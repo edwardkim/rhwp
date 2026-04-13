@@ -43,7 +43,7 @@ default = ["console_error_panic_hook"]
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
 usvg = "0.45"
-pdf-writer = "0.12"
+pdf-writer = "0.14"
 subsetter = "0.2"
 ttf-parser = "0.25"
 
