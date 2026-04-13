@@ -24,7 +24,7 @@ flate2 = "1.0"
 byteorder = "1.5"
 base64 = "0.22"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
-quick-xml = "0.37"
+quick-xml = "0.39"
 codepage = "0.1.2"
 embedded-io = "0.7.1"
 encoding_rs = "0.8.35"
