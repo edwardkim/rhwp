@@ -6,7 +6,7 @@
 #[cfg(test)]
 mod tests {
     use resvg::{tiny_skia, usvg};
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     /// 테스트용 DocumentCore 생성 헬퍼
     fn load_document(path: &str) -> Option<crate::document_core::DocumentCore> {
@@ -29,6 +29,94 @@ mod tests {
         Some(pixmap)
     }
 
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    fn decode_png(bytes: &[u8]) -> Option<tiny_skia::Pixmap> {
+        tiny_skia::Pixmap::decode_png(bytes).ok()
+    }
+
+    struct PixmapDiff {
+        diff_pixels: usize,
+        total_pixels: usize,
+        max_channel_delta: u8,
+        mean_abs_channel_delta: f64,
+        diff_pixmap: tiny_skia::Pixmap,
+    }
+
+    fn diff_pixmaps(expected: &tiny_skia::Pixmap, actual: &tiny_skia::Pixmap) -> PixmapDiff {
+        let total_pixels = (expected.width() as usize) * (expected.height() as usize);
+        let mut diff_pixmap = tiny_skia::Pixmap::new(expected.width(), expected.height())
+            .expect("diff pixmap 생성 실패");
+        let mut diff_pixels = 0usize;
+        let mut total_channel_delta = 0u64;
+        let mut max_channel_delta = 0u8;
+
+        for (idx, (expected_px, actual_px)) in expected
+            .data()
+            .chunks_exact(4)
+            .zip(actual.data().chunks_exact(4))
+            .enumerate()
+        {
+            let mut pixel_diff = false;
+            let mut pixel_max_delta = 0u8;
+
+            for channel in 0..4 {
+                let delta = expected_px[channel].abs_diff(actual_px[channel]);
+                if delta > 0 {
+                    pixel_diff = true;
+                }
+                total_channel_delta += u64::from(delta);
+                pixel_max_delta = pixel_max_delta.max(delta);
+                max_channel_delta = max_channel_delta.max(delta);
+            }
+
+            if pixel_diff {
+                diff_pixels += 1;
+                let base = idx * 4;
+                diff_pixmap.data_mut()[base..base + 4]
+                    .copy_from_slice(&[pixel_max_delta.max(32), 0, 0, 255]);
+            }
+        }
+
+        let mean_abs_channel_delta = if total_pixels == 0 {
+            0.0
+        } else {
+            total_channel_delta as f64 / (total_pixels as f64 * 4.0)
+        };
+
+        PixmapDiff {
+            diff_pixels,
+            total_pixels,
+            max_channel_delta,
+            mean_abs_channel_delta,
+            diff_pixmap,
+        }
+    }
+
+    fn save_diff_artifacts(
+        output_dir: &str,
+        sample: &str,
+        page_num: u32,
+        expected_name: &str,
+        actual_name: &str,
+        expected: &tiny_skia::Pixmap,
+        actual: &tiny_skia::Pixmap,
+        diff: &tiny_skia::Pixmap,
+    ) -> (PathBuf, PathBuf, PathBuf) {
+        let output_dir = Path::new(output_dir);
+        let _ = std::fs::create_dir_all(output_dir);
+        let stem = Path::new(sample)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("sample");
+        let expected_path = output_dir.join(format!("{stem}-{expected_name}-p{page_num}.png"));
+        let actual_path = output_dir.join(format!("{stem}-{actual_name}-p{page_num}.png"));
+        let diff_path = output_dir.join(format!("{stem}-diff-p{page_num}.png"));
+        let _ = expected.save_png(&expected_path);
+        let _ = actual.save_png(&actual_path);
+        let _ = diff.save_png(&diff_path);
+        (expected_path, actual_path, diff_path)
+    }
+
     fn assert_layer_svg_pixels_match(sample: &str, page_num: u32) {
         let Some(core) = load_document(sample) else {
             return;
@@ -48,40 +136,77 @@ mod tests {
             "legacy/layer raster 크기가 달라서는 안 됨",
         );
 
-        let mut diff_pixels = 0usize;
-        let mut diff = tiny_skia::Pixmap::new(legacy_pixmap.width(), legacy_pixmap.height())
-            .expect("diff pixmap 생성 실패");
-        for (idx, (legacy_px, layered_px)) in legacy_pixmap
-            .data()
-            .chunks_exact(4)
-            .zip(layered_pixmap.data().chunks_exact(4))
-            .enumerate()
-        {
-            if legacy_px != layered_px {
-                diff_pixels += 1;
-                let base = idx * 4;
-                diff.data_mut()[base..base + 4].copy_from_slice(&[255, 0, 0, 255]);
-            }
-        }
-
-        if diff_pixels > 0 {
-            let output_dir = Path::new("output/layer-svg-diff");
-            let _ = std::fs::create_dir_all(output_dir);
-            let stem = Path::new(sample)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("sample");
-            let legacy_path = output_dir.join(format!("{stem}-legacy-p{page_num}.png"));
-            let layered_path = output_dir.join(format!("{stem}-layer-p{page_num}.png"));
-            let diff_path = output_dir.join(format!("{stem}-diff-p{page_num}.png"));
-            let _ = legacy_pixmap.save_png(&legacy_path);
-            let _ = layered_pixmap.save_png(&layered_path);
-            let _ = diff.save_png(&diff_path);
+        let diff = diff_pixmaps(&legacy_pixmap, &layered_pixmap);
+        if diff.diff_pixels > 0 {
+            let (legacy_path, layered_path, diff_path) = save_diff_artifacts(
+                "output/layer-svg-diff",
+                sample,
+                page_num,
+                "legacy",
+                "layer",
+                &legacy_pixmap,
+                &layered_pixmap,
+                &diff.diff_pixmap,
+            );
             panic!(
                 "legacy/layer raster diff 발생: {} pixels (legacy: {}, layer: {}, diff: {})",
-                diff_pixels,
+                diff.diff_pixels,
                 legacy_path.display(),
                 layered_path.display(),
+                diff_path.display(),
+            );
+        }
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    fn assert_skia_png_visually_close(
+        sample: &str,
+        page_num: u32,
+        max_diff_ratio: f64,
+        max_mean_abs_channel_delta: f64,
+        max_channel_delta: u8,
+    ) {
+        let Some(core) = load_document(sample) else {
+            return;
+        };
+        let layered_svg = core
+            .render_page_svg_layer_native(page_num)
+            .expect("layer SVG 렌더 실패");
+        let expected = rasterize_svg(&layered_svg).expect("layer SVG rasterize 실패");
+        let actual_png = core
+            .render_page_png_native(page_num)
+            .expect("Skia PNG 렌더 실패");
+        let actual = decode_png(&actual_png).expect("Skia PNG decode 실패");
+
+        assert_eq!(
+            (actual.width(), actual.height()),
+            (expected.width(), expected.height()),
+            "Skia/layer raster 크기가 달라서는 안 됨",
+        );
+
+        let diff = diff_pixmaps(&expected, &actual);
+        let diff_ratio = diff.diff_pixels as f64 / diff.total_pixels.max(1) as f64;
+        if diff_ratio > max_diff_ratio
+            || diff.mean_abs_channel_delta > max_mean_abs_channel_delta
+            || diff.max_channel_delta > max_channel_delta
+        {
+            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
+                "output/skia-diff",
+                sample,
+                page_num,
+                "layer",
+                "skia",
+                &expected,
+                &actual,
+                &diff.diff_pixmap,
+            );
+            panic!(
+                "Skia raster diff 발생: ratio={:.4}, mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, diff: {})",
+                diff_ratio,
+                diff.mean_abs_channel_delta,
+                diff.max_channel_delta,
+                expected_path.display(),
+                actual_path.display(),
                 diff_path.display(),
             );
         }
@@ -288,5 +413,93 @@ mod tests {
     #[test]
     fn test_layer_svg_screenshot_matches_legacy_for_table_sample() {
         assert_layer_svg_pixels_match("samples/hwp_table_test.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_synthetic_shapes() {
+        use crate::paint::{LayerBuilder, RenderProfile};
+        use crate::renderer::layer_renderer::LayerRenderer;
+        use crate::renderer::render_tree::{
+            BoundingBox, PageNode, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
+        };
+        use crate::renderer::skia::SkiaLayerRenderer;
+        use crate::renderer::svg_layer::SvgLayerRenderer;
+        use crate::renderer::ShapeStyle;
+
+        let mut tree = PageRenderTree::new(0, 180.0, 120.0);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 180.0,
+            height: 120.0,
+            section_index: 0,
+        });
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Rectangle(RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    fill_color: Some(0x00F6F0E6),
+                    ..Default::default()
+                },
+                None,
+            )),
+            BoundingBox::new(12.0, 12.0, 60.0, 40.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            2,
+            RenderNodeType::Rectangle(RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    fill_color: Some(0x00D9E7FF),
+                    ..Default::default()
+                },
+                None,
+            )),
+            BoundingBox::new(90.0, 28.0, 66.0, 52.0),
+        ));
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        let mut svg_renderer = SvgLayerRenderer::new();
+        svg_renderer.render_page(&layer_tree);
+        let expected = rasterize_svg(svg_renderer.output()).expect("synthetic SVG rasterize 실패");
+        let actual_png = SkiaLayerRenderer::new()
+            .render_png(&layer_tree)
+            .expect("synthetic Skia PNG 렌더 실패");
+        let actual = decode_png(&actual_png).expect("synthetic Skia PNG decode 실패");
+        let diff = diff_pixmaps(&expected, &actual);
+
+        if diff.diff_pixels > 0 {
+            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
+                "output/skia-diff",
+                "synthetic-shapes",
+                0,
+                "layer",
+                "skia",
+                &expected,
+                &actual,
+                &diff.diff_pixmap,
+            );
+            panic!(
+                "synthetic Skia raster diff 발생: {} pixels (layer: {}, skia: {}, diff: {})",
+                diff.diff_pixels,
+                expected_path.display(),
+                actual_path.display(),
+                diff_path.display(),
+            );
+        }
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_stays_close_to_layer_svg_for_basic_text_sample() {
+        assert_skia_png_visually_close("samples/lseg-01-basic.hwp", 0, 0.20, 8.0, 255);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_stays_close_to_layer_svg_for_table_sample() {
+        assert_skia_png_visually_close("samples/hwp_table_test.hwp", 0, 0.20, 8.0, 255);
     }
 }
