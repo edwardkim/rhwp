@@ -11,15 +11,17 @@ pub mod equation;
 pub mod font_metrics_data;
 pub mod height_measurer;
 pub mod html;
+pub mod layer_renderer;
 pub mod layout;
 pub mod page_layout;
 pub mod pagination;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod pdf;
 pub mod render_tree;
 pub mod scheduler;
 pub mod style_resolver;
 pub mod svg;
-#[cfg(not(target_arch = "wasm32"))]
-pub mod pdf;
+pub mod svg_layer;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
@@ -347,11 +349,15 @@ pub enum PathCommand {
 /// (x1, y1): 시작점, (x2, y2): 끝점, rx/ry: 반지름,
 /// phi: x축 회전(도), large_arc/sweep: 플래그
 pub fn svg_arc_to_beziers(
-    x1: f64, y1: f64,
-    mut rx: f64, mut ry: f64,
+    x1: f64,
+    y1: f64,
+    mut rx: f64,
+    mut ry: f64,
     phi_deg: f64,
-    large_arc: bool, sweep: bool,
-    x2: f64, y2: f64,
+    large_arc: bool,
+    sweep: bool,
+    x2: f64,
+    y2: f64,
 ) -> Vec<PathCommand> {
     use std::f64::consts::PI;
 
@@ -497,10 +503,10 @@ pub fn corrected_line_height(
 ) -> f64 {
     if max_fs > 0.0 && raw_lh < max_fs {
         match ls_type {
-            LineSpacingType::Percent   => max_fs * ls_val / 100.0,
-            LineSpacingType::Fixed     => ls_val.max(max_fs),
+            LineSpacingType::Percent => max_fs * ls_val / 100.0,
+            LineSpacingType::Fixed => ls_val.max(max_fs),
             LineSpacingType::SpaceOnly => max_fs + ls_val,
-            LineSpacingType::Minimum   => ls_val.max(max_fs),
+            LineSpacingType::Minimum => ls_val.max(max_fs),
         }
     } else {
         raw_lh
@@ -530,24 +536,29 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
-    if font_family.contains("굴림체") || font_family.contains("바탕체")
-        || lower.contains("gulimche") || lower.contains("batangche")
-        || lower.contains("coding") || lower.contains("courier")
+    if font_family.contains("굴림체")
+        || font_family.contains("바탕체")
+        || lower.contains("gulimche")
+        || lower.contains("batangche")
+        || lower.contains("coding")
+        || lower.contains("courier")
     {
         // Monospace: Windows → 오픈소스 → generic
         return "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
     }
     // 세리프 키워드 (한글)
-    if font_family.contains("바탕") || font_family.contains("명조")
-        || font_family.contains("궁서")
+    if font_family.contains("바탕") || font_family.contains("명조") || font_family.contains("궁서")
     {
         // Serif: Windows → macOS/iOS → Android → 오픈소스 → generic
         return "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
     }
     // 세리프 키워드 (영문)
-    if lower.contains("times") || lower.contains("hymjre")
-        || lower.contains("palatino") || lower.contains("georgia")
-        || lower.contains("batang") || lower.contains("gungsuh")
+    if lower.contains("times")
+        || lower.contains("hymjre")
+        || lower.contains("palatino")
+        || lower.contains("georgia")
+        || lower.contains("batang")
+        || lower.contains("gungsuh")
     {
         return "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
     }
@@ -694,8 +705,8 @@ pub fn format_number(number: u16, format: NumberFormat) -> String {
 /// 원 문자 변환 (① ~ ⑳, 이후 숫자)
 fn format_circled_digit(n: u16) -> String {
     const CIRCLED: [char; 20] = [
-        '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
-        '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳',
+        '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱',
+        '⑲', '⑳',
     ];
     if n >= 1 && n <= 20 {
         CIRCLED[(n - 1) as usize].to_string()
@@ -711,10 +722,18 @@ fn format_roman(n: u16, upper: bool) -> String {
     }
 
     let values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
-    let symbols_upper = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
-    let symbols_lower = ["m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i"];
+    let symbols_upper = [
+        "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I",
+    ];
+    let symbols_lower = [
+        "m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i",
+    ];
 
-    let symbols = if upper { &symbols_upper } else { &symbols_lower };
+    let symbols = if upper {
+        &symbols_upper
+    } else {
+        &symbols_lower
+    };
     let mut result = String::new();
     let mut num = n as i32;
 
@@ -751,7 +770,9 @@ fn format_latin(n: u16, upper: bool) -> String {
 
 /// 한글 가나다 변환
 fn format_hangul_ganada(n: u16) -> String {
-    const GANADA: [char; 14] = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'];
+    const GANADA: [char; 14] = [
+        '가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하',
+    ];
     if n >= 1 && n <= 14 {
         GANADA[(n - 1) as usize].to_string()
     } else {
@@ -783,7 +804,11 @@ fn format_hangul_number(n: u16) -> String {
             while g > 0 {
                 let digit = g % 10;
                 if digit > 0 {
-                    let digit_str = if digit == 1 && unit > 0 { "" } else { HANGUL_DIGITS[digit] };
+                    let digit_str = if digit == 1 && unit > 0 {
+                        ""
+                    } else {
+                        HANGUL_DIGITS[digit]
+                    };
                     group_str.insert_str(0, HANGUL_UNITS[unit]);
                     group_str.insert_str(0, digit_str);
                 }
@@ -823,7 +848,11 @@ fn format_hanja_number(n: u16) -> String {
             while g > 0 {
                 let digit = g % 10;
                 if digit > 0 {
-                    let digit_str = if digit == 1 && unit > 0 { "" } else { HANJA_DIGITS[digit] };
+                    let digit_str = if digit == 1 && unit > 0 {
+                        ""
+                    } else {
+                        HANJA_DIGITS[digit]
+                    };
                     group_str.insert_str(0, HANJA_UNITS[unit]);
                     group_str.insert_str(0, digit_str);
                 }
@@ -845,7 +874,10 @@ mod tests {
 
     #[test]
     fn test_render_backend_from_str() {
-        assert_eq!(RenderBackend::from_str("canvas"), Some(RenderBackend::Canvas));
+        assert_eq!(
+            RenderBackend::from_str("canvas"),
+            Some(RenderBackend::Canvas)
+        );
         assert_eq!(RenderBackend::from_str("svg"), Some(RenderBackend::Svg));
         assert_eq!(RenderBackend::from_str("html"), Some(RenderBackend::Html));
         assert_eq!(RenderBackend::from_str("unknown"), None);

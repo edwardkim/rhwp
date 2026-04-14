@@ -1,6 +1,8 @@
 use crate::paint::paint_op::PaintOp;
 use crate::paint::resources::ResourceArena;
-use crate::renderer::render_tree::{BoundingBox, NodeId};
+use crate::renderer::render_tree::{
+    BoundingBox, GroupNode, NodeId, TableCellNode, TableNode, TextLineNode,
+};
 
 /// 한 페이지의 visual layer tree.
 #[derive(Debug, Clone)]
@@ -51,6 +53,7 @@ impl LayerNode {
         source_node_id: Option<NodeId>,
         children: Vec<LayerNode>,
         cache_hint: CacheHint,
+        group_kind: GroupKind,
     ) -> Self {
         Self {
             bounds,
@@ -58,6 +61,7 @@ impl LayerNode {
             kind: LayerNodeKind::Group {
                 children,
                 cache_hint,
+                group_kind,
             },
         }
     }
@@ -94,6 +98,7 @@ pub enum LayerNodeKind {
     Group {
         children: Vec<LayerNode>,
         cache_hint: CacheHint,
+        group_kind: GroupKind,
     },
     ClipRect {
         clip: BoundingBox,
@@ -103,4 +108,20 @@ pub enum LayerNodeKind {
     Leaf {
         ops: Vec<PaintOp>,
     },
+}
+
+#[derive(Debug, Clone)]
+pub enum GroupKind {
+    Generic,
+    MasterPage,
+    Header,
+    Footer,
+    Body,
+    Column(u16),
+    FootnoteArea,
+    TextLine(TextLineNode),
+    Table(TableNode),
+    TableCell(TableCellNode),
+    TextBox,
+    Group(GroupNode),
 }
