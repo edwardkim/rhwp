@@ -19,6 +19,8 @@ pub mod pagination;
 pub mod pdf;
 pub mod render_tree;
 pub mod scheduler;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod skia;
 pub mod style_resolver;
 pub mod svg;
 pub mod svg_layer;

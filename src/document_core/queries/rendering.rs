@@ -16,6 +16,8 @@ use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{PaginationResult, Paginator};
 use crate::renderer::render_tree::PageRenderTree;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+use crate::renderer::skia::SkiaLayerRenderer;
 use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
@@ -54,6 +56,17 @@ impl DocumentCore {
         renderer.inner_mut().debug_overlay = self.debug_overlay;
         renderer.render_page(&layer_tree);
         Ok(renderer.output().to_string())
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_png_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        let _overflows = self.layout_engine.take_overflows();
+        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        SkiaLayerRenderer::new()
+            .render_png(&layer_tree)
+            .map_err(HwpError::RenderError)
     }
 
     /// SVG 렌더링 (폰트 임베딩 옵션 포함)
