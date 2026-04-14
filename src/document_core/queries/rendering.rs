@@ -7,9 +7,11 @@ use crate::model::paragraph::Paragraph;
 use crate::model::page::ColumnDef;
 use crate::renderer::pagination::{Paginator, PaginationResult};
 use crate::renderer::height_measurer::{MeasuredTable, MeasuredSection, HeightMeasurer};
+use crate::renderer::layer_renderer::LayerRenderer;
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::svg::SvgRenderer;
+use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::html::HtmlRenderer;
 use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::style_resolver::resolve_styles;
@@ -36,6 +38,16 @@ impl DocumentCore {
     }
 
     pub fn render_page_svg_native(&self, page_num: u32) -> Result<String, HwpError> {
+        if matches!(
+            std::env::var("RHWP_RENDER_PATH").ok().as_deref(),
+            Some("layer-svg")
+        ) {
+            return self.render_page_svg_layer_native(page_num);
+        }
+        self.render_page_svg_legacy_native(page_num)
+    }
+
+    pub fn render_page_svg_legacy_native(&self, page_num: u32) -> Result<String, HwpError> {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let mut renderer = SvgRenderer::new();
@@ -43,6 +55,19 @@ impl DocumentCore {
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
         renderer.render_tree(&tree);
+        Ok(renderer.output().to_string())
+    }
+
+    pub fn render_page_svg_layer_native(&self, page_num: u32) -> Result<String, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        let _overflows = self.layout_engine.take_overflows();
+        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().show_paragraph_marks = self.show_paragraph_marks;
+        renderer.inner_mut().show_control_codes = self.show_control_codes;
+        renderer.inner_mut().debug_overlay = self.debug_overlay;
+        renderer.render_page(&layer_tree);
         Ok(renderer.output().to_string())
     }
 

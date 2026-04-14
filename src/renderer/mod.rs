@@ -13,6 +13,7 @@ pub mod equation;
 pub mod font_metrics_data;
 pub mod height_measurer;
 pub mod html;
+pub mod layer_renderer;
 pub mod layout;
 pub mod page_layout;
 pub mod page_number;
@@ -22,6 +23,7 @@ pub mod scheduler;
 pub mod style_resolver;
 pub mod svg;
 pub mod svg_fragment;
+pub mod svg_layer;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf;
 pub mod typeset;

@@ -1,4 +1,6 @@
-use crate::paint::layer_tree::{CacheHint, ClipKind, LayerNode, LayerNodeKind, PageLayerTree};
+use crate::paint::layer_tree::{
+    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
+};
 use crate::paint::paint_op::PaintOp;
 use crate::paint::profile::RenderProfile;
 use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
@@ -24,6 +26,7 @@ impl LayerBuilder {
             Some(tree.root.id),
             self.build_children(&tree.root),
             self.cache_hint_for(&tree.root.node_type),
+            GroupKind::Generic,
         );
 
         PageLayerTree::new(page_width, page_height, root)
@@ -130,6 +133,7 @@ impl LayerBuilder {
                     Some(node.id),
                     self.build_children(node),
                     self.cache_hint_for(&node.node_type),
+                    GroupKind::Body,
                 );
                 Some(LayerNode::clip_rect(
                     node.bbox,
@@ -145,6 +149,7 @@ impl LayerBuilder {
                     Some(node.id),
                     self.build_children(node),
                     self.cache_hint_for(&node.node_type),
+                    GroupKind::TableCell(cell.clone()),
                 );
                 Some(LayerNode::clip_rect(
                     node.bbox,
@@ -159,6 +164,7 @@ impl LayerBuilder {
                 Some(node.id),
                 self.build_children(node),
                 self.cache_hint_for(&node.node_type),
+                self.group_kind_for(&node.node_type),
             )),
         }
     }
@@ -174,6 +180,23 @@ impl LayerBuilder {
                 CacheHint::PreferRaster
             }
             _ => CacheHint::None,
+        }
+    }
+
+    fn group_kind_for(&self, node_type: &RenderNodeType) -> GroupKind {
+        match node_type {
+            RenderNodeType::MasterPage => GroupKind::MasterPage,
+            RenderNodeType::Header => GroupKind::Header,
+            RenderNodeType::Footer => GroupKind::Footer,
+            RenderNodeType::Body { .. } => GroupKind::Body,
+            RenderNodeType::Column(index) => GroupKind::Column(*index),
+            RenderNodeType::FootnoteArea => GroupKind::FootnoteArea,
+            RenderNodeType::TextLine(line) => GroupKind::TextLine(line.clone()),
+            RenderNodeType::Table(table) => GroupKind::Table(table.clone()),
+            RenderNodeType::TableCell(cell) => GroupKind::TableCell(cell.clone()),
+            RenderNodeType::TextBox => GroupKind::TextBox,
+            RenderNodeType::Group(group) => GroupKind::Group(group.clone()),
+            _ => GroupKind::Generic,
         }
     }
 }
