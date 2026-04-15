@@ -126,6 +126,14 @@ impl DocumentCore {
         Ok(renderer.command_count() as u32)
     }
 
+    pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        let _overflows = self.layout_engine.take_overflows();
+        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        Ok(layer_tree.to_json())
+    }
+
     /// 페이지 정보 (네이티브 에러 타입)
     pub fn get_page_info_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::renderer::hwpunit_to_px;
