@@ -2,10 +2,7 @@
 //!
 //! GSO(General Shape Object) 컨트롤과 관련 서브타입을 파싱한다.
 
-use crate::parser::body_text::parse_paragraph_list;
-use crate::parser::byte_reader::ByteReader;
-use crate::parser::record::Record;
-use crate::parser::tags;
+use super::parse_caption;
 use crate::model::control::Control;
 use crate::model::image::{ImageEffect, Picture};
 use crate::model::shape::{
@@ -14,10 +11,13 @@ use crate::model::shape::{
     ShapeObject, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, ShapeBorderLine};
-use crate::model::Point;
 use crate::model::Padding;
+use crate::model::Point;
+use crate::parser::body_text::parse_paragraph_list;
+use crate::parser::byte_reader::ByteReader;
 use crate::parser::doc_info;
-use super::parse_caption;
+use crate::parser::record::Record;
+use crate::parser::tags;
 
 // ============================================================
 // 그리기 개체 ('gso ')
@@ -41,23 +41,31 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
     let mut shape_component_parsed = false;
 
     // 그룹 컨테이너 사전 감지
-    let has_container_tag = child_records.iter().any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER);
-    let has_child_sc = if let Some((sc_idx, sc_rec)) = child_records.iter().enumerate()
-        .find(|(_, r)| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT) {
+    let has_container_tag = child_records
+        .iter()
+        .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER);
+    let has_child_sc = if let Some((sc_idx, sc_rec)) = child_records
+        .iter()
+        .enumerate()
+        .find(|(_, r)| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT)
+    {
         let sc_level = sc_rec.level;
-        child_records[sc_idx + 1..].iter().any(|r|
-            r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level == sc_level + 1
-        )
-    } else { false };
+        child_records[sc_idx + 1..]
+            .iter()
+            .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level == sc_level + 1)
+    } else {
+        false
+    };
     if has_container_tag {
         is_container = true;
     } else if has_child_sc {
         is_container = true;
     }
     // SHAPE_COMPONENT 인덱스 찾기 (캡션/텍스트박스 LIST_HEADER 구분에 필요)
-    let shape_comp_idx = child_records.iter().position(|r|
-        r.tag_id == tags::HWPTAG_SHAPE_COMPONENT || r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER
-    );
+    let shape_comp_idx = child_records.iter().position(|r| {
+        r.tag_id == tags::HWPTAG_SHAPE_COMPONENT
+            || r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER
+    });
 
     for record in child_records {
         match record.tag_id {
@@ -159,8 +167,8 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
             text_box.max_width = lr.read_u32().unwrap_or(0);
             // 나머지 바이트 보존 (라운드트립용)
             if lr.remaining() > 0 {
-                text_box.raw_list_header_extra = lr.read_bytes(lr.remaining())
-                    .unwrap_or_default().to_vec();
+                text_box.raw_list_header_extra =
+                    lr.read_bytes(lr.remaining()).unwrap_or_default().to_vec();
             }
         }
 
@@ -296,9 +304,9 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     // hwplib 기준 TextFlowMethod: 0=어울림, 1=자리차지, 2=글뒤로, 3=글앞으로
     common.text_wrap = match (attr >> 21) & 0x07 {
         0 => TextWrap::Square,        // 어울림 (FitWithText)
-        1 => TextWrap::TopAndBottom,   // 자리차지 (TakePlace)
-        2 => TextWrap::BehindText,     // 글 뒤로
-        3 => TextWrap::InFrontOfText,  // 글 앞으로
+        1 => TextWrap::TopAndBottom,  // 자리차지 (TakePlace)
+        2 => TextWrap::BehindText,    // 글 뒤로
+        3 => TextWrap::InFrontOfText, // 글 앞으로
         _ => TextWrap::Square,
     };
 
@@ -367,8 +375,12 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
             attr: ShapeComponentAttr::default(),
             border: ShapeBorderLine::default(),
             fill: Fill::default(),
-            shadow_type: 0, shadow_color: 0, shadow_offset_x: 0, shadow_offset_y: 0,
-            inst_id: 0, shadow_alpha: 0,
+            shadow_type: 0,
+            shadow_color: 0,
+            shadow_offset_x: 0,
+            shadow_offset_y: 0,
+            inst_id: 0,
+            shadow_alpha: 0,
         };
     }
 
@@ -415,7 +427,10 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
             for v in m.iter_mut() {
                 let bytes = r.read_bytes(8).unwrap_or_default();
                 if bytes.len() == 8 {
-                    *v = f64::from_le_bytes([bytes[0],bytes[1],bytes[2],bytes[3],bytes[4],bytes[5],bytes[6],bytes[7]]);
+                    *v = f64::from_le_bytes([
+                        bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6],
+                        bytes[7],
+                    ]);
                 }
             }
             m
@@ -423,12 +438,12 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
         // 두 아핀 행렬 합성: result = A × B
         fn compose(a: &[f64; 6], b: &[f64; 6]) -> [f64; 6] {
             [
-                a[0]*b[0] + a[1]*b[3],          // a
-                a[0]*b[1] + a[1]*b[4],          // b
-                a[0]*b[2] + a[1]*b[5] + a[2],   // tx
-                a[3]*b[0] + a[4]*b[3],          // c
-                a[3]*b[1] + a[4]*b[4],          // d
-                a[3]*b[2] + a[4]*b[5] + a[5],   // ty
+                a[0] * b[0] + a[1] * b[3],        // a
+                a[0] * b[1] + a[1] * b[4],        // b
+                a[0] * b[2] + a[1] * b[5] + a[2], // tx
+                a[3] * b[0] + a[4] * b[3],        // c
+                a[3] * b[1] + a[4] * b[4],        // d
+                a[3] * b[2] + a[4] * b[5] + a[5], // ty
             ]
         }
 
@@ -442,9 +457,9 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
         }
         // 합성된 아핀 행렬 [a, b, tx, c, d, ty] 추출
         attr.render_sx = result[0]; // a
-        attr.render_b  = result[1]; // b (회전/전단 성분)
+        attr.render_b = result[1]; // b (회전/전단 성분)
         attr.render_tx = result[2]; // tx
-        attr.render_c  = result[3]; // c (회전/전단 성분)
+        attr.render_c = result[3]; // c (회전/전단 성분)
         attr.render_sy = result[4]; // d
         attr.render_ty = result[5]; // ty
     }
@@ -487,11 +502,31 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
     };
 
     // 인스턴스 ID (4바이트) + 예약 (1바이트) + 그림자 투명도 (1바이트) = 6바이트
-    let inst_id = if r.remaining() >= 4 { r.read_u32().unwrap_or(0) } else { 0 };
-    if r.remaining() >= 1 { let _ = r.read_u8(); } // 예약 (skip)
-    let shadow_alpha = if r.remaining() >= 1 { r.read_u8().unwrap_or(0) } else { 0 };
+    let inst_id = if r.remaining() >= 4 {
+        r.read_u32().unwrap_or(0)
+    } else {
+        0
+    };
+    if r.remaining() >= 1 {
+        let _ = r.read_u8();
+    } // 예약 (skip)
+    let shadow_alpha = if r.remaining() >= 1 {
+        r.read_u8().unwrap_or(0)
+    } else {
+        0
+    };
 
-    ShapeComponentParsed { attr, border, fill, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, inst_id, shadow_alpha }
+    ShapeComponentParsed {
+        attr,
+        border,
+        fill,
+        shadow_type,
+        shadow_color,
+        shadow_offset_x,
+        shadow_offset_y,
+        inst_id,
+        shadow_alpha,
+    }
 }
 
 /// 묶음 개체(Container)의 자식 도형 파싱
@@ -507,7 +542,9 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
         .position(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER);
 
     // 첫 SHAPE_COMPONENT 위치 찾기 (캡션 등이 앞에 올 수 있음)
-    let first_sc_idx = child_records.iter().position(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT);
+    let first_sc_idx = child_records
+        .iter()
+        .position(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT);
 
     let start = match container_idx {
         Some(idx) => idx + 1,
@@ -536,7 +573,6 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
             comp_indices.push(i);
         }
     }
-
 
     for (ci, &comp_start) in comp_indices.iter().enumerate() {
         let comp_end = if ci + 1 < comp_indices.len() {
@@ -573,7 +609,9 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
         let mut shape_tag_id: Option<u16> = None;
         let mut shape_tag_data: &[u8] = &[];
         for record in &child_slice[1..] {
-            if record.level != direct_child_level { continue; }
+            if record.level != direct_child_level {
+                continue;
+            }
             match record.tag_id {
                 tags::HWPTAG_SHAPE_COMPONENT_LINE
                 | tags::HWPTAG_SHAPE_COMPONENT_RECTANGLE
@@ -629,8 +667,8 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
                     text_box.margin_bottom = lr.read_i16().unwrap_or(0);
                     text_box.max_width = lr.read_u32().unwrap_or(0);
                     if lr.remaining() > 0 {
-                        text_box.raw_list_header_extra = lr.read_bytes(lr.remaining())
-                            .unwrap_or_default().to_vec();
+                        text_box.raw_list_header_extra =
+                            lr.read_bytes(lr.remaining()).unwrap_or_default().to_vec();
                     }
                 } else if let Some((ml, mr, mt, mb, max_w, list_attr)) = tb_attr {
                     // LIST_HEADER 레코드가 없으면 SHAPE_COMPONENT 인라인 속성 사용
@@ -652,11 +690,14 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
         }
 
         // 중첩 Group 감지: shape_tag_id가 없고 하위 SHAPE_COMPONENT가 있으면 재귀
-        let has_nested_shapes = shape_tag_id.is_none() && child_slice.len() > 1
-            && child_slice[1..].iter().any(|r|
-                r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level > child_slice[0].level);
+        let has_nested_shapes = shape_tag_id.is_none()
+            && child_slice.len() > 1
+            && child_slice[1..].iter().any(|r| {
+                r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level > child_slice[0].level
+            });
         // CONTAINER 태그가 있거나 하위 SHAPE_COMPONENT가 있으면 중첩 Group
-        let has_container_tag = child_slice[1..].iter()
+        let has_container_tag = child_slice[1..]
+            .iter()
             .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER);
         if has_container_tag || has_nested_shapes {
             let mut group = GroupShape::default();
@@ -727,11 +768,7 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
 }
 
 /// 그림 개체 파싱
-fn parse_picture(
-    common: CommonObjAttr,
-    shape_attr: ShapeComponentAttr,
-    data: &[u8],
-) -> Picture {
+fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[u8]) -> Picture {
     let mut pic = Picture::default();
     pic.common = common;
     pic.shape_attr = shape_attr;
@@ -794,7 +831,7 @@ fn parse_picture(
 
 /// 직선 도형 데이터 파싱
 fn parse_line_shape_data(data: &[u8], line: &mut LineShape, is_connector: bool) {
-    use crate::model::shape::{ConnectorData, ConnectorControlPoint, LinkLineType};
+    use crate::model::shape::{ConnectorControlPoint, ConnectorData, LinkLineType};
     let mut r = ByteReader::new(data);
     line.start.x = r.read_i32().unwrap_or(0);
     line.start.y = r.read_i32().unwrap_or(0);

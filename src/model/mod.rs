@@ -70,7 +70,12 @@ mod tests {
 
     #[test]
     fn test_rect_dimensions() {
-        let r = Rect { left: 100, top: 200, right: 500, bottom: 700 };
+        let r = Rect {
+            left: 100,
+            top: 200,
+            right: 500,
+            bottom: 700,
+        };
         assert_eq!(r.width(), 400);
         assert_eq!(r.height(), 500);
     }

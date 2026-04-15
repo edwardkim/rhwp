@@ -17,9 +17,7 @@ pub mod section;
 pub mod utils;
 
 use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
-use crate::model::document::{
-    Document, FileHeader, HwpVersion, Section,
-};
+use crate::model::document::{Document, FileHeader, HwpVersion, Section};
 
 /// HWPX 파싱 에러
 #[derive(Debug)]
@@ -116,7 +114,12 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 
     // Document 조립
     let model_header = FileHeader {
-        version: HwpVersion { major: 5, minor: 1, build: 0, revision: 0 },
+        version: HwpVersion {
+            major: 5,
+            minor: 1,
+            build: 0,
+            revision: 0,
+        },
         flags: 0,
         compressed: false,
         encrypted: false,

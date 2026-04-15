@@ -22,25 +22,25 @@ impl HwpxReader {
 
     /// 지정한 경로의 파일을 UTF-8 문자열로 읽는다.
     pub fn read_file(&mut self, path: &str) -> Result<String, HwpxError> {
-        let mut file = self.archive.by_name(path).map_err(|e| {
-            HwpxError::MissingFile(format!("{}: {}", path, e))
-        })?;
+        let mut file = self
+            .archive
+            .by_name(path)
+            .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let mut buf = String::new();
-        file.read_to_string(&mut buf).map_err(|e| {
-            HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e))
-        })?;
+        file.read_to_string(&mut buf)
+            .map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))?;
         Ok(buf)
     }
 
     /// 지정한 경로의 파일을 바이트 배열로 읽는다.
     pub fn read_file_bytes(&mut self, path: &str) -> Result<Vec<u8>, HwpxError> {
-        let mut file = self.archive.by_name(path).map_err(|e| {
-            HwpxError::MissingFile(format!("{}: {}", path, e))
-        })?;
+        let mut file = self
+            .archive
+            .by_name(path)
+            .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let mut buf = Vec::new();
-        file.read_to_end(&mut buf).map_err(|e| {
-            HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e))
-        })?;
+        file.read_to_end(&mut buf)
+            .map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))?;
         Ok(buf)
     }
 

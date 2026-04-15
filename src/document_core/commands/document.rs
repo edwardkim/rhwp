@@ -1,15 +1,15 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
-use std::cell::RefCell;
-use std::collections::HashMap;
+use crate::document_core::{DocumentCore, DEFAULT_FALLBACK_FONT};
+use crate::error::HwpError;
 use crate::model::document::Document;
-use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 use crate::renderer::composer::{compose_section, reflow_line_segs};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 use crate::renderer::DEFAULT_DPI;
-use crate::document_core::{DocumentCore, DEFAULT_FALLBACK_FONT};
-use crate::error::HwpError;
+use std::cell::RefCell;
+use std::collections::HashMap;
 
 impl DocumentCore {
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
@@ -75,18 +75,16 @@ impl DocumentCore {
     /// 설정되어 줄바꿈·문단 높이 계산이 불가능하다. 이 함수는 문서 로드 직후
     /// CharPr/ParaPr 기반으로 올바른 line_height/line_spacing을 계산한다.
     /// 본문 문단뿐 아니라 표 셀 내부 문단도 처리한다.
-    fn reflow_zero_height_paragraphs(
-        document: &mut Document,
-        styles: &ResolvedStyleSet,
-        dpi: f64,
-    ) {
+    fn reflow_zero_height_paragraphs(document: &mut Document, styles: &ResolvedStyleSet, dpi: f64) {
         use crate::model::control::Control;
 
         for section in &mut document.sections {
             let page_def = &section.section_def.page_def;
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-            let col_width = layout.column_areas.first()
+            let col_width = layout
+                .column_areas
+                .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
 
@@ -107,7 +105,10 @@ impl DocumentCore {
                     let mut max_tac_h: i32 = 0;
                     for ctrl in para.controls.iter() {
                         if let Control::Table(t) = ctrl {
-                            if t.common.treat_as_char && t.raw_ctrl_data.is_empty() && t.common.height > 0 {
+                            if t.common.treat_as_char
+                                && t.raw_ctrl_data.is_empty()
+                                && t.common.height > 0
+                            {
                                 max_tac_h = max_tac_h.max(t.common.height as i32);
                             }
                         }
@@ -145,28 +146,44 @@ impl DocumentCore {
             for para in section.paragraphs.iter() {
                 for ctrl in &para.controls {
                     match ctrl {
-                        Control::Table(t) if t.common.treat_as_char && t.raw_ctrl_data.is_empty() && t.common.height > 0 => {
+                        Control::Table(t)
+                            if t.common.treat_as_char
+                                && t.raw_ctrl_data.is_empty()
+                                && t.common.height > 0 =>
+                        {
                             need_vpos_recalc = true;
                             break;
                         }
                         // 비-TAC TopAndBottom Picture/Table: LINE_SEG에 개체 높이 미포함
-                        Control::Picture(p) if !p.common.treat_as_char
-                            && matches!(p.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
-                            && p.common.height > 0 => {
+                        Control::Picture(p)
+                            if !p.common.treat_as_char
+                                && matches!(
+                                    p.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                )
+                                && p.common.height > 0 =>
+                        {
                             need_vpos_recalc = true;
                             break;
                         }
-                        Control::Table(t) if !t.common.treat_as_char
-                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
-                            && t.common.height > 0
-                            && t.raw_ctrl_data.is_empty() => {
+                        Control::Table(t)
+                            if !t.common.treat_as_char
+                                && matches!(
+                                    t.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                )
+                                && t.common.height > 0
+                                && t.raw_ctrl_data.is_empty() =>
+                        {
                             need_vpos_recalc = true;
                             break;
                         }
                         _ => {}
                     }
                 }
-                if need_vpos_recalc { break; }
+                if need_vpos_recalc {
+                    break;
+                }
             }
             if need_vpos_recalc {
                 let mut running_vpos: i32 = 0;
@@ -190,21 +207,46 @@ impl DocumentCore {
                     }
                     // 비-TAC TopAndBottom Picture/Table: 개체 높이를 vpos에 반영
                     for ctrl in para.controls.iter() {
-                        let (obj_height, obj_v_offset, obj_margin_top, obj_margin_bottom) = match ctrl {
-                            Control::Picture(p) if !p.common.treat_as_char
-                                && matches!(p.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
-                                && p.common.height > 0 =>
-                                (p.common.height as i32, p.common.vertical_offset as i32, 0, 0),
-                            Control::Table(t) if !t.common.treat_as_char
-                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
-                                && t.common.height > 0
-                                && t.raw_ctrl_data.is_empty() =>
-                                (t.common.height as i32, t.common.vertical_offset as i32,
-                                 t.outer_margin_top as i32, t.outer_margin_bottom as i32),
-                            _ => continue,
-                        };
-                        let obj_total = obj_height + obj_v_offset + obj_margin_top + obj_margin_bottom;
-                        let seg_lh_total: i32 = para.line_segs.iter()
+                        let (obj_height, obj_v_offset, obj_margin_top, obj_margin_bottom) =
+                            match ctrl {
+                                Control::Picture(p)
+                                    if !p.common.treat_as_char
+                                        && matches!(
+                                            p.common.text_wrap,
+                                            crate::model::shape::TextWrap::TopAndBottom
+                                        )
+                                        && p.common.height > 0 =>
+                                {
+                                    (
+                                        p.common.height as i32,
+                                        p.common.vertical_offset as i32,
+                                        0,
+                                        0,
+                                    )
+                                }
+                                Control::Table(t)
+                                    if !t.common.treat_as_char
+                                        && matches!(
+                                            t.common.text_wrap,
+                                            crate::model::shape::TextWrap::TopAndBottom
+                                        )
+                                        && t.common.height > 0
+                                        && t.raw_ctrl_data.is_empty() =>
+                                {
+                                    (
+                                        t.common.height as i32,
+                                        t.common.vertical_offset as i32,
+                                        t.outer_margin_top as i32,
+                                        t.outer_margin_bottom as i32,
+                                    )
+                                }
+                                _ => continue,
+                            };
+                        let obj_total =
+                            obj_height + obj_v_offset + obj_margin_top + obj_margin_bottom;
+                        let seg_lh_total: i32 = para
+                            .line_segs
+                            .iter()
                             .map(|s| s.line_height + s.line_spacing)
                             .sum();
                         if obj_total > seg_lh_total {
@@ -231,7 +273,11 @@ impl DocumentCore {
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
 
         let styles = resolve_styles(&document.doc_info, self.dpi);
-        let composed = document.sections.iter().map(|s| compose_section(s)).collect();
+        let composed = document
+            .sections
+            .iter()
+            .map(|s| compose_section(s))
+            .collect();
         let sec_count = document.sections.len();
 
         self.document = document;
@@ -274,7 +320,10 @@ impl DocumentCore {
     pub fn set_document(&mut self, doc: Document) {
         self.document = doc;
         self.styles = resolve_styles(&self.document.doc_info, self.dpi);
-        self.composed = self.document.sections.iter()
+        self.composed = self
+            .document
+            .sections
+            .iter()
             .map(|s| compose_section(s))
             .collect();
         self.mark_all_sections_dirty();
@@ -317,13 +366,19 @@ impl DocumentCore {
     /// 지정 ID의 스냅샷으로 Document를 복원한다.
     /// 스타일 재해소 + 문단 구성 + 페이지네이션까지 수행.
     pub fn restore_snapshot_native(&mut self, id: u32) -> Result<String, HwpError> {
-        let idx = self.snapshot_store.iter().position(|(sid, _)| *sid == id)
+        let idx = self
+            .snapshot_store
+            .iter()
+            .position(|(sid, _)| *sid == id)
             .ok_or_else(|| HwpError::RenderError(format!("스냅샷 {} 없음", id)))?;
         let (_, doc) = self.snapshot_store[idx].clone();
         self.document = doc;
         // 캐시 전체 재구성
         self.styles = resolve_styles(&self.document.doc_info, self.dpi);
-        self.composed = self.document.sections.iter()
+        self.composed = self
+            .document
+            .sections
+            .iter()
             .map(|s| compose_section(s))
             .collect();
         self.mark_all_sections_dirty();
@@ -350,11 +405,17 @@ impl DocumentCore {
         use crate::renderer::composer::estimate_composed_line_width;
         use crate::renderer::hwpunit_to_px;
 
-        let section = self.document.sections.get(section_idx)
-            .ok_or_else(|| HwpError::InvalidFile(format!("section {} not found", section_idx)))?;
-        let para = section.paragraphs.get(para_idx)
+        let section =
+            self.document.sections.get(section_idx).ok_or_else(|| {
+                HwpError::InvalidFile(format!("section {} not found", section_idx))
+            })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
             .ok_or_else(|| HwpError::InvalidFile(format!("para {} not found", para_idx)))?;
-        let composed = self.composed.get(section_idx)
+        let composed = self
+            .composed
+            .get(section_idx)
             .and_then(|s| s.get(para_idx))
             .ok_or_else(|| HwpError::InvalidFile("composed paragraph not found".into()))?;
 
@@ -375,7 +436,9 @@ impl DocumentCore {
             let mut runs_json = Vec::new();
             for run in &composed_line.runs {
                 let ts = crate::renderer::layout::resolved_to_text_style(
-                    &self.styles, run.char_style_id, run.lang_index,
+                    &self.styles,
+                    run.char_style_id,
+                    run.lang_index,
                 );
                 let run_width = crate::renderer::layout::estimate_text_width(&run.text, &ts);
                 runs_json.push(format!(
@@ -387,9 +450,7 @@ impl DocumentCore {
                 ));
             }
 
-            let line_text: String = composed_line.runs.iter()
-                .map(|r| r.text.as_str())
-                .collect();
+            let line_text: String = composed_line.runs.iter().map(|r| r.text.as_str()).collect();
 
             lines_json.push(format!(
                 r#"{{"line_index":{},"text":"{}","runs":[{}],"our_width_px":{:.2},"stored_segment_width_hwpunit":{},"stored_width_px":{:.2},"error_px":{:.2},"error_hwpunit":{}}}"#,
@@ -426,15 +487,22 @@ impl DocumentCore {
             // 삭제 대상 field_range 인덱스와 삭제할 문자 범위 수집
             let mut removals: Vec<(usize, usize, usize)> = Vec::new(); // (fr_idx, start, end)
             for (fri, fr) in para.field_ranges.iter().enumerate() {
-                if fr.start_char_idx >= fr.end_char_idx { continue; }
+                if fr.start_char_idx >= fr.end_char_idx {
+                    continue;
+                }
                 if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
-                    if f.field_type != FieldType::ClickHere { continue; }
-                    if f.properties & (1 << 15) != 0 { continue; } // 이미 수정된 상태
-                    // 필드 값이 안내문과 동일한지 확인
+                    if f.field_type != FieldType::ClickHere {
+                        continue;
+                    }
+                    if f.properties & (1 << 15) != 0 {
+                        continue;
+                    } // 이미 수정된 상태
+                      // 필드 값이 안내문과 동일한지 확인
                     if let Some(guide) = f.guide_text() {
                         let chars: Vec<char> = para.text.chars().collect();
                         if fr.end_char_idx <= chars.len() {
-                            let field_val: String = chars[fr.start_char_idx..fr.end_char_idx].iter().collect();
+                            let field_val: String =
+                                chars[fr.start_char_idx..fr.end_char_idx].iter().collect();
                             // trailing 공백 제거 후 비교 (한컴이 안내문 뒤에 공백을 추가하는 경우)
                             if field_val.trim_end() == guide || field_val == guide {
                                 removals.push((fri, fr.start_char_idx, fr.end_char_idx));
@@ -452,7 +520,9 @@ impl DocumentCore {
                 para.field_ranges[fri].end_char_idx = start;
                 // 이후 field_ranges의 char_idx 조정
                 for i in 0..para.field_ranges.len() {
-                    if i == fri { continue; }
+                    if i == fri {
+                        continue;
+                    }
                     let other = &mut para.field_ranges[i];
                     if other.start_char_idx >= end {
                         other.start_char_idx -= removed_len;

@@ -1,12 +1,12 @@
 //! 문서 전체 구조 (Document, Section, SectionDef)
 
-use super::*;
 use super::bin_data::{BinData, BinDataContent};
 use super::footnote::FootnoteShape;
 use super::header_footer::MasterPage;
-use super::page::{PageDef, PageBorderFill};
+use super::page::{PageBorderFill, PageDef};
 use super::paragraph::Paragraph;
-use super::style::{CharShape, ParaShape, Style, BorderFill, Font, TabDef, Numbering, Bullet};
+use super::style::{BorderFill, Bullet, CharShape, Font, Numbering, ParaShape, Style, TabDef};
+use super::*;
 
 /// 파서가 모델링하지 않는 원시 레코드 (라운드트립 보존용)
 #[derive(Debug, Clone, Default)]
@@ -246,7 +246,9 @@ impl Document {
         // 2. DocInfo: DISTRIBUTE_DOC_DATA 레코드 제거
         // HWPTAG_BEGIN(0x010) + 12 = 0x01C
         const TAG_DISTRIBUTE_DOC_DATA: u16 = 0x01C;
-        self.doc_info.extra_records.retain(|r| r.tag_id != TAG_DISTRIBUTE_DOC_DATA);
+        self.doc_info
+            .extra_records
+            .retain(|r| r.tag_id != TAG_DISTRIBUTE_DOC_DATA);
         // raw_stream의 surgical remove는 serializer 계층에서 처리
         self.doc_info.distribute_doc_data_removed = true;
 
@@ -263,7 +265,9 @@ impl Document {
         base_id: u32,
         mods: &super::style::CharShapeMods,
     ) -> u32 {
-        let base = self.doc_info.char_shapes
+        let base = self
+            .doc_info
+            .char_shapes
             .get(base_id as usize)
             .cloned()
             .unwrap_or_default();
@@ -291,7 +295,9 @@ impl Document {
         base_id: u16,
         mods: &super::style::ParaShapeMods,
     ) -> u16 {
-        let base = self.doc_info.para_shapes
+        let base = self
+            .doc_info
+            .para_shapes
             .get(base_id as usize)
             .cloned()
             .unwrap_or_default();
@@ -341,7 +347,12 @@ mod tests {
 
     #[test]
     fn test_hwp_version() {
-        let ver = HwpVersion { major: 5, minor: 0, build: 3, revision: 0 };
+        let ver = HwpVersion {
+            major: 5,
+            minor: 0,
+            build: 3,
+            revision: 0,
+        };
         assert_eq!(ver.major, 5);
     }
 
@@ -356,8 +367,16 @@ mod tests {
             },
             doc_info: DocInfo {
                 extra_records: vec![
-                    RawRecord { tag_id: 28, level: 0, data: vec![0u8; 256] }, // HWPTAG_DISTRIBUTE_DOC_DATA = HWPTAG_BEGIN(0x10=16) + 12 = 28
-                    RawRecord { tag_id: 99, level: 0, data: vec![1, 2, 3] }, // 다른 레코드
+                    RawRecord {
+                        tag_id: 28,
+                        level: 0,
+                        data: vec![0u8; 256],
+                    }, // HWPTAG_DISTRIBUTE_DOC_DATA = HWPTAG_BEGIN(0x10=16) + 12 = 28
+                    RawRecord {
+                        tag_id: 99,
+                        level: 0,
+                        data: vec![1, 2, 3],
+                    }, // 다른 레코드
                 ],
                 ..Default::default()
             },
@@ -402,7 +421,10 @@ mod tests {
         doc.doc_info.char_shapes.push(cs.clone());
 
         // bold=true로 수정 → 새 ID 생성
-        let mods = CharShapeMods { bold: Some(true), ..Default::default() };
+        let mods = CharShapeMods {
+            bold: Some(true),
+            ..Default::default()
+        };
         let id1 = doc.find_or_create_char_shape(0, &mods);
         assert_eq!(id1, 1);
         assert_eq!(doc.doc_info.char_shapes.len(), 2);
@@ -415,11 +437,14 @@ mod tests {
 
     #[test]
     fn test_find_or_create_para_shape_reuse() {
-        use super::style::{ParaShape, ParaShapeMods, Alignment};
+        use super::style::{Alignment, ParaShape, ParaShapeMods};
         let mut doc = Document::default();
         doc.doc_info.para_shapes.push(ParaShape::default());
 
-        let mods = ParaShapeMods { alignment: Some(Alignment::Center), ..Default::default() };
+        let mods = ParaShapeMods {
+            alignment: Some(Alignment::Center),
+            ..Default::default()
+        };
         let id1 = doc.find_or_create_para_shape(0, &mods);
         assert_eq!(id1, 1);
 

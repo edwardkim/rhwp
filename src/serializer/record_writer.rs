@@ -39,9 +39,10 @@ pub fn write_record_from(record: &Record) -> Vec<u8> {
 
 /// 여러 레코드를 연결하여 바이너리 스트림 생성
 pub fn write_records(records: &[Record]) -> Vec<u8> {
-    let total_size: usize = records.iter().map(|r| {
-        4 + if r.data.len() >= 0xFFF { 4 } else { 0 } + r.data.len()
-    }).sum();
+    let total_size: usize = records
+        .iter()
+        .map(|r| 4 + if r.data.len() >= 0xFFF { 4 } else { 0 } + r.data.len())
+        .sum();
 
     let mut bytes = Vec::with_capacity(total_size);
     for record in records {

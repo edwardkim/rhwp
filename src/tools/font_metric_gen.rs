@@ -60,7 +60,9 @@ fn parse_table_directory_at(data: &[u8], header_off: usize) -> Vec<TableEntry> {
     let mut tables = Vec::new();
     for i in 0..num_tables as usize {
         let entry_off = header_off + 12 + i * 16;
-        if entry_off + 16 > data.len() { break; }
+        if entry_off + 16 > data.len() {
+            break;
+        }
         tables.push(TableEntry {
             tag: tag_str(data, entry_off),
             offset: read_u32_be(data, entry_off + 8),
@@ -71,7 +73,10 @@ fn parse_table_directory_at(data: &[u8], header_off: usize) -> Vec<TableEntry> {
 }
 
 fn table_offset(tables: &[TableEntry], tag: &str) -> Option<usize> {
-    tables.iter().find(|t| t.tag == tag).map(|t| t.offset as usize)
+    tables
+        .iter()
+        .find(|t| t.tag == tag)
+        .map(|t| t.offset as usize)
 }
 
 // ─── head 테이블: unitsPerEm, macStyle ───
@@ -110,12 +115,16 @@ fn parse_cmap(data: &[u8], tables: &[TableEntry]) -> HashMap<u32, u16> {
 
     for i in 0..num_subtables {
         let rec = cmap_off + 4 + i * 8;
-        if rec + 8 > data.len() { break; }
+        if rec + 8 > data.len() {
+            break;
+        }
         let platform_id = read_u16_be(data, rec);
         let encoding_id = read_u16_be(data, rec + 2);
         let subtable_off = cmap_off + read_u32_be(data, rec + 4) as usize;
 
-        if subtable_off >= data.len() { continue; }
+        if subtable_off >= data.len() {
+            continue;
+        }
         let format = read_u16_be(data, subtable_off);
 
         if platform_id == 3 {
@@ -142,7 +151,9 @@ fn parse_cmap(data: &[u8], tables: &[TableEntry]) -> HashMap<u32, u16> {
         let n_groups = read_u32_be(data, off + 12) as usize;
         for g in 0..n_groups {
             let rec = off + 16 + g * 12;
-            if rec + 12 > data.len() { break; }
+            if rec + 12 > data.len() {
+                break;
+            }
             let start_char = read_u32_be(data, rec);
             let end_char = read_u32_be(data, rec + 4);
             let start_glyph = read_u32_be(data, rec + 8);
@@ -168,15 +179,16 @@ fn parse_cmap(data: &[u8], tables: &[TableEntry]) -> HashMap<u32, u16> {
             let id_delta = read_i16_be(data, id_delta_off + seg * 2) as i32;
             let id_range_offset = read_u16_be(data, id_range_off + seg * 2) as usize;
 
-            if start_code == 0xFFFF { break; }
+            if start_code == 0xFFFF {
+                break;
+            }
 
             for c in start_code..=end_code {
                 let gid = if id_range_offset == 0 {
                     ((c as i32 + id_delta) & 0xFFFF) as u16
                 } else {
-                    let glyph_idx_off = id_range_off + seg * 2
-                        + id_range_offset
-                        + ((c - start_code) as usize) * 2;
+                    let glyph_idx_off =
+                        id_range_off + seg * 2 + id_range_offset + ((c - start_code) as usize) * 2;
                     if glyph_idx_off + 2 <= data.len() {
                         let gid = read_u16_be(data, glyph_idx_off);
                         if gid != 0 {
@@ -236,40 +248,42 @@ fn parse_name(data: &[u8], tables: &[TableEntry]) -> String {
     // nameID=1 (Font Family), platformID=3 (Windows), encodingID=1 (Unicode BMP)
     for i in 0..count {
         let rec = name_off + 6 + i * 12;
-        if rec + 12 > data.len() { break; }
+        if rec + 12 > data.len() {
+            break;
+        }
         let platform_id = read_u16_be(data, rec);
         let encoding_id = read_u16_be(data, rec + 2);
         let name_id = read_u16_be(data, rec + 6);
         let length = read_u16_be(data, rec + 8) as usize;
         let offset = string_offset + read_u16_be(data, rec + 10) as usize;
 
-        if name_id == 1 && platform_id == 3 && encoding_id == 1
-            && offset + length <= data.len() {
-                // UTF-16 BE 디코딩
-                let mut s = String::new();
-                for j in (0..length).step_by(2) {
-                    let ch = read_u16_be(data, offset + j);
-                    if let Some(c) = char::from_u32(ch as u32) {
-                        s.push(c);
-                    }
+        if name_id == 1 && platform_id == 3 && encoding_id == 1 && offset + length <= data.len() {
+            // UTF-16 BE 디코딩
+            let mut s = String::new();
+            for j in (0..length).step_by(2) {
+                let ch = read_u16_be(data, offset + j);
+                if let Some(c) = char::from_u32(ch as u32) {
+                    s.push(c);
                 }
-                return s;
             }
+            return s;
+        }
     }
 
     // 폴백: platformID=1 (Mac), encodingID=0 (Roman)
     for i in 0..count {
         let rec = name_off + 6 + i * 12;
-        if rec + 12 > data.len() { break; }
+        if rec + 12 > data.len() {
+            break;
+        }
         let platform_id = read_u16_be(data, rec);
         let name_id = read_u16_be(data, rec + 6);
         let length = read_u16_be(data, rec + 8) as usize;
         let offset = string_offset + read_u16_be(data, rec + 10) as usize;
 
-        if name_id == 1 && platform_id == 1
-            && offset + length <= data.len() {
-                return String::from_utf8_lossy(&data[offset..offset + length]).to_string();
-            }
+        if name_id == 1 && platform_id == 1 && offset + length <= data.len() {
+            return String::from_utf8_lossy(&data[offset..offset + length]).to_string();
+        }
     }
 
     String::new()
@@ -300,12 +314,18 @@ fn parse_ttf_all(path: &Path) -> Result<Vec<FontMetric>, String> {
     }
 
     let offsets = get_font_offsets(&data);
-    let file_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+    let file_name = path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
     let mut results = Vec::new();
 
     for &font_off in &offsets {
         let tables = parse_table_directory_at(&data, font_off);
-        if tables.is_empty() { continue; }
+        if tables.is_empty() {
+            continue;
+        }
 
         let head = parse_head(&data, &tables);
         let num_glyphs = parse_maxp(&data, &tables);
@@ -407,8 +427,10 @@ fn find_best_grouping(
     max_jong: u8,
 ) -> HangulCompressed {
     // 음절 폭을 3D 배열로 변환
-    let mut widths_3d = vec![vec![vec![0u16; JONG_COUNT as usize]; JUNG_COUNT as usize]; CHO_COUNT as usize];
-    let mut has_data = vec![vec![vec![false; JONG_COUNT as usize]; JUNG_COUNT as usize]; CHO_COUNT as usize];
+    let mut widths_3d =
+        vec![vec![vec![0u16; JONG_COUNT as usize]; JUNG_COUNT as usize]; CHO_COUNT as usize];
+    let mut has_data =
+        vec![vec![vec![false; JONG_COUNT as usize]; JUNG_COUNT as usize]; CHO_COUNT as usize];
 
     for &(code, w) in syllable_widths {
         let (cho, jung, jong) = decompose_hangul(code);
@@ -447,7 +469,13 @@ fn find_best_grouping(
     let group_widths: Vec<u16> = group_sums
         .iter()
         .zip(group_counts.iter())
-        .map(|(&sum, &cnt)| if cnt > 0 { (sum / cnt as u64) as u16 } else { 0 })
+        .map(|(&sum, &cnt)| {
+            if cnt > 0 {
+                (sum / cnt as u64) as u16
+            } else {
+                0
+            }
+        })
         .collect();
 
     // 오차 측정
@@ -489,7 +517,11 @@ fn find_best_grouping(
         jong_map: jong_map_arr,
         widths: group_widths,
         max_error,
-        avg_error: if count > 0 { total_error as f64 / count as f64 } else { 0.0 },
+        avg_error: if count > 0 {
+            total_error as f64 / count as f64
+        } else {
+            0.0
+        },
     }
 }
 
@@ -526,7 +558,11 @@ fn compute_axis_averages(
                 }
             }
         }
-        avgs[idx] = if cnt > 0 { sum as f64 / cnt as f64 } else { 0.0 };
+        avgs[idx] = if cnt > 0 {
+            sum as f64 / cnt as f64
+        } else {
+            0.0
+        };
     }
     avgs
 }
@@ -534,11 +570,20 @@ fn compute_axis_averages(
 /// 1D K-means 클러스터링 (간단한 정렬 기반 분할)
 fn kmeans_group(values: &[f64], k: usize) -> Vec<u8> {
     let n = values.len();
-    if n == 0 || k == 0 { return vec![0; n]; }
-    if k >= n { return (0..n).map(|i| i as u8).collect(); }
+    if n == 0 || k == 0 {
+        return vec![0; n];
+    }
+    if k >= n {
+        return (0..n).map(|i| i as u8).collect();
+    }
 
     // 값-인덱스 쌍을 정렬
-    let mut indexed: Vec<(f64, usize)> = values.iter().copied().enumerate().map(|(i, v)| (v, i)).collect();
+    let mut indexed: Vec<(f64, usize)> = values
+        .iter()
+        .copied()
+        .enumerate()
+        .map(|(i, v)| (v, i))
+        .collect();
     indexed.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
 
     // 정렬된 순서에서 k등분
@@ -697,7 +742,10 @@ fn generate_rust_source(metrics: &[FontMetric]) -> String {
         for (ri, range) in latin_ranges.iter().enumerate() {
             out.push_str(&format!(
                 "static {}_LATIN_{}: [u16; {}] = {:?};\n",
-                var_prefix, ri, range.widths.len(), range.widths
+                var_prefix,
+                ri,
+                range.widths.len(),
+                range.widths
             ));
         }
 
@@ -786,8 +834,16 @@ fn generate_rust_source(metrics: &[FontMetric]) -> String {
 
 fn print_diagnostic(metric: &FontMetric) {
     let total_chars = metric.char_widths.len();
-    let hangul_count = metric.char_widths.keys().filter(|&&c| (HANGUL_BASE..=HANGUL_END).contains(&c)).count();
-    let latin_count = metric.char_widths.keys().filter(|&&c| (0x20..=0x7E).contains(&c)).count();
+    let hangul_count = metric
+        .char_widths
+        .keys()
+        .filter(|&&c| (HANGUL_BASE..=HANGUL_END).contains(&c))
+        .count();
+    let latin_count = metric
+        .char_widths
+        .keys()
+        .filter(|&&c| (0x20..=0x7E).contains(&c))
+        .count();
 
     let style = match (metric.bold, metric.italic) {
         (false, false) => "Regular",
@@ -844,7 +900,10 @@ fn main() {
     if args[1] == "--dir" {
         let dir = PathBuf::from(&args[2]);
         let list_mode = args.iter().any(|a| a == "--list");
-        let output_path = args.iter().position(|a| a == "--output").map(|i| PathBuf::from(&args[i + 1]));
+        let output_path = args
+            .iter()
+            .position(|a| a == "--output")
+            .map(|i| PathBuf::from(&args[i + 1]));
 
         let mut entries: Vec<_> = fs::read_dir(&dir)
             .expect("디렉토리 열기 실패")
@@ -867,7 +926,14 @@ fn main() {
                             (false, true) => " [I]",
                             (true, true) => " [BI]",
                         };
-                        println!("  {} → \"{}\"{} (em={}, 글리프={})", m.file_name, m.family_name, style, m.em_size, m.char_widths.len());
+                        println!(
+                            "  {} → \"{}\"{} (em={}, 글리프={})",
+                            m.file_name,
+                            m.family_name,
+                            style,
+                            m.em_size,
+                            m.char_widths.len()
+                        );
                     }
                     Err(e) => println!("  {} → 오류: {}", entry.file_name().to_string_lossy(), e),
                 }
@@ -918,22 +984,44 @@ fn main() {
         }
         // 우선 폰트를 앞쪽에 배치 (HWP 기본 폰트 → 기타)
         let priority_fonts: Vec<&str> = vec![
-            "함초롬돋움", "함초롬바탕", "HCR Batang", "HCR Dotum",
-            "Malgun Gothic", "맑은 고딕",
-            "Haansoft Batang", "Haansoft Dotum",
-            "NanumGothic", "NanumMyeongjo", "NanumBarunGothic",
-            "Noto Sans KR", "Noto Serif KR",
-            "Arial", "Times New Roman", "Calibri", "Verdana", "Tahoma",
-            "Batang", "Dotum", "Gulim", "Gungsuh",
+            "함초롬돋움",
+            "함초롬바탕",
+            "HCR Batang",
+            "HCR Dotum",
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Haansoft Batang",
+            "Haansoft Dotum",
+            "NanumGothic",
+            "NanumMyeongjo",
+            "NanumBarunGothic",
+            "Noto Sans KR",
+            "Noto Serif KR",
+            "Arial",
+            "Times New Roman",
+            "Calibri",
+            "Verdana",
+            "Tahoma",
+            "Batang",
+            "Dotum",
+            "Gulim",
+            "Gungsuh",
         ];
         deduped.sort_by(|a, b| {
             let pa = priority_fonts.iter().position(|&p| p == a.family_name);
             let pb = priority_fonts.iter().position(|&p| p == b.family_name);
             match (pa, pb) {
-                (Some(ia), Some(ib)) => ia.cmp(&ib).then(a.bold.cmp(&b.bold)).then(a.italic.cmp(&b.italic)),
+                (Some(ia), Some(ib)) => ia
+                    .cmp(&ib)
+                    .then(a.bold.cmp(&b.bold))
+                    .then(a.italic.cmp(&b.italic)),
                 (Some(_), None) => std::cmp::Ordering::Less,
                 (None, Some(_)) => std::cmp::Ordering::Greater,
-                (None, None) => a.family_name.cmp(&b.family_name).then(a.bold.cmp(&b.bold)).then(a.italic.cmp(&b.italic)),
+                (None, None) => a
+                    .family_name
+                    .cmp(&b.family_name)
+                    .then(a.bold.cmp(&b.bold))
+                    .then(a.italic.cmp(&b.italic)),
             }
         });
         println!("중복 제거: {} → {} 엔트리", before_dedup, deduped.len());
@@ -942,7 +1030,12 @@ fn main() {
             println!("\nRust 소스코드 생성 중...");
             let source = generate_rust_source(&deduped);
             fs::write(&output, &source).expect("출력 파일 쓰기 실패");
-            println!("출력: {} ({} 바이트, {} 폰트)", output.display(), source.len(), deduped.len());
+            println!(
+                "출력: {} ({} 바이트, {} 폰트)",
+                output.display(),
+                source.len(),
+                deduped.len()
+            );
         }
     } else {
         // 단일 파일 진단

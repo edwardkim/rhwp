@@ -1,16 +1,16 @@
 //! HTML 표 파싱 + BorderFill 생성 + 이미지 파싱 관련 native 메서드
 
-use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use super::helpers::*;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
-use super::helpers::*;
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
 use crate::renderer::style_resolver::resolve_styles;
 
 impl DocumentCore {
     pub(crate) fn parse_table_html(&mut self, paragraphs: &mut Vec<Paragraph>, table_html: &str) {
-        use crate::model::table::{Table, Cell, TablePageBreak};
         use crate::model::control::Control;
+        use crate::model::table::{Cell, Table, TablePageBreak};
 
         // --- 1. HTML 파싱: 행/셀 구조 추출 ---
         let table_lower = table_html.to_lowercase();
@@ -20,10 +20,10 @@ impl DocumentCore {
             row_span: u16,
             width_pt: f64,
             height_pt: f64,
-            padding_pt: [f64; 4], // left, right, top, bottom
-            border_widths_pt: [f64; 4], // left, right, top, bottom
-            border_colors: [u32; 4],    // BGR
-            border_styles: [u8; 4],     // 0=none, 1=solid, 2=dashed, 3=dotted, 4=double
+            padding_pt: [f64; 4],          // left, right, top, bottom
+            border_widths_pt: [f64; 4],    // left, right, top, bottom
+            border_colors: [u32; 4],       // BGR
+            border_styles: [u8; 4],        // 0=none, 1=solid, 2=dashed, 3=dotted, 4=double
             background_color: Option<u32>, // BGR
             content_html: String,
             is_header: bool,
@@ -48,7 +48,13 @@ impl DocumentCore {
                 let th_match = tr_inner_lower[td_pos..].find("<th");
 
                 let (tag_offset, is_th) = match (td_match, th_match) {
-                    (Some(a), Some(b)) => if a <= b { (a, false) } else { (b, true) },
+                    (Some(a), Some(b)) => {
+                        if a <= b {
+                            (a, false)
+                        } else {
+                            (b, true)
+                        }
+                    }
                     (Some(a), None) => (a, false),
                     (None, Some(b)) => (b, true),
                     (None, None) => break,
@@ -107,21 +113,23 @@ impl DocumentCore {
                         .and_then(|v| css_color_to_hwp_bgr(&v));
 
                     // 수직 정렬 (0=미지정, 1=center, 2=bottom, 3=명시적 top)
-                    let vertical_align = match parse_css_value(&css_lower, "vertical-align").as_deref() {
-                        Some("middle") | Some("center") => 1u8,
-                        Some("bottom") => 2u8,
-                        Some("top") => 3u8,       // 명시적 top
-                        _ => 0u8,                  // 미지정 → Center (HWP 기본)
-                    };
+                    let vertical_align =
+                        match parse_css_value(&css_lower, "vertical-align").as_deref() {
+                            Some("middle") | Some("center") => 1u8,
+                            Some("bottom") => 2u8,
+                            Some("top") => 3u8, // 명시적 top
+                            _ => 0u8,           // 미지정 → Center (HWP 기본)
+                        };
 
                     // 셀 내용 HTML 추출
                     let content_start = cell_abs + gt + 1;
                     let close_tag = format!("</{}>", tag_name);
-                    let content_end = if let Some(close) = tr_inner_lower[content_start..].find(&close_tag) {
-                        content_start + close
-                    } else {
-                        tr_inner.len()
-                    };
+                    let content_end =
+                        if let Some(close) = tr_inner_lower[content_start..].find(&close_tag) {
+                            content_start + close
+                        } else {
+                            tr_inner.len()
+                        };
                     let content_html = tr_inner[content_start..content_end].to_string();
 
                     row_cells.push(ParsedCell {
@@ -161,7 +169,9 @@ impl DocumentCore {
         let mut max_cols: usize = 0;
         for row in &parsed_rows {
             let sum: usize = row.iter().map(|c| c.col_span as usize).sum();
-            if sum > max_cols { max_cols = sum; }
+            if sum > max_cols {
+                max_cols = sum;
+            }
         }
         max_cols = max_cols.max(1);
         // rowspan 처리를 위한 점유 그리드
@@ -239,7 +249,9 @@ impl DocumentCore {
             }
         }
         for w in col_widths.iter_mut() {
-            if *w == 0 { *w = default_col_width; }
+            if *w == 0 {
+                *w = default_col_width;
+            }
         }
 
         // 행별 높이
@@ -256,7 +268,9 @@ impl DocumentCore {
             }
         }
         for h in row_heights.iter_mut() {
-            if *h == 0 { *h = default_row_height; }
+            if *h == 0 {
+                *h = default_row_height;
+            }
         }
 
         // --- 4. BorderFill 생성 및 Cell 구조체 조립 ---
@@ -268,10 +282,20 @@ impl DocumentCore {
 
             // 셀 폭/높이 (병합 고려)
             let cell_width: u32 = (cp.col..cp.col + cp.col_span)
-                .map(|c| col_widths.get(c as usize).copied().unwrap_or(default_col_width))
+                .map(|c| {
+                    col_widths
+                        .get(c as usize)
+                        .copied()
+                        .unwrap_or(default_col_width)
+                })
                 .sum();
             let cell_height: u32 = (cp.row..cp.row + cp.row_span)
-                .map(|r| row_heights.get(r as usize).copied().unwrap_or(default_row_height))
+                .map(|r| {
+                    row_heights
+                        .get(r as usize)
+                        .copied()
+                        .unwrap_or(default_row_height)
+                })
                 .sum();
 
             // BorderFill 생성/재사용
@@ -285,10 +309,26 @@ impl DocumentCore {
             // 패딩 (pt → HWPUNIT16, CSS 미지정 시 기본 1.4mm ≈ 397 HWPUNIT)
             let default_pad: f64 = 141.0; // ~0.5mm HWPUNIT
             let padding = crate::model::Padding {
-                left: if pc.padding_pt[0] > 0.01 { (pc.padding_pt[0] * 100.0).round() as i16 } else { default_pad as i16 },
-                right: if pc.padding_pt[1] > 0.01 { (pc.padding_pt[1] * 100.0).round() as i16 } else { default_pad as i16 },
-                top: if pc.padding_pt[2] > 0.01 { (pc.padding_pt[2] * 100.0).round() as i16 } else { default_pad as i16 },
-                bottom: if pc.padding_pt[3] > 0.01 { (pc.padding_pt[3] * 100.0).round() as i16 } else { default_pad as i16 },
+                left: if pc.padding_pt[0] > 0.01 {
+                    (pc.padding_pt[0] * 100.0).round() as i16
+                } else {
+                    default_pad as i16
+                },
+                right: if pc.padding_pt[1] > 0.01 {
+                    (pc.padding_pt[1] * 100.0).round() as i16
+                } else {
+                    default_pad as i16
+                },
+                top: if pc.padding_pt[2] > 0.01 {
+                    (pc.padding_pt[2] * 100.0).round() as i16
+                } else {
+                    default_pad as i16
+                },
+                bottom: if pc.padding_pt[3] > 0.01 {
+                    (pc.padding_pt[3] * 100.0).round() as i16
+                } else {
+                    default_pad as i16
+                },
             };
 
             // 셀 내용 파싱
@@ -300,7 +340,9 @@ impl DocumentCore {
             } else {
                 let parsed = self.parse_html_to_paragraphs(&pc.content_html);
                 if parsed.is_empty()
-                    || parsed.iter().all(|p| p.text.trim().is_empty() && p.controls.is_empty())
+                    || parsed
+                        .iter()
+                        .all(|p| p.text.trim().is_empty() && p.controls.is_empty())
                 {
                     vec![Paragraph::new_empty()]
                 } else {
@@ -316,7 +358,7 @@ impl DocumentCore {
             let mut cell_paragraphs = cell_paragraphs;
             for cp_para in &mut cell_paragraphs {
                 cp_para.char_count_msb = true; // 셀 문단은 항상 MSB 설정
-                // char_count에 문단끝 마커(+1) 포함
+                                               // char_count에 문단끝 마커(+1) 포함
                 let text_chars = cp_para.text.chars().count() as u32;
                 cp_para.char_count = text_chars + 1;
 
@@ -326,11 +368,17 @@ impl DocumentCore {
                 // DIFF-2: char_shapes가 비어있으면 기본 CharShapeRef 추가
                 // 모든 셀 문단은 최소 1개의 명시적 CharShapeRef를 가져야 함
                 if cp_para.char_shapes.is_empty() {
-                    let base_cs_id = if !self.document.doc_info.char_shapes.is_empty() { 0u32 } else { 0u32 };
-                    cp_para.char_shapes.push(crate::model::paragraph::CharShapeRef {
-                        start_pos: 0,
-                        char_shape_id: base_cs_id,
-                    });
+                    let base_cs_id = if !self.document.doc_info.char_shapes.is_empty() {
+                        0u32
+                    } else {
+                        0u32
+                    };
+                    cp_para
+                        .char_shapes
+                        .push(crate::model::paragraph::CharShapeRef {
+                            start_pos: 0,
+                            char_shape_id: base_cs_id,
+                        });
                 }
 
                 // raw_header_extra에 instance_id = 0x80000000 설정
@@ -348,8 +396,15 @@ impl DocumentCore {
                 }
 
                 // line_segs: 폰트 크기 기반 높이 계산
-                let font_size = cp_para.char_shapes.first()
-                    .and_then(|cs| self.document.doc_info.char_shapes.get(cs.char_shape_id as usize))
+                let font_size = cp_para
+                    .char_shapes
+                    .first()
+                    .and_then(|cs| {
+                        self.document
+                            .doc_info
+                            .char_shapes
+                            .get(cs.char_shape_id as usize)
+                    })
                     .map(|cs| cs.base_size.max(400))
                     .unwrap_or(1000);
                 let line_h = font_size;
@@ -357,8 +412,7 @@ impl DocumentCore {
                 let baseline = (font_size as f64 * 0.85) as i32;
                 let spacing = (font_size as f64 * 0.6) as i32;
                 // seg_width: 셀 폭에서 좌우 패딩을 뺀 텍스트 영역 폭
-                let seg_w = (cell_width as i32)
-                    - (padding.left as i32) - (padding.right as i32);
+                let seg_w = (cell_width as i32) - (padding.left as i32) - (padding.right as i32);
                 // tag(flags): 0x00060000 = bit 17,18 (정상 HWP 셀 문단 패턴)
                 let line_tag: u32 = 0x00060000;
 
@@ -391,7 +445,9 @@ impl DocumentCore {
                 }
             }
 
-            if pc.is_header { has_header_row = true; }
+            if pc.is_header {
+                has_header_row = true;
+            }
 
             // list_header_width_ref: is_header면 bit 2 설정
             let lh_width_ref: u16 = if pc.is_header { 0x04 } else { 0 };
@@ -402,7 +458,7 @@ impl DocumentCore {
                 0 => crate::model::table::VerticalAlign::Center, // CSS 미지정 → Center (HWP 기본)
                 1 => crate::model::table::VerticalAlign::Center,
                 2 => crate::model::table::VerticalAlign::Bottom,
-                3 => crate::model::table::VerticalAlign::Top,    // 명시적 top
+                3 => crate::model::table::VerticalAlign::Top, // 명시적 top
                 _ => crate::model::table::VerticalAlign::Center,
             };
 
@@ -461,7 +517,9 @@ impl DocumentCore {
             h = h.wrapping_add(total_width);
             h = h.wrapping_add(total_height.wrapping_mul(0x1b));
             h ^= cells.len() as u32 * 0x4b69;
-            if h == 0 { h = 0x7c154b69; } // 절대 0이 되지 않도록
+            if h == 0 {
+                h = 0x7c154b69;
+            } // 절대 0이 되지 않도록
             h
         };
         raw_ctrl_data[28..32].copy_from_slice(&instance_id.to_le_bytes());
@@ -483,16 +541,32 @@ impl DocumentCore {
         };
 
         // HTML <table> CSS에서 표 패딩 파싱
-        let table_style = parse_inline_style(
-            &table_html[..table_html.find('>').unwrap_or(table_html.len()) + 1]
-        ).to_lowercase();
+        let table_style =
+            parse_inline_style(&table_html[..table_html.find('>').unwrap_or(table_html.len()) + 1])
+                .to_lowercase();
         let table_padding_pt = parse_css_padding_pt(&table_style);
         // 기본값: L:510 R:510 T:141 B:141 (정상 HWP 파일 패턴)
         let table_padding = crate::model::Padding {
-            left: if table_padding_pt[0] > 0.01 { (table_padding_pt[0] * 100.0).round() as i16 } else { 510 },
-            right: if table_padding_pt[1] > 0.01 { (table_padding_pt[1] * 100.0).round() as i16 } else { 510 },
-            top: if table_padding_pt[2] > 0.01 { (table_padding_pt[2] * 100.0).round() as i16 } else { 141 },
-            bottom: if table_padding_pt[3] > 0.01 { (table_padding_pt[3] * 100.0).round() as i16 } else { 141 },
+            left: if table_padding_pt[0] > 0.01 {
+                (table_padding_pt[0] * 100.0).round() as i16
+            } else {
+                510
+            },
+            right: if table_padding_pt[1] > 0.01 {
+                (table_padding_pt[1] * 100.0).round() as i16
+            } else {
+                510
+            },
+            top: if table_padding_pt[2] > 0.01 {
+                (table_padding_pt[2] * 100.0).round() as i16
+            } else {
+                141
+            },
+            bottom: if table_padding_pt[3] > 0.01 {
+                (table_padding_pt[3] * 100.0).round() as i16
+            } else {
+                141
+            },
         };
 
         // table.attr: 기존 문서의 표와 동일한 패턴 사용
@@ -536,8 +610,13 @@ impl DocumentCore {
 
         // --- 6. Table Control을 포함하는 Paragraph 생성 ---
         // 제어문자는 text에 포함하지 않음 (serialize_para_text가 controls에서 생성)
-        let default_char_shape_id = if !self.document.doc_info.char_shapes.is_empty() { 0u32 } else {
-            self.document.doc_info.char_shapes.push(crate::model::style::CharShape::default());
+        let default_char_shape_id = if !self.document.doc_info.char_shapes.is_empty() {
+            0u32
+        } else {
+            self.document
+                .doc_info
+                .char_shapes
+                .push(crate::model::style::CharShape::default());
             0
         };
 
@@ -566,7 +645,7 @@ impl DocumentCore {
         // 정상 파일에서 표 문단의 instance_id = 0x80000000
         let mut table_raw_header_extra = vec![0u8; 10];
         table_raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes()); // n_char_shapes=1
-        // [2..4] n_range_tags=0, [4..6] n_line_segs=1
+                                                                           // [2..4] n_range_tags=0, [4..6] n_line_segs=1
         table_raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
         // [6..10] instance_id=0x80000000
         table_raw_header_extra[6..10].copy_from_slice(&0x80000000u32.to_le_bytes());
@@ -615,7 +694,9 @@ impl DocumentCore {
         border_styles: &[u8; 4],
         background_color: Option<u32>,
     ) -> u16 {
-        use crate::model::style::{BorderFill, BorderLine, BorderLineType, Fill, FillType, SolidFill, DiagonalLine};
+        use crate::model::style::{
+            BorderFill, BorderLine, BorderLineType, DiagonalLine, Fill, FillType, SolidFill,
+        };
 
         let mut borders = [BorderLine::default(); 4];
         for i in 0..4 {
@@ -684,7 +765,9 @@ impl DocumentCore {
     /// JSON에서 border/fill 속성을 파싱하여 BorderFill을 생성/재사용한다.
     /// 프론트엔드 글자 테두리/배경 대화상자에서 호출된다.
     pub(crate) fn create_border_fill_from_json(&mut self, json: &str) -> u16 {
-        use crate::model::style::{BorderFill, BorderLine, DiagonalLine, Fill, FillType, SolidFill};
+        use crate::model::style::{
+            BorderFill, BorderLine, DiagonalLine, Fill, FillType, SolidFill,
+        };
 
         // 4방향 테두리 파싱
         let dir_keys = ["borderLeft", "borderRight", "borderTop", "borderBottom"];
@@ -766,8 +849,14 @@ impl DocumentCore {
             let mut para = Paragraph::default();
             para.text = "[이미지]".to_string();
             para.char_count = para.text.encode_utf16().count() as u32;
-            para.char_offsets = para.text.chars()
-                .scan(0u32, |acc, c| { let off = *acc; *acc += c.len_utf16() as u32; Some(off) })
+            para.char_offsets = para
+                .text
+                .chars()
+                .scan(0u32, |acc, c| {
+                    let off = *acc;
+                    *acc += c.len_utf16() as u32;
+                    Some(off)
+                })
                 .collect();
             paragraphs.push(para);
             return;
@@ -788,15 +877,23 @@ impl DocumentCore {
             Err(_) => return,
         };
 
-        if decoded.is_empty() { return; }
+        if decoded.is_empty() {
+            return;
+        }
 
         // BinData로 등록
         let new_bin_id = (self.document.bin_data_content.len() + 1) as u16;
-        self.document.bin_data_content.push(crate::model::bin_data::BinDataContent {
-            id: new_bin_id,
-            data: decoded.clone(),
-            extension: detect_clipboard_image_mime(&decoded).split('/').nth(1).unwrap_or("png").to_string(),
-        });
+        self.document
+            .bin_data_content
+            .push(crate::model::bin_data::BinDataContent {
+                id: new_bin_id,
+                data: decoded.clone(),
+                extension: detect_clipboard_image_mime(&decoded)
+                    .split('/')
+                    .nth(1)
+                    .unwrap_or("png")
+                    .to_string(),
+            });
 
         // width/height 추출
         let width = parse_html_attr_f64(img_tag, "width").unwrap_or(200.0);
@@ -810,8 +907,14 @@ impl DocumentCore {
         let mut para = Paragraph::default();
         para.text = "[이미지]".to_string();
         para.char_count = para.text.encode_utf16().count() as u32;
-        para.char_offsets = para.text.chars()
-            .scan(0u32, |acc, c| { let off = *acc; *acc += c.len_utf16() as u32; Some(off) })
+        para.char_offsets = para
+            .text
+            .chars()
+            .scan(0u32, |acc, c| {
+                let off = *acc;
+                *acc += c.len_utf16() as u32;
+                Some(off)
+            })
             .collect();
 
         // Picture 컨트롤 생성
@@ -825,5 +928,4 @@ impl DocumentCore {
 
         paragraphs.push(para);
     }
-
 }

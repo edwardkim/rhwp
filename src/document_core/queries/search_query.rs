@@ -2,8 +2,8 @@
 //!
 //! 본문, 표 셀, 글상자 등 중첩 컨트롤 내부 텍스트를 포함한 전체 검색.
 
-use crate::document_core::DocumentCore;
 use crate::document_core::helpers::get_textbox_from_shape;
+use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 
@@ -28,7 +28,9 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
         let chars: Vec<char> = text.chars().collect();
         let qchars: Vec<char> = query.chars().collect();
         let qlen = qchars.len();
-        if chars.len() < qlen { return results; }
+        if chars.len() < qlen {
+            return results;
+        }
         for i in 0..=chars.len() - qlen {
             if chars[i..i + qlen] == qchars[..] {
                 results.push(i);
@@ -40,7 +42,9 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
         let chars: Vec<char> = text_lower.chars().collect();
         let qchars: Vec<char> = query_lower.chars().collect();
         let qlen = qchars.len();
-        if chars.len() < qlen { return results; }
+        if chars.len() < qlen {
+            return results;
+        }
         for i in 0..=chars.len() - qlen {
             if chars[i..i + qlen] == qchars[..] {
                 results.push(i);
@@ -80,7 +84,12 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                                         para: para_idx,
                                         char_offset: offset,
                                         length: qlen,
-                                        cell_context: Some((para_idx, ctrl_idx, cell_idx, cell_para_idx)),
+                                        cell_context: Some((
+                                            para_idx,
+                                            ctrl_idx,
+                                            cell_idx,
+                                            cell_para_idx,
+                                        )),
                                     });
                                 }
                             }
@@ -137,7 +146,8 @@ impl DocumentCore {
         }
 
         // 본문 결과만 필터 (셀/글상자 내부 제외 — 커서 이동 불가)
-        let body_hits: Vec<&SearchHit> = all_hits.iter()
+        let body_hits: Vec<&SearchHit> = all_hits
+            .iter()
             .filter(|h| h.cell_context.is_none())
             .collect();
         if body_hits.is_empty() {
@@ -147,8 +157,8 @@ impl DocumentCore {
         if forward {
             let after = body_hits.iter().find(|h| {
                 h.sec > from_sec
-                || (h.sec == from_sec && h.para > from_para)
-                || (h.sec == from_sec && h.para == from_para && h.char_offset > from_char)
+                    || (h.sec == from_sec && h.para > from_para)
+                    || (h.sec == from_sec && h.para == from_para && h.char_offset > from_char)
             });
             match after {
                 Some(h) => Ok(format_search_hit(h, false)),
@@ -157,8 +167,8 @@ impl DocumentCore {
         } else {
             let before = body_hits.iter().rev().find(|h| {
                 h.sec < from_sec
-                || (h.sec == from_sec && h.para < from_para)
-                || (h.sec == from_sec && h.para == from_para && h.char_offset < from_char)
+                    || (h.sec == from_sec && h.para < from_para)
+                    || (h.sec == from_sec && h.para == from_para && h.char_offset < from_char)
             });
             match before {
                 Some(h) => Ok(format_search_hit(h, false)),
@@ -212,22 +222,31 @@ impl DocumentCore {
         for hit in &all_hits {
             if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = hit.cell_context {
                 // 표 셀 내부 치환
-                let section = self.document.sections.get_mut(hit.sec)
+                let section = self
+                    .document
+                    .sections
+                    .get_mut(hit.sec)
                     .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
-                let para = section.paragraphs.get_mut(parent_para)
+                let para = section
+                    .paragraphs
+                    .get_mut(parent_para)
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
                 let cell_para = match para.controls.get_mut(ctrl_idx) {
                     Some(Control::Table(table)) => {
-                        let cell = table.cells.get_mut(cell_idx)
+                        let cell = table
+                            .cells
+                            .get_mut(cell_idx)
                             .ok_or_else(|| HwpError::RenderError("셀 범위 초과".into()))?;
-                        cell.paragraphs.get_mut(cell_para_idx)
+                        cell.paragraphs
+                            .get_mut(cell_para_idx)
                             .ok_or_else(|| HwpError::RenderError("셀 문단 범위 초과".into()))?
                     }
                     Some(Control::Shape(shape)) => {
                         let tb = crate::document_core::helpers::get_textbox_from_shape_mut(shape)
                             .ok_or_else(|| HwpError::RenderError("글상자 없음".into()))?;
-                        tb.paragraphs.get_mut(cell_para_idx)
+                        tb.paragraphs
+                            .get_mut(cell_para_idx)
                             .ok_or_else(|| HwpError::RenderError("글상자 문단 범위 초과".into()))?
                     }
                     _ => continue,
@@ -237,9 +256,14 @@ impl DocumentCore {
             } else {
                 // 본문 문단 치환 — delete_text_native + insert_text_native는 recompose를 호출하므로
                 // 성능을 위해 직접 문단 수준 조작 후 마지막에 일괄 recompose
-                let section = self.document.sections.get_mut(hit.sec)
+                let section = self
+                    .document
+                    .sections
+                    .get_mut(hit.sec)
                     .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
-                let para = section.paragraphs.get_mut(hit.para)
+                let para = section
+                    .paragraphs
+                    .get_mut(hit.para)
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
                 para.delete_text_at(hit.char_offset, hit.length);
                 para.insert_text_at(hit.char_offset, new_text);
@@ -260,10 +284,7 @@ impl DocumentCore {
     }
 
     /// 글로벌 쪽 번호에 해당하는 첫 번째 문단 위치를 반환
-    pub fn get_position_of_page_native(
-        &self,
-        global_page: usize,
-    ) -> Result<String, HwpError> {
+    pub fn get_position_of_page_native(&self, global_page: usize) -> Result<String, HwpError> {
         let mut page_offset = 0usize;
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
             for page in &pr.pages {
@@ -272,11 +293,23 @@ impl DocumentCore {
                     for col in &page.column_contents {
                         for item in &col.items {
                             let pi = match item {
-                                crate::renderer::pagination::PageItem::FullParagraph { para_index } => Some(*para_index),
-                                crate::renderer::pagination::PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
-                                crate::renderer::pagination::PageItem::Table { para_index, .. } => Some(*para_index),
-                                crate::renderer::pagination::PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                                crate::renderer::pagination::PageItem::Shape { para_index, .. } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::FullParagraph {
+                                    para_index,
+                                } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::PartialParagraph {
+                                    para_index,
+                                    ..
+                                } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::Table {
+                                    para_index, ..
+                                } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::PartialTable {
+                                    para_index,
+                                    ..
+                                } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::Shape {
+                                    para_index, ..
+                                } => Some(*para_index),
                             };
                             if let Some(para_idx) = pi {
                                 return Ok(format!(
@@ -287,12 +320,18 @@ impl DocumentCore {
                         }
                     }
                     // 빈 페이지 fallback
-                    return Ok(format!("{{\"ok\":true,\"sec\":{},\"para\":0,\"charOffset\":0}}", sec_idx));
+                    return Ok(format!(
+                        "{{\"ok\":true,\"sec\":{},\"para\":0,\"charOffset\":0}}",
+                        sec_idx
+                    ));
                 }
                 page_offset += 1;
             }
         }
-        Err(HwpError::RenderError(format!("쪽 번호 {} 범위 초과", global_page)))
+        Err(HwpError::RenderError(format!(
+            "쪽 번호 {} 범위 초과",
+            global_page
+        )))
     }
 
     /// 위치에 해당하는 글로벌 쪽 번호를 반환

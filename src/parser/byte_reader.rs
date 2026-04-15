@@ -87,7 +87,10 @@ impl<'a> ByteReader<'a> {
     pub fn skip(&mut self, n: usize) -> io::Result<()> {
         let pos = self.cursor.position() + n as u64;
         if pos > self.len as u64 {
-            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "skip 범위 초과"));
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "skip 범위 초과",
+            ));
         }
         self.cursor.set_position(pos);
         Ok(())
@@ -115,7 +118,10 @@ impl<'a> ByteReader<'a> {
             .collect();
 
         String::from_utf16(&utf16).map_err(|e| {
-            io::Error::new(io::ErrorKind::InvalidData, format!("UTF-16 디코딩 실패: {}", e))
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("UTF-16 디코딩 실패: {}", e),
+            )
         })
     }
 

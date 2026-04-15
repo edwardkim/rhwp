@@ -1,8 +1,8 @@
 //! 그림 개체 (Picture, ImageData, CropInfo)
 
-use super::*;
 use super::shape::{CommonObjAttr, ShapeComponentAttr};
 use super::style::ShapeBorderLine;
+use super::*;
 
 /// 그림 개체 (HWPTAG_SHAPE_COMPONENT_PICTURE)
 #[derive(Debug, Default, Clone)]
@@ -110,7 +110,12 @@ mod tests {
 
     #[test]
     fn test_crop_info() {
-        let crop = CropInfo { left: 100, top: 200, right: 300, bottom: 400 };
+        let crop = CropInfo {
+            left: 100,
+            top: 200,
+            right: 300,
+            bottom: 400,
+        };
         assert_eq!(crop.left, 100);
     }
 

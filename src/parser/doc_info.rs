@@ -58,8 +58,7 @@ struct IdMappings {
 ///
 /// 압축 해제된 DocInfo 레코드 바이트를 파싱하여 DocInfo, DocProperties를 반환.
 pub fn parse_doc_info(data: &[u8]) -> Result<(DocInfo, DocProperties), DocInfoError> {
-    let records =
-        Record::read_all(data).map_err(|e| DocInfoError::RecordError(e.to_string()))?;
+    let records = Record::read_all(data).map_err(|e| DocInfoError::RecordError(e.to_string()))?;
 
     let mut doc_info = DocInfo::default();
     let mut doc_props = DocProperties::default();
@@ -93,8 +92,7 @@ pub fn parse_doc_info(data: &[u8]) -> Result<(DocInfo, DocProperties), DocInfoEr
 
                 // 현재 언어 카테고리 결정
                 while current_lang < 7
-                    && lang_counts_consumed[current_lang]
-                        >= id_mappings.font_counts[current_lang]
+                    && lang_counts_consumed[current_lang] >= id_mappings.font_counts[current_lang]
                 {
                     current_lang += 1;
                 }
@@ -168,9 +166,21 @@ fn parse_document_properties(data: &[u8]) -> Result<DocProperties, DocInfoError>
         picture_start_num: r.read_u16().unwrap_or(1),
         table_start_num: r.read_u16().unwrap_or(1),
         equation_start_num: r.read_u16().unwrap_or(1),
-        caret_list_id: if r.remaining() >= 4 { r.read_u32().unwrap_or(0) } else { 0 },
-        caret_para_id: if r.remaining() >= 4 { r.read_u32().unwrap_or(0) } else { 0 },
-        caret_char_pos: if r.remaining() >= 4 { r.read_u32().unwrap_or(0) } else { 0 },
+        caret_list_id: if r.remaining() >= 4 {
+            r.read_u32().unwrap_or(0)
+        } else {
+            0
+        },
+        caret_para_id: if r.remaining() >= 4 {
+            r.read_u32().unwrap_or(0)
+        } else {
+            0
+        },
+        caret_char_pos: if r.remaining() >= 4 {
+            r.read_u32().unwrap_or(0)
+        } else {
+            0
+        },
     })
 }
 
@@ -201,7 +211,9 @@ fn parse_id_mappings(data: &[u8]) -> Result<IdMappings, DocInfoError> {
 
 fn parse_bin_data(data: &[u8]) -> Result<BinData, DocInfoError> {
     let mut r = ByteReader::new(data);
-    let attr = r.read_u16().map_err(|e| DocInfoError::IoError(e.to_string()))?;
+    let attr = r
+        .read_u16()
+        .map_err(|e| DocInfoError::IoError(e.to_string()))?;
 
     let data_type = match attr & 0x000F {
         0 => BinDataType::Link,
@@ -451,11 +463,15 @@ pub(crate) fn parse_fill(r: &mut ByteReader) -> Fill {
     }
     if fill_type_val & 0x04 != 0 {
         let a = r.read_u8().unwrap_or(0);
-        if fill.alpha == 0 { fill.alpha = a; }
+        if fill.alpha == 0 {
+            fill.alpha = a;
+        }
     }
     if fill_type_val & 0x02 != 0 {
         let a = r.read_u8().unwrap_or(0);
-        if fill.alpha == 0 { fill.alpha = a; }
+        if fill.alpha == 0 {
+            fill.alpha = a;
+        }
     }
 
     fill
@@ -942,7 +958,7 @@ mod tests {
         }
         // base_size
         data.extend_from_slice(&1000i32.to_le_bytes()); // 10pt
-        // attr: bold | italic
+                                                        // attr: bold | italic
         data.extend_from_slice(&0x03u32.to_le_bytes());
         // shadow offsets
         data.push(0);
@@ -974,7 +990,7 @@ mod tests {
         data.extend_from_slice(&0u16.to_le_bytes()); // tab_def_id
         data.extend_from_slice(&0u16.to_le_bytes()); // numbering_id
         data.extend_from_slice(&0u16.to_le_bytes()); // border_fill_id
-        // border_spacing (4 × i16)
+                                                     // border_spacing (4 × i16)
         for _ in 0..4 {
             data.extend_from_slice(&0i16.to_le_bytes());
         }
@@ -996,7 +1012,11 @@ mod tests {
         for _ in 0..6 {
             props_data.extend_from_slice(&1u16.to_le_bytes());
         }
-        doc_info_data.extend(make_record(tags::HWPTAG_DOCUMENT_PROPERTIES, 0, &props_data));
+        doc_info_data.extend(make_record(
+            tags::HWPTAG_DOCUMENT_PROPERTIES,
+            0,
+            &props_data,
+        ));
 
         // ID_MAPPINGS (모두 0)
         let id_data = vec![0u8; 60]; // 15 × u32
@@ -1015,7 +1035,11 @@ mod tests {
 
         // DOCUMENT_PROPERTIES
         let props_data = vec![0u8; 14];
-        doc_info_data.extend(make_record(tags::HWPTAG_DOCUMENT_PROPERTIES, 0, &props_data));
+        doc_info_data.extend(make_record(
+            tags::HWPTAG_DOCUMENT_PROPERTIES,
+            0,
+            &props_data,
+        ));
 
         // ID_MAPPINGS: 한글 폰트 1개
         let mut id_data = vec![0u8; 60];
@@ -1043,8 +1067,8 @@ mod tests {
         data.extend_from_slice(&0x0000u16.to_le_bytes());
         // 4방향 테두리 (각: 종류 u8 + 굵기 u8 + 색상 COLORREF)
         for _ in 0..4 {
-            data.push(1);  // 종류: Solid (HWP 스펙: 1=실선)
-            data.push(3);  // 굵기: 인덱스 3 (0.2mm)
+            data.push(1); // 종류: Solid (HWP 스펙: 1=실선)
+            data.push(3); // 굵기: 인덱스 3 (0.2mm)
             data.extend_from_slice(&0x00000000u32.to_le_bytes()); // 색상: 검정
         }
         // 대각선: type=0, width=0, color=0
@@ -1056,9 +1080,18 @@ mod tests {
 
         let bf = parse_border_fill(&data).unwrap();
         for i in 0..4 {
-            assert_eq!(bf.borders[i].line_type, BorderLineType::Solid, "border[{}] should be Solid", i);
+            assert_eq!(
+                bf.borders[i].line_type,
+                BorderLineType::Solid,
+                "border[{}] should be Solid",
+                i
+            );
             assert_eq!(bf.borders[i].width, 3, "border[{}] width should be 3", i);
-            assert_eq!(bf.borders[i].color, 0, "border[{}] color should be black", i);
+            assert_eq!(
+                bf.borders[i].color, 0,
+                "border[{}] color should be black",
+                i
+            );
         }
     }
 
@@ -1068,17 +1101,23 @@ mod tests {
         let mut data = Vec::new();
         data.extend_from_slice(&0x0000u16.to_le_bytes());
         for _ in 0..4 {
-            data.push(0);  // 종류: None (0)
-            data.push(1);  // 굵기: 인덱스 1
+            data.push(0); // 종류: None (0)
+            data.push(1); // 굵기: 인덱스 1
             data.extend_from_slice(&0x00000000u32.to_le_bytes());
         }
-        data.push(0); data.push(0);
+        data.push(0);
+        data.push(0);
         data.extend_from_slice(&0x00000000u32.to_le_bytes());
         data.extend_from_slice(&0x00000000u32.to_le_bytes());
 
         let bf = parse_border_fill(&data).unwrap();
         for i in 0..4 {
-            assert_eq!(bf.borders[i].line_type, BorderLineType::None, "border[{}] should be None", i);
+            assert_eq!(
+                bf.borders[i].line_type,
+                BorderLineType::None,
+                "border[{}] should be None",
+                i
+            );
         }
     }
 
@@ -1091,16 +1130,20 @@ mod tests {
         // attr (u16)
         data.extend_from_slice(&0x0000u16.to_le_bytes());
         // 좌: Solid(1), 굵기 0, 빨강
-        data.push(1); data.push(0);
+        data.push(1);
+        data.push(0);
         data.extend_from_slice(&0x000000FFu32.to_le_bytes());
         // 우: Dash(2), 굵기 4, 초록
-        data.push(2); data.push(4);
+        data.push(2);
+        data.push(4);
         data.extend_from_slice(&0x0000FF00u32.to_le_bytes());
         // 상: Dot(3), 굵기 7, 파랑
-        data.push(3); data.push(7);
+        data.push(3);
+        data.push(7);
         data.extend_from_slice(&0x00FF0000u32.to_le_bytes());
         // 하: Double(8), 굵기 10, 검정
-        data.push(8); data.push(10);
+        data.push(8);
+        data.push(10);
         data.extend_from_slice(&0x00000000u32.to_le_bytes());
         // 대각선
         data.push(0);
@@ -1125,5 +1168,4 @@ mod tests {
         assert_eq!(bf.borders[2].color, 0x00FF0000); // 파랑
         assert_eq!(bf.borders[3].color, 0x00000000); // 검정
     }
-
 }

@@ -18,14 +18,14 @@ use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::image::{ImageEffect, Picture};
 use crate::model::shape::{
-    ArcShape, Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape,
-    GroupShape, HorzAlign, HorzRelTo, LineShape, PolygonShape, RectangleShape, ShapeComponentAttr,
-    ShapeObject, TextWrap, VertAlign, VertRelTo,
+    ArcShape, Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, CurveShape,
+    DrawingObjAttr, EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, PolygonShape,
+    RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, ShapeBorderLine};
-use crate::model::Point;
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
+use crate::model::Point;
 
 /// ctrl_id 기반으로 컨트롤 파싱
 ///
@@ -48,9 +48,7 @@ pub fn parse_control(ctrl_id: u32, ctrl_data: &[u8], child_records: &[Record]) -
         tags::CTRL_EQUATION => parse_equation_control(ctrl_data, child_records),
         tags::CTRL_FORM => parse_form_control(ctrl_data, child_records),
         id if tags::is_field_ctrl_id(id) => parse_field_control(id, ctrl_data),
-        _ => {
-            Control::Unknown(UnknownControl { ctrl_id })
-        }
+        _ => Control::Unknown(UnknownControl { ctrl_id }),
     }
 }
 
@@ -176,10 +174,8 @@ fn parse_table_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
 
         if let Some(start) = caption_start {
             // 캡션 레코드 범위 수집 (TABLE 레코드 이전까지)
-            let caption_records: Vec<Record> = child_records[start..table_idx]
-                .iter()
-                .cloned()
-                .collect();
+            let caption_records: Vec<Record> =
+                child_records[start..table_idx].iter().cloned().collect();
             if !caption_records.is_empty() {
                 table.caption = Some(parse_caption(&caption_records));
             }
@@ -293,7 +289,11 @@ fn parse_table_record(data: &[u8], table: &mut Table) {
                 let end_col = r.read_u16().unwrap_or(0);
                 let bf_id = r.read_u16().unwrap_or(0);
                 table.zones.push(crate::model::table::TableZone {
-                    start_col, start_row, end_col, end_row, border_fill_id: bf_id,
+                    start_col,
+                    start_row,
+                    end_col,
+                    end_row,
+                    border_fill_id: bf_id,
                 });
             }
         }
@@ -398,7 +398,11 @@ fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
         .map(|c| u16::from_le_bytes([c[0], c[1]]))
         .collect();
     let name = String::from_utf16_lossy(&wchars);
-    if name.is_empty() { None } else { Some(name) }
+    if name.is_empty() {
+        None
+    } else {
+        Some(name)
+    }
 }
 
 /// 캡션 파싱 (LIST_HEADER + 캡션 데이터 + 내부 문단)
@@ -452,9 +456,8 @@ pub(crate) fn parse_caption(records: &[Record]) -> Caption {
     caption
 }
 
-
 mod shape;
-pub(crate) use shape::{parse_gso_control, parse_common_obj_attr};
+pub(crate) use shape::{parse_common_obj_attr, parse_gso_control};
 
 // ============================================================
 // 머리말/꼬리말 ('head'/'foot')
@@ -570,9 +573,9 @@ fn parse_auto_number(ctrl_data: &[u8]) -> Control {
             5 => AutoNumberType::Equation,
             _ => AutoNumberType::Page,
         };
-        an.format = ((attr >> 4) & 0xFF) as u8;   // bit 4~11: 번호 모양 (표 134)
-        an.superscript = attr & 0x1000 != 0;       // bit 12: 위 첨자
-        // 표 144: UINT16 번호 + WCHAR 사용자기호 + WCHAR 앞장식 + WCHAR 뒤장식
+        an.format = ((attr >> 4) & 0xFF) as u8; // bit 4~11: 번호 모양 (표 134)
+        an.superscript = attr & 0x1000 != 0; // bit 12: 위 첨자
+                                             // 표 144: UINT16 번호 + WCHAR 사용자기호 + WCHAR 앞장식 + WCHAR 뒤장식
         an.number = r.read_u16().unwrap_or(0);
         an.user_symbol = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
         an.prefix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
@@ -607,9 +610,9 @@ fn parse_page_num_pos(ctrl_data: &[u8]) -> Control {
     if ctrl_data.len() >= 4 {
         let mut r = ByteReader::new(ctrl_data);
         let attr = r.read_u32().unwrap_or(0);
-        pnp.format = (attr & 0xFF) as u8;          // bit 0~7: 번호 모양 (표 134)
+        pnp.format = (attr & 0xFF) as u8; // bit 0~7: 번호 모양 (표 134)
         pnp.position = ((attr >> 8) & 0x0F) as u8; // bit 8~11: 표시 위치 (표 150)
-        // 표 149: WCHAR 사용자기호 + 앞장식 + 뒤장식 + 대시
+                                                   // 표 149: WCHAR 사용자기호 + 앞장식 + 뒤장식 + 대시
         pnp.user_symbol = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
         pnp.prefix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
         pnp.suffix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
@@ -719,7 +722,9 @@ fn parse_char_overlap(ctrl_data: &[u8]) -> Control {
 /// 자식 레코드에서 LIST_HEADER를 찾고, 그 이후 레코드에서 문단 목록을 파싱.
 /// LIST_HEADER와 PARA_HEADER가 동일 level인 경우가 있으므로 (표 셀 내 각주 등),
 /// level 필터링 대신 LIST_HEADER 이후의 모든 레코드를 parse_paragraph_list에 위임.
-fn find_list_header_paragraphs(child_records: &[Record]) -> Vec<crate::model::paragraph::Paragraph> {
+fn find_list_header_paragraphs(
+    child_records: &[Record],
+) -> Vec<crate::model::paragraph::Paragraph> {
     let mut idx = 0;
     while idx < child_records.len() {
         if child_records[idx].tag_id == tags::HWPTAG_LIST_HEADER {
@@ -729,7 +734,6 @@ fn find_list_header_paragraphs(child_records: &[Record]) -> Vec<crate::model::pa
     }
     Vec::new()
 }
-
 
 // ============================================================
 // 수식 ('eqed')
@@ -748,9 +752,11 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         ..Default::default()
     };
 
-
     // HWPTAG_EQEDIT 자식 레코드 탐색
-    if let Some(eq_rec) = child_records.iter().find(|r| r.tag_id == tags::HWPTAG_EQEDIT) {
+    if let Some(eq_rec) = child_records
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_EQEDIT)
+    {
         let data = &eq_rec.data;
         let mut r = ByteReader::new(data);
 
@@ -810,7 +816,10 @@ fn parse_form_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
     }
 
     // HWPTAG_FORM_OBJECT 자식 레코드에서 타입/속성 파싱
-    if let Some(rec) = child_records.iter().find(|r| r.tag_id == tags::HWPTAG_FORM_OBJECT) {
+    if let Some(rec) = child_records
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_FORM_OBJECT)
+    {
         let data = &rec.data;
         if data.len() >= 14 {
             // bytes 0-3: 타입 ID 문자열 (예: "tbp+", "tbc+", "boc+", "tbr+", "tde+")
@@ -842,7 +851,8 @@ fn parse_form_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
 
 /// UTF-16LE 바이트를 String으로 디코딩
 fn decode_utf16le(data: &[u8]) -> String {
-    let u16s: Vec<u16> = data.chunks_exact(2)
+    let u16s: Vec<u16> = data
+        .chunks_exact(2)
         .map(|c| u16::from_le_bytes([c[0], c[1]]))
         .collect();
     String::from_utf16_lossy(&u16s)
@@ -861,34 +871,58 @@ fn parse_form_properties(prop_str: &str, form: &mut FormObject) {
 
     while pos < len {
         // 공백 건너뛰기
-        while pos < len && chars[pos] == ' ' { pos += 1; }
-        if pos >= len { break; }
+        while pos < len && chars[pos] == ' ' {
+            pos += 1;
+        }
+        if pos >= len {
+            break;
+        }
 
         // Key 읽기 (':'까지)
         let key_start = pos;
-        while pos < len && chars[pos] != ':' { pos += 1; }
+        while pos < len && chars[pos] != ':' {
+            pos += 1;
+        }
         let key: String = chars[key_start..pos].iter().collect();
-        if pos < len { pos += 1; } // ':' 건너뛰기
+        if pos < len {
+            pos += 1;
+        } // ':' 건너뛰기
 
         // Type 읽기 (':'까지)
         let type_start = pos;
-        while pos < len && chars[pos] != ':' { pos += 1; }
+        while pos < len && chars[pos] != ':' {
+            pos += 1;
+        }
         let type_str: String = chars[type_start..pos].iter().collect();
-        if pos < len { pos += 1; } // ':' 건너뛰기
+        if pos < len {
+            pos += 1;
+        } // ':' 건너뛰기
 
         match type_str.as_str() {
             "set" => {
                 // N(바이트 길이) 읽고 ':' 건너뛰기 — 내용은 이어지는 속성으로 처리됨
-                while pos < len && chars[pos] != ':' { pos += 1; }
-                if pos < len { pos += 1; }
+                while pos < len && chars[pos] != ':' {
+                    pos += 1;
+                }
+                if pos < len {
+                    pos += 1;
+                }
             }
             "wstring" => {
                 // N(문자 수) 읽기
                 let n_start = pos;
-                while pos < len && chars[pos] != ':' { pos += 1; }
-                let n: usize = chars[n_start..pos].iter().collect::<String>().parse().unwrap_or(0);
-                if pos < len { pos += 1; } // ':' 건너뛰기
-                // 정확히 N문자 읽기
+                while pos < len && chars[pos] != ':' {
+                    pos += 1;
+                }
+                let n: usize = chars[n_start..pos]
+                    .iter()
+                    .collect::<String>()
+                    .parse()
+                    .unwrap_or(0);
+                if pos < len {
+                    pos += 1;
+                } // ':' 건너뛰기
+                  // 정확히 N문자 읽기
                 let end = (pos + n).min(len);
                 let value: String = chars[pos..end].iter().collect();
                 pos = end;
@@ -897,13 +931,17 @@ fn parse_form_properties(prop_str: &str, form: &mut FormObject) {
             "int" | "bool" => {
                 // 공백까지 값 읽기
                 let v_start = pos;
-                while pos < len && chars[pos] != ' ' { pos += 1; }
+                while pos < len && chars[pos] != ' ' {
+                    pos += 1;
+                }
                 let value: String = chars[v_start..pos].iter().collect();
                 apply_form_property(&key, &value, form);
             }
             _ => {
                 // 알 수 없는 타입 — 공백까지 건너뛰기
-                while pos < len && chars[pos] != ' ' { pos += 1; }
+                while pos < len && chars[pos] != ' ' {
+                    pos += 1;
+                }
             }
         }
     }

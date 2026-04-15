@@ -2,14 +2,14 @@
 
 use std::collections::HashMap;
 
-use super::paragraph::Paragraph;
-use super::table::Table;
-use super::shape::{CommonObjAttr, ShapeObject};
-use super::image::Picture;
-use super::header_footer::{Header, Footer};
-use super::footnote::{Footnote, Endnote};
-use super::page::ColumnDef;
 use super::document::SectionDef;
+use super::footnote::{Endnote, Footnote};
+use super::header_footer::{Footer, Header};
+use super::image::Picture;
+use super::page::ColumnDef;
+use super::paragraph::Paragraph;
+use super::shape::{CommonObjAttr, ShapeObject};
+use super::table::Table;
 
 /// 문단 내 컨트롤 (확장 컨트롤)
 #[derive(Debug, Clone)]
@@ -269,12 +269,17 @@ impl Field {
         let value_start = key_start + key.len() + ws_start + colon_pos + 1;
         let value_part = &self.command[value_start..];
         // 다음 키워드(" HelpState:", " Direction:", " Name:" 등)까지
-        let end = value_part.find(" HelpState:")
+        let end = value_part
+            .find(" HelpState:")
             .or_else(|| value_part.find(" Direction:"))
             .or_else(|| value_part.find(" Name:"))
             .unwrap_or(value_part.len());
         let value = value_part[..end].trim();
-        if value.is_empty() { None } else { Some(value) }
+        if value.is_empty() {
+            None
+        } else {
+            Some(value)
+        }
     }
 
     /// 누름틀(ClickHere) command에서 메모(HelpState) 텍스트를 추출한다.
@@ -300,8 +305,10 @@ impl Field {
 
         // Direction + HelpState + Name (Name이 비어있으면 생략)
         // 각 wstring 값 뒤에 공백 1개를 유지한다 (한컴 호환).
-        let mut inner = format!("Direction:wstring:{}:{} HelpState:wstring:{}:{} ",
-            guide_len, guide, memo_len, memo);
+        let mut inner = format!(
+            "Direction:wstring:{}:{} HelpState:wstring:{}:{} ",
+            guide_len, guide, memo_len, memo
+        );
         if !name.is_empty() {
             inner.push_str(&format!("Name:wstring:{}:{} ", name_len, name));
         }
@@ -409,7 +416,9 @@ mod tests {
 
     #[test]
     fn test_control_variants() {
-        let ctrl = Control::Bookmark(Bookmark { name: "test".to_string() });
+        let ctrl = Control::Bookmark(Bookmark {
+            name: "test".to_string(),
+        });
         match ctrl {
             Control::Bookmark(bm) => assert_eq!(bm.name, "test"),
             _ => panic!("Expected Bookmark"),

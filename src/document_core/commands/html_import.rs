@@ -1,11 +1,11 @@
 //! HTML 붙여넣기 + HTML 파싱 관련 native 메서드
 
-use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use super::super::helpers::*;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
+use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use super::super::helpers::*;
+use crate::model::paragraph::Paragraph;
 use crate::renderer::style_resolver::resolve_styles;
 
 impl DocumentCore {
@@ -17,10 +17,16 @@ impl DocumentCore {
         html: &str,
     ) -> Result<String, HwpError> {
         if section_idx >= self.document.sections.len() {
-            return Err(HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)));
+            return Err(HwpError::RenderError(format!(
+                "구역 {} 범위 초과",
+                section_idx
+            )));
         }
         if para_idx >= self.document.sections[section_idx].paragraphs.len() {
-            return Err(HwpError::RenderError(format!("문단 {} 범위 초과", para_idx)));
+            return Err(HwpError::RenderError(format!(
+                "문단 {} 범위 초과",
+                para_idx
+            )));
         }
 
         // HTML 파싱 → 문단 목록 생성
@@ -44,8 +50,12 @@ impl DocumentCore {
                 .insert_text_at(char_offset, &clip_text);
 
             self.apply_clipboard_char_shapes(
-                section_idx, para_idx, char_offset,
-                &clip_char_shapes, &clip_char_offsets, new_chars,
+                section_idx,
+                para_idx,
+                char_offset,
+                &clip_char_shapes,
+                &clip_char_offsets,
+                new_chars,
             );
 
             self.reflow_paragraph(section_idx, para_idx);
@@ -53,7 +63,10 @@ impl DocumentCore {
             self.paginate_if_needed();
 
             let new_offset = char_offset + new_chars;
-            self.event_log.push(DocumentEvent::HtmlImported { section: section_idx, para: para_idx });
+            self.event_log.push(DocumentEvent::HtmlImported {
+                section: section_idx,
+                para: para_idx,
+            });
             return Ok(format!(
                 "{{\"ok\":true,\"paraIdx\":{},\"charOffset\":{}}}",
                 para_idx, new_offset
@@ -65,18 +78,21 @@ impl DocumentCore {
 
         if has_controls {
             // 컨트롤 포함 문단은 merge 불가 → 직접 삽입
-            let right_half = self.document.sections[section_idx].paragraphs[para_idx]
-                .split_at(char_offset);
+            let right_half =
+                self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
 
             // 현재 문단 (왼쪽 반)이 비어있으면 첫 번째 파싱 문단으로 대체
-            let left_empty = self.document.sections[section_idx].paragraphs[para_idx].text.is_empty();
+            let left_empty = self.document.sections[section_idx].paragraphs[para_idx]
+                .text
+                .is_empty();
 
             let mut insert_idx = if left_empty {
                 // 빈 왼쪽 문단을 첫 번째 파싱 문단으로 대체
                 self.document.sections[section_idx].paragraphs[para_idx] = parsed_paras[0].clone();
                 let idx = para_idx + 1;
                 for i in 1..clip_count {
-                    self.document.sections[section_idx].paragraphs
+                    self.document.sections[section_idx]
+                        .paragraphs
                         .insert(idx + i - 1, parsed_paras[i].clone());
                 }
                 para_idx + clip_count
@@ -84,7 +100,8 @@ impl DocumentCore {
                 // 왼쪽 문단에 텍스트 → 파싱 문단들을 그 뒤에 삽입
                 let idx = para_idx + 1;
                 for i in 0..clip_count {
-                    self.document.sections[section_idx].paragraphs
+                    self.document.sections[section_idx]
+                        .paragraphs
                         .insert(idx + i, parsed_paras[i].clone());
                 }
                 para_idx + 1 + clip_count
@@ -94,7 +111,8 @@ impl DocumentCore {
             let last_para_idx;
             let merge_point;
             if !right_half.text.is_empty() {
-                self.document.sections[section_idx].paragraphs
+                self.document.sections[section_idx]
+                    .paragraphs
                     .insert(insert_idx, right_half);
                 last_para_idx = insert_idx;
                 merge_point = 0;
@@ -116,7 +134,10 @@ impl DocumentCore {
             }
             self.paginate_if_needed();
 
-            self.event_log.push(DocumentEvent::HtmlImported { section: section_idx, para: para_idx });
+            self.event_log.push(DocumentEvent::HtmlImported {
+                section: section_idx,
+                para: para_idx,
+            });
             return Ok(format!(
                 "{{\"ok\":true,\"paraIdx\":{},\"charOffset\":{}}}",
                 last_para_idx, merge_point
@@ -124,22 +145,22 @@ impl DocumentCore {
         }
 
         // 다중 문단 삽입 (컨트롤 없는 텍스트만)
-        let right_half = self.document.sections[section_idx].paragraphs[para_idx]
-            .split_at(char_offset);
+        let right_half =
+            self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
 
-        self.document.sections[section_idx].paragraphs[para_idx]
-            .merge_from(&parsed_paras[0]);
+        self.document.sections[section_idx].paragraphs[para_idx].merge_from(&parsed_paras[0]);
 
         let mut insert_idx = para_idx + 1;
         for i in 1..clip_count {
-            self.document.sections[section_idx].paragraphs
+            self.document.sections[section_idx]
+                .paragraphs
                 .insert(insert_idx, parsed_paras[i].clone());
             insert_idx += 1;
         }
 
         let last_para_idx = insert_idx - 1;
-        let merge_point = self.document.sections[section_idx].paragraphs[last_para_idx]
-            .merge_from(&right_half);
+        let merge_point =
+            self.document.sections[section_idx].paragraphs[last_para_idx].merge_from(&right_half);
 
         for i in para_idx..=last_para_idx {
             self.reflow_paragraph(section_idx, i);
@@ -152,7 +173,10 @@ impl DocumentCore {
         }
         self.paginate_if_needed();
 
-        self.event_log.push(DocumentEvent::HtmlImported { section: section_idx, para: para_idx });
+        self.event_log.push(DocumentEvent::HtmlImported {
+            section: section_idx,
+            para: para_idx,
+        });
         Ok(format!(
             "{{\"ok\":true,\"paraIdx\":{},\"charOffset\":{}}}",
             last_para_idx, merge_point
@@ -172,20 +196,28 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         // 셀 접근 검증
         let cell_para_count = {
-            let section = self.document.sections.get(section_idx)
-                .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
-            let para = section.paragraphs.get(parent_para_idx)
-                .ok_or_else(|| HwpError::RenderError(format!("문단 {} 범위 초과", parent_para_idx)))?;
+            let section =
+                self.document.sections.get(section_idx).ok_or_else(|| {
+                    HwpError::RenderError(format!("구역 {} 범위 초과", section_idx))
+                })?;
+            let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 {} 범위 초과", parent_para_idx))
+            })?;
             let table = match para.controls.get(control_idx) {
                 Some(Control::Table(t)) => t,
                 _ => return Err(HwpError::RenderError("표가 아님".to_string())),
             };
-            let cell = table.cells.get(cell_idx)
+            let cell = table
+                .cells
+                .get(cell_idx)
                 .ok_or_else(|| HwpError::RenderError(format!("셀 {} 범위 초과", cell_idx)))?;
             cell.paragraphs.len()
         };
         if cell_para_idx >= cell_para_count {
-            return Err(HwpError::RenderError(format!("셀 문단 {} 범위 초과", cell_para_idx)));
+            return Err(HwpError::RenderError(format!(
+                "셀 문단 {} 범위 초과",
+                cell_para_idx
+            )));
         }
 
         let parsed_paras = self.parse_html_to_paragraphs(html);
@@ -198,32 +230,47 @@ impl DocumentCore {
         let clip_count = parsed_paras.len();
 
         // 셀 내부에는 Table Control 중첩 불가 → 컨트롤 포함 문단은 텍스트만 추출
-        let parsed_paras: Vec<Paragraph> = parsed_paras.into_iter().map(|mut p| {
-            if !p.controls.is_empty() {
-                // 컨트롤 문단은 텍스트로 대체
-                let text = if p.text.is_empty() || p.text == "\u{0002}" {
-                    // Table/Picture 등 컨트롤 → 셀 텍스트 추출
-                    match p.controls.first() {
-                        Some(Control::Table(tbl)) => {
-                            tbl.cells.iter()
-                                .map(|c| c.paragraphs.iter().map(|cp| cp.text.clone()).collect::<Vec<_>>().join(" "))
+        let parsed_paras: Vec<Paragraph> = parsed_paras
+            .into_iter()
+            .map(|mut p| {
+                if !p.controls.is_empty() {
+                    // 컨트롤 문단은 텍스트로 대체
+                    let text = if p.text.is_empty() || p.text == "\u{0002}" {
+                        // Table/Picture 등 컨트롤 → 셀 텍스트 추출
+                        match p.controls.first() {
+                            Some(Control::Table(tbl)) => tbl
+                                .cells
+                                .iter()
+                                .map(|c| {
+                                    c.paragraphs
+                                        .iter()
+                                        .map(|cp| cp.text.clone())
+                                        .collect::<Vec<_>>()
+                                        .join(" ")
+                                })
                                 .collect::<Vec<_>>()
-                                .join("\t")
-                        },
-                        _ => String::new(),
-                    }
-                } else {
-                    p.text.clone()
-                };
-                p.controls.clear();
-                p.text = text;
-                p.char_count = p.text.encode_utf16().count() as u32;
-                p.char_offsets = p.text.chars()
-                    .scan(0u32, |acc, c| { let off = *acc; *acc += c.len_utf16() as u32; Some(off) })
-                    .collect();
-            }
-            p
-        }).collect();
+                                .join("\t"),
+                            _ => String::new(),
+                        }
+                    } else {
+                        p.text.clone()
+                    };
+                    p.controls.clear();
+                    p.text = text;
+                    p.char_count = p.text.encode_utf16().count() as u32;
+                    p.char_offsets = p
+                        .text
+                        .chars()
+                        .scan(0u32, |acc, c| {
+                            let off = *acc;
+                            *acc += c.len_utf16() as u32;
+                            Some(off)
+                        })
+                        .collect();
+                }
+                p
+            })
+            .collect();
         let clip_count = parsed_paras.len();
 
         let cell_paras = {
@@ -245,22 +292,37 @@ impl DocumentCore {
             let clip_char_shapes = parsed_paras[0].char_shapes.clone();
             let clip_char_offsets = parsed_paras[0].char_offsets.clone();
             Self::apply_clipboard_char_shapes_to_para(
-                &mut cell_paras[cell_para_idx], char_offset,
-                &clip_char_shapes, &clip_char_offsets, new_chars,
+                &mut cell_paras[cell_para_idx],
+                char_offset,
+                &clip_char_shapes,
+                &clip_char_offsets,
+                new_chars,
             );
 
             let _ = cell_paras;
-            self.reflow_cell_paragraph(section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx);
+            self.reflow_cell_paragraph(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            );
             // 부모 표 dirty 마킹 + 재페이지네이션 (셀 편집 → composed 불변)
-            if let Some(Control::Table(t)) = self.document.sections[section_idx]
-                .paragraphs[parent_para_idx].controls.get_mut(control_idx) {
+            if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls
+                .get_mut(control_idx)
+            {
                 t.dirty = true;
             }
             self.mark_section_dirty(section_idx);
             self.paginate_if_needed();
 
             let new_offset = char_offset + new_chars;
-            self.event_log.push(DocumentEvent::HtmlImported { section: section_idx, para: parent_para_idx });
+            self.event_log.push(DocumentEvent::HtmlImported {
+                section: section_idx,
+                para: parent_para_idx,
+            });
             return Ok(format!(
                 "{{\"ok\":true,\"cellParaIdx\":{},\"charOffset\":{}}}",
                 cell_para_idx, new_offset
@@ -285,14 +347,20 @@ impl DocumentCore {
             self.reflow_cell_paragraph(section_idx, parent_para_idx, control_idx, cell_idx, i);
         }
         // 부모 표 dirty 마킹 + 재페이지네이션 (셀 편집 → composed 불변)
-        if let Some(Control::Table(t)) = self.document.sections[section_idx]
-            .paragraphs[parent_para_idx].controls.get_mut(control_idx) {
+        if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
+            [parent_para_idx]
+            .controls
+            .get_mut(control_idx)
+        {
             t.dirty = true;
         }
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        self.event_log.push(DocumentEvent::HtmlImported { section: section_idx, para: parent_para_idx });
+        self.event_log.push(DocumentEvent::HtmlImported {
+            section: section_idx,
+            para: parent_para_idx,
+        });
         Ok(format!(
             "{{\"ok\":true,\"cellParaIdx\":{},\"charOffset\":{}}}",
             last_para_idx, merge_point
@@ -343,7 +411,9 @@ impl DocumentCore {
                 // 태그 시작
                 let tag_start = pos;
                 let tag_end = find_char(&chars, pos, '>');
-                if tag_end >= len { break; }
+                if tag_end >= len {
+                    break;
+                }
 
                 let tag_str: String = chars[tag_start..=tag_end].iter().collect();
                 let tag_lower = tag_str.to_lowercase();
@@ -410,7 +480,8 @@ impl DocumentCore {
                     // div 내부의 콘텐츠를 재귀적으로 처리
                     let div_content_start = tag_end + 1;
                     let div_end = find_closing_tag_chars(&chars, pos, "div");
-                    let div_inner: String = chars[div_content_start..div_end.min(len)].iter().collect();
+                    let div_inner: String =
+                        chars[div_content_start..div_end.min(len)].iter().collect();
                     let div_inner = if let Some(idx) = div_inner.rfind("</div>") {
                         &div_inner[..idx]
                     } else {
@@ -441,7 +512,8 @@ impl DocumentCore {
                     if tag_lower.starts_with("<span") {
                         // <span>...</span> 인라인 콘텐츠
                         let span_end = find_closing_tag_chars(&chars, pos, "span");
-                        let span_full: String = chars[tag_start..span_end.min(len)].iter().collect();
+                        let span_full: String =
+                            chars[tag_start..span_end.min(len)].iter().collect();
                         let span_full = if let Some(idx) = span_full.rfind("</span>") {
                             &span_full[..idx]
                         } else {
@@ -476,8 +548,14 @@ impl DocumentCore {
                 let mut para = Paragraph::default();
                 para.text = plain;
                 para.char_count = para.text.encode_utf16().count() as u32;
-                para.char_offsets = para.text.chars()
-                    .scan(0u32, |acc, c| { let off = *acc; *acc += c.len_utf16() as u32; Some(off) })
+                para.char_offsets = para
+                    .text
+                    .chars()
+                    .scan(0u32, |acc, c| {
+                        let off = *acc;
+                        *acc += c.len_utf16() as u32;
+                        Some(off)
+                    })
                     .collect();
                 paragraphs.push(para);
             }
@@ -491,12 +569,20 @@ impl DocumentCore {
         let decoded = decode_html_entities(text);
         for line in decoded.split('\n') {
             let trimmed = line.trim();
-            if trimmed.is_empty() { continue; }
+            if trimmed.is_empty() {
+                continue;
+            }
             let mut para = Paragraph::default();
             para.text = trimmed.to_string();
             para.char_count = para.text.encode_utf16().count() as u32;
-            para.char_offsets = para.text.chars()
-                .scan(0u32, |acc, c| { let off = *acc; *acc += c.len_utf16() as u32; Some(off) })
+            para.char_offsets = para
+                .text
+                .chars()
+                .scan(0u32, |acc, c| {
+                    let off = *acc;
+                    *acc += c.len_utf16() as u32;
+                    Some(off)
+                })
                 .collect();
             paragraphs.push(para);
         }
@@ -520,7 +606,9 @@ impl DocumentCore {
         while pos < len {
             if chars[pos] == '<' {
                 let tag_end = find_char(&chars, pos, '>');
-                if tag_end >= len { break; }
+                if tag_end >= len {
+                    break;
+                }
 
                 let tag_str: String = chars[pos..=tag_end].iter().collect();
                 let tag_lower = tag_str.to_lowercase();
@@ -533,7 +621,9 @@ impl DocumentCore {
                         let close_chars: Vec<char> = "</span>".chars().collect();
                         let mut found = None;
                         for i in inner_start..len.saturating_sub(close_chars.len() - 1) {
-                            let slice: String = chars[i..i + close_chars.len().min(len - i)].iter().collect();
+                            let slice: String = chars[i..i + close_chars.len().min(len - i)]
+                                .iter()
+                                .collect();
                             if slice.to_lowercase() == "</span>" {
                                 found = Some(i);
                                 break;
@@ -547,7 +637,10 @@ impl DocumentCore {
                     if !inner_text.is_empty() {
                         let css = parse_inline_style(&tag_str);
                         let char_shape_id = self.css_to_char_shape_id(
-                            &css, inherited_bold, inherited_italic, inherited_underline,
+                            &css,
+                            inherited_bold,
+                            inherited_italic,
+                            inherited_underline,
                         );
                         let start = full_text.chars().count();
                         full_text.push_str(&inner_text);
@@ -601,14 +694,28 @@ impl DocumentCore {
                 if !decoded.is_empty() {
                     if inherited_bold || inherited_italic || inherited_underline {
                         let css_parts: Vec<String> = [
-                            if inherited_bold { Some("font-weight:bold".to_string()) } else { None },
-                            if inherited_italic { Some("font-style:italic".to_string()) } else { None },
-                            if inherited_underline { Some("text-decoration:underline".to_string()) } else { None },
-                        ].into_iter().flatten().collect();
+                            if inherited_bold {
+                                Some("font-weight:bold".to_string())
+                            } else {
+                                None
+                            },
+                            if inherited_italic {
+                                Some("font-style:italic".to_string())
+                            } else {
+                                None
+                            },
+                            if inherited_underline {
+                                Some("text-decoration:underline".to_string())
+                            } else {
+                                None
+                            },
+                        ]
+                        .into_iter()
+                        .flatten()
+                        .collect();
                         let fake_css = css_parts.join(";");
-                        let char_shape_id = self.css_to_char_shape_id(
-                            &fake_css, false, false, false,
-                        );
+                        let char_shape_id =
+                            self.css_to_char_shape_id(&fake_css, false, false, false);
                         let start = full_text.chars().count();
                         full_text.push_str(&decoded);
                         let end = full_text.chars().count();
@@ -623,20 +730,30 @@ impl DocumentCore {
 
         para.text = full_text;
         para.char_count = para.text.encode_utf16().count() as u32;
-        para.char_offsets = para.text.chars()
-            .scan(0u32, |acc, c| { let off = *acc; *acc += c.len_utf16() as u32; Some(off) })
+        para.char_offsets = para
+            .text
+            .chars()
+            .scan(0u32, |acc, c| {
+                let off = *acc;
+                *acc += c.len_utf16() as u32;
+                Some(off)
+            })
             .collect();
 
         // 스타일 범위를 CharShapeRef로 변환
         for (start, _end, char_shape_id) in &style_runs {
             // char index → UTF-16 위치
-            let utf16_pos: u32 = para.text.chars().take(*start)
+            let utf16_pos: u32 = para
+                .text
+                .chars()
+                .take(*start)
                 .map(|c| c.len_utf16() as u32)
                 .sum();
-            para.char_shapes.push(crate::model::paragraph::CharShapeRef {
-                start_pos: utf16_pos,
-                char_shape_id: *char_shape_id,
-            });
+            para.char_shapes
+                .push(crate::model::paragraph::CharShapeRef {
+                    start_pos: utf16_pos,
+                    char_shape_id: *char_shape_id,
+                });
         }
     }
 
@@ -651,8 +768,13 @@ impl DocumentCore {
         use crate::model::style::{CharShape, UnderlineType};
 
         // 기본 CharShape를 기반으로 수정
-        let base_id = if !self.document.doc_info.char_shapes.is_empty() { 0u32 } else {
-            self.document.doc_info.char_shapes.push(CharShape::default());
+        let base_id = if !self.document.doc_info.char_shapes.is_empty() {
+            0u32
+        } else {
+            self.document
+                .doc_info
+                .char_shapes
+                .push(CharShape::default());
             0
         };
         let mut cs = self.document.doc_info.char_shapes[base_id as usize].clone();
@@ -662,7 +784,10 @@ impl DocumentCore {
 
         // font-family
         if let Some(font_name) = parse_css_value(&css_lower, "font-family") {
-            let clean_name = font_name.trim_matches(|c: char| c == '\'' || c == '"').trim().to_string();
+            let clean_name = font_name
+                .trim_matches(|c: char| c == '\'' || c == '"')
+                .trim()
+                .to_string();
             if !clean_name.is_empty() {
                 if let Some(font_id) = self.find_font_id(&clean_name) {
                     cs.font_ids = [font_id; 7];
@@ -704,7 +829,11 @@ impl DocumentCore {
             || css_lower.contains("text-decoration:underline")
             || css_lower.contains("text-decoration: underline")
             || css_lower.contains("text-decoration-line:underline");
-        cs.underline_type = if has_underline { UnderlineType::Bottom } else { UnderlineType::None };
+        cs.underline_type = if has_underline {
+            UnderlineType::Bottom
+        } else {
+            UnderlineType::None
+        };
 
         let has_strikethrough = css_lower.contains("text-decoration:line-through")
             || css_lower.contains("text-decoration: line-through")
@@ -736,7 +865,10 @@ impl DocumentCore {
         }
 
         let base_id: u16 = 0;
-        let mut ps = self.document.doc_info.para_shapes
+        let mut ps = self
+            .document
+            .doc_info
+            .para_shapes
             .get(base_id as usize)
             .cloned()
             .unwrap_or_default();
@@ -790,7 +922,10 @@ impl DocumentCore {
         let name_lower = name.to_lowercase();
         // 한글 폰트 (인덱스 0)를 먼저, 영어 폰트 (인덱스 1)를 다음으로 검색
         for lang_idx in 0..self.document.doc_info.font_faces.len() {
-            for (font_idx, font) in self.document.doc_info.font_faces[lang_idx].iter().enumerate() {
+            for (font_idx, font) in self.document.doc_info.font_faces[lang_idx]
+                .iter()
+                .enumerate()
+            {
                 if font.name.to_lowercase() == name_lower {
                     return Some(font_idx as u16);
                 }
@@ -798,5 +933,4 @@ impl DocumentCore {
         }
         None
     }
-
 }

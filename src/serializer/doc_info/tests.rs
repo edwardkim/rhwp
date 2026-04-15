@@ -282,13 +282,11 @@ fn test_serialize_tab_def() {
     let td = TabDef {
         raw_data: None,
         attr: 0x03,
-        tabs: vec![
-            crate::model::style::TabItem {
-                position: 7200,
-                tab_type: 0,
-                fill_type: 0,
-            },
-        ],
+        tabs: vec![crate::model::style::TabItem {
+            position: 7200,
+            tab_type: 0,
+            fill_type: 0,
+        }],
         auto_tab_left: true,
         auto_tab_right: true,
     };

@@ -52,7 +52,7 @@ fn test_parse_para_text_with_tab() {
     let mut data = Vec::new();
     // "A" + tab(0x0009, inline 8 code units = 16바이트) + "B" + para break
     data.extend_from_slice(&0x0041u16.to_le_bytes()); // 'A'
-    // tab: 0x0009 + 7 dummy code units (inline control data)
+                                                      // tab: 0x0009 + 7 dummy code units (inline control data)
     data.extend_from_slice(&0x0009u16.to_le_bytes());
     for _ in 0..7 {
         data.extend_from_slice(&0x0000u16.to_le_bytes());
@@ -70,7 +70,7 @@ fn test_parse_para_text_with_extended_ctrl() {
     let mut data = Vec::new();
     // "A" + extended ctrl(0x000B, 8 code units) + "B" + para break
     data.extend_from_slice(&0x0041u16.to_le_bytes()); // 'A'
-    // Extended control character: 0x000B + 7 dummy code units
+                                                      // Extended control character: 0x000B + 7 dummy code units
     data.extend_from_slice(&0x000Bu16.to_le_bytes());
     for _ in 0..7 {
         data.extend_from_slice(&0x0000u16.to_le_bytes());
@@ -285,11 +285,7 @@ fn test_parse_section_with_section_def() {
     ctrl_data.extend_from_slice(&0u16.to_le_bytes()); // picture_num
     ctrl_data.extend_from_slice(&0u16.to_le_bytes()); // table_num
     ctrl_data.extend_from_slice(&0u16.to_le_bytes()); // equation_num
-    section_bytes.extend(make_record_bytes(
-        tags::HWPTAG_CTRL_HEADER,
-        1,
-        &ctrl_data,
-    ));
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, 1, &ctrl_data));
 
     // PAGE_DEF (secd의 자식)
     let mut page_data = Vec::new();
@@ -323,11 +319,7 @@ fn test_parse_section_with_column_def() {
     ctrl_data.extend_from_slice(&attr.to_le_bytes()); // attr (bits 0-15)
     ctrl_data.extend_from_slice(&1000i16.to_le_bytes()); // spacing
     ctrl_data.extend_from_slice(&0u16.to_le_bytes()); // attr2 (bits 16-32)
-    section_bytes.extend(make_record_bytes(
-        tags::HWPTAG_CTRL_HEADER,
-        1,
-        &ctrl_data,
-    ));
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, 1, &ctrl_data));
 
     let section = parse_body_text_section(&section_bytes).unwrap();
     assert_eq!(section.paragraphs.len(), 1);
@@ -360,11 +352,7 @@ fn test_parse_table_control_delegation() {
     let mut ctrl_data = Vec::new();
     ctrl_data.extend_from_slice(&tags::CTRL_TABLE.to_le_bytes());
     ctrl_data.extend_from_slice(&[0u8; 20]); // dummy data
-    section_bytes.extend(make_record_bytes(
-        tags::HWPTAG_CTRL_HEADER,
-        1,
-        &ctrl_data,
-    ));
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, 1, &ctrl_data));
 
     let section = parse_body_text_section(&section_bytes).unwrap();
     let has_table = section.paragraphs[0]
@@ -386,11 +374,7 @@ fn test_parse_unknown_control() {
     let mut ctrl_data = Vec::new();
     ctrl_data.extend_from_slice(&unknown_ctrl_id.to_le_bytes());
     ctrl_data.extend_from_slice(&[0u8; 20]); // dummy data
-    section_bytes.extend(make_record_bytes(
-        tags::HWPTAG_CTRL_HEADER,
-        1,
-        &ctrl_data,
-    ));
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, 1, &ctrl_data));
 
     let section = parse_body_text_section(&section_bytes).unwrap();
     let has_unknown = section.paragraphs[0]
@@ -451,9 +435,24 @@ fn test_lineseg_field_semantics() {
             let text_preview: String = para.text.chars().take(30).collect();
             let has_large_font = para.line_segs.iter().any(|s| s.line_height > 2000);
             if para_idx < 20 || has_large_font {
-                eprintln!("Para{}: text=\"{}\" psid={} segs={}", para_idx, text_preview, para.para_shape_id, para.line_segs.len());
+                eprintln!(
+                    "Para{}: text=\"{}\" psid={} segs={}",
+                    para_idx,
+                    text_preview,
+                    para.para_shape_id,
+                    para.line_segs.len()
+                );
                 for (i, seg) in para.line_segs.iter().enumerate() {
-                    eprintln!("  L{}: vpos={} lh={} th={} bd={} ls={} tag={:#010x}", i, seg.vertical_pos, seg.line_height, seg.text_height, seg.baseline_distance, seg.line_spacing, seg.tag);
+                    eprintln!(
+                        "  L{}: vpos={} lh={} th={} bd={} ls={} tag={:#010x}",
+                        i,
+                        seg.vertical_pos,
+                        seg.line_height,
+                        seg.text_height,
+                        seg.baseline_distance,
+                        seg.line_spacing,
+                        seg.tag
+                    );
                 }
             }
         }
@@ -466,22 +465,44 @@ fn test_lineseg_field_semantics() {
 
     for (_sec_idx, section) in doc.sections.iter().enumerate() {
         for (_para_idx, para) in section.paragraphs.iter().enumerate() {
-            if para.line_segs.len() < 2 { continue; }
+            if para.line_segs.len() < 2 {
+                continue;
+            }
             for i in 0..para.line_segs.len() - 1 {
                 let curr = &para.line_segs[i];
                 let next = &para.line_segs[i + 1];
                 let vpos_diff = next.vertical_pos - curr.vertical_pos;
                 total_pairs += 1;
-                if vpos_diff == curr.line_spacing { match_ls_count += 1; }
-                if vpos_diff == curr.line_height + curr.line_spacing { match_lh_ls_count += 1; }
+                if vpos_diff == curr.line_spacing {
+                    match_ls_count += 1;
+                }
+                if vpos_diff == curr.line_height + curr.line_spacing {
+                    match_lh_ls_count += 1;
+                }
             }
         }
     }
 
     eprintln!("\n=== 결과 요약 ===");
     eprintln!("총 줄 쌍: {}", total_pairs);
-    eprintln!("vpos_diff == line_spacing: {} ({}%)", match_ls_count, if total_pairs > 0 { match_ls_count * 100 / total_pairs } else { 0 });
-    eprintln!("vpos_diff == line_height + line_spacing: {} ({}%)", match_lh_ls_count, if total_pairs > 0 { match_lh_ls_count * 100 / total_pairs } else { 0 });
+    eprintln!(
+        "vpos_diff == line_spacing: {} ({}%)",
+        match_ls_count,
+        if total_pairs > 0 {
+            match_ls_count * 100 / total_pairs
+        } else {
+            0
+        }
+    );
+    eprintln!(
+        "vpos_diff == line_height + line_spacing: {} ({}%)",
+        match_lh_ls_count,
+        if total_pairs > 0 {
+            match_lh_ls_count * 100 / total_pairs
+        } else {
+            0
+        }
+    );
 
     // 2. 문단 간 vpos 관계 분석
     eprintln!("\n=== 문단 간 관계 분석 ===");
@@ -499,7 +520,8 @@ fn test_lineseg_field_semantics() {
 
             // 현재 문단의 마지막 줄 끝 위치 (다양한 해석)
             let end_with_lh = last_seg.vertical_pos + last_seg.line_height;
-            let end_with_lh_ls = last_seg.vertical_pos + last_seg.line_height + last_seg.line_spacing;
+            let end_with_lh_ls =
+                last_seg.vertical_pos + last_seg.line_height + last_seg.line_spacing;
             let gap_from_lh = next_first.vertical_pos - end_with_lh;
             let gap_from_lh_ls = next_first.vertical_pos - end_with_lh_ls;
 
@@ -540,7 +562,10 @@ fn test_lineseg_field_semantics() {
         eprintln!("  lh={} ls={} total={}", lh, ls, lh + ls);
     }
 
-    assert_eq!(match_lh_ls_count, total_pairs, "모든 줄 쌍이 vpos_diff == line_height + line_spacing 이어야 함");
+    assert_eq!(
+        match_lh_ls_count, total_pairs,
+        "모든 줄 쌍이 vpos_diff == line_height + line_spacing 이어야 함"
+    );
 }
 
 /// 진단용 테스트: hancom-webgian.hwp에서 표를 포함하는 문단의
@@ -580,22 +605,10 @@ fn test_table_paragraph_diagnostics() {
             // 텍스트 미리보기 (첫 20자)
             let text_preview: String = para.text.chars().take(20).collect();
 
-            eprintln!(
-                "--- Section {} / Para {} ---",
-                sec_idx, para_idx
-            );
-            eprintln!(
-                "  para_shape_id: {}",
-                para.para_shape_id
-            );
-            eprintln!(
-                "  text_preview: \"{}\"",
-                text_preview
-            );
-            eprintln!(
-                "  line_segs count: {}",
-                para.line_segs.len()
-            );
+            eprintln!("--- Section {} / Para {} ---", sec_idx, para_idx);
+            eprintln!("  para_shape_id: {}", para.para_shape_id);
+            eprintln!("  text_preview: \"{}\"", text_preview);
+            eprintln!("  line_segs count: {}", para.line_segs.len());
 
             // 첫 번째 line_seg 정보
             if let Some(seg) = para.line_segs.first() {
@@ -640,10 +653,7 @@ fn test_table_paragraph_diagnostics() {
                 );
                 // host_spacing 계산 (진단 목적)
                 let host_spacing = ps.spacing_before + ps.spacing_after;
-                eprintln!(
-                    "  host_spacing (before+after): {}",
-                    host_spacing
-                );
+                eprintln!("  host_spacing (before+after): {}", host_spacing);
             } else {
                 eprintln!(
                     "  para_shape: id {} out of range (max {})",
@@ -670,7 +680,11 @@ fn test_table_paragraph_diagnostics() {
                     t_idx,
                     table.cell_spacing,
                     table.cells.len(),
-                    table.caption.as_ref().map(|c| format!("dir={:?} paras={}", c.direction, c.paragraphs.len())),
+                    table.caption.as_ref().map(|c| format!(
+                        "dir={:?} paras={}",
+                        c.direction,
+                        c.paragraphs.len()
+                    )),
                 );
 
                 // 행별 셀 높이 합산을 위해 각 셀의 크기 출력

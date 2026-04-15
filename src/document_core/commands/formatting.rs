@@ -1,18 +1,17 @@
 //! 글자모양/문단모양 조회·적용 관련 native 메서드
 
-use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use super::super::helpers::{
+    border_line_type_to_u8_val, build_tab_def_from_json, color_ref_to_css, json_has_border_keys,
+    json_has_tab_keys, parse_char_shape_mods, parse_json_i16_array, parse_para_shape_mods,
+};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
+use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use super::super::helpers::{
-    color_ref_to_css, parse_char_shape_mods, parse_para_shape_mods,
-    json_has_border_keys, json_has_tab_keys, build_tab_def_from_json,
-    parse_json_i16_array, border_line_type_to_u8_val,
-};
-use crate::renderer::style_resolver::resolve_styles;
+use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::reflow_line_segs;
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::style_resolver::resolve_styles;
 
 impl DocumentCore {
     pub fn get_char_properties_at_native(
@@ -21,9 +20,14 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get(sec_idx)
+        let section = self
+            .document
+            .sections
+            .get(sec_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
-        let para = section.paragraphs.get(para_idx)
+        let para = section
+            .paragraphs
+            .get(para_idx)
             .ok_or_else(|| HwpError::RenderError(format!("문단 {} 범위 초과", para_idx)))?;
         Ok(self.build_char_properties_json(para, char_offset))
     }
@@ -38,7 +42,14 @@ impl DocumentCore {
         cell_para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        let para = self.get_cell_paragraph_ref(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+        let para = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
             .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
         Ok(self.build_char_properties_json(para, char_offset))
     }
@@ -51,9 +62,14 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::model::control::Control;
         use crate::model::style::HeadType;
-        let section = self.document.sections.get(sec_idx)
+        let section = self
+            .document
+            .sections
+            .get(sec_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
-        let para = section.paragraphs.get(para_idx)
+        let para = section
+            .paragraphs
+            .get(para_idx)
             .ok_or_else(|| HwpError::RenderError(format!("문단 {} 범위 초과", para_idx)))?;
         let mut json = self.build_para_properties_json(para.para_shape_id, sec_idx);
 
@@ -64,7 +80,11 @@ impl DocumentCore {
             let cur_nid = ps.map(|s| s.numbering_id).unwrap_or(0);
             // NewNumber 컨트롤 체크
             let new_number = para.controls.iter().find_map(|c| {
-                if let Control::NewNumber(nn) = c { Some(nn.number) } else { None }
+                if let Control::NewNumber(nn) = c {
+                    Some(nn.number)
+                } else {
+                    None
+                }
             });
             let (mode, start_num) = if let Some(num) = new_number {
                 (2, num as u32) // 새 번호 목록 시작 (NewNumber 컨트롤)
@@ -76,7 +96,9 @@ impl DocumentCore {
                     let pp = &section.paragraphs[pi];
                     let pps = self.styles.para_styles.get(pp.para_shape_id as usize);
                     let pht = pps.map(|s| s.head_type).unwrap_or(HeadType::None);
-                    if pht == HeadType::None { continue; }
+                    if pht == HeadType::None {
+                        continue;
+                    }
                     let pnid = pps.map(|s| s.numbering_id).unwrap_or(0);
                     if prev_nid.is_none() {
                         prev_nid = Some(pnid);
@@ -93,7 +115,10 @@ impl DocumentCore {
                 }
             };
             json.pop(); // 마지막 '}' 제거
-            json.push_str(&format!(",\"numberingRestartMode\":{},\"numberingStartNum\":{}}}", mode, start_num));
+            json.push_str(&format!(
+                ",\"numberingRestartMode\":{},\"numberingStartNum\":{}}}",
+                mode, start_num
+            ));
         }
 
         Ok(json)
@@ -108,13 +133,24 @@ impl DocumentCore {
         cell_idx: usize,
         cell_para_idx: usize,
     ) -> Result<String, HwpError> {
-        let para = self.get_cell_paragraph_ref(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+        let para = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
             .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
         Ok(self.build_para_properties_json(para.para_shape_id, sec_idx))
     }
 
     /// 글자 속성 JSON 생성 헬퍼
-    pub(crate) fn build_char_properties_json(&self, para: &crate::model::paragraph::Paragraph, char_offset: usize) -> String {
+    pub(crate) fn build_char_properties_json(
+        &self,
+        para: &crate::model::paragraph::Paragraph,
+        char_offset: usize,
+    ) -> String {
         let char_shape_id = para.char_shape_id_at(char_offset).unwrap_or(0);
         let style = self.styles.char_styles.get(char_shape_id as usize);
 
@@ -124,12 +160,15 @@ impl DocumentCore {
                 use crate::renderer::style_resolver::detect_lang_category;
 
                 // 캐럿 위치 문자의 언어 카테고리를 판별하여 해당 폰트 반환
-                let lang_index = para.text.chars()
+                let lang_index = para
+                    .text
+                    .chars()
                     .nth(char_offset)
                     .map(|ch| detect_lang_category(ch))
                     .unwrap_or(0);
                 let font_family_raw = cs.font_family_for_lang(lang_index);
-                let font_family = crate::renderer::style_resolver::primary_font_name(&font_family_raw);
+                let font_family =
+                    crate::renderer::style_resolver::primary_font_name(&font_family_raw);
 
                 let escaped_font = super::super::helpers::json_escape(font_family);
                 let underline = !matches!(cs.underline, UnderlineType::None);
@@ -140,35 +179,104 @@ impl DocumentCore {
                 };
 
                 // raw CharShape에서 추가 속성 읽기
-                let raw_cs = self.document.doc_info.char_shapes.get(char_shape_id as usize);
+                let raw_cs = self
+                    .document
+                    .doc_info
+                    .char_shapes
+                    .get(char_shape_id as usize);
                 let base_size = raw_cs.map(|s| s.base_size).unwrap_or(1000);
 
                 // 언어별 글꼴 이름 배열 (원본 폰트명만, 폴백 제외)
-                let font_families: Vec<String> = (0..7usize).map(|i| {
-                    let name = cs.font_family_for_lang(i);
-                    let primary = crate::renderer::style_resolver::primary_font_name(&name);
-                    super::super::helpers::json_escape(primary)
-                }).collect();
-                let font_families_json = format!("[{}]",
-                    font_families.iter().map(|f| format!("\"{}\"", f)).collect::<Vec<_>>().join(","));
+                let font_families: Vec<String> = (0..7usize)
+                    .map(|i| {
+                        let name = cs.font_family_for_lang(i);
+                        let primary = crate::renderer::style_resolver::primary_font_name(&name);
+                        super::super::helpers::json_escape(primary)
+                    })
+                    .collect();
+                let font_families_json = format!(
+                    "[{}]",
+                    font_families
+                        .iter()
+                        .map(|f| format!("\"{}\"", f))
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
 
                 // 언어별 수치 배열
                 let (ratios, spacings, relative_sizes, char_offsets) = match raw_cs {
                     Some(s) => (s.ratios, s.spacings, s.relative_sizes, s.char_offsets),
                     None => ([100u8; 7], [0i8; 7], [100u8; 7], [0i8; 7]),
                 };
-                let ratios_json = format!("[{}]", ratios.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let spacings_json = format!("[{}]", spacings.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let relative_sizes_json = format!("[{}]", relative_sizes.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let char_offsets_json = format!("[{}]", char_offsets.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
+                let ratios_json = format!(
+                    "[{}]",
+                    ratios
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let spacings_json = format!(
+                    "[{}]",
+                    spacings
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let relative_sizes_json = format!(
+                    "[{}]",
+                    relative_sizes
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let char_offsets_json = format!(
+                    "[{}]",
+                    char_offsets
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
 
-                let (shadow_type, shadow_color, shadow_offset_x, shadow_offset_y,
-                     outline_type, subscript, superscript, shade_color,
-                     emboss, engrave, emphasis_dot, underline_shape, strike_shape, kerning) = match raw_cs {
-                    Some(s) => (s.shadow_type, s.shadow_color, s.shadow_offset_x, s.shadow_offset_y,
-                                s.outline_type, s.subscript, s.superscript, s.shade_color,
-                                s.emboss, s.engrave, s.emphasis_dot, s.underline_shape, s.strike_shape, s.kerning),
-                    None => (0, 0xB2B2B2, 0i8, 0i8, 0, false, false, 0xFFFFFF, false, false, 0, 0, 0, false),
+                let (
+                    shadow_type,
+                    shadow_color,
+                    shadow_offset_x,
+                    shadow_offset_y,
+                    outline_type,
+                    subscript,
+                    superscript,
+                    shade_color,
+                    emboss,
+                    engrave,
+                    emphasis_dot,
+                    underline_shape,
+                    strike_shape,
+                    kerning,
+                ) = match raw_cs {
+                    Some(s) => (
+                        s.shadow_type,
+                        s.shadow_color,
+                        s.shadow_offset_x,
+                        s.shadow_offset_y,
+                        s.outline_type,
+                        s.subscript,
+                        s.superscript,
+                        s.shade_color,
+                        s.emboss,
+                        s.engrave,
+                        s.emphasis_dot,
+                        s.underline_shape,
+                        s.strike_shape,
+                        s.kerning,
+                    ),
+                    None => (
+                        0, 0xB2B2B2, 0i8, 0i8, 0, false, false, 0xFFFFFF, false, false, 0, 0, 0,
+                        false,
+                    ),
                 };
 
                 // 글자 테두리/배경 정보
@@ -244,7 +352,8 @@ impl DocumentCore {
                 use crate::model::style::UnderlineType;
                 // 한글(0) 언어를 기본으로 사용
                 let font_family_raw = cs.font_family_for_lang(0);
-                let font_family = crate::renderer::style_resolver::primary_font_name(&font_family_raw);
+                let font_family =
+                    crate::renderer::style_resolver::primary_font_name(&font_family_raw);
                 let escaped_font = super::super::helpers::json_escape(font_family);
                 let underline = !matches!(cs.underline, UnderlineType::None);
                 let underline_type_str = match cs.underline {
@@ -252,30 +361,99 @@ impl DocumentCore {
                     UnderlineType::Bottom => "Bottom",
                     UnderlineType::Top => "Top",
                 };
-                let raw_cs = self.document.doc_info.char_shapes.get(char_shape_id as usize);
+                let raw_cs = self
+                    .document
+                    .doc_info
+                    .char_shapes
+                    .get(char_shape_id as usize);
                 let base_size = raw_cs.map(|s| s.base_size).unwrap_or(1000);
-                let font_families: Vec<String> = (0..7usize).map(|i| {
-                    let name = cs.font_family_for_lang(i);
-                    let primary = crate::renderer::style_resolver::primary_font_name(&name);
-                    super::super::helpers::json_escape(primary)
-                }).collect();
-                let font_families_json = format!("[{}]",
-                    font_families.iter().map(|f| format!("\"{}\"", f)).collect::<Vec<_>>().join(","));
+                let font_families: Vec<String> = (0..7usize)
+                    .map(|i| {
+                        let name = cs.font_family_for_lang(i);
+                        let primary = crate::renderer::style_resolver::primary_font_name(&name);
+                        super::super::helpers::json_escape(primary)
+                    })
+                    .collect();
+                let font_families_json = format!(
+                    "[{}]",
+                    font_families
+                        .iter()
+                        .map(|f| format!("\"{}\"", f))
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
                 let (ratios, spacings, relative_sizes, char_offsets) = match raw_cs {
                     Some(s) => (s.ratios, s.spacings, s.relative_sizes, s.char_offsets),
                     None => ([100u8; 7], [0i8; 7], [100u8; 7], [0i8; 7]),
                 };
-                let ratios_json = format!("[{}]", ratios.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let spacings_json = format!("[{}]", spacings.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let relative_sizes_json = format!("[{}]", relative_sizes.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let char_offsets_json = format!("[{}]", char_offsets.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-                let (shadow_type, shadow_color, shadow_offset_x, shadow_offset_y,
-                     outline_type, subscript, superscript, shade_color,
-                     emboss, engrave, emphasis_dot, underline_shape, strike_shape, kerning) = match raw_cs {
-                    Some(s) => (s.shadow_type, s.shadow_color, s.shadow_offset_x, s.shadow_offset_y,
-                                s.outline_type, s.subscript, s.superscript, s.shade_color,
-                                s.emboss, s.engrave, s.emphasis_dot, s.underline_shape, s.strike_shape, s.kerning),
-                    None => (0, 0xB2B2B2, 0i8, 0i8, 0, false, false, 0xFFFFFF, false, false, 0, 0, 0, false),
+                let ratios_json = format!(
+                    "[{}]",
+                    ratios
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let spacings_json = format!(
+                    "[{}]",
+                    spacings
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let relative_sizes_json = format!(
+                    "[{}]",
+                    relative_sizes
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let char_offsets_json = format!(
+                    "[{}]",
+                    char_offsets
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                );
+                let (
+                    shadow_type,
+                    shadow_color,
+                    shadow_offset_x,
+                    shadow_offset_y,
+                    outline_type,
+                    subscript,
+                    superscript,
+                    shade_color,
+                    emboss,
+                    engrave,
+                    emphasis_dot,
+                    underline_shape,
+                    strike_shape,
+                    kerning,
+                ) = match raw_cs {
+                    Some(s) => (
+                        s.shadow_type,
+                        s.shadow_color,
+                        s.shadow_offset_x,
+                        s.shadow_offset_y,
+                        s.outline_type,
+                        s.subscript,
+                        s.superscript,
+                        s.shade_color,
+                        s.emboss,
+                        s.engrave,
+                        s.emphasis_dot,
+                        s.underline_shape,
+                        s.strike_shape,
+                        s.kerning,
+                    ),
+                    None => (
+                        0, 0xB2B2B2, 0i8, 0i8, 0, false, false, 0xFFFFFF, false, false, 0, 0, 0,
+                        false,
+                    ),
                 };
                 let border_fill_json = self.build_char_border_fill_json(raw_cs);
                 format!(
@@ -341,7 +519,10 @@ impl DocumentCore {
     }
 
     /// 글자 테두리/배경 JSON 헬퍼 — CharShape의 border_fill_id를 참조하여 BorderFill 정보를 JSON 문자열로 반환
-    pub(crate) fn build_char_border_fill_json(&self, raw_cs: Option<&crate::model::style::CharShape>) -> String {
+    pub(crate) fn build_char_border_fill_json(
+        &self,
+        raw_cs: Option<&crate::model::style::CharShape>,
+    ) -> String {
         let bf_id = raw_cs.map(|s| s.border_fill_id).unwrap_or(0);
         if bf_id == 0 {
             return concat!(
@@ -353,7 +534,11 @@ impl DocumentCore {
                 "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
             ).to_string();
         }
-        let bf = self.document.doc_info.border_fills.get((bf_id - 1) as usize);
+        let bf = self
+            .document
+            .doc_info
+            .border_fills
+            .get((bf_id - 1) as usize);
         match bf {
             Some(bf) => {
                 use crate::model::style::FillType;
@@ -396,21 +581,37 @@ impl DocumentCore {
 
     /// 문단 속성 JSON 생성 헬퍼
     pub(crate) fn build_para_properties_json(&self, para_shape_id: u16, sec_idx: usize) -> String {
-        use crate::model::style::{Alignment, HeadType, FillType};
+        use crate::model::style::{Alignment, FillType, HeadType};
         let ps = self.styles.para_styles.get(para_shape_id as usize);
 
         // 탭 정의 조회
-        let raw_ps = self.document.doc_info.para_shapes.get(para_shape_id as usize);
+        let raw_ps = self
+            .document
+            .doc_info
+            .para_shapes
+            .get(para_shape_id as usize);
         let tab_def_id = raw_ps.map(|p| p.tab_def_id).unwrap_or(0);
         let tab_def = self.document.doc_info.tab_defs.get(tab_def_id as usize);
         let tab_auto_left = tab_def.map(|td| td.auto_tab_left).unwrap_or(false);
         let tab_auto_right = tab_def.map(|td| td.auto_tab_right).unwrap_or(false);
-        let tab_stops_json = tab_def.map(|td| {
-            td.tabs.iter().map(|t|
-                format!("{{\"position\":{},\"type\":{},\"fill\":{}}}", t.position, t.tab_type, t.fill_type)
-            ).collect::<Vec<_>>().join(",")
-        }).unwrap_or_default();
-        let default_tab_spacing = self.document.sections.get(sec_idx)
+        let tab_stops_json = tab_def
+            .map(|td| {
+                td.tabs
+                    .iter()
+                    .map(|t| {
+                        format!(
+                            "{{\"position\":{},\"type\":{},\"fill\":{}}}",
+                            t.position, t.tab_type, t.fill_type
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join(",")
+            })
+            .unwrap_or_default();
+        let default_tab_spacing = self
+            .document
+            .sections
+            .get(sec_idx)
             .map(|s| s.section_def.default_tab_spacing)
             .unwrap_or(4000);
 
@@ -418,22 +619,34 @@ impl DocumentCore {
         let bf_id = raw_ps.map(|p| p.border_fill_id).unwrap_or(0);
         let border_spacing = raw_ps.map(|p| p.border_spacing).unwrap_or([0; 4]);
         let border_fill_json = if bf_id > 0 {
-            if let Some(bf) = self.document.doc_info.border_fills.get((bf_id - 1) as usize) {
+            if let Some(bf) = self
+                .document
+                .doc_info
+                .border_fills
+                .get((bf_id - 1) as usize)
+            {
                 let dir_names = ["Left", "Right", "Top", "Bottom"];
-                let borders: Vec<String> = bf.borders.iter().enumerate().map(|(i, b)| {
-                    format!(
-                        "\"border{}\":{{\"type\":{},\"width\":{},\"color\":\"{}\"}}",
-                        dir_names[i],
-                        border_line_type_to_u8_val(b.line_type),
-                        b.width,
-                        color_ref_to_css(b.color),
-                    )
-                }).collect();
+                let borders: Vec<String> = bf
+                    .borders
+                    .iter()
+                    .enumerate()
+                    .map(|(i, b)| {
+                        format!(
+                            "\"border{}\":{{\"type\":{},\"width\":{},\"color\":\"{}\"}}",
+                            dir_names[i],
+                            border_line_type_to_u8_val(b.line_type),
+                            b.width,
+                            color_ref_to_css(b.color),
+                        )
+                    })
+                    .collect();
                 let (fill_type_str, fill_color, pat_color, pat_type) = match &bf.fill.solid {
-                    Some(sf) if bf.fill.fill_type == FillType::Solid => {
-                        ("solid", color_ref_to_css(sf.background_color),
-                         color_ref_to_css(sf.pattern_color), sf.pattern_type)
-                    }
+                    Some(sf) if bf.fill.fill_type == FillType::Solid => (
+                        "solid",
+                        color_ref_to_css(sf.background_color),
+                        color_ref_to_css(sf.pattern_color),
+                        sf.pattern_type,
+                    ),
                     _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
                 };
                 format!(
@@ -495,7 +708,9 @@ impl DocumentCore {
                 // verticalAlign: attr1 bits 20-21 (autoSpacing과 충돌 시 0)
                 let vertical_align = if !auto_space_kr_en && !auto_space_kr_num {
                     (a1 >> 20) & 0x03
-                } else { 0 };
+                } else {
+                    0
+                };
                 let english_break_unit = (a1 >> 5) & 0x03;
                 let korean_break_unit = (a1 >> 7) & 0x01;
                 format!(
@@ -598,9 +813,13 @@ impl DocumentCore {
 
     /// 특정 언어 카테고리에서 글꼴 이름으로 ID를 찾거나, 없으면 해당 카테고리에만 등록한다.
     pub fn find_or_create_font_id_for_lang(&mut self, lang: usize, name: &str) -> i32 {
-        if lang >= 7 { return -1; }
+        if lang >= 7 {
+            return -1;
+        }
         let font_faces = &self.document.doc_info.font_faces;
-        if font_faces.len() <= lang { return -1; }
+        if font_faces.len() <= lang {
+            return -1;
+        }
 
         // 해당 언어 카테고리에서 검색
         for (idx, font) in font_faces[lang].iter().enumerate() {
@@ -661,7 +880,10 @@ impl DocumentCore {
             return Err(HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)));
         }
         if para_idx >= self.document.sections[sec_idx].paragraphs.len() {
-            return Err(HwpError::RenderError(format!("문단 {} 범위 초과", para_idx)));
+            return Err(HwpError::RenderError(format!(
+                "문단 {} 범위 초과",
+                para_idx
+            )));
         }
 
         let mut mods = parse_char_shape_mods(props_json);
@@ -679,7 +901,9 @@ impl DocumentCore {
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, self.dpi);
-            let col_width = layout.column_areas.first()
+            let col_width = layout
+                .column_areas
+                .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
             let para_shape_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
@@ -688,16 +912,25 @@ impl DocumentCore {
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             let available_width = (col_width - margin_left - margin_right).max(1.0);
             // 원본 LineSeg 무효화 → reflow가 max_font_size에서 새로 계산
-            self.document.sections[sec_idx].paragraphs[para_idx].line_segs.clear();
+            self.document.sections[sec_idx].paragraphs[para_idx]
+                .line_segs
+                .clear();
             reflow_line_segs(
                 &mut self.document.sections[sec_idx].paragraphs[para_idx],
-                available_width, &styles, self.dpi,
+                available_width,
+                &styles,
+                self.dpi,
             );
         }
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
-        self.event_log.push(DocumentEvent::CharFormatChanged { section: sec_idx, para: para_idx, start: start_offset, end: end_offset });
+        self.event_log.push(DocumentEvent::CharFormatChanged {
+            section: sec_idx,
+            para: para_idx,
+            start: start_offset,
+            end: end_offset,
+        });
         Ok("{\"ok\":true}".to_string())
     }
 
@@ -721,13 +954,26 @@ impl DocumentCore {
 
         // 셀 내 문단의 기존 char_shape_id를 기반으로 새 ID 생성
         {
-            let para = self.get_cell_paragraph_ref(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+            let para = self
+                .get_cell_paragraph_ref(
+                    sec_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
                 .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
             let base_id = para.char_shape_id_at(start_offset).unwrap_or(0);
             let new_id = self.document.find_or_create_char_shape(base_id, &mods);
 
             // 셀 문단에 범위 적용
-            let cell_para = self.get_cell_paragraph_mut(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)?;
+            let cell_para = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
             cell_para.apply_char_shape_range(start_offset, end_offset, new_id);
         }
 
@@ -739,10 +985,18 @@ impl DocumentCore {
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-            let col_width = layout.column_areas.first()
+            let col_width = layout
+                .column_areas
+                .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
-            let cell_para = self.get_cell_paragraph_mut(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)?;
+            let cell_para = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
             let para_shape_id = cell_para.para_shape_id;
             let para_style = styles.para_styles.get(para_shape_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -752,8 +1006,8 @@ impl DocumentCore {
             reflow_line_segs(cell_para, available_width, &styles, dpi);
 
             // 표 dirty 마킹 — 셀 높이 재계산 필요
-            if let Control::Table(ref mut t) = self.document.sections[sec_idx]
-                .paragraphs[parent_para_idx].controls[control_idx]
+            if let Control::Table(ref mut t) =
+                self.document.sections[sec_idx].paragraphs[parent_para_idx].controls[control_idx]
             {
                 t.dirty = true;
             }
@@ -761,7 +1015,12 @@ impl DocumentCore {
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
-        self.event_log.push(DocumentEvent::CharFormatChanged { section: sec_idx, para: parent_para_idx, start: start_offset, end: end_offset });
+        self.event_log.push(DocumentEvent::CharFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+            start: start_offset,
+            end: end_offset,
+        });
         Ok("{\"ok\":true}".to_string())
     }
 
@@ -776,7 +1035,10 @@ impl DocumentCore {
             return Err(HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)));
         }
         if para_idx >= self.document.sections[sec_idx].paragraphs.len() {
-            return Err(HwpError::RenderError(format!("문단 {} 범위 초과", para_idx)));
+            return Err(HwpError::RenderError(format!(
+                "문단 {} 범위 초과",
+                para_idx
+            )));
         }
 
         let mut mods = parse_para_shape_mods(props_json);
@@ -784,11 +1046,18 @@ impl DocumentCore {
         // 탭 설정 변경 처리: TabDef 생성 → tab_def_id 세팅
         if json_has_tab_keys(props_json) {
             let base_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
-            let base_tab_def_id = self.document.doc_info.para_shapes
+            let base_tab_def_id = self
+                .document
+                .doc_info
+                .para_shapes
                 .get(base_id as usize)
                 .map(|ps| ps.tab_def_id)
                 .unwrap_or(0);
-            let new_td = build_tab_def_from_json(props_json, base_tab_def_id, &self.document.doc_info.tab_defs);
+            let new_td = build_tab_def_from_json(
+                props_json,
+                base_tab_def_id,
+                &self.document.doc_info.tab_defs,
+            );
             let new_tab_id = self.document.find_or_create_tab_def(new_td);
             mods.tab_def_id = Some(new_tab_id);
         }
@@ -813,7 +1082,9 @@ impl DocumentCore {
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, self.dpi);
-            let col_width = layout.column_areas.first()
+            let col_width = layout
+                .column_areas
+                .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
             let para_style = styles.para_styles.get(new_id as usize);
@@ -830,7 +1101,10 @@ impl DocumentCore {
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
-        self.event_log.push(DocumentEvent::ParaFormatChanged { section: sec_idx, para: para_idx });
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: sec_idx,
+            para: para_idx,
+        });
         Ok("{\"ok\":true}".to_string())
     }
 
@@ -848,13 +1122,27 @@ impl DocumentCore {
 
         // 탭 설정 변경 처리: TabDef 생성 → tab_def_id 세팅
         if json_has_tab_keys(props_json) {
-            let para = self.get_cell_paragraph_ref(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+            let para = self
+                .get_cell_paragraph_ref(
+                    sec_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
                 .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
-            let base_tab_def_id = self.document.doc_info.para_shapes
+            let base_tab_def_id = self
+                .document
+                .doc_info
+                .para_shapes
                 .get(para.para_shape_id as usize)
                 .map(|ps| ps.tab_def_id)
                 .unwrap_or(0);
-            let new_td = build_tab_def_from_json(props_json, base_tab_def_id, &self.document.doc_info.tab_defs);
+            let new_td = build_tab_def_from_json(
+                props_json,
+                base_tab_def_id,
+                &self.document.doc_info.tab_defs,
+            );
             let new_tab_id = self.document.find_or_create_tab_def(new_td);
             mods.tab_def_id = Some(new_tab_id);
         }
@@ -870,12 +1158,25 @@ impl DocumentCore {
 
         let new_id;
         {
-            let para = self.get_cell_paragraph_ref(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+            let para = self
+                .get_cell_paragraph_ref(
+                    sec_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
                 .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
             let base_id = para.para_shape_id;
             new_id = self.document.find_or_create_para_shape(base_id, &mods);
 
-            let cell_para = self.get_cell_paragraph_mut(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)?;
+            let cell_para = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
             cell_para.para_shape_id = new_id;
         }
 
@@ -887,22 +1188,30 @@ impl DocumentCore {
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-            let col_width = layout.column_areas.first()
+            let col_width = layout
+                .column_areas
+                .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
             let para_style = styles.para_styles.get(new_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             let available_width = (col_width - margin_left - margin_right).max(1.0);
-            let cell_para = self.get_cell_paragraph_mut(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)?;
+            let cell_para = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
             reflow_line_segs(cell_para, available_width, &styles, dpi);
         }
 
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
         {
             use crate::model::control::Control;
-            if let Control::Table(ref mut t) = self.document.sections[sec_idx]
-                .paragraphs[parent_para_idx].controls[control_idx]
+            if let Control::Table(ref mut t) =
+                self.document.sections[sec_idx].paragraphs[parent_para_idx].controls[control_idx]
             {
                 t.dirty = true;
             }
@@ -910,7 +1219,10 @@ impl DocumentCore {
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
-        self.event_log.push(DocumentEvent::ParaFormatChanged { section: sec_idx, para: parent_para_idx });
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+        });
         Ok("{\"ok\":true}".to_string())
     }
 
@@ -941,7 +1253,10 @@ impl DocumentCore {
 
     /// 문서의 ParaShape 풀에서 동일 numbering_id·head_type이면서 target level인 것을 찾는다.
     fn find_para_shape_with_nid_and_level(
-        &self, nid: u16, head_type: crate::model::style::HeadType, level: u8,
+        &self,
+        nid: u16,
+        head_type: crate::model::style::HeadType,
+        level: u8,
     ) -> Option<u16> {
         for (i, ps) in self.document.doc_info.para_shapes.iter().enumerate() {
             if ps.numbering_id == nid && ps.head_type == head_type && ps.para_level == level {
@@ -973,26 +1288,35 @@ impl DocumentCore {
     fn resolve_style_para_shape_id(&mut self, style_id: usize, current_psid: u16) -> u16 {
         use crate::model::style::HeadType;
 
-        let current_ps = self.document.doc_info.para_shapes.get(current_psid as usize).cloned();
-        let current_head = current_ps.as_ref().map(|ps| ps.head_type).unwrap_or(HeadType::None);
+        let current_ps = self
+            .document
+            .doc_info
+            .para_shapes
+            .get(current_psid as usize)
+            .cloned();
+        let current_head = current_ps
+            .as_ref()
+            .map(|ps| ps.head_type)
+            .unwrap_or(HeadType::None);
         let current_nid = current_ps.as_ref().map(|ps| ps.numbering_id).unwrap_or(0);
 
         // ── 현재 문단이 번호/개요를 가지고 있는 경우 ──
         // numbering_id와 head_type을 보존하고 para_level만 변경
         if current_head != HeadType::None {
             // 대상 스타일의 개요 수준 결정
-            let target_level = self.parse_outline_level_from_style(style_id)
-                .or_else(|| {
-                    // 스타일 이름에서 못 찾으면 참조 문단에서 추출
-                    self.find_reference_para_shape_for_style(style_id)
-                        .and_then(|psid| self.document.doc_info.para_shapes.get(psid as usize))
-                        .filter(|ps| ps.head_type != HeadType::None)
-                        .map(|ps| ps.para_level)
-                });
+            let target_level = self.parse_outline_level_from_style(style_id).or_else(|| {
+                // 스타일 이름에서 못 찾으면 참조 문단에서 추출
+                self.find_reference_para_shape_for_style(style_id)
+                    .and_then(|psid| self.document.doc_info.para_shapes.get(psid as usize))
+                    .filter(|ps| ps.head_type != HeadType::None)
+                    .map(|ps| ps.para_level)
+            });
 
             if let Some(level) = target_level {
                 // 같은 numbering_id·head_type에서 target level인 ParaShape 검색
-                if let Some(found) = self.find_para_shape_with_nid_and_level(current_nid, current_head, level) {
+                if let Some(found) =
+                    self.find_para_shape_with_nid_and_level(current_nid, current_head, level)
+                {
                     return found;
                 }
 
@@ -1047,35 +1371,53 @@ impl DocumentCore {
         para_idx: usize,
         style_id: usize,
     ) -> Result<String, HwpError> {
-        let style = self.document.doc_info.styles.get(style_id)
+        let style = self
+            .document
+            .doc_info
+            .styles
+            .get(style_id)
             .ok_or_else(|| HwpError::RenderError(format!("스타일 {} 범위 초과", style_id)))?;
         let new_char_shape_id = style.char_shape_id as u32;
 
         // 현재 문단의 para_shape_id를 먼저 읽어서 번호 문맥 보존
-        let current_psid = self.document.sections.get(sec_idx)
+        let current_psid = self
+            .document
+            .sections
+            .get(sec_idx)
             .and_then(|s| s.paragraphs.get(para_idx))
             .map(|p| p.para_shape_id)
-            .ok_or_else(|| HwpError::RenderError(format!("문단 {}/{} 범위 초과", sec_idx, para_idx)))?;
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("문단 {}/{} 범위 초과", sec_idx, para_idx))
+            })?;
 
         let new_para_shape_id = self.resolve_style_para_shape_id(style_id, current_psid);
 
-        let para = self.document.sections.get_mut(sec_idx)
+        let para = self
+            .document
+            .sections
+            .get_mut(sec_idx)
             .and_then(|s| s.paragraphs.get_mut(para_idx))
-            .ok_or_else(|| HwpError::RenderError(format!("문단 {}/{} 범위 초과", sec_idx, para_idx)))?;
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("문단 {}/{} 범위 초과", sec_idx, para_idx))
+            })?;
 
         para.style_id = style_id as u8;
         para.para_shape_id = new_para_shape_id;
 
         // char_shape: 모든 로컬 오버라이드를 제거하고 스타일 CharShape 단일 항목으로 통일
         para.char_shapes.clear();
-        para.char_shapes.push(crate::model::paragraph::CharShapeRef {
-            start_pos: 0,
-            char_shape_id: new_char_shape_id,
-        });
+        para.char_shapes
+            .push(crate::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: new_char_shape_id,
+            });
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
-        self.event_log.push(DocumentEvent::ParaFormatChanged { section: sec_idx, para: para_idx });
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: sec_idx,
+            para: para_idx,
+        });
         Ok("{\"ok\":true}".to_string())
     }
 
@@ -1089,32 +1431,54 @@ impl DocumentCore {
         cell_para_idx: usize,
         style_id: usize,
     ) -> Result<String, HwpError> {
-        let style = self.document.doc_info.styles.get(style_id)
+        let style = self
+            .document
+            .doc_info
+            .styles
+            .get(style_id)
             .ok_or_else(|| HwpError::RenderError(format!("스타일 {} 범위 초과", style_id)))?;
         let new_char_shape_id = style.char_shape_id as u32;
 
         // 현재 셀 문단의 para_shape_id를 먼저 읽어서 번호 문맥 보존
-        let current_psid = self.get_cell_paragraph_ref(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+        let current_psid = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
             .map(|p| p.para_shape_id)
             .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
 
         let new_para_shape_id = self.resolve_style_para_shape_id(style_id, current_psid);
 
         {
-            let cell_para = self.get_cell_paragraph_mut(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)?;
+            let cell_para = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
             cell_para.style_id = style_id as u8;
             cell_para.para_shape_id = new_para_shape_id;
             // 모든 로컬 오버라이드를 제거하고 스타일 CharShape 단일 항목으로 통일
             cell_para.char_shapes.clear();
-            cell_para.char_shapes.push(crate::model::paragraph::CharShapeRef {
-                start_pos: 0,
-                char_shape_id: new_char_shape_id,
-            });
+            cell_para
+                .char_shapes
+                .push(crate::model::paragraph::CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: new_char_shape_id,
+                });
         }
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
-        self.event_log.push(DocumentEvent::ParaFormatChanged { section: sec_idx, para: parent_para_idx });
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+        });
         Ok("{\"ok\":true}".to_string())
     }
 
@@ -1131,8 +1495,11 @@ impl DocumentCore {
             .char_shape_id_at(start_offset)
             .unwrap_or(0);
         let new_id = self.document.find_or_create_char_shape(base_id, mods);
-        self.document.sections[sec_idx].paragraphs[para_idx]
-            .apply_char_shape_range(start_offset, end_offset, new_id);
+        self.document.sections[sec_idx].paragraphs[para_idx].apply_char_shape_range(
+            start_offset,
+            end_offset,
+            new_id,
+        );
     }
 
     /// 문단 번호 시작 방식을 설정한다.
@@ -1148,10 +1515,14 @@ impl DocumentCore {
         use crate::model::paragraph::NumberingRestart;
 
         if section_idx >= self.document.sections.len() {
-            return Err(crate::error::HwpError::RenderError("구역 범위 초과".to_string()));
+            return Err(crate::error::HwpError::RenderError(
+                "구역 범위 초과".to_string(),
+            ));
         }
         if para_idx >= self.document.sections[section_idx].paragraphs.len() {
-            return Err(crate::error::HwpError::RenderError("문단 범위 초과".to_string()));
+            return Err(crate::error::HwpError::RenderError(
+                "문단 범위 초과".to_string(),
+            ));
         }
 
         let restart = match mode {
@@ -1186,19 +1557,30 @@ impl DocumentCore {
         use crate::model::control::{Control, PageHide};
 
         if section_idx >= self.document.sections.len() {
-            return Err(crate::error::HwpError::RenderError("구역 범위 초과".to_string()));
+            return Err(crate::error::HwpError::RenderError(
+                "구역 범위 초과".to_string(),
+            ));
         }
         if para_idx >= self.document.sections[section_idx].paragraphs.len() {
-            return Err(crate::error::HwpError::RenderError("문단 범위 초과".to_string()));
+            return Err(crate::error::HwpError::RenderError(
+                "문단 범위 초과".to_string(),
+            ));
         }
 
-        let all_false = !hide_header && !hide_footer && !hide_master_page
-            && !hide_border && !hide_fill && !hide_page_num;
+        let all_false = !hide_header
+            && !hide_footer
+            && !hide_master_page
+            && !hide_border
+            && !hide_fill
+            && !hide_page_num;
 
         let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
 
         // 기존 PageHide 컨트롤 찾기
-        let existing_idx = para.controls.iter().position(|c| matches!(c, Control::PageHide(_)));
+        let existing_idx = para
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::PageHide(_)));
 
         if all_false {
             // 모두 false → 기존 PageHide 제거
@@ -1210,8 +1592,12 @@ impl DocumentCore {
             }
         } else {
             let ph = PageHide {
-                hide_header, hide_footer, hide_master_page,
-                hide_border, hide_fill, hide_page_num,
+                hide_header,
+                hide_footer,
+                hide_master_page,
+                hide_border,
+                hide_fill,
+                hide_page_num,
             };
             if let Some(idx) = existing_idx {
                 // 기존 컨트롤 갱신
@@ -1238,9 +1624,14 @@ impl DocumentCore {
     ) -> Result<String, crate::error::HwpError> {
         use crate::model::control::Control;
 
-        let section = self.document.sections.get(section_idx)
+        let section = self
+            .document
+            .sections
+            .get(section_idx)
             .ok_or_else(|| crate::error::HwpError::RenderError("구역 범위 초과".to_string()))?;
-        let para = section.paragraphs.get(para_idx)
+        let para = section
+            .paragraphs
+            .get(para_idx)
             .ok_or_else(|| crate::error::HwpError::RenderError("문단 범위 초과".to_string()))?;
 
         for ctrl in &para.controls {

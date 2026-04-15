@@ -10,7 +10,10 @@ fn test_paragraph_default() {
 
 #[test]
 fn test_line_seg_flags() {
-    let seg = LineSeg { tag: 0x03, ..Default::default() };
+    let seg = LineSeg {
+        tag: 0x03,
+        ..Default::default()
+    };
     assert!(seg.is_first_line_of_page());
     assert!(seg.is_first_line_of_column());
 }
@@ -26,12 +29,14 @@ fn test_insert_text_at_middle() {
         text: "안녕세계".to_string(),
         char_count: 4,
         char_offsets: vec![0, 1, 2, 3],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     para.insert_text_at(2, "하");
@@ -46,12 +51,14 @@ fn test_insert_text_at_beginning() {
         text: "세계".to_string(),
         char_count: 2,
         char_offsets: vec![0, 1],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     para.insert_text_at(0, "안녕");
@@ -66,12 +73,14 @@ fn test_insert_text_at_end() {
         text: "안녕".to_string(),
         char_count: 2,
         char_offsets: vec![0, 1],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     para.insert_text_at(2, "세계");
@@ -87,12 +96,19 @@ fn test_insert_text_char_shapes_shift() {
         char_count: 2,
         char_offsets: vec![0, 1],
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-            CharShapeRef { start_pos: 1, char_shape_id: 2 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 1,
+            },
+            CharShapeRef {
+                start_pos: 1,
+                char_shape_id: 2,
+            },
         ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     // 'A'와 'B' 사이에 'X' 삽입
@@ -109,12 +125,19 @@ fn test_insert_text_line_segs_shift() {
         text: "Hello\nWorld".to_string(),
         char_count: 11,
         char_offsets: (0..11).collect(),
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
         line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-            LineSeg { text_start: 6, ..Default::default() },
+            LineSeg {
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 6,
+                ..Default::default()
+            },
         ],
         ..Default::default()
     };
@@ -145,12 +168,14 @@ fn test_insert_line_break() {
         text: "가나다".to_string(),
         char_count: 3,
         char_offsets: vec![0, 1, 2],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     // Shift+Enter: 줄바꿈 문자 '\n' 삽입
@@ -167,12 +192,14 @@ fn test_delete_text_at_middle() {
         text: "안녕하세계".to_string(),
         char_count: 5,
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     let deleted = para.delete_text_at(2, 1); // '하' 삭제
@@ -188,12 +215,14 @@ fn test_delete_text_at_beginning() {
         text: "안녕세계".to_string(),
         char_count: 4,
         char_offsets: vec![0, 1, 2, 3],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     let deleted = para.delete_text_at(0, 2); // '안녕' 삭제
@@ -209,12 +238,14 @@ fn test_delete_text_at_end() {
         text: "안녕세계".to_string(),
         char_count: 4,
         char_offsets: vec![0, 1, 2, 3],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     let deleted = para.delete_text_at(3, 1); // '계' 삭제
@@ -231,12 +262,19 @@ fn test_delete_text_char_shapes_shift() {
         char_count: 3,
         char_offsets: vec![0, 1, 2],
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-            CharShapeRef { start_pos: 2, char_shape_id: 2 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 1,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 2,
+            },
         ],
-        line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-        ],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     // 'X' 삭제 (위치 1)
@@ -253,12 +291,19 @@ fn test_delete_text_line_segs_shift() {
         text: "HelXXlo\nWorld".to_string(),
         char_count: 13,
         char_offsets: (0..13).collect(),
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
         line_segs: vec![
-            LineSeg { text_start: 0, ..Default::default() },
-            LineSeg { text_start: 8, ..Default::default() },
+            LineSeg {
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 8,
+                ..Default::default()
+            },
         ],
         ..Default::default()
     };
@@ -291,10 +336,14 @@ fn test_split_at_middle() {
         text: "안녕하세요".to_string(),
         char_count: 6, // 5 + 1
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -319,10 +368,14 @@ fn test_split_at_beginning() {
         text: "ABC".to_string(),
         char_count: 4,
         char_offsets: vec![0, 1, 2],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -341,10 +394,14 @@ fn test_split_at_end() {
         text: "ABC".to_string(),
         char_count: 4,
         char_offsets: vec![0, 1, 2],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -361,10 +418,19 @@ fn test_split_at_preserves_char_shapes() {
         char_count: 6,
         char_offsets: vec![0, 1, 2, 3, 4],
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-            CharShapeRef { start_pos: 2, char_shape_id: 2 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 1,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 2,
+            },
         ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -387,10 +453,16 @@ fn test_split_at_preserves_para_shape() {
         text: "ABCD".to_string(),
         char_count: 5,
         char_offsets: vec![0, 1, 2, 3],
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 1 }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
         para_shape_id: 42,
         style_id: 3,
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -407,10 +479,14 @@ fn test_merge_from_basic() {
         text: "안녕".to_string(),
         char_count: 3,
         char_offsets: vec![0, 1],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -418,10 +494,14 @@ fn test_merge_from_basic() {
         text: "하세요".to_string(),
         char_count: 4,
         char_offsets: vec![0, 1, 2],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -438,10 +518,14 @@ fn test_merge_from_different_styles() {
         text: "AA".to_string(),
         char_count: 3,
         char_offsets: vec![0, 1],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -449,10 +533,14 @@ fn test_merge_from_different_styles() {
         text: "BB".to_string(),
         char_count: 3,
         char_offsets: vec![0, 1],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 2 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 2,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -472,10 +560,14 @@ fn test_merge_from_empty() {
         text: "안녕".to_string(),
         char_count: 3,
         char_offsets: vec![0, 1],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -492,10 +584,14 @@ fn test_split_and_merge_roundtrip() {
         text: "안녕하세요".to_string(),
         char_count: 6,
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        ],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -515,8 +611,14 @@ fn test_char_shape_id_at() {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-            CharShapeRef { start_pos: 2, char_shape_id: 20 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 10,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 20,
+            },
         ],
         ..Default::default()
     };
@@ -532,9 +634,10 @@ fn test_apply_char_shape_range_full() {
     let mut para = Paragraph {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 10,
+        }],
         ..Default::default()
     };
     para.apply_char_shape_range(0, 5, 99);
@@ -549,9 +652,10 @@ fn test_apply_char_shape_range_left_partial() {
     let mut para = Paragraph {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 10,
+        }],
         ..Default::default()
     };
     para.apply_char_shape_range(0, 2, 99);
@@ -568,9 +672,10 @@ fn test_apply_char_shape_range_right_partial() {
     let mut para = Paragraph {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 10,
+        }],
         ..Default::default()
     };
     para.apply_char_shape_range(2, 5, 99);
@@ -587,9 +692,10 @@ fn test_apply_char_shape_range_middle() {
     let mut para = Paragraph {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 10,
+        }],
         ..Default::default()
     };
     para.apply_char_shape_range(1, 3, 99);
@@ -609,9 +715,18 @@ fn test_apply_char_shape_range_multi_segment() {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-            CharShapeRef { start_pos: 2, char_shape_id: 20 },
-            CharShapeRef { start_pos: 4, char_shape_id: 30 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 10,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 20,
+            },
+            CharShapeRef {
+                start_pos: 4,
+                char_shape_id: 30,
+            },
         ],
         ..Default::default()
     };
@@ -633,8 +748,14 @@ fn test_apply_char_shape_range_merge_same_id() {
         text: "ABCDE".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-            CharShapeRef { start_pos: 2, char_shape_id: 20 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 10,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 20,
+            },
         ],
         ..Default::default()
     };
@@ -650,9 +771,10 @@ fn test_apply_char_shape_after_sequential_insert() {
     let mut para = Paragraph {
         text: String::new(),
         char_offsets: vec![],
-        char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 10 },
-        ],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 10,
+        }],
         ..Default::default()
     };
 
@@ -678,7 +800,11 @@ fn test_apply_char_shape_after_sequential_insert() {
     for (i, cs) in para.char_shapes.iter().enumerate() {
         eprintln!("  [{}] pos={} id={}", i, cs.start_pos, cs.char_shape_id);
     }
-    assert_eq!(para.char_shapes.len(), 3, "should have 3 segments: original, superscript, original");
+    assert_eq!(
+        para.char_shapes.len(),
+        3,
+        "should have 3 segments: original, superscript, original"
+    );
     assert_eq!(para.char_shapes[0].char_shape_id, 10); // 가나
     assert_eq!(para.char_shapes[0].start_pos, 0);
     assert_eq!(para.char_shapes[1].char_shape_id, 99); // 123

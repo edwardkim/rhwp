@@ -27,11 +27,11 @@ pub mod hwpx;
 pub mod record;
 pub mod tags;
 
-use crate::model::document::{
-    Document, FileHeader as ModelFileHeader, HwpVersion as ModelHwpVersion,
-    Preview, PreviewImage, PreviewImageFormat,
-};
 use crate::model::bin_data::BinDataContent;
+use crate::model::document::{
+    Document, FileHeader as ModelFileHeader, HwpVersion as ModelHwpVersion, Preview, PreviewImage,
+    PreviewImageFormat,
+};
 
 /// 파일 포맷 종류
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -105,7 +105,10 @@ pub fn parse_hwp(data: &[u8]) -> Result<Document, ParseError> {
     match cfb_reader::CfbReader::open(data) {
         Ok(cfb) => parse_hwp_with_cfb(cfb, data),
         Err(strict_err) => {
-            eprintln!("표준 CFB 파서 실패: {}, lenient 파서로 재시도...", strict_err);
+            eprintln!(
+                "표준 CFB 파서 실패: {}, lenient 파서로 재시도...",
+                strict_err
+            );
             let lenient = cfb_reader::LenientCfbReader::open(data)
                 .map_err(|_| ParseError::CfbError(strict_err))?;
             parse_hwp_with_lenient(lenient, data)
@@ -114,12 +117,13 @@ pub fn parse_hwp(data: &[u8]) -> Result<Document, ParseError> {
 }
 
 /// 표준 CfbReader로 파싱
-fn parse_hwp_with_cfb(mut cfb: cfb_reader::CfbReader, _raw_data: &[u8]) -> Result<Document, ParseError> {
+fn parse_hwp_with_cfb(
+    mut cfb: cfb_reader::CfbReader,
+    _raw_data: &[u8],
+) -> Result<Document, ParseError> {
     // 2. FileHeader 파싱
-    let header_data = cfb.read_file_header()
-        .map_err(ParseError::CfbError)?;
-    let file_header = header::parse_file_header(&header_data)
-        .map_err(ParseError::HeaderError)?;
+    let header_data = cfb.read_file_header().map_err(ParseError::CfbError)?;
+    let file_header = header::parse_file_header(&header_data).map_err(ParseError::HeaderError)?;
 
     if file_header.flags.encrypted {
         return Err(ParseError::EncryptedDocument);
@@ -129,10 +133,11 @@ fn parse_hwp_with_cfb(mut cfb: cfb_reader::CfbReader, _raw_data: &[u8]) -> Resul
     let distribution = file_header.flags.distribution;
 
     // 3. DocInfo 파싱
-    let doc_info_data = cfb.read_doc_info(compressed)
+    let doc_info_data = cfb
+        .read_doc_info(compressed)
         .map_err(ParseError::CfbError)?;
-    let (mut doc_info, doc_properties) = doc_info::parse_doc_info(&doc_info_data)
-        .map_err(ParseError::DocInfoError)?;
+    let (mut doc_info, doc_properties) =
+        doc_info::parse_doc_info(&doc_info_data).map_err(ParseError::DocInfoError)?;
     doc_info.raw_stream = Some(doc_info_data);
 
     // 4. BodyText 섹션별 파싱
@@ -187,10 +192,10 @@ fn parse_sections_strict(
     for i in 0..section_count {
         let section_data = if distribution {
             // 배포용 문서: ViewText 복호화
-            let raw = cfb.read_body_text_section(i, compressed, true)
+            let raw = cfb
+                .read_body_text_section(i, compressed, true)
                 .map_err(ParseError::CfbError)?;
-            crypto::decrypt_viewtext_section(&raw, compressed)
-                .map_err(ParseError::CryptoError)?
+            crypto::decrypt_viewtext_section(&raw, compressed).map_err(ParseError::CryptoError)?
         } else {
             cfb.read_body_text_section(i, compressed, false)
                 .map_err(ParseError::CfbError)?
@@ -214,12 +219,13 @@ fn parse_sections_strict(
 }
 
 /// LenientCfbReader로 파싱 (FAT 검증 무시)
-fn parse_hwp_with_lenient(lenient: cfb_reader::LenientCfbReader, _raw_data: &[u8]) -> Result<Document, ParseError> {
+fn parse_hwp_with_lenient(
+    lenient: cfb_reader::LenientCfbReader,
+    _raw_data: &[u8],
+) -> Result<Document, ParseError> {
     // FileHeader 파싱
-    let header_data = lenient.read_file_header()
-        .map_err(ParseError::CfbError)?;
-    let file_header = header::parse_file_header(&header_data)
-        .map_err(ParseError::HeaderError)?;
+    let header_data = lenient.read_file_header().map_err(ParseError::CfbError)?;
+    let file_header = header::parse_file_header(&header_data).map_err(ParseError::HeaderError)?;
 
     if file_header.flags.encrypted {
         return Err(ParseError::EncryptedDocument);
@@ -229,10 +235,11 @@ fn parse_hwp_with_lenient(lenient: cfb_reader::LenientCfbReader, _raw_data: &[u8
     let distribution = file_header.flags.distribution;
 
     // DocInfo 파싱
-    let doc_info_data = lenient.read_doc_info(compressed)
+    let doc_info_data = lenient
+        .read_doc_info(compressed)
         .map_err(ParseError::CfbError)?;
-    let (mut doc_info, doc_properties) = doc_info::parse_doc_info(&doc_info_data)
-        .map_err(ParseError::DocInfoError)?;
+    let (mut doc_info, doc_properties) =
+        doc_info::parse_doc_info(&doc_info_data).map_err(ParseError::DocInfoError)?;
     doc_info.raw_stream = Some(doc_info_data);
 
     // BodyText 섹션별 파싱
@@ -241,12 +248,13 @@ fn parse_hwp_with_lenient(lenient: cfb_reader::LenientCfbReader, _raw_data: &[u8
 
     for i in 0..section_count {
         let section_data = if distribution {
-            let raw = lenient.read_body_text_section_full(i, compressed, true)
+            let raw = lenient
+                .read_body_text_section_full(i, compressed, true)
                 .map_err(ParseError::CfbError)?;
-            crypto::decrypt_viewtext_section(&raw, compressed)
-                .map_err(ParseError::CryptoError)?
+            crypto::decrypt_viewtext_section(&raw, compressed).map_err(ParseError::CryptoError)?
         } else {
-            lenient.read_body_text_section_full(i, compressed, false)
+            lenient
+                .read_body_text_section_full(i, compressed, false)
                 .map_err(ParseError::CfbError)?
         };
 
@@ -326,7 +334,10 @@ fn load_bin_data_content_lenient(
                 });
             }
             Err(e) => {
-                eprintln!("경고: BinData '{}' 로드 실패 (lenient): {}", storage_name, e);
+                eprintln!(
+                    "경고: BinData '{}' 로드 실패 (lenient): {}",
+                    storage_name, e
+                );
             }
         }
     }
@@ -403,13 +414,21 @@ fn assign_auto_numbers_in_controls(
                 // 표 내부 셀의 문단도 처리
                 for cell in &mut table.cells {
                     for para in &mut cell.paragraphs {
-                        assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+                        assign_auto_numbers_in_controls(
+                            &mut para.controls,
+                            counters,
+                            counter_index,
+                        );
                     }
                 }
                 // 표 캡션 처리
                 if let Some(ref mut caption) = table.caption {
                     for para in &mut caption.paragraphs {
-                        assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+                        assign_auto_numbers_in_controls(
+                            &mut para.controls,
+                            counters,
+                            counter_index,
+                        );
                     }
                 }
             }
@@ -417,7 +436,11 @@ fn assign_auto_numbers_in_controls(
                 // 그림 캡션 처리
                 if let Some(ref mut caption) = pic.caption {
                     for para in &mut caption.paragraphs {
-                        assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+                        assign_auto_numbers_in_controls(
+                            &mut para.controls,
+                            counters,
+                            counter_index,
+                        );
                     }
                 }
             }
@@ -426,7 +449,11 @@ fn assign_auto_numbers_in_controls(
                 if let crate::model::shape::ShapeObject::Group(ref mut group) = shape.as_mut() {
                     if let Some(ref mut caption) = group.caption {
                         for para in &mut caption.paragraphs {
-                            assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+                            assign_auto_numbers_in_controls(
+                                &mut para.controls,
+                                counters,
+                                counter_index,
+                            );
                         }
                     }
                 }
@@ -434,13 +461,21 @@ fn assign_auto_numbers_in_controls(
                 if let Some(ref mut drawing) = shape.drawing_mut() {
                     if let Some(ref mut caption) = drawing.caption {
                         for para in &mut caption.paragraphs {
-                            assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+                            assign_auto_numbers_in_controls(
+                                &mut para.controls,
+                                counters,
+                                counter_index,
+                            );
                         }
                     }
                     // 글상자 내부 문단의 자동 번호 처리
                     if let Some(ref mut text_box) = drawing.text_box {
                         for para in &mut text_box.paragraphs {
-                            assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+                            assign_auto_numbers_in_controls(
+                                &mut para.controls,
+                                counters,
+                                counter_index,
+                            );
                         }
                     }
                 }
@@ -546,14 +581,34 @@ pub fn extract_thumbnail_only(data: &[u8]) -> Option<ThumbnailResult> {
     let (width, height) = match format {
         PreviewImageFormat::Png if image_data.len() >= 24 => {
             // PNG IHDR: offset 16 = width (u32 BE), offset 20 = height (u32 BE)
-            let w = u32::from_be_bytes([image_data[16], image_data[17], image_data[18], image_data[19]]);
-            let h = u32::from_be_bytes([image_data[20], image_data[21], image_data[22], image_data[23]]);
+            let w = u32::from_be_bytes([
+                image_data[16],
+                image_data[17],
+                image_data[18],
+                image_data[19],
+            ]);
+            let h = u32::from_be_bytes([
+                image_data[20],
+                image_data[21],
+                image_data[22],
+                image_data[23],
+            ]);
             (w, h)
         }
         PreviewImageFormat::Bmp if image_data.len() >= 26 => {
             // BMP 헤더: offset 18 = width (i32 LE), offset 22 = height (i32 LE)
-            let w = i32::from_le_bytes([image_data[18], image_data[19], image_data[20], image_data[21]]);
-            let h = i32::from_le_bytes([image_data[22], image_data[23], image_data[24], image_data[25]]);
+            let w = i32::from_le_bytes([
+                image_data[18],
+                image_data[19],
+                image_data[20],
+                image_data[21],
+            ]);
+            let h = i32::from_le_bytes([
+                image_data[22],
+                image_data[23],
+                image_data[24],
+                image_data[25],
+            ]);
             (w.unsigned_abs(), h.unsigned_abs())
         }
         PreviewImageFormat::Gif if image_data.len() >= 10 => {
@@ -600,7 +655,11 @@ fn extract_thumbnail_from_hwpx(data: &[u8]) -> Option<Vec<u8>> {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).ok()?;
 
-    if buf.is_empty() { None } else { Some(buf) }
+    if buf.is_empty() {
+        None
+    } else {
+        Some(buf)
+    }
 }
 
 /// 썸네일 추출 결과
@@ -739,7 +798,10 @@ mod tests {
     #[test]
     fn test_detect_image_format_unknown() {
         let unknown_data = [0x00, 0x00, 0x00, 0x00];
-        assert_eq!(detect_image_format(&unknown_data), PreviewImageFormat::Unknown);
+        assert_eq!(
+            detect_image_format(&unknown_data),
+            PreviewImageFormat::Unknown
+        );
     }
 
     #[test]

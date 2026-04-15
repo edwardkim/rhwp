@@ -10,9 +10,9 @@
 //! - 사칙연산: +, -, *, /
 //! - 시트 함수: SUM, AVG, PRODUCT, MIN, MAX, COUNT 등 22개
 
-mod tokenizer;
-mod parser;
 mod evaluator;
+mod parser;
+mod tokenizer;
 
 pub use evaluator::{evaluate_formula, TableContext};
 pub use parser::FormulaNode;

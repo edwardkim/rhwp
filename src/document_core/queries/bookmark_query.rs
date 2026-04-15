@@ -1,7 +1,7 @@
 //! 책갈피 조회/조작 기능
 
-use crate::document_core::DocumentCore;
 use crate::document_core::helpers::find_control_text_positions;
+use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::{Bookmark, Control};
 
@@ -20,12 +20,19 @@ impl DocumentCore {
     /// 문서 내 모든 책갈피 목록을 JSON으로 반환
     pub fn get_bookmarks_native(&self) -> Result<String, HwpError> {
         let bookmarks = self.collect_bookmarks();
-        let items: Vec<String> = bookmarks.iter().map(|b| {
-            format!(
-                "{{\"name\":{},\"sec\":{},\"para\":{},\"ctrlIdx\":{},\"charPos\":{}}}",
-                json_escape(&b.name), b.sec, b.para, b.ctrl_idx, b.char_pos
-            )
-        }).collect();
+        let items: Vec<String> = bookmarks
+            .iter()
+            .map(|b| {
+                format!(
+                    "{{\"name\":{},\"sec\":{},\"para\":{},\"ctrlIdx\":{},\"charPos\":{}}}",
+                    json_escape(&b.name),
+                    b.sec,
+                    b.para,
+                    b.ctrl_idx,
+                    b.char_pos
+                )
+            })
+            .collect();
         Ok(format!("[{}]", items.join(",")))
     }
 
@@ -47,25 +54,38 @@ impl DocumentCore {
         // 중복 검사
         let existing = self.collect_bookmarks();
         if existing.iter().any(|b| b.name == name) {
-            return Ok(r#"{"ok":false,"error":"같은 이름의 책갈피가 이미 등록되어 있습니다."}"#.to_string());
+            return Ok(
+                r#"{"ok":false,"error":"같은 이름의 책갈피가 이미 등록되어 있습니다."}"#
+                    .to_string(),
+            );
         }
 
-        let section = self.document.sections.get_mut(sec)
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
             .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
-        let paragraph = section.paragraphs.get_mut(para)
+        let paragraph = section
+            .paragraphs
+            .get_mut(para)
             .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
         // char_offset에 해당하는 컨트롤 삽입 위치 결정
         let insert_idx = find_control_insert_index(paragraph, char_offset);
 
-        paragraph.controls.insert(insert_idx, Control::Bookmark(Bookmark {
-            name: name.to_string(),
-        }));
+        paragraph.controls.insert(
+            insert_idx,
+            Control::Bookmark(Bookmark {
+                name: name.to_string(),
+            }),
+        );
 
         // CTRL_DATA 레코드 생성 (ParameterSet: 책갈피 이름)
         let ctrl_data = build_bookmark_ctrl_data(name);
         if paragraph.ctrl_data_records.len() >= insert_idx {
-            paragraph.ctrl_data_records.insert(insert_idx, Some(ctrl_data));
+            paragraph
+                .ctrl_data_records
+                .insert(insert_idx, Some(ctrl_data));
         }
 
         // char_offsets에 컨트롤 위치 정보 추가
@@ -86,9 +106,14 @@ impl DocumentCore {
         para: usize,
         ctrl_idx: usize,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get_mut(sec)
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
             .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
-        let paragraph = section.paragraphs.get_mut(para)
+        let paragraph = section
+            .paragraphs
+            .get_mut(para)
             .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
         if ctrl_idx >= paragraph.controls.len() {
@@ -127,13 +152,23 @@ impl DocumentCore {
 
         // 중복 검사 (자기 자신 제외)
         let existing = self.collect_bookmarks();
-        if existing.iter().any(|b| b.name == new_name && !(b.sec == sec && b.para == para && b.ctrl_idx == ctrl_idx)) {
-            return Ok(r#"{"ok":false,"error":"같은 이름의 책갈피가 이미 등록되어 있습니다."}"#.to_string());
+        if existing.iter().any(|b| {
+            b.name == new_name && !(b.sec == sec && b.para == para && b.ctrl_idx == ctrl_idx)
+        }) {
+            return Ok(
+                r#"{"ok":false,"error":"같은 이름의 책갈피가 이미 등록되어 있습니다."}"#
+                    .to_string(),
+            );
         }
 
-        let section = self.document.sections.get_mut(sec)
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
             .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
-        let paragraph = section.paragraphs.get_mut(para)
+        let paragraph = section
+            .paragraphs
+            .get_mut(para)
             .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
         if ctrl_idx >= paragraph.controls.len() {
@@ -156,9 +191,7 @@ impl DocumentCore {
     fn collect_bookmarks(&self) -> Vec<BookmarkInfo> {
         let mut result = vec![];
         for (sec_idx, section) in self.document.sections.iter().enumerate() {
-            collect_bookmarks_from_paragraphs(
-                &section.paragraphs, sec_idx, None, &mut result,
-            );
+            collect_bookmarks_from_paragraphs(&section.paragraphs, sec_idx, None, &mut result);
         }
         result
     }
@@ -197,33 +230,51 @@ fn collect_bookmarks_from_paragraphs(
                 Control::Table(t) => {
                     for cell in &t.cells {
                         collect_bookmarks_from_paragraphs(
-                            &cell.paragraphs, sec, Some(effective_para), result,
+                            &cell.paragraphs,
+                            sec,
+                            Some(effective_para),
+                            result,
                         );
                     }
                 }
                 Control::Header(h) => {
                     collect_bookmarks_from_paragraphs(
-                        &h.paragraphs, sec, Some(effective_para), result,
+                        &h.paragraphs,
+                        sec,
+                        Some(effective_para),
+                        result,
                     );
                 }
                 Control::Footer(f) => {
                     collect_bookmarks_from_paragraphs(
-                        &f.paragraphs, sec, Some(effective_para), result,
+                        &f.paragraphs,
+                        sec,
+                        Some(effective_para),
+                        result,
                     );
                 }
                 Control::Footnote(n) => {
                     collect_bookmarks_from_paragraphs(
-                        &n.paragraphs, sec, Some(effective_para), result,
+                        &n.paragraphs,
+                        sec,
+                        Some(effective_para),
+                        result,
                     );
                 }
                 Control::Endnote(n) => {
                     collect_bookmarks_from_paragraphs(
-                        &n.paragraphs, sec, Some(effective_para), result,
+                        &n.paragraphs,
+                        sec,
+                        Some(effective_para),
+                        result,
                     );
                 }
                 Control::HiddenComment(hc) => {
                     collect_bookmarks_from_paragraphs(
-                        &hc.paragraphs, sec, Some(effective_para), result,
+                        &hc.paragraphs,
+                        sec,
+                        Some(effective_para),
+                        result,
                     );
                 }
                 _ => {}
@@ -260,7 +311,11 @@ fn char_offset_to_raw(
     } else if !para.char_offsets.is_empty() {
         // 첫 위치에 삽입: 기존 첫 번째보다 작은 값
         let first = para.char_offsets[0];
-        if first >= 8 { first - 8 } else { 0 }
+        if first >= 8 {
+            first - 8
+        } else {
+            0
+        }
     } else {
         // char_offsets가 비어있으면 char_offset * 2 (UTF-16 추정)
         (char_offset * 2) as u32
@@ -274,10 +329,10 @@ fn build_bookmark_ctrl_data(name: &str) -> Vec<u8> {
     let utf16: Vec<u16> = name.encode_utf16().collect();
     let mut data = Vec::with_capacity(12 + utf16.len() * 2);
     data.extend_from_slice(&0x021Bu16.to_le_bytes()); // ps_id
-    data.extend_from_slice(&1i16.to_le_bytes());      // count = 1
-    data.extend_from_slice(&0u16.to_le_bytes());      // dummy
+    data.extend_from_slice(&1i16.to_le_bytes()); // count = 1
+    data.extend_from_slice(&0u16.to_le_bytes()); // dummy
     data.extend_from_slice(&0x4000u16.to_le_bytes()); // item_id
-    data.extend_from_slice(&1u16.to_le_bytes());      // item_type = String
+    data.extend_from_slice(&1u16.to_le_bytes()); // item_type = String
     data.extend_from_slice(&(utf16.len() as u16).to_le_bytes()); // name_len
     for &ch in &utf16 {
         data.extend_from_slice(&ch.to_le_bytes());

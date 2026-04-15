@@ -70,7 +70,9 @@ pub fn tokenize(input: &str) -> Vec<Token> {
         // 알파벳 또는 '?': 셀 참조, 함수, 방향 지정자
         if ch.is_ascii_alphabetic() || ch == '?' {
             let start = i;
-            while i < len && (chars[i].is_ascii_alphanumeric() || chars[i] == '?' || chars[i] == '_') {
+            while i < len
+                && (chars[i].is_ascii_alphanumeric() || chars[i] == '?' || chars[i] == '_')
+            {
                 i += 1;
             }
             let word: String = chars[start..i].iter().collect();
@@ -78,10 +80,22 @@ pub fn tokenize(input: &str) -> Vec<Token> {
 
             // 방향 지정자
             match upper.as_str() {
-                "LEFT" => { tokens.push(Token::Direction(DirectionKind::Left)); continue; }
-                "RIGHT" => { tokens.push(Token::Direction(DirectionKind::Right)); continue; }
-                "ABOVE" => { tokens.push(Token::Direction(DirectionKind::Above)); continue; }
-                "BELOW" => { tokens.push(Token::Direction(DirectionKind::Below)); continue; }
+                "LEFT" => {
+                    tokens.push(Token::Direction(DirectionKind::Left));
+                    continue;
+                }
+                "RIGHT" => {
+                    tokens.push(Token::Direction(DirectionKind::Right));
+                    continue;
+                }
+                "ABOVE" => {
+                    tokens.push(Token::Direction(DirectionKind::Above));
+                    continue;
+                }
+                "BELOW" => {
+                    tokens.push(Token::Direction(DirectionKind::Below));
+                    continue;
+                }
                 _ => {}
             }
 
@@ -143,35 +157,40 @@ mod tests {
     #[test]
     fn test_cell_ref() {
         let tokens = tokenize("=A1+B3");
-        assert_eq!(tokens, vec![
-            Token::CellRef('A', 1),
-            Token::Plus,
-            Token::CellRef('B', 3),
-        ]);
+        assert_eq!(
+            tokens,
+            vec![Token::CellRef('A', 1), Token::Plus, Token::CellRef('B', 3),]
+        );
     }
 
     #[test]
     fn test_function_call() {
         let tokens = tokenize("=SUM(A1:B5)");
-        assert_eq!(tokens, vec![
-            Token::Function("SUM".into()),
-            Token::LParen,
-            Token::CellRef('A', 1),
-            Token::Colon,
-            Token::CellRef('B', 5),
-            Token::RParen,
-        ]);
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Function("SUM".into()),
+                Token::LParen,
+                Token::CellRef('A', 1),
+                Token::Colon,
+                Token::CellRef('B', 5),
+                Token::RParen,
+            ]
+        );
     }
 
     #[test]
     fn test_direction() {
         let tokens = tokenize("=sum(left)");
-        assert_eq!(tokens, vec![
-            Token::Function("SUM".into()),
-            Token::LParen,
-            Token::Direction(DirectionKind::Left),
-            Token::RParen,
-        ]);
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Function("SUM".into()),
+                Token::LParen,
+                Token::Direction(DirectionKind::Left),
+                Token::RParen,
+            ]
+        );
     }
 
     #[test]
@@ -185,14 +204,17 @@ mod tests {
     #[test]
     fn test_wildcard() {
         let tokens = tokenize("=SUM(?1:?3)");
-        assert_eq!(tokens, vec![
-            Token::Function("SUM".into()),
-            Token::LParen,
-            Token::CellRef('?', 1),
-            Token::Colon,
-            Token::CellRef('?', 3),
-            Token::RParen,
-        ]);
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Function("SUM".into()),
+                Token::LParen,
+                Token::CellRef('?', 1),
+                Token::Colon,
+                Token::CellRef('?', 3),
+                Token::RParen,
+            ]
+        );
     }
 
     #[test]

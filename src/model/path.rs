@@ -38,10 +38,10 @@ mod tests {
     #[test]
     fn test_path_from_flat() {
         let path = path_from_flat(3, 1);
-        assert_eq!(path, vec![
-            PathSegment::Paragraph(3),
-            PathSegment::Control(1),
-        ]);
+        assert_eq!(
+            path,
+            vec![PathSegment::Paragraph(3), PathSegment::Control(1),]
+        );
     }
 
     #[test]

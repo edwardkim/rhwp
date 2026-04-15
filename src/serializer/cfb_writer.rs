@@ -10,8 +10,8 @@
 
 use std::io::Write;
 
-use crate::model::bin_data::{BinData, BinDataType};
 use crate::model::bin_data::BinDataContent;
+use crate::model::bin_data::{BinData, BinDataType};
 use crate::model::document::{Document, Preview};
 
 use super::body_text::serialize_section;
@@ -123,7 +123,8 @@ fn write_hwp_cfb(
     // 4. /BinData/BIN{XXXX}.{ext}
     // BinData는 개별 압축 속성에 따라 재압축
     for content in bin_data_content {
-        let (storage_id, ext, should_compress) = find_bin_data_info_with_compress(bin_data_list, content, compressed);
+        let (storage_id, ext, should_compress) =
+            find_bin_data_info_with_compress(bin_data_list, content, compressed);
         let storage_name = format!("BIN{:04X}.{}", storage_id, ext);
         let path = format!("/BinData/{}", storage_name);
         let data = if should_compress {
@@ -190,7 +191,6 @@ fn find_bin_data_info_with_compress<'a>(
     // 못 찾으면 content에서 직접 추출 (문서 압축 플래그 따름)
     (content.id, &content.extension, doc_compressed)
 }
-
 
 #[cfg(test)]
 mod tests;
