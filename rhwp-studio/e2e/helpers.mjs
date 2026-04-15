@@ -10,12 +10,37 @@
  *   node e2e/text-flow.test.mjs --mode=headless  # headless Chrome
  */
 import puppeteer from 'puppeteer-core';
+import pixelmatch from 'pixelmatch';
+import { PNG } from 'pngjs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
+import { fileURLToPath } from 'url';
+import os from 'os';
+import path from 'path';
 import { TestReporter } from './report-generator.mjs';
 
-const CHROME_PATH = '/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 const REPORT_DIR = '../output/e2e';
+const RHWP_ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)), '..');
+
+function resolveChromePath() {
+  const envPath = process.env.CHROME_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (envPath && existsSync(envPath)) return envPath;
+
+  const cacheRoot = path.join(os.homedir(), '.cache', 'puppeteer', 'chrome');
+  if (!existsSync(cacheRoot)) return envPath || '';
+
+  const entries = readdirSync(cacheRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(cacheRoot, entry.name, 'chrome-linux64', 'chrome'))
+    .filter((candidate) => existsSync(candidate))
+    .sort()
+    .reverse();
+
+  return entries[0] || envPath || '';
+}
+
+const CHROME_PATH = resolveChromePath();
 
 /** CLI 인수에서 --mode=host|headless 파싱 */
 function parseMode() {
@@ -42,6 +67,9 @@ export function setTestCase(name) {
 /** Chrome 브라우저에 연결하거나 시작하고 반환 */
 export async function launchBrowser() {
   if (MODE === 'headless') {
+    if (!CHROME_PATH) {
+      throw new Error('headless Chrome executable을 찾지 못했습니다. CHROME_PATH를 지정하거나 Puppeteer browser를 설치하세요.');
+    }
     console.log('  [browser] headless Chrome 실행');
     return await puppeteer.launch({
       headless: true,
@@ -113,9 +141,9 @@ export async function closeBrowser(browser) {
 const CANVAS_SELECTOR = '#scroll-container canvas';
 
 /** Vite dev server에서 앱을 로드하고 WASM 초기화 완료 대기 */
-export async function loadApp(page) {
-  await page.goto(VITE_URL, { waitUntil: 'networkidle0', timeout: 30000 });
-  await page.waitForFunction(() => !!window.__wasm, { timeout: 15000 });
+export async function loadApp(page, search = '') {
+  await page.goto(`${VITE_URL}${search}`, { waitUntil: 'networkidle0', timeout: 30000 });
+  await page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, { timeout: 15000 });
   await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
 }
 
@@ -131,21 +159,24 @@ export async function createNewDocument(page) {
   await page.evaluate(() => new Promise(r => setTimeout(r, 1000)));
 }
 
-/** HWP 파일을 fetch하여 문서 로드 + 캔버스 대기 */
+/** repo 샘플 HWP 파일을 Node에서 읽어 브라우저에 주입하고 문서를 로드한다 */
 export async function loadHwpFile(page, filename) {
-  const result = await page.evaluate(async (fname) => {
+  const samplePath = path.join(RHWP_ROOT, 'samples', filename);
+  if (!existsSync(samplePath)) {
+    throw new Error(`샘플 파일이 없습니다: ${samplePath}`);
+  }
+
+  const bytes = [...readFileSync(samplePath)];
+  const result = await page.evaluate(async ({ fname, sampleBytes }) => {
     try {
-      const resp = await fetch(`/samples/${fname}`);
-      if (!resp.ok) return { error: `HTTP ${resp.status}` };
-      const buf = await resp.arrayBuffer();
-      const docInfo = window.__wasm?.loadDocument(new Uint8Array(buf), fname);
+      const docInfo = window.__wasm?.loadDocument(new Uint8Array(sampleBytes), fname);
       if (!docInfo) return { error: 'loadDocument returned null' };
       window.__canvasView?.loadDocument?.();
       return { pageCount: docInfo.pageCount };
     } catch (e) {
       return { error: e.message || String(e) };
     }
-  }, filename);
+  }, { fname: filename, sampleBytes: bytes });
   if (result.error) throw new Error(`파일 로드 실패 (${filename}): ${result.error}`);
   await page.waitForSelector(CANVAS_SELECTOR, { timeout: 10000 });
   await page.evaluate(() => new Promise(r => setTimeout(r, 1500)));
@@ -234,6 +265,73 @@ export async function screenshot(page, name) {
     }
   }
   return path;
+}
+
+/** 편집 영역의 첫 번째 페이지 캔버스만 캡처한다 */
+export async function screenshotCanvas(page, name) {
+  const dir = 'e2e/screenshots';
+  const { mkdirSync, existsSync } = await import('fs');
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const path = `${dir}/${name}.png`;
+  const canvas = await page.$(CANVAS_SELECTOR);
+  if (!canvas) throw new Error('편집 영역 캔버스를 찾을 수 없습니다');
+  const buffer = await canvas.screenshot({ path });
+  console.log(`  Canvas Screenshot: ${path}`);
+  _lastScreenshot = `${name}.png`;
+  if (_reporter) {
+    const results = _reporter.results;
+    if (results.length > 0 && !results[results.length - 1].screenshot) {
+      results[results.length - 1].screenshot = `${name}.png`;
+    }
+  }
+  return { path, buffer };
+}
+
+/** 두 PNG 버퍼를 비교하고, 차이가 허용 범위를 넘으면 diff 아티팩트를 저장한다 */
+export async function comparePngBuffers(expectedBuffer, actualBuffer, {
+  diffName,
+  threshold = 0.1,
+  maxDiffPixels = 0,
+  maxDiffRatio = 0,
+} = {}) {
+  const expected = PNG.sync.read(expectedBuffer);
+  const actual = PNG.sync.read(actualBuffer);
+
+  if (expected.width !== actual.width || expected.height !== actual.height) {
+    throw new Error(`이미지 크기 불일치: ${expected.width}x${expected.height} vs ${actual.width}x${actual.height}`);
+  }
+
+  const diff = new PNG({ width: expected.width, height: expected.height });
+  const diffPixels = pixelmatch(
+    expected.data,
+    actual.data,
+    diff.data,
+    expected.width,
+    expected.height,
+    { threshold, includeAA: false },
+  );
+  const totalPixels = expected.width * expected.height;
+  const diffRatio = totalPixels > 0 ? diffPixels / totalPixels : 0;
+  const passed = diffPixels <= maxDiffPixels && diffRatio <= maxDiffRatio;
+
+  let diffPath = null;
+  if (!passed && diffName) {
+    const { mkdirSync, existsSync, writeFileSync } = await import('fs');
+    const outputDir = '../output/e2e/canvaskit-diff';
+    if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
+    diffPath = `${outputDir}/${diffName}.png`;
+    writeFileSync(diffPath, PNG.sync.write(diff));
+    console.log(`  Diff Artifact: ${diffPath}`);
+  }
+
+  return {
+    passed,
+    diffPixels,
+    diffRatio,
+    width: expected.width,
+    height: expected.height,
+    diffPath,
+  };
 }
 
 /** WASM bridge를 통해 페이지 수 조회 */
