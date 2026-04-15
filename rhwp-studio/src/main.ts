@@ -23,6 +23,8 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import { CanvasKitLayerRenderer } from '@/view/canvaskit-renderer';
+import { persistRenderBackend, resolveRenderBackend } from '@/view/render-backend';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -91,10 +93,24 @@ async function initialize(): Promise<void> {
     await loadWebFonts([]);  // CSS @font-face 등록 + CRITICAL 폰트만 로드
     msg.textContent = 'WASM 로딩 중...';
     await wasm.initialize();
+    const requestedBackend = resolveRenderBackend(window.location.search);
+    let renderBackend = requestedBackend;
+    let canvaskitRenderer: CanvasKitLayerRenderer | null = null;
+
+    if (renderBackend === 'canvaskit') {
+      msg.textContent = 'CanvasKit 로딩 중...';
+      try {
+        canvaskitRenderer = await CanvasKitLayerRenderer.create();
+      } catch (error) {
+        console.error('[main] CanvasKit 초기화 실패, Canvas2D로 폴백합니다:', error);
+        renderBackend = 'canvas2d';
+      }
+    }
+    persistRenderBackend(renderBackend);
     msg.textContent = 'HWP 파일을 선택해주세요.';
 
     const container = document.getElementById('scroll-container')!;
-    canvasView = new CanvasView(container, wasm, eventBus);
+    canvasView = new CanvasView(container, wasm, eventBus, renderBackend, canvaskitRenderer);
 
     // 눈금자 초기화
     ruler = new Ruler(
@@ -182,6 +198,7 @@ async function initialize(): Promise<void> {
     if (import.meta.env.DEV) {
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
+      (window as any).__renderBackend = renderBackend;
     }
   } catch (error) {
     msg.textContent = `WASM 초기화 실패: ${error}`;

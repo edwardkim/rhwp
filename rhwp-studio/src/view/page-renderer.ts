@@ -1,15 +1,48 @@
 import { WasmBridge } from '@/core/wasm-bridge';
+import { CanvasKitLayerRenderer } from './canvaskit-renderer';
+import type { RenderBackend } from './render-backend';
 
 export class PageRenderer {
   private reRenderTimers = new Map<number, ReturnType<typeof setTimeout>[]>();
 
-  constructor(private wasm: WasmBridge) {}
+  constructor(
+    private wasm: WasmBridge,
+    private backend: RenderBackend,
+    private canvaskitRenderer: CanvasKitLayerRenderer | null,
+  ) {}
 
   /** 페이지를 Canvas에 렌더링한다 (scale = zoom × DPR) */
   renderPage(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
-    this.wasm.renderPageToCanvas(pageIdx, canvas, scale);
-    this.drawMarginGuides(pageIdx, canvas, scale);
+    const appliedScale = this.renderContent(pageIdx, canvas, scale);
+    this.drawMarginGuides(pageIdx, canvas, appliedScale);
     this.scheduleReRender(pageIdx, canvas, scale);
+  }
+
+  getBackend(): RenderBackend {
+    return this.backend;
+  }
+
+  private renderContent(pageIdx: number, canvas: HTMLCanvasElement, scale: number): number {
+    if (this.backend !== 'canvaskit') {
+      this.wasm.renderPageToCanvas(pageIdx, canvas, scale);
+      return scale;
+    }
+
+    if (!this.canvaskitRenderer) {
+      throw new Error('CanvasKit renderer가 초기화되지 않았습니다');
+    }
+
+    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    let appliedScale = scale <= 0 || Number.isNaN(scale) ? 1.0 : Math.min(Math.max(scale, 0.25), 12.0);
+    const maxDim = 16384;
+    if (pageInfo.width * appliedScale > maxDim || pageInfo.height * appliedScale > maxDim) {
+      appliedScale = Math.min(maxDim / pageInfo.width, maxDim / pageInfo.height, appliedScale);
+    }
+
+    canvas.width = Math.max(1, Math.floor(pageInfo.width * appliedScale));
+    canvas.height = Math.max(1, Math.floor(pageInfo.height * appliedScale));
+    this.canvaskitRenderer.renderPage(this.wasm.getPageLayerTree(pageIdx), canvas, appliedScale);
+    return appliedScale;
   }
 
   /** 편집 용지 여백 가이드라인을 캔버스에 그린다 (4모서리 L자 표시) */
@@ -72,8 +105,8 @@ export class PageRenderer {
     for (const delay of delays) {
       const timer = setTimeout(() => {
         if (canvas.parentElement) {
-          this.wasm.renderPageToCanvas(pageIdx, canvas, scale);
-          this.drawMarginGuides(pageIdx, canvas, scale);
+          const appliedScale = this.renderContent(pageIdx, canvas, scale);
+          this.drawMarginGuides(pageIdx, canvas, appliedScale);
         }
       }, delay);
       timers.push(timer);

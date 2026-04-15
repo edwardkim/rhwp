@@ -6,6 +6,8 @@ import { CanvasPool } from './canvas-pool';
 import { PageRenderer } from './page-renderer';
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
+import { CanvasKitLayerRenderer } from './canvaskit-renderer';
+import type { RenderBackend } from './render-backend';
 
 export class CanvasView {
   private virtualScroll: VirtualScroll;
@@ -23,10 +25,12 @@ export class CanvasView {
     private container: HTMLElement,
     private wasm: WasmBridge,
     private eventBus: EventBus,
+    renderBackend: RenderBackend,
+    canvaskitRenderer: CanvasKitLayerRenderer | null,
   ) {
     this.virtualScroll = new VirtualScroll();
     this.canvasPool = new CanvasPool();
-    this.pageRenderer = new PageRenderer(wasm);
+    this.pageRenderer = new PageRenderer(wasm, renderBackend, canvaskitRenderer);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
 
@@ -277,6 +281,10 @@ export class CanvasView {
 
   getViewportManager(): ViewportManager {
     return this.viewportManager;
+  }
+
+  getRenderBackend(): RenderBackend {
+    return this.pageRenderer.getBackend();
   }
 
   getCoordinateSystem(): CoordinateSystem {

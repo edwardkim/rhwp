@@ -7,12 +7,17 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "e2e": "node e2e/text-flow.test.mjs"
+    "e2e": "node e2e/text-flow.test.mjs && node e2e/canvaskit-render.test.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.40",
     "puppeteer-core": "^24.40.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.8"
+  },
+  "dependencies": {
+    "canvaskit-wasm": "^0.41.1",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0"
   }
 }

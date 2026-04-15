@@ -30,6 +30,242 @@ export interface PageInfo {
   columns?: { x: number; width: number }[];
 }
 
+export interface LayerBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PageLayerTree {
+  pageWidth: number;
+  pageHeight: number;
+  root: LayerNode;
+}
+
+export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;
+
+export interface LayerGroupNode {
+  bounds: LayerBounds;
+  kind: 'group';
+  sourceNodeId?: number;
+  children: LayerNode[];
+}
+
+export interface LayerClipNode {
+  bounds: LayerBounds;
+  kind: 'clipRect';
+  sourceNodeId?: number;
+  clip: LayerBounds;
+  child: LayerNode;
+}
+
+export interface LayerLeafNode {
+  bounds: LayerBounds;
+  kind: 'leaf';
+  sourceNodeId?: number;
+  ops: LayerPaintOp[];
+}
+
+export type LayerPaintOp =
+  | LayerPageBackgroundOp
+  | LayerTextRunOp
+  | LayerFootnoteMarkerOp
+  | LayerLineOp
+  | LayerRectangleOp
+  | LayerEllipseOp
+  | LayerPathOp
+  | LayerImageOp
+  | LayerEquationOp
+  | LayerFormObjectOp;
+
+export interface LayerTextStyle {
+  fontFamily: string;
+  fontSize: number;
+  color: string;
+  bold: boolean;
+  italic: boolean;
+  underline: 'none' | 'bottom' | 'top';
+  strikethrough: boolean;
+  shadowType: number;
+  shadowColor: string;
+  shadowOffsetX: number;
+  shadowOffsetY: number;
+  underlineColor: string;
+  strikeColor: string;
+}
+
+export interface LayerTabLeader {
+  startX: number;
+  endX: number;
+  fillType: number;
+}
+
+export interface LayerShapeShadow {
+  shadowType: number;
+  color: string;
+  offsetX: number;
+  offsetY: number;
+  alpha: number;
+}
+
+export interface LayerPatternFill {
+  patternType: number;
+  patternColor: string;
+  backgroundColor: string;
+}
+
+export interface LayerShapeStyle {
+  fillColor: string | null;
+  strokeColor: string | null;
+  strokeWidth: number;
+  strokeDash: 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
+  opacity: number;
+  pattern?: LayerPatternFill;
+  shadow?: LayerShapeShadow;
+}
+
+export interface LayerLineStyle {
+  color: string;
+  width: number;
+  dash: 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
+  lineType: 'single' | 'double' | 'thinThickDouble' | 'thickThinDouble' | 'thinThickThinTriple';
+  startArrow: string;
+  endArrow: string;
+  startArrowSize: number;
+  endArrowSize: number;
+}
+
+export interface LayerTransform {
+  rotation: number;
+  horzFlip: boolean;
+  vertFlip: boolean;
+}
+
+export interface LayerGradient {
+  gradientType: number;
+  angle: number;
+  centerX: number;
+  centerY: number;
+  colors: string[];
+  positions: number[];
+}
+
+export type LayerPathCommand =
+  | { type: 'moveTo'; x: number; y: number }
+  | { type: 'lineTo'; x: number; y: number }
+  | { type: 'curveTo'; x1: number; y1: number; x2: number; y2: number; x3: number; y3: number }
+  | { type: 'arcTo'; rx: number; ry: number; rotation: number; largeArc: boolean; sweep: boolean; x: number; y: number }
+  | { type: 'closePath' };
+
+export interface LayerPageBackgroundOp {
+  type: 'pageBackground';
+  bbox: LayerBounds;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth: number;
+  gradient?: LayerGradient;
+  image?: {
+    fillMode: string;
+    base64: string;
+  };
+}
+
+export interface LayerTextRunOp {
+  type: 'textRun';
+  bbox: LayerBounds;
+  text: string;
+  baseline: number;
+  rotation: number;
+  isVertical: boolean;
+  style: LayerTextStyle;
+  positions: number[];
+  tabLeaders?: LayerTabLeader[];
+}
+
+export interface LayerFootnoteMarkerOp {
+  type: 'footnoteMarker';
+  bbox: LayerBounds;
+  text: string;
+  fontFamily: string;
+  fontSize: number;
+  color: string;
+}
+
+export interface LayerLineOp {
+  type: 'line';
+  bbox: LayerBounds;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  style: LayerLineStyle;
+  transform: LayerTransform;
+}
+
+export interface LayerRectangleOp {
+  type: 'rectangle';
+  bbox: LayerBounds;
+  cornerRadius: number;
+  style: LayerShapeStyle;
+  gradient?: LayerGradient;
+  transform: LayerTransform;
+}
+
+export interface LayerEllipseOp {
+  type: 'ellipse';
+  bbox: LayerBounds;
+  style: LayerShapeStyle;
+  gradient?: LayerGradient;
+  transform: LayerTransform;
+}
+
+export interface LayerPathOp {
+  type: 'path';
+  bbox: LayerBounds;
+  commands: LayerPathCommand[];
+  style: LayerShapeStyle;
+  gradient?: LayerGradient;
+  transform: LayerTransform;
+}
+
+export interface LayerImageOp {
+  type: 'image';
+  bbox: LayerBounds;
+  base64?: string;
+  fillMode?: string;
+  originalSize?: {
+    width: number;
+    height: number;
+  };
+  crop?: {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+  };
+  transform: LayerTransform;
+}
+
+export interface LayerEquationOp {
+  type: 'equation';
+  bbox: LayerBounds;
+  color: string;
+  fontSize: number;
+}
+
+export interface LayerFormObjectOp {
+  type: 'formObject';
+  bbox: LayerBounds;
+  formType: string;
+  caption: string;
+  text: string;
+  foreColor: string;
+  backColor: string;
+  value: number;
+  enabled: boolean;
+}
+
 /** WASM getPageDef() 반환 타입 — HWPUNIT 원본값 */
 export interface PageDef {
   width: number;
