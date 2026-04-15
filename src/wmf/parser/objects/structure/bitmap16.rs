@@ -57,8 +57,7 @@ impl Bitmap16 {
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
         let (mut bitmap, mut consumed_bytes) = Self::parse_without_bits(buf)?;
-        let (bits, bits_bytes) =
-            crate::wmf::parser::read_variable(buf, bitmap.calc_length())?;
+        let (bits, bits_bytes) = crate::wmf::parser::read_variable(buf, bitmap.calc_length())?;
 
         bitmap.bits = bits;
         consumed_bytes += bits_bytes;
@@ -124,8 +123,7 @@ impl Bitmap16 {
     }
 
     pub fn calc_length(&self) -> usize {
-        ((((self.width * self.bits_pixel as i16 + 15) >> 4) << 1) * self.height)
-            as usize
+        ((((self.width * self.bits_pixel as i16 + 15) >> 4) << 1) * self.height) as usize
     }
 }
 

@@ -1,7 +1,5 @@
 impl crate::wmf::parser::META_ESCAPE {
-    pub(in crate::wmf::parser::records::escape) fn parse_as_SETMITERLIMIT<
-        R: crate::wmf::Read,
-    >(
+    pub(in crate::wmf::parser::records::escape) fn parse_as_SETMITERLIMIT<R: crate::wmf::Read>(
         buf: &mut R,
         mut record_size: crate::wmf::parser::RecordSize,
         record_function: u16,
@@ -18,9 +16,7 @@ impl crate::wmf::parser::META_ESCAPE {
 
         if byte_count != 0x0004 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: format!(
-                    "The byte_count `{byte_count:#06X}` field must be `0x0004`",
-                ),
+                cause: format!("The byte_count `{byte_count:#06X}` field must be `0x0004`",),
             });
         }
 

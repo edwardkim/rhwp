@@ -27,22 +27,19 @@ impl Brush {
     pub fn as_filter(&self) -> Node {
         match self {
             Brush::DIBPatternPT { brush_hatch, .. } => {
-                let data = crate::wmf::converter::Bitmap::from(brush_hatch.clone())
+                let data = crate::wmf::converter::Bitmap::from(brush_hatch.clone()).as_data_url();
+                Node::new("filter").add(Node::new("feImage").set("href", data))
+            }
+            Brush::Hatched {
+                color_ref,
+                brush_hatch,
+            } => {
+                let data = crate::wmf::converter::Bitmap::from((color_ref.clone(), *brush_hatch))
                     .as_data_url();
                 Node::new("filter").add(Node::new("feImage").set("href", data))
             }
-            Brush::Hatched { color_ref, brush_hatch } => {
-                let data = crate::wmf::converter::Bitmap::from((
-                    color_ref.clone(),
-                    *brush_hatch,
-                ))
-                .as_data_url();
-                Node::new("filter").add(Node::new("feImage").set("href", data))
-            }
             Brush::Pattern { brush_hatch } => {
-                let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(
-                    brush_hatch.clone(),
-                );
+                let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(brush_hatch.clone());
                 let data = crate::wmf::converter::Bitmap::from(bitmap).as_data_url();
 
                 Node::new("filter").add(Node::new("feImage").set("href", data))
@@ -60,9 +57,7 @@ impl Brush {
                 .add(
                     Node::new("feMerge")
                         .add(Node::new("feMergeNode").set("in", "bg"))
-                        .add(
-                            Node::new("feMergeNode").set("in", "SourceGraphic"),
-                        ),
+                        .add(Node::new("feMergeNode").set("in", "SourceGraphic")),
                 ),
             Brush::Null => Node::new("filter")
                 .set("x", "0")
@@ -88,8 +83,7 @@ impl From<Brush> for Fill {
     fn from(v: Brush) -> Self {
         match v {
             Brush::DIBPatternPT { brush_hatch, .. } => {
-                let data = crate::wmf::converter::Bitmap::from(brush_hatch.clone())
-                    .as_data_url();
+                let data = crate::wmf::converter::Bitmap::from(brush_hatch.clone()).as_data_url();
                 let image = Node::new("image")
                     .set("x", "0")
                     .set("y", "0")
@@ -107,7 +101,10 @@ impl From<Brush> for Fill {
 
                 Fill::Pattern { pattern }
             }
-            Brush::Hatched { color_ref, brush_hatch } => {
+            Brush::Hatched {
+                color_ref,
+                brush_hatch,
+            } => {
                 let path = match brush_hatch {
                     HatchStyle::HS_HORIZONTAL => {
                         let data = Data::new().move_to("0 0").line_to("10 0");
@@ -173,9 +170,7 @@ impl From<Brush> for Fill {
                 Fill::Pattern { pattern }
             }
             Brush::Pattern { brush_hatch } => {
-                let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(
-                    brush_hatch.clone(),
-                );
+                let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(brush_hatch.clone());
                 let data = crate::wmf::converter::Bitmap::from(bitmap).as_data_url();
                 let image = Node::new("image")
                     .set("x", "0")
@@ -194,10 +189,12 @@ impl From<Brush> for Fill {
 
                 Fill::Pattern { pattern }
             }
-            Brush::Solid { color_ref } => {
-                Fill::Value { value: css_color_from_color_ref(&color_ref) }
-            }
-            Brush::Null => Fill::Value { value: "none".to_owned() },
+            Brush::Solid { color_ref } => Fill::Value {
+                value: css_color_from_color_ref(&color_ref),
+            },
+            Brush::Null => Fill::Value {
+                value: "none".to_owned(),
+            },
         }
     }
 }
@@ -237,7 +234,10 @@ impl Default for Stroke {
 impl From<Pen> for Stroke {
     fn from(v: Pen) -> Self {
         if v.style.style == PenStyle::PS_NULL {
-            return Self { none: true, ..Default::default() };
+            return Self {
+                none: true,
+                ..Default::default()
+            };
         }
 
         let mut stroke = Self::default();
@@ -305,14 +305,22 @@ impl From<Pen> for Stroke {
 impl From<Brush> for Stroke {
     fn from(v: Brush) -> Self {
         match v {
-            Brush::DIBPatternPT { .. } => {
-                Self { none: true, ..Default::default() }
-            }
-            Brush::Hatched { color_ref, .. } | Brush::Solid { color_ref } => {
-                Self { color: color_ref, ..Default::default() }
-            }
-            Brush::Pattern { .. } => Self { ..Default::default() },
-            Brush::Null => Self { none: true, width: 0, ..Default::default() },
+            Brush::DIBPatternPT { .. } => Self {
+                none: true,
+                ..Default::default()
+            },
+            Brush::Hatched { color_ref, .. } | Brush::Solid { color_ref } => Self {
+                color: color_ref,
+                ..Default::default()
+            },
+            Brush::Pattern { .. } => Self {
+                ..Default::default()
+            },
+            Brush::Null => Self {
+                none: true,
+                width: 0,
+                ..Default::default()
+            },
         }
     }
 }
@@ -357,11 +365,7 @@ impl Stroke {
 }
 
 impl Font {
-    pub fn set_props(
-        &self,
-        mut elem: Node,
-        point: &PointS,
-    ) -> (Node, Vec<String>) {
+    pub fn set_props(&self, mut elem: Node, point: &PointS) -> (Node, Vec<String>) {
         let mut styles = Vec::with_capacity(2);
 
         if self.italic {
@@ -395,12 +399,7 @@ impl Font {
         if self.escapement != 0 {
             elem = elem.set(
                 "transform",
-                format!(
-                    "rotate({}, {} {})",
-                    -self.escapement / 10,
-                    point.x,
-                    point.y
-                ),
+                format!("rotate({}, {} {})", -self.escapement / 10, point.x, point.y),
             );
         }
 

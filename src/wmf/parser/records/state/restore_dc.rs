@@ -38,12 +38,15 @@ impl META_RESTOREDC {
             crate::wmf::parser::RecordType::META_RESTOREDC,
         )?;
 
-        let (n_saved_dc, n_saved_dc_bytes) =
-            crate::wmf::parser::read_i16_from_le_bytes(buf)?;
+        let (n_saved_dc, n_saved_dc_bytes) = crate::wmf::parser::read_i16_from_le_bytes(buf)?;
         record_size.consume(n_saved_dc_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, n_saved_dc })
+        Ok(Self {
+            record_size,
+            record_function,
+            n_saved_dc,
+        })
     }
 }

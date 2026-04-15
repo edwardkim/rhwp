@@ -45,12 +45,7 @@ impl META_EXTFLOODFILL {
             crate::wmf::parser::RecordType::META_EXTFLOODFILL,
         )?;
 
-        let (
-            (mode, mode_bytes),
-            (color_ref, color_ref_bytes),
-            (y, y_bytes),
-            (x, x_bytes),
-        ) = (
+        let ((mode, mode_bytes), (color_ref, color_ref_bytes), (y, y_bytes), (x, x_bytes)) = (
             crate::wmf::parser::FloodFill::parse(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
@@ -60,6 +55,13 @@ impl META_EXTFLOODFILL {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, mode, color_ref, y, x })
+        Ok(Self {
+            record_size,
+            record_function,
+            mode,
+            color_ref,
+            y,
+            x,
+        })
     }
 }

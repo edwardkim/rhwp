@@ -23,8 +23,7 @@ impl PitchAndFamily {
         let (byte, consumed_bytes) = crate::wmf::parser::read_u8_from_le_bytes(buf)?;
 
         let family = byte >> 4;
-        let Some(family) = crate::wmf::parser::FamilyFont::from_repr(byte >> 4)
-        else {
+        let Some(family) = crate::wmf::parser::FamilyFont::from_repr(byte >> 4) else {
             return Err(crate::wmf::parser::ParseError::UnexpectedEnumValue {
                 cause: format!("unexpected value as FamilyFont: {family:#04X}"),
             });

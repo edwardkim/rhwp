@@ -62,10 +62,8 @@ impl META_CREATEPATTERNBRUSH {
             crate::wmf::parser::RecordType::META_CREATEPATTERNBRUSH,
         )?;
 
-        let (bitmap16, bitmap16_bytes) =
-            crate::wmf::parser::Bitmap16::parse_without_bits(buf)?;
-        let (_, ignored_bytes) =
-            crate::wmf::parser::read_variable(buf, 14 - bitmap16_bytes)?;
+        let (bitmap16, bitmap16_bytes) = crate::wmf::parser::Bitmap16::parse_without_bits(buf)?;
+        let (_, ignored_bytes) = crate::wmf::parser::read_variable(buf, 14 - bitmap16_bytes)?;
         let (reserved, reserved_bytes) = crate::wmf::parser::read::<R, 18>(buf)?;
         record_size.consume(bitmap16_bytes + ignored_bytes + reserved_bytes);
 
@@ -75,7 +73,13 @@ impl META_CREATEPATTERNBRUSH {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, bitmap16, reserved, pattern })
+        Ok(Self {
+            record_size,
+            record_function,
+            bitmap16,
+            reserved,
+            pattern,
+        })
     }
 
     pub fn create_brush(&self) -> crate::wmf::parser::Brush {

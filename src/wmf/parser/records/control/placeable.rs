@@ -65,14 +65,18 @@ impl META_PLACEABLE {
             crate::wmf::parser::read_u32_from_le_bytes(buf)?,
             crate::wmf::parser::read::<R, 2>(buf)?,
         );
-        let consumed_bytes = hwmf_bytes
-            + bounding_box_bytes
-            + inch_bytes
-            + reserved_bytes
-            + checksum_bytes;
+        let consumed_bytes =
+            hwmf_bytes + bounding_box_bytes + inch_bytes + reserved_bytes + checksum_bytes;
 
         Ok((
-            Self { key, hwmf, bounding_box, inch, reserved, checksum },
+            Self {
+                key,
+                hwmf,
+                bounding_box,
+                inch,
+                reserved,
+                checksum,
+            },
             consumed_bytes,
         ))
     }

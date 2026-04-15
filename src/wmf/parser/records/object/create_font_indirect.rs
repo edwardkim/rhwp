@@ -33,8 +33,7 @@ impl META_CREATEFONTINDIRECT {
             crate::wmf::parser::RecordType::META_CREATEFONTINDIRECT,
         )?;
 
-        let (b, c) =
-            crate::wmf::parser::read_variable(buf, record_size.remaining_bytes())?;
+        let (b, c) = crate::wmf::parser::read_variable(buf, record_size.remaining_bytes())?;
         record_size.consume(c);
 
         let mut buffer = &b[..];
@@ -42,6 +41,10 @@ impl META_CREATEFONTINDIRECT {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, font })
+        Ok(Self {
+            record_size,
+            record_function,
+            font,
+        })
     }
 }

@@ -1,15 +1,5 @@
 /// The PaletteEntryFlag Enumeration specifies how the palette entry is used.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u8)]
 pub enum PaletteEntryFlag {
     /// Specifies that the logical palette entry be used for palette animation.

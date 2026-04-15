@@ -63,25 +63,26 @@ impl META_DIBCREATEPATTERNBRUSH {
         }
 
         let (target, c) =
-            crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(
-                buf,
-                color_usage,
-            )?;
+            crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(buf, color_usage)?;
         record_size.consume(c);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, style, color_usage, target })
+        Ok(Self {
+            record_size,
+            record_function,
+            style,
+            color_usage,
+            target,
+        })
     }
 
     pub fn create_brush(&self) -> crate::wmf::parser::Brush {
         match self.style {
-            crate::wmf::parser::BrushStyle::BS_PATTERN => {
-                crate::wmf::parser::Brush::DIBPatternPT {
-                    color_usage: crate::wmf::parser::ColorUsage::DIB_RGB_COLORS,
-                    brush_hatch: self.target.clone(),
-                }
-            }
+            crate::wmf::parser::BrushStyle::BS_PATTERN => crate::wmf::parser::Brush::DIBPatternPT {
+                color_usage: crate::wmf::parser::ColorUsage::DIB_RGB_COLORS,
+                brush_hatch: self.target.clone(),
+            },
             _ => crate::wmf::parser::Brush::DIBPatternPT {
                 color_usage: self.color_usage,
                 brush_hatch: self.target.clone(),

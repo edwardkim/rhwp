@@ -14,8 +14,7 @@ mod select_object;
 mod select_palette;
 
 pub use self::{
-    create_brush_indirect::*, create_font_indirect::*, create_palette::*,
-    create_pattern_brush::*, create_pen_indirect::*, create_region::*,
-    delete_object::*, dib_create_pattern_brush::*, select_clip_region::*,
-    select_object::*, select_palette::*,
+    create_brush_indirect::*, create_font_indirect::*, create_palette::*, create_pattern_brush::*,
+    create_pen_indirect::*, create_region::*, delete_object::*, dib_create_pattern_brush::*,
+    select_clip_region::*, select_object::*, select_palette::*,
 };

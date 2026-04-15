@@ -46,7 +46,12 @@ impl ColorRef {
         }
 
         Ok((
-            Self { red, green, blue, reserved },
+            Self {
+                red,
+                green,
+                blue,
+                reserved,
+            },
             red_bytes + green_bytes + blue_bytes + reserved_bytes,
         ))
     }
@@ -54,10 +59,20 @@ impl ColorRef {
 
 impl ColorRef {
     pub fn black() -> Self {
-        Self { red: 0, green: 0, blue: 0, reserved: 0 }
+        Self {
+            red: 0,
+            green: 0,
+            blue: 0,
+            reserved: 0,
+        }
     }
 
     pub fn white() -> Self {
-        Self { red: 255, green: 255, blue: 255, reserved: 0 }
+        Self {
+            red: 255,
+            green: 255,
+            blue: 255,
+            reserved: 0,
+        }
     }
 }

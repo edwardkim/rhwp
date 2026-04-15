@@ -181,8 +181,7 @@ impl Font {
             )?;
 
             // Convert bytes to UTF-8 string from specified charset
-            let as_charset =
-                crate::wmf::parser::bytes_into_utf8(&bytes[..len], charset)?;
+            let as_charset = crate::wmf::parser::bytes_into_utf8(&bytes[..len], charset)?;
 
             (as_latin1, as_charset)
         };

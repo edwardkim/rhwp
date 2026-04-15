@@ -31,7 +31,9 @@ pub struct ReadError {
 
 impl ReadError {
     pub fn new(err: impl core::fmt::Display) -> Self {
-        Self { cause: err.to_string() }
+        Self {
+            cause: err.to_string(),
+        }
     }
 }
 
@@ -109,9 +111,7 @@ fn bytes_into_utf8(
     if charset == crate::wmf::parser::CharacterSet::SYMBOL_CHARSET {
         Ok(bytes
             .iter()
-            .filter_map(|v| {
-                crate::wmf::parser::symbol_charset_table().get(v).copied()
-            })
+            .filter_map(|v| crate::wmf::parser::symbol_charset_table().get(v).copied())
             .collect::<String>()
             .replace('\0', ""))
     } else {
@@ -120,8 +120,7 @@ fn bytes_into_utf8(
 
         if had_errors {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: "Failed to decode string with specified charset"
-                    .to_string(),
+                cause: "Failed to decode string with specified charset".to_string(),
             });
         }
 

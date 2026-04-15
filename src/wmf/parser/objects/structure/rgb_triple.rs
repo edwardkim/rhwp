@@ -28,6 +28,9 @@ impl RGBTriple {
             crate::wmf::parser::read_u8_from_le_bytes(buf)?,
         );
 
-        Ok((Self { red, green, blue }, red_bytes + green_bytes + blue_bytes))
+        Ok((
+            Self { red, green, blue },
+            red_bytes + green_bytes + blue_bytes,
+        ))
     }
 }

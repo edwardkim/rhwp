@@ -45,7 +45,12 @@ impl RGBQuad {
         }
 
         Ok((
-            Self { red, green, blue, reserved },
+            Self {
+                red,
+                green,
+                blue,
+                reserved,
+            },
             red_bytes + green_bytes + blue_bytes + reserved_bytes,
         ))
     }

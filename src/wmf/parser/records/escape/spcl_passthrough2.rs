@@ -6,11 +6,7 @@ impl crate::wmf::parser::META_ESCAPE {
         mut record_size: crate::wmf::parser::RecordSize,
         record_function: u16,
     ) -> Result<Self, crate::wmf::parser::ParseError> {
-        let (
-            (byte_count, byte_count_bytes),
-            (reserved, reserved_bytes),
-            (size, size_bytes),
-        ) = (
+        let ((byte_count, byte_count_bytes), (reserved, reserved_bytes), (size, size_bytes)) = (
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
             crate::wmf::parser::read_u32_from_le_bytes(buf)?,
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,

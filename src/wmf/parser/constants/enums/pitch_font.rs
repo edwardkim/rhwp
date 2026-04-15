@@ -4,17 +4,7 @@
 ///
 /// In a Font Object, when a FamilyFont Enumeration value is packed into a byte
 /// with a PitchFont value, the result is a PitchAndFamily Object.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u8)]
 pub enum PitchFont {
     /// The default pitch, which is implementation-dependent.

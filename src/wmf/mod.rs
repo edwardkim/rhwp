@@ -13,7 +13,7 @@
     unexpected_cfgs,
     dead_code,
     unused_imports,
-    unused_variables,
+    unused_variables
 )]
 
 // tracing 스텁 매크로 (converter/parser 모듈보다 먼저 정의해야 하위 모듈에서 사용 가능)

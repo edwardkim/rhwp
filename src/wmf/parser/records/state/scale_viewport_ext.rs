@@ -58,8 +58,7 @@ impl META_SCALEVIEWPORTEXT {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
-        record_size
-            .consume(y_denom_bytes + y_num_bytes + x_denom_bytes + x_num_bytes);
+        record_size.consume(y_denom_bytes + y_num_bytes + x_denom_bytes + x_num_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 

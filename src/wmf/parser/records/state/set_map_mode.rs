@@ -45,6 +45,10 @@ impl META_SETMAPMODE {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, map_mode })
+        Ok(Self {
+            record_size,
+            record_function,
+            map_mode,
+        })
     }
 }

@@ -40,6 +40,9 @@ impl META_EOF {
             });
         }
 
-        Ok(Self { record_size, record_function })
+        Ok(Self {
+            record_size,
+            record_function,
+        })
     }
 }

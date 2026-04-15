@@ -1,17 +1,7 @@
 /// ClipPrecision Flags specify clipping precision, which defines how to clip
 /// characters that are partially outside a clipping region. These flags can be
 /// combined to specify multiple options.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u8)]
 pub enum ClipPrecision {
     /// Specifies that default clipping MUST be used.

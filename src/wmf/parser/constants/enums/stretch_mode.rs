@@ -1,17 +1,7 @@
 /// The StretchMode Enumeration specifies the bitmap stretching mode, which
 /// defines how the system combines rows or columns of a bitmap with existing
 /// pixels.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum StretchMode {
     /// Performs a Boolean AND operation by using the color values for the

@@ -55,11 +55,17 @@ impl META_FRAMEREGION {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
-        record_size
-            .consume(region_bytes + brush_bytes + height_bytes + width_bytes);
+        record_size.consume(region_bytes + brush_bytes + height_bytes + width_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, region, brush, height, width })
+        Ok(Self {
+            record_size,
+            record_function,
+            region,
+            brush,
+            height,
+            width,
+        })
     }
 }

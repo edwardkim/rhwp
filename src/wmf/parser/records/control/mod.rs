@@ -25,8 +25,7 @@ impl MetafileHeader {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (mut key, mut consumed_bytes) =
-            crate::wmf::parser::read_u32_from_le_bytes(buf)?;
+        let (mut key, mut consumed_bytes) = crate::wmf::parser::read_u32_from_le_bytes(buf)?;
 
         let placeable = if key == 0x9AC6CDD7 {
             let (v, c) = crate::wmf::parser::META_PLACEABLE::parse(buf, key)?;

@@ -9,6 +9,6 @@ mod stretch_blt;
 mod stretch_dib;
 
 pub use self::{
-    bit_blt::*, dib_bit_blt::*, dib_stretch_blt::*, set_dib_to_dev::*,
-    stretch_blt::*, stretch_dib::*,
+    bit_blt::*, dib_bit_blt::*, dib_stretch_blt::*, set_dib_to_dev::*, stretch_blt::*,
+    stretch_dib::*,
 };

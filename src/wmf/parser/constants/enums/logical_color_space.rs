@@ -5,17 +5,7 @@
 /// The LogicalColorSpaceV5 Enumeration is used to specify where to find color
 /// profile information for a DeviceIndependentBitmap (DIB) Object that has a
 /// header of type BitmapV5Header Object.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u32)]
 pub enum LogicalColorSpace {
     /// Color values are calibrated red green blue (RGB) values.

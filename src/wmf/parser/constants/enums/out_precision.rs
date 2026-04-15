@@ -2,17 +2,7 @@
 /// the requirement for the font mapper to match specific font parameters,
 /// including height, width, character orientation, escapement, pitch, and font
 /// type.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u8)]
 pub enum OutPrecision {
     /// A value that specifies default behavior.

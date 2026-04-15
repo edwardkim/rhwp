@@ -1,7 +1,5 @@
 impl crate::wmf::parser::META_ESCAPE {
-    pub(in crate::wmf::parser::records::escape) fn parse_as_GETCOLORTABLE<
-        R: crate::wmf::Read,
-    >(
+    pub(in crate::wmf::parser::records::escape) fn parse_as_GETCOLORTABLE<R: crate::wmf::Read>(
         buf: &mut R,
         mut record_size: crate::wmf::parser::RecordSize,
         record_function: u16,

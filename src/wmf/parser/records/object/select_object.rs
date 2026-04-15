@@ -41,12 +41,15 @@ impl META_SELECTOBJECT {
             crate::wmf::parser::RecordType::META_SELECTOBJECT,
         )?;
 
-        let (object_index, object_index_bytes) =
-            crate::wmf::parser::read_u16_from_le_bytes(buf)?;
+        let (object_index, object_index_bytes) = crate::wmf::parser::read_u16_from_le_bytes(buf)?;
         record_size.consume(object_index_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, object_index })
+        Ok(Self {
+            record_size,
+            record_function,
+            object_index,
+        })
     }
 }

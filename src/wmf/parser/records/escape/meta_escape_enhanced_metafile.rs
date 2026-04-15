@@ -71,17 +71,13 @@ impl crate::wmf::parser::META_ESCAPE {
 
         if version != 0x00010000 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: format!(
-                    "The version `{version:#010X}` field must be `0x00010000`"
-                ),
+                cause: format!("The version `{version:#010X}` field must be `0x00010000`"),
             });
         }
 
         if flags != 0x00000000 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: format!(
-                    "The flags `{version:#010X}` field must be `0x00000000`",
-                ),
+                cause: format!("The flags `{version:#010X}` field must be `0x00000000`",),
             });
         }
 
@@ -94,10 +90,8 @@ impl crate::wmf::parser::META_ESCAPE {
             });
         }
 
-        let (enhanced_metafile_data, c) = crate::wmf::parser::read_variable(
-            buf,
-            enhanced_metafile_data_size as usize,
-        )?;
+        let (enhanced_metafile_data, c) =
+            crate::wmf::parser::read_variable(buf, enhanced_metafile_data_size as usize)?;
         record_size.consume(c);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;

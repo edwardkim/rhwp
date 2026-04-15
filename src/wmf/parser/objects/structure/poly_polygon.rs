@@ -28,8 +28,7 @@ impl PolyPolygon {
         let (number_of_polygons, mut consumed_bytes) =
             crate::wmf::parser::read_u16_from_le_bytes(buf)?;
         let mut number_of_points = 0;
-        let mut a_points_per_polygon =
-            Vec::with_capacity(number_of_polygons as usize);
+        let mut a_points_per_polygon = Vec::with_capacity(number_of_polygons as usize);
         let mut a_points = Vec::with_capacity(number_of_points as usize);
 
         for _ in 0..number_of_polygons {
@@ -48,7 +47,11 @@ impl PolyPolygon {
         }
 
         Ok((
-            Self { number_of_polygons, a_points_per_polygon, a_points },
+            Self {
+                number_of_polygons,
+                a_points_per_polygon,
+                a_points,
+            },
             consumed_bytes,
         ))
     }

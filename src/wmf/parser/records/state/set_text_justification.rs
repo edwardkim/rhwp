@@ -41,10 +41,7 @@ impl META_SETTEXTJUSTIFICATION {
             crate::wmf::parser::RecordType::META_SETTEXTJUSTIFICATION,
         )?;
 
-        let (
-            (break_count, break_count_bytes),
-            (break_extra, break_extra_bytes),
-        ) = (
+        let ((break_count, break_count_bytes), (break_extra, break_extra_bytes)) = (
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
         );
@@ -52,6 +49,11 @@ impl META_SETTEXTJUSTIFICATION {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, break_count, break_extra })
+        Ok(Self {
+            record_size,
+            record_function,
+            break_count,
+            break_extra,
+        })
     }
 }

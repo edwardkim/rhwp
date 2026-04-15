@@ -40,8 +40,7 @@ impl META_SETSTRETCHBLTMODE {
             crate::wmf::parser::RecordType::META_SETSTRETCHBLTMODE,
         )?;
 
-        let (stretch_mode, stretch_mode_bytes) =
-            crate::wmf::parser::StretchMode::parse(buf)?;
+        let (stretch_mode, stretch_mode_bytes) = crate::wmf::parser::StretchMode::parse(buf)?;
         record_size.consume(stretch_mode_bytes);
 
         let reserved = if record_size.byte_count() > 8 {
@@ -55,6 +54,11 @@ impl META_SETSTRETCHBLTMODE {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, stretch_mode, reserved })
+        Ok(Self {
+            record_size,
+            record_function,
+            stretch_mode,
+            reserved,
+        })
     }
 }

@@ -185,11 +185,8 @@ impl BitmapInfoHeaderV5 {
             crate::wmf::parser::read_u32_from_le_bytes(buf)?,
             crate::wmf::parser::read_u32_from_le_bytes(buf)?,
         );
-        let consumed_bytes = profile_data_bytes
-            + profile_size_bytes
-            + reserved_bytes
-            + header_bytes
-            + intent_bytes;
+        let consumed_bytes =
+            profile_data_bytes + profile_size_bytes + reserved_bytes + header_bytes + intent_bytes;
 
         let crate::wmf::parser::BitmapInfoHeaderV4 {
             header_size,

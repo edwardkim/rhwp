@@ -1,16 +1,6 @@
 /// The ColorUsage Enumeration specifies whether a color table exists in a
 /// device-independent bitmap (DIB) and how to interpret its values.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum ColorUsage {
     /// The color table contains RGB values specified by RGBQuad Objects

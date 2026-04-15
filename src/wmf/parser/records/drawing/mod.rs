@@ -23,9 +23,8 @@ mod set_pixel;
 mod text_out;
 
 pub use self::{
-    arc::*, chord::*, ellipse::*, ext_flood_fill::*, ext_text_out::*,
-    fill_region::*, flood_fill::*, frame_region::*, invert_region::*,
-    line_to::*, paint_region::*, pat_blt::*, pie::*, poly_line::*,
-    poly_polygon::*, polygon::*, rectangle::*, round_rect::*, set_pixel::*,
+    arc::*, chord::*, ellipse::*, ext_flood_fill::*, ext_text_out::*, fill_region::*,
+    flood_fill::*, frame_region::*, invert_region::*, line_to::*, paint_region::*, pat_blt::*,
+    pie::*, poly_line::*, poly_polygon::*, polygon::*, rectangle::*, round_rect::*, set_pixel::*,
     text_out::*,
 };

@@ -1,16 +1,6 @@
 /// The FloodFill Enumeration specifies the type of fill operation to be
 /// performed.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum FloodFill {
     /// The fill area is bounded by the color specified by the Color member.

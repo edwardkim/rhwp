@@ -35,12 +35,15 @@ impl META_INVERTREGION {
             crate::wmf::parser::RecordType::META_INVERTREGION,
         )?;
 
-        let (region, region_bytes) =
-            crate::wmf::parser::read_u16_from_le_bytes(buf)?;
+        let (region, region_bytes) = crate::wmf::parser::read_u16_from_le_bytes(buf)?;
         record_size.consume(region_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, region })
+        Ok(Self {
+            record_size,
+            record_function,
+            region,
+        })
     }
 }

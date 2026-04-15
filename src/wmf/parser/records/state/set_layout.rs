@@ -48,6 +48,11 @@ impl META_SETLAYOUT {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, layout, reserved })
+        Ok(Self {
+            record_size,
+            record_function,
+            layout,
+            reserved,
+        })
     }
 }

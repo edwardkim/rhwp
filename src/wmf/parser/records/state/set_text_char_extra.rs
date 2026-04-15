@@ -40,12 +40,15 @@ impl META_SETTEXTCHAREXTRA {
             crate::wmf::parser::RecordType::META_SETTEXTCHAREXTRA,
         )?;
 
-        let (char_extra, char_extra_bytes) =
-            crate::wmf::parser::read_u16_from_le_bytes(buf)?;
+        let (char_extra, char_extra_bytes) = crate::wmf::parser::read_u16_from_le_bytes(buf)?;
         record_size.consume(char_extra_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, char_extra })
+        Ok(Self {
+            record_size,
+            record_function,
+            char_extra,
+        })
     }
 }

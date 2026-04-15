@@ -25,11 +25,7 @@ pub trait Player: Sized {
     // .
 
     /// Render [`META_BITBLT`](crate::wmf::parser::META_BITBLT) record.
-    fn bit_blt(
-        self,
-        record_number: usize,
-        record: META_BITBLT,
-    ) -> Result<Self, PlayError>;
+    fn bit_blt(self, record_number: usize, record: META_BITBLT) -> Result<Self, PlayError>;
     /// Render [`META_DIBBITBLT`](crate::wmf::parser::META_DIBBITBLT) record.
     fn device_independent_bitmap_bit_blt(
         self,
@@ -49,11 +45,7 @@ pub trait Player: Sized {
         record: META_SETDIBTODEV,
     ) -> Result<Self, PlayError>;
     /// Render [`META_STRETCHBLT`](crate::wmf::parser::META_STRETCHBLT) record.
-    fn stretch_blt(
-        self,
-        record_number: usize,
-        record: META_STRETCHBLT,
-    ) -> Result<Self, PlayError>;
+    fn stretch_blt(self, record_number: usize, record: META_STRETCHBLT) -> Result<Self, PlayError>;
     /// Render [`META_STRETCHDIB`](crate::wmf::parser::META_STRETCHDIB) record.
     fn stretch_device_independent_bitmap(
         self,
@@ -68,17 +60,9 @@ pub trait Player: Sized {
     // .
 
     /// Render [`META_EOF`](crate::wmf::parser::META_EOF) record.
-    fn eof(
-        self,
-        record_number: usize,
-        record: META_EOF,
-    ) -> Result<Self, PlayError>;
+    fn eof(self, record_number: usize, record: META_EOF) -> Result<Self, PlayError>;
     /// Render [`MetafileHeader`](crate::wmf::parser::MetafileHeader) record.
-    fn header(
-        self,
-        record_number: usize,
-        header: MetafileHeader,
-    ) -> Result<Self, PlayError>;
+    fn header(self, record_number: usize, header: MetafileHeader) -> Result<Self, PlayError>;
 
     // .
     // .
@@ -87,23 +71,11 @@ pub trait Player: Sized {
     // .
 
     /// Render [`META_ARC`](crate::wmf::parser::META_ARC) record.
-    fn arc(
-        self,
-        record_number: usize,
-        record: META_ARC,
-    ) -> Result<Self, PlayError>;
+    fn arc(self, record_number: usize, record: META_ARC) -> Result<Self, PlayError>;
     /// Render [`META_CHORD`](crate::wmf::parser::META_CHORD) record.
-    fn chord(
-        self,
-        record_number: usize,
-        record: META_CHORD,
-    ) -> Result<Self, PlayError>;
+    fn chord(self, record_number: usize, record: META_CHORD) -> Result<Self, PlayError>;
     /// Render [`META_ELLIPSE`](crate::wmf::parser::META_ELLIPSE) record.
-    fn ellipse(
-        self,
-        record_number: usize,
-        record: META_ELLIPSE,
-    ) -> Result<Self, PlayError>;
+    fn ellipse(self, record_number: usize, record: META_ELLIPSE) -> Result<Self, PlayError>;
     /// Render [`META_EXTFLOODFILL`](crate::wmf::parser::META_EXTFLOODFILL) record.
     fn ext_flood_fill(
         self,
@@ -111,23 +83,12 @@ pub trait Player: Sized {
         record: META_EXTFLOODFILL,
     ) -> Result<Self, PlayError>;
     /// Render [`META_EXTTEXTOUT`](crate::wmf::parser::META_EXTTEXTOUT) record.
-    fn ext_text_out(
-        self,
-        record_number: usize,
-        record: META_EXTTEXTOUT,
-    ) -> Result<Self, PlayError>;
+    fn ext_text_out(self, record_number: usize, record: META_EXTTEXTOUT)
+        -> Result<Self, PlayError>;
     /// Render [`META_FILLREGION`](crate::wmf::parser::META_FILLREGION) record.
-    fn fill_region(
-        self,
-        record_number: usize,
-        record: META_FILLREGION,
-    ) -> Result<Self, PlayError>;
+    fn fill_region(self, record_number: usize, record: META_FILLREGION) -> Result<Self, PlayError>;
     /// Render [`META_FLOODFILL`](crate::wmf::parser::META_FLOODFILL) record.
-    fn flood_fill(
-        self,
-        record_number: usize,
-        record: META_FLOODFILL,
-    ) -> Result<Self, PlayError>;
+    fn flood_fill(self, record_number: usize, record: META_FLOODFILL) -> Result<Self, PlayError>;
     /// Render [`META_FRAMEREGION`](crate::wmf::parser::META_FRAMEREGION) record.
     fn frame_region(
         self,
@@ -141,11 +102,7 @@ pub trait Player: Sized {
         record: META_INVERTREGION,
     ) -> Result<Self, PlayError>;
     /// Render [`META_LINETO`](crate::wmf::parser::META_LINETO) record.
-    fn line_to(
-        self,
-        record_number: usize,
-        record: META_LINETO,
-    ) -> Result<Self, PlayError>;
+    fn line_to(self, record_number: usize, record: META_LINETO) -> Result<Self, PlayError>;
     /// Render [`META_PAINTREGION`](crate::wmf::parser::META_PAINTREGION) record.
     fn paint_region(
         self,
@@ -153,29 +110,13 @@ pub trait Player: Sized {
         record: META_PAINTREGION,
     ) -> Result<Self, PlayError>;
     /// Render [`META_PATBLT`](crate::wmf::parser::META_PATBLT) record.
-    fn pat_blt(
-        self,
-        record_number: usize,
-        record: META_PATBLT,
-    ) -> Result<Self, PlayError>;
+    fn pat_blt(self, record_number: usize, record: META_PATBLT) -> Result<Self, PlayError>;
     /// Render [`META_PIE`](crate::wmf::parser::META_PIE) record.
-    fn pie(
-        self,
-        record_number: usize,
-        record: META_PIE,
-    ) -> Result<Self, PlayError>;
+    fn pie(self, record_number: usize, record: META_PIE) -> Result<Self, PlayError>;
     /// Render [`META_POLYLINE`](crate::wmf::parser::META_POLYLINE) record.
-    fn polyline(
-        self,
-        record_number: usize,
-        record: META_POLYLINE,
-    ) -> Result<Self, PlayError>;
+    fn polyline(self, record_number: usize, record: META_POLYLINE) -> Result<Self, PlayError>;
     /// Render [`META_POLYGON`](crate::wmf::parser::META_POLYGON) record.
-    fn polygon(
-        self,
-        record_number: usize,
-        record: META_POLYGON,
-    ) -> Result<Self, PlayError>;
+    fn polygon(self, record_number: usize, record: META_POLYGON) -> Result<Self, PlayError>;
     /// Render [`META_POLYPOLYGON`](crate::wmf::parser::META_POLYPOLYGON) record.
     fn poly_polygon(
         self,
@@ -183,23 +124,11 @@ pub trait Player: Sized {
         record: META_POLYPOLYGON,
     ) -> Result<Self, PlayError>;
     /// Render [`META_RECTANGLE`](crate::wmf::parser::META_RECTANGLE) record.
-    fn rectangle(
-        self,
-        record_number: usize,
-        record: META_RECTANGLE,
-    ) -> Result<Self, PlayError>;
+    fn rectangle(self, record_number: usize, record: META_RECTANGLE) -> Result<Self, PlayError>;
     /// Render [`META_ROUNDRECT`](crate::wmf::parser::META_ROUNDRECT) record.
-    fn round_rect(
-        self,
-        record_number: usize,
-        record: META_ROUNDRECT,
-    ) -> Result<Self, PlayError>;
+    fn round_rect(self, record_number: usize, record: META_ROUNDRECT) -> Result<Self, PlayError>;
     /// Render [`META_SETPIXEL`](crate::wmf::parser::META_SETPIXEL) record.
-    fn set_pixel(
-        self,
-        record_number: usize,
-        record: META_SETPIXEL,
-    ) -> Result<Self, PlayError>;
+    fn set_pixel(self, record_number: usize, record: META_SETPIXEL) -> Result<Self, PlayError>;
     /// Render [`META_TEXTOUT`](crate::wmf::parser::META_TEXTOUT) record.
     fn text_out(
         self,
@@ -310,11 +239,7 @@ pub trait Player: Sized {
         record: META_INTERSECTCLIPRECT,
     ) -> Result<Self, PlayError>;
     /// Render [`META_MOVETO`](crate::wmf::parser::META_MOVETO) record.
-    fn move_to(
-        self,
-        record_number: usize,
-        record: META_MOVETO,
-    ) -> Result<Self, PlayError>;
+    fn move_to(self, record_number: usize, record: META_MOVETO) -> Result<Self, PlayError>;
     /// Render [`META_OFFSETCLIPRGN`](crate::wmf::parser::META_OFFSETCLIPRGN) record.
     fn offset_clip_region(
         self,
@@ -375,29 +300,15 @@ pub trait Player: Sized {
         record: META_SCALEWINDOWEXT,
     ) -> Result<Self, PlayError>;
     /// Render [`META_SETBKCOLOR`](crate::wmf::parser::META_SETBKCOLOR) record.
-    fn set_bk_color(
-        self,
-        record_number: usize,
-        record: META_SETBKCOLOR,
-    ) -> Result<Self, PlayError>;
+    fn set_bk_color(self, record_number: usize, record: META_SETBKCOLOR)
+        -> Result<Self, PlayError>;
     /// Render [`META_SETBKMODE`](crate::wmf::parser::META_SETBKMODE) record.
-    fn set_bk_mode(
-        self,
-        record_number: usize,
-        record: META_SETBKMODE,
-    ) -> Result<Self, PlayError>;
+    fn set_bk_mode(self, record_number: usize, record: META_SETBKMODE) -> Result<Self, PlayError>;
     /// Render [`META_SETLAYOUT`](crate::wmf::parser::META_SETLAYOUT) record.
-    fn set_layout(
-        self,
-        record_number: usize,
-        record: META_SETLAYOUT,
-    ) -> Result<Self, PlayError>;
+    fn set_layout(self, record_number: usize, record: META_SETLAYOUT) -> Result<Self, PlayError>;
     /// Render [`META_SETMAPMODE`](crate::wmf::parser::META_SETMAPMODE) record.
-    fn set_map_mode(
-        self,
-        record_number: usize,
-        record: META_SETMAPMODE,
-    ) -> Result<Self, PlayError>;
+    fn set_map_mode(self, record_number: usize, record: META_SETMAPMODE)
+        -> Result<Self, PlayError>;
     /// Render [`META_SETMAPPERFLAGS`](crate::wmf::parser::META_SETMAPPERFLAGS)
     /// record.
     fn set_mapper_flags(
@@ -419,11 +330,7 @@ pub trait Player: Sized {
         record: META_SETPOLYFILLMODE,
     ) -> Result<Self, PlayError>;
     /// Render [`META_SETRELABS`](crate::wmf::parser::META_SETRELABS) record.
-    fn set_relabs(
-        self,
-        record_number: usize,
-        record: META_SETRELABS,
-    ) -> Result<Self, PlayError>;
+    fn set_relabs(self, record_number: usize, record: META_SETRELABS) -> Result<Self, PlayError>;
     /// Render [`META_SETROP2`](crate::wmf::parser::META_SETROP2) record.
     fn set_raster_operation(
         self,
@@ -496,9 +403,5 @@ pub trait Player: Sized {
     // .
 
     /// Render [`META_ESCAPE`](crate::wmf::parser::META_ESCAPE) record.
-    fn escape(
-        self,
-        record_number: usize,
-        record: META_ESCAPE,
-    ) -> Result<Self, PlayError>;
+    fn escape(self, record_number: usize, record: META_ESCAPE) -> Result<Self, PlayError>;
 }

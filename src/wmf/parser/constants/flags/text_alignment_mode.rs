@@ -5,17 +5,7 @@
 ///
 /// Horizontal text alignment is performed when the font has a horizontal
 /// default baseline.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum TextAlignmentMode {
     /// The drawing position in the playback device context MUST NOT be updated

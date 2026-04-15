@@ -55,6 +55,11 @@ impl META_POLYLINE {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, number_of_points, a_points })
+        Ok(Self {
+            record_size,
+            record_function,
+            number_of_points,
+            a_points,
+        })
     }
 }

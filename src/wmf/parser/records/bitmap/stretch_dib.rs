@@ -115,10 +115,7 @@ impl META_STRETCHDIB {
         );
 
         let (dib, c) =
-            crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(
-                buf,
-                color_usage,
-            )?;
+            crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(buf, color_usage)?;
         record_size.consume(c);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;

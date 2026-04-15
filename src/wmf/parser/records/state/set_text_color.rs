@@ -40,6 +40,10 @@ impl META_SETTEXTCOLOR {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, color_ref })
+        Ok(Self {
+            record_size,
+            record_function,
+            color_ref,
+        })
     }
 }

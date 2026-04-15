@@ -68,7 +68,16 @@ impl Scan {
             });
         }
 
-        Ok((Self { count, top, bottom, scan_lines, count2 }, consumed_bytes))
+        Ok((
+            Self {
+                count,
+                top,
+                bottom,
+                scan_lines,
+                count2,
+            },
+            consumed_bytes,
+        ))
     }
 }
 

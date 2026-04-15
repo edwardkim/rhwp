@@ -2,17 +2,7 @@
 /// raster-operation codes. Raster-operation codes define how metafile
 /// processing combines the bits from the selected pen with the bits in the
 /// destination bitmap.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum BinaryRasterOperation {
     /// 0, Pixel is always 0.

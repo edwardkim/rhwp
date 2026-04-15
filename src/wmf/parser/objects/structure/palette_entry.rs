@@ -26,31 +26,33 @@ impl PaletteEntry {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (
-            (red, red_bytes),
-            (green, green_bytes),
-            (blue, blue_bytes),
-            (values, values_bytes),
-        ) = (
+        let ((red, red_bytes), (green, green_bytes), (blue, blue_bytes), (values, values_bytes)) = (
             crate::wmf::parser::read_u8_from_le_bytes(buf)?,
             crate::wmf::parser::read_u8_from_le_bytes(buf)?,
             crate::wmf::parser::read_u8_from_le_bytes(buf)?,
             crate::wmf::parser::read_u8_from_le_bytes(buf)?,
         );
-        let consumed_bytes =
-            red_bytes + green_bytes + blue_bytes + values_bytes;
+        let consumed_bytes = red_bytes + green_bytes + blue_bytes + values_bytes;
 
         let values = match values {
             0x00 => None,
-            v => {
-                Some(crate::wmf::parser::PaletteEntryFlag::from_repr(v).ok_or_else(
-                    || crate::wmf::parser::ParseError::UnexpectedEnumValue {
+            v => Some(
+                crate::wmf::parser::PaletteEntryFlag::from_repr(v).ok_or_else(|| {
+                    crate::wmf::parser::ParseError::UnexpectedEnumValue {
                         cause: format!("invalid value {v} as PaletteEntryFlag"),
-                    },
-                )?)
-            }
+                    }
+                })?,
+            ),
         };
 
-        Ok((Self { red, green, blue, values }, consumed_bytes))
+        Ok((
+            Self {
+                red,
+                green,
+                blue,
+                values,
+            },
+            consumed_bytes,
+        ))
     }
 }
