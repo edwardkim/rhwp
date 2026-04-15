@@ -60,9 +60,9 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 
 - HWP 5.0 / HWPX 파서, 문단·표·수식·이미지·차트 렌더링
 - 페이지네이션 (다단 분할, 표 행 분할), 머리말/꼬리말/바탕쪽/각주
-- SVG 내보내기 (CLI) + Canvas 렌더링 (WASM/Web)
+- 레이어 기반 SVG/Canvas2D/CanvasKit/native Skia 렌더링 경로
 - 웹 에디터 + hwpctl 호환 API (30 Actions, Field API)
-- 783+ 테스트
+- 793+ 테스트
 
 ### v1.0.0 — 조판 엔진
 
@@ -123,9 +123,23 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - vpos-based paragraph position correction
 
 ### Output (출력)
-- SVG export (CLI)
-- Canvas rendering (WASM/Web)
+- SVG export (CLI, legacy + layer replay)
+- Canvas rendering (WASM/Web, Canvas2D + CanvasKit)
+- Native Skia PNG rendering (feature-gated)
 - Debug overlay (paragraph/table boundaries + indices + y-coordinates)
+
+### Multi-Renderer Backends (멀티 렌더러 백엔드)
+- `PageLayerTree` 페인트 IR를 공유하고, 백엔드별로 replay만 다르게 수행합니다.
+- **Legacy SVG**: 기본 `rhwp export-svg sample.hwp`
+- **Layered SVG**: `RHWP_RENDER_PATH=layer-svg rhwp export-svg sample.hwp`
+- **Native Skia**: non-wasm 타깃에서 `native-skia` feature로 PNG 렌더링
+- **Browser Canvas2D / CanvasKit**: `rhwp-studio` 기본값은 Canvas2D, `?renderer=canvaskit`로 CanvasKit 선택
+
+### Renderer Regression Tests (렌더러 회귀 테스트)
+- `cargo test layer_svg --lib`
+- `cargo test --features native-skia skia --lib`
+- `cd rhwp-studio && npm run e2e`
+- diff artifact는 `output/layer-svg-diff`, `output/skia-diff`, `rhwp-studio/output/e2e`에 남습니다.
 
 ### Web Editor (웹 에디터)
 - Text editing (insert, delete, undo/redo)
@@ -200,7 +214,8 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (755+ tests)
+cargo test                     # Run tests (793+ tests)
+cargo clippy --all-targets --all-features   # native-skia까지 보려면 fontconfig/freetype 개발 패키지가 필요할 수 있음
 ```
 
 ### WASM Build
@@ -223,6 +238,8 @@ npx vite --host 0.0.0.0 --port 7700
 ```
 
 Open `http://localhost:7700` in your browser.
+
+브라우저 렌더러를 바꿔 비교하려면 `http://localhost:7700/?renderer=canvas2d` 또는 `http://localhost:7700/?renderer=canvaskit`를 사용하세요.
 
 ## CLI Usage
 

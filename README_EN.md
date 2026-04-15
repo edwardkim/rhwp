@@ -117,9 +117,23 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 - vpos-based paragraph position correction
 
 ### Output
-- SVG export (CLI)
-- Canvas rendering (WASM/Web)
+- SVG export (CLI, legacy + layer replay)
+- Canvas rendering (WASM/Web, Canvas2D + CanvasKit)
+- Native Skia PNG rendering (feature-gated)
 - Debug overlay (paragraph/table boundaries + indices + y-coordinates)
+
+### Multi-Renderer Backends
+- rhwp now shares a `PageLayerTree` paint IR and replays it through different backends.
+- **Legacy SVG**: default `rhwp export-svg sample.hwp`
+- **Layered SVG**: `RHWP_RENDER_PATH=layer-svg rhwp export-svg sample.hwp`
+- **Native Skia**: PNG rendering on non-wasm targets behind the `native-skia` feature
+- **Browser Canvas2D / CanvasKit**: `rhwp-studio` defaults to Canvas2D, and `?renderer=canvaskit` switches to CanvasKit
+
+### Renderer Regression Tests
+- `cargo test layer_svg --lib`
+- `cargo test --features native-skia skia --lib`
+- `cd rhwp-studio && npm run e2e`
+- diff artifacts are written to `output/layer-svg-diff`, `output/skia-diff`, and `rhwp-studio/output/e2e`.
 
 ### Web Editor
 - Text editing (insert, delete, undo/redo)
@@ -145,7 +159,8 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (783+ tests)
+cargo test                     # Run tests (793+ tests)
+cargo clippy --all-targets --all-features   # native-skia may require fontconfig/freetype development libraries
 ```
 
 ### WASM Build
@@ -166,6 +181,8 @@ npx vite --port 7700
 ```
 
 Open `http://localhost:7700` in your browser.
+
+To compare browser backends directly, open `http://localhost:7700/?renderer=canvas2d` or `http://localhost:7700/?renderer=canvaskit`.
 
 ## CLI Usage
 
@@ -277,7 +294,7 @@ The `mydocs/` directory (724 files, English translations in `mydocs/eng/`) conta
 Most AI coding demos show simple tasks. This project demonstrates AI pair programming **at production scale**:
 
 - **100K+ lines of Rust** — parser, renderer, pagination, editor
-- **783+ tests** with zero clippy warnings
+- **793+ tests** with zero clippy warnings
 - **Reverse engineering** a proprietary binary format
 - **Sub-pixel layout accuracy** matching commercial software
 - **Full CI/CD pipeline** — from commit to npm publish to GitHub Pages
@@ -292,7 +309,7 @@ The `mydocs/` directory is not documentation about the code — it's documentati
 |--|-------------|-------------|
 | **Human role** | Accept AI output | Direct, review, decide |
 | **Planning** | None — "just build it" | Written plan → approval → execution |
-| **Quality gate** | Hope it works | 783 tests + Clippy + CI + code review |
+| **Quality gate** | Hope it works | 793 tests + Clippy + CI + code review |
 | **Debugging** | Ask AI to fix AI's bugs | Human diagnoses, AI implements fix |
 | **Architecture** | Emergent (accidental) | Deliberate (CQRS, dependency direction) |
 | **Documentation** | None | 724 files of process records |
