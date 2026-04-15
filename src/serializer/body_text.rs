@@ -824,7 +824,7 @@ mod tests {
     #[test]
     fn test_control_char_code() {
         assert_eq!(
-            control_char_code_and_id(&Control::SectionDef(Box::new(SectionDef::default()))).0,
+            control_char_code_and_id(&Control::SectionDef(Box::default())).0,
             0x0002
         );
         assert_eq!(

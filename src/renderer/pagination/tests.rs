@@ -79,7 +79,7 @@ fn test_page_overflow() {
         0,
     );
     // 여러 페이지로 분할되어야 함
-    assert!(result.pages.len() >= 1);
+    assert!(!result.pages.is_empty());
 }
 
 #[test]

@@ -710,7 +710,7 @@ fn test_edit_ops_rebuild_grid() {
 
     // delete_column 후 grid 정합성 확인
     table.delete_column(1).unwrap();
-    assert_eq!(table.cell_grid.len(), 3 * 1); // 3행 × 1열
+    assert_eq!(table.cell_grid.len(), 3); // 3행 × 1열
     for r in 0..3u16 {
         let cell = table
             .cell_at(r, 0)

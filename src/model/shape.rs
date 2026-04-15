@@ -591,10 +591,7 @@ mod tests {
     #[test]
     fn test_shape_object_line() {
         let line = ShapeObject::Line(LineShape::default());
-        match line {
-            ShapeObject::Line(_) => assert!(true),
-            _ => panic!("Expected Line variant"),
-        }
+        assert!(matches!(line, ShapeObject::Line(_)));
     }
 
     #[test]

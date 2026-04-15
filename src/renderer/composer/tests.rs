@@ -200,7 +200,7 @@ fn test_identify_inline_controls_table() {
 
     let para = Paragraph {
         text: "표 앞 텍스트".to_string(),
-        controls: vec![Control::Table(Box::new(Table::default()))],
+        controls: vec![Control::Table(Box::default())],
         ..Default::default()
     };
 

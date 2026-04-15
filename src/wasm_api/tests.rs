@@ -315,7 +315,7 @@ fn test_insert_text_in_cell() {
     assert!(json.contains("\"ok\":true"));
     assert!(json.contains("\"charOffset\":3"));
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells[0].paragraphs[0].text, "셀추가A");
     } else {
         panic!("표 컨트롤을 찾을 수 없음");
@@ -330,7 +330,7 @@ fn test_delete_text_in_cell() {
     let json = result.unwrap();
     assert!(json.contains("\"ok\":true"));
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells[1].paragraphs[0].text, "B");
     } else {
         panic!("표 컨트롤을 찾을 수 없음");
@@ -371,14 +371,14 @@ fn test_insert_and_delete_roundtrip_in_cell() {
     let result = doc.insert_text_in_cell_native(0, 0, 0, 2, 0, 2, "테스트");
     assert!(result.is_ok());
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells[2].paragraphs[0].text, "셀C테스트");
     }
 
     let result = doc.delete_text_in_cell_native(0, 0, 0, 2, 0, 2, 3);
     assert!(result.is_ok());
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells[2].paragraphs[0].text, "셀C");
     }
 }
@@ -390,7 +390,7 @@ fn test_svg_render_with_table_after_cell_edit() {
     doc.insert_text_in_cell_native(0, 0, 0, 3, 0, 2, "수정됨")
         .unwrap();
     // 삽입 후 셀 텍스트 확인
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells[3].paragraphs[0].text, "셀D수정됨");
     }
     let svg = doc.render_page_svg_native(0);
@@ -453,7 +453,7 @@ fn test_insert_table_row_below() {
     assert!(json.contains("\"rowCount\":3"));
     assert!(json.contains("\"colCount\":2"));
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.row_count, 3);
         assert_eq!(table.cells.len(), 6);
         // 원래 첫 행의 셀A는 여전히 행 0
@@ -476,7 +476,7 @@ fn test_insert_table_column_right() {
     assert!(json.contains("\"rowCount\":2"));
     assert!(json.contains("\"colCount\":3"));
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.col_count, 3);
         assert_eq!(table.cells.len(), 6);
     } else {
@@ -493,7 +493,7 @@ fn test_merge_table_cells() {
     let json = result.unwrap();
     assert!(json.contains("\"cellCount\":3")); // 비주 셀 1개 제거
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells.len(), 3); // 비주 셀 제거됨
         let merged = &table.cells[0];
         assert_eq!(merged.col_span, 2);
@@ -508,7 +508,7 @@ fn test_split_table_cell() {
     let mut doc = create_doc_with_table();
     // 먼저 병합
     doc.merge_table_cells_native(0, 0, 0, 0, 0, 0, 1).unwrap();
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells.len(), 3);
     }
 
@@ -518,7 +518,7 @@ fn test_split_table_cell() {
     let json = result.unwrap();
     assert!(json.contains("\"cellCount\":4"));
 
-    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.get(0) {
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
         assert_eq!(table.cells.len(), 4);
         let cell = &table.cells[0];
         assert_eq!(cell.col_span, 1);
@@ -529,7 +529,7 @@ fn test_split_table_cell() {
 }
 
 #[test]
-fn test_merge_then_control_layout_has_colSpan() {
+fn test_merge_then_control_layout_has_col_span() {
     let mut doc = create_doc_with_table();
     // 병합 전: colSpan=1
     let layout_before = doc.get_page_control_layout_native(0).unwrap();
@@ -3417,7 +3417,7 @@ fn test_docinfo_roundtrip_charshape_preservation() {
             if let Ok(cdoc) = HwpDocument::from_bytes(&d) {
                 eprintln!(
                     "  {} → char_shapes={} para_shapes={} border_fills={} styles={}",
-                    cf.split('/').last().unwrap_or(cf),
+                    cf.split('/').next_back().unwrap_or(cf),
                     cdoc.document.doc_info.char_shapes.len(),
                     cdoc.document.doc_info.para_shapes.len(),
                     cdoc.document.doc_info.border_fills.len(),
@@ -4464,7 +4464,7 @@ fn test_pasted_table_structure_analysis() {
         if t.ctrl_header.data.len() >= 8 {
             let obj_attr = u32::from_le_bytes(t.ctrl_header.data[4..8].try_into().unwrap());
             eprintln!("    obj_attr = 0x{:08X}", obj_attr);
-            let vert_offset = (obj_attr >> 0) & 0x3;
+            let vert_offset = obj_attr & 0x3;
             let horiz_offset = (obj_attr >> 2) & 0x3;
             let vert_rel = (obj_attr >> 4) & 0x3;
             let horiz_rel = (obj_attr >> 7) & 0x3;
@@ -6682,7 +6682,7 @@ fn test_rp006_dangling_references() {
         // LIST_HEADER의 border_fill_id (셀) 및 TABLE의 border_fill_id
         if rec.tag_id == tags::HWPTAG_LIST_HEADER && rec.data.len() >= 34 {
             let bf_id = u16::from_le_bytes([rec.data[32], rec.data[33]]) as usize;
-            if bf_id > 0 && bf_id - 1 >= bf_count {
+            if bf_id > bf_count {
                 dangling_bf.push((ri, "LIST_HEADER", bf_id));
             }
         }
@@ -6817,7 +6817,7 @@ fn test_template_comparison() {
         }
 
         let bytes = std::fs::read(path).unwrap();
-        let mut cfb = CfbReader::open(&bytes).expect(&format!("{} CFB 열기 실패", label));
+        let mut cfb = CfbReader::open(&bytes).unwrap_or_else(|_| panic!("{} CFB 열기 실패", label));
 
         // DocInfo 분석
         let doc_info_data = cfb.read_doc_info(true).expect("DocInfo 읽기 실패");
@@ -7197,8 +7197,8 @@ fn test_complex_comparison() {
 
     eprintln!("\n  --- Record-by-record comparison ---");
     eprintln!(
-        "  {:<6} {:<25} {:<6} {:<8} | {:<25} {:<6} {:<8} | {}",
-        "Idx", "Damaged Tag", "Lvl", "Size", "Fixed Tag", "Lvl", "Size", "Differences"
+        "  {:<6} {:<25} {:<6} {:<8} | {:<25} {:<6} {:<8} | Differences",
+        "Idx", "Damaged Tag", "Lvl", "Size", "Fixed Tag", "Lvl", "Size"
     );
     eprintln!("  {}", "-".repeat(120));
 
@@ -9232,8 +9232,8 @@ fn test_step2_comparison() {
         eprintln!("  Total record data bytes: {}", total_data_bytes);
 
         eprintln!(
-            "\n{:<5} {:<5} {:<25} {:>8}  {}",
-            "Idx", "Lvl", "Tag", "Size", "Details"
+            "\n{:<5} {:<5} {:<25} {:>8}  Details",
+            "Idx", "Lvl", "Tag", "Size"
         );
         eprintln!("{:-<120}", "");
 
@@ -9436,8 +9436,8 @@ fn test_step2_comparison() {
     let mut total_diffs = 0;
 
     eprintln!(
-        "\n{:<5} | {:<30} {:>4} {:>6} | {:<30} {:>4} {:>6} | {}",
-        "#", "VALID Tag", "Lvl", "Size", "DAMAGED Tag", "Lvl", "Size", "Status"
+        "\n{:<5} | {:<30} {:>4} {:>6} | {:<30} {:>4} {:>6} | Status",
+        "#", "VALID Tag", "Lvl", "Size", "DAMAGED Tag", "Lvl", "Size"
     );
     eprintln!("{:-<130}", "");
 
@@ -10613,8 +10613,7 @@ fn test_empty_save_analysis() {
             let ch = u16::from_le_bytes([data[i], data[i + 1]]);
             match ch {
                 // Extended controls take 8 WCHARs (16 bytes)
-                0x0001 | 0x0002 | 0x0003 | 0x000B | 0x000C | 0x000D | 0x000E | 0x000F | 0x0004
-                | 0x0005 | 0x0006 | 0x0007 | 0x0008 | 0x0009 | 0x000A => {
+                0x0001..=0x000F => {
                     let name = match ch {
                         0x0002 => "SEC/COL",
                         0x0003 => "FIELD_BEGIN",
@@ -10675,9 +10674,9 @@ fn test_empty_save_analysis() {
         // textStartPos(4) + lineVPos(4) + lineHPos(4) + lineHeight(4)
         // + textPartHeight(4) + distBaseline(4) + lineSpacing(4) + colStartPos(4) + segWidth(4)
         // Some versions use 32 bytes per segment
-        let seg_size = if data.len() % 36 == 0 {
+        let seg_size = if data.len().is_multiple_of(36) {
             36
-        } else if data.len() % 32 == 0 {
+        } else if data.len().is_multiple_of(32) {
             32
         } else {
             36
@@ -11175,7 +11174,7 @@ fn test_text_insert_detailed_diff() {
     let mut doc = HwpDocument::from_bytes(&orig_data).unwrap();
 
     // 텍스트 삽입
-    doc.insert_text_native(0, 0, 0, "가나다라마바사아");
+    let _ = doc.insert_text_native(0, 0, 0, "가나다라마바사아");
     let saved = doc.export_hwp_native().unwrap();
 
     // 레코드 파싱
@@ -15309,8 +15308,8 @@ fn test_diag_msb_pattern_kwater() {
         let para_count = section.paragraphs.len();
         eprintln!("\n  Section {} ({} paragraphs)", si, para_count);
         eprintln!(
-            "  {:>4} | {:>5} | {:>3} | {:>5} | {:>3} | {:>8} | {}",
-            "idx", "cc", "msb", "psid", "sid", "ctrl", "text_preview"
+            "  {:>4} | {:>5} | {:>3} | {:>5} | {:>3} | {:>8} | text_preview",
+            "idx", "cc", "msb", "psid", "sid", "ctrl"
         );
         eprintln!("  {}", "-".repeat(65));
 
@@ -15657,7 +15656,7 @@ fn test_textbox_render_tree_debug() {
 
     let data = std::fs::read(path).unwrap();
     let mut doc = HwpDocument::from_bytes(&data).unwrap();
-    doc.convert_to_editable_native();
+    let _ = doc.convert_to_editable_native();
 
     // 문서 구조 확인: Shape 컨트롤 찾기
     let mut shape_found = false;
@@ -16461,7 +16460,7 @@ fn test_task81_vertical_cell_text() {
         .collect();
     let sec_mt = doc
         .measured_tables
-        .get(0)
+        .first()
         .map(|v| v.as_slice())
         .unwrap_or(&[]);
     let tree = engine.build_render_tree(
@@ -17366,7 +17365,7 @@ fn test_task110_treatise_diag() {
     eprintln!("\n=== 2단 영역 편집: insert_text_native(0, 14, 0, \"Y\") ===");
     let col_idx_14_before = doc
         .para_column_map
-        .get(0)
+        .first()
         .and_then(|m| m.get(14))
         .copied()
         .unwrap_or(0);
@@ -17682,7 +17681,7 @@ fn test_blank2020_enter_corruption_diagnosis() {
         }
 
         let bytes = std::fs::read(path).unwrap();
-        let mut cfb = CfbReader::open(&bytes).expect(&format!("{} CFB 열기 실패", label));
+        let mut cfb = CfbReader::open(&bytes).unwrap_or_else(|_| panic!("{} CFB 열기 실패", label));
 
         eprintln!("\n{}", "=".repeat(80));
         eprintln!("  {} ({} bytes)", label, bytes.len());
