@@ -169,9 +169,15 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - vpos-based paragraph position correction
 
 ### Output
-- SVG export (CLI)
+- SVG export (CLI, legacy + layer replay)
 - Canvas rendering (WASM/Web)
 - Debug overlay (paragraph/table boundaries + indices + y-coordinates)
+
+### Multi-Renderer Backends
+- `PageRenderTree` can be lowered into a `PageLayerTree` paint IR before backend replay.
+- **Legacy SVG** remains the default compatibility output.
+- **Layered SVG** can be exercised with `RHWP_RENDER_PATH=layer-svg`.
+- This phase establishes the frontend/backend boundary for later CanvasKit and native Skia backends.
 
 ### Web Editor
 - Text editing (insert, delete, undo/redo)
