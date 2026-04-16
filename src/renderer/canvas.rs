@@ -3,8 +3,8 @@
 //! 브라우저의 Canvas 2D API를 사용하여 렌더링한다.
 //! WASM 환경에서 web-sys를 통해 Canvas에 직접 그린다.
 
-use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand};
-use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType, ShapeTransform, BoundingBox};
+use super::render_tree::{BoundingBox, PageRenderTree, RenderNode, RenderNodeType, ShapeTransform};
+use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
 
 /// Canvas 2D 렌더러
 ///
@@ -48,7 +48,13 @@ pub enum CanvasCommand {
     /// 상태 복원 (ctx.restore)
     Restore,
     /// 아핀 변환: translate(tx, ty) → rotate(rad) → scale(sx, sy) 순서
-    SetTransform { tx: f64, ty: f64, rotation_rad: f64, sx: f64, sy: f64 },
+    SetTransform {
+        tx: f64,
+        ty: f64,
+        rotation_rad: f64,
+        sx: f64,
+        sy: f64,
+    },
 }
 
 impl CanvasRenderer {
@@ -89,20 +95,29 @@ impl CanvasRenderer {
                 if let Some(color) = bg.background_color {
                     let color_str = color_to_css(color);
                     self.commands.push(CanvasCommand::FillRect(
-                        node.bbox.x, node.bbox.y,
-                        node.bbox.width, node.bbox.height,
+                        node.bbox.x,
+                        node.bbox.y,
+                        node.bbox.width,
+                        node.bbox.height,
                         color_str,
                     ));
                 }
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(&run.text, node.bbox.x, node.bbox.y + node.bbox.height, &run.style);
+                self.draw_text(
+                    &run.text,
+                    node.bbox.x,
+                    node.bbox.y + node.bbox.height,
+                    &run.style,
+                );
             }
             RenderNodeType::Rectangle(rect) => {
                 self.open_shape_transform(&rect.transform, &node.bbox);
                 self.draw_rect(
-                    node.bbox.x, node.bbox.y,
-                    node.bbox.width, node.bbox.height,
+                    node.bbox.x,
+                    node.bbox.y,
+                    node.bbox.width,
+                    node.bbox.height,
                     rect.corner_radius,
                     &rect.style,
                 );
@@ -115,12 +130,24 @@ impl CanvasRenderer {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
                 let cx = node.bbox.x + node.bbox.width / 2.0;
                 let cy = node.bbox.y + node.bbox.height / 2.0;
-                self.draw_ellipse(cx, cy, node.bbox.width / 2.0, node.bbox.height / 2.0, &ellipse.style);
+                self.draw_ellipse(
+                    cx,
+                    cy,
+                    node.bbox.width / 2.0,
+                    node.bbox.height / 2.0,
+                    &ellipse.style,
+                );
             }
             RenderNodeType::Image(img) => {
                 self.open_shape_transform(&img.transform, &node.bbox);
                 if let Some(ref data) = img.data {
-                    self.draw_image(data, node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height);
+                    self.draw_image(
+                        data,
+                        node.bbox.x,
+                        node.bbox.y,
+                        node.bbox.width,
+                        node.bbox.height,
+                    );
                 }
             }
             RenderNodeType::Path(path) => {
@@ -153,7 +180,11 @@ impl CanvasRenderer {
         let rotation_rad = transform.rotation.to_radians();
         self.commands.push(CanvasCommand::Save);
         self.commands.push(CanvasCommand::SetTransform {
-            tx: cx, ty: cy, rotation_rad, sx, sy,
+            tx: cx,
+            ty: cy,
+            rotation_rad,
+            sx,
+            sy,
         });
     }
 
@@ -185,22 +216,36 @@ impl Renderer for CanvasRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, _style: &TextStyle) {
-        self.commands.push(CanvasCommand::FillText(text.to_string(), x, y));
+        self.commands
+            .push(CanvasCommand::FillText(text.to_string(), x, y));
     }
 
-    fn draw_rect(&mut self, x: f64, y: f64, w: f64, h: f64, _corner_radius: f64, style: &ShapeStyle) {
+    fn draw_rect(
+        &mut self,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
+        _corner_radius: f64,
+        style: &ShapeStyle,
+    ) {
         if let Some(ref pat) = style.pattern {
             self.commands.push(CanvasCommand::FillPatternRect(
-                x, y, w, h,
+                x,
+                y,
+                w,
+                h,
                 pat.pattern_type,
                 color_to_css(pat.pattern_color),
                 color_to_css(pat.background_color),
             ));
         } else if let Some(fill) = style.fill_color {
-            self.commands.push(CanvasCommand::FillRect(x, y, w, h, color_to_css(fill)));
+            self.commands
+                .push(CanvasCommand::FillRect(x, y, w, h, color_to_css(fill)));
         }
         if let Some(stroke) = style.stroke_color {
-            self.commands.push(CanvasCommand::StrokeRect(x, y, w, h, color_to_css(stroke)));
+            self.commands
+                .push(CanvasCommand::StrokeRect(x, y, w, h, color_to_css(stroke)));
         }
     }
 
@@ -209,7 +254,8 @@ impl Renderer for CanvasRenderer {
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, _style: &ShapeStyle) {
-        self.commands.push(CanvasCommand::DrawEllipse(cx, cy, rx, ry));
+        self.commands
+            .push(CanvasCommand::DrawEllipse(cx, cy, rx, ry));
     }
 
     fn draw_image(&mut self, _data: &[u8], x: f64, y: f64, w: f64, h: f64) {
@@ -227,10 +273,13 @@ impl Renderer for CanvasRenderer {
                     self.commands.push(CanvasCommand::LineTo(*x, *y));
                 }
                 PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                    self.commands.push(CanvasCommand::CurveTo(*x1, *y1, *x2, *y2, *x, *y));
+                    self.commands
+                        .push(CanvasCommand::CurveTo(*x1, *y1, *x2, *y2, *x, *y));
                 }
                 PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
-                    self.commands.push(CanvasCommand::ArcTo(*rx, *ry, *x_rot, *large_arc, *sweep, *x, *y));
+                    self.commands.push(CanvasCommand::ArcTo(
+                        *rx, *ry, *x_rot, *large_arc, *sweep, *x, *y,
+                    ));
                 }
                 PathCommand::ClosePath => {
                     self.commands.push(CanvasCommand::ClosePath);

@@ -25,8 +25,14 @@ fn create_fontdb() -> usvg::fontdb::Database {
 /// SVG에서 없는 한글 폰트명에 fallback 추가
 #[cfg(not(target_arch = "wasm32"))]
 fn add_font_fallbacks(svg: &str) -> String {
-    svg.replace("font-family=\"휴먼명조\"", "font-family=\"휴먼명조, 바탕, serif\"")
-       .replace("font-family=\"HCI Poppy\"", "font-family=\"HCI Poppy, 맑은 고딕, sans-serif\"")
+    svg.replace(
+        "font-family=\"휴먼명조\"",
+        "font-family=\"휴먼명조, 바탕, serif\"",
+    )
+    .replace(
+        "font-family=\"HCI Poppy\"",
+        "font-family=\"HCI Poppy, 맑은 고딕, sans-serif\"",
+    )
 }
 
 /// 단일 SVG를 PDF로 변환
@@ -38,8 +44,12 @@ pub fn svg_to_pdf(svg_content: &str) -> Result<Vec<u8>, String> {
     let svg_with_fallback = add_font_fallbacks(svg_content);
     let tree = usvg::Tree::from_str(&svg_with_fallback, &options)
         .map_err(|e| format!("SVG 파싱 실패: {}", e))?;
-    let pdf = svg2pdf::to_pdf(&tree, svg2pdf::ConversionOptions::default(), svg2pdf::PageOptions::default())
-        .map_err(|e| format!("PDF 변환 실패: {:?}", e))?;
+    let pdf = svg2pdf::to_pdf(
+        &tree,
+        svg2pdf::ConversionOptions::default(),
+        svg2pdf::PageOptions::default(),
+    )
+    .map_err(|e| format!("PDF 변환 실패: {:?}", e))?;
     Ok(pdf)
 }
 
@@ -53,7 +63,7 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
         return svg_to_pdf(&svg_pages[0]);
     }
 
-    use pdf_writer::{Pdf, Ref, Finish};
+    use pdf_writer::{Finish, Pdf, Ref};
     use std::collections::HashMap;
 
     let fontdb = create_fontdb();
@@ -86,7 +96,12 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
         let w = tree.size().width() * dpi_ratio;
         let h = tree.size().height() * dpi_ratio;
 
-        page_datas.push(PageData { chunk, svg_ref, width: w, height: h });
+        page_datas.push(PageData {
+            chunk,
+            svg_ref,
+            width: w,
+            height: h,
+        });
     }
 
     // 각 chunk를 재번호화하고 페이지 참조 수집
@@ -101,9 +116,9 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
 
         // chunk 재번호화
         let mut map = HashMap::new();
-        let renumbered = pd.chunk.renumber(|old| {
-            *map.entry(old).or_insert_with(|| alloc.bump())
-        });
+        let renumbered = pd
+            .chunk
+            .renumber(|old| *map.entry(old).or_insert_with(|| alloc.bump()));
 
         let remapped_svg_ref = map.get(&pd.svg_ref).copied().unwrap_or(pd.svg_ref);
         svg_refs_remapped.push(remapped_svg_ref);
@@ -150,7 +165,8 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
 
     // 문서 정보
     let info_ref = alloc.bump();
-    pdf.document_info(info_ref).producer(pdf_writer::TextStr("rhwp"));
+    pdf.document_info(info_ref)
+        .producer(pdf_writer::TextStr("rhwp"));
 
     Ok(pdf.finish())
 }

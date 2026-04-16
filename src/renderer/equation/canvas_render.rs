@@ -3,10 +3,10 @@
 //! LayoutBox를 HTML5 Canvas 2D API로 직접 렌더링한다.
 //! WASM 환경에서만 컴파일된다.
 
-use web_sys::CanvasRenderingContext2d;
+use super::ast::MatrixStyle;
 use super::layout::*;
 use super::symbols::{DecoKind, FontStyleKind};
-use super::ast::MatrixStyle;
+use web_sys::CanvasRenderingContext2d;
 
 /// 수식을 Canvas에 렌더링
 pub fn render_equation_canvas(
@@ -17,7 +17,16 @@ pub fn render_equation_canvas(
     color: &str,
     base_font_size: f64,
 ) {
-    render_box(ctx, layout, origin_x, origin_y, color, base_font_size, false, false);
+    render_box(
+        ctx,
+        layout,
+        origin_x,
+        origin_y,
+        color,
+        base_font_size,
+        false,
+        false,
+    );
 }
 
 fn render_box(
@@ -158,7 +167,16 @@ fn render_box(
             };
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(ctx, bracket_chars.0, x, y, fs * 0.3, lb.height, color, fs);
-                draw_stretch_bracket(ctx, bracket_chars.1, x + lb.width - fs * 0.3, y, fs * 0.3, lb.height, color, fs);
+                draw_stretch_bracket(
+                    ctx,
+                    bracket_chars.1,
+                    x + lb.width - fs * 0.3,
+                    y,
+                    fs * 0.3,
+                    lb.height,
+                    color,
+                    fs,
+                );
             }
             for row in cells {
                 for cell in row {
@@ -209,7 +227,11 @@ fn render_box(
 }
 
 fn font_size_from_box(lb: &LayoutBox, base_fs: f64) -> f64 {
-    if lb.height > 0.0 { lb.height } else { base_fs }
+    if lb.height > 0.0 {
+        lb.height
+    } else {
+        base_fs
+    }
 }
 
 fn estimate_op_width(text: &str, fs: f64) -> f64 {
@@ -228,7 +250,13 @@ fn set_font(ctx: &CanvasRenderingContext2d, size: f64, italic: bool, bold: bool)
 /// 늘림 괄호 렌더링
 fn draw_stretch_bracket(
     ctx: &CanvasRenderingContext2d,
-    bracket: &str, x: f64, y: f64, w: f64, h: f64, color: &str, fs: f64,
+    bracket: &str,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    color: &str,
+    fs: f64,
 ) {
     let mid_x = x + w / 2.0;
     let stroke_w = fs * 0.04;
@@ -269,8 +297,18 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.move_to(mid_x + w * 0.2, y);
             let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y, mid_x - w * 0.1, y + qh);
-            let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.3, y + qh * 2.0);
-            let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.1, y + qh * 3.0);
+            let _ = ctx.quadratic_curve_to(
+                mid_x - w * 0.1,
+                y + qh * 2.0,
+                mid_x - w * 0.3,
+                y + qh * 2.0,
+            );
+            let _ = ctx.quadratic_curve_to(
+                mid_x - w * 0.1,
+                y + qh * 2.0,
+                mid_x - w * 0.1,
+                y + qh * 3.0,
+            );
             let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + h, mid_x + w * 0.2, y + h);
             ctx.stroke();
         }
@@ -279,8 +317,18 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.move_to(mid_x - w * 0.2, y);
             let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y, mid_x + w * 0.1, y + qh);
-            let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.3, y + qh * 2.0);
-            let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.1, y + qh * 3.0);
+            let _ = ctx.quadratic_curve_to(
+                mid_x + w * 0.1,
+                y + qh * 2.0,
+                mid_x + w * 0.3,
+                y + qh * 2.0,
+            );
+            let _ = ctx.quadratic_curve_to(
+                mid_x + w * 0.1,
+                y + qh * 2.0,
+                mid_x + w * 0.1,
+                y + qh * 3.0,
+            );
             let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + h, mid_x - w * 0.2, y + h);
             ctx.stroke();
         }
@@ -304,7 +352,12 @@ fn draw_stretch_bracket(
 /// 장식 렌더링
 fn draw_decoration(
     ctx: &CanvasRenderingContext2d,
-    kind: DecoKind, mid_x: f64, y: f64, width: f64, color: &str, fs: f64,
+    kind: DecoKind,
+    mid_x: f64,
+    y: f64,
+    width: f64,
+    color: &str,
+    fs: f64,
 ) {
     let stroke_w = fs * 0.03;
     let half_w = width / 2.0;
@@ -342,7 +395,12 @@ fn draw_decoration(
             ctx.begin_path();
             ctx.move_to(mid_x - half_w * 0.6, ty);
             let _ = ctx.quadratic_curve_to(mid_x - half_w * 0.2, ty - fs * 0.08, mid_x, ty);
-            let _ = ctx.quadratic_curve_to(mid_x + half_w * 0.2, ty + fs * 0.08, mid_x + half_w * 0.6, ty);
+            let _ = ctx.quadratic_curve_to(
+                mid_x + half_w * 0.2,
+                ty + fs * 0.08,
+                mid_x + half_w * 0.6,
+                ty,
+            );
             ctx.stroke();
         }
         DecoKind::Dot => {
@@ -355,10 +413,22 @@ fn draw_decoration(
             let gap = fs * 0.1;
             ctx.set_fill_style_str(color);
             ctx.begin_path();
-            let _ = ctx.arc(mid_x - gap, y + fs * 0.06, fs * 0.03, 0.0, std::f64::consts::TAU);
+            let _ = ctx.arc(
+                mid_x - gap,
+                y + fs * 0.06,
+                fs * 0.03,
+                0.0,
+                std::f64::consts::TAU,
+            );
             ctx.fill();
             ctx.begin_path();
-            let _ = ctx.arc(mid_x + gap, y + fs * 0.06, fs * 0.03, 0.0, std::f64::consts::TAU);
+            let _ = ctx.arc(
+                mid_x + gap,
+                y + fs * 0.06,
+                fs * 0.03,
+                0.0,
+                std::f64::consts::TAU,
+            );
             ctx.fill();
         }
         DecoKind::Underline | DecoKind::Under => {

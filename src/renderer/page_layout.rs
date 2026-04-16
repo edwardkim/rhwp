@@ -1,8 +1,8 @@
 //! 페이지 레이아웃 계산 (PageDef → 렌더링 영역)
 
-use crate::model::page::{PageDef, ColumnDef, PageAreas};
-use crate::model::Rect;
 use super::{hwpunit_to_px, DEFAULT_DPI};
+use crate::model::page::{ColumnDef, PageAreas, PageDef};
+use crate::model::Rect;
 
 /// 페이지 레이아웃 정보 (픽셀 단위로 변환된 영역)
 #[derive(Debug, Clone)]
@@ -100,7 +100,8 @@ impl PageLayoutInfo {
 
     /// 단 너비 (HWPUNIT) — vpos 보정에서 segment_width 비교에 사용
     pub fn column_width_hu(&self) -> i32 {
-        self.column_areas.first()
+        self.column_areas
+            .first()
             .map(|a| super::px_to_hwpunit(a.width, self.dpi))
             .unwrap_or(super::px_to_hwpunit(self.body_area.width, self.dpi))
     }
@@ -141,11 +142,17 @@ fn calculate_column_areas(
         if column_def.proportional_widths {
             // HWP 5.0 바이너리: widths/gaps는 비례값 (합계=32768)
             // body_area.width에 대한 비례로 변환
-            let total: f64 = column_def.widths.iter()
+            let total: f64 = column_def
+                .widths
+                .iter()
                 .chain(column_def.gaps.iter())
                 .map(|&v| (v as u16) as f64)
                 .sum();
-            let scale = if total > 0.0 { body_area.width / total } else { 1.0 };
+            let scale = if total > 0.0 {
+                body_area.width / total
+            } else {
+                1.0
+            };
 
             for i in 0..col_count {
                 let w = (column_def.widths[i] as u16) as f64 * scale;
@@ -201,7 +208,7 @@ fn calculate_column_areas(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::page::{PageDef, ColumnDef};
+    use crate::model::page::{ColumnDef, PageDef};
 
     fn a4_page_def() -> PageDef {
         PageDef {
@@ -221,7 +228,10 @@ mod tests {
     #[test]
     fn test_single_column_layout() {
         let page_def = a4_page_def();
-        let col_def = ColumnDef { column_count: 1, ..Default::default() };
+        let col_def = ColumnDef {
+            column_count: 1,
+            ..Default::default()
+        };
         let layout = PageLayoutInfo::from_page_def_default(&page_def, &col_def);
 
         assert!((layout.page_width - 793.7).abs() < 1.0);

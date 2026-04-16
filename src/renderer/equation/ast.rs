@@ -16,9 +16,9 @@ pub enum MatrixStyle {
 /// 공백 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SpaceKind {
-    Normal,   // ~ (보통 공백)
-    Thin,     // ` (1/4 공백)
-    Tab,      // & (세로 칸 맞춤)
+    Normal, // ~ (보통 공백)
+    Thin,   // ` (1/4 공백)
+    Tab,    // & (세로 칸 맞춤)
 }
 
 /// 수식 AST 노드
@@ -61,16 +61,10 @@ pub enum EqNode {
     },
 
     /// 위첨자: x^y
-    Superscript {
-        base: Box<EqNode>,
-        sup: Box<EqNode>,
-    },
+    Superscript { base: Box<EqNode>, sup: Box<EqNode> },
 
     /// 아래첨자: x_y
-    Subscript {
-        base: Box<EqNode>,
-        sub: Box<EqNode>,
-    },
+    Subscript { base: Box<EqNode>, sub: Box<EqNode> },
 
     /// 위·아래첨자: x_a^b
     SubSup {
@@ -99,15 +93,10 @@ pub enum EqNode {
     },
 
     /// 조건식: CASES{...}
-    Cases {
-        rows: Vec<EqNode>,
-    },
+    Cases { rows: Vec<EqNode> },
 
     /// 세로 쌓기: PILE/LPILE/RPILE
-    Pile {
-        rows: Vec<EqNode>,
-        align: PileAlign,
-    },
+    Pile { rows: Vec<EqNode>, align: PileAlign },
 
     /// 칸 맞춤 정렬: EQALIGN{...}
     /// & 기준으로 왼쪽/오른쪽을 분리하여 세로 정렬
@@ -130,10 +119,7 @@ pub enum EqNode {
     },
 
     /// 글자 장식: hat, bar, vec, etc.
-    Decoration {
-        kind: DecoKind,
-        body: Box<EqNode>,
-    },
+    Decoration { kind: DecoKind, body: Box<EqNode> },
 
     /// 글꼴 스타일: rm, it, bold
     FontStyle {
@@ -175,7 +161,8 @@ impl EqNode {
     pub fn simplify(self) -> Self {
         match self {
             EqNode::Row(mut children) => {
-                children = children.into_iter()
+                children = children
+                    .into_iter()
                     .map(|c| c.simplify())
                     .filter(|c| !matches!(c, EqNode::Empty))
                     .collect();

@@ -1,8 +1,8 @@
 //! PaginationState: paginate_with_measured의 가변 상태를 캡슐화
 
-use std::collections::HashMap;
+use super::{ColumnContent, PageContent, PageItem, WrapAroundPara};
 use crate::renderer::page_layout::PageLayoutInfo;
-use super::{PageContent, ColumnContent, PageItem, WrapAroundPara};
+use std::collections::HashMap;
 
 /// 페이지당 방어 로직 최대 실행 횟수.
 /// 정상 문서에서는 절대 도달하지 않는 값. 이 값을 초과하면 무한 루프로 판단하고 강제 배치.
@@ -130,7 +130,10 @@ impl PaginationState {
             return;
         }
         let is_para_item = self.current_items.last().map_or(false, |item| {
-            matches!(item, PageItem::FullParagraph { .. } | PageItem::PartialParagraph { .. })
+            matches!(
+                item,
+                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { .. }
+            )
         });
         if !is_para_item {
             return;

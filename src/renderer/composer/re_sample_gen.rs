@@ -6,8 +6,8 @@
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
     use std::fs;
+    use std::path::Path;
 
     /// 템플릿 HWP 로드 → 텍스트 교체 → 저장
     fn generate_sample(
@@ -20,7 +20,11 @@ mod tests {
 
     /// 폰트를 코드로 변경 (한컴의 방식을 재현)
     /// ko_font: 한글 폰트, en_font: 영문 폰트 (None이면 한글과 동일)
-    fn apply_font(core: &mut crate::document_core::DocumentCore, ko_font: &str, en_font: Option<&str>) {
+    fn apply_font(
+        core: &mut crate::document_core::DocumentCore,
+        ko_font: &str,
+        en_font: Option<&str>,
+    ) {
         let en = en_font.unwrap_or(ko_font);
         let doc = &mut core.document;
 
@@ -49,13 +53,20 @@ mod tests {
 
         // 2. CharShape의 font_ids 설정
         // 문단이 참조하는 CharShape를 찾아 font_ids 변경
-        let para_cs_id = doc.sections[0].paragraphs[0].char_shapes
-            .first().map(|cs| cs.char_shape_id as usize).unwrap_or(0);
+        let para_cs_id = doc.sections[0].paragraphs[0]
+            .char_shapes
+            .first()
+            .map(|cs| cs.char_shape_id as usize)
+            .unwrap_or(0);
 
         if para_cs_id < doc.doc_info.char_shapes.len() {
             let cs = &mut doc.doc_info.char_shapes[para_cs_id];
             for lang in 0..7 {
-                cs.font_ids[lang] = if lang == 1 { en_ids[lang] } else { ko_ids[lang] };
+                cs.font_ids[lang] = if lang == 1 {
+                    en_ids[lang]
+                } else {
+                    ko_ids[lang]
+                };
             }
             cs.raw_data = None;
         }
@@ -106,7 +117,7 @@ mod tests {
         template_path: &str,
         output_path: &str,
         texts: &[&str],
-        _font_name: Option<&str>,  // 미사용 (폰트는 템플릿으로 결정)
+        _font_name: Option<&str>, // 미사용 (폰트는 템플릿으로 결정)
         alignment: Option<crate::model::style::Alignment>,
     ) -> Result<(), String> {
         // output/ 디렉토리 자동 생성
@@ -365,12 +376,14 @@ mod tests {
             "template/blank-malgun.hwp",
             "samples/re-eng-mixed-batang-arial-empty.hwp",
             "samples/re-mixed-malgun-timesnew-hancom.hwp",
-            "samples/re-eng-nospace-malgun-times.hwp",  // + char_shapes_ref 출력
+            "samples/re-eng-nospace-malgun-times.hwp", // + char_shapes_ref 출력
         ];
 
         for path in &templates {
             let p = Path::new(path);
-            if !p.exists() { continue; }
+            if !p.exists() {
+                continue;
+            }
             let data = fs::read(p).unwrap();
             let doc = crate::parser::parse_document(&data).unwrap();
 
@@ -379,18 +392,30 @@ mod tests {
             // font_faces: 7개 언어 카테고리별 폰트 목록
             let lang_names = ["한글", "영어", "한자", "일어", "기타", "기호", "사용자"];
             for (li, fonts) in doc.doc_info.font_faces.iter().enumerate() {
-                let lang = if li < lang_names.len() { lang_names[li] } else { "?" };
-                let names: Vec<String> = fonts.iter().map(|f| format!("{}(t{})", f.name, f.alt_type)).collect();
+                let lang = if li < lang_names.len() {
+                    lang_names[li]
+                } else {
+                    "?"
+                };
+                let names: Vec<String> = fonts
+                    .iter()
+                    .map(|f| format!("{}(t{})", f.name, f.alt_type))
+                    .collect();
                 eprintln!("  font_faces[{}]({}): {:?}", li, lang, names);
             }
 
             // char_shapes: font_ids 확인
             for (ci, cs) in doc.doc_info.char_shapes.iter().enumerate() {
-                eprintln!("  char_shapes[{}]: font_ids={:?} base_size={} spacings={:?} ratios={:?}", ci, cs.font_ids, cs.base_size, cs.spacings, cs.ratios);
+                eprintln!(
+                    "  char_shapes[{}]: font_ids={:?} base_size={} spacings={:?} ratios={:?}",
+                    ci, cs.font_ids, cs.base_size, cs.spacings, cs.ratios
+                );
             }
             // 문단의 char_shape_ref 확인
             for (pi, para) in doc.sections[0].paragraphs.iter().enumerate() {
-                let refs: Vec<String> = para.char_shapes.iter()
+                let refs: Vec<String> = para
+                    .char_shapes
+                    .iter()
                     .map(|r| format!("pos={}→cs_id={}", r.start_pos, r.char_shape_id))
                     .collect();
                 if !refs.is_empty() {
@@ -408,10 +433,10 @@ mod tests {
         // 한글/영문 폰트 조합 테스트
         let fonts: Vec<(&str, &str, Option<&str>)> = vec![
             // (접미사, 한글폰트, 영문폰트)
-            ("batang", "바탕", None),              // 한영 동일: 바탕
-            ("batangche", "바탕체", None),          // 한영 동일: 바탕체 (고정폭)
-            ("dotum", "돋움", None),               // 한영 동일: 돋움
-            ("malgun", "맑은 고딕", None),          // 한영 동일: 맑은 고딕
+            ("batang", "바탕", None),                // 한영 동일: 바탕
+            ("batangche", "바탕체", None),           // 한영 동일: 바탕체 (고정폭)
+            ("dotum", "돋움", None),                 // 한영 동일: 돋움
+            ("malgun", "맑은 고딕", None),           // 한영 동일: 맑은 고딕
             ("batang-arial", "바탕", Some("Arial")), // 한글=바탕, 영문=Arial
             ("malgun-times", "맑은 고딕", Some("Times New Roman")), // 한글=맑은고딕, 영문=Times (한컴 템플릿 사용)
             ("malgun-courier", "맑은 고딕", Some("Courier New")), // 한글=맑은고딕, 영문=Courier(고정폭)
@@ -429,15 +454,33 @@ mod tests {
         for (suffix, ko_font, en_font) in &fonts {
             // 영문 연속 (공백 없음)
             let output = format!("output/re-eng-nospace-{}.hwp", suffix);
-            let _ = generate_sample_with_font_pair(&output, &[&latin_nospace], Some(ko_font), *en_font, None);
+            let _ = generate_sample_with_font_pair(
+                &output,
+                &[&latin_nospace],
+                Some(ko_font),
+                *en_font,
+                None,
+            );
 
             // 영문 단어 (공백 있음)
             let output = format!("output/re-eng-words-{}.hwp", suffix);
-            let _ = generate_sample_with_font_pair(&output, &[&latin_words_long], Some(ko_font), *en_font, None);
+            let _ = generate_sample_with_font_pair(
+                &output,
+                &[&latin_words_long],
+                Some(ko_font),
+                *en_font,
+                None,
+            );
 
             // 한영 혼합
             let output = format!("output/re-eng-mixed-{}.hwp", suffix);
-            let _ = generate_sample_with_font_pair(&output, &[&mixed_long], Some(ko_font), *en_font, None);
+            let _ = generate_sample_with_font_pair(
+                &output,
+                &[&mixed_long],
+                Some(ko_font),
+                *en_font,
+                None,
+            );
         }
     }
 
@@ -480,10 +523,10 @@ mod tests {
     fn test_gen_re_multisize() {
         // 한 문단 내에 두 가지 크기를 혼합하여 줄별 line_height 검증
         let sizes: Vec<(&str, i32, i32)> = vec![
-            ("10-16", 1000, 1600),  // 10pt + 16pt
-            ("10-20", 1000, 2000),  // 10pt + 20pt
-            ("8-14",   800, 1400),  // 8pt + 14pt
-            ("10-10", 1000, 1000),  // 동일 크기 (기준선)
+            ("10-16", 1000, 1600), // 10pt + 16pt
+            ("10-20", 1000, 2000), // 10pt + 20pt
+            ("8-14", 800, 1400),   // 8pt + 14pt
+            ("10-10", 1000, 1000), // 동일 크기 (기준선)
         ];
 
         fs::create_dir_all("output").unwrap();
@@ -520,9 +563,18 @@ mod tests {
             let big_end_utf16 = para.char_offsets.get(big_end).copied().unwrap_or(0);
 
             para.char_shapes = vec![
-                crate::model::paragraph::CharShapeRef { start_pos: 0, char_shape_id: 0 },
-                crate::model::paragraph::CharShapeRef { start_pos: big_start_utf16, char_shape_id: big_cs_id },
-                crate::model::paragraph::CharShapeRef { start_pos: big_end_utf16, char_shape_id: 0 },
+                crate::model::paragraph::CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 0,
+                },
+                crate::model::paragraph::CharShapeRef {
+                    start_pos: big_start_utf16,
+                    char_shape_id: big_cs_id,
+                },
+                crate::model::paragraph::CharShapeRef {
+                    start_pos: big_end_utf16,
+                    char_shape_id: 0,
+                },
             ];
 
             core.document.sections[0].raw_stream = None;
@@ -540,7 +592,12 @@ mod tests {
             let empty_bytes = crate::serializer::serialize_document(&core.document).unwrap();
             fs::write(&empty_path, &empty_bytes).unwrap();
 
-            eprintln!("생성: {} (기본={}pt, 큰={}pt)", output, base_size / 100, big_size / 100);
+            eprintln!(
+                "생성: {} (기본={}pt, 큰={}pt)",
+                output,
+                base_size / 100,
+                big_size / 100
+            );
         }
     }
 }

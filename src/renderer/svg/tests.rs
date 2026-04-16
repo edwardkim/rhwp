@@ -15,11 +15,16 @@ fn test_svg_begin_end_page() {
 fn test_svg_draw_text() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_text("안녕하세요", 10.0, 20.0, &TextStyle {
-        font_size: 16.0,
-        bold: true,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "안녕하세요",
+        10.0,
+        20.0,
+        &TextStyle {
+            font_size: 16.0,
+            bold: true,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     assert!(output.contains("<text"));
     assert!(output.contains("font-weight=\"bold\""));
@@ -29,12 +34,19 @@ fn test_svg_draw_text() {
 fn test_svg_draw_rect() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_rect(10.0, 20.0, 100.0, 50.0, 0.0, &ShapeStyle {
-        fill_color: Some(0x00FF0000),
-        stroke_color: Some(0x00000000),
-        stroke_width: 2.0,
-        ..Default::default()
-    });
+    renderer.draw_rect(
+        10.0,
+        20.0,
+        100.0,
+        50.0,
+        0.0,
+        &ShapeStyle {
+            fill_color: Some(0x00FF0000),
+            stroke_color: Some(0x00000000),
+            stroke_width: 2.0,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     assert!(output.contains("<rect"));
     assert!(output.contains("fill=\"#0000ff\"")); // BGR → RGB
@@ -61,22 +73,34 @@ fn test_svg_draw_path() {
 fn test_svg_text_decoration() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_text("밑줄", 10.0, 20.0, &TextStyle {
-        font_size: 16.0,
-        underline: UnderlineType::Bottom,
-        ..Default::default()
-    });
-    renderer.draw_text("취소", 10.0, 40.0, &TextStyle {
-        font_size: 16.0,
-        strikethrough: true,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "밑줄",
+        10.0,
+        20.0,
+        &TextStyle {
+            font_size: 16.0,
+            underline: UnderlineType::Bottom,
+            ..Default::default()
+        },
+    );
+    renderer.draw_text(
+        "취소",
+        10.0,
+        40.0,
+        &TextStyle {
+            font_size: 16.0,
+            strikethrough: true,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     // 밑줄: <line> 요소로 출력
     let underline_count = output.matches("y1=\"22\"").count(); // y + 2.0
     assert!(underline_count > 0, "밑줄 <line> 요소가 있어야 함");
     // 취소선: <line> 요소로 출력
-    let strike_count = output.matches("stroke=\"#000000\" stroke-width=\"1\"").count();
+    let strike_count = output
+        .matches("stroke=\"#000000\" stroke-width=\"1\"")
+        .count();
     assert!(strike_count >= 2, "취소선과 밑줄 <line> 요소가 있어야 함");
 }
 
@@ -85,11 +109,16 @@ fn test_svg_text_ratio() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
     // ratio 80%: 문자별 transform 적용
-    renderer.draw_text("장평", 50.0, 100.0, &TextStyle {
-        font_size: 16.0,
-        ratio: 0.8,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "장평",
+        50.0,
+        100.0,
+        &TextStyle {
+            font_size: 16.0,
+            ratio: 0.8,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     // 첫 문자 '장': translate(50,100) scale(0.8000,1)
     assert!(output.contains("transform=\"translate(50,100) scale(0.8000,1)\""));
@@ -103,11 +132,16 @@ fn test_svg_text_ratio_default() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
     // ratio 100%: transform 미적용, 문자별 x좌표
-    renderer.draw_text("기본", 50.0, 100.0, &TextStyle {
-        font_size: 16.0,
-        ratio: 1.0,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "기본",
+        50.0,
+        100.0,
+        &TextStyle {
+            font_size: 16.0,
+            ratio: 1.0,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     assert!(!output.contains("transform="));
     // 첫 문자는 x=50
@@ -146,4 +180,3 @@ fn test_color_to_svg() {
     assert_eq!(color_to_svg(0x000000FF), "#ff0000");
     assert_eq!(color_to_svg(0x00FFFFFF), "#ffffff");
 }
-

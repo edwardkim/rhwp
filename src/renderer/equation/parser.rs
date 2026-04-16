@@ -4,10 +4,10 @@
 
 use super::ast::*;
 use super::symbols::{
-    self, is_big_operator, is_function, is_structure_command,
-    lookup_symbol, lookup_function, DECORATIONS, FONT_STYLES,
+    self, is_big_operator, is_function, is_structure_command, lookup_function, lookup_symbol,
+    DECORATIONS, FONT_STYLES,
 };
-use super::tokenizer::{Token, TokenType, tokenize};
+use super::tokenizer::{tokenize, Token, TokenType};
 
 /// 수식 파서
 pub struct EqParser {
@@ -25,11 +25,17 @@ impl EqParser {
     }
 
     fn current_type(&self) -> TokenType {
-        self.tokens.get(self.pos).map(|t| t.ty).unwrap_or(TokenType::Eof)
+        self.tokens
+            .get(self.pos)
+            .map(|t| t.ty)
+            .unwrap_or(TokenType::Eof)
     }
 
     fn current_value(&self) -> &str {
-        self.tokens.get(self.pos).map(|t| t.value.as_str()).unwrap_or("")
+        self.tokens
+            .get(self.pos)
+            .map(|t| t.value.as_str())
+            .unwrap_or("")
     }
 
     fn at_end(&self) -> bool {
@@ -85,7 +91,9 @@ impl EqParser {
     /// 수식 전체 파싱 (엔트리 포인트)
     pub fn parse(&mut self) -> EqNode {
         // 최상위 OVER 분수 확인
-        let non_eof: Vec<Token> = self.tokens.iter()
+        let non_eof: Vec<Token> = self
+            .tokens
+            .iter()
             .filter(|t| t.ty != TokenType::Eof)
             .cloned()
             .collect();
@@ -164,8 +172,7 @@ impl EqParser {
                 let group = self.parse_group();
                 self.try_parse_scripts(group)
             }
-            TokenType::LParen | TokenType::RParen |
-            TokenType::LBracket | TokenType::RBracket => {
+            TokenType::LParen | TokenType::RParen | TokenType::LBracket | TokenType::RBracket => {
                 self.pos += 1;
                 EqNode::Symbol(val)
             }
@@ -557,7 +564,9 @@ impl EqParser {
             if self.current_type() == TokenType::RBrace {
                 break;
             }
-            if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+            if self.current_type() == TokenType::Command
+                && Self::cmd_eq(self.current_value(), "RIGHT")
+            {
                 break;
             }
             denom_nodes.push(self.parse_element());
@@ -796,7 +805,8 @@ impl EqParser {
             if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
                 // 새 행: 현재 행 완료
                 let left = EqNode::Row(current_left).simplify();
-                let right = current_right.map(|r| EqNode::Row(r).simplify())
+                let right = current_right
+                    .map(|r| EqNode::Row(r).simplify())
                     .unwrap_or(EqNode::Empty);
                 rows.push((left, right));
                 current_left = Vec::new();
@@ -808,7 +818,9 @@ impl EqParser {
                     current_right = Some(Vec::new());
                 }
                 // 이미 오른쪽인 경우 왼쪽에 합침
-                if current_right.as_ref().map_or(false, |r| r.is_empty()) && !current_left.is_empty() {
+                if current_right.as_ref().map_or(false, |r| r.is_empty())
+                    && !current_left.is_empty()
+                {
                     // 첫 번째 &: left 확정, right 시작
                 } else if let Some(ref mut right) = current_right {
                     // 추가 &는 right에 탭으로 추가
@@ -827,7 +839,8 @@ impl EqParser {
         // 마지막 행 추가
         if !current_left.is_empty() || current_right.is_some() {
             let left = EqNode::Row(current_left).simplify();
-            let right = current_right.map(|r| EqNode::Row(r).simplify())
+            let right = current_right
+                .map(|r| EqNode::Row(r).simplify())
                 .unwrap_or(EqNode::Empty);
             rows.push((left, right));
         }
@@ -857,7 +870,9 @@ impl EqParser {
         } else {
             let mut children = Vec::new();
             while self.pos < content_end && !self.at_end() {
-                if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+                if self.current_type() == TokenType::Command
+                    && Self::cmd_eq(self.current_value(), "RIGHT")
+                {
                     break;
                 }
                 children.push(self.parse_element());
@@ -866,7 +881,8 @@ impl EqParser {
         };
 
         // RIGHT 건너뛰기
-        if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+        if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT")
+        {
             self.pos += 1;
         }
 
@@ -890,9 +906,12 @@ impl EqParser {
         let val = self.current_value().to_string();
 
         match ty {
-            TokenType::LParen | TokenType::RParen |
-            TokenType::LBracket | TokenType::RBracket |
-            TokenType::LBrace | TokenType::RBrace => {
+            TokenType::LParen
+            | TokenType::RParen
+            | TokenType::LBracket
+            | TokenType::RBracket
+            | TokenType::LBrace
+            | TokenType::RBrace => {
                 self.pos += 1;
                 val
             }
@@ -953,7 +972,9 @@ impl EqParser {
 
         let mut denom_nodes = Vec::new();
         while self.pos < end && !self.at_end() {
-            if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+            if self.current_type() == TokenType::Command
+                && Self::cmd_eq(self.current_value(), "RIGHT")
+            {
                 break;
             }
             denom_nodes.push(self.parse_element());
@@ -1005,8 +1026,8 @@ pub fn parse(script: &str) -> EqNode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::symbols::{DecoKind, FontStyleKind};
+    use super::*;
 
     #[test]
     fn test_simple_fraction() {
@@ -1172,7 +1193,8 @@ mod tests {
     #[test]
     fn test_sample_eq01_script() {
         // samples/eq-01.hwp의 첫 번째 수식
-        let script = "평점=입찰가격평가~배점한도 TIMES  LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )";
+        let script =
+            "평점=입찰가격평가~배점한도 TIMES  LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )";
         let ast = parse(script);
         // 파싱 실패 없이 AST 생성되면 성공
         match &ast {

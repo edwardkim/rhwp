@@ -3,9 +3,9 @@
 //! 렌더 트리를 HTML 문자열로 변환한다.
 //! CSS로 스타일링하여 접근성과 텍스트 선택을 지원한다.
 
-use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand};
-use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 use super::layout::compute_char_positions;
+use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
+use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
 use crate::model::style::UnderlineType;
 
 /// HTML 렌더러
@@ -54,7 +54,8 @@ impl HtmlRenderer {
                 self.begin_page(page.width, page.height);
             }
             RenderNodeType::PageBackground(bg) => {
-                let bg_color = bg.background_color
+                let bg_color = bg
+                    .background_color
                     .map(|c| color_to_css(c))
                     .unwrap_or_else(|| "#ffffff".to_string());
                 self.output.push_str(&format!(
@@ -122,7 +123,11 @@ impl HtmlRenderer {
             RenderNodeType::TextRun(run) => {
                 self.draw_text(&run.text, node.bbox.x, node.bbox.y, &run.style);
                 if self.show_paragraph_marks || self.show_control_codes {
-                    let font_size = if run.style.font_size > 0.0 { run.style.font_size } else { 12.0 };
+                    let font_size = if run.style.font_size > 0.0 {
+                        run.style.font_size
+                    } else {
+                        12.0
+                    };
                     // 공백·탭 기호
                     if !run.text.is_empty() {
                         let char_positions = compute_char_positions(&run.text, &run.style);
@@ -151,8 +156,16 @@ impl HtmlRenderer {
                     }
                     // 하드 리턴·강제 줄바꿈 기호
                     if run.is_para_end || run.is_line_break_end {
-                        let mark_x = if run.text.is_empty() { node.bbox.x } else { node.bbox.x + node.bbox.width };
-                        let mark = if run.is_line_break_end { "\u{2193}" } else { "\u{21B5}" };
+                        let mark_x = if run.text.is_empty() {
+                            node.bbox.x
+                        } else {
+                            node.bbox.x + node.bbox.width
+                        };
+                        let mark = if run.is_line_break_end {
+                            "\u{2193}"
+                        } else {
+                            "\u{21B5}"
+                        };
                         self.output.push_str(&format!(
                             "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#4A90D9;\">{}</span>\n",
                             mark_x, node.bbox.y, font_size, mark,
@@ -184,8 +197,10 @@ impl HtmlRenderer {
             }
             RenderNodeType::Rectangle(rect) => {
                 self.draw_rect(
-                    node.bbox.x, node.bbox.y,
-                    node.bbox.width, node.bbox.height,
+                    node.bbox.x,
+                    node.bbox.y,
+                    node.bbox.width,
+                    node.bbox.height,
                     rect.corner_radius,
                     &rect.style,
                 );
@@ -248,7 +263,11 @@ impl Renderer for HtmlRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
-        let font_size = if style.font_size > 0.0 { style.font_size } else { 12.0 };
+        let font_size = if style.font_size > 0.0 {
+            style.font_size
+        } else {
+            12.0
+        };
         let color = color_to_css(style.color);
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
@@ -291,7 +310,10 @@ impl Renderer for HtmlRenderer {
             } else {
                 ""
             };
-            css.push_str(&format!("text-decoration:underline;text-decoration-style:{};{}", ul_style, ul_pos));
+            css.push_str(&format!(
+                "text-decoration:underline;text-decoration-style:{};{}",
+                ul_style, ul_pos
+            ));
         }
         if style.strikethrough {
             let st_style = match style.strike_shape {
@@ -302,7 +324,10 @@ impl Renderer for HtmlRenderer {
                 11 => "wavy",
                 _ => "solid",
             };
-            css.push_str(&format!("text-decoration:line-through;text-decoration-style:{};", st_style));
+            css.push_str(&format!(
+                "text-decoration:line-through;text-decoration-style:{};",
+                st_style
+            ));
         }
         // 외곽선
         if style.outline_type > 0 {
@@ -323,21 +348,36 @@ impl Renderer for HtmlRenderer {
         // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
         let shade_rgb = style.shade_color & 0x00FFFFFF;
         if shade_rgb != 0x00FFFFFF && shade_rgb != 0 {
-            css.push_str(&format!("background-color:{};", color_to_css(style.shade_color)));
+            css.push_str(&format!(
+                "background-color:{};",
+                color_to_css(style.shade_color)
+            ));
         }
 
         let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
         if (ratio - 1.0).abs() > 0.01 {
-            css.push_str(&format!("transform:scaleX({:.4});transform-origin:left;", ratio));
+            css.push_str(&format!(
+                "transform:scaleX({:.4});transform-origin:left;",
+                ratio
+            ));
         }
 
         self.output.push_str(&format!(
             "<span class=\"text-run\" style=\"{}\">{}</span>\n",
-            css, escape_html(text),
+            css,
+            escape_html(text),
         ));
     }
 
-    fn draw_rect(&mut self, x: f64, y: f64, w: f64, h: f64, corner_radius: f64, style: &ShapeStyle) {
+    fn draw_rect(
+        &mut self,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
+        corner_radius: f64,
+        style: &ShapeStyle,
+    ) {
         let mut css = format!(
             "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;",
             x, y, w, h,
@@ -352,7 +392,11 @@ impl Renderer for HtmlRenderer {
         }
 
         if let Some(stroke) = style.stroke_color {
-            css.push_str(&format!("border:{}px solid {};", style.stroke_width, color_to_css(stroke)));
+            css.push_str(&format!(
+                "border:{}px solid {};",
+                style.stroke_width,
+                color_to_css(stroke)
+            ));
         }
 
         self.output.push_str(&format!(
@@ -376,7 +420,10 @@ impl Renderer for HtmlRenderer {
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {
         let mut css = format!(
             "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;border-radius:50%;",
-            cx - rx, cy - ry, rx * 2.0, ry * 2.0,
+            cx - rx,
+            cy - ry,
+            rx * 2.0,
+            ry * 2.0,
         );
 
         if let Some(fill) = style.fill_color {
@@ -408,17 +455,23 @@ impl Renderer for HtmlRenderer {
                     d.push_str(&format!("C{} {} {} {} {} {} ", x1, y1, x2, y2, x, y));
                 }
                 PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
-                    d.push_str(&format!("A{} {} {} {} {} {} {} ",
-                        rx, ry, x_rot,
+                    d.push_str(&format!(
+                        "A{} {} {} {} {} {} {} ",
+                        rx,
+                        ry,
+                        x_rot,
                         if *large_arc { 1 } else { 0 },
                         if *sweep { 1 } else { 0 },
-                        x, y));
+                        x,
+                        y
+                    ));
                 }
                 PathCommand::ClosePath => d.push_str("Z "),
             }
         }
 
-        let fill = style.fill_color
+        let fill = style
+            .fill_color
             .map(|c| color_to_css(c))
             .unwrap_or_else(|| "none".to_string());
 
@@ -474,12 +527,17 @@ mod tests {
     fn test_html_draw_text() {
         let mut renderer = HtmlRenderer::new();
         renderer.begin_page(800.0, 600.0);
-        renderer.draw_text("테스트", 10.0, 20.0, &TextStyle {
-            font_size: 14.0,
-            bold: true,
-            italic: true,
-            ..Default::default()
-        });
+        renderer.draw_text(
+            "테스트",
+            10.0,
+            20.0,
+            &TextStyle {
+                font_size: 14.0,
+                bold: true,
+                italic: true,
+                ..Default::default()
+            },
+        );
         let output = renderer.output();
         assert!(output.contains("font-weight:bold"));
         assert!(output.contains("font-style:italic"));
@@ -489,10 +547,17 @@ mod tests {
     fn test_html_draw_rect() {
         let mut renderer = HtmlRenderer::new();
         renderer.begin_page(800.0, 600.0);
-        renderer.draw_rect(0.0, 0.0, 100.0, 50.0, 0.0, &ShapeStyle {
-            fill_color: Some(0x00FF0000),
-            ..Default::default()
-        });
+        renderer.draw_rect(
+            0.0,
+            0.0,
+            100.0,
+            50.0,
+            0.0,
+            &ShapeStyle {
+                fill_color: Some(0x00FF0000),
+                ..Default::default()
+            },
+        );
         let output = renderer.output();
         assert!(output.contains("hwp-rect"));
         assert!(output.contains("background:#0000ff")); // BGR → RGB
@@ -500,8 +565,10 @@ mod tests {
 
     #[test]
     fn test_html_escape() {
-        assert_eq!(escape_html("<script>alert('xss')</script>"),
-            "&lt;script&gt;alert('xss')&lt;/script&gt;");
+        assert_eq!(
+            escape_html("<script>alert('xss')</script>"),
+            "&lt;script&gt;alert('xss')&lt;/script&gt;"
+        );
     }
 
     #[test]

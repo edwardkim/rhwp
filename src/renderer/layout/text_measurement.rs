@@ -1,8 +1,8 @@
 //! 텍스트 폭 측정, 문자 클러스터 분할, CJK 판별 관련 함수
 
 use super::super::font_metrics_data;
-use super::super::{TextStyle, TabStop, TabLeaderInfo, hwpunit_to_px};
 use super::super::style_resolver::ResolvedStyleSet;
+use super::super::{hwpunit_to_px, TabLeaderInfo, TabStop, TextStyle};
 use crate::model::style::UnderlineType;
 
 // ── TextMeasurer trait ──────────────────────────────────────────────
@@ -35,7 +35,9 @@ fn build_cluster_len(chars: &[char]) -> Vec<u8> {
             ci += 1;
             if ci < char_count && is_hangul_jungseong(chars[ci]) {
                 ci += 1;
-                if ci < char_count && is_hangul_jongseong(chars[ci]) { ci += 1; }
+                if ci < char_count && is_hangul_jongseong(chars[ci]) {
+                    ci += 1;
+                }
             }
             cluster_len[start] = (ci - start) as u8;
         } else {
@@ -48,9 +50,17 @@ fn build_cluster_len(chars: &[char]) -> Vec<u8> {
 
 /// 스타일에서 공통 파라미터 추출 (font_size, ratio, tab_w)
 fn style_params(style: &TextStyle) -> (f64, f64, f64) {
-    let font_size = if style.font_size > 0.0 { style.font_size } else { 12.0 };
+    let font_size = if style.font_size > 0.0 {
+        style.font_size
+    } else {
+        12.0
+    };
     let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-    let tab_w = if style.default_tab_width > 0.0 { style.default_tab_width } else { font_size * 4.0 };
+    let tab_w = if style.default_tab_width > 0.0 {
+        style.default_tab_width
+    } else {
+        font_size * 4.0
+    };
     (font_size, ratio, tab_w)
 }
 
@@ -82,7 +92,11 @@ pub(crate) fn find_next_tab_stop(
         return (available_width, 1, 0); // type=1(오른쪽), fill=0(없음)
     }
     // 기본 등간격 탭
-    let tab_w = if default_tab_width > 0.0 { default_tab_width } else { 48.0 };
+    let tab_w = if default_tab_width > 0.0 {
+        default_tab_width
+    } else {
+        48.0
+    };
     let next = ((abs_x / tab_w).floor() + 1.0) * tab_w;
     (next, 0, 0) // type=0(왼쪽), fill=0(없음)
 }
@@ -96,8 +110,12 @@ fn measure_segment_from(
 ) -> f64 {
     let mut w = 0.0;
     for i in start..chars.len() {
-        if chars[i] == '\t' { break; }
-        if cluster_len[i] == 0 { continue; }
+        if chars[i] == '\t' {
+            break;
+        }
+        if cluster_len[i] == 0 {
+            continue;
+        }
         w += char_width(i);
     }
     w
@@ -111,9 +129,16 @@ pub fn extract_tab_leaders(text: &str, positions: &[f64], style: &TextStyle) -> 
 /// 탭 리더 추출 (tab_extended 지원)
 /// tab_extended: HWPX 인라인 탭 또는 HWP 탭 확장 데이터 (ext[1] = leader/fill_type)
 pub fn extract_tab_leaders_with_extended(
-    text: &str, positions: &[f64], style: &TextStyle, tab_extended: &[[u16; 7]],
+    text: &str,
+    positions: &[f64],
+    style: &TextStyle,
+    tab_extended: &[[u16; 7]],
 ) -> Vec<TabLeaderInfo> {
-    let tab_w = if style.default_tab_width > 0.0 { style.default_tab_width } else { 48.0 };
+    let tab_w = if style.default_tab_width > 0.0 {
+        style.default_tab_width
+    } else {
+        48.0
+    };
     let mut leaders = Vec::new();
     let mut tab_idx = 0usize; // tab_extended 인덱스
     for (i, c) in text.chars().enumerate() {
@@ -132,8 +157,11 @@ pub fn extract_tab_leaders_with_extended(
             let tabdef_fill = if !style.tab_stops.is_empty() || style.auto_tab_right {
                 let abs_before = style.line_x_offset + before_x;
                 let (_, _, ft) = find_next_tab_stop(
-                    abs_before, &style.tab_stops, tab_w,
-                    style.auto_tab_right, style.available_width,
+                    abs_before,
+                    &style.tab_stops,
+                    tab_w,
+                    style.auto_tab_right,
+                    style.available_width,
                 );
                 ft
             } else {
@@ -179,36 +207,58 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+            let base_w = if let Some(w) = measure_char_width_embedded(
+                &style.font_family,
+                style.bold,
+                style.italic,
+                c,
+                font_size,
+            ) {
                 w
-            } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) { font_size } else { font_size * 0.5 };
+            } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
+                font_size
+            } else {
+                font_size * 0.5
+            };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
-            if c == ' ' { w += style.extra_word_spacing; }
+            if c == ' ' {
+                w += style.extra_word_spacing;
+            }
             w
         };
 
         let mut total = 0.0;
         for i in 0..char_count {
             let c = chars[i];
-            if cluster_len[i] == 0 { continue; }
+            if cluster_len[i] == 0 {
+                continue;
+            }
             if c == '\t' {
                 if has_custom_tabs {
                     let abs_x = style.line_x_offset + total;
                     let (tab_pos, tab_type, _) = find_next_tab_stop(
-                        abs_x, &style.tab_stops, tab_w,
-                        style.auto_tab_right, style.available_width,
+                        abs_x,
+                        &style.tab_stops,
+                        tab_w,
+                        style.auto_tab_right,
+                        style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
                     match tab_type {
-                        1 => { // 오른쪽
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        1 => {
+                            // 오른쪽
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             total = (rel_tab - seg_w).max(total);
                         }
-                        2 => { // 가운데
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        2 => {
+                            // 가운데
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             total = (rel_tab - seg_w / 2.0).max(total);
                         }
-                        _ => { // 왼쪽(0), 소수점(3) → 왼쪽과 동일 처리
+                        _ => {
+                            // 왼쪽(0), 소수점(3) → 왼쪽과 동일 처리
                             total = rel_tab.max(total);
                         }
                     }
@@ -220,7 +270,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 }
                 continue;
             }
-            if cluster_len[i] == 0 { continue; }
+            if cluster_len[i] == 0 {
+                continue;
+            }
             total += char_width(i);
         }
         total.round()
@@ -242,11 +294,23 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+            let base_w = if let Some(w) = measure_char_width_embedded(
+                &style.font_family,
+                style.bold,
+                style.italic,
+                c,
+                font_size,
+            ) {
                 w
-            } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) { font_size } else { font_size * 0.5 };
+            } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
+                font_size
+            } else {
+                font_size * 0.5
+            };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
-            if c == ' ' { w += style.extra_word_spacing; }
+            if c == ' ' {
+                w += style.extra_word_spacing;
+            }
             w
         };
 
@@ -265,15 +329,20 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                     let tab_type = ext[2];
                     let tab_target = x + tab_width_px;
                     match tab_type {
-                        1 => { // 오른쪽
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        1 => {
+                            // 오른쪽
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (tab_target - seg_w).max(x);
                         }
-                        2 => { // 가운데
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        2 => {
+                            // 가운데
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (tab_target - seg_w / 2.0).max(x);
                         }
-                        _ => { // 왼쪽(0)
+                        _ => {
+                            // 왼쪽(0)
                             x = tab_target.max(x);
                         }
                     }
@@ -281,24 +350,32 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 } else if has_custom_tabs {
                     let abs_x = style.line_x_offset + x;
                     let (tab_pos, tab_type, _) = find_next_tab_stop(
-                        abs_x, &style.tab_stops, tab_w,
-                        style.auto_tab_right, style.available_width,
+                        abs_x,
+                        &style.tab_stops,
+                        tab_w,
+                        style.auto_tab_right,
+                        style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
                     match tab_type {
-                        1 => { // 오른쪽
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        1 => {
+                            // 오른쪽
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             if tab_type == 1 {
                                 eprintln!("[DEBUG_TAB_POS] RIGHT tab: abs_x={:.2}, tab_pos={:.2}, line_x_offset={:.2}, rel_tab={:.2}, seg_w={:.2}, avail_w={:.2}, result_x={:.2}",
                                     abs_x, tab_pos, style.line_x_offset, rel_tab, seg_w, style.available_width, (rel_tab - seg_w).max(x));
                             }
                             x = (rel_tab - seg_w).max(x);
                         }
-                        2 => { // 가운데
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        2 => {
+                            // 가운데
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (rel_tab - seg_w / 2.0).max(x);
                         }
-                        _ => { // 왼쪽(0), 소수점(3)
+                        _ => {
+                            // 왼쪽(0), 소수점(3)
                             x = rel_tab.max(x);
                         }
                     }
@@ -328,9 +405,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
 
 #[cfg(target_arch = "wasm32")]
 mod wasm_internals {
-    use wasm_bindgen::prelude::*;
-    use std::cell::RefCell;
     use crate::renderer::TextStyle;
+    use std::cell::RefCell;
+    use wasm_bindgen::prelude::*;
 
     // globalThis.measureTextWidth(font, text) → width in pixels
     // editor.html/index.html의 <head>에 정의된 글로벌 함수를 호출한다.
@@ -357,7 +434,10 @@ mod wasm_internals {
 
     impl MeasureCache {
         fn new(capacity: usize) -> Self {
-            Self { entries: Vec::with_capacity(capacity), capacity }
+            Self {
+                entries: Vec::with_capacity(capacity),
+                capacity,
+            }
         }
 
         fn get(&mut self, key: u64) -> Option<f64> {
@@ -387,8 +467,8 @@ mod wasm_internals {
 
     /// 캐시 키 생성: hash(measure_font + char)
     fn measure_cache_key(measure_font: &str, c: char) -> u64 {
-        use std::hash::{Hash, Hasher};
         use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
         let mut h = DefaultHasher::new();
         measure_font.hash(&mut h);
         c.hash(&mut h);
@@ -427,9 +507,18 @@ mod wasm_internals {
     /// 한컴 webhwp 방식 문자 폭 측정 (HWP 단위 양자화)
     ///
     /// 파이프라인: 내장 메트릭 → JS 1000px 측정 → font_size/1000 스케일링 → HWP 단위(×75) → 정수 반올림 → px
-    pub(super) fn measure_char_width_hwp(measure_font: &str, font_family: &str, bold: bool, italic: bool, c: char, hangul_width_hwp: i32, font_size: f64) -> f64 {
+    pub(super) fn measure_char_width_hwp(
+        measure_font: &str,
+        font_family: &str,
+        bold: bool,
+        italic: bool,
+        c: char,
+        hangul_width_hwp: i32,
+        font_size: f64,
+    ) -> f64 {
         // 1차: 내장 메트릭 (JS 브릿지 호출 불필요)
-        if let Some(w) = super::measure_char_width_embedded(font_family, bold, italic, c, font_size) {
+        if let Some(w) = super::measure_char_width_embedded(font_family, bold, italic, c, font_size)
+        {
             return w;
         }
 
@@ -447,8 +536,16 @@ mod wasm_internals {
 
     /// 한글 '가' 대리 측정값 (HWP 단위, 정수)
     /// 내장 메트릭이 있으면 JS 호출 없이 반환.
-    pub(super) fn measure_hangul_width_hwp(measure_font: &str, font_family: &str, bold: bool, italic: bool, font_size: f64) -> i32 {
-        if let Some(w) = super::measure_char_width_embedded(font_family, bold, italic, '\u{AC00}', font_size) {
+    pub(super) fn measure_hangul_width_hwp(
+        measure_font: &str,
+        font_family: &str,
+        bold: bool,
+        italic: bool,
+        font_size: f64,
+    ) -> i32 {
+        if let Some(w) =
+            super::measure_char_width_embedded(font_family, bold, italic, '\u{AC00}', font_size)
+        {
             return (w * 75.0).round() as i32;
         }
         let raw_px = cached_js_measure(measure_font, '\u{AC00}');
@@ -472,7 +569,11 @@ impl TextMeasurer for WasmTextMeasurer {
         let (font_size, ratio, tab_w) = style_params(style);
         let measure_font = wasm_internals::build_1000pt_font_string(style);
         let hangul_hwp = wasm_internals::measure_hangul_width_hwp(
-            &measure_font, &style.font_family, style.bold, style.italic, font_size,
+            &measure_font,
+            &style.font_family,
+            style.bold,
+            style.italic,
+            font_size,
         );
 
         let chars: Vec<char> = text.chars().collect();
@@ -489,34 +590,48 @@ impl TextMeasurer for WasmTextMeasurer {
                 hangul_hwp as f64 / 75.0
             } else {
                 wasm_internals::measure_char_width_hwp(
-                    &measure_font, &style.font_family, style.bold, style.italic,
-                    c, hangul_hwp, font_size,
+                    &measure_font,
+                    &style.font_family,
+                    style.bold,
+                    style.italic,
+                    c,
+                    hangul_hwp,
+                    font_size,
                 )
             };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
-            if c == ' ' { w += style.extra_word_spacing; }
+            if c == ' ' {
+                w += style.extra_word_spacing;
+            }
             w
         };
 
         let mut total = 0.0;
         for i in 0..char_count {
             let c = chars[i];
-            if cluster_len[i] == 0 { continue; }
+            if cluster_len[i] == 0 {
+                continue;
+            }
             if c == '\t' {
                 if has_custom_tabs {
                     let abs_x = style.line_x_offset + total;
                     let (tab_pos, tab_type, _) = find_next_tab_stop(
-                        abs_x, &style.tab_stops, tab_w,
-                        style.auto_tab_right, style.available_width,
+                        abs_x,
+                        &style.tab_stops,
+                        tab_w,
+                        style.auto_tab_right,
+                        style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
                     match tab_type {
                         1 => {
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             total = (rel_tab - seg_w).max(total);
                         }
                         2 => {
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             total = (rel_tab - seg_w / 2.0).max(total);
                         }
                         _ => {
@@ -549,7 +664,11 @@ impl TextMeasurer for WasmTextMeasurer {
 
         let measure_font = wasm_internals::build_1000pt_font_string(style);
         let hangul_hwp = wasm_internals::measure_hangul_width_hwp(
-            &measure_font, &style.font_family, style.bold, style.italic, font_size,
+            &measure_font,
+            &style.font_family,
+            style.bold,
+            style.italic,
+            font_size,
         );
 
         let char_width = |i: usize| -> f64 {
@@ -561,12 +680,19 @@ impl TextMeasurer for WasmTextMeasurer {
                 hangul_hwp as f64 / 75.0
             } else {
                 wasm_internals::measure_char_width_hwp(
-                    &measure_font, &style.font_family, style.bold, style.italic,
-                    c, hangul_hwp, font_size,
+                    &measure_font,
+                    &style.font_family,
+                    style.bold,
+                    style.italic,
+                    c,
+                    hangul_hwp,
+                    font_size,
                 )
             };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
-            if c == ' ' { w += style.extra_word_spacing; }
+            if c == ' ' {
+                w += style.extra_word_spacing;
+            }
             w
         };
 
@@ -580,17 +706,22 @@ impl TextMeasurer for WasmTextMeasurer {
                 if has_custom_tabs {
                     let abs_x = style.line_x_offset + x;
                     let (tab_pos, tab_type, _) = find_next_tab_stop(
-                        abs_x, &style.tab_stops, tab_w,
-                        style.auto_tab_right, style.available_width,
+                        abs_x,
+                        &style.tab_stops,
+                        tab_w,
+                        style.auto_tab_right,
+                        style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
                     match tab_type {
                         1 => {
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (rel_tab - seg_w).max(x);
                         }
                         2 => {
-                            let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w =
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (rel_tab - seg_w / 2.0).max(x);
                         }
                         _ => {
@@ -617,14 +748,22 @@ impl TextMeasurer for WasmTextMeasurer {
 // ── 플랫폼별 기본 측정기 선택 ───────────────────────────────────────
 
 #[cfg(target_arch = "wasm32")]
-fn default_measurer() -> WasmTextMeasurer { WasmTextMeasurer }
+fn default_measurer() -> WasmTextMeasurer {
+    WasmTextMeasurer
+}
 
 #[cfg(not(target_arch = "wasm32"))]
-fn default_measurer() -> EmbeddedTextMeasurer { EmbeddedTextMeasurer }
+fn default_measurer() -> EmbeddedTextMeasurer {
+    EmbeddedTextMeasurer
+}
 
 // ── 스타일 변환 ─────────────────────────────────────────────────────
 
-pub(crate) fn resolved_to_text_style(styles: &ResolvedStyleSet, char_style_id: u32, lang_index: usize) -> TextStyle {
+pub(crate) fn resolved_to_text_style(
+    styles: &ResolvedStyleSet,
+    char_style_id: u32,
+    lang_index: usize,
+) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
             font_family: cs.font_family_for_lang(lang_index).to_string(),
@@ -672,7 +811,13 @@ pub(crate) fn resolved_to_text_style(styles: &ResolvedStyleSet, char_style_id: u
 ///
 /// 내장 메트릭이 있으면 JS 브릿지 호출 없이 즉시 반환.
 /// 없으면 None을 반환하여 폴백 경로를 사용하게 한다.
-fn measure_char_width_embedded(font_family: &str, bold: bool, italic: bool, c: char, font_size: f64) -> Option<f64> {
+fn measure_char_width_embedded(
+    font_family: &str,
+    bold: bool,
+    italic: bool,
+    c: char,
+    font_size: f64,
+) -> Option<f64> {
     // CSS font-family 체인에서 첫 번째 폰트명으로 메트릭 조회
     let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
     let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
@@ -683,9 +828,11 @@ fn measure_char_width_embedded(font_family: &str, bold: bool, italic: bool, c: c
         let glyph_w = mm.metric.get_width(c)?;
         // 한컴은 스마트 따옴표, 가운뎃점 등을 반각으로 처리
         // 폰트 메트릭에서 전각(em_size)으로 기록되어 있어도 em/2로 강제
-        let is_halfwidth_punct = matches!(c,
-            '\u{2018}'..='\u{2027}' | // ''‚‛""„‟†‡•‣․‥…‧ 구두점/기호
-            '\u{00B7}'                 // · MIDDLE DOT
+        let is_halfwidth_punct = matches!(
+            c,
+            '\u{2018}'
+                ..='\u{2027}' | // ''‚‛""„‟†‡•‣․‥…‧ 구두점/기호
+            '\u{00B7}' // · MIDDLE DOT
         );
         if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
             mm.metric.em_size / 2
@@ -737,17 +884,27 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         if c == '\u{2007}' {
             return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
         }
-        let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+        let base_w = if let Some(w) =
+            measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size)
+        {
             w
-        } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) { font_size } else { font_size * 0.5 };
+        } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
+            font_size
+        } else {
+            font_size * 0.5
+        };
         let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
-        if c == ' ' { w += style.extra_word_spacing; }
+        if c == ' ' {
+            w += style.extra_word_spacing;
+        }
         w
     };
 
     let mut total = 0.0;
     for i in 0..char_count {
-        if cluster_len[i] == 0 { continue; }
+        if cluster_len[i] == 0 {
+            continue;
+        }
         let c = chars[i];
         if c == '\t' {
             let abs_x = style.line_x_offset + total;
@@ -786,11 +943,12 @@ pub(crate) fn is_cjk_char(c: char) -> bool {
 
 /// 한컴이 전각으로 처리하는 기호 (메트릭 폴백 시 font_size 사용)
 fn is_fullwidth_symbol(c: char) -> bool {
-    matches!(c,
+    matches!(
+        c,
         '\u{20A9}' |                   // ₩ WON SIGN
         '\u{20AC}' |                   // € EURO SIGN
         '\u{00A3}' |                   // £ POUND SIGN
-        '\u{00A5}'                     // ¥ YEN SIGN
+        '\u{00A5}' // ¥ YEN SIGN
     )
 }
 
@@ -849,7 +1007,8 @@ pub fn split_into_clusters(text: &str) -> Vec<(usize, String)> {
 /// - 괄호류: ( ) [ ] { } < > 〈 〉 《 》 「 」 『 』 【 】
 /// - 문장부호: . , _ - ~ … ― ─
 pub(crate) fn is_vertical_rotate_char(c: char) -> bool {
-    matches!(c,
+    matches!(
+        c,
         '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>'
         | '.' | ',' | '_' | '-' | '~'
         | '\u{2026}' // … (ellipsis)
@@ -876,33 +1035,33 @@ pub(crate) fn is_vertical_rotate_char(c: char) -> bool {
 pub(crate) fn vertical_substitute_char(c: char) -> Option<char> {
     match c {
         // 괄호류
-        '(' | '\u{FF08}' => Some('\u{FE35}'),  // ︵
-        ')' | '\u{FF09}' => Some('\u{FE36}'),  // ︶
-        '{' | '\u{FF5B}' => Some('\u{FE37}'),  // ︷
-        '}' | '\u{FF5D}' => Some('\u{FE38}'),  // ︸
-        '[' | '\u{FF3B}' => Some('\u{FE39}'),  // ︹
-        ']' | '\u{FF3D}' => Some('\u{FE3A}'),  // ︺
-        '\u{3010}' => Some('\u{FE3B}'),  // 【 → ︻
-        '\u{3011}' => Some('\u{FE3C}'),  // 】 → ︼
-        '\u{3008}' => Some('\u{FE3F}'),  // 〈 → ︿
-        '\u{3009}' => Some('\u{FE40}'),  // 〉 → ﹀
-        '\u{300A}' => Some('\u{FE3D}'),  // 《 → ︽
-        '\u{300B}' => Some('\u{FE3E}'),  // 》 → ︾
-        '\u{300C}' => Some('\u{FE41}'),  // 「 → ﹁
-        '\u{300D}' => Some('\u{FE42}'),  // 」 → ﹂
-        '\u{300E}' => Some('\u{FE43}'),  // 『 → ﹃
-        '\u{300F}' => Some('\u{FE44}'),  // 』 → ﹄
+        '(' | '\u{FF08}' => Some('\u{FE35}'), // ︵
+        ')' | '\u{FF09}' => Some('\u{FE36}'), // ︶
+        '{' | '\u{FF5B}' => Some('\u{FE37}'), // ︷
+        '}' | '\u{FF5D}' => Some('\u{FE38}'), // ︸
+        '[' | '\u{FF3B}' => Some('\u{FE39}'), // ︹
+        ']' | '\u{FF3D}' => Some('\u{FE3A}'), // ︺
+        '\u{3010}' => Some('\u{FE3B}'),       // 【 → ︻
+        '\u{3011}' => Some('\u{FE3C}'),       // 】 → ︼
+        '\u{3008}' => Some('\u{FE3F}'),       // 〈 → ︿
+        '\u{3009}' => Some('\u{FE40}'),       // 〉 → ﹀
+        '\u{300A}' => Some('\u{FE3D}'),       // 《 → ︽
+        '\u{300B}' => Some('\u{FE3E}'),       // 》 → ︾
+        '\u{300C}' => Some('\u{FE41}'),       // 「 → ﹁
+        '\u{300D}' => Some('\u{FE42}'),       // 」 → ﹂
+        '\u{300E}' => Some('\u{FE43}'),       // 『 → ﹃
+        '\u{300F}' => Some('\u{FE44}'),       // 』 → ﹄
         // 대시/선
-        '\u{2014}' => Some('\u{FE31}'),  // — → ︱ (em dash)
-        '\u{2013}' => Some('\u{FE32}'),  // – → ︲ (en dash)
-        '\u{2015}' => Some('\u{FE31}'),  // ― → ︱ (horizontal bar)
-        '\u{2500}' => Some('\u{2502}'),  // ─ → │ (box drawing)
+        '\u{2014}' => Some('\u{FE31}'), // — → ︱ (em dash)
+        '\u{2013}' => Some('\u{FE32}'), // – → ︲ (en dash)
+        '\u{2015}' => Some('\u{FE31}'), // ― → ︱ (horizontal bar)
+        '\u{2500}' => Some('\u{2502}'), // ─ → │ (box drawing)
         // 말줄임
-        '\u{2026}' => Some('\u{FE19}'),  // … → ︙ (vertical ellipsis)
+        '\u{2026}' => Some('\u{FE19}'), // … → ︙ (vertical ellipsis)
         // 물결표
-        '~' => Some('\u{FE34}'),         // ~ → ︴ (vertical wavy low line)
+        '~' => Some('\u{FE34}'), // ~ → ︴ (vertical wavy low line)
         // 밑줄
-        '_' => Some('\u{FE33}'),         // _ → ︳ (vertical low line)
+        '_' => Some('\u{FE33}'), // _ → ︳ (vertical low line)
         _ => None,
     }
 }
@@ -928,13 +1087,17 @@ mod tests {
             let cluster_len = build_cluster_len(&chars);
             let mut total = 0.0;
             for i in 0..chars.len() {
-                if cluster_len[i] == 0 { continue; }
+                if cluster_len[i] == 0 {
+                    continue;
+                }
                 if chars[i] == '\t' {
                     total = ((total / tab_w).floor() + 1.0) * tab_w;
                     continue;
                 }
                 total += self.char_width * ratio + style.letter_spacing + style.extra_char_spacing;
-                if chars[i] == ' ' { total += style.extra_word_spacing; }
+                if chars[i] == ' ' {
+                    total += style.extra_word_spacing;
+                }
             }
             total
         }
@@ -957,7 +1120,9 @@ mod tests {
                     continue;
                 }
                 x += self.char_width * ratio + style.letter_spacing + style.extra_char_spacing;
-                if chars[i] == ' ' { x += style.extra_word_spacing; }
+                if chars[i] == ' ' {
+                    x += style.extra_word_spacing;
+                }
                 positions.push(x);
             }
             positions
@@ -969,7 +1134,10 @@ mod tests {
     #[test]
     fn test_mock_measurer_fixed_width() {
         let m = MockTextMeasurer { char_width: 10.0 };
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         let w = m.estimate_text_width("ABC", &style);
         assert!((w - 30.0).abs() < 0.01, "expected 30.0, got {}", w);
     }
@@ -977,7 +1145,10 @@ mod tests {
     #[test]
     fn test_mock_measurer_positions() {
         let m = MockTextMeasurer { char_width: 10.0 };
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         let pos = m.compute_char_positions("AB", &style);
         assert_eq!(pos.len(), 3);
         assert!((pos[0]).abs() < 0.01);
@@ -988,23 +1159,43 @@ mod tests {
     #[test]
     fn test_mock_measurer_ratio() {
         let m = MockTextMeasurer { char_width: 10.0 };
-        let style = TextStyle { font_size: 16.0, ratio: 0.5, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ratio: 0.5,
+            ..Default::default()
+        };
         let w = m.estimate_text_width("AB", &style);
-        assert!((w - 10.0).abs() < 0.01, "expected 10.0 (2*10*0.5), got {}", w);
+        assert!(
+            (w - 10.0).abs() < 0.01,
+            "expected 10.0 (2*10*0.5), got {}",
+            w
+        );
     }
 
     #[test]
     fn test_mock_measurer_letter_spacing() {
         let m = MockTextMeasurer { char_width: 10.0 };
-        let style = TextStyle { font_size: 16.0, letter_spacing: 2.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            letter_spacing: 2.0,
+            ..Default::default()
+        };
         let w = m.estimate_text_width("AB", &style);
-        assert!((w - 24.0).abs() < 0.01, "expected 24.0 (2*(10+2)), got {}", w);
+        assert!(
+            (w - 24.0).abs() < 0.01,
+            "expected 24.0 (2*(10+2)), got {}",
+            w
+        );
     }
 
     #[test]
     fn test_mock_measurer_extra_word_spacing() {
         let m = MockTextMeasurer { char_width: 10.0 };
-        let style = TextStyle { font_size: 16.0, extra_word_spacing: 5.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            extra_word_spacing: 5.0,
+            ..Default::default()
+        };
         // "A B" = A(10) + space(10+5) + B(10) = 35
         let w = m.estimate_text_width("A B", &style);
         assert!((w - 35.0).abs() < 0.01, "expected 35.0, got {}", w);
@@ -1013,12 +1204,23 @@ mod tests {
     #[test]
     fn test_mock_measurer_tab() {
         let m = MockTextMeasurer { char_width: 10.0 };
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         // tab_w = font_size * 4 = 64, "\tA" → tab snaps to 64, then A at 74
         let pos = m.compute_char_positions("\tA", &style);
         assert_eq!(pos.len(), 3);
-        assert!((pos[1] - 64.0).abs() < 0.01, "tab should snap to 64, got {}", pos[1]);
-        assert!((pos[2] - 74.0).abs() < 0.01, "A should be at 74, got {}", pos[2]);
+        assert!(
+            (pos[1] - 64.0).abs() < 0.01,
+            "tab should snap to 64, got {}",
+            pos[1]
+        );
+        assert!(
+            (pos[2] - 74.0).abs() < 0.01,
+            "A should be at 74, got {}",
+            pos[2]
+        );
     }
 
     // ── EmbeddedTextMeasurer 테스트 ──
@@ -1026,19 +1228,33 @@ mod tests {
     #[test]
     fn test_embedded_measurer_latin_heuristic() {
         let m = EmbeddedTextMeasurer;
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         // 기본 폰트("")는 내장 메트릭 없음 → 휴리스틱: Latin = font_size * 0.5
         let w = m.estimate_text_width("AB", &style);
-        assert!((w - 16.0).abs() < 0.01, "expected 16.0 (2*8.0 heuristic), got {}", w);
+        assert!(
+            (w - 16.0).abs() < 0.01,
+            "expected 16.0 (2*8.0 heuristic), got {}",
+            w
+        );
     }
 
     #[test]
     fn test_embedded_measurer_cjk_heuristic() {
         let m = EmbeddedTextMeasurer;
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         // 기본 폰트("")는 내장 메트릭 없음 → 휴리스틱: CJK = font_size
         let w = m.estimate_text_width("가나", &style);
-        assert!((w - 32.0).abs() < 0.01, "expected 32.0 (2*16.0 heuristic), got {}", w);
+        assert!(
+            (w - 32.0).abs() < 0.01,
+            "expected 32.0 (2*16.0 heuristic), got {}",
+            w
+        );
     }
 
     #[test]
@@ -1051,24 +1267,36 @@ mod tests {
         };
         // 내장 메트릭이 있는 폰트: Latin 문자는 CJK보다 좁아야 함
         let w = m.estimate_text_width("A", &style);
-        assert!(w > 0.0 && w < 16.0, "Latin 'A' should be narrower than CJK, got {}", w);
+        assert!(
+            w > 0.0 && w < 16.0,
+            "Latin 'A' should be narrower than CJK, got {}",
+            w
+        );
     }
 
     #[test]
     fn test_embedded_matches_free_fn() {
         // 자유 함수 래퍼가 EmbeddedTextMeasurer로 위임하는지 확인
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         let free_fn_result = estimate_text_width("ABC가나다", &style);
         let trait_result = EmbeddedTextMeasurer.estimate_text_width("ABC가나다", &style);
         assert!(
             (free_fn_result - trait_result).abs() < 0.01,
-            "free fn ({}) != trait ({})", free_fn_result, trait_result,
+            "free fn ({}) != trait ({})",
+            free_fn_result,
+            trait_result,
         );
     }
 
     #[test]
     fn test_embedded_positions_match_free_fn() {
-        let style = TextStyle { font_size: 16.0, ..Default::default() };
+        let style = TextStyle {
+            font_size: 16.0,
+            ..Default::default()
+        };
         let free_fn_result = compute_char_positions("ABC", &style);
         let trait_result = EmbeddedTextMeasurer.compute_char_positions("ABC", &style);
         assert_eq!(free_fn_result.len(), trait_result.len());

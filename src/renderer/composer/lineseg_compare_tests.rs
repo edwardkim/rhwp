@@ -5,14 +5,19 @@
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
+    use crate::model::paragraph::LineSeg;
     use crate::renderer::composer::lineseg_compare::*;
     use crate::renderer::composer::reflow_line_segs;
     use crate::renderer::page_layout::PageLayoutInfo;
-    use crate::model::paragraph::LineSeg;
+    use std::path::Path;
 
     /// HWP 파일을 파싱하여 Document + ResolvedStyleSet 반환
-    fn load_raw(path: &str) -> Option<(crate::model::document::Document, crate::renderer::style_resolver::ResolvedStyleSet)> {
+    fn load_raw(
+        path: &str,
+    ) -> Option<(
+        crate::model::document::Document,
+        crate::renderer::style_resolver::ResolvedStyleSet,
+    )> {
         let p = Path::new(path);
         if !p.exists() {
             eprintln!("테스트 파일 없음: {} — 건너뜀", path);
@@ -79,9 +84,15 @@ mod tests {
             let diff = compare_line_segs(para_idx, &original_line_segs, &para_clone.line_segs);
 
             compared += 1;
-            if diff.line_count_match { line_count_match += 1; }
-            if diff.line_breaks_match() { line_break_match += 1; }
-            if diff.all_match() { all_match += 1; }
+            if diff.line_count_match {
+                line_count_match += 1;
+            }
+            if diff.line_breaks_match() {
+                line_break_match += 1;
+            }
+            if diff.all_match() {
+                all_match += 1;
+            }
 
             paragraph_diffs.push(diff);
         }
@@ -102,11 +113,13 @@ mod tests {
         paragraphs: &[crate::model::paragraph::Paragraph],
         para_idx: usize,
     ) -> crate::model::page::ColumnDef {
-        use crate::model::page::ColumnDef;
         use crate::model::control::Control;
+        use crate::model::page::ColumnDef;
         let mut last_cd = ColumnDef::default();
         for (i, para) in paragraphs.iter().enumerate() {
-            if i > para_idx { break; }
+            if i > para_idx {
+                break;
+            }
             for ctrl in &para.controls {
                 if let Control::ColumnDef(cd) = ctrl {
                     last_cd = cd.clone();
@@ -134,7 +147,9 @@ mod tests {
 
     #[test]
     fn test_lineseg_compare_basic() {
-        let Some(reports) = run_comparison("samples/basic/BookReview.hwp") else { return };
+        let Some(reports) = run_comparison("samples/basic/BookReview.hwp") else {
+            return;
+        };
         let report_text = format_report(&reports);
         eprintln!("\n=== BookReview.hwp ===\n{}", report_text);
 
@@ -146,7 +161,9 @@ mod tests {
 
     #[test]
     fn test_lineseg_compare_table_test() {
-        let Some(reports) = run_comparison("samples/hwp_table_test.hwp") else { return };
+        let Some(reports) = run_comparison("samples/hwp_table_test.hwp") else {
+            return;
+        };
         let report_text = format_report(&reports);
         eprintln!("\n=== hwp_table_test.hwp ===\n{}", report_text);
 
@@ -156,7 +173,9 @@ mod tests {
 
     #[test]
     fn test_lineseg_compare_hongbo() {
-        let Some(reports) = run_comparison("samples/20250130-hongbo.hwp") else { return };
+        let Some(reports) = run_comparison("samples/20250130-hongbo.hwp") else {
+            return;
+        };
         let report_text = format_report(&reports);
         eprintln!("\n=== 20250130-hongbo.hwp ===\n{}", report_text);
 
@@ -169,11 +188,13 @@ mod tests {
     /// 줄별 텍스트를 추출하고 rhwp 측정 폭 vs available_width를 비교
     #[test]
     fn test_lineseg_width_diagnosis_basic() {
+        use crate::renderer::composer::find_active_char_shape;
         use crate::renderer::layout::{estimate_text_width, resolved_to_text_style};
         use crate::renderer::style_resolver::detect_lang_category;
-        use crate::renderer::composer::find_active_char_shape;
 
-        let Some((document, styles)) = load_raw("samples/lseg-01-basic.hwp") else { return };
+        let Some((document, styles)) = load_raw("samples/lseg-01-basic.hwp") else {
+            return;
+        };
         let dpi = 96.0;
         let section = &document.sections[0];
         let page_def = &section.section_def.page_def;
@@ -182,8 +203,12 @@ mod tests {
         let col_area = &layout.column_areas[0];
 
         for (pi, para) in section.paragraphs.iter().enumerate() {
-            if para.line_segs.is_empty() || para.text.is_empty() { continue; }
-            if para.line_segs[0].line_height == 0 { continue; }
+            if para.line_segs.is_empty() || para.text.is_empty() {
+                continue;
+            }
+            if para.line_segs[0].line_height == 0 {
+                continue;
+            }
 
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -193,23 +218,39 @@ mod tests {
 
             let text_chars: Vec<char> = para.text.chars().collect();
 
-            eprintln!("\n=== 문단 {} (줄 {}개, 가용폭 {:.1}px = {} HU) ===",
-                pi, para.line_segs.len(), available_width, available_hwp);
+            eprintln!(
+                "\n=== 문단 {} (줄 {}개, 가용폭 {:.1}px = {} HU) ===",
+                pi,
+                para.line_segs.len(),
+                available_width,
+                available_hwp
+            );
 
             for (li, ls) in para.line_segs.iter().enumerate() {
                 let utf16_start = ls.text_start as usize;
                 let utf16_end = if li + 1 < para.line_segs.len() {
                     para.line_segs[li + 1].text_start as usize
                 } else {
-                    para.char_offsets.last().map(|&o| o as usize + 1).unwrap_or(text_chars.len())
+                    para.char_offsets
+                        .last()
+                        .map(|&o| o as usize + 1)
+                        .unwrap_or(text_chars.len())
                 };
 
                 // UTF-16 offset → char index 변환
-                let char_start = para.char_offsets.iter()
-                    .position(|&o| o as usize >= utf16_start).unwrap_or(0);
-                let char_end = para.char_offsets.iter()
-                    .position(|&o| o as usize >= utf16_end).unwrap_or(text_chars.len());
-                let line_text: String = text_chars[char_start..char_end.min(text_chars.len())].iter().collect();
+                let char_start = para
+                    .char_offsets
+                    .iter()
+                    .position(|&o| o as usize >= utf16_start)
+                    .unwrap_or(0);
+                let char_end = para
+                    .char_offsets
+                    .iter()
+                    .position(|&o| o as usize >= utf16_end)
+                    .unwrap_or(text_chars.len());
+                let line_text: String = text_chars[char_start..char_end.min(text_chars.len())]
+                    .iter()
+                    .collect();
 
                 // TextStyle 생성
                 let active_cs_id = find_active_char_shape(&para.char_shapes, char_start as u32);
@@ -235,20 +276,29 @@ mod tests {
                 for ch in line_text.chars() {
                     let cw = estimate_text_width(&ch.to_string(), &ts);
                     if ch >= '\u{AC00}' && ch <= '\u{D7AF}' {
-                        hangul_count += 1; hangul_total += cw;
+                        hangul_count += 1;
+                        hangul_total += cw;
                     } else if ch.is_ascii_alphabetic() {
-                        latin_count += 1; latin_total += cw;
+                        latin_count += 1;
+                        latin_total += cw;
                     } else if ch == ' ' {
-                        space_count += 1; space_total += cw;
+                        space_count += 1;
+                        space_total += cw;
                     } else {
-                        punct_count += 1; punct_total += cw;
+                        punct_count += 1;
+                        punct_total += cw;
                     }
                 }
 
                 eprintln!(
                     "  L{}: chars=[{}..{}) len={} | measured={:.1}px({}HU) seg_width={}HU delta={}",
-                    li, char_start, char_end, line_text.chars().count(),
-                    measured_width, measured_hwp, orig_seg_width,
+                    li,
+                    char_start,
+                    char_end,
+                    line_text.chars().count(),
+                    measured_width,
+                    measured_hwp,
+                    orig_seg_width,
                     measured_hwp - orig_seg_width
                 );
                 eprintln!(
@@ -262,10 +312,13 @@ mod tests {
                 );
 
                 // 첫 5글자의 개별 폭 출력
-                let detail_chars: Vec<(char, f64)> = line_text.chars().take(10)
+                let detail_chars: Vec<(char, f64)> = line_text
+                    .chars()
+                    .take(10)
                     .map(|ch| (ch, estimate_text_width(&ch.to_string(), &ts)))
                     .collect();
-                let detail_str: Vec<String> = detail_chars.iter()
+                let detail_str: Vec<String> = detail_chars
+                    .iter()
                     .map(|(c, w)| format!("'{}'{:.2}", c, w))
                     .collect();
                 eprintln!("    처음10자: {}", detail_str.join(" "));
@@ -277,13 +330,15 @@ mod tests {
     /// 줄바꿈 차이가 발생하는 정확한 글자와 폭을 추적
     #[test]
     fn test_lineseg_boundary_char_analysis() {
+        use crate::renderer::composer::find_active_char_shape;
         use crate::renderer::layout::{estimate_text_width, resolved_to_text_style};
         use crate::renderer::style_resolver::detect_lang_category;
-        use crate::renderer::composer::find_active_char_shape;
 
         let paths = ["samples/lseg-03-spacing.hwp", "samples/lseg-01-basic.hwp"];
         for path in &paths {
-            let Some((document, styles)) = load_raw(path) else { continue };
+            let Some((document, styles)) = load_raw(path) else {
+                continue;
+            };
             let dpi = 96.0;
             let section = &document.sections[0];
             let page_def = &section.section_def.page_def;
@@ -294,9 +349,15 @@ mod tests {
             eprintln!("\n========== {} ==========", path);
 
             for (pi, para) in section.paragraphs.iter().enumerate() {
-                if pi > 0 { break; } // 첫 문단만
-                if para.line_segs.is_empty() || para.text.is_empty() { continue; }
-                if para.line_segs[0].line_height == 0 { continue; }
+                if pi > 0 {
+                    break;
+                } // 첫 문단만
+                if para.line_segs.is_empty() || para.text.is_empty() {
+                    continue;
+                }
+                if para.line_segs[0].line_height == 0 {
+                    continue;
+                }
 
                 let para_style = styles.para_styles.get(para.para_shape_id as usize);
                 let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -308,9 +369,17 @@ mod tests {
 
                 // reflow 결과
                 let mut para_clone = para.clone();
-                crate::renderer::composer::reflow_line_segs(&mut para_clone, available_width, &styles, dpi);
+                crate::renderer::composer::reflow_line_segs(
+                    &mut para_clone,
+                    available_width,
+                    &styles,
+                    dpi,
+                );
 
-                eprintln!("문단 {} (가용폭={}HU={:.1}px)", pi, available_hwp, available_width);
+                eprintln!(
+                    "문단 {} (가용폭={}HU={:.1}px)",
+                    pi, available_hwp, available_width
+                );
 
                 // 각 줄의 경계 글자 비교
                 for li in 0..para.line_segs.len().max(para_clone.line_segs.len()) {
@@ -318,19 +387,31 @@ mod tests {
                     let refl_ts = para_clone.line_segs.get(li).map(|l| l.text_start);
 
                     // 원본 줄의 마지막 글자 위치에서의 누적 폭
-                    if let (Some(ots), Some(next_ots)) = (orig_ts, para.line_segs.get(li + 1).map(|l| l.text_start)) {
+                    if let (Some(ots), Some(next_ots)) =
+                        (orig_ts, para.line_segs.get(li + 1).map(|l| l.text_start))
+                    {
                         // 이 줄의 글자 범위 (char index)
-                        let char_start = para.char_offsets.iter()
-                            .position(|&o| o >= ots).unwrap_or(0);
-                        let char_end = para.char_offsets.iter()
-                            .position(|&o| o >= next_ots).unwrap_or(text_chars.len());
+                        let char_start = para
+                            .char_offsets
+                            .iter()
+                            .position(|&o| o >= ots)
+                            .unwrap_or(0);
+                        let char_end = para
+                            .char_offsets
+                            .iter()
+                            .position(|&o| o >= next_ots)
+                            .unwrap_or(text_chars.len());
 
                         // 줄 텍스트의 각 글자 폭을 누적
                         let mut cum = 0.0f64;
                         let mut last_char = ' ';
                         for ci in char_start..char_end.min(text_chars.len()) {
                             let ch = text_chars[ci];
-                            let utf16_pos = if ci < para.char_offsets.len() { para.char_offsets[ci] } else { ci as u32 };
+                            let utf16_pos = if ci < para.char_offsets.len() {
+                                para.char_offsets[ci]
+                            } else {
+                                ci as u32
+                            };
                             let style_id = find_active_char_shape(&para.char_shapes, utf16_pos);
                             let lang = detect_lang_category(ch);
                             let ts = resolved_to_text_style(&styles, style_id, lang);
@@ -342,7 +423,11 @@ mod tests {
 
                         // 다음 글자(줄 넘침 원인)
                         let next_char = text_chars.get(char_end).copied().unwrap_or('?');
-                        let next_utf16 = if char_end < para.char_offsets.len() { para.char_offsets[char_end] } else { 0 };
+                        let next_utf16 = if char_end < para.char_offsets.len() {
+                            para.char_offsets[char_end]
+                        } else {
+                            0
+                        };
                         let next_style_id = find_active_char_shape(&para.char_shapes, next_utf16);
                         let next_lang = detect_lang_category(next_char);
                         let next_ts = resolved_to_text_style(&styles, next_style_id, next_lang);
@@ -369,11 +454,13 @@ mod tests {
     /// 한컴이 줄을 나누는 정확한 지점에서 rhwp가 측정한 폭을 확인
     #[test]
     fn test_lineseg_linebreak_width_analysis() {
+        use crate::renderer::composer::{find_active_char_shape, tokenize_paragraph, BreakToken};
         use crate::renderer::layout::{estimate_text_width, resolved_to_text_style};
         use crate::renderer::style_resolver::detect_lang_category;
-        use crate::renderer::composer::{find_active_char_shape, tokenize_paragraph, BreakToken};
 
-        let Some((document, styles)) = load_raw("samples/lseg-01-basic.hwp") else { return };
+        let Some((document, styles)) = load_raw("samples/lseg-01-basic.hwp") else {
+            return;
+        };
         let dpi = 96.0;
         let section = &document.sections[0];
         let page_def = &section.section_def.page_def;
@@ -382,8 +469,12 @@ mod tests {
         let col_area = &layout.column_areas[0];
 
         for (pi, para) in section.paragraphs.iter().enumerate() {
-            if para.line_segs.is_empty() || para.text.is_empty() { continue; }
-            if para.line_segs[0].line_height == 0 { continue; }
+            if para.line_segs.is_empty() || para.text.is_empty() {
+                continue;
+            }
+            if para.line_segs[0].line_height == 0 {
+                continue;
+            }
 
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -405,14 +496,25 @@ mod tests {
                     para.line_segs[li + 1].text_start as usize
                 } else {
                     // 마지막 줄: 문단 끝까지
-                    para.char_offsets.last().map(|&o| o as usize + 1).unwrap_or(text_chars.len())
+                    para.char_offsets
+                        .last()
+                        .map(|&o| o as usize + 1)
+                        .unwrap_or(text_chars.len())
                 };
 
-                let char_start = para.char_offsets.iter()
-                    .position(|&o| o as usize >= utf16_start).unwrap_or(0);
-                let char_end = para.char_offsets.iter()
-                    .position(|&o| o as usize >= utf16_end).unwrap_or(text_chars.len());
-                let line_text: String = text_chars[char_start..char_end.min(text_chars.len())].iter().collect();
+                let char_start = para
+                    .char_offsets
+                    .iter()
+                    .position(|&o| o as usize >= utf16_start)
+                    .unwrap_or(0);
+                let char_end = para
+                    .char_offsets
+                    .iter()
+                    .position(|&o| o as usize >= utf16_end)
+                    .unwrap_or(text_chars.len());
+                let line_text: String = text_chars[char_start..char_end.min(text_chars.len())]
+                    .iter()
+                    .collect();
                 let is_last_line = li + 1 >= para.line_segs.len();
 
                 // 줄 텍스트에서 trailing space 제거하여 측정 (줄 끝 공백은 줄바꿈 시 흡수됨)
@@ -427,19 +529,31 @@ mod tests {
 
                 for (ci, ch) in trimmed.chars().enumerate() {
                     let pos = char_start + ci;
-                    let utf16_pos = if pos < para.char_offsets.len() { para.char_offsets[pos] } else { pos as u32 };
+                    let utf16_pos = if pos < para.char_offsets.len() {
+                        para.char_offsets[pos]
+                    } else {
+                        pos as u32
+                    };
                     let style_id = find_active_char_shape(&para.char_shapes, utf16_pos);
                     let lang = detect_lang_category(ch);
                     let ts = resolved_to_text_style(&styles, style_id, lang);
                     let cw = estimate_text_width(&ch.to_string(), &ts);
                     raw_total += cw;
 
-                    if ch >= '\u{AC00}' && ch <= '\u{D7AF}' { char_count_hangul += 1; }
-                    else if ch == ' ' { char_count_space += 1; }
-                    else { char_count_other += 1; }
+                    if ch >= '\u{AC00}' && ch <= '\u{D7AF}' {
+                        char_count_hangul += 1;
+                    } else if ch == ' ' {
+                        char_count_space += 1;
+                    } else {
+                        char_count_other += 1;
+                    }
                 }
 
-                let eff_width = if li == 0 { (available_width - indent.max(0.0)).max(1.0) } else { available_width };
+                let eff_width = if li == 0 {
+                    (available_width - indent.max(0.0)).max(1.0)
+                } else {
+                    available_width
+                };
                 let margin = eff_width - raw_total;
 
                 eprintln!(
@@ -458,43 +572,78 @@ mod tests {
             let english_break_unit = para_style.map(|s| s.english_break_unit).unwrap_or(0);
             let korean_break_unit = para_style.map(|s| s.korean_break_unit).unwrap_or(0);
             let tokens = tokenize_paragraph(
-                &text_chars, &para.char_offsets, &para.char_shapes,
-                &styles, english_break_unit, korean_break_unit,
+                &text_chars,
+                &para.char_offsets,
+                &para.char_shapes,
+                &styles,
+                english_break_unit,
+                korean_break_unit,
             );
             let mut token_width_sum = 0.0f64;
             let mut token_count = 0usize;
             for tok in &tokens {
                 match tok {
-                    BreakToken::Text { width, start_idx, end_idx, .. } => {
+                    BreakToken::Text {
+                        width,
+                        start_idx,
+                        end_idx,
+                        ..
+                    } => {
                         token_width_sum += width;
                         token_count += 1;
                         if token_count <= 10 {
-                            let tok_text: String = text_chars[*start_idx..*end_idx].iter().collect();
-                            eprintln!("    T[{}]: Text({:.1}px) [{}..{}) \"{}\"",
-                                token_count - 1, width, start_idx, end_idx, tok_text);
+                            let tok_text: String =
+                                text_chars[*start_idx..*end_idx].iter().collect();
+                            eprintln!(
+                                "    T[{}]: Text({:.1}px) [{}..{}) \"{}\"",
+                                token_count - 1,
+                                width,
+                                start_idx,
+                                end_idx,
+                                tok_text
+                            );
                         }
                     }
                     BreakToken::Space { width, idx, .. } => {
                         token_width_sum += width;
                         token_count += 1;
                         if token_count <= 10 {
-                            eprintln!("    T[{}]: Space({:.1}px) idx={}", token_count - 1, width, idx);
+                            eprintln!(
+                                "    T[{}]: Space({:.1}px) idx={}",
+                                token_count - 1,
+                                width,
+                                idx
+                            );
                         }
                     }
-                    _ => { token_count += 1; }
+                    _ => {
+                        token_count += 1;
+                    }
                 }
             }
-            eprintln!("  토큰 {}개, 폭 합계={:.1}px (available={:.1}px)", tokens.len(), token_width_sum, available_width);
+            eprintln!(
+                "  토큰 {}개, 폭 합계={:.1}px (available={:.1}px)",
+                tokens.len(),
+                token_width_sum,
+                available_width
+            );
 
             // rhwp reflow 결과와 비교
             let mut para_clone = para.clone();
-            crate::renderer::composer::reflow_line_segs(&mut para_clone, available_width, &styles, dpi);
+            crate::renderer::composer::reflow_line_segs(
+                &mut para_clone,
+                available_width,
+                &styles,
+                dpi,
+            );
             eprintln!("  --- reflow 결과: {}줄 ---", para_clone.line_segs.len());
             for (li, ls) in para_clone.line_segs.iter().enumerate() {
                 let orig_ts = para.line_segs.get(li).map(|o| o.text_start);
                 eprintln!(
                     "  R{}: text_start={} (원본={})",
-                    li, ls.text_start, orig_ts.map(|t| t.to_string()).unwrap_or("없음".into())
+                    li,
+                    ls.text_start,
+                    orig_ts.map(|t| t.to_string()).unwrap_or("없음".into())
                 );
             }
         }
@@ -519,7 +668,9 @@ mod tests {
                 for r in &reports {
                     eprintln!(
                         "  섹션{}: 문단 {}/{} | 줄수={:.0}% 줄바꿈={:.0}% 전체={:.0}%",
-                        r.section_idx, r.compared_paragraphs, r.total_paragraphs,
+                        r.section_idx,
+                        r.compared_paragraphs,
+                        r.total_paragraphs,
                         r.line_count_match_rate(),
                         r.line_break_match_rate(),
                         r.all_match_rate(),
@@ -528,7 +679,11 @@ mod tests {
                     if avg.lines_compared > 0 {
                         eprintln!(
                             "    오차: ts={:.1} lh={:.1} bl={:.1} ls={:.1} sw={:.1}",
-                            avg.text_start, avg.line_height, avg.baseline_distance, avg.line_spacing, avg.segment_width
+                            avg.text_start,
+                            avg.line_height,
+                            avg.baseline_distance,
+                            avg.line_spacing,
+                            avg.segment_width
                         );
                     }
                     // 불일치 문단 상세 출력
@@ -536,16 +691,26 @@ mod tests {
                         if !pd.all_match() {
                             eprintln!(
                                 "    pi={}: 줄 {}→{} {}",
-                                pd.para_idx, pd.original_line_count, pd.reflow_line_count,
-                                if pd.line_count_match { "필드차이" } else { "줄수불일치" }
+                                pd.para_idx,
+                                pd.original_line_count,
+                                pd.reflow_line_count,
+                                if pd.line_count_match {
+                                    "필드차이"
+                                } else {
+                                    "줄수불일치"
+                                }
                             );
                             for fd in &pd.field_diffs {
                                 if !fd.all_match() {
                                     eprintln!(
                                         "      L{}: ts={} lh={} th={} bl={} ls={} sw={} vp={}",
-                                        fd.line_idx, fd.text_start_delta, fd.line_height_delta,
-                                        fd.text_height_delta, fd.baseline_distance_delta,
-                                        fd.line_spacing_delta, fd.segment_width_delta,
+                                        fd.line_idx,
+                                        fd.text_start_delta,
+                                        fd.line_height_delta,
+                                        fd.text_height_delta,
+                                        fd.baseline_distance_delta,
+                                        fd.line_spacing_delta,
+                                        fd.segment_width_delta,
                                         fd.vertical_pos_delta
                                     );
                                 }
@@ -586,8 +751,13 @@ mod tests {
         let mut total_all_match = 0usize;
 
         for (hancom_path, _rhwp_path) in &pairs {
-            let Some(reports) = run_comparison(hancom_path) else { continue };
-            let base = std::path::Path::new(hancom_path).file_stem().unwrap().to_string_lossy();
+            let Some(reports) = run_comparison(hancom_path) else {
+                continue;
+            };
+            let base = std::path::Path::new(hancom_path)
+                .file_stem()
+                .unwrap()
+                .to_string_lossy();
 
             for r in &reports {
                 total_compared += r.compared_paragraphs;
@@ -612,9 +782,12 @@ mod tests {
                             if !fd.all_match() {
                                 eprintln!(
                                     "  L{}: ts={} lh={} th={} bl={} ls={} sw={}",
-                                    fd.line_idx, fd.text_start_delta,
-                                    fd.line_height_delta, fd.text_height_delta,
-                                    fd.baseline_distance_delta, fd.line_spacing_delta,
+                                    fd.line_idx,
+                                    fd.text_start_delta,
+                                    fd.line_height_delta,
+                                    fd.text_height_delta,
+                                    fd.baseline_distance_delta,
+                                    fd.line_spacing_delta,
                                     fd.segment_width_delta
                                 );
                             }
@@ -624,12 +797,27 @@ mod tests {
             }
         }
 
-        let rate = |n: usize, d: usize| if d == 0 { 0.0 } else { n as f64 / d as f64 * 100.0 };
+        let rate = |n: usize, d: usize| {
+            if d == 0 {
+                0.0
+            } else {
+                n as f64 / d as f64 * 100.0
+            }
+        };
         eprintln!("\n=== 한컴 저장본 전체 요약 ===");
         eprintln!("비교: {}문단", total_compared);
-        eprintln!("줄 수 일치율: {:.1}%", rate(total_line_match, total_compared));
-        eprintln!("줄바꿈 위치 일치율: {:.1}%", rate(total_break_match, total_compared));
-        eprintln!("전체 필드 일치율: {:.1}%", rate(total_all_match, total_compared));
+        eprintln!(
+            "줄 수 일치율: {:.1}%",
+            rate(total_line_match, total_compared)
+        );
+        eprintln!(
+            "줄바꿈 위치 일치율: {:.1}%",
+            rate(total_break_match, total_compared)
+        );
+        eprintln!(
+            "전체 필드 일치율: {:.1}%",
+            rate(total_all_match, total_compared)
+        );
     }
 
     /// 전체 samples/ 대상 일괄 비교 (nocapture로 실행하여 리포트 확인)

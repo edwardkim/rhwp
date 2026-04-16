@@ -3,17 +3,27 @@
 //! LayoutBox를 SVG 요소로 변환한다.
 //! 생성된 SVG 조각은 `<g>` 요소 내부에 포함된다.
 
+use super::ast::MatrixStyle;
 use super::layout::*;
 use super::symbols::{DecoKind, FontStyleKind};
-use super::ast::MatrixStyle;
 
 /// 수식 전용 font-family (Latin Modern Math → STIX Two Math → Cambria Math → Pretendard → serif)
-const EQ_FONT_FAMILY: &str = " font-family=\"'Latin Modern Math', 'STIX Two Math', 'Cambria Math', 'Pretendard', serif\"";
+const EQ_FONT_FAMILY: &str =
+    " font-family=\"'Latin Modern Math', 'STIX Two Math', 'Cambria Math', 'Pretendard', serif\"";
 
 /// 수식을 SVG 조각 문자열로 렌더링
 pub fn render_equation_svg(layout: &LayoutBox, color: &str, base_font_size: f64) -> String {
     let mut svg = String::new();
-    render_box(&mut svg, layout, 0.0, 0.0, color, base_font_size, false, false);
+    render_box(
+        &mut svg,
+        layout,
+        0.0,
+        0.0,
+        color,
+        base_font_size,
+        false,
+        false,
+    );
     svg
 }
 
@@ -128,7 +138,16 @@ fn render_box(
 
             // 인덱스 (있으면)
             if let Some(idx) = index {
-                render_box(svg, idx, sign_x, y, color, fs * super::layout::SCRIPT_SCALE, false, false);
+                render_box(
+                    svg,
+                    idx,
+                    sign_x,
+                    y,
+                    color,
+                    fs * super::layout::SCRIPT_SCALE,
+                    false,
+                    false,
+                );
             }
 
             // 본체
@@ -136,16 +155,52 @@ fn render_box(
         }
         LayoutKind::Superscript { base, sup } => {
             render_box(svg, base, x, y, color, fs, italic, bold);
-            render_box(svg, sup, x, y, color, fs * super::layout::SCRIPT_SCALE, italic, bold);
+            render_box(
+                svg,
+                sup,
+                x,
+                y,
+                color,
+                fs * super::layout::SCRIPT_SCALE,
+                italic,
+                bold,
+            );
         }
         LayoutKind::Subscript { base, sub } => {
             render_box(svg, base, x, y, color, fs, italic, bold);
-            render_box(svg, sub, x, y, color, fs * super::layout::SCRIPT_SCALE, italic, bold);
+            render_box(
+                svg,
+                sub,
+                x,
+                y,
+                color,
+                fs * super::layout::SCRIPT_SCALE,
+                italic,
+                bold,
+            );
         }
         LayoutKind::SubSup { base, sub, sup } => {
             render_box(svg, base, x, y, color, fs, italic, bold);
-            render_box(svg, sub, x, y, color, fs * super::layout::SCRIPT_SCALE, italic, bold);
-            render_box(svg, sup, x, y, color, fs * super::layout::SCRIPT_SCALE, italic, bold);
+            render_box(
+                svg,
+                sub,
+                x,
+                y,
+                color,
+                fs * super::layout::SCRIPT_SCALE,
+                italic,
+                bold,
+            );
+            render_box(
+                svg,
+                sup,
+                x,
+                y,
+                color,
+                fs * super::layout::SCRIPT_SCALE,
+                italic,
+                bold,
+            );
         }
         LayoutKind::BigOp { symbol, sub, sup } => {
             // 큰 연산자 기호
@@ -160,10 +215,28 @@ fn render_box(
             ));
             // 위/아래 첨자
             if let Some(sup_box) = sup {
-                render_box(svg, sup_box, x, y, color, fs * super::layout::SCRIPT_SCALE, false, false);
+                render_box(
+                    svg,
+                    sup_box,
+                    x,
+                    y,
+                    color,
+                    fs * super::layout::SCRIPT_SCALE,
+                    false,
+                    false,
+                );
             }
             if let Some(sub_box) = sub {
-                render_box(svg, sub_box, x, y, color, fs * super::layout::SCRIPT_SCALE, false, false);
+                render_box(
+                    svg,
+                    sub_box,
+                    x,
+                    y,
+                    color,
+                    fs * super::layout::SCRIPT_SCALE,
+                    false,
+                    false,
+                );
             }
         }
         LayoutKind::Limit { is_upper, sub } => {
@@ -171,10 +244,24 @@ fn render_box(
             let fi = font_size_from_box(lb, fs);
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
-                x, y + fi * 0.8, fi, color, EQ_FONT_FAMILY, name,
+                x,
+                y + fi * 0.8,
+                fi,
+                color,
+                EQ_FONT_FAMILY,
+                name,
             ));
             if let Some(sub_box) = sub {
-                render_box(svg, sub_box, x, y, color, fs * super::layout::SCRIPT_SCALE, false, false);
+                render_box(
+                    svg,
+                    sub_box,
+                    x,
+                    y,
+                    color,
+                    fs * super::layout::SCRIPT_SCALE,
+                    false,
+                    false,
+                );
             }
         }
         LayoutKind::Matrix { cells, style } => {
@@ -187,7 +274,16 @@ fn render_box(
             };
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(svg, bracket_chars.0, x, y, fs * 0.3, lb.height, color, fs);
-                draw_stretch_bracket(svg, bracket_chars.1, x + lb.width - fs * 0.3, y, fs * 0.3, lb.height, color, fs);
+                draw_stretch_bracket(
+                    svg,
+                    bracket_chars.1,
+                    x + lb.width - fs * 0.3,
+                    y,
+                    fs * 0.3,
+                    lb.height,
+                    color,
+                    fs,
+                );
             }
             // 셀 내용
             for row in cells {
@@ -256,7 +352,16 @@ fn estimate_op_width(text: &str, fs: f64) -> f64 {
 }
 
 /// 늘림 괄호 렌더링
-fn draw_stretch_bracket(svg: &mut String, bracket: &str, x: f64, y: f64, w: f64, h: f64, color: &str, fs: f64) {
+fn draw_stretch_bracket(
+    svg: &mut String,
+    bracket: &str,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    color: &str,
+    fs: f64,
+) {
     let mid_x = x + w / 2.0;
     let stroke_w = fs * 0.04;
 
@@ -349,7 +454,15 @@ fn draw_stretch_bracket(svg: &mut String, bracket: &str, x: f64, y: f64, w: f64,
 }
 
 /// 장식 렌더링
-fn draw_decoration(svg: &mut String, kind: DecoKind, mid_x: f64, y: f64, width: f64, color: &str, fs: f64) {
+fn draw_decoration(
+    svg: &mut String,
+    kind: DecoKind,
+    mid_x: f64,
+    y: f64,
+    width: f64,
+    color: &str,
+    fs: f64,
+) {
     let stroke_w = fs * 0.03;
     let half_w = width / 2.0;
 
@@ -403,18 +516,27 @@ fn draw_decoration(svg: &mut String, kind: DecoKind, mid_x: f64, y: f64, width: 
         DecoKind::Dot => {
             svg.push_str(&format!(
                 "<circle cx=\"{:.2}\" cy=\"{:.2}\" r=\"{:.2}\" fill=\"{}\"/>\n",
-                mid_x, y + fs * 0.06, fs * 0.03, color,
+                mid_x,
+                y + fs * 0.06,
+                fs * 0.03,
+                color,
             ));
         }
         DecoKind::DDot => {
             let gap = fs * 0.1;
             svg.push_str(&format!(
                 "<circle cx=\"{:.2}\" cy=\"{:.2}\" r=\"{:.2}\" fill=\"{}\"/>\n",
-                mid_x - gap, y + fs * 0.06, fs * 0.03, color,
+                mid_x - gap,
+                y + fs * 0.06,
+                fs * 0.03,
+                color,
             ));
             svg.push_str(&format!(
                 "<circle cx=\"{:.2}\" cy=\"{:.2}\" r=\"{:.2}\" fill=\"{}\"/>\n",
-                mid_x + gap, y + fs * 0.06, fs * 0.03, color,
+                mid_x + gap,
+                y + fs * 0.06,
+                fs * 0.03,
+                color,
             ));
         }
         DecoKind::Underline | DecoKind::Under => {
@@ -465,9 +587,9 @@ pub fn eq_color_to_svg(color: u32) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::renderer::equation::layout::EqLayout;
     use crate::renderer::equation::parser::EqParser;
     use crate::renderer::equation::tokenizer::tokenize;
-    use crate::renderer::equation::layout::EqLayout;
 
     fn render_eq(script: &str) -> String {
         let tokens = tokenize(script);
@@ -500,7 +622,7 @@ mod tests {
     #[test]
     fn test_eq01_svg() {
         let svg = render_eq(
-            "평점=입찰가격평가~배점한도 TIMES LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )"
+            "평점=입찰가격평가~배점한도 TIMES LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )",
         );
         assert!(svg.contains("평점"));
         assert!(svg.contains("×")); // TIMES → ×

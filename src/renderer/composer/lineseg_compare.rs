@@ -71,17 +71,23 @@ pub struct SectionLineSegReport {
 
 impl SectionLineSegReport {
     pub fn line_count_match_rate(&self) -> f64 {
-        if self.compared_paragraphs == 0 { return 0.0; }
+        if self.compared_paragraphs == 0 {
+            return 0.0;
+        }
         self.line_count_match_count as f64 / self.compared_paragraphs as f64 * 100.0
     }
 
     pub fn line_break_match_rate(&self) -> f64 {
-        if self.compared_paragraphs == 0 { return 0.0; }
+        if self.compared_paragraphs == 0 {
+            return 0.0;
+        }
         self.line_break_match_count as f64 / self.compared_paragraphs as f64 * 100.0
     }
 
     pub fn all_match_rate(&self) -> f64 {
-        if self.compared_paragraphs == 0 { return 0.0; }
+        if self.compared_paragraphs == 0 {
+            return 0.0;
+        }
         self.all_match_count as f64 / self.compared_paragraphs as f64 * 100.0
     }
 
@@ -194,15 +200,21 @@ pub fn format_report(reports: &[SectionLineSegReport]) -> String {
         ));
         out.push_str(&format!(
             "- 줄 수 일치: {}/{} ({:.1}%)\n",
-            report.line_count_match_count, report.compared_paragraphs, report.line_count_match_rate()
+            report.line_count_match_count,
+            report.compared_paragraphs,
+            report.line_count_match_rate()
         ));
         out.push_str(&format!(
             "- 줄바꿈 위치 일치: {}/{} ({:.1}%)\n",
-            report.line_break_match_count, report.compared_paragraphs, report.line_break_match_rate()
+            report.line_break_match_count,
+            report.compared_paragraphs,
+            report.line_break_match_rate()
         ));
         out.push_str(&format!(
             "- 전체 필드 일치: {}/{} ({:.1}%)\n",
-            report.all_match_count, report.compared_paragraphs, report.all_match_rate()
+            report.all_match_count,
+            report.compared_paragraphs,
+            report.all_match_rate()
         ));
 
         let avg = report.avg_field_deltas();
@@ -214,12 +226,22 @@ pub fn format_report(reports: &[SectionLineSegReport]) -> String {
         }
 
         // 불일치 문단 상위 5개
-        let mut mismatches: Vec<&ParagraphLineSegDiff> = report.paragraph_diffs.iter()
+        let mut mismatches: Vec<&ParagraphLineSegDiff> = report
+            .paragraph_diffs
+            .iter()
             .filter(|d| !d.all_match())
             .collect();
         mismatches.sort_by(|a, b| {
-            let a_score = a.field_diffs.iter().map(|f| f.text_start_delta.abs()).sum::<i64>();
-            let b_score = b.field_diffs.iter().map(|f| f.text_start_delta.abs()).sum::<i64>();
+            let a_score = a
+                .field_diffs
+                .iter()
+                .map(|f| f.text_start_delta.abs())
+                .sum::<i64>();
+            let b_score = b
+                .field_diffs
+                .iter()
+                .map(|f| f.text_start_delta.abs())
+                .sum::<i64>();
             b_score.cmp(&a_score)
         });
         if !mismatches.is_empty() {
@@ -227,8 +249,16 @@ pub fn format_report(reports: &[SectionLineSegReport]) -> String {
             out.push_str("| 문단 | 원본 줄수 | reflow 줄수 | text_start 오차합 | 비고 |\n");
             out.push_str("|------|----------|------------|-------------------|------|\n");
             for pd in mismatches.iter().take(5) {
-                let ts_sum: i64 = pd.field_diffs.iter().map(|f| f.text_start_delta.abs()).sum();
-                let note = if !pd.line_count_match { "줄 수 불일치" } else { "필드 차이" };
+                let ts_sum: i64 = pd
+                    .field_diffs
+                    .iter()
+                    .map(|f| f.text_start_delta.abs())
+                    .sum();
+                let note = if !pd.line_count_match {
+                    "줄 수 불일치"
+                } else {
+                    "필드 차이"
+                };
                 out.push_str(&format!(
                     "| {} | {} | {} | {} | {} |\n",
                     pd.para_idx, pd.original_line_count, pd.reflow_line_count, ts_sum, note
@@ -241,11 +271,29 @@ pub fn format_report(reports: &[SectionLineSegReport]) -> String {
     // 전체 요약
     if reports.len() > 1 || total_paras > 0 {
         out.push_str("## 전체 요약\n\n");
-        let rate = |n: usize, d: usize| if d == 0 { 0.0 } else { n as f64 / d as f64 * 100.0 };
-        out.push_str(&format!("- 총 문단: {} (비교 대상: {})\n", total_paras, total_compared));
-        out.push_str(&format!("- 줄 수 일치율: {:.1}%\n", rate(total_line_match, total_compared)));
-        out.push_str(&format!("- 줄바꿈 위치 일치율: {:.1}%\n", rate(total_break_match, total_compared)));
-        out.push_str(&format!("- 전체 필드 일치율: {:.1}%\n", rate(total_all_match, total_compared)));
+        let rate = |n: usize, d: usize| {
+            if d == 0 {
+                0.0
+            } else {
+                n as f64 / d as f64 * 100.0
+            }
+        };
+        out.push_str(&format!(
+            "- 총 문단: {} (비교 대상: {})\n",
+            total_paras, total_compared
+        ));
+        out.push_str(&format!(
+            "- 줄 수 일치율: {:.1}%\n",
+            rate(total_line_match, total_compared)
+        ));
+        out.push_str(&format!(
+            "- 줄바꿈 위치 일치율: {:.1}%\n",
+            rate(total_break_match, total_compared)
+        ));
+        out.push_str(&format!(
+            "- 전체 필드 일치율: {:.1}%\n",
+            rate(total_all_match, total_compared)
+        ));
     }
 
     out
