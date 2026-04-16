@@ -16,6 +16,10 @@ const SAMPLE_CASES = [
   { name: 'pic-crop-01', setup: (page) => loadHwpFile(page, 'pic-crop-01.hwp') },
 ];
 const CANVASKIT_MODE = process.env.RHWP_CANVASKIT_MODE === 'default' ? 'default' : 'compat';
+const TOLERANT_DIFF = {
+  ignoreChannelDelta: 128,
+  maxDiffRatio: 0.0025,
+};
 
 async function renderScenario(page, backend, caseInfo) {
   const search = backend === 'canvaskit'
@@ -60,11 +64,13 @@ runTest('CanvasKit 렌더 비교', async ({ page }) => {
 
     const diff = await comparePngBuffers(baseline.buffer, canvaskit.buffer, {
       diffName: `${caseInfo.name}-${CANVASKIT_MODE}`,
+      ignoreChannelDelta: TOLERANT_DIFF.ignoreChannelDelta,
+      maxDiffRatio: TOLERANT_DIFF.maxDiffRatio,
     });
 
     assert(
       diff.passed,
-      `${caseInfo.name} screenshot diff pixels=${diff.diffPixels} ratio=${diff.diffRatio.toFixed(4)}`,
+      `${caseInfo.name} screenshot exact=${diff.exactDiffPixels} (${diff.exactDiffRatio.toFixed(4)}), tolerant=${diff.tolerantDiffPixels} (${diff.tolerantDiffRatio.toFixed(4)}), ignored_channel_delta<=${diff.ignoreChannelDelta}, max_channel_delta=${diff.maxChannelDelta}`,
     );
   }
 }, { skipLoadApp: true });

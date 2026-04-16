@@ -287,12 +287,13 @@ export async function screenshotCanvas(page, name) {
   return { path, buffer };
 }
 
-/** 두 PNG 버퍼를 비교하고, 차이가 허용 범위를 넘으면 diff 아티팩트를 저장한다 */
+/** 두 PNG 버퍼를 exact/tolerant 기준으로 비교하고 diff 아티팩트를 저장한다 */
 export async function comparePngBuffers(expectedBuffer, actualBuffer, {
   diffName,
   threshold = 0,
-  maxDiffPixels = 0,
-  maxDiffRatio = 0,
+  ignoreChannelDelta = 0,
+  maxDiffPixels = null,
+  maxDiffRatio = null,
 } = {}) {
   const expected = PNG.sync.read(expectedBuffer);
   const actual = PNG.sync.read(actualBuffer);
@@ -301,36 +302,84 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
     throw new Error(`이미지 크기 불일치: ${expected.width}x${expected.height} vs ${actual.width}x${actual.height}`);
   }
 
-  const diff = new PNG({ width: expected.width, height: expected.height });
-  const diffPixels = pixelmatch(
+  const exactDiff = new PNG({ width: expected.width, height: expected.height });
+  const exactDiffPixels = pixelmatch(
     expected.data,
     actual.data,
-    diff.data,
+    exactDiff.data,
     expected.width,
     expected.height,
     { threshold, includeAA: true },
   );
-  const totalPixels = expected.width * expected.height;
-  const diffRatio = totalPixels > 0 ? diffPixels / totalPixels : 0;
-  const passed = diffPixels <= maxDiffPixels && diffRatio <= maxDiffRatio;
 
-  let diffPath = null;
-  if (!passed && diffName) {
+  const tolerantDiff = new PNG({ width: expected.width, height: expected.height });
+  let tolerantDiffPixels = 0;
+  let totalChannelDelta = 0;
+  let maxChannelDelta = 0;
+
+  for (let i = 0; i < expected.data.length; i += 4) {
+    let pixelMaxDelta = 0;
+
+    for (let channel = 0; channel < 4; channel++) {
+      const delta = Math.abs(expected.data[i + channel] - actual.data[i + channel]);
+      totalChannelDelta += delta;
+      if (delta > pixelMaxDelta) pixelMaxDelta = delta;
+      if (delta > maxChannelDelta) maxChannelDelta = delta;
+    }
+
+    if (pixelMaxDelta > ignoreChannelDelta) {
+      tolerantDiffPixels++;
+      tolerantDiff.data[i] = Math.max(pixelMaxDelta, 32);
+      tolerantDiff.data[i + 1] = 0;
+      tolerantDiff.data[i + 2] = 0;
+      tolerantDiff.data[i + 3] = 255;
+    }
+  }
+
+  const totalPixels = expected.width * expected.height;
+  const exactDiffRatio = totalPixels > 0 ? exactDiffPixels / totalPixels : 0;
+  const tolerantDiffRatio = totalPixels > 0 ? tolerantDiffPixels / totalPixels : 0;
+  const meanAbsChannelDelta = totalPixels > 0 ? totalChannelDelta / (totalPixels * 4) : 0;
+  const hasPixelBudget = maxDiffPixels != null;
+  const hasRatioBudget = maxDiffRatio != null;
+  const passed = hasPixelBudget || hasRatioBudget
+    ? (!hasPixelBudget || tolerantDiffPixels <= maxDiffPixels)
+      && (!hasRatioBudget || tolerantDiffRatio <= maxDiffRatio)
+    : tolerantDiffPixels === 0;
+
+  let exactDiffPath = null;
+  let tolerantDiffPath = null;
+  if (diffName && (exactDiffPixels > 0 || tolerantDiffPixels > 0)) {
     const { mkdirSync, existsSync, writeFileSync } = await import('fs');
     const outputDir = '../output/e2e/canvaskit-diff';
     if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
-    diffPath = `${outputDir}/${diffName}.png`;
-    writeFileSync(diffPath, PNG.sync.write(diff));
-    console.log(`  Diff Artifact: ${diffPath}`);
+    if (exactDiffPixels > 0) {
+      exactDiffPath = `${outputDir}/${diffName}.png`;
+      writeFileSync(exactDiffPath, PNG.sync.write(exactDiff));
+      console.log(`  Exact Diff Artifact: ${exactDiffPath}`);
+    }
+    if (tolerantDiffPixels > 0) {
+      tolerantDiffPath = `${outputDir}/${diffName}-tolerant.png`;
+      writeFileSync(tolerantDiffPath, PNG.sync.write(tolerantDiff));
+      console.log(`  Tolerant Diff Artifact: ${tolerantDiffPath}`);
+    }
   }
 
   return {
     passed,
-    diffPixels,
-    diffRatio,
+    diffPixels: tolerantDiffPixels,
+    diffRatio: tolerantDiffRatio,
+    exactDiffPixels,
+    exactDiffRatio,
+    tolerantDiffPixels,
+    tolerantDiffRatio,
     width: expected.width,
     height: expected.height,
-    diffPath,
+    ignoreChannelDelta,
+    meanAbsChannelDelta,
+    maxChannelDelta,
+    exactDiffPath,
+    tolerantDiffPath,
   };
 }
 

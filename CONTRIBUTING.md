@@ -155,13 +155,15 @@ RHWP_CANVASKIT_MODE=default node e2e/canvaskit-render.test.mjs --mode=headless
 
 WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신 `--mode=headless` 명령을 사용하세요.
 
-테스트가 실패하면 아래 위치에 비교 아티팩트가 남습니다.
+비교 아티팩트는 아래 위치에 남습니다.
 
 - `output/layer-svg-diff/` — legacy SVG vs layer SVG
 - `output/skia-diff/` — layer SVG vs native Skia PNG
-- `rhwp-studio/output/e2e/` 및 `rhwp-studio/e2e/screenshots/` — 브라우저 Canvas2D vs CanvasKit
+- `output/e2e/` 및 `rhwp-studio/e2e/screenshots/` — 브라우저 Canvas2D vs CanvasKit
 
-이 비교들은 현재 모두 exact match 기준입니다. 한 픽셀이라도 diff가 생기면 테스트가 실패합니다.
+- `layer-svg` 비교는 현재 exact match 기준입니다. 한 픽셀이라도 diff가 생기면 테스트가 실패합니다.
+- `native-skia` / `CanvasKit` 비교는 exact diff를 계속 저장하고, 별도로 채널 차이가 `128` 이하인 픽셀을 무시한 tolerant diff를 계산합니다.
+- 테스트 통과 여부는 tolerant diff 기준으로 판단합니다. 현재 기준은 `native-skia`는 tolerant diff pixel `64` 이하, `CanvasKit`은 tolerant diff ratio `0.25%` 이하입니다.
 
 디버그 오버레이는 문단/표에 라벨을 표시합니다:
 - 문단: `s{섹션}:pi={인덱스} y={좌표}`

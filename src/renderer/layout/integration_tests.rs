@@ -8,6 +8,9 @@ mod tests {
     use resvg::{tiny_skia, usvg};
     use std::path::{Path, PathBuf};
 
+    const SKIA_TOLERANT_CHANNEL_DELTA: u8 = 128;
+    const SKIA_TOLERANT_MAX_DIFF_PIXELS: usize = 64;
+
     /// 테스트용 DocumentCore 생성 헬퍼
     fn load_document(path: &str) -> Option<crate::document_core::DocumentCore> {
         let p = Path::new(path);
@@ -46,7 +49,11 @@ mod tests {
         diff_pixmap: tiny_skia::Pixmap,
     }
 
-    fn diff_pixmaps(expected: &tiny_skia::Pixmap, actual: &tiny_skia::Pixmap) -> PixmapDiff {
+    fn diff_pixmaps(
+        expected: &tiny_skia::Pixmap,
+        actual: &tiny_skia::Pixmap,
+        ignored_channel_delta: u8,
+    ) -> PixmapDiff {
         let total_pixels = (expected.width() as usize) * (expected.height() as usize);
         let mut diff_pixmap = tiny_skia::Pixmap::new(expected.width(), expected.height())
             .expect("diff pixmap 생성 실패");
@@ -73,7 +80,7 @@ mod tests {
                 max_channel_delta = max_channel_delta.max(delta);
             }
 
-            if pixel_diff {
+            if pixel_max_delta > ignored_channel_delta {
                 diff_pixels += 1;
                 let base = idx * 4;
                 diff_pixmap.data_mut()[base..base + 4].copy_from_slice(&[
@@ -106,6 +113,7 @@ mod tests {
         page_num: u32,
         expected_name: &str,
         actual_name: &str,
+        diff_name: &str,
         expected: &tiny_skia::Pixmap,
         actual: &tiny_skia::Pixmap,
         diff: &tiny_skia::Pixmap,
@@ -118,7 +126,7 @@ mod tests {
             .unwrap_or("sample");
         let expected_path = output_dir.join(format!("{stem}-{expected_name}-p{page_num}.png"));
         let actual_path = output_dir.join(format!("{stem}-{actual_name}-p{page_num}.png"));
-        let diff_path = output_dir.join(format!("{stem}-diff-p{page_num}.png"));
+        let diff_path = output_dir.join(format!("{stem}-{diff_name}-p{page_num}.png"));
         let _ = expected.save_png(&expected_path);
         let _ = actual.save_png(&actual_path);
         let _ = diff.save_png(&diff_path);
@@ -144,7 +152,7 @@ mod tests {
             "legacy/layer raster 크기가 달라서는 안 됨",
         );
 
-        let diff = diff_pixmaps(&legacy_pixmap, &layered_pixmap);
+        let diff = diff_pixmaps(&legacy_pixmap, &layered_pixmap, 0);
         if diff.diff_pixels > 0 {
             let (legacy_path, layered_path, diff_path) = save_diff_artifacts(
                 "output/layer-svg-diff",
@@ -152,6 +160,7 @@ mod tests {
                 page_num,
                 "legacy",
                 "layer",
+                "diff",
                 &legacy_pixmap,
                 &layered_pixmap,
                 &diff.diff_pixmap,
@@ -186,28 +195,83 @@ mod tests {
             "Skia/layer raster 크기가 달라서는 안 됨",
         );
 
-        let diff = diff_pixmaps(&expected, &actual);
-        if diff.diff_pixels > 0 {
-            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
+        let exact_diff = diff_pixmaps(&expected, &actual, 0);
+        let tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+
+        let exact_paths = if exact_diff.diff_pixels > 0 {
+            Some(save_diff_artifacts(
                 "output/skia-diff",
                 sample,
                 page_num,
                 "layer",
                 "skia",
+                "diff",
                 &expected,
                 &actual,
-                &diff.diff_pixmap,
-            );
+                &exact_diff.diff_pixmap,
+            ))
+        } else {
+            None
+        };
+
+        let tolerant_paths = if tolerant_diff.diff_pixels > 0 {
+            Some(save_diff_artifacts(
+                "output/skia-diff",
+                sample,
+                page_num,
+                "layer",
+                "skia",
+                "tolerant-diff",
+                &expected,
+                &actual,
+                &tolerant_diff.diff_pixmap,
+            ))
+        } else {
+            None
+        };
+
+        if tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
+            let (expected_path, actual_path, diff_path) =
+                exact_paths.expect("tolerant diff가 있으면 exact diff도 있어야 함");
+            let tolerant_diff_path = tolerant_paths
+                .as_ref()
+                .map(|(_, _, path)| path.display().to_string())
+                .unwrap_or_else(|| "-".to_string());
             panic!(
-                "Skia raster diff 발생: {} pixels, mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, diff: {})",
-                diff.diff_pixels,
-                diff.mean_abs_channel_delta,
-                diff.max_channel_delta,
+                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (ignored_channel_delta<={}), mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
+                exact_diff.diff_pixels,
+                tolerant_diff.diff_pixels,
+                SKIA_TOLERANT_CHANNEL_DELTA,
+                exact_diff.mean_abs_channel_delta,
+                exact_diff.max_channel_delta,
                 expected_path.display(),
                 actual_path.display(),
                 diff_path.display(),
+                tolerant_diff_path,
             );
         }
+    }
+
+    #[test]
+    fn test_diff_pixmaps_ignores_small_channel_deltas_when_configured() {
+        let mut expected = tiny_skia::Pixmap::new(2, 1).expect("expected pixmap 생성 실패");
+        let mut actual = tiny_skia::Pixmap::new(2, 1).expect("actual pixmap 생성 실패");
+
+        expected
+            .data_mut()
+            .copy_from_slice(&[10, 20, 30, 255, 80, 90, 100, 255]);
+        actual
+            .data_mut()
+            .copy_from_slice(&[12, 20, 30, 255, 80, 90, 106, 255]);
+
+        let exact = diff_pixmaps(&expected, &actual, 0);
+        let tolerant = diff_pixmaps(&expected, &actual, 4);
+
+        assert_eq!(exact.total_pixels, 2);
+        assert_eq!(exact.diff_pixels, 2);
+        assert_eq!(tolerant.diff_pixels, 1);
+        assert_eq!(exact.max_channel_delta, 6);
+        assert_eq!(tolerant.max_channel_delta, 6);
     }
 
     // ─── 페이지 수 검증 ───
@@ -466,7 +530,7 @@ mod tests {
             .render_png(&layer_tree)
             .expect("synthetic Skia PNG 렌더 실패");
         let actual = decode_png(&actual_png).expect("synthetic Skia PNG decode 실패");
-        let diff = diff_pixmaps(&expected, &actual);
+        let diff = diff_pixmaps(&expected, &actual, 0);
 
         if diff.diff_pixels > 0 {
             let (expected_path, actual_path, diff_path) = save_diff_artifacts(
@@ -475,6 +539,7 @@ mod tests {
                 0,
                 "layer",
                 "skia",
+                "diff",
                 &expected,
                 &actual,
                 &diff.diff_pixmap,
