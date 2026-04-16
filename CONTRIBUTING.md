@@ -164,6 +164,7 @@ WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신
 - `layer-svg` 비교는 현재 exact match 기준입니다. 한 픽셀이라도 diff가 생기면 테스트가 실패합니다.
 - `native-skia` / `CanvasKit` 비교는 exact diff를 계속 저장하고, 별도로 채널 차이가 `128` 이하인 픽셀을 무시한 tolerant diff를 계산합니다.
 - 테스트 통과 여부는 tolerant diff 기준으로 판단합니다. 현재 기준은 `native-skia`는 tolerant diff pixel `64` 이하, `CanvasKit`은 tolerant diff ratio `0.25%` 이하입니다.
+- tolerant 결과는 최종 허용 예산까지 반영한 값입니다. 즉 통과한 케이스는 tolerant diff가 `0`으로 보고되고, tolerant diff 아티팩트도 남기지 않습니다. exact diff 아티팩트는 참고용으로 계속 생성될 수 있습니다.
 
 디버그 오버레이는 문단/표에 라벨을 표시합니다:
 - 문단: `s{섹션}:pi={인덱스} y={좌표}`

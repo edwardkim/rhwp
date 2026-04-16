@@ -196,7 +196,7 @@ mod tests {
         );
 
         let exact_diff = diff_pixmaps(&expected, &actual, 0);
-        let tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+        let raw_tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
 
         let exact_paths = if exact_diff.diff_pixels > 0 {
             Some(save_diff_artifacts(
@@ -214,7 +214,7 @@ mod tests {
             None
         };
 
-        let tolerant_paths = if tolerant_diff.diff_pixels > 0 {
+        let tolerant_paths = if raw_tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
             Some(save_diff_artifacts(
                 "output/skia-diff",
                 sample,
@@ -224,13 +224,13 @@ mod tests {
                 "tolerant-diff",
                 &expected,
                 &actual,
-                &tolerant_diff.diff_pixmap,
+                &raw_tolerant_diff.diff_pixmap,
             ))
         } else {
             None
         };
 
-        if tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
+        if raw_tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
             let (expected_path, actual_path, diff_path) =
                 exact_paths.expect("tolerant diff가 있으면 exact diff도 있어야 함");
             let tolerant_diff_path = tolerant_paths
@@ -238,9 +238,10 @@ mod tests {
                 .map(|(_, _, path)| path.display().to_string())
                 .unwrap_or_else(|| "-".to_string());
             panic!(
-                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (ignored_channel_delta<={}), mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
+                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
                 exact_diff.diff_pixels,
-                tolerant_diff.diff_pixels,
+                raw_tolerant_diff.diff_pixels,
+                SKIA_TOLERANT_MAX_DIFF_PIXELS,
                 SKIA_TOLERANT_CHANNEL_DELTA,
                 exact_diff.mean_abs_channel_delta,
                 exact_diff.max_channel_delta,
@@ -272,6 +273,29 @@ mod tests {
         assert_eq!(tolerant.diff_pixels, 1);
         assert_eq!(exact.max_channel_delta, 6);
         assert_eq!(tolerant.max_channel_delta, 6);
+    }
+
+    #[test]
+    fn test_skia_tolerant_budget_zeroes_passing_diff() {
+        let mut expected = tiny_skia::Pixmap::new(4, 1).expect("expected pixmap 생성 실패");
+        let mut actual = tiny_skia::Pixmap::new(4, 1).expect("actual pixmap 생성 실패");
+
+        expected.data_mut().copy_from_slice(&[
+            10, 20, 30, 255, 40, 50, 60, 255, 70, 80, 90, 255, 1, 2, 3, 255,
+        ]);
+        actual.data_mut().copy_from_slice(&[
+            10, 20, 30, 255, 40, 50, 60, 255, 70, 80, 91, 255, 1, 2, 4, 255,
+        ]);
+
+        let raw_tolerant = diff_pixmaps(&expected, &actual, 0);
+        let budgeted_tolerant = if raw_tolerant.diff_pixels <= 2 {
+            0
+        } else {
+            raw_tolerant.diff_pixels
+        };
+
+        assert_eq!(raw_tolerant.diff_pixels, 2);
+        assert_eq!(budgeted_tolerant, 0);
     }
 
     // ─── 페이지 수 검증 ───

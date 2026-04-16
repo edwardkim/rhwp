@@ -338,14 +338,16 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
 
   const totalPixels = expected.width * expected.height;
   const exactDiffRatio = totalPixels > 0 ? exactDiffPixels / totalPixels : 0;
-  const tolerantDiffRatio = totalPixels > 0 ? tolerantDiffPixels / totalPixels : 0;
+  const rawTolerantDiffRatio = totalPixels > 0 ? tolerantDiffPixels / totalPixels : 0;
   const meanAbsChannelDelta = totalPixels > 0 ? totalChannelDelta / (totalPixels * 4) : 0;
   const hasPixelBudget = maxDiffPixels != null;
   const hasRatioBudget = maxDiffRatio != null;
   const passed = hasPixelBudget || hasRatioBudget
     ? (!hasPixelBudget || tolerantDiffPixels <= maxDiffPixels)
-      && (!hasRatioBudget || tolerantDiffRatio <= maxDiffRatio)
+      && (!hasRatioBudget || rawTolerantDiffRatio <= maxDiffRatio)
     : tolerantDiffPixels === 0;
+  const budgetedTolerantDiffPixels = passed ? 0 : tolerantDiffPixels;
+  const budgetedTolerantDiffRatio = passed ? 0 : rawTolerantDiffRatio;
 
   let exactDiffPath = null;
   let tolerantDiffPath = null;
@@ -358,7 +360,7 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
       writeFileSync(exactDiffPath, PNG.sync.write(exactDiff));
       console.log(`  Exact Diff Artifact: ${exactDiffPath}`);
     }
-    if (tolerantDiffPixels > 0) {
+    if (!passed && tolerantDiffPixels > 0) {
       tolerantDiffPath = `${outputDir}/${diffName}-tolerant.png`;
       writeFileSync(tolerantDiffPath, PNG.sync.write(tolerantDiff));
       console.log(`  Tolerant Diff Artifact: ${tolerantDiffPath}`);
@@ -367,12 +369,14 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
 
   return {
     passed,
-    diffPixels: tolerantDiffPixels,
-    diffRatio: tolerantDiffRatio,
+    diffPixels: budgetedTolerantDiffPixels,
+    diffRatio: budgetedTolerantDiffRatio,
     exactDiffPixels,
     exactDiffRatio,
-    tolerantDiffPixels,
-    tolerantDiffRatio,
+    tolerantDiffPixels: budgetedTolerantDiffPixels,
+    tolerantDiffRatio: budgetedTolerantDiffRatio,
+    rawTolerantDiffPixels: tolerantDiffPixels,
+    rawTolerantDiffRatio,
     width: expected.width,
     height: expected.height,
     ignoreChannelDelta,
