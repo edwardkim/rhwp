@@ -290,7 +290,7 @@ export async function screenshotCanvas(page, name) {
 /** 두 PNG 버퍼를 비교하고, 차이가 허용 범위를 넘으면 diff 아티팩트를 저장한다 */
 export async function comparePngBuffers(expectedBuffer, actualBuffer, {
   diffName,
-  threshold = 0.1,
+  threshold = 0,
   maxDiffPixels = 0,
   maxDiffRatio = 0,
 } = {}) {
@@ -308,7 +308,7 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
     diff.data,
     expected.width,
     expected.height,
-    { threshold, includeAA: false },
+    { threshold, includeAA: true },
   );
   const totalPixels = expected.width * expected.height;
   const diffRatio = totalPixels > 0 ? diffPixels / totalPixels : 0;

@@ -11,6 +11,8 @@ interface FontEntry {
   file: string;
   /** woff2(기본) 또는 woff — CDN woff 파일용 */
   format?: 'woff2' | 'woff';
+  /** CSS/FontFace font-weight descriptor */
+  weight?: string;
 }
 
 // 함초롬체 CDN (눈누 jsdelivr — 비상업적 사용 허용, 한컴 라이선스)
@@ -44,26 +46,40 @@ const FONT_LIST: FontEntry[] = [
   { name: 'HY중고딕', file: 'fonts/NotoSansKR-Regular.woff2' },
   { name: '양재튼튼체B', file: 'fonts/NotoSansKR-Bold.woff2' },
   // === 한글 시스템 폰트 → 오픈소스 대체 (OS 폰트 없을 때 폴백) ===
-  { name: 'Malgun Gothic', file: 'fonts/Pretendard-Regular.woff2' },
-  { name: '맑은 고딕', file: 'fonts/Pretendard-Regular.woff2' },
+  { name: 'Malgun Gothic', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+  { name: 'Malgun Gothic', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+  { name: '맑은 고딕', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+  { name: '맑은 고딕', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+  { name: 'Apple SD Gothic Neo', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+  { name: 'Apple SD Gothic Neo', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
   { name: '돋움', file: 'fonts/NotoSansKR-Regular.woff2' },
   { name: '돋움체', file: 'fonts/NotoSansKR-Regular.woff2' },
   { name: '굴림', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: 'GulimChe', file: 'fonts/D2Coding-Regular.woff2' },
   { name: '굴림체', file: 'fonts/D2Coding-Regular.woff2' },
   { name: '새굴림', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: 'Batang', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: '바탕', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: '바탕체', file: 'fonts/D2Coding-Regular.woff2' },
+  { name: 'AppleMyungjo', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: '궁서', file: 'fonts/GowunBatang-Regular.woff2' },
   { name: '궁서체', file: 'fonts/GowunBatang-Regular.woff2' },
   { name: '새궁서', file: 'fonts/GowunBatang-Regular.woff2' },
   // === 나눔 폰트 (OFL, 로컬) ===
+  { name: 'NanumGothic', file: 'fonts/NanumGothic-Regular.woff2' },
   { name: '나눔고딕', file: 'fonts/NanumGothic-Regular.woff2' },
+  { name: 'NanumMyeongjo', file: 'fonts/NanumMyeongjo-Regular.woff2' },
   { name: '나눔명조', file: 'fonts/NanumMyeongjo-Regular.woff2' },
+  { name: 'NanumGothicCoding', file: 'fonts/NanumGothicCoding-Regular.woff2' },
   { name: '나눔고딕코딩', file: 'fonts/NanumGothicCoding-Regular.woff2' },
   // === 영문 폰트 → OS 폴백 (번들 제거) ===
   { name: 'Palatino Linotype', file: 'fonts/NotoSerifKR-Regular.woff2' },
   // === Noto (OFL, 로컬) ===
-  { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: 'Noto Sans CJK KR', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+  { name: 'Noto Sans CJK KR', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+  { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+  { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+  { name: 'Noto Serif CJK KR', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: 'Noto Serif KR', file: 'fonts/NotoSerifKR-Regular.woff2' },
   // === Pretendard ===
   { name: 'Pretendard', file: 'fonts/Pretendard-Regular.woff2' },
@@ -122,7 +138,9 @@ const OS_FONT_CANDIDATES = [
   // macOS / iOS
   'Apple SD Gothic Neo', 'AppleMyungjo', 'AppleGothic',
   // Android
-  'Noto Sans KR', 'Noto Serif KR',
+  'Noto Sans KR', 'Noto Serif KR', 'Noto Sans CJK KR', 'Noto Serif CJK KR',
+  // Linux/Open source
+  'NanumGothic', 'NanumMyeongjo', 'NanumGothicCoding',
 ];
 const detectedOSFonts = new Set<string>();
 
@@ -167,7 +185,7 @@ export async function loadWebFonts(
     const style = document.createElement('style');
     style.textContent = FONT_LIST.map(f => {
       const fmt = f.format ?? 'woff2';
-      return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap; }`;
+      return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap; font-weight: ${f.weight ?? '400'}; }`;
     }).join('\n');
     document.head.appendChild(style);
     fontFaceRegistered = true;
@@ -187,8 +205,9 @@ export async function loadWebFonts(
   const seenFiles = new Set<string>();
   const uniqueToLoad: FontEntry[] = [];
   for (const f of toLoad) {
-    if (!seenFiles.has(f.file) && !loadedFiles.has(f.file)) {
-      seenFiles.add(f.file);
+    const loadKey = `${f.file}::${f.weight ?? '400'}`;
+    if (!seenFiles.has(loadKey) && !loadedFiles.has(loadKey)) {
+      seenFiles.add(loadKey);
       uniqueToLoad.push(f);
     }
   }
@@ -199,12 +218,13 @@ export async function loadWebFonts(
   console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 woff2 (이미 로드됨: ${loadedFiles.size}개)`);
 
   // 같은 woff2 파일에 매핑된 모든 이름도 함께 등록
-  const fileToNames = new Map<string, string[]>();
+  const fileToFaces = new Map<string, Array<{ name: string; weight: string }>>();
   for (const f of toLoad) {
-    if (!loadedFiles.has(f.file)) {
-      const names = fileToNames.get(f.file) ?? [];
-      names.push(f.name);
-      fileToNames.set(f.file, names);
+    const loadKey = `${f.file}::${f.weight ?? '400'}`;
+    if (!loadedFiles.has(loadKey)) {
+      const faces = fileToFaces.get(loadKey) ?? [];
+      faces.push({ name: f.name, weight: f.weight ?? '400' });
+      fileToFaces.set(loadKey, faces);
     }
   }
 
@@ -216,14 +236,15 @@ export async function loadWebFonts(
     const batch = uniqueToLoad.slice(i, i + BATCH);
     await Promise.all(batch.map(async (f) => {
       try {
-        const names = fileToNames.get(f.file) ?? [f.name];
+        const loadKey = `${f.file}::${f.weight ?? '400'}`;
+        const faces = fileToFaces.get(loadKey) ?? [{ name: f.name, weight: f.weight ?? '400' }];
         const fmt = f.format ?? 'woff2';
-        for (const name of names) {
-          const face = new FontFace(name, `url(${f.file}) format('${fmt}')`);
+        for (const { name, weight } of faces) {
+          const face = new FontFace(name, `url(${f.file}) format('${fmt}')`, { weight });
           const result = await face.load();
           document.fonts.add(result);
         }
-        loadedFiles.add(f.file);
+        loadedFiles.add(loadKey);
         loaded++;
       } catch {
         failed++;

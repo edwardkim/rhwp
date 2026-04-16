@@ -1,4 +1,4 @@
-use skia_safe::{surfaces, Canvas, Color, EncodedImageFormat, FontMgr, Paint, Rect};
+use skia_safe::{surfaces, Canvas, Color, EncodedImageFormat, FontMgr, Paint, Point, Rect};
 
 use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
 use crate::renderer::layout::{compute_char_positions, split_into_clusters};
@@ -87,7 +87,11 @@ impl SkiaLayerRenderer {
                 if let Some(border) = background.border_color {
                     let mut paint = Paint::default();
                     paint.set_style(skia_safe::paint::Style::Stroke);
-                    paint.set_stroke_width(background.border_width.max(1.0) as f32);
+                    paint.set_stroke_width(if background.border_width > 0.0 {
+                        background.border_width as f32
+                    } else {
+                        1.0
+                    });
                     paint.set_color(colorref_to_skia(border, 1.0));
                     canvas.draw_rect(
                         Rect::from_xywh(
@@ -110,6 +114,7 @@ impl SkiaLayerRenderer {
                         ..Default::default()
                     },
                     &self.font_mgr,
+                    &marker.text,
                 );
                 font.set_size((marker.base_font_size * 0.55).max(7.0) as f32);
                 let mut paint = Paint::default();
@@ -244,11 +249,11 @@ impl SkiaLayerRenderer {
     }
 
     fn render_text_run(&self, canvas: &Canvas, bbox: &BoundingBox, run: &TextRunNode) {
-        let font = make_font(&run.style, &self.font_mgr);
         let paint = make_text_paint(&run.style);
         let y = (bbox.y + run.baseline) as f32;
         let char_positions = compute_char_positions(&run.text, &run.style);
         let clusters = split_into_clusters(&run.text);
+        let metrics_font = make_font(&run.style, &self.font_mgr, &run.text);
 
         if run.style.shadow_type > 0 {
             let mut shadow_paint = Paint::default();
@@ -258,9 +263,22 @@ impl SkiaLayerRenderer {
                 if cluster == " " || cluster == "\t" {
                     continue;
                 }
+                let font = make_font(&run.style, &self.font_mgr, cluster);
                 let x = bbox.x + char_positions[*char_idx] + run.style.shadow_offset_x;
                 let shadow_y = y + run.style.shadow_offset_y as f32;
-                canvas.draw_str(cluster, (x as f32, shadow_y), &font, &shadow_paint);
+                let glyphs = font.text_to_glyphs_vec(cluster);
+                let mut glyph_positions = vec![Point::default(); glyphs.len()];
+                font.get_pos(
+                    &glyphs,
+                    &mut glyph_positions,
+                    Some(Point::new(x as f32, shadow_y)),
+                );
+                for (glyph_id, glyph_position) in glyphs.into_iter().zip(glyph_positions) {
+                    if let Some(path) = font.get_path(glyph_id) {
+                        let path = path.with_offset((glyph_position.x, glyph_position.y));
+                        canvas.draw_path(&path, &shadow_paint);
+                    }
+                }
             }
         }
 
@@ -268,14 +286,23 @@ impl SkiaLayerRenderer {
             if cluster == " " || cluster == "\t" {
                 continue;
             }
+            let font = make_font(&run.style, &self.font_mgr, cluster);
             let x = bbox.x + char_positions[*char_idx];
-            canvas.draw_str(cluster, (x as f32, y), &font, &paint);
+            let glyphs = font.text_to_glyphs_vec(cluster);
+            let mut glyph_positions = vec![Point::default(); glyphs.len()];
+            font.get_pos(&glyphs, &mut glyph_positions, Some(Point::new(x as f32, y)));
+            for (glyph_id, glyph_position) in glyphs.into_iter().zip(glyph_positions) {
+                if let Some(path) = font.get_path(glyph_id) {
+                    let path = path.with_offset((glyph_position.x, glyph_position.y));
+                    canvas.draw_path(&path, &paint);
+                }
+            }
         }
 
         let text_width = char_positions.last().copied().unwrap_or(0.0) as f32;
         if !matches!(run.style.underline, UnderlineType::None) {
             let ul_y = match run.style.underline {
-                UnderlineType::Top => y - font.size() + 1.0,
+                UnderlineType::Top => y - metrics_font.size() + 1.0,
                 _ => y + 2.0,
             };
             let mut line_paint = Paint::default();
@@ -290,10 +317,14 @@ impl SkiaLayerRenderer {
                 },
                 1.0,
             ));
-            canvas.draw_line((bbox.x as f32, ul_y), ((bbox.x as f32) + text_width, ul_y), &line_paint);
+            canvas.draw_line(
+                (bbox.x as f32, ul_y),
+                ((bbox.x as f32) + text_width, ul_y),
+                &line_paint,
+            );
         }
         if run.style.strikethrough {
-            let strike_y = y - font.size() * 0.3;
+            let strike_y = y - metrics_font.size() * 0.3;
             let mut line_paint = Paint::default();
             line_paint.set_anti_alias(true);
             line_paint.set_style(skia_safe::paint::Style::Stroke);
@@ -351,7 +382,9 @@ impl SkiaLayerRenderer {
 mod tests {
     use super::SkiaLayerRenderer;
     use crate::paint::{LayerBuilder, RenderProfile};
-    use crate::renderer::render_tree::{BoundingBox, PageNode, RectangleNode, RenderNode, RenderNodeType};
+    use crate::renderer::render_tree::{
+        BoundingBox, PageNode, RectangleNode, RenderNode, RenderNodeType,
+    };
     use crate::renderer::ShapeStyle;
 
     #[test]

@@ -257,12 +257,12 @@ export function fontFamilyWithFallback(fontName: string): string {
   const lower = fontName.toLowerCase();
   // Monospace 판별
   if (/굴림체|바탕체|gulimche|batangche|coding|courier/i.test(fontName)) {
-    return `"${fontName}", "GulimChe", "D2Coding", "Noto Sans Mono", monospace`;
+    return `"${fontName}", "GulimChe", "D2Coding", "NanumGothicCoding", "나눔고딕코딩", "Noto Sans Mono", monospace`;
   }
   // Serif 판별
   if (/[바탕명조궁서]|hymjre|times|palatino|georgia|batang|gungsuh/i.test(fontName)) {
-    return `"${fontName}", "Batang", "AppleMyungjo", "Noto Serif KR", serif`;
+    return `"${fontName}", "Batang", "AppleMyungjo", "Noto Serif KR", "Noto Serif CJK KR", "NanumMyeongjo", "나눔명조", serif`;
   }
   // Sans-serif (기본)
-  return `"${fontName}", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif`;
+  return `"${fontName}", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans CJK KR", "NanumGothic", "나눔고딕", "Pretendard", sans-serif`;
 }

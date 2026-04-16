@@ -534,7 +534,7 @@ pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
 pub fn generic_fallback(font_family: &str) -> &'static str {
     if font_family.is_empty() {
         // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → generic
-        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard',sans-serif";
+        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans CJK KR','NanumGothic','나눔고딕','Noto Sans KR','Pretendard',sans-serif";
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
@@ -546,13 +546,13 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("courier")
     {
         // Monospace: Windows → 오픈소스 → generic
-        return "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
+        return "'GulimChe','굴림체','D2Coding','NanumGothicCoding','나눔고딕코딩','Noto Sans Mono',monospace";
     }
     // 세리프 키워드 (한글)
     if font_family.contains("바탕") || font_family.contains("명조") || font_family.contains("궁서")
     {
         // Serif: Windows → macOS/iOS → Android → 오픈소스 → generic
-        return "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
+        return "'Batang','바탕','AppleMyungjo','Noto Serif CJK KR','NanumMyeongjo','나눔명조','Noto Serif KR',serif";
     }
     // 세리프 키워드 (영문)
     if lower.contains("times")
@@ -562,10 +562,10 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("batang")
         || lower.contains("gungsuh")
     {
-        return "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
+        return "'Batang','바탕','AppleMyungjo','Noto Serif CJK KR','NanumMyeongjo','나눔명조','Noto Serif KR',serif";
     }
     // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → generic
-    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard',sans-serif"
+    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans CJK KR','NanumGothic','나눔고딕','Noto Sans KR','Pretendard',sans-serif"
 }
 
 // ============================================================
@@ -953,9 +953,9 @@ mod tests {
 
     #[test]
     fn test_generic_fallback() {
-        let serif = "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
-        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard',sans-serif";
-        let mono = "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
+        let serif = "'Batang','바탕','AppleMyungjo','Noto Serif CJK KR','NanumMyeongjo','나눔명조','Noto Serif KR',serif";
+        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans CJK KR','NanumGothic','나눔고딕','Noto Sans KR','Pretendard',sans-serif";
+        let mono = "'GulimChe','굴림체','D2Coding','NanumGothicCoding','나눔고딕코딩','Noto Sans Mono',monospace";
         // 세리프 계열
         assert_eq!(generic_fallback("함초롬바탕"), serif);
         assert_eq!(generic_fallback("바탕"), serif);

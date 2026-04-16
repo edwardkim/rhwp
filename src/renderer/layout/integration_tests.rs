@@ -21,7 +21,11 @@ mod tests {
 
     fn rasterize_svg(svg: &str) -> Option<tiny_skia::Pixmap> {
         let mut options = usvg::Options::default();
-        options.fontdb_mut().load_system_fonts();
+        let fontdb = options.fontdb_mut();
+        fontdb.load_system_fonts();
+        fontdb.set_sans_serif_family("Noto Sans CJK KR");
+        fontdb.set_serif_family("Noto Serif CJK KR");
+        fontdb.set_monospace_family("D2Coding");
         let tree = usvg::Tree::from_str(svg, &options).ok()?;
         let pixmap_size = tree.size().to_int_size();
         let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height())?;
@@ -72,8 +76,12 @@ mod tests {
             if pixel_diff {
                 diff_pixels += 1;
                 let base = idx * 4;
-                diff_pixmap.data_mut()[base..base + 4]
-                    .copy_from_slice(&[pixel_max_delta.max(32), 0, 0, 255]);
+                diff_pixmap.data_mut()[base..base + 4].copy_from_slice(&[
+                    pixel_max_delta.max(32),
+                    0,
+                    0,
+                    255,
+                ]);
             }
         }
 
@@ -159,13 +167,7 @@ mod tests {
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
-    fn assert_skia_png_visually_close(
-        sample: &str,
-        page_num: u32,
-        max_diff_ratio: f64,
-        max_mean_abs_channel_delta: f64,
-        max_channel_delta: u8,
-    ) {
+    fn assert_skia_png_matches_layer_svg(sample: &str, page_num: u32) {
         let Some(core) = load_document(sample) else {
             return;
         };
@@ -185,11 +187,7 @@ mod tests {
         );
 
         let diff = diff_pixmaps(&expected, &actual);
-        let diff_ratio = diff.diff_pixels as f64 / diff.total_pixels.max(1) as f64;
-        if diff_ratio > max_diff_ratio
-            || diff.mean_abs_channel_delta > max_mean_abs_channel_delta
-            || diff.max_channel_delta > max_channel_delta
-        {
+        if diff.diff_pixels > 0 {
             let (expected_path, actual_path, diff_path) = save_diff_artifacts(
                 "output/skia-diff",
                 sample,
@@ -201,8 +199,8 @@ mod tests {
                 &diff.diff_pixmap,
             );
             panic!(
-                "Skia raster diff 발생: ratio={:.4}, mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, diff: {})",
-                diff_ratio,
+                "Skia raster diff 발생: {} pixels, mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, diff: {})",
+                diff.diff_pixels,
                 diff.mean_abs_channel_delta,
                 diff.max_channel_delta,
                 expected_path.display(),
@@ -493,13 +491,13 @@ mod tests {
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     #[test]
-    fn test_skia_screenshot_stays_close_to_layer_svg_for_basic_text_sample() {
-        assert_skia_png_visually_close("samples/lseg-01-basic.hwp", 0, 0.20, 8.0, 255);
+    fn test_skia_screenshot_matches_layer_svg_for_basic_text_sample() {
+        assert_skia_png_matches_layer_svg("samples/lseg-01-basic.hwp", 0);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     #[test]
-    fn test_skia_screenshot_stays_close_to_layer_svg_for_table_sample() {
-        assert_skia_png_visually_close("samples/hwp_table_test.hwp", 0, 0.20, 8.0, 255);
+    fn test_skia_screenshot_matches_layer_svg_for_table_sample() {
+        assert_skia_png_matches_layer_svg("samples/hwp_table_test.hwp", 0);
     }
 }
