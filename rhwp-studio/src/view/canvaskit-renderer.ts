@@ -3,6 +3,7 @@ import type { CanvasKit, Font, Image, Paint, Surface, Typeface, TypefaceFontProv
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url';
 
 import { resolveFont } from '@/core/font-substitution';
+import type { CanvasKitRenderMode } from '@/view/render-backend';
 import type {
   LayerBounds,
   LayerClipNode,
@@ -29,8 +30,12 @@ const FONT_MONO_REGULAR_URL = new URL('../../../web/fonts/D2Coding-Regular.woff2
 
 const SANS_ALIASES = [
   'Noto Sans KR',
+  'Noto Sans CJK KR',
+  'NanumGothic',
+  '나눔고딕',
   '맑은 고딕',
   'Malgun Gothic',
+  'Apple SD Gothic Neo',
   'Pretendard',
   '돋움',
   '돋움체',
@@ -51,7 +56,11 @@ const SANS_ALIASES = [
 
 const SERIF_ALIASES = [
   'Noto Serif KR',
+  'Noto Serif CJK KR',
+  'NanumMyeongjo',
+  '나눔명조',
   '바탕',
+  'AppleMyungjo',
   '새바탕',
   '한컴바탕',
   '함초롬바탕',
@@ -65,7 +74,10 @@ const SERIF_ALIASES = [
 
 const MONO_ALIASES = [
   'D2Coding',
+  'NanumGothicCoding',
+  '나눔고딕코딩',
   '굴림체',
+  'GulimChe',
   '바탕체',
   'Noto Sans Mono',
 ];
@@ -77,14 +89,15 @@ export class CanvasKitLayerRenderer {
   private constructor(
     private readonly canvasKit: CanvasKit,
     private readonly fontProvider: TypefaceFontProvider,
+    private readonly renderMode: CanvasKitRenderMode,
   ) {}
 
-  static async create(): Promise<CanvasKitLayerRenderer> {
+  static async create(renderMode: CanvasKitRenderMode = 'compat'): Promise<CanvasKitLayerRenderer> {
     const canvasKit = await CanvasKitInit({
       locateFile: (file) => file === 'canvaskit.wasm' ? canvaskitWasmUrl : file,
     });
     const fontProvider = canvasKit.TypefaceFontProvider.Make();
-    const renderer = new CanvasKitLayerRenderer(canvasKit, fontProvider);
+    const renderer = new CanvasKitLayerRenderer(canvasKit, fontProvider, renderMode);
     await renderer.registerFonts();
     return renderer;
   }
@@ -228,26 +241,76 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderTextRun(canvas: ReturnType<Surface['getCanvas']>, op: LayerTextRunOp): void {
-    const { font, paint, typeface } = this.makeTextObjects(op.style.fontFamily, op.style.fontSize, op.style.bold, op.style.italic, op.style.color);
+    const primaryObjects = this.makeTextObjects(
+      op.style.fontFamily,
+      op.style.fontSize,
+      op.style.bold,
+      op.style.italic,
+      op.style.color,
+    );
     const clusters = splitIntoClusters(op.text);
+    const textObjectsByFamily = new Map<string, { typeface: Typeface; font: Font; paint: Paint }>();
+    textObjectsByFamily.set(op.style.fontFamily, primaryObjects);
+    const fallbackFamilies = [
+      op.style.fontFamily,
+      'Noto Sans KR',
+      'Noto Sans CJK KR',
+      'NanumGothic',
+      'D2Coding',
+      'NanumGothicCoding',
+      'Noto Serif KR',
+      'Noto Serif CJK KR',
+    ].filter((family, index, all) => all.indexOf(family) === index);
+    const clusterFonts: Font[] = [];
+    for (const cluster of clusters) {
+      let selectedFont = primaryObjects.font;
+      const primaryGlyphs = primaryObjects.font.getGlyphIDs(cluster.text);
+      if (primaryGlyphs?.some((glyphId) => glyphId === 0)) {
+        for (const family of fallbackFamilies) {
+          let candidate = textObjectsByFamily.get(family);
+          if (!candidate) {
+            candidate = this.makeTextObjects(
+              family,
+              op.style.fontSize,
+              op.style.bold,
+              op.style.italic,
+              op.style.color,
+            );
+            textObjectsByFamily.set(family, candidate);
+          }
+          const candidateGlyphs = candidate.font.getGlyphIDs(cluster.text);
+          if (candidateGlyphs && candidateGlyphs.every((glyphId) => glyphId !== 0)) {
+            selectedFont = candidate.font;
+            break;
+          }
+        }
+      }
+      clusterFonts.push(selectedFont);
+    }
     const drawClusters = (originX: number, originY: number) => {
       if (op.style.shadowType > 0) {
         const shadowPaint = this.makePaint(op.style.shadowColor, 'fill');
-        for (const cluster of clusters) {
+        for (const [index, cluster] of clusters.entries()) {
           const x = originX + op.positions[cluster.start];
           canvas.drawText(
             cluster.text,
             x + op.style.shadowOffsetX,
             originY + op.style.shadowOffsetY,
             shadowPaint,
-            font,
+            clusterFonts[index],
           );
         }
         shadowPaint.delete();
       }
 
-      for (const cluster of clusters) {
-        canvas.drawText(cluster.text, originX + op.positions[cluster.start], originY, paint, font);
+      for (const [index, cluster] of clusters.entries()) {
+        canvas.drawText(
+          cluster.text,
+          originX + op.positions[cluster.start],
+          originY,
+          primaryObjects.paint,
+          clusterFonts[index],
+        );
       }
 
       if (op.tabLeaders?.length) {
@@ -283,9 +346,11 @@ export class CanvasKitLayerRenderer {
       drawClusters(op.bbox.x, op.bbox.y + op.baseline);
     }
 
-    paint.delete();
-    font.delete();
-    typeface.delete();
+    for (const { paint, font, typeface } of textObjectsByFamily.values()) {
+      paint.delete();
+      font.delete();
+      typeface.delete();
+    }
   }
 
   private renderFootnoteMarker(canvas: ReturnType<Surface['getCanvas']>, op: Extract<LayerPaintOp, { type: 'footnoteMarker' }>): void {
@@ -388,6 +453,22 @@ export class CanvasKitLayerRenderer {
   ): void {
     const image = this.getImage(base64);
     if (!image) return;
+    const drawImageRect = (srcRect: ReturnType<CanvasKit['XYWHRect']>, dstRect: ReturnType<CanvasKit['XYWHRect']>) => {
+      const paint = new this.canvasKit.Paint();
+      if (this.renderMode === 'compat') {
+        canvas.drawImageRectOptions(
+          image,
+          srcRect,
+          dstRect,
+          this.canvasKit.FilterMode.Linear,
+          this.canvasKit.MipmapMode.None,
+          paint,
+        );
+      } else {
+        canvas.drawImageRect(image, srcRect, dstRect, paint, false);
+      }
+      paint.delete();
+    };
 
     if (fillMode === 'fitToSize' || fillMode === 'none') {
       if (crop) {
@@ -400,27 +481,17 @@ export class CanvasKitLayerRenderer {
         const srcH = (crop.bottom - crop.top) / scaleX;
         const isCropped = srcX > 0.5 || srcY > 0.5 || Math.abs(srcW - imgW) > 1 || Math.abs(srcH - imgH) > 1;
         if (isCropped) {
-          const paint = new this.canvasKit.Paint();
-          canvas.drawImageRect(
-            image,
+          drawImageRect(
             this.canvasKit.XYWHRect(srcX, srcY, srcW, srcH),
             this.toRect(bbox),
-            paint,
-            false,
           );
-          paint.delete();
           return;
         }
       }
-      const paint = new this.canvasKit.Paint();
-      canvas.drawImageRect(
-        image,
+      drawImageRect(
         this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
         this.toRect(bbox),
-        paint,
-        false,
       );
-      paint.delete();
       return;
     }
 
@@ -435,54 +506,34 @@ export class CanvasKitLayerRenderer {
       if (fillMode === 'tileAll') {
         for (let ty = bbox.y; ty < bbox.y + bbox.height; ty += imageHeight) {
           for (let tx = bbox.x; tx < bbox.x + bbox.width; tx += imageWidth) {
-            const paint = new this.canvasKit.Paint();
-            canvas.drawImageRect(
-              image,
+            drawImageRect(
               this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
               this.canvasKit.XYWHRect(tx, ty, imageWidth, imageHeight),
-              paint,
-              false,
             );
-            paint.delete();
           }
         }
       } else if (fillMode === 'tileHorzTop' || fillMode === 'tileHorzBottom') {
         const ty = fillMode === 'tileHorzTop' ? bbox.y : bbox.y + bbox.height - imageHeight;
         for (let tx = bbox.x; tx < bbox.x + bbox.width; tx += imageWidth) {
-          const paint = new this.canvasKit.Paint();
-          canvas.drawImageRect(
-            image,
+          drawImageRect(
             this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
             this.canvasKit.XYWHRect(tx, ty, imageWidth, imageHeight),
-            paint,
-            false,
           );
-          paint.delete();
         }
       } else {
         const tx = fillMode === 'tileVertLeft' ? bbox.x : bbox.x + bbox.width - imageWidth;
         for (let ty = bbox.y; ty < bbox.y + bbox.height; ty += imageHeight) {
-          const paint = new this.canvasKit.Paint();
-          canvas.drawImageRect(
-            image,
+          drawImageRect(
             this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
             this.canvasKit.XYWHRect(tx, ty, imageWidth, imageHeight),
-            paint,
-            false,
           );
-          paint.delete();
         }
       }
     } else {
-      const paint = new this.canvasKit.Paint();
-      canvas.drawImageRect(
-        image,
+      drawImageRect(
         this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
         this.canvasKit.XYWHRect(x, y, imageWidth, imageHeight),
-        paint,
-        false,
       );
-      paint.delete();
     }
 
     canvas.restore();
@@ -557,6 +608,9 @@ export class CanvasKitLayerRenderer {
     });
     const font = new this.canvasKit.Font(typeface, fontSize || 12);
     font.setEmbolden(bold);
+    if (this.renderMode === 'compat') {
+      font.setSubpixel(true);
+    }
     const paint = this.makePaint(color, 'fill');
     return { typeface, font, paint };
   }

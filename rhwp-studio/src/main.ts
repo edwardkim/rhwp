@@ -24,7 +24,12 @@ import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
 import { CanvasKitLayerRenderer } from '@/view/canvaskit-renderer';
-import { persistRenderBackend, resolveRenderBackend } from '@/view/render-backend';
+import {
+  persistCanvasKitRenderMode,
+  persistRenderBackend,
+  resolveCanvasKitRenderMode,
+  resolveRenderBackend,
+} from '@/view/render-backend';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -94,19 +99,21 @@ async function initialize(): Promise<void> {
     msg.textContent = 'WASM 로딩 중...';
     await wasm.initialize();
     const requestedBackend = resolveRenderBackend(window.location.search);
+    const canvaskitMode = resolveCanvasKitRenderMode(window.location.search);
     let renderBackend = requestedBackend;
     let canvaskitRenderer: CanvasKitLayerRenderer | null = null;
 
     if (renderBackend === 'canvaskit') {
       msg.textContent = 'CanvasKit 로딩 중...';
       try {
-        canvaskitRenderer = await CanvasKitLayerRenderer.create();
+        canvaskitRenderer = await CanvasKitLayerRenderer.create(canvaskitMode);
       } catch (error) {
         console.error('[main] CanvasKit 초기화 실패, Canvas2D로 폴백합니다:', error);
         renderBackend = 'canvas2d';
       }
     }
     persistRenderBackend(renderBackend);
+    persistCanvasKitRenderMode(canvaskitMode);
     msg.textContent = 'HWP 파일을 선택해주세요.';
 
     const container = document.getElementById('scroll-container')!;
@@ -199,6 +206,7 @@ async function initialize(): Promise<void> {
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
       (window as any).__renderBackend = renderBackend;
+      (window as any).__canvaskitRenderMode = canvaskitMode;
     }
   } catch (error) {
     msg.textContent = `WASM 초기화 실패: ${error}`;

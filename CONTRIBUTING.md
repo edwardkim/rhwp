@@ -87,8 +87,8 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 ### PR 전 체크리스트
 
 ```bash
-cargo test                       # 783+ 테스트 통과
-cargo clippy -- -D warnings      # 린트 경고 0건
+cargo test                                       # 793+ 테스트 통과
+cargo clippy --all-targets --all-features        # native-skia까지 확인하려면 fontconfig/freetype 개발 패키지가 필요할 수 있음
 ```
 
 두 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
@@ -121,6 +121,47 @@ cargo run --bin rhwp -- dump-pages sample.hwp -p 3
 # 3. 특정 문단 상세 (ParaShape, LINE_SEG, 표 속성)
 cargo run --bin rhwp -- dump sample.hwp -s 0 -p 45
 ```
+
+`export-svg`의 기본 출력 폴더는 `output/`입니다. 예를 들어 `sample.hwp`를 한 페이지 문서로 내보내면 `output/sample.svg`, 여러 페이지면 `output/sample_001.svg`처럼 저장됩니다. `-o`를 사용하면 다른 폴더로 보낼 수 있습니다.
+
+### 렌더러 비교 가이드
+
+현재 렌더러 경로는 아래처럼 나뉩니다.
+
+- **Legacy SVG**: 기본 `cargo run --bin rhwp -- export-svg sample.hwp`
+- **Layer SVG**: `RHWP_RENDER_PATH=layer-svg cargo run --bin rhwp -- export-svg sample.hwp`
+- **Native Skia PNG**: 테스트 경로에서 `render_page_png_native()`로 검증되며, 현재 별도 `export-png` CLI는 없습니다
+- **Browser Canvas2D / CanvasKit**: `rhwp-studio`에서 기본은 Canvas2D, `http://localhost:7700/?renderer=canvaskit`로 CanvasKit 비교
+  - CanvasKit 래스터 모드: `?canvaskitMode=compat`(기본, Canvas2D 유사도 우선) 또는 `?canvaskitMode=default`(CanvasKit 기본 동작)
+
+SVG를 직접 비교하려면 보통 아래처럼 두 번 내보냅니다.
+
+```bash
+cargo run --bin rhwp -- export-svg sample.hwp -o output/legacy
+RHWP_RENDER_PATH=layer-svg cargo run --bin rhwp -- export-svg sample.hwp -o output/layer
+```
+
+자동 회귀 테스트는 다음 명령을 사용합니다.
+
+```bash
+cargo test layer_svg --lib
+RUSTFLAGS='-L native=target/native-libs' cargo test skia --lib --features native-skia
+
+cd rhwp-studio
+npm run e2e                           # 기본: host Chrome CDP 모드
+node e2e/text-flow.test.mjs --mode=headless && node e2e/canvaskit-render.test.mjs --mode=headless
+RHWP_CANVASKIT_MODE=default node e2e/canvaskit-render.test.mjs --mode=headless
+```
+
+WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신 `--mode=headless` 명령을 사용하세요.
+
+테스트가 실패하면 아래 위치에 비교 아티팩트가 남습니다.
+
+- `output/layer-svg-diff/` — legacy SVG vs layer SVG
+- `output/skia-diff/` — layer SVG vs native Skia PNG
+- `rhwp-studio/output/e2e/` 및 `rhwp-studio/e2e/screenshots/` — 브라우저 Canvas2D vs CanvasKit
+
+이 비교들은 현재 모두 exact match 기준입니다. 한 픽셀이라도 diff가 생기면 테스트가 실패합니다.
 
 디버그 오버레이는 문단/표에 라벨을 표시합니다:
 - 문단: `s{섹션}:pi={인덱스} y={좌표}`

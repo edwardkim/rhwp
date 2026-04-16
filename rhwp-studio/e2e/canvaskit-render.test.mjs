@@ -10,15 +10,18 @@ import {
 } from './helpers.mjs';
 
 const SAMPLE_CASES = [
-  { name: 'blank-new-document', setup: (page) => createNewDocument(page), maxDiffPixels: 0, maxDiffRatio: 0 },
-  { name: 'lseg-01-basic', setup: (page) => loadHwpFile(page, 'lseg-01-basic.hwp'), maxDiffPixels: 12000, maxDiffRatio: 0.015 },
-  // 표 샘플은 굵은 한글 헤더와 기호 glyph에서 Canvas2D/CanvasKit rasterizer 차이가 조금 더 커진다.
-  { name: 'hwp-table-test', setup: (page) => loadHwpFile(page, 'hwp_table_test.hwp'), maxDiffPixels: 22000, maxDiffRatio: 0.025 },
-  { name: 'pic-crop-01', setup: (page) => loadHwpFile(page, 'pic-crop-01.hwp'), maxDiffPixels: 9000, maxDiffRatio: 0.01 },
+  { name: 'blank-new-document', setup: (page) => createNewDocument(page) },
+  { name: 'lseg-01-basic', setup: (page) => loadHwpFile(page, 'lseg-01-basic.hwp') },
+  { name: 'hwp-table-test', setup: (page) => loadHwpFile(page, 'hwp_table_test.hwp') },
+  { name: 'pic-crop-01', setup: (page) => loadHwpFile(page, 'pic-crop-01.hwp') },
 ];
+const CANVASKIT_MODE = process.env.RHWP_CANVASKIT_MODE === 'default' ? 'default' : 'compat';
 
 async function renderScenario(page, backend, caseInfo) {
-  await loadApp(page, `?renderer=${backend}`);
+  const search = backend === 'canvaskit'
+    ? `?renderer=${backend}&canvaskitMode=${CANVASKIT_MODE}`
+    : `?renderer=${backend}`;
+  await loadApp(page, search);
   await caseInfo.setup(page);
 
   const activeBackend = await page.evaluate(() => window.__renderBackend ?? window.__canvasView?.getRenderBackend?.());
@@ -30,12 +33,20 @@ async function renderScenario(page, backend, caseInfo) {
       if (!tree) return null;
       const root = tree.root;
       const opCount = root.kind === 'leaf' ? root.ops.length : root.kind === 'group' ? root.children.length : 1;
-      return { kind: root.kind, opCount };
+      return {
+        kind: root.kind,
+        opCount,
+        mode: window.__canvaskitRenderMode,
+      };
     });
     assert(!!layerSummary && layerSummary.opCount > 0, `${caseInfo.name} layer tree exported`);
+    assert(layerSummary?.mode === CANVASKIT_MODE, `${caseInfo.name} canvaskitMode=${CANVASKIT_MODE}`);
   }
 
-  return screenshotCanvas(page, `${caseInfo.name}-${backend}`);
+  const screenshotName = backend === 'canvaskit'
+    ? `${caseInfo.name}-${backend}-${CANVASKIT_MODE}`
+    : `${caseInfo.name}-${backend}`;
+  return screenshotCanvas(page, screenshotName);
 }
 
 runTest('CanvasKit 렌더 비교', async ({ page }) => {
@@ -48,10 +59,7 @@ runTest('CanvasKit 렌더 비교', async ({ page }) => {
     const canvaskit = await renderScenario(page, 'canvaskit', caseInfo);
 
     const diff = await comparePngBuffers(baseline.buffer, canvaskit.buffer, {
-      diffName: caseInfo.name,
-      threshold: 0.08,
-      maxDiffPixels: caseInfo.maxDiffPixels,
-      maxDiffRatio: caseInfo.maxDiffRatio,
+      diffName: `${caseInfo.name}-${CANVASKIT_MODE}`,
     });
 
     assert(
