@@ -142,6 +142,7 @@ export interface LayerLineStyle {
   endArrow: string;
   startArrowSize: number;
   endArrowSize: number;
+  shadow?: LayerShapeShadow;
 }
 
 export interface LayerTransform {
@@ -234,6 +235,13 @@ export interface LayerPathOp {
   commands: LayerPathCommand[];
   style: LayerShapeStyle;
   gradient?: LayerGradient;
+  connectorEndpoints?: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  };
+  lineStyle?: LayerLineStyle;
   transform: LayerTransform;
 }
 
@@ -255,11 +263,65 @@ export interface LayerImageOp {
   transform: LayerTransform;
 }
 
+export type LayerEquationMatrixStyle = 'plain' | 'paren' | 'bracket' | 'vert';
+export type LayerEquationDecoration =
+  | 'hat'
+  | 'check'
+  | 'tilde'
+  | 'acute'
+  | 'grave'
+  | 'dot'
+  | 'dDot'
+  | 'bar'
+  | 'vec'
+  | 'dyad'
+  | 'under'
+  | 'arch'
+  | 'underline'
+  | 'overline'
+  | 'strikeThrough';
+export type LayerEquationFontStyle = 'roman' | 'italic' | 'bold';
+
+export interface LayerEquationLayoutBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  baseline: number;
+  kind: LayerEquationLayoutKind;
+}
+
+export type LayerEquationLayoutKind =
+  | { type: 'row'; children: LayerEquationLayoutBox[] }
+  | { type: 'text'; text: string }
+  | { type: 'number'; text: string }
+  | { type: 'symbol'; text: string }
+  | { type: 'mathSymbol'; text: string }
+  | { type: 'function'; name: string }
+  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox }
+  | { type: 'sqrt'; body: LayerEquationLayoutBox; index?: LayerEquationLayoutBox }
+  | { type: 'superscript'; base: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }
+  | { type: 'subscript'; base: LayerEquationLayoutBox; sub: LayerEquationLayoutBox }
+  | { type: 'subSup'; base: LayerEquationLayoutBox; sub: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }
+  | { type: 'bigOp'; symbol: string; sub?: LayerEquationLayoutBox; sup?: LayerEquationLayoutBox }
+  | { type: 'limit'; isUpper: boolean; sub?: LayerEquationLayoutBox }
+  | { type: 'matrix'; style: LayerEquationMatrixStyle; cells: LayerEquationLayoutBox[][] }
+  | { type: 'rel'; arrow: LayerEquationLayoutBox; over: LayerEquationLayoutBox; under?: LayerEquationLayoutBox }
+  | { type: 'eqAlign'; rows: Array<{ left: LayerEquationLayoutBox; right: LayerEquationLayoutBox }> }
+  | { type: 'paren'; left: string; right: string; body: LayerEquationLayoutBox }
+  | { type: 'decoration'; decoration: LayerEquationDecoration; body: LayerEquationLayoutBox }
+  | { type: 'fontStyle'; fontStyle: LayerEquationFontStyle; body: LayerEquationLayoutBox }
+  | { type: 'space'; width: number }
+  | { type: 'newline' }
+  | { type: 'empty' };
+
 export interface LayerEquationOp {
   type: 'equation';
   bbox: LayerBounds;
   color: string;
   fontSize: number;
+  svgContent: string;
+  layoutBox: LayerEquationLayoutBox;
 }
 
 export interface LayerFormObjectOp {

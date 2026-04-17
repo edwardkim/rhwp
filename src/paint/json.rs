@@ -6,6 +6,9 @@ use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_es
 use crate::model::control::FormType;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
+use crate::renderer::equation::ast::MatrixStyle;
+use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
+use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, ShapeTransform, TextRunNode};
 use crate::renderer::{
@@ -200,6 +203,17 @@ impl PaintOp {
                     buf.push_str(",\"gradient\":");
                     write_gradient(buf, gradient);
                 }
+                if let Some((x1, y1, x2, y2)) = path.connector_endpoints {
+                    let _ = write!(
+                        buf,
+                        ",\"connectorEndpoints\":{{\"x1\":{:.3},\"y1\":{:.3},\"x2\":{:.3},\"y2\":{:.3}}}",
+                        x1, y1, x2, y2
+                    );
+                }
+                if let Some(line_style) = &path.line_style {
+                    buf.push_str(",\"lineStyle\":");
+                    write_line_style(buf, line_style);
+                }
                 buf.push_str(",\"transform\":");
                 write_transform(buf, path.transform);
                 buf.push('}');
@@ -243,10 +257,12 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"color\":{},\"fontSize\":{:.3}",
+                    ",\"color\":{},\"fontSize\":{:.3},\"svgContent\":{},\"layoutBox\":",
                     json_escape(&equation.color_str),
-                    equation.font_size
+                    equation.font_size,
+                    json_escape(&equation.svg_content),
                 );
+                write_equation_layout_box(buf, &equation.layout_box);
                 buf.push('}');
             }
             PaintOp::FormObject { bbox, form } => {
@@ -422,7 +438,7 @@ fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
 fn write_line_style(buf: &mut String, style: &LineStyle) {
     let _ = write!(
         buf,
-        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}}}",
+        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
         json_escape(&color_ref_to_css(style.color)),
         style.width,
         json_escape(stroke_dash_str(style.dash)),
@@ -432,6 +448,11 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         style.start_arrow_size,
         style.end_arrow_size,
     );
+    if let Some(shadow) = &style.shadow {
+        buf.push_str(",\"shadow\":");
+        write_shadow_style(buf, shadow);
+    }
+    buf.push('}');
 }
 
 fn write_transform(buf: &mut String, transform: ShapeTransform) {
@@ -473,6 +494,213 @@ fn write_path_commands(buf: &mut String, commands: &[PathCommand]) {
         }
     }
     buf.push(']');
+}
+
+fn write_equation_layout_box(buf: &mut String, layout: &LayoutBox) {
+    let _ = write!(
+        buf,
+        "{{\"x\":{:.3},\"y\":{:.3},\"width\":{:.3},\"height\":{:.3},\"baseline\":{:.3},\"kind\":",
+        layout.x, layout.y, layout.width, layout.height, layout.baseline,
+    );
+    write_equation_layout_kind(buf, &layout.kind);
+    buf.push('}');
+}
+
+fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
+    match kind {
+        LayoutKind::Row(children) => {
+            buf.push_str("{\"type\":\"row\",\"children\":[");
+            for (idx, child) in children.iter().enumerate() {
+                if idx > 0 {
+                    buf.push(',');
+                }
+                write_equation_layout_box(buf, child);
+            }
+            buf.push_str("]}");
+        }
+        LayoutKind::Text(text) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"text\",\"text\":{}}}",
+                json_escape(text)
+            );
+        }
+        LayoutKind::Number(text) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"number\",\"text\":{}}}",
+                json_escape(text)
+            );
+        }
+        LayoutKind::Symbol(text) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"symbol\",\"text\":{}}}",
+                json_escape(text)
+            );
+        }
+        LayoutKind::MathSymbol(text) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"mathSymbol\",\"text\":{}}}",
+                json_escape(text)
+            );
+        }
+        LayoutKind::Function(name) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"function\",\"name\":{}}}",
+                json_escape(name)
+            );
+        }
+        LayoutKind::Fraction { numer, denom } => {
+            buf.push_str("{\"type\":\"fraction\",\"numer\":");
+            write_equation_layout_box(buf, numer);
+            buf.push_str(",\"denom\":");
+            write_equation_layout_box(buf, denom);
+            buf.push('}');
+        }
+        LayoutKind::Sqrt { index, body } => {
+            buf.push_str("{\"type\":\"sqrt\"");
+            if let Some(index) = index {
+                buf.push_str(",\"index\":");
+                write_equation_layout_box(buf, index);
+            }
+            buf.push_str(",\"body\":");
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::Superscript { base, sup } => {
+            buf.push_str("{\"type\":\"superscript\",\"base\":");
+            write_equation_layout_box(buf, base);
+            buf.push_str(",\"sup\":");
+            write_equation_layout_box(buf, sup);
+            buf.push('}');
+        }
+        LayoutKind::Subscript { base, sub } => {
+            buf.push_str("{\"type\":\"subscript\",\"base\":");
+            write_equation_layout_box(buf, base);
+            buf.push_str(",\"sub\":");
+            write_equation_layout_box(buf, sub);
+            buf.push('}');
+        }
+        LayoutKind::SubSup { base, sub, sup } => {
+            buf.push_str("{\"type\":\"subSup\",\"base\":");
+            write_equation_layout_box(buf, base);
+            buf.push_str(",\"sub\":");
+            write_equation_layout_box(buf, sub);
+            buf.push_str(",\"sup\":");
+            write_equation_layout_box(buf, sup);
+            buf.push('}');
+        }
+        LayoutKind::BigOp { symbol, sub, sup } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"bigOp\",\"symbol\":{}",
+                json_escape(symbol)
+            );
+            if let Some(sub) = sub {
+                buf.push_str(",\"sub\":");
+                write_equation_layout_box(buf, sub);
+            }
+            if let Some(sup) = sup {
+                buf.push_str(",\"sup\":");
+                write_equation_layout_box(buf, sup);
+            }
+            buf.push('}');
+        }
+        LayoutKind::Limit { is_upper, sub } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"limit\",\"isUpper\":{}",
+                is_upper
+            );
+            if let Some(sub) = sub {
+                buf.push_str(",\"sub\":");
+                write_equation_layout_box(buf, sub);
+            }
+            buf.push('}');
+        }
+        LayoutKind::Matrix { cells, style } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"matrix\",\"style\":{},\"cells\":[",
+                json_escape(matrix_style_str(*style))
+            );
+            for (row_idx, row) in cells.iter().enumerate() {
+                if row_idx > 0 {
+                    buf.push(',');
+                }
+                buf.push('[');
+                for (cell_idx, cell) in row.iter().enumerate() {
+                    if cell_idx > 0 {
+                        buf.push(',');
+                    }
+                    write_equation_layout_box(buf, cell);
+                }
+                buf.push(']');
+            }
+            buf.push_str("]}");
+        }
+        LayoutKind::Rel { arrow, over, under } => {
+            buf.push_str("{\"type\":\"rel\",\"arrow\":");
+            write_equation_layout_box(buf, arrow);
+            buf.push_str(",\"over\":");
+            write_equation_layout_box(buf, over);
+            if let Some(under) = under {
+                buf.push_str(",\"under\":");
+                write_equation_layout_box(buf, under);
+            }
+            buf.push('}');
+        }
+        LayoutKind::EqAlign { rows } => {
+            buf.push_str("{\"type\":\"eqAlign\",\"rows\":[");
+            for (idx, (left, right)) in rows.iter().enumerate() {
+                if idx > 0 {
+                    buf.push(',');
+                }
+                buf.push_str("{\"left\":");
+                write_equation_layout_box(buf, left);
+                buf.push_str(",\"right\":");
+                write_equation_layout_box(buf, right);
+                buf.push('}');
+            }
+            buf.push_str("]}");
+        }
+        LayoutKind::Paren { left, right, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"paren\",\"left\":{},\"right\":{},\"body\":",
+                json_escape(left),
+                json_escape(right),
+            );
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::Decoration { kind, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"decoration\",\"decoration\":{},\"body\":",
+                json_escape(deco_kind_str(*kind))
+            );
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::FontStyle { style, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"fontStyle\",\"fontStyle\":{},\"body\":",
+                json_escape(font_style_kind_str(*style))
+            );
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::Space(width) => {
+            let _ = write!(buf, "{{\"type\":\"space\",\"width\":{:.3}}}", width);
+        }
+        LayoutKind::Newline => buf.push_str("{\"type\":\"newline\"}"),
+        LayoutKind::Empty => buf.push_str("{\"type\":\"empty\"}"),
+    }
 }
 
 fn underline_type_str(value: UnderlineType) -> &'static str {
@@ -517,6 +745,43 @@ fn arrow_style_str(value: ArrowStyle) -> &'static str {
     }
 }
 
+fn matrix_style_str(value: MatrixStyle) -> &'static str {
+    match value {
+        MatrixStyle::Plain => "plain",
+        MatrixStyle::Paren => "paren",
+        MatrixStyle::Bracket => "bracket",
+        MatrixStyle::Vert => "vert",
+    }
+}
+
+fn deco_kind_str(value: DecoKind) -> &'static str {
+    match value {
+        DecoKind::Hat => "hat",
+        DecoKind::Check => "check",
+        DecoKind::Tilde => "tilde",
+        DecoKind::Acute => "acute",
+        DecoKind::Grave => "grave",
+        DecoKind::Dot => "dot",
+        DecoKind::DDot => "dDot",
+        DecoKind::Bar => "bar",
+        DecoKind::Vec => "vec",
+        DecoKind::Dyad => "dyad",
+        DecoKind::Under => "under",
+        DecoKind::Arch => "arch",
+        DecoKind::Underline => "underline",
+        DecoKind::Overline => "overline",
+        DecoKind::StrikeThrough => "strikeThrough",
+    }
+}
+
+fn font_style_kind_str(value: FontStyleKind) -> &'static str {
+    match value {
+        FontStyleKind::Roman => "roman",
+        FontStyleKind::Italic => "italic",
+        FontStyleKind::Bold => "bold",
+    }
+}
+
 fn image_fill_mode_str(value: ImageFillMode) -> &'static str {
     match value {
         ImageFillMode::TileAll => "tileAll",
@@ -553,7 +818,7 @@ fn form_type_str(value: FormType) -> &'static str {
 mod tests {
     use super::*;
     use crate::paint::{LayerNode, PageLayerTree};
-    use crate::renderer::render_tree::TextRunNode;
+    use crate::renderer::render_tree::{EquationNode, TextRunNode};
 
     #[test]
     fn serializes_text_and_shape_ops_for_browser_replay() {
@@ -598,6 +863,28 @@ mod tests {
                 None,
             ),
         };
+        let equation = PaintOp::Equation {
+            bbox: BoundingBox::new(12.0, 44.0, 40.0, 16.0),
+            equation: EquationNode {
+                svg_content: "<text x=\"0\" y=\"12\">x</text>".to_string(),
+                layout_box: crate::renderer::equation::layout::LayoutBox {
+                    x: 0.0,
+                    y: 0.0,
+                    width: 10.0,
+                    height: 12.0,
+                    baseline: 9.0,
+                    kind: crate::renderer::equation::layout::LayoutKind::Text("x".to_string()),
+                },
+                color_str: "#112233".to_string(),
+                color: 0x00332211,
+                font_size: 14.0,
+                section_index: None,
+                para_index: None,
+                control_index: None,
+                cell_index: None,
+                cell_para_index: None,
+            },
+        };
 
         let tree = PageLayerTree::new(
             120.0,
@@ -605,7 +892,7 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 120.0, 80.0),
                 None,
-                vec![text, rect],
+                vec![text, rect, equation],
             ),
         );
 
@@ -631,7 +918,86 @@ mod tests {
         assert!(json.contains(&positions_json));
         assert!(json.contains("\"fontFamily\":\"Noto Sans KR\""));
         assert!(json.contains("\"type\":\"rectangle\""));
+        assert!(json.contains("\"type\":\"equation\""));
+        assert!(json.contains("\"svgContent\":\"<text x=\\\"0\\\" y=\\\"12\\\">x</text>\""));
+        assert!(json.contains("\"layoutBox\":{\"x\":0.000,\"y\":0.000,\"width\":10.000,\"height\":12.000,\"baseline\":9.000,\"kind\":{\"type\":\"text\",\"text\":\"x\"}}"));
         assert!(json.contains("\"cornerRadius\":4.000"));
+    }
+
+    #[test]
+    fn serializes_line_shadow_and_connector_arrow_metadata() {
+        let line = PaintOp::Line {
+            bbox: BoundingBox::new(0.0, 0.0, 24.0, 24.0),
+            line: crate::renderer::render_tree::LineNode::new(
+                2.0,
+                4.0,
+                22.0,
+                20.0,
+                LineStyle {
+                    color: 0x000000ff,
+                    width: 3.0,
+                    dash: StrokeDash::Dash,
+                    line_type: LineRenderType::ThinThickDouble,
+                    start_arrow: ArrowStyle::Arrow,
+                    end_arrow: ArrowStyle::OpenDiamond,
+                    start_arrow_size: 2,
+                    end_arrow_size: 5,
+                    shadow: Some(ShadowStyle {
+                        shadow_type: 1,
+                        color: 0x00303030,
+                        offset_x: 1.5,
+                        offset_y: 2.5,
+                        alpha: 64,
+                    }),
+                },
+            ),
+        };
+
+        let mut path_node = crate::renderer::render_tree::PathNode::new(
+            vec![
+                PathCommand::MoveTo(4.0, 4.0),
+                PathCommand::CurveTo(8.0, 4.0, 16.0, 20.0, 20.0, 20.0),
+            ],
+            ShapeStyle {
+                stroke_color: Some(0x00010203),
+                stroke_width: 2.0,
+                ..Default::default()
+            },
+            None,
+        );
+        path_node.connector_endpoints = Some((4.0, 4.0, 20.0, 20.0));
+        path_node.line_style = Some(LineStyle {
+            color: 0x00010203,
+            width: 2.0,
+            dash: StrokeDash::Solid,
+            line_type: LineRenderType::Single,
+            start_arrow: ArrowStyle::Circle,
+            end_arrow: ArrowStyle::Square,
+            start_arrow_size: 1,
+            end_arrow_size: 8,
+            shadow: None,
+        });
+
+        let tree = PageLayerTree::new(
+            40.0,
+            40.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 40.0, 40.0),
+                None,
+                vec![
+                    line,
+                    PaintOp::Path {
+                        bbox: BoundingBox::new(0.0, 0.0, 24.0, 24.0),
+                        path: path_node,
+                    },
+                ],
+            ),
+        );
+
+        let json = tree.to_json();
+        assert!(json.contains("\"shadow\":{\"shadowType\":1,\"color\":\"#303030\",\"offsetX\":1.500,\"offsetY\":2.500,\"alpha\":64}"));
+        assert!(json.contains("\"connectorEndpoints\":{\"x1\":4.000,\"y1\":4.000,\"x2\":20.000,\"y2\":20.000}"));
+        assert!(json.contains("\"lineStyle\":{\"color\":\"#030201\",\"width\":2.000,\"dash\":\"solid\",\"lineType\":\"single\",\"startArrow\":\"circle\",\"endArrow\":\"square\",\"startArrowSize\":1,\"endArrowSize\":8}"));
     }
 }
 
