@@ -86,6 +86,19 @@ impl SkiaLayerRenderer {
                         &paint,
                     );
                 }
+                if let Some(image) = &background.image {
+                    draw_image_bytes(
+                        canvas,
+                        &image.data,
+                        bbox.x as f32,
+                        bbox.y as f32,
+                        bbox.width as f32,
+                        bbox.height as f32,
+                        Some(image.fill_mode),
+                        None,
+                        None,
+                    );
+                }
                 if let Some(border) = background.border_color {
                     let mut paint = Paint::default();
                     paint.set_style(skia_safe::paint::Style::Stroke);
@@ -217,6 +230,9 @@ impl SkiaLayerRenderer {
                             bbox.y as f32,
                             bbox.width as f32,
                             bbox.height as f32,
+                            image.fill_mode,
+                            image.original_size,
+                            image.crop,
                         );
                     }
                 });

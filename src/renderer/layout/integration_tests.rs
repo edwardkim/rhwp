@@ -259,6 +259,78 @@ mod tests {
         }
     }
 
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    fn assert_skia_layer_tree_matches_svg(
+        case_name: &str,
+        layer_tree: &crate::paint::PageLayerTree,
+    ) {
+        use crate::renderer::layer_renderer::LayerRenderer;
+        use crate::renderer::skia::SkiaLayerRenderer;
+        use crate::renderer::svg_layer::SvgLayerRenderer;
+
+        let mut svg_renderer = SvgLayerRenderer::new();
+        svg_renderer.render_page(layer_tree);
+        let expected = rasterize_svg(svg_renderer.output()).expect("synthetic SVG rasterize 실패");
+        let actual_png = SkiaLayerRenderer::new()
+            .render_png(layer_tree)
+            .expect("synthetic Skia PNG 렌더 실패");
+        let actual = decode_png(&actual_png).expect("synthetic Skia PNG decode 실패");
+        let tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+
+        if tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
+            let exact_diff = diff_pixmaps(&expected, &actual, 0);
+            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
+                "output/skia-diff",
+                case_name,
+                0,
+                "layer",
+                "skia",
+                "diff",
+                &expected,
+                &actual,
+                &exact_diff.diff_pixmap,
+            );
+            let (_, _, tolerant_path) = save_diff_artifacts(
+                "output/skia-diff",
+                case_name,
+                0,
+                "layer",
+                "skia",
+                "tolerant-diff",
+                &expected,
+                &actual,
+                &tolerant_diff.diff_pixmap,
+            );
+            panic!(
+                "synthetic Skia raster diff 발생: exact={} tolerant={} (budget={}) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
+                exact_diff.diff_pixels,
+                tolerant_diff.diff_pixels,
+                SKIA_TOLERANT_MAX_DIFF_PIXELS,
+                expected_path.display(),
+                actual_path.display(),
+                diff_path.display(),
+                tolerant_path.display(),
+            );
+        }
+    }
+
+    fn synthetic_png_bytes() -> Vec<u8> {
+        let mut pixmap = tiny_skia::Pixmap::new(40, 30).expect("synthetic pixmap 생성 실패");
+        for y in 0..30usize {
+            for x in 0..40usize {
+                let (r, g, b) = match (x < 20, y < 15) {
+                    (true, true) => (255, 32, 32),
+                    (false, true) => (32, 200, 64),
+                    (true, false) => (48, 96, 255),
+                    (false, false) => (255, 200, 32),
+                };
+                let base = (y * 40 + x) * 4;
+                pixmap.data_mut()[base..base + 4].copy_from_slice(&[r, g, b, 255]);
+            }
+        }
+        pixmap.encode_png().expect("synthetic png 인코딩 실패")
+    }
+
     #[test]
     fn test_diff_pixmaps_ignores_small_channel_deltas_when_configured() {
         let mut expected = tiny_skia::Pixmap::new(2, 1).expect("expected pixmap 생성 실패");
@@ -511,12 +583,9 @@ mod tests {
     #[test]
     fn test_skia_screenshot_matches_layer_svg_for_synthetic_shapes() {
         use crate::paint::{LayerBuilder, RenderProfile};
-        use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::render_tree::{
             BoundingBox, PageNode, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
         };
-        use crate::renderer::skia::SkiaLayerRenderer;
-        use crate::renderer::svg_layer::SvgLayerRenderer;
         use crate::renderer::ShapeStyle;
 
         let mut tree = PageRenderTree::new(0, 180.0, 120.0);
@@ -553,35 +622,7 @@ mod tests {
 
         let mut builder = LayerBuilder::new(RenderProfile::Screen);
         let layer_tree = builder.build(&tree);
-        let mut svg_renderer = SvgLayerRenderer::new();
-        svg_renderer.render_page(&layer_tree);
-        let expected = rasterize_svg(svg_renderer.output()).expect("synthetic SVG rasterize 실패");
-        let actual_png = SkiaLayerRenderer::new()
-            .render_png(&layer_tree)
-            .expect("synthetic Skia PNG 렌더 실패");
-        let actual = decode_png(&actual_png).expect("synthetic Skia PNG decode 실패");
-        let diff = diff_pixmaps(&expected, &actual, 0);
-
-        if diff.diff_pixels > 0 {
-            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
-                "output/skia-diff",
-                "synthetic-shapes",
-                0,
-                "layer",
-                "skia",
-                "diff",
-                &expected,
-                &actual,
-                &diff.diff_pixmap,
-            );
-            panic!(
-                "synthetic Skia raster diff 발생: {} pixels (layer: {}, skia: {}, diff: {})",
-                diff.diff_pixels,
-                expected_path.display(),
-                actual_path.display(),
-                diff_path.display(),
-            );
-        }
+        assert_skia_layer_tree_matches_svg("synthetic-shapes", &layer_tree);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -598,15 +639,18 @@ mod tests {
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_picture_crop_sample() {
+        assert_skia_png_matches_layer_svg("samples/pic-crop-01.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
     fn test_skia_screenshot_matches_layer_svg_for_synthetic_form_controls() {
         use crate::model::control::FormType;
         use crate::paint::{LayerBuilder, RenderProfile};
-        use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::render_tree::{
             BoundingBox, FormObjectNode, PageNode, PageRenderTree, RenderNode, RenderNodeType,
         };
-        use crate::renderer::skia::SkiaLayerRenderer;
-        use crate::renderer::svg_layer::SvgLayerRenderer;
 
         let mut tree = PageRenderTree::new(0, 320.0, 180.0);
         tree.root.node_type = RenderNodeType::Page(PageNode {
@@ -719,50 +763,102 @@ mod tests {
 
         let mut builder = LayerBuilder::new(RenderProfile::Screen);
         let layer_tree = builder.build(&tree);
-        let mut svg_renderer = SvgLayerRenderer::new();
-        svg_renderer.render_page(&layer_tree);
-        let expected = rasterize_svg(svg_renderer.output()).expect("synthetic form SVG rasterize 실패");
-        let actual_png = SkiaLayerRenderer::new()
-            .render_png(&layer_tree)
-            .expect("synthetic form Skia PNG 렌더 실패");
-        let actual = decode_png(&actual_png).expect("synthetic form Skia PNG decode 실패");
-        let tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+        assert_skia_layer_tree_matches_svg("synthetic-form-controls", &layer_tree);
+    }
 
-        if tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
-            let exact_diff = diff_pixmaps(&expected, &actual, 0);
-            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
-                "output/skia-diff",
-                "synthetic-form-controls",
-                0,
-                "layer",
-                "skia",
-                "diff",
-                &expected,
-                &actual,
-                &exact_diff.diff_pixmap,
-            );
-            let (_, _, tolerant_path) = save_diff_artifacts(
-                "output/skia-diff",
-                "synthetic-form-controls",
-                0,
-                "layer",
-                "skia",
-                "tolerant-diff",
-                &expected,
-                &actual,
-                &tolerant_diff.diff_pixmap,
-            );
-            panic!(
-                "synthetic form Skia raster diff 발생: exact={} tolerant={} (budget={}) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
-                exact_diff.diff_pixels,
-                tolerant_diff.diff_pixels,
-                SKIA_TOLERANT_MAX_DIFF_PIXELS,
-                expected_path.display(),
-                actual_path.display(),
-                diff_path.display(),
-                tolerant_path.display(),
-            );
-        }
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_synthetic_page_background_image() {
+        use crate::model::style::ImageFillMode;
+        use crate::paint::{LayerBuilder, RenderProfile};
+        use crate::renderer::render_tree::{
+            BoundingBox, PageBackgroundImage, PageBackgroundNode, PageNode, PageRenderTree,
+            RenderNode, RenderNodeType,
+        };
+
+        let mut tree = PageRenderTree::new(0, 160.0, 120.0);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 160.0,
+            height: 120.0,
+            section_index: 0,
+        });
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::PageBackground(PageBackgroundNode {
+                background_color: Some(0x00FFFFFF),
+                border_color: None,
+                border_width: 0.0,
+                gradient: None,
+                image: Some(PageBackgroundImage {
+                    data: synthetic_png_bytes(),
+                    fill_mode: ImageFillMode::FitToSize,
+                }),
+            }),
+            BoundingBox::new(0.0, 0.0, 160.0, 120.0),
+        ));
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        assert_skia_layer_tree_matches_svg("synthetic-page-background-image", &layer_tree);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_synthetic_image_fill_modes() {
+        use crate::model::image::ImageEffect;
+        use crate::model::style::ImageFillMode;
+        use crate::paint::{LayerBuilder, RenderProfile};
+        use crate::renderer::render_tree::{
+            BoundingBox, ImageNode, PageNode, PageRenderTree, RenderNode, RenderNodeType,
+            ShapeTransform,
+        };
+
+        let png_bytes = synthetic_png_bytes();
+        let mut tree = PageRenderTree::new(0, 240.0, 160.0);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 240.0,
+            height: 160.0,
+            section_index: 0,
+        });
+
+        let mut cropped = ImageNode::new(0, Some(png_bytes.clone()));
+        cropped.fill_mode = Some(ImageFillMode::FitToSize);
+        cropped.crop = Some((20 * 75, 0, 40 * 75, 30 * 75));
+        cropped.transform = ShapeTransform::default();
+        cropped.effect = ImageEffect::RealPic;
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Image(cropped),
+            BoundingBox::new(16.0, 16.0, 96.0, 72.0),
+        ));
+
+        let mut centered = ImageNode::new(0, Some(png_bytes.clone()));
+        centered.fill_mode = Some(ImageFillMode::CenterBottom);
+        centered.original_size = Some((40.0, 30.0));
+        centered.transform = ShapeTransform::default();
+        centered.effect = ImageEffect::RealPic;
+        tree.root.children.push(RenderNode::new(
+            2,
+            RenderNodeType::Image(centered),
+            BoundingBox::new(132.0, 16.0, 80.0, 72.0),
+        ));
+
+        let mut tiled = ImageNode::new(0, Some(png_bytes));
+        tiled.fill_mode = Some(ImageFillMode::TileAll);
+        tiled.original_size = Some((20.0, 15.0));
+        tiled.transform = ShapeTransform::default();
+        tiled.effect = ImageEffect::RealPic;
+        tree.root.children.push(RenderNode::new(
+            3,
+            RenderNodeType::Image(tiled),
+            BoundingBox::new(16.0, 100.0, 196.0, 44.0),
+        ));
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        assert_skia_layer_tree_matches_svg("synthetic-image-fill-modes", &layer_tree);
     }
 
     #[test]
