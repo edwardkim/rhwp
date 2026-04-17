@@ -165,6 +165,7 @@ WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신
 - `native-skia` / `CanvasKit` 비교는 exact diff를 계속 저장하고, 별도로 채널 차이가 `128` 이하인 픽셀을 무시한 tolerant diff를 계산합니다.
 - 테스트 통과 여부는 tolerant diff 기준으로 판단합니다. 현재 기준은 `native-skia`는 tolerant diff pixel `64` 이하, `CanvasKit`은 tolerant diff ratio `0.25%` 이하입니다.
 - tolerant 결과는 최종 허용 예산까지 반영한 값입니다. 즉 통과한 케이스는 tolerant diff가 `0`으로 보고되고, tolerant diff 아티팩트도 남기지 않습니다. exact diff 아티팩트는 참고용으로 계속 생성될 수 있습니다.
+- `CanvasKit` e2e는 기본적으로 전체 페이지를 비교하지만, `eq-01`처럼 본문 텍스트 오차와 분리해서 봐야 하는 기능 회귀는 해당 `layer op` bbox만 잘라서 비교합니다. 현재는 `equation` op가 이 방식으로 검증됩니다.
 
 디버그 오버레이는 문단/표에 라벨을 표시합니다:
 - 문단: `s{섹션}:pi={인덱스} y={좌표}`

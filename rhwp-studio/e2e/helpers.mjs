@@ -287,6 +287,44 @@ export async function screenshotCanvas(page, name) {
   return { path, buffer };
 }
 
+/** layer tree에서 특정 op type의 bbox 목록을 수집한다 */
+export async function getLayerOpBBoxes(page, opType) {
+  return await page.evaluate((targetType) => {
+    const tree = window.__wasm?.getPageLayerTree?.(0);
+    const boxes = [];
+    const walk = (node) => {
+      if (!node) return;
+      if (node.kind === 'leaf') {
+        for (const op of node.ops) {
+          if (op.type === targetType) boxes.push(op.bbox);
+        }
+        return;
+      }
+      if (node.kind === 'clipRect') {
+        walk(node.child);
+        return;
+      }
+      if (node.kind === 'group') {
+        for (const child of node.children) walk(child);
+      }
+    };
+    walk(tree?.root);
+    return boxes;
+  }, opType);
+}
+
+/** PNG 버퍼를 bbox 영역으로 잘라 새 PNG 버퍼를 반환한다 */
+export function cropPngBuffer(buffer, bbox) {
+  const image = PNG.sync.read(buffer);
+  const x = Math.max(0, Math.floor(bbox.x));
+  const y = Math.max(0, Math.floor(bbox.y));
+  const width = Math.min(image.width - x, Math.ceil(bbox.width));
+  const height = Math.min(image.height - y, Math.ceil(bbox.height));
+  const out = new PNG({ width, height });
+  PNG.bitblt(image, out, x, y, width, height, 0, 0);
+  return PNG.sync.write(out);
+}
+
 /** 두 PNG 버퍼를 exact/tolerant 기준으로 비교하고 diff 아티팩트를 저장한다 */
 export async function comparePngBuffers(expectedBuffer, actualBuffer, {
   diffName,
