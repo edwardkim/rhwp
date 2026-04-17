@@ -141,15 +141,18 @@ export class CanvasView {
     // iOS WebKit Canvas 최대 크기 제한 (64MP = 67,108,864 pixels)
     // 물리 크기 = pageSize × zoom × dpr 가 제한을 초과하면 dpr을 낮춘다
     const pageInfo = this.pages[pageIdx];
+    if (!pageInfo) {
+      console.error(`[CanvasView] 페이지 ${pageIdx} 정보가 없습니다`);
+      this.canvasPool.release(pageIdx);
+      return;
+    }
     const MAX_CANVAS_PIXELS = 67108864;
     let dpr = rawDpr;
-    if (pageInfo) {
-      const physW = pageInfo.width * zoom * dpr;
-      const physH = pageInfo.height * zoom * dpr;
-      if (physW * physH > MAX_CANVAS_PIXELS) {
-        dpr = Math.sqrt(MAX_CANVAS_PIXELS / (pageInfo.width * zoom * pageInfo.height * zoom));
-        dpr = Math.max(1, Math.floor(dpr)); // 최소 1, 정수로 내림
-      }
+    const physW = pageInfo.width * zoom * dpr;
+    const physH = pageInfo.height * zoom * dpr;
+    if (physW * physH > MAX_CANVAS_PIXELS) {
+      dpr = Math.sqrt(MAX_CANVAS_PIXELS / (pageInfo.width * zoom * pageInfo.height * zoom));
+      dpr = Math.max(1, Math.floor(dpr)); // 최소 1, 정수로 내림
     }
     const renderScale = zoom * dpr;
 
@@ -170,7 +173,7 @@ export class CanvasView {
 
     // WASM이 Canvas 크기를 자동 설정한다 (물리 픽셀 = 페이지크기 × zoom × DPR)
     try {
-      this.pageRenderer.renderPage(pageIdx, canvas, renderScale);
+      this.pageRenderer.renderPage(pageIdx, pageInfo, canvas, renderScale);
     } catch (e) {
       console.error(`[CanvasView] 페이지 ${pageIdx} 렌더링 실패:`, e);
       this.canvasPool.release(pageIdx);

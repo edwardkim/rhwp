@@ -27,8 +27,15 @@ impl SvgLayerRenderer {
         self.renderer.output()
     }
 
-    pub fn inner_mut(&mut self) -> &mut SvgRenderer {
-        &mut self.renderer
+    pub fn configure_output(
+        &mut self,
+        show_paragraph_marks: bool,
+        show_control_codes: bool,
+        debug_overlay: bool,
+    ) {
+        self.renderer.show_paragraph_marks = show_paragraph_marks;
+        self.renderer.show_control_codes = show_control_codes;
+        self.renderer.debug_overlay = debug_overlay;
     }
 
     fn build_render_tree(&mut self, tree: &PageLayerTree) -> PageRenderTree {

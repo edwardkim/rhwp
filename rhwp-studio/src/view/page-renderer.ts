@@ -1,6 +1,7 @@
 import { WasmBridge } from '@/core/wasm-bridge';
+import type { PageInfo } from '@/core/types';
 import { CanvasKitLayerRenderer } from './canvaskit-renderer';
-import type { RenderBackend } from './render-backend';
+import { clampRenderScale, type RenderBackend } from './render-backend';
 
 export class PageRenderer {
   private reRenderTimers = new Map<number, ReturnType<typeof setTimeout>[]>();
@@ -12,17 +13,22 @@ export class PageRenderer {
   ) {}
 
   /** 페이지를 Canvas에 렌더링한다 (scale = zoom × DPR) */
-  renderPage(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
-    const appliedScale = this.renderContent(pageIdx, canvas, scale);
-    this.drawMarginGuides(pageIdx, canvas, appliedScale);
-    this.scheduleReRender(pageIdx, canvas, scale);
+  renderPage(pageIdx: number, pageInfo: PageInfo, canvas: HTMLCanvasElement, scale: number): void {
+    const appliedScale = this.renderContent(pageIdx, pageInfo, canvas, scale);
+    this.drawMarginGuides(pageInfo, canvas, appliedScale);
+    this.scheduleReRender(pageIdx, pageInfo, canvas, scale);
   }
 
   getBackend(): RenderBackend {
     return this.backend;
   }
 
-  private renderContent(pageIdx: number, canvas: HTMLCanvasElement, scale: number): number {
+  private renderContent(
+    pageIdx: number,
+    pageInfo: PageInfo,
+    canvas: HTMLCanvasElement,
+    scale: number,
+  ): number {
     if (this.backend !== 'canvaskit') {
       this.wasm.renderPageToCanvas(pageIdx, canvas, scale);
       return scale;
@@ -32,12 +38,7 @@ export class PageRenderer {
       throw new Error('CanvasKit renderer가 초기화되지 않았습니다');
     }
 
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
-    let appliedScale = scale <= 0 || Number.isNaN(scale) ? 1.0 : Math.min(Math.max(scale, 0.25), 12.0);
-    const maxDim = 16384;
-    if (pageInfo.width * appliedScale > maxDim || pageInfo.height * appliedScale > maxDim) {
-      appliedScale = Math.min(maxDim / pageInfo.width, maxDim / pageInfo.height, appliedScale);
-    }
+    const appliedScale = clampRenderScale(pageInfo, scale);
 
     canvas.width = Math.max(1, Math.floor(pageInfo.width * appliedScale));
     canvas.height = Math.max(1, Math.floor(pageInfo.height * appliedScale));
@@ -46,8 +47,7 @@ export class PageRenderer {
   }
 
   /** 편집 용지 여백 가이드라인을 캔버스에 그린다 (4모서리 L자 표시) */
-  private drawMarginGuides(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
+  private drawMarginGuides(pageInfo: PageInfo, canvas: HTMLCanvasElement, scale: number): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -96,7 +96,12 @@ export class PageRenderer {
    * 아직 디코딩되지 않았을 수 있으므로 점진적 재렌더링한다.
    * 200ms, 600ms 두 번 재시도하여 대부분의 이미지 로드를 커버한다.
    */
-  private scheduleReRender(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  private scheduleReRender(
+    pageIdx: number,
+    pageInfo: PageInfo,
+    canvas: HTMLCanvasElement,
+    scale: number,
+  ): void {
     this.cancelReRender(pageIdx);
 
     const delays = [200, 600];
@@ -105,8 +110,8 @@ export class PageRenderer {
     for (const delay of delays) {
       const timer = setTimeout(() => {
         if (canvas.parentElement) {
-          const appliedScale = this.renderContent(pageIdx, canvas, scale);
-          this.drawMarginGuides(pageIdx, canvas, appliedScale);
+          const appliedScale = this.renderContent(pageIdx, pageInfo, canvas, scale);
+          this.drawMarginGuides(pageInfo, canvas, appliedScale);
         }
       }, delay);
       timers.push(timer);

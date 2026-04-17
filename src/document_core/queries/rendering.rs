@@ -7,6 +7,7 @@ use crate::model::control::Control;
 use crate::model::document::Section;
 use crate::model::page::ColumnDef;
 use crate::model::paragraph::Paragraph;
+use crate::paint::{LayerBuilder, PageLayerTree, RenderProfile};
 use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
@@ -24,6 +25,28 @@ use crate::renderer::svg_layer::SvgLayerRenderer;
 use std::cell::RefCell;
 
 impl DocumentCore {
+    fn build_page_tree_for_output(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        let _overflows = self.layout_engine.take_overflows();
+        Ok(tree)
+    }
+
+    fn build_page_layer_tree_for_output(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
+        let tree = self.build_page_tree_for_output(page_num)?;
+        Ok(self.build_layer_tree_from_page_tree(&tree))
+    }
+
+    fn build_layer_tree_from_page_tree(&self, tree: &PageRenderTree) -> PageLayerTree {
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        builder.build(tree)
+    }
+
+    fn configure_svg_renderer(&self, renderer: &mut SvgRenderer) {
+        renderer.show_paragraph_marks = self.show_paragraph_marks;
+        renderer.show_control_codes = self.show_control_codes;
+        renderer.debug_overlay = self.debug_overlay;
+    }
+
     pub fn render_page_svg_native(&self, page_num: u32) -> Result<String, HwpError> {
         if matches!(
             std::env::var("RHWP_RENDER_PATH").ok().as_deref(),
@@ -35,35 +58,28 @@ impl DocumentCore {
     }
 
     pub fn render_page_svg_legacy_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
+        let tree = self.build_page_tree_for_output(page_num)?;
         let mut renderer = SvgRenderer::new();
-        renderer.show_paragraph_marks = self.show_paragraph_marks;
-        renderer.show_control_codes = self.show_control_codes;
-        renderer.debug_overlay = self.debug_overlay;
+        self.configure_svg_renderer(&mut renderer);
         renderer.render_tree(&tree);
         Ok(renderer.output().to_string())
     }
 
     pub fn render_page_svg_layer_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
-        let layer_tree = builder.build(&tree);
+        let layer_tree = self.build_page_layer_tree_for_output(page_num)?;
         let mut renderer = SvgLayerRenderer::new();
-        renderer.inner_mut().show_paragraph_marks = self.show_paragraph_marks;
-        renderer.inner_mut().show_control_codes = self.show_control_codes;
-        renderer.inner_mut().debug_overlay = self.debug_overlay;
+        renderer.configure_output(
+            self.show_paragraph_marks,
+            self.show_control_codes,
+            self.debug_overlay,
+        );
         renderer.render_page(&layer_tree);
         Ok(renderer.output().to_string())
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     pub fn render_page_png_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
-        let layer_tree = builder.build(&tree);
+        let layer_tree = self.build_page_layer_tree_for_output(page_num)?;
         SkiaLayerRenderer::new()
             .render_png(&layer_tree)
             .map_err(HwpError::RenderError)
@@ -77,12 +93,9 @@ impl DocumentCore {
         font_embed_mode: crate::renderer::svg::FontEmbedMode,
         font_paths: &[std::path::PathBuf],
     ) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
+        let tree = self.build_page_tree_for_output(page_num)?;
         let mut renderer = SvgRenderer::new();
-        renderer.show_paragraph_marks = self.show_paragraph_marks;
-        renderer.show_control_codes = self.show_control_codes;
-        renderer.debug_overlay = self.debug_overlay;
+        self.configure_svg_renderer(&mut renderer);
         renderer.font_embed_mode = font_embed_mode;
         renderer.font_paths = font_paths.to_vec();
         renderer.render_tree(&tree);
@@ -104,8 +117,7 @@ impl DocumentCore {
 
     /// HTML 렌더링 (네이티브 에러 타입)
     pub fn render_page_html_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
+        let tree = self.build_page_tree_for_output(page_num)?;
         let mut renderer = HtmlRenderer::new();
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
@@ -115,18 +127,14 @@ impl DocumentCore {
 
     /// Canvas 렌더링 (네이티브 에러 타입)
     pub fn render_page_canvas_native(&self, page_num: u32) -> Result<u32, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
+        let tree = self.build_page_tree_for_output(page_num)?;
         let mut renderer = CanvasRenderer::new();
         renderer.render_tree(&tree);
         Ok(renderer.command_count() as u32)
     }
 
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
-        let layer_tree = builder.build(&tree);
+        let layer_tree = self.build_page_layer_tree_for_output(page_num)?;
         Ok(layer_tree.to_json())
     }
 
