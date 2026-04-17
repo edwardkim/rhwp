@@ -89,6 +89,10 @@ const sbPage = () => document.getElementById('sb-page')!;
 const sbSection = () => document.getElementById('sb-section')!;
 const sbZoomVal = () => document.getElementById('sb-zoom-val')!;
 
+function logSaveTrace(event: Record<string, unknown>): void {
+  console.info('[save-trace]', event);
+}
+
 async function initialize(): Promise<void> {
   const msg = sbMessage();
   try {
@@ -517,6 +521,12 @@ async function loadFromUrlParam(): Promise<void> {
     fileName,
     fileUrl,
     saveUrl,
+    onTrace(event) {
+      logSaveTrace({
+        surface: 'loadFromUrlParam',
+        ...event,
+      });
+    },
   }) : null;
 
   try {

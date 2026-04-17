@@ -41,6 +41,7 @@ export interface SaveDocumentOptions {
   suggestedName: string;
   currentHandle: FileSystemFileHandleLike | null;
   windowLike: FileSystemWindowLike;
+  onTrace?: (event: SaveTraceEvent) => void;
 }
 
 export interface SaveDocumentResult {
@@ -59,6 +60,25 @@ export interface HttpFileHandleOptions {
   fileName: string;
   fileUrl: string;
   saveUrl: string;
+  onTrace?: (event: SaveTraceEvent) => void;
+}
+
+export interface SaveTraceEvent {
+  stage:
+  | 'save-start'
+  | 'save-success'
+  | 'save-error'
+  | 'save-fallback'
+  | 'http-save-request'
+  | 'http-save-success'
+  | 'http-save-error';
+  method?: 'current-handle' | 'save-picker' | 'fallback';
+  fileName: string;
+  handleName?: string;
+  token?: string;
+  fileUrl?: string;
+  saveUrl?: string;
+  error?: string;
 }
 
 const HWP_PICKER_TYPES = [{
@@ -76,8 +96,24 @@ async function writeBlobToHandle(handle: FileSystemFileHandleLike, blob: Blob): 
   await writable.close();
 }
 
+function extractTokenFromSaveUrl(saveUrl: string): string | undefined {
+  try {
+    const url = new URL(saveUrl);
+    const token = url.pathname.split('/').pop() ?? '';
+    return token || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function createHttpFileHandle(options: HttpFileHandleOptions): FileSystemFileHandleLike {
-  const { fileName, fileUrl, saveUrl } = options;
+  const {
+    fileName,
+    fileUrl,
+    saveUrl,
+    onTrace,
+  } = options;
+  const token = extractTokenFromSaveUrl(saveUrl);
 
   return {
     kind: 'file',
@@ -103,6 +139,14 @@ export function createHttpFileHandle(options: HttpFileHandleOptions): FileSystem
         async close() {
           if (!pendingBlob) return;
 
+          onTrace?.({
+            stage: 'http-save-request',
+            fileName,
+            token,
+            fileUrl,
+            saveUrl,
+          });
+
           const response = await fetch(saveUrl, {
             method: 'PUT',
             body: pendingBlob,
@@ -112,8 +156,24 @@ export function createHttpFileHandle(options: HttpFileHandleOptions): FileSystem
           });
 
           if (!response.ok) {
+            onTrace?.({
+              stage: 'http-save-error',
+              fileName,
+              token,
+              fileUrl,
+              saveUrl,
+              error: `HTTP ${response.status}: ${response.statusText}`,
+            });
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
+
+          onTrace?.({
+            stage: 'http-save-success',
+            fileName,
+            token,
+            fileUrl,
+            saveUrl,
+          });
         },
       };
     },
@@ -171,23 +231,64 @@ export function setupPwaFileLaunch(
 }
 
 export async function saveDocumentToFileSystem(options: SaveDocumentOptions): Promise<SaveDocumentResult> {
-  const { blob, suggestedName, currentHandle, windowLike } = options;
+  const {
+    blob,
+    suggestedName,
+    currentHandle,
+    windowLike,
+    onTrace,
+  } = options;
 
   if (currentHandle) {
-    await writeBlobToHandle(currentHandle, blob);
-    return {
+    onTrace?.({
+      stage: 'save-start',
       method: 'current-handle',
-      handle: currentHandle,
-      fileName: currentHandle.name,
-    };
+      fileName: suggestedName,
+      handleName: currentHandle.name,
+    });
+
+    try {
+      await writeBlobToHandle(currentHandle, blob);
+      onTrace?.({
+        stage: 'save-success',
+        method: 'current-handle',
+        fileName: currentHandle.name,
+        handleName: currentHandle.name,
+      });
+      return {
+        method: 'current-handle',
+        handle: currentHandle,
+        fileName: currentHandle.name,
+      };
+    } catch (error) {
+      onTrace?.({
+        stage: 'save-error',
+        method: 'current-handle',
+        fileName: suggestedName,
+        handleName: currentHandle.name,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   }
 
   if (windowLike.showSaveFilePicker) {
+    onTrace?.({
+      stage: 'save-start',
+      method: 'save-picker',
+      fileName: suggestedName,
+    });
     const handle = await windowLike.showSaveFilePicker({
       suggestedName,
       types: HWP_PICKER_TYPES,
     });
     await writeBlobToHandle(handle, blob);
+    onTrace?.({
+      stage: 'save-success',
+      method: 'save-picker',
+      fileName: handle.name,
+      handleName: handle.name,
+    });
     return {
       method: 'save-picker',
       handle,
@@ -195,6 +296,11 @@ export async function saveDocumentToFileSystem(options: SaveDocumentOptions): Pr
     };
   }
 
+  onTrace?.({
+    stage: 'save-fallback',
+    method: 'fallback',
+    fileName: suggestedName,
+  });
   return {
     method: 'fallback',
     handle: null,

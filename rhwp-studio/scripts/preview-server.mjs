@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { access, readFile, stat, writeFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
@@ -87,7 +88,7 @@ async function readLaunchManifest(rootDir, token) {
   }
 
   const raw = await readFile(manifestPath, 'utf8');
-  const manifest = JSON.parse(raw);
+  const manifest = JSON.parse(raw.replace(/^\uFEFF/, ''));
   const stagePath = resolve(join(openedRoot, manifest.stageFileName));
 
   if (!stagePath.startsWith(openedRoot)) {
@@ -126,12 +127,35 @@ async function resolveRequestTarget(rootDir, pathname) {
 }
 
 export function createPreviewServer({ rootDir }) {
+  const serverState = {
+    sessionId: randomUUID(),
+    startedAt: new Date().toISOString(),
+    lastSave: null,
+  };
+
   return http.createServer(async (request, response) => {
     const requestUrl = new URL(request.url ?? '/', 'http://127.0.0.1');
 
     if (requestUrl.pathname === '/__rhwp_health') {
+      const indexPath = resolve(join(rootDir, 'index.html'));
+      let buildStamp = null;
+      try {
+        buildStamp = (await stat(indexPath)).mtime.toISOString();
+      } catch {
+        buildStamp = null;
+      }
+
       response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      response.end(JSON.stringify({ ok: true, saveBridge: true }));
+      response.end(JSON.stringify({
+        ok: true,
+        saveBridge: true,
+        rootDir,
+        pid: process.pid,
+        sessionId: serverState.sessionId,
+        startedAt: serverState.startedAt,
+        buildStamp,
+        lastSave: serverState.lastSave,
+      }));
       return;
     }
 
@@ -147,8 +171,27 @@ export function createPreviewServer({ rootDir }) {
         const body = await readRequestBody(request);
         const manifest = await readLaunchManifest(rootDir, token);
 
+        console.info('[save-trace]', {
+          surface: 'preview-server',
+          stage: 'server-save-request',
+          token,
+          fileName: manifest.originalFileName,
+          originalFilePath: manifest.originalFilePath,
+          stagePath: manifest.stagePath,
+          bytes: body.length,
+        });
+
         await writeFile(manifest.originalFilePath, body);
         await writeFile(manifest.stagePath, body);
+        serverState.lastSave = {
+          ok: true,
+          token,
+          fileName: manifest.originalFileName,
+          originalFilePath: manifest.originalFilePath,
+          stagePath: manifest.stagePath,
+          bytes: body.length,
+          savedAt: new Date().toISOString(),
+        };
 
         response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
         response.end(JSON.stringify({
@@ -156,6 +199,12 @@ export function createPreviewServer({ rootDir }) {
           fileName: manifest.originalFileName,
         }));
       } catch (error) {
+        serverState.lastSave = {
+          ok: false,
+          token: requestUrl.pathname.split('/').pop() ?? '',
+          error: error instanceof Error ? error.message : String(error),
+          savedAt: new Date().toISOString(),
+        };
         response.writeHead(500, { 'content-type': 'application/json; charset=utf-8' });
         response.end(JSON.stringify({
           ok: false,

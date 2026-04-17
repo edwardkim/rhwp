@@ -223,3 +223,48 @@ test('createHttpFileHandle는 Ctrl+S 저장을 local save endpoint로 전달한�
     globalThis.fetch = originalFetch;
   }
 });
+
+test('createHttpFileHandle는 save trace를 시작과 성공 단계로 남긴다', async () => {
+  const originalFetch = globalThis.fetch;
+  const traces: unknown[] = [];
+
+  globalThis.fetch = async () => new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+
+  try {
+    const handle = createHttpFileHandle({
+      fileName: 'opened.hwp',
+      fileUrl: 'http://127.0.0.1:7702/__opened/trace-token.hwp',
+      saveUrl: 'http://127.0.0.1:7702/__rhwp_save/trace-token',
+      onTrace(event) {
+        traces.push(event);
+      },
+    });
+
+    await saveDocumentToFileSystem({
+      blob: new Blob(['saved'], { type: 'application/x-hwp' }),
+      suggestedName: 'opened.hwp',
+      currentHandle: handle,
+      windowLike: {},
+      onTrace(event) {
+        traces.push(event);
+      },
+    });
+
+    assert.deepEqual(
+      traces.map((event: any) => event.stage),
+      [
+        'save-start',
+        'http-save-request',
+        'http-save-success',
+        'save-success',
+      ],
+    );
+    assert.equal((traces[1] as any).token, 'trace-token');
+    assert.equal((traces[2] as any).saveUrl, 'http://127.0.0.1:7702/__rhwp_save/trace-token');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
