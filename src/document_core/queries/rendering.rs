@@ -32,7 +32,8 @@ impl DocumentCore {
     }
 
     fn build_page_layer_tree_for_output(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
-        let tree = self.build_page_tree_for_output(page_num)?;
+        let tree = self.build_page_tree_cached(page_num)?;
+        let _overflows = self.layout_engine.take_overflows();
         Ok(self.build_layer_tree_from_page_tree(&tree))
     }
 
@@ -93,6 +94,40 @@ impl DocumentCore {
         font_embed_mode: crate::renderer::svg::FontEmbedMode,
         font_paths: &[std::path::PathBuf],
     ) -> Result<String, HwpError> {
+        if matches!(
+            std::env::var("RHWP_RENDER_PATH").ok().as_deref(),
+            Some("layer-svg")
+        ) {
+            let tree = self.build_page_tree_for_output(page_num)?;
+            let layer_tree = self.build_layer_tree_from_page_tree(&tree);
+
+            let mut layer_renderer = SvgLayerRenderer::new();
+            layer_renderer.configure_output(
+                self.show_paragraph_marks,
+                self.show_control_codes,
+                self.debug_overlay,
+            );
+            layer_renderer.render_page(&layer_tree);
+
+            let mut collector = SvgRenderer::new();
+            self.configure_svg_renderer(&mut collector);
+            collector.font_embed_mode = font_embed_mode;
+            collector.font_paths = font_paths.to_vec();
+            collector.render_tree(&tree);
+
+            let mut svg = layer_renderer.output().to_string();
+            if font_embed_mode != crate::renderer::svg::FontEmbedMode::None {
+                let style_css = crate::renderer::svg::generate_font_style(&collector, font_paths);
+                if !style_css.is_empty() {
+                    if let Some(pos) = svg.find('>') {
+                        let insert = format!("\n<style>\n{}</style>\n", style_css);
+                        svg.insert_str(pos + 1, &insert);
+                    }
+                }
+            }
+            return Ok(svg);
+        }
+
         let tree = self.build_page_tree_for_output(page_num)?;
         let mut renderer = SvgRenderer::new();
         self.configure_svg_renderer(&mut renderer);

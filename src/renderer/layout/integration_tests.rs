@@ -7,9 +7,15 @@
 mod tests {
     use resvg::{tiny_skia, usvg};
     use std::path::{Path, PathBuf};
+    use std::sync::{Mutex, OnceLock};
 
     const SKIA_TOLERANT_CHANNEL_DELTA: u8 = 128;
     const SKIA_TOLERANT_MAX_DIFF_PIXELS: usize = 64;
+
+    fn render_path_env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
 
     /// 테스트용 DocumentCore 생성 헬퍼
     fn load_document(path: &str) -> Option<crate::document_core::DocumentCore> {
@@ -588,5 +594,72 @@ mod tests {
     #[test]
     fn test_skia_screenshot_matches_layer_svg_for_table_sample() {
         assert_skia_png_matches_layer_svg("samples/hwp_table_test.hwp", 0);
+    }
+
+    #[test]
+    fn test_get_page_layer_tree_native_populates_page_tree_cache() {
+        let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
+            return;
+        };
+
+        assert!(
+            core.page_tree_cache.borrow().is_empty(),
+            "테스트 시작 시 페이지 트리 캐시는 비어 있어야 함"
+        );
+
+        core.get_page_layer_tree_native(0)
+            .expect("레이어 트리 직렬화 실패");
+
+        let cache = core.page_tree_cache.borrow();
+        assert!(
+            !cache.is_empty() && cache[0].is_some(),
+            "레이어 트리 조회는 페이지 트리 캐시를 채워야 함"
+        );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn test_render_page_svg_with_fonts_respects_layer_svg_path() {
+        let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
+            return;
+        };
+        let _guard = render_path_env_lock()
+            .lock()
+            .expect("render path env lock 획득 실패");
+        std::env::set_var("RHWP_RENDER_PATH", "layer-svg");
+
+        let layered = core
+            .render_page_svg_layer_native(0)
+            .expect("layer SVG 렌더 실패");
+        let embedded = core
+            .render_page_svg_with_fonts(0, crate::renderer::svg::FontEmbedMode::Style, &[])
+            .expect("폰트 포함 SVG 렌더 실패");
+
+        std::env::remove_var("RHWP_RENDER_PATH");
+
+        let embedded_without_style = if let Some(style_start) = embedded.find("<style>") {
+            if let Some(style_end) = embedded.find("</style>") {
+                let mut normalized = embedded.clone();
+                normalized.replace_range(style_start..style_end + "</style>".len(), "");
+                normalized
+            } else {
+                embedded.clone()
+            }
+        } else {
+            embedded.clone()
+        };
+        let normalize_svg = |svg: String| {
+            svg.lines()
+                .map(str::trim_end)
+                .filter(|line| !line.trim().is_empty())
+                .collect::<Vec<_>>()
+                .join("\n")
+        };
+
+        assert_eq!(
+            normalize_svg(embedded_without_style),
+            normalize_svg(layered),
+            "font-embed 경로도 layer-svg 선택을 존중해야 함"
+        );
     }
 }
