@@ -14,6 +14,7 @@ import {
 const FULL_PAGE_CASES = [
   { name: 'blank-new-document', setup: (page) => createNewDocument(page) },
   { name: 'lseg-01-basic', setup: (page) => loadHwpFile(page, 'lseg-01-basic.hwp') },
+  { name: 'eq-01', setup: (page) => loadHwpFile(page, 'eq-01.hwp') },
   { name: 'hwp-table-test', setup: (page) => loadHwpFile(page, 'hwp_table_test.hwp') },
   { name: 'pic-crop-01', setup: (page) => loadHwpFile(page, 'pic-crop-01.hwp') },
   { name: 'field-01', setup: (page) => loadHwpFile(page, 'field-01.hwp') },

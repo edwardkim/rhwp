@@ -9,6 +9,7 @@ import type {
   LayerClipNode,
   LayerEllipseOp,
   LayerEquationLayoutBox,
+  LayerFootnoteMarkerOp,
   LayerFormObjectOp,
   LayerGradient,
   LayerImageOp,
@@ -139,7 +140,7 @@ export class CanvasKitLayerRenderer {
       this.renderNode(canvas, tree.root);
       canvas.restore();
       surface.flush();
-      this.renderEquationOverlays(tree.root, targetCanvas, scale);
+      this.renderCompatOverlays(tree.root, targetCanvas, scale);
     } finally {
       surface.delete();
     }
@@ -231,9 +232,15 @@ export class CanvasKitLayerRenderer {
         this.renderPageBackground(canvas, op);
         return;
       case 'textRun':
+        if (this.shouldOverlayTextRun(op)) {
+          return;
+        }
         this.renderTextRun(canvas, op);
         return;
       case 'footnoteMarker':
+        if (this.shouldOverlayFootnoteMarker(op)) {
+          return;
+        }
         this.renderFootnoteMarker(canvas, op);
         return;
       case 'line':
@@ -257,6 +264,14 @@ export class CanvasKitLayerRenderer {
         this.renderFormObject(canvas, op);
         return;
     }
+  }
+
+  private shouldOverlayTextRun(op: LayerTextRunOp): boolean {
+    return this.renderMode === 'compat' && shouldOverlayCanvasTextFamily(op.style.fontFamily);
+  }
+
+  private shouldOverlayFootnoteMarker(op: LayerFootnoteMarkerOp): boolean {
+    return this.renderMode === 'compat' && shouldOverlayCanvasTextFamily(op.fontFamily);
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
@@ -902,21 +917,24 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderEquationOverlays(node: LayerNode, targetCanvas: HTMLCanvasElement, scale: number): void {
+  private renderCompatOverlays(node: LayerNode, targetCanvas: HTMLCanvasElement, scale: number): void {
+    if (this.renderMode !== 'compat') {
+      return;
+    }
     const ctx = targetCanvas.getContext('2d');
     if (!ctx) {
       return;
     }
     ctx.save();
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    this.renderEquationOverlayNode(ctx, node);
+    this.renderCompatOverlayNode(ctx, node);
     ctx.restore();
   }
 
-  private renderEquationOverlayNode(ctx: CanvasRenderingContext2D, node: LayerNode): void {
+  private renderCompatOverlayNode(ctx: CanvasRenderingContext2D, node: LayerNode): void {
     if (node.kind === 'group') {
       for (const child of node.children) {
-        this.renderEquationOverlayNode(ctx, child);
+        this.renderCompatOverlayNode(ctx, child);
       }
       return;
     }
@@ -925,16 +943,213 @@ export class CanvasKitLayerRenderer {
       ctx.beginPath();
       ctx.rect(node.clip.x, node.clip.y, node.clip.width, node.clip.height);
       ctx.clip();
-      this.renderEquationOverlayNode(ctx, node.child);
+      this.renderCompatOverlayNode(ctx, node.child);
       ctx.restore();
       return;
     }
     for (const op of node.ops) {
-      if (op.type !== 'equation') {
+      if (op.type === 'equation') {
+        renderEquationLayoutBox(ctx, op.layoutBox, op.bbox.x, op.bbox.y, op.color, op.fontSize, false, false);
         continue;
       }
-      renderEquationLayoutBox(ctx, op.layoutBox, op.bbox.x, op.bbox.y, op.color, op.fontSize, false, false);
+      if (op.type === 'textRun' && this.shouldOverlayTextRun(op)) {
+        this.renderTextRunOverlay(ctx, op);
+        continue;
+      }
+      if (op.type === 'footnoteMarker' && this.shouldOverlayFootnoteMarker(op)) {
+        this.renderFootnoteMarkerOverlay(ctx, op);
+      }
     }
+  }
+
+  private renderTextRunOverlay(ctx: CanvasRenderingContext2D, op: LayerTextRunOp): void {
+    const ratio = typeof op.style.ratio === 'number' && op.style.ratio > 0 ? op.style.ratio : 1;
+    const hasRatio = Math.abs(ratio - 1) > 0.01;
+    const outlineType = op.style.outlineType ?? 0;
+    const shadowType = op.style.shadowType ?? 0;
+    const shadowColor = typeof op.style.shadowColor === 'string' ? op.style.shadowColor : op.style.color;
+    const shadowOffsetX = typeof op.style.shadowOffsetX === 'number' ? op.style.shadowOffsetX : 0;
+    const shadowOffsetY = typeof op.style.shadowOffsetY === 'number' ? op.style.shadowOffsetY : 0;
+    const emboss = !!op.style.emboss;
+    const engrave = !!op.style.engrave;
+    const emphasisDot = op.style.emphasisDot ?? 0;
+    const shadeColor = (typeof op.style.shadeColor === 'string' ? op.style.shadeColor : '#ffffff').toLowerCase();
+    const fontSize = op.style.fontSize || 12;
+    const clusters = splitIntoClusters(op.text);
+    const drawClusters = (originX: number, originY: number) => {
+      const textWidth = op.positions.at(-1) ?? 0;
+      if (textWidth > 0 && shadeColor !== '#ffffff') {
+        ctx.save();
+        ctx.fillStyle = shadeColor;
+        ctx.fillRect(originX, originY - fontSize, textWidth, fontSize * 1.2);
+        ctx.restore();
+      }
+
+      const drawPass = (dx: number, dy: number, fillColor: string, strokeColor?: string, lineWidth = 0) => {
+        ctx.save();
+        ctx.fillStyle = fillColor;
+        if (strokeColor) {
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = lineWidth;
+          ctx.lineJoin = 'round';
+        }
+        for (const cluster of clusters) {
+          if (cluster.text === ' ' || cluster.text === '\t' || cluster.text === '\u2007') {
+            continue;
+          }
+          if (startsWithInvalidControl(cluster.text)) {
+            continue;
+          }
+          const x = originX + op.positions[cluster.start] + dx;
+          const y = originY + dy;
+          if (isHalfwidthScaledCluster(cluster.text) && !hasRatio) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(0.5, 1);
+            ctx.fillText(cluster.text, 0, 0);
+            if (strokeColor) {
+              ctx.strokeText(cluster.text, 0, 0);
+            }
+            ctx.restore();
+            continue;
+          }
+          if (hasRatio) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(ratio, 1);
+            ctx.fillText(cluster.text, 0, 0);
+            if (strokeColor) {
+              ctx.strokeText(cluster.text, 0, 0);
+            }
+            ctx.restore();
+            continue;
+          }
+          ctx.fillText(cluster.text, x, y);
+          if (strokeColor) {
+            ctx.strokeText(cluster.text, x, y);
+          }
+        }
+        ctx.restore();
+      };
+
+      if (emboss || engrave) {
+        const offset = Math.max(fontSize / 20, 1);
+        drawPass(-offset, -offset, emboss ? '#ffffff' : '#808080');
+        drawPass(offset, offset, emboss ? '#808080' : '#ffffff');
+        drawPass(0, 0, op.style.color);
+      } else {
+        if (shadowType > 0) {
+          drawPass(shadowOffsetX, shadowOffsetY, shadowColor);
+        }
+        if (outlineType > 0) {
+          drawPass(0, 0, '#ffffff', op.style.color, Math.max(fontSize / 25, 0.5));
+        } else {
+          drawPass(0, 0, op.style.color);
+        }
+      }
+
+      if (emphasisDot > 0) {
+        const dotChar =
+          emphasisDot === 1 ? '●'
+            : emphasisDot === 2 ? '○'
+              : emphasisDot === 3 ? 'ˇ'
+                : emphasisDot === 4 ? '˜'
+                  : emphasisDot === 5 ? '･'
+                    : emphasisDot === 6 ? '˸'
+                      : '';
+        if (dotChar) {
+          ctx.save();
+          this.setCanvasTextFont(ctx, 'Noto Sans KR', fontSize * 0.3, false, false);
+          ctx.fillStyle = op.style.color;
+          const dotY = originY - fontSize * 1.05;
+          for (const position of op.positions.slice(0, -1)) {
+            const dotX = originX + position + (fontSize * ratio * 0.5);
+            ctx.fillText(dotChar, dotX, dotY);
+          }
+          ctx.restore();
+        }
+      }
+
+      if (op.tabLeaders?.length) {
+        this.drawTabLeadersOverlay(ctx, op.tabLeaders, originX, originY, op.style.color);
+      }
+
+      if (op.style.underline !== 'none') {
+        ctx.save();
+        ctx.strokeStyle = op.style.underlineColor || op.style.color;
+        ctx.lineWidth = 1;
+        const y = op.style.underline === 'top' ? originY - fontSize + 1 : originY + 2;
+        ctx.beginPath();
+        ctx.moveTo(originX, y);
+        ctx.lineTo(originX + textWidth, y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (op.style.strikethrough) {
+        ctx.save();
+        ctx.strokeStyle = op.style.strikeColor || op.style.color;
+        ctx.lineWidth = 1;
+        const y = originY - fontSize * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(originX, y);
+        ctx.lineTo(originX + textWidth, y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    ctx.save();
+    this.setCanvasTextFont(ctx, op.style.fontFamily, fontSize, op.style.bold, op.style.italic);
+    ctx.textBaseline = 'alphabetic';
+    if (op.rotation !== 0) {
+      const cx = op.bbox.x + op.bbox.width / 2;
+      const cy = op.bbox.y + op.bbox.height / 2;
+      ctx.translate(cx, cy);
+      ctx.rotate((op.rotation * Math.PI) / 180);
+      drawClusters(-op.bbox.width / 2, -op.bbox.height / 2 + op.baseline);
+    } else {
+      drawClusters(op.bbox.x, op.bbox.y + op.baseline);
+    }
+    ctx.restore();
+  }
+
+  private renderFootnoteMarkerOverlay(ctx: CanvasRenderingContext2D, op: LayerFootnoteMarkerOp): void {
+    ctx.save();
+    this.setCanvasTextFont(ctx, op.fontFamily, op.fontSize, false, false);
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = op.color;
+    ctx.fillText(op.text, op.bbox.x, op.bbox.y + op.bbox.height * 0.4);
+    ctx.restore();
+  }
+
+  private drawTabLeadersOverlay(ctx: CanvasRenderingContext2D, leaders: LayerTabLeader[], originX: number, baselineY: number, color: string): void {
+    for (const leader of leaders) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash(
+        leader.fillType === 2 ? [4, 2]
+          : leader.fillType === 3 ? [1.5, 2.5]
+            : [],
+      );
+      const y = baselineY + 1;
+      ctx.beginPath();
+      ctx.moveTo(originX + leader.startX, y);
+      ctx.lineTo(originX + leader.endX, y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  private setCanvasTextFont(
+    ctx: CanvasRenderingContext2D,
+    fontFamily: string,
+    fontSize: number,
+    bold: boolean,
+    italic: boolean,
+  ): void {
+    ctx.font = buildCanvasTextFont(fontFamily, fontSize, bold, italic);
   }
 
   private drawEncodedImage(
@@ -1348,6 +1563,59 @@ function decodeBase64(base64: string): Uint8Array {
     bytes[idx] = binary.charCodeAt(idx);
   }
   return bytes;
+}
+
+function shouldOverlayCanvasTextFamily(fontFamily: string): boolean {
+  const resolved = resolveFont(fontFamily, 0, 0);
+  return HAMCHOROM_DOTUM_ALIASES.has(fontFamily)
+    || HAMCHOROM_DOTUM_ALIASES.has(resolved)
+    || HAMCHOROM_BATANG_ALIASES.has(fontFamily)
+    || HAMCHOROM_BATANG_ALIASES.has(resolved);
+}
+
+function buildCanvasTextFont(fontFamily: string, fontSize: number, bold: boolean, italic: boolean): string {
+  const resolved = resolveFont(fontFamily, 0, 0);
+  const families: string[] = [fontFamily];
+  if (HAMCHOROM_DOTUM_ALIASES.has(fontFamily) || HAMCHOROM_DOTUM_ALIASES.has(resolved)) {
+    families.push('함초롬돋움');
+  } else if (HAMCHOROM_BATANG_ALIASES.has(fontFamily) || HAMCHOROM_BATANG_ALIASES.has(resolved)) {
+    families.push('함초롬바탕');
+  } else if (resolved && resolved !== fontFamily) {
+    families.push(resolved);
+  }
+  const fallback = genericCanvasTextFallback(fontFamily, resolved);
+  const familyExpr = [...new Set([...families.filter(Boolean), fallback])]
+    .map((family) => isGenericCanvasFontFamily(family) ? family : `"${family}"`)
+    .join(', ');
+  return `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${(fontSize || 12).toFixed(3)}px ${familyExpr}`;
+}
+
+function genericCanvasTextFallback(fontFamily: string, resolved: string): string {
+  const lower = `${fontFamily} ${resolved}`.toLowerCase();
+  if (/gulimche|batangche|coding|courier/.test(lower) || /굴림체|바탕체/.test(fontFamily) || /굴림체|바탕체/.test(resolved)) {
+    return 'monospace';
+  }
+  if (/batang|gungsuh|serif|times/.test(lower) || /바탕|명조|궁서/.test(fontFamily) || /바탕|명조|궁서/.test(resolved)) {
+    return 'serif';
+  }
+  return 'sans-serif';
+}
+
+function isGenericCanvasFontFamily(fontFamily: string): boolean {
+  return fontFamily === 'serif' || fontFamily === 'sans-serif' || fontFamily === 'monospace';
+}
+
+function startsWithInvalidControl(text: string): boolean {
+  if (!text) {
+    return false;
+  }
+  const code = text.codePointAt(0) ?? 0;
+  return code < 0x20 && code !== 0x09 && code !== 0x0a && code !== 0x0d;
+}
+
+function isHalfwidthScaledCluster(text: string): boolean {
+  const code = text.codePointAt(0) ?? 0;
+  return (code >= 0x2018 && code <= 0x2027) || code === 0x00b7;
 }
 
 function angleToCanvasCoords(angle: number, x: number, y: number, width: number, height: number): [number, number, number, number] {
