@@ -1,5 +1,5 @@
 import CanvasKitInit from 'canvaskit-wasm';
-import type { CanvasKit, Font, Image, Paint, Surface, Typeface, TypefaceFontProvider } from 'canvaskit-wasm';
+import type { CanvasKit, Font, Image, Paint, Shader, Surface, Typeface, TypefaceFontProvider } from 'canvaskit-wasm';
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url';
 
 import { resolveFont } from '@/core/font-substitution';
@@ -8,16 +8,21 @@ import type {
   LayerBounds,
   LayerClipNode,
   LayerEllipseOp,
+  LayerEquationLayoutBox,
   LayerFormObjectOp,
+  LayerGradient,
   LayerImageOp,
   LayerLeafNode,
   LayerLineOp,
+  LayerLineStyle,
   LayerNode,
   LayerPageBackgroundOp,
   LayerPaintOp,
   LayerPathCommand,
   LayerPathOp,
+  LayerPatternFill,
   LayerRectangleOp,
+  LayerShapeShadow,
   LayerTabLeader,
   LayerTextRunOp,
   PageLayerTree,
@@ -97,6 +102,7 @@ const MONO_ALIASES = [
 
 export class CanvasKitLayerRenderer {
   private readonly imageCache = new Map<string, Image>();
+  private readonly patternImageCache = new Map<string, Image | null>();
   private readonly fontAliases = new Set<string>();
 
   private constructor(
@@ -115,7 +121,11 @@ export class CanvasKitLayerRenderer {
     return renderer;
   }
 
-  renderPage(tree: PageLayerTree, targetCanvas: HTMLCanvasElement, scale: number): void {
+  renderPage(
+    tree: PageLayerTree,
+    targetCanvas: HTMLCanvasElement,
+    scale: number,
+  ): void {
     const surface = this.canvasKit.MakeSWCanvasSurface(targetCanvas);
     if (!surface) {
       throw new Error('CanvasKit surface 생성 실패');
@@ -129,6 +139,7 @@ export class CanvasKitLayerRenderer {
       this.renderNode(canvas, tree.root);
       canvas.restore();
       surface.flush();
+      this.renderEquationOverlays(tree.root, targetCanvas, scale);
     } finally {
       surface.delete();
     }
@@ -169,7 +180,10 @@ export class CanvasKitLayerRenderer {
     await registerAliases(MONO_ALIASES, FONT_MONO_REGULAR_URL);
   }
 
-  private renderNode(canvas: ReturnType<Surface['getCanvas']>, node: LayerNode): void {
+  private renderNode(
+    canvas: ReturnType<Surface['getCanvas']>,
+    node: LayerNode,
+  ): void {
     switch (node.kind) {
       case 'group':
         for (const child of node.children) {
@@ -185,7 +199,10 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderClipNode(canvas: ReturnType<Surface['getCanvas']>, node: LayerClipNode): void {
+  private renderClipNode(
+    canvas: ReturnType<Surface['getCanvas']>,
+    node: LayerClipNode,
+  ): void {
     canvas.save();
     canvas.clipRect(
       this.canvasKit.XYWHRect(node.clip.x, node.clip.y, node.clip.width, node.clip.height),
@@ -196,13 +213,19 @@ export class CanvasKitLayerRenderer {
     canvas.restore();
   }
 
-  private renderLeafNode(canvas: ReturnType<Surface['getCanvas']>, node: LayerLeafNode): void {
+  private renderLeafNode(
+    canvas: ReturnType<Surface['getCanvas']>,
+    node: LayerLeafNode,
+  ): void {
     for (const op of node.ops) {
       this.renderOp(canvas, op);
     }
   }
 
-  private renderOp(canvas: ReturnType<Surface['getCanvas']>, op: LayerPaintOp): void {
+  private renderOp(
+    canvas: ReturnType<Surface['getCanvas']>,
+    op: LayerPaintOp,
+  ): void {
     switch (op.type) {
       case 'pageBackground':
         this.renderPageBackground(canvas, op);
@@ -229,7 +252,6 @@ export class CanvasKitLayerRenderer {
         this.renderImage(canvas, op);
         return;
       case 'equation':
-        this.renderPlaceholderRect(canvas, op.bbox, '#dcdcdc');
         return;
       case 'formObject':
         this.renderFormObject(canvas, op);
@@ -238,10 +260,11 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
-    if (op.backgroundColor) {
-      const paint = this.makePaint(op.backgroundColor, 'fill');
-      canvas.drawRect(this.toRect(op.bbox), paint);
-      paint.delete();
+    const fill = this.makeShapeFillPaint(op.bbox, op.backgroundColor ?? null, 1, op.gradient);
+    if (fill) {
+      canvas.drawRect(this.toRect(op.bbox), fill.paint);
+      fill.shader?.delete();
+      fill.paint.delete();
     }
 
     if (op.image?.base64) {
@@ -440,33 +463,138 @@ export class CanvasKitLayerRenderer {
 
   private renderLine(canvas: ReturnType<Surface['getCanvas']>, op: LayerLineOp): void {
     this.withTransform(canvas, op.bbox, op.transform, () => {
-      const paint = this.makeLinePaint(op.style.color, op.style.width, op.style.dash);
-      canvas.drawLine(op.x1, op.y1, op.x2, op.y2, paint);
-      paint.delete();
+      const width = Math.max(op.style.width, 0.5);
+      const dx = op.x2 - op.x1;
+      const dy = op.y2 - op.y1;
+      const lineLength = Math.hypot(dx, dy);
+      let lineX1 = op.x1;
+      let lineY1 = op.y1;
+      let lineX2 = op.x2;
+      let lineY2 = op.y2;
+
+      if (lineLength > 0) {
+        const unitX = dx / lineLength;
+        const unitY = dy / lineLength;
+        if (op.style.startArrow !== 'none') {
+          const [arrowWidth, arrowHeight] = calculateArrowDimensions(width, lineLength, op.style.startArrowSize);
+          drawArrowHead(
+            this.canvasKit,
+            canvas,
+            op.x1,
+            op.y1,
+            -unitX,
+            -unitY,
+            arrowWidth,
+            arrowHeight,
+            op.style.startArrow,
+            op.style.color,
+            width,
+          );
+          lineX1 += unitX * arrowWidth;
+          lineY1 += unitY * arrowWidth;
+        }
+        if (op.style.endArrow !== 'none') {
+          const [arrowWidth, arrowHeight] = calculateArrowDimensions(width, lineLength, op.style.endArrowSize);
+          drawArrowHead(
+            this.canvasKit,
+            canvas,
+            op.x2,
+            op.y2,
+            unitX,
+            unitY,
+            arrowWidth,
+            arrowHeight,
+            op.style.endArrow,
+            op.style.color,
+            width,
+          );
+          lineX2 -= unitX * arrowWidth;
+          lineY2 -= unitY * arrowWidth;
+        }
+      }
+
+      const drawSegment = (strokeWidth: number, offsetRatio: number) => {
+        const paint = this.makeLinePaint(op.style.color, strokeWidth, op.style.dash);
+        if (strokeWidth < 0.5) {
+          paint.setStrokeWidth(strokeWidth);
+        }
+        let offsetX = 0;
+        let offsetY = 0;
+        if (lineLength > 0 && offsetRatio !== 0) {
+          const normalX = -dy / lineLength;
+          const normalY = dx / lineLength;
+          offsetX = normalX * width * offsetRatio;
+          offsetY = normalY * width * offsetRatio;
+        }
+        if (op.style.shadow) {
+          this.drawShadow(
+            canvas,
+            op.style.shadow,
+            'stroke',
+            op.style.shadow.color,
+            strokeWidth,
+            (shadowPaint) => canvas.drawLine(lineX1 + offsetX, lineY1 + offsetY, lineX2 + offsetX, lineY2 + offsetY, shadowPaint),
+          );
+        }
+        canvas.drawLine(lineX1 + offsetX, lineY1 + offsetY, lineX2 + offsetX, lineY2 + offsetY, paint);
+        paint.delete();
+      };
+
+      switch (op.style.lineType) {
+        case 'double':
+          drawSegment(width * 0.3, -0.35);
+          drawSegment(width * 0.3, 0.35);
+          break;
+        case 'thickThinDouble':
+          drawSegment(width * 0.4, -0.30);
+          drawSegment(width * 0.2, 0.40);
+          break;
+        case 'thinThickDouble':
+          drawSegment(width * 0.2, -0.40);
+          drawSegment(width * 0.4, 0.30);
+          break;
+        case 'thinThickThinTriple':
+          drawSegment(width * 0.15, -0.425);
+          drawSegment(width * 0.30, 0);
+          drawSegment(width * 0.15, 0.425);
+          break;
+        default:
+          drawSegment(width, 0);
+      }
     });
   }
 
   private renderRectangle(canvas: ReturnType<Surface['getCanvas']>, op: LayerRectangleOp): void {
     this.withTransform(canvas, op.bbox, op.transform, () => {
-      const fillPaint = op.style.fillColor ? this.makePaint(op.style.fillColor, 'fill', op.style.opacity) : null;
+      const fill = this.makeShapeFillPaint(op.bbox, op.style.fillColor, op.style.opacity, op.gradient, op.style.pattern);
       const strokePaint = op.style.strokeColor ? this.makeLinePaint(op.style.strokeColor, op.style.strokeWidth, op.style.strokeDash, op.style.opacity) : null;
       const rect = this.toRect(op.bbox);
-
-      if (fillPaint) {
+      const drawRect = (paint: Paint) => {
         if (op.cornerRadius > 0) {
-          canvas.drawRRect(this.canvasKit.RRectXY(rect, op.cornerRadius, op.cornerRadius), fillPaint);
-        } else {
-          canvas.drawRect(rect, fillPaint);
+          canvas.drawRRect(this.canvasKit.RRectXY(rect, op.cornerRadius, op.cornerRadius), paint);
+          return;
         }
-        fillPaint.delete();
+        canvas.drawRect(rect, paint);
+      };
+
+      if (op.style.shadow) {
+        this.drawShadow(
+          canvas,
+          op.style.shadow,
+          fill ? 'fill' : 'stroke',
+          op.style.shadow.color,
+          op.style.strokeWidth,
+          drawRect,
+        );
       }
 
+      if (fill) {
+        drawRect(fill.paint);
+        fill.shader?.delete();
+        fill.paint.delete();
+      }
       if (strokePaint) {
-        if (op.cornerRadius > 0) {
-          canvas.drawRRect(this.canvasKit.RRectXY(rect, op.cornerRadius, op.cornerRadius), strokePaint);
-        } else {
-          canvas.drawRect(rect, strokePaint);
-        }
+        drawRect(strokePaint);
         strokePaint.delete();
       }
     });
@@ -474,16 +602,29 @@ export class CanvasKitLayerRenderer {
 
   private renderEllipse(canvas: ReturnType<Surface['getCanvas']>, op: LayerEllipseOp): void {
     this.withTransform(canvas, op.bbox, op.transform, () => {
-      const fillPaint = op.style.fillColor ? this.makePaint(op.style.fillColor, 'fill', op.style.opacity) : null;
+      const fill = this.makeShapeFillPaint(op.bbox, op.style.fillColor, op.style.opacity, op.gradient, op.style.pattern);
       const strokePaint = op.style.strokeColor ? this.makeLinePaint(op.style.strokeColor, op.style.strokeWidth, op.style.strokeDash, op.style.opacity) : null;
       const oval = this.toRect(op.bbox);
+      const drawOval = (paint: Paint) => canvas.drawOval(oval, paint);
 
-      if (fillPaint) {
-        canvas.drawOval(oval, fillPaint);
-        fillPaint.delete();
+      if (op.style.shadow) {
+        this.drawShadow(
+          canvas,
+          op.style.shadow,
+          fill ? 'fill' : 'stroke',
+          op.style.shadow.color,
+          op.style.strokeWidth,
+          drawOval,
+        );
+      }
+
+      if (fill) {
+        drawOval(fill.paint);
+        fill.shader?.delete();
+        fill.paint.delete();
       }
       if (strokePaint) {
-        canvas.drawOval(oval, strokePaint);
+        drawOval(strokePaint);
         strokePaint.delete();
       }
     });
@@ -492,16 +633,112 @@ export class CanvasKitLayerRenderer {
   private renderPath(canvas: ReturnType<Surface['getCanvas']>, op: LayerPathOp): void {
     this.withTransform(canvas, op.bbox, op.transform, () => {
       const path = this.makePath(op.commands);
-      const fillPaint = op.style.fillColor ? this.makePaint(op.style.fillColor, 'fill', op.style.opacity) : null;
+      const pathBounds = computePathPaintBounds(op.commands, op.bbox);
+      const fill = this.makeShapeFillPaint(pathBounds, op.style.fillColor, op.style.opacity, op.gradient, op.style.pattern);
       const strokePaint = op.style.strokeColor ? this.makeLinePaint(op.style.strokeColor, op.style.strokeWidth, op.style.strokeDash, op.style.opacity) : null;
+      const drawPath = (paint: Paint) => canvas.drawPath(path, paint);
 
-      if (fillPaint) {
-        canvas.drawPath(path, fillPaint);
-        fillPaint.delete();
+      if (op.style.shadow) {
+        this.drawShadow(
+          canvas,
+          op.style.shadow,
+          fill ? 'fill' : 'stroke',
+          op.style.shadow.color,
+          op.style.strokeWidth,
+          drawPath,
+        );
+      }
+
+      if (fill) {
+        drawPath(fill.paint);
+        fill.shader?.delete();
+        fill.paint.delete();
       }
       if (strokePaint) {
-        canvas.drawPath(path, strokePaint);
+        drawPath(strokePaint);
         strokePaint.delete();
+      }
+      if (op.lineStyle && op.connectorEndpoints) {
+        const { x1, y1, x2, y2 } = op.connectorEndpoints;
+        const connectorLength = Math.max(Math.hypot(x2 - x1, y2 - y1), 1);
+
+        if (op.lineStyle.startArrow !== 'none') {
+          let directionX = x1 - x2;
+          let directionY = y1 - y2;
+          for (const command of op.commands.slice(1)) {
+            if (command.type === 'lineTo') {
+              if (Math.abs(x1 - command.x) > 0.5 || Math.abs(y1 - command.y) > 0.5) {
+                directionX = x1 - command.x;
+                directionY = y1 - command.y;
+                break;
+              }
+              continue;
+            }
+            if (command.type === 'curveTo') {
+              if (Math.abs(x1 - command.x1) > 0.5 || Math.abs(y1 - command.y1) > 0.5) {
+                directionX = x1 - command.x1;
+                directionY = y1 - command.y1;
+                break;
+              }
+            }
+          }
+          const directionLength = Math.max(Math.hypot(directionX, directionY), 0.001);
+          const [arrowWidth, arrowHeight] = calculateArrowDimensions(op.lineStyle.width, connectorLength, op.lineStyle.startArrowSize);
+          drawArrowHead(
+            this.canvasKit,
+            canvas,
+            x1,
+            y1,
+            directionX / directionLength,
+            directionY / directionLength,
+            arrowWidth,
+            arrowHeight,
+            op.lineStyle.startArrow,
+            op.lineStyle.color,
+            op.lineStyle.width,
+          );
+        }
+
+        if (op.lineStyle.endArrow !== 'none') {
+          const points: Array<[number, number]> = [];
+          for (const command of op.commands) {
+            if (command.type === 'moveTo' || command.type === 'lineTo') {
+              points.push([command.x, command.y]);
+              continue;
+            }
+            if (command.type === 'curveTo') {
+              points.push([command.x2, command.y2]);
+              points.push([command.x3, command.y3]);
+            }
+          }
+          let directionX = x2 - x1;
+          let directionY = y2 - y1;
+          for (let index = points.length - 1; index >= 0; index -= 1) {
+            const [pointX, pointY] = points[index];
+            const candidateX = x2 - pointX;
+            const candidateY = y2 - pointY;
+            if (Math.abs(candidateX) > 0.5 || Math.abs(candidateY) > 0.5) {
+              directionX = candidateX;
+              directionY = candidateY;
+              break;
+            }
+          }
+          const directionLength = Math.max(Math.hypot(directionX, directionY), 0.001);
+          const [arrowWidth, arrowHeight] = calculateArrowDimensions(op.lineStyle.width, connectorLength, op.lineStyle.endArrowSize);
+          drawArrowHead(
+            this.canvasKit,
+            canvas,
+            x2,
+            y2,
+            directionX / directionLength,
+            directionY / directionLength,
+            arrowWidth,
+            arrowHeight,
+            op.lineStyle.endArrow,
+            op.lineStyle.color,
+            op.lineStyle.width,
+          );
+        }
       }
       path.delete();
     });
@@ -665,10 +902,39 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderPlaceholderRect(canvas: ReturnType<Surface['getCanvas']>, bbox: LayerBounds, color: string): void {
-    const paint = this.makePaint(color, 'fill');
-    canvas.drawRect(this.toRect(bbox), paint);
-    paint.delete();
+  private renderEquationOverlays(node: LayerNode, targetCanvas: HTMLCanvasElement, scale: number): void {
+    const ctx = targetCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+    ctx.save();
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    this.renderEquationOverlayNode(ctx, node);
+    ctx.restore();
+  }
+
+  private renderEquationOverlayNode(ctx: CanvasRenderingContext2D, node: LayerNode): void {
+    if (node.kind === 'group') {
+      for (const child of node.children) {
+        this.renderEquationOverlayNode(ctx, child);
+      }
+      return;
+    }
+    if (node.kind === 'clipRect') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(node.clip.x, node.clip.y, node.clip.width, node.clip.height);
+      ctx.clip();
+      this.renderEquationOverlayNode(ctx, node.child);
+      ctx.restore();
+      return;
+    }
+    for (const op of node.ops) {
+      if (op.type !== 'equation') {
+        continue;
+      }
+      renderEquationLayoutBox(ctx, op.layoutBox, op.bbox.x, op.bbox.y, op.color, op.fontSize, false, false);
+    }
   }
 
   private drawEncodedImage(
@@ -882,10 +1148,11 @@ export class CanvasKitLayerRenderer {
 
   private makeLinePaint(color: string, width: number, dash: string, opacity = 1): Paint {
     const paint = this.makePaint(color, 'stroke', opacity);
-    paint.setStrokeWidth(Math.max(width, 1));
+    const strokeWidth = Math.max(width, 0.5);
+    paint.setStrokeWidth(strokeWidth);
 
     if (dash !== 'solid') {
-      const stroke = Math.max(width, 1);
+      const stroke = Math.max(width, 0.5);
       const intervals =
         dash === 'dash' ? [stroke * 4, stroke * 2]
           : dash === 'dot' ? [stroke * 1.5, stroke * 2.5]
@@ -897,6 +1164,108 @@ export class CanvasKitLayerRenderer {
     }
 
     return paint;
+  }
+
+  private makeShapeFillPaint(
+    bounds: LayerBounds,
+    fillColor: string | null | undefined,
+    opacity: number,
+    gradient?: LayerGradient,
+    pattern?: LayerPatternFill,
+  ): { paint: Paint; shader: Shader | null } | null {
+    const shader = gradient ? this.makeGradientShader(gradient, bounds) : pattern ? this.makePatternShader(pattern) : null;
+    if (!shader && !fillColor) {
+      return null;
+    }
+
+    const paint = this.makePaint(fillColor ?? '#ffffff', 'fill', opacity);
+    if (shader) {
+      paint.setShader(shader);
+      paint.setAlphaf(opacity);
+    }
+    return { paint, shader };
+  }
+
+  private makeGradientShader(gradient: LayerGradient, bounds: LayerBounds): Shader | null {
+    if (gradient.colors.length < 2) {
+      return null;
+    }
+
+    const colors = gradient.colors.map((color) => this.canvasKit.parseColorString(color));
+    const positions = gradient.positions.length > 0 ? gradient.positions : null;
+    if (gradient.gradientType === 2 || gradient.gradientType === 3 || gradient.gradientType === 4) {
+      const cx = bounds.x + bounds.width * (gradient.centerX / 100);
+      const cy = bounds.y + bounds.height * (gradient.centerY / 100);
+      const radius = Math.max(bounds.width, bounds.height) / 2;
+      return this.canvasKit.Shader.MakeRadialGradient(
+        [cx, cy],
+        radius,
+        colors,
+        positions,
+        this.canvasKit.TileMode.Clamp,
+      );
+    }
+
+    const [x0, y0, x1, y1] = angleToCanvasCoords(gradient.angle, bounds.x, bounds.y, bounds.width, bounds.height);
+    return this.canvasKit.Shader.MakeLinearGradient(
+      [x0, y0],
+      [x1, y1],
+      colors,
+      positions,
+      this.canvasKit.TileMode.Clamp,
+    );
+  }
+
+  private makePatternShader(pattern: LayerPatternFill): Shader | null {
+    const image = this.getPatternImage(pattern);
+    return image
+      ? image.makeShaderOptions(
+        this.canvasKit.TileMode.Repeat,
+        this.canvasKit.TileMode.Repeat,
+        this.canvasKit.FilterMode.Nearest,
+        this.canvasKit.MipmapMode.None,
+      )
+      : null;
+  }
+
+  private getPatternImage(pattern: LayerPatternFill): Image | null {
+    const cacheKey = `${pattern.patternType}:${pattern.patternColor}:${pattern.backgroundColor}`;
+    if (this.patternImageCache.has(cacheKey)) {
+      return this.patternImageCache.get(cacheKey) ?? null;
+    }
+
+    const bytes = rasterizePatternTileToPngBytes(pattern);
+    const image = bytes ? this.canvasKit.MakeImageFromEncoded(bytes) : null;
+    this.patternImageCache.set(cacheKey, image);
+    return image;
+  }
+
+  private drawShadow(
+    canvas: ReturnType<Surface['getCanvas']>,
+    shadow: LayerShapeShadow | undefined,
+    style: 'fill' | 'stroke',
+    color: string,
+    strokeWidth: number,
+    draw: (paint: Paint) => void,
+  ): void {
+    if (!shadow) {
+      return;
+    }
+
+    const opacity = shadow.alpha > 0 ? 1 - (shadow.alpha / 255) : 1;
+    const paint = this.makePaint(color, style, opacity);
+    if (style === 'stroke') {
+      paint.setStrokeWidth(Math.max(strokeWidth, 0.5));
+    }
+    const blur = this.canvasKit.MaskFilter.MakeBlur(this.canvasKit.BlurStyle.Normal, 1, false);
+    paint.setMaskFilter(blur);
+    blur.delete();
+
+    canvas.save();
+    canvas.translate(shadow.offsetX, shadow.offsetY);
+    draw(paint);
+    canvas.restore();
+    paint.delete();
   }
 
   private withTransform(
@@ -929,6 +1298,33 @@ export class CanvasKitLayerRenderer {
     canvas.restore();
   }
 
+  private drawCanvasKitImage(
+    canvas: ReturnType<Surface['getCanvas']>,
+    image: Image,
+    bbox: LayerBounds,
+  ): void {
+    const paint = new this.canvasKit.Paint();
+    if (this.renderMode === 'compat') {
+      canvas.drawImageRectOptions(
+        image,
+        this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
+        this.toRect(bbox),
+        this.canvasKit.FilterMode.Linear,
+        this.canvasKit.MipmapMode.None,
+        paint,
+      );
+    } else {
+      canvas.drawImageRect(
+        image,
+        this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
+        this.toRect(bbox),
+        paint,
+        false,
+      );
+    }
+    paint.delete();
+  }
+
   private getImage(base64: string): Image | null {
     const cached = this.imageCache.get(base64);
     if (cached) return cached;
@@ -952,6 +1348,770 @@ function decodeBase64(base64: string): Uint8Array {
     bytes[idx] = binary.charCodeAt(idx);
   }
   return bytes;
+}
+
+function angleToCanvasCoords(angle: number, x: number, y: number, width: number, height: number): [number, number, number, number] {
+  const normalized = ((angle % 360) + 360) % 360;
+  switch (normalized) {
+    case 0:
+      return [x, y, x, y + height];
+    case 45:
+      return [x, y, x + width, y + height];
+    case 90:
+      return [x, y, x + width, y];
+    case 135:
+      return [x, y + height, x + width, y];
+    case 180:
+      return [x, y + height, x, y];
+    case 225:
+      return [x + width, y + height, x, y];
+    case 270:
+      return [x + width, y, x, y];
+    case 315:
+      return [x + width, y, x, y + height];
+    default: {
+      const radians = normalized * (Math.PI / 180);
+      const sin = Math.sin(radians);
+      const cos = Math.cos(radians);
+      const centerX = x + width / 2;
+      const centerY = y + height / 2;
+      return [
+        centerX - sin * width / 2,
+        centerY - cos * height / 2,
+        centerX + sin * width / 2,
+        centerY + cos * height / 2,
+      ];
+    }
+  }
+}
+
+function rasterizePatternTileToPngBytes(pattern: LayerPatternFill): Uint8Array | null {
+  const canvas = document.createElement('canvas');
+  canvas.width = 6;
+  canvas.height = 6;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    return null;
+  }
+
+  ctx.fillStyle = pattern.backgroundColor;
+  ctx.fillRect(0, 0, 6, 6);
+  ctx.strokeStyle = pattern.patternColor;
+  ctx.lineWidth = 1;
+
+  switch (pattern.patternType) {
+    case 0:
+      ctx.beginPath();
+      ctx.moveTo(0, 3);
+      ctx.lineTo(6, 3);
+      ctx.stroke();
+      break;
+    case 1:
+      ctx.beginPath();
+      ctx.moveTo(3, 0);
+      ctx.lineTo(3, 6);
+      ctx.stroke();
+      break;
+    case 2:
+      ctx.beginPath();
+      ctx.moveTo(6, 0);
+      ctx.lineTo(0, 6);
+      ctx.stroke();
+      break;
+    case 3:
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(6, 6);
+      ctx.stroke();
+      break;
+    case 4:
+      ctx.beginPath();
+      ctx.moveTo(3, 0);
+      ctx.lineTo(3, 6);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, 3);
+      ctx.lineTo(6, 3);
+      ctx.stroke();
+      break;
+    case 5:
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(6, 6);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(6, 0);
+      ctx.lineTo(0, 6);
+      ctx.stroke();
+      break;
+    default:
+      break;
+  }
+
+  const dataUrl = canvas.toDataURL('image/png');
+  const [, encoded = ''] = dataUrl.split(',');
+  return decodeBase64(encoded);
+}
+
+function computePathPaintBounds(commands: LayerPathCommand[], fallback: LayerBounds): LayerBounds {
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  const record = (x: number, y: number) => {
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+  };
+
+  for (const command of commands) {
+    switch (command.type) {
+      case 'moveTo':
+      case 'lineTo':
+        record(command.x, command.y);
+        break;
+      case 'curveTo':
+        record(command.x1, command.y1);
+        record(command.x2, command.y2);
+        record(command.x3, command.y3);
+        break;
+      case 'arcTo':
+        record(command.x, command.y);
+        break;
+      case 'closePath':
+        break;
+    }
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+    return fallback;
+  }
+
+  return {
+    x: minX,
+    y: minY,
+    width: Math.max(maxX - minX, 1),
+    height: Math.max(maxY - minY, 1),
+  };
+}
+
+function calculateArrowDimensions(strokeWidth: number, lineLength: number, arrowSize: number): [number, number] {
+  const widthLevel = Math.floor(arrowSize / 3);
+  const lengthLevel = arrowSize % 3;
+  const widthMultiplier = widthLevel === 0 ? 1.5 : widthLevel === 1 ? 2.5 : 3.5;
+  const lengthMultiplier = lengthLevel === 0 ? 1 : lengthLevel === 1 ? 1.5 : 2;
+  const arrowHeight = Math.max(strokeWidth * widthMultiplier, 3);
+  const arrowWidth = Math.min(arrowHeight * lengthMultiplier, lineLength * 0.3);
+  return [arrowWidth, arrowHeight];
+}
+
+function drawArrowHead(
+  canvasKit: CanvasKit,
+  canvas: ReturnType<Surface['getCanvas']>,
+  tipX: number,
+  tipY: number,
+  directionX: number,
+  directionY: number,
+  arrowWidth: number,
+  arrowHeight: number,
+  arrowStyle: string,
+  color: string,
+  strokeWidth: number,
+): void {
+  if (arrowStyle === 'none') {
+    return;
+  }
+
+  const alongX = -directionX;
+  const alongY = -directionY;
+  const perpX = directionY;
+  const perpY = -directionX;
+  const halfHeight = arrowHeight / 2;
+  const toWorld = (along: number, perp: number): [number, number] => [
+    tipX + along * alongX + perp * perpX,
+    tipY + along * alongY + perp * perpY,
+  ];
+
+  const builder = new canvasKit.PathBuilder();
+  const fillPaint = new canvasKit.Paint();
+  fillPaint.setAntiAlias(true);
+  fillPaint.setStyle(canvasKit.PaintStyle.Fill);
+  fillPaint.setColor(canvasKit.parseColorString(color));
+
+  const strokePaint = new canvasKit.Paint();
+  strokePaint.setAntiAlias(true);
+  strokePaint.setStyle(canvasKit.PaintStyle.Stroke);
+  strokePaint.setColor(canvasKit.parseColorString(color));
+  strokePaint.setStrokeWidth(Math.max(strokeWidth * 0.3, 0.5));
+
+  if (arrowStyle === 'arrow' || arrowStyle === 'concaveArrow') {
+    const [baseX1, baseY1] = toWorld(arrowWidth, -halfHeight);
+    const [baseX2, baseY2] = toWorld(arrowWidth, halfHeight);
+    builder.moveTo(tipX, tipY);
+    builder.lineTo(baseX1, baseY1);
+    if (arrowStyle === 'concaveArrow') {
+      const [centerX, centerY] = toWorld(arrowWidth - arrowWidth * 0.3, 0);
+      builder.lineTo(centerX, centerY);
+    }
+    builder.lineTo(baseX2, baseY2);
+    builder.close();
+    const path = builder.detach();
+    canvas.drawPath(path, fillPaint);
+    path.delete();
+    builder.delete();
+    fillPaint.delete();
+    strokePaint.delete();
+    return;
+  }
+
+  if (arrowStyle === 'diamond' || arrowStyle === 'openDiamond') {
+    const halfWidth = arrowWidth / 2;
+    const [point1X, point1Y] = toWorld(0, 0);
+    const [point2X, point2Y] = toWorld(halfWidth, -halfHeight);
+    const [point3X, point3Y] = toWorld(arrowWidth, 0);
+    const [point4X, point4Y] = toWorld(halfWidth, halfHeight);
+    builder.moveTo(point1X, point1Y);
+    builder.lineTo(point2X, point2Y);
+    builder.lineTo(point3X, point3Y);
+    builder.lineTo(point4X, point4Y);
+    builder.close();
+    const path = builder.detach();
+    if (arrowStyle === 'diamond') {
+      canvas.drawPath(path, fillPaint);
+    } else {
+      const whiteFill = new canvasKit.Paint();
+      whiteFill.setAntiAlias(true);
+      whiteFill.setStyle(canvasKit.PaintStyle.Fill);
+      whiteFill.setColor(canvasKit.parseColorString('white'));
+      canvas.drawPath(path, whiteFill);
+      canvas.drawPath(path, strokePaint);
+      whiteFill.delete();
+    }
+    path.delete();
+    builder.delete();
+    fillPaint.delete();
+    strokePaint.delete();
+    return;
+  }
+
+  if (arrowStyle === 'circle' || arrowStyle === 'openCircle') {
+    const halfWidth = arrowWidth / 2;
+    const [centerX, centerY] = toWorld(halfWidth, 0);
+    const radiusX = halfWidth * 0.8;
+    const radiusY = halfHeight * 0.8;
+    if (arrowStyle === 'circle') {
+      canvas.drawOval(canvasKit.LTRBRect(centerX - radiusX, centerY - radiusY, centerX + radiusX, centerY + radiusY), fillPaint);
+    } else {
+      const whiteFill = new canvasKit.Paint();
+      whiteFill.setAntiAlias(true);
+      whiteFill.setStyle(canvasKit.PaintStyle.Fill);
+      whiteFill.setColor(canvasKit.parseColorString('white'));
+      const oval = canvasKit.LTRBRect(centerX - radiusX, centerY - radiusY, centerX + radiusX, centerY + radiusY);
+      canvas.drawOval(oval, whiteFill);
+      canvas.drawOval(oval, strokePaint);
+      whiteFill.delete();
+    }
+    builder.delete();
+    fillPaint.delete();
+    strokePaint.delete();
+    return;
+  }
+
+  if (arrowStyle === 'square' || arrowStyle === 'openSquare') {
+    const [point1X, point1Y] = toWorld(0, -halfHeight);
+    const [point2X, point2Y] = toWorld(arrowWidth, -halfHeight);
+    const [point3X, point3Y] = toWorld(arrowWidth, halfHeight);
+    const [point4X, point4Y] = toWorld(0, halfHeight);
+    builder.moveTo(point1X, point1Y);
+    builder.lineTo(point2X, point2Y);
+    builder.lineTo(point3X, point3Y);
+    builder.lineTo(point4X, point4Y);
+    builder.close();
+    const path = builder.detach();
+    if (arrowStyle === 'square') {
+      canvas.drawPath(path, fillPaint);
+    } else {
+      const whiteFill = new canvasKit.Paint();
+      whiteFill.setAntiAlias(true);
+      whiteFill.setStyle(canvasKit.PaintStyle.Fill);
+      whiteFill.setColor(canvasKit.parseColorString('white'));
+      canvas.drawPath(path, whiteFill);
+      canvas.drawPath(path, strokePaint);
+      whiteFill.delete();
+    }
+    path.delete();
+  }
+
+  builder.delete();
+  fillPaint.delete();
+  strokePaint.delete();
+}
+
+const EQUATION_SCRIPT_SCALE = 0.7;
+const EQUATION_BIG_OP_SCALE = 1.5;
+
+function renderEquationLayoutBox(
+  ctx: CanvasRenderingContext2D,
+  layout: LayerEquationLayoutBox,
+  parentX: number,
+  parentY: number,
+  color: string,
+  fontSize: number,
+  italic: boolean,
+  bold: boolean,
+): void {
+  const x = parentX + layout.x;
+  const y = parentY + layout.y;
+
+  switch (layout.kind.type) {
+    case 'row':
+      for (const child of layout.kind.children) {
+        renderEquationLayoutBox(ctx, child, x, y, color, fontSize, italic, bold);
+      }
+      return;
+    case 'text': {
+      const size = equationFontSizeFromBox(layout, fontSize);
+      setEquationFont(ctx, size, true, bold);
+      ctx.fillStyle = color;
+      ctx.fillText(layout.kind.text, x, y + layout.baseline);
+      return;
+    }
+    case 'number': {
+      const size = equationFontSizeFromBox(layout, fontSize);
+      setEquationFont(ctx, size, false, bold);
+      ctx.fillStyle = color;
+      ctx.fillText(layout.kind.text, x, y + layout.baseline);
+      return;
+    }
+    case 'symbol': {
+      const size = equationFontSizeFromBox(layout, fontSize);
+      setEquationFont(ctx, size, false, false);
+      ctx.fillStyle = color;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.fillText(layout.kind.text, x + layout.width / 2, y + layout.baseline);
+      ctx.restore();
+      return;
+    }
+    case 'mathSymbol': {
+      const size = equationFontSizeFromBox(layout, fontSize);
+      setEquationFont(ctx, size, false, false);
+      ctx.fillStyle = color;
+      ctx.fillText(layout.kind.text, x, y + layout.baseline);
+      return;
+    }
+    case 'function': {
+      const size = equationFontSizeFromBox(layout, fontSize);
+      setEquationFont(ctx, size, false, false);
+      ctx.fillStyle = color;
+      ctx.fillText(layout.kind.name, x, y + layout.baseline);
+      return;
+    }
+    case 'fraction':
+      renderEquationLayoutBox(ctx, layout.kind.numer, x, y, color, fontSize, italic, bold);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = fontSize * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(x + fontSize * 0.05, y + layout.baseline);
+      ctx.lineTo(x + layout.width - fontSize * 0.05, y + layout.baseline);
+      ctx.stroke();
+      renderEquationLayoutBox(ctx, layout.kind.denom, x, y, color, fontSize, italic, bold);
+      return;
+    case 'sqrt': {
+      const bodyLeft = x + layout.kind.body.x - fontSize * 0.1;
+      const signHeight = layout.height;
+      const midX = bodyLeft - fontSize * 0.15;
+      const midY = y + signHeight;
+      const startX = midX - fontSize * 0.3;
+      const startY = y + signHeight * 0.6;
+      const tickX = startX - fontSize * 0.1;
+      const tickY = startY - fontSize * 0.05;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = fontSize * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(tickX, tickY);
+      ctx.lineTo(startX, startY);
+      ctx.lineTo(midX, midY);
+      ctx.lineTo(bodyLeft, y);
+      ctx.lineTo(x + layout.width, y);
+      ctx.stroke();
+
+      if (layout.kind.index) {
+        renderEquationLayoutBox(
+          ctx,
+          layout.kind.index,
+          x,
+          y,
+          color,
+          fontSize * EQUATION_SCRIPT_SCALE,
+          false,
+          false,
+        );
+      }
+      renderEquationLayoutBox(ctx, layout.kind.body, x, y, color, fontSize, italic, bold);
+      return;
+    }
+    case 'superscript':
+      renderEquationLayoutBox(ctx, layout.kind.base, x, y, color, fontSize, italic, bold);
+      renderEquationLayoutBox(
+        ctx,
+        layout.kind.sup,
+        x,
+        y,
+        color,
+        fontSize * EQUATION_SCRIPT_SCALE,
+        italic,
+        bold,
+      );
+      return;
+    case 'subscript':
+      renderEquationLayoutBox(ctx, layout.kind.base, x, y, color, fontSize, italic, bold);
+      renderEquationLayoutBox(
+        ctx,
+        layout.kind.sub,
+        x,
+        y,
+        color,
+        fontSize * EQUATION_SCRIPT_SCALE,
+        italic,
+        bold,
+      );
+      return;
+    case 'subSup':
+      renderEquationLayoutBox(ctx, layout.kind.base, x, y, color, fontSize, italic, bold);
+      renderEquationLayoutBox(
+        ctx,
+        layout.kind.sub,
+        x,
+        y,
+        color,
+        fontSize * EQUATION_SCRIPT_SCALE,
+        italic,
+        bold,
+      );
+      renderEquationLayoutBox(
+        ctx,
+        layout.kind.sup,
+        x,
+        y,
+        color,
+        fontSize * EQUATION_SCRIPT_SCALE,
+        italic,
+        bold,
+      );
+      return;
+    case 'bigOp': {
+      const opFontSize = fontSize * EQUATION_BIG_OP_SCALE;
+      const supHeight = layout.kind.sup ? layout.kind.sup.height + fontSize * 0.05 : 0;
+      const opX = x + (layout.width - estimateEquationOperatorWidth(layout.kind.symbol, opFontSize)) / 2;
+      const opY = y + supHeight + opFontSize * 0.8;
+      setEquationFont(ctx, opFontSize, false, false);
+      ctx.fillStyle = color;
+      ctx.fillText(layout.kind.symbol, opX, opY);
+      if (layout.kind.sup) {
+        renderEquationLayoutBox(
+          ctx,
+          layout.kind.sup,
+          x,
+          y,
+          color,
+          fontSize * EQUATION_SCRIPT_SCALE,
+          false,
+          false,
+        );
+      }
+      if (layout.kind.sub) {
+        renderEquationLayoutBox(
+          ctx,
+          layout.kind.sub,
+          x,
+          y,
+          color,
+          fontSize * EQUATION_SCRIPT_SCALE,
+          false,
+          false,
+        );
+      }
+      return;
+    }
+    case 'limit': {
+      const name = layout.kind.isUpper ? 'Lim' : 'lim';
+      const size = equationFontSizeFromBox(layout, fontSize);
+      setEquationFont(ctx, size, false, false);
+      ctx.fillStyle = color;
+      ctx.fillText(name, x, y + size * 0.8);
+      if (layout.kind.sub) {
+        renderEquationLayoutBox(
+          ctx,
+          layout.kind.sub,
+          x,
+          y,
+          color,
+          fontSize * EQUATION_SCRIPT_SCALE,
+          false,
+          false,
+        );
+      }
+      return;
+    }
+    case 'matrix': {
+      const brackets = layout.kind.style === 'paren' ? ['(', ')']
+        : layout.kind.style === 'bracket' ? ['[', ']']
+          : layout.kind.style === 'vert' ? ['|', '|']
+            : ['', ''];
+      if (brackets[0]) {
+        drawEquationStretchBracket(ctx, brackets[0], x, y, fontSize * 0.3, layout.height, color, fontSize);
+        drawEquationStretchBracket(ctx, brackets[1], x + layout.width - fontSize * 0.3, y, fontSize * 0.3, layout.height, color, fontSize);
+      }
+      for (const row of layout.kind.cells) {
+        for (const cell of row) {
+          renderEquationLayoutBox(ctx, cell, x, y, color, fontSize, italic, bold);
+        }
+      }
+      return;
+    }
+    case 'rel':
+      renderEquationLayoutBox(ctx, layout.kind.over, x, y, color, fontSize, italic, bold);
+      renderEquationLayoutBox(ctx, layout.kind.arrow, x, y, color, fontSize, italic, bold);
+      if (layout.kind.under) {
+        renderEquationLayoutBox(ctx, layout.kind.under, x, y, color, fontSize, italic, bold);
+      }
+      return;
+    case 'eqAlign':
+      for (const row of layout.kind.rows) {
+        renderEquationLayoutBox(ctx, row.left, x, y, color, fontSize, italic, bold);
+        renderEquationLayoutBox(ctx, row.right, x, y, color, fontSize, italic, bold);
+      }
+      return;
+    case 'paren':
+      if (layout.kind.left) {
+        drawEquationStretchBracket(ctx, layout.kind.left, x, y, fontSize * 0.3, layout.height, color, fontSize);
+      }
+      renderEquationLayoutBox(ctx, layout.kind.body, x, y, color, fontSize, italic, bold);
+      if (layout.kind.right) {
+        drawEquationStretchBracket(
+          ctx,
+          layout.kind.right,
+          x + layout.width - fontSize * 0.3,
+          y,
+          fontSize * 0.3,
+          layout.height,
+          color,
+          fontSize,
+        );
+      }
+      return;
+    case 'decoration':
+      renderEquationLayoutBox(ctx, layout.kind.body, x, y, color, fontSize, italic, bold);
+      drawEquationDecoration(
+        ctx,
+        layout.kind.decoration,
+        x + layout.kind.body.x + layout.kind.body.width / 2,
+        y + fontSize * 0.05,
+        layout.kind.body.width,
+        color,
+        fontSize,
+      );
+      return;
+    case 'fontStyle': {
+      const nextItalic = layout.kind.fontStyle === 'roman' ? false : layout.kind.fontStyle === 'italic' ? true : italic;
+      const nextBold = layout.kind.fontStyle === 'roman' ? false : layout.kind.fontStyle === 'bold' ? true : bold;
+      renderEquationLayoutBox(ctx, layout.kind.body, x, y, color, fontSize, nextItalic, nextBold);
+      return;
+    }
+    case 'space':
+    case 'newline':
+    case 'empty':
+      return;
+  }
+}
+
+function equationFontSizeFromBox(layout: LayerEquationLayoutBox, baseFontSize: number): number {
+  return layout.height > 0 ? layout.height : baseFontSize;
+}
+
+function estimateEquationOperatorWidth(text: string, fontSize: number): number {
+  return Array.from(text).length * fontSize * 0.6;
+}
+
+function setEquationFont(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  italic: boolean,
+  bold: boolean,
+): void {
+  const style = italic ? 'italic ' : '';
+  const weight = bold ? 'bold ' : '';
+  ctx.font = `${style}${weight}${size.toFixed(1)}px 'Latin Modern Math', 'STIX Two Math', 'Cambria Math', 'Pretendard', serif`;
+}
+
+function drawEquationStretchBracket(
+  ctx: CanvasRenderingContext2D,
+  bracket: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  color: string,
+  fontSize: number,
+): void {
+  const midX = x + width / 2;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = fontSize * 0.04;
+
+  switch (bracket) {
+    case '(':
+      ctx.beginPath();
+      ctx.moveTo(midX + width * 0.2, y);
+      ctx.quadraticCurveTo(x, y + height / 2, midX + width * 0.2, y + height);
+      ctx.stroke();
+      return;
+    case ')':
+      ctx.beginPath();
+      ctx.moveTo(midX - width * 0.2, y);
+      ctx.quadraticCurveTo(x + width, y + height / 2, midX - width * 0.2, y + height);
+      ctx.stroke();
+      return;
+    case '[':
+      ctx.beginPath();
+      ctx.moveTo(midX + width * 0.2, y);
+      ctx.lineTo(midX - width * 0.2, y);
+      ctx.lineTo(midX - width * 0.2, y + height);
+      ctx.lineTo(midX + width * 0.2, y + height);
+      ctx.stroke();
+      return;
+    case ']':
+      ctx.beginPath();
+      ctx.moveTo(midX - width * 0.2, y);
+      ctx.lineTo(midX + width * 0.2, y);
+      ctx.lineTo(midX + width * 0.2, y + height);
+      ctx.lineTo(midX - width * 0.2, y + height);
+      ctx.stroke();
+      return;
+    case '{': {
+      const quarterHeight = height / 4;
+      ctx.beginPath();
+      ctx.moveTo(midX + width * 0.2, y);
+      ctx.quadraticCurveTo(midX - width * 0.1, y, midX - width * 0.1, y + quarterHeight);
+      ctx.quadraticCurveTo(midX - width * 0.1, y + quarterHeight * 2, midX - width * 0.3, y + quarterHeight * 2);
+      ctx.quadraticCurveTo(midX - width * 0.1, y + quarterHeight * 2, midX - width * 0.1, y + quarterHeight * 3);
+      ctx.quadraticCurveTo(midX - width * 0.1, y + height, midX + width * 0.2, y + height);
+      ctx.stroke();
+      return;
+    }
+    case '}': {
+      const quarterHeight = height / 4;
+      ctx.beginPath();
+      ctx.moveTo(midX - width * 0.2, y);
+      ctx.quadraticCurveTo(midX + width * 0.1, y, midX + width * 0.1, y + quarterHeight);
+      ctx.quadraticCurveTo(midX + width * 0.1, y + quarterHeight * 2, midX + width * 0.3, y + quarterHeight * 2);
+      ctx.quadraticCurveTo(midX + width * 0.1, y + quarterHeight * 2, midX + width * 0.1, y + quarterHeight * 3);
+      ctx.quadraticCurveTo(midX + width * 0.1, y + height, midX - width * 0.2, y + height);
+      ctx.stroke();
+      return;
+    }
+    case '|':
+      ctx.beginPath();
+      ctx.moveTo(midX, y);
+      ctx.lineTo(midX, y + height);
+      ctx.stroke();
+      return;
+    default:
+      setEquationFont(ctx, height, false, false);
+      ctx.fillStyle = color;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.fillText(bracket, midX, y + height * 0.7);
+      ctx.restore();
+  }
+}
+
+function drawEquationDecoration(
+  ctx: CanvasRenderingContext2D,
+  decoration: string,
+  midX: number,
+  y: number,
+  width: number,
+  color: string,
+  fontSize: number,
+): void {
+  const strokeWidth = fontSize * 0.03;
+  const halfWidth = width / 2;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = strokeWidth;
+
+  switch (decoration) {
+    case 'hat':
+      ctx.beginPath();
+      ctx.moveTo(midX - halfWidth * 0.6, y + fontSize * 0.15);
+      ctx.lineTo(midX, y);
+      ctx.lineTo(midX + halfWidth * 0.6, y + fontSize * 0.15);
+      ctx.stroke();
+      return;
+    case 'bar':
+    case 'overline':
+      ctx.beginPath();
+      ctx.moveTo(midX - halfWidth, y + fontSize * 0.05);
+      ctx.lineTo(midX + halfWidth, y + fontSize * 0.05);
+      ctx.stroke();
+      return;
+    case 'vec': {
+      const arrowY = y + fontSize * 0.05;
+      ctx.beginPath();
+      ctx.moveTo(midX - halfWidth, arrowY);
+      ctx.lineTo(midX + halfWidth, arrowY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(midX + halfWidth - fontSize * 0.1, arrowY - fontSize * 0.06);
+      ctx.lineTo(midX + halfWidth, arrowY);
+      ctx.lineTo(midX + halfWidth - fontSize * 0.1, arrowY + fontSize * 0.06);
+      ctx.stroke();
+      return;
+    }
+    case 'tilde': {
+      const tildeY = y + fontSize * 0.08;
+      ctx.beginPath();
+      ctx.moveTo(midX - halfWidth * 0.6, tildeY);
+      ctx.quadraticCurveTo(midX - halfWidth * 0.2, tildeY - fontSize * 0.08, midX, tildeY);
+      ctx.quadraticCurveTo(midX + halfWidth * 0.2, tildeY + fontSize * 0.08, midX + halfWidth * 0.6, tildeY);
+      ctx.stroke();
+      return;
+    }
+    case 'dot':
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(midX, y + fontSize * 0.06, fontSize * 0.03, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    case 'dDot': {
+      const gap = fontSize * 0.1;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(midX - gap, y + fontSize * 0.06, fontSize * 0.03, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(midX + gap, y + fontSize * 0.06, fontSize * 0.03, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    case 'underline':
+    case 'under': {
+      const underlineY = y + fontSize * 1.1;
+      ctx.beginPath();
+      ctx.moveTo(midX - halfWidth, underlineY);
+      ctx.lineTo(midX + halfWidth, underlineY);
+      ctx.stroke();
+      return;
+    }
+    default:
+      ctx.beginPath();
+      ctx.moveTo(midX - halfWidth * 0.5, y + fontSize * 0.1);
+      ctx.lineTo(midX + halfWidth * 0.5, y + fontSize * 0.1);
+      ctx.stroke();
+  }
 }
 
 function splitIntoClusters(text: string): Array<{ start: number; text: string }> {
