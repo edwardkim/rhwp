@@ -2,7 +2,7 @@ import CanvasKitInit from 'canvaskit-wasm';
 import type { CanvasKit, Font, Image, Paint, Shader, Surface, Typeface, TypefaceFontProvider } from 'canvaskit-wasm';
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url';
 
-import { resolveFont } from '@/core/font-substitution';
+import { fontFamilyWithFallback, resolveFont } from '@/core/font-substitution';
 import type { CanvasKitRenderMode } from '@/view/render-backend';
 import type {
   LayerBounds,
@@ -267,11 +267,11 @@ export class CanvasKitLayerRenderer {
   }
 
   private shouldOverlayTextRun(op: LayerTextRunOp): boolean {
-    return this.renderMode === 'compat' && shouldOverlayCanvasTextFamily(op.style.fontFamily);
+    return this.renderMode === 'compat';
   }
 
   private shouldOverlayFootnoteMarker(op: LayerFootnoteMarkerOp): boolean {
-    return this.renderMode === 'compat' && shouldOverlayCanvasTextFamily(op.fontFamily);
+    return this.renderMode === 'compat';
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
@@ -1565,44 +1565,10 @@ function decodeBase64(base64: string): Uint8Array {
   return bytes;
 }
 
-function shouldOverlayCanvasTextFamily(fontFamily: string): boolean {
-  const resolved = resolveFont(fontFamily, 0, 0);
-  return HAMCHOROM_DOTUM_ALIASES.has(fontFamily)
-    || HAMCHOROM_DOTUM_ALIASES.has(resolved)
-    || HAMCHOROM_BATANG_ALIASES.has(fontFamily)
-    || HAMCHOROM_BATANG_ALIASES.has(resolved);
-}
-
 function buildCanvasTextFont(fontFamily: string, fontSize: number, bold: boolean, italic: boolean): string {
   const resolved = resolveFont(fontFamily, 0, 0);
-  const families: string[] = [fontFamily];
-  if (HAMCHOROM_DOTUM_ALIASES.has(fontFamily) || HAMCHOROM_DOTUM_ALIASES.has(resolved)) {
-    families.push('함초롬돋움');
-  } else if (HAMCHOROM_BATANG_ALIASES.has(fontFamily) || HAMCHOROM_BATANG_ALIASES.has(resolved)) {
-    families.push('함초롬바탕');
-  } else if (resolved && resolved !== fontFamily) {
-    families.push(resolved);
-  }
-  const fallback = genericCanvasTextFallback(fontFamily, resolved);
-  const familyExpr = [...new Set([...families.filter(Boolean), fallback])]
-    .map((family) => isGenericCanvasFontFamily(family) ? family : `"${family}"`)
-    .join(', ');
-  return `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${(fontSize || 12).toFixed(3)}px ${familyExpr}`;
-}
-
-function genericCanvasTextFallback(fontFamily: string, resolved: string): string {
-  const lower = `${fontFamily} ${resolved}`.toLowerCase();
-  if (/gulimche|batangche|coding|courier/.test(lower) || /굴림체|바탕체/.test(fontFamily) || /굴림체|바탕체/.test(resolved)) {
-    return 'monospace';
-  }
-  if (/batang|gungsuh|serif|times/.test(lower) || /바탕|명조|궁서/.test(fontFamily) || /바탕|명조|궁서/.test(resolved)) {
-    return 'serif';
-  }
-  return 'sans-serif';
-}
-
-function isGenericCanvasFontFamily(fontFamily: string): boolean {
-  return fontFamily === 'serif' || fontFamily === 'sans-serif' || fontFamily === 'monospace';
+  const baseFamily = resolved || fontFamily;
+  return `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${(fontSize || 12).toFixed(3)}px ${fontFamilyWithFallback(baseFamily)}`;
 }
 
 function startsWithInvalidControl(text: string): boolean {

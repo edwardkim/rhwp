@@ -45,85 +45,75 @@ impl LayerBuilder {
         }
 
         match &node.node_type {
-            RenderNodeType::PageBackground(background) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::PageBackground {
+            RenderNodeType::PageBackground(background) => Some(self.build_paint_node(
+                node,
+                PaintOp::PageBackground {
                     bbox: node.bbox,
                     background: background.clone(),
-                }],
+                },
             )),
-            RenderNodeType::TextRun(run) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::TextRun {
+            RenderNodeType::TextRun(run) => Some(self.build_paint_node(
+                node,
+                PaintOp::TextRun {
                     bbox: node.bbox,
                     run: run.clone(),
-                }],
+                },
             )),
-            RenderNodeType::FootnoteMarker(marker) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::FootnoteMarker {
+            RenderNodeType::FootnoteMarker(marker) => Some(self.build_paint_node(
+                node,
+                PaintOp::FootnoteMarker {
                     bbox: node.bbox,
                     marker: marker.clone(),
-                }],
+                },
             )),
-            RenderNodeType::Line(line) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Line {
+            RenderNodeType::Line(line) => Some(self.build_paint_node(
+                node,
+                PaintOp::Line {
                     bbox: node.bbox,
                     line: line.clone(),
-                }],
+                },
             )),
-            RenderNodeType::Rectangle(rect) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Rectangle {
+            RenderNodeType::Rectangle(rect) => Some(self.build_paint_node(
+                node,
+                PaintOp::Rectangle {
                     bbox: node.bbox,
                     rect: rect.clone(),
-                }],
+                },
             )),
-            RenderNodeType::Ellipse(ellipse) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Ellipse {
+            RenderNodeType::Ellipse(ellipse) => Some(self.build_paint_node(
+                node,
+                PaintOp::Ellipse {
                     bbox: node.bbox,
                     ellipse: ellipse.clone(),
-                }],
+                },
             )),
-            RenderNodeType::Path(path) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Path {
+            RenderNodeType::Path(path) => Some(self.build_paint_node(
+                node,
+                PaintOp::Path {
                     bbox: node.bbox,
                     path: path.clone(),
-                }],
+                },
             )),
-            RenderNodeType::Image(image) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Image {
+            RenderNodeType::Image(image) => Some(self.build_paint_node(
+                node,
+                PaintOp::Image {
                     bbox: node.bbox,
                     image: image.clone(),
-                }],
+                },
             )),
-            RenderNodeType::Equation(equation) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Equation {
+            RenderNodeType::Equation(equation) => Some(self.build_paint_node(
+                node,
+                PaintOp::Equation {
                     bbox: node.bbox,
                     equation: equation.clone(),
-                }],
+                },
             )),
-            RenderNodeType::FormObject(form) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::FormObject {
+            RenderNodeType::FormObject(form) => Some(self.build_paint_node(
+                node,
+                PaintOp::FormObject {
                     bbox: node.bbox,
                     form: form.clone(),
-                }],
+                },
             )),
             RenderNodeType::Body {
                 clip_rect: Some(clip),
@@ -167,6 +157,24 @@ impl LayerBuilder {
                 self.group_kind_for(&node.node_type),
             )),
         }
+    }
+
+    fn build_paint_node(&mut self, node: &RenderNode, op: PaintOp) -> LayerNode {
+        if node.children.is_empty() {
+            return LayerNode::leaf(node.bbox, Some(node.id), vec![op]);
+        }
+
+        let mut children = Vec::with_capacity(node.children.len() + 1);
+        children.push(LayerNode::leaf(node.bbox, Some(node.id), vec![op]));
+        children.extend(self.build_children(node));
+
+        LayerNode::group(
+            node.bbox,
+            None,
+            children,
+            self.cache_hint_for(&node.node_type),
+            GroupKind::Generic,
+        )
     }
 
     fn cache_hint_for(&self, node_type: &RenderNodeType) -> CacheHint {
@@ -293,6 +301,70 @@ mod tests {
                         assert_eq!(*clip_kind, ClipKind::TableCell);
                     }
                     other => panic!("expected clip rect, got {other:?}"),
+                }
+            }
+            other => panic!("expected root group, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn preserves_shape_children_by_wrapping_leaf_in_group() {
+        use crate::renderer::render_tree::{RectangleNode, TextRunNode};
+        use crate::renderer::{ShapeStyle, TextStyle};
+
+        let mut tree = PageRenderTree::new(0, 800.0, 600.0);
+        let mut rect = RenderNode::new(
+            10,
+            RenderNodeType::Rectangle(RectangleNode::new(0.0, ShapeStyle::default(), None)),
+            BoundingBox::new(100.0, 120.0, 160.0, 48.0),
+        );
+        rect.children.push(RenderNode::new(
+            11,
+            RenderNodeType::TextRun(TextRunNode {
+                text: "group label".to_string(),
+                style: TextStyle::default(),
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 0.0,
+                field_marker: Default::default(),
+            }),
+            BoundingBox::new(112.0, 132.0, 92.0, 18.0),
+        ));
+        tree.root.children.push(rect);
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+
+        match &layer_tree.root.kind {
+            LayerNodeKind::Group { children, .. } => {
+                assert_eq!(children.len(), 1);
+                match &children[0].kind {
+                    LayerNodeKind::Group { children, .. } => {
+                        assert_eq!(children.len(), 2);
+                        match &children[0].kind {
+                            LayerNodeKind::Leaf { ops } => {
+                                assert!(matches!(ops[0], PaintOp::Rectangle { .. }));
+                            }
+                            other => panic!("expected rectangle leaf, got {other:?}"),
+                        }
+                        match &children[1].kind {
+                            LayerNodeKind::Leaf { ops } => {
+                                assert!(matches!(ops[0], PaintOp::TextRun { .. }));
+                            }
+                            other => panic!("expected text leaf, got {other:?}"),
+                        }
+                    }
+                    other => panic!("expected synthetic group, got {other:?}"),
                 }
             }
             other => panic!("expected root group, got {other:?}"),

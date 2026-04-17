@@ -23,7 +23,7 @@ const FULL_PAGE_CASES = [
 ];
 const CANVASKIT_MODE = process.env.RHWP_CANVASKIT_MODE === 'default' ? 'default' : 'compat';
 const TOLERANT_DIFF = {
-  ignoreChannelDelta: 128,
+  ignoreChannelDelta: 8,
   maxDiffRatio: 0.0025,
 };
 const FEATURE_CASES = [
