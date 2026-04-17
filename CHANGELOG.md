@@ -6,6 +6,7 @@
 
 ### 추가
 - **Windows/PWA 실행 연동**: `manifest.webmanifest`, `launchQueue`, preview save bridge, RHWP launcher를 추가해 `.hwp/.hwpx` 더블클릭 열기와 원본 저장 흐름을 연결 (#179)
+- **루트 백로그 추가**: 글로벌 템플릿 기반 `BACKLOG.md`를 만들고 폰트 변경 후 `Ctrl+Z` 실행취소 항목을 등록 (#179)
 
 ### 수정
 - **더블클릭 저장 실패 수정**: launch manifest BOM으로 `__rhwp_save`가 500을 반환하던 문제를 수정하고 저장 trace 및 오류 노출을 보강 (#179)
