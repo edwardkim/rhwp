@@ -8,6 +8,7 @@ import type {
   LayerBounds,
   LayerClipNode,
   LayerEllipseOp,
+  LayerFormObjectOp,
   LayerImageOp,
   LayerLeafNode,
   LayerLineOp,
@@ -217,7 +218,8 @@ export class CanvasKitLayerRenderer {
         this.renderPlaceholderRect(canvas, op.bbox, '#dcdcdc');
         return;
       case 'formObject':
-        this.renderPlaceholderRect(canvas, op.bbox, '#f0f0f0');
+        this.renderFormObject(canvas, op);
+        return;
     }
   }
 
@@ -435,6 +437,157 @@ export class CanvasKitLayerRenderer {
       if (!op.base64) return;
       this.drawEncodedImage(canvas, op.base64, op.bbox, op.fillMode, op.originalSize, op.crop);
     });
+  }
+
+  private renderFormObject(
+    canvas: ReturnType<Surface['getCanvas']>,
+    op: LayerFormObjectOp,
+  ): void {
+    const { x, y, width: w, height: h } = op.bbox;
+
+    switch (op.formType) {
+      case 'pushButton': {
+        const fillPaint = this.makePaint('#d0d0d0', 'fill');
+        const strokePaint = this.makeLinePaint('#a0a0a0', 0.5, 'solid');
+        canvas.drawRect(this.toRect(op.bbox), fillPaint);
+        canvas.drawRect(this.toRect(op.bbox), strokePaint);
+        fillPaint.delete();
+        strokePaint.delete();
+
+        if (op.caption) {
+          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
+          const family = this.resolveCanvasKitFontFamily('Noto Sans KR');
+          const { font, paint, typeface } = this.makeTextObjects(family, fontSize, false, false, '#808080');
+          const cssFont = `${fontSize}px "${family}"`;
+          const textWidth = (globalThis as any).measureTextWidth?.(cssFont, op.caption) ?? op.caption.length * fontSize * 0.55;
+          canvas.drawText(op.caption, x + w / 2 - textWidth / 2, y + h / 2 + fontSize * 0.35, paint, font);
+          paint.delete();
+          font.delete();
+          typeface.delete();
+        }
+        return;
+      }
+      case 'checkBox': {
+        const boxSize = Math.min(h * 0.7, 13);
+        const boxY = y + (h - boxSize) / 2;
+        const boxX = x + 2;
+        const fillPaint = this.makePaint('#ffffff', 'fill');
+        const strokePaint = this.makeLinePaint('#606060', 0.8, 'solid');
+        canvas.drawRect(this.canvasKit.XYWHRect(boxX, boxY, boxSize, boxSize), fillPaint);
+        canvas.drawRect(this.canvasKit.XYWHRect(boxX, boxY, boxSize, boxSize), strokePaint);
+        fillPaint.delete();
+        strokePaint.delete();
+
+        if (op.value !== 0) {
+          const path = new this.canvasKit.PathBuilder();
+          path.moveTo(boxX + boxSize * 0.2, boxY + boxSize * 0.55);
+          path.lineTo(boxX + boxSize * 0.45, boxY + boxSize * 0.8);
+          path.lineTo(boxX + boxSize * 0.85, boxY + boxSize * 0.2);
+          const markPaint = this.makeLinePaint('#000000', 1.5, 'solid');
+          const checkPath = path.detach();
+          canvas.drawPath(checkPath, markPaint);
+          markPaint.delete();
+          checkPath.delete();
+          path.delete();
+        }
+
+        if (op.caption) {
+          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
+          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
+          canvas.drawText(op.caption, boxX + boxSize + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          paint.delete();
+          font.delete();
+          typeface.delete();
+        }
+        return;
+      }
+      case 'radioButton': {
+        const r = Math.min(h * 0.3, 6.5);
+        const cx = x + 2 + r;
+        const cy = y + h / 2;
+        const fillPaint = this.makePaint('#ffffff', 'fill');
+        const strokePaint = this.makeLinePaint('#606060', 0.8, 'solid');
+        canvas.drawCircle(cx, cy, r, fillPaint);
+        canvas.drawCircle(cx, cy, r, strokePaint);
+        fillPaint.delete();
+        strokePaint.delete();
+
+        if (op.value !== 0) {
+          const dotPaint = this.makePaint('#000000', 'fill');
+          canvas.drawCircle(cx, cy, r * 0.5, dotPaint);
+          dotPaint.delete();
+        }
+
+        if (op.caption) {
+          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
+          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
+          canvas.drawText(op.caption, cx + r + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          paint.delete();
+          font.delete();
+          typeface.delete();
+        }
+        return;
+      }
+      case 'comboBox': {
+        const btnW = Math.min(h * 0.8, 16);
+        const fillPaint = this.makePaint('#ffffff', 'fill');
+        const strokePaint = this.makeLinePaint('#a0a0a0', 0.8, 'solid');
+        canvas.drawRect(this.toRect(op.bbox), fillPaint);
+        canvas.drawRect(this.toRect(op.bbox), strokePaint);
+        fillPaint.delete();
+        strokePaint.delete();
+
+        const buttonRect = this.canvasKit.XYWHRect(x + w - btnW, y, btnW, h);
+        const buttonFill = this.makePaint('#e0e0e0', 'fill');
+        const buttonStroke = this.makeLinePaint('#a0a0a0', 0.5, 'solid');
+        canvas.drawRect(buttonRect, buttonFill);
+        canvas.drawRect(buttonRect, buttonStroke);
+        buttonFill.delete();
+        buttonStroke.delete();
+
+        const arrowCx = x + w - btnW / 2;
+        const arrowCy = y + h / 2;
+        const arrowSize = Math.min(h * 0.2, 4);
+        const arrowPath = new this.canvasKit.PathBuilder();
+        arrowPath.moveTo(arrowCx - arrowSize, arrowCy - arrowSize * 0.5);
+        arrowPath.lineTo(arrowCx + arrowSize, arrowCy - arrowSize * 0.5);
+        arrowPath.lineTo(arrowCx, arrowCy + arrowSize * 0.5);
+        arrowPath.close();
+        const arrowPaint = this.makePaint('#404040', 'fill');
+        const arrowShape = arrowPath.detach();
+        canvas.drawPath(arrowShape, arrowPaint);
+        arrowPaint.delete();
+        arrowShape.delete();
+        arrowPath.delete();
+
+        if (op.text) {
+          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
+          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
+          canvas.drawText(op.text, x + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          paint.delete();
+          font.delete();
+          typeface.delete();
+        }
+        return;
+      }
+      case 'edit': {
+        const fillPaint = this.makePaint('#ffffff', 'fill');
+        const strokePaint = this.makeLinePaint('#a0a0a0', 0.8, 'solid');
+        canvas.drawRect(this.toRect(op.bbox), fillPaint);
+        canvas.drawRect(this.toRect(op.bbox), strokePaint);
+        fillPaint.delete();
+        strokePaint.delete();
+
+        if (op.text) {
+          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
+          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
+          canvas.drawText(op.text, x + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          paint.delete();
+          font.delete();
+          typeface.delete();
+        }
+      }
+    }
   }
 
   private renderPlaceholderRect(canvas: ReturnType<Surface['getCanvas']>, bbox: LayerBounds, color: string): void {

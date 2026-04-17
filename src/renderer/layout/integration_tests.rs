@@ -596,6 +596,175 @@ mod tests {
         assert_skia_png_matches_layer_svg("samples/hwp_table_test.hwp", 0);
     }
 
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_synthetic_form_controls() {
+        use crate::model::control::FormType;
+        use crate::paint::{LayerBuilder, RenderProfile};
+        use crate::renderer::layer_renderer::LayerRenderer;
+        use crate::renderer::render_tree::{
+            BoundingBox, FormObjectNode, PageNode, PageRenderTree, RenderNode, RenderNodeType,
+        };
+        use crate::renderer::skia::SkiaLayerRenderer;
+        use crate::renderer::svg_layer::SvgLayerRenderer;
+
+        let mut tree = PageRenderTree::new(0, 320.0, 180.0);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 320.0,
+            height: 180.0,
+            section_index: 0,
+        });
+
+        let forms = [
+            (
+                1,
+                FormObjectNode {
+                    form_type: FormType::PushButton,
+                    caption: String::new(),
+                    text: String::new(),
+                    fore_color: "#000000".to_string(),
+                    back_color: "#ffffff".to_string(),
+                    value: 0,
+                    enabled: true,
+                    section_index: 0,
+                    para_index: 0,
+                    control_index: 0,
+                    name: "button".to_string(),
+                    cell_location: None,
+                },
+                BoundingBox::new(20.0, 20.0, 72.0, 24.0),
+            ),
+            (
+                2,
+                FormObjectNode {
+                    form_type: FormType::CheckBox,
+                    caption: String::new(),
+                    text: String::new(),
+                    fore_color: "#202020".to_string(),
+                    back_color: "#ffffff".to_string(),
+                    value: 1,
+                    enabled: true,
+                    section_index: 0,
+                    para_index: 0,
+                    control_index: 1,
+                    name: "check".to_string(),
+                    cell_location: None,
+                },
+                BoundingBox::new(20.0, 60.0, 110.0, 20.0),
+            ),
+            (
+                3,
+                FormObjectNode {
+                    form_type: FormType::RadioButton,
+                    caption: String::new(),
+                    text: String::new(),
+                    fore_color: "#202020".to_string(),
+                    back_color: "#ffffff".to_string(),
+                    value: 1,
+                    enabled: true,
+                    section_index: 0,
+                    para_index: 0,
+                    control_index: 2,
+                    name: "radio".to_string(),
+                    cell_location: None,
+                },
+                BoundingBox::new(20.0, 92.0, 110.0, 20.0),
+            ),
+            (
+                4,
+                FormObjectNode {
+                    form_type: FormType::ComboBox,
+                    caption: String::new(),
+                    text: String::new(),
+                    fore_color: "#303030".to_string(),
+                    back_color: "#ffffff".to_string(),
+                    value: 0,
+                    enabled: true,
+                    section_index: 0,
+                    para_index: 0,
+                    control_index: 3,
+                    name: "combo".to_string(),
+                    cell_location: None,
+                },
+                BoundingBox::new(160.0, 20.0, 110.0, 24.0),
+            ),
+            (
+                5,
+                FormObjectNode {
+                    form_type: FormType::Edit,
+                    caption: String::new(),
+                    text: String::new(),
+                    fore_color: "#303030".to_string(),
+                    back_color: "#ffffff".to_string(),
+                    value: 0,
+                    enabled: true,
+                    section_index: 0,
+                    para_index: 0,
+                    control_index: 4,
+                    name: "edit".to_string(),
+                    cell_location: None,
+                },
+                BoundingBox::new(160.0, 60.0, 110.0, 24.0),
+            ),
+        ];
+
+        for (node_id, form, bbox) in forms {
+            tree.root.children.push(RenderNode::new(
+                node_id,
+                RenderNodeType::FormObject(form),
+                bbox,
+            ));
+        }
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        let mut svg_renderer = SvgLayerRenderer::new();
+        svg_renderer.render_page(&layer_tree);
+        let expected = rasterize_svg(svg_renderer.output()).expect("synthetic form SVG rasterize 실패");
+        let actual_png = SkiaLayerRenderer::new()
+            .render_png(&layer_tree)
+            .expect("synthetic form Skia PNG 렌더 실패");
+        let actual = decode_png(&actual_png).expect("synthetic form Skia PNG decode 실패");
+        let tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+
+        if tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
+            let exact_diff = diff_pixmaps(&expected, &actual, 0);
+            let (expected_path, actual_path, diff_path) = save_diff_artifacts(
+                "output/skia-diff",
+                "synthetic-form-controls",
+                0,
+                "layer",
+                "skia",
+                "diff",
+                &expected,
+                &actual,
+                &exact_diff.diff_pixmap,
+            );
+            let (_, _, tolerant_path) = save_diff_artifacts(
+                "output/skia-diff",
+                "synthetic-form-controls",
+                0,
+                "layer",
+                "skia",
+                "tolerant-diff",
+                &expected,
+                &actual,
+                &tolerant_diff.diff_pixmap,
+            );
+            panic!(
+                "synthetic form Skia raster diff 발생: exact={} tolerant={} (budget={}) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
+                exact_diff.diff_pixels,
+                tolerant_diff.diff_pixels,
+                SKIA_TOLERANT_MAX_DIFF_PIXELS,
+                expected_path.display(),
+                actual_path.display(),
+                diff_path.display(),
+                tolerant_path.display(),
+            );
+        }
+    }
+
     #[test]
     fn test_get_page_layer_tree_native_populates_page_tree_cache() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
