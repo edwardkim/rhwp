@@ -435,9 +435,7 @@ async function loadFile(file: File): Promise<void> {
     msg.textContent = '파일 로딩 중...';
     const startTime = performance.now();
     const data = new Uint8Array(await file.arrayBuffer());
-    const docInfo = wasm.loadDocument(data, file.name);
-    const elapsed = performance.now() - startTime;
-    await initializeDocument(docInfo, `${file.name} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
+    await loadBytes(data, file.name, null, startTime);
   } catch (error) {
     const errMsg = `파일 로드 실패: ${error}`;
     msg.textContent = errMsg;
@@ -445,6 +443,18 @@ async function loadFile(file: File): Promise<void> {
     // 모바일에서 상태 메시지가 숨겨질 수 있으므로 alert으로도 표시
     if (window.innerWidth < 768) alert(errMsg);
   }
+}
+
+async function loadBytes(
+  data: Uint8Array,
+  fileName: string,
+  fileHandle: typeof wasm.currentFileHandle,
+  startTime = performance.now(),
+): Promise<void> {
+  const docInfo = wasm.loadDocument(data, fileName);
+  wasm.currentFileHandle = fileHandle;
+  const elapsed = performance.now() - startTime;
+  await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
 }
 
 async function createNewDocument(): Promise<void> {
@@ -461,6 +471,14 @@ async function createNewDocument(): Promise<void> {
 
 // 커맨드에서 새 문서 생성 호출
 eventBus.on('create-new-document', () => { createNewDocument(); });
+eventBus.on('open-document-bytes', async (payload) => {
+  const data = payload as {
+    bytes: Uint8Array;
+    fileName: string;
+    fileHandle: typeof wasm.currentFileHandle;
+  };
+  await loadBytes(data.bytes, data.fileName, data.fileHandle);
+});
 
 // 수식 더블클릭 → 수식 편집 대화상자
 eventBus.on('equation-edit-request', () => {

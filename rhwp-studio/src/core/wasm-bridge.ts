@@ -2,6 +2,7 @@ import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, CursorRect, HitTestResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, NavContextEntry, FieldInfoResult, BookmarkInfo } from './types';
 import { resolveFont, fontFamilyWithFallback } from './font-substitution';
 import { REGISTERED_FONTS } from './font-loader';
+import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 
 /**
  * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
@@ -32,6 +33,7 @@ export class WasmBridge {
   private doc: HwpDocument | null = null;
   private initialized = false;
   private _fileName = 'document.hwp';
+  private _currentFileHandle: FileSystemFileHandleLike | null = null;
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -64,6 +66,7 @@ export class WasmBridge {
       this.doc.free();
     }
     this._fileName = fileName ?? 'document.hwp';
+    this._currentFileHandle = null;
     this.doc = new HwpDocument(data);
     this.doc.convertToEditable();
     this.doc.setFileName(this._fileName);
@@ -79,6 +82,7 @@ export class WasmBridge {
     }
     const info: DocumentInfo = JSON.parse(this.doc.createBlankDocument());
     this._fileName = '새 문서.hwp';
+    this._currentFileHandle = null;
     this.doc.setFileName(this._fileName);
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
     return info;
@@ -90,6 +94,14 @@ export class WasmBridge {
 
   set fileName(name: string) {
     this._fileName = name;
+  }
+
+  get currentFileHandle(): FileSystemFileHandleLike | null {
+    return this._currentFileHandle;
+  }
+
+  set currentFileHandle(handle: FileSystemFileHandleLike | null) {
+    this._currentFileHandle = handle;
   }
 
   get isNewDocument(): boolean {
