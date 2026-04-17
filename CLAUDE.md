@@ -27,7 +27,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 모든 문서는 한국어로 작성한다.
 
-문서 폴더 구조 (`mydocs/` 하위):
+사용자가 생성·저장을 요청한 일반 문서는 기본적으로 루트 `_docs/`에 저장한다.
+
+- 기본 형식: `YYYYMMDD_NN_한줄요약.md`
+- 사용자가 경로를 명시한 경우에만 해당 경로를 따른다.
+- 기존 `mydocs/`는 레거시 프로젝트 문서 저장소로 유지하며, 사용자 요청 문서의 기본 저장 위치로는 새로 사용하지 않는다.
+
+문서 폴더 구조 (`mydocs/` 하위, 레거시/내부 분류용):
 - `orders/` - 오늘 할일 문서 (yyyymmdd.md)
 - `plans/` - 수행 계획서, 구현 계획서
 - `plans/archives/` - 완료된 계획서 보관
