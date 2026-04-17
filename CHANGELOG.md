@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### 추가
+- **Windows/PWA 실행 연동**: `manifest.webmanifest`, `launchQueue`, preview save bridge, RHWP launcher를 추가해 `.hwp/.hwpx` 더블클릭 열기와 원본 저장 흐름을 연결 (#179)
+
 ### 수정
 - **rhwp-studio 저장 경로 유지**: `showOpenFilePicker()`로 연 문서는 `Ctrl+S` 시 기존 파일 handle에 바로 덮어쓰고, handle이 없는 입력창 열기 경로만 저장 대화상자로 폴백하도록 정리 (#179)
 

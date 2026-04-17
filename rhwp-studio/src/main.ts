@@ -23,6 +23,11 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import {
+  createHttpFileHandle,
+  setupPwaFileLaunch,
+  type FileSystemWindowLike,
+} from '@/command/file-system-access';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -176,6 +181,17 @@ async function initialize(): Promise<void> {
     setupZoomControls();
     setupEventListeners();
     setupGlobalShortcuts();
+    setupPwaFileLaunch(
+      window as FileSystemWindowLike,
+      async ({ bytes, fileName, fileHandle }) => {
+        await loadBytes(bytes, fileName, fileHandle);
+      },
+      (error) => {
+        const errMsg = `파일 실행 실패: ${error}`;
+        msg.textContent = errMsg;
+        console.error('[pwa:file-launch]', error);
+      },
+    );
     loadFromUrlParam();
 
     // E2E 테스트용 전역 노출 (개발 모드 전용)
@@ -495,7 +511,13 @@ async function loadFromUrlParam(): Promise<void> {
   if (!fileUrl) return;
 
   const fileName = params.get('filename') || fileUrl.split('/').pop()?.split('?')[0] || 'document.hwp';
+  const saveUrl = params.get('save');
   const msg = sbMessage();
+  const remoteHandle = saveUrl ? createHttpFileHandle({
+    fileName,
+    fileUrl,
+    saveUrl,
+  }) : null;
 
   try {
     msg.textContent = '파일 로딩 중...';
@@ -512,8 +534,7 @@ async function loadFromUrlParam(): Promise<void> {
         const result = await chrome.runtime.sendMessage({ type: 'fetch-file', url: fileUrl });
         if (result.error) throw new Error(result.error);
         const data = new Uint8Array(result.data);
-        const docInfo = wasm.loadDocument(data, fileName);
-        await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지`);
+        await loadBytes(data, fileName, remoteHandle);
         return;
       }
     } else {
@@ -523,8 +544,7 @@ async function loadFromUrlParam(): Promise<void> {
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     const buffer = await response.arrayBuffer();
     const data = new Uint8Array(buffer);
-    const docInfo = wasm.loadDocument(data, fileName);
-    await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지`);
+    await loadBytes(data, fileName, remoteHandle);
   } catch (error) {
     const errMsg = `파일 로드 실패: ${error}`;
     msg.textContent = errMsg;
