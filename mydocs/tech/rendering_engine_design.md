@@ -1,5 +1,10 @@
 # RHWP 렌더링 엔진 아키텍처 설계서
 
+> 이 문서는 렌더링 엔진의 상위 구조와 역사적 설계 방향을 설명한다.
+> 현재 구현된 `PageRenderTree -> PageLayerTree -> backend replay` 구조와
+> CanvasKit/native Skia parity 전략은
+> [layered_renderer_architecture.md](./layered_renderer_architecture.md)에서 자세히 다룬다.
+
 ## 1. 렌더링 백엔드 최종 선정
 
 ### 비교 평가

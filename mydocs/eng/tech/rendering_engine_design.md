@@ -1,5 +1,10 @@
 # RHWP Rendering Engine Architecture Design
 
+> This document explains the high-level rendering architecture and its historical design direction.
+> The currently implemented `PageRenderTree -> PageLayerTree -> backend replay` pipeline and
+> the CanvasKit/native Skia parity strategy are described in detail in
+> [layered_renderer_architecture.md](./layered_renderer_architecture.md).
+
 ## 1. Final Rendering Backend Selection
 
 ### Comparative Evaluation
