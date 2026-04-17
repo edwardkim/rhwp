@@ -85,14 +85,22 @@ export interface LayerTextStyle {
   color: string;
   bold: boolean;
   italic: boolean;
+  ratio: number;
   underline: 'none' | 'bottom' | 'top';
+  underlineShape: number;
   strikethrough: boolean;
+  strikeShape: number;
+  outlineType: number;
   shadowType: number;
   shadowColor: string;
   shadowOffsetX: number;
   shadowOffsetY: number;
+  emboss: boolean;
+  engrave: boolean;
+  emphasisDot: number;
   underlineColor: string;
   strikeColor: string;
+  shadeColor: string;
 }
 
 export interface LayerTabLeader {

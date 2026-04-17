@@ -14,6 +14,7 @@ const SAMPLE_CASES = [
   { name: 'lseg-01-basic', setup: (page) => loadHwpFile(page, 'lseg-01-basic.hwp') },
   { name: 'hwp-table-test', setup: (page) => loadHwpFile(page, 'hwp_table_test.hwp') },
   { name: 'pic-crop-01', setup: (page) => loadHwpFile(page, 'pic-crop-01.hwp') },
+  { name: 'field-01', setup: (page) => loadHwpFile(page, 'field-01.hwp') },
 ];
 const CANVASKIT_MODE = process.env.RHWP_CANVASKIT_MODE === 'default' ? 'default' : 'compat';
 const TOLERANT_DIFF = {

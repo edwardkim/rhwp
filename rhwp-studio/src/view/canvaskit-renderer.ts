@@ -28,6 +28,26 @@ const FONT_SANS_BOLD_URL = new URL('../../../web/fonts/NotoSansKR-Bold.woff2', i
 const FONT_SERIF_REGULAR_URL = new URL('../../../web/fonts/NotoSerifKR-Regular.woff2', import.meta.url).href;
 const FONT_SERIF_BOLD_URL = new URL('../../../web/fonts/NotoSerifKR-Bold.woff2', import.meta.url).href;
 const FONT_MONO_REGULAR_URL = new URL('../../../web/fonts/D2Coding-Regular.woff2', import.meta.url).href;
+const FONT_HAMCHOROM_DOTUM_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff';
+const FONT_HAMCHOROM_BATANG_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
+const FONT_HAMCHOROM_BATANG_BOLD_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
+
+const HAMCHOROM_DOTUM_FAMILY = 'HCR Dotum';
+const HAMCHOROM_BATANG_FAMILY = 'HCR Batang';
+const HAMCHOROM_DOTUM_ALIASES = new Set([
+  '함초롬돋움',
+  '함초롱돋움',
+  '한컴돋움',
+  '새돋움',
+  HAMCHOROM_DOTUM_FAMILY,
+]);
+const HAMCHOROM_BATANG_ALIASES = new Set([
+  '함초롬바탕',
+  '함초롱바탕',
+  '한컴바탕',
+  '새바탕',
+  HAMCHOROM_BATANG_FAMILY,
+]);
 
 const SANS_ALIASES = [
   'Noto Sans KR',
@@ -41,11 +61,7 @@ const SANS_ALIASES = [
   '돋움',
   '돋움체',
   '굴림',
-  '새돋움',
   '새굴림',
-  '한컴돋움',
-  '함초롬돋움',
-  '함초롱돋움',
   'HY중고딕',
   'HY그래픽',
   'HY그래픽M',
@@ -62,10 +78,6 @@ const SERIF_ALIASES = [
   '나눔명조',
   '바탕',
   'AppleMyungjo',
-  '새바탕',
-  '한컴바탕',
-  '함초롬바탕',
-  '함초롱바탕',
   '궁서',
   '새궁서',
   'HY신명조',
@@ -150,6 +162,8 @@ export class CanvasKitLayerRenderer {
       }
     };
 
+    await registerAliases([HAMCHOROM_DOTUM_FAMILY], FONT_HAMCHOROM_DOTUM_URL);
+    await registerAliases([HAMCHOROM_BATANG_FAMILY], FONT_HAMCHOROM_BATANG_URL, FONT_HAMCHOROM_BATANG_BOLD_URL);
     await registerAliases(SANS_ALIASES, FONT_SANS_REGULAR_URL, FONT_SANS_BOLD_URL);
     await registerAliases(SERIF_ALIASES, FONT_SERIF_REGULAR_URL, FONT_SERIF_BOLD_URL);
     await registerAliases(MONO_ALIASES, FONT_MONO_REGULAR_URL);
@@ -243,12 +257,23 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderTextRun(canvas: ReturnType<Surface['getCanvas']>, op: LayerTextRunOp): void {
+    const ratio = typeof op.style.ratio === 'number' && op.style.ratio > 0 ? op.style.ratio : 1;
+    const outlineType = op.style.outlineType ?? 0;
+    const shadowType = op.style.shadowType ?? 0;
+    const shadowColor = typeof op.style.shadowColor === 'string' ? op.style.shadowColor : op.style.color;
+    const shadowOffsetX = typeof op.style.shadowOffsetX === 'number' ? op.style.shadowOffsetX : 0;
+    const shadowOffsetY = typeof op.style.shadowOffsetY === 'number' ? op.style.shadowOffsetY : 0;
+    const emboss = !!op.style.emboss;
+    const engrave = !!op.style.engrave;
+    const emphasisDot = op.style.emphasisDot ?? 0;
+    const shadeColor = (typeof op.style.shadeColor === 'string' ? op.style.shadeColor : '#ffffff').toLowerCase();
     const primaryObjects = this.makeTextObjects(
       op.style.fontFamily,
       op.style.fontSize,
       op.style.bold,
       op.style.italic,
       op.style.color,
+      ratio,
     );
     const clusters = splitIntoClusters(op.text);
     const textObjectsByFamily = new Map<string, { typeface: Typeface; font: Font; paint: Paint }>();
@@ -277,6 +302,7 @@ export class CanvasKitLayerRenderer {
               op.style.bold,
               op.style.italic,
               op.style.color,
+              ratio,
             );
             textObjectsByFamily.set(family, candidate);
           }
@@ -290,36 +316,85 @@ export class CanvasKitLayerRenderer {
       clusterFonts.push(selectedFont);
     }
     const drawClusters = (originX: number, originY: number) => {
-      if (op.style.shadowType > 0) {
-        const shadowPaint = this.makePaint(op.style.shadowColor, 'fill');
-        for (const [index, cluster] of clusters.entries()) {
-          const x = originX + op.positions[cluster.start];
-          canvas.drawText(
-            cluster.text,
-            x + op.style.shadowOffsetX,
-            originY + op.style.shadowOffsetY,
-            shadowPaint,
-            clusterFonts[index],
-          );
-        }
-        shadowPaint.delete();
+      const textWidth = op.positions.at(-1) ?? 0;
+      if (textWidth > 0 && shadeColor !== '#ffffff') {
+        const shadePaint = this.makePaint(shadeColor, 'fill');
+        canvas.drawRect(
+          this.canvasKit.XYWHRect(originX, originY - op.style.fontSize, textWidth, op.style.fontSize * 1.2),
+          shadePaint,
+        );
+        shadePaint.delete();
       }
 
-      for (const [index, cluster] of clusters.entries()) {
-        canvas.drawText(
-          cluster.text,
-          originX + op.positions[cluster.start],
-          originY,
-          primaryObjects.paint,
-          clusterFonts[index],
-        );
+      const drawPass = (dx: number, dy: number, fillPaint: Paint, strokePaint?: Paint) => {
+        for (const [index, cluster] of clusters.entries()) {
+          if (cluster.text === ' ' || cluster.text === '\t' || cluster.text === '\u2007') {
+            continue;
+          }
+          const x = originX + op.positions[cluster.start] + dx;
+          const y = originY + dy;
+          canvas.drawText(cluster.text, x, y, fillPaint, clusterFonts[index]);
+          if (strokePaint) {
+            canvas.drawText(cluster.text, x, y, strokePaint, clusterFonts[index]);
+          }
+        }
+      };
+
+      if (emboss || engrave) {
+        const offset = Math.max(op.style.fontSize / 20, 1);
+        const firstPaint = this.makePaint(emboss ? '#ffffff' : '#808080', 'fill');
+        const secondPaint = this.makePaint(emboss ? '#808080' : '#ffffff', 'fill');
+        drawPass(-offset, -offset, firstPaint);
+        drawPass(offset, offset, secondPaint);
+        drawPass(0, 0, primaryObjects.paint);
+        firstPaint.delete();
+        secondPaint.delete();
+      } else {
+        if (shadowType > 0) {
+          const shadowPaint = this.makePaint(shadowColor, 'fill');
+          drawPass(shadowOffsetX, shadowOffsetY, shadowPaint);
+          shadowPaint.delete();
+        }
+
+        if (outlineType > 0) {
+          const fillPaint = this.makePaint('#ffffff', 'fill');
+          const strokePaint = this.makePaint(op.style.color, 'stroke');
+          strokePaint.setStrokeWidth(Math.max(op.style.fontSize / 25, 0.5));
+          drawPass(0, 0, fillPaint, strokePaint);
+          fillPaint.delete();
+          strokePaint.delete();
+        } else {
+          drawPass(0, 0, primaryObjects.paint);
+        }
+      }
+
+      if (emphasisDot > 0) {
+        const dotChar =
+          emphasisDot === 1 ? '●'
+            : emphasisDot === 2 ? '○'
+              : emphasisDot === 3 ? 'ˇ'
+                : emphasisDot === 4 ? '˜'
+                  : emphasisDot === 5 ? '･'
+                    : emphasisDot === 6 ? '˸'
+                      : '';
+        if (dotChar) {
+          const dotSize = op.style.fontSize * 0.3;
+          const dotY = originY - op.style.fontSize * 1.05;
+          const dotObjects = this.makeTextObjects('Noto Sans KR', dotSize, false, false, op.style.color);
+          for (const position of op.positions.slice(0, -1)) {
+            const dotX = originX + position + (op.style.fontSize * ratio * 0.5);
+            canvas.drawText(dotChar, dotX, dotY, dotObjects.paint, dotObjects.font);
+          }
+          dotObjects.paint.delete();
+          dotObjects.font.delete();
+          dotObjects.typeface.delete();
+        }
       }
 
       if (op.tabLeaders?.length) {
         this.drawTabLeaders(canvas, op.tabLeaders, originX, originY, op.style.color);
       }
 
-      const textWidth = op.positions.at(-1) ?? 0;
       if (op.style.underline !== 'none') {
         const underlinePaint = this.makePaint(op.style.underlineColor || op.style.color, 'stroke');
         underlinePaint.setStrokeWidth(1);
@@ -753,16 +828,22 @@ export class CanvasKitLayerRenderer {
     return path;
   }
 
-  private makeTextObjects(fontFamily: string, fontSize: number, bold: boolean, italic: boolean, color: string): { typeface: Typeface; font: Font; paint: Paint } {
+  private makeTextObjects(fontFamily: string, fontSize: number, bold: boolean, italic: boolean, color: string, scaleX = 1): { typeface: Typeface; font: Font; paint: Paint } {
     const family = this.resolveCanvasKitFontFamily(fontFamily);
     const typeface = this.fontProvider.matchFamilyStyle(family, {
-      weight: bold ? this.canvasKit.FontWeight.Bold : this.canvasKit.FontWeight.Normal,
-      slant: italic ? this.canvasKit.FontSlant.Italic : this.canvasKit.FontSlant.Upright,
+      weight: this.canvasKit.FontWeight.Normal,
+      slant: this.canvasKit.FontSlant.Upright,
     });
     const font = new this.canvasKit.Font(typeface, fontSize || 12);
     font.setEmbolden(bold);
+    font.setScaleX(scaleX > 0 ? scaleX : 1);
+    font.setSkewX(italic ? -0.25 : 0);
     if (this.renderMode === 'compat') {
       font.setSubpixel(true);
+      if (fontSize >= 48 && bold && !italic) {
+        font.setEdging(this.canvasKit.FontEdging.SubpixelAntiAlias);
+        font.setHinting(this.canvasKit.FontHinting.Slight);
+      }
     }
     const paint = this.makePaint(color, 'fill');
     return { typeface, font, paint };
@@ -770,6 +851,12 @@ export class CanvasKitLayerRenderer {
 
   private resolveCanvasKitFontFamily(fontFamily: string): string {
     const resolved = resolveFont(fontFamily, 0, 0);
+    if (HAMCHOROM_DOTUM_ALIASES.has(resolved) || HAMCHOROM_DOTUM_ALIASES.has(fontFamily)) {
+      return HAMCHOROM_DOTUM_FAMILY;
+    }
+    if (HAMCHOROM_BATANG_ALIASES.has(resolved) || HAMCHOROM_BATANG_ALIASES.has(fontFamily)) {
+      return HAMCHOROM_BATANG_FAMILY;
+    }
     if (this.fontAliases.has(resolved)) return resolved;
     if (this.fontAliases.has(fontFamily)) return fontFamily;
 

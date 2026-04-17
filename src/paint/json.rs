@@ -282,20 +282,28 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
     buf.push('{');
     let _ = write!(
         buf,
-        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"underline\":{},\"strikethrough\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"underlineColor\":{},\"strikeColor\":{}",
+        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"ratio\":{:.3},\"underline\":{},\"underlineShape\":{},\"strikethrough\":{},\"strikeShape\":{},\"outlineType\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"emboss\":{},\"engrave\":{},\"emphasisDot\":{},\"underlineColor\":{},\"strikeColor\":{},\"shadeColor\":{}",
         json_escape(&style.font_family),
         style.font_size,
         json_escape(&color_ref_to_css(style.color)),
         style.bold,
         style.italic,
+        style.ratio,
         json_escape(underline_type_str(style.underline)),
+        style.underline_shape,
         style.strikethrough,
+        style.strike_shape,
+        style.outline_type,
         style.shadow_type,
         json_escape(&color_ref_to_css(style.shadow_color)),
         style.shadow_offset_x,
         style.shadow_offset_y,
+        style.emboss,
+        style.engrave,
+        style.emphasis_dot,
         json_escape(&color_ref_to_css(style.underline_color)),
         json_escape(&color_ref_to_css(style.strike_color)),
+        json_escape(&color_ref_to_css(style.shade_color)),
     );
     buf.push('}');
 }
