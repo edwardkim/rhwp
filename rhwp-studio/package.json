@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "e2e": "node e2e/text-flow.test.mjs && node e2e/canvaskit-render.test.mjs"
+    "e2e": "node e2e/text-flow.test.mjs && node e2e/canvaskit-render.test.mjs && RHWP_CANVASKIT_MODE=default node e2e/canvaskit-render.test.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.40",

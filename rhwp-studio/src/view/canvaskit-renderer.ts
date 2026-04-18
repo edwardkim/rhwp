@@ -34,9 +34,10 @@ const FONT_SANS_BOLD_URL = new URL('../../../web/fonts/NotoSansKR-Bold.woff2', i
 const FONT_SERIF_REGULAR_URL = new URL('../../../web/fonts/NotoSerifKR-Regular.woff2', import.meta.url).href;
 const FONT_SERIF_BOLD_URL = new URL('../../../web/fonts/NotoSerifKR-Bold.woff2', import.meta.url).href;
 const FONT_MONO_REGULAR_URL = new URL('../../../web/fonts/D2Coding-Regular.woff2', import.meta.url).href;
-const FONT_HAMCHOROM_DOTUM_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff';
-const FONT_HAMCHOROM_BATANG_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
-const FONT_HAMCHOROM_BATANG_BOLD_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
+const FONT_HAMCHOROM_DOTUM_URL = new URL('../../../web/fonts/NotoSansKR-Regular.woff2', import.meta.url).href;
+const FONT_HAMCHOROM_DOTUM_BOLD_URL = new URL('../../../web/fonts/NotoSansKR-Bold.woff2', import.meta.url).href;
+const FONT_HAMCHOROM_BATANG_URL = new URL('../../../web/fonts/NotoSerifKR-Regular.woff2', import.meta.url).href;
+const FONT_HAMCHOROM_BATANG_BOLD_URL = new URL('../../../web/fonts/NotoSerifKR-Bold.woff2', import.meta.url).href;
 
 const HAMCHOROM_DOTUM_FAMILY = 'HCR Dotum';
 const HAMCHOROM_BATANG_FAMILY = 'HCR Batang';
@@ -140,7 +141,7 @@ export class CanvasKitLayerRenderer {
       this.renderNode(canvas, tree.root);
       canvas.restore();
       surface.flush();
-      this.renderCompatOverlays(tree.root, targetCanvas, scale);
+      this.renderFallbackOverlays(tree.root, targetCanvas, scale);
     } finally {
       surface.delete();
     }
@@ -174,7 +175,7 @@ export class CanvasKitLayerRenderer {
       }
     };
 
-    await registerAliases([HAMCHOROM_DOTUM_FAMILY], FONT_HAMCHOROM_DOTUM_URL);
+    await registerAliases([HAMCHOROM_DOTUM_FAMILY], FONT_HAMCHOROM_DOTUM_URL, FONT_HAMCHOROM_DOTUM_BOLD_URL);
     await registerAliases([HAMCHOROM_BATANG_FAMILY], FONT_HAMCHOROM_BATANG_URL, FONT_HAMCHOROM_BATANG_BOLD_URL);
     await registerAliases(SANS_ALIASES, FONT_SANS_REGULAR_URL, FONT_SANS_BOLD_URL);
     await registerAliases(SERIF_ALIASES, FONT_SERIF_REGULAR_URL, FONT_SERIF_BOLD_URL);
@@ -267,11 +268,11 @@ export class CanvasKitLayerRenderer {
   }
 
   private shouldOverlayTextRun(op: LayerTextRunOp): boolean {
-    return this.renderMode === 'compat';
+    return true;
   }
 
   private shouldOverlayFootnoteMarker(op: LayerFootnoteMarkerOp): boolean {
-    return this.renderMode === 'compat';
+    return true;
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
@@ -917,24 +918,21 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderCompatOverlays(node: LayerNode, targetCanvas: HTMLCanvasElement, scale: number): void {
-    if (this.renderMode !== 'compat') {
-      return;
-    }
+  private renderFallbackOverlays(node: LayerNode, targetCanvas: HTMLCanvasElement, scale: number): void {
     const ctx = targetCanvas.getContext('2d');
     if (!ctx) {
       return;
     }
     ctx.save();
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    this.renderCompatOverlayNode(ctx, node);
+    this.renderFallbackOverlayNode(ctx, node);
     ctx.restore();
   }
 
-  private renderCompatOverlayNode(ctx: CanvasRenderingContext2D, node: LayerNode): void {
+  private renderFallbackOverlayNode(ctx: CanvasRenderingContext2D, node: LayerNode): void {
     if (node.kind === 'group') {
       for (const child of node.children) {
-        this.renderCompatOverlayNode(ctx, child);
+        this.renderFallbackOverlayNode(ctx, child);
       }
       return;
     }
@@ -943,7 +941,7 @@ export class CanvasKitLayerRenderer {
       ctx.beginPath();
       ctx.rect(node.clip.x, node.clip.y, node.clip.width, node.clip.height);
       ctx.clip();
-      this.renderCompatOverlayNode(ctx, node.child);
+      this.renderFallbackOverlayNode(ctx, node.child);
       ctx.restore();
       return;
     }
@@ -1164,18 +1162,14 @@ export class CanvasKitLayerRenderer {
     if (!image) return;
     const drawImageRect = (srcRect: ReturnType<CanvasKit['XYWHRect']>, dstRect: ReturnType<CanvasKit['XYWHRect']>) => {
       const paint = new this.canvasKit.Paint();
-      if (this.renderMode === 'compat') {
-        canvas.drawImageRectOptions(
-          image,
-          srcRect,
-          dstRect,
-          this.canvasKit.FilterMode.Linear,
-          this.canvasKit.MipmapMode.None,
-          paint,
-        );
-      } else {
-        canvas.drawImageRect(image, srcRect, dstRect, paint, false);
-      }
+      canvas.drawImageRectOptions(
+        image,
+        srcRect,
+        dstRect,
+        this.canvasKit.FilterMode.Linear,
+        this.canvasKit.MipmapMode.None,
+        paint,
+      );
       paint.delete();
     };
 
@@ -1519,24 +1513,14 @@ export class CanvasKitLayerRenderer {
     bbox: LayerBounds,
   ): void {
     const paint = new this.canvasKit.Paint();
-    if (this.renderMode === 'compat') {
-      canvas.drawImageRectOptions(
-        image,
-        this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-        this.toRect(bbox),
-        this.canvasKit.FilterMode.Linear,
-        this.canvasKit.MipmapMode.None,
-        paint,
-      );
-    } else {
-      canvas.drawImageRect(
-        image,
-        this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-        this.toRect(bbox),
-        paint,
-        false,
-      );
-    }
+    canvas.drawImageRectOptions(
+      image,
+      this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
+      this.toRect(bbox),
+      this.canvasKit.FilterMode.Linear,
+      this.canvasKit.MipmapMode.None,
+      paint,
+    );
     paint.delete();
   }
 

@@ -148,9 +148,8 @@ cargo test layer_svg --lib
 RUSTFLAGS='-L native=target/native-libs' cargo test skia --lib --features native-skia
 
 cd rhwp-studio
-npm run e2e                           # 기본: host Chrome CDP 모드
-node e2e/text-flow.test.mjs --mode=headless && node e2e/canvaskit-render.test.mjs --mode=headless
-RHWP_CANVASKIT_MODE=default node e2e/canvaskit-render.test.mjs --mode=headless
+npm run e2e                           # 기본: host Chrome CDP 모드, CanvasKit compat/default 둘 다 실행
+node e2e/text-flow.test.mjs --mode=headless && node e2e/canvaskit-render.test.mjs --mode=headless && RHWP_CANVASKIT_MODE=default node e2e/canvaskit-render.test.mjs --mode=headless
 ```
 
 WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신 `--mode=headless` 명령을 사용하세요.
