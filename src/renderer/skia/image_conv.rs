@@ -108,7 +108,10 @@ pub fn draw_image_bytes(
                 }
                 tile_y += image_height.max(1.0);
             }
-        } else if matches!(mode, ImageFillMode::TileHorzTop | ImageFillMode::TileHorzBottom) {
+        } else if matches!(
+            mode,
+            ImageFillMode::TileHorzTop | ImageFillMode::TileHorzBottom
+        ) {
             let tile_y = if matches!(mode, ImageFillMode::TileHorzTop) {
                 y
             } else {
@@ -140,7 +143,8 @@ pub fn draw_image_bytes(
             }
         }
     } else {
-        let (image_x, image_y) = resolve_image_placement(mode, x, y, width, height, image_width, image_height);
+        let (image_x, image_y) =
+            resolve_image_placement(mode, x, y, width, height, image_width, image_height);
         draw_image_rect(
             canvas,
             None,
@@ -149,6 +153,30 @@ pub fn draw_image_bytes(
     }
 
     canvas.restore();
+}
+
+pub fn draw_svg_fragment(
+    canvas: &Canvas,
+    svg_fragment: &str,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+) {
+    let Some(image) = decode_svg_fragment(svg_fragment, width, height) else {
+        return;
+    };
+
+    let dst = Rect::from_xywh(x, y, width, height);
+    let mut paint = Paint::default();
+    paint.set_anti_alias(true);
+    canvas.draw_image_rect_with_sampling_options(
+        &image,
+        None,
+        dst,
+        SamplingOptions::new(FilterMode::Linear, MipmapMode::None),
+        &paint,
+    );
 }
 
 fn resolve_image_placement(
@@ -169,15 +197,9 @@ fn resolve_image_placement(
             x + (width - image_width) / 2.0,
             y + (height - image_height) / 2.0,
         ),
-        ImageFillMode::RightCenter => (
-            x + width - image_width,
-            y + (height - image_height) / 2.0,
-        ),
+        ImageFillMode::RightCenter => (x + width - image_width, y + (height - image_height) / 2.0),
         ImageFillMode::LeftBottom => (x, y + height - image_height),
-        ImageFillMode::CenterBottom => (
-            x + (width - image_width) / 2.0,
-            y + height - image_height,
-        ),
+        ImageFillMode::CenterBottom => (x + (width - image_width) / 2.0, y + height - image_height),
         ImageFillMode::RightBottom => (x + width - image_width, y + height - image_height),
         _ => (x, y),
     }
@@ -198,6 +220,29 @@ fn decode_image(bytes: &[u8]) -> Option<Image> {
         }
         _ => Image::from_encoded(Data::new_copy(bytes)),
     }
+}
+
+fn decode_svg_fragment(svg_fragment: &str, width: f32, height: f32) -> Option<Image> {
+    if width <= 0.0 || height <= 0.0 {
+        return None;
+    }
+
+    let svg = format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.2}\" height=\"{height:.2}\" viewBox=\"0 0 {width:.2} {height:.2}\">{svg_fragment}</svg>"
+    );
+    let mut options = usvg::Options::default();
+    let fontdb = options.fontdb_mut();
+    fontdb.load_system_fonts();
+    fontdb.set_sans_serif_family("Noto Sans CJK KR");
+    fontdb.set_serif_family("Noto Serif CJK KR");
+    fontdb.set_monospace_family("D2Coding");
+
+    let tree = usvg::Tree::from_str(&svg, &options).ok()?;
+    let size = tree.size().to_int_size();
+    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())?;
+    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
+    let png = pixmap.encode_png().ok()?;
+    Image::from_encoded(Data::new_copy(&png))
 }
 
 fn detect_image_mime_type(data: &[u8]) -> &'static str {

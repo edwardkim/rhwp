@@ -9,7 +9,7 @@ mod tests {
     use std::path::{Path, PathBuf};
     use std::sync::{Mutex, OnceLock};
 
-    const SKIA_TOLERANT_CHANNEL_DELTA: u8 = 128;
+    const SKIA_TOLERANT_CHANNEL_DELTA: u8 = 8;
     const SKIA_TOLERANT_MAX_DIFF_PIXELS: usize = 64;
 
     fn render_path_env_lock() -> &'static Mutex<()> {
@@ -635,6 +635,12 @@ mod tests {
     #[test]
     fn test_skia_screenshot_matches_layer_svg_for_table_sample() {
         assert_skia_png_matches_layer_svg("samples/hwp_table_test.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_equation_sample() {
+        assert_skia_png_matches_layer_svg("samples/eq-01.hwp", 0);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]

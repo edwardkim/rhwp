@@ -7,7 +7,7 @@ use crate::renderer::layout::{compute_char_positions, split_into_clusters};
 use crate::renderer::render_tree::{BoundingBox, TextRunNode};
 use crate::renderer::{LineRenderType, UnderlineType};
 
-use super::image_conv::draw_image_bytes;
+use super::image_conv::{draw_image_bytes, draw_svg_fragment};
 use super::paint_conv::{
     colorref_to_skia, make_fill_paint, make_font, make_line_paint, make_stroke_paint,
     make_text_paint,
@@ -237,17 +237,14 @@ impl SkiaLayerRenderer {
                     }
                 });
             }
-            PaintOp::Equation { bbox, .. } => {
-                let mut paint = Paint::default();
-                paint.set_color(Color::from_argb(255, 220, 220, 220));
-                canvas.draw_rect(
-                    Rect::from_xywh(
-                        bbox.x as f32,
-                        bbox.y as f32,
-                        bbox.width as f32,
-                        bbox.height as f32,
-                    ),
-                    &paint,
+            PaintOp::Equation { bbox, equation } => {
+                draw_svg_fragment(
+                    canvas,
+                    &equation.svg_content,
+                    bbox.x as f32,
+                    bbox.y as f32,
+                    bbox.width as f32,
+                    bbox.height as f32,
                 );
             }
             PaintOp::FormObject { bbox, form } => self.render_form_object(canvas, bbox, form),
@@ -303,7 +300,8 @@ impl SkiaLayerRenderer {
                 if !form.caption.is_empty() {
                     let font_size = (bbox.height * 0.55).clamp(7.0, 12.0);
                     text_style.font_size = font_size;
-                    let font = super::paint_conv::make_font(&text_style, &self.font_mgr, &form.caption);
+                    let font =
+                        super::paint_conv::make_font(&text_style, &self.font_mgr, &form.caption);
                     let mut paint = Paint::default();
                     paint.set_anti_alias(true);
                     paint.set_color(Color::from_argb(255, 128, 128, 128));
@@ -352,7 +350,8 @@ impl SkiaLayerRenderer {
                 if !form.caption.is_empty() {
                     let font_size = (bbox.height * 0.55).clamp(7.0, 12.0);
                     text_style.font_size = font_size;
-                    let font = super::paint_conv::make_font(&text_style, &self.font_mgr, &form.caption);
+                    let font =
+                        super::paint_conv::make_font(&text_style, &self.font_mgr, &form.caption);
                     let mut paint = Paint::default();
                     paint.set_anti_alias(true);
                     paint.set_color(parse_css(&form.fore_color, Color::BLACK));
@@ -394,7 +393,8 @@ impl SkiaLayerRenderer {
                 if !form.caption.is_empty() {
                     let font_size = (bbox.height * 0.55).clamp(7.0, 12.0);
                     text_style.font_size = font_size;
-                    let font = super::paint_conv::make_font(&text_style, &self.font_mgr, &form.caption);
+                    let font =
+                        super::paint_conv::make_font(&text_style, &self.font_mgr, &form.caption);
                     let mut paint = Paint::default();
                     paint.set_anti_alias(true);
                     paint.set_color(parse_css(&form.fore_color, Color::BLACK));
@@ -457,7 +457,8 @@ impl SkiaLayerRenderer {
                 if !form.text.is_empty() {
                     let font_size = (bbox.height * 0.55).clamp(7.0, 12.0);
                     text_style.font_size = font_size;
-                    let font = super::paint_conv::make_font(&text_style, &self.font_mgr, &form.text);
+                    let font =
+                        super::paint_conv::make_font(&text_style, &self.font_mgr, &form.text);
                     let mut paint = Paint::default();
                     paint.set_anti_alias(true);
                     paint.set_color(parse_css(&form.fore_color, Color::BLACK));
@@ -488,7 +489,8 @@ impl SkiaLayerRenderer {
                 if !form.text.is_empty() {
                     let font_size = (bbox.height * 0.55).clamp(7.0, 12.0);
                     text_style.font_size = font_size;
-                    let font = super::paint_conv::make_font(&text_style, &self.font_mgr, &form.text);
+                    let font =
+                        super::paint_conv::make_font(&text_style, &self.font_mgr, &form.text);
                     let mut paint = Paint::default();
                     paint.set_anti_alias(true);
                     paint.set_color(parse_css(&form.fore_color, Color::BLACK));
