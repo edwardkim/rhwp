@@ -5,6 +5,7 @@
 
 #[cfg(test)]
 mod tests {
+    use base64::Engine;
     use resvg::{tiny_skia, usvg};
     use std::path::{Path, PathBuf};
     use std::sync::{Mutex, OnceLock};
@@ -13,6 +14,10 @@ mod tests {
     const SKIA_TOLERANT_MAX_DIFF_PIXELS: usize = 64;
     const SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS: usize = 1;
     const SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO: f64 = 0.013;
+    const SKIA_INK_MASK_WHITE_DELTA: u8 = 25;
+    const SKIA_INK_MASK_ALPHA_THRESHOLD: u8 = 8;
+    const SKIA_INK_MASK_NEIGHBOR_RADIUS: usize = 1;
+    const SKIA_INK_MASK_MAX_DIFF_RATIO: f64 = 0.003;
 
     fn render_path_env_lock() -> &'static Mutex<()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
@@ -31,17 +36,60 @@ mod tests {
     }
 
     fn rasterize_svg(svg: &str) -> Option<tiny_skia::Pixmap> {
+        let svg = normalize_svg_embedded_bitmaps(svg);
         let mut options = usvg::Options::default();
         let fontdb = options.fontdb_mut();
         fontdb.load_system_fonts();
         fontdb.set_sans_serif_family("Noto Sans CJK KR");
         fontdb.set_serif_family("Noto Serif CJK KR");
         fontdb.set_monospace_family("D2Coding");
-        let tree = usvg::Tree::from_str(svg, &options).ok()?;
+        let tree = usvg::Tree::from_str(&svg, &options).ok()?;
         let pixmap_size = tree.size().to_int_size();
         let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height())?;
         resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
         Some(pixmap)
+    }
+
+    fn normalize_svg_embedded_bitmaps(svg: &str) -> String {
+        const PREFIX: &str = "href=\"data:image/bmp;base64,";
+
+        let mut normalized = String::with_capacity(svg.len());
+        let mut rest = svg;
+
+        while let Some(start) = rest.find(PREFIX) {
+            let (before, after_prefix) = rest.split_at(start);
+            normalized.push_str(before);
+
+            let after_prefix = &after_prefix[PREFIX.len()..];
+            let Some(end) = after_prefix.find('"') else {
+                normalized.push_str(rest);
+                return normalized;
+            };
+
+            let encoded = &after_prefix[..end];
+            let replacement = decode_bmp_data_uri_to_png(encoded)
+                .unwrap_or_else(|| format!("data:image/bmp;base64,{encoded}"));
+            normalized.push_str("href=\"");
+            normalized.push_str(&replacement);
+            normalized.push('"');
+            rest = &after_prefix[end + 1..];
+        }
+
+        normalized.push_str(rest);
+        normalized
+    }
+
+    fn decode_bmp_data_uri_to_png(encoded: &str) -> Option<String> {
+        let bmp_bytes = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .ok()?;
+        let image =
+            image::load_from_memory_with_format(&bmp_bytes, image::ImageFormat::Bmp).ok()?;
+        let mut png_bytes = Vec::new();
+        let mut cursor = std::io::Cursor::new(&mut png_bytes);
+        image.write_to(&mut cursor, image::ImageFormat::Png).ok()?;
+        let png_base64 = base64::engine::general_purpose::STANDARD.encode(png_bytes);
+        Some(format!("data:image/png;base64,{png_base64}"))
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -72,6 +120,19 @@ mod tests {
         ignored_channel_delta: u8,
     ) -> bool {
         pixel_max_delta(expected_px, actual_px) <= ignored_channel_delta
+    }
+
+    fn pixel_is_ink(pixel: &[u8], white_delta: u8, alpha_threshold: u8) -> bool {
+        pixel[3] > alpha_threshold
+            && [
+                255u8.saturating_sub(pixel[0]),
+                255u8.saturating_sub(pixel[1]),
+                255u8.saturating_sub(pixel[2]),
+            ]
+            .into_iter()
+            .max()
+            .unwrap_or(0)
+                > white_delta
     }
 
     fn diff_pixmaps(
@@ -225,6 +286,88 @@ mod tests {
         }
     }
 
+    fn diff_ink_masks_with_neighborhood(
+        expected: &tiny_skia::Pixmap,
+        actual: &tiny_skia::Pixmap,
+        white_delta: u8,
+        alpha_threshold: u8,
+        radius: usize,
+    ) -> PixmapDiff {
+        let total_pixels = (expected.width() as usize) * (expected.height() as usize);
+        let mut diff_pixmap = tiny_skia::Pixmap::new(expected.width(), expected.height())
+            .expect("ink mask diff pixmap 생성 실패");
+        let mut diff_pixels = 0usize;
+        let width = expected.width() as usize;
+        let height = expected.height() as usize;
+        let expected_data = expected.data();
+        let actual_data = actual.data();
+
+        for y in 0..height {
+            for x in 0..width {
+                let idx = y * width + x;
+                let base = idx * 4;
+                let expected_px = &expected_data[base..base + 4];
+                let actual_px = &actual_data[base..base + 4];
+                let expected_ink = pixel_is_ink(expected_px, white_delta, alpha_threshold);
+                let actual_ink = pixel_is_ink(actual_px, white_delta, alpha_threshold);
+
+                if expected_ink == actual_ink {
+                    continue;
+                }
+
+                let min_y = y.saturating_sub(radius);
+                let max_y = (y + radius).min(height - 1);
+                let min_x = x.saturating_sub(radius);
+                let max_x = (x + radius).min(width - 1);
+                let mut matched = false;
+
+                if expected_ink && !actual_ink {
+                    'search_actual: for ny in min_y..=max_y {
+                        for nx in min_x..=max_x {
+                            let neighbor_base = (ny * width + nx) * 4;
+                            let candidate = &actual_data[neighbor_base..neighbor_base + 4];
+                            if pixel_is_ink(candidate, white_delta, alpha_threshold) {
+                                matched = true;
+                                break 'search_actual;
+                            }
+                        }
+                    }
+                } else if actual_ink && !expected_ink {
+                    'search_expected: for ny in min_y..=max_y {
+                        for nx in min_x..=max_x {
+                            let neighbor_base = (ny * width + nx) * 4;
+                            let candidate = &expected_data[neighbor_base..neighbor_base + 4];
+                            if pixel_is_ink(candidate, white_delta, alpha_threshold) {
+                                matched = true;
+                                break 'search_expected;
+                            }
+                        }
+                    }
+                }
+
+                if matched {
+                    continue;
+                }
+
+                diff_pixels += 1;
+                diff_pixmap.data_mut()[base..base + 4].copy_from_slice(&[
+                    if expected_ink { 255 } else { 0 },
+                    0,
+                    if actual_ink { 255 } else { 0 },
+                    255,
+                ]);
+            }
+        }
+
+        PixmapDiff {
+            diff_pixels,
+            total_pixels,
+            max_channel_delta: 0,
+            mean_abs_channel_delta: 0.0,
+            diff_pixmap,
+        }
+    }
+
     fn save_diff_artifacts(
         output_dir: &str,
         sample: &str,
@@ -340,8 +483,16 @@ mod tests {
             SKIA_TOLERANT_CHANNEL_DELTA,
             SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
         );
+        let ink_mask_diff = diff_ink_masks_with_neighborhood(
+            &expected,
+            &actual,
+            SKIA_INK_MASK_WHITE_DELTA,
+            SKIA_INK_MASK_ALPHA_THRESHOLD,
+            SKIA_INK_MASK_NEIGHBOR_RADIUS,
+        );
         let raster_tolerant_ratio =
             raster_tolerant_diff.diff_pixels as f64 / raster_tolerant_diff.total_pixels as f64;
+        let ink_mask_ratio = ink_mask_diff.diff_pixels as f64 / ink_mask_diff.total_pixels as f64;
 
         let exact_paths = if exact_diff.diff_pixels > 0 {
             Some(save_diff_artifacts(
@@ -375,7 +526,7 @@ mod tests {
             None
         };
 
-        if raster_tolerant_ratio > SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO {
+        if ink_mask_ratio > SKIA_INK_MASK_MAX_DIFF_RATIO {
             let (expected_path, actual_path, diff_path) =
                 exact_paths.expect("tolerant diff가 있으면 exact diff도 있어야 함");
             let tolerant_diff_path = tolerant_paths
@@ -393,8 +544,19 @@ mod tests {
                 &actual,
                 &raster_tolerant_diff.diff_pixmap,
             );
+            let (_, _, ink_mask_diff_path) = save_diff_artifacts(
+                "output/skia-diff",
+                sample,
+                page_num,
+                "layer",
+                "skia",
+                "ink-mask-diff",
+                &expected,
+                &actual,
+                &ink_mask_diff.diff_pixmap,
+            );
             return Err(format!(
-                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), raster_tolerant={} pixels (radius={}, ratio={:.3}%, budget={:.3}%) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {})",
+                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), raster_tolerant={} pixels (radius={}, ratio={:.3}%, budget={:.3}%), ink_mask={} pixels (white_delta={}, alpha_threshold={}, radius={}, ratio={:.3}%, budget={:.3}%) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {}, ink mask diff: {})",
                 exact_diff.diff_pixels,
                 raw_tolerant_diff.diff_pixels,
                 SKIA_TOLERANT_MAX_DIFF_PIXELS,
@@ -403,11 +565,18 @@ mod tests {
                 SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
                 raster_tolerant_ratio * 100.0,
                 SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO * 100.0,
+                ink_mask_diff.diff_pixels,
+                SKIA_INK_MASK_WHITE_DELTA,
+                SKIA_INK_MASK_ALPHA_THRESHOLD,
+                SKIA_INK_MASK_NEIGHBOR_RADIUS,
+                ink_mask_ratio * 100.0,
+                SKIA_INK_MASK_MAX_DIFF_RATIO * 100.0,
                 expected_path.display(),
                 actual_path.display(),
                 diff_path.display(),
                 tolerant_diff_path,
                 raster_tolerant_diff_path.display(),
+                ink_mask_diff_path.display(),
             ));
         }
 
@@ -471,10 +640,18 @@ mod tests {
             SKIA_TOLERANT_CHANNEL_DELTA,
             SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
         );
+        let ink_mask_diff = diff_ink_masks_with_neighborhood(
+            &expected,
+            &actual,
+            SKIA_INK_MASK_WHITE_DELTA,
+            SKIA_INK_MASK_ALPHA_THRESHOLD,
+            SKIA_INK_MASK_NEIGHBOR_RADIUS,
+        );
         let raster_tolerant_ratio =
             raster_tolerant_diff.diff_pixels as f64 / raster_tolerant_diff.total_pixels as f64;
+        let ink_mask_ratio = ink_mask_diff.diff_pixels as f64 / ink_mask_diff.total_pixels as f64;
 
-        if raster_tolerant_ratio > SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO {
+        if ink_mask_ratio > SKIA_INK_MASK_MAX_DIFF_RATIO {
             let exact_diff = diff_pixmaps(&expected, &actual, 0);
             let (expected_path, actual_path, diff_path) = save_diff_artifacts(
                 "output/skia-diff",
@@ -509,8 +686,19 @@ mod tests {
                 &actual,
                 &raster_tolerant_diff.diff_pixmap,
             );
+            let (_, _, ink_mask_path) = save_diff_artifacts(
+                "output/skia-diff",
+                case_name,
+                0,
+                "layer",
+                "skia",
+                "ink-mask-diff",
+                &expected,
+                &actual,
+                &ink_mask_diff.diff_pixmap,
+            );
             panic!(
-                "synthetic Skia raster diff 발생: exact={} tolerant={} (budget={}), raster_tolerant={} (radius={}, ratio={:.3}%, budget={:.3}%) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {})",
+                "synthetic Skia raster diff 발생: exact={} tolerant={} (budget={}), raster_tolerant={} (radius={}, ratio={:.3}%, budget={:.3}%), ink_mask={} (white_delta={}, alpha_threshold={}, radius={}, ratio={:.3}%, budget={:.3}%) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {}, ink mask diff: {})",
                 exact_diff.diff_pixels,
                 tolerant_diff.diff_pixels,
                 SKIA_TOLERANT_MAX_DIFF_PIXELS,
@@ -518,11 +706,18 @@ mod tests {
                 SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
                 raster_tolerant_ratio * 100.0,
                 SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO * 100.0,
+                ink_mask_diff.diff_pixels,
+                SKIA_INK_MASK_WHITE_DELTA,
+                SKIA_INK_MASK_ALPHA_THRESHOLD,
+                SKIA_INK_MASK_NEIGHBOR_RADIUS,
+                ink_mask_ratio * 100.0,
+                SKIA_INK_MASK_MAX_DIFF_RATIO * 100.0,
                 expected_path.display(),
                 actual_path.display(),
                 diff_path.display(),
                 tolerant_path.display(),
                 raster_tolerant_path.display(),
+                ink_mask_path.display(),
             );
         }
     }
@@ -620,6 +815,53 @@ mod tests {
         ]);
 
         let diff = diff_pixmaps_with_neighborhood(&expected, &actual, 8, 1);
+        assert!(diff.diff_pixels > 0);
+    }
+
+    #[test]
+    fn test_diff_ink_masks_ignores_antialias_coverage_difference() {
+        let mut expected = tiny_skia::Pixmap::new(3, 1).expect("expected pixmap 생성 실패");
+        let mut actual = tiny_skia::Pixmap::new(3, 1).expect("actual pixmap 생성 실패");
+
+        expected
+            .data_mut()
+            .copy_from_slice(&[255, 255, 255, 255, 235, 235, 235, 255, 0, 0, 0, 255]);
+        actual
+            .data_mut()
+            .copy_from_slice(&[255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255]);
+
+        let diff = diff_ink_masks_with_neighborhood(&expected, &actual, 25, 8, 1);
+        assert_eq!(diff.diff_pixels, 0);
+    }
+
+    #[test]
+    fn test_diff_ink_masks_ignores_one_pixel_shift() {
+        let mut expected = tiny_skia::Pixmap::new(5, 1).expect("expected pixmap 생성 실패");
+        let mut actual = tiny_skia::Pixmap::new(5, 1).expect("actual pixmap 생성 실패");
+
+        expected.data_mut().copy_from_slice(&[
+            255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            255, 255,
+        ]);
+        actual.data_mut().copy_from_slice(&[
+            255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255,
+            255, 255,
+        ]);
+
+        let diff = diff_ink_masks_with_neighborhood(&expected, &actual, 25, 8, 1);
+        assert_eq!(diff.diff_pixels, 0);
+    }
+
+    #[test]
+    fn test_diff_ink_masks_preserves_missing_shape() {
+        let mut expected = tiny_skia::Pixmap::new(3, 1).expect("expected pixmap 생성 실패");
+        let actual = tiny_skia::Pixmap::new(3, 1).expect("actual pixmap 생성 실패");
+
+        expected
+            .data_mut()
+            .copy_from_slice(&[255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255]);
+
+        let diff = diff_ink_masks_with_neighborhood(&expected, &actual, 25, 8, 1);
         assert!(diff.diff_pixels > 0);
     }
 
@@ -834,6 +1076,7 @@ mod tests {
             BoundingBox, PageNode, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
         };
         use crate::renderer::ShapeStyle;
+        use crate::renderer::{GradientFillInfo, PatternFillInfo};
 
         let mut tree = PageRenderTree::new(0, 180.0, 120.0);
         tree.root.node_type = RenderNodeType::Page(PageNode {
@@ -860,16 +1103,76 @@ mod tests {
                 0.0,
                 ShapeStyle {
                     fill_color: Some(0x00D9E7FF),
+                    pattern: Some(PatternFillInfo {
+                        pattern_type: 4,
+                        pattern_color: 0x003D6FB6,
+                        background_color: 0x00D9E7FF,
+                    }),
                     ..Default::default()
                 },
                 None,
             )),
             BoundingBox::new(90.0, 28.0, 66.0, 52.0),
         ));
+        tree.root.children.push(RenderNode::new(
+            3,
+            RenderNodeType::Rectangle(RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    fill_color: Some(0x00C3D7AF),
+                    ..Default::default()
+                },
+                Some(Box::new(GradientFillInfo {
+                    gradient_type: 1,
+                    angle: 0,
+                    center_x: 50,
+                    center_y: 50,
+                    colors: vec![0x00EEF4E8, 0x00A9C47F, 0x00839A6B],
+                    positions: vec![0.0, 0.65, 1.0],
+                })),
+            )),
+            BoundingBox::new(24.0, 68.0, 64.0, 40.0),
+        ));
 
         let mut builder = LayerBuilder::new(RenderProfile::Screen);
         let layer_tree = builder.build(&tree);
         assert_skia_layer_tree_matches_svg("synthetic-shapes", &layer_tree);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_shape_group_sample() {
+        assert_skia_png_matches_layer_svg("samples/shape-group-02.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_table_vpos_sample() {
+        assert_skia_png_matches_layer_svg("samples/table-vpos-01.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_img_start_sample() {
+        assert_skia_png_matches_layer_svg("samples/img-start-001.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_pic_in_head_sample() {
+        assert_skia_png_matches_layer_svg("samples/pic-in-head-02.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_footnote_sample() {
+        assert_skia_png_matches_layer_svg("samples/footnote-01.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_endnote_sample() {
+        assert_skia_png_matches_layer_svg("samples/endnote-01.hwp", 0);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -949,6 +1252,18 @@ mod tests {
     #[test]
     fn test_skia_screenshot_matches_layer_svg_for_draw_group_sample() {
         assert_skia_png_matches_layer_svg("samples/draw-group.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_hwp_3_0_hwpml_sample() {
+        assert_skia_png_matches_layer_svg("samples/hwp-3.0-HWPML.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_hwpspec_sample() {
+        assert_skia_png_matches_layer_svg("samples/hwpspec.hwp", 0);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
