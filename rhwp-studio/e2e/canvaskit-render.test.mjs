@@ -15,7 +15,11 @@ const FULL_PAGE_CASES = [
   { name: 'blank-new-document', setup: (page) => createNewDocument(page) },
   { name: 'lseg-01-basic', setup: (page) => loadHwpFile(page, 'lseg-01-basic.hwp') },
   { name: 'eq-01', setup: (page) => loadHwpFile(page, 'eq-01.hwp') },
-  { name: 'hwp-table-test', setup: (page) => loadHwpFile(page, 'hwp_table_test.hwp') },
+  {
+    name: 'hwp-table-test',
+    setup: (page) => loadHwpFile(page, 'hwp_table_test.hwp'),
+    maxDiffRatio: 0.0002,
+  },
   { name: 'pic-crop-01', setup: (page) => loadHwpFile(page, 'pic-crop-01.hwp') },
   { name: 'field-01', setup: (page) => loadHwpFile(page, 'field-01.hwp') },
   { name: 'shape-group-02', setup: (page) => loadHwpFile(page, 'shape-group-02.hwp') },
@@ -79,7 +83,7 @@ runTest('CanvasKit 렌더 비교', async ({ page }) => {
     const diff = await comparePngBuffers(baseline.buffer, canvaskit.buffer, {
       diffName: `${caseInfo.name}-${CANVASKIT_MODE}`,
       ignoreChannelDelta: TOLERANT_DIFF.ignoreChannelDelta,
-      maxDiffRatio: TOLERANT_DIFF.maxDiffRatio,
+      maxDiffRatio: caseInfo.maxDiffRatio ?? TOLERANT_DIFF.maxDiffRatio,
     });
 
     assert(

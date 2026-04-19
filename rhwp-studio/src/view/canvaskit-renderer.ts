@@ -1042,7 +1042,55 @@ export class CanvasKitLayerRenderer {
         if (outlineType > 0) {
           drawPass(0, 0, '#ffffff', op.style.color, Math.max(fontSize / 25, 0.5));
         } else {
-          drawPass(0, 0, op.style.color);
+          ctx.save();
+          ctx.fillStyle = op.style.color;
+          for (const cluster of clusters) {
+            if (cluster.text === ' ' || cluster.text === '\t' || cluster.text === '\u2007') {
+              continue;
+            }
+            if (startsWithInvalidControl(cluster.text)) {
+              continue;
+            }
+
+            const x = originX + op.positions[cluster.start];
+            const y = originY;
+            const ch = cluster.text.codePointAt(0) ?? 0;
+            const needsCurrencyFallback =
+              ch === 0x20A9 || ch === 0x20AC || ch === 0x00A3 || ch === 0x00A5;
+            const needsSymbolFallback =
+              (ch >= 0x2460 && ch <= 0x24FF)
+              || (ch >= 0x25A0 && ch <= 0x25FF)
+              || (ch >= 0x2600 && ch <= 0x27BF);
+
+            if (needsCurrencyFallback || needsSymbolFallback) {
+              ctx.save();
+              ctx.font = needsSymbolFallback
+                ? `${op.style.italic ? 'italic ' : ''}${op.style.bold ? 'bold ' : ''}${fontSize.toFixed(3)}px ${fontFamilyWithFallback('굴림체')}`
+                : `${op.style.italic ? 'italic ' : ''}${op.style.bold ? 'bold ' : ''}${fontSize.toFixed(3)}px "Malgun Gothic","맑은 고딕",sans-serif`;
+              ctx.fillText(cluster.text, x, y);
+              ctx.restore();
+              continue;
+            }
+
+            if (isHalfwidthScaledCluster(cluster.text) && !hasRatio) {
+              ctx.save();
+              ctx.translate(x, y);
+              ctx.scale(0.5, 1);
+              ctx.fillText(cluster.text, 0, 0);
+              ctx.restore();
+              continue;
+            }
+            if (hasRatio) {
+              ctx.save();
+              ctx.translate(x, y);
+              ctx.scale(ratio, 1);
+              ctx.fillText(cluster.text, 0, 0);
+              ctx.restore();
+              continue;
+            }
+            ctx.fillText(cluster.text, x, y);
+          }
+          ctx.restore();
         }
       }
 
