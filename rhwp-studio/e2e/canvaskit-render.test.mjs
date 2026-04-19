@@ -130,26 +130,45 @@ runTest('CanvasKit 렌더 비교', async ({ page }) => {
   await loadApp(page, `?renderer=canvaskit&canvaskitMode=${CANVASKIT_MODE}`);
   const preloadedFonts = await page.evaluate(async () => {
     const { loadWebFonts } = await import('/src/core/font-loader.ts');
-    await loadWebFonts(['한컴 윤고딕 230', '함초롬돋움', '함초롬바탕']);
+    await loadWebFonts(
+      ['한컴 윤고딕 230', '함초롬돋움', '함초롬바탕'],
+      undefined,
+      { includeOverlayFallbacks: true },
+    );
+    const loadedFamilies = Array.from(document.fonts)
+      .filter((face) => face.status === 'loaded')
+      .map((face) => face.family.replaceAll('"', ''));
     return {
-      symbolFonts: [
-        document.fonts.check('16px "굴림체"'),
-        document.fonts.check('16px "GulimChe"'),
-        document.fonts.check('16px "D2Coding"'),
-      ],
-      currencyFonts: [
-        document.fonts.check('16px "Malgun Gothic"'),
-        document.fonts.check('16px "맑은 고딕"'),
-      ],
+      symbolFonts: {
+        gulimText: loadedFamilies.includes('굴림체'),
+        gulimChe: loadedFamilies.includes('GulimChe'),
+        d2Coding: loadedFamilies.includes('D2Coding'),
+      },
+      currencyFonts: {
+        malgun: loadedFamilies.includes('Malgun Gothic'),
+        malgunKr: loadedFamilies.includes('맑은 고딕'),
+      },
     };
   });
   assert(
-    preloadedFonts.symbolFonts.some(Boolean),
-    `canvaskit symbol fallback font preload=${preloadedFonts.symbolFonts.join(',')}`,
+    preloadedFonts.symbolFonts.gulimText,
+    `canvaskit symbol fallback font preload=${JSON.stringify(preloadedFonts.symbolFonts)}`,
   );
   assert(
-    preloadedFonts.currencyFonts.some(Boolean),
-    `canvaskit currency fallback font preload=${preloadedFonts.currencyFonts.join(',')}`,
+    preloadedFonts.symbolFonts.gulimChe,
+    `canvaskit symbol fallback font preload=${JSON.stringify(preloadedFonts.symbolFonts)}`,
+  );
+  assert(
+    preloadedFonts.symbolFonts.d2Coding,
+    `canvaskit symbol fallback font preload=${JSON.stringify(preloadedFonts.symbolFonts)}`,
+  );
+  assert(
+    preloadedFonts.currencyFonts.malgun,
+    `canvaskit currency fallback font preload=${JSON.stringify(preloadedFonts.currencyFonts)}`,
+  );
+  assert(
+    preloadedFonts.currencyFonts.malgunKr,
+    `canvaskit currency fallback font preload=${JSON.stringify(preloadedFonts.currencyFonts)}`,
   );
 
   setTestCase('canvaskit-overlay-effect-fallback');

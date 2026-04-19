@@ -132,11 +132,15 @@ const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
 /** CanvasKit overlay가 심볼/통화 기호 렌더링에 즉시 사용하는 폰트 */
 const OVERLAY_FALLBACK_FONTS = new Set(['Malgun Gothic', '맑은 고딕', '굴림체', 'GulimChe', 'D2Coding']);
 
+interface LoadWebFontsOptions {
+  includeOverlayFallbacks?: boolean;
+}
+
 /** CSS @font-face 등록 여부 (중복 등록 방지) */
 let fontFaceRegistered = false;
 
-/** 이미 로드 완료된 woff2 파일 (중복 네트워크 요청 방지) */
-const loadedFiles = new Set<string>();
+/** 이미 로드 완료된 font face (가족명 + weight 단위) */
+const loadedFaceKeys = new Set<string>();
 
 /**
  * OS에 설치된 폰트인지 감지한다 (document.fonts.check 기반).
@@ -179,12 +183,14 @@ export function getDetectedOSFonts(): ReadonlySet<string> {
  *   1단계(동기): CSS @font-face 전체 등록 (최초 1회, 네트워크 미발생)
  *   2단계: 대상 폰트 로드 (이미 로드된 파일은 건너뜀)
  *
- * @param docFonts 문서에서 사용하는 폰트 이름 목록 (있으면 해당 폰트 + CRITICAL만 로드, 없으면 전체)
+ * @param docFonts 문서에서 사용하는 폰트 이름 목록 (해당 폰트 + CRITICAL만 로드, 생략 시 CRITICAL만)
  * @param onProgress 폰트 로드 진행률 콜백 (loaded, total)
+ * @param options overlay fallback preload 여부
  */
 export async function loadWebFonts(
   docFonts?: string[],
   onProgress?: (loaded: number, total: number) => void,
+  options?: LoadWebFontsOptions,
 ): Promise<void> {
   // 0) OS 폰트 감지 (@font-face 등록 전에 실행해야 정확)
   if (!fontFaceRegistered) {
@@ -202,9 +208,13 @@ export async function loadWebFonts(
     fontFaceRegistered = true;
   }
 
-  // 2) 로드 대상 결정: docFonts + 초기/overlay 필수 폰트만 로드
+  // 2) 로드 대상 결정: docFonts + 초기 필수 폰트 + 옵션 기반 overlay 폴백
   //    OS에 설치된 폰트는 웹폰트 로딩 건너뜀
-  const targetSet = new Set([...(docFonts ?? []), ...CRITICAL_FONTS, ...OVERLAY_FALLBACK_FONTS]);
+  const targetSet = new Set([
+    ...(docFonts ?? []),
+    ...CRITICAL_FONTS,
+    ...(options?.includeOverlayFallbacks ? OVERLAY_FALLBACK_FONTS : []),
+  ]);
   const toLoad = FONT_LIST.filter(f => {
     if (!targetSet.has(f.name)) return false;
     // OS에 동일 이름 폰트가 있으면 웹폰트 로딩 불필요
@@ -212,60 +222,36 @@ export async function loadWebFonts(
     return true;
   });
 
-  // woff2 파일 기준으로 중복 제거 + 이미 로드된 파일 건너뜀
-  const seenFiles = new Set<string>();
-  const uniqueToLoad: FontEntry[] = [];
-  for (const f of toLoad) {
-    const loadKey = `${f.file}::${f.weight ?? '400'}`;
-    if (!seenFiles.has(loadKey) && !loadedFiles.has(loadKey)) {
-      seenFiles.add(loadKey);
-      uniqueToLoad.push(f);
-    }
-  }
+  const facesToLoad = toLoad.filter((f) => !loadedFaceKeys.has(`${f.name}::${f.weight ?? '400'}`));
+  if (facesToLoad.length === 0) return;
 
-  if (uniqueToLoad.length === 0) return;
-
-  const total = uniqueToLoad.length;
-  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 woff2 (이미 로드됨: ${loadedFiles.size}개)`);
-
-  // 같은 woff2 파일에 매핑된 모든 이름도 함께 등록
-  const fileToFaces = new Map<string, Array<{ name: string; weight: string }>>();
-  for (const f of toLoad) {
-    const loadKey = `${f.file}::${f.weight ?? '400'}`;
-    if (!loadedFiles.has(loadKey)) {
-      const faces = fileToFaces.get(loadKey) ?? [];
-      faces.push({ name: f.name, weight: f.weight ?? '400' });
-      fileToFaces.set(loadKey, faces);
-    }
-  }
+  const total = facesToLoad.length;
+  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 face (이미 로드됨: ${loadedFaceKeys.size}개)`);
 
   let loaded = 0;
   let failed = 0;
   const BATCH = 4;
 
-  for (let i = 0; i < uniqueToLoad.length; i += BATCH) {
-    const batch = uniqueToLoad.slice(i, i + BATCH);
+  for (let i = 0; i < facesToLoad.length; i += BATCH) {
+    const batch = facesToLoad.slice(i, i + BATCH);
     await Promise.all(batch.map(async (f) => {
       try {
-        const loadKey = `${f.file}::${f.weight ?? '400'}`;
-        const faces = fileToFaces.get(loadKey) ?? [{ name: f.name, weight: f.weight ?? '400' }];
         const fmt = f.format ?? 'woff2';
-        for (const { name, weight } of faces) {
-          const face = new FontFace(name, `url(${f.file}) format('${fmt}')`, { weight });
-          const result = await face.load();
-          document.fonts.add(result);
-        }
-        loadedFiles.add(loadKey);
+        const weight = f.weight ?? '400';
+        const face = new FontFace(f.name, `url(${f.file}) format('${fmt}')`, { weight });
+        const result = await face.load();
+        document.fonts.add(result);
+        loadedFaceKeys.add(`${f.name}::${weight}`);
         loaded++;
       } catch {
         failed++;
       }
       onProgress?.(loaded + failed, total);
     }));
-    if (i + BATCH < uniqueToLoad.length) {
+    if (i + BATCH < facesToLoad.length) {
       await new Promise(r => setTimeout(r, 0));
     }
   }
 
-  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFiles.size}개 woff2 로드됨)`);
+  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFaceKeys.size}개 face 로드됨)`);
 }
