@@ -7,7 +7,8 @@ use crate::renderer::layout::{compute_char_positions, split_into_clusters};
 use crate::renderer::render_tree::{BoundingBox, TextRunNode};
 use crate::renderer::{LineRenderType, UnderlineType};
 
-use super::image_conv::{draw_image_bytes, draw_svg_fragment};
+use super::equation_conv::render_equation;
+use super::image_conv::draw_image_bytes;
 use super::paint_conv::{
     colorref_to_skia, make_fill_paint, make_font, make_line_paint, make_stroke_paint,
     make_text_paint,
@@ -75,6 +76,7 @@ impl SkiaLayerRenderer {
             PaintOp::PageBackground { bbox, background } => {
                 if let Some(color) = background.background_color {
                     let mut paint = Paint::default();
+                    paint.set_anti_alias(true);
                     paint.set_color(colorref_to_skia(color, 1.0));
                     canvas.draw_rect(
                         Rect::from_xywh(
@@ -101,6 +103,7 @@ impl SkiaLayerRenderer {
                 }
                 if let Some(border) = background.border_color {
                     let mut paint = Paint::default();
+                    paint.set_anti_alias(true);
                     paint.set_style(skia_safe::paint::Style::Stroke);
                     paint.set_stroke_width(if background.border_width > 0.0 {
                         background.border_width as f32
@@ -238,13 +241,14 @@ impl SkiaLayerRenderer {
                 });
             }
             PaintOp::Equation { bbox, equation } => {
-                draw_svg_fragment(
+                render_equation(
                     canvas,
-                    &equation.svg_content,
-                    bbox.x as f32,
-                    bbox.y as f32,
-                    bbox.width as f32,
-                    bbox.height as f32,
+                    &self.font_mgr,
+                    &equation.layout_box,
+                    bbox.x,
+                    bbox.y,
+                    equation.color,
+                    equation.font_size,
                 );
             }
             PaintOp::FormObject { bbox, form } => self.render_form_object(canvas, bbox, form),

@@ -68,16 +68,41 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
     ] {
         for candidate in candidate_list.split(',') {
             let candidate = candidate.trim().trim_matches('\'').trim_matches('"');
-            if candidate.is_empty()
-                || family_candidates
-                    .iter()
-                    .any(|existing: &String| existing == candidate)
-            {
+            if candidate.is_empty() {
                 continue;
             }
-            family_candidates.push(candidate.to_string());
+
+            for alias in match candidate {
+                "함초롬바탕" => vec!["함초롬바탕", "HCR Batang"],
+                "함초롬돋움" => vec!["함초롬돋움", "HCR Dotum"],
+                "함초롱바탕" => vec!["함초롱바탕", "HCR Batang"],
+                "함초롱돋움" => vec!["함초롱돋움", "HCR Dotum"],
+                "한컴바탕" => vec!["한컴바탕", "함초롬바탕", "HCR Batang"],
+                "한컴돋움" => vec!["한컴돋움", "함초롬돋움", "HCR Dotum"],
+                "맑은 고딕" => vec!["맑은 고딕", "Malgun Gothic"],
+                "바탕" => vec!["바탕", "Batang"],
+                "돋움" => vec!["돋움", "Dotum"],
+                "굴림" => vec!["굴림", "Gulim"],
+                "굴림체" => vec!["굴림체", "GulimChe"],
+                "바탕체" => vec!["바탕체", "BatangChe"],
+                "궁서" => vec!["궁서", "Gungsuh"],
+                "궁서체" => vec!["궁서체", "GungsuhChe"],
+                _ => vec![candidate],
+            } {
+                if family_candidates
+                    .iter()
+                    .any(|existing: &String| existing == alias)
+                {
+                    continue;
+                }
+                family_candidates.push(alias.to_string());
+            }
         }
     }
+
+    let probe_char = sample_text
+        .chars()
+        .find(|ch| !ch.is_whitespace() && !ch.is_ascii());
 
     if family_candidates
         .iter()
@@ -102,19 +127,29 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
         .iter()
         .any(|candidate| candidate.eq_ignore_ascii_case("serif"))
     {
-        for candidate in [
-            "Noto Serif CJK KR",
-            "NanumMyeongjo",
-            "DejaVu Serif",
-            "serif",
-        ] {
+        let serif_fallbacks: &[&str] = if probe_char.is_some() {
+            &[
+                "Noto Serif CJK KR",
+                "NanumMyeongjo",
+                "DejaVu Serif",
+                "serif",
+            ]
+        } else {
+            &[
+                "DejaVu Serif",
+                "Noto Serif CJK KR",
+                "NanumMyeongjo",
+                "serif",
+            ]
+        };
+        for candidate in serif_fallbacks {
             if family_candidates
                 .iter()
                 .any(|existing| existing == candidate)
             {
                 continue;
             }
-            family_candidates.push(candidate.to_string());
+            family_candidates.push((*candidate).to_string());
         }
     } else {
         for candidate in [
@@ -132,10 +167,6 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
             family_candidates.push(candidate.to_string());
         }
     }
-
-    let probe_char = sample_text
-        .chars()
-        .find(|ch| !ch.is_whitespace() && !ch.is_ascii());
 
     let mut matched = None;
     for candidate in &family_candidates {
@@ -195,15 +226,11 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
     font.set_subpixel(false);
     font.set_linear_metrics(true);
     font.set_baseline_snap(false);
-    font.set_embolden(text_style.bold);
     font.set_scale_x(if text_style.ratio > 0.0 {
         text_style.ratio as f32
     } else {
         1.0
     });
-    if text_style.italic {
-        font.set_skew_x(-0.2);
-    }
     font
 }
 
@@ -304,6 +331,64 @@ mod tests {
             assert_eq!(
                 hangul_sans_family, "NanumGothic",
                 "unexpected Hangul sans fallback family: {hangul_sans_family}"
+            );
+        }
+    }
+
+    #[test]
+    fn prioritizes_ascii_and_hangul_serif_fallbacks_differently() {
+        let font_mgr = FontMgr::default();
+
+        let ascii_family = make_font(
+            &TextStyle {
+                font_family: "serif".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            },
+            &font_mgr,
+            "n",
+        )
+        .typeface()
+        .family_name();
+        let hangul_family = make_font(
+            &TextStyle {
+                font_family: "serif".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            },
+            &font_mgr,
+            "표",
+        )
+        .typeface()
+        .family_name();
+
+        if font_mgr
+            .match_family_style("DejaVu Serif", FontStyle::normal())
+            .is_some()
+        {
+            assert_eq!(
+                ascii_family, "DejaVu Serif",
+                "unexpected ASCII serif fallback family: {ascii_family}"
+            );
+        }
+        if font_mgr
+            .match_family_style("Noto Serif CJK KR", FontStyle::normal())
+            .is_some()
+        {
+            assert!(
+                matches!(
+                    hangul_family.as_str(),
+                    "Noto Serif CJK KR" | "NanumMyeongjo"
+                ),
+                "unexpected Hangul serif fallback family: {hangul_family}"
+            );
+        } else if font_mgr
+            .match_family_style("NanumMyeongjo", FontStyle::normal())
+            .is_some()
+        {
+            assert_eq!(
+                hangul_family, "NanumMyeongjo",
+                "unexpected Hangul serif fallback family: {hangul_family}"
             );
         }
     }

@@ -1,3 +1,4 @@
+pub mod equation_conv;
 pub mod image_conv;
 pub mod paint_conv;
 pub mod path_conv;

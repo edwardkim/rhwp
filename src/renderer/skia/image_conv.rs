@@ -29,7 +29,7 @@ pub fn draw_image_bytes(
         if let Some(src) = src.as_ref() {
             canvas.draw_image_rect_with_sampling_options(
                 &image,
-                Some((src, SrcRectConstraint::Fast)),
+                Some((src, SrcRectConstraint::Strict)),
                 dst,
                 SamplingOptions::new(FilterMode::Linear, MipmapMode::None),
                 &paint,
@@ -61,11 +61,21 @@ pub fn draw_image_bytes(
                         || (src_w - image_width).abs() > 1.0
                         || (src_h - image_height).abs() > 1.0;
                     if is_cropped {
+                        let scale_x = width / src_w.max(1.0);
+                        let scale_y = height / src_h.max(1.0);
+                        let draw_x = x - src_x * scale_x;
+                        let draw_y = y - src_y * scale_y;
+                        let draw_w = image_width * scale_x;
+                        let draw_h = image_height * scale_y;
+
+                        canvas.save();
+                        canvas.clip_rect(dst, None, Some(true));
                         draw_image_rect(
                             canvas,
-                            Some(Rect::from_xywh(src_x, src_y, src_w, src_h)),
-                            dst,
+                            None,
+                            Rect::from_xywh(draw_x, draw_y, draw_w, draw_h),
                         );
+                        canvas.restore();
                         return;
                     }
                 }
