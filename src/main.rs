@@ -934,6 +934,16 @@ fn dump_controls(args: &[String]) {
                 dump_common_fn(&p.common, indent);
                 dump_sa_fn(&p.shape_attr, indent);
             }
+            ShapeObject::Chart(c) => {
+                println!("{}[차트] type={:?} series={} raw_chart_data={}B", indent, c.chart_type, c.series.len(), c.raw_chart_data.len());
+                dump_common_fn(&c.common, indent);
+                dump_sa_fn(&c.drawing.shape_attr, indent);
+            }
+            ShapeObject::Ole(o) => {
+                println!("{}[OLE] bin_data_id={} extent={}x{} flags=0x{:02X} raw={}B", indent, o.bin_data_id, o.extent_x, o.extent_y, o.flags, o.raw_tag_data.len());
+                dump_common_fn(&o.common, indent);
+                dump_sa_fn(&o.drawing.shape_attr, indent);
+            }
         }
     }
 
@@ -1224,8 +1234,8 @@ fn dump_controls(args: &[String]) {
                                                     p.common.horz_rel_to, p.common.horizontal_offset);
                                             }
                                             Control::Shape(s) => {
-                                                println!("{}    ctrl[{}] 도형: tac={}, wrap={:?}",
-                                                    indent, ci, s.common().treat_as_char, s.common().text_wrap);
+                                                println!("{}    ctrl[{}] {}: tac={}, wrap={:?}",
+                                                    indent, ci, s.shape_name(), s.common().treat_as_char, s.common().text_wrap);
                                             }
                                             _ => {}
                                         }

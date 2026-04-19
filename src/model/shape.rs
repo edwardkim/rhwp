@@ -264,6 +264,10 @@ pub enum ShapeObject {
     Group(GroupShape),
     /// 그림 개체 (묶음 내 자식으로 포함될 때)
     Picture(Box<crate::model::image::Picture>),
+    /// 차트 개체 (GSO + HWPTAG_CHART_DATA)
+    Chart(Box<ChartShape>),
+    /// OLE 개체 (HWPTAG_SHAPE_COMPONENT_OLE)
+    Ole(Box<OleShape>),
 }
 
 impl ShapeObject {
@@ -278,6 +282,8 @@ impl ShapeObject {
             ShapeObject::Curve(s) => &s.common,
             ShapeObject::Group(g) => &g.common,
             ShapeObject::Picture(p) => &p.common,
+            ShapeObject::Chart(c) => &c.common,
+            ShapeObject::Ole(o) => &o.common,
         }
     }
 
@@ -292,10 +298,12 @@ impl ShapeObject {
             ShapeObject::Curve(s) => &mut s.common,
             ShapeObject::Group(g) => &mut g.common,
             ShapeObject::Picture(p) => &mut p.common,
+            ShapeObject::Chart(c) => &mut c.common,
+            ShapeObject::Ole(o) => &mut o.common,
         }
     }
 
-    /// 그리기 공통 속성 참조 반환 (Group/Picture는 None)
+    /// 그리기 공통 속성 참조 반환 (Group/Picture/Ole 내용 없는 종류는 None)
     pub fn drawing(&self) -> Option<&DrawingObjAttr> {
         match self {
             ShapeObject::Line(s) => Some(&s.drawing),
@@ -304,6 +312,8 @@ impl ShapeObject {
             ShapeObject::Arc(s) => Some(&s.drawing),
             ShapeObject::Polygon(s) => Some(&s.drawing),
             ShapeObject::Curve(s) => Some(&s.drawing),
+            ShapeObject::Chart(c) => Some(&c.drawing),
+            ShapeObject::Ole(o) => Some(&o.drawing),
             ShapeObject::Group(_) | ShapeObject::Picture(_) => None,
         }
     }
@@ -317,6 +327,8 @@ impl ShapeObject {
             ShapeObject::Arc(s) => Some(&mut s.drawing),
             ShapeObject::Polygon(s) => Some(&mut s.drawing),
             ShapeObject::Curve(s) => Some(&mut s.drawing),
+            ShapeObject::Chart(c) => Some(&mut c.drawing),
+            ShapeObject::Ole(o) => Some(&mut o.drawing),
             ShapeObject::Group(_) | ShapeObject::Picture(_) => None,
         }
     }
@@ -337,6 +349,8 @@ impl ShapeObject {
             ShapeObject::Curve(s) => &s.drawing.shape_attr,
             ShapeObject::Group(g) => &g.shape_attr,
             ShapeObject::Picture(p) => &p.shape_attr,
+            ShapeObject::Chart(c) => &c.drawing.shape_attr,
+            ShapeObject::Ole(o) => &o.drawing.shape_attr,
         }
     }
 
@@ -351,6 +365,8 @@ impl ShapeObject {
             ShapeObject::Curve(_) => "곡선",
             ShapeObject::Group(_) => "묶음",
             ShapeObject::Picture(_) => "그림(묶음내)",
+            ShapeObject::Chart(_) => "차트",
+            ShapeObject::Ole(_) => "OLE",
         }
     }
 }
@@ -572,6 +588,147 @@ pub enum CaptionVertAlign {
     Top,
     Center,
     Bottom,
+}
+
+// ============================================================
+// 차트 개체 (Task #195)
+// ============================================================
+
+/// 차트 종류 (1차 범위: Bar/Column/Line/Pie/Area/Scatter)
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum ChartType {
+    Bar,
+    Column,
+    Line,
+    Pie,
+    Area,
+    Scatter,
+    #[default]
+    Unknown,
+}
+
+/// 범례 위치
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum LegendPosition {
+    #[default]
+    Right,
+    Left,
+    Top,
+    Bottom,
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Hidden,
+}
+
+/// 범례
+#[derive(Debug, Clone, Default)]
+pub struct Legend {
+    pub position: LegendPosition,
+    pub visible: bool,
+}
+
+/// 축
+#[derive(Debug, Clone, Default)]
+pub struct Axis {
+    pub label: Option<String>,
+    pub labels: Vec<String>,
+    pub min: Option<f64>,
+    pub max: Option<f64>,
+}
+
+/// 데이터 시리즈 (한 줄기 막대/선 등)
+#[derive(Debug, Clone, Default)]
+pub struct DataSeries {
+    /// 시리즈 이름 (범례 표시용)
+    pub name: String,
+    /// Y값 (또는 파이의 각 조각 값)
+    pub values: Vec<f64>,
+    /// X축 레이블 (시리즈 간 공유되지만 편의상 각자 보관)
+    pub categories: Vec<String>,
+    /// RGB 색상 (`0xRRGGBB`)
+    pub color: Option<u32>,
+}
+
+/// 차트 개체 (GSO + HWPTAG_CHART_DATA)
+#[derive(Debug, Clone, Default)]
+pub struct ChartShape {
+    /// 공통 속성
+    pub common: CommonObjAttr,
+    /// 그리기 공통 속성
+    pub drawing: DrawingObjAttr,
+    /// 차트 종류
+    pub chart_type: ChartType,
+    /// 타이틀
+    pub title: Option<String>,
+    /// 범례
+    pub legend: Option<Legend>,
+    /// X축
+    pub x_axis: Option<Axis>,
+    /// Y축
+    pub y_axis: Option<Axis>,
+    /// 데이터 시리즈 목록
+    pub series: Vec<DataSeries>,
+    /// CHART_DATA 레코드 원본 바이트(라운드트립 보존용, 하위 태그 전체 병합)
+    pub raw_chart_data: Vec<u8>,
+    /// 캡션
+    pub caption: Option<Caption>,
+}
+
+// ============================================================
+// OLE 개체 (Task #195)
+// ============================================================
+
+/// OLE 프리뷰 이미지 포맷
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum OlePreviewFormat {
+    Wmf,
+    Emf,
+    Png,
+    Bmp,
+}
+
+/// OLE 프리뷰 이미지
+#[derive(Debug, Clone)]
+pub struct OlePreview {
+    pub format: OlePreviewFormat,
+    pub bytes: Vec<u8>,
+}
+
+/// OLE 표시 방식 (DrawingAspect)
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum OleDrawingAspect {
+    #[default]
+    Content,
+    Icon,
+    Thumbnail,
+    DocPrint,
+}
+
+/// OLE 개체 (HWPTAG_SHAPE_COMPONENT_OLE)
+#[derive(Debug, Clone, Default)]
+pub struct OleShape {
+    /// 공통 속성
+    pub common: CommonObjAttr,
+    /// 그리기 공통 속성
+    pub drawing: DrawingObjAttr,
+    /// 개체 영역 가로 (HWPUNIT)
+    pub extent_x: i32,
+    /// 개체 영역 세로 (HWPUNIT)
+    pub extent_y: i32,
+    /// OLE 속성 플래그
+    pub flags: u8,
+    /// 표시 방식
+    pub drawing_aspect: OleDrawingAspect,
+    /// BinData 참조 ID (`BinData/BIN000N.OLE`)
+    pub bin_data_id: u32,
+    /// 프리뷰 이미지 (단계 4 이후 선택적 채움)
+    pub preview: Option<OlePreview>,
+    /// OLE 레코드 원본 바이트 (라운드트립 보존)
+    pub raw_tag_data: Vec<u8>,
+    /// 캡션
+    pub caption: Option<Caption>,
 }
 
 #[cfg(test)]

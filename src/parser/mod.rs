@@ -17,6 +17,7 @@
 
 pub mod bin_data;
 pub mod body_text;
+pub mod ole_container;
 pub mod byte_reader;
 pub mod cfb_reader;
 pub mod control;
@@ -305,19 +306,33 @@ fn load_bin_data_content_lenient(
     let mut contents = Vec::new();
 
     for bd in bin_data_list.iter() {
-        if bd.data_type != BinDataType::Embedding {
-            continue;
-        }
+        let is_storage = match bd.data_type {
+            BinDataType::Embedding => false,
+            BinDataType::Storage => true,
+            BinDataType::Link => continue,
+        };
 
-        let ext = bd.extension.as_deref().unwrap_or("dat");
+        let ext = if is_storage {
+            bd.extension.as_deref().unwrap_or("OLE")
+        } else {
+            bd.extension.as_deref().unwrap_or("dat")
+        };
         let storage_name = format!("BIN{:04X}.{}", bd.storage_id, ext);
 
         match lenient.read_stream(&storage_name) {
             Ok(data) => {
-                let decompressed = match cfb_reader::decompress_stream(&data) {
+                let mut decompressed = match cfb_reader::decompress_stream(&data) {
                     Ok(d) => d,
                     Err(_) => data,
                 };
+
+                // Task #195 단계 6: OLE Storage는 CFB 매직 바로 앞의 4-byte size prefix 스킵
+                if is_storage && decompressed.len() > 8 {
+                    let cfb_magic = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+                    if decompressed[..8] != cfb_magic && decompressed[4..12] == cfb_magic {
+                        decompressed.drain(..4);
+                    }
+                }
 
                 contents.push(BinDataContent {
                     id: bd.storage_id,
@@ -676,22 +691,39 @@ fn load_bin_data_content(
     let mut contents = Vec::new();
 
     for bd in bin_data_list.iter() {
-        // Embedding 타입만 로드 (Link는 외부 파일, Storage는 OLE)
-        if bd.data_type != BinDataType::Embedding {
-            continue;
-        }
+        // Embedding(이미지)과 Storage(OLE) 로드. Link는 외부 파일 참조이므로 제외
+        let is_storage = match bd.data_type {
+            BinDataType::Embedding => false,
+            BinDataType::Storage => true,
+            BinDataType::Link => continue,
+        };
 
-        // 스토리지 이름 생성: BIN0001.jpg, BIN0002.png, ... (16진수, HWP 규칙)
-        let ext = bd.extension.as_deref().unwrap_or("dat");
+        // 스토리지 이름 생성: BIN0001.jpg (이미지) / BIN0001.OLE (OLE)
+        // Storage 타입은 확장자 정보가 없을 수 있으므로 "OLE"로 기본 폴백
+        let ext = if is_storage {
+            bd.extension.as_deref().unwrap_or("OLE")
+        } else {
+            bd.extension.as_deref().unwrap_or("dat")
+        };
         let storage_name = format!("BIN{:04X}.{}", bd.storage_id, ext);
 
         match cfb.read_bin_data(&storage_name) {
             Ok(data) => {
                 // 압축된 BinData 해제 시도
-                let decompressed = match cfb_reader::decompress_stream(&data) {
+                let mut decompressed = match cfb_reader::decompress_stream(&data) {
                     Ok(d) => d,
                     Err(_) => data, // 압축 해제 실패 시 원본 사용 (비압축 데이터)
                 };
+
+                // Task #195 단계 6: OLE Storage는 해제 후 선두 4바이트 size prefix를 스킵하여
+                // 내부 CFB(`d0cf11e0...`) 시작 바이트부터 노출한다.
+                if is_storage && decompressed.len() > 8 {
+                    // CFB 매직이 바로 시작하면 prefix 없음
+                    let cfb_magic = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+                    if decompressed[..8] != cfb_magic && decompressed[4..12] == cfb_magic {
+                        decompressed.drain(..4);
+                    }
+                }
 
                 contents.push(BinDataContent {
                     id: bd.storage_id,

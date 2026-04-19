@@ -334,6 +334,25 @@ impl SvgRenderer {
             RenderNodeType::FormObject(form) => {
                 self.render_form_object(form, &node.bbox);
             }
+            RenderNodeType::RawSvg(r) => {
+                // Task #195 단계 8: OOXML 차트 SVG 조각 그대로 삽입
+                self.output.push_str(&r.svg);
+            }
+            RenderNodeType::Placeholder(ph) => {
+                // Task #195: 차트/OLE placeholder (점선 테두리 + 중앙 라벨)
+                let cx = node.bbox.x + node.bbox.width / 2.0;
+                let cy = node.bbox.y + node.bbox.height / 2.0;
+                let font_size = (node.bbox.width.min(node.bbox.height) * 0.06).clamp(12.0, 28.0);
+                self.output.push_str(&format!(
+                    "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" stroke=\"{}\" stroke-width=\"1\" stroke-dasharray=\"6 3\"/>\n",
+                    node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
+                    color_to_svg(ph.fill_color), color_to_svg(ph.stroke_color),
+                ));
+                self.output.push_str(&format!(
+                    "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.1}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"central\">{}</text>\n",
+                    cx, cy, font_size, color_to_svg(ph.stroke_color), escape_xml(&ph.label),
+                ));
+            }
             RenderNodeType::Body { clip_rect: Some(cr) } => {
                 let clip_id = format!("body-clip-{}", node.id);
                 self.defs.push(format!(
@@ -836,6 +855,13 @@ impl SvgRenderer {
         if let Some(stroke) = style.stroke_color {
             attrs.push_str(&format!(" stroke=\"{}\" stroke-width=\"{}\"",
                 color_to_svg(stroke), style.stroke_width));
+            match style.stroke_dash {
+                StrokeDash::Dash => attrs.push_str(" stroke-dasharray=\"6 3\""),
+                StrokeDash::Dot => attrs.push_str(" stroke-dasharray=\"2 2\""),
+                StrokeDash::DashDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3\""),
+                StrokeDash::DashDotDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3 2 3\""),
+                _ => {}
+            }
         }
 
         if style.opacity < 1.0 {

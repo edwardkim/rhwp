@@ -1018,6 +1018,8 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
                         ShapeObject::Curve(_) => tags::SHAPE_CURVE_ID,
                         ShapeObject::Group(_) => tags::CTRL_GEN_SHAPE,
                         ShapeObject::Picture(_) => 0x24706963, // '$pic'
+                        ShapeObject::Chart(c) => c.drawing.shape_attr.ctrl_id,
+                        ShapeObject::Ole(o) => o.drawing.shape_attr.ctrl_id,
                     };
                     w.write_u32(child_ctrl_id).unwrap();
                 }
@@ -1041,6 +1043,52 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
         }
         ShapeObject::Picture(_pic) => {
             // 그룹 내 그림: 그룹 직렬화 시 자식으로 처리됨 (단독 Picture는 Control::Picture로 직렬화)
+        }
+        ShapeObject::Chart(chart) => {
+            // Task #195 단계 2: raw_chart_data를 그대로 보존하여 라운드트립 유지
+            records.push(make_ctrl_record(
+                tags::CTRL_GEN_SHAPE,
+                level,
+                &serialize_common_obj_attr(&chart.common),
+            ));
+            let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: level + 1,
+                size: 0,
+                data: serialize_drawing_shape_component(sc_ctrl_id, &chart.drawing, true),
+            });
+            emit_ctrl_data(records);
+            serialize_text_box_if_present(&chart.drawing, level + 2, records);
+            records.push(Record {
+                tag_id: tags::HWPTAG_CHART_DATA,
+                level: level + 2,
+                size: 0,
+                data: chart.raw_chart_data.clone(),
+            });
+        }
+        ShapeObject::Ole(ole) => {
+            // Task #195 단계 2: raw_tag_data를 그대로 보존하여 라운드트립 유지
+            records.push(make_ctrl_record(
+                tags::CTRL_GEN_SHAPE,
+                level,
+                &serialize_common_obj_attr(&ole.common),
+            ));
+            let sc_ctrl_id = ole.drawing.shape_attr.ctrl_id;
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: level + 1,
+                size: 0,
+                data: serialize_drawing_shape_component(sc_ctrl_id, &ole.drawing, true),
+            });
+            emit_ctrl_data(records);
+            serialize_text_box_if_present(&ole.drawing, level + 2, records);
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT_OLE,
+                level: level + 2,
+                size: 0,
+                data: ole.raw_tag_data.clone(),
+            });
         }
     }
 }
@@ -1227,6 +1275,38 @@ fn serialize_group_child(
         }
         ShapeObject::Picture(_pic) => {
             // TODO: 그룹 내 그림 직렬화
+        }
+        ShapeObject::Chart(chart) => {
+            // Task #195 단계 2: 그룹 내 차트는 raw_chart_data로 라운드트립
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: comp_level,
+                size: 0,
+                data: serialize_drawing_shape_component(chart.drawing.shape_attr.ctrl_id, &chart.drawing, false),
+            });
+            serialize_text_box_if_present(&chart.drawing, type_level, records);
+            records.push(Record {
+                tag_id: tags::HWPTAG_CHART_DATA,
+                level: type_level,
+                size: 0,
+                data: chart.raw_chart_data.clone(),
+            });
+        }
+        ShapeObject::Ole(ole) => {
+            // Task #195 단계 2: 그룹 내 OLE는 raw_tag_data로 라운드트립
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: comp_level,
+                size: 0,
+                data: serialize_drawing_shape_component(ole.drawing.shape_attr.ctrl_id, &ole.drawing, false),
+            });
+            serialize_text_box_if_present(&ole.drawing, type_level, records);
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT_OLE,
+                level: type_level,
+                size: 0,
+                data: ole.raw_tag_data.clone(),
+            });
         }
     }
 }

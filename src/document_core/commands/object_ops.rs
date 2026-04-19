@@ -2752,6 +2752,8 @@ impl DocumentCore {
                     Self::scale_group_children(&mut g.children, sx, sy);
                 }
                 SO::Picture(_) => {} // 그림은 크기만 변경
+                SO::Chart(_) => {}   // 차트: 크기만 변경, 내부 좌표 스케일 없음 (Task #195 단계 2)
+                SO::Ole(_) => {}     // OLE: 크기만 변경
             }
 
             // shape_attr 동기화
@@ -2764,6 +2766,8 @@ impl DocumentCore {
                 SO::Curve(s) => &mut s.drawing.shape_attr,
                 SO::Group(g) => &mut g.shape_attr,
                 SO::Picture(p) => &mut p.shape_attr,
+                SO::Chart(c) => &mut c.drawing.shape_attr,
+                SO::Ole(o) => &mut o.drawing.shape_attr,
             };
             sa.offset_x = new_horz as i32;
             sa.offset_y = new_vert as i32;
@@ -2883,6 +2887,8 @@ impl DocumentCore {
                 ShapeObject::Curve(s) => &mut s.drawing.shape_attr,
                 ShapeObject::Group(g) => &mut g.shape_attr,
                 ShapeObject::Picture(p) => &mut p.shape_attr,
+                ShapeObject::Chart(c) => &mut c.drawing.shape_attr,
+                ShapeObject::Ole(o) => &mut o.drawing.shape_attr,
             };
             sa.offset_x = new_horz as i32;
             sa.offset_y = new_vert as i32;
@@ -3130,6 +3136,8 @@ impl DocumentCore {
                     ShapeObject::Curve(s) => &mut s.drawing.shape_attr,
                     ShapeObject::Group(g) => &mut g.shape_attr,
                     ShapeObject::Picture(p) => &mut p.shape_attr,
+                    ShapeObject::Chart(c) => &mut c.drawing.shape_attr,
+                    ShapeObject::Ole(o) => &mut o.drawing.shape_attr,
                 };
                 if sa.group_level > 0 { sa.group_level -= 1; }
                 sa.offset_x = 0;

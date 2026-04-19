@@ -965,6 +965,60 @@ impl LayoutEngine {
                 );
                 parent.children.push(img_node);
             }
+            ShapeObject::Chart(chart) => {
+                // Task #195: 차트 placeholder (점선 테두리 + "차트" 라벨)
+                let _chart = chart;
+                let node_id = tree.next_id();
+                let node = RenderNode::new(
+                    node_id,
+                    RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode {
+                        fill_color: 0xFFE8F0FE,
+                        stroke_color: 0xFF4A90E2,
+                        label: "차트 (Chart)".to_string(),
+                    }),
+                    BoundingBox::new(render_x, render_y, render_w, render_h),
+                );
+                parent.children.push(node);
+            }
+            ShapeObject::Ole(ole) => {
+                // Task #195 단계 8: BinData에서 OOXML 차트 시도 → 성공 시 네이티브 SVG 렌더
+                let mut rendered = false;
+                if let Some(content) = find_bin_data(bin_data_content, ole.bin_data_id as u16) {
+                    if let Some(container) = crate::parser::ole_container::parse_ole_container(&content.data) {
+                        if let Some(ooxml_bytes) = container.ooxml_chart.as_ref() {
+                            if let Some(chart) = crate::ooxml_chart::OoxmlChart::parse(ooxml_bytes) {
+                                let svg_fragment = chart.render_svg(render_x, render_y, render_w, render_h);
+                                let node_id = tree.next_id();
+                                let node = RenderNode::new(
+                                    node_id,
+                                    RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode {
+                                        svg: svg_fragment,
+                                    }),
+                                    BoundingBox::new(render_x, render_y, render_w, render_h),
+                                );
+                                parent.children.push(node);
+                                rendered = true;
+                            }
+                        }
+                    }
+                }
+
+                if !rendered {
+                    // 폴백: placeholder
+                    let label = format!("OLE 개체 (BinData #{})", ole.bin_data_id);
+                    let node_id = tree.next_id();
+                    let node = RenderNode::new(
+                        node_id,
+                        RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode {
+                            fill_color: 0xFFF0F0F0,
+                            stroke_color: 0xFF707070,
+                            label,
+                        }),
+                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                    );
+                    parent.children.push(node);
+                }
+            }
         }
     }
 
