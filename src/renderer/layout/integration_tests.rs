@@ -294,24 +294,43 @@ mod tests {
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
-    fn assert_skia_png_matches_layer_svg(sample: &str, page_num: u32) {
-        let Some(core) = load_document(sample) else {
-            return;
-        };
+    fn compare_skia_png_matches_layer_svg(sample: &str, page_num: u32) -> Result<(), String> {
+        let path = Path::new(sample);
+        if !path.exists() {
+            return Ok(());
+        }
+
+        let data = std::fs::read(path).map_err(|err| format!("샘플 읽기 실패: {sample}: {err}"))?;
+        let core = crate::document_core::DocumentCore::from_bytes(&data)
+            .map_err(|err| format!("문서 파싱 실패: {sample}: {err}"))?;
+        if page_num >= core.page_count() {
+            return Err(format!(
+                "페이지 범위 초과: {sample} requested={} page_count={}",
+                page_num,
+                core.page_count()
+            ));
+        }
+
         let layered_svg = core
             .render_page_svg_layer_native(page_num)
-            .expect("layer SVG 렌더 실패");
-        let expected = rasterize_svg(&layered_svg).expect("layer SVG rasterize 실패");
+            .map_err(|err| format!("layer SVG 렌더 실패: {sample} p{page_num}: {err}"))?;
+        let expected = rasterize_svg(&layered_svg)
+            .ok_or_else(|| format!("layer SVG rasterize 실패: {sample} p{page_num}"))?;
         let actual_png = core
             .render_page_png_native(page_num)
-            .expect("Skia PNG 렌더 실패");
-        let actual = decode_png(&actual_png).expect("Skia PNG decode 실패");
+            .map_err(|err| format!("Skia PNG 렌더 실패: {sample} p{page_num}: {err}"))?;
+        let actual = decode_png(&actual_png)
+            .ok_or_else(|| format!("Skia PNG decode 실패: {sample} p{page_num}"))?;
 
-        assert_eq!(
-            (actual.width(), actual.height()),
-            (expected.width(), expected.height()),
-            "Skia/layer raster 크기가 달라서는 안 됨",
-        );
+        if (actual.width(), actual.height()) != (expected.width(), expected.height()) {
+            return Err(format!(
+                "Skia/layer raster 크기 불일치: {sample} p{page_num} expected=({},{}) actual=({},{})",
+                expected.width(),
+                expected.height(),
+                actual.width(),
+                actual.height(),
+            ));
+        }
 
         let exact_diff = diff_pixmaps(&expected, &actual, 0);
         let raw_tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
@@ -374,8 +393,8 @@ mod tests {
                 &actual,
                 &raster_tolerant_diff.diff_pixmap,
             );
-            panic!(
-                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), raster_tolerant={} pixels (radius={}, ratio={:.3}%, budget={:.3}%), mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {})",
+            return Err(format!(
+                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), raster_tolerant={} pixels (radius={}, ratio={:.3}%, budget={:.3}%) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {})",
                 exact_diff.diff_pixels,
                 raw_tolerant_diff.diff_pixels,
                 SKIA_TOLERANT_MAX_DIFF_PIXELS,
@@ -384,14 +403,48 @@ mod tests {
                 SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
                 raster_tolerant_ratio * 100.0,
                 SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO * 100.0,
-                exact_diff.mean_abs_channel_delta,
-                exact_diff.max_channel_delta,
                 expected_path.display(),
                 actual_path.display(),
                 diff_path.display(),
                 tolerant_diff_path,
                 raster_tolerant_diff_path.display(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    fn assert_skia_png_matches_layer_svg_for_corpus(label: &str, samples: &[(String, Vec<u32>)]) {
+        let mut failures = Vec::new();
+        let total_pages: usize = samples.iter().map(|(_, pages)| pages.len()).sum();
+        let mut completed_pages = 0usize;
+
+        for (sample, pages) in samples {
+            for &page_num in pages {
+                completed_pages += 1;
+                eprintln!(
+                    "[skia-corpus:{label}] {completed_pages}/{total_pages} {sample} p{page_num}"
+                );
+                if let Err(err) = compare_skia_png_matches_layer_svg(sample, page_num) {
+                    failures.push(err);
+                }
+            }
+        }
+
+        if !failures.is_empty() {
+            panic!(
+                "Skia corpus screenshot regression 실패 {}건:\n{}",
+                failures.len(),
+                failures.join("\n"),
             );
+        }
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    fn assert_skia_png_matches_layer_svg(sample: &str, page_num: u32) {
+        if let Err(err) = compare_skia_png_matches_layer_svg(sample, page_num) {
+            panic!("{err}");
         }
     }
 
@@ -890,6 +943,62 @@ mod tests {
     #[test]
     fn test_skia_screenshot_matches_layer_svg_for_picture_crop_sample() {
         assert_skia_png_matches_layer_svg("samples/pic-crop-01.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_representative_sample_corpus() {
+        let samples = vec![
+            ("samples/lseg-02-mixed.hwp".to_string(), vec![0]),
+            ("samples/lseg-03-spacing.hwp".to_string(), vec![0]),
+            ("samples/field-01.hwp".to_string(), vec![0]),
+            ("samples/form-01.hwp".to_string(), vec![0]),
+            ("samples/eq-01.hwp".to_string(), vec![0]),
+            ("samples/pic-crop-01.hwp".to_string(), vec![0]),
+            ("samples/table-001.hwp".to_string(), vec![0]),
+            ("samples/table-complex.hwp".to_string(), vec![0]),
+            ("samples/group-drawing-02.hwp".to_string(), vec![0]),
+            ("samples/hwp-img-001.hwp".to_string(), vec![0]),
+            ("samples/biz_plan.hwp".to_string(), vec![0]),
+        ];
+
+        assert_skia_png_matches_layer_svg_for_corpus("representative", &samples);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    #[ignore = "expensive full sample sweep"]
+    fn test_skia_screenshot_matches_layer_svg_for_full_sample_corpus() {
+        let mut samples = Vec::new();
+        for entry in std::fs::read_dir("samples").expect("samples 디렉터리 읽기 실패") {
+            let entry = entry.expect("samples 디렉터리 항목 읽기 실패");
+            let path = entry.path();
+            if !path.is_file() {
+                continue;
+            }
+
+            let extension = path
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map(|ext| ext.to_ascii_lowercase())
+                .unwrap_or_default();
+            if !matches!(extension.as_str(), "hwp" | "hwpx") {
+                continue;
+            }
+
+            let file_name = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or_default();
+            if matches!(file_name, "loading-fail-01.hwp") {
+                continue;
+            }
+
+            samples.push((path.to_string_lossy().to_string(), vec![0]));
+        }
+        samples.sort_by(|left, right| left.0.cmp(&right.0));
+
+        assert_skia_png_matches_layer_svg_for_corpus("full", &samples);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
