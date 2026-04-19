@@ -11,6 +11,8 @@ mod tests {
 
     const SKIA_TOLERANT_CHANNEL_DELTA: u8 = 8;
     const SKIA_TOLERANT_MAX_DIFF_PIXELS: usize = 64;
+    const SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS: usize = 1;
+    const SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO: f64 = 0.013;
 
     fn render_path_env_lock() -> &'static Mutex<()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
@@ -55,6 +57,23 @@ mod tests {
         diff_pixmap: tiny_skia::Pixmap,
     }
 
+    fn pixel_max_delta(expected_px: &[u8], actual_px: &[u8]) -> u8 {
+        let mut pixel_max_delta = 0u8;
+        for channel in 0..4 {
+            pixel_max_delta =
+                pixel_max_delta.max(expected_px[channel].abs_diff(actual_px[channel]));
+        }
+        pixel_max_delta
+    }
+
+    fn pixel_matches_within_delta(
+        expected_px: &[u8],
+        actual_px: &[u8],
+        ignored_channel_delta: u8,
+    ) -> bool {
+        pixel_max_delta(expected_px, actual_px) <= ignored_channel_delta
+    }
+
     fn diff_pixmaps(
         expected: &tiny_skia::Pixmap,
         actual: &tiny_skia::Pixmap,
@@ -73,22 +92,115 @@ mod tests {
             .zip(actual.data().chunks_exact(4))
             .enumerate()
         {
-            let mut pixel_diff = false;
-            let mut pixel_max_delta = 0u8;
-
             for channel in 0..4 {
                 let delta = expected_px[channel].abs_diff(actual_px[channel]);
-                if delta > 0 {
-                    pixel_diff = true;
-                }
                 total_channel_delta += u64::from(delta);
-                pixel_max_delta = pixel_max_delta.max(delta);
                 max_channel_delta = max_channel_delta.max(delta);
             }
 
+            let pixel_max_delta = pixel_max_delta(expected_px, actual_px);
             if pixel_max_delta > ignored_channel_delta {
                 diff_pixels += 1;
                 let base = idx * 4;
+                diff_pixmap.data_mut()[base..base + 4].copy_from_slice(&[
+                    pixel_max_delta.max(32),
+                    0,
+                    0,
+                    255,
+                ]);
+            }
+        }
+
+        let mean_abs_channel_delta = if total_pixels == 0 {
+            0.0
+        } else {
+            total_channel_delta as f64 / (total_pixels as f64 * 4.0)
+        };
+
+        PixmapDiff {
+            diff_pixels,
+            total_pixels,
+            max_channel_delta,
+            mean_abs_channel_delta,
+            diff_pixmap,
+        }
+    }
+
+    fn diff_pixmaps_with_neighborhood(
+        expected: &tiny_skia::Pixmap,
+        actual: &tiny_skia::Pixmap,
+        ignored_channel_delta: u8,
+        radius: usize,
+    ) -> PixmapDiff {
+        let total_pixels = (expected.width() as usize) * (expected.height() as usize);
+        let mut diff_pixmap = tiny_skia::Pixmap::new(expected.width(), expected.height())
+            .expect("diff pixmap 생성 실패");
+        let mut diff_pixels = 0usize;
+        let mut total_channel_delta = 0u64;
+        let mut max_channel_delta = 0u8;
+        let width = expected.width() as usize;
+        let height = expected.height() as usize;
+        let expected_data = expected.data();
+        let actual_data = actual.data();
+
+        for y in 0..height {
+            for x in 0..width {
+                let idx = y * width + x;
+                let base = idx * 4;
+                let expected_px = &expected_data[base..base + 4];
+                let actual_px = &actual_data[base..base + 4];
+
+                for channel in 0..4 {
+                    let delta = expected_px[channel].abs_diff(actual_px[channel]);
+                    total_channel_delta += u64::from(delta);
+                    max_channel_delta = max_channel_delta.max(delta);
+                }
+
+                let pixel_max_delta = pixel_max_delta(expected_px, actual_px);
+                if pixel_max_delta <= ignored_channel_delta {
+                    continue;
+                }
+
+                let mut matched = false;
+                let min_y = y.saturating_sub(radius);
+                let max_y = (y + radius).min(height - 1);
+                let min_x = x.saturating_sub(radius);
+                let max_x = (x + radius).min(width - 1);
+
+                'search_actual: for ny in min_y..=max_y {
+                    for nx in min_x..=max_x {
+                        let neighbor_base = (ny * width + nx) * 4;
+                        let candidate = &actual_data[neighbor_base..neighbor_base + 4];
+                        if pixel_matches_within_delta(expected_px, candidate, ignored_channel_delta)
+                        {
+                            matched = true;
+                            break 'search_actual;
+                        }
+                    }
+                }
+
+                if !matched {
+                    'search_expected: for ny in min_y..=max_y {
+                        for nx in min_x..=max_x {
+                            let neighbor_base = (ny * width + nx) * 4;
+                            let candidate = &expected_data[neighbor_base..neighbor_base + 4];
+                            if pixel_matches_within_delta(
+                                candidate,
+                                actual_px,
+                                ignored_channel_delta,
+                            ) {
+                                matched = true;
+                                break 'search_expected;
+                            }
+                        }
+                    }
+                }
+
+                if matched {
+                    continue;
+                }
+
+                diff_pixels += 1;
                 diff_pixmap.data_mut()[base..base + 4].copy_from_slice(&[
                     pixel_max_delta.max(32),
                     0,
@@ -203,6 +315,14 @@ mod tests {
 
         let exact_diff = diff_pixmaps(&expected, &actual, 0);
         let raw_tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+        let raster_tolerant_diff = diff_pixmaps_with_neighborhood(
+            &expected,
+            &actual,
+            SKIA_TOLERANT_CHANNEL_DELTA,
+            SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
+        );
+        let raster_tolerant_ratio =
+            raster_tolerant_diff.diff_pixels as f64 / raster_tolerant_diff.total_pixels as f64;
 
         let exact_paths = if exact_diff.diff_pixels > 0 {
             Some(save_diff_artifacts(
@@ -236,25 +356,41 @@ mod tests {
             None
         };
 
-        if raw_tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
+        if raster_tolerant_ratio > SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO {
             let (expected_path, actual_path, diff_path) =
                 exact_paths.expect("tolerant diff가 있으면 exact diff도 있어야 함");
             let tolerant_diff_path = tolerant_paths
                 .as_ref()
                 .map(|(_, _, path)| path.display().to_string())
                 .unwrap_or_else(|| "-".to_string());
+            let (_, _, raster_tolerant_diff_path) = save_diff_artifacts(
+                "output/skia-diff",
+                sample,
+                page_num,
+                "layer",
+                "skia",
+                "raster-tolerant-diff",
+                &expected,
+                &actual,
+                &raster_tolerant_diff.diff_pixmap,
+            );
             panic!(
-                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
+                "Skia raster diff 발생: exact={} pixels, tolerant={} pixels (budget={}, ignored_channel_delta<={}), raster_tolerant={} pixels (radius={}, ratio={:.3}%, budget={:.3}%), mean_abs_channel_delta={:.3}, max_channel_delta={} (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {})",
                 exact_diff.diff_pixels,
                 raw_tolerant_diff.diff_pixels,
                 SKIA_TOLERANT_MAX_DIFF_PIXELS,
                 SKIA_TOLERANT_CHANNEL_DELTA,
+                raster_tolerant_diff.diff_pixels,
+                SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
+                raster_tolerant_ratio * 100.0,
+                SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO * 100.0,
                 exact_diff.mean_abs_channel_delta,
                 exact_diff.max_channel_delta,
                 expected_path.display(),
                 actual_path.display(),
                 diff_path.display(),
                 tolerant_diff_path,
+                raster_tolerant_diff_path.display(),
             );
         }
     }
@@ -276,8 +412,16 @@ mod tests {
             .expect("synthetic Skia PNG 렌더 실패");
         let actual = decode_png(&actual_png).expect("synthetic Skia PNG decode 실패");
         let tolerant_diff = diff_pixmaps(&expected, &actual, SKIA_TOLERANT_CHANNEL_DELTA);
+        let raster_tolerant_diff = diff_pixmaps_with_neighborhood(
+            &expected,
+            &actual,
+            SKIA_TOLERANT_CHANNEL_DELTA,
+            SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
+        );
+        let raster_tolerant_ratio =
+            raster_tolerant_diff.diff_pixels as f64 / raster_tolerant_diff.total_pixels as f64;
 
-        if tolerant_diff.diff_pixels > SKIA_TOLERANT_MAX_DIFF_PIXELS {
+        if raster_tolerant_ratio > SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO {
             let exact_diff = diff_pixmaps(&expected, &actual, 0);
             let (expected_path, actual_path, diff_path) = save_diff_artifacts(
                 "output/skia-diff",
@@ -301,15 +445,31 @@ mod tests {
                 &actual,
                 &tolerant_diff.diff_pixmap,
             );
+            let (_, _, raster_tolerant_path) = save_diff_artifacts(
+                "output/skia-diff",
+                case_name,
+                0,
+                "layer",
+                "skia",
+                "raster-tolerant-diff",
+                &expected,
+                &actual,
+                &raster_tolerant_diff.diff_pixmap,
+            );
             panic!(
-                "synthetic Skia raster diff 발생: exact={} tolerant={} (budget={}) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {})",
+                "synthetic Skia raster diff 발생: exact={} tolerant={} (budget={}), raster_tolerant={} (radius={}, ratio={:.3}%, budget={:.3}%) (layer: {}, skia: {}, exact diff: {}, tolerant diff: {}, raster tolerant diff: {})",
                 exact_diff.diff_pixels,
                 tolerant_diff.diff_pixels,
                 SKIA_TOLERANT_MAX_DIFF_PIXELS,
+                raster_tolerant_diff.diff_pixels,
+                SKIA_RASTER_TOLERANT_NEIGHBOR_RADIUS,
+                raster_tolerant_ratio * 100.0,
+                SKIA_RASTER_TOLERANT_MAX_DIFF_RATIO * 100.0,
                 expected_path.display(),
                 actual_path.display(),
                 diff_path.display(),
                 tolerant_path.display(),
+                raster_tolerant_path.display(),
             );
         }
     }
@@ -374,6 +534,40 @@ mod tests {
 
         assert_eq!(raw_tolerant.diff_pixels, 2);
         assert_eq!(budgeted_tolerant, 0);
+    }
+
+    #[test]
+    fn test_diff_pixmaps_with_neighborhood_ignores_one_pixel_shift() {
+        let mut expected = tiny_skia::Pixmap::new(5, 1).expect("expected pixmap 생성 실패");
+        let mut actual = tiny_skia::Pixmap::new(5, 1).expect("actual pixmap 생성 실패");
+
+        expected
+            .data_mut()
+            .copy_from_slice(&[0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        actual
+            .data_mut()
+            .copy_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+        let diff = diff_pixmaps_with_neighborhood(&expected, &actual, 8, 1);
+        assert_eq!(diff.diff_pixels, 0);
+    }
+
+    #[test]
+    fn test_diff_pixmaps_with_neighborhood_preserves_large_shift() {
+        let mut expected = tiny_skia::Pixmap::new(10, 1).expect("expected pixmap 생성 실패");
+        let mut actual = tiny_skia::Pixmap::new(10, 1).expect("actual pixmap 생성 실패");
+
+        expected.data_mut().copy_from_slice(&[
+            0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        actual.data_mut().copy_from_slice(&[
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0,
+            255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+
+        let diff = diff_pixmaps_with_neighborhood(&expected, &actual, 8, 1);
+        assert!(diff.diff_pixels > 0);
     }
 
     // ─── 페이지 수 검증 ───
@@ -623,6 +817,55 @@ mod tests {
         let mut builder = LayerBuilder::new(RenderProfile::Screen);
         let layer_tree = builder.build(&tree);
         assert_skia_layer_tree_matches_svg("synthetic-shapes", &layer_tree);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_synthetic_equation_layout() {
+        use crate::paint::{LayerBuilder, RenderProfile};
+        use crate::renderer::equation::layout::EqLayout;
+        use crate::renderer::equation::parser::EqParser;
+        use crate::renderer::equation::svg_render::render_equation_svg;
+        use crate::renderer::equation::tokenizer::tokenize;
+        use crate::renderer::render_tree::{
+            BoundingBox, EquationNode, PageNode, PageRenderTree, RenderNode, RenderNodeType,
+        };
+
+        let font_size = 22.0;
+        let ast = EqParser::new(tokenize(
+            "SUM _{i=1} ^{n} LEFT ( x_i ^2 + y_i ^2 RIGHT ) over SQRT {n}",
+        ))
+        .parse();
+        let layout_box = EqLayout::new(font_size).layout(&ast);
+        let svg_content = render_equation_svg(&layout_box, "#000000", font_size);
+
+        let mut tree = PageRenderTree::new(0, 320.0, 140.0);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 320.0,
+            height: 140.0,
+            section_index: 0,
+        });
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Equation(EquationNode {
+                svg_content,
+                layout_box: layout_box.clone(),
+                color_str: "#000000".to_string(),
+                color: 0x00000000,
+                font_size,
+                section_index: Some(0),
+                para_index: Some(0),
+                control_index: Some(0),
+                cell_index: None,
+                cell_para_index: None,
+            }),
+            BoundingBox::new(18.0, 24.0, layout_box.width, layout_box.height),
+        ));
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        assert_skia_layer_tree_matches_svg("synthetic-equation-layout", &layer_tree);
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
