@@ -19,6 +19,10 @@ pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
 }
 
+fn raster_dimension(length: f64) -> i32 {
+    length.round().max(1.0) as i32
+}
+
 impl SkiaLayerRenderer {
     pub fn new() -> Self {
         Self {
@@ -27,8 +31,8 @@ impl SkiaLayerRenderer {
     }
 
     pub fn render_png(&self, tree: &PageLayerTree) -> Result<Vec<u8>, String> {
-        let width = tree.page_width.max(1.0).ceil() as i32;
-        let height = tree.page_height.max(1.0).ceil() as i32;
+        let width = raster_dimension(tree.page_width);
+        let height = raster_dimension(tree.page_height);
         let mut surface = surfaces::raster_n32_premul((width, height))
             .ok_or_else(|| "Skia raster surface 생성 실패".to_string())?;
         let canvas = surface.canvas();
@@ -650,6 +654,7 @@ mod tests {
         BoundingBox, PageNode, RectangleNode, RenderNode, RenderNodeType,
     };
     use crate::renderer::ShapeStyle;
+    use resvg::tiny_skia;
 
     #[test]
     fn renders_basic_rect_to_png() {
@@ -680,5 +685,37 @@ mod tests {
         let png = renderer.render_png(&layer_tree).expect("skia png render");
         assert!(!png.is_empty());
         assert_eq!(&png[0..8], b"\x89PNG\r\n\x1a\n");
+    }
+
+    #[test]
+    fn rounds_surface_size_like_svg_rasterization() {
+        let mut tree =
+            crate::renderer::render_tree::PageRenderTree::new(0, 793.7066666666667, 1122.48);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 793.7066666666667,
+            height: 1122.48,
+            section_index: 0,
+        });
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Rectangle(RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    fill_color: Some(0x00FFFFFF),
+                    ..Default::default()
+                },
+                None,
+            )),
+            BoundingBox::new(0.0, 0.0, 793.7066666666667, 1122.48),
+        ));
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+        let renderer = SkiaLayerRenderer::new();
+        let png = renderer.render_png(&layer_tree).expect("skia png render");
+        let pixmap = tiny_skia::Pixmap::decode_png(&png).expect("png decode");
+
+        assert_eq!((pixmap.width(), pixmap.height()), (794, 1122));
     }
 }

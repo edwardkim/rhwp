@@ -947,6 +947,12 @@ mod tests {
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     #[test]
+    fn test_skia_screenshot_matches_layer_svg_for_draw_group_sample() {
+        assert_skia_png_matches_layer_svg("samples/draw-group.hwp", 0);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
     fn test_skia_screenshot_matches_layer_svg_for_representative_sample_corpus() {
         let samples = vec![
             ("samples/lseg-02-mixed.hwp".to_string(), vec![0]),
