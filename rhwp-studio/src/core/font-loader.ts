@@ -129,6 +129,8 @@ export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 
 /** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
 const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
+/** CanvasKit overlay가 심볼/통화 기호 렌더링에 즉시 사용하는 폰트 */
+const OVERLAY_FALLBACK_FONTS = new Set(['Malgun Gothic', '맑은 고딕', '굴림체', 'GulimChe', 'D2Coding']);
 
 /** CSS @font-face 등록 여부 (중복 등록 방지) */
 let fontFaceRegistered = false;
@@ -200,9 +202,9 @@ export async function loadWebFonts(
     fontFaceRegistered = true;
   }
 
-  // 2) 로드 대상 결정: docFonts에 포함된 폰트 + CRITICAL만 로드
+  // 2) 로드 대상 결정: docFonts + 초기/overlay 필수 폰트만 로드
   //    OS에 설치된 폰트는 웹폰트 로딩 건너뜀
-  const targetSet = new Set([...(docFonts ?? []), ...CRITICAL_FONTS]);
+  const targetSet = new Set([...(docFonts ?? []), ...CRITICAL_FONTS, ...OVERLAY_FALLBACK_FONTS]);
   const toLoad = FONT_LIST.filter(f => {
     if (!targetSet.has(f.name)) return false;
     // OS에 동일 이름 폰트가 있으면 웹폰트 로딩 불필요

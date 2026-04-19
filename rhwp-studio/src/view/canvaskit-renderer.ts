@@ -974,6 +974,22 @@ export class CanvasKitLayerRenderer {
     const shadeColor = (typeof op.style.shadeColor === 'string' ? op.style.shadeColor : '#ffffff').toLowerCase();
     const fontSize = op.style.fontSize || 12;
     const clusters = splitIntoClusters(op.text);
+    const baseFont = buildCanvasTextFont(op.style.fontFamily, fontSize, op.style.bold, op.style.italic);
+    const currencyFallbackFont = buildCanvasTextFont('Malgun Gothic', fontSize, op.style.bold, op.style.italic);
+    const symbolFallbackFont = buildCanvasTextFont('굴림체', fontSize, op.style.bold, op.style.italic);
+    const clusterFonts = clusters.map((cluster) => {
+      const ch = cluster.text.codePointAt(0) ?? 0;
+      const needsCurrencyFallback =
+        ch === 0x20A9 || ch === 0x20AC || ch === 0x00A3 || ch === 0x00A5;
+      if (needsCurrencyFallback) {
+        return currencyFallbackFont;
+      }
+      const needsSymbolFallback =
+        (ch >= 0x2460 && ch <= 0x24FF)
+        || (ch >= 0x25A0 && ch <= 0x25FF)
+        || (ch >= 0x2600 && ch <= 0x27BF);
+      return needsSymbolFallback ? symbolFallbackFont : baseFont;
+    });
     const drawClusters = (originX: number, originY: number) => {
       const textWidth = op.positions.at(-1) ?? 0;
       if (textWidth > 0 && shadeColor !== '#ffffff') {
@@ -991,12 +1007,16 @@ export class CanvasKitLayerRenderer {
           ctx.lineWidth = lineWidth;
           ctx.lineJoin = 'round';
         }
-        for (const cluster of clusters) {
+        for (const [index, cluster] of clusters.entries()) {
           if (cluster.text === ' ' || cluster.text === '\t' || cluster.text === '\u2007') {
             continue;
           }
           if (startsWithInvalidControl(cluster.text)) {
             continue;
+          }
+          const clusterFont = clusterFonts[index];
+          if (ctx.font !== clusterFont) {
+            ctx.font = clusterFont;
           }
           const x = originX + op.positions[cluster.start] + dx;
           const y = originY + dy;
@@ -1042,55 +1062,7 @@ export class CanvasKitLayerRenderer {
         if (outlineType > 0) {
           drawPass(0, 0, '#ffffff', op.style.color, Math.max(fontSize / 25, 0.5));
         } else {
-          ctx.save();
-          ctx.fillStyle = op.style.color;
-          for (const cluster of clusters) {
-            if (cluster.text === ' ' || cluster.text === '\t' || cluster.text === '\u2007') {
-              continue;
-            }
-            if (startsWithInvalidControl(cluster.text)) {
-              continue;
-            }
-
-            const x = originX + op.positions[cluster.start];
-            const y = originY;
-            const ch = cluster.text.codePointAt(0) ?? 0;
-            const needsCurrencyFallback =
-              ch === 0x20A9 || ch === 0x20AC || ch === 0x00A3 || ch === 0x00A5;
-            const needsSymbolFallback =
-              (ch >= 0x2460 && ch <= 0x24FF)
-              || (ch >= 0x25A0 && ch <= 0x25FF)
-              || (ch >= 0x2600 && ch <= 0x27BF);
-
-            if (needsCurrencyFallback || needsSymbolFallback) {
-              ctx.save();
-              ctx.font = needsSymbolFallback
-                ? `${op.style.italic ? 'italic ' : ''}${op.style.bold ? 'bold ' : ''}${fontSize.toFixed(3)}px ${fontFamilyWithFallback('굴림체')}`
-                : `${op.style.italic ? 'italic ' : ''}${op.style.bold ? 'bold ' : ''}${fontSize.toFixed(3)}px "Malgun Gothic","맑은 고딕",sans-serif`;
-              ctx.fillText(cluster.text, x, y);
-              ctx.restore();
-              continue;
-            }
-
-            if (isHalfwidthScaledCluster(cluster.text) && !hasRatio) {
-              ctx.save();
-              ctx.translate(x, y);
-              ctx.scale(0.5, 1);
-              ctx.fillText(cluster.text, 0, 0);
-              ctx.restore();
-              continue;
-            }
-            if (hasRatio) {
-              ctx.save();
-              ctx.translate(x, y);
-              ctx.scale(ratio, 1);
-              ctx.fillText(cluster.text, 0, 0);
-              ctx.restore();
-              continue;
-            }
-            ctx.fillText(cluster.text, x, y);
-          }
-          ctx.restore();
+          drawPass(0, 0, op.style.color);
         }
       }
 
@@ -1146,7 +1118,7 @@ export class CanvasKitLayerRenderer {
     };
 
     ctx.save();
-    this.setCanvasTextFont(ctx, op.style.fontFamily, fontSize, op.style.bold, op.style.italic);
+    ctx.font = baseFont;
     ctx.textBaseline = 'alphabetic';
     if (op.rotation !== 0) {
       const cx = op.bbox.x + op.bbox.width / 2;
