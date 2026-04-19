@@ -251,6 +251,8 @@ pub struct Bullet {
     pub width_adjust: i16,
     /// 본문과의 거리
     pub text_distance: i16,
+    /// 글머리표 전용 글자 모양 ID
+    pub char_shape_id: u32,
     /// 글머리표 문자 (●, ■, ▶ 등)
     pub bullet_char: char,
     /// 이미지 글머리표 여부 (0=문자, ID=이미지)

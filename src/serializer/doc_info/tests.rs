@@ -201,6 +201,35 @@ fn test_serialize_style_roundtrip() {
 }
 
 #[test]
+fn test_serialize_bullet_roundtrip() {
+    let bullet = Bullet {
+        raw_data: None,
+        attr: 0x11223344,
+        width_adjust: 12,
+        text_distance: 34,
+        char_shape_id: 7,
+        bullet_char: '\u{25C9}',
+        image_bullet: 0,
+        image_data: [1, 2, 3, 4],
+        check_bullet_char: '\u{2611}',
+    };
+
+    let data = serialize_bullet(&bullet);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data);
+    assert_eq!(r.read_u32().unwrap(), 0x11223344);
+    assert_eq!(r.read_i16().unwrap(), 12);
+    assert_eq!(r.read_i16().unwrap(), 34);
+    assert_eq!(r.read_u32().unwrap(), 7);
+    assert_eq!(r.read_u16().unwrap(), 0x25C9);
+    assert_eq!(r.read_i32().unwrap(), 0);
+    assert_eq!(r.read_u8().unwrap(), 1);
+    assert_eq!(r.read_u8().unwrap(), 2);
+    assert_eq!(r.read_u8().unwrap(), 3);
+    assert_eq!(r.read_u8().unwrap(), 4);
+    assert_eq!(r.read_u16().unwrap(), 0x2611);
+}
+
+#[test]
 fn test_serialize_bin_data_embedding() {
     let bd = BinData {
         raw_data: None,

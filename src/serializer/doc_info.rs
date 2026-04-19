@@ -517,14 +517,15 @@ fn serialize_numbering(numbering: &Numbering) -> Vec<u8> {
     w.into_bytes()
 }
 
-/// HWPTAG_BULLET 직렬화 (표 44: 글머리표, 20바이트)
+/// HWPTAG_BULLET 직렬화 (표 44: 글머리표, 24바이트)
 fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // 문단 머리 정보 (8바이트)
+    // 문단 머리 정보 (12바이트)
     w.write_u32(bullet.attr).unwrap();
     w.write_i16(bullet.width_adjust).unwrap();
     w.write_i16(bullet.text_distance).unwrap();
+    w.write_u32(bullet.char_shape_id).unwrap();
 
     // 글머리표 문자 (WCHAR)
     w.write_u16(bullet.bullet_char as u16).unwrap();

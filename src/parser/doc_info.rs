@@ -784,7 +784,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
     let attr = r.read_u32().unwrap_or(0);
     let width_adjust = r.read_i16().unwrap_or(0);
     let text_distance = r.read_i16().unwrap_or(0);
-    let _char_shape_id = r.read_u32().unwrap_or(0);
+    let char_shape_id = r.read_u32().unwrap_or(0);
 
     // 글머리표 문자 (WCHAR, 2바이트)
     let bullet_char_u16 = r.read_u16().unwrap_or(0x2022); // 기본: ●(U+2022)
@@ -808,6 +808,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
         attr,
         width_adjust,
         text_distance,
+        char_shape_id,
         bullet_char,
         image_bullet,
         image_data,
@@ -862,6 +863,24 @@ mod tests {
             bytes.extend_from_slice(&c.to_le_bytes());
         }
         bytes
+    }
+
+    #[test]
+    fn test_parse_bullet_preserves_char_shape_id() {
+        let mut data = Vec::new();
+        data.extend_from_slice(&0u32.to_le_bytes());
+        data.extend_from_slice(&0i16.to_le_bytes());
+        data.extend_from_slice(&120i16.to_le_bytes());
+        data.extend_from_slice(&7u32.to_le_bytes());
+        data.extend_from_slice(&(0x25C9u16).to_le_bytes());
+        data.extend_from_slice(&0i32.to_le_bytes());
+        data.extend_from_slice(&[0, 0, 0, 0]);
+        data.extend_from_slice(&0u16.to_le_bytes());
+
+        let bullet = parse_bullet(&data).expect("bullet parse 실패");
+        assert_eq!(bullet.char_shape_id, 7);
+        assert_eq!(bullet.text_distance, 120);
+        assert_eq!(bullet.bullet_char, '\u{25C9}');
     }
 
     #[test]

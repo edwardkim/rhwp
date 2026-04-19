@@ -815,21 +815,32 @@ impl LayoutEngine {
             .all(|l| l.runs.is_empty());
 
         // 개요 번호/글머리표 마커 폭 사전 계산 (첫 줄 가용폭 차감용)
-        let numbering_width = if start_line == 0 {
-            if let Some(ref num_text) = composed.numbering_text {
-                let num_style = composed
-                    .lines
-                    .first()
-                    .and_then(|l| l.runs.first())
-                    .map(|r| resolved_to_text_style(styles, r.char_style_id, r.lang_index))
-                    .unwrap_or_else(|| resolved_to_text_style(styles, 0, 0));
-                estimate_text_width(num_text, &num_style)
-            } else {
-                0.0
-            }
+        let numbering_style = if start_line == 0 {
+            composed.numbering_text.as_ref().map(|num_text| {
+                if let Some(char_shape_id) = composed.numbering_char_shape_id {
+                    let lang_index = num_text
+                        .chars()
+                        .find(|ch| !ch.is_whitespace())
+                        .map(super::super::style_resolver::detect_lang_category)
+                        .unwrap_or(0);
+                    resolved_to_text_style(styles, char_shape_id, lang_index)
+                } else {
+                    composed
+                        .lines
+                        .first()
+                        .and_then(|l| l.runs.first())
+                        .map(|r| resolved_to_text_style(styles, r.char_style_id, r.lang_index))
+                        .unwrap_or_else(|| resolved_to_text_style(styles, 0, 0))
+                }
+            })
         } else {
-            0.0
+            None
         };
+        let numbering_width = numbering_style
+            .as_ref()
+            .zip(composed.numbering_text.as_ref())
+            .map(|(num_style, num_text)| estimate_text_width(num_text, num_style))
+            .unwrap_or(0.0);
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
@@ -1265,24 +1276,17 @@ impl LayoutEngine {
 
             // 개요 번호/글머리표: 첫 줄에서 별도 TextRunNode로 렌더링 (char_start: None)
             if line_idx == start_line && start_line == 0 {
-                if let Some(ref num_text) = composed.numbering_text {
-                    let num_style = if let Some(first_run) = comp_line.runs.first() {
-                        resolved_to_text_style(
-                            styles,
-                            first_run.char_style_id,
-                            first_run.lang_index,
-                        )
-                    } else {
-                        resolved_to_text_style(styles, 0, 0)
-                    };
+                if let (Some(num_text), Some(num_style)) =
+                    (composed.numbering_text.as_ref(), numbering_style.as_ref())
+                {
                     let num_width = estimate_text_width(num_text, &num_style);
                     let num_id = tree.next_id();
                     let num_node = RenderNode::new(
                         num_id,
                         RenderNodeType::TextRun(TextRunNode {
                             text: num_text.clone(),
-                            style: num_style,
-                            char_shape_id: None,
+                            style: num_style.clone(),
+                            char_shape_id: composed.numbering_char_shape_id,
                             para_shape_id: Some(composed.para_style_id),
                             section_index: Some(section_index),
                             para_index: Some(para_index),
@@ -2851,7 +2855,7 @@ impl LayoutEngine {
     ) -> Option<ComposedParagraph> {
         let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
 
-        let head_text = match para_style.head_type {
+        let (head_text, numbering_char_shape_id) = match para_style.head_type {
             HeadType::None => return None,
             HeadType::Outline | HeadType::Number => {
                 let numbering_id = resolve_numbering_id(
@@ -2883,7 +2887,11 @@ impl LayoutEngine {
                 if text.is_empty() {
                     return None;
                 }
-                text
+                (
+                    text,
+                    (numbering.heads[level_idx].char_shape_id > 0)
+                        .then_some(numbering.heads[level_idx].char_shape_id),
+                )
             }
             HeadType::Bullet => {
                 // Bullet: numbering_id(1-based)로 Bullet 참조
@@ -2901,9 +2909,15 @@ impl LayoutEngine {
                 let bullet_ch = map_pua_bullet_char(bullet.bullet_char);
                 // 글머리 기호 + 본문과의 거리(text_distance)에 따른 간격
                 if bullet.text_distance > 0 {
-                    format!("{} ", bullet_ch)
+                    (
+                        format!("{} ", bullet_ch),
+                        (bullet.char_shape_id > 0).then_some(bullet.char_shape_id),
+                    )
                 } else {
-                    format!("{}", bullet_ch)
+                    (
+                        format!("{}", bullet_ch),
+                        (bullet.char_shape_id > 0).then_some(bullet.char_shape_id),
+                    )
                 }
             }
         };
@@ -2913,6 +2927,7 @@ impl LayoutEngine {
         let comp = composed?;
         let mut modified = comp.clone();
         modified.numbering_text = Some(head_text);
+        modified.numbering_char_shape_id = numbering_char_shape_id;
 
         Some(modified)
     }

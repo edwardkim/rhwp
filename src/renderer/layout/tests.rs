@@ -5,9 +5,9 @@ use super::utils::{expand_numbering_format, numbering_format_to_number_format};
 use super::*;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use crate::model::style::{Numbering, NumberingHead};
+use crate::model::style::{Bullet, HeadType, Numbering, NumberingHead};
 use crate::renderer::composer::compose_paragraph;
-use crate::renderer::style_resolver::ResolvedStyleSet;
+use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle, ResolvedStyleSet};
 
 fn a4_page_def() -> PageDef {
     PageDef {
@@ -132,8 +132,6 @@ fn test_build_page_with_paragraph() {
 
 #[test]
 fn test_layout_with_composed_styles() {
-    use crate::renderer::style_resolver::ResolvedCharStyle;
-
     let engine = LayoutEngine::with_default_dpi();
     let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
 
@@ -255,6 +253,244 @@ fn test_layout_with_composed_styles() {
             assert_eq!(run.style.color, 0x00FF0000);
         }
         _ => panic!("Expected TextRun"),
+    }
+}
+
+#[test]
+fn test_bullet_marker_uses_bullet_char_shape_style() {
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+
+    let paragraphs = vec![Paragraph {
+        text: "본문".to_string(),
+        char_offsets: vec![0, 1],
+        char_count: 3,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            line_height: 800,
+            baseline_distance: 640,
+            ..Default::default()
+        }],
+        para_shape_id: 0,
+        ..Default::default()
+    }];
+    let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
+
+    let styles = ResolvedStyleSet {
+        char_styles: vec![
+            ResolvedCharStyle {
+                font_family: "BodyFont".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            },
+            ResolvedCharStyle {
+                font_family: "MarkerFont".to_string(),
+                font_size: 14.0,
+                ..Default::default()
+            },
+        ],
+        para_styles: vec![ResolvedParaStyle {
+            head_type: HeadType::Bullet,
+            numbering_id: 1,
+            ..Default::default()
+        }],
+        border_styles: Vec::new(),
+        numberings: Vec::new(),
+        bullets: vec![Bullet {
+            bullet_char: '\u{25C9}',
+            text_distance: 120,
+            char_shape_id: 1,
+            ..Default::default()
+        }],
+    };
+
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 0,
+        section_index: 0,
+        layout,
+        column_contents: vec![ColumnContent {
+            column_index: 0,
+            items: vec![PageItem::FullParagraph { para_index: 0 }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+        }],
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    let tree = engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &composed,
+        &styles,
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    );
+
+    let body = tree
+        .root
+        .children
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Body { .. }))
+        .unwrap();
+    let col = &body.children[0];
+    let line = &col.children[0];
+
+    match &line.children[0].node_type {
+        RenderNodeType::TextRun(run) => {
+            assert_eq!(run.text, "\u{25C9} ");
+            assert_eq!(run.char_shape_id, Some(1));
+            assert_eq!(run.style.font_family, "MarkerFont");
+        }
+        _ => panic!("Expected bullet marker TextRun"),
+    }
+
+    match &line.children[1].node_type {
+        RenderNodeType::TextRun(run) => {
+            assert_eq!(run.text, "본문");
+            assert_eq!(run.char_shape_id, Some(0));
+            assert_eq!(run.style.font_family, "BodyFont");
+        }
+        _ => panic!("Expected body TextRun"),
+    }
+}
+
+#[test]
+fn test_numbering_marker_uses_numbering_head_char_shape_style() {
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+
+    let paragraphs = vec![Paragraph {
+        text: "본문".to_string(),
+        char_offsets: vec![0, 1],
+        char_count: 3,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            line_height: 800,
+            baseline_distance: 640,
+            ..Default::default()
+        }],
+        para_shape_id: 0,
+        ..Default::default()
+    }];
+    let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
+
+    let mut heads = [NumberingHead::default(); 7];
+    heads[0].char_shape_id = 1;
+    let mut level_formats = std::array::from_fn(|_| String::new());
+    level_formats[0] = "^1.".to_string();
+
+    let styles = ResolvedStyleSet {
+        char_styles: vec![
+            ResolvedCharStyle {
+                font_family: "BodyFont".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            },
+            ResolvedCharStyle {
+                font_family: "MarkerFont".to_string(),
+                font_size: 14.0,
+                ..Default::default()
+            },
+        ],
+        para_styles: vec![ResolvedParaStyle {
+            head_type: HeadType::Number,
+            numbering_id: 1,
+            ..Default::default()
+        }],
+        border_styles: Vec::new(),
+        numberings: vec![Numbering {
+            heads,
+            level_formats,
+            start_number: 1,
+            level_start_numbers: [1; 7],
+            ..Default::default()
+        }],
+        bullets: Vec::new(),
+    };
+
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 0,
+        section_index: 0,
+        layout,
+        column_contents: vec![ColumnContent {
+            column_index: 0,
+            items: vec![PageItem::FullParagraph { para_index: 0 }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+        }],
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    let tree = engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &composed,
+        &styles,
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    );
+
+    let body = tree
+        .root
+        .children
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Body { .. }))
+        .unwrap();
+    let col = &body.children[0];
+    let line = &col.children[0];
+
+    match &line.children[0].node_type {
+        RenderNodeType::TextRun(run) => {
+            assert_eq!(run.text, "1.");
+            assert_eq!(run.char_shape_id, Some(1));
+            assert_eq!(run.style.font_family, "MarkerFont");
+        }
+        _ => panic!("Expected numbering marker TextRun"),
+    }
+
+    match &line.children[1].node_type {
+        RenderNodeType::TextRun(run) => {
+            assert_eq!(run.text, "본문");
+            assert_eq!(run.char_shape_id, Some(0));
+            assert_eq!(run.style.font_family, "BodyFont");
+        }
+        _ => panic!("Expected body TextRun"),
     }
 }
 

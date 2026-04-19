@@ -90,6 +90,8 @@ pub struct ComposedParagraph {
     /// 개요 번호/글머리표 등 문단 머리 텍스트 (렌더링 전용)
     /// 문서 좌표 char_offset에 포함되지 않으며 별도 TextRunNode로 렌더링된다.
     pub numbering_text: Option<String>,
+    /// 개요 번호/글머리표 전용 글자 모양 ID
+    pub numbering_char_shape_id: Option<u32>,
     /// treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 목록
     /// (para.text 내 절대 char 인덱스, 폭 HWPUNIT, para.controls 내 인덱스)
     pub tac_controls: Vec<(usize, i32, usize)>,
@@ -167,6 +169,7 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
         para_style_id: para.para_shape_id,
         inline_controls,
         numbering_text: None,
+        numbering_char_shape_id: None,
         tac_controls,
         footnote_positions,
         tab_extended: para.tab_extended.clone(),
