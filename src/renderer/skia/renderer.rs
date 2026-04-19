@@ -8,10 +8,10 @@ use crate::renderer::render_tree::{BoundingBox, TextRunNode};
 use crate::renderer::{LineRenderType, UnderlineType};
 
 use super::equation_conv::render_equation;
-use super::image_conv::draw_image_bytes;
+use super::image_conv::{draw_image_bytes, draw_svg_fragment};
 use super::paint_conv::{
-    colorref_to_skia, make_fill_paint, make_font, make_line_paint, make_stroke_paint,
-    make_text_paint,
+    colorref_to_skia, make_background_fill_paint, make_fill_paint, make_font, make_line_paint,
+    make_stroke_paint, make_text_paint,
 };
 use super::path_conv::to_skia_path;
 
@@ -78,20 +78,6 @@ impl SkiaLayerRenderer {
     fn render_op(&self, canvas: &Canvas, op: &PaintOp) {
         match op {
             PaintOp::PageBackground { bbox, background } => {
-                if let Some(color) = background.background_color {
-                    let mut paint = Paint::default();
-                    paint.set_anti_alias(true);
-                    paint.set_color(colorref_to_skia(color, 1.0));
-                    canvas.draw_rect(
-                        Rect::from_xywh(
-                            bbox.x as f32,
-                            bbox.y as f32,
-                            bbox.width as f32,
-                            bbox.height as f32,
-                        ),
-                        &paint,
-                    );
-                }
                 if let Some(image) = &background.image {
                     draw_image_bytes(
                         canvas,
@@ -104,6 +90,20 @@ impl SkiaLayerRenderer {
                         None,
                         None,
                     );
+                } else {
+                    let background_rect = Rect::from_xywh(
+                        bbox.x as f32,
+                        bbox.y as f32,
+                        bbox.width as f32,
+                        bbox.height as f32,
+                    );
+                    if let Some(fill) = make_background_fill_paint(
+                        background_rect,
+                        background.background_color,
+                        background.gradient.as_deref(),
+                    ) {
+                        canvas.draw_rect(background_rect, &fill);
+                    }
                 }
                 if let Some(border) = background.border_color {
                     let mut paint = Paint::default();
@@ -174,7 +174,9 @@ impl SkiaLayerRenderer {
                         bbox.width as f32,
                         bbox.height as f32,
                     );
-                    if let Some(fill) = make_fill_paint(&rect.style) {
+                    if let Some(fill) =
+                        make_fill_paint(sk_rect, &rect.style, rect.gradient.as_deref())
+                    {
                         if rect.corner_radius > 0.0 {
                             canvas.draw_round_rect(
                                 sk_rect,
@@ -208,7 +210,9 @@ impl SkiaLayerRenderer {
                         bbox.width as f32,
                         bbox.height as f32,
                     );
-                    if let Some(fill) = make_fill_paint(&ellipse.style) {
+                    if let Some(fill) =
+                        make_fill_paint(oval, &ellipse.style, ellipse.gradient.as_deref())
+                    {
                         canvas.draw_oval(oval, &fill);
                     }
                     if let Some(stroke) = make_stroke_paint(&ellipse.style) {
@@ -216,10 +220,18 @@ impl SkiaLayerRenderer {
                     }
                 });
             }
-            PaintOp::Path { path, .. } => {
+            PaintOp::Path { bbox, path } => {
                 self.with_shape_transform(canvas, path.transform, None, |canvas| {
                     let sk_path = to_skia_path(&path.commands);
-                    if let Some(fill) = make_fill_paint(&path.style) {
+                    let path_bounds = Rect::from_xywh(
+                        bbox.x as f32,
+                        bbox.y as f32,
+                        bbox.width as f32,
+                        bbox.height as f32,
+                    );
+                    if let Some(fill) =
+                        make_fill_paint(path_bounds, &path.style, path.gradient.as_deref())
+                    {
                         canvas.draw_path(&sk_path, &fill);
                     }
                     if let Some(stroke) = make_stroke_paint(&path.style) {
@@ -517,99 +529,341 @@ impl SkiaLayerRenderer {
     }
 
     fn render_text_run(&self, canvas: &Canvas, bbox: &BoundingBox, run: &TextRunNode) {
-        let paint = make_text_paint(&run.style);
-        let y = (bbox.y + run.baseline) as f32;
+        let base_font_size = if run.style.font_size > 0.0 {
+            run.style.font_size
+        } else {
+            12.0
+        };
+        let mut render_style = run.style.clone();
+        let mut y = (bbox.y + run.baseline) as f32;
+        if run.style.superscript {
+            render_style.font_size = base_font_size * 0.7;
+            y -= (base_font_size * 0.3) as f32;
+        } else if run.style.subscript {
+            render_style.font_size = base_font_size * 0.7;
+            y += (base_font_size * 0.15) as f32;
+        }
+
+        let paint = make_text_paint(&render_style);
         let char_positions = compute_char_positions(&run.text, &run.style);
         let clusters = split_into_clusters(&run.text);
-        let metrics_font = make_font(&run.style, &self.font_mgr, &run.text);
+        let metrics_font = make_font(&render_style, &self.font_mgr, &run.text);
+        let text_width = char_positions.last().copied().unwrap_or(0.0) as f32;
+        let shade_rgb = run.style.shade_color & 0x00FF_FFFF;
+        if text_width > 0.0 && shade_rgb != 0x00FF_FFFF && shade_rgb != 0 {
+            let mut shade_paint = Paint::default();
+            shade_paint.set_anti_alias(true);
+            shade_paint.set_style(skia_safe::paint::Style::Fill);
+            shade_paint.set_color(colorref_to_skia(run.style.shade_color, 1.0));
+            canvas.draw_rect(
+                Rect::from_xywh(
+                    bbox.x as f32,
+                    y - render_style.font_size as f32,
+                    text_width,
+                    render_style.font_size as f32 * 1.2,
+                ),
+                &shade_paint,
+            );
+        }
 
-        if run.style.shadow_type > 0 {
-            let mut shadow_paint = Paint::default();
-            shadow_paint.set_anti_alias(true);
-            shadow_paint.set_color(colorref_to_skia(run.style.shadow_color, 1.0));
+        let draw_pass = |canvas: &Canvas,
+                         x_offset: f32,
+                         y_offset: f32,
+                         fill_color: u32,
+                         stroke_color: Option<u32>,
+                         stroke_width: f32| {
+            let font_family = if render_style.font_family.is_empty() {
+                "sans-serif".to_string()
+            } else {
+                format!(
+                    "'{}',{}",
+                    render_style
+                        .font_family
+                        .replace('\\', "\\\\")
+                        .replace('\'', "\\'"),
+                    crate::renderer::generic_fallback(&render_style.font_family)
+                )
+            };
+            let mut fill_paint = Paint::default();
+            fill_paint.set_anti_alias(true);
+            fill_paint.set_style(skia_safe::paint::Style::Fill);
+            fill_paint.set_color(colorref_to_skia(fill_color, 1.0));
+
+            let mut stroke_paint = Paint::default();
+            if let Some(stroke_color) = stroke_color {
+                stroke_paint.set_anti_alias(true);
+                stroke_paint.set_style(skia_safe::paint::Style::Stroke);
+                stroke_paint.set_stroke_width(stroke_width.max(0.5));
+                stroke_paint.set_color(colorref_to_skia(stroke_color, 1.0));
+            }
+
             for (char_idx, cluster) in &clusters {
-                if cluster == " " || cluster == "\t" {
+                if cluster == " " || cluster == "\t" || cluster == "\u{2007}" {
                     continue;
                 }
-                let font = make_font(&run.style, &self.font_mgr, cluster);
-                let x = bbox.x + char_positions[*char_idx] + run.style.shadow_offset_x;
-                let shadow_y = y + run.style.shadow_offset_y as f32;
+                let x = bbox.x as f32 + char_positions[*char_idx] as f32 + x_offset;
+                let pass_y = y + y_offset;
+                let is_symbol_cluster = cluster.chars().count() == 1
+                    && cluster.chars().all(|ch| {
+                        matches!(
+                            ch,
+                            '\u{00AD}'
+                                | '\u{203B}'
+                                | '\u{2460}'..='\u{24FF}'
+                                | '\u{2500}'..='\u{27BF}'
+                        )
+                    });
+                if is_symbol_cluster {
+                    let next_x = char_positions
+                        .get(*char_idx + 1)
+                        .copied()
+                        .unwrap_or(text_width as f64);
+                    let cluster_width = (next_x - char_positions[*char_idx])
+                        .max(render_style.font_size * 0.6)
+                        as f32;
+                    let color = format!(
+                        "#{:02x}{:02x}{:02x}",
+                        fill_color & 0xFF,
+                        (fill_color >> 8) & 0xFF,
+                        (fill_color >> 16) & 0xFF,
+                    );
+                    let svg_fragment = format!(
+                        "<text x=\"0\" y=\"{:.3}\" font-family=\"{}\" font-size=\"{:.3}\" fill=\"{}\">{}</text>",
+                        render_style.font_size,
+                        font_family,
+                        render_style.font_size,
+                        color,
+                        cluster,
+                    );
+                    draw_svg_fragment(
+                        canvas,
+                        &svg_fragment,
+                        x,
+                        pass_y - render_style.font_size as f32,
+                        cluster_width,
+                        render_style.font_size as f32 * 1.4,
+                    );
+                    continue;
+                }
+                let font = make_font(&render_style, &self.font_mgr, cluster);
                 let glyphs = font.text_to_glyphs_vec(cluster);
                 let mut glyph_positions = vec![Point::default(); glyphs.len()];
-                font.get_pos(
-                    &glyphs,
-                    &mut glyph_positions,
-                    Some(Point::new(x as f32, shadow_y)),
-                );
+                font.get_pos(&glyphs, &mut glyph_positions, Some(Point::new(x, pass_y)));
                 for (glyph_id, glyph_position) in glyphs.into_iter().zip(glyph_positions) {
                     if let Some(path) = font.get_path(glyph_id) {
                         let path = path.with_offset((glyph_position.x, glyph_position.y));
-                        canvas.draw_path(&path, &shadow_paint);
+                        canvas.draw_path(&path, &fill_paint);
+                        if stroke_color.is_some() {
+                            canvas.draw_path(&path, &stroke_paint);
+                        }
+                    }
+                }
+            }
+        };
+
+        if run.style.emboss || run.style.engrave {
+            let offset = (render_style.font_size as f32 / 20.0).max(1.0);
+            let (first_color, second_color) = if run.style.emboss {
+                (0x00FF_FFFF, 0x0080_8080)
+            } else {
+                (0x0080_8080, 0x00FF_FFFF)
+            };
+            draw_pass(canvas, -offset, -offset, first_color, None, 0.0);
+            draw_pass(canvas, offset, offset, second_color, None, 0.0);
+            draw_pass(canvas, 0.0, 0.0, run.style.color, None, 0.0);
+        } else {
+            if run.style.shadow_type > 0 {
+                draw_pass(
+                    canvas,
+                    run.style.shadow_offset_x as f32,
+                    run.style.shadow_offset_y as f32,
+                    run.style.shadow_color,
+                    None,
+                    0.0,
+                );
+            }
+            if run.style.outline_type > 0 {
+                draw_pass(
+                    canvas,
+                    0.0,
+                    0.0,
+                    0x00FF_FFFF,
+                    Some(run.style.color),
+                    (render_style.font_size as f32 / 25.0).max(0.5),
+                );
+            } else {
+                for (char_idx, cluster) in &clusters {
+                    if cluster == " " || cluster == "\t" {
+                        continue;
+                    }
+                    let font = make_font(&render_style, &self.font_mgr, cluster);
+                    let x = bbox.x + char_positions[*char_idx];
+                    let glyphs = font.text_to_glyphs_vec(cluster);
+                    let mut glyph_positions = vec![Point::default(); glyphs.len()];
+                    font.get_pos(&glyphs, &mut glyph_positions, Some(Point::new(x as f32, y)));
+                    for (glyph_id, glyph_position) in glyphs.into_iter().zip(glyph_positions) {
+                        if let Some(path) = font.get_path(glyph_id) {
+                            let path = path.with_offset((glyph_position.x, glyph_position.y));
+                            canvas.draw_path(&path, &paint);
+                        }
                     }
                 }
             }
         }
 
-        for (char_idx, cluster) in &clusters {
-            if cluster == " " || cluster == "\t" {
-                continue;
-            }
-            let font = make_font(&run.style, &self.font_mgr, cluster);
-            let x = bbox.x + char_positions[*char_idx];
-            let glyphs = font.text_to_glyphs_vec(cluster);
-            let mut glyph_positions = vec![Point::default(); glyphs.len()];
-            font.get_pos(&glyphs, &mut glyph_positions, Some(Point::new(x as f32, y)));
-            for (glyph_id, glyph_position) in glyphs.into_iter().zip(glyph_positions) {
-                if let Some(path) = font.get_path(glyph_id) {
-                    let path = path.with_offset((glyph_position.x, glyph_position.y));
-                    canvas.draw_path(&path, &paint);
-                }
-            }
-        }
-
-        let text_width = char_positions.last().copied().unwrap_or(0.0) as f32;
         if !matches!(run.style.underline, UnderlineType::None) {
             let ul_y = match run.style.underline {
                 UnderlineType::Top => y - metrics_font.size() + 1.0,
                 _ => y + 2.0,
             };
-            let mut line_paint = Paint::default();
-            line_paint.set_anti_alias(true);
-            line_paint.set_style(skia_safe::paint::Style::Stroke);
-            line_paint.set_stroke_width(1.0);
-            line_paint.set_color(colorref_to_skia(
+            self.draw_text_line_shape(
+                canvas,
+                bbox.x as f32,
+                ul_y,
+                bbox.x as f32 + text_width,
+                ul_y,
                 if run.style.underline_color != 0 {
                     run.style.underline_color
                 } else {
                     run.style.color
                 },
-                1.0,
-            ));
-            canvas.draw_line(
-                (bbox.x as f32, ul_y),
-                ((bbox.x as f32) + text_width, ul_y),
-                &line_paint,
+                run.style.underline_shape,
             );
         }
         if run.style.strikethrough {
             let strike_y = y - metrics_font.size() * 0.3;
-            let mut line_paint = Paint::default();
-            line_paint.set_anti_alias(true);
-            line_paint.set_style(skia_safe::paint::Style::Stroke);
-            line_paint.set_stroke_width(1.0);
-            line_paint.set_color(colorref_to_skia(
+            self.draw_text_line_shape(
+                canvas,
+                bbox.x as f32,
+                strike_y,
+                bbox.x as f32 + text_width,
+                strike_y,
                 if run.style.strike_color != 0 {
                     run.style.strike_color
                 } else {
                     run.style.color
                 },
-                1.0,
-            ));
-            canvas.draw_line(
-                (bbox.x as f32, strike_y),
-                ((bbox.x as f32) + text_width, strike_y),
-                &line_paint,
+                run.style.strike_shape,
             );
+        }
+
+        if run.style.emphasis_dot > 0 {
+            let dot_char = match run.style.emphasis_dot {
+                1 => "●",
+                2 => "○",
+                3 => "ˇ",
+                4 => "˜",
+                5 => "･",
+                6 => "˸",
+                _ => "",
+            };
+            if !dot_char.is_empty() {
+                let mut dot_style = render_style.clone();
+                dot_style.font_family = "sans-serif".to_string();
+                dot_style.font_size = render_style.font_size * 0.3;
+                let dot_font = make_font(&dot_style, &self.font_mgr, dot_char);
+                let mut dot_paint = Paint::default();
+                dot_paint.set_anti_alias(true);
+                dot_paint.set_color(colorref_to_skia(run.style.color, 1.0));
+                let dot_y = y - render_style.font_size as f32 * 1.05;
+                for &char_x in &char_positions[..char_positions.len().saturating_sub(1)] {
+                    let dot_x = bbox.x as f32
+                        + char_x as f32
+                        + (base_font_size * run.style.ratio * 0.5) as f32;
+                    canvas.draw_str(dot_char, (dot_x, dot_y), &dot_font, &dot_paint);
+                }
+            }
+        }
+    }
+
+    fn draw_text_line_shape(
+        &self,
+        canvas: &Canvas,
+        x1: f32,
+        y1: f32,
+        x2: f32,
+        y2: f32,
+        color: u32,
+        shape: u8,
+    ) {
+        let mut draw_single_line =
+            |x1: f32, y1: f32, x2: f32, y2: f32, width: f32, dash: &[f32], round_cap: bool| {
+                let mut paint = Paint::default();
+                paint.set_anti_alias(true);
+                paint.set_style(skia_safe::paint::Style::Stroke);
+                paint.set_stroke_width(width);
+                paint.set_color(colorref_to_skia(color, 1.0));
+                if round_cap {
+                    paint.set_stroke_cap(skia_safe::paint::Cap::Round);
+                }
+                if !dash.is_empty() {
+                    if let Some(effect) = skia_safe::PathEffect::dash(dash, 0.0) {
+                        paint.set_path_effect(effect);
+                    }
+                }
+                canvas.draw_line((x1, y1), (x2, y2), &paint);
+            };
+
+        match shape {
+            7 => {
+                draw_single_line(x1, y1 - 1.0, x2, y2 - 1.0, 0.7, &[], false);
+                draw_single_line(x1, y1 + 1.0, x2, y2 + 1.0, 0.7, &[], false);
+            }
+            8 => {
+                draw_single_line(x1, y1 - 1.2, x2, y2 - 1.2, 0.5, &[], false);
+                draw_single_line(x1, y1 + 0.8, x2, y2 + 0.8, 1.2, &[], false);
+            }
+            9 => {
+                draw_single_line(x1, y1 - 0.8, x2, y2 - 0.8, 1.2, &[], false);
+                draw_single_line(x1, y1 + 1.2, x2, y2 + 1.2, 0.5, &[], false);
+            }
+            10 => {
+                draw_single_line(x1, y1 - 1.5, x2, y2 - 1.5, 0.5, &[], false);
+                draw_single_line(x1, y1, x2, y2, 0.5, &[], false);
+                draw_single_line(x1, y1 + 1.5, x2, y2 + 1.5, 0.5, &[], false);
+            }
+            11 | 12 => {
+                let wave_offsets: &[f32] = if shape == 12 { &[-1.0, 1.0] } else { &[0.0] };
+                for offset in wave_offsets {
+                    let mut path = PathBuilder::new();
+                    path.move_to((x1, y1 + offset));
+                    let mut current_x = x1;
+                    let mut upward = true;
+                    while current_x < x2 {
+                        let next_x = (current_x + 6.0).min(x2);
+                        let control_y = if upward {
+                            y1 + offset - 1.5
+                        } else {
+                            y1 + offset + 1.5
+                        };
+                        path.quad_to(
+                            ((current_x + next_x) / 2.0, control_y),
+                            (next_x, y1 + offset),
+                        );
+                        current_x = next_x;
+                        upward = !upward;
+                    }
+                    let path = path.detach();
+                    let mut paint = Paint::default();
+                    paint.set_anti_alias(true);
+                    paint.set_style(skia_safe::paint::Style::Stroke);
+                    paint.set_stroke_width(if shape == 12 { 0.5 } else { 0.7 });
+                    paint.set_color(colorref_to_skia(color, 1.0));
+                    canvas.draw_path(&path, &paint);
+                }
+            }
+            _ => {
+                let dash: &[f32] = match shape {
+                    1 => &[3.0, 3.0],
+                    2 => &[1.0, 2.0],
+                    3 => &[6.0, 2.0, 1.0, 2.0],
+                    4 => &[6.0, 2.0, 1.0, 2.0, 1.0, 2.0],
+                    5 => &[8.0, 4.0],
+                    6 => &[0.1, 2.5],
+                    _ => &[],
+                };
+                draw_single_line(x1, y1, x2, y2, 1.0, dash, shape == 6);
+            }
         }
     }
 

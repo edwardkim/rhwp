@@ -1,6 +1,13 @@
-use skia_safe::{paint, Color, Font, FontHinting, FontMgr, FontStyle, Paint};
+use skia_safe::{
+    gradient_shader::{Gradient, GradientColors, Interpolation as GradientInterpolation},
+    paint, shaders, surfaces, Color, Color4f, FilterMode, Font, FontHinting, FontMgr, FontStyle,
+    MipmapMode, Paint, Point, Rect, SamplingOptions, TileMode,
+};
 
-use crate::renderer::{generic_fallback, LineStyle, ShapeStyle, StrokeDash, TextStyle};
+use crate::renderer::{
+    generic_fallback, GradientFillInfo, LineStyle, PatternFillInfo, ShapeStyle, StrokeDash,
+    TextStyle,
+};
 
 pub fn colorref_to_skia(color: u32, alpha_scale: f32) -> Color {
     let b = ((color >> 16) & 0xFF) as u8;
@@ -10,12 +17,38 @@ pub fn colorref_to_skia(color: u32, alpha_scale: f32) -> Color {
     Color::from_argb(a, r, g, b)
 }
 
-pub fn make_fill_paint(style: &ShapeStyle) -> Option<Paint> {
-    let fill_color = style.fill_color?;
+pub fn make_fill_paint(
+    bounds: Rect,
+    style: &ShapeStyle,
+    gradient: Option<&GradientFillInfo>,
+) -> Option<Paint> {
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
     paint.set_style(paint::Style::Fill);
+    if let Some(shader) = make_fill_shader(bounds, style.pattern.as_ref(), gradient) {
+        paint.set_alpha_f(style.opacity as f32);
+        paint.set_shader(shader);
+        return Some(paint);
+    }
+    let fill_color = style.fill_color?;
     paint.set_color(colorref_to_skia(fill_color, style.opacity as f32));
+    Some(paint)
+}
+
+pub fn make_background_fill_paint(
+    bounds: Rect,
+    background_color: Option<u32>,
+    gradient: Option<&GradientFillInfo>,
+) -> Option<Paint> {
+    let mut paint = Paint::default();
+    paint.set_anti_alias(true);
+    paint.set_style(paint::Style::Fill);
+    if let Some(shader) = make_fill_shader(bounds, None, gradient) {
+        paint.set_shader(shader);
+        return Some(paint);
+    }
+    let background_color = background_color?;
+    paint.set_color(colorref_to_skia(background_color, 1.0));
     Some(paint)
 }
 
@@ -103,6 +136,54 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
     let probe_char = sample_text
         .chars()
         .find(|ch| !ch.is_whitespace() && !ch.is_ascii());
+    let needs_currency_fallback = probe_char
+        .is_some_and(|ch| matches!(ch, '\u{20A9}' | '\u{20AC}' | '\u{00A3}' | '\u{00A5}'));
+    let needs_symbol_fallback = probe_char.is_some_and(|ch| {
+        matches!(
+            ch,
+            '\u{2460}'..='\u{24FF}' | '\u{25A0}'..='\u{25FF}' | '\u{2600}'..='\u{27BF}'
+        )
+    });
+
+    if needs_currency_fallback {
+        for candidate in [
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans CJK KR",
+            "NanumGothic",
+            "Noto Sans KR",
+            "Pretendard",
+            "DejaVu Sans",
+            "sans-serif",
+        ] {
+            if family_candidates
+                .iter()
+                .any(|existing| existing == candidate)
+            {
+                continue;
+            }
+            family_candidates.push(candidate.to_string());
+        }
+    } else if needs_symbol_fallback {
+        for candidate in [
+            "Noto Sans CJK KR",
+            "NanumGothic",
+            "Noto Sans KR",
+            "DejaVu Sans",
+            "OpenSymbol",
+            "Segoe UI Symbol",
+            "sans-serif",
+        ] {
+            if family_candidates
+                .iter()
+                .any(|existing| existing == candidate)
+            {
+                continue;
+            }
+            family_candidates.push(candidate.to_string());
+        }
+    }
 
     if family_candidates
         .iter()
@@ -129,16 +210,24 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
     {
         let serif_fallbacks: &[&str] = if probe_char.is_some() {
             &[
+                "Batang",
+                "바탕",
+                "AppleMyungjo",
                 "Noto Serif CJK KR",
                 "NanumMyeongjo",
+                "Noto Serif KR",
                 "DejaVu Serif",
                 "serif",
             ]
         } else {
             &[
                 "DejaVu Serif",
+                "Batang",
+                "바탕",
+                "AppleMyungjo",
                 "Noto Serif CJK KR",
                 "NanumMyeongjo",
+                "Noto Serif KR",
                 "serif",
             ]
         };
@@ -153,8 +242,13 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
         }
     } else {
         for candidate in [
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
             "Noto Sans CJK KR",
             "NanumGothic",
+            "Noto Sans KR",
+            "Pretendard",
             "DejaVu Sans",
             "sans-serif",
         ] {
@@ -171,22 +265,25 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
     let mut matched = None;
     for candidate in &family_candidates {
         let typeface = if let Some(probe_char) = probe_char {
-            if matches!(
-                candidate.as_str(),
-                "D2Coding"
-                    | "NanumGothicCoding"
-                    | "Noto Sans Mono"
-                    | "DejaVu Sans Mono"
-                    | "Noto Serif CJK KR"
-                    | "NanumMyeongjo"
-                    | "DejaVu Serif"
-                    | "Noto Sans CJK KR"
-                    | "NanumGothic"
-                    | "DejaVu Sans"
-                    | "serif"
-                    | "sans-serif"
-                    | "monospace"
-            ) {
+            if needs_symbol_fallback
+                || needs_currency_fallback
+                || matches!(
+                    candidate.as_str(),
+                    "D2Coding"
+                        | "NanumGothicCoding"
+                        | "Noto Sans Mono"
+                        | "DejaVu Sans Mono"
+                        | "Noto Serif CJK KR"
+                        | "NanumMyeongjo"
+                        | "DejaVu Serif"
+                        | "Noto Sans CJK KR"
+                        | "NanumGothic"
+                        | "DejaVu Sans"
+                        | "serif"
+                        | "sans-serif"
+                        | "monospace"
+                )
+            {
                 font_mgr.match_family_style_character(
                     candidate,
                     font_style,
@@ -202,6 +299,18 @@ pub fn make_font(text_style: &TextStyle, font_mgr: &FontMgr, sample_text: &str) 
         let Some(typeface) = typeface else {
             continue;
         };
+        if sample_text.chars().any(|ch| !ch.is_whitespace()) {
+            let probe_font = Font::new(typeface.clone(), font_size);
+            let glyphs = probe_font.text_to_glyphs_vec(sample_text);
+            if glyphs.len() != sample_text.chars().count()
+                || glyphs
+                    .iter()
+                    .zip(sample_text.chars())
+                    .any(|(&glyph, ch)| !ch.is_whitespace() && glyph == 0)
+            {
+                continue;
+            }
+        }
         let family_name = typeface.family_name();
         if matches!(candidate.as_str(), "serif" | "sans-serif" | "monospace")
             || family_name == *candidate
@@ -240,6 +349,141 @@ pub fn make_text_paint(text_style: &TextStyle) -> Paint {
     paint.set_style(paint::Style::Fill);
     paint.set_color(colorref_to_skia(text_style.color, 1.0));
     paint
+}
+
+fn make_fill_shader(
+    bounds: Rect,
+    pattern: Option<&PatternFillInfo>,
+    gradient: Option<&GradientFillInfo>,
+) -> Option<skia_safe::Shader> {
+    if let Some(gradient) = gradient {
+        if let Some(shader) = make_gradient_shader(gradient, bounds) {
+            return Some(shader);
+        }
+    }
+    pattern.and_then(make_pattern_shader)
+}
+
+fn make_gradient_shader(info: &GradientFillInfo, bounds: Rect) -> Option<skia_safe::Shader> {
+    if info.colors.len() < 2 {
+        return None;
+    }
+
+    let colors: Vec<Color4f> = info
+        .colors
+        .iter()
+        .copied()
+        .map(|color| Color4f::from(colorref_to_skia(color, 1.0)))
+        .collect();
+    let positions: Vec<f32> = if info.positions.len() == colors.len() {
+        info.positions
+            .iter()
+            .map(|position| position.clamp(0.0, 1.0) as f32)
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let colors = if positions.is_empty() {
+        GradientColors::new_evenly_spaced(&colors, TileMode::Clamp, None)
+    } else {
+        GradientColors::new(&colors, Some(&positions), TileMode::Clamp, None)
+    };
+    let shader_gradient = Gradient::new(colors, GradientInterpolation::default());
+
+    if matches!(info.gradient_type, 2..=4) {
+        let center = Point::new(
+            bounds.left + bounds.width() * (info.center_x as f32 / 100.0),
+            bounds.top + bounds.height() * (info.center_y as f32 / 100.0),
+        );
+        let radius = bounds.width().max(bounds.height()) / 2.0;
+        return shaders::radial_gradient((center, radius.max(1.0)), &shader_gradient, None);
+    }
+
+    let (start, end) = angle_to_gradient_points(info.angle, bounds);
+    shaders::linear_gradient((start, end), &shader_gradient, None)
+}
+
+fn angle_to_gradient_points(angle: i16, bounds: Rect) -> (Point, Point) {
+    let x = bounds.left;
+    let y = bounds.top;
+    let width = bounds.width();
+    let height = bounds.height();
+    let angle = ((angle % 360 + 360) % 360) as f32;
+
+    match angle as i32 {
+        0 => (Point::new(x, y), Point::new(x, y + height)),
+        45 => (Point::new(x, y), Point::new(x + width, y + height)),
+        90 => (Point::new(x, y), Point::new(x + width, y)),
+        135 => (Point::new(x, y + height), Point::new(x + width, y)),
+        180 => (Point::new(x, y + height), Point::new(x, y)),
+        225 => (Point::new(x + width, y + height), Point::new(x, y)),
+        270 => (Point::new(x + width, y), Point::new(x, y)),
+        315 => (Point::new(x + width, y), Point::new(x, y + height)),
+        _ => {
+            let radians = angle.to_radians();
+            let sin_angle = radians.sin();
+            let cos_angle = radians.cos();
+            let center_x = x + width / 2.0;
+            let center_y = y + height / 2.0;
+            (
+                Point::new(
+                    center_x - sin_angle * width / 2.0,
+                    center_y - cos_angle * height / 2.0,
+                ),
+                Point::new(
+                    center_x + sin_angle * width / 2.0,
+                    center_y + cos_angle * height / 2.0,
+                ),
+            )
+        }
+    }
+}
+
+fn make_pattern_shader(pattern: &PatternFillInfo) -> Option<skia_safe::Shader> {
+    let mut surface = surfaces::raster_n32_premul((6, 6))?;
+    let canvas = surface.canvas();
+
+    let mut background = Paint::default();
+    background.set_anti_alias(false);
+    background.set_style(paint::Style::Fill);
+    background.set_color(colorref_to_skia(pattern.background_color, 1.0));
+    canvas.draw_rect(Rect::from_xywh(0.0, 0.0, 6.0, 6.0), &background);
+
+    let mut foreground = Paint::default();
+    foreground.set_anti_alias(true);
+    foreground.set_style(paint::Style::Stroke);
+    foreground.set_stroke_width(1.0);
+    foreground.set_color(colorref_to_skia(pattern.pattern_color, 1.0));
+
+    match pattern.pattern_type {
+        0 => {
+            canvas.draw_line((0.0, 3.0), (6.0, 3.0), &foreground);
+        }
+        1 => {
+            canvas.draw_line((3.0, 0.0), (3.0, 6.0), &foreground);
+        }
+        2 => {
+            canvas.draw_line((6.0, 0.0), (0.0, 6.0), &foreground);
+        }
+        3 => {
+            canvas.draw_line((0.0, 0.0), (6.0, 6.0), &foreground);
+        }
+        4 => {
+            canvas.draw_line((3.0, 0.0), (3.0, 6.0), &foreground);
+            canvas.draw_line((0.0, 3.0), (6.0, 3.0), &foreground);
+        }
+        5 => {
+            canvas.draw_line((0.0, 0.0), (6.0, 6.0), &foreground);
+            canvas.draw_line((6.0, 0.0), (0.0, 6.0), &foreground);
+        }
+        _ => {}
+    }
+
+    surface.image_snapshot().to_shader(
+        Some((TileMode::Repeat, TileMode::Repeat)),
+        SamplingOptions::new(FilterMode::Nearest, MipmapMode::None),
+        None,
+    )
 }
 
 fn apply_dash(paint: &mut Paint, dash: StrokeDash) {
