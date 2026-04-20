@@ -4,7 +4,7 @@
 // 2. WASM, 폰트, 확장 파일(manifest, background, content-script)을 dist/에 복사
 // 3. dist/ 폴더가 곧 Chrome 확장 프로그램
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { cpSync, mkdirSync, existsSync, renameSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,26 +13,36 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(__dirname, 'dist');
 
-function run(cmd, cwd = __dirname) {
-  console.log(`> ${cmd}`);
-  execSync(cmd, { stdio: 'inherit', cwd });
+/**
+ * Shell 우회로 명령어 실행 — 인자가 shell 에 의해 해석되지 않아 경로의 공백/특수문자 안전.
+ * (CodeQL js/shell-command-injection-from-environment fix, alert #16)
+ *
+ * Windows 의 npx 같은 .cmd 스크립트 실행을 위해 shell: true 가 필요한 경우는
+ * 별도 처리. 본 스크립트는 Linux/macOS 빌드 전제 (Docker WASM + native).
+ */
+function run(file, args, cwd = __dirname) {
+  console.log(`> ${file} ${args.join(' ')}`);
+  execFileSync(file, args, { stdio: 'inherit', cwd });
 }
 
-function copy(src, dest) {
+function copy(src, dest, options = {}) {
   if (!existsSync(src)) {
     console.warn(`  SKIP (not found): ${src}`);
     return;
   }
-  cpSync(src, dest, { recursive: true });
+  cpSync(src, dest, { recursive: true, ...options });
   console.log(`  COPY: ${src} → ${dest}`);
 }
+
+/** 배포본에서 제외할 파일 패턴 (테스트 등). */
+const EXCLUDE_FROM_DIST = /\.(test|spec)\.[mc]?[jt]sx?$/i;
 
 console.log('=== rhwp-chrome 빌드 시작 ===\n');
 
 // 1. Vite 빌드 (rhwp-studio → dist/)
 console.log('[1/4] Vite 빌드...');
 const studioDir = resolve(ROOT, 'rhwp-studio');
-run(`npx vite build --config ${resolve(__dirname, 'vite.config.ts')}`, studioDir);
+run('npx', ['vite', 'build', '--config', resolve(__dirname, 'vite.config.ts')], studioDir);
 
 // index.html → viewer.html 이름 변경
 const indexHtml = resolve(DIST, 'index.html');
@@ -58,7 +68,9 @@ copy(resolve(__dirname, 'background.js'), resolve(DIST, 'background.js'));
 copy(resolve(__dirname, 'content-script.js'), resolve(DIST, 'content-script.js'));
 copy(resolve(__dirname, 'content-script.css'), resolve(DIST, 'content-script.css'));
 copy(resolve(__dirname, 'dev-tools-inject.js'), resolve(DIST, 'dev-tools-inject.js'));
-copy(resolve(__dirname, 'sw'), resolve(DIST, 'sw'));
+copy(resolve(__dirname, 'sw'), resolve(DIST, 'sw'), {
+  filter: (src) => !EXCLUDE_FROM_DIST.test(src),
+});
 copy(resolve(__dirname, 'options.html'), resolve(DIST, 'options.html'));
 copy(resolve(__dirname, 'options.js'), resolve(DIST, 'options.js'));
 

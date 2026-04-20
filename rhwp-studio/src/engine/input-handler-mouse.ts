@@ -323,6 +323,7 @@ export function onClick(this: any, e: MouseEvent): void {
                 ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type },
                 origWidth: props.width,
                 origHeight: props.height,
+                rotationAngle: (props.rotationAngle ?? 0) as number,
                 startClientX: e.clientX,
                 startClientY: e.clientY,
                 pageIndex: picBbox.pageIndex,
@@ -1037,6 +1038,11 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       this.dragRafId = 0;
       if (!this.isPictureResizeDragging || !this.pictureResizeState) return;
       this.updatePictureResizeDrag(e);
+
+      // 드래그 중에도 커서 방향 업데이트 (Flipping 대응)
+      const state = this.pictureResizeState;
+      const angleDeg = (state.rotationAngle ?? 0) as number;
+      this.container.style.cursor = getRotatedCursor(state.dir, angleDeg);
     });
     return;
   }
@@ -1076,14 +1082,20 @@ export function onMouseMove(this: any, e: MouseEvent): void {
     const y = e.clientY - contentRect.top;
     const dir = this.pictureObjectRenderer.getHandleAtPoint(x, y);
     if (dir) {
-      const cursorMap: Record<string, string> = {
-        nw: 'nwse-resize', se: 'nwse-resize',
-        ne: 'nesw-resize', sw: 'nesw-resize',
-        n: 'ns-resize', s: 'ns-resize',
-        e: 'ew-resize', w: 'ew-resize',
-        rotate: 'grab',
-      };
-      this.container.style.cursor = cursorMap[dir] ?? '';
+      if (dir === 'rotate') {
+        this.container.style.cursor = 'grab';
+      } else {
+        // 회전된 도형의 경우 커서 방향도 회전시켜 표시
+        let angleDeg = 0;
+        const ref = this.cursor.getSelectedPictureRef();
+        if (ref && ref.type === 'shape') {
+          try {
+            const props = this.getObjectProperties(ref);
+            angleDeg = (props.rotationAngle ?? 0) as number;
+          } catch { /* ignore */ }
+        }
+        this.container.style.cursor = getRotatedCursor(dir, angleDeg);
+      }
     } else {
       // 핸들 밖 → 그림 본체 위이면 move 커서
       const ref = this.cursor.getSelectedPictureRef();
@@ -1335,3 +1347,27 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
   this.updateCaret();
 }
 
+
+/**
+ * 회전각을 반영하여 적절한 리사이즈 커서 이름을 반환한다.
+ * @param dir 기본 방향 ('nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w')
+ * @param angleDeg 회전각 (도)
+ */
+function getRotatedCursor(dir: string, angleDeg: number): string {
+  const dirs = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
+  const idx = dirs.indexOf(dir);
+  if (idx === -1) return '';
+
+  // 45도 단위로 인덱스 시프트 (회전각 정규화)
+  const normalizedAngle = ((angleDeg % 360) + 360) % 360;
+  const shift = Math.round(normalizedAngle / 45);
+  const rotatedDir = dirs[(idx + shift) % 8];
+
+  const cursorMap: Record<string, string> = {
+    n: 'ns-resize', s: 'ns-resize',
+    e: 'ew-resize', w: 'ew-resize',
+    nw: 'nwse-resize', se: 'nwse-resize',
+    ne: 'nesw-resize', sw: 'nesw-resize',
+  };
+  return cursorMap[rotatedDir] ?? '';
+}

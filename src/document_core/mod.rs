@@ -11,6 +11,7 @@ mod queries;
 pub(crate) mod html_table_import;
 pub mod table_calc;
 pub mod validation;
+pub mod converters;
 
 use std::cell::RefCell;
 use std::collections::HashMap;

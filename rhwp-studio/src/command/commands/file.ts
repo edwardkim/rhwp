@@ -3,16 +3,12 @@ import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { AboutDialog } from '@/ui/about-dialog';
 import { showConfirm } from '@/ui/confirm-dialog';
 import { showSaveAs } from '@/ui/save-as-dialog';
-
-// File System Access API (Chrome/Edge)
-declare global {
-  interface Window {
-    showSaveFilePicker?: (options?: {
-      suggestedName?: string;
-      types?: { description: string; accept: Record<string, string[]> }[];
-    }) => Promise<FileSystemFileHandle>;
-  }
-}
+import {
+  pickOpenFileHandle,
+  readFileFromHandle,
+  saveDocumentToFileSystem,
+  type FileSystemWindowLike,
+} from '@/command/file-system-access';
 
 export const fileCommands: CommandDef[] = [
   {
@@ -36,8 +32,25 @@ export const fileCommands: CommandDef[] = [
   {
     id: 'file:open',
     label: '열기',
-    execute() {
-      document.getElementById('file-input')?.click();
+    async execute(services) {
+      try {
+        const handle = await pickOpenFileHandle(window as FileSystemWindowLike);
+        if (!handle) {
+          document.getElementById('file-input')?.click();
+          return;
+        }
+
+        const { bytes, name } = await readFileFromHandle(handle);
+        services.eventBus.emit('open-document-bytes', {
+          bytes,
+          fileName: name,
+          fileHandle: handle,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[file:open] 열기 실패:', msg);
+        alert(`파일 열기에 실패했습니다:\n${msg}`);
+      }
     },
   },
   {
@@ -45,7 +58,8 @@ export const fileCommands: CommandDef[] = [
     label: '저장',
     icon: 'icon-save',
     shortcutLabel: 'Ctrl+S',
-    canExecute: (ctx) => ctx.hasDocument,
+    // #196: HWPX 출처는 저장 비활성화 (베타 단계, #197 완전 변환기 완료 시까지)
+    canExecute: (ctx) => ctx.hasDocument && ctx.sourceFormat !== 'hwpx',
     async execute(services) {
       try {
         const saveName = services.wasm.fileName;
@@ -53,34 +67,29 @@ export const fileCommands: CommandDef[] = [
         const isHwpx = sourceFormat === 'hwpx';
         const bytes = isHwpx ? services.wasm.exportHwpx() : services.wasm.exportHwp();
         const mimeType = isHwpx ? 'application/hwp+zip' : 'application/x-hwp';
-        const ext = isHwpx ? '.hwpx' : '.hwp';
         const blob = new Blob([bytes as unknown as BlobPart], { type: mimeType });
         console.log(`[file:save] format=${sourceFormat}, isHwpx=${isHwpx}, ${bytes.length} bytes`);
 
-        // 1) File System Access API 지원 시 네이티브 저장 대화상자 사용
-        if ('showSaveFilePicker' in window) {
-          try {
-            const handle = await window.showSaveFilePicker!({
-              suggestedName: saveName,
-              types: [{
-                description: isHwpx ? 'HWPX 문서' : 'HWP 문서',
-                accept: isHwpx
-                  ? { 'application/hwp+zip': ['.hwpx'] }
-                  : { 'application/x-hwp': ['.hwp'] },
-              }],
-            });
-            const writable = await handle.createWritable();
-            await writable.write(blob);
-            await writable.close();
-            services.wasm.fileName = handle.name;
-            console.log(`[file:save] ${handle.name} (${(bytes.length / 1024).toFixed(1)}KB)`);
+        // 1) 기존 파일 handle이 있으면 같은 파일에 저장, 없으면 save picker 시도
+        try {
+          const saveResult = await saveDocumentToFileSystem({
+            blob,
+            suggestedName: saveName,
+            currentHandle: services.wasm.currentFileHandle,
+            windowLike: window as FileSystemWindowLike,
+          });
+
+          if (saveResult.method !== 'fallback') {
+            services.wasm.currentFileHandle = saveResult.handle;
+            services.wasm.fileName = saveResult.fileName;
+            console.log(`[file:save] ${saveResult.fileName} (${(bytes.length / 1024).toFixed(1)}KB)`);
             return;
-          } catch (e) {
-            // 사용자가 취소하면 AbortError 발생 — 무시
-            if (e instanceof DOMException && e.name === 'AbortError') return;
-            // 그 외 오류는 폴백으로 진행
-            console.warn('[file:save] File System Access API 실패, 폴백:', e);
           }
+        } catch (e) {
+          // 사용자가 취소하면 AbortError 발생 — 무시
+          if (e instanceof DOMException && e.name === 'AbortError') return;
+          // 그 외 오류는 폴백으로 진행
+          console.warn('[file:save] File System Access API 실패, 폴백:', e);
         }
 
         // 2) 폴백: 새 문서인 경우 자체 파일이름 대화상자 표시

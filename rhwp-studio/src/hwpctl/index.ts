@@ -72,6 +72,11 @@ export class HwpCtrl {
   SaveAs(filename: string, format?: string, arg?: string): boolean {
     try {
       const sourceFormat = this.wasmDoc.getSourceFormat();
+      // #196: HWPX 출처는 저장 비활성화 (베타 단계, #197 완전 변환기 완료 시까지)
+      if (sourceFormat === 'hwpx' && format !== 'hwp') {
+        console.warn('[hwpctl] SaveAs: HWPX 출처 저장은 현재 베타 단계로 비활성화되어 있습니다 (#196)');
+        return false;
+      }
       const isHwpx = format === 'hwpx' || (!format && sourceFormat === 'hwpx');
       console.log(`[hwpctl] SaveAs: filename=${filename}, sourceFormat=${sourceFormat}, isHwpx=${isHwpx}`);
 
