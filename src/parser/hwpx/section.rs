@@ -296,37 +296,36 @@ fn parse_paragraph(
         buf.clear();
     }
 
-    // 텍스트 조립: 제어 문자(\u{0002})는 HWP와 동일하게 텍스트에서 제외
-    // HWP에서 컨트롤 위치는 char_offsets의 갭으로 표현됨
-    para.text = text_parts.iter()
-        .filter(|s| *s != "\u{0002}")
-        .cloned()
-        .collect::<Vec<_>>()
-        .join("");
-
-    // char_offsets 생성 (각 문자의 UTF-16 위치)
-    // HWP 바이너리에서 탭 문자는 확장 데이터 포함 8 code unit을 차지하므로
-    // LINE_SEG text_start와 올바르게 매핑되려면 탭도 8 code unit으로 계산
+    // 텍스트 조립: 제어 문자(\u{0002}, \u{0003}, \u{0004})는 HWP와 동일하게 텍스트에서 제외
+    // HWP에서 컨트롤 위치는 char_offsets의 갭으로 표현되므로 원본 순서를 유지해 계산한다.
+    let mut visual_text = String::new();
+    let mut char_offsets: Vec<u32> = Vec::new();
     let mut utf16_pos: u32 = 0;
-    let ctrl_offset: u32 = (para.controls.len() as u32) * 8; // 각 컨트롤 = 8 UTF-16 유닛
-    para.char_offsets = para.text.chars().map(|c| {
-        let pos = utf16_pos + ctrl_offset;
-        utf16_pos += if c == '\t' { 8 } else if (c as u32) > 0xFFFF { 2 } else { 1 };
-        pos
-    }).collect();
 
-    // char_count 설정 (텍스트 + 컨트롤 + 끝 마커)
-    let text_utf16_len: u32 = para.text.chars()
-        .map(|c| if c == '\t' { 8u32 } else if (c as u32) > 0xFFFF { 2 } else { 1 })
-        .sum();
-    para.char_count = text_utf16_len + ctrl_offset + 1; // +1 for 끝 마커
+    for part in &text_parts {
+        match part.as_str() {
+            "\u{0002}" | "\u{0003}" | "\u{0004}" => {
+                utf16_pos += 8;
+            }
+            _ => {
+                for c in part.chars() {
+                    char_offsets.push(utf16_pos);
+                    visual_text.push(c);
+                    let width = if c == '\t' { 8 } else if (c as u32) > 0xFFFF { 2 } else { 1 };
+                    utf16_pos += width;
+                }
+            }
+        }
+    }
+
+    para.text = visual_text;
+    para.char_offsets = char_offsets;
+    para.char_count = utf16_pos + 1; // +1 for 끝 마커
     para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
 
-    // char_shapes 변환
-    // char_shapes의 start_pos에 ctrl_offset 적용 (char_offsets와 동기화, Task #11)
-    let ctrl_offset_for_shapes: u32 = (para.controls.len() as u32) * 8;
+    // char_shapes는 원본 문단 순서(text_parts)를 기준으로 계산한 위치를 그대로 사용한다.
     para.char_shapes = char_shape_changes.into_iter()
-        .map(|(pos, id)| CharShapeRef { start_pos: pos + ctrl_offset_for_shapes, char_shape_id: id })
+        .map(|(pos, id)| CharShapeRef { start_pos: pos, char_shape_id: id })
         .collect();
 
     // 기본 line_seg (빈 문단이라도 최소 1개)
@@ -2699,8 +2698,12 @@ fn parse_equation(
 /// 탭 문자는 HWP 바이너리와 동일하게 8 code unit으로 계산
 fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
     parts.iter()
-        .flat_map(|s| s.chars())
-        .map(|c| if c == '\t' { 8u32 } else if (c as u32) > 0xFFFF { 2 } else { 1 })
+        .map(|s| match s.as_str() {
+            "\u{0002}" | "\u{0003}" | "\u{0004}" => 8,
+            _ => s.chars()
+                .map(|c| if c == '\t' { 8u32 } else if (c as u32) > 0xFFFF { 2 } else { 1 })
+                .sum(),
+        })
         .sum()
 }
 
@@ -2834,6 +2837,57 @@ mod tests {
         assert_eq!(section.paragraphs.len(), 1);
         assert_eq!(section.paragraphs[0].text, "Hello World");
         assert_eq!(section.paragraphs[0].para_shape_id, 0);
+    }
+
+    #[test]
+    fn test_parse_linebreak_preserves_offsets() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:t>줄바꿈A<hp:lineBreak/>줄바꿈B</hp:t>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.text, "줄바꿈A\n줄바꿈B");
+        assert_eq!(para.char_offsets, vec![0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    }
+
+    #[test]
+    fn test_parse_control_keeps_interleaved_offsets() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t>A</hp:t></hp:run>
+    <hp:tbl rowCnt="1" colCnt="1" cellSpacing="0" borderFillIDRef="0">
+      <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:tr>
+        <hp:tc name="0" header="0" hasMargin="0" editable="0" dirty="0" borderFillIDRef="0" textDirection="HORIZONTAL" vertAlign="TOP" colAddr="0" rowAddr="0" colSpan="1" rowSpan="1" width="1000" height="1000">
+          <hp:cellAddr colAddr="0" rowAddr="0"/>
+          <hp:cellSpan colSpan="1" rowSpan="1"/>
+          <hp:cellSz width="1000" height="1000"/>
+          <hp:cellMargin left="0" right="0" top="0" bottom="0"/>
+          <hp:subList><hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>T</hp:t></hp:run></hp:p></hp:subList>
+          <hp:lineBreak/>
+        </hp:tc>
+      </hp:tr>
+    </hp:tbl>
+    <hp:run charPrIDRef="0"><hp:t>B</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.text, "AB");
+        assert_eq!(para.char_offsets, vec![0, 9]);
+        assert_eq!(para.char_shapes[0].start_pos, 0);
+        assert_eq!(para.char_shapes[1].start_pos, 9);
+        assert_eq!(para.controls.len(), 1);
     }
 
     #[test]
