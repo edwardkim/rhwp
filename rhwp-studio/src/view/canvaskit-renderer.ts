@@ -104,8 +104,15 @@ const MONO_ALIASES = [
 
 export class CanvasKitLayerRenderer {
   private readonly imageCache = new Map<string, Image>();
+  private readonly mipmappedImageCache = new Map<string, Image>();
+  private readonly domImageCache = new Map<string, HTMLImageElement>();
   private readonly patternImageCache = new Map<string, Image | null>();
   private readonly fontAliases = new Set<string>();
+  private readonly overlayClipStack: LayerBounds[] = [];
+  private lastRenderedTree: PageLayerTree | null = null;
+  private lastTargetCanvas: HTMLCanvasElement | null = null;
+  private lastScale = 1;
+  private rerenderScheduled = false;
 
   private constructor(
     private readonly canvasKit: CanvasKit,
@@ -128,6 +135,10 @@ export class CanvasKitLayerRenderer {
     targetCanvas: HTMLCanvasElement,
     scale: number,
   ): void {
+    this.lastRenderedTree = tree;
+    this.lastTargetCanvas = targetCanvas;
+    this.lastScale = scale;
+
     const surface = this.canvasKit.MakeSWCanvasSurface(targetCanvas);
     if (!surface) {
       throw new Error('CanvasKit surface 생성 실패');
@@ -245,9 +256,15 @@ export class CanvasKitLayerRenderer {
         this.renderFootnoteMarker(canvas, op);
         return;
       case 'line':
+        if (this.shouldOverlayLine(op)) {
+          return;
+        }
         this.renderLine(canvas, op);
         return;
       case 'rectangle':
+        if (this.shouldOverlayRectangle(op)) {
+          return;
+        }
         this.renderRectangle(canvas, op);
         return;
       case 'ellipse':
@@ -275,6 +292,22 @@ export class CanvasKitLayerRenderer {
     return true;
   }
 
+  private shouldOverlayLine(op: LayerLineOp): boolean {
+    return this.renderMode === 'compat'
+      && op.style.lineType === 'single'
+      && op.style.startArrow === 'none'
+      && op.style.endArrow === 'none'
+      && !op.style.shadow;
+  }
+
+  private shouldOverlayRectangle(op: LayerRectangleOp): boolean {
+    return this.renderMode === 'compat'
+      && op.cornerRadius === 0
+      && !op.gradient
+      && !op.style.pattern
+      && !op.style.shadow;
+  }
+
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
     const fill = this.makeShapeFillPaint(op.bbox, op.backgroundColor ?? null, 1, op.gradient);
     if (fill) {
@@ -283,7 +316,7 @@ export class CanvasKitLayerRenderer {
       fill.paint.delete();
     }
 
-    if (op.image?.base64) {
+    if (op.image?.base64 && this.renderMode !== 'compat') {
       this.drawEncodedImage(canvas, op.image.base64, op.bbox, op.image.fillMode);
     }
 
@@ -761,6 +794,9 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderImage(canvas: ReturnType<Surface['getCanvas']>, op: LayerImageOp): void {
+    if (this.renderMode === 'compat') {
+      return;
+    }
     this.withTransform(canvas, op.bbox, op.transform, () => {
       if (!op.base64) return;
       this.drawEncodedImage(canvas, op.base64, op.bbox, op.fillMode, op.originalSize, op.crop);
@@ -783,12 +819,14 @@ export class CanvasKitLayerRenderer {
         strokePaint.delete();
 
         if (op.caption) {
-          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
-          const family = this.resolveCanvasKitFontFamily('Noto Sans KR');
+          const fontSize = Math.min(Math.max(h * 0.5, 8), 12);
+          const family = this.resolveCanvasKitFontFamily('sans-serif');
           const { font, paint, typeface } = this.makeTextObjects(family, fontSize, false, false, '#808080');
-          const cssFont = `${fontSize}px "${family}"`;
+          const metrics = font.getMetrics();
+          const cssFont = buildCanvasTextFont(family, fontSize, false, false);
           const textWidth = (globalThis as any).measureTextWidth?.(cssFont, op.caption) ?? op.caption.length * fontSize * 0.55;
-          canvas.drawText(op.caption, x + w / 2 - textWidth / 2, y + h / 2 + fontSize * 0.35, paint, font);
+          const baselineY = y + h / 2 - ((metrics.ascent ?? -fontSize * 0.8) + (metrics.descent ?? fontSize * 0.2)) / 2;
+          canvas.drawText(op.caption, x + w / 2 - textWidth / 2, baselineY, paint, font);
           paint.delete();
           font.delete();
           typeface.delete();
@@ -796,11 +834,11 @@ export class CanvasKitLayerRenderer {
         return;
       }
       case 'checkBox': {
-        const boxSize = Math.min(h * 0.7, 13);
+        const boxSize = Math.min(h, 14);
         const boxY = y + (h - boxSize) / 2;
-        const boxX = x + 2;
+        const boxX = x;
         const fillPaint = this.makePaint('#ffffff', 'fill');
-        const strokePaint = this.makeLinePaint('#606060', 0.8, 'solid');
+        const strokePaint = this.makeLinePaint('#000000', 1, 'solid');
         canvas.drawRect(this.canvasKit.XYWHRect(boxX, boxY, boxSize, boxSize), fillPaint);
         canvas.drawRect(this.canvasKit.XYWHRect(boxX, boxY, boxSize, boxSize), strokePaint);
         fillPaint.delete();
@@ -808,10 +846,10 @@ export class CanvasKitLayerRenderer {
 
         if (op.value !== 0) {
           const path = new this.canvasKit.PathBuilder();
-          path.moveTo(boxX + boxSize * 0.2, boxY + boxSize * 0.55);
-          path.lineTo(boxX + boxSize * 0.45, boxY + boxSize * 0.8);
-          path.lineTo(boxX + boxSize * 0.85, boxY + boxSize * 0.2);
-          const markPaint = this.makeLinePaint('#000000', 1.5, 'solid');
+          path.moveTo(boxX + 2, boxY + boxSize / 2);
+          path.lineTo(boxX + boxSize / 3, boxY + boxSize - 3);
+          path.lineTo(boxX + boxSize - 2, boxY + 2);
+          const markPaint = this.makeLinePaint('#000000', 2, 'solid');
           const checkPath = path.detach();
           canvas.drawPath(checkPath, markPaint);
           markPaint.delete();
@@ -820,9 +858,12 @@ export class CanvasKitLayerRenderer {
         }
 
         if (op.caption) {
-          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
-          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
-          canvas.drawText(op.caption, boxX + boxSize + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          const fontSize = Math.min(Math.max(h * 0.7, 8), 12);
+          const family = this.resolveCanvasKitFontFamily('sans-serif');
+          const { font, paint, typeface } = this.makeTextObjects(family, fontSize, false, false, op.foreColor);
+          const metrics = font.getMetrics();
+          const baselineY = y + h / 2 - ((metrics.ascent ?? -fontSize * 0.8) + (metrics.descent ?? fontSize * 0.2)) / 2;
+          canvas.drawText(op.caption, boxX + boxSize + 4, baselineY, paint, font);
           paint.delete();
           font.delete();
           typeface.delete();
@@ -830,11 +871,11 @@ export class CanvasKitLayerRenderer {
         return;
       }
       case 'radioButton': {
-        const r = Math.min(h * 0.3, 6.5);
-        const cx = x + 2 + r;
+        const r = Math.min(h, 14) / 2;
+        const cx = x + r;
         const cy = y + h / 2;
         const fillPaint = this.makePaint('#ffffff', 'fill');
-        const strokePaint = this.makeLinePaint('#606060', 0.8, 'solid');
+        const strokePaint = this.makeLinePaint('#000000', 1, 'solid');
         canvas.drawCircle(cx, cy, r, fillPaint);
         canvas.drawCircle(cx, cy, r, strokePaint);
         fillPaint.delete();
@@ -847,9 +888,12 @@ export class CanvasKitLayerRenderer {
         }
 
         if (op.caption) {
-          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
-          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
-          canvas.drawText(op.caption, cx + r + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          const fontSize = Math.min(Math.max(h * 0.7, 8), 12);
+          const family = this.resolveCanvasKitFontFamily('sans-serif');
+          const { font, paint, typeface } = this.makeTextObjects(family, fontSize, false, false, op.foreColor);
+          const metrics = font.getMetrics();
+          const baselineY = y + h / 2 - ((metrics.ascent ?? -fontSize * 0.8) + (metrics.descent ?? fontSize * 0.2)) / 2;
+          canvas.drawText(op.caption, x + r * 2 + 4, baselineY, paint, font);
           paint.delete();
           font.delete();
           typeface.delete();
@@ -857,17 +901,17 @@ export class CanvasKitLayerRenderer {
         return;
       }
       case 'comboBox': {
-        const btnW = Math.min(h * 0.8, 16);
+        const btnW = Math.min(h, 20);
         const fillPaint = this.makePaint('#ffffff', 'fill');
-        const strokePaint = this.makeLinePaint('#a0a0a0', 0.8, 'solid');
-        canvas.drawRect(this.toRect(op.bbox), fillPaint);
-        canvas.drawRect(this.toRect(op.bbox), strokePaint);
+        const strokePaint = this.makeLinePaint('#808080', 1, 'solid');
+        canvas.drawRect(this.canvasKit.XYWHRect(x, y, w - btnW, h), fillPaint);
+        canvas.drawRect(this.canvasKit.XYWHRect(x, y, w - btnW, h), strokePaint);
         fillPaint.delete();
         strokePaint.delete();
 
         const buttonRect = this.canvasKit.XYWHRect(x + w - btnW, y, btnW, h);
-        const buttonFill = this.makePaint('#e0e0e0', 'fill');
-        const buttonStroke = this.makeLinePaint('#a0a0a0', 0.5, 'solid');
+        const buttonFill = this.makePaint('#c0c0c0', 'fill');
+        const buttonStroke = this.makeLinePaint('#808080', 1, 'solid');
         canvas.drawRect(buttonRect, buttonFill);
         canvas.drawRect(buttonRect, buttonStroke);
         buttonFill.delete();
@@ -875,13 +919,13 @@ export class CanvasKitLayerRenderer {
 
         const arrowCx = x + w - btnW / 2;
         const arrowCy = y + h / 2;
-        const arrowSize = Math.min(h * 0.2, 4);
+        const arrowSize = btnW * 0.3;
         const arrowPath = new this.canvasKit.PathBuilder();
-        arrowPath.moveTo(arrowCx - arrowSize, arrowCy - arrowSize * 0.5);
-        arrowPath.lineTo(arrowCx + arrowSize, arrowCy - arrowSize * 0.5);
-        arrowPath.lineTo(arrowCx, arrowCy + arrowSize * 0.5);
+        arrowPath.moveTo(arrowCx - arrowSize, arrowCy - arrowSize / 2);
+        arrowPath.lineTo(arrowCx + arrowSize, arrowCy - arrowSize / 2);
+        arrowPath.lineTo(arrowCx, arrowCy + arrowSize / 2);
         arrowPath.close();
-        const arrowPaint = this.makePaint('#404040', 'fill');
+        const arrowPaint = this.makePaint('#000000', 'fill');
         const arrowShape = arrowPath.detach();
         canvas.drawPath(arrowShape, arrowPaint);
         arrowPaint.delete();
@@ -889,9 +933,12 @@ export class CanvasKitLayerRenderer {
         arrowPath.delete();
 
         if (op.text) {
-          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
-          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
-          canvas.drawText(op.text, x + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          const fontSize = Math.min(Math.max(h * 0.6, 8), 12);
+          const family = this.resolveCanvasKitFontFamily('sans-serif');
+          const { font, paint, typeface } = this.makeTextObjects(family, fontSize, false, false, op.foreColor);
+          const metrics = font.getMetrics();
+          const baselineY = y + h / 2 - ((metrics.ascent ?? -fontSize * 0.8) + (metrics.descent ?? fontSize * 0.2)) / 2;
+          canvas.drawText(op.text, x + 2, baselineY, paint, font);
           paint.delete();
           font.delete();
           typeface.delete();
@@ -899,17 +946,20 @@ export class CanvasKitLayerRenderer {
         return;
       }
       case 'edit': {
-        const fillPaint = this.makePaint('#ffffff', 'fill');
-        const strokePaint = this.makeLinePaint('#a0a0a0', 0.8, 'solid');
+        const fillPaint = this.makePaint(op.backColor, 'fill');
+        const strokePaint = this.makeLinePaint('#808080', 1, 'solid');
         canvas.drawRect(this.toRect(op.bbox), fillPaint);
         canvas.drawRect(this.toRect(op.bbox), strokePaint);
         fillPaint.delete();
         strokePaint.delete();
 
         if (op.text) {
-          const fontSize = Math.min(Math.max(h * 0.55, 7), 12);
-          const { font, paint, typeface } = this.makeTextObjects('Noto Sans KR', fontSize, false, false, op.foreColor);
-          canvas.drawText(op.text, x + 3, y + h / 2 + fontSize * 0.35, paint, font);
+          const fontSize = Math.min(Math.max(h * 0.6, 8), 12);
+          const family = this.resolveCanvasKitFontFamily('sans-serif');
+          const { font, paint, typeface } = this.makeTextObjects(family, fontSize, false, false, op.foreColor);
+          const metrics = font.getMetrics();
+          const baselineY = y + h / 2 - ((metrics.ascent ?? -fontSize * 0.8) + (metrics.descent ?? fontSize * 0.2)) / 2;
+          canvas.drawText(op.text, x + 2, baselineY, paint, font);
           paint.delete();
           font.delete();
           typeface.delete();
@@ -937,6 +987,12 @@ export class CanvasKitLayerRenderer {
       return;
     }
     if (node.kind === 'clipRect') {
+      if (this.renderMode === 'compat') {
+        this.overlayClipStack.push(node.clip);
+        this.renderFallbackOverlayNode(ctx, node.child);
+        this.overlayClipStack.pop();
+        return;
+      }
       ctx.save();
       ctx.beginPath();
       ctx.rect(node.clip.x, node.clip.y, node.clip.width, node.clip.height);
@@ -946,18 +1002,280 @@ export class CanvasKitLayerRenderer {
       return;
     }
     for (const op of node.ops) {
+      if (this.renderMode === 'compat' && op.type === 'pageBackground' && op.image?.base64) {
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderPageBackgroundImageOverlay(ctx, op);
+        });
+        continue;
+      }
+      if (this.renderMode === 'compat' && op.type === 'image' && op.base64) {
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderImageOverlay(ctx, op);
+        });
+        continue;
+      }
+      if (op.type === 'line' && this.shouldOverlayLine(op)) {
+        this.renderLineOverlay(ctx, op);
+        continue;
+      }
+      if (op.type === 'rectangle' && this.shouldOverlayRectangle(op)) {
+        this.renderRectangleOverlay(ctx, op);
+        continue;
+      }
       if (op.type === 'equation') {
-        renderEquationLayoutBox(ctx, op.layoutBox, op.bbox.x, op.bbox.y, op.color, op.fontSize, false, false);
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          renderEquationLayoutBox(ctx, op.layoutBox, op.bbox.x, op.bbox.y, op.color, op.fontSize, false, false);
+        });
         continue;
       }
       if (op.type === 'textRun' && this.shouldOverlayTextRun(op)) {
-        this.renderTextRunOverlay(ctx, op);
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderTextRunOverlay(ctx, op);
+        });
         continue;
       }
       if (op.type === 'footnoteMarker' && this.shouldOverlayFootnoteMarker(op)) {
-        this.renderFootnoteMarkerOverlay(ctx, op);
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderFootnoteMarkerOverlay(ctx, op);
+        });
       }
     }
+  }
+
+  private renderPageBackgroundImageOverlay(ctx: CanvasRenderingContext2D, op: LayerPageBackgroundOp): void {
+    if (!op.image?.base64) {
+      return;
+    }
+    const image = this.getDomImage(op.image.base64);
+    if (!image) {
+      return;
+    }
+    this.drawDomImage(ctx, image, op.bbox, op.image.fillMode);
+  }
+
+  private renderImageOverlay(ctx: CanvasRenderingContext2D, op: LayerImageOp): void {
+    if (!op.base64) {
+      return;
+    }
+    const image = this.getDomImage(op.base64);
+    if (!image) {
+      return;
+    }
+
+    this.withCanvasOverlayTransform(ctx, op.bbox, op.transform, () => {
+      this.drawDomImage(ctx, image, op.bbox, op.fillMode, op.originalSize, op.crop);
+    });
+  }
+
+  private renderLineOverlay(ctx: CanvasRenderingContext2D, op: LayerLineOp): void {
+    this.withCanvasOverlayTransform(ctx, op.bbox, op.transform, () => {
+      ctx.save();
+      const strokeWidth = Math.max(op.style.width, 0.5);
+      const isVertical = Math.abs(op.x1 - op.x2) < 0.01;
+      const isHorizontal = Math.abs(op.y1 - op.y2) < 0.01;
+      if (op.style.dash === 'solid' && strokeWidth > 1.5 && (isVertical || isHorizontal)) {
+        ctx.fillStyle = op.style.color;
+        if (isVertical) {
+          ctx.fillRect(
+            op.x1 - strokeWidth / 2,
+            Math.min(op.y1, op.y2),
+            strokeWidth,
+            Math.abs(op.y2 - op.y1),
+          );
+        } else {
+          ctx.fillRect(
+            Math.min(op.x1, op.x2),
+            op.y1 - strokeWidth / 2,
+            Math.abs(op.x2 - op.x1),
+            strokeWidth,
+          );
+        }
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(op.x1, op.y1);
+        ctx.lineTo(op.x2, op.y2);
+        ctx.strokeStyle = op.style.color;
+        ctx.lineWidth = strokeWidth;
+        ctx.setLineDash(
+          op.style.dash === 'dash' ? [6, 3]
+            : op.style.dash === 'dot' ? [2, 2]
+              : op.style.dash === 'dashDot' ? [6, 3, 2, 3]
+                : op.style.dash === 'dashDotDot' ? [6, 3, 2, 3, 2, 3]
+                  : [],
+        );
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+  }
+
+  private renderRectangleOverlay(ctx: CanvasRenderingContext2D, op: LayerRectangleOp): void {
+    this.withCanvasOverlayTransform(ctx, op.bbox, op.transform, () => {
+      ctx.save();
+      if (op.style.opacity < 1) {
+        ctx.globalAlpha = op.style.opacity;
+      }
+      if (op.style.fillColor) {
+        ctx.fillStyle = op.style.fillColor;
+        ctx.fillRect(op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height);
+      }
+      if (op.style.strokeColor) {
+        ctx.strokeStyle = op.style.strokeColor;
+        ctx.lineWidth = Math.max(op.style.strokeWidth, 0.5);
+        ctx.setLineDash(
+          op.style.strokeDash === 'dash' ? [6, 3]
+            : op.style.strokeDash === 'dot' ? [2, 2]
+              : op.style.strokeDash === 'dashDot' ? [6, 3, 2, 3]
+                : op.style.strokeDash === 'dashDotDot' ? [6, 3, 2, 3, 2, 3]
+                  : [],
+        );
+        ctx.strokeRect(op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height);
+      }
+      ctx.restore();
+    });
+  }
+
+  private withCanvasOverlayTransform(
+    ctx: CanvasRenderingContext2D,
+    bbox: LayerBounds,
+    transform: { rotation: number; horzFlip: boolean; vertFlip: boolean },
+    draw: () => void,
+  ): void {
+    ctx.save();
+    const { rotation, horzFlip, vertFlip } = transform;
+    if (rotation || horzFlip || vertFlip) {
+      const cx = bbox.x + bbox.width / 2;
+      const cy = bbox.y + bbox.height / 2;
+      if (horzFlip) {
+        ctx.translate(cx * 2, 0);
+        ctx.scale(-1, 1);
+      }
+      if (vertFlip) {
+        ctx.translate(0, cy * 2);
+        ctx.scale(1, -1);
+      }
+      if (rotation) {
+        ctx.translate(cx, cy);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(-cx, -cy);
+      }
+    }
+    draw();
+    ctx.restore();
+  }
+
+  private withCurrentOverlayClip(
+    ctx: CanvasRenderingContext2D,
+    padding: number,
+    draw: () => void,
+  ): void {
+    const clip = this.overlayClipStack.at(-1);
+    if (!clip) {
+      draw();
+      return;
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(
+      clip.x - padding,
+      clip.y - padding,
+      clip.width + padding * 2,
+      clip.height + padding * 2,
+    );
+    ctx.clip();
+    draw();
+    ctx.restore();
+  }
+
+  private drawDomImage(
+    ctx: CanvasRenderingContext2D,
+    image: HTMLImageElement,
+    bbox: LayerBounds,
+    fillMode = 'fitToSize',
+    originalSize?: { width: number; height: number },
+    crop?: { left: number; top: number; right: number; bottom: number },
+  ): void {
+    const imageWidth = image.naturalWidth || image.width;
+    const imageHeight = image.naturalHeight || image.height;
+    if (!imageWidth || !imageHeight) {
+      return;
+    }
+
+    if (fillMode === 'fitToSize' || fillMode === 'none') {
+      if (crop) {
+        const scaleX = crop.right / imageWidth;
+        const srcX = crop.left / scaleX;
+        const srcY = crop.top / scaleX;
+        const srcW = (crop.right - crop.left) / scaleX;
+        const srcH = (crop.bottom - crop.top) / scaleX;
+        const isCropped = srcX > 0.5 || srcY > 0.5 || Math.abs(srcW - imageWidth) > 1 || Math.abs(srcH - imageHeight) > 1;
+        if (isCropped) {
+          ctx.drawImage(image, srcX, srcY, srcW, srcH, bbox.x, bbox.y, bbox.width, bbox.height);
+          return;
+        }
+      }
+      ctx.drawImage(image, bbox.x, bbox.y, bbox.width, bbox.height);
+      return;
+    }
+
+    const placedWidth = originalSize?.width ?? imageWidth;
+    const placedHeight = originalSize?.height ?? imageHeight;
+    const { x, y } = this.resolveImagePlacement(fillMode, bbox, placedWidth, placedHeight);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+    ctx.clip();
+
+    if (fillMode === 'tileAll') {
+      for (let ty = bbox.y; ty < bbox.y + bbox.height; ty += placedHeight) {
+        for (let tx = bbox.x; tx < bbox.x + bbox.width; tx += placedWidth) {
+          ctx.drawImage(image, tx, ty, placedWidth, placedHeight);
+        }
+      }
+    } else if (fillMode === 'tileHorzTop' || fillMode === 'tileHorzBottom') {
+      const ty = fillMode === 'tileHorzTop' ? bbox.y : bbox.y + bbox.height - placedHeight;
+      for (let tx = bbox.x; tx < bbox.x + bbox.width; tx += placedWidth) {
+        ctx.drawImage(image, tx, ty, placedWidth, placedHeight);
+      }
+    } else if (fillMode === 'tileVertLeft' || fillMode === 'tileVertRight') {
+      const tx = fillMode === 'tileVertLeft' ? bbox.x : bbox.x + bbox.width - placedWidth;
+      for (let ty = bbox.y; ty < bbox.y + bbox.height; ty += placedHeight) {
+        ctx.drawImage(image, tx, ty, placedWidth, placedHeight);
+      }
+    } else {
+      ctx.drawImage(image, x, y, placedWidth, placedHeight);
+    }
+
+    ctx.restore();
+  }
+
+  private getDomImage(base64: string): HTMLImageElement | null {
+    const cached = this.domImageCache.get(base64);
+    if (cached) {
+      return cached.complete && cached.naturalWidth > 0 ? cached : null;
+    }
+
+    const image = new Image();
+    const bytes = decodeBase64(base64);
+    const mimeType = inferImageMime(bytes);
+    image.decoding = 'sync';
+    image.onload = () => {
+      if (this.rerenderScheduled || !this.lastRenderedTree || !this.lastTargetCanvas) {
+        return;
+      }
+      this.rerenderScheduled = true;
+      requestAnimationFrame(() => {
+        this.rerenderScheduled = false;
+        if (!this.lastRenderedTree || !this.lastTargetCanvas) {
+          return;
+        }
+        this.renderPage(this.lastRenderedTree, this.lastTargetCanvas, this.lastScale);
+      });
+    };
+    image.src = `data:${mimeType};base64,${base64}`;
+    this.domImageCache.set(base64, image);
+    return image.complete && image.naturalWidth > 0 ? image : null;
   }
 
   private renderTextRunOverlay(ctx: CanvasRenderingContext2D, op: LayerTextRunOp): void {
@@ -1180,14 +1498,27 @@ export class CanvasKitLayerRenderer {
   ): void {
     const image = this.getImage(base64);
     if (!image) return;
-    const drawImageRect = (srcRect: ReturnType<CanvasKit['XYWHRect']>, dstRect: ReturnType<CanvasKit['XYWHRect']>) => {
+    const drawImageRect = (
+      srcX: number,
+      srcY: number,
+      srcW: number,
+      srcH: number,
+      dstX: number,
+      dstY: number,
+      dstW: number,
+      dstH: number,
+    ) => {
+      const useMipmaps =
+        this.renderMode === 'compat'
+        && (srcW > dstW * 1.2 || srcH > dstH * 1.2);
+      const sampledImage = useMipmaps ? this.getImage(base64, true) ?? image : image;
       const paint = new this.canvasKit.Paint();
       canvas.drawImageRectOptions(
-        image,
-        srcRect,
-        dstRect,
+        sampledImage,
+        this.canvasKit.XYWHRect(srcX, srcY, srcW, srcH),
+        this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH),
         this.canvasKit.FilterMode.Linear,
-        this.canvasKit.MipmapMode.None,
+        useMipmaps ? this.canvasKit.MipmapMode.Linear : this.canvasKit.MipmapMode.None,
         paint,
       );
       paint.delete();
@@ -1204,17 +1535,11 @@ export class CanvasKitLayerRenderer {
         const srcH = (crop.bottom - crop.top) / scaleX;
         const isCropped = srcX > 0.5 || srcY > 0.5 || Math.abs(srcW - imgW) > 1 || Math.abs(srcH - imgH) > 1;
         if (isCropped) {
-          drawImageRect(
-            this.canvasKit.XYWHRect(srcX, srcY, srcW, srcH),
-            this.toRect(bbox),
-          );
+          drawImageRect(srcX, srcY, srcW, srcH, bbox.x, bbox.y, bbox.width, bbox.height);
           return;
         }
       }
-      drawImageRect(
-        this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-        this.toRect(bbox),
-      );
+      drawImageRect(0, 0, image.width(), image.height(), bbox.x, bbox.y, bbox.width, bbox.height);
       return;
     }
 
@@ -1229,34 +1554,22 @@ export class CanvasKitLayerRenderer {
       if (fillMode === 'tileAll') {
         for (let ty = bbox.y; ty < bbox.y + bbox.height; ty += imageHeight) {
           for (let tx = bbox.x; tx < bbox.x + bbox.width; tx += imageWidth) {
-            drawImageRect(
-              this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-              this.canvasKit.XYWHRect(tx, ty, imageWidth, imageHeight),
-            );
+            drawImageRect(0, 0, image.width(), image.height(), tx, ty, imageWidth, imageHeight);
           }
         }
       } else if (fillMode === 'tileHorzTop' || fillMode === 'tileHorzBottom') {
         const ty = fillMode === 'tileHorzTop' ? bbox.y : bbox.y + bbox.height - imageHeight;
         for (let tx = bbox.x; tx < bbox.x + bbox.width; tx += imageWidth) {
-          drawImageRect(
-            this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-            this.canvasKit.XYWHRect(tx, ty, imageWidth, imageHeight),
-          );
+          drawImageRect(0, 0, image.width(), image.height(), tx, ty, imageWidth, imageHeight);
         }
       } else {
         const tx = fillMode === 'tileVertLeft' ? bbox.x : bbox.x + bbox.width - imageWidth;
         for (let ty = bbox.y; ty < bbox.y + bbox.height; ty += imageHeight) {
-          drawImageRect(
-            this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-            this.canvasKit.XYWHRect(tx, ty, imageWidth, imageHeight),
-          );
+          drawImageRect(0, 0, image.width(), image.height(), tx, ty, imageWidth, imageHeight);
         }
       }
     } else {
-      drawImageRect(
-        this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
-        this.canvasKit.XYWHRect(x, y, imageWidth, imageHeight),
-      );
+      drawImageRect(0, 0, image.width(), image.height(), x, y, imageWidth, imageHeight);
     }
 
     canvas.restore();
@@ -1544,7 +1857,19 @@ export class CanvasKitLayerRenderer {
     paint.delete();
   }
 
-  private getImage(base64: string): Image | null {
+  private getImage(base64: string, withMipmaps = false): Image | null {
+    if (withMipmaps) {
+      const cachedMipmap = this.mipmappedImageCache.get(base64);
+      if (cachedMipmap) return cachedMipmap;
+
+      const original = this.getImage(base64);
+      if (!original) return null;
+
+      const mipmapped = original.makeCopyWithDefaultMipmaps();
+      this.mipmappedImageCache.set(base64, mipmapped);
+      return mipmapped;
+    }
+
     const cached = this.imageCache.get(base64);
     if (cached) return cached;
 
@@ -1567,6 +1892,44 @@ function decodeBase64(base64: string): Uint8Array {
     bytes[idx] = binary.charCodeAt(idx);
   }
   return bytes;
+}
+
+function inferImageMime(bytes: Uint8Array): string {
+  if (bytes.length >= 8
+    && bytes[0] === 0x89
+    && bytes[1] === 0x50
+    && bytes[2] === 0x4E
+    && bytes[3] === 0x47) {
+    return 'image/png';
+  }
+  if (bytes.length >= 3
+    && bytes[0] === 0xFF
+    && bytes[1] === 0xD8
+    && bytes[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+  if (bytes.length >= 6
+    && bytes[0] === 0x47
+    && bytes[1] === 0x49
+    && bytes[2] === 0x46) {
+    return 'image/gif';
+  }
+  if (bytes.length >= 2
+    && bytes[0] === 0x42
+    && bytes[1] === 0x4D) {
+    return 'image/bmp';
+  }
+  if (bytes.length >= 12
+    && bytes[0] === 0x52
+    && bytes[1] === 0x49
+    && bytes[2] === 0x46
+    && bytes[8] === 0x57
+    && bytes[9] === 0x45
+    && bytes[10] === 0x42
+    && bytes[11] === 0x50) {
+    return 'image/webp';
+  }
+  return 'image/png';
 }
 
 function buildCanvasTextFont(fontFamily: string, fontSize: number, bold: boolean, italic: boolean): string {

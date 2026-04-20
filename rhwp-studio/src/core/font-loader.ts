@@ -218,7 +218,7 @@ export async function loadWebFonts(
   const toLoad = FONT_LIST.filter(f => {
     if (!targetSet.has(f.name)) return false;
     // OS에 동일 이름 폰트가 있으면 웹폰트 로딩 불필요
-    if (detectedOSFonts.has(f.name)) return false;
+    if (!OVERLAY_FALLBACK_FONTS.has(f.name) && detectedOSFonts.has(f.name)) return false;
     return true;
   });
 
