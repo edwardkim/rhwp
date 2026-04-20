@@ -166,6 +166,34 @@ fn task177_lineseg_preserved_on_roundtrip_ref_mixed() {
     }
 }
 
+#[test]
+fn task177_linebreak_preserved_on_roundtrip_ref_mixed() {
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/hwpx/ref/ref_mixed.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse ref_mixed");
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    let mut newline_paragraphs = 0usize;
+
+    assert_eq!(doc1.sections.len(), doc2.sections.len());
+    for (si, (s1, s2)) in doc1.sections.iter().zip(doc2.sections.iter()).enumerate() {
+        assert_eq!(s1.paragraphs.len(), s2.paragraphs.len(), "section {} paragraph count", si);
+        for (pi, (p1, p2)) in s1.paragraphs.iter().zip(s2.paragraphs.iter()).enumerate() {
+            if !p1.text.contains('\n') {
+                continue;
+            }
+            newline_paragraphs += 1;
+            assert_eq!(p1.text, p2.text, "sec {} para {} text", si, pi);
+            assert_eq!(p1.char_offsets, p2.char_offsets, "sec {} para {} char_offsets", si, pi);
+        }
+    }
+
+    assert!(newline_paragraphs > 0, "newline paragraph fixture missing");
+}
+
 // ---------- #177 Stage 4: 회귀 검증 샘플 ----------
 // 작업지시자 제공 hwpx-02.hwpx (rhwp-studio 에서 비표준 lineseg 재현이 가능한 샘플)
 // - 파싱·직렬화·재파싱이 크래시 없이 완료되어야 한다
