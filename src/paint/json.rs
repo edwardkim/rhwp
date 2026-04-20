@@ -519,11 +519,7 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             buf.push_str("]}");
         }
         LayoutKind::Text(text) => {
-            let _ = write!(
-                buf,
-                "{{\"type\":\"text\",\"text\":{}}}",
-                json_escape(text)
-            );
+            let _ = write!(buf, "{{\"type\":\"text\",\"text\":{}}}", json_escape(text));
         }
         LayoutKind::Number(text) => {
             let _ = write!(
@@ -610,11 +606,7 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             buf.push('}');
         }
         LayoutKind::Limit { is_upper, sub } => {
-            let _ = write!(
-                buf,
-                "{{\"type\":\"limit\",\"isUpper\":{}",
-                is_upper
-            );
+            let _ = write!(buf, "{{\"type\":\"limit\",\"isUpper\":{}", is_upper);
             if let Some(sub) = sub {
                 buf.push_str(",\"sub\":");
                 write_equation_layout_box(buf, sub);
@@ -996,7 +988,9 @@ mod tests {
 
         let json = tree.to_json();
         assert!(json.contains("\"shadow\":{\"shadowType\":1,\"color\":\"#303030\",\"offsetX\":1.500,\"offsetY\":2.500,\"alpha\":64}"));
-        assert!(json.contains("\"connectorEndpoints\":{\"x1\":4.000,\"y1\":4.000,\"x2\":20.000,\"y2\":20.000}"));
+        assert!(json.contains(
+            "\"connectorEndpoints\":{\"x1\":4.000,\"y1\":4.000,\"x2\":20.000,\"y2\":20.000}"
+        ));
         assert!(json.contains("\"lineStyle\":{\"color\":\"#030201\",\"width\":2.000,\"dash\":\"solid\",\"lineType\":\"single\",\"startArrow\":\"circle\",\"endArrow\":\"square\",\"startArrowSize\":1,\"endArrowSize\":8}"));
     }
 }
