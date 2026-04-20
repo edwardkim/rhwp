@@ -106,9 +106,16 @@ export class MenuBar {
     // 일반 항목
     const items = menuElement.querySelectorAll('.md-item[data-cmd]');
     for (const item of items) {
-      const cmdId = (item as HTMLElement).dataset.cmd!;
+      const el = item as HTMLElement;
+      const cmdId = el.dataset.cmd!;
       const enabled = this.dispatcher.isEnabled(cmdId);
-      item.classList.toggle('disabled', !enabled);
+      el.classList.toggle('disabled', !enabled);
+      // #196: file:save 가 비활성이면 베타 안내 툴팁 표시
+      if (cmdId === 'file:save' && !enabled) {
+        el.title = 'HWPX 직접 저장은 현재 베타 단계로 비활성화되어 있습니다. 다음 업데이트에서 지원 예정입니다.';
+      } else if (cmdId === 'file:save') {
+        el.removeAttribute('title');
+      }
     }
     // 서브메뉴 컨테이너: 하위 항목 중 활성이 하나라도 있으면 서브메뉴도 활성
     const subs = menuElement.querySelectorAll('.md-sub');

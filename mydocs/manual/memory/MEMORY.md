@@ -1,0 +1,20 @@
+- [작업 시간 제한 금지](feedback_no_time_limits.md) — 클로드가 임의로 작업 종료 제안 금지, 작업지시자가 결정
+- [한컴 LINE_SEG 자동 재계산](project_hancom_lineseg_behavior.md) — LINE_SEG가 비어있어도 한컴이 자체 재계산. 역공학 샘플 전략의 기반
+- [타스크 번호는 GitHub Issues로 채번](feedback_task_numbering.md) — gh issue create로 자동 채번, 수동 번호 할당 금지
+- [마일스톤 표기 규칙](feedback_milestone_notation.md) — v1.0.0→M100, v0.5.x→M05x. 오늘할일에서 M100 #1 형식 사용
+- [안드로이드 IME 미구현](project_android_ime_pending.md) — 기기 미보유로 미테스트. iOS는 contentEditable+디바운스로 해결. 기기 확보 시 구현 필요
+- [Discord 커뮤니티](reference_discord.md) — Rust Discord에 프로젝트 소개 (2026-04-04)
+- [타스크 프로세스 반드시 준수](feedback_process_must_follow.md) — 이슈→브랜치→할일→계획서→구현 순서 절대 생략 금지. #61에서 위반 발생
+- [이슈 클로즈는 작업지시자 승인 필수](feedback_no_close_without_approval.md) — 미해결 상태 임의 클로즈 금지. #62에서 위반 발생
+- [로컬 폰트 경로](reference_font_path.md) — TTF 폰트는 /home/edward/mygithub/ttfs에 프로젝트 외부 분리
+- [작업 문서 네이밍 규칙](feedback_working_doc_naming.md) — task_m100_{번호}_stage{단계}.md 패턴 필수
+- [최종 보고서 위치 규칙](feedback_report_location.md) — 최종 보고서는 mydocs/report/, 단계별 보고서는 mydocs/working/
+- [보고서는 타스크 브랜치에서 커밋](feedback_commit_reports_in_branch.md) — 보고서·오늘할일 갱신은 타스크 브랜치에서 소스와 함께 커밋. merge 전 git status 필수
+- [오늘할일 문서 작업일지 갱신 필수](feedback_update_daily_orders.md) — 작업한 내용은 반드시 mydocs/orders/yyyymmdd.md에 기록. 세션 종료 전 커밋
+- [알한글 iOS 프로젝트](project_alhangeul_ios.md) — iPad HWP 학습 도구, 맥북 전용(ios/devel), 리눅스에서 빌드 불가. 현재 환경에서 작업 불가
+- [output 폴더 서브폴더 구조](project_output_folder_structure.md) — output/re/(재현검증), output/svg/(SVG), output/debug/(디버그) 용도별 분리. 새 출력 코드는 반드시 서브폴더에 저장
+- [수식 컨트롤은 항상 TAC](project_equation_always_tac.md) — 한컴 수식은 모두 treat_as_char. paragraph_layout 인라인 배치가 핵심 경로
+- [rhwp 자기 검증 ≠ 한컴 호환](feedback_self_verification_not_hancom.md) — 자기 라운드트립 통과해도 한컴 거부 가능. HWP 저장 작업은 한컴2020 수동 검증 게이트 필수
+- [트러블슈팅 폴더 사전 검색 의무](feedback_search_troubleshootings_first.md) — 직렬화·한컴 호환·파일 손상 작업 시작 전 mydocs/troubleshootings/ 전수 검색
+- [HWPX→HWP 단순 어댑터의 한계](project_hwpx_to_hwp_adapter_limit.md) — 단순 어댑터로 한컴 호환 불가. 다음 시도는 "완전 변환기" 정체성 필요
+- [hwp2hwpx Java 라이브러리](reference_hwp2hwpx_library.md) — HWP↔HWPX 변환 매핑 권위 자료. /home/edward/vsworks/hwp2hwpx (Apache 2.0)

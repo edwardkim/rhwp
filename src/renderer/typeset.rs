@@ -1578,13 +1578,13 @@ impl TypesetEngine {
         })
     }
 
-    /// 표의 세로 오프셋 추출 (Paginator와 동일)
+    /// 표의 세로 오프셋 추출 (Paginator와 동일).
+    ///
+    /// `raw_ctrl_data` 의 첫 4바이트는 `attr` 비트 플래그이고 `vertical_offset` 은
+    /// 다음 4바이트 (`raw_ctrl_data[4..8]`) 이지만, IR 의 `common.vertical_offset` 가
+    /// 파서가 채운 권위 있는 값이므로 이를 직접 사용한다 (#178).
     fn get_table_vertical_offset(table: &crate::model::table::Table) -> u32 {
-        if table.raw_ctrl_data.len() >= 4 {
-            u32::from_le_bytes(table.raw_ctrl_data[0..4].try_into().unwrap())
-        } else {
-            0
-        }
+        table.common.vertical_offset as u32
     }
 }
 

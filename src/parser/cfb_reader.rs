@@ -163,7 +163,7 @@ impl CfbReader {
         let mut names = Vec::new();
         // cfb 크레이트의 walk API로 BinData 하위 항목 탐색
         for entry in self.compound.walk() {
-            let path = entry.path().to_string_lossy().to_string();
+            let path = entry.path().to_string_lossy().replace('\\', "/");
             if path.starts_with("/BinData/") && entry.is_stream() {
                 if let Some(name) = path.strip_prefix("/BinData/") {
                     names.push(name.to_string());
@@ -178,7 +178,7 @@ impl CfbReader {
         let mut paths = Vec::new();
         for entry in self.compound.walk() {
             if entry.is_stream() {
-                paths.push(entry.path().to_string_lossy().to_string());
+                paths.push(entry.path().to_string_lossy().replace('\\', "/"));
             }
         }
         paths
@@ -188,7 +188,7 @@ impl CfbReader {
     pub fn list_all_entries(&self) -> Vec<(String, u64, bool)> {
         let mut entries = Vec::new();
         for entry in self.compound.walk() {
-            let path = entry.path().to_string_lossy().to_string();
+            let path = entry.path().to_string_lossy().replace('\\', "/");
             let size = entry.len();
             let is_stream = entry.is_stream();
             entries.push((path, size, is_stream));

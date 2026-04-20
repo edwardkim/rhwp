@@ -208,6 +208,35 @@ Foundation  Typeset   Collab    Complete
 | **1.0 → 2.0** | Open community participation on AI typesetting pipeline | Lower the barrier to contribution |
 | **2.0 → 3.0** | Community-driven features toward public asset | Reach parity with Hancom |
 
+## Recent Changes (v0.7.3 / extension v0.2.1, 2026-04-19)
+
+**rhwp-studio (library 0.7.3)**
+- HWPX-source documents: save disabled with user notification ([#196](https://github.com/edwardkim/rhwp/issues/196)) — prevents data loss until HWPX→HWP full converter ([#197](https://github.com/edwardkim/rhwp/issues/197)) lands
+- HWPX→HWP IR mapping adapter assets preserved ([#178](https://github.com/edwardkim/rhwp/issues/178)) — rhwp self-roundtrip 100% recovered, Hancom compatibility deferred to #197
+- Rotated shape resize cursor improvement + Flip handling (external contribution by [@bapdodi](https://github.com/bapdodi) — PR [#192](https://github.com/edwardkim/rhwp/pull/192))
+- HWP image effects (grayscale/black-and-white) reflected in SVG (external contribution by [@marsimon](https://github.com/marsimon) — PR [#149](https://github.com/edwardkim/rhwp/pull/149))
+- Windows CFB path separator fix (external contribution by [@dreamworker0](https://github.com/dreamworker0) — PR [#152](https://github.com/edwardkim/rhwp/pull/152))
+- HWPX Serializer — Document IR → HWPX save (external contribution by [@seunghan91](https://github.com/seunghan91) — PR [#170](https://github.com/edwardkim/rhwp/pull/170))
+- HWPX ZIP entry decompression cap + strikeout shape whitelist (external contribution by [@seunghan91](https://github.com/seunghan91) — PR [#153](https://github.com/edwardkim/rhwp/pull/153), PR [#154](https://github.com/edwardkim/rhwp/pull/154))
+- Shape resize width/height clamp (external contribution by [@seunghan91](https://github.com/seunghan91) — PR [#163](https://github.com/edwardkim/rhwp/pull/163))
+- Mobile dropdown menu icon/label overlap fix (external contribution by [@seunghan91](https://github.com/seunghan91) — PR [#161](https://github.com/edwardkim/rhwp/pull/161))
+
+**rhwp-chrome / Edge extension (v0.2.1)**
+- Restored "remember last save location" for general file downloads when extension is active ([#198](https://github.com/edwardkim/rhwp/issues/198))
+- Options page CSP fix ([#166](https://github.com/edwardkim/rhwp/issues/166))
+- HWP files: `Ctrl+S` overwrites the same file directly (external contribution by [@ahnbu](https://github.com/ahnbu) — PR [#189](https://github.com/edwardkim/rhwp/pull/189))
+- Thumbnail loading spinner cleanup + options CSP compatibility (external contribution by [@postmelee](https://github.com/postmelee) — PR [#168](https://github.com/edwardkim/rhwp/pull/168))
+- Block empty viewer tab on DEXT5-style download handlers
+
+**Thanks to contributors**
+This release cycle: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@dreamworker0](https://github.com/dreamworker0), [@marsimon](https://github.com/marsimon), [@postmelee](https://github.com/postmelee), [@seunghan91](https://github.com/seunghan91)
+
+### Coming Soon
+
+- HWPX direct save support ([#197](https://github.com/edwardkim/rhwp/issues/197)) — full HWPX→HWP converter
+- "What's New" notification on extension update
+- Additional download handler patterns (user-reported)
+
 ## Project Structure
 
 ```

@@ -17,6 +17,7 @@ export class TableObjectRenderer {
   private borders: HTMLDivElement[] = [];
   private handles: HandleInfo[] = [];
   private extraEls: HTMLElement[] = [];  // 회전 연결선 등 부가 요소
+  private previewEl: HTMLDivElement | null = null;
   private static readonly HANDLE_SIZE = 8; // px (화면 고정)
   private static readonly ROTATE_HANDLE_SIZE = 10; // px
   private static readonly ROTATE_HANDLE_GAP = 20; // px (상단 중앙에서 위로)
@@ -39,8 +40,99 @@ export class TableObjectRenderer {
   render(
     tableBBox: { pageIndex: number; x: number; y: number; width: number; height: number },
     zoom: number,
+    angleDeg: number = 0,
   ): void {
-    this.renderMultiPage([tableBBox], zoom);
+    if (angleDeg === 0) {
+      this.renderMultiPage([tableBBox], zoom);
+      return;
+    }
+    // 회전된 도형: CSS 회전 테두리 + 실제 회전된 꼭짓점에 핸들 배치
+    this.clear();
+    this.ensureAttached();
+
+    const scrollContent = this.container.querySelector('#scroll-content');
+    const contentWidth = scrollContent?.clientWidth ?? 0;
+    const pageOffset = this.virtualScroll.getPageOffset(tableBBox.pageIndex);
+    const pageDisplayWidth = this.virtualScroll.getPageWidth(tableBBox.pageIndex);
+    const pageLeft = (contentWidth - pageDisplayWidth) / 2;
+
+    const left = pageLeft + tableBBox.x * zoom;
+    const top = pageOffset + tableBBox.y * zoom;
+    const w = tableBBox.width * zoom;
+    const h = tableBBox.height * zoom;
+    const cx = left + w / 2;
+    const cy = top + h / 2;
+
+    const rad = angleDeg * Math.PI / 180;
+    const cosA = Math.cos(rad);
+    const sinA = Math.sin(rad);
+    const rot = (lx: number, ly: number): [number, number] =>
+      [cx + lx * cosA - ly * sinA, cy + lx * sinA + ly * cosA];
+
+    // 외곽선 (CSS 회전)
+    const border = document.createElement('div');
+    border.style.cssText =
+      `position:absolute;` +
+      `left:${left}px;top:${top}px;` +
+      `width:${w}px;height:${h}px;` +
+      `border:1px solid #000;box-sizing:border-box;pointer-events:none;` +
+      `transform:rotate(${angleDeg}deg);`;
+    this.layer.appendChild(border);
+    this.borders.push(border);
+
+    // 8개 핸들 (실제 회전된 꼭짓점/변 중점)
+    const hs = TableObjectRenderer.HANDLE_SIZE;
+    const half = hs / 2;
+    const positions: { dir: HandleDirection; lx: number; ly: number }[] = [
+      { dir: 'nw', lx: -w / 2, ly: -h / 2 },
+      { dir: 'n',  lx: 0,      ly: -h / 2 },
+      { dir: 'ne', lx:  w / 2, ly: -h / 2 },
+      { dir: 'e',  lx:  w / 2, ly: 0      },
+      { dir: 'se', lx:  w / 2, ly:  h / 2 },
+      { dir: 's',  lx: 0,      ly:  h / 2 },
+      { dir: 'sw', lx: -w / 2, ly:  h / 2 },
+      { dir: 'w',  lx: -w / 2, ly: 0      },
+    ];
+    for (const pos of positions) {
+      const [px, py] = rot(pos.lx, pos.ly);
+      const el = document.createElement('div');
+      el.style.cssText =
+        `position:absolute;` +
+        `left:${px - half}px;top:${py - half}px;` +
+        `width:${hs}px;height:${hs}px;` +
+        `background:#fff;border:1px solid #000;box-sizing:border-box;pointer-events:none;`;
+      this.layer.appendChild(el);
+      this.handles.push({ dir: pos.dir, el, cx: px, cy: py });
+    }
+
+    // 회전 핸들 (도형 위쪽 방향으로 gap만큼 이동)
+    if (this.showRotateHandle) {
+      const rhs = TableObjectRenderer.ROTATE_HANDLE_SIZE;
+      const rhalf = rhs / 2;
+      const gap = TableObjectRenderer.ROTATE_HANDLE_GAP;
+      const [topCx, topCy] = rot(0, -h / 2);
+      const [rcx, rcy] = rot(0, -h / 2 - gap);
+
+      // 연결선 (SVG)
+      const svgEl = document.createElement('div');
+      svgEl.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;';
+      svgEl.innerHTML =
+        `<svg style="position:absolute;overflow:visible;pointer-events:none;">` +
+        `<line x1="${topCx}" y1="${topCy}" x2="${rcx}" y2="${rcy}" stroke="#4CAF50" stroke-width="1"/>` +
+        `</svg>`;
+      this.layer.appendChild(svgEl);
+      this.extraEls.push(svgEl);
+
+      // 원형 회전 핸들
+      const el = document.createElement('div');
+      el.style.cssText =
+        `position:absolute;` +
+        `left:${rcx - rhalf}px;top:${rcy - rhalf}px;` +
+        `width:${rhs}px;height:${rhs}px;` +
+        `background:#4CAF50;border:1px solid #388E3C;border-radius:50%;box-sizing:border-box;pointer-events:none;`;
+      this.layer.appendChild(el);
+      this.handles.push({ dir: 'rotate', el, cx: rcx, cy: rcy });
+    }
   }
 
   /** 다중 페이지 표 바운딩박스 기준으로 외곽선 + 핸들을 렌더링한다 */
@@ -219,18 +311,61 @@ export class TableObjectRenderer {
 
   /** 모든 오버레이를 제거한다 */
   clear(): void {
-    for (const b of this.borders) {
-      b.remove();
-    }
+    for (const b of this.borders) b.remove();
     this.borders = [];
-    for (const h of this.handles) {
-      h.el.remove();
-    }
+    for (const h of this.handles) h.el.remove();
     this.handles = [];
-    for (const el of this.extraEls) {
-      el.remove();
-    }
+    for (const el of this.extraEls) el.remove();
     this.extraEls = [];
+    this.clearDragPreview();
+  }
+
+  /** 핸들·연결선은 남긴 채 테두리만 제거한다 (드래그 예비선 교체용) */
+  private clearBordersOnly(): void {
+    for (const b of this.borders) b.remove();
+    this.borders = [];
+  }
+
+  /** 드래그 예비선을 제거한다 */
+  clearDragPreview(): void {
+    if (this.previewEl) {
+      this.previewEl.remove();
+      this.previewEl = null;
+    }
+  }
+
+  /** 핸들은 그대로 두고 회전각이 적용된 드래그 예비 테두리만 렌더링한다 */
+  renderDragPreview(
+    bbox: { pageIndex: number; x: number; y: number; width: number; height: number },
+    zoom: number,
+    angleDeg: number = 0,
+  ): void {
+    this.clearBordersOnly();
+    this.clearDragPreview();
+    this.ensureAttached();
+
+    const scrollContent = this.container.querySelector('#scroll-content');
+    const contentWidth = scrollContent?.clientWidth ?? 0;
+    const pageOffset = this.virtualScroll.getPageOffset(bbox.pageIndex);
+    const pageDisplayWidth = this.virtualScroll.getPageWidth(bbox.pageIndex);
+    const pageLeft = (contentWidth - pageDisplayWidth) / 2;
+
+    const left = pageLeft + bbox.x * zoom;
+    const top = pageOffset + bbox.y * zoom;
+    const width = bbox.width * zoom;
+    const height = bbox.height * zoom;
+
+    const el = document.createElement('div');
+    el.style.cssText =
+      `position:absolute;` +
+      `left:${left}px;top:${top}px;` +
+      `width:${width}px;height:${height}px;` +
+      `border:1px solid #000;box-sizing:border-box;pointer-events:none;`;
+    if (angleDeg !== 0) {
+      el.style.transform = `rotate(${angleDeg}deg)`;
+    }
+    this.layer.appendChild(el);
+    this.previewEl = el;
   }
 
   /** 레이어가 DOM에 없으면 재부착한다 */

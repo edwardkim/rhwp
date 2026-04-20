@@ -29,6 +29,8 @@ export interface EditorContext {
   zoom: number;
   /** 조판부호 보이기 모드인가? */
   showControlCodes: boolean;
+  /** 원본 파일 형식 (#196 — HWPX 출처는 저장 비활성화) */
+  sourceFormat?: 'hwp' | 'hwpx';
 }
 
 /** 개별 커맨드 정의 */

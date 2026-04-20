@@ -16,6 +16,24 @@ use crate::document_core::validation::{
 use crate::document_core::{DocumentCore, DEFAULT_FALLBACK_FONT};
 use crate::error::HwpError;
 
+/// HWP 내보내기 + 자기 재로드 검증 결과 (#178 Stage 6).
+///
+/// `serialize_hwp_with_verify` 의 반환값. 호출자가 페이지 회복 여부를 확인하고
+/// 실패 시 사용자에게 경고하거나 다른 동작을 취할 수 있게 한다.
+#[derive(Debug, Clone)]
+pub struct HwpExportVerification {
+    /// 직렬화된 HWP 바이트
+    pub bytes: Vec<u8>,
+    /// 바이트 길이 (편의)
+    pub bytes_len: usize,
+    /// 어댑터 적용 직전 페이지 수
+    pub page_count_before: u32,
+    /// 직렬화 → 재로드 후 페이지 수
+    pub page_count_after: u32,
+    /// `page_count_before == page_count_after` 여부
+    pub recovered: bool,
+}
+
 impl DocumentCore {
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
@@ -449,6 +467,50 @@ impl DocumentCore {
     pub fn export_hwp_native(&self) -> Result<Vec<u8>, HwpError> {
         crate::serializer::serialize_document(&self.document)
             .map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
+    /// HWPX 출처 IR 을 HWP 호환 형태로 변환 후 HWP 5.0 CFB 바이너리로 직렬화한다 (#178).
+    ///
+    /// HWP 출처는 어댑터가 no-op 이므로 `export_hwp_native` 와 동일 결과.
+    /// 사용자 시나리오: HWPX 로 연 문서를 편집 후 HWP 로 저장하는 모든 경로의 단일 진입점.
+    ///
+    /// 어댑터 호출은 IR 자체를 변경하므로 `&mut self` 를 요구한다.
+    pub fn export_hwp_with_adapter(&mut self) -> Result<Vec<u8>, HwpError> {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
+        let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
+        self.export_hwp_native()
+    }
+
+    /// 어댑터 적용 + 직렬화 + 자기 재로드 검증을 한 번에 수행한다 (#178 Stage 6).
+    ///
+    /// 명시 호출 전용. 운영 경로 (`export_hwp_with_adapter`) 는 검증 비용을 부담하지 않으며,
+    /// 진단·테스트·사용자 경고가 필요한 경우에만 본 함수 사용.
+    ///
+    /// ## 검증 항목
+    ///
+    /// - `page_count_before`: 어댑터 적용 직전 페이지 수
+    /// - `page_count_after`: 직렬화 → 재로드 후 페이지 수
+    /// - `bytes_len`: HWP 바이트 길이
+    /// - `recovered`: `before == after` 면 true
+    ///
+    /// ## 비용
+    ///
+    /// 1회 paginate + 1회 직렬화 + 1회 from_bytes (paginate 포함). 작은 문서 ~수 ms,
+    /// 큰 문서 수백 ms 가능.
+    pub fn serialize_hwp_with_verify(&mut self) -> Result<HwpExportVerification, HwpError> {
+        let page_count_before = self.page_count();
+        let bytes = self.export_hwp_with_adapter()?;
+        let bytes_len = bytes.len();
+        let reloaded = DocumentCore::from_bytes(&bytes)?;
+        let page_count_after = reloaded.page_count();
+
+        Ok(HwpExportVerification {
+            bytes,
+            bytes_len,
+            page_count_before,
+            page_count_after,
+            recovered: page_count_before == page_count_after,
+        })
     }
 
     /// Document IR을 HWPX(ZIP+XML)로 직렬화 (네이티브 에러 타입)

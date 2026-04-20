@@ -14,3 +14,9 @@
 - [알한글 iOS 프로젝트](project_alhangeul_ios.md) — iPad HWP 학습 도구, 맥북 전용(ios/devel), 리눅스에서 빌드 불가. 현재 환경에서 작업 불가
 - [output 폴더 서브폴더 구조](project_output_folder_structure.md) — output/re/(재현검증), output/svg/(SVG), output/debug/(디버그) 용도별 분리. 새 출력 코드는 반드시 서브폴더에 저장
 - [수식 컨트롤은 항상 TAC](project_equation_always_tac.md) — 한컴 수식은 모두 treat_as_char. paragraph_layout 인라인 배치가 핵심 경로
+- [rhwp 자기 검증 ≠ 한컴 호환](feedback_self_verification_not_hancom.md) — 자기 라운드트립 통과해도 한컴 거부 가능. HWP 저장 작업은 한컴2020 수동 검증 게이트 필수
+- [트러블슈팅 폴더 사전 검색 의무](feedback_search_troubleshootings_first.md) — 직렬화·한컴 호환·파일 손상 작업 시작 전 mydocs/troubleshootings/ 전수 검색
+- [HWPX→HWP 단순 어댑터의 한계](project_hwpx_to_hwp_adapter_limit.md) — 단순 어댑터로 한컴 호환 불가. 다음 시도는 "완전 변환기" 정체성 필요
+- [hwp2hwpx Java 라이브러리](reference_hwp2hwpx_library.md) — HWP↔HWPX 변환 매핑 권위 자료. /home/edward/vsworks/hwp2hwpx (Apache 2.0)
+- [릴리즈 작업 전 main 동기화 점검 필수](feedback_release_sync_check.md) — devel→main 머지/태그 작업 시작 전 git pull --ff-only origin main. 분기 발견 시 즉시 중단
+- [릴리즈/배포 작업 시 매뉴얼 정독 필수](feedback_release_manual_required.md) — mydocs/manual/ 관련 매뉴얼 전체 정독. 부분 검색 금지. 매뉴얼 체크리스트와 1:1 대조
