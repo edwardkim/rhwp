@@ -342,7 +342,7 @@ export class CanvasKitLayerRenderer {
   }
 
   private shouldOverlayFormObject(_op: LayerFormObjectOp): boolean {
-    return this.renderMode === 'compat';
+    return true;
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
