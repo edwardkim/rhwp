@@ -301,11 +301,9 @@ export class CanvasKitLayerRenderer {
   }
 
   private shouldOverlayRectangle(op: LayerRectangleOp): boolean {
-    return this.renderMode === 'compat'
-      && op.cornerRadius === 0
-      && !op.gradient
-      && !op.style.pattern
-      && !op.style.shadow;
+    // Simple rectangle fills/strokes match Canvas 2D more closely when CanvasKit
+    // renders them directly than when we replay them through the DOM overlay path.
+    return false;
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
@@ -1071,40 +1069,19 @@ export class CanvasKitLayerRenderer {
     this.withCanvasOverlayTransform(ctx, op.bbox, op.transform, () => {
       ctx.save();
       const strokeWidth = Math.max(op.style.width, 0.5);
-      const isVertical = Math.abs(op.x1 - op.x2) < 0.01;
-      const isHorizontal = Math.abs(op.y1 - op.y2) < 0.01;
-      if (op.style.dash === 'solid' && strokeWidth > 1.5 && (isVertical || isHorizontal)) {
-        ctx.fillStyle = op.style.color;
-        if (isVertical) {
-          ctx.fillRect(
-            op.x1 - strokeWidth / 2,
-            Math.min(op.y1, op.y2),
-            strokeWidth,
-            Math.abs(op.y2 - op.y1),
-          );
-        } else {
-          ctx.fillRect(
-            Math.min(op.x1, op.x2),
-            op.y1 - strokeWidth / 2,
-            Math.abs(op.x2 - op.x1),
-            strokeWidth,
-          );
-        }
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(op.x1, op.y1);
-        ctx.lineTo(op.x2, op.y2);
-        ctx.strokeStyle = op.style.color;
-        ctx.lineWidth = strokeWidth;
-        ctx.setLineDash(
-          op.style.dash === 'dash' ? [6, 3]
-            : op.style.dash === 'dot' ? [2, 2]
-              : op.style.dash === 'dashDot' ? [6, 3, 2, 3]
-                : op.style.dash === 'dashDotDot' ? [6, 3, 2, 3, 2, 3]
-                  : [],
-        );
-        ctx.stroke();
-      }
+      ctx.beginPath();
+      ctx.moveTo(op.x1, op.y1);
+      ctx.lineTo(op.x2, op.y2);
+      ctx.strokeStyle = op.style.color;
+      ctx.lineWidth = strokeWidth;
+      ctx.setLineDash(
+        op.style.dash === 'dash' ? [6, 3]
+          : op.style.dash === 'dot' ? [2, 2]
+            : op.style.dash === 'dashDot' ? [6, 3, 2, 3]
+              : op.style.dash === 'dashDotDot' ? [6, 3, 2, 3, 2, 3]
+                : [],
+      );
+      ctx.stroke();
       ctx.restore();
     });
   }
