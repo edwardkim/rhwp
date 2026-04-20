@@ -9,20 +9,24 @@
     // HWP 문서에서 자주 사용되는 폰트를 미리 로드
     // 한컴 webhwp CSS(@font-face) 매핑 기준 + HWP 문서에서 사용하는 별칭 추가
     (function() {
-        // 함초롬체 CDN (눈누 jsdelivr — 비상업적 사용, 한컴 라이선스)
-        const CDN_HAMCHOB_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
-        const CDN_HAMCHOB_B = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
-        const CDN_HAMCHOD_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff';
         const fonts = [
-            // === 함초롬/함초롱/한컴 폰트 (CDN 참조) ===
-            { name: '함초롬돋움', file: CDN_HAMCHOD_R, format: 'woff' },
-            { name: '함초롬바탕', file: CDN_HAMCHOB_R, format: 'woff' },
-            { name: '함초롱돋움', file: CDN_HAMCHOD_R, format: 'woff' },
-            { name: '함초롱바탕', file: CDN_HAMCHOB_R, format: 'woff' },
-            { name: '한컴돋움', file: CDN_HAMCHOD_R, format: 'woff' },
-            { name: '한컴바탕', file: CDN_HAMCHOB_R, format: 'woff' },
-            { name: '새돋움', file: CDN_HAMCHOD_R, format: 'woff' },
-            { name: '새바탕', file: CDN_HAMCHOB_R, format: 'woff' },
+            // === 함초롬/함초롱/한컴 폰트 aliases → 로컬 대체 ===
+            { name: '함초롬돋움', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: '함초롬돋움', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: '함초롬바탕', file: 'fonts/NotoSerifKR-Regular.woff2', weight: '400' },
+            { name: '함초롬바탕', file: 'fonts/NotoSerifKR-Bold.woff2', weight: '700' },
+            { name: '함초롱돋움', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: '함초롱돋움', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: '함초롱바탕', file: 'fonts/NotoSerifKR-Regular.woff2', weight: '400' },
+            { name: '함초롱바탕', file: 'fonts/NotoSerifKR-Bold.woff2', weight: '700' },
+            { name: '한컴돋움', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: '한컴돋움', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: '한컴바탕', file: 'fonts/NotoSerifKR-Regular.woff2', weight: '400' },
+            { name: '한컴바탕', file: 'fonts/NotoSerifKR-Bold.woff2', weight: '700' },
+            { name: '새돋움', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: '새돋움', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: '새바탕', file: 'fonts/NotoSerifKR-Regular.woff2', weight: '400' },
+            { name: '새바탕', file: 'fonts/NotoSerifKR-Bold.woff2', weight: '700' },
             // === 한컴 HY 폰트 → 오픈소스 대체 ===
             { name: 'HY헤드라인M', file: 'fonts/NotoSansKR-Bold.woff2' },
             { name: 'HYHeadLine M', file: 'fonts/NotoSansKR-Bold.woff2' },
@@ -38,26 +42,40 @@
             { name: 'HY중고딕', file: 'fonts/NotoSansKR-Regular.woff2' },
             { name: '양재튼튼체B', file: 'fonts/NotoSansKR-Bold.woff2' },
             // === 한글 시스템 폰트 → 오픈소스 대체 ===
-            { name: 'Malgun Gothic', file: 'fonts/Pretendard-Regular.woff2' },
-            { name: '맑은 고딕', file: 'fonts/Pretendard-Regular.woff2' },
+            { name: 'Malgun Gothic', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: 'Malgun Gothic', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: '맑은 고딕', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: '맑은 고딕', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: 'Apple SD Gothic Neo', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: 'Apple SD Gothic Neo', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
             { name: '돋움', file: 'fonts/NotoSansKR-Regular.woff2' },
             { name: '돋움체', file: 'fonts/NotoSansKR-Regular.woff2' },
             { name: '굴림', file: 'fonts/NotoSansKR-Regular.woff2' },
+            { name: 'GulimChe', file: 'fonts/D2Coding-Regular.woff2' },
             { name: '굴림체', file: 'fonts/D2Coding-Regular.woff2' },
             { name: '새굴림', file: 'fonts/NotoSansKR-Regular.woff2' },
+            { name: 'Batang', file: 'fonts/NotoSerifKR-Regular.woff2' },
             { name: '바탕', file: 'fonts/NotoSerifKR-Regular.woff2' },
             { name: '바탕체', file: 'fonts/D2Coding-Regular.woff2' },
+            { name: 'AppleMyungjo', file: 'fonts/NotoSerifKR-Regular.woff2' },
             { name: '궁서', file: 'fonts/GowunBatang-Regular.woff2' },
             { name: '궁서체', file: 'fonts/GowunBatang-Regular.woff2' },
             { name: '새궁서', file: 'fonts/GowunBatang-Regular.woff2' },
             // === 나눔 폰트 (OFL) ===
+            { name: 'NanumGothic', file: 'fonts/NanumGothic-Regular.woff2' },
             { name: '나눔고딕', file: 'fonts/NanumGothic-Regular.woff2' },
+            { name: 'NanumMyeongjo', file: 'fonts/NanumMyeongjo-Regular.woff2' },
             { name: '나눔명조', file: 'fonts/NanumMyeongjo-Regular.woff2' },
+            { name: 'NanumGothicCoding', file: 'fonts/NanumGothicCoding-Regular.woff2' },
             { name: '나눔고딕코딩', file: 'fonts/NanumGothicCoding-Regular.woff2' },
             // === 영문 폰트 → OS 폴백 ===
             { name: 'Palatino Linotype', file: 'fonts/NotoSerifKR-Regular.woff2' },
             // === Noto (OFL) ===
-            { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Regular.woff2' },
+            { name: 'Noto Sans CJK KR', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: 'Noto Sans CJK KR', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Regular.woff2', weight: '400' },
+            { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Bold.woff2', weight: '700' },
+            { name: 'Noto Serif CJK KR', file: 'fonts/NotoSerifKR-Regular.woff2' },
             { name: 'Noto Serif KR', file: 'fonts/NotoSerifKR-Regular.woff2' },
             // === Pretendard (9 weights) ===
             { name: 'Pretendard', file: 'fonts/Pretendard-Regular.woff2' },
@@ -84,6 +102,8 @@
             { name: 'Cafe24 Ssurround Bold', file: 'fonts/Cafe24Ssurround-v2.0.woff2' },
             { name: '카페24 슈퍼매직', file: 'fonts/Cafe24Supermagic-Regular-v1.0.woff2' },
             { name: 'Cafe24 Supermagic', file: 'fonts/Cafe24Supermagic-Regular-v1.0.woff2' },
+            // === 수식 전용 폰트 ===
+            { name: 'Latin Modern Math', file: 'fonts/LatinModernMath-Regular.woff2' },
             // === 기타 ===
             { name: 'SpoqaHanSans', file: 'fonts/SpoqaHanSans-Regular.woff2' },
             // === Gowun (OFL) ===
@@ -99,7 +119,7 @@
         const style = document.createElement('style');
         style.textContent = fonts.map(f => {
             const fmt = f.format || 'woff2';
-            return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: block; }`;
+            return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap; font-weight: ${f.weight || '400'}; }`;
         }).join('\n');
         document.head.appendChild(style);
 
@@ -107,7 +127,7 @@
         let loadedCount = 0, failedCount = 0;
         globalThis._fontLoadPromise = Promise.all(fonts.map(f => {
             const fmt = f.format || 'woff2';
-            const face = new FontFace(f.name, `url(${f.file}) format('${fmt}')`);
+            const face = new FontFace(f.name, `url(${f.file}) format('${fmt}')`, { weight: f.weight || '400' });
             return face.load().then(loaded => {
                 document.fonts.add(loaded);
                 loadedCount++;
@@ -134,6 +154,26 @@
         const MAX_CACHE = 256;
         const EVICT_COUNT = 64;   // 25% 퇴거
 
+        function substituteCssFontFamily(cssFont) {
+            const pxIdx = cssFont.indexOf('px ');
+            if (pxIdx < 0) return cssFont;
+
+            const prefix = cssFont.substring(0, pxIdx + 3);
+            const familyPart = cssFont.substring(pxIdx + 3);
+            const match = familyPart.match(/^"([^"]+)"/);
+            if (!match) return cssFont;
+
+            const fontName = match[1];
+            const api = globalThis.FontSubstitution;
+            if (!api) return cssFont;
+            if (api.REGISTERED_FONTS.has(fontName)) return cssFont;
+
+            const resolved = api.resolveFont(fontName, 0, 0);
+            if (resolved === fontName) return cssFont;
+
+            return prefix + api.fontFamilyWithFallback(resolved);
+        }
+
         globalThis.measureTextWidth = function(font, text) {
             const key = font + '\0' + text;
 
@@ -148,9 +188,10 @@
             if (!ctx) {
                 ctx = document.createElement('canvas').getContext('2d');
             }
-            if (font !== lastFont) {
-                ctx.font = font;
-                lastFont = font;
+            const resolved = substituteCssFontFamily(font);
+            if (resolved !== lastFont) {
+                ctx.font = resolved;
+                lastFont = resolved;
             }
 
             const width = ctx.measureText(text).width;
