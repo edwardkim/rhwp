@@ -3,7 +3,7 @@
  *
  * 2계층 로딩:
  *   1. CSS @font-face 규칙 생성 (Canvas 2D 호환)
- *   2. FontFace API로 즉시 로드 + document.fonts.add()
+ *   2. document.fonts.load()로 필요한 family/weight만 개별 로드
  */
 
 interface FontEntry {
@@ -236,11 +236,8 @@ export async function loadWebFonts(
     const batch = facesToLoad.slice(i, i + BATCH);
     await Promise.all(batch.map(async (f) => {
       try {
-        const fmt = f.format ?? 'woff2';
         const weight = f.weight ?? '400';
-        const face = new FontFace(f.name, `url(${f.file}) format('${fmt}')`, { weight });
-        const result = await face.load();
-        document.fonts.add(result);
+        await document.fonts.load(`${weight} 16px "${f.name}"`);
         loadedFaceKeys.add(`${f.name}::${weight}`);
         loaded++;
       } catch {
@@ -253,5 +250,6 @@ export async function loadWebFonts(
     }
   }
 
+  await document.fonts.ready;
   console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFaceKeys.size}개 face 로드됨)`);
 }
