@@ -142,9 +142,30 @@ const CANVAS_SELECTOR = '#scroll-container canvas';
 
 /** Vite dev server에서 앱을 로드하고 WASM 초기화 완료 대기 */
 export async function loadApp(page, search = '') {
-  await page.goto(`${VITE_URL}${search}`, { waitUntil: 'networkidle0', timeout: 30000 });
-  await page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, { timeout: 15000 });
-  await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
+  const targetUrl = `${VITE_URL}${search}`;
+  let lastError = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await page.goto(targetUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+      await page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, { timeout: 15000 });
+      await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 1) {
+        break;
+      }
+      try {
+        await page.goto('about:blank', { waitUntil: 'load', timeout: 5000 });
+      } catch {
+        // best-effort reset before retrying the app load
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  throw lastError;
 }
 
 /** 편집 영역 캔버스가 렌더링될 때까지 대기 */
