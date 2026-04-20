@@ -2,7 +2,7 @@ import CanvasKitInit from 'canvaskit-wasm';
 import type { CanvasKit, Font, Image, Paint, Shader, Surface, Typeface, TypefaceFontProvider } from 'canvaskit-wasm';
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url';
 
-import { fontFamilyWithFallback, resolveFont } from '@/core/font-substitution';
+import { resolveFont } from '@/core/font-substitution';
 import type { CanvasKitRenderMode } from '@/view/render-backend';
 import type {
   LayerBounds,
@@ -102,13 +102,18 @@ const MONO_ALIASES = [
   'Noto Sans Mono',
 ];
 
+type OverlayClip = {
+  bounds: LayerBounds;
+  kind: LayerClipNode['clipKind'];
+};
+
 export class CanvasKitLayerRenderer {
   private readonly imageCache = new Map<string, Image>();
   private readonly mipmappedImageCache = new Map<string, Image>();
   private readonly domImageCache = new Map<string, HTMLImageElement>();
   private readonly patternImageCache = new Map<string, Image | null>();
   private readonly fontAliases = new Set<string>();
-  private readonly overlayClipStack: LayerBounds[] = [];
+  private readonly currentClipStack: OverlayClip[] = [];
   private lastRenderedTree: PageLayerTree | null = null;
   private lastTargetCanvas: HTMLCanvasElement | null = null;
   private lastScale = 1;
@@ -216,14 +221,22 @@ export class CanvasKitLayerRenderer {
     canvas: ReturnType<Surface['getCanvas']>,
     node: LayerClipNode,
   ): void {
+    const clipRightPad = node.clipKind === 'body' || node.clipKind === 'tableCell' ? 4 : 0;
+    this.currentClipStack.push({ bounds: node.clip, kind: node.clipKind });
     canvas.save();
     canvas.clipRect(
-      this.canvasKit.XYWHRect(node.clip.x, node.clip.y, node.clip.width, node.clip.height),
+      this.canvasKit.XYWHRect(
+        node.clip.x,
+        node.clip.y,
+        node.clip.width + clipRightPad,
+        node.clip.height,
+      ),
       this.canvasKit.ClipOp.Intersect,
       true,
     );
     this.renderNode(canvas, node.child);
     canvas.restore();
+    this.currentClipStack.pop();
   }
 
   private renderLeafNode(
@@ -279,6 +292,9 @@ export class CanvasKitLayerRenderer {
       case 'equation':
         return;
       case 'formObject':
+        if (this.shouldOverlayFormObject(op)) {
+          return;
+        }
         this.renderFormObject(canvas, op);
         return;
     }
@@ -301,9 +317,32 @@ export class CanvasKitLayerRenderer {
   }
 
   private shouldOverlayRectangle(op: LayerRectangleOp): boolean {
-    // Simple rectangle fills/strokes match Canvas 2D more closely when CanvasKit
-    // renders them directly than when we replay them through the DOM overlay path.
-    return false;
+    return this.renderMode === 'compat'
+      && op.cornerRadius === 0
+      && !op.gradient
+      && !op.style.pattern
+      && !op.style.shadow
+      && !op.transform.rotation
+      && !op.transform.horzFlip
+      && !op.transform.vertFlip
+      && op.style.opacity === 1
+      && (
+        (
+          this.currentClipStack.some((clip) => clip.kind === 'tableCell')
+          && !!op.style.fillColor
+          && !op.style.strokeColor
+        )
+        || (
+          !op.style.fillColor
+          && !!op.style.strokeColor
+          && op.style.strokeDash === 'solid'
+          && op.style.strokeWidth <= 1
+        )
+      );
+  }
+
+  private shouldOverlayFormObject(_op: LayerFormObjectOp): boolean {
+    return this.renderMode === 'compat';
   }
 
   private renderPageBackground(canvas: ReturnType<Surface['getCanvas']>, op: LayerPageBackgroundOp): void {
@@ -985,15 +1024,16 @@ export class CanvasKitLayerRenderer {
       return;
     }
     if (node.kind === 'clipRect') {
+      const clipRightPad = node.clipKind === 'body' || node.clipKind === 'tableCell' ? 4 : 0;
       if (this.renderMode === 'compat') {
-        this.overlayClipStack.push(node.clip);
+        this.currentClipStack.push({ bounds: node.clip, kind: node.clipKind });
         this.renderFallbackOverlayNode(ctx, node.child);
-        this.overlayClipStack.pop();
+        this.currentClipStack.pop();
         return;
       }
       ctx.save();
       ctx.beginPath();
-      ctx.rect(node.clip.x, node.clip.y, node.clip.width, node.clip.height);
+      ctx.rect(node.clip.x, node.clip.y, node.clip.width + clipRightPad, node.clip.height);
       ctx.clip();
       this.renderFallbackOverlayNode(ctx, node.child);
       ctx.restore();
@@ -1013,11 +1053,27 @@ export class CanvasKitLayerRenderer {
         continue;
       }
       if (op.type === 'line' && this.shouldOverlayLine(op)) {
-        this.renderLineOverlay(ctx, op);
+        const clipBounds = {
+          x: op.bbox.x,
+          y: op.bbox.y,
+          width: op.bbox.width,
+          height: op.bbox.height,
+        };
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderLineOverlay(ctx, op);
+        }, clipBounds);
         continue;
       }
       if (op.type === 'rectangle' && this.shouldOverlayRectangle(op)) {
-        this.renderRectangleOverlay(ctx, op);
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderRectangleOverlay(ctx, op);
+        });
+        continue;
+      }
+      if (op.type === 'formObject' && this.shouldOverlayFormObject(op)) {
+        this.withCurrentOverlayClip(ctx, 0, () => {
+          this.renderFormObjectOverlay(ctx, op);
+        });
         continue;
       }
       if (op.type === 'equation') {
@@ -1112,6 +1168,129 @@ export class CanvasKitLayerRenderer {
     });
   }
 
+  private renderFormObjectOverlay(ctx: CanvasRenderingContext2D, op: LayerFormObjectOp): void {
+    const { x, y, width: w, height: h } = op.bbox;
+    ctx.save();
+
+    switch (op.formType) {
+      case 'pushButton': {
+        ctx.fillStyle = '#d0d0d0';
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = '#a0a0a0';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x, y, w, h);
+        if (op.caption) {
+          const fontSize = Math.min(Math.max(h * 0.5, 8), 12);
+          ctx.font = `${fontSize}px sans-serif`;
+          ctx.fillStyle = '#808080';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(op.caption, x + w / 2, y + h / 2);
+        }
+        break;
+      }
+      case 'checkBox': {
+        const boxSize = Math.min(h, 14);
+        const boxY = y + (h - boxSize) / 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, boxY, boxSize, boxSize);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, boxY, boxSize, boxSize);
+        if (op.value !== 0) {
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x + 2, boxY + boxSize / 2);
+          ctx.lineTo(x + boxSize / 3, boxY + boxSize - 3);
+          ctx.lineTo(x + boxSize - 2, boxY + 2);
+          ctx.stroke();
+        }
+        if (op.caption) {
+          const fontSize = Math.min(Math.max(h * 0.7, 8), 12);
+          ctx.font = `${fontSize}px sans-serif`;
+          ctx.fillStyle = op.foreColor;
+          ctx.textBaseline = 'middle';
+          ctx.fillText(op.caption, x + boxSize + 4, y + h / 2);
+        }
+        break;
+      }
+      case 'radioButton': {
+        const r = Math.min(h, 14) / 2;
+        const cx = x + r;
+        const cy = y + h / 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        if (op.value !== 0) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, r * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#000000';
+          ctx.fill();
+        }
+        if (op.caption) {
+          const fontSize = Math.min(Math.max(h * 0.7, 8), 12);
+          ctx.font = `${fontSize}px sans-serif`;
+          ctx.fillStyle = op.foreColor;
+          ctx.textBaseline = 'middle';
+          ctx.fillText(op.caption, x + r * 2 + 4, y + h / 2);
+        }
+        break;
+      }
+      case 'comboBox': {
+        const btnW = Math.min(h, 20);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, w - btnW, h);
+        ctx.strokeStyle = '#808080';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, w - btnW, h);
+        if (op.text) {
+          const fontSize = Math.min(Math.max(h * 0.6, 8), 12);
+          ctx.font = `${fontSize}px sans-serif`;
+          ctx.fillStyle = op.foreColor;
+          ctx.textBaseline = 'middle';
+          ctx.fillText(op.text, x + 2, y + h / 2);
+        }
+        const buttonX = x + w - btnW;
+        ctx.fillStyle = '#c0c0c0';
+        ctx.fillRect(buttonX, y, btnW, h);
+        ctx.strokeStyle = '#808080';
+        ctx.strokeRect(buttonX, y, btnW, h);
+        ctx.beginPath();
+        const triCx = buttonX + btnW / 2;
+        const triCy = y + h / 2;
+        const triSize = btnW * 0.3;
+        ctx.moveTo(triCx - triSize, triCy - triSize / 2);
+        ctx.lineTo(triCx + triSize, triCy - triSize / 2);
+        ctx.lineTo(triCx, triCy + triSize / 2);
+        ctx.closePath();
+        ctx.fillStyle = '#000000';
+        ctx.fill();
+        break;
+      }
+      case 'edit': {
+        ctx.fillStyle = op.backColor;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = '#808080';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, w, h);
+        if (op.text) {
+          const fontSize = Math.min(Math.max(h * 0.6, 8), 12);
+          ctx.font = `${fontSize}px sans-serif`;
+          ctx.fillStyle = op.foreColor;
+          ctx.textBaseline = 'middle';
+          ctx.fillText(op.text, x + 2, y + h / 2);
+        }
+        break;
+      }
+    }
+
+    ctx.restore();
+  }
+
   private withCanvasOverlayTransform(
     ctx: CanvasRenderingContext2D,
     bbox: LayerBounds,
@@ -1145,21 +1324,51 @@ export class CanvasKitLayerRenderer {
     ctx: CanvasRenderingContext2D,
     padding: number,
     draw: () => void,
+    bounds?: LayerBounds,
   ): void {
-    const clip = this.overlayClipStack.at(-1);
-    if (!clip) {
+    if (this.currentClipStack.length === 0) {
       draw();
       return;
     }
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(
-      clip.x - padding,
-      clip.y - padding,
-      clip.width + padding * 2,
-      clip.height + padding * 2,
-    );
-    ctx.clip();
+    for (const clip of this.currentClipStack) {
+      const clipBounds = clip.bounds;
+      let leftPad = padding;
+      let topPad = padding;
+      let rightPad = padding;
+      let bottomPad = padding;
+
+      if (clip.kind === 'body' || clip.kind === 'tableCell') {
+        rightPad = Math.max(rightPad, 4);
+      }
+
+      if (bounds) {
+        if (bounds.x < clipBounds.x) {
+          leftPad = Math.max(leftPad, 1);
+        }
+        if (bounds.y < clipBounds.y) {
+          topPad = Math.max(topPad, 1);
+        }
+        if (bounds.x + bounds.width > clipBounds.x + clipBounds.width + rightPad) {
+          rightPad = Math.max(
+            rightPad,
+            Math.ceil(bounds.x + bounds.width - (clipBounds.x + clipBounds.width)) + 1,
+          );
+        }
+        if (bounds.y + bounds.height > clipBounds.y + clipBounds.height) {
+          bottomPad = Math.max(bottomPad, 1);
+        }
+      }
+
+      ctx.beginPath();
+      ctx.rect(
+        clipBounds.x - leftPad,
+        clipBounds.y - topPad,
+        clipBounds.width + leftPad + rightPad,
+        clipBounds.height + topPad + bottomPad,
+      );
+      ctx.clip();
+    }
     draw();
     ctx.restore();
   }
@@ -1270,8 +1479,10 @@ export class CanvasKitLayerRenderer {
     const fontSize = op.style.fontSize || 12;
     const clusters = splitIntoClusters(op.text);
     const baseFont = buildCanvasTextFont(op.style.fontFamily, fontSize, op.style.bold, op.style.italic);
-    const currencyFallbackFont = buildCanvasTextFont('Malgun Gothic', fontSize, op.style.bold, op.style.italic);
-    const symbolFallbackFont = buildCanvasTextFont('굴림체', fontSize, op.style.bold, op.style.italic);
+    const currencyFallbackFont =
+      `${op.style.italic ? 'italic ' : ''}${op.style.bold ? 'bold ' : ''}${fontSize.toFixed(3)}px 'Malgun Gothic','맑은 고딕',sans-serif`;
+    const symbolFallbackFont =
+      `${op.style.italic ? 'italic ' : ''}${op.style.bold ? 'bold ' : ''}${fontSize.toFixed(3)}px 'GulimChe','굴림체','D2Coding','NanumGothicCoding','나눔고딕코딩','Noto Sans Mono',monospace`;
     const clusterFonts = clusters.map((cluster) => {
       const ch = cluster.text.codePointAt(0) ?? 0;
       const needsCurrencyFallback =
@@ -1910,9 +2121,17 @@ function inferImageMime(bytes: Uint8Array): string {
 }
 
 function buildCanvasTextFont(fontFamily: string, fontSize: number, bold: boolean, italic: boolean): string {
-  const resolved = resolveFont(fontFamily, 0, 0);
-  const baseFamily = resolved || fontFamily;
-  return `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${(fontSize || 12).toFixed(3)}px ${fontFamilyWithFallback(baseFamily)}`;
+  const baseFamily = fontFamily?.trim() ?? '';
+  const lower = baseFamily.toLowerCase();
+  const fallback = !baseFamily
+    ? `'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans CJK KR','NanumGothic','나눔고딕','Noto Sans KR','Pretendard',sans-serif`
+    : /굴림체|바탕체|gulimche|batangche|coding|courier/i.test(baseFamily)
+      ? `'GulimChe','굴림체','D2Coding','NanumGothicCoding','나눔고딕코딩','Noto Sans Mono',monospace`
+      : /바탕|명조|궁서/.test(baseFamily) || /times|hymjre|palatino|georgia|batang|gungsuh/i.test(lower)
+        ? `'Batang','바탕','AppleMyungjo','Noto Serif CJK KR','NanumMyeongjo','나눔명조','Noto Serif KR',serif`
+        : `'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans CJK KR','NanumGothic','나눔고딕','Noto Sans KR','Pretendard',sans-serif`;
+  const family = baseFamily ? `"${baseFamily}", ${fallback}` : fallback;
+  return `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${(fontSize || 12).toFixed(3)}px ${family}`;
 }
 
 function startsWithInvalidControl(text: string): boolean {

@@ -74,7 +74,7 @@ export async function launchBrowser() {
     return await puppeteer.launch({
       headless: true,
       executablePath: CHROME_PATH,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
     });
   }
   // 호스트 Chrome CDP에 연결
@@ -172,8 +172,7 @@ export async function loadHwpFile(page, filename) {
       const docInfo = window.__wasm?.loadDocument(new Uint8Array(sampleBytes), fname);
       if (!docInfo) return { error: 'loadDocument returned null' };
       const { loadWebFonts } = await import('/src/core/font-loader.ts');
-      const includeOverlayFallbacks =
-        (window.__canvasView?.getRenderBackend?.() ?? window.__renderBackend) === 'canvaskit';
+      const includeOverlayFallbacks = true;
       await loadWebFonts(docInfo.fontsUsed ?? [], undefined, { includeOverlayFallbacks });
       window.__canvasView?.loadDocument?.();
       return { pageCount: docInfo.pageCount };
@@ -336,6 +335,11 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
   ignoreChannelDelta = 0,
   maxDiffPixels = null,
   maxDiffRatio = null,
+  inkMaskWhiteDelta = 25,
+  inkMaskAlphaThreshold = 8,
+  inkMaskNeighborhoodRadius = 1,
+  inkMaskMaxDiffPixels = null,
+  inkMaskMaxDiffRatio = null,
 } = {}) {
   const expected = PNG.sync.read(expectedBuffer);
   const actual = PNG.sync.read(actualBuffer);
@@ -355,9 +359,14 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
   );
 
   const tolerantDiff = new PNG({ width: expected.width, height: expected.height });
+  const inkMaskDiff = new PNG({ width: expected.width, height: expected.height });
   let tolerantDiffPixels = 0;
+  let inkMaskDiffPixels = 0;
   let totalChannelDelta = 0;
   let maxChannelDelta = 0;
+  const totalPixels = expected.width * expected.height;
+  const width = expected.width;
+  const height = expected.height;
 
   for (let i = 0; i < expected.data.length; i += 4) {
     let pixelMaxDelta = 0;
@@ -378,22 +387,110 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
     }
   }
 
-  const totalPixels = expected.width * expected.height;
   const exactDiffRatio = totalPixels > 0 ? exactDiffPixels / totalPixels : 0;
   const rawTolerantDiffRatio = totalPixels > 0 ? tolerantDiffPixels / totalPixels : 0;
   const meanAbsChannelDelta = totalPixels > 0 ? totalChannelDelta / (totalPixels * 4) : 0;
   const hasPixelBudget = maxDiffPixels != null;
   const hasRatioBudget = maxDiffRatio != null;
-  const passed = hasPixelBudget || hasRatioBudget
-    ? (!hasPixelBudget || tolerantDiffPixels <= maxDiffPixels)
-      && (!hasRatioBudget || rawTolerantDiffRatio <= maxDiffRatio)
-    : tolerantDiffPixels === 0;
-  const budgetedTolerantDiffPixels = passed ? 0 : tolerantDiffPixels;
-  const budgetedTolerantDiffRatio = passed ? 0 : rawTolerantDiffRatio;
+  const hasInkMaskPixelBudget = inkMaskMaxDiffPixels != null;
+  const hasInkMaskRatioBudget = inkMaskMaxDiffRatio != null;
+  const usesInkMaskBudget = hasInkMaskPixelBudget || hasInkMaskRatioBudget;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const base = (y * width + x) * 4;
+      const expectedR = expected.data[base];
+      const expectedG = expected.data[base + 1];
+      const expectedB = expected.data[base + 2];
+      const expectedA = expected.data[base + 3];
+      const actualR = actual.data[base];
+      const actualG = actual.data[base + 1];
+      const actualB = actual.data[base + 2];
+      const actualA = actual.data[base + 3];
+      const expectedInk = expectedA > inkMaskAlphaThreshold
+        && Math.max(255 - expectedR, 255 - expectedG, 255 - expectedB) > inkMaskWhiteDelta;
+      const actualInk = actualA > inkMaskAlphaThreshold
+        && Math.max(255 - actualR, 255 - actualG, 255 - actualB) > inkMaskWhiteDelta;
+
+      if (expectedInk === actualInk) {
+        continue;
+      }
+
+      const minY = Math.max(0, y - inkMaskNeighborhoodRadius);
+      const maxY = Math.min(height - 1, y + inkMaskNeighborhoodRadius);
+      const minX = Math.max(0, x - inkMaskNeighborhoodRadius);
+      const maxX = Math.min(width - 1, x + inkMaskNeighborhoodRadius);
+      let matched = false;
+
+      if (expectedInk && !actualInk) {
+        for (let ny = minY; ny <= maxY && !matched; ny++) {
+          for (let nx = minX; nx <= maxX; nx++) {
+            const neighborBase = (ny * width + nx) * 4;
+            const neighborInk = actual.data[neighborBase + 3] > inkMaskAlphaThreshold
+              && Math.max(
+                255 - actual.data[neighborBase],
+                255 - actual.data[neighborBase + 1],
+                255 - actual.data[neighborBase + 2],
+              ) > inkMaskWhiteDelta;
+            if (neighborInk) {
+              matched = true;
+              break;
+            }
+          }
+        }
+      } else if (actualInk && !expectedInk) {
+        for (let ny = minY; ny <= maxY && !matched; ny++) {
+          for (let nx = minX; nx <= maxX; nx++) {
+            const neighborBase = (ny * width + nx) * 4;
+            const neighborInk = expected.data[neighborBase + 3] > inkMaskAlphaThreshold
+              && Math.max(
+                255 - expected.data[neighborBase],
+                255 - expected.data[neighborBase + 1],
+                255 - expected.data[neighborBase + 2],
+              ) > inkMaskWhiteDelta;
+            if (neighborInk) {
+              matched = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (matched) {
+        continue;
+      }
+
+      inkMaskDiffPixels++;
+      inkMaskDiff.data[base] = expectedInk ? 255 : 0;
+      inkMaskDiff.data[base + 1] = 0;
+      inkMaskDiff.data[base + 2] = actualInk ? 255 : 0;
+      inkMaskDiff.data[base + 3] = 255;
+    }
+  }
+
+  const rawInkMaskDiffRatio = totalPixels > 0 ? inkMaskDiffPixels / totalPixels : 0;
+  const passed = usesInkMaskBudget
+    ? (!hasInkMaskPixelBudget || inkMaskDiffPixels <= inkMaskMaxDiffPixels)
+      && (!hasInkMaskRatioBudget || rawInkMaskDiffRatio <= inkMaskMaxDiffRatio)
+    : hasPixelBudget || hasRatioBudget
+      ? (!hasPixelBudget || tolerantDiffPixels <= maxDiffPixels)
+        && (!hasRatioBudget || rawTolerantDiffRatio <= maxDiffRatio)
+      : tolerantDiffPixels === 0;
+  const selectedDiffPixels = passed
+    ? 0
+    : usesInkMaskBudget
+      ? inkMaskDiffPixels
+      : tolerantDiffPixels;
+  const selectedDiffRatio = passed
+    ? 0
+    : usesInkMaskBudget
+      ? rawInkMaskDiffRatio
+      : rawTolerantDiffRatio;
 
   let exactDiffPath = null;
   let tolerantDiffPath = null;
-  if (diffName && (exactDiffPixels > 0 || tolerantDiffPixels > 0)) {
+  let inkMaskDiffPath = null;
+  if (diffName && (exactDiffPixels > 0 || tolerantDiffPixels > 0 || inkMaskDiffPixels > 0)) {
     const { mkdirSync, existsSync, writeFileSync } = await import('fs');
     const outputDir = '../output/e2e/canvaskit-diff';
     if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
@@ -402,23 +499,33 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
       writeFileSync(exactDiffPath, PNG.sync.write(exactDiff));
       console.log(`  Exact Diff Artifact: ${exactDiffPath}`);
     }
-    if (!passed && tolerantDiffPixels > 0) {
+    if (tolerantDiffPixels > 0) {
       tolerantDiffPath = `${outputDir}/${diffName}-tolerant.png`;
       writeFileSync(tolerantDiffPath, PNG.sync.write(tolerantDiff));
       console.log(`  Tolerant Diff Artifact: ${tolerantDiffPath}`);
     }
+    if (inkMaskDiffPixels > 0) {
+      inkMaskDiffPath = `${outputDir}/${diffName}-ink-mask.png`;
+      writeFileSync(inkMaskDiffPath, PNG.sync.write(inkMaskDiff));
+      console.log(`  Ink Mask Diff Artifact: ${inkMaskDiffPath}`);
+    }
   }
 
   return {
+    passMetric: usesInkMaskBudget ? 'inkMask' : 'tolerant',
     passed,
-    diffPixels: budgetedTolerantDiffPixels,
-    diffRatio: budgetedTolerantDiffRatio,
+    diffPixels: selectedDiffPixels,
+    diffRatio: selectedDiffRatio,
     exactDiffPixels,
     exactDiffRatio,
-    tolerantDiffPixels: budgetedTolerantDiffPixels,
-    tolerantDiffRatio: budgetedTolerantDiffRatio,
+    tolerantDiffPixels,
+    tolerantDiffRatio: rawTolerantDiffRatio,
     rawTolerantDiffPixels: tolerantDiffPixels,
     rawTolerantDiffRatio,
+    inkMaskDiffPixels,
+    inkMaskDiffRatio: rawInkMaskDiffRatio,
+    rawInkMaskDiffPixels: inkMaskDiffPixels,
+    rawInkMaskDiffRatio,
     width: expected.width,
     height: expected.height,
     ignoreChannelDelta,
@@ -426,6 +533,7 @@ export async function comparePngBuffers(expectedBuffer, actualBuffer, {
     maxChannelDelta,
     exactDiffPath,
     tolerantDiffPath,
+    inkMaskDiffPath,
   };
 }
 

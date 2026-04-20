@@ -57,6 +57,7 @@ export interface LayerClipNode {
   kind: 'clipRect';
   sourceNodeId?: number;
   clip: LayerBounds;
+  clipKind: 'body' | 'tableCell' | 'generic';
   child: LayerNode;
 }
 

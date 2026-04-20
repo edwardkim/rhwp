@@ -5,7 +5,7 @@ use base64::Engine;
 use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_escape};
 use crate::model::control::FormType;
 use crate::model::style::{ImageFillMode, UnderlineType};
-use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
+use crate::paint::{ClipKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
 use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
@@ -22,7 +22,7 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"pageWidth\":{:.6},\"pageHeight\":{:.6},\"root\":",
             self.page_width, self.page_height
         );
         self.root.write_json(&mut buf);
@@ -51,9 +51,18 @@ impl LayerNode {
                 }
                 buf.push(']');
             }
-            LayerNodeKind::ClipRect { clip, child, .. } => {
+            LayerNodeKind::ClipRect {
+                clip,
+                child,
+                clip_kind,
+            } => {
                 buf.push_str(",\"kind\":\"clipRect\",\"clip\":");
                 write_bbox(buf, *clip);
+                let _ = write!(
+                    buf,
+                    ",\"clipKind\":{}",
+                    json_escape(clip_kind_str(*clip_kind))
+                );
                 buf.push_str(",\"child\":");
                 child.write_json(buf);
             }
@@ -93,7 +102,7 @@ impl PaintOp {
                         json_escape(&color_ref_to_css(color))
                     );
                 }
-                let _ = write!(buf, ",\"borderWidth\":{:.3}", background.border_width);
+                let _ = write!(buf, ",\"borderWidth\":{:.6}", background.border_width);
                 if let Some(gradient) = &background.gradient {
                     buf.push_str(",\"gradient\":");
                     write_gradient(buf, gradient);
@@ -115,7 +124,7 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"text\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{}",
+                    ",\"text\":{},\"baseline\":{:.6},\"rotation\":{:.6},\"isVertical\":{}",
                     json_escape(&run.text),
                     run.baseline,
                     run.rotation,
@@ -137,7 +146,7 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"text\":{},\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{}",
+                    ",\"text\":{},\"fontFamily\":{},\"fontSize\":{:.6},\"color\":{}",
                     json_escape(&marker.text),
                     json_escape(&marker.font_family),
                     (marker.base_font_size * 0.55).max(7.0),
@@ -151,7 +160,7 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"x1\":{:.3},\"y1\":{:.3},\"x2\":{:.3},\"y2\":{:.3},\"style\":",
+                    ",\"x1\":{:.6},\"y1\":{:.6},\"x2\":{:.6},\"y2\":{:.6},\"style\":",
                     line.x1, line.y1, line.x2, line.y2
                 );
                 write_line_style(buf, &line.style);
@@ -165,7 +174,7 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"cornerRadius\":{:.3},\"style\":",
+                    ",\"cornerRadius\":{:.6},\"style\":",
                     rect.corner_radius
                 );
                 write_shape_style(buf, &rect.style);
@@ -206,7 +215,7 @@ impl PaintOp {
                 if let Some((x1, y1, x2, y2)) = path.connector_endpoints {
                     let _ = write!(
                         buf,
-                        ",\"connectorEndpoints\":{{\"x1\":{:.3},\"y1\":{:.3},\"x2\":{:.3},\"y2\":{:.3}}}",
+                        ",\"connectorEndpoints\":{{\"x1\":{:.6},\"y1\":{:.6},\"x2\":{:.6},\"y2\":{:.6}}}",
                         x1, y1, x2, y2
                     );
                 }
@@ -236,7 +245,7 @@ impl PaintOp {
                 if let Some((width, height)) = image.original_size {
                     let _ = write!(
                         buf,
-                        ",\"originalSize\":{{\"width\":{:.3},\"height\":{:.3}}}",
+                        ",\"originalSize\":{{\"width\":{:.6},\"height\":{:.6}}}",
                         width, height
                     );
                 }
@@ -257,7 +266,7 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"color\":{},\"fontSize\":{:.3},\"svgContent\":{},\"layoutBox\":",
+                    ",\"color\":{},\"fontSize\":{:.6},\"svgContent\":{},\"layoutBox\":",
                     json_escape(&equation.color_str),
                     equation.font_size,
                     json_escape(&equation.svg_content),
@@ -289,7 +298,7 @@ impl PaintOp {
 fn write_bbox(buf: &mut String, bbox: BoundingBox) {
     let _ = write!(
         buf,
-        "{{\"x\":{:.3},\"y\":{:.3},\"width\":{:.3},\"height\":{:.3}}}",
+        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6}}}",
         bbox.x, bbox.y, bbox.width, bbox.height
     );
 }
@@ -298,7 +307,7 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
     buf.push('{');
     let _ = write!(
         buf,
-        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"ratio\":{:.3},\"underline\":{},\"underlineShape\":{},\"strikethrough\":{},\"strikeShape\":{},\"outlineType\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"emboss\":{},\"engrave\":{},\"emphasisDot\":{},\"underlineColor\":{},\"strikeColor\":{},\"shadeColor\":{}",
+        "\"fontFamily\":{},\"fontSize\":{:.6},\"color\":{},\"bold\":{},\"italic\":{},\"ratio\":{:.6},\"underline\":{},\"underlineShape\":{},\"strikethrough\":{},\"strikeShape\":{},\"outlineType\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.6},\"shadowOffsetY\":{:.6},\"emboss\":{},\"engrave\":{},\"emphasisDot\":{},\"underlineColor\":{},\"strikeColor\":{},\"shadeColor\":{}",
         json_escape(&style.font_family),
         style.font_size,
         json_escape(&color_ref_to_css(style.color)),
@@ -331,7 +340,7 @@ fn write_text_positions(buf: &mut String, run: &TextRunNode) {
         if idx > 0 {
             buf.push(',');
         }
-        let _ = write!(buf, "{:.3}", position);
+        let _ = write!(buf, "{:.6}", position);
     }
     buf.push(']');
 }
@@ -344,7 +353,7 @@ fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
         }
         let _ = write!(
             buf,
-            "{{\"startX\":{:.3},\"endX\":{:.3},\"fillType\":{}}}",
+            "{{\"startX\":{:.6},\"endX\":{:.6},\"fillType\":{}}}",
             leader.start_x, leader.end_x, leader.fill_type
         );
     }
@@ -377,7 +386,7 @@ fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
     }
     let _ = write!(
         buf,
-        ",\"strokeWidth\":{:.3},\"strokeDash\":{},\"opacity\":{:.3}",
+        ",\"strokeWidth\":{:.6},\"strokeDash\":{},\"opacity\":{:.6}",
         style.stroke_width,
         json_escape(stroke_dash_str(style.stroke_dash)),
         style.opacity,
@@ -402,7 +411,7 @@ fn write_pattern_fill(buf: &mut String, pattern: &PatternFillInfo) {
 fn write_shadow_style(buf: &mut String, shadow: &ShadowStyle) {
     let _ = write!(
         buf,
-        "{{\"shadowType\":{},\"color\":{},\"offsetX\":{:.3},\"offsetY\":{:.3},\"alpha\":{}}}",
+        "{{\"shadowType\":{},\"color\":{},\"offsetX\":{:.6},\"offsetY\":{:.6},\"alpha\":{}}}",
         shadow.shadow_type,
         json_escape(&color_ref_to_css(shadow.color)),
         shadow.offset_x,
@@ -430,7 +439,7 @@ fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
         if idx > 0 {
             buf.push(',');
         }
-        let _ = write!(buf, "{:.3}", position);
+        let _ = write!(buf, "{:.6}", position);
     }
     buf.push_str("]}");
 }
@@ -438,7 +447,7 @@ fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
 fn write_line_style(buf: &mut String, style: &LineStyle) {
     let _ = write!(
         buf,
-        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
+        "{{\"color\":{},\"width\":{:.6},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
         json_escape(&color_ref_to_css(style.color)),
         style.width,
         json_escape(stroke_dash_str(style.dash)),
@@ -458,7 +467,7 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
 fn write_transform(buf: &mut String, transform: ShapeTransform) {
     let _ = write!(
         buf,
-        "{{\"rotation\":{:.3},\"horzFlip\":{},\"vertFlip\":{}}}",
+        "{{\"rotation\":{:.6},\"horzFlip\":{},\"vertFlip\":{}}}",
         transform.rotation, transform.horz_flip, transform.vert_flip
     );
 }
@@ -471,22 +480,22 @@ fn write_path_commands(buf: &mut String, commands: &[PathCommand]) {
         }
         match command {
             PathCommand::MoveTo(x, y) => {
-                let _ = write!(buf, "{{\"type\":\"moveTo\",\"x\":{:.3},\"y\":{:.3}}}", x, y);
+                let _ = write!(buf, "{{\"type\":\"moveTo\",\"x\":{:.6},\"y\":{:.6}}}", x, y);
             }
             PathCommand::LineTo(x, y) => {
-                let _ = write!(buf, "{{\"type\":\"lineTo\",\"x\":{:.3},\"y\":{:.3}}}", x, y);
+                let _ = write!(buf, "{{\"type\":\"lineTo\",\"x\":{:.6},\"y\":{:.6}}}", x, y);
             }
             PathCommand::CurveTo(x1, y1, x2, y2, x3, y3) => {
                 let _ = write!(
                     buf,
-                    "{{\"type\":\"curveTo\",\"x1\":{:.3},\"y1\":{:.3},\"x2\":{:.3},\"y2\":{:.3},\"x3\":{:.3},\"y3\":{:.3}}}",
+                    "{{\"type\":\"curveTo\",\"x1\":{:.6},\"y1\":{:.6},\"x2\":{:.6},\"y2\":{:.6},\"x3\":{:.6},\"y3\":{:.6}}}",
                     x1, y1, x2, y2, x3, y3
                 );
             }
             PathCommand::ArcTo(rx, ry, rotation, large_arc, sweep, x, y) => {
                 let _ = write!(
                     buf,
-                    "{{\"type\":\"arcTo\",\"rx\":{:.3},\"ry\":{:.3},\"rotation\":{:.3},\"largeArc\":{},\"sweep\":{},\"x\":{:.3},\"y\":{:.3}}}",
+                    "{{\"type\":\"arcTo\",\"rx\":{:.6},\"ry\":{:.6},\"rotation\":{:.6},\"largeArc\":{},\"sweep\":{},\"x\":{:.6},\"y\":{:.6}}}",
                     rx, ry, rotation, large_arc, sweep, x, y
                 );
             }
@@ -499,7 +508,7 @@ fn write_path_commands(buf: &mut String, commands: &[PathCommand]) {
 fn write_equation_layout_box(buf: &mut String, layout: &LayoutBox) {
     let _ = write!(
         buf,
-        "{{\"x\":{:.3},\"y\":{:.3},\"width\":{:.3},\"height\":{:.3},\"baseline\":{:.3},\"kind\":",
+        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6},\"baseline\":{:.6},\"kind\":",
         layout.x, layout.y, layout.width, layout.height, layout.baseline,
     );
     write_equation_layout_kind(buf, &layout.kind);
@@ -688,7 +697,7 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             buf.push('}');
         }
         LayoutKind::Space(width) => {
-            let _ = write!(buf, "{{\"type\":\"space\",\"width\":{:.3}}}", width);
+            let _ = write!(buf, "{{\"type\":\"space\",\"width\":{:.6}}}", width);
         }
         LayoutKind::Newline => buf.push_str("{\"type\":\"newline\"}"),
         LayoutKind::Empty => buf.push_str("{\"type\":\"empty\"}"),
@@ -805,11 +814,19 @@ fn form_type_str(value: FormType) -> &'static str {
     }
 }
 
+fn clip_kind_str(value: ClipKind) -> &'static str {
+    match value {
+        ClipKind::Body => "body",
+        ClipKind::TableCell => "tableCell",
+        ClipKind::Generic => "generic",
+    }
+}
+
 #[cfg(test)]
 #[allow(clippy::items_after_test_module)]
 mod tests {
     use super::*;
-    use crate::paint::{LayerNode, PageLayerTree};
+    use crate::paint::{ClipKind, LayerNode, PageLayerTree};
     use crate::renderer::render_tree::{EquationNode, TextRunNode};
 
     #[test]
@@ -901,7 +918,7 @@ mod tests {
             },
         );
         let positions_json = format!(
-            "\"positions\":[{:.3},{:.3},{:.3}]",
+            "\"positions\":[{:.6},{:.6},{:.6}]",
             positions[0], positions[1], positions[2]
         );
 
@@ -912,8 +929,8 @@ mod tests {
         assert!(json.contains("\"type\":\"rectangle\""));
         assert!(json.contains("\"type\":\"equation\""));
         assert!(json.contains("\"svgContent\":\"<text x=\\\"0\\\" y=\\\"12\\\">x</text>\""));
-        assert!(json.contains("\"layoutBox\":{\"x\":0.000,\"y\":0.000,\"width\":10.000,\"height\":12.000,\"baseline\":9.000,\"kind\":{\"type\":\"text\",\"text\":\"x\"}}"));
-        assert!(json.contains("\"cornerRadius\":4.000"));
+        assert!(json.contains("\"layoutBox\":{\"x\":0.000000,\"y\":0.000000,\"width\":10.000000,\"height\":12.000000,\"baseline\":9.000000,\"kind\":{\"type\":\"text\",\"text\":\"x\"}}"));
+        assert!(json.contains("\"cornerRadius\":4.000000"));
     }
 
     #[test]
@@ -987,11 +1004,30 @@ mod tests {
         );
 
         let json = tree.to_json();
-        assert!(json.contains("\"shadow\":{\"shadowType\":1,\"color\":\"#303030\",\"offsetX\":1.500,\"offsetY\":2.500,\"alpha\":64}"));
+        assert!(json.contains("\"shadow\":{\"shadowType\":1,\"color\":\"#303030\",\"offsetX\":1.500000,\"offsetY\":2.500000,\"alpha\":64}"));
         assert!(json.contains(
-            "\"connectorEndpoints\":{\"x1\":4.000,\"y1\":4.000,\"x2\":20.000,\"y2\":20.000}"
+            "\"connectorEndpoints\":{\"x1\":4.000000,\"y1\":4.000000,\"x2\":20.000000,\"y2\":20.000000}"
         ));
-        assert!(json.contains("\"lineStyle\":{\"color\":\"#030201\",\"width\":2.000,\"dash\":\"solid\",\"lineType\":\"single\",\"startArrow\":\"circle\",\"endArrow\":\"square\",\"startArrowSize\":1,\"endArrowSize\":8}"));
+        assert!(json.contains("\"lineStyle\":{\"color\":\"#030201\",\"width\":2.000000,\"dash\":\"solid\",\"lineType\":\"single\",\"startArrow\":\"circle\",\"endArrow\":\"square\",\"startArrowSize\":1,\"endArrowSize\":8}"));
+    }
+
+    #[test]
+    fn serializes_clip_kind_for_browser_replay() {
+        let tree = PageLayerTree::new(
+            40.0,
+            40.0,
+            LayerNode::clip_rect(
+                BoundingBox::new(0.0, 0.0, 40.0, 40.0),
+                None,
+                BoundingBox::new(1.0, 2.0, 30.0, 20.0),
+                LayerNode::leaf(BoundingBox::new(1.0, 2.0, 30.0, 20.0), None, vec![]),
+                ClipKind::Body,
+            ),
+        );
+
+        let json = tree.to_json();
+        assert!(json.contains("\"kind\":\"clipRect\""));
+        assert!(json.contains("\"clipKind\":\"body\""));
     }
 }
 

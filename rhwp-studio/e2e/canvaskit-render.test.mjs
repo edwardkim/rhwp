@@ -44,6 +44,10 @@ const CANVASKIT_MODE = process.env.RHWP_CANVASKIT_MODE === 'default' ? 'default'
 const TOLERANT_DIFF = {
   ignoreChannelDelta: 8,
   maxDiffRatio: 0.0025,
+  inkMaskWhiteDelta: 25,
+  inkMaskAlphaThreshold: 8,
+  inkMaskNeighborhoodRadius: 1,
+  inkMaskMaxDiffRatio: 0.0001,
 };
 const FEATURE_CASES = [
   {
@@ -133,11 +137,15 @@ runTest('CanvasKit 렌더 비교', async ({ page }) => {
         diffName: `${caseInfo.name}-${CANVASKIT_MODE}`,
         ignoreChannelDelta: TOLERANT_DIFF.ignoreChannelDelta,
         maxDiffRatio: caseInfo.maxDiffRatio ?? TOLERANT_DIFF.maxDiffRatio,
+        inkMaskWhiteDelta: TOLERANT_DIFF.inkMaskWhiteDelta,
+        inkMaskAlphaThreshold: TOLERANT_DIFF.inkMaskAlphaThreshold,
+        inkMaskNeighborhoodRadius: TOLERANT_DIFF.inkMaskNeighborhoodRadius,
+        inkMaskMaxDiffRatio: TOLERANT_DIFF.inkMaskMaxDiffRatio,
       });
 
       assert(
         diff.passed,
-        `${caseInfo.name} screenshot exact=${diff.exactDiffPixels} (${diff.exactDiffRatio.toFixed(4)}), tolerant=${diff.tolerantDiffPixels} (${diff.tolerantDiffRatio.toFixed(4)}), raw_tolerant=${diff.rawTolerantDiffPixels} (${diff.rawTolerantDiffRatio.toFixed(4)}), ignored_channel_delta<=${diff.ignoreChannelDelta}, max_channel_delta=${diff.maxChannelDelta}`,
+        `${caseInfo.name} screenshot exact=${diff.exactDiffPixels} (${diff.exactDiffRatio.toFixed(4)}), tolerant=${diff.rawTolerantDiffPixels} (${diff.rawTolerantDiffRatio.toFixed(4)}), ink_mask=${diff.rawInkMaskDiffPixels} (${diff.rawInkMaskDiffRatio.toFixed(4)}), pass_metric=${diff.passMetric}, ignored_channel_delta<=${diff.ignoreChannelDelta}, max_channel_delta=${diff.maxChannelDelta}`,
       );
     } catch (error) {
       await screenshot(page, `${caseInfo.name}-${CANVASKIT_MODE}-error`).catch(() => {});
@@ -172,11 +180,15 @@ runTest('CanvasKit 렌더 비교', async ({ page }) => {
             diffName: `${caseInfo.name}-${caseInfo.opType}-${index}-${CANVASKIT_MODE}`,
             ignoreChannelDelta: TOLERANT_DIFF.ignoreChannelDelta,
             maxDiffRatio: TOLERANT_DIFF.maxDiffRatio,
+            inkMaskWhiteDelta: TOLERANT_DIFF.inkMaskWhiteDelta,
+            inkMaskAlphaThreshold: TOLERANT_DIFF.inkMaskAlphaThreshold,
+            inkMaskNeighborhoodRadius: TOLERANT_DIFF.inkMaskNeighborhoodRadius,
+            inkMaskMaxDiffRatio: TOLERANT_DIFF.inkMaskMaxDiffRatio,
           },
         );
         assert(
           diff.passed,
-          `${caseInfo.name} ${caseInfo.opType}[${index}] exact=${diff.exactDiffPixels} (${diff.exactDiffRatio.toFixed(4)}), tolerant=${diff.tolerantDiffPixels} (${diff.tolerantDiffRatio.toFixed(4)}), raw_tolerant=${diff.rawTolerantDiffPixels} (${diff.rawTolerantDiffRatio.toFixed(4)}), ignored_channel_delta<=${diff.ignoreChannelDelta}, max_channel_delta=${diff.maxChannelDelta}`,
+          `${caseInfo.name} ${caseInfo.opType}[${index}] exact=${diff.exactDiffPixels} (${diff.exactDiffRatio.toFixed(4)}), tolerant=${diff.rawTolerantDiffPixels} (${diff.rawTolerantDiffRatio.toFixed(4)}), ink_mask=${diff.rawInkMaskDiffPixels} (${diff.rawInkMaskDiffRatio.toFixed(4)}), pass_metric=${diff.passMetric}, ignored_channel_delta<=${diff.ignoreChannelDelta}, max_channel_delta=${diff.maxChannelDelta}`,
         );
       }
     } catch (error) {

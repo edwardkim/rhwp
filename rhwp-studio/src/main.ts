@@ -428,7 +428,7 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
   const msg = sbMessage();
   try {
     console.log('[initDoc] 1. 폰트 로딩 시작');
-    const includeOverlayFallbacks = canvasView?.getRenderBackend() === 'canvaskit';
+    const includeOverlayFallbacks = true;
     if (docInfo.fontsUsed?.length || includeOverlayFallbacks) {
       await loadWebFonts(docInfo.fontsUsed ?? [], (loaded, total) => {
         msg.textContent = `폰트 로딩 중... (${loaded}/${total})`;
