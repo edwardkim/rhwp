@@ -21,17 +21,33 @@ targets:
         PRODUCT_NAME: 알한글
         INFOPLIST_FILE: Sources/Info.plist
         SWIFT_OBJC_BRIDGING_HEADER: Sources/rhwp-Bridging-Header.h
-        OTHER_LDFLAGS:
-          - "-lrhwp"
-          - "-framework Security"
-          - "-framework CoreFoundation"
         DEVELOPMENT_TEAM: "FSFG3AQ4KZ"
         ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
         CODE_SIGN_STYLE: "Automatic"
       configs:
         Debug:
-          "LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]": "$(PROJECT_DIR)/../target/aarch64-apple-ios-sim/release"
-          "LIBRARY_SEARCH_PATHS[sdk=iphoneos*]": "$(PROJECT_DIR)/../target/aarch64-apple-ios/release"
+          "OTHER_LDFLAGS[sdk=iphonesimulator*]":
+            - "$(PROJECT_DIR)/../target/aarch64-apple-ios-sim/release/librhwp.a"
+            - "-framework"
+            - "Security"
+            - "-framework"
+            - "CoreFoundation"
+          "OTHER_LDFLAGS[sdk=iphoneos*]":
+            - "$(PROJECT_DIR)/../target/aarch64-apple-ios/release/librhwp.a"
+            - "-framework"
+            - "Security"
+            - "-framework"
+            - "CoreFoundation"
         Release:
-          "LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]": "$(PROJECT_DIR)/../target/aarch64-apple-ios-sim/release"
-          "LIBRARY_SEARCH_PATHS[sdk=iphoneos*]": "$(PROJECT_DIR)/../target/aarch64-apple-ios/release"
+          "OTHER_LDFLAGS[sdk=iphonesimulator*]":
+            - "$(PROJECT_DIR)/../target/aarch64-apple-ios-sim/release/librhwp.a"
+            - "-framework"
+            - "Security"
+            - "-framework"
+            - "CoreFoundation"
+          "OTHER_LDFLAGS[sdk=iphoneos*]":
+            - "$(PROJECT_DIR)/../target/aarch64-apple-ios/release/librhwp.a"
+            - "-framework"
+            - "Security"
+            - "-framework"
+            - "CoreFoundation"
