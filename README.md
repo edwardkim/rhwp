@@ -134,11 +134,15 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - **Layered SVG**: `RHWP_RENDER_PATH=layer-svg rhwp export-svg sample.hwp`
 - **Native Skia**: non-wasm 타깃에서 `native-skia` feature로 PNG 렌더링
 - **Browser Canvas2D / CanvasKit**: `rhwp-studio` 기본값은 Canvas2D, `?renderer=canvaskit`로 CanvasKit 선택
+- `RHWP_RENDER_PROFILE=screen|print|high-quality|fast-preview`로 layered 출력 프로파일을 덮어쓸 수 있습니다.
+  기본값은 browser layer tree=`screen`, layer SVG export=`print`, native Skia PNG=`high-quality`입니다.
 
 ### Renderer Regression Tests (렌더러 회귀 테스트)
 - `cargo test layer_svg --lib`
 - `cargo test --features native-skia skia --lib`
 - `cd rhwp-studio && npm run e2e`
+- `cd rhwp-studio && npm run e2e:headless`
+- `cd rhwp-studio && npm run e2e:ci`
 - diff artifact는 `output/layer-svg-diff`, `output/skia-diff`, `rhwp-studio/output/e2e`에 남습니다.
 
 ### Web Editor (웹 에디터)

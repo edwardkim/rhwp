@@ -134,6 +134,12 @@ cargo run --bin rhwp -- dump sample.hwp -s 0 -p 45
 - **Browser Canvas2D / CanvasKit**: `rhwp-studio`에서 기본은 Canvas2D, `http://localhost:7700/?renderer=canvaskit`로 CanvasKit 비교
   - CanvasKit 래스터 모드: `?canvaskitMode=compat`(기본, Canvas2D 유사도 우선) 또는 `?canvaskitMode=default`(CanvasKit 기본 동작)
 
+레이어 기반 출력은 `RHWP_RENDER_PROFILE`로 기본 프로파일을 덮어쓸 수 있습니다.
+
+- 기본값은 경로별로 다릅니다: browser layer tree는 `screen`, layer SVG export는 `print`, native Skia PNG는 `high-quality`
+- 허용 값: `screen`, `print`, `high-quality`, `fast-preview`
+- `fast-preview`는 현재 page background cache hint만 다르게 주며, 더 공격적인 단순화 프로파일을 위한 예약값입니다.
+
 SVG를 직접 비교하려면 보통 아래처럼 두 번 내보냅니다.
 
 ```bash
@@ -149,10 +155,11 @@ RUSTFLAGS='-L native=target/native-libs' cargo test skia --lib --features native
 
 cd rhwp-studio
 npm run e2e                           # 기본: host Chrome CDP 모드, CanvasKit compat/default 둘 다 실행
-node e2e/text-flow.test.mjs --mode=headless && node e2e/canvaskit-render.test.mjs --mode=headless && RHWP_CANVASKIT_MODE=default node e2e/canvaskit-render.test.mjs --mode=headless
+npm run e2e:headless                  # headless Chrome 모드
+npm run e2e:ci                        # Vite 서버 자동 기동 + headless Chrome 전체 묶음
 ```
 
-WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신 `--mode=headless` 명령을 사용하세요.
+WSL/CI처럼 호스트 Chrome CDP가 없는 환경에서는 `npm run e2e` 대신 `npm run e2e:headless` 또는 `npm run e2e:ci`를 사용하세요.
 
 비교 아티팩트는 아래 위치에 남습니다.
 

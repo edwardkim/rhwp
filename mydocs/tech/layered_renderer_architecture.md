@@ -44,6 +44,14 @@ Document / Section / Paragraph / Control
 
 즉 현재 구조는 “모든 백엔드가 같은 path를 쓴다”가 아니라, “기존 baseline은 유지하고 새 backend는 layered path로 수렴한다”에 가깝다.
 
+또 하나 중요한 점은, 현재 공통 계약이 완전히 하나로 닫혀 있지는 않다는 것이다.
+
+- `LayerRenderer` trait는 layered SVG처럼 stateful output을 누적하는 backend에 맞춘 좁은 전환기 계약이다.
+- native Skia는 아직 `render_png()`처럼 바이트를 직접 돌려주는 명시적 API를 유지한다.
+
+즉 “모든 layered backend가 동일한 Rust trait를 이미 공유한다”기보다는,
+“공통 입력 IR은 `PageLayerTree`로 정리했고, 출력 계약은 backend 특성에 맞춰 아직 전환 중”이라고 보는 편이 정확하다.
+
 ## 3. 왜 `PageLayerTree`가 필요했는가
 
 `PageRenderTree`는 레이아웃 결과를 표현하기에는 적절하지만, 백엔드 replay용 IR로는 너무 semantic하다.
@@ -170,6 +178,23 @@ Rust core가 layout과 layer tree export를 담당하고, TypeScript가 CanvasKi
 
 native Skia는 non-wasm 타깃에서 layered raster backend 역할을 한다.
 현재는 테스트/검증용 경로가 중심이며, 별도의 일반 사용자용 `export-png` CLI는 아직 없다.
+
+### 6.6 RenderProfile 기본값
+
+`RenderProfile`은 layered 출력 경로가 어떤 품질/캐시 힌트를 기본으로 택할지 나타내는 enum이다.
+아직 모든 profile이 큰 동작 차이를 만드는 것은 아니지만, 호출 경로에는 기본값이 명시되어 있다.
+
+| 경로 | 기본 profile |
+|---|---|
+| browser layer tree (`getPageLayerTree`) | `Screen` |
+| layer SVG export | `Print` |
+| native Skia PNG | `HighQuality` |
+
+추가로 `RHWP_RENDER_PROFILE` 환경 변수로 `screen`, `print`, `high-quality`, `fast-preview`를 지정해
+기본값을 덮어쓸 수 있다.
+
+현재 `FastPreview`는 page background 쪽 cache hint만 다르게 적용하며,
+더 적극적인 preview simplification을 위한 예약 성격이 강하다.
 
 ## 7. CanvasKit render mode
 

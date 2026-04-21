@@ -45,6 +45,14 @@ Two points matter here.
 So the current structure is not “all backends already use the same path”.
 It is closer to “keep the proven baseline path, while converging new backends on the layered path”.
 
+Another important point is that the output-side contract is not fully unified yet.
+
+- The `LayerRenderer` trait is a narrow transitional contract for stateful backends that accumulate output, such as the layered SVG bridge.
+- Native Skia still keeps an explicit raster API, namely `render_png()`, because its natural output is encoded bytes rather than an internal scene buffer.
+
+So the accurate statement today is not “every layered backend already shares one Rust trait”.
+It is “the shared input IR is now `PageLayerTree`, while the output contract is still in transition depending on backend shape”.
+
 ## 3. Why `PageLayerTree` exists
 
 `PageRenderTree` is appropriate as a layout result, but too semantic to serve as a replay IR for all backends.
@@ -171,6 +179,23 @@ This path exists to provide:
 Native Skia is the layered raster backend for non-wasm targets.
 At the moment it is primarily a test and validation path.
 There is not yet a general-purpose end-user `export-png` CLI.
+
+### 6.6 RenderProfile defaults
+
+`RenderProfile` is the enum that hints which quality/cache profile a layered output path should prefer.
+Not every variant produces a large behavioral difference yet, but the call sites now make their defaults explicit.
+
+| Path | Default profile |
+|---|---|
+| browser layer tree (`getPageLayerTree`) | `Screen` |
+| layered SVG export | `Print` |
+| native Skia PNG | `HighQuality` |
+
+These defaults can be overridden with `RHWP_RENDER_PROFILE`, using one of:
+`screen`, `print`, `high-quality`, or `fast-preview`.
+
+At the moment `FastPreview` only changes page-background cache hints.
+It is mostly a reserved staging point for more aggressive preview simplification later.
 
 ## 7. CanvasKit render modes
 
