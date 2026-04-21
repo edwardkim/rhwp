@@ -184,7 +184,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) { font_size } else { font_size * 0.5 };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
-            w
+            // 글자 겹침 방지: 음수 자간으로 인해 글자 폭이 글리프의 50% 미만이 되지 않도록 제한
+            let min_w = base_w * ratio * 0.5;
+            w.max(min_w)
         };
 
         let mut total = 0.0;
@@ -270,7 +272,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) { font_size } else { font_size * 0.5 };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
-            w
+            // 글자 겹침 방지: 음수 자간으로 인해 글자 폭이 글리프의 50% 미만이 되지 않도록 제한
+            let min_w = base_w * ratio * 0.5;
+            w.max(min_w)
         };
 
         let mut tab_char_idx = 0usize; // inline_tabs 인덱스
@@ -518,7 +522,9 @@ impl TextMeasurer for WasmTextMeasurer {
             };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
-            w
+            // 글자 겹침 방지: 음수 자간으로 인해 글자 폭이 글리프의 50% 미만이 되지 않도록 제한
+            let min_w = char_px * ratio * 0.5;
+            w.max(min_w)
         };
 
         let mut total = 0.0;
@@ -590,7 +596,9 @@ impl TextMeasurer for WasmTextMeasurer {
             };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
-            w
+            // 글자 겹침 방지: 음수 자간으로 인해 글자 폭이 글리프의 50% 미만이 되지 않도록 제한
+            let min_w = char_px * ratio * 0.5;
+            w.max(min_w)
         };
 
         for i in 0..char_count {
@@ -765,7 +773,9 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) { font_size } else { font_size * 0.5 };
         let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
         if c == ' ' { w += style.extra_word_spacing; }
-        w
+        // 글자 겹침 방지: 음수 자간으로 인해 글자 폭이 글리프의 50% 미만이 되지 않도록 제한
+        let min_w = base_w * ratio * 0.5;
+        w.max(min_w)
     };
 
     let mut total = 0.0;
