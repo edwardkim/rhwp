@@ -81,3 +81,8 @@ rhwp-safari/.DS_Store
 # Xcode 사용자별 설정
 xcuserdata/
 *.xcuserstate
+
+# rhwp-macos 빌드 산출물
+rhwp-macos/Frameworks/
+rhwp-macos/build/
+rhwp-macos/*.xcodeproj
