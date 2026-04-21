@@ -31,15 +31,34 @@ impl DocumentCore {
         Ok(tree)
     }
 
-    fn build_page_layer_tree_for_output(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
+    fn build_page_layer_tree_for_output(
+        &self,
+        page_num: u32,
+        default_profile: RenderProfile,
+    ) -> Result<PageLayerTree, HwpError> {
         let tree = self.build_page_tree_cached(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
-        Ok(self.build_layer_tree_from_page_tree(&tree))
+        Ok(self.build_layer_tree_from_page_tree(
+            &tree,
+            self.resolve_layer_render_profile(default_profile),
+        ))
     }
 
-    fn build_layer_tree_from_page_tree(&self, tree: &PageRenderTree) -> PageLayerTree {
-        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+    fn build_layer_tree_from_page_tree(
+        &self,
+        tree: &PageRenderTree,
+        profile: RenderProfile,
+    ) -> PageLayerTree {
+        let mut builder = LayerBuilder::new(profile);
         builder.build(tree)
+    }
+
+    fn resolve_layer_render_profile(&self, default_profile: RenderProfile) -> RenderProfile {
+        std::env::var("RHWP_RENDER_PROFILE")
+            .ok()
+            .as_deref()
+            .and_then(RenderProfile::parse_name)
+            .unwrap_or(default_profile)
     }
 
     fn configure_svg_renderer(&self, renderer: &mut SvgRenderer) {
@@ -67,7 +86,7 @@ impl DocumentCore {
     }
 
     pub fn render_page_svg_layer_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let layer_tree = self.build_page_layer_tree_for_output(page_num)?;
+        let layer_tree = self.build_page_layer_tree_for_output(page_num, RenderProfile::Print)?;
         let mut renderer = SvgLayerRenderer::new();
         renderer.configure_output(
             self.show_paragraph_marks,
@@ -80,7 +99,8 @@ impl DocumentCore {
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     pub fn render_page_png_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
-        let layer_tree = self.build_page_layer_tree_for_output(page_num)?;
+        let layer_tree =
+            self.build_page_layer_tree_for_output(page_num, RenderProfile::HighQuality)?;
         SkiaLayerRenderer::new()
             .render_png(&layer_tree)
             .map_err(HwpError::RenderError)
@@ -99,7 +119,10 @@ impl DocumentCore {
             Some("layer-svg")
         ) {
             let tree = self.build_page_tree_for_output(page_num)?;
-            let layer_tree = self.build_layer_tree_from_page_tree(&tree);
+            let layer_tree = self.build_layer_tree_from_page_tree(
+                &tree,
+                self.resolve_layer_render_profile(RenderProfile::Print),
+            );
 
             let mut layer_renderer = SvgLayerRenderer::new();
             layer_renderer.configure_output(
@@ -169,7 +192,7 @@ impl DocumentCore {
     }
 
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let layer_tree = self.build_page_layer_tree_for_output(page_num)?;
+        let layer_tree = self.build_page_layer_tree_for_output(page_num, RenderProfile::Screen)?;
         Ok(layer_tree.to_json())
     }
 
