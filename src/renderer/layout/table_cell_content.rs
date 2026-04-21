@@ -548,7 +548,19 @@ impl LayoutEngine {
             }
 
             // 셀 패딩 (apply_inner_margin 고려)
-            let (pad_left, pad_right, pad_top, _pad_bottom) = self.resolve_cell_padding(cell, table);
+            let (mut pad_left, mut pad_right, pad_top, _pad_bottom) = self.resolve_cell_padding(cell, table);
+
+            // 셀 내 문단 레이아웃
+            let composed_paras: Vec<_> = cell.paragraphs.iter()
+                .map(|p| compose_paragraph(p))
+                .collect();
+
+            // 텍스트 오버플로우 시 좌우 패딩 축소
+            let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
+                pad_left, pad_right, cell_w, &composed_paras, styles,
+            );
+            pad_left = new_pl;
+            pad_right = new_pr;
 
             let inner_x = cell_x + pad_left;
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
@@ -558,11 +570,6 @@ impl LayoutEngine {
                 width: inner_width,
                 height: cell_h,
             };
-
-            // 셀 내 문단 레이아웃
-            let composed_paras: Vec<_> = cell.paragraphs.iter()
-                .map(|p| compose_paragraph(p))
-                .collect();
 
             let mut para_y = cell_y + pad_top;
             let para_count = composed_paras.len();

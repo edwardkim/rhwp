@@ -743,6 +743,56 @@ impl LayoutEngine {
         (pad_left, pad_right, pad_top, pad_bottom)
     }
 
+    /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
+    /// composed 문단의 각 줄 텍스트 폭을 측정하여 최대값이 가용 폭을 초과하면
+    /// 패딩을 비례 축소한다 (최소 1px 보장).
+    pub(crate) fn shrink_cell_padding_for_overflow(
+        &self,
+        pad_left: f64,
+        pad_right: f64,
+        cell_w: f64,
+        composed_paras: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+    ) -> (f64, f64) {
+        let mut max_line_w = 0.0f64;
+        for comp in composed_paras {
+            for line in &comp.lines {
+                let mut w = 0.0;
+                for run in &line.runs {
+                    let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    // 자연 폭 측정: 음수 자간을 제거하여 글리프가 서로 겹치지 않는 최소 폭을 얻음
+                    if ts.letter_spacing < 0.0 {
+                        ts.letter_spacing = 0.0;
+                    }
+                    w += estimate_text_width(&run.text, &ts);
+                }
+                if w > max_line_w {
+                    max_line_w = w;
+                }
+            }
+        }
+        let available = (cell_w - pad_left - pad_right).max(0.0);
+        if max_line_w <= available || cell_w <= 2.0 {
+            return (pad_left, pad_right);
+        }
+        let min_pad = 1.0;
+        let total_pad = pad_left + pad_right;
+        let max_reducible = (total_pad - 2.0 * min_pad).max(0.0);
+        if max_reducible <= 0.0 {
+            return (pad_left, pad_right);
+        }
+        let deficit = max_line_w - available;
+        let reduction = deficit.min(max_reducible);
+        let new_total = total_pad - reduction;
+        let new_left = if total_pad > 0.0 {
+            pad_left * new_total / total_pad
+        } else {
+            new_total / 2.0
+        };
+        let new_right = new_total - new_left;
+        (new_left, new_right)
+    }
+
     /// 셀 배경 렌더링 (fill_color + pattern + gradient)
     pub(crate) fn render_cell_background(
         &self,
@@ -1008,15 +1058,22 @@ impl LayoutEngine {
             self.render_cell_background(tree, &mut cell_node, border_style, cell_x, cell_y, cell_w, cell_h);
 
             // 셀 패딩 (cell.padding이 0이면 table.padding fallback)
-            let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
-
-            let inner_x = cell_x + pad_left;
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
-            let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            let (mut pad_left, mut pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
 
             let mut composed_paras: Vec<_> = cell.paragraphs.iter()
                 .map(|p| compose_paragraph(p))
                 .collect();
+
+            // 텍스트 오버플로우 시 좌우 패딩 축소
+            let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
+                pad_left, pad_right, cell_w, &composed_paras, styles,
+            );
+            pad_left = new_pl;
+            pad_right = new_pr;
+
+            let inner_x = cell_x + pad_left;
+            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
 
             // AutoNumber(Page) 치환: 셀 내 쪽번호 필드를 현재 페이지 번호로 변환
             let current_pn = self.current_page_number.get();
