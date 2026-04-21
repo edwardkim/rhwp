@@ -144,7 +144,8 @@ export class CanvasKitLayerRenderer {
     this.lastTargetCanvas = targetCanvas;
     this.lastScale = scale;
 
-    const surface = this.canvasKit.MakeSWCanvasSurface(targetCanvas);
+    const surface = this.canvasKit.MakeCanvasSurface(targetCanvas)
+      ?? this.canvasKit.MakeSWCanvasSurface(targetCanvas);
     if (!surface) {
       throw new Error('CanvasKit surface 생성 실패');
     }

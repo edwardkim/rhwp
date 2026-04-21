@@ -240,6 +240,9 @@ export class CanvasView {
   refreshPages(): void {
     if (this.pages.length === 0) return;
 
+    this.pageRenderer.cancelAll();
+    this.pageRenderer.clearLayerTreeCache();
+
     // 페이지 정보 재수집 (페이지 수/크기가 변경될 수 있음)
     const pageCount = this.wasm.pageCount;
     this.pages = [];
@@ -255,13 +258,13 @@ export class CanvasView {
 
     // 보이는 페이지 재렌더링
     this.canvasPool.releaseAll();
-    this.pageRenderer.cancelAll();
     this.updateVisiblePages();
   }
 
   /** 리소스를 정리한다 */
   private reset(): void {
     this.pageRenderer.cancelAll();
+    this.pageRenderer.clearLayerTreeCache();
     this.canvasPool.releaseAll();
     this.currentVisiblePages = [];
     this.pages = [];

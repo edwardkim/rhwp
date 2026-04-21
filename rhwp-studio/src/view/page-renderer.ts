@@ -1,10 +1,11 @@
 import { WasmBridge } from '@/core/wasm-bridge';
-import type { PageInfo } from '@/core/types';
+import type { PageInfo, PageLayerTree } from '@/core/types';
 import { CanvasKitLayerRenderer } from './canvaskit-renderer';
 import { clampRenderScale, type RenderBackend } from './render-backend';
 
 export class PageRenderer {
   private reRenderTimers = new Map<number, ReturnType<typeof setTimeout>[]>();
+  private layerTreeCache = new Map<number, PageLayerTree>();
 
   constructor(
     private wasm: WasmBridge,
@@ -42,7 +43,12 @@ export class PageRenderer {
 
     canvas.width = Math.max(1, Math.floor(pageInfo.width * appliedScale));
     canvas.height = Math.max(1, Math.floor(pageInfo.height * appliedScale));
-    this.canvaskitRenderer.renderPage(this.wasm.getPageLayerTree(pageIdx), canvas, appliedScale);
+    let layerTree = this.layerTreeCache.get(pageIdx);
+    if (!layerTree) {
+      layerTree = this.wasm.getPageLayerTree(pageIdx);
+      this.layerTreeCache.set(pageIdx, layerTree);
+    }
+    this.canvaskitRenderer.renderPage(layerTree, canvas, appliedScale);
     return appliedScale;
   }
 
@@ -134,5 +140,9 @@ export class PageRenderer {
       for (const t of timers) clearTimeout(t);
     }
     this.reRenderTimers.clear();
+  }
+
+  clearLayerTreeCache(): void {
+    this.layerTreeCache.clear();
   }
 }
