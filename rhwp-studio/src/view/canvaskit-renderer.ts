@@ -144,12 +144,20 @@ export class CanvasKitLayerRenderer {
     this.lastTargetCanvas = targetCanvas;
     this.lastScale = scale;
 
-    const surface = this.canvasKit.MakeCanvasSurface(targetCanvas)
-      ?? this.canvasKit.MakeSWCanvasSurface(targetCanvas);
+    let surface: Surface | null = null;
+    let usedGpuSurface = false;
+    try {
+      surface = this.canvasKit.MakeCanvasSurface(targetCanvas);
+      usedGpuSurface = surface !== null;
+    } catch {
+      surface = null;
+    }
+    surface ??= this.canvasKit.MakeSWCanvasSurface(targetCanvas);
     if (!surface) {
       throw new Error('CanvasKit surface 생성 실패');
     }
 
+    let renderError: unknown = null;
     try {
       const canvas = surface.getCanvas();
       canvas.clear(this.canvasKit.TRANSPARENT);
@@ -159,8 +167,36 @@ export class CanvasKitLayerRenderer {
       canvas.restore();
       surface.flush();
       this.renderFallbackOverlays(tree.root, targetCanvas, scale);
+    } catch (error) {
+      renderError = error;
     } finally {
       surface.delete();
+    }
+
+    if (!renderError) {
+      return;
+    }
+
+    if (!usedGpuSurface) {
+      throw renderError;
+    }
+
+    const fallbackSurface = this.canvasKit.MakeSWCanvasSurface(targetCanvas);
+    if (!fallbackSurface) {
+      throw renderError;
+    }
+
+    try {
+      const canvas = fallbackSurface.getCanvas();
+      canvas.clear(this.canvasKit.TRANSPARENT);
+      canvas.save();
+      canvas.scale(scale, scale);
+      this.renderNode(canvas, tree.root);
+      canvas.restore();
+      fallbackSurface.flush();
+      this.renderFallbackOverlays(tree.root, targetCanvas, scale);
+    } finally {
+      fallbackSurface.delete();
     }
   }
 
