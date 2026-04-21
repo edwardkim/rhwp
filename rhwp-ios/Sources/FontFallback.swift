@@ -1,10 +1,9 @@
-// 폰트 폴백 매핑 — HWP 폰트명 → iOS 시스템 폰트
+// 폰트 폴백 매핑 — HWP 폰트명 → Apple 플랫폼 시스템 폰트
 // 참조: mydocs/tech/font_fallback_strategy.md
 
 import CoreText
-import UIKit
 
-/// HWP 폰트명을 iOS에서 사용 가능한 폰트명으로 변환한다.
+/// HWP 폰트명을 Apple 플랫폼에서 사용 가능한 폰트명으로 변환한다.
 func resolveIOSFont(hwpFontFamily: String, bold: Bool, italic: Bool) -> CTFont {
     let iosName = mapHWPFontToIOS(hwpFontFamily)
     let size: CGFloat = 1.0 // 크기는 호출 측에서 설정
@@ -21,7 +20,7 @@ func resolveIOSFont(hwpFontFamily: String, bold: Bool, italic: Bool) -> CTFont {
     return CTFontCreateWithName("AppleSDGothicNeo-Regular" as CFString, size, nil)
 }
 
-/// HWP 폰트명 → iOS 폰트명 매핑
+/// HWP 폰트명 → Apple 플랫폼 폰트명 매핑
 func mapHWPFontToIOS(_ hwpFont: String) -> String {
     // 정확한 매핑
     switch hwpFont {

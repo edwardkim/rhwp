@@ -2,9 +2,10 @@
 // 3a단계: 도형(rect, line, ellipse, path) + 이미지 + 표 테두리
 // 3b단계: 텍스트(Core Text + 폰트 폴백) — 별도 구현 예정
 
-import UIKit
 import CoreGraphics
 import CoreText
+import Foundation
+import ImageIO
 
 @MainActor
 class CGTreeRenderer {
@@ -16,8 +17,7 @@ class CGTreeRenderer {
     func render(tree: RenderNode, in context: CGContext, pageHeight: Double, document: RhwpDocument?) {
         self.document = document
         self.pageHeight = pageHeight
-        // UIView.draw()에서 호출될 때 UIKit이 이미 좌상단 원점 좌표계를 설정한다.
-        // 즉 CGContext의 CTM이 translateBy(y: viewHeight) + scaleBy(y: -1) 상태.
+        // 호출 측은 좌상단 원점 좌표계로 CGContext를 전달한다.
         // 렌더 트리의 좌표(좌상단 원점)를 그대로 사용할 수 있다.
         // 단, Core Text와 CGImage는 원본 CG 좌표계(좌하단)를 기대하므로
         // 해당 요소에서만 국소적으로 좌표를 조정한다.
@@ -36,7 +36,7 @@ class CGTreeRenderer {
         switch node.nodeType {
         case .page:
             // 페이지 배경 (흰색)
-            ctx.setFillColor(UIColor.white.cgColor)
+            ctx.setFillColor(CGColor(gray: 1.0, alpha: 1.0))
             ctx.fill(cgRect(node.bbox))
             renderChildren(node, in: ctx)
 
@@ -78,13 +78,13 @@ class CGTreeRenderer {
         case .image(let img):
             renderImage(img, bbox: node.bbox, in: ctx)
 
-        case .group(let grp):
+        case .group:
             renderGroup(node, in: ctx)
 
         case .textRun(let run):
             renderTextRun(run, bbox: node.bbox, in: ctx)
 
-        case .equation(let eq):
+        case .equation:
             // M3에서 네이티브 수식 렌더링 예정
             break
 
@@ -215,7 +215,7 @@ class CGTreeRenderer {
                 path.addCurve(to: CGPoint(x: x, y: y),
                               control1: CGPoint(x: x1, y: y1),
                               control2: CGPoint(x: x2, y: y2))
-            case .arcTo(let rx, let ry, let xRot, let largeArc, let sweep, let x, let y):
+            case .arcTo(_, _, _, _, _, let x, let y):
                 path.addLine(to: CGPoint(x: x, y: y))
             case .closePath:
                 path.closeSubpath()
@@ -234,8 +234,8 @@ class CGTreeRenderer {
             cgImage = cached
         } else {
             guard let data = doc.imageData(binDataId: img.binDataId),
-                  let uiImage = UIImage(data: data),
-                  let cg = uiImage.cgImage else { return }
+                  let source = CGImageSourceCreateWithData(data as CFData, nil),
+                  let cg = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return }
             imageCache[img.binDataId] = cg
             cgImage = cg
         }
@@ -335,13 +335,13 @@ class CGTreeRenderer {
 
         // 속성 구성
         var attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: UIColor(cgColor: colorRefToCGColor(style.color)),
+            coreTextFontKey: font,
+            coreTextForegroundColorKey: colorRefToCGColor(style.color),
         ]
 
         // 자간 (letter_spacing)
         if style.letterSpacing != 0 {
-            attributes[.kern] = CGFloat(style.letterSpacing)
+            attributes[coreTextKernKey] = CGFloat(style.letterSpacing)
         }
 
         let attrStr = NSAttributedString(string: run.text, attributes: attributes)
@@ -391,8 +391,8 @@ class CGTreeRenderer {
         let iosName = mapHWPFontToIOS(marker.fontFamily)
         let font = CTFontCreateWithName(iosName as CFString, fontSize, nil)
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: UIColor(cgColor: colorRefToCGColor(marker.color)),
+            coreTextFontKey: font,
+            coreTextForegroundColorKey: colorRefToCGColor(marker.color),
         ]
         let attrStr = NSAttributedString(string: marker.text, attributes: attributes)
         let line = CTLineCreateWithAttributedString(attrStr)
@@ -514,6 +514,18 @@ class CGTreeRenderer {
         let g = CGFloat((ref >> 8) & 0xFF) / 255.0
         let b = CGFloat((ref >> 16) & 0xFF) / 255.0
         return CGColor(red: r, green: g, blue: b, alpha: 1.0)
+    }
+
+    private var coreTextForegroundColorKey: NSAttributedString.Key {
+        NSAttributedString.Key(kCTForegroundColorAttributeName as String)
+    }
+
+    private var coreTextFontKey: NSAttributedString.Key {
+        NSAttributedString.Key(kCTFontAttributeName as String)
+    }
+
+    private var coreTextKernKey: NSAttributedString.Key {
+        NSAttributedString.Key(kCTKernAttributeName as String)
     }
 
     private func cgRect(_ bbox: BBox) -> CGRect {
