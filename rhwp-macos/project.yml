@@ -17,12 +17,15 @@ targets:
     dependencies:
       - target: QLExtension
         embed: true
+      - target: ThumbnailExtension
+        embed: true
     settings:
       base:
         PRODUCT_NAME: HWP Quick Look
         PRODUCT_BUNDLE_IDENTIFIER: com.postmelee.rhwpmac
         INFOPLIST_FILE: Sources/HostApp/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/HostApp/HostApp.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
 
   QLExtension:
@@ -30,6 +33,7 @@ targets:
     platform: macOS
     sources:
       - path: Sources/QLExtension
+      - path: Sources/Shared
       - path: ../rhwp-ios/Sources/RhwpDocument.swift
       - path: ../rhwp-ios/Sources/RenderTree.swift
       - path: ../rhwp-ios/Sources/FontFallback.swift
@@ -44,4 +48,26 @@ targets:
         INFOPLIST_FILE: Sources/QLExtension/Info.plist
         SWIFT_OBJC_BRIDGING_HEADER: ../rhwp-ios/Sources/rhwp-Bridging-Header.h
         CODE_SIGN_ENTITLEMENTS: Sources/QLExtension/QLExtension.entitlements
+        CODE_SIGN_STYLE: Automatic
+
+  ThumbnailExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Sources/ThumbnailExtension
+      - path: Sources/Shared
+      - path: ../rhwp-ios/Sources/RhwpDocument.swift
+      - path: ../rhwp-ios/Sources/RenderTree.swift
+      - path: ../rhwp-ios/Sources/FontFallback.swift
+      - path: ../rhwp-ios/Sources/CGTreeRenderer.swift
+    dependencies:
+      - framework: Frameworks/Rhwp.xcframework
+        embed: false
+    settings:
+      base:
+        PRODUCT_NAME: HWP Quick Look Thumbnail
+        PRODUCT_BUNDLE_IDENTIFIER: com.postmelee.rhwpmac.ThumbnailExtension
+        INFOPLIST_FILE: Sources/ThumbnailExtension/Info.plist
+        SWIFT_OBJC_BRIDGING_HEADER: ../rhwp-ios/Sources/rhwp-Bridging-Header.h
+        CODE_SIGN_ENTITLEMENTS: Sources/ThumbnailExtension/ThumbnailExtension.entitlements
         CODE_SIGN_STYLE: Automatic
