@@ -14,16 +14,24 @@ targets:
     platform: macOS
     sources:
       - path: Sources/HostApp
+      - path: Sources/Shared
+      - path: ../rhwp-ios/Sources/RhwpDocument.swift
+      - path: ../rhwp-ios/Sources/RenderTree.swift
+      - path: ../rhwp-ios/Sources/FontFallback.swift
+      - path: ../rhwp-ios/Sources/CGTreeRenderer.swift
     dependencies:
       - target: QLExtension
         embed: true
       - target: ThumbnailExtension
         embed: true
+      - framework: Frameworks/Rhwp.xcframework
+        embed: false
     settings:
       base:
         PRODUCT_NAME: HWP Quick Look
         PRODUCT_BUNDLE_IDENTIFIER: com.postmelee.rhwpmac
         INFOPLIST_FILE: Sources/HostApp/Info.plist
+        SWIFT_OBJC_BRIDGING_HEADER: ../rhwp-ios/Sources/rhwp-Bridging-Header.h
         CODE_SIGN_ENTITLEMENTS: Sources/HostApp/HostApp.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic

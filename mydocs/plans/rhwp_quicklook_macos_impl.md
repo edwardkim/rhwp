@@ -7,7 +7,7 @@
 | 프로젝트 성격 | **포크 내 디렉토리 추가** (`postmelee/rhwp` fork, macOS 통합 기준 `macos/devel`) |
 | 앱 번들 표시명 | "HWP Quick Look" (잠정) |
 | 배포 목표 | Homebrew cask (`.app` 배포) |
-| 최종 사용자 기능 | ① Finder Quick Look (스페이스바) ② Finder 썸네일 |
+| 최종 사용자 기능 | ① Finder Quick Look (스페이스바) ② Finder 썸네일 ③ macOS HostApp 문서 Viewer |
 | 개발 전제 | 무료 Apple ID로 로컬 본인 Mac 테스트까지 완결. 공증/배포는 별도 후속 트랙 |
 | 업스트림 고정 SHA | `34b6e20af37209b0df943acd30a67afdf6a84a2b` (edwardkim/rhwp@ios/devel, 2026-04-20 07:04 UTC) |
 | 업스트림 라이선스 | MIT (Copyright (c) 2025-2026 Edward Kim) |
@@ -22,7 +22,7 @@
 | **현재 작업 브랜치** | `local/task3` (from `macos/devel`) |
 | **번들 ID 접두사** | `com.postmelee.rhwpmac` |
 | **UTI 네임스페이스** | Exporter: `com.postmelee.rhwpmac.hwp[x]` / Importer 참조: `com.hancom.hwp[x]` |
-| 예상 총 공수 | **7.5~12일** (단독 작업자 기준) |
+| 예상 총 공수 | **8.5~14일** (단독 작업자 기준) |
 
 ## 포크 기반 + git worktree 전략 요약
 
@@ -79,6 +79,30 @@ local/task3           ← issue #3 작업 브랜치 (macos/devel에서 분기)
 | `rhwp-ios/project.yml` | ✅ XcodeGen 기반 iOS 프로젝트 |
 | `rhwp-ios/Sources/` 공유 4종 | `RhwpDocument.swift`, `RenderTree.swift`, `FontFallback.swift`, `CGTreeRenderer.swift` (19,196B) |
 | `rhwp-ios/Resources/sample.hwpx` | ✅ 번들 샘플 존재 |
+
+### 6. 업스트림 iOS 앱 기능 수준 (2026-04-22 추가 재검토)
+
+`edwardkim/rhwp@ios/devel`의 iOS 앱은 현재 **편집 앱이 아니라 Viewer 앱**이다.
+
+근거:
+- Swift 앱은 `UIDocumentPickerViewController(forOpeningContentTypes:)`로 HWP/HWPX 파일을 여는 경로만 제공한다.
+- `DocumentViewModel`은 `loadDocument`, `loadSampleFromBundle`, `loadPage`, `unloadPage` 중심이며 편집 상태, dirty flag, 저장/export UI가 없다.
+- `src/ios_ffi.rs`가 iOS로 노출하는 C ABI는 `rhwp_open`, `rhwp_page_count`, `rhwp_page_size`, `rhwp_render_page_svg`, `rhwp_render_page_tree`, `rhwp_image_data`, `rhwp_close` 등 읽기/렌더링 함수뿐이다.
+- Rust core에는 `insert_text_native`, `delete_text_native`, `export_hwp_native`, `export_hwpx_native`, `convert_to_editable_native` 같은 편집/직렬화 기능이 있으나, 현재 iOS FFI와 Swift UI에는 연결되어 있지 않다.
+
+따라서 macOS HostApp의 기능 parity 기준은 다음으로 정의한다.
+
+| 기능 | iOS upstream | macOS 목표 |
+|------|-------------|------------|
+| 번들 샘플 자동 로드 | 지원 | 지원 |
+| 로컬 HWP/HWPX 열기 | 지원 | 지원 (`NSOpenPanel`) |
+| 다중 페이지 렌더링 | 지원 | 지원 |
+| 페이지 lazy load/cache | 지원 | 지원 |
+| 팬/스크롤 | 지원 | 지원 |
+| 확대/축소 | 지원 | 지원 |
+| 현재/전체 페이지 표시 | 지원 | 지원 |
+| 텍스트/개체 편집 | 미지원 | 미지원 (별도 이슈) |
+| 저장/export | 미지원 | 미지원 (별도 이슈) |
 
 ## 아키텍처 개요
 
@@ -152,7 +176,7 @@ postmelee/rhwp (포크, macOS 기준 macos/devel / 작업 local/task3)
 
 ---
 
-## 단계별 구현 계획 (Stage 0~6)
+## 단계별 구현 계획 (Stage 0~7)
 
 ---
 
@@ -503,7 +527,55 @@ postmelee/rhwp (포크, macOS 기준 macos/devel / 작업 local/task3)
 
 ---
 
-### Stage 6 — 릴리스 패키징 + Homebrew cask 초안
+### Stage 6 — macOS HostApp Viewer parity
+
+**목적**: upstream iOS 앱의 Viewer 기능 수준을 macOS HostApp에도 구현한다. Quick Look 설치 상태 앱에 머물지 않고, 앱을 직접 실행했을 때 HWP/HWPX 문서를 열어 다중 페이지로 볼 수 있게 한다.
+
+**범위**:
+- 편집/저장/export는 제외한다. upstream iOS 앱에도 아직 연결되지 않은 기능이므로 별도 이슈로 분리한다.
+- 기존 Quick Look Preview/Thumbnail Extension 기능은 유지한다.
+- 기존 공유 Swift 렌더러와 Rust FFI 8종을 그대로 사용한다.
+
+**작업 내용**:
+
+1. `project.yml`에서 HostApp도 공유 렌더링 소스와 `Rhwp.xcframework`에 링크한다.
+
+2. HostApp 구조 분리
+   - `HostApp.swift`: 앱 entry + command/menu wiring
+   - `Views/ContentView.swift`: root layout
+   - `Views/DocumentViewerView.swift`: 문서 화면
+   - `Views/DocumentPageView.swift`: `NSViewRepresentable` 기반 페이지 canvas
+   - `Stores/DocumentViewerStore.swift`: 문서 로드, 페이지 cache, 현재 페이지, zoom 상태
+   - `Services/DocumentOpenPanel.swift`: `NSOpenPanel` 파일 선택
+   - `Services/ExtensionStatusModel.swift`: Stage 5 등록 상태 확인
+   - `Support/BuildInfo.swift`: 버전 표시
+
+3. Viewer 기능
+   - 앱 실행 시 번들 `sample.hwpx` 자동 로드
+   - `NSOpenPanel`로 `.hwp`, `.hwpx` 열기
+   - 다중 페이지 세로 스크롤
+   - `onAppear`/`onDisappear` 기반 페이지 lazy load/cache
+   - zoom in/out/reset 및 slider
+   - 현재 페이지/전체 페이지 표시
+   - 에러/로딩 상태 표시
+
+4. Quick Look 상태 UI는 사이드/하단 정보로 유지한다.
+
+**검증 기준**:
+- [ ] HostApp Debug 빌드 통과
+- [ ] 앱 실행 시 `sample.hwpx` 자동 로드
+- [ ] `samples/basic/KTX.hwp` 열기 성공
+- [ ] 다중 페이지 스크롤 가능
+- [ ] zoom in/out/reset 동작
+- [ ] 현재 페이지/전체 페이지 표시
+- [ ] Preview/Thumbnail 등록 상태 표시 유지
+- [ ] Finder Quick Look/Thumbnail Stage 4~5 회귀 없음
+
+**예상 공수**: 1~2일
+
+---
+
+### Stage 7 — 릴리스 패키징 + Homebrew cask 초안
 
 **목적**: 재현 가능한 배포 산출물 생성.
 
@@ -547,8 +619,9 @@ postmelee/rhwp (포크, macOS 기준 macos/devel / 작업 local/task3)
 | 3 | Swift 코어 포팅 (원본 수정 + iOS 검증) | 2~3일 |
 | 4 | QL Extension + UTI + 크기 가드 | 2~3일 |
 | 5 | Thumbnail + HostApp UI | 1~2일 |
-| 6 | 릴리스 + cask 초안 | 1~2일 |
-| **합계** | | **7.5 ~ 12.5일** |
+| 6 | macOS HostApp Viewer parity | 1~2일 |
+| 7 | 릴리스 + cask 초안 | 1~2일 |
+| **합계** | | **8.5 ~ 14.5일** |
 
 ## 리스크 & 대응
 
