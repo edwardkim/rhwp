@@ -286,10 +286,10 @@ node e2e/text-flow.test.mjs              # 개별 테스트 실행
 
 ### 8.2 모드
 
-| 모드 | 용도 | 명령 |
-|------|------|------|
-| `--mode=headless` | CI 자동화 | WSL2 내부 Chrome |
-| `--mode=host` | 시각 확인 | 호스트 Windows Chrome CDP |
+| 모드 | 용도 | 실행 환경 |
+|------|------|----------|
+| `--mode=headless` | CI 자동화 | 로컬/컨테이너 내부 헤드리스 Chrome (Puppeteer 번들) |
+| `--mode=host` | 시각 확인 | 호스트 브라우저 (Windows Chrome / macOS Chrome / Linux Chromium) CDP 연결 |
 
 ### 8.3 새 E2E 테스트 작성
 

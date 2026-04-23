@@ -1,7 +1,7 @@
 # #196 최종 보고서 — rhwp-studio HWPX 저장 비활성화 + 사용자 안내
 
 - **타스크**: [#196](https://github.com/edwardkim/rhwp/issues/196)
-- **마일스톤**: M100 (v0.2.0 — 확장) / 0.7.3 (라이브러리)
+- **마일스톤**: M100 (v0.2.1 — 확장) / 0.7.3 (라이브러리)
 - **브랜치**: `local/task196`
 - **기간**: 2026-04-19 (단일일)
 - **상태**: **완료** ✅
@@ -10,7 +10,7 @@
 
 #178 두 번째 시도가 한컴 호환 실패로 마무리되면서 후속 이슈로 분리됐고, 본 #196 은 그 동안 사용자 데이터 손상을 막기 위해 **HWPX 출처 문서의 저장을 UI 차원에서 비활성화** + **다층 안내** 제공.
 
-추가로 검증 사이클에서 발견된 부수 fix 6건 (토스트 UX, about-dialog ReferenceError, 브랜딩, 별도 이슈 분리) 도 함께 처리. 본 v0.2.0 배포의 사용자 인지 가치 향상.
+추가로 검증 사이클에서 발견된 부수 fix 6건 (토스트 UX, about-dialog ReferenceError, 브랜딩, 별도 이슈 분리) 도 함께 처리. 본 v0.2.1 배포의 사용자 인지 가치 향상.
 
 ## 2. 진척 측정
 
@@ -51,7 +51,7 @@
 | 토스트 타이밍 | 모달 충돌 회피 (모달 닫힌 후 토스트) + z-index 21000 |
 | 토스트 동작 | 자동 페이드 제거 + 명시 [확인] 버튼 |
 | `about-dialog` ReferenceError | rhwp-chrome/vite.config.ts 에 `__APP_VERSION__` define 추가 |
-| 버전 이원화 | rhwp-studio 0.7.3 / 확장 0.2.0 (동기화 정책 분리) |
+| 버전 이원화 | rhwp-studio 0.7.3 / 확장 0.2.1 (동기화 정책 분리) |
 | about-dialog 브랜딩 | 한글 제품명 "HWP 오픈소스 편집" + 카피라이트 "© 2026 rhwp: Edward Kim" |
 | 인쇄 미리보기 줌 | 별도 이슈 [#199](https://github.com/edwardkim/rhwp/issues/199) 분리 |
 
@@ -106,7 +106,7 @@
 
 ## 7. 본 작업의 폭넓은 가치
 
-원래 단순 "저장 비활성화 + 안내" 작업이었으나 검증 사이클에서 발견된 부수 fix 6건이 본 v0.2.0 배포의 사용자 인지 가치를 크게 향상:
+원래 단순 "저장 비활성화 + 안내" 작업이었으나 검증 사이클에서 발견된 부수 fix 6건이 본 v0.2.1 배포의 사용자 인지 가치를 크게 향상:
 
 - HWPX 데이터 손상 방지 (본 #196)
 - 일반 다운로드 위치 기억 복원 ([#198](https://github.com/edwardkim/rhwp/issues/198))
@@ -127,6 +127,6 @@
 
 ## 9. 다음 작업
 
-- v0.2.0 배포 (Chrome Web Store + Microsoft Edge Add-ons)
+- v0.2.1 배포 (Chrome Web Store + Microsoft Edge Add-ons)
 - chrome-ext-update-01 (What's New) 별도 이슈 등록 후 진행
 - #197 (HWPX→HWP 완전 변환기) — M101 또는 다음 패치

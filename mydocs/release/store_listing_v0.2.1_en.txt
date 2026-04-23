@@ -1,0 +1,77 @@
+[Chrome Web Store / Edge Add-ons — English Listing]
+
+■ Name
+
+rhwp - HWP Document Viewer & Editor
+
+
+■ Short description (summary)
+
+View and edit HWP/HWPX (Korean Hangul) documents directly in your browser. Free, ad-free, open source.
+
+
+■ Detailed description
+
+Install once, then view and edit Korean Hangul (HWP/HWPX) documents right in your browser.
+
+[Key Features]
+• View without installation — just install the extension and click any HWP file to open it in a viewer tab
+• Editing — text input/modification, table editing, formatting
+• Print — Ctrl+P to print or save as PDF
+• Auto-detect — icon automatically appears next to HWP links on web pages
+• Context menu — right-click HWP links → "Open with rhwp"
+• Privacy — files are never sent to any server, all processing happens locally in browser via WASM
+• Free — MIT licensed, free for personal and commercial use
+• No ads
+
+[v0.2.1 Highlights]
+• Restored "remember last save location" for general file downloads (chrome-fd-001)
+• Options page now works correctly (CSP fix)
+• HWP files: Ctrl+S now overwrites the same file directly (external contribution)
+• HWPX files: beta notice with save disabled (prevents data loss)
+• Rotated shape resize cursor + Flip handling improved (external contribution)
+• Stabilized downloads on some Korean government sites (DEXT5-style handlers)
+• Product info / version display fixes
+
+[Known Limitations]
+• Direct HWPX save is currently in beta and disabled (full support coming in next update)
+• If the print preview window appears too large, press Ctrl+0 to reset zoom
+
+[Thanks to Contributors]
+ahnbu, bapdodi, dreamworker0, marsimon, postmelee, seunghan91
+
+[Full Changelog]
+https://github.com/edwardkim/rhwp/releases
+
+[Source Code / Issue Reports]
+https://github.com/edwardkim/rhwp
+
+
+■ Category
+
+Productivity
+
+
+■ Search keywords
+
+HWP viewer, HWPX viewer, Hangul viewer, HWP editor, Korean Hangul document, HWP file, hancom
+
+
+■ Privacy policy URL
+
+https://github.com/edwardkim/rhwp/blob/main/rhwp-chrome/PRIVACY.md
+
+
+■ Permission justifications
+
+• activeTab — needed to detect HWP links on the current tab
+• downloads — to automatically open HWP downloads in the built-in viewer
+• contextMenus — provides "Open with rhwp" right-click menu on HWP links
+• clipboardWrite — copy selected content from documents
+• storage — saves user preferences (auto-open ON/OFF, etc.)
+• host_permissions (<all_urls>) — detect HWP links on any web page (no personal data collected)
+
+
+■ Uses remote code
+
+No. All code is bundled in the extension package; nothing is downloaded externally at runtime.

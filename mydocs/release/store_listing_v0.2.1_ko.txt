@@ -1,0 +1,77 @@
+[Chrome Web Store / Edge Add-ons — 한국어 등록 정보]
+
+▣ 이름
+
+rhwp - HWP 문서 뷰어 & 에디터
+
+
+▣ 짧은 설명 (요약)
+
+브라우저에서 HWP/HWPX 한글 문서를 바로 열고 편집. 무료, 광고 없음, 오픈소스.
+
+
+▣ 상세 설명
+
+설치 한 번이면 한글(HWP/HWPX) 문서를 브라우저에서 바로 열고 편집할 수 있습니다.
+
+[주요 기능]
+• 설치 없이 열기 - 확장만 설치하면 HWP 파일을 클릭만으로 뷰어 탭에서 열람
+• 편집 지원 - 텍스트 입력/수정, 표 편집, 서식 변경
+• 인쇄 - Ctrl+P로 인쇄, PDF 저장 가능
+• 자동 감지 - 웹페이지의 HWP 링크 옆에 아이콘 자동 표시
+• 우클릭 메뉴 - HWP 링크 우클릭 → "rhwp로 열기"
+• 개인정보 보호 - 파일이 서버로 전송되지 않음, 모든 처리는 브라우저 내 WASM
+• 무료 - MIT 라이선스, 개인/기업 모두 무료
+• 광고 없음
+
+[v0.2.1 주요 변경]
+• 일반 파일 다운로드의 "마지막 저장 위치 기억" 동작 복원 (chrome-fd-001)
+• 옵션 페이지 동작 정상화 (CSP 호환 수정)
+• HWP 파일 Ctrl+S 시 같은 파일에 직접 덮어쓰기 지원 (외부 기여)
+• HWPX 파일 열람 시 베타 안내 + 저장 비활성화 (데이터 손상 방지)
+• 회전된 도형 리사이즈 + Flip 처리 개선 (외부 기여)
+• 일부 관공서 사이트 (DEXT5 류) 다운로드 안정화
+• 제품 정보/버전 표시 정상화
+
+[알려진 한계]
+• HWPX 직접 저장은 현재 베타 단계로 비활성화 (다음 업데이트에서 지원 예정)
+• 인쇄 미리보기 창의 줌이 비정상적으로 크면 Ctrl+0으로 리셋 가능
+
+[기여해주신 분들]
+ahnbu, bapdodi, dreamworker0, marsimon, postmelee, seunghan91
+
+[전체 변경 이력]
+https://github.com/edwardkim/rhwp/releases
+
+[소스 코드 / 이슈 보고]
+https://github.com/edwardkim/rhwp
+
+
+▣ 카테고리
+
+생산성
+
+
+▣ 검색어
+
+HWP 뷰어, HWP viewer, HWPX viewer, 한글 뷰어, HWP editor, 한글 문서 열기, HWP 파일
+
+
+▣ 개인정보처리방침 URL
+
+https://github.com/edwardkim/rhwp/blob/main/rhwp-chrome/PRIVACY.md
+
+
+▣ 권한 사용 근거
+
+• activeTab — 현재 탭의 HWP 링크 감지에 필요
+• downloads — HWP 파일 다운로드 시 자체 뷰어로 자동 열기
+• contextMenus — HWP 링크 우클릭 메뉴 "rhwp로 열기" 제공
+• clipboardWrite — 문서 내 선택 영역 복사 기능
+• storage — 사용자 설정 (자동 열기 ON/OFF 등) 저장
+• host_permissions (<all_urls>) — 모든 웹페이지에서 HWP 링크 감지 (개인정보 미수집)
+
+
+▣ 원격 코드 사용
+
+아니오. 모든 코드는 확장 패키지에 포함되며 외부에서 다운로드하지 않습니다.

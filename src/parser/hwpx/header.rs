@@ -12,6 +12,50 @@ use crate::model::style::*;
 use super::HwpxError;
 use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool};
 
+/// `<hh:strikeout shape="..."/>` 의 shape 값이 실제 렌더링되는 취소선인지
+/// 판정한다 (화이트리스트).
+///
+/// ## 배경
+///
+/// 한컴오피스 HWPX 익스포터는 본문 charPr 정의에 `<hh:strikeout shape="3D"/>`
+/// 를 placeholder 기본값으로 넣어두는 경우가 많다. "3D"는 OWPML 스펙상
+/// 유효한 취소선 모양이 아니며, 한컴 뷰어에서도 취소선으로 그리지 않는다.
+/// 따라서 이를 진짜 strikethrough로 해석하면 정상 본문 전체가 취소선으로
+/// 렌더링되는 버그가 생긴다.
+///
+/// 또한 한컴이 향후 다른 placeholder 값("Ghost", "4D" 등)을 추가할 가능성이
+/// 있으므로, 블랙리스트(\"NONE\" | \"3D\" 제외)보다는 화이트리스트가 더
+/// 안전하다. 알 수 없는 값은 fail-closed로 no-strike 처리한다.
+///
+/// ## 허용 값
+///
+/// 본 함수가 `true`를 반환하는 값은 OWPML `LineSym2` 열거(표 27 선 종류)와
+/// shape.rs 의 `strike_shape` 매핑 표에서 모두 실제 선으로 인정되는 13종:
+///
+/// `SOLID`, `DASH`, `DOT`, `DASH_DOT`, `DASH_DOT_DOT`, `LONG_DASH`,
+/// `CIRCLE`, `DOUBLE_SLIM`, `SLIM_THICK`, `THICK_SLIM`, `SLIM_THICK_SLIM`,
+/// `WAVE`, `DOUBLE_WAVE`.
+///
+/// `NONE`, `3D`, 기타 모든 값은 `false` (취소선 없음).
+pub(crate) fn is_real_strike_shape(shape: &str) -> bool {
+    matches!(
+        shape,
+        "SOLID"
+            | "DASH"
+            | "DOT"
+            | "DASH_DOT"
+            | "DASH_DOT_DOT"
+            | "LONG_DASH"
+            | "CIRCLE"
+            | "DOUBLE_SLIM"
+            | "SLIM_THICK"
+            | "THICK_SLIM"
+            | "SLIM_THICK_SLIM"
+            | "WAVE"
+            | "DOUBLE_WAVE"
+    )
+}
+
 /// header.xml을 파싱하여 DocInfo와 DocProperties를 생성한다.
 pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxError> {
     let mut doc_info = DocInfo::default();
@@ -289,8 +333,12 @@ fn parse_char_shape(
                                 match attr.key.as_ref() {
                                     b"shape" => {
                                         let val = attr_str(&attr);
-                                        // 유효한 취소선: NONE/3D 이외의 선 스타일
-                                        cs.strikethrough = !matches!(val.as_str(), "NONE" | "3D");
+                                        // 화이트리스트 방식: 한컴이 실제 렌더링하는
+                                        // OWPML LineSym2 값만 취소선으로 인정한다.
+                                        // "NONE", "3D" 같은 placeholder 및 알 수 없는
+                                        // 값은 fail-closed로 no-strike 처리.
+                                        // is_real_strike_shape() 독스트링 참고.
+                                        cs.strikethrough = is_real_strike_shape(&val);
                                         cs.strike_shape = match val.as_str() {
                                             "SOLID" => 0,
                                             "DASH" => 1,
@@ -1142,5 +1190,52 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn test_is_real_strike_shape_valid_shapes() {
+        // OWPML LineSym2 전체 — 모두 true
+        for shape in &[
+            "SOLID",
+            "DASH",
+            "DOT",
+            "DASH_DOT",
+            "DASH_DOT_DOT",
+            "LONG_DASH",
+            "CIRCLE",
+            "DOUBLE_SLIM",
+            "SLIM_THICK",
+            "THICK_SLIM",
+            "SLIM_THICK_SLIM",
+            "WAVE",
+            "DOUBLE_WAVE",
+        ] {
+            assert!(
+                is_real_strike_shape(shape),
+                "{} should be a real strike shape",
+                shape
+            );
+        }
+    }
+
+    #[test]
+    fn test_is_real_strike_shape_placeholder_none() {
+        assert!(!is_real_strike_shape("NONE"));
+    }
+
+    #[test]
+    fn test_is_real_strike_shape_placeholder_3d() {
+        // 한컴 익스포터의 대표 placeholder — 본문 전체가 취소선으로 찍히던 버그
+        assert!(!is_real_strike_shape("3D"));
+    }
+
+    #[test]
+    fn test_is_real_strike_shape_unknown_fail_closed() {
+        // 미래에 한컴이 추가할 수 있는 placeholder. 블랙리스트였다면 true로
+        // 오인식되어 본문에 취소선이 그려질 것이다. 화이트리스트는 false.
+        assert!(!is_real_strike_shape("4D"));
+        assert!(!is_real_strike_shape("Ghost"));
+        assert!(!is_real_strike_shape(""));
+        assert!(!is_real_strike_shape("solid")); // 대소문자 구분
     }
 }

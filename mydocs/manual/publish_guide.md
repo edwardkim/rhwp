@@ -73,10 +73,10 @@ v{MAJOR}.{MINOR}.{PATCH}
 
 | 파일 | 패키지 | 예시 |
 |------|--------|------|
-| `Cargo.toml` | rhwp (Rust) + @rhwp/core 원본 | `version = "0.7.0"` |
-| `rhwp-vscode/package.json` | VSCode 익스텐션 | `"version": "0.7.0"` |
-| `npm/editor/package.json` | @rhwp/editor | `"version": "0.7.0"` |
-| `rhwp-studio/package.json` | rhwp-studio (GitHub Pages 데모) | `"version": "0.7.0"` |
+| `Cargo.toml` | rhwp (Rust) + @rhwp/core 원본 | `version = "0.7.3"` |
+| `rhwp-vscode/package.json` | VSCode 익스텐션 | `"version": "0.7.3"` |
+| `npm/editor/package.json` | @rhwp/editor | `"version": "0.7.3"` |
+| `rhwp-studio/package.json` | rhwp-studio (GitHub Pages 데모) | `"version": "0.7.3"` |
 
 > `pkg/package.json`은 직접 편집하지 않는다. `scripts/prepare-npm.sh`가 `Cargo.toml`에서 버전을 읽어 자동 생성한다.
 > `rhwp-studio/package.json` 버전은 빌드 시 `__APP_VERSION__`으로 주입되어 제품정보 대화창에 표시된다.
@@ -89,14 +89,55 @@ v{MAJOR}.{MINOR}.{PATCH}
 - @rhwp/editor 는 독자적으로 PATCH를 올릴 수 있다 (README 보강 등).
 - npm은 한 번 배포한 버전을 덮어쓸 수 없으므로, README만 수정해도 PATCH를 올려야 한다.
 
+### 브라우저 확장 버전 정책 (라이브러리와 이원화)
+
+**rhwp-chrome / rhwp-edge / rhwp-firefox / rhwp-safari** 의 버전은 라이브러리(Cargo.toml) 와 **독립적으로 관리**한다.
+
+| 영역 | 2026-04-23 현재 |
+|------|----------------|
+| 라이브러리 (Cargo.toml) | `0.7.3` |
+| rhwp-chrome / Edge | `0.2.1` (Chrome Web Store / Edge Add-ons 심사 통과) |
+| rhwp-safari | `0.2.1` |
+| rhwp-firefox | `0.1.1` (AMO 등록 준비 중) |
+
+#### 이원화 이유
+
+- **배포 주기 독립**: 라이브러리는 기능 추가·버그픽스 주기로, 확장은 스토어 심사 주기(Chrome/Edge/AMO) 로 별도 움직임
+- **스토어 요구사항**: 각 스토어가 manifest 의 `version` 을 자체 규칙으로 관리 요구 (예: 4자리, 재사용 불가)
+- **사용자 인지 버전**: 확장 사용자에게 보이는 버전은 "확장 버전"이고, 라이브러리 버전은 기술 내부 번호
+
+#### 확장 버전 동기화 파일
+
+**rhwp-chrome/rhwp-edge** (한 코드베이스, 동일 버전):
+- `rhwp-chrome/manifest.json` — 스토어 심사 기준
+- `rhwp-chrome/package.json`
+- `rhwp-chrome/dev-tools-inject.js` 상수
+- `rhwp-chrome/content-script.js` 상수
+
+> manifest 하나만 바꾸고 다른 세 곳이 누락되면 UI 일관성 깨짐. v0.2.0 사이클에서 같은 실수가 발생해 hotfix v0.2.1 을 낸 이력 있음.
+
+**rhwp-firefox**:
+- `rhwp-firefox/manifest.json`
+- `rhwp-firefox/package.json`
+
+**rhwp-safari**:
+- `rhwp-safari/src/manifest.json`
+
+#### 확장 버전 올리기 기준
+
+- 스토어 심사 필요한 변경 → PATCH 이상
+- UI/동작 변경 없음 (dist 만 재빌드) → 버전 그대로 유지
+
+> 라이브러리 MINOR 업이 확장 버전 업을 강제하지는 않는다. 확장은 WASM을 새로 번들링해도 스토어 메타데이터 변경 필요 시에만 버전 업.
+
 ### 버전 올리기 예시
 
 **MINOR 릴리즈** (조판 개선, 새 기능):
 ```
-Cargo.toml:                  0.7.0 → 0.8.0
-rhwp-vscode/package.json:    0.7.0 → 0.8.0
-npm/editor/package.json:     0.7.0 → 0.8.0
-rhwp-studio/package.json:    0.7.0 → 0.8.0
+Cargo.toml:                  0.7.3 → 0.8.0
+rhwp-vscode/package.json:    0.7.3 → 0.8.0
+npm/editor/package.json:     0.7.3 → 0.8.0
+rhwp-studio/package.json:    0.7.3 → 0.8.0
 ```
 
 **PATCH 릴리즈** (npm README 수정 등):
@@ -117,7 +158,7 @@ npm/editor/package.json:  0.6.1 → 0.6.2  (다른 파일 변경 없음)
 ### 1단계: 코드 검증
 
 ```bash
-cargo build && cargo test        # 네이티브 빌드 + 783개 테스트
+cargo build && cargo test        # 네이티브 빌드 + 941개 테스트 (2026-04-23 기준)
 docker compose --env-file .env.docker run --rm wasm   # WASM 빌드
 ```
 
@@ -169,7 +210,7 @@ version = "0.8.0"
 ```bash
 # 변경사항 커밋
 git add -A
-git commit -m "v0.7.0 릴리즈 준비"
+git commit -m "v0.7.3 릴리즈 준비"
 
 # devel → main merge
 git checkout devel && git merge local/devel && git push origin devel
@@ -183,9 +224,9 @@ git checkout main && git merge devel && git push origin main
 ### 5단계: GitHub Release 생성 → npm @rhwp/core 자동 배포
 
 ```bash
-git tag v0.7.0
-git push origin v0.7.0
-gh release create v0.7.0 --title "v0.7.0 — 제목" --notes "릴리즈 노트"
+git tag v0.7.3
+git push origin v0.7.3
+gh release create v0.7.3 --title "v0.7.3 — 제목" --notes "릴리즈 노트"
 ```
 
 > **Release 생성 시 `npm-publish.yml` 자동 실행:**

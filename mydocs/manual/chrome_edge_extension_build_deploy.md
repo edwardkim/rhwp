@@ -1,4 +1,6 @@
-# Chrome/Edge 확장 프로그램 빌드 및 배포 매뉴얼
+# 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
+
+> 2026-04-23 확장: 원래 Chrome/Edge 전용이었으나 v0.2.1 사이클에서 Firefox (PR #169) 와 기존 Safari 가 합류하여 통합 매뉴얼로 재구성. 각 브라우저별 빌드·배포 경로는 공유 부분(WASM/폰트/Vite)과 고유 부분으로 나뉜다.
 
 ## 1. 사전 준비
 
@@ -62,14 +64,16 @@ rhwp-chrome/dist/          ← 이 폴더가 확장 프로그램 패키지
 └── favicon.ico
 ```
 
-### 2.4 빌드 크기
+### 2.4 빌드 크기 (2026-04-23 실측)
 
 | 항목 | 크기 |
 |------|------|
-| WASM 바이너리 | ~3.3MB |
-| 폰트 | ~9MB |
-| JS/CSS/HTML | ~4MB |
-| 전체 | ~17MB |
+| WASM 바이너리 (`wasm/rhwp_bg.wasm`) | ~3.9MB (EMF/OLE/Chart 네이티브 렌더링 포함 · PR #221) |
+| 폰트 (`fonts/`) | ~9MB (14개 woff2) |
+| JS/CSS/HTML 번들 (`assets/`) | ~8.7MB |
+| 전체 (`rhwp-chrome/dist/` · `rhwp-firefox/dist/`) | **~23MB** |
+
+> 값은 `du -sh rhwp-chrome/dist` 실측. WASM 크기는 PR 머지에 따라 변동 가능 — 실측 갱신은 `cd rhwp-chrome/dist && du -sh`.
 
 ---
 
@@ -119,6 +123,12 @@ http://localhost:5500/rhwp-chrome/test/index.html
 | 03-dynamic-content.html | AJAX 동적 콘텐츠 MutationObserver |
 | 04-devtools.html | rhwpDev 개발자 도구 |
 | 05-gov-site-sim.html | 공공기관 게시판 시뮬레이션 |
+| 06-security.html | CSP · XSS · 메시지 검증 등 보안 회귀 점검 |
+
+> rhwp-firefox 는 동일한 6개 + `test/index.html` 허브가 있어 한 화면에서 모두 열람 가능.
+| 06-security.html | CSP · XSS · 메시지 검증 등 보안 회귀 점검 |
+
+> rhwp-firefox 는 동일한 6개 + `test/index.html` 허브가 있어 한 화면에서 모두 열람 가능.
 
 ### 3.5 디버깅
 
@@ -206,6 +216,66 @@ zip -r ../rhwp-chrome.zip .
 #### 심사 소요 시간
 
 - 일반적으로 1~2 영업일
+
+### 4.4 Firefox — rhwp-firefox 빌드 + AMO 제출
+
+#### 빌드
+
+```bash
+cd rhwp-firefox
+npm install
+npm run build
+```
+
+- 빌드 산출물은 `rhwp-firefox/dist/`
+- Chrome 과 동일한 Vite 번들 + WASM + 폰트 + 심볼릭 링크 dereference (`rhwp-shared/sw/download-interceptor-common.js` 실체화)
+- Firefox MV3 요구사항:
+  - `manifest.json` 의 `browser_specific_settings.gecko.id` 필수
+  - `background.scripts` + `type: "module"` (Chrome 의 `service_worker` 방식과 다름)
+
+#### 개발 모드 로드
+
+1. Firefox 주소창 `about:debugging#/runtime/this-firefox`
+2. **"임시 부가 기능 로드..."** → `rhwp-firefox/dist/manifest.json` 선택
+3. 확장 콘솔: 해당 확장 → **"검사"** 버튼
+4. 임시 부가 기능은 Firefox 재시작 시 자동 제거됨 → 재테스트 시 재로드
+
+#### AMO (addons.mozilla.org) 제출
+
+```bash
+cd rhwp-firefox/dist
+zip -r ../rhwp-firefox.zip .
+```
+
+- [AMO Developer Hub](https://addons.mozilla.org/developers/) 접속
+- **Submit a New Add-on** → Self-distribution 또는 Listed 선택
+- `rhwp-firefox.zip` 업로드
+- AMO 자동 검증 (`web-ext lint`) 통과 필요
+- 심사: 일반적으로 1~5 영업일 (수동 검증 대기열 상황 따라 변동)
+
+> 자동 검증 실패 항목 디버깅: `npx web-ext lint` 를 `rhwp-firefox/dist/` 에서 로컬 실행 가능.
+
+### 4.5 Safari — rhwp-safari (macOS 전용)
+
+Safari 확장은 macOS 환경에서만 빌드 가능하다 (`xcodebuild` + `safari-web-extension-converter` 의존).
+
+```bash
+cd rhwp-safari
+./build.sh
+```
+
+내부적으로:
+1. rhwp-chrome 빌드 호출 → `dist/` 재사용
+2. Safari 전용 소스 교체 (background / content-script / manifest / options 4종)
+3. Chrome 전용 파일 제거 (`sw/`, `dev-tools-inject.js`)
+4. `xcrun safari-web-extension-converter` 로 Xcode 프로젝트 생성 (최초 1회)
+5. `xcodebuild` 로 macOS 빌드
+
+#### App Store 제출
+
+- App Store Connect 계정 필요
+- TestFlight 내부 테스트 → 심사 제출
+- 상세 매뉴얼: 별도 (맥 환경 보유 시 작성 예정)
 
 ---
 

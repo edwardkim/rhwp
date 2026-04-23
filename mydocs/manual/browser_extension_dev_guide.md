@@ -1,8 +1,8 @@
-# 브라우저 확장 프로그램 개발 가이드 (Safari/Chrome/Edge)
+# 브라우저 확장 프로그램 개발 가이드 (Safari/Chrome/Edge/Firefox)
 
-**작성일**: 2026-04-09
+**작성일**: 2026-04-09 · **최종 갱신**: 2026-04-23
 **대상**: rhwp 프로젝트 컨트리뷰터
-**교훈 기반**: Task #83 Safari 확장 개발, Task #84 보안 수정
+**교훈 기반**: Task #83 Safari 확장 개발, Task #84 보안 수정, PR #169 Firefox 포팅, PR #214 rhwp-shared 공통 모듈 도입
 
 ---
 
@@ -26,13 +26,16 @@ MV3의 CSP는 `extension_pages`에서 인라인 스크립트를 **완전 차단*
 
 ### Service Worker vs Background Scripts
 
-| 항목 | Chrome/Edge | Safari |
-|------|-----------|--------|
-| 형식 | `service_worker` + `type: "module"` | `scripts` + `persistent: false` |
-| ES module import | ✅ 지원 | ❌ 미지원 |
-| 라이프사이클 | 비영속적 (유휴 시 종료) | 비영속적 |
+| 항목 | Chrome/Edge | Firefox | Safari |
+|------|-----------|---------|--------|
+| 형식 | `service_worker` + `type: "module"` | `background.scripts` + `type: "module"` (Event Page 방식) | `scripts` + `persistent: false` |
+| ES module import | ✅ 지원 | ✅ 지원 | ❌ 미지원 |
+| 라이프사이클 | 비영속적 (유휴 시 종료) | 비영속적 | 비영속적 |
+| 라이브 재시작 | 자동 | 자동 | 수동 |
 
 Safari는 ES module을 지원하지 않으므로, **단일 파일로 번들링**하거나 별도 소스를 관리해야 한다.
+
+Firefox MV3는 **Event Page** 방식이라 Chrome 의 Service Worker 와 구조가 다르다. `background.scripts` 에 `type: "module"` 을 붙여야 import 가능.
 
 ### CSP 설정 주의사항
 
@@ -287,4 +290,143 @@ done
 - [ ] macOS Safari
 - [ ] iOS Safari (Simulator)
 - [ ] Chrome (비교 동작 확인)
+- [ ] Firefox (`about:debugging` 임시 부가 기능 로드)
 - [ ] 다크 모드 UI
+
+---
+
+## 9. 브라우저 API 네임스페이스 차이 (`chrome.*` vs `browser.*`)
+
+**배경**: PR #169 (Firefox 포팅) 에서 확립된 규칙. 매뉴얼 신설 섹션.
+
+### 네임스페이스
+
+| 브라우저 | 네임스페이스 | 반환 형태 |
+|----------|------------|----------|
+| Chrome / Edge | `chrome.*` | 대부분 callback (일부 Promise 혼용) |
+| Firefox | `browser.*` (네이티브) | **Promise** (async/await 친화) |
+| Safari | `browser.*` (polyfill) 또는 `chrome.*` | 상황에 따라 다름 |
+
+### 포팅 시 주의
+
+rhwp-firefox 는 `browser.*` 네임스페이스를 네이티브 사용. Chrome 코드를 가져올 때:
+
+1. **전역 치환**: `chrome.` → `browser.`
+2. **Callback → await**: `chrome.storage.sync.get({...}, cb)` → `const d = await browser.storage.sync.get({...})`
+3. **`chrome.runtime.lastError` 체크 제거**: Promise rejection 으로 자연스럽게 처리
+4. **Fire-and-forget**: Chrome 은 무시해도 안전하나 Firefox 는 unhandled Promise warning → `.catch(() => {})` 명시 권장
+
+### rhwp 프로젝트의 실제 적용
+
+- `rhwp-chrome/` — `chrome.*` 만
+- `rhwp-firefox/` — `browser.*` 만
+- `rhwp-safari/src/` — Safari Web Extension Converter 가 자동 처리
+
+동일 파일을 공유할 필요는 없음. 각 확장이 자기 네임스페이스를 가지고 공통 로직만 `rhwp-shared/` 에서 공유 (아래 10절 참조).
+
+---
+
+## 10. 공통 모듈 공유 (`rhwp-shared/` + 심볼릭 링크)
+
+**배경**: PR #214 에서 `download-interceptor` 의 판정 로직을 Chrome/Firefox 간 공유하기 위해 도입된 패턴. 매뉴얼 신설 섹션.
+
+### 문제
+
+Chrome 과 Firefox 가 서로 다른 리스너(API) 를 사용하지만, **"이 다운로드가 HWP 인가?"** 같은 **순수 판정 함수** 는 두 플랫폼에서 동일하게 동작해야 한다. 파일을 두 번 유지하면 한쪽만 수정하는 드리프트 발생.
+
+### 해결 — 공통 원본 + 심볼릭 링크
+
+```
+rhwp-shared/
+└── sw/
+    ├── download-interceptor-common.js        # 원본
+    └── download-interceptor-common.test.js   # 원본의 Node 테스트
+
+rhwp-chrome/sw/
+└── download-interceptor-common.js            # → ../../rhwp-shared/sw/download-interceptor-common.js (심링크)
+
+rhwp-firefox/sw/
+└── download-interceptor-common.js            # → ../../rhwp-shared/sw/download-interceptor-common.js (심링크)
+```
+
+- 개발 중: 심링크를 통해 참조 (Vite dev 서버 는 심링크 자연 지원)
+- 빌드 시: `cpSync({ dereference: true })` 로 심링크를 실체 파일로 복사
+
+### 빌드 스크립트 패턴
+
+`rhwp-chrome/build.mjs` · `rhwp-firefox/build.mjs` 에서:
+
+```js
+copy(resolve(__dirname, 'sw'), resolve(DIST, 'sw'), {
+  filter: (src) => !EXCLUDE_FROM_DIST.test(src),
+  dereference: true,     // ← 심링크 → 실체 파일
+});
+```
+
+`dereference: true` 없이 dist 에 복사하면 **심링크 자체가 복사되어 스토어 심사에서 거부**된다 (Chrome Web Store 는 심링크 포함 zip 을 악성으로 판정 가능).
+
+### 테스트 전략
+
+공통 모듈의 순수 함수는 `rhwp-shared/sw/*.test.js` 에 Node `--test` 로 작성:
+
+```bash
+node --test rhwp-shared/sw/download-interceptor-common.test.js
+```
+
+- 의존성: Node 기본 `test` 러너만 사용 (서드파티 없음)
+- 플랫폼별 리스너 (onCreated/onChanged/onDeterminingFilename) 는 테스트 대상 외 — 순수 판정 함수만
+
+---
+
+## 11. 다운로드 가로채기의 Chrome/Firefox 구조 차이
+
+**배경**: PR #214 에서 확립. 매뉴얼 신설 섹션.
+
+### API 차이
+
+| 이벤트 | Chrome/Edge | Firefox |
+|--------|-----------|---------|
+| 다운로드 감지 시점 | `downloads.onDeterminingFilename` (**filename 결정 직전 한 번**) | `downloads.onCreated` + `downloads.onChanged` (2단계) |
+| 파일명 변경 가능 | ✅ (콜백에서 `suggest({filename})`) | 제한적 (onCreated 에서만 가능) |
+| MIME / 크기 확정 시점 | onDeterminingFilename 에서 완전히 결정됨 | onCreated 에는 **미정**, onChanged 에서 확정 |
+
+### Firefox 의 2단계 감지 패턴
+
+```js
+browser.downloads.onCreated.addListener((item) => {
+  // 1차: url 로 일단 HWP 의심 여부 판정
+  if (isLikelyHwp(item)) {
+    pendingIds.add(item.id);
+  }
+});
+
+browser.downloads.onChanged.addListener((delta) => {
+  // 2차: filename / mime 확정 후 재판정
+  if (!pendingIds.has(delta.id)) return;
+  browser.downloads.search({id: delta.id}).then(([item]) => {
+    if (shouldInterceptDownload(item)) { /* 가로채기 */ }
+  });
+});
+```
+
+`isLikelyHwp` 는 저비용 url 휴리스틱, `shouldInterceptDownload` 는 `rhwp-shared/` 의 공통 판정 함수.
+
+### Chrome 의 단일 단계 패턴
+
+```js
+chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
+  if (shouldInterceptDownload(item)) {
+    // HWP → 기본 다운로드 + 뷰어 탭 열기
+    openInViewer(item);
+    return true;  // 비동기 suggest 반환 예약
+  }
+  // HWP 가 아니면 기본 저장 위치 기억 동작 보존
+  return false;
+});
+```
+
+### 교차 교훈
+
+- **판정 함수** 는 공통 (`rhwp-shared/sw/download-interceptor-common.js`) — `shouldInterceptDownload(item)`
+- **리스너 구조** 는 플랫폼별 (Chrome 단일 / Firefox 2단계)
+- 동일 판정을 두 리스너에서 호출하므로 로직 일관성 보장
