@@ -91,6 +91,14 @@ fn resolve_metric_alias(name: &str) -> &str {
         "고운바탕" | "Gowun Batang" => "Gowun Batang",
         "고운돋움" | "Gowun Dodum" => "Gowun Dodum",
         "Pretendard" | "프리텐다드" => "Pretendard",
+        // HY 계열 한글 정규명 → 메트릭 DB 영문명 (Task #259)
+        "HY중고딕" => "HYGothic-Medium",
+        "HY견고딕" => "HYGothic-Extra",
+        "HY견명조" => "HYMyeongJo-Extra",
+        "HY신명조" => "HYSinMyeongJo-Medium",
+        "HY그래픽" => "HYGraphic-Medium",
+        "HY헤드라인M" => "HYHeadLine-Medium",
+        "HY궁서" | "HY궁서B" => "HYGungSo-Bold",
         _ => name,
     }
 }
@@ -10251,3 +10259,31 @@ pub static FONT_METRICS: [FontMetric; 595] = [
     FontMetric { name: "Pretendard", bold: false, italic: false, em_size: 2048, latin_ranges: &FONT_593_LATIN_RANGES, hangul: Some(&FONT_593_HANGUL) },
     FontMetric { name: "Pretendard", bold: true, italic: false, em_size: 2048, latin_ranges: &FONT_594_LATIN_RANGES, hangul: Some(&FONT_594_HANGUL) },
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Task #259: HY 한글 정규명이 메트릭 DB 영문 엔트리로 resolve 되는지 확인.
+    // 누락 시 기본 폭 적용으로 글자 겹침 발생 (text-align.hwp s0:pi=4).
+    #[test]
+    fn hy_normalized_names_resolve_to_db_entries() {
+        let cases = [
+            ("HY중고딕", "HYGothic-Medium"),
+            ("HY견고딕", "HYGothic-Extra"),
+            ("HY견명조", "HYMyeongJo-Extra"),
+            ("HY신명조", "HYSinMyeongJo-Medium"),
+            ("HY그래픽", "HYGraphic-Medium"),
+            ("HY헤드라인M", "HYHeadLine-Medium"),
+            ("HY궁서", "HYGungSo-Bold"),
+            ("HY궁서B", "HYGungSo-Bold"),
+        ];
+        for (korean, expected_db) in cases {
+            assert_eq!(resolve_metric_alias(korean), expected_db,
+                "resolve_metric_alias({korean}) should map to {expected_db}");
+            let m = find_metric(korean, false, false);
+            assert!(m.is_some(), "find_metric({korean}, false, false) returned None");
+            assert_eq!(m.unwrap().metric.name, expected_db);
+        }
+    }
+}
