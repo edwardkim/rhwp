@@ -18,3 +18,7 @@
 - [트러블슈팅 폴더 사전 검색 의무](feedback_search_troubleshootings_first.md) — 직렬화·한컴 호환·파일 손상 작업 시작 전 mydocs/troubleshootings/ 전수 검색
 - [HWPX→HWP 단순 어댑터의 한계](project_hwpx_to_hwp_adapter_limit.md) — 단순 어댑터로 한컴 호환 불가. 다음 시도는 "완전 변환기" 정체성 필요
 - [hwp2hwpx Java 라이브러리](reference_hwp2hwpx_library.md) — HWP↔HWPX 변환 매핑 권위 자료. /home/edward/vsworks/hwp2hwpx (Apache 2.0)
+- [릴리즈 작업 전 main 동기화 점검 필수](feedback_release_sync_check.md) — devel→main 머지/태그 작업 시작 전 git pull --ff-only origin main. 분기 발견 시 즉시 중단
+- [릴리즈/배포 작업 시 매뉴얼 정독 필수](feedback_release_manual_required.md) — mydocs/manual/ 관련 매뉴얼 전체 정독. 부분 검색 금지. 매뉴얼 체크리스트와 1:1 대조
+- [외부 공개 문서 자기검열 체크리스트](feedback_external_docs_self_censor.md) — 구체 회사명 비교/최상급 주장/개인정보/공공기관 오인 등 7개 카테고리 점검. 커밋 전 grep 자동 검증
+- [AMO 제출 4대 함정](feedback_amo_submission_gotchas.md) — data_collection_permissions 필수/gecko_android 키 생략/gecko id 플랫폼 suffix/소스 zip 필수 업로드. Firefox 확장 제출 전 체크리스트

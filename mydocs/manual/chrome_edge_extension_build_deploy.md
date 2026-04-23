@@ -255,6 +255,45 @@ zip -r ../rhwp-firefox.zip .
 
 > 자동 검증 실패 항목 디버깅: `npx web-ext lint` 를 `rhwp-firefox/dist/` 에서 로컬 실행 가능.
 
+#### AMO 제출 4대 함정 (2026-04-23 rhwp-firefox v0.2.1 실측)
+
+신규 제출 시 `web-ext lint` 는 통과해도 AMO 서버 단에서 연속 거부될 수 있다. 다음 4가지를 사전 점검하면 한 번에 통과 가능:
+
+| # | 에러 | 원인 | 해결책 |
+|---|------|------|--------|
+| 1 | `data_collection_permissions property is required` | Firefox 140 에서 시행된 신규 필수 키 | `manifest.json` 의 `browser_specific_settings.gecko.data_collection_permissions.required = ["none"]` 선언 (실제 수집 없음 표명). lint 는 경고 내지만 AMO 요구가 우선 |
+| 2 | `Unknown strict_min_version 999.0 for Firefox Android` | placeholder 버전 숫자 거부 — AMO 는 실존 Gecko 버전 (https://addons.mozilla.org/api/v5/applications/firefox/) 만 인정 | Android 옵트아웃은 `gecko_android` 키를 **완전 생략**. MDN 공식: "`gecko_android` 없으면 desktop only" |
+| 3 | 중복된 부가 기능 ID가 발견됨 | 같은 gecko id 가 AMO 에 이미 등록됨 (타인 선점 또는 본인 이전 draft) | id 에 **플랫폼 suffix 포함** — 예: `rhwp@...` → `rhwp-firefox@...`. 첫 제출 전 AMO 공개 API 로 id 중복 확인: `curl https://addons.mozilla.org/api/v5/addons/addon/{id}/` |
+| 4 | Source code submission required | minified/번들 JS 또는 WASM 바이너리 포함 시 AMO 가 소스 제출 요구. **GitHub URL 불가** — 파일 업로드 필수 | `git archive` 로 samples 제외 zip 생성: `git archive --format=zip --prefix=rhwp-source/ HEAD ':(exclude)samples' -o rhwp-source-{sha}.zip` (91MB → 37MB) |
+
+#### Reviewer Notes (권한 정당화 + WASM 안전성)
+
+AMO 심사자 대상 설명은 **영문** 권장 (검토자 국적 분산). 필수 포함 항목:
+
+1. **확장이 하는 일** — 한 단락
+2. **테스트 방법** — 심사자가 실제로 눌러볼 수 있게 샘플 HWP 링크 제공 (저장소 samples 경로)
+3. **권한 사용 근거** — `<all_urls>` · `downloads` · `contextMenus` · `storage` · `clipboardWrite` · `activeTab` 각각
+4. **WASM 설명** — "샌드박스 내 실행", "네트워크 요청 없음", "Rust 오픈소스 빌드"
+5. **심볼릭 링크 해명** — `rhwp-shared/sw/` 는 소스에만 있고 dist 에는 실체 파일. `cpSync({ dereference: true })` 로 빌드 시 해제.
+6. **제한 사항 명시** — HWPX 직접 저장 비활성 · Firefox Android 미지원 (근거: `downloads` API v79 제거, `contextMenus` 미지원)
+7. **데이터 수집** — "없음" 선언 확인
+8. **오픈소스** — 저장소 URL + 라이선스 + 제출 commit SHA
+
+템플릿: `mydocs/release/amo_submission_v0.2.1.md` §3 참조.
+
+#### 빌드 지침 (소스 zip 과 함께 제출 시)
+
+AMO 는 소스 업로드와 별개로 **빌드 지침 텍스트** 를 요구한다. 심사자가 `diff` 로 업로드 zip 과 재빌드 결과를 비교하기 위함.
+
+필수 포함:
+- OS · Node.js · npm · Docker 버전 요구사항
+- 소스 디렉토리 구조 설명 (rhwp-firefox / rhwp-shared / rhwp-studio / pkg / web/fonts / src / Cargo.toml)
+- 재현 절차 (npm install → npm run build → dist/ 확인)
+- 검증 방법 (`diff -r` 또는 zip 재생성 후 바이트 비교)
+- 주의 사항 (Vite asset 해시 미세 차이, 심링크 → 실체 파일 변환)
+
+템플릿: `mydocs/release/amo_submission_v0.2.1.md` 및 `mydocs/manual/memory/feedback_amo_submission_gotchas.md`.
+
 ### 4.5 Safari — rhwp-safari (macOS 전용)
 
 Safari 확장은 macOS 환경에서만 빌드 가능하다 (`xcodebuild` + `safari-web-extension-converter` 의존).
