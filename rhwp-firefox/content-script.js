@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.2.1';
+  const VERSION = (browser.runtime.getManifest() && browser.runtime.getManifest().version) || '';
   const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
