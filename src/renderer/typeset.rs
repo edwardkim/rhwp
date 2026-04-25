@@ -551,7 +551,7 @@ impl TypesetEngine {
         // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
         // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
         // layout 시점의 LAYOUT_OVERFLOW (clamp pile 트리거) 를 사전 차단한다.
-        const LAYOUT_DRIFT_SAFETY_PX: f64 = 15.0;
+        const LAYOUT_DRIFT_SAFETY_PX: f64 = 10.0;
         let available = (st.available_height() - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
 
         // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
@@ -656,7 +656,8 @@ impl TypesetEngine {
             };
 
             let sp_b = if cursor_line == 0 { fmt.spacing_before } else { 0.0 };
-            let avail_for_lines = (page_avail - sp_b).max(0.0);
+            // Task #332 Stage 4b: partial split 의 줄 단위 fit 검사에도 layout drift 마진 적용
+            let avail_for_lines = (page_avail - sp_b - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
 
             // 현재 페이지에 들어갈 줄 범위 결정
             let mut cumulative = 0.0;
