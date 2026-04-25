@@ -609,7 +609,7 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.total_height;
+            st.current_height += fmt.height_for_fit;
             return;
         }
 
@@ -619,7 +619,7 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.total_height;
+            st.current_height += fmt.height_for_fit;
             return;
         }
 
