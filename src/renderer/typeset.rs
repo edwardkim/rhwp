@@ -358,6 +358,22 @@ impl TypesetEngine {
                 st.force_new_page();
             }
 
+            // Task #321: 문단간 vpos-reset 기반 강제 분할
+            // HWP LINE_SEG의 vertical_pos는 페이지 내 흐름 y 좌표.
+            // 현재 문단 first_vpos=0이고 직전 문단이 같은 단에 있으며 last_vpos가 충분히 큰 경우,
+            // HWP가 pi 경계에서 페이지/단 분할을 의도한 것 → 강제 분할.
+            if para_idx > 0 && !st.current_items.is_empty() {
+                let prev_para = &paragraphs[para_idx - 1];
+                let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
+                let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
+                if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
+                    // 현재 문단의 vpos가 0 이고 직전 문단의 마지막 vpos가 의미있게 큰 경우 (5000 HU ≈ 1.76mm)
+                    if cv == 0 && pv > 5000 {
+                        st.advance_column_or_new_page();
+                    }
+                }
+            }
+
             st.ensure_page();
 
             if !has_table {
