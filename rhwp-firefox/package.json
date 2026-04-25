@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "check": "node --check background.js && node --check content-script.js && node --check options.js && node --check firefox-compat.js && node --check sw/viewer-launcher.js && node --check sw/context-menus.js && node --check sw/download-observer.js && node --check sw/message-router.js",
+    "check": "node --check background.js && node --check content-script.js && node --check options.js && node --check firefox-compat.js && node --check sw/viewer-launcher.js && node --check sw/context-menus.js && node --check sw/download-observer.js && node --check sw/message-router.js && node --check sw/thumbnail-extractor.js",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\""
   },
   "devDependencies": {
