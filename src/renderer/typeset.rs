@@ -510,6 +510,25 @@ impl TypesetEngine {
     ) {
         let available = st.available_height();
 
+        // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
+        if std::env::var("RHWP_TYPESET_DRIFT").is_ok() {
+            let vpos_h: Option<f64> = if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
+                let span_hu = (last.vertical_pos + last.line_height) - first.vertical_pos;
+                if span_hu > 0 { Some(crate::renderer::hwpunit_to_px(span_hu, self.dpi)) } else { None }
+            } else { None };
+            let first_vpos = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
+            let last_vpos = para.line_segs.last().map(|s| s.vertical_pos).unwrap_or(-1);
+            let diff_str = match vpos_h {
+                Some(v) => format!(", vpos_h={:.1}, diff={:+.1}", v, fmt.total_height - v),
+                None => String::new(),
+            };
+            eprintln!(
+                "TYPESET_DRIFT: pi={} col={} cur_h={:.1} avail={:.1} fmt_total={:.1}{} first_vpos={} last_vpos={}",
+                para_idx, st.current_column, st.current_height, available,
+                fmt.total_height, diff_str, first_vpos, last_vpos,
+            );
+        }
+
         // 다단 레이아웃에서 문단 내 단 경계 감지
         let col_breaks = if st.col_count > 1 && st.current_column == 0 && st.on_first_multicolumn_page {
             Self::detect_column_breaks_in_paragraph(para)
