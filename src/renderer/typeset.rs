@@ -550,6 +550,7 @@ impl TypesetEngine {
         let available = st.available_height();
 
         // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
+        // Stage 5a 확장: per-paragraph 카테고리 분해 (sb/sa/lines/line_sum/ls_sum)
         if std::env::var("RHWP_TYPESET_DRIFT").is_ok() {
             let vpos_h: Option<f64> = if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
                 let span_hu = (last.vertical_pos + last.line_height) - first.vertical_pos;
@@ -557,15 +558,37 @@ impl TypesetEngine {
             } else { None };
             let first_vpos = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
             let last_vpos = para.line_segs.last().map(|s| s.vertical_pos).unwrap_or(-1);
-            let diff_str = match vpos_h {
-                Some(v) => format!(", vpos_h={:.1}, diff={:+.1}", v, fmt.total_height - v),
-                None => String::new(),
+            let lh_sum: f64 = fmt.line_heights.iter().sum();
+            let ls_sum: f64 = fmt.line_spacings.iter().sum();
+            let line_count = fmt.line_heights.len();
+            let trailing_ls = fmt.line_spacings.last().copied().unwrap_or(0.0);
+            let diff = match vpos_h {
+                Some(v) => fmt.total_height - v,
+                None => 0.0,
             };
+            let vpos_h_str = vpos_h.map(|v| format!("{:.1}", v)).unwrap_or_else(|| "-".to_string());
             eprintln!(
-                "TYPESET_DRIFT: pi={} col={} cur_h={:.1} avail={:.1} fmt_total={:.1}{} first_vpos={} last_vpos={}",
-                para_idx, st.current_column, st.current_height, available,
-                fmt.total_height, diff_str, first_vpos, last_vpos,
+                "TYPESET_DRIFT_PI: pi={} col={} sb={:.1} sa={:.1} lines={} lh_sum={:.1} ls_sum={:.1} trail_ls={:.1} fmt_total={:.1} vpos_h={} diff={:+.1} first_vpos={} last_vpos={} cur_h={:.1} avail={:.1}",
+                para_idx, st.current_column, fmt.spacing_before, fmt.spacing_after,
+                line_count, lh_sum, ls_sum, trailing_ls,
+                fmt.total_height, vpos_h_str, diff,
+                first_vpos, last_vpos,
+                st.current_height, available,
             );
+
+            // 옵션: per-line 분해 (LINE_SEG 와 비교)
+            if std::env::var("RHWP_TYPESET_DRIFT_LINES").is_ok() {
+                for (li, (lh, ls)) in fmt.line_heights.iter().zip(fmt.line_spacings.iter()).enumerate() {
+                    let seg = para.line_segs.get(li);
+                    let seg_lh = seg.map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi)).unwrap_or(-1.0);
+                    let seg_ls = seg.map(|s| crate::renderer::hwpunit_to_px(s.line_spacing, self.dpi)).unwrap_or(-1.0);
+                    let seg_vpos = seg.map(|s| s.vertical_pos).unwrap_or(-1);
+                    eprintln!(
+                        "TYPESET_DRIFT_LINE: pi={} li={} fmt_lh={:.1} fmt_ls={:.1} seg_lh={:.1} seg_ls={:.1} vpos={}",
+                        para_idx, li, lh, ls, seg_lh, seg_ls, seg_vpos,
+                    );
+                }
+            }
         }
 
         // 다단 레이아웃에서 문단 내 단 경계 감지
@@ -1094,6 +1117,33 @@ impl TypesetEngine {
 
         let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after;
         let table_total = ft.effective_height + host_spacing_total;
+
+        // Task #321 v5: Paper-anchored TopAndBottom block 표는 절대 좌표로 그려지므로
+        // cur_h advance 에 표 effective_height 를 그대로 더하면 본문 LINE_SEG vpos 와
+        // mismatch (= 21_언어 page 1 col 0 의 +76 px drift). 본문 좌표계와 동기화 하기
+        // 위해 host paragraph 의 first_vpos 만큼 cur_h 를 미리 jump 하고 표 advance 를
+        // 본문 라인 만큼으로 축소.
+        use crate::model::shape::{TextWrap, VertRelTo};
+        let is_paper_topbottom_block =
+            !table.common.treat_as_char
+            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            && matches!(table.common.vert_rel_to, VertRelTo::Paper);
+        if is_paper_topbottom_block && st.current_column == 0 {
+            if let Some(first_seg) = para.line_segs.first() {
+                let target_y = crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
+                // 호스트 본문 lines + 표는 절대 좌표 → cur_h 는 first_vpos + host lines 만 진행.
+                let pre_lines_h = fmt.line_advances_sum(0..fmt.line_heights.len());
+                if target_y > st.current_height
+                    && target_y + pre_lines_h <= available
+                {
+                    st.current_height = target_y;
+                    // table_total = 0: 표 자체는 cur_h advance 에 영향 없음 (Paper-absolute).
+                    // 호스트 본문 lines 만 place_table_with_text 가 pre_height 로 추가.
+                    self.place_table_with_text(st, para_idx, ctrl_idx, para, table, fmt, 0.0);
+                    return;
+                }
+            }
+        }
 
         // fits: 전체가 현재 페이지에 들어가는가?
         if st.current_height + table_total <= available {

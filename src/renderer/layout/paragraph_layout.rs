@@ -2366,8 +2366,11 @@ impl LayoutEngine {
             let bg_height = y - bg_y_start;
             if bg_height > 0.0 {
                 // margin_left/margin_right는 이미 px 단위 (style_resolver에서 변환됨)
+                // border_spacing[2]/[3] (top/bottom) 을 inset 으로 전달 — 병합 그룹의 첫/마지막 range 에서만 적용됨.
+                let top_inset = para_style.map(|s| s.border_spacing[2]).unwrap_or(0.0);
+                let bottom_inset = para_style.map(|s| s.border_spacing[3]).unwrap_or(0.0);
                 self.para_border_ranges.borrow_mut().push(
-                    (para_border_fill_id, col_area.x + margin_left, bg_y_start, col_area.width - margin_left - margin_right, y)
+                    (para_border_fill_id, col_area.x + margin_left, bg_y_start, col_area.width - margin_left - margin_right, y, top_inset, bottom_inset)
                 );
             }
         }
