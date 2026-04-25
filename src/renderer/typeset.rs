@@ -1650,14 +1650,19 @@ impl TypesetEngine {
 
 /// Task #321: 단일 문단의 컨트롤에서 body-wide TopAndBottom 표/도형이 차지하는 높이 계산.
 ///
-/// 다단 페이지에서 col 1 이상은 이 높이 만큼 zone_y_offset을 미리 차감해야
-/// layout의 `body_wide_reserved` 처리와 일치한다.
+/// col 1+ advance 시 current_height 시작값으로 사용하여 layout의 `body_wide_reserved`
+/// 와 동일한 가용 공간 축소를 적용한다.
+///
+/// **vert_rel_to=Paper 인 개체는 제외**: 이 경우 도형은 페이지 절대 위치(머리말 영역
+/// 포함)에 놓인 것이라 HWP는 col 1을 본문 상단부터 시작시키는 것으로 보인다.
+/// (21_언어 4×5 표가 page-y=131px 부터 시작하여 body 상단을 일부 침범하지만 col 1은
+/// HWP 기준 1213px를 사용 — 즉 col 1 에 reserve 미적용).
 fn compute_body_wide_top_reserve_for_para(
     para: &Paragraph,
     layout: &PageLayoutInfo,
     dpi: f64,
 ) -> f64 {
-    use crate::model::shape::TextWrap;
+    use crate::model::shape::{TextWrap, VertRelTo};
     let body_w = layout.body_area.width;
     let body_h = layout.available_body_height();
     let mut max_bottom: f64 = 0.0;
@@ -1669,6 +1674,10 @@ fn compute_body_wide_top_reserve_for_para(
             _ => continue,
         };
         if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
+            continue;
+        }
+        // Paper(용지) 기준 도형은 페이지 절대 위치 — col 1 시작에는 영향 없음
+        if matches!(common.vert_rel_to, VertRelTo::Paper) {
             continue;
         }
         let shape_w = crate::renderer::hwpunit_to_px(common.width as i32, dpi);
