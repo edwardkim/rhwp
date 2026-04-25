@@ -2429,13 +2429,19 @@ impl LayoutEngine {
             }
 
             col_node.children.push(line_node);
-            // 줄간격 적용: 셀 내 마지막 문단의 마지막 줄에서만 trailing spacing 제외
+            // 줄간격 적용 — typeset 의 height_for_fit 모델과 정합:
+            //   - 셀 내 마지막 문단의 마지막 줄: 기존대로 trailing 제외
+            //   - 일반 문단의 마지막 visible 줄(=문단 전체 마지막 줄): trailing 제외 (Task #332)
+            //   - partial 문단(split 된 경우)의 마지막 visible 줄: trailing 유지 (다음 단의 첫 줄과의 간격)
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
-            if !is_cell_last_line || cell_ctx.is_none() {
+            let is_para_last_line = cell_ctx.is_none()
+                && line_idx + 1 == end
+                && end == composed.lines.len();
+            if (is_cell_last_line && cell_ctx.is_some()) || is_para_last_line {
+                y += line_height;
+            } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
-            } else {
-                y += line_height;
             }
         }
 
