@@ -1650,16 +1650,21 @@ impl TypesetEngine {
 
 /// Task #321: 단일 문단의 컨트롤에서 body-wide TopAndBottom 표/도형이 차지하는 높이 계산.
 ///
-/// 다단 페이지에서 col 1 이상은 이 높이 만큼 zone_y_offset을 미리 차감해야
-/// layout의 `body_wide_reserved` 처리와 일치한다.
+/// col 1+ advance 시 current_height 시작값으로 사용하여 layout의 `body_wide_reserved`
+/// 와 동일한 가용 공간 축소를 적용한다.
+///
+/// **Paper(용지) 기준 도형 가드 (v3 정밀화 #326)**: vert_rel_to=Paper 인 도형 중
+/// 본문 영역과 겹치지 않는(머리말 영역에만 위치하는) 도형만 제외. body 와 겹치는
+/// Paper 도형은 col 1 시작에 영향 → reserve 대상으로 포함.
 fn compute_body_wide_top_reserve_for_para(
     para: &Paragraph,
     layout: &PageLayoutInfo,
     dpi: f64,
 ) -> f64 {
-    use crate::model::shape::TextWrap;
+    use crate::model::shape::{TextWrap, VertRelTo};
     let body_w = layout.body_area.width;
     let body_h = layout.available_body_height();
+    let body_top = layout.body_area.y;
     let mut max_bottom: f64 = 0.0;
     for ctrl in &para.controls {
         let common = match ctrl {
@@ -1670,6 +1675,15 @@ fn compute_body_wide_top_reserve_for_para(
         };
         if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
             continue;
+        }
+        // Paper 기준 도형: 본문과 겹치지 않을 때(=머리말 영역만 점유)만 제외.
+        if matches!(common.vert_rel_to, VertRelTo::Paper) {
+            let shape_top_abs = crate::renderer::hwpunit_to_px(common.vertical_offset as i32, dpi);
+            let shape_bottom_abs = shape_top_abs
+                + crate::renderer::hwpunit_to_px(common.height as i32, dpi);
+            if shape_bottom_abs <= body_top {
+                continue;
+            }
         }
         let shape_w = crate::renderer::hwpunit_to_px(common.width as i32, dpi);
         if shape_w < body_w * 0.8 {
