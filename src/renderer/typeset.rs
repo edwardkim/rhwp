@@ -547,7 +547,12 @@ impl TypesetEngine {
         para: &Paragraph,
         fmt: &FormattedParagraph,
     ) {
-        let available = st.available_height();
+        // Task #332 Stage 4a: layout drift 안전 마진.
+        // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
+        // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
+        // layout 시점의 LAYOUT_OVERFLOW (clamp pile 트리거) 를 사전 차단한다.
+        const LAYOUT_DRIFT_SAFETY_PX: f64 = 15.0;
+        let available = (st.available_height() - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
 
         // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
         // Stage 5a 확장: per-paragraph 카테고리 분해 (sb/sa/lines/line_sum/ls_sum)
@@ -623,7 +628,8 @@ impl TypesetEngine {
             return;
         }
 
-        let base_available = st.base_available_height();
+        // Task #332 Stage 4a: partial split 시에도 동일 마진 적용
+        let base_available = (st.base_available_height() - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
 
         // 남은 공간이 없거나 첫 줄도 못 넣으면 먼저 다음 단/페이지로
         let first_line_h = fmt.line_heights[0];
