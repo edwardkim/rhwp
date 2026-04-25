@@ -609,8 +609,7 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            // Task #331: trailing line_spacing 은 advance 에 포함하지 않음 (HWP vpos_h 일치)
-            st.current_height += fmt.height_for_fit;
+            st.current_height += fmt.total_height;
             return;
         }
 
@@ -620,7 +619,7 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.height_for_fit;
+            st.current_height += fmt.total_height;
             return;
         }
 
@@ -671,13 +670,7 @@ impl TypesetEngine {
 
             let part_line_height = fmt.line_advances_sum(cursor_line..end_line);
             let part_sp_after = if end_line >= line_count { fmt.spacing_after } else { 0.0 };
-            // Task #331: 마지막 partial 의 trailing line_spacing 은 advance 에서 제외
-            let trailing_ls_correction = if end_line >= line_count {
-                fmt.line_spacings.get(end_line - 1).copied().unwrap_or(0.0)
-            } else {
-                0.0
-            };
-            let part_height = sp_b + part_line_height + part_sp_after - trailing_ls_correction;
+            let part_height = sp_b + part_line_height + part_sp_after;
 
             if cursor_line == 0 && end_line >= line_count {
                 // 전체가 배치됨 — overflow 재확인
