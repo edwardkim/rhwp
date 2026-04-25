@@ -1364,7 +1364,10 @@ impl LayoutEngine {
                         });
                         if let Some(seg) = prev_seg {
                             if !(seg.vertical_pos == 0 && prev_pi > 0) {
-                                let vpos_end = seg.vertical_pos + seg.line_height + seg.line_spacing;
+                                // Task #332: typeset/layout 의 height_for_fit 모델과 정합 —
+                                // vpos_end 의 trailing line_spacing 을 제외해 다음 문단의 시작 y_offset
+                                // 이 trail_ls 만큼 일찍 보정되도록 한다.
+                                let vpos_end = seg.vertical_pos + seg.line_height;
                                 let base = if let Some(b) = vpos_page_base {
                                     b
                                 } else if let Some(b) = vpos_lazy_base {
