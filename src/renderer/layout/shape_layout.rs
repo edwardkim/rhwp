@@ -2088,10 +2088,6 @@ impl LayoutEngine {
                 if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
                     continue;
                 }
-                // Task #321: Paper(용지) 기준 도형은 페이지 절대 위치이므로 col 1 시작에 영향 없음
-                if matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper) {
-                    continue;
-                }
                 // body_area 너비의 80% 이상 차지하는 개체만 (2단에 걸치는 개체)
                 let shape_w = hwpunit_to_px(common.width as i32, self.dpi);
                 if shape_w < body_area.width * 0.8 {
