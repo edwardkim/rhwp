@@ -9,7 +9,7 @@ const CACHE_MAX_SIZE = 100;
 /**
  * URL에서 HWP 파일을 fetch하여 PrvImage 썸네일을 추출한다.
  * @param {string} url - HWP 파일 URL
- * @returns {Promise<{dataUri: string, width: number, height: number} | null>}
+ * @returns {Promise<{dataUri: string, mime: string, width: number, height: number} | null>}
  */
 export async function extractThumbnailFromUrl(url) {
   // 캐시 확인
