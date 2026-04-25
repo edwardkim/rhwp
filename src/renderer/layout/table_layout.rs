@@ -2009,9 +2009,15 @@ impl LayoutEngine {
         content_limit: f64,
         styles: &ResolvedStyleSet,
     ) -> Vec<(usize, usize)> {
+        // 셀 콘텐츠의 cumulative position(누적 px) 기반 가시성 결정.
+        // - LINE_SEG.vpos 는 컬럼 리셋이 발생하므로 셀 시작부터의 누적 위치로 사용 불가 → line_height + line_spacing 누적 사용.
+        // - content_offset > 0: [0, content_offset) 영역의 콘텐츠는 이전 페이지 → 스킵.
+        // - content_limit > 0: [0, content_limit] 영역의 콘텐츠만 표시.
+        // - 중첩 표(atomic) 문단은 분할 불가 — 경계를 걸치면 한쪽 페이지에만 렌더링.
         let mut result = Vec::with_capacity(composed_paras.len());
-        let mut offset_remaining = content_offset;
-        let mut limit_remaining = if content_limit > 0.0 { content_limit } else { f64::MAX };
+        let has_offset = content_offset > 0.0;
+        let has_limit = content_limit > 0.0;
+        let mut cum: f64 = 0.0;
 
         let total_paras = composed_paras.len();
         for (pi, (comp, para)) in composed_paras.iter().zip(cell.paragraphs.iter()).enumerate() {
@@ -2021,77 +2027,56 @@ impl LayoutEngine {
             let spacing_before = if pi > 0 { para_style.map(|s| s.spacing_before).unwrap_or(0.0) } else { 0.0 };
             let spacing_after = if !is_last_para { para_style.map(|s| s.spacing_after).unwrap_or(0.0) } else { 0.0 };
             let line_count = comp.lines.len();
-            if line_count == 0 {
-                // 중첩 표 컨트롤 문단: 실제 중첩 표 높이로 offset/limit 소비
-                let nested_h: f64 = para.controls.iter().map(|ctrl| {
-                    if let Control::Table(t) = ctrl {
-                        self.calc_nested_table_height(t, styles)
-                    } else {
-                        0.0
-                    }
-                }).sum();
-                let h = if nested_h > 0.0 { nested_h } else { hwpunit_to_px(400, self.dpi) };
-                let para_h = spacing_before + h + spacing_after;
 
-                if offset_remaining > 0.0 {
-                    if para_h <= offset_remaining {
-                        offset_remaining -= para_h;
-                    } else {
-                        offset_remaining = 0.0;
-                    }
-                } else if limit_remaining > 0.0 {
-                    if para_h <= limit_remaining {
-                        limit_remaining -= para_h;
-                    }
-                }
-                result.push((0, 0));
-                continue;
-            }
-
-            // 중첩 표가 있는 문단: LINE_SEG 높이가 중첩 표 높이를 반영하지 않으므로
-            // 실제 중첩 표 높이를 포함한 전체 높이를 사용
+            // 중첩 표 포함 문단(atomic) — line_count==0 또는 has_table_in_para
             let has_table_in_para = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
-            if has_table_in_para {
+            if line_count == 0 || has_table_in_para {
                 let nested_h: f64 = para.controls.iter().map(|ctrl| {
                     if let Control::Table(t) = ctrl {
                         self.calc_nested_table_height(t, styles)
-                    } else {
-                        0.0
-                    }
+                    } else { 0.0 }
                 }).sum();
-                let line_based_h: f64 = comp.lines.iter().enumerate().map(|(li, line)| {
-                    let h = hwpunit_to_px(line.line_height, self.dpi);
-                    let ls = hwpunit_to_px(line.line_spacing, self.dpi);
-                    let is_cell_last_line = is_last_para && li + 1 == line_count;
-                    let mut lh = if !is_cell_last_line { h + ls } else { h };
-                    if li == 0 { lh += spacing_before; }
-                    if li == line_count - 1 { lh += spacing_after; }
-                    lh
-                }).sum();
-                let para_h = nested_h.max(line_based_h);
-
-                if offset_remaining > 0.0 {
-                    if para_h <= offset_remaining {
-                        offset_remaining -= para_h;
-                    } else {
-                        offset_remaining = 0.0;
-                    }
-                } else if limit_remaining > 0.0 {
-                    if para_h <= limit_remaining {
-                        limit_remaining -= para_h;
-                    }
-                }
-                // 중첩 표 문단은 모든 줄을 포함하거나 모두 제외
-                if offset_remaining > 0.0 || (offset_remaining == 0.0 && content_offset > 0.0 && para_h <= content_offset) {
-                    result.push((line_count, line_count)); // 이미 지나간 문단
+                let para_h = if line_count == 0 {
+                    let h = if nested_h > 0.0 { nested_h } else { hwpunit_to_px(400, self.dpi) };
+                    spacing_before + h + spacing_after
                 } else {
-                    result.push((0, line_count)); // 아직 보여야 할 문단
+                    let line_based_h: f64 = comp.lines.iter().enumerate().map(|(li, line)| {
+                        let h = hwpunit_to_px(line.line_height, self.dpi);
+                        let ls = hwpunit_to_px(line.line_spacing, self.dpi);
+                        let is_cell_last_line = is_last_para && li + 1 == line_count;
+                        let mut lh = if !is_cell_last_line { h + ls } else { h };
+                        if li == 0 { lh += spacing_before; }
+                        if li == line_count - 1 { lh += spacing_after; }
+                        lh
+                    }).sum();
+                    nested_h.max(line_based_h)
+                };
+
+                let para_start_pos = cum;
+                let para_end_pos = cum + para_h;
+                cum = para_end_pos;
+
+                // 가시성 결정: atomic — 한쪽 페이지에만 렌더링.
+                // - content_offset 영역 안에 끝나면(이전 페이지 전체 포함됨) → 스킵
+                // - content_limit 영역을 끝점이 초과하면 → 다음 페이지로 미룸
+                // - offset 경계를 걸치면 현재 페이지(continuation)에서 렌더링
+                let was_on_prev = has_offset && para_end_pos <= content_offset;
+                let exceeds_limit = has_limit && para_end_pos > content_limit;
+                let visible_count = if line_count == 0 { 0 } else { line_count };
+                if was_on_prev || exceeds_limit {
+                    // (n,n): 렌더 스킵 마커. line_count==0 이면 (0,0) 동일.
+                    result.push((visible_count, visible_count));
+                } else {
+                    result.push((0, visible_count));
                 }
+                let _ = para_start_pos; // 추적 변수 (미사용 경고 회피)
                 continue;
             }
 
+            // 일반 문단: line 단위 누적 + 위치 기반 가시성
             let mut para_start = 0;
             let mut para_end = 0;
+            let mut started = false;
 
             for (li, line) in comp.lines.iter().enumerate() {
                 let h = hwpunit_to_px(line.line_height, self.dpi);
@@ -2105,33 +2090,33 @@ impl LayoutEngine {
                     line_h += spacing_after;
                 }
 
-                if offset_remaining > 0.0 {
-                    if line_h <= offset_remaining {
-                        offset_remaining -= line_h;
-                        para_start = li + 1;
-                        para_end = li + 1;
-                        continue;
-                    } else {
-                        offset_remaining = 0.0;
-                    }
-                }
+                let line_end_pos = cum + line_h;
 
-                if limit_remaining <= 0.0 {
-                    break;
-                }
-
-                if line_h <= limit_remaining {
-                    limit_remaining -= line_h;
+                if has_offset && line_end_pos <= content_offset {
+                    // 이전 페이지에서 완전히 렌더링됨 → 스킵
+                    cum = line_end_pos;
+                    para_start = li + 1;
                     para_end = li + 1;
-                } else {
-                    // limit 초과 시 이후 모든 문단도 렌더링하지 않도록 limit_remaining을 0으로 설정
-                    limit_remaining = 0.0;
+                    continue;
+                }
+
+                if has_limit && line_end_pos > content_limit {
+                    // limit 초과 → 이 줄과 이후 모든 콘텐츠 차단
                     break;
                 }
+
+                cum = line_end_pos;
+                if !started {
+                    started = true;
+                    // para_start 는 첫 가시 줄의 인덱스에 고정됨 (위 루프에서 갱신됨)
+                }
+                para_end = li + 1;
             }
 
-            // LINE_SEG의 line_height에 이미 중첩 표 높이가 반영되어 있으므로
-            // 별도로 중첩 표 높이를 소비하면 이중 계산됨
+            if !started {
+                // 한 줄도 렌더링 안 됨: 모두 offset 영역에 있거나 limit 초과
+                // → 누적은 이미 라인별로 처리됨
+            }
 
             result.push((para_start, para_end));
         }
