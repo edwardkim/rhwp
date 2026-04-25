@@ -1040,7 +1040,7 @@ fn task290_inline_right_uses_tabdef() {
     let result = super::paragraph_layout::resolve_last_tab_pending(
         "abc\t", 0, &ext, &ts, &tab_stops, 48.0, false, 420.0,
     );
-    assert_eq!(result, Some((300.0, 1)), "RIGHT inline → TabDef 기반 위치");
+    assert_eq!(result, Some((300.0, 1, 3)), "RIGHT inline → TabDef 기반 위치, fill=dot");
 }
 
 #[test]
@@ -1052,7 +1052,7 @@ fn task290_inline_center_uses_tabdef() {
     let result = super::paragraph_layout::resolve_last_tab_pending(
         "abc\t", 0, &ext, &ts, &tab_stops, 48.0, false, 420.0,
     );
-    assert_eq!(result, Some((200.0, 2)), "CENTER inline → TabDef 기반 위치");
+    assert_eq!(result, Some((200.0, 2, 0)), "CENTER inline → TabDef 기반 위치, fill 없음");
 }
 
 #[test]
@@ -1064,7 +1064,7 @@ fn task290_no_inline_fallback_to_tabdef() {
     let result = super::paragraph_layout::resolve_last_tab_pending(
         "abc\t", 0, &ext, &ts, &tab_stops, 48.0, false, 420.0,
     );
-    assert_eq!(result, Some((250.0, 1)), "inline 없음 → TabDef RIGHT stop 사용");
+    assert_eq!(result, Some((250.0, 1, 0)), "inline 없음 → TabDef RIGHT stop 사용, fill 없음");
 }
 
 #[test]
@@ -1077,7 +1077,7 @@ fn task290_no_inline_auto_tab_right_fallthrough() {
         "abcdef\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert!(result.is_some(), "auto_tab_right 폴스루 → Some");
-    let (tp, tt) = result.unwrap();
+    let (tp, tt, _ft) = result.unwrap();
     assert_eq!(tt, 1, "auto_tab_right 은 RIGHT(1)");
     assert!((tp - 420.0).abs() < 0.1, "tab_pos 는 available_width 에 고정");
 }

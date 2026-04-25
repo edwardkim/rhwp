@@ -2,6 +2,15 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
+## [Unreleased]
+
+### 수정
+- **목차 리더 도트 + 페이지번호 우측 탭 정렬** (#279)
+  — 분석·구현 by [@seanshin](https://github.com/seanshin)
+  - `fill_type=3` 점선 리더를 round cap 원형 점으로 표현 (한컴 동등)
+  - `find_next_tab_stop` RIGHT 탭 클램핑 제외 — 들여쓰기 문단의 페이지번호 정렬 보정
+  - 메인테이너 추가 보강: 셀 padding 인지 leader 시멘틱, 페이지번호 폭별 leader 길이 차등화, 공백 only run carry-over
+
 ## [0.6.0] — 2026-04-04
 
 > 조판 품질 개선 + 비기능성 기반 구축 — "알을 깨고 세상으로"

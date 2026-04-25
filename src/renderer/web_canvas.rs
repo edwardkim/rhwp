@@ -1409,7 +1409,12 @@ impl Renderer for WebCanvasRenderer {
             match leader.fill_type {
                 1 => draw_line(&self.ctx, ly, 0.5, &[]),                     // 실선
                 2 => draw_line(&self.ctx, ly, 0.5, &[3.0, 3.0]),             // 파선
-                3 => draw_line(&self.ctx, ly, 0.5, &[1.0, 2.0]),             // 점선
+                3 => {
+                    // 점선 ··· — round cap으로 원형 점 표현 (한컴 동등)
+                    self.ctx.set_line_cap("round");
+                    draw_line(&self.ctx, ly, 1.0, &[0.1, 3.0]);
+                    self.ctx.set_line_cap("butt");
+                }
                 4 => draw_line(&self.ctx, ly, 0.5, &[6.0, 2.0, 1.0, 2.0]),   // 일점쇄선
                 5 => draw_line(&self.ctx, ly, 0.5, &[6.0, 2.0, 1.0, 2.0, 1.0, 2.0]), // 이점쇄선
                 6 => draw_line(&self.ctx, ly, 0.5, &[8.0, 4.0]),             // 긴파선

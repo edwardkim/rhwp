@@ -2003,9 +2003,9 @@ impl Renderer for SvgRenderer {
                     ));
                 }
                 3 => {
-                    // 점선 ···
+                    // 점선 ··· — round cap으로 원형 점 표현 (한컴 동등)
                     self.output.push_str(&format!(
-                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"0.5\" stroke-dasharray=\"1 2\"/>\n",
+                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"1.0\" stroke-dasharray=\"0.1 3\" stroke-linecap=\"round\"/>\n",
                         lx1, ly, lx2, ly, color,
                     ));
                 }
