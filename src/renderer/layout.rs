@@ -2012,7 +2012,26 @@ impl LayoutEngine {
                     let leading = composed.get(para_index)
                         .map(|c| compute_tac_leading_width(c, control_index, styles))
                         .unwrap_or(0.0);
-                    Some(col_area.x + effective_margin + leading)
+                    let base_x = col_area.x + effective_margin + leading;
+                    // [Issue #291] ParaShape align 반영:
+                    // TAC 표가 inline_shape_position 미설정 상태에서 단/문단 좌측에
+                    // 붙어버리는 회귀를 막는다. ParaShape align=Right 인 경우 표를
+                    // 단의 우측 끝 - 표 폭 - margin_right 위치로 이동시켜 한컴과 일치.
+                    // align=Center 도 동일 원리로 처리.
+                    let aligned_x = match para_style.map(|s| s.alignment) {
+                        Some(crate::model::style::Alignment::Right) => {
+                            let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
+                            let avail_right = col_area.x + col_area.width - margin_right;
+                            (avail_right - tbl_w).max(base_x)
+                        }
+                        Some(crate::model::style::Alignment::Center) => {
+                            let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
+                            let center = col_area.x + (col_area.width - tbl_w) / 2.0;
+                            center.max(base_x)
+                        }
+                        _ => base_x,
+                    };
+                    Some(aligned_x)
                 } else {
                     None
                 };
