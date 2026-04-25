@@ -1,0 +1,17 @@
+{
+  "name": "rhwp-firefox",
+  "version": "0.2.1",
+  "description": "rhwp HWP viewer and editor Firefox extension",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node --check background.js && node --check content-script.js && node --check options.js && node --check firefox-compat.js && node --check sw/viewer-launcher.js && node --check sw/context-menus.js && node --check sw/download-observer.js && node --check sw/message-router.js",
+    "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\""
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite": "^6.1.0"
+  }
+}

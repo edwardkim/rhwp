@@ -21,6 +21,9 @@ Cargo.lock
 .DS_Store
 Thumbs.db
 
+# Node
+node_modules/
+
 # 폰트 (저작권 보호)
 /ttfs/hwp/
 /ttfs/windows/
@@ -77,3 +80,6 @@ rhwp-chrome/dist/
 rhwp-safari/dist/
 rhwp-safari/HWP Viewer/
 rhwp-safari/.DS_Store
+
+# rhwp-firefox 빌드 산출물
+rhwp-firefox/dist/
