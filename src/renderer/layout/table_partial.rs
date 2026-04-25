@@ -87,70 +87,16 @@ impl LayoutEngine {
                 if cell.row_span == 1 && cell.row as usize == start_row {
                     let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
 
-                    // 셀 내 중첩 표 유무 확인
-                    let has_nested_table = cell.paragraphs.iter()
-                        .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
-
-                    let remaining = if has_nested_table {
-                        // 중첩 표 포함 셀: pagination의 split_start_content_offset은
-                        // MeasuredTable 기반이므로, layout의 cell.height 기반 행 높이와
-                        // 좌표 불일치가 발생한다.
-                        // → 실제 렌더링될 중첩 표의 가시 행 높이를 직접 계산한다.
-                        let mut visible_h = 0.0f64;
-                        let mut found_nested_table = false;
-                        let mut post_table_h = 0.0f64;
-                        let mut in_continuation_zone = false;
-                        for p in &cell.paragraphs {
-                            let p_has_table = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
-                            if p_has_table {
-                                found_nested_table = true;
-                                for ctrl in &p.controls {
-                                    if let Control::Table(inner_table) = ctrl {
-                                        let inner_rc = inner_table.row_count as usize;
-                                        let inner_cc = inner_table.col_count as usize;
-                                        let inner_rh = self.resolve_row_heights(
-                                            inner_table, inner_cc, inner_rc, None, styles,
-                                        );
-                                        let inner_spacing = hwpunit_to_px(inner_table.cell_spacing as i32, self.dpi);
-                                        let nested_h = self.calc_nested_table_height(inner_table, styles);
-                                        let split_info = calc_nested_split_rows(
-                                            &inner_rh, inner_spacing,
-                                            split_start_content_offset, nested_h - split_start_content_offset,
-                                        );
-                                        let om_top = hwpunit_to_px(inner_table.outer_margin_top as i32, self.dpi);
-                                        let om_bottom = hwpunit_to_px(inner_table.outer_margin_bottom as i32, self.dpi);
-                                        visible_h += split_info.visible_height + om_top + om_bottom;
-                                    }
-                                }
-                            } else if found_nested_table {
-                                // 중첩 표 이후 문단: split offset 이후인 것만 포함
-                                // vpos < split_offset → 이전 페이지 문단 → 스킵
-                                // vpos == 0 → continuation 리셋 → 포함
-                                if let Some(first_seg) = p.line_segs.first() {
-                                    // vpos=0 발견 → continuation 좌표계 시작 → 이후 모든 문단 포함
-                                    if first_seg.vertical_pos == 0 && !in_continuation_zone {
-                                        in_continuation_zone = true;
-                                    }
-                                    let is_after_split = in_continuation_zone
-                                        || hwpunit_to_px(first_seg.vertical_pos, self.dpi) >= split_start_content_offset;
-                                    if is_after_split {
-                                        for seg in &p.line_segs {
-                                            post_table_h += hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        visible_h + post_table_h
-                    } else {
-                        let composed: Vec<_> = cell.paragraphs.iter()
-                            .map(|p| compose_paragraph(p))
-                            .collect();
-                        let ranges = self.compute_cell_line_ranges(cell, &composed, split_start_content_offset, 0.0, styles);
-                        self.calc_visible_content_height_from_ranges(
-                            &composed, &cell.paragraphs, &ranges, styles,
-                        )
-                    };
+                    // Task #324 v3: 중첩 표 포함 여부와 무관하게 통일된 경로 사용.
+                    // compute_cell_line_ranges 가 cumulative position 기반으로 nested table
+                    // atomic 처리를 정확히 수행하므로 별도 분기 불필요.
+                    let composed: Vec<_> = cell.paragraphs.iter()
+                        .map(|p| compose_paragraph(p))
+                        .collect();
+                    let ranges = self.compute_cell_line_ranges(cell, &composed, split_start_content_offset, 0.0, styles);
+                    let remaining = self.calc_visible_content_height_from_ranges(
+                        &composed, &cell.paragraphs, &ranges, styles,
+                    );
                     let cell_h = remaining + pad_top + pad_bottom;
                     if cell_h > max_remaining_h {
                         max_remaining_h = cell_h;
@@ -586,7 +532,41 @@ impl LayoutEngine {
                             content_y_accum += nested_h;
                             continue;
                         }
+                    } else if has_nested_table && is_in_split_row && split_end_content_limit > 0.0 {
+                        // 분할 끝 행: compute_cell_line_ranges가 중첩 표를 limit 초과로
+                        // 다음 페이지로 미뤘음(=(line_count, line_count)). 이 페이지에서는 스킵.
+                        let nested_h: f64 = para.controls.iter().map(|ctrl| {
+                            if let Control::Table(t) = ctrl {
+                                self.calc_nested_table_height(t, styles)
+                            } else { 0.0 }
+                        }).sum();
+                        content_y_accum += nested_h;
+                        continue;
                     } else if !has_nested_table {
+                        // 일반 문단이 offset 으로 완전히 소비됨 → content_y_accum 갱신 후 스킵.
+                        // (Task #324 후속: 이 갱신 누락으로 후속 nested-table 문단의 content_y_accum
+                        //  이 부정확하여 split_start 페이지에서 렌더 위치가 잘못 판정되던 결함 수정.)
+                        if is_in_split_row {
+                            let p_style = styles.para_styles.get(para.para_shape_id as usize);
+                            let sp_before = if cp_idx > 0 { p_style.map(|s| s.spacing_before).unwrap_or(0.0) } else { 0.0 };
+                            let sp_after = if cp_idx + 1 != split_para_count { p_style.map(|s| s.spacing_after).unwrap_or(0.0) } else { 0.0 };
+                            let lc = composed.lines.len();
+                            let is_lp = cp_idx + 1 == split_para_count;
+                            let h = if lc == 0 {
+                                sp_before + hwpunit_to_px(400, self.dpi) + sp_after
+                            } else {
+                                composed.lines.iter().enumerate().map(|(li, line)| {
+                                    let lh = hwpunit_to_px(line.line_height, self.dpi);
+                                    let ls = hwpunit_to_px(line.line_spacing, self.dpi);
+                                    let is_cell_last = is_lp && li + 1 == lc;
+                                    let mut h = if !is_cell_last { lh + ls } else { lh };
+                                    if li == 0 { h += sp_before; }
+                                    if li == lc - 1 { h += sp_after; }
+                                    h
+                                }).sum()
+                            };
+                            content_y_accum += h;
+                        }
                         continue;
                     }
                 }
