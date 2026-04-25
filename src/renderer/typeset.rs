@@ -117,6 +117,9 @@ struct TypesetState {
     current_zone_layout: Option<PageLayoutInfo>,
     /// 다단 첫 페이지 여부
     on_first_multicolumn_page: bool,
+    /// Task #321: col 0 상단의 body-wide TopAndBottom 표/도형이 차지하는 높이 (px).
+    /// col 1 이상으로 advance 시 zone_y_offset에 반영.
+    pending_body_wide_top_reserve: f64,
 }
 
 impl TypesetState {
@@ -142,6 +145,7 @@ impl TypesetState {
             current_zone_y_offset: 0.0,
             current_zone_layout: None,
             on_first_multicolumn_page: false,
+            pending_body_wide_top_reserve: 0.0,
         }
     }
 
@@ -212,7 +216,11 @@ impl TypesetState {
         self.flush_column();
         if self.current_column + 1 < self.col_count {
             self.current_column += 1;
-            self.current_height = 0.0;
+            // Task #321: col 0 상단의 body-wide TopAndBottom 표/도형이 차지한 높이를
+            // current_height의 시작값으로 사용 (가용 공간만 줄임, zone_y_offset은 건드리지 않음).
+            // layout은 body_wide_reserved로 별도 처리하므로 여기서 zone_y_offset에
+            // 넣으면 double-shift가 발생.
+            self.current_height = self.pending_body_wide_top_reserve;
         } else {
             self.push_new_page();
         }
@@ -235,6 +243,8 @@ impl TypesetState {
     fn push_new_page(&mut self) {
         self.pages.push(self.new_page_content(Vec::new()));
         self.reset_for_new_page();
+        // Task #321: 새 페이지에서는 body-wide top reserve 초기화
+        self.pending_body_wide_top_reserve = 0.0;
     }
 
     fn reset_for_new_page(&mut self) {
@@ -374,6 +384,7 @@ impl TypesetEngine {
                 }
             }
 
+
             st.ensure_page();
 
             if !has_table {
@@ -386,6 +397,18 @@ impl TypesetEngine {
                     &mut st, para_idx, para, composed.get(para_idx),
                     styles, measured_tables, page_def,
                 );
+            }
+
+            // Task #321: col 0 처리 중 body-wide TopAndBottom 표/도형이 발견되면
+            // col 1+ advance 시 적용할 current_height 시작값을 미리 등록.
+            // layout의 body_wide_reserved와 동일 조건으로 detect.
+            if st.col_count > 1 && st.current_column == 0 && st.pending_body_wide_top_reserve == 0.0 {
+                let reserve = compute_body_wide_top_reserve_for_para(
+                    para, &st.layout, self.dpi,
+                );
+                if reserve > 0.0 {
+                    st.pending_body_wide_top_reserve = reserve;
+                }
             }
 
             // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
@@ -1623,6 +1646,47 @@ impl TypesetEngine {
     fn get_table_vertical_offset(table: &crate::model::table::Table) -> u32 {
         table.common.vertical_offset as u32
     }
+}
+
+/// Task #321: 단일 문단의 컨트롤에서 body-wide TopAndBottom 표/도형이 차지하는 높이 계산.
+///
+/// 다단 페이지에서 col 1 이상은 이 높이 만큼 zone_y_offset을 미리 차감해야
+/// layout의 `body_wide_reserved` 처리와 일치한다.
+fn compute_body_wide_top_reserve_for_para(
+    para: &Paragraph,
+    layout: &PageLayoutInfo,
+    dpi: f64,
+) -> f64 {
+    use crate::model::shape::TextWrap;
+    let body_w = layout.body_area.width;
+    let body_h = layout.available_body_height();
+    let mut max_bottom: f64 = 0.0;
+    for ctrl in &para.controls {
+        let common = match ctrl {
+            Control::Shape(s) => s.common(),
+            Control::Table(t) if !t.common.treat_as_char => &t.common,
+            Control::Picture(p) if !p.common.treat_as_char => &p.common,
+            _ => continue,
+        };
+        if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
+            continue;
+        }
+        let shape_w = crate::renderer::hwpunit_to_px(common.width as i32, dpi);
+        if shape_w < body_w * 0.8 {
+            continue;
+        }
+        let shape_h = crate::renderer::hwpunit_to_px(common.height as i32, dpi);
+        let shape_y_offset = crate::renderer::hwpunit_to_px(common.vertical_offset as i32, dpi);
+        if shape_y_offset > body_h / 3.0 {
+            continue;
+        }
+        let outer_bottom = crate::renderer::hwpunit_to_px(common.margin.bottom as i32, dpi);
+        let bottom = shape_y_offset + shape_h + outer_bottom;
+        if bottom > max_bottom {
+            max_bottom = bottom;
+        }
+    }
+    max_bottom
 }
 
 #[cfg(test)]
