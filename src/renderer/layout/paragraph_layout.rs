@@ -2429,9 +2429,14 @@ impl LayoutEngine {
             }
 
             col_node.children.push(line_node);
-            // 줄간격 적용: 셀 내 마지막 문단의 마지막 줄에서만 trailing spacing 제외
+            // 줄간격 적용:
+            //  - 셀 내 마지막 문단의 마지막 줄: trailing spacing 제외 (기존 동작)
+            //  - Task #331: 본문 partial 의 마지막 visible 줄: trailing spacing 제외
+            //    (마지막 partial 이면 HWP vpos_h 와 일치, 중간 partial 이면 페이지 break 가 ls 를 흡수)
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
-            if !is_cell_last_line || cell_ctx.is_none() {
+            let is_partial_last_line = line_idx + 1 >= end;
+            let skip_trailing_ls = is_cell_last_line || (is_partial_last_line && cell_ctx.is_none());
+            if !skip_trailing_ls {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
             } else {

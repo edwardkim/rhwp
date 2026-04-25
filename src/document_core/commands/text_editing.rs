@@ -1667,15 +1667,16 @@ mod tests {
         assert_eq!(core.page_count(), 1, "초기 페이지 수");
         assert_eq!(core.document.sections[0].paragraphs.len(), 1, "초기 문단 수");
 
-        // Enter를 50번 입력하여 페이지 오버플로우 유발
-        for i in 0..50 {
+        // Enter를 100번 입력하여 페이지 오버플로우 유발
+        // (Task #331 trailing line_spacing 보정 후 페이지 수용량 증가 → 50→100 으로 상향)
+        for i in 0..100 {
             let para_count = core.document.sections[0].paragraphs.len();
             core.split_paragraph_native(0, para_count - 1, 0).unwrap();
         }
 
         let para_count = core.document.sections[0].paragraphs.len();
         let page_count = core.page_count();
-        assert_eq!(para_count, 51, "문단 수");
+        assert_eq!(para_count, 101, "문단 수");
         assert!(page_count >= 2, "페이지 수: {} (2 이상이어야 함)", page_count);
     }
 
@@ -1728,7 +1729,8 @@ mod tests {
 
         // 텍스트를 넣고 Enter로 문단 분리 반복 → 페이지 넘김 검증
         let text = "Line spacing 160 percent default.";
-        for i in 0..50 {
+        // Task #331: trailing line_spacing 보정 후 페이지 수용량 증가 → 50→100
+        for i in 0..100 {
             let para_count = core.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
@@ -1736,17 +1738,18 @@ mod tests {
         }
 
         let page_count = core.page_count();
-        eprintln!("160% 줄간격: 문단 51개, 페이지 수: {}", page_count);
+        eprintln!("160% 줄간격: 문단 101개, 페이지 수: {}", page_count);
         assert!(page_count >= 2, "160% 줄간격에서 페이지 넘김 필요: {}", page_count);
     }
 
     /// 줄간격 100%에서 160%보다 더 많은 문단이 한 페이지에 들어가는지 확인
     #[test]
     fn test_page_break_with_tight_line_spacing() {
-        // 100% 줄간격 문서
+        // 100% 줄간격 문서 (multi-line 문단 — line_spacing 은 줄 사이에만 적용되므로
+        // 단일 줄 문단으로는 의미 있는 비교가 불가능)
         let mut core100 = DocumentCore::new_empty();
         core100.create_blank_document_native().unwrap();
-        let text = "Tight spacing test line.";
+        let text = "Tight spacing test line that should wrap onto multiple lines so that line_spacing actually has an effect on paragraph height.";
         // 첫 문단에 줄간격 100% 적용
         core100.apply_para_format_native(0, 0, r#"{"lineSpacing":100}"#).unwrap();
         for i in 0..50 {
@@ -1820,7 +1823,8 @@ mod tests {
         let spacings = [160, 100, 300, 250, 120, 200];
         let text = "Mixed spacing paragraph content here.";
 
-        for i in 0..40 {
+        // Task #331: trailing line_spacing 보정 후 페이지 수용량 증가 → 40→80
+        for i in 0..80 {
             let para_count = core.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
@@ -1918,9 +1922,11 @@ mod tests {
         let mut core = DocumentCore::new_empty();
         core.create_blank_document_native().unwrap();
 
-        // 160% 줄간격으로 40개 문단 생성 (1페이지에 딱 맞도록)
-        let text = "Test paragraph for spacing.";
-        for _ in 0..39 {
+        // 30개 multi-line 문단 생성 (각 문단 2~3줄, 1페이지 가득)
+        // Task #331: trailing line_spacing 은 마지막 줄 뒤에 적용되지 않음 → 단일 줄 문단은
+        // 줄간격 변경에 advance 가 무영향. 따라서 multi-line 문단으로 spacing 영향 검증.
+        let text = "Test paragraph for spacing testing with sufficiently long text to wrap onto multiple lines because line spacing only matters between lines.";
+        for _ in 0..29 {
             let last = core.document.sections[0].paragraphs.len() - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
             core.split_paragraph_native(0, last, text.len()).unwrap();
@@ -1930,18 +1936,18 @@ mod tests {
         core.insert_text_native(0, last, 0, text).unwrap();
 
         let initial_pages = core.page_count();
-        eprintln!("초기 페이지 수: {} (40문단 160%)", initial_pages);
+        eprintln!("초기 페이지 수: {} (30 multi-line 문단 160%)", initial_pages);
 
-        // 문단 15~25의 줄간격을 10%씩 증가 (170%, 180%, ..., 270%)
+        // 모든 문단의 줄간격을 10%씩 증가 (170%, 180%, ..., 560%)
+        // Task #331: trailing line_spacing 보정 후 수용량 증가 → 범위/상한 확대
+        let total_paras = core.document.sections[0].paragraphs.len();
         let mut prev_pages = initial_pages;
         let mut boundary_crossed_at = 0;
-        for step in 0..20 {
-            let spacing = 170 + step * 10; // 170% → 360%
-            for para_idx in 15..26 {
-                if para_idx < core.document.sections[0].paragraphs.len() {
-                    let json = format!(r#"{{"lineSpacing":{}}}"#, spacing);
-                    core.apply_para_format_native(0, para_idx, &json).unwrap();
-                }
+        for step in 0..40 {
+            let spacing = 170 + step * 10; // 170% → 560%
+            for para_idx in 0..total_paras {
+                let json = format!(r#"{{"lineSpacing":{}}}"#, spacing);
+                core.apply_para_format_native(0, para_idx, &json).unwrap();
             }
             let pages = core.page_count();
             if pages > prev_pages && boundary_crossed_at == 0 {
@@ -1951,7 +1957,7 @@ mod tests {
             prev_pages = pages;
         }
 
-        eprintln!("최종 페이지 수: {} (줄간격 360%)", prev_pages);
+        eprintln!("최종 페이지 수: {} (줄간격 560%)", prev_pages);
         assert!(prev_pages > initial_pages,
             "줄간격 증가로 페이지 수 증가 필요: {} → {}", initial_pages, prev_pages);
         assert!(boundary_crossed_at > 0,

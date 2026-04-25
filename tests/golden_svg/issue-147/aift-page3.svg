@@ -3,13 +3,13 @@
 <clipPath id="body-clip-3"><rect x="75.58666666666667" y="75.57333333333334" width="642.5333333333334" height="971.36"/></clipPath>
 </defs>
 <rect x="0" y="0" width="793.7066666666667" height="1122.5066666666667" fill="#ffffff"/>
-<g clip-path="url(#body-clip-3)"><rect x="75.58666666666667" y="925.2800000000001" width="642.5333333333334" height="79.78666666666663" fill="none"/>
-<rect x="75.58666666666667" y="902.2933333333334" width="642.5333333333334" height="22.98666666666668" fill="none"/>
-<rect x="75.58666666666667" y="802.5600000000001" width="642.5333333333334" height="99.73333333333335" fill="none"/>
-<rect x="75.58666666666667" y="772.9066666666668" width="642.5333333333334" height="29.653333333333308" fill="none"/>
-<rect x="75.58666666666667" y="714.6133333333333" width="642.5333333333334" height="58.293333333333294" fill="none"/>
-<rect x="75.58666666666667" y="684.96" width="642.5333333333334" height="29.653333333333308" fill="none"/>
-<rect x="75.58666666666667" y="75.57333333333334" width="642.5333333333334" height="609.3866666666668" fill="none"/>
+<g clip-path="url(#body-clip-3)"><rect x="75.58666666666667" y="925.2800000000001" width="642.5333333333334" height="77.17333333333329" fill="none"/>
+<rect x="75.58666666666667" y="902.2933333333334" width="642.5333333333334" height="20" fill="none"/>
+<rect x="75.58666666666667" y="802.5600000000001" width="642.5333333333334" height="97.12" fill="none"/>
+<rect x="75.58666666666667" y="772.9066666666668" width="642.5333333333334" height="26.66666666666663" fill="none"/>
+<rect x="75.58666666666667" y="714.6133333333333" width="642.5333333333334" height="55.89333333333332" fill="none"/>
+<rect x="75.58666666666667" y="684.96" width="642.5333333333334" height="26.66666666666663" fill="none"/>
+<rect x="75.58666666666667" y="75.57333333333334" width="642.5333333333334" height="606.7733333333334" fill="none"/>
 <text x="362.85333333333335" y="94.84" font-family="돋움체,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="22.666666666666668" font-weight="bold" fill="#000000">목</text>
 <text x="408.18666666666667" y="94.84" font-family="돋움체,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="22.666666666666668" font-weight="bold" fill="#000000">차</text>
 <text x="75.58666666666667" y="138.6" font-family="돋움체,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="20" font-weight="bold" fill="#000000">1</text>
