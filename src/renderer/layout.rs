@@ -1359,9 +1359,12 @@ impl LayoutEngine {
                     }).unwrap_or(false);
                     if !prev_has_overlay_shape {
                     if let Some(prev_para) = paragraphs.get(prev_pi) {
-                        let prev_seg = prev_para.line_segs.iter().rev().find(|ls| {
-                            ls.segment_width > 0 && (ls.segment_width - col_width_hu).abs() < 3000
-                        });
+                        // Task #332 Stage 5: vpos correction trigger 조건 완화 —
+                        // 기존엔 segment_width 가 col_width 와 ±3000 HWPUNIT 이내일 때만 적용해
+                        // 짧은 단락/indent 가 있는 경우 trigger 누락 → drift 누적. 조건을 완화해
+                        // 마지막 segment 를 사용하되 width 검증 자체는 가드 조건으로 약화.
+                        let prev_seg = prev_para.line_segs.iter().rev().find(|ls| ls.segment_width > 0)
+                            .or_else(|| prev_para.line_segs.last());
                         if let Some(seg) = prev_seg {
                             if !(seg.vertical_pos == 0 && prev_pi > 0) {
                                 // Task #332: typeset/layout 의 height_for_fit 모델과 정합 —
