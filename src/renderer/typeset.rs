@@ -509,6 +509,32 @@ impl TypesetEngine {
         }
         st.ensure_page();
 
+        // Task #356: trailing 빈 페이지 정리.
+        // 본 fix 의 vpos 보정/force_advance 로 마지막 빈 문단(예: 본 샘플 pi=629 \r 만)
+        // 이 단독으로 새 페이지를 차지할 수 있다. PDF 는 이를 별도 페이지로 두지 않으므로,
+        // 마지막 페이지가 (a) 단 1개 (b) 단 내 항목 1개 (c) 그 항목이 빈 문단이면 삭제.
+        if st.pages.len() > 1 {
+            let drop_last = st.pages.last().map(|page| {
+                if page.column_contents.len() != 1 { return false; }
+                let col = &page.column_contents[0];
+                if col.items.len() != 1 { return false; }
+                // PartialParagraph 는 분할된 다행 문단의 일부이므로 trim 대상 제외
+                // (synthetic 테스트나 실제 큰 문단의 split 마지막 페이지를 보존)
+                let pi = match col.items[0] {
+                    PageItem::FullParagraph { para_index } => para_index,
+                    _ => return false,
+                };
+                paragraphs.get(pi).map(|p| {
+                    p.controls.is_empty()
+                        && p.text.chars()
+                            .all(|c| c.is_whitespace() || c == '\r' || c == '\n')
+                }).unwrap_or(false)
+            }).unwrap_or(false);
+            if drop_last {
+                st.pages.pop();
+            }
+        }
+
         // 페이지 번호 + 머리말/꼬리말 할당
         Self::finalize_pages(
             &mut st.pages, &hf_entries, &page_number_pos,
