@@ -411,5 +411,7 @@ impl Paginator {
 mod engine;
 mod state;
 
+pub use engine::detect_inter_paragraph_vpos_reset;
+
 #[cfg(test)]
 mod tests;

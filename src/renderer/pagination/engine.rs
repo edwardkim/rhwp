@@ -147,6 +147,22 @@ impl Paginator {
                 self.process_page_break(&mut st);
             }
 
+            // 인접 문단 vpos 리셋 감지 (Task #356)
+            // HWP 가 권위값으로 새 페이지에 보낸 문단(첫 LINE_SEG vpos 가 직전 문단
+            // vpos_end 보다 작음) 을 px 누적 평가가 같은 페이지로 잘못 분류하는 경우
+            // 강제 페이지/단 분기로 보정한다.
+            // current_items 가 비어있으면(=페이지 첫 문단 또는 직전 단계 분기 직후)
+            // 자연스럽게 적용 대상에서 제외된다.
+            if !st.current_items.is_empty() {
+                if let Some(prev_pi) = prev_pagination_para {
+                    if let Some(prev_para) = paragraphs.get(prev_pi) {
+                        if detect_inter_paragraph_vpos_reset(prev_para, para) {
+                            st.advance_column_or_new_page();
+                        }
+                    }
+                }
+            }
+
             // tac 표: 표 실측 높이 + 텍스트 줄 높이(th)로 판단 (Task #19)
             let para_height_for_fit = if has_table {
                 let has_tac = para.controls.iter().any(|c|
@@ -1929,29 +1945,32 @@ impl Paginator {
 /// 인접 문단 간 vpos 리셋 신호 감지.
 ///
 /// HWP 는 문단의 첫 LINE_SEG `vertical_pos` 를 페이지 좌표계 기준값(또는 0)으로
-/// 기록한다. 직전 문단의 마지막 LINE_SEG `vpos_end` 보다 현 문단의 첫 LINE_SEG
+/// 기록한다. 직전 문단의 첫 LINE_SEG `vertical_pos` 보다 현 문단의 첫 LINE_SEG
 /// `vertical_pos` 가 작으면, HWP 가 현 문단을 새 페이지(또는 새 단)로 보낸 것이다.
 /// 페이지네이터의 px 누적은 이 신호를 놓칠 수 있으므로 본 헬퍼로 감지한다.
 ///
 /// true 반환 조건 (모두 만족):
 /// - 두 문단 모두 LINE_SEG 가 1개 이상
 /// - `prev` 의 마지막 ls 와 `cur` 의 첫 ls 가 같은 column_start (단 변경과 구분)
-/// - `cur.first.vertical_pos < prev.last.vpos_end`
-///   (`vpos_end = vertical_pos + line_height + line_spacing`)
-pub(super) fn detect_inter_paragraph_vpos_reset(
+/// - `cur.first.vertical_pos < prev.first.vertical_pos`
+///
+/// `prev.last.vpos_end` 가 아닌 `prev.first.vertical_pos` 를 기준으로 삼는 이유:
+/// vpos_end 비교는 prev 문단의 lh/ls 누적이 의미 있는 값일 때만 정확하다.
+/// 합성 테스트나 비정상 데이터에서 lh>0 이지만 모든 줄의 vpos=0 인 경우
+/// vpos_end 만 보면 cur.vpos=0 < vpos_end 로 false positive 가 발생한다.
+/// `prev.first.vpos` 비교는 "cur 이 prev 의 시작 위치보다 위로 올라감 = 새 페이지/단"
+/// 이라는 더 강한 의미적 신호를 제공한다.
+pub fn detect_inter_paragraph_vpos_reset(
     prev: &Paragraph,
     cur: &Paragraph,
 ) -> bool {
     let Some(prev_last) = prev.line_segs.last() else { return false };
+    let Some(prev_first) = prev.line_segs.first() else { return false };
     let Some(cur_first) = cur.line_segs.first() else { return false };
     if prev_last.column_start != cur_first.column_start {
         return false;
     }
-    let prev_vpos_end = prev_last
-        .vertical_pos
-        .saturating_add(prev_last.line_height)
-        .saturating_add(prev_last.line_spacing);
-    cur_first.vertical_pos < prev_vpos_end
+    cur_first.vertical_pos < prev_first.vertical_pos
 }
 
 #[cfg(test)]
@@ -1984,8 +2003,7 @@ mod inter_para_vpos_reset_tests {
 
     #[test]
     fn returns_false_for_normal_progression() {
-        // prev: vpos_end = 5000 + 1600 + 0 = 6600
-        // cur:  vpos = 6600 (touching, equal) → not less than
+        // prev.first.vpos = 5000, cur.vpos = 6600 (정상 진행)
         let prev = para_with_segs(vec![seg(5000, 1600, 0, 0)]);
         let cur = para_with_segs(vec![seg(6600, 1600, 0, 0)]);
         assert!(!detect_inter_paragraph_vpos_reset(&prev, &cur));
@@ -1994,13 +2012,18 @@ mod inter_para_vpos_reset_tests {
         let prev2 = para_with_segs(vec![seg(5000, 1600, 600, 0)]);
         let cur2 = para_with_segs(vec![seg(7200, 1600, 0, 0)]);
         assert!(!detect_inter_paragraph_vpos_reset(&prev2, &cur2));
+
+        // 합성 데이터: 둘 다 vpos=0 (lh 만 있음) → false (새 페이지 신호 아님)
+        let prev3 = para_with_segs(vec![seg(0, 1000, 0, 0); 3]);
+        let cur3 = para_with_segs(vec![seg(0, 1000, 0, 0); 5]);
+        assert!(!detect_inter_paragraph_vpos_reset(&prev3, &cur3));
     }
 
     #[test]
     fn returns_true_for_clear_reset_to_new_page() {
         // 본 샘플 페이지 3 → 페이지 4 시나리오
-        // prev pi=39: vpos=66281, lh=2400, ls=0 → vpos_end = 68681
-        // cur pi=40: vpos=500
+        // prev pi=39: vpos=66281
+        // cur pi=40: vpos=500 (< 66281)
         let prev = para_with_segs(vec![seg(66281, 2400, 0, 0)]);
         let cur = para_with_segs(vec![seg(500, 1600, 0, 0)]);
         assert!(detect_inter_paragraph_vpos_reset(&prev, &cur));
@@ -2015,22 +2038,22 @@ mod inter_para_vpos_reset_tests {
     }
 
     #[test]
-    fn returns_true_for_subtle_reset_just_below_vpos_end() {
-        // vpos_end = 70000, cur.vpos = 69999 (1 HU 작음)
+    fn returns_true_for_subtle_reset_below_prev_first() {
+        // prev.first.vpos = 60000, cur.vpos = 59999 (1 HU 작음, prev 시작점보다 위)
         let prev = para_with_segs(vec![seg(60000, 10000, 0, 0)]);
-        let cur = para_with_segs(vec![seg(69999, 1600, 0, 0)]);
+        let cur = para_with_segs(vec![seg(59999, 1600, 0, 0)]);
         assert!(detect_inter_paragraph_vpos_reset(&prev, &cur));
     }
 
     #[test]
-    fn uses_last_line_seg_of_prev_not_first() {
-        // prev 가 여러 줄: 마지막 줄의 vpos_end 가 기준
+    fn returns_false_when_cur_vpos_within_prev_para_span() {
+        // prev: vpos=5000, lh=1600, 마지막 줄 vpos=8200
+        // cur.vpos = 9800 (정상 진행) → false
         let prev = para_with_segs(vec![
             seg(5000, 1600, 0, 0),
             seg(6600, 1600, 0, 0),
-            seg(8200, 1600, 0, 0), // vpos_end = 9800
+            seg(8200, 1600, 0, 0),
         ]);
-        // cur.vpos = 9800 → 정상 (false)
         let cur_ok = para_with_segs(vec![seg(9800, 1600, 0, 0)]);
         assert!(!detect_inter_paragraph_vpos_reset(&prev, &cur_ok));
         // cur.vpos = 500 → 리셋 (true)
