@@ -71,6 +71,27 @@ npm run build
 - `background.js`: `browser.*` 네임스페이스 사용 (Firefox 네이티브 Promise API)
 - `sw/download-interceptor.js`: `onDeterminingFilename` → `onCreated` (Firefox 호환)
 
+## 변경 이력
+
+### v0.2.2 (2026-04-26)
+
+**보안·품질 개선**
+- AMO 검증 워닝 해소 + 보안 강화 (외부 기여 by [@postmelee](https://github.com/postmelee) — PR [#339](https://github.com/edwardkim/rhwp/pull/339))
+  - `manifest.json` 의 `strict_min_version` 을 `142.0` 으로 상향 (`data_collection_permissions` 호환)
+  - 인쇄 팝업 경로의 `document.write` 를 DOM API 기반으로 변경
+  - 메뉴/오버레이/대화상자 경로의 `innerHTML` 사용을 DOM API · `textContent` · `replaceChildren()` · SVG DOM 생성 방식으로 변경
+  - 빌드 시 stale artifact 가 dist 에 섞이지 않도록 정리 단계 보강
+- 목차 리더 도트 + 페이지번호 우측 탭 정렬 (외부 기여 by [@seanshin](https://github.com/seanshin) — PR [#282](https://github.com/edwardkim/rhwp/pull/282))
+  - `fill_type=3` 점선 리더를 round cap 원형 점으로 표현 (한컴 동등)
+  - 들여쓰기 문단의 페이지번호 정렬 보정
+
+**기여자 감사**
+이번 배포 주기에 기여해주신 분들: [@postmelee](https://github.com/postmelee), [@seanshin](https://github.com/seanshin)
+
+### v0.2.1 (이전)
+
+- AMO 등록 준비 (rhwp-firefox 첫 공개 빌드)
+
 ## 라이선스
 
 MIT License — Copyright (c) 2026 Edward Kim

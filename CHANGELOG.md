@@ -2,7 +2,21 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
-## [Unreleased]
+## [0.7.6] — 2026-04-26
+
+> 외부 기여자 다수 + 조판 정밀화 사이클
+
+### 추가
+- **`replaceOne(query, newText, caseSensitive)` WASM API** (#268)
+  — 분석·구현 by [@oksure](https://github.com/oksure) (신규 기여자)
+  - `replaceText` 의 위치 기반 시그니처 vs 검색어 기반 호출 mismatch crash 해결
+  - 새 API 추가로 하위 호환성 100% 보존
+  - 5 unit tests (한국어 multi-byte 경계 포함)
+
+- **SVG/HTML draw_image base64 임베딩** (#335)
+  — 분석·구현 by [@oksure](https://github.com/oksure)
+  - 기존 placeholder (`<rect>`/`<div>`) → 실제 이미지 base64 data URI 임베딩
+  - `render_picture` / `web_canvas` 와의 backend 정합
 
 ### 수정
 - **목차 리더 도트 + 페이지번호 우측 탭 정렬** (#279)
@@ -10,6 +24,31 @@
   - `fill_type=3` 점선 리더를 round cap 원형 점으로 표현 (한컴 동등)
   - `find_next_tab_stop` RIGHT 탭 클램핑 제외 — 들여쓰기 문단의 페이지번호 정렬 보정
   - 메인테이너 추가 보강: 셀 padding 인지 leader 시멘틱, 페이지번호 폭별 leader 길이 차등화, 공백 only run carry-over
+
+- **form-002 인너 표 페이지 분할 결함** (#324)
+  — 분석·구현 by [@planet6897](https://github.com/planet6897)
+  - `compute_cell_line_ranges` 잔량 추적 → 누적위치 (`cum`) 기반 재작성
+  - `layout_partial_table` 의 `content_y_accum` 갱신 + split-start row 통일된 계산
+  - 작성자 자체 v1 → v2 → v3 보강
+
+- **typeset 경로 PageHide / Shape / 중복 emit 결함** (#340)
+  — 분석·구현 by [@planet6897](https://github.com/planet6897)
+  - 세 결함을 typeset.rs 의 누락이라는 공통 원인으로 통합 진단
+  - `engine.rs` 와의 정합 (PageHide 수집 + `pre_text_exists` 가드 + Shape 인라인 등록)
+
+- **Firefox AMO 워닝 해결 (rhwp-firefox 0.2.1 → 0.2.2)** (#338)
+  — 분석·구현 by [@postmelee](https://github.com/postmelee)
+  - manifest `strict_min_version` 142 상향 (`data_collection_permissions` 호환)
+  - `viewer-*.js` 의 unsafe `innerHTML` / `Function` / `document.write` sanitize
+  - rhwp-studio 28 파일 DOM/SVG API 교체 + Reviewer Notes 한/영
+
+- **Task #321~#332 누적 정리 + vpos/cell padding 회귀 해소** (#342)
+  — 분석·구현 by [@planet6897](https://github.com/planet6897)
+  - vpos correction 양방향 가드 + cell padding aim 명시값 우선 정책
+  - typeset/layout drift 정합화 + 메인테이너 검토 응답으로 KTX TOC 결과 (#279) 복원
+
+### 기타
+- **신규 기여자 환영 안내** — README.md / README_EN.md Contributing 섹션에 PR base=devel 명시 (#330 close 후 후속 개선)
 
 ## [0.6.0] — 2026-04-04
 

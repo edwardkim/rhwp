@@ -1,6 +1,6 @@
 {
   "name": "rhwp-studio",
-  "version": "0.7.3",
+  "version": "0.7.6",
   "license": "MIT",
   "type": "module",
   "scripts": {

@@ -54,7 +54,7 @@
 **보고**: 메뉴 → 도움말 → 제품 정보 클릭 시 콘솔 에러.
 **원인**: `rhwp-chrome/vite.config.ts` 가 `__APP_VERSION__` 의 `define` 옵션을 누락. rhwp-studio/vite.config.ts 는 정상.
 **수정**: `rhwp-chrome/vite.config.ts` 에 `define: { __APP_VERSION__: JSON.stringify(studioPkg.version) }` 추가.
-**부수 효과**: 작업지시자 결정으로 라이브러리/확장 버전 이원화 — rhwp-studio 0.7.2→0.7.3, rhwp-chrome/safari 확장 0.1.x→0.2.0.
+**부수 효과**: 작업지시자 결정으로 라이브러리/확장 버전 이원화 — rhwp-studio 0.7.2→0.7.3, rhwp-chrome/safari 확장 0.1.x→0.2.1.
 
 ### 2.5 about-dialog 한글 제품명 + 카피라이트 변경
 
@@ -83,8 +83,8 @@
 
 | 파일 | 변경 |
 |---|---|
-| [`rhwp-chrome/README.md`](rhwp-chrome/README.md) | 저장 섹션 갱신 (HWP/HWPX 분리) + 변경 이력 v0.2.0 + 향후 예정 |
-| [`README.md`](README.md) | 이정표 v0.5.0 → v0.5.0~v0.7.x 확장 + 최근 변경 (v0.7.3 / 확장 v0.2.0) |
+| [`rhwp-chrome/README.md`](rhwp-chrome/README.md) | 저장 섹션 갱신 (HWP/HWPX 분리) + 변경 이력 v0.2.1 + 향후 예정 |
+| [`README.md`](README.md) | 이정표 v0.5.0 → v0.5.0~v0.7.x 확장 + 최근 변경 (v0.7.3 / 확장 v0.2.1) |
 | [`README_EN.md`](README_EN.md) | Recent Changes + Coming Soon 신규 섹션 |
 
 ## 5. 산출물 변경 요약
@@ -100,8 +100,8 @@
 | `rhwp-studio/src/ui/about-dialog.ts` | 한글 제품명 + 카피라이트 변경 |
 | `rhwp-chrome/vite.config.ts` | `__APP_VERSION__` define 주입 |
 | `rhwp-studio/package.json` | 0.7.2 → 0.7.3 |
-| `rhwp-chrome/manifest.json` + `package.json` | 0.1.1 → 0.2.0 |
-| `rhwp-safari/src/manifest.json` | 0.1.0 → 0.2.0 |
+| `rhwp-chrome/manifest.json` + `package.json` | 0.1.1 → 0.2.1 |
+| `rhwp-safari/src/manifest.json` | 0.1.0 → 0.2.1 |
 | README 3개 | 변경 이력 + 향후 예정 섹션 |
 
 ## 6. 검증 사이클 요약
