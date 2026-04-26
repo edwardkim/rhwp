@@ -1689,18 +1689,15 @@ impl TypesetEngine {
         page_hides: &[(usize, crate::model::control::PageHide)],
         _section_index: usize,
     ) {
-        // 기존 Paginator::finalize_pages 로직을 그대로 재사용
-        // (별도 함수로 추출하여 공유하는 것이 이상적이나, Phase 1에서는 복제)
-
+        // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
         let mut current_header: Option<HeaderFooterRef> = None;
         let mut current_footer: Option<HeaderFooterRef> = None;
-        let mut page_num: u32 = 1;
-        // [Task #361] 이전 페이지의 마지막 문단 추적 — NewNumber 가 이미 적용된 페이지에서
-        // 다시 적용되지 않도록 한다 (Paginator 시멘틱과 동일).
-        let mut prev_page_last_para: Option<usize> = None;
+        let mut assigner = crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
 
         for page in pages.iter_mut() {
-            // 이 페이지에 속하는 첫/끝 문단 인덱스
+            let page_num = assigner.assign(page);
+
+            // 이 페이지에 속하는 머리말/꼬리말 갱신
             let page_last_para = page.column_contents.iter()
                 .flat_map(|col| col.items.iter())
                 .map(|item| match item {
@@ -1712,18 +1709,6 @@ impl TypesetEngine {
                 })
                 .max();
 
-            // [Task #361] NewNumber 적용 — 한 페이지에서 한 번만
-            // 조건: nn_pi 가 이전 페이지에 이미 적용되지 않았고 (after_prev),
-            //       이 페이지 안에 있어야 함 (in_current).
-            for &(nn_pi, nn_num) in new_page_numbers {
-                let after_prev = prev_page_last_para.map_or(true, |prev| nn_pi > prev);
-                let in_current = page_last_para.map_or(false, |last| nn_pi <= last);
-                if after_prev && in_current {
-                    page_num = nn_num as u32;
-                }
-            }
-
-            // 이 페이지에 속하는 머리말/꼬리말 갱신
             if let Some(last_pi) = page_last_para {
                 for (hf_pi, hf_ref, is_header, apply) in hf_entries {
                     if *hf_pi <= last_pi {
@@ -1766,11 +1751,6 @@ impl TypesetEngine {
                     break;
                 }
             }
-
-            // [Task #361] 다음 페이지에서 NewNumber 가 이미 적용된 페이지인지 판단하기 위해
-            // 이 페이지의 마지막 문단을 추적.
-            prev_page_last_para = page_last_para.or(prev_page_last_para);
-            page_num += 1;
         }
     }
 
