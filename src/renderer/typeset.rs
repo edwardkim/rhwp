@@ -368,22 +368,6 @@ impl TypesetEngine {
                 st.force_new_page();
             }
 
-            // Task #321: 문단간 vpos-reset 기반 강제 분할
-            // HWP LINE_SEG의 vertical_pos는 페이지 내 흐름 y 좌표.
-            // 현재 문단 first_vpos=0이고 직전 문단이 같은 단에 있으며 last_vpos가 충분히 큰 경우,
-            // HWP가 pi 경계에서 페이지/단 분할을 의도한 것 → 강제 분할.
-            if para_idx > 0 && !st.current_items.is_empty() {
-                let prev_para = &paragraphs[para_idx - 1];
-                let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
-                let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
-                if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
-                    // 현재 문단의 vpos가 0 이고 직전 문단의 마지막 vpos가 의미있게 큰 경우 (5000 HU ≈ 1.76mm)
-                    if cv == 0 && pv > 5000 {
-                        st.advance_column_or_new_page();
-                    }
-                }
-            }
-
 
             st.ensure_page();
 
@@ -547,12 +531,11 @@ impl TypesetEngine {
         para: &Paragraph,
         fmt: &FormattedParagraph,
     ) {
-        // Task #332 Stage 4a: layout drift 안전 마진.
-        // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
-        // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
-        // layout 시점의 LAYOUT_OVERFLOW (clamp pile 트리거) 를 사전 차단한다.
-        const LAYOUT_DRIFT_SAFETY_PX: f64 = 10.0;
-        let available = (st.available_height() - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
+        // issue #345: PR #343 squash 의 LAYOUT_DRIFT_SAFETY_PX (10px) 마진은 advance
+        // 변경 (total → height_for_fit) 와 결합되어 페이지 수 회귀를 만들었다.
+        // advance 를 total_height 로 복원하면 layout 의 vpos_end 와 정합하므로
+        // drift 마진 불필요. pre-#343 동작으로 복원.
+        let available = st.available_height();
 
         // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
         // Stage 5a 확장: per-paragraph 카테고리 분해 (sb/sa/lines/line_sum/ls_sum)
@@ -609,12 +592,17 @@ impl TypesetEngine {
         }
 
         // fits: 문단 전체가 현재 공간에 들어가는가?
+        // issue #345: fit 판정은 height_for_fit (trail_ls 제외, 관대) — 마지막
+        // 문단의 trail_ls 가 페이지 끝에 걸쳐도 fit 인정. 그러나 advance 는
+        // total_height 로 정확히 누적 — 다음 문단의 cumulative y 가 layout 의
+        // vpos_end (= prev.vpos + lh + ls) 와 정합. PR #343 squash 가 advance 도
+        // height_for_fit 으로 변경하여 trail_ls 만큼 cumulative 가 작아지고 다음
+        // 문단이 한 페이지에 더 들어가는 회귀 (exam_eng 9→8 페이지) 발생.
         if st.current_height + fmt.height_for_fit <= available {
-            // place: 전체 배치
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.height_for_fit;
+            st.current_height += fmt.total_height;
             return;
         }
 
@@ -624,12 +612,12 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.height_for_fit;
+            st.current_height += fmt.total_height;
             return;
         }
 
-        // Task #332 Stage 4a: partial split 시에도 동일 마진 적용
-        let base_available = (st.base_available_height() - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
+        // issue #345: drift 마진 제거 (advance 복원으로 불필요)
+        let base_available = st.base_available_height();
 
         // 남은 공간이 없거나 첫 줄도 못 넣으면 먼저 다음 단/페이지로
         let first_line_h = fmt.line_heights[0];
@@ -656,8 +644,8 @@ impl TypesetEngine {
             };
 
             let sp_b = if cursor_line == 0 { fmt.spacing_before } else { 0.0 };
-            // Task #332 Stage 4b: partial split 의 줄 단위 fit 검사에도 layout drift 마진 적용
-            let avail_for_lines = (page_avail - sp_b - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
+            // issue #345: drift 마진 제거
+            let avail_for_lines = (page_avail - sp_b).max(0.0);
 
             // 현재 페이지에 들어갈 줄 범위 결정
             let mut cumulative = 0.0;
