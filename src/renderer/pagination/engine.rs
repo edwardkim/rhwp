@@ -1925,3 +1925,116 @@ impl Paginator {
         table.common.vertical_offset as u32
     }
 }
+
+/// 인접 문단 간 vpos 리셋 신호 감지.
+///
+/// HWP 는 문단의 첫 LINE_SEG `vertical_pos` 를 페이지 좌표계 기준값(또는 0)으로
+/// 기록한다. 직전 문단의 마지막 LINE_SEG `vpos_end` 보다 현 문단의 첫 LINE_SEG
+/// `vertical_pos` 가 작으면, HWP 가 현 문단을 새 페이지(또는 새 단)로 보낸 것이다.
+/// 페이지네이터의 px 누적은 이 신호를 놓칠 수 있으므로 본 헬퍼로 감지한다.
+///
+/// true 반환 조건 (모두 만족):
+/// - 두 문단 모두 LINE_SEG 가 1개 이상
+/// - `prev` 의 마지막 ls 와 `cur` 의 첫 ls 가 같은 column_start (단 변경과 구분)
+/// - `cur.first.vertical_pos < prev.last.vpos_end`
+///   (`vpos_end = vertical_pos + line_height + line_spacing`)
+pub(super) fn detect_inter_paragraph_vpos_reset(
+    prev: &Paragraph,
+    cur: &Paragraph,
+) -> bool {
+    let Some(prev_last) = prev.line_segs.last() else { return false };
+    let Some(cur_first) = cur.line_segs.first() else { return false };
+    if prev_last.column_start != cur_first.column_start {
+        return false;
+    }
+    let prev_vpos_end = prev_last
+        .vertical_pos
+        .saturating_add(prev_last.line_height)
+        .saturating_add(prev_last.line_spacing);
+    cur_first.vertical_pos < prev_vpos_end
+}
+
+#[cfg(test)]
+mod inter_para_vpos_reset_tests {
+    use super::*;
+    use crate::model::paragraph::LineSeg;
+
+    fn para_with_segs(segs: Vec<LineSeg>) -> Paragraph {
+        let mut p = Paragraph::default();
+        p.line_segs = segs;
+        p
+    }
+
+    fn seg(vpos: i32, lh: i32, ls: i32, col: i32) -> LineSeg {
+        let mut s = LineSeg::default();
+        s.vertical_pos = vpos;
+        s.line_height = lh;
+        s.line_spacing = ls;
+        s.column_start = col;
+        s
+    }
+
+    #[test]
+    fn returns_false_when_either_paragraph_has_no_line_segs() {
+        let empty = Paragraph::default();
+        let with = para_with_segs(vec![seg(0, 1000, 0, 0)]);
+        assert!(!detect_inter_paragraph_vpos_reset(&empty, &with));
+        assert!(!detect_inter_paragraph_vpos_reset(&with, &empty));
+    }
+
+    #[test]
+    fn returns_false_for_normal_progression() {
+        // prev: vpos_end = 5000 + 1600 + 0 = 6600
+        // cur:  vpos = 6600 (touching, equal) → not less than
+        let prev = para_with_segs(vec![seg(5000, 1600, 0, 0)]);
+        let cur = para_with_segs(vec![seg(6600, 1600, 0, 0)]);
+        assert!(!detect_inter_paragraph_vpos_reset(&prev, &cur));
+
+        // 정상 줄간격 추가 진행
+        let prev2 = para_with_segs(vec![seg(5000, 1600, 600, 0)]);
+        let cur2 = para_with_segs(vec![seg(7200, 1600, 0, 0)]);
+        assert!(!detect_inter_paragraph_vpos_reset(&prev2, &cur2));
+    }
+
+    #[test]
+    fn returns_true_for_clear_reset_to_new_page() {
+        // 본 샘플 페이지 3 → 페이지 4 시나리오
+        // prev pi=39: vpos=66281, lh=2400, ls=0 → vpos_end = 68681
+        // cur pi=40: vpos=500
+        let prev = para_with_segs(vec![seg(66281, 2400, 0, 0)]);
+        let cur = para_with_segs(vec![seg(500, 1600, 0, 0)]);
+        assert!(detect_inter_paragraph_vpos_reset(&prev, &cur));
+    }
+
+    #[test]
+    fn returns_false_when_columns_differ() {
+        // 다단 환경에서 단 변경: vpos 는 작아지지만 column_start 가 다름
+        let prev = para_with_segs(vec![seg(60000, 2400, 0, 0)]);
+        let cur = para_with_segs(vec![seg(0, 1600, 0, 8000)]);
+        assert!(!detect_inter_paragraph_vpos_reset(&prev, &cur));
+    }
+
+    #[test]
+    fn returns_true_for_subtle_reset_just_below_vpos_end() {
+        // vpos_end = 70000, cur.vpos = 69999 (1 HU 작음)
+        let prev = para_with_segs(vec![seg(60000, 10000, 0, 0)]);
+        let cur = para_with_segs(vec![seg(69999, 1600, 0, 0)]);
+        assert!(detect_inter_paragraph_vpos_reset(&prev, &cur));
+    }
+
+    #[test]
+    fn uses_last_line_seg_of_prev_not_first() {
+        // prev 가 여러 줄: 마지막 줄의 vpos_end 가 기준
+        let prev = para_with_segs(vec![
+            seg(5000, 1600, 0, 0),
+            seg(6600, 1600, 0, 0),
+            seg(8200, 1600, 0, 0), // vpos_end = 9800
+        ]);
+        // cur.vpos = 9800 → 정상 (false)
+        let cur_ok = para_with_segs(vec![seg(9800, 1600, 0, 0)]);
+        assert!(!detect_inter_paragraph_vpos_reset(&prev, &cur_ok));
+        // cur.vpos = 500 → 리셋 (true)
+        let cur_reset = para_with_segs(vec![seg(500, 1600, 0, 0)]);
+        assert!(detect_inter_paragraph_vpos_reset(&prev, &cur_reset));
+    }
+}
