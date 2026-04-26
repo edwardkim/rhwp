@@ -1786,8 +1786,8 @@ impl Paginator {
         new_page_numbers: &[(usize, u16)],
         _section_index: usize,
     ) {
-        let mut page_num_counter: u32 = 1;
-        let mut prev_page_last_para: usize = 0;
+        // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
+        let mut assigner = crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
         // 머리말/꼬리말은 한번 설정되면 이후 페이지에도 유지 (누적)
         let mut header_both: Option<HeaderFooterRef> = None;
         let mut header_even: Option<HeaderFooterRef> = None;
@@ -1847,16 +1847,10 @@ impl Paginator {
                 }
             }
 
-            for (para_idx, new_num) in new_page_numbers {
-                if *para_idx > prev_page_last_para || i == 0 {
-                    if *para_idx <= page_last_para {
-                        page_num_counter = *new_num as u32;
-                    }
-                }
-            }
-            page.page_number = page_num_counter;
+            let page_num_u32 = assigner.assign(page);
+            page.page_number = page_num_u32;
 
-            let page_num = page_num_counter as usize;
+            let page_num = page_num_u32 as usize;
             let is_odd = page_num % 2 == 1;
 
             page.active_header = if is_odd {
@@ -1881,8 +1875,7 @@ impl Paginator {
                 }
             }
 
-            prev_page_last_para = page_last_para;
-            page_num_counter += 1;
+            let _ = page_last_para;
         }
     }
 

@@ -1629,32 +1629,13 @@ impl TypesetEngine {
         page_hides: &[(usize, crate::model::control::PageHide)],
         _section_index: usize,
     ) {
-        // 기존 Paginator::finalize_pages 로직을 그대로 재사용
-        // (별도 함수로 추출하여 공유하는 것이 이상적이나, Phase 1에서는 복제)
-
+        // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
         let mut current_header: Option<HeaderFooterRef> = None;
         let mut current_footer: Option<HeaderFooterRef> = None;
-        let mut page_num: u32 = 1;
+        let mut assigner = crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
 
         for page in pages.iter_mut() {
-            // 새 번호 지정 확인
-            let first_para = page.column_contents.first()
-                .and_then(|col| col.items.first())
-                .map(|item| match item {
-                    PageItem::FullParagraph { para_index } => *para_index,
-                    PageItem::PartialParagraph { para_index, .. } => *para_index,
-                    PageItem::Table { para_index, .. } => *para_index,
-                    PageItem::PartialTable { para_index, .. } => *para_index,
-                    PageItem::Shape { para_index, .. } => *para_index,
-                });
-
-            if let Some(fp) = first_para {
-                for &(nn_pi, nn_num) in new_page_numbers {
-                    if nn_pi <= fp {
-                        page_num = nn_num as u32;
-                    }
-                }
-            }
+            let page_num = assigner.assign(page);
 
             // 이 페이지에 속하는 머리말/꼬리말 갱신
             let page_last_para = page.column_contents.iter()
@@ -1710,8 +1691,6 @@ impl TypesetEngine {
                     break;
                 }
             }
-
-            page_num += 1;
         }
     }
 
