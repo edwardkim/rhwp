@@ -1602,6 +1602,306 @@ impl DocumentCore {
         self.paginate();
     }
 
+
+    /// 페이지에 렌더된 텍스트를 줄 단위로 추출한다.
+    ///
+    /// TextLine 노드의 시각적 순서를 유지하며 TextRun/각주 마커/양식 텍스트를 합친다.
+    pub fn extract_page_text_native(&self, page_num: u32) -> Result<String, HwpError> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
+            match &node.node_type {
+                RenderNodeType::TextRun(tr) => {
+                    out.push_str(&tr.text);
+                    *has_token = true;
+                }
+                RenderNodeType::FootnoteMarker(marker) => {
+                    out.push_str(&marker.text);
+                    *has_token = true;
+                }
+                RenderNodeType::FormObject(form) => {
+                    if !form.text.is_empty() {
+                        out.push_str(&form.text);
+                        *has_token = true;
+                    } else if !form.caption.is_empty() {
+                        out.push_str(&form.caption);
+                        *has_token = true;
+                    }
+                }
+                _ => {}
+            }
+
+            for child in &node.children {
+                collect_line_text(child, out, has_token);
+            }
+        }
+
+        fn collect_page_lines(node: &RenderNode, lines: &mut Vec<String>) {
+            if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+                let mut line = String::new();
+                let mut has_token = false;
+
+                for child in &node.children {
+                    collect_line_text(child, &mut line, &mut has_token);
+                }
+
+                if has_token {
+                    lines.push(line);
+                }
+                return;
+            }
+
+            for child in &node.children {
+                collect_page_lines(child, lines);
+            }
+        }
+
+        let tree = self.build_page_tree(page_num)?;
+        let mut lines = Vec::new();
+        collect_page_lines(&tree.root, &mut lines);
+        Ok(lines.join("\n"))
+    }
+
+    /// 페이지를 Markdown으로 추출한다.
+    ///
+    /// - 일반 텍스트는 줄 단위로 추출
+    /// - 표 컨트롤은 Markdown table(`| ... |`)로 변환
+    /// - 표/이미지는 내부 텍스트 중복 추출을 방지하기 위해 하위 순회를 생략
+    /// - 이미지는 `[[RHWP_IMAGE:n]]` 토큰으로 출력되며,
+    ///   반환 벡터에 같은 순서로 `(sec_idx, para_idx, control_idx, bin_data_id)`가 담긴다.
+    ///   (sec/para/ctrl은 없을 수 있으며, 이 경우 bin_data_id로 추출한다)
+    pub fn extract_page_markdown_with_images_native(
+        &self,
+        page_num: u32,
+    ) -> Result<
+        (
+            String,
+            Vec<(Option<usize>, Option<usize>, Option<usize>, u16)>,
+        ),
+        HwpError,
+    > {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        #[derive(Debug)]
+        enum MarkdownItem {
+            Line(String),
+            Table(String),
+            Image {
+                sec_idx: Option<usize>,
+                para_idx: Option<usize>,
+                control_idx: Option<usize>,
+                bin_data_id: u16,
+            },
+        }
+
+        fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
+            match &node.node_type {
+                RenderNodeType::TextRun(tr) => {
+                    out.push_str(&tr.text);
+                    *has_token = true;
+                }
+                RenderNodeType::FootnoteMarker(marker) => {
+                    out.push_str(&marker.text);
+                    *has_token = true;
+                }
+                RenderNodeType::FormObject(form) => {
+                    if !form.text.is_empty() {
+                        out.push_str(&form.text);
+                        *has_token = true;
+                    } else if !form.caption.is_empty() {
+                        out.push_str(&form.caption);
+                        *has_token = true;
+                    }
+                }
+                _ => {}
+            }
+
+            for child in &node.children {
+                collect_line_text(child, out, has_token);
+            }
+        }
+
+        fn markdown_escape_cell(s: &str) -> String {
+            s.replace('|', "\\|")
+                .replace('\r', "")
+                .replace('\n', " ")
+                .trim()
+                .to_string()
+        }
+
+        fn table_cell_text(cell: &crate::model::table::Cell) -> String {
+            let mut parts: Vec<String> = Vec::new();
+            for para in &cell.paragraphs {
+                let txt = para.text.trim();
+                if !txt.is_empty() {
+                    parts.push(markdown_escape_cell(txt));
+                }
+            }
+            parts.join(" <br> ")
+        }
+
+        fn table_to_markdown(table: &crate::model::table::Table) -> String {
+            let rows = table.row_count as usize;
+            let cols = table.col_count as usize;
+            if rows == 0 || cols == 0 {
+                return String::new();
+            }
+
+            let mut grid = vec![vec![String::new(); cols]; rows];
+
+            for cell in &table.cells {
+                let r = cell.row as usize;
+                let c = cell.col as usize;
+                if r >= rows || c >= cols {
+                    continue;
+                }
+                grid[r][c] = table_cell_text(cell);
+            }
+
+            let make_row = |cells: &[String]| -> String {
+                format!("| {} |", cells.join(" | "))
+            };
+
+            let header = make_row(&grid[0]);
+            let separator = format!(
+                "| {} |",
+                std::iter::repeat("---").take(cols).collect::<Vec<_>>().join(" | ")
+            );
+
+            let mut lines = vec![header, separator];
+            for row in grid.iter().skip(1) {
+                lines.push(make_row(row));
+            }
+            lines.join("\n")
+        }
+
+        fn lookup_table<'a>(
+            doc: &'a crate::model::document::Document,
+            sec_idx: usize,
+            para_idx: usize,
+            ctrl_idx: usize,
+        ) -> Option<&'a crate::model::table::Table> {
+            let para = doc.sections.get(sec_idx)?.paragraphs.get(para_idx)?;
+            match para.controls.get(ctrl_idx)? {
+                crate::model::control::Control::Table(table) => Some(table.as_ref()),
+                _ => None,
+            }
+        }
+
+        fn collect_markdown_items(
+            node: &RenderNode,
+            doc: &crate::model::document::Document,
+            items: &mut Vec<MarkdownItem>,
+        ) {
+            fn collect_images_only(node: &RenderNode, items: &mut Vec<MarkdownItem>) {
+                if let RenderNodeType::Image(image_node) = &node.node_type {
+                    items.push(MarkdownItem::Image {
+                        sec_idx: image_node.section_index,
+                        para_idx: image_node.para_index,
+                        control_idx: image_node.control_index,
+                        bin_data_id: image_node.bin_data_id,
+                    });
+                    return;
+                }
+                for child in &node.children {
+                    collect_images_only(child, items);
+                }
+            }
+
+            match &node.node_type {
+                RenderNodeType::Table(table_node) => {
+                    if let (Some(si), Some(pi), Some(ci)) = (
+                        table_node.section_index,
+                        table_node.para_index,
+                        table_node.control_index,
+                    ) {
+                        if let Some(table) = lookup_table(doc, si, pi, ci) {
+                            let md = table_to_markdown(table);
+                            if !md.is_empty() {
+                                items.push(MarkdownItem::Table(md));
+                            }
+                            // 표 텍스트는 table_to_markdown으로 처리하고,
+                            // 표 내부 Image 노드만 별도로 수집한다.
+                            for child in &node.children {
+                                collect_images_only(child, items);
+                            }
+                            return;
+                        }
+                    }
+                }
+                RenderNodeType::Image(image_node) => {
+                    items.push(MarkdownItem::Image {
+                        sec_idx: image_node.section_index,
+                        para_idx: image_node.para_index,
+                        control_idx: image_node.control_index,
+                        bin_data_id: image_node.bin_data_id,
+                    });
+                    return;
+                }
+                RenderNodeType::TextLine(_) => {
+                    let mut line = String::new();
+                    let mut has_token = false;
+                    for child in &node.children {
+                        collect_line_text(child, &mut line, &mut has_token);
+                    }
+                    if has_token {
+                        items.push(MarkdownItem::Line(line));
+                    }
+                    return;
+                }
+                _ => {}
+            }
+
+            for child in &node.children {
+                collect_markdown_items(child, doc, items);
+            }
+        }
+
+        let tree = self.build_page_tree(page_num)?;
+        let mut items: Vec<MarkdownItem> = Vec::new();
+        collect_markdown_items(&tree.root, &self.document, &mut items);
+
+        let mut out = String::new();
+        let mut images: Vec<(Option<usize>, Option<usize>, Option<usize>, u16)> = Vec::new();
+        for item in items {
+            match item {
+                MarkdownItem::Line(line) => {
+                    out.push_str(&line);
+                    out.push('\n');
+                }
+                MarkdownItem::Table(table_md) => {
+                    if !out.is_empty() && !out.ends_with("\n\n") {
+                        out.push('\n');
+                    }
+                    out.push_str(&table_md);
+                    out.push_str("\n\n");
+                }
+                MarkdownItem::Image {
+                    sec_idx,
+                    para_idx,
+                    control_idx,
+                    bin_data_id,
+                } => {
+                    if !out.is_empty() && !out.ends_with("\n\n") {
+                        out.push('\n');
+                    }
+                    let image_idx = images.len() + 1;
+                    out.push_str(&format!("[[RHWP_IMAGE:{}]]\n\n", image_idx));
+                    images.push((sec_idx, para_idx, control_idx, bin_data_id));
+                }
+            }
+        }
+
+        Ok((out.trim_end().to_string(), images))
+    }
+
+    /// 페이지를 Markdown으로 추출한다 (이미지 토큰 포함).
+    pub fn extract_page_markdown_native(&self, page_num: u32) -> Result<String, HwpError> {
+        self.extract_page_markdown_with_images_native(page_num)
+            .map(|(md, _)| md)
+    }
+
+
     // =====================================================================
     // 클립보드 API (내부)
     // =====================================================================

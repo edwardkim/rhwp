@@ -1167,6 +1167,36 @@ impl DocumentCore {
         Ok(detect_clipboard_image_mime(&bdc.data).to_string())
     }
 
+    /// BinData ID(1-based)로 이미지 바이너리 데이터를 반환한다.
+    pub fn get_bin_data_image_data_native(&self, bin_data_id: u16) -> Result<Vec<u8>, HwpError> {
+        if bin_data_id == 0 {
+            return Err(HwpError::RenderError("이미지 데이터 없음 (bin_data_id=0)".to_string()));
+        }
+        let bdc = self
+            .document
+            .bin_data_content
+            .get((bin_data_id - 1) as usize)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
+            })?;
+        Ok(bdc.data.clone())
+    }
+
+    /// BinData ID(1-based)로 이미지 MIME 타입을 반환한다.
+    pub fn get_bin_data_image_mime_native(&self, bin_data_id: u16) -> Result<String, HwpError> {
+        if bin_data_id == 0 {
+            return Err(HwpError::RenderError("이미지 데이터 없음 (bin_data_id=0)".to_string()));
+        }
+        let bdc = self
+            .document
+            .bin_data_content
+            .get((bin_data_id - 1) as usize)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
+            })?;
+        Ok(detect_clipboard_image_mime(&bdc.data).to_string())
+    }
+
     // === 클립보드 HTML 붙여넣기 ===
 
 }

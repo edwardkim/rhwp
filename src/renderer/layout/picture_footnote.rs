@@ -2,7 +2,7 @@
 
 use crate::model::paragraph::Paragraph;
 use crate::model::style::Alignment;
-use crate::model::shape::{Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, VertAlign, VertRelTo};
+use crate::model::shape::{Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::footnote::{FootnoteShape, NumberFormat};
 use super::super::pagination::{FootnoteRef, FootnoteSource};
 use crate::model::control::Control;
@@ -349,10 +349,12 @@ impl LayoutEngine {
 
         // y_offset 업데이트: Para 기준 그림만 높이만큼 진행
         // Page/Paper 기준 그림은 플로팅이므로 y_offset 변경 없음
+        // Task #347: 글뒤로/글앞으로 그림은 본문 흐름을 점유하지 않으므로 y 미진행.
         let total_height = pic_height + caption_height + if caption_height > 0.0 { caption_spacing } else { 0.0 };
-        match picture.common.vert_rel_to {
-            VertRelTo::Para => y_offset + total_height,
-            VertRelTo::Page | VertRelTo::Paper => y_offset,
+        match (picture.common.vert_rel_to, picture.common.text_wrap) {
+            (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
+            (VertRelTo::Para, _) => y_offset + total_height,
+            (VertRelTo::Page | VertRelTo::Paper, _) => y_offset,
         }
     }
 

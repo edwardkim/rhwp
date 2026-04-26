@@ -662,10 +662,12 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord]) -> Vec<MasterPage> {
         // 확장 플래그 (byte 18-19, 표 139 이후)
         let ext_flags = r.read_u16().unwrap_or(0);
 
-        // 확장 바탕쪽 판별: 같은 apply_to가 이미 등록되어 있으면 확장
-        let is_extension = master_pages.iter().any(|m: &MasterPage| m.apply_to == apply_to);
-        // 겹치게 하기: ext_flags의 하위 비트로 추정
+        // Task #347: ext_flags 비트로 확장 여부 판별 (bit 1) — 휴리스틱(같은 apply_to 중복)
+        // 단독으로는 ext_flags=0x03 같은 케이스(첫 등록 + 확장 표시)를 놓침.
+        // 비트 + 휴리스틱 OR 조합으로 보강.
         let overlap = ext_flags & 0x01 != 0;
+        let is_extension = (ext_flags & 0x02 != 0)
+            || master_pages.iter().any(|m: &MasterPage| m.apply_to == apply_to);
 
         // 이 LIST_HEADER에 속하는 문단 레코드 범위 결정
         let end = if mp_idx + 1 < list_header_positions.len() {

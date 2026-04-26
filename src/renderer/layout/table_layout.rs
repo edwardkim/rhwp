@@ -779,28 +779,36 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
-        // aim 플래그와 무관하게 cell.padding 명시값(0 아님) 우선,
-        // 0 이면 table.padding fallback.
-        // 한컴 동작 호환: aim=false 라도 작성자가 비대칭 cell.padding 을 의도
-        // 적으로 설정한 경우 (예: KTX 목차 R=1417 HU) 그 값을 적용해야 한컴
-        // PDF 와 동등 (Task #279 검증 결과 + toc_leader_right_tab_alignment.md
-        // 의 "한컴은 의도를 재해석" 원칙).
-        let pad_left = if cell.padding.left != 0 {
+        // HWP 스펙: aim(apply_inner_margin)=true → cell.padding,
+        //           aim=false → table.padding 우선.
+        // Task #347: 단, aim=false에서도 cell.padding이 table.padding보다
+        // 큰 비대칭 값이면 작성자 의도(예: KTX 목차 R=1417 HU)로 보고 그 축만 cell 사용.
+        // (Task #279의 "전 축에서 cell 우선" 휴리스틱은 일반 박스 셀에서 표 padding을
+        // 무시해 텍스트가 왼쪽으로 붙어버리는 부작용이 있어 축소 적용.)
+        let prefer_cell_axis = |c: i16, t: i16| -> bool {
+            if cell.apply_inner_margin {
+                c != 0
+            } else {
+                // aim=false: cell이 table보다 명백히 큰 경우만 cell 우선 (의도된 비대칭)
+                (c as i32) > (t as i32)
+            }
+        };
+        let pad_left = if prefer_cell_axis(cell.padding.left, table.padding.left) {
             hwpunit_to_px(cell.padding.left as i32, self.dpi)
         } else {
             hwpunit_to_px(table.padding.left as i32, self.dpi)
         };
-        let pad_right = if cell.padding.right != 0 {
+        let pad_right = if prefer_cell_axis(cell.padding.right, table.padding.right) {
             hwpunit_to_px(cell.padding.right as i32, self.dpi)
         } else {
             hwpunit_to_px(table.padding.right as i32, self.dpi)
         };
-        let pad_top = if cell.padding.top != 0 {
+        let pad_top = if prefer_cell_axis(cell.padding.top, table.padding.top) {
             hwpunit_to_px(cell.padding.top as i32, self.dpi)
         } else {
             hwpunit_to_px(table.padding.top as i32, self.dpi)
         };
-        let pad_bottom = if cell.padding.bottom != 0 {
+        let pad_bottom = if prefer_cell_axis(cell.padding.bottom, table.padding.bottom) {
             hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
         } else {
             hwpunit_to_px(table.padding.bottom as i32, self.dpi)
@@ -837,7 +845,11 @@ impl LayoutEngine {
             }
         }
         let available = (cell_w - pad_left - pad_right).max(0.0);
-        if max_line_w <= available || cell_w <= 2.0 {
+        // Task #347: estimate_text_width는 영어 본문(Times New Roman 등) 자연 폭을
+        // 5~15%까지 과대 추정할 수 있어, HWP가 이미 줄바꿈한 본문에서도
+        // padding 축소가 잘못 트리거됨. 15% 이내 초과는 정상으로 보고 미축소.
+        let overflow_threshold = available * 1.15;
+        if max_line_w <= overflow_threshold || cell_w <= 2.0 {
             return (pad_left, pad_right);
         }
         let min_pad = 1.0;
@@ -939,14 +951,19 @@ impl LayoutEngine {
                     });
                     (0.0, paper_w)
                 }
-                HorzRelTo::Page => (col_area.x, col_area.width),
+                HorzRelTo::Page => {
+                    // Task #347: 본문 영역(body_area) 기준. 미설정 시 col_area 폴백.
+                    let body = self.current_body_area.get();
+                    if body.2 > 0.0 { (body.0, body.2) } else { (col_area.x, col_area.width) }
+                }
                 HorzRelTo::Para => (col_area.x + host_margin_left, col_area.width - host_margin_left),
                 _ => (col_area.x, col_area.width),
             };
             match horz_align {
                 HorzAlign::Left | HorzAlign::Inside => ref_x + h_offset,
                 HorzAlign::Center => ref_x + (ref_w - table_width).max(0.0) / 2.0 + h_offset,
-                HorzAlign::Right | HorzAlign::Outside => ref_x + (ref_w - table_width).max(0.0) + h_offset,
+                // Task #347: picture_footnote.rs:185와 동일하게 - h_offset (오른쪽 끝에서 안쪽으로 오프셋).
+                HorzAlign::Right | HorzAlign::Outside => ref_x + (ref_w - table_width).max(0.0) - h_offset,
             }
         } else {
             // 중첩 표: outer_margin_left 적용 + host_alignment에 따라 셀 내에서 정렬
@@ -991,7 +1008,11 @@ impl LayoutEngine {
             // (HWP 스펙: Page=쪽 본문, Paper=용지 전체). 바탕쪽 문맥에서는
             // col_area = paper_area이므로 두 경로 결과가 동일하여 회귀 없음.
             let (ref_y, ref_h) = match vert_rel_to {
-                crate::model::shape::VertRelTo::Page => (col_area.y, col_area.height),
+                crate::model::shape::VertRelTo::Page => {
+                    // Task #347: 본문 영역(body_area) 기준. 미설정 시 col_area 폴백.
+                    let body = self.current_body_area.get();
+                    if body.3 > 0.0 { (body.1, body.3) } else { (col_area.y, col_area.height) }
+                }
                 crate::model::shape::VertRelTo::Para => (anchor_y, col_area.height - (anchor_y - col_area.y).max(0.0)),
                 crate::model::shape::VertRelTo::Paper => (0.0, page_h_approx),
             };
@@ -1014,10 +1035,17 @@ impl LayoutEngine {
             };
             // Para 기준 + bit 13: 본문 영역으로 제한
             // 앞선 표/텍스트가 차지한 영역(y_start) 아래로 밀어내고, 본문 영역 내로 클램핑
+            // Task #347: TopAndBottom 만 y_start 이하로 밀어냄. 글뒤로(BehindText) /
+            // 글앞으로(InFrontOfText) 표는 절대 위치 오버레이이므로 push-down 미적용.
             if matches!(vert_rel_to, crate::model::shape::VertRelTo::Para) {
                 let body_top = col_area.y;
                 let body_bottom = col_area.y + col_area.height - table_height;
-                raw_y.max(y_start).clamp(body_top, body_bottom.max(body_top))
+                let pushed = if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom) {
+                    raw_y.max(y_start)
+                } else {
+                    raw_y
+                };
+                pushed.clamp(body_top, body_bottom.max(body_top))
             } else {
                 raw_y
             }
@@ -1252,14 +1280,26 @@ impl LayoutEngine {
             } else {
                 cell.vertical_align
             };
-            let text_y_start = match effective_valign {
-                VerticalAlign::Top => cell_y + pad_top,
-                VerticalAlign::Center => {
-                    let mechanical_offset = (inner_height - total_content_height).max(0.0) / 2.0;
-                    cell_y + pad_top + mechanical_offset
-                }
-                VerticalAlign::Bottom => {
-                    cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+            // Task #347: HWP는 LineSeg.vertical_pos에 첫 줄의 절대 위치(셀 내부 컨텐츠 상단부터)
+            // 를 기록한다. 이 값을 그대로 적용하면 모든 vertical_align (Top/Center/Bottom)에서
+            // PDF와 일치하는 텍스트 시작 y가 자동으로 결정됨 (mechanical_offset 불필요).
+            // 단, line_segs가 비어있는 케이스는 기존 mechanical_offset 폴백 유지.
+            let first_line_vpos = cell.paragraphs.first()
+                .and_then(|p| p.line_segs.first())
+                .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi));
+            let text_y_start = if let Some(vpos) = first_line_vpos.filter(|&v| v > 0.0) {
+                // vpos는 셀 컨텐츠 상단(=cell_y+pad_top)으로부터의 첫 줄 top y 오프셋
+                cell_y + pad_top + vpos
+            } else {
+                match effective_valign {
+                    VerticalAlign::Top => cell_y + pad_top,
+                    VerticalAlign::Center => {
+                        let mechanical_offset = (inner_height - total_content_height).max(0.0) / 2.0;
+                        cell_y + pad_top + mechanical_offset
+                    }
+                    VerticalAlign::Bottom => {
+                        cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                    }
                 }
             };
 

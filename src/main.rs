@@ -10,6 +10,8 @@ fn main() {
         Some("--version") | Some("-V") => println!("rhwp v{}", rhwp::version()),
         Some("export-svg") => export_svg(&args[2..]),
         Some("export-pdf") => export_pdf(&args[2..]),
+        Some("export-text") => export_text(&args[2..]),
+        Some("export-markdown") => export_markdown(&args[2..]),
         Some("info") => show_info(&args[2..]),
         Some("dump") => dump_controls(&args[2..]),
         Some("dump-pages") => dump_pages(&args[2..]),
@@ -51,6 +53,17 @@ fn print_help() {
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
     println!();
+    println!("  export-text <파일.hwp> [옵션]");
+    println!("      페이지별 텍스트를 TXT로 내보내기");
+    println!();
+    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
+    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!();
+    println!("  export-markdown <파일.hwp> [옵션]");
+    println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
+    println!();
+    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
+    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("  info <파일.hwp>");
     println!("      HWP 파일 정보 표시");
     println!();
@@ -464,6 +477,391 @@ fn export_pdf(args: &[String]) {
     }
 
     println!("PDF 내보내기 완료");
+}
+
+fn export_text(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
+        return;
+    }
+
+    let file_path = &args[0];
+    let mut output_dir = "output".to_string();
+    let mut target_page: Option<u32> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--output" | "-o" => {
+                if i + 1 < args.len() {
+                    output_dir = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                    return;
+                }
+            }
+            "--page" | "-p" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return;
+                }
+            }
+            _ => {
+                eprintln!("알 수 없는 옵션: {}", args[i]);
+                i += 1;
+            }
+        }
+    }
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return;
+        }
+    };
+
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    let page_count = doc.page_count();
+    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if page_count == 0 {
+        eprintln!("오류: 문서에 페이지가 없습니다.");
+        return;
+    }
+
+    let output_path = Path::new(&output_dir);
+    if !output_path.exists() {
+        if let Err(e) = fs::create_dir_all(output_path) {
+            eprintln!("오류: 출력 폴더를 생성할 수 없습니다 - {}: {}", output_dir, e);
+            return;
+        }
+    }
+
+    let pages: Vec<u32> = match target_page {
+        Some(p) => {
+            if p >= page_count {
+                eprintln!("오류: 페이지 번호가 범위를 벗어났습니다 (0~{})", page_count - 1);
+                return;
+            }
+            vec![p]
+        }
+        None => (0..page_count).collect(),
+    };
+
+    let file_stem = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("page");
+
+    for page_num in &pages {
+        match doc.extract_page_text_native(*page_num) {
+            Ok(mut text) => {
+                if !text.ends_with('\n') {
+                    text.push('\n');
+                }
+
+                let txt_filename = if page_count == 1 {
+                    format!("{}.txt", file_stem)
+                } else {
+                    format!("{}_{:03}.txt", file_stem, page_num + 1)
+                };
+                let txt_path = output_path.join(&txt_filename);
+
+                match fs::write(&txt_path, text.as_bytes()) {
+                    Ok(_) => println!("  → {}", txt_path.display()),
+                    Err(e) => eprintln!("오류: TXT 저장 실패 - {}: {}", txt_path.display(), e),
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 페이지 {} 텍스트 추출 실패 - {:?}", page_num, e);
+            }
+        }
+    }
+
+    println!("텍스트 내보내기 완료: {}개 TXT 파일 → {}/", pages.len(), output_dir);
+}
+
+fn export_markdown(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-markdown <파일.hwp> [옵션] (rhwp --help 참조)");
+        return;
+    }
+
+    let file_path = &args[0];
+    let mut output_dir = "output".to_string();
+    let mut target_page: Option<u32> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--output" | "-o" => {
+                if i + 1 < args.len() {
+                    output_dir = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                    return;
+                }
+            }
+            "--page" | "-p" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return;
+                }
+            }
+            _ => {
+                eprintln!("알 수 없는 옵션: {}", args[i]);
+                i += 1;
+            }
+        }
+    }
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return;
+        }
+    };
+
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    let page_count = doc.page_count();
+    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if page_count == 0 {
+        eprintln!("오류: 문서에 페이지가 없습니다.");
+        return;
+    }
+
+    let output_path = Path::new(&output_dir);
+    if !output_path.exists() {
+        if let Err(e) = fs::create_dir_all(output_path) {
+            eprintln!("오류: 출력 폴더를 생성할 수 없습니다 - {}: {}", output_dir, e);
+            return;
+        }
+    }
+
+    let pages: Vec<u32> = match target_page {
+        Some(p) => {
+            if p >= page_count {
+                eprintln!("오류: 페이지 번호가 범위를 벗어났습니다 (0~{})", page_count - 1);
+                return;
+            }
+            vec![p]
+        }
+        None => (0..page_count).collect(),
+    };
+
+    let file_stem = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("page");
+
+    let assets_dir_name = format!("{}_assets", file_stem);
+    let assets_dir_path = output_path.join(&assets_dir_name);
+    let mut written_image_count: usize = 0;
+
+    let mime_to_ext = |mime: &str| -> &'static str {
+        match mime {
+            "image/png" => "png",
+            "image/jpeg" => "jpg",
+            "image/gif" => "gif",
+            "image/bmp" => "bmp",
+            "image/webp" => "webp",
+            _ => "bin",
+        }
+    };
+
+    for page_num in &pages {
+        match doc.extract_page_markdown_with_images_native(*page_num) {
+            Ok((mut markdown, image_refs)) => {
+                for (img_idx, (sec_idx, para_idx, control_idx, bin_data_id)) in
+                    image_refs.iter().enumerate()
+                {
+                    let token = format!("[[RHWP_IMAGE:{}]]", img_idx + 1);
+
+                    let try_control = match (sec_idx, para_idx, control_idx) {
+                        (Some(si), Some(pi), Some(ci)) => Some((*si, *pi, *ci)),
+                        _ => None,
+                    };
+
+                    let (mime, image_data) = if let Some((si, pi, ci)) = try_control {
+                        match (
+                            doc.get_control_image_mime_native(si, pi, ci),
+                            doc.get_control_image_data_native(si, pi, ci),
+                        ) {
+                            (Ok(m), Ok(d)) => (m, d),
+                            _ => {
+                                if *bin_data_id == 0 {
+                                    eprintln!(
+                                        "경고: 페이지 {} 이미지 추출 실패 (s{} p{} c{}), fallback bin_data_id 없음",
+                                        page_num, si, pi, ci
+                                    );
+                                    markdown = markdown.replace(&token, "");
+                                    continue;
+                                }
+                                let fb_mime = match doc.get_bin_data_image_mime_native(*bin_data_id) {
+                                    Ok(m) => m,
+                                    Err(e) => {
+                                        eprintln!(
+                                            "경고: 페이지 {} 이미지 MIME fallback 실패 (bin={}): {:?}",
+                                            page_num, bin_data_id, e
+                                        );
+                                        markdown = markdown.replace(&token, "");
+                                        continue;
+                                    }
+                                };
+                                let fb_data = match doc.get_bin_data_image_data_native(*bin_data_id) {
+                                    Ok(d) => d,
+                                    Err(e) => {
+                                        eprintln!(
+                                            "경고: 페이지 {} 이미지 데이터 fallback 실패 (bin={}): {:?}",
+                                            page_num, bin_data_id, e
+                                        );
+                                        markdown = markdown.replace(&token, "");
+                                        continue;
+                                    }
+                                };
+                                (fb_mime, fb_data)
+                            }
+                        }
+                    } else {
+                        if *bin_data_id == 0 {
+                            eprintln!(
+                                "경고: 페이지 {} 이미지 추출 실패 (문서 좌표 없음, bin_data_id=0)",
+                                page_num
+                            );
+                            markdown = markdown.replace(&token, "");
+                            continue;
+                        }
+                        let fb_mime = match doc.get_bin_data_image_mime_native(*bin_data_id) {
+                            Ok(m) => m,
+                            Err(e) => {
+                                eprintln!(
+                                    "경고: 페이지 {} 이미지 MIME fallback 실패 (bin={}): {:?}",
+                                    page_num, bin_data_id, e
+                                );
+                                markdown = markdown.replace(&token, "");
+                                continue;
+                            }
+                        };
+                        let fb_data = match doc.get_bin_data_image_data_native(*bin_data_id) {
+                            Ok(d) => d,
+                            Err(e) => {
+                                eprintln!(
+                                    "경고: 페이지 {} 이미지 데이터 fallback 실패 (bin={}): {:?}",
+                                    page_num, bin_data_id, e
+                                );
+                                markdown = markdown.replace(&token, "");
+                                continue;
+                            }
+                        };
+                        (fb_mime, fb_data)
+                    };
+
+                    if !assets_dir_path.exists() {
+                        if let Err(e) = fs::create_dir_all(&assets_dir_path) {
+                            eprintln!(
+                                "오류: 이미지 출력 폴더 생성 실패 - {}: {}",
+                                assets_dir_path.display(),
+                                e
+                            );
+                            markdown = markdown.replace(&token, "");
+                            continue;
+                        }
+                    }
+
+                    let ext = mime_to_ext(&mime);
+                    let image_filename = format!(
+                        "{}_p{:03}_img{:03}.{}",
+                        file_stem,
+                        page_num + 1,
+                        img_idx + 1,
+                        ext
+                    );
+                    let image_path = assets_dir_path.join(&image_filename);
+
+                    if let Err(e) = fs::write(&image_path, &image_data) {
+                        eprintln!(
+                            "경고: 이미지 저장 실패 - {}: {}",
+                            image_path.display(),
+                            e
+                        );
+                        markdown = markdown.replace(&token, "");
+                        continue;
+                    }
+
+                    let image_link = format!("![image {}]({}/{})", img_idx + 1, assets_dir_name, image_filename);
+                    markdown = markdown.replace(&token, &image_link);
+                    written_image_count += 1;
+                }
+
+                if !markdown.ends_with('\n') {
+                    markdown.push('\n');
+                }
+
+                let md_filename = if page_count == 1 {
+                    format!("{}.md", file_stem)
+                } else {
+                    format!("{}_{:03}.md", file_stem, page_num + 1)
+                };
+                let md_path = output_path.join(&md_filename);
+
+                match fs::write(&md_path, markdown.as_bytes()) {
+                    Ok(_) => println!("  → {}", md_path.display()),
+                    Err(e) => eprintln!("오류: Markdown 저장 실패 - {}: {}", md_path.display(), e),
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 페이지 {} Markdown 생성 실패 - {:?}", page_num, e);
+            }
+        }
+    }
+
+    if written_image_count > 0 {
+        println!(
+            "Markdown 내보내기 완료: {}개 MD 파일, {}개 이미지 → {}/",
+            pages.len(),
+            written_image_count,
+            output_dir
+        );
+    } else {
+        println!("Markdown 내보내기 완료: {}개 MD 파일 → {}/", pages.len(), output_dir);
+    }
 }
 
 fn show_info(args: &[String]) {
@@ -1863,11 +2261,11 @@ fn gen_table(args: &[String]) {
 fn test_field_roundtrip(args: &[String]) {
     let input = args.first().map(|s| s.as_str()).unwrap_or("hwp_webctl/bsbc01_10_000.hwp");
     let output = args.get(1).map(|s| s.as_str()).unwrap_or("output/field_test.hwp");
-    
+
     let data = std::fs::read(input).expect("파일 읽기 실패");
     let mut core = rhwp::document_core::DocumentCore::from_bytes(&data)
         .expect("문서 파싱 실패");
-    
+
     // 1. 필드 목록 출력
     let fields = core.collect_all_fields();
     println!("=== 필드 목록 ({}개) ===", fields.len());
@@ -1875,7 +2273,7 @@ fn test_field_roundtrip(args: &[String]) {
         let name = fi.field.field_name().unwrap_or("(이름없음)");
         println!("  {} = \"{}\"", name, fi.value);
     }
-    
+
     // 2. 필드에 값 설정
     let test_data = [
         ("mbizNm", "청소년 자립지원사업"),
@@ -1888,7 +2286,7 @@ fn test_field_roundtrip(args: &[String]) {
         ("bizPrdTxt", "2026.01 ~ 2026.12"),
         ("insttNm", "시청 복지과"),
     ];
-    
+
     println!("\n=== 필드 값 설정 ===");
     for (name, value) in &test_data {
         match core.set_field_value_by_name(name, value) {
@@ -1896,7 +2294,7 @@ fn test_field_roundtrip(args: &[String]) {
             Err(e) => println!("  ✗ {} = \"{}\" → {}", name, value, e),
         }
     }
-    
+
     // 3. 설정 후 확인
     println!("\n=== 설정 후 확인 ===");
     let fields2 = core.collect_all_fields();
@@ -1904,7 +2302,7 @@ fn test_field_roundtrip(args: &[String]) {
         let name = fi.field.field_name().unwrap_or("(이름없음)");
         println!("  {} = \"{}\"", name, fi.value);
     }
-    
+
     // 3.5 pi=0 문단 텍스트 직접 확인
     let para0 = &core.document().sections[0].paragraphs[0];
 
@@ -1912,7 +2310,7 @@ fn test_field_roundtrip(args: &[String]) {
     let saved = core.export_hwp_native().expect("직렬화 실패");
     std::fs::write(output, &saved).expect("저장 실패");
     println!("\n저장: {} ({}바이트)", output, saved.len());
-    
+
     // 5. 재로딩 → 필드 확인
     let mut core2 = rhwp::document_core::DocumentCore::from_bytes(&saved)
         .expect("재로딩 실패");

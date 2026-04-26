@@ -120,6 +120,9 @@ struct TypesetState {
     /// Task #321: col 0 상단의 body-wide TopAndBottom 표/도형이 차지하는 높이 (px).
     /// col 1 이상으로 advance 시 zone_y_offset에 반영.
     pending_body_wide_top_reserve: f64,
+    /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
+    /// 단독 항목 페이지 발생 차단용.
+    skip_safety_margin_once: bool,
 }
 
 impl TypesetState {
@@ -146,6 +149,7 @@ impl TypesetState {
             current_zone_layout: None,
             on_first_multicolumn_page: false,
             pending_body_wide_top_reserve: 0.0,
+            skip_safety_margin_once: false,
         }
     }
 
@@ -384,6 +388,38 @@ impl TypesetEngine {
                 }
             }
 
+            // [Task #359] 단독 항목 페이지 차단:
+            // 다음 pi 가 vpos-reset 가드를 발동할 예정이고 현재 pi 가 잔여 공간 부족으로
+            // 새 페이지를 시작하면 단독 항목 페이지가 발생.
+            //   - 현재 pi 가 빈 문단이면: skip (한컴은 표시하지 않음)
+            //   - 현재 pi 가 일반 텍스트이면: fit 안전마진 (10px) 1회 비활성화
+            //     (kps-ai pi=317 case: 0.x px 차이로 fit 실패하여 단독 페이지 35 발생)
+            // 가드 제외 조건:
+            //   - 다음 pi 가 force_page_break (column_type==Page/Section) 인 경우 발동 안 함
+            //     (정상 쪽나누기 신호 — 단독 페이지 발생 안 함, hwp-multi-001 회귀 차단)
+            let next_will_vpos_reset = if !st.current_items.is_empty() && para_idx + 1 < paragraphs.len() {
+                let next_para = &paragraphs[para_idx + 1];
+                let next_force_break = next_para.column_type == ColumnBreakType::Page
+                    || next_para.column_type == ColumnBreakType::Section;
+                if next_force_break {
+                    false
+                } else {
+                    let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
+                    let curr_last_vpos = para.line_segs.last().map(|s| s.vertical_pos);
+                    matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl)) if nv == 0 && cl > 5000)
+                }
+            } else { false };
+
+            if next_will_vpos_reset {
+                if para.text.is_empty() {
+                    // 빈 문단 skip (단독 빈페이지 차단)
+                    continue;
+                } else {
+                    // 일반 텍스트: 안전마진 1회 비활성화 (단독 텍스트 페이지 차단)
+                    st.skip_safety_margin_once = true;
+                }
+            }
+
 
             st.ensure_page();
 
@@ -551,8 +587,26 @@ impl TypesetEngine {
         // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
         // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
         // layout 시점의 LAYOUT_OVERFLOW (clamp pile 트리거) 를 사전 차단한다.
+        // [Task #359] 다음 pi 가 vpos-reset 가드 발동 예정 시 안전마진 1회 비활성화
+        // (단독 항목 페이지 차단).
+        // [Task #361] 직전 항목이 PartialTable 인 경우 안전마진 비활성화.
+        // PartialTable 의 cur_h 는 row 단위로 정확히 누적되므로 안전마진이 과함.
+        // (k-water-rfp p15 case: PartialTable 직후 작은 텍스트 (16px) 가 잔여 5.3px 부족으로
+        // fit 실패하여 다음 페이지로 밀리는 회귀.)
         const LAYOUT_DRIFT_SAFETY_PX: f64 = 10.0;
-        let available = (st.available_height() - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
+        let prev_is_partial_table = matches!(
+            st.current_items.last(),
+            Some(PageItem::PartialTable { .. })
+        );
+        let safety = if st.skip_safety_margin_once {
+            st.skip_safety_margin_once = false;
+            0.0
+        } else if prev_is_partial_table {
+            0.0
+        } else {
+            LAYOUT_DRIFT_SAFETY_PX
+        };
+        let available = (st.available_height() - safety).max(0.0);
 
         // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
         // Stage 5a 확장: per-paragraph 카테고리 분해 (sb/sa/lines/line_sum/ls_sum)
@@ -609,12 +663,18 @@ impl TypesetEngine {
         }
 
         // fits: 문단 전체가 현재 공간에 들어가는가?
+        // [Task #359] fit 판정은 height_for_fit (trailing_ls 제외) 으로,
+        // 누적은 total_height (full) 로 분리. 각 항목별 trailing_ls 가
+        // 누적에서 빠지면 N items 누적 시 N × trailing_ls 만큼 drift 발생
+        // (k-water-rfp p3 case: 36 items × 평균 ~9px = ~311px LAYOUT_OVERFLOW).
+        // trailing_ls 는 페이지 마지막 항목의 fit 판정에만 의미가 있음
+        // (페이지 끝에는 다음 줄이 없으니 line_spacing 미적용).
         if st.current_height + fmt.height_for_fit <= available {
             // place: 전체 배치
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.height_for_fit;
+            st.current_height += fmt.total_height;
             return;
         }
 
@@ -624,7 +684,7 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.height_for_fit;
+            st.current_height += fmt.total_height;
             return;
         }
 
@@ -1649,6 +1709,18 @@ impl TypesetEngine {
                 })
                 .max();
 
+            // [Task #361] NewNumber 적용 — 한 페이지에서 한 번만
+            // 조건: nn_pi 가 이전 페이지에 이미 적용되지 않았고 (after_prev),
+            //       이 페이지 안에 있어야 함 (in_current).
+            for &(nn_pi, nn_num) in new_page_numbers {
+                let after_prev = prev_page_last_para.map_or(true, |prev| nn_pi > prev);
+                let in_current = page_last_para.map_or(false, |last| nn_pi <= last);
+                if after_prev && in_current {
+                    page_num = nn_num as u32;
+                }
+            }
+
+            // 이 페이지에 속하는 머리말/꼬리말 갱신
             if let Some(last_pi) = page_last_para {
                 for (hf_pi, hf_ref, is_header, apply) in hf_entries {
                     if *hf_pi <= last_pi {

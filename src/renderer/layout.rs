@@ -230,6 +230,9 @@ pub struct LayoutEngine {
     show_control_codes: std::cell::Cell<bool>,
     /// 현재 페이지 용지 너비 (표 HorzRelTo::Paper 위치 계산용)
     current_paper_width: std::cell::Cell<f64>,
+    /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
+    /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
+    current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
 }
 
 mod text_measurement;
@@ -270,6 +273,7 @@ impl LayoutEngine {
             active_field: std::cell::RefCell::new(None),
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
+            current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
         }
     }
 
@@ -1255,6 +1259,9 @@ impl LayoutEngine {
 
         // 현재 페이지 용지 너비 설정 (표 HorzRelTo::Paper 위치 계산용)
         self.current_paper_width.set(layout.page_width);
+        // 현재 페이지 본문 영역 설정 (표 HorzRelTo::Page / VertRelTo::Page 계산용 — Task #347)
+        let ba = &layout.body_area;
+        self.current_body_area.set((ba.x, ba.y, ba.width, ba.height));
 
         // 문단 테두리 범위 수집 초기화
         self.para_border_ranges.borrow_mut().clear();
@@ -2509,26 +2516,90 @@ impl LayoutEngine {
             if let Some(ctrl) = para.controls.get(control_index) {
                 if let Control::Picture(pic) = ctrl {
                     if pic.common.treat_as_char {
+                        let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                        let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                        let pic_y = para_start_y.get(&para_index).copied().unwrap_or(y_offset);
+                        let comp = composed.get(para_index);
+                        let para_style_id = comp.map(|c| c.para_style_id as usize)
+                            .unwrap_or(para.para_shape_id as usize);
+                        let para_style_ref = styles.para_styles.get(para_style_id);
+                        let para_alignment = para_style_ref
+                            .map(|s| s.alignment)
+                            .unwrap_or(Alignment::Left);
+                        // Task #347: 첫 줄 effective_margin (hanging indent: indent<0 → first-line은 margin_left만 적용)
+                        let para_margin_left = para_style_ref.map(|s| s.margin_left).unwrap_or(0.0);
+                        let para_indent = para_style_ref.map(|s| s.indent).unwrap_or(0.0);
+                        let effective_margin_left = if para_indent > 0.0 {
+                            para_margin_left + para_indent
+                        } else {
+                            para_margin_left
+                        };
+                        let para_margin_right = para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
+                        let avail_w = (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
+                        let pic_x = match para_alignment {
+                            Alignment::Center | Alignment::Distribute =>
+                                col_area.x + effective_margin_left + (avail_w - pic_w).max(0.0) / 2.0,
+                            Alignment::Right =>
+                                col_area.x + effective_margin_left + (avail_w - pic_w).max(0.0),
+                            _ => col_area.x + effective_margin_left,
+                        };
+
+                        // Task #347: paragraph_layout이 호출되지 않는 빈 문단(텍스트 없음 +
+                        // TAC 그림만 있는 경우)에서는 인라인 그림이 누락되어
+                        // 박스 프레임 시각이 사라지고 후속 InFrontOfText 표가 위로 겹침.
+                        // 호스트 문단에 실제 텍스트가 없으면 여기서 직접 이미지 노드를 생성하고
+                        // y_offset을 그림 높이만큼 진행시킨다.
+                        let has_real_text = para.text.chars()
+                            .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                        if !has_real_text {
+                            let bin_data_id = pic.image_attr.bin_data_id;
+                            let image_data = find_bin_data(bin_data_content, bin_data_id)
+                                .map(|c| c.data.clone());
+                            let crop = {
+                                let c = &pic.crop;
+                                if c.right > c.left && c.bottom > c.top {
+                                    Some((c.left, c.top, c.right, c.bottom))
+                                } else {
+                                    None
+                                }
+                            };
+                            let img_id = tree.next_id();
+                            let img_node = RenderNode::new(
+                                img_id,
+                                RenderNodeType::Image(ImageNode {
+                                    section_index: Some(page_content.section_index),
+                                    para_index: Some(para_index),
+                                    control_index: Some(control_index),
+                                    crop,
+                                    effect: pic.image_attr.effect,
+                                    ..ImageNode::new(bin_data_id, image_data)
+                                }),
+                                BoundingBox::new(pic_x, pic_y, pic_w, pic_h),
+                            );
+                            // Task #347: 같은 문단의 InFrontOfText 표가 이미 렌더되어
+                            // col_node.children에 들어있으면 그 앞에 끼워넣어 z-order 보존
+                            // (인라인 TAC 그림은 박스 프레임 시각이고 InFrontOfText 표가
+                            //  본문 콘텐츠로 그 위에 그려져야 함).
+                            let insert_pos = col_node.children.iter().position(|c| {
+                                matches!(&c.node_type, RenderNodeType::Table(t)
+                                    if t.para_index == Some(para_index))
+                            });
+                            if let Some(pos) = insert_pos {
+                                col_node.children.insert(pos, img_node);
+                            } else {
+                                col_node.children.push(img_node);
+                            }
+                            // 후속 InFrontOfText 객체의 para_y 기준이 되도록 위치 등록
+                            tree.set_inline_shape_position(
+                                page_content.section_index, para_index, control_index, pic_x, pic_y,
+                            );
+                            result_y = pic_y + pic_h;
+                        }
+
                         if let Some(ref caption) = pic.caption {
                             use crate::model::shape::CaptionDirection;
-                            let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                            let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                            let pic_y = para_start_y.get(&para_index).copied().unwrap_or(y_offset);
                             let caption_spacing = hwpunit_to_px(caption.spacing as i32, self.dpi);
                             let caption_h = self.calculate_caption_height(&pic.caption, styles);
-                            let comp = composed.get(para_index);
-                            let para_style_id = comp.map(|c| c.para_style_id as usize)
-                                .unwrap_or(para.para_shape_id as usize);
-                            let para_alignment = styles.para_styles.get(para_style_id)
-                                .map(|s| s.alignment)
-                                .unwrap_or(Alignment::Left);
-                            let pic_x = match para_alignment {
-                                Alignment::Center | Alignment::Distribute =>
-                                    col_area.x + (col_area.width - pic_w).max(0.0) / 2.0,
-                                Alignment::Right =>
-                                    col_area.x + (col_area.width - pic_w).max(0.0),
-                                _ => col_area.x,
-                            };
                             let cap_y = match caption.direction {
                                 CaptionDirection::Bottom => pic_y + pic_h + caption_spacing,
                                 CaptionDirection::Top => pic_y,
