@@ -120,6 +120,17 @@ struct TypesetState {
     /// Task #321: col 0 상단의 body-wide TopAndBottom 표/도형이 차지하는 높이 (px).
     /// col 1 이상으로 advance 시 zone_y_offset에 반영.
     pending_body_wide_top_reserve: f64,
+    /// Task #356: HWP 권위값(LINE_SEG.vertical_pos) 의 페이지 기준점.
+    /// 새 페이지의 첫 문단의 first_vpos 로 설정. 후속 문단의 first_vpos 는
+    /// (cur_first_vpos - base) 로 페이지 내 px 위치를 환산해 current_height 를
+    /// 보정하는 데 사용한다 (TAC 표 누적 drift 보정).
+    page_vpos_base: Option<i32>,
+    /// Task #356: 직전 문단이 typeset_paragraph 내부에서 HWP overflow 검증으로
+    /// 강제 페이지 advance 된 경우 true. 다음 문단의 인접 문단 vpos 리셋 검사를
+    /// 한 번 스킵하여 중복 advance 를 방지한다 (force_advanced 된 문단이 새 페이지의
+    /// 첫 항목이 되었으므로, HWP 의 원래 다음 문단이 vpos=작은값 으로 시작해도
+    /// 그것은 정상 진행임).
+    suppress_next_inter_para_advance: bool,
 }
 
 impl TypesetState {
@@ -146,6 +157,8 @@ impl TypesetState {
             current_zone_layout: None,
             on_first_multicolumn_page: false,
             pending_body_wide_top_reserve: 0.0,
+            page_vpos_base: None,
+            suppress_next_inter_para_advance: false,
         }
     }
 
@@ -255,6 +268,7 @@ impl TypesetState {
         self.current_zone_y_offset = 0.0;
         self.current_zone_layout = None;
         self.on_first_multicolumn_page = false;
+        self.page_vpos_base = None;
     }
 
     fn new_page_content(&self, column_contents: Vec<ColumnContent>) -> PageContent {
@@ -377,7 +391,18 @@ impl TypesetEngine {
             // detect_inter_paragraph_vpos_reset 헬퍼를 보조 트리거로 사용한다.
             // 헬퍼는 column_start 가 같은 경우만 다루므로 기존 cv==0 의 다단 advance
             // 동작은 그대로 유지된다.
-            if para_idx > 0 && !st.current_items.is_empty() {
+            // current_items 의 마지막 항목이 PartialParagraph 이면 prev 가 페이지에
+            // 걸쳐 분할된 상태. prev.first_vpos 는 다른 페이지의 좌표라 inter-para
+            // 검사가 잘못된 advance 를 유발 (예: hongbo.hwp pi=15 split → pi=16).
+            let prev_was_partial = matches!(
+                st.current_items.last(),
+                Some(PageItem::PartialParagraph { .. })
+            );
+
+            if para_idx > 0 && !st.current_items.is_empty()
+                && !st.suppress_next_inter_para_advance
+                && !prev_was_partial
+            {
                 let prev_para = &paragraphs[para_idx - 1];
                 let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
                 let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
@@ -396,9 +421,32 @@ impl TypesetEngine {
                     st.advance_column_or_new_page();
                 }
             }
+            // suppress 플래그는 한 문단 후 자동 클리어
+            st.suppress_next_inter_para_advance = false;
 
 
             st.ensure_page();
+
+            // Task #356: vpos 기준점 = 현재 페이지의 첫 PageItem 에 해당하는 문단의
+            // first_vpos. 표 처리 도중 reset_for_new_page 로 base 가 사라져도
+            // current_items 의 첫 항목으로부터 다시 유도하면 일관성 유지.
+            if st.page_vpos_base.is_none() {
+                let first_pi = st.current_items.first().and_then(|item| match item {
+                    PageItem::FullParagraph { para_index } => Some(*para_index),
+                    PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
+                    PageItem::Table { para_index, .. } => Some(*para_index),
+                    PageItem::PartialTable { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. } => Some(*para_index),
+                });
+                let first_vpos = first_pi
+                    .and_then(|pi| paragraphs.get(pi))
+                    .and_then(|p| p.line_segs.first())
+                    .map(|s| s.vertical_pos)
+                    .or_else(|| para.line_segs.first().map(|s| s.vertical_pos));
+                if let Some(v) = first_vpos {
+                    st.page_vpos_base = Some(v);
+                }
+            }
 
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
@@ -619,6 +667,63 @@ impl TypesetEngine {
         if col_breaks.len() > 1 {
             self.typeset_multicolumn_paragraph(st, para_idx, para, fmt, &col_breaks);
             return;
+        }
+
+        // Task #356: HWP 권위값(LINE_SEG vpos) 기반 current_height 보정.
+        // 페이지 첫 문단이면 vpos 기준점 설정. 후속 문단이면 first_vpos 로
+        // 환산한 px 위치가 누적 current_height 보다 크면 그 값으로 끌어올린다.
+        // TAC 표 다수 페이지에서 px 누적이 HWP 위치보다 적게 계산되는 drift 를
+        // 보정하여 fits 판정이 HWP 와 일치하도록 한다.
+        // 단 col_count==1 (단일 단) 페이지에 한정하여 다단 케이스 회귀를 방지한다.
+        if st.col_count == 1 {
+            // (a) HWP 권위값 overflow 검증: 마지막 LINE_SEG 의 vpos+lh+ls 가 page body
+            // 높이를 초과하면 HWP 자체가 다음 페이지로 보낸 것이므로 강제 분기.
+            // (이슈 #356: pi=39 의 ls[1].vpos+lh+ls=70761HU > body 70014HU 인 경우)
+            //
+            // 적용 조건:
+            //   - current_items 비어있지 않음 (페이지 첫 항목 아님)
+            //   - px-누적 fits 판정으로는 들어가지만 HWP 권위값으로는 초과
+            //   - 새 페이지로 옮기면 fits (full para 가 base_available 안에 들어감)
+            // 위 모두 만족시에만 force advance. 그렇지 않으면 일반 fits/split 로직에 위임.
+            let mut force_advance = false;
+            if !st.current_items.is_empty() {
+                if let (Some(base), Some(last_seg)) = (st.page_vpos_base, para.line_segs.last()) {
+                    let last_bottom_hu = last_seg.vertical_pos
+                        .saturating_add(last_seg.line_height)
+                        .saturating_add(last_seg.line_spacing);
+                    let span_hu = last_bottom_hu.saturating_sub(base);
+                    if span_hu > 0 {
+                        let span_px = crate::renderer::hwpunit_to_px(span_hu, self.dpi);
+                        let base_avail = st.base_available_height();
+                        let px_fits_now = st.current_height + fmt.height_for_fit <= available + 0.5;
+                        let fits_on_fresh = fmt.height_for_fit <= (base_avail - LAYOUT_DRIFT_SAFETY_PX) + 0.5;
+                        if span_px > base_avail + 0.5 && px_fits_now && fits_on_fresh {
+                            force_advance = true;
+                        }
+                    }
+                }
+            }
+            if force_advance {
+                st.advance_column_or_new_page();
+                // 새 페이지의 base 는 현 문단의 first_vpos 로 재설정 (advance 후 None 상태)
+                if let Some(first_seg) = para.line_segs.first() {
+                    st.page_vpos_base = Some(first_seg.vertical_pos);
+                }
+                // 다음 문단의 inter-para vpos 리셋 검사를 한 번 스킵
+                st.suppress_next_inter_para_advance = true;
+            }
+
+            // (b) vpos 권위값 기반 current_height 보정 (drift 보정).
+            if let (Some(first_seg), Some(base)) = (para.line_segs.first(), st.page_vpos_base) {
+                let span_hu = first_seg.vertical_pos.saturating_sub(base);
+                if span_hu > 0 {
+                    let vpos_h = crate::renderer::hwpunit_to_px(span_hu, self.dpi);
+                    let base_avail = st.base_available_height();
+                    if vpos_h > st.current_height && vpos_h <= base_avail {
+                        st.current_height = vpos_h;
+                    }
+                }
+            }
         }
 
         // fits: 문단 전체가 현재 공간에 들어가는가?
