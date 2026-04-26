@@ -4,7 +4,7 @@
 // 2. WASM, 폰트, 확장 파일(manifest, background, content-script)을 dist/에 복사
 // 3. dist/ 폴더가 곧 Firefox 확장 프로그램
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { cpSync, mkdirSync, existsSync, renameSync, rmSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,9 +13,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(__dirname, 'dist');
 
-function run(cmd, cwd = __dirname) {
-  console.log(`> ${cmd}`);
-  execSync(cmd, { stdio: 'inherit', cwd });
+// [Task #354] execSync (shell 보간) → execFileSync (인자 배열, shell:false) 전환.
+// CodeQL 경고 (js/shell-command-injection-from-environment) 해소 + 공백 포함
+// 경로에서도 인자 배열이 안전하게 처리됨.
+function run(cmd, args, cwd = __dirname) {
+  console.log(`> ${cmd} ${args.join(' ')}`);
+  execFileSync(cmd, args, { stdio: 'inherit', cwd, shell: false });
 }
 
 function copy(src, dest, options = {}) {
@@ -40,7 +43,7 @@ if (existsSync(DIST)) {
 // 1. Vite 빌드 (rhwp-studio → dist/)
 console.log('[1/4] Vite 빌드...');
 const studioDir = resolve(ROOT, 'rhwp-studio');
-run(`npx vite build --config ${resolve(__dirname, 'vite.config.ts')}`, studioDir);
+run('npx', ['vite', 'build', '--config', resolve(__dirname, 'vite.config.ts')], studioDir);
 
 // index.html → viewer.html 이름 변경
 const indexHtml = resolve(DIST, 'index.html');
