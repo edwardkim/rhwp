@@ -1403,16 +1403,32 @@ impl TypesetEngine {
         let table_available = available; // 각주/존 오프셋 차감된 가용 높이
 
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인)
+        //
+        // Task #379: row 0 에 row_span>1 셀이 있으면 그 셀의 실제 높이는
+        // row_heights[0..rs].sum() 이다. 단순히 row_heights[0] 만 가드 기준으로
+        // 사용하면 헤더만 fit 으로 판정되고 rs 셀이 두 페이지에 걸쳐 깨진다.
+        // (예: 기부 보고서 pi=22 의 \"<요약>\" 헤더 셀, rs=2). row 0 에서 출발하는
+        // 모든 셀의 row_span 확장 높이 중 max 를 기준으로 사용한다.
         let remaining_on_page = (table_available - st.current_height).max(0.0);
         let first_row_h = mt.row_heights[0];
-        if remaining_on_page < first_row_h && !st.current_items.is_empty() {
+        let first_row_atomic_h = mt.cells.iter()
+            .filter(|c| c.row == 0 && c.row_span > 1)
+            .map(|c| {
+                let end = (c.row + c.row_span).min(row_count);
+                mt.row_heights[c.row..end].iter().sum::<f64>()
+                    + cs * (end - c.row).saturating_sub(1) as f64
+            })
+            .fold(first_row_h, f64::max);
+        if remaining_on_page < first_row_atomic_h && !st.current_items.is_empty() {
             let first_row_splittable = can_intra_split && mt.is_row_splittable(0);
-            let min_content = if first_row_splittable {
+            // rs>1 셀이 있으면 인트라-로우 분할 시도하지 않음 (atomic 단위로 push)
+            let has_rowspan = mt.cells.iter().any(|c| c.row == 0 && c.row_span > 1);
+            let min_content = if first_row_splittable && !has_rowspan {
                 mt.min_first_line_height_for_row(0, 0.0) + mt.max_padding_for_row(0)
             } else {
                 f64::MAX
             };
-            if !first_row_splittable || remaining_on_page < min_content {
+            if !first_row_splittable || has_rowspan || remaining_on_page < min_content {
                 st.advance_column_or_new_page();
             }
         }
