@@ -2549,9 +2549,20 @@ impl LayoutEngine {
                         // 박스 프레임 시각이 사라지고 후속 InFrontOfText 표가 위로 겹침.
                         // 호스트 문단에 실제 텍스트가 없으면 여기서 직접 이미지 노드를 생성하고
                         // y_offset을 그림 높이만큼 진행시킨다.
+                        //
+                        // Task #376: paragraph_layout 의 빈 문단 + TAC 분기에서도 인라인 emit
+                        // + position 등록을 수행하므로, 이미 등록된 경우 여기서 이중 emit 하지
+                        // 않는다 (y_offset 만 갱신).
+                        let already_inlined = tree
+                            .get_inline_shape_position(
+                                page_content.section_index, para_index, control_index,
+                            )
+                            .is_some();
                         let has_real_text = para.text.chars()
                             .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-                        if !has_real_text {
+                        if already_inlined {
+                            result_y = pic_y + pic_h;
+                        } else if !has_real_text {
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data(bin_data_content, bin_data_id)
                                 .map(|c| c.data.clone());
