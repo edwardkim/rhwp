@@ -1061,6 +1061,11 @@ impl SvgRenderer {
         if let Some(ref fid) = effect_filter_id {
             self.output.push_str(&format!("<g filter=\"url(#{})\">\n", fid));
         }
+        // 밝기/대비 → SVG 필터 래핑
+        let bc_filter_id = self.ensure_brightness_contrast_filter(img.brightness, img.contrast);
+        if let Some(ref fid) = bc_filter_id {
+            self.output.push_str(&format!("<g filter=\"url(#{})\">\n", fid));
+        }
 
         let mime_type = detect_image_mime_type(data);
 
@@ -1158,6 +1163,9 @@ impl SvgRenderer {
             }
         }
 
+        if bc_filter_id.is_some() {
+            self.output.push_str("</g>\n");
+        }
         if effect_filter_id.is_some() {
             self.output.push_str("</g>\n");
         }
@@ -1207,6 +1215,37 @@ impl SvgRenderer {
             self.defs.push(def_str);
         }
         Some(id.to_string())
+    }
+
+    /// 밝기/대비 조정용 SVG 필터를 defs에 보장하고 ID를 반환한다.
+    /// 둘 다 0이면 필터 불필요 → None 반환.
+    fn ensure_brightness_contrast_filter(&mut self, brightness: i8, contrast: i8) -> Option<String> {
+        if brightness == 0 && contrast == 0 {
+            return None;
+        }
+
+        let id = format!("rhwp-img-bc-b{}c{}", brightness, contrast);
+
+        // 밝기: intercept 오프셋으로 구현 (slope=1, intercept=brightness/100)
+        // 대비: slope 조정으로 구현 (slope=(100+contrast)/100, intercept=0.5-0.5*slope)
+        // 둘을 합성: slope=contrast_slope, intercept=contrast_intercept + brightness_offset
+        let b = brightness as f64 / 100.0;
+        let slope = (100.0 + contrast as f64) / 100.0;
+        let intercept = (0.5 - 0.5 * slope) + b;
+
+        let def = format!(
+            "<filter id=\"{id}\">\
+                <feComponentTransfer>\
+                    <feFuncR type=\"linear\" slope=\"{slope:.4}\" intercept=\"{intercept:.4}\"/>\
+                    <feFuncG type=\"linear\" slope=\"{slope:.4}\" intercept=\"{intercept:.4}\"/>\
+                    <feFuncB type=\"linear\" slope=\"{slope:.4}\" intercept=\"{intercept:.4}\"/>\
+                </feComponentTransfer>\
+            </filter>\n"
+        );
+        if !self.defs.iter().any(|d| d == &def) {
+            self.defs.push(def);
+        }
+        Some(id)
     }
 
     /// 이미지를 원래 크기로 지정 위치에 배치 (배치 모드)
