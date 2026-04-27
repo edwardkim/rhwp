@@ -13,6 +13,7 @@ pub mod height_measurer;
 pub mod html;
 pub mod layout;
 pub mod page_layout;
+pub mod page_number;
 pub mod pagination;
 pub mod render_tree;
 pub mod scheduler;
