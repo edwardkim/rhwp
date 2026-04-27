@@ -1944,7 +1944,14 @@ fn compute_body_wide_top_reserve_for_para(
             continue;
         }
         let outer_bottom = crate::renderer::hwpunit_to_px(common.margin.bottom as i32, dpi);
-        let bottom = shape_y_offset + shape_h + outer_bottom;
+        // [Task #386] VertRelTo::Paper 인 경우 vertical_offset 은 page-top 절대 좌표.
+        // reserve 는 col 1 cur_h 시작값(=body-top 상대)으로 사용되므로 body_top 차감.
+        let bottom_raw = shape_y_offset + shape_h + outer_bottom;
+        let bottom = if matches!(common.vert_rel_to, VertRelTo::Paper) {
+            (bottom_raw - body_top).max(0.0)
+        } else {
+            bottom_raw
+        };
         if bottom > max_bottom {
             max_bottom = bottom;
         }
