@@ -2277,4 +2277,125 @@ mod tests {
     fn test_typeset_vs_paginator_biz_plan() {
         compare_with_hwp_file("samples/biz_plan.hwp");
     }
+
+    // ===== Task #386: compute_body_wide_top_reserve_for_para 좌표계 검증 =====
+    //
+    // VertRelTo::Paper 기준 도형은 vertical_offset이 page-top 절대 좌표.
+    // col 1 진입 시 cur_h 시작값으로 사용되므로 body_top 기준으로 변환되어야 한다.
+
+    fn a3_page_def_exam_eng() -> PageDef {
+        // exam_eng.hwp 와 동일: A3 297×420mm, 상단 여백 56.5mm
+        PageDef {
+            width: 84188,
+            height: 119052,
+            margin_left: 8788,
+            margin_right: 8788,
+            margin_top: 16013,
+            margin_bottom: 8504,
+            margin_header: 0,
+            margin_footer: 3826,
+            margin_gutter: 0,
+            ..Default::default()
+        }
+    }
+
+    fn two_column_def() -> ColumnDef {
+        ColumnDef {
+            column_count: 2,
+            same_width: true,
+            spacing: 3120,
+            ..Default::default()
+        }
+    }
+
+    /// 테스트 헬퍼: TopAndBottom 비-TAC 표를 가진 단일 문단 생성
+    fn make_para_with_top_bottom_table(
+        vert_rel_to: crate::model::shape::VertRelTo,
+        vertical_offset_hu: u32,
+        width_hu: u32,
+        height_hu: u32,
+        margin_bottom_hu: i16,
+    ) -> Paragraph {
+        use crate::model::table::Table;
+        use crate::model::shape::{CommonObjAttr, TextWrap};
+        use crate::model::Padding;
+        let table = Table {
+            common: CommonObjAttr {
+                vert_rel_to,
+                text_wrap: TextWrap::TopAndBottom,
+                vertical_offset: vertical_offset_hu,
+                width: width_hu,
+                height: height_hu,
+                treat_as_char: false,
+                margin: Padding {
+                    bottom: margin_bottom_hu,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        Paragraph {
+            controls: vec![Control::Table(Box::new(table))],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn t386_body_wide_reserve_paper_relative_returns_body_relative() {
+        // exam_eng.hwp pi=0 ctrl[4] 재현:
+        //   VertRelTo::Paper, vertical_offset=10885 HU, width=66616 HU, height=11058 HU
+        //   margin.bottom=1132 HU
+        // body_top = 16013 HU = 213.5 px (A3, top margin 56.5mm, 96 DPI)
+        // 표 bottom (page-abs) = 145.2 + 147.4 + 15.1 = 307.7 px
+        // body 상대 reserve = 307.7 - 213.5 = 94.2 px (HWP col 1 vpos=7060=94.1 px와 일치)
+        let para = make_para_with_top_bottom_table(
+            crate::model::shape::VertRelTo::Paper,
+            10885, 66616, 11058, 1132,
+        );
+        let layout = PageLayoutInfo::from_page_def_default(&a3_page_def_exam_eng(), &two_column_def());
+        let reserve = compute_body_wide_top_reserve_for_para(&para, &layout, 96.0);
+
+        // body_top 차감된 body-relative 값이어야 함
+        assert!(
+            (reserve - 94.13).abs() < 0.5,
+            "Paper-relative TopAndBottom 표의 reserve는 body-relative여야 함. \
+             expected≈94.13 px, got {:.2} px (page-abs 좌표 그대로 반환되면 307.67)",
+            reserve,
+        );
+    }
+
+    #[test]
+    fn t386_body_wide_reserve_paper_relative_inside_header_skipped() {
+        // shape_bottom_abs <= body_top 인 도형 (머리말 영역 전체)은 reserve=0
+        // vertical_offset=2000 HU, height=5000 HU → bottom=7000 HU = 93.3 px < body_top(213.5)
+        let para = make_para_with_top_bottom_table(
+            crate::model::shape::VertRelTo::Paper,
+            2000, 66616, 5000, 0,
+        );
+        let layout = PageLayoutInfo::from_page_def_default(&a3_page_def_exam_eng(), &two_column_def());
+        let reserve = compute_body_wide_top_reserve_for_para(&para, &layout, 96.0);
+        assert_eq!(reserve, 0.0,
+            "머리말 영역 도형은 reserve=0 (body 밖이므로 col 1에 영향 없음). got {:.2}",
+            reserve);
+    }
+
+    #[test]
+    fn t386_body_wide_reserve_para_relative_unchanged() {
+        // VertRelTo::Para 인 도형은 paragraph 시작점 기준이므로 변환 불필요.
+        // 이 테스트는 Para 케이스가 수정으로 인해 회귀하지 않음을 보장.
+        // vertical_offset=0 HU, height=11058 HU, margin.bottom=1132 HU
+        // 결과: 0 + 147.4 + 15.1 = 162.5 px (body 상대로 그대로 사용 가능)
+        let para = make_para_with_top_bottom_table(
+            crate::model::shape::VertRelTo::Para,
+            0, 66616, 11058, 1132,
+        );
+        let layout = PageLayoutInfo::from_page_def_default(&a3_page_def_exam_eng(), &two_column_def());
+        let reserve = compute_body_wide_top_reserve_for_para(&para, &layout, 96.0);
+        assert!(
+            (reserve - 162.49).abs() < 0.5,
+            "Para-relative 도형의 reserve는 변환 없이 그대로. expected≈162.49, got {:.2}",
+            reserve,
+        );
+    }
 }
