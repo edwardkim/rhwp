@@ -329,10 +329,16 @@ impl SvgRenderer {
                 } else {
                     1.0
                 };
-                if (scale_x - 1.0).abs() > 0.01 {
+                let scale_y = if eq.layout_box.height > 0.0 && node.bbox.height > 0.0 {
+                    node.bbox.height / eq.layout_box.height
+                } else {
+                    1.0
+                };
+                let needs_scale = (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01;
+                if needs_scale {
                     self.output.push_str(&format!(
-                        "<g transform=\"translate({},{}) scale({:.4},1)\">\n",
-                        node.bbox.x, node.bbox.y, scale_x,
+                        "<g transform=\"translate({},{}) scale({:.4},{:.4})\">\n",
+                        node.bbox.x, node.bbox.y, scale_x, scale_y,
                     ));
                 } else {
                     self.output.push_str(&format!(

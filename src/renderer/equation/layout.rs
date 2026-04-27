@@ -223,7 +223,11 @@ impl EqLayout {
     }
 
     fn layout_text(&self, text: &str, fs: f64) -> LayoutBox {
-        let w = estimate_text_width(text, fs, true);
+        // CJK/한글 텍스트는 이탤릭이 아니므로 italic 보정 제외
+        let has_cjk = text.chars().any(|c| matches!(c,
+            '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
+        ));
+        let w = estimate_text_width(text, fs, !has_cjk);
         LayoutBox {
             x: 0.0, y: 0.0, width: w, height: fs,
             baseline: fs * 0.8,
@@ -1003,5 +1007,41 @@ mod tests {
         );
         assert!(lb.width > 100.0);
         assert!(lb.height > 0.0);
+    }
+
+    #[test]
+    fn test_cases_korean_no_overlap() {
+        // exam_math.hwp p177 CASES 수식 — 한글 혼합
+        let lb = parse_and_layout(
+            "a _{n+1} = {cases{``a _{n} -3&&LEFT ( LEFT |` a _{n} `RIGHT | 이~홀수인~경우 RIGHT )#``{1} over {2} a _{n}&&LEFT ( a _{n} =0~또는~ LEFT |` a _{n} `RIGHT | 이~짝수인~경우 RIGHT )}}",
+            14.67,
+        );
+        assert!(lb.width > 0.0, "CASES width should be positive");
+        assert!(lb.height > 0.0, "CASES height should be positive");
+
+        // CASES는 Paren{ body: Row[ row1, row2 ] } 구조
+        if let LayoutKind::Paren { body, .. } = &lb.kind {
+            if let LayoutKind::Row(rows) = &body.kind {
+                assert!(rows.len() >= 2, "CASES should have at least 2 rows");
+                let row1 = &rows[0];
+                let row2 = &rows[1];
+                let row1_bottom = row1.y + row1.height;
+                let row2_top = row2.y;
+                assert!(row2_top >= row1_bottom,
+                    "CASES rows should not overlap: row1 bottom={:.1}, row2 top={:.1}",
+                    row1_bottom, row2_top);
+            }
+        }
+    }
+
+    #[test]
+    fn test_korean_text_width_not_italic() {
+        // 한글 텍스트는 이탤릭 보정 없이 폭 산출
+        let korean = parse_and_layout("홀수인~경우", 20.0);
+        let latin = parse_and_layout("abcdef", 20.0);
+        // 한글 6자(전각 1.0×) > 라틴 6자(~0.55×)
+        assert!(korean.width > latin.width,
+            "Korean text width ({:.1}) should be larger than Latin ({:.1})",
+            korean.width, latin.width);
     }
 }
