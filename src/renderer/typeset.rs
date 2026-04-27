@@ -793,7 +793,12 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.total_height;
+            // [Task #391] 다단/단단 분기:
+            //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
+            //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
+            // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
+            // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
+            st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
             return;
         }
 
@@ -803,7 +808,12 @@ impl TypesetEngine {
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
             });
-            st.current_height += fmt.total_height;
+            // [Task #391] 다단/단단 분기:
+            //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
+            //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
+            // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
+            // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
+            st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
             return;
         }
 
