@@ -1702,6 +1702,8 @@ impl LayoutEngine {
                                             para_index: Some(para_index),
                                             control_index: Some(tac_ci),
                                             effect: pic.image_attr.effect,
+                                    brightness: pic.image_attr.brightness,
+                                    contrast: pic.image_attr.contrast,
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -1952,6 +1954,8 @@ impl LayoutEngine {
                                         para_index: Some(para_index),
                                         control_index: Some(tac_ci),
                                         effect: pic.image_attr.effect,
+                                    brightness: pic.image_attr.brightness,
+                                    contrast: pic.image_attr.contrast,
                                         ..ImageNode::new(bin_data_id, image_data)
                                     }),
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2035,6 +2039,8 @@ impl LayoutEngine {
                                             para_index: Some(para_index),
                                             control_index: Some(tac_ci),
                                             effect: pic.image_attr.effect,
+                                    brightness: pic.image_attr.brightness,
+                                    contrast: pic.image_attr.contrast,
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),

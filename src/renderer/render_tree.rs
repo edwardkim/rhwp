@@ -639,6 +639,10 @@ pub struct ImageNode {
     pub crop: Option<(i32, i32, i32, i32)>,
     /// 그림 효과 (실사/그레이스케일/흑백/패턴)
     pub effect: ImageEffect,
+    /// 밝기 (-100 ~ +100)
+    pub brightness: i8,
+    /// 명암(대비) (-100 ~ +100)
+    pub contrast: i8,
 }
 
 impl ImageNode {
@@ -650,6 +654,8 @@ impl ImageNode {
             transform: ShapeTransform::default(),
             crop: None,
             effect: ImageEffect::RealPic,
+            brightness: 0,
+            contrast: 0,
         }
     }
 }
