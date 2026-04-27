@@ -1847,6 +1847,19 @@ impl Renderer for SvgRenderer {
         let char_positions = compute_char_positions(text, style);
         let clusters = split_into_clusters(text);
 
+        // 형광펜 배경 (CharShape.shade_color 기반 — web_canvas.rs와 동일 로직)
+        let shade_rgb = style.shade_color & 0x00FFFFFF;
+        if shade_rgb != 0x00FFFFFF && shade_rgb != 0 {
+            let text_width = *char_positions.last().unwrap_or(&0.0);
+            if text_width > 0.0 {
+                self.output.push_str(&format!(
+                    "<rect x=\"{:.4}\" y=\"{:.4}\" width=\"{:.4}\" height=\"{:.4}\" fill=\"{}\"/>\n",
+                    x, y - font_size, text_width, font_size * 1.2,
+                    color_to_svg(style.shade_color),
+                ));
+            }
+        }
+
         // Task #257: `·`(U+00B7) 를 <text> 대신 <circle> 로 렌더한다.
         //
         // 폰트 대체(휴먼명조→Batang 등)로 각 폰트의 `·` 글리프 LSB 와 글리프

@@ -2,7 +2,7 @@
   "name": "rhwp-vscode",
   "displayName": "HWP Viewer",
   "description": "HWP/HWPX 문서 뷰어 — rhwp 기반",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "publisher": "edwardkim",
   "license": "MIT",
   "icon": "media/icon.png",

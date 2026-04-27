@@ -1,6 +1,6 @@
 [package]
 name = "rhwp"
-version = "0.7.6"
+version = "0.7.7"
 edition = "2021"
 description = "HWP file viewer and editor written in Rust, targeting WebAssembly"
 license = "MIT"

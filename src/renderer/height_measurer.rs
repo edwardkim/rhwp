@@ -1089,7 +1089,15 @@ impl MeasuredTable {
                 // 연속적 비율 기반으로 remaining 계산
                 let line_sum: f64 = c.line_heights.iter().sum();
                 if line_sum < capped * 0.5 {
-                    return (capped - content_offset).max(0.0);
+                    // [Task #362] nested table 의 잔여 계산 시 외부 셀 행 높이로 cap.
+                    // total_content_height 가 nested 의 raw 누적이라 외부 행보다 클 수 있음 →
+                    // 외부 행 기준 잔여로 cap 하여 후속 페이지 누적 결함 차단.
+                    let effective_total = if c.has_nested_table {
+                        capped.min(max_content.max(line_sum))
+                    } else {
+                        capped
+                    };
+                    return (effective_total - content_offset).max(0.0);
                 }
                 // 줄 단위 스냅: content_offset을 줄별로 소비하고 나머지 줄의 높이 합산
                 // (layout의 compute_cell_line_ranges와 동일한 이산 계산)

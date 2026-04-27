@@ -47,6 +47,7 @@ Thumbs.db
 /webgian/
 /saved/*.hwp
 !/saved/blank2010.hwp
+!/saved/pr360-edward.hwp
 .claude/
 
 # 환경변수 (민감 정보)
