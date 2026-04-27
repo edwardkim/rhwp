@@ -31,8 +31,10 @@ fn extract_page_numbers(dump: &str) -> Vec<u32> {
 fn gugeo_업무계획_post_new_number_monotonic() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/2022년 국립국어원 업무계획.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let Ok(bytes) = fs::read(&hwp_path) else {
+        eprintln!("skip: sample not available at {}", hwp_path.display());
+        return;
+    };
 
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .expect("parse 2022년 국립국어원 업무계획.hwp");
@@ -72,7 +74,10 @@ fn gugeo_업무계획_post_new_number_monotonic() {
 fn gugeo_업무계획_max_page_number_close_to_count() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/2022년 국립국어원 업무계획.hwp");
-    let bytes = fs::read(&hwp_path).expect("read sample");
+    let Ok(bytes) = fs::read(&hwp_path) else {
+        eprintln!("skip: sample not available at {}", hwp_path.display());
+        return;
+    };
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
 
     let total_pages = doc.page_count();
