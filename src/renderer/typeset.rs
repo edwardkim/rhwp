@@ -540,6 +540,18 @@ impl TypesetEngine {
             }
 
             // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
+            //
+            // Task #380: 비-TAC TopAndBottom body-wide 도형/그림 의 높이는 paragraph
+            // line_segs 에 미포함 → typeset current_height 가 layout 실제 위치와
+            // 어긋남 (pi=172 chart 419.6px → drift 누적). compute_body_wide_top_reserve_for_para
+            // 가 동일 계산을 하지만 multi-col col 1+ advance 한정. single-col 에서도
+            // current_height 에 반영해 후속 항목의 페이지 분배 정확도를 유지한다.
+            let body_wide_reserve_h = compute_body_wide_top_reserve_for_para(
+                para, &st.layout, self.dpi,
+            );
+            if body_wide_reserve_h > 0.0 && !has_table {
+                st.current_height += body_wide_reserve_h;
+            }
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 match ctrl {
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
