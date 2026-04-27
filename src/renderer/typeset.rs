@@ -467,12 +467,12 @@ impl TypesetEngine {
             // first_vpos. 표 처리 도중 reset_for_new_page 로 base 가 사라져도
             // current_items 의 첫 항목으로부터 다시 유도하면 일관성 유지.
             if st.page_vpos_base.is_none() {
-                let first_pi = st.current_items.first().and_then(|item| match item {
-                    PageItem::FullParagraph { para_index } => Some(*para_index),
-                    PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
-                    PageItem::Table { para_index, .. } => Some(*para_index),
-                    PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                    PageItem::Shape { para_index, .. } => Some(*para_index),
+                let first_pi = st.current_items.first().map(|item| match item {
+                    PageItem::FullParagraph { para_index } => *para_index,
+                    PageItem::PartialParagraph { para_index, .. } => *para_index,
+                    PageItem::Table { para_index, .. } => *para_index,
+                    PageItem::PartialTable { para_index, .. } => *para_index,
+                    PageItem::Shape { para_index, .. } => *para_index,
                 });
                 let first_vpos = first_pi
                     .and_then(|pi| paragraphs.get(pi))
