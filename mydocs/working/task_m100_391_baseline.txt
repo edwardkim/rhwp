@@ -1,0 +1,386 @@
+문서 로드: samples/exam_eng.hwp (11페이지)
+
+=== 페이지 1 (global_idx=0, section=0, page_num=1) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=38, used=1114.4px, hwp_used≈1205.8px, diff=-91.4px)
+    Shape          pi=0 ci=3  wrap=BehindText tac=false  vpos=7060
+    Table          pi=0 ci=4  1x1  888.2x147.4px  wrap=TopAndBottom tac=false  vpos=7060
+    Shape          pi=0 ci=5  wrap=InFrontOfText tac=false  vpos=7060
+    Shape          pi=0 ci=6  wrap=InFrontOfText tac=false  vpos=7060
+    Table          pi=0 ci=7  1x1  419.5x89.9px  wrap=TopAndBottom tac=true  vpos=7060
+    FullParagraph  pi=1  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=14378  "(빈)"
+    FullParagraph  pi=2  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=16102..18032  "1.- 다음을 듣고, 여자가 하는 말의 목적으로 가장 적절한 것을 고르시"
+    FullParagraph  pi=3  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=20172  "①-학교 종소리 교체 계획을 알리려고"
+    FullParagraph  pi=4  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=21814  "②-학교 수업 시간 단축을 공지하려고"
+    FullParagraph  pi=5  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=23456  "③-등교 시간 변경을 안내하려고"
+    FullParagraph  pi=6  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=25098  "④-학부모 상담 신청서 제출을 독려하려고"
+    FullParagraph  pi=7  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=26740  "⑤-학교 행사 후 교실 정리 정돈을 당부하려고"
+    FullParagraph  pi=8  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=28382  "(빈)"
+    FullParagraph  pi=9  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=30024  "2.- 대화를 듣고, 남자의 의견으로 가장 적절한 것을 고르시오."
+    FullParagraph  pi=10  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=32454  "①-드라마 캠프는 효율적인 여가 시간 활용 수단이다."
+    FullParagraph  pi=11  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=34096  "②-좋은 연기를 하려면 다른 사람과의 협력이 중요하다."
+    FullParagraph  pi=12  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=35738  "③-드라마에는 독특한 개성을 가진 등장인물이 필요하다."
+    FullParagraph  pi=13  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37380  "④-원만한 교우 관계를 위해 친구의 말에 귀 기울여야 한다."
+    FullParagraph  pi=14  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39022  "⑤-드라마 캠프 참여는 다양한 시각을 갖는 데 도움이 된다."
+    FullParagraph  pi=15  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=40664  "(빈)"
+    FullParagraph  pi=16  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=42306  "3.- 다음을 듣고, 여자가 하는 말의 요지로 가장 적절한 것을 고르시오"
+    FullParagraph  pi=17  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=44736  "①-예술가에 관해 알면 작품을 더 잘 이해할 수 있다."
+    FullParagraph  pi=18  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=46378  "②-지역 사회는 예술가에 대한 지원을 확대해야 한다."
+    FullParagraph  pi=19  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=48020  "③-예술 작품을 전시할 때 조명 효과를 고려해야 한다."
+    FullParagraph  pi=20  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=49662  "④-정기적인 미술관 방문은 작품 감상 능력을 높여 준다."
+    FullParagraph  pi=21  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=51304  "⑤-예술 작품은 보는 사람에 따라 다양한 해석이 가능하다."
+    FullParagraph  pi=22  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=52946  "(빈)"
+    FullParagraph  pi=23  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=54588  "4.- 대화를 듣고, 그림에서 대화의 내용과 일치하지 않는 것을 고르시오"
+    FullParagraph  pi=24  h=249.4 (sb=0.0 lines=249.4 sa=0.0)  vpos=57018  "(빈)"
+    Shape          pi=24 ci=0  그림 tac=true  vpos=57018
+    FullParagraph  pi=25  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=76218  "(빈)"
+    FullParagraph  pi=26  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=77860  "5.- 대화를 듣고, 남자가 할 일로 가장 적절한 것을 고르시오."
+    FullParagraph  pi=27  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=80290  "①-트로피 가져오기②-사진 출력하기"
+    FullParagraph  pi=28  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=81932  "③-이메일 확인하기④-스티커 주문하기"
+    FullParagraph  pi=29  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=83574  "⑤-게시판 사용 허락받기"
+    FullParagraph  pi=30  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=85216  "(빈)"
+    FullParagraph  pi=31  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=86858  "6.- 대화를 듣고, 여자가 지불할 금액을 고르시오."
+    FullParagraph  pi=32  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89288  "①-$100②-$150③-$180④-$200⑤-$220"
+  단 1 (items=25, used=1186.2px, hwp_used≈969.1px, diff=+217.1px)
+    FullParagraph  pi=33  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=7060..9042  "7.- 대화를 듣고, 남자가 Streamline Broadcasting "
+    FullParagraph  pi=34  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=11230  "①-동아리 공연에 참여해야 해서"
+    FullParagraph  pi=35  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=12920  "②-교내 방송 준비를 해야 해서"
+    FullParagraph  pi=36  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=14610  "③-야구 경기를 보러 가야 해서"
+    FullParagraph  pi=37  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=16300  "④-생일 파티에 참석해야 해서"
+    FullParagraph  pi=38  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=17990  "⑤-선물을 사러 가야 해서"
+    FullParagraph  pi=39  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=19680  "(빈)"
+    FullParagraph  pi=40  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=21296..23278  "8.- 대화를 듣고, Outstanding Octopuses 행사에 관해"
+    FullParagraph  pi=41  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=25466  "①-목적②-프로그램③-후원 기관"
+    FullParagraph  pi=42  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=27156  "④-입장료⑤-기간"
+    FullParagraph  pi=43  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=28846  "(빈)"
+    FullParagraph  pi=44  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=30462..32444  "9.- 2024 Grand Butterfly Circus에 관한 다음 내"
+    FullParagraph  pi=45  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=34632  "①-5일 동안 진행될 것이다."
+    FullParagraph  pi=46  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=36322  "②-마술 쇼를 포함한다."
+    FullParagraph  pi=47  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=38012  "③-2세 미만의 아이는 무료로 입장한다."
+    FullParagraph  pi=48  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39702  "④-할인 쿠폰을 웹사이트에서 다운로드할 수 있다."
+    FullParagraph  pi=49  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=41392  "⑤-지정석이 있다."
+    FullParagraph  pi=50  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=43082  "(빈)"
+    FullParagraph  pi=51  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=44698..46680  "10.- 다음 표를 보면서 대화를 듣고, 여자가 구입할 식물 씨앗 키트를"
+    Table          pi=52 ci=0  7x6  408.2x172.8px  wrap=TopAndBottom tac=true  vpos=48868
+    FullParagraph  pi=53  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=62366  "(빈)"
+    FullParagraph  pi=54  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=63982..65964  "11.- 대화를 듣고, 남자의 마지막 말에 대한 여자의 응답으로 가장 적"
+    FullParagraph  pi=55  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=68152  "①-Great idea! Let’s ask him to come to t"
+    FullParagraph  pi=56  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=69842  "②-That’s okay. I’ll check if I can chang"
+    FullParagraph  pi=57  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=71532  "③-I can’t believe it! We finally won a t"
+
+=== 페이지 2 (global_idx=1, section=0, page_num=2) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=9, used=234.9px, hwp_used≈1204.0px, diff=-969.1px)
+    FullParagraph  pi=58  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=73222  "④-No thanks. I don’t really like cakes w"
+    FullParagraph  pi=59  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=74912  "⑤-No problem. I won’t eat foods that cau"
+    FullParagraph  pi=60  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=76602  "(빈)"
+    FullParagraph  pi=61  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=78218..80200  "12.- 대화를 듣고, 여자의 마지막 말에 대한 남자의 응답으로 가장 적"
+    FullParagraph  pi=62  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82388  "①-In that case, let’s give it a try."
+    FullParagraph  pi=63  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84078  "②-I don’t know. It’s a bit expensive."
+    FullParagraph  pi=64  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=85768  "③-That’s the best class we’ve ever taken"
+    FullParagraph  pi=65  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87458  "④-I’d be happy to teach yoga to beginner"
+    FullParagraph  pi=66  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89148  "⑤-You’re right. The hotel’s view is amaz"
+  단 1 (items=41, used=1167.8px)
+    FullParagraph  pi=67  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=0..2026  "13.- 대화를 듣고, 남자의 마지막 말에 대한 여자의 응답으로 가장 적"
+    FullParagraph  pi=68  h=19.3 (sb=0.0 lines=15.3 sa=4.0)  vpos=4250  "Woman: ---------------------------------"
+    FullParagraph  pi=69  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=6276  "①-Too bad. I hope you can find your lost"
+    FullParagraph  pi=70  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=8002  "②-Good job. You’ll get used to riding a "
+    FullParagraph  pi=71  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=9728  "③-Awesome! Thank you for lending me your"
+    FullParagraph  pi=72  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=11454  "④-I’m sorry. I’m afraid our auction has "
+    FullParagraph  pi=73  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=13180  "⑤-Excellent! I’m sure your donation will"
+    FullParagraph  pi=74  h=52.9 (sb=0.0 lines=52.9 sa=0.0)  vpos=14906  "(빈)"
+    Shape          pi=74 ci=0  wrap=InFrontOfText tac=true  vpos=14906
+    FullParagraph  pi=75  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=19450..21476  "14.- 대화를 듣고, 여자의 마지막 말에 대한 남자의 응답으로 가장 적"
+    FullParagraph  pi=76  h=19.3 (sb=0.0 lines=15.3 sa=4.0)  vpos=23700  "Man: -----------------------------------"
+    FullParagraph  pi=77  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=25726  "①-Sure. I hope you’ll be able to judge t"
+    FullParagraph  pi=78  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=27452  "②-Well done. You’ve advanced to the fina"
+    FullParagraph  pi=79  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=29178  "③-Great. Text me the dates of the compet"
+    FullParagraph  pi=80  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=30904  "④-Don’t worry. We’ll announce the winner"
+    FullParagraph  pi=81  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=32630  "⑤-I understand. It’s hard to be fair whe"
+    FullParagraph  pi=82  h=52.9 (sb=0.0 lines=52.9 sa=0.0)  vpos=34356  "(빈)"
+    Shape          pi=82 ci=0  wrap=InFrontOfText tac=true  vpos=34356
+    FullParagraph  pi=83  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=38900..40926  "15.- 다음 상황 설명을 듣고, Sophia가 Jack에게 할 말로 가"
+    FullParagraph  pi=84  h=19.3 (sb=0.0 lines=15.3 sa=4.0)  vpos=43150  "Sophia: --------------------------------"
+    FullParagraph  pi=85  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=45176  "①-I think it’ll be better to stick to yo"
+    FullParagraph  pi=86  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=46902  "②-Let’s head out for the concert far in "
+    FullParagraph  pi=87  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=48628  "③-We can ask for a seat change so we can"
+    FullParagraph  pi=88  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=50354  "④-Don’t you think we need to rehearse on"
+    FullParagraph  pi=89  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=52080  "⑤-How about leaving the concert early to"
+    FullParagraph  pi=90  h=52.9 (sb=0.0 lines=52.9 sa=0.0)  vpos=53806  "(빈)"
+    Shape          pi=90 ci=0  wrap=InFrontOfText tac=true  vpos=53806
+    FullParagraph  pi=91  h=25.7 (sb=0.0 lines=16.3 sa=9.5)  vpos=58350  "[16～17] 다음을 듣고, 물음에 답하시오."
+    FullParagraph  pi=92  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=60768  "16.- 여자가 하는 말의 주제로 가장 적절한 것은?"
+    FullParagraph  pi=93  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=63294  "①-desirable conditions to store food"
+    FullParagraph  pi=94  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=65020  "②-importance of having a nutritious diet"
+    FullParagraph  pi=95  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=66746  "③-suitable foods to solve future food sh"
+    FullParagraph  pi=96  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=68472  "④-popular dishes made from unusual ingre"
+    FullParagraph  pi=97  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=70198  "⑤-future technologies to cope with food "
+    FullParagraph  pi=98  h=52.9 (sb=0.0 lines=52.9 sa=0.0)  vpos=71924  "(빈)"
+    Shape          pi=98 ci=0  wrap=InFrontOfText tac=true  vpos=71924
+    FullParagraph  pi=99  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=76468  "17.- 언급된 음식이 아닌 것은?"
+    FullParagraph  pi=100  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=78994  "①-seaweed②-beans③-pumpkins"
+    FullParagraph  pi=101  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=80720  "④-potatoes⑤-mushrooms"
+    Table          pi=102 ci=0  1x1  423.3x60.9px  wrap=InFrontOfText tac=false  vpos=82446
+    Shape          pi=102 ci=1  wrap=InFrontOfText tac=true  vpos=82446
+
+=== 페이지 3 (global_idx=2, section=0, page_num=3) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=22, used=1191.0px, hwp_used≈1188.7px, diff=+2.3px)
+    FullParagraph  pi=103  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "18.- 다음 글의 목적으로 가장 적절한 것은?"
+    Shape          pi=104 ci=0  그림 tac=false  vpos=2254
+    Shape          pi=104 ci=1  그림 tac=false  vpos=2254
+    Table          pi=104 ci=2  1x1  408.2x288.1px  wrap=TopAndBottom tac=true  vpos=2254
+    FullParagraph  pi=105  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=24805  "①-마라톤 경기 취소 사실을 공지하려고 "
+    FullParagraph  pi=106  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=26299  "②-마라톤 경기 사전 행사 참여를 독려하려고 "
+    FullParagraph  pi=107  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=27793  "③-마라톤 경기 참가비 환불 절차를 설명하려고 "
+    FullParagraph  pi=108  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=29287  "④-마라톤 경기 참여 시 규칙 준수를 당부하려고 "
+    FullParagraph  pi=109  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=30781  "⑤-마라톤 경기 진행에 따른 도로 통제를 안내하려고"
+    FullParagraph  pi=110  h=20.0 (sb=0.0 lines=20.0 sa=0.0)  vpos=32275  "(빈)"
+    FullParagraph  pi=111  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=34227  "19.- 다음 글에 드러난 Peter의 심경 변화로 가장 적절한 것은?"
+    FullParagraph  pi=112  h=190.7 (sb=0.0 lines=184.0 sa=6.7)  vpos=36481..52915  "It was Valentine’s Day on Friday and Pet"
+    FullParagraph  pi=113  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=54909  "①-relaxed→-indifferent②-confident→-disap"
+    FullParagraph  pi=114  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=56403  "③-confused→-satisfied④-jealous→-discoura"
+    FullParagraph  pi=115  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=57897  "⑤-embarrassed→-joyful"
+    FullParagraph  pi=116  h=20.0 (sb=0.0 lines=20.0 sa=0.0)  vpos=59391  "(빈)"
+    FullParagraph  pi=117  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=61343  "20.- 다음 글에서 필자가 주장하는 바로 가장 적절한 것은?"
+    FullParagraph  pi=118  h=206.0 (sb=0.0 lines=199.3 sa=6.7)  vpos=63597..81525  "We almost universally accept that playin"
+    FullParagraph  pi=119  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=83519  "①-학습 효과 증진에 활용될 수 있는 게임을 개발해야 한다. "
+    FullParagraph  pi=120  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=85013  "②-교육 현장에서 학습과 게임 활동을 적절하게 분배해야 한다. "
+    FullParagraph  pi=121  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=86507  "③-학습 활동에 게임이 초래하는 집중력 저하를 경계해야 한다. "
+    FullParagraph  pi=122  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=88001  "④-여가 시간에 게임을 활용함으로써 학습 효율을 향상해야 한다. "
+  단 1 (items=1, used=19.9px, hwp_used≈1208.6px, diff=-1188.7px)
+    FullParagraph  pi=123  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89495  "⑤-게임의 부정적 영향을 줄이기 위해 학습 공동체가 노력해야 한다."
+
+=== 페이지 4 (global_idx=3, section=0, page_num=4) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=20, used=1215.3px, hwp_used≈1207.7px, diff=+7.7px)
+    FullParagraph  pi=124  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=0..2026  "21.- 밑줄 친 hunting the shadow, not the su"
+    FullParagraph  pi=125  h=252.0 (sb=0.0 lines=245.3 sa=6.7)  vpos=4250..30140  "The position of the architect rose durin"
+    FullParagraph  pi=126  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=32366  "①-seeking abstract knowledge emphasized "
+    FullParagraph  pi=127  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=34092  "②-discounting the subjects necessary to "
+    FullParagraph  pi=128  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=35818  "③-pursuing the ideals of architecture wi"
+    FullParagraph  pi=129  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37544  "④-prioritizing architecture’s material a"
+    FullParagraph  pi=130  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39270  "⑤-following historical precedents withou"
+    FullParagraph  pi=131  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=40996  "(빈)"
+    FullParagraph  pi=132  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=42722  "(빈)"
+    FullParagraph  pi=133  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=44448  "(빈)"
+    FullParagraph  pi=134  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=46174  "(빈)"
+    FullParagraph  pi=135  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=47900  "(빈)"
+    FullParagraph  pi=136  h=20.0 (sb=0.0 lines=20.0 sa=0.0)  vpos=49626  "(빈)"
+    FullParagraph  pi=137  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=51878  "22.- 다음 글의 요지로 가장 적절한 것은?"
+    FullParagraph  pi=138  h=252.0 (sb=0.0 lines=245.3 sa=6.7)  vpos=54404..80294  "The ability to understand emotions ― to "
+    FullParagraph  pi=139  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82520  "①-집단 구성원 간 갈등 해소를 위해 감정 조절이 중요하다. "
+    FullParagraph  pi=140  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84246  "②-감정 이해 능력은 집단 내 원활한 소통과 협력을 촉진한다. "
+    FullParagraph  pi=141  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=85972  "③-타인에 대한 공감 능력은 자신의 감정 표현 능력을 향상한다. "
+    FullParagraph  pi=142  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87698  "④-감정 관련 어휘에 대한 지식은 공감 능력 발달의 기반이 된다. "
+    FullParagraph  pi=143  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89424  "⑤-자신의 감정 상태에 대한 이해는 사회성 함양에 필수적 요소이다. "
+  단 1 (items=23, used=1193.3px, hwp_used≈1185.6px, diff=+7.7px)
+    FullParagraph  pi=144  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "23.- 다음 글의 주제로 가장 적절한 것은?"
+    FullParagraph  pi=145  h=236.7 (sb=0.0 lines=230.0 sa=6.7)  vpos=2526..26690  "The arrival of the Industrial Age change"
+    FullParagraph  pi=146  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=28916  "* widget: 제품 "
+    FullParagraph  pi=147  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=30976  "①-shift in the work-time paradigm brough"
+    FullParagraph  pi=148  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=32702  "②-effects of standardizing production pr"
+    FullParagraph  pi=149  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=34428  "③-influence of industrialization on the "
+    FullParagraph  pi=150  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=36154  "④-efficient ways to increase the value o"
+    FullParagraph  pi=151  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37880  "⑤-problems that excessive work hours hav"
+    FullParagraph  pi=152  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39606  "(빈)"
+    FullParagraph  pi=153  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=41332  "(빈)"
+    FullParagraph  pi=154  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=43058  "(빈)"
+    FullParagraph  pi=155  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=44784  "(빈)"
+    FullParagraph  pi=156  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=46510  "(빈)"
+    FullParagraph  pi=157  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=48236  "(빈)"
+    FullParagraph  pi=158  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=49962  "(빈)"
+    FullParagraph  pi=159  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=51688  "(빈)"
+    FullParagraph  pi=160  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=53340  "24.- 다음 글의 제목으로 가장 적절한 것은?"
+    FullParagraph  pi=161  h=221.3 (sb=0.0 lines=214.7 sa=6.7)  vpos=55866..78304  "The selfie resonates not because it is n"
+    FullParagraph  pi=162  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=80530  "* resonate: 공명(共鳴)하다--** depict: 그리다 "
+    FullParagraph  pi=163  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82590  "①-Are Selfies Just a Temporary Trend in "
+    FullParagraph  pi=164  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84316  "②-Fantasy or Reality:-Your Selfie Is Not"
+    FullParagraph  pi=165  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=86042  "③-The Selfie:-A Symbol of Self-oriented "
+    FullParagraph  pi=166  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87768  "④-The End of Self-portraits:-How Selfies"
+
+=== 페이지 5 (global_idx=4, section=0, page_num=5) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=1, used=23.0px, hwp_used≈1208.6px, diff=-1185.6px)
+    FullParagraph  pi=167  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89494  "⑤-Selfies, the Latest Innovation in Repr"
+
+=== 페이지 6 (global_idx=5, section=0, page_num=6) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=12, used=1205.5px, hwp_used≈1208.3px, diff=-2.8px)
+    FullParagraph  pi=168  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "25.- 다음 도표의 내용과 일치하지 않는 것은?"
+    Table          pi=169 ci=0  1x1  408.2x279.5px  wrap=TopAndBottom tac=true  vpos=2526
+    FullParagraph  pi=170  h=236.7 (sb=0.0 lines=230.0 sa=6.7)  vpos=24563..48727  "The graph above shows the percentages of"
+    FullParagraph  pi=171  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=50953  "(빈)"
+    FullParagraph  pi=172  h=24.0 (sb=0.0 lines=24.0 sa=0.0)  vpos=52677  "(빈)"
+    FullParagraph  pi=173  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=55377  "26.- Dick Enberg에 관한 다음 글의 내용과 일치하지 않는 것"
+    FullParagraph  pi=174  h=221.3 (sb=0.0 lines=214.7 sa=6.7)  vpos=57903..80341  "Dick Enberg was one of America’s most be"
+    FullParagraph  pi=175  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82567  "①-Michigan에서 태어났다. "
+    FullParagraph  pi=176  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84293  "②-대학 야구팀 코치였다. "
+    FullParagraph  pi=177  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=86019  "③-중국을 방문한 첫 미국인 스포츠 캐스터였다. "
+    FullParagraph  pi=178  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87745  "④-마지막 생방송 후 3년 뒤에 사망하였다. "
+    FullParagraph  pi=179  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89471  "⑤-Emmy Awards를 수상하였다. "
+  단 1 (items=17, used=1187.9px, hwp_used≈1207.5px, diff=-19.6px)
+    FullParagraph  pi=180  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=0..1942  "27.- Adenville City Pass Card에 관한 다음 안내문"
+    Shape          pi=181 ci=0  그림 tac=true  vpos=4094
+    Table          pi=181 ci=1  1x1  400.6x423.0px  wrap=InFrontOfText tac=false  vpos=4094
+    FullParagraph  pi=182  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37590  "①-관광객을 위한 대중교통 카드이다. "
+    FullParagraph  pi=183  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39244  "②-시티 투어 버스에는 사용할 수 없다. "
+    FullParagraph  pi=184  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=40898  "③-5일 패스 카드에만 주요 관광지 입장료 할인 혜택이 제공된다. "
+    FullParagraph  pi=185  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=42552  "④-미사용 카드는 구입일로부터 30일 이내에 환불이 가능하다. "
+    FullParagraph  pi=186  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=44206  "⑤-모바일 카드는 A-Transit 앱에서 구입할 수 있다. "
+    FullParagraph  pi=187  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=45860  "(빈)"
+    FullParagraph  pi=188  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=47444..49386  "28.- Luckwood Snow Festival에 관한 다음 안내문의 "
+    Table          pi=189 ci=0  1x1  404.4x400.6px  wrap=InFrontOfText tac=false  vpos=51538
+    Shape          pi=189 ci=1  그림 tac=true  vpos=51538
+    FullParagraph  pi=190  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82797  "①-2년에 한 번 열린다. "
+    FullParagraph  pi=191  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84451  "②-열흘 동안 진행된다. "
+    FullParagraph  pi=192  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=86105  "③-눈 조각 경연에는 11개 팀이 참가할 것이다. "
+    FullParagraph  pi=193  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87759  "④-주차가 가능하다. "
+    FullParagraph  pi=194  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89413  "⑤-셔틀버스 이용은 무료이다. "
+
+=== 페이지 7 (global_idx=6, section=0, page_num=7) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=15, used=1194.5px, hwp_used≈1180.2px, diff=+14.3px)
+    FullParagraph  pi=195  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "29.- 다음 글의 밑줄 친 부분 중, 어법상 틀린 것은?"
+    FullParagraph  pi=196  h=236.7 (sb=0.0 lines=230.0 sa=6.7)  vpos=2526..26690  "Think of yourself. When you decide to ge"
+    FullParagraph  pi=197  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=28916  "* crude: 투박한"
+    FullParagraph  pi=198  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=30976  "(빈)"
+    FullParagraph  pi=199  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=32700  "(빈)"
+    FullParagraph  pi=200  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=34424  "(빈)"
+    FullParagraph  pi=201  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=36148  "(빈)"
+    FullParagraph  pi=202  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37872  "(빈)"
+    FullParagraph  pi=203  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39596  "(빈)"
+    FullParagraph  pi=204  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=41320  "(빈)"
+    FullParagraph  pi=205  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=43044  "(빈)"
+    FullParagraph  pi=206  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=44768  "(빈)"
+    FullParagraph  pi=207  h=18.7 (sb=0.0 lines=18.7 sa=0.0)  vpos=46492  "(빈)"
+    FullParagraph  pi=208  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=48592..50618  "30.- 다음 글의 밑줄 친 부분 중, 문맥상 낱말의 쓰임이 적절하지 않"
+    FullParagraph  pi=209  h=328.7 (sb=0.0 lines=322.0 sa=6.7)  vpos=52842..87362  "Studies in psychology have reported case"
+  단 1 (items=1, used=27.5px, hwp_used≈1208.4px, diff=-1180.9px)
+    FullParagraph  pi=210  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=89588  "* taint: 더럽히다--** altruistic: 이타주의의"
+
+=== 페이지 8 (global_idx=7, section=0, page_num=8) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=17, used=1215.3px, hwp_used≈1207.6px, diff=+7.7px)
+    FullParagraph  pi=211  h=25.7 (sb=0.0 lines=16.3 sa=9.5)  vpos=0  "[31～34] 다음 빈칸에 들어갈 말로 가장 적절한 것을 고르시오."
+    FullParagraph  pi=212  h=300.2 (sb=0.0 lines=293.5 sa=6.7)  vpos=2418..33752  "31.- Literature can be helpful in the la"
+    FullParagraph  pi=213  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=35976  "* sociosemantic: 사회의미론적인--** transparent"
+    FullParagraph  pi=214  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=38036  "①-linguistic insight②-artistic imaginati"
+    FullParagraph  pi=215  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39762  "③-literary sensibility④-alternative pers"
+    FullParagraph  pi=216  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=41488  "⑤-personal involvement "
+    FullParagraph  pi=217  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=43214  "(빈)"
+    FullParagraph  pi=218  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=44940  "(빈)"
+    FullParagraph  pi=219  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=46666  "(빈)"
+    FullParagraph  pi=220  h=17.3 (sb=0.0 lines=17.3 sa=0.0)  vpos=48392  "(빈)"
+    FullParagraph  pi=221  h=269.6 (sb=0.0 lines=262.9 sa=6.7)  vpos=50344..78230  "32.- Education, at its best, teaches mor"
+    FullParagraph  pi=222  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=80454  "* succumb: 굴복하다--** arterial: 동맥의 "
+    FullParagraph  pi=223  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82514  "①-intensifies people’s danger "
+    FullParagraph  pi=224  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84240  "②-enhances our understanding "
+    FullParagraph  pi=225  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=85966  "③-frees a person from the burden "
+    FullParagraph  pi=226  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87692  "④-allows us to accept the inevitability "
+    FullParagraph  pi=227  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=89418  "⑤-requires one to have the experience "
+  단 1 (items=18, used=1192.6px, hwp_used≈1184.9px, diff=+7.7px)
+    FullParagraph  pi=228  h=254.3 (sb=0.0 lines=247.6 sa=6.7)  vpos=0..26162  "33.- We are famously living in the era o"
+    FullParagraph  pi=229  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=28386  "①-all of your attention has already been"
+    FullParagraph  pi=230  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=30112  "②-the real product being sold is you "
+    FullParagraph  pi=231  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=31838  "③-your privacy is being violated "
+    FullParagraph  pi=232  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=33564  "④-the public may be sponsoring you "
+    FullParagraph  pi=233  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=35290  "⑤-you owe the benefits to your friend AI"
+    FullParagraph  pi=234  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37016  "(빈)"
+    FullParagraph  pi=235  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=38742  "(빈)"
+    FullParagraph  pi=236  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=40468  "(빈)"
+    FullParagraph  pi=237  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=42194  "(빈)"
+    FullParagraph  pi=238  h=26.7 (sb=0.0 lines=26.7 sa=0.0)  vpos=43920  "(빈)"
+    FullParagraph  pi=239  h=284.9 (sb=0.0 lines=278.2 sa=6.7)  vpos=46920..76530  "34.- Centralized, formal rules can -----"
+    FullParagraph  pi=240  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=78754  "* constrain: 속박하다 "
+    FullParagraph  pi=241  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=80814  "①-categorize one’s patterns of conduct i"
+    FullParagraph  pi=242  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=82540  "②-lead people to reevaluate their roles "
+    FullParagraph  pi=243  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=84266  "③-encourage new ways of thinking which p"
+    FullParagraph  pi=244  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=85992  "④-reinforce one’s behavior within legal "
+    FullParagraph  pi=245  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=87718  "⑤-facilitate productive activity by esta"
+
+=== 페이지 9 (global_idx=8, section=0, page_num=9) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=12, used=1198.1px)
+    FullParagraph  pi=246  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "35.- 다음 글에서 전체 흐름과 관계 없는 문장은?"
+    FullParagraph  pi=247  h=313.3 (sb=0.0 lines=306.7 sa=6.7)  vpos=2526..35320  "The expansion of sports tourism in the t"
+    FullParagraph  pi=248  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=37546  "(빈)"
+    FullParagraph  pi=249  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39270  "(빈)"
+    FullParagraph  pi=250  h=42.0 (sb=0.0 lines=32.5 sa=9.5)  vpos=40994..42702  "[36～37] 주어진 글 다음에 이어질 글의 순서로 가장 적절한 것을 고"
+    FullParagraph  pi=251  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=45120  "36.- "
+    Table          pi=252 ci=0  1x1  408.2x76.5px  wrap=TopAndBottom tac=true  vpos=47646
+    FullParagraph  pi=253  h=98.7 (sb=0.0 lines=92.0 sa=6.7)  vpos=54457..63087  "(A)-Similarly, a landowner can undermain"
+    FullParagraph  pi=254  h=98.7 (sb=0.0 lines=92.0 sa=6.7)  vpos=65313..73943  "(B)-Over time landowners indirectly moni"
+    FullParagraph  pi=255  h=68.0 (sb=0.0 lines=61.3 sa=6.7)  vpos=76169..81347  "(C)-Farmers and landowners develop reput"
+    FullParagraph  pi=256  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=83573  "* ditch: 개천--** irrigation: 물을-댐 "
+    Table          pi=257 ci=0  5x13  347.7x63.0px  wrap=TopAndBottom tac=true  vpos=85633
+
+=== 페이지 10 (global_idx=9, section=0, page_num=10) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=13, used=1190.9px, hwp_used≈1202.1px, diff=-11.3px)
+    FullParagraph  pi=258  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "37.- "
+    Table          pi=259 ci=0  1x1  408.2x99.5px  wrap=TopAndBottom tac=true  vpos=2526
+    FullParagraph  pi=260  h=83.3 (sb=0.0 lines=76.7 sa=6.7)  vpos=11063..17967  "(A)-Marc wondered whether the birds in l"
+    FullParagraph  pi=261  h=83.3 (sb=0.0 lines=76.7 sa=6.7)  vpos=20193..27097  "(B)-In a long-term research project that"
+    FullParagraph  pi=262  h=98.7 (sb=0.0 lines=92.0 sa=6.7)  vpos=29323..37953  "(C)-The birds in a line, who could only "
+    FullParagraph  pi=263  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=40179  "* grosbeak: 콩새류(類)--** array: 정렬 "
+    Table          pi=264 ci=0  5x13  347.7x63.0px  wrap=TopAndBottom tac=true  vpos=42239
+    FullParagraph  pi=265  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=47539  "(빈)"
+    FullParagraph  pi=266  h=42.0 (sb=0.0 lines=32.5 sa=9.5)  vpos=49265..50973  "[38～39] 글의 흐름으로 보아, 주어진 문장이 들어가기에 가장 적절한"
+    FullParagraph  pi=267  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=53391  "38.- "
+    Table          pi=268 ci=0  1x1  408.2x76.5px  wrap=TopAndBottom tac=true  vpos=55917
+    FullParagraph  pi=269  h=236.7 (sb=0.0 lines=230.0 sa=6.7)  vpos=62728..86892  "Trade secret law aims to promote innovat"
+    FullParagraph  pi=270  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=89118  "* patent: 특허--** predicament: 곤경 "
+  단 1 (items=10, used=1187.9px)
+    FullParagraph  pi=271  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=0  "39.- "
+    Table          pi=272 ci=0  1x1  408.2x92.4px  wrap=TopAndBottom tac=true  vpos=2390
+    FullParagraph  pi=273  h=267.3 (sb=0.0 lines=260.7 sa=6.7)  vpos=10283..35083  "By their very nature, the concepts of ma"
+    FullParagraph  pi=274  h=20.5 (sb=0.0 lines=13.9 sa=6.7)  vpos=37133  "* relegate: 추방하다--** anthropomorphic: 의인"
+    FullParagraph  pi=275  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=39089  "(빈)"
+    FullParagraph  pi=276  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=40813..42703  "40.- 다음 글의 내용을 한 문장으로 요약하고자 한다. 빈칸 (A), "
+    Table          pi=277 ci=0  1x1  408.2x388.9px  wrap=TopAndBottom tac=true  vpos=44811
+    FullParagraph  pi=278  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=74435  "󰀻"
+    Table          pi=279 ci=0  1x1  408.2x92.4px  wrap=TopAndBottom tac=true  vpos=76045
+    Table          pi=280 ci=0  4x8  408.5x87.5px  wrap=TopAndBottom tac=true  vpos=84054
+
+=== 페이지 11 (global_idx=10, section=0, page_num=11) ===
+  body_area: x=117.2 y=213.5 w=888.2 h=1209.4
+  단 0 (items=18, used=1208.9px, hwp_used≈1202.7px, diff=+6.1px)
+    FullParagraph  pi=281  h=34.5 (sb=0.0 lines=16.3 sa=18.3)  vpos=0  "[41～42] 다음 글을 읽고, 물음에 답하시오."
+    FullParagraph  pi=282  h=230.0 (sb=0.0 lines=230.0 sa=0.0)  vpos=3078..26402  "Imagine grabbing a piece of paper betwee"
+    FullParagraph  pi=283  h=153.3 (sb=0.0 lines=153.3 sa=0.0)  vpos=28068..43062  "With a unique combination of traits, the"
+    FullParagraph  pi=284  h=23.2 (sb=6.7 lines=13.9 sa=2.7)  vpos=45228  "* primate: 영장류--** anatomy: 해부학--*** sub"
+    FullParagraph  pi=285  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=46988  "(빈)"
+    FullParagraph  pi=286  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=48712  "41.- 윗글의 제목으로 가장 적절한 것은?"
+    FullParagraph  pi=287  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=51238  "①-Anatomical Distance Between Humans and"
+    FullParagraph  pi=288  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=52964  "②-Human Hands:-A Decisive Leap in the Ev"
+    FullParagraph  pi=289  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=54690  "③-Our Hands:-An Unexpected Outcome of Ev"
+    FullParagraph  pi=290  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=56416  "④-Human Grip:-The Dilemma of Human Survi"
+    FullParagraph  pi=291  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=58142  "⑤-Hidden Power of the Daily Use of Tools"
+    FullParagraph  pi=292  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=59868  "(빈)"
+    FullParagraph  pi=293  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=61594..63620  "42.- 밑줄 친 (a)～(e) 중에서 문맥상 낱말의 쓰임이 적절하지 않"
+    FullParagraph  pi=294  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=65844  "①-(a)②-(b)③-(c)④-(d)⑤-(e)"
+    FullParagraph  pi=295  h=22.7 (sb=0.0 lines=22.7 sa=0.0)  vpos=67570  "(빈)"
+    FullParagraph  pi=296  h=25.7 (sb=0.0 lines=16.3 sa=9.5)  vpos=70122  "[43～45] 다음 글을 읽고, 물음에 답하시오."
+    FullParagraph  pi=297  h=19.3 (sb=0.0 lines=15.3 sa=4.0)  vpos=72540  "(A)"
+    FullParagraph  pi=298  h=153.3 (sb=0.0 lines=153.3 sa=0.0)  vpos=74564..89054  "“Do you remember when Sean used to tell "
+  단 1 (items=19, used=1095.5px, hwp_used≈1091.7px, diff=+3.8px)
+    FullParagraph  pi=299  h=19.3 (sb=0.0 lines=15.3 sa=4.0)  vpos=0  "(B)"
+    FullParagraph  pi=300  h=138.0 (sb=0.0 lines=138.0 sa=0.0)  vpos=1908..14788  "Ethan and Grace came back home with the "
+    FullParagraph  pi=301  h=28.6 (sb=9.3 lines=15.3 sa=4.0)  vpos=17098  "(C)"
+    FullParagraph  pi=302  h=138.0 (sb=0.0 lines=138.0 sa=0.0)  vpos=19006..31886  "“When did you bring the jackets in?” the"
+    FullParagraph  pi=303  h=28.6 (sb=9.3 lines=15.3 sa=4.0)  vpos=34196  "(D)"
+    FullParagraph  pi=304  h=138.0 (sb=0.0 lines=138.0 sa=0.0)  vpos=36104..48984  "The weather was perfect. Ethan and Sean "
+    FullParagraph  pi=305  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=50594  "(빈)"
+    FullParagraph  pi=306  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=52318..54344  "43.- 주어진 글 (A)에 이어질 내용을 순서에 맞게 배열한 것으로 가"
+    Table          pi=307 ci=0  5x13  347.7x63.0px  wrap=TopAndBottom tac=true  vpos=56568
+    FullParagraph  pi=308  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=61868  "(빈)"
+    FullParagraph  pi=309  h=40.0 (sb=0.0 lines=33.3 sa=6.7)  vpos=63594..65620  "44.- 밑줄 친 (a)～(e) 중에서 가리키는 대상이 나머지 넷과 다른"
+    FullParagraph  pi=310  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=67844  "①-(a)②-(b)③-(c)④-(d)⑤-(e)"
+    FullParagraph  pi=311  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=69570  "(빈)"
+    FullParagraph  pi=312  h=24.7 (sb=0.0 lines=18.0 sa=6.7)  vpos=71296  "45.- 윗글의 내용으로 적절하지 않은 것은?"
+    FullParagraph  pi=313  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=73822  "①-Grace는 Ethan과 Sean의 관계를 부러워했다고 말했다. "
+    FullParagraph  pi=314  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=75548  "②-Grace는 Ethan에게 Sean과 둘이서 하이킹할 것을 권했다. "
+    FullParagraph  pi=315  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=77274  "③-Sean의 선글라스가 서랍장 안에 있었다. "
+    FullParagraph  pi=316  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=79000  "④-Ethan은 혼자서 세탁소에 하이킹 재킷을 찾으러 갔다. "
+    FullParagraph  pi=317  h=15.3 (sb=0.0 lines=15.3 sa=0.0)  vpos=80726  "⑤-Sean은 하이킹하는 도중 돌에 걸려 넘어졌다."
