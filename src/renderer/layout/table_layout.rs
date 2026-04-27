@@ -1284,12 +1284,16 @@ impl LayoutEngine {
             // 를 기록한다. 이 값을 그대로 적용하면 모든 vertical_align (Top/Center/Bottom)에서
             // PDF와 일치하는 텍스트 시작 y가 자동으로 결정됨 (mechanical_offset 불필요).
             // 단, line_segs가 비어있는 케이스는 기존 mechanical_offset 폴백 유지.
+            //
+            // Task #362: 콘텐츠가 셀에 꽉 찬 경우 vpos 를 그대로 적용하면 셀 경계를 넘어
+            // 클립이 발생한다 (kps-ai p56 외부 표). 셀 내부 여유 공간(remaining_room)
+            // 한도로 vpos 를 클램프해 오버플로를 방지한다. 여유가 충분하면 기존 동작 유지.
             let first_line_vpos = cell.paragraphs.first()
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi));
             let text_y_start = if let Some(vpos) = first_line_vpos.filter(|&v| v > 0.0) {
-                // vpos는 셀 컨텐츠 상단(=cell_y+pad_top)으로부터의 첫 줄 top y 오프셋
-                cell_y + pad_top + vpos
+                let remaining_room = (inner_height - total_content_height).max(0.0);
+                cell_y + pad_top + vpos.min(remaining_room)
             } else {
                 match effective_valign {
                     VerticalAlign::Top => cell_y + pad_top,
