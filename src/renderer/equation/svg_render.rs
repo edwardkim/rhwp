@@ -43,9 +43,14 @@ fn render_box(
             let text_y = y + lb.baseline;
             let esc = escape_xml(text);
             let fi = fs;
+            // CJK/한글 텍스트는 이탤릭 없이 렌더링 (수학 변수명만 이탤릭)
+            let has_cjk = text.chars().any(|c| matches!(c,
+                '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
+            ));
+            let style = if has_cjk { "" } else { " font-style=\"italic\"" };
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\" font-style=\"italic\"{}>{}</text>\n",
-                text_x, text_y, fi, color, EQ_FONT_FAMILY, esc,
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}{}>{}</text>\n",
+                text_x, text_y, fi, color, style, EQ_FONT_FAMILY, esc,
             ));
         }
         LayoutKind::Number(text) => {
