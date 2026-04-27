@@ -249,7 +249,7 @@ pub fn lookup_function(cmd: &str) -> Option<&'static str> {
 }
 
 /// 글자 장식 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum DecoKind {
     Hat,           // ^
     Check,         // ˇ
@@ -269,7 +269,7 @@ pub enum DecoKind {
 }
 
 /// 글꼴 스타일 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum FontStyleKind {
     Roman,  // 로만체 (upright)
     Italic, // 이탤릭체

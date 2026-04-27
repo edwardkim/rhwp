@@ -354,7 +354,7 @@ pub enum FieldType {
 }
 
 /// 양식 개체 타입
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, serde::Serialize)]
 pub enum FormType {
     /// 명령 단추
     #[default]

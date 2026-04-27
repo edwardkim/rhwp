@@ -60,7 +60,7 @@ pub struct ImageAttr {
 }
 
 /// 이미지 효과
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ImageEffect {
     #[default]
     RealPic,

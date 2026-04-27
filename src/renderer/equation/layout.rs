@@ -6,7 +6,7 @@
 use super::ast::*;
 
 /// 수식 레이아웃 박스
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct LayoutBox {
     /// X 위치 (부모 기준 상대 좌표)
     pub x: f64,
@@ -23,7 +23,7 @@ pub struct LayoutBox {
 }
 
 /// 레이아웃 요소 종류
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub enum LayoutKind {
     /// 수평 나열
     Row(Vec<LayoutBox>),

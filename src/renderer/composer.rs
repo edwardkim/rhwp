@@ -12,7 +12,7 @@ use super::style_resolver::{ResolvedStyleSet, detect_lang_category};
 use super::{TextStyle, px_to_hwpunit};
 
 /// 글자겹침(CharOverlap) 렌더링 정보
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct CharOverlapInfo {
     /// 테두리 타입 (0=없음, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
     pub border_type: u8,

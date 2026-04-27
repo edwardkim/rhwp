@@ -119,7 +119,7 @@ impl PartialEq for CharShape {
 impl Eq for CharShape {}
 
 /// 밑줄 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum UnderlineType {
     #[default]
     None,
@@ -497,7 +497,7 @@ pub struct ImageFill {
 }
 
 /// 이미지 채우기 유형
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ImageFillMode {
     #[default]
     TileAll,

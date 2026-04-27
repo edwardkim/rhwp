@@ -5,7 +5,7 @@
 use super::symbols::{DecoKind, FontStyleKind};
 
 /// 행렬 스타일
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum MatrixStyle {
     Plain,   // MATRIX — 괄호 없음
     Paren,   // PMATRIX — 소괄호 ( )

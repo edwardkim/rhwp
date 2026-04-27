@@ -3,6 +3,8 @@
 //! IR(Document Model) → 렌더 트리 → 백엔드 렌더링 파이프라인을 구현한다.
 //! Renderer Trait으로 추상화하여 Canvas/SVG/HTML 백엔드를 선택할 수 있다.
 
+use serde::Serialize;
+
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub mod canvas;
@@ -51,7 +53,7 @@ impl RenderBackend {
 }
 
 /// 탭 정지 (렌더링용)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TabStop {
     /// 절대 위치 (px, 단 시작 기준)
     pub position: f64,
@@ -62,7 +64,7 @@ pub struct TabStop {
 }
 
 /// 탭 리더(채움 기호) 렌더링 정보
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TabLeaderInfo {
     /// 리더 시작 x (run 내 상대 좌표)
     pub start_x: f64,
@@ -73,7 +75,7 @@ pub struct TabLeaderInfo {
 }
 
 /// 텍스트 렌더링 스타일
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TextStyle {
     /// 글꼴 이름
     pub font_family: String,
@@ -196,7 +198,7 @@ impl Default for TextStyle {
 }
 
 /// 패턴 채우기 정보 (HWP pattern_type 1~6)
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub struct PatternFillInfo {
     /// 패턴 종류 (1=가로줄, 2=세로줄, 3=역대각선, 4=대각선, 5=십자, 6=격자)
     pub pattern_type: i32,
@@ -207,7 +209,7 @@ pub struct PatternFillInfo {
 }
 
 /// 도형 렌더링 스타일
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ShapeStyle {
     /// 채우기 색상 (None이면 채우기 없음)
     pub fill_color: Option<ColorRef>,
@@ -226,7 +228,7 @@ pub struct ShapeStyle {
 }
 
 /// 도형 그림자 스타일
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ShadowStyle {
     /// 그림자 종류 (1~8)
     pub shadow_type: u32,
@@ -255,7 +257,7 @@ impl Default for ShapeStyle {
 }
 
 /// 그라데이션 채우기 렌더링 정보
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct GradientFillInfo {
     /// 유형 (1: 줄무늬/선형, 2: 원형, 3: 원뿔형, 4: 사각형)
     pub gradient_type: i16,
@@ -272,7 +274,7 @@ pub struct GradientFillInfo {
 }
 
 /// 선 렌더링 스타일
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct LineStyle {
     /// 선 색상
     pub color: ColorRef,
@@ -295,7 +297,7 @@ pub struct LineStyle {
 }
 
 /// 테두리 점선 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
 pub enum StrokeDash {
     #[default]
     Solid,
@@ -306,7 +308,7 @@ pub enum StrokeDash {
 }
 
 /// 선 렌더링 종류 (이중선/삼중선)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
 pub enum LineRenderType {
     #[default]
     Single,
@@ -321,7 +323,7 @@ pub enum LineRenderType {
 }
 
 /// 화살표 스타일
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
 pub enum ArrowStyle {
     #[default]
     None,
@@ -344,7 +346,7 @@ pub enum ArrowStyle {
 }
 
 /// 패스 커맨드 (벡터 도형용)
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum PathCommand {
     MoveTo(f64, f64),
     LineTo(f64, f64),
