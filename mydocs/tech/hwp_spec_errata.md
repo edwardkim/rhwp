@@ -241,6 +241,7 @@
 | 실제 의미 | **doc_info의 BinData 레코드 순번 (1-indexed)**. storage_id(CFB 파일명 번호)와는 별개 |
 | 혼동 원인 | 대부분의 HWP 파일에서 storage_id가 1부터 순차 할당되어 순번과 우연히 일치 |
 | 올바른 접근 | `bin_data_content[(bin_data_id - 1) as usize]` — 배열 인덱스로 접근 |
+| native bridge API | `ImageNode.bin_data_id`는 1-based 참조값이고, `DocumentCore::get_bin_data(index)`의 `index`는 0-based `bin_data_content` 배열 인덱스다. 따라서 render tree의 `bin_data_id`로 조회할 때는 보통 `get_bin_data((bin_data_id - 1) as usize)`를 호출한다. |
 | 위반 시 결과 | storage_id가 비순차인 파일(예: Worldcup_FIFA2010_32.hwp)에서 잘못된 이미지 매핑 |
 | 수정 파일 | `src/renderer/layout.rs` (6곳), `src/wasm_api.rs` (1곳) |
 | 참조 문서 | `troubleshootings/bin_data_id_index_mapping.md` |
