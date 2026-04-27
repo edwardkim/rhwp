@@ -554,15 +554,15 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     if font_family.contains("바탕") || font_family.contains("명조")
         || font_family.contains("궁서")
     {
-        // Serif: Windows → macOS/iOS → Android → 오픈소스 → generic
-        return "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
+        // Serif: Windows → macOS/iOS → Android → 오픈소스 → 리눅스 시스템 → generic
+        return "'Batang','바탕','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR',serif";
     }
     // 세리프 키워드 (영문)
     if lower.contains("times") || lower.contains("hymjre")
         || lower.contains("palatino") || lower.contains("georgia")
         || lower.contains("batang") || lower.contains("gungsuh")
     {
-        return "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
+        return "'Batang','바탕','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR',serif";
     }
     // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → generic
     "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard',sans-serif"
@@ -932,7 +932,7 @@ mod tests {
 
     #[test]
     fn test_generic_fallback() {
-        let serif = "'Batang','바탕','AppleMyungjo','Noto Serif KR',serif";
+        let serif = "'Batang','바탕','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR',serif";
         let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard',sans-serif";
         let mono = "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
         // 세리프 계열
