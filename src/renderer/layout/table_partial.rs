@@ -94,8 +94,10 @@ impl LayoutEngine {
                         .map(|p| compose_paragraph(p))
                         .collect();
                     let ranges = self.compute_cell_line_ranges(cell, &composed, split_start_content_offset, 0.0, styles);
-                    let remaining = self.calc_visible_content_height_from_ranges(
-                        &composed, &cell.paragraphs, &ranges, styles,
+                    // [Task #362] split_start 시 한 페이지보다 큰 nested table 의 잔여 높이가
+                    // 정확히 계산되도록 content_offset 을 함께 전달.
+                    let remaining = self.calc_visible_content_height_from_ranges_with_offset(
+                        &composed, &cell.paragraphs, &ranges, styles, split_start_content_offset,
                     );
                     let cell_h = remaining + pad_top + pad_bottom;
                     if cell_h > max_remaining_h {

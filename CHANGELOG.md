@@ -2,6 +2,48 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
+## [0.7.7] — 2026-04-27
+
+> v0.7.6 회귀 정정 사이클 (TypesetEngine default 전환 후 누락된 시멘틱 복원)
+
+### 수정 — TypesetEngine 회귀 정정
+
+- **페이지네이션 fit 누적 drift 수정** (#359)
+  - typeset 의 fit 판정과 누적을 분리: fit 은 `height_for_fit` (trailing_ls 제외), 누적은 `total_height` (full)
+  - 단독 항목 페이지 차단 가드 추가 — 다음 pi 의 vpos-reset 가드가 발동될 예정인 경우 빈 paragraph skip / 안전마진 1회 비활성화
+  - **k-water-rfp**: LAYOUT_OVERFLOW 73 → 0 (drift 311px 정정)
+  - **kps-ai**: 60 → 4
+
+- **TypesetEngine page_num + PartialTable fit 안전마진** (#361)
+  - `finalize_pages` 의 NewNumber 적용 조건을 Paginator 시멘틱과 동일하게 정정 (`prev_page_last_para` 추적, 한 페이지에서 한 번만 적용)
+  - PartialTable 직후 fit 안전마진 (10px) 비활성화 — PartialTable 의 cur_h 는 row 단위로 정확
+  - **k-water-rfp**: 28 → 27 페이지 (page_num 정상 갱신)
+  - **kps-ai**: page_num 1, 2, 1, 1, 2~8 정상 (NewNumber 컨트롤 처리)
+
+- **kps-ai PartialTable + Square wrap 처리** (#362, 8 항목 누적)
+  - **wrap-around 메커니즘 (Square wrap) 이식** ★ — Paginator engine.rs:288-372 의 wrap zone 매칭 + 활성화 시멘틱을 TypesetEngine 에 이식. 외부 표 옆 paragraph 들이 height 소비 없이 흡수됨
+  - 외부 셀 vpos 가드 — nested table 셀에서 LineSeg.vertical_pos 적용 제외 (p56 클립 차단)
+  - PartialTable nested 분할 허용 — 한 페이지보다 큰 nested table atomic 미루기 대신 분할 표시 (p67 빈 페이지 차단)
+  - PartialTable 잔여 height 정확 계산 — `calc_visible_content_height_from_ranges_with_offset` 신설
+  - nested table 셀 capping 강화 (외부 행 높이로 cap)
+  - hide_empty_line TypesetEngine 추가 (페이지 시작 빈 줄 최대 2개 height=0)
+  - vpos-reset 가드 wrap zone 안에서 무시 (오발동 차단)
+  - 빈 paragraph skip 가드 강화 — 표/도형 컨트롤 보유 paragraph 는 skip 안 함 (pi=778 표 누락 차단)
+  - **kps-ai**: 88 → 79 페이지 (Paginator 78 와 일치, LAYOUT_OVERFLOW 60→5)
+
+### 보안
+
+- **rhwp-firefox/build.mjs CodeQL Alert #17 해소** (#354)
+  - `execSync` shell 사용 → `execFileSync` (`shell: false`) 로 전환
+
+### 검증
+
+- `cargo test --lib`: 1008 passed, 0 failed
+- `cargo test --test svg_snapshot`: 6/6
+- `cargo test --test issue_301`: 1/1
+- WASM 빌드 통과
+- 작업지시자 시각 판정 통과 (kps-ai p56, p67-70, p72-73, k-water-rfp 전체)
+
 ## [0.7.6] — 2026-04-26
 
 > 외부 기여자 다수 + 조판 정밀화 사이클

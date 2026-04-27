@@ -847,6 +847,7 @@ impl DocumentCore {
                     &column_def,
                     idx,
                     &measured.tables,
+                    section.section_def.hide_empty_line,
                 )
             };
 
