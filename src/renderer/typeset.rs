@@ -1113,6 +1113,39 @@ impl TypesetEngine {
                 Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
                     // 사각형/직선/타원 등 Shape 컨트롤도 PageItem::Shape 로 등록
                     // (둥근사각형 글상자 "제 2 교시" 등이 누락되는 문제 차단)
+                    //
+                    // Task #378: 같은 문단에 TAC 표 + TAC 차트(Picture) 가 함께 있는 경우
+                    // (보고서 류: "(N) 제목 + 표 + 차트") fmt.height_for_fit 가 빈 문단의
+                    // composed.lines 만 반영해 차트의 line_seg 높이를 누락 → 차트가 표와
+                    // 같은 페이지에 강제 emit 되는 회귀 (PDF 정답은 다음 페이지로 분리).
+                    // 본 컨트롤이 TAC 이고 자체 line_seg 가 페이지에 안 들어가면 advance.
+                    let is_tac = match ctrl {
+                        Control::Picture(p) => p.common.treat_as_char,
+                        Control::Shape(s) => s.common().treat_as_char,
+                        Control::Equation(e) => e.common.treat_as_char,
+                        _ => false,
+                    };
+                    if is_tac && !st.current_items.is_empty() {
+                        // 이 컨트롤의 line_seg 인덱스 = 이전 TAC 컨트롤 수
+                        let seg_idx = para.controls.iter().take(ctrl_idx).filter(|c| {
+                            match c {
+                                Control::Table(t) => t.common.treat_as_char,
+                                Control::Picture(p) => p.common.treat_as_char,
+                                Control::Shape(s) => s.common().treat_as_char,
+                                Control::Equation(e) => e.common.treat_as_char,
+                                _ => false,
+                            }
+                        }).count();
+                        if let Some(seg) = para.line_segs.get(seg_idx) {
+                            let ctrl_h = hwpunit_to_px(seg.line_height, self.dpi);
+                            if st.current_height + ctrl_h > st.available_height() {
+                                st.advance_column_or_new_page();
+                                st.ensure_page();
+                            }
+                            // 차트의 line_seg 높이를 current_height 에 반영 (후속 항목 fit 판단용)
+                            st.current_height += ctrl_h;
+                        }
+                    }
                     st.current_items.push(PageItem::Shape {
                         para_index: para_idx,
                         control_index: ctrl_idx,
