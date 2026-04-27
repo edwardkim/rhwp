@@ -2,6 +2,17 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
+## [Unreleased]
+
+### 수정
+
+- **다단 섹션 #359 누적 공식 회귀 정정** (#391)
+  - `src/renderer/typeset.rs` 누적 공식을 `col_count` 로 분기:
+    단단 → `total_height` (k-water-rfp #359 보존), 다단 → `height_for_fit` (trailing_ls 인플레이션 차단)
+  - 다단 layout 은 vpos 기반 stacking 이므로 누적의 trailing_ls 가 단을 조기 종료시키던 문제 해결
+  - **exam_eng** (2단): 11 → **8 페이지**, 단독 1-item 단 (p3/p5/p7) 모두 해소
+  - 단단 샘플 (k-water-rfp / kps-ai / aift / KTX / form-01 / hwp-multi-001) 무회귀
+
 ## [0.7.7] — 2026-04-27
 
 > v0.7.6 회귀 정정 사이클 (TypesetEngine default 전환 후 누락된 시멘틱 복원)
