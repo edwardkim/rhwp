@@ -2021,3 +2021,46 @@ fn format_vpos_range(
     }
     s_out
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::bin_data::BinDataContent;
+    use crate::renderer::render_tree::RenderNodeType;
+
+    #[test]
+    fn build_page_render_tree_exposes_public_page_tree() {
+        let mut core = DocumentCore::new_empty();
+        core.paginate();
+
+        let tree = core
+            .build_page_render_tree(0)
+            .expect("empty document should expose page render tree");
+
+        match tree.root.node_type {
+            RenderNodeType::Page(page) => {
+                assert_eq!(page.page_index, 0);
+            }
+            other => panic!("root should be Page node, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn get_bin_data_returns_zero_based_content_slice() {
+        let mut core = DocumentCore::new_empty();
+        core.document.bin_data_content.push(BinDataContent {
+            id: 1,
+            data: vec![0x01, 0x02, 0x03],
+            extension: "png".to_string(),
+        });
+        core.document.bin_data_content.push(BinDataContent {
+            id: 2,
+            data: vec![0xAA, 0xBB],
+            extension: "jpg".to_string(),
+        });
+
+        assert_eq!(core.get_bin_data(0), Some(&[0x01, 0x02, 0x03][..]));
+        assert_eq!(core.get_bin_data(1), Some(&[0xAA, 0xBB][..]));
+        assert_eq!(core.get_bin_data(2), None);
+    }
+}
