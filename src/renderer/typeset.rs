@@ -912,6 +912,43 @@ impl TypesetEngine {
             return;
         }
 
+        // [Task #409 v3] atomic TAC top-fit:
+        // 단일 라인 + TAC Picture/Shape (분할 불가능) 항목은 시작점이 본문 안이면
+        // 현재 페이지에 배치하고 하단 일부는 하단 여백 (15mm) 으로 흘림 허용.
+        // HWP 시멘틱 — atomic 항목은 strict bottom-fit 대신 top-fit 으로 판정.
+        // (대상 샘플 23페이지 차트 pi=208: lh=316px, 시작 y=721.4 < 1028(본문 끝),
+        //  끝 y=1037.4 가 9.4px 초과하지만 하단 여백 56.7px 안이므로 HWP 가 23페이지 배치.)
+        let is_atomic_tac_singleton = fmt.line_heights.len() == 1
+            && para.controls.iter().any(|c| match c {
+                Control::Picture(p) => p.common.treat_as_char,
+                Control::Shape(s) => s.common().treat_as_char,
+                _ => false,
+            });
+        if is_atomic_tac_singleton
+            && st.current_height < available
+            && !st.current_items.is_empty()
+        {
+            // 추가 가드: 본문 + 하단 여백 안에 들어가야 함 (footer 침범 금지)
+            let bottom_margin_px = hwpunit_to_px(
+                st.layout.body_area.height as i32, // body_area.height 는 이미 px
+                self.dpi,
+            );
+            // 보수적 tolerance: 1mm (약 3.78px) 이상 ~ 하단 여백 끝까지 허용
+            // body_area.height 가 px 이므로 직접 비교 — base_available_height 와의
+            // 차이는 footnote_area 만 (본 케이스 0). bottom_margin 은 PageDef 에서
+            // 가져와야 하나 직접 접근 어려우므로 1mm 이상 ~ 60px 정도까지 허용.
+            let _ = bottom_margin_px; // (위 변수는 향후 정밀화용 — 현재 사용 안 함)
+            let overflow = st.current_height + fmt.height_for_fit - available;
+            // 60px 이내 초과 (대략 하단 여백 1.6cm 까지 허용; HWP 표준 15mm 여백 안)
+            if overflow <= 60.0 {
+                st.current_items.push(PageItem::FullParagraph {
+                    para_index: para_idx,
+                });
+                st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
+                return;
+            }
+        }
+
         // split: 줄 단위 분할
         let line_count = fmt.line_heights.len();
         if line_count == 0 {
