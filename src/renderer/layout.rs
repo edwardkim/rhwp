@@ -1423,9 +1423,17 @@ impl LayoutEngine {
                                     + hwpunit_to_px(vpos_end - base, self.dpi);
                                 // 자가 검증: 보정값이 컬럼 영역 내에 있고
                                 // 현재 y_offset보다 뒤로 가지 않아야 유효
-                                if end_y >= col_area.y && end_y <= col_area.y + col_area.height
-                                    && end_y >= y_offset - 1.0
-                                {
+                                let applied = end_y >= col_area.y && end_y <= col_area.y + col_area.height
+                                    && end_y >= y_offset - 1.0;
+                                if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                                    let path = if vpos_page_base.is_some() { "page" } else { "lazy" };
+                                    eprintln!(
+                                        "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} applied={}",
+                                        path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
+                                        vpos_end, base, col_area.y, y_offset, end_y, applied,
+                                    );
+                                }
+                                if applied {
                                     y_offset = end_y;
                                 }
                             }
