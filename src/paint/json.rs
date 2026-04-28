@@ -24,12 +24,17 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"schemaVersion\":{},\"resourceTableVersion\":{},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"schemaVersion\":{},\"resourceTableVersion\":{},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
             PAGE_LAYER_TREE_SCHEMA_VERSION,
             PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
             json_escape(PAGE_LAYER_TREE_UNIT),
             json_escape(PAGE_LAYER_TREE_COORDINATE_SYSTEM),
             json_escape(render_profile_str(self.profile)),
+            self.output_options.show_paragraph_marks,
+            self.output_options.show_control_codes,
+            self.output_options.show_transparent_borders,
+            self.output_options.clip_enabled,
+            self.output_options.debug_overlay,
             self.page_width,
             self.page_height
         );
@@ -839,6 +844,8 @@ mod tests {
         assert!(json.contains("\"unit\":\"px\""));
         assert!(json.contains("\"coordinateSystem\":\"page-top-left\""));
         assert!(json.contains("\"profile\":\"screen\""));
+        assert!(json.contains("\"outputOptions\":{"));
+        assert!(json.contains("\"clipEnabled\":true"));
         assert!(json.contains("\"type\":\"textRun\""));
         assert!(json.contains(&positions_json));
         assert!(json.contains("\"isParaEnd\":true"));
@@ -959,6 +966,26 @@ mod tests {
         assert!(json.contains("\"groupKind\":{\"kind\":\"column\",\"index\":2}"));
         assert!(json.contains("\"cacheHint\":\"staticSubtree\""));
         assert!(json.contains("\"clipKind\":\"body\""));
+    }
+
+    #[test]
+    fn serializes_layer_output_options() {
+        let root = LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, Vec::new());
+        let json = PageLayerTree::new(10.0, 10.0, root)
+            .with_output_options(crate::paint::LayerOutputOptions {
+                show_paragraph_marks: true,
+                show_control_codes: true,
+                show_transparent_borders: true,
+                clip_enabled: false,
+                debug_overlay: true,
+            })
+            .to_json();
+
+        assert!(json.contains("\"showParagraphMarks\":true"));
+        assert!(json.contains("\"showControlCodes\":true"));
+        assert!(json.contains("\"showTransparentBorders\":true"));
+        assert!(json.contains("\"clipEnabled\":false"));
+        assert!(json.contains("\"debugOverlay\":true"));
     }
 }
 
