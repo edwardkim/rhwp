@@ -579,7 +579,7 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let char_px = if cluster_len[i] > 1 {
+            let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
                 wasm_internals::measure_char_width_hwp(
@@ -587,8 +587,16 @@ impl TextMeasurer for WasmTextMeasurer {
                     c, hangul_hwp, font_size,
                 )
             };
+            // Task #352: dash leader 좁은 base 0.3 em + extra_dash_advance.
+            let is_leader = is_dash_leader_run(&chars, i);
+            let char_px = if is_leader {
+                char_px_raw.min(font_size * 0.3)
+            } else {
+                char_px_raw
+            };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
+            if is_leader { w += style.extra_dash_advance; }
             // 음수 자간(letter_spacing + extra_char_spacing < 0) 시
             // per-char 최소 advance 클램프로 narrow glyph 역진 방지.
             if style.letter_spacing + style.extra_char_spacing < 0.0 {
@@ -681,7 +689,7 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let char_px = if cluster_len[i] > 1 {
+            let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
                 wasm_internals::measure_char_width_hwp(
@@ -689,8 +697,16 @@ impl TextMeasurer for WasmTextMeasurer {
                     c, hangul_hwp, font_size,
                 )
             };
+            // Task #352: dash leader 좁은 base 0.3 em + extra_dash_advance.
+            let is_leader = is_dash_leader_run(&chars, i);
+            let char_px = if is_leader {
+                char_px_raw.min(font_size * 0.3)
+            } else {
+                char_px_raw
+            };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
+            if is_leader { w += style.extra_dash_advance; }
             // 음수 자간(letter_spacing + extra_char_spacing < 0) 시
             // per-char 최소 advance 클램프로 narrow glyph 역진 방지.
             if style.letter_spacing + style.extra_char_spacing < 0.0 {
