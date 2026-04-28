@@ -194,7 +194,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+            let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
                 font_size
@@ -205,6 +205,13 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 font_size * 0.3
             } else {
                 font_size * 0.5
+            };
+            // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 는 좁은 폭으로 재산출.
+            // HY신명조 등 한글 폰트 메트릭의 ASCII '-' 폭(0.83 em) 부풀림 회피.
+            let base_w = if is_dash_leader_run(&chars, i) {
+                base_w_raw.min(font_size * 0.3)
+            } else {
+                base_w_raw
             };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
@@ -301,7 +308,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+            let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
                 font_size
@@ -310,6 +317,12 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 font_size * 0.3
             } else {
                 font_size * 0.5
+            };
+            // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 좁은 폭 적용.
+            let base_w = if is_dash_leader_run(&chars, i) {
+                base_w_raw.min(font_size * 0.3)
+            } else {
+                base_w_raw
             };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
@@ -873,7 +886,7 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         if c == '\u{2007}' {
             return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
         }
-        let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+        let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
             w
         } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
             font_size
@@ -882,6 +895,12 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
             font_size * 0.3
         } else {
             font_size * 0.5
+        };
+        // Task #352: 3+ 연속 dash leader 좁은 폭 적용.
+        let base_w = if is_dash_leader_run(&chars, i) {
+            base_w_raw.min(font_size * 0.3)
+        } else {
+            base_w_raw
         };
         let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
         if c == ' ' { w += style.extra_word_spacing; }
@@ -941,6 +960,34 @@ fn is_narrow_punctuation(c: char) -> bool {
         ',' | '.' | ':' | ';' | '\'' | '"' | '`' |
         '\u{00B7}'   // · MIDDLE DOT
     )
+}
+
+/// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).
+///
+/// 한컴 문서의 빈칸/구분선은 ASCII '-' 반복으로 구성되며, PDF 도 좁은
+/// advance 로 렌더된다. 그러나 일부 한글 폰트(HY신명조 등) 의 메트릭 DB 가
+/// '-' 글리프 폭을 0.83 em 으로 저장하고 있어 반복 시 자연 폭이
+/// 사용 가능 폭을 크게 초과한다. 본 헬퍼로 leader 시퀀스를 식별해
+/// 좁은 advance(`font_size * 0.3`) 로 재산출한다.
+///
+/// 자연 텍스트의 단발 dash(예: "stimulus-driven", "32.-") 는 ≥3 조건을
+/// 만족하지 않으므로 영향 없음.
+fn is_dash_leader_run(chars: &[char], i: usize) -> bool {
+    if chars[i] != '-' { return false; }
+    let mut count = 1usize;
+    let mut j = i;
+    while j > 0 && chars[j - 1] == '-' {
+        count += 1;
+        j -= 1;
+        if count >= 3 { return true; }
+    }
+    let mut j = i;
+    while j + 1 < chars.len() && chars[j + 1] == '-' {
+        count += 1;
+        j += 1;
+        if count >= 3 { return true; }
+    }
+    false
 }
 
 /// 한컴이 전각으로 처리하는 기호 (메트릭 폴백 시 font_size 사용)
