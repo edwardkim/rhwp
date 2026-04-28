@@ -101,6 +101,22 @@ const count = await editor.pageCount();
 const svg = await editor.getPageSvg(0); // 첫 페이지
 ```
 
+### editor.exportHwp()
+
+현재 편집 중인 문서를 HWP 바이너리로 내보냅니다.
+
+```javascript
+const bytes = await editor.exportHwp();
+const blob = new Blob([bytes], { type: 'application/x-hwp' });
+
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'document.hwp';
+a.click();
+URL.revokeObjectURL(url);
+```
+
 ### editor.destroy()
 
 에디터를 제거합니다.
