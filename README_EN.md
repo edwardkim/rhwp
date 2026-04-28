@@ -181,7 +181,8 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - **Legacy SVG** remains the default compatibility output.
 - **Layered SVG** can be exercised with `RHWP_RENDER_PATH=layer-svg`.
 - The layered SVG path is a transition adapter that expands `PageLayerTree` back into the existing SVG renderer.
-- Browser/native Canvas paths still use the legacy `PageRenderTree` renderer in this phase.
+- Browser/native Canvas paths render through `PageLayerTree` replay by default.
+- Legacy Canvas remains available through `renderPageCanvasLegacy` / `renderPageToCanvasLegacy` for parity checks.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
 - This phase establishes the frontend/backend boundary for later CanvasKit and native Skia backends.

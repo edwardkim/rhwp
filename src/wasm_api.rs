@@ -193,6 +193,12 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    #[wasm_bindgen(js_name = renderPageCanvasLegacy)]
+    pub fn render_page_canvas_legacy(&self, page_num: u32) -> Result<u32, JsValue> {
+        self.render_page_canvas_legacy_native(page_num)
+            .map_err(|e| e.into())
+    }
+
     /// 특정 페이지를 Canvas 2D에 직접 렌더링한다.
     ///
     /// WASM 환경에서만 사용 가능하다. Canvas 크기는 페이지 크기 × scale로 설정된다.
@@ -200,6 +206,50 @@ impl HwpDocument {
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen(js_name = renderPageToCanvas)]
     pub fn render_page_to_canvas(
+        &self,
+        page_num: u32,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+    ) -> Result<(), JsValue> {
+        use crate::renderer::layer_renderer::LayerRenderer;
+        use crate::renderer::web_canvas::WebCanvasRenderer;
+
+        let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
+
+        // scale 정규화: 0 이하 또는 NaN이면 1.0, 최소 0.25 최대 12.0
+        // (zoom 3.0 × DPR 4.0 = 12.0 지원)
+        let scale = if scale <= 0.0 || scale.is_nan() {
+            1.0
+        } else {
+            scale.clamp(0.25, 12.0)
+        };
+
+        // 최대 캔버스 크기 가드 (16384px)
+        let max_dim = 16384.0;
+        let scale = if tree.page_width * scale > max_dim || tree.page_height * scale > max_dim {
+            (max_dim / tree.page_width)
+                .min(max_dim / tree.page_height)
+                .min(scale)
+        } else {
+            scale
+        };
+
+        // 캔버스 크기 = 페이지 크기 × scale
+        canvas.set_width((tree.page_width * scale) as u32);
+        canvas.set_height((tree.page_height * scale) as u32);
+
+        let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.show_paragraph_marks = self.show_paragraph_marks;
+        renderer.show_control_codes = self.show_control_codes;
+        renderer.set_scale(scale);
+        renderer.render_page(&tree).map_err(JsValue::from)?;
+        Ok(())
+    }
+
+    /// 특정 페이지를 기존 PageRenderTree 경로로 Canvas 2D에 직접 렌더링한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = renderPageToCanvasLegacy)]
+    pub fn render_page_to_canvas_legacy(
         &self,
         page_num: u32,
         canvas: &HtmlCanvasElement,

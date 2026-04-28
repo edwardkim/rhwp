@@ -133,6 +133,13 @@ impl DocumentCore {
 
     /// Canvas 렌더링 (네이티브 에러 타입)
     pub fn render_page_canvas_native(&self, page_num: u32) -> Result<u32, HwpError> {
+        let tree = self.build_page_layer_tree(page_num)?;
+        let mut renderer = CanvasRenderer::new();
+        renderer.render_page(&tree)?;
+        Ok(renderer.command_count() as u32)
+    }
+
+    pub fn render_page_canvas_legacy_native(&self, page_num: u32) -> Result<u32, HwpError> {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let mut renderer = CanvasRenderer::new();
