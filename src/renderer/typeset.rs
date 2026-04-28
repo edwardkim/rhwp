@@ -627,6 +627,37 @@ impl TypesetEngine {
                                 para_index: para_idx,
                                 control_index: ctrl_idx,
                             });
+                            // Task #409 v2: 비-TAC TopAndBottom + vert=Para Picture/Shape 는
+                            // layout 에서 picture_footnote.rs:356 의 `y_offset + total_height`
+                            // 패턴으로 후속 콘텐츠를 개체 높이만큼 밀어냄. 하지만 paragraph
+                            // line_seg 의 lh 는 텍스트 baseline 만 반영하므로 페이지네이션의
+                            // current_height 가 개체 높이만큼 부족하게 누적되어 page packing
+                            // 시 layout 실제 y 와 어긋남 (21페이지: pagination used=803px vs
+                            // layout y=1275px → pi=192 가 21페이지에 packing 되었다가
+                            // overflow 로 잘림). pagination 측에서도 layout 과 동일하게
+                            // 개체 높이를 current_height 에 누적.
+                            use crate::model::shape::{TextWrap, VertRelTo};
+                            let pushdown_h: Option<f64> = match ctrl {
+                                Control::Picture(pic) if !pic.common.treat_as_char
+                                    && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
+                                    && matches!(pic.common.vert_rel_to, VertRelTo::Para) => {
+                                    let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                    let mb = hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
+                                    Some(h + mb)
+                                }
+                                Control::Shape(s) if !s.common().treat_as_char
+                                    && matches!(s.common().text_wrap, TextWrap::TopAndBottom)
+                                    && matches!(s.common().vert_rel_to, VertRelTo::Para) => {
+                                    let cm = s.common();
+                                    let h = hwpunit_to_px(cm.height as i32, self.dpi);
+                                    let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
+                                    Some(h + mb)
+                                }
+                                _ => None,
+                            };
+                            if let Some(extra) = pushdown_h {
+                                st.current_height += extra;
+                            }
                         }
                     }
                     Control::Footnote(fn_ctrl) => {
