@@ -35,18 +35,31 @@ export default defineConfig({
         theme_color: '#2b6cb0',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '.',
-        scope: '.',
+        start_url: '/rhwp/',
+        scope: '/rhwp/',
         icons: [
           { src: 'icons/icon-128.png', sizes: '128x128', type: 'image/png' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-256.png', sizes: '256x256', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,wasm,png,svg,ico,woff,woff2,ttf,otf}'],
+        // WASM (~12 MB) is kept out of precache to avoid blocking SW installation;
+        // CacheFirst at runtime still gives offline access after the first load.
+        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2,ttf,otf}'],
         maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: /\.wasm$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'wasm-cache',
+              expiration: { maxEntries: 5, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false,
