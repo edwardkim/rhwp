@@ -88,7 +88,7 @@ impl EqParser {
     }
 
     /// 표현식 파싱 (중단 조건 없이 끝까지)
-    /// OVER를 중위 연산자로 처리: 바로 앞 요소가 분자, 바로 뒤 요소가 분모
+    /// OVER/ATOP을 중위 연산자로 처리: 바로 앞/뒤 요소를 위아래로 배치
     fn parse_expression(&mut self) -> EqNode {
         let mut children = Vec::new();
         while !self.at_end() {
@@ -101,16 +101,25 @@ impl EqParser {
             {
                 break;
             }
-            // OVER 중위 연산자: 직전 요소를 분자, 직후 요소를 분모로 결합
+            // OVER/ATOP 중위 연산자: 직전/직후 요소를 위아래로 결합
             if self.current_type() == TokenType::Command
-                && Self::cmd_eq(self.current_value(), "OVER")
+                && (Self::cmd_eq(self.current_value(), "OVER")
+                    || Self::cmd_eq(self.current_value(), "ATOP"))
             {
-                self.pos += 1; // OVER 건너뛰기
-                let numer = children.pop().unwrap_or(EqNode::Empty);
-                let denom = self.parse_element();
-                children.push(EqNode::Fraction {
-                    numer: Box::new(numer),
-                    denom: Box::new(denom),
+                let is_atop = Self::cmd_eq(self.current_value(), "ATOP");
+                self.pos += 1; // 연산자 건너뛰기
+                let top = children.pop().unwrap_or(EqNode::Empty);
+                let bottom = self.parse_element();
+                children.push(if is_atop {
+                    EqNode::Atop {
+                        top: Box::new(top),
+                        bottom: Box::new(bottom),
+                    }
+                } else {
+                    EqNode::Fraction {
+                        numer: Box::new(top),
+                        denom: Box::new(bottom),
+                    }
                 });
                 continue;
             }
@@ -189,13 +198,13 @@ impl EqParser {
         let cmd_upper = cmd.to_ascii_uppercase();
         let cu = cmd_upper.as_str();
 
-        // OVER는 parse_fraction에서 처리됨 (단독 발생 시)
+        // OVER/ATOP은 parse_expression에서 처리됨 (단독 발생 시)
         if cu == "OVER" {
             return EqNode::Empty;
         }
 
         if cu == "ATOP" {
-            return EqNode::Empty; // ATOP도 parse_atop에서 처리
+            return EqNode::Empty;
         }
 
         // 제곱근
@@ -444,16 +453,25 @@ impl EqParser {
             if self.current_type() == TokenType::RBrace {
                 break;
             }
-            // OVER 중위 연산자: 그룹 내에서도 동일하게 처리
+            // OVER/ATOP 중위 연산자: 그룹 내에서도 동일하게 처리
             if self.current_type() == TokenType::Command
-                && Self::cmd_eq(self.current_value(), "OVER")
+                && (Self::cmd_eq(self.current_value(), "OVER")
+                    || Self::cmd_eq(self.current_value(), "ATOP"))
             {
+                let is_atop = Self::cmd_eq(self.current_value(), "ATOP");
                 self.pos += 1;
-                let numer = children.pop().unwrap_or(EqNode::Empty);
-                let denom = self.parse_element();
-                children.push(EqNode::Fraction {
-                    numer: Box::new(numer),
-                    denom: Box::new(denom),
+                let top = children.pop().unwrap_or(EqNode::Empty);
+                let bottom = self.parse_element();
+                children.push(if is_atop {
+                    EqNode::Atop {
+                        top: Box::new(top),
+                        bottom: Box::new(bottom),
+                    }
+                } else {
+                    EqNode::Fraction {
+                        numer: Box::new(top),
+                        denom: Box::new(bottom),
+                    }
                 });
                 continue;
             }
@@ -1180,6 +1198,18 @@ mod tests {
                 assert!(matches!(denom.as_ref(), EqNode::Number(n) if n == "2"));
             }
             _ => panic!("Expected Fraction, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_atop() {
+        let ast = parse("a atop b");
+        match &ast {
+            EqNode::Atop { top, bottom } => {
+                assert!(matches!(top.as_ref(), EqNode::Text(t) if t == "a"));
+                assert!(matches!(bottom.as_ref(), EqNode::Text(t) if t == "b"));
+            }
+            _ => panic!("Expected Atop, got {:?}", ast),
         }
     }
 

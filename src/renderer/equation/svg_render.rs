@@ -110,6 +110,10 @@ fn render_box(
             // 분모
             render_box(svg, denom, x, y, color, fs, italic, bold);
         }
+        LayoutKind::Atop { top, bottom } => {
+            render_box(svg, top, x, y, color, fs, italic, bold);
+            render_box(svg, bottom, x, y, color, fs, italic, bold);
+        }
         LayoutKind::Sqrt { index, body } => {
             // √ 기호
             let sign_h = lb.height;
@@ -523,6 +527,29 @@ mod tests {
         let svg = render_eq("a over b");
         assert!(svg.contains("<text")); // 분자/분모 텍스트
         assert!(svg.contains("<line")); // 분수선
+    }
+
+    #[test]
+    fn test_atop_svg_has_no_fraction_line() {
+        let svg = render_eq("a atop b");
+        assert!(svg.contains("<text"));
+        assert!(!svg.contains("<line"));
+        let y_values: Vec<&str> = svg
+            .lines()
+            .filter_map(|line| line.split(" y=\"").nth(1))
+            .filter_map(|rest| rest.split('"').next())
+            .collect();
+        assert_eq!(
+            y_values.len(),
+            2,
+            "ATOP은 위/아래 텍스트 2개를 렌더링해야 함: {}",
+            svg
+        );
+        assert_ne!(
+            y_values[0], y_values[1],
+            "ATOP은 두 항을 세로로 배치해야 함: {}",
+            svg
+        );
     }
 
     #[test]
