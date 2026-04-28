@@ -191,3 +191,32 @@ fn test_bmp_to_png_invalid_returns_none() {
     let junk = vec![0u8; 32];
     assert!(bmp_bytes_to_png_bytes(&junk).is_none());
 }
+
+#[test]
+fn test_brightness_contrast_filter_zero_returns_none() {
+    let mut renderer = SvgRenderer::new();
+    assert!(renderer.ensure_brightness_contrast_filter(0, 0).is_none());
+    assert!(renderer.defs.is_empty());
+}
+
+#[test]
+fn test_brightness_contrast_filter_nonzero_adds_defs() {
+    let mut renderer = SvgRenderer::new();
+    let id = renderer.ensure_brightness_contrast_filter(30, -20);
+    assert!(id.is_some());
+    let id = id.unwrap();
+    assert_eq!(id, "rhwp-img-bc-b30c-20");
+    assert_eq!(renderer.defs.len(), 1);
+    let def = &renderer.defs[0];
+    assert!(def.contains(&format!("id=\"{}\"", id)));
+    assert!(def.contains("<feComponentTransfer>"));
+    assert!(def.contains("feFuncR"));
+}
+
+#[test]
+fn test_brightness_contrast_filter_dedup() {
+    let mut renderer = SvgRenderer::new();
+    renderer.ensure_brightness_contrast_filter(50, 50);
+    renderer.ensure_brightness_contrast_filter(50, 50);
+    assert_eq!(renderer.defs.len(), 1);
+}
