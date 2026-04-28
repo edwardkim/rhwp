@@ -1,0 +1,20 @@
+=== 구역 0 ===
+  용지: 210.0mm × 297.0mm (59528×84186 HU), 세로
+  여백: 좌=20.0 우=20.0 상=15.0 하=15.0 머리말=10.0 꼬리말=10.0 mm
+
+--- 문단 0.172 --- cc=9, text_len=0, controls=1 
+  텍스트: (빈 문단)
+  [CS] pos=0 id=43 bold=false spacing=0% ratio=100% char=""
+  [PS] ps_id=2 align=Center spacing: before=0 after=0 line=160/Percent
+       margins: left=0 right=710 indent=0 border_fill_id=2
+       border_spacing: left=0 right=0 top=0 bottom=0
+       tab_def_id=0 auto_left=false auto_right=false tabs=[(없음)]
+  ls[0]: ts=0, vpos=1275685, lh=1100, th=1100, bl=935, ls=660, cs=0, sw=0, tag=0x00060000
+  [0] 그림: bin_id=19, common=48190×31470 (170.0×111.0mm), orig=97380×63600 (343.5×224.4mm), cur=48190×31470 (170.0×111.0mm), tac=false
+  [0]   border_x=[0, 0, 0, 0] border_y=[0, 0, 0, 0] border_color=#000000 border_width=0 (0.00mm) border_attr=ShapeBorderLine { color: 0, width: 0, attr: 0, outline_style: 0 }
+  [0]   crop=(0,0,97380,63600) crop_mm=(0.00,0.00,343.53,224.37)
+    크기: 170.0mm × 111.0mm (48190×31470 HU)
+    위치: 가로=단 오프셋=0.0mm(0), 세로=문단 오프셋=0.0mm(0)
+    배치: 위아래, 글자처럼=false, z=68
+
+=== 완료: 1 구역, 256 문단 ===
