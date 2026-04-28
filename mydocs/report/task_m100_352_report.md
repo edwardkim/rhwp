@@ -53,8 +53,8 @@
 
 | 항목 | 수정 전 | 수정 후 | PDF 목표 |
 |------|---------|---------|----------|
-| dash advance / 글자 | 12.11 px | 4.65 px | ~3.5 px (근사) |
-| 29 dash 시퀀스 폭 | 351 px | **134.94 px** | ~135 px ✓ |
+| dash advance / 글자 | 12.11 px | 7.27 px | ~7.4 px (PDF 실측) |
+| 29 dash 시퀀스 폭 | 351 px | **210.85 px** | ~218 px (PDF 실측, 96.7% 일치) |
 | 화면상 가로선 수 | 2 (dash bar 겹침 + underline) | **1** (underline 만) | 1 |
 | dash 글리프 잔존 | 29 | **0** (스킵) | (PDF 글리프 미시) |
 | `of being` 시작 x | 953 (단 우측 끝) | 839 (단 중앙쯤) | 단 중앙 |
@@ -90,9 +90,11 @@ Stage 3 단계에서 다음 피드백 받음:
    - 원인: dash leader 라인(y = baseline − 0.32 em) 과 char_shape underline(y = baseline + 2 px) 동시 출력
    - 대응: `suppress_dash_leader_line = !style.underline.is_none()` 가드 추가. underline 있는 run 은 dash leader 라인 생략.
 
-2. **"폭이 조금 짧음"**
-   - 원인: 0.3 em 적용 시 29 × 4.36 = 126 px (PDF ~135 px 보다 9 px 부족)
-   - 대응: 0.3 em → **0.32 em** 으로 미세 조정. 134.94 px ≈ PDF 일치.
+2. **"폭이 조금 짧음" → "1.5 정도인듯"**
+   - 1차 추정: 이슈 본문의 "PDF ~135 px" 를 신뢰하여 0.3 em → 0.32 em 적용 (134.94 px)
+   - 사용자 피드백: 너무 짧아 보임 (1.5~2 배 필요)
+   - PDF 직접 실측 (`pdftotext -bbox-layout`): 우측 단 좌측 = 447.84 pt, "of" 시작 = 611.40 pt → dash 시퀀스 ~218 px (이슈 본문의 135 px 추정은 잘못)
+   - 대응: 0.32 em → **0.5 em** (반각). 결과 210.85 px (PDF 218 px 의 96.7%, 사용자 1.5x estimate 와도 일치). 한컴이 다른 ASCII 구두점에 적용하는 반각 강제 정책과 일관.
 
 ---
 

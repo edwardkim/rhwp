@@ -208,9 +208,10 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             };
             // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 는 좁은 폭으로 재산출.
             // HY신명조 등 한글 폰트 메트릭의 ASCII '-' 폭(0.83 em) 부풀림 회피.
-            // 0.32 em 은 PDF 측정치(~0.30 em) 와 Times New Roman dash(0.333 em) 사이값.
+            // 0.5 em (반각) 은 PDF 측정치(0.48 em ≈ 218 px / 29 dash) 와 일치하며
+            // 한컴이 다른 ASCII 구두점에 적용하는 반각 강제 정책과도 일관.
             let base_w = if is_dash_leader_run(&chars, i) {
-                base_w_raw.min(font_size * 0.32)
+                base_w_raw.min(font_size * 0.5)
             } else {
                 base_w_raw
             };
@@ -319,9 +320,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else {
                 font_size * 0.5
             };
-            // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 좁은 폭 적용.
+            // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 좁은 폭 적용 (0.5 em).
             let base_w = if is_dash_leader_run(&chars, i) {
-                base_w_raw.min(font_size * 0.32)
+                base_w_raw.min(font_size * 0.5)
             } else {
                 base_w_raw
             };
@@ -897,9 +898,9 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         } else {
             font_size * 0.5
         };
-        // Task #352: 3+ 연속 dash leader 좁은 폭 적용.
+        // Task #352: 3+ 연속 dash leader 좁은 폭 적용 (0.5 em).
         let base_w = if is_dash_leader_run(&chars, i) {
-            base_w_raw.min(font_size * 0.32)
+            base_w_raw.min(font_size * 0.5)
         } else {
             base_w_raw
         };
