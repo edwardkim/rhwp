@@ -572,26 +572,46 @@ fn colorref_to_skia(color: ColorRef, alpha_scale: f32) -> Color {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::paint::LayerNode;
+    use crate::paint::{LayerNode, LayerOutputOptions};
     use crate::renderer::render_tree::{BoundingBox, RectangleNode};
 
-    #[test]
-    fn renders_png_for_basic_layer_tree() {
+    fn decode_rgba(bytes: &[u8]) -> image::RgbaImage {
+        image::load_from_memory(bytes)
+            .expect("decode png")
+            .to_rgba8()
+    }
+
+    fn solid_rect_tree(
+        page_width: f64,
+        page_height: f64,
+        bbox: BoundingBox,
+        fill_color: ColorRef,
+    ) -> PageLayerTree {
         let style = ShapeStyle {
-            fill_color: Some(0x000000ff),
+            fill_color: Some(fill_color),
             ..Default::default()
         };
-        let tree = PageLayerTree::new(
-            32.0,
-            24.0,
+        PageLayerTree::new(
+            page_width,
+            page_height,
             LayerNode::leaf(
-                BoundingBox::new(0.0, 0.0, 32.0, 24.0),
+                BoundingBox::new(0.0, 0.0, page_width, page_height),
                 None,
                 vec![PaintOp::Rectangle {
-                    bbox: BoundingBox::new(4.0, 4.0, 16.0, 12.0),
+                    bbox,
                     rect: RectangleNode::new(0.0, style, None),
                 }],
             ),
+        )
+    }
+
+    #[test]
+    fn renders_png_for_basic_layer_tree() {
+        let tree = solid_rect_tree(
+            32.0,
+            24.0,
+            BoundingBox::new(4.0, 4.0, 16.0, 12.0),
+            0x000000ff,
         );
 
         let output = SkiaLayerRenderer::new()
@@ -627,5 +647,128 @@ mod tests {
 
         assert_eq!(output.width, 20);
         assert_eq!(output.height, 24);
+    }
+
+    #[test]
+    fn preserves_colorref_channel_order_in_pixels() {
+        let tree = solid_rect_tree(12.0, 12.0, BoundingBox::new(2.0, 2.0, 8.0, 8.0), 0x000000ff);
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render red rect");
+        let image = decode_rgba(&output.bytes);
+        let pixel = image.get_pixel(4, 4);
+
+        assert!(pixel[0] > 220, "red channel should be high: {pixel:?}");
+        assert!(pixel[1] < 32, "green channel should be low: {pixel:?}");
+        assert!(pixel[2] < 32, "blue channel should be low: {pixel:?}");
+        assert_eq!(pixel[3], 255);
+    }
+
+    #[test]
+    fn clears_transparent_by_default_and_opaque_when_requested() {
+        let tree = PageLayerTree::new(
+            4.0,
+            4.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 4.0, 4.0), None, vec![]),
+        );
+        let renderer = SkiaLayerRenderer::new();
+        let transparent = renderer
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render transparent");
+        let opaque = renderer
+            .render_raster_with_options(
+                &tree,
+                RasterRenderOptions {
+                    transparent: false,
+                    ..Default::default()
+                },
+            )
+            .expect("render opaque");
+
+        assert_eq!(decode_rgba(&transparent.bytes).get_pixel(0, 0)[3], 0);
+        assert_eq!(
+            decode_rgba(&opaque.bytes).get_pixel(0, 0).0,
+            [255, 255, 255, 255]
+        );
+    }
+
+    #[test]
+    fn output_options_control_clip_rect_replay() {
+        let style = ShapeStyle {
+            fill_color: Some(0x000000ff),
+            ..Default::default()
+        };
+        let child = LayerNode::leaf(
+            BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+            None,
+            vec![PaintOp::Rectangle {
+                bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+                rect: RectangleNode::new(0.0, style, None),
+            }],
+        );
+        let clipped = PageLayerTree::new(
+            20.0,
+            20.0,
+            LayerNode::clip_rect(
+                BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+                None,
+                BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                child.clone(),
+                crate::paint::ClipKind::Generic,
+            ),
+        );
+        let unclipped = clipped.clone().with_output_options(LayerOutputOptions {
+            clip_enabled: false,
+            ..Default::default()
+        });
+        let renderer = SkiaLayerRenderer::new();
+        let clipped_png = renderer
+            .render_raster_with_options(&clipped, RasterRenderOptions::default())
+            .expect("render clipped");
+        let unclipped_png = renderer
+            .render_raster_with_options(&unclipped, RasterRenderOptions::default())
+            .expect("render unclipped");
+        let clipped = decode_rgba(&clipped_png.bytes);
+        let unclipped = decode_rgba(&unclipped_png.bytes);
+
+        assert_eq!(clipped.get_pixel(15, 15)[3], 0);
+        assert_eq!(unclipped.get_pixel(15, 15)[3], 255);
+    }
+
+    #[test]
+    fn rejects_invalid_raster_options_before_surface_creation() {
+        let tree = PageLayerTree::new(
+            10.0,
+            10.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, vec![]),
+        );
+        let renderer = SkiaLayerRenderer::new();
+
+        let invalid_scale = renderer.render_raster_with_options(
+            &tree,
+            RasterRenderOptions {
+                scale: 0.0,
+                ..Default::default()
+            },
+        );
+        assert!(invalid_scale.is_err());
+
+        let invalid_dpi = renderer.render_raster_with_options(
+            &tree,
+            RasterRenderOptions {
+                dpi: Some(0.0),
+                ..Default::default()
+            },
+        );
+        assert!(invalid_dpi.is_err());
+
+        let oversized = renderer.render_raster_with_options(
+            &tree,
+            RasterRenderOptions {
+                max_dimension: 8,
+                ..Default::default()
+            },
+        );
+        assert!(oversized.is_err());
     }
 }
