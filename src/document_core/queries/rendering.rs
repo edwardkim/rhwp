@@ -17,7 +17,7 @@ use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::composer::{compose_section, compose_paragraph, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::paint::{LayerBuilder, PageLayerTree, RenderProfile};
+use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use super::super::helpers::color_ref_to_css;
@@ -34,7 +34,15 @@ impl DocumentCore {
     pub fn build_page_layer_tree(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
-        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let output_options = LayerOutputOptions {
+            show_paragraph_marks: self.show_paragraph_marks,
+            show_control_codes: self.show_control_codes,
+            show_transparent_borders: self.show_transparent_borders,
+            clip_enabled: self.clip_enabled,
+            debug_overlay: self.debug_overlay,
+        };
+        let mut builder =
+            LayerBuilder::new(RenderProfile::Screen).with_output_options(output_options);
         Ok(builder.build(&tree))
     }
 

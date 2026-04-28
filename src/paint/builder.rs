@@ -1,5 +1,5 @@
 use crate::paint::layer_tree::{
-    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
+    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
 use crate::paint::paint_op::PaintOp;
 use crate::paint::profile::RenderProfile;
@@ -8,11 +8,20 @@ use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 /// semantic render tree를 visual layer tree로 내린다.
 pub struct LayerBuilder {
     profile: RenderProfile,
+    output_options: LayerOutputOptions,
 }
 
 impl LayerBuilder {
     pub fn new(profile: RenderProfile) -> Self {
-        Self { profile }
+        Self {
+            profile,
+            output_options: LayerOutputOptions::default(),
+        }
+    }
+
+    pub fn with_output_options(mut self, output_options: LayerOutputOptions) -> Self {
+        self.output_options = output_options;
+        self
     }
 
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
@@ -30,6 +39,7 @@ impl LayerBuilder {
         );
 
         PageLayerTree::with_profile(page_width, page_height, root, self.profile)
+            .with_output_options(self.output_options)
     }
 
     fn build_children(&mut self, node: &RenderNode) -> Vec<LayerNode> {

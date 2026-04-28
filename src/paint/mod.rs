@@ -11,7 +11,7 @@ pub mod resources;
 
 pub use builder::LayerBuilder;
 pub use layer_tree::{
-    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
+    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
     PAGE_LAYER_TREE_COORDINATE_SYSTEM, PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
     PAGE_LAYER_TREE_SCHEMA_VERSION, PAGE_LAYER_TREE_UNIT,
 };
