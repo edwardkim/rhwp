@@ -2,6 +2,7 @@
 //!
 //! This module is available only with the `native-skia` feature.
 
+mod image_conv;
 mod renderer;
 
 pub use renderer::SkiaLayerRenderer;

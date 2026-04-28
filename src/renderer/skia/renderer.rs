@@ -1,9 +1,10 @@
 use skia_safe::{
-    font, paint, surfaces, Canvas, Color, Data, EncodedImageFormat, FilterMode, Font, FontMgr,
-    FontStyle, Image, MipmapMode, Paint, PathBuilder, PathEffect, Rect, SamplingOptions,
+    font, paint, surfaces, Canvas, Color, EncodedImageFormat, Font, FontMgr, FontStyle, Paint,
+    PathBuilder, PathEffect, Rect,
 };
 
 use crate::error::HwpError;
+use crate::model::image::ImageEffect;
 use crate::model::ColorRef;
 use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
 use crate::renderer::layer_renderer::{
@@ -11,6 +12,8 @@ use crate::renderer::layer_renderer::{
     RasterRenderOutput,
 };
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
+
+use super::image_conv::{draw_image_bytes, ImageSampling};
 
 pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
@@ -189,28 +192,25 @@ impl SkiaLayerRenderer {
                 &text,
             );
         };
-        let draw_image = |data: &[u8], bbox: crate::renderer::render_tree::BoundingBox| {
-            if bbox.width <= 0.0 || bbox.height <= 0.0 {
-                return;
-            }
-            if let Some(image) = Image::from_encoded(Data::new_copy(data)) {
-                let dst = Rect::from_xywh(
-                    bbox.x as f32,
-                    bbox.y as f32,
-                    bbox.width as f32,
-                    bbox.height as f32,
-                );
-                let paint = Paint::default();
-                canvas.draw_image_rect_with_sampling_options(
-                    &image,
-                    None,
-                    dst,
-                    SamplingOptions::new(FilterMode::Linear, MipmapMode::None),
-                    &paint,
-                );
-            } else {
-                draw_placeholder(bbox, "image");
-            }
+        let draw_image = |data: &[u8],
+                          bbox: crate::renderer::render_tree::BoundingBox,
+                          fill_mode,
+                          original_size,
+                          crop,
+                          effect| {
+            draw_image_bytes(
+                canvas,
+                data,
+                bbox.x as f32,
+                bbox.y as f32,
+                bbox.width as f32,
+                bbox.height as f32,
+                fill_mode,
+                original_size,
+                crop,
+                effect,
+                ImageSampling::linear(),
+            );
         };
         let draw_text = |text: &str,
                          bbox: crate::renderer::render_tree::BoundingBox,
@@ -341,7 +341,14 @@ impl SkiaLayerRenderer {
                                 canvas.draw_rect(rect, &paint);
                             }
                             if let Some(image) = &background.image {
-                                draw_image(&image.data, *bbox);
+                                draw_image(
+                                    &image.data,
+                                    *bbox,
+                                    Some(image.fill_mode),
+                                    None,
+                                    None,
+                                    ImageEffect::RealPic,
+                                );
                             }
                             if let Some(color) = background.border_color {
                                 let mut paint = Paint::default();
@@ -554,7 +561,14 @@ impl SkiaLayerRenderer {
                                 open_shape_transform(image.transform, bbox);
                             }
                             if let Some(data) = image.data.as_deref() {
-                                draw_image(data, *bbox);
+                                draw_image(
+                                    data,
+                                    *bbox,
+                                    image.fill_mode,
+                                    image.original_size,
+                                    image.crop,
+                                    image.effect,
+                                );
                             } else {
                                 draw_placeholder(*bbox, "image");
                             }
@@ -628,6 +642,33 @@ mod tests {
 
     fn solid_png(color: [u8; 4]) -> Vec<u8> {
         let image = RgbaImage::from_pixel(2, 2, Rgba(color));
+        let mut cursor = Cursor::new(Vec::new());
+        image
+            .write_to(&mut cursor, ImageFormat::Png)
+            .expect("encode png");
+        cursor.into_inner()
+    }
+
+    fn split_png(
+        width: u32,
+        height: u32,
+        first: [u8; 4],
+        second: [u8; 4],
+        vertical: bool,
+    ) -> Vec<u8> {
+        let mut image = RgbaImage::from_pixel(width, height, Rgba(first));
+        for y in 0..height {
+            for x in 0..width {
+                let second_half = if vertical {
+                    y >= height / 2
+                } else {
+                    x >= width / 2
+                };
+                if second_half {
+                    image.put_pixel(x, y, Rgba(second));
+                }
+            }
+        }
         let mut cursor = Cursor::new(Vec::new());
         image
             .write_to(&mut cursor, ImageFormat::Png)
@@ -1120,6 +1161,120 @@ mod tests {
 
         assert_channel(valid, 2, 220, 255);
         assert!(invalid_placeholder[3] > 0);
+    }
+
+    #[test]
+    fn renders_cropped_image_source_rects() {
+        let mut node = ImageNode::new(
+            1,
+            Some(split_png(4, 4, [255, 0, 0, 255], [0, 0, 255, 255], true)),
+        );
+        node.crop = Some((0, 2, 4, 4));
+        let tree = PageLayerTree::new(
+            8.0,
+            8.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                None,
+                vec![PaintOp::Image {
+                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    image: node,
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render cropped image");
+        let image = decode_rgba(&output.bytes);
+        let pixel = *image.get_pixel(4, 4);
+
+        assert_channel(pixel, 0, 0, 48);
+        assert_channel(pixel, 2, 180, 255);
+    }
+
+    #[test]
+    fn renders_tiled_images_using_original_size() {
+        let mut node = ImageNode::new(
+            1,
+            Some(split_png(8, 4, [255, 0, 0, 255], [0, 255, 0, 255], false)),
+        );
+        node.fill_mode = Some(ImageFillMode::TileAll);
+        node.original_size = Some((8.0, 4.0));
+        let tree = PageLayerTree::new(
+            16.0,
+            4.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 16.0, 4.0),
+                None,
+                vec![PaintOp::Image {
+                    bbox: BoundingBox::new(0.0, 0.0, 16.0, 4.0),
+                    image: node,
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render tiled image");
+        let image = decode_rgba(&output.bytes);
+        let first_tile_left = *image.get_pixel(2, 2);
+        let second_tile_left = *image.get_pixel(10, 2);
+        let first_tile_right = *image.get_pixel(6, 2);
+        let second_tile_right = *image.get_pixel(14, 2);
+
+        assert_channel(first_tile_left, 0, 180, 255);
+        assert_channel(second_tile_left, 0, 180, 255);
+        assert_channel(first_tile_right, 1, 180, 255);
+        assert_channel(second_tile_right, 1, 180, 255);
+    }
+
+    #[test]
+    fn applies_grayscale_image_effect() {
+        let mut node = ImageNode::new(1, Some(solid_png([255, 0, 0, 255])));
+        node.effect = ImageEffect::GrayScale;
+        let tree = PageLayerTree::new(
+            8.0,
+            8.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                None,
+                vec![PaintOp::Image {
+                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    image: node,
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render grayscale image");
+        let pixel = *decode_rgba(&output.bytes).get_pixel(4, 4);
+        let max_channel = pixel[0].max(pixel[1]).max(pixel[2]);
+        let min_channel = pixel[0].min(pixel[1]).min(pixel[2]);
+
+        assert!(max_channel.abs_diff(min_channel) <= 2, "pixel={pixel:?}");
+        assert!(pixel[0] > 40 && pixel[0] < 140, "pixel={pixel:?}");
+        assert_eq!(pixel[3], 255);
+    }
+
+    #[test]
+    fn ignores_invalid_image_rects() {
+        let tree = PageLayerTree::new(
+            8.0,
+            8.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                None,
+                vec![PaintOp::Image {
+                    bbox: BoundingBox::new(f64::NAN, 0.0, 8.0, 8.0),
+                    image: ImageNode::new(1, Some(solid_png([255, 0, 0, 255]))),
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render invalid image rect");
+        let image = decode_rgba(&output.bytes);
+
+        assert_eq!(count_ink(&image), 0);
     }
 
     #[test]
