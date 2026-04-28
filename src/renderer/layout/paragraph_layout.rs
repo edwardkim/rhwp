@@ -2040,6 +2040,12 @@ impl LayoutEngine {
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
                                     );
                                     line_node.children.push(img_node);
+                                    // [Task #418/#376] layout_shape_item 의 Task #347 분기 (빈 문단 +
+                                    // TAC Picture 직접 emit) 와 이중 렌더링되지 않도록 인라인 위치를
+                                    // 등록한다. layout_shape_item 은 등록된 경우 push 를 스킵한다.
+                                    tree.set_inline_shape_position(
+                                        section_index, para_index, tac_ci, img_x, img_y,
+                                    );
                                     img_x += tac_w;
                                 }
                             }

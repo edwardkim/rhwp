@@ -2551,7 +2551,14 @@ impl LayoutEngine {
                         // y_offset을 그림 높이만큼 진행시킨다.
                         let has_real_text = para.text.chars()
                             .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-                        if !has_real_text {
+                        // [Task #418/#376] paragraph_layout 의 빈 문단 + TAC Picture 분기에서
+                        // 이미 ImageNode 가 emit 되어 inline_shape_position 이 등록된 경우,
+                        // 여기서 또 push 하면 이중 emit 이 된다. 등록된 경우 push 를 스킵하고
+                        // result_y 만 갱신한다.
+                        let already_registered = tree.get_inline_shape_position(
+                            page_content.section_index, para_index, control_index,
+                        ).is_some();
+                        if !has_real_text && !already_registered {
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data(bin_data_content, bin_data_id)
                                 .map(|c| c.data.clone());
@@ -2593,6 +2600,9 @@ impl LayoutEngine {
                             tree.set_inline_shape_position(
                                 page_content.section_index, para_index, control_index, pic_x, pic_y,
                             );
+                            result_y = pic_y + pic_h;
+                        } else if !has_real_text && already_registered {
+                            // [Task #418/#376] paragraph_layout 가 이미 emit 함 — push 스킵, result_y 만 갱신
                             result_y = pic_y + pic_h;
                         }
 
