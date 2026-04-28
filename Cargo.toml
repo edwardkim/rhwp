@@ -41,6 +41,7 @@ console_error_panic_hook = { version = "0.1", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
+native-skia = ["dep:skia-safe"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -49,6 +50,7 @@ usvg = "0.45"
 pdf-writer = "0.12"
 subsetter = "0.2"
 ttf-parser = "0.25"
+skia-safe = { version = "0.93.1", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [

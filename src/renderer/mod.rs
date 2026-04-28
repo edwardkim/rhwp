@@ -27,6 +27,8 @@ pub mod svg_fragment;
 pub mod svg_layer;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod skia;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;

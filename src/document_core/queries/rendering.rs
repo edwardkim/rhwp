@@ -147,6 +147,15 @@ impl DocumentCore {
         Ok(renderer.command_count() as u32)
     }
 
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_png_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
+        use crate::renderer::layer_renderer::LayerRasterRenderer;
+        use crate::renderer::skia::SkiaLayerRenderer;
+
+        let layer_tree = self.build_page_layer_tree(page_num)?;
+        SkiaLayerRenderer::new().render_png(&layer_tree)
+    }
+
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
         Ok(self.build_page_layer_tree(page_num)?.to_json())
     }
