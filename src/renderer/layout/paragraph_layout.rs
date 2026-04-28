@@ -993,7 +993,25 @@ impl LayoutEngine {
             let total_char_count: usize = comp_line.runs.iter()
                 .map(|r| r.text.chars().filter(|c| *c != '\t').count()).sum();
 
-            let (extra_word_sp, extra_char_sp) = if needs_justify {
+            // Task #352: 라인 내 dash leader (3+ 연속 '-') 글자 수 카운트.
+            // visible_count 까지의 chars 에서만 카운트 (후행 공백 제외).
+            let count_dash_leaders = |chars: &[char]| -> usize {
+                let mut count = 0;
+                let n = chars.len();
+                let mut i = 0;
+                while i < n {
+                    if chars[i] == '-' {
+                        let mut j = i;
+                        while j < n && chars[j] == '-' { j += 1; }
+                        let run_len = j - i;
+                        if run_len >= 3 { count += run_len; }
+                        i = j;
+                    } else { i += 1; }
+                }
+                count
+            };
+
+            let (extra_word_sp, extra_char_sp, extra_dash_sp) = if needs_justify {
                 // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배
                 let all_chars: Vec<char> = comp_line.runs.iter()
                     .flat_map(|r| r.text.chars()).collect();
@@ -1002,6 +1020,7 @@ impl LayoutEngine {
                 let visible_count = all_chars.len() - trailing_spaces;
                 let interior_spaces = all_chars[..visible_count].iter()
                     .filter(|c| **c == ' ').count();
+                let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
                 if interior_spaces > 0 {
                     // 후행 공백 폭 계산
                     let trailing_width = if trailing_spaces > 0 {
@@ -1013,42 +1032,46 @@ impl LayoutEngine {
                         } else { 0.0 }
                     } else { 0.0 };
                     let effective_used = total_text_width - trailing_width;
-                    // 양쪽 정렬: 단어 간격 분배
-                    // 메트릭 차이로 text_w > avail이면 음수가 되지만,
-                    // 공백 최소 폭을 보장하여 글자 겹침 방지
-                    let raw_ews = (available_width - effective_used) / interior_spaces as f64;
-                    let space_base_w = estimate_text_width(" ", &resolved_to_text_style(
-                        styles, comp_line.runs[0].char_style_id, comp_line.runs[0].lang_index));
-                    let min_ews = -(space_base_w * 0.5); // 공백 폭의 50%까지만 축소 허용
-                    (raw_ews.max(min_ews), 0.0)
+                    let slack = available_width - effective_used;
+                    if leader_dashes > 0 && slack > 0.0 {
+                        // Task #352: 라인에 dash leader 가 있고 슬랙이 양수면
+                        // dash 가 흡수 (PDF elastic leader 동작 모방). 공백·일반
+                        // 글자 자연 폭 유지.
+                        (0.0, 0.0, slack / leader_dashes as f64)
+                    } else {
+                        // 양쪽 정렬: 단어 간격 분배 (또는 음수 슬랙 시 압축)
+                        let raw_ews = slack / interior_spaces as f64;
+                        let space_base_w = estimate_text_width(" ", &resolved_to_text_style(
+                            styles, comp_line.runs[0].char_style_id, comp_line.runs[0].lang_index));
+                        let min_ews = -(space_base_w * 0.5);
+                        (raw_ews.max(min_ews), 0.0, 0.0)
+                    }
                 } else if total_char_count > 1 {
                     // 양쪽 정렬이지만 공백 없음 (일본어/숫자 등):
-                    // 단어 간격 대신 글자 간격으로 양쪽 맞춤
-                    // 겹침 방지: 음수 자간을 평균 글자폭의 50%로 제한
-                    let raw = (available_width - total_text_width) / total_char_count as f64;
-                    let avg_char_w = total_text_width / total_char_count as f64;
-                    let min_sp = -avg_char_w * 0.5;
-                    (0.0, raw.max(min_sp))
+                    let slack = available_width - total_text_width;
+                    if leader_dashes > 0 && slack > 0.0 {
+                        (0.0, 0.0, slack / leader_dashes as f64)
+                    } else {
+                        let raw = slack / total_char_count as f64;
+                        let avg_char_w = total_text_width / total_char_count as f64;
+                        let min_sp = -avg_char_w * 0.5;
+                        (0.0, raw.max(min_sp), 0.0)
+                    }
                 } else {
-                    (0.0, 0.0)
+                    (0.0, 0.0, 0.0)
                 }
             } else if needs_distribute && total_char_count > 1 {
                 // 배분/나눔 정렬: 모든 글자에 균등 분배
-                // 겹침 방지: 음수 자간을 평균 글자폭의 50%로 제한
                 let raw = (available_width - total_text_width) / total_char_count as f64;
                 let avg_char_w = total_text_width / total_char_count as f64;
                 let min_sp = -avg_char_w * 0.5;
-                (0.0, raw.max(min_sp))
+                (0.0, raw.max(min_sp), 0.0)
             } else if total_text_width > available_width && total_char_count > 1 && !has_tabs {
                 // 비정렬(왼쪽/오른쪽/가운데) 텍스트가 오버플로우할 때 글자 간격 압축
-                // 원본 HWP line_segs가 우리 폰트 메트릭과 다를 경우
-                // 텍스트가 body_area를 넘지 않도록 균등 압축
-                // 탭이 있는 줄은 탭 정지가 절대 위치를 제어하므로 압축하지 않음
-                // 겹침 방지: 음수 자간을 평균 글자폭의 50%로 제한
                 let raw = (available_width - total_text_width) / total_char_count as f64;
                 let avg_char_w = total_text_width / total_char_count as f64;
                 let min_sp = -avg_char_w * 0.5;
-                (0.0, raw.max(min_sp))
+                (0.0, raw.max(min_sp), 0.0)
             } else if cell_ctx.is_some()
                 && total_char_count > 1
                 && !has_tabs
@@ -1092,9 +1115,9 @@ impl LayoutEngine {
                     if delta.abs() < 0.5 { break; }
                     extra += delta / total_char_count as f64;
                 }
-                (0.0, extra)
+                (0.0, extra, 0.0)
             } else {
-                (0.0, 0.0)
+                (0.0, 0.0, 0.0)
             };
 
             // 셀 underflow 분기로 자간 확장된 경우 정렬 기준 폭은 확장 후 폭이어야 함
@@ -1333,6 +1356,7 @@ impl LayoutEngine {
                 text_style.line_x_offset = x - col_area.x;
                 text_style.extra_word_spacing = extra_word_sp;
                 text_style.extra_char_spacing = extra_char_sp;
+                text_style.extra_dash_advance = extra_dash_sp;
                 let run_border_fill_id = styles.char_styles.get(run.char_style_id as usize)
                     .map(|cs| cs.border_fill_id).unwrap_or(0);
                 let full_width = if run.char_overlap.is_some() {

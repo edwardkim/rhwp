@@ -23,6 +23,9 @@
 | 1 | `428b01d` | 원인 확정 (eprintln + 코드포인트 분석) |
 | 2 | `69e420b` | leader-aware 좁은 advance (text_measurement.rs) |
 | 3 | `2248752` | 시각 라인 통합 + 폭 미세 조정 (svg.rs, web_canvas.rs) |
+| 4 | `7f45fc0` | Stage 4 보고서 |
+| | `037cba6` | 폭 보정 0.32→0.5 em |
+| 5 | (this) | dash leader elastic Justify 분배 (PDF elastic 모방) |
 
 ---
 
@@ -53,8 +56,9 @@
 
 | 항목 | 수정 전 | 수정 후 | PDF 목표 |
 |------|---------|---------|----------|
-| dash advance / 글자 | 12.11 px | 7.27 px | ~7.4 px (PDF 실측) |
-| 29 dash 시퀀스 폭 | 351 px | **210.85 px** | ~218 px (PDF 실측, 96.7% 일치) |
+| dash advance / 글자 | 12.11 px | 7.06 px (Stage 5) | ~7.4 px (PDF 실측) |
+| 29 dash 시퀀스 폭 | 351 px | **204.7 px** (Stage 5) | ~218 px (PDF 실측, 93.9% 일치) |
+| 후속 단어 공백 (예: y=414 단어 폭) | 83.6 (압축) | **95.6 (자연)** | 자연 폭 |
 | 화면상 가로선 수 | 2 (dash bar 겹침 + underline) | **1** (underline 만) | 1 |
 | dash 글리프 잔존 | 29 | **0** (스킵) | (PDF 글리프 미시) |
 | `of being` 시작 x | 953 (단 우측 끝) | 839 (단 중앙쯤) | 단 중앙 |
