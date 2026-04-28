@@ -412,6 +412,7 @@ fn color_to_css(color: u32) -> String {
 mod tests {
     use super::super::render_tree::*;
     use super::*;
+    use crate::model::control::FormType;
     use crate::paint::{LayerBuilder, RenderProfile};
 
     #[test]
@@ -669,6 +670,37 @@ mod tests {
             RenderNodeType::Path(path),
             BoundingBox::new(150.0, 80.0, 90.0, 50.0),
         ));
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_leaf_nodes_with_children() {
+        let mut tree = PageRenderTree::new(0, 400.0, 300.0);
+        let mut form = RenderNode::new(
+            1,
+            RenderNodeType::FormObject(FormObjectNode {
+                form_type: FormType::PushButton,
+                caption: "OK".to_string(),
+                text: String::new(),
+                fore_color: "#000000".to_string(),
+                back_color: "#ffffff".to_string(),
+                value: 0,
+                enabled: true,
+                section_index: 0,
+                para_index: 0,
+                control_index: 0,
+                name: "button".to_string(),
+                cell_location: None,
+            }),
+            BoundingBox::new(20.0, 30.0, 120.0, 40.0),
+        );
+        form.children.push(RenderNode::new(
+            2,
+            RenderNodeType::TextRun(text_run("button label")),
+            BoundingBox::new(28.0, 42.0, 90.0, 18.0),
+        ));
+        tree.root.children.push(form);
 
         assert_layer_canvas_matches_legacy(&tree);
     }
