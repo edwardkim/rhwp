@@ -410,7 +410,9 @@ fn color_to_css(color: u32) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::super::render_tree::*;
     use super::*;
+    use crate::paint::{LayerBuilder, RenderProfile};
 
     #[test]
     fn test_canvas_renderer_basic() {
@@ -460,8 +462,6 @@ mod tests {
 
     #[test]
     fn test_canvas_render_tree() {
-        use super::super::render_tree::*;
-
         let mut tree = PageRenderTree::new(0, 800.0, 600.0);
         let bg_id = tree.next_id();
         tree.root.children.push(RenderNode::new(
@@ -483,10 +483,7 @@ mod tests {
     }
 
     #[test]
-    fn test_canvas_layer_tree_matches_legacy_render_tree() {
-        use super::super::render_tree::*;
-        use crate::paint::{LayerBuilder, RenderProfile};
-
+    fn canvas_layer_tree_matches_legacy_leaf_ops() {
         let mut tree = PageRenderTree::new(0, 800.0, 600.0);
         tree.root.children.push(RenderNode::new(
             1,
@@ -501,24 +498,7 @@ mod tests {
         ));
         tree.root.children.push(RenderNode::new(
             2,
-            RenderNodeType::TextRun(TextRunNode {
-                text: "Canvas".to_string(),
-                style: TextStyle::default(),
-                char_shape_id: None,
-                para_shape_id: None,
-                section_index: None,
-                para_index: None,
-                char_start: None,
-                cell_context: None,
-                is_para_end: false,
-                is_line_break_end: false,
-                rotation: 0.0,
-                is_vertical: false,
-                char_overlap: None,
-                border_fill_id: 0,
-                baseline: 12.0,
-                field_marker: Default::default(),
-            }),
+            RenderNodeType::TextRun(text_run("Canvas")),
             BoundingBox::new(10.0, 20.0, 80.0, 20.0),
         ));
         tree.root.children.push(RenderNode::new(
@@ -570,13 +550,158 @@ mod tests {
             BoundingBox::new(240.0, 50.0, 20.0, 20.0),
         ));
 
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_nested_clips() {
+        let mut tree = PageRenderTree::new(0, 600.0, 400.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::PageBackground(PageBackgroundNode {
+                background_color: Some(0x00FFFFFF),
+                border_color: None,
+                border_width: 0.0,
+                gradient: None,
+                image: None,
+            }),
+            BoundingBox::new(0.0, 0.0, 600.0, 400.0),
+        ));
+
+        let mut body = RenderNode::new(
+            2,
+            RenderNodeType::Body {
+                clip_rect: Some(BoundingBox::new(40.0, 40.0, 520.0, 300.0)),
+            },
+            BoundingBox::new(40.0, 40.0, 520.0, 300.0),
+        );
+        let mut column = RenderNode::new(
+            3,
+            RenderNodeType::Column(0),
+            BoundingBox::new(40.0, 40.0, 520.0, 300.0),
+        );
+        column.children.push(RenderNode::new(
+            4,
+            RenderNodeType::TextRun(text_run("body text")),
+            BoundingBox::new(50.0, 60.0, 100.0, 20.0),
+        ));
+
+        let mut table = RenderNode::new(
+            5,
+            RenderNodeType::Table(TableNode {
+                row_count: 1,
+                col_count: 1,
+                border_fill_id: 0,
+                section_index: Some(0),
+                para_index: Some(0),
+                control_index: Some(0),
+            }),
+            BoundingBox::new(80.0, 100.0, 160.0, 60.0),
+        );
+        let mut cell = RenderNode::new(
+            6,
+            RenderNodeType::TableCell(TableCellNode {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                border_fill_id: 0,
+                text_direction: 0,
+                clip: true,
+                model_cell_index: Some(0),
+            }),
+            BoundingBox::new(80.0, 100.0, 160.0, 60.0),
+        );
+        cell.children.push(RenderNode::new(
+            7,
+            RenderNodeType::TextRun(text_run("cell")),
+            BoundingBox::new(90.0, 112.0, 60.0, 20.0),
+        ));
+        table.children.push(cell);
+        column.children.push(table);
+        body.children.push(column);
+        tree.root.children.push(body);
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_transformed_shapes() {
+        let mut tree = PageRenderTree::new(0, 400.0, 300.0);
+
+        let mut rect = RectangleNode::new(
+            2.0,
+            ShapeStyle {
+                fill_color: Some(0x000000FF),
+                stroke_color: Some(0x00000000),
+                stroke_width: 1.0,
+                ..Default::default()
+            },
+            None,
+        );
+        rect.transform = ShapeTransform {
+            rotation: 15.0,
+            horz_flip: true,
+            vert_flip: false,
+        };
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Rectangle(rect),
+            BoundingBox::new(20.0, 30.0, 100.0, 40.0),
+        ));
+
+        let mut path = PathNode::new(
+            vec![
+                PathCommand::MoveTo(20.0, 20.0),
+                PathCommand::LineTo(90.0, 40.0),
+                PathCommand::ClosePath,
+            ],
+            ShapeStyle::default(),
+            None,
+        );
+        path.transform = ShapeTransform {
+            rotation: 45.0,
+            horz_flip: false,
+            vert_flip: true,
+        };
+        tree.root.children.push(RenderNode::new(
+            2,
+            RenderNodeType::Path(path),
+            BoundingBox::new(150.0, 80.0, 90.0, 50.0),
+        ));
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    fn assert_layer_canvas_matches_legacy(tree: &PageRenderTree) {
         let mut legacy = CanvasRenderer::new();
         legacy.render_tree(&tree);
 
-        let layer_tree = LayerBuilder::new(RenderProfile::Screen).build(&tree);
+        let layer_tree = LayerBuilder::new(RenderProfile::Screen).build(tree);
         let mut layer = CanvasRenderer::new();
         layer.render_layer_tree(&layer_tree);
 
         assert_eq!(layer.commands(), legacy.commands());
+    }
+
+    fn text_run(text: &str) -> TextRunNode {
+        TextRunNode {
+            text: text.to_string(),
+            style: TextStyle::default(),
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 12.0,
+            field_marker: Default::default(),
+        }
     }
 }

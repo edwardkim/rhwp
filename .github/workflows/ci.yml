@@ -68,6 +68,9 @@ jobs:
       - name: Build
         run: cargo build --verbose
 
+      - name: Canvas layer parity tests
+        run: cargo test canvas_layer_tree_matches_legacy --lib --verbose
+
       - name: Run tests
         run: cargo test --verbose
 
