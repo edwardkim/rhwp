@@ -1,6 +1,6 @@
 use crate::paint::{ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
 
-use super::layer_renderer::LayerRenderer;
+use super::layer_renderer::{LayerRenderResult, LayerRenderer};
 use super::render_tree::{
     BoundingBox, GroupNode, PageRenderTree, RenderNode, RenderNodeType, TableCellNode,
 };
@@ -167,6 +167,16 @@ impl SvgLayerRenderer {
                 RenderNodeType::FormObject(form.clone()),
                 *bbox,
             ),
+            PaintOp::Placeholder { bbox, placeholder } => RenderNode::new(
+                self.take_node_id(source_node_id),
+                RenderNodeType::Placeholder(placeholder.clone()),
+                *bbox,
+            ),
+            PaintOp::RawSvg { bbox, raw } => RenderNode::new(
+                self.take_node_id(source_node_id),
+                RenderNodeType::RawSvg(raw.clone()),
+                *bbox,
+            ),
         }
     }
 
@@ -202,9 +212,10 @@ impl SvgLayerRenderer {
 }
 
 impl LayerRenderer for SvgLayerRenderer {
-    fn render_page(&mut self, tree: &PageLayerTree) {
+    fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
         let render_tree = self.build_render_tree(tree);
         self.renderer.render_tree(&render_tree);
+        Ok(())
     }
 }
 
@@ -212,7 +223,9 @@ impl LayerRenderer for SvgLayerRenderer {
 mod tests {
     use super::*;
     use crate::paint::{LayerBuilder, RenderProfile};
-    use crate::renderer::render_tree::{PageNode, RectangleNode, TextRunNode};
+    use crate::renderer::render_tree::{
+        PageNode, PlaceholderNode, RawSvgNode, RectangleNode, TextRunNode,
+    };
     use crate::renderer::svg::SvgRenderer;
     use crate::renderer::{ShapeStyle, TextStyle};
 
@@ -278,7 +291,44 @@ mod tests {
         let mut builder = LayerBuilder::new(RenderProfile::Screen);
         let layer_tree = builder.build(&render_tree);
         let mut layer = SvgLayerRenderer::new();
-        layer.render_page(&layer_tree);
+        layer.render_page(&layer_tree).unwrap();
+
+        assert_eq!(layer.output(), legacy.output());
+    }
+
+    #[test]
+    fn replays_raw_svg_and_placeholder_to_same_svg() {
+        let mut render_tree = PageRenderTree::new(0, 160.0, 100.0);
+        render_tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 160.0,
+            height: 100.0,
+            section_index: 0,
+        });
+        render_tree.root.children.push(RenderNode::new(
+            21,
+            RenderNodeType::RawSvg(RawSvgNode {
+                svg: "<g><circle cx=\"20\" cy=\"20\" r=\"8\" fill=\"#ff0000\"/></g>\n".to_string(),
+            }),
+            BoundingBox::new(0.0, 0.0, 40.0, 40.0),
+        ));
+        render_tree.root.children.push(RenderNode::new(
+            22,
+            RenderNodeType::Placeholder(PlaceholderNode {
+                fill_color: 0x00F8F8F8,
+                stroke_color: 0x00000000,
+                label: "OLE".to_string(),
+            }),
+            BoundingBox::new(50.0, 10.0, 80.0, 50.0),
+        ));
+
+        let mut legacy = SvgRenderer::new();
+        legacy.render_tree(&render_tree);
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&render_tree);
+        let mut layer = SvgLayerRenderer::new();
+        layer.render_page(&layer_tree).unwrap();
 
         assert_eq!(layer.output(), legacy.output());
     }

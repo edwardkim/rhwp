@@ -4,10 +4,11 @@ use base64::Engine;
 
 use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_escape};
 use crate::model::control::FormType;
+use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
-use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
+use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
 use crate::renderer::layout::compute_char_positions;
-use crate::renderer::render_tree::{BoundingBox, ShapeTransform, TextRunNode};
+use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
 use crate::renderer::{
     ArrowStyle, GradientFillInfo, LineRenderType, LineStyle, PathCommand, PatternFillInfo,
     ShadowStyle, ShapeStyle, StrokeDash, TabLeaderInfo, TextStyle,
@@ -19,8 +20,10 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
-            self.page_width, self.page_height
+            "\"schemaVersion\":1,\"resourceTableVersion\":1,\"unit\":\"px\",\"coordinateSystem\":\"page-top-left\",\"profile\":{},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            json_escape(render_profile_str(self.profile)),
+            self.page_width,
+            self.page_height
         );
         self.root.write_json(&mut buf);
         buf.push('}');
@@ -126,6 +129,14 @@ impl PaintOp {
                     buf.push_str(",\"tabLeaders\":");
                     write_tab_leaders(buf, &run.style.tab_leaders);
                 }
+                let _ = write!(
+                    buf,
+                    ",\"isParaEnd\":{},\"isLineBreakEnd\":{},\"fieldMarker\":",
+                    run.is_para_end, run.is_line_break_end,
+                );
+                write_field_marker(buf, run.field_marker);
+                buf.push_str(",\"charOverlap\":");
+                write_char_overlap(buf, run.char_overlap.as_ref());
                 buf.push('}');
             }
             PaintOp::FootnoteMarker { bbox, marker } => {
@@ -200,6 +211,17 @@ impl PaintOp {
                     buf.push_str(",\"gradient\":");
                     write_gradient(buf, gradient);
                 }
+                if let Some((x1, y1, x2, y2)) = path.connector_endpoints {
+                    let _ = write!(
+                        buf,
+                        ",\"connectorEndpoints\":{{\"x1\":{:.3},\"y1\":{:.3},\"x2\":{:.3},\"y2\":{:.3}}}",
+                        x1, y1, x2, y2
+                    );
+                }
+                if let Some(line_style) = &path.line_style {
+                    buf.push_str(",\"lineStyle\":");
+                    write_line_style(buf, line_style);
+                }
                 buf.push_str(",\"transform\":");
                 write_transform(buf, path.transform);
                 buf.push('}');
@@ -233,6 +255,11 @@ impl PaintOp {
                         left, top, right, bottom
                     );
                 }
+                let _ = write!(
+                    buf,
+                    ",\"effect\":{}",
+                    json_escape(image_effect_str(image.effect))
+                );
                 buf.push_str(",\"transform\":");
                 write_transform(buf, image.transform);
                 buf.push('}');
@@ -243,7 +270,8 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"color\":{},\"fontSize\":{:.3}",
+                    ",\"svgContent\":{},\"color\":{},\"fontSize\":{:.3}",
+                    json_escape(&equation.svg_content),
                     json_escape(&equation.color_str),
                     equation.font_size
                 );
@@ -264,6 +292,26 @@ impl PaintOp {
                     form.value,
                     form.enabled,
                 );
+                buf.push('}');
+            }
+            PaintOp::Placeholder { bbox, placeholder } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"placeholder\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                let _ = write!(
+                    buf,
+                    ",\"fillColor\":{},\"strokeColor\":{},\"label\":{}",
+                    json_escape(&color_ref_to_css(placeholder.fill_color)),
+                    json_escape(&color_ref_to_css(placeholder.stroke_color)),
+                    json_escape(&placeholder.label),
+                );
+                buf.push('}');
+            }
+            PaintOp::RawSvg { bbox, raw } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"rawSvg\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                let _ = write!(buf, ",\"svg\":{}", json_escape(&raw.svg));
                 buf.push('}');
             }
         }
@@ -325,6 +373,37 @@ fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
         );
     }
     buf.push(']');
+}
+
+fn write_field_marker(buf: &mut String, marker: FieldMarkerType) {
+    match marker {
+        FieldMarkerType::None => buf.push_str("{\"kind\":\"none\"}"),
+        FieldMarkerType::FieldBegin => buf.push_str("{\"kind\":\"fieldBegin\"}"),
+        FieldMarkerType::FieldEnd => buf.push_str("{\"kind\":\"fieldEnd\"}"),
+        FieldMarkerType::FieldBeginEnd => buf.push_str("{\"kind\":\"fieldBeginEnd\"}"),
+        FieldMarkerType::ShapeMarker(index) => {
+            let _ = write!(
+                buf,
+                "{{\"kind\":\"shapeMarker\",\"controlIndex\":{}}}",
+                index
+            );
+        }
+    }
+}
+
+fn write_char_overlap(
+    buf: &mut String,
+    overlap: Option<&crate::renderer::composer::CharOverlapInfo>,
+) {
+    if let Some(overlap) = overlap {
+        let _ = write!(
+            buf,
+            "{{\"borderType\":{},\"innerCharSize\":{}}}",
+            overlap.border_type, overlap.inner_char_size
+        );
+    } else {
+        buf.push_str("null");
+    }
 }
 
 fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
@@ -530,6 +609,24 @@ fn image_fill_mode_str(value: ImageFillMode) -> &'static str {
     }
 }
 
+fn image_effect_str(value: ImageEffect) -> &'static str {
+    match value {
+        ImageEffect::RealPic => "realPic",
+        ImageEffect::GrayScale => "grayScale",
+        ImageEffect::BlackWhite => "blackWhite",
+        ImageEffect::Pattern8x8 => "pattern8x8",
+    }
+}
+
+fn render_profile_str(value: RenderProfile) -> &'static str {
+    match value {
+        RenderProfile::FastPreview => "fastPreview",
+        RenderProfile::Screen => "screen",
+        RenderProfile::Print => "print",
+        RenderProfile::HighQuality => "highQuality",
+    }
+}
+
 fn form_type_str(value: FormType) -> &'static str {
     match value {
         FormType::PushButton => "pushButton",
@@ -544,7 +641,12 @@ fn form_type_str(value: FormType) -> &'static str {
 mod tests {
     use super::*;
     use crate::paint::{LayerNode, PageLayerTree};
-    use crate::renderer::render_tree::TextRunNode;
+    use crate::renderer::composer::CharOverlapInfo;
+    use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
+    use crate::renderer::render_tree::{
+        EquationNode, FieldMarkerType, ImageNode, PathNode, PlaceholderNode, RawSvgNode,
+        TextRunNode,
+    };
 
     #[test]
     fn serializes_text_and_shape_ops_for_browser_replay() {
@@ -566,14 +668,17 @@ mod tests {
                 para_index: None,
                 char_start: None,
                 cell_context: None,
-                is_para_end: false,
-                is_line_break_end: false,
+                is_para_end: true,
+                is_line_break_end: true,
                 rotation: 0.0,
                 is_vertical: false,
-                char_overlap: None,
+                char_overlap: Some(CharOverlapInfo {
+                    border_type: 1,
+                    inner_char_size: 90,
+                }),
                 border_fill_id: 0,
                 baseline: 13.0,
-                field_marker: Default::default(),
+                field_marker: FieldMarkerType::FieldBegin,
             },
         };
         let rect = PaintOp::Rectangle {
@@ -618,11 +723,103 @@ mod tests {
         );
 
         assert!(json.contains("\"kind\":\"leaf\""));
+        assert!(json.contains("\"schemaVersion\":1"));
+        assert!(json.contains("\"resourceTableVersion\":1"));
+        assert!(json.contains("\"unit\":\"px\""));
+        assert!(json.contains("\"coordinateSystem\":\"page-top-left\""));
+        assert!(json.contains("\"profile\":\"screen\""));
         assert!(json.contains("\"type\":\"textRun\""));
         assert!(json.contains(&positions_json));
+        assert!(json.contains("\"isParaEnd\":true"));
+        assert!(json.contains("\"isLineBreakEnd\":true"));
+        assert!(json.contains("\"fieldMarker\":{\"kind\":\"fieldBegin\"}"));
+        assert!(json.contains("\"charOverlap\":{\"borderType\":1,\"innerCharSize\":90}"));
         assert!(json.contains("\"fontFamily\":\"Noto Sans KR\""));
         assert!(json.contains("\"type\":\"rectangle\""));
         assert!(json.contains("\"cornerRadius\":4.000"));
+    }
+
+    #[test]
+    fn serializes_backend_replay_payload_fields() {
+        let mut path = PathNode::new(
+            vec![
+                PathCommand::MoveTo(0.0, 0.0),
+                PathCommand::LineTo(10.0, 10.0),
+            ],
+            ShapeStyle::default(),
+            None,
+        );
+        path.connector_endpoints = Some((1.0, 2.0, 3.0, 4.0));
+        path.line_style = Some(LineStyle::default());
+
+        let mut image = ImageNode::new(7, Some(vec![1, 2, 3]));
+        image.effect = ImageEffect::BlackWhite;
+
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 80.0),
+                None,
+                vec![
+                    PaintOp::Path {
+                        bbox: BoundingBox::new(1.0, 2.0, 30.0, 20.0),
+                        path,
+                    },
+                    PaintOp::Image {
+                        bbox: BoundingBox::new(3.0, 4.0, 30.0, 20.0),
+                        image,
+                    },
+                    PaintOp::Equation {
+                        bbox: BoundingBox::new(5.0, 6.0, 30.0, 20.0),
+                        equation: EquationNode {
+                            svg_content: "<text>x</text>".to_string(),
+                            layout_box: LayoutBox {
+                                x: 0.0,
+                                y: 0.0,
+                                width: 8.0,
+                                height: 12.0,
+                                baseline: 10.0,
+                                kind: LayoutKind::Text("x".to_string()),
+                            },
+                            color_str: "#000000".to_string(),
+                            color: 0x00000000,
+                            font_size: 12.0,
+                            section_index: None,
+                            para_index: None,
+                            control_index: None,
+                            cell_index: None,
+                            cell_para_index: None,
+                        },
+                    },
+                    PaintOp::Placeholder {
+                        bbox: BoundingBox::new(7.0, 8.0, 30.0, 20.0),
+                        placeholder: PlaceholderNode {
+                            fill_color: 0x00F0F0F0,
+                            stroke_color: 0x00000000,
+                            label: "OLE".to_string(),
+                        },
+                    },
+                    PaintOp::RawSvg {
+                        bbox: BoundingBox::new(9.0, 10.0, 30.0, 20.0),
+                        raw: RawSvgNode {
+                            svg: "<g><path d=\"M0 0L1 1\"/></g>".to_string(),
+                        },
+                    },
+                ],
+            ),
+        );
+
+        let json = tree.to_json();
+
+        assert!(json.contains("\"connectorEndpoints\":{\"x1\":1.000"));
+        assert!(json.contains("\"lineStyle\":"));
+        assert!(json.contains("\"effect\":\"blackWhite\""));
+        assert!(json.contains("\"svgContent\":\"<text>x</text>\""));
+        assert!(json.contains("\"type\":\"placeholder\""));
+        assert!(json.contains("\"label\":\"OLE\""));
+        assert!(json.contains("\"type\":\"rawSvg\""));
+        assert!(json.contains("\"svg\":\"<g><path d=\\\"M0 0L1 1\\\"/></g>\""));
     }
 }
 

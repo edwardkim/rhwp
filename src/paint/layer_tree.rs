@@ -1,4 +1,5 @@
 use crate::paint::paint_op::PaintOp;
+use crate::paint::profile::RenderProfile;
 use crate::paint::resources::ResourceArena;
 use crate::renderer::render_tree::{
     BoundingBox, GroupNode, NodeId, TableCellNode, TableNode, TextLineNode,
@@ -9,6 +10,7 @@ use crate::renderer::render_tree::{
 pub struct PageLayerTree {
     pub page_width: f64,
     pub page_height: f64,
+    pub profile: RenderProfile,
     pub root: LayerNode,
     pub resources: ResourceArena,
 }
@@ -18,6 +20,22 @@ impl PageLayerTree {
         Self {
             page_width,
             page_height,
+            profile: RenderProfile::Screen,
+            root,
+            resources: ResourceArena,
+        }
+    }
+
+    pub fn with_profile(
+        page_width: f64,
+        page_height: f64,
+        root: LayerNode,
+        profile: RenderProfile,
+    ) -> Self {
+        Self {
+            page_width,
+            page_height,
+            profile,
             root,
             resources: ResourceArena,
         }

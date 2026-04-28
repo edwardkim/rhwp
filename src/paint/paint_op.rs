@@ -1,6 +1,7 @@
 use crate::renderer::render_tree::{
     BoundingBox, EllipseNode, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
-    LineNode, PageBackgroundNode, PathNode, RectangleNode, TextRunNode,
+    LineNode, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode,
+    TextRunNode,
 };
 
 /// backend가 재생하는 leaf paint operation.
@@ -49,6 +50,14 @@ pub enum PaintOp {
         bbox: BoundingBox,
         form: FormObjectNode,
     },
+    Placeholder {
+        bbox: BoundingBox,
+        placeholder: PlaceholderNode,
+    },
+    RawSvg {
+        bbox: BoundingBox,
+        raw: RawSvgNode,
+    },
 }
 
 impl PaintOp {
@@ -63,7 +72,9 @@ impl PaintOp {
             | PaintOp::Path { bbox, .. }
             | PaintOp::Image { bbox, .. }
             | PaintOp::Equation { bbox, .. }
-            | PaintOp::FormObject { bbox, .. } => *bbox,
+            | PaintOp::FormObject { bbox, .. }
+            | PaintOp::Placeholder { bbox, .. }
+            | PaintOp::RawSvg { bbox, .. } => *bbox,
         }
     }
 }

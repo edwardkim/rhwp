@@ -67,7 +67,7 @@ impl DocumentCore {
         renderer.inner_mut().show_paragraph_marks = self.show_paragraph_marks;
         renderer.inner_mut().show_control_codes = self.show_control_codes;
         renderer.inner_mut().debug_overlay = self.debug_overlay;
-        renderer.render_page(&layer_tree);
+        renderer.render_page(&layer_tree)?;
         Ok(renderer.output().to_string())
     }
 
