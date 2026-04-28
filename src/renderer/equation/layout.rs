@@ -1019,19 +1019,30 @@ mod tests {
         assert!(lb.width > 0.0, "CASES width should be positive");
         assert!(lb.height > 0.0, "CASES height should be positive");
 
-        // CASES는 Paren{ body: Row[ row1, row2 ] } 구조
-        if let LayoutKind::Paren { body, .. } = &lb.kind {
-            if let LayoutKind::Row(rows) = &body.kind {
-                assert!(rows.len() >= 2, "CASES should have at least 2 rows");
-                let row1 = &rows[0];
-                let row2 = &rows[1];
-                let row1_bottom = row1.y + row1.height;
-                let row2_top = row2.y;
-                assert!(row2_top >= row1_bottom,
-                    "CASES rows should not overlap: row1 bottom={:.1}, row2 top={:.1}",
-                    row1_bottom, row2_top);
-            }
-        }
+        // 전체 수식 a_{n+1} = {cases{...}} 는 Row[subscript, =, Paren{cases}]
+        let top_children = match &lb.kind {
+            LayoutKind::Row(children) => children,
+            other => panic!("Top-level should be Row, got {:?}", other),
+        };
+        let cases_paren = top_children.iter()
+            .find(|c| matches!(&c.kind, LayoutKind::Paren { .. }))
+            .expect("Should contain a Paren (CASES) element");
+        let cases_body = match &cases_paren.kind {
+            LayoutKind::Paren { body, .. } => body,
+            _ => unreachable!(),
+        };
+        let rows = match &cases_body.kind {
+            LayoutKind::Row(rows) => rows,
+            other => panic!("CASES body should be Row, got {:?}", other),
+        };
+        assert!(rows.len() >= 2, "CASES should have at least 2 rows");
+        let row1 = &rows[0];
+        let row2 = &rows[1];
+        let row1_bottom = row1.y + row1.height;
+        let row2_top = row2.y;
+        assert!(row2_top >= row1_bottom,
+            "CASES rows should not overlap: row1 bottom={:.1}, row2 top={:.1}",
+            row1_bottom, row2_top);
     }
 
     #[test]

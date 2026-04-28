@@ -41,7 +41,10 @@ fn render_box(
         }
         LayoutKind::Text(text) => {
             let fi = font_size_from_box(lb, fs);
-            set_font(ctx, fi, true, bold);
+            let has_cjk = text.chars().any(|c| matches!(c,
+                '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
+            ));
+            set_font(ctx, fi, !has_cjk, bold);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(text, x, y + lb.baseline);
         }
