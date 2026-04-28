@@ -19,8 +19,10 @@
 //!   - `paragraph.char_shapes[0].char_shape_id` → 첫 `<hp:run charPrIDRef>`
 //!   - `paragraph.line_segs[i]` → 각 `<hp:lineseg>` 속성 (6개 필드 그대로 출력)
 
+use crate::model::control::{Control, Equation};
 use crate::model::document::{Document, Section};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
+use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 
 use super::context::SerializeContext;
 use super::utils::xml_escape;
@@ -128,7 +130,7 @@ fn first_run_char_shape_id(p: &Paragraph) -> u32 {
 /// - `para.line_segs` 가 비어있지 않으면 **IR 값 그대로 출력**
 /// - 비어있을 때만 텍스트 내 `\n` 기반으로 fallback 생성 (빈 문단·`Document::default()` 호환)
 fn render_paragraph_parts(para: &Paragraph, vert_start: u32) -> (String, String, u32) {
-    let t_xml = render_hp_t_content(&para.text);
+    let t_xml = render_run_content(para);
 
     if !para.line_segs.is_empty() {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
@@ -174,6 +176,217 @@ fn render_hp_t_content(text: &str) -> String {
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
+}
+
+/// Paragraph의 본문 run 콘텐츠를 `<hp:t>`와 인라인 컨트롤 XML로 직렬화한다.
+fn render_run_content(para: &Paragraph) -> String {
+    let slot_count = inferred_control_slot_count(para);
+    let slots: Vec<&Control> = if slot_count == para.controls.len() {
+        para.controls.iter().collect()
+    } else {
+        para.controls.iter()
+            .filter(|c| is_hwpx_inline_slot(c))
+            .collect()
+    };
+
+    if !slots.iter().any(|c| matches!(c, Control::Equation(_))) {
+        return render_hp_t_content(&para.text);
+    }
+
+    if slot_count != slots.len() {
+        let mut out = render_hp_t_content(&para.text);
+        for slot in slots {
+            render_control_slot(&mut out, slot);
+        }
+        return out;
+    }
+
+    let mut out = String::new();
+    let mut text_buf = String::new();
+    let mut slot_idx = 0usize;
+    let mut expected_utf16_pos = 0u32;
+
+    for (idx, c) in para.text.chars().enumerate() {
+        let char_pos = para
+            .char_offsets
+            .get(idx)
+            .copied()
+            .unwrap_or(expected_utf16_pos);
+        while slot_idx < slots.len()
+            && char_pos >= expected_utf16_pos.saturating_add(8)
+        {
+            flush_text_fragment(&mut out, &mut text_buf);
+            render_control_slot(&mut out, slots[slot_idx]);
+            slot_idx += 1;
+            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+        }
+
+        text_buf.push(c);
+        let width = char_utf16_width(c);
+        if char_pos >= expected_utf16_pos {
+            expected_utf16_pos = char_pos.saturating_add(width);
+        } else {
+            expected_utf16_pos = expected_utf16_pos.saturating_add(width);
+        }
+    }
+
+    flush_text_fragment(&mut out, &mut text_buf);
+    while slot_idx < slots.len() {
+        render_control_slot(&mut out, slots[slot_idx]);
+        slot_idx += 1;
+    }
+
+    if out.is_empty() {
+        render_hp_t_content("")
+    } else {
+        out
+    }
+}
+
+fn inferred_control_slot_count(para: &Paragraph) -> usize {
+    let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
+    let from_char_count = para.char_count
+        .saturating_sub(1)
+        .saturating_sub(text_units)
+        / 8;
+
+    let mut from_offsets = 0u32;
+    let mut expected = 0u32;
+    for (idx, c) in para.text.chars().enumerate() {
+        let pos = para.char_offsets.get(idx).copied().unwrap_or(expected);
+        if pos > expected {
+            from_offsets += (pos - expected) / 8;
+        }
+        expected = pos.max(expected).saturating_add(char_utf16_width(c));
+    }
+
+    from_char_count.max(from_offsets) as usize
+}
+
+fn is_hwpx_inline_slot(control: &Control) -> bool {
+    matches!(
+        control,
+        Control::Table(_)
+            | Control::Shape(_)
+            | Control::Picture(_)
+            | Control::CharOverlap(_)
+            | Control::Ruby(_)
+            | Control::Equation(_)
+            | Control::Field(_)
+            | Control::Form(_)
+    )
+}
+
+fn flush_text_fragment(out: &mut String, text_buf: &mut String) {
+    if !text_buf.is_empty() {
+        out.push_str(&render_hp_t_content(text_buf));
+        text_buf.clear();
+    }
+}
+
+fn render_control_slot(out: &mut String, control: &Control) {
+    if let Control::Equation(eq) = control {
+        out.push_str(&render_equation(eq));
+    }
+}
+
+fn render_equation(eq: &Equation) -> String {
+    let c = &eq.common;
+    let id = c.instance_id.to_string();
+    let z_order = c.z_order.to_string();
+    let version = xml_escape(&eq.version_info);
+    let baseline = eq.baseline.to_string();
+    let text_color = color_ref_to_hwpx(eq.color);
+    let base_unit = eq.font_size.to_string();
+    let font = xml_escape(&eq.font_name);
+    let script = xml_escape(&eq.script);
+    let width = c.width.to_string();
+    let height = c.height.to_string();
+    let treat = if c.treat_as_char { "1" } else { "0" };
+    let vert_offset = c.vertical_offset.to_string();
+    let horz_offset = c.horizontal_offset.to_string();
+    let margin_left = c.margin.left.to_string();
+    let margin_right = c.margin.right.to_string();
+    let margin_top = c.margin.top.to_string();
+    let margin_bottom = c.margin.bottom.to_string();
+
+    format!(
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/></hp:equation>"#,
+        text_wrap_to_hwpx(c.text_wrap),
+        vert_rel_to_hwpx(c.vert_rel_to),
+        horz_rel_to_hwpx(c.horz_rel_to),
+        vert_align_to_hwpx(c.vert_align),
+        horz_align_to_hwpx(c.horz_align),
+    )
+}
+
+fn char_utf16_width(c: char) -> u32 {
+    if c == '\t' {
+        8
+    } else if (c as u32) > 0xFFFF {
+        2
+    } else {
+        1
+    }
+}
+
+fn color_ref_to_hwpx(color: u32) -> String {
+    if color == 0xFFFFFFFF {
+        return "none".to_string();
+    }
+
+    let r = color & 0xFF;
+    let g = (color >> 8) & 0xFF;
+    let b = (color >> 16) & 0xFF;
+    format!("#{r:02X}{g:02X}{b:02X}")
+}
+
+fn text_wrap_to_hwpx(wrap: TextWrap) -> &'static str {
+    match wrap {
+        TextWrap::Square => "SQUARE",
+        TextWrap::Tight => "TIGHT",
+        TextWrap::Through => "THROUGH",
+        TextWrap::TopAndBottom => "TOP_AND_BOTTOM",
+        TextWrap::BehindText => "BEHIND_TEXT",
+        TextWrap::InFrontOfText => "IN_FRONT_OF_TEXT",
+    }
+}
+
+fn vert_rel_to_hwpx(rel: VertRelTo) -> &'static str {
+    match rel {
+        VertRelTo::Paper => "PAPER",
+        VertRelTo::Page => "PAGE",
+        VertRelTo::Para => "PARA",
+    }
+}
+
+fn horz_rel_to_hwpx(rel: HorzRelTo) -> &'static str {
+    match rel {
+        HorzRelTo::Paper => "PAPER",
+        HorzRelTo::Page => "PAGE",
+        HorzRelTo::Column => "COLUMN",
+        HorzRelTo::Para => "PARA",
+    }
+}
+
+fn vert_align_to_hwpx(align: VertAlign) -> &'static str {
+    match align {
+        VertAlign::Top => "TOP",
+        VertAlign::Center => "CENTER",
+        VertAlign::Bottom => "BOTTOM",
+        VertAlign::Inside => "INSIDE",
+        VertAlign::Outside => "OUTSIDE",
+    }
+}
+
+fn horz_align_to_hwpx(align: HorzAlign) -> &'static str {
+    match align {
+        HorzAlign::Left => "LEFT",
+        HorzAlign::Center => "CENTER",
+        HorzAlign::Right => "RIGHT",
+        HorzAlign::Inside => "INSIDE",
+        HorzAlign::Outside => "OUTSIDE",
+    }
 }
 
 /// IR의 `line_segs` 를 그대로 XML로 직렬화 (6개 필드 전부 IR 값 사용).

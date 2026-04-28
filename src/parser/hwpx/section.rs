@@ -2690,6 +2690,26 @@ fn parse_equation(
                     }
                 }
             }
+            Ok(Event::GeneralRef(ref r)) => {
+                if in_script {
+                    if let Ok(Some(ch)) = r.resolve_char_ref() {
+                        script.push(ch);
+                    } else if let Ok(name) = r.decode() {
+                        match name.as_ref() {
+                            "lt" => script.push('<'),
+                            "gt" => script.push('>'),
+                            "amp" => script.push('&'),
+                            "quot" => script.push('"'),
+                            "apos" => script.push('\''),
+                            _ => {
+                                script.push('&');
+                                script.push_str(&name);
+                                script.push(';');
+                            }
+                        }
+                    }
+                }
+            }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
                 let local = local_name(eename.as_ref());
