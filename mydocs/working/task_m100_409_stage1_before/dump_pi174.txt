@@ -1,0 +1,22 @@
+=== 구역 0 ===
+  용지: 210.0mm × 297.0mm (59528×84186 HU), 세로
+  여백: 좌=20.0 우=20.0 상=15.0 하=15.0 머리말=10.0 꼬리말=10.0 mm
+
+--- 문단 0.174 --- cc=9, text_len=0, controls=1 
+  텍스트: (빈 문단)
+  [CS] pos=0 id=43 bold=false spacing=0% ratio=100% char=""
+  [PS] ps_id=12 align=Justify spacing: before=0 after=0 line=160/Percent
+       margins: left=0 right=710 indent=0 border_fill_id=2
+       border_spacing: left=0 right=0 top=0 bottom=0
+       tab_def_id=0 auto_left=false auto_right=false tabs=[(없음)]
+  ls[0]: ts=0, vpos=1308915, lh=8329, th=8329, bl=7080, ls=660, cs=0, sw=47833, tag=0x00060000
+  [0] 표: 2행×1열, 셀=2, 쪽나눔=CellBreak (attr=0x00000000), padding=(510,510,140,140), cs=0
+  [0]   [common] treat_as_char=true, wrap=위아래, vert=문단(0=0.0mm), horz=문단(0=0.0mm)
+  [0]   [common] size=47813×7759(168.7×27.4mm), valign=Top, halign=Left
+  [0]   [outer_margin] left=1.0mm(285) right=1.0mm(285) top=1.0mm(285) bottom=1.0mm(285)
+  [0]   셀[0] r=0,c=0 rs=1,cs=1 h=2106 w=47813 pad=(510,510,140,140) aim=false bf=82 paras=1 text=""
+  [0]     p[0] ps_id=72 ctrls=0 text_len=0 ls[0] vpos=0 lh=1000 ls=200
+  [0]   셀[1] r=1,c=0 rs=1,cs=1 h=5653 w=47813 pad=(510,510,140,140) aim=false bf=84 paras=1 text=""
+  [0]     p[0] ps_id=76 ctrls=0 text_len=0 ls[0] vpos=0 lh=900 ls=540
+
+=== 완료: 1 구역, 256 문단 ===

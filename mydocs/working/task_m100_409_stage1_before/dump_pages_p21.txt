@@ -1,0 +1,27 @@
+문서 로드: samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx (30페이지)
+
+=== 페이지 21 (global_idx=20, section=0, page_num=21) ===
+  body_area: x=75.6 y=94.5 w=642.5 h=933.5
+  단 0 (items=22, used=803.3px)
+    FullParagraph  pi=172  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1275685  "(빈)"
+    Shape          pi=172 ci=0  그림 tac=false  vpos=1275685
+    FullParagraph  pi=173  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1307155  "(빈)"
+    Table          pi=174 ci=0  2x1  637.5x103.5px  wrap=TopAndBottom tac=true  vpos=1308915
+    FullParagraph  pi=175  h=13.3 (sb=0.0 lines=13.3 sa=0.0)  vpos=1317904  "(빈)"
+    FullParagraph  pi=176  h=13.3 (sb=0.0 lines=13.3 sa=0.0)  vpos=1319504  "(빈)"
+    FullParagraph  pi=177  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1321104  "(빈)"
+    FullParagraph  pi=178  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1322864  "(빈)"
+    FullParagraph  pi=179  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1324624  "(빈)"
+    FullParagraph  pi=180  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1326384  "(빈)"
+    FullParagraph  pi=181  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1328144  "(빈)"
+    FullParagraph  pi=182  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1329904  "(빈)"
+    FullParagraph  pi=183  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1331664  "(빈)"
+    FullParagraph  pi=184  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1333424  "(빈)"
+    FullParagraph  pi=185  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1335184  "(빈)"
+    FullParagraph  pi=186  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1336944  "(빈)"
+    FullParagraph  pi=187  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1338704  "(빈)"
+    FullParagraph  pi=188  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1340464  "(빈)"
+    FullParagraph  pi=189  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1342224  "(빈)"
+    FullParagraph  pi=190  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1343984  "(빈)"
+    FullParagraph  pi=191  h=14.7 (sb=0.0 lines=14.7 sa=0.0)  vpos=1345744  "(4) 연령대별 구매 건수 및 사용 포인트"
+    Table          pi=192 ci=0  10x5  621.2x240.6px  wrap=TopAndBottom tac=true  vpos=1347504

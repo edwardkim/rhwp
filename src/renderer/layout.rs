@@ -1362,11 +1362,31 @@ impl LayoutEngine {
             if !shape_jumped && !prev_tac_seg_applied {
             if let Some(prev_pi) = prev_layout_para {
                 if item_para != prev_pi {
-                    // 글앞으로/글뒤로 Shape가 있는 문단: vpos에 Shape 높이가 포함되어 과대 → bypass
+                    // 글앞으로/글뒤로/위아래 Shape·Picture가 있는 문단: vpos에 개체 높이가 포함되어 과대 → bypass
+                    // - InFrontOfText/BehindText: 개체 vpos가 텍스트 라인 vpos와 별도 누적 → 합산 시 과대
+                    // - TopAndBottom + vert=Para: 한컴이 후속 문단 vpos에 개체 높이를 더해 기록하므로
+                    //   sequential y_offset이 이미 개체 바닥까지 진행된 상태에서 vpos 보정 lazy_base 산출
+                    //   시 prev_pi의 텍스트 vpos_end만 쓰면 base가 개체 높이만큼 낮게 산출되어
+                    //   다음 문단/표가 개체 높이만큼 추가 점프 (Task #409: 21페이지 차트→2x1 표 521px overflow)
                     let prev_has_overlay_shape = paragraphs.get(prev_pi).map(|p| {
-                        p.controls.iter().any(|c|
-                            matches!(c, Control::Shape(s) if matches!(s.common().text_wrap,
-                                crate::model::shape::TextWrap::InFrontOfText | crate::model::shape::TextWrap::BehindText)))
+                        use crate::model::shape::{TextWrap, VertRelTo};
+                        p.controls.iter().any(|c| match c {
+                            Control::Shape(s) => {
+                                let cm = s.common();
+                                matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+                                    || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                                        && matches!(cm.vert_rel_to, VertRelTo::Para)
+                                        && !cm.treat_as_char)
+                            }
+                            Control::Picture(pic) => {
+                                let cm = &pic.common;
+                                if cm.treat_as_char { return false; }
+                                matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+                                    || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                                        && matches!(cm.vert_rel_to, VertRelTo::Para))
+                            }
+                            _ => false,
+                        })
                     }).unwrap_or(false);
                     if !prev_has_overlay_shape {
                     if let Some(prev_para) = paragraphs.get(prev_pi) {
@@ -2510,7 +2530,28 @@ impl LayoutEngine {
             page_content, paragraphs, composed, styles, bin_data_content,
             layout, col_area, ..
         } = ctx;
-        para_start_y.entry(para_index).or_insert(y_offset);
+        // Task #402: 같은 paragraph 안에 TAC 컨트롤(표/그림/도형) 2개 이상이 서로 다른 line에
+        // 배치된 경우, 두 번째 이후의 그림은 paragraph 시작 y가 아니라 진행된 y_offset
+        // (선행 TAC 후속 위치)에 그려져야 표와 겹치지 않는다. control_index 이전에 같은
+        // paragraph의 TAC 컨트롤이 있고 y_offset이 기존 등록값보다 진행됐으면 갱신한다.
+        let has_prior_tac_in_para = paragraphs.get(para_index)
+            .map(|p| p.controls.iter().take(control_index).any(|c| match c {
+                Control::Table(t) => t.common.treat_as_char,
+                Control::Picture(p) => p.common.treat_as_char,
+                Control::Shape(s) => s.common().treat_as_char,
+                _ => false,
+            }))
+            .unwrap_or(false);
+        if has_prior_tac_in_para {
+            let needs_update = para_start_y.get(&para_index)
+                .map(|&existing| y_offset > existing + 1.0)
+                .unwrap_or(true);
+            if needs_update {
+                para_start_y.insert(para_index, y_offset);
+            }
+        } else {
+            para_start_y.entry(para_index).or_insert(y_offset);
+        }
         let mut result_y = y_offset;
         if let Some(para) = paragraphs.get(para_index) {
             if let Some(ctrl) = para.controls.get(control_index) {

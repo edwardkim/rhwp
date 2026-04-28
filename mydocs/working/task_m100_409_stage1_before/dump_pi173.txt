@@ -1,0 +1,14 @@
+=== 구역 0 ===
+  용지: 210.0mm × 297.0mm (59528×84186 HU), 세로
+  여백: 좌=20.0 우=20.0 상=15.0 하=15.0 머리말=10.0 꼬리말=10.0 mm
+
+--- 문단 0.173 --- cc=1, text_len=0, controls=0 
+  텍스트: (빈 문단)
+  [CS] pos=0 id=0 bold=false spacing=0% ratio=100% char=""
+  [PS] ps_id=12 align=Justify spacing: before=0 after=0 line=160/Percent
+       margins: left=0 right=710 indent=0 border_fill_id=2
+       border_spacing: left=0 right=0 top=0 bottom=0
+       tab_def_id=0 auto_left=false auto_right=false tabs=[(없음)]
+  ls[0]: ts=0, vpos=1307155, lh=1100, th=1100, bl=935, ls=660, cs=0, sw=47833, tag=0x00060000
+
+=== 완료: 1 구역, 256 문단 ===
