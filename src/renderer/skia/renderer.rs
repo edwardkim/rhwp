@@ -598,13 +598,41 @@ fn colorref_to_skia(color: ColorRef, alpha_scale: f32) -> Color {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::paint::{LayerNode, LayerOutputOptions};
-    use crate::renderer::render_tree::{BoundingBox, RectangleNode};
+    use crate::model::control::FormType;
+    use crate::model::style::ImageFillMode;
+    use crate::paint::{CacheHint, GroupKind, LayerNode, LayerOutputOptions};
+    use crate::renderer::render_tree::{
+        BoundingBox, FootnoteMarkerNode, FormObjectNode, ImageNode, PageBackgroundImage,
+        PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode, TextRunNode,
+    };
+    use crate::renderer::{GradientFillInfo, PatternFillInfo, TextStyle};
+    use image::{ImageFormat, Rgba, RgbaImage};
+    use std::io::Cursor;
 
     fn decode_rgba(bytes: &[u8]) -> image::RgbaImage {
         image::load_from_memory(bytes)
             .expect("decode png")
             .to_rgba8()
+    }
+
+    fn assert_channel(pixel: image::Rgba<u8>, channel: usize, min: u8, max: u8) {
+        assert!(
+            pixel[channel] >= min && pixel[channel] <= max,
+            "pixel={pixel:?}, channel={channel}, expected {min}..={max}"
+        );
+    }
+
+    fn count_ink(image: &image::RgbaImage) -> usize {
+        image.pixels().filter(|pixel| pixel[3] > 0).count()
+    }
+
+    fn solid_png(color: [u8; 4]) -> Vec<u8> {
+        let image = RgbaImage::from_pixel(2, 2, Rgba(color));
+        let mut cursor = Cursor::new(Vec::new());
+        image
+            .write_to(&mut cursor, ImageFormat::Png)
+            .expect("encode png");
+        cursor.into_inner()
     }
 
     fn solid_rect_tree(
@@ -796,5 +824,468 @@ mod tests {
             },
         );
         assert!(oversized.is_err());
+    }
+
+    #[test]
+    fn raster_output_preserves_metadata_and_background_color() {
+        let tree = PageLayerTree::new(
+            3.0,
+            2.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 3.0, 2.0), None, vec![]),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(
+                &tree,
+                RasterRenderOptions {
+                    dpi: Some(144.0),
+                    background_color: Some(0x0000ff00),
+                    ..Default::default()
+                },
+            )
+            .expect("render with metadata");
+        let image = decode_rgba(&output.bytes);
+        let pixel = *image.get_pixel(0, 0);
+
+        assert_eq!(output.dpi, Some(144.0));
+        assert_eq!(
+            output.color_space,
+            crate::renderer::layer_renderer::RasterColorSpace::Srgb
+        );
+        assert_channel(pixel, 0, 0, 16);
+        assert_channel(pixel, 1, 220, 255);
+        assert_channel(pixel, 2, 0, 16);
+        assert_eq!(pixel[3], 255);
+    }
+
+    #[test]
+    fn rejects_invalid_page_dimensions() {
+        let renderer = SkiaLayerRenderer::new();
+        let zero_width = PageLayerTree::new(
+            0.0,
+            10.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 0.0, 10.0), None, vec![]),
+        );
+        let nan_height = PageLayerTree::new(
+            10.0,
+            f64::NAN,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, vec![]),
+        );
+
+        assert!(renderer
+            .render_raster_with_options(&zero_width, RasterRenderOptions::default())
+            .is_err());
+        assert!(renderer
+            .render_raster_with_options(&nan_height, RasterRenderOptions::default())
+            .is_err());
+    }
+
+    #[test]
+    fn renders_page_background_fill_border_and_image() {
+        let tree = PageLayerTree::new(
+            8.0,
+            8.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                None,
+                vec![PaintOp::PageBackground {
+                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    background: PageBackgroundNode {
+                        background_color: Some(0x0000ff00),
+                        border_color: Some(0x00ff0000),
+                        border_width: 2.0,
+                        gradient: None,
+                        image: None,
+                    },
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render background");
+        let image = decode_rgba(&output.bytes);
+        let fill = *image.get_pixel(4, 4);
+        let border = *image.get_pixel(0, 0);
+
+        assert_channel(fill, 0, 0, 32);
+        assert_channel(fill, 1, 180, 255);
+        assert_channel(fill, 2, 0, 32);
+        assert_eq!(fill[3], 255);
+        assert_channel(border, 0, 0, 64);
+        assert_channel(border, 1, 0, 64);
+        assert_channel(border, 2, 180, 255);
+        assert_eq!(border[3], 255);
+
+        let tree = PageLayerTree::new(
+            8.0,
+            8.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                None,
+                vec![PaintOp::PageBackground {
+                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    background: PageBackgroundNode {
+                        background_color: None,
+                        border_color: None,
+                        border_width: 0.0,
+                        gradient: None,
+                        image: Some(PageBackgroundImage {
+                            data: solid_png([0, 0, 255, 255]),
+                            fill_mode: ImageFillMode::FitToSize,
+                        }),
+                    },
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render background image");
+        let image = decode_rgba(&output.bytes);
+        let pixel = *image.get_pixel(4, 4);
+
+        assert_channel(pixel, 0, 0, 32);
+        assert_channel(pixel, 1, 0, 32);
+        assert_channel(pixel, 2, 220, 255);
+        assert_eq!(pixel[3], 255);
+    }
+
+    #[test]
+    fn renders_shape_fallback_fills_for_gradient_pattern_ellipse_path_and_line() {
+        let gradient = GradientFillInfo {
+            gradient_type: 1,
+            angle: 0,
+            center_x: 0,
+            center_y: 0,
+            colors: vec![0x00ff0000, 0x000000ff],
+            positions: vec![0.0, 1.0],
+        };
+        let gradient_rect = RectangleNode::new(
+            0.0,
+            ShapeStyle {
+                fill_color: Some(0x000000ff),
+                ..Default::default()
+            },
+            Some(Box::new(gradient)),
+        );
+        let pattern_rect = RectangleNode::new(
+            0.0,
+            ShapeStyle {
+                pattern: Some(PatternFillInfo {
+                    pattern_type: 1,
+                    pattern_color: 0x000000ff,
+                    background_color: 0x0000ff00,
+                }),
+                ..Default::default()
+            },
+            None,
+        );
+        let ellipse = crate::renderer::render_tree::EllipseNode::new(
+            ShapeStyle {
+                fill_color: Some(0x000000ff),
+                ..Default::default()
+            },
+            None,
+        );
+        let path = PathNode::new(
+            vec![
+                PathCommand::MoveTo(2.0, 24.0),
+                PathCommand::LineTo(12.0, 24.0),
+                PathCommand::LineTo(12.0, 34.0),
+                PathCommand::LineTo(2.0, 34.0),
+                PathCommand::ClosePath,
+            ],
+            ShapeStyle {
+                fill_color: Some(0x00ff0000),
+                ..Default::default()
+            },
+            None,
+        );
+        let line = crate::renderer::render_tree::LineNode::new(
+            18.0,
+            30.0,
+            34.0,
+            30.0,
+            LineStyle {
+                color: 0x000000ff,
+                width: 3.0,
+                ..Default::default()
+            },
+        );
+        let tree = PageLayerTree::new(
+            40.0,
+            40.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 40.0, 40.0),
+                None,
+                vec![
+                    PaintOp::Rectangle {
+                        bbox: BoundingBox::new(2.0, 2.0, 10.0, 8.0),
+                        rect: gradient_rect,
+                    },
+                    PaintOp::Rectangle {
+                        bbox: BoundingBox::new(16.0, 2.0, 10.0, 8.0),
+                        rect: pattern_rect,
+                    },
+                    PaintOp::Ellipse {
+                        bbox: BoundingBox::new(2.0, 12.0, 10.0, 10.0),
+                        ellipse,
+                    },
+                    PaintOp::Path {
+                        bbox: BoundingBox::new(2.0, 24.0, 10.0, 10.0),
+                        path,
+                    },
+                    PaintOp::Line {
+                        bbox: BoundingBox::new(18.0, 28.0, 16.0, 4.0),
+                        line,
+                    },
+                ],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render shapes");
+        let image = decode_rgba(&output.bytes);
+        let gradient_pixel = *image.get_pixel(4, 4);
+        let pattern_pixel = *image.get_pixel(18, 4);
+        let ellipse_pixel = *image.get_pixel(7, 17);
+        let path_pixel = *image.get_pixel(7, 29);
+        let line_pixel = *image.get_pixel(24, 30);
+
+        assert_channel(gradient_pixel, 2, 180, 255);
+        assert_channel(pattern_pixel, 1, 180, 255);
+        assert_channel(ellipse_pixel, 0, 180, 255);
+        assert_channel(path_pixel, 2, 180, 255);
+        assert_channel(line_pixel, 0, 180, 255);
+    }
+
+    #[test]
+    fn renders_arc_path_segments_as_ink() {
+        let path = PathNode::new(
+            vec![
+                PathCommand::MoveTo(4.0, 12.0),
+                PathCommand::ArcTo(8.0, 8.0, 0.0, false, true, 20.0, 12.0),
+            ],
+            ShapeStyle {
+                stroke_color: Some(0x000000ff),
+                stroke_width: 2.0,
+                ..Default::default()
+            },
+            None,
+        );
+        let tree = PageLayerTree::new(
+            24.0,
+            18.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 24.0, 18.0),
+                None,
+                vec![PaintOp::Path {
+                    bbox: BoundingBox::new(4.0, 4.0, 16.0, 12.0),
+                    path,
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render arc path");
+        let image = decode_rgba(&output.bytes);
+
+        assert!(count_ink(&image) > 8);
+    }
+
+    #[test]
+    fn renders_valid_images_and_invalid_image_placeholders() {
+        let tree = PageLayerTree::new(
+            20.0,
+            10.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 20.0, 10.0),
+                None,
+                vec![
+                    PaintOp::Image {
+                        bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                        image: ImageNode::new(1, Some(solid_png([0, 0, 255, 255]))),
+                    },
+                    PaintOp::Image {
+                        bbox: BoundingBox::new(10.0, 0.0, 8.0, 8.0),
+                        image: ImageNode::new(2, Some(vec![1, 2, 3, 4])),
+                    },
+                ],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render images");
+        let image = decode_rgba(&output.bytes);
+        let valid = *image.get_pixel(4, 4);
+        let invalid_placeholder = *image.get_pixel(12, 4);
+
+        assert_channel(valid, 2, 220, 255);
+        assert!(invalid_placeholder[3] > 0);
+    }
+
+    #[test]
+    fn renders_text_and_footnote_marker_as_ink() {
+        let run = TextRunNode {
+            text: "A".to_string(),
+            style: TextStyle {
+                font_size: 18.0,
+                color: 0x00000000,
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 20.0,
+            field_marker: Default::default(),
+        };
+        let marker = FootnoteMarkerNode {
+            number: 1,
+            text: "1)".to_string(),
+            base_font_size: 18.0,
+            font_family: String::new(),
+            color: 0x00000000,
+            section_index: 0,
+            para_index: 0,
+            control_index: 0,
+        };
+        let tree = PageLayerTree::new(
+            64.0,
+            32.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 64.0, 32.0),
+                None,
+                vec![
+                    PaintOp::TextRun {
+                        bbox: BoundingBox::new(4.0, 4.0, 24.0, 24.0),
+                        run,
+                    },
+                    PaintOp::FootnoteMarker {
+                        bbox: BoundingBox::new(32.0, 4.0, 24.0, 24.0),
+                        marker,
+                    },
+                ],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render text");
+        let image = decode_rgba(&output.bytes);
+
+        assert!(count_ink(&image) > 0);
+    }
+
+    #[test]
+    fn renders_placeholder_style_ops_as_ink() {
+        let form = FormObjectNode {
+            form_type: FormType::PushButton,
+            caption: "OK".to_string(),
+            text: String::new(),
+            fore_color: "#000000".to_string(),
+            back_color: "#ffffff".to_string(),
+            value: 0,
+            enabled: true,
+            section_index: 0,
+            para_index: 0,
+            control_index: 0,
+            name: "button".to_string(),
+            cell_location: None,
+        };
+        let tree = PageLayerTree::new(
+            48.0,
+            16.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 48.0, 16.0),
+                None,
+                vec![
+                    PaintOp::Placeholder {
+                        bbox: BoundingBox::new(0.0, 0.0, 14.0, 14.0),
+                        placeholder: PlaceholderNode {
+                            fill_color: 0,
+                            stroke_color: 0,
+                            label: "ph".to_string(),
+                        },
+                    },
+                    PaintOp::RawSvg {
+                        bbox: BoundingBox::new(16.0, 0.0, 14.0, 14.0),
+                        raw: RawSvgNode {
+                            svg: "<rect/>".to_string(),
+                        },
+                    },
+                    PaintOp::FormObject {
+                        bbox: BoundingBox::new(32.0, 0.0, 14.0, 14.0),
+                        form,
+                    },
+                ],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render placeholders");
+        let image = decode_rgba(&output.bytes);
+
+        assert!(count_ink(&image) > 40);
+    }
+
+    #[test]
+    fn group_children_replay_in_order() {
+        let red = LayerNode::leaf(
+            BoundingBox::new(0.0, 0.0, 12.0, 12.0),
+            None,
+            vec![PaintOp::Rectangle {
+                bbox: BoundingBox::new(0.0, 0.0, 12.0, 12.0),
+                rect: RectangleNode::new(
+                    0.0,
+                    ShapeStyle {
+                        fill_color: Some(0x000000ff),
+                        ..Default::default()
+                    },
+                    None,
+                ),
+            }],
+        );
+        let blue = LayerNode::leaf(
+            BoundingBox::new(3.0, 3.0, 6.0, 6.0),
+            None,
+            vec![PaintOp::Rectangle {
+                bbox: BoundingBox::new(3.0, 3.0, 6.0, 6.0),
+                rect: RectangleNode::new(
+                    0.0,
+                    ShapeStyle {
+                        fill_color: Some(0x00ff0000),
+                        ..Default::default()
+                    },
+                    None,
+                ),
+            }],
+        );
+        let tree = PageLayerTree::new(
+            12.0,
+            12.0,
+            LayerNode::group(
+                BoundingBox::new(0.0, 0.0, 12.0, 12.0),
+                None,
+                vec![red, blue],
+                CacheHint::None,
+                GroupKind::Generic,
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render group");
+        let image = decode_rgba(&output.bytes);
+        let center = *image.get_pixel(6, 6);
+
+        assert_channel(center, 0, 0, 64);
+        assert_channel(center, 1, 0, 64);
+        assert_channel(center, 2, 180, 255);
+        assert_eq!(center[3], 255);
     }
 }
