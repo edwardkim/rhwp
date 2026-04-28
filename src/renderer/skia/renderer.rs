@@ -1,6 +1,6 @@
 use skia_safe::{
-    paint, surfaces, Canvas, Color, Data, EncodedImageFormat, FilterMode, Font, Image, MipmapMode,
-    Paint, PathBuilder, PathEffect, Rect, SamplingOptions,
+    font, paint, surfaces, Canvas, Color, Data, EncodedImageFormat, FilterMode, Font, FontMgr,
+    FontStyle, Image, MipmapMode, Paint, PathBuilder, PathEffect, Rect, SamplingOptions,
 };
 
 use crate::error::HwpError;
@@ -12,11 +12,15 @@ use crate::renderer::layer_renderer::{
 };
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
-pub struct SkiaLayerRenderer;
+pub struct SkiaLayerRenderer {
+    font_mgr: FontMgr,
+}
 
 impl SkiaLayerRenderer {
     pub fn new() -> Self {
-        Self
+        Self {
+            font_mgr: FontMgr::default(),
+        }
     }
 
     pub fn render_raster_with_options(
@@ -216,12 +220,34 @@ impl SkiaLayerRenderer {
             if text.is_empty() {
                 return;
             }
-            let mut font = Font::default();
-            font.set_size(if style.font_size > 0.0 {
+            let font_size = if style.font_size > 0.0 {
                 style.font_size as f32
             } else {
                 12.0
-            });
+            };
+            let font_style = match (style.bold, style.italic) {
+                (true, true) => FontStyle::bold_italic(),
+                (true, false) => FontStyle::bold(),
+                (false, true) => FontStyle::italic(),
+                (false, false) => FontStyle::normal(),
+            };
+            let mut families = Vec::new();
+            if !style.font_family.trim().is_empty() {
+                families.push(style.font_family.as_str());
+            }
+            families.extend(["DejaVu Sans", "Arial", "sans-serif"]);
+            let typeface = families
+                .into_iter()
+                .find_map(|family| self.font_mgr.match_family_style(family, font_style))
+                .or_else(|| self.font_mgr.legacy_make_typeface(None::<&str>, font_style));
+            let mut font = if let Some(typeface) = typeface {
+                Font::new(typeface, font_size)
+            } else {
+                let mut font = Font::default();
+                font.set_size(font_size);
+                font
+            };
+            font.set_edging(font::Edging::AntiAlias);
             let mut paint = Paint::default();
             paint.set_anti_alias(true);
             paint.set_color(colorref_to_skia(style.color, 1.0));
