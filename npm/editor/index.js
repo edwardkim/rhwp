@@ -158,6 +158,15 @@ class RhwpEditor {
   }
 
   /**
+   * 현재 문서를 HWP 바이너리로 내보냅니다.
+   * @returns {Promise<Uint8Array>} HWP 파일 bytes
+   */
+  async exportHwp() {
+    const result = await this._request('exportHwp');
+    return result instanceof Uint8Array ? result : new Uint8Array(result || []);
+  }
+
+  /**
    * iframe 엘리먼트를 반환합니다.
    */
   get element() {

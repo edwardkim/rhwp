@@ -648,6 +648,9 @@ window.addEventListener('message', async (e) => {
       case 'getPageSvg':
         reply(wasm.renderPageSvg(params.page ?? 0));
         break;
+      case 'exportHwp':
+        reply(Array.from(wasm.exportHwp()));
+        break;
       case 'ready':
         reply(true);
         break;
