@@ -1229,18 +1229,30 @@ impl MeasuredTable {
         (start, end, h)
     }
 
-    /// 종료 행 후보가 rowspan 묶음 블록 중간이면 블록 시작 행으로 후퇴 (Task #398).
-    /// end_row 가 행 범위 끝(== row_count)이거나 블록 경계이면 그대로 반환.
+    /// 종료 행 후보가 *보호 대상* rowspan 묶음 블록 중간이면 블록 시작 행으로 후퇴.
+    /// 블록 크기가 BLOCK_UNIT_MAX_ROWS (=3) 초과인 큰 rowspan 묶음은 행 단위 분할 허용 (Task #398 v2).
     pub fn snap_to_block_boundary(&self, end_row: usize) -> usize {
         let rc = self.row_heights.len();
         if end_row >= rc {
             return end_row.min(rc);
         }
-        // end_row가 어떤 블록의 시작이면 OK; 아니면 그 블록 시작으로 후퇴
         let block_start = self.row_block_start.get(end_row).copied().unwrap_or(end_row);
-        block_start
+        let block_end = self.row_block_end.get(end_row).copied().unwrap_or(end_row + 1);
+        if end_row == block_start {
+            return end_row;
+        }
+        let block_size = block_end.saturating_sub(block_start);
+        if block_size <= BLOCK_UNIT_MAX_ROWS {
+            block_start
+        } else {
+            end_row
+        }
     }
 }
+
+/// 블록 단위 보호 분할의 최대 rowspan. 이 값을 초과하는 큰 rowspan 묶음은
+/// 행 단위 분할을 허용하여 페이지 잔여 공간을 활용한다 (Task #398 v2, HanCom-compat).
+pub const BLOCK_UNIT_MAX_ROWS: usize = 3;
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).
 /// row_block_start[r] = r 행을 포함하는 셀들의 최소 시작 행

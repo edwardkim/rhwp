@@ -42,6 +42,11 @@ pub enum LayoutKind {
         numer: Box<LayoutBox>,
         denom: Box<LayoutBox>,
     },
+    /// 위아래 배치 (분수선 없음)
+    Atop {
+        top: Box<LayoutBox>,
+        bottom: Box<LayoutBox>,
+    },
     /// 제곱근
     Sqrt {
         index: Option<Box<LayoutBox>>,
@@ -153,7 +158,7 @@ impl EqLayout {
             EqNode::Function(s) => self.layout_function(s, fs),
             EqNode::Quoted(s) => self.layout_number(s, fs),
             EqNode::Fraction { numer, denom } => self.layout_fraction(numer, denom, fs),
-            EqNode::Atop { top, bottom } => self.layout_fraction(top, bottom, fs),
+            EqNode::Atop { top, bottom } => self.layout_atop(top, bottom, fs),
             EqNode::Sqrt { index, body } => self.layout_sqrt(index, body, fs),
             EqNode::Superscript { base, sup } => self.layout_superscript(base, sup, fs),
             EqNode::Subscript { base, sub } => self.layout_subscript(base, sub, fs),
@@ -319,6 +324,36 @@ impl EqLayout {
             kind: LayoutKind::Fraction {
                 numer: Box::new(n_box),
                 denom: Box::new(d_box),
+            },
+        }
+    }
+
+    fn layout_atop(&self, top: &EqNode, bottom: &EqNode, fs: f64) -> LayoutBox {
+        let t = self.layout_node(top, fs);
+        let b = self.layout_node(bottom, fs);
+
+        let pad = fs * FRAC_LINE_PAD;
+        let axis = fs * AXIS_HEIGHT;
+        let w = t.width.max(b.width) + pad * 2.0;
+
+        let top_h = t.height + pad;
+        let bottom_h = b.height + pad;
+        let baseline = top_h + axis;
+        let total_h = top_h + bottom_h;
+
+        let mut top_box = t;
+        top_box.x = (w - top_box.width) / 2.0;
+        top_box.y = pad;
+
+        let mut bottom_box = b;
+        bottom_box.x = (w - bottom_box.width) / 2.0;
+        bottom_box.y = top_h;
+
+        LayoutBox {
+            x: 0.0, y: 0.0, width: w, height: total_h, baseline,
+            kind: LayoutKind::Atop {
+                top: Box::new(top_box),
+                bottom: Box::new(bottom_box),
             },
         }
     }
