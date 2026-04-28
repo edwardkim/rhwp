@@ -505,7 +505,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.cursor.moveOutOfSelectedTable();
       this.eventBus.emit('table-object-selection-changed', false);
       this.updateCaret();
-      this.checkTransparentBordersTransition();
+      // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+      // this.checkTransparentBordersTransition();
       return;
     }
     if (e.key === 'Enter') {
@@ -526,7 +527,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
           this.cursor.moveOutOfSelectedTable();
           this.eventBus.emit('table-object-selection-changed', false);
           this.updateCaret();
-          this.checkTransparentBordersTransition();
+          // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+          // this.checkTransparentBordersTransition();
         } else {
           this.cursor.moveOutOfSelectedTable();
           this.eventBus.emit('table-object-selection-changed', false);
@@ -534,7 +536,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
             wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
             return this.cursor.getPosition();
           }});
-          this.checkTransparentBordersTransition();
+          // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+          // this.checkTransparentBordersTransition();
         }
       }
       return;
@@ -572,7 +575,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
           wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
           return this.cursor.getPosition();
         }});
-        this.checkTransparentBordersTransition();
+        // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+        // this.checkTransparentBordersTransition();
       }
       return;
     }
