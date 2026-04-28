@@ -141,6 +141,10 @@ struct TypesetState {
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
+    /// [Task #404] 현재 페이지 첫 문단의 vpos. vpos overflow 검사 기준점.
+    /// None = 페이지 시작 직후, 다음 문단 진입 시 first_seg.vpos로 설정.
+    /// 페이지 전환 시 reset_for_new_page() 에서 None으로 reset.
+    page_first_vpos: Option<i32>,
 }
 
 impl TypesetState {
@@ -176,6 +180,7 @@ impl TypesetState {
             wrap_around_sw: -1,
             wrap_around_table_para: 0,
             current_column_wrap_around_paras: Vec::new(),
+            page_first_vpos: None,
         }
     }
 
@@ -285,6 +290,8 @@ impl TypesetState {
         self.current_zone_y_offset = 0.0;
         self.current_zone_layout = None;
         self.on_first_multicolumn_page = false;
+        // Task #404: 페이지 전환 — vpos 기준점 reset
+        self.page_first_vpos = None;
     }
 
     fn new_page_content(&self, column_contents: Vec<ColumnContent>) -> PageContent {
@@ -488,6 +495,45 @@ impl TypesetEngine {
             }
 
             st.ensure_page();
+
+            // Task #404 진단 로그 (Stage 1) - Stage 2 이후 제거
+            // 현재 단의 첫 item의 para_index → first_seg.vpos를 page_first_vpos로 사용 (즉시 계산).
+            // current_items가 비었으면 현재 paragraph가 그 페이지의 첫 item이 될 것이므로
+            // 자기 first_seg.vpos를 page_top으로 사용 (overflow 자기참조 → 항상 false).
+            {
+                let page_first_para_idx = st.current_items.first().map(|item| match item {
+                    PageItem::FullParagraph { para_index } => *para_index,
+                    PageItem::PartialParagraph { para_index, .. } => *para_index,
+                    PageItem::Table { para_index, .. } => *para_index,
+                    PageItem::PartialTable { para_index, .. } => *para_index,
+                    PageItem::Shape { para_index, .. } => *para_index,
+                });
+                if let Some(first_seg) = para.line_segs.first() {
+                    let page_top_vpos = page_first_para_idx
+                        .and_then(|pi| paragraphs.get(pi))
+                        .and_then(|p| p.line_segs.first())
+                        .map(|s| s.vertical_pos)
+                        .unwrap_or(first_seg.vertical_pos);
+                    let body_h_px = st.layout.body_area.height;
+                    let body_h_hu = crate::renderer::px_to_hwpunit(body_h_px, self.dpi);
+                    let page_bottom_vpos = page_top_vpos + body_h_hu;
+                    let para_h_px: f64 = para.line_segs.iter()
+                        .map(|s| crate::renderer::hwpunit_to_px(s.line_height + s.line_spacing, self.dpi))
+                        .sum();
+                    let para_h_hu = crate::renderer::px_to_hwpunit(para_h_px, self.dpi);
+                    let vpos_end = first_seg.vertical_pos + para_h_hu;
+                    let overflow = vpos_end - page_bottom_vpos;
+                    if overflow > 0 && page_first_para_idx.is_some() {
+                        eprintln!(
+                            "[T404] pi={} first_page_pi={:?} page_top_vpos={} body_h_hu={} page_bottom_vpos={} \
+                            first_vpos={} para_h_hu={} vpos_end={} overflow={} curr_h={:.1} avail={:.1}",
+                            para_idx, page_first_para_idx, page_top_vpos, body_h_hu, page_bottom_vpos,
+                            first_seg.vertical_pos, para_h_hu, vpos_end, overflow,
+                            st.current_height, st.available_height(),
+                        );
+                    }
+                }
+            }
 
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
