@@ -1489,13 +1489,20 @@ impl Paginator {
         };
         let remaining_on_page = table_available_height - st.current_height - host_text_height - v_offset_px;
 
-        let first_row_h = if row_count > 0 { mt.row_heights[0] } else { 0.0 };
+        // Task #398: rowspan 묶음 블록 단위로 분할 판정.
+        // 행 0이 rowspan>1 셀의 시작점이면 블록 전체 높이를 분할 단위로 사용해야
+        // rowspan 셀이 페이지 경계에서 잘리지 않는다.
+        let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
+            mt.row_block_for(0)
+        } else { (0, 0, 0.0) };
+        let first_block_is_single_row = first_block_end == first_block_start + 1;
         let can_intra_split_early = !mt.cells.is_empty();
 
-        if remaining_on_page < first_row_h && !st.current_items.is_empty() {
-            // 첫 행이 인트라-로우 분할 가능하고 남은 공간에 최소 콘텐츠가 들어갈 수 있으면
-            // 현재 페이지에서 분할 시도 (새 페이지로 밀지 않음)
-            let first_row_splittable = can_intra_split_early && mt.is_row_splittable(0);
+        if remaining_on_page < first_block_h && !st.current_items.is_empty() {
+            // 인트라-로우 분할은 단일 행 블록에서만 시도 (rowspan 묶음은 분할 불가)
+            let first_row_splittable = first_block_is_single_row
+                && can_intra_split_early
+                && mt.is_row_splittable(0);
             let min_content = if first_row_splittable {
                 mt.min_first_line_height_for_row(0, 0.0) + mt.max_padding_for_row(0)
             } else {
@@ -1603,11 +1610,18 @@ impl Paginator {
             {
                 const MIN_SPLIT_CONTENT_PX: f64 = 10.0;
 
-                let approx_end = mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
+                let approx_end_raw = mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
+                // Task #398: rowspan 묶음 중간에서 잘리지 않도록 블록 경계로 스냅
+                let approx_end = mt.snap_to_block_boundary(approx_end_raw);
+
+                // cursor_row가 속한 블록 정보 (인트라-로우 분할 가드)
+                let (cur_b_start, cur_b_end, _) = mt.row_block_for(cursor_row);
+                let cur_block_single = cur_b_end == cur_b_start + 1;
 
                 if approx_end <= cursor_row {
                     let r = cursor_row;
-                    let splittable = can_intra_split && mt.is_row_splittable(r);
+                    // 인트라-로우 분할은 단일 행 블록에서만 허용 (rowspan 묶음 보호)
+                    let splittable = cur_block_single && can_intra_split && mt.is_row_splittable(r);
                     if splittable {
                         let padding = mt.max_padding_for_row(r);
                         let avail_content = (avail_for_rows - padding).max(0.0);
@@ -1623,7 +1637,7 @@ impl Paginator {
                         } else {
                             end_row = r + 1;
                         }
-                    } else if can_intra_split && effective_first_row_h > avail_for_rows {
+                    } else if cur_block_single && can_intra_split && effective_first_row_h > avail_for_rows {
                         // 행이 분할 불가능하지만 페이지보다 클 때: 가용 높이에 맞춰 강제 분할
                         let padding = mt.max_padding_for_row(r);
                         let avail_content = (avail_for_rows - padding).max(0.0);
@@ -1633,6 +1647,12 @@ impl Paginator {
                         } else {
                             end_row = r + 1;
                         }
+                    } else if !cur_block_single {
+                        // Task #398: 다중 행 블록(rowspan 묶음)이 들어가지 않으면
+                        // 블록 전체를 한 단위로 배치 (페이지 초과 가능, 시각적 잘림 방지).
+                        // 일반적으로 pre-loop에서 advance되어 fresh page에서는 들어가지만,
+                        // 블록이 페이지 전체보다 큰 경우 통째로 배치.
+                        end_row = cur_b_end;
                     } else {
                         end_row = r + 1;
                     }
@@ -1646,7 +1666,10 @@ impl Paginator {
                     };
                     let range_h = mt.range_height(cursor_row, approx_end) - delta;
                     let remaining_avail = avail_for_rows - range_h;
-                    if can_intra_split && mt.is_row_splittable(r) {
+                    // Task #398: 분할 후보 r의 블록 단일성 검사
+                    let (next_b_start, next_b_end, _) = mt.row_block_for(r);
+                    let next_block_single = next_b_end == next_b_start + 1;
+                    if next_block_single && can_intra_split && mt.is_row_splittable(r) {
                         let row_cs = cs;
                         let padding = mt.max_padding_for_row(r);
                         let avail_content_for_r = (remaining_avail - row_cs - padding).max(0.0);
@@ -1660,9 +1683,10 @@ impl Paginator {
                             end_row = r + 1;
                             split_end_limit = avail_content_for_r;
                         }
-                    } else if can_intra_split && mt.row_heights[r] > base_available_height {
+                    } else if next_block_single && can_intra_split && mt.row_heights[r] > base_available_height {
                         // 행이 splittable=false이지만 전체 페이지 가용높이보다 큰 경우:
-                        // 다음 페이지로 넘겨도 들어가지 않으므로 가용 공간에 맞춰 강제 intra-row split
+                        // 다음 페이지로 넘겨도 들어가지 않으므로 가용 공간에 맞춰 강제 intra-row split.
+                        // Task #398: 단일 행 블록에서만 적용 (rowspan 묶음 보호).
                         let row_cs = cs;
                         let padding = mt.max_padding_for_row(r);
                         let avail_content_for_r = (remaining_avail - row_cs - padding).max(0.0);
