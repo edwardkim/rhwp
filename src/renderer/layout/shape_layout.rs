@@ -959,6 +959,8 @@ impl LayoutEngine {
                     RenderNodeType::Image(ImageNode {
                         transform,
                         effect: pic.image_attr.effect,
+                        brightness: pic.image_attr.brightness,
+                        contrast: pic.image_attr.contrast,
                         ..ImageNode::new(bin_data_id, image_data)
                     }),
                     BoundingBox::new(render_x, render_y, render_w, render_h),

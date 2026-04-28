@@ -101,6 +101,8 @@ impl LayoutEngine {
                 control_index,
                 crop,
                 effect: picture.image_attr.effect,
+                brightness: picture.image_attr.brightness,
+                contrast: picture.image_attr.contrast,
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(pic_x, pic_y, pic_width, pic_height),
@@ -298,6 +300,8 @@ impl LayoutEngine {
                 control_index: Some(control_index),
                 crop,
                 effect: picture.image_attr.effect,
+                brightness: picture.image_attr.brightness,
+                contrast: picture.image_attr.contrast,
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
