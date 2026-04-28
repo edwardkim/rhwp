@@ -6,7 +6,9 @@ use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_es
 use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
-use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
+use crate::paint::{
+    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile,
+};
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
 use crate::renderer::{
@@ -41,8 +43,18 @@ impl LayerNode {
         }
 
         match &self.kind {
-            LayerNodeKind::Group { children, .. } => {
-                buf.push_str(",\"kind\":\"group\",\"children\":[");
+            LayerNodeKind::Group {
+                children,
+                cache_hint,
+                group_kind,
+            } => {
+                buf.push_str(",\"kind\":\"group\",\"groupKind\":");
+                write_group_kind(buf, group_kind);
+                let _ = write!(
+                    buf,
+                    ",\"cacheHint\":{},\"children\":[",
+                    json_escape(cache_hint_str(*cache_hint))
+                );
                 for (idx, child) in children.iter().enumerate() {
                     if idx > 0 {
                         buf.push(',');
@@ -51,9 +63,18 @@ impl LayerNode {
                 }
                 buf.push(']');
             }
-            LayerNodeKind::ClipRect { clip, child, .. } => {
+            LayerNodeKind::ClipRect {
+                clip,
+                child,
+                clip_kind,
+            } => {
                 buf.push_str(",\"kind\":\"clipRect\",\"clip\":");
                 write_bbox(buf, *clip);
+                let _ = write!(
+                    buf,
+                    ",\"clipKind\":{}",
+                    json_escape(clip_kind_str(*clip_kind))
+                );
                 buf.push_str(",\"child\":");
                 child.write_json(buf);
             }
@@ -324,6 +345,82 @@ fn write_bbox(buf: &mut String, bbox: BoundingBox) {
         "{{\"x\":{:.3},\"y\":{:.3},\"width\":{:.3},\"height\":{:.3}}}",
         bbox.x, bbox.y, bbox.width, bbox.height
     );
+}
+
+fn write_group_kind(buf: &mut String, group_kind: &GroupKind) {
+    match group_kind {
+        GroupKind::Generic => buf.push_str("{\"kind\":\"generic\"}"),
+        GroupKind::MasterPage => buf.push_str("{\"kind\":\"masterPage\"}"),
+        GroupKind::Header => buf.push_str("{\"kind\":\"header\"}"),
+        GroupKind::Footer => buf.push_str("{\"kind\":\"footer\"}"),
+        GroupKind::Body => buf.push_str("{\"kind\":\"body\"}"),
+        GroupKind::Column(index) => {
+            let _ = write!(buf, "{{\"kind\":\"column\",\"index\":{}}}", index);
+        }
+        GroupKind::FootnoteArea => buf.push_str("{\"kind\":\"footnoteArea\"}"),
+        GroupKind::TextLine(line) => {
+            let _ = write!(
+                buf,
+                "{{\"kind\":\"textLine\",\"lineHeight\":{:.3},\"baseline\":{:.3}}}",
+                line.line_height, line.baseline
+            );
+        }
+        GroupKind::Table(table) => {
+            let _ = write!(
+                buf,
+                "{{\"kind\":\"table\",\"rowCount\":{},\"colCount\":{},\"borderFillId\":{}}}",
+                table.row_count, table.col_count, table.border_fill_id
+            );
+        }
+        GroupKind::TableCell(cell) => {
+            let _ = write!(
+                buf,
+                "{{\"kind\":\"tableCell\",\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"borderFillId\":{},\"textDirection\":{},\"clip\":{}",
+                cell.row,
+                cell.col,
+                cell.row_span,
+                cell.col_span,
+                cell.border_fill_id,
+                cell.text_direction,
+                cell.clip
+            );
+            if let Some(index) = cell.model_cell_index {
+                let _ = write!(buf, ",\"modelCellIndex\":{}", index);
+            }
+            buf.push('}');
+        }
+        GroupKind::TextBox => buf.push_str("{\"kind\":\"textBox\"}"),
+        GroupKind::Group(group) => {
+            buf.push_str("{\"kind\":\"group\"");
+            if let Some(section_index) = group.section_index {
+                let _ = write!(buf, ",\"sectionIndex\":{}", section_index);
+            }
+            if let Some(para_index) = group.para_index {
+                let _ = write!(buf, ",\"paraIndex\":{}", para_index);
+            }
+            if let Some(control_index) = group.control_index {
+                let _ = write!(buf, ",\"controlIndex\":{}", control_index);
+            }
+            buf.push('}');
+        }
+    }
+}
+
+fn cache_hint_str(value: CacheHint) -> &'static str {
+    match value {
+        CacheHint::None => "none",
+        CacheHint::StaticSubtree => "staticSubtree",
+        CacheHint::PreferRaster => "preferRaster",
+        CacheHint::PreferVectorRecording => "preferVectorRecording",
+    }
+}
+
+fn clip_kind_str(value: ClipKind) -> &'static str {
+    match value {
+        ClipKind::Body => "body",
+        ClipKind::TableCell => "tableCell",
+        ClipKind::Generic => "generic",
+    }
 }
 
 fn write_text_style(buf: &mut String, style: &TextStyle) {
@@ -640,7 +737,7 @@ fn form_type_str(value: FormType) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::paint::{LayerNode, PageLayerTree};
+    use crate::paint::{CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree};
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
@@ -820,6 +917,31 @@ mod tests {
         assert!(json.contains("\"label\":\"OLE\""));
         assert!(json.contains("\"type\":\"rawSvg\""));
         assert!(json.contains("\"svg\":\"<g><path d=\\\"M0 0L1 1\\\"/></g>\""));
+    }
+
+    #[test]
+    fn serializes_layer_node_metadata() {
+        let leaf = LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, Vec::new());
+        let clip = LayerNode::clip_rect(
+            BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+            None,
+            BoundingBox::new(1.0, 1.0, 8.0, 8.0),
+            leaf,
+            ClipKind::Body,
+        );
+        let root = LayerNode::group(
+            BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+            None,
+            vec![clip],
+            CacheHint::StaticSubtree,
+            GroupKind::Column(2),
+        );
+
+        let json = PageLayerTree::new(10.0, 10.0, root).to_json();
+
+        assert!(json.contains("\"groupKind\":{\"kind\":\"column\",\"index\":2}"));
+        assert!(json.contains("\"cacheHint\":\"staticSubtree\""));
+        assert!(json.contains("\"clipKind\":\"body\""));
     }
 }
 
