@@ -10,17 +10,20 @@ use super::super::{ShapeStyle, LineStyle, PathCommand, StrokeDash, ArrowStyle, f
 /// bin_data_id(1-indexed 순번)로 BinDataContent를 찾는다.
 /// bin_data_id는 doc_info의 BinData 레코드 순번(1부터 시작)이며,
 /// BinDataContent 배열도 같은 순서로 저장되어 있다.
+///
+/// HWPX 차트는 sparse id (60000+N) 를 사용하므로 인덱스 범위 밖일 때만 id 직접 검색.
+/// 가드 `c.id == bin_data_id` 는 사용하지 않는다 — `c.id` 는 storage_id 이고 bin_data_id 는
+/// 인덱스이므로, 두 값이 다른 경우 (예: hwpspec.hwp 1 페이지 표지) 정상 매칭이 거짓 실패함.
+/// 자세한 정황: mydocs/troubleshootings/bin_data_id_index_mapping.md
 pub(crate) fn find_bin_data<'a>(bin_data_content: &'a [BinDataContent], bin_data_id: u16) -> Option<&'a BinDataContent> {
     if bin_data_id == 0 {
         return None;
     }
-    // 1-indexed 순번으로 먼저 조회 (기존 동작 유지)
+    // 1-indexed 순번으로 BinDataContent 배열 접근
     if let Some(c) = bin_data_content.get((bin_data_id - 1) as usize) {
-        if c.id == bin_data_id {
-            return Some(c);
-        }
+        return Some(c);
     }
-    // 실패 시 id 필드로 직접 검색 (HWPX 차트처럼 sparse id 사용 시)
+    // 인덱스 범위 밖 (HWPX 차트 sparse id 60000+N 등) — id 직접 검색
     bin_data_content.iter().find(|c| c.id == bin_data_id)
 }
 
@@ -333,4 +336,70 @@ fn shape_border_width_to_px(width: i32) -> f64 {
 /// LayoutRect → BoundingBox 변환
 pub(crate) fn layout_rect_to_bbox(rect: &LayoutRect) -> BoundingBox {
     BoundingBox::new(rect.x, rect.y, rect.width, rect.height)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_bin_data;
+    use crate::model::bin_data::BinDataContent;
+
+    fn mk(id: u16, ext: &str) -> BinDataContent {
+        BinDataContent { id, data: vec![], extension: ext.to_string() }
+    }
+
+    /// bin_data_id=0 은 항상 None
+    #[test]
+    fn find_bin_data_returns_none_for_zero() {
+        let v = vec![mk(1, "png")];
+        assert!(find_bin_data(&v, 0).is_none());
+    }
+
+    /// hwpspec.hwp 패턴 — bin_data_id=1 이 storage_id=12 를 가리킴 (가드 회귀 방지)
+    #[test]
+    fn find_bin_data_indexed_match_storage_id_differs() {
+        let v = vec![
+            mk(12, "png"),  // index 0 → bin_data_id=1
+            mk(1, "bmp"),   // index 1 → bin_data_id=2
+            mk(2, "bmp"),   // index 2 → bin_data_id=3
+        ];
+        // bin_data_id=1 → 인덱스 0 의 BIN000C.png 매칭 (storage_id=12)
+        let c = find_bin_data(&v, 1).expect("매칭 성공");
+        assert_eq!(c.id, 12);
+        assert_eq!(c.extension, "png");
+    }
+
+    /// 일반적인 케이스 — storage_id 가 인덱스와 일치
+    #[test]
+    fn find_bin_data_indexed_match_storage_id_matches() {
+        let v = vec![mk(1, "jpg"), mk(2, "png"), mk(3, "bmp")];
+        for i in 1..=3u16 {
+            let c = find_bin_data(&v, i).expect("매칭 성공");
+            assert_eq!(c.id, i);
+        }
+    }
+
+    /// HWPX 차트 — sparse id 60000+N (인덱스 범위 밖)
+    #[test]
+    fn find_bin_data_sparse_id_for_hwpx_chart() {
+        let v = vec![
+            mk(1, "png"),
+            mk(2, "png"),
+            mk(60001, "ooxml_chart"),
+            mk(60002, "ooxml_chart"),
+        ];
+        // bin_data_id=60001 → 인덱스 60000 범위 밖 → fallback id 직접 검색
+        let c = find_bin_data(&v, 60001).expect("차트 매칭");
+        assert_eq!(c.id, 60001);
+        assert_eq!(c.extension, "ooxml_chart");
+
+        let c2 = find_bin_data(&v, 60002).expect("차트 매칭");
+        assert_eq!(c2.id, 60002);
+    }
+
+    /// 인덱스 범위 밖 + 일치 id 없음 → None
+    #[test]
+    fn find_bin_data_out_of_range_returns_none() {
+        let v = vec![mk(1, "png"), mk(2, "png")];
+        assert!(find_bin_data(&v, 99).is_none());
+    }
 }
