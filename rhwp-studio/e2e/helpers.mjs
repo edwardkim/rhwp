@@ -12,7 +12,9 @@
 import puppeteer from 'puppeteer-core';
 import { TestReporter } from './report-generator.mjs';
 
-const CHROME_PATH = '/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
+const CHROME_PATH = process.env.CHROME_PATH
+  || process.env.PUPPETEER_EXECUTABLE_PATH
+  || '/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 const REPORT_DIR = '../output/e2e';
