@@ -1121,12 +1121,44 @@ impl TypesetEngine {
                     }
                 }
                 Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
-                    // 사각형/직선/타원 등 Shape 컨트롤도 PageItem::Shape 로 등록
-                    // (둥근사각형 글상자 "제 2 교시" 등이 누락되는 문제 차단)
+                    // Task #402: 같은 paragraph의 선행 TAC 컨트롤이 있는 TAC 그림은
+                    // 자기 line_seg에 위치하므로 그 line의 높이를 페이지 누적에 반영해야 함.
+                    // 누락 시 후속 항목이 페이지 끝을 넘어 그려져 겹침/오버플로 발생 (#402).
+                    let tac_separate_line_h: Option<f64> = match ctrl {
+                        Control::Picture(p) if p.common.treat_as_char => Some(()),
+                        Control::Shape(s) if s.common().treat_as_char => Some(()),
+                        _ => None,
+                    }.and_then(|_| {
+                        let prior_tac_count = para.controls.iter().take(ctrl_idx).filter(|c| match c {
+                            Control::Table(t) => t.common.treat_as_char,
+                            Control::Picture(p) => p.common.treat_as_char,
+                            Control::Shape(s) => s.common().treat_as_char,
+                            _ => false,
+                        }).count();
+                        if prior_tac_count == 0 { return None; }
+                        para.line_segs.get(prior_tac_count).map(|seg| {
+                            let lh = hwpunit_to_px(seg.line_height, self.dpi);
+                            let ls_extra = if seg.line_spacing > 0 {
+                                hwpunit_to_px(seg.line_spacing, self.dpi)
+                            } else { 0.0 };
+                            lh + ls_extra
+                        })
+                    });
+                    if let Some(line_h) = tac_separate_line_h {
+                        // 자기 line이 현재 페이지에 들어가지 않으면 다음 페이지로 분할
+                        if !st.current_items.is_empty()
+                            && st.current_height + line_h > st.available_height() + 0.5
+                        {
+                            st.advance_column_or_new_page();
+                        }
+                    }
                     st.current_items.push(PageItem::Shape {
                         para_index: para_idx,
                         control_index: ctrl_idx,
                     });
+                    if let Some(line_h) = tac_separate_line_h {
+                        st.current_height += line_h;
+                    }
                 }
                 _ => {}
             }

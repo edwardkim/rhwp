@@ -2510,7 +2510,28 @@ impl LayoutEngine {
             page_content, paragraphs, composed, styles, bin_data_content,
             layout, col_area, ..
         } = ctx;
-        para_start_y.entry(para_index).or_insert(y_offset);
+        // Task #402: 같은 paragraph 안에 TAC 컨트롤(표/그림/도형) 2개 이상이 서로 다른 line에
+        // 배치된 경우, 두 번째 이후의 그림은 paragraph 시작 y가 아니라 진행된 y_offset
+        // (선행 TAC 후속 위치)에 그려져야 표와 겹치지 않는다. control_index 이전에 같은
+        // paragraph의 TAC 컨트롤이 있고 y_offset이 기존 등록값보다 진행됐으면 갱신한다.
+        let has_prior_tac_in_para = paragraphs.get(para_index)
+            .map(|p| p.controls.iter().take(control_index).any(|c| match c {
+                Control::Table(t) => t.common.treat_as_char,
+                Control::Picture(p) => p.common.treat_as_char,
+                Control::Shape(s) => s.common().treat_as_char,
+                _ => false,
+            }))
+            .unwrap_or(false);
+        if has_prior_tac_in_para {
+            let needs_update = para_start_y.get(&para_index)
+                .map(|&existing| y_offset > existing + 1.0)
+                .unwrap_or(true);
+            if needs_update {
+                para_start_y.insert(para_index, y_offset);
+            }
+        } else {
+            para_start_y.entry(para_index).or_insert(y_offset);
+        }
         let mut result_y = y_offset;
         if let Some(para) = paragraphs.get(para_index) {
             if let Some(ctrl) = para.controls.get(control_index) {
