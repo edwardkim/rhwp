@@ -17,6 +17,7 @@ use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::composer::{compose_section, compose_paragraph, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::paint::{LayerBuilder, PageLayerTree, RenderProfile};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use super::super::helpers::color_ref_to_css;
@@ -27,6 +28,14 @@ impl DocumentCore {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         Ok(tree)
+    }
+
+    /// 페이지 레이어 트리를 생성하여 반환한다 (native bridge / backend replay용).
+    pub fn build_page_layer_tree(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        let _overflows = self.layout_engine.take_overflows();
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        Ok(builder.build(&tree))
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
@@ -59,10 +68,7 @@ impl DocumentCore {
     }
 
     pub fn render_page_svg_layer_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
-        let layer_tree = builder.build(&tree);
+        let layer_tree = self.build_page_layer_tree(page_num)?;
         let mut renderer = SvgLayerRenderer::new();
         renderer.inner_mut().show_paragraph_marks = self.show_paragraph_marks;
         renderer.inner_mut().show_control_codes = self.show_control_codes;
@@ -127,11 +133,7 @@ impl DocumentCore {
     }
 
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
-        let layer_tree = builder.build(&tree);
-        Ok(layer_tree.to_json())
+        Ok(self.build_page_layer_tree(page_num)?.to_json())
     }
 
     /// 페이지 정보 (네이티브 에러 타입)

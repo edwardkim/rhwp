@@ -5,6 +5,14 @@ use crate::renderer::render_tree::{
     BoundingBox, GroupNode, NodeId, TableCellNode, TableNode, TextLineNode,
 };
 
+/// JSON schema version for `PageLayerTree` exports.
+///
+/// Increment this when the exported node/op shape changes incompatibly.
+pub const PAGE_LAYER_TREE_SCHEMA_VERSION: u32 = 1;
+pub const PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION: u32 = 1;
+pub const PAGE_LAYER_TREE_UNIT: &str = "px";
+pub const PAGE_LAYER_TREE_COORDINATE_SYSTEM: &str = "page-top-left";
+
 /// 한 페이지의 visual layer tree.
 #[derive(Debug, Clone)]
 pub struct PageLayerTree {

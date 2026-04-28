@@ -7,7 +7,9 @@ use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use crate::paint::{
-    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile,
+    CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
+    RenderProfile, PAGE_LAYER_TREE_COORDINATE_SYSTEM, PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
+    PAGE_LAYER_TREE_SCHEMA_VERSION, PAGE_LAYER_TREE_UNIT,
 };
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
@@ -22,7 +24,11 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"schemaVersion\":1,\"resourceTableVersion\":1,\"unit\":\"px\",\"coordinateSystem\":\"page-top-left\",\"profile\":{},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"schemaVersion\":{},\"resourceTableVersion\":{},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            PAGE_LAYER_TREE_SCHEMA_VERSION,
+            PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
+            json_escape(PAGE_LAYER_TREE_UNIT),
+            json_escape(PAGE_LAYER_TREE_COORDINATE_SYSTEM),
             json_escape(render_profile_str(self.profile)),
             self.page_width,
             self.page_height
@@ -427,7 +433,7 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
     buf.push('{');
     let _ = write!(
         buf,
-        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"underline\":{},\"strikethrough\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"underlineColor\":{},\"strikeColor\":{}",
+        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"underline\":{},\"strikethrough\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"underlineColor\":{},\"strikeColor\":{},\"shadeColor\":{},\"emphasisDot\":{}",
         json_escape(&style.font_family),
         style.font_size,
         json_escape(&color_ref_to_css(style.color)),
@@ -441,6 +447,8 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
         style.shadow_offset_y,
         json_escape(&color_ref_to_css(style.underline_color)),
         json_escape(&color_ref_to_css(style.strike_color)),
+        json_escape(&color_ref_to_css(style.shade_color)),
+        style.emphasis_dot,
     );
     buf.push('}');
 }
@@ -756,7 +764,10 @@ mod tests {
                     font_size: 16.0,
                     color: 0x00010203,
                     bold: true,
+                    italic: true,
                     underline: UnderlineType::Bottom,
+                    shade_color: 0x0000FFFF,
+                    emphasis_dot: 2,
                     ..Default::default()
                 },
                 char_shape_id: None,
@@ -810,7 +821,10 @@ mod tests {
                 font_size: 16.0,
                 color: 0x00010203,
                 bold: true,
+                italic: true,
                 underline: UnderlineType::Bottom,
+                shade_color: 0x0000FFFF,
+                emphasis_dot: 2,
                 ..Default::default()
             },
         );
@@ -832,6 +846,9 @@ mod tests {
         assert!(json.contains("\"fieldMarker\":{\"kind\":\"fieldBegin\"}"));
         assert!(json.contains("\"charOverlap\":{\"borderType\":1,\"innerCharSize\":90}"));
         assert!(json.contains("\"fontFamily\":\"Noto Sans KR\""));
+        assert!(json.contains("\"italic\":true"));
+        assert!(json.contains("\"shadeColor\":\"#ffff00\""));
+        assert!(json.contains("\"emphasisDot\":2"));
         assert!(json.contains("\"type\":\"rectangle\""));
         assert!(json.contains("\"cornerRadius\":4.000"));
     }

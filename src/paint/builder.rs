@@ -225,7 +225,8 @@ mod tests {
     use crate::renderer::render_tree::{
         BoundingBox, EllipseNode, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
         LineNode, PageBackgroundNode, PageNode, PathNode, PlaceholderNode, RawSvgNode,
-        RectangleNode, RenderNode, RenderNodeType, TableCellNode, TextRunNode,
+        RectangleNode, RenderNode, RenderNodeType, TableCellNode, TableNode, TextLineNode,
+        TextRunNode,
     };
     use crate::renderer::{LineStyle, PathCommand, ShapeStyle, TextStyle};
 
@@ -430,6 +431,242 @@ mod tests {
             assert_eq!(ops.len(), 1, "{label} should lower to one paint op");
             assert!(is_expected_op(&ops[0]), "{label} lowered to {:?}", ops[0]);
         }
+    }
+
+    #[test]
+    fn preserves_structural_groups_and_clips_for_backend_replay() {
+        let mut tree = PageRenderTree::new(0, 800.0, 600.0);
+        tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 800.0,
+            height: 600.0,
+            section_index: 0,
+        });
+
+        let mut header = RenderNode::new(
+            1,
+            RenderNodeType::Header,
+            BoundingBox::new(0.0, 0.0, 800.0, 80.0),
+        );
+        let mut header_line = RenderNode::new(
+            2,
+            RenderNodeType::TextLine(TextLineNode::with_para_vpos(20.0, 15.0, 0, 0, 0, 120)),
+            BoundingBox::new(40.0, 20.0, 200.0, 20.0),
+        );
+        header_line.children.push(RenderNode::new(
+            3,
+            RenderNodeType::TextRun(text_run("머리말")),
+            BoundingBox::new(40.0, 20.0, 60.0, 20.0),
+        ));
+        header.children.push(header_line);
+
+        let footer = RenderNode::new(
+            4,
+            RenderNodeType::Footer,
+            BoundingBox::new(0.0, 540.0, 800.0, 60.0),
+        );
+
+        let body_clip = BoundingBox::new(40.0, 90.0, 720.0, 420.0);
+        let mut body = RenderNode::new(
+            5,
+            RenderNodeType::Body {
+                clip_rect: Some(body_clip),
+            },
+            body_clip,
+        );
+        let mut column = RenderNode::new(
+            6,
+            RenderNodeType::Column(1),
+            BoundingBox::new(40.0, 90.0, 340.0, 420.0),
+        );
+        let mut table = RenderNode::new(
+            7,
+            RenderNodeType::Table(TableNode {
+                row_count: 1,
+                col_count: 1,
+                border_fill_id: 2,
+                section_index: Some(0),
+                para_index: Some(2),
+                control_index: Some(0),
+            }),
+            BoundingBox::new(60.0, 110.0, 180.0, 80.0),
+        );
+        let mut clipped_cell = RenderNode::new(
+            8,
+            RenderNodeType::TableCell(TableCellNode {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                border_fill_id: 3,
+                text_direction: 0,
+                clip: true,
+                model_cell_index: Some(4),
+            }),
+            BoundingBox::new(60.0, 110.0, 180.0, 80.0),
+        );
+        let mut nested_table = RenderNode::new(
+            9,
+            RenderNodeType::Table(TableNode {
+                row_count: 1,
+                col_count: 1,
+                border_fill_id: 5,
+                section_index: Some(0),
+                para_index: Some(2),
+                control_index: Some(1),
+            }),
+            BoundingBox::new(70.0, 120.0, 80.0, 40.0),
+        );
+        nested_table.children.push(RenderNode::new(
+            10,
+            RenderNodeType::TableCell(TableCellNode {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                border_fill_id: 6,
+                text_direction: 0,
+                clip: false,
+                model_cell_index: None,
+            }),
+            BoundingBox::new(70.0, 120.0, 80.0, 40.0),
+        ));
+        clipped_cell.children.push(nested_table);
+        table.children.push(clipped_cell);
+        column.children.push(table);
+        body.children.push(column);
+
+        tree.root.children.push(header);
+        tree.root.children.push(footer);
+        tree.root.children.push(body);
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        assert_eq!(children.len(), 3);
+
+        let LayerNodeKind::Group {
+            group_kind,
+            cache_hint,
+            children: header_children,
+        } = &children[0].kind
+        else {
+            panic!("expected header group");
+        };
+        assert!(matches!(group_kind, GroupKind::Header));
+        assert_eq!(*cache_hint, CacheHint::StaticSubtree);
+        let LayerNodeKind::Group {
+            group_kind,
+            children: line_children,
+            ..
+        } = &header_children[0].kind
+        else {
+            panic!("expected text line group");
+        };
+        match group_kind {
+            GroupKind::TextLine(line) => {
+                assert_eq!(line.para_index, Some(0));
+                assert_eq!(line.vpos, Some(120));
+            }
+            other => panic!("expected text line group kind, got {other:?}"),
+        }
+        assert!(matches!(&line_children[0].kind, LayerNodeKind::Leaf { .. }));
+
+        let LayerNodeKind::Group {
+            group_kind,
+            cache_hint,
+            ..
+        } = &children[1].kind
+        else {
+            panic!("expected footer group");
+        };
+        assert!(matches!(group_kind, GroupKind::Footer));
+        assert_eq!(*cache_hint, CacheHint::StaticSubtree);
+
+        let LayerNodeKind::ClipRect {
+            clip,
+            clip_kind,
+            child,
+        } = &children[2].kind
+        else {
+            panic!("expected body clip");
+        };
+        assert_eq!(clip.x, body_clip.x);
+        assert_eq!(clip.y, body_clip.y);
+        assert_eq!(clip.width, body_clip.width);
+        assert_eq!(clip.height, body_clip.height);
+        assert_eq!(*clip_kind, ClipKind::Body);
+
+        let LayerNodeKind::Group {
+            group_kind,
+            children: body_children,
+            ..
+        } = &child.kind
+        else {
+            panic!("expected clipped body group");
+        };
+        assert!(matches!(group_kind, GroupKind::Body));
+
+        let LayerNodeKind::Group {
+            group_kind,
+            children: column_children,
+            ..
+        } = &body_children[0].kind
+        else {
+            panic!("expected column group");
+        };
+        assert!(matches!(group_kind, GroupKind::Column(1)));
+
+        let LayerNodeKind::Group {
+            group_kind,
+            children: table_children,
+            ..
+        } = &column_children[0].kind
+        else {
+            panic!("expected table group");
+        };
+        match group_kind {
+            GroupKind::Table(table) => {
+                assert_eq!(table.row_count, 1);
+                assert_eq!(table.col_count, 1);
+                assert_eq!(table.control_index, Some(0));
+            }
+            other => panic!("expected table group kind, got {other:?}"),
+        }
+
+        let LayerNodeKind::ClipRect {
+            clip_kind, child, ..
+        } = &table_children[0].kind
+        else {
+            panic!("expected table cell clip");
+        };
+        assert_eq!(*clip_kind, ClipKind::TableCell);
+
+        let LayerNodeKind::Group {
+            group_kind,
+            children: cell_children,
+            ..
+        } = &child.kind
+        else {
+            panic!("expected clipped table cell group");
+        };
+        match group_kind {
+            GroupKind::TableCell(cell) => {
+                assert!(cell.clip);
+                assert_eq!(cell.model_cell_index, Some(4));
+            }
+            other => panic!("expected table cell group kind, got {other:?}"),
+        }
+        assert!(matches!(
+            &cell_children[0].kind,
+            LayerNodeKind::Group {
+                group_kind: GroupKind::Table(_),
+                ..
+            }
+        ));
     }
 
     fn text_run(text: &str) -> TextRunNode {
