@@ -194,7 +194,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+            let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
                 font_size
@@ -206,8 +206,19 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else {
                 font_size * 0.5
             };
+            // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 는 좁은 폭으로 재산출.
+            // HY신명조 등 한글 폰트 메트릭의 ASCII '-' 폭(0.83 em) 부풀림 회피.
+            // 좁은 base 0.3 em 위에 paragraph_layout 가 라인 슬랙을 분배한
+            // extra_dash_advance 를 추가하여 PDF 의 elastic leader 동작 모방.
+            let is_leader = is_dash_leader_run(&chars, i);
+            let base_w = if is_leader {
+                base_w_raw.min(font_size * 0.3)
+            } else {
+                base_w_raw
+            };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
+            if is_leader { w += style.extra_dash_advance; }
             // 음수 자간(letter_spacing + extra_char_spacing < 0) 시
             // per-char 최소 advance = base*ratio*0.5 로 클램프하여 narrow
             // glyph(콤마/마침표 등) 이 뒷 글자와 역진 겹침되는 것을 방지한다.
@@ -301,7 +312,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+            let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
                 font_size
@@ -311,8 +322,17 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else {
                 font_size * 0.5
             };
+            // Task #352: 3+ 연속 dash leader 좁은 base 0.3 em + 라인 슬랙
+            // 분배(extra_dash_advance) 로 PDF elastic leader 모방.
+            let is_leader = is_dash_leader_run(&chars, i);
+            let base_w = if is_leader {
+                base_w_raw.min(font_size * 0.3)
+            } else {
+                base_w_raw
+            };
             let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
+            if is_leader { w += style.extra_dash_advance; }
             // 음수 자간(letter_spacing + extra_char_spacing < 0) 시 per-char 최소
             // advance 를 base_w*ratio*0.5 로 클램프하여 narrow glyph(콤마/마침표 등)
             // 이 뒷 글자와 역진 겹침되는 것을 방지한다. 문서 CharShape 의 음수 자간
@@ -559,7 +579,7 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let char_px = if cluster_len[i] > 1 {
+            let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
                 wasm_internals::measure_char_width_hwp(
@@ -567,8 +587,16 @@ impl TextMeasurer for WasmTextMeasurer {
                     c, hangul_hwp, font_size,
                 )
             };
+            // Task #352: dash leader 좁은 base 0.3 em + extra_dash_advance.
+            let is_leader = is_dash_leader_run(&chars, i);
+            let char_px = if is_leader {
+                char_px_raw.min(font_size * 0.3)
+            } else {
+                char_px_raw
+            };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
+            if is_leader { w += style.extra_dash_advance; }
             // 음수 자간(letter_spacing + extra_char_spacing < 0) 시
             // per-char 최소 advance 클램프로 narrow glyph 역진 방지.
             if style.letter_spacing + style.extra_char_spacing < 0.0 {
@@ -661,7 +689,7 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
-            let char_px = if cluster_len[i] > 1 {
+            let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
                 wasm_internals::measure_char_width_hwp(
@@ -669,8 +697,16 @@ impl TextMeasurer for WasmTextMeasurer {
                     c, hangul_hwp, font_size,
                 )
             };
+            // Task #352: dash leader 좁은 base 0.3 em + extra_dash_advance.
+            let is_leader = is_dash_leader_run(&chars, i);
+            let char_px = if is_leader {
+                char_px_raw.min(font_size * 0.3)
+            } else {
+                char_px_raw
+            };
             let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
             if c == ' ' { w += style.extra_word_spacing; }
+            if is_leader { w += style.extra_dash_advance; }
             // 음수 자간(letter_spacing + extra_char_spacing < 0) 시
             // per-char 최소 advance 클램프로 narrow glyph 역진 방지.
             if style.letter_spacing + style.extra_char_spacing < 0.0 {
@@ -781,6 +817,7 @@ pub(crate) fn resolved_to_text_style(styles: &ResolvedStyleSet, char_style_id: u
             inline_tabs: Vec::new(),
             extra_word_spacing: 0.0,
             extra_char_spacing: 0.0,
+            extra_dash_advance: 0.0,
             outline_type: cs.outline_type,
             shadow_type: cs.shadow_type,
             shadow_color: cs.shadow_color,
@@ -873,7 +910,7 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         if c == '\u{2007}' {
             return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
         }
-        let base_w = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
+        let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
             w
         } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
             font_size
@@ -883,8 +920,16 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         } else {
             font_size * 0.5
         };
+        // Task #352: 3+ 연속 dash leader 좁은 base 0.3 em + 라인 슬랙 분배.
+        let is_leader = is_dash_leader_run(&chars, i);
+        let base_w = if is_leader {
+            base_w_raw.min(font_size * 0.3)
+        } else {
+            base_w_raw
+        };
         let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
         if c == ' ' { w += style.extra_word_spacing; }
+        if is_leader { w += style.extra_dash_advance; }
         // 음수 자간(letter_spacing + extra_char_spacing < 0) 시
         // per-char 최소 advance 클램프로 narrow glyph 역진 방지.
         if style.letter_spacing + style.extra_char_spacing < 0.0 {
@@ -941,6 +986,34 @@ fn is_narrow_punctuation(c: char) -> bool {
         ',' | '.' | ':' | ';' | '\'' | '"' | '`' |
         '\u{00B7}'   // · MIDDLE DOT
     )
+}
+
+/// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).
+///
+/// 한컴 문서의 빈칸/구분선은 ASCII '-' 반복으로 구성되며, PDF 도 좁은
+/// advance 로 렌더된다. 그러나 일부 한글 폰트(HY신명조 등) 의 메트릭 DB 가
+/// '-' 글리프 폭을 0.83 em 으로 저장하고 있어 반복 시 자연 폭이
+/// 사용 가능 폭을 크게 초과한다. 본 헬퍼로 leader 시퀀스를 식별해
+/// 좁은 advance(`font_size * 0.3`) 로 재산출한다.
+///
+/// 자연 텍스트의 단발 dash(예: "stimulus-driven", "32.-") 는 ≥3 조건을
+/// 만족하지 않으므로 영향 없음.
+fn is_dash_leader_run(chars: &[char], i: usize) -> bool {
+    if chars[i] != '-' { return false; }
+    let mut count = 1usize;
+    let mut j = i;
+    while j > 0 && chars[j - 1] == '-' {
+        count += 1;
+        j -= 1;
+        if count >= 3 { return true; }
+    }
+    let mut j = i;
+    while j + 1 < chars.len() && chars[j + 1] == '-' {
+        count += 1;
+        j += 1;
+        if count >= 3 { return true; }
+    }
+    false
 }
 
 /// 한컴이 전각으로 처리하는 기호 (메트릭 폴백 시 font_size 사용)

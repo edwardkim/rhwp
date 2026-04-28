@@ -1,4 +1,6 @@
 use super::*;
+use crate::model::control::Bookmark;
+use crate::model::table::Table;
 
 #[test]
 fn test_paragraph_default() {
@@ -685,4 +687,91 @@ fn test_apply_char_shape_after_sequential_insert() {
     assert_eq!(para.char_shapes[1].start_pos, 2);
     assert_eq!(para.char_shapes[2].char_shape_id, 10); // 다라마바사
     assert_eq!(para.char_shapes[2].start_pos, 5);
+}
+
+#[test]
+fn test_control_text_positions_empty() {
+    let para = Paragraph::default();
+    assert_eq!(para.control_text_positions(), Vec::<usize>::new());
+}
+
+#[test]
+fn test_control_text_positions_no_offsets_inline_sequential() {
+    let para = Paragraph {
+        text: String::new(),
+        char_offsets: vec![],
+        controls: vec![
+            Control::Table(Box::<Table>::default()),
+            Control::Table(Box::<Table>::default()),
+        ],
+        ..Default::default()
+    };
+    // 인라인 컨트롤 2개: 첫 번째 push 0 후 pos += 1, 두 번째 push 1
+    assert_eq!(para.control_text_positions(), vec![0, 1]);
+}
+
+#[test]
+fn test_control_text_positions_gap_between_chars() {
+    // text = "AB", char_offsets = [0, 9] → 'A'(width 1) 와 'B' 사이 8 unit 갭 = inline ctrl 1개
+    let para = Paragraph {
+        text: "AB".to_string(),
+        char_offsets: vec![0, 9],
+        controls: vec![Control::Table(Box::<Table>::default())],
+        ..Default::default()
+    };
+    // controls[0] = 'A' 다음 character index 1
+    assert_eq!(para.control_text_positions(), vec![1]);
+}
+
+#[test]
+fn test_control_text_positions_gap_before() {
+    // text = "A", char_offsets = [8] → 'A' 앞에 8 unit 갭 = inline ctrl 1개
+    let para = Paragraph {
+        text: "A".to_string(),
+        char_offsets: vec![8],
+        controls: vec![Control::Table(Box::<Table>::default())],
+        ..Default::default()
+    };
+    // controls[0] = 'A' 이전 character index 0
+    assert_eq!(para.control_text_positions(), vec![0]);
+}
+
+#[test]
+fn test_control_text_positions_surrogate_pair_char_width() {
+    // text = "🎉A": '🎉'(U+1F389, surrogate pair, UTF-16 width=2) + 'A'(width=1)
+    // char_offsets = [0, 17] → 사이 gap = 17 - 0 - 2(surrogate width) = 15 = inline ctrl 1개
+    // controls 2 개로 width 분기 boundary 검증:
+    //   - width=2 정상: gap=15, n_ctrls=1, push position 1, fill last position chars.len()=2 → [1, 2]
+    //   - width=1 버그: gap=16, n_ctrls=2, push position 1 두 번 → [1, 1] (다른 결과)
+    let para = Paragraph {
+        text: "🎉A".to_string(),
+        char_offsets: vec![0, 17],
+        controls: vec![
+            Control::Table(Box::<Table>::default()),
+            Control::Table(Box::<Table>::default()),
+        ],
+        ..Default::default()
+    };
+    assert_eq!(para.control_text_positions(), vec![1, 2]);
+}
+
+#[test]
+fn test_control_text_positions_no_offsets_non_inline_skipped() {
+    // `char_offsets` 비어있는 폴백 경로에서 비인라인 컨트롤 (Bookmark) 은 pos 증가시키지 않음.
+    // [Bookmark, Table, Bookmark] →
+    //   - Bookmark: push pos=0, 비인라인이라 pos 유지 (0)
+    //   - Table:    push pos=0, 인라인이라 pos += 1 (= 1)
+    //   - Bookmark: push pos=1, 비인라인이라 pos 유지
+    // 결과: [0, 0, 1]
+    let para = Paragraph {
+        text: String::new(),
+        char_offsets: vec![],
+        controls: vec![
+            Control::Bookmark(Bookmark::default()),
+            Control::Table(Box::<Table>::default()),
+            Control::Bookmark(Bookmark::default()),
+        ],
+        ..Default::default()
+    };
+    assert_eq!(para.control_text_positions(), vec![0, 0, 1]);
 }

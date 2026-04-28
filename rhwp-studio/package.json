@@ -13,6 +13,8 @@
     "@types/chrome": "^0.1.40",
     "puppeteer-core": "^24.42.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-window": "^7.4.0"
   }
 }

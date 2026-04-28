@@ -103,64 +103,11 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
 }
 
 /// 반환: positions[i] = para.controls[i]가 삽입되어야 할 텍스트 문자 인덱스
+///
+/// 알고리즘 본체는 [`Paragraph::control_text_positions`] 로 이동했으며 (#390),
+/// 본 함수는 기존 호출 경로를 유지하기 위한 thin wrapper 다.
 pub(crate) fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
-    let offsets = &para.char_offsets;
-    let total_controls = para.controls.len();
-
-    if total_controls == 0 {
-        return vec![];
-    }
-
-    if offsets.is_empty() {
-        // char_offsets가 없는 경우: 인라인 컨트롤을 순차적으로 배치
-        // secd/cold 등 비인라인 컨트롤은 position 0, 인라인 컨트롤은 순차 증가
-        let mut pos = 0usize;
-        let mut positions = Vec::with_capacity(total_controls);
-        for ctrl in &para.controls {
-            positions.push(pos);
-            if matches!(ctrl,
-                Control::Shape(_) | Control::Table(_) |
-                Control::Picture(_) | Control::Equation(_)
-            ) {
-                pos += 1;
-            }
-        }
-        return positions;
-    }
-
-    let chars: Vec<char> = para.text.chars().collect();
-    let mut positions = Vec::with_capacity(total_controls);
-
-    // 첫 문자 이전의 갭: 확장 컨트롤이 텍스트 시작 전에 있는 경우
-    let gap_before = offsets[0] as usize;
-    let n_ctrls_before = gap_before / 8;
-    for _ in 0..n_ctrls_before {
-        if positions.len() >= total_controls { break; }
-        positions.push(0);
-    }
-
-    // 연속된 문자 사이의 갭
-    for i in 0..offsets.len().saturating_sub(1) {
-        if positions.len() >= total_controls { break; }
-        let current_off = offsets[i] as usize;
-        let next_off = offsets[i + 1] as usize;
-        let char_width = if chars.get(i).map_or(false, |&c| c as u32 > 0xFFFF) { 2 } else { 1 };
-        if next_off > current_off + char_width {
-            let gap = next_off - current_off - char_width;
-            let n_ctrls = gap / 8;
-            for _ in 0..n_ctrls {
-                if positions.len() >= total_controls { break; }
-                positions.push(i + 1); // 현재 문자 다음에 삽입
-            }
-        }
-    }
-
-    // 마지막 문자 이후의 컨트롤 (드문 경우)
-    while positions.len() < total_controls {
-        positions.push(chars.len());
-    }
-
-    positions
+    para.control_text_positions()
 }
 
 /// ShapeObject에서 TextBox를 추출하는 헬퍼

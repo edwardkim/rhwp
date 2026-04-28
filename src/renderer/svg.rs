@@ -329,10 +329,16 @@ impl SvgRenderer {
                 } else {
                     1.0
                 };
-                if (scale_x - 1.0).abs() > 0.01 {
+                let scale_y = if eq.layout_box.height > 0.0 && node.bbox.height > 0.0 {
+                    node.bbox.height / eq.layout_box.height
+                } else {
+                    1.0
+                };
+                let needs_scale = (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01;
+                if needs_scale {
                     self.output.push_str(&format!(
-                        "<g transform=\"translate({},{}) scale({:.4},1)\">\n",
-                        node.bbox.x, node.bbox.y, scale_x,
+                        "<g transform=\"translate({},{}) scale({:.4},{:.4})\">\n",
+                        node.bbox.x, node.bbox.y, scale_x, scale_y,
                     ));
                 } else {
                     self.output.push_str(&format!(
@@ -1061,6 +1067,11 @@ impl SvgRenderer {
         if let Some(ref fid) = effect_filter_id {
             self.output.push_str(&format!("<g filter=\"url(#{})\">\n", fid));
         }
+        // 밝기/대비 → SVG 필터 래핑
+        let bc_filter_id = self.ensure_brightness_contrast_filter(img.brightness, img.contrast);
+        if let Some(ref fid) = bc_filter_id {
+            self.output.push_str(&format!("<g filter=\"url(#{})\">\n", fid));
+        }
 
         let mime_type = detect_image_mime_type(data);
 
@@ -1158,6 +1169,9 @@ impl SvgRenderer {
             }
         }
 
+        if bc_filter_id.is_some() {
+            self.output.push_str("</g>\n");
+        }
         if effect_filter_id.is_some() {
             self.output.push_str("</g>\n");
         }
@@ -1207,6 +1221,40 @@ impl SvgRenderer {
             self.defs.push(def_str);
         }
         Some(id.to_string())
+    }
+
+    /// 밝기/대비 조정용 SVG 필터를 defs에 보장하고 ID를 반환한다.
+    /// 둘 다 0이면 필터 불필요 → None 반환.
+    /// HWP 스펙은 brightness/contrast 를 -100..=100 으로 정의하므로 손상된 입력에 대비해 clamp 한다.
+    fn ensure_brightness_contrast_filter(&mut self, brightness: i8, contrast: i8) -> Option<String> {
+        let brightness = brightness.clamp(-100, 100);
+        let contrast = contrast.clamp(-100, 100);
+        if brightness == 0 && contrast == 0 {
+            return None;
+        }
+
+        let id = format!("rhwp-img-bc-b{}c{}", brightness, contrast);
+
+        // 밝기: intercept 오프셋으로 구현 (slope=1, intercept=brightness/100)
+        // 대비: slope 조정으로 구현 (slope=(100+contrast)/100, intercept=0.5-0.5*slope)
+        // 둘을 합성: slope=contrast_slope, intercept=contrast_intercept + brightness_offset
+        let b = brightness as f64 / 100.0;
+        let slope = (100.0 + contrast as f64) / 100.0;
+        let intercept = (0.5 - 0.5 * slope) + b;
+
+        let def = format!(
+            "<filter id=\"{id}\">\
+                <feComponentTransfer>\
+                    <feFuncR type=\"linear\" slope=\"{slope:.4}\" intercept=\"{intercept:.4}\"/>\
+                    <feFuncG type=\"linear\" slope=\"{slope:.4}\" intercept=\"{intercept:.4}\"/>\
+                    <feFuncB type=\"linear\" slope=\"{slope:.4}\" intercept=\"{intercept:.4}\"/>\
+                </feComponentTransfer>\
+            </filter>\n"
+        );
+        if !self.defs.iter().any(|d| d == &def) {
+            self.defs.push(def);
+        }
+        Some(id)
     }
 
     /// 이미지를 원래 크기로 지정 위치에 배치 (배치 모드)
@@ -1883,14 +1931,68 @@ impl Renderer for SvgRenderer {
         let dot_radius = font_size * 0.08;
         let dot_cy_offset = -font_size * 0.35;
 
+        // Task #352: 3+ 연속 '-' 시퀀스(빈칸/leader) 를 단일 가로선으로 대체.
+        // Stage 2 가 advance 를 좁히면 글리프 폭이 advance 를 초과해 시각상
+        // 겹치므로 글리프 출력은 스킵하고 라인으로 통합. 가운데점 패턴과 동일.
+        // 단, 같은 run 에 underline 이 설정된 경우 underline 이 빈칸의 시각
+        // representation 을 담당하므로 dash leader 라인은 생략 (이중선 방지).
+        let suppress_dash_leader_line = !matches!(style.underline, UnderlineType::None);
+        let dash_run_groups: Vec<(usize, usize)> = {
+            let mut groups = Vec::new();
+            let mut run_start: Option<usize> = None;
+            for (idx, (_, cs)) in clusters.iter().enumerate() {
+                if cs == "-" {
+                    if run_start.is_none() { run_start = Some(idx); }
+                } else if let Some(s) = run_start.take() {
+                    if idx - s >= 3 { groups.push((s, idx)); }
+                }
+            }
+            if let Some(s) = run_start {
+                if clusters.len() - s >= 3 { groups.push((s, clusters.len())); }
+            }
+            groups
+        };
+        let dash_line_y_offset = -font_size * 0.32; // baseline 기준 dash 중앙선 근사
+        let dash_line_stroke_w = (font_size * 0.07).max(0.5);
+        let cluster_in_dash_run = |cluster_idx: usize| -> Option<(f64, f64)> {
+            // 첫 cluster 위치라면 (line_x1, line_x2) 반환, 외 None
+            for &(s, e) in &dash_run_groups {
+                if cluster_idx == s {
+                    let start_char_idx = clusters[s].0;
+                    let last = &clusters[e - 1];
+                    let end_char_idx = last.0 + last.1.chars().count();
+                    let x1 = char_positions.get(start_char_idx).copied().unwrap_or(0.0);
+                    let x2 = char_positions.get(end_char_idx).copied()
+                        .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0));
+                    return Some((x1, x2));
+                }
+                if cluster_idx > s && cluster_idx < e {
+                    // run 내부 dash: 라인은 한 번만 그리고 글리프 출력은 모두 스킵
+                    return Some((f64::NAN, f64::NAN));
+                }
+            }
+            None
+        };
+
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
         if style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
             let shadow_attrs = format!("{} fill=\"{}\"", base_attrs, shadow_color);
             let dx = style.shadow_offset_x;
             let dy = style.shadow_offset_y;
-            for (char_idx, cluster_str) in &clusters {
+            for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
                 if cluster_str == " " || cluster_str == "\t" { continue; }
+                // Task #352: dash leader 시퀀스는 글리프 스킵, 필요 시 라인 1 회
+                if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(cluster_idx) {
+                    if x1_rel.is_finite() && !suppress_dash_leader_line {
+                        let line_y = y + dash_line_y_offset + dy;
+                        self.output.push_str(&format!(
+                            "<line x1=\"{:.4}\" y1=\"{:.4}\" x2=\"{:.4}\" y2=\"{:.4}\" stroke=\"{}\" stroke-width=\"{:.4}\"/>\n",
+                            x + x1_rel + dx, line_y, x + x2_rel + dx, line_y, shadow_color, dash_line_stroke_w,
+                        ));
+                    }
+                    continue;
+                }
                 if is_middle_dot(cluster_str) {
                     let adv = cluster_advance(*char_idx, cluster_str);
                     let cx = x + char_positions[*char_idx] + adv / 2.0 + dx;
@@ -1919,8 +2021,19 @@ impl Renderer for SvgRenderer {
 
         // 원본 텍스트 렌더링
         let common_attrs = format!("{} fill=\"{}\"", base_attrs, color);
-        for (char_idx, cluster_str) in &clusters {
+        for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
             if cluster_str == " " || cluster_str == "\t" { continue; }
+            // Task #352: dash leader 시퀀스는 글리프 스킵, 필요 시 라인 1 회
+            if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(cluster_idx) {
+                if x1_rel.is_finite() && !suppress_dash_leader_line {
+                    let line_y = y + dash_line_y_offset;
+                    self.output.push_str(&format!(
+                        "<line x1=\"{:.4}\" y1=\"{:.4}\" x2=\"{:.4}\" y2=\"{:.4}\" stroke=\"{}\" stroke-width=\"{:.4}\"/>\n",
+                        x + x1_rel, line_y, x + x2_rel, line_y, color, dash_line_stroke_w,
+                    ));
+                }
+                continue;
+            }
             if is_middle_dot(cluster_str) {
                 let adv = cluster_advance(*char_idx, cluster_str);
                 let cx = x + char_positions[*char_idx] + adv / 2.0;

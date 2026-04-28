@@ -97,3 +97,54 @@ fn find_bin_data<'a>(bin_data_content: &'a [BinDataContent], bin_data_id: u16) -
 - `bin_data_id`는 레코드 순번이지 `storage_id`가 아니다 — HWP 스펙의 ID 참조 방식을 정확히 이해할 것
 - 대부분의 파일에서 우연히 동작하는 코드는 발견이 어려움 → 다양한 샘플로 검증 필요
 - 이미지 참조 로직이 여러 곳에 분산되어 있으면 일관성 유지가 어려움 → 헬퍼 함수로 중앙화
+
+## 회귀 이력
+
+### 2026-04-20 — Task #195 fallback 도입 (회귀 origin)
+
+커밋 [`5c72f48`](https://github.com/edwardkim/rhwp/commit/5c72f48) (Task #195 OOXML 차트 콤보/이중축 지원, @planet6897) 에서 HWPX 차트 sparse id (60000+N) 처리를 위해 `find_bin_data` 에 fallback 추가.
+
+이때 가드 `c.id == bin_data_id` 가 일반 HWP 그림의 정상 케이스도 거르는 부작용 발생:
+
+```rust
+// 회귀 도입 코드 (5c72f48)
+if let Some(c) = bin_data_content.get((bin_data_id - 1) as usize) {
+    if c.id == bin_data_id {            // ← 가드: c.id 는 storage_id, bin_data_id 는 인덱스
+        return Some(c);
+    }
+}
+bin_data_content.iter().find(|c| c.id == bin_data_id)   // ← 본 트러블슈팅이 정정한 그 결함 패턴 재발
+```
+
+- 결함: 인덱스로 접근한 항목의 `c.id` (=storage_id) 가 `bin_data_id` (=인덱스) 와 다르면 가드 실패 → fallback 으로 빠짐 → storage_id 검색
+- 영향: storage_id ≠ 인덱스인 모든 hwp (예: `samples/hwpspec.hwp` 1 페이지 페이지 표지)
+- 메인테이너의 PR 검토에서 발견 못함 — 본 트러블슈팅 문서가 있었음에도 가드 추가 시 동일 결함 패턴인지 점검이 누락된 정황
+
+### 2026-04-28 — Task #416 재정정
+
+가드 제거 + sparse id 분기:
+
+```rust
+pub(crate) fn find_bin_data<'a>(bin_data_content: &'a [BinDataContent], bin_data_id: u16) -> Option<&'a BinDataContent> {
+    if bin_data_id == 0 {
+        return None;
+    }
+    // 1-indexed 순번으로 BinDataContent 배열 접근 (가드 없음)
+    if let Some(c) = bin_data_content.get((bin_data_id - 1) as usize) {
+        return Some(c);
+    }
+    // 인덱스 범위 밖 (HWPX 차트 sparse id 60000+N 등) — id 직접 검색
+    bin_data_content.iter().find(|c| c.id == bin_data_id)
+}
+```
+
+- 일반 그림: 1-indexed 인덱스 매칭 (storage_id 가드 없음)
+- HWPX 차트 (id=60000+N, 인덱스 범위 밖): fallback id 검색 — Task #195 의도 보존
+- 단위 테스트 7 개 추가 (`src/renderer/layout/utils.rs::tests`):
+  - 0 / 인덱스 매칭 일반 / hwpspec 패턴 / sparse id / 범위 밖 / HWPX 실제 layout / hwpspec 14 BinData 모사
+
+## 추가 교훈 (2026-04-28)
+
+- **가드 / fallback 추가 시 본 트러블슈팅 문서 정독 필수** — 이미 정정한 결함 패턴이 다시 등장하지 않는지 점검
+- **PR 검토에서 트러블슈팅 문서 참조 절차 강화** — 같은 함수를 수정하는 PR 은 관련 트러블슈팅 문서를 보고서에 명시
+- **회귀 방지 단위 테스트** — 본 트러블슈팅 정정 시 단위 테스트가 없어 동일 결함이 재발 가능했음. 정정과 함께 단위 테스트 필수

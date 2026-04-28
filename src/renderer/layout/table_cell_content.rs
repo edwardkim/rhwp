@@ -643,6 +643,8 @@ impl LayoutEngine {
                                     transform: ShapeTransform::default(),
                                     crop: None,
                                     effect: pic.image_attr.effect,
+                                    brightness: pic.image_attr.brightness,
+                                    contrast: pic.image_attr.contrast,
                                 }),
                                 BoundingBox::new(pic_x, pic_y, fit_w, fit_h),
                             );

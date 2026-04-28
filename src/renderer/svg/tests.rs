@@ -191,3 +191,61 @@ fn test_bmp_to_png_invalid_returns_none() {
     let junk = vec![0u8; 32];
     assert!(bmp_bytes_to_png_bytes(&junk).is_none());
 }
+
+#[test]
+fn test_brightness_contrast_filter_zero_returns_none() {
+    let mut renderer = SvgRenderer::new();
+    assert!(renderer.ensure_brightness_contrast_filter(0, 0).is_none());
+    assert!(renderer.defs.is_empty());
+}
+
+#[test]
+fn test_brightness_contrast_filter_nonzero_adds_defs() {
+    let mut renderer = SvgRenderer::new();
+    let id = renderer.ensure_brightness_contrast_filter(30, -20);
+    assert!(id.is_some());
+    let id = id.unwrap();
+    assert_eq!(id, "rhwp-img-bc-b30c-20");
+    assert_eq!(renderer.defs.len(), 1);
+    let def = &renderer.defs[0];
+    assert!(def.contains(&format!("id=\"{}\"", id)));
+    assert!(def.contains("<feComponentTransfer>"));
+    assert!(def.contains("feFuncR"));
+}
+
+#[test]
+fn test_brightness_contrast_filter_dedup() {
+    let mut renderer = SvgRenderer::new();
+    renderer.ensure_brightness_contrast_filter(50, 50);
+    renderer.ensure_brightness_contrast_filter(50, 50);
+    assert_eq!(renderer.defs.len(), 1);
+}
+
+/// 순수 밝기 (b=50, c=0) → slope=1.0, intercept=0.5
+#[test]
+fn test_brightness_contrast_filter_pure_brightness() {
+    let mut renderer = SvgRenderer::new();
+    renderer.ensure_brightness_contrast_filter(50, 0);
+    let def = &renderer.defs[0];
+    assert!(def.contains("slope=\"1.0000\""), "slope expected 1.0000: {def}");
+    assert!(def.contains("intercept=\"0.5000\""), "intercept expected 0.5000: {def}");
+}
+
+/// 순수 대비 (b=0, c=50) → slope=1.5, intercept=-0.25
+#[test]
+fn test_brightness_contrast_filter_pure_contrast() {
+    let mut renderer = SvgRenderer::new();
+    renderer.ensure_brightness_contrast_filter(0, 50);
+    let def = &renderer.defs[0];
+    assert!(def.contains("slope=\"1.5000\""), "slope expected 1.5000: {def}");
+    assert!(def.contains("intercept=\"-0.2500\""), "intercept expected -0.2500: {def}");
+}
+
+/// HWP 범위 외 입력은 -100..=100 으로 clamp — i8 max/min → 100/-100
+#[test]
+fn test_brightness_contrast_filter_clamp_out_of_range() {
+    let mut renderer = SvgRenderer::new();
+    let id = renderer.ensure_brightness_contrast_filter(127, -128).expect("clamp 후 nonzero");
+    assert_eq!(id, "rhwp-img-bc-b100c-100");
+    assert_eq!(renderer.defs.len(), 1);
+}
