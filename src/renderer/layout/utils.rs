@@ -402,4 +402,69 @@ mod tests {
         let v = vec![mk(1, "png"), mk(2, "png")];
         assert!(find_bin_data(&v, 99).is_none());
     }
+
+    /// 차트 회귀 방지 — HWPX 의 실제 배열 구조 모사
+    /// 일반 BinData (id=인덱스+1) 다음에 차트 (id=60000+N) 가 push 되는 형태
+    #[test]
+    fn find_bin_data_hwpx_realistic_layout_with_chart() {
+        // HWPX 파서 (parser/hwpx/mod.rs:105-127) 의 실제 push 패턴 모사
+        let v = vec![
+            mk(1, "png"),               // index 0 — bin_data_id=1
+            mk(2, "png"),               // index 1 — bin_data_id=2
+            mk(3, "jpg"),               // index 2 — bin_data_id=3
+            mk(60001, "ooxml_chart"),   // index 3 — chart 1
+            mk(60002, "ooxml_chart"),   // index 4 — chart 2
+        ];
+
+        // 일반 그림: bin_data_id=1,2,3 → 인덱스 매칭
+        for i in 1..=3u16 {
+            let c = find_bin_data(&v, i).expect("그림 매칭");
+            assert_eq!(c.id, i);
+            assert!(c.extension == "png" || c.extension == "jpg");
+        }
+
+        // 차트: bin_data_id=60001,60002 → 인덱스 60000+ 범위 밖 → fallback id 검색
+        let chart1 = find_bin_data(&v, 60001).expect("차트 1");
+        assert_eq!(chart1.id, 60001);
+        assert_eq!(chart1.extension, "ooxml_chart");
+
+        let chart2 = find_bin_data(&v, 60002).expect("차트 2");
+        assert_eq!(chart2.id, 60002);
+
+        // 차트의 인덱스 위치 (3, 4) 는 일반 그림처럼 1-indexed 로도 접근 가능하지만
+        // 차트는 bin_data_id=60001/60002 로 호출되므로 영향 없음
+    }
+
+    /// HWP 패턴 — storage_id sparse 한 일반 그림 (hwpspec.hwp 1 페이지 페이지 표지)
+    #[test]
+    fn find_bin_data_hwp_hwpspec_page_bg_pattern() {
+        // hwpspec.hwp 의 실제 BinData 매핑 (앞부분 14개)
+        // 트러블슈팅 문서의 표 참고
+        let v = vec![
+            mk(0x000C, "png"),  // index 0 — bin_data_id=1 → 페이지 표지 (BIN000C.png, 1137 bytes)
+            mk(0x0001, "bmp"),  // index 1 — bin_data_id=2
+            mk(0x0002, "bmp"),  // index 2 — bin_data_id=3
+            mk(0x0003, "bmp"),  // index 3
+            mk(0x0004, "bmp"),  // index 4
+            mk(0x0005, "bmp"),  // index 5
+            mk(0x0006, "bmp"),  // index 6
+            mk(0x0007, "bmp"),  // index 7
+            mk(0x0008, "bmp"),  // index 8
+            mk(0x0009, "bmp"),  // index 9
+            mk(0x000A, "bmp"),  // index 10
+            mk(0x000B, "bmp"),  // index 11
+            mk(0x002B, "png"),  // index 12 — bin_data_id=13
+            mk(0x000D, "bmp"),  // index 13 — bin_data_id=14
+        ];
+
+        // 페이지 표지 — bin_data_id=1 → 인덱스 0 → storage_id=12 (PNG)
+        let bg = find_bin_data(&v, 1).expect("페이지 표지");
+        assert_eq!(bg.id, 0x000C, "회귀: bin_data_id=1 이 storage_id=12 가 아님 (가드가 정상 매칭을 거짓 실패시킴)");
+        assert_eq!(bg.extension, "png");
+
+        // bin_data_id=14 → 인덱스 13 → storage_id=13 (BMP)
+        let p2 = find_bin_data(&v, 14).expect("두 번째 표지");
+        assert_eq!(p2.id, 0x000D);
+        assert_eq!(p2.extension, "bmp");
+    }
 }
