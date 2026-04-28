@@ -1,0 +1,39 @@
+문서 로드 완료: samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx (30페이지)
+LAYOUT_OVERFLOW: page=20, col=0, para=174, type=Table, y=1049.7, bottom=1028.0, overflow=21.8px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=175 line=0 y=1063.1 col_bottom=1028.0 overflow=35.1px
+LAYOUT_OVERFLOW: page=20, col=0, para=175, type=FullParagraph, y=1063.1, bottom=1028.0, overflow=35.1px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=176 line=0 y=1076.4 col_bottom=1028.0 overflow=48.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=176, type=FullParagraph, y=1076.4, bottom=1028.0, overflow=48.4px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=177 line=0 y=1091.1 col_bottom=1028.0 overflow=63.1px
+LAYOUT_OVERFLOW: page=20, col=0, para=177, type=FullParagraph, y=1091.1, bottom=1028.0, overflow=63.1px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=178 line=0 y=1105.7 col_bottom=1028.0 overflow=77.8px
+LAYOUT_OVERFLOW: page=20, col=0, para=178, type=FullParagraph, y=1105.7, bottom=1028.0, overflow=77.8px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=179 line=0 y=1120.4 col_bottom=1028.0 overflow=92.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=179, type=FullParagraph, y=1120.4, bottom=1028.0, overflow=92.4px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=180 line=0 y=1135.1 col_bottom=1028.0 overflow=107.1px
+LAYOUT_OVERFLOW: page=20, col=0, para=180, type=FullParagraph, y=1135.1, bottom=1028.0, overflow=107.1px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=181 line=0 y=1149.7 col_bottom=1028.0 overflow=121.8px
+LAYOUT_OVERFLOW: page=20, col=0, para=181, type=FullParagraph, y=1149.7, bottom=1028.0, overflow=121.8px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=182 line=0 y=1164.4 col_bottom=1028.0 overflow=136.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=182, type=FullParagraph, y=1164.4, bottom=1028.0, overflow=136.4px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=183 line=0 y=1179.1 col_bottom=1028.0 overflow=151.1px
+LAYOUT_OVERFLOW: page=20, col=0, para=183, type=FullParagraph, y=1179.1, bottom=1028.0, overflow=151.1px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=184 line=0 y=1193.7 col_bottom=1028.0 overflow=165.8px
+LAYOUT_OVERFLOW: page=20, col=0, para=184, type=FullParagraph, y=1193.7, bottom=1028.0, overflow=165.8px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=185 line=0 y=1208.4 col_bottom=1028.0 overflow=180.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=185, type=FullParagraph, y=1208.4, bottom=1028.0, overflow=180.4px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=186 line=0 y=1223.1 col_bottom=1028.0 overflow=195.1px
+LAYOUT_OVERFLOW: page=20, col=0, para=186, type=FullParagraph, y=1223.1, bottom=1028.0, overflow=195.1px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=187 line=0 y=1237.7 col_bottom=1028.0 overflow=209.8px
+LAYOUT_OVERFLOW: page=20, col=0, para=187, type=FullParagraph, y=1237.7, bottom=1028.0, overflow=209.8px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=188 line=0 y=1252.4 col_bottom=1028.0 overflow=224.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=188, type=FullParagraph, y=1252.4, bottom=1028.0, overflow=224.4px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=189 line=0 y=1267.1 col_bottom=1028.0 overflow=239.1px
+LAYOUT_OVERFLOW: page=20, col=0, para=189, type=FullParagraph, y=1267.1, bottom=1028.0, overflow=239.1px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=190 line=0 y=1281.7 col_bottom=1028.0 overflow=253.8px
+LAYOUT_OVERFLOW: page=20, col=0, para=190, type=FullParagraph, y=1281.7, bottom=1028.0, overflow=253.8px
+LAYOUT_OVERFLOW_DRAW: section=0 pi=191 line=0 y=1296.4 col_bottom=1028.0 overflow=268.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=191, type=FullParagraph, y=1296.4, bottom=1028.0, overflow=268.4px
+LAYOUT_OVERFLOW: page=20, col=0, para=192, type=Table, y=1549.6, bottom=1028.0, overflow=521.7px
+  → output/2025년 기부·답례품 실적 지자체 보고서_양식_021.svg
+내보내기 완료: 1개 SVG 파일 → output/

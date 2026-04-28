@@ -1362,11 +1362,31 @@ impl LayoutEngine {
             if !shape_jumped && !prev_tac_seg_applied {
             if let Some(prev_pi) = prev_layout_para {
                 if item_para != prev_pi {
-                    // 글앞으로/글뒤로 Shape가 있는 문단: vpos에 Shape 높이가 포함되어 과대 → bypass
+                    // 글앞으로/글뒤로/위아래 Shape·Picture가 있는 문단: vpos에 개체 높이가 포함되어 과대 → bypass
+                    // - InFrontOfText/BehindText: 개체 vpos가 텍스트 라인 vpos와 별도 누적 → 합산 시 과대
+                    // - TopAndBottom + vert=Para: 한컴이 후속 문단 vpos에 개체 높이를 더해 기록하므로
+                    //   sequential y_offset이 이미 개체 바닥까지 진행된 상태에서 vpos 보정 lazy_base 산출
+                    //   시 prev_pi의 텍스트 vpos_end만 쓰면 base가 개체 높이만큼 낮게 산출되어
+                    //   다음 문단/표가 개체 높이만큼 추가 점프 (Task #409: 21페이지 차트→2x1 표 521px overflow)
                     let prev_has_overlay_shape = paragraphs.get(prev_pi).map(|p| {
-                        p.controls.iter().any(|c|
-                            matches!(c, Control::Shape(s) if matches!(s.common().text_wrap,
-                                crate::model::shape::TextWrap::InFrontOfText | crate::model::shape::TextWrap::BehindText)))
+                        use crate::model::shape::{TextWrap, VertRelTo};
+                        p.controls.iter().any(|c| match c {
+                            Control::Shape(s) => {
+                                let cm = s.common();
+                                matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+                                    || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                                        && matches!(cm.vert_rel_to, VertRelTo::Para)
+                                        && !cm.treat_as_char)
+                            }
+                            Control::Picture(pic) => {
+                                let cm = &pic.common;
+                                if cm.treat_as_char { return false; }
+                                matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+                                    || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                                        && matches!(cm.vert_rel_to, VertRelTo::Para))
+                            }
+                            _ => false,
+                        })
                     }).unwrap_or(false);
                     if !prev_has_overlay_shape {
                     if let Some(prev_para) = paragraphs.get(prev_pi) {
