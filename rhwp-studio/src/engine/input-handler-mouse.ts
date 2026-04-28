@@ -584,7 +584,8 @@ export function onClick(this: any, e: MouseEvent): void {
         this.selectionRenderer.clear();
         this.renderTableObjectSelection();
         this.eventBus.emit('table-object-selection-changed', true);
-        this.checkTransparentBordersTransition();
+        // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+        // this.checkTransparentBordersTransition();
         this.textarea.focus();
         return;
       }
@@ -601,7 +602,8 @@ export function onClick(this: any, e: MouseEvent): void {
         this.selectionRenderer.clear();
         this.renderTableObjectSelection();
         this.eventBus.emit('table-object-selection-changed', true);
-        this.checkTransparentBordersTransition();
+        // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+        // this.checkTransparentBordersTransition();
         this.textarea.focus();
         return;
       }
@@ -617,7 +619,8 @@ export function onClick(this: any, e: MouseEvent): void {
       this.active = true;
       this.isDragging = true;
       this.updateCaret();
-      this.checkTransparentBordersTransition();
+      // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+      // this.checkTransparentBordersTransition();
       document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
       this.textarea.focus();
       return;
@@ -732,7 +735,8 @@ export function onClick(this: any, e: MouseEvent): void {
     }
     this.selectionRenderer.clear();
     this.emitCursorFormatState();
-    this.checkTransparentBordersTransition();
+    // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
+    // this.checkTransparentBordersTransition();
 
     // 필드(누름틀) 마커 표시 + 상태 표시줄 갱신
     this.updateFieldMarkers();

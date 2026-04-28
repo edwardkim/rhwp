@@ -395,12 +395,30 @@ impl WebCanvasRenderer {
                 self.ctx.clip();
             }
             RenderNodeType::Equation(eq) => {
+                // SVG 경로 (svg.rs 의 Equation 분기) 와 동일하게 bbox 크기에 맞춰
+                // X/Y 스케일링 적용. HWP 저장 영역(bbox)과 레이아웃 산출 크기(layout_box)
+                // 가 다를 때 수식이 정확한 영역에 그려지도록 한다.
+                let scale_x = if eq.layout_box.width > 0.0 && node.bbox.width > 0.0 {
+                    node.bbox.width / eq.layout_box.width
+                } else {
+                    1.0
+                };
+                let scale_y = if eq.layout_box.height > 0.0 && node.bbox.height > 0.0 {
+                    node.bbox.height / eq.layout_box.height
+                } else {
+                    1.0
+                };
                 self.ctx.save();
+                let _ = self.ctx.translate(node.bbox.x, node.bbox.y);
+                let needs_scale = (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01;
+                if needs_scale {
+                    let _ = self.ctx.scale(scale_x, scale_y);
+                }
                 super::equation::canvas_render::render_equation_canvas(
                     &self.ctx,
                     &eq.layout_box,
-                    node.bbox.x,
-                    node.bbox.y,
+                    0.0,
+                    0.0,
                     &eq.color_str,
                     eq.font_size,
                 );
