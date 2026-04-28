@@ -2140,6 +2140,46 @@ mod tests {
         }
     }
 
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn render_page_png_native_uses_document_core_skia_layer_path() {
+        use crate::model::document::{Document, Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        let mut document = Document::default();
+        document.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+        });
+
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+
+        let png = core
+            .render_page_png_native(0)
+            .expect("empty document should render through native Skia");
+
+        assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+        let decoded = image::load_from_memory(&png).expect("decode native Skia PNG");
+        assert!(decoded.width() > 0);
+        assert!(decoded.height() > 0);
+    }
+
     #[test]
     fn get_bin_data_returns_zero_based_content_slice() {
         let mut core = DocumentCore::new_empty();

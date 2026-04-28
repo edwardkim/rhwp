@@ -209,6 +209,7 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - P3 visual regression coverage runs `npm run e2e:render-diff:ci` in `rhwp-studio` to compare legacy Canvas and layer Canvas in Chromium; CI uploads render-diff artifacts and writes a summary.
 - The default render-diff fixtures cover basic text/table output, business-document layout, and treat-as-char object placement; override with `RHWP_RENDER_DIFF_FILES`, `RHWP_RENDER_DIFF_MAX_PAGES`, or `RHWP_RENDER_DIFF_ALL=1`.
 - Native Skia PNG export is available only on native targets with `--features native-skia`.
+- The initial native Skia path is a PNG raster backend smoke path; CanvasKit, resource interning/cache, complex text shaping, full image crop/tile parity, and native equation/raw-svg/form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
 - This phase establishes the frontend/backend boundary for later CanvasKit and fuller native Skia backends.
