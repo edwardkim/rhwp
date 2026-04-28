@@ -114,6 +114,14 @@ jobs:
 
           npm run e2e:render-diff
 
+      - name: Add render diff summary
+        if: always()
+        working-directory: rhwp-studio
+        run: |
+          if [ -f e2e/screenshots/render-diff/summary.md ]; then
+            cat e2e/screenshots/render-diff/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Upload render diff artifacts
         if: always()
         uses: actions/upload-artifact@v4
