@@ -57,8 +57,8 @@ pub struct SvgRenderer {
     overlay_skip_depth: u32,
     /// 디버그 오버레이용: 현재 페이지의 메인 섹션 인덱스 (-1이면 미설정)
     overlay_page_section: i32,
-    /// 생성된 화살표 마커 ID 집합 (중복 방지)
-    arrow_marker_ids: std::collections::HashSet<String>,
+    /// defs 내 중복 방지용 ID 집합 (화살표 마커, 이미지 효과 필터 등)
+    defs_ids: std::collections::HashSet<String>,
     /// 폰트 임베딩 모드
     pub font_embed_mode: FontEmbedMode,
     /// 추가 폰트 탐색 경로
@@ -120,7 +120,7 @@ impl SvgRenderer {
             overlay_vpos_resets: Vec::new(),
             overlay_skip_depth: 0,
             overlay_page_section: -1,
-            arrow_marker_ids: std::collections::HashSet::new(),
+            defs_ids: std::collections::HashSet::new(),
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
             font_codepoints: std::collections::HashMap::new(),
@@ -709,10 +709,9 @@ impl SvgRenderer {
         let color_id = color.replace('#', "");
         let id = format!("mk-{}-{}-{}-{}", type_name, dir, color_id, arrow_size);
 
-        if self.arrow_marker_ids.contains(&id) {
+        if !self.defs_ids.insert(id.clone()) {
             return id;
         }
-        self.arrow_marker_ids.insert(id.clone());
 
         // HWP 화살표 크기 → 너비/길이 배율
         // arrow_size: 0=작은-작은, 1=작은-중간, 2=작은-큰,
@@ -1216,9 +1215,8 @@ impl SvgRenderer {
                     0 0 0 1 0\"/></filter>\n",
             ),
         };
-        let def_str = def.to_string();
-        if !self.defs.iter().any(|d| d == &def_str) {
-            self.defs.push(def_str);
+        if self.defs_ids.insert(id.to_string()) {
+            self.defs.push(def.to_string());
         }
         Some(id.to_string())
     }
@@ -1251,7 +1249,7 @@ impl SvgRenderer {
                 </feComponentTransfer>\
             </filter>\n"
         );
-        if !self.defs.iter().any(|d| d == &def) {
+        if self.defs_ids.insert(id.clone()) {
             self.defs.push(def);
         }
         Some(id)
@@ -1828,8 +1826,8 @@ impl Renderer for SvgRenderer {
         self.height = height;
         self.output.clear();
         self.defs.clear();
+        self.defs_ids.clear();
         self.gradient_counter = 0;
-        self.arrow_marker_ids.clear();
         self.overlay_para_bounds.clear();
         self.overlay_table_bounds.clear();
         self.overlay_vpos_resets.clear();
