@@ -1287,6 +1287,11 @@ impl LayoutEngine {
                 y_offset = bottom_y;
             }
         }
+        // [Task #412] vpos 보정 anchor: 첫 PageItem 이 실제 렌더링되는 y_offset.
+        // body_wide_reserved 푸시 후의 y_offset 이 첫 항목의 vpos(=base) 에 대응됨.
+        // 이를 anchor 로 사용해야 vpos→y 변환이 정확함 (col_area.y 는 단 영역 top
+        // 으로 vpos=0 이 아니라 vpos=base 도 아닌 일반적으로 어긋난 값).
+        let col_anchor_y = y_offset;
 
 
 
@@ -1398,34 +1403,73 @@ impl LayoutEngine {
                             .or_else(|| prev_para.line_segs.last());
                         if let Some(seg) = prev_seg {
                             if !(seg.vertical_pos == 0 && prev_pi > 0) {
-                                let vpos_end = seg.vertical_pos + seg.line_height + seg.line_spacing;
-                                let base = if let Some(b) = vpos_page_base {
-                                    b
+                                // [Task #412] vpos_end 결정:
+                                // - page_path: 현재 paragraph 의 first seg vpos 를 직접 사용 (HWP 가 spacing_after 를
+                                //   다음 paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확).
+                                //   현재 항목의 vpos 를 신뢰하지 못하는 경우(0 reset 등) prev 기반 fallback.
+                                // - lazy_path: 기존 prev 기반 vpos_end 유지 (sequential 와의 역산 다리).
+                                let prev_vpos_end = seg.vertical_pos + seg.line_height + seg.line_spacing;
+                                let curr_first_vpos = paragraphs.get(item_para)
+                                    .and_then(|p| p.line_segs.first())
+                                    .map(|ls| ls.vertical_pos);
+                                // [Task #412] page_base / lazy_base 경로 분리:
+                                // - page_base: 첫 PageItem 이 명확한 vpos 를 가짐(FullParagraph/PartialParagraph/Table).
+                                //   sequential 배치는 col_area.y + vpos*scale (절대 vpos 좌표) 으로 동작하므로
+                                //   보정 공식도 base 차감 없이 col_area.y + vpos*scale 사용해야 함.
+                                //   기존 base 차감은 첫 항목 vpos 만큼 보정값을 위로 어긋나게 하여
+                                //   다단 우측 단(base 큼) 에서 보정이 발동하지 않는 문제 발생.
+                                // - lazy_base: 첫 PageItem 이 신뢰 불가(Shape/PartialTable). sequential y_offset
+                                //   으로부터 lazy_base 역산하여 단단을 잇는 다리 역할. 기존 base 차감 유지.
+                                let (base, is_page_path) = if let Some(b) = vpos_page_base {
+                                    (b, true)
                                 } else if let Some(b) = vpos_lazy_base {
-                                    b
+                                    (b, false)
                                 } else {
                                     // 지연 보정: 첫 보정 시점에서 기준점 산출
                                     // sequential y_offset에서 역산하여 기준 vpos 결정
                                     let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32;
-                                    let lazy_base = vpos_end - y_delta_hu;
+                                    let lazy_base = prev_vpos_end - y_delta_hu;
                                     // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                     // vpos 누적보다 크게 밀린 것 → 역산 무효
                                     if lazy_base < 0 {
                                         // 보정 건너뛰기: base를 vpos_end로 설정하여
                                         // end_y = col_area.y + 0 → 검증 실패 → 보정 미적용
-                                        vpos_end
+                                        (prev_vpos_end, false)
                                     } else {
                                         vpos_lazy_base = Some(lazy_base);
-                                        lazy_base
+                                        (lazy_base, false)
                                     }
                                 };
-                                let end_y = col_area.y
-                                    + hwpunit_to_px(vpos_end - base, self.dpi);
+                                // [Task #412] vpos_end 결정 (page/lazy 공통):
+                                // 현재 paragraph 의 first vpos 우선 사용. HWP 가 spacing_after 를 다음
+                                // paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확.
+                                // vpos reset(0) 이거나 prev 보다 작아진 경우는 prev 기반 fallback.
+                                let vpos_end = match curr_first_vpos {
+                                    Some(v) if v > seg.vertical_pos => v,
+                                    _ => prev_vpos_end,
+                                };
+                                // [Task #412] page_path: col_anchor_y (body_wide_reserved 푸시 적용 후) 가
+                                // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
+                                // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어
+                                //   col_area.y 기준 (vpos_end - base) 차감 공식이 일관.
+                                let end_y = if is_page_path {
+                                    col_anchor_y + hwpunit_to_px(vpos_end - base, self.dpi)
+                                } else {
+                                    col_area.y + hwpunit_to_px(vpos_end - base, self.dpi)
+                                };
                                 // 자가 검증: 보정값이 컬럼 영역 내에 있고
                                 // 현재 y_offset보다 뒤로 가지 않아야 유효
-                                if end_y >= col_area.y && end_y <= col_area.y + col_area.height
-                                    && end_y >= y_offset - 1.0
-                                {
+                                let applied = end_y >= col_area.y && end_y <= col_area.y + col_area.height
+                                    && end_y >= y_offset - 1.0;
+                                if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                                    let path = if is_page_path { "page" } else { "lazy" };
+                                    eprintln!(
+                                        "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} applied={}",
+                                        path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
+                                        vpos_end, base, col_area.y, y_offset, end_y, applied,
+                                    );
+                                }
+                                if applied {
                                     y_offset = end_y;
                                 }
                             }
