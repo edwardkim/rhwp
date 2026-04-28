@@ -1385,9 +1385,17 @@ impl TypesetEngine {
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
             mt.row_block_for(0)
         } else { (0, 0, 0.0) };
-        let first_block_is_single_row = first_block_end == first_block_start + 1;
-        if remaining_on_page < first_block_h && !st.current_items.is_empty() {
-            let first_row_splittable = first_block_is_single_row
+        let first_block_size = first_block_end.saturating_sub(first_block_start);
+        let first_block_is_single_row = first_block_size == 1;
+        let first_block_protected = first_block_size >= 2 && first_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+        // Task #398 v2: 보호 블록(2~3 rows)만 블록 전체 높이로 판정. 큰 rowspan(>3)은 행 단위 분할.
+        let split_unit_h = if first_block_protected {
+            first_block_h
+        } else {
+            mt.row_heights.first().copied().unwrap_or(0.0)
+        };
+        if remaining_on_page < split_unit_h && !st.current_items.is_empty() {
+            let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
                 && mt.is_row_splittable(0);
             let min_content = if first_row_splittable {
@@ -1481,11 +1489,14 @@ impl TypesetEngine {
                 let approx_end = mt.snap_to_block_boundary(approx_end_raw);
 
                 let (cur_b_start, cur_b_end, _) = mt.row_block_for(cursor_row);
-                let cur_block_single = cur_b_end == cur_b_start + 1;
+                let cur_block_size = cur_b_end.saturating_sub(cur_b_start);
+                let cur_block_single = cur_block_size == 1;
+                let cur_block_protected = cur_block_size >= 2 && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                let cur_can_intra_split = (cur_block_single || !cur_block_protected) && can_intra_split;
 
                 if approx_end <= cursor_row {
                     let r = cursor_row;
-                    let splittable = cur_block_single && can_intra_split && mt.is_row_splittable(r);
+                    let splittable = cur_can_intra_split && mt.is_row_splittable(r);
                     if splittable {
                         let padding = mt.max_padding_for_row(r);
                         let avail_content = (avail_for_rows - padding).max(0.0);
@@ -1501,7 +1512,7 @@ impl TypesetEngine {
                         } else {
                             end_row = r + 1;
                         }
-                    } else if cur_block_single && can_intra_split && effective_first_row_h > avail_for_rows {
+                    } else if cur_can_intra_split && effective_first_row_h > avail_for_rows {
                         let padding = mt.max_padding_for_row(r);
                         let avail_content = (avail_for_rows - padding).max(0.0);
                         if avail_content >= MIN_SPLIT_CONTENT_PX {
@@ -1510,9 +1521,8 @@ impl TypesetEngine {
                         } else {
                             end_row = r + 1;
                         }
-                    } else if !cur_block_single {
-                        // Task #398: 다중 행 블록(rowspan 묶음)이 들어가지 않으면
-                        // 블록 전체를 한 단위로 배치 (페이지 초과 가능, 시각적 잘림 방지).
+                    } else if cur_block_protected {
+                        // Task #398: 보호 블록(2~3 rows)이 들어가지 않으면 블록 전체 배치.
                         end_row = cur_b_end;
                     } else {
                         end_row = r + 1;
@@ -1528,8 +1538,11 @@ impl TypesetEngine {
                     let range_h = mt.range_height(cursor_row, approx_end) - delta;
                     let remaining_avail = avail_for_rows - range_h;
                     let (next_b_start, next_b_end, _) = mt.row_block_for(r);
-                    let next_block_single = next_b_end == next_b_start + 1;
-                    if next_block_single && can_intra_split && mt.is_row_splittable(r) {
+                    let next_block_size = next_b_end.saturating_sub(next_b_start);
+                    let next_block_single = next_block_size == 1;
+                    let next_block_protected = next_block_size >= 2 && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                    let next_can_intra_split = (next_block_single || !next_block_protected) && can_intra_split;
+                    if next_can_intra_split && mt.is_row_splittable(r) {
                         let row_cs = cs;
                         let padding = mt.max_padding_for_row(r);
                         let avail_content_for_r = (remaining_avail - row_cs - padding).max(0.0);
@@ -1543,7 +1556,7 @@ impl TypesetEngine {
                             end_row = r + 1;
                             split_end_limit = avail_content_for_r;
                         }
-                    } else if next_block_single && can_intra_split && mt.row_heights[r] > base_available {
+                    } else if next_can_intra_split && mt.row_heights[r] > base_available {
                         let row_cs = cs;
                         let padding = mt.max_padding_for_row(r);
                         let avail_content_for_r = (remaining_avail - row_cs - padding).max(0.0);
