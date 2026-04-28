@@ -1702,6 +1702,8 @@ impl LayoutEngine {
                                             para_index: Some(para_index),
                                             control_index: Some(tac_ci),
                                             effect: pic.image_attr.effect,
+                                            brightness: pic.image_attr.brightness,
+                                            contrast: pic.image_attr.contrast,
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -1733,9 +1735,17 @@ impl LayoutEngine {
                                 let svg_content = crate::renderer::equation::svg_render::render_equation_svg(
                                     &layout_box, &color_str, font_size_px,
                                 );
-                                let eq_h = layout_box.height;
+                                // HWP 저장 높이를 우선 사용 (한컴 조판 결과 기준)
+                                let hwp_eq_h = hwpunit_to_px(eq.common.height as i32, self.dpi);
+                                let eq_h = if hwp_eq_h > 0.0 { hwp_eq_h } else { layout_box.height };
                                 // 수식 baseline을 텍스트 baseline에 맞춤
-                                let eq_y = (y + baseline - layout_box.baseline).max(y);
+                                // HWP 높이와 레이아웃 높이가 다르면 baseline도 비례 조정
+                                let eq_y = if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
+                                    let scale = hwp_eq_h / layout_box.height;
+                                    (y + baseline - layout_box.baseline * scale).max(y)
+                                } else {
+                                    (y + baseline - layout_box.baseline).max(y)
+                                };
                                 let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                     (Some(ctx.path[0].cell_index), Some(ctx.path[0].cell_para_index))
                                 } else {
@@ -1952,6 +1962,8 @@ impl LayoutEngine {
                                         para_index: Some(para_index),
                                         control_index: Some(tac_ci),
                                         effect: pic.image_attr.effect,
+                                        brightness: pic.image_attr.brightness,
+                                        contrast: pic.image_attr.contrast,
                                         ..ImageNode::new(bin_data_id, image_data)
                                     }),
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2035,11 +2047,19 @@ impl LayoutEngine {
                                             para_index: Some(para_index),
                                             control_index: Some(tac_ci),
                                             effect: pic.image_attr.effect,
+                                            brightness: pic.image_attr.brightness,
+                                            contrast: pic.image_attr.contrast,
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
                                     );
                                     line_node.children.push(img_node);
+                                    // [Task #418/#376] layout_shape_item 의 Task #347 분기 (빈 문단 +
+                                    // TAC Picture 직접 emit) 와 이중 렌더링되지 않도록 인라인 위치를
+                                    // 등록한다. layout_shape_item 은 등록된 경우 push 를 스킵한다.
+                                    tree.set_inline_shape_position(
+                                        section_index, para_index, tac_ci, img_x, img_y,
+                                    );
                                     img_x += tac_w;
                                 }
                             }
@@ -2098,8 +2118,14 @@ impl LayoutEngine {
                             let svg_content = crate::renderer::equation::svg_render::render_equation_svg(
                                 &layout_box, &color_str, font_size_px,
                             );
-                            let eq_h = layout_box.height;
-                            let eq_y = (y + baseline - layout_box.baseline).max(y);
+                            let hwp_eq_h = hwpunit_to_px(eq.common.height as i32, self.dpi);
+                            let eq_h = if hwp_eq_h > 0.0 { hwp_eq_h } else { layout_box.height };
+                            let eq_y = if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
+                                let scale = hwp_eq_h / layout_box.height;
+                                (y + baseline - layout_box.baseline * scale).max(y)
+                            } else {
+                                (y + baseline - layout_box.baseline).max(y)
+                            };
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (Some(ctx.path[0].cell_index), Some(ctx.path[0].cell_para_index))
                             } else {
