@@ -403,6 +403,92 @@ mod tests {
         );
     }
 
+    /// 한컴 편집기가 만든 hwp 샘플(`samples/equation-lim.hwp`)의 수식 IR이
+    /// HWPX 직렬화 → 재파싱 사이클에서 의미를 잃지 않는지 검증한다.
+    ///
+    /// 자체 IR 생성 패턴(Document::default + 수동 push)을 회피하고,
+    /// 한컴 origin 데이터에서 추출한 Equation을 입력으로 사용한다.
+    #[test]
+    fn equation_roundtrip_from_hancom_origin_hwp_sample() {
+        use crate::model::control::{Control, Equation};
+        use crate::parser::parse_hwp;
+
+        let bytes = std::fs::read("samples/equation-lim.hwp")
+            .expect("samples/equation-lim.hwp must be readable");
+        let original = parse_hwp(&bytes).expect("parse hancom origin hwp");
+
+        let collect_equations = |doc: &Document| -> Vec<Equation> {
+            doc.sections
+                .iter()
+                .flat_map(|s| s.paragraphs.iter())
+                .flat_map(|p| p.controls.iter())
+                .filter_map(|c| match c {
+                    Control::Equation(eq) => Some((**eq).clone()),
+                    _ => None,
+                })
+                .collect()
+        };
+
+        let original_eqs = collect_equations(&original);
+        assert!(
+            !original_eqs.is_empty(),
+            "한컴 origin 샘플에 수식이 존재해야 회귀 비교가 의미있음"
+        );
+
+        let hwpx_bytes = serialize_hwpx(&original).expect("serialize to hwpx");
+        let reparsed = parse_hwpx(&hwpx_bytes).expect("parse hwpx back");
+        let reparsed_eqs = collect_equations(&reparsed);
+
+        assert_eq!(
+            reparsed_eqs.len(),
+            original_eqs.len(),
+            "수식 컨트롤 개수가 hwpx 라운드트립에서 유지되어야 함"
+        );
+
+        for (i, (orig, rep)) in original_eqs.iter().zip(reparsed_eqs.iter()).enumerate() {
+            assert_eq!(
+                rep.script, orig.script,
+                "[#{}] script must roundtrip through hwpx",
+                i
+            );
+            assert_eq!(
+                rep.font_size, orig.font_size,
+                "[#{}] font_size must roundtrip",
+                i
+            );
+            assert_eq!(
+                rep.baseline, orig.baseline,
+                "[#{}] baseline must roundtrip",
+                i
+            );
+            assert_eq!(
+                rep.font_name, orig.font_name,
+                "[#{}] font_name must roundtrip",
+                i
+            );
+            assert_eq!(
+                rep.color, orig.color,
+                "[#{}] color must roundtrip",
+                i
+            );
+            assert_eq!(
+                rep.common.width, orig.common.width,
+                "[#{}] common.width must roundtrip",
+                i
+            );
+            assert_eq!(
+                rep.common.height, orig.common.height,
+                "[#{}] common.height must roundtrip",
+                i
+            );
+            assert_eq!(
+                rep.common.treat_as_char, orig.common.treat_as_char,
+                "[#{}] common.treat_as_char must roundtrip",
+                i
+            );
+        }
+    }
+
     #[test]
     fn linesegs_emitted_per_linebreak() {
         let mut doc = Document::default();
