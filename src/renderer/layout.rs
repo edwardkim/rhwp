@@ -524,9 +524,23 @@ impl LayoutEngine {
                             .get(para.para_shape_id as usize)
                             .map(|s| s.alignment)
                             .unwrap_or(Alignment::Left);
+                        // Task #445: 머리말/꼬리말 영역의 wrap=TopAndBottom + vert=Para 표는
+                        // 첫 라인의 line_height/2 만큼 아래로 anchor 됨 (HWP 가 line center
+                        // 기준으로 표를 배치하는 동작과 일치). 이 보정이 없으면 페이지 번호
+                        // 박스가 본문 바닥과 붙어 보이는 문제(Task #445) 발생.
+                        let line_anchor_offset = if matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                            && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                            && i == 0
+                        {
+                            let lh_hu = para.line_segs.first().map(|ls| ls.line_height as i32).unwrap_or(0);
+                            hwpunit_to_px(lh_hu, self.dpi) / 2.0
+                        } else {
+                            0.0
+                        };
+                        let table_y = y_offset + line_anchor_offset;
                         y_offset = self.layout_table(
                             tree, area_node, t,
-                            0, styles, area, y_offset, bin_data_content,
+                            0, styles, area, table_y, bin_data_content,
                             None, 0,
                             Some((i, ci)), alignment,
                             None, 0.0, 0.0, None, None, None,
