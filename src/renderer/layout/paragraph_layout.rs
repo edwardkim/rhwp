@@ -1735,6 +1735,17 @@ impl LayoutEngine {
                                     let bin_data_id = pic.image_attr.bin_data_id;
                                     let image_data = find_bin_data(bdc, bin_data_id)
                                         .map(|c| c.data.clone());
+                                    let crop = {
+                                        let c = &pic.crop;
+                                        if c.right > c.left && c.bottom > c.top
+                                            && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0) {
+                                            Some((c.left, c.top, c.right, c.bottom))
+                                        } else { None }
+                                    };
+                                    let original_size_hu = if pic.shape_attr.original_width > 0
+                                        && pic.shape_attr.original_height > 0 {
+                                        Some((pic.shape_attr.original_width, pic.shape_attr.original_height))
+                                    } else { None };
                                     let img_id = tree.next_id();
                                     let img_node = RenderNode::new(
                                         img_id,
@@ -1742,6 +1753,8 @@ impl LayoutEngine {
                                             section_index: Some(section_index),
                                             para_index: Some(para_index),
                                             control_index: Some(tac_ci),
+                                            crop,
+                                            original_size_hu,
                                             effect: pic.image_attr.effect,
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
@@ -1995,6 +2008,17 @@ impl LayoutEngine {
                                 let bin_data_id = pic.image_attr.bin_data_id;
                                 let image_data = find_bin_data(bdc, bin_data_id)
                                     .map(|c| c.data.clone());
+                                let crop = {
+                                    let c = &pic.crop;
+                                    if c.right > c.left && c.bottom > c.top
+                                        && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0) {
+                                        Some((c.left, c.top, c.right, c.bottom))
+                                    } else { None }
+                                };
+                                let original_size_hu = if pic.shape_attr.original_width > 0
+                                    && pic.shape_attr.original_height > 0 {
+                                    Some((pic.shape_attr.original_width, pic.shape_attr.original_height))
+                                } else { None };
                                 let img_id = tree.next_id();
                                 let img_node = RenderNode::new(
                                     img_id,
@@ -2002,6 +2026,8 @@ impl LayoutEngine {
                                         section_index: Some(section_index),
                                         para_index: Some(para_index),
                                         control_index: Some(tac_ci),
+                                        crop,
+                                        original_size_hu,
                                         effect: pic.image_attr.effect,
                                         brightness: pic.image_attr.brightness,
                                         contrast: pic.image_attr.contrast,
@@ -2080,6 +2106,17 @@ impl LayoutEngine {
                                     let bin_data_id = pic.image_attr.bin_data_id;
                                     let image_data = find_bin_data(bdc, bin_data_id)
                                         .map(|c| c.data.clone());
+                                    let crop = {
+                                        let c = &pic.crop;
+                                        if c.right > c.left && c.bottom > c.top
+                                            && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0) {
+                                            Some((c.left, c.top, c.right, c.bottom))
+                                        } else { None }
+                                    };
+                                    let original_size_hu = if pic.shape_attr.original_width > 0
+                                        && pic.shape_attr.original_height > 0 {
+                                        Some((pic.shape_attr.original_width, pic.shape_attr.original_height))
+                                    } else { None };
                                     let img_id = tree.next_id();
                                     let img_node = RenderNode::new(
                                         img_id,
@@ -2087,6 +2124,8 @@ impl LayoutEngine {
                                             section_index: Some(section_index),
                                             para_index: Some(para_index),
                                             control_index: Some(tac_ci),
+                                            crop,
+                                            original_size_hu,
                                             effect: pic.image_attr.effect,
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
