@@ -183,6 +183,7 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - The layered SVG path is a transition adapter that expands `PageLayerTree` back into the existing SVG renderer.
 - Browser/native Canvas paths render through `PageLayerTree` replay by default.
 - Legacy Canvas remains available through `renderPageCanvasLegacy` / `renderPageToCanvasLegacy` for parity checks.
+- P3 visual regression coverage runs `npm run e2e:render-diff` in `rhwp-studio` to compare legacy Canvas and layer Canvas in Chromium; CI uploads render-diff artifacts and writes a summary.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
 - This phase establishes the frontend/backend boundary for later CanvasKit and native Skia backends.
