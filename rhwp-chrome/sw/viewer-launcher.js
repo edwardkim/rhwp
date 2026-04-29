@@ -2,6 +2,18 @@
 // - 뷰어 탭 열기/재활용
 // - URL 파라미터로 파일 경로 전달
 
+import { resolveDocumentUrl } from './document-url-resolver.js';
+
+function buildViewerUrl(viewerBase, options = {}) {
+  const params = new URLSearchParams();
+
+  if (options.url) params.set('url', resolveDocumentUrl(options.url));
+  if (options.filename) params.set('filename', options.filename);
+
+  const query = params.toString();
+  return query ? `${viewerBase}?${query}` : viewerBase;
+}
+
 /**
  * 뷰어 탭을 열어 HWP 파일을 표시한다.
  * @param {object} [options]
@@ -10,13 +22,7 @@
  */
 export function openViewer(options = {}) {
   const viewerBase = chrome.runtime.getURL('viewer.html');
-  const params = new URLSearchParams();
-
-  if (options.url) params.set('url', options.url);
-  if (options.filename) params.set('filename', options.filename);
-
-  const query = params.toString();
-  const fullUrl = query ? `${viewerBase}?${query}` : viewerBase;
+  const fullUrl = buildViewerUrl(viewerBase, options);
 
   chrome.tabs.create({ url: fullUrl });
 }
@@ -34,12 +40,8 @@ export async function openViewerOrReuse(options = {}) {
 
   if (emptyTab) {
     // 기존 빈 탭에 파일 로드
-    const params = new URLSearchParams();
-    if (options.url) params.set('url', options.url);
-    if (options.filename) params.set('filename', options.filename);
-
     await chrome.tabs.update(emptyTab.id, {
-      url: `${viewerBase}?${params.toString()}`,
+      url: buildViewerUrl(viewerBase, options),
       active: true
     });
   } else {
