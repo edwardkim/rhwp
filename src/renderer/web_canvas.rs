@@ -314,6 +314,7 @@ impl WebCanvasRenderer {
                 if let Some(ref data) = img.data {
                     self.draw_image_with_fill_mode(
                         data, &node.bbox, img.fill_mode, img.original_size, img.crop,
+                        img.original_size_hu,
                     );
                 }
             }
@@ -2110,20 +2111,20 @@ impl WebCanvasRenderer {
         fill_mode: Option<ImageFillMode>,
         original_size: Option<(f64, f64)>,
         crop: Option<(i32, i32, i32, i32)>,
+        original_size_hu: Option<(u32, u32)>,
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
             ImageFillMode::FitToSize | ImageFillMode::None => {
                 // crop이 있으면 source rect 기반 drawImage 사용
-                if let Some((cl, ct, cr, cb)) = crop {
+                if let Some(crop_rect) = crop {
                     if let Some((img_w, img_h)) = parse_image_dimensions_canvas(data) {
                         let img_w = img_w as f64;
                         let img_h = img_h as f64;
-                        let scale_x = cr as f64 / img_w;
-                        let src_x = cl as f64 / scale_x;
-                        let src_y = ct as f64 / scale_x;
-                        let src_w = (cr - cl) as f64 / scale_x;
-                        let src_h = (cb - ct) as f64 / scale_x;
+                        let (src_x, src_y, src_w, src_h) =
+                            crate::renderer::svg::compute_image_crop_src(
+                                crop_rect, original_size_hu, img_w, img_h,
+                            );
                         let is_cropped = src_x > 0.5 || src_y > 0.5
                             || (src_w - img_w).abs() > 1.0 || (src_h - img_h).abs() > 1.0;
                         if is_cropped {
