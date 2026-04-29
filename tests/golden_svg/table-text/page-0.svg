@@ -21,10 +21,7 @@
 <clipPath id="cell-clip-67"><rect x="648.0933333333334" y="202.08" width="76.38666666666666" height="36.49333333333334"/></clipPath>
 </defs>
 <rect x="0" y="0" width="793.7066666666667" height="1122.48" fill="#ffffff"/>
-<g clip-path="url(#body-clip-3)"><rect x="190.77333333333334" y="214.32666666666668" width="74.38666666666667" height="12" fill="none"/>
-<rect x="120.18666666666667" y="177.83333333333334" width="62.786666666666676" height="48.49333333333334" fill="none"/>
-<rect x="120.18666666666667" y="143.86666666666667" width="291.94666666666666" height="12" fill="none"/>
-<g clip-path="url(#cell-clip-6)"><rect x="113.38666666666667" y="134.14666666666668" width="305.5466666666667" height="31.44" fill="#d9d9d9"/>
+<g clip-path="url(#body-clip-3)"><g clip-path="url(#cell-clip-6)"><rect x="113.38666666666667" y="134.14666666666668" width="305.5466666666667" height="31.44" fill="#d9d9d9"/>
 <text x="220.16" y="154.06666666666666" font-family="맑은 고딕,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="12" fill="#000000">기</text>
 <text x="232.16" y="154.06666666666666" font-family="맑은 고딕,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="12" fill="#000000">부</text>
 <text x="250.16" y="154.06666666666666" font-family="맑은 고딕,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="12" fill="#000000">금</text>

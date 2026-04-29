@@ -23,9 +23,9 @@
 <clipPath id="cell-clip-155"><rect x="214.42666666666668" y="918.5066666666671" width="467.85333333333335" height="99.32"/></clipPath>
 </defs>
 <rect x="0" y="0" width="793.7066666666667" height="1122.5066666666667" fill="#ffffff"/>
-<g clip-path="url(#body-clip-3)"><rect x="89.2" y="960.8333333333338" width="118.42666666666668" height="132.49999999999966" fill="none"/>
-<rect x="89.2" y="861.5133333333339" width="118.42666666666668" height="38.133333333333326" fill="none"/>
-<rect x="60.00000000000001" y="60.00000000000001" width="686.6666666666667" height="739.3733333333339" fill="none"/>
+<g clip-path="url(#body-clip-3)"><rect x="60.00000000000001" y="1027.4266666666672" width="686.6666666666667" height="65.9066666666663" fill="none"/>
+<rect x="60.00000000000001" y="422.78666666666675" width="686.6666666666667" height="376.58666666666716" fill="none"/>
+<rect x="60.00000000000001" y="60.00000000000001" width="686.6666666666667" height="182.4" fill="none"/>
 <text x="343.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">주</text>
 <text x="359.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">주</text>
 <text x="375.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">총</text>

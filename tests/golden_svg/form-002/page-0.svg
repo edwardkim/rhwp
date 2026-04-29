@@ -5,16 +5,7 @@
 <clipPath id="cell-clip-335"><rect x="92.34666666666666" y="826.1866666666667" width="610.1466666666666" height="27.30666666666667"/></clipPath>
 </defs>
 <rect x="0" y="0" width="793.7066666666667" height="1122.48" fill="#ffffff"/>
-<g clip-path="url(#body-clip-3)"><rect x="77.46666666666667" y="860.9733333333332" width="631.88" height="150.3466666666667" fill="none"/>
-<rect x="99.14666666666666" y="831.84" width="596.5466666666667" height="16" fill="none"/>
-<rect x="77.46666666666667" y="559.5466666666666" width="178.69333333333336" height="264.7600000000001" fill="none"/>
-<rect x="201.28" y="535.4599999999999" width="501.4" height="14.666666666666629" fill="none"/>
-<rect x="77.46666666666667" y="408.47999999999996" width="113.38666666666667" height="113.24666666666673" fill="none"/>
-<rect x="77.46666666666667" y="342.41333333333324" width="113.38666666666667" height="19.33333333333337" fill="none"/>
-<rect x="263.6933333333333" y="319.9866666666666" width="445.6533333333333" height="14.666666666666686" fill="none"/>
-<rect x="77.46666666666667" y="269.5333333333333" width="113.38666666666667" height="65.78666666666663" fill="none"/>
-<rect x="77.46666666666667" y="105.58666666666667" width="113.38666666666667" height="130.9333333333333" fill="none"/>
-<rect x="75.58666666666667" y="94.48" width="117.14666666666666" height="38.21333333333334" fill="#cccccc"/>
+<g clip-path="url(#body-clip-3)"><rect x="75.58666666666667" y="94.48" width="117.14666666666666" height="38.21333333333334" fill="#cccccc"/>
 <text transform="translate(105.16,119.18666666666667) scale(0.9600,1)" font-family="맑은 고딕,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="16" font-weight="bold" fill="#000000">품</text>
 <text transform="translate(119.56,119.18666666666667) scale(0.9600,1)" font-family="맑은 고딕,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="16" font-weight="bold" fill="#000000">목</text>
 <text transform="translate(133.95999999999998,119.18666666666667) scale(0.9600,1)" font-family="맑은 고딕,&apos;Malgun Gothic&apos;,&apos;맑은 고딕&apos;,&apos;Apple SD Gothic Neo&apos;,&apos;Noto Sans KR&apos;,&apos;Pretendard&apos;,sans-serif" font-size="16" font-weight="bold" fill="#000000">번</text>
