@@ -657,9 +657,35 @@ impl LayoutEngine {
 
         // 문단 스타일에서 여백 및 정렬 정보
         let para_style = styles.para_styles.get(composed.para_style_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+        let box_margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+        let box_margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+
+        // 문단에 시각적 테두리(stroke 있는 border)가 있고 border_spacing 좌/우가 0인
+        // 파일의 경우, 한컴은 paragraph margin 값을 inner padding으로도 사용하여
+        // 텍스트가 테두리에 붙지 않도록 한다. rhwp는 동일 효과를 내기 위해 텍스트
+        // 위치 계산에 사용하는 margin 값에만 inner padding을 더하고, 박스(테두리)
+        // 위치는 원래 margin 값을 그대로 사용한다.
+        // 배경(fill)만 있는 문단은 영향 받지 않도록 stroke 유무를 확인한다.
+        let para_border_fill_id_pre = para_style.map(|s| s.border_fill_id).unwrap_or(0);
+        let has_visible_stroke = if para_border_fill_id_pre > 0 {
+            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
+            styles.border_styles.get(idx)
+                .map(|bs| bs.borders.iter().any(|b|
+                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
+                .unwrap_or(false)
+        } else {
+            false
+        };
+        let bs_left_px = para_style.map(|s| s.border_spacing[0]).unwrap_or(0.0);
+        let bs_right_px = para_style.map(|s| s.border_spacing[1]).unwrap_or(0.0);
+        let (inner_pad_left, inner_pad_right) = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
+            (box_margin_left, box_margin_right)
+        } else {
+            (0.0, 0.0)
+        };
+        let margin_left = box_margin_left + inner_pad_left;
+        let margin_right = box_margin_right + inner_pad_right;
         let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Justify);
         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
@@ -2507,7 +2533,7 @@ impl LayoutEngine {
                 let is_partial_start = start_line > 0;
                 let is_partial_end = end < composed.lines.len();
                 self.para_border_ranges.borrow_mut().push(
-                    (para_border_fill_id, col_area.x + margin_left, bg_y_start, col_area.width - margin_left - margin_right, y, top_inset, bottom_inset, is_partial_start, is_partial_end)
+                    (para_border_fill_id, col_area.x + box_margin_left, bg_y_start, col_area.width - box_margin_left - box_margin_right, y, top_inset, bottom_inset, is_partial_start, is_partial_end)
                 );
             }
         }

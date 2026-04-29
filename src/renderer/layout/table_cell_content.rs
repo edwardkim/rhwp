@@ -642,6 +642,7 @@ impl LayoutEngine {
                                     original_size: None,
                                     transform: ShapeTransform::default(),
                                     crop: None,
+                                    original_size_hu: None,
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,

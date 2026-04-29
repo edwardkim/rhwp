@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.8] - 2026-04-29
+
+라이브러리 버전 동기화. v0.7.7 후속 사이클 — 외부 컨트리뷰터 15 PR (cherry-pick) + 메인테이너 회귀 정정 3건 (#394, #416, #418) + 위키/README 정비. 핵심 변경: 그림 자동 크롭 공식 정정 (#430), TopAndBottom Picture chart 정정 (#409), 다단 vpos 보정 anchor (#412), heading-orphan vpos 보정 (#404), 동일 문단 inline TAC (#402), PageLayerTree generation API (#364). 상세는 저장소 루트 CHANGELOG.md 참고.
+
 ## [0.7.7] - 2026-04-27
 
 라이브러리 버전 동기화. v0.7.6 회귀 정정 사이클 (#354, #359, #361, #362). TypesetEngine 의 페이지네이션 fit drift, page_num 갱신, PartialTable + Square wrap 처리 8항목 누적 정정. 상세는 저장소 루트 CHANGELOG.md 참고.

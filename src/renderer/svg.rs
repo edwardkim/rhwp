@@ -1102,21 +1102,8 @@ impl SvgRenderer {
                     if let Some((img_w, img_h)) = parse_image_dimensions(&render_data) {
                         let img_w = img_w as f64;
                         let img_h = img_h as f64;
-                        // crop 좌표 → 원본 이미지 비율 (crop 좌표 / 안 자른 전체 crop 크기)
-                        // 안 자른 전체 crop 크기 ≈ 원본 px × (crop.right / img_w)
-                        // 즉 scale = crop.right / img_w (이 값이 ~75)
-                        let scale_x = cr as f64 / img_w;
-                        let scale_y = if ct == 0 && cl == 0 {
-                            // 전체 이미지의 scale은 right/width로 추정
-                            scale_x
-                        } else {
-                            cb as f64 / img_h // fallback
-                        };
-                        // 원본 px 좌표로 변환
-                        let src_x = cl as f64 / scale_x;
-                        let src_y = ct as f64 / scale_x;
-                        let src_w = (cr - cl) as f64 / scale_x;
-                        let src_h = (cb - ct) as f64 / scale_x;
+                        let (src_x, src_y, src_w, src_h) =
+                            compute_image_crop_src((cl, ct, cr, cb), img.original_size_hu, img_w, img_h);
                         // 전체 이미지 대비 잘림이 있는지 확인
                         let is_cropped = src_x > 0.5 || src_y > 0.5
                             || (src_w - img_w).abs() > 1.0 || (src_h - img_h).abs() > 1.0;
@@ -2390,6 +2377,32 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
 }
 
 /// 이미지 데이터에서 픽셀 크기(width, height)를 파싱한다.
+/// HWP `pic.crop` (HWPUNIT) 와 원본 이미지 크기(HU/px)로부터 SVG `viewBox` 에 쓸
+/// 원본 픽셀 단위 source rect (x, y, w, h)를 계산한다.
+///
+/// `original_size_hu = Some((ow, oh))` 가 주어지면 정확한 HU/px 스케일을 사용한다.
+/// 그렇지 않으면 `crop.right / img_w_px` 를 폴백 스케일로 사용한다(과거 동작 호환).
+pub(crate) fn compute_image_crop_src(
+    crop_hu: (i32, i32, i32, i32),
+    original_size_hu: Option<(u32, u32)>,
+    img_w_px: f64,
+    img_h_px: f64,
+) -> (f64, f64, f64, f64) {
+    let (cl, ct, cr, cb) = crop_hu;
+    let (scale_x, scale_y) = match original_size_hu {
+        Some((ow, oh)) if ow > 0 && oh > 0 => (ow as f64 / img_w_px, oh as f64 / img_h_px),
+        _ => {
+            let s = cr as f64 / img_w_px;
+            (s, s)
+        }
+    };
+    let src_x = cl as f64 / scale_x;
+    let src_y = ct as f64 / scale_y;
+    let src_w = (cr - cl) as f64 / scale_x;
+    let src_h = (cb - ct) as f64 / scale_y;
+    (src_x, src_y, src_w, src_h)
+}
+
 fn parse_image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
     if data.len() < 24 {
         return None;
