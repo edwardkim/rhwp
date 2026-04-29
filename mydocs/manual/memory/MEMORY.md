@@ -31,3 +31,4 @@
 - [작업지시자 정답지 한컴 환경](reference_authoritative_hancom.md) — 한컴 2010 + 한컴 2022 의 편집기 출력만 정답지. 한글뷰어 / macOS 인쇄 / 외부 변환은 정답지 아님
 - [v0.7.6 페이지 레이아웃 회귀의 origin](feedback_v076_regression_origin.md) — 외부 PR 컨트리뷰터들이 자기 환경 PDF 를 정답지로 사용 → 작업지시자 환경에서 회귀. 머지 전 작업지시자 직접 시각 검증을 게이트로
 - [이슈 close 시 정정 commit devel 머지 검증 필수](feedback_close_issue_verify_merged.md) — Task #376 정정 commit 이 임시 브랜치에만 있고 devel 미머지 → 동일 결함 재발 (Task #418). close 전 git branch --contains 검증
+- [작은 단위 PATCH 회전 운영 철학](feedback_small_batch_release_strategy.md) — 활발한 컨트리뷰션 사이클 (9명 외부 기여자) 에서 큰 묶음으로 완성도 높이려는 시도가 오히려 위험 누적. v0.x 단계에서 신규 API/모듈 (opt-in, 하위 호환성 100%) 도 PATCH 로 묶어 빠른 회전 — 컨트리뷰터 동기 + 위험 분산

@@ -2,16 +2,126 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
-## [Unreleased]
+## [0.7.8] — 2026-04-29
 
-### 수정
+> v0.7.7 후속 사이클 — 외부 컨트리뷰터 다수 + 메인테이너 회귀 정정 + 위키/README 정비
 
-- **다단 섹션 #359 누적 공식 회귀 정정** (#391)
-  - `src/renderer/typeset.rs` 누적 공식을 `col_count` 로 분기:
-    단단 → `total_height` (k-water-rfp #359 보존), 다단 → `height_for_fit` (trailing_ls 인플레이션 차단)
-  - 다단 layout 은 vpos 기반 stacking 이므로 누적의 trailing_ls 가 단을 조기 종료시키던 문제 해결
-  - **exam_eng** (2단): 11 → **8 페이지**, 단독 1-item 단 (p3/p5/p7) 모두 해소
-  - 단단 샘플 (k-water-rfp / kps-ai / aift / KTX / form-01 / hwp-multi-001) 무회귀
+### 외부 PR cherry-pick (15 건)
+
+라이브러리 본질 정정 (조판 / 페이지네이션 / 직렬화):
+
+- **PR #391 다단 섹션 누적 공식 회귀 정정** (#391, by [@planet6897](https://github.com/planet6897))
+  - `src/renderer/typeset.rs` 누적 공식을 `col_count` 로 분기 — 단단 → `total_height`, 다단 → `height_for_fit` (trailing_ls 인플레이션 차단)
+  - exam_eng (2단): 11 → **8 페이지**, 단독 1-item 단 (p3/p5/p7) 해소
+
+- **PR #396 수식 렌더링 개선** (#174, #175, by [@oksure](https://github.com/oksure))
+  - 인라인 수식 높이를 `eq.common.height` (HWP 권위값) 기준으로 설정 + X/Y 스케일링 동시 적용
+  - 수식 내 CJK 문자 이탤릭 / 너비 보정 비적용 — CASES 한글 행 겹침 정정
+  - 메인테이너 후속 정정 3건 (Canvas 분수선 y / Equation 스케일 / Limit fi=fs)
+
+- **PR #395 그림 밝기/대비 효과 SVG 반영** (#150, by [@oksure](https://github.com/oksure))
+
+- **PR #397 수식 ATOP 파싱 및 렌더링 보정** (by [@cskwork](https://github.com/cskwork))
+  - **본 저장소 첫 외부 컨트리뷰터** — `EqNode::Atop` AST 파싱 + 분수선 없는 위/아래 배치 (HWP 의 ATOP / OVER 의미 분리)
+
+- **PR #400 HWPX 수식 직렬화 보존** (#286, by [@cskwork](https://github.com/cskwork))
+  - `render_paragraph_parts` 의 controls 무시 정황 정정 + parser XML entity 복원
+  - 한컴 한글 2020 정상 열람 + PDF 일치 확인 (한컴 origin hwp 라운드트립 회귀 commit `ecd7d9a` 추가)
+
+- **PR #401 v2 표 페이지 분할 rowspan>1 셀 분할 단위** (#398, by [@planet6897](https://github.com/planet6897))
+  - `BLOCK_UNIT_MAX_ROWS=3` 임계 — 작은 블록 (≤3 행) 만 보호, 큰 rowspan (≥4 행) 행 단위 분할 허용 (HanCom 호환)
+  - synam-001.hwp 5페이지 회귀 정정 (35→37→**35** 페이지)
+
+- **PR #406 동일 문단 inline TAC 그림 페이지네이션 정정** (#402, by [@planet6897](https://github.com/planet6897))
+  - 같은 paragraph 의 두 번째 inline 그림이 첫 번째와 같은 y 좌표에 그려져 겹침/오버플로 발생하던 문제 정정
+  - 27→30 페이지 (분할 정상화)
+
+- **PR #408 heading-orphan vpos 기반 보정** (#404, by [@planet6897](https://github.com/planet6897))
+  - vpos 기반 5 조건 AND trigger (current fit + vpos overflow + next substantial + next 못 fit + single column non-wrap) — vpos overflow 41건 중 1건만 진짜 orphan
+  - 9쪽 pi=83 헤딩 → 10쪽으로 push, 후속 표와 함께 배치
+
+- **PR #410 TopAndBottom Picture vert=Para chart 정정 + atomic TAC top-fit** (#409, by [@planet6897](https://github.com/planet6897))
+  - v1: `prev_has_overlay_shape` 가드 확장 (Picture + TopAndBottom + vert=Para)
+  - v2: `typeset_section` controls 루프 chart 높이 누적
+  - v3: `typeset_paragraph` atomic TAC top-fit 시멘틱 (60px tolerance)
+
+- **PR #415 Task #352 dash 시퀀스 Justify 폭 부풀림 정정** (#352, by [@planet6897](https://github.com/planet6897))
+  - dash leader elastic Justify 분배 (PDF 모방), exam_eng Q32 dash advance 12.11 → 7.06 px
+
+- **PR #424 다단 우측 단 단행 문단 줄간격 누락 정정 (vpos 보정 anchor)** (#412, by [@planet6897](https://github.com/planet6897))
+  - layout.rs vpos 보정 공식 정정 — `col_anchor_y` 도입 (body_wide_reserved 푸시 직후 anchor 보존), `curr_first_vpos` 우선 사용, page_path/lazy_path 분리
+  - exam_eng p1 우측 단 item 7 ①~⑤ 15.33→**22.55px 균일**, 좌측 단 item 1 catch-up 28.56→21.89
+
+- **PR #427 SvgRenderer defs 중복 방지 HashSet 통합** (#423, by [@oksure](https://github.com/oksure))
+  - `arrow_marker_ids: HashSet<String>` → 범용 `defs_ids: HashSet<String>` 통합, O(n)→O(1)
+
+- **PR #434 그림 자동 크롭 (FitToSize+crop) 공식 교정 + 테두리 inner padding** (#430, by [@planet6897](https://github.com/planet6897))
+  - svg.rs / web_canvas.rs 의 crop 스케일 공식 정정 (`cr/img_w` → `original_size_hu/img_size_px`) + 헬퍼 `compute_image_crop_src` 추출 (SVG/Canvas 단일 진실 원천)
+  - 별도 fix: 테두리 문단 inner padding (텍스트가 테두리에 붙는 문제)
+
+API 추가 / 도구:
+
+- **PR #405 `Paragraph::control_text_positions` 추가** (#390, by [@DanMeon](https://github.com/DanMeon))
+  - 외부 binding 노출용 API 리팩토링
+
+- **PR #411 `editor.exportHwp()` API 추가** (by [@ggoban](https://github.com/ggoban))
+  - 신규 컨트리뷰터 첫 PR — iframe wrapper `@rhwp/editor` 에 exportHwp() 노출
+
+- **PR #413 rhwp-studio PWA support** (#383, by [@dyjung150605](https://github.com/dyjung150605))
+  - 신규 컨트리뷰터 첫 PR — vite-plugin-pwa, manifest scope `/rhwp/`, icon 192/512/maskable, registerType=autoUpdate, WASM precache
+
+- **PR #419 PageLayerTree generation API 도입** (#364, by [@seo-rii](https://github.com/seo-rii))
+  - `paint` 모듈 신규 (2,376 lines, builder/json/layer_tree/paint_op) — PageRenderTree → PageLayerTree 변환
+  - opt-in transition adapter (`svg_layer.rs`, `RHWP_RENDER_PATH=layer-svg`)
+  - 기존 5 렌더러 파일 변경 0 라인, 광범위 309 페이지 SVG 100% byte 동일 (피델리티 분석 보고서)
+
+### 메인테이너 작업 (3 건)
+
+- **Task #394 셀 진입 시 투명선 자동 ON 로직 비활성화** (#394)
+  - input-handler.ts 5 영역 주석 처리 — 한컴 출력 정합
+
+- **Task #416 `find_bin_data` 가드 결함 정정** (#416)
+  - `c.id == bin_data_id` 가드 제거 — `c.id` 는 storage_id, bin_data_id 는 인덱스. sparse id 범위 분기 (HWPX 차트 60000+N 보존). 단위 테스트 7건 추가
+
+- **Task #418 `hwpspec.hwp` p20 빈 문단 + TAC Picture 이중 emit 정정** (#418)
+  - Task #376 정정 commit 이 devel 미머지 (close 됐지만 임시 브랜치에만 존재) → 동일 결함 재발
+  - paragraph_layout 의 set_inline_shape_position + layout.rs::layout_shape_item 의 already_registered 가드 추가
+  - 신규 메모리 (close 시 commit devel 머지 검증) + 트러블슈팅 신설
+
+### 정비 / 문서
+
+- **위키 페이지 [한컴 PDF 환경 의존성](https://github.com/edwardkim/rhwp/wiki/한컴-PDF-환경-의존성) 보강**
+  - "발견 정황 II (PR #434 / 이슈 #430)" 섹션 추가 — 한컴 2010 ↔ 2020 ↔ 한컴독스 가 같은 hwp 를 다르게 조판하는 정황. 단일 한컴 정답지 가정의 한계 재확인.
+  - rhwp 의 현재 출력이 시험지 조판자 의도에 더 부합 가능성 (원본 JPEG "(A 형)" 잔재 보존)
+
+- **README.md / README_EN.md 보강**
+  - Contributing 섹션에 "한컴 PDF 는 정답지가 아닙니다" 항목 추가
+  - 신규 "위키 자료 (Wiki Resources)" 서브섹션 (위키 9개 페이지 링크)
+
+- **samples 정답지 자료 추가** — 모든 컨트리뷰터와 fork 사용자 공유
+  - `samples/2010-exam_kor.pdf` (한컴 2010, 4.57 MB)
+  - `samples/2020-exam_kor.pdf` (한컴 2020, 4.57 MB)
+  - `samples/hancomdocs-exam_kor.pdf` (한컴독스, 6.05 MB)
+  - `samples/복학원서.pdf` (이슈 #421 한컴 정답지)
+  - `samples/synam-001.hwp` (PR #401 회귀 검증)
+  - `samples/atop-equation-01.hwp` (PR #397 시각 판정)
+
+### 검증
+
+- `cargo test --lib`: **1066 passed** (1008 → +58, 회귀 0건)
+- `cargo test --test svg_snapshot`: 6/6 passed
+- `cargo test --test issue_418`: 1/1 passed (Task #418 회귀 보존)
+- `cargo clippy --lib -- -D warnings`: 0건
+- WASM 빌드: 4,182,395 bytes (변동 +47 KB)
+- 광범위 byte 비교: 10 샘플 / 309 페이지 SVG 회귀 검증 (PR 별 검증 게이트)
+- 작업지시자 SVG + Canvas 양 경로 시각 판정 (PR #401 v2 / #406 / #408 / #410 / #415 / #424 / #434)
+
+### 외부 기여자 감사
+
+본 사이클 외부 기여자 (가나다순):
+[@cskwork](https://github.com/cskwork), [@DanMeon](https://github.com/DanMeon), [@dyjung150605](https://github.com/dyjung150605), [@ggoban](https://github.com/ggoban), [@oksure](https://github.com/oksure), [@planet6897](https://github.com/planet6897), [@seo-rii](https://github.com/seo-rii)
+
+특히 [@cskwork](https://github.com/cskwork) 님은 **본 저장소 첫 외부 컨트리뷰터** 로 PR #397 / #400 두 건을 머지하셨고, [@planet6897](https://github.com/planet6897) 님은 본 사이클 외부 PR 의 다수 (8 건) 를 진단 + 정정해주셨습니다.
 
 ## [0.7.7] — 2026-04-27
 
