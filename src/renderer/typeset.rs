@@ -2144,26 +2144,34 @@ fn compute_body_wide_top_reserve_for_para(
         if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
             continue;
         }
-        // Paper 기준 도형: 본문과 겹치지 않을 때(=머리말 영역만 점유)만 제외.
-        if matches!(common.vert_rel_to, VertRelTo::Paper) {
-            let shape_top_abs = crate::renderer::hwpunit_to_px(common.vertical_offset as i32, dpi);
-            let shape_bottom_abs = shape_top_abs
-                + crate::renderer::hwpunit_to_px(common.height as i32, dpi);
-            if shape_bottom_abs <= body_top {
-                continue;
-            }
-        }
         let shape_w = crate::renderer::hwpunit_to_px(common.width as i32, dpi);
         if shape_w < body_w * 0.8 {
             continue;
         }
         let shape_h = crate::renderer::hwpunit_to_px(common.height as i32, dpi);
-        let shape_y_offset = crate::renderer::hwpunit_to_px(common.vertical_offset as i32, dpi);
-        if shape_y_offset > body_h / 3.0 {
+        let raw_v_offset = crate::renderer::hwpunit_to_px(common.vertical_offset as i32, dpi);
+
+        // body-rel 기준 시작/끝 y 계산.
+        // - VertRelTo::Paper: vertical_offset 이 용지 상단(= 0) 기준 → body_top 차감.
+        //   본문과 전혀 겹치지 않으면(머리말만 점유) 제외.
+        //   본문 위쪽으로 일부 빠져나가면(shape_top_abs < body_top) 본문 침범 영역만 reserve.
+        // - VertRelTo::Page / Para: vertical_offset 이 본문/단 top 기준 → body-rel 그대로.
+        let (body_y, body_bottom) = if matches!(common.vert_rel_to, VertRelTo::Paper) {
+            let shape_top_abs = raw_v_offset;
+            let shape_bottom_abs = shape_top_abs + shape_h;
+            if shape_bottom_abs <= body_top {
+                continue;
+            }
+            ((shape_top_abs - body_top).max(0.0), shape_bottom_abs - body_top)
+        } else {
+            (raw_v_offset, raw_v_offset + shape_h)
+        };
+
+        if body_y > body_h / 3.0 {
             continue;
         }
         let outer_bottom = crate::renderer::hwpunit_to_px(common.margin.bottom as i32, dpi);
-        let bottom = shape_y_offset + shape_h + outer_bottom;
+        let bottom = body_bottom + outer_bottom;
         if bottom > max_bottom {
             max_bottom = bottom;
         }
