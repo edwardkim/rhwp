@@ -236,6 +236,63 @@ mod tests {
         );
     }
 
+    /// Task #470: cross-paragraph vpos-reset 미인식 (cv != 0)
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 1 의 pi=10 ("적합성 검증이란…") 은
+    /// HWP 인코딩상 col 1 시작 (first vpos=9014, pi=9 last vpos=90426).
+    /// `cv == 0` 가드만 있던 시절: pi=10 partial 2줄이 col 0 에 강제 삽입되어 overflow.
+    /// 수정 후: 전체가 col 1 첫 항목으로 이동.
+    #[test]
+    fn test_470_cross_paragraph_vpos_reset_with_column_header_offset() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let dump = core.dump_page_items(Some(0));
+        assert!(!dump.is_empty(), "페이지 1 dump 가 비어있음");
+
+        // 페이지 1 의 단 0 / 단 1 섹션을 분리해서 pi=10 위치 검증
+        // dump 형식 예:
+        //   === 페이지 1 ...
+        //     단 0 (...)
+        //       PartialParagraph pi=10 ...
+        //     단 1 (...)
+        //       FullParagraph pi=10 ...
+        let mut col0_block = String::new();
+        let mut col1_block = String::new();
+        let mut current_col: i32 = -1;
+        for line in dump.lines() {
+            if line.trim_start().starts_with("단 0") {
+                current_col = 0;
+                continue;
+            }
+            if line.trim_start().starts_with("단 1") {
+                current_col = 1;
+                continue;
+            }
+            // 다음 페이지로 넘어가면 중단
+            if line.starts_with("=== 페이지") && current_col >= 0 {
+                break;
+            }
+            match current_col {
+                0 => col0_block.push_str(line),
+                1 => col1_block.push_str(line),
+                _ => {}
+            }
+            col0_block.push('\n');
+            col1_block.push('\n');
+        }
+
+        // pi=10 이 단 0 에 등장하면 안 됨, 단 1 에는 등장해야 함.
+        let col0_has_pi10 = col0_block.contains("pi=10");
+        let col1_has_pi10 = col1_block.contains("pi=10");
+        assert!(!col0_has_pi10,
+            "pi=10 이 col 0 에 배치되어 있음 (cross-column vpos-reset 미감지). col 0 dump:\n{}",
+            col0_block);
+        assert!(col1_has_pi10,
+            "pi=10 이 col 1 에 등장해야 함. col 1 dump:\n{}",
+            col1_block);
+    }
+
     #[test]
     fn test_layer_svg_matches_legacy_for_basic_text_sample() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
