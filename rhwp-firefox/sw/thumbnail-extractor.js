@@ -3,6 +3,8 @@
 // CFB(OLE2 Compound File) 컨테이너에서 /PrvImage 스트림만 추출한다.
 // 전체 HWP 파싱 없이 썸네일만 빠르게 얻을 수 있다.
 
+import { resolveDocumentUrl } from './document-url-resolver.js';
+
 const THUMBNAIL_CACHE = new Map();
 const CACHE_MAX_SIZE = 100;
 
@@ -18,7 +20,7 @@ export async function extractThumbnailFromUrl(url) {
   }
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(resolveDocumentUrl(url));
     if (!response.ok) return null;
     const buffer = await response.arrayBuffer();
     const data = new Uint8Array(buffer);
