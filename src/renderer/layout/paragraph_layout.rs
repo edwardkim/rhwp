@@ -2512,8 +2512,11 @@ impl LayoutEngine {
         }
 
         // 문단 테두리/배경 범위 수집 (build_single_column에서 연속 그룹으로 병합 렌더링)
-        // margin_left/margin_right를 반영하여 박스 위치·폭 조정
-        if para_border_fill_id > 0 {
+        // margin_left/margin_right를 반영하여 박스 위치·폭 조정.
+        // Task #463: 셀 안 단락은 본문 큐에 leakage 하지 않도록 cell_ctx 게이팅.
+        // 셀 외곽선은 별도 경로(table_layout/border_rendering)에서 처리되므로
+        // 본문 단락의 연속 외곽선 merge 가 셀 단락 좌표/시그니처에 의해 깨지지 않게 한다.
+        if para_border_fill_id > 0 && cell_ctx.is_none() {
             let bg_height = y - bg_y_start;
             if bg_height > 0.0 {
                 // margin_left/margin_right는 이미 px 단위 (style_resolver에서 변환됨)
