@@ -1008,9 +1008,26 @@ impl DocumentCore {
                                 master_page_index: replace_idx,
                             });
                         }
-                        // 겹침형 확장은 extra로 추가
-                        if !overlap_exts.is_empty() {
-                            page.extra_master_pages = overlap_exts.iter()
+                        // 겹침형 확장:
+                        // - apply_to 가 active 와 동일: 같은 위치(헤더/푸터/배경) 컨텐츠가 충돌 → active 대체
+                        //   (HWP 작성자가 마지막 쪽 전용 헤더로 의도. 한컴 PDF 출력 동작과 일치)
+                        // - apply_to 가 다름(예: active=Odd, 확장=Both): 보조 컨텐츠 추가 → extra
+                        let active_apply = page.active_master_page.as_ref()
+                            .and_then(|mp_ref| mps.get(mp_ref.master_page_index))
+                            .map(|m| m.apply_to);
+                        let mut remaining_overlap_exts: Vec<usize> = Vec::new();
+                        for &i in &overlap_exts {
+                            if Some(mps[i].apply_to) == active_apply {
+                                page.active_master_page = Some(MasterPageRef {
+                                    section_index: idx,
+                                    master_page_index: i,
+                                });
+                            } else {
+                                remaining_overlap_exts.push(i);
+                            }
+                        }
+                        if !remaining_overlap_exts.is_empty() {
+                            page.extra_master_pages = remaining_overlap_exts.iter()
                                 .map(|&mi| MasterPageRef { section_index: idx, master_page_index: mi })
                                 .collect();
                         }
