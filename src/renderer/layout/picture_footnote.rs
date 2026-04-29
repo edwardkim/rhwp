@@ -91,6 +91,15 @@ impl LayoutEngine {
             }
         };
 
+        // 원본 이미지 크기(HU) — crop 좌표 보정용
+        let original_size_hu = if picture.shape_attr.original_width > 0
+            && picture.shape_attr.original_height > 0
+        {
+            Some((picture.shape_attr.original_width, picture.shape_attr.original_height))
+        } else {
+            None
+        };
+
         // 이미지 노드 생성
         let img_id = tree.next_id();
         let img_node = RenderNode::new(
@@ -100,6 +109,7 @@ impl LayoutEngine {
                 para_index,
                 control_index,
                 crop,
+                original_size_hu,
                 effect: picture.image_attr.effect,
                 ..ImageNode::new(bin_data_id, image_data)
             }),
@@ -288,6 +298,15 @@ impl LayoutEngine {
             }
         };
 
+        // 원본 이미지 크기(HU)
+        let original_size_hu = if picture.shape_attr.original_width > 0
+            && picture.shape_attr.original_height > 0
+        {
+            Some((picture.shape_attr.original_width, picture.shape_attr.original_height))
+        } else {
+            None
+        };
+
         // 이미지 노드 생성
         let img_id = tree.next_id();
         let img_node = RenderNode::new(
@@ -297,6 +316,7 @@ impl LayoutEngine {
                 para_index: Some(para_index),
                 control_index: Some(control_index),
                 crop,
+                original_size_hu,
                 effect: picture.image_attr.effect,
                 ..ImageNode::new(bin_data_id, image_data)
             }),

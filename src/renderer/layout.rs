@@ -2604,6 +2604,13 @@ impl LayoutEngine {
                                     None
                                 }
                             };
+                            let original_size_hu = if pic.shape_attr.original_width > 0
+                                && pic.shape_attr.original_height > 0
+                            {
+                                Some((pic.shape_attr.original_width, pic.shape_attr.original_height))
+                            } else {
+                                None
+                            };
                             let img_id = tree.next_id();
                             let img_node = RenderNode::new(
                                 img_id,
@@ -2612,6 +2619,7 @@ impl LayoutEngine {
                                     para_index: Some(para_index),
                                     control_index: Some(control_index),
                                     crop,
+                                    original_size_hu,
                                     effect: pic.image_attr.effect,
                                     ..ImageNode::new(bin_data_id, image_data)
                                 }),
