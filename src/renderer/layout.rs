@@ -2721,10 +2721,21 @@ impl LayoutEngine {
                             tree.set_inline_shape_position(
                                 page_content.section_index, para_index, control_index, pic_x, pic_y,
                             );
-                            result_y = pic_y + pic_h;
+                            // [Task #462] LINE_SEG 의 lh+ls 를 advance 로 사용 — 이미지 박스
+                            // 높이만 사용하면 leading + line_spacing 이 누락되어 다음 문단이
+                            // 그림 바로 아래에 붙음. max(pic_h) 는 LINE_SEG 가 비정상적으로
+                            // 작은 경우의 안전장치.
+                            let line_advance = para.line_segs.first()
+                                .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
+                                .unwrap_or(pic_h);
+                            result_y = pic_y + line_advance.max(pic_h);
                         } else if !has_real_text && already_registered {
                             // [Task #418/#376] paragraph_layout 가 이미 emit 함 — push 스킵, result_y 만 갱신
-                            result_y = pic_y + pic_h;
+                            // [Task #462] 동일하게 LINE_SEG 기반 advance 사용
+                            let line_advance = para.line_segs.first()
+                                .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
+                                .unwrap_or(pic_h);
+                            result_y = pic_y + line_advance.max(pic_h);
                         }
 
                         if let Some(ref caption) = pic.caption {
