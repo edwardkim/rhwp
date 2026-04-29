@@ -69,7 +69,7 @@ Foundation  Typeset   Collab    Complete
 - Pagination (multi-column split, table row split), headers/footers, master pages, footnotes
 - SVG export (CLI) + Canvas rendering (WASM/Web)
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
-- 935+ tests
+- 1,100+ tests
 
 #### Recent Changes (v0.7.3 / extension v0.2.1, 2026-04-21)
 
@@ -259,7 +259,7 @@ New contributors: start with the [onboarding guide](mydocs/eng/manual/onboarding
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (935+ tests)
+cargo test                     # Run tests (1,100+ tests)
 ```
 
 ### WASM Build
@@ -354,7 +354,7 @@ mydocs/                        # Project documentation (Korean)
 ├── feedback/                  # Code review feedback
 ├── tech/                      # Technical documents
 └── manual/                    # Manuals and guides
-mydocs/eng/                    # English translations (724 files)
+mydocs/eng/                    # English translations (2,200+ files)
 
 scripts/                       # Build & quality tools
 ├── metrics.sh                 # Code quality metrics collection
@@ -375,10 +375,10 @@ This project takes the opposite approach. A human **task director** maintains fu
 |--|-------------|-------------|
 | **Human role** | Accept AI output | Direct, review, decide |
 | **Planning** | None — "just build it" | Written plan → approval → execution |
-| **Quality gate** | Hope it works | 935 tests + Clippy + CI + code review |
+| **Quality gate** | Hope it works | 1,100+ tests + Clippy + CI + code review |
 | **Debugging** | Ask AI to fix AI's bugs | Human diagnoses, AI implements fix |
 | **Architecture** | Emergent (accidental) | Deliberate (CQRS, dependency direction) |
-| **Documentation** | None | 724 files of process records |
+| **Documentation** | None | 2,200+ files of process records |
 | **Outcome** | Fragile, hard to maintain | Production-grade, 100K+ lines |
 
 AI is a force multiplier, but a multiplier amplifies whatever process you already have. No process × AI = fast chaos. Good process × AI = extraordinary output.
@@ -397,7 +397,7 @@ Makes architectural decisions →    Executes with precision
 Judges quality & correctness  ←    Generates code, docs, tests
 ```
 
-The `mydocs/` directory (724 files, English translations in `mydocs/eng/`) contains the complete development record: daily task logs, implementation plans, code review feedback, technical research documents, and debugging records.
+The `mydocs/` directory (2,200+ files, English translations in `mydocs/eng/`) contains the complete development record: daily task logs, implementation plans, code review feedback, technical research documents, and debugging records.
 
 > `mydocs/` is not documentation about the code — it is documentation about **how to build software with AI**. It is an open-source methodology.
 
