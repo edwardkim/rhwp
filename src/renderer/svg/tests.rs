@@ -249,3 +249,64 @@ fn test_brightness_contrast_filter_clamp_out_of_range() {
     assert_eq!(id, "rhwp-img-bc-b100c-100");
     assert_eq!(renderer.defs.len(), 1);
 }
+
+#[test]
+fn test_compute_image_crop_src_exam_kor_header() {
+    // exam_kor.hwp bin_id=27: 원본 174000×26580 HU(=2320×354 px @ 75 HU/px),
+    // crop=(0, 0, 102366, 26580) → 좌측 1364.88px × 354px (= "국어 영역")
+    let (sx, sy, sw, sh) = compute_image_crop_src(
+        (0, 0, 102366, 26580),
+        Some((174000, 26580)),
+        2320.0, 354.0,
+    );
+    assert!((sx - 0.0).abs() < 0.01);
+    assert!((sy - 0.0).abs() < 0.01);
+    assert!((sw - 1364.88).abs() < 0.01);
+    assert!((sh - 354.0).abs() < 0.01);
+}
+
+#[test]
+fn test_compute_image_crop_src_no_crop_full_image() {
+    // crop이 원본 전체를 가리키면 src도 이미지 전체와 일치
+    let (sx, sy, sw, sh) = compute_image_crop_src(
+        (0, 0, 174000, 26580),
+        Some((174000, 26580)),
+        2320.0, 354.0,
+    );
+    assert!((sx - 0.0).abs() < 0.01);
+    assert!((sy - 0.0).abs() < 0.01);
+    assert!((sw - 2320.0).abs() < 0.01);
+    assert!((sh - 354.0).abs() < 0.01);
+}
+
+#[test]
+fn test_compute_image_crop_src_offset_top_left() {
+    // 좌·상단을 잘라낸 케이스: top=ow/4, left=ow/4 → 우하단 75% 영역
+    let (sx, sy, sw, sh) = compute_image_crop_src(
+        (1000, 500, 4000, 2500),
+        Some((4000, 2500)),
+        400.0, 250.0,
+    );
+    // scale_x = 4000/400 = 10 HU/px, scale_y = 2500/250 = 10 HU/px
+    assert!((sx - 100.0).abs() < 0.01);   // 1000/10
+    assert!((sy - 50.0).abs() < 0.01);    // 500/10
+    assert!((sw - 300.0).abs() < 0.01);   // 3000/10
+    assert!((sh - 200.0).abs() < 0.01);   // 2000/10
+}
+
+#[test]
+fn test_compute_image_crop_src_fallback_when_original_size_missing() {
+    // original_size_hu가 None이면 폴백 (cr/img_w 스케일)
+    // 이 폴백은 항상 src_w == img_w 가 되는 과거 동작과 동일
+    let (sx, sy, sw, sh) = compute_image_crop_src(
+        (0, 0, 102366, 26580),
+        None,
+        2320.0, 354.0,
+    );
+    // 폴백 스케일 = 102366/2320 = 44.12 HU/px (X·Y 동일)
+    assert!((sx - 0.0).abs() < 0.01);
+    assert!((sy - 0.0).abs() < 0.01);
+    assert!((sw - 2320.0).abs() < 0.01); // (cr-cl)/scale = cr/(cr/img_w) = img_w
+    // 폴백 src_h는 src_w와 같은 비율이라 정확하지 않음 — 호환성 유지일 뿐
+    assert!(sh > 0.0);
+}
