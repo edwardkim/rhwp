@@ -11,6 +11,7 @@ pub enum DocumentEvent {
     TextDeleted { section: usize, para: usize, offset: usize, count: usize },
     ParagraphSplit { section: usize, para: usize, offset: usize },
     ParagraphMerged { section: usize, para: usize },
+    ParagraphInserted { section: usize, para: usize },
 
     // ── 서식 변경 ──
     CharFormatChanged { section: usize, para: usize, start: usize, end: usize },
@@ -49,6 +50,8 @@ impl DocumentEvent {
                 format!(r#"{{"type":"ParagraphSplit","section":{},"para":{},"offset":{}}}"#, section, para, offset),
             DocumentEvent::ParagraphMerged { section, para } =>
                 format!(r#"{{"type":"ParagraphMerged","section":{},"para":{}}}"#, section, para),
+            DocumentEvent::ParagraphInserted { section, para } =>
+                format!(r#"{{"type":"ParagraphInserted","section":{},"para":{}}}"#, section, para),
 
             // 서식 변경
             DocumentEvent::CharFormatChanged { section, para, start, end } =>
