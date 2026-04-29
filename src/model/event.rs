@@ -119,6 +119,15 @@ mod tests {
     }
 
     #[test]
+    fn test_paragraph_deleted_to_json() {
+        let event = DocumentEvent::ParagraphDeleted { section: 1, para: 3 };
+        let json = event.to_json();
+        assert!(json.contains(r#""type":"ParagraphDeleted""#));
+        assert!(json.contains(r#""section":1"#));
+        assert!(json.contains(r#""para":3"#));
+    }
+
+    #[test]
     fn test_serialize_event_log_empty() {
         let result = serialize_event_log(&[]);
         assert_eq!(result, r#"{"ok":true,"events":[]}"#);

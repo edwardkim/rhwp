@@ -971,19 +971,20 @@ impl DocumentCore {
             )));
         }
         let section = &self.document.sections[section_idx];
-        if section.paragraphs.len() <= 1 {
-            return Err(HwpError::RenderError(
-                "구역의 마지막 문단은 삭제할 수 없습니다".to_string()
-            ));
-        }
         if para_idx >= section.paragraphs.len() {
             return Err(HwpError::RenderError(format!(
                 "문단 인덱스 {} 범위 초과 (총 {}개)", para_idx, section.paragraphs.len()
             )));
         }
+        if section.paragraphs.len() <= 1 {
+            return Err(HwpError::RenderError(
+                "구역의 마지막 문단은 삭제할 수 없습니다".to_string()
+            ));
+        }
 
-        let removed_char_count = self.document.sections[section_idx].paragraphs[para_idx]
-            .text.chars().count();
+        let removed_char_count = super::super::helpers::logical_paragraph_length(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         self.document.sections[section_idx].raw_stream = None;
         self.document.sections[section_idx].paragraphs.remove(para_idx);
 

@@ -1088,6 +1088,10 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 지정한 문단을 구역에서 구조적으로 삭제한다.
+    ///
+    /// 구역에 문단이 1개만 남아있으면 삭제할 수 없다.
+    /// 반환값: JSON `{"ok":true,"removedCharCount":<n>,"newParagraphCount":<n>}`
     #[wasm_bindgen(js_name = deleteParagraph)]
     pub fn delete_paragraph(&mut self, section_idx: u32, para_idx: u32) -> Result<String, JsValue> {
         self.delete_paragraph_native(section_idx as usize, para_idx as usize)
