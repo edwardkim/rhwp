@@ -112,15 +112,23 @@ Firefox dist와 Chrome dist 모두 같은 결과를 반환했다.
 
 ## 4. 수동 GUI 검증 상태
 
-현재 Codex 세션에서는 Firefox 확장을 실제 브라우저에 로드한 뒤 GitHub wiki 카드 클릭까지 진행하는 GUI 수동 검증은 수행하지 않았다.
+작업지시자가 Firefox 임시 확장 로드 환경에서 수동 GUI 검증을 수행했고, 모든 항목이 통과했다.
 
-대신 이번 단계에서 확인한 범위는 다음과 같다.
+검증일: 2026-04-29
 
-- 확장 dist 빌드 성공
-- dist service worker에 URL resolver 포함
-- dist viewer/thumbnail 경로가 resolver를 호출
-- dist viewer asset에 원격 응답 바이트 검증 포함
-- GitHub blob URL이 dist resolver에서 raw URL로 변환됨
+| 항목 | 결과 |
+|---|---|
+| GitHub wiki의 `saved/pr360-edward.hwp` hover 카드 썸네일 표시 | 통과 |
+| wiki 카드의 `rhwp로 열기` 클릭 시 viewer에서 `pr360-edward.hwp` 35페이지 로드 | 통과 |
+| GitHub blob 원본 페이지 hover 카드 썸네일 표시 | 통과 |
+| GitHub blob/raw 흐름에서 viewer가 `pr360-edward.hwp` 35페이지 로드 | 통과 |
+| HTML/미리보기 응답 URL 입력 시 CFB 오류 대신 원인 중심 오류 표시 | 통과 |
+
+오류 메시지 확인:
+
+```text
+파일 로드 실패: 실제 HWP/HWPX 파일이 아닙니다. 파일 미리보기/오류 페이지가 반환되었습니다.
+```
 
 ## 5. 완료 기준 대비
 
@@ -132,7 +140,7 @@ Firefox dist와 Chrome dist 모두 같은 결과를 반환했다.
 | Chrome 확장 빌드 통과 | 완료 |
 | dist에 resolver 실체 파일 포함 | 완료 |
 | dist viewer에 응답 검증 포함 | 완료 |
-| 실제 Firefox GUI 카드 클릭 검증 | 미수행 |
+| 실제 Firefox GUI 카드 클릭 검증 | 완료 |
 
 ## 6. 결론
 

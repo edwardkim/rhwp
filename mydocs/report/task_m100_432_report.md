@@ -113,20 +113,43 @@ dist 산출물에서 다음도 확인했다.
 - GitHub blob URL이 raw URL로 변환됨
 - viewer asset에 원격 응답 검증 오류 문구가 포함됨
 
-## 6. 남은 확인 사항
+## 6. 수동 검증 결과
 
-실제 Firefox GUI에서 확장을 로드한 뒤 GitHub wiki 카드 hover/click까지 진행하는 수동 검증은 현재 Codex 세션에서 수행하지 않았다.
+작업지시자가 2026-04-29에 Firefox 임시 확장 로드 환경에서 다음 수동 검증을 수행했고 모두 통과했다.
 
-작업지시자가 로컬 Firefox에서 확인할 시나리오는 다음과 같다.
+| 항목 | 결과 |
+|---|---|
+| GitHub wiki의 `saved/pr360-edward.hwp` hover 카드 썸네일 표시 | 통과 |
+| wiki 카드의 `rhwp로 열기` 클릭 시 viewer에서 `pr360-edward.hwp` 35페이지 로드 | 통과 |
+| GitHub blob 원본 페이지 hover 카드 썸네일 표시 | 통과 |
+| GitHub blob/raw 흐름에서 viewer가 `pr360-edward.hwp` 35페이지 로드 | 통과 |
+| HTML/미리보기 응답 URL 입력 시 CFB 오류 대신 원인 중심 오류 표시 | 통과 |
 
-1. `rhwp-firefox/dist`를 임시 확장으로 로드한다.
-2. GitHub wiki의 `saved/pr360-edward.hwp` 카드에서 썸네일이 표시되는지 확인한다.
-3. 카드의 `rhwp로 열기`를 클릭한다.
-4. viewer가 raw URL을 받아 문서를 정상 로드하는지 확인한다.
-5. 의도적으로 HTML 응답 URL을 viewer `?url=`에 넣었을 때 CFB 오류 대신 원인 중심 오류가 표시되는지 확인한다.
+오류 메시지 확인:
 
-## 7. 결론
+```text
+파일 로드 실패: 실제 HWP/HWPX 파일이 아닙니다. 파일 미리보기/오류 페이지가 반환되었습니다.
+```
+
+## 7. PR 본문용 검증 문구
+
+```markdown
+## Verification
+
+- `node --test rhwp-shared/sw/document-url-resolver.test.js` passed (12 tests)
+- `node --test rhwp-shared/sw/download-interceptor-common.test.js` passed (26 tests)
+- `cd rhwp-firefox && npm run build` passed
+- `cd rhwp-chrome && npm run build` passed
+- Manual Firefox extension verification passed:
+  - GitHub wiki `saved/pr360-edward.hwp` hover card renders the document thumbnail
+  - Clicking `rhwp로 열기` from the wiki hover card opens the viewer and loads `pr360-edward.hwp` as a 35-page document
+  - GitHub blob page hover card still renders the thumbnail
+  - Existing blob/raw viewer flow still loads `pr360-edward.hwp` as a 35-page document
+  - HTML/preview-page responses now show `파일 로드 실패: 실제 HWP/HWPX 파일이 아닙니다. 파일 미리보기/오류 페이지가 반환되었습니다.` instead of the old CFB parser error
+```
+
+## 8. 결론
 
 #432는 현재 보고된 GitHub wiki 링크 하나만을 위한 분기 처리가 아니라, 파일 URL 해석과 응답 바이트 검증이라는 일반 계층으로 해결했다.
 
-Chrome/Firefox 확장 빌드는 통과했고, dist 산출물에도 변경이 반영되었다. 작업지시자 승인 후 타스크 완료 처리와 `local/devel` 병합 절차로 이동할 수 있다.
+Chrome/Firefox 확장 빌드와 Firefox 수동 검증이 통과했고, dist 산출물에도 변경이 반영되었다. 타스크 완료 처리와 `local/devel` 병합 절차로 이동할 수 있다.
