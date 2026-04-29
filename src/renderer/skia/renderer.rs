@@ -14,6 +14,7 @@ use crate::renderer::layer_renderer::{
 };
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
+use super::equation_conv::render_equation;
 use super::image_conv::{draw_image_bytes, ImageSampling};
 
 pub struct SkiaLayerRenderer {
@@ -721,7 +722,38 @@ impl SkiaLayerRenderer {
                                 canvas.restore();
                             }
                         }
-                        PaintOp::Equation { bbox, .. } => draw_placeholder(*bbox, "equation"),
+                        PaintOp::Equation { bbox, equation } => {
+                            canvas.save();
+                            let scale_x = if equation.layout_box.width > 0.0 && bbox.width > 0.0 {
+                                bbox.width / equation.layout_box.width
+                            } else {
+                                1.0
+                            };
+                            if (scale_x - 1.0).abs() > 0.01 {
+                                canvas.translate((bbox.x as f32, bbox.y as f32));
+                                canvas.scale((scale_x as f32, 1.0));
+                                render_equation(
+                                    canvas,
+                                    &self.font_mgr,
+                                    &equation.layout_box,
+                                    0.0,
+                                    0.0,
+                                    equation.color,
+                                    equation.font_size,
+                                );
+                            } else {
+                                render_equation(
+                                    canvas,
+                                    &self.font_mgr,
+                                    &equation.layout_box,
+                                    bbox.x,
+                                    bbox.y,
+                                    equation.color,
+                                    equation.font_size,
+                                );
+                            }
+                            canvas.restore();
+                        }
                         PaintOp::FormObject { bbox, form } => {
                             draw_placeholder(*bbox, form.caption.as_str());
                         }
@@ -760,9 +792,12 @@ mod tests {
     use crate::model::control::FormType;
     use crate::model::style::ImageFillMode;
     use crate::paint::{CacheHint, GroupKind, LayerNode, LayerOutputOptions};
+    use crate::renderer::equation::ast::EqNode;
+    use crate::renderer::equation::layout::EqLayout;
     use crate::renderer::render_tree::{
-        BoundingBox, FootnoteMarkerNode, FormObjectNode, ImageNode, PageBackgroundImage,
-        PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode, TextRunNode,
+        BoundingBox, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
+        PageBackgroundImage, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode,
+        RectangleNode, TextRunNode,
     };
     use crate::renderer::{GradientFillInfo, PatternFillInfo, TextStyle};
     use image::{ImageFormat, Rgba, RgbaImage};
@@ -1498,6 +1533,52 @@ mod tests {
         let image = decode_rgba(&output.bytes);
 
         assert!(count_ink(&image) > 0);
+    }
+
+    #[test]
+    fn renders_equation_layout_as_colored_ink() {
+        let font_size = 18.0;
+        let layout_box = EqLayout::new(font_size).layout(&EqNode::Fraction {
+            numer: Box::new(EqNode::Text("a".to_string())),
+            denom: Box::new(EqNode::Text("b".to_string())),
+        });
+        let equation = EquationNode {
+            svg_content: String::new(),
+            layout_box,
+            color_str: "#ff0000".to_string(),
+            color: 0x000000ff,
+            font_size,
+            section_index: Some(0),
+            para_index: Some(0),
+            control_index: Some(0),
+            cell_index: None,
+            cell_para_index: None,
+        };
+        let tree = PageLayerTree::new(
+            64.0,
+            48.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 64.0, 48.0),
+                None,
+                vec![PaintOp::Equation {
+                    bbox: BoundingBox::new(6.0, 6.0, 44.0, 32.0),
+                    equation,
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render equation");
+        let image = decode_rgba(&output.bytes);
+        let red_ink = image
+            .pixels()
+            .filter(|pixel| pixel[0] > 160 && pixel[1] < 96 && pixel[2] < 96 && pixel[3] > 0)
+            .count();
+
+        assert!(
+            red_ink > 0,
+            "equation should render using its configured color"
+        );
     }
 
     #[test]
