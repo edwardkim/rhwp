@@ -2504,15 +2504,15 @@ impl LayoutEngine {
             }
 
             col_node.children.push(line_node);
-            // 줄간격 적용 — typeset 의 height_for_fit 모델과 정합:
-            //   - 셀 내 마지막 문단의 마지막 줄: 기존대로 trailing 제외
-            //   - 일반 문단의 마지막 visible 줄(=문단 전체 마지막 줄): trailing 제외 (Task #332)
-            //   - partial 문단(split 된 경우)의 마지막 visible 줄: trailing 유지 (다음 단의 첫 줄과의 간격)
+            // 줄간격 적용:
+            //   - 셀 내 마지막 문단의 마지막 줄: trailing line_spacing 제외
+            //     (셀 높이 모델은 trailing 미포함, 셀 내부와 정합)
+            //   - 그 외 모든 줄(본문 단락의 마지막 줄 포함): trailing line_spacing 가산
+            //     pagination/engine.rs 의 current_height 누적(para_height = sum(lh+ls))
+            //     과 정합. (Task #452: 이전 #332 의 layout-only trailing 제외 →
+            //     pagination 과 1 ls drift 발생 → 회복)
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
-            let is_para_last_line = cell_ctx.is_none()
-                && line_idx + 1 == end
-                && end == composed.lines.len();
-            if (is_cell_last_line && cell_ctx.is_some()) || is_para_last_line {
+            if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
             } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
