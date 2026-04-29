@@ -1737,8 +1737,14 @@ impl LayoutEngine {
                     const DEFAULT_MIN_INSET: f64 = 2.0;
                     let top_pad = if stroke_width > 0.0 && !prev_touches { top_inset.max(DEFAULT_MIN_INSET) } else { top_inset };
                     let bot_pad = if stroke_width > 0.0 && !next_touches { bottom_inset.max(DEFAULT_MIN_INSET) } else { bottom_inset };
-                    let rect_y = y_start - top_pad;
-                    let rect_h = height + top_pad + bot_pad;
+                    // Task #469: cross-column / cross-page 로 이어진 partial 박스의 후속 부분은
+                    // 이전/다음 컬럼에서 이미 inset 이 적용되었으므로 여기서 다시 col_top/col_bot
+                    // 너머로 박스를 확장하면 안 된다 (헤더선/꼬리말선과 충돌).
+                    // y_start/y_end 는 L1707 에서 col_top..col_bot 으로 이미 클램프됨.
+                    let effective_top_pad = if is_partial_start { 0.0 } else { top_pad };
+                    let effective_bot_pad = if is_partial_end { 0.0 } else { bot_pad };
+                    let rect_y = y_start - effective_top_pad;
+                    let rect_h = height + effective_top_pad + effective_bot_pad;
                     // Wrap inner edge 처리: partial_start 면 top, partial_end 면 bottom 미렌더링.
                     let skip_top = stroke_width > 0.0 && is_partial_start;
                     let skip_bottom = stroke_width > 0.0 && is_partial_end;

@@ -185,6 +185,57 @@ mod tests {
         );
     }
 
+    /// Task #469: cross-column 으로 이어지는 paragraph border 박스의 좌·우 세로선이
+    /// col_top 위(헤더선 영역) 까지 침범하지 않는지 검증.
+    ///
+    /// exam_kor.hwp 페이지 2 우측 단의 (나) 박스(border_fill_id=7)는 좌측 단 마지막 줄
+    /// 부터 이어지는 partial_start 케이스. 수정 전: 좌·우 세로선이 y=196.55 (헤더선)
+    /// 부터 시작. 수정 후: y >= 211.65 (body top, 단 시작 좌표) 이상에서 시작.
+    #[test]
+    fn test_469_partial_start_box_does_not_cross_col_top() {
+        let Some(core) = load_document("samples/exam_kor.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // 우측 단 영역: x ≈ 582..1005. 페이지 본문 상단(col_top) ≈ 211.65 px.
+        // 헤더 가로선은 단일 (y=196.55, x1≈117, x2≈1005, y2 동일) 으로 전체 폭에 그어짐.
+        // 우측 단 범위(x1 in [580, 1010]) 의 수직선(y1 != y2) 들은 y1 >= 200 이어야 함.
+        let mut violations: Vec<(f64, f64, f64)> = Vec::new();
+        for chunk in svg.split("<line ").skip(1) {
+            // 다음 '/>' 또는 '>' 이전까지의 속성 파싱
+            let end = chunk.find("/>").or_else(|| chunk.find('>')).unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            let parse_attr = |name: &str| -> Option<f64> {
+                let pat = format!("{}=\"", name);
+                let i = attrs.find(&pat)? + pat.len();
+                let j = i + attrs[i..].find('"')?;
+                attrs[i..j].parse::<f64>().ok()
+            };
+            let (x1, y1, x2, y2) = match (parse_attr("x1"), parse_attr("y1"), parse_attr("x2"), parse_attr("y2")) {
+                (Some(a), Some(b), Some(c), Some(d)) => (a, b, c, d),
+                _ => continue,
+            };
+            // 수직선(y1 != y2 && x1 == x2) 만 검사
+            if (y1 - y2).abs() < 0.5 || (x1 - x2).abs() >= 0.5 {
+                continue;
+            }
+            // 우측 단 영역
+            if x1 >= 580.0 && x1 <= 1010.0 {
+                let y_top = y1.min(y2);
+                if y_top < 200.0 {
+                    violations.push((x1, y1, y2));
+                }
+            }
+        }
+        assert!(
+            violations.is_empty(),
+            "우측 단 수직선이 헤더선 영역(y<200) 까지 침범: {:?}",
+            violations
+        );
+    }
+
     #[test]
     fn test_layer_svg_matches_legacy_for_basic_text_sample() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
