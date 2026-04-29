@@ -1415,25 +1415,45 @@ impl TypesetEngine {
             0
         };
 
+        // [Task #439] Square wrap (어울림) 표 식별.
+        // 어울림 표는 호스트 문단 텍스트와 같은 수직 영역에 배치되므로
+        // current_height 누적은 max(host_text, v_off + table) 한 번만.
+        // engine.rs:1328 와 동일 시멘틱.
+        let is_wrap_around_table = !table.common.treat_as_char
+            && matches!(table.common.text_wrap, crate::model::shape::TextWrap::Square);
+
         // pre-table 텍스트 (첫 번째 표에서만)
         let is_first_table = !para.controls.iter().take(ctrl_idx)
             .any(|c| matches!(c, Control::Table(_)));
-        if pre_table_end_line > 0 && is_first_table {
-            let pre_height: f64 = fmt.line_advances_sum(0..pre_table_end_line);
+        let pre_height: f64 = if pre_table_end_line > 0 && is_first_table {
+            let h = fmt.line_advances_sum(0..pre_table_end_line);
             st.current_items.push(PageItem::PartialParagraph {
                 para_index: para_idx,
                 start_line: 0,
                 end_line: pre_table_end_line,
             });
-            st.current_height += pre_height;
-        }
+            h
+        } else {
+            0.0
+        };
 
         // 표 배치
         st.current_items.push(PageItem::Table {
             para_index: para_idx,
             control_index: ctrl_idx,
         });
-        st.current_height += table_total_height;
+
+        // [Task #439] 누적 정책:
+        // - Square wrap (어울림): max(pre_height, v_off + table_total)
+        //     호스트 텍스트와 표가 같은 y 영역을 공유하므로 더 큰 쪽만 누적.
+        // - 그 외 (TopAndBottom 등): pre_height + table_total 합산 (기존 동작).
+        if is_wrap_around_table && pre_height > 0.0 {
+            let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
+            let table_bottom = v_off_px + table_total_height;
+            st.current_height += pre_height.max(table_bottom);
+        } else {
+            st.current_height += pre_height + table_total_height;
+        }
 
         // post-table 텍스트
         let is_last_table = !para.controls.iter().skip(ctrl_idx + 1)
