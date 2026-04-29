@@ -1640,14 +1640,17 @@ fn dump_controls(args: &[String]) {
                                     for (ci, ctrl) in cp.controls.iter().enumerate() {
                                         match ctrl {
                                             Control::Picture(p) => {
-                                                println!("{}    ctrl[{}] 그림: bin_id={}, w={} h={} ({:.1}×{:.1}mm), tac={}, wrap={:?}, vert={:?}(off={}), horz={:?}(off={})",
+                                                println!("{}    ctrl[{}] 그림: bin_id={}, w={} h={} ({:.1}×{:.1}mm), tac={}, wrap={:?}, vert={:?}(off={}), horz={:?}(off={}), orig={}×{}, cur={}×{}, crop=({},{},{},{})",
                                                     indent, ci, p.image_attr.bin_data_id,
                                                     p.common.width, p.common.height,
                                                     p.common.width as f64 / 7200.0 * 25.4,
                                                     p.common.height as f64 / 7200.0 * 25.4,
                                                     p.common.treat_as_char,
                                                     p.common.text_wrap, p.common.vert_rel_to, p.common.vertical_offset,
-                                                    p.common.horz_rel_to, p.common.horizontal_offset);
+                                                    p.common.horz_rel_to, p.common.horizontal_offset,
+                                                    p.shape_attr.original_width, p.shape_attr.original_height,
+                                                    p.shape_attr.current_width, p.shape_attr.current_height,
+                                                    p.crop.left, p.crop.top, p.crop.right, p.crop.bottom);
                                             }
                                             Control::Shape(s) => {
                                                 println!("{}    ctrl[{}] {}: tac={}, wrap={:?}",
