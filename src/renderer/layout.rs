@@ -1634,6 +1634,18 @@ impl LayoutEngine {
                     groups.push((bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end));
                 }
 
+                // Task #445: paragraph border 가 col_area 바닥을 넘지 않도록 클램프.
+                // vpos-reset 미지원으로 paragraph 가 col_bottom 너머에 layout 될 수 있는데,
+                // border 까지 따라가면 페이지/꼬리말 영역까지 침범 (예: exam_kor p8 의 1671px).
+                // 텍스트 자체의 overflow 처리는 별도 이슈.
+                let col_top = col_area.y;
+                let col_bot = col_area.y + col_area.height;
+                for g in groups.iter_mut() {
+                    if g.2 < col_top { g.2 = col_top; }
+                    if g.4 > col_bot { g.4 = col_bot; }
+                }
+                groups.retain(|g| g.4 > g.2);
+
                 let groups_len = groups.len();
                 for (gi, (bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end)) in groups.clone().into_iter().enumerate() {
                     let height = y_end - y_start;
