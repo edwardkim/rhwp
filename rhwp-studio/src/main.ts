@@ -505,6 +505,50 @@ function notifyHwpxBetaIfNeeded(): void {
   if (sb) sb.textContent = 'HWPX 베타 모드 — 저장은 다음 업데이트에서 지원됩니다';
 }
 
+type DocumentByteKind = 'hwp' | 'hwpx' | 'html' | 'unknown';
+
+const HWP_CFB_SIGNATURE = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1] as const;
+const ZIP_SIGNATURES = [
+  [0x50, 0x4B, 0x03, 0x04],
+  [0x50, 0x4B, 0x05, 0x06],
+  [0x50, 0x4B, 0x07, 0x08],
+] as const;
+
+function startsWithBytes(bytes: Uint8Array, signature: readonly number[]): boolean {
+  if (bytes.length < signature.length) return false;
+  return signature.every((byte, index) => bytes[index] === byte);
+}
+
+function detectDocumentByteKind(bytes: Uint8Array, contentType?: string | null): DocumentByteKind {
+  if (startsWithBytes(bytes, HWP_CFB_SIGNATURE)) return 'hwp';
+  if (ZIP_SIGNATURES.some(signature => startsWithBytes(bytes, signature))) return 'hwpx';
+
+  const declaredContentType = contentType?.toLowerCase() ?? '';
+  if (declaredContentType.includes('text/html')) return 'html';
+
+  const prefix = new TextDecoder('utf-8')
+    .decode(bytes.subarray(0, Math.min(bytes.length, 256)))
+    .trimStart()
+    .toLowerCase();
+
+  if (prefix.startsWith('<!doctype') || prefix.startsWith('<html') || prefix.startsWith('<?xml')) {
+    return 'html';
+  }
+
+  return 'unknown';
+}
+
+function assertRemoteDocumentBytes(bytes: Uint8Array, contentType?: string | null): void {
+  const kind = detectDocumentByteKind(bytes, contentType);
+  if (kind === 'hwp' || kind === 'hwpx') return;
+
+  if (kind === 'html') {
+    throw new Error('실제 HWP/HWPX 파일이 아닙니다. 파일 미리보기/오류 페이지가 반환되었습니다.');
+  }
+
+  throw new Error('실제 HWP/HWPX 파일이 아닙니다. 파일 시그니처를 확인할 수 없습니다.');
+}
+
 async function createNewDocument(): Promise<void> {
   const msg = sbMessage();
   try {
@@ -565,6 +609,7 @@ async function loadFromUrlParam(): Promise<void> {
         const result = await chrome.runtime.sendMessage({ type: 'fetch-file', url: fileUrl });
         if (result.error) throw new Error(result.error);
         const data = new Uint8Array(result.data);
+        assertRemoteDocumentBytes(data);
         const docInfo = wasm.loadDocument(data, fileName);
         await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지`);
         return;
@@ -574,8 +619,10 @@ async function loadFromUrlParam(): Promise<void> {
     }
 
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const contentType = response.headers.get('content-type');
     const buffer = await response.arrayBuffer();
     const data = new Uint8Array(buffer);
+    assertRemoteDocumentBytes(data, contentType);
     const docInfo = wasm.loadDocument(data, fileName);
     await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지`);
   } catch (error) {
