@@ -1088,6 +1088,18 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    #[wasm_bindgen(js_name = deleteParagraph)]
+    pub fn delete_paragraph(&mut self, section_idx: u32, para_idx: u32) -> Result<String, JsValue> {
+        self.delete_paragraph_native(section_idx as usize, para_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = insertParagraph)]
+    pub fn insert_paragraph(&mut self, section_idx: u32, para_idx: u32) -> Result<String, JsValue> {
+        self.insert_paragraph_native(section_idx as usize, para_idx as usize)
+            .map_err(|e| e.into())
+    }
+
     // ─── Phase 1: 기본 편집 보조 API ───────────────────────────
 
     /// 구역(Section) 수를 반환한다.
