@@ -1680,18 +1680,9 @@ impl LayoutEngine {
                     let mut seg_start = 0usize;
                     let mut sub_char_offset = char_offset;
 
-                    // 인라인 Shape 중 글상자(TextBox)가 있는 경우에만 텍스트 스킵
-                    // (글상자 텍스트는 table_layout에서 렌더링)
-                    // 단순 도형(사각형, 원 등)은 TextBox가 없으므로 텍스트를 여기서 렌더링
-                    let skip_text_for_inline_shape = has_tac_shape && para.map(|p| {
-                        tac_offsets_px.iter().any(|(_, _, ci)| {
-                            if let Some(Control::Shape(s)) = p.controls.get(*ci) {
-                                s.drawing().map(|d| d.text_box.is_some()).unwrap_or(false)
-                            } else {
-                                false
-                            }
-                        })
-                    }).unwrap_or(false);
+                    // [Task #455] 외부 문단 본문 텍스트는 글상자 유무와 무관하게 항상 렌더한다.
+                    // 글상자(TextBox) 자체와 그 내부 텍스트("개화" 같은)는
+                    // shape_layout 이 inline_shape_position 을 보고 별도 패스에서 렌더하므로 중복되지 않는다.
 
                     for &(tac_rel, tac_w, tac_ci) in &run_tacs {
                         // tac 앞 텍스트 세그먼트 렌더링
@@ -1706,7 +1697,7 @@ impl LayoutEngine {
                             }
                             let seg_w = estimate_text_width(&seg_text, &seg_style);
                             let seg_char_count = tac_rel - seg_start;
-                            if !skip_text_for_inline_shape {
+                            {
                                 let sub_run_id = tree.next_id();
                                 let sub_run_node = RenderNode::new(
                                     sub_run_id,
@@ -1897,7 +1888,7 @@ impl LayoutEngine {
                             seg_style.tab_leaders = extract_tab_leaders_with_extended(&remaining, &positions, &seg_style, &composed.tab_extended);
                         }
                         let seg_w = estimate_text_width(&remaining, &seg_style);
-                        if !skip_text_for_inline_shape {
+                        {
                             let sub_run_id = tree.next_id();
                             let sub_run_node = RenderNode::new(
                                 sub_run_id,
