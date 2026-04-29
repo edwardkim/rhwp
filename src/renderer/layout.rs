@@ -214,10 +214,11 @@ pub struct LayoutEngine {
     file_name: std::cell::RefCell<String>,
     /// 문단 테두리/배경 범위 수집
     /// (border_fill_id, x, y_start, width, y_end, top_inset, bottom_inset,
-    ///  is_partial_start, is_partial_end)
+    ///  is_partial_start, is_partial_end, para_index)
     /// is_partial_start: 다른 컬럼/페이지에서 이어진 부분 (top edge 미렌더링)
     /// is_partial_end: 다음 컬럼/페이지로 이어지는 부분 (bottom edge 미렌더링)
-    para_border_ranges: std::cell::RefCell<Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool)>>,
+    /// para_index: 본 range 가 속한 paragraph 인덱스 (Task #468: cross-column 박스 연속 검출용)
+    para_border_ranges: std::cell::RefCell<Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize)>>,
     /// 문단 외곽선 box geometry override (Task #463): wrap=Square 호스트 문단의
     /// 텍스트는 좁은 wrap_area 에서 layout 되지만, 외곽선은 원래 col_area 의
     /// 전체 너비로 그려야 PDF 와 일치한다 (인라인 floating 표를 박스가 둘러쌈).
@@ -1630,9 +1631,9 @@ impl LayoutEngine {
                     }
                 };
                 // 그룹 튜플: (bf_id, x, y_start, w, y_end, top_inset, bottom_inset,
-                //              is_partial_start, is_partial_end)
-                let mut groups: Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool)> = Vec::new();
-                for &(bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end) in ranges.iter() {
+                //              is_partial_start, is_partial_end, first_para_idx, last_para_idx)
+                let mut groups: Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize, usize)> = Vec::new();
+                for &(bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end, para_idx) in ranges.iter() {
                     if let Some(last) = groups.last_mut() {
                         // bf_id 가 동일하면 기존 동작과 호환 (1차 병합).
                         // 다른 bf_id 지만 동일한 visible stroke 인 경우에만 시각 병합 (None ≠ None 으로 처리).
@@ -1649,6 +1650,7 @@ impl LayoutEngine {
                             // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.
                             // partial_start 는 첫 range 값(last.7)을 유지.
                             last.8 = is_partial_end;
+                            last.10 = para_idx;  // last_para_idx 갱신
                             // Task #463: 첫 항목이 PartialParagraph (좁은 geometry, 예: pi=50
                             // 우측 단 시작) 이고 후속 항목이 넓은 geometry 일 때, 박스가 좁게
                             // 굳어 후속 paragraph 가 박스 밖으로 튀어나오는 것을 방지하기 위해
@@ -1662,7 +1664,38 @@ impl LayoutEngine {
                             continue;
                         }
                     }
-                    groups.push((bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end));
+                    groups.push((bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end, para_idx, para_idx));
+                }
+
+                // Task #468: cross-column 박스 연속 검출.
+                // sequential 인접 paragraph 가 같은 bf_id 면 박스가 다른 컬럼/페이지로 이어진 것.
+                // 시작 paragraph 의 이전 paragraph 가 같은 bf_id → partial_start
+                // 마지막 paragraph 의 다음 paragraph 가 같은 bf_id → partial_end
+                for g in groups.iter_mut() {
+                    let bf_id = g.0;
+                    if bf_id == 0 { continue; }
+                    let first_pi = g.9;
+                    let last_pi = g.10;
+
+                    if !g.7 && first_pi > 0 {
+                        let prev_bf = composed.get(first_pi - 1)
+                            .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
+                            .map(|s| s.border_fill_id)
+                            .unwrap_or(0);
+                        if prev_bf == bf_id {
+                            g.7 = true;
+                        }
+                    }
+
+                    if !g.8 {
+                        let next_bf = composed.get(last_pi + 1)
+                            .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
+                            .map(|s| s.border_fill_id)
+                            .unwrap_or(0);
+                        if next_bf == bf_id {
+                            g.8 = true;
+                        }
+                    }
                 }
 
                 // Task #445: paragraph border 가 col_area 바닥을 넘지 않도록 클램프.
@@ -1678,7 +1711,7 @@ impl LayoutEngine {
                 groups.retain(|g| g.4 > g.2);
 
                 let groups_len = groups.len();
-                for (gi, (bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end)) in groups.clone().into_iter().enumerate() {
+                for (gi, (bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end, _, _)) in groups.clone().into_iter().enumerate() {
                     let height = y_end - y_start;
                     if height <= 0.0 { continue; }
                     // 인접한 다른 border 그룹 (간격 < 4px) 과는 inset 충돌 회피.

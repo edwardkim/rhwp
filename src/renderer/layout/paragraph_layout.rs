@@ -2577,7 +2577,7 @@ impl LayoutEngine {
                     (col_area.x + box_margin_left, col_area.width - box_margin_left - box_margin_right)
                 };
                 self.para_border_ranges.borrow_mut().push(
-                    (para_border_fill_id, box_x, bg_y_start, box_w, y, top_inset, bottom_inset, is_partial_start, is_partial_end)
+                    (para_border_fill_id, box_x, bg_y_start, box_w, y, top_inset, bottom_inset, is_partial_start, is_partial_end, para_index)
                 );
             }
         }
