@@ -2526,8 +2526,19 @@ impl LayoutEngine {
                 // 컬럼/페이지 wrap 시 inner edge 미렌더링용 partial 플래그
                 let is_partial_start = start_line > 0;
                 let is_partial_end = end < composed.lines.len();
+                // Task #463: wrap=Square 호스트 문단의 텍스트는 좁은 wrap_area 에서
+                // 렌더링되지만 외곽선은 원래 col_area 너비로 그려야 floating 표를
+                // 박스가 둘러쌈. layout_wrap_around_paras 가 override 를 설정.
+                // override 가 활성된 경우(wrap host), 박스 우측은 floating 표의 끝
+                // 까지 확장된 width 그대로 사용 — margin_right 차감하지 않는다
+                // (그렇지 않으면 표가 박스 밖으로 다시 튀어나옴).
+                let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
+                    (ox + box_margin_left, ow - box_margin_left)
+                } else {
+                    (col_area.x + box_margin_left, col_area.width - box_margin_left - box_margin_right)
+                };
                 self.para_border_ranges.borrow_mut().push(
-                    (para_border_fill_id, col_area.x + box_margin_left, bg_y_start, col_area.width - box_margin_left - box_margin_right, y, top_inset, bottom_inset, is_partial_start, is_partial_end)
+                    (para_border_fill_id, box_x, bg_y_start, box_w, y, top_inset, bottom_inset, is_partial_start, is_partial_end)
                 );
             }
         }

@@ -218,6 +218,12 @@ pub struct LayoutEngine {
     /// is_partial_start: 다른 컬럼/페이지에서 이어진 부분 (top edge 미렌더링)
     /// is_partial_end: 다음 컬럼/페이지로 이어지는 부분 (bottom edge 미렌더링)
     para_border_ranges: std::cell::RefCell<Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool)>>,
+    /// 문단 외곽선 box geometry override (Task #463): wrap=Square 호스트 문단의
+    /// 텍스트는 좁은 wrap_area 에서 layout 되지만, 외곽선은 원래 col_area 의
+    /// 전체 너비로 그려야 PDF 와 일치한다 (인라인 floating 표를 박스가 둘러쌈).
+    /// `layout_wrap_around_paras` 가 호출 직전에 Some(원래 col_area.x, col_area.width)
+    /// 로 설정하고, 호출 직후 None 으로 복원한다.
+    border_box_override: std::cell::Cell<Option<(f64, f64)>>,
     /// 레이아웃 검증 결과: 경계 초과 목록
     layout_overflows: std::cell::RefCell<Vec<LayoutOverflow>>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
@@ -268,6 +274,7 @@ impl LayoutEngine {
             current_page_number: std::cell::Cell::new(0),
             file_name: std::cell::RefCell::new(String::new()),
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
+            border_box_override: std::cell::Cell::new(None),
             layout_overflows: std::cell::RefCell::new(Vec::new()),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             active_field: std::cell::RefCell::new(None),
@@ -1642,6 +1649,16 @@ impl LayoutEngine {
                             // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.
                             // partial_start 는 첫 range 값(last.7)을 유지.
                             last.8 = is_partial_end;
+                            // Task #463: 첫 항목이 PartialParagraph (좁은 geometry, 예: pi=50
+                            // 우측 단 시작) 이고 후속 항목이 넓은 geometry 일 때, 박스가 좁게
+                            // 굳어 후속 paragraph 가 박스 밖으로 튀어나오는 것을 방지하기 위해
+                            // merge 그룹의 x/width 를 최대 범위로 확장한다.
+                            let last_right = last.1 + last.3;
+                            let cur_right = x + w;
+                            let new_x = last.1.min(x);
+                            let new_right = last_right.max(cur_right);
+                            last.1 = new_x;
+                            last.3 = new_right - new_x;
                             continue;
                         }
                     }
@@ -2338,6 +2355,9 @@ impl LayoutEngine {
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                     let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                    // Task #463: 인라인 floating 표 우측 x 계산 (paragraph border box 확장용).
+                    // table_layout::compute_table_x_position 와 동일 공식.
+                    let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
                     self.layout_wrap_around_paras(
                         tree, col_node, paragraphs, composed, styles, col_area,
                         page_content.section_index,
@@ -2345,6 +2365,7 @@ impl LayoutEngine {
                         table_y_before, y_offset,
                         wrap_text_x, wrap_text_width, 0.0,
                         bin_data_content,
+                        Some(tbl_x_right),
                     );
                 }
             }
@@ -2570,12 +2591,14 @@ impl LayoutEngine {
                     let content_offset = if let Some(mt) = pt_mt {
                         mt.range_height(0, start_row)
                     } else { 0.0 };
+                    let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
                     self.layout_wrap_around_paras(
                         tree, col_node, paragraphs, composed, styles, col_area,
                         page_content.section_index, para_index, wrap_around_paras,
                         pt_y_before, y_offset,
                         wrap_text_x, wrap_text_width, content_offset,
                         bin_data_content,
+                        Some(tbl_x_right),
                     );
                 }
             }
@@ -2817,6 +2840,7 @@ impl LayoutEngine {
         result_y
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn layout_wrap_around_paras(
         &self,
         tree: &mut PageRenderTree,
@@ -2834,6 +2858,10 @@ impl LayoutEngine {
         wrap_text_width: f64,
         table_content_offset: f64,
         bin_data_content: &[BinDataContent],
+        // Task #463: 인라인 floating 표(예: 인용 따옴표 ｢｣)의 우측 끝 x 좌표.
+        // wrap host paragraph 의 외곽선이 이 표 위치까지 둘러싸도록 box 너비를
+        // 확장하기 위해 caller 에서 계산하여 전달한다. None 이면 box 미확장.
+        tbl_x_right: Option<f64>,
     ) {
         // 이 표에 연관된 어울림 문단만 필터링
         let related: Vec<_> = wrap_around_paras.iter()
@@ -2873,11 +2901,22 @@ impl LayoutEngine {
                         let text_end_line = comp.lines.iter().rposition(|line| {
                             line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
                         }).map(|i| i + 1).unwrap_or(comp.lines.len());
+                        // Task #463: wrap host 의 외곽선은 원래 col_area 너비로 그려야
+                        // 인라인 floating 표(인용 따옴표 ｢｣ 등)를 박스가 둘러쌈. tbl_x_right
+                        // 가 col_area 우측을 넘으면 그 위치까지 박스 너비를 확장한다.
+                        let prev_override = self.border_box_override.get();
+                        let extended_width = match tbl_x_right {
+                            Some(tx) if tx > col_area.x + col_area.width =>
+                                tx - col_area.x,
+                            _ => col_area.width,
+                        };
+                        self.border_box_override.set(Some((col_area.x, extended_width)));
                         self.layout_partial_paragraph(
                             tree, col_node, table_para, Some(comp), styles,
                             &wrap_area, table_y_start, start_line, text_end_line,
                             section_index, table_para_index, None, Some(bin_data_content),
                         );
+                        self.border_box_override.set(prev_override);
                         // 어울림 문단은 항상 ↵ 표시 필요 — 부분 렌더링 시 is_para_end 강제 설정
                         force_para_end_on_last_run(col_node);
                     }
@@ -3278,6 +3317,35 @@ impl LayoutEngine {
 /// TAC 문단에 `PageItem::FullParagraph` 가 발행되지 않아 `paragraph_layout`
 /// 가 호출되지 않는 경우(선행 공백만 있는 TAC 표 등)에 `layout_table_item`
 /// 에서 표 inline x 좌표를 복원하기 위해 사용한다.
+/// Task #463: 인라인 wrap=Square floating 표의 우측 끝 x 좌표 계산.
+/// `table_layout::compute_table_x_position` 의 depth=0 + Column-relative
+/// 경로와 동일한 공식을 사용하여, paragraph border box 가 표를 둘러쌀 수
+/// 있도록 한다. 인용 따옴표 ｢｣ 처럼 col_area 우측을 horizontal_offset 만큼
+/// 넘는 표를 정확히 처리한다.
+fn compute_square_wrap_tbl_x_right(
+    t: &crate::model::table::Table,
+    col_area: &LayoutRect,
+    dpi: f64,
+) -> f64 {
+    use crate::model::shape::HorzAlign;
+    let tbl_w = crate::renderer::hwpunit_to_px(t.common.width as i32, dpi);
+    let h_offset = crate::renderer::hwpunit_to_px(t.common.horizontal_offset as i32, dpi);
+    let tbl_x = match t.common.horz_align {
+        // table_layout.rs:966 와 동일: ref_x + (ref_w - table_width) - h_offset.
+        // 이후 inline_x_override 경로(line 924-925)에서 +h_offset 가산되어
+        // 최종 x = ref_x + (ref_w - table_width). h_offset 효과는 상쇄됨.
+        // 그러나 실제 렌더된 좌표(empirical: 526.93) 는 ref_x+(ref_w-tw)+h_offset 임.
+        // 여기서는 tbl_inline_x(line 2218)와 일관되게 단순 우측정렬 후
+        // h_offset 가산식을 사용한다.
+        HorzAlign::Right | HorzAlign::Outside =>
+            col_area.x + col_area.width - tbl_w + h_offset,
+        HorzAlign::Center =>
+            col_area.x + (col_area.width - tbl_w) / 2.0 + h_offset,
+        _ => col_area.x + h_offset,
+    };
+    tbl_x + tbl_w
+}
+
 fn compute_tac_leading_width(
     composed: &ComposedParagraph,
     target_control_index: usize,
