@@ -2880,10 +2880,20 @@ impl LayoutEngine {
         let table_base_vpos = table_seg.vertical_pos;
 
         // 어울림 텍스트 영역
+        // Task #463: wrap_text_x 는 LINE_SEG.column_start 기반으로 paragraph
+        // margin_left 를 이미 포함하지만, layout_composed_paragraph 가 col_area.x 에
+        // margin_left 를 한 번 더 더하기 때문에 wrap host 텍스트가 한 단계 더
+        // 들여쓰기 됨 (학생3 wrap host 가 학생1 보다 +margin_left 만큼 우측으로 밀림).
+        // wrap_area.x 를 margin_left 만큼 좌측으로 보정하고 width 도 그만큼 확장.
+        // (inner_pad 는 외곽선 안쪽 여백으로 wrap_cs 와 무관하므로 보정 대상 아님)
+        let host_para_style = composed.get(table_para_index)
+            .and_then(|c| styles.para_styles.get(c.para_style_id as usize));
+        let host_margin_left = host_para_style.map(|s| s.margin_left).unwrap_or(0.0);
+        let host_margin_right = host_para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let wrap_area = LayoutRect {
-            x: wrap_text_x,
+            x: wrap_text_x - host_margin_left,
             y: col_area.y,
-            width: wrap_text_width,
+            width: wrap_text_width + host_margin_left + host_margin_right,
             height: col_area.height,
         };
 
