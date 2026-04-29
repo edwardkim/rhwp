@@ -87,7 +87,7 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 ### PR 전 체크리스트
 
 ```bash
-cargo test                       # 1014+ 테스트 통과
+cargo test                       # 1,100+ 테스트 통과
 cargo clippy -- -D warnings      # 린트 경고 0건
 ```
 
