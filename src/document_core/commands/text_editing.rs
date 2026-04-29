@@ -959,6 +959,73 @@ impl DocumentCore {
         Ok(super::super::helpers::json_ok_with(&format!("\"paraIdx\":{},\"charOffset\":{}", prev_idx, merge_point)))
     }
 
+    /// 문단 삭제 (네이티브 에러 타입)
+    pub fn delete_paragraph_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<String, HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)", section_idx, self.document.sections.len()
+            )));
+        }
+        let section = &self.document.sections[section_idx];
+        if section.paragraphs.len() <= 1 {
+            return Err(HwpError::RenderError(
+                "구역의 마지막 문단은 삭제할 수 없습니다".to_string()
+            ));
+        }
+        if para_idx >= section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과 (총 {}개)", para_idx, section.paragraphs.len()
+            )));
+        }
+
+        let removed_char_count = self.document.sections[section_idx].paragraphs[para_idx]
+            .text.chars().count();
+        self.document.sections[section_idx].raw_stream = None;
+        self.document.sections[section_idx].paragraphs.remove(para_idx);
+
+        let reflow_idx = if para_idx > 0 { para_idx - 1 } else { 0 };
+        let old_col = self.para_column_map.get(section_idx)
+            .and_then(|m| m.get(reflow_idx)).copied().unwrap_or(0);
+        self.remove_composed_paragraph(section_idx, para_idx);
+        if reflow_idx < self.document.sections[section_idx].paragraphs.len() {
+            self.reflow_paragraph(section_idx, reflow_idx);
+        }
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs, reflow_idx,
+        );
+        if reflow_idx < self.document.sections[section_idx].paragraphs.len() {
+            self.recompose_paragraph(section_idx, reflow_idx);
+        }
+        self.paginate_if_needed();
+
+        for _ in 0..2 {
+            let new_col = self.para_column_map.get(section_idx)
+                .and_then(|m| m.get(reflow_idx)).copied().unwrap_or(0);
+            if new_col == old_col { break; }
+            if reflow_idx < self.document.sections[section_idx].paragraphs.len() {
+                self.reflow_paragraph(section_idx, reflow_idx);
+            }
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs, reflow_idx,
+            );
+            if reflow_idx < self.document.sections[section_idx].paragraphs.len() {
+                self.recompose_paragraph(section_idx, reflow_idx);
+            }
+            self.paginate_if_needed();
+        }
+
+        let new_count = self.document.sections[section_idx].paragraphs.len();
+        self.event_log.push(DocumentEvent::ParagraphDeleted { section: section_idx, para: para_idx });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"removedCharCount\":{},\"newParagraphCount\":{}",
+            removed_char_count, new_count
+        )))
+    }
+
     /// 셀 내부 문단 분할 (네이티브 에러 타입)
     pub fn split_paragraph_in_cell_native(
         &mut self,
