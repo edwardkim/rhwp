@@ -15,7 +15,7 @@
  *   RHWP_RENDER_DIFF_WRITE_IMAGES=1
  */
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { lstatSync, mkdirSync, realpathSync, statSync, writeFileSync } from 'fs';
 import { dirname, extname, isAbsolute, join, posix, relative, resolve, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { runTest, loadHwpFile, assert, setTestCase } from './helpers.mjs';
@@ -25,6 +25,7 @@ const ARTIFACT_DIR = join(__dirname, 'screenshots', 'render-diff');
 const REPORT_PATH = join(ARTIFACT_DIR, 'results.json');
 const SUMMARY_PATH = join(ARTIFACT_DIR, 'summary.md');
 const SAMPLES_DIR = resolve(__dirname, '..', 'public', 'samples');
+const REAL_SAMPLES_DIR = realpathSync(SAMPLES_DIR);
 const VALID_FIXTURE_EXTENSIONS = new Set(['.hwp', '.hwpx']);
 
 const DEFAULT_FIXTURES = [
@@ -102,8 +103,26 @@ function normalizeFixture(value) {
   if (relativePath === '' || relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
     throw new Error(`render diff fixture resolved outside public/samples: ${fixture}`);
   }
-  if (!existsSync(resolved)) {
-    throw new Error(`render diff fixture does not exist under public/samples: ${fixture}`);
+  let current = REAL_SAMPLES_DIR;
+  for (const part of normalized.split('/')) {
+    current = resolve(current, part);
+    let entry;
+    try {
+      entry = lstatSync(current);
+    } catch {
+      throw new Error(`render diff fixture does not exist under public/samples: ${fixture}`);
+    }
+    if (entry.isSymbolicLink()) {
+      throw new Error(`render diff fixture must not use symlinks: ${fixture}`);
+    }
+  }
+  const realResolved = realpathSync(resolved);
+  const realRelativePath = relative(REAL_SAMPLES_DIR, realResolved);
+  if (realRelativePath === '' || realRelativePath === '..' || realRelativePath.startsWith(`..${sep}`) || isAbsolute(realRelativePath)) {
+    throw new Error(`render diff fixture real path escaped public/samples: ${fixture}`);
+  }
+  if (!statSync(resolved).isFile()) {
+    throw new Error(`render diff fixture must be a regular file under public/samples: ${fixture}`);
   }
   return normalized;
 }
@@ -137,12 +156,13 @@ function formatPageLimit(maxPages) {
   return maxPages === Number.POSITIVE_INFINITY ? 'all' : String(maxPages);
 }
 
-function resultLine(result) {
+function resultLine(result, { markdown = false } = {}) {
   const percent = (result.diffRatio * 100).toFixed(5);
   const size = result.sameSize
     ? `${result.width}x${result.height}`
     : `${result.legacyWidth}x${result.legacyHeight} vs ${result.layerWidth}x${result.layerHeight}`;
-  return `${result.fixture} page ${result.pageIndex + 1}: ${result.diffPixels}/${result.totalPixels} pixels differ (${percent}%), max channel delta ${result.maxChannelDelta}, size ${size}`;
+  const fixture = markdown ? markdownCell(result.fixture) : result.fixture;
+  return `${fixture} page ${result.pageIndex + 1}: ${result.diffPixels}/${result.totalPixels} pixels differ (${percent}%), max channel delta ${result.maxChannelDelta}, size ${size}`;
 }
 
 function renderMarkdownSummary(config, results) {
@@ -193,7 +213,7 @@ function renderMarkdownSummary(config, results) {
     lines.push('## Failures');
     lines.push('');
     for (const failure of failures) {
-      lines.push(`- ${resultLine(failure)}`);
+      lines.push(`- ${resultLine(failure, { markdown: true })}`);
     }
     lines.push('');
   }
