@@ -4,6 +4,15 @@
  *
  * Run from rhwp-studio after building ../pkg with wasm-pack:
  *   npm run e2e:render-diff
+ *
+ * To start/stop the Vite server automatically:
+ *   npm run e2e:render-diff:ci
+ *
+ * Useful knobs:
+ *   RHWP_RENDER_DIFF_FILES=basic/KTX.hwp,biz_plan.hwp
+ *   RHWP_RENDER_DIFF_MAX_PAGES=1|all
+ *   RHWP_RENDER_DIFF_ALL=1
+ *   RHWP_RENDER_DIFF_WRITE_IMAGES=1
  */
 import { mkdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';

@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "e2e": "node e2e/text-flow.test.mjs",
-    "e2e:render-diff": "node e2e/canvas-render-diff.test.mjs --mode=headless"
+    "e2e:render-diff": "node e2e/canvas-render-diff.test.mjs --mode=headless",
+    "e2e:render-diff:ci": "node e2e/run-render-diff.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.40",
