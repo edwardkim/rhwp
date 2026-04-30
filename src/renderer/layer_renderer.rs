@@ -12,6 +12,7 @@ pub trait LayerRenderer {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RasterRenderOptions {
     pub max_dimension: i32,
+    pub max_pixels: u64,
     pub scale: f64,
     pub dpi: Option<f64>,
     pub transparent: bool,
@@ -24,6 +25,7 @@ impl Default for RasterRenderOptions {
     fn default() -> Self {
         Self {
             max_dimension: 16_384,
+            max_pixels: 67_108_864,
             scale: 1.0,
             dpi: None,
             transparent: true,

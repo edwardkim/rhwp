@@ -70,6 +70,19 @@ impl SkiaLayerRenderer {
         };
         let width = raster_dimension(tree.page_width, "width")?;
         let height = raster_dimension(tree.page_height, "height")?;
+        if options.max_pixels == 0 {
+            return Err(HwpError::RenderError(
+                "invalid raster max pixel count: 0".to_string(),
+            ));
+        }
+        let pixel_count = (width as u64).checked_mul(height as u64).ok_or_else(|| {
+            HwpError::RenderError("raster pixel count overflow".to_string())
+        })?;
+        if pixel_count > options.max_pixels {
+            return Err(HwpError::RenderError(format!(
+                "raster pixel count out of range: {pixel_count}"
+            )));
+        }
 
         let mut surface = surfaces::raster_n32_premul((width, height))
             .ok_or_else(|| HwpError::RenderError("Skia raster surface 생성 실패".to_string()))?;
@@ -865,6 +878,24 @@ mod tests {
             },
         );
         assert!(oversized.is_err());
+
+        let too_many_pixels = renderer.render_raster_with_options(
+            &tree,
+            RasterRenderOptions {
+                max_pixels: 99,
+                ..Default::default()
+            },
+        );
+        assert!(too_many_pixels.is_err());
+
+        let invalid_pixel_budget = renderer.render_raster_with_options(
+            &tree,
+            RasterRenderOptions {
+                max_pixels: 0,
+                ..Default::default()
+            },
+        );
+        assert!(invalid_pixel_budget.is_err());
     }
 
     #[test]
