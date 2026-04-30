@@ -2380,8 +2380,12 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
 /// HWP `pic.crop` (HWPUNIT) 와 원본 이미지 크기(HU/px)로부터 SVG `viewBox` 에 쓸
 /// 원본 픽셀 단위 source rect (x, y, w, h)를 계산한다.
 ///
-/// `original_size_hu = Some((ow, oh))` 가 주어지면 정확한 HU/px 스케일을 사용한다.
-/// 그렇지 않으면 `crop.right / img_w_px` 를 폴백 스케일로 사용한다(과거 동작 호환).
+/// HWP `crop` 은 이미지 native 픽셀을 96-DPI HU 관행 (75 HU/px) 으로 인코딩한다.
+/// `original_size_hu` (= ShapeComponentAttr.original_width/height) 는 표시 HU 이며,
+/// 사용자가 그림 크기를 변경한 경우 이미지 native HU 와 다를 수 있다.
+///
+/// [Task #473] `original_size_hu / img_px` 가 75 ± 5% 안에 들어오는 경우만 사용 (역호환),
+/// 아니면 96-DPI 관행 (75 HU/px) fallback. 이미지 binary 의 정확한 native scale.
 pub(crate) fn compute_image_crop_src(
     crop_hu: (i32, i32, i32, i32),
     original_size_hu: Option<(u32, u32)>,
@@ -2389,13 +2393,14 @@ pub(crate) fn compute_image_crop_src(
     img_h_px: f64,
 ) -> (f64, f64, f64, f64) {
     let (cl, ct, cr, cb) = crop_hu;
-    let (scale_x, scale_y) = match original_size_hu {
-        Some((ow, oh)) if ow > 0 && oh > 0 => (ow as f64 / img_w_px, oh as f64 / img_h_px),
-        _ => {
-            let s = cr as f64 / img_w_px;
-            (s, s)
-        }
-    };
+    const HWP_CROP_DPI_SCALE: f64 = 75.0; // 7200 HU/inch / 96 px/inch
+    let scale_from_orig = original_size_hu
+        .filter(|(ow, oh)| *ow > 0 && *oh > 0 && img_w_px > 0.0 && img_h_px > 0.0)
+        .map(|(ow, oh)| (ow as f64 / img_w_px, oh as f64 / img_h_px))
+        .filter(|(sx, sy)|
+            (*sx - HWP_CROP_DPI_SCALE).abs() / HWP_CROP_DPI_SCALE < 0.05
+                && (*sy - HWP_CROP_DPI_SCALE).abs() / HWP_CROP_DPI_SCALE < 0.05);
+    let (scale_x, scale_y) = scale_from_orig.unwrap_or((HWP_CROP_DPI_SCALE, HWP_CROP_DPI_SCALE));
     let src_x = cl as f64 / scale_x;
     let src_y = ct as f64 / scale_y;
     let src_w = (cr - cl) as f64 / scale_x;
