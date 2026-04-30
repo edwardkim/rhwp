@@ -492,6 +492,74 @@ mod tests {
         );
     }
 
+    /// Task #490: 빈 텍스트 + TAC 수식만 있는 셀 paragraph 의 alignment 적용.
+    ///
+    /// 케이스: `samples/exam_science.hwp` 페이지 1 의 3번 표 (pi=12, 4행×4열,
+    /// "이온 결합 화합물") 의 셀 7 (행1, 열3) "전체 전자의 양" 컬럼 28 수식.
+    /// 셀 paragraph 는 text_len=0 + ctrls=1 (수식) 구조. 수정 전: empty-runs
+    /// 분기 (`paragraph_layout.rs:2227`) 가 `inline_x = effective_col_x +
+    /// effective_margin_left` 로 좌측 고정 → 28 수식이 셀 좌측에 정렬.
+    /// 수정 후: paragraph alignment(Center) 따라 align_offset 적용 → 수식이
+    /// 셀 중앙 부근에 정렬.
+    ///
+    /// 검증: 28 수식의 그룹 transform x 좌표가 수정 전(x≈358) 보다 우측
+    /// (x>400) 으로 이동했는지 확인. 셀 7 영역(x≈336..478) 의 좌측 1/3
+    /// 범위(<395) 에 있으면 결함, 그 이후면 alignment 정상 적용.
+    #[test]
+    fn test_490_empty_para_with_tac_equation_respects_alignment() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+
+        // 28 수식 위치 추출. SVG 구조: <g transform="translate(X, Y) scale(...)">
+        //                              <text x="0" y="...">28</text>
+        //                              </g>
+        // "28" 텍스트 직전의 group transform x 좌표를 찾는다.
+        let needle = ">28<";
+        let mut found_xs: Vec<f64> = Vec::new();
+        let mut search_start = 0;
+        while let Some(pos) = svg[search_start..].find(needle) {
+            let abs_pos = search_start + pos;
+            let context_start = abs_pos.saturating_sub(2000);
+            let context = &svg[context_start..abs_pos];
+            // 가장 가까운 직전 `<g transform="translate(X` 패턴 찾기
+            if let Some(g_rel) = context.rfind("<g transform=\"translate(") {
+                let after_translate = &context[g_rel + "<g transform=\"translate(".len()..];
+                if let Some(comma) = after_translate.find(',') {
+                    if let Ok(x) = after_translate[..comma].parse::<f64>() {
+                        // y 좌표로 3번 표 영역 (y ≈ 1040..1090) 인지 확인
+                        let after_comma = &after_translate[comma + 1..];
+                        if let Some(close_paren) = after_comma.find(')') {
+                            if let Ok(y) = after_comma[..close_paren].parse::<f64>() {
+                                if (1040.0..1090.0).contains(&y) {
+                                    found_xs.push(x);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            search_start = abs_pos + needle.len();
+        }
+
+        assert!(
+            !found_xs.is_empty(),
+            "Task #490: 3번 표 영역(y∈[1040,1090])의 28 수식 transform 을 찾지 못함"
+        );
+
+        // 셀 7 영역: x≈336.8..478.0 (140 px). 좌측 1/4 한계: 372.
+        // 수정 전: x≈358.7 (좌측 정렬). 수정 후: x>=400 (alignment 적용).
+        for x in &found_xs {
+            assert!(
+                *x >= 380.0,
+                "Task #490: 28 수식이 좌측 정렬됨 (x={:.1} < 380). 셀 paragraph alignment 적용 안 됨",
+                x
+            );
+        }
+    }
+
     #[test]
     fn test_layer_svg_matches_legacy_for_basic_text_sample() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
