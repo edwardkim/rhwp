@@ -796,14 +796,19 @@ impl TypesetEngine {
             (vec![hwpunit_to_px(400, self.dpi)], vec![0.0])
         };
 
-        let lines_total: f64 = line_heights.iter().zip(line_spacings.iter())
-            .map(|(h, s)| h + s)
-            .sum();
-        let total_height = spacing_before + lines_total + spacing_after;
-
-        // 적합성 판단용: trailing line_spacing 제외
+        // [Issue #479] trailing line_spacing 제외 — HWP vpos 기준과 정합.
+        // vpos_h = (last.vpos + last.lh) - first.vpos = lh_sum + (n-1)*ls
+        // 즉 paragraph 영역은 마지막 line 의 line_spacing 을 포함하지 않는다.
+        // 이전 동작 (모든 ls 포함) 은 paragraph 마다 +trailing_ls 만큼 부풀려져
+        // 페이지 12 layout drift ≈ 200px (#479) 발생 원인.
+        let n = line_heights.len();
+        let lh_sum: f64 = line_heights.iter().sum();
+        let inter_ls_sum: f64 = line_spacings.iter().take(n.saturating_sub(1)).sum();
         let trailing_ls = line_spacings.last().copied().unwrap_or(0.0);
-        let height_for_fit = (total_height - trailing_ls).max(0.0);
+        let total_height = spacing_before + lh_sum + inter_ls_sum + spacing_after;
+        let height_for_fit = total_height.max(0.0);
+        // total_height/height_for_fit 동일 — trailing_ls 는 누적되지 않는다.
+        let _ = trailing_ls; // 진단용 변수 (디버그 출력 등에서 사용)
 
         FormattedParagraph {
             total_height,
