@@ -2545,15 +2545,23 @@ impl LayoutEngine {
             }
 
             col_node.children.push(line_node);
-            // 줄간격 적용:
+            // [Issue #479] 줄간격 적용:
             //   - 셀 내 마지막 문단의 마지막 줄: trailing line_spacing 제외
             //     (셀 높이 모델은 trailing 미포함, 셀 내부와 정합)
-            //   - 그 외 모든 줄(본문 단락의 마지막 줄 포함): trailing line_spacing 가산
-            //     pagination/engine.rs 의 current_height 누적(para_height = sum(lh+ls))
-            //     과 정합. (Task #452: 이전 #332 의 layout-only trailing 제외 →
-            //     pagination 과 1 ls drift 발생 → 회복)
+            //   - 본문(셀 외부) paragraph 의 마지막 줄(end == composed.lines.len()):
+            //     trailing line_spacing 제외 — HWP vpos 기준 paragraph 영역 = lh_sum + (n-1)*ls.
+            //     typeset.rs:802 의 total_height 와 정합.
+            //   - 셀 내부 비-마지막 paragraph: line_spacing 가산 (셀 안 paragraph 사이 정상 spacing 유지).
+            //   - 그 외 (paragraph 내 중간 줄 또는 PartialParagraph 의 비-끝 줄): line_spacing 가산
+            //
+            // 이전 Task #452 의 layout-only trailing 제외는 pagination 과 drift 를 만들었으나,
+            // 본 task #479 는 typeset.rs 의 누적도 함께 trailing 제외로 변경하여 정합.
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
+            let is_full_paragraph_end = line_idx + 1 >= end && end >= composed.lines.len();
             if is_cell_last_line && cell_ctx.is_some() {
+                y += line_height;
+            } else if is_full_paragraph_end && cell_ctx.is_none() {
+                // 셀 외부 paragraph 의 마지막 줄 (#479)
                 y += line_height;
             } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
