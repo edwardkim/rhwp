@@ -411,8 +411,18 @@ impl TypesetEngine {
                 let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
                 let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
                 if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
-                    // 현재 문단의 vpos가 0 이고 직전 문단의 마지막 vpos가 의미있게 큰 경우 (5000 HU ≈ 1.76mm)
-                    if cv == 0 && pv > 5000 {
+                    // 현재 문단의 vpos가 직전 문단의 마지막 vpos보다 작은 경우 — 컬럼/페이지 reset 시그널.
+                    // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
+                    //   단일 단에서 cv != 0 의 cv < pv 는 partial-table split 의 LAYOUT 잔재로
+                    //   해석되어야 함 (issue #418 / hwpspec pi=78→pi=79).
+                    // - 다단: cv != 0 도 인정 (Task #470). 컬럼 헤더 오프셋 (cv=9014 등) 으로
+                    //   시작하는 새 컬럼의 reset 을 감지.
+                    let trigger = if st.col_count > 1 {
+                        cv < pv && pv > 5000
+                    } else {
+                        cv == 0 && pv > 5000
+                    };
+                    if trigger {
                         st.advance_column_or_new_page();
                     }
                 }
@@ -436,7 +446,11 @@ impl TypesetEngine {
                 } else {
                     let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
                     let curr_last_vpos = para.line_segs.last().map(|s| s.vertical_pos);
-                    matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl)) if nv == 0 && cl > 5000)
+                    // [Task #470] 다단 섹션에서는 nv == 0 → nv < cl 로 완화 (컬럼 헤더 오프셋).
+                    // 단일 단에서는 partial-table split 회귀 (issue #418) 회피 위해 nv == 0 유지.
+                    let multi_col = st.col_count > 1;
+                    matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl))
+                        if (if multi_col { nv < cl } else { nv == 0 }) && cl > 5000)
                 }
             } else { false };
 
@@ -623,10 +637,39 @@ impl TypesetEngine {
                 match ctrl {
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
                         if !has_table {
-                            st.current_items.push(PageItem::Shape {
+                            // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된
+                            // 페이지/단에 등록. paragraph 가 페이지 분할되면 이 시점의
+                            // st.current_items 는 마지막 페이지 상태이므로, 그대로 push 하면
+                            // 박스가 잘못된 페이지에 떠 있게 된다.
+                            let is_tac_shape = matches!(ctrl,
+                                Control::Shape(s) if s.common().treat_as_char);
+                            let routed = if is_tac_shape {
+                                crate::renderer::pagination::find_inline_control_target_page(
+                                    &st.pages, &st.current_items, para_idx, ctrl_idx, para,
+                                )
+                            } else {
+                                None
+                            };
+                            let item = PageItem::Shape {
                                 para_index: para_idx,
                                 control_index: ctrl_idx,
-                            });
+                            };
+                            match routed {
+                                Some((page_idx, col_idx)) => {
+                                    if let Some(page) = st.pages.get_mut(page_idx) {
+                                        if let Some(col) = page.column_contents.get_mut(col_idx) {
+                                            col.items.push(item);
+                                        } else {
+                                            st.current_items.push(item);
+                                        }
+                                    } else {
+                                        st.current_items.push(item);
+                                    }
+                                }
+                                None => {
+                                    st.current_items.push(item);
+                                }
+                            }
                             // Task #409 v2: 비-TAC TopAndBottom + vert=Para Picture/Shape 는
                             // layout 에서 picture_footnote.rs:356 의 `y_offset + total_height`
                             // 패턴으로 후속 콘텐츠를 개체 높이만큼 밀어냄. 하지만 paragraph

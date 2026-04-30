@@ -985,10 +985,37 @@ impl Paginator {
                     );
                 }
                 Control::Shape(shape_obj) => {
-                    st.current_items.push(PageItem::Shape {
+                    // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된 페이지/단에 등록.
+                    // paragraph 가 페이지 분할되면 process_controls 시점에 st.current_items 는 마지막
+                    // 페이지 상태이므로, 그대로 push 하면 박스가 잘못된 페이지에 떠 있게 된다.
+                    let routed = if shape_obj.common().treat_as_char {
+                        super::find_inline_control_target_page(
+                            &st.pages, &st.current_items, para_idx, ctrl_idx, para,
+                        )
+                    } else {
+                        None
+                    };
+                    let item = PageItem::Shape {
                         para_index: para_idx,
                         control_index: ctrl_idx,
-                    });
+                    };
+                    match routed {
+                        Some((page_idx, col_idx)) => {
+                            // 이전 페이지의 해당 단 items 에 직접 push
+                            if let Some(page) = st.pages.get_mut(page_idx) {
+                                if let Some(col) = page.column_contents.get_mut(col_idx) {
+                                    col.items.push(item);
+                                } else {
+                                    st.current_items.push(item);
+                                }
+                            } else {
+                                st.current_items.push(item);
+                            }
+                        }
+                        None => {
+                            st.current_items.push(item);
+                        }
+                    }
                     // 글상자 내 각주 수집
                     if let Some(text_box) = shape_obj.drawing().and_then(|d| d.text_box.as_ref()) {
                         for (tp_idx, tp) in text_box.paragraphs.iter().enumerate() {

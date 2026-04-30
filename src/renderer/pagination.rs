@@ -188,6 +188,57 @@ pub enum PageItem {
     },
 }
 
+/// [Issue #476] 인라인(treat_as_char) 컨트롤이 라우팅된 페이지/단을 찾는다.
+///
+/// `pages`: 이미 finalize 된 이전 페이지들의 ColumnContent(items 포함).
+/// `current_items`: 현재(마지막) 페이지의 진행 중 항목 목록 (아직 flush 안 된 상태).
+///
+/// 박스의 char 위치 → line index → 그 line 을 포함하는 PartialParagraph 가 들어있는
+/// `(page_idx, column_idx)` 를 반환. 마지막 페이지(현재 처리 중)에 들어있으면 `None` (= 현재).
+/// 어디에도 없거나 페이지 분할이 없으면 `None`.
+pub fn find_inline_control_target_page(
+    pages: &[PageContent],
+    current_items: &[PageItem],
+    para_idx: usize,
+    ctrl_idx: usize,
+    para: &Paragraph,
+) -> Option<(usize, usize)> {
+    let positions = para.control_text_positions();
+    let ctrl_text_pos = *positions.get(ctrl_idx)?;
+    let target_line = para.line_segs.iter().enumerate()
+        .rev()
+        .find(|(_, ls)| (ls.text_start as usize) <= ctrl_text_pos)
+        .map(|(i, _)| i)
+        .unwrap_or(0);
+
+    // 1) 현재(마지막) 페이지의 current_items 검사 — 박스 line 이 여기 있으면 None (= 현재)
+    let in_current = current_items.iter().any(|item| match item {
+        PageItem::FullParagraph { para_index } if *para_index == para_idx => true,
+        PageItem::PartialParagraph { para_index, start_line, end_line }
+            if *para_index == para_idx && (*start_line..*end_line).contains(&target_line) => true,
+        _ => false,
+    });
+    if in_current {
+        return None;
+    }
+
+    // 2) 이전 페이지/단 검색
+    for (page_idx, page) in pages.iter().enumerate() {
+        for (col_idx, col) in page.column_contents.iter().enumerate() {
+            let hit = col.items.iter().any(|item| match item {
+                PageItem::FullParagraph { para_index } if *para_index == para_idx => true,
+                PageItem::PartialParagraph { para_index, start_line, end_line }
+                    if *para_index == para_idx && (*start_line..*end_line).contains(&target_line) => true,
+                _ => false,
+            });
+            if hit {
+                return Some((page_idx, col_idx));
+            }
+        }
+    }
+    None
+}
+
 impl PageItem {
     /// 항목의 para_index를 반환한다.
     pub fn para_index(&self) -> usize {

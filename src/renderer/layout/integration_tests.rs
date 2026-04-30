@@ -236,6 +236,174 @@ mod tests {
         );
     }
 
+    /// Task #470: cross-paragraph vpos-reset 미인식 (cv != 0)
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 1 의 pi=10 ("적합성 검증이란…") 은
+    /// HWP 인코딩상 col 1 시작 (first vpos=9014, pi=9 last vpos=90426).
+    /// `cv == 0` 가드만 있던 시절: pi=10 partial 2줄이 col 0 에 강제 삽입되어 overflow.
+    /// 수정 후: 전체가 col 1 첫 항목으로 이동.
+    #[test]
+    fn test_470_cross_paragraph_vpos_reset_with_column_header_offset() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let dump = core.dump_page_items(Some(0));
+        assert!(!dump.is_empty(), "페이지 1 dump 가 비어있음");
+
+        // 페이지 1 의 단 0 / 단 1 섹션을 분리해서 pi=10 위치 검증
+        // dump 형식 예:
+        //   === 페이지 1 ...
+        //     단 0 (...)
+        //       PartialParagraph pi=10 ...
+        //     단 1 (...)
+        //       FullParagraph pi=10 ...
+        let mut col0_block = String::new();
+        let mut col1_block = String::new();
+        let mut current_col: i32 = -1;
+        for line in dump.lines() {
+            if line.trim_start().starts_with("단 0") {
+                current_col = 0;
+                continue;
+            }
+            if line.trim_start().starts_with("단 1") {
+                current_col = 1;
+                continue;
+            }
+            // 다음 페이지로 넘어가면 중단
+            if line.starts_with("=== 페이지") && current_col >= 0 {
+                break;
+            }
+            match current_col {
+                0 => col0_block.push_str(line),
+                1 => col1_block.push_str(line),
+                _ => {}
+            }
+            col0_block.push('\n');
+            col1_block.push('\n');
+        }
+
+        // pi=10 이 단 0 에 등장하면 안 됨, 단 1 에는 등장해야 함.
+        let col0_has_pi10 = col0_block.contains("pi=10");
+        let col1_has_pi10 = col1_block.contains("pi=10");
+        assert!(!col0_has_pi10,
+            "pi=10 이 col 0 에 배치되어 있음 (cross-column vpos-reset 미감지). col 0 dump:\n{}",
+            col0_block);
+        assert!(col1_has_pi10,
+            "pi=10 이 col 1 에 등장해야 함. col 1 dump:\n{}",
+            col1_block);
+    }
+
+    /// Task #471: cross-column 박스 검출(Task #468) 이 stroke_sig 머지(Task #321 v6) 와
+    /// 불일치하여 좌측 단 (가) 박스 하단에 잘못된 가로선이 그려지는 회귀.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 1: pi=6(bf=7) + pi=7~9(bf=4) 가 stroke_sig
+    /// 동일하여 한 그룹으로 머지. 그룹의 g.0=7 (첫 range bf). 다음 paragraph pi=10 은
+    /// bf=4. bf_id 비교로는 7 != 4 → partial_end 미설정 → 4면 Rectangle 으로 그려져
+    /// 하단 가로선 발생.
+    #[test]
+    fn test_471_cross_column_box_no_bottom_line_in_col0() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 1 SVG 가 비어있음");
+
+        // body bottom = 1436.2. cross-column 박스의 하단 가로선이 그려진다면
+        // y ≈ 1436~1442 부근에 stroke 가 있는 4면 rect 또는 가로 line 이 존재.
+        // body_clip 안의 좌측 단 영역 (x in [120, 542]) 에서 stroke 가 있는
+        // rect 또는 가로 line 의 bottom_y 가 1300 보다 큰 항목이 있는지 검사.
+        //
+        // 현 구조: 잘못 그려진 단일 Rectangle (4면 stroke) — `<rect ... fill="none"
+        // stroke="#000000" stroke-width="0.5"/>` x≈128, y≈558, w≈402, h≈880 (ends_y≈1438).
+        let mut violations: Vec<String> = Vec::new();
+        for chunk in svg.split("<rect ").skip(1) {
+            let end = chunk.find("/>").or_else(|| chunk.find('>')).unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            // stroke 가 있는 rect 만 (fill 만 있는 rect 는 paragraph background)
+            if !attrs.contains("stroke=\"#000000\"") && !attrs.contains("stroke=\"#000\"") {
+                continue;
+            }
+            let parse_attr = |name: &str| -> Option<f64> {
+                let pat = format!("{}=\"", name);
+                let i = attrs.find(&pat)? + pat.len();
+                let j = i + attrs[i..].find('"')?;
+                attrs[i..j].parse::<f64>().ok()
+            };
+            let (x, y, w, h) = match (parse_attr("x"), parse_attr("y"), parse_attr("width"), parse_attr("height")) {
+                (Some(a), Some(b), Some(c), Some(d)) => (a, b, c, d),
+                _ => continue,
+            };
+            // 좌측 단 영역의 4면 stroke rect 로 bottom 이 col_bottom 근처
+            if x >= 120.0 && x <= 542.0 && (x + w) <= 545.0 && (y + h) > 1300.0 {
+                violations.push(format!("rect x={} y={} w={} h={} ends_y={}", x, y, w, h, y + h));
+            }
+        }
+        assert!(violations.is_empty(),
+            "좌측 단 (가) 박스에 4면 stroke rect 가 그려짐 (cross-column 검출 실패): {:?}",
+            violations);
+    }
+
+    /// Task #473: 그림 crop 변환 scale 기준 오류 — 표시 HU(`original_size_hu`)가
+    /// 96-DPI native HU 와 일치하지 않을 때 viewBox 가 image 보다 과대해지는 회귀.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 12 우측 단 `<보기>` 표 내부 그림:
+    /// - 이미지 binary: 2220×1654 px (96 DPI 환산 166500×124080 HU)
+    /// - 표시 HU: 26640×19860 (94×70mm)
+    /// - crop = (0, 0, 166500, 124080) ← 이미지 native HU at 96 DPI
+    ///
+    /// 기존: scale=26640/2220=12 HU/px → src_w=13875 → viewBox(13875) 안에
+    /// image(2220) → 16% 비율로 작게 표시.
+    /// 수정 후: scale=75 (96-DPI 관행) → src_w=2220 → viewBox=image 일치.
+    #[test]
+    fn test_473_picture_crop_viewbox_matches_image_px() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(11).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 12 SVG 가 비어있음");
+
+        // SVG 내 <svg ...><image .../></svg> 패턴에서 viewBox width 와 inner image
+        // width 비율 검증. crop 이 적용된 그림은 이런 nested SVG 형태로 emit 됨.
+        // 비율이 1.0 ± 10% 안에 있어야 그림이 viewBox 를 가득 채움.
+        let mut violations: Vec<String> = Vec::new();
+        for chunk in svg.split("<svg ").skip(1) {
+            let end = chunk.find("</svg>").unwrap_or(chunk.len());
+            let body = &chunk[..end];
+            let vb_pat = "viewBox=\"";
+            let Some(vb_start) = body.find(vb_pat) else { continue };
+            let vb_str_start = vb_start + vb_pat.len();
+            let Some(vb_end) = body[vb_str_start..].find('"') else { continue };
+            let vb_str = &body[vb_str_start..vb_str_start + vb_end];
+            let vb_parts: Vec<f64> = vb_str.split_whitespace()
+                .filter_map(|s| s.parse().ok()).collect();
+            if vb_parts.len() != 4 { continue; }
+            let vb_w = vb_parts[2];
+            let vb_h = vb_parts[3];
+            let img_pat = "<image width=\"";
+            let Some(im_start) = body.find(img_pat) else { continue };
+            let im_str_start = im_start + img_pat.len();
+            let Some(im_end) = body[im_str_start..].find('"') else { continue };
+            let img_w: f64 = body[im_str_start..im_str_start + im_end].parse().unwrap_or(0.0);
+            let h_pat = "height=\"";
+            let Some(h_start) = body[im_str_start + im_end..].find(h_pat) else { continue };
+            let h_off = im_start + im_end + h_start + h_pat.len();
+            let Some(h_end) = body[h_off..].find('"') else { continue };
+            let img_h: f64 = body[h_off..h_off + h_end].parse().unwrap_or(0.0);
+            if vb_w > 0.0 && img_w > 0.0 {
+                let ratio_w = vb_w / img_w;
+                let ratio_h = if vb_h > 0.0 && img_h > 0.0 { vb_h / img_h } else { 1.0 };
+                if (ratio_w - 1.0).abs() > 0.1 || (ratio_h - 1.0).abs() > 0.1 {
+                    violations.push(format!(
+                        "viewBox=({},{}) image=({},{}) ratio_w={:.3} ratio_h={:.3}",
+                        vb_w, vb_h, img_w, img_h, ratio_w, ratio_h));
+                }
+            }
+        }
+        assert!(violations.is_empty(),
+            "그림 crop SVG 의 viewBox 가 image px 와 일치하지 않음: {:?}",
+            violations);
+    }
+
     #[test]
     fn test_layer_svg_matches_legacy_for_basic_text_sample() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
