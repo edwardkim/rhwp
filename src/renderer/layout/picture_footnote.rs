@@ -699,7 +699,11 @@ impl LayoutEngine {
             }
 
             parent.children.push(line_node);
-            y += line_height;
+            // [Issue #483] trailing line_spacing 추가 — layout_composed_paragraph:2560 과 정합.
+            // 누락 시 multi-paragraph 각주의 paragraph 간 gap 이 line_spacing(예: 360 HU = 4.8px)
+            // 만큼 좁아져 한컴 vpos 의도와 어긋남.
+            let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
+            y += line_height + line_spacing_px;
         }
 
         // 빈 문단 fallback
