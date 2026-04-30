@@ -14,8 +14,9 @@
  *   RHWP_RENDER_DIFF_ALL=1
  *   RHWP_RENDER_DIFF_WRITE_IMAGES=1
  */
-import { mkdirSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { createHash } from 'crypto';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { dirname, extname, isAbsolute, join, posix, relative, resolve, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { runTest, loadHwpFile, assert, setTestCase } from './helpers.mjs';
 
@@ -23,6 +24,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ARTIFACT_DIR = join(__dirname, 'screenshots', 'render-diff');
 const REPORT_PATH = join(ARTIFACT_DIR, 'results.json');
 const SUMMARY_PATH = join(ARTIFACT_DIR, 'summary.md');
+const SAMPLES_DIR = resolve(__dirname, '..', 'public', 'samples');
+const VALID_FIXTURE_EXTENSIONS = new Set(['.hwp', '.hwpx']);
 
 const DEFAULT_FIXTURES = [
   'basic/KTX.hwp',
@@ -61,23 +64,73 @@ function maxPagesFromEnv() {
 
 function fixturesFromEnv() {
   const raw = process.env.RHWP_RENDER_DIFF_FILES;
-  if (raw) {
-    return raw.split(',').map(s => s.trim()).filter(Boolean);
+  const fixtures = raw
+    ? raw.split(',').map(s => s.trim()).filter(Boolean)
+    : process.env.RHWP_RENDER_DIFF_ALL === '1' ? ALL_FIXTURES : DEFAULT_FIXTURES;
+  return fixtures.map(normalizeFixture);
+}
+
+function normalizeFixture(value) {
+  const fixture = String(value).trim();
+  if (!fixture) {
+    throw new Error('render diff fixture must not be empty');
   }
-  return process.env.RHWP_RENDER_DIFF_ALL === '1' ? ALL_FIXTURES : DEFAULT_FIXTURES;
+  if (fixture.includes('\0') || fixture.includes('\\') || fixture.includes('?') || fixture.includes('#')) {
+    throw new Error(`invalid render diff fixture path: ${fixture}`);
+  }
+  if (fixture.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(fixture)) {
+    throw new Error(`render diff fixture must be relative to public/samples: ${fixture}`);
+  }
+  let decoded = fixture;
+  try {
+    decoded = decodeURIComponent(fixture);
+  } catch {
+    throw new Error(`render diff fixture must not contain malformed URL escapes: ${fixture}`);
+  }
+  if (decoded !== fixture) {
+    throw new Error(`render diff fixture must not be percent-encoded: ${fixture}`);
+  }
+  const normalized = posix.normalize(fixture);
+  if (normalized !== fixture || normalized === '.' || normalized === '..' || normalized.startsWith('../')) {
+    throw new Error(`render diff fixture must stay under public/samples: ${fixture}`);
+  }
+  if (!VALID_FIXTURE_EXTENSIONS.has(extname(normalized).toLowerCase())) {
+    throw new Error(`render diff fixture must be a .hwp or .hwpx sample: ${fixture}`);
+  }
+  const resolved = resolve(SAMPLES_DIR, ...normalized.split('/'));
+  const relativePath = relative(SAMPLES_DIR, resolved);
+  if (relativePath === '' || relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
+    throw new Error(`render diff fixture resolved outside public/samples: ${fixture}`);
+  }
+  if (!existsSync(resolved)) {
+    throw new Error(`render diff fixture does not exist under public/samples: ${fixture}`);
+  }
+  return normalized;
 }
 
 function safeName(value) {
-  return value.replace(/[^a-z0-9_.-]+/gi, '_').replace(/^_+|_+$/g, '');
+  const sanitized = value.replace(/[^a-z0-9_.-]+/gi, '_').replace(/^_+|_+$/g, '');
+  const hash = createHash('sha256').update(value).digest('hex').slice(0, 8);
+  return `${sanitized || 'fixture'}-${hash}`;
 }
 
 function writeDataUrl(path, dataUrl) {
-  const encoded = dataUrl.replace(/^data:image\/png;base64,/, '');
-  writeFileSync(path, Buffer.from(encoded, 'base64'));
+  const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
+  if (!match) {
+    throw new Error(`expected PNG data URL for ${path}`);
+  }
+  writeFileSync(path, Buffer.from(match[1], 'base64'));
 }
 
 function markdownCell(value) {
-  return String(value).replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+  return String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
 }
 
 function formatPageLimit(maxPages) {
@@ -97,7 +150,7 @@ function renderMarkdownSummary(config, results) {
   const lines = [
     '# Canvas Visual Diff',
     '',
-    `- fixtures: ${config.fixtures.join(', ')}`,
+    `- fixtures: ${config.fixtures.map(markdownCell).join(', ')}`,
     `- scale: ${config.scale}`,
     `- max pages: ${formatPageLimit(config.maxPages)}`,
     `- channel tolerance: ${config.channelTolerance}`,
