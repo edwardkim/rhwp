@@ -1668,31 +1668,35 @@ impl LayoutEngine {
                 }
 
                 // Task #468: cross-column 박스 연속 검출.
-                // sequential 인접 paragraph 가 같은 bf_id 면 박스가 다른 컬럼/페이지로 이어진 것.
-                // 시작 paragraph 의 이전 paragraph 가 같은 bf_id → partial_start
-                // 마지막 paragraph 의 다음 paragraph 가 같은 bf_id → partial_end
+                // sequential 인접 paragraph 가 같은 stroke_sig 면 박스가 다른 컬럼/페이지로 이어진 것.
+                // [Task #471] bf_id 비교가 아닌 stroke_sig 비교 — 머지(Task #321 v6)가 visual
+                // stroke 기준으로 동작하므로 그룹의 g.0 bf_id 는 첫 range 의 bf_id 만 보존됨.
+                // 그룹의 visual sig 와 인접 paragraph 의 visual sig 비교가 정확.
                 for g in groups.iter_mut() {
                     let bf_id = g.0;
                     if bf_id == 0 { continue; }
                     let first_pi = g.9;
                     let last_pi = g.10;
+                    let group_sig = stroke_sig(bf_id);
+                    if group_sig.is_none() { continue; }
 
-                    if !g.7 && first_pi > 0 {
-                        let prev_bf = composed.get(first_pi - 1)
+                    let para_bf = |pi: usize| -> u16 {
+                        composed.get(pi)
                             .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
                             .map(|s| s.border_fill_id)
-                            .unwrap_or(0);
-                        if prev_bf == bf_id {
+                            .unwrap_or(0)
+                    };
+
+                    if !g.7 && first_pi > 0 {
+                        let prev_sig = stroke_sig(para_bf(first_pi - 1));
+                        if prev_sig.is_some() && prev_sig == group_sig {
                             g.7 = true;
                         }
                     }
 
                     if !g.8 {
-                        let next_bf = composed.get(last_pi + 1)
-                            .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
-                            .map(|s| s.border_fill_id)
-                            .unwrap_or(0);
-                        if next_bf == bf_id {
+                        let next_sig = stroke_sig(para_bf(last_pi + 1));
+                        if next_sig.is_some() && next_sig == group_sig {
                             g.8 = true;
                         }
                     }
