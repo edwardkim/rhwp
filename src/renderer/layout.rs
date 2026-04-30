@@ -2256,15 +2256,19 @@ impl LayoutEngine {
                 let tbl_inline_x = if let Some((ix, _)) = inline_pos {
                     Some(ix)
                 } else if !is_tac && tbl_is_square {
-                    // Square wrap 표는 halign에 따라 좌/중/우 배치
+                    // [Issue #480] Square wrap 표는 paragraph 영역 (col_area + margin) 기준으로 정렬.
+                    // 이전 동작(col_area 기준)은 paragraph margin/indent 가 있는 경우 표가
+                    // 단 사이 갭으로 떨어지는 문제 발생 (예: 페이지 14 [A] 박스).
                     // (Task #295: halign=Right 표가 좌측에 잘못 배치되는 문제 수정)
                     let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
+                    let area_x = col_area.x + effective_margin;
+                    let area_w = (col_area.width - effective_margin - margin_right).max(0.0);
                     let x = match t.common.horz_align {
                         crate::model::shape::HorzAlign::Right | crate::model::shape::HorzAlign::Outside =>
-                            col_area.x + col_area.width - tbl_w,
+                            area_x + (area_w - tbl_w).max(0.0),
                         crate::model::shape::HorzAlign::Center =>
-                            col_area.x + (col_area.width - tbl_w) / 2.0,
-                        _ => col_area.x,
+                            area_x + (area_w - tbl_w).max(0.0) / 2.0,
+                        _ => area_x,
                     };
                     Some(x)
                 } else if is_tac {
