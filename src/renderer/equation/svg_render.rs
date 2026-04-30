@@ -13,9 +13,12 @@ use super::ast::MatrixStyle;
 const EQ_FONT_FAMILY: &str = " font-family=\"'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif\"";
 
 /// 수식을 SVG 조각 문자열로 렌더링
+///
+/// 진입점 default: italic=true (hwpeq 변수 기본 스타일). FontStyle::Roman(`rm`)
+/// 적용 영역에서는 자식 렌더링 시 italic=false 로 전환된다.
 pub fn render_equation_svg(layout: &LayoutBox, color: &str, base_font_size: f64) -> String {
     let mut svg = String::new();
-    render_box(&mut svg, layout, 0.0, 0.0, color, base_font_size, false, false);
+    render_box(&mut svg, layout, 0.0, 0.0, color, base_font_size, true, false);
     svg
 }
 
@@ -43,14 +46,16 @@ fn render_box(
             let text_y = y + lb.baseline;
             let esc = escape_xml(text);
             let fi = fs;
-            // CJK/한글 텍스트는 이탤릭 없이 렌더링 (수학 변수명만 이탤릭)
+            // CJK/한글 텍스트는 이탤릭 없이 렌더링 (수학 변수명만 이탤릭).
+            // FontStyle::Roman(`rm` 적용)으로 italic=false 가 전달된 경우에도 이탤릭을 적용하지 않는다.
             let has_cjk = text.chars().any(|c| matches!(c,
                 '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
             ));
-            let style = if has_cjk { "" } else { " font-style=\"italic\"" };
+            let italic_attr = if !has_cjk && italic { " font-style=\"italic\"" } else { "" };
+            let weight_attr = if bold { " font-weight=\"bold\"" } else { "" };
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}{}>{}</text>\n",
-                text_x, text_y, fi, color, style, EQ_FONT_FAMILY, esc,
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}{}{}>{}</text>\n",
+                text_x, text_y, fi, color, italic_attr, weight_attr, EQ_FONT_FAMILY, esc,
             ));
         }
         LayoutKind::Number(text) => {
@@ -577,5 +582,56 @@ mod tests {
         assert!(svg.contains("×")); // TIMES → ×
         assert!(svg.contains("<line")); // 분수선
         assert!(svg.contains("<path")); // 괄호
+    }
+
+    // Task #488: rm/it 폰트 스타일 적용 검증
+
+    #[test]
+    fn test_default_text_is_italic() {
+        // hwpeq 기본: 라틴 변수는 italic
+        let svg = render_eq("K");
+        assert!(svg.contains("font-style=\"italic\""), "기본 변수는 italic: {}", svg);
+    }
+
+    #[test]
+    fn test_rm_disables_italic() {
+        // rm K (직립체): italic 미적용
+        let svg = render_eq("rm K");
+        assert!(!svg.contains("font-style=\"italic\""), "rm 적용 시 italic 없음: {}", svg);
+        assert!(svg.contains(">K<"));
+    }
+
+    #[test]
+    fn test_rm_prefix_form_disables_italic() {
+        // rmK (공백 없는 prefix 형태): italic 미적용
+        let svg = render_eq("rmK");
+        assert!(!svg.contains("font-style=\"italic\""), "rmK 적용 시 italic 없음: {}", svg);
+        assert!(svg.contains(">K<"));
+        // rm prefix 자체가 토큰으로 분리되었으므로 raw "rmK" 가 SVG 텍스트로 남지 않아야 함
+        assert!(!svg.contains(">rmK<"));
+    }
+
+    #[test]
+    fn test_rm_compound_chemical_symbol() {
+        // rmCa: 두 글자 화학 기호도 한 토큰으로 묶여 italic 미적용
+        let svg = render_eq("rmCa");
+        assert!(!svg.contains("font-style=\"italic\""));
+        assert!(svg.contains(">Ca<"));
+    }
+
+    #[test]
+    fn test_it_keeps_italic() {
+        // it K (이탤릭 명시): italic 적용
+        let svg = render_eq("it K");
+        assert!(svg.contains("font-style=\"italic\""));
+        assert!(svg.contains(">K<"));
+    }
+
+    #[test]
+    fn test_cjk_never_italic() {
+        // 한글은 default italic=true 영역에서도 italic 미적용
+        let svg = render_eq("평점");
+        assert!(!svg.contains("font-style=\"italic\""), "CJK는 italic 미적용: {}", svg);
+        assert!(svg.contains("평점"));
     }
 }
