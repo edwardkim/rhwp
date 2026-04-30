@@ -2,8 +2,8 @@
 //! paragraph_layout 와 layout_shape_item 양쪽에서 emit 되어 SVG 에 두 번
 //! 그려지는 회귀.
 //!
-//! [Task #479] paragraph 누적에서 trailing line_spacing 제외 정정 후
-//! 페이지 분배가 시프트되어 pi=83/86/89 가 페이지 18 (index 17) 로 이동.
+//! [Task #479 옵션 3 v2] paginator 의 paragraph 누적은 Before 와 동일
+//! (trailing_ls 포함). pi=83/86/89 가 페이지 20 (index 19) 에 그대로 위치.
 //!
 //! 정황:
 //! - pi=83 / pi=86 / pi=89 가 각각 빈 문단 + TAC=true Picture (bin_id=35,36,37)
@@ -30,10 +30,10 @@ fn hwpspec_no_duplicate_image_emit() {
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .expect("parse hwpspec.hwp");
 
-    // [Task #479] 페이지 인덱스 변경: pi=83/86/89 가 페이지 18 (index 17) 로 이동
+    // 페이지 20 = index 19
     let svg = doc
-        .render_page_svg_native(17)
-        .expect("render hwpspec.hwp page 18");
+        .render_page_svg_native(19)
+        .expect("render hwpspec.hwp page 20");
 
     // <image> 요소 개수 검증
     let image_count = svg.matches("<image").count();
