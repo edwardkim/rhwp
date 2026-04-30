@@ -76,9 +76,39 @@ impl Tokenizer {
         }
     }
 
+    /// 위치 `self.pos`부터 키워드가 prefix로 매치되는지 확인
+    fn matches_at(&self, kw: &str) -> bool {
+        let kw_chars: Vec<char> = kw.chars().collect();
+        if self.pos + kw_chars.len() > self.chars.len() {
+            return false;
+        }
+        for (i, &c) in kw_chars.iter().enumerate() {
+            if self.chars[self.pos + i] != c {
+                return false;
+            }
+        }
+        true
+    }
+
     /// 명령어/식별자 읽기 (영문자+숫자)
+    ///
+    /// hwpeq 문법: 폰트 스타일 키워드(`bold`/`it`/`rm`)는 식별자에 공백 없이
+    /// 붙어 쓰일 수 있고(예: `rmK`, `itl`, `boldX`), 키워드 길이만큼만 소비된 뒤
+    /// 나머지는 별개 토큰이 된다. 키워드 직후가 식별자 종료(공백/기호/EOF)인
+    /// 경우에는 분리하지 않는다.
     fn read_command(&mut self) -> Token {
         let start = self.pos;
+
+        for kw in ["bold", "it", "rm"] {
+            if self.matches_at(kw) {
+                let after = self.peek(kw.len());
+                if matches!(after, Some(c) if c.is_ascii_alphanumeric()) {
+                    self.pos += kw.len();
+                    return Token::new(TokenType::Command, kw, start);
+                }
+            }
+        }
+
         let mut value = String::new();
         while let Some(ch) = self.current() {
             if ch.is_ascii_alphanumeric() {
@@ -382,5 +412,61 @@ mod tests {
         assert!(cmds.contains(&"LEFT"));
         assert!(cmds.contains(&"over"));
         assert!(cmds.contains(&"RIGHT"));
+    }
+
+    // Task #488: 폰트 스타일 키워드(rm/it/bold) prefix 분리
+
+    #[test]
+    fn test_font_style_prefix_rm_uppercase() {
+        let tokens = tokenize("rmK ^{+}");
+        assert_eq!(values(&tokens), vec!["rm", "K", "^", "{", "+", "}"]);
+    }
+
+    #[test]
+    fn test_font_style_prefix_rm_compound() {
+        let tokens = tokenize("rmCa ^{2+}");
+        assert_eq!(values(&tokens), vec!["rm", "Ca", "^", "{", "2", "+", "}"]);
+    }
+
+    #[test]
+    fn test_font_style_prefix_rm_lowercase() {
+        let tokens = tokenize("1`rmmol");
+        assert_eq!(values(&tokens), vec!["1", "`", "rm", "mol"]);
+    }
+
+    #[test]
+    fn test_font_style_prefix_it_compound() {
+        let tokens = tokenize("LEFT ( itaq RIGHT )");
+        assert_eq!(values(&tokens), vec!["LEFT", "(", "it", "aq", "RIGHT", ")"]);
+    }
+
+    #[test]
+    fn test_font_style_prefix_it_single_letter() {
+        let tokens = tokenize("LEFT ( itl RIGHT )");
+        assert_eq!(values(&tokens), vec!["LEFT", "(", "it", "l", "RIGHT", ")"]);
+    }
+
+    #[test]
+    fn test_font_style_prefix_bold() {
+        let tokens = tokenize("boldX");
+        assert_eq!(values(&tokens), vec!["bold", "X"]);
+    }
+
+    #[test]
+    fn test_font_style_keyword_alone_unchanged() {
+        // 키워드 직후가 공백/기호/EOF: 분리하지 않고 그대로 키워드
+        let tokens = tokenize("rm K");
+        assert_eq!(values(&tokens), vec!["rm", "K"]);
+        let tokens = tokenize("it{x}");
+        assert_eq!(values(&tokens), vec!["it", "{", "x", "}"]);
+        let tokens = tokenize("rm");
+        assert_eq!(values(&tokens), vec!["rm"]);
+    }
+
+    #[test]
+    fn test_existing_commands_unchanged() {
+        // 기존 명령은 회귀 없음
+        let tokens = tokenize("OVER MATRIX SQRT alpha beta");
+        assert_eq!(values(&tokens), vec!["OVER", "MATRIX", "SQRT", "alpha", "beta"]);
     }
 }
