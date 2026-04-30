@@ -1582,6 +1582,52 @@ mod tests {
     }
 
     #[test]
+    fn renders_atop_equation_layout_as_colored_ink() {
+        let font_size = 18.0;
+        let layout_box = EqLayout::new(font_size).layout(&EqNode::Atop {
+            top: Box::new(EqNode::Text("a".to_string())),
+            bottom: Box::new(EqNode::Text("b".to_string())),
+        });
+        let equation = EquationNode {
+            svg_content: String::new(),
+            layout_box,
+            color_str: "#00aa00".to_string(),
+            color: 0x0000aa00,
+            font_size,
+            section_index: Some(0),
+            para_index: Some(0),
+            control_index: Some(0),
+            cell_index: None,
+            cell_para_index: None,
+        };
+        let tree = PageLayerTree::new(
+            64.0,
+            48.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 64.0, 48.0),
+                None,
+                vec![PaintOp::Equation {
+                    bbox: BoundingBox::new(6.0, 6.0, 44.0, 32.0),
+                    equation,
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render atop equation");
+        let image = decode_rgba(&output.bytes);
+        let green_ink = image
+            .pixels()
+            .filter(|pixel| pixel[0] < 96 && pixel[1] > 96 && pixel[2] < 96 && pixel[3] > 0)
+            .count();
+
+        assert!(
+            green_ink > 0,
+            "atop equation should render using its configured color"
+        );
+    }
+
+    #[test]
     fn renders_placeholder_style_ops_as_ink() {
         let form = FormObjectNode {
             form_type: FormType::PushButton,

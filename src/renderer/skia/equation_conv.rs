@@ -136,6 +136,10 @@ fn render_box(
             );
             render_box(canvas, font_mgr, denom, x, y, color, fs, italic, bold);
         }
+        LayoutKind::Atop { top, bottom } => {
+            render_box(canvas, font_mgr, top, x, y, color, fs, italic, bold);
+            render_box(canvas, font_mgr, bottom, x, y, color, fs, italic, bold);
+        }
         LayoutKind::Sqrt { index, body } => {
             let sign_h = lb.height;
             let body_left = x + body.x - fs * 0.1;
