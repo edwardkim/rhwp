@@ -800,6 +800,28 @@ impl Paragraph {
         positions
     }
 
+    /// `char_offsets` 중 UTF-16 위치 `utf16_pos` 이상인 첫 번째 codepoint 의
+    /// 인덱스를 반환한다. 모든 entry 가 작으면 `char_offsets.len()` (텍스트 끝).
+    ///
+    /// `char_shapes[i].start_pos` 와 `line_segs[i].text_start` 같은 UTF-16
+    /// 단위 위치 필드를 codepoint 인덱스로 정규화할 때 사용한다.
+    ///
+    /// 본 메서드는 `document_core::helpers::utf16_pos_to_char_idx` 와 동일
+    /// 알고리즘이나, 시그니처 호환성 (raw `&[u32]` vs `&self`) 때문에 본체를
+    /// 자체 보유한다 — 의존성 방향 (model ← document_core) 보존. 알고리즘이
+    /// 1줄 (`iter().position`) 이라 silent drift 위험은 무시 가능.
+    ///
+    /// # Returns
+    ///
+    /// `char_offsets` 첫 entry 가 `utf16_pos` 이상인 인덱스. 모든 entry 가
+    /// 작으면 `char_offsets.len()`.
+    pub fn utf16_pos_to_char_idx(&self, utf16_pos: u32) -> usize {
+        self.char_offsets
+            .iter()
+            .position(|&off| off >= utf16_pos)
+            .unwrap_or(self.char_offsets.len())
+    }
+
     /// [start_char_offset, end_char_offset) 범위에 new_char_shape_id를 적용한다.
     ///
     /// CharShapeRef 배열을 분할/교체하여 지정 범위만 새 ID로 변경한다.
