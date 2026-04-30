@@ -53,6 +53,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
 
       - name: Cache cargo registry & build
         uses: actions/cache@v4
@@ -67,6 +68,12 @@ jobs:
 
       - name: Build
         run: cargo build --verbose
+
+      - name: Canvas layer parity tests
+        run: cargo test canvas_layer_tree_matches_legacy --lib --verbose
+
+      - name: Check WASM target
+        run: cargo check --target wasm32-unknown-unknown --lib
 
       - name: Run tests
         run: cargo test --verbose

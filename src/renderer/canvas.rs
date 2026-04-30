@@ -3,8 +3,11 @@
 //! 브라우저의 Canvas 2D API를 사용하여 렌더링한다.
 //! WASM 환경에서 web-sys를 통해 Canvas에 직접 그린다.
 
-use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand};
-use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType, ShapeTransform, BoundingBox};
+use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
+
+use super::layer_renderer::{LayerRenderResult, LayerRenderer};
+use super::render_tree::{BoundingBox, PageRenderTree, RenderNode, RenderNodeType, ShapeTransform};
+use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
 
 /// Canvas 2D 렌더러
 ///
@@ -20,7 +23,7 @@ pub struct CanvasRenderer {
 }
 
 /// Canvas 렌더링 명령 (테스트/디버깅용)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CanvasCommand {
     BeginPage(f64, f64),
     EndPage,
@@ -48,7 +51,13 @@ pub enum CanvasCommand {
     /// 상태 복원 (ctx.restore)
     Restore,
     /// 아핀 변환: translate(tx, ty) → rotate(rad) → scale(sx, sy) 순서
-    SetTransform { tx: f64, ty: f64, rotation_rad: f64, sx: f64, sy: f64 },
+    SetTransform {
+        tx: f64,
+        ty: f64,
+        rotation_rad: f64,
+        sx: f64,
+        sy: f64,
+    },
 }
 
 impl CanvasRenderer {
@@ -75,6 +84,12 @@ impl CanvasRenderer {
         self.render_node(&tree.root);
     }
 
+    /// 레이어 트리를 Canvas 명령으로 재생한다.
+    pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.begin_page(tree.page_width, tree.page_height);
+        self.render_layer_node(&tree.root);
+    }
+
     /// 개별 노드를 렌더링한다.
     fn render_node(&mut self, node: &RenderNode) {
         if !node.visible {
@@ -89,20 +104,29 @@ impl CanvasRenderer {
                 if let Some(color) = bg.background_color {
                     let color_str = color_to_css(color);
                     self.commands.push(CanvasCommand::FillRect(
-                        node.bbox.x, node.bbox.y,
-                        node.bbox.width, node.bbox.height,
+                        node.bbox.x,
+                        node.bbox.y,
+                        node.bbox.width,
+                        node.bbox.height,
                         color_str,
                     ));
                 }
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(&run.text, node.bbox.x, node.bbox.y + node.bbox.height, &run.style);
+                self.draw_text(
+                    &run.text,
+                    node.bbox.x,
+                    node.bbox.y + node.bbox.height,
+                    &run.style,
+                );
             }
             RenderNodeType::Rectangle(rect) => {
                 self.open_shape_transform(&rect.transform, &node.bbox);
                 self.draw_rect(
-                    node.bbox.x, node.bbox.y,
-                    node.bbox.width, node.bbox.height,
+                    node.bbox.x,
+                    node.bbox.y,
+                    node.bbox.width,
+                    node.bbox.height,
                     rect.corner_radius,
                     &rect.style,
                 );
@@ -115,12 +139,24 @@ impl CanvasRenderer {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
                 let cx = node.bbox.x + node.bbox.width / 2.0;
                 let cy = node.bbox.y + node.bbox.height / 2.0;
-                self.draw_ellipse(cx, cy, node.bbox.width / 2.0, node.bbox.height / 2.0, &ellipse.style);
+                self.draw_ellipse(
+                    cx,
+                    cy,
+                    node.bbox.width / 2.0,
+                    node.bbox.height / 2.0,
+                    &ellipse.style,
+                );
             }
             RenderNodeType::Image(img) => {
                 self.open_shape_transform(&img.transform, &node.bbox);
                 if let Some(ref data) = img.data {
-                    self.draw_image(data, node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height);
+                    self.draw_image(
+                        data,
+                        node.bbox.x,
+                        node.bbox.y,
+                        node.bbox.width,
+                        node.bbox.height,
+                    );
                 }
             }
             RenderNodeType::Path(path) => {
@@ -141,6 +177,86 @@ impl CanvasRenderer {
         self.close_shape_transform(&node.node_type);
     }
 
+    fn render_layer_node(&mut self, node: &LayerNode) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    self.render_layer_node(child);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } => {
+                self.render_layer_node(child);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    match op {
+                        PaintOp::PageBackground { bbox, background } => {
+                            if let Some(color) = background.background_color {
+                                self.commands.push(CanvasCommand::FillRect(
+                                    bbox.x,
+                                    bbox.y,
+                                    bbox.width,
+                                    bbox.height,
+                                    color_to_css(color),
+                                ));
+                            }
+                        }
+                        PaintOp::TextRun { bbox, run } => {
+                            self.draw_text(&run.text, bbox.x, bbox.y + bbox.height, &run.style);
+                        }
+                        PaintOp::Rectangle { bbox, rect } => {
+                            self.open_shape_transform(&rect.transform, bbox);
+                            self.draw_rect(
+                                bbox.x,
+                                bbox.y,
+                                bbox.width,
+                                bbox.height,
+                                rect.corner_radius,
+                                &rect.style,
+                            );
+                            self.close_shape_transform_value(&rect.transform);
+                        }
+                        PaintOp::Line { bbox, line } => {
+                            self.open_shape_transform(&line.transform, bbox);
+                            self.draw_line(line.x1, line.y1, line.x2, line.y2, &line.style);
+                            self.close_shape_transform_value(&line.transform);
+                        }
+                        PaintOp::Ellipse { bbox, ellipse } => {
+                            self.open_shape_transform(&ellipse.transform, bbox);
+                            let cx = bbox.x + bbox.width / 2.0;
+                            let cy = bbox.y + bbox.height / 2.0;
+                            self.draw_ellipse(
+                                cx,
+                                cy,
+                                bbox.width / 2.0,
+                                bbox.height / 2.0,
+                                &ellipse.style,
+                            );
+                            self.close_shape_transform_value(&ellipse.transform);
+                        }
+                        PaintOp::Image { bbox, image } => {
+                            self.open_shape_transform(&image.transform, bbox);
+                            if let Some(ref data) = image.data {
+                                self.draw_image(data, bbox.x, bbox.y, bbox.width, bbox.height);
+                            }
+                            self.close_shape_transform_value(&image.transform);
+                        }
+                        PaintOp::Path { bbox, path } => {
+                            self.open_shape_transform(&path.transform, bbox);
+                            self.draw_path(&path.commands, &path.style);
+                            self.close_shape_transform_value(&path.transform);
+                        }
+                        PaintOp::FootnoteMarker { .. }
+                        | PaintOp::Equation { .. }
+                        | PaintOp::FormObject { .. }
+                        | PaintOp::Placeholder { .. }
+                        | PaintOp::RawSvg { .. } => {}
+                    }
+                }
+            }
+        }
+    }
+
     /// 도형 변환(회전/대칭)이 있으면 Save + SetTransform 커맨드를 추가한다.
     fn open_shape_transform(&mut self, transform: &ShapeTransform, bbox: &BoundingBox) {
         if !transform.has_transform() {
@@ -153,7 +269,11 @@ impl CanvasRenderer {
         let rotation_rad = transform.rotation.to_radians();
         self.commands.push(CanvasCommand::Save);
         self.commands.push(CanvasCommand::SetTransform {
-            tx: cx, ty: cy, rotation_rad, sx, sy,
+            tx: cx,
+            ty: cy,
+            rotation_rad,
+            sx,
+            sy,
         });
     }
 
@@ -171,6 +291,19 @@ impl CanvasRenderer {
             self.commands.push(CanvasCommand::Restore);
         }
     }
+
+    fn close_shape_transform_value(&mut self, transform: &ShapeTransform) {
+        if transform.has_transform() {
+            self.commands.push(CanvasCommand::Restore);
+        }
+    }
+}
+
+impl LayerRenderer for CanvasRenderer {
+    fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
+        self.render_layer_tree(tree);
+        Ok(())
+    }
 }
 
 impl Renderer for CanvasRenderer {
@@ -185,22 +318,36 @@ impl Renderer for CanvasRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, _style: &TextStyle) {
-        self.commands.push(CanvasCommand::FillText(text.to_string(), x, y));
+        self.commands
+            .push(CanvasCommand::FillText(text.to_string(), x, y));
     }
 
-    fn draw_rect(&mut self, x: f64, y: f64, w: f64, h: f64, _corner_radius: f64, style: &ShapeStyle) {
+    fn draw_rect(
+        &mut self,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
+        _corner_radius: f64,
+        style: &ShapeStyle,
+    ) {
         if let Some(ref pat) = style.pattern {
             self.commands.push(CanvasCommand::FillPatternRect(
-                x, y, w, h,
+                x,
+                y,
+                w,
+                h,
                 pat.pattern_type,
                 color_to_css(pat.pattern_color),
                 color_to_css(pat.background_color),
             ));
         } else if let Some(fill) = style.fill_color {
-            self.commands.push(CanvasCommand::FillRect(x, y, w, h, color_to_css(fill)));
+            self.commands
+                .push(CanvasCommand::FillRect(x, y, w, h, color_to_css(fill)));
         }
         if let Some(stroke) = style.stroke_color {
-            self.commands.push(CanvasCommand::StrokeRect(x, y, w, h, color_to_css(stroke)));
+            self.commands
+                .push(CanvasCommand::StrokeRect(x, y, w, h, color_to_css(stroke)));
         }
     }
 
@@ -209,7 +356,8 @@ impl Renderer for CanvasRenderer {
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, _style: &ShapeStyle) {
-        self.commands.push(CanvasCommand::DrawEllipse(cx, cy, rx, ry));
+        self.commands
+            .push(CanvasCommand::DrawEllipse(cx, cy, rx, ry));
     }
 
     fn draw_image(&mut self, _data: &[u8], x: f64, y: f64, w: f64, h: f64) {
@@ -227,10 +375,13 @@ impl Renderer for CanvasRenderer {
                     self.commands.push(CanvasCommand::LineTo(*x, *y));
                 }
                 PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                    self.commands.push(CanvasCommand::CurveTo(*x1, *y1, *x2, *y2, *x, *y));
+                    self.commands
+                        .push(CanvasCommand::CurveTo(*x1, *y1, *x2, *y2, *x, *y));
                 }
                 PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
-                    self.commands.push(CanvasCommand::ArcTo(*rx, *ry, *x_rot, *large_arc, *sweep, *x, *y));
+                    self.commands.push(CanvasCommand::ArcTo(
+                        *rx, *ry, *x_rot, *large_arc, *sweep, *x, *y,
+                    ));
                 }
                 PathCommand::ClosePath => {
                     self.commands.push(CanvasCommand::ClosePath);
@@ -259,7 +410,10 @@ fn color_to_css(color: u32) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::super::render_tree::*;
     use super::*;
+    use crate::model::control::FormType;
+    use crate::paint::{LayerBuilder, RenderProfile};
 
     #[test]
     fn test_canvas_renderer_basic() {
@@ -309,8 +463,6 @@ mod tests {
 
     #[test]
     fn test_canvas_render_tree() {
-        use super::super::render_tree::*;
-
         let mut tree = PageRenderTree::new(0, 800.0, 600.0);
         let bg_id = tree.next_id();
         tree.root.children.push(RenderNode::new(
@@ -329,5 +481,259 @@ mod tests {
         renderer.render_tree(&tree);
         // BeginPage + FillRect (background)
         assert!(renderer.command_count() >= 2);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_leaf_ops() {
+        let mut tree = PageRenderTree::new(0, 800.0, 600.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::PageBackground(PageBackgroundNode {
+                background_color: Some(0x00FFFFFF),
+                border_color: None,
+                border_width: 0.0,
+                gradient: None,
+                image: None,
+            }),
+            BoundingBox::new(0.0, 0.0, 800.0, 600.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            2,
+            RenderNodeType::TextRun(text_run("Canvas")),
+            BoundingBox::new(10.0, 20.0, 80.0, 20.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            3,
+            RenderNodeType::Rectangle(RectangleNode::new(
+                0.0,
+                ShapeStyle {
+                    fill_color: Some(0x0000FF00),
+                    stroke_color: Some(0x00000000),
+                    stroke_width: 1.0,
+                    ..Default::default()
+                },
+                None,
+            )),
+            BoundingBox::new(20.0, 50.0, 100.0, 40.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            4,
+            RenderNodeType::Line(LineNode::new(
+                20.0,
+                100.0,
+                120.0,
+                100.0,
+                LineStyle::default(),
+            )),
+            BoundingBox::new(20.0, 100.0, 100.0, 0.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            5,
+            RenderNodeType::Ellipse(EllipseNode::new(ShapeStyle::default(), None)),
+            BoundingBox::new(140.0, 50.0, 60.0, 40.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            6,
+            RenderNodeType::Path(PathNode::new(
+                vec![
+                    PathCommand::MoveTo(0.0, 0.0),
+                    PathCommand::LineTo(20.0, 0.0),
+                    PathCommand::ClosePath,
+                ],
+                ShapeStyle::default(),
+                None,
+            )),
+            BoundingBox::new(200.0, 50.0, 20.0, 20.0),
+        ));
+        tree.root.children.push(RenderNode::new(
+            7,
+            RenderNodeType::Image(ImageNode::new(0, Some(vec![1, 2, 3]))),
+            BoundingBox::new(240.0, 50.0, 20.0, 20.0),
+        ));
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_nested_clips() {
+        let mut tree = PageRenderTree::new(0, 600.0, 400.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::PageBackground(PageBackgroundNode {
+                background_color: Some(0x00FFFFFF),
+                border_color: None,
+                border_width: 0.0,
+                gradient: None,
+                image: None,
+            }),
+            BoundingBox::new(0.0, 0.0, 600.0, 400.0),
+        ));
+
+        let mut body = RenderNode::new(
+            2,
+            RenderNodeType::Body {
+                clip_rect: Some(BoundingBox::new(40.0, 40.0, 520.0, 300.0)),
+            },
+            BoundingBox::new(40.0, 40.0, 520.0, 300.0),
+        );
+        let mut column = RenderNode::new(
+            3,
+            RenderNodeType::Column(0),
+            BoundingBox::new(40.0, 40.0, 520.0, 300.0),
+        );
+        column.children.push(RenderNode::new(
+            4,
+            RenderNodeType::TextRun(text_run("body text")),
+            BoundingBox::new(50.0, 60.0, 100.0, 20.0),
+        ));
+
+        let mut table = RenderNode::new(
+            5,
+            RenderNodeType::Table(TableNode {
+                row_count: 1,
+                col_count: 1,
+                border_fill_id: 0,
+                section_index: Some(0),
+                para_index: Some(0),
+                control_index: Some(0),
+            }),
+            BoundingBox::new(80.0, 100.0, 160.0, 60.0),
+        );
+        let mut cell = RenderNode::new(
+            6,
+            RenderNodeType::TableCell(TableCellNode {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                border_fill_id: 0,
+                text_direction: 0,
+                clip: true,
+                model_cell_index: Some(0),
+            }),
+            BoundingBox::new(80.0, 100.0, 160.0, 60.0),
+        );
+        cell.children.push(RenderNode::new(
+            7,
+            RenderNodeType::TextRun(text_run("cell")),
+            BoundingBox::new(90.0, 112.0, 60.0, 20.0),
+        ));
+        table.children.push(cell);
+        column.children.push(table);
+        body.children.push(column);
+        tree.root.children.push(body);
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_transformed_shapes() {
+        let mut tree = PageRenderTree::new(0, 400.0, 300.0);
+
+        let mut rect = RectangleNode::new(
+            2.0,
+            ShapeStyle {
+                fill_color: Some(0x000000FF),
+                stroke_color: Some(0x00000000),
+                stroke_width: 1.0,
+                ..Default::default()
+            },
+            None,
+        );
+        rect.transform = ShapeTransform {
+            rotation: 15.0,
+            horz_flip: true,
+            vert_flip: false,
+        };
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Rectangle(rect),
+            BoundingBox::new(20.0, 30.0, 100.0, 40.0),
+        ));
+
+        let mut path = PathNode::new(
+            vec![
+                PathCommand::MoveTo(20.0, 20.0),
+                PathCommand::LineTo(90.0, 40.0),
+                PathCommand::ClosePath,
+            ],
+            ShapeStyle::default(),
+            None,
+        );
+        path.transform = ShapeTransform {
+            rotation: 45.0,
+            horz_flip: false,
+            vert_flip: true,
+        };
+        tree.root.children.push(RenderNode::new(
+            2,
+            RenderNodeType::Path(path),
+            BoundingBox::new(150.0, 80.0, 90.0, 50.0),
+        ));
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    #[test]
+    fn canvas_layer_tree_matches_legacy_leaf_nodes_with_children() {
+        let mut tree = PageRenderTree::new(0, 400.0, 300.0);
+        let mut form = RenderNode::new(
+            1,
+            RenderNodeType::FormObject(FormObjectNode {
+                form_type: FormType::PushButton,
+                caption: "OK".to_string(),
+                text: String::new(),
+                fore_color: "#000000".to_string(),
+                back_color: "#ffffff".to_string(),
+                value: 0,
+                enabled: true,
+                section_index: 0,
+                para_index: 0,
+                control_index: 0,
+                name: "button".to_string(),
+                cell_location: None,
+            }),
+            BoundingBox::new(20.0, 30.0, 120.0, 40.0),
+        );
+        form.children.push(RenderNode::new(
+            2,
+            RenderNodeType::TextRun(text_run("button label")),
+            BoundingBox::new(28.0, 42.0, 90.0, 18.0),
+        ));
+        tree.root.children.push(form);
+
+        assert_layer_canvas_matches_legacy(&tree);
+    }
+
+    fn assert_layer_canvas_matches_legacy(tree: &PageRenderTree) {
+        let mut legacy = CanvasRenderer::new();
+        legacy.render_tree(&tree);
+
+        let layer_tree = LayerBuilder::new(RenderProfile::Screen).build(tree);
+        let mut layer = CanvasRenderer::new();
+        layer.render_layer_tree(&layer_tree);
+
+        assert_eq!(layer.commands(), legacy.commands());
+    }
+
+    fn text_run(text: &str) -> TextRunNode {
+        TextRunNode {
+            text: text.to_string(),
+            style: TextStyle::default(),
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 12.0,
+            field_marker: Default::default(),
+        }
     }
 }

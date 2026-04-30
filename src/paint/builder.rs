@@ -54,103 +54,77 @@ impl LayerBuilder {
             return None;
         }
 
+        let own_ops = match &node.node_type {
+            RenderNodeType::PageBackground(background) => Some(vec![PaintOp::PageBackground {
+                bbox: node.bbox,
+                background: background.clone(),
+            }]),
+            RenderNodeType::TextRun(run) => Some(vec![PaintOp::TextRun {
+                bbox: node.bbox,
+                run: run.clone(),
+            }]),
+            RenderNodeType::FootnoteMarker(marker) => Some(vec![PaintOp::FootnoteMarker {
+                bbox: node.bbox,
+                marker: marker.clone(),
+            }]),
+            RenderNodeType::Line(line) => Some(vec![PaintOp::Line {
+                bbox: node.bbox,
+                line: line.clone(),
+            }]),
+            RenderNodeType::Rectangle(rect) => Some(vec![PaintOp::Rectangle {
+                bbox: node.bbox,
+                rect: rect.clone(),
+            }]),
+            RenderNodeType::Ellipse(ellipse) => Some(vec![PaintOp::Ellipse {
+                bbox: node.bbox,
+                ellipse: ellipse.clone(),
+            }]),
+            RenderNodeType::Path(path) => Some(vec![PaintOp::Path {
+                bbox: node.bbox,
+                path: path.clone(),
+            }]),
+            RenderNodeType::Image(image) => Some(vec![PaintOp::Image {
+                bbox: node.bbox,
+                image: image.clone(),
+            }]),
+            RenderNodeType::Equation(equation) => Some(vec![PaintOp::Equation {
+                bbox: node.bbox,
+                equation: equation.clone(),
+            }]),
+            RenderNodeType::FormObject(form) => Some(vec![PaintOp::FormObject {
+                bbox: node.bbox,
+                form: form.clone(),
+            }]),
+            RenderNodeType::Placeholder(placeholder) => Some(vec![PaintOp::Placeholder {
+                bbox: node.bbox,
+                placeholder: placeholder.clone(),
+            }]),
+            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::RawSvg {
+                bbox: node.bbox,
+                raw: raw.clone(),
+            }]),
+            _ => None,
+        };
+
+        if let Some(ops) = own_ops {
+            let own_leaf = LayerNode::leaf(node.bbox, Some(node.id), ops);
+            return if node.children.is_empty() {
+                Some(own_leaf)
+            } else {
+                let mut children = Vec::with_capacity(node.children.len() + 1);
+                children.push(own_leaf);
+                children.extend(self.build_children(node));
+                Some(LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    children,
+                    self.cache_hint_for(&node.node_type),
+                    self.group_kind_for(&node.node_type),
+                ))
+            };
+        }
+
         match &node.node_type {
-            RenderNodeType::PageBackground(background) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::PageBackground {
-                    bbox: node.bbox,
-                    background: background.clone(),
-                }],
-            )),
-            RenderNodeType::TextRun(run) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::TextRun {
-                    bbox: node.bbox,
-                    run: run.clone(),
-                }],
-            )),
-            RenderNodeType::FootnoteMarker(marker) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::FootnoteMarker {
-                    bbox: node.bbox,
-                    marker: marker.clone(),
-                }],
-            )),
-            RenderNodeType::Line(line) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Line {
-                    bbox: node.bbox,
-                    line: line.clone(),
-                }],
-            )),
-            RenderNodeType::Rectangle(rect) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Rectangle {
-                    bbox: node.bbox,
-                    rect: rect.clone(),
-                }],
-            )),
-            RenderNodeType::Ellipse(ellipse) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Ellipse {
-                    bbox: node.bbox,
-                    ellipse: ellipse.clone(),
-                }],
-            )),
-            RenderNodeType::Path(path) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Path {
-                    bbox: node.bbox,
-                    path: path.clone(),
-                }],
-            )),
-            RenderNodeType::Image(image) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Image {
-                    bbox: node.bbox,
-                    image: image.clone(),
-                }],
-            )),
-            RenderNodeType::Equation(equation) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Equation {
-                    bbox: node.bbox,
-                    equation: equation.clone(),
-                }],
-            )),
-            RenderNodeType::FormObject(form) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::FormObject {
-                    bbox: node.bbox,
-                    form: form.clone(),
-                }],
-            )),
-            RenderNodeType::Placeholder(placeholder) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::Placeholder {
-                    bbox: node.bbox,
-                    placeholder: placeholder.clone(),
-                }],
-            )),
-            RenderNodeType::RawSvg(raw) => Some(LayerNode::leaf(
-                node.bbox,
-                Some(node.id),
-                vec![PaintOp::RawSvg {
-                    bbox: node.bbox,
-                    raw: raw.clone(),
-                }],
-            )),
             RenderNodeType::Body {
                 clip_rect: Some(clip),
             } => {
@@ -441,6 +415,47 @@ mod tests {
             assert_eq!(ops.len(), 1, "{label} should lower to one paint op");
             assert!(is_expected_op(&ops[0]), "{label} lowered to {:?}", ops[0]);
         }
+    }
+
+    #[test]
+    fn preserves_leaf_node_children_after_own_paint_op() {
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        let mut form = RenderNode::new(
+            1,
+            RenderNodeType::FormObject(form_object_node()),
+            BoundingBox::new(10.0, 10.0, 60.0, 24.0),
+        );
+        form.children.push(RenderNode::new(
+            2,
+            RenderNodeType::TextRun(text_run("label")),
+            BoundingBox::new(14.0, 14.0, 40.0, 16.0),
+        ));
+        tree.root.children.push(form);
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        let LayerNodeKind::Group {
+            children: form_children,
+            ..
+        } = &children[0].kind
+        else {
+            panic!("expected form node with children to lower to a group");
+        };
+        assert_eq!(form_children.len(), 2);
+
+        let LayerNodeKind::Leaf { ops: form_ops } = &form_children[0].kind else {
+            panic!("expected own form paint op first");
+        };
+        assert!(matches!(form_ops[0], PaintOp::FormObject { .. }));
+
+        let LayerNodeKind::Leaf { ops: label_ops } = &form_children[1].kind else {
+            panic!("expected child text paint op second");
+        };
+        assert!(matches!(label_ops[0], PaintOp::TextRun { .. }));
     }
 
     #[test]

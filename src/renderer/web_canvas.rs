@@ -12,6 +12,8 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
 #[cfg(target_arch = "wasm32")]
 use base64::Engine;
 
+use crate::paint::{ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
+use super::layer_renderer::{LayerRenderResult, LayerRenderer};
 use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand, StrokeDash, GradientFillInfo, PatternFillInfo};
 use crate::model::style::UnderlineType;
 use crate::model::style::ImageFillMode;
@@ -159,6 +161,12 @@ impl WebCanvasRenderer {
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_node(&tree.root);
+    }
+
+    /// 레이어 트리를 Canvas에 렌더링
+    pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.begin_page(tree.page_width, tree.page_height);
+        self.render_layer_node(&tree.root);
     }
 
     /// 개별 노드 렌더링
@@ -542,6 +550,182 @@ impl WebCanvasRenderer {
             // 편집 모드: 여백을 벗어난 도형/이미지/표를 재렌더링 (좌우 넘침 허용)
             if let RenderNodeType::Body { clip_rect: Some(ref cr) } = node.node_type {
                 self.render_overflow_controls(node, cr);
+            }
+        }
+    }
+
+    fn render_layer_node(&mut self, node: &LayerNode) {
+        match &node.kind {
+            LayerNodeKind::Group { children, group_kind, .. } => {
+                for child in children {
+                    self.render_layer_node(child);
+                }
+                if self.show_control_codes {
+                    let label = match group_kind {
+                        GroupKind::Table(_) => Some("[표]"),
+                        GroupKind::TextBox => Some("[글상자]"),
+                        GroupKind::Header => Some("[머리말]"),
+                        GroupKind::Footer => Some("[꼬리말]"),
+                        GroupKind::FootnoteArea => Some("[각주]"),
+                        _ => None,
+                    };
+                    if let Some(label) = label {
+                        let fs = 10.0;
+                        self.ctx.set_fill_style_str("#CC3333");
+                        self.ctx.set_font(&format!("{:.3}px sans-serif", fs));
+                        let _ = self.ctx.fill_text(label, node.bounds.x, node.bounds.y + fs);
+                    }
+                }
+            }
+            LayerNodeKind::ClipRect { clip, child, clip_kind } => match clip_kind {
+                ClipKind::Body => {
+                    self.ctx.save();
+                    self.ctx.begin_path();
+                    self.ctx.rect(clip.x, clip.y, clip.width + 4.0, clip.height);
+                    self.ctx.clip();
+                    self.render_layer_node(child);
+                    self.ctx.restore();
+
+                    let body_left = clip.x;
+                    let body_right = clip.x + clip.width;
+                    let is_overflow_control = |layer: &LayerNode| -> bool {
+                        match &layer.kind {
+                            LayerNodeKind::Group { group_kind, .. } => match group_kind {
+                                GroupKind::TextLine(_)
+                                | GroupKind::Column(_)
+                                | GroupKind::FootnoteArea
+                                | GroupKind::Header
+                                | GroupKind::Footer
+                                | GroupKind::MasterPage
+                                | GroupKind::Body => return false,
+                                _ => {}
+                            },
+                            LayerNodeKind::Leaf { ops } => {
+                                if ops.iter().all(|op| matches!(
+                                    op,
+                                    PaintOp::TextRun { .. } | PaintOp::FootnoteMarker { .. }
+                                )) {
+                                    return false;
+                                }
+                            }
+                            LayerNodeKind::ClipRect { .. } => {}
+                        }
+                        layer.bounds.x < body_left || layer.bounds.x + layer.bounds.width > body_right
+                    };
+                    let body_children = match &child.kind {
+                        LayerNodeKind::Group { children, .. } => children.as_slice(),
+                        _ => &[][..],
+                    };
+                    let has_overflow = body_children.iter().any(|column| match &column.kind {
+                        LayerNodeKind::Group { children, .. } => children.iter().any(&is_overflow_control),
+                        _ => is_overflow_control(column),
+                    });
+                    if has_overflow {
+                        self.ctx.save();
+                        self.ctx.begin_path();
+                        self.ctx.rect(0.0, clip.y, self.width, clip.height);
+                        self.ctx.clip();
+                        for column in body_children {
+                            match &column.kind {
+                                LayerNodeKind::Group { children, .. } => {
+                                    for child in children {
+                                        if is_overflow_control(child) {
+                                            self.render_layer_node(child);
+                                        }
+                                    }
+                                }
+                                _ if is_overflow_control(column) => {
+                                    self.render_layer_node(column);
+                                }
+                                _ => {}
+                            }
+                        }
+                        self.ctx.restore();
+                    }
+                }
+                ClipKind::TableCell => {
+                    self.ctx.save();
+                    self.ctx.begin_path();
+                    self.ctx.rect(node.bounds.x, node.bounds.y, node.bounds.width + 4.0, node.bounds.height);
+                    self.ctx.clip();
+                    self.render_layer_node(child);
+                    self.ctx.restore();
+                }
+                ClipKind::Generic => {
+                    self.ctx.save();
+                    self.ctx.begin_path();
+                    self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
+                    self.ctx.clip();
+                    self.render_layer_node(child);
+                    self.ctx.restore();
+                }
+            },
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    let render_node = match op {
+                        PaintOp::PageBackground { bbox, background } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::PageBackground(background.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::TextRun { bbox, run } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::TextRun(run.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::FootnoteMarker { bbox, marker } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::FootnoteMarker(marker.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Line { bbox, line } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Line(line.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Rectangle { bbox, rect } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Rectangle(rect.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Ellipse { bbox, ellipse } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Ellipse(ellipse.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Path { bbox, path } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Path(path.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Image { bbox, image } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Image(image.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Equation { bbox, equation } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Equation(equation.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::FormObject { bbox, form } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::FormObject(form.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::Placeholder { bbox, placeholder } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::Placeholder(placeholder.clone()),
+                            *bbox,
+                        ),
+                        PaintOp::RawSvg { bbox, raw } => RenderNode::new(
+                            node.source_node_id.unwrap_or(0),
+                            RenderNodeType::RawSvg(raw.clone()),
+                            *bbox,
+                        ),
+                    };
+                    self.render_node(&render_node);
+                }
             }
         }
     }
@@ -1226,6 +1410,14 @@ impl WebCanvasRenderer {
                 }
             }
         }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl LayerRenderer for WebCanvasRenderer {
+    fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
+        self.render_layer_tree(tree);
+        Ok(())
     }
 }
 
