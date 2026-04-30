@@ -404,6 +404,94 @@ mod tests {
             violations);
     }
 
+    /// Task #489: Picture+Square wrap (어울림) 호스트 paragraph 의 텍스트가
+    /// 그림 영역을 침범하지 않고 LINE_SEG.cs/sw 좁아진 영역에 정상 배치되는지 검증.
+    ///
+    /// 케이스: `samples/exam_science.hwp` 페이지 1 컬럼 1 (단 1) 의 5번 문제 본문
+    /// (pi=21). HWP IR: 그림(11250×10230 HU, wrap=Square, horz_align=Right) +
+    /// 6 줄 LINE_SEG cs=0, sw=19592 (~261px, 컬럼 너비 ~412px 에서 그림 너비
+    /// 만큼 좁아짐).
+    ///
+    /// 수정 전: 풀컬럼 너비로 justify → 텍스트가 그림 영역(x=807..957) 침범.
+    /// 수정 후: segment_width 적용 → 텍스트 우측 끝이 x≈798 이내, 그림과 겹치지 않음.
+    #[test]
+    fn test_489_picture_square_wrap_text_does_not_overlap_image() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+
+        // ─── 그림 위치 파싱 ───────────────────────────────────────
+        // pi=21 ci=0 그림: width=150 (= 39.7mm @ 75 HU/px), height≈136.
+        // 다른 그림(width=258, 110, 102 등) 과 구분되도록 width 기준으로 식별.
+        fn parse_attr_f64(s: &str, key: &str) -> Option<f64> {
+            let pat = format!("{}=\"", key);
+            let p = s.find(&pat)?;
+            let val_start = p + pat.len();
+            let rest = &s[val_start..];
+            let q = rest.find('"')?;
+            rest[..q].parse().ok()
+        }
+        let mut img_rect: Option<(f64, f64, f64, f64)> = None;
+        for chunk in svg.split("<image").skip(1) {
+            let end = chunk.find("/>").unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            let w = parse_attr_f64(attrs, "width").unwrap_or(0.0);
+            let h = parse_attr_f64(attrs, "height").unwrap_or(0.0);
+            // pi=21 그림 식별: width≈150 (148~152) AND height≈136 (134~138)
+            if (w - 150.0).abs() < 2.0 && (h - 136.4).abs() < 2.0 {
+                let x = parse_attr_f64(attrs, "x").unwrap_or(0.0);
+                let y = parse_attr_f64(attrs, "y").unwrap_or(0.0);
+                img_rect = Some((x, y, w, h));
+                break;
+            }
+        }
+        let (img_x, img_y, img_w, img_h) = img_rect
+            .expect("Task #489: pi=21 ci=0 그림 (width≈150 height≈136) 을 SVG 에서 찾지 못함");
+        let img_left = img_x;
+        let img_right = img_x + img_w;
+        let img_top = img_y;
+        let img_bottom = img_y + img_h;
+
+        // ─── 텍스트 위치 파싱 ─────────────────────────────────────
+        // <text ... transform="translate(x,y) ...">텍스트</text>
+        let mut overlap_chars: Vec<(f64, f64, String)> = Vec::new();
+        for chunk in svg.split("<text").skip(1) {
+            let close = chunk.find('>').unwrap_or(chunk.len());
+            let header = &chunk[..close];
+            let body_end = chunk.find("</text>").unwrap_or(chunk.len());
+            let body = &chunk[close + 1..body_end];
+
+            let trans_pat = "transform=\"translate(";
+            let Some(tp) = header.find(trans_pat) else { continue };
+            let trans_str_start = tp + trans_pat.len();
+            let trans_rest = &header[trans_str_start..];
+            let Some(close_paren) = trans_rest.find(')') else { continue };
+            let trans_args = &trans_rest[..close_paren];
+            let mut parts = trans_args.split(',');
+            let x: f64 = match parts.next().and_then(|s| s.trim().parse().ok()) {
+                Some(v) => v,
+                None => continue,
+            };
+            let y: f64 = match parts.next().and_then(|s| s.trim().parse().ok()) {
+                Some(v) => v,
+                None => continue,
+            };
+
+            // 그림의 수직 영역 안에서 그림 가로 영역에 있는 텍스트는 침범.
+            if y > img_top && y < img_bottom && x >= img_left && x < img_right {
+                overlap_chars.push((x, y, body.to_string()));
+            }
+        }
+
+        assert!(
+            overlap_chars.is_empty(),
+            "Task #489: pi=21 텍스트가 그림 영역(x={:.1}..{:.1} y={:.1}..{:.1}) 에 침범: {:?}",
+            img_left, img_right, img_top, img_bottom, overlap_chars,
+        );
+    }
+
     #[test]
     fn test_layer_svg_matches_legacy_for_basic_text_sample() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {
