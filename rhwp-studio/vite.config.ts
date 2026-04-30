@@ -19,7 +19,7 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 7700,
     fs: {
-      allow: [resolve(__dirname, '..', 'pkg')],
+      allow: [__dirname, resolve(__dirname, '..', 'pkg')],
     },
   },
   plugins: [
