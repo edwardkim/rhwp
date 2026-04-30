@@ -220,6 +220,19 @@ impl LayoutEngine {
         } else {
             None
         };
+        // [Issue #476] treat_as_char Shape는 paragraph_layout이 inline_pos 등록 후
+        // 본 함수가 그려야 한다. inline_pos 가 없는 경우는 paginator 가 PageItem::Shape 를
+        // 잘못된 페이지(박스가 속한 line이 라우팅되지 않은 페이지)에 등록한 결과이며,
+        // compute_object_position fallback 으로 그리면 절대 좌표(예: 문단 오프셋=0,0)
+        // 기준의 잘못된 위치에 박스가 출현한다 (= 다른 paragraph 영역에 침범).
+        // 본질 수정 전까지(paginator A 단계) fallback 그리기를 차단한다.
+        if common.treat_as_char && inline_pos.is_none() {
+            if std::env::var("RHWP_DEBUG_LAYOUT").is_ok() {
+                eprintln!("[#476 skip] inline Shape without inline_pos: sec={} para={} ci={}",
+                    section_index, para_index, control_index);
+            }
+            return;
+        }
 
         // 통합 좌표 계산 (layout_body_picture와 동일 로직)
         let shape_container = LayoutRect {

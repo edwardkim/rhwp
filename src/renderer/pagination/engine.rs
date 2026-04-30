@@ -606,7 +606,10 @@ impl Paginator {
         // 다단 레이아웃에서 문단 내 단 경계 감지
         // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
         // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
-        let col_breaks = if st.col_count > 1 && st.current_column == 0 {
+        // [Task #464] current_column == 0 가드 제거: col 1 (마지막 단) 에서도
+        // vpos-reset 인코딩된 col_break 를 감지해 페이지 break 를 트리거.
+        // paginate_multicolumn_paragraph 는 이미 advance_column_or_new_page 사용.
+        let col_breaks = if st.col_count > 1 {
             Self::detect_column_breaks_in_paragraph(para)
         } else {
             vec![0]
@@ -985,10 +988,37 @@ impl Paginator {
                     );
                 }
                 Control::Shape(shape_obj) => {
-                    st.current_items.push(PageItem::Shape {
+                    // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된 페이지/단에 등록.
+                    // paragraph 가 페이지 분할되면 process_controls 시점에 st.current_items 는 마지막
+                    // 페이지 상태이므로, 그대로 push 하면 박스가 잘못된 페이지에 떠 있게 된다.
+                    let routed = if shape_obj.common().treat_as_char {
+                        super::find_inline_control_target_page(
+                            &st.pages, &st.current_items, para_idx, ctrl_idx, para,
+                        )
+                    } else {
+                        None
+                    };
+                    let item = PageItem::Shape {
                         para_index: para_idx,
                         control_index: ctrl_idx,
-                    });
+                    };
+                    match routed {
+                        Some((page_idx, col_idx)) => {
+                            // 이전 페이지의 해당 단 items 에 직접 push
+                            if let Some(page) = st.pages.get_mut(page_idx) {
+                                if let Some(col) = page.column_contents.get_mut(col_idx) {
+                                    col.items.push(item);
+                                } else {
+                                    st.current_items.push(item);
+                                }
+                            } else {
+                                st.current_items.push(item);
+                            }
+                        }
+                        None => {
+                            st.current_items.push(item);
+                        }
+                    }
                     // 글상자 내 각주 수집
                     if let Some(text_box) = shape_obj.drawing().and_then(|d| d.text_box.as_ref()) {
                         for (tp_idx, tp) in text_box.paragraphs.iter().enumerate() {

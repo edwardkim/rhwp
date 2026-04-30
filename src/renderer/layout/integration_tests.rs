@@ -343,6 +343,223 @@ mod tests {
             violations);
     }
 
+    /// Task #473: 그림 crop 변환 scale 기준 오류 — 표시 HU(`original_size_hu`)가
+    /// 96-DPI native HU 와 일치하지 않을 때 viewBox 가 image 보다 과대해지는 회귀.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 12 우측 단 `<보기>` 표 내부 그림:
+    /// - 이미지 binary: 2220×1654 px (96 DPI 환산 166500×124080 HU)
+    /// - 표시 HU: 26640×19860 (94×70mm)
+    /// - crop = (0, 0, 166500, 124080) ← 이미지 native HU at 96 DPI
+    ///
+    /// 기존: scale=26640/2220=12 HU/px → src_w=13875 → viewBox(13875) 안에
+    /// image(2220) → 16% 비율로 작게 표시.
+    /// 수정 후: scale=75 (96-DPI 관행) → src_w=2220 → viewBox=image 일치.
+    #[test]
+    fn test_473_picture_crop_viewbox_matches_image_px() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(11).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 12 SVG 가 비어있음");
+
+        // SVG 내 <svg ...><image .../></svg> 패턴에서 viewBox width 와 inner image
+        // width 비율 검증. crop 이 적용된 그림은 이런 nested SVG 형태로 emit 됨.
+        // 비율이 1.0 ± 10% 안에 있어야 그림이 viewBox 를 가득 채움.
+        let mut violations: Vec<String> = Vec::new();
+        for chunk in svg.split("<svg ").skip(1) {
+            let end = chunk.find("</svg>").unwrap_or(chunk.len());
+            let body = &chunk[..end];
+            let vb_pat = "viewBox=\"";
+            let Some(vb_start) = body.find(vb_pat) else { continue };
+            let vb_str_start = vb_start + vb_pat.len();
+            let Some(vb_end) = body[vb_str_start..].find('"') else { continue };
+            let vb_str = &body[vb_str_start..vb_str_start + vb_end];
+            let vb_parts: Vec<f64> = vb_str.split_whitespace()
+                .filter_map(|s| s.parse().ok()).collect();
+            if vb_parts.len() != 4 { continue; }
+            let vb_w = vb_parts[2];
+            let vb_h = vb_parts[3];
+            let img_pat = "<image width=\"";
+            let Some(im_start) = body.find(img_pat) else { continue };
+            let im_str_start = im_start + img_pat.len();
+            let Some(im_end) = body[im_str_start..].find('"') else { continue };
+            let img_w: f64 = body[im_str_start..im_str_start + im_end].parse().unwrap_or(0.0);
+            let h_pat = "height=\"";
+            let Some(h_start) = body[im_str_start + im_end..].find(h_pat) else { continue };
+            let h_off = im_start + im_end + h_start + h_pat.len();
+            let Some(h_end) = body[h_off..].find('"') else { continue };
+            let img_h: f64 = body[h_off..h_off + h_end].parse().unwrap_or(0.0);
+            if vb_w > 0.0 && img_w > 0.0 {
+                let ratio_w = vb_w / img_w;
+                let ratio_h = if vb_h > 0.0 && img_h > 0.0 { vb_h / img_h } else { 1.0 };
+                if (ratio_w - 1.0).abs() > 0.1 || (ratio_h - 1.0).abs() > 0.1 {
+                    violations.push(format!(
+                        "viewBox=({},{}) image=({},{}) ratio_w={:.3} ratio_h={:.3}",
+                        vb_w, vb_h, img_w, img_h, ratio_w, ratio_h));
+                }
+            }
+        }
+        assert!(violations.is_empty(),
+            "그림 crop SVG 의 viewBox 가 image px 와 일치하지 않음: {:?}",
+            violations);
+    }
+
+    /// Task #489: Picture+Square wrap (어울림) 호스트 paragraph 의 텍스트가
+    /// 그림 영역을 침범하지 않고 LINE_SEG.cs/sw 좁아진 영역에 정상 배치되는지 검증.
+    ///
+    /// 케이스: `samples/exam_science.hwp` 페이지 1 컬럼 1 (단 1) 의 5번 문제 본문
+    /// (pi=21). HWP IR: 그림(11250×10230 HU, wrap=Square, horz_align=Right) +
+    /// 6 줄 LINE_SEG cs=0, sw=19592 (~261px, 컬럼 너비 ~412px 에서 그림 너비
+    /// 만큼 좁아짐).
+    ///
+    /// 수정 전: 풀컬럼 너비로 justify → 텍스트가 그림 영역(x=807..957) 침범.
+    /// 수정 후: segment_width 적용 → 텍스트 우측 끝이 x≈798 이내, 그림과 겹치지 않음.
+    #[test]
+    fn test_489_picture_square_wrap_text_does_not_overlap_image() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+
+        // ─── 그림 위치 파싱 ───────────────────────────────────────
+        // pi=21 ci=0 그림: width=150 (= 39.7mm @ 75 HU/px), height≈136.
+        // 다른 그림(width=258, 110, 102 등) 과 구분되도록 width 기준으로 식별.
+        fn parse_attr_f64(s: &str, key: &str) -> Option<f64> {
+            let pat = format!("{}=\"", key);
+            let p = s.find(&pat)?;
+            let val_start = p + pat.len();
+            let rest = &s[val_start..];
+            let q = rest.find('"')?;
+            rest[..q].parse().ok()
+        }
+        let mut img_rect: Option<(f64, f64, f64, f64)> = None;
+        for chunk in svg.split("<image").skip(1) {
+            let end = chunk.find("/>").unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            let w = parse_attr_f64(attrs, "width").unwrap_or(0.0);
+            let h = parse_attr_f64(attrs, "height").unwrap_or(0.0);
+            // pi=21 그림 식별: width≈150 (148~152) AND height≈136 (134~138)
+            if (w - 150.0).abs() < 2.0 && (h - 136.4).abs() < 2.0 {
+                let x = parse_attr_f64(attrs, "x").unwrap_or(0.0);
+                let y = parse_attr_f64(attrs, "y").unwrap_or(0.0);
+                img_rect = Some((x, y, w, h));
+                break;
+            }
+        }
+        let (img_x, img_y, img_w, img_h) = img_rect
+            .expect("Task #489: pi=21 ci=0 그림 (width≈150 height≈136) 을 SVG 에서 찾지 못함");
+        let img_left = img_x;
+        let img_right = img_x + img_w;
+        let img_top = img_y;
+        let img_bottom = img_y + img_h;
+
+        // ─── 텍스트 위치 파싱 ─────────────────────────────────────
+        // <text ... transform="translate(x,y) ...">텍스트</text>
+        let mut overlap_chars: Vec<(f64, f64, String)> = Vec::new();
+        for chunk in svg.split("<text").skip(1) {
+            let close = chunk.find('>').unwrap_or(chunk.len());
+            let header = &chunk[..close];
+            let body_end = chunk.find("</text>").unwrap_or(chunk.len());
+            let body = &chunk[close + 1..body_end];
+
+            let trans_pat = "transform=\"translate(";
+            let Some(tp) = header.find(trans_pat) else { continue };
+            let trans_str_start = tp + trans_pat.len();
+            let trans_rest = &header[trans_str_start..];
+            let Some(close_paren) = trans_rest.find(')') else { continue };
+            let trans_args = &trans_rest[..close_paren];
+            let mut parts = trans_args.split(',');
+            let x: f64 = match parts.next().and_then(|s| s.trim().parse().ok()) {
+                Some(v) => v,
+                None => continue,
+            };
+            let y: f64 = match parts.next().and_then(|s| s.trim().parse().ok()) {
+                Some(v) => v,
+                None => continue,
+            };
+
+            // 그림의 수직 영역 안에서 그림 가로 영역에 있는 텍스트는 침범.
+            if y > img_top && y < img_bottom && x >= img_left && x < img_right {
+                overlap_chars.push((x, y, body.to_string()));
+            }
+        }
+
+        assert!(
+            overlap_chars.is_empty(),
+            "Task #489: pi=21 텍스트가 그림 영역(x={:.1}..{:.1} y={:.1}..{:.1}) 에 침범: {:?}",
+            img_left, img_right, img_top, img_bottom, overlap_chars,
+        );
+    }
+
+    /// Task #490: 빈 텍스트 + TAC 수식만 있는 셀 paragraph 의 alignment 적용.
+    ///
+    /// 케이스: `samples/exam_science.hwp` 페이지 1 의 3번 표 (pi=12, 4행×4열,
+    /// "이온 결합 화합물") 의 셀 7 (행1, 열3) "전체 전자의 양" 컬럼 28 수식.
+    /// 셀 paragraph 는 text_len=0 + ctrls=1 (수식) 구조. 수정 전: empty-runs
+    /// 분기 (`paragraph_layout.rs:2227`) 가 `inline_x = effective_col_x +
+    /// effective_margin_left` 로 좌측 고정 → 28 수식이 셀 좌측에 정렬.
+    /// 수정 후: paragraph alignment(Center) 따라 align_offset 적용 → 수식이
+    /// 셀 중앙 부근에 정렬.
+    ///
+    /// 검증: 28 수식의 그룹 transform x 좌표가 수정 전(x≈358) 보다 우측
+    /// (x>400) 으로 이동했는지 확인. 셀 7 영역(x≈336..478) 의 좌측 1/3
+    /// 범위(<395) 에 있으면 결함, 그 이후면 alignment 정상 적용.
+    #[test]
+    fn test_490_empty_para_with_tac_equation_respects_alignment() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+
+        // 28 수식 위치 추출. SVG 구조: <g transform="translate(X, Y) scale(...)">
+        //                              <text x="0" y="...">28</text>
+        //                              </g>
+        // "28" 텍스트 직전의 group transform x 좌표를 찾는다.
+        let needle = ">28<";
+        let mut found_xs: Vec<f64> = Vec::new();
+        let mut search_start = 0;
+        while let Some(pos) = svg[search_start..].find(needle) {
+            let abs_pos = search_start + pos;
+            let context_start = abs_pos.saturating_sub(2000);
+            let context = &svg[context_start..abs_pos];
+            // 가장 가까운 직전 `<g transform="translate(X` 패턴 찾기
+            if let Some(g_rel) = context.rfind("<g transform=\"translate(") {
+                let after_translate = &context[g_rel + "<g transform=\"translate(".len()..];
+                if let Some(comma) = after_translate.find(',') {
+                    if let Ok(x) = after_translate[..comma].parse::<f64>() {
+                        // y 좌표로 3번 표 영역 (y ≈ 1040..1090) 인지 확인
+                        let after_comma = &after_translate[comma + 1..];
+                        if let Some(close_paren) = after_comma.find(')') {
+                            if let Ok(y) = after_comma[..close_paren].parse::<f64>() {
+                                if (1040.0..1090.0).contains(&y) {
+                                    found_xs.push(x);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            search_start = abs_pos + needle.len();
+        }
+
+        assert!(
+            !found_xs.is_empty(),
+            "Task #490: 3번 표 영역(y∈[1040,1090])의 28 수식 transform 을 찾지 못함"
+        );
+
+        // 셀 7 영역: x≈336.8..478.0 (140 px). 좌측 1/4 한계: 372.
+        // 수정 전: x≈358.7 (좌측 정렬). 수정 후: x>=400 (alignment 적용).
+        for x in &found_xs {
+            assert!(
+                *x >= 380.0,
+                "Task #490: 28 수식이 좌측 정렬됨 (x={:.1} < 380). 셀 paragraph alignment 적용 안 됨",
+                x
+            );
+        }
+    }
+
     #[test]
     fn test_layer_svg_matches_legacy_for_basic_text_sample() {
         let Some(core) = load_document("samples/lseg-01-basic.hwp") else {

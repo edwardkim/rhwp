@@ -1600,22 +1600,36 @@ impl LayoutEngine {
                                 // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와
                                 // 이전 Shape의 text_pos 차이에 해당하는 텍스트 너비를 inline_x에 반영
                                 if let Some(&(tac_pos, _, _)) = composed.tac_controls.iter().find(|&&(_, _, ci)| ci == ctrl_idx) {
-                                    // 이 Shape 앞에 아직 inline_x에 반영되지 않은 텍스트가 있는지 계산
-                                    let text_before: String = composed.lines.first()
+                                    // [Task #495] 가드: 사각형이 paragraph 첫 줄(ls[0]) 범위 안에 있을 때만
+                                    // text_before 추출/발행. multi-line paragraph 에서 사각형이 ls[1]+ 에
+                                    // 있는 경우 composed.lines.first() 만 보던 기존 코드는 첫 줄 전체
+                                    // 텍스트를 잘못 추출해 paragraph_layout 결과와 중복 발행했음.
+                                    let in_first_line = composed.lines.first()
                                         .map(|line| {
-                                            let mut chars_so_far = 0usize;
-                                            let mut result = String::new();
-                                            for run in &line.runs {
-                                                for ch in run.text.chars() {
-                                                    if chars_so_far >= prev_tac_text_pos && chars_so_far < tac_pos {
-                                                        result.push(ch);
-                                                    }
-                                                    chars_so_far += 1;
-                                                }
-                                            }
-                                            result
+                                            let line_chars: usize = line.runs.iter().map(|r| r.text.chars().count()).sum();
+                                            tac_pos >= line.char_start && tac_pos < line.char_start + line_chars
                                         })
-                                        .unwrap_or_default();
+                                        .unwrap_or(false);
+                                    // 이 Shape 앞에 아직 inline_x에 반영되지 않은 텍스트가 있는지 계산
+                                    let text_before: String = if in_first_line {
+                                        composed.lines.first()
+                                            .map(|line| {
+                                                let mut chars_so_far = 0usize;
+                                                let mut result = String::new();
+                                                for run in &line.runs {
+                                                    for ch in run.text.chars() {
+                                                        if chars_so_far >= prev_tac_text_pos && chars_so_far < tac_pos {
+                                                            result.push(ch);
+                                                        }
+                                                        chars_so_far += 1;
+                                                    }
+                                                }
+                                                result
+                                            })
+                                            .unwrap_or_default()
+                                    } else {
+                                        String::new()
+                                    };
                                     if !text_before.is_empty() {
                                         let char_style_id = composed.lines.first()
                                             .and_then(|l| l.runs.first())

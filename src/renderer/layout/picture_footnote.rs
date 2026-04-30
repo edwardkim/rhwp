@@ -573,17 +573,34 @@ impl LayoutEngine {
                     .map(|cs| cs.char_shape_id as u32)
                     .unwrap_or(composed.para_style_id as u32);
 
+                // [Issue #483] 각주의 마지막 paragraph 는 trailing line_spacing 미적용
+                // — 다음 각주와의 간격은 note_spacing 이 책임. trailing ls 까지 합산하면
+                // 각주 사이 gap 이 line_spacing 만큼 부풀려짐.
+                let is_last_para_of_fn = p_idx + 1 == fn_paras.len();
+
                 if p_idx == 0 {
                     // 첫 문단: 각주 번호를 텍스트 앞에 삽입
                     y = self.layout_footnote_paragraph_with_number(
                         tree, fn_node, &composed, styles, fn_area, y, &number_text,
                         marker_section, marker_para, base_cs_id,
+                        is_last_para_of_fn,
                     );
                 } else {
-                    y = self.layout_composed_paragraph(
+                    let returned_y = self.layout_composed_paragraph(
                         tree, fn_node, &composed, styles, fn_area, y, 0, composed.lines.len(),
                         marker_section, marker_para, None, false, 0.0, None, None, None,
                     );
+                    if is_last_para_of_fn {
+                        // layout_composed_paragraph 가 마지막 line 의 trailing line_spacing 을
+                        // 포함시키므로, 각주 마지막 paragraph 에서는 그만큼 빼서 note_spacing
+                        // 과의 이중 합산을 막는다.
+                        let trail_ls = composed.lines.last()
+                            .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                            .unwrap_or(0.0);
+                        y = returned_y - trail_ls;
+                    } else {
+                        y = returned_y;
+                    }
                 }
             }
 
@@ -609,6 +626,9 @@ impl LayoutEngine {
         marker_section: usize,
         marker_para: usize,
         base_cs_id: u32,
+        // [Issue #483] true 면 각주의 마지막 paragraph — 마지막 line 의 trailing
+        // line_spacing 을 누적하지 않는다 (note_spacing 과 이중 합산 방지).
+        is_last_para_of_fn: bool,
     ) -> f64 {
         let mut y = y_start;
 
@@ -699,7 +719,17 @@ impl LayoutEngine {
             }
 
             parent.children.push(line_node);
-            y += line_height;
+            // [Issue #483] trailing line_spacing 추가 — layout_composed_paragraph:2560 과 정합.
+            // 단, 각주의 마지막 paragraph 의 마지막 line 에서는 trailing line_spacing 을
+            // 누적하지 않는다 — 다음 각주와의 간격은 note_spacing 이 책임하므로
+            // 이중 합산을 피하기 위함.
+            let is_last_line = line_idx + 1 >= composed.lines.len();
+            if is_last_para_of_fn && is_last_line {
+                y += line_height;
+            } else {
+                let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
+                y += line_height + line_spacing_px;
+            }
         }
 
         // 빈 문단 fallback

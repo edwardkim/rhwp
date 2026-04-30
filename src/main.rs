@@ -1234,11 +1234,11 @@ fn dump_controls(args: &[String]) {
     let dump_common = |c: &rhwp::model::shape::CommonObjAttr, indent: &str| {
         println!("{}  크기: {:.1}mm × {:.1}mm ({}×{} HU)",
             indent, hu_to_mm(c.width), hu_to_mm(c.height), c.width, c.height);
-        println!("{}  위치: 가로={} 오프셋={:.1}mm({}), 세로={} 오프셋={:.1}mm({})",
+        println!("{}  위치: 가로={} 오프셋={:.1}mm({}) 정렬={:?}, 세로={} 오프셋={:.1}mm({}) 정렬={:?}",
             indent, horz_str(&c.horz_rel_to),
-            hu_to_mm(c.horizontal_offset), c.horizontal_offset,
+            hu_to_mm(c.horizontal_offset), c.horizontal_offset, c.horz_align,
             vert_str(&c.vert_rel_to),
-            hu_to_mm(c.vertical_offset), c.vertical_offset);
+            hu_to_mm(c.vertical_offset), c.vertical_offset, c.vert_align);
         println!("{}  배치: {}, 글자처럼={}, z={}",
             indent, wrap_str(&c.text_wrap), c.treat_as_char, c.z_order);
     };

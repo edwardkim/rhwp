@@ -1,6 +1,9 @@
-//! Issue #418: hwpspec.hwp 20 페이지의 빈 문단 + TAC Picture 가
+//! Issue #418: hwpspec.hwp 의 빈 문단 + TAC Picture 가
 //! paragraph_layout 와 layout_shape_item 양쪽에서 emit 되어 SVG 에 두 번
 //! 그려지는 회귀.
+//!
+//! [Task #479 옵션 3 v2] paginator 의 paragraph 누적은 Before 와 동일
+//! (trailing_ls 포함). pi=83/86/89 가 페이지 20 (index 19) 에 그대로 위치.
 //!
 //! 정황:
 //! - pi=83 / pi=86 / pi=89 가 각각 빈 문단 + TAC=true Picture (bin_id=35,36,37)
@@ -18,7 +21,7 @@ use std::fs;
 use std::path::Path;
 
 #[test]
-fn hwpspec_page20_no_duplicate_image_emit() {
+fn hwpspec_no_duplicate_image_emit() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/hwpspec.hwp");
     let bytes = fs::read(&hwp_path)
