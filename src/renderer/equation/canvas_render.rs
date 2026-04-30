@@ -17,7 +17,9 @@ pub fn render_equation_canvas(
     color: &str,
     base_font_size: f64,
 ) {
-    render_box(ctx, layout, origin_x, origin_y, color, base_font_size, false, false);
+    // 진입점 default: italic=true (hwpeq 변수 기본 스타일).
+    // FontStyle::Roman(`rm`) 적용 영역에서는 자식 렌더링 시 italic=false 로 전환된다.
+    render_box(ctx, layout, origin_x, origin_y, color, base_font_size, true, false);
 }
 
 fn render_box(
@@ -41,10 +43,12 @@ fn render_box(
         }
         LayoutKind::Text(text) => {
             let fi = font_size_from_box(lb, fs);
+            // CJK 문자는 italic 미적용. FontStyle::Roman(`rm`)으로 italic=false 가
+            // 전달된 경우에도 italic 미적용 (svg_render.rs Text arm 과 동일 정책).
             let has_cjk = text.chars().any(|c| matches!(c,
                 '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
             ));
-            set_font(ctx, fi, !has_cjk, bold);
+            set_font(ctx, fi, !has_cjk && italic, bold);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(text, x, y + lb.baseline);
         }
