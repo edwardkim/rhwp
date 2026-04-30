@@ -2100,6 +2100,17 @@ impl LayoutEngine {
                         let mut img_x = col_area.x + effective_margin_left + align_offset;
                         for &(_, tac_w, tac_ci) in &tac_offsets_px {
                             if let Some(ctrl) = p.controls.get(tac_ci) {
+                                // [Issue #476] 빈 문단 + 인라인 Shape: inline_pos 등록 후 shape_layout 이 그리도록 위임.
+                                // 등록하지 않으면 layout_shape 가 inline_pos=None 으로 받아 fallback 위치에 그리거나,
+                                // #476 의 fallback 차단 분기로 박스가 누락된다.
+                                if let Control::Shape(shape) = ctrl {
+                                    let common = shape.common();
+                                    let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
+                                    let shape_y = (y + baseline - shape_h).max(y);
+                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, img_x, shape_y);
+                                    img_x += tac_w;
+                                    continue;
+                                }
                                 if let Control::Picture(pic) = ctrl {
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let img_y = (y + baseline - pic_h).max(y);

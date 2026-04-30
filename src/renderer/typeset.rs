@@ -637,10 +637,39 @@ impl TypesetEngine {
                 match ctrl {
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
                         if !has_table {
-                            st.current_items.push(PageItem::Shape {
+                            // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된
+                            // 페이지/단에 등록. paragraph 가 페이지 분할되면 이 시점의
+                            // st.current_items 는 마지막 페이지 상태이므로, 그대로 push 하면
+                            // 박스가 잘못된 페이지에 떠 있게 된다.
+                            let is_tac_shape = matches!(ctrl,
+                                Control::Shape(s) if s.common().treat_as_char);
+                            let routed = if is_tac_shape {
+                                crate::renderer::pagination::find_inline_control_target_page(
+                                    &st.pages, &st.current_items, para_idx, ctrl_idx, para,
+                                )
+                            } else {
+                                None
+                            };
+                            let item = PageItem::Shape {
                                 para_index: para_idx,
                                 control_index: ctrl_idx,
-                            });
+                            };
+                            match routed {
+                                Some((page_idx, col_idx)) => {
+                                    if let Some(page) = st.pages.get_mut(page_idx) {
+                                        if let Some(col) = page.column_contents.get_mut(col_idx) {
+                                            col.items.push(item);
+                                        } else {
+                                            st.current_items.push(item);
+                                        }
+                                    } else {
+                                        st.current_items.push(item);
+                                    }
+                                }
+                                None => {
+                                    st.current_items.push(item);
+                                }
+                            }
                             // Task #409 v2: 비-TAC TopAndBottom + vert=Para Picture/Shape 는
                             // layout 에서 picture_footnote.rs:356 의 `y_offset + total_height`
                             // 패턴으로 후속 콘텐츠를 개체 높이만큼 밀어냄. 하지만 paragraph
