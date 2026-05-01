@@ -1597,6 +1597,41 @@ impl LayoutEngine {
                         Control::Shape(shape) => {
                             if shape.common().treat_as_char {
                                 let shape_w = hwpunit_to_px(shape.common().width as i32, self.dpi);
+                                // [Task #500] Picture 분기와 정합: target_line 산출 + 줄 변경 시
+                                // inline_x/tac_img_y 리셋. multi-line paragraph 에서 사각형이
+                                // ls[1]+ 에 있을 때 paragraph 첫 줄 좌표가 잘못 사용되던 결함 정정.
+                                let target_line = if all_runs_empty && para.line_segs.len() > 1 {
+                                    let li = tac_seq_index.min(para.line_segs.len() - 1);
+                                    tac_seq_index += 1;
+                                    li
+                                } else {
+                                    composed.tac_controls.iter()
+                                        .find(|&&(_, _, ci)| ci == ctrl_idx)
+                                        .map(|&(abs_pos, _, _)| {
+                                            composed.lines.iter().enumerate()
+                                                .rev()
+                                                .find(|(_, line)| abs_pos >= line.char_start)
+                                                .map(|(li, _)| li)
+                                                .unwrap_or(0)
+                                        })
+                                        .unwrap_or(0)
+                                };
+                                if target_line > current_tac_line {
+                                    current_tac_line = target_line;
+                                    let line_w = tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                    inline_x = match para_alignment {
+                                        Alignment::Center | Alignment::Distribute => {
+                                            inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
+                                        }
+                                        Alignment::Right => {
+                                            inner_area.x + (inner_area.width - line_w).max(0.0)
+                                        }
+                                        _ => inner_area.x,
+                                    };
+                                    if let Some(seg) = para.line_segs.get(target_line) {
+                                        tac_img_y = para_y_before_compose + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                    }
+                                }
                                 // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와
                                 // 이전 Shape의 text_pos 차이에 해당하는 텍스트 너비를 inline_x에 반영
                                 if let Some(&(tac_pos, _, _)) = composed.tac_controls.iter().find(|&&(_, _, ci)| ci == ctrl_idx) {
@@ -1682,11 +1717,11 @@ impl LayoutEngine {
                                 }
                                 let shape_area = LayoutRect {
                                     x: inline_x,
-                                    y: para_y_before_compose,
+                                    y: tac_img_y,
                                     width: shape_w,
                                     height: inner_area.height,
                                 };
-                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, para_y_before_compose, Alignment::Left, styles, bin_data_content);
+                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, tac_img_y, Alignment::Left, styles, bin_data_content);
                                 inline_x += shape_w;
                             } else {
                                 self.layout_cell_shape(tree, &mut cell_node, shape, &inner_area, para_y, para_alignment, styles, bin_data_content);
