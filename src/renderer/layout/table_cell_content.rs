@@ -472,6 +472,7 @@ impl LayoutEngine {
                 self.render_cell_background(
                     tree, &mut table_node, Some(tbl_bs),
                     table_x, table_y, table_width, table_height,
+                    bin_data_content,
                 );
             }
         }

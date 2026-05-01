@@ -775,3 +775,75 @@ fn test_control_text_positions_no_offsets_non_inline_skipped() {
     };
     assert_eq!(para.control_text_positions(), vec![0, 0, 1]);
 }
+
+#[test]
+fn test_utf16_pos_to_char_idx_empty_offsets() {
+    // char_offsets 가 비어있으면 unwrap_or(char_offsets.len()) = 0 반환.
+    let para = Paragraph::default();
+    assert_eq!(para.utf16_pos_to_char_idx(0), 0);
+    assert_eq!(para.utf16_pos_to_char_idx(100), 0);
+}
+
+#[test]
+fn test_utf16_pos_to_char_idx_zero_returns_first() {
+    // utf16_pos = 0 → 첫 entry (offsets[0] = 0 >= 0) 의 인덱스 0.
+    let para = Paragraph {
+        text: "ABC".to_string(),
+        char_offsets: vec![0, 1, 2],
+        ..Default::default()
+    };
+    assert_eq!(para.utf16_pos_to_char_idx(0), 0);
+}
+
+#[test]
+fn test_utf16_pos_to_char_idx_exact_match() {
+    // offsets 안의 정확한 값일 때 해당 인덱스 반환.
+    let para = Paragraph {
+        text: "ABC".to_string(),
+        char_offsets: vec![0, 1, 2],
+        ..Default::default()
+    };
+    assert_eq!(para.utf16_pos_to_char_idx(1), 1);
+    assert_eq!(para.utf16_pos_to_char_idx(2), 2);
+}
+
+#[test]
+fn test_utf16_pos_to_char_idx_between_offsets() {
+    // offsets 사이 값일 때 첫 entry >= utf16_pos 인 인덱스 반환.
+    // offsets = [0, 1, 3] (2번째 codepoint 는 SMP) → utf16_pos=2 는 첫
+    // entry >=2 인 3 의 인덱스 2.
+    let para = Paragraph {
+        text: "A🎉".to_string(),
+        char_offsets: vec![0, 1, 3],
+        ..Default::default()
+    };
+    assert_eq!(para.utf16_pos_to_char_idx(2), 2);
+}
+
+#[test]
+fn test_utf16_pos_to_char_idx_beyond_end_returns_len() {
+    // utf16_pos 가 모든 entry 보다 크면 char_offsets.len() (텍스트 끝).
+    let para = Paragraph {
+        text: "ABC".to_string(),
+        char_offsets: vec![0, 1, 2],
+        ..Default::default()
+    };
+    assert_eq!(para.utf16_pos_to_char_idx(3), 3);
+    assert_eq!(para.utf16_pos_to_char_idx(100), 3);
+}
+
+#[test]
+fn test_utf16_pos_to_char_idx_surrogate_pair_midpoint() {
+    // text = "🎉A" → offsets = [0, 2] (🎉 가 UTF-16 width=2). utf16_pos=1
+    // (surrogate pair 의 low half) 도 첫 entry >=1 인 2 의 인덱스 1 반환 —
+    // 다음 codepoint 시작 위치로 정규화.
+    let para = Paragraph {
+        text: "🎉A".to_string(),
+        char_offsets: vec![0, 2],
+        ..Default::default()
+    };
+    assert_eq!(para.utf16_pos_to_char_idx(0), 0);
+    assert_eq!(para.utf16_pos_to_char_idx(1), 1);
+    assert_eq!(para.utf16_pos_to_char_idx(2), 1);
+    assert_eq!(para.utf16_pos_to_char_idx(3), 2); // beyond end
+}

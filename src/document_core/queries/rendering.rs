@@ -1429,7 +1429,8 @@ impl DocumentCore {
                                 out.push_str(&format!("    Table          pi={} ci={}  {}  {}\n",
                                     para_index, control_index, table_info, vpos_info));
                             }
-                            PageItem::PartialTable { para_index, control_index, start_row, end_row, is_continuation, .. } => {
+                            PageItem::PartialTable { para_index, control_index, start_row, end_row, is_continuation,
+                                                     split_start_content_offset, split_end_content_limit } => {
                                 let table_info = paragraphs.get(*para_index)
                                     .and_then(|p| p.controls.get(*control_index))
                                     .map(|c| {
@@ -1439,8 +1440,14 @@ impl DocumentCore {
                                     })
                                     .unwrap_or_default();
                                 let vpos_info = format_vpos_range(paragraphs.get(*para_index), None, None);
-                                out.push_str(&format!("    PartialTable   pi={} ci={}  rows={}..{}  cont={}  {}  {}\n",
-                                    para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info));
+                                // [Task #431] 분할 표 진단 정보 — split_start/end 가 0 이 아니면 셀 내 분할
+                                let split_info = if *split_start_content_offset > 0.0 || *split_end_content_limit > 0.0 {
+                                    format!("  split_start={:.1} split_end={:.1}", split_start_content_offset, split_end_content_limit)
+                                } else {
+                                    String::new()
+                                };
+                                out.push_str(&format!("    PartialTable   pi={} ci={}  rows={}..{}  cont={}  {}  {}{}\n",
+                                    para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info, split_info));
                             }
                             PageItem::Shape { para_index, control_index } => {
                                 let shape_info = paragraphs.get(*para_index)

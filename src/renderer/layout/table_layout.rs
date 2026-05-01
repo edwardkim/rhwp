@@ -264,6 +264,7 @@ impl LayoutEngine {
                 self.render_cell_background(
                     tree, &mut table_node, Some(tbl_bs),
                     table_x, table_y, table_width, table_height,
+                    bin_data_content,
                 );
             }
         }
@@ -297,23 +298,9 @@ impl LayoutEngine {
                     });
                     let zone_w = (zone_x_end - zone_x).max(0.0);
                     let zone_h = (zone_y_end - zone_y).max(0.0);
-                    // 단색/패턴/그라데이션 배경
-                    self.render_cell_background(tree, &mut table_node, Some(zone_bs), zone_x, zone_y, zone_w, zone_h);
-                    // 이미지 채우기
-                    if let Some(ref img_fill) = zone_bs.image_fill {
-                        if let Some(img_content) = crate::renderer::layout::find_bin_data(bin_data_content, img_fill.bin_data_id) {
-                            let img_id = tree.next_id();
-                            let img_node = RenderNode::new(
-                                img_id,
-                                RenderNodeType::Image(ImageNode {
-                                    fill_mode: Some(img_fill.fill_mode),
-                                    ..ImageNode::new(img_fill.bin_data_id, Some(img_content.data.clone()))
-                                }),
-                                BoundingBox::new(zone_x, zone_y, zone_w, zone_h),
-                            );
-                            table_node.children.push(img_node);
-                        }
-                    }
+                    // [Task #429] 단색/패턴/그라데이션 + 이미지 채우기 (zone 의 별도 image fill 처리는
+                    // render_cell_background 가 통합 처리하므로 제거)
+                    self.render_cell_background(tree, &mut table_node, Some(zone_bs), zone_x, zone_y, zone_w, zone_h, bin_data_content);
                 }
             }
         }
@@ -813,6 +800,23 @@ impl LayoutEngine {
         } else {
             hwpunit_to_px(table.padding.bottom as i32, self.dpi)
         };
+        // [Task #501] 한컴 방어 로직 모방 — cell.padding.top + bottom 합산이
+        // cell.height 자체를 초과하면 (mel-001 p2 셀[21]: pad=1700 HU 두 축, h=1280 HU)
+        // 한컴은 자체 가드로 cell 안에 콘텐츠가 들어가도록 처리. cell.height 의 절반까지
+        // 비례 축소 (HWP 스펙 외 한컴 동작 모방).
+        let (pad_top, pad_bottom) = if cell.height < 0x80000000 {
+            let cell_h_px = hwpunit_to_px(cell.height as i32, self.dpi);
+            let total_v_pad = pad_top + pad_bottom;
+            if cell_h_px > 0.0 && total_v_pad >= cell_h_px {
+                let max_v_pad = cell_h_px * 0.5;
+                let scale = max_v_pad / total_v_pad;
+                (pad_top * scale, pad_bottom * scale)
+            } else {
+                (pad_top, pad_bottom)
+            }
+        } else {
+            (pad_top, pad_bottom)
+        };
         (pad_left, pad_right, pad_top, pad_bottom)
     }
 
@@ -877,6 +881,7 @@ impl LayoutEngine {
         cell_node: &mut RenderNode,
         border_style: Option<&crate::renderer::style_resolver::ResolvedBorderStyle>,
         cell_x: f64, cell_y: f64, cell_w: f64, cell_h: f64,
+        bin_data_content: &[BinDataContent],
     ) {
         let fill_color = border_style.and_then(|bs| bs.fill_color);
         let pattern = border_style.and_then(|bs| bs.pattern);
@@ -899,6 +904,21 @@ impl LayoutEngine {
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
             );
             cell_node.children.push(rect_node);
+        }
+        // [Task #429] image fill 처리 — zone 처리와 동일 패턴
+        if let Some(img_fill) = border_style.and_then(|bs| bs.image_fill.as_ref()) {
+            if let Some(img_content) = crate::renderer::layout::find_bin_data(bin_data_content, img_fill.bin_data_id) {
+                let img_id = tree.next_id();
+                let img_node = RenderNode::new(
+                    img_id,
+                    RenderNodeType::Image(ImageNode {
+                        fill_mode: Some(img_fill.fill_mode),
+                        ..ImageNode::new(img_fill.bin_data_id, Some(img_content.data.clone()))
+                    }),
+                    BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
+                );
+                cell_node.children.push(img_node);
+            }
         }
     }
 
@@ -1151,7 +1171,7 @@ impl LayoutEngine {
             };
 
             // (a) 셀 배경
-            self.render_cell_background(tree, &mut cell_node, border_style, cell_x, cell_y, cell_w, cell_h);
+            self.render_cell_background(tree, &mut cell_node, border_style, cell_x, cell_y, cell_w, cell_h, bin_data_content);
 
             // 셀 패딩 (cell.padding이 0이면 table.padding fallback)
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
@@ -1530,13 +1550,22 @@ impl LayoutEngine {
                                     }
 
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                    // [Task #477] 셀 폭 초과 시 비율 유지 클램프
+                                    let clamped_w = pic_w.min(inner_area.width);
+                                    let clamped_h = if pic_w > 0.0 {
+                                        pic_h * (clamped_w / pic_w)
+                                    } else {
+                                        pic_h
+                                    };
                                     let pic_area = LayoutRect {
                                         x: inline_x,
                                         y: tac_img_y,
-                                        width: pic_w,
-                                        height: pic_h,
+                                        width: clamped_w,
+                                        height: clamped_h,
                                     };
                                     self.layout_picture(tree, &mut cell_node, pic, &pic_area, bin_data_content, Alignment::Left, Some(section_index), None, None);
+                                    inline_x += clamped_w;
+                                    continue;
                                 }
                                 inline_x += pic_w;
                             } else {
@@ -2082,6 +2111,11 @@ impl LayoutEngine {
         let has_offset = content_offset > 0.0;
         let has_limit = content_limit > 0.0;
         let mut cum: f64 = 0.0;
+        // [Task #431] content_limit 은 현재 페이지에서 표시할 상대 길이(px) 의미이므로
+        // 절대 좌표(cum 기반)와 비교하려면 content_offset 을 더해 절대 끝 좌표로 변환한다.
+        // (Task #362 의 도입 시점에 단위 mismatch 가 있었음 — content_offset >= content_limit
+        // 케이스에서 셀 내 문단이 즉시 break 되어 빈 페이지로 출력되던 결함 정정.)
+        let abs_limit = if has_limit { content_offset + content_limit } else { 0.0 };
 
         let total_paras = composed_paras.len();
         for (pi, (comp, para)) in composed_paras.iter().zip(cell.paragraphs.iter()).enumerate() {
@@ -2131,7 +2165,8 @@ impl LayoutEngine {
                 // v0.7.3 의 처리 시멘틱과 동일.
                 let was_on_prev = has_offset && para_end_pos <= content_offset;
                 let bigger_than_page = has_limit && para_h > content_limit;
-                let exceeds_limit = has_limit && para_end_pos > content_limit && !bigger_than_page;
+                // [Task #431] abs_limit (= content_offset + content_limit) 와 비교 (단위 정합)
+                let exceeds_limit = has_limit && para_end_pos > abs_limit && !bigger_than_page;
                 let visible_count = if line_count == 0 { 0 } else { line_count };
                 if was_on_prev || exceeds_limit {
                     // (n,n): 렌더 스킵 마커. line_count==0 이면 (0,0) 동일.
@@ -2170,7 +2205,8 @@ impl LayoutEngine {
                     continue;
                 }
 
-                if has_limit && line_end_pos > content_limit {
+                if has_limit && line_end_pos > abs_limit {
+                    // [Task #431] abs_limit (= content_offset + content_limit) 와 비교 (단위 정합)
                     // limit 초과 → 이 줄과 이후 모든 콘텐츠 차단
                     break;
                 }

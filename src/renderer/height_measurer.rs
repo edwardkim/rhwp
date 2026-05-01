@@ -586,7 +586,24 @@ impl HeightMeasurer {
                 };
 
                 // 패딩 포함 총 필요 높이
-                let required_height = content_height + pad_top + pad_bottom;
+                // [Task #501] cell.padding 이 IR cell.height 의 절반을 초과하는 비정상
+                // 케이스 (mel-001 p2 셀[21]: cell.h=1280 HU, pad.top+bottom=3400 HU) 가드:
+                // 비정상 padding 이 row_heights 를 확장하면 TAC 표 비례 축소가 모든 행에
+                // 영향. content_height 가 IR cell.height 안에 들어가면 IR 권위 우선.
+                let total_pad = pad_top + pad_bottom;
+                let cell_h_px = if cell.height < 0x80000000 {
+                    hwpunit_to_px(cell.height as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                let required_height = if cell_h_px > 0.0
+                    && total_pad > cell_h_px * 0.5
+                    && content_height <= cell_h_px
+                {
+                    cell_h_px
+                } else {
+                    content_height + total_pad
+                };
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
@@ -1231,10 +1248,15 @@ impl MeasuredTable {
 
     /// 종료 행 후보가 *보호 대상* rowspan 묶음 블록 중간이면 블록 시작 행으로 후퇴.
     /// 블록 크기가 BLOCK_UNIT_MAX_ROWS (=3) 초과인 큰 rowspan 묶음은 행 단위 분할 허용 (Task #398 v2).
+    /// [Task #474] RowBreak 표는 행 경계 분할이 명시 정책이라 보호 비적용.
     pub fn snap_to_block_boundary(&self, end_row: usize) -> usize {
         let rc = self.row_heights.len();
         if end_row >= rc {
             return end_row.min(rc);
+        }
+        // [Task #474] RowBreak 표는 보호 블록 정책 비적용 (HWP 행 경계 분할 정책 정합)
+        if self.allows_row_break_split() {
+            return end_row;
         }
         let block_start = self.row_block_start.get(end_row).copied().unwrap_or(end_row);
         let block_end = self.row_block_end.get(end_row).copied().unwrap_or(end_row + 1);
@@ -1247,6 +1269,12 @@ impl MeasuredTable {
         } else {
             end_row
         }
+    }
+
+    /// [Task #474] 표 정책이 RowBreak 인지 확인. RowBreak 표는 행 경계 분할이
+    /// 명시 정책이므로 rowspan 보호 블록 정책 비적용 대상.
+    pub fn allows_row_break_split(&self) -> bool {
+        matches!(self.page_break, crate::model::table::TablePageBreak::RowBreak)
     }
 }
 
@@ -1832,5 +1860,43 @@ mod tests {
         assert_eq!(mt.snap_to_block_boundary(4), 3);
         // end_row=5: 행 범위 끝 → 5 (snap 없음)
         assert_eq!(mt.snap_to_block_boundary(5), 5);
+    }
+
+    #[test]
+    fn test_snap_to_block_boundary_row_break_skipped() {
+        // [Task #474] RowBreak 표는 보호 블록 정책 비적용 — end_row 그대로 반환
+        let mt = MeasuredTable {
+            para_index: 0, control_index: 0, total_height: 100.0,
+            row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
+            caption_height: 0.0, cell_spacing: 0.0,
+            cumulative_heights: vec![0.0, 10.0, 20.0, 30.0, 40.0, 50.0],
+            repeat_header: false, has_header_cells: false,
+            cells: vec![],
+            page_break: crate::model::table::TablePageBreak::RowBreak,
+            row_block_start: vec![0, 0, 2, 3, 3],
+            row_block_end:   vec![2, 2, 3, 5, 5],
+        };
+        // None 정책에서는 end_row=1 → 0 으로 후퇴, RowBreak 에서는 1 그대로
+        assert_eq!(mt.snap_to_block_boundary(1), 1);
+        // None 정책에서는 end_row=4 → 3 으로 후퇴, RowBreak 에서는 4 그대로
+        assert_eq!(mt.snap_to_block_boundary(4), 4);
+    }
+
+    #[test]
+    fn test_allows_row_break_split() {
+        // [Task #474] page_break 정책 별 RowBreak 인지 확인
+        let mut mt = MeasuredTable {
+            para_index: 0, control_index: 0, total_height: 0.0,
+            row_heights: vec![], caption_height: 0.0, cell_spacing: 0.0,
+            cumulative_heights: vec![0.0], repeat_header: false,
+            has_header_cells: false, cells: vec![],
+            page_break: crate::model::table::TablePageBreak::None,
+            row_block_start: vec![], row_block_end: vec![],
+        };
+        assert!(!mt.allows_row_break_split());
+        mt.page_break = crate::model::table::TablePageBreak::CellBreak;
+        assert!(!mt.allows_row_break_split());
+        mt.page_break = crate::model::table::TablePageBreak::RowBreak;
+        assert!(mt.allows_row_break_split());
     }
 }

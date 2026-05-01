@@ -1527,14 +1527,21 @@ impl LayoutEngine {
                             // 인라인 이미지: 수평으로 순차 배치
                             let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                            // [Task #477] 도형 컨테이너 폭 초과 시 비율 유지 클램프
+                            let clamped_w = pic_w.min(inner_area.width);
+                            let clamped_h = if pic_w > 0.0 {
+                                pic_h * (clamped_w / pic_w)
+                            } else {
+                                pic_h
+                            };
                             let pic_container = LayoutRect {
                                 x: inline_x,
                                 y: inline_y,
-                                width: pic_w,
-                                height: pic_h,
+                                width: clamped_w,
+                                height: clamped_h,
                             };
                             self.layout_picture(tree, shape_node, pic, &pic_container, bin_data_content, Alignment::Left, None, None, None);
-                            inline_x += pic_w;
+                            inline_x += clamped_w;
                         } else {
                             // 절대 위치 이미지
                             let pic_container = LayoutRect {

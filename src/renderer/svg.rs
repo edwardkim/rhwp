@@ -2377,30 +2377,27 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
 }
 
 /// 이미지 데이터에서 픽셀 크기(width, height)를 파싱한다.
-/// HWP `pic.crop` (HWPUNIT) 와 원본 이미지 크기(HU/px)로부터 SVG `viewBox` 에 쓸
-/// 원본 픽셀 단위 source rect (x, y, w, h)를 계산한다.
+/// HWP `pic.crop` (HWPUNIT) 로부터 SVG `viewBox` 에 쓸 원본 픽셀 단위
+/// source rect (x, y, w, h) 를 계산한다.
 ///
-/// HWP `crop` 은 이미지 native 픽셀을 96-DPI HU 관행 (75 HU/px) 으로 인코딩한다.
-/// `original_size_hu` (= ShapeComponentAttr.original_width/height) 는 표시 HU 이며,
-/// 사용자가 그림 크기를 변경한 경우 이미지 native HU 와 다를 수 있다.
+/// [Task #477] HWP 표준 룰: 1 inch = 7200 HU = 96 px → **75 HU/px** (DPI 96).
+/// 한컴이 BinData 에 저장하는 image 의 표준 DPI 이며, crop 좌표 (HU) 와 image
+/// 픽셀의 변환은 이 표준 scale 로 항상 정합한다.
 ///
-/// [Task #473] `original_size_hu / img_px` 가 75 ± 5% 안에 들어오는 경우만 사용 (역호환),
-/// 아니면 96-DPI 관행 (75 HU/px) fallback. 이미지 binary 의 정확한 native scale.
+/// `original_size_hu` 인자는 라운드트립 보존 메타로만 유지하며 계산에는 사용하지
+/// 않는다 (Task #430 이 도입했던 `orig/img_w` scale 은 일부 케이스에서 결함을
+/// 유발 — k-water-rfp pi=31 등에서 image 좌측만 표시되는 회귀).
 pub(crate) fn compute_image_crop_src(
     crop_hu: (i32, i32, i32, i32),
-    original_size_hu: Option<(u32, u32)>,
-    img_w_px: f64,
-    img_h_px: f64,
+    _original_size_hu: Option<(u32, u32)>,
+    _img_w_px: f64,
+    _img_h_px: f64,
 ) -> (f64, f64, f64, f64) {
     let (cl, ct, cr, cb) = crop_hu;
-    const HWP_CROP_DPI_SCALE: f64 = 75.0; // 7200 HU/inch / 96 px/inch
-    let scale_from_orig = original_size_hu
-        .filter(|(ow, oh)| *ow > 0 && *oh > 0 && img_w_px > 0.0 && img_h_px > 0.0)
-        .map(|(ow, oh)| (ow as f64 / img_w_px, oh as f64 / img_h_px))
-        .filter(|(sx, sy)|
-            (*sx - HWP_CROP_DPI_SCALE).abs() / HWP_CROP_DPI_SCALE < 0.05
-                && (*sy - HWP_CROP_DPI_SCALE).abs() / HWP_CROP_DPI_SCALE < 0.05);
-    let (scale_x, scale_y) = scale_from_orig.unwrap_or((HWP_CROP_DPI_SCALE, HWP_CROP_DPI_SCALE));
+    // HWP 표준 DPI 96 = 75 HU/px
+    const HU_PER_PX: f64 = 75.0;
+    let scale_x = HU_PER_PX;
+    let scale_y = HU_PER_PX;
     let src_x = cl as f64 / scale_x;
     let src_y = ct as f64 / scale_y;
     let src_w = (cr - cl) as f64 / scale_x;

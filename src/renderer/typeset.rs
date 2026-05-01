@@ -1636,7 +1636,10 @@ impl TypesetEngine {
         } else { (0, 0, 0.0) };
         let first_block_size = first_block_end.saturating_sub(first_block_start);
         let first_block_is_single_row = first_block_size == 1;
-        let first_block_protected = first_block_size >= 2 && first_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+        // [Task #474] RowBreak 표는 보호 블록 정책 비적용
+        let first_block_protected = !mt.allows_row_break_split()
+            && first_block_size >= 2
+            && first_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
         // Task #398 v2: 보호 블록(2~3 rows)만 블록 전체 높이로 판정. 큰 rowspan(>3)은 행 단위 분할.
         let split_unit_h = if first_block_protected {
             first_block_h
@@ -1740,7 +1743,10 @@ impl TypesetEngine {
                 let (cur_b_start, cur_b_end, _) = mt.row_block_for(cursor_row);
                 let cur_block_size = cur_b_end.saturating_sub(cur_b_start);
                 let cur_block_single = cur_block_size == 1;
-                let cur_block_protected = cur_block_size >= 2 && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                // [Task #474] RowBreak 표는 보호 블록 정책 비적용
+                let cur_block_protected = !mt.allows_row_break_split()
+                    && cur_block_size >= 2
+                    && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
                 let cur_can_intra_split = (cur_block_single || !cur_block_protected) && can_intra_split;
 
                 if approx_end <= cursor_row {
@@ -1789,7 +1795,10 @@ impl TypesetEngine {
                     let (next_b_start, next_b_end, _) = mt.row_block_for(r);
                     let next_block_size = next_b_end.saturating_sub(next_b_start);
                     let next_block_single = next_block_size == 1;
-                    let next_block_protected = next_block_size >= 2 && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                    // [Task #474] RowBreak 표는 보호 블록 정책 비적용
+                    let next_block_protected = !mt.allows_row_break_split()
+                        && next_block_size >= 2
+                        && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
                     let next_can_intra_split = (next_block_single || !next_block_protected) && can_intra_split;
                     if next_can_intra_split && mt.is_row_splittable(r) {
                         let row_cs = cs;
