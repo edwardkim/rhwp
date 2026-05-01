@@ -102,7 +102,7 @@ fn adapter_deterministic_across_clones() {
 fn adapter_skips_hwp_source() {
     let mut doc = rhwp::model::document::Document::default();
     let report = convert_if_hwpx_source(&mut doc, rhwp::parser::FileFormat::Hwp);
-    assert_eq!(report.skipped_reason.as_deref(), Some("source_format != Hwpx"));
+    assert_eq!(report.skipped_reason.as_deref(), Some("source_format != Hwpx/Hwp3"));
 }
 
 // ============================================================

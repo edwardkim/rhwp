@@ -21,6 +21,7 @@ fn main() {
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
         Some("test-caption") => test_caption(&args[2..]),
         Some("gen-table") => gen_table(&args[2..]),
+        Some("gen-pua") => gen_pua_test(&args[2..]),
         Some("test-field") => test_field_roundtrip(&args[2..]),
         Some("ir-diff") => ir_diff(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
@@ -2259,6 +2260,98 @@ fn gen_table(args: &[String]) {
     }
     fs::write(out_path, bytes).expect("파일 저장 실패");
     println!("저장 완료: {} ({}행 × {}열)", output, rows, cols);
+}
+
+/// PUA (Private Use Area) 문자 셋트를 입력한 HWP 테스트 문서 생성.
+///
+/// Task #509 (PUA 회귀 정정) 의 한컴 정답지 확보용. 본 라이브러리가 발견한
+/// 14 샘플 광범위 PUA 코드포인트 18 종을 한 문서에 입력 → 한컴 편집기로 PDF
+/// 출력 + rhwp SVG 출력 시각 비교.
+///
+/// 사용:
+///   rhwp gen-pua [output_path]
+///   기본 출력: output/pua-test.hwp
+fn gen_pua_test(args: &[String]) {
+    let output = args.first().map(|s| s.as_str()).unwrap_or("output/pua-test.hwp");
+
+    println!("PUA 문자 셋트 입력 HWP 문서 생성 중...");
+
+    let mut core = rhwp::document_core::DocumentCore::new_empty();
+    core.create_blank_document_native().expect("빈 문서 생성 실패");
+
+    // PUA 코드포인트 셋트 (Task #509 Stage 1 의 14 샘플 광범위 통계 정합)
+    // (codepoint, 영역 분류, 사용 샘플, 본 라이브러리 현재 매핑)
+    let pua_set: &[(u32, &str, &str, &str)] = &[
+        // ── Basic PUA (0xF020~0xF0FF) — 매핑 표 적용 영역 ──
+        (0x0F076, "Basic",      "mel-001",      "❖ U+2756"),
+        (0x0F09F, "Basic",      "biz_plan",     "• U+2022"),
+        (0x0F0A0, "Basic",      "synam-001",    "▪ U+25AA"),
+        (0x0F0A7, "Basic",      "kps-ai",       "▪ U+25AA"),
+        (0x0F0E8, "Basic",      "kps-ai",       "(미정의)"),
+        (0x0F0F2, "Basic",      "KTX",          "⇩ U+21E9 (의도 정정 후보)"),
+        (0x0F0FE, "Basic",      "k-water-rfp",  "☑ U+2611"),
+        // ── Basic PUA — 매핑 표 외 영역 ──
+        (0x0F53A, "Basic-out",  "hwpspec",      "(매핑 표 외)"),
+        // ── Supplementary PUA-A (0xF0000~0xFFFFD) — 매핑 표 미지원 영역 ──
+        (0xF02B1, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B2, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B3, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B4, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B5, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B6, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B7, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B8, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02B9, "Suppl-A",    "mel-001",      "(매핑 표 외)"),
+        (0xF02EF, "Suppl-A",    "KTX (회귀)",   "(매핑 표 외) ★"),
+    ];
+
+    println!("  PUA 코드포인트 {} 종 입력", pua_set.len());
+
+    core.begin_batch_native().expect("배치 시작 실패");
+
+    // 첫 paragraph (0번) 에 제목 입력
+    let title = "[PUA 회귀 검증 — Task #509]";
+    core.insert_text_native(0, 0, 0, title).expect("제목 입력 실패");
+
+    // 각 PUA 글자별로 paragraph 추가:
+    // "U+0F0F2 (Basic, KTX): {char}    ← 한컴 정답지 / rhwp 비교"
+    // 빈 paragraph 추가 + 텍스트 입력 패턴
+    for (i, &(cp, area, sample, mapping)) in pua_set.iter().enumerate() {
+        let pi = i + 1; // 0번은 제목, 1번부터 PUA paragraphs
+
+        // 새 paragraph 추가 (pi 위치에 새 문단 삽입)
+        core.insert_paragraph_native(0, pi)
+            .unwrap_or_else(|e| panic!("paragraph 추가 실패 (pi={}): {:?}", pi, e));
+
+        // PUA 글자 char 변환 (i32 unsafe 회피)
+        let pua_char = char::from_u32(cp)
+            .unwrap_or_else(|| panic!("invalid codepoint U+{:05X}", cp));
+
+        // 텍스트: "U+0F0F2 (Basic, KTX, ⇩ U+21E9 매핑): " + PUA + "  ← 한컴 PDF 글리프 정답지"
+        let text = format!(
+            "U+{:05X} ({}, {}, {}): {}  ← 한컴 PDF 정답지",
+            cp, area, sample, mapping, pua_char
+        );
+
+        core.insert_text_native(0, pi, 0, &text)
+            .unwrap_or_else(|e| panic!("텍스트 입력 실패 (pi={}): {:?}", pi, e));
+    }
+
+    core.end_batch_native().expect("배치 종료 실패");
+
+    // 저장
+    let bytes = core.export_hwp_native().expect("HWP 내보내기 실패");
+    let out_path = Path::new(output);
+    if let Some(parent) = out_path.parent() {
+        fs::create_dir_all(parent).ok();
+    }
+    fs::write(out_path, bytes).expect("파일 저장 실패");
+    println!("저장 완료: {} ({} 종 PUA)", output, pua_set.len());
+    println!();
+    println!("다음 단계:");
+    println!("  1. 한컴 2022 편집기에서 본 파일 열기 → PDF 출력 (정답지)");
+    println!("  2. rhwp export-svg {} → SVG 출력 비교", output);
+    println!("  3. 시각 비교로 매핑 정합 확정");
 }
 
 fn test_field_roundtrip(args: &[String]) {

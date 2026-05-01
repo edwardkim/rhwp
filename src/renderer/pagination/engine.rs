@@ -62,6 +62,7 @@ impl Paginator {
         let mut wrap_around_cs: i32 = -1;  // -1 = 비활성
         let mut wrap_around_sw: i32 = -1;  // wrap zone의 segment_width
         let mut wrap_around_table_para: usize = 0;  // 어울림 표의 문단 인덱스
+        let mut wrap_around_any_seg: bool = false;  // true면 any_seg_matches만으로 어울림 판정
         let mut prev_pagination_para: Option<usize> = None;  // vpos 보정용 이전 문단
 
         // 고정값 줄간격 TAC 표 병행 (Task #9):
@@ -301,7 +302,7 @@ impl Paginator {
                 let sw0_match = wrap_around_sw == 0 && is_empty_para && para_sw > 0
                     && para_sw < body_w / 2;
                 if para_cs == wrap_around_cs && para_sw == wrap_around_sw
-                    || (any_seg_matches && is_empty_para)
+                    || (any_seg_matches && (is_empty_para || wrap_around_any_seg))
                     || sw0_match {
                     // 어울림 문단: 표 옆에 배치 — pagination에서 높이 소비 없이 기록
                     // (표가 이미 이 공간을 차지하고 있음)
@@ -316,6 +317,7 @@ impl Paginator {
                 } else {
                     wrap_around_cs = -1;
                     wrap_around_sw = -1;
+                    wrap_around_any_seg = false;
                 }
             }
 
@@ -369,6 +371,28 @@ impl Paginator {
                         .map(|s| s.segment_width as i32)
                         .unwrap_or(0);
                     wrap_around_table_para = para_idx;
+                    wrap_around_any_seg = false;
+                }
+            }
+            // 비-TAC Picture Square wrap (어울림 그림): TABLE wrap과 동일 메커니즘.
+            // lineseg가 이미지 존 전후로 분할되어 첫 seg cs=0 일 수 있으므로
+            // wrap_around_any_seg=true 로 any_seg_matches만으로 후속 문단 판정 허용.
+            let has_non_tac_pic_square = para.controls.iter().any(|c| {
+                let cm = match c {
+                    Control::Picture(p) => Some(&p.common),
+                    Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() { Some(&p.common) } else { None },
+                    _ => None,
+                };
+                cm.map(|cm| !cm.treat_as_char && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)).unwrap_or(false)
+            });
+            if has_non_tac_pic_square {
+                let anchor_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
+                let anchor_sw = para.line_segs.first().map(|s| s.segment_width as i32).unwrap_or(0);
+                if anchor_cs > 0 || anchor_sw > 0 {
+                    wrap_around_cs = anchor_cs;
+                    wrap_around_sw = anchor_sw;
+                    wrap_around_table_para = para_idx;
+                    wrap_around_any_seg = true;
                 }
             }
 

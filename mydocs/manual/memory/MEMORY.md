@@ -32,3 +32,5 @@
 - [v0.7.6 페이지 레이아웃 회귀의 origin](feedback_v076_regression_origin.md) — 외부 PR 컨트리뷰터들이 자기 환경 PDF 를 정답지로 사용 → 작업지시자 환경에서 회귀. 머지 전 작업지시자 직접 시각 검증을 게이트로
 - [이슈 close 시 정정 commit devel 머지 검증 필수](feedback_close_issue_verify_merged.md) — Task #376 정정 commit 이 임시 브랜치에만 있고 devel 미머지 → 동일 결함 재발 (Task #418). close 전 git branch --contains 검증
 - [작은 단위 PATCH 회전 운영 철학](feedback_small_batch_release_strategy.md) — 활발한 컨트리뷰션 사이클 (9명 외부 기여자) 에서 큰 묶음으로 완성도 높이려는 시도가 오히려 위험 누적. v0.x 단계에서 신규 API/모듈 (opt-in, 하위 호환성 100%) 도 PATCH 로 묶어 빠른 회전 — 컨트리뷰터 동기 + 위험 분산
+- [페이지 총 수 검증 한계 — 시각 회귀 비중 증가](feedback_visual_regression_grows.md) — 페이지 총 수 byte 비교만으로는 셀 안 그림 클램프 같은 시각 결함 검출 불가. 작업지시자 시각 판정이 절차의 핵심 게이트
+- [단어 선택 — "산수" 대신 "계산"](feedback_word_choice_calculation.md) — 기술 문서 / 코드 주석 / 보고서에서 "산수" 표현 금지, "계산" 사용
