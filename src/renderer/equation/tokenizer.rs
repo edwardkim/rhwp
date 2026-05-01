@@ -71,7 +71,9 @@ impl Tokenizer {
     }
 
     fn skip_spaces(&mut self) {
-        while self.current() == Some(' ') || self.current() == Some('\t') {
+        // 일반 공백/탭 + 개행. HWP 수식 스크립트는 `#`/`&` 으로 명시적 행/탭 구분을 하므로
+        // 실제 개행 문자는 의미 없는 포맷팅으로 간주하여 건너뛴다 (#505).
+        while matches!(self.current(), Some(' ') | Some('\t') | Some('\n') | Some('\r')) {
             self.pos += 1;
         }
     }
