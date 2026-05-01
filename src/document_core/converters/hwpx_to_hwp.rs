@@ -211,8 +211,8 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
-    if source_format != FileFormat::Hwpx {
-        return AdapterReport::new().no_op("source_format != Hwpx");
+    if !matches!(source_format, FileFormat::Hwpx | FileFormat::Hwp3) {
+        return AdapterReport::new().no_op("source_format != Hwpx/Hwp3");
     }
     convert_hwpx_to_hwp_ir(doc)
 }
@@ -233,7 +233,7 @@ mod tests {
     fn hwp_source_no_op_via_filter() {
         let mut doc = Document::default();
         let report = convert_if_hwpx_source(&mut doc, FileFormat::Hwp);
-        assert_eq!(report.skipped_reason.as_deref(), Some("source_format != Hwpx"));
+        assert_eq!(report.skipped_reason.as_deref(), Some("source_format != Hwpx/Hwp3"));
     }
 
     #[test]

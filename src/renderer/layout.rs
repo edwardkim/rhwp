@@ -476,6 +476,11 @@ impl LayoutEngine {
             for child in &body_node.children {
                 expand_clip(&mut clip, child);
             }
+            let body_bottom = body_bbox.y + body_bbox.height;
+            let max_bottom = body_bottom + 10.0;
+            if clip.y + clip.height > max_bottom {
+                clip.height = max_bottom - clip.y;
+            }
             body_node.node_type = RenderNodeType::Body {
                 clip_rect: Some(clip),
             };
@@ -1342,6 +1347,46 @@ impl LayoutEngine {
         let mut fix_table_visual_h: f64 = 0.0;
         let mut fix_overlay_active = false;
 
+        // Square wrap 그림 어울림: 그림 하단 y(페이지 기준) 계산.
+        // wrap_around_paras가 있으면 앵커 문단의 그림에서 그림 하단을 구한다.
+        // 어울림 문단(wrap_around_paras)이 끝난 뒤 첫 번째 일반 문단의 y를 그림 하단으로 밀어내는 데 사용.
+        // y_offset은 페이지 상단 기준 절대 픽셀값이므로 wrap_pic_bottom_y도 동일 기준으로 계산.
+        let mut wrap_pic_bottom_y: f64 = 0.0;
+        // 앵커 Shape가 처리된 이후에만 y_offset 보정을 적용. 앵커 자신은 대상 제외.
+        let mut wrap_anchor_shape_seen: bool = false;
+        let wrap_around_set: std::collections::HashSet<usize> =
+            col_content.wrap_around_paras.iter().map(|w| w.para_index).collect();
+        let wrap_anchor_pi: Option<usize> = col_content.wrap_around_paras.first().map(|w| w.table_para_index);
+        if !col_content.wrap_around_paras.is_empty() {
+            let anchor_pi = col_content.wrap_around_paras[0].table_para_index;
+            if let Some(anchor_para) = paragraphs.get(anchor_pi) {
+                for ctrl in &anchor_para.controls {
+                    let cm = match ctrl {
+                        Control::Picture(p) if !p.common.treat_as_char
+                            && matches!(p.common.text_wrap, crate::model::shape::TextWrap::Square) => &p.common,
+                        Control::Shape(s) => {
+                            if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
+                                if !p.common.treat_as_char && matches!(p.common.text_wrap, crate::model::shape::TextWrap::Square) {
+                                    &p.common
+                                } else { continue; }
+                            } else { continue; }
+                        }
+                        _ => continue,
+                    };
+                    let pic_h_px = hwpunit_to_px(cm.height as i32, self.dpi);
+                    let v_off_px = hwpunit_to_px(cm.vertical_offset as i32, self.dpi);
+                    // Paper/Page-relative: vertical_offset이 용지 상단 기준 → y_offset(페이지 기준)과 동일 좌표계
+                    // Para-relative: 앵커 문단의 실제 y_offset에 v_off를 더해야 하나, 동적 계산이 필요하여 현재는 미지원
+                    wrap_pic_bottom_y = if matches!(cm.vert_rel_to, crate::model::shape::VertRelTo::Para) {
+                        0.0  // Para-relative: 이 경로는 현재 hwp3에서 사용되지 않음
+                    } else {
+                        v_off_px + pic_h_px  // Paper/Page-relative: 페이지 상단 기준 절대 y
+                    };
+                    break;
+                }
+            }
+        }
+
         // vpos 보정을 위한 페이지 기준 vpos 계산
         // 페이지 첫 항목의 vpos를 기준점으로 삼아 모든 페이지에서 vpos 보정 적용
         let mut vpos_page_base: Option<i32> = col_content.items.first().and_then(|item| {
@@ -1515,6 +1560,24 @@ impl LayoutEngine {
                         y_offset = table_bottom;
                     }
                     fix_overlay_active = false;
+                }
+            }
+
+            // Square wrap 그림 어울림: 앵커 Shape 처리 후 첫 번째 일반 문단을 그림 하단으로 밀어냄.
+            // 앵커 Shape를 만나면 플래그를 설정하고, 그 이후 처음 나오는 일반 문단에서 y_offset 보정.
+            if let PageItem::Shape { para_index, .. } = item {
+                if wrap_anchor_pi == Some(*para_index) {
+                    wrap_anchor_shape_seen = true;
+                }
+            }
+            if wrap_pic_bottom_y > 0.0 && wrap_anchor_shape_seen {
+                if let PageItem::FullParagraph { para_index } | PageItem::PartialParagraph { para_index, .. } = item {
+                    if !wrap_around_set.contains(para_index) {
+                        if y_offset < wrap_pic_bottom_y {
+                            y_offset = wrap_pic_bottom_y;
+                        }
+                        wrap_pic_bottom_y = 0.0; // 한 번만 적용
+                    }
                 }
             }
 
@@ -2668,7 +2731,7 @@ impl LayoutEngine {
     ) -> f64 {
         let ColumnItemCtx {
             page_content, paragraphs, composed, styles, bin_data_content,
-            layout, col_area, ..
+            layout, col_area, wrap_around_paras, ..
         } = ctx;
         // Task #402: 같은 paragraph 안에 TAC 컨트롤(표/그림/도형) 2개 이상이 서로 다른 line에
         // 배치된 경우, 두 번째 이후의 그림은 paragraph 시작 y가 아니라 진행된 y_offset
@@ -2879,6 +2942,37 @@ impl LayoutEngine {
                                 bin_data_content, styles, alignment, pic_y,
                                 page_content.section_index, para_index, control_index,
                             );
+                            // Square wrap + Para-relative: 그림 높이로 column y를 밀지 않는다.
+                            // 텍스트는 그림 옆에 segment_width로 제어되어 흐르므로
+                            // 후속 문단은 앵커 단락 직후(shape item y_offset)부터 시작해야 한다.
+                            // layout_body_picture의 y_offset은 pic_y(=단락 시작 y)이므로
+                            // 반환값이 para_start_y로 거슬러 올라감 — 이를 shape item y로 복원.
+                            if matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
+                                && matches!(pic.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                            {
+                                result_y = y_offset;
+                            }
+                            // Picture Square wrap (어울림 그림): TABLE wrap과 동일하게
+                            // layout_wrap_around_paras를 호출하여 텍스트를 그림 옆에 배치.
+                            if !pic.common.treat_as_char
+                                && matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
+                            {
+                                let wrap_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
+                                let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                                if wrap_cs > 0 || wrap_sw > 0 {
+                                    let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
+                                    let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                                    self.layout_wrap_around_paras(
+                                        tree, col_node, paragraphs, composed, styles, col_area,
+                                        page_content.section_index,
+                                        para_index, wrap_around_paras,
+                                        pic_y, result_y,
+                                        wrap_text_x, wrap_text_width, 0.0,
+                                        bin_data_content,
+                                        None,
+                                    );
+                                }
+                            }
                         }
                     }
                 }
@@ -3060,12 +3154,10 @@ impl LayoutEngine {
             if wp.has_text {
                 // 텍스트 문단: composed paragraph를 사용하여 어울림 영역에 렌더링
                 let comp = composed.get(wp.para_index);
-                // 다중 LINE_SEG: wrap 영역에 해당하는 첫 줄만 렌더링
-                let end_line = if comp.map(|c| c.lines.len()).unwrap_or(1) > 1 {
-                    1
-                } else {
-                    comp.map(|c| c.lines.len()).unwrap_or(1)
-                };
+                // 어울림 문단의 전체 줄 렌더링.
+                // 표 어울림: 각 WrapAroundPara가 별도 1-줄 문단이므로 all_lines=1.
+                // 그림 어울림: 하나의 WrapAroundPara에 여러 줄이 포함될 수 있어 전체 렌더링.
+                let end_line = comp.map(|c| c.lines.len()).unwrap_or(1);
                 self.layout_partial_paragraph(
                     tree, col_node, para, comp, styles,
                     &wrap_area, para_y, 0, end_line,
@@ -3262,6 +3354,54 @@ impl LayoutEngine {
                     bin_data_content,
                     &overflow_map,
                 );
+            }
+            // 비-TAC Square wrap 그림/도형: 어울림 문단 렌더링.
+            // typeset.rs 경로에서 PaginationResult.wrap_around_paras는 항상 비어있으므로
+            // col_content.wrap_around_paras를 직접 사용해야 함.
+            // 용지 기준(page-relative) 그림도 어울림 텍스트는 body 기준 좌표로 렌더링.
+            {
+                let (opt_cm, opt_pic_h) = if let Some(ctrl) = paragraphs.get(para_index)
+                    .and_then(|p| p.controls.get(control_index))
+                {
+                    match ctrl {
+                        Control::Shape(shape) => {
+                            if let crate::model::shape::ShapeObject::Picture(pic) = shape.as_ref() {
+                                let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                (Some(&pic.common), h)
+                            } else { (None, 0.0) }
+                        }
+                        Control::Picture(pic) => {
+                            let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                            (Some(&pic.common), h)
+                        }
+                        _ => (None, 0.0),
+                    }
+                } else { (None, 0.0) };
+                if let Some(cm) = opt_cm {
+                    if !cm.treat_as_char && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square) {
+                        let wrap_cs = paragraphs.get(para_index)
+                            .and_then(|p| p.line_segs.first())
+                            .map(|s| s.column_start)
+                            .unwrap_or(0);
+                        let wrap_sw = paragraphs.get(para_index)
+                            .and_then(|p| p.line_segs.first())
+                            .map(|s| s.segment_width)
+                            .unwrap_or(0);
+                        if wrap_cs > 0 || wrap_sw > 0 {
+                            let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
+                            let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                            self.layout_wrap_around_paras(
+                                tree, col_node, paragraphs, composed, styles, col_area,
+                                page_content.section_index,
+                                para_index, &col_content.wrap_around_paras,
+                                para_y, para_y + opt_pic_h,
+                                wrap_text_x, wrap_text_width, 0.0,
+                                bin_data_content,
+                                None,
+                            );
+                        }
+                    }
+                }
             }
         }
     }

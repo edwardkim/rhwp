@@ -374,10 +374,13 @@ impl LayoutEngine {
         // y_offset 업데이트: Para 기준 그림만 높이만큼 진행
         // Page/Paper 기준 그림은 플로팅이므로 y_offset 변경 없음
         // Task #347: 글뒤로/글앞으로 그림은 본문 흐름을 점유하지 않으므로 y 미진행.
+        // base_y는 vert_offset이 적용된 실제 그림 상단 y이므로, base_y + total_height가
+        // 그림 하단 y가 된다. y_offset(앵커 단락 y) 대신 base_y를 기준으로 반환해야
+        // vert_offset이 있는 혼합 단락(텍스트+그림)에서 후속 단락이 그림 위로 겹치지 않는다.
         let total_height = pic_height + caption_height + if caption_height > 0.0 { caption_spacing } else { 0.0 };
         match (picture.common.vert_rel_to, picture.common.text_wrap) {
             (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
-            (VertRelTo::Para, _) => y_offset + total_height,
+            (VertRelTo::Para, _) => base_y + total_height,
             (VertRelTo::Page | VertRelTo::Paper, _) => y_offset,
         }
     }

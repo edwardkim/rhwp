@@ -9,6 +9,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - WebAssembly(WASM)로 빌드하여 웹브라우저에서 HWP 문서를 볼 수 있도록 함
 - 한컴 웹기안기의 오픈소스 대안
 
+### 파일 포맷별 파서 구조
+
+공통 문서 모델은 `src/model/document.rs`의 `Document` 구조체이다. 모든 포맷 파서는 이 하나의 `Document` IR로 변환하여 반환한다.
+
+| 포맷 | 파서 위치 | 출력 IR |
+|------|----------|---------|
+| HWPX (ZIP+XML) | `src/parser/hwpx/` | `Document` |
+| HWP5 (OLE 복합) | `src/parser/hwp5/` | `Document` |
+| HWP3 (고전 바이너리) | `src/parser/hwp3/` | `Document` |
+
+> 역사적으로 `Document` 모델은 HWP5 형식의 구조를 기반으로 설계되었으며, HWPX는 같은 의미의 XML 포맷이다. HWP3는 고전 포맷이지만 동일한 `Document` IR로 변환한다.
+
+**HWP3 파서 규칙**: `src/parser/hwp3/` 내부에서 HWP3 바이너리를 읽어 `Document` IR로 변환하여 반환한다. HWP3 전용 로직은 **반드시 `src/parser/hwp3/` 안에서만** 구현한다. 렌더러(`src/renderer/`), 레이아웃(`src/renderer/layout.rs`), 문서 코어(`src/document_core/`) 등 공통 모듈에 HWP3 전용 분기를 추가하지 않는다.
+
 ## 클로드 코드 사용 시 주의사항
 
 이 프로젝트는 **하이퍼-워터폴** 방법론을 적용한다. 클로드 코드의 기본 동작(빠른 실행, 자율 수정)과 충돌이 발생할 수 있으므로 반드시 숙지한다.

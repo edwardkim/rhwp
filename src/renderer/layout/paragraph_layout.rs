@@ -2888,13 +2888,13 @@ impl LayoutEngine {
                     num_str
                 };
 
-                // 각 줄의 텍스트에서 연속된 두 공백("  ")을 찾아 번호로 대체
-                // HWP/HWPX 모두 AutoNumber 위치에 공백 placeholder 삽입
+                // 각 줄의 텍스트에서 AutoNumber 위치를 찾아 번호로 대체
+                // HWP5/HWPX/HWP3 공통: 공백 두 개("  ") 패턴 탐색
                 for line in &mut composed.lines {
                     for run in &mut line.runs {
                         if let Some(pos) = run.text.find("  ") {
                             run.text = format!("{}{}{}", &run.text[..pos+1], num_str, &run.text[pos+1..]);
-                            return; // 첫 번째 발견 시 처리 완료
+                            return;
                         }
                     }
                 }
