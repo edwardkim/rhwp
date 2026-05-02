@@ -1494,7 +1494,20 @@ impl LayoutEngine {
                                 } else {
                                     // 지연 보정: 첫 보정 시점에서 기준점 산출
                                     // sequential y_offset에서 역산하여 기준 vpos 결정
-                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32;
+                                    //
+                                    // [Task #537] trailing-ls 보정:
+                                    // paragraph_layout 의 마지막 줄은 trailing line_spacing 을
+                                    // 제외하여 y 를 advance 한다 (Task #479, lh_sum + (n-1)*ls 정책).
+                                    // 그 결과 sequential y_offset 은 IR vpos 누적보다
+                                    // prev_pi 의 last seg ls 만큼 부족해진다.
+                                    // 이 부족분을 y_delta_hu 에 더해야 lazy_base 가
+                                    // IR 절대 좌표와 일치한다 (drift 가 base 에 동결되는 것을 방지).
+                                    let trailing_ls_hu = paragraphs.get(prev_pi)
+                                        .and_then(|p| p.line_segs.last())
+                                        .map(|s| s.line_spacing.max(0))
+                                        .unwrap_or(0);
+                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32
+                                        + trailing_ls_hu;
                                     let lazy_base = prev_vpos_end - y_delta_hu;
                                     // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                     // vpos 누적보다 크게 밀린 것 → 역산 무효
