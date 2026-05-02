@@ -6,6 +6,24 @@
 use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand, GradientFillInfo, PatternFillInfo, StrokeDash};
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType, ImageNode, FormObjectNode, ShapeTransform, BoundingBox};
 use super::composer::{CharOverlapInfo, pua_to_display_text, decode_pua_overlap_number};
+use super::pua_oldhangul::map_pua_old_hangul;
+
+/// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
+/// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
+fn expand_pua_old_hangul(text: &str) -> String {
+    if !text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
+        return text.to_string();
+    }
+    let mut out = String::with_capacity(text.len() * 2);
+    for ch in text.chars() {
+        if let Some(jamos) = map_pua_old_hangul(ch) {
+            out.extend(jamos.iter().copied());
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
 use crate::model::control::FormType;
 use super::layout::{compute_char_positions, split_into_clusters};
 use crate::model::style::{ImageFillMode, UnderlineType};
@@ -1860,6 +1878,9 @@ impl Renderer for SvgRenderer {
             .chars()
             .map(crate::renderer::layout::map_pua_bullet_char)
             .collect::<String>();
+        // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
+        // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
+        let text = &expand_pua_old_hangul(text);
 
         let color = color_to_svg(style.color);
         let font_size = if style.font_size > 0.0 { style.font_size } else { 12.0 };

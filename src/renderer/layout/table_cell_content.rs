@@ -13,7 +13,7 @@ use super::super::{hwpunit_to_px, TextStyle, ShapeStyle};
 use super::{LayoutEngine, CellContext, CellPathEntry};
 use super::border_rendering::{build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders};
 use super::text_measurement::{resolved_to_text_style, is_cjk_char, is_vertical_rotate_char, vertical_substitute_char};
-use super::utils::find_bin_data;
+use super::utils::{extract_shape_transform, find_bin_data};
 
 impl LayoutEngine {
     /// 세로쓰기 셀의 텍스트를 수직 방향으로 배치한다.
@@ -641,7 +641,7 @@ impl LayoutEngine {
                                     control_index: Some(ctrl_idx),
                                     fill_mode: None,
                                     original_size: None,
-                                    transform: ShapeTransform::default(),
+                                    transform: extract_shape_transform(&pic.shape_attr),
                                     crop: None,
                                     original_size_hu: None,
                                     effect: pic.image_attr.effect,

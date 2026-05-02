@@ -1545,7 +1545,12 @@ impl LayoutEngine {
                                             _ => inner_area.x,
                                         };
                                         if let Some(seg) = para.line_segs.get(target_line) {
-                                            tac_img_y = para_y_before_compose + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                            // [Task #520] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
+                                            // para_y_before_compose 에는 이미 ls[0].vpos 가 누적되어 있으므로
+                                            // 상대 오프셋(seg.vpos - ls[0].vpos)만 더해야 이중 합산을 피한다.
+                                            let first_vpos = para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
+                                            tac_img_y = para_y_before_compose
+                                                + hwpunit_to_px(seg.vertical_pos - first_vpos, self.dpi);
                                         }
                                     }
 
@@ -1629,7 +1634,12 @@ impl LayoutEngine {
                                         _ => inner_area.x,
                                     };
                                     if let Some(seg) = para.line_segs.get(target_line) {
-                                        tac_img_y = para_y_before_compose + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                        // [Task #520] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
+                                        // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
+                                        // 상대 오프셋만 더해야 한다 (Picture 분기와 동일).
+                                        let first_vpos = para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
+                                        tac_img_y = para_y_before_compose
+                                            + hwpunit_to_px(seg.vertical_pos - first_vpos, self.dpi);
                                     }
                                 }
                                 // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와

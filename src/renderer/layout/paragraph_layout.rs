@@ -13,7 +13,7 @@ use super::super::{TextStyle, ShapeStyle, TabStop, hwpunit_to_px, px_to_hwpunit,
 use super::{LayoutEngine, CellContext};
 use super::text_measurement::{resolved_to_text_style, estimate_text_width, compute_char_positions, extract_tab_leaders_with_extended, find_next_tab_stop};
 use super::border_rendering::create_border_line_nodes;
-use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data};
+use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data, extract_shape_transform};
 
 /// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
 /// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
@@ -1822,6 +1822,7 @@ impl LayoutEngine {
                                             effect: pic.image_attr.effect,
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
+                                            transform: extract_shape_transform(&pic.shape_attr),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2095,6 +2096,7 @@ impl LayoutEngine {
                                         effect: pic.image_attr.effect,
                                         brightness: pic.image_attr.brightness,
                                         contrast: pic.image_attr.contrast,
+                                        transform: extract_shape_transform(&pic.shape_attr),
                                         ..ImageNode::new(bin_data_id, image_data)
                                     }),
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2204,6 +2206,7 @@ impl LayoutEngine {
                                             effect: pic.image_attr.effect,
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
+                                            transform: extract_shape_transform(&pic.shape_attr),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
@@ -2970,6 +2973,19 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
             // KTX 회귀 origin — 한컴 PDF 시각 = · (Middle dot), ★ 아님
             // (작업지시자 정정 — 이전 ★ U+2605 매핑은 잘못)
             0xF02EF => '\u{00B7}', // · Middle dot
+            _ => ch,
+        };
+    }
+
+    // Supplementary PUA-A — 한컴 책괄호 / 예시 마커 (Task #528 exam_kor p17)
+    // exam_kor p17 측정: F0854/F0855 각 33회 (책 제목 둘러싸기), F00DA 2회
+    if (0xF00D0..=0xF09FF).contains(&code) {
+        return match code {
+            // 책괄호 (한국어 도서 제목) — 용비어천가, 석보상절, 월인천강지곡 등
+            0xF0854 => '\u{300A}', // 《 LEFT DOUBLE ANGLE BRACKET
+            0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
+            // 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 — 한컴 PDF 시각 검증 필요
+            0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 후 정정)
             _ => ch,
         };
     }
