@@ -13,7 +13,7 @@ use super::super::{TextStyle, ShapeStyle, TabStop, hwpunit_to_px, px_to_hwpunit,
 use super::{LayoutEngine, CellContext};
 use super::text_measurement::{resolved_to_text_style, estimate_text_width, compute_char_positions, extract_tab_leaders_with_extended, find_next_tab_stop};
 use super::border_rendering::create_border_line_nodes;
-use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data};
+use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data, extract_shape_transform};
 
 /// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
 /// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
@@ -1822,6 +1822,7 @@ impl LayoutEngine {
                                             effect: pic.image_attr.effect,
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
+                                            transform: extract_shape_transform(&pic.shape_attr),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2095,6 +2096,7 @@ impl LayoutEngine {
                                         effect: pic.image_attr.effect,
                                         brightness: pic.image_attr.brightness,
                                         contrast: pic.image_attr.contrast,
+                                        transform: extract_shape_transform(&pic.shape_attr),
                                         ..ImageNode::new(bin_data_id, image_data)
                                     }),
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2204,6 +2206,7 @@ impl LayoutEngine {
                                             effect: pic.image_attr.effect,
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
+                                            transform: extract_shape_transform(&pic.shape_attr),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
