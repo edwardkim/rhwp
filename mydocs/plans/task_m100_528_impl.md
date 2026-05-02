@@ -1,139 +1,252 @@
-# Task #528 구현계획서 — 옛한글 글리프 폴백 지원
+# Task #528 구현계획서 v2 — 옛한글 PUA 변환 (HncPUAConverter 정합)
 
-**작성일**: 2026-05-02
-**이슈**: [#528](https://github.com/edwardkim/rhwp/issues/528)
-**수행계획서**: `mydocs/plans/task_m100_528.md`
+**작성일**: 2026-05-02 (v1: 폰트 fallback / **v2: PUA 변환 본질**)
+**이슈**: [#528](https://github.com/edwardkim/rhwp/issues/528) (← #512 흡수)
+**수행계획서**: [task_m100_528.md](task_m100_528.md) v2
 
-## Stage 1 — 폰트 후보 검증 + 결정
+## Stage 1 — 본질 발견 + 매핑 표 자료원 조사 (완료)
 
-**목표**: exam_kor p17 옛한글 시퀀스를 본명조 (Source Han Serif K) 가 정상 합성하는지 사전 검증. 미커버 시 보조 폰트 (나눔명조 옛한글) 결합 검토.
+[Stage 1 보고서](../working/task_m100_528_stage1.md) — exam_kor p17 PUA 영역 본질 확정.
 
-### 1-1. exam_kor p17 옛한글 코드포인트 추출
-
-```bash
-cargo run --release --bin rhwp -- dump samples/exam_kor.hwp -s 1 -p 16 \
-  > /tmp/exam_kor_p17_dump.txt
-
-# 옛한글 영역 코드포인트 추출 (Python 스크립트)
-python3 -c "
-import re
-with open('/tmp/exam_kor_p17_dump.txt') as f:
-    text = f.read()
-codepoints = set()
-for ch in text:
-    cp = ord(ch)
-    if (0x1100 <= cp <= 0x11FF) or (0xA960 <= cp <= 0xA97F) or (0xD7B0 <= cp <= 0xD7FF):
-        codepoints.add(cp)
-for cp in sorted(codepoints):
-    print(f'U+{cp:04X} {chr(cp)!r}')
-" > /tmp/oldhangul_codepoints.txt
-```
-
-**산출물**: `/tmp/oldhangul_codepoints.txt` — exam_kor p17 에 등장하는 옛한글 코드포인트 + 빈도
-
-### 1-2. 본명조 다운로드 + 합자 검증
-
-```bash
-mkdir -p /tmp/font_eval && cd /tmp/font_eval
-
-# Source Han Serif K v2.003 (Adobe-Fonts/source-han-serif GitHub)
-curl -L -o SourceHanSerif-K.zip \
-  https://github.com/adobe-fonts/source-han-serif/releases/download/2.003R/01_SourceHanSerifKR.zip
-unzip SourceHanSerifKR.zip
-
-# 합자 피처 검증 (FontTools)
-python3 -m pip install fonttools --user --quiet
-python3 -c "
-from fontTools.ttLib import TTFont
-font = TTFont('SourceHanSerifKR-Regular.otf')
-gsub = font['GSUB'].table
-features = [f.FeatureTag for f in gsub.FeatureList.FeatureRecord]
-print('GSUB features:', sorted(set(features)))
-print('CCMP present:', 'ccmp' in features)
-print('LJMO/VJMO/TJMO present:', any(t in features for t in ['ljmo','vjmo','tjmo']))
-"
-```
-
-**검증 항목**:
-- GSUB 테이블에 `ccmp` (Glyph Composition/Decomposition) 피처 존재
-- 옛한글 합자 피처 `ljmo` (leading jamo), `vjmo` (vowel jamo), `tjmo` (trailing jamo) 또는 `nlc` (Non-finalized Letter) 존재
-- exam_kor p17 의 모든 옛한글 코드포인트가 폰트 cmap 에 매핑
-
-### 1-3. 비교 표 작성
-
-| 폰트 | 라이선스 | GSUB 합자 | exam_kor 커버리지 | 파일 크기 (subset) |
-|------|---------|-----------|-------------------|-------------------|
-| 본명조 (Source Han Serif K) | SIL OFL 1.1 | ? | ? / N | ? KB |
-| 나눔명조 옛한글 (대안) | SIL OFL 1.1 | ? | ? / N | ? KB |
-
-**의사결정**:
-- 본명조가 100% 커버 → 본명조 단독 채택
-- 본명조 미커버 시 → 나눔명조 옛한글 보조 + unicode-range 분리
-
-### 1-4. Stage 1 보고서
-
-```
-mydocs/working/task_m100_528_stage1.md
-```
-
-내용:
-- 수집한 옛한글 코드포인트 목록 (빈도 포함)
-- 본명조 검증 결과 (GSUB 피처 + cmap 커버리지)
-- 시각 검증 (FontForge 또는 HarfBuzz 로 합성 결과 캡처)
-- 폰트 결정 + 사유
-
-**승인 게이트**: Stage 1 보고서 작성 → 작업지시자 승인 → Stage 2 진행
+산출물:
+- `mydocs/working/task_m100_528_stage1.md`
+- 본 구현계획서 v2 + 수행계획서 v2
 
 ---
 
-## Stage 2 — Subset 추출 + WASM 빌드 통합
+## Stage 2 — 매핑 표 확보 + 변환 함수 구현
 
-**목표**: 결정된 폰트의 옛한글 영역만 추출하여 WASM 웹 빌드에 번들. `@font-face unicode-range` 로 lazy load.
+**목표**: PUA → KS X 1026-1:2007 자모 시퀀스 매핑 표 코드화 + 변환 함수.
 
-### 2-1. Subset 추출
+### 2-1. 오픈소스 자료원 조사
 
 ```bash
-mkdir -p /tmp/font_subset && cd /tmp/font_subset
+# (1) nuhwp / hwp.js / pyhwp / libhwp 등의 PUA 매핑 표 검색
+mkdir -p /tmp/oss_pua_eval
+cd /tmp/oss_pua_eval
 
-# pyftsubset 으로 옛한글 영역 + 합자 피처 보존
-pyftsubset /tmp/font_eval/SourceHanSerifKR-Regular.otf \
+# pyhwp
+git clone --depth 1 https://github.com/mete0r/pyhwp.git 2>&1 | tail -1
+grep -rn "PUA\|U+E\|0xE\|0xF8\|HncPUA\|pua_to" pyhwp/ 2>/dev/null | head -20
+
+# hwp.js
+git clone --depth 1 https://github.com/hahnlee/hwp.js.git 2>&1 | tail -1
+grep -rn "PUA\|U+E\|0xE\|HncPUA" hwp.js/ 2>/dev/null | head -20
+
+# 결과 → mydocs/tech/pua_oldhangul_mapping_sources.md 작성
+```
+
+**산출**: 발견 자료원 + 라이선스 정합 + 매핑 표 추출 가능성
+
+### 2-2. KS X 1026-1:2007 표준 자료 조사
+
+- 한국산업표준 ks 사이트 — KS X 1026-1:2007 부속서 확인 (유료)
+- ISO/IEC 10646 (Unicode) Hangul Jamo 영역 표준 정합
+- 한컴 매뉴얼 [hncpuaconverter.htm](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/hwp/Help/extracted/hwpbase/hncpuaconverter.htm) 본문 정독
+
+### 2-3. `gen-pua` 도구 보강
+
+기존 `src/main.rs::gen_pua_subcommand` (Task #509) 의 18 종 PUA 코드포인트에 본 task 의 25 종 추가:
+
+```rust
+// src/main.rs::gen_pua_subcommand
+let pua_old_hangul_set: Vec<u32> = vec![
+    // exam_kor p17 측정 영역 (Stage 1 보고서 §2-3)
+    0xE17A, 0xE1A7, 0xE1C2, 0xE288, 0xE38A, 0xE40A,
+    0xE474, 0xE560, 0xE566, 0xE79C, 0xE8A7, 0xE8B2,
+    0xE95B, 0xEB66, 0xEB68, 0xEBD4, 0xECF0, 0xECFB,
+    0xED41, 0xED98, 0xED9A, 0xF152, 0xF154, 0xF1C4, 0xF537,
+    // Supplementary PUA-A
+    0xF00DA, 0xF0854, 0xF0855,
+];
+```
+
+신규 서브명령 `gen-pua-oldhangul` 또는 기존 `gen-pua` 의 옵션:
+
+```bash
+rhwp gen-pua-oldhangul -o samples/pua-oldhangul-test.hwp
+# → 한컴 편집기에서 열어 PDF 캡처 → 정답지 영역
+```
+
+### 2-4. 매핑 표 코드화
+
+위치 결정: 기존 `composer.rs` 와 분리하여 신규 모듈 권장:
+
+```
+src/renderer/pua_oldhangul.rs  (신규)
+  - PUA_OLDHANGUL_MAP: phf::Map<char, &'static [char]>
+  - map_pua_old_hangul(ch: char) -> Option<&'static [char]>
+  - is_pua_old_hangul(ch: char) -> bool
+```
+
+매핑 표 형식:
+
+```rust
+// PUA → KS X 1026-1:2007 자모 시퀀스
+pub static PUA_OLDHANGUL_MAP: phf::Map<u32, &'static [char]> = phf::phf_map! {
+    0xE38Au32 => &['\u{1112}', '\u{1163}', '\u{11AB}'],  // 가설 예시 — 실제 매핑은 자료원 기반
+    // ...
+};
+```
+
+### 2-5. 단위 테스트
+
+```rust
+// tests/pua_oldhangul.rs
+#[test]
+fn test_exam_kor_p17_pua_codepoints_have_mappings() {
+    let exam_kor_pua = [0xE17A, 0xE38A, 0xF537, 0xF00DA, 0xF0854, 0xF0855, /* ... 25종 */];
+    for cp in exam_kor_pua {
+        let ch = char::from_u32(cp).unwrap();
+        assert!(map_pua_old_hangul(ch).is_some(), "PUA U+{:04X} 매핑 없음", cp);
+    }
+}
+
+#[test]
+fn test_no_collision_with_pua_bullet() {
+    // Task #509 의 map_pua_bullet_char 영역과 겹치지 않는지 검증
+    // ...
+}
+```
+
+### 2-6. Stage 2 보고서
+
+```
+mydocs/working/task_m100_528_stage2.md
+```
+
+내용:
+- 자료원 비교 (오픈소스 / KS 표준 / 폰트 cmap / gen-pua 검증)
+- 채택 매핑 표 + 코드 변경 요약
+- 단위 테스트 결과
+- 한컴 PDF 비교 (작업지시자 시각 검증)
+
+**승인 게이트**: Stage 2 보고서 → 승인 → Stage 3
+
+---
+
+## Stage 3 — Composer 단계 변환 적용
+
+**목표**: 렌더 직전 Composer 단계에서 PUA 변환. 1:N 길이 변환의 LINE_SEG 영향 정합.
+
+### 3-1. Composer 통합 위치
+
+`src/renderer/composer.rs::compose_paragraph` 내부에서 텍스트 런 단계 처리:
+
+```rust
+// 기존 (예시)
+fn compose_paragraph(...) -> ComposedParagraph {
+    // ...
+    convert_pua_enclosed_numbers(&mut composed);  // 기존 (Task #509 후속)
+    // ...
+}
+
+// 추가
+fn compose_paragraph(...) -> ComposedParagraph {
+    // ...
+    convert_pua_old_hangul(&mut composed);        // 신규 (본 task)
+    convert_pua_enclosed_numbers(&mut composed);  // 기존
+    // ...
+}
+```
+
+`convert_pua_old_hangul`: 각 텍스트 런에서 PUA 옛한글 char 를 자모 시퀀스로 치환. 글리프 폭 / char_offsets 갱신.
+
+### 3-2. 1:N 변환의 인덱스 영향
+
+PUA 1 char → N 자모 char 변환 시:
+- `char_offsets`: 자모 1개당 폭 vs 합자 후 폭 (Task #122 인프라 활용)
+- `line_break_char_idx` (Task #518): PUA char 위치 → 변환 후 자모 클러스터 시작 위치
+- `text_len`: 변경됨 → IR 보존 vs 변환 후 텍스트 분리
+
+**설계 결정**:
+- 옵션 A: 원본 PUA char 보존, 렌더 시점에만 자모로 합성 (display 분리)
+- 옵션 B: Composer 단계에서 IR 자체를 자모 시퀀스로 치환 (text 분리)
+
+옵션 A 추천 — char_offsets / line_break_char_idx 안정성. Task #122 의 자모 클러스터 처리는 `display_chars` 영역으로 정합.
+
+### 3-3. 자모 클러스터 폭 계산
+
+Task #122 의 `is_hangul()` / `is_cjk_char()` 가 이미 옛한글 자모 영역 (U+1100-11FF, U+A960-A97F, U+D7B0-D7FF) 처리. 폭 계산은 자모 클러스터 단위 (초성+중성+종성 = 1 음절 폭).
+
+PUA char 의 폭은 변환 후 자모 클러스터의 합자 폭과 정합해야 함:
+- 폰트가 합자 미지원 → 자모 개별 글리프 폭 합계 (visual artifact)
+- 폰트가 합자 지원 → 단일 음절 글리프 폭
+
+→ Stage 4 의 폰트 fallback 영향. 우선 자모 영역 폭으로 처리하고 Stage 4 에서 합자 폰트 보강.
+
+### 3-4. 단위 테스트 + integration_tests
+
+```rust
+// src/renderer/composer.rs (단위)
+#[test]
+fn test_convert_pua_old_hangul_text_run() {
+    let mut composed = /* ... PUA 옛한글 포함 paragraph ... */;
+    convert_pua_old_hangul(&mut composed);
+    // 자모 시퀀스로 치환됐는지 검증
+}
+
+// tests/issue_528.rs (integration)
+#[test]
+fn test_exam_kor_p17_old_hangul_renders() {
+    let svg = render_exam_kor_p17();
+    // 옛한글 영역 자모 시퀀스 출현 검증
+}
+```
+
+### 3-5. Stage 3 보고서
+
+```
+mydocs/working/task_m100_528_stage3.md
+```
+
+내용:
+- 옵션 A vs B 결정 + 사유
+- LINE_SEG 영향 분석
+- 단위 + integration 테스트 결과
+- 7 샘플 회귀 byte 비교
+
+**승인 게이트**: Stage 3 보고서 → 승인 → Stage 4
+
+---
+
+## Stage 4 — 폰트 fallback 보강
+
+**목표**: 변환 후 자모 영역 (U+1100-11FF, U+A960-A97F, U+D7B0-D7FF) 의 합자 렌더링용 폰트 fallback 보강.
+
+### 4-1. 합자 지원 폰트 검증
+
+Stage 3 변환 후 결과를 시각 확인:
+
+```bash
+target/release/rhwp export-svg samples/exam_kor.hwp -p 16 -o /tmp/svg_check
+# 브라우저에서 /tmp/svg_check/*.svg 열어 옛한글 영역 자모 합자 확인
+```
+
+- **Noto Serif KR** (기존 fallback 체인) — 합자 지원 여부 확인
+  - 미지원 시: 본명조 (Source Han Serif K) Old Hangul subset 도입 (v1 영역 일부 재활용)
+- **시스템 세리프** (AppleMyungjo 등) — 합자 미지원 → fallback 체인 우선순위 조정
+
+### 4-2. (조건부) 본명조 subset 추출
+
+Stage 1 의 v1 작업 정합:
+
+```bash
+pyftsubset SourceHanSerifKR-Regular.otf \
   --unicodes=U+1100-11FF,U+A960-A97F,U+D7B0-D7FF \
   --layout-features+=ccmp,ljmo,vjmo,tjmo \
   --output-file=SourceHanSerifK-OldHangul-subset.woff2 \
-  --flavor=woff2 \
-  --no-hinting
+  --flavor=woff2
 
-ls -lh SourceHanSerifK-OldHangul-subset.woff2
+# rhwp-studio/public/fonts/ + 브라우저 확장에 동봉
+# SourceHanSerifK-OFL.txt LICENSE 동봉
 ```
 
-**산출 검증**:
-- 파일 크기 < 1MB
-- `python3 -c "from fontTools.ttLib import TTFont; ..."` 로 GSUB 합자 보존 확인
-- 브라우저에서 실제 합자 렌더링 시각 확인
+### 4-3. fallback 체인 보강
 
-### 2-2. WASM 빌드 통합
+`src/renderer/style_resolver.rs::resolve_font_substitution` — Noto Serif KR 미지원 시 본명조 추가.
 
-번들 위치 (작업지시자 결정 사항 정합):
-
-```
-rhwp-studio/public/fonts/
-├── SourceHanSerifK-OldHangul-subset.woff2     # 본명조 subset
-└── SourceHanSerifK-OFL.txt                     # SIL OFL 1.1 라이선스
-```
-
-브라우저 확장 (rhwp-chrome / rhwp-firefox) 빌드 시 동일 폰트 + LICENSE 동봉:
-
-```
-rhwp-chrome/dist/fonts/
-rhwp-firefox/dist/fonts/
-```
-
-각 빌드 스크립트 (`rhwp-studio/vite.config.ts`, `rhwp-chrome/build.mjs`, `rhwp-firefox/build.mjs`) 의 정적 파일 복사 영역에 추가.
-
-### 2-3. CSS @font-face 등록
-
-`rhwp-studio/index.html` 또는 신규 `rhwp-studio/public/fonts/oldhangul.css`:
-
+CSS:
 ```css
 @font-face {
   font-family: "Source Han Serif K Old Hangul";
@@ -143,104 +256,19 @@ rhwp-firefox/dist/fonts/
 }
 ```
 
-브라우저 확장의 content-script CSS 에도 동일 등록.
-
-### 2-4. Stage 2 보고서
+### 4-4. Stage 4 보고서
 
 ```
-mydocs/working/task_m100_528_stage2.md
+mydocs/working/task_m100_528_stage4.md
 ```
 
-내용:
-- subset 파일 크기 측정값
-- WASM 빌드 페이로드 영향
-- 브라우저에서 합자 렌더링 시각 캡처 (작업지시자 검증용)
-
-**승인 게이트**: Stage 2 보고서 → 승인 → Stage 3
+**승인 게이트**: Stage 4 보고서 → 승인 → Stage 5
 
 ---
 
-## Stage 3 — fallback 체인 보강
+## Stage 5 — 광범위 회귀 + 시각 판정 + 최종 보고서
 
-**목표**: `style_resolver.rs::resolve_font_substitution` 의 한컴바탕/함초롬바탕 fallback 체인 말단에 본명조 추가. CSS unicode-range 가 옛한글 영역에서만 발동하도록 단일 진실 원천 구성.
-
-### 3-1. 코드 변경 — `src/renderer/style_resolver.rs`
-
-**변경 영역**: `resolve_font_substitution` 함수 (현재 라인 565-600 근방)
-
-**변경 내용**:
-- `lookup_font_name` 의 반환 폰트 이름 체인에 "Source Han Serif K Old Hangul" 추가
-- CSS 에서 `font-family: "한컴바탕", ..., "Noto Serif KR", "Source Han Serif K Old Hangul", serif` 형태로 사용되도록 출력 갱신
-
-**구체 변경 (예시 — Stage 1 결과 후 확정)**:
-
-```rust
-// resolve_font_substitution 내부
-"한컴바탕" | "함초롬바탕" => Some("함초롬바탕"),  // 기존
-// 후처리: 출력 SVG/Canvas 에서 폰트 체인을 다단계로 emit
-```
-
-실제 변경 위치는 SVG/Canvas 출력 측에서 `font-family` 체인을 확장하는 영역. Stage 1 의 코드 조사로 확정.
-
-### 3-2. 단위 테스트
-
-`src/renderer/style_resolver.rs` 의 기존 테스트 패턴 정합:
-
-```rust
-#[test]
-fn test_oldhangul_fallback_chain() {
-    // 옛한글 영역 코드포인트가 본명조 fallback 으로 이어지는지 검증
-    let result = resolve_font_substitution("한컴바탕", 0, 0);
-    assert!(result.is_some());
-    // ...
-}
-```
-
-### 3-3. 영향 범위 검증
-
-```bash
-# 변경 전 7 샘플 byte 비교
-./scripts/svg_regression_diff.sh build before
-
-# 변경 후
-./scripts/svg_regression_diff.sh build after
-./scripts/svg_regression_diff.sh diff before after
-```
-
-**기대 결과**: 변경 byte 0 (옛한글 영역 외 영향 없음). 변경 발생 시 Stage 4 회귀 분석.
-
-### 3-4. Stage 3 보고서
-
-```
-mydocs/working/task_m100_528_stage3.md
-```
-
-**승인 게이트**: 코드 변경 + 회귀 0 확인 → 승인 → Stage 4
-
----
-
-## Stage 4 — 문서화 + 회귀 검증
-
-**목표**: 본 작업의 디자인 결정과 운영 절차를 영구 문서화. 광범위 회귀 검증.
-
-### 4-1. `mydocs/tech/font_fallback_strategy.md` 갱신
-
-신규 섹션 "8. 옛한글 fallback 전략":
-
-- 본명조 채택 사유 (라이선스 + 합자 지원 + 검증 이력)
-- 번들 위치 + subset 절차 (재생성 방법)
-- `@font-face unicode-range` 작동 원리
-- Canvas 2D 의 unicode-range 한계 (FontFace API 보강 필요 시)
-
-### 4-2. `ttfs/FONTS.md` 갱신
-
-신규 섹션 "OFL 폰트 (웹 빌드 번들)":
-
-- 본 폰트는 `ttfs/` 정책 (Git 미포함) 의 예외
-- 웹 빌드 한정 번들 위치 (`rhwp-studio/public/fonts/`, `rhwp-{chrome,firefox}/public/fonts/`)
-- 라이선스 동봉 의무 (OFL 4조)
-
-### 4-3. 광범위 회귀 검증
+### 5-1. 광범위 회귀
 
 ```bash
 # 단위 테스트
@@ -253,114 +281,118 @@ cargo test --test svg_snapshot 2>&1 | tail -5
 cargo clippy --all-targets 2>&1 | tail -3
 
 # 7 샘플 byte 비교
+./scripts/svg_regression_diff.sh build before
+# (Stage 3 변경 후)
+./scripts/svg_regression_diff.sh build after
 ./scripts/svg_regression_diff.sh diff before after
 
-# WASM 빌드 페이로드 측정
-docker compose --env-file .env.docker run --rm wasm
-ls -lh pkg/rhwp_bg.wasm
-ls -lh rhwp-studio/public/fonts/
+# PUA 광범위 사용 샘플 점검
+# - synam-001 (PUA bullet — Task #509 영역)
+# - mel-001, kps-ai (PUA Supplementary)
+# - exam_kor (옛한글)
 ```
 
-### 4-4. Stage 4 보고서
+### 5-2. PUA 영역 충돌 검증
 
-```
-mydocs/working/task_m100_528_stage4.md
-```
+`map_pua_old_hangul` vs `map_pua_bullet_char` (Task #509) vs `convert_pua_enclosed_numbers` (테두리 숫자) — 영역 겹침 0 검증:
 
-**승인 게이트**: 모든 검증 통과 → 승인 → Stage 5
-
----
-
-## Stage 5 — 시각 판정 + 최종 보고서
-
-**목표**: 작업지시자 시각 판정 + 최종 보고서.
-
-### 5-1. 로컬 시각 판정
-
-```bash
-# 네이티브 SVG (--font-path 없이도 본명조 폰트 체인 작동 확인)
-cargo run --release --bin rhwp -- export-svg samples/exam_kor.hwp -p 16 -o /tmp/exam_kor_p17
-
-# 브라우저 (rhwp-studio)
-cd rhwp-studio
-npx vite --host 0.0.0.0 --port 7700 &
-# 브라우저에서 samples/exam_kor.hwp p17 로딩
+```rust
+#[test]
+fn test_pua_areas_disjoint() {
+    for cp in 0xE000..=0xF8FF {
+        let ch = char::from_u32(cp).unwrap();
+        let is_old_hangul = is_pua_old_hangul(ch);
+        let is_bullet = map_pua_bullet_char(ch).is_some();
+        let is_enclosed_num = pua_enclosed_border_type(ch).is_some();
+        let count = (is_old_hangul as u8) + (is_bullet as u8) + (is_enclosed_num as u8);
+        assert!(count <= 1, "PUA U+{:04X} 영역 충돌", cp);
+    }
+}
 ```
 
-### 5-2. PDF 비교
+### 5-3. 시각 판정
 
 ```
 samples/2010-exam_kor.pdf  (한컴 2010 — 작업지시자 환경)
-samples/2020-exam_kor.pdf  (한컴 2020 — 작업지시자 환경)
+samples/2020-exam_kor.pdf  (한컴 2020)
 samples/hancomdocs-exam_kor.pdf  (한컴독스 — 보조 ref)
 ```
 
-p17 의 옛한글 표기 (`'다'(되다)`, `'(혼자)'`, `'​​'` 등) 가 PDF 와 시각적으로 정합하는지 작업지시자가 직접 비교.
+p17 옛한글 표기 정합 시각 비교 — 작업지시자 ★ 판정.
 
-**메모리 정합** (`feedback_pdf_not_authoritative`):
-- 한컴 2010 / 2020 / 한컴독스 비교
-- 작업지시자 직접 시각 판정 게이트
+### 5-4. WASM 빌드 검증
 
-### 5-3. 최종 보고서
+```bash
+docker compose --env-file .env.docker run --rm wasm
+ls -lh pkg/rhwp_bg.wasm  # 페이로드 크기 측정
+ls -lh rhwp-studio/public/fonts/  # 폰트 자산 (Stage 4 도입 시)
+```
+
+### 5-5. 최종 보고서
 
 ```
 mydocs/report/task_m100_528_report.md
 ```
 
 내용:
-- 본질 정리
-- 정정 요약 (코드 + 폰트 + CSS 변경)
+- 본질 발견 (Stage 1) + 해결 영역 (Stage 2-4) 통합 정리
+- 매핑 표 출처 + 라이선스
+- Composer 통합 영역 + LINE_SEG 영향
+- 폰트 fallback 영역 (조건부)
 - 검증 게이트 통과 데이터
-- 시각 판정 결과 ★
-- 잔존 결함 (있을 경우)
-- 향후 운영 (subset 재생성 절차 등)
+- 시각 판정 ★
+- 향후 운영 — 새 PUA 코드 발견 시 매핑 표 확장 절차
 
-**승인 게이트**: 작업지시자 최종 승인 → 이슈 #528 close + orders 갱신 + local/devel merge
+### 5-6. 이슈 close
+
+```bash
+gh issue close 528 --repo edwardkim/rhwp --comment "Task #528 완료: PUA → KS X 1026-1:2007 자모 변환 + 폰트 fallback. 보고서: mydocs/report/task_m100_528_report.md"
+gh issue close 512 --repo edwardkim/rhwp --comment "Task #528 흡수 완료 — PUA 옛한글 변환 구현. #528 정합."
+```
 
 ---
 
-## 전체 진행 순서 (요약)
+## 전체 진행 순서
 
 ```
-Stage 1 (폰트 검증)        ─┐
-  └─ 보고서 → 승인 ────────│
-                            ↓
-Stage 2 (subset + 번들)    ─┐
-  └─ 보고서 → 승인 ────────│
-                            ↓
-Stage 3 (fallback 체인)    ─┐
-  └─ 보고서 → 승인 ────────│
-                            ↓
-Stage 4 (문서 + 회귀)      ─┐
-  └─ 보고서 → 승인 ────────│
-                            ↓
-Stage 5 (시각 판정)        ─┐
-  └─ 최종 보고서 → 승인 ──│
-                            ↓
-                      이슈 close + merge
+Stage 1 (완료) ─→ 작업지시자 승인 (현재)
+                    ↓
+Stage 2 (매핑 표 + 변환 함수)
+  └─ gen-pua + 한컴 PDF 검증 → 보고서 → 승인
+                    ↓
+Stage 3 (Composer 통합)
+  └─ LINE_SEG 영향 검증 → 보고서 → 승인
+                    ↓
+Stage 4 (폰트 fallback)
+  └─ 합자 검증 → 보고서 → 승인
+                    ↓
+Stage 5 (회귀 + 시각 판정)
+  └─ 최종 보고서 → 승인 → close
 ```
 
-## 회귀 / 리스크 요약 (수행계획서 갱신)
+## 회귀 / 리스크 요약
 
-| 단계 | 회귀 위험 | 완화책 |
-|------|----------|--------|
-| Stage 1 | 0 (조사만) | — |
-| Stage 2 | 0 (정적 자산 추가만) | WASM 페이로드 측정 |
-| Stage 3 | **중간** — fallback 체인 변경 | 7 샘플 byte 비교, 단위 테스트, unicode-range 격리 |
-| Stage 4 | 0 (문서) | — |
-| Stage 5 | 0 (검증) | — |
+| Stage | 회귀 위험 | 완화책 |
+|-------|----------|--------|
+| 1 | 0 (조사) | — |
+| 2 | 0 (자료 조사 + 함수 추가) | 단위 테스트 + 한컴 PDF 비교 |
+| **3** | **고** — Composer 변환 → 모든 렌더러 영향 | 7 샘플 byte 비교 + PUA 영역 충돌 검증 |
+| 4 | 중 — fallback 체인 변경 | unicode-range 격리 + 회귀 검증 |
+| 5 | 0 (검증) | — |
 
-핵심 회귀 영역: Stage 3. unicode-range 분리로 일반 한글 영역 영향 차단이 핵심.
+핵심 회귀: **Stage 3** — `convert_pua_old_hangul` 영역 격리 + Task #509 / `convert_pua_enclosed_numbers` 영역 분리가 핵심.
 
 ## 산출물 인덱스
 
 | 파일 | Stage |
 |------|-------|
 | `mydocs/working/task_m100_528_stage{1,2,3,4}.md` | 각 단계별 |
-| `mydocs/report/task_m100_528_report.md` | Stage 5 |
-| `rhwp-studio/public/fonts/SourceHanSerifK-OldHangul-subset.woff2` | Stage 2 |
-| `rhwp-studio/public/fonts/SourceHanSerifK-OFL.txt` | Stage 2 |
-| `rhwp-{chrome,firefox}/public/fonts/...` | Stage 2 |
-| `src/renderer/style_resolver.rs` (수정) | Stage 3 |
-| `mydocs/tech/font_fallback_strategy.md` (수정) | Stage 4 |
-| `ttfs/FONTS.md` (수정) | Stage 4 |
+| `mydocs/report/task_m100_528_report.md` | 5 |
+| `mydocs/tech/pua_oldhangul_mapping_sources.md` (신규) | 2 |
+| `src/renderer/pua_oldhangul.rs` (신규) | 2 |
+| `src/renderer/composer.rs` (수정) | 3 |
+| `src/main.rs` (gen-pua 보강) | 2 |
+| `tests/pua_oldhangul.rs` (신규) | 2 |
+| `tests/issue_528.rs` (신규) | 3 |
+| `rhwp-studio/public/fonts/SourceHanSerifK-OldHangul-subset.woff2` (조건부) | 4 |
+| `src/renderer/style_resolver.rs` (조건부 수정) | 4 |
