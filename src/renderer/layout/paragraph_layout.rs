@@ -15,6 +15,13 @@ use super::text_measurement::{resolved_to_text_style, estimate_text_width, compu
 use super::border_rendering::create_border_line_nodes;
 use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data};
 
+/// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
+/// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
+#[inline]
+pub(crate) fn layout_debug_enabled() -> bool {
+    std::env::var("RHWP_LAYOUT_DEBUG").map(|v| v == "1").unwrap_or(false)
+}
+
 /// lineseg baseline_distance를 폰트 어센트 기준으로 보정한다.
 /// CENTER 문단 수직정렬 등으로 baseline이 50% 이하로 설정된 경우,
 /// 텍스트 어센트(~80%)가 줄 박스 밖으로 넘치지 않도록 보장한다.
@@ -115,6 +122,31 @@ impl LayoutEngine {
                 None
             })
             .collect();
+
+        // [Task #517 Stage 1] RHWP_LAYOUT_DEBUG 진단 로깅
+        if layout_debug_enabled() {
+            eprintln!(
+                "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={}",
+                para_index, section_index, col_area.x, col_area.width, y_start, y,
+                spacing_before, spacing_after, margin_left, margin_right, alignment,
+                para.line_segs.len(), inline_tables.len(),
+            );
+            for (li, seg) in para.line_segs.iter().enumerate() {
+                eprintln!(
+                    "  LAYOUT_LS[{}]: vpos={} lh={} ls={} bl={} text_start={} sw={}",
+                    li, seg.vertical_pos, seg.line_height, seg.line_spacing,
+                    seg.baseline_distance, seg.text_start, seg.segment_width,
+                );
+            }
+            for (ti, (ci, tbl)) in inline_tables.iter().enumerate() {
+                eprintln!(
+                    "  LAYOUT_INLINE_TBL[{}]: ctrl_idx={} rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
+                    ti, ci, tbl.row_count, tbl.col_count,
+                    tbl.common.width, tbl.common.height,
+                    tbl.common.vert_align, tbl.common.horz_align, tbl.common.text_wrap,
+                );
+            }
+        }
 
         // 3. char_offsets 갭 분석으로 텍스트 세그먼트 분할
         // 확장 컨트롤은 8 UTF-16 코드 유닛을 차지
@@ -259,54 +291,47 @@ impl LayoutEngine {
             baseline_dist * 1.5
         };
 
-        // LINE_SEG 기반 줄 나눔 위치 결정:
-        // ls[1].text_start가 있으면 해당 UTF-16 위치에서 줄 나눔 (한컴 저장값 존재)
-        // ls[1]이 없으면 자체 right_margin 기반 줄 나눔 (동적 reflow)
-        let line_break_char_idx: Option<usize> = if para.line_segs.len() > 1 {
-            let ts = para.line_segs[1].text_start as u32;
-            // UTF-16 text_start를 char index로 변환 (제어문자 갭 보정)
-            // text_start는 제어문자 8 code unit 포함한 절대 UTF-16 위치
-            let mut utf16_pos = 0u32;
-            let mut ctrl_gap = 0u32;
-            // char_offsets에서 제어문자 갭 계산
-            if !para.char_offsets.is_empty() {
-                let first_offset = para.char_offsets[0];
-                ctrl_gap += first_offset; // 선행 컨트롤
-                for i in 1..para.char_offsets.len() {
-                    let prev_len = if text_chars[i-1] >= '\u{10000}' { 2u32 } else { 1 };
-                    let gap = para.char_offsets[i] - para.char_offsets[i-1];
-                    if gap > prev_len + 4 {
-                        ctrl_gap += gap - prev_len; // 중간 컨트롤 갭
+        // [Task #518 Phase 2] LINE_SEG 기반 줄 나눔 위치 결정:
+        // ls[1..] 의 text_start (raw UTF-16 위치, controls 포함) 를 char index 로 변환.
+        // char_offsets[i] = text_chars[i] 의 원본 UTF-16 위치 → char_offsets[i] >= ts 인 첫 i 가 break.
+        //
+        // 이전: ctrl_gap 을 paragraph 전체 controls 합으로 over-subtract → controls 가 있는
+        // paragraph 에서 saturating 0 으로 항상 break 미감지 (#496 케이스).
+        // 이전: ls[1] 만 사용. 다중 줄 paragraph 에서 ls[2..] 무시 → dynamic reflow.
+        let line_break_char_indices: Vec<usize> = if para.line_segs.len() > 1
+            && !para.char_offsets.is_empty()
+        {
+            let mut indices: Vec<usize> = Vec::new();
+            for ls in para.line_segs.iter().skip(1) {
+                let ts = ls.text_start as u32;
+                // char_offsets[i] >= ts 인 첫 i (= text_chars 의 break 위치)
+                let char_idx = para.char_offsets.iter().position(|&off| off >= ts)
+                    .unwrap_or(text_chars.len());
+                if char_idx > 0 && char_idx <= text_chars.len() {
+                    // 단조 증가 보장 (이전 break 보다 큰 경우에만 추가)
+                    if indices.last().map(|&prev| char_idx > prev).unwrap_or(true) {
+                        indices.push(char_idx);
                     }
                 }
             }
-            // text_start에서 ctrl_gap을 빼서 순수 텍스트 char index 추정
-            let text_only_ts = ts.saturating_sub(ctrl_gap);
-            // UTF-16 → char index 변환
-            let mut char_idx = 0usize;
-            let mut u16_accum = 0u32;
-            for (i, ch) in text_chars.iter().enumerate() {
-                if u16_accum >= text_only_ts {
-                    char_idx = i;
-                    break;
-                }
-                u16_accum += if *ch >= '\u{10000}' { 2 } else { 1 };
-                char_idx = i + 1;
-            }
-            if char_idx > 0 && char_idx <= text_chars.len() {
-                Some(char_idx)
-            } else {
-                None
-            }
+            indices
         } else {
-            None
+            Vec::new()
         };
+        if layout_debug_enabled() {
+            eprintln!(
+                "  LAYOUT_BREAK_INDICES: pi={} indices={:?} (from ls[1..])",
+                para_index, line_break_char_indices,
+            );
+        }
 
         let mut inline_x = start_x;
         let mut current_y = y;
         let mut table_idx = 0;
         let mut max_table_bottom = y; // 표의 최대 하단 y (표 높이를 줄 높이로 사용하기 위함)
         let mut wrapped_below_table = false; // 텍스트가 표 아래로 줄바꿈되었는지
+        // [Task #518] 다음 break 인덱스 (line_break_char_indices 안에서)
+        let mut next_break: usize = 0;
 
         for (s, e) in &segments {
             // 텍스트 세그먼트 렌더링 (줄바꿈 지원)
@@ -398,9 +423,13 @@ impl LayoutEngine {
                         let ch_w = estimate_text_width(&ch.to_string(), &ts);
 
                         // char_shape 변경 또는 줄바꿈 시 누적된 run을 출력
-                        // LINE_SEG 기반 줄 나눔: text_start 위치에서 강제 개행
-                        let need_wrap = if let Some(break_idx) = line_break_char_idx {
-                            ch_idx >= break_idx && !wrapped_below_table
+                        // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.
+                        // break 가 모두 소진되거나 미존재 시 right_margin 동적 reflow 로 fallback.
+                        let need_wrap = if next_break < line_break_char_indices.len()
+                            && ch_idx >= line_break_char_indices[next_break]
+                        {
+                            next_break += 1;
+                            true
                         } else {
                             inline_x + ch_w > right_margin + 0.5 && inline_x > line_start_x + 1.0
                         };
@@ -2598,15 +2627,23 @@ impl LayoutEngine {
             }
 
             col_node.children.push(line_node);
-            // 줄간격 적용:
+            // [Issue #479] 줄간격 적용:
             //   - 셀 내 마지막 문단의 마지막 줄: trailing line_spacing 제외
             //     (셀 높이 모델은 trailing 미포함, 셀 내부와 정합)
-            //   - 그 외 모든 줄(본문 단락의 마지막 줄 포함): trailing line_spacing 가산
-            //     pagination/engine.rs 의 current_height 누적(para_height = sum(lh+ls))
-            //     과 정합. (Task #452: 이전 #332 의 layout-only trailing 제외 →
-            //     pagination 과 1 ls drift 발생 → 회복)
+            //   - 본문(셀 외부) paragraph 의 마지막 줄(end == composed.lines.len()):
+            //     trailing line_spacing 제외 — HWP vpos 기준 paragraph 영역 = lh_sum + (n-1)*ls.
+            //     typeset.rs:802 의 total_height 와 정합.
+            //   - 셀 내부 비-마지막 paragraph: line_spacing 가산 (셀 안 paragraph 사이 정상 spacing 유지).
+            //   - 그 외 (paragraph 내 중간 줄 또는 PartialParagraph 의 비-끝 줄): line_spacing 가산
+            //
+            // 이전 Task #452 의 layout-only trailing 제외는 pagination 과 drift 를 만들었으나,
+            // 본 task #479 는 typeset.rs 의 누적도 함께 trailing 제외로 변경하여 정합.
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
+            let is_full_paragraph_end = line_idx + 1 >= end && end >= composed.lines.len();
             if is_cell_last_line && cell_ctx.is_some() {
+                y += line_height;
+            } else if is_full_paragraph_end && cell_ctx.is_none() {
+                // 셀 외부 paragraph 의 마지막 줄 (#479)
                 y += line_height;
             } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
