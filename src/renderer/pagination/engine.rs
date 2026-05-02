@@ -1071,16 +1071,28 @@ impl Paginator {
                         para_index: para_idx,
                         control_index: ctrl_idx,
                     });
-                    // 비-TAC 그림: 본문 공간을 차지하는 배치이면 높이 추가 (Task #10)
-                    if !pic.common.treat_as_char
-                        && matches!(pic.common.text_wrap,
-                            crate::model::shape::TextWrap::Square
-                            | crate::model::shape::TextWrap::TopAndBottom)
-                    {
+                    // 비-TAC 그림: 본문 공간을 차지하는 배치이면 높이 추가 (Task #10, #524)
+                    // - Square (어울림): 그림과 텍스트 줄이 같은 vertical 영역 공유
+                    //   → 그림 extent 가 텍스트 줄 높이를 초과하는 차이분만 가산
+                    // - TopAndBottom (위/아래): 그림이 별도 line block 차지 → 전체 가산
+                    if !pic.common.treat_as_char {
                         let pic_h = crate::renderer::hwpunit_to_px(pic.common.height as i32, self.dpi);
                         let margin_top = crate::renderer::hwpunit_to_px(pic.common.margin.top as i32, self.dpi);
                         let margin_bottom = crate::renderer::hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
-                        st.current_height += pic_h + margin_top + margin_bottom;
+                        let pic_total = pic_h + margin_top + margin_bottom;
+                        match pic.common.text_wrap {
+                            crate::model::shape::TextWrap::Square => {
+                                let lines_h: f64 = measured.get_measured_paragraph(para_idx)
+                                    .map(|m| m.line_heights.iter().sum())
+                                    .unwrap_or(0.0);
+                                let extra = (pic_total - lines_h).max(0.0);
+                                st.current_height += extra;
+                            }
+                            crate::model::shape::TextWrap::TopAndBottom => {
+                                st.current_height += pic_total;
+                            }
+                            _ => {}
+                        }
                     }
                 }
                 Control::Equation(_) => {

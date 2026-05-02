@@ -595,6 +595,11 @@ impl TypesetEngine {
                 }
             }
 
+            // 비-TAC Square wrap 그림의 anchor y 계산용 — typeset_paragraph 가
+            // current_height 에 본 문단 height_for_fit 을 더한 후 body_y 가 산출되면
+            // 문단 BOTTOM 기준으로 pic_top 이 잘못 계산되어 wrap_around_pic_bottom_px 가
+            // 문단 height 만큼 inflation 됨 (#524). 본 문단 TOP 위치를 미리 보존.
+            let para_top_y_for_pic_anchor = st.current_height;
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
                 let formatted = self.format_paragraph(para, composed.get(para_idx), styles);
@@ -671,7 +676,10 @@ impl TypesetEngine {
                             let pic_h_px = hwpunit_to_px(cm.height as i32, self.dpi);
                             let v_off_px = hwpunit_to_px(cm.vertical_offset as i32, self.dpi);
                             let body_y = if matches!(cm.vert_rel_to, VertRelTo::Para) {
-                                st.current_height + v_off_px
+                                // Para-relative: 문단 TOP 위치 기준 (#524)
+                                // typeset_paragraph 에서 height_for_fit 가 더해지기 전 값을 사용해야
+                                // 그림 anchor (vert_align=Top) 가 정확한 paragraph top 이 됨.
+                                para_top_y_for_pic_anchor + v_off_px
                             } else {
                                 // Paper/Page-relative: vertical_offset은 용지 상단 기준
                                 let body_top_px = st.layout.body_area.y;
