@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.9] - 2026-05-01
+
+라이브러리 버전 동기화. v0.7.8 후속 사이클 — Task #501 (cell.padding 한컴 방어 로직 모방 정정) + PR #428/#494/#478/#498 cherry-pick (외부 기여자 4명, 17 commits). 핵심 변경: 비정상 큰 cell padding (mel-001 셀 1700 HU vs 1280 HU) 의 한컴 동작 모방 가드, 그룹 내 그림 직렬화 (#428), Paragraph::utf16_pos_to_char_idx 외부 노출 (#484), 수식 토크나이저 prefix 분리 + 렌더러 italic (#488), 빈 텍스트 + TAC 수식 셀 alignment (#490), 각주 multi-paragraph line_spacing (#483), Picture+Square wrap LINE_SEG 적용 (#489), 셀 paragraph 인라인 Shape 분기 가드 (#495), wrap=Square 표 paragraph margin (#480), PartialParagraph 인라인 Shape 페이지 라우팅 (#476), Canvas visual diff 검증 인프라 (#498). 상세는 저장소 루트 CHANGELOG.md 참고.
+
 ## [0.7.8] - 2026-04-29
 
 라이브러리 버전 동기화. v0.7.7 후속 사이클 — 외부 컨트리뷰터 15 PR (cherry-pick) + 메인테이너 회귀 정정 3건 (#394, #416, #418) + 위키/README 정비. 핵심 변경: 그림 자동 크롭 공식 정정 (#430), TopAndBottom Picture chart 정정 (#409), 다단 vpos 보정 anchor (#412), heading-orphan vpos 보정 (#404), 동일 문단 inline TAC (#402), PageLayerTree generation API (#364). 상세는 저장소 루트 CHANGELOG.md 참고.

@@ -1,6 +1,6 @@
 {
   "name": "@rhwp/editor",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "HWP 에디터 웹 컴포넌트 — iframe 기반 임베드",
   "type": "module",
   "main": "index.js",

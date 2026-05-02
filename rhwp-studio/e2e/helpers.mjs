@@ -12,10 +12,36 @@
 import puppeteer from 'puppeteer-core';
 import { TestReporter } from './report-generator.mjs';
 
-const CHROME_PATH = '/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
+const CHROME_PATH = process.env.CHROME_PATH
+  || process.env.PUPPETEER_EXECUTABLE_PATH
+  || '/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 const REPORT_DIR = '../output/e2e';
+
+function sampleFetchPath(filename) {
+  const value = String(filename || '').trim();
+  if (!value || value.includes('\0') || value.includes('\\') || value.includes('?') || value.includes('#')) {
+    throw new Error(`잘못된 샘플 파일명: ${filename}`);
+  }
+  if (value.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)) {
+    throw new Error(`샘플 파일명은 /samples 하위 상대 경로여야 함: ${filename}`);
+  }
+  let decoded = value;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch {
+    throw new Error(`샘플 파일명 URL escape 오류: ${filename}`);
+  }
+  if (decoded !== value) {
+    throw new Error(`샘플 파일명은 percent-encoding 없이 전달해야 함: ${filename}`);
+  }
+  const parts = value.split('/');
+  if (parts.some(part => !part || part === '.' || part === '..')) {
+    throw new Error(`샘플 파일명이 /samples 밖으로 벗어날 수 있음: ${filename}`);
+  }
+  return `/samples/${parts.map(encodeURIComponent).join('/')}`;
+}
 
 /** CLI 인수에서 --mode=host|headless 파싱 */
 function parseMode() {
@@ -133,9 +159,10 @@ export async function createNewDocument(page) {
 
 /** HWP 파일을 fetch하여 문서 로드 + 캔버스 대기 */
 export async function loadHwpFile(page, filename) {
-  const result = await page.evaluate(async (fname) => {
+  const fetchPath = sampleFetchPath(filename);
+  const result = await page.evaluate(async ({ fname, url }) => {
     try {
-      const resp = await fetch(`/samples/${fname}`);
+      const resp = await fetch(url);
       if (!resp.ok) return { error: `HTTP ${resp.status}` };
       const buf = await resp.arrayBuffer();
       const docInfo = window.__wasm?.loadDocument(new Uint8Array(buf), fname);
@@ -145,7 +172,7 @@ export async function loadHwpFile(page, filename) {
     } catch (e) {
       return { error: e.message || String(e) };
     }
-  }, filename);
+  }, { fname: filename, url: fetchPath });
   if (result.error) throw new Error(`파일 로드 실패 (${filename}): ${result.error}`);
   await page.waitForSelector(CANVAS_SELECTOR, { timeout: 10000 });
   await page.evaluate(() => new Promise(r => setTimeout(r, 1500)));

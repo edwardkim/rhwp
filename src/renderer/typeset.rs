@@ -138,6 +138,11 @@ struct TypesetState {
     wrap_around_sw: i32,
     /// [Task #362] Square wrap 표가 있는 paragraph 인덱스 (WrapAroundPara 에 기록).
     wrap_around_table_para: usize,
+    /// 비-TAC Picture/Shape Square wrap: any_seg_matches만으로 후속 문단 판정 허용.
+    /// 그림의 lineseg는 첫 seg cs=0일 수 있어 전체 seg 중 하나라도 일치하면 흡수.
+    wrap_around_any_seg: bool,
+    /// Square wrap 그림의 본문 기준 하단 y (px). wrap zone 종료 시 current_height 하한으로 사용.
+    wrap_around_pic_bottom_px: f64,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -175,6 +180,8 @@ impl TypesetState {
             wrap_around_cs: -1,
             wrap_around_sw: -1,
             wrap_around_table_para: 0,
+            wrap_around_any_seg: false,
+            wrap_around_pic_bottom_px: 0.0,
             current_column_wrap_around_paras: Vec::new(),
         }
     }
@@ -483,7 +490,7 @@ impl TypesetEngine {
                 let sw0_match = st.wrap_around_sw == 0 && is_empty_para && para_sw > 0
                     && para_sw < body_w / 2;
                 if (para_cs == st.wrap_around_cs && para_sw == st.wrap_around_sw)
-                    || (any_seg_matches && is_empty_para)
+                    || (any_seg_matches && (is_empty_para || st.wrap_around_any_seg))
                     || sw0_match {
                     // 어울림 문단: 표 옆에 기록 + height 소비 없음
                     st.current_column_wrap_around_paras.push(
@@ -498,6 +505,12 @@ impl TypesetEngine {
                     // 매칭 실패 → wrap zone 종료, 정상 처리 진행
                     st.wrap_around_cs = -1;
                     st.wrap_around_sw = -1;
+                    st.wrap_around_any_seg = false;
+                    // Square wrap 그림 높이만큼 current_height 하한 보정
+                    if st.wrap_around_pic_bottom_px > 0.0 {
+                        st.current_height = st.current_height.max(st.wrap_around_pic_bottom_px);
+                        st.wrap_around_pic_bottom_px = 0.0;
+                    }
                 }
             }
 
@@ -616,6 +629,57 @@ impl TypesetEngine {
                             .map(|s| s.segment_width as i32)
                             .unwrap_or(0);
                         st.wrap_around_table_para = para_idx;
+                        st.wrap_around_any_seg = false;
+                    }
+                }
+            }
+            // 비-TAC Picture/Shape Square wrap: engine.rs:380-397 동일 시멘틱.
+            // 그림의 첫 lineseg cs가 0일 수 있어 any_seg_matches 허용 플래그 활성화.
+            if !has_table {
+                let has_non_tac_pic_square = para.controls.iter().any(|c| {
+                    let cm = match c {
+                        Control::Picture(p) => Some(&p.common),
+                        Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() { Some(&p.common) } else { None },
+                        _ => None,
+                    };
+                    cm.map(|cm| !cm.treat_as_char && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)).unwrap_or(false)
+                });
+                if has_non_tac_pic_square {
+                    let anchor_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
+                    let anchor_sw = para.line_segs.first().map(|s| s.segment_width as i32).unwrap_or(0);
+                    if anchor_cs > 0 || anchor_sw > 0 {
+                        st.wrap_around_cs = anchor_cs;
+                        st.wrap_around_sw = anchor_sw;
+                        st.wrap_around_table_para = para_idx;
+                        st.wrap_around_any_seg = true;
+                        // Square wrap 그림 하단 y(본문 기준) 계산 → wrap zone 종료 시 current_height 하한
+                        use crate::model::shape::VertRelTo;
+                        use crate::renderer::hwpunit_to_px;
+                        for ctrl in &para.controls {
+                            let cm = match ctrl {
+                                Control::Picture(p) if !p.common.treat_as_char
+                                    && matches!(p.common.text_wrap, crate::model::shape::TextWrap::Square) => &p.common,
+                                Control::Shape(s) => {
+                                    if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
+                                        if !p.common.treat_as_char && matches!(p.common.text_wrap, crate::model::shape::TextWrap::Square) {
+                                            &p.common
+                                        } else { continue; }
+                                    } else { continue; }
+                                }
+                                _ => continue,
+                            };
+                            let pic_h_px = hwpunit_to_px(cm.height as i32, self.dpi);
+                            let v_off_px = hwpunit_to_px(cm.vertical_offset as i32, self.dpi);
+                            let body_y = if matches!(cm.vert_rel_to, VertRelTo::Para) {
+                                st.current_height + v_off_px
+                            } else {
+                                // Paper/Page-relative: vertical_offset은 용지 상단 기준
+                                let body_top_px = st.layout.body_area.y;
+                                (v_off_px - body_top_px).max(0.0)
+                            };
+                            st.wrap_around_pic_bottom_px = body_y + pic_h_px;
+                            break;
+                        }
                     }
                 }
             }

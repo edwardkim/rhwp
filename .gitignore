@@ -67,12 +67,21 @@ README.public.md
 # 한컴 도움말 (저작권 보호)
 mydocs/manual/hwp/Help/
 
+# 개인 메모 영역 (작업지시자 전용, .gitkeep 만 tracked)
+mydocs/privacy/*
+!mydocs/privacy/.gitkeep
+
 # rhwp-vscode 빌드 산출물
 rhwp-vscode/media/rhwp.js
 rhwp-vscode/media/rhwp_bg.wasm
 
 # rhwp-chrome 빌드 산출물
 rhwp-chrome/dist/
+rhwp-chrome/*.zip
+
+# rhwp-firefox 빌드 산출물
+rhwp-firefox/dist/
+rhwp-firefox/*.zip
 
 # rhwp-safari 빌드 산출물
 rhwp-safari/dist/

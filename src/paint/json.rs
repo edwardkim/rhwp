@@ -289,8 +289,10 @@ impl PaintOp {
                 }
                 let _ = write!(
                     buf,
-                    ",\"effect\":{}",
-                    json_escape(image_effect_str(image.effect))
+                    ",\"effect\":{},\"brightness\":{},\"contrast\":{}",
+                    json_escape(image_effect_str(image.effect)),
+                    image.brightness,
+                    image.contrast
                 );
                 buf.push_str(",\"transform\":");
                 write_transform(buf, image.transform);
@@ -875,6 +877,8 @@ mod tests {
 
         let mut image = ImageNode::new(7, Some(vec![1, 2, 3]));
         image.effect = ImageEffect::BlackWhite;
+        image.brightness = -50;
+        image.contrast = 70;
 
         let tree = PageLayerTree::new(
             120.0,
@@ -936,6 +940,8 @@ mod tests {
         assert!(json.contains("\"connectorEndpoints\":{\"x1\":1.000"));
         assert!(json.contains("\"lineStyle\":"));
         assert!(json.contains("\"effect\":\"blackWhite\""));
+        assert!(json.contains("\"brightness\":-50"));
+        assert!(json.contains("\"contrast\":70"));
         assert!(json.contains("\"svgContent\":\"<text>x</text>\""));
         assert!(json.contains("\"type\":\"placeholder\""));
         assert!(json.contains("\"label\":\"OLE\""));

@@ -1,13 +1,15 @@
 {
   "name": "rhwp-studio",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "e2e": "node e2e/text-flow.test.mjs"
+    "e2e": "node e2e/text-flow.test.mjs",
+    "e2e:render-diff": "node e2e/canvas-render-diff.test.mjs --mode=headless",
+    "e2e:render-diff:ci": "node e2e/run-render-diff.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.40",
@@ -16,5 +18,8 @@
     "vite": "^8.0.10",
     "vite-plugin-pwa": "^1.2.0",
     "workbox-window": "^7.4.0"
+  },
+  "overrides": {
+    "serialize-javascript": "7.0.5"
   }
 }

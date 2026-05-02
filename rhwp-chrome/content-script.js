@@ -27,9 +27,9 @@
 
   // 확장 존재 알림
   document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
-  document.documentElement.setAttribute('data-hwp-extension-version', '0.2.1');
+  document.documentElement.setAttribute('data-hwp-extension-version', '0.2.2');
   window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
-    detail: { name: 'rhwp', version: '0.2.1', capabilities: ['preview', 'edit', 'print'] }
+    detail: { name: 'rhwp', version: '0.2.2', capabilities: ['preview', 'edit', 'print'] }
   }));
 
   // 개발자 도구 주입 (페이지 컨텍스트에 rhwpDev 노출)

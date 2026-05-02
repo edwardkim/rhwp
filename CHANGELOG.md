@@ -2,6 +2,65 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
+## [0.7.9] — 2026-05-01
+
+> v0.7.8 후속 사이클 — Task #501 (cell.padding 한컴 방어 로직) + PR #428/#494/#478/#498 cherry-pick + 외부 기여자 4명 흡수
+
+### 회귀 정정 (메인테이너)
+
+- **Task #501 — mel-001.hwp 2쪽 표 셀 높이 처리 회귀** (closes #501)
+  - 본질: HWP 셀 IR 의 `cell.padding.top + bottom > cell.height` 인 비정상 케이스 (mel-001 셀[21] r=2 c=2 "현 원": pad=(141,141,1700,1700), cell.h=1280 HU). HWPX `hasMargin="0"` 명시 정합.
+  - 회귀 origin: Task #347 의 `prefer_cell_axis` 가드가 비정상 padding 도 cell 우선 적용 → row_heights 거대 → TAC 표 비례 축소 (scale 0.45) → 행 12~20px 축소 + 셀 진입 결함.
+  - 정정: `resolve_cell_padding` 끝에 **한컴 자체 방어 로직 모방** 가드 추가 — pad_top + pad_bottom > cell.height 면 cell.height 의 절반까지 비례 축소. `measure_table_impl` 1-b단계도 동일 안전망.
+  - 작업지시자 통찰: *"이런 경우 한컴은 자체 방어로직으로 처리한다면?"* — Task #347 가드 (KTX 목차 R=1417 HU 정합) 보존 + 한컴 동작 모방 가드 추가
+  - 트러블슈팅 + 위키 ([HWP 셀 Padding 방어 로직](https://github.com/edwardkim/rhwp/wiki/HWP-%EC%85%80-Padding-%EB%B0%A9%EC%96%B4-%EB%A1%9C%EC%A7%81)) 작성
+
+### 외부 PR cherry-pick (3 건 / 17 commits)
+
+- **PR #428 그룹 내 그림(Picture) 직렬화 구현** (by [@oksure](https://github.com/oksure))
+  - `serialize_group_child` 의 `ShapeObject::Picture` 분기 (빈 TODO) 구현 — 그룹 내 그림이 포함된 HWP 저장 시 그림 데이터 유실 결함 정정
+  - SHAPE_COMPONENT + SHAPE_COMPONENT_PICTURE 레코드 추가 (Chart/OLE 자식과 동일 패턴) + 매직 상수 정리 (`tags::SHAPE_PICTURE_ID`)
+
+- **PR #494 Paragraph::utf16_pos_to_char_idx 외부 노출** (#484, by [@DanMeon](https://github.com/DanMeon))
+  - PR #405 와 같은 결의 외부 binding 작업 — `helpers::utf16_pos_to_char_idx` (pub(crate)) 의 알고리즘을 `Paragraph::utf16_pos_to_char_idx(&self, utf16_pos: u32) -> usize` (pub) 으로 캡슐화
+  - 단위 테스트 6건 추가, semver MINOR 영역 (+1 method, 알고리즘 변경 없음)
+
+- **PR #478 Layout 정합 + 수식 정정 합본** (by [@planet6897](https://github.com/planet6897))
+  - 9 Task / 97 commits 누적 PR 중 페이지 레이아웃 무관 영역 **7 Task / 10 commits** 분리 cherry-pick (5 단계 머지)
+  - **#488** (수식 토크나이저 폰트 스타일 prefix 분리 + svg/canvas 렌더러 italic honor) — 단위 테스트 14건 추가
+  - **#490** (빈 텍스트 + TAC 수식 셀 alignment 적용) — exam_science p1 셀 7/11 28/36 수식 중앙 정렬
+  - **#483** (각주 multi-paragraph line_spacing 정합 + trailing line_spacing follow-up)
+  - **#489** (Picture+Square wrap 호스트 paragraph 텍스트 LINE_SEG cs/sw 적용)
+  - **#495** (셀 paragraph 인라인 Shape 분기 가드 — 부분 정정, 잔존 [이슈 #502](https://github.com/edwardkim/rhwp/issues/502) 분리)
+  - **#480** (wrap=Square 표 paragraph margin x 좌표 반영)
+  - **#476** (PartialParagraph 인라인 Shape 페이지 라우팅, +881/-4)
+  - 미흡수: #479 (paragraph trailing line_spacing/HWP vpos) — 한컴 2020 정답지 시각 판정 필수, [이슈 #503](https://github.com/edwardkim/rhwp/issues/503) 분리
+
+### 회귀 검증 인프라 (외부 기여)
+
+- **PR #498 Canvas visual diff 파이프라인** (relates #364, by [@seo-rii](https://github.com/seo-rii))
+  - PR #456 (P2 PageLayerTree replay 전환) 후속 P3 검증 레이어 — rhwp-studio E2E 에 legacy Canvas vs PageLayerTree replay Canvas **픽셀 diff 자동 검증** + GitHub Actions Render Diff workflow 추가
+  - 7 commits 분리 (test + diagnostics + docs + CI runner + 보안 hardening 3건)
+  - 변경 영역: JS E2E + CI workflow + 문서 + Vite 설정 (Rust 변경 0)
+  - 기본 fixture 3개 (KTX/biz_plan/tac-case-001) 모두 0 diff 확인
+
+### 분리된 후속 이슈
+
+- [#502](https://github.com/edwardkim/rhwp/issues/502) — 문단 내 글상자 TextRun 처리 (Task #495 잔존 결함)
+- [#503](https://github.com/edwardkim/rhwp/issues/503) — Task #479 본질 정정 흡수 (한컴 2020 시각 판정 필수)
+
+### 위키 정합
+
+- [HWP 셀 Padding 방어 로직](https://github.com/edwardkim/rhwp/wiki/HWP-%EC%85%80-Padding-%EB%B0%A9%EC%96%B4-%EB%A1%9C%EC%A7%81) 신규
+- [한컴 PDF 환경 의존성](https://github.com/edwardkim/rhwp/wiki/%ED%95%9C%EC%BB%B4-PDF-%ED%99%98%EA%B2%BD-%EC%9D%98%EC%A1%B4%EC%84%B1) 정황 IV 추가 (21_언어_기출 한컴 2020 = rhwp 정답)
+
+### 검증
+
+- cargo test --lib 1086 → **1102 passed**
+- cargo test --test svg_snapshot 6/6, issue_418 1/1, issue_501 PASS (신규 통합 테스트)
+- cargo clippy --lib -- -D warnings 0건
+- WASM 4,206,487 bytes (Task #501) → 4,202,430 bytes (PR #478 5차 후) → 4,211,280 bytes (4차 #480 후)
+
 ## [0.7.8] — 2026-04-29
 
 > v0.7.7 후속 사이클 — 외부 컨트리뷰터 다수 + 메인테이너 회귀 정정 + 위키/README 정비

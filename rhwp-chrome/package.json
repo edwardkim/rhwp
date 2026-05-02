@@ -1,6 +1,6 @@
 {
   "name": "rhwp-chrome",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "rhwp HWP 뷰어 & 에디터 — Chrome/Edge 확장 프로그램",
   "license": "MIT",
   "private": true,

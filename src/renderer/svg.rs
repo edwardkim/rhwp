@@ -1847,10 +1847,13 @@ impl Renderer for SvgRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
-        // PUA 문자(U+F000~F0FF, Wingdings 등 심볼 폰트)를 유니코드 표준 문자로 변환
-        let text = &text.chars().map(|ch| {
-            crate::renderer::layout::map_pua_bullet_char(ch)
-        }).collect::<String>();
+        // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
+        // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 — 일반 텍스트도 PUA
+        // 변환 적용 (PR #251 정합). 매핑 표는 한컴 PDF 정답지 기준.
+        let text = &text
+            .chars()
+            .map(crate::renderer::layout::map_pua_bullet_char)
+            .collect::<String>();
 
         let color = color_to_svg(style.color);
         let font_size = if style.font_size > 0.0 { style.font_size } else { 12.0 };

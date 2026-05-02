@@ -15,6 +15,13 @@ use super::text_measurement::{resolved_to_text_style, estimate_text_width, compu
 use super::border_rendering::create_border_line_nodes;
 use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data, extract_shape_transform};
 
+/// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
+/// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
+#[inline]
+pub(crate) fn layout_debug_enabled() -> bool {
+    std::env::var("RHWP_LAYOUT_DEBUG").map(|v| v == "1").unwrap_or(false)
+}
+
 /// lineseg baseline_distance를 폰트 어센트 기준으로 보정한다.
 /// CENTER 문단 수직정렬 등으로 baseline이 50% 이하로 설정된 경우,
 /// 텍스트 어센트(~80%)가 줄 박스 밖으로 넘치지 않도록 보장한다.
@@ -115,6 +122,31 @@ impl LayoutEngine {
                 None
             })
             .collect();
+
+        // [Task #517 Stage 1] RHWP_LAYOUT_DEBUG 진단 로깅
+        if layout_debug_enabled() {
+            eprintln!(
+                "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={}",
+                para_index, section_index, col_area.x, col_area.width, y_start, y,
+                spacing_before, spacing_after, margin_left, margin_right, alignment,
+                para.line_segs.len(), inline_tables.len(),
+            );
+            for (li, seg) in para.line_segs.iter().enumerate() {
+                eprintln!(
+                    "  LAYOUT_LS[{}]: vpos={} lh={} ls={} bl={} text_start={} sw={}",
+                    li, seg.vertical_pos, seg.line_height, seg.line_spacing,
+                    seg.baseline_distance, seg.text_start, seg.segment_width,
+                );
+            }
+            for (ti, (ci, tbl)) in inline_tables.iter().enumerate() {
+                eprintln!(
+                    "  LAYOUT_INLINE_TBL[{}]: ctrl_idx={} rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
+                    ti, ci, tbl.row_count, tbl.col_count,
+                    tbl.common.width, tbl.common.height,
+                    tbl.common.vert_align, tbl.common.horz_align, tbl.common.text_wrap,
+                );
+            }
+        }
 
         // 3. char_offsets 갭 분석으로 텍스트 세그먼트 분할
         // 확장 컨트롤은 8 UTF-16 코드 유닛을 차지
@@ -259,54 +291,47 @@ impl LayoutEngine {
             baseline_dist * 1.5
         };
 
-        // LINE_SEG 기반 줄 나눔 위치 결정:
-        // ls[1].text_start가 있으면 해당 UTF-16 위치에서 줄 나눔 (한컴 저장값 존재)
-        // ls[1]이 없으면 자체 right_margin 기반 줄 나눔 (동적 reflow)
-        let line_break_char_idx: Option<usize> = if para.line_segs.len() > 1 {
-            let ts = para.line_segs[1].text_start as u32;
-            // UTF-16 text_start를 char index로 변환 (제어문자 갭 보정)
-            // text_start는 제어문자 8 code unit 포함한 절대 UTF-16 위치
-            let mut utf16_pos = 0u32;
-            let mut ctrl_gap = 0u32;
-            // char_offsets에서 제어문자 갭 계산
-            if !para.char_offsets.is_empty() {
-                let first_offset = para.char_offsets[0];
-                ctrl_gap += first_offset; // 선행 컨트롤
-                for i in 1..para.char_offsets.len() {
-                    let prev_len = if text_chars[i-1] >= '\u{10000}' { 2u32 } else { 1 };
-                    let gap = para.char_offsets[i] - para.char_offsets[i-1];
-                    if gap > prev_len + 4 {
-                        ctrl_gap += gap - prev_len; // 중간 컨트롤 갭
+        // [Task #518 Phase 2] LINE_SEG 기반 줄 나눔 위치 결정:
+        // ls[1..] 의 text_start (raw UTF-16 위치, controls 포함) 를 char index 로 변환.
+        // char_offsets[i] = text_chars[i] 의 원본 UTF-16 위치 → char_offsets[i] >= ts 인 첫 i 가 break.
+        //
+        // 이전: ctrl_gap 을 paragraph 전체 controls 합으로 over-subtract → controls 가 있는
+        // paragraph 에서 saturating 0 으로 항상 break 미감지 (#496 케이스).
+        // 이전: ls[1] 만 사용. 다중 줄 paragraph 에서 ls[2..] 무시 → dynamic reflow.
+        let line_break_char_indices: Vec<usize> = if para.line_segs.len() > 1
+            && !para.char_offsets.is_empty()
+        {
+            let mut indices: Vec<usize> = Vec::new();
+            for ls in para.line_segs.iter().skip(1) {
+                let ts = ls.text_start as u32;
+                // char_offsets[i] >= ts 인 첫 i (= text_chars 의 break 위치)
+                let char_idx = para.char_offsets.iter().position(|&off| off >= ts)
+                    .unwrap_or(text_chars.len());
+                if char_idx > 0 && char_idx <= text_chars.len() {
+                    // 단조 증가 보장 (이전 break 보다 큰 경우에만 추가)
+                    if indices.last().map(|&prev| char_idx > prev).unwrap_or(true) {
+                        indices.push(char_idx);
                     }
                 }
             }
-            // text_start에서 ctrl_gap을 빼서 순수 텍스트 char index 추정
-            let text_only_ts = ts.saturating_sub(ctrl_gap);
-            // UTF-16 → char index 변환
-            let mut char_idx = 0usize;
-            let mut u16_accum = 0u32;
-            for (i, ch) in text_chars.iter().enumerate() {
-                if u16_accum >= text_only_ts {
-                    char_idx = i;
-                    break;
-                }
-                u16_accum += if *ch >= '\u{10000}' { 2 } else { 1 };
-                char_idx = i + 1;
-            }
-            if char_idx > 0 && char_idx <= text_chars.len() {
-                Some(char_idx)
-            } else {
-                None
-            }
+            indices
         } else {
-            None
+            Vec::new()
         };
+        if layout_debug_enabled() {
+            eprintln!(
+                "  LAYOUT_BREAK_INDICES: pi={} indices={:?} (from ls[1..])",
+                para_index, line_break_char_indices,
+            );
+        }
 
         let mut inline_x = start_x;
         let mut current_y = y;
         let mut table_idx = 0;
         let mut max_table_bottom = y; // 표의 최대 하단 y (표 높이를 줄 높이로 사용하기 위함)
         let mut wrapped_below_table = false; // 텍스트가 표 아래로 줄바꿈되었는지
+        // [Task #518] 다음 break 인덱스 (line_break_char_indices 안에서)
+        let mut next_break: usize = 0;
 
         for (s, e) in &segments {
             // 텍스트 세그먼트 렌더링 (줄바꿈 지원)
@@ -398,9 +423,13 @@ impl LayoutEngine {
                         let ch_w = estimate_text_width(&ch.to_string(), &ts);
 
                         // char_shape 변경 또는 줄바꿈 시 누적된 run을 출력
-                        // LINE_SEG 기반 줄 나눔: text_start 위치에서 강제 개행
-                        let need_wrap = if let Some(break_idx) = line_break_char_idx {
-                            ch_idx >= break_idx && !wrapped_below_table
+                        // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.
+                        // break 가 모두 소진되거나 미존재 시 right_margin 동적 reflow 로 fallback.
+                        let need_wrap = if next_break < line_break_char_indices.len()
+                            && ch_idx >= line_break_char_indices[next_break]
+                        {
+                            next_break += 1;
+                            true
                         } else {
                             inline_x + ch_w > right_margin + 0.5 && inline_x > line_start_x + 1.0
                         };
@@ -2236,6 +2265,7 @@ impl LayoutEngine {
                 // (text_len=0 + ctrls=1+) 정렬이 무시되어 좌측 고정되던 결함 수정.
                 // exam_science p1 3번 표 (이온 결합 화합물) 셀 7/11 의 28/36 수식이
                 // 좌측 정렬 → 셀 ParaShape align 따라 중앙/우측 정렬 적용.
+                // [Task #489] effective_col_x 적용 (Picture+Square wrap LINE_SEG cs/sw 좁은 영역).
                 let line_tac_width: f64 = tac_offsets_px.iter()
                     .filter(|(pos, _, _)| *pos >= line_start_char && *pos < line_end_char)
                     .map(|(_, w, _)| *w)
@@ -2898,13 +2928,13 @@ impl LayoutEngine {
                     num_str
                 };
 
-                // 각 줄의 텍스트에서 연속된 두 공백("  ")을 찾아 번호로 대체
-                // HWP/HWPX 모두 AutoNumber 위치에 공백 placeholder 삽입
+                // 각 줄의 텍스트에서 AutoNumber 위치를 찾아 번호로 대체
+                // HWP5/HWPX/HWP3 공통: 공백 두 개("  ") 패턴 탐색
                 for line in &mut composed.lines {
                     for run in &mut line.runs {
                         if let Some(pos) = run.text.find("  ") {
                             run.text = format!("{}{}{}", &run.text[..pos+1], num_str, &run.text[pos+1..]);
-                            return; // 첫 번째 발견 시 처리 완료
+                            return;
                         }
                     }
                 }
@@ -2913,11 +2943,40 @@ impl LayoutEngine {
     }
 }
 
-/// HWP PUA 문자(0xF000~0xF0FF)를 표준 Unicode로 매핑
-/// 기준: Wingdings 폰트 → Unicode 매핑 (alanwood.net/demos/wingdings.html)
-/// HWP 글머리표는 Wingdings 폰트 문자를 PUA(0xF000+code)로 저장
+/// HWP PUA 문자를 표준 Unicode 로 매핑.
+///
+/// 두 영역 분기 — Task #509 정답지 매핑 표 정합:
+///
+/// **Basic PUA (0xF020~0xF0FF)** — Wingdings 폰트 PUA 영역.
+///   기준: Wingdings 폰트 → Unicode 매핑 (alanwood.net/demos/wingdings.html).
+///   HWP 글머리표는 Wingdings 폰트 문자를 PUA(0xF000+code)로 저장.
+///
+/// **Supplementary PUA-A (0xF02B0~0xF02FF)** — 한컴 자체 PUA 영역.
+///   원문자 (①~⑨, U+2460~U+2468) 와 별 (★ U+2605) 등을 본 영역에 저장.
+///   Task #509 의 한컴 PDF 정답지 시각 검증으로 매핑 확정.
 pub(crate) fn map_pua_bullet_char(ch: char) -> char {
     let code = ch as u32;
+
+    // Supplementary PUA-A — 한컴 자체 영역 (Task #509 한컴 정답지 정합)
+    if (0xF02B0..=0xF02FF).contains(&code) {
+        return match code {
+            // 원문자 ①~⑨ (mel-001 / kps-ai 사용 영역, 한컴 PDF 시각 검증)
+            0xF02B1 => '\u{2460}', // ①
+            0xF02B2 => '\u{2461}', // ②
+            0xF02B3 => '\u{2462}', // ③
+            0xF02B4 => '\u{2463}', // ④
+            0xF02B5 => '\u{2464}', // ⑤
+            0xF02B6 => '\u{2465}', // ⑥
+            0xF02B7 => '\u{2466}', // ⑦
+            0xF02B8 => '\u{2467}', // ⑧
+            0xF02B9 => '\u{2468}', // ⑨
+            // KTX 회귀 origin — 한컴 PDF 시각 = · (Middle dot), ★ 아님
+            // (작업지시자 정정 — 이전 ★ U+2605 매핑은 잘못)
+            0xF02EF => '\u{00B7}', // · Middle dot
+            _ => ch,
+        };
+    }
+
     if !(0xF020..=0xF0FF).contains(&code) {
         return ch;
     }
@@ -2939,7 +2998,9 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
         // 체크/별/점 (0x9E~0xAF)
         0x9E => '\u{00B7}', // · Middle dot
         0x9F => '\u{2022}', // • Bullet
-        0xA0 => '\u{25AA}', // ▪ Black small square
+        // [Task #509] 0xA0 → · U+00B7 (Middle dot) — 한컴 PDF 정답지 시각 정합.
+        // ▪ U+25AA (Black small square) 영역 아님 (synam-001 사용 영역).
+        0xA0 => '\u{00B7}', // · Middle dot
         0xA1 => '\u{26AA}', // ⚪ Medium white circle
         0xA2 => '\u{25CB}', // ○ (Heavy large circle → 근사값)
         0xA3 => '\u{25CB}', // ○ (Very heavy white circle → 근사값)
@@ -2963,6 +3024,10 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
         0xFD => '\u{2612}', // ☒ Ballot box with X (근사값)
         0xFE => '\u{2611}', // ☑ Ballot box with check (근사값)
         // 화살표 (0xEF~0xF8)
+        // [Task #509] 0xE8 → ➔ U+2794 (Heavy wide-headed rightwards arrow) —
+        // 한컴 PDF 정답지 시각 정합. ➤ U+27A4 (Black rightwards) 와 글리프 형태
+        // 차이 — 한컴은 wide-headed arrow 영역.
+        0xE8 => '\u{2794}', // ➔ Heavy wide-headed rightwards arrow
         0xEF => '\u{21E6}', // ⇦ Leftwards white arrow
         0xF0 => '\u{21E8}', // ⇨ Rightwards white arrow
         0xF1 => '\u{21E7}', // ⇧ Upwards white arrow
@@ -2987,4 +3052,49 @@ fn form_color_to_css(color: u32) -> String {
     let g = (color >> 8) & 0xFF;
     let r = color & 0xFF;
     format!("#{:02x}{:02x}{:02x}", r, g, b)
+}
+
+#[cfg(test)]
+mod pua_mapping_tests {
+    use super::map_pua_bullet_char;
+
+    #[test]
+    fn supplementary_pua_a_maps_circled_digits() {
+        // [Task #509] U+F02B1~F02B9 → U+2460~U+2468 (원문자 ①~⑨)
+        assert_eq!(map_pua_bullet_char('\u{F02B1}'), '\u{2460}', "①");
+        assert_eq!(map_pua_bullet_char('\u{F02B2}'), '\u{2461}', "②");
+        assert_eq!(map_pua_bullet_char('\u{F02B3}'), '\u{2462}', "③");
+        assert_eq!(map_pua_bullet_char('\u{F02B4}'), '\u{2463}', "④");
+        assert_eq!(map_pua_bullet_char('\u{F02B5}'), '\u{2464}', "⑤");
+        assert_eq!(map_pua_bullet_char('\u{F02B6}'), '\u{2465}', "⑥");
+        assert_eq!(map_pua_bullet_char('\u{F02B7}'), '\u{2466}', "⑦");
+        assert_eq!(map_pua_bullet_char('\u{F02B8}'), '\u{2467}', "⑧");
+        assert_eq!(map_pua_bullet_char('\u{F02B9}'), '\u{2468}', "⑨");
+    }
+
+    #[test]
+    fn supplementary_pua_a_maps_middle_dot() {
+        // [Task #509] U+F02EF → U+00B7 · Middle dot (KTX p10 표 회귀 origin)
+        // 한컴 PDF 시각 정답지: dot (·) — ★ 가 아님 (작업지시자 정정)
+        assert_eq!(map_pua_bullet_char('\u{F02EF}'), '\u{00B7}');
+    }
+
+    #[test]
+    fn basic_pua_arrow_e8() {
+        // [Task #509] U+0F0E8 → U+2794 ➔ (Heavy wide-headed rightwards arrow,
+        // 한컴 PDF 정답지 시각 정합)
+        assert_eq!(map_pua_bullet_char('\u{F0E8}'), '\u{2794}');
+    }
+
+    #[test]
+    fn supplementary_pua_a_unmapped_returns_original() {
+        // 매핑 표 외 영역은 원본 유지
+        assert_eq!(map_pua_bullet_char('\u{F0500}'), '\u{F0500}');
+    }
+
+    #[test]
+    fn basic_pua_outside_range_returns_original() {
+        // 0xF020~0xF0FF 외 Basic PUA 는 원본 유지 (예: U+0F53A 한글 "흔")
+        assert_eq!(map_pua_bullet_char('\u{F53A}'), '\u{F53A}');
+    }
 }

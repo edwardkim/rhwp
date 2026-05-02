@@ -69,9 +69,41 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - 웹 에디터 + hwpctl 호환 API (30 Actions, Field API)
 - 1,100+ 테스트
 
-#### devel — 진행 중 (2026-04-26)
+#### v0.7.9 사이클 (2026-05-01 ~ 2026-05-02)
 
-**v0.7.6 사이클 (외부 기여자 다수 + 조판 정밀화)**
+> Task #501 (cell.padding 한컴 방어 로직 모방) + Task #509 (PUA 글머리표 회귀) + PR #428/#494/#478/#498/#506/#510 cherry-pick + 외부 기여자 6명 흡수
+
+**회귀 정정 (메인테이너)**
+- mel-001.hwp 2쪽 표 셀 높이 회귀 정정 ([#501](https://github.com/edwardkim/rhwp/issues/501)) — 비정상 큰 cell.padding (1700 HU vs cell.height 1280 HU) 의 한컴 자체 방어 로직 모방 가드 추가. 트러블슈팅 + 위키 ([HWP 셀 Padding 방어 로직](https://github.com/edwardkim/rhwp/wiki/HWP-%EC%85%80-Padding-%EB%B0%A9%EC%96%B4-%EB%A1%9C%EC%A7%81)) 작성
+- PUA (Private Use Area) 글머리표 글리프 회귀 정정 ([#509](https://github.com/edwardkim/rhwp/issues/509)) — Option F (PR #251 draw_text 영역 보존 + 매핑 표 한컴 PDF 정답지 정확화). 정정 매핑 2건 + 신규 매핑 10건 + `gen-pua` 검증 도구 추가
+
+**외부 PR cherry-pick (5 건)**
+- 그룹 내 그림(Picture) 직렬화 구현 (외부 기여 by [@oksure](https://github.com/oksure) — PR [#428](https://github.com/edwardkim/rhwp/pull/428))
+- `Paragraph::utf16_pos_to_char_idx` 외부 노출 ([#484](https://github.com/edwardkim/rhwp/issues/484)) — 외부 기여 by [@DanMeon](https://github.com/DanMeon), PR [#494](https://github.com/edwardkim/rhwp/pull/494)
+- Layout 정합 + 수식 정정 합본 (7 Task / 10 commits — #488/#490/#483/#489/#495/#480/#476) — 외부 기여 by [@planet6897](https://github.com/planet6897), PR [#478](https://github.com/edwardkim/rhwp/pull/478)
+- HWP 3.0 파서 + Square wrap 어울림 렌더링 (Task #417 + Task #460, 51 commits) — 외부 기여 by [@jangster77](https://github.com/jangster77), PR [#506](https://github.com/edwardkim/rhwp/pull/506)
+- PageLayerTree image paint op 에 brightness/contrast JSON 필드 추가 ([#508](https://github.com/edwardkim/rhwp/issues/508)) — alhangeul-macos downstream 의 backend replay contract 보강. 외부 기여 by [@postmelee](https://github.com/postmelee), PR [#510](https://github.com/edwardkim/rhwp/pull/510)
+
+**회귀 검증 인프라 (외부 기여)**
+- Canvas visual diff 파이프라인 (legacy Canvas ↔ PageLayerTree replay 픽셀 diff 자동 검증, relates [#364](https://github.com/edwardkim/rhwp/issues/364)) — 외부 기여 by [@seo-rii](https://github.com/seo-rii), PR [#498](https://github.com/edwardkim/rhwp/pull/498)
+
+#### v0.7.8 사이클 (2026-04-29)
+
+> 외부 컨트리뷰터 다수 + 메인테이너 회귀 정정 + 위키/README 정비 — 외부 PR 15건 cherry-pick
+
+- 다단 섹션 누적 공식 회귀 정정 ([#391](https://github.com/edwardkim/rhwp/issues/391)) — 외부 기여 by [@planet6897](https://github.com/planet6897)
+- 수식 렌더링 개선 ([#174](https://github.com/edwardkim/rhwp/issues/174), [#175](https://github.com/edwardkim/rhwp/issues/175)) + 그림 밝기/대비 효과 ([#150](https://github.com/edwardkim/rhwp/issues/150)) — 외부 기여 by [@oksure](https://github.com/oksure)
+- 수식 ATOP 파싱 + HWPX 수식 직렬화 보존 ([#286](https://github.com/edwardkim/rhwp/issues/286)) — 외부 기여 by [@cskwork](https://github.com/cskwork) (본 저장소 첫 외부 컨트리뷰터)
+- Canvas → PageLayerTree replay 전환 P2 — 외부 기여 by [@seo-rii](https://github.com/seo-rii) (PR [#456](https://github.com/edwardkim/rhwp/pull/456))
+- WASM API 확장 (insertParagraph / deleteParagraph, [#269](https://github.com/edwardkim/rhwp/issues/269), [#271](https://github.com/edwardkim/rhwp/issues/271)) + set_field 라운드트립 정정 — 외부 기여 by [@oksure](https://github.com/oksure)
+
+#### v0.7.7 사이클 (2026-04-27)
+
+> v0.7.6 회귀 정정 — TypesetEngine 페이지네이션 fit drift / page_num 갱신 / PartialTable + Square wrap 처리 8항목 누적 정정 ([#354](https://github.com/edwardkim/rhwp/issues/354), [#359](https://github.com/edwardkim/rhwp/issues/359), [#361](https://github.com/edwardkim/rhwp/issues/361), [#362](https://github.com/edwardkim/rhwp/issues/362))
+
+#### v0.7.6 사이클 (2026-04-26)
+
+**외부 기여자 다수 + 조판 정밀화**
 - 목차 리더 도트 + 페이지번호 우측 탭 정렬 ([#279](https://github.com/edwardkim/rhwp/issues/279)) — 외부 기여 by [@seanshin](https://github.com/seanshin), PR [#282](https://github.com/edwardkim/rhwp/pull/282)
 - form-002 인너 표 페이지 분할 결함 ([#324](https://github.com/edwardkim/rhwp/issues/324)) — 외부 기여 by [@planet6897](https://github.com/planet6897), PR [#327](https://github.com/edwardkim/rhwp/pull/327)
 - typeset 경로 PageHide / Shape / 중복 emit 결함 ([#340](https://github.com/edwardkim/rhwp/issues/340)) — 외부 기여 by [@planet6897](https://github.com/planet6897), PR [#341](https://github.com/edwardkim/rhwp/pull/341)
@@ -107,7 +139,7 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - DEXT5 류 핸들러 다운로드 시 빈 뷰어 탭 차단
 
 **기여자 감사**
-이번 배포 주기에 기여해주신 분들: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@dreamworker0](https://github.com/dreamworker0), [@marsimon](https://github.com/marsimon), [@postmelee](https://github.com/postmelee), [@seunghan91](https://github.com/seunghan91)
+v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@cskwork](https://github.com/cskwork), [@DanMeon](https://github.com/DanMeon), [@dreamworker0](https://github.com/dreamworker0), [@jangster77](https://github.com/jangster77), [@marsimon](https://github.com/marsimon), [@oksure](https://github.com/oksure), [@planet6897](https://github.com/planet6897), [@postmelee](https://github.com/postmelee), [@seanshin](https://github.com/seanshin), [@seo-rii](https://github.com/seo-rii), [@seunghan91](https://github.com/seunghan91)
 
 ### v1.0.0 — 조판 엔진
 
@@ -182,6 +214,8 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - The layered SVG path is a transition adapter that expands `PageLayerTree` back into the existing SVG renderer.
 - Browser/native Canvas paths render through `PageLayerTree` replay by default.
 - Legacy Canvas remains available through `renderPageCanvasLegacy` / `renderPageToCanvasLegacy` for parity checks.
+- P3 visual regression coverage runs `npm run e2e:render-diff:ci` in `rhwp-studio` to compare legacy Canvas and layer Canvas in Chromium; CI uploads render-diff artifacts and writes a summary.
+- The default render-diff fixtures cover basic text/table output, business-document layout, and treat-as-char object placement; override with `RHWP_RENDER_DIFF_FILES`, `RHWP_RENDER_DIFF_MAX_PAGES`, or `RHWP_RENDER_DIFF_ALL=1`.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
 - This phase establishes the frontend/backend boundary for later CanvasKit and native Skia backends.

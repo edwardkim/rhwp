@@ -4,6 +4,65 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [0.7.9] — 2026-05-01
+
+> Post-v0.7.8 cycle — Task #501 (Hancom defensive logic for cell.padding) + cherry-pick of PR #428/#494/#478/#498 + 4 external contributors
+
+### Regression Fixes (Maintainer)
+
+- **Task #501 — mel-001.hwp page 2 table cell height regression** (closes #501)
+  - Root cause: HWP cell IR with `cell.padding.top + bottom > cell.height` (mel-001 cell[21] r=2 c=2 "현 원": pad=(141,141,1700,1700), cell.h=1280 HU). HWPX `hasMargin="0"` confirmed.
+  - Regression origin: Task #347's `prefer_cell_axis` guard applied cell-priority even for abnormal padding → row_heights inflated → TAC table proportional shrink (scale 0.45) → all rows reduced to 12-20px + cell entry failure.
+  - Fix: Added **Hancom-defensive-logic mimic** guard at the end of `resolve_cell_padding` — if pad_top + pad_bottom > cell.height, scale them down proportionally to half of cell.height. Added the same guard in `measure_table_impl` step 1-b as a safety net.
+  - Maintainer insight: *"What if Hancom handles this case with its own defensive logic?"* — Preserved Task #347 guard (KTX TOC R=1417 HU compatibility) + added Hancom-behavior-mimic guard
+  - Wrote troubleshooting and wiki page ([HWP Cell Padding Defensive Logic](https://github.com/edwardkim/rhwp/wiki/HWP-%EC%85%80-Padding-%EB%B0%A9%EC%96%B4-%EB%A1%9C%EC%A7%81))
+
+### External PR Cherry-picks (3 PRs / 17 commits)
+
+- **PR #428 — Picture serialization within group** (by [@oksure](https://github.com/oksure))
+  - Implemented the empty-TODO `ShapeObject::Picture` branch in `serialize_group_child` — fixes data loss for pictures inside groups when saving HWP
+  - Added SHAPE_COMPONENT + SHAPE_COMPONENT_PICTURE records (matching Chart/OLE child pattern) + magic constant cleanup (`tags::SHAPE_PICTURE_ID`)
+
+- **PR #494 — Paragraph::utf16_pos_to_char_idx public API** (#484, by [@DanMeon](https://github.com/DanMeon))
+  - External binding work in the same vein as PR #405 — encapsulated `helpers::utf16_pos_to_char_idx` (pub(crate)) algorithm as `Paragraph::utf16_pos_to_char_idx(&self, utf16_pos: u32) -> usize` (pub)
+  - 6 unit tests added, semver MINOR-compatible scope (+1 method, no algorithm change)
+
+- **PR #478 — Layout/equation fixes bundled** (by [@planet6897](https://github.com/planet6897))
+  - From the 9-Task / 97-commit accumulated PR, cherry-picked **7 Tasks / 10 commits** that don't directly affect page layout (5-stage merge)
+  - **#488** (equation tokenizer font-style keyword prefix split + svg/canvas renderer italic honor) — 14 unit tests added
+  - **#490** (alignment for empty-text + TAC equation cells) — exam_science p1 cells 7/11 with 28/36 equation now centered
+  - **#483** (footnote multi-paragraph line_spacing + trailing line_spacing follow-up)
+  - **#489** (Picture+Square wrap host paragraph text LINE_SEG cs/sw applied)
+  - **#495** (cell paragraph inline-Shape branch guard — partial fix; remainder split into [issue #502](https://github.com/edwardkim/rhwp/issues/502))
+  - **#480** (wrap=Square table paragraph margin reflected in x coordinate)
+  - **#476** (PartialParagraph inline Shape page routing, +881/-4)
+  - Not absorbed: #479 (paragraph trailing line_spacing / HWP vpos) — requires Hancom 2020 reference visual verification, split into [issue #503](https://github.com/edwardkim/rhwp/issues/503)
+
+### Regression Verification Infrastructure (External)
+
+- **PR #498 — Canvas visual diff pipeline** (relates #364, by [@seo-rii](https://github.com/seo-rii))
+  - Follow-up P3 verification layer for PR #456 (P2 PageLayerTree replay transition) — added rhwp-studio E2E with **automated pixel-diff comparison** of legacy Canvas vs PageLayerTree replay Canvas + GitHub Actions Render Diff workflow
+  - 7 commits split (test + diagnostics + docs + CI runner + 3 security hardening)
+  - Scope: JS E2E + CI workflow + docs + Vite config (zero Rust changes)
+  - Confirmed 0 diff on the 3 default fixtures (KTX / biz_plan / tac-case-001)
+
+### Split Follow-up Issues
+
+- [#502](https://github.com/edwardkim/rhwp/issues/502) — Inline TextBox TextRun handling within a paragraph (Task #495 remainder)
+- [#503](https://github.com/edwardkim/rhwp/issues/503) — Task #479 essential fix absorption (requires Hancom 2020 reference visual verification)
+
+### Wiki Updates
+
+- [HWP Cell Padding Defensive Logic](https://github.com/edwardkim/rhwp/wiki/HWP-%EC%85%80-Padding-%EB%B0%A9%EC%96%B4-%EB%A1%9C%EC%A7%81) (new)
+- [Hancom PDF Environment Dependency](https://github.com/edwardkim/rhwp/wiki/%ED%95%9C%EC%BB%B4-PDF-%ED%99%98%EA%B2%BD-%EC%9D%98%EC%A1%B4%EC%84%B1) — added Case IV (21_언어_기출: Hancom 2020 = rhwp output)
+
+### Verification
+
+- cargo test --lib 1086 → **1102 passed**
+- cargo test --test svg_snapshot 6/6, issue_418 1/1, issue_501 PASS (new integration test)
+- cargo clippy --lib -- -D warnings 0 warnings
+- WASM 4,206,487 bytes (after Task #501) → 4,202,430 bytes (after PR #478 5th merge) → 4,211,280 bytes (after #480)
+
 ## [0.7.8] — 2026-04-29
 
 > Post-v0.7.7 cycle — multiple external contributors, maintainer regression fixes, and wiki/README organization

@@ -71,6 +71,29 @@ Foundation  Typeset   Collab    Complete
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
 - 1,100+ tests
 
+#### v0.7.9 Cycle (2026-05-01)
+
+> Task #501 (Hancom defensive logic for cell.padding) + cherry-pick of PR #428/#494/#478/#498 + 4 external contributors
+
+**Maintainer Regression Fix**
+- mel-001.hwp page 2 table cell height regression ([#501](https://github.com/edwardkim/rhwp/issues/501)) — added a Hancom-defensive-logic mimic guard for the case where `cell.padding > cell.height` (1700 HU vs 1280 HU). Wrote troubleshooting and wiki ([HWP Cell Padding Defensive Logic](https://github.com/edwardkim/rhwp/wiki/HWP-%EC%85%80-Padding-%EB%B0%A9%EC%96%B4-%EB%A1%9C%EC%A7%81))
+
+**External PR Cherry-picks (3 PRs / 17 commits)**
+- Picture serialization within group (external contribution by [@oksure](https://github.com/oksure) — PR [#428](https://github.com/edwardkim/rhwp/pull/428))
+- `Paragraph::utf16_pos_to_char_idx` public API ([#484](https://github.com/edwardkim/rhwp/issues/484)) — external contribution by [@DanMeon](https://github.com/DanMeon), PR [#494](https://github.com/edwardkim/rhwp/pull/494)
+- Layout/equation fixes bundled (7 Tasks / 10 commits — #488/#490/#483/#489/#495/#480/#476) — external contribution by [@planet6897](https://github.com/planet6897), PR [#478](https://github.com/edwardkim/rhwp/pull/478)
+
+**Regression Verification Infrastructure (External)**
+- Canvas visual diff pipeline (legacy Canvas ↔ PageLayerTree replay automated pixel diff, relates [#364](https://github.com/edwardkim/rhwp/issues/364)) — external contribution by [@seo-rii](https://github.com/seo-rii), PR [#498](https://github.com/edwardkim/rhwp/pull/498)
+
+#### v0.7.8 Cycle (2026-04-29)
+
+> Multiple external contributors + maintainer regression fixes + wiki/README organization — 15 external PRs cherry-picked
+
+#### v0.7.7 Cycle (2026-04-27)
+
+> v0.7.6 regression fix cycle — TypesetEngine pagination drift / page_num refresh / PartialTable + Square wrap (8 items consolidated)
+
 #### Recent Changes (v0.7.3 / extension v0.2.1, 2026-04-21)
 
 **rhwp-studio (library 0.7.3)**
@@ -106,7 +129,7 @@ Foundation  Typeset   Collab    Complete
 - Content-script `init()` gate split to honor hoverPreview / autoOpen independently from showBadges (external contribution by [@postmelee](https://github.com/postmelee) — PR [#224](https://github.com/edwardkim/rhwp/pull/224))
 
 **Thanks to contributors**
-This release cycle: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@dreamworker0](https://github.com/dreamworker0), [@marsimon](https://github.com/marsimon), [@postmelee](https://github.com/postmelee), [@seunghan91](https://github.com/seunghan91), [@seo-rii](https://github.com/seo-rii), [@planet6897](https://github.com/planet6897), [@yl-star7](https://github.com/yl-star7)
+v0.7.x cycle cumulative external contributors: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@cskwork](https://github.com/cskwork), [@DanMeon](https://github.com/DanMeon), [@dreamworker0](https://github.com/dreamworker0), [@marsimon](https://github.com/marsimon), [@oksure](https://github.com/oksure), [@planet6897](https://github.com/planet6897), [@postmelee](https://github.com/postmelee), [@seanshin](https://github.com/seanshin), [@seo-rii](https://github.com/seo-rii), [@seunghan91](https://github.com/seunghan91), [@yl-star7](https://github.com/yl-star7)
 
 ### v1.0.0 — Typesetting Engine
 
@@ -183,6 +206,8 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - The layered SVG path is a transition adapter that expands `PageLayerTree` back into the existing SVG renderer.
 - Browser/native Canvas paths render through `PageLayerTree` replay by default.
 - Legacy Canvas remains available through `renderPageCanvasLegacy` / `renderPageToCanvasLegacy` for parity checks.
+- P3 visual regression coverage runs `npm run e2e:render-diff:ci` in `rhwp-studio` to compare legacy Canvas and layer Canvas in Chromium; CI uploads render-diff artifacts and writes a summary.
+- The default render-diff fixtures cover basic text/table output, business-document layout, and treat-as-char object placement; override with `RHWP_RENDER_DIFF_FILES`, `RHWP_RENDER_DIFF_MAX_PAGES`, or `RHWP_RENDER_DIFF_ALL=1`.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
 - This phase establishes the frontend/backend boundary for later CanvasKit and native Skia backends.
