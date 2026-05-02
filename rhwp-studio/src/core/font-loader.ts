@@ -11,6 +11,8 @@ interface FontEntry {
   file: string;
   /** woff2(기본) 또는 woff — CDN woff 파일용 */
   format?: 'woff2' | 'woff';
+  /** CSS unicode-range — 지정 시 해당 코드포인트만 매칭, 다운로드도 해당 영역 사용 시에만 발생 */
+  unicodeRange?: string;
 }
 
 // 함초롬체 CDN (눈누 jsdelivr — 비상업적 사용 허용, 한컴 라이선스)
@@ -97,6 +99,14 @@ const FONT_LIST: FontEntry[] = [
   // === Gowun (OFL, 로컬) ===
   { name: '고운바탕', file: 'fonts/GowunBatang-Regular.woff2' },
   { name: '고운돋움', file: 'fonts/GowunDodum-Regular.woff2' },
+  // === Source Han Serif K Old Hangul (Task #528, OFL, 로컬, 옛한글 자모 한정 subset) ===
+  // PUA 옛한글 (HanCom 자체 인코딩) 을 KS X 1026-1:2007 자모 시퀀스로 변환 후
+  // 합자 렌더링용. unicode-range 로 옛한글 영역에서만 매칭 → 일반 한글 영향 0.
+  {
+    name: 'Source Han Serif K Old Hangul',
+    file: 'fonts/SourceHanSerifK-OldHangul-subset.woff2',
+    unicodeRange: 'U+1100-11FF, U+A960-A97F, U+D7B0-D7FF',
+  },
 ];
 
 /** @font-face에 등록된 폰트 이름 Set */
@@ -167,7 +177,8 @@ export async function loadWebFonts(
     const style = document.createElement('style');
     style.textContent = FONT_LIST.map(f => {
       const fmt = f.format ?? 'woff2';
-      return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap; }`;
+      const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
+      return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap;${ur} }`;
     }).join('\n');
     document.head.appendChild(style);
     fontFaceRegistered = true;
