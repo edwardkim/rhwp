@@ -585,4 +585,76 @@ mod tests {
             "layer SVG는 표 샘플에서 legacy SVG와 동일해야 함"
         );
     }
+
+    /// Task #537: TAC `<보기>` 표 직후 첫 답안(①) → 다음 답안(②) gap 이
+    /// IR `LINE_SEG.vpos` delta 와 일치해야 한다.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 2 의 3번 문제 답안:
+    ///   pi=37 = TAC <보기> 표
+    ///   pi=38 = ① 답 (3 라인, lh=1100, ls=716)
+    ///   pi=39 = ② 답 (3 라인, lh=1100, ls=716)
+    ///   pi=40 = ③ 답 (2 라인)
+    ///
+    /// IR vpos delta:
+    ///   pi=38→pi=39: 5448 HU = 72.64 px (= 3*(lh+ls))
+    ///   pi=39→pi=40: 5448 HU = 72.64 px
+    ///
+    /// 버그(수정 전): lazy_base 가 sequential drift(trailing-ls 제외) 를
+    /// 동결시켜 pi=39 부터 IR_vpos − 716 HU 위치에 배치 →
+    /// ①→② gap 이 63.09 px (4732 HU, 1 ls 부족) 으로 좁아짐.
+    /// 수정 후: ①→② gap == ②→③ gap == 72.64 px.
+    #[test]
+    fn test_537_first_answer_after_tac_table_line_spacing() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // SVG 에서 ① ② ③ 의 baseline y 추출.
+        // 형식: <text transform="translate(X,Y) ...">①</text>
+        // X 는 단 0 시작 부근 (좌측 단 답안 마커 위치).
+        let extract_y = |needle: char| -> Option<f64> {
+            for chunk in svg.split("<text ") {
+                if let Some(pos) = chunk.rfind(&format!(">{}</text>", needle)) {
+                    // 같은 chunk 의 transform 에서 두 번째 숫자(=y) 파싱
+                    let attrs = &chunk[..pos];
+                    let tr = attrs.find("translate(")?;
+                    let after = &attrs[tr + "translate(".len()..];
+                    let close = after.find(')')?;
+                    let inside = &after[..close];
+                    let mut parts = inside.split(',');
+                    let _x = parts.next()?.trim();
+                    let y = parts.next()?.trim().parse::<f64>().ok()?;
+                    return Some(y);
+                }
+            }
+            None
+        };
+
+        let y1 = extract_y('①').expect("① not found in page 2 SVG");
+        let y2 = extract_y('②').expect("② not found in page 2 SVG");
+        let y3 = extract_y('③').expect("③ not found in page 2 SVG");
+
+        let gap_12 = y2 - y1;
+        let gap_23 = y3 - y2;
+
+        // pi=38 (3 라인), pi=39 (3 라인) 동일 ParaShape → 두 gap 이 같아야 함.
+        // IR vpos delta 5448 HU = 72.64 px. 부동소수 톨러런스 0.5 px.
+        assert!(
+            (gap_12 - gap_23).abs() < 0.5,
+            "①→② gap({:.2}) 와 ②→③ gap({:.2}) 가 일치해야 함. \
+             y1={:.2}, y2={:.2}, y3={:.2}. \
+             버그(수정 전): gap_12=63.09, gap_23=72.64.",
+            gap_12, gap_23, y1, y2, y3
+        );
+
+        // IR delta 정합 검증: 5448 HU = 72.64 px.
+        let expected_gap = (5448.0_f64 * 96.0 / 7200.0_f64);
+        assert!(
+            (gap_12 - expected_gap).abs() < 0.5,
+            "①→② gap({:.2}) 가 IR vpos delta({:.2}) 와 일치해야 함",
+            gap_12, expected_gap
+        );
+    }
 }
