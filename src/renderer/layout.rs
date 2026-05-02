@@ -2506,6 +2506,28 @@ impl LayoutEngine {
                         y_offset += para_style.spacing_after;
                     }
                 }
+                // [Task #533] Square wrap 호스트 문단: 표는 floating, 호스트
+                // 텍스트가 표 옆을 흐른다. 호스트 last LINE_SEG vpos+lh 영역이
+                // 표 bottom 보다 아래일 때 호스트 텍스트 영역까지 advance.
+                // 대형 표 (표 > 텍스트) 는 max() 로 표 영역 우선 유지.
+                // vpos 는 column 누적 좌표이므로 ls[0].vpos 를 차감해 호스트
+                // 문단 내부 offset 으로 변환.
+                if !is_tac {
+                    if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                        if matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square) {
+                            if let (Some(first), Some(last)) =
+                                (para.line_segs.first(), para.line_segs.last()) {
+                                let para_inner_h = (last.vertical_pos + last.line_height)
+                                    .saturating_sub(first.vertical_pos);
+                                let host_text_bottom = para_y_for_table
+                                    + hwpunit_to_px(para_inner_h, self.dpi);
+                                if host_text_bottom > y_offset {
+                                    y_offset = host_text_bottom;
+                                }
+                            }
+                        }
+                    }
+                }
                 if let Some(seg) = para.line_segs.last() {
                     let gap = if seg.line_spacing > 0 { seg.line_spacing } else { seg.line_height };
                     y_offset += hwpunit_to_px(gap, self.dpi);
