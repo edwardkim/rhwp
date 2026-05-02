@@ -2795,10 +2795,33 @@ impl LayoutEngine {
                         // Task #347: 첫 줄 effective_margin (hanging indent: indent<0 → first-line은 margin_left만 적용)
                         let para_margin_left = para_style_ref.map(|s| s.margin_left).unwrap_or(0.0);
                         let para_indent = para_style_ref.map(|s| s.indent).unwrap_or(0.0);
-                        let effective_margin_left = if para_indent > 0.0 {
-                            para_margin_left + para_indent
+                        // [Task #534] paragraph_layout 의 effective_margin_left 정합:
+                        // visible stroke 보유 + border_spacing[0,1]=0 인 paragraph 는
+                        // box_margin_left 를 inner padding 으로 추가 가산 (paragraph_layout.rs
+                        // line 711-716 와 동일). wrap_host (Square wrap 표 보유) paragraph 는
+                        // paragraph_layout 미호출되어 본 경로만 emit → inner_pad 누락 시
+                        // 위치 결함 (예: exam_kor p18 pi=50/56 의 [A]/[B] 표시기 옆 그림).
+                        let para_border_fill_id_pre = para_style_ref.map(|s| s.border_fill_id).unwrap_or(0);
+                        let has_visible_stroke = if para_border_fill_id_pre > 0 {
+                            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
+                            styles.border_styles.get(idx)
+                                .map(|bs| bs.borders.iter().any(|b|
+                                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
+                                .unwrap_or(false)
                         } else {
+                            false
+                        };
+                        let bs_left_px = para_style_ref.map(|s| s.border_spacing[0]).unwrap_or(0.0);
+                        let bs_right_px = para_style_ref.map(|s| s.border_spacing[1]).unwrap_or(0.0);
+                        let inner_pad_left = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
                             para_margin_left
+                        } else {
+                            0.0
+                        };
+                        let effective_margin_left = if para_indent > 0.0 {
+                            para_margin_left + para_indent + inner_pad_left
+                        } else {
+                            para_margin_left + inner_pad_left
                         };
                         let para_margin_right = para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
                         let avail_w = (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
