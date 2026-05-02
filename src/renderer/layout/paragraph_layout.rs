@@ -2977,6 +2977,19 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
         };
     }
 
+    // Supplementary PUA-A — 한컴 책괄호 / 예시 마커 (Task #528 exam_kor p17)
+    // exam_kor p17 측정: F0854/F0855 각 33회 (책 제목 둘러싸기), F00DA 2회
+    if (0xF00D0..=0xF09FF).contains(&code) {
+        return match code {
+            // 책괄호 (한국어 도서 제목) — 용비어천가, 석보상절, 월인천강지곡 등
+            0xF0854 => '\u{300A}', // 《 LEFT DOUBLE ANGLE BRACKET
+            0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
+            // 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 — 한컴 PDF 시각 검증 필요
+            0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 후 정정)
+            _ => ch,
+        };
+    }
+
     if !(0xF020..=0xF0FF).contains(&code) {
         return ch;
     }
