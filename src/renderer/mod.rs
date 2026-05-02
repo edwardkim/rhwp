@@ -18,6 +18,7 @@ pub mod layout;
 pub mod page_layout;
 pub mod page_number;
 pub mod pagination;
+pub mod pua_oldhangul;
 pub mod render_tree;
 pub mod scheduler;
 pub mod style_resolver;
