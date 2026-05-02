@@ -87,3 +87,6 @@ rhwp-firefox/*.zip
 rhwp-safari/dist/
 rhwp-safari/HWP Viewer/
 rhwp-safari/.DS_Store
+
+# 골든 SVG 비교 시 생성되는 임시 actual 파일
+tests/golden_svg/**/*.actual.svg
