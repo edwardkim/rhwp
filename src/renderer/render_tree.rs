@@ -8,6 +8,7 @@ use serde::Serialize;
 use crate::model::{ColorRef, Rect};
 use crate::model::style::ImageFillMode;
 use crate::model::image::ImageEffect;
+use crate::model::shape::TextWrap;
 use super::{TextStyle, ShapeStyle, LineStyle, PathCommand, GradientFillInfo};
 use super::composer::CharOverlapInfo;
 use super::layout::CellContext;
@@ -647,6 +648,11 @@ pub struct ImageNode {
     pub brightness: i8,
     /// 명암(대비) (-100 ~ +100)
     pub contrast: i8,
+    /// 텍스트 흐름 wrap 모드 (Task #516, 다층 레이어 분리용).
+    /// `None` 또는 `Some(Square/TopAndBottom/Tight/Through)` 는 본문 layer 에 포함되고,
+    /// `Some(BehindText)` / `Some(InFrontOfText)` 는 overlay layer 로 분리 후보.
+    /// 기본값 `None` 은 기존 동작 유지.
+    pub text_wrap: Option<TextWrap>,
 }
 
 impl ImageNode {
@@ -661,6 +667,7 @@ impl ImageNode {
             effect: ImageEffect::RealPic,
             brightness: 0,
             contrast: 0,
+            text_wrap: None,
         }
     }
 }

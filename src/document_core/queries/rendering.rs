@@ -536,11 +536,22 @@ impl DocumentCore {
                         }
                         _ => String::new(),
                     };
+                    // Task #516 결함 3: hit-test 정합 (옵션 3-C) — wrap 모드 노출.
+                    // BehindText 그림은 텍스트 영역 위에서는 hit-test 후순위 처리.
+                    let wrap_str = match image_node.text_wrap {
+                        Some(crate::model::shape::TextWrap::BehindText) => ",\"wrap\":\"behindText\"",
+                        Some(crate::model::shape::TextWrap::InFrontOfText) => ",\"wrap\":\"inFrontOfText\"",
+                        Some(crate::model::shape::TextWrap::Square) => ",\"wrap\":\"square\"",
+                        Some(crate::model::shape::TextWrap::Tight) => ",\"wrap\":\"tight\"",
+                        Some(crate::model::shape::TextWrap::Through) => ",\"wrap\":\"through\"",
+                        Some(crate::model::shape::TextWrap::TopAndBottom) => ",\"wrap\":\"topAndBottom\"",
+                        None => "",
+                    };
 
                     controls.push(format!(
-                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}}}",
+                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords
+                        doc_coords, wrap_str
                     ));
                     return;
                 }

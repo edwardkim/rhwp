@@ -263,8 +263,25 @@ impl PaintOp {
                 buf.push_str("\"type\":\"image\",\"bbox\":");
                 write_bbox(buf, *bbox);
                 if let Some(data) = &image.data {
-                    let base64_data = base64::engine::general_purpose::STANDARD.encode(data);
-                    let _ = write!(buf, ",\"base64\":{}", json_escape(&base64_data));
+                    // Task #516 Stage 5.2: overlay layer 의 <img> data URL 생성용 mime 노출.
+                    // PCX 등 비표준은 PNG 변환 후 emit (CLI SVG 와 동일 정책 적용).
+                    let mime = crate::renderer::svg::detect_image_mime_type(data);
+                    let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) =
+                        if mime == "image/x-pcx" {
+                            match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            }
+                        } else if mime == "image/bmp" {
+                            match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
+                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            }
+                        } else {
+                            (mime, std::borrow::Cow::Borrowed(data.as_slice()))
+                        };
+                    let base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
+                    let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":{}", final_mime, json_escape(&base64_data));
                 }
                 if let Some(fill_mode) = image.fill_mode {
                     let _ = write!(
@@ -294,6 +311,21 @@ impl PaintOp {
                     image.brightness,
                     image.contrast
                 );
+                // 워터마크 메타정보 (Task #516, AI 활용)
+                let attr = crate::model::image::ImageAttr {
+                    brightness: image.brightness,
+                    contrast: image.contrast,
+                    effect: image.effect,
+                    bin_data_id: image.bin_data_id,
+                };
+                if let Some(preset) = attr.watermark_preset() {
+                    let _ = write!(buf, ",\"watermark\":{{\"preset\":\"{}\"}}", preset);
+                }
+                // 텍스트 흐름 wrap 모드 (Task #516, 다층 레이어 분리용).
+                // BehindText / InFrontOfText 인 경우 web 측이 별도 overlay layer 로 분리.
+                if let Some(wrap) = image.text_wrap {
+                    let _ = write!(buf, ",\"wrap\":{}", json_escape(text_wrap_str(wrap)));
+                }
                 buf.push_str(",\"transform\":");
                 write_transform(buf, image.transform);
                 buf.push('}');
@@ -727,6 +759,18 @@ fn image_effect_str(value: ImageEffect) -> &'static str {
         ImageEffect::GrayScale => "grayScale",
         ImageEffect::BlackWhite => "blackWhite",
         ImageEffect::Pattern8x8 => "pattern8x8",
+    }
+}
+
+fn text_wrap_str(value: crate::model::shape::TextWrap) -> &'static str {
+    use crate::model::shape::TextWrap;
+    match value {
+        TextWrap::Square => "square",
+        TextWrap::Tight => "tight",
+        TextWrap::Through => "through",
+        TextWrap::TopAndBottom => "topAndBottom",
+        TextWrap::BehindText => "behindText",
+        TextWrap::InFrontOfText => "inFrontOfText",
     }
 }
 
