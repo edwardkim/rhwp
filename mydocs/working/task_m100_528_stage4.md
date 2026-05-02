@@ -206,3 +206,49 @@ PUA char 폭 (현재 fallback 으로 ~font_size) vs 자모 cluster 합자 폭 (S
 - [x] cargo test --lib 1116 / svg_snapshot 6 / issue_418/501 통과
 - [x] 골든 SVG 갱신 (font-family 추가만, cosmetic)
 - [ ] **작업지시자 시각 판정** (Stage 5)
+
+---
+
+## 부록 — Stage 4 hotfix (책괄호 + 예시 마커)
+
+### 본질
+
+작업지시자 시각 검증 결과 **Supplementary PUA-A 영역의 한컴 자체 기호** (옛한글 영역 외) 도 정정 필요 확인:
+
+| 코드포인트 | 빈도 (exam_kor p17) | 본질 |
+|----------|------|------|
+| **U+F0854** | 33회 | 책괄호 시작 (`《`) — 용비어천가 등 책 제목 둘러싸기 |
+| **U+F0855** | 33회 | 책괄호 끝 (`》`) |
+| **U+F00DA** | 2회 | 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 |
+
+원래 Stage 3 보고서에 "별도 issue 영역" 으로 명시했지만 사용자 시각에서는 같은 PUA 미렌더 결함으로 보임 → Task #528 범위에 흡수.
+
+### 정정 위치
+
+`src/renderer/layout/paragraph_layout.rs::map_pua_bullet_char` 의 Supplementary PUA-A 핸들러 확장:
+
+```rust
+// Supplementary PUA-A — 한컴 책괄호 / 예시 마커 (Task #528 exam_kor p17)
+if (0xF00D0..=0xF09FF).contains(&code) {
+    return match code {
+        0xF0854 => '\u{300A}', // 《 LEFT DOUBLE ANGLE BRACKET
+        0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
+        0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 필요)
+        _ => ch,
+    };
+}
+```
+
+### 검증
+
+| 항목 | 결과 |
+|------|------|
+| PUA 잔존 (exam_kor p17) | **0** (이전 68 → 0) ✅ |
+| `《 》` 출현 | 66 (33+33) |
+| `▸` 출현 | 2 |
+| `cargo test --lib` | 1116 passed |
+| `svg_snapshot` | 6/6 |
+
+### 잔존 시각 검증 영역
+
+`U+F00DA → ▸` 는 **잠정 매핑**. 한컴 PDF 와 시각 비교 후 정정 필요 (Stage 5).
