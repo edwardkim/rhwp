@@ -232,9 +232,25 @@ impl LayoutEngine {
         }
 
         let table_text_wrap = if depth == 0 { table.common.text_wrap } else { crate::model::shape::TextWrap::Square };
-        // inline_x_override가 있으면 외부에서 이미 위치를 계산했으므로 y_start 그대로 사용
+        let inline_top_caption_offset = if inline_x_override.is_some() && depth == 0 {
+            if let Some(ref caption) = table.caption {
+                use crate::model::shape::CaptionDirection;
+                if matches!(caption.direction, CaptionDirection::Top) {
+                    caption_height + caption_spacing
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+
+        // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
+        // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
         let table_y = if inline_x_override.is_some() {
-            y_start
+            y_start + inline_top_caption_offset
         } else {
             self.compute_table_y_position(
                 table, table_height, y_start, col_area, depth, caption_height, caption_spacing,
