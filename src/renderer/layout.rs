@@ -2818,11 +2818,22 @@ impl LayoutEngine {
                         } else {
                             0.0
                         };
-                        let effective_margin_left = if para_indent > 0.0 {
+                        let mut effective_margin_left = if para_indent > 0.0 {
                             para_margin_left + para_indent + inner_pad_left
                         } else {
                             para_margin_left + inner_pad_left
                         };
+                        // [Task #534 v2] LINE_SEG.column_start 는 Square wrap 인라인 표/그림이
+                        // 좌측에 floating 시 표 영역 이후 텍스트 시작 위치를 HWP IR 가 인코딩.
+                        // layout_shape_item 은 col_area.x 그대로 사용 → picture (TAC) 가 표
+                        // 영역 위에 겹쳐 표시되는 결함 (예: exam_kor p18 pi=50/56 [A]/[B]
+                        // 표시기 + 그림). cs 가 effective_margin_left 보다 크면 cs 우선.
+                        let line_seg_cs_px = para.line_segs.first()
+                            .map(|s| hwpunit_to_px(s.column_start, self.dpi))
+                            .unwrap_or(0.0);
+                        if line_seg_cs_px > effective_margin_left {
+                            effective_margin_left = line_seg_cs_px;
+                        }
                         let para_margin_right = para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
                         let avail_w = (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
                         let pic_x = match para_alignment {
