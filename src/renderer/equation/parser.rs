@@ -87,6 +87,37 @@ impl EqParser {
         self.parse_expression()
     }
 
+    /// OVER/ATOP 중위 연산자 처리. 현재 토큰이 OVER/ATOP 이면 children 의 마지막 요소를
+    /// pop 하여 분수/atop 으로 결합한다. 처리했으면 true, 아니면 false.
+    /// CASES/PILE/EQALIGN 등 row-collecting 파서가 분수를 인식하지 못하는 결함(#505)을
+    /// 방지하기 위해 모든 token-collecting 루프에서 호출한다.
+    fn try_consume_infix_over_atop(&mut self, children: &mut Vec<EqNode>) -> bool {
+        if self.current_type() != TokenType::Command {
+            return false;
+        }
+        let val = self.current_value();
+        let is_over = Self::cmd_eq(val, "OVER");
+        let is_atop = Self::cmd_eq(val, "ATOP");
+        if !is_over && !is_atop {
+            return false;
+        }
+        self.pos += 1;
+        let top = children.pop().unwrap_or(EqNode::Empty);
+        let bottom = self.parse_element();
+        children.push(if is_atop {
+            EqNode::Atop {
+                top: Box::new(top),
+                bottom: Box::new(bottom),
+            }
+        } else {
+            EqNode::Fraction {
+                numer: Box::new(top),
+                denom: Box::new(bottom),
+            }
+        });
+        true
+    }
+
     /// 표현식 파싱 (중단 조건 없이 끝까지)
     /// OVER/ATOP을 중위 연산자로 처리: 바로 앞/뒤 요소를 위아래로 배치
     fn parse_expression(&mut self) -> EqNode {
@@ -102,25 +133,7 @@ impl EqParser {
                 break;
             }
             // OVER/ATOP 중위 연산자: 직전/직후 요소를 위아래로 결합
-            if self.current_type() == TokenType::Command
-                && (Self::cmd_eq(self.current_value(), "OVER")
-                    || Self::cmd_eq(self.current_value(), "ATOP"))
-            {
-                let is_atop = Self::cmd_eq(self.current_value(), "ATOP");
-                self.pos += 1; // 연산자 건너뛰기
-                let top = children.pop().unwrap_or(EqNode::Empty);
-                let bottom = self.parse_element();
-                children.push(if is_atop {
-                    EqNode::Atop {
-                        top: Box::new(top),
-                        bottom: Box::new(bottom),
-                    }
-                } else {
-                    EqNode::Fraction {
-                        numer: Box::new(top),
-                        denom: Box::new(bottom),
-                    }
-                });
+            if self.try_consume_infix_over_atop(&mut children) {
                 continue;
             }
             children.push(self.parse_element());
@@ -454,25 +467,7 @@ impl EqParser {
                 break;
             }
             // OVER/ATOP 중위 연산자: 그룹 내에서도 동일하게 처리
-            if self.current_type() == TokenType::Command
-                && (Self::cmd_eq(self.current_value(), "OVER")
-                    || Self::cmd_eq(self.current_value(), "ATOP"))
-            {
-                let is_atop = Self::cmd_eq(self.current_value(), "ATOP");
-                self.pos += 1;
-                let top = children.pop().unwrap_or(EqNode::Empty);
-                let bottom = self.parse_element();
-                children.push(if is_atop {
-                    EqNode::Atop {
-                        top: Box::new(top),
-                        bottom: Box::new(bottom),
-                    }
-                } else {
-                    EqNode::Fraction {
-                        numer: Box::new(top),
-                        denom: Box::new(bottom),
-                    }
-                });
+            if self.try_consume_infix_over_atop(&mut children) {
                 continue;
             }
             children.push(self.parse_element());
@@ -847,6 +842,9 @@ impl EqParser {
                 }
                 current_cell = Vec::new();
                 self.pos += 1;
+            } else if self.try_consume_infix_over_atop(&mut current_cell) {
+                // OVER/ATOP 중위 처리 (#505)
+                continue;
             } else {
                 current_cell.push(self.parse_element());
             }
@@ -892,6 +890,9 @@ impl EqParser {
                 for _ in 0..amp_count {
                     current_row.push(EqNode::Space(super::ast::SpaceKind::Tab));
                 }
+            } else if self.try_consume_infix_over_atop(&mut current_row) {
+                // OVER/ATOP 중위 처리 (#505)
+                continue;
             } else {
                 current_row.push(self.parse_element());
             }
@@ -924,6 +925,9 @@ impl EqParser {
                 rows.push(EqNode::Row(current_row).simplify());
                 current_row = Vec::new();
                 self.pos += 1;
+            } else if self.try_consume_infix_over_atop(&mut current_row) {
+                // OVER/ATOP 중위 처리 (#505)
+                continue;
             } else {
                 current_row.push(self.parse_element());
             }
@@ -985,6 +989,15 @@ impl EqParser {
                     }
                 }
             } else {
+                // OVER/ATOP 중위 처리 (#505) — 활성 측(right 우선) 의 children 에 적용
+                let consumed = if let Some(ref mut right) = current_right {
+                    self.try_consume_infix_over_atop(right)
+                } else {
+                    self.try_consume_infix_over_atop(&mut current_left)
+                };
+                if consumed {
+                    continue;
+                }
                 if let Some(ref mut right) = current_right {
                     right.push(self.parse_element());
                 } else {
