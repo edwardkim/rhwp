@@ -1547,12 +1547,7 @@ impl LayoutEngine {
                                         .unwrap_or(0);
                                     let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32
                                         + trailing_ls_hu;
-                                    // [Task #540] vpos_neg_ls_floor_total 가 누적된 만큼 y_offset 은
-                                    // IR vpos 보다 더 진행한 상태이다. lazy_base 는 IR 절대 vpos 좌표
-                                    // 기준이므로 누적 floor 분만큼 보정해야 prev_vpos_end - y_delta_hu
-                                    // 가 음수로 흐르지 않고 실제 IR 좌표를 가리킨다 (exam_math 페이지 7
-                                    // pi=169 lazy_base 음수 → fallback 회귀 방지).
-                                    let lazy_base = prev_vpos_end - y_delta_hu + vpos_neg_ls_floor_total;
+                                    let lazy_base = prev_vpos_end - y_delta_hu;
                                     // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                     // vpos 누적보다 크게 밀린 것 → 역산 무효
                                     if lazy_base < 0 {
