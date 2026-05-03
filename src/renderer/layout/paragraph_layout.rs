@@ -2662,7 +2662,20 @@ impl LayoutEngine {
         // Task #463: 셀 안 단락은 본문 큐에 leakage 하지 않도록 cell_ctx 게이팅.
         // 셀 외곽선은 별도 경로(table_layout/border_rendering)에서 처리되므로
         // 본문 단락의 연속 외곽선 merge 가 셀 단락 좌표/시그니처에 의해 깨지지 않게 한다.
-        if para_border_fill_id > 0 && cell_ctx.is_none() {
+        // [Task #540 후속] 빈 paragraph (text=∅ + controls=∅) 가 음수 line_spacing 을
+        // 가지면 layout.rs 의 vpos correction 에서 floor 처리되어 다음 paragraph 가
+        // |neg_ls| 만큼 아래로 시프트된다. 이 경우 본 paragraph 의 border 를 push 하면
+        // merge group 의 top 이 unshifted 위치에 잡혀 다음 paragraph 의 시각적 박스
+        // 위쪽 여백이 |neg_ls| 만큼 늘어나는 회귀 발생 (21_언어_기출 [4~6]/[7~9]/[10~12]/
+        // [13~15]/[16~18]/[19~21]/[22~24]/[25~27]/[28~30] passage 글상자 9곳).
+        // floor 대상 paragraph 는 border push 를 skip 하여 group top 이 다음 paragraph
+        // 의 shifted 시작 위치로 잡히게 한다.
+        let is_540_floor_target = para.map(|p|
+            p.text.is_empty()
+                && p.controls.is_empty()
+                && p.line_segs.iter().any(|s| s.line_spacing < 0)
+        ).unwrap_or(false);
+        if para_border_fill_id > 0 && cell_ctx.is_none() && !is_540_floor_target {
             let bg_height = y - bg_y_start;
             if bg_height > 0.0 {
                 // margin_left/margin_right는 이미 px 단위 (style_resolver에서 변환됨)
