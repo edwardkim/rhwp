@@ -922,7 +922,6 @@ mod tests {
     ///
     /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
     #[test]
-    #[ignore = "Task #544 RED — fix 적용 전 실패 expected"]
     fn test_544_passage_box_coords_match_pdf_p4() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
@@ -1012,7 +1011,6 @@ mod tests {
     ///
     /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
     #[test]
-    #[ignore = "Task #547 RED — fix 적용 전 실패 expected"]
     fn test_547_passage_text_inset_match_pdf_p4() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
