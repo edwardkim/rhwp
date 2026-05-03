@@ -2646,12 +2646,18 @@ impl LayoutEngine {
             // 본 task #479 는 typeset.rs 의 누적도 함께 trailing 제외로 변경하여 정합.
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
             let is_full_paragraph_end = line_idx + 1 >= end && end >= composed.lines.len();
+            // [Task #552] 본문 paragraph 마지막 줄에서 다음 paragraph 가 visible border
+            // 시작이면 trailing ls 보존 (Task #479 의 trailing ls 제외 → 박스 top 이
+            // header 텍스트 바로 아래 붙는 회귀 정정). caller 가 next_para_starts_visible_border
+            // 플래그 set 후 본 함수 호출.
+            let next_starts_border = self.next_para_starts_visible_border.get();
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
-            } else if is_full_paragraph_end && cell_ctx.is_none() {
+            } else if is_full_paragraph_end && cell_ctx.is_none() && !next_starts_border {
                 // 셀 외부 paragraph 의 마지막 줄 (#479)
                 y += line_height;
             } else {
+                // [Task #552] border-start 직전 마지막 줄: trailing ls 보존
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
             }
