@@ -1445,6 +1445,15 @@ impl LayoutEngine {
                         p.controls.iter().any(|c| match c {
                             Control::Shape(s) => {
                                 let cm = s.common();
+                                // [Task #539] tac=true Shape 는 paragraph 의 LINE_SEG vpos 에
+                                // 통합되어 누적되므로, overlay 가 vpos 에 별도 영향을 주지 않는다.
+                                // 따라서 prev_has_overlay_shape 가드 제외 — 그렇지 않으면
+                                // tac=true InFrontOfText/BehindText 글박스 호스트 paragraph
+                                // 직후의 vpos correction 이 skipped 되어 trailing-ls drift
+                                // 716 HU 가 잔존 (#539: 21_언어_기출 7p pi=146, 9p pi=182).
+                                if cm.treat_as_char {
+                                    return false;
+                                }
                                 matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
                                     || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
                                         && matches!(cm.vert_rel_to, VertRelTo::Para)
