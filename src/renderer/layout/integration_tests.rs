@@ -1042,4 +1042,73 @@ mod tests {
             min_x, pdf_text_min_x
         );
     }
+
+    /// Task #548: 셀 내부 paragraph 첫줄 inline TAC Shape 의 좌측 위치 PDF 정합 검증.
+    ///
+    /// 페이지 8 보기 표 (pi=167) 셀 5 (3-col 병합 본문 셀) 의 첫 줄 시작에 있는
+    /// [푸코] inline rectangle Shape (treat_as_char=true).
+    ///
+    /// ps_id=19 ParaShape:
+    ///   - margin_left=1704 HU → 11.36 px
+    ///   - indent=+1980 HU → +13.20 px (positive first-line indent)
+    ///   - border_fill_id=1, alignment=Justify
+    ///
+    /// 기대 위치 (paragraph_layout 텍스트 경로와 일치):
+    ///   - cell_x (131.04) + margin_left (11.36) + indent (13.20) = 155.60 px
+    ///   - PDF (한컴 2010) 측정: ≈155.6 px ±2 px
+    ///
+    /// 현재 (수정 전):
+    ///   - inline_x = inner_area.x = 131.04 (margin/indent 미적용)
+    ///   - 텍스트 "는" 은 paragraph_layout 경로로 정확히 185.83 위치
+    ///   - shape rect 만 131.04 위치 (불일치)
+    ///
+    /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
+    #[test]
+    #[ignore = "Task #548 RED — fix 적용 전 실패 expected"]
+    fn test_548_cell_inline_shape_first_line_indent_p8() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(7).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 8 SVG 가 비어있음");
+
+        // 페이지 8 셀 5 line 0 [푸코] rect 찾기:
+        //   - y in [685, 690] (셀 5 첫줄, vpos=0 + 작은 offset)
+        //   - width ≈ 30.23 (푸코 box width = curr_w 2267 HU)
+        //   - height ≈ 18.89 (푸코 box height = curr_h 1417 HU)
+        let mut puko_x: Option<f64> = None;
+        for chunk in svg.split("<rect ") {
+            let close = match chunk.find("/>") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let parse_attr = |name: &str| -> Option<f64> {
+                let key = format!("{}=\"", name);
+                let p = attrs.find(&key)? + key.len();
+                let q = attrs[p..].find('"')?;
+                attrs[p..p+q].parse::<f64>().ok()
+            };
+            let x = match parse_attr("x") { Some(v) => v, None => continue };
+            let y = match parse_attr("y") { Some(v) => v, None => continue };
+            let w = match parse_attr("width") { Some(v) => v, None => continue };
+            let h = match parse_attr("height") { Some(v) => v, None => continue };
+            if (w - 30.23).abs() < 0.5
+                && (h - 18.89).abs() < 0.5
+                && y > 685.0 && y < 690.0
+            {
+                puko_x = Some(x);
+                break;
+            }
+        }
+        let puko_x = puko_x.expect("페이지 8 셀 5 line 0 [푸코] rect 를 찾지 못함");
+
+        // PDF (한컴 2010) 기대값
+        let pdf_puko_x: f64 = 155.6;
+
+        assert!(
+            (puko_x - pdf_puko_x).abs() < 2.0,
+            "셀 5 line 0 [푸코] box left x={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 \
+             일치해야 함. 버그(수정 전): puko_x=131.04 (-24.6 px, table_layout \
+             inline_x 가 effective_margin_left + first_line_indent 미적용).",
+            puko_x, pdf_puko_x
+        );
+    }
 }
