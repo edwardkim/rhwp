@@ -3093,27 +3093,14 @@ impl LayoutEngine {
                             {
                                 result_y = y_offset;
                             }
-                            // Picture Square wrap (어울림 그림): TABLE wrap과 동일하게
-                            // layout_wrap_around_paras를 호출하여 텍스트를 그림 옆에 배치.
-                            if !pic.common.treat_as_char
-                                && matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
-                            {
-                                let wrap_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                                let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-                                if wrap_cs > 0 || wrap_sw > 0 {
-                                    let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
-                                    let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
-                                    self.layout_wrap_around_paras(
-                                        tree, col_node, paragraphs, composed, styles, col_area,
-                                        page_content.section_index,
-                                        para_index, wrap_around_paras,
-                                        pic_y, result_y,
-                                        wrap_text_x, wrap_text_width, 0.0,
-                                        bin_data_content,
-                                        None,
-                                    );
-                                }
-                            }
+                            // [Task #525] Picture Square wrap 의 호스트 paragraph 텍스트는
+                            // 정상 PageItem::FullParagraph 경로 (layout_composed_paragraph 의
+                            // has_picture_shape_square_wrap 분기, paragraph_layout.rs:822/973)
+                            // 가 LINE_SEG.cs/sw 기반으로 그림 옆 (좁은) + 그림 아래 (넓은)
+                            // 모두 처리. Table Square wrap (호스트 = 표 + 빈 텍스트) 과 달리
+                            // Picture Square wrap 의 호스트는 본문 텍스트를 가지므로 본 wrap
+                            // host 호출은 중복 emit (광범위 시각 결함, 7 샘플 37 페이지 영향).
+                            // 정정으로 호출 제거. (Table 케이스의 layout.rs:2555 호출은 유지.)
                         }
                     }
                 }
@@ -3496,54 +3483,12 @@ impl LayoutEngine {
                     &overflow_map,
                 );
             }
-            // 비-TAC Square wrap 그림/도형: 어울림 문단 렌더링.
-            // typeset.rs 경로에서 PaginationResult.wrap_around_paras는 항상 비어있으므로
-            // col_content.wrap_around_paras를 직접 사용해야 함.
-            // 용지 기준(page-relative) 그림도 어울림 텍스트는 body 기준 좌표로 렌더링.
-            {
-                let (opt_cm, opt_pic_h) = if let Some(ctrl) = paragraphs.get(para_index)
-                    .and_then(|p| p.controls.get(control_index))
-                {
-                    match ctrl {
-                        Control::Shape(shape) => {
-                            if let crate::model::shape::ShapeObject::Picture(pic) = shape.as_ref() {
-                                let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                (Some(&pic.common), h)
-                            } else { (None, 0.0) }
-                        }
-                        Control::Picture(pic) => {
-                            let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                            (Some(&pic.common), h)
-                        }
-                        _ => (None, 0.0),
-                    }
-                } else { (None, 0.0) };
-                if let Some(cm) = opt_cm {
-                    if !cm.treat_as_char && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square) {
-                        let wrap_cs = paragraphs.get(para_index)
-                            .and_then(|p| p.line_segs.first())
-                            .map(|s| s.column_start)
-                            .unwrap_or(0);
-                        let wrap_sw = paragraphs.get(para_index)
-                            .and_then(|p| p.line_segs.first())
-                            .map(|s| s.segment_width)
-                            .unwrap_or(0);
-                        if wrap_cs > 0 || wrap_sw > 0 {
-                            let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
-                            let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
-                            self.layout_wrap_around_paras(
-                                tree, col_node, paragraphs, composed, styles, col_area,
-                                page_content.section_index,
-                                para_index, &col_content.wrap_around_paras,
-                                para_y, para_y + opt_pic_h,
-                                wrap_text_x, wrap_text_width, 0.0,
-                                bin_data_content,
-                                None,
-                            );
-                        }
-                    }
-                }
-            }
+            // [Task #525] 비-TAC Picture/Shape Square wrap 의 어울림 문단 렌더링은
+            // layout_shape_item:3106 (PageItem::Shape 처리 시) 에서 수행. 본 패스에서
+            // 별도 호출은 동일 paragraph 의 wrap-around 텍스트가 두 다른 col_w 정렬로
+            // distinct x 위치에 중복 emit 되어 (광범위 시각 결함, 7 샘플 37 페이지 영향)
+            // 제거. typeset 경로 fallback 가정은 layout_shape_item 가 typeset 경로
+            // 에서도 활성화되어 의미 없음.
         }
     }
 
