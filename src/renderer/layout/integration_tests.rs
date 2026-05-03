@@ -585,4 +585,232 @@ mod tests {
             "layer SVG는 표 샘플에서 legacy SVG와 동일해야 함"
         );
     }
+
+    /// Task #537: TAC `<보기>` 표 직후 첫 답안(①) → 다음 답안(②) gap 이
+    /// IR `LINE_SEG.vpos` delta 와 일치해야 한다.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 2 의 3번 문제 답안:
+    ///   pi=37 = TAC <보기> 표
+    ///   pi=38 = ① 답 (3 라인, lh=1100, ls=716)
+    ///   pi=39 = ② 답 (3 라인, lh=1100, ls=716)
+    ///   pi=40 = ③ 답 (2 라인)
+    ///
+    /// IR vpos delta:
+    ///   pi=38→pi=39: 5448 HU = 72.64 px (= 3*(lh+ls))
+    ///   pi=39→pi=40: 5448 HU = 72.64 px
+    ///
+    /// 버그(수정 전): lazy_base 가 sequential drift(trailing-ls 제외) 를
+    /// 동결시켜 pi=39 부터 IR_vpos − 716 HU 위치에 배치 →
+    /// ①→② gap 이 63.09 px (4732 HU, 1 ls 부족) 으로 좁아짐.
+    /// 수정 후: ①→② gap == ②→③ gap == 72.64 px.
+    #[test]
+    fn test_537_first_answer_after_tac_table_line_spacing() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // SVG 에서 ① ② ③ 의 baseline y 추출.
+        // 형식: <text transform="translate(X,Y) ...">①</text>
+        // X 는 단 0 시작 부근 (좌측 단 답안 마커 위치).
+        let extract_y = |needle: char| -> Option<f64> {
+            for chunk in svg.split("<text ") {
+                if let Some(pos) = chunk.rfind(&format!(">{}</text>", needle)) {
+                    // 같은 chunk 의 transform 에서 두 번째 숫자(=y) 파싱
+                    let attrs = &chunk[..pos];
+                    let tr = attrs.find("translate(")?;
+                    let after = &attrs[tr + "translate(".len()..];
+                    let close = after.find(')')?;
+                    let inside = &after[..close];
+                    let mut parts = inside.split(',');
+                    let _x = parts.next()?.trim();
+                    let y = parts.next()?.trim().parse::<f64>().ok()?;
+                    return Some(y);
+                }
+            }
+            None
+        };
+
+        let y1 = extract_y('①').expect("① not found in page 2 SVG");
+        let y2 = extract_y('②').expect("② not found in page 2 SVG");
+        let y3 = extract_y('③').expect("③ not found in page 2 SVG");
+
+        let gap_12 = y2 - y1;
+        let gap_23 = y3 - y2;
+
+        // pi=38 (3 라인), pi=39 (3 라인) 동일 ParaShape → 두 gap 이 같아야 함.
+        // IR vpos delta 5448 HU = 72.64 px. 부동소수 톨러런스 0.5 px.
+        assert!(
+            (gap_12 - gap_23).abs() < 0.5,
+            "①→② gap({:.2}) 와 ②→③ gap({:.2}) 가 일치해야 함. \
+             y1={:.2}, y2={:.2}, y3={:.2}. \
+             버그(수정 전): gap_12=63.09, gap_23=72.64.",
+            gap_12, gap_23, y1, y2, y3
+        );
+
+        // IR delta 정합 검증: 5448 HU = 72.64 px.
+        let expected_gap = (5448.0_f64 * 96.0 / 7200.0_f64);
+        assert!(
+            (gap_12 - expected_gap).abs() < 0.5,
+            "①→② gap({:.2}) 가 IR vpos delta({:.2}) 와 일치해야 함",
+            gap_12, expected_gap
+        );
+    }
+
+    /// Task #539: InFrontOfText + treat_as_char Shape 호스트 paragraph 직후
+    /// 다음 paragraph 의 줄간격이 IR vpos delta 와 일치해야 한다.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 7:
+    ///   pi=145 = "68혁명 이후..." (controls=1: InFrontOfText tac=true Shape, 글박스)
+    ///   pi=146 = "르포르는 1789년..."
+    ///
+    /// IR vpos delta (pi=145 last seg → pi=146 first seg):
+    ///   pi=145 last seg vpos≈24969+1100+716 = 26785 = pi=146 first seg vpos. delta = 1816 HU = 24.21 px.
+    ///
+    /// 버그(수정 전): pi=145 의 InFrontOfText Shape 가 `prev_has_overlay_shape`
+    /// 가드를 발동시켜 pi=146 의 vpos correction 자체를 skip → drift 716 HU(=9.55 px)
+    /// 잔존하여 pi=145 마지막 line(y=555) → pi=146 첫 line(y=569.81) gap = 14.67 px.
+    /// 수정 후: gap = 24.21 px (IR delta 정확).
+    #[test]
+    fn test_539_paragraph_after_overlay_shape_host() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+
+        // 페이지 7 SVG 에서 col 0 영역의 '르' 첫 등장 (pi=146 첫 글자)
+        // 과 그 이전 줄의 글자 baseline y 추출
+        let svg = core.render_page_svg_native(6).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 7 SVG 가 비어있음");
+
+        // col 0 (x≈140-200) 의 글자별 (y, x, char) 수집
+        let mut points: Vec<(f64, f64, String)> = Vec::new();
+        for chunk in svg.split("<text ") {
+            if let Some(close) = chunk.find("</text>") {
+                let attrs_and_content = &chunk[..close];
+                if let Some(gt) = attrs_and_content.find('>') {
+                    let attrs = &attrs_and_content[..gt];
+                    let content = &attrs_and_content[gt + 1..];
+                    if content.chars().count() != 1 { continue; }
+                    let tr = match attrs.find("translate(") {
+                        Some(p) => p + "translate(".len(),
+                        None => continue,
+                    };
+                    let close_paren = match attrs[tr..].find(')') {
+                        Some(p) => p,
+                        None => continue,
+                    };
+                    let inside = &attrs[tr..tr + close_paren];
+                    let mut parts = inside.split(',');
+                    let x = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
+                    let y = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
+                    if let (Some(x), Some(y)) = (x, y) {
+                        if (130.0..=200.0).contains(&x) && (500.0..=700.0).contains(&y) {
+                            points.push((y, x, content.to_string()));
+                        }
+                    }
+                }
+            }
+        }
+        points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        // '르' 의 첫 등장 (pi=146 의 첫 글자) y
+        let leporeut_y = points.iter()
+            .find(|(_, _, c)| c == "르")
+            .map(|(y, _, _)| *y)
+            .expect("페이지 7 col 0 에서 '르' 를 찾을 수 없음");
+
+        // '르' 직전 line 의 글자 y 찾기 (gap 측정용)
+        let prev_line_y = points.iter()
+            .filter(|(y, _, _)| *y < leporeut_y - 0.5)
+            .last()
+            .map(|(y, _, _)| *y)
+            .expect("'르' 직전 line 을 찾을 수 없음");
+
+        let gap = leporeut_y - prev_line_y;
+        let expected_gap = 1816.0_f64 * 96.0 / 7200.0;  // 24.21 px
+
+        assert!(
+            (gap - expected_gap).abs() < 0.5,
+            "pi=145 last line(y={:.2}) → pi=146 first line '르'(y={:.2}) gap({:.2}) 가 \
+             IR vpos delta({:.2} px = 1816 HU) 와 일치해야 함. \
+             버그(수정 전): gap=14.67 (1 ls=716 HU 부족, prev_has_overlay_shape 가드로 \
+             vpos correction skipped).",
+            prev_line_y, leporeut_y, gap, expected_gap
+        );
+    }
+
+    /// Task #539: 페이지 9 의 PartialParagraph + InFrontOfText Shape 호스트 케이스.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 9 col 0:
+    ///   pi=181 (lines 8..13) = PartialParagraph (controls=1: InFrontOfText tac=true Shape)
+    ///   pi=182 = "더불어 수피즘의 의식에..."
+    ///
+    /// IR vpos delta:
+    ///   pi=181 line 12 vpos=7264, pi=182 line 0 vpos=9080. delta = 1816 HU = 24.21 px.
+    ///
+    /// 버그(수정 전): pi=181 의 InFrontOfText Shape 로 인해 pi=182 의 vpos correction
+    /// skipped → gap = 14.67 px (1 ls 부족).
+    #[test]
+    fn test_539_partial_paragraph_after_overlay_shape() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(8).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 9 SVG 가 비어있음");
+
+        // col 0 영역 (x≈140-540) y 분포 (페이지 9 col 0 상단)
+        let mut points: Vec<(f64, f64, String)> = Vec::new();
+        for chunk in svg.split("<text ") {
+            if let Some(close) = chunk.find("</text>") {
+                let attrs_and_content = &chunk[..close];
+                if let Some(gt) = attrs_and_content.find('>') {
+                    let attrs = &attrs_and_content[..gt];
+                    let content = &attrs_and_content[gt + 1..];
+                    if content.chars().count() != 1 { continue; }
+                    let tr = match attrs.find("translate(") {
+                        Some(p) => p + "translate(".len(),
+                        None => continue,
+                    };
+                    let close_paren = match attrs[tr..].find(')') {
+                        Some(p) => p,
+                        None => continue,
+                    };
+                    let inside = &attrs[tr..tr + close_paren];
+                    let mut parts = inside.split(',');
+                    let x = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
+                    let y = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
+                    if let (Some(x), Some(y)) = (x, y) {
+                        if (140.0..=540.0).contains(&x) && (250.0..=400.0).contains(&y) {
+                            points.push((y, x, content.to_string()));
+                        }
+                    }
+                }
+            }
+        }
+        points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        // '더' 의 첫 등장 (pi=182 의 첫 글자)
+        let deobureo_y = points.iter()
+            .find(|(_, _, c)| c == "더")
+            .map(|(y, _, _)| *y)
+            .expect("페이지 9 col 0 에서 '더' 를 찾을 수 없음");
+
+        let prev_line_y = points.iter()
+            .filter(|(y, _, _)| *y < deobureo_y - 0.5)
+            .last()
+            .map(|(y, _, _)| *y)
+            .expect("'더' 직전 line 을 찾을 수 없음");
+
+        let gap = deobureo_y - prev_line_y;
+        let expected_gap = 1816.0_f64 * 96.0 / 7200.0;  // 24.21 px
+
+        assert!(
+            (gap - expected_gap).abs() < 0.5,
+            "pi=181 last line(y={:.2}) → pi=182 first line '더'(y={:.2}) gap({:.2}) 가 \
+             IR vpos delta({:.2} px = 1816 HU) 와 일치해야 함. \
+             버그(수정 전): gap=14.67 (PartialParagraph 의 overlay Shape 가드로 skipped).",
+            prev_line_y, deobureo_y, gap, expected_gap
+        );
+    }
 }

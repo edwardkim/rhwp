@@ -113,6 +113,7 @@ impl LayoutEngine {
                 effect: picture.image_attr.effect,
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
+                text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
@@ -323,6 +324,7 @@ impl LayoutEngine {
                 effect: picture.image_attr.effect,
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
+                text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
                 ..ImageNode::new(bin_data_id, image_data)
             }),

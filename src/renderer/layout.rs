@@ -1445,6 +1445,15 @@ impl LayoutEngine {
                         p.controls.iter().any(|c| match c {
                             Control::Shape(s) => {
                                 let cm = s.common();
+                                // [Task #539] tac=true Shape 는 paragraph 의 LINE_SEG vpos 에
+                                // 통합되어 누적되므로, overlay 가 vpos 에 별도 영향을 주지 않는다.
+                                // 따라서 prev_has_overlay_shape 가드 제외 — 그렇지 않으면
+                                // tac=true InFrontOfText/BehindText 글박스 호스트 paragraph
+                                // 직후의 vpos correction 이 skipped 되어 trailing-ls drift
+                                // 716 HU 가 잔존 (#539: 21_언어_기출 7p pi=146, 9p pi=182).
+                                if cm.treat_as_char {
+                                    return false;
+                                }
                                 matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
                                     || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
                                         && matches!(cm.vert_rel_to, VertRelTo::Para)
@@ -1494,7 +1503,20 @@ impl LayoutEngine {
                                 } else {
                                     // 지연 보정: 첫 보정 시점에서 기준점 산출
                                     // sequential y_offset에서 역산하여 기준 vpos 결정
-                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32;
+                                    //
+                                    // [Task #537] trailing-ls 보정:
+                                    // paragraph_layout 의 마지막 줄은 trailing line_spacing 을
+                                    // 제외하여 y 를 advance 한다 (Task #479, lh_sum + (n-1)*ls 정책).
+                                    // 그 결과 sequential y_offset 은 IR vpos 누적보다
+                                    // prev_pi 의 last seg ls 만큼 부족해진다.
+                                    // 이 부족분을 y_delta_hu 에 더해야 lazy_base 가
+                                    // IR 절대 좌표와 일치한다 (drift 가 base 에 동결되는 것을 방지).
+                                    let trailing_ls_hu = paragraphs.get(prev_pi)
+                                        .and_then(|p| p.line_segs.last())
+                                        .map(|s| s.line_spacing.max(0))
+                                        .unwrap_or(0);
+                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32
+                                        + trailing_ls_hu;
                                     let lazy_base = prev_vpos_end - y_delta_hu;
                                     // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                     // vpos 누적보다 크게 밀린 것 → 역산 무효
@@ -2773,11 +2795,45 @@ impl LayoutEngine {
                         // Task #347: 첫 줄 effective_margin (hanging indent: indent<0 → first-line은 margin_left만 적용)
                         let para_margin_left = para_style_ref.map(|s| s.margin_left).unwrap_or(0.0);
                         let para_indent = para_style_ref.map(|s| s.indent).unwrap_or(0.0);
-                        let effective_margin_left = if para_indent > 0.0 {
-                            para_margin_left + para_indent
+                        // [Task #534] paragraph_layout 의 effective_margin_left 정합:
+                        // visible stroke 보유 + border_spacing[0,1]=0 인 paragraph 는
+                        // box_margin_left 를 inner padding 으로 추가 가산 (paragraph_layout.rs
+                        // line 711-716 와 동일). wrap_host (Square wrap 표 보유) paragraph 는
+                        // paragraph_layout 미호출되어 본 경로만 emit → inner_pad 누락 시
+                        // 위치 결함 (예: exam_kor p18 pi=50/56 의 [A]/[B] 표시기 옆 그림).
+                        let para_border_fill_id_pre = para_style_ref.map(|s| s.border_fill_id).unwrap_or(0);
+                        let has_visible_stroke = if para_border_fill_id_pre > 0 {
+                            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
+                            styles.border_styles.get(idx)
+                                .map(|bs| bs.borders.iter().any(|b|
+                                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
+                                .unwrap_or(false)
                         } else {
-                            para_margin_left
+                            false
                         };
+                        let bs_left_px = para_style_ref.map(|s| s.border_spacing[0]).unwrap_or(0.0);
+                        let bs_right_px = para_style_ref.map(|s| s.border_spacing[1]).unwrap_or(0.0);
+                        let inner_pad_left = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
+                            para_margin_left
+                        } else {
+                            0.0
+                        };
+                        let mut effective_margin_left = if para_indent > 0.0 {
+                            para_margin_left + para_indent + inner_pad_left
+                        } else {
+                            para_margin_left + inner_pad_left
+                        };
+                        // [Task #534 v2] LINE_SEG.column_start 는 Square wrap 인라인 표/그림이
+                        // 좌측에 floating 시 표 영역 이후 텍스트 시작 위치를 HWP IR 가 인코딩.
+                        // layout_shape_item 은 col_area.x 그대로 사용 → picture (TAC) 가 표
+                        // 영역 위에 겹쳐 표시되는 결함 (예: exam_kor p18 pi=50/56 [A]/[B]
+                        // 표시기 + 그림). cs 가 effective_margin_left 보다 크면 cs 우선.
+                        let line_seg_cs_px = para.line_segs.first()
+                            .map(|s| hwpunit_to_px(s.column_start, self.dpi))
+                            .unwrap_or(0.0);
+                        if line_seg_cs_px > effective_margin_left {
+                            effective_margin_left = line_seg_cs_px;
+                        }
                         let para_margin_right = para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
                         let avail_w = (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
                         let pic_x = match para_alignment {

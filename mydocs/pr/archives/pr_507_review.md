@@ -4,10 +4,11 @@
 **작성자**: @cskwork (Agentic-Worker) — 외부 컨트리뷰터 첫 PR
 **Base / Head**: `devel` ← `feature/issue-505-cases-eqalign-fraction`
 **Linked Issue**: [#505](https://github.com/edwardkim/rhwp/issues/505) (OPEN, bug 라벨, milestone 미지정, assignees 없음)
-**상태**: OPEN, MERGEABLE, mergeStateStatus = **BEHIND** (devel 진행으로 뒤처짐)
+**상태**: OPEN, MERGEABLE, mergeStateStatus = **BEHIND** (devel 진행으로 뒤처짐 — 시각 판정 후 cherry-pick 또는 head-merge 로 해소)
 **CI**: ALL SUCCESS (Build & Test + CodeQL × 3 + Canvas visual diff; WASM Build SKIPPED)
 **작성일**: 2026-05-01
-**검토일**: 2026-05-02
+**최초 검토일**: 2026-05-02
+**재검토일**: 2026-05-03 — fixture HWP 추가 (4b1feeac) 후 머지 차단 사유 해소
 
 ---
 
@@ -116,27 +117,41 @@ let consumed = if let Some(ref mut right) = current_right {
 
 ---
 
-## 4. **시각 검증 게이트 — 머지 차단 사유** ⚠️
+## 4. **시각 검증 게이트 — 해소됨** ✅ (2026-05-03 재검토)
 
-### 4.1 시각 검증 fixture 부재
+### 4.1 시각 검증 fixture (해소)
 
-PR #507 의 본질은 **시각 결함 정정** (`12r²` squashing → `(1/2) x²`). 이 결함은 `samples/` 폴더에 원본 `.hwp` 가 있어야 메인테이너가 직접 재현/판정 가능하다.
+PR #507 의 본질은 **시각 결함 정정** (`12r²` squashing → `(1/2) x²`). 최초 검토 (2026-05-02) 시점에 `samples/` 의 fixture 부재로 머지 차단했으나, 컨트리뷰터의 후속 commit (`4b1feeac`) 으로 fixture 가 추가되어 해소.
 
-**현재 상황:**
+**현재 상황 (2026-05-03):**
 
 | 항목 | 결과 |
 |------|------|
-| `samples/` 폴더 | ❌ 미적분03.hwp 없음 |
-| 프로젝트 전체 grep | ❌ "미적분" 키워드 0건 |
-| PR #507 추가 파일 | ❌ `.hwp` 추가 없음 |
-| 컨트리뷰터 환경 원본 | `D:/PARA/Resource/all-in-one-parser/input/미적분/미적분 기출문제_03.미분계수와 도함수1-1.hwp` (Windows 로컬, 비공개) |
-| 회귀 테스트 fixture 의존성 | ❌ 없음 (인라인 script 4개 + HWP 권위 height 하드코딩) |
+| `samples/issue-505-equations.hwp` | ✅ **추가됨** (12,800 bytes, 1 섹션 / 4 문단 / 4 수식) |
+| 저작권 정합 | ✅ 컨트리뷰터 직접 작성 (원본 미적분03.hwp 비공개 회피) |
+| 재현 가능 빌더 | ✅ `examples/build_issue_505_fixture.rs` — `samples/equation-lim.hwp` 베이스 + 4 paragraph clone + Equation script 교체 |
+| 시각 판정 입력 | ✅ pi=151 (대조군), pi=165 (본 이슈 핵심), pi=196, pi=227 (회귀 검증) |
 
-### 4.2 회귀 테스트는 fixture 독립이지만 시각 검증은 불가
+### 4.2 메인테이너 재현 절차 (현재 가능)
 
-- `cargo test --test issue_505` 9건은 **인라인 script 기반** → 작업지시자 환경에서 작동.
-- 그러나 **시각 결함 정정의 핵심 증거** (squashing 해소) 는 컨트리뷰터의 before/after 스크린샷에만 존재.
-- 메인테이너가 원본 `.hwp` 를 export-svg 로 직접 재출력해 시각 판정할 수 없음.
+```bash
+git fetch origin pull/507/head:pr-507-review
+git checkout pr-507-review
+cargo build --release --bin rhwp
+./target/release/rhwp export-svg samples/issue-505-equations.hwp -o output/svg/pr507/
+```
+
+| 페이지 | fixture | 비고 |
+|--------|---------|------|
+| 1 | pi=151 | CASES+EQALIGN, 분수 없음 (대조군) |
+| 2 | pi=165 | **본 이슈 핵심** — `{1} over {2} x ^{2}` |
+| 3 | pi=196 | CASES+EQALIGN, `x^3 -ax+bx` |
+| 4 | pi=227 | CASES+EQALIGN, `x^3 +ax+b` |
+
+본 검토 환경에서 검증 결과 (2026-05-03):
+- 4 페이지 SVG 정상 산출 (`output/svg/pr507/issue-505-equations_001~004.svg`)
+- `cargo test --test issue_505` 9/9 통과 (회귀 0)
+- `cargo build --release` 정상 (27 초)
 
 ### 4.3 적용 메모리
 
@@ -156,13 +171,13 @@ PR #507 의 본질은 **시각 결함 정정** (`12r²` squashing → `(1/2) x²
 
 따라서 본 PR 의 시각 결함 정정 (`12r²` → `(1/2) x²`) 도 **컨트리뷰터의 before/after 스크린샷이 아니라 메인테이너 환경에서의 직접 시각 판정** 으로 게이트 통과 여부를 결정한다. 이를 위해 원본 `.hwp` 가 `samples/` 에 있어야 한다.
 
-### 4.5 수정 요청 항목
+### 4.5 수정 요청 (해소)
 
-**컨트리뷰터에게 요청:**
+~~**컨트리뷰터에게 요청:** `samples/미적분 기출문제_03.미분계수와 도함수1-1.hwp` 추가~~
 
-- `samples/` 폴더에 `미적분 기출문제_03.미분계수와 도함수1-1.hwp` 추가 (단순 파일 추가 — 라이선스 절차 불필요)
-- 목적: 한컴 버전별 렌더링 정답 불일치 환경에서 **메인테이너가 한컴 2010 + 2020 으로 직접 시각 판정** 하기 위함 (외부 환경 자료를 정답지로 수용 불가)
-- 추가 후 본 PR 에 force-push 또는 추가 commit 으로 반영
+→ **2026-05-03 해소.** 컨트리뷰터가 저작권 회피 + 직접 작성 fixture (`samples/issue-505-equations.hwp` + `examples/build_issue_505_fixture.rs`) 로 commit `4b1feeac` 에서 대응.
+
+남은 절차: 메인테이너가 본 fixture 4 페이지를 한컴 2010/2020 으로 직접 시각 판정 → cherry-pick 머지 또는 추가 수정 요청.
 
 ---
 
@@ -173,31 +188,36 @@ PR #507 의 본질은 **시각 결함 정정** (`12r²` squashing → `(1/2) x²
 | OVER/ATOP 정정으로 row-collecting 루프 변경 → 다른 fixture 회귀 | 🟨 작음 | PR #396 회귀 테스트 통과 + 27 fixture × 344 pages 일괄 panic 0 |
 | tokenizer `\n`/`\r` 추가로 다른 토픽 결함 | 🟨 작음 | `#`/`&` 명시 행/탭 구분 정합 |
 | svg_snapshot PR 작성 시 5/6 — 본 PR cherry-pick 시점 6/6 재확인 필요 | 🟢 매우 작음 | PR #506 머지 후 사전 회귀 정정. cherry-pick 후 재실행 게이트 |
-| **시각 검증 fixture 부재** | 🟥 **머지 차단** | **§4 — `samples/` 추가 요청** |
+| ~~시각 검증 fixture 부재~~ | ✅ 해소 | commit `4b1feeac` (`samples/issue-505-equations.hwp` + `examples/build_issue_505_fixture.rs`) |
+| 시각 판정 게이트 (작업지시자 한컴 2010/2020) | 🟧 게이트 | fixture 4 페이지 SVG 정상 산출. 작업지시자 직접 시각 판정 대기 |
 
 ---
 
-## 6. 결정
+## 6. 결정 (2026-05-03 재검토)
 
-**권장**: ⚠️ **수정 요청 (request changes)** — 코드/테스트 자체는 정합하나 시각 판정 게이트 미충족.
+**권장**: 🟧 **시각 판정 게이트 진행** — fixture 추가로 머지 차단 사유 해소. 작업지시자의 한컴 2010/2020 직접 시각 판정 후 cherry-pick 머지.
 
 **근거:**
 1. 코드 변경은 작고 본질 정합 (헬퍼 추출 + DRY).
 2. 회귀 테스트 9건은 인라인 fixture 기반 → 작업지시자 환경에서 실행 가능.
-3. **그러나 한컴 버전별 렌더링 정답 불일치 환경에서 시각 결함 정정의 게이트는 메인테이너의 한컴 2010 + 2020 직접 시각 판정으로 운영. 컨트리뷰터의 before/after 스크린샷은 정답지로 수용 불가.**
-4. 메모리 `feedback_v076_regression_origin` / `feedback_pdf_not_authoritative` / `feedback_visual_regression_grows` / `reference_authoritative_hancom` 의 정확한 적용 사례.
+3. ~~머지 차단 사유 (시각 판정 fixture 부재)~~ → commit `4b1feeac` 로 해소.
+4. fixture HWP 가 baseline `samples/equation-lim.hwp` 의 정합한 메타데이터를 보존 + Equation script 만 교체로 작성 → 한컴 호환성 위험 작음.
+5. 본 검토 환경에서 4 페이지 SVG 정상 산출 + 9/9 회귀 테스트 통과 검증.
 
-**수정 요청 후 절차:**
-1. 컨트리뷰터가 `samples/미적분 기출문제_03.미분계수와 도함수1-1.hwp` 추가 → PR 갱신
-2. 메인테이너 (작업지시자) 환경에서 `rhwp export-svg samples/미적분*.hwp -p 4` 로 p5 출력
-3. before/after 시각 비교 — `(1/2) x²` 정상 출력 확인
-4. cargo test --lib + cargo test --test issue_505 (9 통과) + svg_snapshot 6/6 + clippy 0 재확인
-5. cherry-pick 머지 → `pr_507_report.md` 작성
+**남은 게이트 (작업지시자):**
+1. 본 fixture 4 페이지 SVG (`output/svg/pr507/issue-505-equations_001~004.svg`) 를 한컴 2010 + 한컴 2020 출력과 비교
+2. pi=165 (page 2) 의 `{1} over {2} x ^{2}` 분수 인식 시각 (squashing 해소) 확인
+3. pi=151/196/227 (page 1/3/4) 회귀 결함 없는지 확인
+4. 시각 판정 통과 후:
+   - cherry-pick 머지 (또는 squash merge) → `pr_507_report.md` 작성
+   - 시각 판정 미통과 시 추가 수정 요청
 
-**머지 시 (게이트 통과 후) 추가 정합 사항:**
+**머지 시 추가 정합 사항:**
 - 이슈 #505 milestone 미지정 → v1.0.0 추가 권장 (PR #507 milestone 은 v1.0.0)
-- 이슈 #505 assignees 없음 → 메모리 `feedback_assign_issue_before_work` 적용. 메인테이너 assign 권장.
+- 이슈 #505 assignees 없음 → 메모리 `feedback_assign_issue_before_work` 적용. 메인테이너 assign 권장 (사후 처리)
 - README 기여자 목록 갱신 (cskwork 첫 PR)
+- mergeStateStatus = BEHIND → cherry-pick 시 자동 해소. force-merge 하지 않음
+- svg_snapshot 6/6 재확인 (PR #506 사전 CRLF/LF 회귀 정정 후)
 
 ---
 
@@ -227,10 +247,13 @@ PR 본문 보고 산출물:
 
 ---
 
-## 9. 다음 단계
+## 9. 다음 단계 (2026-05-03 갱신)
 
-작업지시자 승인 후:
+작업지시자 시각 판정 게이트 진행:
 
-1. PR #507 에 수정 요청 댓글 등록 — `samples/미적분 기출문제_03.미분계수와 도함수1-1.hwp` 추가 요청
-2. 컨트리뷰터 응답 대기
-3. fixture 추가 후 작업지시자 시각 검증 → `pr_507_review_impl.md` (cherry-pick 절차) → `pr_507_report.md`
+1. **시각 판정 자료 위치**: `output/svg/pr507/issue-505-equations_{001..004}.svg`
+2. 작업지시자가 본 SVG 와 한컴 2010 + 한컴 2020 의 동일 fixture 출력 비교
+3. 시각 판정 결과:
+   - **통과** → `pr_507_review_impl.md` 작성 (cherry-pick 절차) → 작업지시자 승인 → cherry-pick 머지 → `pr_507_report.md`
+   - **부분 통과** (특정 fixture 만 결함) → 컨트리뷰터에게 추가 수정 요청
+   - **미통과** → 본질 재진단 (parser 정정 외 추가 영역 필요 가능성)
