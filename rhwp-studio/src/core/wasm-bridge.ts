@@ -133,6 +133,12 @@ export class WasmBridge {
     return this.doc.exportHwpx();
   }
 
+  /** HWP 직렬화 + 자기 재로드 검증 메타데이터를 JSON 문자열로 반환 (#178). */
+  exportHwpVerify(): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.exportHwpVerify();
+  }
+
   getSourceFormat(): string {
     return this.doc?.getSourceFormat?.() ?? 'hwp';
   }

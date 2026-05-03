@@ -698,6 +698,13 @@ window.addEventListener('message', async (e) => {
       case 'exportHwp':
         reply(Array.from(wasm.exportHwp()));
         break;
+      case 'exportHwpx':
+        reply(Array.from(wasm.exportHwpx()));
+        break;
+      case 'exportHwpVerify':
+        // WASM 은 JSON 문자열을 반환 — Wrapper 사용자가 매번 파싱하지 않도록 RPC 단계에서 객체화
+        reply(JSON.parse(wasm.exportHwpVerify()));
+        break;
       case 'ready':
         reply(true);
         break;
