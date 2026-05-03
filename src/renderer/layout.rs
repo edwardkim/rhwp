@@ -240,6 +240,11 @@ pub struct LayoutEngine {
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
     /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
+    /// [Task #552] 다음 paragraph 가 visible border 시작이면 true.
+    /// Task #479 의 본문 paragraph 마지막 줄 trailing ls 제외 분기에서
+    /// 본 플래그가 true 면 ls 보존 (border-start 직전 박스 top 위치 정합).
+    /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
+    next_para_starts_visible_border: std::cell::Cell<bool>,
 }
 
 mod text_measurement;
@@ -263,6 +268,38 @@ mod tests;
 mod integration_tests;
 
 impl LayoutEngine {
+    /// [Task #552] 다음 paragraph (curr_pi + 1) 가 visible border 시작인지 검사.
+    /// curr 가 visible border 보유 시 false (border 내부 transition 은 ls 정상).
+    /// next 가 존재하지 않거나 visible border 가 없으면 false.
+    pub(crate) fn next_paragraph_starts_visible_border(
+        &self,
+        curr_pi: usize,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        use crate::model::style::BorderLineType;
+        let visible_bf = |ps_id: u16| -> bool {
+            let ps = match styles.para_styles.get(ps_id as usize) {
+                Some(s) => s, None => return false,
+            };
+            if ps.border_fill_id == 0 { return false; }
+            let bf = match styles.border_styles.get((ps.border_fill_id as usize).saturating_sub(1)) {
+                Some(b) => b, None => return false,
+            };
+            bf.borders.iter().any(|b|
+                !matches!(b.line_type, BorderLineType::None) && b.width > 0)
+        };
+        let curr_para = match paragraphs.get(curr_pi) {
+            Some(p) => p, None => return false,
+        };
+        let next_para = match paragraphs.get(curr_pi + 1) {
+            Some(p) => p, None => return false,
+        };
+        let curr_visible = visible_bf(curr_para.para_shape_id);
+        let next_visible = visible_bf(next_para.para_shape_id);
+        next_visible && !curr_visible
+    }
+
     pub fn new(dpi: f64) -> Self {
         Self {
             dpi,
@@ -282,6 +319,7 @@ impl LayoutEngine {
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
+            next_para_starts_visible_border: std::cell::Cell::new(false),
         }
     }
 
@@ -2001,6 +2039,9 @@ impl LayoutEngine {
                                 });
                                 if let Some(start_line) = text_start_line {
                                     para_start_y.insert(*para_index, y_offset);
+                                    // [Task #552] 다음 paragraph 가 visible border 시작이면 trailing ls 보존
+                                    self.next_para_starts_visible_border.set(
+                                        self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
                                     y_offset = self.layout_partial_paragraph(
                                         tree,
                                         col_node,
@@ -2016,6 +2057,7 @@ impl LayoutEngine {
                                         multi_col_width,
                                         Some(bin_data_content),
                                     );
+                                    self.next_para_starts_visible_border.set(false);
                                 }
                             }
                         }
@@ -2053,6 +2095,9 @@ impl LayoutEngine {
                         let final_comp = numbered_comp.as_ref().or(comp);
 
                         para_start_y.insert(*para_index, y_offset);
+                        // [Task #552] 다음 paragraph 가 visible border 시작이면 trailing ls 보존
+                        self.next_para_starts_visible_border.set(
+                            self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
                         y_offset = self.layout_paragraph(
                             tree,
                             col_node,
@@ -2066,6 +2111,7 @@ impl LayoutEngine {
                             multi_col_width,
                             Some(bin_data_content),
                         );
+                        self.next_para_starts_visible_border.set(false);
                     }
                     // TAC Shape 높이 보정: 문단에 TAC Shape(개체묶기 등)가 있으면
                     // Shape 높이가 문단 텍스트 높이보다 클 수 있으므로 y_offset을 보정.
@@ -2160,6 +2206,10 @@ impl LayoutEngine {
                     } else {
                         composed.get(*para_index).cloned()
                     };
+                    // [Task #552] PartialParagraph 가 paragraph 끝까지 렌더링하면 (end_line >= comp.lines.len()) 다음 paragraph border 검사
+                    let is_full_end = comp.as_ref().map(|c| *end_line >= c.lines.len()).unwrap_or(false);
+                    self.next_para_starts_visible_border.set(
+                        is_full_end && self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
                     y_offset = self.layout_partial_paragraph(
                         tree,
                         col_node,
@@ -2175,6 +2225,7 @@ impl LayoutEngine {
                         None,
                         Some(bin_data_content),
                     );
+                    self.next_para_starts_visible_border.set(false);
                 }
             }
             PageItem::Table { para_index, control_index } => {

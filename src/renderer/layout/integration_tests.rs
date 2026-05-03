@@ -813,4 +813,98 @@ mod tests {
             prev_line_y, deobureo_y, gap, expected_gap
         );
     }
+
+    /// Task #552: Task #479 회귀 정정 — paragraph border 시작 직전 trailing ls 보존.
+    ///
+    /// 페이지 2 우측 단 [4~6] passage 박스 top y 와 [4~6] header text 간 gap 검증.
+    ///
+    /// pi=44 ([4~6] header, 본문 paragraph, no border) 의 마지막 줄 trailing ls 716 HU
+    /// = 9.54 px 가 박스 top 위치를 결정. Task #479 가 본문 paragraph 마지막 줄에서
+    /// trailing ls 제거하여 박스 top 이 header 텍스트 바로 아래에 붙는 회귀.
+    ///
+    /// PDF 한컴 2010: gap = 175.36 - 168.81 = 6.55 pt = 8.73 px (96 dpi 환산)
+    /// pre-#479 baseline: gap = 9.54 px (PDF 정합 ±2 px)
+    /// post-#479 (수정 전): gap = 0.0 px (회귀)
+    ///
+    /// 본 테스트: header 텍스트 baseline + ascent 와 박스 top horizontal line 간 gap
+    /// 이 6 px 이상 (회귀 검출).
+    #[test]
+    #[ignore]
+    fn test_552_passage_box_top_gap_p2_4_6() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // 1. [4~6] header text "[" 의 y 좌표 (우측 단 = x ≥ 575)
+        // SVG <text transform="translate(X,Y)">[</text> 형식
+        let mut header_y: Option<f64> = None;
+        for chunk in svg.split("<text ").skip(1) {
+            let close = match chunk.find('>') { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            // Body content
+            let body_start = close + 1;
+            let body_end = chunk[body_start..].find("</text>").map(|i| body_start + i).unwrap_or(close);
+            let body = &chunk[body_start..body_end];
+            // 우측 단 (x >= 575) y in [215, 230] [4~6] header
+            if x >= 575.0 && x < 590.0 && y > 215.0 && y < 230.0 && body == "[" {
+                header_y = Some(y);
+                break;
+            }
+        }
+        let header_y = header_y.expect("페이지 2 우측 단 [4~6] header \"[\" 텍스트를 찾지 못함");
+
+        // 2. 박스 top horizontal line: y > header_y, x1 ≈ 591 (col 1 box left)
+        let mut box_top_y: Option<f64> = None;
+        for chunk in svg.split("<line ").skip(1) {
+            let end = chunk.find("/>").or_else(|| chunk.find('>')).unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            let parse_attr = |name: &str| -> Option<f64> {
+                let pat = format!("{}=\"", name);
+                let i = attrs.find(&pat)? + pat.len();
+                let j = i + attrs[i..].find('"')?;
+                attrs[i..j].parse::<f64>().ok()
+            };
+            let (x1, y1, x2, y2) = match (parse_attr("x1"), parse_attr("y1"), parse_attr("x2"), parse_attr("y2")) {
+                (Some(a), Some(b), Some(c), Some(d)) => (a, b, c, d),
+                _ => continue,
+            };
+            // horizontal line (y1 == y2), 우측 단 (x1 >= 575), header 아래
+            if (y1 - y2).abs() < 0.5
+                && x1 >= 575.0 && x2 >= 575.0
+                && y1 > header_y && y1 < header_y + 30.0
+            {
+                box_top_y = Some(y1);
+                break;
+            }
+        }
+        let box_top_y = box_top_y.expect(
+            "페이지 2 우측 단 [4~6] 박스 top horizontal line 을 찾지 못함");
+
+        // 3. gap 검증: header bottom (≈ header_y + ascent) → box top
+        // header text font-size 14.67, scale 0.95 → ascent ≈ font * 0.15 = 2.20
+        // header bottom = header_y + 2.20 ≈ 224.43
+        // PDF 정합: gap = 8.73 px. tolerance ±2 px → gap 검증 ≥ 6.0 px.
+        let header_bottom = header_y + 2.20;
+        let gap = box_top_y - header_bottom;
+
+        assert!(
+            gap >= 6.0,
+            "[4~6] 박스 top y={:.2} 가 header bottom y={:.2} 와 충분한 gap 을 \
+             가져야 함. gap={:.2} px (PDF 기대 8.73 px ±2 px). \
+             버그(수정 전): gap=0.0 (Task #479 가 본문 paragraph 마지막 줄 \
+             trailing ls 제외 → border-start paragraph 가 9.54 px 위로 이동). \
+             pre-#479 baseline: gap=9.54 (PDF 정합).",
+            box_top_y, header_bottom, gap
+        );
+    }
 }
