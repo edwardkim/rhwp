@@ -240,6 +240,18 @@ pub struct LayoutEngine {
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
     /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
+    /// [Task #552] 다음 paragraph 가 visible border 시작이면 true.
+    /// Task #479 의 본문 paragraph 마지막 줄 trailing ls 제외 분기에서
+    /// 본 플래그가 true 면 ls 보존 (border-start 직전 박스 top 위치 정합).
+    /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
+    next_para_starts_visible_border: std::cell::Cell<bool>,
+    /// [Task #544 v3] 다음 paragraph 가 prev paragraph 와 같은 visible border
+    /// 진행 중이면 true (박스 안 sequential paragraph). Task #552 (`_starts_`)
+    /// 와 의미 분리 — 본 Cell 은 박스 outline 이 prev 와 동일 (같은 박스 안)
+    /// 인 케이스. paragraph_layout 의 trailing ls 제외 분기에서 본 플래그가
+    /// true 면 ls 보존 (박스 안 sequential paragraph 사이 line spacing 정합).
+    /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
+    next_para_continues_visible_border: std::cell::Cell<bool>,
 }
 
 mod text_measurement;
@@ -263,6 +275,73 @@ mod tests;
 mod integration_tests;
 
 impl LayoutEngine {
+    /// [Task #552] 다음 paragraph (curr_pi + 1) 가 visible border 시작인지 검사.
+    /// curr 가 visible border 보유 시 false (border 내부 transition 은 ls 정상).
+    /// next 가 존재하지 않거나 visible border 가 없으면 false.
+    pub(crate) fn next_paragraph_starts_visible_border(
+        &self,
+        curr_pi: usize,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        use crate::model::style::BorderLineType;
+        let visible_bf = |ps_id: u16| -> bool {
+            let ps = match styles.para_styles.get(ps_id as usize) {
+                Some(s) => s, None => return false,
+            };
+            if ps.border_fill_id == 0 { return false; }
+            let bf = match styles.border_styles.get((ps.border_fill_id as usize).saturating_sub(1)) {
+                Some(b) => b, None => return false,
+            };
+            bf.borders.iter().any(|b|
+                !matches!(b.line_type, BorderLineType::None) && b.width > 0)
+        };
+        let curr_para = match paragraphs.get(curr_pi) {
+            Some(p) => p, None => return false,
+        };
+        let next_para = match paragraphs.get(curr_pi + 1) {
+            Some(p) => p, None => return false,
+        };
+        let curr_visible = visible_bf(curr_para.para_shape_id);
+        let next_visible = visible_bf(next_para.para_shape_id);
+        next_visible && !curr_visible
+    }
+
+    /// [Task #544 v3] 다음 paragraph (curr_pi + 1) 가 prev paragraph 와 같은
+    /// visible border 진행 중인지 검사. curr 와 next 둘 다 visible border 가짐
+    /// + 같은 border_fill_id (= 같은 박스 outline 안 sequential paragraph) 일
+    /// 때 true. 박스 안 sequential paragraph 사이 trailing-ls 보존용.
+    /// next_paragraph_starts_visible_border 와 의미 분리 (mutually exclusive).
+    pub(crate) fn next_paragraph_continues_visible_border(
+        &self,
+        curr_pi: usize,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        use crate::model::style::BorderLineType;
+        let visible_bf_id = |ps_id: u16| -> Option<u16> {
+            let ps = styles.para_styles.get(ps_id as usize)?;
+            if ps.border_fill_id == 0 { return None; }
+            let bf = styles.border_styles.get((ps.border_fill_id as usize).saturating_sub(1))?;
+            let visible = bf.borders.iter().any(|b|
+                !matches!(b.line_type, BorderLineType::None) && b.width > 0);
+            if visible { Some(ps.border_fill_id) } else { None }
+        };
+        let curr_para = match paragraphs.get(curr_pi) {
+            Some(p) => p, None => return false,
+        };
+        let next_para = match paragraphs.get(curr_pi + 1) {
+            Some(p) => p, None => return false,
+        };
+        let curr_id = match visible_bf_id(curr_para.para_shape_id) {
+            Some(id) => id, None => return false,
+        };
+        let next_id = match visible_bf_id(next_para.para_shape_id) {
+            Some(id) => id, None => return false,
+        };
+        curr_id == next_id
+    }
+
     pub fn new(dpi: f64) -> Self {
         Self {
             dpi,
@@ -282,6 +361,8 @@ impl LayoutEngine {
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
+            next_para_starts_visible_border: std::cell::Cell::new(false),
+            next_para_continues_visible_border: std::cell::Cell::new(false),
         }
     }
 
@@ -1943,6 +2024,12 @@ impl LayoutEngine {
                                 });
                                 if let Some(start_line) = text_start_line {
                                     para_start_y.insert(*para_index, y_offset);
+                                    // [Task #552] 다음 paragraph 가 visible border 시작이면 trailing ls 보존
+                                    self.next_para_starts_visible_border.set(
+                                        self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
+                                    // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
+                                    self.next_para_continues_visible_border.set(
+                                        self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
                                     y_offset = self.layout_partial_paragraph(
                                         tree,
                                         col_node,
@@ -1958,6 +2045,8 @@ impl LayoutEngine {
                                         multi_col_width,
                                         Some(bin_data_content),
                                     );
+                                    self.next_para_starts_visible_border.set(false);
+                                    self.next_para_continues_visible_border.set(false);
                                 }
                             }
                         }
@@ -1995,6 +2084,12 @@ impl LayoutEngine {
                         let final_comp = numbered_comp.as_ref().or(comp);
 
                         para_start_y.insert(*para_index, y_offset);
+                        // [Task #552] 다음 paragraph 가 visible border 시작이면 trailing ls 보존
+                        self.next_para_starts_visible_border.set(
+                            self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
+                        // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
+                        self.next_para_continues_visible_border.set(
+                            self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
                         y_offset = self.layout_paragraph(
                             tree,
                             col_node,
@@ -2008,6 +2103,8 @@ impl LayoutEngine {
                             multi_col_width,
                             Some(bin_data_content),
                         );
+                        self.next_para_starts_visible_border.set(false);
+                        self.next_para_continues_visible_border.set(false);
                     }
                     // TAC Shape 높이 보정: 문단에 TAC Shape(개체묶기 등)가 있으면
                     // Shape 높이가 문단 텍스트 높이보다 클 수 있으므로 y_offset을 보정.
@@ -2102,6 +2199,13 @@ impl LayoutEngine {
                     } else {
                         composed.get(*para_index).cloned()
                     };
+                    // [Task #552] PartialParagraph 가 paragraph 끝까지 렌더링하면 (end_line >= comp.lines.len()) 다음 paragraph border 검사
+                    let is_full_end = comp.as_ref().map(|c| *end_line >= c.lines.len()).unwrap_or(false);
+                    self.next_para_starts_visible_border.set(
+                        is_full_end && self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
+                    // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
+                    self.next_para_continues_visible_border.set(
+                        is_full_end && self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
                     y_offset = self.layout_partial_paragraph(
                         tree,
                         col_node,
@@ -2117,6 +2221,8 @@ impl LayoutEngine {
                         None,
                         Some(bin_data_content),
                     );
+                    self.next_para_starts_visible_border.set(false);
+                    self.next_para_continues_visible_border.set(false);
                 }
             }
             PageItem::Table { para_index, control_index } => {
@@ -2431,7 +2537,7 @@ impl LayoutEngine {
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                     // Task #463: 인라인 floating 표 우측 x 계산 (paragraph border box 확장용).
                     // table_layout::compute_table_x_position 와 동일 공식.
-                    let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
+                    let tbl_x_right = self.compute_square_wrap_tbl_x_right(t, col_area);
                     self.layout_wrap_around_paras(
                         tree, col_node, paragraphs, composed, styles, col_area,
                         page_content.section_index,
@@ -2665,7 +2771,7 @@ impl LayoutEngine {
                     let content_offset = if let Some(mt) = pt_mt {
                         mt.range_height(0, start_row)
                     } else { 0.0 };
-                    let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
+                    let tbl_x_right = self.compute_square_wrap_tbl_x_right(t, col_area);
                     self.layout_wrap_around_paras(
                         tree, col_node, paragraphs, composed, styles, col_area,
                         page_content.section_index, para_index, wrap_around_paras,
@@ -2831,6 +2937,7 @@ impl LayoutEngine {
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,
+                                    transform: utils::extract_shape_transform(&pic.shape_attr),
                                     ..ImageNode::new(bin_data_id, image_data)
                                 }),
                                 BoundingBox::new(pic_x, pic_y, pic_w, pic_h),
@@ -3458,32 +3565,58 @@ impl LayoutEngine {
 /// 가 호출되지 않는 경우(선행 공백만 있는 TAC 표 등)에 `layout_table_item`
 /// 에서 표 inline x 좌표를 복원하기 위해 사용한다.
 /// Task #463: 인라인 wrap=Square floating 표의 우측 끝 x 좌표 계산.
-/// `table_layout::compute_table_x_position` 의 depth=0 + Column-relative
-/// 경로와 동일한 공식을 사용하여, paragraph border box 가 표를 둘러쌀 수
+/// `table_layout::compute_table_x_position` 의 depth=0 경로와 동일한
+/// `(ref_x, ref_w)` 공식을 사용하여, paragraph border box 가 표를 둘러쌀 수
 /// 있도록 한다. 인용 따옴표 ｢｣ 처럼 col_area 우측을 horizontal_offset 만큼
 /// 넘는 표를 정확히 처리한다.
-fn compute_square_wrap_tbl_x_right(
-    t: &crate::model::table::Table,
-    col_area: &LayoutRect,
-    dpi: f64,
-) -> f64 {
-    use crate::model::shape::HorzAlign;
-    let tbl_w = crate::renderer::hwpunit_to_px(t.common.width as i32, dpi);
-    let h_offset = crate::renderer::hwpunit_to_px(t.common.horizontal_offset as i32, dpi);
-    let tbl_x = match t.common.horz_align {
-        // table_layout.rs:966 와 동일: ref_x + (ref_w - table_width) - h_offset.
-        // 이후 inline_x_override 경로(line 924-925)에서 +h_offset 가산되어
-        // 최종 x = ref_x + (ref_w - table_width). h_offset 효과는 상쇄됨.
-        // 그러나 실제 렌더된 좌표(empirical: 526.93) 는 ref_x+(ref_w-tw)+h_offset 임.
-        // 여기서는 tbl_inline_x(line 2218)와 일관되게 단순 우측정렬 후
-        // h_offset 가산식을 사용한다.
-        HorzAlign::Right | HorzAlign::Outside =>
-            col_area.x + col_area.width - tbl_w + h_offset,
-        HorzAlign::Center =>
-            col_area.x + (col_area.width - tbl_w) / 2.0 + h_offset,
-        _ => col_area.x + h_offset,
-    };
-    tbl_x + tbl_w
+///
+/// Task #466: `horz_rel_to` 분기 보강.
+/// - Paper: ref_x=0, ref_w=paper_width
+/// - Page: ref_x=body_area.x, ref_w=body_area.width
+/// - Para/Column: ref_x=col_area.x, ref_w=col_area.width
+///
+/// h_offset 적용 방향: `inline_x_override` 경로(line 924-925) 와 일관되게
+/// 단순 정렬 후 `+h_offset` 가산. (table_layout.rs:966 의 Right/Outside 가
+/// `-h_offset` 인 것과 다름 — caller 측 inline_x 보정 후 동일 결과.)
+impl LayoutEngine {
+    fn compute_square_wrap_tbl_x_right(
+        &self,
+        t: &crate::model::table::Table,
+        col_area: &LayoutRect,
+    ) -> f64 {
+        use crate::model::shape::{HorzAlign, HorzRelTo};
+        let paper_w = self.current_paper_width.get();
+        let body = self.current_body_area.get();
+        let (ref_x, ref_w) = match t.common.horz_rel_to {
+            HorzRelTo::Paper => {
+                if paper_w > 0.0 {
+                    (0.0, paper_w)
+                } else {
+                    (col_area.x, col_area.width)
+                }
+            }
+            HorzRelTo::Page => {
+                if body.2 > 0.0 {
+                    (body.0, body.2)
+                } else {
+                    (col_area.x, col_area.width)
+                }
+            }
+            // Para / Column: col_area 기준 (host_margin 미반영 — caller wrap_text_x 가
+            // 별도로 margin 처리하므로 단순화)
+            HorzRelTo::Para | HorzRelTo::Column => (col_area.x, col_area.width),
+        };
+        let tbl_w = crate::renderer::hwpunit_to_px(t.common.width as i32, self.dpi);
+        let h_offset = crate::renderer::hwpunit_to_px(t.common.horizontal_offset as i32, self.dpi);
+        let tbl_x = match t.common.horz_align {
+            HorzAlign::Right | HorzAlign::Outside =>
+                ref_x + (ref_w - tbl_w) + h_offset,
+            HorzAlign::Center =>
+                ref_x + (ref_w - tbl_w) / 2.0 + h_offset,
+            _ => ref_x + h_offset,
+        };
+        tbl_x + tbl_w
+    }
 }
 
 fn compute_tac_leading_width(

@@ -824,12 +824,15 @@ impl TypesetEngine {
             (vec![hwpunit_to_px(400, self.dpi)], vec![0.0])
         };
 
+        // [Issue #479 옵션 3] paginator 의 누적은 trailing_ls 포함된 옛 total_height 유지.
+        // — paragraph 사이 gap 보존 → k-water-rfp p3 paragraph 영역 침범 회피.
+        // 단 layout 측은 paragraph 마지막 줄에서 trailing_ls 제외 (paragraph_layout.rs:2557)
+        // — paragraph 가 정확한 vpos 위치에 그려지도록 함.
+        // fit 판정은 height_for_fit (trailing_ls 제외) 사용 (#359 의도).
         let lines_total: f64 = line_heights.iter().zip(line_spacings.iter())
             .map(|(h, s)| h + s)
             .sum();
         let total_height = spacing_before + lines_total + spacing_after;
-
-        // 적합성 판단용: trailing line_spacing 제외
         let trailing_ls = line_spacings.last().copied().unwrap_or(0.0);
         let height_for_fit = (total_height - trailing_ls).max(0.0);
 
@@ -926,7 +929,9 @@ impl TypesetEngine {
         // 다단 레이아웃에서 문단 내 단 경계 감지
         // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
         // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
-        let col_breaks = if st.col_count > 1 && st.current_column == 0 {
+        // [Task #464] current_column == 0 가드 제거: col 1 (마지막 단) 에서도
+        // vpos-reset 인코딩된 col_break 를 감지해 페이지 break 를 트리거.
+        let col_breaks = if st.col_count > 1 {
             Self::detect_column_breaks_in_paragraph(para)
         } else {
             vec![0]
@@ -2005,13 +2010,13 @@ impl TypesetEngine {
             }
             st.current_height += part_height;
 
-            // 마지막 단이 아니면 다음 단으로 flush
+            // 다음 col_break 가 있으면 다음 단 또는 새 페이지로 이동.
+            // [Task #464] 마지막 단(col 1)에서 col_break 발생 시에도 페이지 break 를
+            // 트리거하도록 advance_column_or_new_page 통합 호출 사용
+            // (이전 코드는 단 변경만 처리하고 페이지 break 미처리 → col 1 의 후속 lines 가
+            //  같은 단에 누적되어 overflow 발생).
             if bi + 1 < col_breaks.len() {
-                st.flush_column();
-                if st.current_column + 1 < st.col_count {
-                    st.current_column += 1;
-                    st.current_height = 0.0;
-                }
+                st.advance_column_or_new_page();
             }
         }
     }
