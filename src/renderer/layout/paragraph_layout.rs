@@ -2633,14 +2633,19 @@ impl LayoutEngine {
             // 시작이면 trailing ls 보존 (Task #479 의 trailing ls 제외 → 박스 top 이
             // header 텍스트 바로 아래 붙는 회귀 정정). caller 가 next_para_starts_visible_border
             // 플래그 set 후 본 함수 호출.
+            // [Task #544 v3] 박스 안 sequential paragraph (prev/next 같은 박스 outline)
+            // 사이도 trailing ls 보존 — Task #552 가 박스 시작 직전만 처리, 박스 안
+            // sequential 영역 미처리 → -9.55 px (또는 부분) drift 회귀 영역.
             let next_starts_border = self.next_para_starts_visible_border.get();
+            let next_continues_border = self.next_para_continues_visible_border.get();
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
-            } else if is_full_paragraph_end && cell_ctx.is_none() && !next_starts_border {
+            } else if is_full_paragraph_end && cell_ctx.is_none()
+                && !next_starts_border && !next_continues_border {
                 // 셀 외부 paragraph 의 마지막 줄 (#479)
                 y += line_height;
             } else {
-                // [Task #552] border-start 직전 마지막 줄: trailing ls 보존
+                // [Task #552/#544 v3] border-start / border-continues 직전 마지막 줄: trailing ls 보존
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
             }

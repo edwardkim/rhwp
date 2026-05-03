@@ -1135,7 +1135,6 @@ mod tests {
     /// 작동 → Task #552 의 next_starts_border 가드가 박스 안 sequential 케이스
     /// 처리 안 함. 새 가드 next_para_continues_visible_border (방법 1) 로 fix.
     #[test]
-    #[ignore = "Task #544 v3 RED — fix 적용 전 실패 expected"]
     fn test_544_v3_passage_inner_lspacing_p2_4_6() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
@@ -1159,7 +1158,7 @@ mod tests {
             if parts.len() != 2 { continue; }
             let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
             let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
-            if x > 500.0 && y > 380.0 && y < 405.0 {
+            if x > 500.0 && y > 380.0 && y < 410.0 {
                 text_ys.push(y);
             }
         }
@@ -1167,9 +1166,10 @@ mod tests {
         unique_ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
         unique_ys.dedup_by(|a, b| (*a - *b).abs() < 0.5);
 
-        // 기대: y=382.17 (pi=46 마지막 줄), y=400.52 (pi=47 첫 줄). gap = 18.35 → 24.21
+        // 기대 (fix 후): y≈382.17 (pi=46 마지막 줄), y≈406.38 (pi=47 첫 줄). gap = 24.21 px.
+        // 수정 전: pi=47 첫 줄 y=400.52, gap=18.35 (drift -5.86).
         assert!(unique_ys.len() >= 2,
-            "p2 [4~6] col 1 의 y 범위 [380, 405] 에서 두 줄을 찾아야 함 (실제 {:?})",
+            "p2 [4~6] col 1 의 y 범위 [380, 410] 에서 두 줄을 찾아야 함 (실제 {:?})",
             unique_ys);
         let prev_last_y = unique_ys[0];
         let next_first_y = unique_ys[1];
@@ -1191,7 +1191,6 @@ mod tests {
     /// 수정 전 측정: gap=14.67 (drift -9.55 px, trailing-ls 716 HU 완전 제외).
     /// 수정 후 기대: gap=24.21 ±2.
     #[test]
-    #[ignore = "Task #544 v3 RED — fix 적용 전 실패 expected"]
     fn test_544_v3_passage_inner_lspacing_p10_19_21() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
@@ -1212,8 +1211,8 @@ mod tests {
             if parts.len() != 2 { continue; }
             let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
             let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
-            // p10 [19~21] 은 col 0 (x<500), y 범위 [380, 405]
-            if x < 500.0 && x > 100.0 && y > 380.0 && y < 405.0 {
+            // p10 [19~21] 은 col 0 (x<500), y 범위 [380, 410] (fix 후 next 첫 줄 ≈406)
+            if x < 500.0 && x > 100.0 && y > 380.0 && y < 410.0 {
                 text_ys.push(y);
             }
         }
@@ -1222,7 +1221,7 @@ mod tests {
         unique_ys.dedup_by(|a, b| (*a - *b).abs() < 0.5);
 
         assert!(unique_ys.len() >= 2,
-            "p10 [19~21] col 0 의 y 범위 [380, 405] 에서 두 줄을 찾아야 함 (실제 {:?})",
+            "p10 [19~21] col 0 의 y 범위 [380, 410] 에서 두 줄을 찾아야 함 (실제 {:?})",
             unique_ys);
         let prev_last_y = unique_ys[0];
         let next_first_y = unique_ys[1];
@@ -1243,7 +1242,6 @@ mod tests {
     /// 수정 전 측정: gap=14.66 (drift -9.55 px, trailing-ls 완전 제외).
     /// 수정 후 기대: gap=24.21 ±2.
     #[test]
-    #[ignore = "Task #544 v3 RED — fix 적용 전 실패 expected"]
     fn test_544_v3_passage_inner_lspacing_p11_22_24() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
@@ -1264,8 +1262,8 @@ mod tests {
             if parts.len() != 2 { continue; }
             let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
             let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
-            // p11 [22~24] 은 col 1 (x>500), y 범위 [549, 575]
-            if x > 500.0 && y > 549.0 && y < 575.0 {
+            // p11 [22~24] 은 col 1 (x>500), y 범위 [549, 580] (fix 후 next 첫 줄 ≈575.88)
+            if x > 500.0 && y > 549.0 && y < 580.0 {
                 text_ys.push(y);
             }
         }
@@ -1274,7 +1272,7 @@ mod tests {
         unique_ys.dedup_by(|a, b| (*a - *b).abs() < 0.5);
 
         assert!(unique_ys.len() >= 2,
-            "p11 [22~24] col 1 의 y 범위 [549, 575] 에서 두 줄을 찾아야 함 (실제 {:?})",
+            "p11 [22~24] col 1 의 y 범위 [549, 580] 에서 두 줄을 찾아야 함 (실제 {:?})",
             unique_ys);
         let prev_last_y = unique_ys[0];
         let next_first_y = unique_ys[1];
