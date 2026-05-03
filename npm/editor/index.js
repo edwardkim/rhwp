@@ -167,6 +167,26 @@ class RhwpEditor {
   }
 
   /**
+   * 현재 문서를 HWPX(ZIP+XML) 바이너리로 내보냅니다.
+   * @returns {Promise<Uint8Array>} HWPX 파일 bytes
+   */
+  async exportHwpx() {
+    const result = await this._request('exportHwpx');
+    return result instanceof Uint8Array ? result : new Uint8Array(result || []);
+  }
+
+  /**
+   * HWP 직렬화 + 자기 재로드 검증 메타데이터를 반환합니다 (#178).
+   *
+   * 검증 메타데이터만 반환하며, 실제 HWP bytes 가 필요하면 `exportHwp()` 를 별도 호출하세요.
+   *
+   * @returns {Promise<{bytesLen: number, pageCountBefore: number, pageCountAfter: number, recovered: boolean}>}
+   */
+  async exportHwpVerify() {
+    return this._request('exportHwpVerify');
+  }
+
+  /**
    * iframe 엘리먼트를 반환합니다.
    */
   get element() {
