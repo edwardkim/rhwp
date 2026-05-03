@@ -977,4 +977,69 @@ mod tests {
             box_width, pdf_box_width
         );
     }
+
+    /// Task #547: 페이지 4 [7~9] passage 박스 안 본문 텍스트 좌측 inset PDF 정합 검증.
+    ///
+    /// 박스 outline 은 Task #544 에서 col_area 로 정정되었으나, 박스 안 본문 텍스트의
+    /// 좌측 inset 이 paragraph margin_left (1704 HU = 11.36 px) 를 두 번 더해 22.66 px
+    /// 가 됨. PDF (한컴 2010) 는 박스 안 좌측 여백 ≈ 11.33 px (margin 한 번만).
+    ///
+    /// pi=82 (passage 본문) ParaShape:
+    ///   - margin_left=1704 HU → 11.36 px
+    ///   - indent=1984 HU → 13.23 px (첫줄만 적용)
+    ///   - border_fill_id=4 (paragraph border with stroke)
+    ///   - border_spacing[0]=[1]=0
+    ///
+    /// 두 번째+ 줄 (line_indent=0) 의 텍스트 x 좌표:
+    ///   - 현재 (수정 전): col_area.x + 11.36 + 11.36 = 139.89 px (inner_pad 중복)
+    ///   - 정정 후: col_area.x + 11.36 = 128.53 px (margin 한 번만)
+    ///   - PDF 기대: ≈ 128.5 px (±2 px)
+    ///
+    /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
+    #[test]
+    fn test_547_passage_text_inset_match_pdf_p4() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(3).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 4 SVG 가 비어있음");
+
+        // SVG <text> 요소 추출. transform="translate(x,y) ..." 형식 파싱.
+        // col 0 (x in 100~545), 박스 안 (y > 240) 영역만.
+        let mut text_xs: Vec<(f64, f64)> = Vec::new();  // (x, y)
+        for chunk in svg.split("<text ") {
+            let close = match chunk.find(">") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            // transform="translate(X,Y) scale(...)"
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            // [7~9] 박스 영역: col 0 (x < 545), y > 240 (박스 top 직후, 첫줄+),
+            // y < 360 (박스 안 본문 처음 몇 줄만 — 다음 박스 회피)
+            if x >= 100.0 && x <= 545.0 && y > 240.0 && y < 360.0 {
+                text_xs.push((x, y));
+            }
+        }
+        assert!(!text_xs.is_empty(),
+            "페이지 4 col 0 [7~9] 박스 안에서 <text> 요소를 찾지 못함");
+
+        // 박스 안 텍스트의 최소 x 좌표 = 줄 시작 x (line_indent=0 인 두 번째+ 줄)
+        // pi=82 첫줄은 indent=13.23 px 추가되므로 더 큼. 둘째+ 줄이 최소.
+        let min_x = text_xs.iter().map(|(x, _)| *x).fold(f64::INFINITY, f64::min);
+
+        let pdf_text_min_x: f64 = 128.5;
+
+        assert!(
+            (min_x - pdf_text_min_x).abs() < 2.0,
+            "[7~9] 박스 안 본문 텍스트 최소 x={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 \
+             일치해야 함. 버그(수정 전): min_x=139.89 (+11.4 px, inner_pad_left=margin_left \
+             중복 적용).",
+            min_x, pdf_text_min_x
+        );
+    }
 }
