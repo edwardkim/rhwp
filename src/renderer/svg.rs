@@ -6,6 +6,24 @@
 use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand, GradientFillInfo, PatternFillInfo, StrokeDash};
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType, ImageNode, FormObjectNode, ShapeTransform, BoundingBox};
 use super::composer::{CharOverlapInfo, pua_to_display_text, decode_pua_overlap_number};
+use super::pua_oldhangul::map_pua_old_hangul;
+
+/// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
+/// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
+fn expand_pua_old_hangul(text: &str) -> String {
+    if !text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
+        return text.to_string();
+    }
+    let mut out = String::with_capacity(text.len() * 2);
+    for ch in text.chars() {
+        if let Some(jamos) = map_pua_old_hangul(ch) {
+            out.extend(jamos.iter().copied());
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
 use crate::model::control::FormType;
 use super::layout::{compute_char_positions, split_into_clusters};
 use crate::model::style::{ImageFillMode, UnderlineType};
@@ -1076,6 +1094,7 @@ impl SvgRenderer {
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
         // BMP → PNG 변환 (브라우저는 SVG <image> 내부의 data:image/bmp 미지원)
+        // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
             match convert_wmf_to_svg(data) {
                 Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
@@ -1083,6 +1102,11 @@ impl SvgRenderer {
             }
         } else if mime_type == "image/bmp" {
             match bmp_bytes_to_png_bytes(data) {
+                Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                None => (std::borrow::Cow::Borrowed(data), mime_type),
+            }
+        } else if mime_type == "image/x-pcx" {
+            match pcx_bytes_to_png_bytes(data) {
                 Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
@@ -1854,6 +1878,9 @@ impl Renderer for SvgRenderer {
             .chars()
             .map(crate::renderer::layout::map_pua_bullet_char)
             .collect::<String>();
+        // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
+        // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
+        let text = &expand_pua_old_hangul(text);
 
         let color = color_to_svg(style.color);
         let font_size = if style.font_size > 0.0 { style.font_size } else { 12.0 };
@@ -2282,6 +2309,11 @@ impl Renderer for SvgRenderer {
                 Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
+        } else if mime_type == "image/x-pcx" {
+            match pcx_bytes_to_png_bytes(data) {
+                Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                None => (std::borrow::Cow::Borrowed(data), mime_type),
+            }
         } else {
             (std::borrow::Cow::Borrowed(data), mime_type)
         };
@@ -2347,6 +2379,70 @@ pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     Some(out)
 }
 
+/// PCX 바이트를 PNG 바이트로 재인코딩한다. 실패 시 None 반환.
+///
+/// 브라우저는 PCX 포맷을 native 렌더링하지 못하므로 (구형 ZSoft Paintbrush 포맷),
+/// SVG 임베딩 전에 PNG로 변환해 호환성을 확보한다.
+/// paletted PCX (8bpp) 와 RGB PCX (24bpp) 모두 지원.
+///
+/// **투명 처리**: PCX 자체는 알파 채널을 지원하지 않지만, HWP 의 PCX 임베드는
+/// 보통 BehindText (글뒤로) 배경/로고 용도로 흰색 (255,255,255) 영역을 투명으로
+/// 보여야 한다 (한컴 호환). 변환 시 흰색 픽셀을 투명 알파로 매핑한 RGBA PNG 를
+/// 출력한다.
+pub(crate) fn pcx_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::{ImageFormat, RgbaImage};
+    use std::io::Cursor;
+    let mut reader = pcx::Reader::new(Cursor::new(data)).ok()?;
+    let width = reader.width() as u32;
+    let height = reader.height() as u32;
+    if width == 0 || height == 0 {
+        return None;
+    }
+    let pixel_count = (width as usize) * (height as usize);
+    let mut rgba = vec![0u8; pixel_count * 4];
+    if reader.is_paletted() {
+        // paletted: row 별 인덱스 읽기 + 끝에서 팔레트 추출
+        let row_bytes = width as usize;
+        let mut indices = vec![0u8; row_bytes * height as usize];
+        for y in 0..height as usize {
+            reader
+                .next_row_paletted(&mut indices[y * row_bytes..(y + 1) * row_bytes])
+                .ok()?;
+        }
+        let mut palette = vec![0u8; 256 * 3];
+        reader.read_palette(&mut palette).ok()?;
+        for (dst, &idx) in rgba.chunks_exact_mut(4).zip(indices.iter()) {
+            let p = idx as usize * 3;
+            let r = palette[p];
+            let g = palette[p + 1];
+            let b = palette[p + 2];
+            dst[0] = r;
+            dst[1] = g;
+            dst[2] = b;
+            // 흰색 (255,255,255) → 투명 (한컴 BehindText 배경 호환)
+            dst[3] = if r == 255 && g == 255 && b == 255 { 0 } else { 255 };
+        }
+    } else {
+        // RGB: row 별 RGB 읽고 RGBA 로 확장
+        let row_bytes_rgb = width as usize * 3;
+        let mut rgb_row = vec![0u8; row_bytes_rgb];
+        for y in 0..height as usize {
+            reader.next_row_rgb(&mut rgb_row).ok()?;
+            for (x, src) in rgb_row.chunks_exact(3).enumerate() {
+                let dst = &mut rgba[(y * width as usize + x) * 4..(y * width as usize + x) * 4 + 4];
+                dst[0] = src[0];
+                dst[1] = src[1];
+                dst[2] = src[2];
+                dst[3] = if src[0] == 255 && src[1] == 255 && src[2] == 255 { 0 } else { 255 };
+            }
+        }
+    }
+    let img = RgbaImage::from_raw(width, height, rgba)?;
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png).ok()?;
+    Some(out)
+}
+
 /// 이미지 데이터에서 MIME 타입 감지
 pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
     if data.len() >= 8 {
@@ -2374,6 +2470,11 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
         if data.starts_with(&[0x49, 0x49, 0x2A, 0x00]) || data.starts_with(&[0x4D, 0x4D, 0x00, 0x2A]) {
             return "image/tiff";
         }
+    }
+    // PCX: 0A 05 (ZSoft Paintbrush v3.0+, 1980년대 비표준 포맷)
+    // 브라우저 native 미지원 → emit 시 PNG 변환 필요 (pcx_bytes_to_png_bytes)
+    if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
+        return "image/x-pcx";
     }
     // 알 수 없는 형식 → 기본값
     "application/octet-stream"

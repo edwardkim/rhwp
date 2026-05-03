@@ -1427,7 +1427,10 @@ fn dump_controls(args: &[String]) {
                                 }
                                 desc
                             }
-                            Control::Picture(p) => format!("그림(bin_id={}, w={}, h={}, tac={})", p.image_attr.bin_data_id, p.common.width, p.common.height, p.common.treat_as_char),
+                            Control::Picture(p) => {
+                                let wm = p.image_attr.watermark_preset().map(|s| format!(", watermark={}", s)).unwrap_or_default();
+                                format!("그림(bin_id={}, w={}, h={}, tac={}{})", p.image_attr.bin_data_id, p.common.width, p.common.height, p.common.treat_as_char, wm)
+                            },
                             Control::Header(_) => "머리말".to_string(),
                             Control::Footer(_) => "꼬리말".to_string(),
                             _ => format!("{:?}", std::mem::discriminant(ctrl)),
@@ -1652,6 +1655,9 @@ fn dump_controls(args: &[String]) {
                                                     p.shape_attr.original_width, p.shape_attr.original_height,
                                                     p.shape_attr.current_width, p.shape_attr.current_height,
                                                     p.crop.left, p.crop.top, p.crop.right, p.crop.bottom);
+                                                println!("{}      [image_attr] effect={:?} brightness={} contrast={} watermark={}",
+                                                    indent, p.image_attr.effect, p.image_attr.brightness, p.image_attr.contrast,
+                                                    p.image_attr.watermark_preset().unwrap_or("none"));
                                             }
                                             Control::Shape(s) => {
                                                 println!("{}    ctrl[{}] {}: tac={}, wrap={:?}",
@@ -1692,6 +1698,9 @@ fn dump_controls(args: &[String]) {
                             sa.current_width, sa.current_height,
                             sa.current_width as f64 / 7200.0 * 25.4, sa.current_height as f64 / 7200.0 * 25.4,
                             pic.common.treat_as_char);
+                        println!("{}  [image_attr] effect={:?} brightness={} contrast={} watermark={}",
+                            prefix, pic.image_attr.effect, pic.image_attr.brightness, pic.image_attr.contrast,
+                            pic.image_attr.watermark_preset().unwrap_or("none"));
                         println!("{}  border_x={:?} border_y={:?} border_color=#{:06X} border_width={} ({:.2}mm) border_attr={:?}",
                             prefix, pic.border_x, pic.border_y,
                             pic.border_color, pic.border_width, pic.border_width as f64 / 7200.0 * 25.4,

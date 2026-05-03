@@ -18,6 +18,23 @@ use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand, StrokeDash,
 use crate::model::style::UnderlineType;
 use crate::model::style::ImageFillMode;
 use super::render_tree::{BoundingBox, FormObjectNode, PageRenderTree, RenderNode, RenderNodeType, ShapeTransform};
+use super::pua_oldhangul::map_pua_old_hangul;
+
+/// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장 (Task #528).
+fn expand_pua_old_hangul_canvas(text: &str) -> String {
+    if !text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
+        return text.to_string();
+    }
+    let mut out = String::with_capacity(text.len() * 2);
+    for ch in text.chars() {
+        if let Some(jamos) = map_pua_old_hangul(ch) {
+            out.extend(jamos.iter().copied());
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
 use super::composer::{CharOverlapInfo, pua_to_display_text, decode_pua_overlap_number};
 use crate::model::control::FormType;
 #[cfg(target_arch = "wasm32")]
@@ -59,12 +76,51 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
         "image/bmp"
     } else if data.len() >= 4 && (data.starts_with(&[0xD7, 0xCD, 0xC6, 0x9A]) || data.starts_with(&[0x01, 0x00, 0x09, 0x00])) {
         "image/x-wmf"
+    } else if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
+        // PCX: 0A 05 (ZSoft Paintbrush v3.0+, Task #514)
+        // 브라우저 native 미지원 → emit 시 PNG 변환 필요 (svg::pcx_bytes_to_png_bytes)
+        "image/x-pcx"
     } else if super::svg_fragment::is_svg_prefix(data) {
         // Task #275: RawSvg 래퍼 경로 — <svg 또는 <?xml + <svg
         "image/svg+xml"
     } else {
         "application/octet-stream"
     }
+}
+
+/// 그림 효과 / 밝기 / 대비를 CSS filter 문자열로 합성한다 (Task #516).
+///
+/// CSS filter ↔ SVG feComponentTransfer 매핑은 미세 차이 가능 (Stage 5 시각 판정 게이트).
+/// 한컴 워터마크 효과 (`effect=GrayScale + brightness=70 + contrast=-50`) 도 본 함수로 통합 적용.
+#[cfg(target_arch = "wasm32")]
+fn compose_image_filter(
+    effect: crate::model::image::ImageEffect,
+    brightness: i8,
+    contrast: i8,
+) -> Option<String> {
+    use crate::model::image::ImageEffect;
+    let mut parts: Vec<String> = Vec::new();
+    match effect {
+        ImageEffect::GrayScale | ImageEffect::Pattern8x8 => {
+            parts.push("grayscale(100%)".to_string());
+        }
+        ImageEffect::BlackWhite => {
+            // 회색조 → 고대비로 흑백 모방. CLI SVG 의 feComponentTransfer discrete 와
+            // 시각적 근접 (정확한 등가는 아님, Stage 5 시각 판정으로 점검).
+            parts.push("grayscale(100%)".to_string());
+            parts.push("contrast(1000%)".to_string());
+        }
+        ImageEffect::RealPic => {}
+    }
+    if brightness != 0 {
+        let css_b = (100.0 + brightness as f64) / 100.0;
+        parts.push(format!("brightness({:.4})", css_b));
+    }
+    if contrast != 0 {
+        let css_c = (100.0 + contrast as f64) / 100.0;
+        parts.push(format!("contrast({:.4})", css_c));
+    }
+    if parts.is_empty() { None } else { Some(parts.join(" ")) }
 }
 
 /// 이미지 데이터에서 픽셀 크기(width, height)를 파싱한다.
@@ -116,6 +172,25 @@ fn parse_image_dimensions_canvas(data: &[u8]) -> Option<(u32, u32)> {
 
 /// Web Canvas 2D 렌더러
 ///
+/// 다층 레이어 렌더링 필터 (Task #516, Stage 5.2 옵션 A).
+///
+/// 페이지를 다중 layer 로 분리할 때 어떤 wrap 모드의 그림을 렌더링할지 결정.
+/// `All` 은 기존 단일 평면 동작 (모든 그림 포함). `FlowOnly` 는 본문 layer 용
+/// (BehindText/InFrontOfText 제외). `WrapOnly` 는 overlay layer 용 (해당 wrap 만).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum LayerFilter {
+    /// 모든 그림 (기본 — 기존 동작 보존)
+    All,
+    /// 본문 layer — BehindText / InFrontOfText 그림 제외
+    FlowOnly,
+    /// Overlay layer — 특정 wrap 모드 그림만 (BehindText 또는 InFrontOfText)
+    WrapOnly(crate::model::shape::TextWrap),
+}
+
+impl Default for LayerFilter {
+    fn default() -> Self { LayerFilter::All }
+}
+
 /// web-sys의 CanvasRenderingContext2d를 사용하여 실제 브라우저 Canvas에 렌더링한다.
 /// WASM 환경에서만 컴파일된다.
 #[cfg(target_arch = "wasm32")]
@@ -132,6 +207,8 @@ pub struct WebCanvasRenderer {
     pub show_control_codes: bool,
     /// 줌 스케일 (1.0 = 100%)
     scale: f64,
+    /// 다층 레이어 필터 (Task #516, 기본 All 은 기존 동작 보존)
+    pub layer_filter: LayerFilter,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -150,12 +227,35 @@ impl WebCanvasRenderer {
             show_paragraph_marks: false,
             show_control_codes: false,
             scale: 1.0,
+            layer_filter: LayerFilter::All,
         })
     }
 
     /// 줌 스케일 설정 (1.0 = 100%, 2.0 = 200%)
     pub fn set_scale(&mut self, scale: f64) {
         self.scale = scale;
+    }
+
+    /// 다층 레이어 필터 설정 (Task #516, Stage 5.2)
+    pub fn set_layer_filter(&mut self, filter: LayerFilter) {
+        self.layer_filter = filter;
+    }
+
+    /// 그림의 wrap 모드가 현재 layer_filter 와 일치하는지 판정 (Task #516).
+    ///
+    /// - `LayerFilter::All`: 모든 그림 렌더 (기본)
+    /// - `LayerFilter::FlowOnly`: BehindText / InFrontOfText 제외 (본문 layer)
+    /// - `LayerFilter::WrapOnly(w)`: 해당 wrap 만 (overlay layer)
+    fn should_render_image(&self, image_wrap: Option<crate::model::shape::TextWrap>) -> bool {
+        use crate::model::shape::TextWrap;
+        match self.layer_filter {
+            LayerFilter::All => true,
+            LayerFilter::FlowOnly => match image_wrap {
+                Some(TextWrap::BehindText) | Some(TextWrap::InFrontOfText) => false,
+                _ => true,
+            },
+            LayerFilter::WrapOnly(target) => image_wrap == Some(target),
+        }
     }
 
     /// 렌더 트리를 Canvas에 렌더링
@@ -320,10 +420,19 @@ impl WebCanvasRenderer {
             RenderNodeType::Image(img) => {
                 self.open_shape_transform(&img.transform, &node.bbox);
                 if let Some(ref data) = img.data {
+                    // Task #516: 그림 효과 / 밝기 / 대비 / 워터마크를 CSS filter 로 적용
+                    let filter_str = compose_image_filter(img.effect, img.brightness, img.contrast);
+                    if let Some(ref f) = filter_str {
+                        self.ctx.set_filter(f);
+                    }
                     self.draw_image_with_fill_mode(
                         data, &node.bbox, img.fill_mode, img.original_size, img.crop,
                         img.original_size_hu,
                     );
+                    // 다음 그리기 작업에 영향 없도록 reset
+                    if filter_str.is_some() {
+                        self.ctx.set_filter("none");
+                    }
                 }
             }
             RenderNodeType::Path(path) => {
@@ -662,6 +771,12 @@ impl WebCanvasRenderer {
             },
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
+                    // Task #516 Stage 5.2: 다층 레이어 필터 — 그림의 wrap 모드에 따라 skip
+                    if let PaintOp::Image { image, .. } = op {
+                        if !self.should_render_image(image.text_wrap) {
+                            continue;
+                        }
+                    }
                     let render_node = match op {
                         PaintOp::PageBackground { bbox, background } => RenderNode::new(
                             node.source_node_id.unwrap_or(0),
@@ -1446,6 +1561,8 @@ impl Renderer for WebCanvasRenderer {
             .chars()
             .map(crate::renderer::layout::map_pua_bullet_char)
             .collect::<String>();
+        // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (KTUG 매핑).
+        let text = &expand_pua_old_hangul_canvas(text);
 
         // 글꼴 설정
         let font_weight = if style.bold { "bold " } else { "" };
@@ -1859,9 +1976,15 @@ impl Renderer for WebCanvasRenderer {
         let mime_type = detect_image_mime_type(data);
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
+        // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
             match crate::renderer::svg::convert_wmf_to_svg(data) {
                 Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                None => (std::borrow::Cow::Borrowed(data), mime_type),
+            }
+        } else if mime_type == "image/x-pcx" {
+            match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else {

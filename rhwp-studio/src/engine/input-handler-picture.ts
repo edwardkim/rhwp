@@ -19,9 +19,19 @@ export function findPictureAtClick(this: any,
 ): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; x1?: number; y1?: number; x2?: number; y2?: number } | null {
   try {
     const layout = this.wasm.getPageControlLayout(pageIdx);
+    // Task #516 결함 3 (옵션 3-C): BehindText 그림은 텍스트 영역 위에서는 후순위.
+    // 1차 패스: BehindText 가 아닌 그림 우선 hit-test.
+    // 2차 패스: BehindText 그림은 텍스트 hit-test 결과가 비어 있을 때만 hit.
+    const behindCtrls: any[] = [];
     for (const ctrl of layout.controls) {
       if (ctrl.type !== 'image' && ctrl.type !== 'shape' && ctrl.type !== 'equation' && ctrl.type !== 'group' && ctrl.type !== 'line') continue;
       if (ctrl.secIdx === undefined || ctrl.paraIdx === undefined || ctrl.controlIdx === undefined) continue;
+
+      // BehindText 그림은 1차 패스 건너뛰고 2차 패스로 보류
+      if (ctrl.wrap === 'behindText') {
+        behindCtrls.push(ctrl);
+        continue;
+      }
 
       if (ctrl.type === 'line') {
         // 직선: 점-선분 거리, 연결선: 곡선 경로 샘플링으로 히트 판정
@@ -72,6 +82,30 @@ export function findPictureAtClick(this: any,
         if (pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
             pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h) {
           return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx };
+        }
+      }
+    }
+    // 2차 패스: BehindText 그림 hit-test (옵션 3-C, Task #516).
+    // 텍스트 hit-test 결과를 확인하여 텍스트가 있는 위치면 그림 hit 무시.
+    // 텍스트가 없는 영역 (예: 빈 줄, 페이지 여백) 에서는 BehindText 그림 hit 허용.
+    if (behindCtrls.length > 0) {
+      let textHit = false;
+      try {
+        const ht = this.wasm.hitTest(pageIdx, pageX, pageY);
+        // ht 가 유효하고 charOffset 이 텍스트 영역 안 (charOffset > 0 또는 paragraphIndex 가
+        // 그림이 attach 된 빈 문단이 아님) 이면 텍스트 hit 으로 간주.
+        // 보수적: ht 가 null/undefined 가 아니면 텍스트 영역으로 간주.
+        if (ht && typeof ht.charOffset === 'number' && ht.charOffset > 0) {
+          textHit = true;
+        }
+      } catch { /* hitTest 실패 시 그림 hit 허용 */ }
+
+      if (!textHit) {
+        for (const ctrl of behindCtrls) {
+          if (pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
+              pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h) {
+            return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx };
+          }
         }
       }
     }

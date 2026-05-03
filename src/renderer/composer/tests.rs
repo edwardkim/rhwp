@@ -366,7 +366,7 @@ fn test_split_runs_by_lang_korean_english() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-    }];
+        display_text: None,    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
     assert_eq!(result[0].text, "안녕");
@@ -386,7 +386,7 @@ fn test_split_runs_by_lang_no_split() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-    }];
+        display_text: None,    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].text, "안녕하세요");
@@ -402,7 +402,7 @@ fn test_split_runs_by_lang_space_follows_prev() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-    }];
+        display_text: None,    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
     assert_eq!(result[0].text, "안녕 ");
@@ -422,7 +422,7 @@ fn test_split_runs_by_lang_empty() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-    }];
+        display_text: None,    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].text, "");
@@ -437,7 +437,7 @@ fn test_split_runs_by_lang_english_only() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-    }];
+        display_text: None,    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].text, "Hello World");
@@ -513,7 +513,7 @@ fn test_estimate_composed_line_width() {
             lang_index: 0,
             char_overlap: None,
         footnote_marker: None,
-        }],
+        display_text: None,        }],
         line_height: 400,
         baseline_distance: 320,
         segment_width: 0,

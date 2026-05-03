@@ -789,31 +789,14 @@ impl LayoutEngine {
         let box_margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
 
-        // 문단에 시각적 테두리(stroke 있는 border)가 있고 border_spacing 좌/우가 0인
-        // 파일의 경우, 한컴은 paragraph margin 값을 inner padding으로도 사용하여
-        // 텍스트가 테두리에 붙지 않도록 한다. rhwp는 동일 효과를 내기 위해 텍스트
-        // 위치 계산에 사용하는 margin 값에만 inner padding을 더하고, 박스(테두리)
-        // 위치는 원래 margin 값을 그대로 사용한다.
-        // 배경(fill)만 있는 문단은 영향 받지 않도록 stroke 유무를 확인한다.
-        let para_border_fill_id_pre = para_style.map(|s| s.border_fill_id).unwrap_or(0);
-        let has_visible_stroke = if para_border_fill_id_pre > 0 {
-            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
-            styles.border_styles.get(idx)
-                .map(|bs| bs.borders.iter().any(|b|
-                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
-                .unwrap_or(false)
-        } else {
-            false
-        };
-        let bs_left_px = para_style.map(|s| s.border_spacing[0]).unwrap_or(0.0);
-        let bs_right_px = para_style.map(|s| s.border_spacing[1]).unwrap_or(0.0);
-        let (inner_pad_left, inner_pad_right) = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
-            (box_margin_left, box_margin_right)
-        } else {
-            (0.0, 0.0)
-        };
-        let margin_left = box_margin_left + inner_pad_left;
-        let margin_right = box_margin_right + inner_pad_right;
+        // [Task #547] paragraph margin_left/right 는 텍스트 좌/우 inset 으로 한 번만
+        // 적용. Task #544 후 box outline = col_area (margin 미적용) 이므로 박스 안
+        // 좌측 여백 = box_margin_left (PDF 한컴 2010 정합).
+        // 이전 코드는 paragraph border + border_spacing=0 인 경우 inner_pad_left =
+        // box_margin_left 로 한 번 더 더해 이중 inset 부작용 발생 (Task #544 전 박스도
+        // margin 적용했을 때만 의미가 있던 분기).
+        let margin_left = box_margin_left;
+        let margin_right = box_margin_right;
         let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Justify);
         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
@@ -882,9 +865,17 @@ impl LayoutEngine {
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
+        // [Task #544] vpos correction 가드 (페이지 시작 paragraph 직후 transition)
+        // 로 trailing-ls 가 누락된 sequential y_offset 인 경우, 외부에서 set 한
+        // paragraph_border_y_correction_px 만큼 박스 top 만 보정 (본문 텍스트 위치는
+        // 보존). 일반 케이스에서는 보정값 0. read 직후 reset 하여 다음 paragraph 에
+        // 누수되지 않게 한다.
         let bg_y_start = if para_border_fill_id > 0 {
-            y_start
+            let corrected = y_start + self.paragraph_border_y_correction_px.get();
+            self.paragraph_border_y_correction_px.set(0.0);
+            corrected
         } else {
+            self.paragraph_border_y_correction_px.set(0.0);
             y
         };
         let bg_insert_idx = col_node.children.len();
@@ -1922,6 +1913,7 @@ impl LayoutEngine {
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
                                             transform: extract_shape_transform(&pic.shape_attr),
+                                            text_wrap: Some(pic.common.text_wrap),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2196,6 +2188,7 @@ impl LayoutEngine {
                                         brightness: pic.image_attr.brightness,
                                         contrast: pic.image_attr.contrast,
                                         transform: extract_shape_transform(&pic.shape_attr),
+                                        text_wrap: Some(pic.common.text_wrap),
                                         ..ImageNode::new(bin_data_id, image_data)
                                     }),
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2306,6 +2299,7 @@ impl LayoutEngine {
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
                                             transform: extract_shape_transform(&pic.shape_attr),
+                                            text_wrap: Some(pic.common.text_wrap),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
@@ -2758,6 +2752,11 @@ impl LayoutEngine {
         // Task #463: 셀 안 단락은 본문 큐에 leakage 하지 않도록 cell_ctx 게이팅.
         // 셀 외곽선은 별도 경로(table_layout/border_rendering)에서 처리되므로
         // 본문 단락의 연속 외곽선 merge 가 셀 단락 좌표/시그니처에 의해 깨지지 않게 한다.
+        // [Task #544] Task #540 Stage 4 의 push skip 가드 (`is_540_floor_target`) 는
+        // Task #544 의 paragraph_border_y_correction_px (vpos correction skip 시 박스
+        // top 의 trailing-ls 보정) 가 동일 회귀 (passage 박스 안 위쪽 여백 증가) 를
+        // 더 본질적으로 해결하므로 제거. floor 대상 paragraph 도 group 첫 paragraph
+        // 로 push 되어 박스 top 이 IR vpos start 위치 (+ trailing-ls) 로 잡힘.
         if para_border_fill_id > 0 && cell_ctx.is_none() {
             let bg_height = y - bg_y_start;
             if bg_height > 0.0 {
@@ -2774,10 +2773,15 @@ impl LayoutEngine {
                 // override 가 활성된 경우(wrap host), 박스 우측은 floating 표의 끝
                 // 까지 확장된 width 그대로 사용 — margin_right 차감하지 않는다
                 // (그렇지 않으면 표가 박스 밖으로 다시 튀어나옴).
+                // [Task #544] paragraph margin_left/right 는 텍스트 inset 으로만 사용,
+                // 박스 outline 좌표는 col_area 전체 (PDF 정합). wrap=Square 호스트
+                // (border_box_override) 케이스는 layout_wrap_around_paras 가 설정한
+                // override 좌표 그대로 사용 (margin 미적용). 호환을 위해 override 가
+                // None 인 일반 케이스만 col_area 좌표 사용.
                 let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
-                    (ox + box_margin_left, ow - box_margin_left)
+                    (ox, ow)
                 } else {
-                    (col_area.x + box_margin_left, col_area.width - box_margin_left - box_margin_right)
+                    (col_area.x, col_area.width)
                 };
                 self.para_border_ranges.borrow_mut().push(
                     (para_border_fill_id, box_x, bg_y_start, box_w, y, top_inset, bottom_inset, is_partial_start, is_partial_end, para_index)
@@ -3072,6 +3076,19 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
             // KTX 회귀 origin — 한컴 PDF 시각 = · (Middle dot), ★ 아님
             // (작업지시자 정정 — 이전 ★ U+2605 매핑은 잘못)
             0xF02EF => '\u{00B7}', // · Middle dot
+            _ => ch,
+        };
+    }
+
+    // Supplementary PUA-A — 한컴 책괄호 / 예시 마커 (Task #528 exam_kor p17)
+    // exam_kor p17 측정: F0854/F0855 각 33회 (책 제목 둘러싸기), F00DA 2회
+    if (0xF00D0..=0xF09FF).contains(&code) {
+        return match code {
+            // 책괄호 (한국어 도서 제목) — 용비어천가, 석보상절, 월인천강지곡 등
+            0xF0854 => '\u{300A}', // 《 LEFT DOUBLE ANGLE BRACKET
+            0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
+            // 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 — 한컴 PDF 시각 검증 필요
+            0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 후 정정)
             _ => ch,
         };
     }

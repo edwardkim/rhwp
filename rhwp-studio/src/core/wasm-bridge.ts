@@ -194,6 +194,32 @@ export class WasmBridge {
     this.doc.renderPageToCanvas(pageNum, canvas, scale);
   }
 
+  /**
+   * 다층 레이어 필터를 적용한 Canvas 렌더링 (Task #516, Stage 5.2).
+   *
+   * @param layerKind 'all' = 모든 그림, 'flow' = 본문 layer (BehindText/InFrontOfText 제외),
+   *                  'behind' = BehindText overlay, 'front' = InFrontOfText overlay
+   */
+  renderPageToCanvasFiltered(
+    pageNum: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+    layerKind: 'all' | 'flow' | 'behind' | 'front',
+  ): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.doc.renderPageToCanvasFiltered(pageNum, canvas, scale, layerKind);
+  }
+
+  /**
+   * PageLayerTree JSON 가져오기 (Task #516, Stage 5.2).
+   * BehindText/InFrontOfText 그림의 메타정보 (bin_id, bbox, transform, effect, brightness, contrast,
+   * watermark, wrap) 를 추출하여 overlay 생성에 사용.
+   */
+  getPageLayerTree(pageNum: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.getPageLayerTree(pageNum);
+  }
+
   renderPageSvg(pageNum: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.renderPageSvg(pageNum);

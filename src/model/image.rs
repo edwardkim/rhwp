@@ -59,6 +59,35 @@ pub struct ImageAttr {
     pub bin_data_id: u16,
 }
 
+impl ImageAttr {
+    /// 워터마크 효과가 적용되어 있는지 식별 (Task #516).
+    /// effect 가 RealPic 이 아니고 brightness/contrast 중 하나라도 변경된 경우.
+    pub fn is_watermark(&self) -> bool {
+        !matches!(self.effect, ImageEffect::RealPic)
+            && (self.brightness != 0 || self.contrast != 0)
+    }
+
+    /// 한컴 자동 워터마크 프리셋 정합 여부 (Task #516).
+    /// 한컴 도구의 "이미지 → 회색조 → 워터마크 효과" 체크 시 자동 적용:
+    /// effect=GrayScale, brightness=70, contrast=-50.
+    pub fn is_hancom_watermark_preset(&self) -> bool {
+        matches!(self.effect, ImageEffect::GrayScale)
+            && self.brightness == 70
+            && self.contrast == -50
+    }
+
+    /// 워터마크 preset 분류 (Task #516, AI 메타정보).
+    pub fn watermark_preset(&self) -> Option<&'static str> {
+        if self.is_hancom_watermark_preset() {
+            Some("hancom-watermark")
+        } else if self.is_watermark() {
+            Some("custom")
+        } else {
+            None
+        }
+    }
+}
+
 /// 이미지 효과
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ImageEffect {
