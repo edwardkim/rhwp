@@ -713,3 +713,80 @@ HWP 문서에서 다음 폰트명들은 FONT_METRICS DB 에 정식 엔트리가 
 
 Layer 2 누락 시 증상: `find_metric` None 반환 → 기본 폭 → SVG 에서 글자 겹침.
 
+
+---
+
+## 10. 옛한글 (Old Hangul) Fallback (Task #528)
+
+### 10.1 본질
+
+한/글 2010 이전 버전에서 입력된 옛한글은 PUA 영역 (U+E0BC ~ U+F8F7) 에 저장된다. 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 글리프를 직접 보유하나, OFL 폰트는 이 영역을 미지원.
+
+해결: PUA → KS X 1026-1:2007 자모 시퀀스 변환 + 변환 결과를 합자 (CCMP/LJMO/VJMO/TJMO) 렌더링하는 폰트 fallback.
+
+### 10.2 채택 폰트
+
+**Source Han Serif K Old Hangul subset** (Adobe + Google, **SIL OFL 1.1**)
+
+- 출처: https://github.com/adobe-fonts/source-han-serif (Adobe-Fonts/source-han-serif)
+- 원본: 23 MB (`SourceHanSerifK-Regular.otf`)
+- subset: **234 KB woff2** (옛한글 자모 영역만 + 합자 피처 보존)
+- 라이선스 동봉: `rhwp-studio/public/fonts/SourceHanSerifK-OFL.txt`
+
+### 10.3 Subset 절차
+
+```bash
+# 원본 다운로드
+curl -L -O https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Korean/SourceHanSerifK-Regular.otf
+
+# Old Hangul 영역 + 합자 피처 보존 subset
+pyftsubset SourceHanSerifK-Regular.otf \
+    --unicodes='U+1100-11FF,U+A960-A97F,U+D7B0-D7FF' \
+    --layout-features='*' \
+    --output-file=SourceHanSerifK-OldHangul-subset.woff2 \
+    --flavor=woff2 --no-hinting
+```
+
+검증:
+- 357/368 옛한글 자모 codepoints 커버 (KTUG 매핑 target jamo 357/357 100%)
+- GSUB features: ccmp + ljmo + vjmo + tjmo (모든 합자 피처 보존)
+
+### 10.4 적용 위치
+
+**WASM 웹 빌드만**:
+- `rhwp-studio/public/fonts/SourceHanSerifK-OldHangul-subset.woff2`
+- `rhwp-studio/src/core/font-loader.ts` 의 `FONT_LIST` 에 등록
+- `unicode-range: U+1100-11FF, U+A960-A97F, U+D7B0-D7FF` 으로 옛한글 영역만 매칭 → 일반 한글 미영향
+
+**네이티브 SVG 출력**:
+- `src/renderer/mod.rs::generic_fallback` 의 한글 serif/sans-serif 체인 말단에 `'Source Han Serif K Old Hangul'` 추가
+- 단독 SVG 사용 시 `--font-style` / `--embed-fonts` 옵션 또는 시스템에 폰트 설치 필요
+
+### 10.5 변환 파이프라인
+
+```
+[원본 IR: PUA U+E38A]
+       ↓ Composer / Renderer (Task #528)
+[map_pua_old_hangul] — KTUG 매핑 표 룩업
+       ↓
+[KS X 1026-1:2007 자모 시퀀스: U+1103 U+119E]
+       ↓
+[font-family 체인 — 일반 한글 폰트는 cmap 부재로 fallback]
+       ↓
+[Source Han Serif K Old Hangul (unicode-range 매칭)]
+       ↓
+[CCMP/LJMO/VJMO/TJMO 합자 → 단일 음절 글리프]
+```
+
+### 10.6 매핑 표
+
+KTUG HanyangPuaTableProject (Public Domain) — 5,660 매핑 (BMP PUA U+E0BC ~ U+F8F7).
+
+자세한 내용: `mydocs/tech/pua_oldhangul_mapping_sources.md`.
+
+### 10.7 미커버 영역
+
+| 영역 | 처리 |
+|------|------|
+| Supplementary PUA-A (U+F0854/F0855 책괄호 등) | 본 task 외 — 별도 issue 권장 |
+| 한컴 자체 PUA 기호 | Task #509 패턴 정합 (별도 매핑 필요) |

@@ -343,72 +343,65 @@ mod tests {
             violations);
     }
 
-    /// Task #490: 빈 텍스트 + TAC 수식만 있는 셀 paragraph 의 alignment 적용.
+    /// Task #473: 그림 crop 변환 scale 기준 오류 — 표시 HU(`original_size_hu`)가
+    /// 96-DPI native HU 와 일치하지 않을 때 viewBox 가 image 보다 과대해지는 회귀.
     ///
-    /// 케이스: `samples/exam_science.hwp` 페이지 1 의 3번 표 (pi=12, 4행×4열,
-    /// "이온 결합 화합물") 의 셀 7 (행1, 열3) "전체 전자의 양" 컬럼 28 수식.
-    /// 셀 paragraph 는 text_len=0 + ctrls=1 (수식) 구조. 수정 전: empty-runs
-    /// 분기 (`paragraph_layout.rs:2227`) 가 `inline_x = effective_col_x +
-    /// effective_margin_left` 로 좌측 고정 → 28 수식이 셀 좌측에 정렬.
-    /// 수정 후: paragraph alignment(Center) 따라 align_offset 적용 → 수식이
-    /// 셀 중앙 부근에 정렬.
+    /// 21_언어_기출_편집가능본.hwp 페이지 12 우측 단 `<보기>` 표 내부 그림:
+    /// - 이미지 binary: 2220×1654 px (96 DPI 환산 166500×124080 HU)
+    /// - 표시 HU: 26640×19860 (94×70mm)
+    /// - crop = (0, 0, 166500, 124080) ← 이미지 native HU at 96 DPI
     ///
-    /// 검증: 28 수식의 그룹 transform x 좌표가 수정 전(x≈358) 보다 우측
-    /// (x>400) 으로 이동했는지 확인. 셀 7 영역(x≈336..478) 의 좌측 1/3
-    /// 범위(<395) 에 있으면 결함, 그 이후면 alignment 정상 적용.
+    /// 기존: scale=26640/2220=12 HU/px → src_w=13875 → viewBox(13875) 안에
+    /// image(2220) → 16% 비율로 작게 표시.
+    /// 수정 후: scale=75 (96-DPI 관행) → src_w=2220 → viewBox=image 일치.
     #[test]
-    fn test_490_empty_para_with_tac_equation_respects_alignment() {
-        let Some(core) = load_document("samples/exam_science.hwp") else {
+    fn test_473_picture_crop_viewbox_matches_image_px() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
         };
-        let svg = core.render_page_svg_native(0).unwrap_or_default();
-        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+        let svg = core.render_page_svg_native(11).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 12 SVG 가 비어있음");
 
-        // 28 수식 위치 추출. SVG 구조: <g transform="translate(X, Y) scale(...)">
-        //                              <text x="0" y="...">28</text>
-        //                              </g>
-        // "28" 텍스트 직전의 group transform x 좌표를 찾는다.
-        let needle = ">28<";
-        let mut found_xs: Vec<f64> = Vec::new();
-        let mut search_start = 0;
-        while let Some(pos) = svg[search_start..].find(needle) {
-            let abs_pos = search_start + pos;
-            let context_start = abs_pos.saturating_sub(2000);
-            let context = &svg[context_start..abs_pos];
-            // 가장 가까운 직전 `<g transform="translate(X` 패턴 찾기
-            if let Some(g_rel) = context.rfind("<g transform=\"translate(") {
-                let after_translate = &context[g_rel + "<g transform=\"translate(".len()..];
-                if let Some(comma) = after_translate.find(',') {
-                    if let Ok(x) = after_translate[..comma].parse::<f64>() {
-                        // y 좌표로 3번 표 영역 (y ≈ 1040..1090) 인지 확인
-                        let after_comma = &after_translate[comma + 1..];
-                        if let Some(close_paren) = after_comma.find(')') {
-                            if let Ok(y) = after_comma[..close_paren].parse::<f64>() {
-                                if (1040.0..1090.0).contains(&y) {
-                                    found_xs.push(x);
-                                }
-                            }
-                        }
-                    }
+        // SVG 내 <svg ...><image .../></svg> 패턴에서 viewBox width 와 inner image
+        // width 비율 검증. crop 이 적용된 그림은 이런 nested SVG 형태로 emit 됨.
+        // 비율이 1.0 ± 10% 안에 있어야 그림이 viewBox 를 가득 채움.
+        let mut violations: Vec<String> = Vec::new();
+        for chunk in svg.split("<svg ").skip(1) {
+            let end = chunk.find("</svg>").unwrap_or(chunk.len());
+            let body = &chunk[..end];
+            let vb_pat = "viewBox=\"";
+            let Some(vb_start) = body.find(vb_pat) else { continue };
+            let vb_str_start = vb_start + vb_pat.len();
+            let Some(vb_end) = body[vb_str_start..].find('"') else { continue };
+            let vb_str = &body[vb_str_start..vb_str_start + vb_end];
+            let vb_parts: Vec<f64> = vb_str.split_whitespace()
+                .filter_map(|s| s.parse().ok()).collect();
+            if vb_parts.len() != 4 { continue; }
+            let vb_w = vb_parts[2];
+            let vb_h = vb_parts[3];
+            let img_pat = "<image width=\"";
+            let Some(im_start) = body.find(img_pat) else { continue };
+            let im_str_start = im_start + img_pat.len();
+            let Some(im_end) = body[im_str_start..].find('"') else { continue };
+            let img_w: f64 = body[im_str_start..im_str_start + im_end].parse().unwrap_or(0.0);
+            let h_pat = "height=\"";
+            let Some(h_start) = body[im_str_start + im_end..].find(h_pat) else { continue };
+            let h_off = im_start + im_end + h_start + h_pat.len();
+            let Some(h_end) = body[h_off..].find('"') else { continue };
+            let img_h: f64 = body[h_off..h_off + h_end].parse().unwrap_or(0.0);
+            if vb_w > 0.0 && img_w > 0.0 {
+                let ratio_w = vb_w / img_w;
+                let ratio_h = if vb_h > 0.0 && img_h > 0.0 { vb_h / img_h } else { 1.0 };
+                if (ratio_w - 1.0).abs() > 0.1 || (ratio_h - 1.0).abs() > 0.1 {
+                    violations.push(format!(
+                        "viewBox=({},{}) image=({},{}) ratio_w={:.3} ratio_h={:.3}",
+                        vb_w, vb_h, img_w, img_h, ratio_w, ratio_h));
                 }
             }
-            search_start = abs_pos + needle.len();
         }
-
-        assert!(
-            !found_xs.is_empty(),
-            "Task #490: 3번 표 영역(y∈[1040,1090])의 28 수식 transform 을 찾지 못함"
-        );
-
-        // 셀 7 영역: x≈336.8..478.0 (140 px). 좌측 1/4 한계: 372.
-        // 수정 전: x≈358.7 (좌측 정렬). 수정 후: x>=400 (alignment 적용).
-        for x in &found_xs {
-            assert!(
-                *x >= 380.0,
-                "Task #490: 28 수식이 좌측 정렬됨 (x={:.1} < 380). 셀 paragraph alignment 적용 안 됨",
-                x
-            );
-        }
+        assert!(violations.is_empty(),
+            "그림 crop SVG 의 viewBox 가 image px 와 일치하지 않음: {:?}",
+            violations);
     }
 
     /// Task #489: Picture+Square wrap (어울림) 호스트 paragraph 의 텍스트가
@@ -497,6 +490,74 @@ mod tests {
             "Task #489: pi=21 텍스트가 그림 영역(x={:.1}..{:.1} y={:.1}..{:.1}) 에 침범: {:?}",
             img_left, img_right, img_top, img_bottom, overlap_chars,
         );
+    }
+
+    /// Task #490: 빈 텍스트 + TAC 수식만 있는 셀 paragraph 의 alignment 적용.
+    ///
+    /// 케이스: `samples/exam_science.hwp` 페이지 1 의 3번 표 (pi=12, 4행×4열,
+    /// "이온 결합 화합물") 의 셀 7 (행1, 열3) "전체 전자의 양" 컬럼 28 수식.
+    /// 셀 paragraph 는 text_len=0 + ctrls=1 (수식) 구조. 수정 전: empty-runs
+    /// 분기 (`paragraph_layout.rs:2227`) 가 `inline_x = effective_col_x +
+    /// effective_margin_left` 로 좌측 고정 → 28 수식이 셀 좌측에 정렬.
+    /// 수정 후: paragraph alignment(Center) 따라 align_offset 적용 → 수식이
+    /// 셀 중앙 부근에 정렬.
+    ///
+    /// 검증: 28 수식의 그룹 transform x 좌표가 수정 전(x≈358) 보다 우측
+    /// (x>400) 으로 이동했는지 확인. 셀 7 영역(x≈336..478) 의 좌측 1/3
+    /// 범위(<395) 에 있으면 결함, 그 이후면 alignment 정상 적용.
+    #[test]
+    fn test_490_empty_para_with_tac_equation_respects_alignment() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+
+        // 28 수식 위치 추출. SVG 구조: <g transform="translate(X, Y) scale(...)">
+        //                              <text x="0" y="...">28</text>
+        //                              </g>
+        // "28" 텍스트 직전의 group transform x 좌표를 찾는다.
+        let needle = ">28<";
+        let mut found_xs: Vec<f64> = Vec::new();
+        let mut search_start = 0;
+        while let Some(pos) = svg[search_start..].find(needle) {
+            let abs_pos = search_start + pos;
+            let context_start = abs_pos.saturating_sub(2000);
+            let context = &svg[context_start..abs_pos];
+            // 가장 가까운 직전 `<g transform="translate(X` 패턴 찾기
+            if let Some(g_rel) = context.rfind("<g transform=\"translate(") {
+                let after_translate = &context[g_rel + "<g transform=\"translate(".len()..];
+                if let Some(comma) = after_translate.find(',') {
+                    if let Ok(x) = after_translate[..comma].parse::<f64>() {
+                        // y 좌표로 3번 표 영역 (y ≈ 1040..1090) 인지 확인
+                        let after_comma = &after_translate[comma + 1..];
+                        if let Some(close_paren) = after_comma.find(')') {
+                            if let Ok(y) = after_comma[..close_paren].parse::<f64>() {
+                                if (1040.0..1090.0).contains(&y) {
+                                    found_xs.push(x);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            search_start = abs_pos + needle.len();
+        }
+
+        assert!(
+            !found_xs.is_empty(),
+            "Task #490: 3번 표 영역(y∈[1040,1090])의 28 수식 transform 을 찾지 못함"
+        );
+
+        // 셀 7 영역: x≈336.8..478.0 (140 px). 좌측 1/4 한계: 372.
+        // 수정 전: x≈358.7 (좌측 정렬). 수정 후: x>=400 (alignment 적용).
+        for x in &found_xs {
+            assert!(
+                *x >= 380.0,
+                "Task #490: 28 수식이 좌측 정렬됨 (x={:.1} < 380). 셀 paragraph alignment 적용 안 됨",
+                x
+            );
+        }
     }
 
     #[test]
@@ -750,6 +811,100 @@ mod tests {
              IR vpos delta({:.2} px = 1816 HU) 와 일치해야 함. \
              버그(수정 전): gap=14.67 (PartialParagraph 의 overlay Shape 가드로 skipped).",
             prev_line_y, deobureo_y, gap, expected_gap
+        );
+    }
+
+    /// Task #552: Task #479 회귀 정정 — paragraph border 시작 직전 trailing ls 보존.
+    ///
+    /// 페이지 2 우측 단 [4~6] passage 박스 top y 와 [4~6] header text 간 gap 검증.
+    ///
+    /// pi=44 ([4~6] header, 본문 paragraph, no border) 의 마지막 줄 trailing ls 716 HU
+    /// = 9.54 px 가 박스 top 위치를 결정. Task #479 가 본문 paragraph 마지막 줄에서
+    /// trailing ls 제거하여 박스 top 이 header 텍스트 바로 아래에 붙는 회귀.
+    ///
+    /// PDF 한컴 2010: gap = 175.36 - 168.81 = 6.55 pt = 8.73 px (96 dpi 환산)
+    /// pre-#479 baseline: gap = 9.54 px (PDF 정합 ±2 px)
+    /// post-#479 (수정 전): gap = 0.0 px (회귀)
+    ///
+    /// 본 테스트: header 텍스트 baseline + ascent 와 박스 top horizontal line 간 gap
+    /// 이 6 px 이상 (회귀 검출).
+    #[test]
+    #[ignore]
+    fn test_552_passage_box_top_gap_p2_4_6() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // 1. [4~6] header text "[" 의 y 좌표 (우측 단 = x ≥ 575)
+        // SVG <text transform="translate(X,Y)">[</text> 형식
+        let mut header_y: Option<f64> = None;
+        for chunk in svg.split("<text ").skip(1) {
+            let close = match chunk.find('>') { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            // Body content
+            let body_start = close + 1;
+            let body_end = chunk[body_start..].find("</text>").map(|i| body_start + i).unwrap_or(close);
+            let body = &chunk[body_start..body_end];
+            // 우측 단 (x >= 575) y in [215, 230] [4~6] header
+            if x >= 575.0 && x < 590.0 && y > 215.0 && y < 230.0 && body == "[" {
+                header_y = Some(y);
+                break;
+            }
+        }
+        let header_y = header_y.expect("페이지 2 우측 단 [4~6] header \"[\" 텍스트를 찾지 못함");
+
+        // 2. 박스 top horizontal line: y > header_y, x1 ≈ 591 (col 1 box left)
+        let mut box_top_y: Option<f64> = None;
+        for chunk in svg.split("<line ").skip(1) {
+            let end = chunk.find("/>").or_else(|| chunk.find('>')).unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            let parse_attr = |name: &str| -> Option<f64> {
+                let pat = format!("{}=\"", name);
+                let i = attrs.find(&pat)? + pat.len();
+                let j = i + attrs[i..].find('"')?;
+                attrs[i..j].parse::<f64>().ok()
+            };
+            let (x1, y1, x2, y2) = match (parse_attr("x1"), parse_attr("y1"), parse_attr("x2"), parse_attr("y2")) {
+                (Some(a), Some(b), Some(c), Some(d)) => (a, b, c, d),
+                _ => continue,
+            };
+            // horizontal line (y1 == y2), 우측 단 (x1 >= 575), header 아래
+            if (y1 - y2).abs() < 0.5
+                && x1 >= 575.0 && x2 >= 575.0
+                && y1 > header_y && y1 < header_y + 30.0
+            {
+                box_top_y = Some(y1);
+                break;
+            }
+        }
+        let box_top_y = box_top_y.expect(
+            "페이지 2 우측 단 [4~6] 박스 top horizontal line 을 찾지 못함");
+
+        // 3. gap 검증: header bottom (≈ header_y + ascent) → box top
+        // header text font-size 14.67, scale 0.95 → ascent ≈ font * 0.15 = 2.20
+        // header bottom = header_y + 2.20 ≈ 224.43
+        // PDF 정합: gap = 8.73 px. tolerance ±2 px → gap 검증 ≥ 6.0 px.
+        let header_bottom = header_y + 2.20;
+        let gap = box_top_y - header_bottom;
+
+        assert!(
+            gap >= 6.0,
+            "[4~6] 박스 top y={:.2} 가 header bottom y={:.2} 와 충분한 gap 을 \
+             가져야 함. gap={:.2} px (PDF 기대 8.73 px ±2 px). \
+             버그(수정 전): gap=0.0 (Task #479 가 본문 paragraph 마지막 줄 \
+             trailing ls 제외 → border-start paragraph 가 9.54 px 위로 이동). \
+             pre-#479 baseline: gap=9.54 (PDF 정합).",
+            box_top_y, header_bottom, gap
         );
     }
 }

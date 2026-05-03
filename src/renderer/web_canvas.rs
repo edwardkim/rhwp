@@ -18,6 +18,23 @@ use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand, StrokeDash,
 use crate::model::style::UnderlineType;
 use crate::model::style::ImageFillMode;
 use super::render_tree::{BoundingBox, FormObjectNode, PageRenderTree, RenderNode, RenderNodeType, ShapeTransform};
+use super::pua_oldhangul::map_pua_old_hangul;
+
+/// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장 (Task #528).
+fn expand_pua_old_hangul_canvas(text: &str) -> String {
+    if !text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
+        return text.to_string();
+    }
+    let mut out = String::with_capacity(text.len() * 2);
+    for ch in text.chars() {
+        if let Some(jamos) = map_pua_old_hangul(ch) {
+            out.extend(jamos.iter().copied());
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
 use super::composer::{CharOverlapInfo, pua_to_display_text, decode_pua_overlap_number};
 use crate::model::control::FormType;
 #[cfg(target_arch = "wasm32")]
@@ -1544,6 +1561,8 @@ impl Renderer for WebCanvasRenderer {
             .chars()
             .map(crate::renderer::layout::map_pua_bullet_char)
             .collect::<String>();
+        // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (KTUG 매핑).
+        let text = &expand_pua_old_hangul_canvas(text);
 
         // 글꼴 설정
         let font_weight = if style.bold { "bold " } else { "" };
