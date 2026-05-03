@@ -1124,4 +1124,169 @@ mod tests {
             puko_x, pdf_puko_x
         );
     }
+
+    /// Task #544 v3: 박스 안 sequential paragraph 사이 line-spacing PDF 정합 검증.
+    /// p2 [4~6] pi=46 ("15세기 초 브루넬레스키...") 마지막 줄 → pi=47 ("고진에 따르면...")
+    /// 첫 줄 사이 gap. IR vpos delta = 1816 HU = 24.21 px (1 line spacing).
+    /// 수정 전 측정: gap=18.35 (drift -5.86 px, ls 의 일부 제외).
+    /// 수정 후 기대: gap=24.21 ±2.
+    ///
+    /// 본질: Task #479 trailing-ls 제외가 박스 안 sequential paragraph 끝에서
+    /// 작동 → Task #552 의 next_starts_border 가드가 박스 안 sequential 케이스
+    /// 처리 안 함. 새 가드 next_para_continues_visible_border (방법 1) 로 fix.
+    #[test]
+    #[ignore = "Task #544 v3 RED — fix 적용 전 실패 expected"]
+    fn test_544_v3_passage_inner_lspacing_p2_4_6() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // pi=46 마지막 줄 ≈ y=382.17 (5줄, 285.32 + 4*24.21).
+        // pi=47 첫 글자 "고" ≈ y=400.52 (col 1, x>500).
+        // pi=46 마지막 줄 첫 글자: paragraph 본문에서 "15세기..." 의 5번째 줄.
+        // 단순화: col 1 (x>500) 영역의 y 범위 [380, 405] 의 unique y 들.
+        let mut text_ys: Vec<f64> = Vec::new();
+        for chunk in svg.split("<text ") {
+            let close = match chunk.find(">") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            if x > 500.0 && y > 380.0 && y < 405.0 {
+                text_ys.push(y);
+            }
+        }
+        let mut unique_ys: Vec<f64> = text_ys.into_iter().collect();
+        unique_ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        unique_ys.dedup_by(|a, b| (*a - *b).abs() < 0.5);
+
+        // 기대: y=382.17 (pi=46 마지막 줄), y=400.52 (pi=47 첫 줄). gap = 18.35 → 24.21
+        assert!(unique_ys.len() >= 2,
+            "p2 [4~6] col 1 의 y 범위 [380, 405] 에서 두 줄을 찾아야 함 (실제 {:?})",
+            unique_ys);
+        let prev_last_y = unique_ys[0];
+        let next_first_y = unique_ys[1];
+        let gap = next_first_y - prev_last_y;
+
+        let pdf_gap: f64 = 24.21;  // 1 line spacing (1816 HU * 75⁻¹)
+        assert!(
+            (gap - pdf_gap).abs() < 2.0,
+            "p2 [4~6] pi=46 → pi=47 gap={:.2} px (prev_last_y={:.2}, next_first_y={:.2}) \
+             가 PDF 기대값 {:.2} (±2 px) 와 일치해야 함. \
+             버그(수정 전): gap=18.35 (-5.86 px, 박스 안 sequential paragraph 의 \
+             trailing-ls 일부 누락).",
+            gap, prev_last_y, next_first_y, pdf_gap
+        );
+    }
+
+    /// Task #544 v3: p10 [19~21] pi=208 ("조선 시대를 관통하여...") 마지막 줄
+    /// → pi=209 ("성리학의 논의가 본격화...") 첫 줄 gap.
+    /// 수정 전 측정: gap=14.67 (drift -9.55 px, trailing-ls 716 HU 완전 제외).
+    /// 수정 후 기대: gap=24.21 ±2.
+    #[test]
+    #[ignore = "Task #544 v3 RED — fix 적용 전 실패 expected"]
+    fn test_544_v3_passage_inner_lspacing_p10_19_21() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(9).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 10 SVG 가 비어있음");
+
+        // pi=208 마지막 줄 y=382.17 (5줄), pi=209 첫 줄 y=396.84.
+        let mut text_ys: Vec<f64> = Vec::new();
+        for chunk in svg.split("<text ") {
+            let close = match chunk.find(">") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            // p10 [19~21] 은 col 0 (x<500), y 범위 [380, 405]
+            if x < 500.0 && x > 100.0 && y > 380.0 && y < 405.0 {
+                text_ys.push(y);
+            }
+        }
+        let mut unique_ys: Vec<f64> = text_ys.into_iter().collect();
+        unique_ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        unique_ys.dedup_by(|a, b| (*a - *b).abs() < 0.5);
+
+        assert!(unique_ys.len() >= 2,
+            "p10 [19~21] col 0 의 y 범위 [380, 405] 에서 두 줄을 찾아야 함 (실제 {:?})",
+            unique_ys);
+        let prev_last_y = unique_ys[0];
+        let next_first_y = unique_ys[1];
+        let gap = next_first_y - prev_last_y;
+
+        let pdf_gap: f64 = 24.21;
+        assert!(
+            (gap - pdf_gap).abs() < 2.0,
+            "p10 [19~21] pi=208 → pi=209 gap={:.2} px (prev_last_y={:.2}, \
+             next_first_y={:.2}) 가 PDF 기대값 {:.2} (±2 px) 와 일치해야 함. \
+             버그(수정 전): gap=14.67 (-9.55 px, trailing-ls 716 HU 완전 제외).",
+            gap, prev_last_y, next_first_y, pdf_gap
+        );
+    }
+
+    /// Task #544 v3: p11 [22~24] pi=234 ("빈곤 퇴치와 경제성장...") 마지막 줄
+    /// → pi=235 ("제도의 역할을 강조...") 첫 줄 gap.
+    /// 수정 전 측정: gap=14.66 (drift -9.55 px, trailing-ls 완전 제외).
+    /// 수정 후 기대: gap=24.21 ±2.
+    #[test]
+    #[ignore = "Task #544 v3 RED — fix 적용 전 실패 expected"]
+    fn test_544_v3_passage_inner_lspacing_p11_22_24() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(10).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 11 SVG 가 비어있음");
+
+        // pi=234 마지막 줄 y=551.67 (12줄), pi=235 첫 줄 y=566.33.
+        let mut text_ys: Vec<f64> = Vec::new();
+        for chunk in svg.split("<text ") {
+            let close = match chunk.find(">") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            // p11 [22~24] 은 col 1 (x>500), y 범위 [549, 575]
+            if x > 500.0 && y > 549.0 && y < 575.0 {
+                text_ys.push(y);
+            }
+        }
+        let mut unique_ys: Vec<f64> = text_ys.into_iter().collect();
+        unique_ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        unique_ys.dedup_by(|a, b| (*a - *b).abs() < 0.5);
+
+        assert!(unique_ys.len() >= 2,
+            "p11 [22~24] col 1 의 y 범위 [549, 575] 에서 두 줄을 찾아야 함 (실제 {:?})",
+            unique_ys);
+        let prev_last_y = unique_ys[0];
+        let next_first_y = unique_ys[1];
+        let gap = next_first_y - prev_last_y;
+
+        let pdf_gap: f64 = 24.21;
+        assert!(
+            (gap - pdf_gap).abs() < 2.0,
+            "p11 [22~24] pi=234 → pi=235 gap={:.2} px (prev_last_y={:.2}, \
+             next_first_y={:.2}) 가 PDF 기대값 {:.2} (±2 px) 와 일치해야 함. \
+             버그(수정 전): gap=14.66 (-9.55 px, trailing-ls 716 HU 완전 제외).",
+            gap, prev_last_y, next_first_y, pdf_gap
+        );
+    }
 }
