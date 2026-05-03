@@ -783,9 +783,17 @@ impl LayoutEngine {
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
+        // [Task #544] vpos correction 가드 (페이지 시작 paragraph 직후 transition)
+        // 로 trailing-ls 가 누락된 sequential y_offset 인 경우, 외부에서 set 한
+        // paragraph_border_y_correction_px 만큼 박스 top 만 보정 (본문 텍스트 위치는
+        // 보존). 일반 케이스에서는 보정값 0. read 직후 reset 하여 다음 paragraph 에
+        // 누수되지 않게 한다.
         let bg_y_start = if para_border_fill_id > 0 {
-            y_start
+            let corrected = y_start + self.paragraph_border_y_correction_px.get();
+            self.paragraph_border_y_correction_px.set(0.0);
+            corrected
         } else {
+            self.paragraph_border_y_correction_px.set(0.0);
             y
         };
         let bg_insert_idx = col_node.children.len();
@@ -2662,20 +2670,12 @@ impl LayoutEngine {
         // Task #463: 셀 안 단락은 본문 큐에 leakage 하지 않도록 cell_ctx 게이팅.
         // 셀 외곽선은 별도 경로(table_layout/border_rendering)에서 처리되므로
         // 본문 단락의 연속 외곽선 merge 가 셀 단락 좌표/시그니처에 의해 깨지지 않게 한다.
-        // [Task #540 후속] 빈 paragraph (text=∅ + controls=∅) 가 음수 line_spacing 을
-        // 가지면 layout.rs 의 vpos correction 에서 floor 처리되어 다음 paragraph 가
-        // |neg_ls| 만큼 아래로 시프트된다. 이 경우 본 paragraph 의 border 를 push 하면
-        // merge group 의 top 이 unshifted 위치에 잡혀 다음 paragraph 의 시각적 박스
-        // 위쪽 여백이 |neg_ls| 만큼 늘어나는 회귀 발생 (21_언어_기출 [4~6]/[7~9]/[10~12]/
-        // [13~15]/[16~18]/[19~21]/[22~24]/[25~27]/[28~30] passage 글상자 9곳).
-        // floor 대상 paragraph 는 border push 를 skip 하여 group top 이 다음 paragraph
-        // 의 shifted 시작 위치로 잡히게 한다.
-        let is_540_floor_target = para.map(|p|
-            p.text.is_empty()
-                && p.controls.is_empty()
-                && p.line_segs.iter().any(|s| s.line_spacing < 0)
-        ).unwrap_or(false);
-        if para_border_fill_id > 0 && cell_ctx.is_none() && !is_540_floor_target {
+        // [Task #544] Task #540 Stage 4 의 push skip 가드 (`is_540_floor_target`) 는
+        // Task #544 의 paragraph_border_y_correction_px (vpos correction skip 시 박스
+        // top 의 trailing-ls 보정) 가 동일 회귀 (passage 박스 안 위쪽 여백 증가) 를
+        // 더 본질적으로 해결하므로 제거. floor 대상 paragraph 도 group 첫 paragraph
+        // 로 push 되어 박스 top 이 IR vpos start 위치 (+ trailing-ls) 로 잡힘.
+        if para_border_fill_id > 0 && cell_ctx.is_none() {
             let bg_height = y - bg_y_start;
             if bg_height > 0.0 {
                 // margin_left/margin_right는 이미 px 단위 (style_resolver에서 변환됨)
@@ -2691,10 +2691,15 @@ impl LayoutEngine {
                 // override 가 활성된 경우(wrap host), 박스 우측은 floating 표의 끝
                 // 까지 확장된 width 그대로 사용 — margin_right 차감하지 않는다
                 // (그렇지 않으면 표가 박스 밖으로 다시 튀어나옴).
+                // [Task #544] paragraph margin_left/right 는 텍스트 inset 으로만 사용,
+                // 박스 outline 좌표는 col_area 전체 (PDF 정합). wrap=Square 호스트
+                // (border_box_override) 케이스는 layout_wrap_around_paras 가 설정한
+                // override 좌표 그대로 사용 (margin 미적용). 호환을 위해 override 가
+                // None 인 일반 케이스만 col_area 좌표 사용.
                 let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
-                    (ox + box_margin_left, ow - box_margin_left)
+                    (ox, ow)
                 } else {
-                    (col_area.x + box_margin_left, col_area.width - box_margin_left - box_margin_right)
+                    (col_area.x, col_area.width)
                 };
                 self.para_border_ranges.borrow_mut().push(
                     (para_border_fill_id, box_x, bg_y_start, box_w, y, top_inset, bottom_inset, is_partial_start, is_partial_end, para_index)
