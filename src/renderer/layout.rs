@@ -225,6 +225,14 @@ pub struct LayoutEngine {
     /// `layout_wrap_around_paras` 가 호출 직전에 Some(원래 col_area.x, col_area.width)
     /// 로 설정하고, 호출 직후 None 으로 복원한다.
     border_box_override: std::cell::Cell<Option<(f64, f64)>>,
+    /// [Task #544] paragraph border `bg_y_start` 산출용 prev paragraph trailing-ls 보정값.
+    /// vpos correction 가드 (`seg.vertical_pos == 0 && prev_pi > 0`) 로 페이지 시작
+    /// paragraph 직후 transition 의 vpos correction 이 skip 되어 trailing-ls 가
+    /// sequential y_offset 에서 누락된다. paragraph_layout 진입 시 paragraph border 를
+    /// 가진 paragraph 라면 본 값을 bg_y_start 에 더해 IR vpos 기반 박스 top 좌표를
+    /// 얻는다 (본문 텍스트 위치는 보존). build_single_column 이 paragraph_layout 호출
+    /// 직전에 set, 호출 직후 0 으로 reset.
+    paragraph_border_y_correction_px: std::cell::Cell<f64>,
     /// 레이아웃 검증 결과: 경계 초과 목록
     layout_overflows: std::cell::RefCell<Vec<LayoutOverflow>>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
@@ -276,6 +284,7 @@ impl LayoutEngine {
             file_name: std::cell::RefCell::new(String::new()),
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
             border_box_override: std::cell::Cell::new(None),
+            paragraph_border_y_correction_px: std::cell::Cell::new(0.0),
             layout_overflows: std::cell::RefCell::new(Vec::new()),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             active_field: std::cell::RefCell::new(None),
@@ -1481,6 +1490,24 @@ impl LayoutEngine {
                         let prev_seg = prev_para.line_segs.iter().rev().find(|ls| ls.segment_width > 0)
                             .or_else(|| prev_para.line_segs.last());
                         if let Some(seg) = prev_seg {
+                            // [Task #544] 가드 skip 케이스에서 다음 paragraph 가 paragraph
+                            // border 를 가지면 prev paragraph 의 trailing-ls 만큼 박스 top
+                            // 보정. vpos correction 자체는 변경하지 않고 paragraph border
+                            // outline 좌표만 IR vpos 기반으로 보정 (본문 텍스트 위치 보존).
+                            if seg.vertical_pos == 0 && prev_pi > 0 {
+                                let trailing_ls_hu = seg.line_spacing.max(0);
+                                if trailing_ls_hu > 0 {
+                                    let next_has_border = composed.get(item_para)
+                                        .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
+                                        .map(|s| s.border_fill_id > 0)
+                                        .unwrap_or(false);
+                                    if next_has_border {
+                                        self.paragraph_border_y_correction_px.set(
+                                            hwpunit_to_px(trailing_ls_hu, self.dpi)
+                                        );
+                                    }
+                                }
+                            }
                             if !(seg.vertical_pos == 0 && prev_pi > 0) {
                                 // [Task #412] vpos_end 결정:
                                 // - page_path: 현재 paragraph 의 first seg vpos 를 직접 사용 (HWP 가 spacing_after 를
@@ -1804,26 +1831,17 @@ impl LayoutEngine {
                             .unwrap_or(0)
                     };
 
-                    // [Task #540 후속] floor 대상 paragraph (text=∅ + controls=∅ + 음수 ls)
-                    // 는 paragraph_layout 에서 border push 가 skip 된다. 인접 paragraph 의
-                    // partial_start/partial_end (cross-column/page 연속) 검사에서도 제외해야
-                    // 잘못된 partial 처리로 top/bottom edge 가 누락되지 않는다.
-                    let is_540_floor = |pi: usize| -> bool {
-                        paragraphs.get(pi).map(|p|
-                            p.text.is_empty()
-                                && p.controls.is_empty()
-                                && p.line_segs.iter().any(|s| s.line_spacing < 0)
-                        ).unwrap_or(false)
-                    };
-
-                    if !g.7 && first_pi > 0 && !is_540_floor(first_pi - 1) {
+                    // [Task #544] Task #540 Stage 4 의 is_540_floor 가드 제거. push skip
+                    // 가드가 제거되어 floor 대상 paragraph 도 group 에 포함되므로 prev/next
+                    // sig 검사도 일반 흐름 그대로 동작.
+                    if !g.7 && first_pi > 0 {
                         let prev_sig = stroke_sig(para_bf(first_pi - 1));
                         if prev_sig.is_some() && prev_sig == group_sig {
                             g.7 = true;
                         }
                     }
 
-                    if !g.8 && !is_540_floor(last_pi + 1) {
+                    if !g.8 {
                         let next_sig = stroke_sig(para_bf(last_pi + 1));
                         if next_sig.is_some() && next_sig == group_sig {
                             g.8 = true;
