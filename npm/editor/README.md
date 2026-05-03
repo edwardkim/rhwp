@@ -117,6 +117,40 @@ a.click();
 URL.revokeObjectURL(url);
 ```
 
+### editor.exportHwpx()
+
+현재 편집 중인 문서를 HWPX(ZIP+XML) 바이너리로 내보냅니다.
+
+```javascript
+const bytes = await editor.exportHwpx();
+const blob = new Blob([bytes], { type: 'application/vnd.hancom.hwpx' });
+
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'document.hwpx';
+a.click();
+URL.revokeObjectURL(url);
+```
+
+### editor.exportHwpVerify()
+
+HWP 직렬화 + 자기 재로드 검증 메타데이터를 반환합니다 (#178).
+검증 메타데이터만 반환하며, 실제 HWP bytes 가 필요하면 `exportHwp()` 를 별도 호출하세요.
+
+```javascript
+const verify = await editor.exportHwpVerify();
+// {
+//   bytesLen: 678912,
+//   pageCountBefore: 9,
+//   pageCountAfter: 9,
+//   recovered: true
+// }
+if (!verify.recovered || verify.pageCountBefore !== verify.pageCountAfter) {
+  console.warn('HWP 직렬화 검증 실패', verify);
+}
+```
+
 ### editor.destroy()
 
 에디터를 제거합니다.
