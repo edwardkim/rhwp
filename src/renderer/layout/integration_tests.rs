@@ -892,4 +892,89 @@ mod tests {
             bracket_y, next_line_y, gap, expected_gap
         );
     }
+
+    /// Task #544: 페이지 4 [7~9] passage 박스 좌표 PDF 정합 검증.
+    ///
+    /// 한컴 2010 PDF 기준 (페이지 4 col 0 박스):
+    ///   - 박스 top y = 233.8 px (= body_area.y + pi=80 IR vpos end)
+    ///   - 박스 left x ≈ 117.0 px (= col_area.x = body_area.x)
+    ///   - 박스 width ≈ 425.1 px (= col_width 전체, paragraph margin 미적용)
+    ///
+    /// 현재 rhwp SVG (수정 전):
+    ///   - 박스 top y = 224.4 (-9.4 px, pi=80 trailing-ls 716 HU 누락)
+    ///   - 박스 left x = 128.5 (+11.5 px, ParaShape margin_left 적용)
+    ///   - 박스 width = 402.5 (-22.6 px, margin_left+right 차감)
+    ///
+    /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
+    #[test]
+    #[ignore = "Task #544 RED — fix 적용 전 실패 expected"]
+    fn test_544_passage_box_coords_match_pdf_p4() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(3).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 4 SVG 가 비어있음");
+
+        // SVG <line> 좌표 추출, col 0 (x in 100~545) horizontal 라인 중 박스 top 식별.
+        let mut top_horizontals: Vec<(f64, f64, f64)> = Vec::new();
+        for chunk in svg.split("<line ") {
+            if !chunk.starts_with("x") { continue; }
+            let close = match chunk.find("/>") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let parse_attr = |name: &str| -> Option<f64> {
+                let key = format!("{}=\"", name);
+                let p = attrs.find(&key)? + key.len();
+                let q = attrs[p..].find('"')?;
+                attrs[p..p+q].parse::<f64>().ok()
+            };
+            let x1 = match parse_attr("x1") { Some(v) => v, None => continue };
+            let y1 = match parse_attr("y1") { Some(v) => v, None => continue };
+            let x2 = match parse_attr("x2") { Some(v) => v, None => continue };
+            let y2 = match parse_attr("y2") { Some(v) => v, None => continue };
+            let x_min = x1.min(x2);
+            let x_max = x1.max(x2);
+            // 박스 top horizontal: y1≈y2, 길이 > 100 px, x in 100~545 (col 0)
+            if (y1 - y2).abs() < 0.5
+                && (x_max - x_min) > 100.0
+                && x_min >= 100.0 && x_max <= 545.0
+            {
+                top_horizontals.push((x_min, x_max, y1));
+            }
+        }
+        assert!(!top_horizontals.is_empty(),
+            "페이지 4 col 0 에서 박스 horizontal line 을 찾지 못함");
+
+        // 가장 위쪽의 horizontal = passage 박스 top
+        // body_area.y = 209.76 직후 영역 ([7~9] 첫줄 직후)
+        top_horizontals.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap());
+        let (box_left_x, box_right_x, box_top_y) = top_horizontals.iter()
+            .find(|(_, _, y)| *y > 220.0)  // [7~9] line baseline 보다 아래
+            .copied()
+            .expect("페이지 4 col 0 [7~9] 박스 top horizontal 을 찾지 못함");
+        let box_width = box_right_x - box_left_x;
+
+        // PDF 기준 (한컴 2010)
+        let pdf_box_top_y: f64 = 233.8;
+        let pdf_box_left_x: f64 = 117.0;
+        let pdf_box_width: f64 = 425.1;
+
+        assert!(
+            (box_top_y - pdf_box_top_y).abs() < 2.0,
+            "[7~9] 박스 top y={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 일치해야 함. \
+             버그(수정 전): box_top_y=224.4 (-9.4 px, pi=80 trailing-ls 716 HU 누락).",
+            box_top_y, pdf_box_top_y
+        );
+        assert!(
+            (box_left_x - pdf_box_left_x).abs() < 2.0,
+            "[7~9] 박스 left x={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 일치해야 함. \
+             버그(수정 전): box_left_x=128.5 (+11.5 px, ParaShape margin_left 적용).",
+            box_left_x, pdf_box_left_x
+        );
+        assert!(
+            (box_width - pdf_box_width).abs() < 2.0,
+            "[7~9] 박스 width={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 일치해야 함. \
+             버그(수정 전): box_width=402.5 (-22.6 px, margin_left+right 차감).",
+            box_width, pdf_box_width
+        );
+    }
 }
