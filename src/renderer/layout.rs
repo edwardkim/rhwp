@@ -1411,6 +1411,9 @@ impl LayoutEngine {
             }
         });
         let mut vpos_lazy_base: Option<i32> = None;
+        // [Task #540] 가설 H2: 빈 paragraph 의 음수 ls floor 보정 누적값 (HWPUNIT).
+        // 컬럼 내 모든 vpos correction 의 vpos_end 에 더해져 누적 시프트를 유지한다.
+        let mut vpos_neg_ls_floor_total: i32 = 0;
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
         for item in col_content.items.iter() {
@@ -1517,7 +1520,12 @@ impl LayoutEngine {
                                         .unwrap_or(0);
                                     let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32
                                         + trailing_ls_hu;
-                                    let lazy_base = prev_vpos_end - y_delta_hu;
+                                    // [Task #540] vpos_neg_ls_floor_total 가 누적된 만큼 y_offset 은
+                                    // IR vpos 보다 더 진행한 상태이다. lazy_base 는 IR 절대 vpos 좌표
+                                    // 기준이므로 누적 floor 분만큼 보정해야 prev_vpos_end - y_delta_hu
+                                    // 가 음수로 흐르지 않고 실제 IR 좌표를 가리킨다 (exam_math 페이지 7
+                                    // pi=169 lazy_base 음수 → fallback 회귀 방지).
+                                    let lazy_base = prev_vpos_end - y_delta_hu + vpos_neg_ls_floor_total;
                                     // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                     // vpos 누적보다 크게 밀린 것 → 역산 무효
                                     if lazy_base < 0 {
@@ -1533,10 +1541,34 @@ impl LayoutEngine {
                                 // 현재 paragraph 의 first vpos 우선 사용. HWP 가 spacing_after 를 다음
                                 // paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확.
                                 // vpos reset(0) 이거나 prev 보다 작아진 경우는 prev 기반 fallback.
-                                let vpos_end = match curr_first_vpos {
+                                let vpos_end_raw = match curr_first_vpos {
                                     Some(v) if v > seg.vertical_pos => v,
                                     _ => prev_vpos_end,
                                 };
+                                // [Task #540] 가설 H2: 한컴은 빈 paragraph 의 음수 ls 를 floor (무시)
+                                // 하여 advance = lh 만큼만 진행한다. HWP IR 의 vpos 는 음수 ls 가
+                                // 반영된 값이지만 한컴 렌더링에서는 빈 paragraph 의 음수 ls 만
+                                // floor 적용된다. prev_pi 가 빈 paragraph (text.is_empty()) + 음수 ls
+                                // 인 경우 floor 분을 누적하여 이후 모든 vpos_end 에 더한다 (컬럼 내).
+                                // 누적 누적이 필요한 이유: vpos correction 은 IR 절대 vpos 기반이라
+                                // 단발 보정만 하면 다음 paragraph 의 correction 이 IR 위치(시프트 미반영)
+                                // 로 되돌리기 때문. 누적값을 모든 후속 correction 에 적용해야 한컴 동작
+                                // (모든 후속 paragraph 가 floor 분만큼 아래로 시프트) 와 일치.
+                                // 가드: text.is_empty() && controls.is_empty() — synam-001 의 음수 ls
+                                // 57건 중 일반 paragraph (셀 내부 등) 의 음수 ls 는 보존, 진짜 빈
+                                // paragraph 만 floor 적용. controls 가 있으면 구역나누기/머리말/표 등을
+                                // 가진 section-setup paragraph (예: exam_science s0.p0 ls=-1348, 영
+                                // advance 의도) 이므로 floor 하면 본문이 1348 HU 만큼 잘못 시프트됨.
+                                let prev_neg_ls_floor: i32 = paragraphs.get(prev_pi)
+                                    .map(|p| {
+                                        if !p.text.is_empty() || !p.controls.is_empty() { return 0; }
+                                        p.line_segs.iter()
+                                            .map(|s| if s.line_spacing < 0 { -s.line_spacing } else { 0 })
+                                            .sum::<i32>()
+                                    })
+                                    .unwrap_or(0);
+                                vpos_neg_ls_floor_total += prev_neg_ls_floor;
+                                let vpos_end = vpos_end_raw + vpos_neg_ls_floor_total;
                                 // [Task #412] page_path: col_anchor_y (body_wide_reserved 푸시 적용 후) 가
                                 // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
                                 // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어

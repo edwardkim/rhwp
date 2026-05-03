@@ -813,4 +813,83 @@ mod tests {
             prev_line_y, deobureo_y, gap, expected_gap
         );
     }
+
+    /// Task #540: 지문 시작 표시 [X~Y] 직후 빈 paragraph(음수 line_spacing) 의 advance.
+    ///
+    /// 21_언어_기출_편집가능본.hwp 페이지 2 [4~6]:
+    ///   pi=44 "[4~6] 다음 글을..." (165% line, ls=716)
+    ///   pi=45 (빈 paragraph, 60% line, ls=-440)
+    ///   pi=46 "15세기 초 브루넬레스키..."
+    ///
+    /// IR vpos: pi=44=0, pi=45=1816, pi=46=2476 → gap pi=44→pi=46 = 33.01 px (rhwp 현재).
+    ///
+    /// 가설 H2 (작업지시자 채택): 한컴은 빈 paragraph 의 음수 ls 를 floor 하여
+    /// advance = lh. → effective gap = 1816 + 1100 = 2916 HU = 38.88 px.
+    ///
+    /// 버그(수정 전): gap=33.01 (IR 음수 ls 그대로 반영).
+    /// 수정 후: gap=38.88 (빈 paragraph 음수 ls floor).
+    #[test]
+    fn test_540_empty_paragraph_negative_ls_floor() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // 페이지 2 col 1 (x≈580) 의 '[' 와 그 다음 본문 line 의 baseline y 추출
+        let mut points: Vec<(f64, f64, String)> = Vec::new();
+        for chunk in svg.split("<text ") {
+            if let Some(close) = chunk.find("</text>") {
+                let attrs_and_content = &chunk[..close];
+                if let Some(gt) = attrs_and_content.find('>') {
+                    let attrs = &attrs_and_content[..gt];
+                    let content = &attrs_and_content[gt + 1..];
+                    if content.chars().count() != 1 { continue; }
+                    let tr = match attrs.find("translate(") {
+                        Some(p) => p + "translate(".len(),
+                        None => continue,
+                    };
+                    let close_paren = match attrs[tr..].find(')') {
+                        Some(p) => p,
+                        None => continue,
+                    };
+                    let inside = &attrs[tr..tr + close_paren];
+                    let mut parts = inside.split(',');
+                    let x = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
+                    let y = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
+                    if let (Some(x), Some(y)) = (x, y) {
+                        if (575.0..=620.0).contains(&x) && y < 300.0 {
+                            points.push((y, x, content.to_string()));
+                        }
+                    }
+                }
+            }
+        }
+        points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        let bracket_y = points.iter()
+            .find(|(_, _, c)| c == "[")
+            .map(|(y, _, _)| *y)
+            .expect("페이지 2 col 1 에서 '[' 를 찾을 수 없음 (pi=44)");
+
+        // bracket 다음 line (pi=46 첫 line)
+        let next_line_y = points.iter()
+            .filter(|(y, _, _)| *y > bracket_y + 1.0)
+            .next()
+            .map(|(y, _, _)| *y)
+            .expect("'[' 다음 line 을 찾을 수 없음");
+
+        let gap = next_line_y - bracket_y;
+        // 가설 H2: 음수 ls floor → advance = lh = 1100 HU
+        // gap = pi=44→pi=46 vpos delta with floor = 1816 + 1100 = 2916 HU = 38.88 px
+        let expected_gap = (1816.0_f64 + 1100.0) * 96.0 / 7200.0;  // 38.88 px
+
+        assert!(
+            (gap - expected_gap).abs() < 0.5,
+            "[4~6](y={:.2}) → 지문 첫 line(y={:.2}) gap({:.2}) 가 \
+             빈 paragraph 음수 ls floor 적용 시 기대값({:.2} = 38.88 px) 와 일치해야 함. \
+             버그(수정 전): gap=33.01 (IR 음수 ls=-440 그대로 반영).",
+            bracket_y, next_line_y, gap, expected_gap
+        );
+    }
 }
