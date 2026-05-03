@@ -10,6 +10,23 @@ use super::super::page_layout::LayoutRect;
 use super::super::height_measurer::MeasuredTable;
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::style_resolver::ResolvedStyleSet;
+
+/// [Task #548] paragraph 의 line N 에 적용되는 effective margin_left.
+/// paragraph_layout.rs 의 line_indent 산식과 동일 (단일 룰).
+/// - positive indent: line 0 에만 +indent 적용 (첫줄 들여쓰기)
+/// - negative indent (hanging): line N≥1 에 +|indent| 적용
+/// - indent=0: 모든 line 에 margin_left 만 적용
+fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: usize) -> f64 {
+    let line_indent = if indent > 0.0 {
+        if line_n == 0 { indent } else { 0.0 }
+    } else if indent < 0.0 {
+        if line_n == 0 { 0.0 } else { indent.abs() }
+    } else {
+        0.0
+    };
+    margin_left + line_indent
+}
+
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::{LayoutEngine, CellContext, CellPathEntry};
 use super::border_rendering::{build_row_col_x, collect_cell_borders, render_cell_diagonal, render_edge_borders, render_transparent_borders};
@@ -1492,6 +1509,17 @@ impl LayoutEngine {
                     .get(para.para_shape_id as usize)
                     .map(|s| s.alignment)
                     .unwrap_or(Alignment::Left);
+                // [Task #548] paragraph margin_left + first-line indent 를 inline shape
+                // 위치에 반영. paragraph_layout 텍스트 경로와 동일한 effective_margin_left
+                // 산식을 적용해 텍스트와 shape 위치 일관성 보장.
+                let para_margin_left_px = styles.para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|s| s.margin_left)
+                    .unwrap_or(0.0);
+                let para_indent_px = styles.para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|s| s.indent)
+                    .unwrap_or(0.0);
 
                 let mut prev_tac_text_pos: usize = 0;
                 // LINE_SEG 기반 줄별 TAC 이미지 배치를 위한 상태
@@ -1501,6 +1529,7 @@ impl LayoutEngine {
                 let mut current_tac_line: usize = 0;
                 let mut inline_x = {
                     let line_w = tac_line_widths.first().copied().unwrap_or(total_inline_width);
+                    let line_margin = effective_margin_left_line(para_margin_left_px, para_indent_px, 0);
                     match para_alignment {
                         Alignment::Center | Alignment::Distribute => {
                             inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
@@ -1508,7 +1537,7 @@ impl LayoutEngine {
                         Alignment::Right => {
                             inner_area.x + (inner_area.width - line_w).max(0.0)
                         }
-                        _ => inner_area.x,
+                        _ => inner_area.x + line_margin,
                     }
                 };
                 let mut tac_img_y = para_y_before_compose;
@@ -1551,6 +1580,9 @@ impl LayoutEngine {
                                         // 줄이 바뀜: inline_x 리셋, y를 LINE_SEG vpos 기준으로 이동
                                         current_tac_line = target_line;
                                         let line_w = tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                        // [Task #548] target_line 의 effective_margin_left 적용
+                                        let line_margin = effective_margin_left_line(
+                                            para_margin_left_px, para_indent_px, target_line);
                                         inline_x = match para_alignment {
                                             Alignment::Center | Alignment::Distribute => {
                                                 inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
@@ -1558,7 +1590,7 @@ impl LayoutEngine {
                                             Alignment::Right => {
                                                 inner_area.x + (inner_area.width - line_w).max(0.0)
                                             }
-                                            _ => inner_area.x,
+                                            _ => inner_area.x + line_margin,
                                         };
                                         if let Some(seg) = para.line_segs.get(target_line) {
                                             // [Task #520] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
@@ -1640,6 +1672,9 @@ impl LayoutEngine {
                                 if target_line > current_tac_line {
                                     current_tac_line = target_line;
                                     let line_w = tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                    // [Task #548] target_line 의 effective_margin_left 적용
+                                    let line_margin = effective_margin_left_line(
+                                        para_margin_left_px, para_indent_px, target_line);
                                     inline_x = match para_alignment {
                                         Alignment::Center | Alignment::Distribute => {
                                             inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
@@ -1647,7 +1682,7 @@ impl LayoutEngine {
                                         Alignment::Right => {
                                             inner_area.x + (inner_area.width - line_w).max(0.0)
                                         }
-                                        _ => inner_area.x,
+                                        _ => inner_area.x + line_margin,
                                     };
                                     if let Some(seg) = para.line_segs.get(target_line) {
                                         // [Task #520] LineSeg.vertical_pos 는 셀 origin 기준 절대값.

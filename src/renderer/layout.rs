@@ -245,6 +245,13 @@ pub struct LayoutEngine {
     /// 본 플래그가 true 면 ls 보존 (border-start 직전 박스 top 위치 정합).
     /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
     next_para_starts_visible_border: std::cell::Cell<bool>,
+    /// [Task #544 v3] 다음 paragraph 가 prev paragraph 와 같은 visible border
+    /// 진행 중이면 true (박스 안 sequential paragraph). Task #552 (`_starts_`)
+    /// 와 의미 분리 — 본 Cell 은 박스 outline 이 prev 와 동일 (같은 박스 안)
+    /// 인 케이스. paragraph_layout 의 trailing ls 제외 분기에서 본 플래그가
+    /// true 면 ls 보존 (박스 안 sequential paragraph 사이 line spacing 정합).
+    /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
+    next_para_continues_visible_border: std::cell::Cell<bool>,
 }
 
 mod text_measurement;
@@ -300,6 +307,41 @@ impl LayoutEngine {
         next_visible && !curr_visible
     }
 
+    /// [Task #544 v3] 다음 paragraph (curr_pi + 1) 가 prev paragraph 와 같은
+    /// visible border 진행 중인지 검사. curr 와 next 둘 다 visible border 가짐
+    /// + 같은 border_fill_id (= 같은 박스 outline 안 sequential paragraph) 일
+    /// 때 true. 박스 안 sequential paragraph 사이 trailing-ls 보존용.
+    /// next_paragraph_starts_visible_border 와 의미 분리 (mutually exclusive).
+    pub(crate) fn next_paragraph_continues_visible_border(
+        &self,
+        curr_pi: usize,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        use crate::model::style::BorderLineType;
+        let visible_bf_id = |ps_id: u16| -> Option<u16> {
+            let ps = styles.para_styles.get(ps_id as usize)?;
+            if ps.border_fill_id == 0 { return None; }
+            let bf = styles.border_styles.get((ps.border_fill_id as usize).saturating_sub(1))?;
+            let visible = bf.borders.iter().any(|b|
+                !matches!(b.line_type, BorderLineType::None) && b.width > 0);
+            if visible { Some(ps.border_fill_id) } else { None }
+        };
+        let curr_para = match paragraphs.get(curr_pi) {
+            Some(p) => p, None => return false,
+        };
+        let next_para = match paragraphs.get(curr_pi + 1) {
+            Some(p) => p, None => return false,
+        };
+        let curr_id = match visible_bf_id(curr_para.para_shape_id) {
+            Some(id) => id, None => return false,
+        };
+        let next_id = match visible_bf_id(next_para.para_shape_id) {
+            Some(id) => id, None => return false,
+        };
+        curr_id == next_id
+    }
+
     pub fn new(dpi: f64) -> Self {
         Self {
             dpi,
@@ -320,6 +362,7 @@ impl LayoutEngine {
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             next_para_starts_visible_border: std::cell::Cell::new(false),
+            next_para_continues_visible_border: std::cell::Cell::new(false),
         }
     }
 
@@ -1984,6 +2027,9 @@ impl LayoutEngine {
                                     // [Task #552] 다음 paragraph 가 visible border 시작이면 trailing ls 보존
                                     self.next_para_starts_visible_border.set(
                                         self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
+                                    // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
+                                    self.next_para_continues_visible_border.set(
+                                        self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
                                     y_offset = self.layout_partial_paragraph(
                                         tree,
                                         col_node,
@@ -2000,6 +2046,7 @@ impl LayoutEngine {
                                         Some(bin_data_content),
                                     );
                                     self.next_para_starts_visible_border.set(false);
+                                    self.next_para_continues_visible_border.set(false);
                                 }
                             }
                         }
@@ -2040,6 +2087,9 @@ impl LayoutEngine {
                         // [Task #552] 다음 paragraph 가 visible border 시작이면 trailing ls 보존
                         self.next_para_starts_visible_border.set(
                             self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
+                        // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
+                        self.next_para_continues_visible_border.set(
+                            self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
                         y_offset = self.layout_paragraph(
                             tree,
                             col_node,
@@ -2054,6 +2104,7 @@ impl LayoutEngine {
                             Some(bin_data_content),
                         );
                         self.next_para_starts_visible_border.set(false);
+                        self.next_para_continues_visible_border.set(false);
                     }
                     // TAC Shape 높이 보정: 문단에 TAC Shape(개체묶기 등)가 있으면
                     // Shape 높이가 문단 텍스트 높이보다 클 수 있으므로 y_offset을 보정.
@@ -2152,6 +2203,9 @@ impl LayoutEngine {
                     let is_full_end = comp.as_ref().map(|c| *end_line >= c.lines.len()).unwrap_or(false);
                     self.next_para_starts_visible_border.set(
                         is_full_end && self.next_paragraph_starts_visible_border(*para_index, paragraphs, styles));
+                    // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
+                    self.next_para_continues_visible_border.set(
+                        is_full_end && self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
                     y_offset = self.layout_partial_paragraph(
                         tree,
                         col_node,
@@ -2168,6 +2222,7 @@ impl LayoutEngine {
                         Some(bin_data_content),
                     );
                     self.next_para_starts_visible_border.set(false);
+                    self.next_para_continues_visible_border.set(false);
                 }
             }
             PageItem::Table { para_index, control_index } => {

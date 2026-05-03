@@ -690,31 +690,14 @@ impl LayoutEngine {
         let box_margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
 
-        // 문단에 시각적 테두리(stroke 있는 border)가 있고 border_spacing 좌/우가 0인
-        // 파일의 경우, 한컴은 paragraph margin 값을 inner padding으로도 사용하여
-        // 텍스트가 테두리에 붙지 않도록 한다. rhwp는 동일 효과를 내기 위해 텍스트
-        // 위치 계산에 사용하는 margin 값에만 inner padding을 더하고, 박스(테두리)
-        // 위치는 원래 margin 값을 그대로 사용한다.
-        // 배경(fill)만 있는 문단은 영향 받지 않도록 stroke 유무를 확인한다.
-        let para_border_fill_id_pre = para_style.map(|s| s.border_fill_id).unwrap_or(0);
-        let has_visible_stroke = if para_border_fill_id_pre > 0 {
-            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
-            styles.border_styles.get(idx)
-                .map(|bs| bs.borders.iter().any(|b|
-                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
-                .unwrap_or(false)
-        } else {
-            false
-        };
-        let bs_left_px = para_style.map(|s| s.border_spacing[0]).unwrap_or(0.0);
-        let bs_right_px = para_style.map(|s| s.border_spacing[1]).unwrap_or(0.0);
-        let (inner_pad_left, inner_pad_right) = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
-            (box_margin_left, box_margin_right)
-        } else {
-            (0.0, 0.0)
-        };
-        let margin_left = box_margin_left + inner_pad_left;
-        let margin_right = box_margin_right + inner_pad_right;
+        // [Task #547] paragraph margin_left/right 는 텍스트 좌/우 inset 으로 한 번만
+        // 적용. Task #544 후 box outline = col_area (margin 미적용) 이므로 박스 안
+        // 좌측 여백 = box_margin_left (PDF 한컴 2010 정합).
+        // 이전 코드는 paragraph border + border_spacing=0 인 경우 inner_pad_left =
+        // box_margin_left 로 한 번 더 더해 이중 inset 부작용 발생 (Task #544 전 박스도
+        // margin 적용했을 때만 의미가 있던 분기).
+        let margin_left = box_margin_left;
+        let margin_right = box_margin_right;
         let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Justify);
         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
@@ -2650,14 +2633,19 @@ impl LayoutEngine {
             // 시작이면 trailing ls 보존 (Task #479 의 trailing ls 제외 → 박스 top 이
             // header 텍스트 바로 아래 붙는 회귀 정정). caller 가 next_para_starts_visible_border
             // 플래그 set 후 본 함수 호출.
+            // [Task #544 v3] 박스 안 sequential paragraph (prev/next 같은 박스 outline)
+            // 사이도 trailing ls 보존 — Task #552 가 박스 시작 직전만 처리, 박스 안
+            // sequential 영역 미처리 → -9.55 px (또는 부분) drift 회귀 영역.
             let next_starts_border = self.next_para_starts_visible_border.get();
+            let next_continues_border = self.next_para_continues_visible_border.get();
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
-            } else if is_full_paragraph_end && cell_ctx.is_none() && !next_starts_border {
+            } else if is_full_paragraph_end && cell_ctx.is_none()
+                && !next_starts_border && !next_continues_border {
                 // 셀 외부 paragraph 의 마지막 줄 (#479)
                 y += line_height;
             } else {
-                // [Task #552] border-start 직전 마지막 줄: trailing ls 보존
+                // [Task #552/#544 v3] border-start / border-continues 직전 마지막 줄: trailing ls 보존
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
             }
@@ -2684,10 +2672,14 @@ impl LayoutEngine {
                 // override 가 활성된 경우(wrap host), 박스 우측은 floating 표의 끝
                 // 까지 확장된 width 그대로 사용 — margin_right 차감하지 않는다
                 // (그렇지 않으면 표가 박스 밖으로 다시 튀어나옴).
+                // [Task #544] paragraph margin_left/right 는 텍스트 inset 으로만 사용,
+                // 박스 outline 좌표는 col_area 전체 (PDF 정합). wrap=Square 호스트
+                // (border_box_override) 케이스는 layout_wrap_around_paras 가 설정한
+                // override 좌표 그대로 사용 (margin 미적용).
                 let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
-                    (ox + box_margin_left, ow - box_margin_left)
+                    (ox, ow)
                 } else {
-                    (col_area.x + box_margin_left, col_area.width - box_margin_left - box_margin_right)
+                    (col_area.x, col_area.width)
                 };
                 self.para_border_ranges.borrow_mut().push(
                     (para_border_fill_id, box_x, bg_y_start, box_w, y, top_inset, bottom_inset, is_partial_start, is_partial_end, para_index)
