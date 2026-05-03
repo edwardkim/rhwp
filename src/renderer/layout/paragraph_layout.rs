@@ -85,6 +85,61 @@ pub(crate) fn resolve_last_tab_pending(
 }
 
 impl LayoutEngine {
+    /// 인라인 수식 노드를 그려 col_node 에 추가하고 inline_shape_position 을 등록한다.
+    /// shape_layout::layout_shape 가 이 위치 등록을 보고 fallback 경로를 우회하도록 한다.
+    /// `layout_composed_paragraph` 의 인라인 수식 처리 (paragraph_layout.rs:1845~) 와 동일 로직.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn render_inline_equation_node(
+        &self,
+        tree: &mut PageRenderTree,
+        col_node: &mut RenderNode,
+        eq: &crate::model::control::Equation,
+        ctrl_idx: usize,
+        section_index: usize,
+        para_index: usize,
+        inline_x: f64,
+        current_y: f64,
+        cur_baseline: f64,
+        w: f64,
+    ) {
+        let tokens = crate::renderer::equation::tokenizer::tokenize(&eq.script);
+        let ast = crate::renderer::equation::parser::EqParser::new(tokens).parse();
+        let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
+        let layout_box = crate::renderer::equation::layout::EqLayout::new(font_size_px).layout(&ast);
+        let color_str = crate::renderer::equation::svg_render::eq_color_to_svg(eq.color);
+        let svg_content = crate::renderer::equation::svg_render::render_equation_svg(
+            &layout_box, &color_str, font_size_px,
+        );
+        let hwp_eq_h = hwpunit_to_px(eq.common.height as i32, self.dpi);
+        let eq_h = if hwp_eq_h > 0.0 { hwp_eq_h } else { layout_box.height };
+        // baseline 정렬: 텍스트 baseline 기준. HWP 높이와 layout 높이가 다르면 baseline 도 비례 조정.
+        let eq_y = if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
+            let scale = hwp_eq_h / layout_box.height;
+            (current_y + cur_baseline - layout_box.baseline * scale).max(current_y)
+        } else {
+            (current_y + cur_baseline - layout_box.baseline).max(current_y)
+        };
+        let eq_node = RenderNode::new(
+            tree.next_id(),
+            RenderNodeType::Equation(crate::renderer::render_tree::EquationNode {
+                svg_content,
+                layout_box,
+                color_str,
+                color: eq.color,
+                font_size: font_size_px,
+                section_index: Some(section_index),
+                para_index: Some(para_index),
+                control_index: Some(ctrl_idx),
+                cell_index: None,
+                cell_para_index: None,
+            }),
+            BoundingBox::new(inline_x, eq_y, w, eq_h),
+        );
+        col_node.children.push(eq_node);
+        // shape_layout fallback 우회 (Task #526)
+        tree.set_inline_shape_position(section_index, para_index, ctrl_idx, inline_x, eq_y);
+    }
+
     pub(crate) fn layout_inline_table_paragraph(
         &self,
         tree: &mut PageRenderTree,
@@ -113,23 +168,32 @@ impl LayoutEngine {
 
         let y = y_start + spacing_before;
 
-        // 2. treat_as_char 표 목록과 폭 수집
-        let inline_tables: Vec<(usize, &crate::model::table::Table)> = para.controls.iter().enumerate()
-            .filter_map(|(i, c)| {
-                if let Control::Table(t) = c {
-                    if t.common.treat_as_char { return Some((i, t.as_ref())); }
-                }
-                None
+        // 2. treat_as_char 표·수식 목록과 폭 수집 (인라인 처리 대상)
+        // [Task #526] 기존에는 표만 처리하여 동일 문단의 인라인 수식이
+        // set_inline_shape_position 등록 누락 → shape pass fallback 으로
+        // 한 점 stack. enum 으로 통합하여 종류별 분기 처리한다.
+        enum InlineTac<'a> {
+            Table(&'a crate::model::table::Table),
+            Equation(&'a crate::model::control::Equation),
+        }
+
+        let inline_tac_controls: Vec<(usize, InlineTac)> = para.controls.iter().enumerate()
+            .filter_map(|(i, c)| match c {
+                Control::Table(t) if t.common.treat_as_char => Some((i, InlineTac::Table(t.as_ref()))),
+                Control::Equation(eq) => Some((i, InlineTac::Equation(eq.as_ref()))),
+                _ => None,
             })
             .collect();
 
         // [Task #517 Stage 1] RHWP_LAYOUT_DEBUG 진단 로깅
         if layout_debug_enabled() {
+            let tbl_cnt = inline_tac_controls.iter().filter(|(_, k)| matches!(k, InlineTac::Table(_))).count();
+            let eq_cnt = inline_tac_controls.iter().filter(|(_, k)| matches!(k, InlineTac::Equation(_))).count();
             eprintln!(
-                "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={}",
+                "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={} equations={}",
                 para_index, section_index, col_area.x, col_area.width, y_start, y,
                 spacing_before, spacing_after, margin_left, margin_right, alignment,
-                para.line_segs.len(), inline_tables.len(),
+                para.line_segs.len(), tbl_cnt, eq_cnt,
             );
             for (li, seg) in para.line_segs.iter().enumerate() {
                 eprintln!(
@@ -138,13 +202,19 @@ impl LayoutEngine {
                     seg.baseline_distance, seg.text_start, seg.segment_width,
                 );
             }
-            for (ti, (ci, tbl)) in inline_tables.iter().enumerate() {
-                eprintln!(
-                    "  LAYOUT_INLINE_TBL[{}]: ctrl_idx={} rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
-                    ti, ci, tbl.row_count, tbl.col_count,
-                    tbl.common.width, tbl.common.height,
-                    tbl.common.vert_align, tbl.common.horz_align, tbl.common.text_wrap,
-                );
+            for (ti, (ci, kind)) in inline_tac_controls.iter().enumerate() {
+                match kind {
+                    InlineTac::Table(tbl) => eprintln!(
+                        "  LAYOUT_INLINE_TAC[{}]: ctrl_idx={} kind=Table rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
+                        ti, ci, tbl.row_count, tbl.col_count,
+                        tbl.common.width, tbl.common.height,
+                        tbl.common.vert_align, tbl.common.horz_align, tbl.common.text_wrap,
+                    ),
+                    InlineTac::Equation(eq) => eprintln!(
+                        "  LAYOUT_INLINE_TAC[{}]: ctrl_idx={} kind=Equation w={} h={} script={:?}",
+                        ti, ci, eq.common.width, eq.common.height, eq.script,
+                    ),
+                }
             }
         }
 
@@ -160,9 +230,9 @@ impl LayoutEngine {
         // 확장 컨트롤은 8 UTF-16 유닛을 차지하므로, offsets[0] / 8 = 선행 컨트롤 수
         if !offsets.is_empty() && offsets[0] >= 8 {
             let num_leading = (offsets[0] / 8) as usize;
-            let tables_to_prepend = num_leading.min(inline_tables.len());
-            for _ in 0..tables_to_prepend {
-                segments.push((0, 0)); // 빈 세그먼트 → 표가 텍스트 앞에 배치됨
+            let tac_to_prepend = num_leading.min(inline_tac_controls.len());
+            for _ in 0..tac_to_prepend {
+                segments.push((0, 0)); // 빈 세그먼트 → 컨트롤(표/수식)이 텍스트 앞에 배치됨
             }
         }
 
@@ -182,25 +252,32 @@ impl LayoutEngine {
         // 선행 컨트롤이 있으면: empty_seg, table[0], text_seg, table[1], ...
 
         // 4. 각 요소의 폭 계산
-        // 4a. 표 폭 계산
-        let table_widths: Vec<f64> = inline_tables.iter().map(|(_, t)| {
-            // col_widths로부터 table_width 계산
-            let col_count = t.col_count as usize;
-            let cell_spacing = hwpunit_to_px(t.cell_spacing as i32, self.dpi);
-            let mut col_widths = vec![0.0f64; col_count];
-            for cell in &t.cells {
-                let c = cell.col as usize;
-                let span = cell.col_span.max(1) as usize;
-                if c + span <= col_count {
-                    let w = hwpunit_to_px(cell.width as i32, self.dpi);
-                    if span == 1 {
-                        if w > col_widths[c] { col_widths[c] = w; }
+        // 4a. TAC 컨트롤 폭 계산 (표 + 수식)
+        let tac_widths: Vec<f64> = inline_tac_controls.iter().map(|(_, kind)| {
+            match kind {
+                InlineTac::Table(t) => {
+                    // col_widths로부터 table_width 계산
+                    let col_count = t.col_count as usize;
+                    let cell_spacing = hwpunit_to_px(t.cell_spacing as i32, self.dpi);
+                    let mut col_widths = vec![0.0f64; col_count];
+                    for cell in &t.cells {
+                        let c = cell.col as usize;
+                        let span = cell.col_span.max(1) as usize;
+                        if c + span <= col_count {
+                            let w = hwpunit_to_px(cell.width as i32, self.dpi);
+                            if span == 1 {
+                                if w > col_widths[c] { col_widths[c] = w; }
+                            }
+                        }
                     }
+                    col_widths.iter().sum::<f64>()
+                        + cell_spacing * (col_count.saturating_sub(1) as f64)
+                }
+                InlineTac::Equation(eq) => {
+                    // HWP 저장 폭 사용 — 한컴 편집기 기준
+                    hwpunit_to_px(eq.common.width as i32, self.dpi)
                 }
             }
-            let total: f64 = col_widths.iter().sum::<f64>()
-                + cell_spacing * (col_count.saturating_sub(1) as f64);
-            total
         }).collect();
 
         // 4b. 텍스트 세그먼트 폭 계산
@@ -229,7 +306,7 @@ impl LayoutEngine {
         }).collect();
 
         // 5. 총 폭과 정렬 계산
-        let total_width: f64 = seg_widths.iter().sum::<f64>() + table_widths.iter().sum::<f64>();
+        let total_width: f64 = seg_widths.iter().sum::<f64>() + tac_widths.iter().sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
         let start_x = match alignment {
             Alignment::Center | Alignment::Distribute => col_area.x + margin_left + (available_width - total_width).max(0.0) / 2.0,
@@ -327,7 +404,7 @@ impl LayoutEngine {
 
         let mut inline_x = start_x;
         let mut current_y = y;
-        let mut table_idx = 0;
+        let mut tac_idx = 0;
         let mut max_table_bottom = y; // 표의 최대 하단 y (표 높이를 줄 높이로 사용하기 위함)
         let mut wrapped_below_table = false; // 텍스트가 표 아래로 줄바꿈되었는지
         // [Task #518] 다음 break 인덱스 (line_break_char_indices 안에서)
@@ -532,62 +609,84 @@ impl LayoutEngine {
                 }
             }
 
-            // 텍스트 세그먼트 뒤의 표 배치
-            // 표 하단 = 베이스라인 + outer_margin_bottom
-            if table_idx < inline_tables.len() {
-                let (ctrl_idx, tbl) = &inline_tables[table_idx];
-                let mt = measured_tables.iter().find(|mt|
-                    mt.para_index == para_index && mt.control_index == *ctrl_idx
-                );
-                let tw = table_widths[table_idx];
-                let tbl_h = mt.map(|m| m.total_height)
-                    .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
-                let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
-                let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
+            // 텍스트 세그먼트 뒤의 TAC 컨트롤(표/수식) 배치
+            if tac_idx < inline_tac_controls.len() {
+                let (ctrl_idx, kind) = &inline_tac_controls[tac_idx];
+                let w = tac_widths[tac_idx];
+                match kind {
+                    InlineTac::Table(tbl) => {
+                        // 표 하단 = 베이스라인 + outer_margin_bottom
+                        let mt = measured_tables.iter().find(|mt|
+                            mt.para_index == para_index && mt.control_index == *ctrl_idx
+                        );
+                        let tbl_h = mt.map(|m| m.total_height)
+                            .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
+                        let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
+                        let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
 
-                let table_bottom = self.layout_table(
-                    tree, col_node, tbl,
-                    section_index, styles, col_area, tbl_y,
-                    bin_data_content, mt, 0,
-                    Some((para_index, *ctrl_idx)),
-                    Alignment::Left, None, 0.0, 0.0,
-                    Some(inline_x), None, None,
-                );
-                if table_bottom > max_table_bottom {
-                    max_table_bottom = table_bottom;
+                        let table_bottom = self.layout_table(
+                            tree, col_node, tbl,
+                            section_index, styles, col_area, tbl_y,
+                            bin_data_content, mt, 0,
+                            Some((para_index, *ctrl_idx)),
+                            Alignment::Left, None, 0.0, 0.0,
+                            Some(inline_x), None, None,
+                        );
+                        if table_bottom > max_table_bottom {
+                            max_table_bottom = table_bottom;
+                        }
+                    }
+                    InlineTac::Equation(eq) => {
+                        let cur_baseline = if wrapped_below_table { text_line_baseline } else { baseline_dist };
+                        self.render_inline_equation_node(
+                            tree, col_node, eq, *ctrl_idx,
+                            section_index, para_index,
+                            inline_x, current_y, cur_baseline, w,
+                        );
+                    }
                 }
-
-                inline_x += tw;
-                table_idx += 1;
+                inline_x += w;
+                tac_idx += 1;
             }
         }
 
-        // 후행 표 (텍스트 세그먼트보다 표가 더 많은 경우)
-        while table_idx < inline_tables.len() {
-            let (ctrl_idx, tbl) = &inline_tables[table_idx];
-            let mt = measured_tables.iter().find(|mt|
-                mt.para_index == para_index && mt.control_index == *ctrl_idx
-            );
-            let tw = table_widths[table_idx];
-            let tbl_h = mt.map(|m| m.total_height)
-                .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
-            let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
-            let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
+        // 후행 컨트롤 (텍스트 세그먼트보다 TAC 컨트롤이 더 많은 경우)
+        while tac_idx < inline_tac_controls.len() {
+            let (ctrl_idx, kind) = &inline_tac_controls[tac_idx];
+            let w = tac_widths[tac_idx];
+            match kind {
+                InlineTac::Table(tbl) => {
+                    let mt = measured_tables.iter().find(|mt|
+                        mt.para_index == para_index && mt.control_index == *ctrl_idx
+                    );
+                    let tbl_h = mt.map(|m| m.total_height)
+                        .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
+                    let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
+                    let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
 
-            let table_bottom = self.layout_table(
-                tree, col_node, tbl,
-                section_index, styles, col_area, tbl_y,
-                bin_data_content, mt, 0,
-                Some((para_index, *ctrl_idx)),
-                Alignment::Left, None, 0.0, 0.0,
-                Some(inline_x), None, None,
-            );
-            if table_bottom > max_table_bottom {
-                max_table_bottom = table_bottom;
+                    let table_bottom = self.layout_table(
+                        tree, col_node, tbl,
+                        section_index, styles, col_area, tbl_y,
+                        bin_data_content, mt, 0,
+                        Some((para_index, *ctrl_idx)),
+                        Alignment::Left, None, 0.0, 0.0,
+                        Some(inline_x), None, None,
+                    );
+                    if table_bottom > max_table_bottom {
+                        max_table_bottom = table_bottom;
+                    }
+                }
+                InlineTac::Equation(eq) => {
+                    let cur_baseline = if wrapped_below_table { text_line_baseline } else { baseline_dist };
+                    self.render_inline_equation_node(
+                        tree, col_node, eq, *ctrl_idx,
+                        section_index, para_index,
+                        inline_x, current_y, cur_baseline, w,
+                    );
+                }
             }
-
-            inline_x += tw;
-            table_idx += 1;
+            inline_x += w;
+            tac_idx += 1;
         }
 
         // 텍스트가 줄바꿈된 경우 텍스트 하단 고려
