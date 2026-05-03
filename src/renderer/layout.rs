@@ -2489,7 +2489,7 @@ impl LayoutEngine {
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                     // Task #463: 인라인 floating 표 우측 x 계산 (paragraph border box 확장용).
                     // table_layout::compute_table_x_position 와 동일 공식.
-                    let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
+                    let tbl_x_right = self.compute_square_wrap_tbl_x_right(t, col_area);
                     self.layout_wrap_around_paras(
                         tree, col_node, paragraphs, composed, styles, col_area,
                         page_content.section_index,
@@ -2723,7 +2723,7 @@ impl LayoutEngine {
                     let content_offset = if let Some(mt) = pt_mt {
                         mt.range_height(0, start_row)
                     } else { 0.0 };
-                    let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
+                    let tbl_x_right = self.compute_square_wrap_tbl_x_right(t, col_area);
                     self.layout_wrap_around_paras(
                         tree, col_node, paragraphs, composed, styles, col_area,
                         page_content.section_index, para_index, wrap_around_paras,
@@ -2889,6 +2889,7 @@ impl LayoutEngine {
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,
+                                    transform: utils::extract_shape_transform(&pic.shape_attr),
                                     ..ImageNode::new(bin_data_id, image_data)
                                 }),
                                 BoundingBox::new(pic_x, pic_y, pic_w, pic_h),
@@ -3571,32 +3572,58 @@ impl LayoutEngine {
 /// 가 호출되지 않는 경우(선행 공백만 있는 TAC 표 등)에 `layout_table_item`
 /// 에서 표 inline x 좌표를 복원하기 위해 사용한다.
 /// Task #463: 인라인 wrap=Square floating 표의 우측 끝 x 좌표 계산.
-/// `table_layout::compute_table_x_position` 의 depth=0 + Column-relative
-/// 경로와 동일한 공식을 사용하여, paragraph border box 가 표를 둘러쌀 수
+/// `table_layout::compute_table_x_position` 의 depth=0 경로와 동일한
+/// `(ref_x, ref_w)` 공식을 사용하여, paragraph border box 가 표를 둘러쌀 수
 /// 있도록 한다. 인용 따옴표 ｢｣ 처럼 col_area 우측을 horizontal_offset 만큼
 /// 넘는 표를 정확히 처리한다.
-fn compute_square_wrap_tbl_x_right(
-    t: &crate::model::table::Table,
-    col_area: &LayoutRect,
-    dpi: f64,
-) -> f64 {
-    use crate::model::shape::HorzAlign;
-    let tbl_w = crate::renderer::hwpunit_to_px(t.common.width as i32, dpi);
-    let h_offset = crate::renderer::hwpunit_to_px(t.common.horizontal_offset as i32, dpi);
-    let tbl_x = match t.common.horz_align {
-        // table_layout.rs:966 와 동일: ref_x + (ref_w - table_width) - h_offset.
-        // 이후 inline_x_override 경로(line 924-925)에서 +h_offset 가산되어
-        // 최종 x = ref_x + (ref_w - table_width). h_offset 효과는 상쇄됨.
-        // 그러나 실제 렌더된 좌표(empirical: 526.93) 는 ref_x+(ref_w-tw)+h_offset 임.
-        // 여기서는 tbl_inline_x(line 2218)와 일관되게 단순 우측정렬 후
-        // h_offset 가산식을 사용한다.
-        HorzAlign::Right | HorzAlign::Outside =>
-            col_area.x + col_area.width - tbl_w + h_offset,
-        HorzAlign::Center =>
-            col_area.x + (col_area.width - tbl_w) / 2.0 + h_offset,
-        _ => col_area.x + h_offset,
-    };
-    tbl_x + tbl_w
+///
+/// Task #466: `horz_rel_to` 분기 보강.
+/// - Paper: ref_x=0, ref_w=paper_width
+/// - Page: ref_x=body_area.x, ref_w=body_area.width
+/// - Para/Column: ref_x=col_area.x, ref_w=col_area.width
+///
+/// h_offset 적용 방향: `inline_x_override` 경로(line 924-925) 와 일관되게
+/// 단순 정렬 후 `+h_offset` 가산. (table_layout.rs:966 의 Right/Outside 가
+/// `-h_offset` 인 것과 다름 — caller 측 inline_x 보정 후 동일 결과.)
+impl LayoutEngine {
+    fn compute_square_wrap_tbl_x_right(
+        &self,
+        t: &crate::model::table::Table,
+        col_area: &LayoutRect,
+    ) -> f64 {
+        use crate::model::shape::{HorzAlign, HorzRelTo};
+        let paper_w = self.current_paper_width.get();
+        let body = self.current_body_area.get();
+        let (ref_x, ref_w) = match t.common.horz_rel_to {
+            HorzRelTo::Paper => {
+                if paper_w > 0.0 {
+                    (0.0, paper_w)
+                } else {
+                    (col_area.x, col_area.width)
+                }
+            }
+            HorzRelTo::Page => {
+                if body.2 > 0.0 {
+                    (body.0, body.2)
+                } else {
+                    (col_area.x, col_area.width)
+                }
+            }
+            // Para / Column: col_area 기준 (host_margin 미반영 — caller wrap_text_x 가
+            // 별도로 margin 처리하므로 단순화)
+            HorzRelTo::Para | HorzRelTo::Column => (col_area.x, col_area.width),
+        };
+        let tbl_w = crate::renderer::hwpunit_to_px(t.common.width as i32, self.dpi);
+        let h_offset = crate::renderer::hwpunit_to_px(t.common.horizontal_offset as i32, self.dpi);
+        let tbl_x = match t.common.horz_align {
+            HorzAlign::Right | HorzAlign::Outside =>
+                ref_x + (ref_w - tbl_w) + h_offset,
+            HorzAlign::Center =>
+                ref_x + (ref_w - tbl_w) / 2.0 + h_offset,
+            _ => ref_x + h_offset,
+        };
+        tbl_x + tbl_w
+    }
 }
 
 fn compute_tac_leading_width(

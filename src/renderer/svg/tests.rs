@@ -285,7 +285,8 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
-    // 좌·상단을 잘라낸 케이스: top=ow/4, left=ow/4 → 우하단 75% 영역
+    // [Task #473] 좌·상단을 잘라낸 케이스. orig=(4000,2500) / img=(400,250) = 10 HU/px.
+    // 75 ± 5% 범위 밖이라 96-DPI 관행 (75 HU/px) fallback 적용.
     let (sx, sy, sw, sh) = compute_image_crop_src(
         (1000, 500, 4000, 2500),
         Some((4000, 2500)),
