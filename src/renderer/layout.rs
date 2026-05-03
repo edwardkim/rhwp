@@ -1804,14 +1804,26 @@ impl LayoutEngine {
                             .unwrap_or(0)
                     };
 
-                    if !g.7 && first_pi > 0 {
+                    // [Task #540 후속] floor 대상 paragraph (text=∅ + controls=∅ + 음수 ls)
+                    // 는 paragraph_layout 에서 border push 가 skip 된다. 인접 paragraph 의
+                    // partial_start/partial_end (cross-column/page 연속) 검사에서도 제외해야
+                    // 잘못된 partial 처리로 top/bottom edge 가 누락되지 않는다.
+                    let is_540_floor = |pi: usize| -> bool {
+                        paragraphs.get(pi).map(|p|
+                            p.text.is_empty()
+                                && p.controls.is_empty()
+                                && p.line_segs.iter().any(|s| s.line_spacing < 0)
+                        ).unwrap_or(false)
+                    };
+
+                    if !g.7 && first_pi > 0 && !is_540_floor(first_pi - 1) {
                         let prev_sig = stroke_sig(para_bf(first_pi - 1));
                         if prev_sig.is_some() && prev_sig == group_sig {
                             g.7 = true;
                         }
                     }
 
-                    if !g.8 {
+                    if !g.8 && !is_540_floor(last_pi + 1) {
                         let next_sig = stroke_sig(para_bf(last_pi + 1));
                         if next_sig.is_some() && next_sig == group_sig {
                             g.8 = true;
