@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""KTUG HanyangPuaTableProject → src/renderer/pua_oldhangul.rs 생성.
+
+원본: https://github.com/mete0r/hypua2jamo/blob/master/data/hypua2jamocomposed.txt
+라이선스: Public Domain (원본 파일 헤더 명시 — KTUG)
+
+사용법:
+    python3 scripts/gen_pua_oldhangul_rs.py /tmp/oss_pua/hypua2jamo/data/hypua2jamocomposed.txt > src/renderer/pua_oldhangul.rs
+"""
+import sys
+import re
+
+def parse_ktug(path):
+    """U+XXXX => U+YYYY [U+ZZZZ ...] 형식 파싱."""
+    mapping = []
+    with open(path, encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('%') or not line.strip():
+                continue
+            m = re.match(r'^U\+([0-9A-F]+)\s*=>\s*(.+)$', line.strip())
+            if not m:
+                continue
+            src = int(m.group(1), 16)
+            dst = tuple(int(c, 16) for c in re.findall(r'U\+([0-9A-F]+)', m.group(2)))
+            mapping.append((src, dst))
+    mapping.sort(key=lambda x: x[0])
+    return mapping
+
+def emit_rust(mapping):
+    """Rust 모듈 코드 생성."""
+    print('// 자동 생성 — scripts/gen_pua_oldhangul_rs.py 로 재생성')
+    print('// 원본 데이터: KTUG HanyangPuaTableProject (Public Domain)')
+    print('// https://github.com/mete0r/hypua2jamo/blob/master/data/hypua2jamocomposed.txt')
+    print()
+    print('//! HanCom Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 변환.')
+    print('//!')
+    print('//! ## 본질')
+    print('//!')
+    print('//! 한/글 2010 이전 버전에서 입력된 옛한글은 PUA 영역 (U+E000~F8FF) 의')
+    print('//! 한컴 자체 인코딩 (Hanyang-PUA) 으로 저장된다. 한/글 2010 이후는')
+    print('//! KS X 1026-1:2007 표준 (유니코드 자모 영역) 으로 입력하지만 기존')
+    print('//! HWP 문서 호환을 위해 PUA 영역 옛한글 보존이 일반적이다.')
+    print('//!')
+    print('//! 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 코드포인트에 글리프를')
+    print('//! 직접 보유하나, OFL 폰트 (Noto Serif KR / Source Han Serif K 등)')
+    print('//! 는 KS X 1026-1 자모 영역 글리프만 보유.')
+    print('//!')
+    print('//! 본 모듈은 PUA → 자모 시퀀스 변환으로 한컴 자체 폰트 의존을 제거.')
+    print('//!')
+    print('//! ## 매핑 표 출처')
+    print('//!')
+    print('//! [KTUG (Korean TeX Users Group) HanyangPuaTableProject]')
+    print('//! (http://faq.ktug.or.kr/mywiki/HanyangPuaTableProject) — Public Domain.')
+    print('//!')
+    print('//! 5,660 매핑 (U+E0BC ~ U+F8F7), 출력 자모는 Hangul Jamo (U+1100-11FF)')
+    print('//! + Extended-A (U+A960-A97F) + Extended-B (U+D7B0-D7FF).')
+    print()
+    print(f'/// 매핑 표 크기: {len(mapping)} entries.')
+    print('///')
+    print('/// (PUA 코드포인트, 자모 시퀀스) 정렬된 정적 배열. 이진 검색으로 룩업.')
+    print('static PUA_OLDHANGUL_MAP: &[(u32, &[char])] = &[')
+    for src, dst in mapping:
+        chars = ', '.join(f'\'\\u{{{c:X}}}\'' for c in dst)
+        print(f'    (0x{src:04X}, &[{chars}]),')
+    print('];')
+    print()
+    print('/// PUA 옛한글 코드포인트 → KS X 1026-1:2007 자모 시퀀스.')
+    print('///')
+    print('/// 매핑이 존재하면 자모 슬라이스 반환, 없으면 None.')
+    print('pub fn map_pua_old_hangul(ch: char) -> Option<&\'static [char]> {')
+    print('    let cp = ch as u32;')
+    print('    PUA_OLDHANGUL_MAP')
+    print('        .binary_search_by_key(&cp, |&(k, _)| k)')
+    print('        .ok()')
+    print('        .map(|idx| PUA_OLDHANGUL_MAP[idx].1)')
+    print('}')
+    print()
+    print('/// 본 코드포인트가 PUA 옛한글인지 (변환 가능한지) 판별.')
+    print('pub fn is_pua_old_hangul(ch: char) -> bool {')
+    print('    map_pua_old_hangul(ch).is_some()')
+    print('}')
+    print()
+    print('#[cfg(test)]')
+    print('mod tests {')
+    print('    use super::*;')
+    print()
+    print('    #[test]')
+    print('    fn test_map_size() {')
+    print(f'        assert_eq!(PUA_OLDHANGUL_MAP.len(), {len(mapping)});')
+    print('    }')
+    print()
+    print('    #[test]')
+    print('    fn test_map_sorted() {')
+    print('        for w in PUA_OLDHANGUL_MAP.windows(2) {')
+    print('            assert!(w[0].0 < w[1].0, "U+{:04X} >= U+{:04X}", w[0].0, w[1].0);')
+    print('        }')
+    print('    }')
+    print()
+    print('    #[test]')
+    print('    fn test_exam_kor_p17_coverage() {')
+    print('        // exam_kor.hwp p17 측정으로 발견된 25 PUA 옛한글 코드포인트')
+    print('        // (Stage 1 보고서 §2-3)')
+    print('        let exam_kor_pua = [')
+    print('            0xE17A_u32, 0xE1A7, 0xE1C2, 0xE288, 0xE38A, 0xE40A,')
+    print('            0xE474, 0xE560, 0xE566, 0xE79C, 0xE8A7, 0xE8B2,')
+    print('            0xE95B, 0xEB66, 0xEB68, 0xEBD4, 0xECF0, 0xECFB,')
+    print('            0xED41, 0xED98, 0xED9A, 0xF152, 0xF154, 0xF1C4, 0xF537,')
+    print('        ];')
+    print('        for cp in exam_kor_pua {')
+    print('            let ch = char::from_u32(cp).unwrap();')
+    print('            assert!(')
+    print('                is_pua_old_hangul(ch),')
+    print('                "exam_kor PUA U+{:04X} 매핑 누락",')
+    print('                cp')
+    print('            );')
+    print('        }')
+    print('    }')
+    print()
+    print('    #[test]')
+    print('    fn test_known_mapping_sample() {')
+    print('        // U+E1A7 => U+1100 U+119E (\\u{1100}\\u{119E} = ᄀᆞ)')
+    print('        let result = map_pua_old_hangul(\'\\u{E1A7}\').expect("U+E1A7 매핑");')
+    print('        assert_eq!(result, &[\'\\u{1100}\', \'\\u{119E}\']);')
+    print('    }')
+    print()
+    print('    #[test]')
+    print('    fn test_no_collision_with_pua_bullet_range() {')
+    print('        // Task #509 의 PUA bullet 영역 (U+F0A0~F0FF 일부) 과 본 매핑 영역 분리 확인.')
+    print('        // KTUG 매핑은 U+E0BC~F8F7 BMP 전체를 다루지만 bullet 코드는 매핑 표 외 영역.')
+    print('        // (Task #509 bullet 코드 17 종이 KTUG 매핑 표에 없는지 검증)')
+    print('        let task_509_bullets = [')
+    print('            0xF0A0_u32, 0xF0E8, 0xF02EF,')
+    print('            0xF02B1, 0xF02B2, 0xF02B3, 0xF02B4, 0xF02B5,')
+    print('            0xF02B6, 0xF02B7, 0xF02B8, 0xF02B9,')
+    print('        ];')
+    print('        for cp in task_509_bullets {')
+    print('            if let Some(ch) = char::from_u32(cp) {')
+    print('                assert!(')
+    print('                    !is_pua_old_hangul(ch),')
+    print('                    "Task #509 bullet U+{:04X} 가 PUA 옛한글 매핑 표에 충돌",')
+    print('                    cp')
+    print('                );')
+    print('            }')
+    print('        }')
+    print('    }')
+    print('}')
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: gen_pua_oldhangul_rs.py <hypua2jamocomposed.txt>", file=sys.stderr)
+        sys.exit(1)
+    mapping = parse_ktug(sys.argv[1])
+    emit_rust(mapping)
+
+if __name__ == '__main__':
+    main()

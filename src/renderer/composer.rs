@@ -33,6 +33,10 @@ pub struct ComposedTextRun {
     pub char_overlap: Option<CharOverlapInfo>,
     /// 각주/미주 마커 (Some이면 위첨자로 렌더링, 텍스트 흐름에 포함)
     pub footnote_marker: Option<u16>,
+    /// PUA 옛한글 변환 후 표시 텍스트 (Some 이면 렌더러는 본 필드 사용).
+    /// `text` 는 IR 와 동일하게 PUA char 1글자로 보존하여 char_offsets /
+    /// char_start / line_chars 등 인덱싱 불변성을 유지한다 (Task #528).
+    pub display_text: Option<String>,
 }
 
 /// 구성된 줄 (LineSeg 기반)
@@ -174,7 +178,41 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     // PUA 테두리 숫자(사각형/원형 안의 숫자) → CharOverlap 런으로 변환
     convert_pua_enclosed_numbers(&mut composed);
 
+    // Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (Task #528)
+    convert_pua_old_hangul(&mut composed);
+
     composed
+}
+
+/// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 변환한다.
+///
+/// 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 영역에 옛한글 글리프를 직접
+/// 보유하나, OFL 폰트 (Noto Serif KR / Source Han Serif K 등) 는 KS X 1026-1
+/// 자모 영역만 지원하므로 PUA → 자모 변환 후 합자 렌더링이 필요.
+///
+/// 본 함수는 `run.text` 를 변경하지 않고 `run.display_text` 에만 변환 결과를
+/// 저장한다. 이는 `char_offsets`, `line.char_start`, `line_chars` 등 인덱싱
+/// 불변성을 유지하기 위함이다 (PUA 1 char = display N jamos).
+///
+/// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
+fn convert_pua_old_hangul(composed: &mut ComposedParagraph) {
+    use super::pua_oldhangul::map_pua_old_hangul;
+    for line in composed.lines.iter_mut() {
+        for run in line.runs.iter_mut() {
+            if !run.text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
+                continue;
+            }
+            let mut display = String::with_capacity(run.text.len() * 3);
+            for ch in run.text.chars() {
+                if let Some(jamos) = map_pua_old_hangul(ch) {
+                    display.extend(jamos.iter().copied());
+                } else {
+                    display.push(ch);
+                }
+            }
+            run.display_text = Some(display);
+        }
+    }
 }
 
 /// 각주 마커를 해당 텍스트 위치의 런에 인라인 삽입
@@ -218,7 +256,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     lang_index: lang,
                     char_overlap: None,
                     footnote_marker: Some(number),
-                };
+                    display_text: None,                };
 
                 let mut new_runs = Vec::new();
                 // 앞부분에서 기존 런 교체
@@ -231,7 +269,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 lang_index: lang,
                                 char_overlap: run.char_overlap.clone(),
                                 footnote_marker: None,
-                            });
+                                display_text: None,                            });
                         }
                         new_runs.push(marker_run.clone());
                         if !after.is_empty() {
@@ -241,7 +279,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 lang_index: lang,
                                 char_overlap: run.char_overlap.clone(),
                                 footnote_marker: None,
-                            });
+                                display_text: None,                            });
                         }
                     } else {
                         new_runs.push(run.clone());
@@ -273,7 +311,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 lang_index: 0,
                 char_overlap: None,
                     footnote_marker: None,
-            }]),
+                    display_text: None,            }]),
             line_height: 400,
             baseline_distance: 320,
             segment_width: 0,
@@ -463,7 +501,7 @@ fn split_by_char_shapes(
             lang_index: 0,
             char_overlap: None,
                     footnote_marker: None,
-        }]);
+                    display_text: None,        }]);
     }
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
@@ -525,7 +563,7 @@ fn split_by_char_shapes(
             lang_index: 0,
             char_overlap: None,
                     footnote_marker: None,
-        }]);
+                    display_text: None,        }]);
     }
 
     // TextRun 생성
@@ -550,7 +588,7 @@ fn split_by_char_shapes(
                     lang_index: 0,
                     char_overlap: None,
                     footnote_marker: None,
-                });
+                    display_text: None,                });
             }
         }
     }
@@ -569,7 +607,7 @@ fn split_by_char_shapes(
                     lang_index: 0,
                     char_overlap: None,
                     footnote_marker: None,
-                },
+                    display_text: None,                },
             );
         }
     }
@@ -582,7 +620,7 @@ fn split_by_char_shapes(
             lang_index: 0,
             char_overlap: None,
                     footnote_marker: None,
-        });
+                    display_text: None,        });
     }
 
     // 언어 카테고리별로 Run을 세분화
@@ -652,7 +690,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                         lang_index: current_lang,
                         char_overlap: run.char_overlap.clone(),
                     footnote_marker: None,
-                    });
+                    display_text: None,                    });
                 }
                 current_lang = char_lang;
                 current_start = i;
@@ -668,7 +706,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                 lang_index: current_lang,
                 char_overlap: run.char_overlap.clone(),
                     footnote_marker: None,
-            });
+                    display_text: None,            });
         }
     }
 
@@ -762,7 +800,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
                 inner_char_size: co.inner_char_size,
             }),
             footnote_marker: None,
-        }));
+            display_text: None,        }));
     }
 
     if insertions.is_empty() {
@@ -847,7 +885,7 @@ fn insert_overlap_run(
                         lang_index: lang_idx,
                         char_overlap: None,
                     footnote_marker: None,
-                    };
+                    display_text: None,                    };
 
                     // overlap_run과 after_run을 삽입
                     line.runs.insert(run_idx + 1, after_run);
@@ -1003,7 +1041,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             lang_index: run.lang_index,
                             char_overlap: None,
                     footnote_marker: None,
-                        });
+                    display_text: None,                        });
                         buf.clear();
                     }
                     // PUA 문자 그대로 유지 + CharOverlapInfo 부착
@@ -1016,7 +1054,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             inner_char_size: 0,
                         }),
                         footnote_marker: None,
-                    });
+                        display_text: None,                    });
                 } else {
                     buf.push(ch);
                 }
@@ -1030,7 +1068,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                     lang_index: run.lang_index,
                     char_overlap: None,
                     footnote_marker: None,
-                });
+                    display_text: None,                });
             }
         }
 

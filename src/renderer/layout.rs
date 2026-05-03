@@ -225,6 +225,14 @@ pub struct LayoutEngine {
     /// `layout_wrap_around_paras` 가 호출 직전에 Some(원래 col_area.x, col_area.width)
     /// 로 설정하고, 호출 직후 None 으로 복원한다.
     border_box_override: std::cell::Cell<Option<(f64, f64)>>,
+    /// [Task #544] paragraph border `bg_y_start` 산출용 prev paragraph trailing-ls 보정값.
+    /// vpos correction 가드 (`seg.vertical_pos == 0 && prev_pi > 0`) 로 페이지 시작
+    /// paragraph 직후 transition 의 vpos correction 이 skip 되어 trailing-ls 가
+    /// sequential y_offset 에서 누락된다. paragraph_layout 진입 시 paragraph border 를
+    /// 가진 paragraph 라면 본 값을 bg_y_start 에 더해 IR vpos 기반 박스 top 좌표를
+    /// 얻는다 (본문 텍스트 위치는 보존). build_single_column 이 paragraph_layout 호출
+    /// 직전에 set, 호출 직후 0 으로 reset.
+    paragraph_border_y_correction_px: std::cell::Cell<f64>,
     /// 레이아웃 검증 결과: 경계 초과 목록
     layout_overflows: std::cell::RefCell<Vec<LayoutOverflow>>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
@@ -276,6 +284,7 @@ impl LayoutEngine {
             file_name: std::cell::RefCell::new(String::new()),
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
             border_box_override: std::cell::Cell::new(None),
+            paragraph_border_y_correction_px: std::cell::Cell::new(0.0),
             layout_overflows: std::cell::RefCell::new(Vec::new()),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             active_field: std::cell::RefCell::new(None),
@@ -1411,6 +1420,9 @@ impl LayoutEngine {
             }
         });
         let mut vpos_lazy_base: Option<i32> = None;
+        // [Task #540] 가설 H2: 빈 paragraph 의 음수 ls floor 보정 누적값 (HWPUNIT).
+        // 컬럼 내 모든 vpos correction 의 vpos_end 에 더해져 누적 시프트를 유지한다.
+        let mut vpos_neg_ls_floor_total: i32 = 0;
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
         for item in col_content.items.iter() {
@@ -1445,6 +1457,15 @@ impl LayoutEngine {
                         p.controls.iter().any(|c| match c {
                             Control::Shape(s) => {
                                 let cm = s.common();
+                                // [Task #539] tac=true Shape 는 paragraph 의 LINE_SEG vpos 에
+                                // 통합되어 누적되므로, overlay 가 vpos 에 별도 영향을 주지 않는다.
+                                // 따라서 prev_has_overlay_shape 가드 제외 — 그렇지 않으면
+                                // tac=true InFrontOfText/BehindText 글박스 호스트 paragraph
+                                // 직후의 vpos correction 이 skipped 되어 trailing-ls drift
+                                // 716 HU 가 잔존 (#539: 21_언어_기출 7p pi=146, 9p pi=182).
+                                if cm.treat_as_char {
+                                    return false;
+                                }
                                 matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
                                     || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
                                         && matches!(cm.vert_rel_to, VertRelTo::Para)
@@ -1469,6 +1490,24 @@ impl LayoutEngine {
                         let prev_seg = prev_para.line_segs.iter().rev().find(|ls| ls.segment_width > 0)
                             .or_else(|| prev_para.line_segs.last());
                         if let Some(seg) = prev_seg {
+                            // [Task #544] 가드 skip 케이스에서 다음 paragraph 가 paragraph
+                            // border 를 가지면 prev paragraph 의 trailing-ls 만큼 박스 top
+                            // 보정. vpos correction 자체는 변경하지 않고 paragraph border
+                            // outline 좌표만 IR vpos 기반으로 보정 (본문 텍스트 위치 보존).
+                            if seg.vertical_pos == 0 && prev_pi > 0 {
+                                let trailing_ls_hu = seg.line_spacing.max(0);
+                                if trailing_ls_hu > 0 {
+                                    let next_has_border = composed.get(item_para)
+                                        .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
+                                        .map(|s| s.border_fill_id > 0)
+                                        .unwrap_or(false);
+                                    if next_has_border {
+                                        self.paragraph_border_y_correction_px.set(
+                                            hwpunit_to_px(trailing_ls_hu, self.dpi)
+                                        );
+                                    }
+                                }
+                            }
                             if !(seg.vertical_pos == 0 && prev_pi > 0) {
                                 // [Task #412] vpos_end 결정:
                                 // - page_path: 현재 paragraph 의 first seg vpos 를 직접 사용 (HWP 가 spacing_after 를
@@ -1494,8 +1533,26 @@ impl LayoutEngine {
                                 } else {
                                     // 지연 보정: 첫 보정 시점에서 기준점 산출
                                     // sequential y_offset에서 역산하여 기준 vpos 결정
-                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32;
-                                    let lazy_base = prev_vpos_end - y_delta_hu;
+                                    //
+                                    // [Task #537] trailing-ls 보정:
+                                    // paragraph_layout 의 마지막 줄은 trailing line_spacing 을
+                                    // 제외하여 y 를 advance 한다 (Task #479, lh_sum + (n-1)*ls 정책).
+                                    // 그 결과 sequential y_offset 은 IR vpos 누적보다
+                                    // prev_pi 의 last seg ls 만큼 부족해진다.
+                                    // 이 부족분을 y_delta_hu 에 더해야 lazy_base 가
+                                    // IR 절대 좌표와 일치한다 (drift 가 base 에 동결되는 것을 방지).
+                                    let trailing_ls_hu = paragraphs.get(prev_pi)
+                                        .and_then(|p| p.line_segs.last())
+                                        .map(|s| s.line_spacing.max(0))
+                                        .unwrap_or(0);
+                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32
+                                        + trailing_ls_hu;
+                                    // [Task #540] vpos_neg_ls_floor_total 가 누적된 만큼 y_offset 은
+                                    // IR vpos 보다 더 진행한 상태이다. lazy_base 는 IR 절대 vpos 좌표
+                                    // 기준이므로 누적 floor 분만큼 보정해야 prev_vpos_end - y_delta_hu
+                                    // 가 음수로 흐르지 않고 실제 IR 좌표를 가리킨다 (exam_math 페이지 7
+                                    // pi=169 lazy_base 음수 → fallback 회귀 방지).
+                                    let lazy_base = prev_vpos_end - y_delta_hu + vpos_neg_ls_floor_total;
                                     // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                     // vpos 누적보다 크게 밀린 것 → 역산 무효
                                     if lazy_base < 0 {
@@ -1511,10 +1568,34 @@ impl LayoutEngine {
                                 // 현재 paragraph 의 first vpos 우선 사용. HWP 가 spacing_after 를 다음
                                 // paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확.
                                 // vpos reset(0) 이거나 prev 보다 작아진 경우는 prev 기반 fallback.
-                                let vpos_end = match curr_first_vpos {
+                                let vpos_end_raw = match curr_first_vpos {
                                     Some(v) if v > seg.vertical_pos => v,
                                     _ => prev_vpos_end,
                                 };
+                                // [Task #540] 가설 H2: 한컴은 빈 paragraph 의 음수 ls 를 floor (무시)
+                                // 하여 advance = lh 만큼만 진행한다. HWP IR 의 vpos 는 음수 ls 가
+                                // 반영된 값이지만 한컴 렌더링에서는 빈 paragraph 의 음수 ls 만
+                                // floor 적용된다. prev_pi 가 빈 paragraph (text.is_empty()) + 음수 ls
+                                // 인 경우 floor 분을 누적하여 이후 모든 vpos_end 에 더한다 (컬럼 내).
+                                // 누적 누적이 필요한 이유: vpos correction 은 IR 절대 vpos 기반이라
+                                // 단발 보정만 하면 다음 paragraph 의 correction 이 IR 위치(시프트 미반영)
+                                // 로 되돌리기 때문. 누적값을 모든 후속 correction 에 적용해야 한컴 동작
+                                // (모든 후속 paragraph 가 floor 분만큼 아래로 시프트) 와 일치.
+                                // 가드: text.is_empty() && controls.is_empty() — synam-001 의 음수 ls
+                                // 57건 중 일반 paragraph (셀 내부 등) 의 음수 ls 는 보존, 진짜 빈
+                                // paragraph 만 floor 적용. controls 가 있으면 구역나누기/머리말/표 등을
+                                // 가진 section-setup paragraph (예: exam_science s0.p0 ls=-1348, 영
+                                // advance 의도) 이므로 floor 하면 본문이 1348 HU 만큼 잘못 시프트됨.
+                                let prev_neg_ls_floor: i32 = paragraphs.get(prev_pi)
+                                    .map(|p| {
+                                        if !p.text.is_empty() || !p.controls.is_empty() { return 0; }
+                                        p.line_segs.iter()
+                                            .map(|s| if s.line_spacing < 0 { -s.line_spacing } else { 0 })
+                                            .sum::<i32>()
+                                    })
+                                    .unwrap_or(0);
+                                vpos_neg_ls_floor_total += prev_neg_ls_floor;
+                                let vpos_end = vpos_end_raw + vpos_neg_ls_floor_total;
                                 // [Task #412] page_path: col_anchor_y (body_wide_reserved 푸시 적용 후) 가
                                 // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
                                 // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어
@@ -1750,6 +1831,9 @@ impl LayoutEngine {
                             .unwrap_or(0)
                     };
 
+                    // [Task #544] Task #540 Stage 4 의 is_540_floor 가드 제거. push skip
+                    // 가드가 제거되어 floor 대상 paragraph 도 group 에 포함되므로 prev/next
+                    // sig 검사도 일반 흐름 그대로 동작.
                     if !g.7 && first_pi > 0 {
                         let prev_sig = stroke_sig(para_bf(first_pi - 1));
                         if prev_sig.is_some() && prev_sig == group_sig {
@@ -2506,6 +2590,28 @@ impl LayoutEngine {
                         y_offset += para_style.spacing_after;
                     }
                 }
+                // [Task #533] Square wrap 호스트 문단: 표는 floating, 호스트
+                // 텍스트가 표 옆을 흐른다. 호스트 last LINE_SEG vpos+lh 영역이
+                // 표 bottom 보다 아래일 때 호스트 텍스트 영역까지 advance.
+                // 대형 표 (표 > 텍스트) 는 max() 로 표 영역 우선 유지.
+                // vpos 는 column 누적 좌표이므로 ls[0].vpos 를 차감해 호스트
+                // 문단 내부 offset 으로 변환.
+                if !is_tac {
+                    if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                        if matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square) {
+                            if let (Some(first), Some(last)) =
+                                (para.line_segs.first(), para.line_segs.last()) {
+                                let para_inner_h = (last.vertical_pos + last.line_height)
+                                    .saturating_sub(first.vertical_pos);
+                                let host_text_bottom = para_y_for_table
+                                    + hwpunit_to_px(para_inner_h, self.dpi);
+                                if host_text_bottom > y_offset {
+                                    y_offset = host_text_bottom;
+                                }
+                            }
+                        }
+                    }
+                }
                 if let Some(seg) = para.line_segs.last() {
                     let gap = if seg.line_spacing > 0 { seg.line_spacing } else { seg.line_height };
                     y_offset += hwpunit_to_px(gap, self.dpi);
@@ -2773,11 +2879,45 @@ impl LayoutEngine {
                         // Task #347: 첫 줄 effective_margin (hanging indent: indent<0 → first-line은 margin_left만 적용)
                         let para_margin_left = para_style_ref.map(|s| s.margin_left).unwrap_or(0.0);
                         let para_indent = para_style_ref.map(|s| s.indent).unwrap_or(0.0);
-                        let effective_margin_left = if para_indent > 0.0 {
-                            para_margin_left + para_indent
+                        // [Task #534] paragraph_layout 의 effective_margin_left 정합:
+                        // visible stroke 보유 + border_spacing[0,1]=0 인 paragraph 는
+                        // box_margin_left 를 inner padding 으로 추가 가산 (paragraph_layout.rs
+                        // line 711-716 와 동일). wrap_host (Square wrap 표 보유) paragraph 는
+                        // paragraph_layout 미호출되어 본 경로만 emit → inner_pad 누락 시
+                        // 위치 결함 (예: exam_kor p18 pi=50/56 의 [A]/[B] 표시기 옆 그림).
+                        let para_border_fill_id_pre = para_style_ref.map(|s| s.border_fill_id).unwrap_or(0);
+                        let has_visible_stroke = if para_border_fill_id_pre > 0 {
+                            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
+                            styles.border_styles.get(idx)
+                                .map(|bs| bs.borders.iter().any(|b|
+                                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
+                                .unwrap_or(false)
                         } else {
-                            para_margin_left
+                            false
                         };
+                        let bs_left_px = para_style_ref.map(|s| s.border_spacing[0]).unwrap_or(0.0);
+                        let bs_right_px = para_style_ref.map(|s| s.border_spacing[1]).unwrap_or(0.0);
+                        let inner_pad_left = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
+                            para_margin_left
+                        } else {
+                            0.0
+                        };
+                        let mut effective_margin_left = if para_indent > 0.0 {
+                            para_margin_left + para_indent + inner_pad_left
+                        } else {
+                            para_margin_left + inner_pad_left
+                        };
+                        // [Task #534 v2] LINE_SEG.column_start 는 Square wrap 인라인 표/그림이
+                        // 좌측에 floating 시 표 영역 이후 텍스트 시작 위치를 HWP IR 가 인코딩.
+                        // layout_shape_item 은 col_area.x 그대로 사용 → picture (TAC) 가 표
+                        // 영역 위에 겹쳐 표시되는 결함 (예: exam_kor p18 pi=50/56 [A]/[B]
+                        // 표시기 + 그림). cs 가 effective_margin_left 보다 크면 cs 우선.
+                        let line_seg_cs_px = para.line_segs.first()
+                            .map(|s| hwpunit_to_px(s.column_start, self.dpi))
+                            .unwrap_or(0.0);
+                        if line_seg_cs_px > effective_margin_left {
+                            effective_margin_left = line_seg_cs_px;
+                        }
                         let para_margin_right = para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
                         let avail_w = (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
                         let pic_x = match para_alignment {

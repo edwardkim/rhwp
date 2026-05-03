@@ -107,7 +107,7 @@ pub enum SizeCriterion {
 }
 
 /// 텍스트 흐름 방식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TextWrap {
     #[default]
     Square,

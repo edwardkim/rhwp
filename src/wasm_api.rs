@@ -246,6 +246,66 @@ impl HwpDocument {
         Ok(())
     }
 
+    /// 다층 레이어 필터를 적용한 Canvas 렌더링 (Task #516, Stage 5.2).
+    ///
+    /// `layer_kind`:
+    /// - `"all"` → 모든 그림 렌더 (기본 `renderPageToCanvas` 와 동일)
+    /// - `"flow"` → 본문 layer (BehindText / InFrontOfText 그림 제외)
+    /// - `"behind"` → BehindText overlay layer
+    /// - `"front"` → InFrontOfText overlay layer
+    ///
+    /// 본문 Canvas 와 overlay 컨테이너를 분리하는 다층 layer 아키텍처에서 사용.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = renderPageToCanvasFiltered)]
+    pub fn render_page_to_canvas_filtered(
+        &self,
+        page_num: u32,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+        layer_kind: &str,
+    ) -> Result<(), JsValue> {
+        use crate::renderer::layer_renderer::LayerRenderer;
+        use crate::renderer::web_canvas::{LayerFilter, WebCanvasRenderer};
+        use crate::model::shape::TextWrap;
+
+        let filter = match layer_kind {
+            "all" => LayerFilter::All,
+            "flow" => LayerFilter::FlowOnly,
+            "behind" => LayerFilter::WrapOnly(TextWrap::BehindText),
+            "front" => LayerFilter::WrapOnly(TextWrap::InFrontOfText),
+            _ => return Err(JsValue::from_str(
+                "invalid layer_kind: 'all' | 'flow' | 'behind' | 'front'",
+            )),
+        };
+
+        let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
+
+        let scale = if scale <= 0.0 || scale.is_nan() {
+            1.0
+        } else {
+            scale.clamp(0.25, 12.0)
+        };
+        let max_dim = 16384.0;
+        let scale = if tree.page_width * scale > max_dim || tree.page_height * scale > max_dim {
+            (max_dim / tree.page_width)
+                .min(max_dim / tree.page_height)
+                .min(scale)
+        } else {
+            scale
+        };
+
+        canvas.set_width((tree.page_width * scale) as u32);
+        canvas.set_height((tree.page_height * scale) as u32);
+
+        let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.show_paragraph_marks = self.show_paragraph_marks;
+        renderer.show_control_codes = self.show_control_codes;
+        renderer.set_scale(scale);
+        renderer.set_layer_filter(filter);
+        renderer.render_page(&tree).map_err(JsValue::from)?;
+        Ok(())
+    }
+
     /// 특정 페이지를 기존 PageRenderTree 경로로 Canvas 2D에 직접 렌더링한다.
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen(js_name = renderPageToCanvasLegacy)]
