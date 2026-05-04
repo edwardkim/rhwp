@@ -939,14 +939,17 @@ fn test_tac_leading_width_block_table_full_line() {
 fn test_is_heavy_display_face_matches_known_heavy_faces() {
     // Task #146 v4: HY헤드라인M 등 heavy display face 는 CharShape.bold=false
     // 여도 본래 heavy 이므로 SVG 에서 font-weight="bold" 강제 대상이어야 한다.
+    //
+    // Task #574: HY견명조 는 한컴 일반 두께 명조 — heavy 가 아님. 제거.
+    // HY견명조B 는 명시 Bold variant — 보존.
     use crate::renderer::style_resolver::is_heavy_display_face;
     for face in ["HY헤드라인M", "HYHeadLine M", "HYHeadLine Medium",
-                  "HY견고딕", "HY견명조", "HY견명조B", "HY그래픽", "HY그래픽M"] {
+                  "HY견고딕", "HY견명조B", "HY그래픽", "HY그래픽M"] {
         assert!(is_heavy_display_face(face), "{} should be heavy", face);
     }
-    // 일반 face 는 false
+    // 일반 face 는 false (HY견명조 는 Task #574 에서 heavy 제거)
     for face in ["Malgun Gothic", "맑은 고딕", "함초롬바탕", "함초롬돋움",
-                  "바탕", "돋움", "HY신명조", "HY중고딕"] {
+                  "바탕", "돋움", "HY신명조", "HY중고딕", "HY견명조"] {
         assert!(!is_heavy_display_face(face), "{} should NOT be heavy", face);
     }
 }
