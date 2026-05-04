@@ -398,3 +398,82 @@ fn test_roundtrip_header() {
         panic!("Expected Header control");
     }
 }
+
+/// 그룹 내 Picture 자식 라운드트립 (#428 후속)
+#[test]
+fn test_roundtrip_group_picture_child() {
+    use crate::model::image::Picture;
+    use crate::model::shape::{
+        CommonObjAttr, GroupShape, ShapeComponentAttr, ShapeObject,
+    };
+
+    let pic = Picture {
+        common: CommonObjAttr::default(),
+        shape_attr: ShapeComponentAttr {
+            group_level: 1,
+            original_width: 5000,
+            original_height: 3000,
+            current_width: 5000,
+            current_height: 3000,
+            ..Default::default()
+        },
+        image_attr: crate::model::image::ImageAttr {
+            bin_data_id: 7,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let group = GroupShape {
+        common: CommonObjAttr {
+            width: 10000,
+            height: 8000,
+            ..Default::default()
+        },
+        shape_attr: ShapeComponentAttr {
+            original_width: 10000,
+            original_height: 8000,
+            current_width: 10000,
+            current_height: 8000,
+            ..Default::default()
+        },
+        children: vec![ShapeObject::Picture(Box::new(pic))],
+        caption: None,
+    };
+
+    let para = Paragraph {
+        char_count: 2,
+        text: "".to_string(),
+        char_offsets: vec![],
+        controls: vec![Control::Shape(Box::new(ShapeObject::Group(group)))],
+        ..Default::default()
+    };
+
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let parsed = parse_body_text_section(&bytes).unwrap();
+
+    assert_eq!(parsed.paragraphs.len(), 1);
+    let ctrl = &parsed.paragraphs[0].controls[0];
+    if let Control::Shape(shape) = ctrl {
+        if let ShapeObject::Group(g) = shape.as_ref() {
+            assert_eq!(g.children.len(), 1, "Group should have 1 child");
+            if let ShapeObject::Picture(p) = &g.children[0] {
+                assert_eq!(p.image_attr.bin_data_id, 7, "bin_data_id should survive roundtrip");
+                assert_eq!(p.shape_attr.original_width, 5000);
+                assert_eq!(p.shape_attr.original_height, 3000);
+            } else {
+                panic!("Expected Picture child, got {:?}", g.children[0]);
+            }
+        } else {
+            panic!("Expected Group shape");
+        }
+    } else {
+        panic!("Expected Shape control");
+    }
+}

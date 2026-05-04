@@ -1273,8 +1273,19 @@ fn serialize_group_child(
                 serialize_group_child(nested_child, comp_level + 1, comp_level + 2, records);
             }
         }
-        ShapeObject::Picture(_pic) => {
-            // TODO: 그룹 내 그림 직렬화
+        ShapeObject::Picture(pic) => {
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: comp_level,
+                size: 0,
+                data: serialize_shape_component(tags::SHAPE_PICTURE_ID, &pic.shape_attr, false),
+            });
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT_PICTURE,
+                level: type_level,
+                size: 0,
+                data: serialize_picture_data(pic),
+            });
         }
         ShapeObject::Chart(chart) => {
             // Task #195 단계 2: 그룹 내 차트는 raw_chart_data로 라운드트립
