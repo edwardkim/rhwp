@@ -248,6 +248,37 @@ pub fn lookup_function(cmd: &str) -> Option<&'static str> {
     FUNCTIONS.get(cmd).copied()
 }
 
+/// 주어진 문자열이 알려진 명령어(키워드)인지 확인.
+/// 대소문자를 구분하여 정확히 일치하는 경우와, 대소문자 무시 후 일치하는 경우 모두 true.
+pub fn is_known_command(cmd: &str) -> bool {
+    if FONT_STYLES.contains_key(cmd)
+        || DECORATIONS.contains_key(cmd)
+        || FUNCTIONS.contains_key(cmd)
+        || is_structure_command(cmd)
+        || is_structure_command(&cmd.to_ascii_uppercase())
+        || lookup_symbol(cmd).is_some()
+    {
+        return true;
+    }
+    let upper = cmd.to_ascii_uppercase();
+    is_structure_command(&upper) || FUNCTIONS.contains_key(upper.as_str())
+}
+
+/// 주어진 alphanumeric 문자열에서 가장 긴 알려진 키워드 접두사의 길이를 반환.
+/// 문자열 전체가 키워드와 일치하면 None (분할 불필요).
+/// 접두사가 키워드이고 나머지가 남으면 Some(접두사 길이).
+pub fn longest_keyword_prefix_len(word: &str) -> Option<usize> {
+    let len = word.len();
+    // 가장 긴 접두사부터 시도 (전체 길이 - 1 부터 1까지)
+    for end in (1..len).rev() {
+        let prefix = &word[..end];
+        if is_known_command(prefix) {
+            return Some(end);
+        }
+    }
+    None
+}
+
 /// 글자 장식 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum DecoKind {
@@ -342,5 +373,32 @@ mod tests {
         assert!(is_structure_command("SQRT"));
         assert!(is_structure_command("lim"));
         assert!(!is_structure_command("alpha"));
+    }
+
+    #[test]
+    fn test_is_known_command() {
+        assert!(is_known_command("times"));
+        assert!(is_known_command("TIMES"));
+        assert!(is_known_command("sim"));
+        assert!(is_known_command("rm"));
+        assert!(is_known_command("sin"));
+        assert!(is_known_command("alpha"));
+        assert!(is_known_command("OVER"));
+        assert!(is_known_command("hat"));
+        assert!(!is_known_command("timesm"));
+        assert!(!is_known_command("xyz"));
+    }
+
+    #[test]
+    fn test_longest_keyword_prefix_len() {
+        assert_eq!(longest_keyword_prefix_len("timesm"), Some(5));
+        assert_eq!(longest_keyword_prefix_len("simZ"), Some(3));
+        assert_eq!(longest_keyword_prefix_len("rmX"), Some(2));
+        assert_eq!(longest_keyword_prefix_len("alphaX"), Some(5));
+        // 전체 일치 → None (분할 불필요)
+        assert_eq!(longest_keyword_prefix_len("alpha"), None);
+        assert_eq!(longest_keyword_prefix_len("times"), None);
+        // 키워드 접두사 없음 → None
+        assert_eq!(longest_keyword_prefix_len("xyz"), None);
     }
 }

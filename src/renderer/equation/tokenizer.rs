@@ -2,6 +2,8 @@
 //!
 //! 수식 스크립트 문자열을 토큰으로 분리한다.
 
+use super::symbols;
+
 /// 토큰 타입
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
@@ -77,6 +79,9 @@ impl Tokenizer {
     }
 
     /// 명령어/식별자 읽기 (영문자+숫자)
+    ///
+    /// 키워드 prefix-split: `timesm` → `times` + `m`, `simZ` → `sim` + `Z`
+    /// 연결된 alphanumeric 시퀀스가 알려진 키워드로 시작하면 키워드만 소비한다.
     fn read_command(&mut self) -> Token {
         let start = self.pos;
         let mut value = String::new();
@@ -87,6 +92,16 @@ impl Tokenizer {
             } else {
                 break;
             }
+        }
+        // 전체가 이미 알려진 명령어이면 그대로 반환
+        if symbols::is_known_command(&value) {
+            return Token::new(TokenType::Command, value, start);
+        }
+        // 알려진 키워드 접두사가 있으면 분할: 키워드만 반환하고 나머지는 되감기
+        if let Some(prefix_len) = symbols::longest_keyword_prefix_len(&value) {
+            self.pos = start + prefix_len;
+            let prefix = value[..prefix_len].to_string();
+            return Token::new(TokenType::Command, prefix, start);
         }
         Token::new(TokenType::Command, value, start)
     }
@@ -382,5 +397,49 @@ mod tests {
         assert!(cmds.contains(&"LEFT"));
         assert!(cmds.contains(&"over"));
         assert!(cmds.contains(&"RIGHT"));
+    }
+
+    #[test]
+    fn test_keyword_prefix_split_times() {
+        // #576: `timesm` → `times` + `m`
+        let tokens = tokenize("{b} over {a timesm}");
+        assert_eq!(values(&tokens), vec![
+            "{", "b", "}", "over", "{", "a", "times", "m", "}"
+        ]);
+    }
+
+    #[test]
+    fn test_keyword_prefix_split_sim() {
+        // #576: `simZ` → `sim` + `Z`
+        let tokens = tokenize("rm X simZ");
+        assert_eq!(values(&tokens), vec!["rm", "X", "sim", "Z"]);
+    }
+
+    #[test]
+    fn test_keyword_prefix_split_font_style() {
+        // `rmX` → `rm` + `X`, `itY` → `it` + `Y`
+        let tokens = tokenize("rmX itY boldZ");
+        assert_eq!(values(&tokens), vec!["rm", "X", "it", "Y", "bold", "Z"]);
+    }
+
+    #[test]
+    fn test_keyword_no_split_exact_match() {
+        // 완전 일치하는 키워드는 분할하지 않음
+        let tokens = tokenize("alpha TIMES over sin");
+        assert_eq!(values(&tokens), vec!["alpha", "TIMES", "over", "sin"]);
+    }
+
+    #[test]
+    fn test_keyword_prefix_split_greek() {
+        // `alphaX` → `alpha` + `X`
+        let tokens = tokenize("alphaX betaY");
+        assert_eq!(values(&tokens), vec!["alpha", "X", "beta", "Y"]);
+    }
+
+    #[test]
+    fn test_keyword_no_split_unknown() {
+        // 키워드가 아닌 문자열은 분할하지 않음
+        let tokens = tokenize("xyz abc");
+        assert_eq!(values(&tokens), vec!["xyz", "abc"]);
     }
 }
