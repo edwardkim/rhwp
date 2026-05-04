@@ -2493,6 +2493,17 @@ impl LayoutEngine {
                         y_offset += ps.spacing_after;
                     }
                 }
+                // [Task #521] TAC 표 outer_margin_bottom 적용 (한컴 명세 정합).
+                // layout_partial_table_item:2642-2647 와 동일 처리. lh = cell_h +
+                // outer_margin_bottom 으로 한컴이 정의하므로, layout_table 가
+                // cell_h 만 advance 한 후 outer_margin_bottom 을 별도 적용해야
+                // 다음 paragraph 가 정합 (exam_eng p2 18번 ① 위치 -8 px shortfall).
+                let outer_margin_bottom_px = if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                    hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
+                } else { 0.0 };
+                if outer_margin_bottom_px > 0.0 {
+                    y_offset += outer_margin_bottom_px;
+                }
                 return (y_offset, true);
             }
             // ── 같은 문단의 인라인 TAC 표 렌더링 ──

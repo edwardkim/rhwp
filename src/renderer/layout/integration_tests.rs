@@ -1064,4 +1064,84 @@ mod tests {
             puko_x, pdf_puko_x
         );
     }
+
+    /// Task #521: exam_eng p2 18번 박스 (TAC 표) 하단 ↔ ① 첫 답안 gap 정합 검증.
+    ///
+    /// 페이지 2 우측 단 18번 문제 (pi=104) 의 TAC 표 (1×1, 이메일 박스, h=76.2mm,
+    /// outer_margin_bottom=2.1mm=600 HU) 직후 ① 첫 답안 (pi=105) 위치.
+    ///
+    /// HWP IR ls[0] lh=22207 = cell h (21607) + outer_margin_bottom (600) 으로
+    /// lh 정의. layout_table_item TAC after-spacing 분기 (layout.rs:2491-2497) 가
+    /// outer_margin_bottom 미적용 → 다음 paragraph 가 8 px 위로 시프트.
+    ///
+    /// PDF 한컴 2010: 박스 bottom → ① 첫 답안 gap ≈ 20 px
+    /// 수정 전: gap = 12.27 px (-7.7 px shortfall)
+    /// 수정 후: gap = 20.27 px (PDF ±2 px 정합)
+    #[test]
+    fn test_521_tac_table_outer_margin_bottom_p2() {
+        let Some(core) = load_document("samples/exam_eng.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
+
+        // 박스 (table border rect) bottom y 찾기
+        // 우측 단 (x ≈ 597), top y ≈ 244, height ≈ 288 → bottom ≈ 532
+        let mut box_bottom: Option<f64> = None;
+        for chunk in svg.split("<rect ").skip(1) {
+            let close = match chunk.find("/>") { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let parse_attr = |name: &str| -> Option<f64> {
+                let key = format!("{}=\"", name);
+                let p = attrs.find(&key)? + key.len();
+                let q = attrs[p..].find('"')?;
+                attrs[p..p+q].parse::<f64>().ok()
+            };
+            let x = match parse_attr("x") { Some(v) => v, None => continue };
+            let y = match parse_attr("y") { Some(v) => v, None => continue };
+            let h = match parse_attr("height") { Some(v) => v, None => continue };
+            // 박스: x ≈ 597 (col 1), y in [240, 250], h in [285, 290]
+            if x > 595.0 && x < 600.0 && y > 240.0 && y < 250.0 && h > 285.0 && h < 290.0 {
+                box_bottom = Some(y + h);
+                break;
+            }
+        }
+        let box_bottom = box_bottom.expect("페이지 2 우측 단 18번 박스 (TAC 표) rect 를 찾지 못함");
+
+        // ① 첫 답안 baseline y 찾기 (우측 단, box bottom 직후)
+        let mut answer_y: Option<f64> = None;
+        for chunk in svg.split("<text ").skip(1) {
+            let close = match chunk.find('>') { Some(p) => p, None => continue };
+            let attrs = &chunk[..close];
+            let key = "transform=\"translate(";
+            let p = match attrs.find(key) { Some(p) => p + key.len(), None => continue };
+            let q = match attrs[p..].find(')') { Some(q) => q, None => continue };
+            let coords = &attrs[p..p+q];
+            let parts: Vec<&str> = coords.split(',').collect();
+            if parts.len() != 2 { continue; }
+            let x: f64 = match parts[0].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let y: f64 = match parts[1].trim().parse() { Ok(v) => v, Err(_) => continue };
+            let body_start = close + 1;
+            let body_end = chunk[body_start..].find("</text>").map(|i| body_start + i).unwrap_or(close);
+            let body = &chunk[body_start..body_end];
+            // 우측 단 (x > 580), box bottom 직후 (y > box_bottom + 5), '①' 문자
+            if x > 580.0 && y > box_bottom + 5.0 && y < box_bottom + 30.0 && body == "①" {
+                answer_y = Some(y);
+                break;
+            }
+        }
+        let answer_y = answer_y.expect("페이지 2 우측 단 18번 ① 첫 답안을 찾지 못함");
+
+        // gap 검증
+        let gap = answer_y - box_bottom;
+        let pdf_expected_gap: f64 = 20.0;
+
+        assert!(
+            (gap - pdf_expected_gap).abs() < 2.0,
+            "박스 bottom y={:.2} → ① y={:.2} gap={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 \
+             일치해야 함. 버그(수정 전): gap=12.27 (-7.7 px shortfall, \
+             layout_table_item TAC after-spacing 의 outer_margin_bottom 미적용).",
+            box_bottom, answer_y, gap, pdf_expected_gap
+        );
+    }
 }
