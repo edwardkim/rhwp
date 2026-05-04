@@ -650,7 +650,7 @@ function showLoadError(error: unknown): void {
   });
 }
 
-initialize();
+const initPromise = initialize();
 
 // ── iframe 연동 API (postMessage) ──
 // 부모 페이지에서 postMessage로 에디터를 제어할 수 있다.
@@ -663,6 +663,7 @@ window.addEventListener('message', async (e) => {
   // 기존 hwpctl-load 호환
   if (msg.type === 'hwpctl-load' && msg.data) {
     try {
+      await initPromise;
       const bytes = new Uint8Array(msg.data);
       const docInfo = wasm.loadDocument(bytes, msg.fileName || 'document.hwp');
       await initializeDocument(docInfo, `${msg.fileName || 'document'} — ${docInfo.pageCount}페이지`);
@@ -682,7 +683,13 @@ window.addEventListener('message', async (e) => {
 
   try {
     switch (method) {
+      case 'ready':
+        // wasm 초기화 완료 후에만 true 응답 — race condition 방지 (#522)
+        await initPromise;
+        reply(true);
+        break;
       case 'loadFile': {
+        await initPromise;
         const bytes = new Uint8Array(params.data);
         const docInfo = wasm.loadDocument(bytes, params.fileName || 'document.hwp');
         await initializeDocument(docInfo, `${params.fileName || 'document'} — ${docInfo.pageCount}페이지`);
@@ -690,16 +697,16 @@ window.addEventListener('message', async (e) => {
         break;
       }
       case 'pageCount':
+        await initPromise;
         reply(wasm.pageCount);
         break;
       case 'getPageSvg':
+        await initPromise;
         reply(wasm.renderPageSvg(params.page ?? 0));
         break;
       case 'exportHwp':
+        await initPromise;
         reply(Array.from(wasm.exportHwp()));
-        break;
-      case 'ready':
-        reply(true);
         break;
       default:
         reply(undefined, `Unknown method: ${method}`);
