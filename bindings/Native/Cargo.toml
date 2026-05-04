@@ -1,0 +1,12 @@
+[package]
+name = "rhwp-native-ffi"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "rhwp_native_ffi"
+crate-type = ["cdylib"]
+
+[dependencies]
+rhwp_core = { package = "rhwp", path = "../.." }
