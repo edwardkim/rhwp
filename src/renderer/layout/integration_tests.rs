@@ -1017,7 +1017,6 @@ mod tests {
     ///
     /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
     #[test]
-    #[ignore = "Task #548 RED — fix 적용 전 실패 expected"]
     fn test_548_cell_inline_shape_first_line_indent_p8() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
@@ -1043,9 +1042,11 @@ mod tests {
             let y = match parse_attr("y") { Some(v) => v, None => continue };
             let w = match parse_attr("width") { Some(v) => v, None => continue };
             let h = match parse_attr("height") { Some(v) => v, None => continue };
+            // 본 devel 의 #479 미적용 trailing-ls 모델로 셀 y 위치가 컨트리뷰터 fork
+            // (y≈685-690) 대비 다름. 본 devel 측정 y≈698.43 → 범위 [690, 710] 으로 조정.
             if (w - 30.23).abs() < 0.5
                 && (h - 18.89).abs() < 0.5
-                && y > 685.0 && y < 690.0
+                && y > 690.0 && y < 710.0
             {
                 puko_x = Some(x);
                 break;
