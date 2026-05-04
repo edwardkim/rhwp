@@ -207,6 +207,11 @@ impl EqParser {
             return EqNode::Empty;
         }
 
+        // LaTeX 분수: \frac{a}{b}
+        if cu == "FRAC" {
+            return self.parse_latex_fraction();
+        }
+
         // 제곱근
         if cu == "SQRT" || cu == "ROOT" {
             return self.parse_sqrt();
@@ -722,6 +727,22 @@ impl EqParser {
 
     /// 제곱근 파싱: SQRT x, SQRT(n) of x
     fn parse_sqrt(&mut self) -> EqNode {
+        // LaTeX \sqrt[n]{x} 패턴
+        if self.current_type() == TokenType::LBracket {
+            self.pos += 1; // [
+            let mut index_nodes = Vec::new();
+            while !self.at_end() && self.current_type() != TokenType::RBracket {
+                index_nodes.push(self.parse_element());
+            }
+            self.expect(TokenType::RBracket);
+
+            let body = self.parse_single_or_group();
+            return EqNode::Sqrt {
+                index: Some(Box::new(EqNode::Row(index_nodes).simplify())),
+                body: Box::new(body),
+            };
+        }
+
         // SQRT(n) of x 패턴 확인 — 소괄호
         if self.current_type() == TokenType::LParen {
             self.pos += 1; // (
@@ -779,6 +800,16 @@ impl EqParser {
         EqNode::Sqrt {
             index: None,
             body: Box::new(body),
+        }
+    }
+
+    /// LaTeX 분수 파싱: \frac{numer}{denom}
+    fn parse_latex_fraction(&mut self) -> EqNode {
+        let numer = self.parse_single_or_group();
+        let denom = self.parse_single_or_group();
+        EqNode::Fraction {
+            numer: Box::new(numer),
+            denom: Box::new(denom),
         }
     }
 
@@ -1394,6 +1425,39 @@ mod tests {
         // Fraction{1,5}가 독립적으로 존재해야 함
         assert!(ast_str.contains("Fraction { numer: Number(\"1\"), denom: Number(\"5\")"),
             "Fraction{{1,5}}가 있어야 함: {}", ast_str);
+    }
+
+    #[test]
+    fn test_latex_frac() {
+        let ast = parse(r"\frac{1}{2}");
+        match &ast {
+            EqNode::Fraction { numer, denom } => {
+                assert!(matches!(numer.as_ref(), EqNode::Number(n) if n == "1"));
+                assert!(matches!(denom.as_ref(), EqNode::Number(n) if n == "2"));
+            }
+            _ => panic!("Expected Fraction, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_quadratic_slice() {
+        let ast = parse(r"x=\frac{-b \pm \sqrt{b^2}}{2a}");
+        let ast_str = format!("{:?}", ast);
+        assert!(ast_str.contains("Fraction"), "Fraction이 있어야 함: {}", ast_str);
+        assert!(ast_str.contains("MathSymbol(\"±\")"), "± 기호가 있어야 함: {}", ast_str);
+        assert!(ast_str.contains("Sqrt"), "Sqrt가 있어야 함: {}", ast_str);
+    }
+
+    #[test]
+    fn test_latex_sqrt_with_bracket_index() {
+        let ast = parse(r"\sqrt[3]{x}");
+        match &ast {
+            EqNode::Sqrt { index, body } => {
+                assert!(index.is_some(), "sqrt index가 있어야 함");
+                assert!(matches!(body.as_ref(), EqNode::Text(t) if t == "x"));
+            }
+            _ => panic!("Expected indexed Sqrt, got {:?}", ast),
+        }
     }
 }
 

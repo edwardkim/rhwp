@@ -169,6 +169,22 @@ impl Tokenizer {
         Token::new(TokenType::Quoted, value, start)
     }
 
+    /// LaTeX 명령어 읽기 (\frac, \sqrt 등)
+    fn read_latex_command(&mut self) -> Token {
+        let start = self.pos;
+        self.pos += 1; // 백슬래시 건너뛰기
+        let mut value = String::new();
+        while let Some(ch) = self.current() {
+            if ch.is_ascii_alphabetic() {
+                value.push(ch);
+                self.pos += 1;
+            } else {
+                break;
+            }
+        }
+        Token::new(TokenType::Command, value, start)
+    }
+
     /// 다중 문자 기호 읽기 (<=, >=, !=, ==, <<, >>, <<<, >>>)
     fn try_read_multi_char_symbol(&mut self) -> Option<Token> {
         let start = self.pos;
@@ -235,6 +251,11 @@ impl Tokenizer {
         // 따옴표 문자열
         if ch == '"' {
             return self.read_quoted();
+        }
+
+        // LaTeX 명령어: \frac, \sqrt, \pm 등
+        if ch == '\\' && self.peek(1).map_or(false, |c| c.is_ascii_alphabetic()) {
+            return self.read_latex_command();
         }
 
         // 다중 문자 기호
@@ -468,5 +489,20 @@ mod tests {
         // 기존 명령은 회귀 없음
         let tokens = tokenize("OVER MATRIX SQRT alpha beta");
         assert_eq!(values(&tokens), vec!["OVER", "MATRIX", "SQRT", "alpha", "beta"]);
+    }
+
+    #[test]
+    fn test_latex_command_prefix() {
+        let tokens = tokenize(r"\frac{1}{2}");
+        assert_eq!(types(&tokens), vec![
+            TokenType::Command,
+            TokenType::LBrace,
+            TokenType::Number,
+            TokenType::RBrace,
+            TokenType::LBrace,
+            TokenType::Number,
+            TokenType::RBrace,
+        ]);
+        assert_eq!(values(&tokens), vec!["frac", "{", "1", "}", "{", "2", "}"]);
     }
 }
