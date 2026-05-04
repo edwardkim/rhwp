@@ -1017,7 +1017,6 @@ mod tests {
     ///
     /// 본 테스트는 fix 적용 전 RED, fix 적용 후 GREEN.
     #[test]
-    #[ignore = "Task #548 RED — fix 적용 전 실패 expected"]
     fn test_548_cell_inline_shape_first_line_indent_p8() {
         let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
             return;
