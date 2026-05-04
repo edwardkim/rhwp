@@ -842,9 +842,32 @@ impl LayoutEngine {
             // 표 Square wrap 케이스는 caller 가 col_area 를 이미 wrap_area 로 좁혀
             // 호출하므로 segment_width ≈ col_area_w_hu → 조건 미발동 (회귀 차단).
             // 200 HU 임계값은 paragraph_layout 의 multi-col filter 와 동일 (페이지네이션 노이즈 제거).
-            let (effective_col_x, effective_col_w) = if has_picture_shape_square_wrap
+            //
+            // [Task #568] 인라인 TAC 표(treat_as_char=true) 가 있는 줄도 동일 처리.
+            // HWP 는 인라인 TAC 표가 있는 줄의 segment_width 를 표 폭 + 잔여로 좁게
+            // 인코딩한다 (wrap=TopAndBottom 영향). col_area.width 로 잡으면
+            // Justify slack 이 과대 산출되어 선두 공백이 80 px/space 로 부풀어 표를
+            // 우측으로 민다 (exam_science.hwp pi=61 12번 응답: +175 px 편위).
+            let line_has_inline_tac_table = !tac_offsets_px.is_empty() && para.map(|p| {
+                let line_start = comp_line.char_start;
+                let line_end = line_start + comp_line.runs.iter()
+                    .map(|r| r.text.chars().count()).sum::<usize>();
+                tac_offsets_px.iter().any(|(pos, _, ci)| {
+                    *pos >= line_start && *pos <= line_end
+                        && matches!(p.controls.get(*ci),
+                            Some(Control::Table(t)) if t.common.treat_as_char)
+                })
+            }).unwrap_or(false);
+
+            // [Task #568] 임계값에 column_start 포함 — 실제 가용 line 폭은 (sw + cs).
+            // 단락 들여쓰기를 LINE_SEG.column_start 로 인코딩한 paragraph 의
+            // 정상 라인은 (sw + cs) ≈ col_w_hu 이므로 새 분기 미진입.
+            // Picture/Shape Square wrap 은 cs=0 이라 기존 동작과 동일.
+            let line_avail_hu = comp_line.segment_width.saturating_add(comp_line.column_start);
+            let (effective_col_x, effective_col_w) = if (has_picture_shape_square_wrap
+                || line_has_inline_tac_table)
                 && comp_line.segment_width > 0
-                && comp_line.segment_width < col_area_w_hu - 200
+                && line_avail_hu < col_area_w_hu - 200
             {
                 let cs_px = hwpunit_to_px(comp_line.column_start, self.dpi);
                 let sw_px = hwpunit_to_px(comp_line.segment_width, self.dpi);
