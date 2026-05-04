@@ -598,6 +598,9 @@ fn resolve_ttf_font(name: &str) -> Option<&'static str> {
 /// regular weight fallback 으로 떨어지면 PDF(한컴) 출력과 시각 괴리가
 /// 발생하므로, 이 리스트에 포함된 face 는 SVG 에서 font-weight="bold"
 /// 를 강제해 fallback bold variant 로 근사 렌더한다.
+///
+/// Task #574: HY견명조 는 한컴 일반 두께 명조 — heavy 가 아님. 제거.
+/// HY견명조B (명시 Bold variant) 는 보존.
 pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
     // font_family 는 "HY헤드라인M,'Malgun Gothic',..." 처럼 CSS 체인 형태.
     // 첫 face 만 검사 (HWP 가 지정한 primary face).
@@ -607,7 +610,7 @@ pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
         .trim_matches('"');
     matches!(primary,
         "HY헤드라인M" | "HYHeadLine M" | "HYHeadLine Medium"
-        | "HY견고딕" | "HY견명조" | "HY견명조B"
+        | "HY견고딕" | "HY견명조B"
         | "HY그래픽" | "HY그래픽M"
     )
 }
