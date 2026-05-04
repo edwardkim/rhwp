@@ -2282,10 +2282,11 @@ impl LayoutEngine {
                 };
                 let tbl_inline_x = if let Some((ix, _)) = inline_pos {
                     Some(ix)
-                } else if !is_tac && tbl_is_square {
-                    // [Issue #480] Square wrap 표는 paragraph 영역 (col_area + margin) 기준으로 정렬.
-                    // 이전 동작(col_area 기준)은 paragraph margin/indent 가 있는 경우 표가
-                    // 단 사이 갭으로 떨어지는 문제 발생 (예: 페이지 14 [A] 박스).
+                } else if !is_tac && tbl_is_square
+                    && matches!(t.common.horz_rel_to, crate::model::shape::HorzRelTo::Para) {
+                    // [Issue #480 / #590] horz_rel_to=Para 인 Square wrap 표만 paragraph 영역
+                    // (col_area + margin) 기준으로 정렬. horz_rel_to=Column/Page/Paper 는
+                    // compute_table_x_position 의 기본 분기에서 명세대로 처리한다.
                     // (Task #295: halign=Right 표가 좌측에 잘못 배치되는 문제 수정)
                     let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
                     let area_x = col_area.x + effective_margin;
