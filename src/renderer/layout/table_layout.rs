@@ -1589,15 +1589,31 @@ impl LayoutEngine {
                                 // 본문배치 속성(가로/세로 기준, 정렬, 오프셋) 적용
                                 let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                                 let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                // [Task #577] TopAndBottom + vert_rel_to=Para 인 셀 내부 이미지는
+                                // anchor 라인이 이미지에 의해 displaced 되므로, layout_composed_paragraph
+                                // 가 advance 시킨 para_y 가 아닌 anchor 시점(para_y_before_compose)을 기준
+                                // 으로 해야 cell-clip 영역 내부에 정확히 배치된다. (exam_science 2번 보기 ⑤
+                                // 등 5개 이미지에서 line_height(약 15.32px) 만큼 아래로 밀려 잘림.)
+                                let anchor_y = if matches!(
+                                    pic.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                ) && matches!(
+                                    pic.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                ) {
+                                    para_y_before_compose
+                                } else {
+                                    para_y
+                                };
                                 let cell_area = LayoutRect {
-                                    y: para_y,
-                                    height: (inner_area.height - (para_y - inner_area.y)).max(0.0),
+                                    y: anchor_y,
+                                    height: (inner_area.height - (anchor_y - inner_area.y)).max(0.0),
                                     ..inner_area
                                 };
                                 let (pic_x, pic_y) = self.compute_object_position(
                                     &pic.common, pic_w, pic_h,
                                     &cell_area, &inner_area, &inner_area, &inner_area,
-                                    para_y, para_alignment,
+                                    anchor_y, para_alignment,
                                 );
                                 let pic_area = LayoutRect {
                                     x: pic_x,
