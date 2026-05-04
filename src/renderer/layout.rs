@@ -1968,7 +1968,20 @@ impl LayoutEngine {
                         .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char
                             && crate::renderer::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls)));
 
-                    if has_inline_tables {
+                    // [Task #565] 인라인 표 + 다른 인라인 컨트롤(수식/treat_as_char Picture/Shape)
+                    // 이 같이 있는 문단은 layout_inline_table_paragraph 가 인라인 수식 등을
+                    // 처리하지 않아 shape_layout fallback (col_area.x, para_y) 으로 9개 수식이
+                    // 동일 좌표에 겹친다 (exam_science.hwp 12/15/18/19번). 일반
+                    // layout_paragraph 로 보내 인라인 표 + 인라인 수식이 같은 line/x 체계
+                    // (run_tacs / inline_x) 로 정상 배치되도록 한다.
+                    let has_other_inline_ctrls = para.controls.iter().any(|c| match c {
+                        Control::Equation(_) => true,
+                        Control::Picture(p) => p.common.treat_as_char,
+                        Control::Shape(s) => s.common().treat_as_char,
+                        _ => false,
+                    });
+
+                    if has_inline_tables && !has_other_inline_ctrls {
                         // 인라인 표 문단도 번호 카운터 전진 필요
                         self.apply_paragraph_numbering(
                             composed.get(*para_index), para, styles, outline_numbering_id,
