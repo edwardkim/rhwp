@@ -2904,8 +2904,23 @@ impl LayoutEngine {
 /// **Supplementary PUA-A (0xF02B0~0xF02FF)** — 한컴 자체 PUA 영역.
 ///   원문자 (①~⑨, U+2460~U+2468) 와 별 (★ U+2605) 등을 본 영역에 저장.
 ///   Task #509 의 한컴 PDF 정답지 시각 검증으로 매핑 확정.
+///
+/// **Supplementary PUA-A 저영역 (0xF0000~0xF00CF)** — 한컴 자체 PUA 저영역.
+///   요약형 문항 화살표 등 시각 마커. Task #588 의 한컴 PDF 임베디드 폰트
+///   글리프 외곽 분석 + 정답지 시각 검증으로 매핑 확정.
 pub(crate) fn map_pua_bullet_char(ch: char) -> char {
     let code = ch as u32;
+
+    // Supplementary PUA-A 저영역 — 한컴 자체 영역 (Task #588 한컴 정답지 정합)
+    if (0xF0000..=0xF00CF).contains(&code) {
+        return match code {
+            // exam_eng.hwp p7 #40 요약형 문항 글상자 사이 화살표.
+            // 한컴 PDF (HCRBatang 임베디드 폰트) 글리프 외곽 분석:
+            //   stem 35% × arrowhead 100% × solid filled (1 contour, 7 pts) → ↓
+            0xF003B => '\u{2193}', // ↓ DOWNWARDS ARROW
+            _ => ch,
+        };
+    }
 
     // Supplementary PUA-A — 한컴 자체 영역 (Task #509 한컴 정답지 정합)
     if (0xF02B0..=0xF02FF).contains(&code) {
@@ -3059,5 +3074,22 @@ mod pua_mapping_tests {
     fn basic_pua_outside_range_returns_original() {
         // 0xF020~0xF0FF 외 Basic PUA 는 원본 유지 (예: U+0F53A 한글 "흔")
         assert_eq!(map_pua_bullet_char('\u{F53A}'), '\u{F53A}');
+    }
+
+    #[test]
+    fn supplementary_pua_a_low_range_maps_down_arrow() {
+        // [Task #588] U+F003B → U+2193 ↓ (DOWNWARDS ARROW)
+        // exam_eng.hwp p7 #40 요약형 문항 글상자 사이 화살표.
+        // 한컴 PDF (HCRBatang) 임베디드 폰트 글리프 외곽 분석으로 확정.
+        assert_eq!(map_pua_bullet_char('\u{F003B}'), '\u{2193}');
+    }
+
+    #[test]
+    fn supplementary_pua_a_low_range_unmapped_returns_original() {
+        // [Task #588] 0xF0000~0xF00CF 영역의 매핑 표 외 코드포인트는 원본 유지
+        // (예: U+F0090 — img-start-001.hwp 1건, 별도 task 후보)
+        assert_eq!(map_pua_bullet_char('\u{F0090}'), '\u{F0090}');
+        assert_eq!(map_pua_bullet_char('\u{F0000}'), '\u{F0000}');
+        assert_eq!(map_pua_bullet_char('\u{F00CF}'), '\u{F00CF}');
     }
 }
