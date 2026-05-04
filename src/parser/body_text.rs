@@ -327,22 +327,22 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
             match ch {
                 0x0018 => {
                     char_offsets.push(code_unit_pos);
-                    text.push('\u{00A0}'); // 묶음 빈칸
+                    text.push('-'); // 하이픈 (HWP 5.0 표 7: 코드 24)
                     char_count += 1;
                 }
                 0x0019 => {
                     char_offsets.push(code_unit_pos);
-                    text.push(' '); // 고정폭 빈칸
+                    text.push(' '); // 예약 (코드 25-29) — 호환성 위해 공백 유지
                     char_count += 1;
                 }
                 0x001E => {
                     char_offsets.push(code_unit_pos);
-                    text.push('-'); // 하이픈
+                    text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
                 }
                 0x001F => {
                     char_offsets.push(code_unit_pos);
-                    text.push('\u{2007}'); // 고정폭 빈칸 (FIGURE SPACE)
+                    text.push('\u{2007}'); // 고정폭 빈칸 (HWP 5.0 표 7: 코드 31, FIGURE SPACE)
                     char_count += 1;
                 }
                 _ => {}

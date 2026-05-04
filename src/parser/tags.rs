@@ -125,13 +125,13 @@ pub const CHAR_EXTENDED_CTRL: u16 = 0x000B;
 pub const CHAR_LINE_BREAK: u16 = 0x000A;
 /// 문단 나눔
 pub const CHAR_PARA_BREAK: u16 = 0x000D;
-/// 하이픈
-pub const CHAR_HYPHEN: u16 = 0x001E;
-/// 고정폭 공백
-pub const CHAR_NBSPACE: u16 = 0x0018;
-/// 고정폭 하이픈
+/// 하이픈 (HWP 5.0 표 7: 코드 24)
+pub const CHAR_HYPHEN: u16 = 0x0018;
+/// 묶음 빈칸 / NO-BREAK SPACE (HWP 5.0 표 7: 코드 30)
+pub const CHAR_NBSPACE: u16 = 0x001E;
+/// 예약 (스펙 코드 25)
 pub const CHAR_FIXED_WIDTH_SPACE: u16 = 0x0019;
-/// 고정폭 빈칸 (스펙 코드 31)
+/// 고정폭 빈칸 / FIGURE SPACE (HWP 5.0 표 7: 코드 31)
 pub const CHAR_FIXED_WIDTH_SPACE_31: u16 = 0x001F;
 
 // ============================================================
