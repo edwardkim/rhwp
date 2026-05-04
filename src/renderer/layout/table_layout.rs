@@ -1392,6 +1392,14 @@ impl LayoutEngine {
                 };
 
                 let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                // [Task #573] inline TAC 표(treat_as_char=true) 와 block 표(treat_as_char=false)
+                // 를 분리. 인라인 TAC 표가 있는 셀 paragraph 의 surrounding text (예: "ㄷ. ",
+                // "이다.") 가 layout_composed_paragraph 호출 미진입으로 미렌더되던 결함 정정.
+                // block 표는 별도 layout_table 호출로 배치되므로 텍스트 흐름 외부 — 기존
+                // ELSE 분기 로직 유지. inline TAC 표는 layout_composed_paragraph 의 run_tacs
+                // 에서 텍스트와 함께 배치되어야 함.
+                let has_block_table_ctrl = para.controls.iter().any(|c|
+                    matches!(c, Control::Table(t) if !t.common.treat_as_char));
 
                 let para_y_before_compose = para_y;
 
@@ -1441,7 +1449,7 @@ impl LayoutEngine {
                 };
                 let total_inline_width: f64 = tac_line_widths.iter().cloned().fold(0.0f64, f64::max);
 
-                if !has_table_ctrl {
+                if !has_block_table_ctrl {
                     let is_last_para = cp_idx + 1 == composed_paras.len();
                     // 분할 중첩 표: 셀 하단을 초과하는 줄은 렌더링하지 않음
                     let end_line = if row_filter.is_some() {
@@ -1780,26 +1788,36 @@ impl LayoutEngine {
                             });
                             if is_tac_table {
                                 // TAC 표: inline_x를 사용하여 수평 배치
+                                // [Task #573] layout_composed_paragraph 의 run_tacs 가
+                                // 인라인 TAC 표를 이미 렌더하고 set_inline_shape_position
+                                // 등록했다면 중복 emit 방지 (Equation 의 L1800 가드와 동일 패턴).
+                                let already_rendered_inline = tree
+                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx)
+                                    .is_some();
                                 let tac_w = hwpunit_to_px(nested_table.common.width as i32, self.dpi);
-                                let ctrl_area = LayoutRect {
-                                    x: inline_x,
-                                    y: para_y_before_compose,
-                                    width: tac_w,
-                                    height: (inner_area.height - (para_y_before_compose - inner_area.y)).max(0.0),
-                                };
-                                let table_h = self.layout_table(
-                                    tree, &mut cell_node, nested_table,
-                                    section_index, styles, &ctrl_area, para_y_before_compose,
-                                    bin_data_content, None, depth + 1,
-                                    None, para_alignment,
-                                    nested_ctx,
-                                    0.0, 0.0, Some(inline_x), None, None,
-                                );
-                                inline_x += tac_w;
-                                // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
-                                let new_bottom = para_y_before_compose + table_h;
-                                if new_bottom > para_y {
-                                    para_y = new_bottom;
+                                if already_rendered_inline {
+                                    inline_x += tac_w;
+                                } else {
+                                    let ctrl_area = LayoutRect {
+                                        x: inline_x,
+                                        y: para_y_before_compose,
+                                        width: tac_w,
+                                        height: (inner_area.height - (para_y_before_compose - inner_area.y)).max(0.0),
+                                    };
+                                    let table_h = self.layout_table(
+                                        tree, &mut cell_node, nested_table,
+                                        section_index, styles, &ctrl_area, para_y_before_compose,
+                                        bin_data_content, None, depth + 1,
+                                        None, para_alignment,
+                                        nested_ctx,
+                                        0.0, 0.0, Some(inline_x), None, None,
+                                    );
+                                    inline_x += tac_w;
+                                    // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
+                                    let new_bottom = para_y_before_compose + table_h;
+                                    if new_bottom > para_y {
+                                        para_y = new_bottom;
+                                    }
                                 }
                             } else {
                                 // 비-TAC 표: 기존 수직 배치
