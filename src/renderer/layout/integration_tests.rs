@@ -411,6 +411,145 @@ mod tests {
         }
     }
 
+    /// Task #565: 텍스트가 있는 줄의 TAC 표 문단에서 수식이 fallback 좌표에
+    /// 겹치지 않고 각 줄의 인라인 위치에 배치되는지 검증.
+    ///
+    /// 케이스: `samples/exam_science.hwp` 12/15/18/19번 문제.
+    /// 12번 문단에는 TAC 표 1개 뒤에 `rmX`, `rmA`, `rmB`, `rmC`, `rmD`,
+    /// `m-4`, `m-2`, `m+2`, `m+4` 수식 9개가 있고, 나머지 보고 문단도
+    /// 같은 "TAC 표 + TAC 수식" 흐름을 가진다.
+    /// 수정 전: 9개 수식이 모두 같은 fallback 좌표(x≈534.8, y≈1262.0)에 겹침.
+    #[test]
+    fn test_565_exam_science_inline_tac_equations_are_not_collapsed() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+
+        fn collect_equations(
+            node: &crate::renderer::render_tree::RenderNode,
+            para_index: usize,
+            expected_controls: &std::collections::BTreeSet<usize>,
+            out: &mut Vec<(usize, i32, i32)>,
+        ) {
+            if let crate::renderer::render_tree::RenderNodeType::Equation(eq) = &node.node_type {
+                if eq.section_index == Some(0)
+                    && eq.para_index == Some(para_index)
+                    && eq.control_index
+                        .map(|ci| expected_controls.contains(&ci))
+                        .unwrap_or(false)
+                {
+                    let ci = eq.control_index.unwrap();
+                    out.push((
+                        ci,
+                        (node.bbox.x * 10.0).round() as i32,
+                        (node.bbox.y * 10.0).round() as i32,
+                    ));
+                }
+            }
+            for child in &node.children {
+                collect_equations(child, para_index, expected_controls, out);
+            }
+        }
+
+        let cases: &[(u32, usize, &[usize], usize, usize, usize)] = &[
+            (1, 61, &[1, 2, 3, 4, 5, 6, 7, 8, 9], 8, 5, 2),
+            (2, 79, &[0, 2, 4, 5, 6, 7, 8, 9, 10], 8, 5, 2),
+            (3, 110, &[0, 2, 3, 4, 5, 6, 7], 6, 4, 2),
+            (3, 118, &[0, 1, 2, 3, 4, 5, 6, 8], 7, 4, 2),
+        ];
+
+        for &(page_index, para_index, controls, min_positions, min_xs, min_ys) in cases {
+            let tree = core
+                .build_page_render_tree(page_index)
+                .expect("페이지 렌더 트리 생성");
+            let expected_controls: std::collections::BTreeSet<usize> =
+                controls.iter().copied().collect();
+
+            let mut equations = Vec::new();
+            collect_equations(&tree.root, para_index, &expected_controls, &mut equations);
+            equations.sort_by_key(|(ci, _, _)| *ci);
+
+            assert_eq!(
+                equations.len(),
+                controls.len(),
+                "Task #565: pi={} TAC 수식이 한 번씩 렌더되어야 함: {:?}",
+                para_index,
+                equations
+            );
+
+            let unique_positions: std::collections::BTreeSet<(i32, i32)> =
+                equations.iter().map(|(_, x, y)| (*x, *y)).collect();
+            let unique_xs: std::collections::BTreeSet<i32> =
+                equations.iter().map(|(_, x, _)| *x).collect();
+            let unique_ys: std::collections::BTreeSet<i32> =
+                equations.iter().map(|(_, _, y)| *y).collect();
+
+            assert!(
+                unique_positions.len() >= min_positions,
+                "Task #565: pi={} TAC 수식이 같은 좌표에 겹침: {:?}",
+                para_index,
+                equations
+            );
+            assert!(
+                unique_xs.len() >= min_xs && unique_ys.len() >= min_ys,
+                "Task #565: pi={} TAC 수식이 줄별 인라인 위치로 분산되지 않음: {:?}",
+                para_index,
+                equations
+            );
+        }
+
+        fn collect_problem_19_answer_line(
+            node: &crate::renderer::render_tree::RenderNode,
+            eq_x: &mut Option<f64>,
+            table_x: &mut Option<f64>,
+            text_x: &mut Option<f64>,
+        ) {
+            match &node.node_type {
+                crate::renderer::render_tree::RenderNodeType::Equation(eq)
+                    if eq.section_index == Some(0)
+                        && eq.para_index == Some(120)
+                        && eq.control_index == Some(0) =>
+                {
+                    *eq_x = Some(node.bbox.x);
+                }
+                crate::renderer::render_tree::RenderNodeType::Table(table)
+                    if table.section_index == Some(0)
+                        && table.para_index == Some(120)
+                        && table.control_index == Some(1) =>
+                {
+                    *table_x = Some(node.bbox.x);
+                }
+                crate::renderer::render_tree::RenderNodeType::TextRun(run)
+                    if run.section_index == Some(0)
+                        && run.para_index == Some(120)
+                        && run.char_start == Some(3)
+                        && run.text.trim_start().starts_with("은?") =>
+                {
+                    *text_x = Some(node.bbox.x);
+                }
+                _ => {}
+            }
+            for child in &node.children {
+                collect_problem_19_answer_line(child, eq_x, table_x, text_x);
+            }
+        }
+
+        let tree = core.build_page_render_tree(3).expect("페이지 4 렌더 트리 생성");
+        let mut eq_x = None;
+        let mut table_x = None;
+        let mut text_x = None;
+        collect_problem_19_answer_line(&tree.root, &mut eq_x, &mut table_x, &mut text_x);
+
+        let eq_x = eq_x.expect("Task #565: 19번 답문항 선행 수식 x TIMES 렌더");
+        let table_x = table_x.expect("Task #565: 19번 답문항 분수 TAC 표 렌더");
+        let text_x = text_x.expect("Task #565: 19번 답문항 본문 텍스트 렌더");
+        assert!(
+            eq_x < table_x && table_x < text_x,
+            "Task #565: 같은 text position 의 TAC 수식/표가 텍스트 앞 순서로 배치되어야 함: \
+             eq_x={eq_x}, table_x={table_x}, text_x={text_x}"
+        );
+    }
+
     /// Task #489: Picture+Square wrap (어울림) 호스트 paragraph 의 텍스트가
     /// 그림 영역을 침범하지 않고 LINE_SEG.cs/sw 좁아진 영역에 정상 배치되는지 검증.
     ///
