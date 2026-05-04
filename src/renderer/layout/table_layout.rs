@@ -14,6 +14,7 @@ use super::super::{hwpunit_to_px, ShapeStyle};
 use super::{LayoutEngine, CellContext, CellPathEntry};
 use super::border_rendering::{build_row_col_x, collect_cell_borders, render_cell_diagonal, render_edge_borders, render_transparent_borders};
 use super::text_measurement::{resolved_to_text_style, estimate_text_width};
+use super::super::composer::effective_text_for_metrics;
 use super::utils::find_bin_data;
 
 // 표 수평 정렬: model::shape 타입 사용
@@ -857,7 +858,8 @@ impl LayoutEngine {
                     if ts.letter_spacing < 0.0 {
                         ts.letter_spacing = 0.0;
                     }
-                    w += estimate_text_width(&run.text, &ts);
+                    // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭 사용.
+                    w += estimate_text_width(effective_text_for_metrics(run), &ts);
                 }
                 if w > max_line_w {
                     max_line_w = w;
@@ -1654,7 +1656,16 @@ impl LayoutEngine {
                                             .and_then(|l| l.runs.first())
                                             .map(|r| r.lang_index).unwrap_or(0);
                                         let ts = resolved_to_text_style(styles, char_style_id, lang_index);
-                                        let text_w = estimate_text_width(&text_before, &ts);
+                                        // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
+                                        let text_before_metrics: String = {
+                                            use super::super::pua_oldhangul::map_pua_old_hangul;
+                                            text_before.chars().flat_map(|ch| {
+                                                if let Some(jamos) = map_pua_old_hangul(ch) {
+                                                    jamos.iter().copied().collect::<Vec<_>>()
+                                                } else { vec![ch] }
+                                            }).collect()
+                                        };
+                                        let text_w = estimate_text_width(&text_before_metrics, &ts);
                                         let text_font_size = ts.font_size;
                                         // 텍스트 렌더링: Shape 사이에 배치
                                         // 텍스트 y를 Shape 하단 baseline에 맞춤
@@ -1811,7 +1822,8 @@ impl LayoutEngine {
                                             if !run.text.is_empty() {
                                                 let ts = resolved_to_text_style(
                                                     styles, run.char_style_id, run.lang_index);
-                                                text_w += estimate_text_width(&run.text, &ts);
+                                                // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
+                                                text_w += estimate_text_width(effective_text_for_metrics(run), &ts);
                                             }
                                         }
                                     }
@@ -1837,7 +1849,8 @@ impl LayoutEngine {
                                             if run.text.is_empty() { continue; }
                                             let ts = resolved_to_text_style(
                                                 styles, run.char_style_id, run.lang_index);
-                                            let run_w = estimate_text_width(&run.text, &ts);
+                                            // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
+                                            let run_w = estimate_text_width(effective_text_for_metrics(run), &ts);
                                             let run_id = tree.next_id();
                                             let run_node = RenderNode::new(
                                                 run_id,
@@ -1919,7 +1932,16 @@ impl LayoutEngine {
                                 .and_then(|l| l.runs.last())
                                 .map(|r| r.lang_index).unwrap_or(0);
                             let ts = resolved_to_text_style(styles, char_style_id, lang_index);
-                            let text_w = estimate_text_width(remaining_trimmed, &ts);
+                            // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
+                            let remaining_metrics: String = {
+                                use super::super::pua_oldhangul::map_pua_old_hangul;
+                                remaining_trimmed.chars().flat_map(|ch| {
+                                    if let Some(jamos) = map_pua_old_hangul(ch) {
+                                        jamos.iter().copied().collect::<Vec<_>>()
+                                    } else { vec![ch] }
+                                }).collect()
+                            };
+                            let text_w = estimate_text_width(&remaining_metrics, &ts);
                             let text_baseline = ts.font_size * 0.85;
                             let text_h = ts.font_size * 1.2;
                             // 마지막 Shape 높이 기준으로 텍스트 y 계산

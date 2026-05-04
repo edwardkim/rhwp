@@ -15,7 +15,7 @@ use super::render_tree::*;
 use super::page_layout::{LayoutRect, PageLayoutInfo};
 use super::pagination::{ColumnContent, PageContent, PageItem, FootnoteRef, FootnoteSource};
 use super::height_measurer::MeasuredTable;
-use super::composer::{ComposedParagraph, compose_paragraph};
+use super::composer::{ComposedParagraph, compose_paragraph, effective_text_for_metrics};
 use super::style_resolver::ResolvedStyleSet;
 use super::font_metrics_data;
 use super::{TextStyle, ShapeStyle, LineStyle, PathCommand, StrokeDash, ArrowStyle, hwpunit_to_px, DEFAULT_DPI, AutoNumberCounter, format_number, NumberFormat as NumFmt};
@@ -3441,7 +3441,14 @@ impl LayoutEngine {
                     );
                     est_x = tp;
                 } else {
-                    est_x += estimate_text_width(&ch.to_string(), &ts);
+                    // [Task #555] PUA 옛한글 char 은 자모 시퀀스 폭으로 측정.
+                    use super::pua_oldhangul::map_pua_old_hangul;
+                    let metric_str: String = if let Some(jamos) = map_pua_old_hangul(ch) {
+                        jamos.iter().copied().collect()
+                    } else {
+                        ch.to_string()
+                    };
+                    est_x += estimate_text_width(&metric_str, &ts);
                 }
                 char_idx += 1;
             }
@@ -3505,21 +3512,32 @@ fn compute_tac_leading_width(
     for run in &first_line.runs {
         let run_len = run.text.chars().count();
         let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        // [Task #555] PUA 옛한글 변환 후 폰트 매트릭스는 자모 시퀀스 기준.
+        let effective_full = effective_text_for_metrics(run);
         match tac_pos_opt {
             Some(tac_pos) if char_pos + run_len <= tac_pos => {
-                width += estimate_text_width(&run.text, &style);
+                width += estimate_text_width(effective_full, &style);
                 char_pos += run_len;
             }
             Some(tac_pos) if char_pos < tac_pos => {
                 let partial_len = tac_pos - char_pos;
+                // partial 추출은 run.text 기준 (인덱싱 불변성). 이후 PUA 변환 적용.
                 let partial: String = run.text.chars().take(partial_len).collect();
-                width += estimate_text_width(&partial, &style);
+                let partial_display: String = partial.chars().flat_map(|ch| {
+                    use super::pua_oldhangul::map_pua_old_hangul;
+                    if let Some(jamos) = map_pua_old_hangul(ch) {
+                        jamos.iter().copied().collect::<Vec<_>>()
+                    } else {
+                        vec![ch]
+                    }
+                }).collect();
+                width += estimate_text_width(&partial_display, &style);
                 break;
             }
             Some(_) => break,
             None => {
                 // block 취급 TAC: 전체 run 합산
-                width += estimate_text_width(&run.text, &style);
+                width += estimate_text_width(effective_full, &style);
                 char_pos += run_len;
             }
         }

@@ -917,8 +917,22 @@ fn insert_overlap_run(
 pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleSet) -> f64 {
     line.runs.iter().map(|run| {
         let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-        estimate_text_width(&run.text, &ts)
+        estimate_text_width(effective_text_for_metrics(run), &ts)
     }).sum()
+}
+
+/// [Task #555] 폰트 매트릭스 (글자폭/줄간격) 계산용 effective text 반환.
+///
+/// PUA 옛한글 변환 (Task #528) 후 `run.display_text` 가 자모 시퀀스를 보유하면
+/// 본 함수는 그 자모 시퀀스를 반환한다. 그렇지 않으면 `run.text` (PUA char 1글자
+/// 또는 일반 텍스트) 를 그대로 반환.
+///
+/// 사용처: `estimate_text_width` / `estimate_composed_line_width` 등 폰트 매트릭스
+/// 측정 함수의 caller. visual 출력 (svg/web_canvas) 은 이미 `display_text` 사용.
+///
+/// 단일 룰 (분기/허용오차 없음): 비-PUA 텍스트는 fallback 으로 동일 동작.
+pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
+    run.display_text.as_deref().unwrap_or(&run.text)
 }
 
 /// PUA Supplementary 영역(U+F0000~) 문자가 사각형/원형 테두리 숫자인지 판별한다.
