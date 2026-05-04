@@ -264,15 +264,34 @@ pub fn is_known_command(cmd: &str) -> bool {
     is_structure_command(&upper) || FUNCTIONS.contains_key(upper.as_str())
 }
 
-/// 주어진 alphanumeric 문자열에서 가장 긴 알려진 키워드 접두사의 길이를 반환.
+/// prefix-split 대상 키워드인지 확인.
+/// 연산자(OPERATORS), 큰 연산자(BIG_OPERATORS), 특수 기호(SPECIAL_SYMBOLS),
+/// 글꼴 스타일(FONT_STYLES)만 포함. 그리스 문자, 함수, 장식, 구조 명령어는
+/// 변수명 충돌 위험이 있어 제외 (예: `alphabet` ≠ `alpha` + `bet`).
+fn is_splittable_keyword(cmd: &str) -> bool {
+    if FONT_STYLES.contains_key(cmd) {
+        return true;
+    }
+    if OPERATORS.contains_key(cmd)
+        || BIG_OPERATORS.contains_key(cmd)
+        || SPECIAL_SYMBOLS.contains_key(cmd)
+    {
+        return true;
+    }
+    let upper = cmd.to_ascii_uppercase();
+    OPERATORS.contains_key(upper.as_str())
+        || BIG_OPERATORS.contains_key(upper.as_str())
+        || SPECIAL_SYMBOLS.contains_key(upper.as_str())
+}
+
+/// 주어진 alphanumeric 문자열에서 가장 긴 분할 가능 키워드 접두사의 길이를 반환.
 /// 문자열 전체가 키워드와 일치하면 None (분할 불필요).
 /// 접두사가 키워드이고 나머지가 남으면 Some(접두사 길이).
 pub fn longest_keyword_prefix_len(word: &str) -> Option<usize> {
     let len = word.len();
-    // 가장 긴 접두사부터 시도 (전체 길이 - 1 부터 1까지)
     for end in (1..len).rev() {
         let prefix = &word[..end];
-        if is_known_command(prefix) {
+        if is_splittable_keyword(prefix) {
             return Some(end);
         }
     }
@@ -391,12 +410,19 @@ mod tests {
 
     #[test]
     fn test_longest_keyword_prefix_len() {
+        // 연산자 prefix-split
         assert_eq!(longest_keyword_prefix_len("timesm"), Some(5));
         assert_eq!(longest_keyword_prefix_len("simZ"), Some(3));
+        assert_eq!(longest_keyword_prefix_len("TIMESa"), Some(5));
+        assert_eq!(longest_keyword_prefix_len("SIMx"), Some(3));
+        // 글꼴 스타일 prefix-split
         assert_eq!(longest_keyword_prefix_len("rmX"), Some(2));
-        assert_eq!(longest_keyword_prefix_len("alphaX"), Some(5));
+        // 그리스 문자는 분할 대상이 아님 (변수명 충돌 방지)
+        assert_eq!(longest_keyword_prefix_len("alphaX"), None);
+        assert_eq!(longest_keyword_prefix_len("alphabet"), None);
+        // 함수도 분할 대상이 아님
+        assert_eq!(longest_keyword_prefix_len("sinx"), None);
         // 전체 일치 → None (분할 불필요)
-        assert_eq!(longest_keyword_prefix_len("alpha"), None);
         assert_eq!(longest_keyword_prefix_len("times"), None);
         // 키워드 접두사 없음 → None
         assert_eq!(longest_keyword_prefix_len("xyz"), None);

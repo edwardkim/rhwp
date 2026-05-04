@@ -430,10 +430,24 @@ mod tests {
     }
 
     #[test]
-    fn test_keyword_prefix_split_greek() {
-        // `alphaX` → `alpha` + `X`
+    fn test_keyword_no_split_greek() {
+        // 그리스 문자는 분할하지 않음 (변수명 충돌 방지: alphabet ≠ alpha+bet)
         let tokens = tokenize("alphaX betaY");
-        assert_eq!(values(&tokens), vec!["alpha", "X", "beta", "Y"]);
+        assert_eq!(values(&tokens), vec!["alphaX", "betaY"]);
+    }
+
+    #[test]
+    fn test_keyword_no_split_function() {
+        // 함수도 분할하지 않음 (sinx는 변수일 수 있음)
+        let tokens = tokenize("sinx cosy");
+        assert_eq!(values(&tokens), vec!["sinx", "cosy"]);
+    }
+
+    #[test]
+    fn test_keyword_no_split_alphabet() {
+        // Copilot 리뷰 회귀 방지: alphabet이 alpha+bet으로 분할되면 안 됨
+        let tokens = tokenize("alphabet");
+        assert_eq!(values(&tokens), vec!["alphabet"]);
     }
 
     #[test]
