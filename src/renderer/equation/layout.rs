@@ -392,20 +392,29 @@ impl EqLayout {
         let b = self.layout_node(base, fs);
         let s = self.layout_node(sup, fs * SCRIPT_SCALE);
 
+        // sup_shift: 기준선으로부터 위첨자 상단까지의 거리 (양수 = base 상단 아래)
         let sup_shift = b.baseline - s.height * 0.7;
-        let total_h = b.height.max(s.height + sup_shift.max(0.0));
+
+        let (base_y, sup_y, total_h);
+        if sup_shift >= 0.0 {
+            // 위첨자가 base 높이 내에 들어감 — sup를 상단에, base를 아래로
+            sup_y = 0.0;
+            base_y = sup_shift.max(s.height - b.height).max(0.0);
+            total_h = (base_y + b.height).max(s.height);
+        } else {
+            // 위첨자가 base 상단 위로 확장 — sup를 상단에, base를 |sup_shift|만큼 내림
+            sup_y = 0.0;
+            base_y = -sup_shift;
+            total_h = (base_y + b.height).max(s.height);
+        }
 
         let mut base_box = b;
         base_box.x = 0.0;
-        base_box.y = total_h - base_box.height;
+        base_box.y = base_y;
 
         let mut sup_box = s;
         sup_box.x = base_box.width;
-        sup_box.y = 0.0f64.max(sup_shift.min(0.0).abs());
-        if sup_shift > 0.0 {
-            sup_box.y = 0.0;
-            base_box.y = (total_h - base_box.height).max(0.0);
-        }
+        sup_box.y = sup_y;
 
         let total_w = base_box.width + sup_box.width;
 
@@ -1031,6 +1040,34 @@ mod tests {
         let lb = parse_and_layout("x^2", 20.0);
         assert!(lb.width > 0.0);
         assert!(lb.height > 0.0);
+    }
+
+    #[test]
+    fn test_superscript_fraction_baseline() {
+        // #532: 분수형 위첨자 (25^{1/3}) 에서 sup의 baseline이
+        // base baseline 아래로 내려가면 안 됨
+        let lb = parse_and_layout("25^{{1} over {3}}", 14.0);
+        let (base_box, sup_box) = match &lb.kind {
+            LayoutKind::Superscript { base, sup } => (base, sup),
+            LayoutKind::Row(children) => {
+                // Row 내 마지막 요소가 Superscript일 수 있음
+                let last = children.last().unwrap();
+                match &last.kind {
+                    LayoutKind::Superscript { base, sup } => (base, sup),
+                    _ => panic!("Expected Superscript in Row"),
+                }
+            }
+            _ => panic!("Expected Superscript or Row, got {:?}", lb.kind),
+        };
+        // sup의 상단(y)이 base의 상단보다 높거나 같아야 함
+        assert!(sup_box.y <= base_box.y,
+            "sup.y ({}) should be <= base.y ({})", sup_box.y, base_box.y);
+        // sup의 baseline이 base baseline보다 위에 있어야 함
+        let sup_baseline_abs = sup_box.y + sup_box.baseline;
+        let base_baseline_abs = base_box.y + base_box.baseline;
+        assert!(sup_baseline_abs < base_baseline_abs,
+            "sup baseline ({}) should be above base baseline ({})",
+            sup_baseline_abs, base_baseline_abs);
     }
 
     #[test]
