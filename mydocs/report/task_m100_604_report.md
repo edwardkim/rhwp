@@ -83,12 +83,26 @@ PR #589 (Task #511 v2 + #554) 머지 후 시각 판정 중 발견:
 - 검증: lib 1130 passed, Task #546/#554 통과, HWP3 native 페이지 회귀 0.
 - 시각 정합: page 4 x=529 분포 20 → 23개 (pi=75 첫 3 줄 추가 정합).
 
-### Stage 4 — 광범위 회귀 검증 + 최종 보고 (본 보고서)
+### Stage 4 — 광범위 회귀 검증
 
 - `cargo build --release` 통과
 - `cargo test --lib --release` **1130 passed** / 0 failed / 2 ignored
 - `cargo test --release` 통합 31 모두 통과
 - `cargo clippy --lib -- -D warnings` 0건
+
+Stage 4 시각 판정 중 작업지시자 발견: `hwp3-sample4.hwp` (HWP3 native 40p) 와
+`hwp3-sample4-hwp5.hwp` (HWP5 변환본 36p) 의 시각/페이지 수 차이.
+
+### Stage 5 — HWP3 wrap zone 인코딩 무효화 (한컴 변환 메커니즘 모방, commit ★)
+
+- `src/parser/hwp3/mod.rs:1399~`: 후속 wrap text 문단의 cs/sw 인코딩 무효화 (`None`).
+  앵커 문단은 cs/sw 인코딩 보존 (그림 위치 영향).
+- 본질: HWP3 spec 의 cs/sw wrap zone 인코딩이 폰트 크기와 호환되지 않는 케이스
+  (pi=75 sw=207px 좁은 영역에 13pt 글자 안 들어감) 발견. 한컴 자체가 변환 시
+  cs/sw=0/full 로 정정 (cf. hwp3-sample5-hwp5-v2024.hwp 모든 LineSeg cs=0/sw=51024).
+  본 정정은 한컴 변환과 정합 시각.
+- 결과: pi=75 모든 LineSeg cs=0/sw=0 → 본문 full width 흐름 + 그림 absolute layer.
+- 검증: lib 1130 passed, Task #546/#554 정합, HWP3 native 16/64 회귀 0.
 
 ## 4. 결정적 검증 결과
 

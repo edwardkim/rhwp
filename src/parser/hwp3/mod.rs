@@ -1397,24 +1397,29 @@ pub(crate) fn parse_paragraph_list(
 
                 // 이 줄의 pgy로 어울림 구역 판정 (per-line)
                 //
-                // 앵커 문단(pic_wrap_zone.is_some()): 자신이 그림 호스트이므로 pgy 무관하게 적용.
+                // [Task #604 Stage 5] 한컴 변환 메커니즘 모방 — wrap zone 인코딩 무효화.
                 //
-                // [Task #604 Stage 3] 후속 문단: pgy_end 만 검사 (pgy_start 가드 제거).
-                // 본 정정 이전: `pgy >= pgy_start && pgy < pgy_end` 양방향 검사. 그러나
-                // wrap text 문단의 첫 줄 pgy 가 anchor 의 pgy_start 미만 인 경우 발생
-                // (예: hwp3-sample5.hwp pi=75 첫 3 줄). 결과 cs/sw=0 → 그림 좌측 (x=56.7)
-                // 에 텍스트 그려짐 → 그림과 겹침 (Issue #604).
+                // 본질: HWP3 spec 의 cs/sw wrap zone 인코딩이 폰트 크기와 호환되지 않는
+                // 케이스 (예: hwp3-sample5.hwp pi=75 의 sw=15564HU=207px 좁은 영역에 13pt
+                // 글자 안 들어감) 가 존재. 한컴 자체가 HWP3 → HWP5 변환 시 wrap zone 인코딩
+                // 을 제거 (cs/sw=0/full) 하고, 그림은 paper-relative absolute layer 로 별도
+                // 그려지는 본질로 정정 (cf. hwp3-sample5-hwp5-v2024.hwp 모든 LineSeg cs=0/
+                // sw=51024 = full body width).
                 //
-                // 본질: 후속 wrap text 문단은 anchor 그림 우측에 정합 배치되어야 하며,
-                // pgy_start 미만의 줄도 wrap zone 의 일부. pgy_end 만 가드해 그림 아래로
-                // 흘러간 줄 (cs=0 인 정상 줄) 만 wrap zone 외 판정.
-                let line_cs_sw = current_zone.and_then(|(cs, sw, _pgy_start, pgy_end)| {
-                    if pic_wrap_zone.is_some() || linfo.pgy < pgy_end {
-                        Some((cs, sw))
-                    } else {
-                        None
-                    }
-                });
+                // 정정 방향:
+                // - 앵커 문단 (pic_wrap_zone.is_some()): 자신이 그림 호스트 — 그림 위치
+                //   영향이 있으므로 cs/sw 인코딩 보존
+                // - 후속 wrap text 문단: cs/sw=0 으로 무효화 → 본문은 full width 자연 흐름,
+                //   그림은 absolute layer 로 별도 그려짐 (한컴 v2024 변환 정합)
+                //
+                // 이전 Stage 3 (pgy_end 단방향 가드) 의 cs/sw 정확 인코딩 본질은 폰트 크기
+                // 미정합 결함과 결합되어 페이지네이션 +1 회귀 발생. 본 정정으로 회귀 회피
+                // + 시각 정합 (한컴 v2024 정합).
+                let line_cs_sw = if pic_wrap_zone.is_some() {
+                    current_zone.map(|(cs, sw, _, _)| (cs, sw))
+                } else {
+                    None
+                };
 
                 line_segs.push(LineSeg {
                     text_start,
