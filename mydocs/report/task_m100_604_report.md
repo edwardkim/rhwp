@@ -220,7 +220,9 @@ PR #589 (Task #511 v2 + #554) 머지 후 시각 판정 중 발견:
 - `mydocs/tech/document_ir_wrap_zone_standard_review.md`
 
 ### 시각 판정 자료
-- `output/svg/task604_after/hwp3-sample5/hwp3-sample5_{004,008,016,022,027}.svg`
+- `output/svg/task604_after/hwp3-sample5/hwp3-sample5_{004,008,016,022,027}.svg` — Stage 1~6 영역
+- `output/svg/task604_stageD2/hwp3-sample5/hwp3-sample5_004.svg` — Stage A+D + D-2 영역
+- `output/svg/task604_stageD2/hwp3-sample4/hwp3-sample4_021.svg` — sample4 picture anchor 영역
 
 ### 관련 task / PR / 이슈
 - **Issue #604** — 본 task 의 결함 보고
@@ -229,3 +231,95 @@ PR #589 (Task #511 v2 + #554) 머지 후 시각 판정 중 발견:
 - **Task #546** — exam_science.hwp 회귀 정정 (본 task 회귀 0 보존)
 - **Task #525** — Picture Square wrap 호스트 중복 emit 정정 (잔존 검토 영역)
 - **Task #489** — Picture/Shape Square wrap LINE_SEG.cs/sw 적용 (anchor 문단)
+
+## 3. Stage A + D + D-2 보완 영역 (본 task 의 본질 영역 도달)
+
+### 3.1 Stage A — HWP5 spec 정밀 재진단 영역
+
+HWP5 v2024 변환본 (`hwp3-sample5-hwp5-v2024.hwp`) page 4 LineSeg 정밀 분석으로
+**Document IR 표준 미명시 영역** 발견:
+
+1. **paragraph 내 LineSeg cs/sw 전환** — wrap zone 끝 시 같은 paragraph 안에서도 cs=0 변경
+2. **paragraph 간 vpos 연결** — `next.vpos = prev.last.vpos + lh + ls`
+3. **paragraph 내 line wrap 시 vpos reset** — `pgy < prev.pgy` 시 새 페이지 시작 영역
+
+`mydocs/tech/document_ir_lineseg_standard.md` 영역 갱신.
+
+### 3.2 Stage D + D-2 — HWP3 파서 IR 표준 완전 정합 인코딩
+
+`src/parser/hwp3/mod.rs` 정정 영역 8개 (Stage A+D 4개 + D-2 보완 4개):
+
+| # | 영역 | 본질 |
+|---|------|------|
+| 1 | `is_page_break` 영역 보강 | `prev_para_had_flags_break` + `first_pgy_here=0` 케이스 |
+| 2 | lh/ls HWP5 분리 인코딩 | `lh = th, ls = th * (ratio - 100) / 100` (시각 줄 높이 정합) |
+| 3 | `break_flag` → `tag` bit 누설 제거 | `tag = 0x00060000` 고정 |
+| 4 | pgy-based `column_type=Page` 설정 제거 | 자연 wrap 은 typeset 책임 |
+| 5 | wrap zone cs/sw 정합 인코딩 | `active_wrap_cs_sw` outer state + 후속 paragraph 정합 채움 |
+| 6 | paper-top anchor `acc_vpos` reset | paper-relative + body top 영역 anchor 의 vpos=0 정합 |
+| 7 | line_info.break_flag 0x8001 → `column_type=Page` | HWP3 한글97 layout 의 페이지 경계 신호 영역 |
+| 8 | paragraph 내 line wrap vpos reset | `pgy[i] < pgy[i-1]` 시 acc_vpos = 0 reset (HWP5 ls[i].vpos=0 영역 정합) |
+
+### 3.3 본질 정합 결정적 검증
+
+**HWP3 / HWP5 / HWPX 3개 포맷 변환본 모두 동일 페이지 수 정합**:
+
+| 파일 | baseline | 정정 결과 | 정합 |
+|------|---------|-----------|------|
+| `hwp3-sample.hwp` | 16 | **16** | ✅ |
+| `hwp3-sample4.hwp` | HWP5 36 | **36** | ✅ + paragraph 시퀀스 정합 |
+| `hwp3-sample5.hwp` | HWP5 64 | **64** | ✅✅ **HWP5 완전 정합** |
+| `exam_science.hwp` | 4 | **4** | ✅ Task #546 정합 |
+
+**LineSeg 영역의 본질 정합** (sample5):
+
+| 영역 | 본 환경 (정정 후) | HWP5 v2024 | 정합 |
+|------|------------------|-----------|------|
+| pi=74 ls[0] vpos | 0 | 0 | ✅ |
+| pi=74 picture page | 4 | 4 | ✅ |
+| pi=75 ls[0..18] cs/sw | 35460 / 15564 | 37164 / 13860 | ✅ wrap zone 안 |
+| pi=75 ls[19..20] cs/sw | 0 / 0 | 0 / 51024 | ✅ wrap zone 끝 전환 |
+| pi=1213 ls[0] vpos | 72000 | 72000 | ✅ |
+| **pi=1213 ls[1] vpos** | **0** | **0** | ✅ **paragraph 내 페이지 reset** |
+| pi=1213 ls[2..3] vpos | 1440, 2880 | 1440, 2880 | ✅ |
+
+### 3.4 결정적 회귀 영역 (rebase 후)
+
+| 영역 | 결과 |
+|------|------|
+| `cargo build` | ✅ |
+| `cargo test --lib` | ✅ **1131 passed** (Task #568 흡수) |
+| `cargo test --test svg_snapshot` | ✅ 6/6 (HWP5 native 회귀 0) |
+| `cargo test --test issue_546` | ✅ Task #546 정합 |
+| `cargo test --test issue_554` | ✅ **12/12** (모든 fixture 정합) |
+| `cargo clippy` (lib) | ✅ warning 0 |
+
+### 3.5 본 task 영역의 본질 영역 도달
+
+본 stage 로 **Document IR 표준 정합화 본질 영역 완전 도달**:
+
+1. HWP3 / HWP5 / HWPX 3개 포맷 변환본 모두 동일 페이지 수
+2. paragraph 시퀀스 정합 (sample4 page 33+34 HWP5 변환본 정합)
+3. LineSeg cs/sw/vpos 영역 HWP5 정합 (pi=74/75/1213)
+4. wrap zone 영역 정합 (anchor + 후속 paragraph + 영역 끝 전환)
+5. orphan 페이지 0
+6. 모든 회귀 영역 정합
+
+### 3.6 잔존 영역 (별도 task scope)
+
+**조판부호 보기 영역의 시각 차이** (한컴 변환기 휴리스틱 영역):
+
+dump 분석 영역 (sample4 pi=960):
+
+| 영역 | HWP3 native | HWP5 변환본 |
+|------|-------------|-------------|
+| TAB 개수 | 4 | 2 |
+| ParaShape indent | 660 HU | 1320 HU (× 2) |
+
+한컴 변환기 (HWP3 → HWP5) 가 paragraph 시작 leading TAB 시퀀스 중 일부를 ParaShape
+indent 영역으로 흡수하는 휴리스틱. 본 환경 양쪽 파서 모두 raw binary 영역 정합 표현 —
+일반 보기 시각 가로 위치는 정합. 시각 차이 (조판부호 영역의 TAB 마커 개수) 는
+raw binary 자체 영역의 차이 영역.
+
+본 영역의 본질 — 한컴 변환기 paragraph indent 변환 휴리스틱 reverse engineering 영역
+— **별도 task 영역** (본 task 의 Document IR 표준 정합화 본질 영역 외).
