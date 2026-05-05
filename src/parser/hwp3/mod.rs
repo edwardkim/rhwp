@@ -1671,7 +1671,19 @@ pub(crate) fn parse_paragraph_list(
             }
 
             // LineSeg vpos 누적 + wrap zone cs/sw 정합 인코딩 + 끝 시 전환
-            for seg in &mut para.line_segs {
+            // [Task #604 Stage D-2] paragraph 내 line wrap 시 vpos reset 정합:
+            // line_infos[i].pgy < line_infos[i-1].pgy → 본 line 이 새 페이지 시작 (HWP3
+            // 가 한글97 layout 시점에 본 line 부터 새 페이지 인식). HWP5 v2024 변환본의
+            // paragraph 내 ls[i].vpos=0 영역 정합 (typeset Task #321 vpos-reset guard
+            // 영역 trigger 정합).
+            for (i, seg) in para.line_segs.iter_mut().enumerate() {
+                if i > 0 && i < line_infos.len()
+                    && line_infos[i].pgy < line_infos[i-1].pgy
+                {
+                    // 새 페이지 시작 — vpos reset
+                    acc_section_vpos = 0;
+                    wrap_zone_end_vpos = 0;
+                }
                 seg.vertical_pos = acc_section_vpos;
 
                 if wrap_zone_end_vpos > 0 && acc_section_vpos < wrap_zone_end_vpos {
