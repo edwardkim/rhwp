@@ -130,25 +130,29 @@ pub struct CharShapeRef {
 }
 
 /// 줄 레이아웃 정보 (HWPTAG_PARA_LINE_SEG)
+///
+/// **표준**: `mydocs/tech/document_ir_lineseg_standard.md` (Task #604)
+/// 모든 i32 필드는 HWPUNIT (1 inch = 7200 HWPUNIT).
 #[derive(Debug, Clone, Default)]
 pub struct LineSeg {
-    /// 텍스트 시작 위치
+    /// 본 줄이 차지하는 텍스트 시작 위치 (UTF-16 code unit, 문단 시작 기준)
     pub text_start: u32,
-    /// 줄의 세로 위치
+    /// 페이지 내 흐름 y 좌표 (HWPUNIT, 페이지 상단 기준 누적 절대값)
+    /// HWP3 파서는 현재 항상 0 (별도 task 에서 누적 계산 정정 권고)
     pub vertical_pos: i32,
-    /// 줄의 높이
+    /// 줄 높이 (HWPUNIT, line_spacing 포함)
     pub line_height: i32,
-    /// 텍스트 부분의 높이
+    /// 텍스트 부분의 높이 (HWPUNIT)
     pub text_height: i32,
-    /// 베이스라인까지 거리
+    /// 베이스라인까지 거리 (HWPUNIT, 줄 시작 기준)
     pub baseline_distance: i32,
-    /// 줄간격
+    /// 줄간격 (HWPUNIT)
     pub line_spacing: i32,
-    /// 컬럼에서의 시작 위치
+    /// wrap zone x 오프셋 (HWPUNIT, 단(column) 좌측 기준). 0 = wrap 없음
     pub column_start: i32,
-    /// 세그먼트 폭
+    /// 줄 너비 (HWPUNIT). 단 너비와 같으면 wrap 없음
     pub segment_width: i32,
-    /// 태그 플래그
+    /// 비트 플래그 (첫 줄 / 첫 단 등)
     pub tag: u32,
 }
 
@@ -156,6 +160,21 @@ impl LineSeg {
     /// 페이지의 첫 줄인지 여부
     pub fn is_first_line_of_page(&self) -> bool {
         self.tag & 0x01 != 0
+    }
+
+    /// 본 줄이 wrap zone (그림/표 옆) 안에 있는지 (포맷 무관 표준).
+    ///
+    /// 표준: `mydocs/tech/document_ir_lineseg_standard.md`
+    ///
+    /// `col_w_hu`: 단 너비 (HWPUNIT). 본 줄의 segment_width 와 비교.
+    ///
+    /// 판정 본질:
+    /// - `column_start > 0`: 단 좌측에서 떨어진 위치 시작 → wrap zone
+    /// - `segment_width > 0 AND segment_width < col_w_hu`: 너비가 단 너비보다 작음 → wrap zone
+    /// - 모두 거짓: full width 정상 줄
+    pub fn is_in_wrap_zone(&self, col_w_hu: i32) -> bool {
+        self.column_start > 0
+            || (self.segment_width > 0 && self.segment_width < col_w_hu)
     }
 
     /// 컬럼의 첫 줄인지 여부
