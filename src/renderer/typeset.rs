@@ -495,12 +495,29 @@ impl TypesetEngine {
                 if (para_cs == st.wrap_around_cs && para_sw == st.wrap_around_sw)
                     || (any_seg_matches && (is_empty_para || st.wrap_around_any_seg))
                     || sw0_match {
-                    // [Task #604 R3] wrap_around 매칭 메타데이터 등록 + 흡수 skip + FullParagraph 통과.
-                    // 본 문단은 anchor 그림/표 옆 wrap text 로 식별됨. layout 단계가
-                    // wrap_anchors[para_idx] 로 wrap zone 정합 렌더 (LineSeg cs/sw 그대로 사용).
-                    // 기존 wrap_precomputed 메커니즘을 typeset 출력 메타데이터로 본질화.
-                    if para.wrap_precomputed {
-                        // wrap_precomputed=true (HWP3 파서가 set): 흡수 skip + FullParagraph 통과
+                    // [Task #604 R3] wrap_around 매칭 분기를 anchor 종류 기반으로 본질화.
+                    //
+                    // - Picture (그림 Square wrap) anchor: wrap text 가 LineSeg cs/sw 로
+                    //   사전 인코딩됨 → wrap_anchors 등록 + FullParagraph 통과
+                    //   (layout 이 LineSeg cs/sw 정합 렌더)
+                    // - Table (표 Square wrap) anchor: wrap text 는 표 옆 빈 ↵ 표시용
+                    //   → 흡수 (current_column_wrap_around_paras)
+                    //
+                    // Stage 2b: Paragraph.wrap_precomputed (HWP3 휴리스틱 IR 누설) 제거.
+                    // anchor paragraph 의 controls 검사로 본질 정합 대체.
+                    let anchor_is_picture = paragraphs.get(st.wrap_around_table_para)
+                        .map(|p| p.controls.iter().any(|c| match c {
+                            Control::Picture(pic) => !pic.common.treat_as_char,
+                            Control::Shape(s) => {
+                                if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
+                                    !pic.common.treat_as_char
+                                } else { false }
+                            }
+                            _ => false,
+                        }))
+                        .unwrap_or(false);
+                    if anchor_is_picture {
+                        // Picture anchor: wrap_anchors 등록 + FullParagraph 통과
                         st.current_column_wrap_anchors.insert(
                             para_idx,
                             crate::renderer::pagination::WrapAnchorRef {
@@ -510,7 +527,7 @@ impl TypesetEngine {
                             },
                         );
                     } else {
-                        // 어울림 문단: 표 옆에 기록 + height 소비 없음 (기존 흐름 보존)
+                        // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음
                         st.current_column_wrap_around_paras.push(
                             crate::renderer::pagination::WrapAroundPara {
                                 para_index: para_idx,

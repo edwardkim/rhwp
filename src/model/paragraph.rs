@@ -49,10 +49,6 @@ pub struct Paragraph {
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
     pub numbering_restart: Option<NumberingRestart>,
-    /// LineSeg cs/sw가 파서에 의해 사전 계산된 wrap zone 문단.
-    /// true: 모든 LineSeg의 vertical_pos=0이며 일부 cs>0으로 wrap zone이 이미 인코딩됨.
-    /// → layout 엔진이 WrapAroundPara 흡수 없이 FullParagraph path로 렌더링해야 한다.
-    pub wrap_precomputed: bool,
 }
 
 /// 문단 번호 시작 방식
@@ -615,7 +611,6 @@ impl Paragraph {
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
             numbering_restart: None,
-            wrap_precomputed: false,
         }
     }
 

@@ -130,7 +130,7 @@ pub struct ColumnContent {
     /// [Task #604 R3] anchor 그림/표 옆 wrap text 문단의 wrap context 메타데이터.
     /// typeset.rs 의 wrap_around state machine 매칭 결과 (anchor cs/sw 일치) 를
     /// layout 시점까지 보존. layout 이 본 메타데이터로 wrap zone 판정 + LineSeg cs/sw
-    /// 정합 렌더 (현 wrap_precomputed 메커니즘 대체).
+    /// 정합 렌더 (PR #589 wrap_precomputed 메커니즘 대체).
     pub wrap_anchors: std::collections::HashMap<usize, WrapAnchorRef>,
 }
 
