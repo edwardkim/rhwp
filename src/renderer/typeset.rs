@@ -144,6 +144,9 @@ struct TypesetState {
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
+    /// [Task #604 R3] 현재 단의 wrap text 문단 ↔ anchor 메타데이터.
+    /// wrap_around state machine 매칭 시 등록. flush_column 에서 ColumnContent 로 전달.
+    current_column_wrap_anchors: std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
 }
 
 impl TypesetState {
@@ -180,6 +183,7 @@ impl TypesetState {
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
             current_column_wrap_around_paras: Vec::new(),
+            current_column_wrap_anchors: std::collections::HashMap::new(),
         }
     }
 
@@ -220,6 +224,7 @@ impl TypesetState {
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
+            wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -237,6 +242,7 @@ impl TypesetState {
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
+            wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -489,12 +495,22 @@ impl TypesetEngine {
                 if (para_cs == st.wrap_around_cs && para_sw == st.wrap_around_sw)
                     || (any_seg_matches && (is_empty_para || st.wrap_around_any_seg))
                     || sw0_match {
-                    // wrap_precomputed=true: 파서가 LineSeg cs/sw를 사전 계산한 문단.
-                    // layout_wrap_around_paras는 vertical_pos 기반 y 계산을 하므로
-                    // vertical_pos=0인 사전 계산 문단에서 잘못된 y가 나온다.
-                    // FullParagraph path에서 LineSeg cs/sw로 직접 처리하도록 흡수 스킵.
-                    if !para.wrap_precomputed {
-                        // 어울림 문단: 표 옆에 기록 + height 소비 없음
+                    // [Task #604 R3] wrap_around 매칭 메타데이터 등록 + 흡수 skip + FullParagraph 통과.
+                    // 본 문단은 anchor 그림/표 옆 wrap text 로 식별됨. layout 단계가
+                    // wrap_anchors[para_idx] 로 wrap zone 정합 렌더 (LineSeg cs/sw 그대로 사용).
+                    // 기존 wrap_precomputed 메커니즘을 typeset 출력 메타데이터로 본질화.
+                    if para.wrap_precomputed {
+                        // wrap_precomputed=true (HWP3 파서가 set): 흡수 skip + FullParagraph 통과
+                        st.current_column_wrap_anchors.insert(
+                            para_idx,
+                            crate::renderer::pagination::WrapAnchorRef {
+                                anchor_para_index: st.wrap_around_table_para,
+                                anchor_cs: st.wrap_around_cs,
+                                anchor_sw: st.wrap_around_sw,
+                            },
+                        );
+                    } else {
+                        // 어울림 문단: 표 옆에 기록 + height 소비 없음 (기존 흐름 보존)
                         st.current_column_wrap_around_paras.push(
                             crate::renderer::pagination::WrapAroundPara {
                                 para_index: para_idx,
@@ -504,7 +520,6 @@ impl TypesetEngine {
                         );
                         continue;
                     }
-                    // pre-computed: fall through to normal FullParagraph rendering
                 } else {
                     // 매칭 실패 → wrap zone 종료, 정상 처리 진행
                     st.wrap_around_cs = -1;

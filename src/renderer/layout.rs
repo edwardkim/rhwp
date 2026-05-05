@@ -34,6 +34,8 @@ struct ColumnItemCtx<'a> {
     multi_col_width: Option<i32>,
     prev_tac_seg_applied: bool,
     wrap_around_paras: &'a [super::pagination::WrapAroundPara],
+    /// [Task #604 R3] anchor ↔ wrap text 매칭 메타데이터 (typeset 출력 → layout 소비)
+    wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
 }
 
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
@@ -587,6 +589,7 @@ impl LayoutEngine {
                     y_offset = self.layout_paragraph(
                         tree, area_node, para, Some(&comp), styles, area, y_offset,
                         0, usize::MAX - i, None, Some(bin_data_content),
+                        None,  // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
                 }
             } else if has_shape {
@@ -610,6 +613,7 @@ impl LayoutEngine {
                     y_offset = self.layout_paragraph(
                         tree, area_node, para, Some(&comp), styles, area, y_offset,
                         0, usize::MAX - i, None, None,
+                        None,  // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
                 }
             } else {
@@ -619,6 +623,7 @@ impl LayoutEngine {
                 y_offset = self.layout_paragraph(
                     tree, area_node, para, Some(&comp), styles, area, y_offset,
                     0, usize::MAX - i, None, None,
+                    None,  // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                 );
             }
             if y_offset >= area.y + area.height {
@@ -868,6 +873,7 @@ impl LayoutEngine {
                             tree, &mut mp_node, para, Some(&comp), styles,
                             &paper_area, mp_y_offset,
                             0, usize::MAX - pi, None, None,
+                            None,  // 바탕쪽 컨텍스트 — wrap zone 무관
                         );
                     } else {
                         // 빈 문단: LINE_SEG vpos로 y 위치 갱신
@@ -1552,6 +1558,7 @@ impl LayoutEngine {
                 outline_numbering_id, multi_col_width, y_offset,
                 prev_tac_seg_applied,
                 wrap_around_paras,
+                &col_content.wrap_anchors,
             );
             y_offset = new_y;
             prev_tac_seg_applied = was_tac;
@@ -1881,11 +1888,12 @@ impl LayoutEngine {
         mut y_offset: f64,
         prev_tac_seg_applied: bool,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
+        wrap_anchors: &std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
     ) -> (f64, bool) {
         let ctx = ColumnItemCtx {
             page_content, paragraphs, composed, styles, bin_data_content,
             measured_tables, layout, col_area, outline_numbering_id,
-            multi_col_width, prev_tac_seg_applied, wrap_around_paras,
+            multi_col_width, prev_tac_seg_applied, wrap_around_paras, wrap_anchors,
         };
         match item {
             PageItem::FullParagraph { para_index } => {
@@ -1899,6 +1907,7 @@ impl LayoutEngine {
                                 tree, col_node, para, Some(comp), styles,
                                 col_area, y_offset, page_content.section_index,
                                 *para_index, multi_col_width, Some(bin_data_content),
+                                ctx.wrap_anchors.get(para_index),
                             );
                         }
                     }
@@ -1957,6 +1966,7 @@ impl LayoutEngine {
                                         *para_index,
                                         multi_col_width,
                                         Some(bin_data_content),
+                                        ctx.wrap_anchors.get(para_index),
                                     );
                                 }
                             }
@@ -2020,6 +2030,7 @@ impl LayoutEngine {
                             *para_index,
                             multi_col_width,
                             Some(bin_data_content),
+                            ctx.wrap_anchors.get(para_index),
                         );
                     }
                     // TAC Shape 높이 보정: 문단에 TAC Shape(개체묶기 등)가 있으면
@@ -2129,6 +2140,7 @@ impl LayoutEngine {
                         *para_index,
                         None,
                         Some(bin_data_content),
+                        ctx.wrap_anchors.get(para_index),
                     );
                 }
             }
@@ -2173,7 +2185,7 @@ impl LayoutEngine {
         let ColumnItemCtx {
             page_content, paragraphs, composed, styles, bin_data_content,
             measured_tables, layout, col_area, multi_col_width,
-            prev_tac_seg_applied, wrap_around_paras, ..
+            prev_tac_seg_applied, wrap_around_paras, wrap_anchors, ..
         } = ctx;
         // 표 앵커 문단의 y 위치 등록
         // TAC 표: 이전 TAC가 y_offset을 진행시킨 경우 갱신 (같은 문단 TAC+블록 구조)
@@ -2253,6 +2265,7 @@ impl LayoutEngine {
                                     col_area, y_offset, start_line, text_end_line,
                                     page_content.section_index, para_index,
                                     *multi_col_width, Some(bin_data_content),
+                                    wrap_anchors.get(&para_index),
                                 );
                             }
                         }
@@ -2572,7 +2585,7 @@ impl LayoutEngine {
     ) -> f64 {
         let ColumnItemCtx {
             page_content, paragraphs, composed, styles, bin_data_content,
-            measured_tables, col_area, multi_col_width, wrap_around_paras, ..
+            measured_tables, col_area, multi_col_width, wrap_around_paras, wrap_anchors, ..
         } = ctx;
         // ── 분할 표 첫 부분: 호스트 문단 텍스트 렌더링 ──
         if !is_continuation {
@@ -2597,6 +2610,7 @@ impl LayoutEngine {
                                     col_area, y_offset, start_line, text_end_line,
                                     page_content.section_index, para_index,
                                     *multi_col_width, Some(bin_data_content),
+                                    wrap_anchors.get(&para_index),
                                 );
                             }
                         }
@@ -3062,6 +3076,7 @@ impl LayoutEngine {
                             tree, col_node, table_para, Some(comp), styles,
                             &wrap_area, table_y_start, start_line, text_end_line,
                             section_index, table_para_index, None, Some(bin_data_content),
+                            None,  // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
                         );
                         self.border_box_override.set(prev_override);
                         // 어울림 문단은 항상 ↵ 표시 필요 — 부분 렌더링 시 is_para_end 강제 설정
@@ -3158,6 +3173,7 @@ impl LayoutEngine {
                     tree, col_node, para, comp, styles,
                     &wrap_area, para_y, 0, end_line,
                     section_index, wp.para_index, None, Some(bin_data_content),
+                    None,  // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
                 );
                 // 어울림 문단은 항상 ↵ 표시 필요
                 force_para_end_on_last_run(col_node);
