@@ -150,17 +150,24 @@ impl LayoutEngine {
         );
 
         // ── 4. 렌더링할 행 목록 구성 ──
-        // is_continuation && repeat_header → 제목행(0)에 제목 셀(is_header)이 있으면 반복
-        let render_header = is_continuation && table.repeat_header && start_row > 0
-            && table.cells.iter()
-                .filter(|c| c.row == 0)
-                .any(|c| c.is_header);
-        let mut render_rows: Vec<usize> = Vec::new();
-        if render_header {
-            render_rows.push(0); // 제목행
+        // is_continuation && repeat_header → is_header 셀이 있는 모든 행을 반복
+        let mut header_rows: Vec<usize> = Vec::new();
+        if is_continuation && table.repeat_header && start_row > 0 {
+            let mut seen = vec![false; row_count];
+            for c in &table.cells {
+                if c.is_header && (c.row as usize) < row_count && !seen[c.row as usize] {
+                    seen[c.row as usize] = true;
+                    header_rows.push(c.row as usize);
+                }
+            }
+            header_rows.sort_unstable();
         }
+        let mut render_rows: Vec<usize> = Vec::new();
+        render_rows.extend_from_slice(&header_rows);
         for r in start_row..end_row.min(row_count) {
-            render_rows.push(r);
+            if !header_rows.contains(&r) {
+                render_rows.push(r);
+            }
         }
 
         // 렌더링 영역의 행별 y 위치 계산 (0부터 시작)
@@ -255,16 +262,20 @@ impl LayoutEngine {
 
             // 이 셀이 렌더링 범위에 포함되는지 확인
             let cell_end_row = cell_row + cell.row_span as usize;
-            let render_range_start = if render_header { 0 } else { start_row };
+            let render_range_start = if !header_rows.is_empty() {
+                *header_rows.first().unwrap()
+            } else {
+                start_row
+            };
             let render_range_end = end_row.min(row_count);
 
             // 제목행 반복으로 렌더링되는 셀인지 판별
-            // (원래 범위 밖이지만 render_header 때문에 포함되는 행0 셀)
-            let is_repeated_header_cell = render_header && cell_row == 0 && cell_end_row <= start_row;
+            let is_repeated_header_cell = !header_rows.is_empty()
+                && header_rows.contains(&cell_row)
+                && cell_end_row <= start_row;
 
             // 셀이 렌더링 범위와 겹치는지 확인
             if cell_row >= render_range_end || cell_end_row <= render_range_start {
-                // 제목행 렌더링 시 행0 셀은 포함
                 if !is_repeated_header_cell {
                     continue;
                 }
