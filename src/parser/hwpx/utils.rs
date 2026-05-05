@@ -51,7 +51,7 @@ pub fn parse_i32(attr: &quick_xml::events::attributes::Attribute) -> i32 {
     attr_str(attr).parse().unwrap_or(0)
 }
 
-/// "#RRGGBB" 또는 "#AARRGGBB" 형식의 색상을 HWP ColorRef(0x00BBGGRR)로 변환
+/// "#RRGGBB" 또는 "#AARRGGBB" 형식의 색상을 HWP ColorRef로 변환
 pub fn parse_color(attr: &quick_xml::events::attributes::Attribute) -> u32 {
     let s = attr_str(attr);
     parse_color_str(&s)
@@ -72,12 +72,14 @@ pub fn parse_color_str(s: &str) -> u32 {
             return b << 16 | g << 8 | r;
         }
     } else if hex.len() == 8 {
-        // AARRGGBB → 0x00BBGGRR (alpha 무시)
+        // AARRGGBB → 0xAABBGGRR
+        // 상위 바이트는 HWP ColorRef의 확장/특수값 판별에 쓰이므로 보존한다.
         if let Ok(v) = u32::from_str_radix(hex, 16) {
+            let a = (v >> 24) & 0xFF;
             let r = (v >> 16) & 0xFF;
             let g = (v >> 8) & 0xFF;
             let b = v & 0xFF;
-            return b << 16 | g << 8 | r;
+            return a << 24 | b << 16 | g << 8 | r;
         }
     }
     0x00000000 // 검정
@@ -135,7 +137,9 @@ mod tests {
 
     #[test]
     fn test_parse_color_str_with_alpha() {
-        // AARRGGBB — alpha 무시
-        assert_eq!(parse_color_str("#80FF0000"), 0x000000FF);
+        // AARRGGBB — RGB는 BGR로 바꾸되 상위 바이트는 보존
+        assert_eq!(parse_color_str("#80FF0000"), 0x800000FF);
+        assert_eq!(parse_color_str("#FF000000"), 0xFF000000);
+        assert_eq!(parse_color_str("#FFFFFFFF"), 0xFFFFFFFF);
     }
 }
