@@ -185,6 +185,15 @@ pub(crate) fn parse_paragraph_list(
     // Square wrap 그림 어울림 구역: (column_start, segment_width, pgy_start, pgy_end)
     // 떠다니는 Square wrap 그림 문단을 만나면 갱신, pgy가 pgy_end를 넘으면 초기화.
     let mut active_wrap_zone: Option<(i32, i32, u16, u16)> = None;
+    // [Task #604 Stage A+D] Square wrap 그림 영역 끝 vpos (HU, section 누적 절대값).
+    // wrap zone 안 LineSeg 의 vpos 가 본 값을 넘으면 cs/sw=0/full 전환.
+    // 0 = wrap zone 비활성. 새 그림 만나면 (anchor 시작 vpos + total_height) 로 갱신.
+    let mut wrap_zone_end_vpos: i32 = 0;
+    // section 단위 누적 vpos (HWP5 IR 표준: page 상단 기준 절대값).
+    // 새 paragraph 시작 시 이 값을 첫 LineSeg vpos 로 사용.
+    let mut acc_section_vpos: i32 = 0;
+    // body_left/right_hu 는 column_width_hu 로 사용
+    let _section_acc_marker = 0;
 
     loop {
         let para_start_pos = body_cursor.position();
@@ -1416,29 +1425,17 @@ pub(crate) fn parse_paragraph_list(
                     }
                 });
 
-                // [Task #604 Stage 5 — 옵션 B-2] wrap zone 안 라인의 line_spacing 정합화.
-                //
-                // 본질: HWP3 의 line_spacing_ratio (보통 160%) 가 좁은 wrap zone (예:
-                // pi=75 sw=15564HU=207px) 안에 적용되면 줄당 19.2px 차지 → 415자 텍스트
-                // 가 38 줄 = 729px 필요 (그림 357px 초과). 한컴 자체가 HWP3 → HWP5 변환 시
-                // 줄간격 100% 로 정정 (cf. hwp3-sample5-hwp5-v2024.hwp lh=900 = th).
-                //
-                // 정정: wrap zone 안 라인 (line_cs_sw.is_some() AND cs>0) 만 lh=th 적용
-                // (line_spacing 100% 강제). 그림 아래 흘러간 라인 (line_cs_sw=None) 은
-                // HWP3 본질 (line_spacing_ratio) 유지 — 영향 영역 최소화.
-                let (line_lh, line_ls) = if line_cs_sw.map(|(cs, _)| cs > 0).unwrap_or(false) {
-                    (th, 0)
-                } else {
-                    (lh, ls)
-                };
-
+                // [Task #604 Stage A+D] HWP3 본질 유지: lh / ls 그대로 (Stage 5 B-2 revert).
+                // HWP5 v2024 변환본 분석 결과 lh+ls 누적값이 본 환경 HWP3 의 lh 와 동등
+                // (HWP5: lh=900+ls=540=1440 / HWP3: lh=1440+ls=0=1440). vpos 누적 정합화는
+                // paragraphs.push 후 후처리에서 처리.
                 line_segs.push(LineSeg {
                     text_start,
                     vertical_pos: 0,
-                    line_height: line_lh,
+                    line_height: lh,
                     text_height: th,
                     baseline_distance: bl,
-                    line_spacing: line_ls,
+                    line_spacing: ls,
                     column_start: line_cs_sw.map(|(cs, _)| cs).unwrap_or(0),
                     segment_width: line_cs_sw.map(|(_, sw)| sw).unwrap_or(0),
                     tag,
@@ -1575,6 +1572,73 @@ pub(crate) fn parse_paragraph_list(
             para.column_type = crate::model::paragraph::ColumnBreakType::Page;
         }
         prev_para_had_flags_break = para_info.flags & 0x02 != 0;
+
+        // [Task #604 Stage A+D] HWP5 IR 표준 정합화: paragraph 간 vpos 연결 + 그림
+        // 영역 끝 시 cs/sw=0/full 전환 + paragraph 내 vpos 누적.
+        //
+        // 본질 (Stage A 진단):
+        // - HWP5 v2024 변환본 분석 결과 LineSeg.vpos 는 section 단위 누적 절대값
+        // - paragraph 내 wrap zone 안 줄 (cs>0) → 그림 영역 끝 시 cs=0/sw=full 전환
+        //   (예: pi=75 ls[18] cs=37164 → ls[19] cs=0 at vpos=28800)
+        // - paragraph 간 vpos 연결: next.vpos = prev.last_vpos + lh + ls
+        //
+        // 본 정정으로 본 환경 rhwp 의 typeset/layout vpos 기반 로직 (Task #321/332/412
+        // 등) 이 HWP3 파서 출력에 정합 동작 → 시각 결함 자연스럽게 정정.
+        {
+            // 페이지 break 시 vpos reset (anchor 검출 전 reset 필수 — Stage A+D 정정)
+            if matches!(para.column_type, crate::model::paragraph::ColumnBreakType::Page) {
+                acc_section_vpos = 0;
+                wrap_zone_end_vpos = 0;
+            }
+
+            // paragraph 시작 시 그림 anchor 검출 → wrap_zone_end_vpos 갱신
+            // (Control::Picture / Control::Shape 안의 ShapeObject::Picture 모두 검사)
+            let pic_total_h: Option<i32> = para.controls.iter().find_map(|c| {
+                let pic_common = match c {
+                    crate::model::control::Control::Picture(pic) => Some(&pic.common),
+                    crate::model::control::Control::Shape(s) => {
+                        if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
+                            Some(&pic.common)
+                        } else { None }
+                    }
+                    _ => None,
+                };
+                if let Some(cm) = pic_common {
+                    if !cm.treat_as_char
+                        && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)
+                    {
+                        let total_h = cm.height as i32
+                            + cm.margin.top as i32
+                            + cm.margin.bottom as i32;
+                        return Some(total_h);
+                    }
+                }
+                None
+            });
+            if let Some(total_h) = pic_total_h {
+                // wrap zone 영역 끝 = anchor 시작 vpos + 그림 total height
+                wrap_zone_end_vpos = acc_section_vpos.saturating_add(total_h);
+            }
+
+            // LineSeg vpos 누적 + cs=0 전환
+            for seg in &mut para.line_segs {
+                seg.vertical_pos = acc_section_vpos;
+
+                // wrap zone 영역 끝 시 cs/sw=0/full 전환
+                if wrap_zone_end_vpos > 0
+                    && acc_section_vpos >= wrap_zone_end_vpos
+                    && seg.column_start > 0
+                {
+                    seg.column_start = 0;
+                    seg.segment_width = 0;
+                }
+
+                // 다음 줄 vpos 누적
+                acc_section_vpos = acc_section_vpos
+                    .saturating_add(seg.line_height)
+                    .saturating_add(seg.line_spacing);
+            }
+        }
 
         paragraphs.push(para);
     }

@@ -50,6 +50,50 @@ hwpunit_to_px(hu, dpi=96) = hu * 96 / 7200
 - `column_start > 0`: 본 줄은 단 좌측에서 `column_start` HWPUNIT 떨어진 위치에서 시작 (wrap zone)
 - `segment_width > 0` AND `segment_width < column_width`: 본 줄의 너비가 단 너비보다 작음 (wrap zone)
 
+### paragraph 내 LineSeg cs/sw 전환 (Stage A 본질 발견)
+
+본 표준의 핵심 본질 — **wrap zone 안 줄과 wrap zone 끝 (그림 영역 끝) 시 같은
+paragraph 안에서도 LineSeg.cs/sw 가 전환된다**.
+
+HWP5 v2024 변환본 (`hwp3-sample5-hwp5-v2024.hwp`) page 4 pi=75 실측 데이터:
+
+| LineSeg | vpos | cs | sw | 본질 |
+|---------|------|-----|------|------|
+| ls[0~18] | 1440~27360 | **37164** | 13860 | wrap zone 안 (그림 옆 좁은 영역) |
+| **ls[19]** | **28800** | **0** | **51024** | ★ **그림 영역 끝 — full width 전환** |
+| ls[20] | 30240 | 0 | 51024 | full width (그림 아래) |
+
+본질:
+- 같은 paragraph (pi=75) 안에서 LineSeg cs/sw 가 줄 단위로 전환
+- wrap zone 끝 줄 (그림 영역 vpos 끝) 부터 cs=0 / sw=column_width 로 변경
+- 다음 paragraph (pi=76) 의 첫 vpos = 직전 paragraph 마지막 vpos + lh + line_spacing
+
+### paragraph 간 vpos 연결 (Stage A 본질 발견)
+
+다음 paragraph 의 첫 `LineSeg.vpos`:
+```
+next_para.line_segs[0].vpos = prev_para.line_segs.last().vpos
+                              + prev_para.line_segs.last().line_height
+                              + prev_para.line_segs.last().line_spacing
+```
+
+HWP5 v2024 page 4 실측:
+- pi=75 마지막 ls[20] vpos=30240, lh=900, ls=540 → next vpos = 30240 + 900 + 540 = 31680
+- pi=76 ls[0] vpos=**31680** ✓ (정합 연결)
+
+본 paragraph 간 vpos 연결이 paginate / layout 의 sequential flow 의 본질. HWP3 파서가
+LineSeg.vpos = 0 채우면 본 연결이 끊김 → 렌더러 vpos 기반 로직 우회 → 시각 결함.
+
+### HWP3 파서의 IR 표준 정합 인코딩 책임 (Stage A 진단)
+
+HWP3 → HWP5 IR 변환 시 다음 모두 정합화 필요:
+
+1. **anchor paragraph LineSeg lh = 1줄** (HWP5 표준 — 그림 height 가 아님)
+2. **wrap text paragraph LineSeg vpos = section 누적 절대값** (현재 항상 0 — 위배)
+3. **paragraph 내 cs/sw 전환** — wrap zone 안 줄 (cs>0) → 그림 영역 끝 시 cs=0/sw=full
+   (현재 미인코딩 — 위배)
+4. **paragraph 간 vpos 연결** — anchor 끝 다음 paragraph 의 vpos 누적 (현재 모두 0 — 위배)
+
 ## wrap zone 판정 (포맷 무관)
 
 `LineSeg::is_in_wrap_zone(col_w_hu)` helper 가 본 표준의 정합한 구현.
