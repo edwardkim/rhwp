@@ -1416,13 +1416,29 @@ pub(crate) fn parse_paragraph_list(
                     }
                 });
 
+                // [Task #604 Stage 5 — 옵션 B-2] wrap zone 안 라인의 line_spacing 정합화.
+                //
+                // 본질: HWP3 의 line_spacing_ratio (보통 160%) 가 좁은 wrap zone (예:
+                // pi=75 sw=15564HU=207px) 안에 적용되면 줄당 19.2px 차지 → 415자 텍스트
+                // 가 38 줄 = 729px 필요 (그림 357px 초과). 한컴 자체가 HWP3 → HWP5 변환 시
+                // 줄간격 100% 로 정정 (cf. hwp3-sample5-hwp5-v2024.hwp lh=900 = th).
+                //
+                // 정정: wrap zone 안 라인 (line_cs_sw.is_some() AND cs>0) 만 lh=th 적용
+                // (line_spacing 100% 강제). 그림 아래 흘러간 라인 (line_cs_sw=None) 은
+                // HWP3 본질 (line_spacing_ratio) 유지 — 영향 영역 최소화.
+                let (line_lh, line_ls) = if line_cs_sw.map(|(cs, _)| cs > 0).unwrap_or(false) {
+                    (th, 0)
+                } else {
+                    (lh, ls)
+                };
+
                 line_segs.push(LineSeg {
                     text_start,
                     vertical_pos: 0,
-                    line_height: lh,
+                    line_height: line_lh,
                     text_height: th,
                     baseline_distance: bl,
-                    line_spacing: ls,
+                    line_spacing: line_ls,
                     column_start: line_cs_sw.map(|(cs, _)| cs).unwrap_or(0),
                     segment_width: line_cs_sw.map(|(_, sw)| sw).unwrap_or(0),
                     tag,
