@@ -150,14 +150,15 @@ impl LayoutEngine {
         );
 
         // ── 4. 렌더링할 행 목록 구성 ──
-        // is_continuation && repeat_header → is_header 셀이 있는 모든 행을 반복
+        // is_continuation && repeat_header → start_row 이전의 is_header 행만 반복
         let mut header_rows: Vec<usize> = Vec::new();
         if is_continuation && table.repeat_header && start_row > 0 {
             let mut seen = vec![false; row_count];
             for c in &table.cells {
-                if c.is_header && (c.row as usize) < row_count && !seen[c.row as usize] {
-                    seen[c.row as usize] = true;
-                    header_rows.push(c.row as usize);
+                let r = c.row as usize;
+                if c.is_header && r < start_row && r < row_count && !seen[r] {
+                    seen[r] = true;
+                    header_rows.push(r);
                 }
             }
             header_rows.sort_unstable();
@@ -165,9 +166,7 @@ impl LayoutEngine {
         let mut render_rows: Vec<usize> = Vec::new();
         render_rows.extend_from_slice(&header_rows);
         for r in start_row..end_row.min(row_count) {
-            if !header_rows.contains(&r) {
-                render_rows.push(r);
-            }
+            render_rows.push(r);
         }
 
         // 렌더링 영역의 행별 y 위치 계산 (0부터 시작)
