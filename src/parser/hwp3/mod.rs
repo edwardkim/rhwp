@@ -1553,32 +1553,11 @@ pub(crate) fn parse_paragraph_list(
         paragraphs.push(para);
     }
 
-    // LineSeg cs/sw가 사전 계산된 wrap zone 문단 표시.
-    // 패턴A/B (multi-LineSeg): 모두 vertical_pos=0 + 하나 이상 column_start>0
-    // 패턴C (single-LineSeg): column_start>0 + segment_width>0 + tac=false 그림 없음
-    //   → 그림 옆 wrap zone의 짧은 문단(예: "$ mount /dev/hda3 /usr")
-    for para in &mut paragraphs {
-        let has_floating_picture = para.controls.iter().any(|c| {
-            matches!(c, crate::model::control::Control::Picture(p) if !p.common.treat_as_char)
-        });
-        if para.line_segs.len() > 1
-            && para.line_segs.iter().all(|s| s.vertical_pos == 0)
-            && para.line_segs.iter().any(|s| s.column_start > 0)
-        {
-            para.wrap_precomputed = true;
-        } else if para.line_segs.len() == 1
-            && para.line_segs[0].column_start > 0
-            && para.line_segs[0].segment_width > 0
-            && (!has_floating_picture
-                || para.column_type == crate::model::paragraph::ColumnBreakType::Page)
-        {
-            // tac=false 그림 없음: 항상 wrap zone
-            // tac=false 그림 있음: 페이지 첫 문단일 때만 적용
-            //   (예: pi=599 "9 AIX bootable..." - 그림과 텍스트가 동일 y에서 시작)
-            //   (반례: pi=779/440 - 그림이 텍스트 y보다 아래에 있으므로 제외)
-            para.wrap_precomputed = true;
-        }
-    }
+    // [Task #604 Stage 2b] wrap_precomputed 후처리 제거 — IR 부채 청산.
+    // 본 후처리는 PR #589 보완6/8 에서 도입된 HWP3 휴리스틱 (vertical_pos==0
+    // 패턴 검출) 을 IR 에 누설했던 메커니즘. typeset.rs 의 wrap_around state machine
+    // 매칭 + ColumnContent.wrap_anchors 메타데이터 채널로 정합 대체됨.
+    // (anchor 종류 (Picture vs Table) 기반 분기 → typeset.rs:495~)
 
     Ok(paragraphs)
 }

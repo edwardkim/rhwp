@@ -2992,8 +2992,8 @@ impl LayoutEngine {
                             // 정상 PageItem::FullParagraph 경로 (layout_composed_paragraph 의
                             // has_picture_shape_square_wrap 분기, paragraph_layout.rs:822/973)
                             // 가 LINE_SEG.cs/sw 기반으로 그림 옆 (좁은) + 그림 아래 (넓은)
-                            // 모두 처리. Task #460 보완6의 wrap_precomputed IR 플래그로
-                            // FullParagraph path가 cs offset을 정확히 적용하므로 별도 호출 불필요.
+                            // 모두 처리. Task #604 Stage 2 의 wrap_anchors 메타데이터 채널
+                            // 로 FullParagraph path 가 cs offset 을 정확히 적용하므로 별도 호출 불필요.
                         }
                     }
                 }
@@ -3382,8 +3382,8 @@ impl LayoutEngine {
             // layout_shape_item:3106 (PageItem::Shape 처리 시) 에서 수행. 본 패스에서
             // 별도 호출은 동일 paragraph 의 wrap-around 텍스트가 두 다른 col_w 정렬로
             // distinct x 위치에 중복 emit 되어 (광범위 시각 결함, 7 샘플 37 페이지 영향)
-            // 제거. Task #460 보완6의 wrap_precomputed IR 플래그로 FullParagraph path가
-            // cs offset을 정확히 적용하므로 별도 호출 불필요.
+            // 제거. Task #604 Stage 2 의 wrap_anchors 메타데이터 채널로 FullParagraph
+            // path 가 cs offset 을 정확히 적용하므로 별도 호출 불필요.
         }
     }
 
