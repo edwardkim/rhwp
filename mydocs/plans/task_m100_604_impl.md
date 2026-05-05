@@ -140,11 +140,50 @@ Task #604 Stage 1: Document IR LineSeg 표준 정의 + is_in_wrap_zone helper
 
 ---
 
-## Stage 2 — 렌더러 표준 적용 + wrap_precomputed 제거
+## Stage 2a — wrap_precomputed → is_in_wrap_zone 교체 시도 ❌ revert
+
+옵션 C (cs/sw 만으로 wrap zone 판정) 본질 부적합 — test_547 회귀.
+HWP5 native passage box 본문 LineSeg `cs=852, sw=30184` 가 false-positive 판정.
+**전체 변경 revert. R3 (Stage 2 신규 본질) 채택.**
+
+---
+
+## Stage 2 — typeset 출력 메타데이터 도입 (R3 본격 진행)
+
+### 2.0 본질
+
+`src/renderer/typeset.rs:478-513` 의 wrap_around state machine 이 anchor ↔ wrap text
+매칭 본질 메커니즘. 현재 매칭 결과가 layout 시점에 전달 안 됨 → wrap_precomputed 우회.
+**R3**: 매칭 결과를 `ComposedParagraph` 또는 `PageItem::FullParagraph` 메타데이터로
+보존 → layout 이 본 메타데이터로 wrap zone 판정 + 정합 렌더.
 
 ### 2.1 변경 영역
 
-#### A. `src/renderer/typeset.rs:496` 교체
+#### A. ComposedParagraph (또는 PageItem) 에 `wrap_anchor` 필드 추가
+
+위치: `src/renderer/composer.rs` 의 `ComposedParagraph` struct 또는
+`src/renderer/pagination.rs` 의 `PageItem::FullParagraph` variant.
+
+```rust
+pub struct WrapAnchorRef {
+    /// anchor 문단 인덱스 (그림/표를 가진 문단)
+    pub anchor_para_index: usize,
+    /// anchor 의 wrap zone cs (HWPUNIT)
+    pub anchor_cs: i32,
+    /// anchor 의 wrap zone sw (HWPUNIT)
+    pub anchor_sw: i32,
+}
+
+pub struct ComposedParagraph {
+    // ... 기존 필드 ...
+    /// 본 문단이 wrap text (anchor 그림/표 옆) 인 경우 anchor 참조
+    pub wrap_anchor: Option<WrapAnchorRef>,
+}
+```
+
+직렬화 영향 없음 (typeset 출력은 휘발성 — Document IR 저장 영역 외).
+
+#### B. `src/renderer/typeset.rs:478-513` wrap_around 매칭 시 메타데이터 설정
 
 기존:
 ```rust

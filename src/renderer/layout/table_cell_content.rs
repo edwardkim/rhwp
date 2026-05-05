@@ -607,6 +607,7 @@ impl LayoutEngine {
                     pidx + 1 == para_count,
                     0.0,
                     None, Some(para), None,
+                    None,  // 셀 컨텍스트 — wrap zone 무관
                 );
 
                 // 셀 내 그림/도형 컨트롤 렌더링

@@ -1493,6 +1493,7 @@ impl LayoutEngine {
                         is_last_para,
                         0.0,
                         None, Some(para), Some(bin_data_content),
+                        None,  // 셀 컨텍스트 — wrap zone 무관
                     );
 
                     let has_visible_text = composed.lines.iter()

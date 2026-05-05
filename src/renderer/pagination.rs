@@ -127,6 +127,11 @@ pub struct ColumnContent {
     pub wrap_around_paras: Vec<WrapAroundPara>,
     /// 단을 닫을 시점의 누적 사용 높이 (px). 진단/측정 도구용.
     pub used_height: f64,
+    /// [Task #604 R3] anchor 그림/표 옆 wrap text 문단의 wrap context 메타데이터.
+    /// typeset.rs 의 wrap_around state machine 매칭 결과 (anchor cs/sw 일치) 를
+    /// layout 시점까지 보존. layout 이 본 메타데이터로 wrap zone 판정 + LineSeg cs/sw
+    /// 정합 렌더 (현 wrap_precomputed 메커니즘 대체).
+    pub wrap_anchors: std::collections::HashMap<usize, WrapAnchorRef>,
 }
 
 /// 어울림 배치 표 옆에 배치되는 빈 리턴 문단 정보
@@ -138,6 +143,21 @@ pub struct WrapAroundPara {
     pub table_para_index: usize,
     /// 텍스트가 있는 문단인지 (false면 빈 리턴)
     pub has_text: bool,
+}
+
+/// [Task #604 R3] anchor 그림/표 ↔ wrap text 문단 매칭 메타데이터.
+///
+/// typeset.rs 의 wrap_around state machine 이 본 문단의 LineSeg cs/sw 가 anchor
+/// 의 cs/sw 와 매칭됨을 검출 시 ColumnContent.wrap_anchors 에 등록. layout 단계가
+/// 본 메타데이터로 wrap zone 정합 렌더 (LineSeg cs/sw 그대로 사용 — 현 보완6 효과).
+#[derive(Debug, Clone)]
+pub struct WrapAnchorRef {
+    /// anchor 문단 인덱스 (그림/표 보유)
+    pub anchor_para_index: usize,
+    /// anchor wrap zone column_start (HWPUNIT)
+    pub anchor_cs: i32,
+    /// anchor wrap zone segment_width (HWPUNIT)
+    pub anchor_sw: i32,
 }
 
 /// 페이지에 배치되는 개별 항목
@@ -340,6 +360,13 @@ impl PaginationResult {
                             has_text: w.has_text,
                         }).collect(),
                         used_height: cc.used_height,
+                        wrap_anchors: cc.wrap_anchors.iter().map(|(k, v)| {
+                            ((*k as i64 + offset as i64).max(0) as usize, WrapAnchorRef {
+                                anchor_para_index: (v.anchor_para_index as i64 + offset as i64).max(0) as usize,
+                                anchor_cs: v.anchor_cs,
+                                anchor_sw: v.anchor_sw,
+                            })
+                        }).collect(),
                     }
                 }).collect(),
                 active_header: old_page.active_header.clone(),
