@@ -488,12 +488,14 @@ impl LayoutEngine {
             };
         }
 
-        // 용지 기준 이미지: body clip 바깥에 배치 (배경 이미지 등)
+        tree.root.children.push(body_node);
+
+        // [Task #604 Stage 6] 용지 기준 이미지: body 위 z-layer 로 배치 (한컴 변환 메커니즘
+        // 정합). 본문이 sequential flow 로 그림 영역 y 안에 흐를 때 그림이 위에 그려져
+        // 시각적으로 본문을 가려 한컴 v2018/v2024 변환본과 정합 시각.
         for img_node in paper_images {
             tree.root.children.push(img_node);
         }
-
-        tree.root.children.push(body_node);
 
         // 각주 영역
         self.build_footnote_area(&mut tree, page_content, paragraphs, footnote_shape, styles, layout);
