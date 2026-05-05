@@ -34,6 +34,9 @@ if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
   (window as any).__eventBus = eventBus;
 }
+// rhwpDev 디버깅 툴킷 (모든 모드에서 활성 — 서드파티 연동 디버깅용)
+import { initRhwpDev } from '@/core/rhwp-dev';
+initRhwpDev(wasm);
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
 let toolbar: Toolbar | null = null;
