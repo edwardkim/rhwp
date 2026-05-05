@@ -2910,7 +2910,7 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
     // Supplementary PUA-A — 한컴 자체 영역 (Task #509 한컴 정답지 정합)
     if (0xF02B0..=0xF02FF).contains(&code) {
         return match code {
-            // 원문자 ①~⑨ (mel-001 / kps-ai 사용 영역, 한컴 PDF 시각 검증)
+            // 원문자 ①~⑳ (mel-001 / kps-ai 사용 영역, 한컴 PDF 시각 검증)
             0xF02B1 => '\u{2460}', // ①
             0xF02B2 => '\u{2461}', // ②
             0xF02B3 => '\u{2462}', // ③
@@ -2920,6 +2920,17 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
             0xF02B7 => '\u{2466}', // ⑦
             0xF02B8 => '\u{2467}', // ⑧
             0xF02B9 => '\u{2468}', // ⑨
+            0xF02BA => '\u{2469}', // ⑩
+            0xF02BB => '\u{246A}', // ⑪
+            0xF02BC => '\u{246B}', // ⑫
+            0xF02BD => '\u{246C}', // ⑬
+            0xF02BE => '\u{246D}', // ⑭
+            0xF02BF => '\u{246E}', // ⑮
+            0xF02C0 => '\u{246F}', // ⑯
+            0xF02C1 => '\u{2470}', // ⑰
+            0xF02C2 => '\u{2471}', // ⑱
+            0xF02C3 => '\u{2472}', // ⑲
+            0xF02C4 => '\u{2473}', // ⑳
             // KTX 회귀 origin — 한컴 PDF 시각 = · (Middle dot), ★ 아님
             // (작업지시자 정정 — 이전 ★ U+2605 매핑은 잘못)
             0xF02EF => '\u{00B7}', // · Middle dot
