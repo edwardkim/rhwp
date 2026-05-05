@@ -188,7 +188,7 @@ impl LayoutEngine {
                     .find(|cs| cs.start_pos <= utf16_pos)
                     .map(|cs| cs.char_shape_id as u32)
                     .unwrap_or(char_style_id);
-                let ch = text_chars[ch_idx];
+                let ch = map_pua_bullet_char(text_chars[ch_idx]);
                 let lang = super::super::style_resolver::detect_lang_category(ch);
                 let ts = resolved_to_text_style(styles, cs_id, lang);
                 total += estimate_text_width(&ch.to_string(), &ts);
@@ -2902,7 +2902,7 @@ impl LayoutEngine {
 ///   HWP 글머리표는 Wingdings 폰트 문자를 PUA(0xF000+code)로 저장.
 ///
 /// **Supplementary PUA-A (0xF02B0~0xF02FF)** — 한컴 자체 PUA 영역.
-///   원문자 (①~⑨, U+2460~U+2468) 와 별 (★ U+2605) 등을 본 영역에 저장.
+///   원문자 (①~⑳, U+2460~U+2473) 와 · (U+00B7) 등을 본 영역에 저장.
 ///   Task #509 의 한컴 PDF 정답지 시각 검증으로 매핑 확정.
 pub(crate) fn map_pua_bullet_char(ch: char) -> char {
     let code = ch as u32;
@@ -3034,7 +3034,7 @@ mod pua_mapping_tests {
 
     #[test]
     fn supplementary_pua_a_maps_circled_digits() {
-        // [Task #509] U+F02B1~F02B9 → U+2460~U+2468 (원문자 ①~⑨)
+        // U+F02B1~F02C4 → U+2460~U+2473 (원문자 ①~⑳)
         assert_eq!(map_pua_bullet_char('\u{F02B1}'), '\u{2460}', "①");
         assert_eq!(map_pua_bullet_char('\u{F02B2}'), '\u{2461}', "②");
         assert_eq!(map_pua_bullet_char('\u{F02B3}'), '\u{2462}', "③");
@@ -3044,6 +3044,17 @@ mod pua_mapping_tests {
         assert_eq!(map_pua_bullet_char('\u{F02B7}'), '\u{2466}', "⑦");
         assert_eq!(map_pua_bullet_char('\u{F02B8}'), '\u{2467}', "⑧");
         assert_eq!(map_pua_bullet_char('\u{F02B9}'), '\u{2468}', "⑨");
+        assert_eq!(map_pua_bullet_char('\u{F02BA}'), '\u{2469}', "⑩");
+        assert_eq!(map_pua_bullet_char('\u{F02BB}'), '\u{246A}', "⑪");
+        assert_eq!(map_pua_bullet_char('\u{F02BC}'), '\u{246B}', "⑫");
+        assert_eq!(map_pua_bullet_char('\u{F02BD}'), '\u{246C}', "⑬");
+        assert_eq!(map_pua_bullet_char('\u{F02BE}'), '\u{246D}', "⑭");
+        assert_eq!(map_pua_bullet_char('\u{F02BF}'), '\u{246E}', "⑮");
+        assert_eq!(map_pua_bullet_char('\u{F02C0}'), '\u{246F}', "⑯");
+        assert_eq!(map_pua_bullet_char('\u{F02C1}'), '\u{2470}', "⑰");
+        assert_eq!(map_pua_bullet_char('\u{F02C2}'), '\u{2471}', "⑱");
+        assert_eq!(map_pua_bullet_char('\u{F02C3}'), '\u{2472}', "⑲");
+        assert_eq!(map_pua_bullet_char('\u{F02C4}'), '\u{2473}', "⑳");
     }
 
     #[test]
