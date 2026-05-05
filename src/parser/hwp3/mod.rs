@@ -1396,10 +1396,20 @@ pub(crate) fn parse_paragraph_list(
                 }
 
                 // 이 줄의 pgy로 어울림 구역 판정 (per-line)
+                //
                 // 앵커 문단(pic_wrap_zone.is_some()): 자신이 그림 호스트이므로 pgy 무관하게 적용.
-                // 후속 문단: pgy가 구역 안에 있을 때만 적용.
-                let line_cs_sw = current_zone.and_then(|(cs, sw, pgy_start, pgy_end)| {
-                    if pic_wrap_zone.is_some() || (linfo.pgy >= pgy_start && linfo.pgy < pgy_end) {
+                //
+                // [Task #604 Stage 3] 후속 문단: pgy_end 만 검사 (pgy_start 가드 제거).
+                // 본 정정 이전: `pgy >= pgy_start && pgy < pgy_end` 양방향 검사. 그러나
+                // wrap text 문단의 첫 줄 pgy 가 anchor 의 pgy_start 미만 인 경우 발생
+                // (예: hwp3-sample5.hwp pi=75 첫 3 줄). 결과 cs/sw=0 → 그림 좌측 (x=56.7)
+                // 에 텍스트 그려짐 → 그림과 겹침 (Issue #604).
+                //
+                // 본질: 후속 wrap text 문단은 anchor 그림 우측에 정합 배치되어야 하며,
+                // pgy_start 미만의 줄도 wrap zone 의 일부. pgy_end 만 가드해 그림 아래로
+                // 흘러간 줄 (cs=0 인 정상 줄) 만 wrap zone 외 판정.
+                let line_cs_sw = current_zone.and_then(|(cs, sw, _pgy_start, pgy_end)| {
+                    if pic_wrap_zone.is_some() || linfo.pgy < pgy_end {
                         Some((cs, sw))
                     } else {
                         None
