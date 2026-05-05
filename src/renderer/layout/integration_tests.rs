@@ -1145,4 +1145,78 @@ mod tests {
             box_bottom, answer_y, gap, pdf_expected_gap
         );
     }
+
+    /// Task #574: exam_science.hwp 페이지 1 쪽번호 "1" 이 CharShape.bold=false 인데도
+    /// SVG 에서 font-weight="bold" 강제 적용되는 결함 정정 검증.
+    ///
+    /// 본질: `is_heavy_display_face` (`src/renderer/style_resolver.rs:601`) 의 hardcoded
+    /// list 에 HY견명조 가 잘못 포함됨. HY견명조 는 한컴 일반 두께 명조 폰트이며,
+    /// HY헤드라인M / HY견고딕 같은 진짜 heavy display face 와 다름.
+    ///
+    /// 케이스: 본문 [6] 표 셀 paragraph[0] Shape (사각형, InFrontOfText) TextBox
+    /// 내부 literal text "1". CharShape cs_id=0 (size=3300, bold=false, color=#000000,
+    /// ratio=90%, font_id[0]=8 → HY견명조).
+    ///
+    /// 수정 전: SVG `<text font-size="44" font-weight="bold" fill="#000000">1</text>`.
+    /// 수정 후: `font-weight="bold"` 미적용 — CharShape.bold=false 권위 회복.
+    #[test]
+    fn test_574_page_number_not_force_bold_for_hy_kyun_myeongjo() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 1 SVG 가 비어있음");
+
+        // 페이지 우상단 (x≈924, y≈115) 의 font-size=44 + HY견명조 텍스트 "1" 식별.
+        // 해당 텍스트는 CharShape.bold=false 이므로 font-weight="bold" 가 없어야 한다.
+        let mut found_page_number = false;
+        for chunk in svg.split("<text").skip(1) {
+            let close = match chunk.find('>') { Some(p) => p, None => continue };
+            let header = &chunk[..close];
+            let body_end = chunk.find("</text>").unwrap_or(chunk.len());
+            let body = &chunk[close + 1..body_end];
+
+            // 본 페이지의 쪽번호 "1" 식별 조건:
+            // (1) 텍스트 = "1"
+            // (2) font-size=44 (33pt)
+            // (3) HY견명조 폰트 패밀리 체인
+            // (4) translate(x≈924, y≈115)
+            if body.trim() != "1" { continue; }
+            if !header.contains("font-size=\"44\"") { continue; }
+            if !header.contains("HY견명조") { continue; }
+
+            let trans_pat = "transform=\"translate(";
+            let Some(tp) = header.find(trans_pat) else { continue };
+            let trans_args_start = tp + trans_pat.len();
+            let trans_rest = &header[trans_args_start..];
+            let Some(close_paren) = trans_rest.find(')') else { continue };
+            let trans_args = &trans_rest[..close_paren];
+            let mut parts = trans_args.split(',');
+            let x: f64 = match parts.next().and_then(|s| s.trim().parse().ok()) {
+                Some(v) => v, None => continue,
+            };
+            let y: f64 = match parts.next().and_then(|s| s.trim().parse().ok()) {
+                Some(v) => v, None => continue,
+            };
+
+            // 우상단 영역 가드 (페이지 1 측정값 기준)
+            if !(900.0..=950.0).contains(&x) || !(100.0..=130.0).contains(&y) { continue; }
+
+            found_page_number = true;
+            assert!(
+                !header.contains("font-weight=\"bold\""),
+                "Task #574: 쪽번호 '1' (x={:.1}, y={:.1}, HY견명조, font-size=44) 가 \
+                 font-weight=\"bold\" 강제 적용됨. CharShape cs_id=0 의 bold=false \
+                 가 무시되는 is_heavy_display_face 결함. header=[{}]",
+                x, y, header,
+            );
+            break;
+        }
+
+        assert!(
+            found_page_number,
+            "Task #574: 페이지 1 우상단 쪽번호 '1' (font-size=44, HY견명조, x≈924, y≈115) \
+             SVG 요소를 찾지 못함 — 식별 가드 갱신 필요"
+        );
+    }
 }
