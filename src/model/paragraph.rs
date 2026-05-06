@@ -246,6 +246,24 @@ impl Paragraph {
         // 이 경우 char_offset을 text_len으로 clamp하되, UTF-16 위치는
         // 마지막 문자 + 후행 컨트롤 갭을 포함한 값으로 계산
         let effective_char_offset = char_offset.min(text_len);
+        let control_positions = self.control_text_positions();
+        let inserts_before_inline_control = char_offset <= text_len
+            && self
+                .controls
+                .iter()
+                .zip(control_positions.iter())
+                .any(|(ctrl, &pos)| {
+                    pos == effective_char_offset
+                        && matches!(
+                            ctrl,
+                            Control::Shape(_)
+                                | Control::Table(_)
+                                | Control::Picture(_)
+                                | Control::Equation(_)
+                                | Control::Footnote(_)
+                                | Control::Endnote(_)
+                        )
+                });
 
         // 바이트 삽입 위치 계산
         let byte_offset: usize = text_chars[..effective_char_offset].iter().map(|c| c.len_utf8()).sum();
@@ -258,6 +276,15 @@ impl Paragraph {
             // 후행 컨트롤 수 = char_offset - text_len
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
+        } else if inserts_before_inline_control {
+            if effective_char_offset == 0 {
+                0
+            } else if !self.char_offsets.is_empty() {
+                let prev_idx = effective_char_offset - 1;
+                self.char_offsets[prev_idx] + Self::char_utf16_len(text_chars[prev_idx])
+            } else {
+                0
+            }
         } else if effective_char_offset < self.char_offsets.len() {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
@@ -370,15 +397,11 @@ impl Paragraph {
         } else {
             0
         };
-        let utf16_end: u32 = if del_end < self.char_offsets.len() {
-            self.char_offsets[del_end]
-        } else if !self.char_offsets.is_empty() {
-            let last_idx = self.char_offsets.len() - 1;
-            self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx])
-        } else {
-            0
-        };
-        let utf16_delta = utf16_end - utf16_start;
+        let utf16_delta: u32 = text_chars[char_offset..del_end]
+            .iter()
+            .map(|c| Self::char_utf16_len(*c))
+            .sum();
+        let utf16_end = utf16_start + utf16_delta;
 
         // 1. 텍스트 삭제
         self.text.drain(byte_start..byte_end);
@@ -739,8 +762,9 @@ impl Paragraph {
     /// position 을 분배한다 — 컨트롤 variant 를 보지 않으므로 각주·미주, 그림, 표, 수식,
     /// 자동번호 등 모든 inline 컨트롤이 동일하게 character offset 을 부여받는다.
     ///
-    /// `char_offsets` 가 비어있는 폴백 경로에서는 Shape/Table/Picture/Equation 만 폭 1을
-    /// 가산하고, 그 외 컨트롤은 모두 position 0 에 누적된다 (정밀도 손실 분기).
+    /// `char_offsets` 가 비어있는 폴백 경로에서는 본문 흐름에서 1칸을 차지하는
+    /// Shape/Table/Picture/Equation/Footnote/Endnote 만 폭 1을 가산하고,
+    /// 그 외 컨트롤은 모두 position 0 에 누적된다 (정밀도 손실 분기).
     ///
     /// # Returns
     ///
@@ -767,6 +791,8 @@ impl Paragraph {
                         | Control::Table(_)
                         | Control::Picture(_)
                         | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
                 ) {
                     pos += 1;
                 }

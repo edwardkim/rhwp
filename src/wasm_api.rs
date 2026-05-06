@@ -2525,6 +2525,42 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 본문 커서 위치의 각주 마커를 조회한다.
+    ///
+    /// direction: "backward" 또는 "forward"
+    #[wasm_bindgen(js_name = getFootnoteAtCursor)]
+    pub fn get_footnote_at_cursor(
+        &self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+        direction: &str,
+    ) -> Result<String, JsValue> {
+        self.get_footnote_at_cursor_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+            direction,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 본문 각주 컨트롤을 삭제한다.
+    #[wasm_bindgen(js_name = deleteFootnote)]
+    pub fn delete_footnote(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_footnote_native(
+            section_idx as usize,
+            para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 각주 내 텍스트를 삽입한다.
     #[wasm_bindgen(js_name = insertTextInFootnote)]
     pub fn insert_text_in_footnote(
@@ -2648,6 +2684,18 @@ impl HwpDocument {
             char_offset as usize,
         )
         .map_err(|e| e.into())
+    }
+
+    /// 본문 인라인 각주 마커 히트테스트
+    #[wasm_bindgen(js_name = hitTestBodyFootnoteMarker)]
+    pub fn hit_test_body_footnote_marker(
+        &self,
+        page_num: u32,
+        x: f64,
+        y: f64,
+    ) -> Result<String, JsValue> {
+        self.hit_test_body_footnote_marker_native(page_num, x, y)
+            .map_err(|e| e.into())
     }
 
     /// 수직 커서 이동 (ArrowUp/Down) — 단일 호출로 줄/문단/표/구역 경계를 모두 처리한다.

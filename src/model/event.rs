@@ -32,6 +32,7 @@ pub enum DocumentEvent {
     PictureDeleted { section: usize, para: usize, ctrl: usize },
     PictureMoved { section: usize, para: usize, ctrl: usize },
     PictureResized { section: usize, para: usize, ctrl: usize },
+    FootnoteDeleted { section: usize, para: usize, ctrl: usize },
 
     // ── 클립보드/HTML ──
     ContentPasted { section: usize, para: usize },
@@ -87,6 +88,8 @@ impl DocumentEvent {
                 format!(r#"{{"type":"PictureMoved","section":{},"para":{},"ctrl":{}}}"#, section, para, ctrl),
             DocumentEvent::PictureResized { section, para, ctrl } =>
                 format!(r#"{{"type":"PictureResized","section":{},"para":{},"ctrl":{}}}"#, section, para, ctrl),
+            DocumentEvent::FootnoteDeleted { section, para, ctrl } =>
+                format!(r#"{{"type":"FootnoteDeleted","section":{},"para":{},"ctrl":{}}}"#, section, para, ctrl),
 
             // 클립보드/HTML
             DocumentEvent::ContentPasted { section, para } =>

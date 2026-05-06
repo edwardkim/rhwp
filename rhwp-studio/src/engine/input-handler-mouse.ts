@@ -539,6 +539,34 @@ export function onClick(this: any, e: MouseEvent): void {
     } catch { /* 무시 */ }
   }
 
+  // 본문 각주 마커 클릭 → 각주 편집 모드 진입
+  if (!this.cursor.isInFootnote()) {
+    try {
+      const markerHit = this.wasm.hitTestBodyFootnoteMarker(pageIdx, pageX, pageY);
+      if (
+        markerHit.hit &&
+        markerHit.sectionIndex !== undefined &&
+        markerHit.paragraphIndex !== undefined &&
+        markerHit.controlIndex !== undefined &&
+        markerHit.footnoteIndex !== undefined
+      ) {
+        this.cursor.enterFootnoteMode(
+          markerHit.sectionIndex,
+          markerHit.paragraphIndex,
+          markerHit.controlIndex,
+          markerHit.footnoteIndex,
+          pageIdx,
+        );
+        this.eventBus.emit('footnoteModeChanged', true);
+        this.cursor.setFnCursorPosition(0, 0);
+        this.active = true;
+        this.updateCaret();
+        this.textarea.focus();
+        return;
+      }
+    } catch { /* 무시 */ }
+  }
+
   // 각주 영역 클릭 → 각주 편집 모드 진입
   if (!this.cursor.isInFootnote()) {
     try {

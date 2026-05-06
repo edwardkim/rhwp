@@ -5,7 +5,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::path::PathSegment;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
-use super::super::helpers::{LineInfoResult, utf16_pos_to_char_idx, color_ref_to_css, has_table_control, find_char_at_x, navigable_text_len};
+use super::super::helpers::{LineInfoResult, utf16_pos_to_char_idx, color_ref_to_css, has_table_control, find_char_at_x, find_control_text_positions, navigable_text_len};
 use crate::renderer::render_tree::TextRunNode;
 
 /// PUA 다자리 글자겹침 TextRun의 논리적 char_count (1) 반환, 아니면 실제 글자 수 반환
@@ -32,6 +32,18 @@ impl DocumentCore {
         // 문단이 포함된 페이지 찾기
         let pages = self.find_pages_for_paragraph(section_idx, para_idx)?;
 
+        let footnote_marker_positions: Vec<(usize, usize)> = self.document.sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(para_idx))
+            .map(|para| {
+                let ctrl_positions = find_control_text_positions(para);
+                para.controls.iter().enumerate()
+                    .filter(|(_, ctrl)| matches!(ctrl, Control::Footnote(_) | Control::Endnote(_)))
+                    .filter_map(|(ci, _)| ctrl_positions.get(ci).copied().map(|pos| (ci, pos)))
+                    .collect()
+            })
+            .unwrap_or_default();
+
         // 커서 결과를 담을 구조체
         struct CursorHit {
             page_index: u32,
@@ -49,7 +61,25 @@ impl DocumentCore {
             offset: usize,
             page_index: u32,
             exact_only: bool,
+            footnote_marker_positions: &[(usize, usize)],
         ) -> Option<CursorHit> {
+            if let RenderNodeType::FootnoteMarker(ref marker) = node.node_type {
+                if marker.section_index == sec && marker.para_index == para {
+                    if let Some((_, marker_pos)) = footnote_marker_positions.iter()
+                        .find(|(ci, _)| *ci == marker.control_index)
+                    {
+                        if offset == *marker_pos || offset == *marker_pos + 1 {
+                            return Some(CursorHit {
+                                page_index,
+                                x: if offset == *marker_pos { node.bbox.x } else { node.bbox.x + node.bbox.width },
+                                y: node.bbox.y,
+                                height: node.bbox.height.max(10.0),
+                            });
+                        }
+                    }
+                }
+            }
+
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
                 if let Some(char_start) = text_run.char_start {
@@ -128,7 +158,7 @@ impl DocumentCore {
                 }
             }
             for child in &node.children {
-                if let Some(hit) = find_cursor_in_node(child, sec, para, offset, page_index, exact_only) {
+                if let Some(hit) = find_cursor_in_node(child, sec, para, offset, page_index, exact_only, footnote_marker_positions) {
                     return Some(hit);
                 }
             }
@@ -139,8 +169,8 @@ impl DocumentCore {
         // 1차: 정확한 앵커(zero-width 노드) 우선 검색, 2차: 일반 검색
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
-            let exact_hit = find_cursor_in_node(&tree.root, section_idx, para_idx, char_offset, page_num, true);
-            let hit_result = exact_hit.or_else(|| find_cursor_in_node(&tree.root, section_idx, para_idx, char_offset, page_num, false));
+            let exact_hit = find_cursor_in_node(&tree.root, section_idx, para_idx, char_offset, page_num, true, &footnote_marker_positions);
+            let hit_result = exact_hit.or_else(|| find_cursor_in_node(&tree.root, section_idx, para_idx, char_offset, page_num, false, &footnote_marker_positions));
             if let Some(hit) = hit_result {
                 return Ok(format!(
                     "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
@@ -2384,6 +2414,117 @@ impl DocumentCore {
         Ok(format!(
             "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
             page_num, cursor_x, cursor_y, last.font_size
+        ))
+    }
+
+    fn find_page_body_footnote_index(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) -> Option<usize> {
+        use crate::renderer::pagination::FootnoteSource;
+
+        let (page_section_idx, local_page) = self.find_section_for_page(page_num);
+        if page_section_idx != section_idx {
+            return None;
+        }
+
+        let pr = self.pagination.get(section_idx)?;
+        let page = pr.pages.get(local_page)?;
+        page.footnotes.iter().position(|fn_ref| {
+            matches!(
+                &fn_ref.source,
+                FootnoteSource::Body { para_index, control_index }
+                    if *para_index == para_idx && *control_index == control_idx
+            )
+        })
+    }
+
+    /// 본문 인라인 각주 마커 히트테스트
+    ///
+    /// 각주 영역(zone)이 아니라 본문 TextLine 안의 FootnoteMarker bbox를 대상으로 한다.
+    /// 반환: JSON `{"hit":true,...}` 또는 `{"hit":false}`
+    pub fn hit_test_body_footnote_marker_native(
+        &self,
+        page_num: u32,
+        x: f64,
+        y: f64,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        struct MarkerHit {
+            section_index: usize,
+            paragraph_index: usize,
+            control_index: usize,
+            footnote_number: u16,
+            bbox_x: f64,
+            bbox_y: f64,
+            bbox_w: f64,
+            bbox_h: f64,
+        }
+
+        fn find_marker(node: &RenderNode, x: f64, y: f64) -> Option<MarkerHit> {
+            if let RenderNodeType::FootnoteMarker(ref marker) = node.node_type {
+                if x >= node.bbox.x
+                    && x <= node.bbox.x + node.bbox.width
+                    && y >= node.bbox.y
+                    && y <= node.bbox.y + node.bbox.height
+                {
+                    return Some(MarkerHit {
+                        section_index: marker.section_index,
+                        paragraph_index: marker.para_index,
+                        control_index: marker.control_index,
+                        footnote_number: marker.number,
+                        bbox_x: node.bbox.x,
+                        bbox_y: node.bbox.y,
+                        bbox_w: node.bbox.width,
+                        bbox_h: node.bbox.height,
+                    });
+                }
+            }
+
+            for child in &node.children {
+                if let Some(hit) = find_marker(child, x, y) {
+                    return Some(hit);
+                }
+            }
+
+            None
+        }
+
+        let tree = self.build_page_tree_cached(page_num)?;
+        let hit = match find_marker(&tree.root, x, y) {
+            Some(hit) => hit,
+            None => return Ok("{\"hit\":false}".to_string()),
+        };
+
+        let footnote_index = match self.find_page_body_footnote_index(
+            page_num,
+            hit.section_index,
+            hit.paragraph_index,
+            hit.control_index,
+        ) {
+            Some(idx) => idx,
+            None => return Ok("{\"hit\":false}".to_string()),
+        };
+
+        Ok(format!(
+            "{{\"hit\":true,\"sectionIndex\":{},\"paragraphIndex\":{},\"controlIndex\":{},\"footnoteNumber\":{},\"footnoteIndex\":{},\"bbox\":{{\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+            hit.section_index,
+            hit.paragraph_index,
+            hit.control_index,
+            hit.footnote_number,
+            footnote_index,
+            hit.bbox_x,
+            hit.bbox_y,
+            hit.bbox_w,
+            hit.bbox_h,
+            page_num,
+            hit.bbox_x + hit.bbox_w,
+            hit.bbox_y,
+            hit.bbox_h
         ))
     }
 
