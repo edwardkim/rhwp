@@ -85,10 +85,10 @@ fn hwp3_sample5_hwp3_64p() {
 fn task554_no_regression_2022_kuglip() {
     // 2022년 국립국어원: 단순 -1600 적용 시 -5 회귀였던 케이스
     // 휴리스틱 (PS/CS 비율) 로 변환본이 아니라 정확히 분류 → 보정 미적용
-    // [Task #643] 페이지 분할 드리프트 정정으로 페이지당 컨텐츠 수용량 증가:
-    //   pi=80 (page 6 마지막 문단) 이 다음 페이지로 분리되지 않고 페이지 6 에 fits
-    //   → 후속 페이지 압축 → 40 → 38 페이지 (HWP 원본 정합 회복)
-    assert_eq!(page_count("samples/2022년 국립국어원 업무계획.hwp"), 38);
+    // [Task #643] 페이지 분할 드리프트 정정 + Task #404 vpos_end 트레일링 ls 제외:
+    //   pi=80 (page 6) 트레일링 ls 정정 + pi=39 (page 3) heading-orphan 가드 정정
+    //   → 후속 페이지 압축 → 40 → 35 페이지 (HWP 원본 정합 회복)
+    assert_eq!(page_count("samples/2022년 국립국어원 업무계획.hwp"), 35);
 }
 
 #[test]

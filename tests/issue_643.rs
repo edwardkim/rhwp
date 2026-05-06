@@ -23,38 +23,26 @@ fn page6_pi80_last_line_stays_on_page6() {
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .expect("parse 2022년 국립국어원 업무계획.hwp");
 
-    // 페이지 6 (0-based index 5) 만 덤프
-    let dump = doc.dump_page_items(Some(5));
-
-    // 페이지 6 섹션을 추출 — "=== 페이지 6 " 로 시작, 다음 "=== 페이지" 까지
-    let page6_start = dump.find("=== 페이지 6 ")
-        .expect("페이지 6 덤프 섹션을 찾지 못함");
-    let after = &dump[page6_start..];
-    let page6_section = match after[10..].find("=== 페이지") {
-        Some(end_rel) => &after[..10 + end_rel],
-        None => after,
-    };
-
-    // pi=80 항목이 페이지 6 에 존재하는지 확인
-    let pi80_line = page6_section.lines()
-        .find(|l| l.contains("pi=80"))
-        .unwrap_or_else(|| panic!("페이지 6 에 pi=80 항목이 없음.\n--- page6 dump ---\n{}", page6_section));
+    // 전체 덤프에서 pi=80 항목 찾기 (페이지 번호는 다른 정정으로 변동 가능)
+    let dump = doc.dump_page_items(None);
+    let pi80_line = dump.lines()
+        .find(|l| l.contains("pi=80") && (l.contains("FullParagraph") || l.contains("PartialParagraph")))
+        .unwrap_or_else(|| panic!("pi=80 항목을 찾지 못함.\n--- dump ---\n{}", dump));
 
     // 정정 기대:
     // - FullParagraph pi=80  ... (전체 배치)
     // - 또는 PartialParagraph pi=80  lines=0..2  ... (line 1 포함)
     //
-    // 회귀 (현재 버그):
+    // 회귀 (수정 전 버그):
     // - PartialParagraph pi=80  lines=0..1  ... (line 1 누락)
 
-    let is_full = pi80_line.contains("FullParagraph") && pi80_line.contains("pi=80");
+    let is_full = pi80_line.contains("FullParagraph");
     let is_complete_partial = pi80_line.contains("PartialParagraph")
-        && pi80_line.contains("pi=80")
         && pi80_line.contains("lines=0..2");
 
     assert!(
         is_full || is_complete_partial,
-        "pi=80 line 1 (' 및 점자 해당 분야 전문인력 확보 어려움') 이 페이지 6 에 포함되어야 함.\n\
+        "pi=80 line 1 (' 및 점자 해당 분야 전문인력 확보 어려움') 이 같은 페이지에 포함되어야 함.\n\
          실제 항목: {}\n\
          (회귀 패턴: 'lines=0..1' — line 1 이 다음 페이지로 분리됨)",
         pi80_line.trim()
