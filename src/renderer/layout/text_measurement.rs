@@ -854,11 +854,13 @@ fn measure_char_width_embedded(font_family: &str, bold: bool, italic: bool, c: c
         mm.metric.em_size / 2
     } else {
         let glyph_w = mm.metric.get_width(c)?;
-        // 한컴은 스마트 따옴표, 가운뎃점 등을 반각으로 처리
-        // 폰트 메트릭에서 전각(em_size)으로 기록되어 있어도 em/2로 강제
+        // 한컴은 스마트 따옴표 등을 반각으로 처리.
+        // 폰트 메트릭에서 전각(em_size)으로 기록되어 있어도 em/2로 강제.
+        // [Issue #630] U+00B7 (가운뎃점) 은 본 분기에서 제외 — 한컴 저장본의
+        // tab_extended 가 전각 측정 기반으로 산출되므로 반각 강제 시 right-tab
+        // 정렬이 8.67px 좌측 이탈. 폰트 메트릭 그대로 사용 (전각).
         let is_halfwidth_punct = matches!(c,
-            '\u{2018}'..='\u{2027}' | // ''‚‛""„‟†‡•‣․‥…‧ 구두점/기호
-            '\u{00B7}'                 // · MIDDLE DOT
+            '\u{2018}'..='\u{2027}' // ''‚‛""„‟†‡•‣․‥…‧ 구두점/기호
         );
         if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
             mm.metric.em_size / 2
