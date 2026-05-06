@@ -766,7 +766,7 @@ impl TypesetEngine {
 
         // 페이지 번호 + 머리말/꼬리말 할당
         Self::finalize_pages(
-            &mut st.pages, &hf_entries, &page_number_pos,
+            &mut st.pages, paragraphs, &hf_entries, &page_number_pos,
             &new_page_numbers, &page_hides, section_index,
         );
 
@@ -2130,6 +2130,7 @@ impl TypesetEngine {
     /// 페이지 번호 + 머리말/꼬리말 최종 할당 (기존 Paginator::finalize_pages와 동일)
     fn finalize_pages(
         pages: &mut [PageContent],
+        paragraphs: &[Paragraph],
         hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
         page_number_pos: &Option<crate::model::control::PageNumberPos>,
         new_page_numbers: &[(usize, u16)],
@@ -2198,7 +2199,35 @@ impl TypesetEngine {
                     break;
                 }
             }
+
+            // [Issue #639] cover-style 페이지 자동 쪽번호 미표시
+            // 룰: items=1 + 단일 단 + 완전한 Table (PartialTable 아님) + tac=false
+            // → page.page_hide.hide_page_num=true 자동 설정.
+            // Task #637 분석 결과 174 샘플 중 aift.hwp 페이지 2, 3 만 매칭.
+            if page.page_hide.is_none() && Self::is_cover_style_page(page, paragraphs) {
+                page.page_hide = Some(crate::model::control::PageHide {
+                    hide_page_num: true,
+                    ..Default::default()
+                });
+            }
         }
+    }
+
+    /// [Issue #639] cover-style 페이지 판정.
+    ///
+    /// 룰: 단일 단(column=1) + 단일 항목(item=1) + 완전한 Table (PartialTable 아님) +
+    /// `treat_as_char=false` 일 때 한컴은 쪽번호 표시 안 함.
+    fn is_cover_style_page(page: &PageContent, paragraphs: &[Paragraph]) -> bool {
+        if page.column_contents.len() != 1 { return false; }
+        let items = &page.column_contents[0].items;
+        if items.len() != 1 { return false; }
+        let (para_idx, ctrl_idx) = match &items[0] {
+            PageItem::Table { para_index, control_index } => (*para_index, *control_index),
+            _ => return false,
+        };
+        let Some(para) = paragraphs.get(para_idx) else { return false; };
+        let Some(Control::Table(t)) = para.controls.get(ctrl_idx) else { return false; };
+        !t.common.treat_as_char
     }
 
     // ========================================================
