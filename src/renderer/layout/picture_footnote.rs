@@ -14,7 +14,7 @@ use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, StrokeDash, LineStyle, TextStyle, AutoNumberCounter, format_number, NumberFormat as NumFmt};
 use super::LayoutEngine;
 use super::border_rendering::border_width_to_px;
-use super::utils::find_bin_data;
+use super::utils::{extract_shape_transform, find_bin_data};
 use super::text_measurement::{resolved_to_text_style, estimate_text_width};
 
 impl LayoutEngine {
@@ -114,6 +114,7 @@ impl LayoutEngine {
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
                 text_wrap: Some(picture.common.text_wrap),
+                transform: extract_shape_transform(&picture.shape_attr),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(pic_x, pic_y, pic_width, pic_height),
@@ -324,6 +325,7 @@ impl LayoutEngine {
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
                 text_wrap: Some(picture.common.text_wrap),
+                transform: extract_shape_transform(&picture.shape_attr),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
