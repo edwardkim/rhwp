@@ -2289,7 +2289,7 @@ impl LayoutEngine {
                 let tbl_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
                 // インラインTAC表: paragraph_layoutで計算された位置を使用
                 let inline_pos = if is_tac {
-                    tree.get_inline_shape_position(page_content.section_index, para_index, control_index)
+                    tree.get_inline_shape_position(page_content.section_index, para_index, control_index, None)
                 } else {
                     None
                 };
@@ -2536,7 +2536,7 @@ impl LayoutEngine {
                                 .unwrap_or(Alignment::Left);
                             // paragraph_layout에서 계산된 인라인 좌표 사용
                             let inline_pos = tree.get_inline_shape_position(
-                                page_content.section_index, para_index, ci);
+                                page_content.section_index, para_index, ci, None);
                             let (inline_x, inline_y) = if let Some((ix, iy)) = inline_pos {
                                 (Some(ix), iy)
                             } else {
@@ -2823,7 +2823,7 @@ impl LayoutEngine {
                         // 여기서 또 push 하면 이중 emit 이 된다. 등록된 경우 push 를 스킵하고
                         // result_y 만 갱신한다.
                         let already_registered = tree.get_inline_shape_position(
-                            page_content.section_index, para_index, control_index,
+                            page_content.section_index, para_index, control_index, None,
                         ).is_some();
                         if !has_real_text && !already_registered {
                             let bin_data_id = pic.image_attr.bin_data_id;
@@ -2875,7 +2875,7 @@ impl LayoutEngine {
                             }
                             // 후속 InFrontOfText 객체의 para_y 기준이 되도록 위치 등록
                             tree.set_inline_shape_position(
-                                page_content.section_index, para_index, control_index, pic_x, pic_y,
+                                page_content.section_index, para_index, control_index, None, pic_x, pic_y,
                             );
                             // [Task #462] LINE_SEG 의 lh+ls 를 advance 로 사용 — 이미지 박스
                             // 높이만 사용하면 leading + line_spacing 이 누락되어 다음 문단이

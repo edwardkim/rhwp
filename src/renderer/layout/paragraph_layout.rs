@@ -1846,7 +1846,7 @@ impl LayoutEngine {
                                 let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
                                 let shape_y = (y + baseline - shape_h).max(y);
                                 // 인라인 좌표 등록 → shape_layout.rs에서 이 Shape를 스킵
-                                tree.set_inline_shape_position(section_index, para_index, tac_ci, x, shape_y);
+                                tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), x, shape_y);
                             }
                         }
                         // 인라인 수식: 직접 EquationNode로 렌더링
@@ -1903,7 +1903,7 @@ impl LayoutEngine {
                                 );
                                 line_node.children.push(eq_node);
                                 // 인라인 좌표 등록 → shape_layout에서 이 수식을 스킵
-                                tree.set_inline_shape_position(section_index, para_index, tac_ci, x, eq_y);
+                                tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), x, eq_y);
                             }
                         }
                         // 인라인 TAC 표: 텍스트 흐름 위치에 직접 렌더링
@@ -1923,7 +1923,7 @@ impl LayoutEngine {
                                         Some(x), None, None,
                                     );
                                     // 스킵 마커 등록 (별도 Table PageItem에서 중복 렌더 방지)
-                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, x, table_y);
+                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), x, table_y);
                                 }
                             }
                         }
@@ -2180,7 +2180,7 @@ impl LayoutEngine {
                                     let common = shape.common();
                                     let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
                                     let shape_y = (y + baseline - shape_h).max(y);
-                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, img_x, shape_y);
+                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), img_x, shape_y);
                                     img_x += tac_w;
                                     continue;
                                 }
@@ -2223,7 +2223,7 @@ impl LayoutEngine {
                                     // TAC Picture 직접 emit) 와 이중 렌더링되지 않도록 인라인 위치를
                                     // 등록한다. layout_shape_item 은 등록된 경우 push 를 스킵한다.
                                     tree.set_inline_shape_position(
-                                        section_index, para_index, tac_ci, img_x, img_y,
+                                        section_index, para_index, tac_ci, cell_ctx.as_ref(), img_x, img_y,
                                     );
                                     img_x += tac_w;
                                 }
@@ -2339,7 +2339,7 @@ impl LayoutEngine {
                                 BoundingBox::new(inline_x, eq_y, tac_w, eq_h),
                             );
                             line_node.children.push(eq_node);
-                            tree.set_inline_shape_position(section_index, para_index, tac_ci, inline_x, eq_y);
+                            tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), inline_x, eq_y);
                             inline_x += tac_w;
                         }
                     }

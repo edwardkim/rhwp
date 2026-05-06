@@ -765,7 +765,7 @@ impl LayoutEngine {
                                 // set_inline_shape_position 호출. 중복 emit 방지
                                 // (Issue #301 의 분할 표 경로 보강 — Task #318).
                                 let already_rendered_inline = tree
-                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx)
+                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context_opt.as_ref())
                                     .is_some();
                                 if already_rendered_inline {
                                     inline_x += eq_w;

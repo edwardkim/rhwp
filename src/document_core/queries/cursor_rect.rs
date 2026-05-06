@@ -177,7 +177,7 @@ impl DocumentCore {
                         // inline_shape_positions에서 Shape 좌표 조회
                         let first_page = pages[0];
                         let tree = self.build_page_tree(first_page)?;
-                        if let Some((sx, sy)) = tree.get_inline_shape_position(section_idx, para_idx, ci) {
+                        if let Some((sx, sy)) = tree.get_inline_shape_position(section_idx, para_idx, ci, None) {
                             let shape_h = if let Some(Control::Shape(s)) = para.controls.get(ci) {
                                 crate::renderer::hwpunit_to_px(s.common().height as i32, crate::renderer::DEFAULT_DPI)
                             } else if let Some(Control::Picture(p)) = para.controls.get(ci) {
@@ -530,7 +530,9 @@ impl DocumentCore {
         // inline_shape_positions에 등록된 Shape의 bbox를 검사하여
         // 클릭 시 해당 Shape의 텍스트 위치(char_offset)를 반환
         for (key, &(sx, sy)) in tree.inline_shape_positions() {
-            let (si, pi, ci) = *key;
+            let (si, pi, ci, ref cell_path) = *key;
+            // 셀 내부 inline shape 은 cursor hit-test 에서 별도 처리 — 섹션 단위만 검사
+            if !cell_path.is_empty() { continue; }
             if let Some(section) = self.document.sections.get(si) {
                 if let Some(para) = section.paragraphs.get(pi) {
                     if let Some(ctrl) = para.controls.get(ci) {

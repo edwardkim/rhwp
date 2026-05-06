@@ -1828,7 +1828,7 @@ impl LayoutEngine {
                             // 빈 runs 셀 + TAC 수식: paragraph_layout(Task #287 경로)이 이미
                             // 렌더 후 set_inline_shape_position 호출. 중복 emit 방지(Issue #301).
                             let already_rendered_inline = tree
-                                .get_inline_shape_position(section_index, cp_idx, ctrl_idx)
+                                .get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context.as_ref())
                                 .is_some();
                             if has_text_in_para || already_rendered_inline {
                                 // paragraph_layout 경로에서 이미 렌더됨
@@ -1894,7 +1894,7 @@ impl LayoutEngine {
                                 // 인라인 TAC 표를 이미 렌더하고 set_inline_shape_position
                                 // 등록했다면 중복 emit 방지 (Equation 의 L1800 가드와 동일 패턴).
                                 let already_rendered_inline = tree
-                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx)
+                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context.as_ref())
                                     .is_some();
                                 let tac_w = hwpunit_to_px(nested_table.common.width as i32, self.dpi);
                                 if already_rendered_inline {
