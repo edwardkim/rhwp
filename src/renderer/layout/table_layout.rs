@@ -1603,7 +1603,12 @@ impl LayoutEngine {
                                             _ => inner_area.x + line_margin,
                                         };
                                         if let Some(seg) = para.line_segs.get(target_line) {
-                                            tac_img_y = para_y_before_compose + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                            // [Task #520 / #624 복원] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
+                                            // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
+                                            // 상대 오프셋(seg.vpos - ls[0].vpos)만 더해야 이중 합산을 피한다.
+                                            let first_vpos = para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
+                                            tac_img_y = para_y_before_compose
+                                                + hwpunit_to_px(seg.vertical_pos - first_vpos, self.dpi);
                                         }
                                     }
 
@@ -1806,13 +1811,16 @@ impl LayoutEngine {
                                     }
                                     prev_tac_text_pos = tac_pos;
                                 }
+                                // [Task #520 / #624 복원] target_line 기반 tac_img_y 사용 (Picture 분기와 동일).
+                                // para_y_before_compose 사용 시 multi-line paragraph 의 ls[1]+ inline TAC Shape 가
+                                // 항상 line 0 좌표에 떨어져 본문 텍스트와 겹친다 (exam_science p2 7번 글상자 ㉠).
                                 let shape_area = LayoutRect {
                                     x: inline_x,
-                                    y: para_y_before_compose,
+                                    y: tac_img_y,
                                     width: shape_w,
                                     height: inner_area.height,
                                 };
-                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, para_y_before_compose, Alignment::Left, styles, bin_data_content);
+                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, tac_img_y, Alignment::Left, styles, bin_data_content);
                                 inline_x += shape_w;
                             } else {
                                 self.layout_cell_shape(tree, &mut cell_node, shape, &inner_area, para_y, para_alignment, styles, bin_data_content);
