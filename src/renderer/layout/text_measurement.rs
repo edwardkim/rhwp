@@ -775,9 +775,22 @@ impl TextMeasurer for WasmTextMeasurer {
                     let ext = &style.inline_tabs[tab_char_idx];
                     let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
                     let tab_type = inline_tab_type(ext);
+                    let fill_low = (ext[2] & 0xFF) as u8;
                     let tab_target = x + tab_width_px;
+                    // [Issue #630 Stage 6] RIGHT + leader (fill ≠ 0): ')' 끝이 본문
+                    // 우측 끝까지 정렬. EmbeddedTextMeasurer 와 동일 로직.
+                    let body_right = if style.available_width > 0.0 {
+                        style.available_width - style.line_x_offset
+                    } else {
+                        f64::INFINITY
+                    };
                     match tab_type {
-                        2 => { // RIGHT
+                        2 if fill_low != 0 => { // RIGHT + leader: body_right 정렬
+                            let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
+                            let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
+                            x = (body_right - seg_w).max(x);
+                        }
+                        2 => { // RIGHT (no leader)
                             let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
                             let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
                             x = (tab_target - seg_w).max(x);
