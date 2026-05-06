@@ -265,15 +265,24 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                     tab_char_idx += 1;
                 } else if has_custom_tabs {
                     let abs_x = style.line_x_offset + total;
-                    let (tab_pos, tab_type, _) = find_next_tab_stop(
+                    let (tab_pos, tab_type, fill_type) = find_next_tab_stop(
                         abs_x, &style.tab_stops, tab_w,
                         style.auto_tab_right, style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
+                    // [Issue #630 Stage 6] leader (fill_type ≠ 0) 가 있는 RIGHT 탭은
+                    // "이 줄 우측 끝까지" 의미 (paragraph_layout.rs:1402 cross-run handler
+                    // 정합). in-run RIGHT 탭에도 동일 룰 적용 — 단일 룰.
+                    let effective_rel_tab = if tab_type == 1 && fill_type != 0
+                        && style.available_width > 0.0 {
+                        style.available_width - style.line_x_offset
+                    } else {
+                        rel_tab
+                    };
                     match tab_type {
                         1 => { // 오른쪽
                             let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                            total = (rel_tab - seg_w).max(total);
+                            total = (effective_rel_tab - seg_w).max(total);
                         }
                         2 => { // 가운데
                             let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
@@ -364,35 +373,65 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 if tab_char_idx < style.inline_tabs.len() {
                     let ext = &style.inline_tabs[tab_char_idx];
                     let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
-                    let tab_type = ext[2];
+                    let tab_type_raw = ext[2];
                     let tab_target = x + tab_width_px;
-                    match tab_type {
-                        1 => { // 오른쪽
+                    // [Issue #630 Stage 6] HWP5 inline tab `ext[2]` 인코딩 = `(enum+1)<<8 | fill`
+                    // 이므로 high-byte 추출이 정확. 단, RIGHT(high-byte=2) + leader(fill≠0)
+                    // 의 경우 한컴 ext[0] 가 이미 "(우측 끝 - 한컴_seg_w)" 까지의 거리로
+                    // 저장 (Stage 4 검증). tab_target = x + ext[0] 가 한컴_seg_w 와 our seg_w
+                    // 미세 차이로 본문 우측 끝까지 정확히 도달 못 함 → body_right 까지
+                    // 클램프하여 정합 회복 (단일 룰: `seg_w 차감하지 않고 본문 우측 끝까지`).
+                    let body_right = if style.available_width > 0.0 {
+                        style.available_width - style.line_x_offset
+                    } else {
+                        f64::INFINITY
+                    };
+                    let high_byte = (tab_type_raw >> 8) & 0xFF;
+                    let fill_low = tab_type_raw & 0xFF;
+                    match (high_byte, tab_type_raw) {
+                        (_, 1) => { // 기존 raw 1 (LEFT 또는 잘못된 RIGHT 1) — 호환 유지
                             let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
                             let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
                             x = (tab_target - seg_w).max(x);
                         }
-                        2 => { // 가운데
+                        (_, 2) => { // 기존 raw 2 — 호환 유지
                             let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (tab_target - seg_w / 2.0).max(x);
                         }
-                        _ => { // 왼쪽(0)
+                        (2, _) if fill_low != 0 => {
+                            // RIGHT + leader: ')' 끝이 본문 우측 끝까지 정렬되도록
+                            // x = body_right - our_seg_w. 한컴 ext[0] 는 무시
+                            // (한컴_seg_w 와 our_seg_w 미세 차이로 본문 우측 끝 미달).
+                            let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
+                            let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
+                            x = (body_right - seg_w).max(x);
+                        }
+                        _ => {
                             x = tab_target.max(x);
                         }
                     }
                     tab_char_idx += 1;
                 } else if has_custom_tabs {
                     let abs_x = style.line_x_offset + x;
-                    let (tab_pos, tab_type, _) = find_next_tab_stop(
+                    let (tab_pos, tab_type, fill_type) = find_next_tab_stop(
                         abs_x, &style.tab_stops, tab_w,
                         style.auto_tab_right, style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
+                    // [Issue #630 Stage 6] leader (fill_type ≠ 0) 가 있는 RIGHT 탭은
+                    // "이 줄 우측 끝까지" 의미 (paragraph_layout.rs:1402 cross-run handler
+                    // 정합). in-run RIGHT 탭에도 동일 룰 적용 — 단일 룰.
+                    let effective_rel_tab = if tab_type == 1 && fill_type != 0
+                        && style.available_width > 0.0 {
+                        style.available_width - style.line_x_offset
+                    } else {
+                        rel_tab
+                    };
                     match tab_type {
                         1 => { // 오른쪽
                             let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
                             let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
-                            x = (rel_tab - seg_w).max(x);
+                            x = (effective_rel_tab - seg_w).max(x);
                         }
                         2 => { // 가운데
                             let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
@@ -754,16 +793,24 @@ impl TextMeasurer for WasmTextMeasurer {
                     tab_char_idx += 1;
                 } else if has_custom_tabs {
                     let abs_x = style.line_x_offset + x;
-                    let (tab_pos, tab_type, _) = find_next_tab_stop(
+                    let (tab_pos, tab_type, fill_type) = find_next_tab_stop(
                         abs_x, &style.tab_stops, tab_w,
                         style.auto_tab_right, style.available_width,
                     );
                     let rel_tab = tab_pos - style.line_x_offset;
+                    // [Issue #630 Stage 6] leader (fill_type ≠ 0) 가 있는 RIGHT 탭은
+                    // "이 줄 우측 끝까지" 의미. 단일 룰.
+                    let effective_rel_tab = if tab_type == 1 && fill_type != 0
+                        && style.available_width > 0.0 {
+                        style.available_width - style.line_x_offset
+                    } else {
+                        rel_tab
+                    };
                     match tab_type {
                         1 => {
                             let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
                             let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
-                            x = (rel_tab - seg_w).max(x);
+                            x = (effective_rel_tab - seg_w).max(x);
                         }
                         2 => {
                             let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
