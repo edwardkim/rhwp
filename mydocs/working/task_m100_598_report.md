@@ -33,6 +33,8 @@
 - `DocumentEvent::FootnoteDeleted` 를 추가했다.
 - rhwp-studio Backspace/Delete 처리에서 일반 텍스트 삭제 전에 각주 마커 삭제를 우선 처리하도록 연결했다.
 - 삭제 작업은 `SnapshotCommand` 로 실행해 Undo/Redo 경로를 사용한다.
+- Delete/Fn+Delete 및 Backspace 양쪽에서 동일한 `showConfirm()` 확인창을 표시하도록 보강했다.
+- 확인창 취소 시 삭제하지 않고, 확인 후에는 textarea 포커스를 복원해 Ctrl+Z Undo 가 바로 동작하도록 보정했다.
 
 ## 검증 결과
 
@@ -45,6 +47,7 @@ cargo build
 cd rhwp-studio && npm run build
 docker-compose --env-file .env.docker run --rm wasm
 cd rhwp-studio && npm run build
+CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" node e2e/footnote-delete-confirm.test.mjs --mode=headless
 git diff --check
 ```
 
@@ -56,6 +59,7 @@ git diff --check
 - `npm run build`: 통과
 - `docker-compose --env-file .env.docker run --rm wasm`: 통과
 - 새 WASM 반영 후 `npm run build`: 통과
+- `footnote-delete-confirm.test.mjs`: 통과
 - `git diff --check`: 통과
 
 추가 확인:
@@ -78,6 +82,9 @@ git diff --check
 - 본문 각주 마커 뒤 커서 위치에서 Backspace 로 각주 삭제
 - 본문 각주 마커 앞 커서 위치에서 `Fn+Delete` 로 각주 삭제
 - `Fn+Delete` 삭제 후 첫 번째 각주 본문 제거 및 기존 두 번째 각주가 `1)` 로 재번호화됨
+- Delete/Backspace 양쪽에서 동일한 "각주를 삭제하시겠습니까?" 확인창 표시
+- 확인창 취소 시 각주가 삭제되지 않음
+- 삭제 후 Ctrl+Z 로 각주 마커/본문/번호가 복원됨
 
 ## 산출물
 
@@ -98,6 +105,7 @@ git diff --check
   - `rhwp-studio/src/engine/input-handler-text.ts`
 - 테스트:
   - `tests/issue_598_footnote_marker_nav.rs`
+  - `rhwp-studio/e2e/footnote-delete-confirm.test.mjs`
 - 문서:
   - `mydocs/plans/task_m100_598.md`
   - `mydocs/plans/task_m100_598_impl.md`
@@ -109,8 +117,8 @@ git diff --check
   - `mydocs/working/task_m100_598_stage3_4.md`
   - `mydocs/working/task_m100_598_stage4_1.md`
   - `mydocs/working/task_m100_598_stage4_2.md`
+  - `mydocs/working/task_m100_598_stage4_3.md`
 
 ## 남은 확인 항목
 
-- PR 전 최종 diff 리뷰
-- 작업 단위 커밋 작성
+- PR #642 추가 커밋 push 및 CI 확인

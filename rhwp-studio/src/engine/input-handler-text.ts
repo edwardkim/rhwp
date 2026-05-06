@@ -3,6 +3,10 @@
 
 import { InsertTextCommand, DeleteTextCommand, MergeParagraphCommand, MergeNextParagraphCommand, MergeParagraphInCellCommand, MergeNextParagraphInCellCommand } from './command';
 import type { DocumentPosition } from '@/core/types';
+import { showConfirm } from '@/ui/confirm-dialog';
+
+const FOOTNOTE_DELETE_TITLE = '각주 삭제';
+const FOOTNOTE_DELETE_MESSAGE = '각주를 삭제하시겠습니까?';
 
 /** IME 조합 종료 후 대기 중인 탐색 키를 처리한다 */
 function processPendingNav(this: any, nav: { code: string; shiftKey: boolean; ctrlKey: boolean; metaKey: boolean }): void {
@@ -64,18 +68,29 @@ function tryDeleteBodyFootnoteAtCursor(
     const paragraphIndex = hit.paragraphIndex ?? pos.paragraphIndex;
     const controlIndex = hit.controlIndex;
 
-    this.executeOperation({
-      kind: 'snapshot',
-      operationType: 'deleteFootnote',
-      operation: (wasm: any) => {
-        const result = wasm.deleteFootnote(sectionIndex, paragraphIndex, controlIndex);
-        return {
-          sectionIndex: result.sectionIndex,
-          paragraphIndex: result.paragraphIndex,
-          charOffset: result.charOffset,
-        };
-      },
-    });
+    void showConfirm(FOOTNOTE_DELETE_TITLE, FOOTNOTE_DELETE_MESSAGE)
+      .then((ok) => {
+        if (!ok) {
+          this.textarea?.focus();
+          return;
+        }
+        this.executeOperation({
+          kind: 'snapshot',
+          operationType: 'deleteFootnote',
+          operation: (wasm: any) => {
+            const result = wasm.deleteFootnote(sectionIndex, paragraphIndex, controlIndex);
+            return {
+              sectionIndex: result.sectionIndex,
+              paragraphIndex: result.paragraphIndex,
+              charOffset: result.charOffset,
+            };
+          },
+        });
+        this.textarea?.focus();
+      })
+      .catch(() => {
+        this.textarea?.focus();
+      });
     return true;
   } catch {
     return false;
