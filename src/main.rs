@@ -9,6 +9,7 @@ fn main() {
         Some("--help") | Some("-h") => print_help(),
         Some("--version") | Some("-V") => println!("rhwp v{}", rhwp::version()),
         Some("export-svg") => export_svg(&args[2..]),
+        Some("export-png") => export_png(&args[2..]),
         Some("export-pdf") => export_pdf(&args[2..]),
         Some("export-text") => export_text(&args[2..]),
         Some("export-markdown") => export_markdown(&args[2..]),
@@ -53,6 +54,20 @@ fn print_help() {
     println!("      --embed-fonts           폰트 서브셋 임베딩 (사용 글자만 base64)");
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    println!();
+    println!("  export-png <파일.hwp> [옵션]   (native-skia feature 필요)");
+    println!("      HWP 파일을 PNG로 내보내기 (Skia raster backend, AI 파이프라인 + VLM 연동)");
+    println!();
+    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
+    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    println!("                              한컴 전용 폰트 (HY견명조 등) 가 시스템에 없을 때 ttfs 디렉토리 지정");
+    println!("      --scale <배율>          렌더링 배율 (기본: 1.0)");
+    println!("      --max-dimension <픽셀>  한 변 최대 픽셀 (longest edge). VLM 입력 한도용.");
+    println!("                              명시 --scale 이 없으면 자동 scale 계산 (페이지 → 한도 안)");
+    println!("      --vlm-target <프리셋>   VLM 입력 프리셋 (현재: claude)");
+    println!("                              claude: 1568 px / 1.15 MP (Claude Vision 정합)");
+    println!("                              다른 VLM (gpt4v/gemini/qwen-vl/llava) 은 이슈 #613 후속");
     println!();
     println!("  export-text <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 TXT로 내보내기");
@@ -360,6 +375,218 @@ fn extract_attr_f64(svg: &str, attr: &str) -> Option<f64> {
         }
     }
     None
+}
+
+#[cfg(not(feature = "native-skia"))]
+fn export_png(_args: &[String]) {
+    eprintln!("오류: export-png 명령은 native-skia feature 가 활성화되어야 합니다.");
+    eprintln!("       cargo build --release --features native-skia");
+}
+
+#[cfg(feature = "native-skia")]
+fn export_png(args: &[String]) {
+    use rhwp::document_core::queries::rendering::{PngExportOptions, VlmTarget};
+
+    if args.is_empty() {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-png <파일.hwp> [옵션] (rhwp --help 참조)");
+        return;
+    }
+
+    let file_path = &args[0];
+    let mut output_dir = "output".to_string();
+    let mut target_page: Option<u32> = None;
+    let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
+    let mut scale: Option<f64> = None;
+    let mut max_dimension: Option<i32> = None;
+    let mut vlm_target: Option<VlmTarget> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--output" | "-o" => {
+                if i + 1 < args.len() {
+                    output_dir = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                    return;
+                }
+            }
+            "--page" | "-p" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return;
+                }
+            }
+            "--font-path" => {
+                if i + 1 < args.len() {
+                    font_paths.push(std::path::PathBuf::from(&args[i + 1]));
+                    i += 2;
+                } else {
+                    eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
+                    return;
+                }
+            }
+            "--scale" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<f64>() {
+                        Ok(s) if s.is_finite() && s > 0.0 => scale = Some(s),
+                        _ => {
+                            eprintln!("오류: --scale 값이 올바르지 않습니다 (양수 실수 필요).");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --scale 뒤에 배율 값이 필요합니다.");
+                    return;
+                }
+            }
+            "--max-dimension" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<i32>() {
+                        Ok(n) if n > 0 => max_dimension = Some(n),
+                        _ => {
+                            eprintln!("오류: --max-dimension 값이 올바르지 않습니다 (양수 정수 필요).");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --max-dimension 뒤에 픽셀 값이 필요합니다.");
+                    return;
+                }
+            }
+            "--vlm-target" => {
+                if i + 1 < args.len() {
+                    match VlmTarget::from_str(&args[i + 1]) {
+                        Some(t) => vlm_target = Some(t),
+                        None => {
+                            eprintln!("오류: --vlm-target 값이 올바르지 않습니다 (지원: claude).");
+                            eprintln!("       다른 VLM 프리셋 (gpt4v / gemini / qwen-vl / llava) 은 이슈 #613 후속 task.");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --vlm-target 뒤에 프리셋 이름이 필요합니다.");
+                    return;
+                }
+            }
+            _ => {
+                eprintln!("알 수 없는 옵션: {}", args[i]);
+                i += 1;
+            }
+        }
+    }
+
+    let png_options = PngExportOptions {
+        scale,
+        max_dimension,
+        vlm_target,
+        font_paths: font_paths.clone(),
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return;
+        }
+    };
+
+    let core = match rhwp::document_core::DocumentCore::from_bytes(&data) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {:?}", e);
+            return;
+        }
+    };
+
+    let page_count = core.page_count();
+    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+
+    let output_path = Path::new(&output_dir);
+    if !output_path.exists() {
+        if let Err(e) = fs::create_dir_all(output_path) {
+            eprintln!("오류: 출력 폴더를 생성할 수 없습니다 - {}: {}", output_dir, e);
+            return;
+        }
+    }
+
+    let pages: Vec<u32> = match target_page {
+        Some(p) => {
+            if p >= page_count as u32 {
+                eprintln!("오류: 페이지 번호가 범위를 벗어났습니다 (0~{})", page_count - 1);
+                return;
+            }
+            vec![p]
+        }
+        None => (0..page_count as u32).collect(),
+    };
+
+    let file_stem = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("page");
+
+    let total_pages = pages.len();
+    let mut success = 0;
+    let mut total_bytes = 0usize;
+
+    for page_num in &pages {
+        let has_options = png_options.scale.is_some()
+            || png_options.max_dimension.is_some()
+            || png_options.vlm_target.is_some();
+        let result = if has_options {
+            core.render_page_png_native_with_export_options(*page_num, &png_options)
+        } else if !font_paths.is_empty() {
+            core.render_page_png_native_with_fonts(*page_num, &font_paths)
+        } else {
+            core.render_page_png_native(*page_num)
+        };
+        match result {
+            Ok(png_bytes) => {
+                let png_filename = if total_pages == 1 {
+                    format!("{}.png", file_stem)
+                } else {
+                    format!("{}_{:03}.png", file_stem, page_num + 1)
+                };
+                let png_path = output_path.join(&png_filename);
+                if let Err(e) = fs::write(&png_path, &png_bytes) {
+                    eprintln!("오류: 페이지 {} PNG 저장 실패 - {}", page_num + 1, e);
+                    continue;
+                }
+                println!(
+                    "  → {} ({} bytes)",
+                    png_path.display(),
+                    png_bytes.len()
+                );
+                total_bytes += png_bytes.len();
+                success += 1;
+            }
+            Err(e) => {
+                eprintln!("오류: 페이지 {} 렌더링 실패 - {:?}", page_num + 1, e);
+            }
+        }
+    }
+
+    println!(
+        "내보내기 완료: {}개 PNG 파일 → {}/ ({:.1} MB)",
+        success,
+        output_dir,
+        total_bytes as f64 / 1024.0 / 1024.0
+    );
 }
 
 fn export_pdf(args: &[String]) {

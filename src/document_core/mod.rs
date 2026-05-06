@@ -7,7 +7,7 @@ pub(crate) mod helpers;
 pub(crate) use helpers::*;
 
 mod commands;
-mod queries;
+pub mod queries;
 pub(crate) mod html_table_import;
 pub mod table_calc;
 pub mod validation;

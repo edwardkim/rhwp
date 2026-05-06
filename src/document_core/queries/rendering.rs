@@ -147,6 +147,147 @@ impl DocumentCore {
         Ok(renderer.command_count() as u32)
     }
 
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_png_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
+        use crate::renderer::layer_renderer::LayerRasterRenderer;
+        use crate::renderer::skia::SkiaLayerRenderer;
+
+        let layer_tree = self.build_page_layer_tree(page_num)?;
+        SkiaLayerRenderer::new().render_png(&layer_tree)
+    }
+
+    /// 사용자 지정 폰트 경로를 포함한 PNG 렌더링. SVG 의 `--font-path` 와 동일 패턴.
+    /// ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 가 시스템 fontconfig 에 없을 때 사용.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_png_native_with_fonts(
+        &self,
+        page_num: u32,
+        font_paths: &[std::path::PathBuf],
+    ) -> Result<Vec<u8>, HwpError> {
+        use crate::renderer::layer_renderer::LayerRasterRenderer;
+        use crate::renderer::skia::SkiaLayerRenderer;
+
+        let layer_tree = self.build_page_layer_tree(page_num)?;
+        SkiaLayerRenderer::new()
+            .with_font_paths(font_paths)
+            .render_png(&layer_tree)
+    }
+
+    /// 옵션 (scale / max-dimension / VLM 프리셋 / font_paths) 적용 PNG 렌더링.
+    /// AI 파이프라인 + VLM (Vision-Language Model) 연동 사용 사례용.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_png_native_with_export_options(
+        &self,
+        page_num: u32,
+        options: &PngExportOptions,
+    ) -> Result<Vec<u8>, HwpError> {
+        use crate::renderer::layer_renderer::{LayerRasterRenderer, RasterRenderOptions};
+        use crate::renderer::skia::SkiaLayerRenderer;
+
+        let layer_tree = self.build_page_layer_tree(page_num)?;
+
+        // 페이지 크기에서 effective scale + max_dimension 결정
+        let mut raster_options = RasterRenderOptions::default();
+
+        // VLM 프리셋 적용 (longest edge 한도 + 픽셀 수 한도)
+        let mut effective_max_dim: Option<i32> = options.max_dimension;
+        let mut effective_max_pixels: Option<u64> = None;
+        if let Some(target) = options.vlm_target {
+            let (longest_edge, max_pixels) = target.constraints();
+            // 명시 max_dimension 이 없으면 프리셋 한도 사용
+            effective_max_dim.get_or_insert(longest_edge);
+            effective_max_pixels = Some(max_pixels);
+        }
+
+        // scale 결정 우선순위:
+        // 1. 명시 scale (사용자 직접 지정)
+        // 2. max_dimension + max_pixels 기반 자동 계산 (페이지가 두 한도 모두 안에 들어가도록)
+        // 3. 기본 1.0
+        let scale = if let Some(s) = options.scale {
+            s
+        } else if effective_max_dim.is_some() || effective_max_pixels.is_some() {
+            let mut auto_scale: f64 = 1.0;
+            // longest edge 한도
+            if let Some(max_dim) = effective_max_dim {
+                let longest_page_edge = layer_tree.page_width.max(layer_tree.page_height);
+                if longest_page_edge > 0.0 {
+                    auto_scale = auto_scale.min(max_dim as f64 / longest_page_edge);
+                }
+            }
+            // 픽셀 수 한도 (ceil + 부동소수점 오차 안전 마진 0.5%)
+            if let Some(max_pixels) = effective_max_pixels {
+                let page_pixels = layer_tree.page_width * layer_tree.page_height;
+                if page_pixels > 0.0 {
+                    let pixel_scale = (max_pixels as f64 / page_pixels).sqrt() * 0.995;
+                    auto_scale = auto_scale.min(pixel_scale);
+                }
+            }
+            // 1.0 초과 시는 페이지가 이미 충분히 작은 것이므로 1.0 으로 cap
+            auto_scale.min(1.0).max(0.1)
+        } else {
+            1.0
+        };
+
+        raster_options.scale = scale;
+        if let Some(max_dim) = effective_max_dim {
+            raster_options.max_dimension = max_dim;
+        }
+        if let Some(max_pixels) = effective_max_pixels {
+            raster_options.max_pixels = max_pixels;
+        }
+
+        SkiaLayerRenderer::new()
+            .with_font_paths(&options.font_paths)
+            .render_png_with_options(&layer_tree, raster_options)
+    }
+}
+
+/// PNG 내보내기 옵션 (export-png CLI / API 통합).
+///
+/// AI 파이프라인 + VLM (Vision-Language Model) 연동 사용 사례용.
+/// `vlm_target` 프리셋 → `max_dimension` → `scale` 순으로 우선순위.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, Default)]
+pub struct PngExportOptions {
+    /// 명시 배율 (scale). None 이면 max_dimension 기반 자동 계산.
+    pub scale: Option<f64>,
+    /// 한 변 최대 픽셀 (longest edge). VLM 입력 한도용.
+    pub max_dimension: Option<i32>,
+    /// VLM 프리셋. Claude / 향후 GPT-4V / Gemini / Qwen-VL / LLaVA 확장 (이슈 #613).
+    pub vlm_target: Option<VlmTarget>,
+    /// 사용자 지정 폰트 디렉토리 (ttfs 등). SVG 의 `--font-path` 와 동일.
+    pub font_paths: Vec<std::path::PathBuf>,
+}
+
+/// VLM (Vision-Language Model) 입력 사양 프리셋.
+///
+/// 본 사이클은 Claude Vision 만 지원. 다른 provider 는 이슈 #613 후속 task.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VlmTarget {
+    /// Claude Vision (Anthropic): longest edge ≤1568 px, ≤1.15 MP.
+    Claude,
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+impl VlmTarget {
+    /// (longest_edge, max_pixels) 한도 반환.
+    pub fn constraints(&self) -> (i32, u64) {
+        match self {
+            VlmTarget::Claude => (1568, 1_150_000),
+        }
+    }
+
+    /// CLI 옵션 문자열 → VlmTarget 변환.
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "claude" => Some(VlmTarget::Claude),
+            _ => None,
+        }
+    }
+}
+
+impl DocumentCore {
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
         Ok(self.build_page_layer_tree(page_num)?.to_json())
     }
@@ -2129,6 +2270,46 @@ mod tests {
             }
             other => panic!("root should be Page node, got {:?}", other),
         }
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn render_page_png_native_uses_document_core_skia_layer_path() {
+        use crate::model::document::{Document, Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        let mut document = Document::default();
+        document.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+        });
+
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+
+        let png = core
+            .render_page_png_native(0)
+            .expect("empty document should render through native Skia");
+
+        assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+        let decoded = image::load_from_memory(&png).expect("decode native Skia PNG");
+        assert!(decoded.width() > 0);
+        assert!(decoded.height() > 0);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-mod rendering;
+pub mod rendering;
 mod cursor_nav;
 mod cursor_rect;
 pub(crate) mod doc_tree_nav;

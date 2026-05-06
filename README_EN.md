@@ -208,9 +208,12 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - Legacy Canvas remains available through `renderPageCanvasLegacy` / `renderPageToCanvasLegacy` for parity checks.
 - P3 visual regression coverage runs `npm run e2e:render-diff:ci` in `rhwp-studio` to compare legacy Canvas and layer Canvas in Chromium; CI uploads render-diff artifacts and writes a summary.
 - The default render-diff fixtures cover basic text/table output, business-document layout, and treat-as-char object placement; override with `RHWP_RENDER_DIFF_FILES`, `RHWP_RENDER_DIFF_MAX_PAGES`, or `RHWP_RENDER_DIFF_ALL=1`.
+- P4 adds native-only `DocumentCore::render_page_png_native(page)` behind `--features native-skia`; it renders `PageLayerTree` to encoded PNG through `SkiaLayerRenderer`.
+- CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
+- The initial native Skia path is a PNG raster backend with core image replay; CanvasKit, resource interning/cache, complex text shaping, advanced image parity, and native equation/raw-svg/form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
-- This phase establishes the frontend/backend boundary for later CanvasKit and native Skia backends.
+- This phase establishes the frontend/backend boundary for later CanvasKit and fuller native Skia backends.
 
 ### Web Editor
 - Text editing (insert, delete, undo/redo)

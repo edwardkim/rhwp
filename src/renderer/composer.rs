@@ -935,10 +935,10 @@ pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
     run.display_text.as_deref().unwrap_or(&run.text)
 }
 
-/// PUA Supplementary 영역(U+F0000~) 문자가 사각형/원형 테두리 숫자인지 판별한다.
+/// PUA Supplementary 영역(U+F0000~) 문자가 테두리 숫자인지 판별한다.
 ///
 /// HWP 특수문자표에서 표준 Unicode가 없는 테두리 숫자를 PUA로 인코딩한다.
-/// - U+F02B1~U+F02C4: 사각형 안의 숫자 1~20 (border_type=3)
+/// - U+F02B1~U+F02C4: map_pua_bullet_char 에서 ①~⑳ 으로 매핑 (CharOverlap 제외)
 /// - U+F02CE~U+F02E1: 반전 사각형 안의 숫자 1~20 (border_type=4)
 ///
 /// 반환: Some(border_type) 또는 None
@@ -987,10 +987,7 @@ pub fn decode_pua_overlap_number(chars: &[char]) -> Option<String> {
 
 fn pua_enclosed_border_type(ch: char) -> Option<u8> {
     let cp = ch as u32;
-    // 사각형 안의 숫자: U+F02B1(1) ~ U+F02C4(20)
-    if (0xF02B1..=0xF02C4).contains(&cp) {
-        return Some(3); // border_type=3: 사각형
-    }
+    // U+F02B1~F02C4 (①~⑳): map_pua_bullet_char 에서 표준 원문자로 매핑 — CharOverlap 제외
     // 반전 사각형 안의 숫자: U+F02CE(1) ~ U+F02E1(20)
     if (0xF02CE..=0xF02E1).contains(&cp) {
         return Some(4); // border_type=4: 반전 사각형
@@ -1003,11 +1000,7 @@ fn pua_enclosed_border_type(ch: char) -> Option<u8> {
 /// draw_char_overlap()에서 호출하여, 실제 렌더링 시에만 변환한다.
 pub fn pua_to_display_text(ch: char) -> Option<String> {
     let cp = ch as u32;
-    // 사각형 안의 숫자: U+F02B1(1) ~ U+F02C4(20)
-    if (0xF02B1..=0xF02C4).contains(&cp) {
-        let num = cp - 0xF02B0;
-        return Some(format!("{}", num));
-    }
+    // U+F02B1~F02C4 는 map_pua_bullet_char 에서 ①~⑳ 으로 매핑 — 여기 도달 불가
     // 반전 사각형 안의 숫자: U+F02CE(1) ~ U+F02E1(20)
     if (0xF02CE..=0xF02E1).contains(&cp) {
         let num = cp - 0xF02CD;

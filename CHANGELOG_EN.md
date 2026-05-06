@@ -4,6 +4,72 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [0.7.10] — 2026-05-06
+
+> Post-v0.7.9 patch cycle — Absorbed 7 external contributors (13 PR cherry-picks) + introduced AI pipeline / VLM integration + CLI binary release pipeline (Issues #608/#612).
+
+### New Features
+
+- **CLI binary releases** (Issue #608/#612, by [@almet](https://github.com/almet)'s request)
+  - 4-platform GitHub Release assets attached (Linux x86_64 / macOS x86_64+aarch64 / Windows x86_64)
+  - SHA-256 checksums included
+  - New `.github/workflows/release-binary.yml`
+- **PNG raster backend** (PR #599, [@seo-rii](https://github.com/seo-rii)) — render P4 stage
+  - Native Skia-based `PageLayerTree` → PNG export
+  - `native-skia` feature gate (zero impact on default build, opt-in)
+  - `DocumentCore::render_page_png_native(page)` API
+  - **AI pipeline + VLM (Vision-Language Model) integration introduced** (maintainer follow-up fixes)
+    - `--vlm-target claude` (1568 longest edge / 1.15 MP, Claude Vision compliant)
+    - `--scale <factor>` / `--max-dimension <px>` (auto scale calculation)
+    - `export-png` CLI command + manual (Korean + English dual)
+    - Korean font fallback chain + per-character fallback (whitespace tofu fix) + `--font-path` dynamic font loading
+
+### External PR cherry-picks (13 PRs / 7 contributors)
+
+#### [@planet6897](https://github.com/planet6897) / Jaeook Ryu — collaborative flow
+
+- PR #587 — HWP 5.0 spec 0x18/0x1E swap (hyphen ↔ non-breaking space)
+- PR #589 (Task #511 v2 + #554) — HWP3 Square wrap supplementary fix + conversion identification heuristic
+- PR #561 (Task #548) — Cell inline TAC Shape margin + indent
+- PR #564 (Task #521) — TAC table outer_margin_bottom missing
+- PR #570 (Task #568) — Inline table + equation paragraph right-shift
+- PR #575 (Task #573) — Choice cell fraction paragraph routing
+- PR #580 (Task #577) — Cell-internal standalone TopAndBottom image 1-line offset
+- PR #584 (Task #574) — HY견명조 heavy display misclassification (TDD)
+- PR #592 (Task #588) — exam_eng.hwp p7 arrow missing (PUA U+F003B mapping)
+- PR #593 (Task #590) — Square wrap table horz_rel_to=Column attribute
+- PR #567 (Task #565) — Inline equation render-missing
+
+#### [@oksure](https://github.com/oksure) (Hyunwoo Park)
+
+- PR #600 (closes #513) — Supplementary PUA-A SVG output fix
+
+#### [@seo-rii](https://github.com/seo-rii)
+
+- PR #599 (refs #536) — native Skia PNG raster backend
+
+### Maintainer Fixes
+
+- 5 Skia font area fixes (PR #599 follow-up, `876d820`): Korean font fallback chain / `--font-path` dynamic loading / per-character fallback / VLM options / `export-png` CLI
+
+### Infrastructure
+
+- CI build stability (`[[example]] required-features`)
+- Wide pagination regression sweep tooling (164 fixtures / 1,614 pages auto-verification)
+
+### Follow-up Issues
+
+- [#613](https://github.com/edwardkim/rhwp/issues/613) — VLM preset expansion
+- [#614](https://github.com/edwardkim/rhwp/issues/614) — DPI metadata option
+- [#615](https://github.com/edwardkim/rhwp/issues/615) — `pua_oldhangul.rs` Hancom alignment
+- [#598](https://github.com/edwardkim/rhwp/issues/598) — rhwp-studio footnote deletion (open)
+
+### Remaining PRs (deferred to v0.7.11)
+
+- PR #601, #602 (@oksure) / PR #607 (@dicebattle) / PR #609 (@jangster77) / PR #611 (@kihyunnn)
+
+---
+
 ## [0.7.9] — 2026-05-01
 
 > Post-v0.7.8 cycle — Task #501 (Hancom defensive logic for cell.padding) + cherry-pick of PR #428/#494/#478/#498 + 4 external contributors

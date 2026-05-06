@@ -2,6 +2,84 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
+## [0.7.10] — 2026-05-06
+
+> v0.7.9 후속 patch 사이클 — 외부 기여자 7명 흡수 (PR 13건 cherry-pick) + AI 파이프라인 / VLM 연동 도입 + CLI 바이너리 릴리즈 파이프라인 (Issue #608/#612).
+
+### 신규 기능
+
+- **CLI 바이너리 릴리즈** (Issue #608/#612, [@almet](https://github.com/almet) 의 요청)
+  - 4 플랫폼 GitHub Release 자산 첨부 (Linux x86_64 / macOS x86_64+aarch64 / Windows x86_64)
+  - SHA-256 체크섬 동봉
+  - `.github/workflows/release-binary.yml` 신규
+- **PNG raster backend** (PR #599, [@seo-rii](https://github.com/seo-rii)) — render P4 단계
+  - native Skia 기반 `PageLayerTree` → PNG export
+  - `native-skia` feature gate (기본 빌드 영향 0, opt-in)
+  - `DocumentCore::render_page_png_native(page)` API
+  - **AI 파이프라인 + VLM (Vision-Language Model) 연동 도입** (메인테이너 후속 정정)
+    - `--vlm-target claude` (1568 longest edge / 1.15 MP, Claude Vision 정합)
+    - `--scale <배율>` / `--max-dimension <픽셀>` (자동 scale 계산)
+    - `export-png` CLI 명령 + 매뉴얼 (한글 + 영문 dual)
+    - 한글 폰트 fallback chain + char 단위 fallback (공백 두부 정정) + `--font-path` 동적 폰트 로딩
+
+### 외부 PR cherry-pick (13 PR / 7 컨트리뷰터)
+
+#### [@planet6897](https://github.com/planet6897) / Jaeook Ryu — 8 PR (협업 컨트리뷰터)
+
+- **PR #587** — HWP 5.0 스펙 0x18/0x1E swap (하이픈 ↔ 묶음 빈칸)
+- **PR #589** (Task #511 v2 + #554) — HWP3 Square wrap 보완6+8 (페이지네이션 안전) + HWP3 변환본 식별 휴리스틱 (HWP 3.0 직렬화 round-trip 정합)
+- **PR #561** (Task #548) — 셀 inline TAC Shape margin + indent 정정
+- **PR #564** (Task #521) — TAC 표 outer_margin_bottom 누락 정정
+- **PR #570** (Task #568) — 인라인 표+수식 단락 우측 편위 정정
+- **PR #575** (Task #573) — 보기 셀 분수 단락 인라인 표 셀 paragraph 라우팅 정정 (Issue #572 인접 효과 자동 정정)
+- **PR #580** (Task #577) — 셀 내부 단독 TopAndBottom 이미지 1라인 오프셋 정정 (HWP IR anchor 시점 정합)
+- **PR #584** (Task #574) — HY견명조 heavy display 오분류 정정 (TDD Stage 2/3 RED→GREEN)
+- **PR #592** (Task #588) — exam_eng.hwp p7 #40 글상자 사이 화살표 누락 (PUA U+F003B → ↓ 매핑 + PDF 글리프 외곽 직접 분석)
+- **PR #593** (Task #590) — Square wrap 표 horz_rel_to=단 속성 정합 (단일 줄 분기 가드)
+- **PR #567** (Task #565) — 인라인 수식 미렌더 정정
+
+#### [@oksure](https://github.com/oksure) (Hyunwoo Park) — PUA SVG 출력
+
+- **PR #600** (closes #513) — Supplementary PUA-A (U+F02B1~F02C4) SVG 출력 정정 — Task #509 후속 매핑 우선순위 정정
+
+#### [@jangster77](https://github.com/jangster77) (Taesup Jang) — HWP3 본질
+
+- **PR #589** (commit author, @planet6897 PR 등록 협업 흐름)
+
+#### [@seo-rii](https://github.com/seo-rii) — render P4
+
+- **PR #599** (refs #536) — native Skia PNG raster backend
+
+### 메인테이너 정정
+
+- **Skia 폰트 영역 5개 정정** (PR #599 후속, `876d820`):
+  - 한글 폰트 fallback chain 추가 (Noto Sans KR / Nanum 등)
+  - `--font-path` 동적 폰트 로딩 (`with_font_paths` API, ttfs 디렉토리)
+  - char 단위 fallback (NBSP / U+2007 / U+200B 두부 정정)
+  - VLM 옵션 (`PngExportOptions` + `VlmTarget::Claude`)
+  - `export-png` CLI 명령 + 매뉴얼 dual
+
+### 인프라
+
+- **CI 빌드 안정성 향상** (`Cargo.toml` `[[example]] required-features`)
+- **광범위 페이지네이션 회귀 sweep 도구** — 164 fixture (158 hwp + 6 hwpx) / 1,614 페이지 자동 검증 (PR #564 도입, 본 사이클 모든 PR 처리에 적용)
+
+### 후속 이슈
+
+- [#613](https://github.com/edwardkim/rhwp/issues/613) — VLM 프리셋 확장 (GPT-4V / Gemini / Qwen-VL / LLaVA)
+- [#614](https://github.com/edwardkim/rhwp/issues/614) — DPI 메타데이터 옵션 (`--dpi` PNG pHYs chunk)
+- [#615](https://github.com/edwardkim/rhwp/issues/615) — `pua_oldhangul.rs` U+F53A 매핑 한컴 정합 영역
+- [#598](https://github.com/edwardkim/rhwp/issues/598) — rhwp-studio 각주 삭제 기능 (한컴 정합 UX, 외부 컨트리뷰터 공개)
+
+### 잔여 PR (v0.7.11 후속 patch 영역)
+
+- PR #601, #602 (@oksure)
+- PR #607 (@dicebattle)
+- PR #609 (@jangster77, Task #604 Document IR 표준 정합화)
+- PR #611 (@kihyunnn)
+
+---
+
 ## [0.7.9] — 2026-05-01
 
 > v0.7.8 후속 사이클 — Task #501 (cell.padding 한컴 방어 로직) + PR #428/#494/#478/#498 cherry-pick + 외부 기여자 4명 흡수
