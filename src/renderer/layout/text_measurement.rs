@@ -240,7 +240,10 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 // NOTE: 네이티브 경로는 `tab_type = ext[2]` 전체 u16 해석을 유지.
                 // 기존 golden SVG (issue-147, issue-267) 가 이 "우연한 LEFT 폴백" 동작에
                 // 의존하고 있어, 이를 바꾸면 회귀 발생. WASM 경로만 inline_tab_type 사용.
-                // 네이티브 측 일관성 복원은 별도 이슈로 추적 (Task #296 범위 외).
+                // [Issue #630 Stage 4 검증] HWP5 의 `ext[0]` 가 이미 right-tab 결과 위치
+                // (= 우측 끝 - 한컴_seg_w) 로 저장되어 있어 LEFT fallback 이 인코딩 의도와
+                // 정합. RIGHT 정확 매치 시 seg_w 이중 차감 → ≈seg_w (≈112px) 좌측 이탈
+                // (aift p4 1-1 등 23/24 라인 모두 영향). 본 LEFT fallback 동작 유지.
                 if tab_char_idx < style.inline_tabs.len() {
                     let ext = &style.inline_tabs[tab_char_idx];
                     let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
@@ -355,6 +358,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 // HWPX 인라인 탭: inline_tabs에서 width/type 사용
                 // 네이티브 경로의 ext[2] 인코딩: (tab_type << 8) | fill_type.
                 // 상위 바이트가 tab_type (1=LEFT, 2=RIGHT, 3=CENTER, 4=DECIMAL).
+                // [Issue #630 Stage 4 검증] HWP5 의 `ext[0]` 가 이미 right-tab 결과 위치
+                // (= 우측 끝 - 한컴_seg_w) 로 저장되어 있어 LEFT fallback 이 인코딩 의도와
+                // 정합. estimate_text_width 와 동일한 raw u16 해석 유지.
                 if tab_char_idx < style.inline_tabs.len() {
                     let ext = &style.inline_tabs[tab_char_idx];
                     let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
@@ -1549,51 +1555,8 @@ mod tests {
         );
     }
 
-    /// Issue #630: native 인라인 탭 RIGHT 처리. HWP `tab_extended[2]` 인코딩은
-    /// `(tab_type_enum + 1) << 8 | fill_type` 이므로 RIGHT 는 `(2<<8)|3 = 515`.
-    /// 정정 전: `tab_type = ext[2]` raw u16 → match `1/2` 매치 실패 → LEFT
-    /// fallback (tab_target 에 left-align). 정정 후: `inline_tab_type(ext)` →
-    /// match `2/3` → RIGHT 정확 매치 (tab_target 에 right-align, seg_w 만큼 좌측).
-    #[test]
-    fn test_630_native_inline_tab_right_align() {
-        let m = EmbeddedTextMeasurer;
-        // 인라인 탭 RIGHT 인코딩: ext[0]=tab_width(HU), ext[2]=(2<<8)|3
-        let mut style = TextStyle {
-            font_family: UNREGISTERED_FONT.to_string(),
-            font_size: 10.0,
-            ratio: 1.0,
-            ..Default::default()
-        };
-        // 큰 tab_width (예: 30000 HU = 400px) — after-tab segment 가 tab_target 에
-        // right-align 되도록 충분히 큼.
-        let tab_width_hu: u16 = 30000;
-        let right_encoded: u16 = (2u16 << 8) | 3;
-        style.inline_tabs = vec![[tab_width_hu, 0, right_encoded, 0, 0, 0, 0]];
-
-        // 텍스트 "A\tBC" — `\t` 후 segment "BC" 가 right-align 되어야.
-        // tab_target = x_at_tab + tab_width_px. tab_width_px = 30000 * 96 / 7200 = 400.0
-        // seg_w = width("BC") ≈ 10.0 (font_size * 0.5 narrow heuristic 미등록 폰트, 'B'+'C')
-        // RIGHT: x_after_tab = tab_target - seg_w = 400 + x_at_tab - seg_w
-        // LEFT fallback: x_after_tab = tab_target = x_at_tab + 400
-        let positions = m.compute_char_positions("A\tBC", &style);
-        // positions: [0=A_start, 1=tab_pos, 2=tab_after, 3=B_end_C_start, 4=C_end]
-        assert!(positions.len() >= 5, "positions should have ≥ 5 entries");
-        let b_x = positions[2];
-        let c_end = positions[4];
-        let seg_w = c_end - b_x;
-
-        // tab_width_px = 400.0
-        let tab_width_px = tab_width_hu as f64 * 96.0 / 7200.0;
-        let a_width = positions[1] - positions[0];
-        // RIGHT: B_x ≈ a_width + tab_width_px - seg_w
-        // LEFT (fallback): B_x ≈ a_width + tab_width_px
-        let expected_right = a_width + tab_width_px - seg_w;
-        let diff = (b_x - expected_right).abs();
-        assert!(
-            diff < 1.0,
-            "native RIGHT 인라인 탭이 적용되어야 함. B_x={:.2} expected={:.2} (diff={:.2}px)\n\
-             LEFT fallback 시 B_x ≈ {:.2}. seg_w={:.2} (Issue #630).",
-            b_x, expected_right, diff, a_width + tab_width_px, seg_w
-        );
-    }
+    // Stage 4 검증으로 native tab_type 정정 (정정 2) 은 회귀 발견되어 철회.
+    // HWP5 의 `tab_extended[0]` 가 이미 right-tab 결과 위치 (= 우측 끝 - 한컴_seg_w)
+    // 로 저장되어 있어 LEFT fallback 이 인코딩 의도와 정합. 본 테스트는 합성 데이터
+    // 기반의 잘못된 가정 (RIGHT 정확 매치) 을 검증하던 것이라 삭제.
 }
