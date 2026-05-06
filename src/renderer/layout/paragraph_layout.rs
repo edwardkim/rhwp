@@ -327,7 +327,7 @@ impl LayoutEngine {
 
                     for ch_idx in *s..*e {
                         // 각주 마커 삽입: 현재 문자 위치에 각주가 있으면 먼저 run flush + FootnoteMarker 노드 삽입
-                        if let Some(&(_, fn_num)) = composed.and_then(|c| c.footnote_positions.iter().find(|&&(pos, _)| pos == ch_idx)) {
+                        if let Some(&(_, fn_num, fn_ctrl_idx)) = composed.and_then(|c| c.footnote_positions.iter().find(|&&(pos, _, _)| pos == ch_idx)) {
                             // 현재까지 누적된 run 출력
                             if ch_idx > line_run_start {
                                 let run_text: String = text_chars[line_run_start..ch_idx].iter().collect();
@@ -363,10 +363,6 @@ impl LayoutEngine {
                             let sup_ts = TextStyle { font_size: sup_font_size, font_family: base_ts.font_family.clone(), ..Default::default() };
                             let sup_w = estimate_text_width(&fn_text, &sup_ts);
                             let run_bbox_h = if wrapped_below_table { text_line_baseline } else { baseline_dist };
-                            // 각주 컨트롤 인덱스 찾기
-                            let fn_ctrl_idx = composed.map(|c| {
-                                c.footnote_positions.iter().position(|&(p, _)| p == ch_idx).unwrap_or(0)
-                            }).unwrap_or(0);
                             let marker_id = tree.next_id();
                             let marker_node = RenderNode::new(marker_id,
                                 RenderNodeType::FootnoteMarker(FootnoteMarkerNode {
@@ -1042,7 +1038,7 @@ impl LayoutEngine {
                 }
                 // 각주 마커 폭: run 내에 각주가 있으면 마커 위첨자 폭 추가
                 let is_last_run_est = run_char_end_est >= comp_line.runs.iter().map(|r| r.text.chars().count()).sum::<usize>() + comp_line.char_start;
-                for &(fpos, fnum) in composed.footnote_positions.iter() {
+                for &(fpos, fnum, _) in composed.footnote_positions.iter() {
                     if fpos >= run_char_pos_est && (fpos < run_char_end_est || (is_last_run_est && fpos == run_char_end_est)) {
                         let fn_text = format!("{})", fnum);
                         let sup_size = (ts.font_size * 0.55).max(7.0);
@@ -1335,7 +1331,7 @@ impl LayoutEngine {
             };
 
             // 각주 마커 위치 수집
-            let fn_positions: &[(usize, u16)] = &composed.footnote_positions;
+            let fn_positions: &[(usize, u16, usize)] = &composed.footnote_positions;
             let mut fn_marker_inserted = vec![false; fn_positions.len()];
 
             let mut pending_right_tab_render: Option<(f64, u8, u8)> = None;
@@ -1600,7 +1596,7 @@ impl LayoutEngine {
                         // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
                         let is_last = is_last_run_of_line(run_idx);
                         let run_fn_markers: Vec<(usize, u16, usize)> = fn_positions.iter().enumerate()
-                            .filter_map(|(fni, &(fpos, fnum))| {
+                            .filter_map(|(fni, &(fpos, fnum, _))| {
                                 let in_range = fpos >= run_char_pos && (fpos < run_char_end || (is_last && fpos == run_char_end));
                                 if !fn_marker_inserted[fni] && in_range {
                                     Some((fpos - run_char_pos, fnum, fni))

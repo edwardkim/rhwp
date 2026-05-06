@@ -110,6 +110,38 @@ export interface HitTestResult {
   fieldType?: string;
 }
 
+/** WASM hitTestBodyFootnoteMarker() 반환 타입 */
+export interface BodyFootnoteMarkerHit {
+  hit: boolean;
+  sectionIndex?: number;
+  paragraphIndex?: number;
+  controlIndex?: number;
+  footnoteNumber?: number;
+  footnoteIndex?: number;
+  bbox?: { x: number; y: number; w: number; h: number };
+  cursorRect?: CursorRect;
+}
+
+/** WASM getFootnoteAtCursor() 반환 타입 */
+export interface FootnoteAtCursorResult {
+  hit: boolean;
+  sectionIndex?: number;
+  paragraphIndex?: number;
+  controlIndex?: number;
+  charOffset?: number;
+  footnoteNumber?: number;
+}
+
+/** WASM deleteFootnote() 반환 타입 */
+export interface DeleteFootnoteResult {
+  ok: boolean;
+  sectionIndex: number;
+  paragraphIndex: number;
+  controlIndex: number;
+  charOffset: number;
+  deletedNumber: number;
+}
+
 /** 커서 위치의 필드 범위 정보 */
 export interface FieldInfoResult {
   inField: boolean;

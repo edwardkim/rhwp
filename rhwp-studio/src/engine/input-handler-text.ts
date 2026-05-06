@@ -44,6 +44,44 @@ function processPendingNav(this: any, nav: { code: string; shiftKey: boolean; ct
   }
 }
 
+function tryDeleteBodyFootnoteAtCursor(
+  this: any,
+  pos: DocumentPosition,
+  direction: 'backward' | 'forward',
+): boolean {
+  if (pos.parentParaIndex !== undefined || pos.cellPath || pos.isTextBox) return false;
+
+  try {
+    const hit = this.wasm.getFootnoteAtCursor(
+      pos.sectionIndex,
+      pos.paragraphIndex,
+      pos.charOffset,
+      direction,
+    );
+    if (!hit.hit || hit.controlIndex === undefined) return false;
+
+    const sectionIndex = hit.sectionIndex ?? pos.sectionIndex;
+    const paragraphIndex = hit.paragraphIndex ?? pos.paragraphIndex;
+    const controlIndex = hit.controlIndex;
+
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'deleteFootnote',
+      operation: (wasm: any) => {
+        const result = wasm.deleteFootnote(sectionIndex, paragraphIndex, controlIndex);
+        return {
+          sectionIndex: result.sectionIndex,
+          paragraphIndex: result.paragraphIndex,
+          charOffset: result.charOffset,
+        };
+      },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolean): void {
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
@@ -86,6 +124,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     }
   } else {
     const { sectionIndex: sec, paragraphIndex: para } = pos;
+    if (tryDeleteBodyFootnoteAtCursor.call(this, pos, 'backward')) return;
     if (charOffset > 0) {
       const deletePos = { ...pos, charOffset: charOffset - 1 };
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(deletePos, 1, 'backward') });
@@ -151,6 +190,7 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
     }
   } else {
     const { sectionIndex: sec, paragraphIndex: para } = pos;
+    if (tryDeleteBodyFootnoteAtCursor.call(this, pos, 'forward')) return;
     const paraLen = this.wasm.getParagraphLength(sec, para);
     if (charOffset < paraLen) {
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(pos, 1, 'forward') });
@@ -444,4 +484,3 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
     this.wasm.deleteText(sec, para, charOffset, count);
   }
 }
-

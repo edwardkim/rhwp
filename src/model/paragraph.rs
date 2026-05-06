@@ -725,8 +725,9 @@ impl Paragraph {
     /// position 을 분배한다 — 컨트롤 variant 를 보지 않으므로 각주·미주, 그림, 표, 수식,
     /// 자동번호 등 모든 inline 컨트롤이 동일하게 character offset 을 부여받는다.
     ///
-    /// `char_offsets` 가 비어있는 폴백 경로에서는 Shape/Table/Picture/Equation 만 폭 1을
-    /// 가산하고, 그 외 컨트롤은 모두 position 0 에 누적된다 (정밀도 손실 분기).
+    /// `char_offsets` 가 비어있는 폴백 경로에서는 본문 흐름에서 1칸을 차지하는
+    /// Shape/Table/Picture/Equation/Footnote/Endnote 만 폭 1을 가산하고,
+    /// 그 외 컨트롤은 모두 position 0 에 누적된다 (정밀도 손실 분기).
     ///
     /// # Returns
     ///
@@ -753,6 +754,8 @@ impl Paragraph {
                         | Control::Table(_)
                         | Control::Picture(_)
                         | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
                 ) {
                     pos += 1;
                 }
