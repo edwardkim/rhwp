@@ -166,6 +166,8 @@ export class InputHandler {
     ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' };
     origWidth: number;
     origHeight: number;
+    origHorzOffset?: number;
+    origVertOffset?: number;
     startClientX: number;
     startClientY: number;
     pageIndex: number;

@@ -799,6 +799,60 @@ export class MoveShapeCommand implements EditCommand {
   }
 }
 
+
+// ─── 개체 크기/위치 속성 변경 명령 ─────────────────────
+
+export type ObjectResizeTarget = {
+  sec: number;
+  ppi: number;
+  ci: number;
+  type: string;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+};
+
+/**
+ * 그림/도형 리사이즈처럼 드래그 중 WASM에 이미 반영된 속성 변경을
+ * Undo/Redo 스택에 기록하기 위한 명령.
+ */
+export class ResizeObjectCommand implements EditCommand {
+  readonly type = 'resizeObject';
+  readonly timestamp: number;
+
+  constructor(
+    private targets: ObjectResizeTarget[],
+    timestamp?: number,
+  ) {
+    this.timestamp = timestamp ?? Date.now();
+  }
+
+  private setProps(wasm: WasmBridge, target: ObjectResizeTarget, props: Record<string, unknown>): void {
+    if (target.type === 'shape' || target.type === 'line' || target.type === 'group') {
+      wasm.setShapeProperties(target.sec, target.ppi, target.ci, props);
+    } else {
+      wasm.setPictureProperties(target.sec, target.ppi, target.ci, props);
+    }
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    for (const target of this.targets) {
+      this.setProps(wasm, target, target.after);
+    }
+    const first = this.targets[0];
+    return { sectionIndex: first?.sec ?? 0, paragraphIndex: first?.ppi ?? 0, charOffset: 0 };
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    for (const target of this.targets) {
+      this.setProps(wasm, target, target.before);
+    }
+    const first = this.targets[0];
+    return { sectionIndex: first?.sec ?? 0, paragraphIndex: first?.ppi ?? 0, charOffset: 0 };
+  }
+
+  mergeWith(): null { return null; }
+}
+
 // ─── 스냅샷 기반 명령 (복잡한 작업의 Undo/Redo) ─────
 
 /**
