@@ -1776,40 +1776,53 @@ impl DocumentCore {
     /// 페이지 좌표가 머리말 또는 꼬리말 영역에 해당하는지 판별.
     /// 반환: JSON `{"hit":true,"isHeader":bool,"sectionIndex":N,"applyTo":N}`
     /// 또는 `{"hit":false}`
+    ///
+    /// Issue #595: Header/Footer 노드의 bbox 는 `expand_bbox_to_children` 으로
+    /// 자식 (예: 단 구분선 line) 까지 확장되어 본문 영역을 침범할 수 있음.
+    /// hit 판정은 layout 의 정확한 `header_area` / `footer_area` 로 수행하여
+    /// bbox 확장과 무관하게 본질 영역만 hit.
     pub fn hit_test_header_footer_native(
         &self,
         page_num: u32,
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::RenderNodeType;
+        let (page_content, _, _) = self.find_page(page_num)?;
+        let layout = &page_content.layout;
 
-        let tree = self.build_page_tree(page_num)?;
-
-        for child in &tree.root.children {
-            let is_header = matches!(child.node_type, RenderNodeType::Header);
-            let is_footer = matches!(child.node_type, RenderNodeType::Footer);
-            if !is_header && !is_footer { continue; }
-
-            if x >= child.bbox.x && x <= child.bbox.x + child.bbox.width
-                && y >= child.bbox.y && y <= child.bbox.y + child.bbox.height
-            {
-                // active header/footer에서 source_section_index와 apply_to 추출
-                // 머리말/꼬리말은 이전 구역에서 상속될 수 있으므로
-                // 페이지 소속 구역이 아닌 source_section_index를 반환해야 함
-                if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, is_header) {
-                    return Ok(format!(
-                        "{{\"hit\":true,\"isHeader\":{},\"sectionIndex\":{},\"applyTo\":{}}}",
-                        is_header, source_sec, apply_to
-                    ));
-                }
-                // active 정보가 없는 경우 fallback
-                let (section_idx, _) = self.find_section_for_page(page_num);
+        // 머리말 영역 hit 판정 (layout.header_area — 정확한 머리말 범위)
+        let h = &layout.header_area;
+        if x >= h.x && x <= h.x + h.width && y >= h.y && y <= h.y + h.height {
+            // active header에서 source_section_index와 apply_to 추출
+            // 머리말은 이전 구역에서 상속될 수 있으므로 source_section_index 우선
+            if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, true) {
                 return Ok(format!(
-                    "{{\"hit\":true,\"isHeader\":{},\"sectionIndex\":{},\"applyTo\":0}}",
-                    is_header, section_idx
+                    "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
+                    source_sec, apply_to
                 ));
             }
+            // active 정보가 없는 경우 fallback (빈 머리말 영역 — 신규 생성 대상)
+            let (section_idx, _) = self.find_section_for_page(page_num);
+            return Ok(format!(
+                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":0}}",
+                section_idx
+            ));
+        }
+
+        // 꼬리말 영역 hit 판정 (layout.footer_area)
+        let f = &layout.footer_area;
+        if x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height {
+            if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, false) {
+                return Ok(format!(
+                    "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
+                    source_sec, apply_to
+                ));
+            }
+            let (section_idx, _) = self.find_section_for_page(page_num);
+            return Ok(format!(
+                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":0}}",
+                section_idx
+            ));
         }
 
         Ok("{\"hit\":false}".to_string())
