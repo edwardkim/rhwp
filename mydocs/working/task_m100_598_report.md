@@ -95,6 +95,8 @@ git diff --check
 - 본문 각주 마커 바로 앞 `액체|1)와` 위치에서 Backspace 를 누르면 각주 삭제 확인창 없이 직전 일반 텍스트만 삭제됨
 - 위 상태에서 각주 마커가 줄 끝으로 이동하지 않고 남은 텍스트와 다음 텍스트 사이에 유지됨
 - 위 상태에서 Ctrl+Z 로 텍스트와 각주 마커 위치가 함께 복원됨
+- rhwp-studio e2e에서 좌/우 방향키로 본문 각주 마커를 한 칸 단위로 통과함을 검증함
+- rhwp-studio e2e에서 본문 각주 마커 클릭 시 각주 편집 모드로 진입하고 원본 본문 문단/컨트롤/각주 인덱스가 연결됨을 검증함
 
 ## 산출물
 
@@ -130,6 +132,7 @@ git diff --check
   - `mydocs/working/task_m100_598_stage4_3.md`
   - `mydocs/working/task_m100_598_stage4_4.md`
   - `mydocs/working/task_m100_598_stage4_5.md`
+  - `mydocs/working/task_m100_598_stage4_6.md`
 
 ## 남은 확인 항목
 
