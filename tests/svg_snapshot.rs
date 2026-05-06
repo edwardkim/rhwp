@@ -110,6 +110,14 @@ fn issue_147_aift_page3() {
     check_snapshot("samples/aift.hwp", 3, "issue-147/aift-page3");
 }
 
+/// Issue #617: exam_kor.hwp 6페이지 — 16번 보기 박스 셀 padding 이
+/// shrink 휴리스틱으로 0까지 깎이는 회귀를 잠가둔다. 다중 줄 셀에서
+/// HWP 가 분배한 line_segs 를 신뢰하고 padding 을 보존하는 동작을 검증.
+#[test]
+fn issue_617_exam_kor_page5() {
+    check_snapshot("samples/exam_kor.hwp", 5, "issue-617/exam-kor-page5");
+}
+
 /// Determinism probe: render the same page twice in one process and assert
 /// byte-for-byte equality. If this ever fails, the snapshot tests above
 /// are unreliable regardless of golden correctness.

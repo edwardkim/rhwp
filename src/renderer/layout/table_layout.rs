@@ -857,14 +857,31 @@ impl LayoutEngine {
     /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
     /// composed 문단의 각 줄 텍스트 폭을 측정하여 최대값이 가용 폭을 초과하면
     /// 패딩을 비례 축소한다 (최소 1px 보장).
+    ///
+    /// [Task #617] 다중 줄(2 줄 이상) 단락이 있는 셀은 HWP 가 가용 폭에 자간을
+    /// 분배·줄바꿈을 확정한 상태이므로 padding 을 보존한다 (자연 폭 추정으로
+    /// 다시 깎으면 본문이 테두리에 닿는 시각 오류 발생 — exam_kor.hwp
+    /// 16/27/36번 보기 박스). 단일 줄 셀(좁은 수치 셀에서 오버플로우 가능성
+    /// 있음) 은 종전 휴리스틱으로 보호한다.
     pub(crate) fn shrink_cell_padding_for_overflow(
         &self,
         pad_left: f64,
         pad_right: f64,
         cell_w: f64,
         composed_paras: &[ComposedParagraph],
+        paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> (f64, f64) {
+        // [Task #617] 다중 줄(2 줄 이상) 단락이 line_segs 로 분배 완료된 경우,
+        // HWP 가 가용 폭에 맞춰 자간을 분배하고 줄바꿈을 확정한 상태이므로
+        // 자연 폭 추정으로 다시 깎으면 오버 페인팅. 단일 줄 셀(좁은 수치 셀
+        // 등에서 오버플로우 가능성 있음) 은 종전 휴리스틱으로 보호한다.
+        let any_multiline_distributed = paragraphs.iter()
+            .any(|p| p.line_segs.len() >= 2);
+        if any_multiline_distributed {
+            return (pad_left, pad_right);
+        }
+
         let mut max_line_w = 0.0f64;
         for comp in composed_paras {
             for line in &comp.lines {
@@ -876,6 +893,7 @@ impl LayoutEngine {
                         ts.letter_spacing = 0.0;
                     }
                     // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭 사용.
+                    // (estimate_text_width 는 ts.ratio 를 자체 반영함.)
                     w += estimate_text_width(effective_text_for_metrics(run), &ts);
                 }
                 if w > max_line_w {
@@ -1217,7 +1235,7 @@ impl LayoutEngine {
 
             // 텍스트 오버플로우 시 좌우 패딩 축소
             let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
-                pad_left, pad_right, cell_w, &composed_paras, styles,
+                pad_left, pad_right, cell_w, &composed_paras, &cell.paragraphs, styles,
             );
             pad_left = new_pl;
             pad_right = new_pr;
