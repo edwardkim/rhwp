@@ -1219,4 +1219,99 @@ mod tests {
              SVG 요소를 찾지 못함 — 식별 가드 갱신 필요"
         );
     }
+
+    // ─── Issue #639: cover-style 페이지 (items=1 + 완전한 Table + tac=false) 자동 쪽번호 미표시 ───
+    //
+    // Task #637 (분석) 에서 도출된 결정적 룰. 174 샘플 전수 조사 결과 aift.hwp 페이지
+    // 2, 3 만 매칭 (전체의 0.06%, 한컴 PDF 미표시와 일치).
+    //
+    // 룰: `페이지가 items=1 인 단일 완전한 Table (PartialTable 아님) 을 포함하고
+    // 그 Table 의 treat_as_char=false 일 때 한컴은 쪽번호 표시 안 함`.
+    //
+    // 검출 패턴: render_page_svg_native 는 footer 쪽번호 "- N -" 를 character 별 분리된
+    // <text> 요소로 출력 (font-size="10", y="1079.16"). aift.hwp body 텍스트는 다른 폰트
+    // 크기를 사용하므로 footer 텍스트 좌표 + font-size 조합이 결정적 마커.
+
+    /// y=1079.16 + font-size=10 인 <text> 요소 카운트. 0 이면 footer 쪽번호 미표시.
+    fn count_footer_page_number_glyphs(svg: &str) -> usize {
+        svg.split("<text").skip(1).filter(|chunk| {
+            let header_end = chunk.find('>').unwrap_or(0);
+            let header = &chunk[..header_end];
+            header.contains("y=\"1079.16\"") && header.contains("font-size=\"10\"")
+        }).count()
+    }
+
+    #[test]
+    fn test_639_aift_page2_cover_style_no_page_number() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let svg = core.render_page_svg_native(1).unwrap_or_default(); // 0-based: page 2 = 1
+        assert!(!svg.is_empty(), "aift.hwp 페이지 2 SVG 가 비어있음");
+        let glyphs = count_footer_page_number_glyphs(&svg);
+        assert_eq!(
+            glyphs, 0,
+            "Issue #639: aift.hwp 페이지 2 (cover-style: items=1 + Table 35×27 tac=false) 의 \
+             쪽번호 footer 가 SVG 에 표시됨 (font-size=10 + y=1079.16 글리프 {}개). \
+             한컴 PDF 미표시와 불일치.", glyphs
+        );
+    }
+
+    #[test]
+    fn test_639_aift_page3_cover_style_no_page_number() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let svg = core.render_page_svg_native(2).unwrap_or_default(); // 0-based: page 3 = 2
+        assert!(!svg.is_empty(), "aift.hwp 페이지 3 SVG 가 비어있음");
+        let glyphs = count_footer_page_number_glyphs(&svg);
+        assert_eq!(
+            glyphs, 0,
+            "Issue #639: aift.hwp 페이지 3 (cover-style: items=1 + Table 14×17 tac=false) 의 \
+             쪽번호 footer 가 SVG 에 표시됨 (font-size=10 + y=1079.16 글리프 {}개). \
+             한컴 PDF 미표시와 불일치.", glyphs
+        );
+    }
+
+    #[test]
+    fn test_639_aift_page1_shows_page_number() {
+        // 회귀 가드: 페이지 1 (items=2: tac=true Table + PartialPara) 은 표시 유지
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "aift.hwp 페이지 1 SVG 가 비어있음");
+        let glyphs = count_footer_page_number_glyphs(&svg);
+        assert!(
+            glyphs >= 3,
+            "Issue #639 회귀: aift.hwp 페이지 1 (items=2 — cover-style 미해당) 의 쪽번호 \
+             '- 1 -' (3 글리프) 가 표시되어야 함. 실제: {} 글리프.", glyphs
+        );
+    }
+
+    #[test]
+    fn test_639_aift_page6_shows_page_number() {
+        // 회귀 가드: 페이지 6 (items=18: 작은 Table tac=false + 17 paragraph) 는 표시 유지
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let svg = core.render_page_svg_native(5).unwrap_or_default(); // 0-based: page 6 = 5
+        assert!(!svg.is_empty(), "aift.hwp 페이지 6 SVG 가 비어있음");
+        let glyphs = count_footer_page_number_glyphs(&svg);
+        assert!(
+            glyphs >= 3,
+            "Issue #639 회귀: aift.hwp 페이지 6 (items=18 — cover-style 미해당) 의 쪽번호 \
+             footer 가 표시되어야 함. 실제: {} 글리프.", glyphs
+        );
+    }
+
+    #[test]
+    fn test_639_aift_page74_tac_true_table_shows_page_number() {
+        // 회귀 가드: 페이지 74 (items=1 Table tac=true) 는 cover-style 룰 미매칭 → 표시 유지.
+        // Task #637 분석: tac=true 가 결정적 분리자 (한컴 PDF 표시 확정).
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let total = core.page_count();
+        if total < 74 { return; }
+        let svg = core.render_page_svg_native(73).unwrap_or_default(); // 0-based: page 74 = 73
+        assert!(!svg.is_empty(), "aift.hwp 페이지 74 SVG 가 비어있음");
+        let glyphs = count_footer_page_number_glyphs(&svg);
+        // 페이지 74 page_num=68 → "- 6 8 -" = 4 글리프
+        assert!(
+            glyphs >= 3,
+            "Issue #639 회귀: aift.hwp 페이지 74 (items=1 + Table 2×2 tac=true) 의 쪽번호 \
+             footer 가 표시되어야 함. tac=true 는 cover-style 룰 미매칭. 실제: {} 글리프.", glyphs
+        );
+    }
 }
