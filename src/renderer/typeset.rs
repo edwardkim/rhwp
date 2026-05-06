@@ -905,7 +905,9 @@ impl TypesetEngine {
         // PartialTable 의 cur_h 는 row 단위로 정확히 누적되므로 안전마진이 과함.
         // (k-water-rfp p15 case: PartialTable 직후 작은 텍스트 (16px) 가 잔여 5.3px 부족으로
         // fit 실패하여 다음 페이지로 밀리는 회귀.)
-        const LAYOUT_DRIFT_SAFETY_PX: f64 = 10.0;
+        // [Task #643] VPOS_CORR 백워드 허용 (8px) 으로 layout drift 누적이 해소됨.
+        // 트레일링 ls 누적 fit 산식 정정과 함께 안전마진 10 → 4 축소.
+        const LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
         let prev_is_partial_table = matches!(
             st.current_items.last(),
             Some(PageItem::PartialTable { .. })

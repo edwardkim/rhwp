@@ -841,6 +841,8 @@ impl Paginator {
                 let avail_for_lines = (page_avail - sp_b).max(0.0);
 
                 // 세그먼트 안에서만 줄 누적 (seg_end 초과 금지)
+                // [Task #643] 마지막 줄은 자체 line_height 만 차지 (트레일링 line_spacing 제외)
+                // 트레일링 ls 는 다음 줄/문단으로의 간격이며, 세그먼트 마지막 줄에는 불필요.
                 let mut cumulative = 0.0;
                 let mut end_line = cursor_line;
                 for li in cursor_line..seg_end {
@@ -848,14 +850,25 @@ impl Paginator {
                     if cumulative + content_h > avail_for_lines && li > cursor_line {
                         break;
                     }
-                    cumulative += mp.line_advance(li);
+                    cumulative += if li + 1 < seg_end {
+                        mp.line_advance(li)
+                    } else {
+                        mp.line_heights[li]
+                    };
                     end_line = li + 1;
                 }
                 if end_line <= cursor_line {
                     end_line = cursor_line + 1;
                 }
 
-                let part_line_height: f64 = mp.line_advances_sum(cursor_line..end_line);
+                // [Task #643] part_line_height 도 동일 산식: 마지막 줄은 lh 만
+                let part_line_height: f64 = if end_line > cursor_line {
+                    let advances = mp.line_advances_sum(cursor_line..end_line.saturating_sub(1));
+                    let last_lh = mp.line_heights.get(end_line - 1).copied().unwrap_or(0.0);
+                    advances + last_lh
+                } else {
+                    0.0
+                };
                 let part_sp_after = if end_line >= line_count { sp_after } else { 0.0 };
                 let part_height = sp_b + part_line_height + part_sp_after;
 

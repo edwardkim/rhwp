@@ -1509,15 +1509,33 @@ impl LayoutEngine {
                                 // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
                                 // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어
                                 //   col_area.y 기준 (vpos_end - base) 차감 공식이 일관.
-                                let end_y = if is_page_path {
+                                let raw_end_y = if is_page_path {
                                     col_anchor_y + hwpunit_to_px(vpos_end - base, self.dpi)
                                 } else {
                                     col_area.y + hwpunit_to_px(vpos_end - base, self.dpi)
                                 };
+                                // [Task #643] sb_N 사전 차감:
+                                // vpos_end 는 line 0 의 상단 (HWP 가 sb 를 vpos 에 인코딩) 을 의미.
+                                // layout_paragraph 는 시작 시 sb_N 을 다시 더하므로,
+                                // sb_N 만큼 미리 빼서 net 결과가 line 0 == vpos_end 가 되도록.
+                                let curr_sb = paragraphs.get(item_para)
+                                    .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+                                    .map(|ps| ps.spacing_before)
+                                    .unwrap_or(0.0);
+                                let end_y = (raw_end_y - curr_sb).max(col_area.y);
                                 // 자가 검증: 보정값이 컬럼 영역 내에 있고
-                                // 현재 y_offset보다 뒤로 가지 않아야 유효
+                                // 현재 y_offset 보다 크게 뒤로 가지 않아야 유효.
+                                //
+                                // [Task #643] 백워드 허용폭 확장 1.0 → 8.0px.
+                                // Layout 은 spacing_before(sb_N) 을 pi_N 시작 시 추가하지만,
+                                // HWP 는 sb_(N+1) 을 vpos delta 에 인코딩한다. sb_N ≠ sb_(N+1)
+                                // (특히 빈 문단 sb=0 인접) 에서 드리프트가 누적되어 본문 끝까지
+                                // 밀려 LAYOUT_OVERFLOW 발생. 문단 사이 trailing line_spacing 만큼은
+                                // 안전하게 백워드 보정 가능 (pi_N 마지막 줄과 pi_(N+1) 첫 줄 사이의
+                                // 공백 영역 내에서만 이동).
+                                const MAX_BACKWARD_PX: f64 = 8.0;
                                 let applied = end_y >= col_area.y && end_y <= col_area.y + col_area.height
-                                    && end_y >= y_offset - 1.0;
+                                    && end_y >= y_offset - MAX_BACKWARD_PX;
                                 if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
                                     let path = if is_page_path { "page" } else { "lazy" };
                                     eprintln!(
