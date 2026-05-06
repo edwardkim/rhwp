@@ -37,6 +37,7 @@
 - 확인창 취소 시 삭제하지 않고, 확인 후에는 textarea 포커스를 복원해 Ctrl+Z Undo 가 바로 동작하도록 보정했다.
 - 본문 각주 마커 바로 앞에서 `Backspace` 로 일반 텍스트를 삭제하는 경우 각주 anchor 가 줄 끝으로 이동하지 않도록 `delete_text_at()` 의 UTF-16 삭제 길이 계산을 보정했다.
 - 같은 위치에서 Undo 성격의 텍스트 삽입이 각주 마커 뒤가 아니라 앞쪽 원위치로 들어가도록 `insert_text_at()` 의 inline control 위치 삽입을 보정했다.
+- `insert_text_at()` 의 inline control 앞 삽입 보정이 `SectionDef` / `ColumnDef` 같은 문단 메타 컨트롤에 적용되지 않도록 제한해 빈 문서 저장 caret 회귀를 보정했다.
 
 ## 검증 결과
 
@@ -44,6 +45,8 @@
 
 ```bash
 cargo test --test issue_598_footnote_marker_nav
+cargo test wasm_api::tests::test_save_text_only --lib -- --nocapture
+cargo test --lib
 cargo test navigable_text_len_counts_trailing_footnote_marker
 cargo build
 cd rhwp-studio && npm run build
@@ -56,6 +59,8 @@ git diff --check
 결과:
 
 - `cargo test --test issue_598_footnote_marker_nav`: 4 passed
+- `cargo test wasm_api::tests::test_save_text_only --lib -- --nocapture`: 통과
+- `cargo test --lib`: 1135 passed, 0 failed, 2 ignored
 - `cargo test navigable_text_len_counts_trailing_footnote_marker`: 1 passed
 - `cargo build`: 통과
 - `npm run build`: 통과
@@ -124,6 +129,7 @@ git diff --check
   - `mydocs/working/task_m100_598_stage4_2.md`
   - `mydocs/working/task_m100_598_stage4_3.md`
   - `mydocs/working/task_m100_598_stage4_4.md`
+  - `mydocs/working/task_m100_598_stage4_5.md`
 
 ## 남은 확인 항목
 

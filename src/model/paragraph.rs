@@ -233,7 +233,22 @@ impl Paragraph {
         let effective_char_offset = char_offset.min(text_len);
         let control_positions = self.control_text_positions();
         let inserts_before_inline_control = char_offset <= text_len
-            && control_positions.iter().any(|&pos| pos == effective_char_offset);
+            && self
+                .controls
+                .iter()
+                .zip(control_positions.iter())
+                .any(|(ctrl, &pos)| {
+                    pos == effective_char_offset
+                        && matches!(
+                            ctrl,
+                            Control::Shape(_)
+                                | Control::Table(_)
+                                | Control::Picture(_)
+                                | Control::Equation(_)
+                                | Control::Footnote(_)
+                                | Control::Endnote(_)
+                        )
+                });
 
         // 바이트 삽입 위치 계산
         let byte_offset: usize = text_chars[..effective_char_offset].iter().map(|c| c.len_utf8()).sum();
