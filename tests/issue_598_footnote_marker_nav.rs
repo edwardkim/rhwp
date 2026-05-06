@@ -155,3 +155,40 @@ fn issue_598_body_footnote_marker_can_be_found_and_deleted_from_cursor() {
         "second info json: {second_info}"
     );
 }
+
+#[test]
+fn issue_598_backspace_before_marker_keeps_marker_anchor_and_undo_restores_it() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/footnote-01.hwp");
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("parse footnote-01.hwp");
+
+    assert_eq!(doc.get_control_text_positions(0, 3), "[7]");
+    assert_eq!(
+        doc.get_text_range_native(0, 3, 6, 2).expect("text around marker"),
+        "체와"
+    );
+
+    doc.delete_text_native(0, 3, 6, 1)
+        .expect("delete text before footnote marker");
+    assert_eq!(
+        doc.get_control_text_positions(0, 3),
+        "[6]",
+        "footnote marker should stay between remaining previous text and following text"
+    );
+    assert_eq!(
+        doc.get_text_range_native(0, 3, 5, 2).expect("text around marker after delete"),
+        "액와"
+    );
+
+    doc.insert_text_native(0, 3, 6, "체")
+        .expect("undo-like insert before footnote marker");
+    assert_eq!(
+        doc.get_control_text_positions(0, 3),
+        "[7]",
+        "undo-like insert should restore original footnote marker anchor"
+    );
+    assert_eq!(
+        doc.get_text_range_native(0, 3, 6, 2).expect("text around marker after restore"),
+        "체와"
+    );
+}
