@@ -1081,7 +1081,24 @@ impl TypesetEngine {
             for li in cursor_line..line_count {
                 let content_h = fmt.line_heights[li];
                 if cumulative + content_h > avail_for_lines && li > cursor_line {
-                    break;
+                    // [Task #631] HWP 권위값 더블체크
+                    // 누적 추정으로는 fit 실패하지만 HWP 파일 자체가 다음 줄(li+1)에
+                    // vpos-reset(=0) 을 인코딩한 경우, 한컴 엔진이 직접 li 까지를 현재
+                    // 페이지에 배치한 것이다. typeset 보수 마진(20px) 으로 인한 콘텐츠
+                    // 손실을 차단하기 위해 HWP 신호를 우선한다.
+                    // 조건: (1) 다음 줄의 vpos==0 (페이지 경계 신호)
+                    //       (2) 현재 줄의 hwp 좌표 vpos+lh 가 body_available 안
+                    let hwp_authoritative = para.line_segs.get(li + 1)
+                        .map(|next| next.vertical_pos == 0)
+                        .unwrap_or(false)
+                        && para.line_segs.get(li).map(|cur| {
+                            let bottom_px = crate::renderer::hwpunit_to_px(
+                                cur.vertical_pos + cur.line_height, self.dpi);
+                            bottom_px <= st.base_available_height()
+                        }).unwrap_or(false);
+                    if !hwp_authoritative {
+                        break;
+                    }
                 }
                 cumulative += fmt.line_advance(li);
                 end_line = li + 1;
