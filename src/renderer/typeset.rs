@@ -1079,6 +1079,16 @@ impl TypesetEngine {
             let mut cumulative = 0.0;
             let mut end_line = cursor_line;
             for li in cursor_line..line_count {
+                // [Task #619] 다단 paragraph 내 vpos-reset 강제 분리.
+                // line_segs[li].vertical_pos == 0 (li>0) 은 HWP 가 해당 line 을
+                // 다음 단/페이지 최상단에 배치하도록 인코딩한 신호.
+                // 다단 한정 적용 — 단일 단은 partial-table split 회귀 (issue #418) 차단 위해 미적용.
+                if st.col_count > 1
+                    && li > cursor_line
+                    && para.line_segs.get(li).map(|s| s.vertical_pos == 0).unwrap_or(false)
+                {
+                    break;
+                }
                 let content_h = fmt.line_heights[li];
                 if cumulative + content_h > avail_for_lines && li > cursor_line {
                     break;
