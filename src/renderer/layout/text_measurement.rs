@@ -1519,4 +1519,79 @@ mod tests {
             style.font_size, k_advance
         );
     }
+
+    /// Issue #630: 등록된 한글 폰트(돋움체)에서 `·`(U+00B7) 가 전각으로 측정되어야
+    /// 한컴 저장본 의 tab_extended 와 정합. `is_halfwidth_punct` 의 강제 반각
+    /// 처리는 한컴 측정값과 8.67px(반각 1자) 차이 유발.
+    #[test]
+    fn test_630_middle_dot_full_width_in_registered_font() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: "돋움체".to_string(),
+            font_size: 17.333,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        let positions = m.compute_char_positions("가\u{00B7}나", &style);
+        assert!(positions.len() >= 3, "positions should have ≥ 3 entries");
+        let dot_advance = positions[2] - positions[1];
+
+        // 전각 = font_size (≈17.33px). 정정 전: 반각 (≈8.67px).
+        // HWPUNIT 양자화 + 폰트 메트릭 미세 차이 허용 ±1.5px.
+        let expected = style.font_size;
+        assert!(
+            (dot_advance - expected).abs() < 1.5,
+            "DotumChe 의 `·` (U+00B7) advance 가 전각 (={:.2}) 으로 측정되어야 함, got {:.2}\n\
+             정정 전: 반각 (≈{:.2}). is_halfwidth_punct 가 U+00B7 강제 반각 처리 (Issue #630).",
+            expected, dot_advance, expected / 2.0
+        );
+    }
+
+    /// Issue #630: native 인라인 탭 RIGHT 처리. HWP `tab_extended[2]` 인코딩은
+    /// `(tab_type_enum + 1) << 8 | fill_type` 이므로 RIGHT 는 `(2<<8)|3 = 515`.
+    /// 정정 전: `tab_type = ext[2]` raw u16 → match `1/2` 매치 실패 → LEFT
+    /// fallback (tab_target 에 left-align). 정정 후: `inline_tab_type(ext)` →
+    /// match `2/3` → RIGHT 정확 매치 (tab_target 에 right-align, seg_w 만큼 좌측).
+    #[test]
+    fn test_630_native_inline_tab_right_align() {
+        let m = EmbeddedTextMeasurer;
+        // 인라인 탭 RIGHT 인코딩: ext[0]=tab_width(HU), ext[2]=(2<<8)|3
+        let mut style = TextStyle {
+            font_family: UNREGISTERED_FONT.to_string(),
+            font_size: 10.0,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        // 큰 tab_width (예: 30000 HU = 400px) — after-tab segment 가 tab_target 에
+        // right-align 되도록 충분히 큼.
+        let tab_width_hu: u16 = 30000;
+        let right_encoded: u16 = (2u16 << 8) | 3;
+        style.inline_tabs = vec![[tab_width_hu, 0, right_encoded, 0, 0, 0, 0]];
+
+        // 텍스트 "A\tBC" — `\t` 후 segment "BC" 가 right-align 되어야.
+        // tab_target = x_at_tab + tab_width_px. tab_width_px = 30000 * 96 / 7200 = 400.0
+        // seg_w = width("BC") ≈ 10.0 (font_size * 0.5 narrow heuristic 미등록 폰트, 'B'+'C')
+        // RIGHT: x_after_tab = tab_target - seg_w = 400 + x_at_tab - seg_w
+        // LEFT fallback: x_after_tab = tab_target = x_at_tab + 400
+        let positions = m.compute_char_positions("A\tBC", &style);
+        // positions: [0=A_start, 1=tab_pos, 2=tab_after, 3=B_end_C_start, 4=C_end]
+        assert!(positions.len() >= 5, "positions should have ≥ 5 entries");
+        let b_x = positions[2];
+        let c_end = positions[4];
+        let seg_w = c_end - b_x;
+
+        // tab_width_px = 400.0
+        let tab_width_px = tab_width_hu as f64 * 96.0 / 7200.0;
+        let a_width = positions[1] - positions[0];
+        // RIGHT: B_x ≈ a_width + tab_width_px - seg_w
+        // LEFT (fallback): B_x ≈ a_width + tab_width_px
+        let expected_right = a_width + tab_width_px - seg_w;
+        let diff = (b_x - expected_right).abs();
+        assert!(
+            diff < 1.0,
+            "native RIGHT 인라인 탭이 적용되어야 함. B_x={:.2} expected={:.2} (diff={:.2}px)\n\
+             LEFT fallback 시 B_x ≈ {:.2}. seg_w={:.2} (Issue #630).",
+            b_x, expected_right, diff, a_width + tab_width_px, seg_w
+        );
+    }
 }
