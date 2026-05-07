@@ -629,7 +629,8 @@ impl TypesetEngine {
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
                 let formatted = self.format_paragraph(para, composed.get(para_idx), styles);
-                self.typeset_paragraph(&mut st, para_idx, para, &formatted);
+                let is_last_in_section = para_idx + 1 == paragraphs.len();
+                self.typeset_paragraph(&mut st, para_idx, para, &formatted, is_last_in_section);
             } else {
                 // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
                 self.typeset_table_paragraph(
@@ -894,6 +895,7 @@ impl TypesetEngine {
         para_idx: usize,
         para: &Paragraph,
         fmt: &FormattedParagraph,
+        is_last_in_section: bool,
     ) {
         // Task #332 Stage 4a: layout drift 안전 마진.
         // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
@@ -1000,6 +1002,29 @@ impl TypesetEngine {
                     para_index: para_idx,
                 });
                 return;
+            }
+        }
+
+        // [Task #676] trailing empty paragraph 가드 (단단 전용):
+        // 섹션 마지막 빈 paragraph 가 LAYOUT_DRIFT_SAFETY_PX(10px) 영역 내 미세 overflow 로
+        // fit 실패 시 height=0 흡수 — 단독 빈 페이지 차단. 한컴2022 정합 시멘틱.
+        // (통합재정통계 2010.11/2011.10: pi=14 cur_h=751.0 + 16.0 = 767.0 > avail 766.2,
+        //  overflow=0.8px ≤ safety_margin 10px → 흡수.)
+        // hide_empty_line (Task #362) 분기와 달리 SectionDef bit 무관, 섹션 마지막 1개만 흡수.
+        if is_last_in_section
+            && st.col_count == 1
+            && !st.current_items.is_empty()
+        {
+            let trimmed = para.text.replace(|c: char| c.is_control(), "");
+            let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
+            if is_empty_para {
+                let total_h = st.current_height + fmt.height_for_fit;
+                let fit_fail_within_safety =
+                    total_h > available && total_h <= available + LAYOUT_DRIFT_SAFETY_PX;
+                if fit_fail_within_safety {
+                    st.current_items.push(PageItem::FullParagraph { para_index: para_idx });
+                    return;
+                }
             }
         }
 
