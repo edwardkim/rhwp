@@ -42,11 +42,11 @@ export function initRhwpDev(wasm: WasmBridge): void {
       }> = [];
 
       for (let p = startPage; p < endPage; p++) {
-        let layout: string;
+        let data: any;
         try {
-          layout = (wasm as any).doc.getPageTextLayout(p);
+          const layout = (wasm as any).doc.getPageTextLayout(p);
+          data = JSON.parse(layout);
         } catch { continue; }
-        const data = JSON.parse(layout);
         if (!data || !Array.isArray(data.runs)) continue;
 
         for (const run of data.runs as TextRunInfo[]) {
@@ -103,11 +103,11 @@ export function initRhwpDev(wasm: WasmBridge): void {
       const page = pageNum ?? 0;
       if (page >= totalPages) return null;
 
-      let layout: string;
+      let data: any;
       try {
-        layout = (wasm as any).doc.getPageTextLayout(page);
+        const layout = (wasm as any).doc.getPageTextLayout(page);
+        data = JSON.parse(layout);
       } catch { return null; }
-      const data = JSON.parse(layout);
       if (!data || !Array.isArray(data.runs)) return null;
 
       let nearest: { paraIdx: number; distance: number; text: string; container: string } | null = null;

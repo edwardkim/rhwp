@@ -96,7 +96,9 @@ async function initialize(): Promise<void> {
     await loadWebFonts([]);  // CSS @font-face 등록 + CRITICAL 폰트만 로드
     msg.textContent = 'WASM 로딩 중...';
     await wasm.initialize();
-    initRhwpDev(wasm);
+    if (import.meta.env.DEV) {
+      initRhwpDev(wasm);
+    }
     msg.textContent = 'HWP 파일을 선택해주세요.';
 
     const container = document.getElementById('scroll-container')!;
