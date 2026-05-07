@@ -605,13 +605,15 @@ impl LayoutEngine {
         for cell in &table.cells {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
-                let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
 
                 let content_height = if cell.text_direction != 0 {
                     // 세로쓰기: line_seg.segment_width가 열의 세로 길이
                     self.calc_vertical_cell_content_height(&cell.paragraphs)
                 } else {
-                    self.calc_cell_paragraphs_content_height(&cell.paragraphs, styles)
+                    let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
+                    let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                    self.calc_cell_paragraphs_content_height(&cell.paragraphs, styles, inner_width)
                 };
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
@@ -674,8 +676,10 @@ impl LayoutEngine {
             let r = cell.row as usize;
             let span = cell.row_span as usize;
             if span > 1 && r + span <= row_count {
-                let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
-                let content_height = self.calc_cell_paragraphs_content_height(&cell.paragraphs, styles);
+                let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
+                let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let content_height = self.calc_cell_paragraphs_content_height(&cell.paragraphs, styles, inner_width);
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
                 let required_height = content_height + pad_top + pad_bottom;
@@ -701,12 +705,19 @@ impl LayoutEngine {
         &self,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
+        cell_inner_width_px: f64,
     ) -> f64 {
         let cell_para_count = paragraphs.len();
         paragraphs.iter()
             .enumerate()
             .map(|(pidx, p)| {
-                let comp = compose_paragraph(p);
+                let mut comp = compose_paragraph(p);
+                // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
+                // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
+                // 측정/렌더링 일관성 보장 (table_layout.rs:1226 의 렌더링 경로와 동일).
+                crate::renderer::composer::recompose_for_cell_width(
+                    &mut comp, p, cell_inner_width_px, styles,
+                );
                 self.calc_para_lines_height(&comp.lines, pidx, cell_para_count,
                     styles.para_styles.get(p.para_shape_id as usize))
             })
@@ -1243,6 +1254,18 @@ impl LayoutEngine {
             let inner_x = cell_x + pad_left;
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+
+            // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
+            // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
+            // 한컴이 PARA_LINE_SEG 를 인코딩하지 않은 케이스 (samples/계획서.hwp) 의
+            // 줄겹침 시각 결함 정정. 정상 line_segs 인코딩된 paragraph 는 무영향.
+            for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                if let Some(comp) = composed_paras.get_mut(cpi) {
+                    crate::renderer::composer::recompose_for_cell_width(
+                        comp, para, inner_width, styles,
+                    );
+                }
+            }
 
             // AutoNumber(Page) 치환: 셀 내 쪽번호 필드를 현재 페이지 번호로 변환
             let current_pn = self.current_page_number.get();

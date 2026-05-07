@@ -85,13 +85,23 @@ impl LayoutEngine {
             let mut max_remaining_h = 0.0f64;
             for cell in &table.cells {
                 if cell.row_span == 1 && cell.row as usize == start_row {
-                    let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                    let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                    let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, self.dpi);
+                    let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
 
                     // Task #324 v3: 중첩 표 포함 여부와 무관하게 통일된 경로 사용.
                     // compute_cell_line_ranges 가 cumulative position 기반으로 nested table
                     // atomic 처리를 정확히 수행하므로 별도 분기 불필요.
+                    // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
+                    // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
                     let composed: Vec<_> = cell.paragraphs.iter()
-                        .map(|p| compose_paragraph(p))
+                        .map(|p| {
+                            let mut comp = compose_paragraph(p);
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp, p, inner_width, styles,
+                            );
+                            comp
+                        })
                         .collect();
                     let ranges = self.compute_cell_line_ranges(cell, &composed, split_start_content_offset, 0.0, styles);
                     // [Task #362] split_start 시 한 페이지보다 큰 nested table 의 잔여 높이가
@@ -354,7 +364,7 @@ impl LayoutEngine {
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
 
             // 셀 내 문단 구성
-            let composed_paras: Vec<_> = cell.paragraphs.iter()
+            let mut composed_paras: Vec<_> = cell.paragraphs.iter()
                 .map(|p| compose_paragraph(p))
                 .collect();
 
@@ -368,6 +378,16 @@ impl LayoutEngine {
             let inner_x = cell_x + pad_left;
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+
+            // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
+            // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
+            for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                if let Some(comp) = composed_paras.get_mut(cpi) {
+                    crate::renderer::composer::recompose_for_cell_width(
+                        comp, para, inner_width, styles,
+                    );
+                }
+            }
 
 
             // 분할 행: compute_cell_line_ranges()로 표시할 줄 범위 계산

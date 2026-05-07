@@ -505,6 +505,23 @@ impl HeightMeasurer {
                 } else {
                     hwpunit_to_px(table.padding.bottom as i32, self.dpi)
                 };
+                // [Task #671] 좌우 패딩 — recompose_for_cell_width 의 inner_width 계산용
+                let pad_left = if prefer_cell_axis(cell.padding.left, table.padding.left) {
+                    hwpunit_to_px(cell.padding.left as i32, self.dpi)
+                } else {
+                    hwpunit_to_px(table.padding.left as i32, self.dpi)
+                };
+                let pad_right = if prefer_cell_axis(cell.padding.right, table.padding.right) {
+                    hwpunit_to_px(cell.padding.right as i32, self.dpi)
+                } else {
+                    hwpunit_to_px(table.padding.right as i32, self.dpi)
+                };
+                let cell_w_px = if cell.width < 0x80000000 {
+                    hwpunit_to_px(cell.width as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
 
                 // 셀 내 문단들의 실제 높이 합산
                 let text_height: f64 = if cell.text_direction != 0 {
@@ -524,7 +541,13 @@ impl HeightMeasurer {
                     cell.paragraphs.iter()
                         .enumerate()
                         .map(|(pidx, p)| {
-                            let comp = compose_paragraph(p);
+                            let mut comp = compose_paragraph(p);
+                            // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
+                            // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
+                            // 측정/렌더링 일관성 (layout 의 recompose_for_cell_width 호출과 동일).
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp, p, cell_inner_width, styles,
+                            );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
                             let spacing_before = if pidx > 0 {
@@ -671,6 +694,22 @@ impl HeightMeasurer {
                      if cell.padding.bottom != 0 { hwpunit_to_px(cell.padding.bottom as i32, self.dpi) }
                      else { hwpunit_to_px(table.padding.bottom as i32, self.dpi) })
                 };
+                // [Task #671] 좌우 패딩 (recompose_for_cell_width inner_width 계산용)
+                let (pad_left, pad_right) = if !cell.apply_inner_margin {
+                    (hwpunit_to_px(table.padding.left as i32, self.dpi),
+                     hwpunit_to_px(table.padding.right as i32, self.dpi))
+                } else {
+                    (if cell.padding.left != 0 { hwpunit_to_px(cell.padding.left as i32, self.dpi) }
+                     else { hwpunit_to_px(table.padding.left as i32, self.dpi) },
+                     if cell.padding.right != 0 { hwpunit_to_px(cell.padding.right as i32, self.dpi) }
+                     else { hwpunit_to_px(table.padding.right as i32, self.dpi) })
+                };
+                let cell_w_px = if cell.width < 0x80000000 {
+                    hwpunit_to_px(cell.width as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
                 let text_height: f64 = if cell.text_direction != 0 {
                     // 세로쓰기: max(segment_width)
                     let mut max_h: f64 = 0.0;
@@ -686,7 +725,12 @@ impl HeightMeasurer {
                     cell.paragraphs.iter()
                         .enumerate()
                         .map(|(pidx, p)| {
-                            let comp = compose_paragraph(p);
+                            let mut comp = compose_paragraph(p);
+                            // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
+                            // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp, p, cell_inner_width, styles,
+                            );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
                             let spacing_before = if pidx > 0 {

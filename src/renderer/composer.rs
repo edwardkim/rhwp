@@ -921,6 +921,187 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
     }).sum()
 }
 
+/// [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
+/// 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할한다.
+///
+/// 본질: HWP5 일부 파일은 셀 paragraph 의 PARA_LINE_SEG 를 인코딩하지 않는다
+/// (한컴이 layout 시 자동 계산). 본 환경 fallback (`compose_lines` 단일 ComposedLine
+/// 압축) 은 셀 너비를 초과하는 텍스트가 한 줄에 그려져 줄겹침 시각 결함을 발생.
+///
+/// 본 함수는 다음 가드로 동작 영역을 좁힌다:
+/// - `para.line_segs.is_empty()` (한컴 인코딩 부재)
+/// - `composed.lines.len() == 1` (compose_lines fallback 결과)
+/// - 단일 ComposedLine 의 측정 폭이 `cell_inner_width_px` 초과
+///
+/// 분할 전략: 단어 경계 (공백) 우선, 단어가 셀 너비 초과 시 글자 단위 break.
+pub fn recompose_for_cell_width(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    if !para.line_segs.is_empty() {
+        return;
+    }
+    if composed.lines.len() != 1 {
+        return;
+    }
+    if cell_inner_width_px <= 0.0 {
+        return;
+    }
+    let single_line = composed.lines.remove(0);
+    let total_width = estimate_composed_line_width(&single_line, styles);
+    if total_width <= cell_inner_width_px + 0.5 {
+        composed.lines.push(single_line);
+        return;
+    }
+    composed.lines = split_composed_line_by_width(&single_line, cell_inner_width_px, styles);
+}
+
+/// 단일 ComposedLine 을 셀 가용 너비에 맞춰 다중 ComposedLine 으로 분할.
+///
+/// 분할 단위: 공백 단어 경계 우선, 단일 단어가 너비 초과 시 글자 단위 break.
+/// 각 분할 줄의 메타데이터 (line_height/baseline/segment_width 등) 는 원본 보존.
+fn split_composed_line_by_width(
+    src: &ComposedLine,
+    max_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> Vec<ComposedLine> {
+    let mut result: Vec<ComposedLine> = Vec::new();
+    let mut current_runs: Vec<ComposedTextRun> = Vec::new();
+    let mut current_width = 0.0;
+    let mut current_char_start = src.char_start;
+    let mut chars_in_line = 0usize;
+    let mut current_run_text = String::new();
+    let mut current_run_template: Option<ComposedTextRun> = None;
+
+    let flush_run = |runs: &mut Vec<ComposedTextRun>,
+                     text: &mut String,
+                     template: &Option<ComposedTextRun>| {
+        if !text.is_empty() {
+            if let Some(t) = template {
+                runs.push(ComposedTextRun {
+                    text: std::mem::take(text),
+                    char_style_id: t.char_style_id,
+                    lang_index: t.lang_index,
+                    char_overlap: t.char_overlap.clone(),
+                    footnote_marker: t.footnote_marker,
+                    display_text: None,
+                });
+            } else {
+                text.clear();
+            }
+        }
+    };
+
+    let push_line = |result: &mut Vec<ComposedLine>,
+                     runs: &mut Vec<ComposedTextRun>,
+                     current_char_start: &mut usize,
+                     chars_in_line: &mut usize,
+                     current_width: &mut f64| {
+        if !runs.is_empty() {
+            result.push(ComposedLine {
+                runs: std::mem::take(runs),
+                line_height: src.line_height,
+                baseline_distance: src.baseline_distance,
+                segment_width: src.segment_width,
+                column_start: src.column_start,
+                line_spacing: src.line_spacing,
+                has_line_break: false,
+                char_start: *current_char_start,
+            });
+            *current_char_start += *chars_in_line;
+            *chars_in_line = 0;
+            *current_width = 0.0;
+        }
+    };
+
+    for run in &src.runs {
+        let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        // 현재 run 의 template 변경 (char_style 다른 run 들 처리)
+        if current_run_template.as_ref().map(|t| {
+            t.char_style_id != run.char_style_id || t.lang_index != run.lang_index
+        }).unwrap_or(true) {
+            flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+            current_run_template = Some(run.clone());
+        }
+        // run 텍스트를 단어 단위로 분할 (공백 포함)
+        let mut word = String::new();
+        for ch in run.text.chars() {
+            word.push(ch);
+            // 공백 또는 마지막 글자 직전이 단어 경계
+            if ch == ' ' || ch == '\t' {
+                let word_width = estimate_text_width(&word, &ts);
+                // 현재 단어가 추가되면 max_width 초과하는지 검사
+                if current_width + word_width > max_width_px && (chars_in_line > 0 || !current_run_text.is_empty()) {
+                    // 현재 줄을 flush 후 새 줄 시작
+                    flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+                    push_line(&mut result, &mut current_runs, &mut current_char_start,
+                              &mut chars_in_line, &mut current_width);
+                }
+                // 단어 자체가 max_width 초과 시 글자 단위 break
+                if word_width > max_width_px && current_width == 0.0 {
+                    for wch in word.chars() {
+                        let wch_str: String = std::iter::once(wch).collect();
+                        let wch_width = estimate_text_width(&wch_str, &ts);
+                        if current_width + wch_width > max_width_px && chars_in_line > 0 {
+                            flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+                            push_line(&mut result, &mut current_runs, &mut current_char_start,
+                                      &mut chars_in_line, &mut current_width);
+                        }
+                        current_run_text.push(wch);
+                        current_width += wch_width;
+                        chars_in_line += 1;
+                    }
+                } else {
+                    current_run_text.push_str(&word);
+                    current_width += word_width;
+                    chars_in_line += word.chars().count();
+                }
+                word.clear();
+            }
+        }
+        // run 끝에 남은 단어 처리
+        if !word.is_empty() {
+            let word_width = estimate_text_width(&word, &ts);
+            if current_width + word_width > max_width_px && (chars_in_line > 0 || !current_run_text.is_empty()) {
+                flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+                push_line(&mut result, &mut current_runs, &mut current_char_start,
+                          &mut chars_in_line, &mut current_width);
+            }
+            // 단어 자체가 max_width 초과 시 글자 단위 break
+            if word_width > max_width_px && current_width == 0.0 {
+                for wch in word.chars() {
+                    let wch_str: String = std::iter::once(wch).collect();
+                    let wch_width = estimate_text_width(&wch_str, &ts);
+                    if current_width + wch_width > max_width_px && chars_in_line > 0 {
+                        flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+                        push_line(&mut result, &mut current_runs, &mut current_char_start,
+                                  &mut chars_in_line, &mut current_width);
+                    }
+                    current_run_text.push(wch);
+                    current_width += wch_width;
+                    chars_in_line += 1;
+                }
+            } else {
+                current_run_text.push_str(&word);
+                current_width += word_width;
+                chars_in_line += word.chars().count();
+            }
+        }
+    }
+    // 마지막 줄 flush
+    flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+    push_line(&mut result, &mut current_runs, &mut current_char_start,
+              &mut chars_in_line, &mut current_width);
+
+    if result.is_empty() {
+        // 안전장치: 절대 빈 결과 반환하지 않음
+        result.push(src.clone());
+    }
+    result
+}
+
 /// [Task #555] 폰트 매트릭스 (글자폭/줄간격) 계산용 effective text 반환.
 ///
 /// PUA 옛한글 변환 (Task #528) 후 `run.display_text` 가 자모 시퀀스를 보유하면
