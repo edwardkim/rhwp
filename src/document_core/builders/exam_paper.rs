@@ -29,14 +29,15 @@ pub fn build_exam_paper(ingest: &IngestDocument) -> Document {
         // 1. stem
         if q.stem_blocks.is_empty() {
             // stem_blocks 미제공 시 stem 한 줄 사용
-            let line = format!("{}. {}", q.number, q.stem);
-            doc.sections[0].paragraphs.push(make_text_para(&line));
+            doc.sections[0]
+                .paragraphs
+                .push(make_text_para(&apply_number_prefix(q.number, &q.stem)));
         } else {
             for (b_idx, block) in q.stem_blocks.iter().enumerate() {
                 match block {
                     StemBlock::Text { text } => {
                         let prefixed = if b_idx == 0 {
-                            format!("{}. {}", q.number, text)
+                            apply_number_prefix(q.number, text)
                         } else {
                             text.clone()
                         };
@@ -65,6 +66,20 @@ pub fn build_exam_paper(ingest: &IngestDocument) -> Document {
     }
 
     doc
+}
+
+/// 첫 stem 텍스트에 `{number}. ` 접두어를 추가하되, 사용자가 이미 명시적으로
+/// 번호 또는 그룹 지시문(`[1~3]` 등)을 포함했으면 그대로 둔다.
+///
+/// e2e #663 검증에서 발견 — Skill이 `2. ㉠에 해당하는 ...` 처럼 작성한 경우
+/// 빌더가 또 `2. ` prefix를 추가해 `2. 2. ㉠...` 중복 출력되던 문제 정정.
+fn apply_number_prefix(number: u32, text: &str) -> String {
+    let auto_prefix = format!("{number}. ");
+    if text.starts_with(&auto_prefix) || text.starts_with('[') {
+        text.to_string()
+    } else {
+        format!("{auto_prefix}{text}")
+    }
 }
 
 /// 한 줄짜리 텍스트 Paragraph 생성 헬퍼.
@@ -199,5 +214,54 @@ mod tests {
         let ingest = parse_ingest_str(json).unwrap();
         let doc = build_exam_paper(&ingest);
         assert_eq!(doc.sections[0].paragraphs[0].text, "5. 단순 stem");
+    }
+
+    #[test]
+    fn test_build_stem_with_explicit_number_prefix_no_duplication() {
+        // e2e #663 회귀: Skill이 stem 첫 블록에 "2. ..."로 작성해도 빌더가 또 "2. "를
+        // 추가하지 않음.
+        let json = r#"{
+            "version": "1",
+            "questions": [{
+                "number": 2,
+                "stem": "㉠에 해당하는 내용으로 가장 적절한 것은?",
+                "stem_blocks": [
+                    {"type": "text", "text": "2. ㉠에 해당하는 내용으로 가장 적절한 것은?"}
+                ],
+                "choices": [{"label": "①", "text": "X"}],
+                "media": []
+            }]
+        }"#;
+        let ingest = parse_ingest_str(json).unwrap();
+        let doc = build_exam_paper(&ingest);
+        assert_eq!(
+            doc.sections[0].paragraphs[0].text,
+            "2. ㉠에 해당하는 내용으로 가장 적절한 것은?"
+        );
+    }
+
+    #[test]
+    fn test_build_stem_with_group_directive_no_prefix() {
+        // e2e #663 회귀: 첫 stem_block이 "[1~3] 다음 글을 ..." 형식의 그룹 지시문이면
+        // 빌더가 "1. " prefix를 강제로 붙이지 않음.
+        let json = r#"{
+            "version": "1",
+            "questions": [{
+                "number": 1,
+                "stem": "윗글의 내용과 일치하지 않는 것은?",
+                "stem_blocks": [
+                    {"type": "text", "text": "[1~3] 다음 글을 읽고 물음에 답하시오."},
+                    {"type": "text", "text": "본문..."}
+                ],
+                "choices": [{"label": "①", "text": "X"}],
+                "media": []
+            }]
+        }"#;
+        let ingest = parse_ingest_str(json).unwrap();
+        let doc = build_exam_paper(&ingest);
+        assert_eq!(
+            doc.sections[0].paragraphs[0].text,
+            "[1~3] 다음 글을 읽고 물음에 답하시오."
+        );
     }
 }

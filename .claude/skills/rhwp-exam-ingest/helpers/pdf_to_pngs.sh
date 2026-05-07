@@ -27,7 +27,8 @@ if command -v pdftoppm >/dev/null 2>&1; then
     for f in page-*.png; do
         if [ -f "$f" ]; then
             n=$(echo "$f" | sed 's/page-\([0-9]*\)\.png/\1/')
-            printf -v new "page_%03d.png" "$n"
+            # 10진수 강제 — "08", "09" 등 leading-zero 입력이 8진수로 해석되는 것 방지
+            printf -v new "page_%03d.png" "$((10#$n))"
             mv "$f" "$new"
         fi
     done
