@@ -71,7 +71,7 @@ export function updateResizeDrag(this: any, e: MouseEvent): void {
   const pageIdx = this.resizeDragState.edge.pageIndex;
   const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
   const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
-  const pageLeft = (scrollContent.clientWidth - pageDisplayWidth) / 2;
+  const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
   const pageX = (contentX - pageLeft) / zoom;
   const pageY = (contentY - pageOffset) / zoom;
 
@@ -108,7 +108,7 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
   const pageIdx = state.edge.pageIndex;
   const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
   const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
-  const pageLeft = (scrollContent.clientWidth - pageDisplayWidth) / 2;
+  const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
   const pageX = (contentX - pageLeft) / zoom;
   const pageY = (contentY - pageOffset) / zoom;
 
@@ -397,10 +397,10 @@ export function updateMoveDrag(this: any, e: MouseEvent): void {
   const cr = sc.getBoundingClientRect();
   const cx = e.clientX - cr.left;
   const cy = e.clientY - cr.top;
-  const pi = this.virtualScroll.getPageAtY(cy);
+  const pi = this.virtualScroll.getPageAtPoint(cx, cy);
   const po = this.virtualScroll.getPageOffset(pi);
   const pw = this.virtualScroll.getPageWidth(pi);
-  const pl = (sc.clientWidth - pw) / 2;
+  const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
   const px = (cx - pl) / zoom;
   const py = (cy - po) / zoom;
 

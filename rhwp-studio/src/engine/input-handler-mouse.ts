@@ -17,7 +17,7 @@ export function onClick(this: any, e: MouseEvent): void {
     const cr = sc.getBoundingClientRect();
     const cx = e.clientX - cr.left;
     const cy = e.clientY - cr.top;
-    const pi = this.virtualScroll.getPageAtY(cy);
+    const pi = this.virtualScroll.getPageAtPoint(cx, cy);
     const po = this.virtualScroll.getPageOffset(pi);
     const pw = this.virtualScroll.getPageWidth(pi);
     const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
@@ -123,7 +123,7 @@ export function onClick(this: any, e: MouseEvent): void {
         const cr = sc.getBoundingClientRect();
         const cx = e.clientX - cr.left;
         const cy = e.clientY - cr.top;
-        const pi = this.virtualScroll.getPageAtY(cy);
+        const pi = this.virtualScroll.getPageAtPoint(cx, cy);
         const po = this.virtualScroll.getPageOffset(pi);
         const pw = this.virtualScroll.getPageWidth(pi);
         const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
@@ -170,7 +170,7 @@ export function onClick(this: any, e: MouseEvent): void {
           const cr = sc.getBoundingClientRect();
           const cx = e.clientX - cr.left;
           const cy = e.clientY - cr.top;
-          const pi = this.virtualScroll.getPageAtY(cy);
+          const pi = this.virtualScroll.getPageAtPoint(cx, cy);
           const po = this.virtualScroll.getPageOffset(pi);
           const pw = this.virtualScroll.getPageWidth(pi);
           const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
@@ -351,7 +351,7 @@ export function onClick(this: any, e: MouseEvent): void {
             const cr = sc.getBoundingClientRect();
             const cx = e.clientX - cr.left;
             const cy = e.clientY - cr.top;
-            const pi = this.virtualScroll.getPageAtY(cy);
+            const pi = this.virtualScroll.getPageAtPoint(cx, cy);
             const po = this.virtualScroll.getPageOffset(pi);
             const pw = this.virtualScroll.getPageWidth(pi);
             const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
@@ -425,7 +425,7 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentRect = scrollContent.getBoundingClientRect();
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
-            const pageIdx = this.virtualScroll.getPageAtY(contentY);
+            const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -467,7 +467,7 @@ export function onClick(this: any, e: MouseEvent): void {
   const contentY = e.clientY - contentRect.top;
 
   // 페이지 찾기
-  const pageIdx = this.virtualScroll.getPageAtY(contentY);
+  const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
   const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
 
   // CSS 중앙 정렬 보정 (left:50%; transform:translateX(-50%))
@@ -804,7 +804,7 @@ export function onDblClick(this: any, e: MouseEvent): void {
         const cr = sc.getBoundingClientRect();
         const contentX = e.clientX - cr.left;
         const contentY = e.clientY - cr.top;
-        const pageIdx = this.virtualScroll.getPageAtY(contentY);
+        const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
         if (pageIdx >= 0) {
           const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
           const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
@@ -883,7 +883,7 @@ export function onContextMenu(this: any, e: MouseEvent): void {
   const contentRect = scrollContent.getBoundingClientRect();
   const contentX = e.clientX - contentRect.left;
   const contentY = e.clientY - contentRect.top;
-  const pageIdx = this.virtualScroll.getPageAtY(contentY);
+  const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
   const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
   const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
   const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -925,7 +925,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       const cr = sc.getBoundingClientRect();
       const cx = e.clientX - cr.left;
       const cy = e.clientY - cr.top;
-      const pi = this.virtualScroll.getPageAtY(cy);
+      const pi = this.virtualScroll.getPageAtPoint(cx, cy);
       const po = this.virtualScroll.getPageOffset(pi);
       const pw = this.virtualScroll.getPageWidth(pi);
       const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
@@ -1140,7 +1140,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
         const picBbox = this.findPictureBbox(ref);
         if (picBbox) {
           const zoom = this.viewportManager.getZoom();
-          const pi = this.virtualScroll.getPageAtY(y);
+          const pi = this.virtualScroll.getPageAtPoint(x, y);
           const po = this.virtualScroll.getPageOffset(pi);
           const pw = this.virtualScroll.getPageWidth(pi);
           const pl = this.virtualScroll.getPageLeftResolved(pi, scrollContent.clientWidth);
@@ -1190,7 +1190,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       const ref = this.cursor.getSelectedTableRef();
       if (ref) {
         const zoom = this.viewportManager.getZoom();
-        const pi = this.virtualScroll.getPageAtY(y);
+        const pi = this.virtualScroll.getPageAtPoint(x, y);
         const po = this.virtualScroll.getPageOffset(pi);
         const pw = this.virtualScroll.getPageWidth(pi);
         const pl = this.virtualScroll.getPageLeftResolved(pi, scrollContent.clientWidth);
@@ -1237,7 +1237,7 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   const contentRect = scrollContent.getBoundingClientRect();
   const contentX = e.clientX - contentRect.left;
   const contentY = e.clientY - contentRect.top;
-  const pageIdx = this.virtualScroll.getPageAtY(contentY);
+  const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
   const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
   const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
   const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
