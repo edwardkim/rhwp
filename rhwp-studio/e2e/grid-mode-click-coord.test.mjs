@@ -17,7 +17,7 @@
  *   npx vite --host 0.0.0.0 --port 7700 &
  *   node e2e/grid-mode-click-coord.test.mjs --mode=headless
  */
-import { runTest, loadHwpFile, screenshot } from './helpers.mjs';
+import { runTest, loadHwpFile, screenshot, assert } from './helpers.mjs';
 
 async function dumpGridState(page, label) {
   console.log(`\n=== ${label} ===`);
@@ -36,19 +36,30 @@ async function dumpGridState(page, label) {
       const correct = vs.getPageLeft(i);
       const pw = vs.getPageWidth(i);
       const buggy = (clientWidth - pw) / 2;
+      const helperResolved = vs.getPageLeftResolved(i, clientWidth);
       const col = i % Math.max(columns, 1);
       const delta = correct >= 0 ? (buggy - correct) : 0;
-      rows.push({ i, col, pw, correct, buggy, delta });
+      // 헬퍼 기대값: 그리드 모드는 pageLefts[i], 단일 컬럼은 buggy 공식과 동치
+      const expectedHelper = correct >= 0 ? correct : buggy;
+      const helperDelta = helperResolved - expectedHelper;
+      rows.push({ i, col, pw, correct, buggy, helperResolved, helperDelta, delta });
     }
     return { zoom, isGrid, columns, pageCount, clientWidth, rows };
   });
 
   console.log(`  zoom=${state.zoom}  grid=${state.isGrid}  columns=${state.columns}  pageCount=${state.pageCount}  clientWidth=${state.clientWidth}`);
-  console.log(`  | i  | col | pw     | correct(pageLefts[i]) | buggy(formula) | delta_px |`);
-  console.log(`  |----|-----|--------|-----------------------|----------------|----------|`);
+  console.log(`  | i  | col | pw     | correct(pageLefts[i]) | buggy(formula) | helper | delta_px |`);
+  console.log(`  |----|-----|--------|-----------------------|----------------|--------|----------|`);
   for (const r of state.rows.slice(0, 8)) {  // 첫 8 페이지만 출력
-    console.log(`  | ${String(r.i).padEnd(2)} | ${String(r.col).padEnd(3)} | ${r.pw.toFixed(1).padEnd(6)} | ${r.correct.toFixed(1).padEnd(21)} | ${r.buggy.toFixed(1).padEnd(14)} | ${r.delta.toFixed(1).padEnd(8)} |`);
+    console.log(`  | ${String(r.i).padEnd(2)} | ${String(r.col).padEnd(3)} | ${r.pw.toFixed(1).padEnd(6)} | ${r.correct.toFixed(1).padEnd(21)} | ${r.buggy.toFixed(1).padEnd(14)} | ${r.helperResolved.toFixed(1).padEnd(6)} | ${r.delta.toFixed(1).padEnd(8)} |`);
   }
+
+  // 헬퍼 동치성 assert: 모든 페이지에 대해 |helperDelta| < 0.01
+  const maxHelperDelta = Math.max(...state.rows.map(r => Math.abs(r.helperDelta)));
+  assert(
+    maxHelperDelta < 0.01,
+    `[${label}] getPageLeftResolved == 기대값 (max|helperDelta|=${maxHelperDelta.toFixed(4)}px)`
+  );
   return state;
 }
 
@@ -64,6 +75,9 @@ async function probeClickAtPage(page, label, pageIdx, hwpX, hwpY) {
     const zoom = vm.getZoom();
     const pw = vs.getPageWidth(pageIdx);
     const po = vs.getPageOffset(pageIdx);
+    const columns = typeof vs.getColumns === 'function' ? vs.getColumns() : 1;
+    const col = pageIdx % Math.max(columns, 1);
+    const isLastCol = col === columns - 1;
 
     // CORRECT: pageLefts[i] 사용 (실제 페이지 element 위치)
     const correctLeft = vs.getPageLeft(pageIdx);
@@ -84,6 +98,7 @@ async function probeClickAtPage(page, label, pageIdx, hwpX, hwpY) {
       zoom, pw, po, correctLeft, correctLeftDOM, buggyLeft,
       correctDocX, correctDocY, buggyDocX, buggyDocY,
       delta_x: buggyDocX - correctDocX,
+      columns, col, isLastCol,
     };
   }, { pageIdx, hwpX, hwpY });
 
@@ -135,6 +150,25 @@ async function probeClickAtPage(page, label, pageIdx, hwpX, hwpY) {
   console.log(`  CORRECT click @(${correctClick.clientX.toFixed(1)}, ${correctClick.clientY.toFixed(1)}) → pos=${JSON.stringify(afterCorrectClick.pos)} rectPage=${afterCorrectClick.rectPageIdx}`);
   console.log(`  BUGGY  click @(${(correctClick.clientX + probe.delta_x).toFixed(1)}, ${correctClick.clientY.toFixed(1)}) → pos=${JSON.stringify(afterBuggyClick.pos)} rectPage=${afterBuggyClick.rectPageIdx}`);
 
+  // fix 검증: CORRECT click → cursor.pos 정상 (모든 col)
+  assert(
+    afterCorrectClick.pos !== null,
+    `[${label}] CORRECT click → cursor.pos !== null`
+  );
+
+  // rectPageIdx assert 는 last-col 케이스에서만 strict 하게 검증.
+  // non-last col 은 getPageAtY 가 X 무시하고 row 의 last page idx 만 반환하는 별개 결함 (Issue #689)
+  // 으로 인해 항상 마지막 col 페이지로 cursor 가 떨어짐. Task #685 의 pageLeft 정정만으로는 해결되지 않는
+  // 후속 결함이며, 본 e2e 는 #685 정정 효과 (last col 에서 정확한 pageLefts[i] 적용) 만 검증.
+  if (probe.isLastCol) {
+    assert(
+      afterCorrectClick.rectPageIdx === pageIdx,
+      `[${label}] CORRECT click → cursor.rectPageIdx=${afterCorrectClick.rectPageIdx} (기대 ${pageIdx}, last col=${probe.col}/columns=${probe.columns})`
+    );
+  } else {
+    console.log(`  SKIP: [${label}] non-last col rectPageIdx strict assert (col=${probe.col}/columns=${probe.columns}) — getPageAtY X-무시 결함, Issue #689 후속`);
+  }
+
   return { probe, correctClick, afterCorrectClick, afterBuggyClick };
 }
 
@@ -169,6 +203,12 @@ runTest('보류 ① 그리드 좌표 결함 — exam_kor.hwp zoom=0.5 정량 측
 
   const stateZ025 = await dumpGridState(page, 'zoom=0.25 그리드 상태');
 
+  // [3b] zoom=0.25 last col (col=4) click 검증 — pageLeft 정정 효과
+  if (stateZ025.columns >= 2 && stateZ025.pageCount > stateZ025.columns - 1) {
+    const lastColPage = stateZ025.columns - 1;
+    await probeClickAtPage(page, `page ${lastColPage} (zoom=0.25 last col)`, lastColPage, 100, 200);
+  }
+
   // [4] zoom=1.0 (단일 컬럼) - 비교 baseline
   console.log('\n[4] zoom=1.0 변경 (단일 컬럼)');
   await page.evaluate(() => {
@@ -177,6 +217,10 @@ runTest('보류 ① 그리드 좌표 결함 — exam_kor.hwp zoom=0.5 정량 측
   await page.evaluate(() => new Promise(r => setTimeout(r, 600)));
 
   const stateZ10 = await dumpGridState(page, 'zoom=1.0 단일 컬럼 (정상 baseline)');
+
+  // [4b] zoom=1.0 click baseline — 단일 컬럼 모드 click 무회귀 확인
+  console.log('\n[4b] zoom=1.0 click baseline');
+  await probeClickAtPage(page, 'page 0 (zoom=1.0 single col)', 0, 100, 200);
 
   // [5] zoom=0.5 + 실제 click 측정 — col 0/1 페이지 비교
   console.log('\n[5] zoom=0.5 실제 click 측정');

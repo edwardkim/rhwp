@@ -155,3 +155,23 @@ zoom=0.5, page 1 (col 1) 에서 hwpX=100 좌표를 의도한 click:
 - BUGGY click @(579.4, 242.0) → cursor.pos = `{sec:0, para:31, char:0}` (page 0 의 영역으로 잘못 떨어짐)
 
 **결론**: 그리드 모드에서 input-handler-mouse 의 14개 분기는 모든 페이지에서 ±수백 px 단위로 click 좌표를 어긋나게 만듬. 가운데 열 (홀수 columns 일 때 mid-col) 만 우연히 정합.
+
+## 정정 완료 (2026-05-08, Task #685) — 부분 정정
+
+본 결함의 1차 원인 (`(clientWidth - pageWidth) / 2` 단일 컬럼 가정 공식) 은 Task #685 에서 정정됨:
+
+- `virtualScroll.getPageLeftResolved(pageIdx, containerWidth)` 헬퍼 도입 — 그리드 모드는 `pageLefts[i]`, 단일 컬럼은 `(containerWidth - pageWidth) / 2` fallback (sentinel −1 해소).
+- `input-handler-mouse.ts` 14곳 + `input-handler.ts` (`formBboxToOverlayRect`) 1곳 헬퍼 일괄 치환 (총 15곳).
+- e2e (`grid-mode-click-coord.test.mjs`) 회귀 assert 추가 — `getPageLeftResolved` 동치성 + last-col CORRECT click → cursor.rectPageIdx 정합 검증.
+
+### 후속 결함 (Issue #689)
+
+Stage 3 e2e assert 강화로 추가 결함이 노출됨: [`virtual-scroll.ts` `getPageAtY(docY)`](../../rhwp-studio/src/view/virtual-scroll.ts#L133-L140) 가 Y 좌표만 보고 row 의 last page idx 만 반환 → non-last col 페이지 click 시 row 의 last col 페이지로 잘못 처리됨.
+
+| zoom | columns | last col 정합 | non-last col 정합 |
+|------|---------|--------------|-------------------|
+| 1.0 | 1 | ✅ (col 0 = last) | n/a |
+| 0.5 | 2 | ✅ col 1 | ❌ col 0 |
+| 0.25 | 5 | ✅ col 4 | ❌ col 0~3 |
+
+본 후속 결함은 [Issue #689](https://github.com/edwardkim/rhwp/issues/689) 으로 분리 등록 (`getPageAtPoint(docX, docY)` 헬퍼 도입 + 14곳 `getPageAtY` 호출 일괄 치환 방향). Task #685 의 정정은 last-col 케이스에서 정상 동작하며, non-last col 정정은 #689 에서 진행.
