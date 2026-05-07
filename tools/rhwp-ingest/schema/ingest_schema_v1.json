@@ -48,6 +48,11 @@
         "media": {
           "type": "array",
           "items": { "$ref": "#/definitions/Media" }
+        },
+        "auto_number": {
+          "type": "boolean",
+          "default": true,
+          "description": "true면 빌더가 첫 stem 텍스트 앞에 '{number}. '를 자동 prepend. Skill이 stem_blocks 첫 텍스트에 명시적으로 번호/그룹 지시문을 작성한 경우 false로 설정해 중복을 회피한다. 본 필드 미지정 시 true."
         }
       }
     },

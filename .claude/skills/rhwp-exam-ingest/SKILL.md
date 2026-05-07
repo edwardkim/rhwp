@@ -122,6 +122,7 @@ bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP
     {
       "number": 1,
       "stem": "다음 글의 주제로 가장 적절한 것은?",
+      "auto_number": true,
       "stem_blocks": [
         {"type": "text", "text": "다음 글의 주제로 가장 적절한 것은?"},
         {"type": "text", "text": "긴 지문..."},
@@ -144,6 +145,19 @@ bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP
 ```
 
 `media[].id`는 `--media-dir` 기준 상대 경로. Claude가 Step 4에서 자르기 결과 PNG를 그 경로에 저장.
+
+#### `auto_number` 필드 사용법 (v2 정책 — Task #660 후속)
+
+빌더는 첫 stem 텍스트 앞에 `{number}. ` prefix를 자동으로 붙인다. 다만 다음 두 경우에는 **사용자가 stem 텍스트 자체에 명시적으로 작성**하는 편이 자연스럽다 — 이 때 `auto_number: false`를 함께 설정해 빌더의 자동 prefix를 끈다.
+
+| 상황 | `auto_number` | stem_blocks 첫 텍스트 예시 |
+|------|---------------|----------------------------|
+| 일반 문제 (default) | `true` 또는 미지정 | `"다음 글의 주제는?"` → 빌더가 `"1. 다음 글의 주제는?"` 생성 |
+| **공유 지문 그룹 지시문** | `false` | `"[1~3] 다음 글을 읽고 물음에 답하시오."` → 그대로 출력 |
+| **사용자가 명시적으로 prefix 작성** | `false` | `"2. ㉠에 해당하는 내용으로 가장 적절한 것은?"` → 그대로 출력 |
+| **`<보기>` / `[보기]` 본문** | `true` | `"[보기]를 참고하여…"` → 빌더가 `"12. [보기]를 참고하여…"` 생성 |
+
+**권장**: 가능하면 `auto_number: true`(default) + stem 텍스트는 prefix 없이 작성하는 것이 깔끔하다. 공유 지문이나 그룹 지시문 등 빌더의 자동 prefix가 어색한 경우에만 `false`로 끈다.
 
 ### Step 4: 이미지 자르기
 
