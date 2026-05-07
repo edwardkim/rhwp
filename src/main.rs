@@ -83,7 +83,8 @@ fn print_help() {
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
     println!("                 controls(타입+속성), tab_extended, ParaShape, TabDef");
-    println!("      표/그림/도형 컨트롤: treat_as_char, wrap, size, offset, page_break 등");
+    println!("      표: page_break, outer_margin, treat_as_char, wrap, size, v_offset/h_offset");
+    println!("      그림/도형: treat_as_char, wrap, size, v_offset/h_offset, vert_rel/horz_rel");
     println!();
     println!("  thumbnail <파일.hwp> [옵션]");
     println!("      HWP 파일에서 썸네일(PrvImage) 추출");
@@ -2378,7 +2379,7 @@ fn diff_table(
         diffs.push(format!("ctrl[{}] tbl cell_spacing: A={} vs B={}", ci, a.cell_spacing, b.cell_spacing));
     }
     if a.border_fill_id != b.border_fill_id {
-        diffs.push(format!("ctrl[{}] tbl border_fill: A={} vs B={}", ci, a.border_fill_id, b.border_fill_id));
+        diffs.push(format!("ctrl[{}] tbl border_fill_id: A={} vs B={}", ci, a.border_fill_id, b.border_fill_id));
     }
     if a.outer_margin_left != b.outer_margin_left
         || a.outer_margin_right != b.outer_margin_right
@@ -2412,10 +2413,10 @@ fn diff_common_obj(
         diffs.push(format!("ctrl[{}] {} size: A={}x{} vs B={}x{}", ci, tag, a.width, a.height, b.width, b.height));
     }
     if a.vertical_offset != b.vertical_offset {
-        diffs.push(format!("ctrl[{}] {} voff: A={} vs B={}", ci, tag, a.vertical_offset, b.vertical_offset));
+        diffs.push(format!("ctrl[{}] {} v_offset: A={} vs B={}", ci, tag, a.vertical_offset, b.vertical_offset));
     }
     if a.horizontal_offset != b.horizontal_offset {
-        diffs.push(format!("ctrl[{}] {} hoff: A={} vs B={}", ci, tag, a.horizontal_offset, b.horizontal_offset));
+        diffs.push(format!("ctrl[{}] {} h_offset: A={} vs B={}", ci, tag, a.horizontal_offset, b.horizontal_offset));
     }
     if a.vert_rel_to != b.vert_rel_to {
         diffs.push(format!("ctrl[{}] {} vert_rel: A={:?} vs B={:?}", ci, tag, a.vert_rel_to, b.vert_rel_to));
@@ -2591,20 +2592,20 @@ fn ir_diff(args: &[String]) {
                 for ci in 0..ctrl_count {
                     let ca = &pa.controls[ci];
                     let cb = &pb.controls[ci];
-                    let tag_a = control_tag(ca);
-                    let tag_b = control_tag(cb);
-                    if tag_a != tag_b {
-                        diffs.push(format!("ctrl[{}] type: A={} vs B={}", ci, tag_a, tag_b));
-                        continue;
-                    }
-                    if let (Control::Table(ta), Control::Table(tb)) = (ca, cb) {
-                        diff_table(&mut diffs, ci, ta, tb);
-                    }
-                    if let (Control::Picture(pic_a), Control::Picture(pic_b)) = (ca, cb) {
-                        diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
-                    }
-                    if let (Control::Shape(sa), Control::Shape(sb)) = (ca, cb) {
-                        diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                    match (ca, cb) {
+                        (Control::Table(ta), Control::Table(tb)) => {
+                            diff_table(&mut diffs, ci, ta, tb);
+                        }
+                        (Control::Picture(pic_a), Control::Picture(pic_b)) => {
+                            diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
+                        }
+                        (Control::Shape(sa), Control::Shape(sb)) => {
+                            diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                        }
+                        _ if control_tag(ca) != control_tag(cb) => {
+                            diffs.push(format!("ctrl[{}] type: A={} vs B={}", ci, control_tag(ca), control_tag(cb)));
+                        }
+                        _ => {}
                     }
                 }
             }
