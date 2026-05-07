@@ -156,18 +156,12 @@ async function probeClickAtPage(page, label, pageIdx, hwpX, hwpY) {
     `[${label}] CORRECT click → cursor.pos !== null`
   );
 
-  // rectPageIdx assert 는 last-col 케이스에서만 strict 하게 검증.
-  // non-last col 은 getPageAtY 가 X 무시하고 row 의 last page idx 만 반환하는 별개 결함 (Issue #689)
-  // 으로 인해 항상 마지막 col 페이지로 cursor 가 떨어짐. Task #685 의 pageLeft 정정만으로는 해결되지 않는
-  // 후속 결함이며, 본 e2e 는 #685 정정 효과 (last col 에서 정확한 pageLefts[i] 적용) 만 검증.
-  if (probe.isLastCol) {
-    assert(
-      afterCorrectClick.rectPageIdx === pageIdx,
-      `[${label}] CORRECT click → cursor.rectPageIdx=${afterCorrectClick.rectPageIdx} (기대 ${pageIdx}, last col=${probe.col}/columns=${probe.columns})`
-    );
-  } else {
-    console.log(`  SKIP: [${label}] non-last col rectPageIdx strict assert (col=${probe.col}/columns=${probe.columns}) — getPageAtY X-무시 결함, Issue #689 후속`);
-  }
+  // Task #685 + #689 결합 정정 후: 모든 col CORRECT click → 의도한 페이지에 cursor 배치.
+  // (#685 가 pageLeft 공식, #689 가 getPageAtPoint 도입으로 그리드 X+Y 인지)
+  assert(
+    afterCorrectClick.rectPageIdx === pageIdx,
+    `[${label}] CORRECT click → cursor.rectPageIdx=${afterCorrectClick.rectPageIdx} (기대 ${pageIdx}, col=${probe.col}/columns=${probe.columns}${probe.isLastCol ? ' last' : ''})`
+  );
 
   return { probe, correctClick, afterCorrectClick, afterBuggyClick };
 }
@@ -203,10 +197,12 @@ runTest('보류 ① 그리드 좌표 결함 — exam_kor.hwp zoom=0.5 정량 측
 
   const stateZ025 = await dumpGridState(page, 'zoom=0.25 그리드 상태');
 
-  // [3b] zoom=0.25 last col (col=4) click 검증 — pageLeft 정정 효과
+  // [3b] zoom=0.25 모든 col click 검증 — Task #685 + #689 결합 정정 효과
   if (stateZ025.columns >= 2 && stateZ025.pageCount > stateZ025.columns - 1) {
-    const lastColPage = stateZ025.columns - 1;
-    await probeClickAtPage(page, `page ${lastColPage} (zoom=0.25 last col)`, lastColPage, 100, 200);
+    for (let c = 0; c < stateZ025.columns; c++) {
+      const isLast = c === stateZ025.columns - 1;
+      await probeClickAtPage(page, `page ${c} (zoom=0.25 col ${c}${isLast ? ' last' : ''})`, c, 100, 200);
+    }
   }
 
   // [4] zoom=1.0 (단일 컬럼) - 비교 baseline

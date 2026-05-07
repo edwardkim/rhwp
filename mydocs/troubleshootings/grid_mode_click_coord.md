@@ -175,3 +175,20 @@ Stage 3 e2e assert 강화로 추가 결함이 노출됨: [`virtual-scroll.ts` `g
 | 0.25 | 5 | ✅ col 4 | ❌ col 0~3 |
 
 본 후속 결함은 [Issue #689](https://github.com/edwardkim/rhwp/issues/689) 으로 분리 등록 (`getPageAtPoint(docX, docY)` 헬퍼 도입 + 14곳 `getPageAtY` 호출 일괄 치환 방향). Task #685 의 정정은 last-col 케이스에서 정상 동작하며, non-last col 정정은 #689 에서 진행.
+
+## 완전 정정 완료 (2026-05-08, Task #685 + #689 결합)
+
+후속 결함 (`getPageAtY` X 무시) 정정 완료 (Task #689):
+
+- `virtualScroll.getPageAtPoint(docX, docY)` 헬퍼 도입 — 단일 컬럼은 `getPageAtY` 동치, 그리드는 row(Y) 안에서 X 로 col 결정, gap 영역은 가장 가까운 페이지로 fallback.
+- 마우스 컨텍스트 18곳 `getPageAtY` → `getPageAtPoint` 치환 (input-handler-mouse 12곳 + input-handler.ts 4곳 + table 1곳 + picture 1곳).
+- Task #685 sweep 의 input-handler-mouse 한정 누락분 buggy `pageLeft` **10곳 동반 정정** (input-handler.ts 4곳 + table 3곳 + picture 1곳 + connector 2곳).
+- e2e (`grid-mode-click-coord.test.mjs`) strict assert 활성화 — 모든 col CORRECT click → cursor.rectPageIdx 정합 검증.
+
+| zoom | columns | 모든 col 정합 |
+|------|---------|--------------|
+| 1.0 | 1 | ✅ (col 0) |
+| 0.5 | 2 | ✅ (col 0, col 1) |
+| 0.25 | 5 | ✅ (col 0~4) |
+
+→ Task #685 + #689 결합으로 그리드 모드 click 한컴 호환 완성. e2e 결과: **PASS=21 / FAIL=0 / SKIP=0** (이전 SKIP 2건 모두 PASS 로 전환).
