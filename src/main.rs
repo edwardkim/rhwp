@@ -18,6 +18,7 @@ fn main() {
         Some("dump-pages") => dump_pages(&args[2..]),
         Some("diag") => diag_document(&args[2..]),
         Some("convert") => convert_hwp(&args[2..]),
+        Some("build-from-ingest") => build_from_ingest(&args[2..]),
         Some("dump-records") => dump_raw_records(&args[2..]),
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
         Some("test-caption") => test_caption(&args[2..]),
@@ -2293,6 +2294,113 @@ fn convert_hwp(args: &[String]) {
         Err(e) => {
             eprintln!("오류: 직렬화 실패 - {}", e);
         }
+    }
+}
+
+/// `rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
+///
+/// Claude Code Skill (`rhwp-exam-ingest`)이 생성한 JSON 중간 표현을 HWPX로 변환한다.
+/// Task #660 (Neumann 본 작업 1단계).
+fn build_from_ingest(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
+        return;
+    }
+
+    let mut input_path: Option<&str> = None;
+    let mut output_path: Option<&str> = None;
+    let mut media_dir: Option<&str> = None;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-o" | "--output" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: -o 옵션에 값이 필요합니다");
+                    return;
+                }
+                output_path = Some(&args[i + 1]);
+                i += 2;
+            }
+            "--media-dir" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --media-dir 옵션에 값이 필요합니다");
+                    return;
+                }
+                media_dir = Some(&args[i + 1]);
+                i += 2;
+            }
+            other => {
+                if input_path.is_none() {
+                    input_path = Some(other);
+                } else {
+                    eprintln!("경고: 알 수 없는 인자 '{}' 무시", other);
+                }
+                i += 1;
+            }
+        }
+    }
+
+    let input = match input_path {
+        Some(p) => p,
+        None => {
+            eprintln!("오류: 입력 ingest JSON 경로가 누락되었습니다");
+            return;
+        }
+    };
+    let output = match output_path {
+        Some(p) => p,
+        None => {
+            eprintln!("오류: -o <출력 경로> 가 누락되었습니다");
+            return;
+        }
+    };
+
+    let bytes = match fs::read(input) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 입력 파일 읽기 실패 - {}: {}", input, e);
+            return;
+        }
+    };
+
+    let ingest = match rhwp::parser::ingest::parse_ingest_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: ingest JSON 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    if let Some(md) = media_dir {
+        let p = Path::new(md);
+        if !p.exists() {
+            eprintln!(
+                "경고: 미디어 디렉토리가 존재하지 않습니다 ({}). 본 단계는 이미지 placeholder로 처리됩니다.",
+                md
+            );
+        }
+    }
+
+    let doc = rhwp::document_core::builders::exam_paper::build_exam_paper(&ingest);
+
+    let hwpx_bytes = match rhwp::serializer::serialize_hwpx(&doc) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: HWPX 직렬화 실패 - {}", e);
+            return;
+        }
+    };
+
+    match fs::write(output, &hwpx_bytes) {
+        Ok(_) => println!(
+            "저장 완료: {} ({}바이트, 문제 {}개, 문단 {}개)",
+            output,
+            hwpx_bytes.len(),
+            ingest.questions.len(),
+            doc.sections.iter().map(|s| s.paragraphs.len()).sum::<usize>()
+        ),
+        Err(e) => eprintln!("오류: 파일 저장 실패 - {}: {}", output, e),
     }
 }
 
