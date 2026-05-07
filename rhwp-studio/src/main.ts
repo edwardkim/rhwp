@@ -25,6 +25,7 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import { initRhwpDev } from '@/core/rhwp-dev';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -95,6 +96,7 @@ async function initialize(): Promise<void> {
     await loadWebFonts([]);  // CSS @font-face 등록 + CRITICAL 폰트만 로드
     msg.textContent = 'WASM 로딩 중...';
     await wasm.initialize();
+    initRhwpDev(wasm);
     msg.textContent = 'HWP 파일을 선택해주세요.';
 
     const container = document.getElementById('scroll-container')!;
