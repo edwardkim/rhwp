@@ -708,6 +708,13 @@ pub struct EquationNode {
     pub cell_para_index: Option<usize>,
 }
 
+/// 인라인 Shape 좌표 맵 키. 섹션 단위 + 셀 경로로 셀 내 paragraph/control
+/// 인덱스 충돌(예: 서로 다른 셀이 cp_idx=0 + ctrl_idx=N 동일)을 방지한다.
+///
+/// `cell_path` 는 외→내 nesting 순서로 `(control_index, cell_index, cell_para_index)`
+/// 튜플 목록. 섹션 단위(셀 외부)는 빈 Vec.
+pub type InlineShapeKey = (usize, usize, usize, Vec<(usize, usize, usize)>);
+
 /// 한 페이지의 렌더 트리
 #[derive(Debug, Clone, Serialize)]
 pub struct PageRenderTree {
@@ -716,9 +723,9 @@ pub struct PageRenderTree {
     /// 다음 노드 ID 카운터
     #[serde(skip)]
     next_id: NodeId,
-    /// 인라인 Shape 좌표 맵: (section, para, control) → (x, y)
+    /// 인라인 Shape 좌표 맵: (section, para, control, cell_path) → (x, y)
     #[serde(skip)]
-    inline_shape_positions: std::collections::HashMap<(usize, usize, usize), (f64, f64)>,
+    inline_shape_positions: std::collections::HashMap<InlineShapeKey, (f64, f64)>,
 }
 
 impl PageRenderTree {
@@ -737,18 +744,43 @@ impl PageRenderTree {
         Self { root, next_id: 1, inline_shape_positions: std::collections::HashMap::new() }
     }
 
-    /// 인라인 Shape 좌표 등록
-    pub fn set_inline_shape_position(&mut self, sec: usize, para: usize, ctrl: usize, x: f64, y: f64) {
-        self.inline_shape_positions.insert((sec, para, ctrl), (x, y));
+    /// `CellContext` 를 InlineShapeKey 의 cell_path 부분으로 변환.
+    fn cell_path_from_ctx(cell_ctx: Option<&crate::renderer::layout::CellContext>) -> Vec<(usize, usize, usize)> {
+        cell_ctx.map(|ctx| {
+            ctx.path.iter()
+                .map(|e| (e.control_index, e.cell_index, e.cell_para_index))
+                .collect()
+        }).unwrap_or_default()
     }
 
-    /// 인라인 Shape 좌표 조회
-    pub fn get_inline_shape_position(&self, sec: usize, para: usize, ctrl: usize) -> Option<(f64, f64)> {
-        self.inline_shape_positions.get(&(sec, para, ctrl)).copied()
+    /// 인라인 Shape 좌표 등록 (셀 컨텍스트 포함)
+    pub fn set_inline_shape_position(
+        &mut self,
+        sec: usize,
+        para: usize,
+        ctrl: usize,
+        cell_ctx: Option<&crate::renderer::layout::CellContext>,
+        x: f64,
+        y: f64,
+    ) {
+        let cell_path = Self::cell_path_from_ctx(cell_ctx);
+        self.inline_shape_positions.insert((sec, para, ctrl, cell_path), (x, y));
+    }
+
+    /// 인라인 Shape 좌표 조회 (셀 컨텍스트 포함)
+    pub fn get_inline_shape_position(
+        &self,
+        sec: usize,
+        para: usize,
+        ctrl: usize,
+        cell_ctx: Option<&crate::renderer::layout::CellContext>,
+    ) -> Option<(f64, f64)> {
+        let cell_path = Self::cell_path_from_ctx(cell_ctx);
+        self.inline_shape_positions.get(&(sec, para, ctrl, cell_path)).copied()
     }
 
     /// 인라인 Shape 좌표 전체 참조 (hitTest용)
-    pub fn inline_shape_positions(&self) -> &std::collections::HashMap<(usize, usize, usize), (f64, f64)> {
+    pub fn inline_shape_positions(&self) -> &std::collections::HashMap<InlineShapeKey, (f64, f64)> {
         &self.inline_shape_positions
     }
 

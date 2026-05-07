@@ -185,6 +185,18 @@ pub(crate) fn parse_paragraph_list(
     // Square wrap 그림 어울림 구역: (column_start, segment_width, pgy_start, pgy_end)
     // 떠다니는 Square wrap 그림 문단을 만나면 갱신, pgy가 pgy_end를 넘으면 초기화.
     let mut active_wrap_zone: Option<(i32, i32, u16, u16)> = None;
+    // [Task #604 Stage A+D] Square wrap 그림 영역 끝 vpos (HU, section 누적 절대값).
+    // wrap zone 안 LineSeg 의 vpos 가 본 값을 넘으면 cs/sw=0/full 전환.
+    // 0 = wrap zone 비활성. 새 그림 만나면 (anchor 시작 vpos + total_height) 로 갱신.
+    let mut wrap_zone_end_vpos: i32 = 0;
+    // [Task #604 Stage D-2] active wrap zone cs/sw — 후속 paragraph 가 wrap zone 안일 때
+    // 본 cs/sw 로 cs/sw=0 LineSeg 을 정합 채움 (HWP3 의 pgy-based 검출 실패 보완).
+    let mut active_wrap_cs_sw: Option<(i32, i32)> = None;
+    // section 단위 누적 vpos (HWP5 IR 표준: page 상단 기준 절대값).
+    // 새 paragraph 시작 시 이 값을 첫 LineSeg vpos 로 사용.
+    let mut acc_section_vpos: i32 = 0;
+    // body_left/right_hu 는 column_width_hu 로 사용
+    let _section_acc_marker = 0;
 
     loop {
         let para_start_pos = body_cursor.position();
@@ -1240,20 +1252,18 @@ pub(crate) fn parse_paragraph_list(
         }
         
         let fallback_text_height = base_size as i32;
-        let mut fallback_line_height = if let Some(fixed) = fixed_line_spacing {
-            fixed
+        // [Task #604 Stage D-2] HWP5 IR 정합: percent 줄간격도 lh=th, ls=th*(ratio-100)/100
+        // 분리 인코딩. 시각 줄 높이 (item h) 는 lh 값 → HWP5 변환본과 동등 (lh=900/ls=540
+        // 가 lh=1440/ls=0 보다 60% 작은 시각 높이 → 페이지 회귀 해소).
+        let (mut fallback_line_height, fallback_line_spacing) = if let Some(fixed) = fixed_line_spacing {
+            // fixed: lh=fixed, ls=fixed-th (추가 간격)
+            (fixed, fixed - fallback_text_height)
         } else {
-            fallback_text_height * line_spacing_ratio / 100
+            // percent: lh=th, ls=th*(ratio-100)/100
+            (fallback_text_height, fallback_text_height * (line_spacing_ratio - 100) / 100)
         };
         fallback_line_height = fallback_line_height.max(100); // 0 방지
         let fallback_baseline_distance = (fallback_text_height as f32 * 0.85) as i32;
-        // HWP5 IR 모델: percent 줄간격은 line_height에 이미 반영 → line_spacing=0
-        // fixed 줄간격은 line_height=fixed, line_spacing=fixed-th (추가 간격)
-        let fallback_line_spacing = if fixed_line_spacing.is_some() {
-            fallback_line_height - fallback_text_height
-        } else {
-            0
-        };
 
         // Square wrap 그림 어울림 구역 계산 (per-line, pgy 기반)
         // controls가 완성된 이후, line_segs 생성 전에 수행한다.
@@ -1318,7 +1328,10 @@ pub(crate) fn parse_paragraph_list(
         });
 
         // 페이지 경계 여부 (pgy 감소 = 새 페이지)
-        let is_page_break = prev_last_pgy > 0 && first_pgy_here > 0 && first_pgy_here < prev_last_pgy;
+        // [Task #604 Stage D-2] 명시적 페이지 break (이전 para flags&0x02) 도 포함.
+        // first_pgy_here=0 케이스 (새 페이지 시작 정확히 pgy=0) 도 정합 검출.
+        let is_page_break = prev_para_had_flags_break
+            || (prev_last_pgy > 0 && first_pgy_here < prev_last_pgy);
 
         // 현재 문단에 적용할 어울림 구역:
         // 자신이 그림 호스트면 pic_wrap_zone, 아니면 이전 문단에서 이어진 active_wrap_zone.
@@ -1376,36 +1389,50 @@ pub(crate) fn parse_paragraph_list(
                     bl = fallback_baseline_distance;
                     ls = fallback_line_spacing;
                 } else {
-                    lh = if let Some(fixed) = fixed_line_spacing {
-                        fixed
-                    } else {
-                        th * line_spacing_ratio / 100
-                    };
+                    // [Task #604 Stage D-2] HWP5 IR 정합: lh=th, ls 분리 인코딩
                     bl = (th as f32 * 0.85) as i32;
-                    ls = if fixed_line_spacing.is_some() { lh - th } else { 0 };
+                    if let Some(fixed) = fixed_line_spacing {
+                        lh = fixed;
+                        ls = fixed - th;
+                    } else {
+                        lh = th;
+                        ls = th * (line_spacing_ratio - 100) / 100;
+                    }
                 }
 
-                let mut tag = 0x00060000;
-                if linfo.break_flag & 0x8000 != 0 {
-                    if linfo.break_flag & 0x0001 != 0 {
-                        tag |= 0x01; // 첫 페이지 경계
-                    }
-                    if linfo.break_flag & 0x0002 != 0 {
-                        tag |= 0x02; // 첫 단 경계
-                    }
-                }
+                // [Task #604 Stage D-2] HWP3 break_flag 의 페이지/단 경계 hint 는 IR
+                // tag 에 누설하지 않음. HWP5 IR 정합: tag bit 0/1 은 paragraph/column 의
+                // "first line of" semantic 만 표현. HWP3 의 break_flag 는 stale layout
+                // hint (원래 HWP3 가 본 줄에서 페이지/단 break 했음) → 본 환경 typeset
+                // 의 자체 pagination 과 충돌 → 본 hint 누설 시 강제 페이지 break 발생.
+                // Stage A+D vpos 누적 정합화로 자연스러운 pagination 정합.
+                let tag = 0x00060000u32;
 
                 // 이 줄의 pgy로 어울림 구역 판정 (per-line)
+                //
                 // 앵커 문단(pic_wrap_zone.is_some()): 자신이 그림 호스트이므로 pgy 무관하게 적용.
-                // 후속 문단: pgy가 구역 안에 있을 때만 적용.
-                let line_cs_sw = current_zone.and_then(|(cs, sw, pgy_start, pgy_end)| {
-                    if pic_wrap_zone.is_some() || (linfo.pgy >= pgy_start && linfo.pgy < pgy_end) {
+                //
+                // [Task #604 Stage 3] 후속 문단: pgy_end 만 검사 (pgy_start 가드 제거).
+                // 본 정정 이전: `pgy >= pgy_start && pgy < pgy_end` 양방향 검사. 그러나
+                // wrap text 문단의 첫 줄 pgy 가 anchor 의 pgy_start 미만 인 경우 발생
+                // (예: hwp3-sample5.hwp pi=75 첫 3 줄). 결과 cs/sw=0 → 그림 좌측 (x=56.7)
+                // 에 텍스트 그려짐 → 그림과 겹침 (Issue #604).
+                //
+                // 본질: 후속 wrap text 문단은 anchor 그림 우측에 정합 배치되어야 하며,
+                // pgy_start 미만의 줄도 wrap zone 의 일부. pgy_end 만 가드해 그림 아래로
+                // 흘러간 줄 (cs=0 인 정상 줄) 만 wrap zone 외 판정.
+                let line_cs_sw = current_zone.and_then(|(cs, sw, _pgy_start, pgy_end)| {
+                    if pic_wrap_zone.is_some() || linfo.pgy < pgy_end {
                         Some((cs, sw))
                     } else {
                         None
                     }
                 });
 
+                // [Task #604 Stage A+D] HWP3 본질 유지: lh / ls 그대로 (Stage 5 B-2 revert).
+                // HWP5 v2024 변환본 분석 결과 lh+ls 누적값이 본 환경 HWP3 의 lh 와 동등
+                // (HWP5: lh=900+ls=540=1440 / HWP3: lh=1440+ls=0=1440). vpos 누적 정합화는
+                // paragraphs.push 후 후처리에서 처리.
                 line_segs.push(LineSeg {
                     text_start,
                     vertical_pos: 0,
@@ -1531,15 +1558,15 @@ pub(crate) fn parse_paragraph_list(
             }
         }
 
-        // pgy 기반 페이지 경계 검출: LineInfo에 한글97이 저장한 줄 Y좌표.
-        // 현재 문단 첫 줄의 pgy < 이전 문단 마지막 줄의 pgy → 새 페이지 시작.
-        // page break 후 prev_last_pgy를 현재 값으로 리셋해야 연속 오탐을 막을 수 있다.
-        let first_pgy = line_infos.first().map(|l| l.pgy).unwrap_or(0);
+        // pgy 추적 (wrap zone 의 is_page_break 판정 용 — 본 영역에서는 column_type
+        // 갱신 안 함).
+        //
+        // [Task #604 Stage D-2] pgy 기반 자연 페이지 wrap 은 column_type=Page 로
+        // 인코딩하지 않음. 본 환경 typeset.rs 가 item 높이 기준 자체 pagination →
+        // 자연 wrap 은 typeset 책임. column_type=Page 는 명시적 [쪽나누기] (flags&0x02)
+        // 만 설정 → vpos reset 도 본 영역만 발생.
         let last_pgy = line_infos.last().map(|l| l.pgy).unwrap_or(0);
-        if prev_last_pgy > 0 && first_pgy < prev_last_pgy {
-            para.column_type = crate::model::paragraph::ColumnBreakType::Page;
-            prev_last_pgy = last_pgy;
-        } else if last_pgy > 0 {
+        if last_pgy > 0 {
             prev_last_pgy = last_pgy;
         }
 
@@ -1550,35 +1577,146 @@ pub(crate) fn parse_paragraph_list(
         }
         prev_para_had_flags_break = para_info.flags & 0x02 != 0;
 
+        // [Task #604 Stage D-2] HWP3 line_info.break_flag 의 페이지 경계 신호를
+        // column_type=Page 로 변환. 본 신호는 HWP3 가 자연 wrap 한 페이지 시작.
+        // HWP5 v2024 변환본의 vpos=0 (페이지 상단 시작) 인코딩 영역과 정합.
+        // 0x8000 = 신호 마커, 0x0001 = 페이지 경계.
+        if let Some(first_line) = line_infos.first() {
+            if first_line.break_flag & 0x8001 == 0x8001 {
+                para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+            }
+        }
+
+        // [Task #604 Stage A+D] HWP5 IR 표준 정합화: paragraph 간 vpos 연결 + 그림
+        // 영역 끝 시 cs/sw=0/full 전환 + paragraph 내 vpos 누적.
+        //
+        // 본질 (Stage A 진단):
+        // - HWP5 v2024 변환본 분석 결과 LineSeg.vpos 는 section 단위 누적 절대값
+        // - paragraph 내 wrap zone 안 줄 (cs>0) → 그림 영역 끝 시 cs=0/sw=full 전환
+        //   (예: pi=75 ls[18] cs=37164 → ls[19] cs=0 at vpos=28800)
+        // - paragraph 간 vpos 연결: next.vpos = prev.last_vpos + lh + ls
+        //
+        // 본 정정으로 본 환경 rhwp 의 typeset/layout vpos 기반 로직 (Task #321/332/412
+        // 등) 이 HWP3 파서 출력에 정합 동작 → 시각 결함 자연스럽게 정정.
+        {
+            // 페이지 break 시 vpos reset (anchor 검출 전 reset 필수 — Stage A+D 정정)
+            if matches!(para.column_type, crate::model::paragraph::ColumnBreakType::Page) {
+                acc_section_vpos = 0;
+                wrap_zone_end_vpos = 0;
+            }
+
+            // paragraph 시작 시 그림 anchor 검출 → wrap_zone_end_vpos + active_wrap_cs_sw 갱신
+            // (Control::Picture / Control::Shape 안의 ShapeObject::Picture 모두 검사)
+            #[derive(Default)]
+            struct AnchorInfo { total_h: i32, cs: i32, sw: i32, paper_top: bool }
+            let pic_anchor: Option<AnchorInfo> = para.controls.iter().find_map(|c| {
+                let pic_common = match c {
+                    crate::model::control::Control::Picture(pic) => Some(&pic.common),
+                    crate::model::control::Control::Shape(s) => {
+                        if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
+                            Some(&pic.common)
+                        } else { None }
+                    }
+                    _ => None,
+                };
+                if let Some(cm) = pic_common {
+                    if !cm.treat_as_char
+                        && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)
+                        && cm.horizontal_offset > 0
+                    {
+                        use crate::model::shape::HorzRelTo;
+                        let h_off = cm.horizontal_offset as i32;
+                        let pic_w = cm.width as i32;
+                        let pic_left_col = match cm.horz_rel_to {
+                            HorzRelTo::Paper => h_off - body_left_hu,
+                            _ => h_off,
+                        };
+                        let pic_right_col = pic_left_col + pic_w;
+                        if pic_right_col <= 0 || pic_left_col >= column_width_hu {
+                            return None;
+                        }
+                        let (cs, sw) = if pic_left_col < column_width_hu / 2 {
+                            let cs = pic_right_col.max(0);
+                            let sw = (column_width_hu - cs).max(0);
+                            (cs, sw)
+                        } else {
+                            let sw = pic_left_col.min(column_width_hu).max(0);
+                            (0i32, sw)
+                        };
+                        if sw <= 0 { return None; }
+                        let total_h = cm.height as i32
+                            + cm.margin.top as i32
+                            + cm.margin.bottom as i32;
+                        // paper-relative 이고 페이지 상단 근처 (offset ≈ body top)
+                        // 인 anchor 만 페이지 break 정합 reset 대상.
+                        use crate::model::shape::VertRelTo;
+                        let paper_top = matches!(cm.vert_rel_to, VertRelTo::Paper)
+                            && (cm.vertical_offset as i32) <= body_left_hu.saturating_add(2400);
+                        return Some(AnchorInfo { total_h, cs, sw, paper_top });
+                    }
+                }
+                None
+            });
+            if let Some(anc) = pic_anchor {
+                if anc.paper_top {
+                    // [Task #604 Stage D-2] paper-top anchor — acc_vpos reset (HWP5 정합).
+                    // HWP5 변환본의 paper-relative anchor (pi=74) 는 vpos=0 인코딩 →
+                    // typeset Task #321 vpos-reset guard 가 자연스러운 페이지 break 트리거
+                    // → 그림 + wrap text 같은 페이지 정합.
+                    acc_section_vpos = 0;
+                }
+                // wrap zone 영역 끝 = anchor 시작 vpos + 그림 total height
+                wrap_zone_end_vpos = acc_section_vpos.saturating_add(anc.total_h);
+                active_wrap_cs_sw = Some((anc.cs, anc.sw));
+            }
+
+            // LineSeg vpos 누적 + wrap zone cs/sw 정합 인코딩 + 끝 시 전환
+            // [Task #604 Stage D-2] paragraph 내 line wrap 시 vpos reset 정합:
+            // line_infos[i].pgy < line_infos[i-1].pgy → 본 line 이 새 페이지 시작 (HWP3
+            // 가 한글97 layout 시점에 본 line 부터 새 페이지 인식). HWP5 v2024 변환본의
+            // paragraph 내 ls[i].vpos=0 영역 정합 (typeset Task #321 vpos-reset guard
+            // 영역 trigger 정합).
+            for (i, seg) in para.line_segs.iter_mut().enumerate() {
+                if i > 0 && i < line_infos.len()
+                    && line_infos[i].pgy < line_infos[i-1].pgy
+                {
+                    // 새 페이지 시작 — vpos reset
+                    acc_section_vpos = 0;
+                    wrap_zone_end_vpos = 0;
+                }
+                seg.vertical_pos = acc_section_vpos;
+
+                if wrap_zone_end_vpos > 0 && acc_section_vpos < wrap_zone_end_vpos {
+                    // wrap zone 영역 안 — cs/sw 정합 인코딩 (HWP3 pgy-based 누락 보완)
+                    if seg.column_start == 0 && seg.segment_width == 0 {
+                        if let Some((cs, sw)) = active_wrap_cs_sw {
+                            seg.column_start = cs;
+                            seg.segment_width = sw;
+                        }
+                    }
+                } else if wrap_zone_end_vpos > 0 && acc_section_vpos >= wrap_zone_end_vpos {
+                    // wrap zone 영역 끝 — cs/sw=0/full 전환
+                    if seg.column_start > 0 {
+                        seg.column_start = 0;
+                        seg.segment_width = 0;
+                    }
+                }
+
+                // 다음 줄 vpos 누적
+                acc_section_vpos = acc_section_vpos
+                    .saturating_add(seg.line_height)
+                    .saturating_add(seg.line_spacing);
+            }
+        }
+
         paragraphs.push(para);
     }
 
-    // LineSeg cs/sw가 사전 계산된 wrap zone 문단 표시.
-    // 패턴A/B (multi-LineSeg): 모두 vertical_pos=0 + 하나 이상 column_start>0
-    // 패턴C (single-LineSeg): column_start>0 + segment_width>0 + tac=false 그림 없음
-    //   → 그림 옆 wrap zone의 짧은 문단(예: "$ mount /dev/hda3 /usr")
-    for para in &mut paragraphs {
-        let has_floating_picture = para.controls.iter().any(|c| {
-            matches!(c, crate::model::control::Control::Picture(p) if !p.common.treat_as_char)
-        });
-        if para.line_segs.len() > 1
-            && para.line_segs.iter().all(|s| s.vertical_pos == 0)
-            && para.line_segs.iter().any(|s| s.column_start > 0)
-        {
-            para.wrap_precomputed = true;
-        } else if para.line_segs.len() == 1
-            && para.line_segs[0].column_start > 0
-            && para.line_segs[0].segment_width > 0
-            && (!has_floating_picture
-                || para.column_type == crate::model::paragraph::ColumnBreakType::Page)
-        {
-            // tac=false 그림 없음: 항상 wrap zone
-            // tac=false 그림 있음: 페이지 첫 문단일 때만 적용
-            //   (예: pi=599 "9 AIX bootable..." - 그림과 텍스트가 동일 y에서 시작)
-            //   (반례: pi=779/440 - 그림이 텍스트 y보다 아래에 있으므로 제외)
-            para.wrap_precomputed = true;
-        }
-    }
+    // [Task #604 Stage 2b] wrap_precomputed 후처리 제거 — IR 부채 청산.
+    // 본 후처리는 PR #589 보완6/8 에서 도입된 HWP3 휴리스틱 (vertical_pos==0
+    // 패턴 검출) 을 IR 에 누설했던 메커니즘. typeset.rs 의 wrap_around state machine
+    // 매칭 + ColumnContent.wrap_anchors 메타데이터 채널로 정합 대체됨.
+    // (anchor 종류 (Picture vs Table) 기반 분기 → typeset.rs:495~)
 
     Ok(paragraphs)
 }

@@ -150,15 +150,21 @@ impl LayoutEngine {
         );
 
         // ── 4. 렌더링할 행 목록 구성 ──
-        // is_continuation && repeat_header → 제목행(0)에 제목 셀(is_header)이 있으면 반복
-        let render_header = is_continuation && table.repeat_header && start_row > 0
-            && table.cells.iter()
-                .filter(|c| c.row == 0)
-                .any(|c| c.is_header);
-        let mut render_rows: Vec<usize> = Vec::new();
-        if render_header {
-            render_rows.push(0); // 제목행
+        // is_continuation && repeat_header → start_row 이전의 is_header 행만 반복
+        let mut header_rows: Vec<usize> = Vec::new();
+        if is_continuation && table.repeat_header && start_row > 0 {
+            let mut seen = vec![false; row_count];
+            for c in &table.cells {
+                let r = c.row as usize;
+                if c.is_header && r < start_row && r < row_count && !seen[r] {
+                    seen[r] = true;
+                    header_rows.push(r);
+                }
+            }
+            header_rows.sort_unstable();
         }
+        let mut render_rows: Vec<usize> = Vec::new();
+        render_rows.extend_from_slice(&header_rows);
         for r in start_row..end_row.min(row_count) {
             render_rows.push(r);
         }
@@ -255,16 +261,20 @@ impl LayoutEngine {
 
             // 이 셀이 렌더링 범위에 포함되는지 확인
             let cell_end_row = cell_row + cell.row_span as usize;
-            let render_range_start = if render_header { 0 } else { start_row };
+            let render_range_start = if !header_rows.is_empty() {
+                *header_rows.first().unwrap()
+            } else {
+                start_row
+            };
             let render_range_end = end_row.min(row_count);
 
             // 제목행 반복으로 렌더링되는 셀인지 판별
-            // (원래 범위 밖이지만 render_header 때문에 포함되는 행0 셀)
-            let is_repeated_header_cell = render_header && cell_row == 0 && cell_end_row <= start_row;
+            let is_repeated_header_cell = !header_rows.is_empty()
+                && header_rows.contains(&cell_row)
+                && cell_end_row <= start_row;
 
             // 셀이 렌더링 범위와 겹치는지 확인
             if cell_row >= render_range_end || cell_end_row <= render_range_start {
-                // 제목행 렌더링 시 행0 셀은 포함
                 if !is_repeated_header_cell {
                     continue;
                 }
@@ -350,7 +360,7 @@ impl LayoutEngine {
 
             // 텍스트 오버플로우 시 좌우 패딩 축소
             let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
-                pad_left, pad_right, cell_w, &composed_paras, styles,
+                pad_left, pad_right, cell_w, &composed_paras, &cell.paragraphs, styles,
             );
             pad_left = new_pl;
             pad_right = new_pr;
@@ -659,6 +669,7 @@ impl LayoutEngine {
                         is_last_para,
                         0.0,
                         None, Some(para), Some(bin_data_content),
+                        None,  // 셀 컨텍스트 — wrap zone 무관
                     );
 
                     let has_visible_text = composed.lines.iter()
@@ -765,7 +776,7 @@ impl LayoutEngine {
                                 // set_inline_shape_position 호출. 중복 emit 방지
                                 // (Issue #301 의 분할 표 경로 보강 — Task #318).
                                 let already_rendered_inline = tree
-                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx)
+                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context_opt.as_ref())
                                     .is_some();
                                 if already_rendered_inline {
                                     inline_x += eq_w;

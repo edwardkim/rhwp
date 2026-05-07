@@ -22,7 +22,8 @@ pub(crate) fn navigable_text_len(para: &Paragraph) -> usize {
     let max_inline_pos = para.controls.iter().enumerate()
         .filter(|(_, c)| matches!(c,
             Control::Shape(_) | Control::Table(_) |
-            Control::Picture(_) | Control::Equation(_)
+            Control::Picture(_) | Control::Equation(_) |
+            Control::Footnote(_) | Control::Endnote(_)
         ))
         .filter_map(|(i, _)| positions.get(i).copied())
         .max()
@@ -1068,5 +1069,24 @@ pub(crate) fn border_fills_equal(a: &crate::model::style::BorderFill, b: &crate:
         (Some(sa), Some(sb)) => sa.background_color == sb.background_color,
         (None, None) => true,
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::footnote::Footnote;
+
+    #[test]
+    fn navigable_text_len_counts_trailing_footnote_marker() {
+        let para = Paragraph {
+            text: "abc".to_string(),
+            char_offsets: vec![0, 1, 2],
+            controls: vec![Control::Footnote(Box::new(Footnote::default()))],
+            ..Default::default()
+        };
+
+        assert_eq!(find_control_text_positions(&para), vec![3]);
+        assert_eq!(navigable_text_len(&para), 4);
     }
 }

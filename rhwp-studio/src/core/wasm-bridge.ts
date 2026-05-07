@@ -1,5 +1,5 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
-import type { DocumentInfo, PageInfo, PageDef, SectionDef, CursorRect, HitTestResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, NavContextEntry, FieldInfoResult, BookmarkInfo } from './types';
+import type { DocumentInfo, PageInfo, PageDef, SectionDef, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, NavContextEntry, FieldInfoResult, BookmarkInfo } from './types';
 
 /** HWPX 비표준 감지 경고 리포트 (#177). */
 export interface ValidationReport {
@@ -239,6 +239,13 @@ export class WasmBridge {
   hitTest(pageNum: number, x: number, y: number): HitTestResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTest(pageNum, x, y));
+  }
+
+  hitTestBodyFootnoteMarker(pageNum: number, x: number, y: number): BodyFootnoteMarkerHit {
+    if (!this.doc) return { hit: false };
+    const hitTest = (this.doc as any).hitTestBodyFootnoteMarker;
+    if (typeof hitTest !== 'function') return { hit: false };
+    return JSON.parse(hitTest.call(this.doc, pageNum, x, y));
   }
 
   insertText(sec: number, para: number, charOffset: number, text: string): string {
@@ -641,6 +648,18 @@ export class WasmBridge {
   getFootnoteInfo(sec: number, para: number, controlIdx: number): { ok: boolean; paraCount: number; totalTextLen: number; number: number; texts: string[] } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).getFootnoteInfo(sec, para, controlIdx));
+  }
+
+  getFootnoteAtCursor(sec: number, para: number, charOffset: number, direction: 'backward' | 'forward'): FootnoteAtCursorResult {
+    if (!this.doc) return { hit: false };
+    const getter = (this.doc as any).getFootnoteAtCursor;
+    if (typeof getter !== 'function') return { hit: false };
+    return JSON.parse(getter.call(this.doc, sec, para, charOffset, direction));
+  }
+
+  deleteFootnote(sec: number, para: number, controlIdx: number): DeleteFootnoteResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).deleteFootnote(sec, para, controlIdx));
   }
 
   insertTextInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number, text: string): { ok: boolean; charOffset: number } {

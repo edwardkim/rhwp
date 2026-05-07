@@ -377,7 +377,7 @@ mod tests {
     #[test]
     fn find_in_text_case_sensitive() {
         assert_eq!(find_in_text("hello world", "world", true), vec![6]);
-        assert_eq!(find_in_text("hello world", "World", true), vec![]);
+        assert_eq!(find_in_text("hello world", "World", true), Vec::<usize>::new());
     }
 
     #[test]
@@ -393,8 +393,8 @@ mod tests {
 
     #[test]
     fn find_in_text_empty_inputs() {
-        assert_eq!(find_in_text("", "abc", true), vec![]);
-        assert_eq!(find_in_text("abc", "", true), vec![]);
+        assert_eq!(find_in_text("", "abc", true), Vec::<usize>::new());
+        assert_eq!(find_in_text("abc", "", true), Vec::<usize>::new());
     }
 
     #[test]

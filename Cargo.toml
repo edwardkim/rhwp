@@ -36,6 +36,7 @@ unicode-width = "0.2.2"
 image = { version = "0.25", default-features = false, features = ["bmp", "png"] }
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 console_error_panic_hook = { version = "0.1", optional = true }
 
