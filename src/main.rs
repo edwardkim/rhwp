@@ -2557,8 +2557,23 @@ fn ir_diff(args: &[String]) {
                     if la.text_start != lb.text_start {
                         diffs.push(format!("ls[{}].ts: A={} vs B={}", li, la.text_start, lb.text_start));
                     }
+                    if la.vertical_pos != lb.vertical_pos {
+                        diffs.push(format!("ls[{}].vpos: A={} vs B={}", li, la.vertical_pos, lb.vertical_pos));
+                    }
                     if la.line_height != lb.line_height {
                         diffs.push(format!("ls[{}].lh: A={} vs B={}", li, la.line_height, lb.line_height));
+                    }
+                    if la.text_height != lb.text_height {
+                        diffs.push(format!("ls[{}].th: A={} vs B={}", li, la.text_height, lb.text_height));
+                    }
+                    if la.baseline_distance != lb.baseline_distance {
+                        diffs.push(format!("ls[{}].bl: A={} vs B={}", li, la.baseline_distance, lb.baseline_distance));
+                    }
+                    if la.line_spacing != lb.line_spacing {
+                        diffs.push(format!("ls[{}].ls: A={} vs B={}", li, la.line_spacing, lb.line_spacing));
+                    }
+                    if la.column_start != lb.column_start {
+                        diffs.push(format!("ls[{}].cs: A={} vs B={}", li, la.column_start, lb.column_start));
                     }
                     if la.segment_width != lb.segment_width {
                         diffs.push(format!("ls[{}].sw: A={} vs B={}", li, la.segment_width, lb.segment_width));
