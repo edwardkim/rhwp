@@ -81,6 +81,9 @@ fn print_help() {
     println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
+    println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
+    println!("                 controls(타입+속성), tab_extended, ParaShape, TabDef");
+    println!("      표/그림/도형 컨트롤: treat_as_char, wrap, size, offset, page_break 등");
     println!();
     println!("  thumbnail <파일.hwp> [옵션]");
     println!("      HWP 파일에서 썸네일(PrvImage) 추출");
@@ -2325,6 +2328,103 @@ fn test_field_roundtrip(args: &[String]) {
     }
 }
 
+fn control_tag(c: &rhwp::model::control::Control) -> &'static str {
+    use rhwp::model::control::Control;
+    match c {
+        Control::SectionDef(_) => "secd",
+        Control::ColumnDef(_) => "cold",
+        Control::Table(_) => "tbl",
+        Control::Shape(_) => "shape",
+        Control::Picture(_) => "pic",
+        Control::Header(_) => "head",
+        Control::Footer(_) => "foot",
+        Control::Footnote(_) => "fn",
+        Control::Endnote(_) => "en",
+        Control::AutoNumber(_) => "atno",
+        Control::NewNumber(_) => "nwno",
+        Control::PageNumberPos(_) => "pgnp",
+        Control::Bookmark(_) => "bokm",
+        Control::Hyperlink(_) => "hlk",
+        Control::Ruby(_) => "ruby",
+        Control::CharOverlap(_) => "tcps",
+        Control::PageHide(_) => "pghd",
+        Control::HiddenComment(_) => "tcmt",
+        Control::Equation(_) => "eqed",
+        Control::Field(_) => "field",
+        Control::Form(_) => "form",
+        Control::Unknown(_) => "unknown",
+    }
+}
+
+fn diff_table(
+    diffs: &mut Vec<String>,
+    ci: usize,
+    a: &rhwp::model::table::Table,
+    b: &rhwp::model::table::Table,
+) {
+    if a.row_count != b.row_count {
+        diffs.push(format!("ctrl[{}] tbl rows: A={} vs B={}", ci, a.row_count, b.row_count));
+    }
+    if a.col_count != b.col_count {
+        diffs.push(format!("ctrl[{}] tbl cols: A={} vs B={}", ci, a.col_count, b.col_count));
+    }
+    if a.page_break != b.page_break {
+        diffs.push(format!("ctrl[{}] tbl page_break: A={:?} vs B={:?}", ci, a.page_break, b.page_break));
+    }
+    if a.repeat_header != b.repeat_header {
+        diffs.push(format!("ctrl[{}] tbl repeat_header: A={} vs B={}", ci, a.repeat_header, b.repeat_header));
+    }
+    if a.cell_spacing != b.cell_spacing {
+        diffs.push(format!("ctrl[{}] tbl cell_spacing: A={} vs B={}", ci, a.cell_spacing, b.cell_spacing));
+    }
+    if a.border_fill_id != b.border_fill_id {
+        diffs.push(format!("ctrl[{}] tbl border_fill: A={} vs B={}", ci, a.border_fill_id, b.border_fill_id));
+    }
+    if a.outer_margin_left != b.outer_margin_left
+        || a.outer_margin_right != b.outer_margin_right
+        || a.outer_margin_top != b.outer_margin_top
+        || a.outer_margin_bottom != b.outer_margin_bottom
+    {
+        diffs.push(format!(
+            "ctrl[{}] tbl outer_margin: A=({},{},{},{}) vs B=({},{},{},{})",
+            ci,
+            a.outer_margin_left, a.outer_margin_top, a.outer_margin_right, a.outer_margin_bottom,
+            b.outer_margin_left, b.outer_margin_top, b.outer_margin_right, b.outer_margin_bottom,
+        ));
+    }
+    diff_common_obj(diffs, ci, "tbl", &a.common, &b.common);
+}
+
+fn diff_common_obj(
+    diffs: &mut Vec<String>,
+    ci: usize,
+    tag: &str,
+    a: &rhwp::model::shape::CommonObjAttr,
+    b: &rhwp::model::shape::CommonObjAttr,
+) {
+    if a.treat_as_char != b.treat_as_char {
+        diffs.push(format!("ctrl[{}] {} tac: A={} vs B={}", ci, tag, a.treat_as_char, b.treat_as_char));
+    }
+    if a.text_wrap != b.text_wrap {
+        diffs.push(format!("ctrl[{}] {} wrap: A={:?} vs B={:?}", ci, tag, a.text_wrap, b.text_wrap));
+    }
+    if a.width != b.width || a.height != b.height {
+        diffs.push(format!("ctrl[{}] {} size: A={}x{} vs B={}x{}", ci, tag, a.width, a.height, b.width, b.height));
+    }
+    if a.vertical_offset != b.vertical_offset {
+        diffs.push(format!("ctrl[{}] {} voff: A={} vs B={}", ci, tag, a.vertical_offset, b.vertical_offset));
+    }
+    if a.horizontal_offset != b.horizontal_offset {
+        diffs.push(format!("ctrl[{}] {} hoff: A={} vs B={}", ci, tag, a.horizontal_offset, b.horizontal_offset));
+    }
+    if a.vert_rel_to != b.vert_rel_to {
+        diffs.push(format!("ctrl[{}] {} vert_rel: A={:?} vs B={:?}", ci, tag, a.vert_rel_to, b.vert_rel_to));
+    }
+    if a.horz_rel_to != b.horz_rel_to {
+        diffs.push(format!("ctrl[{}] {} horz_rel: A={:?} vs B={:?}", ci, tag, a.horz_rel_to, b.horz_rel_to));
+    }
+}
+
 fn ir_diff(args: &[String]) {
     if args.len() < 2 {
         eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>]");
@@ -2466,9 +2566,32 @@ fn ir_diff(args: &[String]) {
                 }
             }
 
-            // 컨트롤 수 비교
+            // 컨트롤 식별 비교
             if pa.controls.len() != pb.controls.len() {
-                diffs.push(format!("controls: A={} vs B={}", pa.controls.len(), pb.controls.len()));
+                diffs.push(format!("controls count: A={} vs B={}", pa.controls.len(), pb.controls.len()));
+            }
+            {
+                use rhwp::model::control::Control;
+                let ctrl_count = pa.controls.len().min(pb.controls.len());
+                for ci in 0..ctrl_count {
+                    let ca = &pa.controls[ci];
+                    let cb = &pb.controls[ci];
+                    let tag_a = control_tag(ca);
+                    let tag_b = control_tag(cb);
+                    if tag_a != tag_b {
+                        diffs.push(format!("ctrl[{}] type: A={} vs B={}", ci, tag_a, tag_b));
+                        continue;
+                    }
+                    if let (Control::Table(ta), Control::Table(tb)) = (ca, cb) {
+                        diff_table(&mut diffs, ci, ta, tb);
+                    }
+                    if let (Control::Picture(pic_a), Control::Picture(pic_b)) = (ca, cb) {
+                        diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
+                    }
+                    if let (Control::Shape(sa), Control::Shape(sb)) = (ca, cb) {
+                        diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                    }
+                }
             }
 
             // char_shapes 비교

@@ -201,7 +201,8 @@ rhwp ir-diff sample.hwpx sample.hwp 2>&1 | grep "\[PS " # ParaShape 차이만
 rhwp ir-diff sample.hwpx sample.hwp 2>&1 | tail -1      # 차이 건수만
 ```
 
-비교 항목: text, char_count, char_offsets, char_shapes, line_segs, controls, tab_extended, ParaShape(여백/줄간격/탭), TabDef(위치/종류/채움).
+비교 항목: text, char_count, char_offsets, char_shapes, line_segs, controls(타입+속성), tab_extended, ParaShape(여백/줄간격/탭), TabDef(위치/종류/채움).
+표/그림/도형 컨트롤: treat_as_char, wrap, size, offset, page_break, outer_margin 등 개별 속성 비교.
 
 상세 매뉴얼: `mydocs/manual/ir_diff_command.md`
 
