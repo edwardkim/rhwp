@@ -2575,10 +2575,7 @@ export class InputHandler {
     const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
     const scrollContent = this.container.querySelector('#scroll-content');
     const contentWidth = scrollContent?.clientWidth ?? 0;
-    const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
-    const pageLeft = this.virtualScroll.getPageLeft(pageIdx) >= 0
-      ? this.virtualScroll.getPageLeft(pageIdx)
-      : (contentWidth - pageDisplayWidth) / 2;
+    const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, contentWidth);
 
     return {
       left: pageLeft + bbox.x * zoom,

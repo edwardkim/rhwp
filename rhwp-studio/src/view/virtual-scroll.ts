@@ -156,6 +156,18 @@ export class VirtualScroll {
     return this.pageLefts[pageIdx] ?? -1;
   }
 
+  /**
+   * 페이지의 X 좌표를 그리드/단일 컬럼 모드 통합으로 반환.
+   * 그리드 모드: pageLefts[i] 그대로.
+   * 단일 컬럼 모드(sentinel −1): (containerWidth - pageWidth) / 2 fallback.
+   */
+  getPageLeftResolved(pageIdx: number, containerWidth: number): number {
+    const pl = this.pageLefts[pageIdx] ?? -1;
+    if (pl >= 0) return pl;
+    const pw = this.pageWidths[pageIdx] ?? 0;
+    return (containerWidth - pw) / 2;
+  }
+
   getMaxPageWidth(): number {
     return this.maxPageWidth;
   }
