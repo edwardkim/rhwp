@@ -1104,7 +1104,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       const hit = this.hitTestFromEvent(e);
       if (hit && hit.paragraphIndex < 0xFFFFFF00) {
         this.cursor.moveTo(hit);
-        this.updateCaret();
+        this.updateCaretDuringDrag();
       }
     });
     return;

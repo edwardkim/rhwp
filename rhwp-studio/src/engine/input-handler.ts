@@ -1530,6 +1530,28 @@ export class InputHandler {
     // this.checkTransparentBordersTransition();
   }
 
+  /** 드래그 중 캐럿/선택만 가볍게 갱신한다 */
+  private updateCaretDuringDrag(): void {
+    if (this.isComposing) {
+      this.updateCaret();
+      return;
+    }
+
+    const rect = this.cursor.getRect();
+    if (rect) {
+      const zoom = this.viewportManager.getZoom();
+      this.caret.hideComposition();
+      this.caret.updateLive(rect, zoom);
+      this.scrollCaretIntoView(rect);
+    }
+    this.updateSelection();
+
+    const cursorRect = this.cursor.getRect();
+    if (cursorRect) {
+      this.eventBus.emit('cursor-rect-updated', { x: cursorRect.x, y: cursorRect.y });
+    }
+  }
+
   /** 클릭 좌표에서 같은 표 내 셀의 row/col을 반환한다. 다른 표이거나 셀이 아니면 null. */
   private hitTestCellRowCol(e: MouseEvent): { row: number; col: number } | null {
     const ctx = this.cursor.getCellTableContext();

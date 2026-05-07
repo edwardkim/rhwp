@@ -83,6 +83,21 @@ export class CaretRenderer {
     }
   }
 
+  /** 드래그 중 캐럿 위치를 갱신한다 (기존 깜박임 타이머 유지) */
+  updateLive(rect: CursorRect, zoom: number): void {
+    this.ensureAttached();
+    this.currentRect = rect;
+    this.updatePosition(zoom);
+    if (!this.isCompMode) {
+      this.caretEl.style.display = 'block';
+      this.caretEl.style.opacity = '1';
+      this.visible = true;
+      if (this.blinkTimer === null) {
+        this.startBlink();
+      }
+    }
+  }
+
   /** IME 조합 오버레이를 표시한다 */
   showComposition(startRect: CursorRect, charWidth: number, zoom: number, text: string, fontFamily: string): void {
     this.ensureAttached();

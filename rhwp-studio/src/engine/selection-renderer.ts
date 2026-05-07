@@ -5,6 +5,8 @@ import { VirtualScroll } from '@/view/virtual-scroll';
 export class SelectionRenderer {
   private layer: HTMLDivElement;
   private highlights: HTMLDivElement[] = [];
+  private activeCount = 0;
+  private lastSignature = '';
 
   constructor(
     private container: HTMLElement,
@@ -21,35 +23,58 @@ export class SelectionRenderer {
 
   /** 선택 사각형을 렌더링한다 */
   render(rects: SelectionRect[], zoom: number): void {
-    this.clear();
     this.ensureAttached();
 
     const scrollContent = this.container.querySelector('#scroll-content');
+    if (!scrollContent || rects.length === 0) {
+      this.clear();
+      return;
+    }
+
     const contentWidth = scrollContent?.clientWidth ?? 0;
+    const layouts: string[] = [];
 
     for (const rect of rects) {
-      const div = document.createElement('div');
       const pageOffset = this.virtualScroll.getPageOffset(rect.pageIndex);
       const pageDisplayWidth = this.virtualScroll.getPageWidth(rect.pageIndex);
       const pageLeft = (contentWidth - pageDisplayWidth) / 2;
-
-      div.style.cssText =
-        `position:absolute;background:rgba(51,144,255,0.35);pointer-events:none;` +
-        `left:${pageLeft + rect.x * zoom}px;` +
-        `top:${pageOffset + rect.y * zoom}px;` +
-        `width:${rect.width * zoom}px;` +
-        `height:${rect.height * zoom}px;`;
-      this.layer.appendChild(div);
-      this.highlights.push(div);
+      layouts.push([
+        pageLeft + rect.x * zoom,
+        pageOffset + rect.y * zoom,
+        rect.width * zoom,
+        rect.height * zoom,
+      ].map(v => v.toFixed(2)).join(','));
     }
+
+    const signature = layouts.join('|');
+    if (signature === this.lastSignature) return;
+
+    for (let i = 0; i < layouts.length; i++) {
+      const div = this.ensureHighlight(i);
+      const [left, top, width, height] = layouts[i].split(',');
+
+      div.style.left = `${left}px`;
+      div.style.top = `${top}px`;
+      div.style.width = `${width}px`;
+      div.style.height = `${height}px`;
+      div.style.display = 'block';
+    }
+
+    for (let i = layouts.length; i < this.activeCount; i++) {
+      this.highlights[i].style.display = 'none';
+    }
+    this.activeCount = layouts.length;
+    this.lastSignature = signature;
   }
 
   /** 모든 하이라이트를 제거한다 */
   clear(): void {
-    for (const div of this.highlights) {
-      div.remove();
+    if (this.activeCount === 0 && this.lastSignature === '') return;
+    for (let i = 0; i < this.activeCount; i++) {
+      this.highlights[i].style.display = 'none';
     }
-    this.highlights = [];
+    this.activeCount = 0;
+    this.lastSignature = '';
   }
 
   /** 레이어가 DOM에 없으면 재부착한다 (loadDocument 후 컨테이너 교체 대응) */
@@ -59,6 +84,18 @@ export class SelectionRenderer {
     if (scrollContent) {
       scrollContent.appendChild(this.layer);
     }
+  }
+
+  private ensureHighlight(index: number): HTMLDivElement {
+    let div = this.highlights[index];
+    if (!div) {
+      div = document.createElement('div');
+      div.style.cssText =
+        'position:absolute;background:rgba(51,144,255,0.35);pointer-events:none;display:none;';
+      this.layer.appendChild(div);
+      this.highlights[index] = div;
+    }
+    return div;
   }
 
   dispose(): void {
