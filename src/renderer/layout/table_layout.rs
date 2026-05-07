@@ -2352,7 +2352,15 @@ impl LayoutEngine {
                     continue;
                 }
 
-                if has_limit && line_end_pos > abs_limit {
+                // [Task #656] break 비교 시 마지막 visible 줄의 trail_ls 제외.
+                // - cum 누적은 line_h (h+ls) 그대로 (이전 줄들의 ls 는 다음 줄 직전 spacing 이므로 렌더)
+                // - break 비교는 line_break_pos = cum + h (이 줄의 ls 제외) 로 비교
+                //   → 이 줄이 visible 시 마지막 줄이면 trail_ls 미렌더 영역, abs_limit 안에 들어감
+                // typeset 의 `split_end_limit = avail_content` 추정 영역과 정합. 셀 영역
+                // `is_cell_last_line` 분기 의 trail_ls 미렌더 모델과 동일 본질.
+                // (Task #485 의 epsilon 영역 의 본질 정정 — 휴리스틱 마진 없이 일관된 모델.)
+                let line_break_pos = cum + h;
+                if has_limit && line_break_pos > abs_limit {
                     // [Task #431] abs_limit (= content_offset + content_limit) 와 비교 (단위 정합)
                     // limit 초과 → 이 줄과 이후 모든 콘텐츠 차단
                     break;
