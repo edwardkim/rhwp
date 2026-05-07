@@ -139,6 +139,40 @@ export class VirtualScroll {
     return 0;
   }
 
+  /**
+   * 문서 좌표 (X, Y) 가 속하는 페이지 인덱스를 반환한다.
+   * 단일 컬럼 모드: getPageAtY 와 동치 (X 무관).
+   * 그리드 모드: row(Y) 결정 후 같은 row 안에서 X 가 속하는 페이지 반환.
+   *              gap 영역(페이지 사이 빈 공간) click 은 가장 가까운 페이지로 fallback.
+   */
+  getPageAtPoint(docX: number, docY: number): number {
+    const rowLastIdx = this.getPageAtY(docY);
+    if (!this.gridMode) return rowLastIdx;
+
+    // 같은 row 의 페이지 범위 (rowLastIdx 부터 row 시작까지)
+    const rowOffset = this.pageOffsets[rowLastIdx];
+    let rowFirst = rowLastIdx;
+    while (rowFirst > 0 && this.pageOffsets[rowFirst - 1] === rowOffset) rowFirst--;
+
+    // X 가 페이지 안에 속하는 첫 번째 페이지 반환
+    for (let i = rowFirst; i <= rowLastIdx; i++) {
+      const left = this.pageLefts[i] ?? 0;
+      const right = left + (this.pageWidths[i] ?? 0);
+      if (docX >= left && docX <= right) return i;
+    }
+
+    // gap / margin 영역 — 가장 가까운 페이지로 fallback
+    let bestIdx = rowFirst;
+    let bestDist = Infinity;
+    for (let i = rowFirst; i <= rowLastIdx; i++) {
+      const left = this.pageLefts[i] ?? 0;
+      const right = left + (this.pageWidths[i] ?? 0);
+      const dist = docX < left ? left - docX : (docX > right ? docX - right : 0);
+      if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+    }
+    return bestIdx;
+  }
+
   getPageOffset(pageIdx: number): number {
     return this.pageOffsets[pageIdx] ?? 0;
   }
