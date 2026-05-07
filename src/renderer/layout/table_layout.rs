@@ -719,7 +719,7 @@ impl LayoutEngine {
                     &mut comp, p, cell_inner_width_px, styles,
                 );
                 self.calc_para_lines_height(&comp.lines, pidx, cell_para_count,
-                    styles.para_styles.get(p.para_shape_id as usize))
+                    styles.para_styles.get(p.para_shape_id as usize), styles)
             })
             .sum()
     }
@@ -737,18 +737,24 @@ impl LayoutEngine {
             .enumerate()
             .map(|(pidx, (comp, para))| {
                 self.calc_para_lines_height(&comp.lines, pidx, cell_para_count,
-                    styles.para_styles.get(para.para_shape_id as usize))
+                    styles.para_styles.get(para.para_shape_id as usize), styles)
             })
             .sum()
     }
 
     /// 단일 문단의 줄 높이 합산 (공통 로직)
+    ///
+    /// [Task #674] line_height 측정에 corrected_line_height 보정 적용.
+    /// line_segs 부재 paragraph 의 fallback line_height (400 HU = 5.33 px) 가
+    /// max_fs 보다 작은 경우 ParaShape 의 line_spacing_type + line_spacing 으로
+    /// 보정. height_measurer.rs:570-587 와 동일 로직 — 측정/layout 일관성 보장.
     fn calc_para_lines_height(
         &self,
         lines: &[crate::renderer::composer::ComposedLine],
         pidx: usize,
         total_para_count: usize,
         para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        styles: &ResolvedStyleSet,
     ) -> f64 {
         let is_last_para = pidx + 1 == total_para_count;
         let spacing_before = if pidx > 0 {
@@ -764,11 +770,20 @@ impl LayoutEngine {
         if lines.is_empty() {
             spacing_before + hwpunit_to_px(400, self.dpi) + spacing_after
         } else {
+            let cell_ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
+            let cell_ls_type = para_style.map(|s| s.line_spacing_type)
+                .unwrap_or(crate::model::style::LineSpacingType::Percent);
             let line_count = lines.len();
             let lines_total: f64 = lines.iter()
                 .enumerate()
                 .map(|(i, line)| {
-                    let h = hwpunit_to_px(line.line_height, self.dpi);
+                    let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
+                    let max_fs = line.runs.iter()
+                        .map(|r| styles.char_styles.get(r.char_style_id as usize)
+                            .map(|cs| cs.font_size).unwrap_or(0.0))
+                        .fold(0.0f64, f64::max);
+                    let h = crate::renderer::corrected_line_height(
+                        raw_lh, max_fs, cell_ls_type, cell_ls_val);
                     let is_cell_last_line = is_last_para && i + 1 == line_count;
                     if !is_cell_last_line {
                         h + hwpunit_to_px(line.line_spacing, self.dpi)
