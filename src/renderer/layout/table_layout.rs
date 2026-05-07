@@ -2264,6 +2264,11 @@ impl LayoutEngine {
         // 케이스에서 셀 내 문단이 즉시 break 되어 빈 페이지로 출력되던 결함 정정.)
         let abs_limit = if has_limit { content_offset + content_limit } else { 0.0 };
 
+        // [Task #485 Bug-1] abs_limit 도달 후 렌더 차단 플래그.
+        // 이전엔 inner break 만 빠져나와 다음 단락에서 같은 cum 으로 재평가 → 셀 마지막 단락(line_spacing 제외로 line_h 작아짐)이
+        // abs_limit 안에 fit 하여 통과하는 out-of-order 결함 발생. 한 번 도달하면 이후 단락 모두 미렌더로 처리.
+        let mut limit_reached = false;
+
         let total_paras = composed_paras.len();
         for (pi, (comp, para)) in composed_paras.iter().zip(cell.paragraphs.iter()).enumerate() {
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -2272,6 +2277,13 @@ impl LayoutEngine {
             let spacing_before = if pi > 0 { para_style.map(|s| s.spacing_before).unwrap_or(0.0) } else { 0.0 };
             let spacing_after = if !is_last_para { para_style.map(|s| s.spacing_after).unwrap_or(0.0) } else { 0.0 };
             let line_count = comp.lines.len();
+
+            // [Task #485 Bug-1] 한도 초과 후 후속 단락은 강제 미렌더 (시각 순서 보존).
+            if limit_reached {
+                let visible_count = if line_count == 0 { 0 } else { line_count };
+                result.push((visible_count, visible_count));
+                continue;
+            }
 
             // 중첩 표 포함 문단(atomic) — line_count==0 또는 has_table_in_para
             let has_table_in_para = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
@@ -2318,6 +2330,10 @@ impl LayoutEngine {
                 if was_on_prev || exceeds_limit {
                     // (n,n): 렌더 스킵 마커. line_count==0 이면 (0,0) 동일.
                     result.push((visible_count, visible_count));
+                    // [Task #485 Bug-1] limit 초과 단락 발생 시 후속 단락 차단.
+                    if exceeds_limit {
+                        limit_reached = true;
+                    }
                 } else {
                     result.push((0, visible_count));
                 }
@@ -2355,6 +2371,8 @@ impl LayoutEngine {
                 if has_limit && line_end_pos > abs_limit {
                     // [Task #431] abs_limit (= content_offset + content_limit) 와 비교 (단위 정합)
                     // limit 초과 → 이 줄과 이후 모든 콘텐츠 차단
+                    // [Task #485 Bug-1] outer 루프도 차단 — 후속 단락의 작은 line_h slip 방지.
+                    limit_reached = true;
                     break;
                 }
 
