@@ -166,8 +166,6 @@ impl LayoutEngine {
                     // (exam_social.hwp pi=15 4번 자료 박스: 외부 1x1 padding=(850,850,850,850)
                     //  border_fill_id=6, 내부 6x3 대화체 셀.)
                     let outer_y = y_start;
-                    let outer_x_for_box;
-                    let outer_w_for_box;
                     let outer_border_meta = if depth == 0 {
                         let has_outer_padding = cell.padding.left != 0
                             || cell.padding.right != 0
@@ -188,8 +186,8 @@ impl LayoutEngine {
                     let pw_now = self.current_paper_width.get();
                     let paper_w = if pw_now > 0.0 { Some(pw_now) } else { None };
                     let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
-                    outer_w_for_box = nested_w;
-                    outer_x_for_box = self.compute_table_x_position(
+                    let outer_w_for_box = nested_w;
+                    let outer_x_for_box = self.compute_table_x_position(
                         nested, nested_w, col_area, depth, host_alignment,
                         host_margin_left, host_margin_right, inline_x_override, paper_w,
                     );
