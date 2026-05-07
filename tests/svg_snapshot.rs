@@ -118,6 +118,20 @@ fn issue_617_exam_kor_page5() {
     check_snapshot("samples/exam_kor.hwp", 5, "issue-617/exam-kor-page5");
 }
 
+/// Issue #677: 복학원서.hwp 1페이지 — 다음 두 결함 영역의 회귀 차단
+///   1. PartialParagraph y 누적 결함 (인라인 TAC 표 라인)
+///      `layout.rs::PageItem::PartialParagraph` 가 y_offset 을
+///      LineSeg.vpos 정합 위치로 리셋하는 동작을 잠가둔다.
+///   2. U+F081C HWP PUA 채움 문자 폭 (0)
+///      `text_measurement.rs::char_width` 의 5 사이트 모두 채움 문자
+///      폭을 0 으로 처리하는 동작을 잠가둔다.
+///   3. 한컴 워터마크 모드 표준 프리셋 (brightness=+70, contrast=-50)
+///      `svg.rs::render_image` 의 워터마크 게이트 동작을 잠가둔다.
+#[test]
+fn issue_677_bokhakwonseo_page1() {
+    check_snapshot("samples/복학원서.hwp", 0, "issue-677/bokhakwonseo-page1");
+}
+
 /// Determinism probe: render the same page twice in one process and assert
 /// byte-for-byte equality. If this ever fails, the snapshot tests above
 /// are unreliable regardless of golden correctness.

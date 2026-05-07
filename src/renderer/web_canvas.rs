@@ -421,15 +421,27 @@ impl WebCanvasRenderer {
                 self.open_shape_transform(&img.transform, &node.bbox);
                 if let Some(ref data) = img.data {
                     // Task #516: 그림 효과 / 밝기 / 대비 / 워터마크를 CSS filter 로 적용
+                    // [Issue #677] 한컴 워터마크 모드 (effect != RealPic + brightness/contrast 비-zero) 는
+                    // 저장값 그대로 brightness/contrast 적용 + opacity 0.5 반투명 영역.
+                    // PDF 정답지 영역의 시각 — 진한 회색 워터마크 + 본문 텍스트가 워터마크
+                    // 위로 가독 정합. SVG 영역과 동기.
+                    let is_watermark_image = !matches!(img.effect, crate::model::image::ImageEffect::RealPic)
+                        && (img.brightness != 0 || img.contrast != 0);
                     let filter_str = compose_image_filter(img.effect, img.brightness, img.contrast);
                     if let Some(ref f) = filter_str {
                         self.ctx.set_filter(f);
+                    }
+                    if is_watermark_image {
+                        self.ctx.set_global_alpha(0.17);
                     }
                     self.draw_image_with_fill_mode(
                         data, &node.bbox, img.fill_mode, img.original_size, img.crop,
                         img.original_size_hu,
                     );
                     // 다음 그리기 작업에 영향 없도록 reset
+                    if is_watermark_image {
+                        self.ctx.set_global_alpha(1.0);
+                    }
                     if filter_str.is_some() {
                         self.ctx.set_filter("none");
                     }

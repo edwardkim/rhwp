@@ -1085,9 +1085,19 @@ impl SvgRenderer {
             self.output.push_str(&format!("<g filter=\"url(#{})\">\n", fid));
         }
         // 밝기/대비 → SVG 필터 래핑
+        // [Issue #677] 한컴 워터마크 효과 (effect != RealPic 이고 brightness/contrast 가
+        // 비-zero) 는 저장값을 그대로 brightness/contrast 필터로 적용 (회색조 + 강대비
+        // 영역) + opacity 0.5 반투명 영역으로 본문 텍스트 가독성 보존. PDF 정답지 영역
+        // 의 시각 — 진한 회색 워터마크 + 본문 텍스트가 워터마크 위로 가독 정합.
+        let is_watermark_image = !matches!(img.effect, crate::model::image::ImageEffect::RealPic)
+            && (img.brightness != 0 || img.contrast != 0);
         let bc_filter_id = self.ensure_brightness_contrast_filter(img.brightness, img.contrast);
         if let Some(ref fid) = bc_filter_id {
             self.output.push_str(&format!("<g filter=\"url(#{})\">\n", fid));
+        }
+        // 워터마크 반투명 영역 (PDF 정합 — 본문 가독성 보존)
+        if is_watermark_image {
+            self.output.push_str("<g opacity=\"0.17\">\n");
         }
 
         let mime_type = detect_image_mime_type(data);
@@ -1179,6 +1189,9 @@ impl SvgRenderer {
             }
         }
 
+        if is_watermark_image {
+            self.output.push_str("</g>\n");
+        }
         if bc_filter_id.is_some() {
             self.output.push_str("</g>\n");
         }

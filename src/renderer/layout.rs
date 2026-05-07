@@ -2128,14 +2128,36 @@ impl LayoutEngine {
                     } else {
                         composed.get(*para_index).cloned()
                     };
-                    y_offset = self.layout_partial_paragraph(
+                    // [Issue #677] 같은 paragraph 의 TAC 표를 선행한 PP 는 y_offset 이
+                    // 이미 표 바닥까지 누적된 상태로 진입한다. 그러나 HWP IR 는 line 1 의
+                    // lh 에 표 높이를 인코딩 (table 가 line 1 안의 인라인 객체) 하므로
+                    // PP 의 y 를 LineSeg.vpos 정합 위치로 리셋하지 않으면 표 높이만큼
+                    // 이중 누적 (LAYOUT_OVERFLOW). 조건 가드 3개로 좁게 발동:
+                    //   1) start_line > 0 (문단 첫 PP 미적용)
+                    //   2) para 가 TAC 표 보유 (treat_as_char=true)
+                    //   3) para_start_y 등록 (Table item 선행 처리됨 → 같은 column)
+                    let pp_y_in = if *start_line > 0
+                        && para.controls.iter().any(|c|
+                            matches!(c, Control::Table(t) if t.common.treat_as_char))
+                        && para_start_y.contains_key(para_index)
+                    {
+                        if let (Some(seg), Some(seg0), Some(para_top)) = (
+                            para.line_segs.get(*start_line),
+                            para.line_segs.first(),
+                            para_start_y.get(para_index).copied(),
+                        ) {
+                            para_top + hwpunit_to_px(
+                                seg.vertical_pos - seg0.vertical_pos, self.dpi)
+                        } else { y_offset }
+                    } else { y_offset };
+                    let pp_y_out = self.layout_partial_paragraph(
                         tree,
                         col_node,
                         para,
                         comp.as_ref(),
                         styles,
                         col_area,
-                        y_offset,
+                        pp_y_in,
                         *start_line,
                         *end_line,
                         page_content.section_index,
@@ -2144,6 +2166,9 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         ctx.wrap_anchors.get(para_index),
                     );
+                    // y_offset 누적: Table item 의 누적값 (표 바닥) 과 PP 자연 종료값
+                    // 중 최대로 갱신. 표 + 라인 영역의 시각 바닥을 후속 item 에 정확 전파.
+                    y_offset = y_offset.max(pp_y_out);
                 }
             }
             PageItem::Table { para_index, control_index } => {

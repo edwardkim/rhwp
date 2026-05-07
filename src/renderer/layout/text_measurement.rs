@@ -194,6 +194,14 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
+            // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
+            // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
+            // 한컴 PDF 정합 — 폭 0 으로 라인 inline x 에 영향 없음. fillers 가
+            // 표 너비만큼 (≈97 chars × 1 char width = table width) 채워져
+            // 표가 fillers 영역 위에 시각적으로 겹쳐 column-left 출력 패턴.
+            if c == '\u{F081C}' {
+                return 0.0;
+            }
             let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
@@ -311,6 +319,14 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             let c = chars[i];
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            }
+            // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
+            // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
+            // 한컴 PDF 정합 — 폭 0 으로 라인 inline x 에 영향 없음. fillers 가
+            // 표 너비만큼 (≈97 chars × 1 char width = table width) 채워져
+            // 표가 fillers 영역 위에 시각적으로 겹쳐 column-left 출력 패턴.
+            if c == '\u{F081C}' {
+                return 0.0;
             }
             let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
                 w
@@ -579,6 +595,14 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
+            // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
+            // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
+            // 한컴 PDF 정합 — 폭 0 으로 라인 inline x 에 영향 없음. fillers 가
+            // 표 너비만큼 (≈97 chars × 1 char width = table width) 채워져
+            // 표가 fillers 영역 위에 시각적으로 겹쳐 column-left 출력 패턴.
+            if c == '\u{F081C}' {
+                return 0.0;
+            }
             let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
@@ -688,6 +712,14 @@ impl TextMeasurer for WasmTextMeasurer {
             let c = chars[i];
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            }
+            // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
+            // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
+            // 한컴 PDF 정합 — 폭 0 으로 라인 inline x 에 영향 없음. fillers 가
+            // 표 너비만큼 (≈97 chars × 1 char width = table width) 채워져
+            // 표가 fillers 영역 위에 시각적으로 겹쳐 column-left 출력 패턴.
+            if c == '\u{F081C}' {
+                return 0.0;
             }
             let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
@@ -909,6 +941,10 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         let c = chars[i];
         if c == '\u{2007}' {
             return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+        }
+        // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
+        if c == '\u{F081C}' {
+            return 0.0;
         }
         let base_w_raw = if let Some(w) = measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size) {
             w
