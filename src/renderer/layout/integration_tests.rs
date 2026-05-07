@@ -1312,6 +1312,9 @@ mod tests {
             glyphs >= 3,
             "Issue #639 회귀: aift.hwp 페이지 74 (items=1 + Table 2×2 tac=true) 의 쪽번호 \
              footer 가 표시되어야 함. tac=true 는 cover-style 룰 미매칭. 실제: {} 글리프.", glyphs
+        );
+    }
+
     /// Task #624: exam_science p2 7번 글상자 (pi=33 ci=0) 안 p[1] 의
     /// ㉠ 사각형 (Control::Shape, treat_as_char=true, ls[1] 위치) y 좌표 검증.
     ///
