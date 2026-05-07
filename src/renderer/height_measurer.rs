@@ -802,7 +802,18 @@ impl HeightMeasurer {
         // 한컴은 TAC 표의 높이를 속성값으로 유지 (셀 콘텐츠 넘침은 클리핑)
         // 비-TAC 표: 셀 콘텐츠 기반 확장 유지 (행 분할 필요)
         let common_h = hwpunit_to_px(table.common.height as i32, self.dpi);
-        let table_height = if table.common.treat_as_char && common_h > 0.0 && raw_table_height > common_h + 1.0 {
+        // [Task #672] TAC 표 비례 축소 임계값 강화 — 작은 차이 (≤2%) 는 면제.
+        //
+        // 본질: 셀 콘텐츠 측정값과 common.height 의 미세한 불일치 (측정 오차
+        // 또는 line_height 보정 부산물) 시 비례 축소가 셀 콘텐츠 클립을 발생.
+        // 한컴 뷰어는 작은 차이를 비례 축소 안 함 (계획서.hwp 1.32% 차이 — 3 줄
+        // 정상 표시). 2% 이상 차이는 사용자 의도 영역 (의도적 압축) 으로 간주
+        // 하여 기존 동작 유지.
+        //
+        // 발동 영역 sweep 진단 (187 fixture): ≤2% 7 건 면제, ≥5% 11 건 그대로.
+        const TAC_SHRINK_THRESHOLD_RATIO: f64 = 0.02;
+        let shrink_threshold = (common_h * TAC_SHRINK_THRESHOLD_RATIO).max(1.0);
+        let table_height = if table.common.treat_as_char && common_h > 0.0 && raw_table_height > common_h + shrink_threshold {
             let scale = common_h / raw_table_height;
             for h in &mut row_heights {
                 *h *= scale;
