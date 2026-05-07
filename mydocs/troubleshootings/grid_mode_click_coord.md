@@ -49,9 +49,11 @@ this.gridMode = zoom <= GRID_ZOOM_THRESHOLD && viewportWidth > 0 && pages.length
 
 ## 영향 범위 (사용자 직접 측정, 2026-05-07)
 
-**한컴**: 그리드 모드 / 일반 모드 모두 정상 클릭 동작.
+**한컴**: 그리드 모드 / 일반 모드 모두 **정상 클릭 동작**. ※ 한컴 오피스도 다중 페이지 그리드 모드 (여러 페이지 동시 보기) 가 존재하며, 거기서도 click 좌표는 정확히 처리됨.
 
 **RHWP 그리드 모드 (zoom ≤ 0.5)**: **모든 열에서 click 어긋남** (좌측 열 + 가운데 열 + 우측 열 전부). 일반 모드 (zoom > 0.5) 는 정상.
+
+→ **한컴 호환 결함** (한컴은 정상, RHWP만 어긋남).
 
 원인: 페이지 element 의 실제 left 좌표는 `pageLefts[i]` ([canvas-view.ts:156-163](../../rhwp-studio/src/view/canvas-view.ts#L156-L163) 에서 `style.left = ${pageLeft}px`) 인데, input-handler-mouse 의 14곳 모두 `(clientWidth - pageDisplayWidth) / 2` 단일 컬럼 가정. 그리드 모드에서는 모든 열의 페이지가 슬롯 좌표에 배치되므로 단일 컬럼 가정 공식과 어긋남 (좌/우 방향 + 정도가 열별로 다름).
 
@@ -90,9 +92,11 @@ getPageLeftResolved(pageIdx: number, containerWidth: number): number {
 4. **2열째 페이지** 본문 텍스트 클릭 → 커서가 엉뚱한 위치 (1열째 페이지 영역 처럼 처리됨) 에 떨어지는지 확인.
 5. 또는 머리말 영역 dblclick → 머리말 편집기 미진입 (좌표 어긋남으로 hit_test_header_footer = false 반환).
 
-## 한컴 호환 무관성
+## 한컴 호환 결함
 
-한컴 오피스는 그리드 모드 (다중 열 페이지 배치) 자체가 없음. 본 결함은 RHWP 자체 결함이며 한컴 호환 진단 불필요.
+한컴 오피스는 다중 페이지 그리드 모드 (여러 페이지 동시 보기) 가 존재하며, 그 모드에서 click 좌표는 정확히 처리됨 (사용자 직접 시연 확인, 2026-05-07). RHWP 만 그리드 모드에서 click 좌표 어긋남 → **한컴 호환 결함**.
+
+본 정정의 기대 동작: 한컴 그리드 모드와 동일하게 클릭 → 클릭한 페이지 안의 정확한 위치에 cursor 배치.
 
 ## 우선순위
 
