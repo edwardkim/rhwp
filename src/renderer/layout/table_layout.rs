@@ -2211,7 +2211,11 @@ impl LayoutEngine {
         // 절대 좌표(cum 기반)와 비교하려면 content_offset 을 더해 절대 끝 좌표로 변환한다.
         // (Task #362 의 도입 시점에 단위 mismatch 가 있었음 — content_offset >= content_limit
         // 케이스에서 셀 내 문단이 즉시 break 되어 빈 페이지로 출력되던 결함 정정.)
-        let abs_limit = if has_limit { content_offset + content_limit } else { 0.0 };
+        // [Task #485 Bug-2] boundary epsilon — abs_limit 와 cell-clip-rect bottom 의 미세 어긋남 +
+        // descender 여유분 흡수. line_end_pos 가 abs_limit 와 ~0~2px 차이로 fit 하면
+        // 시각적으로 본문 경계 침범 → 다음 페이지로 밀어냄.
+        const SPLIT_LIMIT_EPSILON: f64 = 2.0;
+        let effective_limit = if has_limit { content_offset + content_limit - SPLIT_LIMIT_EPSILON } else { 0.0 };
 
         // [Task #485 Bug-1] abs_limit 도달 후 렌더 차단 플래그.
         // 이전엔 inner break 만 빠져나와 다음 단락에서 같은 cum 으로 재평가 → 셀 마지막 단락(line_spacing 제외로 line_h 작아짐)이
@@ -2274,7 +2278,8 @@ impl LayoutEngine {
                 let was_on_prev = has_offset && para_end_pos <= content_offset;
                 let bigger_than_page = has_limit && para_h > content_limit;
                 // [Task #431] abs_limit (= content_offset + content_limit) 와 비교 (단위 정합)
-                let exceeds_limit = has_limit && para_end_pos > abs_limit && !bigger_than_page;
+                // [Task #485 Bug-2] boundary epsilon 적용 — descender 여유분
+                let exceeds_limit = has_limit && para_end_pos > effective_limit && !bigger_than_page;
                 let visible_count = if line_count == 0 { 0 } else { line_count };
                 if was_on_prev || exceeds_limit {
                     // (n,n): 렌더 스킵 마커. line_count==0 이면 (0,0) 동일.
@@ -2317,9 +2322,10 @@ impl LayoutEngine {
                     continue;
                 }
 
-                if has_limit && line_end_pos > abs_limit {
+                if has_limit && line_end_pos > effective_limit {
                     // [Task #431] abs_limit (= content_offset + content_limit) 와 비교 (단위 정합)
-                    // limit 초과 → 이 줄과 이후 모든 콘텐츠 차단
+                    // [Task #485 Bug-2] boundary epsilon 적용 — line_end_pos 가 abs_limit 와 ~0~2px 차이로 fit 하면
+                    // cell-clip-rect bottom 과 descender 가 충돌 → 다음 페이지로 밀어냄.
                     // [Task #485 Bug-1] outer 루프도 차단 — 후속 단락의 작은 line_h slip 방지.
                     limit_reached = true;
                     break;
