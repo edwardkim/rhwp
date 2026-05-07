@@ -2886,7 +2886,7 @@ fn diff_common_obj(
 
 fn ir_diff(args: &[String]) {
     if args.len() < 2 {
-        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>]");
+        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]");
         return;
     }
 
@@ -2894,6 +2894,9 @@ fn ir_diff(args: &[String]) {
     let file_b = &args[1];
     let mut section_filter: Option<usize> = None;
     let mut para_filter: Option<usize> = None;
+    // [Task #653 보강] 출력 가드 옵션
+    let mut summary_mode = false;
+    let mut max_lines: Option<usize> = None;
 
     let mut i = 2;
     while i < args.len() {
@@ -2904,6 +2907,14 @@ fn ir_diff(args: &[String]) {
             }
             "-p" | "--para" if i + 1 < args.len() => {
                 para_filter = args[i + 1].parse().ok();
+                i += 2;
+            }
+            "--summary" => {
+                summary_mode = true;
+                i += 1;
+            }
+            "--max-lines" if i + 1 < args.len() => {
+                max_lines = args[i + 1].parse().ok();
                 i += 2;
             }
             _ => { i += 1; }
@@ -2930,11 +2941,70 @@ fn ir_diff(args: &[String]) {
 
     let name_a = Path::new(file_a).file_name().unwrap_or_default().to_string_lossy();
     let name_b = Path::new(file_b).file_name().unwrap_or_default().to_string_lossy();
-    println!("=== IR 비교: {} vs {} ===", name_a, name_b);
+    if !summary_mode {
+        println!("=== IR 비교: {} vs {} ===", name_a, name_b);
+    }
+
+    // [Task #653 보강] 출력 가드 상태
+    let mut printed_lines: usize = 0;
+    let mut truncated = false;
+    let mut summary_buckets: std::collections::BTreeMap<String, u32> = std::collections::BTreeMap::new();
+
+    // emit_header: paragraph/섹션 헤더. summary 모드에서는 출력 안 함, max_lines 초과 시 truncate.
+    macro_rules! emit_header {
+        ($($arg:tt)*) => {{
+            if !summary_mode {
+                let line = format!($($arg)*);
+                match max_lines {
+                    Some(limit) if printed_lines >= limit => {
+                        if !truncated {
+                            println!("... 이하 생략 (--max-lines {} 도달)", limit);
+                            truncated = true;
+                        }
+                    }
+                    _ => {
+                        println!("{}", line);
+                        printed_lines += 1;
+                    }
+                }
+            }
+        }};
+    }
+    // emit_diff: 차이 라인. summary 모드에서는 카테고리별 카운트, 일반 모드에서는 "  [차이] {}" 형식.
+    // 카테고리 추출: ":" 앞쪽 첫 토큰. controls[N].xxx 는 ".xxx" 만 추출.
+    macro_rules! emit_diff {
+        ($($arg:tt)*) => {{
+            let body = format!($($arg)*);
+            if summary_mode {
+                let prefix = body.split(':').next().unwrap_or(&body);
+                let cat = if let Some(pos) = prefix.rfind(']') {
+                    prefix[pos + 1..].trim_start_matches('.').trim().to_string()
+                } else {
+                    prefix.trim().to_string()
+                };
+                let key = if cat.is_empty() { body.clone() } else { cat };
+                *summary_buckets.entry(key).or_insert(0) += 1;
+            } else {
+                let line = format!("  [차이] {}", body);
+                match max_lines {
+                    Some(limit) if printed_lines >= limit => {
+                        if !truncated {
+                            println!("... 이하 생략 (--max-lines {} 도달)", limit);
+                            truncated = true;
+                        }
+                    }
+                    _ => {
+                        println!("{}", line);
+                        printed_lines += 1;
+                    }
+                }
+            }
+        }};
+    }
 
     // 구역 수 비교
     if doc_a.sections.len() != doc_b.sections.len() {
-        println!("[차이] 구역 수: A={} vs B={}", doc_a.sections.len(), doc_b.sections.len());
+        emit_diff!("구역 수: A={} vs B={}", doc_a.sections.len(), doc_b.sections.len());
     }
 
     let sec_count = doc_a.sections.len().min(doc_b.sections.len());
@@ -2949,7 +3019,7 @@ fn ir_diff(args: &[String]) {
         let sec_b = &doc_b.sections[sec_idx];
 
         if sec_a.paragraphs.len() != sec_b.paragraphs.len() {
-            println!("[차이] 구역 {}: 문단 수 A={} vs B={}", sec_idx, sec_a.paragraphs.len(), sec_b.paragraphs.len());
+            emit_diff!("구역 {}: 문단 수 A={} vs B={}", sec_idx, sec_a.paragraphs.len(), sec_b.paragraphs.len());
             total_diffs += 1;
         }
 
@@ -3086,9 +3156,9 @@ fn ir_diff(args: &[String]) {
 
             if !diffs.is_empty() {
                 let text_preview: String = pa.text.chars().take(30).collect();
-                println!("\n--- 문단 {}.{} --- \"{}\"", sec_idx, pi, text_preview);
+                emit_header!("\n--- 문단 {}.{} --- \"{}\"", sec_idx, pi, text_preview);
                 for d in &diffs {
-                    println!("  [차이] {}", d);
+                    emit_diff!("{}", d);
                 }
                 total_diffs += diffs.len() as u32;
             }
@@ -3100,7 +3170,7 @@ fn ir_diff(args: &[String]) {
         let ps_a = &doc_a.doc_info.para_shapes;
         let ps_b = &doc_b.doc_info.para_shapes;
         if ps_a.len() != ps_b.len() {
-            println!("\n[차이] ParaShape 수: A={} vs B={}", ps_a.len(), ps_b.len());
+            emit_diff!("ParaShape 수: A={} vs B={}", ps_a.len(), ps_b.len());
             total_diffs += 1;
         }
         let ps_count = ps_a.len().min(ps_b.len());
@@ -3115,7 +3185,7 @@ fn ir_diff(args: &[String]) {
             if a.spacing_after != b.spacing_after { ps_diffs.push(format!("sa: {}vs{}", a.spacing_after, b.spacing_after)); }
             if a.line_spacing != b.line_spacing { ps_diffs.push(format!("ls: {}vs{}", a.line_spacing, b.line_spacing)); }
             if !ps_diffs.is_empty() {
-                println!("  [PS {}] {}", i, ps_diffs.join(", "));
+                emit_diff!("PS[{}] {}", i, ps_diffs.join(", "));
                 total_diffs += ps_diffs.len() as u32;
             }
         }
@@ -3126,24 +3196,34 @@ fn ir_diff(args: &[String]) {
         let td_a = &doc_a.doc_info.tab_defs;
         let td_b = &doc_b.doc_info.tab_defs;
         if td_a.len() != td_b.len() {
-            println!("\n[차이] TabDef 수: A={} vs B={}", td_a.len(), td_b.len());
+            emit_diff!("TabDef 수: A={} vs B={}", td_a.len(), td_b.len());
             total_diffs += 1;
         }
         let td_count = td_a.len().min(td_b.len());
         for i in 0..td_count {
             let a = &td_a[i]; let b = &td_b[i];
             if a.tabs.len() != b.tabs.len() {
-                println!("  [TD {}] 탭 수: A={} vs B={}", i, a.tabs.len(), b.tabs.len());
+                emit_diff!("TD[{}] 탭 수: A={} vs B={}", i, a.tabs.len(), b.tabs.len());
                 total_diffs += 1;
             } else {
                 for (ti, (ta, tb)) in a.tabs.iter().zip(b.tabs.iter()).enumerate() {
                     if ta.position != tb.position || ta.tab_type != tb.tab_type || ta.fill_type != tb.fill_type {
-                        println!("  [TD {}][{}] pos: {}vs{}, type: {}vs{}, fill: {}vs{}",
+                        emit_diff!("TD[{}][{}] pos: {}vs{}, type: {}vs{}, fill: {}vs{}",
                             i, ti, ta.position, tb.position, ta.tab_type, tb.tab_type, ta.fill_type, tb.fill_type);
                         total_diffs += 1;
                     }
                 }
             }
+        }
+    }
+
+    // [Task #653 보강] 요약 모드 출력 — 카테고리별 카운트 (내림차순 → 알파벳)
+    if summary_mode {
+        println!("=== 카테고리별 차이 요약 ===");
+        let mut entries: Vec<(String, u32)> = summary_buckets.into_iter().collect();
+        entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        for (cat, count) in &entries {
+            println!("  {:>5}건  {}", count, cat);
         }
     }
 

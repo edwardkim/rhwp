@@ -19,7 +19,7 @@ HWPX(XML 기반)와 HWP(바이너리)는 동일한 문서를 다른 형식으로
 ## 사용법
 
 ```bash
-rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>]
+rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]
 ```
 
 ### 옵션
@@ -28,6 +28,18 @@ rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>]
 |------|------|------|
 | `--section <번호>` | `-s` | 특정 구역만 비교 (0부터 시작) |
 | `--para <번호>` | `-p` | 특정 문단만 비교 (0부터 시작) |
+| `--summary` |  | 카테고리별 차이 카운트만 출력 (paragraph 헤더 + 개별 차이 라인 생략) |
+| `--max-lines <N>` |  | 출력 라인 수를 N 으로 제한, 초과 시 truncation 마커 표시 (`=== 비교 완료` 라인은 항상 출력) |
+
+#### 출력 가드 사용 예
+
+```bash
+# 카테고리별 카운트 (광범위 회귀 측정 시 유용)
+rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --summary
+
+# 출력을 50 라인으로 제한 (긴 출력 처음 검사)
+rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --max-lines 50
+```
 
 ### 사용 예시
 

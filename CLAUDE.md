@@ -213,6 +213,8 @@ rhwp ir-diff sample.hwpx sample.hwp                    # 전체 비교
 rhwp ir-diff sample.hwpx sample.hwp -s 0 -p 810        # 특정 문단만 비교
 rhwp ir-diff sample.hwpx sample.hwp 2>&1 | grep "\[PS " # ParaShape 차이만
 rhwp ir-diff sample.hwpx sample.hwp 2>&1 | tail -1      # 차이 건수만
+rhwp ir-diff sample.hwpx sample.hwp --summary           # 카테고리별 카운트
+rhwp ir-diff sample.hwpx sample.hwp --max-lines 50      # 출력 50줄 제한
 ```
 
 비교 항목: text, char_count, char_offsets, char_shapes, line_segs, controls(타입+속성), tab_extended, ParaShape(여백/줄간격/탭), TabDef(위치/종류/채움).
