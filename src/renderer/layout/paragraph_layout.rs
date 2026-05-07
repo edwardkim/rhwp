@@ -2638,10 +2638,15 @@ impl LayoutEngine {
             // sequential 영역 미처리 → -9.55 px (또는 부분) drift 회귀 영역.
             let next_starts_border = self.next_para_starts_visible_border.get();
             let next_continues_border = self.next_para_continues_visible_border.get();
+            // [Task #683] 직전 paragraph 가 빈 paragraph + Para-relative TopAndBottom 그림이면
+            // trailing line_spacing 보존. image-paragraph 가 image_height + line(lh+ls) 을
+            // 차지하는 한컴 한글 2022 모델에서 image-paragraph 직후 paragraph 의 trailing ls
+            // 가 제외되면 cluster 가 1 line 부족해진다.
+            let prev_was_empty_pic = self.prev_para_was_empty_topandbottom_pic.get();
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
             } else if is_full_paragraph_end && cell_ctx.is_none()
-                && !next_starts_border && !next_continues_border {
+                && !next_starts_border && !next_continues_border && !prev_was_empty_pic {
                 // 셀 외부 paragraph 의 마지막 줄 (#479)
                 y += line_height;
             } else {

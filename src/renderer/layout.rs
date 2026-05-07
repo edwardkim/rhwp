@@ -252,6 +252,13 @@ pub struct LayoutEngine {
     /// true 면 ls 보존 (박스 안 sequential paragraph 사이 line spacing 정합).
     /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
     next_para_continues_visible_border: std::cell::Cell<bool>,
+    /// [Task #683] 직전 paragraph 가 빈 paragraph + Para-relative TopAndBottom 그림이면 true.
+    /// 한컴 한글 2022 는 image-paragraph 가 image_height + line(lh+ls) 을 차지하고,
+    /// image-paragraph 직후 paragraph 의 trailing line_spacing 이 보존되어 cluster 가 18864 HU
+    /// 가 된다. rhwp 의 본문 paragraph 마지막 줄 trailing ls 제외 (Task #479) 분기에서 본
+    /// 플래그가 true 면 ls 보존 (image-paragraph 직후 텍스트/빈 paragraph 의 1줄 누락 정정).
+    /// 호출 직전 caller 가 set, 호출 직후 false 로 리셋.
+    prev_para_was_empty_topandbottom_pic: std::cell::Cell<bool>,
 }
 
 mod text_measurement;
@@ -342,6 +349,35 @@ impl LayoutEngine {
         curr_id == next_id
     }
 
+    /// [Task #683] paragraph (pi) 가 빈 paragraph (visible 텍스트 0)
+    /// + Para-relative TopAndBottom 그림 (treat_as_char=false, caption 없음) 인지 검사.
+    /// curr_pi - 1 paragraph 가 본 조건이면 caller 가 prev_para_was_empty_topandbottom_pic
+    /// 플래그 set, paragraph_layout 의 trailing-ls 제외 분기에서 ls 보존
+    /// (image-paragraph 직후 텍스트/빈 paragraph 의 1줄 누락 정정, 한컴 한글 2022 PDF 정합).
+    pub(crate) fn paragraph_is_empty_topandbottom_pic(
+        &self,
+        pi: usize,
+        paragraphs: &[Paragraph],
+    ) -> bool {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        let para = match paragraphs.get(pi) {
+            Some(p) => p, None => return false,
+        };
+        let has_visible_text = para.text.chars()
+            .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+        if has_visible_text { return false; }
+        para.controls.iter().any(|c| {
+            if let Control::Picture(pic) = c {
+                !pic.common.treat_as_char
+                    && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
+                    && matches!(pic.common.vert_rel_to, VertRelTo::Para)
+                    && pic.caption.is_none()
+            } else {
+                false
+            }
+        })
+    }
+
     pub fn new(dpi: f64) -> Self {
         Self {
             dpi,
@@ -363,6 +399,7 @@ impl LayoutEngine {
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             next_para_starts_visible_border: std::cell::Cell::new(false),
             next_para_continues_visible_border: std::cell::Cell::new(false),
+            prev_para_was_empty_topandbottom_pic: std::cell::Cell::new(false),
         }
     }
 
@@ -2090,6 +2127,10 @@ impl LayoutEngine {
                         // [Task #544 v3] 박스 안 sequential paragraph 도 trailing ls 보존
                         self.next_para_continues_visible_border.set(
                             self.next_paragraph_continues_visible_border(*para_index, paragraphs, styles));
+                        // [Task #683] 직전 paragraph 가 빈 + TopAndBottom 그림이면 trailing ls 보존
+                        self.prev_para_was_empty_topandbottom_pic.set(
+                            *para_index > 0
+                                && self.paragraph_is_empty_topandbottom_pic(*para_index - 1, paragraphs));
                         y_offset = self.layout_paragraph(
                             tree,
                             col_node,
@@ -2105,6 +2146,7 @@ impl LayoutEngine {
                         );
                         self.next_para_starts_visible_border.set(false);
                         self.next_para_continues_visible_border.set(false);
+                        self.prev_para_was_empty_topandbottom_pic.set(false);
                     }
                     // TAC Shape 높이 보정: 문단에 TAC Shape(개체묶기 등)가 있으면
                     // Shape 높이가 문단 텍스트 높이보다 클 수 있으므로 y_offset을 보정.
@@ -3047,6 +3089,26 @@ impl LayoutEngine {
                                 bin_data_content, styles, alignment, pic_y,
                                 page_content.section_index, para_index, control_index,
                             );
+                            // Task #683: 빈 paragraph (텍스트 없음) + TopAndBottom 그림은
+                            // 한컴 한글 2022 가 그림 다음에 paragraph 의 line baseline 1줄을
+                            // 추가 진행한다 (file 의 LINE_SEG vpos 무시). pagination 은 이미
+                            // line_height + line_spacing 을 누적하지만 layout 은 image_height
+                            // 만 진행하여 시각적으로 1줄 누락. 빈 paragraph + Para-relative
+                            // TopAndBottom + caption 없음 케이스에서 line advance 보정.
+                            if matches!(pic.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                && matches!(pic.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                                && pic.caption.is_none()
+                            {
+                                let has_visible_text = para.text.chars()
+                                    .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                                if !has_visible_text {
+                                    let line_advance = para.line_segs.first()
+                                        .map(|ls| hwpunit_to_px(
+                                            ls.line_height + ls.line_spacing, self.dpi))
+                                        .unwrap_or(0.0);
+                                    result_y += line_advance;
+                                }
+                            }
                             // Square wrap + Para-relative: 그림 높이로 column y를 밀지 않는다.
                             // 텍스트는 그림 옆에 segment_width로 제어되어 흐르므로
                             // 후속 문단은 앵커 단락 직후(shape item y_offset)부터 시작해야 한다.

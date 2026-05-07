@@ -1287,4 +1287,51 @@ mod tests {
             gap, prev_last_y, next_first_y, pdf_gap
         );
     }
+
+    /// [Task #683] pr-149.hwp 빈 paragraph + Para-relative TopAndBottom 그림
+    /// cluster 간 거리 정합 검증.
+    /// - 한컴 한글 2022 PDF 정합: 그림 cluster 당 18864 HU (= image_height + line(lh+ls)).
+    /// - 버그 (수정 전): cluster = 17280 HU (image_height + 0, line baseline 누락).
+    /// - 수정: image-paragraph result_y 에 line(lh+ls) 추가 + 직후 paragraph trailing-ls 보존.
+    #[test]
+    fn test_task683_pr149_image_cluster_spacing() {
+        let Some(core) = load_document("samples/pr-149.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(0).unwrap_or_default();
+        assert!(!svg.is_empty(), "pr-149.hwp page 0 SVG 생성");
+
+        // SVG 에서 <image ... y="..."/> 의 y 값 추출
+        let mut image_ys: Vec<f64> = Vec::new();
+        for cap in svg.split("<image ").skip(1) {
+            if let Some(idx) = cap.find("y=\"") {
+                let rest = &cap[idx + 3..];
+                if let Some(end) = rest.find('"') {
+                    if let Ok(y) = rest[..end].parse::<f64>() {
+                        image_ys.push(y);
+                    }
+                }
+            }
+        }
+        image_ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        assert_eq!(image_ys.len(), 3, "그림 3개 (원본/회색조/흑백)");
+
+        let cluster1 = image_ys[1] - image_ys[0];
+        let cluster2 = image_ys[2] - image_ys[1];
+
+        // 18864 HU @ 96 dpi = 251.52 px. ±3 px tolerance for sub-pixel rounding.
+        let pdf_cluster_px: f64 = 18864.0 * 96.0 / 7200.0;
+        assert!(
+            (cluster1 - pdf_cluster_px).abs() < 3.0,
+            "image1→image2 cluster {:.2} px 가 PDF {:.2} px (±3) 와 일치해야 함. \
+             버그(수정 전): 230.4 px (= 17280 HU, line 누락).",
+            cluster1, pdf_cluster_px
+        );
+        assert!(
+            (cluster2 - pdf_cluster_px).abs() < 3.0,
+            "image2→image3 cluster {:.2} px 가 PDF {:.2} px (±3) 와 일치해야 함.",
+            cluster2, pdf_cluster_px
+        );
+    }
 }
