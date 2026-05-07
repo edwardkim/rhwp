@@ -1044,71 +1044,136 @@ impl DocumentCore {
         use crate::renderer::layout::compute_char_positions;
 
         // ── 커서 위치를 pre-built tree에서 직접 찾는 헬퍼 ──
+        #[derive(Clone)]
         struct CursorHit { page: u32, x: f64, y: f64, h: f64 }
+
+        #[derive(Clone, Copy)]
+        enum CursorBias {
+            Leading,
+            Trailing,
+        }
+
+        fn cursor_score(offset: usize, char_start: usize, char_count: usize, bias: CursorBias) -> u8 {
+            let char_end = char_start + char_count;
+            match bias {
+                CursorBias::Leading if offset == char_start => 0,
+                CursorBias::Leading if offset < char_end => 1,
+                CursorBias::Leading => 2,
+                CursorBias::Trailing if offset == char_end => 0,
+                CursorBias::Trailing if offset > char_start => 1,
+                CursorBias::Trailing => 2,
+            }
+        }
+
+        fn update_best_cursor(best: &mut Option<(u8, CursorHit)>, score: u8, hit: CursorHit) {
+            if best.as_ref().map_or(true, |(best_score, _)| score < *best_score) {
+                *best = Some((score, hit));
+            }
+        }
 
         fn find_body_cursor(
             node: &RenderNode, sec: usize, para: usize,
-            offset: usize, page: u32,
+            offset: usize, page: u32, bias: CursorBias,
         ) -> Option<CursorHit> {
-            if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                if tr.section_index == Some(sec)
-                    && tr.para_index == Some(para)
-                    && tr.cell_context.is_none()
-                {
-                    let cs = tr.char_start.unwrap_or(0);
-                    let cc = tr.text.chars().count();
-                    if offset >= cs && offset <= cs + cc {
-                        let pos = compute_char_positions(&tr.text, &tr.style);
-                        let lo = offset - cs;
-                        let xr = if lo < pos.len() { pos[lo] }
-                                 else if !pos.is_empty() { *pos.last().unwrap() }
-                                 else { 0.0 };
-                        return Some(CursorHit {
-                            page, x: node.bbox.x + xr, y: node.bbox.y, h: node.bbox.height,
-                        });
+            fn visit(
+                node: &RenderNode,
+                sec: usize,
+                para: usize,
+                offset: usize,
+                page: u32,
+                bias: CursorBias,
+                best: &mut Option<(u8, CursorHit)>,
+            ) {
+                if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                    if tr.section_index == Some(sec)
+                        && tr.para_index == Some(para)
+                        && tr.cell_context.is_none()
+                    {
+                        let cs = tr.char_start.unwrap_or(0);
+                        let cc = tr.text.chars().count();
+                        if offset >= cs && offset <= cs + cc {
+                            let pos = compute_char_positions(&tr.text, &tr.style);
+                            let lo = offset - cs;
+                            let xr = if lo < pos.len() { pos[lo] }
+                                     else if !pos.is_empty() { *pos.last().unwrap() }
+                                     else { 0.0 };
+                            update_best_cursor(
+                                best,
+                                cursor_score(offset, cs, cc, bias),
+                                CursorHit {
+                                    page,
+                                    x: node.bbox.x + xr,
+                                    y: node.bbox.y,
+                                    h: node.bbox.height,
+                                },
+                            );
+                        }
                     }
                 }
-            }
-            for child in &node.children {
-                if let Some(hit) = find_body_cursor(child, sec, para, offset, page) {
-                    return Some(hit);
+                for child in &node.children {
+                    visit(child, sec, para, offset, page, bias, best);
                 }
             }
-            None
+
+            let mut best = None;
+            visit(node, sec, para, offset, page, bias, &mut best);
+            best.map(|(_, hit)| hit)
         }
 
         fn find_cell_cursor(
             node: &RenderNode, ppi: usize, ci: usize, cei: usize,
-            cpi: usize, offset: usize, page: u32,
+            cpi: usize, offset: usize, page: u32, bias: CursorBias,
         ) -> Option<CursorHit> {
-            if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                let matches_cell = tr.cell_context.as_ref().map_or(false, |ctx| {
-                    ctx.parent_para_index == ppi
-                        && ctx.path[0].control_index == ci
-                        && ctx.path[0].cell_index == cei
-                        && ctx.path[0].cell_para_index == cpi
-                });
-                if matches_cell {
-                    let cs = tr.char_start.unwrap_or(0);
-                    let cc = tr.text.chars().count();
-                    if offset >= cs && offset <= cs + cc {
-                        let pos = compute_char_positions(&tr.text, &tr.style);
-                        let lo = offset - cs;
-                        let xr = if lo < pos.len() { pos[lo] }
-                                 else if !pos.is_empty() { *pos.last().unwrap() }
-                                 else { 0.0 };
-                        return Some(CursorHit {
-                            page, x: node.bbox.x + xr, y: node.bbox.y, h: node.bbox.height,
-                        });
+            fn visit(
+                node: &RenderNode,
+                ppi: usize,
+                ci: usize,
+                cei: usize,
+                cpi: usize,
+                offset: usize,
+                page: u32,
+                bias: CursorBias,
+                best: &mut Option<(u8, CursorHit)>,
+            ) {
+                if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                    let matches_cell = tr.cell_context.as_ref().map_or(false, |ctx| {
+                        ctx.path.first().map_or(false, |entry| {
+                            ctx.parent_para_index == ppi
+                                && entry.control_index == ci
+                                && entry.cell_index == cei
+                                && entry.cell_para_index == cpi
+                        })
+                    });
+                    if matches_cell {
+                        let cs = tr.char_start.unwrap_or(0);
+                        let cc = tr.text.chars().count();
+                        if offset >= cs && offset <= cs + cc {
+                            let pos = compute_char_positions(&tr.text, &tr.style);
+                            let lo = offset - cs;
+                            let xr = if lo < pos.len() { pos[lo] }
+                                     else if !pos.is_empty() { *pos.last().unwrap() }
+                                     else { 0.0 };
+                            update_best_cursor(
+                                best,
+                                cursor_score(offset, cs, cc, bias),
+                                CursorHit {
+                                    page,
+                                    x: node.bbox.x + xr,
+                                    y: node.bbox.y,
+                                    h: node.bbox.height,
+                                },
+                            );
+                        }
                     }
                 }
-            }
-            for child in &node.children {
-                if let Some(hit) = find_cell_cursor(child, ppi, ci, cei, cpi, offset, page) {
-                    return Some(hit);
+                for child in &node.children {
+                    visit(child, ppi, ci, cei, cpi, offset, page, bias, best);
                 }
             }
-            None
+
+            let mut best = None;
+            visit(node, ppi, ci, cei, cpi, offset, page, bias, &mut best);
+            best.map(|(_, hit)| hit)
         }
 
         // ── 페이지별 렌더 트리 캐시 (최대 2페이지) ──
@@ -1146,13 +1211,13 @@ impl DocumentCore {
 
         // 페이지에서 커서 위치 찾기 (캐시된 트리 사용)
         macro_rules! find_cursor {
-            ($para_idx:expr, $offset:expr) => {{
+            ($para_idx:expr, $offset:expr, $bias:expr) => {{
                 let mut result: Option<CursorHit> = None;
                 for (pn, tree) in tree_cache.iter() {
                     let hit = if let Some((ppi, ci, cei)) = cell_ctx {
-                        find_cell_cursor(&tree.root, ppi, ci, cei, $para_idx, $offset, *pn)
+                        find_cell_cursor(&tree.root, ppi, ci, cei, $para_idx, $offset, *pn, $bias)
                     } else {
-                        find_body_cursor(&tree.root, section_idx, $para_idx, $offset, *pn)
+                        find_body_cursor(&tree.root, section_idx, $para_idx, $offset, *pn, $bias)
                     };
                     if hit.is_some() { result = hit; break; }
                 }
@@ -1221,10 +1286,10 @@ impl DocumentCore {
                 let range_end = sel_end.min(line_char_end);
                 if range_start >= range_end { continue; }
 
-                let left_hit = find_cursor!(para_idx, range_start);
+                let left_hit = find_cursor!(para_idx, range_start, CursorBias::Leading);
                 // range_end가 줄바꿈 등 비렌더링 문자 위치이면 한 칸 앞으로 재시도
-                let right_hit = find_cursor!(para_idx, range_end)
-                    .or_else(|| if range_end > range_start { find_cursor!(para_idx, range_end - 1) } else { None });
+                let right_hit = find_cursor!(para_idx, range_end, CursorBias::Trailing)
+                    .or_else(|| if range_end > range_start { find_cursor!(para_idx, range_end - 1, CursorBias::Trailing) } else { None });
 
                 if let (Some(lh), Some(rh)) = (left_hit, right_hit) {
                     let partial_start = range_start > line_char_start;
