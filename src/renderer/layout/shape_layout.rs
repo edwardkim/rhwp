@@ -132,7 +132,7 @@ impl LayoutEngine {
         // 수식 컨트롤 처리
         if let Control::Equation(eq) = ctrl {
             // 인라인 좌표가 등록되어 있으면 paragraph_layout에서 이미 렌더링됨 → 스킵
-            let inline_pos = tree.get_inline_shape_position(section_index, para_index, control_index);
+            let inline_pos = tree.get_inline_shape_position(section_index, para_index, control_index, None);
             if inline_pos.is_some() {
                 return;
             }
@@ -216,7 +216,7 @@ impl LayoutEngine {
 
         // 인라인 Shape: paragraph_layout에서 계산된 좌표가 있으면 사용
         let inline_pos = if common.treat_as_char {
-            tree.get_inline_shape_position(section_index, para_index, control_index)
+            tree.get_inline_shape_position(section_index, para_index, control_index, None)
         } else {
             None
         };
@@ -1251,6 +1251,7 @@ impl LayoutEngine {
                         is_last_para,
                         0.0,
                         None, Some(para), None,
+                        None,  // 도형 컨텍스트 — wrap zone 무관
                     );
                 }
             }
@@ -1401,6 +1402,7 @@ impl LayoutEngine {
                 is_last_para,
                 tb_inline_width,
                 None, Some(para), None,
+                None,  // 도형 컨텍스트 — wrap zone 무관
             );
         }
 

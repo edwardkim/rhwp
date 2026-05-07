@@ -55,7 +55,7 @@ pub enum NavResult {
 }
 
 /// 컨트롤이 편집 가능(네비게이션 가능)한지 판별.
-/// Some(true)=TextBox, Some(false)=Table/CharOverlap, None=건너뜀
+/// Some(true)=TextBox, Some(false)=Table/인라인 개체/각주 마커, None=건너뜀
 ///
 /// 텍스트가 전혀 없는 빈 글상자(장식용 프레임 등)는 건너뛴다.
 /// CharOverlap(글자겹침)은 1글자 단위로 건너뛴다 (표와 동일 취급).
@@ -74,6 +74,8 @@ fn classify_navigable(ctrl: &Control) -> Option<bool> {
         Control::Table(_) => Some(false),
         Control::Picture(_) => Some(false),
         Control::Equation(_) => Some(false),
+        Control::Footnote(_) => Some(false),
+        Control::Endnote(_) => Some(false),
         // CharOverlap은 layout에서 char_count=1로 처리되므로
         // 별도의 건너뛰기 없이 일반 문자처럼 1칸 이동
         Control::CharOverlap(_) => None,

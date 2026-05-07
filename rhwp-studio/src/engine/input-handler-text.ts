@@ -3,6 +3,10 @@
 
 import { InsertTextCommand, DeleteTextCommand, MergeParagraphCommand, MergeNextParagraphCommand, MergeParagraphInCellCommand, MergeNextParagraphInCellCommand } from './command';
 import type { DocumentPosition } from '@/core/types';
+import { showConfirm } from '@/ui/confirm-dialog';
+
+const FOOTNOTE_DELETE_TITLE = '각주 삭제';
+const FOOTNOTE_DELETE_MESSAGE = '각주를 삭제하시겠습니까?';
 
 /** IME 조합 종료 후 대기 중인 탐색 키를 처리한다 */
 function processPendingNav(this: any, nav: { code: string; shiftKey: boolean; ctrlKey: boolean; metaKey: boolean }): void {
@@ -41,6 +45,55 @@ function processPendingNav(this: any, nav: { code: string; shiftKey: boolean; ct
     this.updateCaret();
   } else if (code === 'Enter') {
     // Enter는 조합 확정만으로 충분 (줄바꿈은 별도 처리 불필요)
+  }
+}
+
+function tryDeleteBodyFootnoteAtCursor(
+  this: any,
+  pos: DocumentPosition,
+  direction: 'backward' | 'forward',
+): boolean {
+  if (pos.parentParaIndex !== undefined || pos.cellPath || pos.isTextBox) return false;
+
+  try {
+    const hit = this.wasm.getFootnoteAtCursor(
+      pos.sectionIndex,
+      pos.paragraphIndex,
+      pos.charOffset,
+      direction,
+    );
+    if (!hit.hit || hit.controlIndex === undefined) return false;
+
+    const sectionIndex = hit.sectionIndex ?? pos.sectionIndex;
+    const paragraphIndex = hit.paragraphIndex ?? pos.paragraphIndex;
+    const controlIndex = hit.controlIndex;
+
+    void showConfirm(FOOTNOTE_DELETE_TITLE, FOOTNOTE_DELETE_MESSAGE)
+      .then((ok) => {
+        if (!ok) {
+          this.textarea?.focus();
+          return;
+        }
+        this.executeOperation({
+          kind: 'snapshot',
+          operationType: 'deleteFootnote',
+          operation: (wasm: any) => {
+            const result = wasm.deleteFootnote(sectionIndex, paragraphIndex, controlIndex);
+            return {
+              sectionIndex: result.sectionIndex,
+              paragraphIndex: result.paragraphIndex,
+              charOffset: result.charOffset,
+            };
+          },
+        });
+        this.textarea?.focus();
+      })
+      .catch(() => {
+        this.textarea?.focus();
+      });
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -86,6 +139,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     }
   } else {
     const { sectionIndex: sec, paragraphIndex: para } = pos;
+    if (tryDeleteBodyFootnoteAtCursor.call(this, pos, 'backward')) return;
     if (charOffset > 0) {
       const deletePos = { ...pos, charOffset: charOffset - 1 };
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(deletePos, 1, 'backward') });
@@ -151,6 +205,7 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
     }
   } else {
     const { sectionIndex: sec, paragraphIndex: para } = pos;
+    if (tryDeleteBodyFootnoteAtCursor.call(this, pos, 'forward')) return;
     const paraLen = this.wasm.getParagraphLength(sec, para);
     if (charOffset < paraLen) {
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(pos, 1, 'forward') });
@@ -444,4 +499,3 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
     this.wasm.deleteText(sec, para, charOffset, count);
   }
 }
-

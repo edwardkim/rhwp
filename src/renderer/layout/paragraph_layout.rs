@@ -13,7 +13,7 @@ use super::super::{TextStyle, ShapeStyle, TabStop, hwpunit_to_px, px_to_hwpunit,
 use super::{LayoutEngine, CellContext};
 use super::text_measurement::{resolved_to_text_style, estimate_text_width, compute_char_positions, extract_tab_leaders_with_extended, find_next_tab_stop};
 use super::border_rendering::create_border_line_nodes;
-use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data};
+use super::utils::{resolve_numbering_id, expand_numbering_format, numbering_format_to_number_format, find_bin_data, extract_shape_transform};
 
 /// lineseg baseline_distance를 폰트 어센트 기준으로 보정한다.
 /// CENTER 문단 수직정렬 등으로 baseline이 50% 이하로 설정된 경우,
@@ -327,7 +327,7 @@ impl LayoutEngine {
 
                     for ch_idx in *s..*e {
                         // 각주 마커 삽입: 현재 문자 위치에 각주가 있으면 먼저 run flush + FootnoteMarker 노드 삽입
-                        if let Some(&(_, fn_num)) = composed.and_then(|c| c.footnote_positions.iter().find(|&&(pos, _)| pos == ch_idx)) {
+                        if let Some(&(_, fn_num, fn_ctrl_idx)) = composed.and_then(|c| c.footnote_positions.iter().find(|&&(pos, _, _)| pos == ch_idx)) {
                             // 현재까지 누적된 run 출력
                             if ch_idx > line_run_start {
                                 let run_text: String = text_chars[line_run_start..ch_idx].iter().collect();
@@ -363,10 +363,6 @@ impl LayoutEngine {
                             let sup_ts = TextStyle { font_size: sup_font_size, font_family: base_ts.font_family.clone(), ..Default::default() };
                             let sup_w = estimate_text_width(&fn_text, &sup_ts);
                             let run_bbox_h = if wrapped_below_table { text_line_baseline } else { baseline_dist };
-                            // 각주 컨트롤 인덱스 찾기
-                            let fn_ctrl_idx = composed.map(|c| {
-                                c.footnote_positions.iter().position(|&(p, _)| p == ch_idx).unwrap_or(0)
-                            }).unwrap_or(0);
                             let marker_id = tree.next_id();
                             let marker_node = RenderNode::new(marker_id,
                                 RenderNodeType::FootnoteMarker(FootnoteMarkerNode {
@@ -587,13 +583,14 @@ impl LayoutEngine {
         para_index: usize,
         multi_col_width_hu: Option<i32>,
         bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         let end_line = composed
             .map(|c| c.lines.len())
             .unwrap_or(para.line_segs.len());
         self.layout_partial_paragraph(
             tree, col_node, para, composed, styles, col_area, y_start, 0, end_line,
-            section_index, para_index, multi_col_width_hu, bin_data_content,
+            section_index, para_index, multi_col_width_hu, bin_data_content, wrap_anchor,
         )
     }
 
@@ -613,12 +610,13 @@ impl LayoutEngine {
         para_index: usize,
         multi_col_width_hu: Option<i32>,
         bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         if let Some(comp) = composed {
             return self.layout_composed_paragraph(
                 tree, col_node, comp, styles, col_area, y_start, start_line, end_line,
                 section_index, para_index, None, false, 0.0, multi_col_width_hu,
-                Some(para), bin_data_content,
+                Some(para), bin_data_content, wrap_anchor,
             );
         }
 
@@ -651,6 +649,7 @@ impl LayoutEngine {
         multi_col_width_hu: Option<i32>,
         para: Option<&Paragraph>,
         bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         let mut y = y_start;
         let end = end_line.min(composed.lines.len());
@@ -880,9 +879,11 @@ impl LayoutEngine {
                     text_y + line_height, col_bottom, text_y + line_height - col_bottom,
                 );
             }
-            // wrap_precomputed: 파서가 LineSeg cs/sw를 사전 계산한 문단.
-            // 각 라인의 LineSeg cs(column_start)를 x 오프셋으로, sw(segment_width)를 너비로 적용.
-            let (line_cs_offset, line_avail_w_override) = if para.map(|p| p.wrap_precomputed).unwrap_or(false) {
+            // [Task #604 R3] wrap_anchor 가 있으면 본 문단은 anchor 그림/표 옆 wrap text.
+            // 각 라인의 LineSeg cs(column_start)/sw(segment_width)를 x 오프셋/너비로 적용.
+            // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
+            // 가 layout 에 전달되어 본 분기가 동작.
+            let (line_cs_offset, line_avail_w_override) = if wrap_anchor.is_some() {
                 let seg = para.and_then(|p| p.line_segs.get(line_idx));
                 let cs = seg.map(|s| s.column_start as i32).unwrap_or(0);
                 let sw = seg.map(|s| s.segment_width as i32).unwrap_or(0);
@@ -901,9 +902,9 @@ impl LayoutEngine {
                     TextLineNode::with_para_vpos(line_height, baseline, section_index, para_index, line_idx as u32, vpos)
                 }),
                 BoundingBox::new(
-                    // Task #460 보완6: wrap_precomputed면 line_cs_offset 사용 (col_area.x 기준),
+                    // [Task #604 R3] wrap_anchor 가 있으면 line_cs_offset 사용 (col_area.x 기준),
                     // 아니면 Task #489 effective_col_x 사용. 두 경로 중복 적용 방지.
-                    if para.map(|p| p.wrap_precomputed).unwrap_or(false) {
+                    if wrap_anchor.is_some() {
                         col_area.x + effective_margin_left + line_cs_offset
                     } else {
                         effective_col_x + effective_margin_left
@@ -925,7 +926,8 @@ impl LayoutEngine {
 
             // 텍스트 정렬을 위한 전체 줄 폭 계산 (자연 폭, 추가 간격 미포함)
             // treat_as_char 이미지 폭도 포함하여 정확한 폭 산출
-            // wrap_precomputed: line_cs_offset을 est_x 기준점에 포함 (line_x_offset은 col_area.x 기준 상대좌표)
+            // [Task #604 Stage 2] wrap_anchor 가 있는 줄: line_cs_offset 을 est_x 기준점에
+            // 포함 (line_x_offset 은 col_area.x 기준 상대좌표).
             let mut est_x = effective_margin_left + line_cs_offset + inline_offset;
             let est_x_start = est_x;
             let mut pending_right_tab_est: Option<(f64, u8, u8)> = None;
@@ -1042,7 +1044,7 @@ impl LayoutEngine {
                 }
                 // 각주 마커 폭: run 내에 각주가 있으면 마커 위첨자 폭 추가
                 let is_last_run_est = run_char_end_est >= comp_line.runs.iter().map(|r| r.text.chars().count()).sum::<usize>() + comp_line.char_start;
-                for &(fpos, fnum) in composed.footnote_positions.iter() {
+                for &(fpos, fnum, _) in composed.footnote_positions.iter() {
                     if fpos >= run_char_pos_est && (fpos < run_char_end_est || (is_last_run_est && fpos == run_char_end_est)) {
                         let fn_text = format!("{})", fnum);
                         let sup_size = (ts.font_size * 0.55).max(7.0);
@@ -1226,9 +1228,9 @@ impl LayoutEngine {
             let num_x_offset = if num_offset > 0.0 && !(line_idx == start_line && start_line == 0) {
                 num_offset
             } else { 0.0 };
-            // Task #460 보완6: wrap_precomputed면 col_area.x + line_cs_offset 기준,
-            // 아니면 effective_col_x (Task #489) 기준
-            let x_base = if para.map(|p| p.wrap_precomputed).unwrap_or(false) {
+            // [Task #604 R3] wrap_anchor 가 있으면 col_area.x + line_cs_offset 기준,
+            // 아니면 effective_col_x (Task #489) 기준.
+            let x_base = if wrap_anchor.is_some() {
                 col_area.x + effective_margin_left + line_cs_offset
             } else {
                 effective_col_x + effective_margin_left
@@ -1335,7 +1337,7 @@ impl LayoutEngine {
             };
 
             // 각주 마커 위치 수집
-            let fn_positions: &[(usize, u16)] = &composed.footnote_positions;
+            let fn_positions: &[(usize, u16, usize)] = &composed.footnote_positions;
             let mut fn_marker_inserted = vec![false; fn_positions.len()];
 
             let mut pending_right_tab_render: Option<(f64, u8, u8)> = None;
@@ -1600,7 +1602,7 @@ impl LayoutEngine {
                         // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
                         let is_last = is_last_run_of_line(run_idx);
                         let run_fn_markers: Vec<(usize, u16, usize)> = fn_positions.iter().enumerate()
-                            .filter_map(|(fni, &(fpos, fnum))| {
+                            .filter_map(|(fni, &(fpos, fnum, _))| {
                                 let in_range = fpos >= run_char_pos && (fpos < run_char_end || (is_last && fpos == run_char_end));
                                 if !fn_marker_inserted[fni] && in_range {
                                     Some((fpos - run_char_pos, fnum, fni))
@@ -1830,6 +1832,7 @@ impl LayoutEngine {
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
                                             text_wrap: Some(pic.common.text_wrap),
+                                            transform: extract_shape_transform(&pic.shape_attr),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -1846,7 +1849,7 @@ impl LayoutEngine {
                                 let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
                                 let shape_y = (y + baseline - shape_h).max(y);
                                 // 인라인 좌표 등록 → shape_layout.rs에서 이 Shape를 스킵
-                                tree.set_inline_shape_position(section_index, para_index, tac_ci, x, shape_y);
+                                tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), x, shape_y);
                             }
                         }
                         // 인라인 수식: 직접 EquationNode로 렌더링
@@ -1903,7 +1906,7 @@ impl LayoutEngine {
                                 );
                                 line_node.children.push(eq_node);
                                 // 인라인 좌표 등록 → shape_layout에서 이 수식을 스킵
-                                tree.set_inline_shape_position(section_index, para_index, tac_ci, x, eq_y);
+                                tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), x, eq_y);
                             }
                         }
                         // 인라인 TAC 표: 텍스트 흐름 위치에 직접 렌더링
@@ -1923,7 +1926,7 @@ impl LayoutEngine {
                                         Some(x), None, None,
                                     );
                                     // 스킵 마커 등록 (별도 Table PageItem에서 중복 렌더 방지)
-                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, x, table_y);
+                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), x, table_y);
                                 }
                             }
                         }
@@ -2104,6 +2107,7 @@ impl LayoutEngine {
                                         brightness: pic.image_attr.brightness,
                                         contrast: pic.image_attr.contrast,
                                         text_wrap: Some(pic.common.text_wrap),
+                                        transform: extract_shape_transform(&pic.shape_attr),
                                         ..ImageNode::new(bin_data_id, image_data)
                                     }),
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
@@ -2180,7 +2184,7 @@ impl LayoutEngine {
                                     let common = shape.common();
                                     let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
                                     let shape_y = (y + baseline - shape_h).max(y);
-                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, img_x, shape_y);
+                                    tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), img_x, shape_y);
                                     img_x += tac_w;
                                     continue;
                                 }
@@ -2214,6 +2218,7 @@ impl LayoutEngine {
                                             brightness: pic.image_attr.brightness,
                                             contrast: pic.image_attr.contrast,
                                             text_wrap: Some(pic.common.text_wrap),
+                                            transform: extract_shape_transform(&pic.shape_attr),
                                             ..ImageNode::new(bin_data_id, image_data)
                                         }),
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
@@ -2223,7 +2228,7 @@ impl LayoutEngine {
                                     // TAC Picture 직접 emit) 와 이중 렌더링되지 않도록 인라인 위치를
                                     // 등록한다. layout_shape_item 은 등록된 경우 push 를 스킵한다.
                                     tree.set_inline_shape_position(
-                                        section_index, para_index, tac_ci, img_x, img_y,
+                                        section_index, para_index, tac_ci, cell_ctx.as_ref(), img_x, img_y,
                                     );
                                     img_x += tac_w;
                                 }
@@ -2339,7 +2344,7 @@ impl LayoutEngine {
                                 BoundingBox::new(inline_x, eq_y, tac_w, eq_h),
                             );
                             line_node.children.push(eq_node);
-                            tree.set_inline_shape_position(section_index, para_index, tac_ci, inline_x, eq_y);
+                            tree.set_inline_shape_position(section_index, para_index, tac_ci, cell_ctx.as_ref(), inline_x, eq_y);
                             inline_x += tac_w;
                         }
                     }

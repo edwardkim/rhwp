@@ -49,10 +49,6 @@ pub struct Paragraph {
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
     pub numbering_restart: Option<NumberingRestart>,
-    /// LineSeg cs/sw가 파서에 의해 사전 계산된 wrap zone 문단.
-    /// true: 모든 LineSeg의 vertical_pos=0이며 일부 cs>0으로 wrap zone이 이미 인코딩됨.
-    /// → layout 엔진이 WrapAroundPara 흡수 없이 FullParagraph path로 렌더링해야 한다.
-    pub wrap_precomputed: bool,
 }
 
 /// 문단 번호 시작 방식
@@ -130,25 +126,29 @@ pub struct CharShapeRef {
 }
 
 /// 줄 레이아웃 정보 (HWPTAG_PARA_LINE_SEG)
+///
+/// **표준**: `mydocs/tech/document_ir_lineseg_standard.md` (Task #604)
+/// 모든 i32 필드는 HWPUNIT (1 inch = 7200 HWPUNIT).
 #[derive(Debug, Clone, Default)]
 pub struct LineSeg {
-    /// 텍스트 시작 위치
+    /// 본 줄이 차지하는 텍스트 시작 위치 (UTF-16 code unit, 문단 시작 기준)
     pub text_start: u32,
-    /// 줄의 세로 위치
+    /// 페이지 내 흐름 y 좌표 (HWPUNIT, 페이지 상단 기준 누적 절대값)
+    /// HWP3 파서는 현재 항상 0 (별도 task 에서 누적 계산 정정 권고)
     pub vertical_pos: i32,
-    /// 줄의 높이
+    /// 줄 높이 (HWPUNIT, line_spacing 포함)
     pub line_height: i32,
-    /// 텍스트 부분의 높이
+    /// 텍스트 부분의 높이 (HWPUNIT)
     pub text_height: i32,
-    /// 베이스라인까지 거리
+    /// 베이스라인까지 거리 (HWPUNIT, 줄 시작 기준)
     pub baseline_distance: i32,
-    /// 줄간격
+    /// 줄간격 (HWPUNIT)
     pub line_spacing: i32,
-    /// 컬럼에서의 시작 위치
+    /// wrap zone x 오프셋 (HWPUNIT, 단(column) 좌측 기준). 0 = wrap 없음
     pub column_start: i32,
-    /// 세그먼트 폭
+    /// 줄 너비 (HWPUNIT). 단 너비와 같으면 wrap 없음
     pub segment_width: i32,
-    /// 태그 플래그
+    /// 비트 플래그 (첫 줄 / 첫 단 등)
     pub tag: u32,
 }
 
@@ -156,6 +156,21 @@ impl LineSeg {
     /// 페이지의 첫 줄인지 여부
     pub fn is_first_line_of_page(&self) -> bool {
         self.tag & 0x01 != 0
+    }
+
+    /// 본 줄이 wrap zone (그림/표 옆) 안에 있는지 (포맷 무관 표준).
+    ///
+    /// 표준: `mydocs/tech/document_ir_lineseg_standard.md`
+    ///
+    /// `col_w_hu`: 단 너비 (HWPUNIT). 본 줄의 segment_width 와 비교.
+    ///
+    /// 판정 본질:
+    /// - `column_start > 0`: 단 좌측에서 떨어진 위치 시작 → wrap zone
+    /// - `segment_width > 0 AND segment_width < col_w_hu`: 너비가 단 너비보다 작음 → wrap zone
+    /// - 모두 거짓: full width 정상 줄
+    pub fn is_in_wrap_zone(&self, col_w_hu: i32) -> bool {
+        self.column_start > 0
+            || (self.segment_width > 0 && self.segment_width < col_w_hu)
     }
 
     /// 컬럼의 첫 줄인지 여부
@@ -231,6 +246,24 @@ impl Paragraph {
         // 이 경우 char_offset을 text_len으로 clamp하되, UTF-16 위치는
         // 마지막 문자 + 후행 컨트롤 갭을 포함한 값으로 계산
         let effective_char_offset = char_offset.min(text_len);
+        let control_positions = self.control_text_positions();
+        let inserts_before_inline_control = char_offset <= text_len
+            && self
+                .controls
+                .iter()
+                .zip(control_positions.iter())
+                .any(|(ctrl, &pos)| {
+                    pos == effective_char_offset
+                        && matches!(
+                            ctrl,
+                            Control::Shape(_)
+                                | Control::Table(_)
+                                | Control::Picture(_)
+                                | Control::Equation(_)
+                                | Control::Footnote(_)
+                                | Control::Endnote(_)
+                        )
+                });
 
         // 바이트 삽입 위치 계산
         let byte_offset: usize = text_chars[..effective_char_offset].iter().map(|c| c.len_utf8()).sum();
@@ -243,6 +276,15 @@ impl Paragraph {
             // 후행 컨트롤 수 = char_offset - text_len
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
+        } else if inserts_before_inline_control {
+            if effective_char_offset == 0 {
+                0
+            } else if !self.char_offsets.is_empty() {
+                let prev_idx = effective_char_offset - 1;
+                self.char_offsets[prev_idx] + Self::char_utf16_len(text_chars[prev_idx])
+            } else {
+                0
+            }
         } else if effective_char_offset < self.char_offsets.len() {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
@@ -355,15 +397,11 @@ impl Paragraph {
         } else {
             0
         };
-        let utf16_end: u32 = if del_end < self.char_offsets.len() {
-            self.char_offsets[del_end]
-        } else if !self.char_offsets.is_empty() {
-            let last_idx = self.char_offsets.len() - 1;
-            self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx])
-        } else {
-            0
-        };
-        let utf16_delta = utf16_end - utf16_start;
+        let utf16_delta: u32 = text_chars[char_offset..del_end]
+            .iter()
+            .map(|c| Self::char_utf16_len(*c))
+            .sum();
+        let utf16_end = utf16_start + utf16_delta;
 
         // 1. 텍스트 삭제
         self.text.drain(byte_start..byte_end);
@@ -596,7 +634,6 @@ impl Paragraph {
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
             numbering_restart: None,
-            wrap_precomputed: false,
         }
     }
 
@@ -725,8 +762,9 @@ impl Paragraph {
     /// position 을 분배한다 — 컨트롤 variant 를 보지 않으므로 각주·미주, 그림, 표, 수식,
     /// 자동번호 등 모든 inline 컨트롤이 동일하게 character offset 을 부여받는다.
     ///
-    /// `char_offsets` 가 비어있는 폴백 경로에서는 Shape/Table/Picture/Equation 만 폭 1을
-    /// 가산하고, 그 외 컨트롤은 모두 position 0 에 누적된다 (정밀도 손실 분기).
+    /// `char_offsets` 가 비어있는 폴백 경로에서는 본문 흐름에서 1칸을 차지하는
+    /// Shape/Table/Picture/Equation/Footnote/Endnote 만 폭 1을 가산하고,
+    /// 그 외 컨트롤은 모두 position 0 에 누적된다 (정밀도 손실 분기).
     ///
     /// # Returns
     ///
@@ -753,6 +791,8 @@ impl Paragraph {
                         | Control::Table(_)
                         | Control::Picture(_)
                         | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
                 ) {
                     pos += 1;
                 }

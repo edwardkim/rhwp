@@ -14,7 +14,7 @@ use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, StrokeDash, LineStyle, TextStyle, AutoNumberCounter, format_number, NumberFormat as NumFmt};
 use super::LayoutEngine;
 use super::border_rendering::border_width_to_px;
-use super::utils::find_bin_data;
+use super::utils::{extract_shape_transform, find_bin_data};
 use super::text_measurement::{resolved_to_text_style, estimate_text_width};
 
 impl LayoutEngine {
@@ -114,6 +114,7 @@ impl LayoutEngine {
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
                 text_wrap: Some(picture.common.text_wrap),
+                transform: extract_shape_transform(&picture.shape_attr),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(pic_x, pic_y, pic_width, pic_height),
@@ -324,6 +325,7 @@ impl LayoutEngine {
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
                 text_wrap: Some(picture.common.text_wrap),
+                transform: extract_shape_transform(&picture.shape_attr),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
@@ -475,6 +477,7 @@ impl LayoutEngine {
                 0,
                 composed.lines.len(),
                 0, 0, ctx, false, 0.0, None, None, None,
+                None,  // 캡션 컨텍스트 — wrap zone 무관
             );
         }
     }
@@ -594,6 +597,7 @@ impl LayoutEngine {
                     let returned_y = self.layout_composed_paragraph(
                         tree, fn_node, &composed, styles, fn_area, y, 0, composed.lines.len(),
                         marker_section, marker_para, None, false, 0.0, None, None, None,
+                        None,  // 각주 컨텍스트 — wrap zone 무관
                     );
                     if is_last_para_of_fn {
                         // layout_composed_paragraph 가 마지막 line 의 trailing line_spacing 을

@@ -463,7 +463,7 @@ impl DocumentCore {
     ///
     /// 그림/도형 삭제 시 문단의 line_segs에 컨트롤 높이가 그대로 남아,
     /// 레이아웃이 갱신되지 않는 문제를 방지한다.
-    fn reflow_paragraph_line_segs_after_control_delete(
+    pub(crate) fn reflow_paragraph_line_segs_after_control_delete(
         para: &mut Paragraph,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
         dpi: f64,
@@ -3566,7 +3566,7 @@ impl DocumentCore {
             }
         }
         paragraph.char_count += 8;
-        paragraph.control_mask |= 0x00000010; // 각주 비트
+        paragraph.control_mask |= 1u32 << 0x0011; // 각주/미주 비트
         paragraph.has_para_text = true;
 
         // 전체 각주 순서 번호 재계산 (1부터 순차)

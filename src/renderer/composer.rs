@@ -97,8 +97,8 @@ pub struct ComposedParagraph {
     /// treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 목록
     /// (para.text 내 절대 char 인덱스, 폭 HWPUNIT, para.controls 내 인덱스)
     pub tac_controls: Vec<(usize, i32, usize)>,
-    /// 각주/미주 위치: (텍스트 내 char 인덱스, 번호)
-    pub footnote_positions: Vec<(usize, u16)>,
+    /// 각주/미주 위치: (텍스트 내 char 인덱스, 번호, para.controls 내 인덱스)
+    pub footnote_positions: Vec<(usize, u16, usize)>,
     /// 탭 확장 데이터 (HWP tab_extended / HWPX 인라인 탭)
     /// ext[0]=width, ext[1]=leader/fill_type, ext[2]=tab_type
     pub tab_extended: Vec<[u16; 7]>,
@@ -149,12 +149,12 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
         .collect();
 
     // 각주/미주 위치 수집
-    let footnote_positions: Vec<(usize, u16)> = para.controls.iter().enumerate()
+    let footnote_positions: Vec<(usize, u16, usize)> = para.controls.iter().enumerate()
         .filter_map(|(i, ctrl)| {
             let pos = *tac_positions.get(i)?;
             match ctrl {
-                Control::Footnote(fn_) => Some((pos, fn_.number)),
-                Control::Endnote(en) => Some((pos, en.number)),
+                Control::Footnote(fn_) => Some((pos, fn_.number, i)),
+                Control::Endnote(en) => Some((pos, en.number, i)),
                 _ => None,
             }
         })
