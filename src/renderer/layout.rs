@@ -2982,6 +2982,25 @@ impl LayoutEngine {
                                 bin_data_content, styles, alignment, pic_y,
                                 page_content.section_index, para_index, control_index,
                             );
+                            // [Task #683] 빈 paragraph (텍스트 없음) + Para-relative TopAndBottom
+                            // 그림 (caption 없음) 의 layout 진행량 보정. 한컴 한글 2022 PDF 는
+                            // 그림 다음에 paragraph 의 line baseline 1줄(line_height + line_spacing)
+                            // 을 추가 진행하나 rhwp 기본 layout 은 image_height 만 진행하여
+                            // cluster 거리가 1 line 부족 (pr-149.hwp 18864 HU vs 17280 HU 결함).
+                            if matches!(pic.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                && matches!(pic.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                                && pic.caption.is_none()
+                            {
+                                let has_visible_text = para.text.chars()
+                                    .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                                if !has_visible_text {
+                                    let line_advance = para.line_segs.first()
+                                        .map(|ls| hwpunit_to_px(
+                                            ls.line_height + ls.line_spacing, self.dpi))
+                                        .unwrap_or(0.0);
+                                    result_y += line_advance;
+                                }
+                            }
                             // Square wrap + Para-relative: 그림 높이로 column y를 밀지 않는다.
                             // 텍스트는 그림 옆에 segment_width로 제어되어 흐르므로
                             // 후속 문단은 앵커 단락 직후(shape item y_offset)부터 시작해야 한다.
