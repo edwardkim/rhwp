@@ -60,6 +60,17 @@ pub struct Question {
     /// 이 문제와 연관된 미디어(이미지) 목록.
     #[serde(default)]
     pub media: Vec<Media>,
+
+    /// `true`면 빌더가 첫 stem 텍스트 앞에 `{number}. `를 자동 prepend.
+    /// Skill이 stem_blocks 첫 텍스트에 명시적으로 번호 또는 그룹 지시문(`[1~3] …`)을
+    /// 작성한 경우 `false`로 설정해 중복 prefix를 회피한다.
+    /// 미지정 시 기본 `true`.
+    #[serde(default = "default_auto_number")]
+    pub auto_number: bool,
+}
+
+fn default_auto_number() -> bool {
+    true
 }
 
 /// 지문 내 블록 (텍스트 또는 이미지).
