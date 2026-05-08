@@ -1565,4 +1565,36 @@ mod tests {
             count
         );
     }
+
+    #[test]
+    fn test_705_kor2022_cell_pagehide_collected() {
+        // Stage 0 측정: 본문 PageHide 1건 + 셀 안 PageHide 1건 (셀[0]/p[5] -----P "Ⅱ. 2022년 정책방향")
+        let Some(core) = load_document("samples/2022년 국립국어원 업무계획.hwp") else { return; };
+        let count = core.pagination.iter()
+            .flat_map(|pr| pr.pages.iter())
+            .filter(|p| p.page_hide.is_some())
+            .count();
+        assert!(
+            count >= 2,
+            "국립국어원 업무계획.hwp page_hide 매핑 페이지 2건 이상 (실제: {}). \
+             셀 안 PageHide 누락 가능성: 결함 #1",
+            count
+        );
+    }
+
+    #[test]
+    fn test_705_ktx_cell_pagehide_collected() {
+        // Stage 0 측정: 본문 PageHide 1건 + 셀 안 PageHide 1건 (셀[10]/p[0] -----P "Ⅰ. 사업 개요")
+        let Some(core) = load_document("samples/KTX.hwp") else { return; };
+        let count = core.pagination.iter()
+            .flat_map(|pr| pr.pages.iter())
+            .filter(|p| p.page_hide.is_some())
+            .count();
+        assert!(
+            count >= 2,
+            "KTX.hwp page_hide 매핑 페이지 2건 이상 (실제: {}). \
+             셀 안 PageHide 누락 가능성: 결함 #1",
+            count
+        );
+    }
 }
