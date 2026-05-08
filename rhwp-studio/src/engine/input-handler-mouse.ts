@@ -647,7 +647,7 @@ export function onClick(this: any, e: MouseEvent): void {
       this.cursor.resetPreferredX();
       this.cursor.setAnchor();
       this.active = true;
-      this.isDragging = true;
+      this.startTextSelectionDrag(e);
       this.updateCaret();
       // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
       // this.checkTransparentBordersTransition();
@@ -697,7 +697,7 @@ export function onClick(this: any, e: MouseEvent): void {
               this.cursor.resetPreferredX();
               this.cursor.setAnchor();
               this.active = true;
-              this.isDragging = true;
+              this.startTextSelectionDrag(e);
               this.updateCaret();
               document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
               this.textarea.focus();
@@ -757,7 +757,7 @@ export function onClick(this: any, e: MouseEvent): void {
     this.cursor.resetPreferredX();
     this.cursor.setAnchor(); // 드래그 시작점(anchor) 설정
     this.active = true;
-    this.isDragging = true;
+    this.startTextSelectionDrag(e);
 
     const rect = this.cursor.getRect();
     if (rect) {
@@ -1097,15 +1097,12 @@ export function onMouseMove(this: any, e: MouseEvent): void {
 
   // 드래그 중: requestAnimationFrame으로 throttle하여 성능 확보
   if (this.isDragging) {
+    this.updateTextSelectionDragPointer(e);
     if (this.dragRafId) return; // 이미 예약된 프레임이 있으면 건너뜀
     this.dragRafId = requestAnimationFrame(() => {
       this.dragRafId = 0;
       if (!this.isDragging) return;
-      const hit = this.hitTestFromEvent(e);
-      if (hit && hit.paragraphIndex < 0xFFFFFF00) {
-        this.cursor.moveTo(hit);
-        this.updateCaret();
-      }
+      this.updateTextSelectionDragFromPointer();
     });
     return;
   }
@@ -1361,7 +1358,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
   }
 
   if (!this.isDragging) return;
-  this.isDragging = false;
+  this.stopTextSelectionDrag();
   if (this.dragRafId) {
     cancelAnimationFrame(this.dragRafId);
     this.dragRafId = 0;
