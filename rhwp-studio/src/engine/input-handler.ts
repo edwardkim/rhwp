@@ -1643,7 +1643,7 @@ export class InputHandler {
     if (rect) {
       const zoom = this.viewportManager.getZoom();
       this.caret.hideComposition();
-      this.caret.updateLive(rect, zoom);
+      this.caret.update(rect, zoom);
       // 드래그 중 스크롤은 caret rect가 아니라 포인터 edge 기준 경로에서만 처리한다.
     }
     this.updateSelection();
