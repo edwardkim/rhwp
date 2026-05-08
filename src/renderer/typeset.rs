@@ -12,7 +12,7 @@ use crate::model::control::Control;
 use crate::model::shape::CaptionDirection;
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::paragraph::{Paragraph, ColumnBreakType};
-use crate::model::page::{PageDef, ColumnDef};
+use crate::model::page::{PageDef, ColumnDef, ColumnType};
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::page_layout::PageLayoutInfo;
@@ -147,6 +147,10 @@ struct TypesetState {
     /// [Task #604 R3] 현재 단의 wrap text 문단 ↔ anchor 메타데이터.
     /// wrap_around state machine 매칭 시 등록. flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_anchors: std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
+    /// [Task #702] 현재 zone 의 ColumnType (Normal/Distribute/Parallel).
+    /// process_multicolumn_break 에서 새 ColumnDef 매칭 시 갱신.
+    /// Distribute 다단의 짧은 컬럼 vpos-reset 검출 임계값 완화에 사용.
+    current_zone_column_type: ColumnType,
 }
 
 impl TypesetState {
@@ -156,6 +160,7 @@ impl TypesetState {
         section_index: usize,
         footnote_separator_overhead: f64,
         footnote_safety_margin: f64,
+        column_type: ColumnType,
     ) -> Self {
         Self {
             pages: Vec::new(),
@@ -184,6 +189,7 @@ impl TypesetState {
             wrap_around_any_seg: false,
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
+            current_zone_column_type: column_type,
         }
     }
 
@@ -379,6 +385,7 @@ impl TypesetEngine {
         let mut st = TypesetState::new(
             layout, col_count, section_index,
             footnote_separator_overhead, footnote_safety_margin,
+            column_def.column_type,
         );
         st.hide_empty_line = hide_empty_line;
 
@@ -390,14 +397,30 @@ impl TypesetEngine {
             // 표 컨트롤 감지
             let has_table = self.paragraph_has_table(para);
 
+            // [Task #702] 새 ColumnDef 검출. shortcut.hwp p2/p3 파일/미리보기/편집 등은
+            // [쪽나누기]+단정의:1단 (header) → [단나누기]+단정의:2단 (content) 패턴 사용.
+            // [다단나누기] 외에도 Page/Column break 의 ColumnDef 차이도 zone 재정의 신호로 인식.
+            let new_col_def_opt: Option<ColumnDef> = para.controls.iter().find_map(|c| {
+                if let Control::ColumnDef(cd) = c { Some(cd.clone()) } else { None }
+            });
+            let has_diff_col_def = new_col_def_opt.as_ref().map(|cd| {
+                cd.column_count.max(1) != st.col_count
+                    || cd.column_type != st.current_zone_column_type
+            }).unwrap_or(false);
+
             // 다단 나누기
             if para.column_type == ColumnBreakType::MultiColumn {
                 self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
             }
 
             // 단 나누기
-            if para.column_type == ColumnBreakType::Column && !st.current_items.is_empty() {
-                st.advance_column_or_new_page();
+            if para.column_type == ColumnBreakType::Column {
+                if has_diff_col_def {
+                    // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
+                    self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
+                } else if !st.current_items.is_empty() {
+                    st.advance_column_or_new_page();
+                }
             }
 
             // 쪽 나누기
@@ -408,6 +431,16 @@ impl TypesetEngine {
 
             if (force_page_break || para_style_break) && !st.current_items.is_empty() {
                 st.force_new_page();
+                // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용
+                if has_diff_col_def {
+                    if let Some(cd) = &new_col_def_opt {
+                        st.col_count = cd.column_count.max(1);
+                        let new_layout = PageLayoutInfo::from_page_def(page_def, cd, self.dpi);
+                        st.current_zone_layout = Some(new_layout.clone());
+                        st.layout = new_layout;
+                        st.current_zone_column_type = cd.column_type;
+                    }
+                }
             }
 
             // Task #321: 문단간 vpos-reset 기반 강제 분할
@@ -425,10 +458,18 @@ impl TypesetEngine {
                     // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
                     //   단일 단에서 cv != 0 의 cv < pv 는 partial-table split 의 LAYOUT 잔재로
                     //   해석되어야 함 (issue #418 / hwpspec pi=78→pi=79).
-                    // - 다단: cv != 0 도 인정 (Task #470). 컬럼 헤더 오프셋 (cv=9014 등) 으로
-                    //   시작하는 새 컬럼의 reset 을 감지.
+                    // - 다단 Normal (NEWSPAPER): cv != 0 도 인정 (Task #470). pv > 5000 임계값 유지.
+                    // - 다단 Distribute (BalancedNewspaper): 짧은 컬럼 (3+3 분배 등) 에서 pv 가
+                    //   임계값 미달일 수 있어 pv > 0 으로 완화 (Task #702, shortcut 지우기 6항목 정합).
+                    //   단일 단/Normal 다단은 영향 없음.
+                    let is_distribute = st.col_count > 1
+                        && matches!(st.current_zone_column_type, ColumnType::Distribute);
                     let trigger = if st.col_count > 1 {
-                        cv < pv && pv > 5000
+                        if is_distribute {
+                            cv < pv && pv > 0
+                        } else {
+                            cv < pv && pv > 5000
+                        }
                     } else {
                         cv == 0 && pv > 5000
                     };
@@ -2160,6 +2201,9 @@ impl TypesetEngine {
                 let new_layout = PageLayoutInfo::from_page_def(page_def, cd, self.dpi);
                 st.current_zone_layout = Some(new_layout.clone());
                 st.layout = new_layout;
+                // [Task #702] 새 zone 의 ColumnType 반영. Distribute(배분) 단에서
+                // 짧은 컬럼 vpos-reset 검출 임계값 완화용.
+                st.current_zone_column_type = cd.column_type;
                 break;
             }
         }
