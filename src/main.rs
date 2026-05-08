@@ -1916,6 +1916,12 @@ fn dump_controls(args: &[String]) {
                                                 println!("{}    ctrl[{}] {}: tac={}, wrap={:?}",
                                                     indent, ci, s.shape_name(), s.common().treat_as_char, s.common().text_wrap);
                                             }
+                                            Control::PageHide(ph) => {
+                                                println!("{}    ctrl[{}] PageHide: header={} footer={} master={} border={} fill={} page_num={}",
+                                                    indent, ci,
+                                                    ph.hide_header, ph.hide_footer, ph.hide_master_page,
+                                                    ph.hide_border, ph.hide_fill, ph.hide_page_num);
+                                            }
                                             _ => {}
                                         }
                                     }
