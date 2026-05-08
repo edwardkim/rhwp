@@ -912,12 +912,19 @@ impl LayoutEngine {
             // 각 라인의 LineSeg cs(column_start)/sw(segment_width)를 x 오프셋/너비로 적용.
             // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
             // 가 layout 에 전달되어 본 분기가 동작.
-            let (line_cs_offset, line_avail_w_override) = if wrap_anchor.is_some() {
+            //
+            // [Task #722] inter-image-text gap 보정 — 한컴 viewer 는 anchor image 의
+            // outer margin_right (HU) 만큼 cs 에 더해 text 시작 x 결정. sw 에서 동일량
+            // 차감하여 가용 폭 정합. WrapAnchorRef.anchor_image_margin_right 활용.
+            let (line_cs_offset, line_avail_w_override) = if let Some(anchor) = wrap_anchor {
                 let seg = para.and_then(|p| p.line_segs.get(line_idx));
                 let cs = seg.map(|s| s.column_start as i32).unwrap_or(0);
                 let sw = seg.map(|s| s.segment_width as i32).unwrap_or(0);
-                let cs_px = crate::renderer::hwpunit_to_px(cs, self.dpi);
-                let sw_px = if sw > 0 { Some(crate::renderer::hwpunit_to_px(sw, self.dpi)) } else { None };
+                let mr = anchor.anchor_image_margin_right;
+                let cs_px = crate::renderer::hwpunit_to_px(cs + mr, self.dpi);
+                let sw_px = if sw > 0 {
+                    Some(crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi))
+                } else { None };
                 (cs_px, sw_px)
             } else {
                 (0.0, None)

@@ -518,12 +518,27 @@ impl TypesetEngine {
                         .unwrap_or(false);
                     if anchor_is_picture {
                         // Picture anchor: wrap_anchors 등록 + FullParagraph 통과
+                        // [Task #722] anchor image 의 outer margin_right (HU) 추출
+                        let anchor_margin_right = paragraphs.get(st.wrap_around_table_para)
+                            .and_then(|p| p.controls.iter().find_map(|c| {
+                                let cm = match c {
+                                    Control::Picture(pic) => Some(&pic.common),
+                                    Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
+                                        Some(&pic.common)
+                                    } else { None },
+                                    _ => None,
+                                };
+                                cm.filter(|cm| !cm.treat_as_char
+                                    && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square))
+                                    .map(|cm| cm.margin.right as i32)
+                            })).unwrap_or(0);
                         st.current_column_wrap_anchors.insert(
                             para_idx,
                             crate::renderer::pagination::WrapAnchorRef {
                                 anchor_para_index: st.wrap_around_table_para,
                                 anchor_cs: st.wrap_around_cs,
                                 anchor_sw: st.wrap_around_sw,
+                                anchor_image_margin_right: anchor_margin_right,
                             },
                         );
                     } else {
@@ -692,6 +707,47 @@ impl TypesetEngine {
                         st.wrap_around_sw = anchor_sw;
                         st.wrap_around_table_para = para_idx;
                         st.wrap_around_any_seg = true;
+                        // [Task #722] anchor host paragraph 자체도 wrap_anchors 등록.
+                        // LINE_SEG cs/sw 가 wrap zone 으로 인코딩되어 있으면 host paragraph 의
+                        // 줄도 image 우측 wrap zone 에 layout 되어야 한다 (한컴 PDF 권위 정합).
+                        // 미등록 시 paragraph_layout 의 wrap_anchor 분기 미진입 → col_area
+                        // 전체 폭 layout → image 영역 침범 → image z-order 후 그려져 가려짐.
+                        //
+                        // Case 가드 (Stage 3~5 진단):
+                        //   - LINE_SEG ≥ 2 → wrap zone (multi-line)
+                        //   - LINE_SEG 1 + caption_room ≤ line_height → wrap zone (image 가
+                        //     body_top 자체에 위치 → image 위 caption 영역 없음, 강제 wrap)
+                        //   - LINE_SEG 1 + caption_room > line_height → caption-style (자기
+                        //     미등록 → col_area 전체 폭 layout, image 위 자유 영역 표시)
+                        let body_top_hu = page_def.margin_top as i32;
+                        let line_height_hu = para.line_segs.first()
+                            .map(|s| s.line_height as i32).unwrap_or(900);
+                        let (image_voff_hu, image_margin_right_hu) = para.controls.iter().find_map(|c| {
+                            let cm = match c {
+                                Control::Picture(p) => Some(&p.common),
+                                Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
+                                    Some(&p.common)
+                                } else { None },
+                                _ => None,
+                            };
+                            cm.filter(|cm| !cm.treat_as_char
+                                && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square))
+                                .map(|cm| (cm.vertical_offset as i32, cm.margin.right as i32))
+                        }).unwrap_or((0, 0));
+                        let caption_room_hu = image_voff_hu - body_top_hu;
+                        let is_caption_style = para.line_segs.len() == 1
+                            && caption_room_hu > line_height_hu;
+                        if !is_caption_style {
+                            st.current_column_wrap_anchors.insert(
+                                para_idx,
+                                crate::renderer::pagination::WrapAnchorRef {
+                                    anchor_para_index: para_idx,
+                                    anchor_cs,
+                                    anchor_sw,
+                                    anchor_image_margin_right: image_margin_right_hu,
+                                },
+                            );
+                        }
                     }
                 }
             }

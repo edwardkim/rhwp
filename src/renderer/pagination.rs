@@ -158,6 +158,11 @@ pub struct WrapAnchorRef {
     pub anchor_cs: i32,
     /// anchor wrap zone segment_width (HWPUNIT)
     pub anchor_sw: i32,
+    /// [Task #722] anchor image 의 outer margin_right (HWPUNIT).
+    /// 한컴 viewer 는 inter-image-text gap 으로 image margin_right 를 추가 적용.
+    /// paragraph_layout 의 wrap_anchor 처리에서 cs px 에 +margin_right_px,
+    /// sw px 에서 -margin_right_px 보정 (text 시작 위치와 가용 폭 정합).
+    pub anchor_image_margin_right: i32,
 }
 
 /// 페이지에 배치되는 개별 항목
@@ -365,6 +370,7 @@ impl PaginationResult {
                                 anchor_para_index: (v.anchor_para_index as i64 + offset as i64).max(0) as usize,
                                 anchor_cs: v.anchor_cs,
                                 anchor_sw: v.anchor_sw,
+                                anchor_image_margin_right: v.anchor_image_margin_right,
                             })
                         }).collect(),
                     }
