@@ -400,11 +400,19 @@ impl LayoutEngine {
             layout.page_height,
         );
 
-        // 페이지 배경
-        self.build_page_background(&mut tree, layout, page_border_fill, styles, bin_data_content);
+        // 페이지 배경 (감추기 설정 시 건너뜀)
+        let hide_fill = page_content.page_hide.as_ref()
+            .map(|ph| ph.hide_fill).unwrap_or(false);
+        if !hide_fill {
+            self.build_page_background(&mut tree, layout, page_border_fill, styles, bin_data_content);
+        }
 
-        // 쪽 테두리선
-        self.build_page_borders(&mut tree, layout, page_border_fill, styles);
+        // 쪽 테두리선 (감추기 설정 시 건너뜀)
+        let hide_border = page_content.page_hide.as_ref()
+            .map(|ph| ph.hide_border).unwrap_or(false);
+        if !hide_border {
+            self.build_page_borders(&mut tree, layout, page_border_fill, styles);
+        }
 
         // 바탕쪽 (감추기 설정 시 건너뜀)
         let hide_master = page_content.page_hide.as_ref()
