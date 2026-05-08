@@ -57,7 +57,7 @@ fn issue_598_second_body_footnote_marker_has_same_cursor_unit() {
     assert_eq!(doc.get_control_text_positions(0, 7), "[6]");
 
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 214.0, 698.0)
+        .hit_test_body_footnote_marker_native(0, 214.0, 670.0)
         .expect("hit second body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"paragraphIndex\":7"), "hit json: {hit}");
