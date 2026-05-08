@@ -1277,6 +1277,7 @@ mod tests {
             rect_y
         );
     }
+
     // ─── Task #634: 한컴 호환 — 쪽번호 표시/미표시 ───
     //
     // 새 한컴 PDF (samples/aift.pdf, 1-up portrait, 2026-05-06 갱신) 측정 결과:
@@ -1484,4 +1485,84 @@ mod tests {
 
     // 페이지 2, 3 (사업계획서 표지/요약문) 미표시 메커니즘은 별도 issue.
     // 한컴: PageHide 없는데도 미표시. rhwp: 표시 (현재). 메커니즘 미확인 — 후속 분석 필요.
+
+    // ─── Task #705: 셀 안 PageHide 컨트롤 페이지네이션 매핑 ───
+    //
+    // 메인테이너 권위 측정 (PR #638 코멘트):
+    //   aift.hwp s0/p[1]/Table[0]/셀[167]/p[3]/ctrl[0]
+    //   PageHide(header=true footer=true master=true border=true fill=true page_num=true)
+    //
+    // Stage 0 본 환경 측정 (examples/inspect_705.rs):
+    //   - aift.hwp 셀 안 PageHide 2건 (s0/셀[167] full6, s1/셀[31] page_num)
+    //   - 본문 PageHide 2건 (s2/p[34], s2/p[54])
+    //
+    // 결함 #1 (pagination/engine.rs:519-544): 본문 paragraph 만 순회 →
+    //   셀 안 PageHide 무시 → page.page_hide 가 None 으로 남음.
+
+    #[test]
+    fn test_705_aift_page2_cell_pagehide_collected() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        // page 2 (global_idx=1, section=0, page_num=2)
+        // 외부 paragraph s0/p[1] (Table 35x27, tac=false) 의 셀[167]/p[3] PageHide
+        let page = core.pagination.first()
+            .and_then(|pr| pr.pages.get(1))
+            .expect("aift.hwp page 2 존재");
+        assert!(
+            page.page_hide.is_some(),
+            "aift.hwp page 2: 셀[167]/p[3] PageHide 가 page.page_hide 로 매핑되어야 함 \
+             (현재 None: 결함 #1 — pagination/engine.rs 가 셀 안 paragraph 미순회)"
+        );
+        assert!(
+            page.page_hide.as_ref().unwrap().hide_page_num,
+            "aift.hwp page 2: hide_page_num=true 여야 함"
+        );
+    }
+
+    #[test]
+    fn test_705_aift_page2_cell_pagehide_six_fields() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let page = core.pagination.first()
+            .and_then(|pr| pr.pages.get(1))
+            .expect("aift.hwp page 2 존재");
+        let ph = page.page_hide.as_ref()
+            .expect("aift.hwp page 2: page_hide 채워져야 함 (결함 #1)");
+        // 메인테이너 권위 측정: 6 필드 모두 true
+        assert!(ph.hide_header,      "hide_header=true (감추기 다이얼로그 6항목)");
+        assert!(ph.hide_footer,      "hide_footer=true");
+        assert!(ph.hide_master_page, "hide_master_page=true");
+        assert!(ph.hide_border,      "hide_border=true");
+        assert!(ph.hide_fill,        "hide_fill=true");
+        assert!(ph.hide_page_num,    "hide_page_num=true");
+    }
+
+    #[test]
+    fn test_705_aift_page3_cell_pagehide_collected() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        // page 3 (global_idx=2, section=1, page_num=3)
+        // 외부 paragraph s1/p[0] 의 셀[31]/p[0] PageHide (page_num 만 true)
+        let page = core.pagination.get(1)
+            .and_then(|pr| pr.pages.first())
+            .expect("aift.hwp page 3 존재");
+        let ph = page.page_hide.as_ref()
+            .expect("aift.hwp page 3: 셀[31]/p[0] PageHide 가 page.page_hide 로 매핑되어야 함 \
+                     (현재 None: 결함 #1)");
+        assert!(ph.hide_page_num, "aift.hwp page 3: hide_page_num=true (셀[31]/p[0] '최종 목표')");
+    }
+
+    #[test]
+    fn test_705_aift_cell_pagehides_total_count() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        // 본문 PageHide 2건 (s2/p[34], s2/p[54]) + 셀 안 PageHide 2건 (s0/셀[167], s1/셀[31])
+        // = 최소 4 페이지에 page_hide 매핑되어야 함
+        let count = core.pagination.iter()
+            .flat_map(|pr| pr.pages.iter())
+            .filter(|p| p.page_hide.is_some())
+            .count();
+        assert!(
+            count >= 4,
+            "aift.hwp page_hide 매핑 페이지 4건 이상 (실제: {}). \
+             셀 안 PageHide (s0/셀[167] + s1/셀[31]) 가 누락된 가능성: 결함 #1",
+            count
+        );
+    }
 }
