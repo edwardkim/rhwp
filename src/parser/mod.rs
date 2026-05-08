@@ -26,6 +26,7 @@ pub mod doc_info;
 pub mod header;
 pub mod hwpx;
 pub mod hwp3;
+pub mod ingest;
 pub mod record;
 pub mod tags;
 

@@ -48,7 +48,9 @@ Thumbs.db
 /saved/*.hwp
 !/saved/blank2010.hwp
 !/saved/pr360-edward.hwp
-.claude/
+.claude/*
+# .claude/skills/는 프로젝트 종속 Skill (rhwp 바이너리 호출, ingest_schema_v1 사용)이므로 추적
+!.claude/skills/
 
 # 환경변수 (민감 정보)
 .env

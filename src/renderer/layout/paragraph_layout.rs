@@ -583,13 +583,14 @@ impl LayoutEngine {
         para_index: usize,
         multi_col_width_hu: Option<i32>,
         bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         let end_line = composed
             .map(|c| c.lines.len())
             .unwrap_or(para.line_segs.len());
         self.layout_partial_paragraph(
             tree, col_node, para, composed, styles, col_area, y_start, 0, end_line,
-            section_index, para_index, multi_col_width_hu, bin_data_content,
+            section_index, para_index, multi_col_width_hu, bin_data_content, wrap_anchor,
         )
     }
 
@@ -609,12 +610,13 @@ impl LayoutEngine {
         para_index: usize,
         multi_col_width_hu: Option<i32>,
         bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         if let Some(comp) = composed {
             return self.layout_composed_paragraph(
                 tree, col_node, comp, styles, col_area, y_start, start_line, end_line,
                 section_index, para_index, None, false, 0.0, multi_col_width_hu,
-                Some(para), bin_data_content,
+                Some(para), bin_data_content, wrap_anchor,
             );
         }
 
@@ -647,6 +649,7 @@ impl LayoutEngine {
         multi_col_width_hu: Option<i32>,
         para: Option<&Paragraph>,
         bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         let mut y = y_start;
         let end = end_line.min(composed.lines.len());
@@ -876,9 +879,11 @@ impl LayoutEngine {
                     text_y + line_height, col_bottom, text_y + line_height - col_bottom,
                 );
             }
-            // wrap_precomputed: 파서가 LineSeg cs/sw를 사전 계산한 문단.
-            // 각 라인의 LineSeg cs(column_start)를 x 오프셋으로, sw(segment_width)를 너비로 적용.
-            let (line_cs_offset, line_avail_w_override) = if para.map(|p| p.wrap_precomputed).unwrap_or(false) {
+            // [Task #604 R3] wrap_anchor 가 있으면 본 문단은 anchor 그림/표 옆 wrap text.
+            // 각 라인의 LineSeg cs(column_start)/sw(segment_width)를 x 오프셋/너비로 적용.
+            // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
+            // 가 layout 에 전달되어 본 분기가 동작.
+            let (line_cs_offset, line_avail_w_override) = if wrap_anchor.is_some() {
                 let seg = para.and_then(|p| p.line_segs.get(line_idx));
                 let cs = seg.map(|s| s.column_start as i32).unwrap_or(0);
                 let sw = seg.map(|s| s.segment_width as i32).unwrap_or(0);
@@ -897,9 +902,9 @@ impl LayoutEngine {
                     TextLineNode::with_para_vpos(line_height, baseline, section_index, para_index, line_idx as u32, vpos)
                 }),
                 BoundingBox::new(
-                    // Task #460 보완6: wrap_precomputed면 line_cs_offset 사용 (col_area.x 기준),
+                    // [Task #604 R3] wrap_anchor 가 있으면 line_cs_offset 사용 (col_area.x 기준),
                     // 아니면 Task #489 effective_col_x 사용. 두 경로 중복 적용 방지.
-                    if para.map(|p| p.wrap_precomputed).unwrap_or(false) {
+                    if wrap_anchor.is_some() {
                         col_area.x + effective_margin_left + line_cs_offset
                     } else {
                         effective_col_x + effective_margin_left
@@ -921,7 +926,8 @@ impl LayoutEngine {
 
             // 텍스트 정렬을 위한 전체 줄 폭 계산 (자연 폭, 추가 간격 미포함)
             // treat_as_char 이미지 폭도 포함하여 정확한 폭 산출
-            // wrap_precomputed: line_cs_offset을 est_x 기준점에 포함 (line_x_offset은 col_area.x 기준 상대좌표)
+            // [Task #604 Stage 2] wrap_anchor 가 있는 줄: line_cs_offset 을 est_x 기준점에
+            // 포함 (line_x_offset 은 col_area.x 기준 상대좌표).
             let mut est_x = effective_margin_left + line_cs_offset + inline_offset;
             let est_x_start = est_x;
             let mut pending_right_tab_est: Option<(f64, u8, u8)> = None;
@@ -1222,9 +1228,9 @@ impl LayoutEngine {
             let num_x_offset = if num_offset > 0.0 && !(line_idx == start_line && start_line == 0) {
                 num_offset
             } else { 0.0 };
-            // Task #460 보완6: wrap_precomputed면 col_area.x + line_cs_offset 기준,
-            // 아니면 effective_col_x (Task #489) 기준
-            let x_base = if para.map(|p| p.wrap_precomputed).unwrap_or(false) {
+            // [Task #604 R3] wrap_anchor 가 있으면 col_area.x + line_cs_offset 기준,
+            // 아니면 effective_col_x (Task #489) 기준.
+            let x_base = if wrap_anchor.is_some() {
                 col_area.x + effective_margin_left + line_cs_offset
             } else {
                 effective_col_x + effective_margin_left

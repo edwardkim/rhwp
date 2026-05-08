@@ -857,14 +857,31 @@ impl LayoutEngine {
     /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
     /// composed 문단의 각 줄 텍스트 폭을 측정하여 최대값이 가용 폭을 초과하면
     /// 패딩을 비례 축소한다 (최소 1px 보장).
+    ///
+    /// [Task #617] 다중 줄(2 줄 이상) 단락이 있는 셀은 HWP 가 가용 폭에 자간을
+    /// 분배·줄바꿈을 확정한 상태이므로 padding 을 보존한다 (자연 폭 추정으로
+    /// 다시 깎으면 본문이 테두리에 닿는 시각 오류 발생 — exam_kor.hwp
+    /// 16/27/36번 보기 박스). 단일 줄 셀(좁은 수치 셀에서 오버플로우 가능성
+    /// 있음) 은 종전 휴리스틱으로 보호한다.
     pub(crate) fn shrink_cell_padding_for_overflow(
         &self,
         pad_left: f64,
         pad_right: f64,
         cell_w: f64,
         composed_paras: &[ComposedParagraph],
+        paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> (f64, f64) {
+        // [Task #617] 다중 줄(2 줄 이상) 단락이 line_segs 로 분배 완료된 경우,
+        // HWP 가 가용 폭에 맞춰 자간을 분배하고 줄바꿈을 확정한 상태이므로
+        // 자연 폭 추정으로 다시 깎으면 오버 페인팅. 단일 줄 셀(좁은 수치 셀
+        // 등에서 오버플로우 가능성 있음) 은 종전 휴리스틱으로 보호한다.
+        let any_multiline_distributed = paragraphs.iter()
+            .any(|p| p.line_segs.len() >= 2);
+        if any_multiline_distributed {
+            return (pad_left, pad_right);
+        }
+
         let mut max_line_w = 0.0f64;
         for comp in composed_paras {
             for line in &comp.lines {
@@ -876,6 +893,7 @@ impl LayoutEngine {
                         ts.letter_spacing = 0.0;
                     }
                     // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭 사용.
+                    // (estimate_text_width 는 ts.ratio 를 자체 반영함.)
                     w += estimate_text_width(effective_text_for_metrics(run), &ts);
                 }
                 if w > max_line_w {
@@ -1217,7 +1235,7 @@ impl LayoutEngine {
 
             // 텍스트 오버플로우 시 좌우 패딩 축소
             let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
-                pad_left, pad_right, cell_w, &composed_paras, styles,
+                pad_left, pad_right, cell_w, &composed_paras, &cell.paragraphs, styles,
             );
             pad_left = new_pl;
             pad_right = new_pr;
@@ -1501,6 +1519,7 @@ impl LayoutEngine {
                         is_last_para,
                         0.0,
                         None, Some(para), Some(bin_data_content),
+                        None,  // 셀 컨텍스트 — wrap zone 무관
                     );
 
                     let has_visible_text = composed.lines.iter()
@@ -1603,7 +1622,12 @@ impl LayoutEngine {
                                             _ => inner_area.x + line_margin,
                                         };
                                         if let Some(seg) = para.line_segs.get(target_line) {
-                                            tac_img_y = para_y_before_compose + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                            // [Task #520 / #624 복원] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
+                                            // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
+                                            // 상대 오프셋(seg.vpos - ls[0].vpos)만 더해야 이중 합산을 피한다.
+                                            let first_vpos = para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
+                                            tac_img_y = para_y_before_compose
+                                                + hwpunit_to_px(seg.vertical_pos - first_vpos, self.dpi);
                                         }
                                     }
 
@@ -1806,13 +1830,16 @@ impl LayoutEngine {
                                     }
                                     prev_tac_text_pos = tac_pos;
                                 }
+                                // [Task #520 / #624 복원] target_line 기반 tac_img_y 사용 (Picture 분기와 동일).
+                                // para_y_before_compose 사용 시 multi-line paragraph 의 ls[1]+ inline TAC Shape 가
+                                // 항상 line 0 좌표에 떨어져 본문 텍스트와 겹친다 (exam_science p2 7번 글상자 ㉠).
                                 let shape_area = LayoutRect {
                                     x: inline_x,
-                                    y: para_y_before_compose,
+                                    y: tac_img_y,
                                     width: shape_w,
                                     height: inner_area.height,
                                 };
-                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, para_y_before_compose, Alignment::Left, styles, bin_data_content);
+                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, tac_img_y, Alignment::Left, styles, bin_data_content);
                                 inline_x += shape_w;
                             } else {
                                 self.layout_cell_shape(tree, &mut cell_node, shape, &inner_area, para_y, para_alignment, styles, bin_data_content);

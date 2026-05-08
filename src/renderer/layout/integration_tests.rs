@@ -1219,4 +1219,62 @@ mod tests {
              SVG 요소를 찾지 못함 — 식별 가드 갱신 필요"
         );
     }
+
+    /// Task #624: exam_science p2 7번 글상자 (pi=33 ci=0) 안 p[1] 의
+    /// ㉠ 사각형 (Control::Shape, treat_as_char=true, ls[1] 위치) y 좌표 검증.
+    ///
+    /// 회귀 (Task #520 부분 회귀, PR #561 cherry-pick `3de0505`) 시 사각형이
+    /// Line 1 영역 (y≈213.95) 에 떨어져 본문 텍스트 "분자당 구성" 위에 겹친다.
+    /// 정정 후: Line 2 영역 (y≈235.65) 으로 이동해 " 이다." 앞에 위치.
+    ///
+    /// 사각형 식별: width≈63 (62.99) AND height≈22.88 의 흰색 fill + 검정 stroke.
+    #[test]
+    fn test_624_textbox_inline_shape_y_on_line2_p2_q7() {
+        let Some(core) = load_document("samples/exam_science.hwp") else {
+            return;
+        };
+        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        assert!(!svg.is_empty(), "exam_science 페이지 2 SVG 가 비어있음");
+
+        fn parse_attr_f64(s: &str, key: &str) -> Option<f64> {
+            let pat = format!("{}=\"", key);
+            let p = s.find(&pat)?;
+            let val_start = p + pat.len();
+            let rest = &s[val_start..];
+            let q = rest.find('"')?;
+            rest[..q].parse().ok()
+        }
+
+        // ㉠ 사각형: <rect ... width="62.98..." height="22.88" fill="#ffffff" stroke="#000000" .../>
+        let mut rect_y: Option<f64> = None;
+        for chunk in svg.split("<rect").skip(1) {
+            let end = chunk.find("/>").unwrap_or(chunk.len());
+            let attrs = &chunk[..end];
+            let w = parse_attr_f64(attrs, "width").unwrap_or(0.0);
+            let h = parse_attr_f64(attrs, "height").unwrap_or(0.0);
+            // ㉠ 사각형 식별: width≈63 (62.99±1) AND height≈22.88 (±0.5)
+            if (w - 62.99).abs() < 1.0 && (h - 22.88).abs() < 0.5
+                && attrs.contains("fill=\"#ffffff\"")
+                && attrs.contains("stroke=\"#000000\"")
+            {
+                let y = parse_attr_f64(attrs, "y").unwrap_or(0.0);
+                rect_y = Some(y);
+                break;
+            }
+        }
+        let rect_y = rect_y.expect(
+            "Task #624: ㉠ 사각형 (width≈63 height≈22.88 흰색 fill + 검정 stroke) 을 SVG 에서 찾지 못함",
+        );
+
+        // Line 2 baseline ≈ 247.68, line top ≈ 235.65, sheet 22.88
+        // 정상 범위: y ∈ [230, 240] (Line 2 영역)
+        // 회귀 범위: y ∈ [212, 218] (Line 1 영역)
+        assert!(
+            (230.0..=240.0).contains(&rect_y),
+            "Task #624: ㉠ 사각형 y={:.2} 가 Line 2 영역 [230, 240] 에 있어야 함. \
+             회귀 (Task #520 부분 회귀): y≈213.95 (Line 1 영역, 본문 '분자당 구성' 위 겹침). \
+             정정 (3 line fix): y≈235.65 (Line 2 영역, ' 이다.' 앞).",
+            rect_y
+        );
+    }
 }
