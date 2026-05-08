@@ -144,6 +144,9 @@ struct TypesetState {
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
+    /// [Task #604 R3] 현재 단의 wrap text 문단 ↔ anchor 메타데이터.
+    /// wrap_around state machine 매칭 시 등록. flush_column 에서 ColumnContent 로 전달.
+    current_column_wrap_anchors: std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
 }
 
 impl TypesetState {
@@ -180,6 +183,7 @@ impl TypesetState {
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
             current_column_wrap_around_paras: Vec::new(),
+            current_column_wrap_anchors: std::collections::HashMap::new(),
         }
     }
 
@@ -220,6 +224,7 @@ impl TypesetState {
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
+            wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -237,6 +242,7 @@ impl TypesetState {
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
+            wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -489,12 +495,39 @@ impl TypesetEngine {
                 if (para_cs == st.wrap_around_cs && para_sw == st.wrap_around_sw)
                     || (any_seg_matches && (is_empty_para || st.wrap_around_any_seg))
                     || sw0_match {
-                    // wrap_precomputed=true: 파서가 LineSeg cs/sw를 사전 계산한 문단.
-                    // layout_wrap_around_paras는 vertical_pos 기반 y 계산을 하므로
-                    // vertical_pos=0인 사전 계산 문단에서 잘못된 y가 나온다.
-                    // FullParagraph path에서 LineSeg cs/sw로 직접 처리하도록 흡수 스킵.
-                    if !para.wrap_precomputed {
-                        // 어울림 문단: 표 옆에 기록 + height 소비 없음
+                    // [Task #604 R3] wrap_around 매칭 분기를 anchor 종류 기반으로 본질화.
+                    //
+                    // - Picture (그림 Square wrap) anchor: wrap text 가 LineSeg cs/sw 로
+                    //   사전 인코딩됨 → wrap_anchors 등록 + FullParagraph 통과
+                    //   (layout 이 LineSeg cs/sw 정합 렌더)
+                    // - Table (표 Square wrap) anchor: wrap text 는 표 옆 빈 ↵ 표시용
+                    //   → 흡수 (current_column_wrap_around_paras)
+                    //
+                    // Stage 2b: Paragraph.wrap_precomputed (HWP3 휴리스틱 IR 누설) 제거.
+                    // anchor paragraph 의 controls 검사로 본질 정합 대체.
+                    let anchor_is_picture = paragraphs.get(st.wrap_around_table_para)
+                        .map(|p| p.controls.iter().any(|c| match c {
+                            Control::Picture(pic) => !pic.common.treat_as_char,
+                            Control::Shape(s) => {
+                                if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
+                                    !pic.common.treat_as_char
+                                } else { false }
+                            }
+                            _ => false,
+                        }))
+                        .unwrap_or(false);
+                    if anchor_is_picture {
+                        // Picture anchor: wrap_anchors 등록 + FullParagraph 통과
+                        st.current_column_wrap_anchors.insert(
+                            para_idx,
+                            crate::renderer::pagination::WrapAnchorRef {
+                                anchor_para_index: st.wrap_around_table_para,
+                                anchor_cs: st.wrap_around_cs,
+                                anchor_sw: st.wrap_around_sw,
+                            },
+                        );
+                    } else {
+                        // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음
                         st.current_column_wrap_around_paras.push(
                             crate::renderer::pagination::WrapAroundPara {
                                 para_index: para_idx,
@@ -504,7 +537,6 @@ impl TypesetEngine {
                         );
                         continue;
                     }
-                    // pre-computed: fall through to normal FullParagraph rendering
                 } else {
                     // 매칭 실패 → wrap zone 종료, 정상 처리 진행
                     st.wrap_around_cs = -1;
@@ -563,7 +595,15 @@ impl TypesetEngine {
                         })
                         .sum();
                     let para_h_hu = crate::renderer::px_to_hwpunit(para_h_px, self.dpi);
-                    let vpos_end = first_seg.vertical_pos + para_h_hu;
+                    // [Task #643] vpos_end 는 마지막 줄의 bottom (vpos + lh) 기준.
+                    // para_h_px 누적은 트레일링 line_spacing 까지 포함하여 ~10-12 HU 과대.
+                    // HWP 가 페이지 끝에서 트레일링 ls 를 고려하지 않고 lh 만 fit 검사하는
+                    // 시멘틱 정합 (pi=39 page 3 fits 케이스).
+                    let vpos_end = para
+                        .line_segs
+                        .last()
+                        .map(|s| s.vertical_pos + s.line_height)
+                        .unwrap_or(first_seg.vertical_pos + para_h_hu);
                     let page_bottom_vpos = page_top_vpos + body_h_hu;
 
                     let avail = st.available_height();
@@ -873,7 +913,9 @@ impl TypesetEngine {
         // PartialTable 의 cur_h 는 row 단위로 정확히 누적되므로 안전마진이 과함.
         // (k-water-rfp p15 case: PartialTable 직후 작은 텍스트 (16px) 가 잔여 5.3px 부족으로
         // fit 실패하여 다음 페이지로 밀리는 회귀.)
-        const LAYOUT_DRIFT_SAFETY_PX: f64 = 10.0;
+        // [Task #643] VPOS_CORR 백워드 허용 (8px) 으로 layout drift 누적이 해소됨.
+        // 트레일링 ls 누적 fit 산식 정정과 함께 안전마진 10 → 4 축소.
+        const LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
         let prev_is_partial_table = matches!(
             st.current_items.last(),
             Some(PageItem::PartialTable { .. })
@@ -1079,9 +1121,36 @@ impl TypesetEngine {
             let mut cumulative = 0.0;
             let mut end_line = cursor_line;
             for li in cursor_line..line_count {
+                // [Task #619] 다단 paragraph 내 vpos-reset 강제 분리.
+                // line_segs[li].vertical_pos == 0 (li>0) 은 HWP 가 해당 line 을
+                // 다음 단/페이지 최상단에 배치하도록 인코딩한 신호.
+                // 다단 한정 적용 — 단일 단은 partial-table split 회귀 (issue #418) 차단 위해 미적용.
+                if st.col_count > 1
+                    && li > cursor_line
+                    && para.line_segs.get(li).map(|s| s.vertical_pos == 0).unwrap_or(false)
+                {
+                    break;
+                }
                 let content_h = fmt.line_heights[li];
                 if cumulative + content_h > avail_for_lines && li > cursor_line {
-                    break;
+                    // [Task #631] HWP 권위값 더블체크
+                    // 누적 추정으로는 fit 실패하지만 HWP 파일 자체가 다음 줄(li+1)에
+                    // vpos-reset(=0) 을 인코딩한 경우, 한컴 엔진이 직접 li 까지를 현재
+                    // 페이지에 배치한 것이다. typeset 보수 마진(20px) 으로 인한 콘텐츠
+                    // 손실을 차단하기 위해 HWP 신호를 우선한다.
+                    // 조건: (1) 다음 줄의 vpos==0 (페이지 경계 신호)
+                    //       (2) 현재 줄의 hwp 좌표 vpos+lh 가 body_available 안
+                    let hwp_authoritative = para.line_segs.get(li + 1)
+                        .map(|next| next.vertical_pos == 0)
+                        .unwrap_or(false)
+                        && para.line_segs.get(li).map(|cur| {
+                            let bottom_px = crate::renderer::hwpunit_to_px(
+                                cur.vertical_pos + cur.line_height, self.dpi);
+                            bottom_px <= st.base_available_height()
+                        }).unwrap_or(false);
+                    if !hwp_authoritative {
+                        break;
+                    }
                 }
                 cumulative += fmt.line_advance(li);
                 end_line = li + 1;

@@ -1251,6 +1251,7 @@ impl LayoutEngine {
                         is_last_para,
                         0.0,
                         None, Some(para), None,
+                        None,  // 도형 컨텍스트 — wrap zone 무관
                     );
                 }
             }
@@ -1401,6 +1402,7 @@ impl LayoutEngine {
                 is_last_para,
                 tb_inline_width,
                 None, Some(para), None,
+                None,  // 도형 컨텍스트 — wrap zone 무관
             );
         }
 

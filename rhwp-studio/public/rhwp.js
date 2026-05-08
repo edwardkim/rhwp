@@ -656,6 +656,31 @@ export class HwpDocument {
         }
     }
     /**
+     * 본문 각주 컨트롤을 삭제한다.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} control_idx
+     * @returns {string}
+     */
+    deleteFootnote(section_idx, para_idx, control_idx) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_deleteFootnote(this.__wbg_ptr, section_idx, para_idx, control_idx);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 머리말/꼬리말을 삭제한다 (컨트롤 자체 제거).
      * @param {number} section_idx
      * @param {boolean} is_header
@@ -2170,6 +2195,36 @@ export class HwpDocument {
         }
     }
     /**
+     * 본문 커서 위치의 각주 마커를 조회한다.
+     *
+     * direction: "backward" 또는 "forward"
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} char_offset
+     * @param {string} direction
+     * @returns {string}
+     */
+    getFootnoteAtCursor(section_idx, para_idx, char_offset, direction) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(direction, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getFootnoteAtCursor(this.__wbg_ptr, section_idx, para_idx, char_offset, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 각주 정보를 조회한다.
      * @param {number} section_idx
      * @param {number} para_idx
@@ -3343,6 +3398,31 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_hitTest(this.__wbg_ptr, page_num, x, y);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 본문 인라인 각주 마커 히트테스트
+     * @param {number} page_num
+     * @param {number} x
+     * @param {number} y
+     * @returns {string}
+     */
+    hitTestBodyFootnoteMarker(page_num, x, y) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_hitTestBodyFootnoteMarker(this.__wbg_ptr, page_num, x, y);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -6049,7 +6129,7 @@ function __wbg_get_imports() {
         __wbg_lineTo_c584cff6c760c4a5: function(arg0, arg1, arg2) {
             arg0.lineTo(arg1, arg2);
         },
-        __wbg_measureTextWidth_bf9b740c03144296: function(arg0, arg1, arg2, arg3) {
+        __wbg_measureTextWidth_384ee9c8dcf2ded0: function(arg0, arg1, arg2, arg3) {
             const ret = globalThis.measureTextWidth(getStringFromWasm0(arg0, arg1), getStringFromWasm0(arg2, arg3));
             return ret;
         },

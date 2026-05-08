@@ -18,6 +18,7 @@ fn main() {
         Some("dump-pages") => dump_pages(&args[2..]),
         Some("diag") => diag_document(&args[2..]),
         Some("convert") => convert_hwp(&args[2..]),
+        Some("build-from-ingest") => build_from_ingest(&args[2..]),
         Some("dump-records") => dump_raw_records(&args[2..]),
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
         Some("test-caption") => test_caption(&args[2..]),
@@ -97,6 +98,10 @@ fn print_help() {
     println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
+    println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
+    println!("                 controls(타입+속성), tab_extended, ParaShape, TabDef");
+    println!("      표: page_break, outer_margin, treat_as_char, wrap, size, v_offset/h_offset");
+    println!("      그림/도형: treat_as_char, wrap, size, v_offset/h_offset, vert_rel/horz_rel");
     println!();
     println!("  thumbnail <파일.hwp> [옵션]");
     println!("      HWP 파일에서 썸네일(PrvImage) 추출");
@@ -2296,6 +2301,113 @@ fn convert_hwp(args: &[String]) {
     }
 }
 
+/// `rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
+///
+/// Claude Code Skill (`rhwp-exam-ingest`)이 생성한 JSON 중간 표현을 HWPX로 변환한다.
+/// Task #660 (Neumann 본 작업 1단계).
+fn build_from_ingest(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
+        return;
+    }
+
+    let mut input_path: Option<&str> = None;
+    let mut output_path: Option<&str> = None;
+    let mut media_dir: Option<&str> = None;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-o" | "--output" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: -o 옵션에 값이 필요합니다");
+                    return;
+                }
+                output_path = Some(&args[i + 1]);
+                i += 2;
+            }
+            "--media-dir" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --media-dir 옵션에 값이 필요합니다");
+                    return;
+                }
+                media_dir = Some(&args[i + 1]);
+                i += 2;
+            }
+            other => {
+                if input_path.is_none() {
+                    input_path = Some(other);
+                } else {
+                    eprintln!("경고: 알 수 없는 인자 '{}' 무시", other);
+                }
+                i += 1;
+            }
+        }
+    }
+
+    let input = match input_path {
+        Some(p) => p,
+        None => {
+            eprintln!("오류: 입력 ingest JSON 경로가 누락되었습니다");
+            return;
+        }
+    };
+    let output = match output_path {
+        Some(p) => p,
+        None => {
+            eprintln!("오류: -o <출력 경로> 가 누락되었습니다");
+            return;
+        }
+    };
+
+    let bytes = match fs::read(input) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 입력 파일 읽기 실패 - {}: {}", input, e);
+            return;
+        }
+    };
+
+    let ingest = match rhwp::parser::ingest::parse_ingest_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: ingest JSON 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    if let Some(md) = media_dir {
+        let p = Path::new(md);
+        if !p.exists() {
+            eprintln!(
+                "경고: 미디어 디렉토리가 존재하지 않습니다 ({}). 본 단계는 이미지 placeholder로 처리됩니다.",
+                md
+            );
+        }
+    }
+
+    let doc = rhwp::document_core::builders::exam_paper::build_exam_paper(&ingest);
+
+    let hwpx_bytes = match rhwp::serializer::serialize_hwpx(&doc) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: HWPX 직렬화 실패 - {}", e);
+            return;
+        }
+    };
+
+    match fs::write(output, &hwpx_bytes) {
+        Ok(_) => println!(
+            "저장 완료: {} ({}바이트, 문제 {}개, 문단 {}개)",
+            output,
+            hwpx_bytes.len(),
+            ingest.questions.len(),
+            doc.sections.iter().map(|s| s.paragraphs.len()).sum::<usize>()
+        ),
+        Err(e) => eprintln!("오류: 파일 저장 실패 - {}: {}", output, e),
+    }
+}
+
 fn dump_raw_records(args: &[String]) {
     if args.is_empty() {
         eprintln!("사용법: rhwp dump-records <파일.hwp>");
@@ -2675,6 +2787,103 @@ fn test_field_roundtrip(args: &[String]) {
     }
 }
 
+fn control_tag(c: &rhwp::model::control::Control) -> &'static str {
+    use rhwp::model::control::Control;
+    match c {
+        Control::SectionDef(_) => "secd",
+        Control::ColumnDef(_) => "cold",
+        Control::Table(_) => "tbl",
+        Control::Shape(_) => "shape",
+        Control::Picture(_) => "pic",
+        Control::Header(_) => "head",
+        Control::Footer(_) => "foot",
+        Control::Footnote(_) => "fn",
+        Control::Endnote(_) => "en",
+        Control::AutoNumber(_) => "atno",
+        Control::NewNumber(_) => "nwno",
+        Control::PageNumberPos(_) => "pgnp",
+        Control::Bookmark(_) => "bokm",
+        Control::Hyperlink(_) => "hlk",
+        Control::Ruby(_) => "ruby",
+        Control::CharOverlap(_) => "tcps",
+        Control::PageHide(_) => "pghd",
+        Control::HiddenComment(_) => "tcmt",
+        Control::Equation(_) => "eqed",
+        Control::Field(_) => "field",
+        Control::Form(_) => "form",
+        Control::Unknown(_) => "unknown",
+    }
+}
+
+fn diff_table(
+    diffs: &mut Vec<String>,
+    ci: usize,
+    a: &rhwp::model::table::Table,
+    b: &rhwp::model::table::Table,
+) {
+    if a.row_count != b.row_count {
+        diffs.push(format!("ctrl[{}] tbl rows: A={} vs B={}", ci, a.row_count, b.row_count));
+    }
+    if a.col_count != b.col_count {
+        diffs.push(format!("ctrl[{}] tbl cols: A={} vs B={}", ci, a.col_count, b.col_count));
+    }
+    if a.page_break != b.page_break {
+        diffs.push(format!("ctrl[{}] tbl page_break: A={:?} vs B={:?}", ci, a.page_break, b.page_break));
+    }
+    if a.repeat_header != b.repeat_header {
+        diffs.push(format!("ctrl[{}] tbl repeat_header: A={} vs B={}", ci, a.repeat_header, b.repeat_header));
+    }
+    if a.cell_spacing != b.cell_spacing {
+        diffs.push(format!("ctrl[{}] tbl cell_spacing: A={} vs B={}", ci, a.cell_spacing, b.cell_spacing));
+    }
+    if a.border_fill_id != b.border_fill_id {
+        diffs.push(format!("ctrl[{}] tbl border_fill_id: A={} vs B={}", ci, a.border_fill_id, b.border_fill_id));
+    }
+    if a.outer_margin_left != b.outer_margin_left
+        || a.outer_margin_right != b.outer_margin_right
+        || a.outer_margin_top != b.outer_margin_top
+        || a.outer_margin_bottom != b.outer_margin_bottom
+    {
+        diffs.push(format!(
+            "ctrl[{}] tbl outer_margin: A=({},{},{},{}) vs B=({},{},{},{})",
+            ci,
+            a.outer_margin_left, a.outer_margin_top, a.outer_margin_right, a.outer_margin_bottom,
+            b.outer_margin_left, b.outer_margin_top, b.outer_margin_right, b.outer_margin_bottom,
+        ));
+    }
+    diff_common_obj(diffs, ci, "tbl", &a.common, &b.common);
+}
+
+fn diff_common_obj(
+    diffs: &mut Vec<String>,
+    ci: usize,
+    tag: &str,
+    a: &rhwp::model::shape::CommonObjAttr,
+    b: &rhwp::model::shape::CommonObjAttr,
+) {
+    if a.treat_as_char != b.treat_as_char {
+        diffs.push(format!("ctrl[{}] {} tac: A={} vs B={}", ci, tag, a.treat_as_char, b.treat_as_char));
+    }
+    if a.text_wrap != b.text_wrap {
+        diffs.push(format!("ctrl[{}] {} wrap: A={:?} vs B={:?}", ci, tag, a.text_wrap, b.text_wrap));
+    }
+    if a.width != b.width || a.height != b.height {
+        diffs.push(format!("ctrl[{}] {} size: A={}x{} vs B={}x{}", ci, tag, a.width, a.height, b.width, b.height));
+    }
+    if a.vertical_offset != b.vertical_offset {
+        diffs.push(format!("ctrl[{}] {} v_offset: A={} vs B={}", ci, tag, a.vertical_offset, b.vertical_offset));
+    }
+    if a.horizontal_offset != b.horizontal_offset {
+        diffs.push(format!("ctrl[{}] {} h_offset: A={} vs B={}", ci, tag, a.horizontal_offset, b.horizontal_offset));
+    }
+    if a.vert_rel_to != b.vert_rel_to {
+        diffs.push(format!("ctrl[{}] {} vert_rel: A={:?} vs B={:?}", ci, tag, a.vert_rel_to, b.vert_rel_to));
+    }
+    if a.horz_rel_to != b.horz_rel_to {
+        diffs.push(format!("ctrl[{}] {} horz_rel: A={:?} vs B={:?}", ci, tag, a.horz_rel_to, b.horz_rel_to));
+    }
+}
+
 fn ir_diff(args: &[String]) {
     if args.len() < 2 {
         eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>]");
@@ -2807,8 +3016,23 @@ fn ir_diff(args: &[String]) {
                     if la.text_start != lb.text_start {
                         diffs.push(format!("ls[{}].ts: A={} vs B={}", li, la.text_start, lb.text_start));
                     }
+                    if la.vertical_pos != lb.vertical_pos {
+                        diffs.push(format!("ls[{}].vpos: A={} vs B={}", li, la.vertical_pos, lb.vertical_pos));
+                    }
                     if la.line_height != lb.line_height {
                         diffs.push(format!("ls[{}].lh: A={} vs B={}", li, la.line_height, lb.line_height));
+                    }
+                    if la.text_height != lb.text_height {
+                        diffs.push(format!("ls[{}].th: A={} vs B={}", li, la.text_height, lb.text_height));
+                    }
+                    if la.baseline_distance != lb.baseline_distance {
+                        diffs.push(format!("ls[{}].bl: A={} vs B={}", li, la.baseline_distance, lb.baseline_distance));
+                    }
+                    if la.line_spacing != lb.line_spacing {
+                        diffs.push(format!("ls[{}].ls: A={} vs B={}", li, la.line_spacing, lb.line_spacing));
+                    }
+                    if la.column_start != lb.column_start {
+                        diffs.push(format!("ls[{}].cs: A={} vs B={}", li, la.column_start, lb.column_start));
                     }
                     if la.segment_width != lb.segment_width {
                         diffs.push(format!("ls[{}].sw: A={} vs B={}", li, la.segment_width, lb.segment_width));
@@ -2816,9 +3040,32 @@ fn ir_diff(args: &[String]) {
                 }
             }
 
-            // 컨트롤 수 비교
+            // 컨트롤 식별 비교
             if pa.controls.len() != pb.controls.len() {
-                diffs.push(format!("controls: A={} vs B={}", pa.controls.len(), pb.controls.len()));
+                diffs.push(format!("controls count: A={} vs B={}", pa.controls.len(), pb.controls.len()));
+            }
+            {
+                use rhwp::model::control::Control;
+                let ctrl_count = pa.controls.len().min(pb.controls.len());
+                for ci in 0..ctrl_count {
+                    let ca = &pa.controls[ci];
+                    let cb = &pb.controls[ci];
+                    match (ca, cb) {
+                        (Control::Table(ta), Control::Table(tb)) => {
+                            diff_table(&mut diffs, ci, ta, tb);
+                        }
+                        (Control::Picture(pic_a), Control::Picture(pic_b)) => {
+                            diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
+                        }
+                        (Control::Shape(sa), Control::Shape(sb)) => {
+                            diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                        }
+                        _ if control_tag(ca) != control_tag(cb) => {
+                            diffs.push(format!("ctrl[{}] type: A={} vs B={}", ci, control_tag(ca), control_tag(cb)));
+                        }
+                        _ => {}
+                    }
+                }
             }
 
             // char_shapes 비교

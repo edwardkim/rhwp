@@ -477,6 +477,7 @@ impl LayoutEngine {
                 0,
                 composed.lines.len(),
                 0, 0, ctx, false, 0.0, None, None, None,
+                None,  // 캡션 컨텍스트 — wrap zone 무관
             );
         }
     }
@@ -596,6 +597,7 @@ impl LayoutEngine {
                     let returned_y = self.layout_composed_paragraph(
                         tree, fn_node, &composed, styles, fn_area, y, 0, composed.lines.len(),
                         marker_section, marker_para, None, false, 0.0, None, None, None,
+                        None,  // 각주 컨텍스트 — wrap zone 무관
                     );
                     if is_last_para_of_fn {
                         // layout_composed_paragraph 가 마지막 line 의 trailing line_spacing 을

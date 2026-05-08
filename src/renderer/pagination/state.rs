@@ -27,6 +27,8 @@ pub(super) struct PaginationState {
     pub footnote_safety_margin: f64,
     /// 현재 단에 축적된 어울림 리턴 문단 목록
     pub current_column_wrap_around_paras: Vec<WrapAroundPara>,
+    /// [Task #604 R3] 현재 단의 wrap text 문단 ↔ anchor 메타데이터
+    pub current_column_wrap_anchors: std::collections::HashMap<usize, super::WrapAnchorRef>,
     /// 현재 페이지의 vpos 기준점 (첫 문단의 vertical_pos, HWPUNIT)
     /// layout의 vpos 보정과 동기화하기 위해 사용
     pub page_vpos_base: Option<i32>,
@@ -67,6 +69,7 @@ impl PaginationState {
             footnote_separator_overhead,
             footnote_safety_margin,
             current_column_wrap_around_paras: Vec::new(),
+            current_column_wrap_anchors: std::collections::HashMap::new(),
             page_vpos_base: None,
             page_has_block_table: false,
             defense_counts: HashMap::new(),
@@ -87,6 +90,7 @@ impl PaginationState {
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
+            wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -104,6 +108,7 @@ impl PaginationState {
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
+            wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -217,6 +222,7 @@ impl PaginationState {
         self.current_zone_layout = None;
         self.on_first_multicolumn_page = false;
         self.current_column_wrap_around_paras.clear();
+        self.current_column_wrap_anchors.clear();
     }
 
     /// PageContent 생성 헬퍼

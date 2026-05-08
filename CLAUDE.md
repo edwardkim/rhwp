@@ -215,7 +215,9 @@ rhwp ir-diff sample.hwpx sample.hwp 2>&1 | grep "\[PS " # ParaShape 차이만
 rhwp ir-diff sample.hwpx sample.hwp 2>&1 | tail -1      # 차이 건수만
 ```
 
-비교 항목: text, char_count, char_offsets, char_shapes, line_segs, controls, tab_extended, ParaShape(여백/줄간격/탭), TabDef(위치/종류/채움).
+비교 항목: text, char_count, char_offsets, char_shapes, line_segs, controls(타입+속성), tab_extended, ParaShape(여백/줄간격/탭), TabDef(위치/종류/채움).
+표: page_break, outer_margin, treat_as_char, wrap, size, v_offset/h_offset 비교.
+그림/도형: treat_as_char, wrap, size, v_offset/h_offset, vert_rel/horz_rel 비교.
 
 상세 매뉴얼: `mydocs/manual/ir_diff_command.md`
 
@@ -241,7 +243,37 @@ HWPX↔HWP 불일치 디버깅 시 추가 단계:
 
 ### 예제 폴더
 
-- `samples/` - 테스트용 HWP 파일
+- `samples/` - 테스트용 HWP/HWPX 파일 (git tracked 영구 보존)
+- `pdf/` - 한글 **2022** 편집기 PDF 변환본 (PR #670, 시각 정합성 비교 권위 자료)
+- `pdf-2020/` - (예정) 한글 2020 편집기 PDF 변환본
+- `pdf-2010/` - (예정) 한글 2010 편집기 PDF 변환본
+
+### PDF 권위 자료 명명 규약
+
+| 폴더 | 한컴 버전 | 명명 패턴 |
+|------|----------|----------|
+| `pdf/` | 한글 2022 | `pdf/{원본 stem}-2022.pdf` |
+| `pdf-2020/` | 한글 2020 | `pdf-2020/{원본 stem}-2020.pdf` |
+| `pdf-2010/` | 한글 2010 | `pdf-2010/{원본 stem}-2010.pdf` |
+
+원본 파일이 하위 폴더 (`samples/basic/` / `samples/hwpx/`) 에 있는 경우 PDF 도 동일 하위 폴더 구조 유지. 상세는 `pdf/README.md`.
+
+### PDF 권위 등급 (컨트리뷰터 환경별)
+
+본 프로젝트의 시각 판정 권위 영역은 컨트리뷰터 환경에 따라 다르다 (`reference_authoritative_hancom` 메모리 룰 정합):
+
+**Windows + 한컴 편집기 환경**:
+- 1차 정답지: 한글 2010 / 2020 / 2022 **편집기** 직접 출력 (시각 판정)
+- 보조: `pdf/`, `pdf-2020/`, `pdf-2010/` 의 PDF
+
+**macOS / Linux 환경 (한컴 편집기 미접근)**:
+- 1차 정답지: `pdf/` (한글 2022) 또는 `pdf-2020/` (한글 2020) PDF
+- 등급 미달: `pdf-2010/` (한글 2010 PDF) — 보조 자료, 정답지 등급 미달
+
+**모든 환경 공통 — 정답지 아님**:
+- 한컴 뷰어 출력
+- macOS 인쇄 / 외부 변환
+- HWP5 v2024 변환본 등 한컴 변환 산출물 (비교 보조 자료)
 
 ### 출력 폴더
 

@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "rhwp ingest schema v1",
+  "description": "Claude Code Skill (rhwp-exam-ingest)이 작성하는 JSON 중간 표현. rhwp build-from-ingest가 이를 읽어 HWPX로 변환한다. Task #660.",
+  "type": "object",
+  "required": ["version", "questions"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1",
+      "description": "스키마 버전. 현재 '1'만 허용."
+    },
+    "page_size": {
+      "type": "object",
+      "properties": {
+        "width_mm": { "type": "number", "default": 210.0 },
+        "height_mm": { "type": "number", "default": 297.0 }
+      }
+    },
+    "default_font": {
+      "type": "string",
+      "default": "함초롬바탕",
+      "description": "기본 폰트명 — Skill이 인식한 시험지 폰트 또는 fallback."
+    },
+    "questions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Question" }
+    }
+  },
+  "definitions": {
+    "Question": {
+      "type": "object",
+      "required": ["number", "stem", "choices"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "stem": {
+          "type": "string",
+          "description": "지문. stem_blocks가 비어있으면 이 값을 한 단락으로 처리."
+        },
+        "stem_blocks": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/StemBlock" }
+        },
+        "choices": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Choice" }
+        },
+        "media": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Media" }
+        },
+        "auto_number": {
+          "type": "boolean",
+          "default": true,
+          "description": "true면 빌더가 첫 stem 텍스트 앞에 '{number}. '를 자동 prepend. Skill이 stem_blocks 첫 텍스트에 명시적으로 번호/그룹 지시문을 작성한 경우 false로 설정해 중복을 회피한다. 본 필드 미지정 시 true."
+        }
+      }
+    },
+    "StemBlock": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "text"],
+          "properties": {
+            "type": { "const": "text" },
+            "text": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "ref"],
+          "properties": {
+            "type": { "const": "image" },
+            "ref": {
+              "type": "string",
+              "description": "media[].id와 일치하는 이미지 참조."
+            },
+            "placement": { "$ref": "#/definitions/Placement" }
+          }
+        }
+      ]
+    },
+    "Choice": {
+      "type": "object",
+      "required": ["label", "text"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "선택지 라벨 (예: '①' U+2460)."
+        },
+        "text": { "type": "string" }
+      }
+    },
+    "Media": {
+      "type": "object",
+      "required": ["id", "natural_w", "natural_h"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "--media-dir 기준 상대 경로 (예: 'img/q1_passage.png')."
+        },
+        "natural_w": { "type": "integer", "minimum": 1 },
+        "natural_h": { "type": "integer", "minimum": 1 },
+        "target_w_mm": {
+          "type": "number",
+          "description": "출력 폭(mm). 미지정 시 본문폭의 70%."
+        },
+        "placement": { "$ref": "#/definitions/Placement" }
+      }
+    },
+    "Placement": {
+      "type": "string",
+      "enum": ["between", "above", "below", "inline"],
+      "default": "between",
+      "description": "이미지 배치 위치. between=지문↔선택지 사이, above=지문 위, below=선택지 아래, inline=지문 텍스트 내 인라인."
+    }
+  }
+}
