@@ -2298,32 +2298,15 @@ impl LayoutEngine {
             // paragraph 의 첫 LINE_SEG.vpos 가 직전 paragraph 누적 끝보다 작으면 page-break 신호로
             // 해석하여, content_limit 컨텍스트(split_end 페이지)에서는 후속 paragraph 들이 limit
             // 초과 영역으로 산출되도록 cum 을 abs_limit 까지 강제 진행시킨다.
-            // line_height + line_spacing 누적이 abs_limit 보다 작아 한컴 측 vpos 끝 위치를
-            // 따라잡지 못하던 mismatch 정정.
-            // [Task #697] paragraph 진입 시 cum 을 LINE_SEG.vpos 기반으로 동기화.
-            // 한컴은 셀 내부 누적 위치를 LINE_SEG.vpos 로 인코딩하며 paragraph spacing 도 vpos 차분에
-            // 흡수되어 있다. rhwp 의 line_height + line_spacing 누적은 spacing 산출 방식 차이로
-            // vpos 누적과 어긋나, split_end content_limit (= 한컴 vpos 단위) 와 비교 시 cut 위치가
-            // 더 멀리 잡혀 한 페이지에 더 많은 paragraph 가 visible 처리되는 회귀가 발생.
-            // 또한 한컴은 셀 내부 페이지 분할 위치에서 LINE_SEG.vpos 를 0 으로 리셋한 인코딩을 사용
-            // (예: inner-table-01.hwp cell[11] p[20] vpos=0). vpos 리셋 검출 시 cum 을 abs_limit
-            // 까지 강제 진행시켜 후속 paragraph 들이 limit 초과로 cut 되도록 한다.
-            if pi > 0 {
+            // (정상 누적 vpos delta 보정은 form-002 등에서 회귀 발생 — 단순 리셋 검출만 적용.)
+            if pi > 0 && has_limit && cum < abs_limit {
                 let prev_para = &cell.paragraphs[pi - 1];
                 let prev_end_vpos_hu = prev_para.line_segs.last()
                     .map(|s| s.vertical_pos + s.line_height)
                     .unwrap_or(0);
                 let cur_first_vpos_hu = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(0);
                 if prev_end_vpos_hu > 0 && cur_first_vpos_hu < prev_end_vpos_hu {
-                    // vpos 리셋 — page-break 신호
-                    if has_limit && cum < abs_limit {
-                        cum = abs_limit;
-                    }
-                } else if prev_end_vpos_hu > 0 && cur_first_vpos_hu > prev_end_vpos_hu {
-                    // vpos 정상 누적 — paragraph 사이 spacing 차분만큼 cum 보정
-                    let vpos_delta_hu = cur_first_vpos_hu - prev_end_vpos_hu;
-                    let cum_delta = hwpunit_to_px(vpos_delta_hu, self.dpi);
-                    cum += cum_delta;
+                    cum = abs_limit;
                 }
             }
 
