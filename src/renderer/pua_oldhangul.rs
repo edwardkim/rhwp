@@ -1,4 +1,6 @@
 // 자동 생성 — scripts/gen_pua_oldhangul_rs.py 로 재생성
+// 주의: hwpspec "매핑 표 외" 코드포인트(0xF53A 등)는 수동 제거됨 (#615).
+// 재생성 시 test_hwpspec_unmapped_codepoints_not_in_table 테스트가 재삽입을 감지함.
 // 원본 데이터: KTUG HanyangPuaTableProject (Public Domain)
 // https://github.com/mete0r/hypua2jamo/blob/master/data/hypua2jamocomposed.txt
 
@@ -22,7 +24,7 @@
 //! [KTUG (Korean TeX Users Group) HanyangPuaTableProject]
 //! (http://faq.ktug.or.kr/mywiki/HanyangPuaTableProject) — Public Domain.
 //!
-//! 5,660 매핑 (U+E0BC ~ U+F8F7), 출력 자모는 Hangul Jamo (U+1100-11FF)
+//! 5,659 매핑 (U+E0BC ~ U+F8F7), 출력 자모는 Hangul Jamo (U+1100-11FF)
 //! + Extended-A (U+A960-A97F) + Extended-B (U+D7B0-D7FF).
 
 /// 매핑 표 크기: 5659 entries.
