@@ -2264,11 +2264,7 @@ export class InputHandler {
         this.pictureObjectRenderer?.clear();
         this.eventBus.emit('picture-object-selection-changed', false);
         this.executeOperation({ kind: 'snapshot', operationType: 'deleteObject', operation: (wasm: WasmBridge) => {
-          if (ref.type === 'image') {
-            wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
-          } else {
-            wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
-          }
+          this.deleteObjectControl(ref);
           return this.cursor.getPosition();
         }});
       }
@@ -2276,14 +2272,18 @@ export class InputHandler {
     }
     if (this.cursor.isInTableObjectSelection()) {
       const ref = this.cursor.getSelectedTableRef();
-      if (ref) {
+      if (!ref) return;
+      if (ref.cellPath && ref.cellPath.length > 1) {
         this.cursor.moveOutOfSelectedTable();
         this.eventBus.emit('table-object-selection-changed', false);
-        this.executeOperation({ kind: 'snapshot', operationType: 'deleteTable', operation: (wasm: WasmBridge) => {
-          wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
-          return this.cursor.getPosition();
-        }});
+        return;
       }
+      this.cursor.moveOutOfSelectedTable();
+      this.eventBus.emit('table-object-selection-changed', false);
+      this.executeOperation({ kind: 'snapshot', operationType: 'deleteTable', operation: (wasm: WasmBridge) => {
+        wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
+        return this.cursor.getPosition();
+      }});
       return;
     }
     if (this.cursor.hasSelection()) {
