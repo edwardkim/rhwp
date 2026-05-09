@@ -17,7 +17,7 @@ type InputMode = 'hwp' | 'latex';
 interface TemplateEntry { label: string; hwp: string; latex: string }
 interface TemplateGroup { id: string; name: string; items: TemplateEntry[] }
 
-interface CommandEntry { name: string; display: string; insert: string; group: string }
+interface CommandEntry { name: string; display: string; hwpInsert: string; latexInsert: string; group: string }
 
 const TEMPLATE_GROUPS: TemplateGroup[] = [
   { id: 'struct', name: '구조', items: [
@@ -182,7 +182,9 @@ function buildCommandList(): CommandEntry[] {
   const cmds: CommandEntry[] = [];
   for (const grp of TEMPLATE_GROUPS) {
     for (const t of grp.items) {
-      cmds.push({ name: t.hwp.split(/[\s{}_^]/)[0], display: t.label, insert: t.hwp, group: grp.name });
+      const parts = t.hwp.split(/[\s{}_^]/);
+      const name = parts.find(p => p.length > 0) || t.label;
+      cmds.push({ name, display: t.label, hwpInsert: t.hwp, latexInsert: t.latex, group: grp.name });
     }
   }
   return cmds;
@@ -540,10 +542,10 @@ export class EquationEditorDialog {
     const pos = ta.selectionStart;
     const text = ta.value;
     const before = text.substring(0, pos);
-    const match = before.match(/([a-zA-Z]+)$/);
+    const match = before.match(/(\\?[a-zA-Z]+)$/);
     if (!match) return;
     const wordStart = pos - match[1].length;
-    const script = this.mode === 'hwp' ? cmd.insert : (cmd.insert.startsWith('\\') ? cmd.insert : '\\' + cmd.insert);
+    const script = this.mode === 'hwp' ? cmd.hwpInsert : cmd.latexInsert;
     ta.value = text.substring(0, wordStart) + script + text.substring(pos);
     const newPos = wordStart + script.length;
     ta.selectionStart = newPos;
@@ -603,7 +605,7 @@ export class EquationEditorDialog {
       btn.className = 'eq-search-result-btn';
       btn.innerHTML = `<span class="eq-sr-display">${cmd.display}</span><span class="eq-sr-name">${cmd.name}</span>`;
       btn.addEventListener('click', () => {
-        const script = this.mode === 'hwp' ? cmd.insert : (cmd.insert.startsWith('\\') ? cmd.insert : '\\' + cmd.insert);
+        const script = this.mode === 'hwp' ? cmd.hwpInsert : cmd.latexInsert;
         this.insertTemplate(script);
         this.searchInput.value = '';
         this.searchResults.style.display = 'none';
