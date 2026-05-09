@@ -1572,8 +1572,19 @@ pub(crate) fn parse_paragraph_list(
 
         // para_info.flags bit 1 = 명시적 페이지나눔: 이전 문단에 이 플래그가 있으면
         // 현재 문단이 새 페이지에서 시작한다.
+        // [Task #724] 한컴 IR 정합: 빈 paragraph (text_len=0 + controls=0) 인 경우
+        // column_type=Page 설정 안 함 (HWP5 변환본 paragraph 171 column_type=Normal 정합).
+        // 단, vpos reset 은 강제 (force_vpos_reset) — page break 시점 acc_section_vpos=0
+        // 정합 (HWP5 변환본 vpos=0 페이지 시작 정합 보존).
+        // 본문 paragraph 의 page break flag 는 그대로 column_type=Page 적용.
+        let mut force_vpos_reset = false;
         if prev_para_had_flags_break {
-            para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+            let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
+            if !is_empty_no_ctrl {
+                para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+            } else {
+                force_vpos_reset = true;
+            }
         }
         prev_para_had_flags_break = para_info.flags & 0x02 != 0;
 
@@ -1581,9 +1592,16 @@ pub(crate) fn parse_paragraph_list(
         // column_type=Page 로 변환. 본 신호는 HWP3 가 자연 wrap 한 페이지 시작.
         // HWP5 v2024 변환본의 vpos=0 (페이지 상단 시작) 인코딩 영역과 정합.
         // 0x8000 = 신호 마커, 0x0001 = 페이지 경계.
+        // [Task #724] 한컴 IR 정합: 빈 paragraph (text_len=0 + controls=0) 인 경우
+        // column_type=Page 설정 안 함 + force_vpos_reset 적용 (vpos reset 보존).
         if let Some(first_line) = line_infos.first() {
             if first_line.break_flag & 0x8001 == 0x8001 {
-                para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+                let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
+                if !is_empty_no_ctrl {
+                    para.column_type = crate::model::paragraph::ColumnBreakType::Page;
+                } else {
+                    force_vpos_reset = true;
+                }
             }
         }
 
@@ -1600,7 +1618,9 @@ pub(crate) fn parse_paragraph_list(
         // 등) 이 HWP3 파서 출력에 정합 동작 → 시각 결함 자연스럽게 정정.
         {
             // 페이지 break 시 vpos reset (anchor 검출 전 reset 필수 — Stage A+D 정정)
-            if matches!(para.column_type, crate::model::paragraph::ColumnBreakType::Page) {
+            // [Task #724] force_vpos_reset (빈 paragraph + page break flag) 도 reset 적용
+            if matches!(para.column_type, crate::model::paragraph::ColumnBreakType::Page)
+                || force_vpos_reset {
                 acc_section_vpos = 0;
                 wrap_zone_end_vpos = 0;
             }
@@ -1696,9 +1716,21 @@ pub(crate) fn parse_paragraph_list(
                     }
                 } else if wrap_zone_end_vpos > 0 && acc_section_vpos >= wrap_zone_end_vpos {
                     // wrap zone 영역 끝 — cs/sw=0/full 전환
-                    if seg.column_start > 0 {
+                    // [Task #724] sw=column_width_hu (col_area 전체 폭) 한컴 IR 정합.
+                    // 본 환경 HWP3 파서가 sw=0 으로 인코딩 시 composer/paragraph_layout
+                    // 에서 좁은 폭 분산 layout 결함 발생.
+                    if seg.column_start > 0 || seg.segment_width == 0 {
                         seg.column_start = 0;
-                        seg.segment_width = 0;
+                        seg.segment_width = column_width_hu;
+                    }
+                } else if wrap_zone_end_vpos == 0 {
+                    // [Task #724 Stage 9] wrap zone 비활성 + cs=0/sw=0 인 case
+                    // (paragraph 189 ls[3~6] / paragraph 190/191 등 페이지 break 후 paragraph)
+                    // sw=column_width_hu 정합화 — 한컴 HWP5 변환본 IR 정합 (sw=51024).
+                    // 본 환경 HWP3 파서가 페이지 break 후 sw=0 으로 인코딩 → composer/layout
+                    // 좁은 폭 분산 결함.
+                    if seg.column_start == 0 && seg.segment_width == 0 {
+                        seg.segment_width = column_width_hu;
                     }
                 }
 

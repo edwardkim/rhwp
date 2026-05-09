@@ -414,9 +414,12 @@ impl TypesetEngine {
             // HWP LINE_SEG의 vertical_pos는 페이지 내 흐름 y 좌표.
             // 현재 문단 first_vpos=0이고 직전 문단이 같은 단에 있으며 last_vpos가 충분히 큰 경우,
             // HWP가 pi 경계에서 페이지/단 분할을 의도한 것 → 강제 분할.
-            // [Task #362] wrap-around zone 활성 중에는 vpos-reset 가드 무시.
-            // 외부 표 옆에 흡수되는 paragraph 들의 vpos 가 0 으로 reset 되어 가드가 잘못 발동.
-            if para_idx > 0 && !st.current_items.is_empty() && st.wrap_around_cs < 0 {
+            // [Task #362] wrap-around zone 활성 중에는 vpos-reset 가드 무시 (기존).
+            // [Task #724] vpos-reset trigger 발동 시 wrap_around 강제 종료 (신규):
+            // HWP5 변환본 case 에서 paragraph 442/443 wrap_around 매칭 후 후속 paragraph
+            // (예: 599) vpos=0 시점에도 wrap_around active 유지되어 페이지 분할 위반 →
+            // vpos-reset trigger 시 wrap_around 강제 종료 + advance_column_or_new_page.
+            if para_idx > 0 && !st.current_items.is_empty() {
                 let prev_para = &paragraphs[para_idx - 1];
                 let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
                 let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
@@ -433,7 +436,17 @@ impl TypesetEngine {
                         cv == 0 && pv > 5000
                     };
                     if trigger {
-                        st.advance_column_or_new_page();
+                        // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
+                        // (HWP5 변환본 caption-style) 한정. 일반 wrap_around (anchor cs>0)
+                        // 는 기존 동작 (Task #362 vpos-reset 무시) 유지.
+                        if st.wrap_around_cs == 0 {
+                            st.wrap_around_cs = -1;
+                            st.wrap_around_sw = -1;
+                            st.wrap_around_any_seg = false;
+                        }
+                        if st.wrap_around_cs < 0 {
+                            st.advance_column_or_new_page();
+                        }
                     }
                 }
             }
@@ -492,9 +505,35 @@ impl TypesetEngine {
                 let body_w = (page_def.width as i32) - (page_def.margin_left as i32) - (page_def.margin_right as i32);
                 let sw0_match = st.wrap_around_sw == 0 && is_empty_para && para_sw > 0
                     && para_sw < body_w / 2;
+                // [Task #724] HWP5 변환본 case: anchor host 의 wrap=Square image 위치/폭/margin
+                // 으로 expected_cs 정확 계산 후 para_cs 일치 확인. anchor cs=0 (caption-style)
+                // 한정 가드. expected_cs = (image_x_offset + width + 2*margin) - body_left.
+                let anchor_image_match = if st.wrap_around_cs == 0 {
+                    let body_left = page_def.margin_left as i32;
+                    let expected_cs_hu = paragraphs.get(st.wrap_around_table_para)
+                        .and_then(|p| p.controls.iter().find_map(|c| {
+                            let cm = match c {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
+                                    Some(&pic.common)
+                                } else { None },
+                                _ => None,
+                            };
+                            cm.filter(|cm| !cm.treat_as_char
+                                && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square))
+                                .map(|cm| cm.horizontal_offset as i32 + cm.width as i32
+                                    + 2 * cm.margin.right as i32 - body_left)
+                        }))
+                        .unwrap_or(0);
+                    expected_cs_hu > 0
+                        && (para_cs - expected_cs_hu).abs() < 200
+                        && para_sw > 0
+                        && para_cs + para_sw <= body_w + 200
+                } else { false };
                 if (para_cs == st.wrap_around_cs && para_sw == st.wrap_around_sw)
                     || (any_seg_matches && (is_empty_para || st.wrap_around_any_seg))
-                    || sw0_match {
+                    || sw0_match
+                    || anchor_image_match {
                     // [Task #604 R3] wrap_around 매칭 분기를 anchor 종류 기반으로 본질화.
                     //
                     // - Picture (그림 Square wrap) anchor: wrap text 가 LineSeg cs/sw 로
