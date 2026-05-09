@@ -495,6 +495,34 @@
   margin: 2px 3px;
   background: #c0c0c0;
 }
+/* 모드 토글 */
+.eq-mode-wrap {
+  margin-left: auto;
+  margin-right: 28px;
+}
+.eq-mode-btn {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  padding: 1px 8px;
+  font-size: 11px;
+  line-height: 18px;
+}
+.eq-mode-btn:hover {
+  background: var(--color-accent-bg);
+  border-color: var(--color-primary);
+}
+.eq-mode-indicator {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.eq-mode-indicator[data-mode="latex"] {
+  color: var(--color-primary, #4a7aba);
+}
+.eq-mode-indicator[data-mode="hwpeq"] {
+  color: var(--color-text, #333);
+}
 /* 미리보기 */
 .eq-preview {
   min-height: 80px;

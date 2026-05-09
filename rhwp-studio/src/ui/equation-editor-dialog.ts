@@ -11,9 +11,9 @@ import { appendSvgMarkup } from './dom-utils';
  * - PicturePropsDialog 패턴 (ModalDialog 미상속, 자체 overlay/DOM/keyboard 관리)
  */
 
-/** 도구 모음 템플릿 정의 */
-const TEMPLATES: { label: string; script: string; group?: string }[] = [
-  // ── 구조 ──
+type EqTemplate = { label: string; script: string; group?: string };
+
+const HWPEQ_TEMPLATES: EqTemplate[] = [
   { label: '분수', script: '{} over {}', group: 'struct' },
   { label: 'x²', script: '{}^{}', group: 'struct' },
   { label: 'x₂', script: '{}_{}', group: 'struct' },
@@ -25,7 +25,6 @@ const TEMPLATES: { label: string; script: string; group?: string }[] = [
   { label: '행렬', script: 'matrix { {} # {} ; {} # {} }', group: 'struct' },
   { label: 'hat', script: 'hat {}', group: 'struct' },
   { label: 'bar', script: 'bar {}', group: 'struct' },
-  // ── 그리스 문자 ──
   { label: 'α', script: 'alpha', group: 'greek' },
   { label: 'β', script: 'beta', group: 'greek' },
   { label: 'γ', script: 'gamma', group: 'greek' },
@@ -35,7 +34,6 @@ const TEMPLATES: { label: string; script: string; group?: string }[] = [
   { label: 'σ', script: 'sigma', group: 'greek' },
   { label: 'λ', script: 'lambda', group: 'greek' },
   { label: 'ω', script: 'omega', group: 'greek' },
-  // ── 연산자/기호 ──
   { label: '±', script: 'pm', group: 'op' },
   { label: '×', script: 'times', group: 'op' },
   { label: '÷', script: 'div', group: 'op' },
@@ -48,6 +46,41 @@ const TEMPLATES: { label: string; script: string; group?: string }[] = [
   { label: '⊂', script: 'subset', group: 'op' },
 ];
 
+const LATEX_TEMPLATES: EqTemplate[] = [
+  { label: '분수', script: '\\frac{}{}', group: 'struct' },
+  { label: 'x²', script: '{}^{}', group: 'struct' },
+  { label: 'x₂', script: '{}_{}', group: 'struct' },
+  { label: '√', script: '\\sqrt{}', group: 'struct' },
+  { label: 'Σ', script: '\\sum_{}^{}', group: 'struct' },
+  { label: '∫', script: '\\int_{}^{}', group: 'struct' },
+  { label: '()', script: '\\left( {} \\right)', group: 'struct' },
+  { label: '[]', script: '\\left[ {} \\right]', group: 'struct' },
+  { label: '행렬', script: '\\begin{pmatrix} {} & {} \\\\ {} & {} \\end{pmatrix}', group: 'struct' },
+  { label: 'hat', script: '\\hat{}', group: 'struct' },
+  { label: 'bar', script: '\\bar{}', group: 'struct' },
+  { label: 'α', script: '\\alpha', group: 'greek' },
+  { label: 'β', script: '\\beta', group: 'greek' },
+  { label: 'γ', script: '\\gamma', group: 'greek' },
+  { label: 'δ', script: '\\delta', group: 'greek' },
+  { label: 'θ', script: '\\theta', group: 'greek' },
+  { label: 'π', script: '\\pi', group: 'greek' },
+  { label: 'σ', script: '\\sigma', group: 'greek' },
+  { label: 'λ', script: '\\lambda', group: 'greek' },
+  { label: 'ω', script: '\\omega', group: 'greek' },
+  { label: '±', script: '\\pm', group: 'op' },
+  { label: '×', script: '\\times', group: 'op' },
+  { label: '÷', script: '\\div', group: 'op' },
+  { label: '≠', script: '\\neq', group: 'op' },
+  { label: '≤', script: '\\leq', group: 'op' },
+  { label: '≥', script: '\\geq', group: 'op' },
+  { label: '∞', script: '\\infty', group: 'op' },
+  { label: '→', script: '\\rightarrow', group: 'op' },
+  { label: '∈', script: '\\in', group: 'op' },
+  { label: '⊂', script: '\\subset', group: 'op' },
+];
+
+type EqInputMode = 'hwpeq' | 'latex';
+
 export class EquationEditorDialog {
   private wasm: WasmBridge;
   private eventBus: EventBus;
@@ -59,7 +92,12 @@ export class EquationEditorDialog {
   private scriptArea!: HTMLTextAreaElement;
   private fontSizeInput!: HTMLInputElement;
   private colorInput!: HTMLInputElement;
+  private toolbarContainer!: HTMLDivElement;
+  private modeIndicator!: HTMLSpanElement;
   private built = false;
+
+  // 입력 모드
+  private mode: EqInputMode = 'hwpeq';
 
   // 현재 편집 대상 좌표
   private sec = 0;
@@ -134,7 +172,23 @@ export class EquationEditorDialog {
     // 타이틀바
     const titleBar = document.createElement('div');
     titleBar.className = 'dialog-title';
-    titleBar.textContent = '수식 편집';
+    const titleText = document.createElement('span');
+    titleText.textContent = '수식 편집';
+    titleBar.appendChild(titleText);
+
+    const modeWrap = document.createElement('span');
+    modeWrap.className = 'eq-mode-wrap';
+    const modeBtn = document.createElement('button');
+    modeBtn.className = 'eq-mode-btn';
+    modeBtn.title = 'hwpeq / LaTeX 입력 모드 전환 (Ctrl+M)';
+    this.modeIndicator = document.createElement('span');
+    this.modeIndicator.className = 'eq-mode-indicator';
+    this.updateModeIndicator();
+    modeBtn.appendChild(this.modeIndicator);
+    modeBtn.addEventListener('click', () => this.toggleMode());
+    modeWrap.appendChild(modeBtn);
+    titleBar.appendChild(modeWrap);
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dialog-close';
     closeBtn.textContent = '\u00D7';
@@ -146,8 +200,9 @@ export class EquationEditorDialog {
     body.className = 'dialog-body eq-body';
 
     // 1) 도구 모음
-    const toolbar = this.buildToolbar();
-    body.appendChild(toolbar);
+    this.toolbarContainer = document.createElement('div');
+    this.rebuildToolbar();
+    body.appendChild(this.toolbarContainer);
 
     // 2) 미리보기 영역
     this.previewContainer = document.createElement('div');
@@ -159,6 +214,7 @@ export class EquationEditorDialog {
     this.scriptArea.className = 'eq-script';
     this.scriptArea.rows = 4;
     this.scriptArea.spellcheck = false;
+    this.scriptArea.placeholder = 'hwpeq: {} over {}, sqrt {}, alpha ...';
     this.scriptArea.addEventListener('input', () => this.schedulePreview());
     body.appendChild(this.scriptArea);
 
@@ -214,13 +270,15 @@ export class EquationEditorDialog {
         e.stopPropagation();
         this.hide();
       }
-      // Enter 키(Ctrl+Enter)로 확인
       if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault();
         e.stopPropagation();
         this.handleOk();
       }
-      // 대화상자 내부 이벤트가 편집기로 전파되지 않도록
+      if (e.key === 'm' && e.ctrlKey && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        this.toggleMode();
+      }
       e.stopPropagation();
     });
 
@@ -233,21 +291,34 @@ export class EquationEditorDialog {
     this.enableDrag(titleBar);
   }
 
-  /** 도구 모음 빌드 */
-  private buildToolbar(): HTMLDivElement {
+  private toggleMode(): void {
+    this.mode = this.mode === 'hwpeq' ? 'latex' : 'hwpeq';
+    this.updateModeIndicator();
+    this.rebuildToolbar();
+    this.scriptArea.placeholder = this.mode === 'latex'
+      ? 'LaTeX: \\frac{a}{b}, \\sqrt{x}, \\alpha ...'
+      : 'hwpeq: {} over {}, sqrt {}, alpha ...';
+  }
+
+  private updateModeIndicator(): void {
+    if (!this.modeIndicator) return;
+    this.modeIndicator.textContent = this.mode === 'latex' ? 'LaTeX' : 'hwpeq';
+    this.modeIndicator.dataset.mode = this.mode;
+  }
+
+  private rebuildToolbar(): void {
+    if (!this.toolbarContainer) return;
+    const templates = this.mode === 'latex' ? LATEX_TEMPLATES : HWPEQ_TEMPLATES;
     const toolbar = document.createElement('div');
     toolbar.className = 'eq-toolbar';
-
     let currentGroup = '';
-    for (const tmpl of TEMPLATES) {
-      // 그룹 구분선
+    for (const tmpl of templates) {
       if (tmpl.group && tmpl.group !== currentGroup && currentGroup !== '') {
         const sep = document.createElement('span');
         sep.className = 'eq-toolbar-sep';
         toolbar.appendChild(sep);
       }
       currentGroup = tmpl.group || '';
-
       const btn = document.createElement('button');
       btn.className = 'eq-toolbar-btn';
       btn.textContent = tmpl.label;
@@ -255,8 +326,7 @@ export class EquationEditorDialog {
       btn.addEventListener('click', () => this.insertTemplate(tmpl.script));
       toolbar.appendChild(btn);
     }
-
-    return toolbar;
+    this.toolbarContainer.replaceChildren(toolbar);
   }
 
   /** textarea 커서 위치에 템플릿 삽입 */
