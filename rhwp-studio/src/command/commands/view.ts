@@ -150,31 +150,35 @@ export const viewCommands: CommandDef[] = [
     },
   },
   (() => {
-    let visible = true;
+    let visible: boolean | null = null;
     return {
       id: 'view:toolbox-basic',
       label: '기본',
       execute() {
-        visible = !visible;
         const el = document.getElementById('icon-toolbar');
-        if (el) el.style.display = visible ? '' : 'none';
+        if (!el) return;
+        if (visible === null) visible = getComputedStyle(el).display !== 'none';
+        visible = !visible;
+        el.style.display = visible ? '' : 'none';
         document.querySelectorAll('[data-cmd="view:toolbox-basic"]').forEach(btn => {
-          btn.classList.toggle('active', visible);
+          btn.classList.toggle('active', visible!);
         });
       },
     } satisfies CommandDef;
   })(),
   (() => {
-    let visible = true;
+    let visible: boolean | null = null;
     return {
       id: 'view:toolbox-format',
       label: '서식',
       execute() {
-        visible = !visible;
         const el = document.getElementById('style-bar');
-        if (el) el.style.display = visible ? '' : 'none';
+        if (!el) return;
+        if (visible === null) visible = getComputedStyle(el).display !== 'none';
+        visible = !visible;
+        el.style.display = visible ? '' : 'none';
         document.querySelectorAll('[data-cmd="view:toolbox-format"]').forEach(btn => {
-          btn.classList.toggle('active', visible);
+          btn.classList.toggle('active', visible!);
         });
       },
     } satisfies CommandDef;
