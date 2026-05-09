@@ -496,20 +496,19 @@ impl EqParser {
             };
         }
 
+        // Unicode 기호 매핑 — 함수보다 우선 (hwpeq inf=∞ vs LaTeX \inf=infimum 충돌 방지)
+        if let Some(symbol) = lookup_symbol(cmd) {
+            let node = EqNode::MathSymbol(symbol.to_string());
+            return self.try_parse_scripts(node);
+        }
+
         // 함수 (sin, cos, log 등)
         if is_function(cmd) {
             let func_name = lookup_function(cmd).unwrap_or(cmd).to_string();
-            // 함수명 바로 뒤의 Thin 공백(`)은 한컴에서 무시 — 소비하고 건너뛰기
             if self.current_type() == TokenType::Whitespace && self.current_value() == "`" {
                 self.pos += 1;
             }
             let node = EqNode::Function(func_name);
-            return self.try_parse_scripts(node);
-        }
-
-        // Unicode 기호 매핑
-        if let Some(symbol) = lookup_symbol(cmd) {
-            let node = EqNode::MathSymbol(symbol.to_string());
             return self.try_parse_scripts(node);
         }
 
@@ -2112,5 +2111,35 @@ mod latex_compat_tests {
             }
             _ => panic!(r"Expected Paren for \langle, got {:?}", ast),
         }
+    }
+
+    #[test]
+    #[test]
+    fn test_hwpeq_inf_remains_symbol() {
+        let ast = parse("lim _{n→inf}");
+        fn has_infinity(node: &EqNode) -> bool {
+            match node {
+                EqNode::MathSymbol(s) if s == "∞" => true,
+                EqNode::Row(ch) => ch.iter().any(has_infinity),
+                EqNode::Subscript { base, sub } => has_infinity(base) || has_infinity(sub),
+                EqNode::Superscript { base, sup } => has_infinity(base) || has_infinity(sup),
+                EqNode::Limit { sub, .. } => sub.as_ref().map_or(false, |s| has_infinity(s)),
+                _ => false,
+            }
+        }
+        assert!(has_infinity(&ast), "hwpeq 'inf' must produce ∞, not function text: {:?}", ast);
+    }
+
+    #[test]
+    fn test_hwpeq_deg_remains_symbol() {
+        let ast = parse("90 deg");
+        fn contains_degree(node: &EqNode) -> bool {
+            match node {
+                EqNode::MathSymbol(s) if s == "°" => true,
+                EqNode::Row(children) => children.iter().any(contains_degree),
+                _ => false,
+            }
+        }
+        assert!(contains_degree(&ast), "hwpeq 'deg' must produce °, not function text: {:?}", ast);
     }
 }
