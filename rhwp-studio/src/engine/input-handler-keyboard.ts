@@ -892,7 +892,7 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
     return;
   }
 
-  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End 등 커서 이동)
+  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End, Ctrl/Cmd+Arrow 등 커서 이동)
   switch (e.key.toLowerCase()) {
     case 'home': {
       e.preventDefault();
@@ -916,6 +916,42 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
         this.cursor.moveToDocumentEnd();
       }
       this.updateCaret();
+      break;
+    }
+    case 'arrowleft': {
+      e.preventDefault();
+      if (e.shiftKey) this.cursor.setAnchor();
+      else this.cursor.clearSelection();
+      this.cursor.moveToLineStart();
+      this.updateCaret();
+      if (e.shiftKey) this.updateSelection();
+      break;
+    }
+    case 'arrowright': {
+      e.preventDefault();
+      if (e.shiftKey) this.cursor.setAnchor();
+      else this.cursor.clearSelection();
+      this.cursor.moveToLineEnd();
+      this.updateCaret();
+      if (e.shiftKey) this.updateSelection();
+      break;
+    }
+    case 'arrowup': {
+      e.preventDefault();
+      if (e.shiftKey) this.cursor.setAnchor();
+      else this.cursor.clearSelection();
+      this.cursor.moveToDocumentStart();
+      this.updateCaret();
+      if (e.shiftKey) this.updateSelection();
+      break;
+    }
+    case 'arrowdown': {
+      e.preventDefault();
+      if (e.shiftKey) this.cursor.setAnchor();
+      else this.cursor.clearSelection();
+      this.cursor.moveToDocumentEnd();
+      this.updateCaret();
+      if (e.shiftKey) this.updateSelection();
       break;
     }
     // 그 외 Ctrl 조합 (줌 등)은 브라우저 기본 동작 허용
