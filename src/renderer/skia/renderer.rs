@@ -755,7 +755,7 @@ impl SkiaLayerRenderer {
                             canvas.restore();
                         }
                         PaintOp::FormObject { bbox, form } => {
-                            draw_placeholder(*bbox, form.caption.as_str());
+                            draw_form_control(canvas, *bbox, form);
                         }
                         PaintOp::Placeholder { bbox, placeholder } => {
                             draw_placeholder(*bbox, placeholder.label.as_str());
@@ -776,6 +776,233 @@ impl LayerRasterRenderer for SkiaLayerRenderer {
     ) -> LayerRenderResult<RasterRenderOutput> {
         self.render_raster_with_options(tree, options)
     }
+}
+
+fn draw_form_control(
+    canvas: &Canvas,
+    bbox: crate::renderer::render_tree::BoundingBox,
+    form: &crate::renderer::render_tree::FormObjectNode,
+) {
+    use crate::model::control::FormType;
+
+    if bbox.width <= 0.0 || bbox.height <= 0.0 {
+        return;
+    }
+
+    let x = bbox.x as f32;
+    let y = bbox.y as f32;
+    let w = bbox.width as f32;
+    let h = bbox.height as f32;
+    let rect = Rect::from_xywh(x, y, w, h);
+
+    let bg_color = parse_css_color(&form.back_color).unwrap_or(Color::from_rgb(240, 240, 240));
+    let fg_color = parse_css_color(&form.fore_color).unwrap_or(Color::from_rgb(0, 0, 0));
+    let border_color = Color::from_rgb(160, 160, 160);
+
+    match form.form_type {
+        FormType::PushButton => {
+            let mut fill = Paint::default();
+            fill.set_anti_alias(true);
+            fill.set_style(paint::Style::Fill);
+            fill.set_color(bg_color);
+            let rrect = RRect::new_rect_xy(rect, 3.0, 3.0);
+            canvas.draw_rrect(rrect, &fill);
+
+            let mut stroke = Paint::default();
+            stroke.set_anti_alias(true);
+            stroke.set_style(paint::Style::Stroke);
+            stroke.set_stroke_width(1.0);
+            stroke.set_color(border_color);
+            canvas.draw_rrect(rrect, &stroke);
+
+            let label = if form.caption.is_empty() { &form.name } else { &form.caption };
+            if !label.is_empty() {
+                let mut font = Font::default();
+                font.set_size((h * 0.45).clamp(8.0, 14.0));
+                let mut tp = Paint::default();
+                tp.set_anti_alias(true);
+                tp.set_color(fg_color);
+                let text_w = font.measure_str(label, Some(&tp)).0;
+                let tx = x + (w - text_w) / 2.0;
+                let ty = y + h / 2.0 + font.size() * 0.35;
+                canvas.draw_str(label, (tx, ty), &font, &tp);
+            }
+        }
+        FormType::CheckBox => {
+            let box_size = h.min(w).min(14.0);
+            let bx = x + 2.0;
+            let by = y + (h - box_size) / 2.0;
+            let box_rect = Rect::from_xywh(bx, by, box_size, box_size);
+
+            let mut fill = Paint::default();
+            fill.set_anti_alias(true);
+            fill.set_style(paint::Style::Fill);
+            fill.set_color(Color::WHITE);
+            canvas.draw_rect(box_rect, &fill);
+
+            let mut stroke = Paint::default();
+            stroke.set_anti_alias(true);
+            stroke.set_style(paint::Style::Stroke);
+            stroke.set_stroke_width(1.0);
+            stroke.set_color(border_color);
+            canvas.draw_rect(box_rect, &stroke);
+
+            if form.value != 0 {
+                let mut check = Paint::default();
+                check.set_anti_alias(true);
+                check.set_style(paint::Style::Stroke);
+                check.set_stroke_width(2.0);
+                check.set_color(fg_color);
+                check.set_stroke_cap(paint::Cap::Round);
+                let cx = bx + box_size * 0.2;
+                let cy = by + box_size * 0.55;
+                let mx = bx + box_size * 0.4;
+                let my = by + box_size * 0.75;
+                let ex = bx + box_size * 0.8;
+                let ey = by + box_size * 0.25;
+                let mut path = skia_safe::Path::new();
+                path.move_to((cx, cy));
+                path.line_to((mx, my));
+                path.line_to((ex, ey));
+                canvas.draw_path(&path, &check);
+            }
+
+            if !form.caption.is_empty() {
+                let mut font = Font::default();
+                font.set_size((h * 0.6).clamp(8.0, 13.0));
+                let mut tp = Paint::default();
+                tp.set_anti_alias(true);
+                tp.set_color(fg_color);
+                let tx = bx + box_size + 4.0;
+                let ty = y + h / 2.0 + font.size() * 0.35;
+                canvas.draw_str(&form.caption, (tx, ty), &font, &tp);
+            }
+        }
+        FormType::RadioButton => {
+            let r = h.min(w).min(14.0) / 2.0;
+            let cx = x + 2.0 + r;
+            let cy = y + h / 2.0;
+
+            let mut fill = Paint::default();
+            fill.set_anti_alias(true);
+            fill.set_style(paint::Style::Fill);
+            fill.set_color(Color::WHITE);
+            canvas.draw_circle((cx, cy), r, &fill);
+
+            let mut stroke = Paint::default();
+            stroke.set_anti_alias(true);
+            stroke.set_style(paint::Style::Stroke);
+            stroke.set_stroke_width(1.0);
+            stroke.set_color(border_color);
+            canvas.draw_circle((cx, cy), r, &stroke);
+
+            if form.value != 0 {
+                let mut dot = Paint::default();
+                dot.set_anti_alias(true);
+                dot.set_style(paint::Style::Fill);
+                dot.set_color(fg_color);
+                canvas.draw_circle((cx, cy), r * 0.5, &dot);
+            }
+
+            if !form.caption.is_empty() {
+                let mut font = Font::default();
+                font.set_size((h * 0.6).clamp(8.0, 13.0));
+                let mut tp = Paint::default();
+                tp.set_anti_alias(true);
+                tp.set_color(fg_color);
+                let tx = cx + r + 4.0;
+                let ty = y + h / 2.0 + font.size() * 0.35;
+                canvas.draw_str(&form.caption, (tx, ty), &font, &tp);
+            }
+        }
+        FormType::ComboBox => {
+            let mut fill = Paint::default();
+            fill.set_anti_alias(true);
+            fill.set_style(paint::Style::Fill);
+            fill.set_color(Color::WHITE);
+            canvas.draw_rect(rect, &fill);
+
+            let mut stroke = Paint::default();
+            stroke.set_anti_alias(true);
+            stroke.set_style(paint::Style::Stroke);
+            stroke.set_stroke_width(1.0);
+            stroke.set_color(border_color);
+            canvas.draw_rect(rect, &stroke);
+
+            // 드롭다운 화살표 영역
+            let arrow_w = h.min(20.0);
+            let ax = x + w - arrow_w;
+            let arrow_rect = Rect::from_xywh(ax, y, arrow_w, h);
+            let mut abg = Paint::default();
+            abg.set_anti_alias(true);
+            abg.set_style(paint::Style::Fill);
+            abg.set_color(bg_color);
+            canvas.draw_rect(arrow_rect, &abg);
+            canvas.draw_line((ax, y), (ax, y + h), &stroke);
+
+            // 화살표 삼각형
+            let mut arrow = Paint::default();
+            arrow.set_anti_alias(true);
+            arrow.set_style(paint::Style::Fill);
+            arrow.set_color(Color::from_rgb(80, 80, 80));
+            let acx = ax + arrow_w / 2.0;
+            let acy = y + h / 2.0;
+            let as_ = (arrow_w * 0.25).min(5.0);
+            let mut path = skia_safe::Path::new();
+            path.move_to((acx - as_, acy - as_ * 0.5));
+            path.line_to((acx + as_, acy - as_ * 0.5));
+            path.line_to((acx, acy + as_ * 0.5));
+            path.close();
+            canvas.draw_path(&path, &arrow);
+
+            let display = if form.text.is_empty() { &form.caption } else { &form.text };
+            if !display.is_empty() {
+                let mut font = Font::default();
+                font.set_size((h * 0.55).clamp(8.0, 13.0));
+                let mut tp = Paint::default();
+                tp.set_anti_alias(true);
+                tp.set_color(fg_color);
+                let tx = x + 4.0;
+                let ty = y + h / 2.0 + font.size() * 0.35;
+                canvas.draw_str(display, (tx, ty), &font, &tp);
+            }
+        }
+        FormType::Edit => {
+            let mut fill = Paint::default();
+            fill.set_anti_alias(true);
+            fill.set_style(paint::Style::Fill);
+            fill.set_color(Color::WHITE);
+            canvas.draw_rect(rect, &fill);
+
+            let mut stroke = Paint::default();
+            stroke.set_anti_alias(true);
+            stroke.set_style(paint::Style::Stroke);
+            stroke.set_stroke_width(1.0);
+            stroke.set_color(border_color);
+            canvas.draw_rect(rect, &stroke);
+
+            let display = if form.text.is_empty() { &form.caption } else { &form.text };
+            if !display.is_empty() {
+                let mut font = Font::default();
+                font.set_size((h * 0.55).clamp(8.0, 13.0));
+                let mut tp = Paint::default();
+                tp.set_anti_alias(true);
+                tp.set_color(fg_color);
+                let tx = x + 4.0;
+                let ty = y + h / 2.0 + font.size() * 0.35;
+                canvas.draw_str(display, (tx, ty), &font, &tp);
+            }
+        }
+    }
+}
+
+fn parse_css_color(s: &str) -> Option<Color> {
+    let s = s.trim().trim_start_matches('#');
+    if s.len() != 6 { return None; }
+    let r = u8::from_str_radix(&s[0..2], 16).ok()?;
+    let g = u8::from_str_radix(&s[2..4], 16).ok()?;
+    let b = u8::from_str_radix(&s[4..6], 16).ok()?;
+    Some(Color::from_rgb(r, g, b))
 }
 
 fn colorref_to_skia(color: ColorRef, alpha_scale: f32) -> Color {
