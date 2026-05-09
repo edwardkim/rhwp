@@ -267,6 +267,23 @@ impl Tokenizer {
             return Token::new(TokenType::Whitespace, "#", start);
         }
 
+        // LaTeX spacing: \, \: \; \! → thin/medium/thick/negative space
+        if ch == '\\' {
+            if let Some(nc) = self.peek(1) {
+                let space_cmd = match nc {
+                    ',' => Some("THINSPACE"),
+                    ':' => Some("MEDSPACE"),
+                    ';' => Some("THICKSPACE"),
+                    '!' => Some("NEGSPACE"),
+                    _ => None,
+                };
+                if let Some(cmd) = space_cmd {
+                    self.pos += 2;
+                    return Token::new(TokenType::Command, cmd, start);
+                }
+            }
+        }
+
         // LaTeX 명령어: \frac, \sqrt, \pm 등
         if ch == '\\' && self.peek(1).map_or(false, |c| c.is_ascii_alphabetic()) {
             return self.read_latex_command();

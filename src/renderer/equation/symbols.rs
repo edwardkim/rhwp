@@ -41,6 +41,11 @@ static SPECIAL_SYMBOLS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock
         ("WP", "℘"), ("IMAG", "ℑ"), ("image", "ℑ"), ("REIMAGE", "ℜ"),
         ("ANGSTROM", "Å"), ("MHO", "℧"), ("OHM", "Ω"),
         ("CDOTS", "⋯"), ("LDOTS", "…"), ("VDOTS", "⋮"), ("DDOTS", "⋱"),
+        ("DOTS", "…"),
+        // LaTeX spacing
+        ("QUAD", "\u{2003}"), ("QQUAD", "\u{2003}\u{2003}"),
+        ("THINSPACE", "\u{2009}"), ("MEDSPACE", "\u{205F}"), ("THICKSPACE", "\u{2004}"),
+        ("NEGSPACE", ""), ("ENSPACE", "\u{2002}"),
         ("TRIANGLE", "△"), ("TRIANGLED", "▽"),
         ("ANGLE", "∠"), ("MSANGLE", "∡"), ("SANGLE", "∢"), ("RTANGLE", "⊾"),
         ("BOT", "⊥"), ("TOP", "⊤"),
@@ -85,6 +90,28 @@ static OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("VDASH", "⊢"), ("HLEFT", "⊣"), ("MODELS", "⊨"),
         ("DAGGER", "†"), ("DDAGGER", "‡"),
         ("BIGCIRC", "○"), ("DIAMOND", "◇"), ("ISO", "⋄"),
+        // LaTeX aliases
+        ("ne", "≠"), ("neq", "≠"), ("le", "≤"), ("leq", "≤"),
+        ("ge", "≥"), ("geq", "≥"), ("ll", "≪"), ("gg", "≫"),
+        ("approx", "≈"), ("sim", "∼"), ("simeq", "≃"),
+        ("cong", "≅"), ("equiv", "≡"), ("propto", "∝"),
+        ("subset", "⊂"), ("supset", "⊃"),
+        ("subseteq", "⊆"), ("supseteq", "⊇"),
+        ("in", "∈"), ("notin", "∉"), ("ni", "∋"),
+        ("forall", "∀"), ("exists", "∃"), ("nexists", "∄"),
+        ("lnot", "¬"), ("neg", "¬"),
+        ("wedge", "∧"), ("land", "∧"), ("vee", "∨"), ("lor", "∨"),
+        ("nabla", "∇"), ("partial", "∂"), ("emptyset", "∅"),
+        ("infty", "∞"), ("aleph", "ℵ"),
+        ("therefore", "∴"), ("because", "∵"),
+        ("cdot", "·"), ("times", "×"), ("div", "÷"),
+        ("pm", "±"), ("mp", "∓"),
+        ("cup", "∪"), ("cap", "∩"),
+        ("vdash", "⊢"), ("models", "⊨"),
+        ("oplus", "⊕"), ("otimes", "⊗"),
+        ("dagger", "†"), ("ddagger", "‡"),
+        ("star", "★"), ("circ", "∘"),
+        ("perp", "⊥"),
     ])
 });
 
@@ -113,6 +140,13 @@ static BIG_OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::
         ("ODOT", "⊙"), ("BIGODOT", "⊙"),
         ("OMINUS", "⊖"), ("BIGOMINUS", "⊖"),
         ("ODIV", "⊘"), ("BIGODIV", "⊘"), ("OSLASH", "⊘"),
+        // LaTeX lowercase aliases for big operators
+        ("sum", "∑"), ("prod", "∏"), ("coprod", "∐"),
+        ("bigcup", "∪"), ("bigcap", "∩"),
+        ("bigwedge", "⋀"), ("bigvee", "⋁"),
+        ("bigoplus", "⊕"), ("bigotimes", "⊗"),
+        ("int", "∫"), ("iint", "∬"), ("iiint", "∭"),
+        ("oint", "∮"),
     ])
 });
 
@@ -132,6 +166,14 @@ static ARROWS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| 
         ("swarrow", "↙"), ("searrow", "↘"),
         // 특수
         ("mapsto", "↦"), ("hookleft", "↩"), ("hookright", "↪"),
+        // 특수 (continued)
+        ("longrightarrow", "⟶"), ("longleftarrow", "⟵"),
+        ("Longrightarrow", "⟹"), ("Longleftarrow", "⟸"),
+        ("longmapsto", "⟼"),
+        // LaTeX aliases
+        ("leftarrow", "←"), ("rightarrow", "→"), ("to", "→"), ("gets", "←"),
+        ("Leftarrow", "⇐"), ("Rightarrow", "⇒"), ("implies", "⇒"), ("iff", "⇔"),
+        ("leftrightarrow", "↔"), ("Leftrightarrow", "⇔"),
         // 막대
         ("vert", "|"), ("VERT", "‖"),
     ])
@@ -158,6 +200,10 @@ static FUNCTIONS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("arg", "arg"), ("deg", "deg"), ("gcd", "gcd"), ("lcm", "lcm"),
         ("max", "max"), ("min", "min"),
         ("mod", "mod"),
+        // LaTeX additional functions
+        ("sup", "sup"), ("inf", "inf"), ("lim", "lim"),
+        ("limsup", "lim sup"), ("liminf", "lim inf"),
+        ("Pr", "Pr"),
     ])
 });
 
@@ -177,6 +223,8 @@ pub static DECORATIONS: LazyLock<HashMap<&'static str, DecoKind>> = LazyLock::ne
         ("not", DecoKind::StrikeThrough),
         ("widehat", DecoKind::Hat), ("widetilde", DecoKind::Tilde),
         ("overrightarrow", DecoKind::Vec),
+        ("overleftarrow", DecoKind::Vec),
+        ("overbrace", DecoKind::Arch), ("underbrace", DecoKind::Under),
     ])
 });
 
@@ -206,6 +254,8 @@ pub fn is_structure_command(cmd: &str) -> bool {
     matches!(cmd,
         "OVER" | "ATOP" | "SQRT" | "ROOT" | "FRAC" | "DFRAC" | "TFRAC" | "TEXT" | "BEGIN" | "END" |
         "LEFT" | "RIGHT" | "BIGG" |
+        "OPERATORNAME" | "PHANTOM" | "VPHANTOM" | "HPHANTOM" |
+        "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE" |
         "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" |
         "CASES" | "PILE" | "LPILE" | "RPILE" |
         "CHOOSE" | "BINOM" |

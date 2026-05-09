@@ -236,6 +236,27 @@ impl EqParser {
             };
         }
 
+        // LaTeX \operatorname{...} — 로만체 연산자명
+        if cu == "OPERATORNAME" {
+            let body = self.parse_single_or_group();
+            return EqNode::FontStyle {
+                style: FontStyleKind::Roman,
+                body: Box::new(body),
+            };
+        }
+
+        // LaTeX \phantom{...} — 보이지 않는 공간 (레이아웃 정렬용)
+        if matches!(cu, "PHANTOM" | "VPHANTOM" | "HPHANTOM") {
+            self.parse_single_or_group();
+            return EqNode::Text(" ".to_string());
+        }
+
+        // LaTeX spacing: \quad, \qquad, \,, \:, \;, \!
+        if matches!(cu, "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE") {
+            let space = lookup_symbol(cu).unwrap_or(" ");
+            return EqNode::Text(space.to_string());
+        }
+
         // LaTeX \begin{env}...\end{env}
         if cu == "BEGIN" {
             return self.parse_latex_environment();
@@ -1903,5 +1924,81 @@ mod latex_compat_tests {
         let tokens = tokenize(r"a \\ b");
         let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
         assert!(types.contains(&TokenType::Whitespace), "\\\\는 Whitespace(#)로 토큰화돼야 함: {:?}", tokens);
+    }
+
+    #[test]
+    fn test_latex_operatorname() {
+        let ast = parse(r"\operatorname{argmax}");
+        match &ast {
+            EqNode::FontStyle { style, body } => {
+                assert_eq!(*style, FontStyleKind::Roman);
+                assert!(format!("{:?}", body).contains("argmax"));
+            }
+            _ => panic!(r"Expected FontStyle(Roman) for \operatorname, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_spacing_quad() {
+        let ast = parse(r"a \quad b");
+        let s = format!("{:?}", ast);
+        assert!(s.contains("Text") || s.contains("Symbol"), r"\quad should produce a text node: {}", s);
+    }
+
+    #[test]
+    fn test_latex_thin_space() {
+        use super::super::tokenizer::{tokenize, TokenType};
+        let tokens = tokenize(r"a \, b");
+        let has_cmd = tokens.iter().any(|t| t.ty == TokenType::Command && t.value == "THINSPACE");
+        assert!(has_cmd, r"\, should tokenize as THINSPACE: {:?}", tokens);
+    }
+
+    #[test]
+    fn test_latex_rightarrow() {
+        let ast = parse(r"\rightarrow");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "→"),
+            _ => panic!(r"Expected → for \rightarrow, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_implies() {
+        let ast = parse(r"\implies");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "⇒"),
+            _ => panic!(r"Expected ⇒ for \implies, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_infty() {
+        let ast = parse(r"\infty");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "∞"),
+            _ => panic!(r"Expected ∞ for \infty, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_nabla() {
+        let ast = parse(r"\nabla");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "∇"),
+            _ => panic!(r"Expected ∇ for \nabla, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_leq_geq() {
+        let ast = parse(r"a \leq b \geq c");
+        let s = format!("{:?}", ast);
+        assert!(s.contains("≤") && s.contains("≥"), r"\leq \geq should produce ≤ ≥: {}", s);
+    }
+
+    #[test]
+    fn test_latex_phantom() {
+        let ast = parse(r"\phantom{x}");
+        assert!(!matches!(ast, EqNode::Empty), r"\phantom should produce a space node, not Empty: {:?}", ast);
     }
 }
