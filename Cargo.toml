@@ -42,12 +42,13 @@ console_error_panic_hook = { version = "0.1", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
-native-skia = ["dep:skia-safe"]
+native-skia = ["dep:resvg", "dep:skia-safe"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
 usvg = "0.45"
+resvg = { version = "0.45", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 ttf-parser = "0.25"

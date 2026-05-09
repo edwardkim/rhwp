@@ -1,3 +1,4 @@
+use resvg::{tiny_skia, usvg};
 use skia_safe::{
     canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, Data, FilterMode,
     IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
@@ -5,6 +6,9 @@ use skia_safe::{
 
 use crate::model::image::ImageEffect;
 use crate::model::style::ImageFillMode;
+
+const MAX_SVG_FRAGMENT_BYTES: usize = 4 * 1024 * 1024;
+const MAX_SVG_RASTER_PIXELS: u64 = 67_108_864;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ImageSampling {
@@ -23,6 +27,34 @@ impl ImageSampling {
     fn options(self) -> SamplingOptions {
         SamplingOptions::new(self.filter_mode, self.mipmap_mode)
     }
+}
+
+pub fn draw_svg_fragment(
+    canvas: &skia_safe::Canvas,
+    svg_fragment: &str,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    sampling: ImageSampling,
+) -> bool {
+    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, width, height) else {
+        return false;
+    };
+    draw_image_bytes(
+        canvas,
+        &png,
+        x,
+        y,
+        width,
+        height,
+        Some(ImageFillMode::FitToSize),
+        None,
+        None,
+        ImageEffect::RealPic,
+        sampling,
+    );
+    true
 }
 
 pub fn draw_image_bytes(
@@ -285,4 +317,54 @@ pub fn draw_image_bytes(
     }
 
     canvas.restore();
+}
+
+fn rasterize_svg_fragment_to_png(svg_fragment: &str, width: f32, height: f32) -> Option<Vec<u8>> {
+    if svg_fragment.is_empty()
+        || svg_fragment.len() > MAX_SVG_FRAGMENT_BYTES
+        || !width.is_finite()
+        || !height.is_finite()
+        || width <= 0.0
+        || height <= 0.0
+    {
+        return None;
+    }
+    let raster_width = width.ceil() as u64;
+    let raster_height = height.ceil() as u64;
+    if raster_width
+        .checked_mul(raster_height)
+        .is_none_or(|pixels| pixels > MAX_SVG_RASTER_PIXELS)
+    {
+        return None;
+    }
+
+    let svg = format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.2}\" height=\"{height:.2}\" viewBox=\"0 0 {width:.2} {height:.2}\">{svg_fragment}</svg>"
+    );
+    let options = svg_parse_options();
+    let tree = usvg::Tree::from_str(&svg, &options).ok()?;
+    let size = tree.size().to_int_size();
+    let pixels = u64::from(size.width()).checked_mul(u64::from(size.height()))?;
+    if pixels == 0 || pixels > MAX_SVG_RASTER_PIXELS {
+        return None;
+    }
+
+    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())?;
+    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
+    pixmap.encode_png().ok()
+}
+
+fn svg_parse_options() -> usvg::Options<'static> {
+    let mut options = usvg::Options::default();
+    options.resources_dir = None;
+    options.image_href_resolver = usvg::ImageHrefResolver {
+        resolve_data: usvg::ImageHrefResolver::default_data_resolver(),
+        resolve_string: Box::new(|_, _| None),
+    };
+    let fontdb = options.fontdb_mut();
+    fontdb.load_system_fonts();
+    fontdb.set_sans_serif_family("Noto Sans CJK KR");
+    fontdb.set_serif_family("Noto Serif CJK KR");
+    fontdb.set_monospace_family("D2Coding");
+    options
 }

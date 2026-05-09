@@ -1277,6 +1277,7 @@ mod tests {
             rect_y
         );
     }
+
     // ─── Task #634: 한컴 호환 — 쪽번호 표시/미표시 ───
     //
     // 새 한컴 PDF (samples/aift.pdf, 1-up portrait, 2026-05-06 갱신) 측정 결과:
@@ -1454,7 +1455,14 @@ mod tests {
         );
     }
 
-    /// Task #634: 2022년 국립국어원 페이지 3 (NewNumber 발화 후) 쪽번호 표시 (회귀 방지).
+    /// Task #634/#705: 2022년 국립국어원 페이지 3 — 셀 안 PageHide 영역의 hide_page_num 적용.
+    ///
+    /// PR #711 (Task #705) 영역 의 셀 안 PageHide 본질 정정 + 작업지시자 시각 판정 권위 영역으로
+    /// page 3 영역의 쪽번호 미표시 영역이 한컴 정답지 정합으로 확정 (2026-05-09).
+    ///
+    /// 본 가드 영역 의 의도 변경:
+    /// - PR #634 시점 (rhwp 의 한컴 부정합 행위 보존): count == 3
+    /// - PR #711 시점 (한컴 권위 정합): count == 0 — 셀[0]/p[5] 영역의 hide_page_num 적용
     #[test]
     fn test_634_gukrip_page3_shows_page_number() {
         let Some(core) = load_document("samples/2022년 국립국어원 업무계획.hwp") else {
@@ -1463,8 +1471,9 @@ mod tests {
         let svg = core.render_page_svg_native(2).unwrap_or_default();
         let count = count_text_at_y(&svg, 1069.7066666666665);
         assert_eq!(
-            count, 3,
-            "국립국어원 페이지 3 은 쪽번호 표시되어야 함."
+            count, 0,
+            "국립국어원 페이지 3 은 셀 안 PageHide 영역의 hide_page_num 영역 적용 영역으로 \
+             쪽번호 미표시 (한컴 권위 정합, PR #711 시각 판정 통과)."
         );
     }
 
@@ -1484,4 +1493,116 @@ mod tests {
 
     // 페이지 2, 3 (사업계획서 표지/요약문) 미표시 메커니즘은 별도 issue.
     // 한컴: PageHide 없는데도 미표시. rhwp: 표시 (현재). 메커니즘 미확인 — 후속 분석 필요.
+
+    // ─── Task #705: 셀 안 PageHide 컨트롤 페이지네이션 매핑 ───
+    //
+    // 메인테이너 권위 측정 (PR #638 코멘트):
+    //   aift.hwp s0/p[1]/Table[0]/셀[167]/p[3]/ctrl[0]
+    //   PageHide(header=true footer=true master=true border=true fill=true page_num=true)
+    //
+    // Stage 0 본 환경 측정 (examples/inspect_705.rs):
+    //   - aift.hwp 셀 안 PageHide 2건 (s0/셀[167] full6, s1/셀[31] page_num)
+    //   - 본문 PageHide 2건 (s2/p[34], s2/p[54])
+    //
+    // 결함 #1 (pagination/engine.rs:519-544): 본문 paragraph 만 순회 →
+    //   셀 안 PageHide 무시 → page.page_hide 가 None 으로 남음.
+
+    #[test]
+    fn test_705_aift_page2_cell_pagehide_collected() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        // page 2 (global_idx=1, section=0, page_num=2)
+        // 외부 paragraph s0/p[1] (Table 35x27, tac=false) 의 셀[167]/p[3] PageHide
+        let page = core.pagination.first()
+            .and_then(|pr| pr.pages.get(1))
+            .expect("aift.hwp page 2 존재");
+        assert!(
+            page.page_hide.is_some(),
+            "aift.hwp page 2: 셀[167]/p[3] PageHide 가 page.page_hide 로 매핑되어야 함 \
+             (현재 None: 결함 #1 — pagination/engine.rs 가 셀 안 paragraph 미순회)"
+        );
+        assert!(
+            page.page_hide.as_ref().unwrap().hide_page_num,
+            "aift.hwp page 2: hide_page_num=true 여야 함"
+        );
+    }
+
+    #[test]
+    fn test_705_aift_page2_cell_pagehide_six_fields() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        let page = core.pagination.first()
+            .and_then(|pr| pr.pages.get(1))
+            .expect("aift.hwp page 2 존재");
+        let ph = page.page_hide.as_ref()
+            .expect("aift.hwp page 2: page_hide 채워져야 함 (결함 #1)");
+        // 메인테이너 권위 측정: 6 필드 모두 true
+        assert!(ph.hide_header,      "hide_header=true (감추기 다이얼로그 6항목)");
+        assert!(ph.hide_footer,      "hide_footer=true");
+        assert!(ph.hide_master_page, "hide_master_page=true");
+        assert!(ph.hide_border,      "hide_border=true");
+        assert!(ph.hide_fill,        "hide_fill=true");
+        assert!(ph.hide_page_num,    "hide_page_num=true");
+    }
+
+    #[test]
+    fn test_705_aift_page3_cell_pagehide_collected() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        // page 3 (global_idx=2, section=1, page_num=3)
+        // 외부 paragraph s1/p[0] 의 셀[31]/p[0] PageHide (page_num 만 true)
+        let page = core.pagination.get(1)
+            .and_then(|pr| pr.pages.first())
+            .expect("aift.hwp page 3 존재");
+        let ph = page.page_hide.as_ref()
+            .expect("aift.hwp page 3: 셀[31]/p[0] PageHide 가 page.page_hide 로 매핑되어야 함 \
+                     (현재 None: 결함 #1)");
+        assert!(ph.hide_page_num, "aift.hwp page 3: hide_page_num=true (셀[31]/p[0] '최종 목표')");
+    }
+
+    #[test]
+    fn test_705_aift_cell_pagehides_total_count() {
+        let Some(core) = load_document("samples/aift.hwp") else { return; };
+        // 본문 PageHide 2건 (s2/p[34], s2/p[54]) + 셀 안 PageHide 2건 (s0/셀[167], s1/셀[31])
+        // = 최소 4 페이지에 page_hide 매핑되어야 함
+        let count = core.pagination.iter()
+            .flat_map(|pr| pr.pages.iter())
+            .filter(|p| p.page_hide.is_some())
+            .count();
+        assert!(
+            count >= 4,
+            "aift.hwp page_hide 매핑 페이지 4건 이상 (실제: {}). \
+             셀 안 PageHide (s0/셀[167] + s1/셀[31]) 가 누락된 가능성: 결함 #1",
+            count
+        );
+    }
+
+    #[test]
+    fn test_705_kor2022_cell_pagehide_collected() {
+        // Stage 0 측정: 본문 PageHide 1건 + 셀 안 PageHide 1건 (셀[0]/p[5] -----P "Ⅱ. 2022년 정책방향")
+        let Some(core) = load_document("samples/2022년 국립국어원 업무계획.hwp") else { return; };
+        let count = core.pagination.iter()
+            .flat_map(|pr| pr.pages.iter())
+            .filter(|p| p.page_hide.is_some())
+            .count();
+        assert!(
+            count >= 2,
+            "국립국어원 업무계획.hwp page_hide 매핑 페이지 2건 이상 (실제: {}). \
+             셀 안 PageHide 누락 가능성: 결함 #1",
+            count
+        );
+    }
+
+    #[test]
+    fn test_705_ktx_cell_pagehide_collected() {
+        // Stage 0 측정: 본문 PageHide 1건 + 셀 안 PageHide 1건 (셀[10]/p[0] -----P "Ⅰ. 사업 개요")
+        let Some(core) = load_document("samples/KTX.hwp") else { return; };
+        let count = core.pagination.iter()
+            .flat_map(|pr| pr.pages.iter())
+            .filter(|p| p.page_hide.is_some())
+            .count();
+        assert!(
+            count >= 2,
+            "KTX.hwp page_hide 매핑 페이지 2건 이상 (실제: {}). \
+             셀 안 PageHide 누락 가능성: 결함 #1",
+            count
+        );
+    }
 }
