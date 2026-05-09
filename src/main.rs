@@ -66,9 +66,13 @@ fn print_help() {
     println!("      --scale <배율>          렌더링 배율 (기본: 1.0)");
     println!("      --max-dimension <픽셀>  한 변 최대 픽셀 (longest edge). VLM 입력 한도용.");
     println!("                              명시 --scale 이 없으면 자동 scale 계산 (페이지 → 한도 안)");
-    println!("      --vlm-target <프리셋>   VLM 입력 프리셋 (현재: claude)");
-    println!("                              claude: 1568 px / 1.15 MP (Claude Vision 정합)");
-    println!("                              다른 VLM (gpt4v/gemini/qwen-vl/llava) 은 이슈 #613 후속");
+    println!("      --vlm-target <프리셋>   VLM 입력 프리셋:");
+    println!("                              claude:     1568 px / 1.15 MP (Claude Vision)");
+    println!("                              gpt4v-low:  512 px (GPT-4V low detail)");
+    println!("                              gpt4v-high: 2000 px / 1.54 MP (GPT-4V high detail)");
+    println!("                              gemini:     3072 px (Google Gemini)");
+    println!("                              qwen-vl:    2240 px (Qwen-VL)");
+    println!("                              llava:      672 px (LLaVA / OSS CLIP)");
     println!();
     println!("  export-text <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 TXT로 내보내기");
@@ -477,8 +481,10 @@ fn export_png(args: &[String]) {
                     match VlmTarget::from_str(&args[i + 1]) {
                         Some(t) => vlm_target = Some(t),
                         None => {
-                            eprintln!("오류: --vlm-target 값이 올바르지 않습니다 (지원: claude).");
-                            eprintln!("       다른 VLM 프리셋 (gpt4v / gemini / qwen-vl / llava) 은 이슈 #613 후속 task.");
+                            eprintln!(
+                                "오류: --vlm-target 값이 올바르지 않습니다 (지원: {}).",
+                                VlmTarget::all_names()
+                            );
                             return;
                         }
                     }

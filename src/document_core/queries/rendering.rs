@@ -260,13 +260,21 @@ pub struct PngExportOptions {
 }
 
 /// VLM (Vision-Language Model) 입력 사양 프리셋.
-///
-/// 본 사이클은 Claude Vision 만 지원. 다른 provider 는 이슈 #613 후속 task.
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VlmTarget {
     /// Claude Vision (Anthropic): longest edge ≤1568 px, ≤1.15 MP.
     Claude,
+    /// GPT-4V low detail (OpenAI): 512×512 고정.
+    Gpt4vLow,
+    /// GPT-4V high detail (OpenAI): 768×2000 tile 기반.
+    Gpt4vHigh,
+    /// Gemini (Google): longest edge ≤3072 px.
+    Gemini,
+    /// Qwen-VL (Alibaba): longest edge ≤2240 px, 28×28 patch 기반.
+    QwenVl,
+    /// LLaVA / 기타 OSS (CLIP backbone): longest edge ≤672 px.
+    Llava,
 }
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -275,15 +283,29 @@ impl VlmTarget {
     pub fn constraints(&self) -> (i32, u64) {
         match self {
             VlmTarget::Claude => (1568, 1_150_000),
+            VlmTarget::Gpt4vLow => (512, 262_144),
+            VlmTarget::Gpt4vHigh => (2000, 1_536_000),
+            VlmTarget::Gemini => (3072, 9_437_184),
+            VlmTarget::QwenVl => (2240, 5_017_600),
+            VlmTarget::Llava => (672, 451_584),
         }
     }
 
     /// CLI 옵션 문자열 → VlmTarget 변환.
     pub fn from_str(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
+        match s.to_lowercase().replace('-', "_").as_str() {
             "claude" => Some(VlmTarget::Claude),
+            "gpt4v_low" | "gpt4v-low" => Some(VlmTarget::Gpt4vLow),
+            "gpt4v_high" | "gpt4v-high" | "gpt4v" => Some(VlmTarget::Gpt4vHigh),
+            "gemini" => Some(VlmTarget::Gemini),
+            "qwen_vl" | "qwen-vl" | "qwen" => Some(VlmTarget::QwenVl),
+            "llava" => Some(VlmTarget::Llava),
             _ => None,
         }
+    }
+
+    pub fn all_names() -> &'static str {
+        "claude, gpt4v-low, gpt4v-high, gemini, qwen-vl, llava"
     }
 }
 
@@ -2329,5 +2351,40 @@ mod tests {
         assert_eq!(core.get_bin_data(0), Some(&[0x01, 0x02, 0x03][..]));
         assert_eq!(core.get_bin_data(1), Some(&[0xAA, 0xBB][..]));
         assert_eq!(core.get_bin_data(2), None);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn vlm_target_from_str_all_variants() {
+        use super::VlmTarget;
+        assert_eq!(VlmTarget::from_str("claude"), Some(VlmTarget::Claude));
+        assert_eq!(VlmTarget::from_str("gpt4v-low"), Some(VlmTarget::Gpt4vLow));
+        assert_eq!(VlmTarget::from_str("gpt4v_low"), Some(VlmTarget::Gpt4vLow));
+        assert_eq!(VlmTarget::from_str("gpt4v-high"), Some(VlmTarget::Gpt4vHigh));
+        assert_eq!(VlmTarget::from_str("gpt4v"), Some(VlmTarget::Gpt4vHigh));
+        assert_eq!(VlmTarget::from_str("gemini"), Some(VlmTarget::Gemini));
+        assert_eq!(VlmTarget::from_str("qwen-vl"), Some(VlmTarget::QwenVl));
+        assert_eq!(VlmTarget::from_str("qwen_vl"), Some(VlmTarget::QwenVl));
+        assert_eq!(VlmTarget::from_str("qwen"), Some(VlmTarget::QwenVl));
+        assert_eq!(VlmTarget::from_str("llava"), Some(VlmTarget::Llava));
+        assert_eq!(VlmTarget::from_str("CLAUDE"), Some(VlmTarget::Claude));
+        assert_eq!(VlmTarget::from_str("unknown"), None);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn vlm_target_constraints_are_sane() {
+        use super::VlmTarget;
+        let targets = [
+            VlmTarget::Claude, VlmTarget::Gpt4vLow, VlmTarget::Gpt4vHigh,
+            VlmTarget::Gemini, VlmTarget::QwenVl, VlmTarget::Llava,
+        ];
+        for t in &targets {
+            let (edge, pixels) = t.constraints();
+            assert!(edge > 0, "{:?} edge should be positive", t);
+            assert!(pixels > 0, "{:?} pixels should be positive", t);
+            assert!((edge as u64) * (edge as u64) >= pixels,
+                "{:?} max_pixels should be reachable within edge", t);
+        }
     }
 }
