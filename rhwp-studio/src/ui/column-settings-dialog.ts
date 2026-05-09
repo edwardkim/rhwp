@@ -2,7 +2,7 @@ import { ModalDialog } from './dialog';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 
-const HWPUNIT_PER_MM = 283.46; // 1mm ≈ 283.46 HWPUNIT (7200/25.4)
+const HWPUNIT_PER_MM = 7200 / 25.4;
 
 function hwpunitToMm(hu: number): number {
   return Math.round(hu / HWPUNIT_PER_MM * 10) / 10;
@@ -104,17 +104,16 @@ export class ColumnSettingsDialog extends ModalDialog {
     }
   }
 
-  protected onOk(): void {
-    const count = parseInt(this.countInput.value, 10) || 1;
-    const type = parseInt(this.typeSelect.value, 10) || 0;
+  protected onConfirm(): void {
+    const count = Math.max(1, Math.min(8, parseInt(this.countInput.value, 10) || 1));
+    const type = Math.max(0, Math.min(2, parseInt(this.typeSelect.value, 10) || 0));
     const sameWidth = this.sameWidthCheck.checked ? 1 : 0;
-    const spacingHu = mmToHwpunit(parseFloat(this.spacingInput.value) || 0);
+    const spacingHu = Math.max(0, Math.min(32767, mmToHwpunit(parseFloat(this.spacingInput.value) || 0)));
     try {
       this.wasm.setColumnDef(this.sectionIdx, count, type, sameWidth, spacingHu);
       this.eventBus.emit('document-changed');
     } catch (err) {
       console.warn('[ColumnSettingsDialog] 다단 설정 실패:', err);
     }
-    this.close();
   }
 }
