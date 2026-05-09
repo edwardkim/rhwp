@@ -276,7 +276,9 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
-      const dlg = new NumberingRestartDialog(1, (startNum) => {
+      const cursor = (ih as any).cursor;
+      const currentPage = (cursor?.rect?.pageIndex ?? 0) + 1;
+      const dlg = new NumberingRestartDialog(currentPage, (startNum) => {
         try {
           services.wasm.setNumberingRestart(pos.sectionIndex, pos.paragraphIndex, 2, startNum);
           services.eventBus.emit('document-changed');

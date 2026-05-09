@@ -3,14 +3,13 @@ import { ModalDialog } from './dialog';
 export class NumberingRestartDialog extends ModalDialog {
   private input!: HTMLInputElement;
   private callback: (startNum: number) => void;
+  private defaultValue: number;
 
-  constructor(currentPage: number, callback: (startNum: number) => void) {
+  constructor(defaultStartNum: number, callback: (startNum: number) => void) {
     super('새 번호로 시작', 300);
     this.callback = callback;
-    this.defaultValue = currentPage;
+    this.defaultValue = defaultStartNum;
   }
-
-  private defaultValue: number;
 
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
@@ -35,10 +34,14 @@ export class NumberingRestartDialog extends ModalDialog {
     this.input.select();
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const num = parseInt(this.input.value, 10);
-    if (num >= 1) {
-      this.callback(num);
+    if (isNaN(num) || num < 1) {
+      this.input.style.outline = '2px solid red';
+      this.input.focus();
+      return false;
     }
+    this.callback(num);
+    return true;
   }
 }
