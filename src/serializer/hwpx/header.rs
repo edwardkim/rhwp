@@ -308,7 +308,12 @@ fn border_width_mm(w: u8) -> &'static str {
 }
 
 fn color_hex(c: ColorRef) -> String {
-    // ColorRef = u32. HWP는 0xAABBGGRR 저장. HWPX는 "#RRGGBB" 또는 "#AARRGGBB".
+    // ColorRef = u32. HWP 내부 저장: 상위 바이트가 비투명 플래그(0이면 유효 색상).
+    // 0xFFFFFFFF = 투명/없음 센티넬 → "none"
+    if c == 0xFFFFFFFF {
+        return "none".to_string();
+    }
+    // HWPX는 "#RRGGBB" 또는 "#AARRGGBB".
     let a = ((c >> 24) & 0xFF) as u8;
     let r = (c & 0xFF) as u8;
     let g = ((c >> 8) & 0xFF) as u8;

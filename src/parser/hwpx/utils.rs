@@ -51,7 +51,7 @@ pub fn parse_i32(attr: &quick_xml::events::attributes::Attribute) -> i32 {
     attr_str(attr).parse().unwrap_or(0)
 }
 
-/// "#RRGGBB" 또는 "#AARRGGBB" 형식의 색상을 HWP ColorRef(0x00BBGGRR)로 변환
+/// "#RRGGBB" → 0x00BBGGRR, "#AARRGGBB" → 0xAABBGGRR (alpha 보존)
 pub fn parse_color(attr: &quick_xml::events::attributes::Attribute) -> u32 {
     let s = attr_str(attr);
     parse_color_str(&s)
