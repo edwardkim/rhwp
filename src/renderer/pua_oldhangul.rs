@@ -25,7 +25,7 @@
 //! 5,660 매핑 (U+E0BC ~ U+F8F7), 출력 자모는 Hangul Jamo (U+1100-11FF)
 //! + Extended-A (U+A960-A97F) + Extended-B (U+D7B0-D7FF).
 
-/// 매핑 표 크기: 5660 entries.
+/// 매핑 표 크기: 5659 entries.
 ///
 /// (PUA 코드포인트, 자모 시퀀스) 정렬된 정적 배열. 이진 검색으로 룩업.
 static PUA_OLDHANGUL_MAP: &[(u32, &[char])] = &[
@@ -5019,7 +5019,7 @@ static PUA_OLDHANGUL_MAP: &[(u32, &[char])] = &[
     (0xF537, &['\u{1112}', '\u{119E}']),
     (0xF538, &['\u{1112}', '\u{119E}', '\u{11A8}']),
     (0xF539, &['\u{1112}', '\u{119E}', '\u{11C3}']),
-    (0xF53A, &['\u{1112}', '\u{119E}', '\u{11AB}']),
+    // 0xF53A 제거: hwpspec 매핑 표 "Basic-out (매핑 표 외)" — 한컴 정답지와 정합 (#615)
     (0xF53B, &['\u{1112}', '\u{119E}', '\u{11AE}']),
     (0xF53C, &['\u{1112}', '\u{119E}', '\u{11AF}']),
     (0xF53D, &['\u{1112}', '\u{119E}', '\u{11B0}']),
@@ -5713,7 +5713,7 @@ mod tests {
 
     #[test]
     fn test_map_size() {
-        assert_eq!(PUA_OLDHANGUL_MAP.len(), 5660);
+        assert_eq!(PUA_OLDHANGUL_MAP.len(), 5659);
     }
 
     #[test]
@@ -5765,6 +5765,24 @@ mod tests {
                 assert!(
                     !is_pua_old_hangul(ch),
                     "Task #509 bullet U+{:04X} 가 PUA 옛한글 매핑 표에 충돌",
+                    cp
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_hwpspec_unmapped_codepoints_not_in_table() {
+        // hwpspec "매핑 표 외" (Basic-out) 코드포인트는 pua_oldhangul 매핑에 없어야 함.
+        // 한컴 정답지가 매핑 미지원인 영역을 임의 변환하면 시각 정합 불일치 발생 (#615).
+        let unmapped_basic_out: &[u32] = &[
+            0xF53A, // Basic-out, hwpspec, (매핑 표 외)
+        ];
+        for &cp in unmapped_basic_out {
+            if let Some(ch) = char::from_u32(cp) {
+                assert!(
+                    map_pua_old_hangul(ch).is_none(),
+                    "hwpspec '매핑 표 외' U+{:04X} 가 pua_oldhangul 매핑 표에 존재 — 제거 필요",
                     cp
                 );
             }
