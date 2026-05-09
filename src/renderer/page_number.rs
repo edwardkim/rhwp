@@ -237,6 +237,31 @@ mod tests {
     }
 
     #[test]
+    fn should_hide_before_first_new_number() {
+        let nns = vec![(5usize, 1u16)];
+        let mut a = PageNumberAssigner::new(&nns, 1);
+        assert!(a.should_hide_page_number(), "NewNumber 존재 + 미발화 → 숨김");
+
+        let p1 = mk_page(vec![PageItem::FullParagraph { para_index: 0 }]);
+        a.assign(&p1);
+        assert!(a.should_hide_page_number(), "아직 NewNumber 미트리거 → 숨김");
+
+        let p2 = mk_page(vec![PageItem::FullParagraph { para_index: 5 }]);
+        a.assign(&p2);
+        assert!(!a.should_hide_page_number(), "NewNumber 발화 후 → 표시");
+
+        let p3 = mk_page(vec![PageItem::FullParagraph { para_index: 6 }]);
+        a.assign(&p3);
+        assert!(!a.should_hide_page_number(), "이후에도 계속 표시");
+    }
+
+    #[test]
+    fn should_not_hide_when_no_new_numbers() {
+        let a = PageNumberAssigner::new(&[], 1);
+        assert!(!a.should_hide_page_number(), "NewNumber 없으면 항상 표시");
+    }
+
+    #[test]
     fn multiple_new_numbers_each_consumed_once() {
         // 별첨 시작 시점에 NewNumber=1 이 또 한번 등장하는 케이스
         let nns = vec![(5usize, 1u16), (20usize, 1u16)];
