@@ -503,6 +503,48 @@ pub(crate) fn parse_paragraph_list(
                         controls.push(crate::model::control::Control::Field(field));
                         ctrl_data_records.push(None);
                     }
+                    1 => {
+                        // [Task #741 Stage 8] HWP3 ch=1 = TOC entry inline page number reference.
+                        // Format: ch=1 marker (2 bytes) + 0x0009 marker (2 bytes) + digit1 ASCII (2 bytes) + digit2 ASCII or 0x000D (2 bytes).
+                        // 한컴 viewer 가 차례 (TOC) entry 의 page 번호를 inline 으로 저장하는 영역.
+                        // header_val1 second u16 = digit1 ASCII, ch2 = digit2 ASCII OR 0x000D (1-digit terminator).
+                        let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
+                            Ok(v) => v,
+                            Err(_) => break,
+                        };
+                        let ch2 = match body_cursor.read_u16::<LittleEndian>() {
+                            Ok(v) => v,
+                            Err(_) => break,
+                        };
+                        // hchar slot count: 1 (initial read) + 3 (8 byte total per spec).
+                        for k in 0..3usize { if i + k < hwp3_char_to_utf16_pos.len() { hwp3_char_to_utf16_pos[i + k] = utf16_len; } }
+                        i += 3;
+
+                        // Decode page number digits.
+                        let digit1_u16 = ((header_val1 >> 16) & 0xFFFF) as u16;
+                        let mut page_str = String::new();
+                        if (0x0030..=0x0039).contains(&digit1_u16) {
+                            page_str.push(char::from_u32(digit1_u16 as u32).unwrap_or('?'));
+                        }
+                        if (0x0030..=0x0039).contains(&ch2) {
+                            page_str.push(char::from_u32(ch2 as u32).unwrap_or('?'));
+                        }
+
+                        if !page_str.is_empty() {
+                            for c in page_str.chars() {
+                                char_offsets.push(utf16_len);
+                                utf16_len += c.len_utf16() as u32;
+                                text_string.push(c);
+                            }
+                        } else {
+                            // unrecognized — fall back to placeholder
+                            char_offsets.push(utf16_len);
+                            utf16_len += 1;
+                            text_string.push('\u{FFFC}');
+                            controls.push(crate::model::control::Control::Unknown(crate::model::control::UnknownControl { ctrl_id: ch as u32 }));
+                            ctrl_data_records.push(None);
+                        }
+                    }
                     _ => {
                         let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
                             Ok(v) => v,
