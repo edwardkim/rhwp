@@ -755,7 +755,7 @@ impl SkiaLayerRenderer {
                             canvas.restore();
                         }
                         PaintOp::FormObject { bbox, form } => {
-                            draw_form_control(canvas, *bbox, form);
+                            self.draw_form_control(canvas, *bbox, form);
                         }
                         PaintOp::Placeholder { bbox, placeholder } => {
                             draw_placeholder(*bbox, placeholder.label.as_str());
@@ -778,26 +778,47 @@ impl LayerRasterRenderer for SkiaLayerRenderer {
     }
 }
 
-fn draw_form_control(
-    canvas: &Canvas,
-    bbox: crate::renderer::render_tree::BoundingBox,
-    form: &crate::renderer::render_tree::FormObjectNode,
-) {
-    use crate::model::control::FormType;
-
-    if bbox.width <= 0.0 || bbox.height <= 0.0 {
-        return;
+impl SkiaLayerRenderer {
+    fn make_form_font(&self, size: f32) -> Font {
+        let style = FontStyle::default();
+        let cjk_families = ["Malgun Gothic", "맑은 고딕", "NanumGothic", "나눔고딕", "AppleGothic"];
+        for family in &cjk_families {
+            if let Some(tf) = self.custom_typefaces.get(*family).cloned() {
+                return Font::new(tf, size);
+            }
+            if let Some(tf) = self.font_mgr.match_family_style(family, style) {
+                return Font::new(tf, size);
+            }
+        }
+        if let Some(tf) = self.font_mgr.legacy_make_typeface(None::<&str>, style) {
+            return Font::new(tf, size);
+        }
+        let mut f = Font::default();
+        f.set_size(size);
+        f
     }
 
-    let x = bbox.x as f32;
-    let y = bbox.y as f32;
-    let w = bbox.width as f32;
-    let h = bbox.height as f32;
-    let rect = Rect::from_xywh(x, y, w, h);
+    fn draw_form_control(
+        &self,
+        canvas: &Canvas,
+        bbox: crate::renderer::render_tree::BoundingBox,
+        form: &crate::renderer::render_tree::FormObjectNode,
+    ) {
+        use crate::model::control::FormType;
 
-    let bg_color = parse_css_color(&form.back_color).unwrap_or(Color::from_rgb(240, 240, 240));
-    let fg_color = parse_css_color(&form.fore_color).unwrap_or(Color::from_rgb(0, 0, 0));
-    let border_color = Color::from_rgb(160, 160, 160);
+        if bbox.width <= 0.0 || bbox.height <= 0.0 {
+            return;
+        }
+
+        let x = bbox.x as f32;
+        let y = bbox.y as f32;
+        let w = bbox.width as f32;
+        let h = bbox.height as f32;
+        let rect = Rect::from_xywh(x, y, w, h);
+
+        let bg_color = parse_css_color(&form.back_color).unwrap_or(Color::from_rgb(240, 240, 240));
+        let fg_color = parse_css_color(&form.fore_color).unwrap_or(Color::from_rgb(0, 0, 0));
+        let border_color = Color::from_rgb(160, 160, 160);
 
     match form.form_type {
         FormType::PushButton => {
@@ -817,8 +838,7 @@ fn draw_form_control(
 
             let label = if form.caption.is_empty() { &form.name } else { &form.caption };
             if !label.is_empty() {
-                let mut font = Font::default();
-                font.set_size((h * 0.45).clamp(8.0, 14.0));
+                let font = self.make_form_font((h * 0.45).clamp(8.0, 14.0));
                 let mut tp = Paint::default();
                 tp.set_anti_alias(true);
                 tp.set_color(fg_color);
@@ -869,8 +889,7 @@ fn draw_form_control(
             }
 
             if !form.caption.is_empty() {
-                let mut font = Font::default();
-                font.set_size((h * 0.6).clamp(8.0, 13.0));
+                let font = self.make_form_font((h * 0.6).clamp(8.0, 13.0));
                 let mut tp = Paint::default();
                 tp.set_anti_alias(true);
                 tp.set_color(fg_color);
@@ -906,8 +925,7 @@ fn draw_form_control(
             }
 
             if !form.caption.is_empty() {
-                let mut font = Font::default();
-                font.set_size((h * 0.6).clamp(8.0, 13.0));
+                let font = self.make_form_font((h * 0.6).clamp(8.0, 13.0));
                 let mut tp = Paint::default();
                 tp.set_anti_alias(true);
                 tp.set_color(fg_color);
@@ -958,8 +976,7 @@ fn draw_form_control(
             canvas.draw_path(&path, &arrow);
 
             if !form.text.is_empty() {
-                let mut font = Font::default();
-                font.set_size((h * 0.55).clamp(8.0, 13.0));
+                let font = self.make_form_font((h * 0.55).clamp(8.0, 13.0));
                 let mut tp = Paint::default();
                 tp.set_anti_alias(true);
                 tp.set_color(fg_color);
@@ -983,8 +1000,7 @@ fn draw_form_control(
             canvas.draw_rect(rect, &stroke);
 
             if !form.text.is_empty() {
-                let mut font = Font::default();
-                font.set_size((h * 0.55).clamp(8.0, 13.0));
+                let font = self.make_form_font((h * 0.55).clamp(8.0, 13.0));
                 let mut tp = Paint::default();
                 tp.set_anti_alias(true);
                 tp.set_color(fg_color);
