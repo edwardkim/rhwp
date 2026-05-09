@@ -226,6 +226,8 @@ impl EqParser {
         }
 
         // LaTeX \text{...} — 로만체 텍스트
+        // 제한: 토크나이저가 일반 공백을 건너뛰므로 \text{a b} 내부 공백은 보존되지 않음.
+        // 공백이 필요하면 hwpeq 관례대로 ~ 사용 (\text{if~}).
         if cu == "TEXT" {
             let body = self.parse_single_or_group();
             return EqNode::FontStyle {
