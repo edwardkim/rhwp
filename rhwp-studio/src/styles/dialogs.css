@@ -458,12 +458,54 @@
 
 /* ── 수식 편집 대화상자 ────────────────────────── */
 .eq-dialog {
-  width: 520px;
+  width: 560px;
 }
 .eq-body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/* 모드 토글 */
+.eq-mode-btn {
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 2px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: var(--color-accent-bg);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.eq-mode-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+/* 탭 */
+.eq-tabs {
+  display: flex;
+  gap: 1px;
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+.eq-tab {
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.eq-tab:hover {
+  background: var(--color-accent-bg);
+}
+.eq-tab-active {
+  background: var(--color-surface);
+  border-color: var(--color-border-lighter);
+  color: var(--color-text);
+  font-weight: 600;
 }
 /* 도구 모음 */
 .eq-toolbar {
@@ -473,7 +515,9 @@
   padding: 4px;
   background: var(--color-bg);
   border: 1px solid var(--color-border-lighter);
-  border-radius: 3px;
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  min-height: 30px;
 }
 .eq-toolbar-btn {
   min-width: 28px;
@@ -490,10 +534,71 @@
   background: var(--color-accent-bg);
   border-color: var(--color-primary);
 }
-.eq-toolbar-sep {
-  width: 1px;
-  margin: 2px 3px;
-  background: #c0c0c0;
+/* 기호 검색 */
+.eq-search-row {
+  position: relative;
+}
+.eq-search-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-size: var(--font-size-sm);
+  box-sizing: border-box;
+}
+.eq-search-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+.eq-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 0 0 3px 3px;
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 10;
+}
+.eq-search-result-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  text-align: left;
+}
+.eq-search-result-btn:hover {
+  background: var(--color-accent-bg);
+}
+.eq-sr-display {
+  font-size: 16px;
+  min-width: 20px;
+  text-align: center;
+}
+.eq-sr-name {
+  color: var(--color-text-secondary);
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+}
+/* LaTeX 전환 힌트 */
+.eq-latex-hint {
+  padding: 4px 8px;
+  background: #fffbea;
+  border: 1px solid #f0d060;
+  border-radius: 3px;
+  font-size: var(--font-size-sm);
+  color: #7a6200;
+}
+.eq-latex-hint a {
+  color: #2563eb;
+  text-decoration: underline;
 }
 /* 미리보기 */
 .eq-preview {
@@ -521,7 +626,10 @@
 .eq-preview-error {
   color: #c44;
 }
-/* 스크립트 입력 */
+/* 스크립트 입력 + 자동완성 */
+.eq-script-wrap {
+  position: relative;
+}
 .eq-script {
   width: 100%;
   min-height: 72px;
@@ -536,6 +644,45 @@
 .eq-script:focus {
   border-color: var(--color-primary);
   outline: none;
+}
+.eq-autocomplete {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 3px 3px 0 0;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
+}
+.eq-ac-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+.eq-ac-item:hover,
+.eq-ac-selected {
+  background: var(--color-accent-bg);
+}
+.eq-ac-display {
+  font-size: 15px;
+  min-width: 20px;
+  text-align: center;
+}
+.eq-ac-name {
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+}
+.eq-ac-group {
+  margin-left: auto;
+  color: var(--color-text-placeholder);
+  font-size: 10px;
 }
 /* 속성 행 */
 .eq-props-row {
