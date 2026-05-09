@@ -23,6 +23,7 @@ cfb = "0.14"
 flate2 = "1.0"
 byteorder = "1.5"
 base64 = "0.22"
+blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.39"
 codepage = "0.1.2"

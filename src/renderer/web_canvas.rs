@@ -265,6 +265,8 @@ impl WebCanvasRenderer {
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.show_paragraph_marks = tree.output_options.show_paragraph_marks;
+        self.show_control_codes = tree.output_options.show_control_codes;
         self.begin_page(tree.page_width, tree.page_height);
         self.render_layer_node(&tree.root);
     }

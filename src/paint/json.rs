@@ -8,8 +8,7 @@ use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use crate::paint::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
-    RenderProfile, PAGE_LAYER_TREE_COORDINATE_SYSTEM, PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
-    PAGE_LAYER_TREE_SCHEMA_VERSION, PAGE_LAYER_TREE_UNIT,
+    RenderProfile, LAYER_TREE_SCHEMA,
 };
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
@@ -25,10 +24,10 @@ impl PageLayerTree {
         let _ = write!(
             buf,
             "\"schemaVersion\":{},\"resourceTableVersion\":{},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
-            PAGE_LAYER_TREE_SCHEMA_VERSION,
-            PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
-            json_escape(PAGE_LAYER_TREE_UNIT),
-            json_escape(PAGE_LAYER_TREE_COORDINATE_SYSTEM),
+            LAYER_TREE_SCHEMA.schema_version,
+            LAYER_TREE_SCHEMA.resource_table_version,
+            json_escape(LAYER_TREE_SCHEMA.unit),
+            json_escape(LAYER_TREE_SCHEMA.coordinate_system),
             json_escape(render_profile_str(self.profile)),
             self.output_options.show_paragraph_marks,
             self.output_options.show_control_codes,

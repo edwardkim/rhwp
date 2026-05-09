@@ -44,6 +44,51 @@ impl From<HwpError> for JsValue {
     }
 }
 
+#[cfg(any(target_arch = "wasm32", test))]
+const MAX_CANVAS_DIMENSION: f64 = 16_384.0;
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn normalize_canvas_scale(
+    page_width: f64,
+    page_height: f64,
+    requested_scale: f64,
+) -> Result<f64, &'static str> {
+    if !page_width.is_finite()
+        || !page_height.is_finite()
+        || page_width <= 0.0
+        || page_height <= 0.0
+    {
+        return Err("invalid page dimensions");
+    }
+
+    let scale = if requested_scale <= 0.0 || !requested_scale.is_finite() {
+        1.0
+    } else {
+        requested_scale.clamp(0.25, 12.0)
+    };
+
+    let scaled_width = page_width * scale;
+    let scaled_height = page_height * scale;
+    if !scaled_width.is_finite() || !scaled_height.is_finite() {
+        return Ok((MAX_CANVAS_DIMENSION / page_width)
+            .min(MAX_CANVAS_DIMENSION / page_height)
+            .min(scale));
+    }
+
+    if scaled_width > MAX_CANVAS_DIMENSION || scaled_height > MAX_CANVAS_DIMENSION {
+        Ok((MAX_CANVAS_DIMENSION / page_width)
+            .min(MAX_CANVAS_DIMENSION / page_height)
+            .min(scale))
+    } else {
+        Ok(scale)
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn scaled_canvas_extent(page_extent: f64, scale: f64) -> u32 {
+    (page_extent * scale).max(1.0).min(MAX_CANVAS_DIMENSION) as u32
+}
+
 /// WASM에서 사용할 HWP 문서 래퍼
 ///
 /// 도메인 로직은 `DocumentCore`에 구현되어 있으며,
@@ -216,27 +261,12 @@ impl HwpDocument {
 
         let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
 
-        // scale 정규화: 0 이하 또는 NaN이면 1.0, 최소 0.25 최대 12.0
-        // (zoom 3.0 × DPR 4.0 = 12.0 지원)
-        let scale = if scale <= 0.0 || scale.is_nan() {
-            1.0
-        } else {
-            scale.clamp(0.25, 12.0)
-        };
-
-        // 최대 캔버스 크기 가드 (16384px)
-        let max_dim = 16384.0;
-        let scale = if tree.page_width * scale > max_dim || tree.page_height * scale > max_dim {
-            (max_dim / tree.page_width)
-                .min(max_dim / tree.page_height)
-                .min(scale)
-        } else {
-            scale
-        };
+        let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
+            .map_err(JsValue::from_str)?;
 
         // 캔버스 크기 = 페이지 크기 × scale
-        canvas.set_width((tree.page_width * scale) as u32);
-        canvas.set_height((tree.page_height * scale) as u32);
+        canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
+        canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
         renderer.show_paragraph_marks = self.show_paragraph_marks;
@@ -280,22 +310,11 @@ impl HwpDocument {
 
         let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
 
-        let scale = if scale <= 0.0 || scale.is_nan() {
-            1.0
-        } else {
-            scale.clamp(0.25, 12.0)
-        };
-        let max_dim = 16384.0;
-        let scale = if tree.page_width * scale > max_dim || tree.page_height * scale > max_dim {
-            (max_dim / tree.page_width)
-                .min(max_dim / tree.page_height)
-                .min(scale)
-        } else {
-            scale
-        };
+        let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
+            .map_err(JsValue::from_str)?;
 
-        canvas.set_width((tree.page_width * scale) as u32);
-        canvas.set_height((tree.page_height * scale) as u32);
+        canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
+        canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
         renderer.show_paragraph_marks = self.show_paragraph_marks;
@@ -321,28 +340,12 @@ impl HwpDocument {
             .build_page_tree_cached(page_num)
             .map_err(|e| JsValue::from(e))?;
 
-        // scale 정규화: 0 이하 또는 NaN이면 1.0, 최소 0.25 최대 12.0
-        // (zoom 3.0 × DPR 4.0 = 12.0 지원)
-        let scale = if scale <= 0.0 || scale.is_nan() {
-            1.0
-        } else {
-            scale.clamp(0.25, 12.0)
-        };
-
-        // 최대 캔버스 크기 가드 (16384px)
-        let max_dim = 16384.0;
-        let scale =
-            if tree.root.bbox.width * scale > max_dim || tree.root.bbox.height * scale > max_dim {
-                (max_dim / tree.root.bbox.width)
-                    .min(max_dim / tree.root.bbox.height)
-                    .min(scale)
-            } else {
-                scale
-            };
+        let scale = normalize_canvas_scale(tree.root.bbox.width, tree.root.bbox.height, scale)
+            .map_err(JsValue::from_str)?;
 
         // 캔버스 크기 = 페이지 크기 × scale
-        canvas.set_width((tree.root.bbox.width * scale) as u32);
-        canvas.set_height((tree.root.bbox.height * scale) as u32);
+        canvas.set_width(scaled_canvas_extent(tree.root.bbox.width, scale));
+        canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
         renderer.show_paragraph_marks = self.show_paragraph_marks;

@@ -1,6 +1,7 @@
     use super::*;
     use crate::model::document::{Document, Section};
     use crate::model::paragraph::{Paragraph, LineSeg};
+    use crate::paint::LAYER_TREE_SCHEMA;
 
     #[test]
     fn test_create_empty_document() {
@@ -44,6 +45,82 @@
             HwpError::PageOutOfRange(n) => assert_eq!(n, 999),
             _ => panic!("Expected PageOutOfRange error"),
         }
+    }
+
+    #[test]
+    fn test_page_layer_tree_export_uses_schema_contract() {
+        let doc = HwpDocument::create_empty();
+        let json = doc
+            .get_page_layer_tree_native(0)
+            .expect("empty document layer tree should export");
+
+        assert!(json.contains(&format!(
+            "\"schemaVersion\":{}",
+            LAYER_TREE_SCHEMA.schema_version
+        )));
+        assert!(json.contains(&format!(
+            "\"resourceTableVersion\":{}",
+            LAYER_TREE_SCHEMA.resource_table_version
+        )));
+        assert!(json.contains(&format!("\"unit\":\"{}\"", LAYER_TREE_SCHEMA.unit)));
+        assert!(json.contains(&format!(
+            "\"coordinateSystem\":\"{}\"",
+            LAYER_TREE_SCHEMA.coordinate_system
+        )));
+        assert!(json.contains("\"profile\":\"screen\""));
+        assert!(json.contains("\"outputOptions\":{"));
+    }
+
+    #[test]
+    fn test_page_layer_tree_export_preserves_output_options() {
+        let mut doc = HwpDocument::create_empty();
+        doc.set_show_paragraph_marks(true);
+        doc.set_show_control_codes(true);
+        doc.set_show_transparent_borders(true);
+        doc.set_clip_enabled(false);
+        doc.set_debug_overlay(true);
+
+        let json = doc
+            .get_page_layer_tree_native(0)
+            .expect("layer tree should export output options");
+
+        assert!(json.contains("\"showParagraphMarks\":true"));
+        assert!(json.contains("\"showControlCodes\":true"));
+        assert!(json.contains("\"showTransparentBorders\":true"));
+        assert!(json.contains("\"clipEnabled\":false"));
+        assert!(json.contains("\"debugOverlay\":true"));
+    }
+
+    #[test]
+    fn test_normalize_canvas_scale_rejects_invalid_page_dimensions() {
+        for (width, height) in [
+            (0.0, 100.0),
+            (100.0, 0.0),
+            (-1.0, 100.0),
+            (100.0, -1.0),
+            (f64::NAN, 100.0),
+            (100.0, f64::NAN),
+            (f64::INFINITY, 100.0),
+            (100.0, f64::INFINITY),
+        ] {
+            assert!(
+                normalize_canvas_scale(width, height, 1.0).is_err(),
+                "invalid page dimensions must fail: {width} x {height}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_normalize_canvas_scale_clamps_request_and_canvas_extent() {
+        assert_eq!(normalize_canvas_scale(100.0, 100.0, 0.0), Ok(1.0));
+        assert_eq!(normalize_canvas_scale(100.0, 100.0, f64::NAN), Ok(1.0));
+        assert_eq!(normalize_canvas_scale(100.0, 100.0, f64::INFINITY), Ok(1.0));
+        assert_eq!(normalize_canvas_scale(100.0, 100.0, 0.1), Ok(0.25));
+        assert_eq!(normalize_canvas_scale(100.0, 100.0, 20.0), Ok(12.0));
+
+        let scale = normalize_canvas_scale(20_000.0, 10_000.0, 1.0)
+            .expect("large finite page should be scaled down");
+        assert!((scale - (16_384.0 / 20_000.0)).abs() < f64::EPSILON);
     }
 
     #[test]
@@ -15680,4 +15757,3 @@
         let count = doc.reflow_linesegs();
         assert_eq!(count, 0);
     }
-
