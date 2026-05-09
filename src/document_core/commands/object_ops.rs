@@ -3640,6 +3640,98 @@ impl DocumentCore {
         self.event_log.push(DocumentEvent::PictureInserted { section: section_idx, para: para_idx });
         Ok(format!("{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"footnoteNumber\":{}}}", para_idx, insert_idx, footnote_number))
     }
+
+    /// 수식을 삽입한다.
+    /// 커서 위치에 수식 컨트롤을 추가한다.
+    /// 반환: JSON `{"ok":true, "paraIdx":N, "controlIdx":N}`
+    pub fn insert_equation_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        script: &str,
+        font_size: u32,
+        color: u32,
+    ) -> Result<String, HwpError> {
+        use crate::model::control::Equation;
+        use crate::model::shape::CommonObjAttr;
+
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)));
+        }
+
+        let equation = Equation {
+            common: CommonObjAttr {
+                ctrl_id: 0x65716564, // 'eqed'
+                treat_as_char: true,
+                width: 0,
+                height: 0,
+                ..Default::default()
+            },
+            script: script.to_string(),
+            font_size,
+            color,
+            font_name: "HYhwpEQ".to_string(),
+            ..Default::default()
+        };
+
+        self.document.sections[section_idx].raw_stream = None;
+        let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+
+        let insert_idx = {
+            let positions = crate::document_core::helpers::find_control_text_positions(paragraph);
+            let mut idx = paragraph.controls.len();
+            for (i, &pos) in positions.iter().enumerate() {
+                if pos > char_offset {
+                    idx = i;
+                    break;
+                }
+            }
+            idx
+        };
+
+        paragraph.controls.insert(insert_idx, Control::Equation(Box::new(equation)));
+        paragraph.ctrl_data_records.insert(insert_idx, None);
+
+        if !paragraph.char_offsets.is_empty() {
+            let text_len = paragraph.text.chars().count();
+            let safe_offset = char_offset.min(text_len);
+            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
+                *co += 8;
+            }
+        }
+        paragraph.char_count += 8;
+        paragraph.has_para_text = true;
+
+        // 본문 문단 리플로우
+        {
+            use crate::renderer::hwpunit_to_px;
+            use crate::renderer::composer::reflow_line_segs;
+            let page_def = &self.document.sections[section_idx].section_def.page_def;
+            let text_width = page_def.width as i32
+                - page_def.margin_left as i32
+                - page_def.margin_right as i32;
+            let available_width = hwpunit_to_px(text_width, self.dpi);
+            let para_style = self.styles.para_styles.get(
+                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize
+            );
+            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+            let final_width = (available_width - margin_left - margin_right).max(0.0);
+            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
+        }
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        self.event_log.push(DocumentEvent::PictureInserted { section: section_idx, para: para_idx });
+        Ok(format!("{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{}}}", para_idx, insert_idx))
+    }
 }
 
 #[cfg(test)]

@@ -2509,6 +2509,28 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 수식을 삽입한다.
+    #[wasm_bindgen(js_name = insertEquation)]
+    pub fn insert_equation(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+        script: &str,
+        font_size: u32,
+        color: u32,
+    ) -> Result<String, JsValue> {
+        self.insert_equation_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+            script,
+            font_size,
+            color,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 각주 정보를 조회한다.
     #[wasm_bindgen(js_name = getFootnoteInfo)]
     pub fn get_footnote_info(

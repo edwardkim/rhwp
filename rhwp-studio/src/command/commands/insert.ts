@@ -78,6 +78,34 @@ export const insertCommands: CommandDef[] = [
       ih.enterTextboxPlacementMode();
     },
   },
+  {
+    id: 'insert:equation',
+    label: '수식',
+    shortcutLabel: 'Ctrl+N,M',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getPosition();
+      try {
+        const defaultFontSize = 1000; // 10pt → HWPUNIT
+        const defaultColor = 0x00000000; // 검정
+        const result = services.wasm.insertEquation(
+          pos.sectionIndex, pos.paragraphIndex, pos.charOffset,
+          '', defaultFontSize, defaultColor
+        );
+        if (result.ok) {
+          services.eventBus.emit('document-changed');
+          if (!equationEditorDialog) {
+            equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
+          }
+          equationEditorDialog.open(pos.sectionIndex, result.paraIdx, result.controlIdx);
+        }
+      } catch (err) {
+        console.warn('[insert:equation] 수식 삽입 실패:', err);
+      }
+    },
+  },
   stub('insert:field', '필드 입력', undefined, 'Ctrl+K+E'),
   stub('insert:caption-top', '캡션 - 위'),
   stub('insert:caption-lt', '캡션 - 왼쪽 위'),
