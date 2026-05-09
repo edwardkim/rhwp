@@ -66,6 +66,8 @@ fn print_help() {
     println!("      --scale <배율>          렌더링 배율 (기본: 1.0)");
     println!("      --max-dimension <픽셀>  한 변 최대 픽셀 (longest edge). VLM 입력 한도용.");
     println!("                              명시 --scale 이 없으면 자동 scale 계산 (페이지 → 한도 안)");
+    println!("      --dpi <값>              DPI 메타데이터 (PNG pHYs chunk). 실제 픽셀 수 무관.");
+    println!("                              --scale 미지정 시 scale = dpi/96 자동 계산");
     println!("      --vlm-target <프리셋>   VLM 입력 프리셋 (현재: claude)");
     println!("                              claude: 1568 px / 1.15 MP (Claude Vision 정합)");
     println!("                              다른 VLM (gpt4v/gemini/qwen-vl/llava) 은 이슈 #613 후속");
@@ -405,6 +407,7 @@ fn export_png(args: &[String]) {
     let mut scale: Option<f64> = None;
     let mut max_dimension: Option<i32> = None;
     let mut vlm_target: Option<VlmTarget> = None;
+    let mut dpi: Option<f64> = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -472,6 +475,21 @@ fn export_png(args: &[String]) {
                     return;
                 }
             }
+            "--dpi" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<f64>() {
+                        Ok(d) if d.is_finite() && d > 0.0 => dpi = Some(d),
+                        _ => {
+                            eprintln!("오류: --dpi 값이 올바르지 않습니다 (양수 실수 필요).");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --dpi 뒤에 DPI 값이 필요합니다.");
+                    return;
+                }
+            }
             "--vlm-target" => {
                 if i + 1 < args.len() {
                     match VlmTarget::from_str(&args[i + 1]) {
@@ -499,6 +517,7 @@ fn export_png(args: &[String]) {
         scale,
         max_dimension,
         vlm_target,
+        dpi,
         font_paths: font_paths.clone(),
     };
 
@@ -552,7 +571,8 @@ fn export_png(args: &[String]) {
     for page_num in &pages {
         let has_options = png_options.scale.is_some()
             || png_options.max_dimension.is_some()
-            || png_options.vlm_target.is_some();
+            || png_options.vlm_target.is_some()
+            || png_options.dpi.is_some();
         let result = if has_options {
             core.render_page_png_native_with_export_options(*page_num, &png_options)
         } else if !font_paths.is_empty() {
