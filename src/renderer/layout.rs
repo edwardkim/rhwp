@@ -1570,7 +1570,19 @@ impl LayoutEngine {
                     .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
                     .map(|ps| ps.line_spacing_type == crate::model::style::LineSpacingType::Fixed)
                     .unwrap_or(false);
-                if !is_fixed {
+                // [Task #716] 빈 paragraph (text_len=0 또는 control 문자/object placeholder
+                // 만 존재) 는 시각적으로 invisible. fix_overlay push 가 적용되어도
+                // 보이는 차이가 없는 반면 y_offset 만 (table_bottom - y_offset) 만큼
+                // 누적되어 forward drift 의 누적 원인이 된다 (page 1 LAYOUT_OVERFLOW
+                // 의 99.3%: pi=1 +8 px + pi=3 +12 px). Task #9 의 push 의도(텍스트
+                // paragraph 가 TAC 표 위에 침범하지 않도록 보호) 는 그대로 유지하고,
+                // 빈 paragraph 는 push 대상에서 제외한다. fix_overlay_active 는 유지하여
+                // 후속 비-empty paragraph 가 push 대상이 될 수 있게 한다.
+                let is_empty_para = paragraphs.get(item_para)
+                    .map(|p| p.text.is_empty()
+                        || p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}'))
+                    .unwrap_or(false);
+                if !is_fixed && !is_empty_para {
                     let table_bottom = fix_table_start_y + fix_table_visual_h;
                     if y_offset < table_bottom {
                         y_offset = table_bottom;
