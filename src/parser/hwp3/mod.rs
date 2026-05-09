@@ -1275,13 +1275,23 @@ pub(crate) fn parse_paragraph_list(
         //   - visible text (object marker + whitespace 제외) ≤ 6 chars (짧은 제목)
         let has_new_num = controls.iter().any(|c| matches!(c, crate::model::control::Control::NewNumber(_)));
         let has_page_pos = controls.iter().any(|c| matches!(c, crate::model::control::Control::PageNumberPos(_)));
+        let mut title_bold_shape_id: Option<u16> = None;
         if has_new_num && has_page_pos {
             let visible_text: String = text_string.chars()
                 .filter(|c| !c.is_whitespace() && *c != '\u{FFFC}')
                 .collect();
             if !visible_text.is_empty() && visible_text.chars().count() <= 6 {
+                // 원본 visible 영역 (제목차례) 의 char_shape 찾기 — hwp3_inline_shapes 의
+                // 가장 큰 idx 가 마지막 ' ' 직전 visible char 위치.
+                // sample10 p.26: hwp3_inline_shapes [(0,76), (0,77), (3,78), (8,79), (8,80)]
+                // 제목차례 위치 (3) 의 shape id (78=bold) 를 추출.
+                title_bold_shape_id = hwp3_inline_shapes.iter()
+                    .find(|(idx, _)| *idx > 0 && *idx < (para_info.char_count as usize).saturating_sub(1))
+                    .map(|(_, sid)| *sid);
+
                 // ═ ■ 제목 ■ ═ 패턴 inject. HWP5 변환본 p.26 영역 정합:
-                //   ═ × 20 + ■ + " 제목 " + ■ + ═ × 22 = 67 chars (cc 67 정합)
+                //   "═ × 20 + ■ + ' ' + 제목 + ' ' + ■ + ═ × 22"
+                let visible_char_count = visible_text.chars().count();
                 let new_text = format!("════════════════════■ {} ■══════════════════════", visible_text);
                 // char_offsets 재구성 (각 char 1 utf16 unit 가정 — BMP 영역 만)
                 let new_char_count = new_text.chars().count() as u32;
@@ -1289,6 +1299,25 @@ pub(crate) fn parse_paragraph_list(
                 text_string = new_text;
                 char_offsets = new_offsets;
                 utf16_len = new_char_count;
+
+                // 기존 hwp3_inline_shapes 는 원본 char index 기반 — 재구성 시 무효.
+                // 제목 bold 영역만 새 위치 (22 ~ 22+visible_char_count) 로 재등록.
+                // 제목 visible 위치: 20 ═ + ■ + ' ' = 22
+                hwp3_inline_shapes.clear();
+                if let Some(bold_id) = title_bold_shape_id {
+                    hwp3_inline_shapes.push((22usize, bold_id));
+                    // 제목 끝 + ' ' 직후 ■ 부터 rep_char_shape (regular) 로 복귀
+                    let after_title = 22 + visible_char_count + 1; // +1 for ' '
+                    hwp3_inline_shapes.push((after_title, rep_char_shape_id as u16));
+                }
+                // hwp3_char_to_utf16_pos 는 하단 char_shapes 빌드 시 idx → utf16_pos 변환에 사용.
+                // 신규 위치 22, after_title 도 직접 utf16 pos 이므로 1:1 매핑 추가.
+                if hwp3_char_to_utf16_pos.len() < new_char_count as usize {
+                    hwp3_char_to_utf16_pos.resize(new_char_count as usize, 0);
+                }
+                for i in 0..(new_char_count as usize) {
+                    hwp3_char_to_utf16_pos[i] = i as u32;
+                }
             }
         }
 
