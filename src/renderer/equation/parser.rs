@@ -5,7 +5,7 @@
 use super::ast::*;
 use super::symbols::{
     self, is_big_operator, is_function, is_structure_command,
-    lookup_symbol, lookup_function, DECORATIONS, FONT_STYLES,
+    lookup_symbol, lookup_function, DECORATIONS, FONT_STYLES, FontStyleKind,
 };
 use super::tokenizer::{Token, TokenType, tokenize};
 
@@ -220,9 +220,18 @@ impl EqParser {
             return EqNode::Empty;
         }
 
-        // LaTeX 분수: \frac{a}{b}
-        if cu == "FRAC" {
+        // LaTeX 분수: \frac{a}{b}, \dfrac{a}{b}, \tfrac{a}{b}
+        if matches!(cu, "FRAC" | "DFRAC" | "TFRAC") {
             return self.parse_latex_fraction();
+        }
+
+        // LaTeX \text{...} — 로만체 텍스트
+        if cu == "TEXT" {
+            let body = self.parse_single_or_group();
+            return EqNode::FontStyle {
+                style: FontStyleKind::Roman,
+                body: Box::new(body),
+            };
         }
 
         // 제곱근
@@ -1517,4 +1526,129 @@ fn test_rm_p_left() {
     eprintln!("RM_P AST: {:#?}", ast);
     let s = format!("{:?}", ast);
     assert!(s.contains("Paren"), "Paren이 있어야 함: {}", s);
+}
+
+// LaTeX 명령어 호환 확장 테스트 (#143 2차)
+
+#[cfg(test)]
+mod latex_compat_tests {
+    use super::*;
+    use super::symbols::{FontStyleKind, DecoKind};
+
+    #[test]
+    fn test_latex_dfrac_tfrac() {
+        for cmd in [r"\dfrac{1}{2}", r"\tfrac{1}{2}"] {
+            let ast = parse(cmd);
+            assert!(matches!(&ast, EqNode::Fraction { .. }), "{cmd}: Expected Fraction, got {:?}", ast);
+        }
+    }
+
+    #[test]
+    fn test_latex_mathrm() {
+        let ast = parse(r"\mathrm{kg}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Roman, .. }),
+            r"Expected FontStyle(Roman) for \mathrm, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathbf() {
+        let ast = parse(r"\mathbf{F}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Bold, .. }),
+            r"Expected FontStyle(Bold) for \mathbf, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathbb() {
+        let ast = parse(r"\mathbb{R}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Blackboard, .. }),
+            r"Expected FontStyle(Blackboard) for \mathbb, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathcal() {
+        let ast = parse(r"\mathcal{L}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Calligraphy, .. }),
+            r"Expected FontStyle(Calligraphy) for \mathcal, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathfrak_mathsf_mathtt() {
+        let ast = parse(r"\mathfrak{g}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Fraktur, .. }));
+
+        let ast = parse(r"\mathsf{AB}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::SansSerif, .. }));
+
+        let ast = parse(r"\mathtt{code}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Monospace, .. }));
+    }
+
+    #[test]
+    fn test_latex_text() {
+        let ast = parse(r"\text{if }");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Roman, .. }),
+            r"Expected FontStyle(Roman) for \text, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_overline_lowercase() {
+        let ast = parse(r"\overline{AB}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Overline, .. }),
+            r"Expected Decoration(Overline) for \overline, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_underline_lowercase() {
+        let ast = parse(r"\underline{x}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Underline, .. }),
+            r"Expected Decoration(Underline) for \underline, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_widehat_widetilde() {
+        let ast = parse(r"\widehat{ABC}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Hat, .. }));
+
+        let ast = parse(r"\widetilde{x}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Tilde, .. }));
+    }
+
+    #[test]
+    fn test_latex_overrightarrow() {
+        let ast = parse(r"\overrightarrow{AB}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Vec, .. }));
+    }
+
+    #[test]
+    fn test_latex_not_lowercase() {
+        let ast = parse(r"\not{=}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::StrikeThrough, .. }),
+            r"Expected Decoration(StrikeThrough) for \not, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_quadratic_formula() {
+        let ast = parse(r"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}");
+        let s = format!("{:?}", ast);
+        assert!(s.contains("Fraction"), "분수 있어야 함");
+        assert!(s.contains("Sqrt"), "제곱근 있어야 함");
+        assert!(s.contains("±"), "± 기호 있어야 함");
+    }
+
+    #[test]
+    fn test_latex_binom() {
+        let ast = parse(r"\binom{n}{k}");
+        assert!(matches!(&ast, EqNode::Paren { left, right, .. } if left == "(" && right == ")"),
+            r"Expected Paren for \binom, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_hwpeq_not_regressed() {
+        assert!(matches!(parse("1 over 2"), EqNode::Fraction { .. }));
+        assert!(matches!(parse("SQRT x"), EqNode::Sqrt { .. }));
+        assert!(matches!(parse("SUM_{i=0}^n"), EqNode::BigOp { .. }));
+        assert!(matches!(parse("rm abc"), EqNode::FontStyle { style: FontStyleKind::Roman, .. }));
+        assert!(matches!(parse("hat x"), EqNode::Decoration { .. }));
+        assert!(matches!(parse("OVERLINE{abc}"), EqNode::Decoration { kind: DecoKind::Overline, .. }));
+    }
 }

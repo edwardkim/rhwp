@@ -172,6 +172,11 @@ pub static DECORATIONS: LazyLock<HashMap<&'static str, DecoKind>> = LazyLock::ne
         ("under", DecoKind::Under), ("arch", DecoKind::Arch),
         ("UNDERLINE", DecoKind::Underline), ("OVERLINE", DecoKind::Overline),
         ("NOT", DecoKind::StrikeThrough),
+        // LaTeX 소문자 별칭
+        ("underline", DecoKind::Underline), ("overline", DecoKind::Overline),
+        ("not", DecoKind::StrikeThrough),
+        ("widehat", DecoKind::Hat), ("widetilde", DecoKind::Tilde),
+        ("overrightarrow", DecoKind::Vec),
     ])
 });
 
@@ -181,13 +186,25 @@ pub static FONT_STYLES: LazyLock<HashMap<&'static str, FontStyleKind>> = LazyLoc
         ("rm", FontStyleKind::Roman),
         ("it", FontStyleKind::Italic),
         ("bold", FontStyleKind::Bold),
+        // LaTeX \math* 계열
+        ("mathrm", FontStyleKind::Roman),
+        ("mathit", FontStyleKind::Italic),
+        ("mathbf", FontStyleKind::Bold),
+        ("mathbb", FontStyleKind::Blackboard),
+        ("mathcal", FontStyleKind::Calligraphy),
+        ("mathfrak", FontStyleKind::Fraktur),
+        ("mathsf", FontStyleKind::SansSerif),
+        ("mathtt", FontStyleKind::Monospace),
+        ("textbf", FontStyleKind::Bold),
+        ("textrm", FontStyleKind::Roman),
+        ("textit", FontStyleKind::Italic),
     ])
 });
 
 /// 구조 명령어 (파서에서 특별 처리)
 pub fn is_structure_command(cmd: &str) -> bool {
     matches!(cmd,
-        "OVER" | "ATOP" | "SQRT" | "ROOT" |
+        "OVER" | "ATOP" | "SQRT" | "ROOT" | "FRAC" | "DFRAC" | "TFRAC" | "TEXT" |
         "LEFT" | "RIGHT" | "BIGG" |
         "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" |
         "CASES" | "PILE" | "LPILE" | "RPILE" |
@@ -271,9 +288,14 @@ pub enum DecoKind {
 /// 글꼴 스타일 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum FontStyleKind {
-    Roman,  // 로만체 (upright)
-    Italic, // 이탤릭체
-    Bold,   // 볼드체
+    Roman,      // 로만체 (upright) — rm, \mathrm
+    Italic,     // 이탤릭체 — it, \mathit
+    Bold,       // 볼드체 — bold, \mathbf
+    Blackboard, // 흑판 볼드 — \mathbb (ℝ, ℤ, ℕ 등)
+    Calligraphy,// 필기체 — \mathcal (ℒ, ℋ 등)
+    Fraktur,    // 프락투르 — \mathfrak
+    SansSerif,  // 산세리프 — \mathsf
+    Monospace,  // 고정폭 — \mathtt
 }
 
 #[cfg(test)]
