@@ -400,11 +400,19 @@ impl LayoutEngine {
             layout.page_height,
         );
 
-        // 페이지 배경
-        self.build_page_background(&mut tree, layout, page_border_fill, styles, bin_data_content);
+        // 페이지 배경 (감추기 설정 시 건너뜀)
+        let hide_fill = page_content.page_hide.as_ref()
+            .map(|ph| ph.hide_fill).unwrap_or(false);
+        if !hide_fill {
+            self.build_page_background(&mut tree, layout, page_border_fill, styles, bin_data_content);
+        }
 
-        // 쪽 테두리선
-        self.build_page_borders(&mut tree, layout, page_border_fill, styles);
+        // 쪽 테두리선 (감추기 설정 시 건너뜀)
+        let hide_border = page_content.page_hide.as_ref()
+            .map(|ph| ph.hide_border).unwrap_or(false);
+        if !hide_border {
+            self.build_page_borders(&mut tree, layout, page_border_fill, styles);
+        }
 
         // 바탕쪽 (감추기 설정 시 건너뜀)
         let hide_master = page_content.page_hide.as_ref()
@@ -1562,7 +1570,19 @@ impl LayoutEngine {
                     .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
                     .map(|ps| ps.line_spacing_type == crate::model::style::LineSpacingType::Fixed)
                     .unwrap_or(false);
-                if !is_fixed {
+                // [Task #716] 빈 paragraph (text_len=0 또는 control 문자/object placeholder
+                // 만 존재) 는 시각적으로 invisible. fix_overlay push 가 적용되어도
+                // 보이는 차이가 없는 반면 y_offset 만 (table_bottom - y_offset) 만큼
+                // 누적되어 forward drift 의 누적 원인이 된다 (page 1 LAYOUT_OVERFLOW
+                // 의 99.3%: pi=1 +8 px + pi=3 +12 px). Task #9 의 push 의도(텍스트
+                // paragraph 가 TAC 표 위에 침범하지 않도록 보호) 는 그대로 유지하고,
+                // 빈 paragraph 는 push 대상에서 제외한다. fix_overlay_active 는 유지하여
+                // 후속 비-empty paragraph 가 push 대상이 될 수 있게 한다.
+                let is_empty_para = paragraphs.get(item_para)
+                    .map(|p| p.text.is_empty()
+                        || p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}'))
+                    .unwrap_or(false);
+                if !is_fixed && !is_empty_para {
                     let table_bottom = fix_table_start_y + fix_table_visual_h;
                     if y_offset < table_bottom {
                         y_offset = table_bottom;
@@ -2687,14 +2707,16 @@ impl LayoutEngine {
         let pt_mt = measured_tables.iter().find(|mt|
             mt.para_index == para_index && mt.control_index == control_index
         );
-        // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달
-        // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지
+        // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달.
+        // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지.
+        // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 가드는 음수 비트표현
+        // (예: -1796 HU = 4294965500u32) 도 통과시킴. signed 비교로 정정.
         let pt_y_start = if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 if !t.common.treat_as_char
                     && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                     && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
-                    && t.common.vertical_offset > 0
+                    && (t.common.vertical_offset as i32) > 0
                 {
                     para_start_y.get(&para_index).copied().unwrap_or(y_offset)
                 } else {
