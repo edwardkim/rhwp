@@ -234,6 +234,15 @@ impl EqParser {
             };
         }
 
+        // LaTeX \begin{env}...\end{env}
+        if cu == "BEGIN" {
+            return self.parse_latex_environment();
+        }
+        if cu == "END" {
+            self.skip_brace_arg();
+            return EqNode::Empty;
+        }
+
         // 제곱근
         if cu == "SQRT" || cu == "ROOT" {
             return self.parse_sqrt();
@@ -815,6 +824,192 @@ impl EqParser {
             numer: Box::new(numer),
             denom: Box::new(denom),
         }
+    }
+
+    /// \begin{env}...\end{env} 환경 파싱
+    fn parse_latex_environment(&mut self) -> EqNode {
+        let env_name = self.read_brace_arg();
+        let env_upper = env_name.to_ascii_uppercase();
+
+        match env_upper.as_str() {
+            "PMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Paren, &env_name),
+            "BMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Bracket, &env_name),
+            "VMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Vert, &env_name),
+            "MATRIX" => self.parse_latex_env_matrix(MatrixStyle::Plain, &env_name),
+            "CASES" => self.parse_latex_env_cases(&env_name),
+            "ALIGNED" | "ALIGN" | "EQNARRAY" => self.parse_latex_env_eqalign(&env_name),
+            _ => EqNode::Empty,
+        }
+    }
+
+    /// {env_name} 읽기 — 중괄호 안의 텍스트를 반환
+    fn read_brace_arg(&mut self) -> String {
+        if self.current_type() != TokenType::LBrace {
+            return String::new();
+        }
+        self.pos += 1;
+        let mut name = String::new();
+        while !self.at_end() && self.current_type() != TokenType::RBrace {
+            name.push_str(self.current_value());
+            self.pos += 1;
+        }
+        self.expect(TokenType::RBrace);
+        name
+    }
+
+    /// \end{env} 의 {env} 인자를 소비하고 건너뛰기
+    fn skip_brace_arg(&mut self) {
+        if self.current_type() == TokenType::LBrace {
+            self.pos += 1;
+            while !self.at_end() && self.current_type() != TokenType::RBrace {
+                self.pos += 1;
+            }
+            self.expect(TokenType::RBrace);
+        }
+    }
+
+    /// \end{env} 도달 여부 확인
+    fn at_latex_env_end(&self, env_name: &str) -> bool {
+        if self.current_type() != TokenType::Command {
+            return false;
+        }
+        let val = self.current_value();
+        if !val.eq_ignore_ascii_case("end") {
+            return false;
+        }
+        let next = self.pos + 1;
+        if next >= self.tokens.len() || self.tokens[next].ty != TokenType::LBrace {
+            return false;
+        }
+        let mut i = next + 1;
+        let mut name = String::new();
+        while i < self.tokens.len() && self.tokens[i].ty != TokenType::RBrace {
+            name.push_str(&self.tokens[i].value);
+            i += 1;
+        }
+        name.eq_ignore_ascii_case(env_name)
+    }
+
+    /// \end{env}를 소비 (command + {env_name})
+    fn consume_latex_env_end(&mut self) {
+        if self.current_type() == TokenType::Command
+            && self.current_value().eq_ignore_ascii_case("end")
+        {
+            self.pos += 1;
+            self.skip_brace_arg();
+        }
+    }
+
+    /// LaTeX matrix 환경 파싱: \begin{pmatrix} a & b \\ c & d \end{pmatrix}
+    fn parse_latex_env_matrix(&mut self, style: MatrixStyle, env_name: &str) -> EqNode {
+        let mut rows: Vec<Vec<EqNode>> = vec![vec![]];
+        let mut current_cell = Vec::new();
+
+        while !self.at_end() && !self.at_latex_env_end(env_name) {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
+                self.pos += 1;
+                if let Some(last_row) = rows.last_mut() {
+                    last_row.push(EqNode::Row(current_cell).simplify());
+                }
+                current_cell = Vec::new();
+                rows.push(vec![]);
+            } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                if let Some(last_row) = rows.last_mut() {
+                    last_row.push(EqNode::Row(current_cell).simplify());
+                }
+                current_cell = Vec::new();
+                self.pos += 1;
+            } else if self.try_consume_infix_over_atop(&mut current_cell) {
+                continue;
+            } else {
+                current_cell.push(self.parse_element());
+            }
+        }
+
+        if !current_cell.is_empty() || rows.last().map_or(false, |r| !r.is_empty()) {
+            if let Some(last_row) = rows.last_mut() {
+                last_row.push(EqNode::Row(current_cell).simplify());
+            }
+        }
+        // 빈 마지막 행 제거 (후행 \\ 대응)
+        if rows.last().map_or(false, |r| r.is_empty()) {
+            rows.pop();
+        }
+
+        self.consume_latex_env_end();
+        EqNode::Matrix { rows, style }
+    }
+
+    /// LaTeX cases 환경 파싱: \begin{cases} expr & cond \\ ... \end{cases}
+    fn parse_latex_env_cases(&mut self, env_name: &str) -> EqNode {
+        let mut case_rows = Vec::new();
+        let mut current_row = Vec::new();
+
+        while !self.at_end() && !self.at_latex_env_end(env_name) {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
+                self.pos += 1;
+                case_rows.push(EqNode::Row(current_row).simplify());
+                current_row = Vec::new();
+            } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                current_row.push(EqNode::Space(SpaceKind::Tab));
+                self.pos += 1;
+            } else if self.try_consume_infix_over_atop(&mut current_row) {
+                continue;
+            } else {
+                current_row.push(self.parse_element());
+            }
+        }
+
+        if !current_row.is_empty() {
+            case_rows.push(EqNode::Row(current_row).simplify());
+        }
+
+        self.consume_latex_env_end();
+        EqNode::Cases { rows: case_rows }
+    }
+
+    /// LaTeX aligned/align 환경 파싱
+    fn parse_latex_env_eqalign(&mut self, env_name: &str) -> EqNode {
+        let mut eq_rows: Vec<(EqNode, EqNode)> = Vec::new();
+        let mut current_left = Vec::new();
+        let mut current_right: Option<Vec<EqNode>> = None;
+
+        while !self.at_end() && !self.at_latex_env_end(env_name) {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
+                self.pos += 1;
+                let left = EqNode::Row(current_left).simplify();
+                let right = current_right.map(|r| EqNode::Row(r).simplify()).unwrap_or(EqNode::Empty);
+                eq_rows.push((left, right));
+                current_left = Vec::new();
+                current_right = None;
+            } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                if current_right.is_none() {
+                    current_right = Some(Vec::new());
+                }
+                self.pos += 1;
+            } else {
+                let consumed = if let Some(ref mut right) = current_right {
+                    self.try_consume_infix_over_atop(right)
+                } else {
+                    self.try_consume_infix_over_atop(&mut current_left)
+                };
+                if consumed { continue; }
+                if let Some(ref mut right) = current_right {
+                    right.push(self.parse_element());
+                } else {
+                    current_left.push(self.parse_element());
+                }
+            }
+        }
+
+        if !current_left.is_empty() || current_right.is_some() {
+            let left = EqNode::Row(current_left).simplify();
+            let right = current_right.map(|r| EqNode::Row(r).simplify()).unwrap_or(EqNode::Empty);
+            eq_rows.push((left, right));
+        }
+
+        self.consume_latex_env_end();
+        EqNode::EqAlign { rows: eq_rows }
     }
 
     /// 큰 연산자 파싱 (적분, 합 등) — 첨자 포함
@@ -1650,5 +1845,61 @@ mod latex_compat_tests {
         assert!(matches!(parse("rm abc"), EqNode::FontStyle { style: FontStyleKind::Roman, .. }));
         assert!(matches!(parse("hat x"), EqNode::Decoration { .. }));
         assert!(matches!(parse("OVERLINE{abc}"), EqNode::Decoration { kind: DecoKind::Overline, .. }));
+    }
+
+    #[test]
+    fn test_latex_begin_pmatrix() {
+        let ast = parse(r"\begin{pmatrix} a & b \\ c & d \end{pmatrix}");
+        match &ast {
+            EqNode::Matrix { rows, style } => {
+                assert_eq!(*style, super::super::ast::MatrixStyle::Paren);
+                assert_eq!(rows.len(), 2);
+                assert_eq!(rows[0].len(), 2);
+                assert_eq!(rows[1].len(), 2);
+            }
+            _ => panic!("Expected Matrix(Paren), got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_bmatrix() {
+        let ast = parse(r"\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}");
+        match &ast {
+            EqNode::Matrix { rows, style } => {
+                assert_eq!(*style, super::super::ast::MatrixStyle::Bracket);
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!("Expected Matrix(Bracket), got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_cases() {
+        let ast = parse(r"\begin{cases} x & x > 0 \\ -x & x \leq 0 \end{cases}");
+        match &ast {
+            EqNode::Cases { rows } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!("Expected Cases, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_aligned() {
+        let ast = parse(r"\begin{aligned} a &= b + c \\ d &= e \end{aligned}");
+        match &ast {
+            EqNode::EqAlign { rows } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!("Expected EqAlign, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_backslash_backslash_tokenizes_as_newline() {
+        use super::super::tokenizer::{tokenize, TokenType};
+        let tokens = tokenize(r"a \\ b");
+        let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
+        assert!(types.contains(&TokenType::Whitespace), "\\\\는 Whitespace(#)로 토큰화돼야 함: {:?}", tokens);
     }
 }

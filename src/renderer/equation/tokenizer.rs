@@ -261,6 +261,12 @@ impl Tokenizer {
             return self.read_quoted();
         }
 
+        // LaTeX \\(줄바꿈) — 두 개의 백슬래시 연속
+        if ch == '\\' && self.peek(1) == Some('\\') {
+            self.pos += 2;
+            return Token::new(TokenType::Whitespace, "#", start);
+        }
+
         // LaTeX 명령어: \frac, \sqrt, \pm 등
         if ch == '\\' && self.peek(1).map_or(false, |c| c.is_ascii_alphabetic()) {
             return self.read_latex_command();

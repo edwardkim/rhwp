@@ -204,7 +204,7 @@ pub static FONT_STYLES: LazyLock<HashMap<&'static str, FontStyleKind>> = LazyLoc
 /// 구조 명령어 (파서에서 특별 처리)
 pub fn is_structure_command(cmd: &str) -> bool {
     matches!(cmd,
-        "OVER" | "ATOP" | "SQRT" | "ROOT" | "FRAC" | "DFRAC" | "TFRAC" | "TEXT" |
+        "OVER" | "ATOP" | "SQRT" | "ROOT" | "FRAC" | "DFRAC" | "TFRAC" | "TEXT" | "BEGIN" | "END" |
         "LEFT" | "RIGHT" | "BIGG" |
         "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" |
         "CASES" | "PILE" | "LPILE" | "RPILE" |
