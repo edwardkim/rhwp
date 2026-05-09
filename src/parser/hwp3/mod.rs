@@ -846,11 +846,15 @@ pub(crate) fn parse_paragraph_list(
                                 let pic_name_buf = &info_buf[83..83+256];
                                 let mut pic_name = crate::parser::hwp3::encoding::decode_hwp3_string(pic_name_buf);
                                 pic_name = pic_name.trim_end_matches('\0').to_string();
-                                
+
                                 let _block_num = (&info_buf[62..64]).read_u16::<LittleEndian>().unwrap_or(0);
                                 let _pic_info_size = (&info_buf[58..62]).read_u32::<LittleEndian>().unwrap_or(0);
-                                
+
                                 if !pic_name.is_empty() {
+                                    // [Task #741] 외부 file path IR 전달 (Renderer placeholder
+                                    // 처리용). HWP3 spec offset 74 그림 종류 0=외부 파일,
+                                    // 1=OLE, 2=Embedded Image / offset 83~339 그림 파일 이름.
+                                    pic.image_attr.external_path = Some(pic_name.clone());
                                     let next_id = (pic_name_to_id.len() + 1) as u16;
                                     let id = *pic_name_to_id.entry(pic_name).or_insert(next_id);
                                     pic.image_attr.bin_data_id = id;
@@ -1396,7 +1400,27 @@ pub(crate) fn parse_paragraph_list(
                         ls = fixed - th;
                     } else {
                         lh = th;
-                        ls = th * (line_spacing_ratio - 100) / 100;
+                        // [Task #741] TAC 그림 paragraph (treat_as_char=true) 의 line_spacing
+                        // 정합화 — 한컴 HWP5 변환본 IR 정합 (paragraph 12 ls=600 HU = 2mm).
+                        // 본 환경 HWP3 파서가 line_spacing_ratio (160%) × th (image height)
+                        // 기반 계산 → ls=th×0.6 큰 값 → paragraph height 비정상 → 페이지 분할
+                        // 위반. TAC 그림 paragraph 시 ls=600 (작은 고정값) 으로 강제.
+                        let has_tac_picture = para.controls.iter().any(|c| {
+                            match c {
+                                crate::model::control::Control::Picture(p) => p.common.treat_as_char,
+                                crate::model::control::Control::Shape(s) => {
+                                    if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
+                                        p.common.treat_as_char
+                                    } else { false }
+                                }
+                                _ => false,
+                            }
+                        });
+                        ls = if has_tac_picture {
+                            600
+                        } else {
+                            th * (line_spacing_ratio - 100) / 100
+                        };
                     }
                 }
 

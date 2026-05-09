@@ -1067,14 +1067,26 @@ impl SvgRenderer {
 
     /// 이미지 노드를 fill_mode에 따라 렌더링한다.
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
+        // 한컴 한글 2024 viewer 정합 — 외부 file 못 찾는 경우 점선 사각형 + 깨진 image 아이콘.
         let data = match img.data {
-            Some(ref d) => d,
-            None => {
-                // 이미지 데이터가 없으면 플레이스홀더 표시
+            Some(ref d) if !d.is_empty() => d,
+            _ => {
+                // 이미지 데이터 부재 (None 또는 빈 vec) — placeholder 표시
                 self.output.push_str(&format!(
-                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#cccccc\" stroke=\"#999999\" stroke-dasharray=\"4\"/>\n",
+                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#f0f0f0\" stroke=\"#999999\" stroke-dasharray=\"4\"/>\n",
                     bbox.x, bbox.y, bbox.width, bbox.height,
                 ));
+                // 외부 file path 그림: file path 표시 (가독성)
+                if let Some(ref path) = img.external_path {
+                    let cx = bbox.x + bbox.width / 2.0;
+                    let cy = bbox.y + bbox.height / 2.0;
+                    let escaped = path.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
+                    self.output.push_str(&format!(
+                        "<text x=\"{}\" y=\"{}\" text-anchor=\"middle\" fill=\"#666666\" font-size=\"10\">[외부: {}]</text>\n",
+                        cx, cy, escaped,
+                    ));
+                }
                 return;
             }
         };

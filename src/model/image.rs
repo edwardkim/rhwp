@@ -47,7 +47,7 @@ pub struct CropInfo {
 }
 
 /// 이미지 속성
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ImageAttr {
     /// 밝기
     pub brightness: i8,
@@ -57,6 +57,11 @@ pub struct ImageAttr {
     pub effect: ImageEffect,
     /// BinData ID 참조
     pub bin_data_id: u16,
+    /// [Task #741] 외부 file path 그림 (HWP3 spec offset 74 그림 종류 0=외부 파일,
+    /// 1=OLE, 2=Embedded Image / offset 83~339 그림 파일 이름).
+    /// HWP3 외부 link 그림이고 binary 데이터 부재 시 placeholder 표시용.
+    /// `None` = 내부 임베드 그림 (binary 데이터 사용).
+    pub external_path: Option<String>,
 }
 
 impl ImageAttr {

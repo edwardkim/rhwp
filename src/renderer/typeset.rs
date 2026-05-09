@@ -596,6 +596,26 @@ impl TypesetEngine {
                     st.wrap_around_cs = -1;
                     st.wrap_around_sw = -1;
                     st.wrap_around_any_seg = false;
+                    // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
+                    // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
+                    // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
+                    // paragraph 22 anchor (cs=11084) active 유지로 line 419 vpos-reset 가드
+                    // 미발현 → 매칭 실패 후 추가 vpos-reset 가드로 페이지 break 정합.
+                    if para_idx > 0 && !st.current_items.is_empty() {
+                        let prev_para = &paragraphs[para_idx - 1];
+                        let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
+                        let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
+                        if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
+                            let trigger = if st.col_count > 1 {
+                                cv < pv && pv > 5000
+                            } else {
+                                cv == 0 && pv > 5000
+                            };
+                            if trigger {
+                                st.advance_column_or_new_page();
+                            }
+                        }
+                    }
                 }
             }
 

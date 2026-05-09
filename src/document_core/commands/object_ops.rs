@@ -1145,6 +1145,7 @@ impl DocumentCore {
                 brightness: 0,
                 contrast: 0,
                 effect: ImageEffect::RealPic,
+                external_path: None,
             },
             ..Default::default()
         };
