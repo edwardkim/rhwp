@@ -568,6 +568,7 @@ pub fn parse_drawing_object_tree(
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
     doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
     doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
     pic_name_to_id: &mut HashMap<String, u16>,
 ) -> Result<ShapeObject, Hwp3Error> {
     let frame_header = Hwp3DrawingObjectFrameHeader::read(&mut *cursor)
@@ -584,7 +585,7 @@ pub fn parse_drawing_object_tree(
         });
     }
 
-    let mut root_nodes = parse_shape_list(cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id)?;
+    let mut root_nodes = parse_shape_list(cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id)?;
 
     if root_nodes.is_empty() {
         return Err(Hwp3Error::ParseError {
@@ -606,20 +607,21 @@ fn parse_shape_list(
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
     doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
     doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
     pic_name_to_id: &mut HashMap<String, u16>,
 ) -> Result<Vec<ShapeObject>, Hwp3Error> {
     let mut list = Vec::new();
     loop {
         let raw_obj = Hwp3DrawingObject::read(&mut *cursor)
             .map_err(|e| Hwp3Error::IoError { source: e })?;
-        
-        let (mut node, connection_info) = map_to_shape_object(raw_obj, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id)?;
-        
+
+        let (mut node, connection_info) = map_to_shape_object(raw_obj, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id)?;
+
         let has_sibling = (connection_info & 0x01) != 0;
         let has_child = (connection_info & 0x02) != 0;
 
         if has_child {
-            let children = parse_shape_list(cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id)?;
+            let children = parse_shape_list(cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id)?;
             if let ShapeObject::Group(ref mut g) = node {
                 g.children = children;
             } else {
@@ -641,6 +643,7 @@ fn map_to_shape_object(
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
     doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
     doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
     pic_name_to_id: &mut HashMap<String, u16>,
 ) -> Result<(ShapeObject, u16), Hwp3Error> {
     let mut parsed_paragraphs = Vec::new();
@@ -672,6 +675,7 @@ fn map_to_shape_object(
                     doc_char_shapes,
                     doc_para_shapes,
                     doc_border_fills,
+                    doc_tab_defs,
                     pic_name_to_id,
                     0,          // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
                     i32::MAX / 2, // column_width_hu
