@@ -82,11 +82,13 @@ export const insertCommands: CommandDef[] = [
     id: 'insert:equation',
     label: '수식',
     shortcutLabel: 'Ctrl+N,M',
-    canExecute: (ctx) => ctx.hasDocument,
+    canExecute: (ctx) => ctx.hasDocument && !ctx.inTableCellEditing,
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
+      // 본문 전용 — 표 셀 내부에서는 실행하지 않음
+      if ((pos as any).cellIndex !== undefined && (pos as any).cellIndex >= 0) return;
       try {
         const defaultFontSize = 1000; // 10pt → HWPUNIT
         const defaultColor = 0x00000000; // 검정

@@ -3641,7 +3641,7 @@ impl DocumentCore {
         Ok(format!("{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"footnoteNumber\":{}}}", para_idx, insert_idx, footnote_number))
     }
 
-    /// 수식을 삽입한다.
+    /// 본문 문단에 수식을 삽입한다 (표 셀/글상자 내부는 미지원).
     /// 커서 위치에 수식 컨트롤을 추가한다.
     /// 반환: JSON `{"ok":true, "paraIdx":N, "controlIdx":N}`
     pub fn insert_equation_native(
@@ -3655,6 +3655,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::model::control::Equation;
         use crate::model::shape::CommonObjAttr;
+        use crate::parser::tags::CTRL_EQUATION;
 
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)));
@@ -3665,7 +3666,7 @@ impl DocumentCore {
 
         let equation = Equation {
             common: CommonObjAttr {
-                ctrl_id: 0x65716564, // 'eqed'
+                ctrl_id: CTRL_EQUATION,
                 treat_as_char: true,
                 width: 0,
                 height: 0,
@@ -3704,6 +3705,7 @@ impl DocumentCore {
             }
         }
         paragraph.char_count += 8;
+        paragraph.control_mask |= 1u32 << 11;
         paragraph.has_para_text = true;
 
         // 본문 문단 리플로우
