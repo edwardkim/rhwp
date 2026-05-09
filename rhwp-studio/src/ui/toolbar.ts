@@ -476,6 +476,32 @@ export class Toolbar {
     });
   }
 
+  /** 문서 로드 시 글꼴 드롭다운을 초기화한다 (기본 글꼴 + 문서 글꼴 + 대표/로컬) */
+  initFontDropdown(docFonts?: string[]): void {
+    const BASE_FONTS = ['함초롬바탕', '함초롬돋움', '맑은 고딕', '나눔고딕', '바탕', '돋움', '궁서'];
+    this.fontName.replaceChildren();
+    for (const name of BASE_FONTS) {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      this.fontName.appendChild(opt);
+    }
+    if (docFonts?.length) {
+      const seen = new Set(BASE_FONTS);
+      for (const name of docFonts) {
+        if (!seen.has(name)) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          this.fontName.appendChild(opt);
+          seen.add(name);
+        }
+      }
+    }
+    this.populateFontSetOptions();
+    this.populateLocalFontOptions();
+  }
+
   /** 문서 로드 시 스타일 목록으로 드롭다운을 채운다 */
   initStyleDropdown(): void {
     try {
