@@ -183,19 +183,20 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
     });
   }
 
-  // WASM 배치 API 호출
-  try {
-    this.wasm.resizeTableCells(
-      state.tableRef.sec,
-      state.tableRef.ppi,
-      state.tableRef.ci,
-      updates,
-    );
-    this.eventBus.emit('document-changed');
-    if (inCellSel) this.updateCellSelection();
-  } catch (err) {
-    console.warn('[InputHandler] resizeTableCells 실패:', err);
-  }
+  // Undo 이력 등록 + WASM 배치 API 호출
+  const sec = state.tableRef.sec;
+  const ppi = state.tableRef.ppi;
+  const ci = state.tableRef.ci;
+  const pos = this.cursor.getPosition();
+  this.executeOperation({
+    kind: 'snapshot', operationType: 'resizeTable',
+    operation: (wasm: any) => {
+      wasm.resizeTableCells(sec, ppi, ci, updates);
+      return pos;
+    },
+  });
+  this.eventBus.emit('document-changed');
+  if (inCellSel) this.updateCellSelection();
 
   this.cleanupResizeDrag();
 }
@@ -492,13 +493,16 @@ export function resizeCellByKeyboard(this: any, key: 'ArrowUp' | 'ArrowDown' | '
     }
   }
 
-  try {
-    this.wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
-    this.eventBus.emit('document-changed');
-    this.updateCellSelection();
-  } catch (err) {
-    console.warn('[InputHandler] resizeCellByKeyboard 실패:', err);
-  }
+  const pos = this.cursor.getPosition();
+  this.executeOperation({
+    kind: 'snapshot', operationType: 'resizeCell',
+    operation: (wasm: any) => {
+      wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+      return pos;
+    },
+  });
+  this.eventBus.emit('document-changed');
+  this.updateCellSelection();
 }
 
 /** 전체 표 비율 리사이즈 (phase 3, Ctrl+방향키) */
@@ -525,7 +529,14 @@ export function resizeTableProportional(this: any, key: 'ArrowUp' | 'ArrowDown' 
       }
     }
 
-    this.wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+    const pos = this.cursor.getPosition();
+    this.executeOperation({
+      kind: 'snapshot', operationType: 'resizeTableProportional',
+      operation: (wasm: any) => {
+        wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+        return pos;
+      },
+    });
     this.eventBus.emit('document-changed');
     this.updateCellSelection();
   } catch (err) {
