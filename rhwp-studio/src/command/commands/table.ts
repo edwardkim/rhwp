@@ -7,6 +7,10 @@ import { FormulaDialog } from '@/ui/formula-dialog';
 
 const inTable = (ctx: EditorContext) => ctx.inTable;
 
+function safeTableOp(fn: () => void, label: string): void {
+  try { fn(); } catch (e) { console.error(`[table] ${label} 실패:`, e); }
+}
+
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
     id,
@@ -30,7 +34,7 @@ export const tableCommands: CommandDef[] = [
       dialog.onApply = (rows, cols) => {
         const ih2 = services.getInputHandler();
         if (!ih2) return;
-        ih2.executeOperation({
+        safeTableOp(() => ih2.executeOperation({
           kind: 'snapshot',
           operationType: 'createTable',
           operation: (wasm) => {
@@ -41,14 +45,14 @@ export const tableCommands: CommandDef[] = [
                 paragraphIndex: 0,
                 charOffset: 0,
                 parentParaIndex: result.paraIdx,
-                controlIndex: 0,
+                controlIndex: result.controlIdx,
                 cellIndex: 0,
                 cellParaIndex: 0,
               };
             }
             return pos;
           },
-        });
+        }), '표 만들기');
       };
       dialog.show(params?.anchorEl as HTMLElement | undefined);
     },
@@ -107,14 +111,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'insertTableRow',
         operation: (wasm) => {
           wasm.insertTableRow(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.row, false);
           return pos;
         },
-      });
+      }), '줄 추가');
     },
   },
   {
@@ -127,14 +131,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'insertTableRow',
         operation: (wasm) => {
           wasm.insertTableRow(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.row, true);
           return pos;
         },
-      });
+      }), '줄 추가');
     },
   },
   {
@@ -148,14 +152,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'insertTableColumn',
         operation: (wasm) => {
           wasm.insertTableColumn(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.col, false);
           return pos;
         },
-      });
+      }), '칸 추가');
     },
   },
   {
@@ -168,14 +172,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'insertTableColumn',
         operation: (wasm) => {
           wasm.insertTableColumn(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.col, true);
           return pos;
         },
-      });
+      }), '칸 추가');
     },
   },
   {
@@ -188,14 +192,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'deleteTableRow',
         operation: (wasm) => {
           wasm.deleteTableRow(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.row);
           return pos;
         },
-      });
+      }), '줄 지우기');
     },
   },
   {
@@ -209,14 +213,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'deleteTableColumn',
         operation: (wasm) => {
           wasm.deleteTableColumn(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.col);
           return pos;
         },
-      });
+      }), '칸 지우기');
     },
   },
   {
@@ -243,7 +247,7 @@ export const tableCommands: CommandDef[] = [
       dialog.onApply = (nRows, mCols, equalHeight, mergeFirst) => {
         const ih2 = services.getInputHandler();
         if (!ih2) return;
-        ih2.executeOperation({
+        safeTableOp(() => ih2.executeOperation({
           kind: 'snapshot',
           operationType: 'splitTableCell',
           operation: (wasm) => {
@@ -262,7 +266,7 @@ export const tableCommands: CommandDef[] = [
             }
             return pos;
           },
-        });
+        }), '셀 나누기');
         if (isMultiCell) ih2.exitCellSelectionMode?.();
       };
       dialog.show();
@@ -280,14 +284,14 @@ export const tableCommands: CommandDef[] = [
       const tableCtx = ih.getCellTableContext();
       if (!range || !tableCtx) return;
       if (range.startRow === range.endRow && range.startCol === range.endCol) return;
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'mergeTableCells',
         operation: (wasm) => {
           wasm.mergeTableCells(tableCtx.sec, tableCtx.ppi, tableCtx.ci, range.startRow, range.startCol, range.endRow, range.endCol);
           return ih.getCursorPosition();
         },
-      });
+      }), '셀 합치기');
       ih.exitCellSelectionMode();
     },
   },
@@ -300,26 +304,26 @@ export const tableCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedTableRef();
       if (ref) {
-        ih.executeOperation({
+        safeTableOp(() => ih.executeOperation({
           kind: 'snapshot',
           operationType: 'deleteTable',
           operation: (wasm) => {
             wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
             return { sectionIndex: ref.sec, paragraphIndex: ref.ppi, charOffset: 0 };
           },
-        });
+        }), '표 지우기');
         return;
       }
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined) return;
-      ih.executeOperation({
+      safeTableOp(() => ih.executeOperation({
         kind: 'snapshot',
         operationType: 'deleteTable',
         operation: (wasm) => {
           wasm.deleteTableControl(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!);
           return { sectionIndex: pos.sectionIndex, paragraphIndex: pos.parentParaIndex!, charOffset: 0 };
         },
-      });
+      }), '표 지우기');
     },
   },
   {
@@ -345,7 +349,7 @@ export const tableCommands: CommandDef[] = [
       if (!props) return;
       let charOffset = 0;
       if (!props.hasCaption) {
-        ih.executeOperation({
+        safeTableOp(() => ih.executeOperation({
           kind: 'snapshot',
           operationType: 'toggleTableCaption',
           operation: (wasm) => {
@@ -353,7 +357,7 @@ export const tableCommands: CommandDef[] = [
             charOffset = result?.captionCharOffset ?? 3;
             return { sectionIndex: sec, paragraphIndex: ppi, charOffset: 0 };
           },
-        });
+        }), '캡션 넣기');
       } else {
         try {
           const len = services.wasm.getCellParagraphLength(sec, ppi, ci, 65534, 0);
