@@ -3,7 +3,7 @@
 **Issue**: #741 — HWP3 외부 file path 그림 + 폰트 매핑 + ParaShape tab + 제목차례 자동 장식 (`hwp3-sample10.hwp` 결함)
 **브랜치**: `local/task741`
 **선행 의존**: PR #732 (Task #724) — 머지 완료
-**완료 commits**: a63114e (Stage 1~4) + 86bf0bd (Stage 5) + ccbb0b6 (Stage 6) + d03109e + b77d071 (Stage 7)
+**완료 commits**: a63114e (Stage 1~4) + 86bf0bd (Stage 5) + ccbb0b6 (Stage 6) + d03109e + b77d071 (Stage 7) + 6f09ece (Stage 8)
 
 ## 1. 정정 영역 요약
 
@@ -16,6 +16,7 @@
 | 5 | HWP3 사적 graphic char (0x0080~0x7FFF) cross-ref 매핑 | 완료 | 86bf0bd |
 | 6 | HWP3 ParaShape tabs[40] → Document IR TabDef 변환 + 필드 순서 bug 정정 | 완료 | ccbb0b6 |
 | 7 | HWP3 leader → HWP5 fill_type 매핑 + 제목차례 자동 장식 inject + char_shape 위치 정정 | 완료 | d03109e + b77d071 |
+| 8 | HWP3 차례 inline page 번호 (ch=1) decode + display | 완료 | 6f09ece |
 
 ## 2. 핵심 본질 발견
 
@@ -36,6 +37,12 @@ HWP3 hchar **0x0080~0x7FFF** 범위는 표준 KSSM 조합형 (0x8000+) 외 **한
 HWP3 paragraph 26 (cc=8 "￼￼ 제목차례 ") → 한컴 viewer 가 "════════════════════■ 제목차례 ■══════════════════════" 자동 장식 inject. **HWP3 spec 외 한컴 사적 로직** (ParaShape `border` / char_shape `attr` 모두 부재 확정).
 
 **해결**: 한컴 변환본 cross-ref 로 trigger 조건 도출 (새번호 + 쪽번호위치 controls + visible text ≤ 6 chars). 보수적 영역으로 광범위 sweep 회귀 위험 최소화.
+
+### 2.4 HWP3 차례 inline page 번호 ch=1 (Stage 8)
+
+HWP3 차례 entries (paragraph 28~339) 가 페이지 번호를 **inline `ch=1` control** 로 저장. 본 환경 catch-all 분기에서 ch=1 처리 시 header_val1 + ch2 byte 값 unused → page 번호 placeholder (`￼`) 만 표시되어 "EXPORT/IMPORT Q & A → " 처럼 page 번호 누락.
+
+**해결**: HWP3_DIAG_CTRL1 진단으로 byte 패턴 도출 — header_val1 second u16 + ch2 = ASCII digit (0x0030~0x0039), ch2=0x000D 는 1-digit terminator. 3-digit 이상은 literal char 자연 결합 (paragraph 339 page 757 = ch=1("75") + literal "7"). 290 ch=1 occurrences 모두 정합.
 
 ## 3. 결정적 검증
 
@@ -58,6 +65,7 @@ HWP3 paragraph 26 (cc=8 "￼￼ 제목차례 ") → 한컴 viewer 가 "═══
 - ✓ TOC entries `▷ EXPORT/IMPORT/LOADER/ODBC/ORACLE GRAPHICS/RDBMS` markers
 - ✓ tab leader 점선 (────) fill (HWP5 conversion fill=3 정합)
 - ✓ 페이지 번호 우측 정렬 (TOC entry 끝 page_num)
+- ✓ TOC entries 페이지 번호 (1, 4, 5, ..., 134) 표시 — Stage 8 ch=1 정합
 
 ## 5. 자료 추가
 
@@ -76,6 +84,7 @@ HWP3 paragraph 26 (cc=8 "￼￼ 제목차례 ") → 한컴 viewer 가 "═══
 | Stage 5 | `mydocs/working/task_m100_741_stage5.md` |
 | Stage 6 | `mydocs/working/task_m100_741_stage6.md` |
 | Stage 7 | `mydocs/working/task_m100_741_stage7.md` |
+| Stage 8 | `mydocs/working/task_m100_741_stage8.md` |
 
 ## 7. 후속 영역 (본 task 외)
 
