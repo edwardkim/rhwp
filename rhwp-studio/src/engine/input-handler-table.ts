@@ -188,14 +188,17 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
   const ppi = state.tableRef.ppi;
   const ci = state.tableRef.ci;
   const pos = this.cursor.getPosition();
-  this.executeOperation({
-    kind: 'snapshot', operationType: 'resizeTable',
-    operation: (wasm: any) => {
-      wasm.resizeTableCells(sec, ppi, ci, updates);
-      return pos;
-    },
-  });
-  this.eventBus.emit('document-changed');
+  try {
+    this.executeOperation({
+      kind: 'snapshot', operationType: 'resizeTable',
+      operation: (wasm: any) => {
+        wasm.resizeTableCells(sec, ppi, ci, updates);
+        return pos;
+      },
+    });
+  } catch (err) {
+    console.warn('[InputHandler] finishResizeDrag 실패:', err);
+  }
   if (inCellSel) this.updateCellSelection();
 
   this.cleanupResizeDrag();
@@ -494,14 +497,17 @@ export function resizeCellByKeyboard(this: any, key: 'ArrowUp' | 'ArrowDown' | '
   }
 
   const pos = this.cursor.getPosition();
-  this.executeOperation({
-    kind: 'snapshot', operationType: 'resizeCell',
-    operation: (wasm: any) => {
-      wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
-      return pos;
-    },
-  });
-  this.eventBus.emit('document-changed');
+  try {
+    this.executeOperation({
+      kind: 'snapshot', operationType: 'resizeCell',
+      operation: (wasm: any) => {
+        wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+        return pos;
+      },
+    });
+  } catch (err) {
+    console.warn('[InputHandler] resizeCellByKeyboard 실패:', err);
+  }
   this.updateCellSelection();
 }
 
@@ -537,7 +543,6 @@ export function resizeTableProportional(this: any, key: 'ArrowUp' | 'ArrowDown' 
         return pos;
       },
     });
-    this.eventBus.emit('document-changed');
     this.updateCellSelection();
   } catch (err) {
     console.warn('[InputHandler] resizeTableProportional 실패:', err);
