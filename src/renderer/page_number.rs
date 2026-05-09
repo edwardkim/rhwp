@@ -19,6 +19,9 @@ pub(crate) struct PageNumberAssigner<'a> {
     new_page_numbers: &'a [(usize, u16)],
     consumed: HashSet<usize>,
     counter: u32,
+    /// NewNumber 컨트롤이 1건 이상 소비되었는지 여부.
+    /// 한컴 호환: NewNumber가 존재하면 첫 발화 전 페이지에는 쪽번호 미표시.
+    numbering_started: bool,
 }
 
 impl<'a> PageNumberAssigner<'a> {
@@ -28,6 +31,7 @@ impl<'a> PageNumberAssigner<'a> {
             new_page_numbers,
             consumed: HashSet::new(),
             counter: initial,
+            numbering_started: false,
         }
     }
 
@@ -43,8 +47,7 @@ impl<'a> PageNumberAssigner<'a> {
             if Self::para_first_appears(page, nn_pi) {
                 self.counter = nn_num as u32;
                 self.consumed.insert(idx);
-                // break 하지 않고 계속 — 한 페이지 안에 여러 NewNumber 가 모두 처음 등장하면
-                // 마지막 것이 적용된다 (현실적으로 거의 발생하지 않음).
+                self.numbering_started = true;
             }
         }
         let assigned = self.counter;
@@ -55,6 +58,12 @@ impl<'a> PageNumberAssigner<'a> {
     /// 다음 페이지에 적용될 카운터 값 (구역 carry 용).
     pub fn next_counter(&self) -> u32 {
         self.counter
+    }
+
+    /// NewNumber가 존재하지만 아직 발화되지 않은 상태인지 판별한다.
+    /// true이면 이 페이지에 쪽번호를 표시하지 않아야 한다 (한컴 호환).
+    pub fn should_hide_page_number(&self) -> bool {
+        !self.new_page_numbers.is_empty() && !self.numbering_started
     }
 
     fn para_first_appears(page: &PageContent, target_pi: usize) -> bool {
