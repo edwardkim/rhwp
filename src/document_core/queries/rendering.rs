@@ -292,20 +292,21 @@ impl VlmTarget {
     }
 
     /// CLI 옵션 문자열 → VlmTarget 변환.
+    /// 하이픈/밑줄 정규화 후 매칭. `gpt4v`/`qwen` 등 축약 별칭도 허용.
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().replace('-', "_").as_str() {
             "claude" => Some(VlmTarget::Claude),
-            "gpt4v_low" | "gpt4v-low" => Some(VlmTarget::Gpt4vLow),
-            "gpt4v_high" | "gpt4v-high" | "gpt4v" => Some(VlmTarget::Gpt4vHigh),
+            "gpt4v_low" => Some(VlmTarget::Gpt4vLow),
+            "gpt4v_high" | "gpt4v" => Some(VlmTarget::Gpt4vHigh),
             "gemini" => Some(VlmTarget::Gemini),
-            "qwen_vl" | "qwen-vl" | "qwen" => Some(VlmTarget::QwenVl),
+            "qwen_vl" | "qwen" => Some(VlmTarget::QwenVl),
             "llava" => Some(VlmTarget::Llava),
             _ => None,
         }
     }
 
     pub fn all_names() -> &'static str {
-        "claude, gpt4v-low, gpt4v-high, gemini, qwen-vl, llava"
+        "claude, gpt4v-low, gpt4v-high (또는 gpt4v), gemini, qwen-vl (또는 qwen), llava"
     }
 }
 
