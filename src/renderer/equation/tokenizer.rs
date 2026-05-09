@@ -284,6 +284,23 @@ impl Tokenizer {
             }
         }
 
+        // LaTeX escaped braces and special chars: \{ \} \| \#
+        if ch == '\\' {
+            if let Some(nc) = self.peek(1) {
+                let brace_tok = match nc {
+                    '{' => Some(Token::new(TokenType::LBrace, "{", start)),
+                    '}' => Some(Token::new(TokenType::RBrace, "}", start)),
+                    '|' => Some(Token::new(TokenType::Symbol, "|", start)),
+                    '#' => Some(Token::new(TokenType::Whitespace, "#", start)),
+                    _ => None,
+                };
+                if let Some(tok) = brace_tok {
+                    self.pos += 2;
+                    return tok;
+                }
+            }
+        }
+
         // LaTeX 명령어: \frac, \sqrt, \pm 등
         if ch == '\\' && self.peek(1).map_or(false, |c| c.is_ascii_alphabetic()) {
             return self.read_latex_command();

@@ -185,6 +185,15 @@ static BRACKETS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|
         ("LBRACE", "{"), ("RBRACE", "}"),
         ("LCEIL", "⌈"), ("RCEIL", "⌉"),
         ("LFLOOR", "⌊"), ("RFLOOR", "⌋"),
+        // LaTeX angle brackets
+        ("langle", "⟨"), ("rangle", "⟩"),
+        ("LANGLE", "⟨"), ("RANGLE", "⟩"),
+        // LaTeX aliases
+        ("lbrace", "{"), ("rbrace", "}"),
+        ("lceil", "⌈"), ("rceil", "⌉"),
+        ("lfloor", "⌊"), ("rfloor", "⌋"),
+        ("lvert", "|"), ("rvert", "|"),
+        ("lVert", "‖"), ("rVert", "‖"),
     ])
 });
 

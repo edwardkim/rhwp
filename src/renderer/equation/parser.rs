@@ -2093,4 +2093,24 @@ mod latex_compat_tests {
             _ => panic!(r"Expected EqAlign for \begin{{split}}, got {:?}", ast),
         }
     }
+
+    #[test]
+    fn test_latex_escaped_braces() {
+        use super::super::tokenizer::{tokenize, TokenType};
+        let tokens = tokenize(r"\left\{ x \right\}");
+        let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
+        assert!(types.contains(&TokenType::LBrace), r"\{{ should tokenize as LBrace: {:?}", tokens);
+    }
+
+    #[test]
+    fn test_latex_langle_rangle() {
+        let ast = parse(r"\left\langle x \right\rangle");
+        match &ast {
+            EqNode::Paren { left, right, .. } => {
+                assert_eq!(left, "⟨");
+                assert_eq!(right, "⟩");
+            }
+            _ => panic!(r"Expected Paren for \langle, got {:?}", ast),
+        }
+    }
 }
