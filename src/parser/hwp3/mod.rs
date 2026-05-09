@@ -177,10 +177,19 @@ pub(crate) fn convert_para_shape(
         if is_default || is_empty {
             continue;
         }
+        // [Task #741 Stage 7] HWP3 leader → HWP5 fill_type 정합 매핑.
+        // 한컴 변환본 cross-ref 영역 (sample10 paragraph 29: HWP3 leader=1 → HWP5 fill_type=3 점선).
+        // HWP5 fill_type: 0=없음, 1=실선, 2=파선, 3=점선, 4=일점쇄선, 5=이점쇄선, 6=긴파선,
+        //                 7=원형점선, 8=이중실선, 9=얇고굵은이중선, 10=굵고얇은이중선, 11=삼중선
+        let fill_type = match t.leader {
+            0 => 0, // 없음 → 없음
+            1 => 3, // HWP3 leader (켜짐) → HWP5 점선 (한컴 변환본 정합)
+            other => other,
+        };
         tab_items.push(crate::model::style::TabItem {
             position: (t.position as u32) * 4,
             tab_type: t.tab_type,
-            fill_type: t.leader,
+            fill_type,
         });
     }
     if !tab_items.is_empty() {
@@ -1251,6 +1260,35 @@ pub(crate) fn parse_paragraph_list(
                 char_offsets.push(utf16_len);
                 utf16_len += s.len_utf16() as u32;
                 text_string.push(s);
+            }
+        }
+
+        // [Task #741 Stage 7] 제목차례 type paragraph 자동 장식 inject (한컴 viewer 정합).
+        // 본질: HWP3 → HWP5 변환 시 한컴이 특정 paragraph 에 ═══ ■ ... ■ ═══ 장식 inject.
+        // HWP3 spec 외 한컴 사적 로직. 한컴 변환본 cross-ref 영역에서 도출:
+        //   - hwp3-sample10 paragraph 26 (cc=8, "￼￼ 제목차례 ") → HWP5 p.26 ("════...■ 제목차례 ■═════")
+        //   - hwp3-sample10 paragraph 340 (cc=30, "￼        ￼-EXPORT/...") → HWP5 p.340 단순 본문 (장식 없음)
+        // 차이: visible text 길이 — 짧은 (~5 chars) 제목 인 경우 한컴이 장식 inject.
+        //
+        // 본 환경 trigger 영역:
+        //   - 새번호 + 쪽번호위치 controls 조합 (section start marker)
+        //   - visible text (object marker + whitespace 제외) ≤ 6 chars (짧은 제목)
+        let has_new_num = controls.iter().any(|c| matches!(c, crate::model::control::Control::NewNumber(_)));
+        let has_page_pos = controls.iter().any(|c| matches!(c, crate::model::control::Control::PageNumberPos(_)));
+        if has_new_num && has_page_pos {
+            let visible_text: String = text_string.chars()
+                .filter(|c| !c.is_whitespace() && *c != '\u{FFFC}')
+                .collect();
+            if !visible_text.is_empty() && visible_text.chars().count() <= 6 {
+                // ═ ■ 제목 ■ ═ 패턴 inject. HWP5 변환본 p.26 영역 정합:
+                //   ═ × 20 + ■ + " 제목 " + ■ + ═ × 22 = 67 chars (cc 67 정합)
+                let new_text = format!("════════════════════■ {} ■══════════════════════", visible_text);
+                // char_offsets 재구성 (각 char 1 utf16 unit 가정 — BMP 영역 만)
+                let new_char_count = new_text.chars().count() as u32;
+                let new_offsets: Vec<u32> = (0..new_char_count).collect();
+                text_string = new_text;
+                char_offsets = new_offsets;
+                utf16_len = new_char_count;
             }
         }
 
