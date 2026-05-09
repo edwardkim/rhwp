@@ -860,10 +860,11 @@ fn draw_form_control(
                 let my = by + box_size * 0.75;
                 let ex = bx + box_size * 0.8;
                 let ey = by + box_size * 0.25;
-                let mut path = skia_safe::Path::new();
-                path.move_to((cx, cy));
-                path.line_to((mx, my));
-                path.line_to((ex, ey));
+                let mut builder = PathBuilder::new();
+                builder.move_to((cx, cy));
+                builder.line_to((mx, my));
+                builder.line_to((ex, ey));
+                let path = builder.detach();
                 canvas.draw_path(&path, &check);
             }
 
@@ -948,11 +949,12 @@ fn draw_form_control(
             let acx = ax + arrow_w / 2.0;
             let acy = y + h / 2.0;
             let as_ = (arrow_w * 0.25).min(5.0);
-            let mut path = skia_safe::Path::new();
-            path.move_to((acx - as_, acy - as_ * 0.5));
-            path.line_to((acx + as_, acy - as_ * 0.5));
-            path.line_to((acx, acy + as_ * 0.5));
-            path.close();
+            let mut builder = PathBuilder::new();
+            builder.move_to((acx - as_, acy - as_ * 0.5));
+            builder.line_to((acx + as_, acy - as_ * 0.5));
+            builder.line_to((acx, acy + as_ * 0.5));
+            builder.close();
+            let path = builder.detach();
             canvas.draw_path(&path, &arrow);
 
             if !form.text.is_empty() {
