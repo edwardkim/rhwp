@@ -332,9 +332,22 @@ where
 }
 
 fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
+    // Rectangle: Writer-based serializer (drawText 포함)
+    if let ShapeObject::Rectangle(r) = shape {
+        return match writer_to_string(|w| super::shape::write_rect(w, r)) {
+            Ok(xml) => xml,
+            Err(e) => { eprintln!("[hwpx] Shape::Rectangle 직렬화 실패: {e}"); String::new() }
+        };
+    }
+    // Line: Writer-based serializer
+    if let ShapeObject::Line(l) = shape {
+        return match writer_to_string(|w| super::shape::write_line(w, l)) {
+            Ok(xml) => xml,
+            Err(e) => { eprintln!("[hwpx] Shape::Line 직렬화 실패: {e}"); String::new() }
+        };
+    }
     let (tag, c) = match shape {
-        ShapeObject::Rectangle(r) => ("rect", &r.common),
-        ShapeObject::Line(l) => ("line", &l.common),
+        ShapeObject::Rectangle(_) | ShapeObject::Line(_) => unreachable!(),
         ShapeObject::Ellipse(e) => ("ellipse", &e.common),
         ShapeObject::Arc(a) => ("arc", &a.common),
         ShapeObject::Polygon(p) => ("polygon", &p.common),
