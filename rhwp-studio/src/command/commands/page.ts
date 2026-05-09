@@ -1,6 +1,7 @@
 import type { CommandDef } from '../types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
+import { NumberingRestartDialog } from '@/ui/numbering-restart-dialog';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -267,7 +268,25 @@ export const pageCommands: CommandDef[] = [
       navigateHeaderFooter(services, 1);
     },
   },
-  stub('page:new-page-num', '새 번호로 시작'),
+  {
+    id: 'page:new-page-num',
+    label: '새 번호로 시작',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getPosition();
+      const dlg = new NumberingRestartDialog(1, (startNum) => {
+        try {
+          services.wasm.setNumberingRestart(pos.sectionIndex, pos.paragraphIndex, 2, startNum);
+          services.eventBus.emit('document-changed');
+        } catch (err) {
+          console.warn('[page:new-page-num] 새 번호 설정 실패:', err);
+        }
+      });
+      dlg.show();
+    },
+  },
   // ─── 머리말/꼬리말 현재 쪽 감추기 ──────────────
   {
     id: 'page:hide-headerfooter',
