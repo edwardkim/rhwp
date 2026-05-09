@@ -72,12 +72,13 @@ pub fn parse_color_str(s: &str) -> u32 {
             return b << 16 | g << 8 | r;
         }
     } else if hex.len() == 8 {
-        // AARRGGBB → 0x00BBGGRR (alpha 무시)
+        // AARRGGBB → 0xAABBGGRR (alpha 보존)
         if let Ok(v) = u32::from_str_radix(hex, 16) {
+            let a = (v >> 24) & 0xFF;
             let r = (v >> 16) & 0xFF;
             let g = (v >> 8) & 0xFF;
             let b = v & 0xFF;
-            return b << 16 | g << 8 | r;
+            return a << 24 | b << 16 | g << 8 | r;
         }
     }
     0x00000000 // 검정
@@ -135,7 +136,9 @@ mod tests {
 
     #[test]
     fn test_parse_color_str_with_alpha() {
-        // AARRGGBB — alpha 무시
-        assert_eq!(parse_color_str("#80FF0000"), 0x000000FF);
+        // AARRGGBB → 0xAABBGGRR (alpha 보존)
+        assert_eq!(parse_color_str("#80FF0000"), 0x800000FF);
+        assert_eq!(parse_color_str("#FF000000"), 0xFF000000); // 상위 바이트 비제로 → 채우기 없음
+        assert_eq!(parse_color_str("#00FF0000"), 0x000000FF); // alpha=00 → 동일
     }
 }
