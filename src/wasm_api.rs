@@ -408,6 +408,23 @@ impl HwpDocument {
         self.set_section_def_all_native(json).map_err(|e| e.into())
     }
 
+    /// 현재 구역의 다단 설정을 JSON으로 반환한다.
+    #[wasm_bindgen(js_name = getColumnDef)]
+    pub fn get_column_def(&self, section_idx: u32) -> Result<String, JsValue> {
+        let sec = self.core.document.sections.get(section_idx as usize)
+            .ok_or_else(|| JsValue::from_str("구역 인덱스 범위 초과"))?;
+        let col_def = HwpDocument::find_initial_column_def(&sec.paragraphs);
+        let col_type = match col_def.column_type {
+            crate::model::page::ColumnType::Normal => 0,
+            crate::model::page::ColumnType::Distribute => 1,
+            crate::model::page::ColumnType::Parallel => 2,
+        };
+        Ok(format!(
+            "{{\"columnCount\":{},\"columnType\":{},\"sameWidth\":{},\"spacing\":{}}}",
+            col_def.column_count, col_type, col_def.same_width, col_def.spacing,
+        ))
+    }
+
     /// 문서 정보를 JSON 문자열로 반환한다.
     #[wasm_bindgen(js_name = getDocumentInfo)]
     pub fn get_document_info(&self) -> String {
