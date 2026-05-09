@@ -290,6 +290,25 @@ export const pageCommands: CommandDef[] = [
       (ih as any).updateCaret?.();
     },
   },
+  {
+    id: 'page:hide-current',
+    label: '현재 쪽만 감추기',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const cursor = (ih as any).cursor;
+      if (!cursor) return;
+      const pageIndex = cursor.rect?.pageIndex ?? 0;
+      try {
+        services.wasm.toggleHideHeaderFooter(pageIndex, true);
+        services.wasm.toggleHideHeaderFooter(pageIndex, false);
+        services.eventBus.emit('document-changed');
+      } catch (err) {
+        console.warn('[page:hide-current] 현재 쪽 감추기 실패:', err);
+      }
+    },
+  },
   // ─── 머리말/꼬리말 필드 삽입 ────────────────────
   {
     id: 'page:insert-field-pagenum',
