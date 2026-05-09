@@ -215,22 +215,25 @@ impl DocumentCore {
         }
 
         // 마지막 항목: 셀의 첫 문단 텍스트를 교체
+        let last_idx = location.nested_path.len() - 1;
         let last = location.nested_path.last().unwrap();
         match last {
             NestedEntry::TableCell { control_index, cell_index, .. } => {
                 let ctrl = para.controls.get_mut(*control_index)
-                    .ok_or_else(|| HwpError::InvalidField("컨트롤이 표가 아님".into()))?;
+                    .ok_or_else(|| HwpError::InvalidField(
+                        format!("경로[{}]: 컨트롤 인덱스 {} 초과", last_idx, control_index)))?;
                 if let Control::Table(ref mut table) = ctrl {
                     let cell = table.cells.get_mut(*cell_index)
-                        .ok_or_else(|| HwpError::InvalidField("셀 인덱스 초과".into()))?;
+                        .ok_or_else(|| HwpError::InvalidField(
+                            format!("경로[{}]: 셀 인덱스 {} 초과", last_idx, cell_index)))?;
                     if let Some(cell_para) = cell.paragraphs.first_mut() {
                         cell_para.text = value.to_string();
-                        let new_len = value.chars().count();
-                        cell_para.char_offsets = (0..new_len).map(|i| i as u32).collect();
+                        rebuild_char_offsets(cell_para);
                     }
                     Ok(())
                 } else {
-                    Err(HwpError::InvalidField("컨트롤이 표가 아님".into()))
+                    Err(HwpError::InvalidField(
+                        format!("경로[{}]: controls[{}]가 Table이 아님", last_idx, control_index)))
                 }
             }
             _ => Err(HwpError::InvalidField("셀 필드가 아닌 위치".into())),
