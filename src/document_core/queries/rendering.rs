@@ -256,19 +256,22 @@ impl DocumentCore {
 /// pHYs chunk: 4-byte X ppm + 4-byte Y ppm + 1-byte unit(1=meter).
 #[cfg(not(target_arch = "wasm32"))]
 fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
+    const PNG_SIGNATURE: [u8; 8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+    const IHDR_DATA_LEN: usize = 13;
+
     let ppm = (dpi / 0.0254).round() as u32;
-    // PNG 구조: 8-byte signature + chunks (IHDR first, then others)
-    // 각 chunk: 4-byte length + 4-byte type + data + 4-byte CRC
-    if png.len() < 8 {
+    if png.len() < 8 || png[..8] != PNG_SIGNATURE {
         return png;
     }
-    let mut pos = 8; // signature 이후
-    // IHDR chunk 끝 위치 찾기
+    let pos = 8; // signature 이후
     if pos + 8 > png.len() {
         return png;
     }
     let ihdr_len = u32::from_be_bytes([png[pos], png[pos + 1], png[pos + 2], png[pos + 3]]) as usize;
-    let ihdr_end = pos + 4 + 4 + ihdr_len + 4; // length + type + data + CRC
+    if ihdr_len != IHDR_DATA_LEN || &png[pos + 4..pos + 8] != b"IHDR" {
+        return png;
+    }
+    let Some(ihdr_end) = pos.checked_add(4 + 4 + ihdr_len + 4) else { return png };
     if ihdr_end > png.len() {
         return png;
     }
