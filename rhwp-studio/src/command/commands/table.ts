@@ -18,6 +18,43 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
   };
 }
 
+function blockCalcCommand(id: string, label: string, func: string, shortcut: string): CommandDef {
+  return {
+    id,
+    label,
+    shortcutLabel: shortcut,
+    canExecute: inTable,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getCursorPosition();
+      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
+      try {
+        let colCount = 1;
+        try {
+          const props = services.wasm.getTableProperties(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex);
+          colCount = props.colCount || props.cols || 1;
+        } catch {
+          colCount = Math.max(1, pos.cellIndex + 1);
+        }
+        const row = Math.floor(pos.cellIndex / colCount);
+        const col = pos.cellIndex % colCount;
+        const formula = `=${func}(above)`;
+        const result = services.wasm.evaluateTableFormula(
+          pos.sectionIndex, pos.parentParaIndex, pos.controlIndex,
+          row, col, formula, true,
+        );
+        const parsed = JSON.parse(result);
+        if (parsed.ok) {
+          services.eventBus.emit('document-changed');
+        }
+      } catch (err) {
+        console.warn(`[${id}] 블록 계산 실패:`, err);
+      }
+    },
+  };
+}
+
 export const tableCommands: CommandDef[] = [
   { id: 'table:create', label: '표 만들기', icon: 'icon-table',
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
@@ -371,9 +408,9 @@ export const tableCommands: CommandDef[] = [
     },
   },
   stub('table:block-formula', '블록 계산식'),
-  stub('table:block-sum', '블록 합계', undefined, 'Ctrl+Shift+S'),
-  stub('table:block-avg', '블록 평균', undefined, 'Ctrl+Shift+A'),
-  stub('table:block-product', '블록 곱', undefined, 'Ctrl+Shift+P'),
+  blockCalcCommand('table:block-sum', '블록 합계', 'SUM', 'Ctrl+Shift+S'),
+  blockCalcCommand('table:block-avg', '블록 평균', 'AVERAGE', 'Ctrl+Shift+A'),
+  blockCalcCommand('table:block-product', '블록 곱', 'PRODUCT', 'Ctrl+Shift+P'),
   stub('table:thousand-sep', '1,000 단위 구분 쉼표'),
   stub('table:decimal-add', '자릿점 넣기'),
   stub('table:decimal-remove', '자릿점 빼기'),

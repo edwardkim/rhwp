@@ -87,6 +87,9 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 표
   [{ key: 'insert', alt: true }, 'table:insert-col-left'],
   [{ key: 'delete', alt: true }, 'table:delete-col'],
+  [{ key: 's', ctrl: true, shift: true }, 'table:block-sum'],
+  [{ key: 'a', ctrl: true, shift: true }, 'table:block-avg'],
+  [{ key: 'p', ctrl: true, shift: true }, 'table:block-product'],
 ];
 
 /**
