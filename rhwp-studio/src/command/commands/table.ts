@@ -384,26 +384,27 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex, cei = pos.cellIndex;
+      const cpi = pos.cellParaIndex ?? 0;
       try {
-        const len = services.wasm.getCellParagraphLength(sec, ppi, ci, cei, 0);
+        const len = services.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
         if (len <= 0) return;
-        const text = services.wasm.getTextInCell(sec, ppi, ci, cei, 0, 0, len);
+        const text = services.wasm.getTextInCell(sec, ppi, ci, cei, cpi, 0, len);
         const trimmed = text.trim();
         if (!trimmed) return;
-        const hasCommas = trimmed.includes(',');
+        const stripped = trimmed.replace(/,/g, '');
+        const numMatch = stripped.match(/^([+-]?)(\d+)(\.?\d*)$/);
+        if (!numMatch) return;
+        const [, sign, intPart, decPart] = numMatch;
         let result: string;
-        if (hasCommas) {
-          result = trimmed.replace(/,/g, '');
+        if (trimmed.includes(',')) {
+          result = sign + intPart + decPart;
         } else {
-          const match = trimmed.match(/^([+-]?)(\d+)(\.?\d*)$/);
-          if (!match) return;
-          const [, sign, intPart, decPart] = match;
           const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
           result = sign + formatted + decPart;
         }
         if (result === text) return;
-        services.wasm.deleteTextInCell(sec, ppi, ci, cei, 0, 0, len);
-        services.wasm.insertTextInCell(sec, ppi, ci, cei, 0, 0, result);
+        services.wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
+        services.wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
         services.eventBus.emit('document-changed');
       } catch (err) {
         console.warn('[table:thousand-sep] 구분 쉼표 변환 실패:', err);
@@ -420,10 +421,11 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex, cei = pos.cellIndex;
+      const cpi = pos.cellParaIndex ?? 0;
       try {
-        const len = services.wasm.getCellParagraphLength(sec, ppi, ci, cei, 0);
+        const len = services.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
         if (len <= 0) return;
-        const text = services.wasm.getTextInCell(sec, ppi, ci, cei, 0, 0, len);
+        const text = services.wasm.getTextInCell(sec, ppi, ci, cei, cpi, 0, len);
         const trimmed = text.trim();
         const raw = trimmed.replace(/,/g, '');
         const match = raw.match(/^([+-]?)(\d+)(\.(\d*))?$/);
@@ -434,8 +436,8 @@ export const tableCommands: CommandDef[] = [
         const fmtInt = hasCommas ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : intPart;
         const result = sign + fmtInt + '.' + newDecimals;
         if (result === text) return;
-        services.wasm.deleteTextInCell(sec, ppi, ci, cei, 0, 0, len);
-        services.wasm.insertTextInCell(sec, ppi, ci, cei, 0, 0, result);
+        services.wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
+        services.wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
         services.eventBus.emit('document-changed');
       } catch (err) {
         console.warn('[table:decimal-add] 자릿점 넣기 실패:', err);
@@ -452,10 +454,11 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex, cei = pos.cellIndex;
+      const cpi = pos.cellParaIndex ?? 0;
       try {
-        const len = services.wasm.getCellParagraphLength(sec, ppi, ci, cei, 0);
+        const len = services.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
         if (len <= 0) return;
-        const text = services.wasm.getTextInCell(sec, ppi, ci, cei, 0, 0, len);
+        const text = services.wasm.getTextInCell(sec, ppi, ci, cei, cpi, 0, len);
         const trimmed = text.trim();
         const raw = trimmed.replace(/,/g, '');
         const match = raw.match(/^([+-]?)(\d+)\.(\d+)$/);
@@ -466,8 +469,8 @@ export const tableCommands: CommandDef[] = [
         const newDecimals = decimals.slice(0, -1);
         const result = newDecimals ? sign + fmtInt + '.' + newDecimals : sign + fmtInt;
         if (result === text) return;
-        services.wasm.deleteTextInCell(sec, ppi, ci, cei, 0, 0, len);
-        services.wasm.insertTextInCell(sec, ppi, ci, cei, 0, 0, result);
+        services.wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
+        services.wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
         services.eventBus.emit('document-changed');
       } catch (err) {
         console.warn('[table:decimal-remove] 자릿점 빼기 실패:', err);
