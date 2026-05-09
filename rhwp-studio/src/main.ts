@@ -256,14 +256,27 @@ function setupFileInput(): void {
       return;
     }
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
-    if (imageExts.some(ext => dropName.endsWith(ext)) && inputHandler && wasm.pageCount > 0) {
+    if (imageExts.some(ext => dropName.endsWith(ext))) {
+      if (!inputHandler || wasm.pageCount === 0) {
+        alert('문서를 먼저 열어주세요.');
+        return;
+      }
       const data = new Uint8Array(await file.arrayBuffer());
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
       const img = new Image();
-      img.src = URL.createObjectURL(file);
-      await new Promise<void>(r => { img.onload = () => r(); });
-      URL.revokeObjectURL(img.src);
-      inputHandler.enterImagePlacementMode(data, ext, img.naturalWidth, img.naturalHeight, file.name);
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('이미지 로드 실패'));
+          img.src = objectUrl;
+        });
+        inputHandler.enterImagePlacementMode(data, ext, img.naturalWidth, img.naturalHeight, file.name);
+      } catch {
+        alert('이미지 파일을 읽을 수 없습니다.');
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
       return;
     }
     alert('HWP/HWPX 또는 이미지 파일만 지원합니다.');
