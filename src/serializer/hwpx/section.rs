@@ -192,7 +192,7 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             .collect()
     };
 
-    if !slots.iter().any(|c| matches!(c, Control::Equation(_))) {
+    if slots.is_empty() {
         return render_hp_t_content(&para.text);
     }
 
@@ -376,7 +376,7 @@ fn render_common_shape_xml(tag: &str, c: &CommonObjAttr) -> String {
 
 fn render_note_sublist(tag: &str, number: u16, paragraphs: &[Paragraph], ctx: &mut SerializeContext) -> String {
     let mut out = format!(
-        r#"<hp:{tag} number="{num}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+        r#"<hp:ctrl><hp:{tag} number="{num}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
         tag = tag, num = number,
     );
     let mut vert_cursor: u32 = 0;
@@ -391,7 +391,7 @@ fn render_note_sublist(tag: &str, number: u16, paragraphs: &[Paragraph], ctx: &m
         out.push_str(&linesegs);
         out.push_str(r#"</hp:linesegarray></hp:p>"#);
     }
-    out.push_str(&format!("</hp:subList></hp:{tag}>", tag = tag));
+    out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
     out
 }
 

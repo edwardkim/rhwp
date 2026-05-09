@@ -17,6 +17,7 @@
 
 use std::collections::{HashMap, HashSet};
 
+use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::serializer::SerializeError;
 
@@ -109,6 +110,24 @@ impl SerializeContext {
         }
         for (idx, _) in doc.doc_info.styles.iter().enumerate() {
             ctx.style_ids.register(idx as u16);
+        }
+
+        // 인라인 컨트롤(표/그림 등)의 borderFillIDRef를 사전 등록하여
+        // assert_all_refs_resolved 검증 시 누락 방지.
+        for sec in &doc.sections {
+            for para in &sec.paragraphs {
+                for ctrl in &para.controls {
+                    if let Control::Table(tbl) = ctrl {
+                        ctx.border_fill_ids.register(tbl.border_fill_id);
+                        for zone in &tbl.zones {
+                            ctx.border_fill_ids.register(zone.border_fill_id);
+                        }
+                        for cell in &tbl.cells {
+                            ctx.border_fill_ids.register(cell.border_fill_id);
+                        }
+                    }
+                }
+            }
         }
 
         // BinData: bin_data_content의 storage_id → manifest 엔트리 생성
