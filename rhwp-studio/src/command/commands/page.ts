@@ -301,8 +301,11 @@ export const pageCommands: CommandDef[] = [
       if (!cursor) return;
       const pageIndex = cursor.rect?.pageIndex ?? 0;
       try {
-        services.wasm.toggleHideHeaderFooter(pageIndex, true);
-        services.wasm.toggleHideHeaderFooter(pageIndex, false);
+        const headerResult = services.wasm.toggleHideHeaderFooter(pageIndex, true);
+        const footerResult = services.wasm.toggleHideHeaderFooter(pageIndex, false);
+        if (headerResult.hidden !== footerResult.hidden) {
+          services.wasm.toggleHideHeaderFooter(pageIndex, false);
+        }
         services.eventBus.emit('document-changed');
       } catch (err) {
         console.warn('[page:hide-current] 현재 쪽 감추기 실패:', err);
