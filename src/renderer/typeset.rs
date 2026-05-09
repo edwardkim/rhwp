@@ -2081,8 +2081,15 @@ impl TypesetEngine {
                         let total_content = mt.remaining_content_for_row(r, 0.0);
                         let remaining_content = total_content - avail_content_for_r;
                         let min_first_line = mt.min_first_line_height_for_row(r, 0.0);
+                        // [Task #713] avail_content_for_r 가 한 줄 정도로 너무 작으면 (orphan)
+                        // 분할 대신 행 전체를 다음 페이지로 push. 한컴은 페이지 끝의 작은
+                        // sliver(예: 17.6 px) 를 두지 않고 행 단위로 이동
+                        // (2022 국립국어원 p31 row 8 케이스). 임계값 25 px 는
+                        // synam-001 의 정합 분할 (27.3 px) 과 본 결함 (17.6 px) 사이.
+                        const MIN_TOP_KEEP_PX: f64 = 25.0;
                         if avail_content_for_r >= MIN_SPLIT_CONTENT_PX
                             && avail_content_for_r >= min_first_line
+                            && avail_content_for_r >= MIN_TOP_KEEP_PX
                             && remaining_content >= MIN_SPLIT_CONTENT_PX
                         {
                             end_row = r + 1;
