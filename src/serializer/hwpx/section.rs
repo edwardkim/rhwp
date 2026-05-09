@@ -24,6 +24,7 @@ use std::io::Cursor;
 use quick_xml::Writer;
 
 use crate::model::control::{Control, Equation};
+use crate::model::footnote::{Footnote, Endnote};
 use crate::model::document::{Document, Section};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo};
@@ -278,6 +279,8 @@ fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Equation(_)
             | Control::Field(_)
             | Control::Form(_)
+            | Control::Footnote(_)
+            | Control::Endnote(_)
     )
 }
 
@@ -305,6 +308,12 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         }
         Control::Shape(shape) => {
             out.push_str(&render_shape(shape));
+        }
+        Control::Footnote(note) => {
+            out.push_str(&render_footnote(note, ctx));
+        }
+        Control::Endnote(note) => {
+            out.push_str(&render_endnote(note, ctx));
         }
         _ => {}
     }
@@ -358,6 +367,35 @@ fn render_common_shape_xml(tag: &str, c: &CommonObjAttr) -> String {
         ml = c.margin.left, mr = c.margin.right,
         mt = c.margin.top, mb = c.margin.bottom,
     )
+}
+
+fn render_note_sublist(tag: &str, number: u16, paragraphs: &[Paragraph], ctx: &mut SerializeContext) -> String {
+    let mut out = format!(
+        r#"<hp:{tag} number="{num}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+        tag = tag, num = number,
+    );
+    let mut vert_cursor: u32 = 0;
+    for (idx, p) in paragraphs.iter().enumerate() {
+        let (t, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        vert_cursor = advance;
+        let cs = first_run_char_shape_id(p);
+        out.push_str(&render_hp_p_open(p, idx as u32));
+        out.push_str(&format!(r#"<hp:run charPrIDRef="{}">"#, cs));
+        out.push_str(&t);
+        out.push_str(r#"</hp:run><hp:linesegarray>"#);
+        out.push_str(&linesegs);
+        out.push_str(r#"</hp:linesegarray></hp:p>"#);
+    }
+    out.push_str(&format!("</hp:subList></hp:{tag}>", tag = tag));
+    out
+}
+
+fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
+    render_note_sublist("footNote", note.number, &note.paragraphs, ctx)
+}
+
+fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
+    render_note_sublist("endNote", note.number, &note.paragraphs, ctx)
 }
 
 fn render_equation(eq: &Equation) -> String {
