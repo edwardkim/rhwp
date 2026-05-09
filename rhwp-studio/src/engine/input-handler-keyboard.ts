@@ -924,7 +924,6 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
       else this.cursor.clearSelection();
       this.cursor.moveToLineStart();
       this.updateCaret();
-      if (e.shiftKey) this.updateSelection();
       break;
     }
     case 'arrowright': {
@@ -933,7 +932,6 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
       else this.cursor.clearSelection();
       this.cursor.moveToLineEnd();
       this.updateCaret();
-      if (e.shiftKey) this.updateSelection();
       break;
     }
     case 'arrowup': {
@@ -942,7 +940,6 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
       else this.cursor.clearSelection();
       this.cursor.moveToDocumentStart();
       this.updateCaret();
-      if (e.shiftKey) this.updateSelection();
       break;
     }
     case 'arrowdown': {
@@ -951,7 +948,6 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
       else this.cursor.clearSelection();
       this.cursor.moveToDocumentEnd();
       this.updateCaret();
-      if (e.shiftKey) this.updateSelection();
       break;
     }
     // 그 외 Ctrl 조합 (줌 등)은 브라우저 기본 동작 허용
