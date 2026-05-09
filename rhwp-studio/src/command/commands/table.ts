@@ -349,8 +349,90 @@ export const tableCommands: CommandDef[] = [
       ih.enterTableCaptionEditing(sec, ppi, ci, charOffset);
     },
   },
-  stub('table:cell-height-equal', '셀 높이를 같게', undefined, 'H'),
-  stub('table:cell-width-equal', '셀 너비를 같게', undefined, 'W'),
+  {
+    id: 'table:cell-height-equal',
+    label: '셀 높이를 같게',
+    shortcutLabel: 'H',
+    canExecute: inTable,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getCursorPosition();
+      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
+      const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex;
+      try {
+        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
+        const rowHeights = new Map<number, { sum: number; count: number }>();
+        for (let i = 0; i < dims.cellCount; i++) {
+          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
+          if (info.rowSpan > 1) continue;
+          const props = services.wasm.getCellProperties(sec, ppi, ci, i);
+          const entry = rowHeights.get(info.row);
+          if (entry) { entry.sum += props.height; entry.count++; }
+          else rowHeights.set(info.row, { sum: props.height, count: 1 });
+        }
+        if (rowHeights.size < 2) return;
+        let totalHeight = 0;
+        for (const v of rowHeights.values()) totalHeight += v.sum / v.count;
+        const avgHeight = Math.round(totalHeight / rowHeights.size);
+        const updates: Array<{ cellIdx: number; heightDelta: number }> = [];
+        for (let i = 0; i < dims.cellCount; i++) {
+          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
+          if (info.rowSpan > 1) continue;
+          const props = services.wasm.getCellProperties(sec, ppi, ci, i);
+          const delta = avgHeight - props.height;
+          if (delta !== 0) updates.push({ cellIdx: i, heightDelta: delta });
+        }
+        if (updates.length === 0) return;
+        services.wasm.resizeTableCells(sec, ppi, ci, updates);
+        services.eventBus.emit('document-changed');
+      } catch (err) {
+        console.warn('[table:cell-height-equal] 높이 균등화 실패:', err);
+      }
+    },
+  },
+  {
+    id: 'table:cell-width-equal',
+    label: '셀 너비를 같게',
+    shortcutLabel: 'W',
+    canExecute: inTable,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getCursorPosition();
+      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
+      const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex;
+      try {
+        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
+        const colWidths = new Map<number, { sum: number; count: number }>();
+        for (let i = 0; i < dims.cellCount; i++) {
+          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
+          if (info.colSpan > 1) continue;
+          const props = services.wasm.getCellProperties(sec, ppi, ci, i);
+          const entry = colWidths.get(info.col);
+          if (entry) { entry.sum += props.width; entry.count++; }
+          else colWidths.set(info.col, { sum: props.width, count: 1 });
+        }
+        if (colWidths.size < 2) return;
+        let totalWidth = 0;
+        for (const v of colWidths.values()) totalWidth += v.sum / v.count;
+        const avgWidth = Math.round(totalWidth / colWidths.size);
+        const updates: Array<{ cellIdx: number; widthDelta: number }> = [];
+        for (let i = 0; i < dims.cellCount; i++) {
+          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
+          if (info.colSpan > 1) continue;
+          const props = services.wasm.getCellProperties(sec, ppi, ci, i);
+          const delta = avgWidth - props.width;
+          if (delta !== 0) updates.push({ cellIdx: i, widthDelta: delta });
+        }
+        if (updates.length === 0) return;
+        services.wasm.resizeTableCells(sec, ppi, ci, updates);
+        services.eventBus.emit('document-changed');
+      } catch (err) {
+        console.warn('[table:cell-width-equal] 너비 균등화 실패:', err);
+      }
+    },
+  },
   {
     id: 'table:formula',
     label: '계산식(F)...',
