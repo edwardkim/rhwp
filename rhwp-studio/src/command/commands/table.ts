@@ -30,15 +30,9 @@ function blockCalcCommand(id: string, label: string, func: string, shortcut: str
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       try {
-        let colCount = 1;
-        try {
-          const props = services.wasm.getTableProperties(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex);
-          colCount = props.colCount || props.cols || 1;
-        } catch {
-          colCount = Math.max(1, pos.cellIndex + 1);
-        }
-        const row = Math.floor(pos.cellIndex / colCount);
-        const col = pos.cellIndex % colCount;
+        const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
+        const row = cellInfo.row;
+        const col = cellInfo.col;
         const formula = `=${func}(above)`;
         const result = services.wasm.evaluateTableFormula(
           pos.sectionIndex, pos.parentParaIndex, pos.controlIndex,
