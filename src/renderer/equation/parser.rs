@@ -257,6 +257,24 @@ impl EqParser {
             return EqNode::Text(space.to_string());
         }
 
+        // LaTeX \overset{over}{base}, \underset{under}{base}, \stackrel{over}{base}
+        if matches!(cu, "OVERSET" | "STACKREL") {
+            let over = self.parse_single_or_group();
+            let base = self.parse_single_or_group();
+            return EqNode::Superscript {
+                base: Box::new(base),
+                sup: Box::new(over),
+            };
+        }
+        if cu == "UNDERSET" {
+            let under = self.parse_single_or_group();
+            let base = self.parse_single_or_group();
+            return EqNode::Subscript {
+                base: Box::new(base),
+                sub: Box::new(under),
+            };
+        }
+
         // LaTeX \begin{env}...\end{env}
         if cu == "BEGIN" {
             return self.parse_latex_environment();
@@ -858,9 +876,13 @@ impl EqParser {
             "PMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Paren, &env_name),
             "BMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Bracket, &env_name),
             "VMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Vert, &env_name),
-            "MATRIX" => self.parse_latex_env_matrix(MatrixStyle::Plain, &env_name),
+            "BVMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Vert, &env_name),
+            "SMALLMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Plain, &env_name),
+            "MATRIX" | "ARRAY" => self.parse_latex_env_matrix(MatrixStyle::Plain, &env_name),
             "CASES" => self.parse_latex_env_cases(&env_name),
-            "ALIGNED" | "ALIGN" | "EQNARRAY" => self.parse_latex_env_eqalign(&env_name),
+            "ALIGNED" | "ALIGN" | "EQNARRAY" | "SPLIT" | "GATHER" | "GATHERED" => {
+                self.parse_latex_env_eqalign(&env_name)
+            }
             _ => EqNode::Empty,
         }
     }
@@ -2000,5 +2022,75 @@ mod latex_compat_tests {
     fn test_latex_phantom() {
         let ast = parse(r"\phantom{x}");
         assert!(!matches!(ast, EqNode::Empty), r"\phantom should produce a space node, not Empty: {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_overset() {
+        let ast = parse(r"\overset{n}{=}");
+        match &ast {
+            EqNode::Superscript { base, sup } => {
+                assert!(format!("{:?}", base).contains("="));
+                assert!(format!("{:?}", sup).contains("n"));
+            }
+            _ => panic!(r"Expected Superscript for \overset, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_underset() {
+        let ast = parse(r"\underset{x}{y}");
+        match &ast {
+            EqNode::Subscript { base, sub } => {
+                assert!(format!("{:?}", base).contains("y"));
+                assert!(format!("{:?}", sub).contains("x"));
+            }
+            _ => panic!(r"Expected Subscript for \underset, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_stackrel() {
+        let ast = parse(r"\stackrel{def}{=}");
+        match &ast {
+            EqNode::Superscript { sup, .. } => {
+                let s = format!("{:?}", sup);
+                assert!(s.contains("def"), r"\stackrel sup should contain 'def': {}", s);
+            }
+            _ => panic!(r"Expected Superscript for \stackrel, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_array() {
+        let ast = parse(r"\begin{array} a & b \\ c & d \end{array}");
+        match &ast {
+            EqNode::Matrix { rows, .. } => {
+                assert_eq!(rows.len(), 2);
+                assert_eq!(rows[0].len(), 2);
+            }
+            _ => panic!(r"Expected Matrix for \begin{{array}}, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_smallmatrix() {
+        let ast = parse(r"\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}");
+        match &ast {
+            EqNode::Matrix { rows, .. } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!(r"Expected Matrix for \begin{{smallmatrix}}, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_split() {
+        let ast = parse(r"\begin{split} a &= b \\ c &= d \end{split}");
+        match &ast {
+            EqNode::EqAlign { rows } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!(r"Expected EqAlign for \begin{{split}}, got {:?}", ast),
+        }
     }
 }

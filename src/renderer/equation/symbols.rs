@@ -255,8 +255,9 @@ pub fn is_structure_command(cmd: &str) -> bool {
         "OVER" | "ATOP" | "SQRT" | "ROOT" | "FRAC" | "DFRAC" | "TFRAC" | "TEXT" | "BEGIN" | "END" |
         "LEFT" | "RIGHT" | "BIGG" |
         "OPERATORNAME" | "PHANTOM" | "VPHANTOM" | "HPHANTOM" |
+        "OVERSET" | "UNDERSET" | "STACKREL" |
         "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE" |
-        "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" |
+        "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" | "VMATRIX" | "SMALLMATRIX" |
         "CASES" | "PILE" | "LPILE" | "RPILE" |
         "CHOOSE" | "BINOM" |
         "lim" | "Lim" |
