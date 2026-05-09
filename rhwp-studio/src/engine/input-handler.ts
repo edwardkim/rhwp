@@ -25,6 +25,9 @@ import * as _text from './input-handler-text';
 import * as _picture from './input-handler-picture';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const DRAG_SCROLL_EDGE_PX = 48;
+const DRAG_SCROLL_MIN_STEP_PX = 2;
+const DRAG_SCROLL_MAX_STEP_PX = 20;
 
 function createOverlaySvg(): SVGSVGElement {
   const svg = document.createElementNS(SVG_NS, 'svg');
@@ -94,6 +97,9 @@ export class InputHandler {
   // 마우스 드래그 선택 상태
   private isDragging = false;
   private dragRafId = 0; // requestAnimationFrame throttle용
+  private dragAutoScrollRafId = 0;
+  private dragLastClientX = 0;
+  private dragLastClientY = 0;
 
   // 표 경계선 hover 상태
   private resizeHoverRafId = 0;
@@ -963,12 +969,19 @@ export class InputHandler {
 
   /** 마우스 이벤트에서 hitTest 결과를 반환한다 */
   private hitTestFromEvent(e: MouseEvent): DocumentPosition | null {
+    return this.hitTestFromClientPoint(e.clientX, e.clientY);
+  }
+
+  /** 화면 좌표에서 hitTest 결과를 반환한다 */
+  private hitTestFromClientPoint(clientX: number, clientY: number): DocumentPosition | null {
     const zoom = this.viewportManager.getZoom();
     const scrollContent = this.container.querySelector('#scroll-content');
     if (!scrollContent) return null;
     const contentRect = scrollContent.getBoundingClientRect();
-    const contentX = e.clientX - contentRect.left;
-    const contentY = e.clientY - contentRect.top;
+    // [Task #661 + #685+#689 통합] PR #718 영역 의 clientX/Y parameter 영역 +
+    // PR #693 영역 의 getPageAtPoint (그리드 모드 click 좌표 정합) 보존.
+    const contentX = clientX - contentRect.left;
+    const contentY = clientY - contentRect.top;
     const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
     const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
     const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
@@ -979,6 +992,97 @@ export class InputHandler {
       return this.wasm.hitTest(pageIdx, pageX, pageY);
     } catch {
       return null;
+    }
+  }
+
+  /** 텍스트 선택 드래그를 시작한다 */
+  private startTextSelectionDrag(e: MouseEvent): void {
+    this.isDragging = true;
+    this.dragLastClientX = e.clientX;
+    this.dragLastClientY = e.clientY;
+    document.addEventListener('mousemove', this.onMouseMoveBound);
+  }
+
+  /** 텍스트 선택 드래그 포인터 좌표를 갱신한다 */
+  private updateTextSelectionDragPointer(e: MouseEvent): void {
+    this.dragLastClientX = e.clientX;
+    this.dragLastClientY = e.clientY;
+    this.updateTextSelectionDragAutoScroll();
+  }
+
+  /** 마지막 포인터 좌표 기준으로 드래그 선택 focus를 갱신한다 */
+  private updateTextSelectionDragFromPointer(): void {
+    if (!this.isDragging) return;
+
+    const hit = this.hitTestFromClientPoint(this.dragLastClientX, this.dragLastClientY);
+    if (hit && hit.paragraphIndex < 0xFFFFFF00) {
+      this.cursor.moveTo(hit);
+      this.updateCaretDuringDrag();
+    }
+  }
+
+  /** 텍스트 선택 드래그를 종료한다 */
+  private stopTextSelectionDrag(): void {
+    this.isDragging = false;
+    document.removeEventListener('mousemove', this.onMouseMoveBound);
+    this.stopTextSelectionDragAutoScroll();
+  }
+
+  private getTextSelectionDragScrollDeltaY(): number {
+    const rect = this.container.getBoundingClientRect();
+    const topEdge = rect.top + DRAG_SCROLL_EDGE_PX;
+    const bottomEdge = rect.top + this.container.clientHeight - DRAG_SCROLL_EDGE_PX;
+    const clientY = this.dragLastClientY;
+
+    if (clientY < topEdge) {
+      return -this.scaleTextSelectionDragScrollStep(topEdge - clientY);
+    }
+    if (clientY > bottomEdge) {
+      return this.scaleTextSelectionDragScrollStep(clientY - bottomEdge);
+    }
+    return 0;
+  }
+
+  private scaleTextSelectionDragScrollStep(distance: number): number {
+    const ratio = Math.min(1, Math.max(0, distance / DRAG_SCROLL_EDGE_PX));
+    return Math.round(DRAG_SCROLL_MIN_STEP_PX + (DRAG_SCROLL_MAX_STEP_PX - DRAG_SCROLL_MIN_STEP_PX) * ratio);
+  }
+
+  private updateTextSelectionDragAutoScroll(): void {
+    if (!this.isDragging) {
+      this.stopTextSelectionDragAutoScroll();
+      return;
+    }
+    if (this.getTextSelectionDragScrollDeltaY() === 0) {
+      this.stopTextSelectionDragAutoScroll();
+      return;
+    }
+    if (!this.dragAutoScrollRafId) {
+      this.dragAutoScrollRafId = requestAnimationFrame(() => this.runTextSelectionDragAutoScroll());
+    }
+  }
+
+  private runTextSelectionDragAutoScroll(): void {
+    this.dragAutoScrollRafId = 0;
+    if (!this.isDragging) return;
+
+    const deltaY = this.getTextSelectionDragScrollDeltaY();
+    if (deltaY === 0) return;
+
+    const before = this.container.scrollTop;
+    const maxScrollTop = Math.max(0, this.container.scrollHeight - this.container.clientHeight);
+    this.container.scrollTop = Math.max(0, Math.min(maxScrollTop, before + deltaY));
+
+    if (this.container.scrollTop === before) return;
+
+    this.updateTextSelectionDragFromPointer();
+    this.dragAutoScrollRafId = requestAnimationFrame(() => this.runTextSelectionDragAutoScroll());
+  }
+
+  private stopTextSelectionDragAutoScroll(): void {
+    if (this.dragAutoScrollRafId) {
+      cancelAnimationFrame(this.dragAutoScrollRafId);
+      this.dragAutoScrollRafId = 0;
     }
   }
 
@@ -1542,7 +1646,9 @@ export class InputHandler {
       const zoom = this.viewportManager.getZoom();
       this.caret.hideComposition();
       this.caret.updateLive(rect, zoom);
-      this.scrollCaretIntoView(rect);
+      // [Task #661] 드래그 중 스크롤은 caret rect 가 아니라 포인터 edge 기준 경로에서만 처리한다.
+      // 메인테이너 통합 정정: devel 의 updateLive (PR #664 깜박임 타이머 유지 본질) 보존 +
+      // PR #718 의 scrollCaretIntoView 부재 본질 적용.
     }
     this.updateSelection();
 
@@ -1904,6 +2010,7 @@ export class InputHandler {
       cancelAnimationFrame(this.dragRafId);
       this.dragRafId = 0;
     }
+    this.stopTextSelectionDragAutoScroll();
     if (this.resizeHoverRafId) {
       cancelAnimationFrame(this.resizeHoverRafId);
       this.resizeHoverRafId = 0;
@@ -1913,6 +2020,7 @@ export class InputHandler {
     this.container.removeEventListener('dblclick', this.onDblClickBound);
     this.container.removeEventListener('contextmenu', this.onContextMenuBound);
     this.container.removeEventListener('mousemove', this.onMouseMoveBound);
+    document.removeEventListener('mousemove', this.onMouseMoveBound);
     document.removeEventListener('mouseup', this.onMouseUpBound);
     this.textarea.removeEventListener('keydown', this.onKeyDownBound);
     this.textarea.removeEventListener('input', this.onInputBound);
