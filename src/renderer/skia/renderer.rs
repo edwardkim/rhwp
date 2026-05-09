@@ -15,7 +15,7 @@ use crate::renderer::layer_renderer::{
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
 use super::equation_conv::render_equation;
-use super::image_conv::{draw_image_bytes, ImageSampling};
+use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 
 pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
@@ -113,9 +113,9 @@ impl SkiaLayerRenderer {
                 "invalid raster max pixel count: 0".to_string(),
             ));
         }
-        let pixel_count = (width as u64).checked_mul(height as u64).ok_or_else(|| {
-            HwpError::RenderError("raster pixel count overflow".to_string())
-        })?;
+        let pixel_count = (width as u64)
+            .checked_mul(height as u64)
+            .ok_or_else(|| HwpError::RenderError("raster pixel count overflow".to_string()))?;
         if pixel_count > options.max_pixels {
             return Err(HwpError::RenderError(format!(
                 "raster pixel count out of range: {pixel_count}"
@@ -760,7 +760,19 @@ impl SkiaLayerRenderer {
                         PaintOp::Placeholder { bbox, placeholder } => {
                             draw_placeholder(*bbox, placeholder.label.as_str());
                         }
-                        PaintOp::RawSvg { bbox, .. } => draw_placeholder(*bbox, "svg"),
+                        PaintOp::RawSvg { bbox, raw } => {
+                            if !draw_svg_fragment(
+                                canvas,
+                                raw.svg.as_str(),
+                                bbox.x as f32,
+                                bbox.y as f32,
+                                bbox.width as f32,
+                                bbox.height as f32,
+                                ImageSampling::linear(),
+                            ) {
+                                draw_placeholder(*bbox, "svg");
+                            }
+                        }
                     }
                 }
             }
@@ -1661,7 +1673,7 @@ mod tests {
                     PaintOp::RawSvg {
                         bbox: BoundingBox::new(16.0, 0.0, 14.0, 14.0),
                         raw: RawSvgNode {
-                            svg: "<rect/>".to_string(),
+                            svg: "<invalid".to_string(),
                         },
                     },
                     PaintOp::FormObject {
@@ -1677,6 +1689,76 @@ mod tests {
         let image = decode_rgba(&output.bytes);
 
         assert!(count_ink(&image) > 40);
+    }
+
+    #[test]
+    fn renders_raw_svg_fragment_as_colored_ink() {
+        let tree = PageLayerTree::new(
+            32.0,
+            24.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 32.0, 24.0),
+                None,
+                vec![PaintOp::RawSvg {
+                    bbox: BoundingBox::new(4.0, 4.0, 18.0, 12.0),
+                    raw: RawSvgNode {
+                        svg: "<rect x=\"0\" y=\"0\" width=\"18\" height=\"12\" fill=\"#00ff00\"/>"
+                            .to_string(),
+                    },
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render raw svg");
+        let image = decode_rgba(&output.bytes);
+        let green_ink = image
+            .pixels()
+            .filter(|pixel| pixel[0] < 48 && pixel[1] > 180 && pixel[2] < 48 && pixel[3] > 0)
+            .count();
+
+        assert!(
+            green_ink > 100,
+            "raw SVG fragment should render as green ink"
+        );
+    }
+
+    #[test]
+    fn raw_svg_replay_does_not_load_external_file_hrefs() {
+        let external_path = std::env::temp_dir().join(format!(
+            "rhwp-skia-raw-svg-external-{}.png",
+            std::process::id()
+        ));
+        std::fs::write(&external_path, solid_png([255, 0, 0, 255])).expect("write external png");
+        let external_href = external_path.to_string_lossy();
+        let tree = PageLayerTree::new(
+            32.0,
+            24.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 32.0, 24.0),
+                None,
+                vec![PaintOp::RawSvg {
+                    bbox: BoundingBox::new(4.0, 4.0, 20.0, 16.0),
+                    raw: RawSvgNode {
+                        svg: format!(
+                            "<image href=\"{}\" x=\"0\" y=\"0\" width=\"20\" height=\"16\"/>",
+                            external_href
+                        ),
+                    },
+                }],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render raw svg with external href");
+        let _ = std::fs::remove_file(&external_path);
+        let image = decode_rgba(&output.bytes);
+        let red_ink = image
+            .pixels()
+            .filter(|pixel| pixel[0] > 180 && pixel[1] < 48 && pixel[2] < 48 && pixel[3] > 0)
+            .count();
+
+        assert_eq!(red_ink, 0, "raw SVG replay must not load file hrefs");
     }
 
     #[test]
