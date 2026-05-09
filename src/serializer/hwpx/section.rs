@@ -19,8 +19,6 @@
 //!   - `paragraph.char_shapes[0].char_shape_id` → 첫 `<hp:run charPrIDRef>`
 //!   - `paragraph.line_segs[i]` → 각 `<hp:lineseg>` 속성 (6개 필드 그대로 출력)
 
-use std::io::Cursor;
-
 use quick_xml::Writer;
 
 use crate::model::control::{Control, Equation};
@@ -297,17 +295,19 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             out.push_str(&render_equation(eq));
         }
         Control::Table(tbl) => {
-            if let Ok(xml) = writer_to_string(|w| table::write_table(w, tbl, ctx)) {
-                out.push_str(&xml);
+            match writer_to_string(|w| table::write_table(w, tbl, ctx)) {
+                Ok(xml) => out.push_str(&xml),
+                Err(e) => eprintln!("[hwpx] Table 직렬화 실패: {e}"),
             }
         }
         Control::Picture(pic) => {
-            if let Ok(xml) = writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
-                out.push_str(&xml);
+            match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
+                Ok(xml) => out.push_str(&xml),
+                Err(e) => eprintln!("[hwpx] Picture 직렬화 실패: {e}"),
             }
         }
         Control::Shape(shape) => {
-            out.push_str(&render_shape(shape));
+            out.push_str(&render_shape(shape, ctx));
         }
         Control::Footnote(note) => {
             out.push_str(&render_footnote(note, ctx));
@@ -321,17 +321,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
 
 fn writer_to_string<F>(f: F) -> Result<String, SerializeError>
 where
-    F: FnOnce(&mut Writer<Cursor<Vec<u8>>>) -> Result<(), SerializeError>,
+    F: FnOnce(&mut Writer<Vec<u8>>) -> Result<(), SerializeError>,
 {
-    let buf = Vec::new();
-    let cursor = Cursor::new(buf);
-    let mut writer = Writer::new(cursor);
+    let mut writer = Writer::new(Vec::new());
     f(&mut writer)?;
-    let bytes = writer.into_inner().into_inner();
-    String::from_utf8(bytes).map_err(|e| SerializeError::XmlError(e.to_string()))
+    let bytes = writer.into_inner();
+    String::from_utf8(bytes).map_err(|e| {
+        SerializeError::XmlError(format!("invalid UTF-8 from XML writer: {e}"))
+    })
 }
 
-fn render_shape(shape: &ShapeObject) -> String {
+fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
     let (tag, c) = match shape {
         ShapeObject::Rectangle(r) => ("rect", &r.common),
         ShapeObject::Line(l) => ("line", &l.common),
@@ -340,7 +340,12 @@ fn render_shape(shape: &ShapeObject) -> String {
         ShapeObject::Polygon(p) => ("polygon", &p.common),
         ShapeObject::Curve(cv) => ("curve", &cv.common),
         ShapeObject::Group(g) => ("container", &g.common),
-        ShapeObject::Picture(_) => return String::new(),
+        ShapeObject::Picture(pic) => {
+            return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
+                Ok(xml) => xml,
+                Err(e) => { eprintln!("[hwpx] Shape::Picture 직렬화 실패: {e}"); String::new() }
+            };
+        }
         ShapeObject::Chart(ch) => ("chart", &ch.common),
         ShapeObject::Ole(o) => ("ole", &o.common),
     };
