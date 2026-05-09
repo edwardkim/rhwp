@@ -2412,7 +2412,51 @@ impl LayoutEngine {
         let mut limit_reached = false;
 
         let total_paras = composed_paras.len();
+        // [Task #700] 셀별 가드용 — 셀 첫 paragraph 의 LINE_SEG[0].vpos 가 0 이어야 한컴 정상 인코딩.
+        let cell_first_vpos = cell.paragraphs.first()
+            .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos))
+            .unwrap_or(-1);
+
         for (pi, (comp, para)) in composed_paras.iter().zip(cell.paragraphs.iter()).enumerate() {
+            // [Task #700] paragraph 진입 시 cum 을 LINE_SEG.vpos 절대값으로 동기화.
+            // 한컴은 셀 콘텐츠 위치를 LINE_SEG.vpos 단위로 인코딩 (paragraph 사이 spacing 도 vpos
+            // 차분에 흡수). rhwp 의 line_height + line_spacing + spacing_before/after 누적은
+            // 한컴 vpos 단위와 ~수십 px 어긋나, split_end content_limit (한컴 vpos 단위) 와 비교 시
+            // cut 위치가 어긋나는 회귀 (예: inner-table-01 cell[11] p[17] 까지 cut 해야 하는데
+            // p[19] 까지 visible 처리). cum 을 vpos 절대값으로 동기화하여 한컴 정합화.
+            //
+            // [Task #697] 또한 한컴은 셀 내부 페이지 분할 위치에서 LINE_SEG.vpos 를 0 으로 리셋한
+            // 인코딩을 사용 (예: cell[11] p[20] vpos=0). vpos 리셋 검출 시 cum 을 abs_limit 까지
+            // 강제 진행시켜 후속 paragraph 들이 limit 초과로 cut.
+            //
+            // 가드:
+            // - cell_first_vpos == 0 — 한컴 정상 인코딩 케이스만 (다른 케이스 회피, 회귀 방지)
+            // - target_cum > cum — cum 만 전진 허용 (감소 금지, line metric 가 vpos 보다 큰 paragraph
+            //   영향 차단)
+            // - 차분 누적 (delta) 대신 절대 동기화 — paragraph 사이 spacing mismatch 누적으로 인한
+            //   회귀 (form-002 등) 회피.
+            if pi > 0 && cell_first_vpos == 0 {
+                let prev_para = &cell.paragraphs[pi - 1];
+                let prev_end_vpos = prev_para.line_segs.last()
+                    .map(|s| s.vertical_pos + s.line_height)
+                    .unwrap_or(-1);
+                let cur_first_vpos = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
+                if cur_first_vpos >= 0 && prev_end_vpos > 0 {
+                    if cur_first_vpos < prev_end_vpos {
+                        // vpos 리셋 — page-break 신호
+                        if has_limit && cum < abs_limit {
+                            cum = abs_limit;
+                        }
+                    } else {
+                        // 정상 누적 — cum 을 vpos 절대값으로 동기화 (전진만)
+                        let target_cum = hwpunit_to_px(cur_first_vpos, self.dpi);
+                        if target_cum > cum {
+                            cum = target_cum;
+                        }
+                    }
+                }
+            }
+
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
             let is_last_para = pi + 1 == total_paras;
             // MeasuredCell 규칙: 첫 문단은 spacing_before 없음, 마지막 문단은 spacing_after 없음

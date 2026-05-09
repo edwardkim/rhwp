@@ -460,10 +460,20 @@ impl LayoutEngine {
             };
 
             // 수직 정렬
-            // 분할 행에서도 셀 콘텐츠가 visible area에 모두 들어가면 원래 정렬 적용
             use crate::model::table::VerticalAlign;
-            // 분할 행에서는 항상 Top 정렬 (컨텐츠가 페이지를 넘어 분할되었으므로)
-            let effective_align = if is_in_split_row {
+            // [Task #697 후속] 분할 행이라도 이 셀의 line_ranges 가 셀의 모든 paragraph line 을
+            // 그대로 visible 처리한다면 (= 실제 split 적용 안 받은 cell, 예: inner-table-01.hwp
+            // cell[10] '사업개요' 라벨) 원본 cell.vertical_align 을 사용한다. split 적용으로
+            // line 일부가 잘린 cell 만 Top 강제.
+            let cell_was_split = if let Some(ref ranges) = line_ranges {
+                ranges.iter().enumerate().any(|(i, &(s, e))| {
+                    let total = composed_paras.get(i).map(|c| c.lines.len()).unwrap_or(0);
+                    s != 0 || e != total
+                })
+            } else {
+                false
+            };
+            let effective_align = if is_in_split_row && cell_was_split {
                 VerticalAlign::Top
             } else {
                 cell.vertical_align
