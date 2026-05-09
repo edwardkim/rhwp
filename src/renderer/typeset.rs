@@ -817,7 +817,15 @@ impl TypesetEngine {
                         let caption_room_hu = image_voff_hu - body_top_hu;
                         let is_caption_style = para.line_segs.len() == 1
                             && caption_room_hu > line_height_hu;
-                        if !is_caption_style {
+                        // [PR #732 후속 — exam_science 회귀 가드] image_mr=0 (margin 부재) 이면
+                        // 본 환경 OLD 동작 보존 — Task #722 host_self register skip.
+                        // 본질: image_mr > 0 인 경우 (한컴 viewer 가 inter-image-text gap 으로
+                        // margin 적용) 만 host_self register 가 의미. exam_science p.21/37/60 의
+                        // Square wrap picture 는 image_mr=0 (호스트 margin 부재) 이므로 OLD 의
+                        // col_area-full-width layout 정합 (line_seg cs=0/sw=실제 wrap zone 인코딩
+                        // 으로 한컴 정합 이미 유지). hwp3-sample5.hwp 의 page 8/27/48 (Task #722
+                        // 본질 영역) 은 image_mr > 0 으로 가드 통과 → 정합 유지.
+                        if !is_caption_style && image_margin_right_hu > 0 {
                             st.current_column_wrap_anchors.insert(
                                 para_idx,
                                 crate::renderer::pagination::WrapAnchorRef {
