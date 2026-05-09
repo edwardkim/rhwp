@@ -12,7 +12,7 @@ use crate::model::control::Control;
 use crate::model::shape::CaptionDirection;
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::paragraph::{Paragraph, ColumnBreakType};
-use crate::model::page::{PageDef, ColumnDef};
+use crate::model::page::{PageDef, ColumnDef, ColumnType};
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::page_layout::PageLayoutInfo;
@@ -147,6 +147,10 @@ struct TypesetState {
     /// [Task #604 R3] 현재 단의 wrap text 문단 ↔ anchor 메타데이터.
     /// wrap_around state machine 매칭 시 등록. flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_anchors: std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
+    /// [Task #702] 현재 zone 의 ColumnType (Normal/Distribute/Parallel).
+    /// process_multicolumn_break 에서 새 ColumnDef 매칭 시 갱신.
+    /// Distribute 다단의 짧은 컬럼 vpos-reset 검출 임계값 완화에 사용.
+    current_zone_column_type: ColumnType,
 }
 
 impl TypesetState {
@@ -156,6 +160,7 @@ impl TypesetState {
         section_index: usize,
         footnote_separator_overhead: f64,
         footnote_safety_margin: f64,
+        column_type: ColumnType,
     ) -> Self {
         Self {
             pages: Vec::new(),
@@ -184,6 +189,7 @@ impl TypesetState {
             wrap_around_any_seg: false,
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
+            current_zone_column_type: column_type,
         }
     }
 
@@ -379,6 +385,7 @@ impl TypesetEngine {
         let mut st = TypesetState::new(
             layout, col_count, section_index,
             footnote_separator_overhead, footnote_safety_margin,
+            column_def.column_type,
         );
         st.hide_empty_line = hide_empty_line;
 
@@ -390,14 +397,30 @@ impl TypesetEngine {
             // 표 컨트롤 감지
             let has_table = self.paragraph_has_table(para);
 
+            // [Task #702] 새 ColumnDef 검출. shortcut.hwp p2/p3 파일/미리보기/편집 등은
+            // [쪽나누기]+단정의:1단 (header) → [단나누기]+단정의:2단 (content) 패턴 사용.
+            // [다단나누기] 외에도 Page/Column break 의 ColumnDef 차이도 zone 재정의 신호로 인식.
+            let new_col_def_opt: Option<ColumnDef> = para.controls.iter().find_map(|c| {
+                if let Control::ColumnDef(cd) = c { Some(cd.clone()) } else { None }
+            });
+            let has_diff_col_def = new_col_def_opt.as_ref().map(|cd| {
+                cd.column_count.max(1) != st.col_count
+                    || cd.column_type != st.current_zone_column_type
+            }).unwrap_or(false);
+
             // 다단 나누기
             if para.column_type == ColumnBreakType::MultiColumn {
                 self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
             }
 
             // 단 나누기
-            if para.column_type == ColumnBreakType::Column && !st.current_items.is_empty() {
-                st.advance_column_or_new_page();
+            if para.column_type == ColumnBreakType::Column {
+                if has_diff_col_def {
+                    // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
+                    self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
+                } else if !st.current_items.is_empty() {
+                    st.advance_column_or_new_page();
+                }
             }
 
             // 쪽 나누기
@@ -408,6 +431,16 @@ impl TypesetEngine {
 
             if (force_page_break || para_style_break) && !st.current_items.is_empty() {
                 st.force_new_page();
+                // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용
+                if has_diff_col_def {
+                    if let Some(cd) = &new_col_def_opt {
+                        st.col_count = cd.column_count.max(1);
+                        let new_layout = PageLayoutInfo::from_page_def(page_def, cd, self.dpi);
+                        st.current_zone_layout = Some(new_layout.clone());
+                        st.layout = new_layout;
+                        st.current_zone_column_type = cd.column_type;
+                    }
+                }
             }
 
             // Task #321: 문단간 vpos-reset 기반 강제 분할
@@ -428,10 +461,18 @@ impl TypesetEngine {
                     // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
                     //   단일 단에서 cv != 0 의 cv < pv 는 partial-table split 의 LAYOUT 잔재로
                     //   해석되어야 함 (issue #418 / hwpspec pi=78→pi=79).
-                    // - 다단: cv != 0 도 인정 (Task #470). 컬럼 헤더 오프셋 (cv=9014 등) 으로
-                    //   시작하는 새 컬럼의 reset 을 감지.
+                    // - 다단 Normal (NEWSPAPER): cv != 0 도 인정 (Task #470). pv > 5000 임계값 유지.
+                    // - 다단 Distribute (BalancedNewspaper): 짧은 컬럼 (3+3 분배 등) 에서 pv 가
+                    //   임계값 미달일 수 있어 pv > 0 으로 완화 (Task #702, shortcut 지우기 6항목 정합).
+                    //   단일 단/Normal 다단은 영향 없음.
+                    let is_distribute = st.col_count > 1
+                        && matches!(st.current_zone_column_type, ColumnType::Distribute);
                     let trigger = if st.col_count > 1 {
-                        cv < pv && pv > 5000
+                        if is_distribute {
+                            cv < pv && pv > 0
+                        } else {
+                            cv < pv && pv > 5000
+                        }
                     } else {
                         cv == 0 && pv > 5000
                     };
@@ -1498,6 +1539,20 @@ impl TypesetEngine {
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             match ctrl {
                 Control::Table(table) => {
+                    // [Issue #703] 글앞으로 / 글뒤로 표는 Shape처럼 취급 — 본문 흐름 공간 차지 없음.
+                    // pagination/engine.rs:976-981 와 동일 시멘틱: 데코레이션 표는 절대 좌표로 배치되며
+                    // current_height 누적에 영향을 주지 않는다.
+                    if matches!(
+                        table.common.text_wrap,
+                        crate::model::shape::TextWrap::InFrontOfText
+                            | crate::model::shape::TextWrap::BehindText
+                    ) {
+                        st.current_items.push(PageItem::Shape {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        });
+                        continue;
+                    }
                     let is_column_top = st.current_height < 1.0;
                     let ft = self.format_table(
                         para, para_idx, ctrl_idx, table,
@@ -2255,6 +2310,9 @@ impl TypesetEngine {
                 let new_layout = PageLayoutInfo::from_page_def(page_def, cd, self.dpi);
                 st.current_zone_layout = Some(new_layout.clone());
                 st.layout = new_layout;
+                // [Task #702] 새 zone 의 ColumnType 반영. Distribute(배분) 단에서
+                // 짧은 컬럼 vpos-reset 검출 임계값 완화용.
+                st.current_zone_column_type = cd.column_type;
                 break;
             }
         }
@@ -2308,12 +2366,39 @@ impl TypesetEngine {
                     Control::PageHide(ph) => {
                         page_hides.push((pi, ph.clone()));
                     }
+                    Control::Table(table) => {
+                        Self::collect_pagehide_in_table(table, pi, &mut page_hides);
+                    }
                     _ => {}
                 }
             }
         }
 
         (hf_entries, page_number_pos, new_page_numbers, page_hides)
+    }
+
+    /// 표 셀 안 paragraph 의 PageHide 를 재귀 수집.
+    /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
+    fn collect_pagehide_in_table(
+        table: &crate::model::table::Table,
+        pi: usize,
+        page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
+    ) {
+        for cell in &table.cells {
+            for cp in &cell.paragraphs {
+                for ctrl in &cp.controls {
+                    match ctrl {
+                        Control::PageHide(ph) => {
+                            page_hides.push((pi, ph.clone()));
+                        }
+                        Control::Table(inner) => {
+                            Self::collect_pagehide_in_table(inner, pi, page_hides);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
     }
 
     /// 페이지 번호 + 머리말/꼬리말 최종 할당 (기존 Paginator::finalize_pages와 동일)
@@ -2801,5 +2886,85 @@ mod tests {
     #[test]
     fn test_typeset_vs_paginator_biz_plan() {
         compare_with_hwp_file("samples/biz_plan.hwp");
+    }
+
+    /// Issue #703: BehindText/InFrontOfText 표는 본문 흐름에서 제외되어야 한다.
+    ///
+    /// 글뒤로 (BehindText) / 글앞으로 (InFrontOfText) 표는 시각적으로 본문 텍스트 뒤/앞에
+    /// 절대 좌표로 배치되는 데코레이션 (워터마크/배경 등) 이며, 본문 흐름의 vertical advance 에
+    /// 영향을 주지 않는다. `pagination/engine.rs:976-981` 와 동일 시멘틱.
+    ///
+    /// 결함 메커니즘: typeset_block_table → place_table_with_text → `cur_h += table_total_height`
+    /// (line 1594) 가 BehindText/InFrontOfText 표에 대해서도 적용되어 본문 흐름 누적이 발생.
+    ///
+    /// 본 테스트는 BIG BehindText 표 (≈300 mm 높이) 를 1 페이지 본문 안에 넣어두고 후속
+    /// paragraph 가 동일 페이지에 들어감을 검증한다. 결함 시 BehindText 표의 거대 height 가
+    /// cur_h 에 가산되어 후속 paragraph 가 다음 페이지로 밀림.
+    #[test]
+    fn test_typeset_703_behind_text_table_no_flow_advance() {
+        use crate::model::shape::TextWrap;
+        let engine = TypesetEngine::with_default_dpi();
+        let paginator = Paginator::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+        let composed: Vec<ComposedParagraph> = Vec::new();
+
+        // BehindText 1×1 표: 본문 높이의 약 80% 차지 (60000 HU ≈ 800 px @96dpi).
+        // BehindText 는 데코레이션이므로 본문 흐름 누적 0 이어야 정상.
+        // 결함 시 cur_h 에 800 px 가산 → 후속 1 단락도 fit 실패 → 페이지 분할.
+        let mut table = crate::model::table::Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![crate::model::table::Cell {
+                col: 0, row: 0, col_span: 1, row_span: 1,
+                width: 51974, height: 60000,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        table.common.text_wrap = TextWrap::BehindText;
+        table.common.treat_as_char = false;
+        table.common.width = 51974;
+        table.common.height = 60000; // ≈800 px @96dpi — 본문 80% 점유 (결함 시 가산되는 양)
+
+        let host_para = Paragraph {
+            line_segs: vec![LineSeg {
+                line_height: 1000, line_spacing: 600,
+                ..Default::default()
+            }],
+            controls: vec![crate::model::control::Control::Table(Box::new(table))],
+            ..Default::default()
+        };
+
+        // 후속 5 단락 — 본문 정상 흐름이면 호스트(21px) + 5 × 13px = 86 px (1 페이지 여유)
+        // 결함 시 호스트(21+800=821px) + 첫 단락(13px) = 834 px 도 fit, 더 추가 시 결국 분할
+        // → 단순히 페이지 수 정확히 비교 필요.
+        let mut paras = vec![host_para];
+        for _ in 0..5 {
+            paras.push(make_paragraph_with_height(1000));
+        }
+
+        let (paginator_result, measured) = paginator.paginate(
+            &paras, &composed, &styles, &page_def, &col_def, 0,
+        );
+        let typeset_result = engine.typeset_section(
+            &paras, &composed, &styles, &page_def, &col_def, 0,
+            &measured.tables, false,
+        );
+
+        // 검증 1: paginator (engine.rs reference) 는 1 페이지에 모두 배치
+        assert_eq!(
+            paginator_result.pages.len(), 1,
+            "[reference] BehindText 표 + 5 후속 paragraph 는 paginator 에서 1 페이지에 들어가야 함",
+        );
+
+        // 검증 2: typeset 결과도 1 페이지 (현재 결함 시 RED — typeset 이 BehindText 표 height 를 누적)
+        assert_eq!(
+            typeset_result.pages.len(), 1,
+            "[BUG #703] typeset 도 1 페이지여야 함. 결함 시 BehindText 표 height ≈800 px 가 \
+             cur_h 에 가산되어 후속 paragraph 가 다음 페이지로 밀림 (RED)",
+        );
     }
 }
