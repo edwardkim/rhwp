@@ -59,13 +59,20 @@ impl LayoutEngine {
             return y_start;
         }
 
-        // 분할 표 첫 부분: vert_offset 적용 (자리차지 표의 세로 오프셋)
+        // 분할 표 첫 부분: vert_offset 적용 (자리차지 표의 세로 오프셋).
+        // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 는 음수 비트표현
+        // (예: -1796 HU = 0xFFFFF8FC = 4294965500u32) 도 양수로 통과시켜
+        // 후속 `as i32` 캐스트에서 음수가 적용 → 표가 위로 점프, 직전 인라인
+        // 표 영역 침범. 비-Partial 경로(`table_layout.rs:1069+`)는 동일 분기에
+        // `raw_y.max(y_start)` 클램프가 있어 음수 무력화. Partial 경로에는
+        // 클램프가 없으므로 게이트를 signed 비교로 정정해 동등 효과.
+        let vert_off_signed = table.common.vertical_offset as i32;
         let y_start = if !is_continuation && !table.common.treat_as_char
             && matches!(table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
-            && table.common.vertical_offset > 0
+            && vert_off_signed > 0
         {
-            y_start + hwpunit_to_px(table.common.vertical_offset as i32, self.dpi)
+            y_start + hwpunit_to_px(vert_off_signed, self.dpi)
         } else {
             y_start
         };

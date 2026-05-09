@@ -2695,14 +2695,16 @@ impl LayoutEngine {
         let pt_mt = measured_tables.iter().find(|mt|
             mt.para_index == para_index && mt.control_index == control_index
         );
-        // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달
-        // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지
+        // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달.
+        // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지.
+        // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 가드는 음수 비트표현
+        // (예: -1796 HU = 4294965500u32) 도 통과시킴. signed 비교로 정정.
         let pt_y_start = if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 if !t.common.treat_as_char
                     && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                     && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
-                    && t.common.vertical_offset > 0
+                    && (t.common.vertical_offset as i32) > 0
                 {
                     para_start_y.get(&para_index).copied().unwrap_or(y_offset)
                 } else {
