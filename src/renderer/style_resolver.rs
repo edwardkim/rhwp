@@ -692,9 +692,10 @@ fn resolve_border_styles(doc_info: &DocInfo) -> Vec<ResolvedBorderStyle> {
 fn resolve_single_border_style(bf: &BorderFill) -> ResolvedBorderStyle {
     let fill_color = match bf.fill.fill_type {
         FillType::Solid => bf.fill.solid.as_ref().and_then(|s| {
+            // pattern_type > 0: 패턴 채우기 → 단색 fill 아님 (background_color는 패턴 배경)
             // ColorRef 상위 바이트가 0이 아니면 "채우기 없음" (투명)
             // 0xFFFFFFFF = CLR_INVALID/CLR_DEFAULT (Windows COLORREF)
-            if (s.background_color >> 24) != 0 {
+            if s.pattern_type > 0 || (s.background_color >> 24) != 0 {
                 None
             } else {
                 Some(s.background_color)
