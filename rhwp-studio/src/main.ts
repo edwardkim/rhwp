@@ -176,6 +176,17 @@ async function initialize(): Promise<void> {
       document.querySelectorAll('.tb-split.open').forEach(s => s.classList.remove('open'));
     });
 
+    // #780: 도구 모음/서식 도구 모음 영역 mousedown 시 focus 이동 방지
+    // — 편집 영역의 텍스트 선택(cursor.anchor)이 보존되어야 서식 적용이 동작함
+    for (const id of ['icon-toolbar', 'style-bar']) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('mousedown', (e) => {
+        if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'SELECT') {
+          e.preventDefault();
+        }
+      });
+    }
+
     setupFileInput();
     setupZoomControls();
     setupEventListeners();
