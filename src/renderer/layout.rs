@@ -2596,6 +2596,40 @@ impl LayoutEngine {
                 if outer_margin_bottom_px > 0.0 {
                     y_offset += outer_margin_bottom_px;
                 }
+                // [Task #770] ColumnDef + TAC 1x1 헤더 표 + 후속 빈 라인 패턴의
+                // paragraph (예: shortcut.hwp pi=36 페이지 2 "파일") 처리 시
+                // 후속 LINE_SEG 의 lh+ls 가 advance 에 누락되는 결함 정정.
+                //
+                // 가드 조건 (광범위 회귀 차단):
+                // 1. paragraph 가 ColumnDef control 동반 (다단 영역 진입 paragraph)
+                // 2. 다중 LINE_SEG (last.vpos > first.vpos)
+                // 3. last_seg.lh > first_seg.lh (헤더 line 0 < 후속 line 1 패턴)
+                //    - shortcut pi=36: ls[0].lh=1200 < ls[1].lh=2332 ✓
+                //    - Textmail pi=0:  ls[0].lh=55830 > ls[1].lh=9460 ✗ (영향 없음)
+                //
+                // ColumnDef 미동반 / 단일 LINE_SEG / 표가 main line 인 paragraph 는
+                // 가드 통과 안 함 → 기존 동작 유지.
+                let has_column_def = para.controls.iter().any(|c|
+                    matches!(c, Control::ColumnDef(_)));
+                if has_column_def {
+                    if let (Some(first_seg), Some(last_seg)) = (
+                        para.line_segs.first(),
+                        para.line_segs.last(),
+                    ) {
+                        if last_seg.vertical_pos > first_seg.vertical_pos
+                            && last_seg.line_height > first_seg.line_height
+                        {
+                            let para_vpos_end = last_seg.vertical_pos
+                                + last_seg.line_height
+                                + last_seg.line_spacing.max(0);
+                            let target_y = para_y_for_table
+                                + hwpunit_to_px(para_vpos_end, self.dpi);
+                            if target_y > y_offset {
+                                y_offset = target_y;
+                            }
+                        }
+                    }
+                }
                 return (y_offset, true);
             }
             // ── 같은 문단의 인라인 TAC 표 렌더링 ──
