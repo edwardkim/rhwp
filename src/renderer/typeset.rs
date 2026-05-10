@@ -419,7 +419,28 @@ impl TypesetEngine {
                     // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
                     self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
                 } else if !st.current_items.is_empty() {
-                    st.advance_column_or_new_page();
+                    // [Task #768] 다단 유형(ColumnType)에 따른 column-break 분기:
+                    //
+                    // - Distribute (배분) / Parallel (병행) 다단: column-break 가 col div 마감
+                    //   신호. 마지막 단에서 발생 시 같은 페이지에 새 col div (zone) 추가
+                    //   (좌단/우단 추가행 시작). 페이지 잔여 공간 부족 시 페이지 break 폴백.
+                    //
+                    // - Normal (일반/신문형 = Newspaper) 다단: column-break 가 일반 텍스트
+                    //   연속과 등가. 다음 단으로 advance, 마지막 단이면 페이지 break (기존 동작).
+                    //
+                    // 본 정정 전: 모든 다단 type 에서 마지막 단 + column-break 시 push_new_page
+                    // 강제 → Distribute 다단에서 페이지 잔여 공간 무시하고 페이지 break (issue #768).
+                    let is_last_col_in_multi = st.col_count > 1
+                        && st.current_column + 1 >= st.col_count;
+                    let is_distribute_or_parallel = matches!(
+                        st.current_zone_column_type,
+                        ColumnType::Distribute | ColumnType::Parallel
+                    );
+                    if is_last_col_in_multi && is_distribute_or_parallel {
+                        self.advance_column_break_wrap_in_multi(&mut st);
+                    } else {
+                        st.advance_column_or_new_page();
+                    }
                 }
             }
 
@@ -2279,6 +2300,37 @@ impl TypesetEngine {
                     st.current_height = 0.0;
                 }
             }
+        }
+    }
+
+    /// [Task #768] Distribute/Parallel 다단의 column-break wrap-around.
+    ///
+    /// 다단 유형이 배분(Distribute) 또는 병행(Parallel) 일 때, 마지막 단에서 발생한
+    /// column-break 는 col div 마감 신호. 같은 페이지 내에 새 col div (zone) 시작
+    /// (zone_y_offset 누적, col=0, h=0 reset). ColumnDef / col_count / layout /
+    /// zone_column_type 은 그대로 유지.
+    ///
+    /// 페이지 잔여 공간이 1 line (≈13.3 px) 미만이면 push_new_page 폴백.
+    fn advance_column_break_wrap_in_multi(&self, st: &mut TypesetState) {
+        st.flush_column();
+        // 페이지 내 현재 zone 의 모든 column 의 used_height 중 최댓값
+        let zone_used_max = st.pages.last()
+            .map(|p| {
+                p.column_contents.iter()
+                    .filter(|cc| (cc.zone_y_offset - st.current_zone_y_offset).abs() < 0.1)
+                    .map(|cc| cc.used_height)
+                    .fold(0.0_f64, f64::max)
+            })
+            .unwrap_or(0.0);
+        let new_zone_y = st.current_zone_y_offset + zone_used_max;
+        let body_height = st.layout.body_area.height;
+        const MIN_WRAP_HEIGHT_PX: f64 = 13.3;
+        if new_zone_y + MIN_WRAP_HEIGHT_PX > body_height {
+            st.push_new_page();
+        } else {
+            st.current_zone_y_offset = new_zone_y;
+            st.current_column = 0;
+            st.current_height = 0.0;
         }
     }
 
