@@ -419,6 +419,27 @@ impl WebCanvasRenderer {
             }
             RenderNodeType::Image(img) => {
                 self.open_shape_transform(&img.transform, &node.bbox);
+                // [Task #741 후속] 외부 file path 그림 (data 부재 + external_path 보유) →
+                // placeholder 영역 (회색 점선 사각형 + file path 텍스트). SVG renderer
+                // (svg.rs:1075~) 영역 정합. 본 분기 부재 시 image 표시 부재.
+                if img.data.is_none() && img.external_path.is_some() {
+                    let bbox = &node.bbox;
+                    self.ctx.set_fill_style_str("#f0f0f0");
+                    self.ctx.fill_rect(bbox.x, bbox.y, bbox.width, bbox.height);
+                    self.ctx.set_stroke_style_str("#999999");
+                    self.ctx.set_line_dash(&js_sys::Array::of2(&4f64.into(), &4f64.into())).ok();
+                    self.ctx.stroke_rect(bbox.x, bbox.y, bbox.width, bbox.height);
+                    self.ctx.set_line_dash(&js_sys::Array::new()).ok();
+                    if let Some(ref path) = img.external_path {
+                        self.ctx.set_fill_style_str("#666666");
+                        self.ctx.set_font("10px sans-serif");
+                        self.ctx.set_text_align("center");
+                        let cx = bbox.x + bbox.width / 2.0;
+                        let cy = bbox.y + bbox.height / 2.0;
+                        let _ = self.ctx.fill_text(&format!("[외부: {}]", path), cx, cy);
+                        self.ctx.set_text_align("start");
+                    }
+                }
                 if let Some(ref data) = img.data {
                     // Task #516: 그림 효과 / 밝기 / 대비 / 워터마크를 CSS filter 로 적용
                     // [Issue #677] 한컴 워터마크 모드 (effect != RealPic + brightness/contrast 비-zero) 는
