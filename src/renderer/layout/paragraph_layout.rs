@@ -742,9 +742,10 @@ impl LayoutEngine {
         };
 
         // 문단 앞 간격 (첫 줄일 때만)
-        // 단/페이지의 맨 처음 문단은 spacing_before 적용하지 않음
-        let is_column_top = (y - col_area.y).abs() < 1.0;
-        if start_line == 0 && spacing_before > 0.0 && !is_column_top {
+        // [Task #776 H1'] 단/페이지의 맨 처음 문단도 sb 적용 (한컴 PDF 정합).
+        // 셀 안 paragraph 는 cell padding 과 sb 중복 방지를 위해 skip 유지.
+        // RFC #774 stage 3 분석: shortcut/sungeo/treatise 3 샘플 ±1 px 정합 검증.
+        if start_line == 0 && spacing_before > 0.0 && cell_ctx.is_none() {
             y += spacing_before;
         }
 
