@@ -41,6 +41,11 @@ static SPECIAL_SYMBOLS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock
         ("WP", "℘"), ("IMAG", "ℑ"), ("image", "ℑ"), ("REIMAGE", "ℜ"),
         ("ANGSTROM", "Å"), ("MHO", "℧"), ("OHM", "Ω"),
         ("CDOTS", "⋯"), ("LDOTS", "…"), ("VDOTS", "⋮"), ("DDOTS", "⋱"),
+        ("DOTS", "…"),
+        // LaTeX spacing
+        ("QUAD", "\u{2003}"), ("QQUAD", "\u{2003}\u{2003}"),
+        ("THINSPACE", "\u{2009}"), ("MEDSPACE", "\u{205F}"), ("THICKSPACE", "\u{2004}"),
+        ("NEGSPACE", ""), ("ENSPACE", "\u{2002}"),
         ("TRIANGLE", "△"), ("TRIANGLED", "▽"),
         ("ANGLE", "∠"), ("MSANGLE", "∡"), ("SANGLE", "∢"), ("RTANGLE", "⊾"),
         ("BOT", "⊥"), ("TOP", "⊤"),
@@ -85,6 +90,28 @@ static OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("VDASH", "⊢"), ("HLEFT", "⊣"), ("MODELS", "⊨"),
         ("DAGGER", "†"), ("DDAGGER", "‡"),
         ("BIGCIRC", "○"), ("DIAMOND", "◇"), ("ISO", "⋄"),
+        // LaTeX aliases
+        ("ne", "≠"), ("neq", "≠"), ("le", "≤"), ("leq", "≤"),
+        ("ge", "≥"), ("geq", "≥"), ("ll", "≪"), ("gg", "≫"),
+        ("approx", "≈"), ("sim", "∼"), ("simeq", "≃"),
+        ("cong", "≅"), ("equiv", "≡"), ("propto", "∝"),
+        ("subset", "⊂"), ("supset", "⊃"),
+        ("subseteq", "⊆"), ("supseteq", "⊇"),
+        ("in", "∈"), ("notin", "∉"), ("ni", "∋"),
+        ("forall", "∀"), ("exists", "∃"), ("nexists", "∄"),
+        ("lnot", "¬"), ("neg", "¬"),
+        ("wedge", "∧"), ("land", "∧"), ("vee", "∨"), ("lor", "∨"),
+        ("nabla", "∇"), ("partial", "∂"), ("emptyset", "∅"),
+        ("infty", "∞"), ("aleph", "ℵ"),
+        ("therefore", "∴"), ("because", "∵"),
+        ("cdot", "·"), ("times", "×"), ("div", "÷"),
+        ("pm", "±"), ("mp", "∓"),
+        ("cup", "∪"), ("cap", "∩"),
+        ("vdash", "⊢"), ("models", "⊨"),
+        ("oplus", "⊕"), ("otimes", "⊗"),
+        ("dagger", "†"), ("ddagger", "‡"),
+        ("star", "★"), ("circ", "∘"),
+        ("perp", "⊥"),
     ])
 });
 
@@ -113,6 +140,13 @@ static BIG_OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::
         ("ODOT", "⊙"), ("BIGODOT", "⊙"),
         ("OMINUS", "⊖"), ("BIGOMINUS", "⊖"),
         ("ODIV", "⊘"), ("BIGODIV", "⊘"), ("OSLASH", "⊘"),
+        // LaTeX lowercase aliases for big operators
+        ("sum", "∑"), ("prod", "∏"), ("coprod", "∐"),
+        ("bigcup", "∪"), ("bigcap", "∩"),
+        ("bigwedge", "⋀"), ("bigvee", "⋁"),
+        ("bigoplus", "⊕"), ("bigotimes", "⊗"),
+        ("int", "∫"), ("iint", "∬"), ("iiint", "∭"),
+        ("oint", "∮"),
     ])
 });
 
@@ -132,6 +166,14 @@ static ARROWS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| 
         ("swarrow", "↙"), ("searrow", "↘"),
         // 특수
         ("mapsto", "↦"), ("hookleft", "↩"), ("hookright", "↪"),
+        // 특수 (continued)
+        ("longrightarrow", "⟶"), ("longleftarrow", "⟵"),
+        ("Longrightarrow", "⟹"), ("Longleftarrow", "⟸"),
+        ("longmapsto", "⟼"),
+        // LaTeX aliases
+        ("leftarrow", "←"), ("rightarrow", "→"), ("to", "→"), ("gets", "←"),
+        ("Leftarrow", "⇐"), ("Rightarrow", "⇒"), ("implies", "⇒"), ("iff", "⇔"),
+        ("leftrightarrow", "↔"), ("Leftrightarrow", "⇔"),
         // 막대
         ("vert", "|"), ("VERT", "‖"),
     ])
@@ -143,6 +185,15 @@ static BRACKETS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|
         ("LBRACE", "{"), ("RBRACE", "}"),
         ("LCEIL", "⌈"), ("RCEIL", "⌉"),
         ("LFLOOR", "⌊"), ("RFLOOR", "⌋"),
+        // LaTeX angle brackets
+        ("langle", "⟨"), ("rangle", "⟩"),
+        ("LANGLE", "⟨"), ("RANGLE", "⟩"),
+        // LaTeX aliases
+        ("lbrace", "{"), ("rbrace", "}"),
+        ("lceil", "⌈"), ("rceil", "⌉"),
+        ("lfloor", "⌊"), ("rfloor", "⌋"),
+        ("lvert", "|"), ("rvert", "|"),
+        ("lVert", "‖"), ("rVert", "‖"),
     ])
 });
 
@@ -158,6 +209,10 @@ static FUNCTIONS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("arg", "arg"), ("deg", "deg"), ("gcd", "gcd"), ("lcm", "lcm"),
         ("max", "max"), ("min", "min"),
         ("mod", "mod"),
+        // LaTeX additional functions
+        ("sup", "sup"), ("inf", "inf"), ("lim", "lim"),
+        ("limsup", "lim sup"), ("liminf", "lim inf"),
+        ("Pr", "Pr"),
     ])
 });
 
@@ -172,6 +227,13 @@ pub static DECORATIONS: LazyLock<HashMap<&'static str, DecoKind>> = LazyLock::ne
         ("under", DecoKind::Under), ("arch", DecoKind::Arch),
         ("UNDERLINE", DecoKind::Underline), ("OVERLINE", DecoKind::Overline),
         ("NOT", DecoKind::StrikeThrough),
+        // LaTeX 소문자 별칭
+        ("underline", DecoKind::Underline), ("overline", DecoKind::Overline),
+        ("not", DecoKind::StrikeThrough),
+        ("widehat", DecoKind::Hat), ("widetilde", DecoKind::Tilde),
+        ("overrightarrow", DecoKind::Vec),
+        ("overleftarrow", DecoKind::Vec),
+        ("overbrace", DecoKind::Arch), ("underbrace", DecoKind::Under),
     ])
 });
 
@@ -181,15 +243,30 @@ pub static FONT_STYLES: LazyLock<HashMap<&'static str, FontStyleKind>> = LazyLoc
         ("rm", FontStyleKind::Roman),
         ("it", FontStyleKind::Italic),
         ("bold", FontStyleKind::Bold),
+        // LaTeX \math* 계열
+        ("mathrm", FontStyleKind::Roman),
+        ("mathit", FontStyleKind::Italic),
+        ("mathbf", FontStyleKind::Bold),
+        ("mathbb", FontStyleKind::Blackboard),
+        ("mathcal", FontStyleKind::Calligraphy),
+        ("mathfrak", FontStyleKind::Fraktur),
+        ("mathsf", FontStyleKind::SansSerif),
+        ("mathtt", FontStyleKind::Monospace),
+        ("textbf", FontStyleKind::Bold),
+        ("textrm", FontStyleKind::Roman),
+        ("textit", FontStyleKind::Italic),
     ])
 });
 
 /// 구조 명령어 (파서에서 특별 처리)
 pub fn is_structure_command(cmd: &str) -> bool {
     matches!(cmd,
-        "OVER" | "ATOP" | "SQRT" | "ROOT" |
+        "OVER" | "ATOP" | "SQRT" | "ROOT" | "FRAC" | "DFRAC" | "TFRAC" | "TEXT" | "BEGIN" | "END" |
         "LEFT" | "RIGHT" | "BIGG" |
-        "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" |
+        "OPERATORNAME" | "PHANTOM" | "VPHANTOM" | "HPHANTOM" |
+        "OVERSET" | "UNDERSET" | "STACKREL" |
+        "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE" |
+        "MATRIX" | "PMATRIX" | "BMATRIX" | "DMATRIX" | "VMATRIX" | "SMALLMATRIX" |
         "CASES" | "PILE" | "LPILE" | "RPILE" |
         "CHOOSE" | "BINOM" |
         "lim" | "Lim" |
@@ -271,9 +348,14 @@ pub enum DecoKind {
 /// 글꼴 스타일 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum FontStyleKind {
-    Roman,  // 로만체 (upright)
-    Italic, // 이탤릭체
-    Bold,   // 볼드체
+    Roman,      // 로만체 (upright) — rm, \mathrm
+    Italic,     // 이탤릭체 — it, \mathit
+    Bold,       // 볼드체 — bold, \mathbf
+    Blackboard, // 흑판 볼드 — \mathbb (ℝ, ℤ, ℕ 등)
+    Calligraphy,// 필기체 — \mathcal (ℒ, ℋ 등)
+    Fraktur,    // 프락투르 — \mathfrak
+    SansSerif,  // 산세리프 — \mathsf
+    Monospace,  // 고정폭 — \mathtt
 }
 
 #[cfg(test)]

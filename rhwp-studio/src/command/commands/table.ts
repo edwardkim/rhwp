@@ -7,6 +7,10 @@ import { FormulaDialog } from '@/ui/formula-dialog';
 
 const inTable = (ctx: EditorContext) => ctx.inTable;
 
+function safeTableOp(fn: () => void, label: string): void {
+  try { fn(); } catch (e) { console.error(`[table] ${label} 실패:`, e); }
+}
+
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
     id,
@@ -25,34 +29,30 @@ export const tableCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getCursorPosition();
-      // 셀 내부에서는 사용 불가 (canExecute에서 걸리지만 방어)
       if (pos.parentParaIndex !== undefined) return;
       const dialog = new TableCreateDialog();
       dialog.onApply = (rows, cols) => {
-        try {
-          const result = services.wasm.createTable(
-            pos.sectionIndex, pos.paragraphIndex, pos.charOffset,
-            rows, cols,
-          );
-          if (result.ok) {
-            services.eventBus.emit('document-changed');
-            // 표 생성 후 첫 번째 셀로 커서 이동
-            const ih = services.getInputHandler();
-            if (ih) {
-              ih.moveCursorTo({
+        const ih2 = services.getInputHandler();
+        if (!ih2) return;
+        safeTableOp(() => ih2.executeOperation({
+          kind: 'snapshot',
+          operationType: 'createTable',
+          operation: (wasm) => {
+            const result = wasm.createTable(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, rows, cols);
+            if (result.ok) {
+              return {
                 sectionIndex: pos.sectionIndex,
                 paragraphIndex: 0,
                 charOffset: 0,
                 parentParaIndex: result.paraIdx,
-                controlIndex: 0,
+                controlIndex: result.controlIdx,
                 cellIndex: 0,
                 cellParaIndex: 0,
-              });
+              };
             }
-          }
-        } catch (e) {
-          console.error('표 만들기 실패:', e);
-        }
+            return pos;
+          },
+        }), '표 만들기');
       };
       dialog.show(params?.anchorEl as HTMLElement | undefined);
     },
@@ -111,12 +111,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      try {
-        services.wasm.insertTableRow(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, cellInfo.row, false);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('줄 추가 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'insertTableRow',
+        operation: (wasm) => {
+          wasm.insertTableRow(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.row, false);
+          return pos;
+        },
+      }), '줄 추가');
     },
   },
   {
@@ -129,12 +131,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      try {
-        services.wasm.insertTableRow(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, cellInfo.row, true);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('줄 추가 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'insertTableRow',
+        operation: (wasm) => {
+          wasm.insertTableRow(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.row, true);
+          return pos;
+        },
+      }), '줄 추가');
     },
   },
   {
@@ -148,12 +152,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      try {
-        services.wasm.insertTableColumn(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, cellInfo.col, false);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('칸 추가 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'insertTableColumn',
+        operation: (wasm) => {
+          wasm.insertTableColumn(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.col, false);
+          return pos;
+        },
+      }), '칸 추가');
     },
   },
   {
@@ -166,12 +172,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      try {
-        services.wasm.insertTableColumn(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, cellInfo.col, true);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('칸 추가 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'insertTableColumn',
+        operation: (wasm) => {
+          wasm.insertTableColumn(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.col, true);
+          return pos;
+        },
+      }), '칸 추가');
     },
   },
   {
@@ -184,12 +192,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      try {
-        services.wasm.deleteTableRow(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, cellInfo.row);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('줄 지우기 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'deleteTableRow',
+        operation: (wasm) => {
+          wasm.deleteTableRow(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.row);
+          return pos;
+        },
+      }), '줄 지우기');
     },
   },
   {
@@ -203,12 +213,14 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-      try {
-        services.wasm.deleteTableColumn(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, cellInfo.col);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('칸 지우기 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'deleteTableColumn',
+        operation: (wasm) => {
+          wasm.deleteTableColumn(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, cellInfo.col);
+          return pos;
+        },
+      }), '칸 지우기');
     },
   },
   {
@@ -233,27 +245,29 @@ export const tableCommands: CommandDef[] = [
 
       const dialog = new CellSplitDialog(isMerged);
       dialog.onApply = (nRows, mCols, equalHeight, mergeFirst) => {
-        try {
-          if (isMultiCell && range && tableCtx) {
-            // 다중 셀: 범위 내 각 셀을 개별 분할
-            services.wasm.splitTableCellsInRange(
-              tableCtx.sec, tableCtx.ppi, tableCtx.ci,
-              range.startRow, range.startCol, range.endRow, range.endCol,
-              nRows, mCols, equalHeight,
-            );
-            ih.exitCellSelectionMode?.();
-          } else {
-            // 단일 셀 분할
-            services.wasm.splitTableCellInto(
-              pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
-              cellInfo.row, cellInfo.col,
-              nRows, mCols, equalHeight, mergeFirst,
-            );
-          }
-          services.eventBus.emit('document-changed');
-        } catch (e) {
-          console.error('셀 나누기 실패:', e);
-        }
+        const ih2 = services.getInputHandler();
+        if (!ih2) return;
+        safeTableOp(() => ih2.executeOperation({
+          kind: 'snapshot',
+          operationType: 'splitTableCell',
+          operation: (wasm) => {
+            if (isMultiCell && range && tableCtx) {
+              wasm.splitTableCellsInRange(
+                tableCtx.sec, tableCtx.ppi, tableCtx.ci,
+                range.startRow, range.startCol, range.endRow, range.endCol,
+                nRows, mCols, equalHeight,
+              );
+            } else {
+              wasm.splitTableCellInto(
+                pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
+                cellInfo.row, cellInfo.col,
+                nRows, mCols, equalHeight, mergeFirst,
+              );
+            }
+            return pos;
+          },
+        }), '셀 나누기');
+        if (isMultiCell) ih2.exitCellSelectionMode?.();
       };
       dialog.show();
     },
@@ -270,13 +284,15 @@ export const tableCommands: CommandDef[] = [
       const tableCtx = ih.getCellTableContext();
       if (!range || !tableCtx) return;
       if (range.startRow === range.endRow && range.startCol === range.endCol) return;
-      try {
-        services.wasm.mergeTableCells(tableCtx.sec, tableCtx.ppi, tableCtx.ci, range.startRow, range.startCol, range.endRow, range.endCol);
-        ih.exitCellSelectionMode();
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('셀 합치기 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'mergeTableCells',
+        operation: (wasm) => {
+          wasm.mergeTableCells(tableCtx.sec, tableCtx.ppi, tableCtx.ci, range.startRow, range.startCol, range.endRow, range.endCol);
+          return ih.getCursorPosition();
+        },
+      }), '셀 합치기');
+      ih.exitCellSelectionMode();
     },
   },
   {
@@ -286,26 +302,28 @@ export const tableCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
-      // 표 객체 선택 모드면 선택된 표 참조 사용
       const ref = ih.getSelectedTableRef();
       if (ref) {
-        try {
-          services.wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
-          services.eventBus.emit('document-changed');
-        } catch (e) {
-          console.error('표 지우기 실패:', e);
-        }
+        safeTableOp(() => ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'deleteTable',
+          operation: (wasm) => {
+            wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
+            return { sectionIndex: ref.sec, paragraphIndex: ref.ppi, charOffset: 0 };
+          },
+        }), '표 지우기');
         return;
       }
-      // 셀 내부에서 커맨드 실행
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined) return;
-      try {
-        services.wasm.deleteTableControl(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex);
-        services.eventBus.emit('document-changed');
-      } catch (e) {
-        console.error('표 지우기 실패:', e);
-      }
+      safeTableOp(() => ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'deleteTable',
+        operation: (wasm) => {
+          wasm.deleteTableControl(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!);
+          return { sectionIndex: pos.sectionIndex, paragraphIndex: pos.parentParaIndex!, charOffset: 0 };
+        },
+      }), '표 지우기');
     },
   },
   {
@@ -331,11 +349,15 @@ export const tableCommands: CommandDef[] = [
       if (!props) return;
       let charOffset = 0;
       if (!props.hasCaption) {
-        try {
-          const result: any = services.wasm.setTableProperties(sec, ppi, ci, { hasCaption: true });
-          charOffset = result?.captionCharOffset ?? 3;
-          services.eventBus.emit('document-changed');
-        } catch (e) { console.error('표 캡션 생성 실패:', e); return; }
+        safeTableOp(() => ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'toggleTableCaption',
+          operation: (wasm) => {
+            const result: any = wasm.setTableProperties(sec, ppi, ci, { hasCaption: true });
+            charOffset = result?.captionCharOffset ?? 3;
+            return { sectionIndex: sec, paragraphIndex: ppi, charOffset: 0 };
+          },
+        }), '캡션 넣기');
       } else {
         try {
           const len = services.wasm.getCellParagraphLength(sec, ppi, ci, 65534, 0);

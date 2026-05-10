@@ -5,7 +5,7 @@
 use super::ast::*;
 use super::symbols::{
     self, is_big_operator, is_function, is_structure_command,
-    lookup_symbol, lookup_function, DECORATIONS, FONT_STYLES,
+    lookup_symbol, lookup_function, DECORATIONS, FONT_STYLES, FontStyleKind,
 };
 use super::tokenizer::{Token, TokenType, tokenize};
 
@@ -220,9 +220,68 @@ impl EqParser {
             return EqNode::Empty;
         }
 
-        // LaTeX 분수: \frac{a}{b}
-        if cu == "FRAC" {
+        // LaTeX 분수: \frac{a}{b}, \dfrac{a}{b}, \tfrac{a}{b}
+        if matches!(cu, "FRAC" | "DFRAC" | "TFRAC") {
             return self.parse_latex_fraction();
+        }
+
+        // LaTeX \text{...} — 로만체 텍스트
+        // 제한: 토크나이저가 일반 공백을 건너뛰므로 \text{a b} 내부 공백은 보존되지 않음.
+        // 공백이 필요하면 hwpeq 관례대로 ~ 사용 (\text{if~}).
+        if cu == "TEXT" {
+            let body = self.parse_single_or_group();
+            return EqNode::FontStyle {
+                style: FontStyleKind::Roman,
+                body: Box::new(body),
+            };
+        }
+
+        // LaTeX \operatorname{...} — 로만체 연산자명
+        if cu == "OPERATORNAME" {
+            let body = self.parse_single_or_group();
+            return EqNode::FontStyle {
+                style: FontStyleKind::Roman,
+                body: Box::new(body),
+            };
+        }
+
+        // LaTeX \phantom{...} — 보이지 않는 공간 (레이아웃 정렬용)
+        if matches!(cu, "PHANTOM" | "VPHANTOM" | "HPHANTOM") {
+            self.parse_single_or_group();
+            return EqNode::Text(" ".to_string());
+        }
+
+        // LaTeX spacing: \quad, \qquad, \,, \:, \;, \!
+        if matches!(cu, "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE") {
+            let space = lookup_symbol(cu).unwrap_or(" ");
+            return EqNode::Text(space.to_string());
+        }
+
+        // LaTeX \overset{over}{base}, \underset{under}{base}, \stackrel{over}{base}
+        if matches!(cu, "OVERSET" | "STACKREL") {
+            let over = self.parse_single_or_group();
+            let base = self.parse_single_or_group();
+            return EqNode::Superscript {
+                base: Box::new(base),
+                sup: Box::new(over),
+            };
+        }
+        if cu == "UNDERSET" {
+            let under = self.parse_single_or_group();
+            let base = self.parse_single_or_group();
+            return EqNode::Subscript {
+                base: Box::new(base),
+                sub: Box::new(under),
+            };
+        }
+
+        // LaTeX \begin{env}...\end{env}
+        if cu == "BEGIN" {
+            return self.parse_latex_environment();
+        }
+        if cu == "END" {
+            self.skip_brace_arg();
+            return EqNode::Empty;
         }
 
         // 제곱근
@@ -806,6 +865,196 @@ impl EqParser {
             numer: Box::new(numer),
             denom: Box::new(denom),
         }
+    }
+
+    /// \begin{env}...\end{env} 환경 파싱
+    fn parse_latex_environment(&mut self) -> EqNode {
+        let env_name = self.read_brace_arg();
+        let env_upper = env_name.to_ascii_uppercase();
+
+        match env_upper.as_str() {
+            "PMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Paren, &env_name),
+            "BMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Bracket, &env_name),
+            "VMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Vert, &env_name),
+            "BVMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Vert, &env_name),
+            "SMALLMATRIX" => self.parse_latex_env_matrix(MatrixStyle::Plain, &env_name),
+            "MATRIX" | "ARRAY" => self.parse_latex_env_matrix(MatrixStyle::Plain, &env_name),
+            "CASES" => self.parse_latex_env_cases(&env_name),
+            "ALIGNED" | "ALIGN" | "EQNARRAY" | "SPLIT" | "GATHER" | "GATHERED" => {
+                self.parse_latex_env_eqalign(&env_name)
+            }
+            _ => EqNode::Empty,
+        }
+    }
+
+    /// {env_name} 읽기 — 중괄호 안의 텍스트를 반환
+    fn read_brace_arg(&mut self) -> String {
+        if self.current_type() != TokenType::LBrace {
+            return String::new();
+        }
+        self.pos += 1;
+        let mut name = String::new();
+        while !self.at_end() && self.current_type() != TokenType::RBrace {
+            name.push_str(self.current_value());
+            self.pos += 1;
+        }
+        self.expect(TokenType::RBrace);
+        name
+    }
+
+    /// \end{env} 의 {env} 인자를 소비하고 건너뛰기
+    fn skip_brace_arg(&mut self) {
+        if self.current_type() == TokenType::LBrace {
+            self.pos += 1;
+            while !self.at_end() && self.current_type() != TokenType::RBrace {
+                self.pos += 1;
+            }
+            self.expect(TokenType::RBrace);
+        }
+    }
+
+    /// \end{env} 도달 여부 확인
+    fn at_latex_env_end(&self, env_name: &str) -> bool {
+        if self.current_type() != TokenType::Command {
+            return false;
+        }
+        let val = self.current_value();
+        if !val.eq_ignore_ascii_case("end") {
+            return false;
+        }
+        let next = self.pos + 1;
+        if next >= self.tokens.len() || self.tokens[next].ty != TokenType::LBrace {
+            return false;
+        }
+        let mut i = next + 1;
+        let mut name = String::new();
+        while i < self.tokens.len() && self.tokens[i].ty != TokenType::RBrace {
+            name.push_str(&self.tokens[i].value);
+            i += 1;
+        }
+        name.eq_ignore_ascii_case(env_name)
+    }
+
+    /// \end{env}를 소비 (command + {env_name})
+    fn consume_latex_env_end(&mut self) {
+        if self.current_type() == TokenType::Command
+            && self.current_value().eq_ignore_ascii_case("end")
+        {
+            self.pos += 1;
+            self.skip_brace_arg();
+        }
+    }
+
+    /// LaTeX matrix 환경 파싱: \begin{pmatrix} a & b \\ c & d \end{pmatrix}
+    fn parse_latex_env_matrix(&mut self, style: MatrixStyle, env_name: &str) -> EqNode {
+        let mut rows: Vec<Vec<EqNode>> = vec![vec![]];
+        let mut current_cell = Vec::new();
+
+        while !self.at_end() && !self.at_latex_env_end(env_name) {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
+                self.pos += 1;
+                if let Some(last_row) = rows.last_mut() {
+                    last_row.push(EqNode::Row(current_cell).simplify());
+                }
+                current_cell = Vec::new();
+                rows.push(vec![]);
+            } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                if let Some(last_row) = rows.last_mut() {
+                    last_row.push(EqNode::Row(current_cell).simplify());
+                }
+                current_cell = Vec::new();
+                self.pos += 1;
+            } else if self.try_consume_infix_over_atop(&mut current_cell) {
+                continue;
+            } else {
+                current_cell.push(self.parse_element());
+            }
+        }
+
+        if !current_cell.is_empty() || rows.last().map_or(false, |r| !r.is_empty()) {
+            if let Some(last_row) = rows.last_mut() {
+                last_row.push(EqNode::Row(current_cell).simplify());
+            }
+        }
+        // 빈 마지막 행 제거 (후행 \\ 대응)
+        if rows.last().map_or(false, |r| r.is_empty()) {
+            rows.pop();
+        }
+
+        self.consume_latex_env_end();
+        EqNode::Matrix { rows, style }
+    }
+
+    /// LaTeX cases 환경 파싱: \begin{cases} expr & cond \\ ... \end{cases}
+    fn parse_latex_env_cases(&mut self, env_name: &str) -> EqNode {
+        let mut case_rows = Vec::new();
+        let mut current_row = Vec::new();
+
+        while !self.at_end() && !self.at_latex_env_end(env_name) {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
+                self.pos += 1;
+                case_rows.push(EqNode::Row(current_row).simplify());
+                current_row = Vec::new();
+            } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                current_row.push(EqNode::Space(SpaceKind::Tab));
+                self.pos += 1;
+            } else if self.try_consume_infix_over_atop(&mut current_row) {
+                continue;
+            } else {
+                current_row.push(self.parse_element());
+            }
+        }
+
+        if !current_row.is_empty() {
+            case_rows.push(EqNode::Row(current_row).simplify());
+        }
+
+        self.consume_latex_env_end();
+        EqNode::Cases { rows: case_rows }
+    }
+
+    /// LaTeX aligned/align 환경 파싱
+    fn parse_latex_env_eqalign(&mut self, env_name: &str) -> EqNode {
+        let mut eq_rows: Vec<(EqNode, EqNode)> = Vec::new();
+        let mut current_left = Vec::new();
+        let mut current_right: Option<Vec<EqNode>> = None;
+
+        while !self.at_end() && !self.at_latex_env_end(env_name) {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
+                self.pos += 1;
+                let left = EqNode::Row(current_left).simplify();
+                let right = current_right.map(|r| EqNode::Row(r).simplify()).unwrap_or(EqNode::Empty);
+                eq_rows.push((left, right));
+                current_left = Vec::new();
+                current_right = None;
+            } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                if current_right.is_none() {
+                    current_right = Some(Vec::new());
+                }
+                self.pos += 1;
+            } else {
+                let consumed = if let Some(ref mut right) = current_right {
+                    self.try_consume_infix_over_atop(right)
+                } else {
+                    self.try_consume_infix_over_atop(&mut current_left)
+                };
+                if consumed { continue; }
+                if let Some(ref mut right) = current_right {
+                    right.push(self.parse_element());
+                } else {
+                    current_left.push(self.parse_element());
+                }
+            }
+        }
+
+        if !current_left.is_empty() || current_right.is_some() {
+            let left = EqNode::Row(current_left).simplify();
+            let right = current_right.map(|r| EqNode::Row(r).simplify()).unwrap_or(EqNode::Empty);
+            eq_rows.push((left, right));
+        }
+
+        self.consume_latex_env_end();
+        EqNode::EqAlign { rows: eq_rows }
     }
 
     /// 큰 연산자 파싱 (적분, 합 등) — 첨자 포함
@@ -1517,4 +1766,351 @@ fn test_rm_p_left() {
     eprintln!("RM_P AST: {:#?}", ast);
     let s = format!("{:?}", ast);
     assert!(s.contains("Paren"), "Paren이 있어야 함: {}", s);
+}
+
+// LaTeX 명령어 호환 확장 테스트 (#143 2차)
+
+#[cfg(test)]
+mod latex_compat_tests {
+    use super::*;
+    use super::symbols::{FontStyleKind, DecoKind};
+
+    #[test]
+    fn test_latex_dfrac_tfrac() {
+        for cmd in [r"\dfrac{1}{2}", r"\tfrac{1}{2}"] {
+            let ast = parse(cmd);
+            assert!(matches!(&ast, EqNode::Fraction { .. }), "{cmd}: Expected Fraction, got {:?}", ast);
+        }
+    }
+
+    #[test]
+    fn test_latex_mathrm() {
+        let ast = parse(r"\mathrm{kg}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Roman, .. }),
+            r"Expected FontStyle(Roman) for \mathrm, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathbf() {
+        let ast = parse(r"\mathbf{F}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Bold, .. }),
+            r"Expected FontStyle(Bold) for \mathbf, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathbb() {
+        let ast = parse(r"\mathbb{R}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Blackboard, .. }),
+            r"Expected FontStyle(Blackboard) for \mathbb, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathcal() {
+        let ast = parse(r"\mathcal{L}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Calligraphy, .. }),
+            r"Expected FontStyle(Calligraphy) for \mathcal, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_mathfrak_mathsf_mathtt() {
+        let ast = parse(r"\mathfrak{g}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Fraktur, .. }));
+
+        let ast = parse(r"\mathsf{AB}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::SansSerif, .. }));
+
+        let ast = parse(r"\mathtt{code}");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Monospace, .. }));
+    }
+
+    #[test]
+    fn test_latex_text() {
+        let ast = parse(r"\text{if }");
+        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Roman, .. }),
+            r"Expected FontStyle(Roman) for \text, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_overline_lowercase() {
+        let ast = parse(r"\overline{AB}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Overline, .. }),
+            r"Expected Decoration(Overline) for \overline, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_underline_lowercase() {
+        let ast = parse(r"\underline{x}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Underline, .. }),
+            r"Expected Decoration(Underline) for \underline, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_widehat_widetilde() {
+        let ast = parse(r"\widehat{ABC}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Hat, .. }));
+
+        let ast = parse(r"\widetilde{x}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Tilde, .. }));
+    }
+
+    #[test]
+    fn test_latex_overrightarrow() {
+        let ast = parse(r"\overrightarrow{AB}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Vec, .. }));
+    }
+
+    #[test]
+    fn test_latex_not_lowercase() {
+        let ast = parse(r"\not{=}");
+        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::StrikeThrough, .. }),
+            r"Expected Decoration(StrikeThrough) for \not, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_quadratic_formula() {
+        let ast = parse(r"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}");
+        let s = format!("{:?}", ast);
+        assert!(s.contains("Fraction"), "분수 있어야 함");
+        assert!(s.contains("Sqrt"), "제곱근 있어야 함");
+        assert!(s.contains("±"), "± 기호 있어야 함");
+    }
+
+    #[test]
+    fn test_latex_binom() {
+        let ast = parse(r"\binom{n}{k}");
+        assert!(matches!(&ast, EqNode::Paren { left, right, .. } if left == "(" && right == ")"),
+            r"Expected Paren for \binom, got {:?}", ast);
+    }
+
+    #[test]
+    fn test_hwpeq_not_regressed() {
+        assert!(matches!(parse("1 over 2"), EqNode::Fraction { .. }));
+        assert!(matches!(parse("SQRT x"), EqNode::Sqrt { .. }));
+        assert!(matches!(parse("SUM_{i=0}^n"), EqNode::BigOp { .. }));
+        assert!(matches!(parse("rm abc"), EqNode::FontStyle { style: FontStyleKind::Roman, .. }));
+        assert!(matches!(parse("hat x"), EqNode::Decoration { .. }));
+        assert!(matches!(parse("OVERLINE{abc}"), EqNode::Decoration { kind: DecoKind::Overline, .. }));
+    }
+
+    #[test]
+    fn test_latex_begin_pmatrix() {
+        let ast = parse(r"\begin{pmatrix} a & b \\ c & d \end{pmatrix}");
+        match &ast {
+            EqNode::Matrix { rows, style } => {
+                assert_eq!(*style, super::super::ast::MatrixStyle::Paren);
+                assert_eq!(rows.len(), 2);
+                assert_eq!(rows[0].len(), 2);
+                assert_eq!(rows[1].len(), 2);
+            }
+            _ => panic!("Expected Matrix(Paren), got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_bmatrix() {
+        let ast = parse(r"\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}");
+        match &ast {
+            EqNode::Matrix { rows, style } => {
+                assert_eq!(*style, super::super::ast::MatrixStyle::Bracket);
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!("Expected Matrix(Bracket), got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_cases() {
+        let ast = parse(r"\begin{cases} x & x > 0 \\ -x & x \leq 0 \end{cases}");
+        match &ast {
+            EqNode::Cases { rows } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!("Expected Cases, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_aligned() {
+        let ast = parse(r"\begin{aligned} a &= b + c \\ d &= e \end{aligned}");
+        match &ast {
+            EqNode::EqAlign { rows } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!("Expected EqAlign, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_backslash_backslash_tokenizes_as_newline() {
+        use super::super::tokenizer::{tokenize, TokenType};
+        let tokens = tokenize(r"a \\ b");
+        let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
+        assert!(types.contains(&TokenType::Whitespace), "\\\\는 Whitespace(#)로 토큰화돼야 함: {:?}", tokens);
+    }
+
+    #[test]
+    fn test_latex_operatorname() {
+        let ast = parse(r"\operatorname{argmax}");
+        match &ast {
+            EqNode::FontStyle { style, body } => {
+                assert_eq!(*style, FontStyleKind::Roman);
+                assert!(format!("{:?}", body).contains("argmax"));
+            }
+            _ => panic!(r"Expected FontStyle(Roman) for \operatorname, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_spacing_quad() {
+        let ast = parse(r"a \quad b");
+        let s = format!("{:?}", ast);
+        assert!(s.contains("Text") || s.contains("Symbol"), r"\quad should produce a text node: {}", s);
+    }
+
+    #[test]
+    fn test_latex_thin_space() {
+        use super::super::tokenizer::{tokenize, TokenType};
+        let tokens = tokenize(r"a \, b");
+        let has_cmd = tokens.iter().any(|t| t.ty == TokenType::Command && t.value == "THINSPACE");
+        assert!(has_cmd, r"\, should tokenize as THINSPACE: {:?}", tokens);
+    }
+
+    #[test]
+    fn test_latex_rightarrow() {
+        let ast = parse(r"\rightarrow");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "→"),
+            _ => panic!(r"Expected → for \rightarrow, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_implies() {
+        let ast = parse(r"\implies");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "⇒"),
+            _ => panic!(r"Expected ⇒ for \implies, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_infty() {
+        let ast = parse(r"\infty");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "∞"),
+            _ => panic!(r"Expected ∞ for \infty, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_nabla() {
+        let ast = parse(r"\nabla");
+        match &ast {
+            EqNode::MathSymbol(s) => assert_eq!(s, "∇"),
+            _ => panic!(r"Expected ∇ for \nabla, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_leq_geq() {
+        let ast = parse(r"a \leq b \geq c");
+        let s = format!("{:?}", ast);
+        assert!(s.contains("≤") && s.contains("≥"), r"\leq \geq should produce ≤ ≥: {}", s);
+    }
+
+    #[test]
+    fn test_latex_phantom() {
+        let ast = parse(r"\phantom{x}");
+        assert!(!matches!(ast, EqNode::Empty), r"\phantom should produce a space node, not Empty: {:?}", ast);
+    }
+
+    #[test]
+    fn test_latex_overset() {
+        let ast = parse(r"\overset{n}{=}");
+        match &ast {
+            EqNode::Superscript { base, sup } => {
+                assert!(format!("{:?}", base).contains("="));
+                assert!(format!("{:?}", sup).contains("n"));
+            }
+            _ => panic!(r"Expected Superscript for \overset, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_underset() {
+        let ast = parse(r"\underset{x}{y}");
+        match &ast {
+            EqNode::Subscript { base, sub } => {
+                assert!(format!("{:?}", base).contains("y"));
+                assert!(format!("{:?}", sub).contains("x"));
+            }
+            _ => panic!(r"Expected Subscript for \underset, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_stackrel() {
+        let ast = parse(r"\stackrel{def}{=}");
+        match &ast {
+            EqNode::Superscript { sup, .. } => {
+                let s = format!("{:?}", sup);
+                assert!(s.contains("def"), r"\stackrel sup should contain 'def': {}", s);
+            }
+            _ => panic!(r"Expected Superscript for \stackrel, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_array() {
+        let ast = parse(r"\begin{array} a & b \\ c & d \end{array}");
+        match &ast {
+            EqNode::Matrix { rows, .. } => {
+                assert_eq!(rows.len(), 2);
+                assert_eq!(rows[0].len(), 2);
+            }
+            _ => panic!(r"Expected Matrix for \begin{{array}}, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_smallmatrix() {
+        let ast = parse(r"\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}");
+        match &ast {
+            EqNode::Matrix { rows, .. } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!(r"Expected Matrix for \begin{{smallmatrix}}, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_begin_split() {
+        let ast = parse(r"\begin{split} a &= b \\ c &= d \end{split}");
+        match &ast {
+            EqNode::EqAlign { rows } => {
+                assert_eq!(rows.len(), 2);
+            }
+            _ => panic!(r"Expected EqAlign for \begin{{split}}, got {:?}", ast),
+        }
+    }
+
+    #[test]
+    fn test_latex_escaped_braces() {
+        use super::super::tokenizer::{tokenize, TokenType};
+        let tokens = tokenize(r"\left\{ x \right\}");
+        let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
+        assert!(types.contains(&TokenType::LBrace), r"\{{ should tokenize as LBrace: {:?}", tokens);
+    }
+
+    #[test]
+    fn test_latex_langle_rangle() {
+        let ast = parse(r"\left\langle x \right\rangle");
+        match &ast {
+            EqNode::Paren { left, right, .. } => {
+                assert_eq!(left, "⟨");
+                assert_eq!(right, "⟩");
+            }
+            _ => panic!(r"Expected Paren for \langle, got {:?}", ast),
+        }
+    }
 }

@@ -261,6 +261,46 @@ impl Tokenizer {
             return self.read_quoted();
         }
 
+        // LaTeX \\(줄바꿈) — 두 개의 백슬래시 연속
+        if ch == '\\' && self.peek(1) == Some('\\') {
+            self.pos += 2;
+            return Token::new(TokenType::Whitespace, "#", start);
+        }
+
+        // LaTeX spacing: \, \: \; \! → thin/medium/thick/negative space
+        if ch == '\\' {
+            if let Some(nc) = self.peek(1) {
+                let space_cmd = match nc {
+                    ',' => Some("THINSPACE"),
+                    ':' => Some("MEDSPACE"),
+                    ';' => Some("THICKSPACE"),
+                    '!' => Some("NEGSPACE"),
+                    _ => None,
+                };
+                if let Some(cmd) = space_cmd {
+                    self.pos += 2;
+                    return Token::new(TokenType::Command, cmd, start);
+                }
+            }
+        }
+
+        // LaTeX escaped braces and special chars: \{ \} \| \#
+        if ch == '\\' {
+            if let Some(nc) = self.peek(1) {
+                let brace_tok = match nc {
+                    '{' => Some(Token::new(TokenType::LBrace, "{", start)),
+                    '}' => Some(Token::new(TokenType::RBrace, "}", start)),
+                    '|' => Some(Token::new(TokenType::Symbol, "|", start)),
+                    '#' => Some(Token::new(TokenType::Whitespace, "#", start)),
+                    _ => None,
+                };
+                if let Some(tok) = brace_tok {
+                    self.pos += 2;
+                    return tok;
+                }
+            }
+        }
+
         // LaTeX 명령어: \frac, \sqrt, \pm 등
         if ch == '\\' && self.peek(1).map_or(false, |c| c.is_ascii_alphabetic()) {
             return self.read_latex_command();

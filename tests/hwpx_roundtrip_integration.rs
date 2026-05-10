@@ -103,6 +103,115 @@ fn stage5_large_real_doc_2025_q2_smoke() {
     let _ = roundtrip_ir_diff(bytes).expect("2025 2분기 large doc roundtrip must not crash");
 }
 
+// ---------- #172: 컨트롤 직렬화 라운드트립 검증 --------------------------------
+// 표/그림/도형/각주 컨트롤이 HWPX 직렬화 → 재파싱 사이클에서 보존되는지 확인.
+
+#[test]
+fn stage5_table_control_preserved_on_roundtrip() {
+    use rhwp::model::control::Control;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/표-텍스트.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse 표-텍스트");
+
+    let orig_tables: usize = doc1.sections.iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .filter(|c| matches!(c, Control::Table(_)))
+        .count();
+    assert!(orig_tables > 0, "표-텍스트.hwpx must contain tables");
+
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    let rt_tables: usize = doc2.sections.iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .filter(|c| matches!(c, Control::Table(_)))
+        .count();
+    assert_eq!(
+        rt_tables, orig_tables,
+        "Table count: original={}, roundtrip={}", orig_tables, rt_tables
+    );
+}
+
+#[test]
+fn stage5_picture_bindata_preserved_on_roundtrip() {
+    use rhwp::model::control::Control;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/tac-img-02.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse tac-img-02");
+
+    let orig_pics: usize = doc1.sections.iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .filter(|c| matches!(c, Control::Picture(_)))
+        .count();
+    assert!(orig_pics > 0, "tac-img-02.hwpx must contain pictures");
+    assert!(!doc1.bin_data_content.is_empty(), "tac-img-02.hwpx must contain BinData");
+
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    assert_eq!(
+        doc2.bin_data_content.len(),
+        doc1.bin_data_content.len(),
+        "BinData count mismatch"
+    );
+
+    for (i, (orig, rt)) in doc1.bin_data_content.iter()
+        .zip(doc2.bin_data_content.iter()).enumerate()
+    {
+        assert_eq!(
+            orig.data.len(), rt.data.len(),
+            "[BinData#{}] size: {} vs {}", i, orig.data.len(), rt.data.len()
+        );
+    }
+
+    let rt_pics: usize = doc2.sections.iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .filter(|c| matches!(c, Control::Picture(_)))
+        .count();
+    assert_eq!(
+        rt_pics, orig_pics,
+        "Picture count: original={}, roundtrip={}", orig_pics, rt_pics
+    );
+}
+
+#[test]
+fn stage5_large_doc_table_count_preserved() {
+    use rhwp::model::control::Control;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse");
+
+    let orig_tables: usize = doc1.sections.iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .filter(|c| matches!(c, Control::Table(_)))
+        .count();
+
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    let rt_tables: usize = doc2.sections.iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .filter(|c| matches!(c, Control::Table(_)))
+        .count();
+
+    assert_eq!(
+        rt_tables, orig_tables,
+        "Large doc table count: original={}, roundtrip={}", orig_tables, rt_tables
+    );
+}
+
 // ---------- #177 Stage 2: Serializer 원본 lineseg 보존 -----------------------
 // rhwp 가 한컴 HWPX 의 `<hp:lineseg>` 값을 저장 시 훼손 없이 보존하는지 확인.
 // 원본 lineseg 값이 재파싱 IR 과 일치해야 함.

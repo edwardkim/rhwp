@@ -41,7 +41,7 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     use static_assets::*;
 
     // 1-pass: ID 풀 구성
-    let ctx = SerializeContext::collect_from_document(doc);
+    let mut ctx = SerializeContext::collect_from_document(doc);
 
     let mut z = HwpxZipWriter::new();
 
@@ -60,7 +60,7 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
         .map(|i| format!("Contents/section{}.xml", i))
         .collect();
     for (i, sec) in doc.sections.iter().enumerate() {
-        let xml = section::write_section(sec, doc, i, &ctx)?;
+        let xml = section::write_section(sec, doc, i, &mut ctx)?;
         z.write_deflated(&section_hrefs[i], &xml)?;
     }
 
@@ -323,6 +323,8 @@ mod tests {
         use crate::model::table::Table;
 
         let mut doc = Document::default();
+        // Table::default() 의 border_fill_id(0) 가 검증을 통과하도록 등록
+        doc.doc_info.border_fills.push(crate::model::style::BorderFill::default());
         let mut section = crate::model::document::Section::default();
         let mut para = crate::model::paragraph::Paragraph::default();
         para.text = "ACB".to_string();
@@ -601,5 +603,211 @@ mod tests {
                 r
             );
         }
+    }
+
+    #[test]
+    fn picture_bindata_roundtrip() {
+        use crate::model::bin_data::BinDataContent;
+        use crate::model::control::Control;
+        use crate::model::image::{ImageAttr, Picture};
+        use crate::model::shape::CommonObjAttr;
+
+        let fake_png = b"\x89PNG\r\n\x1a\nfake_image_data_for_test";
+
+        let mut doc = Document::default();
+        doc.bin_data_content.push(BinDataContent {
+            id: 1,
+            data: fake_png.to_vec(),
+            extension: "png".to_string(),
+        });
+
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "A".to_string();
+        para.char_offsets = vec![8];
+        para.char_count = 10;
+        para.controls.push(Control::Picture(Box::new(Picture {
+            common: CommonObjAttr {
+                width: 5000,
+                height: 3000,
+                treat_as_char: true,
+                ..Default::default()
+            },
+            image_attr: ImageAttr {
+                bin_data_id: 1,
+                ..Default::default()
+            },
+            ..Default::default()
+        })));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize picture");
+
+        // ZIP에 BinData 엔트리 존재 확인
+        let cursor = std::io::Cursor::new(&bytes);
+        let archive = zip::ZipArchive::new(cursor).expect("zip");
+        let names: Vec<String> = archive.file_names().map(String::from).collect();
+        assert!(
+            names.iter().any(|n| n.starts_with("BinData/")),
+            "BinData/ ZIP entry missing: {:?}",
+            names
+        );
+        drop(archive);
+
+        // section XML에 binaryItemIDRef 포함 확인
+        let cursor2 = std::io::Cursor::new(&bytes);
+        let mut archive2 = zip::ZipArchive::new(cursor2).expect("zip");
+        let mut sec0 = archive2.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
+        assert!(
+            xml.contains("binaryItemIDRef"),
+            "binaryItemIDRef missing in section XML: {}",
+            xml
+        );
+        drop(sec0);
+
+        // 라운드트립: BinData 보존 확인
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        assert_eq!(parsed.bin_data_content.len(), 1);
+        assert_eq!(parsed.bin_data_content[0].data, fake_png);
+        assert_eq!(parsed.bin_data_content[0].extension, "png");
+    }
+
+    #[test]
+    fn table_control_roundtrip() {
+        use crate::model::control::Control;
+        use crate::model::table::Table;
+
+        let mut doc = Document::default();
+        doc.doc_info
+            .border_fills
+            .push(crate::model::style::BorderFill::default());
+
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "A".to_string();
+        para.char_offsets = vec![8];
+        para.char_count = 10;
+        para.controls
+            .push(Control::Table(Box::new(Table::default())));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize table");
+
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
+        assert!(
+            xml.contains("<hp:tbl ") || xml.contains("<hp:tbl>"),
+            "table element missing in section XML: {}",
+            xml
+        );
+        drop(sec0);
+
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        let has_table = parsed.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(_)));
+        assert!(has_table, "table control missing after roundtrip");
+    }
+
+    #[test]
+    fn footnote_endnote_roundtrip() {
+        use crate::model::control::Control;
+        use crate::model::footnote::{Endnote, Footnote};
+        use crate::model::paragraph::Paragraph;
+
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "본문".to_string();
+        para.char_offsets = vec![8, 17];
+        para.char_count = 20;
+
+        let mut fn_para = Paragraph::default();
+        fn_para.text = "각주 텍스트".to_string();
+        para.controls.push(Control::Footnote(Box::new(Footnote {
+            number: 1,
+            paragraphs: vec![fn_para],
+        })));
+
+        let mut en_para = Paragraph::default();
+        en_para.text = "미주 텍스트".to_string();
+        para.controls.push(Control::Endnote(Box::new(Endnote {
+            number: 1,
+            paragraphs: vec![en_para],
+        })));
+
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize notes");
+
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
+        assert!(
+            xml.contains("<hp:footNote"),
+            "footNote missing: {}",
+            xml
+        );
+        assert!(
+            xml.contains("<hp:endNote"),
+            "endNote missing: {}",
+            xml
+        );
+        assert!(xml.contains("각주 텍스트"), "footnote text missing: {}", xml);
+        assert!(xml.contains("미주 텍스트"), "endnote text missing: {}", xml);
+        drop(sec0);
+
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        let ctrls = &parsed.sections[0].paragraphs[0].controls;
+        let has_fn = ctrls.iter().any(|c| matches!(c, Control::Footnote(_)));
+        let has_en = ctrls.iter().any(|c| matches!(c, Control::Endnote(_)));
+        assert!(has_fn, "footnote missing after roundtrip");
+        assert!(has_en, "endnote missing after roundtrip");
+
+        let fn_ctrl = ctrls.iter().find_map(|c| match c {
+            Control::Footnote(f) => Some(f),
+            _ => None,
+        });
+        assert!(
+            fn_ctrl.unwrap().paragraphs[0].text.contains("각주 텍스트"),
+            "footnote paragraph text not preserved"
+        );
+    }
+
+    /// tac-img-02.hwpx 파싱 후 BinData 가 존재하는지, Picture 컨트롤이
+    /// section XML 에 반영되는지 확인하는 스모크 테스트.
+    /// 실문서는 borderFillIDRef 가 복잡하여 full roundtrip 대신 직렬화 단계만 검증.
+    #[test]
+    fn tac_img_sample_has_pictures_and_bindata() {
+        use crate::model::control::Control;
+
+        let bytes = std::fs::read("samples/tac-img-02.hwpx")
+            .expect("samples/tac-img-02.hwpx must be readable");
+        let original = parse_hwpx(&bytes).expect("parse original");
+
+        assert!(
+            !original.bin_data_content.is_empty(),
+            "sample must contain BinData"
+        );
+
+        let pic_count = original
+            .sections
+            .iter()
+            .flat_map(|s| s.paragraphs.iter())
+            .flat_map(|p| p.controls.iter())
+            .filter(|c| matches!(c, Control::Picture(_)))
+            .count();
+        assert!(pic_count > 0, "sample must contain Picture controls");
     }
 }

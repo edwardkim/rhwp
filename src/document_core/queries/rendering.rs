@@ -201,8 +201,9 @@ impl DocumentCore {
 
         // scale 결정 우선순위:
         // 1. 명시 scale (사용자 직접 지정)
-        // 2. max_dimension + max_pixels 기반 자동 계산 (페이지가 두 한도 모두 안에 들어가도록)
-        // 3. 기본 1.0
+        // 2. max_dimension / VLM 기반 자동 계산
+        // 3. --dpi 만 지정 시 scale = dpi / 96.0 (#614)
+        // 4. 기본 1.0
         let scale = if let Some(s) = options.scale {
             s
         } else if effective_max_dim.is_some() || effective_max_pixels.is_some() {
@@ -224,11 +225,14 @@ impl DocumentCore {
             }
             // 1.0 초과 시는 페이지가 이미 충분히 작은 것이므로 1.0 으로 cap
             auto_scale.min(1.0).max(0.1)
+        } else if let Some(dpi) = options.dpi {
+            (dpi / 96.0).max(0.1)
         } else {
             1.0
         };
 
         raster_options.scale = scale;
+        raster_options.dpi = options.dpi;
         if let Some(max_dim) = effective_max_dim {
             raster_options.max_dimension = max_dim;
         }
@@ -236,10 +240,81 @@ impl DocumentCore {
             raster_options.max_pixels = max_pixels;
         }
 
-        SkiaLayerRenderer::new()
+        let png_bytes = SkiaLayerRenderer::new()
             .with_font_paths(&options.font_paths)
-            .render_png_with_options(&layer_tree, raster_options)
+            .render_png_with_options(&layer_tree, raster_options)?;
+
+        if let Some(dpi) = options.dpi {
+            Ok(inject_png_phys(png_bytes, dpi))
+        } else {
+            Ok(png_bytes)
+        }
     }
+}
+
+/// PNG 바이트에 pHYs chunk 를 삽입한다 (IHDR 직후, 첫 IDAT 직전).
+/// pHYs chunk: 4-byte X ppm + 4-byte Y ppm + 1-byte unit(1=meter).
+#[cfg(not(target_arch = "wasm32"))]
+fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
+    const PNG_SIGNATURE: [u8; 8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+    const IHDR_DATA_LEN: usize = 13;
+
+    let ppm = (dpi / 0.0254).round() as u32;
+    if png.len() < 8 || png[..8] != PNG_SIGNATURE {
+        return png;
+    }
+    let pos = 8; // signature 이후
+    if pos + 8 > png.len() {
+        return png;
+    }
+    let ihdr_len = u32::from_be_bytes([png[pos], png[pos + 1], png[pos + 2], png[pos + 3]]) as usize;
+    if ihdr_len != IHDR_DATA_LEN || &png[pos + 4..pos + 8] != b"IHDR" {
+        return png;
+    }
+    let Some(ihdr_end) = pos.checked_add(4 + 4 + ihdr_len + 4) else { return png };
+    if ihdr_end > png.len() {
+        return png;
+    }
+
+    // pHYs chunk 구성 (9 bytes data)
+    let mut phys_data = Vec::with_capacity(9);
+    phys_data.extend_from_slice(&ppm.to_be_bytes()); // X pixels per unit
+    phys_data.extend_from_slice(&ppm.to_be_bytes()); // Y pixels per unit
+    phys_data.push(1); // unit = meter
+
+    let phys_type = b"pHYs";
+    let mut phys_chunk = Vec::with_capacity(4 + 4 + 9 + 4);
+    phys_chunk.extend_from_slice(&(9u32).to_be_bytes()); // length
+    phys_chunk.extend_from_slice(phys_type);
+    phys_chunk.extend_from_slice(&phys_data);
+    // CRC: type + data
+    let mut crc_input = Vec::with_capacity(4 + 9);
+    crc_input.extend_from_slice(phys_type);
+    crc_input.extend_from_slice(&phys_data);
+    let crc = png_crc32(&crc_input);
+    phys_chunk.extend_from_slice(&crc.to_be_bytes());
+
+    let mut result = Vec::with_capacity(png.len() + phys_chunk.len());
+    result.extend_from_slice(&png[..ihdr_end]);
+    result.extend_from_slice(&phys_chunk);
+    result.extend_from_slice(&png[ihdr_end..]);
+    result
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn png_crc32(data: &[u8]) -> u32 {
+    let mut crc: u32 = 0xFFFF_FFFF;
+    for &byte in data {
+        crc ^= byte as u32;
+        for _ in 0..8 {
+            if crc & 1 != 0 {
+                crc = (crc >> 1) ^ 0xEDB8_8320;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+    crc ^ 0xFFFF_FFFF
 }
 
 /// PNG 내보내기 옵션 (export-png CLI / API 통합).
@@ -255,18 +330,29 @@ pub struct PngExportOptions {
     pub max_dimension: Option<i32>,
     /// VLM 프리셋. Claude / 향후 GPT-4V / Gemini / Qwen-VL / LLaVA 확장 (이슈 #613).
     pub vlm_target: Option<VlmTarget>,
+    /// DPI 메타데이터. PNG pHYs chunk 에 기록. 실제 래스터 픽셀 수에 영향 없음.
+    /// `scale` 미지정 시 `scale = dpi / 96.0` 자동 계산.
+    pub dpi: Option<f64>,
     /// 사용자 지정 폰트 디렉토리 (ttfs 등). SVG 의 `--font-path` 와 동일.
     pub font_paths: Vec<std::path::PathBuf>,
 }
 
 /// VLM (Vision-Language Model) 입력 사양 프리셋.
-///
-/// 본 사이클은 Claude Vision 만 지원. 다른 provider 는 이슈 #613 후속 task.
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VlmTarget {
     /// Claude Vision (Anthropic): longest edge ≤1568 px, ≤1.15 MP.
     Claude,
+    /// GPT-4V low detail (OpenAI): 512×512 고정.
+    Gpt4vLow,
+    /// GPT-4V high detail (OpenAI): 768×2000 tile 기반.
+    Gpt4vHigh,
+    /// Gemini (Google): longest edge ≤3072 px.
+    Gemini,
+    /// Qwen-VL (Alibaba): longest edge ≤2240 px, 28×28 patch 기반.
+    QwenVl,
+    /// LLaVA / 기타 OSS (CLIP backbone): longest edge ≤672 px.
+    Llava,
 }
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -275,15 +361,30 @@ impl VlmTarget {
     pub fn constraints(&self) -> (i32, u64) {
         match self {
             VlmTarget::Claude => (1568, 1_150_000),
+            VlmTarget::Gpt4vLow => (512, 262_144),
+            VlmTarget::Gpt4vHigh => (2000, 1_536_000),
+            VlmTarget::Gemini => (3072, 9_437_184),
+            VlmTarget::QwenVl => (2240, 5_017_600),
+            VlmTarget::Llava => (672, 451_584),
         }
     }
 
     /// CLI 옵션 문자열 → VlmTarget 변환.
+    /// 하이픈/밑줄 정규화 후 매칭. `gpt4v`/`qwen` 등 축약 별칭도 허용.
     pub fn from_str(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
+        match s.to_lowercase().replace('-', "_").as_str() {
             "claude" => Some(VlmTarget::Claude),
+            "gpt4v_low" => Some(VlmTarget::Gpt4vLow),
+            "gpt4v_high" | "gpt4v" => Some(VlmTarget::Gpt4vHigh),
+            "gemini" => Some(VlmTarget::Gemini),
+            "qwen_vl" | "qwen" => Some(VlmTarget::QwenVl),
+            "llava" => Some(VlmTarget::Llava),
             _ => None,
         }
+    }
+
+    pub fn all_names() -> &'static str {
+        "claude, gpt4v-low, gpt4v-high (또는 gpt4v), gemini, qwen-vl (또는 qwen), llava"
     }
 }
 
@@ -2329,5 +2430,101 @@ mod tests {
         assert_eq!(core.get_bin_data(0), Some(&[0x01, 0x02, 0x03][..]));
         assert_eq!(core.get_bin_data(1), Some(&[0xAA, 0xBB][..]));
         assert_eq!(core.get_bin_data(2), None);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn inject_png_phys_inserts_after_ihdr() {
+        // 최소 PNG: 8-byte signature + IHDR chunk (13 bytes data)
+        let mut png = Vec::new();
+        png.extend_from_slice(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]); // signature
+        // IHDR: length=13
+        png.extend_from_slice(&13u32.to_be_bytes());
+        png.extend_from_slice(b"IHDR");
+        png.extend_from_slice(&[0u8; 13]); // dummy IHDR data
+        let ihdr_crc = super::png_crc32(&{
+            let mut v = Vec::new();
+            v.extend_from_slice(b"IHDR");
+            v.extend_from_slice(&[0u8; 13]);
+            v
+        });
+        png.extend_from_slice(&ihdr_crc.to_be_bytes());
+        let ihdr_end = png.len(); // 8 + 4 + 4 + 13 + 4 = 33
+        // IDAT dummy
+        png.extend_from_slice(&4u32.to_be_bytes());
+        png.extend_from_slice(b"IDAT");
+        png.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
+        let idat_crc = super::png_crc32(&{
+            let mut v = Vec::new();
+            v.extend_from_slice(b"IDAT");
+            v.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
+            v
+        });
+        png.extend_from_slice(&idat_crc.to_be_bytes());
+
+        let result = super::inject_png_phys(png.clone(), 300.0);
+
+        // pHYs chunk 삽입 확인: IHDR 직후에 pHYs 가 위치
+        assert_eq!(&result[ihdr_end + 4..ihdr_end + 8], b"pHYs");
+        // pHYs data length = 9
+        let phys_len = u32::from_be_bytes([
+            result[ihdr_end], result[ihdr_end + 1],
+            result[ihdr_end + 2], result[ihdr_end + 3],
+        ]);
+        assert_eq!(phys_len, 9);
+        // 300 DPI → 11811 ppm (300 / 0.0254 = 11811.02...)
+        let ppm = u32::from_be_bytes([
+            result[ihdr_end + 8], result[ihdr_end + 9],
+            result[ihdr_end + 10], result[ihdr_end + 11],
+        ]);
+        assert_eq!(ppm, 11811);
+        // unit = 1 (meter)
+        assert_eq!(result[ihdr_end + 16], 1);
+        // IDAT 는 pHYs 뒤에 보존
+        let phys_chunk_size = 4 + 4 + 9 + 4; // 21
+        let idat_pos = ihdr_end + phys_chunk_size;
+        assert_eq!(&result[idat_pos + 4..idat_pos + 8], b"IDAT");
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn png_crc32_known_value() {
+        let crc = super::png_crc32(b"IHDR");
+        assert_eq!(crc, 0xA8A1_AE0A);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn vlm_target_from_str_all_variants() {
+        use super::VlmTarget;
+        assert_eq!(VlmTarget::from_str("claude"), Some(VlmTarget::Claude));
+        assert_eq!(VlmTarget::from_str("gpt4v-low"), Some(VlmTarget::Gpt4vLow));
+        assert_eq!(VlmTarget::from_str("gpt4v_low"), Some(VlmTarget::Gpt4vLow));
+        assert_eq!(VlmTarget::from_str("gpt4v-high"), Some(VlmTarget::Gpt4vHigh));
+        assert_eq!(VlmTarget::from_str("gpt4v"), Some(VlmTarget::Gpt4vHigh));
+        assert_eq!(VlmTarget::from_str("gemini"), Some(VlmTarget::Gemini));
+        assert_eq!(VlmTarget::from_str("qwen-vl"), Some(VlmTarget::QwenVl));
+        assert_eq!(VlmTarget::from_str("qwen_vl"), Some(VlmTarget::QwenVl));
+        assert_eq!(VlmTarget::from_str("qwen"), Some(VlmTarget::QwenVl));
+        assert_eq!(VlmTarget::from_str("llava"), Some(VlmTarget::Llava));
+        assert_eq!(VlmTarget::from_str("CLAUDE"), Some(VlmTarget::Claude));
+        assert_eq!(VlmTarget::from_str("unknown"), None);
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    #[test]
+    fn vlm_target_constraints_are_sane() {
+        use super::VlmTarget;
+        let targets = [
+            VlmTarget::Claude, VlmTarget::Gpt4vLow, VlmTarget::Gpt4vHigh,
+            VlmTarget::Gemini, VlmTarget::QwenVl, VlmTarget::Llava,
+        ];
+        for t in &targets {
+            let (edge, pixels) = t.constraints();
+            assert!(edge > 0, "{:?} edge should be positive", t);
+            assert!(pixels > 0, "{:?} pixels should be positive", t);
+            assert!((edge as u64) * (edge as u64) >= pixels,
+                "{:?} max_pixels should be reachable within edge", t);
+        }
     }
 }

@@ -226,9 +226,11 @@ fn render_box(
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
-                FontStyleKind::Roman => (false, false),
+                FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => (false, false),
                 FontStyleKind::Italic => (true, bold),
                 FontStyleKind::Bold => (italic, true),
+                FontStyleKind::Blackboard => (false, true),
+                FontStyleKind::Calligraphy | FontStyleKind::Fraktur => (false, false),
             };
             render_box(ctx, body, x, y, color, fs, new_italic, new_bold);
         }
