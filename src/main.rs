@@ -232,6 +232,12 @@ fn export_svg(args: &[String]) {
         }
     };
 
+    // [Task #741 후속] 외부 file path 그림 영역 영역 HWP file 영역 영역 같은 dir 영역
+    // 영역 image 영역 영역 자동 load (basename 매칭).
+    if let Some(parent) = std::path::Path::new(file_path).parent() {
+        let _loaded = doc.populate_external_images_from_dir(parent);
+    }
+
     if show_para_marks {
         doc.set_show_paragraph_marks(true);
     }

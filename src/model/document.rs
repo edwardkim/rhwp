@@ -326,6 +326,95 @@ impl Document {
         self.doc_info.raw_stream_dirty = true;
         new_id
     }
+
+    /// [Task #741 후속] 외부 file path 그림 (HWP3 영역 영역 절대 경로 영역 저장된 image)
+    /// 영역 의 binary 영역 영역 base_dir 영역 영역 자동 load.
+    ///
+    /// HWP3 파일 영역 의 image 영역 영역 영역 원본 절대 경로 (예: "D:\\Work\\...\\rdb02.gif")
+    /// 영역 저장 영역. 본 환경 영역 영역 영역 path 영역 영역 access 부재 영역 영역 영역,
+    /// 본 helper 영역 영역 path 영역 영역 basename 영역 영역 추출 (`rdb02.gif`) → `base_dir`
+    /// 영역 영역 영역 file 영역 load → `bin_data_content` 영역 push 영역 → 기존 renderer
+    /// 영역 (svg / web_canvas / skia) 영역 영역 영역 image 영역 표시 영역.
+    ///
+    /// 반환: load 영역 image 영역.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn populate_external_images_from_dir(&mut self, base_dir: &std::path::Path) -> usize {
+        use crate::model::control::Control;
+        use crate::model::shape::ShapeObject;
+
+        let mut loaded = 0;
+        // (storage_id, basename, extension) 영역 영역 image 영역 수집
+        let mut to_load: Vec<(u16, String, String)> = Vec::new();
+        for section in &self.sections {
+            for para in &section.paragraphs {
+                for ctrl in &para.controls {
+                    let pic = match ctrl {
+                        Control::Picture(p) => p,
+                        Control::Shape(s) => match s.as_ref() {
+                            ShapeObject::Picture(p) => p,
+                            _ => continue,
+                        },
+                        _ => continue,
+                    };
+                    if let Some(ref path) = pic.image_attr.external_path {
+                        let id = pic.image_attr.bin_data_id;
+                        // 이미 load 영역 (bin_data_content 영역 영역 entry 보유) 영역 skip
+                        let already_loaded = self.bin_data_content.iter()
+                            .any(|c| c.id == id && !c.data.is_empty());
+                        if already_loaded { continue; }
+
+                        // path 영역 영역 basename 추출 (Windows / Unix 영역 모두 대응)
+                        let basename = path.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(path);
+                        let ext = std::path::Path::new(basename)
+                            .extension().and_then(|e| e.to_str()).unwrap_or("").to_string();
+                        to_load.push((id, basename.to_string(), ext));
+                    }
+                }
+            }
+        }
+
+        for (id, basename, ext) in to_load {
+            let full_path = base_dir.join(&basename);
+            if let Ok(data) = std::fs::read(&full_path) {
+                // 본질: bin_data_content 영역 영역 (id-1) index 영역 영역 access (utils.rs:23).
+                let idx = (id as usize).saturating_sub(1);
+                if idx < self.bin_data_content.len() {
+                    self.bin_data_content[idx].id = id;
+                    self.bin_data_content[idx].data = data;
+                    self.bin_data_content[idx].extension = ext;
+                } else {
+                    self.bin_data_content.push(crate::model::bin_data::BinDataContent {
+                        id, data, extension: ext,
+                    });
+                }
+                loaded += 1;
+
+                // [한컴 viewer 정합] 원본 절대 경로 영역 영역 access 부재 시 HWP file 영역
+                // 영역 같은 dir 영역 image 영역 발견 영역 영역 dialog 영역 영역 영역 의 path 영역
+                // resolved local path 영역 영역 갱신 (basename 영역만 부재 영역).
+                let resolved = full_path.to_string_lossy().to_string();
+                for section in &mut self.sections {
+                    for para in &mut section.paragraphs {
+                        for ctrl in &mut para.controls {
+                            let pic = match ctrl {
+                                crate::model::control::Control::Picture(p) => p,
+                                crate::model::control::Control::Shape(s) => match s.as_mut() {
+                                    crate::model::shape::ShapeObject::Picture(p) => p,
+                                    _ => continue,
+                                },
+                                _ => continue,
+                            };
+                            if pic.image_attr.bin_data_id == id
+                                && pic.image_attr.external_path.is_some() {
+                                pic.image_attr.external_path = Some(resolved.clone());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        loaded
+    }
 }
 
 #[cfg(test)]

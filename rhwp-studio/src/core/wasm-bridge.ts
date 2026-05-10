@@ -87,7 +87,47 @@ export class WasmBridge {
     this.doc.setFileName(this._fileName);
     const info: DocumentInfo = JSON.parse(this.doc.getDocumentInfo());
     console.log(`[WasmBridge] 문서 로드: ${info.pageCount}페이지`);
+
+    // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
+    // 영역 영역 same dir 영역 image 영역 영역 영역 — 본 환경 dev 영역 영역 samples/ 영역
+    // Vite asset). 영역 영역 영역 영역 영역 부재 영역 영역 placeholder 표시.
+    void this.populateExternalImagesFromDevServer();
+
     return info;
+  }
+
+  /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */
+  private async populateExternalImagesFromDevServer(): Promise<void> {
+    if (!this.doc) return;
+    try {
+      const basenamesJson = this.doc.getExternalImageBasenames();
+      const basenames: string[] = JSON.parse(basenamesJson);
+      if (basenames.length === 0) return;
+      console.log(`[WasmBridge] 외부 image 영역 영역 ${basenames.length}개 영역 영역 fetch 시도`);
+      for (const name of basenames) {
+        try {
+          const url = `/samples/${name}`;
+          const res = await fetch(url);
+          if (!res.ok) {
+            console.warn(`[WasmBridge] 외부 image 영역 영역 영역 fetch 실패: ${url} (status=${res.status})`);
+            continue;
+          }
+          const buf = await res.arrayBuffer();
+          // [Task #741 후속] OS 절대 경로 영역 영역 X-File-Path header 영역 영역 영역 → dialog
+          // 영역 영역 한컴 viewer 정합 (resolved local path 영역 영역).
+          const filePathHeader = res.headers.get('X-File-Path');
+          const displayPath = filePathHeader ? decodeURI(filePathHeader) : '';
+          const injected = this.doc.injectExternalImage(name, new Uint8Array(buf), displayPath);
+          console.log(`[WasmBridge] 외부 image inject: ${name} → ${displayPath || url} (${buf.byteLength} bytes, ${injected} 영역)`);
+        } catch (e) {
+          console.warn(`[WasmBridge] 외부 image 영역 영역 영역: ${name}`, e);
+        }
+      }
+      // 갱신된 image 영역 영역 영역 화면 영역 영역 영역 — eventBus 영역 영역 document-changed 영역 영역.
+      // (caller 영역 영역 영역 별도 영역 영역 reflow 영역 영역.)
+    } catch (e) {
+      console.warn('[WasmBridge] populateExternalImagesFromDevServer 실패', e);
+    }
   }
 
   createNewDocument(): DocumentInfo {
