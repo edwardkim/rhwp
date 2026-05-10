@@ -461,10 +461,15 @@ fn color_ref_to_hwpx(color: u32) -> String {
         return "none".to_string();
     }
 
+    let a = (color >> 24) & 0xFF;
     let r = color & 0xFF;
     let g = (color >> 8) & 0xFF;
     let b = (color >> 16) & 0xFF;
-    format!("#{r:02X}{g:02X}{b:02X}")
+    if a == 0 {
+        format!("#{r:02X}{g:02X}{b:02X}")
+    } else {
+        format!("#{a:02X}{r:02X}{g:02X}{b:02X}")
+    }
 }
 
 fn text_wrap_to_hwpx(wrap: TextWrap) -> &'static str {
