@@ -1550,11 +1550,16 @@ impl TypesetEngine {
                     // [Issue #703] 글앞으로 / 글뒤로 표는 Shape처럼 취급 — 본문 흐름 공간 차지 없음.
                     // pagination/engine.rs:976-981 와 동일 시멘틱: 데코레이션 표는 절대 좌표로 배치되며
                     // current_height 누적에 영향을 주지 않는다.
+                    //
+                    // [Issue #775] 단일 컬럼 한정. 다단(col_count>=2) 영역에서는 InFrontOfText/BehindText
+                    // 표라도 cur_h 누적이 컬럼 분배에 필요 (exam_eng.hwp p4 27번 보기 그림 위
+                    // 데코레이션 표 회귀 차단).
                     if matches!(
                         table.common.text_wrap,
                         crate::model::shape::TextWrap::InFrontOfText
                             | crate::model::shape::TextWrap::BehindText
-                    ) {
+                    ) && st.col_count == 1
+                    {
                         st.current_items.push(PageItem::Shape {
                             para_index: para_idx,
                             control_index: ctrl_idx,
