@@ -58,6 +58,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 쪽
   [{ key: 'enter', ctrl: true }, 'page:break'],
   [{ key: 'enter', ctrl: true, shift: true }, 'page:column-break'],
+  [{ key: 'enter', ctrl: true, alt: true }, 'page:col-settings'],
 
   // 줄간격
   [{ key: 'a', alt: true, shift: true }, 'format:line-spacing-decrease'],
