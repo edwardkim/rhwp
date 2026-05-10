@@ -1828,17 +1828,17 @@ export class InputHandler {
   }
 
   /** 개체 속성을 타입에 따라 조회한다 (그림/글상자 분기) */
-  private getObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' }): any {
+  private getObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }): any {
     return _picture.getObjectProperties.call(this, ref);
   }
 
   /** 개체 속성을 타입에 따라 변경한다 (그림/글상자 분기) */
-  private setObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' }, props: Record<string, unknown>): void {
+  private setObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }, props: Record<string, unknown>): void {
     _picture.setObjectProperties.call(this, ref, props);
   }
 
   /** 개체를 타입에 따라 삭제한다 (그림/글상자 분기) */
-  private deleteObjectControl(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' }): void {
+  private deleteObjectControl(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }): void {
     _picture.deleteObjectControl.call(this, ref);
   }
 
@@ -2385,6 +2385,42 @@ export class InputHandler {
     // 텍스트 선택 → textarea 포커스 후 execCommand
     this.focusTextarea();
     document.execCommand('cut');
+  }
+
+  /** 선택 영역 삭제 (커맨드 시스템용 — 편집 > 지우기) */
+  performDelete(): void {
+    if (this.cursor.isInPictureObjectSelection()) {
+      const ref = this.cursor.getSelectedPictureRef();
+      if (ref) {
+        this.cursor.moveOutOfSelectedPicture();
+        this.pictureObjectRenderer?.clear();
+        this.eventBus.emit('picture-object-selection-changed', false);
+        this.executeOperation({ kind: 'snapshot', operationType: 'deleteObject', operation: (wasm: WasmBridge) => {
+          this.deleteObjectControl(ref);
+          return this.cursor.getPosition();
+        }});
+      }
+      return;
+    }
+    if (this.cursor.isInTableObjectSelection()) {
+      const ref = this.cursor.getSelectedTableRef();
+      if (!ref) return;
+      if (ref.cellPath && ref.cellPath.length > 1) {
+        this.cursor.moveOutOfSelectedTable();
+        this.eventBus.emit('table-object-selection-changed', false);
+        return;
+      }
+      this.cursor.moveOutOfSelectedTable();
+      this.eventBus.emit('table-object-selection-changed', false);
+      this.executeOperation({ kind: 'snapshot', operationType: 'deleteTable', operation: (wasm: WasmBridge) => {
+        wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
+        return this.cursor.getPosition();
+      }});
+      return;
+    }
+    if (this.cursor.hasSelection()) {
+      this.deleteSelection();
+    }
   }
 
   /** 전체 선택 (커맨드 시스템용) */
