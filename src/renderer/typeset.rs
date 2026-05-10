@@ -2487,7 +2487,9 @@ impl TypesetEngine {
             page.page_number = page_num;
             page.active_header = current_header.clone();
             page.active_footer = current_footer.clone();
-            page.page_number_pos = page_number_pos.clone();
+            if !assigner.should_hide_page_number() {
+                page.page_number_pos = page_number_pos.clone();
+            }
 
             // PageHide: 해당 문단이 이 페이지에서 **처음** 시작하는 경우만 적용
             // (engine.rs 의 동일 로직과 일치 — 머리말/꼬리말/바탕쪽/페이지번호 감추기)
