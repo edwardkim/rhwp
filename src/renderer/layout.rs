@@ -1237,7 +1237,19 @@ impl LayoutEngine {
             let is_new_zone = (col_content.zone_y_offset - last_zone_y_offset).abs() > 0.1;
             if is_new_zone {
                 if col_content.zone_y_offset > 0.0 {
-                    current_zone_start_y = prev_zone_y_end;
+                    // [Task #776 H3b] zone 전환 시 진입 zone 의 ColumnDef.spacing / 2
+                    // 가산 (한컴 PDF 정합). RFC #774 stage 5 분석:
+                    // shortcut.hwp 의 zone 전환 측정 ~18.9 px = 10mm spacing / 2.
+                    let zone_top_extra = col_content.items.first()
+                        .map(|item| item.para_index())
+                        .and_then(|pi| paragraphs.get(pi))
+                        .and_then(|para| para.controls.iter().find_map(|c| {
+                            if let crate::model::control::Control::ColumnDef(cd) = c {
+                                Some(hwpunit_to_px(cd.spacing as i32, self.dpi) / 2.0)
+                            } else { None }
+                        }))
+                        .unwrap_or(0.0);
+                    current_zone_start_y = prev_zone_y_end + zone_top_extra;
                 } else {
                     current_zone_start_y = 0.0;
                 }
