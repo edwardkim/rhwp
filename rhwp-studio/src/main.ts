@@ -219,6 +219,14 @@ function setupGlobalShortcuts(): void {
         return;
       }
     }
+    // Ctrl/Cmd+O → 열기 (문서 미로드 상태에서도 동작)
+    if (ctrlOrMeta && !e.altKey && !e.shiftKey) {
+      if (e.key === 'o' || e.key === 'O' || e.key === 'ㅐ') {
+        e.preventDefault();
+        dispatcher.dispatch('file:open');
+        return;
+      }
+    }
   }, false);
 }
 
