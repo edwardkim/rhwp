@@ -3390,6 +3390,78 @@ impl DocumentCore {
         Ok(svg)
     }
 
+    /// 수식(Equation) 컨트롤을 문단에서 삭제한다.
+    pub fn delete_equation_control_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)));
+        }
+        let section = &mut self.document.sections[section_idx];
+        if parent_para_idx >= section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx)));
+        }
+        let para = &mut section.paragraphs[parent_para_idx];
+        if control_idx >= para.controls.len() {
+            return Err(HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx)));
+        }
+        if !matches!(&para.controls[control_idx], Control::Equation(_)) {
+            return Err(HwpError::RenderError("지정된 컨트롤이 수식이 아닙니다".to_string()));
+        }
+
+        let text_chars: Vec<char> = para.text.chars().collect();
+        let mut ci = 0usize;
+        let mut prev_end: u32 = 0;
+        let mut gap_start: Option<u32> = None;
+        'outer: for i in 0..text_chars.len() {
+            let offset = if i < para.char_offsets.len() { para.char_offsets[i] } else { prev_end };
+            while prev_end + 8 <= offset && ci < para.controls.len() {
+                if ci == control_idx { gap_start = Some(prev_end); break 'outer; }
+                ci += 1;
+                prev_end += 8;
+            }
+            let char_size: u32 = if text_chars[i] == '\t' { 8 }
+                else if text_chars[i].len_utf16() == 2 { 2 }
+                else { 1 };
+            prev_end = offset + char_size;
+        }
+        if gap_start.is_none() {
+            while ci < para.controls.len() {
+                if ci == control_idx { gap_start = Some(prev_end); break; }
+                ci += 1;
+                prev_end += 8;
+            }
+        }
+
+        if let Some(gs) = gap_start {
+            let threshold = gs + 8;
+            for offset in para.char_offsets.iter_mut() {
+                if *offset >= threshold {
+                    *offset -= 8;
+                }
+            }
+        }
+
+        para.controls.remove(control_idx);
+        if control_idx < para.ctrl_data_records.len() {
+            para.ctrl_data_records.remove(control_idx);
+        }
+        if para.char_count >= 8 {
+            para.char_count -= 8;
+        }
+
+        Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        self.event_log.push(DocumentEvent::PictureDeleted { section: section_idx, para: parent_para_idx, ctrl: control_idx });
+        Ok("{\"ok\":true}".to_string())
+    }
+
     // ─── 각주 삽입/삭제 API ──────────────────────────────
 
     /// 각주를 삽입한다.

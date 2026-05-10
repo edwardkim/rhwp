@@ -2046,6 +2046,24 @@ impl HwpDocument {
 
     // ─── Equation(수식) API ──────────────────────────────
 
+    /// 수식 컨트롤을 문단에서 삭제한다.
+    ///
+    /// 반환: JSON `{"ok":true}`
+    #[wasm_bindgen(js_name = deleteEquationControl)]
+    pub fn delete_equation_control(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_equation_control_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 수식 컨트롤의 속성을 조회한다.
     ///
     /// 반환: JSON `{ script, fontSize, color, baseline, fontName }`

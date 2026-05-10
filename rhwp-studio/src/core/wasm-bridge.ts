@@ -590,6 +590,11 @@ export class WasmBridge {
     return JSON.parse(this.doc.deleteShapeControl(sec, para, ci));
   }
 
+  deleteEquationControl(sec: number, para: number, ci: number): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.deleteEquationControl(sec, para, ci));
+  }
+
   changeShapeZOrder(sec: number, para: number, ci: number, operation: string): { ok: boolean; zOrder?: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.changeShapeZOrder(sec, para, ci, operation));

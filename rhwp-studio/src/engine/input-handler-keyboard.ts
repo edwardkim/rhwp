@@ -58,6 +58,8 @@ const chordMapN: Record<string, string> = {
   ㅜ: 'insert:footnote', // 한글 IME
   s: 'page:hide',
   ㄴ: 'page:hide', // 한글 IME
+  m: 'insert:equation',
+  ㅡ: 'insert:equation', // 한글 IME
 };
 
 /** 코드 단축키 → 커맨드 ID 매핑 (Alt+V,? 형태 — 보기 메뉴) */
@@ -413,6 +415,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         this.executeOperation({ kind: 'snapshot', operationType: 'deleteObject', operation: (wasm: WasmBridge) => {
           if (ref.type === 'image') {
             wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
+          } else if (ref.type === 'equation') {
+            wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
           } else {
             wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
           }
@@ -468,6 +472,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: (wasm: WasmBridge) => {
           if (ref.type === 'image') {
             wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
+          } else if (ref.type === 'equation') {
+            wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
           } else {
             wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
           }
@@ -1026,6 +1032,8 @@ export function onCut(this: any, e: ClipboardEvent): void {
       this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: (wasm: WasmBridge) => {
         if (ref.type === 'image') {
           wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
+        } else if (ref.type === 'equation') {
+          wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
         } else {
           wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
         }

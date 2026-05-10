@@ -260,6 +260,8 @@ export function setObjectProperties(this: any, ref: { sec: number; ppi: number; 
 export function deleteObjectControl(this: any, ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }): void {
   if (ref.type === 'shape' || ref.type === 'group' || ref.type === 'line') {
     this.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+  } else if (ref.type === 'equation') {
+    this.wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
   } else {
     this.wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
   }

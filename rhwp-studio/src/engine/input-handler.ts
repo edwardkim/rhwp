@@ -2229,6 +2229,8 @@ export class InputHandler {
         this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: (wasm: WasmBridge) => {
           if (ref.type === 'image') {
             wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
+          } else if (ref.type === 'equation') {
+            wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
           } else {
             wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
           }
