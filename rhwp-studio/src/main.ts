@@ -426,7 +426,8 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
     canvasView?.loadDocument();
     console.log('[initDoc] 5. toolbar setEnabled');
     toolbar?.setEnabled(true);
-    console.log('[initDoc] 6. toolbar initStyleDropdown');
+    console.log('[initDoc] 6. toolbar initFontDropdown + initStyleDropdown');
+    toolbar?.initFontDropdown(docInfo.fontsUsed);
     toolbar?.initStyleDropdown();
     console.log('[initDoc] 7. inputHandler activateWithCaretPosition');
     inputHandler?.activateWithCaretPosition();
