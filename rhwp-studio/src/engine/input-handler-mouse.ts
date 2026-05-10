@@ -1381,7 +1381,13 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
     }
   }
 
-  this.updateCaret();
+  // [Task #779] mouseup 영역 의 updateCaret 은 scrollCaretIntoView skip.
+  // 본질: cursor 변경 trigger 영역 (mousedown / drag selection move 등) 에서 이미 cursor 위치
+  // 갱신 + scroll 호출 영역 동반. mouseup 영역 의 updateCaret 은 selection 종료 영역 의
+  // visual cleanup 만 담당 — caret 위치 자체는 변경 부재 영역. scrollCaretIntoView 가 호출 시
+  // 사용자 의도적 scrollbar drag (drag-during-scroll 패턴) 영역 의 caret 원본 위치 자동 복귀
+  // 결함 발동.
+  this.updateCaret(true);
 }
 
 

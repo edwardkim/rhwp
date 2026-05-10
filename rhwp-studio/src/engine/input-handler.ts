@@ -1550,8 +1550,14 @@ export class InputHandler {
     this.updateCaret();
   }
 
-  /** 캐럿 위치를 갱신한다 */
-  private updateCaret(): void {
+  /**
+   * 캐럿 위치를 갱신한다.
+   *
+   * @param skipScroll true 시 `scrollCaretIntoView` 호출 skip — cursor 변경 trigger 가 동반되지 않은
+   *                   onMouseUp (예: drag-during-scroll 영역, scrollbar release 영역) 의 자동 scroll back
+   *                   결함 차단 영역. (Task #779)
+   */
+  private updateCaret(skipScroll: boolean = false): void {
     const rect = this.cursor.getRect();
     if (rect) {
       const zoom = this.viewportManager.getZoom();
@@ -1606,7 +1612,9 @@ export class InputHandler {
         this.caret.hideComposition();
         this.caret.update(rect, zoom);
       }
-      this.scrollCaretIntoView(rect);
+      if (!skipScroll) {
+        this.scrollCaretIntoView(rect);
+      }
     }
     this.updateSelection();
     this.emitCursorFormatState();
