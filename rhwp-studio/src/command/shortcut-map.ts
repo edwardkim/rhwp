@@ -84,8 +84,11 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // Ctrl+Shift+C: 브라우저 요소검사 충돌 → Alt+Shift+C로 재매핑
   // Ctrl+Shift+T: 브라우저 탭복원 충돌 → Alt+Shift+T로 재매핑
   [{ key: 'h', alt: true, shift: true }, 'format:align-right'],   // 오른쪽 정렬 (재매핑, H=rigHt)
+  [{ key: 'ㅗ', alt: true, shift: true }, 'format:align-right'],
   [{ key: 'c', alt: true, shift: true }, 'format:align-center'],  // 가운데 정렬 (재매핑)
+  [{ key: 'ㅊ', alt: true, shift: true }, 'format:align-center'],
   [{ key: 'd', alt: true, shift: true }, 'format:align-distribute'], // 배분 정렬 (재매핑)
+  [{ key: 'ㅇ', alt: true, shift: true }, 'format:align-distribute'],
 
   // 표
   [{ key: 'insert', alt: true }, 'table:insert-col-left'],
