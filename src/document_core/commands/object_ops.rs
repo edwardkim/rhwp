@@ -473,6 +473,7 @@ impl DocumentCore {
             match ctrl {
                 Control::Picture(pic) => pic.common.height as i32,
                 Control::Shape(shape) => shape.common().height as i32,
+                Control::Equation(eq) => eq.common.height as i32,
                 _ => 0,
             }
         }).max().unwrap_or(0);
