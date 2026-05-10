@@ -18,6 +18,7 @@ export interface ValidationReport {
 import { resolveFont, fontFamilyWithFallback } from './font-substitution';
 import { REGISTERED_FONTS } from './font-loader';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
+import type { EventBus } from './event-bus';
 
 /**
  * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
@@ -49,6 +50,12 @@ export class WasmBridge {
   private initialized = false;
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
+  private eventBus: EventBus | null = null;
+
+  /** [Task #741 후속] 외부 image inject 완료 후 page re-render trigger 영역 영역 EventBus 영역 영역. */
+  setEventBus(bus: EventBus): void {
+    this.eventBus = bus;
+  }
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -104,6 +111,7 @@ export class WasmBridge {
       const basenames: string[] = JSON.parse(basenamesJson);
       if (basenames.length === 0) return;
       console.log(`[WasmBridge] 외부 image 영역 영역 ${basenames.length}개 영역 영역 fetch 시도`);
+      let injectedAny = 0;
       for (const name of basenames) {
         try {
           const url = `/samples/${name}`;
@@ -118,13 +126,17 @@ export class WasmBridge {
           const filePathHeader = res.headers.get('X-File-Path');
           const displayPath = filePathHeader ? decodeURI(filePathHeader) : '';
           const injected = this.doc.injectExternalImage(name, new Uint8Array(buf), displayPath);
+          if (injected > 0) injectedAny += injected;
           console.log(`[WasmBridge] 외부 image inject: ${name} → ${displayPath || url} (${buf.byteLength} bytes, ${injected} 영역)`);
         } catch (e) {
           console.warn(`[WasmBridge] 외부 image 영역 영역 영역: ${name}`, e);
         }
       }
-      // 갱신된 image 영역 영역 영역 화면 영역 영역 영역 — eventBus 영역 영역 document-changed 영역 영역.
-      // (caller 영역 영역 영역 별도 영역 영역 reflow 영역 영역.)
+      // [Task #741 후속] inject 완료 후 page re-render trigger — 영역 영역 환경 영역 영역
+      // initial render 완료 후 inject 영역 race condition 정합 (Mac/Windows 시각 정합).
+      if (injectedAny > 0 && this.eventBus) {
+        this.eventBus.emit('document-changed');
+      }
     } catch (e) {
       console.warn('[WasmBridge] populateExternalImagesFromDevServer 실패', e);
     }

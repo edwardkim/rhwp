@@ -29,6 +29,8 @@ import { initRhwpDev } from '@/core/rhwp-dev';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
+// [Task #741 후속] 외부 image inject 완료 후 page re-render trigger 영역 영역 EventBus 영역 영역.
+wasm.setEventBus(eventBus);
 
 // E2E 테스트용 전역 노출 (개발 모드 전용)
 if (import.meta.env.DEV) {
