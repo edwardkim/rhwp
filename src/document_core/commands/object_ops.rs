@@ -75,6 +75,11 @@ impl DocumentCore {
         };
         // description 내 JSON 제어 문자 이스케이프
         let desc_escaped = super::super::helpers::json_escape(&c.description);
+        // [Task #741 후속] 외부 file path (HWP3 외부 그림) 영역 영역 dialog 표시 영역
+        let external_path_field = match &pic.image_attr.external_path {
+            Some(p) => format!(",\"externalPath\":\"{}\"", super::super::helpers::json_escape(p)),
+            None => String::new(),
+        };
 
         let sa = &pic.shape_attr;
 
@@ -101,7 +106,7 @@ impl DocumentCore {
                 "\"borderColor\":{},\"borderWidth\":{},",
                 // 캡션
                 "\"hasCaption\":{},\"captionDirection\":\"{}\",\"captionVertAlign\":\"{}\",",
-                "\"captionWidth\":{},\"captionSpacing\":{},\"captionMaxWidth\":{},\"captionIncludeMargin\":{}}}"
+                "\"captionWidth\":{},\"captionSpacing\":{},\"captionMaxWidth\":{},\"captionIncludeMargin\":{}{}}}"
             ),
             c.width, c.height, c.treat_as_char,
             vert_rel, vert_align,
@@ -139,6 +144,7 @@ impl DocumentCore {
             pic.caption.as_ref().map_or(0i16, |cap| cap.spacing),
             pic.caption.as_ref().map_or(0u32, |cap| cap.max_width),
             pic.caption.as_ref().map_or(false, |cap| cap.include_margin),
+            external_path_field,
         ))
     }
 
@@ -1145,6 +1151,7 @@ impl DocumentCore {
                 brightness: 0,
                 contrast: 0,
                 effect: ImageEffect::RealPic,
+                external_path: None,
             },
             ..Default::default()
         };

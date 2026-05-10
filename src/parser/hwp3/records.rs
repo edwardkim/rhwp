@@ -245,9 +245,12 @@ pub struct Hwp3TabDef {
 
 impl Hwp3TabDef {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
-        let position = reader.read_u16::<LittleEndian>()?;
+        // [Task #741 Stage 6] HWP3 tab struct 실제 byte 순서: tab_type(u8) → leader(u8) → position(u16 LE).
+        // 기본 탭 default 패턴 검증: bytes [0, 0, 0xE8, 0x03] → position=1000 hunit (slot 0),
+        // [0, 0, 0xD0, 0x07] → 2000 hunit (slot 1) 등 1000 hunit 간격 default tab.
         let tab_type = reader.read_u8()?;
         let leader = reader.read_u8()?;
+        let position = reader.read_u16::<LittleEndian>()?;
         Ok(Hwp3TabDef { position, tab_type, leader })
     }
 }

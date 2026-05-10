@@ -132,7 +132,10 @@ pub(crate) fn convert_char_shape(hwp3_cs: &crate::parser::hwp3::records::Hwp3Cha
     cs
 }
 
-pub(crate) fn convert_para_shape(hwp3_ps: &crate::parser::hwp3::records::Hwp3ParaShape) -> crate::model::style::ParaShape {
+pub(crate) fn convert_para_shape(
+    hwp3_ps: &crate::parser::hwp3::records::Hwp3ParaShape,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
+) -> crate::model::style::ParaShape {
     let mut ps = crate::model::style::ParaShape::default();
     // HWP 3.0에서 여백과 들여쓰기는 hunit(1/1800 인치) 또는 shunit 단위로 제공됩니다.
     // 내부 모델은 HWPUNIT(1/7200 인치)을 사용합니다.
@@ -140,7 +143,7 @@ pub(crate) fn convert_para_shape(hwp3_ps: &crate::parser::hwp3::records::Hwp3Par
     ps.margin_left = (hwp3_ps.left_margin as i32) * 4;
     ps.margin_right = (hwp3_ps.right_margin as i32) * 4;
     ps.indent = (hwp3_ps.indent as i32) * 4;
-    
+
     // 줄 간격: MSB가 1이면 hunit 단위의 절대 간격을 의미하고, 그 외에는 퍼센트를 의미합니다.
     if (hwp3_ps.line_spacing & 0x8000) != 0 {
         ps.line_spacing_type = crate::model::style::LineSpacingType::Fixed;
@@ -149,7 +152,7 @@ pub(crate) fn convert_para_shape(hwp3_ps: &crate::parser::hwp3::records::Hwp3Par
         ps.line_spacing_type = crate::model::style::LineSpacingType::Percent;
         ps.line_spacing = hwp3_ps.line_spacing as i32;
     }
-    
+
     ps.spacing_after = (hwp3_ps.margin_bottom as i32) * 4;
     ps.spacing_before = (hwp3_ps.margin_top as i32) * 4;
     ps.alignment = match hwp3_ps.align {
@@ -162,6 +165,51 @@ pub(crate) fn convert_para_shape(hwp3_ps: &crate::parser::hwp3::records::Hwp3Par
         _ => crate::model::style::Alignment::Justify,
     };
 
+    // [Task #741 Stage 6] HWP3 ParaShape tabs[40] → Document IR TabDef 변환.
+    // - HWP3 tab struct: tab_type(u8) → leader(u8) → position(u16 LE) — 4 bytes.
+    // - default tab pattern (slot N: position=1000*(N+1) hunit, tab_type=0, leader=0) 은 system 기본 탭이므로 제외.
+    // - explicit user tab: tab_type 또는 leader != 0, 또는 position 이 default 패턴과 다름.
+    let mut tab_items: Vec<crate::model::style::TabItem> = Vec::new();
+    for (i, t) in hwp3_ps.tabs.iter().enumerate() {
+        let default_pos = 1000u16.saturating_mul((i as u16).saturating_add(1));
+        let is_default = t.tab_type == 0 && t.leader == 0 && t.position == default_pos;
+        let is_empty = t.tab_type == 0 && t.leader == 0 && t.position == 0;
+        if is_default || is_empty {
+            continue;
+        }
+        // [Task #741 Stage 7] HWP3 leader → HWP5 fill_type 정합 매핑.
+        // 한컴 변환본 cross-ref 영역 (sample10 paragraph 29: HWP3 leader=1 → HWP5 fill_type=3 점선).
+        // HWP5 fill_type: 0=없음, 1=실선, 2=파선, 3=점선, 4=일점쇄선, 5=이점쇄선, 6=긴파선,
+        //                 7=원형점선, 8=이중실선, 9=얇고굵은이중선, 10=굵고얇은이중선, 11=삼중선
+        let fill_type = match t.leader {
+            0 => 0, // 없음 → 없음
+            1 => 3, // HWP3 leader (켜짐) → HWP5 점선 (한컴 변환본 정합)
+            other => other,
+        };
+        tab_items.push(crate::model::style::TabItem {
+            position: (t.position as u32) * 4,
+            tab_type: t.tab_type,
+            fill_type,
+        });
+    }
+    if !tab_items.is_empty() {
+        let new_td = crate::model::style::TabDef {
+            raw_data: None,
+            attr: 0,
+            tabs: tab_items,
+            auto_tab_left: false,
+            auto_tab_right: false,
+        };
+        let id = doc_tab_defs.iter().position(|td| *td == new_td);
+        ps.tab_def_id = match id {
+            Some(idx) => idx as u16,
+            None => {
+                doc_tab_defs.push(new_td);
+                (doc_tab_defs.len() - 1) as u16
+            }
+        };
+    }
+
     ps
 }
 
@@ -170,6 +218,7 @@ pub(crate) fn parse_paragraph_list(
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
     doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
     doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
     pic_name_to_id: &mut std::collections::HashMap<String, u16>,
     body_left_hu: i32,
     column_width_hu: i32,
@@ -207,7 +256,7 @@ pub(crate) fn parse_paragraph_list(
 
         if para_info.follow_prev_para_shape == 0 {
             if let Some(ref hwp3_ps) = para_info.para_shape {
-                let mut ps = convert_para_shape(hwp3_ps);
+                let mut ps = convert_para_shape(hwp3_ps, doc_tab_defs);
                 if hwp3_ps.shade_ratio > 0 {
                     let ratio = hwp3_ps.shade_ratio.min(100) as u32;
                     let gray = (255 * (100 - ratio) / 100) as u8;
@@ -453,6 +502,48 @@ pub(crate) fn parse_paragraph_list(
                         
                         controls.push(crate::model::control::Control::Field(field));
                         ctrl_data_records.push(None);
+                    }
+                    1 => {
+                        // [Task #741 Stage 8] HWP3 ch=1 = TOC entry inline page number reference.
+                        // Format: ch=1 marker (2 bytes) + 0x0009 marker (2 bytes) + digit1 ASCII (2 bytes) + digit2 ASCII or 0x000D (2 bytes).
+                        // 한컴 viewer 가 차례 (TOC) entry 의 page 번호를 inline 으로 저장하는 영역.
+                        // header_val1 second u16 = digit1 ASCII, ch2 = digit2 ASCII OR 0x000D (1-digit terminator).
+                        let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
+                            Ok(v) => v,
+                            Err(_) => break,
+                        };
+                        let ch2 = match body_cursor.read_u16::<LittleEndian>() {
+                            Ok(v) => v,
+                            Err(_) => break,
+                        };
+                        // hchar slot count: 1 (initial read) + 3 (8 byte total per spec).
+                        for k in 0..3usize { if i + k < hwp3_char_to_utf16_pos.len() { hwp3_char_to_utf16_pos[i + k] = utf16_len; } }
+                        i += 3;
+
+                        // Decode page number digits.
+                        let digit1_u16 = ((header_val1 >> 16) & 0xFFFF) as u16;
+                        let mut page_str = String::new();
+                        if (0x0030..=0x0039).contains(&digit1_u16) {
+                            page_str.push(char::from_u32(digit1_u16 as u32).unwrap_or('?'));
+                        }
+                        if (0x0030..=0x0039).contains(&ch2) {
+                            page_str.push(char::from_u32(ch2 as u32).unwrap_or('?'));
+                        }
+
+                        if !page_str.is_empty() {
+                            for c in page_str.chars() {
+                                char_offsets.push(utf16_len);
+                                utf16_len += c.len_utf16() as u32;
+                                text_string.push(c);
+                            }
+                        } else {
+                            // unrecognized — fall back to placeholder
+                            char_offsets.push(utf16_len);
+                            utf16_len += 1;
+                            text_string.push('\u{FFFC}');
+                            controls.push(crate::model::control::Control::Unknown(crate::model::control::UnknownControl { ctrl_id: ch as u32 }));
+                            ctrl_data_records.push(None);
+                        }
                     }
                     _ => {
                         let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
@@ -721,14 +812,14 @@ pub(crate) fn parse_paragraph_list(
 
                                     // 중복된 스팬 계산 제거됨
                                     
-                                    let nested = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id, body_left_hu, column_width_hu)?;
+                                    let nested = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                                     cell.paragraphs = nested;
                                     cells.push(cell);
                                 }
                                 table.cells = cells;
                                 table.rebuild_grid();
                                 table.row_sizes = (0..table.row_count).map(|r| table.cells.iter().filter(|c| c.row == r).count() as i16).collect();
-                                let caption_paras = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id, body_left_hu, column_width_hu)?;
+                                let caption_paras = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                                 let caption_direction = match caption_pos {
                                     0 => crate::model::shape::CaptionDirection::Bottom,
                                     1 => crate::model::shape::CaptionDirection::Top,
@@ -846,11 +937,15 @@ pub(crate) fn parse_paragraph_list(
                                 let pic_name_buf = &info_buf[83..83+256];
                                 let mut pic_name = crate::parser::hwp3::encoding::decode_hwp3_string(pic_name_buf);
                                 pic_name = pic_name.trim_end_matches('\0').to_string();
-                                
+
                                 let _block_num = (&info_buf[62..64]).read_u16::<LittleEndian>().unwrap_or(0);
                                 let _pic_info_size = (&info_buf[58..62]).read_u32::<LittleEndian>().unwrap_or(0);
-                                
+
                                 if !pic_name.is_empty() {
+                                    // [Task #741] 외부 file path IR 전달 (Renderer placeholder
+                                    // 처리용). HWP3 spec offset 74 그림 종류 0=외부 파일,
+                                    // 1=OLE, 2=Embedded Image / offset 83~339 그림 파일 이름.
+                                    pic.image_attr.external_path = Some(pic_name.clone());
                                     let next_id = (pic_name_to_id.len() + 1) as u16;
                                     let id = *pic_name_to_id.entry(pic_name).or_insert(next_id);
                                     pic.image_attr.bin_data_id = id;
@@ -862,6 +957,7 @@ pub(crate) fn parse_paragraph_list(
                                     doc_char_shapes,
                                     doc_para_shapes,
                                     doc_border_fills,
+                                    doc_tab_defs,
                                     pic_name_to_id,
                                 ) {
                                     Ok(drawing_obj) => {
@@ -875,7 +971,7 @@ pub(crate) fn parse_paragraph_list(
                             
                             let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
                             let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-                            let caption_paras = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id, body_left_hu, column_width_hu)?;
+                            let caption_paras = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                             let caption_direction = match caption_pos {
                                 0 => crate::model::shape::CaptionDirection::Bottom,
                                 1 => crate::model::shape::CaptionDirection::Top,
@@ -1006,15 +1102,15 @@ pub(crate) fn parse_paragraph_list(
                         } else if ch == 15 { // 숨은 설명
                             info_buf.resize(8, 0);
                             if let Err(_) = body_cursor.read_exact(&mut info_buf) { break; }
-                            nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id, body_left_hu, column_width_hu)?;
+                            nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                         } else if ch == 16 { // 머리말/꼬리말
                             info_buf.resize(10, 0);
                             if let Err(_) = body_cursor.read_exact(&mut info_buf) { break; }
-                            nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id, body_left_hu, column_width_hu)?;
+                            nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                         } else if ch == 17 { // 각주/미주
                             info_buf.resize(14, 0);
                             if let Err(_) = body_cursor.read_exact(&mut info_buf) { break; }
-                            nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, pic_name_to_id, body_left_hu, column_width_hu)?;
+                            nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                         } else if ch == 29 { // 상호 참조
                             if header_val1 < 1000000 {
                                 info_buf.resize(header_val1 as usize, 0);
@@ -1209,6 +1305,64 @@ pub(crate) fn parse_paragraph_list(
             }
         }
 
+        // [Task #741 Stage 7] 제목차례 type paragraph 자동 장식 inject (한컴 viewer 정합).
+        // 본질: HWP3 → HWP5 변환 시 한컴이 특정 paragraph 에 ═══ ■ ... ■ ═══ 장식 inject.
+        // HWP3 spec 외 한컴 사적 로직. 한컴 변환본 cross-ref 영역에서 도출:
+        //   - hwp3-sample10 paragraph 26 (cc=8, "￼￼ 제목차례 ") → HWP5 p.26 ("════...■ 제목차례 ■═════")
+        //   - hwp3-sample10 paragraph 340 (cc=30, "￼        ￼-EXPORT/...") → HWP5 p.340 단순 본문 (장식 없음)
+        // 차이: visible text 길이 — 짧은 (~5 chars) 제목 인 경우 한컴이 장식 inject.
+        //
+        // 본 환경 trigger 영역:
+        //   - 새번호 + 쪽번호위치 controls 조합 (section start marker)
+        //   - visible text (object marker + whitespace 제외) ≤ 6 chars (짧은 제목)
+        let has_new_num = controls.iter().any(|c| matches!(c, crate::model::control::Control::NewNumber(_)));
+        let has_page_pos = controls.iter().any(|c| matches!(c, crate::model::control::Control::PageNumberPos(_)));
+        let mut title_bold_shape_id: Option<u16> = None;
+        if has_new_num && has_page_pos {
+            let visible_text: String = text_string.chars()
+                .filter(|c| !c.is_whitespace() && *c != '\u{FFFC}')
+                .collect();
+            if !visible_text.is_empty() && visible_text.chars().count() <= 6 {
+                // 원본 visible 영역 (제목차례) 의 char_shape 찾기 — hwp3_inline_shapes 의
+                // 가장 큰 idx 가 마지막 ' ' 직전 visible char 위치.
+                // sample10 p.26: hwp3_inline_shapes [(0,76), (0,77), (3,78), (8,79), (8,80)]
+                // 제목차례 위치 (3) 의 shape id (78=bold) 를 추출.
+                title_bold_shape_id = hwp3_inline_shapes.iter()
+                    .find(|(idx, _)| *idx > 0 && *idx < (para_info.char_count as usize).saturating_sub(1))
+                    .map(|(_, sid)| *sid);
+
+                // ═ ■ 제목 ■ ═ 패턴 inject. HWP5 변환본 p.26 영역 정합:
+                //   "═ × 20 + ■ + ' ' + 제목 + ' ' + ■ + ═ × 22"
+                let visible_char_count = visible_text.chars().count();
+                let new_text = format!("════════════════════■ {} ■══════════════════════", visible_text);
+                // char_offsets 재구성 (각 char 1 utf16 unit 가정 — BMP 영역 만)
+                let new_char_count = new_text.chars().count() as u32;
+                let new_offsets: Vec<u32> = (0..new_char_count).collect();
+                text_string = new_text;
+                char_offsets = new_offsets;
+                utf16_len = new_char_count;
+
+                // 기존 hwp3_inline_shapes 는 원본 char index 기반 — 재구성 시 무효.
+                // 제목 bold 영역만 새 위치 (22 ~ 22+visible_char_count) 로 재등록.
+                // 제목 visible 위치: 20 ═ + ■ + ' ' = 22
+                hwp3_inline_shapes.clear();
+                if let Some(bold_id) = title_bold_shape_id {
+                    hwp3_inline_shapes.push((22usize, bold_id));
+                    // 제목 끝 + ' ' 직후 ■ 부터 rep_char_shape (regular) 로 복귀
+                    let after_title = 22 + visible_char_count + 1; // +1 for ' '
+                    hwp3_inline_shapes.push((after_title, rep_char_shape_id as u16));
+                }
+                // hwp3_char_to_utf16_pos 는 하단 char_shapes 빌드 시 idx → utf16_pos 변환에 사용.
+                // 신규 위치 22, after_title 도 직접 utf16 pos 이므로 1:1 매핑 추가.
+                if hwp3_char_to_utf16_pos.len() < new_char_count as usize {
+                    hwp3_char_to_utf16_pos.resize(new_char_count as usize, 0);
+                }
+                for i in 0..(new_char_count as usize) {
+                    hwp3_char_to_utf16_pos[i] = i as u32;
+                }
+            }
+        }
+
         let mut para = Paragraph::default();
         para.char_count = utf16_len;
         para.para_shape_id = para_shape_id;
@@ -1396,7 +1550,27 @@ pub(crate) fn parse_paragraph_list(
                         ls = fixed - th;
                     } else {
                         lh = th;
-                        ls = th * (line_spacing_ratio - 100) / 100;
+                        // [Task #741] TAC 그림 paragraph (treat_as_char=true) 의 line_spacing
+                        // 정합화 — 한컴 HWP5 변환본 IR 정합 (paragraph 12 ls=600 HU = 2mm).
+                        // 본 환경 HWP3 파서가 line_spacing_ratio (160%) × th (image height)
+                        // 기반 계산 → ls=th×0.6 큰 값 → paragraph height 비정상 → 페이지 분할
+                        // 위반. TAC 그림 paragraph 시 ls=600 (작은 고정값) 으로 강제.
+                        let has_tac_picture = para.controls.iter().any(|c| {
+                            match c {
+                                crate::model::control::Control::Picture(p) => p.common.treat_as_char,
+                                crate::model::control::Control::Shape(s) => {
+                                    if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
+                                        p.common.treat_as_char
+                                    } else { false }
+                                }
+                                _ => false,
+                            }
+                        });
+                        ls = if has_tac_picture {
+                            600
+                        } else {
+                            th * (line_spacing_ratio - 100) / 100
+                        };
                     }
                 }
 
@@ -1842,10 +2016,12 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     let mut doc_para_shapes = Vec::new();
     let mut doc_styles = Vec::new();
     let mut doc_border_fills = Vec::new();
+    let mut doc_tab_defs: Vec<crate::model::style::TabDef> = Vec::new();
 
     doc_char_shapes.push(crate::model::style::CharShape::default());
     doc_para_shapes.push(crate::model::style::ParaShape::default());
     doc_border_fills.push(crate::model::style::BorderFill::default()); // 인덱스 0은 기본 빈값
+    doc_tab_defs.push(crate::model::style::TabDef::default()); // 인덱스 0 = 빈 tab def (정의 없음)
 
     // 6. 스타일 파싱
     use byteorder::{LittleEndian, ReadBytesExt};
@@ -1857,7 +2033,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         doc_char_shapes.push(convert_char_shape(&style.char_shape));
         let c_id = (doc_char_shapes.len() - 1) as u16;
         
-        doc_para_shapes.push(convert_para_shape(&style.para_shape));
+        doc_para_shapes.push(convert_para_shape(&style.para_shape, &mut doc_tab_defs));
         let p_id = (doc_para_shapes.len() - 1) as u16;
 
         use crate::model::style::Style;
@@ -1877,7 +2053,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     let body_right_hu = doc_info.right_margin as i32 * 4;
     let paper_width_hu = doc_info.paper_width as i32 * 4;
     let column_width_hu = (paper_width_hu - body_left_hu - body_right_hu).max(1);
-    let mut paragraphs = parse_paragraph_list(&mut body_cursor, &mut doc_char_shapes, &mut doc_para_shapes, &mut doc_border_fills, &mut pic_name_to_id, body_left_hu, column_width_hu)?;
+    let mut paragraphs = parse_paragraph_list(&mut body_cursor, &mut doc_char_shapes, &mut doc_para_shapes, &mut doc_border_fills, &mut doc_tab_defs, &mut pic_name_to_id, body_left_hu, column_width_hu)?;
 
 
     // 추가 정보 블록 읽기 (압축 해제된 스트림의 끝 부분)
@@ -2046,6 +2222,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     doc.doc_info.para_shapes = doc_para_shapes;
     doc.doc_info.styles = doc_styles;
     doc.doc_info.border_fills = doc_border_fills;
+    doc.doc_info.tab_defs = doc_tab_defs;
     doc.doc_info.bin_data_list = doc_bin_data_list;
     doc.bin_data_content = doc_bin_data_content;
 

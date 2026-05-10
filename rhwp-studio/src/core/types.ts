@@ -533,6 +533,8 @@ export interface PictureProperties {
   captionSpacing: number;
   captionMaxWidth: number;
   captionIncludeMargin: boolean;
+  /** [Task #741 후속] 외부 file path (HWP3 외부 그림). 부재 시 문서 포함 그림. */
+  externalPath?: string;
 }
 
 /** 양식 개체 히트 결과 */

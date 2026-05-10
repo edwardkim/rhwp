@@ -16,9 +16,13 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'y', ctrl: true }, 'edit:redo'],
   [{ key: 'a', ctrl: true }, 'edit:select-all'],
 
+  [{ key: 'e', ctrl: true }, 'edit:delete'],
+
   // 파일
   [{ key: 'n', alt: true }, 'file:new-doc'],
   [{ key: 'ㅜ', alt: true }, 'file:new-doc'],
+  [{ key: 'o', ctrl: true }, 'file:open'],
+  [{ key: 'ㅐ', ctrl: true }, 'file:open'],
   [{ key: 's', ctrl: true }, 'file:save'],
   [{ key: 'p', ctrl: true }, 'file:print'],
 
@@ -56,6 +60,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 쪽
   [{ key: 'enter', ctrl: true }, 'page:break'],
   [{ key: 'enter', ctrl: true, shift: true }, 'page:column-break'],
+  [{ key: 'enter', ctrl: true, alt: true }, 'page:col-settings'],
 
   // 줄간격
   [{ key: 'a', alt: true, shift: true }, 'format:line-spacing-decrease'],
@@ -81,8 +86,11 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // Ctrl+Shift+C: 브라우저 요소검사 충돌 → Alt+Shift+C로 재매핑
   // Ctrl+Shift+T: 브라우저 탭복원 충돌 → Alt+Shift+T로 재매핑
   [{ key: 'h', alt: true, shift: true }, 'format:align-right'],   // 오른쪽 정렬 (재매핑, H=rigHt)
+  [{ key: 'ㅗ', alt: true, shift: true }, 'format:align-right'],
   [{ key: 'c', alt: true, shift: true }, 'format:align-center'],  // 가운데 정렬 (재매핑)
+  [{ key: 'ㅊ', alt: true, shift: true }, 'format:align-center'],
   [{ key: 'd', alt: true, shift: true }, 'format:align-distribute'], // 배분 정렬 (재매핑)
+  [{ key: 'ㅇ', alt: true, shift: true }, 'format:align-distribute'],
 
   // 표
   [{ key: 'insert', alt: true }, 'table:insert-col-left'],

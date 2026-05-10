@@ -23,6 +23,7 @@ fn issue_516_image_attr_helper_hancom_preset() {
         contrast: -50,
         effect: ImageEffect::GrayScale,
         bin_data_id: 1,
+        external_path: None,
     };
     assert!(attr.is_watermark(), "한컴 프리셋은 워터마크");
     assert!(attr.is_hancom_watermark_preset(), "한컴 자동 프리셋 정합");
@@ -38,6 +39,7 @@ fn issue_516_image_attr_helper_custom_watermark() {
         contrast: 70,
         effect: ImageEffect::GrayScale,
         bin_data_id: 2,
+        external_path: None,
     };
     assert!(attr.is_watermark(), "사용자 정의도 워터마크");
     assert!(!attr.is_hancom_watermark_preset(), "한컴 자동 프리셋 미정합");
@@ -65,6 +67,7 @@ fn issue_516_image_attr_helper_no_watermark() {
         contrast: 20,
         effect: ImageEffect::RealPic,
         bin_data_id: 0,
+        external_path: None,
     };
     assert!(!bc_only.is_watermark(), "bc-only 는 워터마크 아님");
     assert_eq!(bc_only.watermark_preset(), None);

@@ -178,6 +178,9 @@ export class PicturePropsDialog {
   private tbFormModeCheck!: HTMLInputElement;
 
   // ── 그림 탭 컨트롤 ──
+  // [Task #741 후속] 외부 file path 그림 영역 영역 dialog 표시 영역
+  private picFileNameInput!: HTMLInputElement;
+  private picEmbedCheck!: HTMLInputElement;
   private picScaleXInput!: HTMLInputElement;
   private picScaleYInput!: HTMLInputElement;
   private picKeepRatioCheck!: HTMLInputElement;
@@ -1405,17 +1408,19 @@ export class PicturePropsDialog {
     const fileFs = this.fieldset('파일 이름');
     panel.appendChild(fileFs);
     const fileRow = this.row();
-    const fileNameInput = document.createElement('input');
-    fileNameInput.type = 'text';
-    fileNameInput.className = 'dialog-input';
-    fileNameInput.style.width = '280px';
-    fileNameInput.readOnly = true;
-    fileNameInput.value = '(문서에 포함된 그림)';
-    fileRow.appendChild(fileNameInput);
+    // [Task #741 후속] 외부 file path 그림 영역 dialog 표시 영역. populateFromProps 영역
+    // 영역 props.externalPath 영역 보유 시 file path + embed=false 영역 갱신.
+    this.picFileNameInput = document.createElement('input');
+    this.picFileNameInput.type = 'text';
+    this.picFileNameInput.className = 'dialog-input';
+    this.picFileNameInput.style.width = '280px';
+    this.picFileNameInput.readOnly = true;
+    this.picFileNameInput.value = '(문서에 포함된 그림)';
+    fileRow.appendChild(this.picFileNameInput);
     const embedLabel = this.checkboxLabel('문서에 포함');
-    const embedCheck = embedLabel.querySelector('input') as HTMLInputElement;
-    embedCheck.checked = true;
-    embedCheck.disabled = true;
+    this.picEmbedCheck = embedLabel.querySelector('input') as HTMLInputElement;
+    this.picEmbedCheck.checked = true;
+    this.picEmbedCheck.disabled = true;
     fileRow.appendChild(embedLabel);
     fileFs.appendChild(fileRow);
 
@@ -2130,6 +2135,20 @@ export class PicturePropsDialog {
 
   private populateFromProps(): void {
     if (!this.props) return;
+    // [Task #741 후속 — 한컴 viewer 정합] 외부 file path 그림 영역 dialog 표시 영역.
+    // props.externalPath 영역 영역 그대로 표시 (resolved path 영역, 한컴 viewer 영역 영역
+    // 원본 절대 경로 영역 영역 access 부재 시 HWP file 영역 영역 같은 dir 영역 image 영역
+    // 영역 영역 path 영역 영역 갱신 — populate_external_images_from_dir / inject_external_image
+    // 영역 영역 변경 영역 ~~basename~~ → resolved local path 영역 영역).
+    if (this.picFileNameInput && this.picEmbedCheck) {
+      if (this.props.externalPath) {
+        this.picFileNameInput.value = this.props.externalPath;
+        this.picEmbedCheck.checked = false;
+      } else {
+        this.picFileNameInput.value = '(문서에 포함된 그림)';
+        this.picEmbedCheck.checked = true;
+      }
+    }
     this.widthInput.value = hwpToMm(this.props.width).toFixed(2);
     this.heightInput.value = hwpToMm(this.props.height).toFixed(2);
     this.treatAsCharCheck.checked = this.props.treatAsChar;

@@ -369,6 +369,7 @@ mod tests {
             brightness: 0,
             contrast: 0,
             effect: ImageEffect::RealPic,
+            external_path: None,
         };
         pic.common.width = 1000;
         pic.common.height = 500;

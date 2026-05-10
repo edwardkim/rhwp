@@ -115,6 +115,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
+                external_path: picture.image_attr.external_path.clone(),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
             BoundingBox::new(pic_x, pic_y, pic_width, pic_height),

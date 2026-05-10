@@ -653,6 +653,12 @@ pub struct ImageNode {
     /// `Some(BehindText)` / `Some(InFrontOfText)` 는 overlay layer 로 분리 후보.
     /// 기본값 `None` 은 기존 동작 유지.
     pub text_wrap: Option<TextWrap>,
+    /// [Task #741] 외부 file path 그림 (HWP3 spec offset 74 그림 종류 0=외부 파일,
+    /// 1=OLE, 2=Embedded Image / offset 83~339 그림 파일 이름).
+    /// `data` 가 `None` 이고 `external_path` 가 `Some` 인 경우 placeholder 표시
+    /// (점선 사각형 + 깨진 image 아이콘) — 한컴 한글 2024 viewer 정합.
+    #[serde(default)]
+    pub external_path: Option<String>,
 }
 
 impl ImageNode {
@@ -668,6 +674,7 @@ impl ImageNode {
             brightness: 0,
             contrast: 0,
             text_wrap: None,
+            external_path: None,
         }
     }
 }

@@ -1,6 +1,7 @@
 import type { CommandDef } from '../types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
+import { ColumnSettingsDialog } from '@/ui/column-settings-dialog';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -438,7 +439,19 @@ export const pageCommands: CommandDef[] = [
       } catch (err) { console.warn('[page:col-right]', err); }
     },
   },
-  stub('page:col-settings', '다단 설정', undefined, 'Ctrl+Alt+Enter'),
+  {
+    id: 'page:col-settings',
+    label: '다단 설정',
+    shortcutLabel: 'Ctrl+Alt+Enter',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getPosition();
+      const dlg = new ColumnSettingsDialog(services.wasm, services.eventBus, pos.sectionIndex);
+      dlg.show();
+    },
+  },
   // ─── 구역 설정 ──────────────────────────────────
   {
     id: 'page:section-settings',

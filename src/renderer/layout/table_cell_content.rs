@@ -649,6 +649,7 @@ impl LayoutEngine {
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,
                                     text_wrap: None,
+                                    external_path: pic.image_attr.external_path.clone(),
                                 }),
                                 BoundingBox::new(pic_x, pic_y, fit_w, fit_h),
                             );

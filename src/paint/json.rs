@@ -317,6 +317,7 @@ impl PaintOp {
                     contrast: image.contrast,
                     effect: image.effect,
                     bin_data_id: image.bin_data_id,
+                    external_path: None,
                 };
                 if let Some(preset) = attr.watermark_preset() {
                     let _ = write!(buf, ",\"watermark\":{{\"preset\":\"{}\"}}", preset);

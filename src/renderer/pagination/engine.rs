@@ -2001,7 +2001,9 @@ impl Paginator {
                 footer_even.clone().or_else(|| footer_both.clone())
             };
 
-            page.page_number_pos = page_number_pos.clone();
+            if !assigner.should_hide_page_number() {
+                page.page_number_pos = page_number_pos.clone();
+            }
             // PageHide: 해당 문단이 이 페이지에서 **처음** 시작하는 경우만 적용
             // (문단이 여러 페이지에 걸치면 첫 페이지에서만 감추기 적용)
             for (ph_para, ph) in page_hides {

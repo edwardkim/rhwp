@@ -232,6 +232,12 @@ fn export_svg(args: &[String]) {
         }
     };
 
+    // [Task #741 후속] 외부 file path 그림 영역 영역 HWP file 영역 영역 같은 dir 영역
+    // 영역 image 영역 영역 자동 load (basename 매칭).
+    if let Some(parent) = std::path::Path::new(file_path).parent() {
+        let _loaded = doc.populate_external_images_from_dir(parent);
+    }
+
     if show_para_marks {
         doc.set_show_paragraph_marks(true);
     }
@@ -1191,7 +1197,9 @@ fn show_info(args: &[String]) {
     for (i, fonts) in document.doc_info.font_faces.iter().enumerate() {
         if !fonts.is_empty() {
             let name = if i < lang_names.len() { lang_names[i] } else { "기타" };
-            let font_names: Vec<&str> = fonts.iter().map(|f| f.name.as_str()).collect();
+            let font_names: Vec<String> = fonts.iter().enumerate()
+                .map(|(idx, f)| format!("[{}]{}", idx, f.name))
+                .collect();
             println!("폰트({}): {}", name, font_names.join(", "));
         }
     }
@@ -1983,9 +1991,12 @@ fn dump_controls(args: &[String]) {
                             sa.current_width, sa.current_height,
                             sa.current_width as f64 / 7200.0 * 25.4, sa.current_height as f64 / 7200.0 * 25.4,
                             pic.common.treat_as_char);
-                        println!("{}  [image_attr] effect={:?} brightness={} contrast={} watermark={}",
+                        println!("{}  [image_attr] effect={:?} brightness={} contrast={} watermark={}{}",
                             prefix, pic.image_attr.effect, pic.image_attr.brightness, pic.image_attr.contrast,
-                            pic.image_attr.watermark_preset().unwrap_or("none"));
+                            pic.image_attr.watermark_preset().unwrap_or("none"),
+                            pic.image_attr.external_path.as_ref()
+                                .map(|p| format!(" external_path=\"{}\"", p))
+                                .unwrap_or_default());
                         println!("{}  border_x={:?} border_y={:?} border_color=#{:06X} border_width={} ({:.2}mm) border_attr={:?}",
                             prefix, pic.border_x, pic.border_y,
                             pic.border_color, pic.border_width, pic.border_width as f64 / 7200.0 * 25.4,

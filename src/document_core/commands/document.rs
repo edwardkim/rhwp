@@ -35,6 +35,18 @@ pub struct HwpExportVerification {
 }
 
 impl DocumentCore {
+    /// [Task #741 후속] 외부 file path 그림 영역 의 binary 영역 영역 base_dir 영역 영역 자동 load.
+    ///
+    /// HWP3 파일 영역 image 영역 영역 영역 영역 절대 경로 (예: "D:\\Work\\...\\rdb02.gif") 영역
+    /// 저장 영역. 본 환경 영역 영역 영역 path 영역 영역 access 부재 영역 영역 영역, basename
+    /// 영역 영역 추출 → `base_dir` 영역 영역 영역 file 영역 load → renderer 영역 영역 표시.
+    ///
+    /// 반환: load 영역 image 영역.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn populate_external_images_from_dir(&mut self, base_dir: &std::path::Path) -> usize {
+        self.document.populate_external_images_from_dir(base_dir)
+    }
+
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
         let mut document = crate::parser::parse_document(data)
@@ -557,6 +569,12 @@ impl DocumentCore {
     /// 문서의 IR 참조를 반환한다 (네이티브 전용).
     pub fn document(&self) -> &Document {
         &self.document
+    }
+
+    /// [Task #741 후속] 문서의 IR mutable 참조를 반환한다.
+    /// WASM 영역 영역 외부 image inject 영역 의 영역 영역 영역.
+    pub fn document_mut(&mut self) -> &mut Document {
+        &mut self.document
     }
 
     /// 문서 IR을 직접 설정한다 (테스트/네이티브 전용).

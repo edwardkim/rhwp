@@ -1,0 +1,5 @@
+# Git LFS — pdf-large/ 폴더 한정 추적
+#
+# 본질: 50 MB 초과 PDF 영역 영역 git history 영역 영역 직접 진입을 차단
+# 다른 PDF 폴더 (pdf/, pdf-2020/, pdf-2010/) 영역 영역 일반 git 영역 영역 보존
+pdf-large/**/*.pdf filter=lfs diff=lfs merge=lfs -text
