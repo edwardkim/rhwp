@@ -247,6 +247,10 @@ impl CanvasRenderer {
                             self.close_shape_transform_value(&path.transform);
                         }
                         PaintOp::FootnoteMarker { .. }
+                        | PaintOp::CharOverlap { .. }
+                        | PaintOp::TextControlMark { .. }
+                        | PaintOp::TabLeader { .. }
+                        | PaintOp::TextDecoration { .. }
                         | PaintOp::Equation { .. }
                         | PaintOp::FormObject { .. }
                         | PaintOp::Placeholder { .. }
