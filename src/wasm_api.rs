@@ -1186,6 +1186,27 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 새 번호 지정 컨트롤 삽입 (쪽 > 새 번호로 시작)
+    #[wasm_bindgen(js_name = insertNewNumber)]
+    pub fn insert_new_number(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+        start_num: u32,
+    ) -> Result<String, JsValue> {
+        if start_num == 0 || start_num > 65535 {
+            return Err(JsValue::from_str("start_num must be 1~65535"));
+        }
+        self.insert_new_number_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+            start_num as u16,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 다단 설정 변경
     /// column_type: 0=일반, 1=배분, 2=평행
     /// same_width: 0=다른 너비, 1=같은 너비
