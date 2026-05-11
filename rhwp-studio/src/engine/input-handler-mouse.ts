@@ -815,17 +815,17 @@ export function onDblClick(this: any, e: MouseEvent): void {
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {
       e.preventDefault();
-      // #686: master page 글상자 (sec=0, ppi=0 앵커) 더블클릭 시 page jump 방지
-      // master page 글상자는 첫 문단(ppi=0)에 앵커 → cursor rect 가 page 0 으로 잡힘
-      // 현재 보고 있는 페이지와 다르면 진입 차단, 선택만 해제
-      const currentPage = this.cursor.getRect()?.pageIndex ?? 0;
-      if (ref.ppi === 0 && currentPage > 0) {
-        this.cursor.exitPictureObjectSelection();
-        this.pictureObjectRenderer?.clear();
-        this.eventBus.emit('picture-object-selection-changed', false);
-        this.updateCaret();
-        this.textarea.focus();
-        return;
+      // #686: ppi=0 앵커 도형 (master page 글상자 등)은 모든 페이지에 반복 표시됨.
+      // 텍스트 진입 시 cursor가 page 0으로 잡혀 뷰가 점프하므로, page 0이 아닐 때 차단.
+      if (ref.ppi === 0) {
+        const cursorPage = this.cursor.getRect()?.pageIndex ?? -1;
+        if (cursorPage !== 0) {
+          this.cursor.exitPictureObjectSelection();
+          this.pictureObjectRenderer?.clear();
+          this.eventBus.emit('picture-object-selection-changed', false);
+          this.textarea.focus();
+          return;
+        }
       }
       this.cursor.exitPictureObjectSelection();
       this.pictureObjectRenderer?.clear();
