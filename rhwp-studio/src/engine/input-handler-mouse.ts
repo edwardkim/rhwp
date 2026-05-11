@@ -500,6 +500,26 @@ export function onClick(this: any, e: MouseEvent): void {
         this.eventBus.emit('headerFooterModeChanged', 'none');
         // 본문 hitTest로 계속 진행
       } else {
+        // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
+        // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
+        const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+        if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line')) {
+          // 머리말 안 그림 객체 선택 → context menu 에 "개체 속성" 표시 가능
+          this.cursor.clearSelection();
+          this.exitPictureObjectSelectionIfNeeded();
+          this.cursor.enterPictureObjectSelectionDirect(
+            picHit.sec, picHit.ppi, picHit.ci, picHit.type as any,
+            picHit.cellIdx, picHit.cellParaIdx,
+            (picHit as any).headerFooter,
+          );
+          this.active = true;
+          this.caret.hide();
+          this.selectionRenderer.clear();
+          this.renderPictureObjectSelection();
+          this.eventBus.emit('picture-object-selection-changed', true);
+          this.textarea.focus();
+          return;
+        }
         // 머리말/꼬리말 영역 클릭 → 내부 텍스트 히트테스트로 커서 이동
         try {
           const isHeader = this.cursor.headerFooterMode === 'header';
