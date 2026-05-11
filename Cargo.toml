@@ -139,3 +139,8 @@ unused_assignments = "allow"
 unused_macros = "allow"
 # wmf 모듈의 tracing feature cfg 경고 억제
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(feature, values("tracing", "svg"))'] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
