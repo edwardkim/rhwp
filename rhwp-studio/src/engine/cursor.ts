@@ -490,6 +490,88 @@ export class CursorState {
     }
   }
 
+  // ─── 단어 단위 이동 (Alt/Option+Arrow) ────────────────
+
+  /** 단어 경계로 이동 (direction: -1=왼쪽, +1=오른쪽) */
+  moveToWordBoundary(direction: -1 | 1): void {
+    this.preferredX = null;
+    const pos = this.position;
+
+    if (this.isInCell() && !this.isInTextBox()) {
+      this.moveToWordBoundaryInCell(direction);
+      return;
+    }
+
+    try {
+      const sec = pos.sectionIndex;
+      const para = pos.paragraphIndex;
+      const paraLen = this.wasm.getParagraphLength(sec, para);
+
+      if (direction === 1) {
+        if (pos.charOffset >= paraLen) {
+          // 문단 끝 → 다음 문단 시작으로 이동
+          this.moveHorizontal(1);
+          return;
+        }
+        const remaining = paraLen - pos.charOffset;
+        const text = this.wasm.getTextRange(sec, para, pos.charOffset, Math.min(remaining, 50));
+        const offset = findWordBoundaryForward(text);
+        this.position = { ...pos, charOffset: pos.charOffset + offset };
+      } else {
+        if (pos.charOffset <= 0) {
+          // 문단 시작 → 이전 문단 끝으로 이동
+          this.moveHorizontal(-1);
+          return;
+        }
+        const start = Math.max(0, pos.charOffset - 50);
+        const count = pos.charOffset - start;
+        const text = this.wasm.getTextRange(sec, para, start, count);
+        const offset = findWordBoundaryBackward(text);
+        this.position = { ...pos, charOffset: start + offset };
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] moveToWordBoundary 실패:', e);
+    }
+  }
+
+  private moveToWordBoundaryInCell(direction: -1 | 1): void {
+    const pos = this.position;
+    const sec = pos.sectionIndex;
+    const ppi = pos.parentParaIndex!;
+    const ci = pos.controlIndex!;
+    const cei = pos.cellIndex!;
+    const cpi = pos.cellParaIndex!;
+
+    try {
+      const text = this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, 0, 9999);
+      const paraLen = text.length;
+
+      if (direction === 1) {
+        if (pos.charOffset >= paraLen) {
+          this.moveHorizontal(1);
+          return;
+        }
+        const slice = text.slice(pos.charOffset, pos.charOffset + 50);
+        const offset = findWordBoundaryForward(slice);
+        this.position = { ...pos, charOffset: pos.charOffset + offset };
+      } else {
+        if (pos.charOffset <= 0) {
+          this.moveHorizontal(-1);
+          return;
+        }
+        const start = Math.max(0, pos.charOffset - 50);
+        const slice = text.slice(start, pos.charOffset);
+        const offset = findWordBoundaryBackward(slice);
+        this.position = { ...pos, charOffset: start + offset };
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] moveToWordBoundaryInCell 실패:', e);
+      this.moveHorizontal(direction);
+    }
+  }
+
   // ─── 셀 탐색 (Tab/Shift+Tab) ──────────────────────────
 
   /** 읽기 순서(row → col)로 정렬된 cellIdx 배열을 반환한다 */
@@ -1234,4 +1316,49 @@ export class CursorState {
 
     this.updateRect();
   }
+}
+
+// ─── 단어 경계 탐색 유틸 ──────────────────────────────────
+
+const enum CharClass { Space, Hangul, Latin, Digit, Punct }
+
+function classifyChar(ch: string): CharClass {
+  const c = ch.charCodeAt(0);
+  if (c === 0x20 || c === 0x09 || c === 0x0A || c === 0x0D || c === 0xA0) return CharClass.Space;
+  if (c >= 0xAC00 && c <= 0xD7AF) return CharClass.Hangul; // 완성형
+  if (c >= 0x3131 && c <= 0x318E) return CharClass.Hangul; // 자모
+  if (c >= 0x1100 && c <= 0x11FF) return CharClass.Hangul; // 첫가끝
+  if ((c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A)) return CharClass.Latin;
+  if (c >= 0x30 && c <= 0x39) return CharClass.Digit;
+  return CharClass.Punct;
+}
+
+function findWordBoundaryForward(text: string): number {
+  if (text.length === 0) return 0;
+  const startClass = classifyChar(text[0]);
+  let i = 0;
+  // Skip current word (same class)
+  if (startClass === CharClass.Space) {
+    while (i < text.length && classifyChar(text[i]) === CharClass.Space) i++;
+  } else {
+    while (i < text.length && classifyChar(text[i]) === startClass) i++;
+    // Also skip trailing spaces
+    while (i < text.length && classifyChar(text[i]) === CharClass.Space) i++;
+  }
+  return i || 1;
+}
+
+function findWordBoundaryBackward(text: string): number {
+  if (text.length === 0) return 0;
+  let i = text.length;
+  const endClass = classifyChar(text[i - 1]);
+  // Skip trailing spaces
+  if (endClass === CharClass.Space) {
+    while (i > 0 && classifyChar(text[i - 1]) === CharClass.Space) i--;
+  }
+  if (i === 0) return 0;
+  // Skip the word (same class)
+  const wordClass = classifyChar(text[i - 1]);
+  while (i > 0 && classifyChar(text[i - 1]) === wordClass) i--;
+  return i;
 }

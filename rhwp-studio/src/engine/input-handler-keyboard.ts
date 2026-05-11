@@ -679,8 +679,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return;
   }
 
-  // Alt 조합 단축키 처리
-  if (e.altKey && this.dispatcher) {
+  // Alt 조합 단축키 처리 (Alt+Arrow는 단어 이동 → 아래 Arrow case에서 처리)
+  if (e.altKey && !e.key.startsWith('Arrow') && this.dispatcher) {
     // Alt+V → Chord 대기 (보기 메뉴 단축키, 한컴 Alt+V,T 계승)
     if ((e.key === 'v' || e.key === 'V' || e.key === 'ㅍ') && !e.shiftKey && !e.ctrlKey) {
       e.preventDefault();
@@ -739,6 +739,11 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       if (this.cursor.hasSelection()) {
         this.deleteSelection();
+      } else if (e.altKey) {
+        // Alt/Option+Backspace: 단어 삭제 (macOS standard)
+        this.cursor.setAnchor();
+        this.cursor.moveToWordBoundary(e.key === 'Backspace' ? -1 : 1);
+        if (this.cursor.hasSelection()) this.deleteSelection();
       } else if (e.key === 'Backspace') {
         this.handleBackspace(pos, inCell);
       } else {
@@ -764,6 +769,15 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     case 'ArrowUp':
     case 'ArrowDown': {
       e.preventDefault();
+      // Alt/Option+Arrow: 단어 단위 이동 (macOS standard)
+      if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        if (e.shiftKey) this.cursor.setAnchor();
+        else this.cursor.clearSelection();
+        this.cursor.moveToWordBoundary(e.key === 'ArrowLeft' ? -1 : 1);
+        this.updateCaret();
+        if (e.shiftKey) this.updateSelection();
+        break;
+      }
       const vertical = this.cursor.isInVerticalCell();
       // 세로쓰기 셀: ↑↓=글자이동(horizontal), ←→=줄이동(vertical)
       // 가로쓰기:    ←→=글자이동(horizontal), ↑↓=줄이동(vertical)
