@@ -92,11 +92,31 @@ export class MenuBar {
     });
   }
 
-  /** Escape 키 → 닫기 */
+  /** 메뉴 열린 상태 키보드 처리: Escape 닫기 + 단일 키 hotkey 항목 활성 (#792) */
   private setupKeyboardClose(): void {
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.openMenu) {
+      if (!this.openMenu) return;
+      if (e.key === 'Escape') {
         this.closeAll();
+        return;
+      }
+      // 메뉴 열린 상태에서 단일 키 (modifier 없음) → shortcutLabel 매칭
+      if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+      if (e.key.length !== 1) return;
+      const key = e.key.toUpperCase();
+      const items = this.openMenu.querySelectorAll('.md-item[data-cmd]:not(.disabled)');
+      for (const item of items) {
+        const shortcut = item.querySelector('.md-shortcut');
+        if (shortcut && shortcut.textContent?.toUpperCase() === key) {
+          e.preventDefault();
+          const cmd = (item as HTMLElement).dataset.cmd;
+          if (cmd) {
+            const params: Record<string, unknown> = { anchorEl: item };
+            this.dispatcher.dispatch(cmd, params);
+          }
+          this.closeAll();
+          return;
+        }
       }
     });
   }
