@@ -166,6 +166,7 @@ impl TextStyle {
         self.bold || crate::renderer::style_resolver::is_heavy_display_face(&self.font_family)
     }
 
+    /// 중고딕 계열(font-weight 500) 여부. SVG/HTML 출력 시 `font-weight: 500` 힌트 삽입에 사용.
     pub fn is_medium_weight(&self) -> bool {
         !self.bold && crate::renderer::style_resolver::is_medium_weight_face(&self.font_family)
     }
