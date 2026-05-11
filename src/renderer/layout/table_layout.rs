@@ -131,11 +131,16 @@ impl LayoutEngine {
             if depth == 0 { return y_start; } else { return 0.0; }
         }
         // 1x1 래퍼 표 감지: 외곽 표를 무시하고 내부 표를 직접 렌더링
+        // 단, 셀 안에 표가 정확히 1개일 때만 shortcut 적용 (다수 표 시 일반 경로)
         if table.row_count == 1 && table.col_count == 1 && table.cells.len() == 1 {
             let cell = &table.cells[0];
             let has_visible_text = cell.paragraphs.iter()
                 .any(|p| p.text.chars().any(|ch| !ch.is_whitespace() && ch != '\r' && ch != '\n'));
-            if !has_visible_text {
+            let nested_table_count = cell.paragraphs.iter()
+                .flat_map(|p| p.controls.iter())
+                .filter(|c| matches!(c, Control::Table(_)))
+                .count();
+            if !has_visible_text && nested_table_count == 1 {
                 if let Some(nested) = cell.paragraphs.iter()
                     .flat_map(|p| p.controls.iter())
                     .find_map(|c| if let Control::Table(t) = c { Some(t.as_ref()) } else { None })
