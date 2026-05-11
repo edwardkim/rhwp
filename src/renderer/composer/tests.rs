@@ -660,3 +660,40 @@ fn test_tokenize_line_break() {
     assert_eq!(tokens.len(), 3);
     assert!(matches!(tokens[1], BreakToken::LineBreak { idx: 1 }));
 }
+
+/// PUA U+F02B1~F02BC → CharOverlap (border_type=3, 사각형 안 숫자)
+#[test]
+fn test_pua_enclosed_number_becomes_char_overlap() {
+    let para = Paragraph {
+        text: "\u{F02B1} 테스트".to_string(),
+        char_offsets: vec![0, 1, 2, 3, 4],
+        char_count: 6,
+        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            line_height: 800,
+            baseline_distance: 640,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let composed = compose_paragraph(&para);
+    assert_eq!(composed.lines.len(), 1);
+    let runs = &composed.lines[0].runs;
+    let overlap_run = runs.iter().find(|r| r.char_overlap.is_some());
+    assert!(overlap_run.is_some(), "U+F02B1 should produce a CharOverlap run");
+    let overlap = overlap_run.unwrap().char_overlap.as_ref().unwrap();
+    assert_eq!(overlap.border_type, 3, "border_type should be 3 (rectangle)");
+}
+
+/// pua_to_display_text correctly converts F02B1~F02BC to "1"~"12"
+#[test]
+fn test_pua_to_display_text_range() {
+    assert_eq!(pua_to_display_text('\u{F02B1}'), Some("1".to_string()));
+    assert_eq!(pua_to_display_text('\u{F02B9}'), Some("9".to_string()));
+    assert_eq!(pua_to_display_text('\u{F02BA}'), Some("10".to_string()));
+    assert_eq!(pua_to_display_text('\u{F02BB}'), Some("11".to_string()));
+    assert_eq!(pua_to_display_text('\u{F02BC}'), Some("12".to_string()));
+    assert_eq!(pua_to_display_text('\u{F02C4}'), Some("20".to_string()));
+}
