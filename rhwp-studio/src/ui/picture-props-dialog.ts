@@ -67,6 +67,8 @@ export class PicturePropsDialog {
   private para = 0;
   private ci = 0;
   private objectType: 'image' | 'shape' | 'line' = 'image';
+  /** [Task #825] 머리말/꼬리말 그림 marker (Some 일 때 신규 API 사용). */
+  private headerFooter: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } | undefined;
   private props: PictureProperties | null = null;
   private shapeProps: ShapeProperties | null = null;
 
@@ -226,6 +228,7 @@ export class PicturePropsDialog {
     this.para = para;
     this.ci = ci;
     this.objectType = type;
+    this.headerFooter = headerFooter;
 
     if (type === 'shape' || type === 'line') {
       this.shapeProps = this.wasm.getShapeProperties(sec, para, ci);
@@ -2135,6 +2138,14 @@ export class PicturePropsDialog {
     if (Object.keys(updated).length > 0) {
       if (this.objectType === 'shape' || this.objectType === 'line') {
         this.wasm.setShapeProperties(this.sec, this.para, this.ci, updated);
+      } else if (this.headerFooter) {
+        // [Task #825] 머리말/꼬리말 그림은 별도 API — 5-tuple lookup. 캡션 신규
+        // 생성은 미지원 (set_header_footer_picture_properties_native 가 NotSupported
+        // 에러 반환 — 본 dialog 에서는 일반 속성 변경만 허용).
+        this.wasm.setHeaderFooterPictureProperties(
+          this.sec, this.headerFooter.outerParaIdx, this.headerFooter.outerControlIdx,
+          this.para, this.ci, updated,
+        );
       } else {
         this.wasm.setPictureProperties(this.sec, this.para, this.ci, updated);
       }
