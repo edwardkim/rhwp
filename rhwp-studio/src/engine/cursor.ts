@@ -54,6 +54,10 @@ export class CursorState {
   /** 셀 선택 모드 시 표의 식별 정보 (sec/ppi/ci/dims) */
   private cellTableCtx: { sec: number; ppi: number; ci: number; rowCount: number; colCount: number; cellPath?: CellPathEntry[] } | null = null;
 
+  // ─── F5 본문 블록 선택 모드 (#220) ────────────────────────
+  private _blockSelectionMode = false;
+  private _expandPhase = 0; // F3 확장 단계: 0=none, 1=word, 2=paragraph, 3=section, 4=document
+
   // ─── 표 객체 선택 ──────────────────────────────────────
   private _tableObjectSelected = false;
   private selectedTableRef: { sec: number; ppi: number; ci: number; cellPath?: CellPathEntry[] } | null = null;
@@ -966,6 +970,61 @@ export class CursorState {
     return this._cellSelectionMode;
   }
 
+  // ─── F5 본문 블록 선택 (#220) ──────────────────────
+  isInBlockSelectionMode(): boolean { return this._blockSelectionMode; }
+
+  enterBlockSelectionMode(): void {
+    this._blockSelectionMode = true;
+    this._expandPhase = 0;
+    this.anchor = { ...this.position };
+  }
+
+  exitBlockSelectionMode(): void {
+    this._blockSelectionMode = false;
+    this._expandPhase = 0;
+    this.clearSelection();
+  }
+
+  expandSelection(): void {
+    this._expandPhase++;
+    const pos = this.position;
+    const sec = pos.sectionIndex;
+    const para = pos.paragraphIndex;
+    try {
+      if (this._expandPhase === 1) {
+        // 단어 선택 — 현재 위치의 단어 범위
+        const paraLen = this.wasm.getParagraphLength(sec, para);
+        const text = this.wasm.getTextRange(sec, para, 0, paraLen);
+        const { start, end } = findWordAt(text, pos.charOffset);
+        this.anchor = { ...pos, charOffset: start };
+        this.position = { ...pos, charOffset: end };
+      } else if (this._expandPhase === 2) {
+        // 문단 전체 선택
+        const paraLen = this.wasm.getParagraphLength(sec, para);
+        this.anchor = { ...pos, charOffset: 0 };
+        this.position = { ...pos, charOffset: paraLen };
+      } else if (this._expandPhase === 3) {
+        // 구역 전체 선택
+        const paraCount = this.wasm.getParagraphCount(sec);
+        const lastParaLen = this.wasm.getParagraphLength(sec, paraCount - 1);
+        this.anchor = { sectionIndex: sec, paragraphIndex: 0, charOffset: 0 };
+        this.position = { sectionIndex: sec, paragraphIndex: paraCount - 1, charOffset: lastParaLen };
+      } else {
+        // 문서 전체 선택
+        const secCount = this.wasm.getSectionCount();
+        const lastSec = secCount - 1;
+        const lastParaCount = this.wasm.getParagraphCount(lastSec);
+        const lastParaLen = this.wasm.getParagraphLength(lastSec, lastParaCount - 1);
+        this.anchor = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
+        this.position = { sectionIndex: lastSec, paragraphIndex: lastParaCount - 1, charOffset: lastParaLen };
+        this._expandPhase = 4; // cap
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] expandSelection 실패:', e);
+    }
+  }
+
   /** 셀 선택을 화살표 방향으로 이동한다 (anchor/focus 함께 이동, 단일 셀 선택). */
   moveCellSelection(deltaRow: number, deltaCol: number): void {
     if (!this._cellSelectionMode || !this.cellFocus || !this.cellTableCtx) return;
@@ -1416,7 +1475,7 @@ export class CursorState {
   }
 }
 
-// ─── 단어 경계 탐색 유틸 ──────────────────────────────────
+// ─── 단어 경계 탐색 유틸 (PR #794, Alt+Arrow 단어 이동) ──────────────────────────────────
 
 const enum CharClass { Space, Hangul, Latin, Digit, Punct }
 
@@ -1459,4 +1518,31 @@ function findWordBoundaryBackward(text: string): number {
   const wordClass = classifyChar(text[i - 1]);
   while (i > 0 && classifyChar(text[i - 1]) === wordClass) i--;
   return i;
+}
+
+// ─── 단어 범위 탐색 유틸 (PR #811, F3 단계 1 단어 선택) ──────────────────────────────────
+
+function isWordChar(c: string): boolean {
+  const code = c.charCodeAt(0);
+  if (code >= 0x30 && code <= 0x39) return true; // digit
+  if (code >= 0x41 && code <= 0x5A) return true; // A-Z
+  if (code >= 0x61 && code <= 0x7A) return true; // a-z
+  if (code >= 0xAC00 && code <= 0xD7AF) return true; // Hangul
+  if (code >= 0x3131 && code <= 0x318E) return true; // Hangul Jamo
+  return false;
+}
+
+function findWordAt(text: string, offset: number): { start: number; end: number } {
+  if (!text || offset >= text.length) return { start: offset, end: offset };
+  const atWord = isWordChar(text[offset] ?? '');
+  let start = offset;
+  let end = offset;
+  if (atWord) {
+    while (start > 0 && isWordChar(text[start - 1])) start--;
+    while (end < text.length && isWordChar(text[end])) end++;
+  } else {
+    while (start > 0 && !isWordChar(text[start - 1])) start--;
+    while (end < text.length && !isWordChar(text[end])) end++;
+  }
+  return { start, end };
 }
