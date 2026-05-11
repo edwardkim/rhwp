@@ -370,6 +370,7 @@ export class CursorState {
 
   /** 커서를 위/아래로 이동한다 (delta: -1=위, +1=아래) — WASM 단일 호출 */
   moveVertical(delta: number): void {
+    this.atLineEnd = false;
     const px = this.preferredX ?? -1.0;
     const pos = this.position;
     const depth = this.nestingDepth();
