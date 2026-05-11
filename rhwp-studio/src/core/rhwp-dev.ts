@@ -1,4 +1,5 @@
 import type { WasmBridge } from './wasm-bridge';
+import type { SearchHit } from './types';
 
 interface TextRunInfo {
   secIdx: number;
@@ -11,15 +12,6 @@ interface TextRunInfo {
   controlIdx?: number;
   cellIdx?: number;
   cellParaIdx?: number;
-}
-
-interface SearchResult {
-  found: boolean;
-  wrapped?: boolean;
-  sec?: number;
-  para?: number;
-  charOffset?: number;
-  length?: number;
 }
 
 function containerKey(run: TextRunInfo): string {
@@ -77,31 +69,8 @@ export function initRhwpDev(wasm: WasmBridge): void {
       console.log(`[rhwpDev] showAllIds: ${unique.length} unique paragraph IDs across pages ${startPage}~${endPage - 1}`);
     },
 
-    search(text: string): SearchResult[] {
-      const results: SearchResult[] = [];
-      let sec = 0, para = 0, charOff = 0;
-
-      // 반복 횟수 한계 — 방어 가드 (실 사용 한도 충분)
-      const MAX_MATCHES = 10000;
-      for (let i = 0; i < MAX_MATCHES; i++) {
-        const r = wasm.searchText(text, sec, para, charOff, true, false);
-        if (!r || !r.found) break;
-        // wrap-around 가드 — search_text_native 가 마지막 매치 이후 wrap 시 body_hits[0] 을
-        // wrapped=true 로 반환 → break 안 하면 무한 루프
-        if (r.wrapped) break;
-        // 후진 가드 — 다음 매치 위치가 직전 위치보다 앞이거나 같으면 break (방어)
-        const sNext = r.sec ?? 0;
-        const pNext = r.para ?? 0;
-        const cNext = r.charOffset ?? 0;
-        if (sNext < sec
-            || (sNext === sec && pNext < para)
-            || (sNext === sec && pNext === para && cNext < charOff)) break;
-        results.push(r);
-        sec = sNext;
-        para = pNext;
-        charOff = cNext + (r.length ?? text.length);
-      }
-
+    search(text: string, includeCells: boolean = false): SearchHit[] {
+      const results = wasm.searchAllText(text, false, includeCells);
       if (results.length === 0) {
         console.warn(`[rhwpDev] search("${text}"): not found`);
       } else {
@@ -140,10 +109,10 @@ export function initRhwpDev(wasm: WasmBridge): void {
 
     help(): void {
       console.log(`%c[rhwpDev]%c Debugging Toolkit
-  .showAllIds(page?)      — list all paragraph IDs with container context (console.table)
-  .search("text")         — find all matches: section/paragraph/offset (returns array)
-  .findNearest(id, page?) — find nearest valid paraIdx to a given ID
-  .help()                 — this message`, 'color:#2563eb;font-weight:bold', 'color:inherit');
+  .showAllIds(page?)           — list all paragraph IDs with container context (console.table)
+  .search("text", cells?)      — find all matches: section/paragraph/offset (returns array)
+  .findNearest(id, page?)      — find nearest valid paraIdx to a given ID
+  .help()                      — this message`, 'color:#2563eb;font-weight:bold', 'color:inherit');
     },
   };
 

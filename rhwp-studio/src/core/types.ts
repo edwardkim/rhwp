@@ -604,6 +604,22 @@ export interface SearchResult {
   };
 }
 
+/** 전체 검색 결과 항목 */
+export interface SearchHit {
+  sec: number;
+  /** 본문 매치: 문단 인덱스. 셀 매치: 부모(호스트) 문단 인덱스 (= cellContext.parentPara) */
+  para: number;
+  charOffset: number;
+  length: number;
+  /** 표 셀/글상자 내부 매치 시 컨텍스트. cellPara가 실제 매치 문단 인덱스 */
+  cellContext?: {
+    parentPara: number;
+    ctrlIdx: number;
+    cellIdx: number;
+    cellPara: number;
+  };
+}
+
 /** 치환 결과 */
 export interface ReplaceResult {
   ok: boolean;
