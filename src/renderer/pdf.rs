@@ -184,19 +184,7 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
         let orig_w = tree.size().width();
         let orig_h = tree.size().height();
 
-        // Fix: SVG 콘텐츠 좌표가 뷰포트를 넘는지 확인하여 BBox 클리핑 방지
-        // usvg의 bounding_box()는 뷰포트에 클리핑되므로 SVG 원본을 직접 스캔
-        let max_x = scan_svg_max_x(&svg_with_fallback);
-
-        let tree_for_chunk = if max_x > orig_w * 1.01 {
-            let expanded = expand_svg_viewport(&svg_with_fallback, max_x, orig_h);
-            usvg::Tree::from_str(&expanded, &options)
-                .map_err(|e| format!("SVG 재파싱 실패: {}", e))?
-        } else {
-            tree
-        };
-
-        let (chunk, svg_ref) = svg2pdf::to_chunk(&tree_for_chunk, svg2pdf::ConversionOptions::default())
+        let (chunk, svg_ref) = svg2pdf::to_chunk(&tree, svg2pdf::ConversionOptions::default())
             .map_err(|e| format!("SVG→chunk 변환 실패: {:?}", e))?;
 
         // 페이지 크기는 원본 뷰포트 기준 (A4 유지)

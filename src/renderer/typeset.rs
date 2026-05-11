@@ -999,37 +999,22 @@ impl TypesetEngine {
         let ls_type = para_style.map(|s| s.line_spacing_type)
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
-        let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
-            comp.lines.iter()
-                .map(|line| {
-                    let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
-                    let max_fs = line.runs.iter()
-                        .map(|r| {
-                            styles.char_styles.get(r.char_style_id as usize)
-                                .map(|cs| cs.font_size)
-                                .unwrap_or(0.0)
-                        })
-                        .fold(0.0f64, f64::max);
-                    let lh = if max_fs > 0.0 && raw_lh < max_fs {
-                        use crate::model::style::LineSpacingType;
-                        let computed = match ls_type {
-                            LineSpacingType::Percent   => max_fs * ls_val / 100.0,
-                            LineSpacingType::Fixed     => ls_val.max(max_fs),
-                            LineSpacingType::SpaceOnly => max_fs + ls_val,
-                            LineSpacingType::Minimum   => ls_val.max(max_fs),
-                        };
-                        computed.max(max_fs)
-                    } else {
-                        raw_lh
-                    };
-                    (lh, hwpunit_to_px(line.line_spacing, self.dpi))
-                })
-                .unzip()
-        } else if !para.line_segs.is_empty() {
+        let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if !para.line_segs.is_empty() {
+            // HWP 파일의 원본 LINE_SEG 데이터를 우선 사용.
+            // 한컴오피스가 계산한 line_height/line_spacing을 신뢰하여
+            // 페이지 구성(줄 높이, 페이지 나눔)을 원본과 일치시킨다.
             para.line_segs.iter()
                 .map(|seg| (
                     hwpunit_to_px(seg.line_height, self.dpi),
                     hwpunit_to_px(seg.line_spacing, self.dpi),
+                ))
+                .unzip()
+        } else if let Some(comp) = composed {
+            // LINE_SEG가 없으면 Composer 결과를 사용 (폴백)
+            comp.lines.iter()
+                .map(|line| (
+                    hwpunit_to_px(line.line_height, self.dpi),
+                    hwpunit_to_px(line.line_spacing, self.dpi),
                 ))
                 .unzip()
         } else {
