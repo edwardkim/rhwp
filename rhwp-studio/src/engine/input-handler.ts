@@ -2258,8 +2258,20 @@ export class InputHandler {
   /** 전체 선택 (커맨드 시스템용) */
   performSelectAll(): void { this.handleSelectAll(); }
 
-  /** 지우기 (커맨드 시스템용) — 선택 있으면 선택 삭제, 없으면 전방 1문자 삭제 */
+  /** 지우기 (커맨드 시스템용) — 개체/텍스트 선택 삭제, 없으면 전방 1문자 삭제 */
   performDelete(): void {
+    if (this.cursor.isInPictureObjectSelection()) {
+      const ref = this.cursor.getSelectedPictureRef();
+      if (ref) {
+        if (ref.type === 'shape' || ref.type === 'line' || ref.type === 'group') {
+          this.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+        } else {
+          this.wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
+        }
+        this.exitPictureObjectSelectionAndAfterEdit();
+      }
+      return;
+    }
     if (this.cursor.hasSelection()) {
       this.deleteSelection();
     } else {
