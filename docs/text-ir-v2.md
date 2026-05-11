@@ -15,7 +15,9 @@ P12 adds the first guarded `GlyphRun` variant contract. Glyph ids are still not
 canonical by default: `TextRun` remains the fallback replay path, and a
 `GlyphRun` may only be selected when the variant is complete, the diagnostics
 are exact or position-adjusted, the font resource is self-contained, and the
-paint style is fill-only.
+paint style is fill-only. Native Skia deliberately keeps using the `TextRun`
+fallback in P12 because exact blob-backed typeface construction is not wired
+yet.
 
 ## Export Contract
 
@@ -64,9 +66,10 @@ fallback instead.
   cross-document or cross-export stable ids.
 - Field marker, paragraph-end, and line-break metadata also appear as source
   annotations.
-- P12 enables the `GlyphRun` schema contract and native Skia selection guard,
-  but normal layer lowering still emits `TextRun` only unless a shaping pass
-  explicitly inserts glyph alternatives.
+- P12 enables the `GlyphRun` schema contract and native Skia contract guard,
+  but native Skia selection remains disabled until it can instantiate the exact
+  referenced font blob/face. Normal layer lowering still emits `TextRun` only
+  unless a shaping pass explicitly inserts glyph alternatives.
 - Canvas2D/layered SVG keep using the `TextRun` fallback and ignore glyph
   sidecars.
 - Glyph ids require portable font identity. Consumers must not replay glyph ids

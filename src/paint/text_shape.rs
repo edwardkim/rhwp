@@ -5,6 +5,7 @@ use crate::paint::{
     TextVariantQuality,
 };
 use crate::renderer::render_tree::{BoundingBox, TextRunNode};
+use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FontRequest {
@@ -168,10 +169,25 @@ impl<'a> TextShapeLowerer<'a> {
                 self.lower_node(child, report, next_text_source_id);
             }
             LayerNodeKind::Leaf { ops } => {
+                let existing_glyph_groups = ops
+                    .iter()
+                    .filter_map(|op| match op {
+                        PaintOp::GlyphRun { run, .. } => {
+                            Some(run.variant.equivalence_group.clone())
+                        }
+                        _ => None,
+                    })
+                    .collect::<HashSet<_>>();
                 let mut lowered = Vec::with_capacity(ops.len());
                 for op in ops.drain(..) {
                     if let PaintOp::TextRun { bbox, run } = op {
                         let text_source_id = *next_text_source_id;
+                        let equivalence_group = format!("text-{text_source_id}");
+                        if existing_glyph_groups.contains(&equivalence_group) {
+                            lowered.push(PaintOp::TextRun { bbox, run });
+                            *next_text_source_id = (*next_text_source_id).saturating_add(1);
+                            continue;
+                        }
                         let (diagnostic, glyph_run) =
                             self.lower_text_run(bbox, &run, text_source_id);
                         report.diagnostics.push(diagnostic);
@@ -545,6 +561,33 @@ mod tests {
         assert!(!run.variant.is_default_fallback);
         assert_eq!(run.glyph_ids, vec![42]);
         assert!(run.diagnostics.strict_visual_eligible);
+    }
+
+    #[test]
+    fn lowerer_does_not_duplicate_existing_glyph_run_sidecars() {
+        let mut root = LayerNode::leaf(
+            BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+            None,
+            vec![PaintOp::TextRun {
+                bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+                run: text_run("A"),
+            }],
+        );
+        let lowerer = TextShapeLowerer::new(&EmittingResolver);
+        let first_report = lowerer.lower_root(&mut root);
+        let second_report = lowerer.lower_root(&mut root);
+
+        assert_eq!(first_report.public_glyph_run_count(), 1);
+        assert_eq!(second_report.public_glyph_run_count(), 0);
+        let LayerNodeKind::Leaf { ops } = &root.kind else {
+            panic!("expected leaf root");
+        };
+        assert_eq!(
+            ops.iter()
+                .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+                .count(),
+            1
+        );
     }
 
     #[test]

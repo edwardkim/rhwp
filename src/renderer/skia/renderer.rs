@@ -1,6 +1,6 @@
 use skia_safe::{
-    font, paint, surfaces, Canvas, Color, EncodedImageFormat, Font, FontMgr, FontStyle, Matrix,
-    Paint, PathBuilder, PathEffect, RRect, Rect, Typeface,
+    paint, surfaces, Canvas, Color, EncodedImageFormat, Font, FontMgr, FontStyle, Paint,
+    PathBuilder, PathEffect, RRect, Rect, Typeface,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -22,6 +22,19 @@ use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 use super::text_replay::SkiaTextReplay;
 
 fn native_skia_can_replay_glyph_run(run: &LayerGlyphRunPaint, resources: &ResourceArena) -> bool {
+    if !native_skia_glyph_run_contract_is_replayable(run, resources) {
+        return false;
+    }
+
+    // Glyph ids are face-local. Native Skia must not select a GlyphRun until it
+    // can build the exact typeface from the referenced font blob/face resource.
+    false
+}
+
+fn native_skia_glyph_run_contract_is_replayable(
+    run: &LayerGlyphRunPaint,
+    resources: &ResourceArena,
+) -> bool {
     if run.glyph_ids.is_empty()
         || run.glyph_ids.len() != run.positions.len()
         || run
@@ -29,7 +42,7 @@ fn native_skia_can_replay_glyph_run(run: &LayerGlyphRunPaint, resources: &Resour
             .as_ref()
             .is_some_and(|advances| advances.len() != run.glyph_ids.len())
         || run.glyph_transforms.is_some()
-        || run.orientation == GlyphRunOrientation::MixedPerGlyph
+        || run.orientation != GlyphRunOrientation::Horizontal
         || !run.diagnostics.strict_visual_eligible
         || run.diagnostics.missing_glyph_count != 0
         || run.diagnostics.cluster_mismatch_count != 0
@@ -554,67 +567,8 @@ impl SkiaLayerRenderer {
                             if !native_skia_can_replay_glyph_run(run, resources) {
                                 continue;
                             }
-                            let font_style = match (run.paint_style.bold, run.paint_style.italic) {
-                                (true, true) => FontStyle::bold_italic(),
-                                (true, false) => FontStyle::bold(),
-                                (false, true) => FontStyle::italic(),
-                                (false, false) => FontStyle::normal(),
-                            };
-                            let font_size = if run.paint_style.font_size > 0.0 {
-                                run.paint_style.font_size as f32
-                            } else {
-                                12.0
-                            };
-                            let typeface = self
-                                .custom_typefaces
-                                .get(run.paint_style.font_family.as_str())
-                                .cloned()
-                                .or_else(|| {
-                                    self.font_mgr.match_family_style(
-                                        run.paint_style.font_family.as_str(),
-                                        font_style,
-                                    )
-                                })
-                                .or_else(|| {
-                                    self.font_mgr.legacy_make_typeface(None::<&str>, font_style)
-                                });
-                            let mut font = if let Some(typeface) = typeface {
-                                Font::new(typeface, font_size)
-                            } else {
-                                let mut fallback = Font::default();
-                                fallback.set_size(font_size);
-                                fallback
-                            };
-                            font.set_edging(font::Edging::AntiAlias);
-
-                            let transform = run.placement.run_to_page;
-                            let matrix = Matrix::from_affine(&[
-                                transform.a as f32,
-                                transform.b as f32,
-                                transform.c as f32,
-                                transform.d as f32,
-                                transform.e as f32,
-                                transform.f as f32,
-                            ]);
-                            let mut fill_paint = Paint::default();
-                            fill_paint.set_anti_alias(true);
-                            fill_paint.set_style(paint::Style::Fill);
-                            fill_paint.set_color(colorref_to_skia(run.paint_style.color, 1.0));
-
-                            canvas.save();
-                            canvas.concat(&matrix);
-                            for (glyph_id, position) in
-                                run.glyph_ids.iter().zip(run.positions.iter())
-                            {
-                                if let Some(path) = font.get_path(*glyph_id as u16) {
-                                    let path = path.with_offset((
-                                        position.x as f32,
-                                        position.y as f32 + run.placement.baseline_y as f32,
-                                    ));
-                                    canvas.draw_path(&path, &fill_paint);
-                                }
-                            }
-                            canvas.restore();
+                            // Unreachable until native_skia_can_replay_glyph_run can verify
+                            // blob-backed typeface construction. Keep the TextRun fallback.
                         }
                         PaintOp::FootnoteMarker { bbox, marker } => {
                             let style = crate::renderer::TextStyle {
@@ -1178,7 +1132,14 @@ mod tests {
     use super::*;
     use crate::model::control::FormType;
     use crate::model::style::{ImageFillMode, UnderlineType};
-    use crate::paint::{CacheHint, GroupKind, LayerNode, LayerOutputOptions};
+    use crate::paint::{
+        BinaryResourceKind, BinaryResourceRef, CacheHint, FontBlobKey, FontBlobResource,
+        FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId, FontInstanceKey,
+        FontPortability, FontResourceSource, GlyphCluster, GlyphRange, GroupKind,
+        LayerAffineTransform, LayerNode, LayerOutputOptions, LayerPoint, PaintTextStyle,
+        PaintVariantMeta, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextSourceId,
+        TextSourceRange, TextSourceSpan, TextVariantKind, WritingMode,
+    };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::ast::EqNode;
     use crate::renderer::equation::layout::EqLayout;
@@ -1206,6 +1167,117 @@ mod tests {
 
     fn count_ink(image: &image::RgbaImage) -> usize {
         image.pixels().filter(|pixel| pixel[3] > 0).count()
+    }
+
+    fn portable_font_resources() -> ResourceArena {
+        let mut resources = ResourceArena::default();
+        let blob_key = FontBlobKey("blob-0".to_string());
+        let face_key = FontFaceKey("face-0".to_string());
+        let digest = FontDigest {
+            algorithm: "blake3".to_string(),
+            value: "0123456789abcdef".to_string(),
+        };
+        let data_ref = BinaryResourceRef {
+            kind: BinaryResourceKind::FontBlob,
+            id: "font:blake3:4:0123456789abcdef".to_string(),
+        };
+        resources.font_resources_mut().blobs.push(FontBlobResource {
+            id: blob_key.clone(),
+            digest: Some(digest.clone()),
+            source: FontResourceSource::Embedded,
+            data_ref: Some(data_ref.clone()),
+            portability: FontPortability::PortableBlob { digest, data_ref },
+        });
+        resources.font_resources_mut().faces.push(FontFaceResource {
+            id: face_key,
+            blob_key,
+            face_index: 0,
+            postscript_name: None,
+            family_names: Vec::new(),
+            style_names: Vec::new(),
+            weight_class: None,
+            width_class: None,
+            italic: None,
+        });
+        resources
+    }
+
+    fn portable_glyph_run(orientation: GlyphRunOrientation) -> LayerGlyphRunPaint {
+        let mut variant = PaintVariantMeta::text_run_default("text-0");
+        variant.variant_id = "glyphRun".to_string();
+        variant.variant_kind = TextVariantKind::GlyphRun;
+        variant.is_default_fallback = false;
+        variant.requires = vec!["fontResources".to_string(), "text.glyphRun".to_string()];
+        variant.quality = Some(TextVariantQuality::Exact);
+
+        LayerGlyphRunPaint {
+            source: TextSourceSpan {
+                id: TextSourceId(0),
+                utf8_range: TextSourceRange::new(0, 1),
+                utf16_range: TextSourceRange::new(0, 1),
+                stable_source_key: None,
+            },
+            variant,
+            paint_style: PaintTextStyle::from(&TextStyle {
+                font_family: "Test".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            }),
+            shape_key: ShapeKey {
+                font_instance: FontInstanceKey {
+                    face_key: FontFaceKey("face-0".to_string()),
+                    size_px: 12.0,
+                    variations: Vec::new(),
+                    synthetic_bold: false,
+                    synthetic_italic: false,
+                },
+                direction: TextDirection::Ltr,
+                writing_mode: WritingMode::HorizontalTb,
+                script: Some(ScriptTag("DFLT".to_string())),
+                language: None,
+                features: Vec::new(),
+                shaping_engine: ShapingEngineId("test".to_string()),
+                fallback_policy: FontFallbackPolicyId("none".to_string()),
+            },
+            placement: crate::paint::TextRunPlacement {
+                run_to_page: LayerAffineTransform {
+                    a: 1.0,
+                    b: 0.0,
+                    c: 0.0,
+                    d: 1.0,
+                    e: 0.0,
+                    f: 0.0,
+                },
+                baseline_y: 0.0,
+            },
+            glyph_ids: vec![42],
+            positions: vec![LayerPoint { x: 0.0, y: 0.0 }],
+            advances: None,
+            clusters: vec![GlyphCluster {
+                source_range_utf8: TextSourceRange::new(0, 1),
+                source_range_utf16: Some(TextSourceRange::new(0, 1)),
+                text_range_utf8: Some(TextSourceRange::new(0, 1)),
+                glyph_range: GlyphRange::new(0, 1),
+                flags: Vec::new(),
+            }],
+            direction: TextDirection::Ltr,
+            bidi_level: None,
+            writing_mode: WritingMode::HorizontalTb,
+            orientation,
+            glyph_transforms: None,
+            diagnostics: crate::paint::GlyphRunDiagnostics {
+                quality: TextVariantQuality::Exact,
+                replay_eligibility: GlyphRunReplayEligibility::Portable,
+                strict_visual_eligible: true,
+                max_origin_delta_px: 0.0,
+                max_advance_delta_px: 0.0,
+                max_residual_after_adjustment_px: 0.0,
+                cluster_mismatch_count: 0,
+                missing_glyph_count: 0,
+                used_fallback_font_count: 0,
+                reason: None,
+            },
+        }
     }
 
     fn solid_png(color: [u8; 4]) -> Vec<u8> {
@@ -1242,6 +1314,28 @@ mod tests {
             .write_to(&mut cursor, ImageFormat::Png)
             .expect("encode png");
         cursor.into_inner()
+    }
+
+    #[test]
+    fn native_skia_keeps_glyph_run_disabled_until_blob_typeface_replay_exists() {
+        let resources = portable_font_resources();
+        let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+
+        assert!(native_skia_glyph_run_contract_is_replayable(
+            &run, &resources
+        ));
+        assert!(!native_skia_can_replay_glyph_run(&run, &resources));
+    }
+
+    #[test]
+    fn native_skia_rejects_vertical_glyph_run_contract_for_now() {
+        let resources = portable_font_resources();
+        let run = portable_glyph_run(GlyphRunOrientation::VerticalUpright);
+
+        assert!(!native_skia_glyph_run_contract_is_replayable(
+            &run, &resources
+        ));
+        assert!(!native_skia_can_replay_glyph_run(&run, &resources));
     }
 
     fn solid_rect_tree(
