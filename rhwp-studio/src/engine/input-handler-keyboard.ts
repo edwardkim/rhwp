@@ -904,10 +904,10 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
   switch (e.key.toLowerCase()) {
     case 'backspace': {
       e.preventDefault();
-      if (e.altKey) {
-        deleteWordBackward.call(this);
-      } else {
+      if (e.metaKey) {
         deleteToLineStart.call(this);
+      } else {
+        deleteWordBackward.call(this);
       }
       break;
     }
@@ -947,13 +947,12 @@ export function handleSelectAll(this: any): void {
   this.updateCaret();
 }
 
-/** Cmd/Ctrl+Backspace: 현재 위치에서 줄 시작까지 삭제 */
+/** Cmd+Backspace (macOS): 현재 위치에서 줄 시작까지 삭제 */
 function deleteToLineStart(this: any): void {
   if (this.cursor.hasSelection()) {
     this.deleteSelection();
     return;
   }
-  const pos = this.cursor.getPosition();
   this.cursor.setAnchor();
   this.cursor.moveToLineStart();
   if (this.cursor.hasSelection()) {
@@ -961,35 +960,43 @@ function deleteToLineStart(this: any): void {
   }
 }
 
-/** Alt/Option+Backspace: 이전 단어 경계까지 삭제 */
+/** Ctrl+Backspace (Win/Linux) / Alt+Backspace (macOS): 이전 단어 경계까지 삭제 */
 function deleteWordBackward(this: any): void {
   if (this.cursor.hasSelection()) {
     this.deleteSelection();
     return;
   }
   const pos = this.cursor.getPosition();
-  const { sectionIndex: sec, paragraphIndex: para, charOffset } = pos;
+  const inCell = this.cursor.isInCell();
+  const charOffset = inCell ? (pos.cellCharOffset ?? pos.charOffset) : pos.charOffset;
   if (charOffset === 0) {
-    // 문단 시작 → 일반 Backspace와 동일 (이전 문단과 병합)
-    this.handleBackspace(pos, this.cursor.isInCell());
+    this.handleBackspace(pos, inCell);
     return;
   }
-  const wordStart = findWordBoundaryBackward(this.wasm, sec, para, charOffset);
+  const text = getTextBeforeCursor(this.wasm, pos, inCell, charOffset);
+  const wordStart = findWordBoundaryInText(text);
   if (wordStart < charOffset) {
     this.cursor.setAnchor();
-    this.cursor.moveTo({ ...pos, charOffset: wordStart });
+    const target = inCell
+      ? { ...pos, cellCharOffset: wordStart, charOffset: wordStart }
+      : { ...pos, charOffset: wordStart };
+    this.cursor.moveTo(target);
     this.deleteSelection();
   }
 }
 
-/** 문단 텍스트에서 이전 단어 경계를 찾는다 */
-function findWordBoundaryBackward(wasm: WasmBridge, sec: number, para: number, offset: number): number {
-  if (offset <= 0) return 0;
-  const text = wasm.getTextRange(sec, para, 0, offset);
+function getTextBeforeCursor(wasm: WasmBridge, pos: any, inCell: boolean, offset: number): string {
+  if (inCell && pos.parentParaIndex != null && pos.controlIndex != null && pos.cellIndex != null && pos.cellParaIndex != null) {
+    try {
+      return wasm.getTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.cellParaIndex, 0, offset);
+    } catch { /* fallback */ }
+  }
+  return wasm.getTextRange(pos.sectionIndex, pos.paragraphIndex, 0, offset);
+}
+
+function findWordBoundaryInText(text: string): number {
   let i = text.length - 1;
-  // 1) 커서 직전의 공백/구두점 건너뛰기
   while (i >= 0 && isWordSeparator(text[i])) i--;
-  // 2) 단어 문자 건너뛰기
   while (i >= 0 && !isWordSeparator(text[i])) i--;
   return i + 1;
 }
