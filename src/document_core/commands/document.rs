@@ -61,15 +61,11 @@ impl DocumentCore {
         let check_textrun_reflow = matches!(source_format, crate::parser::FileFormat::Hwpx);
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
-        // lineSegArray가 없는 문단(line_height=0)에 대해 합성 LineSeg 생성
-        // HWPX에서 lineSegArray 누락 시 기본값(모든 필드 0)이 들어가므로,
-        // compose 전에 올바른 line_height/line_spacing을 계산해야 줄바꿈·높이가 정상 동작한다.
-        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI);
-
         // HWPX → HWP 라운드트립 일관성 normalize (#314):
         // HWPX 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
         // 1) char_shapes 빈 paragraph 에 default [(0,0)] 추가 (HWP 스펙상 최소 1개 요구)
         // 2) control_mask 를 controls 기반으로 재계산
+        // NOTE: reflow보다 먼저 실행해야 char_shapes 참조가 유효함
         if matches!(source_format, crate::parser::FileFormat::Hwpx) {
             Self::normalize_hwpx_paragraphs(&mut document);
             // HWPX 파서는 SectionDef 컨트롤을 문단 controls에 넣지 않음.
@@ -77,6 +73,12 @@ impl DocumentCore {
             use crate::document_core::converters::hwpx_to_hwp::convert_hwpx_to_hwp_ir;
             convert_hwpx_to_hwp_ir(&mut document);
         }
+
+        // lineSegArray가 없는 문단(line_height=0)에 대해 합성 LineSeg 생성
+        // HWPX에서 lineSegArray 누락 시 기본값(모든 필드 0)이 들어가므로,
+        // compose 전에 올바른 line_height/line_spacing을 계산해야 줄바꿈·높이가 정상 동작한다.
+        // normalize 이후 실행하여 char_shapes가 채워진 상태에서 reflow
+        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI);
 
         // 초기 상태(properties bit 15 == 0) 누름틀의 안내문 텍스트를 삭제하여 빈 필드로 정규화
         // (한컴에서 메모 추가 시 안내문 텍스트가 필드 값으로 삽입됨 — compose 전에 제거해야 정합성 유지)
@@ -378,7 +380,21 @@ impl DocumentCore {
     /// 문단의 LineSeg가 합성(reflow)이 필요한지 판단한다.
     /// line_segs가 1개이고 line_height가 0이면 lineSegArray 누락 상태.
     fn needs_line_seg_reflow(para: &crate::model::paragraph::Paragraph) -> bool {
-        para.line_segs.len() == 1 && para.line_segs[0].line_height == 0
+        // 기존 조건: lineseg 1개 + line_height=0 (HWPX 기본값)
+        if para.line_segs.len() == 1 && para.line_segs[0].line_height == 0 {
+            return true;
+        }
+        // 추가: 텍스트가 있는데 line_segs가 비어있음 (HWPX 표 셀 등)
+        if !para.text.is_empty() && para.line_segs.is_empty() {
+            return true;
+        }
+        // 추가: 모든 line_segs의 line_height가 0 (복수 lineseg인데 전부 0)
+        if !para.line_segs.is_empty()
+            && para.line_segs.iter().all(|s| s.line_height == 0)
+        {
+            return true;
+        }
+        false
     }
 
     /// 사용자 명시 요청에 의한 더 넓은 reflow 판정 (#177).
