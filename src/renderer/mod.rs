@@ -556,6 +556,7 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     if font_family.contains("굴림체") || font_family.contains("바탕체")
         || lower.contains("gulimche") || lower.contains("batangche")
         || lower.contains("coding") || lower.contains("courier")
+        || lower.contains("mono")
     {
         // Monospace: Windows → 오픈소스 → generic
         return "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
@@ -569,10 +570,11 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // AppleMyungjo 보다 앞에 두어야 macOS Chrome 에서 CJK 글리프 bold 매칭 성공.
         return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR',serif";
     }
-    // 세리프 키워드 (영문)
+    // 세리프 키워드 (영문) — "serif" 포함 but "sans-serif" 제외
     if lower.contains("times") || lower.contains("hymjre")
         || lower.contains("palatino") || lower.contains("georgia")
         || lower.contains("batang") || lower.contains("gungsuh")
+        || (lower.contains("serif") && !lower.contains("sans"))
     {
         return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR',serif";
     }
