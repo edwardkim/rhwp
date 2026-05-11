@@ -511,6 +511,21 @@ mod tests {
     }
 
     #[test]
+    fn test_html_draw_text_medium_weight() {
+        let mut renderer = HtmlRenderer::new();
+        renderer.begin_page(800.0, 600.0);
+        renderer.draw_text("중고딕", 10.0, 20.0, &TextStyle {
+            font_size: 14.0,
+            font_family: "HY중고딕".to_string(),
+            bold: false,
+            ..Default::default()
+        });
+        let output = renderer.output();
+        assert!(output.contains("font-weight:500"), "중고딕 계열은 font-weight:500이어야 함");
+        assert!(!output.contains("font-weight:bold"));
+    }
+
+    #[test]
     fn test_html_draw_rect() {
         let mut renderer = HtmlRenderer::new();
         renderer.begin_page(800.0, 600.0);
