@@ -3002,7 +3002,7 @@ impl LayoutEngine {
 /// **Supplementary PUA-A 저영역 (0xF0000~0xF00CF)** — 한컴 자체 PUA 저영역.
 ///   요약형 문항 화살표 등 시각 마커. Task #588 의 한컴 PDF 임베디드 폰트
 ///   글리프 외곽 분석 + 정답지 시각 검증으로 매핑 확정.
-pub(crate) fn map_pua_bullet_char(ch: char) -> char {
+pub fn map_pua_bullet_char(ch: char) -> char {
     let code = ch as u32;
 
     // Supplementary PUA-A 저영역 — 한컴 자체 영역 (Task #588 한컴 정답지 정합)

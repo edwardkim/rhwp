@@ -255,7 +255,10 @@ mod border_rendering;
 mod utils;
 
 pub(crate) use text_measurement::{resolved_to_text_style, estimate_text_width, estimate_text_width_unrounded, compute_char_positions, is_cjk_char, split_into_clusters, find_next_tab_stop, extract_tab_leaders_with_extended};
-pub(crate) use paragraph_layout::{map_pua_bullet_char, ensure_min_baseline};
+pub(crate) use paragraph_layout::ensure_min_baseline;
+// [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
+// (PUA substitution 매핑 정합) — pub 노출.
+pub use paragraph_layout::map_pua_bullet_char;
 pub(crate) use utils::{resolve_numbering_id, find_bin_data, drawing_to_shape_style, drawing_to_line_style, layout_rect_to_bbox, format_page_number};
 pub(crate) use border_rendering::{border_width_to_px, create_border_line_nodes};
 
