@@ -796,7 +796,7 @@ export class CursorState {
   enterBlockSelectionMode(): void {
     this._blockSelectionMode = true;
     this._expandPhase = 0;
-    this.setAnchor();
+    this.anchor = { ...this.position };
   }
 
   exitBlockSelectionMode(): void {
