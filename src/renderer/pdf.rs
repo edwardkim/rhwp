@@ -22,10 +22,26 @@ fn create_fontdb() -> usvg::fontdb::Database {
     fontdb
 }
 
-/// SVG에서 없는 한글 폰트명에 fallback 추가
+/// SVG에서 HWP 한글 폰트명 → 시스템 폰트명 fallback 추가
+/// HWPX 문서의 폰트 이름과 시스템에 설치된 폰트 이름이 다를 수 있으므로
+/// 대체 폰트를 지정하여 정확한 렌더링을 보장한다.
 #[cfg(not(target_arch = "wasm32"))]
 fn add_font_fallbacks(svg: &str) -> String {
-    svg.replace("font-family=\"휴먼명조\"", "font-family=\"휴먼명조, 바탕, serif\"")
+    svg // 한컴 기본 폰트
+       .replace("font-family=\"한컴바탕\"", "font-family=\"한컴바탕, HCR Batang, Haansoft Batang, 바탕, serif\"")
+       .replace("font-family=\"한컴돋움\"", "font-family=\"한컴돋움, HCR Dotum, Haansoft Dotum, 돋움, sans-serif\"")
+       .replace("font-family=\"함초롬바탕\"", "font-family=\"함초롬바탕, HCR Batang, Haansoft Batang, 바탕, serif\"")
+       .replace("font-family=\"함초롬돋움\"", "font-family=\"함초롬돋움, HCR Dotum, Haansoft Dotum, 돋움, sans-serif\"")
+       // HY 시리즈
+       .replace("font-family=\"HY견고딕\"", "font-family=\"HY견고딕, HYGothic-Medium, HYgprM, 돋움, sans-serif\"")
+       .replace("font-family=\"HY견명조\"", "font-family=\"HY견명조, HYmjrE, 바탕, serif\"")
+       .replace("font-family=\"HY신명조\"", "font-family=\"HY신명조, HYSinMyeongJo-Medium, 바탕, serif\"")
+       .replace("font-family=\"HY중고딕\"", "font-family=\"HY중고딕, HYGothic-Medium, HYgtrE, 돋움, sans-serif\"")
+       .replace("font-family=\"HY헤드라인M\"", "font-family=\"HY헤드라인M, HYHeadLine-Medium, HYgtrE, 돋움, sans-serif\"")
+       // 휴먼 시리즈
+       .replace("font-family=\"휴먼명조\"", "font-family=\"휴먼명조, 휴먼모음T, 바탕, serif\"")
+       .replace("font-family=\"휴먼고딕\"", "font-family=\"휴먼고딕, 휴먼모음T, 돋움, sans-serif\"")
+       // 기타
        .replace("font-family=\"HCI Poppy\"", "font-family=\"HCI Poppy, 맑은 고딕, sans-serif\"")
 }
 
