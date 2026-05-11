@@ -892,8 +892,13 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
     return;
   }
 
-  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End 등 커서 이동)
+  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End, Ctrl+Delete 등)
   switch (e.key.toLowerCase()) {
+    case 'delete': {
+      e.preventDefault();
+      deleteWordForward.call(this);
+      break;
+    }
     case 'home': {
       e.preventDefault();
       if (e.shiftKey) {
@@ -928,6 +933,43 @@ export function handleSelectAll(this: any): void {
   this.cursor.setAnchor();
   this.cursor.moveToDocumentEnd();
   this.updateCaret();
+}
+
+/** Ctrl+Delete: 다음 단어 경계까지 삭제 */
+function deleteWordForward(this: any): void {
+  if (this.cursor.hasSelection()) {
+    this.deleteSelection();
+    return;
+  }
+  const pos = this.cursor.getPosition();
+  const { sectionIndex: sec, paragraphIndex: para, charOffset } = pos;
+  const paraLen = this.wasm.getParagraphLength(sec, para);
+  if (charOffset >= paraLen) {
+    this.handleDelete(pos, this.cursor.isInCell());
+    return;
+  }
+  const wordEnd = findWordBoundaryForward(this.wasm, sec, para, charOffset, paraLen);
+  if (wordEnd > charOffset) {
+    this.cursor.setAnchor();
+    this.cursor.moveTo({ ...pos, charOffset: wordEnd });
+    this.deleteSelection();
+  }
+}
+
+function findWordBoundaryForward(wasm: WasmBridge, sec: number, para: number, offset: number, paraLen: number): number {
+  if (offset >= paraLen) return paraLen;
+  const remaining = paraLen - offset;
+  const text = wasm.getTextRange(sec, para, offset, remaining);
+  let i = 0;
+  // 1) 단어 문자 건너뛰기
+  while (i < text.length && !isWordSep(text[i])) i++;
+  // 2) 공백/구두점 건너뛰기
+  while (i < text.length && isWordSep(text[i])) i++;
+  return offset + i;
+}
+
+function isWordSep(ch: string): boolean {
+  return /[\s　.,;:!?'"()[\]{}<>\/\\|@#$%^&*~`+=\-_]/.test(ch);
 }
 
 export function onCopy(this: any, e: ClipboardEvent): void {
