@@ -9,6 +9,9 @@ export class CursorState {
   /** 수직 이동 시 원래 X 좌표를 기억 (§6.4.4 preferred X) */
   private preferredX: number | null = null;
 
+  /** 줄 끝 이동 후 경계 위치 판별용 — soft-wrap 줄 경계에서 charEnd == 다음 줄 charStart 동일 문제 해결 */
+  private atLineEnd = false;
+
   /** 선택 시작점 (anchor). null이면 선택 없음 */
   private anchor: DocumentPosition | null = null;
 
@@ -172,12 +175,14 @@ export class CursorState {
   /** 커서를 문서 위치로 이동한다 */
   moveTo(pos: DocumentPosition): void {
     this.position = { ...pos };
+    this.atLineEnd = false;
     this.updateRect();
   }
 
   /** preferredX 초기화 (수평 이동/클릭/편집 시) */
   resetPreferredX(): void {
     this.preferredX = null;
+    this.atLineEnd = false;
   }
 
   // ─── 수평 이동 ──────────────────────────────────────────
@@ -185,6 +190,7 @@ export class CursorState {
   /** 커서를 좌/우로 이동한다 — 문서 트리 DFS 기반 통합 이동 */
   moveHorizontal(delta: number): void {
     this.preferredX = null;
+    this.atLineEnd = false;
 
     // 표 셀 내부는 기존 로직 유지 (Tab 셀 이동과 연동)
     if (this.isInCell() && !this.isInTextBox()) {
@@ -428,7 +434,22 @@ export class CursorState {
   moveToLineStart(): void {
     this.preferredX = null;
     try {
-      const lineInfo = this.getLineInfoAtCursor();
+      const pos = this.position;
+      let lineInfo = this.getLineInfoAtCursor();
+      // #785: soft-wrap 줄 경계 — charEnd(line N) == charStart(line N+1) 동일 위치.
+      // End 키 후 Home 키 시 getLineInfo 가 다음 줄로 판정하여 charStart = 현재 위치 → 미이동.
+      // atLineEnd 플래그가 설정된 상태에서 현재 위치가 줄 시작과 동일하면 이전 줄로 판정.
+      if (this.atLineEnd && pos.charOffset === lineInfo.charStart && pos.charOffset > 0) {
+        const prevLineInfo = this.isInCell()
+          ? this.wasm.getLineInfoInCell(
+              pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
+              pos.cellIndex!, pos.cellParaIndex!, pos.charOffset - 1)
+          : this.wasm.getLineInfo(pos.sectionIndex, pos.paragraphIndex, pos.charOffset - 1);
+        if (prevLineInfo.charEnd === pos.charOffset) {
+          lineInfo = prevLineInfo;
+        }
+      }
+      this.atLineEnd = false;
       this.position = { ...this.position, charOffset: lineInfo.charStart };
       this.updateRect();
     } catch (e) {
@@ -442,6 +463,7 @@ export class CursorState {
     try {
       const lineInfo = this.getLineInfoAtCursor();
       this.position = { ...this.position, charOffset: lineInfo.charEnd };
+      this.atLineEnd = true;
       this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToLineEnd 실패:', e);
@@ -466,6 +488,7 @@ export class CursorState {
   /** 문서 시작으로 이동 (Ctrl+Home) */
   moveToDocumentStart(): void {
     this.preferredX = null;
+    this.atLineEnd = false;
     this.position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
     this.updateRect();
   }
@@ -473,6 +496,7 @@ export class CursorState {
   /** 문서 끝으로 이동 (Ctrl+End) */
   moveToDocumentEnd(): void {
     this.preferredX = null;
+    this.atLineEnd = false;
     try {
       // 마지막 구역의 마지막 문단 끝
       const sec = 0; // 현재 단일 구역 가정
@@ -524,6 +548,7 @@ export class CursorState {
   moveToCellNext(): void {
     if (!this.isInCell()) return;
     this.preferredX = null;
+    this.atLineEnd = false;
 
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
@@ -551,6 +576,7 @@ export class CursorState {
   moveToCellPrev(): void {
     if (!this.isInCell()) return;
     this.preferredX = null;
+    this.atLineEnd = false;
 
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
