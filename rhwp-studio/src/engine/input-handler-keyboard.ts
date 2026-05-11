@@ -895,6 +895,7 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
   // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End, Ctrl+Delete 등)
   switch (e.key.toLowerCase()) {
     case 'delete': {
+      if (!e.ctrlKey) break;
       e.preventDefault();
       deleteWordForward.call(this);
       break;
@@ -942,13 +943,48 @@ function deleteWordForward(this: any): void {
     return;
   }
   const pos = this.cursor.getPosition();
+  const inCell = this.cursor.isInCell();
   const { sectionIndex: sec, paragraphIndex: para, charOffset } = pos;
-  const paraLen = this.wasm.getParagraphLength(sec, para);
+  // 필드 경계 보호
+  try {
+    const fi = this.wasm.getFieldInfoAt(pos);
+    if (fi.inField && charOffset >= fi.endCharIdx) return;
+  } catch { /* ignore */ }
+  let paraLen: number;
+  if (inCell && pos.parentParaIndex != null && pos.controlIndex != null && pos.cellIndex != null && pos.cellParaIndex != null) {
+    try {
+      paraLen = this.wasm.getCellParagraphLength(sec, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.cellParaIndex);
+    } catch { paraLen = this.wasm.getParagraphLength(sec, para); }
+  } else {
+    paraLen = this.wasm.getParagraphLength(sec, para);
+  }
   if (charOffset >= paraLen) {
-    this.handleDelete(pos, this.cursor.isInCell());
+    this.handleDelete(pos, inCell);
     return;
   }
-  const wordEnd = findWordBoundaryForward(this.wasm, sec, para, charOffset, paraLen);
+  let text: string;
+  const remaining = paraLen - charOffset;
+  if (inCell && pos.parentParaIndex != null && pos.controlIndex != null && pos.cellIndex != null && pos.cellParaIndex != null) {
+    try {
+      text = this.wasm.getTextInCell(sec, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, pos.cellParaIndex, charOffset, remaining);
+    } catch { text = this.wasm.getTextRange(sec, para, charOffset, remaining); }
+  } else {
+    text = this.wasm.getTextRange(sec, para, charOffset, remaining);
+  }
+  const delta = findWordEndInText(text);
+  const wordEnd = charOffset + delta;
+  // 필드 경계 클램프
+  try {
+    const fi = this.wasm.getFieldInfoAt(pos);
+    if (fi.inField && wordEnd > fi.endCharIdx) {
+      if (fi.endCharIdx > charOffset) {
+        this.cursor.setAnchor();
+        this.cursor.moveTo({ ...pos, charOffset: fi.endCharIdx });
+        this.deleteSelection();
+      }
+      return;
+    }
+  } catch { /* ignore */ }
   if (wordEnd > charOffset) {
     this.cursor.setAnchor();
     this.cursor.moveTo({ ...pos, charOffset: wordEnd });
@@ -956,16 +992,11 @@ function deleteWordForward(this: any): void {
   }
 }
 
-function findWordBoundaryForward(wasm: WasmBridge, sec: number, para: number, offset: number, paraLen: number): number {
-  if (offset >= paraLen) return paraLen;
-  const remaining = paraLen - offset;
-  const text = wasm.getTextRange(sec, para, offset, remaining);
+function findWordEndInText(text: string): number {
   let i = 0;
-  // 1) 단어 문자 건너뛰기
   while (i < text.length && !isWordSep(text[i])) i++;
-  // 2) 공백/구두점 건너뛰기
   while (i < text.length && isWordSep(text[i])) i++;
-  return offset + i;
+  return i;
 }
 
 function isWordSep(ch: string): boolean {
