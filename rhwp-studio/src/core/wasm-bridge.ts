@@ -228,6 +228,10 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
+  getSectionCount(): number {
+    return this.doc?.getSectionCount() ?? 0;
+  }
+
   getPageInfo(pageNum: number): PageInfo {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getPageInfo(pageNum));
@@ -365,6 +369,11 @@ export class WasmBridge {
   getColumnDef(sec: number): { columnCount: number; columnType: number; sameWidth: boolean; spacing: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).getColumnDef(sec));
+  }
+
+  insertNewNumber(sec: number, para: number, charOffset: number, startNum: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).insertNewNumber(sec, para, charOffset, startNum);
   }
 
   setColumnDef(sec: number, columnCount: number, columnType: number, sameWidth: number, spacingHu: number): string {

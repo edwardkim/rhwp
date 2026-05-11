@@ -3924,3 +3924,66 @@ mod resize_clamp_tests {
         assert_eq!(common.height, 8000);
     }
 }
+
+impl crate::document_core::DocumentCore {
+    pub fn insert_new_number_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        start_num: u16,
+    ) -> Result<String, crate::error::HwpError> {
+        use crate::model::control::{Control, NewNumber, AutoNumberType};
+        use crate::error::HwpError;
+
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)));
+        }
+
+        let new_number = NewNumber {
+            number_type: AutoNumberType::Page,
+            number: start_num,
+        };
+
+        self.document.sections[section_idx].raw_stream = None;
+        let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+
+        let insert_idx = {
+            let positions = crate::document_core::helpers::find_control_text_positions(paragraph);
+            let mut idx = paragraph.controls.len();
+            for (i, &pos) in positions.iter().enumerate() {
+                if pos > char_offset {
+                    idx = i;
+                    break;
+                }
+            }
+            idx
+        };
+
+        paragraph.controls.insert(insert_idx, Control::NewNumber(new_number));
+        paragraph.ctrl_data_records.insert(insert_idx, None);
+
+        if !paragraph.char_offsets.is_empty() {
+            let text_len = paragraph.text.chars().count();
+            let safe_offset = char_offset.min(text_len);
+            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
+                *co += 8;
+            }
+        }
+        paragraph.char_count += 8;
+        paragraph.control_mask |= 1u32 << 0x0012;
+        paragraph.has_para_text = true;
+
+        self.reflow_paragraph(section_idx, para_idx);
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        Ok(crate::document_core::helpers::json_ok_with(&format!(
+            "\"controlIdx\":{}", insert_idx
+        )))
+    }
+}

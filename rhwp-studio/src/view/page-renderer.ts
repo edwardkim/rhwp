@@ -56,8 +56,6 @@ export class PageRenderer {
     if (existingFront) existingFront.remove();
 
     const { behind, front } = this.getOverlayImages(pageIdx);
-    // Task #516 Stage 5.2 진단 로그 — 시각 판정 통과 후 제거
-    console.log(`[Task#516] applyOverlays page=${pageIdx} behind=${behind.length} front=${front.length}`);
     if (behind.length === 0 && front.length === 0) return;
 
     // 위치/크기 정합용 공통 정보
@@ -164,10 +162,6 @@ export class PageRenderer {
     const json = this.wasm.getPageLayerTree(pageIdx);
     const behind: OverlayImageInfo[] = [];
     const front: OverlayImageInfo[] = [];
-    // Task #516 진단 로그 (시각 판정 통과 후 제거)
-    const imageOpCount = (json.match(/"type":"image"/g) || []).length;
-    const wrapBehindCount = (json.match(/"wrap":"behindText"/g) || []).length;
-    console.log(`[Task#516] JSON image ops=${imageOpCount}, wrap=behindText=${wrapBehindCount}`);
     try {
       const wrapper = JSON.parse(json);
       // PageLayerTree JSON 의 트리는 wrapper.root 안에 있음.
@@ -179,7 +173,6 @@ export class PageRenderer {
     } catch (e) {
       console.warn('[PageRenderer] PageLayerTree JSON parse 실패:', e);
     }
-    console.log(`[Task#516] collected behind=${behind.length} front=${front.length}`);
     return { behind, front };
   }
 

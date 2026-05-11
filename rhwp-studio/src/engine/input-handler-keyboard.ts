@@ -997,7 +997,13 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       if (e.shiftKey) this.cursor.setAnchor();
       else this.cursor.clearSelection();
-      this.cursor.moveToDocumentStart();
+      // [Issue #784 후속] macOS Cmd+↑ = 문서 시작 (macOS 표준).
+      // Windows/Linux Ctrl+↑ = 이전 문단 (한컴 표준).
+      if (e.metaKey && !e.ctrlKey) {
+        this.cursor.moveToDocumentStart();
+      } else {
+        this.cursor.moveToParagraphBoundary(-1);
+      }
       this.updateCaret();
       break;
     }
@@ -1005,7 +1011,13 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       if (e.shiftKey) this.cursor.setAnchor();
       else this.cursor.clearSelection();
-      this.cursor.moveToDocumentEnd();
+      // [Issue #784 후속] macOS Cmd+↓ = 문서 끝 (macOS 표준).
+      // Windows/Linux Ctrl+↓ = 다음 문단 (한컴 표준).
+      if (e.metaKey && !e.ctrlKey) {
+        this.cursor.moveToDocumentEnd();
+      } else {
+        this.cursor.moveToParagraphBoundary(1);
+      }
       this.updateCaret();
       break;
     }
