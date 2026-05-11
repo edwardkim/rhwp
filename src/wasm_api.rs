@@ -95,7 +95,7 @@ fn scaled_canvas_extent(page_extent: f64, scale: f64) -> u32 {
 /// `Deref`/`DerefMut`를 통해 투명하게 접근한다.
 #[wasm_bindgen]
 pub struct HwpDocument {
-    core: DocumentCore,
+    pub(crate) core: DocumentCore,
 }
 
 impl std::ops::Deref for HwpDocument {
@@ -3777,6 +3777,18 @@ impl HwpDocument {
         match self.core.source_format {
             crate::parser::FileFormat::Hwpx => "hwpx".to_string(),
             _ => "hwp".to_string(),
+        }
+    }
+
+    /// HWPX 어댑터를 적용한다 (SectionDef 컨트롤 삽입 등).
+    /// PDF/SVG 내보내기 전에 호출하면 HWPX의 페이지 구성을 개선한다.
+    pub fn apply_hwpx_adapter(&mut self) {
+        if matches!(self.core.source_format, crate::parser::FileFormat::Hwpx) {
+            use crate::document_core::converters::hwpx_to_hwp::convert_hwpx_to_hwp_ir;
+            convert_hwpx_to_hwp_ir(&mut self.core.document);
+            // 어댑터 적용 후 페이지네이션 무효화 → 다음 render 시 자동 재계산
+            self.core.pagination.clear();
+            self.core.composed.clear();
         }
     }
 

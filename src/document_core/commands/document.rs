@@ -72,6 +72,10 @@ impl DocumentCore {
         // 2) control_mask 를 controls 기반으로 재계산
         if matches!(source_format, crate::parser::FileFormat::Hwpx) {
             Self::normalize_hwpx_paragraphs(&mut document);
+            // HWPX 파서는 SectionDef 컨트롤을 문단 controls에 넣지 않음.
+            // 페이지네이션에서 구역 경계를 정확히 인식하도록 SectionDef 삽입.
+            use crate::document_core::converters::hwpx_to_hwp::convert_hwpx_to_hwp_ir;
+            convert_hwpx_to_hwp_ir(&mut document);
         }
 
         // 초기 상태(properties bit 15 == 0) 누름틀의 안내문 텍스트를 삭제하여 빈 필드로 정규화
