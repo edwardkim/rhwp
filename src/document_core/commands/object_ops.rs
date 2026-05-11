@@ -240,9 +240,10 @@ impl DocumentCore {
                 }
                 _ => 0,
             };
-            return Ok(format!("{{\"ok\":true,\"captionCharOffset\":{}}}", char_offset));
+            Ok(format!("{{\"ok\":true,\"captionCharOffset\":{}}}", char_offset))
+        } else {
+            Ok("{\"ok\":true}".to_string())
         }
-        return Ok("{\"ok\":true}".to_string());
     }
 
     /// [Task #825] 머리말/꼬리말 안 그림 속성 변경.
