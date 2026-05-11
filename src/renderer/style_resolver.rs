@@ -615,6 +615,22 @@ pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
     )
 }
 
+pub(crate) fn is_medium_weight_face(font_family: &str) -> bool {
+    let primary = font_family.split(',').next().unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
+    let lower = primary.to_lowercase();
+    lower.contains("중고딕")
+        || lower.contains("태고딕")
+        || matches!(primary,
+            "HYMediumGothic" | "HYMedium"
+            | "HY중고딕" | "HY태고딕"
+            | "신명 중고딕" | "신명 태고딕"
+            | "한양중고딕"
+        )
+}
+
 /// ParaShape → ResolvedParaStyle 목록
 fn resolve_para_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedParaStyle> {
     doc_info
