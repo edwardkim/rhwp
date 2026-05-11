@@ -159,6 +159,10 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
+  getSectionCount(): number {
+    return this.doc?.getSectionCount() ?? 0;
+  }
+
   getPageInfo(pageNum: number): PageInfo {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getPageInfo(pageNum));
