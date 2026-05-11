@@ -747,7 +747,12 @@ impl WebCanvasRenderer {
                             LayerNodeKind::Leaf { ops } => {
                                 if ops.iter().all(|op| matches!(
                                     op,
-                                    PaintOp::TextRun { .. } | PaintOp::FootnoteMarker { .. }
+                                    PaintOp::TextRun { .. }
+                                        | PaintOp::CharOverlap { .. }
+                                        | PaintOp::TextControlMark { .. }
+                                        | PaintOp::TabLeader { .. }
+                                        | PaintOp::TextDecoration { .. }
+                                        | PaintOp::FootnoteMarker { .. }
                                 )) {
                                     return false;
                                 }
@@ -873,6 +878,10 @@ impl WebCanvasRenderer {
                             RenderNodeType::RawSvg(raw.clone()),
                             *bbox,
                         ),
+                        PaintOp::CharOverlap { .. }
+                        | PaintOp::TextControlMark { .. }
+                        | PaintOp::TabLeader { .. }
+                        | PaintOp::TextDecoration { .. } => continue,
                     };
                     self.render_node(&render_node);
                 }

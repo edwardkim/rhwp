@@ -8,7 +8,8 @@ use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use crate::paint::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
-    RenderProfile, LAYER_TREE_SCHEMA,
+    RenderProfile, TextDecorationKind, TextSourceAnnotation, TextSourceEntry, TextSourceId,
+    TextSourceRange, TextSourceSpan, TextSourceTable, LAYER_TREE_SCHEMA,
 };
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
@@ -23,9 +24,15 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"schemaVersion\":{},\"resourceTableVersion\":{},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
             LAYER_TREE_SCHEMA.schema_version,
+            LAYER_TREE_SCHEMA.schema_minor_version,
+            LAYER_TREE_SCHEMA.schema_version,
+            LAYER_TREE_SCHEMA.schema_minor_version,
             LAYER_TREE_SCHEMA.resource_table_version,
+            LAYER_TREE_SCHEMA.resource_table_minor_version,
+            LAYER_TREE_SCHEMA.resource_table_version,
+            LAYER_TREE_SCHEMA.resource_table_minor_version,
             json_escape(LAYER_TREE_SCHEMA.unit),
             json_escape(LAYER_TREE_SCHEMA.coordinate_system),
             json_escape(render_profile_str(self.profile)),
@@ -37,14 +44,87 @@ impl PageLayerTree {
             self.page_width,
             self.page_height
         );
-        self.root.write_json(&mut buf);
+        let mut text_source_state = TextSourceExportState::default();
+        self.root.write_json(&mut buf, &mut text_source_state);
+        buf.push_str(",\"textSources\":");
+        write_text_source_entries(&mut buf, &self.text_sources);
+        write_text_export_metadata(&mut buf, &self.root);
         buf.push('}');
         buf
     }
 }
 
+fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
+    let externalized_visuals = externalized_text_visuals(root);
+    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.projectionKind\",\"text.legacyVisuals\"");
+    if externalized_visuals.contains(&"charOverlap") {
+        buf.push_str(",\"text.charOverlapOp\"");
+    }
+    if externalized_visuals.contains(&"controlMarks") {
+        buf.push_str(",\"text.controlMarkOp\"");
+    }
+    if externalized_visuals.contains(&"tabLeaders") {
+        buf.push_str(",\"text.tabLeaderOp\"");
+    }
+    if externalized_visuals.contains(&"decorations") {
+        buf.push_str(",\"text.decorationOp\"");
+    }
+    buf.push_str("],\"optionalFeatures\":[],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"],\"variantSelection\":\"exclusiveVariantSet\",\"sourceTextPreserved\":true,\"clusterEncoding\":[\"utf8\",\"utf16\"],\"fallbackRequired\":true,\"placementAuthority\":\"compatibilityProjection\",\"externalizedVisuals\":[");
+    for (idx, visual) in externalized_visuals.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        buf.push_str(&json_escape(visual));
+    }
+    buf.push_str("]}");
+}
+
+fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
+    let mut has_char_overlap = false;
+    let mut has_control_marks = false;
+    let mut has_tab_leaders = false;
+    let mut has_decorations = false;
+    let mut stack = vec![root];
+    while let Some(node) = stack.pop() {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    stack.push(child);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } => stack.push(child),
+            LayerNodeKind::Leaf { ops } => {
+                has_char_overlap |= ops
+                    .iter()
+                    .any(|op| matches!(op, PaintOp::CharOverlap { .. }));
+                has_control_marks |= ops
+                    .iter()
+                    .any(|op| matches!(op, PaintOp::TextControlMark { .. }));
+                has_tab_leaders |= ops.iter().any(|op| matches!(op, PaintOp::TabLeader { .. }));
+                has_decorations |= ops
+                    .iter()
+                    .any(|op| matches!(op, PaintOp::TextDecoration { .. }));
+            }
+        }
+    }
+    let mut visuals = Vec::new();
+    if has_char_overlap {
+        visuals.push("charOverlap");
+    }
+    if has_control_marks {
+        visuals.push("controlMarks");
+    }
+    if has_tab_leaders {
+        visuals.push("tabLeaders");
+    }
+    if has_decorations {
+        visuals.push("decorations");
+    }
+    visuals
+}
+
 impl LayerNode {
-    fn write_json(&self, buf: &mut String) {
+    fn write_json(&self, buf: &mut String, text_sources: &mut TextSourceExportState) {
         buf.push('{');
         buf.push_str("\"bounds\":");
         write_bbox(buf, self.bounds);
@@ -69,7 +149,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    child.write_json(buf);
+                    child.write_json(buf, text_sources);
                 }
                 buf.push(']');
             }
@@ -86,15 +166,16 @@ impl LayerNode {
                     json_escape(clip_kind_str(*clip_kind))
                 );
                 buf.push_str(",\"child\":");
-                child.write_json(buf);
+                child.write_json(buf, text_sources);
             }
             LayerNodeKind::Leaf { ops } => {
                 buf.push_str(",\"kind\":\"leaf\",\"ops\":[");
+                let leaf_visuals = LeafTextVisualOps::from_ops(ops);
                 for (idx, op) in ops.iter().enumerate() {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    op.write_json(buf);
+                    op.write_json(buf, text_sources, leaf_visuals);
                 }
                 buf.push(']');
             }
@@ -104,7 +185,12 @@ impl LayerNode {
 }
 
 impl PaintOp {
-    fn write_json(&self, buf: &mut String) {
+    fn write_json(
+        &self,
+        buf: &mut String,
+        text_sources: &mut TextSourceExportState,
+        leaf_visuals: LeafTextVisualOps,
+    ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
                 buf.push('{');
@@ -144,16 +230,28 @@ impl PaintOp {
                 buf.push('{');
                 buf.push_str("\"type\":\"textRun\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                let source = text_sources.next_text_run_span(run);
                 let _ = write!(
                     buf,
-                    ",\"text\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{}",
+                    ",\"text\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"orientation\":{},\"projectionKind\":{},\"clusterBasis\":\"legacyPosition\"",
                     json_escape(&run.text),
                     run.baseline,
                     run.rotation,
                     run.is_vertical,
+                    json_escape(text_orientation_str(run)),
+                    json_escape(text_projection_kind_str(run)),
                 );
+                buf.push_str(",\"placement\":");
+                write_text_run_placement(buf, *bbox, run);
+                buf.push_str(",\"clusters\":");
+                write_text_clusters(buf, run);
+                buf.push_str(",\"source\":");
+                write_text_source_span(buf, &source);
                 buf.push_str(",\"style\":");
                 write_text_style(buf, &run.style);
+                buf.push_str(",\"paintStyle\":");
+                write_text_style(buf, &run.style);
+                write_text_legacy_visuals(buf, run, leaf_visuals);
                 buf.push_str(",\"positions\":");
                 write_text_positions(buf, run);
                 if !run.style.tab_leaders.is_empty() {
@@ -168,6 +266,83 @@ impl PaintOp {
                 write_field_marker(buf, run.field_marker);
                 buf.push_str(",\"charOverlap\":");
                 write_char_overlap(buf, run.char_overlap.as_ref());
+                buf.push('}');
+            }
+            PaintOp::CharOverlap { bbox, run } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"charOverlap\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                if let Some(source) = text_sources.last_source.as_ref() {
+                    buf.push_str(",\"source\":");
+                    write_text_source_span(buf, source);
+                }
+                let _ = write!(
+                    buf,
+                    ",\"text\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"orientation\":{}",
+                    json_escape(&run.text),
+                    run.baseline,
+                    run.rotation,
+                    run.is_vertical,
+                    json_escape(text_orientation_str(run)),
+                );
+                buf.push_str(",\"style\":");
+                write_text_style(buf, &run.style);
+                buf.push_str(",\"paintStyle\":");
+                write_text_style(buf, &run.style);
+                buf.push_str(",\"positions\":");
+                write_text_positions(buf, run);
+                buf.push_str(",\"charOverlap\":");
+                write_char_overlap(buf, run.char_overlap.as_ref());
+                buf.push('}');
+            }
+            PaintOp::TextControlMark { bbox, run } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"textControlMark\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                if let Some(source) = text_sources.last_source.as_ref() {
+                    buf.push_str(",\"source\":");
+                    write_text_source_span(buf, source);
+                }
+                let _ = write!(
+                    buf,
+                    ",\"fieldMarker\":{},\"isParaEnd\":{},\"isLineBreakEnd\":{}",
+                    json_escape(field_marker_str(run.field_marker)),
+                    run.is_para_end,
+                    run.is_line_break_end,
+                );
+                if let FieldMarkerType::ShapeMarker(index) = run.field_marker {
+                    let _ = write!(buf, ",\"shapeMarkerIndex\":{}", index);
+                }
+                buf.push('}');
+            }
+            PaintOp::TabLeader { bbox, run } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"tabLeader\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                if let Some(source) = text_sources.last_source.as_ref() {
+                    buf.push_str(",\"source\":");
+                    write_text_source_span(buf, source);
+                }
+                buf.push_str(",\"leaders\":");
+                write_tab_leaders(buf, &run.style.tab_leaders);
+                let _ = write!(
+                    buf,
+                    ",\"color\":{},\"fontSize\":{:.3},\"baseline\":{:.3}}}",
+                    json_escape(&color_ref_to_css(run.style.color)),
+                    run.style.font_size,
+                    run.baseline,
+                );
+            }
+            PaintOp::TextDecoration { bbox, run, kind } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"textDecoration\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                if let Some(source) = text_sources.last_source.as_ref() {
+                    buf.push_str(",\"source\":");
+                    write_text_source_span(buf, source);
+                }
+                buf.push_str(",\"decoration\":");
+                write_text_decoration(buf, *kind, run);
                 buf.push('}');
             }
             PaintOp::FootnoteMarker { bbox, marker } => {
@@ -279,8 +454,14 @@ impl PaintOp {
                         } else {
                             (mime, std::borrow::Cow::Borrowed(data.as_slice()))
                         };
-                    let base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
-                    let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":{}", final_mime, json_escape(&base64_data));
+                    let base64_data =
+                        base64::engine::general_purpose::STANDARD.encode(&*final_data);
+                    let _ = write!(
+                        buf,
+                        ",\"mime\":\"{}\",\"base64\":{}",
+                        final_mime,
+                        json_escape(&base64_data)
+                    );
                 }
                 if let Some(fill_mode) = image.fill_mode {
                     let _ = write!(
@@ -392,6 +573,180 @@ fn write_bbox(buf: &mut String, bbox: BoundingBox) {
     );
 }
 
+#[derive(Default)]
+struct TextSourceExportState {
+    next_id: u32,
+    last_source: Option<TextSourceSpan>,
+}
+
+impl TextSourceExportState {
+    fn next_text_run_span(&mut self, run: &TextRunNode) -> TextSourceSpan {
+        let span = TextSourceSpan {
+            id: TextSourceId(self.next_id),
+            utf8_range: TextSourceRange::new(0, run.text.len() as u32),
+            utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
+            stable_source_key: stable_text_source_key(run),
+        };
+        self.next_id = self.next_id.saturating_add(1);
+        self.last_source = Some(span.clone());
+        span
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct LeafTextVisualOps {
+    char_overlap: bool,
+    control_marks: bool,
+    tab_leaders: bool,
+    decorations: bool,
+}
+
+impl LeafTextVisualOps {
+    fn from_ops(ops: &[PaintOp]) -> Self {
+        let mut visuals = Self::default();
+        for op in ops {
+            match op {
+                PaintOp::CharOverlap { .. } => visuals.char_overlap = true,
+                PaintOp::TextControlMark { .. } => visuals.control_marks = true,
+                PaintOp::TabLeader { .. } => visuals.tab_leaders = true,
+                PaintOp::TextDecoration { .. } => visuals.decorations = true,
+                _ => {}
+            }
+        }
+        visuals
+    }
+}
+
+fn stable_text_source_key(run: &TextRunNode) -> Option<String> {
+    let section = run.section_index?;
+    let para = run.para_index?;
+    let char_start = run.char_start.unwrap_or(0);
+    let mut key = format!("section:{section}/para:{para}/char:{char_start}");
+    if let Some(cell) = &run.cell_context {
+        let path = cell
+            .path
+            .iter()
+            .map(|entry| {
+                format!(
+                    "{}:{}:{}:{}",
+                    entry.control_index,
+                    entry.cell_index,
+                    entry.cell_para_index,
+                    entry.text_direction
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(".");
+        key.push_str("/cell:");
+        key.push_str(&cell.parent_para_index.to_string());
+        key.push(':');
+        key.push_str(&path);
+    }
+    Some(key)
+}
+
+fn write_text_source_entries(buf: &mut String, table: &TextSourceTable) {
+    buf.push('[');
+    for (idx, entry) in table.entries.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        write_text_source_entry(buf, entry);
+    }
+    buf.push(']');
+}
+
+fn write_text_source_entry(buf: &mut String, entry: &TextSourceEntry) {
+    let _ = write!(
+        buf,
+        "{{\"id\":{},\"text\":{},\"utf8Range\":",
+        entry.id.0,
+        json_escape(&entry.text),
+    );
+    write_text_source_range(buf, entry.utf8_range);
+    buf.push_str(",\"utf16Range\":");
+    write_text_source_range(buf, entry.utf16_range);
+    if let Some(stable_source_key) = &entry.stable_source_key {
+        let _ = write!(
+            buf,
+            ",\"stableSourceKey\":{}",
+            json_escape(stable_source_key)
+        );
+    }
+    buf.push_str(",\"annotations\":");
+    write_text_source_annotations(buf, &entry.annotations);
+    buf.push('}');
+}
+
+fn write_text_source_span(buf: &mut String, span: &TextSourceSpan) {
+    let _ = write!(buf, "{{\"id\":{},\"utf8Range\":", span.id.0);
+    write_text_source_range(buf, span.utf8_range);
+    buf.push_str(",\"utf16Range\":");
+    write_text_source_range(buf, span.utf16_range);
+    if let Some(stable_source_key) = &span.stable_source_key {
+        let _ = write!(
+            buf,
+            ",\"stableSourceKey\":{}",
+            json_escape(stable_source_key)
+        );
+    }
+    buf.push('}');
+}
+
+fn write_text_source_range(buf: &mut String, range: TextSourceRange) {
+    let _ = write!(buf, "{{\"start\":{},\"end\":{}}}", range.start, range.end);
+}
+
+fn write_text_source_annotations(buf: &mut String, annotations: &[TextSourceAnnotation]) {
+    buf.push('[');
+    for (idx, annotation) in annotations.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        match annotation {
+            TextSourceAnnotation::FieldMarker {
+                marker,
+                range_utf8,
+                range_utf16,
+            } => {
+                let _ = write!(
+                    buf,
+                    "{{\"kind\":\"fieldMarker\",\"marker\":{},\"rangeUtf8\":",
+                    json_escape(field_marker_str(*marker))
+                );
+                write_text_source_range(buf, *range_utf8);
+                buf.push_str(",\"rangeUtf16\":");
+                write_text_source_range(buf, *range_utf16);
+                if let FieldMarkerType::ShapeMarker(index) = marker {
+                    let _ = write!(buf, ",\"shapeMarkerIndex\":{}", index);
+                }
+                buf.push('}');
+            }
+            TextSourceAnnotation::ParagraphEnd {
+                offset_utf8,
+                offset_utf16,
+            } => {
+                let _ = write!(
+                    buf,
+                    "{{\"kind\":\"paragraphEnd\",\"offsetUtf8\":{},\"offsetUtf16\":{}}}",
+                    offset_utf8, offset_utf16
+                );
+            }
+            TextSourceAnnotation::LineBreakEnd {
+                offset_utf8,
+                offset_utf16,
+            } => {
+                let _ = write!(
+                    buf,
+                    "{{\"kind\":\"lineBreakEnd\",\"offsetUtf8\":{},\"offsetUtf16\":{}}}",
+                    offset_utf8, offset_utf16
+                );
+            }
+        }
+    }
+    buf.push(']');
+}
+
 fn write_group_kind(buf: &mut String, group_kind: &GroupKind) {
     match group_kind {
         GroupKind::Generic => buf.push_str("{\"kind\":\"generic\"}"),
@@ -472,18 +827,26 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
     buf.push('{');
     let _ = write!(
         buf,
-        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"underline\":{},\"strikethrough\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"underlineColor\":{},\"strikeColor\":{},\"shadeColor\":{},\"emphasisDot\":{}",
+        "\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"bold\":{},\"italic\":{},\"ratio\":{:.6},\"underline\":{},\"underlineShape\":{},\"strikethrough\":{},\"strikeShape\":{},\"outlineType\":{},\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{:.3},\"shadowOffsetY\":{:.3},\"emboss\":{},\"engrave\":{},\"superscript\":{},\"subscript\":{},\"underlineColor\":{},\"strikeColor\":{},\"shadeColor\":{},\"emphasisDot\":{}",
         json_escape(&style.font_family),
         style.font_size,
         json_escape(&color_ref_to_css(style.color)),
         style.bold,
         style.italic,
+        style.ratio,
         json_escape(underline_type_str(style.underline)),
+        style.underline_shape,
         style.strikethrough,
+        style.strike_shape,
+        style.outline_type,
         style.shadow_type,
         json_escape(&color_ref_to_css(style.shadow_color)),
         style.shadow_offset_x,
         style.shadow_offset_y,
+        style.emboss,
+        style.engrave,
+        style.superscript,
+        style.subscript,
         json_escape(&color_ref_to_css(style.underline_color)),
         json_escape(&color_ref_to_css(style.strike_color)),
         json_escape(&color_ref_to_css(style.shade_color)),
@@ -535,6 +898,16 @@ fn write_field_marker(buf: &mut String, marker: FieldMarkerType) {
     }
 }
 
+fn field_marker_str(value: FieldMarkerType) -> &'static str {
+    match value {
+        FieldMarkerType::None => "none",
+        FieldMarkerType::FieldBegin => "fieldBegin",
+        FieldMarkerType::FieldEnd => "fieldEnd",
+        FieldMarkerType::FieldBeginEnd => "fieldBeginEnd",
+        FieldMarkerType::ShapeMarker(_) => "shapeMarker",
+    }
+}
+
 fn write_char_overlap(
     buf: &mut String,
     overlap: Option<&crate::renderer::composer::CharOverlapInfo>,
@@ -548,6 +921,197 @@ fn write_char_overlap(
     } else {
         buf.push_str("null");
     }
+}
+
+fn text_orientation_str(run: &TextRunNode) -> &'static str {
+    if !run.is_vertical {
+        "horizontal"
+    } else if run.rotation.abs() > f64::EPSILON {
+        "vertical-sideways"
+    } else {
+        "vertical-upright"
+    }
+}
+
+fn text_projection_kind_str(run: &TextRunNode) -> &'static str {
+    if run.char_overlap.is_some() {
+        "syntheticVisual"
+    } else if run.field_marker != FieldMarkerType::None {
+        "fieldProjection"
+    } else if run.text.is_empty() && (run.is_para_end || run.is_line_break_end) {
+        "controlProjection"
+    } else {
+        "verbatim"
+    }
+}
+
+fn write_text_legacy_visuals(buf: &mut String, run: &TextRunNode, leaf_visuals: LeafTextVisualOps) {
+    let has_decorations = run.style.underline != UnderlineType::None
+        || run.style.strikethrough
+        || run.style.emphasis_dot > 0;
+    if run.char_overlap.is_none()
+        && !leaf_visuals.control_marks
+        && run.style.tab_leaders.is_empty()
+        && !has_decorations
+    {
+        return;
+    }
+
+    buf.push_str(",\"legacyVisuals\":{");
+    let mut wrote = false;
+    if run.char_overlap.is_some() {
+        let state = if leaf_visuals.char_overlap {
+            "mirror"
+        } else {
+            "canonical"
+        };
+        let _ = write!(buf, "\"charOverlap\":{}", json_escape(state));
+        wrote = true;
+    }
+    if leaf_visuals.control_marks {
+        if wrote {
+            buf.push(',');
+        }
+        buf.push_str("\"controlMarks\":\"mirror\"");
+        wrote = true;
+    }
+    if !run.style.tab_leaders.is_empty() {
+        if wrote {
+            buf.push(',');
+        }
+        let state = if leaf_visuals.tab_leaders {
+            "mirror"
+        } else {
+            "canonical"
+        };
+        let _ = write!(buf, "\"tabLeaders\":{}", json_escape(state));
+        wrote = true;
+    }
+    if has_decorations {
+        if wrote {
+            buf.push(',');
+        }
+        let state = if leaf_visuals.decorations {
+            "mirror"
+        } else {
+            "canonical"
+        };
+        let _ = write!(buf, "\"decorations\":{}", json_escape(state));
+    }
+    buf.push('}');
+}
+
+fn write_text_run_placement(buf: &mut String, bbox: BoundingBox, run: &TextRunNode) {
+    let radians = run.rotation.to_radians();
+    let (sin, cos) = radians.sin_cos();
+    let local_origin_x = -bbox.width / 2.0;
+    let local_origin_y = -bbox.height / 2.0 + run.baseline;
+    let center_x = bbox.x + bbox.width / 2.0;
+    let center_y = bbox.y + bbox.height / 2.0;
+    let _ = write!(
+        buf,
+        "{{\"runToPage\":{{\"a\":{:.6},\"b\":{:.6},\"c\":{:.6},\"d\":{:.6},\"e\":{:.6},\"f\":{:.6}}},\"baselineY\":0.000000}}",
+        cos,
+        sin,
+        -sin,
+        cos,
+        center_x + cos * local_origin_x - sin * local_origin_y,
+        center_y + sin * local_origin_x + cos * local_origin_y,
+    );
+}
+
+fn write_text_clusters(buf: &mut String, run: &TextRunNode) {
+    let positions = compute_char_positions(&run.text, &run.style);
+    let mut utf16_start = 0_u32;
+    let chars = run
+        .text
+        .char_indices()
+        .map(|(offset, ch)| (offset as u32, ch))
+        .collect::<Vec<_>>();
+
+    buf.push('[');
+    for (idx, (utf8_start, ch)) in chars.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        let utf8_end = chars
+            .get(idx + 1)
+            .map_or(run.text.len() as u32, |(next, _)| *next);
+        let utf16_end = utf16_start + ch.len_utf16() as u32;
+        let origin_x = positions.get(idx).copied().unwrap_or_default();
+        let projection = text_projection_kind_str(run);
+        buf.push_str("{\"sourceRangeUtf8\":");
+        write_text_source_range(buf, TextSourceRange::new(*utf8_start, utf8_end));
+        buf.push_str(",\"textRangeUtf8\":");
+        write_text_source_range(buf, TextSourceRange::new(*utf8_start, utf8_end));
+        buf.push_str(",\"textRangeUtf16\":");
+        write_text_source_range(buf, TextSourceRange::new(utf16_start, utf16_end));
+        let _ = write!(
+            buf,
+            ",\"projection\":{},\"origin\":{{\"x\":{:.6},\"y\":0.000000}}",
+            json_escape(projection),
+            origin_x
+        );
+        if let Some(next_x) = positions.get(idx + 1) {
+            let _ = write!(
+                buf,
+                ",\"advance\":{{\"dx\":{:.6},\"dy\":0.000000}}",
+                next_x - origin_x
+            );
+        }
+        if run.char_overlap.is_some() {
+            buf.push_str(",\"flags\":[\"specialVisual\",\"notShapingCandidate\"]");
+        }
+        buf.push('}');
+        utf16_start = utf16_end;
+    }
+    buf.push(']');
+}
+
+fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextRunNode) {
+    let (color, shape, underline, emphasis_dot) = match kind {
+        TextDecorationKind::Underline => (
+            if run.style.underline_color != 0 {
+                run.style.underline_color
+            } else {
+                run.style.color
+            },
+            run.style.underline_shape,
+            run.style.underline,
+            0,
+        ),
+        TextDecorationKind::Strikethrough => (
+            if run.style.strike_color != 0 {
+                run.style.strike_color
+            } else {
+                run.style.color
+            },
+            run.style.strike_shape,
+            UnderlineType::None,
+            0,
+        ),
+        TextDecorationKind::EmphasisDot => (
+            run.style.color,
+            0,
+            UnderlineType::None,
+            run.style.emphasis_dot,
+        ),
+    };
+    let _ = write!(
+        buf,
+        "{{\"kind\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"fontSize\":{:.3},\"ratio\":{:.6},\"color\":{},\"shape\":{},\"underline\":{},\"emphasisDot\":{},\"positions\":",
+        json_escape(kind.as_str()),
+        run.baseline,
+        run.rotation,
+        run.style.font_size,
+        run.style.ratio,
+        json_escape(&color_ref_to_css(color)),
+        shape,
+        json_escape(underline_type_str(underline)),
+        emphasis_dot,
+    );
+    write_text_positions(buf, run);
+    buf.push('}');
 }
 
 fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
@@ -796,7 +1360,9 @@ fn form_type_str(value: FormType) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::paint::{CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree};
+    use crate::paint::{
+        CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree, TextDecorationKind,
+    };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
@@ -886,24 +1452,131 @@ mod tests {
 
         assert!(json.contains("\"kind\":\"leaf\""));
         assert!(json.contains("\"schemaVersion\":1"));
+        assert!(json.contains("\"schemaMinorVersion\":8"));
+        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":8}"));
         assert!(json.contains("\"resourceTableVersion\":1"));
+        assert!(json.contains("\"resourceTableMinorVersion\":2"));
+        assert!(json.contains("\"resourceTable\":{\"major\":1,\"minor\":2}"));
         assert!(json.contains("\"unit\":\"px\""));
-        assert!(json.contains("\"coordinateSystem\":\"page-top-left\""));
+        assert!(json.contains("\"coordinateSystem\":\"page-top-left-y-down\""));
         assert!(json.contains("\"profile\":\"screen\""));
         assert!(json.contains("\"outputOptions\":{"));
         assert!(json.contains("\"clipEnabled\":true"));
         assert!(json.contains("\"type\":\"textRun\""));
+        assert!(json.contains("\"textSources\":[{\"id\":0,\"text\":\"가A\""));
+        assert!(json.contains("\"source\":{\"id\":0"));
+        assert!(json.contains("\"paintStyle\":{"));
+        assert!(json.contains("\"placement\":{\"runToPage\":"));
+        assert!(json.contains("\"clusterBasis\":\"legacyPosition\""));
+        assert!(json.contains("\"clusters\":[{\"sourceRangeUtf8\""));
+        assert!(json.contains("\"legacyVisuals\":{"));
         assert!(json.contains(&positions_json));
         assert!(json.contains("\"isParaEnd\":true"));
         assert!(json.contains("\"isLineBreakEnd\":true"));
         assert!(json.contains("\"fieldMarker\":{\"kind\":\"fieldBegin\"}"));
         assert!(json.contains("\"charOverlap\":{\"borderType\":1,\"innerCharSize\":90}"));
+        assert!(json.contains("\"usedFeatures\":[\"text.paintStyle\""));
+        assert!(json.contains("\"knownFeatures\":[\"fontResources\""));
+        assert!(json.contains("\"text\":{\"defaultVariant\":\"textRun\""));
         assert!(json.contains("\"fontFamily\":\"Noto Sans KR\""));
         assert!(json.contains("\"italic\":true"));
         assert!(json.contains("\"shadeColor\":\"#ffff00\""));
         assert!(json.contains("\"emphasisDot\":2"));
         assert!(json.contains("\"type\":\"rectangle\""));
         assert!(json.contains("\"cornerRadius\":4.000"));
+    }
+
+    #[test]
+    fn serializes_external_text_visual_ops_as_additive_features() {
+        let run = TextRunNode {
+            text: "A\tB".to_string(),
+            style: TextStyle {
+                font_family: "Noto Sans".to_string(),
+                font_size: 14.0,
+                color: 0x00000000,
+                underline: UnderlineType::Bottom,
+                strikethrough: true,
+                emphasis_dot: 1,
+                tab_leaders: vec![TabLeaderInfo {
+                    start_x: 10.0,
+                    end_x: 40.0,
+                    fill_type: 3,
+                }],
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: Some(1),
+            para_index: Some(2),
+            char_start: Some(3),
+            cell_context: None,
+            is_para_end: true,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: Some(CharOverlapInfo {
+                border_type: 2,
+                inner_char_size: 80,
+            }),
+            border_fill_id: 0,
+            baseline: 11.0,
+            field_marker: FieldMarkerType::FieldEnd,
+        };
+        let bbox = BoundingBox::new(10.0, 20.0, 40.0, 16.0);
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 80.0),
+                None,
+                vec![
+                    PaintOp::TextRun {
+                        bbox,
+                        run: run.clone(),
+                    },
+                    PaintOp::CharOverlap {
+                        bbox,
+                        run: run.clone(),
+                    },
+                    PaintOp::TextControlMark {
+                        bbox,
+                        run: run.clone(),
+                    },
+                    PaintOp::TabLeader {
+                        bbox,
+                        run: run.clone(),
+                    },
+                    PaintOp::TextDecoration {
+                        bbox,
+                        run: run.clone(),
+                        kind: TextDecorationKind::Underline,
+                    },
+                    PaintOp::TextDecoration {
+                        bbox,
+                        run,
+                        kind: TextDecorationKind::EmphasisDot,
+                    },
+                ],
+            ),
+        );
+
+        let json = tree.to_json();
+
+        assert!(json.contains("\"type\":\"charOverlap\""));
+        assert!(json.contains("\"type\":\"textControlMark\""));
+        assert!(json.contains("\"type\":\"tabLeader\""));
+        assert!(json.contains("\"type\":\"textDecoration\""));
+        assert!(json.contains("\"kind\":\"underline\""));
+        assert!(json.contains("\"kind\":\"emphasisDot\""));
+        assert!(json.contains("\"textSources\":[{\"id\":0,\"text\":\"A\\tB\""));
+        assert!(json.contains("\"stableSourceKey\":\"section:1/para:2/char:3\""));
+        assert!(json.contains("\"marker\":\"fieldEnd\""));
+        assert!(json.contains("\"text.charOverlapOp\""));
+        assert!(json.contains("\"text.controlMarkOp\""));
+        assert!(json.contains("\"text.tabLeaderOp\""));
+        assert!(json.contains("\"text.decorationOp\""));
+        assert!(json.contains("\"externalizedVisuals\":[\"charOverlap\",\"controlMarks\",\"tabLeaders\",\"decorations\"]"));
+        assert!(json.contains("\"legacyVisuals\":{\"charOverlap\":\"mirror\""));
     }
 
     #[test]
