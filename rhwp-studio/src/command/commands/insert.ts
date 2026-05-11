@@ -376,12 +376,12 @@ function setProps(services: import('../types').CommandServices, ref: { sec: numb
   }
 }
 
-/** 현재 회전각에 delta(도)를 더한다 (Shape만 지원). */
+/** 현재 회전각에 delta(도)를 더한다. */
 function applyRotationDelta(services: import('../types').CommandServices, delta: number): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const ref = ih.getSelectedPictureRef();
-  if (!ref || ref.type !== 'shape') return;
+  if (!ref || ref.type === 'equation' || ref.type === 'group') return;
   const props = getProps(services, ref);
   const cur = ((props.rotationAngle as number) ?? 0);
   let next = cur + delta;
@@ -392,12 +392,12 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   services.eventBus.emit('document-changed');
 }
 
-/** horzFlip/vertFlip을 토글한다 (Shape만 지원). */
+/** horzFlip/vertFlip을 토글한다. */
 function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip' | 'vertFlip'): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const ref = ih.getSelectedPictureRef();
-  if (!ref || ref.type !== 'shape') return;
+  if (!ref || ref.type === 'equation' || ref.type === 'group') return;
   const props = getProps(services, ref);
   const cur = !!props[key];
   setProps(services, ref, { [key]: !cur });
