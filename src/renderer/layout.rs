@@ -1959,6 +1959,8 @@ impl LayoutEngine {
                         .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
                             || (t.common.treat_as_char
                                 && !crate::renderer::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls))));
+
+
                     if has_block_table {
                         let comp = composed.get(*para_index);
                         let para_style_id = comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize);
@@ -2017,6 +2019,7 @@ impl LayoutEngine {
                     let has_inline_tables = para.controls.iter()
                         .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char
                             && crate::renderer::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls)));
+
 
                     // [Task #565] 인라인 표 + 다른 인라인 컨트롤(수식/treat_as_char Picture/Shape)
                     // 이 같이 있는 문단은 layout_inline_table_paragraph 가 인라인 수식 등을

@@ -248,6 +248,7 @@ impl LayoutEngine {
         let col_widths = self.resolve_column_widths(table, col_count);
         let row_heights = self.resolve_row_heights(table, col_count, row_count, measured_table, styles);
 
+
         // ── 2. 누적 위치 계산 ──
         let mut col_x = vec![0.0f64; col_count + 1];
         for i in 0..col_count {

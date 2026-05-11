@@ -24,7 +24,10 @@ pub fn is_tac_table_inline(table: &Table, seg_width: i32, text: &str, controls: 
         return (table_width as i32) < (seg_width as f64 * 0.9) as i32;
     }
 
-    // 텍스트 없는 문단: 다중 TAC 표의 합산 너비가 줄 너비 이내이면 인라인
+    // 텍스트 없는 문단: TAC 표가 단독으로 있으면 인라인 취급
+    // HWPX 파서가 텍스트와 표를 별도 문단으로 분리하는 경우,
+    // 빈 문단의 단독 TAC 표가 블록 경로로 빠져 렌더링 누락됨.
+    // 단독 TAC 표도 인라인으로 처리하여 정상 렌더링되도록 한다.
     let tac_tables: Vec<&Table> = controls.iter()
         .filter_map(|c| match c {
             Control::Table(t) if t.common.treat_as_char => Some(t.as_ref()),
@@ -32,11 +35,11 @@ pub fn is_tac_table_inline(table: &Table, seg_width: i32, text: &str, controls: 
         })
         .collect();
 
-    if tac_tables.len() >= 2 {
+    if !tac_tables.is_empty() {
         let total_width: u32 = tac_tables.iter()
             .map(|t| t.get_column_widths().iter().sum::<u32>())
             .sum();
-        return (total_width as i32) <= seg_width;
+        return (total_width as i32) <= seg_width || seg_width == 0;
     }
 
     false
