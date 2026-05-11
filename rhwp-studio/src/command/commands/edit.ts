@@ -70,7 +70,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'edit:format-paste',
     label: '모양 붙이기',
-    icon: 'icon-format-paste',
+    icon: 'icon-format-copy',
     shortcutLabel: 'Ctrl+Alt+V',
     canExecute: (ctx) => ctx.hasDocument && ctx.hasSelection,
     execute(services) {

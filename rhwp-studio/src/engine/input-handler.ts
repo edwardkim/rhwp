@@ -2437,9 +2437,16 @@ export class InputHandler {
   performFormatCopy(): void {
     const charProps = this.getCharPropertiesAtCursor();
     const paraProps = this.getParaProperties();
-    const { charShapeId, fontId, fontIds, paraShapeId, ...charRest } = charProps as any;
-    const { paraShapeId: _psId, ...paraRest } = paraProps as any;
-    this.formatClipboard = { char: charRest, para: paraRest };
+    const charCopy: Partial<CharProperties> = { ...charProps };
+    delete charCopy.charShapeId;
+    delete (charCopy as Record<string, unknown>).fontId;
+    delete (charCopy as Record<string, unknown>).fontIds;
+    delete charCopy.borderFillId;
+    const paraCopy: Partial<ParaProperties> = { ...paraProps };
+    delete paraCopy.paraShapeId;
+    delete paraCopy.borderFillId;
+    delete paraCopy.numberingId;
+    this.formatClipboard = { char: charCopy, para: paraCopy };
   }
 
   performFormatPaste(): void {
