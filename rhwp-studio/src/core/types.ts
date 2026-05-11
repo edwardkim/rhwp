@@ -11,6 +11,8 @@ export interface DocumentInfo {
 /** WASM getPageInfo() 반환 타입 */
 export interface PageInfo {
   pageIndex: number;
+  /** 조판 기준으로 계산된 표시용 쪽 번호(구역 설정 반영) */
+  pageNumber?: number;
   width: number;
   height: number;
   sectionIndex: number;
