@@ -271,7 +271,7 @@ export const pageCommands: CommandDef[] = [
   {
     id: 'page:new-page-num',
     label: '새 번호로 시작',
-    canExecute: (ctx) => ctx.hasDocument,
+    canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
