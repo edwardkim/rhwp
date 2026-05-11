@@ -1135,6 +1135,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       // [Task #661] 포인터 좌표 기반 hit-test (드래그 영역의 자동 스크롤 영역과 동기).
       // PR #693 의 직접 hit + moveTo + updateCaretDuringDrag 영역은 PR #718 의
       // updateTextSelectionDragFromPointer 래퍼 영역에 포함됨 (dragLastClientX/Y 사용).
+      // [Issue #669] 셀 가드는 input-handler.ts 의 래퍼 내부에 적용됨.
       this.updateTextSelectionDragFromPointer();
     });
     return;

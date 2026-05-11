@@ -1016,6 +1016,19 @@ export class InputHandler {
 
     const hit = this.hitTestFromClientPoint(this.dragLastClientX, this.dragLastClientY);
     if (hit && hit.paragraphIndex < 0xFFFFFF00) {
+      // [Issue #669] 셀 내부 드래그: anchor와 같은 셀 컨텍스트인 경우만 커서 이동.
+      // 셀↔본문 혼합은 선택 렌더링 불가이므로 무시 (셀 내 선택 유지).
+      const sel = this.cursor.getSelection();
+      if (sel) {
+        const anchorInCell = sel.anchor.parentParaIndex !== undefined;
+        const hitInSameCell = anchorInCell &&
+          hit.parentParaIndex === sel.anchor.parentParaIndex &&
+          hit.controlIndex === sel.anchor.controlIndex &&
+          hit.cellIndex === sel.anchor.cellIndex;
+        if (anchorInCell && !hitInSameCell) {
+          return;
+        }
+      }
       this.cursor.moveTo(hit);
       this.updateCaretDuringDrag();
     }

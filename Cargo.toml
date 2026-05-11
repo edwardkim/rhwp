@@ -49,7 +49,7 @@ native-skia = ["dep:resvg", "dep:skia-safe"]
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
 usvg = "0.45"
-resvg = { version = "0.45", optional = true }
+resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 ttf-parser = "0.25"
