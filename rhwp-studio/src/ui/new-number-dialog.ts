@@ -57,8 +57,7 @@ export class NewNumberDialog extends ModalDialog {
       this.wasm.insertNewNumber(
         this.cursorPos.sec, this.cursorPos.para, this.cursorPos.offset, num,
       );
-      this.eventBus.emit('document:changed');
-      this.eventBus.emit('recompose:request');
+      this.eventBus.emit('document-changed');
     } catch (e) {
       console.warn('[NewNumberDialog] 삽입 실패:', e);
     }

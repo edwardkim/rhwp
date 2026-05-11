@@ -1065,6 +1065,9 @@ impl HwpDocument {
         char_offset: u32,
         start_num: u32,
     ) -> Result<String, JsValue> {
+        if start_num == 0 || start_num > 65535 {
+            return Err(JsValue::from_str("start_num must be 1~65535"));
+        }
         self.insert_new_number_native(
             section_idx as usize,
             para_idx as usize,
