@@ -680,18 +680,26 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   }
 
   // Alt 조합 단축키 처리
-  if (e.altKey && this.dispatcher) {
+  if (e.altKey) {
+    // Alt+Backspace → 단어 단위 삭제 (macOS Option+Delete)
+    if (e.key === 'Backspace' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      deleteWordBackward.call(this);
+      return;
+    }
     // Alt+V → Chord 대기 (보기 메뉴 단축키, 한컴 Alt+V,T 계승)
     if ((e.key === 'v' || e.key === 'V' || e.key === 'ㅍ') && !e.shiftKey && !e.ctrlKey) {
       e.preventDefault();
       this._pendingChordV = true;
       return;
     }
-    const cmdId = matchShortcut(e, defaultShortcuts);
-    if (cmdId) {
-      e.preventDefault();
-      this.dispatcher.dispatch(cmdId);
-      return;
+    if (this.dispatcher) {
+      const cmdId = matchShortcut(e, defaultShortcuts);
+      if (cmdId) {
+        e.preventDefault();
+        this.dispatcher.dispatch(cmdId);
+        return;
+      }
     }
   }
 
@@ -892,8 +900,17 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
     return;
   }
 
-  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End 등 커서 이동)
+  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End, Ctrl+Backspace 등)
   switch (e.key.toLowerCase()) {
+    case 'backspace': {
+      e.preventDefault();
+      if (e.altKey) {
+        deleteWordBackward.call(this);
+      } else {
+        deleteToLineStart.call(this);
+      }
+      break;
+    }
     case 'home': {
       e.preventDefault();
       if (e.shiftKey) {
@@ -928,6 +945,57 @@ export function handleSelectAll(this: any): void {
   this.cursor.setAnchor();
   this.cursor.moveToDocumentEnd();
   this.updateCaret();
+}
+
+/** Cmd/Ctrl+Backspace: 현재 위치에서 줄 시작까지 삭제 */
+function deleteToLineStart(this: any): void {
+  if (this.cursor.hasSelection()) {
+    this.deleteSelection();
+    return;
+  }
+  const pos = this.cursor.getPosition();
+  this.cursor.setAnchor();
+  this.cursor.moveToLineStart();
+  if (this.cursor.hasSelection()) {
+    this.deleteSelection();
+  }
+}
+
+/** Alt/Option+Backspace: 이전 단어 경계까지 삭제 */
+function deleteWordBackward(this: any): void {
+  if (this.cursor.hasSelection()) {
+    this.deleteSelection();
+    return;
+  }
+  const pos = this.cursor.getPosition();
+  const { sectionIndex: sec, paragraphIndex: para, charOffset } = pos;
+  if (charOffset === 0) {
+    // 문단 시작 → 일반 Backspace와 동일 (이전 문단과 병합)
+    this.handleBackspace(pos, this.cursor.isInCell());
+    return;
+  }
+  const wordStart = findWordBoundaryBackward(this.wasm, sec, para, charOffset);
+  if (wordStart < charOffset) {
+    this.cursor.setAnchor();
+    this.cursor.moveTo({ ...pos, charOffset: wordStart });
+    this.deleteSelection();
+  }
+}
+
+/** 문단 텍스트에서 이전 단어 경계를 찾는다 */
+function findWordBoundaryBackward(wasm: WasmBridge, sec: number, para: number, offset: number): number {
+  if (offset <= 0) return 0;
+  const text = wasm.getTextRange(sec, para, 0, offset);
+  let i = text.length - 1;
+  // 1) 커서 직전의 공백/구두점 건너뛰기
+  while (i >= 0 && isWordSeparator(text[i])) i--;
+  // 2) 단어 문자 건너뛰기
+  while (i >= 0 && !isWordSeparator(text[i])) i--;
+  return i + 1;
+}
+
+function isWordSeparator(ch: string): boolean {
+  return /[\s　.,;:!?'"()[\]{}<>\/\\|@#$%^&*~`+=\-_]/.test(ch);
 }
 
 export function onCopy(this: any, e: ClipboardEvent): void {
