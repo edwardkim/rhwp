@@ -234,6 +234,11 @@ export class WasmBridge {
     return (this.doc as any).insertColumnBreak(sec, para, charOffset);
   }
 
+  insertNewNumber(sec: number, para: number, charOffset: number, startNum: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).insertNewNumber(sec, para, charOffset, startNum);
+  }
+
   setColumnDef(sec: number, columnCount: number, columnType: number, sameWidth: number, spacingHu: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return (this.doc as any).setColumnDef(sec, columnCount, columnType, sameWidth, spacingHu);
