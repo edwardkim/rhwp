@@ -2058,7 +2058,7 @@ mod tests {
         };
         let glyph_run = PaintOp::GlyphRun {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
-            run: LayerGlyphRunPaint {
+            run: Box::new(LayerGlyphRunPaint {
                 source,
                 variant: PaintVariantMeta {
                     equivalence_group: "text-0".to_string(),
@@ -2117,7 +2117,7 @@ mod tests {
                     used_fallback_font_count: 0,
                     reason: None,
                 },
-            },
+            }),
         };
 
         let tree = PageLayerTree::new(

@@ -267,7 +267,7 @@ mod tests {
     fn glyph_op(variant: PaintVariantMeta) -> PaintOp {
         PaintOp::GlyphRun {
             bbox: bbox(),
-            run: LayerGlyphRunPaint {
+            run: Box::new(LayerGlyphRunPaint {
                 source: TextSourceSpan {
                     id: TextSourceId(0),
                     utf8_range: TextSourceRange::new(0, 1),
@@ -330,7 +330,7 @@ mod tests {
                     used_fallback_font_count: 0,
                     reason: None,
                 },
-            },
+            }),
         }
     }
 

@@ -42,7 +42,7 @@ pub enum PaintOp {
     },
     GlyphRun {
         bbox: BoundingBox,
-        run: LayerGlyphRunPaint,
+        run: Box<LayerGlyphRunPaint>,
     },
     /// HWP 글자겹침의 명시 visual op.
     ///

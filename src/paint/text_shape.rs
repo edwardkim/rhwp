@@ -179,7 +179,7 @@ impl<'a> TextShapeLowerer<'a> {
                         if let Some(glyph_run) = glyph_run {
                             lowered.push(PaintOp::GlyphRun {
                                 bbox,
-                                run: glyph_run,
+                                run: Box::new(glyph_run),
                             });
                         }
                         *next_text_source_id = (*next_text_source_id).saturating_add(1);
