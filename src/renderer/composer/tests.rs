@@ -661,7 +661,7 @@ fn test_tokenize_line_break() {
     assert!(matches!(tokens[1], BreakToken::LineBreak { idx: 1 }));
 }
 
-/// PUA U+F02B1~F02BC → CharOverlap (border_type=3, 사각형 안 숫자)
+/// PUA U+F02B1~F02C4 → CharOverlap (border_type=3, 사각형 안 숫자 1~20)
 #[test]
 fn test_pua_enclosed_number_becomes_char_overlap() {
     let para = Paragraph {
@@ -687,7 +687,7 @@ fn test_pua_enclosed_number_becomes_char_overlap() {
     assert_eq!(overlap.border_type, 3, "border_type should be 3 (rectangle)");
 }
 
-/// pua_to_display_text correctly converts F02B1~F02BC to "1"~"12"
+/// pua_to_display_text correctly converts F02B1~F02C4 to "1"~"20"
 #[test]
 fn test_pua_to_display_text_range() {
     assert_eq!(pua_to_display_text('\u{F02B1}'), Some("1".to_string()));
