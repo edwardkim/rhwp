@@ -2430,6 +2430,31 @@ export class InputHandler {
     return this.wasm.getParaPropertiesAt(pos.sectionIndex, pos.paragraphIndex);
   }
 
+  // ─── 모양 복사/붙이기 ──────────────────────────────────
+
+  private formatClipboard: { char: Partial<CharProperties>; para: Partial<ParaProperties> } | null = null;
+
+  performFormatCopy(): void {
+    const charProps = this.getCharPropertiesAtCursor();
+    const paraProps = this.getParaProperties();
+    const { charShapeId, fontId, fontIds, paraShapeId, ...charRest } = charProps as any;
+    const { paraShapeId: _psId, ...paraRest } = paraProps as any;
+    this.formatClipboard = { char: charRest, para: paraRest };
+  }
+
+  performFormatPaste(): void {
+    if (!this.formatClipboard) return;
+    if (!this.cursor.hasSelection()) return;
+    const sel = this.cursor.getSelectionOrdered();
+    if (!sel) return;
+    this.applyCharPropsToRange(sel.start, sel.end, this.formatClipboard.char);
+    this.applyParaPropsToRange(sel.start, sel.end, this.formatClipboard.para);
+  }
+
+  hasFormatClipboard(): boolean {
+    return this.formatClipboard !== null;
+  }
+
   /** 커서 위치의 문단 스타일 ID를 반환한다 (스타일 대화상자용) */
   getCurrentStyleId(): number {
     try {

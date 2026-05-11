@@ -16,6 +16,11 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'y', ctrl: true }, 'edit:redo'],
   [{ key: 'a', ctrl: true }, 'edit:select-all'],
 
+  [{ key: 'c', ctrl: true, alt: true }, 'edit:format-copy'],
+  [{ key: 'ㅊ', ctrl: true, alt: true }, 'edit:format-copy'],
+  [{ key: 'v', ctrl: true, alt: true }, 'edit:format-paste'],
+  [{ key: 'ㅍ', ctrl: true, alt: true }, 'edit:format-paste'],
+
   // 파일
   [{ key: 'n', alt: true }, 'file:new-doc'],
   [{ key: 'ㅜ', alt: true }, 'file:new-doc'],

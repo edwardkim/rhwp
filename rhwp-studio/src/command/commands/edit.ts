@@ -62,8 +62,20 @@ export const editCommands: CommandDef[] = [
     label: '모양 복사',
     icon: 'icon-format-copy',
     shortcutLabel: 'Ctrl+Alt+C',
-    canExecute: () => false, // 미구현
-    execute() { /* TODO */ },
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      services.getInputHandler()?.performFormatCopy();
+    },
+  },
+  {
+    id: 'edit:format-paste',
+    label: '모양 붙이기',
+    icon: 'icon-format-paste',
+    shortcutLabel: 'Ctrl+Alt+V',
+    canExecute: (ctx) => ctx.hasDocument && ctx.hasSelection,
+    execute(services) {
+      services.getInputHandler()?.performFormatPaste();
+    },
   },
   {
     id: 'edit:delete',
