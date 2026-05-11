@@ -180,7 +180,8 @@ export const insertCommands: CommandDef[] = [
       if (!picturePropsDialog) {
         picturePropsDialog = new PicturePropsDialog(services.wasm, services.eventBus);
       }
-      picturePropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.type);
+      // [Task #825] 머리말/꼬리말 그림은 ref.headerFooter 동반 — dialog 에 전달.
+      picturePropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.type, (ref as any).headerFooter);
     },
   },
   {

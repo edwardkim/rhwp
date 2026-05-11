@@ -214,7 +214,13 @@ export class PicturePropsDialog {
   //  공개 API
   // ════════════════════════════════════════════════════════
 
-  open(sec: number, para: number, ci: number, type: 'image' | 'shape' | 'line' = 'image'): void {
+  open(
+    sec: number,
+    para: number,
+    ci: number,
+    type: 'image' | 'shape' | 'line' = 'image',
+    headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number },
+  ): void {
     this.build();
     this.sec = sec;
     this.para = para;
@@ -226,7 +232,15 @@ export class PicturePropsDialog {
       this.props = this.shapeProps as unknown as PictureProperties;
     } else {
       this.shapeProps = null;
-      this.props = this.wasm.getPictureProperties(sec, para, ci);
+      // [Task #825] 머리말/꼬리말 그림은 별도 API 사용 — outer (Header/Footer 컨트롤)
+      // 위치 + inner (그림) 위치 5-tuple lookup.
+      if (headerFooter) {
+        this.props = this.wasm.getHeaderFooterPictureProperties(
+          sec, headerFooter.outerParaIdx, headerFooter.outerControlIdx, para, ci,
+        );
+      } else {
+        this.props = this.wasm.getPictureProperties(sec, para, ci);
+      }
     }
     this.originalWidth = this.props.width;
     this.originalHeight = this.props.height;
