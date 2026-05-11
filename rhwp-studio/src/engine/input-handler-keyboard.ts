@@ -740,7 +740,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       if (this.cursor.hasSelection()) {
         this.deleteSelection();
       } else if (e.altKey) {
-        // Alt/Option+Backspace: 단어 삭제 (macOS standard)
+        // Alt/Option+Backspace/Delete: 단어 삭제 (macOS standard)
         this.cursor.setAnchor();
         this.cursor.moveToWordBoundary(e.key === 'Backspace' ? -1 : 1);
         if (this.cursor.hasSelection()) this.deleteSelection();

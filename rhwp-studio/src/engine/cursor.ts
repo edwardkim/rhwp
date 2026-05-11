@@ -544,16 +544,16 @@ export class CursorState {
     const cpi = pos.cellParaIndex!;
 
     try {
-      const text = this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, 0, 9999);
-      const paraLen = text.length;
+      const paraLen = this.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
 
       if (direction === 1) {
         if (pos.charOffset >= paraLen) {
           this.moveHorizontal(1);
           return;
         }
-        const slice = text.slice(pos.charOffset, pos.charOffset + 50);
-        const offset = findWordBoundaryForward(slice);
+        const remaining = paraLen - pos.charOffset;
+        const text = this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, pos.charOffset, Math.min(remaining, 50));
+        const offset = findWordBoundaryForward(text);
         this.position = { ...pos, charOffset: pos.charOffset + offset };
       } else {
         if (pos.charOffset <= 0) {
@@ -561,8 +561,9 @@ export class CursorState {
           return;
         }
         const start = Math.max(0, pos.charOffset - 50);
-        const slice = text.slice(start, pos.charOffset);
-        const offset = findWordBoundaryBackward(slice);
+        const count = pos.charOffset - start;
+        const text = this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, start, count);
+        const offset = findWordBoundaryBackward(text);
         this.position = { ...pos, charOffset: start + offset };
       }
       this.updateRect();
