@@ -964,7 +964,40 @@ impl LayoutEngine {
         // (머리말 표 셀 내 Shape가 header_area 밖에 배치될 수 있음)
         Self::expand_bbox_to_children(&mut header_node);
         Self::disable_cell_clip_recursive(&mut header_node);
+        // [Task #825] 머리말 안 모든 ImageNode 에 header_footer_ref 부여 + 인덱스 정규화.
+        // TAC 인라인 picture 는 layout_paragraph 경로에서 para_index = usize::MAX - i 로
+        // 인코딩되어 ImageNode 에 저장되므로, 본 후처리로 inner para idx 회복.
+        if let Some(hf_ref) = &page_content.active_header {
+            let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
+                outer_para_index: hf_ref.para_index,
+                outer_control_index: hf_ref.control_index,
+                kind: crate::renderer::render_tree::HeaderFooterKind::Header,
+            };
+            Self::propagate_header_footer_ref(&mut header_node, &outer_ref, hf_ref.source_section_index);
+        }
         tree.root.children.push(header_node);
+    }
+
+    /// [Task #825] header/footer 노드 안 모든 ImageNode 에 header_footer_ref 부여
+    /// + para_index 정규화 (usize::MAX - i → i).
+    fn propagate_header_footer_ref(
+        node: &mut RenderNode,
+        outer_ref: &crate::renderer::render_tree::HeaderFooterImageRef,
+        section_index: usize,
+    ) {
+        if let RenderNodeType::Image(img) = &mut node.node_type {
+            // TAC 경로 인코딩 회복: para_index 가 MAX 근처면 usize::MAX - i 로 저장된 것.
+            if let Some(pi) = img.para_index {
+                if pi >= usize::MAX - 1024 {
+                    img.para_index = Some(usize::MAX - pi);
+                }
+            }
+            img.section_index = Some(section_index);
+            img.header_footer_ref = Some(outer_ref.clone());
+        }
+        for child in node.children.iter_mut() {
+            Self::propagate_header_footer_ref(child, outer_ref, section_index);
+        }
     }
 
     /// 노드의 bbox를 자식 노드 범위까지 확장
@@ -1044,6 +1077,15 @@ impl LayoutEngine {
         }
         Self::expand_bbox_to_children(&mut footer_node);
         Self::disable_cell_clip_recursive(&mut footer_node);
+        // [Task #825] 꼬리말 안 모든 ImageNode 에 header_footer_ref 부여 + 인덱스 정규화.
+        if let Some(hf_ref) = &page_content.active_footer {
+            let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
+                outer_para_index: hf_ref.para_index,
+                outer_control_index: hf_ref.control_index,
+                kind: crate::renderer::render_tree::HeaderFooterKind::Footer,
+            };
+            Self::propagate_header_footer_ref(&mut footer_node, &outer_ref, hf_ref.source_section_index);
+        }
         footer_node
     }
 
