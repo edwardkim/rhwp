@@ -2258,6 +2258,16 @@ export class InputHandler {
   /** 전체 선택 (커맨드 시스템용) */
   performSelectAll(): void { this.handleSelectAll(); }
 
+  /** 지우기 (커맨드 시스템용) — 선택 있으면 선택 삭제, 없으면 전방 1문자 삭제 */
+  performDelete(): void {
+    if (this.cursor.hasSelection()) {
+      this.deleteSelection();
+    } else {
+      const pos = this.cursor.getPosition();
+      this.handleDelete(pos, this.cursor.isInCell());
+    }
+  }
+
   /** 서식 토글 (커맨드 시스템용) */
   toggleFormat(prop: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'emboss' | 'engrave' | 'outline' | 'superscript' | 'subscript'): void {
     this.applyToggleFormat(prop);

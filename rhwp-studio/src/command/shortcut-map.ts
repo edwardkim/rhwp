@@ -15,6 +15,8 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'z', ctrl: true, shift: true }, 'edit:redo'],
   [{ key: 'y', ctrl: true }, 'edit:redo'],
   [{ key: 'a', ctrl: true }, 'edit:select-all'],
+  [{ key: 'e', ctrl: true }, 'edit:delete'],
+  [{ key: 'ㄷ', ctrl: true }, 'edit:delete'],
 
   // 파일
   [{ key: 'n', alt: true }, 'file:new-doc'],

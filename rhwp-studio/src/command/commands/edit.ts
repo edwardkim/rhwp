@@ -70,8 +70,12 @@ export const editCommands: CommandDef[] = [
     label: '지우기',
     icon: 'icon-delete',
     shortcutLabel: 'Ctrl+E',
-    canExecute: () => false, // 미구현
-    execute() { /* TODO */ },
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      ih.performDelete();
+    },
   },
   {
     id: 'edit:select-all',
