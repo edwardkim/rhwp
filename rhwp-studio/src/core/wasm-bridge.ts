@@ -1480,6 +1480,11 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).searchText(query, fromSec, fromPara, fromChar, forward, caseSensitive));
   }
 
+  searchAllText(query: string, caseSensitive: boolean, includeCells: boolean = false): import('./types').SearchHit[] {
+    if (!this.doc || typeof (this.doc as any).searchAllText !== 'function') return [];
+    return JSON.parse((this.doc as any).searchAllText(query, caseSensitive, includeCells));
+  }
+
   replaceText(sec: number, para: number, charOffset: number, length: number, newText: string): import('./types').ReplaceResult {
     if (!this.doc || typeof (this.doc as any).replaceText !== 'function') return { ok: false };
     return JSON.parse((this.doc as any).replaceText(sec, para, charOffset, length, newText));

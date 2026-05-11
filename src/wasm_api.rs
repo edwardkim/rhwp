@@ -3108,6 +3108,19 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 문서 전체 검색 (모든 매치 반환)
+    #[wasm_bindgen(js_name = searchAllText)]
+    pub fn search_all_text(
+        &self,
+        query: &str,
+        case_sensitive: bool,
+        include_cells: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .search_all_text_native(query, case_sensitive, include_cells)
+            .map_err(|e| e.into())
+    }
+
     /// 텍스트 치환 (단일)
     #[wasm_bindgen(js_name = replaceText)]
     pub fn replace_text(
