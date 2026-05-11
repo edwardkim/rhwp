@@ -264,6 +264,11 @@ export class WasmBridge {
     return this.doc.getParagraphLength(sec, para);
   }
 
+  getSectionCount(): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).getSectionCount();
+  }
+
   getParagraphCount(sec: number): number {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.getParagraphCount(sec);
