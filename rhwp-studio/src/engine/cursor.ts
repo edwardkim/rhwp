@@ -474,15 +474,15 @@ export class CursorState {
   moveToDocumentEnd(): void {
     this.preferredX = null;
     try {
-      // 마지막 구역의 마지막 문단 끝
-      const sec = 0; // 현재 단일 구역 가정
-      const paraCount = this.wasm.getParagraphCount(sec);
+      const secCount = this.wasm.getSectionCount();
+      const lastSec = secCount > 0 ? secCount - 1 : 0;
+      const paraCount = this.wasm.getParagraphCount(lastSec);
       if (paraCount > 0) {
         const lastPara = paraCount - 1;
-        const paraLen = this.wasm.getParagraphLength(sec, lastPara);
-        this.position = { sectionIndex: sec, paragraphIndex: lastPara, charOffset: paraLen };
+        const paraLen = this.wasm.getParagraphLength(lastSec, lastPara);
+        this.position = { sectionIndex: lastSec, paragraphIndex: lastPara, charOffset: paraLen };
       } else {
-        this.position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
+        this.position = { sectionIndex: lastSec, paragraphIndex: 0, charOffset: 0 };
       }
       this.updateRect();
     } catch (e) {
