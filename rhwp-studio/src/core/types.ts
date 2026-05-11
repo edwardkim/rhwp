@@ -568,6 +568,20 @@ export interface SearchResult {
   };
 }
 
+/** 전체 검색 결과 항목 */
+export interface SearchHit {
+  sec: number;
+  para: number;
+  charOffset: number;
+  length: number;
+  cellContext?: {
+    parentPara: number;
+    ctrlIdx: number;
+    cellIdx: number;
+    cellPara: number;
+  };
+}
+
 /** 치환 결과 */
 export interface ReplaceResult {
   ok: boolean;

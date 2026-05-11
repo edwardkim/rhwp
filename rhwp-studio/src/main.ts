@@ -21,6 +21,7 @@ import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showToast } from '@/ui/toast';
+import { initRhwpDev } from '@/core/rhwp-dev';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
@@ -29,10 +30,11 @@ import { Ruler } from '@/view/ruler';
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
 
-// E2E 테스트용 전역 노출 (개발 모드 전용)
+// E2E 테스트용 전역 노출 (개발 모드 전���)
 if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
   (window as any).__eventBus = eventBus;
+  initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
