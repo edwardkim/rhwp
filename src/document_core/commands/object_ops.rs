@@ -32,6 +32,46 @@ impl DocumentCore {
             crate::model::control::Control::Picture(p) => p,
             _ => return Err(HwpError::RenderError("지정된 컨트롤이 그림이 아닙니다".to_string())),
         };
+        Self::format_picture_properties_json(pic)
+    }
+
+    /// [Task #825] 머리말/꼬리말 안 그림의 속성 조회.
+    /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
+    ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
+    pub fn get_header_footer_picture_properties_native(
+        &self,
+        section_idx: usize,
+        outer_para_idx: usize,
+        outer_control_idx: usize,
+        inner_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)))?;
+        let outer_para = section.paragraphs.get(outer_para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("외부 문단 인덱스 {} 범위 초과", outer_para_idx)))?;
+        let outer_ctrl = outer_para.controls.get(outer_control_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("외부 컨트롤 인덱스 {} 범위 초과", outer_control_idx)))?;
+
+        let inner_paras: &[crate::model::paragraph::Paragraph] = match outer_ctrl {
+            crate::model::control::Control::Header(h) => &h.paragraphs,
+            crate::model::control::Control::Footer(f) => &f.paragraphs,
+            _ => return Err(HwpError::RenderError("외부 컨트롤이 머리말/꼬리말이 아닙니다".to_string())),
+        };
+
+        let inner_para = inner_paras.get(inner_para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("내부 문단 인덱스 {} 범위 초과", inner_para_idx)))?;
+        let inner_ctrl = inner_para.controls.get(inner_control_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("내부 컨트롤 인덱스 {} 범위 초과", inner_control_idx)))?;
+
+        let pic = match inner_ctrl {
+            crate::model::control::Control::Picture(p) => p,
+            _ => return Err(HwpError::RenderError("지정된 내부 컨트롤이 그림이 아닙니다".to_string())),
+        };
+        Self::format_picture_properties_json(pic)
+    }
+
+    fn format_picture_properties_json(pic: &crate::model::image::Picture) -> Result<String, HwpError> {
 
         let c = &pic.common;
         let vert_rel = match c.vert_rel_to {

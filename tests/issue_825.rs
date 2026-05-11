@@ -50,8 +50,8 @@ fn issue_825_sample11_has_header_picture() {
 
 #[test]
 fn issue_825_header_picture_lookup_via_existing_api_fails() {
-    // RED: 현행 get_picture_properties_native 는 본문 lookup 만 지원 →
-    // 머리말 그림 path 로는 결과 부정확/실패.
+    // 현행 get_picture_properties_native 는 본문 lookup 만 지원 →
+    // 머리말 그림 path 로는 결과 부정확/실패. 회귀 가드 (직접 호출 시 여전히 error).
     use rhwp::wasm_api::HwpDocument;
 
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -68,4 +68,29 @@ fn issue_825_header_picture_lookup_via_existing_api_fails() {
         result.is_err(),
         "현행 API 는 머리말 그림에 도달할 수 없어야 함 (Header 컨트롤 자체가 반환되어 Picture 변환 실패). got: Ok",
     );
+}
+
+#[test]
+fn issue_825_header_picture_lookup_via_new_api_succeeds() {
+    // GREEN: 신규 get_header_footer_picture_properties_native 로 머리말 그림 도달.
+    use rhwp::wasm_api::HwpDocument;
+
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let p = Path::new(repo_root).join("samples/hwp3-sample11.hwp");
+    let data = fs::read(&p).expect("read");
+    let doc = HwpDocument::from_bytes(&data).expect("parse");
+
+    let (si, bi, hi, ipi, ici) = find_header_picture("samples/hwp3-sample11.hwp")
+        .expect("header picture must exist");
+
+    // 신규 API: (sec, outer_body_para, outer_header_ctrl, inner_para, inner_ctrl)
+    let result = doc.get_header_footer_picture_properties_native(si, bi, hi, ipi, ici);
+    assert!(
+        result.is_ok(),
+        "신규 API 는 머리말 그림 속성을 정상 반환해야 함. got: {:?}",
+        result.as_ref().err(),
+    );
+    let json = result.unwrap();
+    assert!(json.contains("\"width\":"), "JSON 에 width 필드 포함");
+    assert!(json.contains("\"height\":"), "JSON 에 height 필드 포함");
 }
