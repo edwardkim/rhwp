@@ -698,7 +698,11 @@ export function onClick(this: any, e: MouseEvent): void {
           bringShapeToFront.call(this, picHit);
           this.cursor.clearSelection();
           this.exitPictureObjectSelectionIfNeeded();
-          this.cursor.enterPictureObjectSelectionDirect(picHit.sec, picHit.ppi, picHit.ci, 'line');
+          // [Task #825] picHit.headerFooter 동반 시 머리말/꼬리말 그림 marker 보존.
+          this.cursor.enterPictureObjectSelectionDirect(
+            picHit.sec, picHit.ppi, picHit.ci, 'line',
+            undefined, undefined, (picHit as any).headerFooter,
+          );
           this.active = true;
           this.caret.hide();
           this.selectionRenderer.clear();
@@ -728,7 +732,10 @@ export function onClick(this: any, e: MouseEvent): void {
           bringShapeToFront.call(this, picHit);
           this.cursor.clearSelection();
           this.exitPictureObjectSelectionIfNeeded();
-          this.cursor.enterPictureObjectSelectionDirect(picHit.sec, picHit.ppi, picHit.ci, 'shape');
+          this.cursor.enterPictureObjectSelectionDirect(
+            picHit.sec, picHit.ppi, picHit.ci, 'shape',
+            undefined, undefined, (picHit as any).headerFooter,
+          );
           this.active = true;
           this.caret.hide();
           this.selectionRenderer.clear();
@@ -740,7 +747,10 @@ export function onClick(this: any, e: MouseEvent): void {
         // 이미지/방정식 → 객체 선택 (z-order 미지원)
         this.cursor.clearSelection();
         this.exitPictureObjectSelectionIfNeeded();
-        this.cursor.enterPictureObjectSelectionDirect(picHit.sec, picHit.ppi, picHit.ci, picHit.type, picHit.cellIdx, picHit.cellParaIdx);
+        this.cursor.enterPictureObjectSelectionDirect(
+          picHit.sec, picHit.ppi, picHit.ci, picHit.type,
+          picHit.cellIdx, picHit.cellParaIdx, (picHit as any).headerFooter,
+        );
         this.active = true;
         this.caret.hide();
         this.selectionRenderer.clear();
