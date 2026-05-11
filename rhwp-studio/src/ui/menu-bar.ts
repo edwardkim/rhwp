@@ -109,9 +109,13 @@ export class MenuBar {
         const shortcut = item.querySelector('.md-shortcut');
         if (shortcut && shortcut.textContent?.toUpperCase() === key) {
           e.preventDefault();
-          const cmd = (item as HTMLElement).dataset.cmd;
+          const el = item as HTMLElement;
+          const cmd = el.dataset.cmd;
           if (cmd) {
             const params: Record<string, unknown> = { anchorEl: item };
+            for (const [k, v] of Object.entries(el.dataset)) {
+              if (k !== 'cmd') params[k] = v;
+            }
             this.dispatcher.dispatch(cmd, params);
           }
           this.closeAll();
