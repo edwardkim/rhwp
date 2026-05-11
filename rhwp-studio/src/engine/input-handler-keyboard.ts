@@ -391,23 +391,42 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return;
   }
 
-  // ─── F5 셀 선택 모드 진입/단계 전환 ────────────────────────────────
+  // ─── F5 블록 선택 모드 진입/해제 ────────────────────────────────
   if (e.key === 'F5') {
     e.preventDefault();
     if (this.cursor.isInCell() && !this.cursor.isInTextBox()) {
       if (this.cursor.isInCellSelectionMode()) {
-        // 이미 셀 선택 모드 → 다음 단계로 전환
         this.cursor.advanceCellSelectionPhase();
         this.updateCellSelection();
       } else {
-        // 셀 선택 모드 진입 (phase 1)
         if (this.cursor.enterCellSelectionMode()) {
           this.caret.hide();
           this.selectionRenderer.clear();
           this.updateCellSelection();
         }
       }
+    } else {
+      // 본문 블록 선택 모드 (#220)
+      if (this.cursor.isInBlockSelectionMode()) {
+        this.cursor.exitBlockSelectionMode();
+        this.selectionRenderer.clear();
+        this.updateCaret();
+      } else {
+        this.cursor.enterBlockSelectionMode();
+        this.updateSelection();
+      }
     }
+    return;
+  }
+
+  // ─── F3 선택 영역 확장 (#220) ──────────────────────────
+  if (e.key === 'F3') {
+    e.preventDefault();
+    if (!this.cursor.isInBlockSelectionMode()) {
+      this.cursor.enterBlockSelectionMode();
+    }
+    this.cursor.expandSelection();
+    this.updateSelection();
     return;
   }
 
@@ -633,6 +652,15 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     this.cursor.exitTableObjectSelection();
     this.eventBus.emit('table-object-selection-changed', false);
     // fall through
+  }
+
+  // ─── 본문 블록 선택 모드 해제 (#220) ──────────────────────
+  if (this.cursor.isInBlockSelectionMode() && e.key === 'Escape') {
+    e.preventDefault();
+    this.cursor.exitBlockSelectionMode();
+    this.selectionRenderer.clear();
+    this.updateCaret();
+    return;
   }
 
   // ─── 셀 선택 모드 중 키 처리 ────────────────────────────
