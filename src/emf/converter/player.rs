@@ -362,9 +362,13 @@ pub struct StrokeSpec {
     pub width: f32,
 }
 
-/// DIB(BITMAPINFO + bits)를 BMP 파일 포맷으로 래핑하여 base64 data URL로 반환.
+/// DIB(BITMAPINFO + bits)를 BMP 파일 포맷으로 래핑한 후 PNG 로 변환하여 base64 data URL로 반환.
 ///
 /// BMP 파일 헤더(14B): `"BM"` + file_size(u32) + reserved(u32)=0 + data_offset(u32)
+///
+/// [Task #860] SVG renderer (rsvg-convert, 브라우저) 가 `data:image/bmp` URI 미지원 →
+/// `data:image/png` 로 재인코딩 (svg.rs:1118 / shape_layout.rs:1063 과 동일 정책).
+/// BMP decode 실패 시 fallback 으로 BMP URI 반환 (graceful degradation).
 fn dib_to_bmp_data_url(bmi: &[u8], bits: &[u8]) -> String {
     let bmi_size  = bmi.len() as u32;
     let bits_size = bits.len() as u32;
@@ -379,6 +383,12 @@ fn dib_to_bmp_data_url(bmi: &[u8], bits: &[u8]) -> String {
     bmp.extend_from_slice(bmi);
     bmp.extend_from_slice(bits);
 
-    let b64 = base64::engine::general_purpose::STANDARD.encode(&bmp);
-    format!("data:image/bmp;base64,{b64}")
+    if let Some(png) = crate::renderer::svg::bmp_bytes_to_png_bytes(&bmp) {
+        let b64 = base64::engine::general_purpose::STANDARD.encode(&png);
+        format!("data:image/png;base64,{b64}")
+    } else {
+        // fallback: BMP (decode 실패 시)
+        let b64 = base64::engine::general_purpose::STANDARD.encode(&bmp);
+        format!("data:image/bmp;base64,{b64}")
+    }
 }
