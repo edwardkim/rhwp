@@ -419,7 +419,14 @@ impl TypesetEngine {
                     // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
                     self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
                 } else if !st.current_items.is_empty() {
-                    st.advance_column_or_new_page();
+                    // [Task #846] 마지막 단에서 명시적 단나누기 → 새 페이지가 아니라 같은
+                    // col_count 로 같은 페이지에 새 단-밴드를 시작 (들어갈 공간이 있으면). ≈ #768.
+                    let is_last_column = st.current_column + 1 >= st.col_count;
+                    if is_last_column && st.col_count > 1 {
+                        self.start_new_column_band(&mut st, para_idx, paragraphs);
+                    } else {
+                        st.advance_column_or_new_page();
+                    }
                 }
             }
 
@@ -2356,6 +2363,100 @@ impl TypesetEngine {
                 break;
             }
         }
+    }
+
+    /// [Task #846] 마지막 단에서 명시적 단나누기(`ColumnBreakType::Column`, 새 ColumnDef 없음)
+    /// 를 만났을 때: 새 페이지가 아니라 같은 col_count 로 같은 페이지에 새 단-밴드를 시작한다
+    /// (≈ 닫힌 #768). 단, 새 밴드가 본문에 들어갈 공간(이 문단 첫 줄)이 없으면 새 페이지로 넘긴다.
+    /// 규칙: `누적_밴드_높이 + 현_밴드_높이(= max(컬럼별 채움)) < 본문_높이` 이면 새 밴드, 아니면 새 페이지.
+    fn start_new_column_band(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        paragraphs: &[Paragraph],
+    ) {
+        st.flush_column();
+
+        // 새 밴드로 들어갈 콘텐츠에 떠다니는(글자처럼 취급이 아닌) 개체가 있으면
+        // 같은 페이지에 밴드를 만들지 않고 새 페이지로 넘긴다.
+        if Self::upcoming_band_has_floating_object(para_idx, paragraphs) {
+            st.push_new_page();
+            return;
+        }
+
+        // 방금 닫힌 밴드의 높이 = 그 밴드 각 단의 마지막 문단 vpos_end 중 최댓값.
+        let zone_off = st.current_zone_y_offset;
+        let mut band_height_px = 0.0_f64;
+        if let Some(page) = st.pages.last() {
+            for cc in page.column_contents.iter().rev() {
+                if cc.zone_y_offset != zone_off {
+                    break;
+                }
+                let last_para_idx = cc.items.iter().rev().find_map(|it| match it {
+                    PageItem::FullParagraph { para_index }
+                    | PageItem::PartialParagraph { para_index, .. }
+                    | PageItem::Table { para_index, .. }
+                    | PageItem::PartialTable { para_index, .. }
+                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                });
+                if let Some(pi) = last_para_idx {
+                    if let Some(seg) = paragraphs.get(pi).and_then(|p| p.line_segs.last()) {
+                        let v = hwpunit_to_px(
+                            seg.vertical_pos + seg.line_height + seg.line_spacing,
+                            self.dpi,
+                        );
+                        if v > band_height_px {
+                            band_height_px = v;
+                        }
+                    }
+                }
+            }
+        }
+        if band_height_px <= 0.0 {
+            band_height_px = st.current_height;
+        }
+
+        let first_line_h = paragraphs
+            .get(para_idx)
+            .and_then(|p| p.line_segs.first())
+            .map(|s| hwpunit_to_px(s.line_height + s.line_spacing, self.dpi))
+            .filter(|h| *h > 0.0)
+            .unwrap_or(1.0);
+        let room_after_band = st.available_height() - band_height_px;
+
+        if room_after_band >= first_line_h {
+            st.current_zone_y_offset += band_height_px;
+            st.current_column = 0;
+            st.current_height = 0.0;
+            st.on_first_multicolumn_page = true;
+        } else {
+            st.push_new_page();
+        }
+    }
+
+    /// 명시적 단나누기 다음 밴드(= `para_idx` 부터 다음 나누기/새 ColumnDef 직전까지)에
+    /// 떠다니는 개체(글자처럼 취급이 아닌 표/그림/그리기 개체)가 있는지.
+    fn upcoming_band_has_floating_object(para_idx: usize, paragraphs: &[Paragraph]) -> bool {
+        for (offset, p) in paragraphs[para_idx..].iter().enumerate() {
+            if offset > 0
+                && (p.column_type != ColumnBreakType::None
+                    || p.controls.iter().any(|c| matches!(c, Control::ColumnDef(_))))
+            {
+                break;
+            }
+            for ctrl in &p.controls {
+                let floating = match ctrl {
+                    Control::Table(t) => !t.common.treat_as_char,
+                    Control::Shape(s) => !s.common().treat_as_char,
+                    Control::Picture(pic) => !pic.common.treat_as_char,
+                    _ => false,
+                };
+                if floating {
+                    return true;
+                }
+            }
+        }
+        false
     }
 
     // ========================================================
