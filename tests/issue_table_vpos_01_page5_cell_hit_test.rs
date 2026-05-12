@@ -227,14 +227,15 @@ fn page5_inner_11x3_c2_row0_insert_lands_in_inner_cell() {
     doc.insert_text_in_cell_by_path(0, parent_para, &path, char_offset, "ZZZTEST")
         .unwrap_or_else(|e| panic!("insert failed: {e:?}, hit={hit}, path={:?}", path));
 
-    // inner 11x3 r=0,c=2 셀의 expected path. 이 경로에서 "ZZZTEST" 가 보여야 한다.
+    // inner 11x3 r=0,c=2 셀의 expected path. 이 경로 안에 "ZZZTEST" 가 보여야 한다.
+    // (insert 위치는 hit.charOffset 에 따라 달라지므로 cell 전체 텍스트 substring 검사)
     let expected_inner_path = vec![(0usize, 0usize, 1usize), (0usize, 2usize, 0usize)];
     let inner_text = doc
-        .get_text_in_cell_by_path(0, 34, &expected_inner_path, 0, 7)
+        .get_text_in_cell_by_path(0, 34, &expected_inner_path, 0, 64)
         .unwrap_or_else(|e| panic!("get_text inner cell failed: {e:?}"));
-    assert_eq!(
-        inner_text, "ZZZTEST",
-        "inserted text must land in inner 11x3 r=0,c=2, but inner cell first 7 chars = {:?}, hit={hit}",
+    assert!(
+        inner_text.contains("ZZZTEST"),
+        "inserted text must appear in inner 11x3 r=0,c=2 (any position), but inner cell text = {:?}, hit={hit}",
         inner_text
     );
 }

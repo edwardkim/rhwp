@@ -643,8 +643,14 @@ impl DocumentCore {
         // 1. 정확한 bbox 히트 검사
         // 셀/글상자 TextRun을 본문 TextRun보다 우선한다.
         // (본문 TextRun이 컨트롤 높이만큼 큰 bbox를 가져서 글상자 영역을 덮을 수 있음)
+        // 셀 후보가 여럿이면 bbox 면적이 가장 작은 것 = 가장 specific 한 셀 선택.
+        // (Task #717 의 cell_bboxes selection L671-675 와 동일 best-match 패턴 — closes #857.
+        //  중첩 표에서 외곽 셀의 빈 placeholder TextRun (bbox 가 paragraph 영역 전체) 이
+        //  inner cell 의 실제 TextRun (작은 bbox) 보다 트리 순서상 먼저 매칭되어
+        //  외곽이 선점되던 결함 정정.)
         let mut hit_body: Option<(usize, usize)> = None;   // (run_idx, char_offset)
         let mut hit_cell: Option<(usize, usize)> = None;
+        let mut hit_cell_area: Option<i64> = None;
         for (i, run) in runs.iter().enumerate() {
             if x >= run.bbox_x && x <= run.bbox_x + run.bbox_w
                 && y >= run.bbox_y && y <= run.bbox_y + run.bbox_h
@@ -652,8 +658,10 @@ impl DocumentCore {
                 let local_x = x - run.bbox_x;
                 let char_offset = find_char_at_x(&run.char_positions, local_x);
                 if run.cell_context.is_some() {
-                    if hit_cell.is_none() {
+                    let area = (run.bbox_w.max(0.0) * run.bbox_h.max(0.0) * 1000.0) as i64;
+                    if hit_cell_area.map_or(true, |best_area| area < best_area) {
                         hit_cell = Some((i, run.char_start + char_offset));
+                        hit_cell_area = Some(area);
                     }
                 } else if hit_body.is_none() {
                     hit_body = Some((i, run.char_start + char_offset));
