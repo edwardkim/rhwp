@@ -150,3 +150,8 @@ unexpected_cfgs = { level = "allow", check-cfg = ['cfg(feature, values("tracing"
 [[example]]
 name = "pr599_png_gateway"
 required-features = ["native-skia"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "debuginfo"
