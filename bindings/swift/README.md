@@ -4,11 +4,28 @@ Swift wrapper for the shared native ABI in `bindings/Native`.
 
 The package exposes:
 
+- `Rhwp.readText(inputFile:page:)`
 - `Rhwp.exportText(inputFile:outputDirectory:page:)`
 - `Rhwp.exportMarkdown(inputFile:outputDirectory:page:)`
+- `RhwpDocumentTextView(inputFile:page:)` for SwiftUI text display
 
-Both methods return `RhwpExportResult` and throw `RhwpError` when the native
-call fails.
+The export methods return `RhwpExportResult`; direct reads return
+`RhwpDocumentText`. All methods throw `RhwpError` when the native call fails.
+
+## SwiftUI Display
+
+```swift
+import Rhwp
+import SwiftUI
+
+struct DocumentScreen: View {
+    let fileURL: URL
+
+    var body: some View {
+        RhwpDocumentTextView(inputFile: fileURL)
+    }
+}
+```
 
 ## Build the Native Library
 

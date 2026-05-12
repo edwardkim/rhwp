@@ -20,14 +20,20 @@ final class RhwpTests: XCTestCase {
         XCTAssertEqual(result.outputFiles, [URL(fileURLWithPath: "/tmp/page.txt")])
     }
 
+    func testReadTextCallsNativeLibraryWithoutExportingTxt() throws {
+        let inputFile = repoRoot().appendingPathComponent("samples/KTX.hwp")
+
+        let document = try Rhwp.readText(inputFile: inputFile, page: .index(0))
+
+        XCTAssertTrue(document.ok)
+        XCTAssertGreaterThan(document.pageCount ?? 0, 0)
+        XCTAssertEqual(document.pages?.count, 1)
+        XCTAssertEqual(document.pages?.first?.index, 0)
+        XCTAssertFalse(document.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
     func testExportTextCallsNativeLibrary() throws {
-        let repoRoot = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let inputFile = repoRoot.appendingPathComponent("samples/KTX.hwp")
+        let inputFile = repoRoot().appendingPathComponent("samples/KTX.hwp")
         let outputDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("rhwp-swift-\(UUID().uuidString)")
 
@@ -41,5 +47,14 @@ final class RhwpTests: XCTestCase {
         XCTAssertGreaterThan(result.pageCount ?? 0, 0)
         XCTAssertEqual(result.outputFiles.count, 1)
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.outputFiles[0].path))
+    }
+
+    private func repoRoot() -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
     }
 }

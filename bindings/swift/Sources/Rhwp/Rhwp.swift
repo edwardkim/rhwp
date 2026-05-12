@@ -27,6 +27,26 @@ public struct RhwpExportResult: Codable, Sendable, Equatable {
     }
 }
 
+public struct RhwpTextPage: Codable, Sendable, Equatable, Identifiable {
+    public let index: Int
+    public let text: String
+
+    public var id: Int {
+        index
+    }
+}
+
+public struct RhwpDocumentText: Codable, Sendable, Equatable {
+    public let ok: Bool
+    public let pageCount: Int?
+    public let pages: [RhwpTextPage]?
+    public let error: String?
+
+    public var text: String {
+        (pages ?? []).map(\.text).joined(separator: "\n")
+    }
+}
+
 public enum RhwpError: Error, LocalizedError, Equatable {
     case nativeReturnedNull
     case invalidUTF8
@@ -48,6 +68,17 @@ public enum RhwpError: Error, LocalizedError, Equatable {
 }
 
 public enum Rhwp {
+    public static func readText(
+        inputFile: URL,
+        page: RhwpPage = .all
+    ) throws -> RhwpDocumentText {
+        try callNativeText(
+            inputFile: inputFile,
+            page: page,
+            function: rhwp_read_text
+        )
+    }
+
     public static func exportText(
         inputFile: URL,
         outputDirectory: URL,
@@ -111,5 +142,41 @@ public enum Rhwp {
         }
 
         throw RhwpError.exportFailed(result.error ?? "rhwp export failed.")
+    }
+
+    private static func callNativeText(
+        inputFile: URL,
+        page: RhwpPage,
+        function: (UnsafePointer<CChar>?, Int32) -> UnsafeMutablePointer<CChar>?
+    ) throws -> RhwpDocumentText {
+        let pointer = inputFile.path.withCString { inputPath in
+            function(inputPath, page.ffiValue)
+        }
+
+        guard let pointer else {
+            throw RhwpError.nativeReturnedNull
+        }
+
+        defer {
+            rhwp_string_free(pointer)
+        }
+
+        guard let payload = String(validatingUTF8: pointer) else {
+            throw RhwpError.invalidUTF8
+        }
+
+        let data = Data(payload.utf8)
+        let result: RhwpDocumentText
+        do {
+            result = try JSONDecoder().decode(RhwpDocumentText.self, from: data)
+        } catch {
+            throw RhwpError.invalidJSON(payload)
+        }
+
+        if result.ok {
+            return result
+        }
+
+        throw RhwpError.exportFailed(result.error ?? "rhwp read failed.")
     }
 }
