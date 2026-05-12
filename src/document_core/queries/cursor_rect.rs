@@ -318,7 +318,7 @@ impl DocumentCore {
     /// 페이지 좌표에서 문서 위치 찾기 (네이티브)
     pub fn hit_test_native(&self, page_num: u32, x: f64, y: f64) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-        use crate::renderer::layout::{compute_char_positions, CellContext};
+        use crate::renderer::layout::{compute_char_positions, CellContext, CellPathEntry};
 
         let tree = self.build_page_tree_cached(page_num)?;
 
@@ -371,6 +371,82 @@ impl DocumentCore {
             cell_context: Option<CellContext>,
         }
 
+        fn table_ctx_from_node(
+            node: &RenderNode,
+            current_table_ctx: Option<&CellContext>,
+            current_cell_ctx: Option<&CellContext>,
+        ) -> Option<CellContext> {
+            if let RenderNodeType::Table(ref tn) = node.node_type {
+                match (tn.para_index, tn.control_index) {
+                    (Some(pi), Some(ci)) => {
+                        if let Some(parent_ctx) = current_cell_ctx {
+                            let mut ctx = parent_ctx.clone();
+                            if let Some(last) = ctx.path.last_mut() {
+                                last.cell_para_index = pi;
+                            }
+                            ctx.path.push(CellPathEntry {
+                                control_index: ci,
+                                cell_index: 0,
+                                cell_para_index: 0,
+                                text_direction: 0,
+                            });
+                            Some(ctx)
+                        } else {
+                            Some(CellContext {
+                                parent_para_index: pi,
+                                path: vec![CellPathEntry {
+                                    control_index: ci,
+                                    cell_index: 0,
+                                    cell_para_index: 0,
+                                    text_direction: 0,
+                                }],
+                            })
+                        }
+                    }
+                    _ => current_table_ctx.cloned(),
+                }
+            } else {
+                current_table_ctx.cloned()
+            }
+        }
+
+        fn cell_ctx_for_table_cell(
+            table_ctx: Option<&CellContext>,
+            cell_index: usize,
+            cell_para_index: usize,
+            text_direction: u8,
+        ) -> Option<CellContext> {
+            table_ctx.map(|ctx| {
+                let mut cell_ctx = ctx.clone();
+                if let Some(last) = cell_ctx.path.last_mut() {
+                    last.cell_index = cell_index;
+                    last.cell_para_index = cell_para_index;
+                    last.text_direction = text_direction;
+                }
+                cell_ctx
+            })
+        }
+
+        fn effective_cell_context(
+            text_ctx: &Option<CellContext>,
+            traversal_ctx: &Option<CellContext>,
+        ) -> Option<CellContext> {
+            match (text_ctx, traversal_ctx) {
+                (Some(text_ctx), Some(traversal_ctx))
+                    if traversal_ctx.path.len() >= text_ctx.path.len() =>
+                {
+                    let mut ctx = traversal_ctx.clone();
+                    if let (Some(dst), Some(src)) = (ctx.path.last_mut(), text_ctx.path.last()) {
+                        dst.cell_para_index = src.cell_para_index;
+                        dst.text_direction = src.text_direction;
+                    }
+                    Some(ctx)
+                }
+                (Some(text_ctx), _) => Some(text_ctx.clone()),
+                (None, _) => None,
+            }
+        }
+
         fn collect_runs(
             node: &RenderNode,
             runs: &mut Vec<RunInfo>,
@@ -380,6 +456,8 @@ impl DocumentCore {
             current_table_id: Option<u32>,
             // Table 노드에서 전파되는 (section_index, parent_para_index, control_index)
             current_table_meta: Option<(usize, usize, usize)>,
+            current_table_ctx: Option<CellContext>,
+            current_cell_ctx: Option<CellContext>,
         ) {
             // Column 노드 진입 시 칼럼 인덱스 전파
             let col = if let RenderNodeType::Column(col_idx) = node.node_type {
@@ -393,17 +471,37 @@ impl DocumentCore {
             } else {
                 current_table_id
             };
-            let table_meta = if let RenderNodeType::Table(ref tn) = node.node_type {
+            let table_ctx = table_ctx_from_node(
+                node,
+                current_table_ctx.as_ref(),
+                current_cell_ctx.as_ref(),
+            );
+            let table_section_index = if let RenderNodeType::Table(ref tn) = node.node_type {
+                tn.section_index.or_else(|| current_table_meta.map(|(si, _, _)| si))
+            } else {
+                current_table_meta.map(|(si, _, _)| si)
+            };
+            let table_meta = if let Some(ref ctx) = table_ctx {
+                table_section_index.map(|si| (si, ctx.parent_para_index, ctx.path[0].control_index))
+            } else if let RenderNodeType::Table(ref tn) = node.node_type {
                 match (tn.section_index, tn.para_index, tn.control_index) {
                     (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
-                    _ => None,
+                    _ => current_table_meta,
                 }
             } else {
                 current_table_meta
             };
+            let mut child_cell_ctx = current_cell_ctx.clone();
             // TableCell 노드의 bbox 수집
             if let RenderNodeType::TableCell(ref tc) = node.node_type {
                 if let Some(cell_idx) = tc.model_cell_index {
+                    let cell_ctx = cell_ctx_for_table_cell(
+                        table_ctx.as_ref(),
+                        cell_idx as usize,
+                        0,
+                        tc.text_direction,
+                    );
+                    child_cell_ctx = cell_ctx.clone();
                     // table_meta가 있으면 즉시 보완, 없으면 자식 TextRun에서 보완
                     let (si, ppi, ci, has_meta) = table_meta
                         .map(|(si, ppi, ci)| (si, ppi, ci, true))
@@ -420,12 +518,13 @@ impl DocumentCore {
                         w: node.bbox.width,
                         h: node.bbox.height,
                         has_meta,
-                        cell_context: None,
+                        cell_context: cell_ctx,
                     });
                 }
             }
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 if let (Some(si), Some(pi)) = (text_run.section_index, text_run.para_index) {
+                    let cell_context = effective_cell_context(&text_run.cell_context, &current_cell_ctx);
                     // 머리말/꼬리말·각주 마커 TextRun 건너뛰기
                     if pi >= (usize::MAX - 3000) { /* skip marker runs */ }
                     else if let Some(cs) = text_run.char_start {
@@ -445,7 +544,7 @@ impl DocumentCore {
                             bbox_y: node.bbox.y,
                             bbox_w: node.bbox.width,
                             bbox_h: node.bbox.height,
-                            cell_context: text_run.cell_context.clone(),
+                            cell_context,
                             is_textbox: false,
                             column_index: col,
                             table_id: current_table_id,
@@ -459,13 +558,23 @@ impl DocumentCore {
                             bbox_y: node.bbox.y,
                             bbox_w: node.bbox.width,
                             bbox_h: node.bbox.height,
-                            cell_context: text_run.cell_context.clone(),
+                            cell_context,
                         });
                     }
                 }
             }
             for child in &node.children {
-                collect_runs(child, runs, guide_runs, cell_bboxes, col, current_table_id, table_meta);
+                collect_runs(
+                    child,
+                    runs,
+                    guide_runs,
+                    cell_bboxes,
+                    col,
+                    current_table_id,
+                    table_meta,
+                    table_ctx.clone(),
+                    child_cell_ctx.clone(),
+                );
             }
         }
 
@@ -511,7 +620,17 @@ impl DocumentCore {
         let mut runs: Vec<RunInfo> = Vec::new();
         let mut guide_runs: Vec<GuideRunInfo> = Vec::new();
         let mut cell_bboxes: Vec<CellBboxInfo> = Vec::new();
-        collect_runs(&tree.root, &mut runs, &mut guide_runs, &mut cell_bboxes, None, None, None);
+        collect_runs(
+            &tree.root,
+            &mut runs,
+            &mut guide_runs,
+            &mut cell_bboxes,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
 
         // cell_bboxes의 section_index/parent_para_index/control_index/cellPath를 runs로 보완.
         // Table 노드에서 이미 채워진 최외곽 메타는 유지하되, 중첩 표의 Table 노드에는

@@ -1,0 +1,162 @@
+# Task #850 최종 결과 보고서
+
+**이슈**: [#850 — rhwp-studio v0.7.11 회귀: exam_social/exam_science 성명 칸 입력 시 컨트롤 인덱스 0 범위 초과](https://github.com/edwardkim/rhwp/issues/850)  
+**브랜치**: `local/task850` (`upstream/devel` 기준)  
+**마일스톤**: v1.0.0 (M100)
+
+## 1. 결함 요약
+
+`rhwp-studio`에서 수능형 샘플 문서 1쪽 상단 답안지 영역의 `성명` 입력칸에 이름을 입력하면 다음 오류가 발생하고 입력이 반영되지 않았다.
+
+```text
+Uncaught 렌더링 오류: 컨트롤 인덱스 0 범위 초과
+```
+
+확인 문서:
+
+- `samples/exam_social.hwp`
+- `samples/exam_science.hwp`
+
+사용자 확인 기준으로 `v0.7.10`에서는 정상 입력되었고 `v0.7.11`부터 실패한 회귀다.
+
+## 2. 원인
+
+상단 답안지의 `성명` 칸은 문서 루트 문단 3의 표가 아니라 첫 문단의 상단 표 내부에 있는 중첩 표다.
+
+`exam_social.hwp` 구조:
+
+- 외곽 상단 표: `section 0 / paragraph 0 / control 4`
+- 성명 입력칸: 외곽 표 `cellIndex=0`, `cellParaIndex=3` 내부 1x2 중첩 표의 두 번째 셀
+- 기대 경로: `[(4, 0, 3), (0, 1, 0)]`
+
+`exam_science.hwp` 구조:
+
+- 외곽 상단 표: `section 0 / paragraph 0 / control 6`
+- 성명 입력칸: 외곽 표 `cellIndex=0`, `cellParaIndex=3` 내부 1x2 중첩 표의 두 번째 셀
+- 기대 경로: `[(6, 0, 3), (0, 1, 0)]`
+
+하지만 기존 `hit_test_native()`는 내부 TAC 표의 로컬 메타를 문서 루트 기준처럼 반환했다.
+
+```json
+{
+  "parentParaIndex": 3,
+  "controlIndex": 0,
+  "cellPath": [
+    { "controlIndex": 0, "cellIndex": 1, "cellParaIndex": 0 }
+  ]
+}
+```
+
+이 값이 Studio 입력 경로로 전달되면 `insertTextInCell(0, 3, 0, 1, 0, 0, text)`가 호출되어 루트 문단 3의 컨트롤 0을 찾다가 `컨트롤 인덱스 0 범위 초과`가 발생했다.
+
+## 3. 수정
+
+수정 파일:
+
+- `src/document_core/queries/cursor_rect.rs`
+
+`hit_test_native()`의 렌더 트리 수집 단계에서 조상 표/셀 컨텍스트를 함께 전파하도록 보정했다.
+
+핵심 보정:
+
+1. `table_ctx_from_node()`
+   - Table 노드가 셀 내부에 있고 `para_index/control_index`를 가진 경우, 이를 문서 루트 메타가 아니라 현재 셀의 `cellParaIndex`와 내부 표 `controlIndex`로 해석한다.
+2. `cell_ctx_for_table_cell()`
+   - TableCell 진입 시 현재 표 경로에 `cellIndex`, `cellParaIndex`, `textDirection`을 반영한다.
+3. `effective_cell_context()`
+   - TextRun 자체가 내부 표 로컬 경로만 가진 경우, 조상 traversal context가 더 깊으면 전체 경로를 보존한 traversal context를 우선 사용한다.
+
+Studio TypeScript는 수정하지 않았다. Studio는 이미 `cellPath.length > 1`이면 `insertTextInCellByPath`를 호출하므로, Rust hit-test 반환값만 정상화하면 기존 경로로 해결된다.
+
+## 4. 회귀 테스트
+
+신규 테스트:
+
+- `tests/issue_850_answer_sheet_name_hit_test.rs`
+
+검증 항목:
+
+- `exam_social.hwp` 성명 칸 hit-test가 `parentParaIndex=0`, `controlIndex=4`, `cellPath=[(4,0,3),(0,1,0)]`를 반환
+- `exam_science.hwp` 성명 칸 hit-test가 `parentParaIndex=0`, `controlIndex=6`, `cellPath=[(6,0,3),(0,1,0)]`를 반환
+- 두 문서 모두 `insert_text_in_cell_by_path()`로 `"홍"` 삽입 후 `get_text_in_cell_by_path()`로 확인
+
+## 5. 검증
+
+### #850 신규 테스트
+
+```bash
+cargo test --test issue_850_answer_sheet_name_hit_test -- --nocapture
+```
+
+```text
+test result: ok. 2 passed; 0 failed
+```
+
+### #717 기존 테스트 보존
+
+```bash
+cargo test --test issue_717_table_cell_hit_test -- --nocapture
+```
+
+```text
+test result: ok. 3 passed; 0 failed
+```
+
+### 기존 중첩 표 path API
+
+```bash
+cargo test --lib test_task105_nested_table_path_api -- --nocapture
+```
+
+```text
+test result: ok. 1 passed; 0 failed
+```
+
+### 전체 테스트
+
+```bash
+cargo test
+```
+
+첫 실행은 sandbox 네트워크 제한으로 `static.crates.io` DNS 조회에 실패했다. 승인 후 `web-sys v0.3.95`를 다운로드하여 재실행했고 전체 테스트가 통과했다.
+
+```text
+test result: ok. 1232 passed; 0 failed; 2 ignored
+```
+
+통합 테스트와 doc-test까지 모두 통과했다.
+
+## 6. 기존 경고
+
+전체 테스트 중 기존 warning 6건이 출력되었다.
+
+- `src/renderer/equation/parser.rs`: duplicated attribute
+- `src/renderer/layout/integration_tests.rs`: unnecessary parentheses
+- `src/serializer/hwpx/field.rs`: non-snake-case test name
+- `src/wasm_api/tests.rs`: non-snake-case test name 1건
+- `src/wasm_api/tests.rs`: unused Result 2건
+
+#850 수정과 직접 관련된 실패는 없다.
+
+## 7. 산출물
+
+| 영역 | 파일 |
+|------|------|
+| 수행 계획서 | `mydocs/plans/task_m100_850.md` |
+| 구현 계획서 | `mydocs/plans/task_m100_850_impl.md` |
+| Stage 1 보고서 | `mydocs/working/task_m100_850_stage1.md` |
+| Stage 2 보고서 | `mydocs/working/task_m100_850_stage2.md` |
+| Stage 3 보고서 | `mydocs/working/task_m100_850_stage3.md` |
+| Stage 4 보고서 | `mydocs/working/task_m100_850_stage4.md` |
+| 최종 보고서 | `mydocs/report/task_m100_850_report.md` |
+| 본질 정정 | `src/document_core/queries/cursor_rect.rs` |
+| 회귀 가드 | `tests/issue_850_answer_sheet_name_hit_test.rs` |
+
+## 8. 결론
+
+#850 회귀는 Studio 입력 라우터 문제가 아니라 Rust `hit_test_native()`가 상단 답안지 내부 TAC 표의 로컬 메타를 문서 루트 컨텍스트처럼 반환한 문제였다.
+
+조상 표/셀 컨텍스트를 수집 단계에서 전파해 외곽 표 기준 `parentParaIndex/controlIndex`와 전체 `cellPath`를 복원했다. 이로써 `exam_social.hwp`, `exam_science.hwp`의 `성명` 입력칸이 기존 Studio path 기반 입력 API로 정상 처리된다.
+
+기존 #717 hit-test 회귀 테스트와 전체 `cargo test` 모두 통과했다.
+
