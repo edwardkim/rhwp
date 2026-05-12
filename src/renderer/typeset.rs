@@ -622,15 +622,30 @@ impl TypesetEngine {
                             },
                         );
                     } else {
-                        // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음
-                        st.current_column_wrap_around_paras.push(
-                            crate::renderer::pagination::WrapAroundPara {
-                                para_index: para_idx,
-                                table_para_index: st.wrap_around_table_para,
-                                has_text: !is_empty_para,
-                            }
-                        );
-                        continue;
+                        // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음.
+                        // [Task #855] 단, 첫 줄만 표 옆이고 나머지 줄이 본문 전체 폭으로
+                        // 흐르는 문단(= 마지막 LINE_SEG 가 wrap zone cs/sw 와 불일치)은
+                        // 0-높이 흡수 대상이 아니다. 첫 LINE_SEG 만 보고 흡수하면 그런 문단이
+                        // 통째로 페이지 흐름에서 누락된다. 이 경우 wrap zone 을 종료하고
+                        // 일반 텍스트 배치로 폴백한다 (LINE_SEG cs/sw 가 이미 wrap 형상을
+                        // 인코딩하므로 layout 이 첫 줄을 표 옆에, 나머지를 표 아래에 렌더).
+                        let last_seg_match = para.line_segs.last().map(|s|
+                            s.column_start == st.wrap_around_cs && s.segment_width as i32 == st.wrap_around_sw
+                        ).unwrap_or(false);
+                        if last_seg_match || is_empty_para {
+                            st.current_column_wrap_around_paras.push(
+                                crate::renderer::pagination::WrapAroundPara {
+                                    para_index: para_idx,
+                                    table_para_index: st.wrap_around_table_para,
+                                    has_text: !is_empty_para,
+                                }
+                            );
+                            continue;
+                        }
+                        st.wrap_around_cs = -1;
+                        st.wrap_around_sw = -1;
+                        st.wrap_around_any_seg = false;
+                        // fall through → 일반 paragraph 배치
                     }
                 } else {
                     // 매칭 실패 → wrap zone 종료, 정상 처리 진행
