@@ -1027,11 +1027,16 @@ impl LayoutEngine {
     ) {
         if layout.column_areas.len() >= 2 && layout.separator_type > 0 {
             let line_width = border_width_to_px(layout.separator_width).max(0.5);
+            // HWP 선 종류 코드 (doc_info.rs:294 line_type 매핑과 정합):
+            // 1=실선, 2=Dash, 3=Dot(점선), 5=DashDotDot, 6=LongDash, 7=Circle(원형 점선),
+            // 8+ (이중선/물결 등) 은 Solid 대체.
             let dash = match layout.separator_type {
                 2 => StrokeDash::Dash,
                 3 => StrokeDash::Dot,
                 4 => StrokeDash::DashDot,
                 5 => StrokeDash::DashDotDot,
+                6 => StrokeDash::Dash,       // LongDash → Dash 근사
+                7 => StrokeDash::Dot,        // Circle(원형 점선) → Dot
                 _ => StrokeDash::Solid,
             };
             for i in 0..layout.column_areas.len() - 1 {
