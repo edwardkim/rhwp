@@ -19,7 +19,14 @@ pub fn as_point_string(point: &PointS) -> String {
 impl crate::wmf::converter::Bitmap {
     pub fn as_data_url(&self) -> String {
         use base64::{engine::general_purpose::STANDARD, Engine};
-        format!("data:image/bmp;base64,{}", STANDARD.encode(self.as_slice()))
+        // [Task #860] SVG renderer (rsvg-convert, 브라우저) 가 `data:image/bmp` URI 미지원.
+        // BMP → PNG 재인코딩 후 data:image/png URI 로 embed.
+        // BMP decode 실패 시 fallback 으로 BMP URI 유지 (graceful degradation).
+        if let Some(png) = crate::renderer::svg::bmp_bytes_to_png_bytes(self.as_slice()) {
+            format!("data:image/png;base64,{}", STANDARD.encode(&png))
+        } else {
+            format!("data:image/bmp;base64,{}", STANDARD.encode(self.as_slice()))
+        }
     }
 }
 

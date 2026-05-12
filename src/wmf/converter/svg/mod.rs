@@ -68,10 +68,36 @@ impl crate::wmf::converter::Player for SVGPlayer {
     fn generate(self) -> Result<Vec<u8>, PlayError> {
         let Self { context_current, definitions, elements, .. } = self;
 
-        let (x, y, width, height) = context_current.window.as_view_box();
+        // [Task #860] WMF binary 의 SetWindowExt 가 actual element 의 bbox 보다 작은 경우
+        // (예: HWP3 sample14 의 WMF 가 1189 인데 image y+height=2304) viewBox 가 element
+        // 를 cover 못 해 rsvg-convert 렌더 시 잘림. element 들의 max x+width / y+height
+        // 까지 viewBox 확장 (한컴 SVG 변환의 자동 확장 시멘틱 정합).
+        let (vb_x, vb_y, mut vb_w, mut vb_h) = context_current.window.as_view_box();
+        let (vb_x, vb_y) = (i32::from(vb_x), i32::from(vb_y));
+        let mut vb_w_i32 = i32::from(vb_w);
+        let mut vb_h_i32 = i32::from(vb_h);
+        for elem in elements.iter() {
+            let max_x = element_max_x(elem);
+            let max_y = element_max_y(elem);
+            if let Some(mx) = max_x {
+                let needed_w = mx - vb_x;
+                if needed_w > vb_w_i32 {
+                    vb_w_i32 = needed_w;
+                }
+            }
+            if let Some(my) = max_y {
+                let needed_h = my - vb_y;
+                if needed_h > vb_h_i32 {
+                    vb_h_i32 = needed_h;
+                }
+            }
+        }
+        // 사용 안 함 (호환성)
+        let _ = (&mut vb_w, &mut vb_h);
+
         let mut document = Node::new("svg")
             .set("xmlns", "http://www.w3.org/2000/svg")
-            .set("viewBox", format!("{x} {y} {width} {height}"));
+            .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
 
         if !definitions.is_empty() {
             let mut defs = Node::new("defs");
@@ -2265,4 +2291,31 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ) -> Result<Self, PlayError> {
         Ok(self)
     }
+}
+
+/// [Task #860] Node 의 x+width attribute 합산 (viewBox 자동 확장용).
+/// `<image>`, `<rect>`, `<polygon>` 등의 좌표 attribute 를 parse 하여
+/// 최대 x+width 위치 반환. attribute 미존재 시 None.
+fn element_max_x(elem: &Node) -> Option<i32> {
+    let s = elem.to_string();
+    let x = parse_attr_i32(&s, "x").unwrap_or(0);
+    let w = parse_attr_i32(&s, "width").unwrap_or(0);
+    if w > 0 { Some(x + w) } else { None }
+}
+
+/// [Task #860] Node 의 y+height attribute 합산 (viewBox 자동 확장용).
+fn element_max_y(elem: &Node) -> Option<i32> {
+    let s = elem.to_string();
+    let y = parse_attr_i32(&s, "y").unwrap_or(0);
+    let h = parse_attr_i32(&s, "height").unwrap_or(0);
+    if h > 0 { Some(y + h) } else { None }
+}
+
+/// 단순 SVG attribute 값 parse (i32). 미존재 또는 parse 실패 시 None.
+fn parse_attr_i32(s: &str, attr: &str) -> Option<i32> {
+    let needle = format!(" {attr}=\"");
+    let start = s.find(&needle)?;
+    let val_start = start + needle.len();
+    let val_end = s[val_start..].find('"')?;
+    s[val_start..val_start + val_end].parse().ok()
 }
