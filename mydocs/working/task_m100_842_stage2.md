@@ -16,7 +16,20 @@ shortcut.hwp 8페이지 우측탭 정렬:
 - `(회색)+/-`, `(쉼표)` 등 한 run 으로 합쳐지는 항목: 기존대로 정상(변화 없음).
 - 회귀: `cargo test` 전건 통과 (8/8 svg_snapshot 포함).
 
-## 미해결 잔여 (결함 #4 일부 — `Alt+P/Ctrl+P` 계열)
+## Stage 2b — `Alt+P/Ctrl+P` 계열 추가 수정 (완료)
+
+원인 확정: char-shape 경계가 `\t` **앞**에 놓이는 단축키 항목(`끝`(id7) + `\tAlt+X`(id8)) 은 cross-run 핸들러(직전 run 이 `\t` 로 끝나는 경우) 대상이 아니라 in-run 탭 경로(`compute_char_positions` 의 inline_tabs 처리)를 탄다. 그 경로의 RIGHT(no-leader) 탭 분기가 한컴이 저장한 `ext[0]`(한컴 metrics 기준 resolved 위치)를 사용 → fallback 폰트 환경에서 우변 폭 차이만큼(~28px) 우측 초과.
+
+수정 — `src/renderer/layout/text_measurement.rs` `compute_char_positions` 의 inline-tab RIGHT 분기를 `(2, _) if fill_low != 0` → `(2, _)` 로 확장. RIGHT 인라인 탭은 leader 유무 무관하게 `body_right - our_seg_w` 로 정렬 (한컴 `ext[0]` 무시 — cross-run RIGHT 핸들러와 동일 룰). 코멘트상 기존 의도("단일 룰")와 정합.
+
+결과:
+- shortcut.hwp 8페이지 우측탭 항목 전부 정렬 폭 [961.7, 972.7] 으로 수렴 (`Alt+X`/`Alt+F9`/`Ctrl+W,H`/`Ctrl+K,M`/`Alt+Shift+*` 등 ~28px 초과 해소).
+- `cargo test` 전건 통과 (svg_snapshot 8/8 포함).
+- 잔여 미세 outlier: `흰색 글자색 Ctrl+M,W` (~10px 짧음) — 별개 원인, 수용 가능 범위.
+
+비고: `cargo clippy` 는 pre-existing `error: unwrap() will always panic` (`table_ops.rs:1007`, `object_ops.rs:304`) 로 컴파일 실패 — 본 타스크와 무관.
+
+## (구) 미해결 잔여 — 위 Stage 2b 에서 해소됨
 
 증상: char-shape 경계가 `\t` **앞**에 놓여 run 이 `\t` 로 시작하는 항목(`끝`(id7) + `\tAlt+X`(id8) 등 — 단축키 우변이 별도 bold run 이고 그 run 이 `\t` 로 시작) 은 cross-run 핸들러("`\t` 로 끝나는 run 의 다음 run 정렬")가 트리거되지 않는다. 이 경우 in-run 탭 처리(`compute_char_positions`)가 `compute_char_positions`/`available_width` 기준으로 우측 정렬하나 실제 정렬 위치가 ~28~32px 우측으로 어긋남(`Alt+X`/`Alt+F9`/`Ctrl+W,H`/`Ctrl+K,M`/`Alt+Shift+*` 등 ASCII 로 끝나는 단축키).
 
