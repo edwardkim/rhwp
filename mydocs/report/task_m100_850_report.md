@@ -55,7 +55,7 @@ Uncaught 렌더링 오류: 컨트롤 인덱스 0 범위 초과
 
 - `src/document_core/queries/cursor_rect.rs`
 
-`hit_test_native()`의 렌더 트리 수집 단계에서 조상 표/셀 컨텍스트를 함께 전파하도록 보정했다.
+`hit_test_native()`와 `get_cursor_rect_by_path_native()`의 렌더 트리 수집 단계에서 조상 표/셀 컨텍스트를 함께 전파하도록 보정했다.
 
 핵심 보정:
 
@@ -65,6 +65,8 @@ Uncaught 렌더링 오류: 컨트롤 인덱스 0 범위 초과
    - TableCell 진입 시 현재 표 경로에 `cellIndex`, `cellParaIndex`, `textDirection`을 반영한다.
 3. `effective_cell_context()`
    - TextRun 자체가 내부 표 로컬 경로만 가진 경우, 조상 traversal context가 더 깊으면 전체 경로를 보존한 traversal context를 우선 사용한다.
+4. `get_cursor_rect_by_path_native()` 후속 보정
+   - path 기반 삽입 후 커서 좌표 조회도 동일한 전체 `cellPath` 기준으로 TextRun을 찾도록 수정했다.
 
 Studio TypeScript는 수정하지 않았다. Studio는 이미 `cellPath.length > 1`이면 `insertTextInCellByPath`를 호출하므로, Rust hit-test 반환값만 정상화하면 기존 경로로 해결된다.
 
@@ -79,6 +81,7 @@ Studio TypeScript는 수정하지 않았다. Studio는 이미 `cellPath.length >
 - `exam_social.hwp` 성명 칸 hit-test가 `parentParaIndex=0`, `controlIndex=4`, `cellPath=[(4,0,3),(0,1,0)]`를 반환
 - `exam_science.hwp` 성명 칸 hit-test가 `parentParaIndex=0`, `controlIndex=6`, `cellPath=[(6,0,3),(0,1,0)]`를 반환
 - 두 문서 모두 `insert_text_in_cell_by_path()`로 `"홍"` 삽입 후 `get_text_in_cell_by_path()`로 확인
+- 삽입 후 `get_cursor_rect_by_path()`가 전체 `cellPath`로 정상 좌표를 반환하는지 확인
 
 ## 5. 검증
 
@@ -118,13 +121,36 @@ test result: ok. 1 passed; 0 failed
 cargo test
 ```
 
-첫 실행은 sandbox 네트워크 제한으로 `static.crates.io` DNS 조회에 실패했다. 승인 후 `web-sys v0.3.95`를 다운로드하여 재실행했고 전체 테스트가 통과했다.
+첫 실행은 sandbox 네트워크 제한으로 `static.crates.io` DNS 조회에 실패했다. 승인 후 `web-sys v0.3.95`를 다운로드하여 재실행했고 전체 테스트가 통과했다. Stage 5 후속 수정 뒤에도 다시 전체 테스트를 실행했다.
 
 ```text
 test result: ok. 1232 passed; 0 failed; 2 ignored
 ```
 
 통합 테스트와 doc-test까지 모두 통과했다.
+
+### WASM/브라우저 검증
+
+`rhwp-studio`는 `../pkg/rhwp.js`, `../pkg/rhwp_bg.wasm`을 사용하므로 Rust 수정 후 WASM 산출물 재빌드가 필요했다. 기존 `pkg/`는 2026-05-08 빌드본이었다.
+
+```bash
+colima start
+docker-compose run --rm wasm
+```
+
+최종 브라우저 검증 URL:
+
+```text
+http://localhost:7700/?url=/samples/exam_social.hwp&filename=exam_social.hwp&t=8502
+```
+
+검증 결과:
+
+```json
+{ "newLogs": [] }
+```
+
+2차 수정 후 `성명` 칸 입력에서 `컨트롤 인덱스 0 범위 초과`와 `getCursorRectByPath` warning이 새로 발생하지 않았다.
 
 ## 6. 기존 경고
 
@@ -148,6 +174,7 @@ test result: ok. 1232 passed; 0 failed; 2 ignored
 | Stage 2 보고서 | `mydocs/working/task_m100_850_stage2.md` |
 | Stage 3 보고서 | `mydocs/working/task_m100_850_stage3.md` |
 | Stage 4 보고서 | `mydocs/working/task_m100_850_stage4.md` |
+| Stage 5 보고서 | `mydocs/working/task_m100_850_stage5.md` |
 | 최종 보고서 | `mydocs/report/task_m100_850_report.md` |
 | 본질 정정 | `src/document_core/queries/cursor_rect.rs` |
 | 회귀 가드 | `tests/issue_850_answer_sheet_name_hit_test.rs` |
@@ -156,7 +183,6 @@ test result: ok. 1232 passed; 0 failed; 2 ignored
 
 #850 회귀는 Studio 입력 라우터 문제가 아니라 Rust `hit_test_native()`가 상단 답안지 내부 TAC 표의 로컬 메타를 문서 루트 컨텍스트처럼 반환한 문제였다.
 
-조상 표/셀 컨텍스트를 수집 단계에서 전파해 외곽 표 기준 `parentParaIndex/controlIndex`와 전체 `cellPath`를 복원했다. 이로써 `exam_social.hwp`, `exam_science.hwp`의 `성명` 입력칸이 기존 Studio path 기반 입력 API로 정상 처리된다.
+조상 표/셀 컨텍스트를 수집 단계에서 전파해 외곽 표 기준 `parentParaIndex/controlIndex`와 전체 `cellPath`를 복원했다. 또한 path 기반 삽입 후 커서 좌표 조회도 같은 경로 기준으로 동작하도록 보정했다. 이로써 `exam_social.hwp`, `exam_science.hwp`의 `성명` 입력칸이 기존 Studio path 기반 입력 API로 정상 처리된다.
 
-기존 #717 hit-test 회귀 테스트와 전체 `cargo test` 모두 통과했다.
-
+기존 #717 hit-test 회귀 테스트, WASM 빌드, 브라우저 입력 검증, 전체 `cargo test` 모두 통과했다.

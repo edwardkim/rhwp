@@ -1291,18 +1291,109 @@ impl DocumentCore {
         char_offset: usize,
     ) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::layout::{compute_char_positions, CellContext, CellPathEntry};
 
         let path = Self::parse_cell_path(path_json)?;
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
 
-        let last = path.last().unwrap();
-        let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &path)?;
+        let _para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &path)?;
 
         // 커서 좌표를 렌더 트리에서 찾기
         let pages = self.find_pages_for_paragraph(section_idx, parent_para_idx)?;
+
+        fn table_ctx_from_node(
+            node: &RenderNode,
+            current_table_ctx: Option<&CellContext>,
+            current_cell_ctx: Option<&CellContext>,
+        ) -> Option<CellContext> {
+            if let RenderNodeType::Table(ref tn) = node.node_type {
+                match (tn.para_index, tn.control_index) {
+                    (Some(pi), Some(ci)) => {
+                        if let Some(parent_ctx) = current_cell_ctx {
+                            let mut ctx = parent_ctx.clone();
+                            if let Some(last) = ctx.path.last_mut() {
+                                last.cell_para_index = pi;
+                            }
+                            ctx.path.push(CellPathEntry {
+                                control_index: ci,
+                                cell_index: 0,
+                                cell_para_index: 0,
+                                text_direction: 0,
+                            });
+                            Some(ctx)
+                        } else {
+                            Some(CellContext {
+                                parent_para_index: pi,
+                                path: vec![CellPathEntry {
+                                    control_index: ci,
+                                    cell_index: 0,
+                                    cell_para_index: 0,
+                                    text_direction: 0,
+                                }],
+                            })
+                        }
+                    }
+                    _ => current_table_ctx.cloned(),
+                }
+            } else {
+                current_table_ctx.cloned()
+            }
+        }
+
+        fn cell_ctx_for_table_cell(
+            table_ctx: Option<&CellContext>,
+            cell_index: usize,
+            cell_para_index: usize,
+            text_direction: u8,
+        ) -> Option<CellContext> {
+            table_ctx.map(|ctx| {
+                let mut cell_ctx = ctx.clone();
+                if let Some(last) = cell_ctx.path.last_mut() {
+                    last.cell_index = cell_index;
+                    last.cell_para_index = cell_para_index;
+                    last.text_direction = text_direction;
+                }
+                cell_ctx
+            })
+        }
+
+        fn effective_cell_context(
+            text_ctx: &Option<CellContext>,
+            traversal_ctx: &Option<CellContext>,
+        ) -> Option<CellContext> {
+            match (text_ctx, traversal_ctx) {
+                (Some(text_ctx), Some(traversal_ctx))
+                    if traversal_ctx.path.len() >= text_ctx.path.len() =>
+                {
+                    let mut ctx = traversal_ctx.clone();
+                    if let (Some(dst), Some(src)) = (ctx.path.last_mut(), text_ctx.path.last()) {
+                        dst.cell_para_index = src.cell_para_index;
+                        dst.text_direction = src.text_direction;
+                    }
+                    Some(ctx)
+                }
+                (Some(text_ctx), _) => Some(text_ctx.clone()),
+                (None, _) => None,
+            }
+        }
+
+        fn cell_context_matches(
+            ctx: &Option<CellContext>,
+            parent_para: usize,
+            path: &[(usize, usize, usize)],
+        ) -> bool {
+            ctx.as_ref().map_or(false, |ctx| {
+                ctx.parent_para_index == parent_para
+                    && ctx.path.len() == path.len()
+                    && ctx.path.iter().zip(path.iter()).all(|(a, b)| {
+                        a.control_index == b.0
+                            && a.cell_index == b.1
+                            && a.cell_para_index == b.2
+                    })
+            })
+        }
 
         // 렌더 트리에서 경로가 일치하는 TextRun 찾기
         fn find_cursor_by_path(
@@ -1311,18 +1402,28 @@ impl DocumentCore {
             path: &[(usize, usize, usize)],
             offset: usize,
             page: u32,
+            current_table_ctx: Option<CellContext>,
+            current_cell_ctx: Option<CellContext>,
         ) -> Option<(u32, f64, f64, f64)> {
+            let table_ctx = table_ctx_from_node(
+                node,
+                current_table_ctx.as_ref(),
+                current_cell_ctx.as_ref(),
+            );
+            let mut child_cell_ctx = current_cell_ctx.clone();
+            if let RenderNodeType::TableCell(ref tc) = node.node_type {
+                if let Some(cell_idx) = tc.model_cell_index {
+                    child_cell_ctx = cell_ctx_for_table_cell(
+                        table_ctx.as_ref(),
+                        cell_idx as usize,
+                        0,
+                        tc.text_direction,
+                    );
+                }
+            }
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                let matches = tr.cell_context.as_ref().map_or(false, |ctx| {
-                    ctx.parent_para_index == parent_para
-                        && ctx.path.len() == path.len()
-                        && ctx.path.iter().zip(path.iter()).all(|(a, b)| {
-                            a.control_index == b.0
-                                && a.cell_index == b.1
-                                && a.cell_para_index == b.2
-                        })
-                });
-                if matches {
+                let cell_context = effective_cell_context(&tr.cell_context, &current_cell_ctx);
+                if cell_context_matches(&cell_context, parent_para, path) {
                     let cs = tr.char_start.unwrap_or(0);
                     let cc = tr.text.chars().count();
                     if offset >= cs && offset <= cs + cc {
@@ -1336,7 +1437,15 @@ impl DocumentCore {
                 }
             }
             for child in &node.children {
-                if let Some(hit) = find_cursor_by_path(child, parent_para, path, offset, page) {
+                if let Some(hit) = find_cursor_by_path(
+                    child,
+                    parent_para,
+                    path,
+                    offset,
+                    page,
+                    table_ctx.clone(),
+                    child_cell_ctx.clone(),
+                ) {
                     return Some(hit);
                 }
             }
@@ -1345,7 +1454,15 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
-            if let Some((pi, x, y, h)) = find_cursor_by_path(&tree.root, parent_para_idx, &path, char_offset, page_num) {
+            if let Some((pi, x, y, h)) = find_cursor_by_path(
+                &tree.root,
+                parent_para_idx,
+                &path,
+                char_offset,
+                page_num,
+                None,
+                None,
+            ) {
                 return Ok(format!(
                     "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
                     pi, x, y, h
@@ -1361,29 +1478,53 @@ impl DocumentCore {
                 parent_para: usize,
                 path: &[(usize, usize, usize)],
                 page: u32,
+                current_table_ctx: Option<CellContext>,
+                current_cell_ctx: Option<CellContext>,
             ) -> Option<(u32, f64, f64, f64)> {
+                let table_ctx = table_ctx_from_node(
+                    node,
+                    current_table_ctx.as_ref(),
+                    current_cell_ctx.as_ref(),
+                );
+                let mut child_cell_ctx = current_cell_ctx.clone();
+                if let RenderNodeType::TableCell(ref tc) = node.node_type {
+                    if let Some(cell_idx) = tc.model_cell_index {
+                        child_cell_ctx = cell_ctx_for_table_cell(
+                            table_ctx.as_ref(),
+                            cell_idx as usize,
+                            0,
+                            tc.text_direction,
+                        );
+                    }
+                }
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    let matches = tr.cell_context.as_ref().map_or(false, |ctx| {
-                        ctx.parent_para_index == parent_para
-                            && ctx.path.len() == path.len()
-                            && ctx.path.iter().zip(path.iter()).all(|(a, b)| {
-                                a.control_index == b.0
-                                    && a.cell_index == b.1
-                                    && a.cell_para_index == b.2
-                            })
-                    });
-                    if matches {
+                    let cell_context = effective_cell_context(&tr.cell_context, &current_cell_ctx);
+                    if cell_context_matches(&cell_context, parent_para, path) {
                         return Some((page, node.bbox.x, node.bbox.y, node.bbox.height));
                     }
                 }
                 for child in &node.children {
-                    if let Some(hit) = find_any_run(child, parent_para, path, page) {
+                    if let Some(hit) = find_any_run(
+                        child,
+                        parent_para,
+                        path,
+                        page,
+                        table_ctx.clone(),
+                        child_cell_ctx.clone(),
+                    ) {
                         return Some(hit);
                     }
                 }
                 None
             }
-            if let Some((pi, x, y, h)) = find_any_run(&tree.root, parent_para_idx, &path, page_num) {
+            if let Some((pi, x, y, h)) = find_any_run(
+                &tree.root,
+                parent_para_idx,
+                &path,
+                page_num,
+                None,
+                None,
+            ) {
                 return Ok(format!(
                     "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
                     pi, x, y, h

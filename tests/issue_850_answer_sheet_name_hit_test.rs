@@ -82,6 +82,7 @@ fn assert_name_insert_by_path(
     assert_answer_sheet_name_hit(&hit, outer_control_index, expected_path);
 
     let path = path_tuples(&hit);
+    let path_json = serde_json::to_string(&hit["cellPath"]).expect("cellPath json");
     let char_offset = hit["charOffset"].as_u64().unwrap_or(0) as usize;
     doc.insert_text_in_cell_by_path(0, 0, &path, char_offset, "홍")
         .unwrap_or_else(|e| panic!("{sample_name}: insert_text_in_cell_by_path failed: {e}"));
@@ -92,6 +93,17 @@ fn assert_name_insert_by_path(
     assert_eq!(
         inserted, "홍",
         "{sample_name}: inserted text must be readable by path"
+    );
+
+    let rect_json = doc
+        .get_cursor_rect_by_path(0, 0, &path_json, (char_offset + 1) as u32)
+        .unwrap_or_else(|e| panic!("{sample_name}: get_cursor_rect_by_path failed: {e:?}"));
+    let rect: Value = serde_json::from_str(&rect_json)
+        .unwrap_or_else(|e| panic!("{sample_name}: parse cursor rect `{rect_json}`: {e}"));
+    assert_eq!(rect["pageIndex"].as_u64(), Some(0), "{sample_name}: rect={rect}");
+    assert!(
+        rect["height"].as_f64().unwrap_or(0.0) > 0.0,
+        "{sample_name}: cursor rect height must be positive, rect={rect}"
     );
 }
 
