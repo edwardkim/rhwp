@@ -222,6 +222,9 @@ pub struct Window {
     pub scale_y: f32,
     /// SetWindowExt가 명시적으로 호출되었는지 여부
     pub ext_explicitly_set: bool,
+    /// [Task #860 Stage D] WMF 의 SetWindowExt y < 0 (Cartesian, bottom-up) 인 경우 true.
+    /// SVG renderer 는 top-down (y 아래 증가). y < 0 처리를 위해 element y 좌표 flip 필요.
+    pub y_inverted: bool,
 }
 
 impl Default for Window {
@@ -234,6 +237,7 @@ impl Default for Window {
             scale_x: 1.0,
             scale_y: 1.0,
             ext_explicitly_set: false,
+            y_inverted: false,
         }
     }
 }
@@ -247,6 +251,12 @@ impl Window {
         self.x = x.abs();
         self.y = y.abs();
         self.ext_explicitly_set = true;
+        // [Task #860 Stage D] y < 0 = Cartesian 좌표계 (bottom-up) — 일부 application
+        // 이 WMF 에 SetWindowExt(width, -height) 로 bottom-up 설정. SVG 변환 시
+        // y-flip transform 필요. 현재 sample 들에서는 미발견.
+        if y < 0 {
+            self.y_inverted = true;
+        }
         self
     }
 
@@ -263,6 +273,10 @@ impl Window {
     }
 
     pub fn as_view_box(&self) -> (i16, i16, i16, i16) {
-        (0, 0, self.x.abs(), self.y.abs())
+        // [Task #860 Stage D] WMF Placeable BoundingBox 또는 SetWindowOrg 의 origin
+        // 을 viewBox 시작점으로 사용. 종전 (0, 0) 사용 시 logical origin 이 (329, 1536)
+        // 같은 sample 에서 element y 좌표가 viewBox 밖으로 나가 시각 어긋남
+        // (HWP3 sample14: 박스 위/캡션 아래 가 한컴과 반대).
+        (self.origin_x, self.origin_y, self.x.abs(), self.y.abs())
     }
 }
