@@ -28,5 +28,15 @@ cd bindings/swift
 swift test -Xlinker -L../../bindings/Native/target/debug
 ```
 
-For app integration, package the native library as an `XCFramework` or place it
-in the app bundle and configure the appropriate library search path.
+For app integration, package the native library as an `XCFramework` from the
+repository root:
+
+```sh
+./scripts/package-swift-xcframework.sh
+```
+
+The archive is written under `dist/swift/` and contains
+`RhwpNative.xcframework`, `LICENSE`, and this README.
+
+By default, the iOS simulator slice includes Apple Silicon (`arm64`). Set
+`INCLUDE_IOS_SIM_X86_64=1` when an Intel simulator slice is also required.
