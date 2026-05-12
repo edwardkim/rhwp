@@ -159,6 +159,109 @@ if (!verify.recovered || verify.pageCountBefore !== verify.pageCountAfter) {
 editor.destroy();
 ```
 
+## 디버깅 도구 — rhwpDev
+
+iframe 안의 rhwp-studio에는 **개발 모드 전용 디버깅 헬퍼** `rhwpDev`가 내장되어 있습니다. 검색, 커서 이동, 문단 ID 점검 등을 콘솔에서 직접 호출할 수 있습니다.
+
+### 접근 방법
+
+`rhwpDev`는 **iframe 내부 window**에 등록됩니다. 브라우저 DevTools의 콘솔 컨텍스트를 iframe으로 전환한 후 호출하세요.
+
+**Chrome / Edge:** DevTools 콘솔 좌측 상단의 컨텍스트 드롭다운(`top ▾`)에서 `rhwp-studio iframe` 선택
+
+**Firefox:** 콘솔 우측 상단의 `iframe` 버튼 → iframe URL 선택
+
+```javascript
+// iframe 컨텍스트로 전환 후
+rhwpDev.help();   // 사용법 안내
+```
+
+> **주의:** rhwp-studio가 DEV 모드(vite dev server)로 빌드된 경우에만 `rhwpDev`가 등록됩니다. 프로덕션 빌드(기본 호스팅 URL `https://edwardkim.github.io/rhwp/`)에는 포함되지 않습니다. 디버깅 도구가 필요하면 셀프 호스팅 환경에서 `vite dev` 모드로 실행하세요.
+
+### 주요 메서드
+
+#### rhwpDev.search(text, includeCells?)
+
+문서 영역에서 모든 매치를 일괄 검색합니다. 반환: `SearchHit[]`
+
+```javascript
+const hits = rhwpDev.search("사업계획");
+// → 9 match(es), console.table 자동 표시
+//
+// [{sec: 0, para: 2, charOffset: 0, length: 13}, ...]
+
+// 표 셀/글상자 내부 포함
+const allHits = rhwpDev.search("사업계획", true);
+```
+
+#### rhwpDev.goto(hit, options?)
+
+SearchHit으로 커서를 이동하고 화면을 스크롤합니다. 반환: `boolean`
+
+```javascript
+const hits = rhwpDev.search("사업계획");
+
+// 3번째 매치로 이동 + 선택 (인덱스 2)
+rhwpDev.goto(hits[2]);
+
+// 캐럿만 이동 (선택 없음)
+rhwpDev.goto(hits[2], { select: false });
+
+// 한 줄 패턴
+rhwpDev.goto(rhwpDev.search("text")[0]);
+```
+
+#### rhwpDev.showAllIds(pageNum?)
+
+페이지의 모든 문단 ID를 `console.table`로 표시합니다.
+
+```javascript
+rhwpDev.showAllIds(0);    // 첫 페이지만
+rhwpDev.showAllIds();     // 전체 페이지
+```
+
+#### rhwpDev.findNearest(targetId, pageNum?)
+
+가장 가까운 paragraph 인덱스를 검색합니다.
+
+```javascript
+rhwpDev.findNearest(618);
+// → { paraIdx: 0, distance: 618, text: "...", container: "cell[p0,c2,i0]" }
+```
+
+#### rhwpDev.help()
+
+전체 사용법과 예시를 콘솔에 출력합니다.
+
+### SearchHit 구조
+
+```typescript
+interface SearchHit {
+  sec: number;          // 구역 인덱스
+  para: number;         // 본문: 문단 인덱스 / 셀: parentPara
+  charOffset: number;   // 문단 내 글자 오프셋
+  length: number;       // 매치 길이
+  cellContext?: {       // 셀/글상자 매치 시
+    parentPara: number;
+    ctrlIdx: number;
+    cellIdx: number;
+    cellPara: number;
+  };
+}
+```
+
+### 활용 예시 — 매치 일괄 강조
+
+```javascript
+// 모든 "회사" 매치를 순차적으로 보여주기
+const hits = rhwpDev.search("회사");
+let i = 0;
+setInterval(() => {
+  if (i >= hits.length) return;
+  rhwpDev.goto(hits[i++]);
+}, 1500);
+```
+
 ## 폰트 안내
 
 ### 기본 동작 — 별도 설정 없이 사용 가능
