@@ -421,8 +421,13 @@ impl TypesetEngine {
                 } else if !st.current_items.is_empty() {
                     // [Task #846] 마지막 단에서 명시적 단나누기 → 새 페이지가 아니라 같은
                     // col_count 로 같은 페이지에 새 단-밴드를 시작 (들어갈 공간이 있으면). ≈ #768.
+                    // [Task #849] 단, 이는 "배분"(Distribute) 단에서만. "일반"(Normal/신문형)
+                    // 단에서 마지막 단의 단나누기는 같은 페이지 새 밴드를 만들지 않는다 (기존 동작).
                     let is_last_column = st.current_column + 1 >= st.col_count;
-                    if is_last_column && st.col_count > 1 {
+                    if is_last_column
+                        && st.col_count > 1
+                        && st.current_zone_column_type == ColumnType::Distribute
+                    {
                         self.start_new_column_band(&mut st, para_idx, paragraphs);
                     } else {
                         st.advance_column_or_new_page();
@@ -2392,12 +2397,12 @@ impl TypesetEngine {
                 if cc.zone_y_offset != zone_off {
                     break;
                 }
-                let last_para_idx = cc.items.iter().rev().find_map(|it| match it {
+                let last_para_idx = cc.items.last().map(|it| match it {
                     PageItem::FullParagraph { para_index }
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                    | PageItem::Shape { para_index, .. } => *para_index,
                 });
                 if let Some(pi) = last_para_idx {
                     if let Some(seg) = paragraphs.get(pi).and_then(|p| p.line_segs.last()) {
