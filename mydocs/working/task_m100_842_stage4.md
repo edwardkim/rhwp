@@ -30,5 +30,16 @@
 2. 출처가 column-area 재계산이면 해당 경로(page-break-then-ColumnDef in multi-column zone) 수정. → 다단 zone/표분할 상호작용 회귀 광범위 검증 필수 (메모리 `feedback_essential_fix_regression_risk`).
 3. 페이지 2 헤더 문단의 para text `"파일"` (ls[0]) 가 표와 별개로 black 텍스트로 렌더되는지(이중 표시) 확인 — PDF 는 `파일` 1회뿐. 별도 결함 가능.
 
-## 권고
-결함 #2 와 #1(헤더 표 후속 spacing — 동급 위험)은 본질 정정으로 회귀 위험이 크다. 현 시점까지 **#4(우측탭 정렬, 2단계)·#3(단 구분선 점선)은 완료·검증·커밋** 됨. #2/#1 을 (a) 본 타스크에서 계속 진행할지, (b) 별도 후속 이슈로 분리해 정밀 검증과 함께 다룰지 작업지시자 판단 요청.
+## 원인 추가 확정 (2026-05-12 후속 조사)
+- 헤더 바 1×1 표는 `is_tac_table_inline()` 가 **false**(폭 ≈ 단 폭) → 블록 취급 → `PageItem::Table` → `layout_table_item` → `is_tac` 분기 → 표 x = `col_area.x + effective_margin + leading`, `leading = compute_tac_leading_width(...)`.
+- 페이지 2 헤더 문단(0.36)은 text "파일" + TAC 표 가 별도 LINE_SEG 2개로 들어옴. `compute_tac_leading_width` 가 `composed.lines.first()` 전체(= "파일", ~28px)를 leading 으로 합산 → 표가 +28px 우측 이동. 페이지 1 헤더 문단(0.1)은 빈 문단이라 leading=0 → 정상.
+
+## 수정 시도 2회 — 모두 회귀 (`issue_677_bokhakwonseo_page1` snapshot)
+1. `compute_tac_leading_width` 에서 `composed.lines.len() > 1` 이면 0 반환 → 복학원서.hwp 표가 7px 좌측 이동(56.7 vs golden 63.7) 회귀.
+2. `compute_tac_leading_width` 를 "표가 놓인 줄에서만 선행 폭 합산" 으로 재작성(`tac_char_pos` 전달) → 동일 회귀.
+3. 호출 측에서 `lines.len() > 1 && line0 에 실제 텍스트` 일 때 leading=0 으로 우회 → 동일 회귀 (복학원서 표 para 가 예상과 달리 `lines.len() > 1` 로 판정되는 듯 — 미규명).
+
+→ 복학원서.hwp 의 TAC 표 레이아웃이 헤더 바와 같은 코드 경로를 공유하며 `compute_tac_leading_width` 가 그 7px offset 에 의존. 둘을 안전하게 분리하려면 복학원서 표 para 의 composed line 구조 / 7px 출처를 먼저 규명해야 함 (시간 소요 큼, 회귀 위험 큼).
+
+## 권고 (갱신)
+**#2 와 #1 을 별도 후속 이슈로 분리** 하고, 본 타스크는 **#4(우측탭 정렬, 완료·검증·커밋) + #3(단 구분선 점선, 완료·검증·커밋)** 으로 마무리(최종 보고서 + merge) 하는 것을 권고. #2/#1 은 layout 본질 정정으로 다단/표분할/TAC 표 상호작용 회귀 위험이 커 정밀 검증과 함께 다뤄야 함(메모리 `feedback_essential_fix_regression_risk`).
