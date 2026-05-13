@@ -275,8 +275,26 @@ function setupFileInput(): void {
     const file = e.dataTransfer?.files[0];
     if (!file) return;
     const dropName = file.name.toLowerCase();
+    const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
+    if (imageExts.some(ext => dropName.endsWith(ext))) {
+      if (!inputHandler || wasm.pageCount === 0) return;
+      const data = new Uint8Array(await file.arrayBuffer());
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      try {
+        img.src = url;
+        await img.decode();
+        inputHandler.enterImagePlacementMode(data, ext, img.naturalWidth, img.naturalHeight, file.name);
+      } catch {
+        console.warn('[drop] 이미지 디코딩 실패:', file.name);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+      return;
+    }
     if (!dropName.endsWith('.hwp') && !dropName.endsWith('.hwpx')) {
-      alert('HWP/HWPX 파일만 지원합니다.');
+      alert('HWP/HWPX 파일 또는 이미지 파일만 지원합니다.');
       return;
     }
     await loadFile(file);

@@ -181,7 +181,8 @@ impl SvgLayerRenderer {
                 RenderNodeType::RawSvg(raw.clone()),
                 *bbox,
             ),
-            PaintOp::CharOverlap { .. }
+            PaintOp::GlyphRun { .. }
+            | PaintOp::CharOverlap { .. }
             | PaintOp::TextControlMark { .. }
             | PaintOp::TabLeader { .. }
             | PaintOp::TextDecoration { .. } => return None,

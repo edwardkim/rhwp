@@ -789,11 +789,26 @@ impl DocumentCore {
                         Some(crate::model::shape::TextWrap::TopAndBottom) => ",\"wrap\":\"topAndBottom\"",
                         None => "",
                     };
+                    // [Task #825] 머리말/꼬리말 그림 marker — rhwp-studio findPictureAtClick
+                    // 이 secIdx 부재로 필터링하지 않도록 hf 정보 포함.
+                    let hf_str = match &image_node.header_footer_ref {
+                        Some(r) => {
+                            let kind = match r.kind {
+                                crate::renderer::render_tree::HeaderFooterKind::Header => "header",
+                                crate::renderer::render_tree::HeaderFooterKind::Footer => "footer",
+                            };
+                            format!(
+                                ",\"headerFooter\":{{\"kind\":\"{}\",\"outerParaIdx\":{},\"outerControlIdx\":{}}}",
+                                kind, r.outer_para_index, r.outer_control_index
+                            )
+                        }
+                        None => String::new(),
+                    };
 
                     controls.push(format!(
-                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}}}",
+                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords, wrap_str
+                        doc_coords, wrap_str, hf_str
                     ));
                     return;
                 }

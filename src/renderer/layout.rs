@@ -255,7 +255,10 @@ mod border_rendering;
 mod utils;
 
 pub(crate) use text_measurement::{resolved_to_text_style, estimate_text_width, estimate_text_width_unrounded, compute_char_positions, is_cjk_char, split_into_clusters, find_next_tab_stop, extract_tab_leaders_with_extended};
-pub(crate) use paragraph_layout::{map_pua_bullet_char, ensure_min_baseline};
+pub(crate) use paragraph_layout::ensure_min_baseline;
+// [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
+// (PUA substitution 매핑 정합) — pub 노출.
+pub use paragraph_layout::map_pua_bullet_char;
 pub(crate) use utils::{resolve_numbering_id, find_bin_data, drawing_to_shape_style, drawing_to_line_style, layout_rect_to_bbox, format_page_number};
 pub(crate) use border_rendering::{border_width_to_px, create_border_line_nodes};
 
@@ -524,6 +527,9 @@ impl LayoutEngine {
     }
 
     /// 머리말/꼬리말 문단을 해당 영역에 레이아웃한다.
+    /// [Task #825] `outer_section_index` + `outer_hf_ref` — 머리말/꼬리말 그림 클릭
+    /// hit-test marker (Some 일 때 ImageNode 에 전파). None 이면 기존 동작 (그림 미선택).
+    #[allow(clippy::too_many_arguments)]
     fn layout_header_footer_paragraphs(
         &self,
         tree: &mut PageRenderTree,
@@ -535,6 +541,8 @@ impl LayoutEngine {
         page_index: u32,
         page_number: u32,
         bin_data_content: &[BinDataContent],
+        outer_section_index: Option<usize>,
+        outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
     ) {
         let mut y_offset = area.y;
         for (i, para) in hf_paragraphs.iter().enumerate() {
@@ -578,7 +586,7 @@ impl LayoutEngine {
                 self.substitute_hf_field_markers(&mut comp, page_number);
                 if comp.tac_controls.is_empty() {
                     // 머리말/꼬리말 내 Picture: header/footer area 기준 배치
-                    for (_ci, ctrl) in para.controls.iter().enumerate() {
+                    for (ci, ctrl) in para.controls.iter().enumerate() {
                         if let Control::Picture(pic) = ctrl {
                             let pic_container = LayoutRect {
                                 x: area.x,
@@ -586,9 +594,14 @@ impl LayoutEngine {
                                 width: area.width,
                                 height: area.height - (y_offset - area.y),
                             };
-                            self.layout_picture(
+                            // [Task #825] inner para_index = i (hf_paragraphs 안 인덱스),
+                            // inner control_index = ci. outer 위치는 outer_hf_ref 보존.
+                            self.layout_picture_full(
                                 tree, area_node, pic, &pic_container,
-                                bin_data_content, Alignment::Left, None, None, None,
+                                bin_data_content, Alignment::Left,
+                                outer_section_index,
+                                Some(i), Some(ci),
+                                outer_hf_ref.clone(),
                             );
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             y_offset += pic_h;
@@ -926,6 +939,12 @@ impl LayoutEngine {
                 if let Some(para) = paragraphs.get(hf_ref.para_index) {
                     if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
                         if let Control::Header(header) = ctrl {
+                            // [Task #825] 머리말 그림 hit-test marker.
+                            let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
+                                outer_para_index: hf_ref.para_index,
+                                outer_control_index: hf_ref.control_index,
+                                kind: crate::renderer::render_tree::HeaderFooterKind::Header,
+                            };
                             self.layout_header_footer_paragraphs(
                                 tree, &mut header_node,
                                 &header.paragraphs, composed, styles,
@@ -933,6 +952,8 @@ impl LayoutEngine {
                                 page_content.page_index,
                                 page_content.page_number,
                                 bin_data_content,
+                                Some(hf_ref.source_section_index),
+                                Some(outer_ref),
                             );
                         }
                     }
@@ -943,7 +964,40 @@ impl LayoutEngine {
         // (머리말 표 셀 내 Shape가 header_area 밖에 배치될 수 있음)
         Self::expand_bbox_to_children(&mut header_node);
         Self::disable_cell_clip_recursive(&mut header_node);
+        // [Task #825] 머리말 안 모든 ImageNode 에 header_footer_ref 부여 + 인덱스 정규화.
+        // TAC 인라인 picture 는 layout_paragraph 경로에서 para_index = usize::MAX - i 로
+        // 인코딩되어 ImageNode 에 저장되므로, 본 후처리로 inner para idx 회복.
+        if let Some(hf_ref) = &page_content.active_header {
+            let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
+                outer_para_index: hf_ref.para_index,
+                outer_control_index: hf_ref.control_index,
+                kind: crate::renderer::render_tree::HeaderFooterKind::Header,
+            };
+            Self::propagate_header_footer_ref(&mut header_node, &outer_ref, hf_ref.source_section_index);
+        }
         tree.root.children.push(header_node);
+    }
+
+    /// [Task #825] header/footer 노드 안 모든 ImageNode 에 header_footer_ref 부여
+    /// + para_index 정규화 (usize::MAX - i → i).
+    fn propagate_header_footer_ref(
+        node: &mut RenderNode,
+        outer_ref: &crate::renderer::render_tree::HeaderFooterImageRef,
+        section_index: usize,
+    ) {
+        if let RenderNodeType::Image(img) = &mut node.node_type {
+            // TAC 경로 인코딩 회복: para_index 가 MAX 근처면 usize::MAX - i 로 저장된 것.
+            if let Some(pi) = img.para_index {
+                if pi >= usize::MAX - 1024 {
+                    img.para_index = Some(usize::MAX - pi);
+                }
+            }
+            img.section_index = Some(section_index);
+            img.header_footer_ref = Some(outer_ref.clone());
+        }
+        for child in node.children.iter_mut() {
+            Self::propagate_header_footer_ref(child, outer_ref, section_index);
+        }
     }
 
     /// 노드의 bbox를 자식 노드 범위까지 확장
@@ -1000,6 +1054,12 @@ impl LayoutEngine {
                 if let Some(para) = paragraphs.get(hf_ref.para_index) {
                     if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
                         if let Control::Footer(footer) = ctrl {
+                            // [Task #825] 꼬리말 그림 hit-test marker.
+                            let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
+                                outer_para_index: hf_ref.para_index,
+                                outer_control_index: hf_ref.control_index,
+                                kind: crate::renderer::render_tree::HeaderFooterKind::Footer,
+                            };
                             self.layout_header_footer_paragraphs(
                                 tree, &mut footer_node,
                                 &footer.paragraphs, composed, styles,
@@ -1007,6 +1067,8 @@ impl LayoutEngine {
                                 page_content.page_index,
                                 page_content.page_number,
                                 bin_data_content,
+                                Some(hf_ref.source_section_index),
+                                Some(outer_ref),
                             );
                         }
                     }
@@ -1015,6 +1077,15 @@ impl LayoutEngine {
         }
         Self::expand_bbox_to_children(&mut footer_node);
         Self::disable_cell_clip_recursive(&mut footer_node);
+        // [Task #825] 꼬리말 안 모든 ImageNode 에 header_footer_ref 부여 + 인덱스 정규화.
+        if let Some(hf_ref) = &page_content.active_footer {
+            let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
+                outer_para_index: hf_ref.para_index,
+                outer_control_index: hf_ref.control_index,
+                kind: crate::renderer::render_tree::HeaderFooterKind::Footer,
+            };
+            Self::propagate_header_footer_ref(&mut footer_node, &outer_ref, hf_ref.source_section_index);
+        }
         footer_node
     }
 

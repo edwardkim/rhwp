@@ -2,12 +2,15 @@ use skia_safe::{
     paint, surfaces, Canvas, Color, EncodedImageFormat, Font, FontMgr, FontStyle, Paint,
     PathBuilder, PathEffect, RRect, Rect, Typeface,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::error::HwpError;
 use crate::model::image::ImageEffect;
 use crate::model::ColorRef;
-use crate::paint::{LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree, PaintOp};
+use crate::paint::{
+    GlyphRunOrientation, GlyphRunReplayEligibility, LayerGlyphRunPaint, LayerNode, LayerNodeKind,
+    LayerOutputOptions, PageLayerTree, PaintOp, ResourceArena, TextVariantQuality,
+};
 use crate::renderer::layer_renderer::{
     LayerRasterRenderer, LayerRenderResult, RasterOutputFormat, RasterRenderOptions,
     RasterRenderOutput,
@@ -17,6 +20,90 @@ use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, St
 use super::equation_conv::render_equation;
 use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 use super::text_replay::SkiaTextReplay;
+
+fn native_skia_can_replay_glyph_run(run: &LayerGlyphRunPaint, resources: &ResourceArena) -> bool {
+    if !native_skia_glyph_run_contract_is_replayable(run, resources) {
+        return false;
+    }
+
+    // Glyph ids are face-local. Native Skia must not select a GlyphRun until it
+    // can build the exact typeface from the referenced font blob/face resource.
+    false
+}
+
+fn native_skia_glyph_run_contract_is_replayable(
+    run: &LayerGlyphRunPaint,
+    resources: &ResourceArena,
+) -> bool {
+    if run.glyph_ids.is_empty()
+        || run.glyph_ids.len() != run.positions.len()
+        || run
+            .advances
+            .as_ref()
+            .is_some_and(|advances| advances.len() != run.glyph_ids.len())
+        || run.glyph_transforms.is_some()
+        || run.orientation != GlyphRunOrientation::Horizontal
+        || !run.diagnostics.strict_visual_eligible
+        || run.diagnostics.missing_glyph_count != 0
+        || run.diagnostics.cluster_mismatch_count != 0
+        || !matches!(
+            run.diagnostics.quality,
+            TextVariantQuality::Exact | TextVariantQuality::PositionAdjusted
+        )
+        || run.diagnostics.replay_eligibility != GlyphRunReplayEligibility::Portable
+    {
+        return false;
+    }
+    if run.diagnostics.quality == TextVariantQuality::PositionAdjusted {
+        let tolerance = 0.5_f64.min(0.25_f64.max(run.paint_style.font_size * 0.005));
+        if !run.diagnostics.max_residual_after_adjustment_px.is_finite()
+            || run.diagnostics.max_residual_after_adjustment_px > tolerance
+        {
+            return false;
+        }
+    }
+    if !run.paint_style.is_fill_only_glyph_replay() {
+        return false;
+    }
+    let font_resources = resources.font_resources();
+    let Some(face) = font_resources
+        .faces
+        .iter()
+        .find(|face| face.id == run.shape_key.font_instance.face_key)
+    else {
+        return false;
+    };
+    let Some(blob) = font_resources
+        .blobs
+        .iter()
+        .find(|blob| blob.id == face.blob_key)
+    else {
+        return false;
+    };
+    if !blob.portability.is_self_contained_replayable() {
+        return false;
+    }
+    let transform = run.placement.run_to_page;
+    [
+        transform.a,
+        transform.b,
+        transform.c,
+        transform.d,
+        transform.e,
+        transform.f,
+        run.placement.baseline_y,
+    ]
+    .into_iter()
+    .all(f64::is_finite)
+        && run
+            .glyph_ids
+            .iter()
+            .all(|glyph_id| *glyph_id <= u16::MAX as u32)
+        && run
+            .positions
+            .iter()
+            .all(|position| position.x.is_finite() && position.y.is_finite())
+}
 
 pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
@@ -140,7 +227,14 @@ impl SkiaLayerRenderer {
         if options.scale != 1.0 {
             canvas.scale((options.scale as f32, options.scale as f32));
         }
-        self.render_node(canvas, &tree.root, &tree.output_options);
+        let mut next_text_source_id = 0_u32;
+        self.render_node(
+            canvas,
+            &tree.root,
+            &tree.output_options,
+            &tree.resources,
+            &mut next_text_source_id,
+        );
 
         let image = surface.image_snapshot();
         let data = image
@@ -156,7 +250,14 @@ impl SkiaLayerRenderer {
         })
     }
 
-    fn render_node(&self, canvas: &Canvas, node: &LayerNode, output_options: &LayerOutputOptions) {
+    fn render_node(
+        &self,
+        canvas: &Canvas,
+        node: &LayerNode,
+        output_options: &LayerOutputOptions,
+        resources: &ResourceArena,
+        next_text_source_id: &mut u32,
+    ) {
         let clip_enabled = output_options.clip_enabled;
         let apply_dash = |paint: &mut Paint, dash: StrokeDash| {
             let base_width = paint.stroke_width().max(1.0);
@@ -296,12 +397,24 @@ impl SkiaLayerRenderer {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => {
                 for child in children {
-                    self.render_node(canvas, child, output_options);
+                    self.render_node(
+                        canvas,
+                        child,
+                        output_options,
+                        resources,
+                        next_text_source_id,
+                    );
                 }
             }
             LayerNodeKind::ClipRect { clip, child, .. } => {
                 if !clip_enabled {
-                    self.render_node(canvas, child, output_options);
+                    self.render_node(
+                        canvas,
+                        child,
+                        output_options,
+                        resources,
+                        next_text_source_id,
+                    );
                     return;
                 }
                 canvas.save();
@@ -315,11 +428,80 @@ impl SkiaLayerRenderer {
                     None,
                     Some(true),
                 );
-                self.render_node(canvas, child, output_options);
+                self.render_node(
+                    canvas,
+                    child,
+                    output_options,
+                    resources,
+                    next_text_source_id,
+                );
                 canvas.restore();
             }
             LayerNodeKind::Leaf { ops } => {
+                let mut variant_order = 0usize;
+                let mut glyph_variants =
+                    HashMap::<String, HashMap<String, (usize, u32, HashSet<u32>, bool)>>::new();
+                let mut glyph_variant_sources = HashMap::<String, u32>::new();
                 for op in ops {
+                    if let PaintOp::GlyphRun { run, .. } = op {
+                        glyph_variant_sources
+                            .entry(run.variant.equivalence_group.clone())
+                            .or_insert(run.source.id.0);
+                        let group = glyph_variants
+                            .entry(run.variant.equivalence_group.clone())
+                            .or_default();
+                        let state =
+                            group
+                                .entry(run.variant.variant_id.clone())
+                                .or_insert_with(|| {
+                                    let order = variant_order;
+                                    variant_order = variant_order.saturating_add(1);
+                                    (order, run.variant.part_count, HashSet::new(), true)
+                                });
+                        if state.1 != run.variant.part_count || run.variant.part_count == 0 {
+                            state.3 = false;
+                        }
+                        if !state.2.insert(run.variant.part_index) {
+                            state.3 = false;
+                        }
+                        state.3 &= native_skia_can_replay_glyph_run(run, resources);
+                    }
+                }
+                let mut selected_text_variants = HashMap::new();
+                for (group, variants) in glyph_variants {
+                    let mut candidates = variants.into_iter().collect::<Vec<_>>();
+                    candidates.sort_by_key(|(_, (order, _, _, _))| *order);
+                    for (variant_id, (_, expected_part_count, parts, supported)) in candidates {
+                        let parts_complete = parts.len() as u32 == expected_part_count
+                            && (0..expected_part_count).all(|index| parts.contains(&index));
+                        if supported && parts_complete {
+                            selected_text_variants.insert(group, variant_id);
+                            break;
+                        }
+                    }
+                }
+                let selected_text_sources = selected_text_variants
+                    .keys()
+                    .filter_map(|group| glyph_variant_sources.get(group).copied())
+                    .collect::<HashSet<_>>();
+                for op in ops {
+                    let skip_unselected_text_variant = match op {
+                        PaintOp::TextRun { .. } => {
+                            let source_id = *next_text_source_id;
+                            *next_text_source_id = (*next_text_source_id).saturating_add(1);
+                            selected_text_sources.contains(&source_id)
+                        }
+                        PaintOp::GlyphRun { run, .. } => {
+                            match selected_text_variants.get(&run.variant.equivalence_group) {
+                                Some(selected) => selected != &run.variant.variant_id,
+                                None => true,
+                            }
+                        }
+                        _ => false,
+                    };
+                    if skip_unselected_text_variant {
+                        continue;
+                    }
                     match op {
                         PaintOp::PageBackground { bbox, background } => {
                             let rect = Rect::from_xywh(
@@ -380,6 +562,13 @@ impl SkiaLayerRenderer {
                                 run.is_para_end,
                                 run.is_line_break_end,
                             );
+                        }
+                        PaintOp::GlyphRun { run, .. } => {
+                            if !native_skia_can_replay_glyph_run(run, resources) {
+                                continue;
+                            }
+                            // Unreachable until native_skia_can_replay_glyph_run can verify
+                            // blob-backed typeface construction. Keep the TextRun fallback.
                         }
                         PaintOp::FootnoteMarker { bbox, marker } => {
                             let style = crate::renderer::TextStyle {
@@ -943,7 +1132,14 @@ mod tests {
     use super::*;
     use crate::model::control::FormType;
     use crate::model::style::{ImageFillMode, UnderlineType};
-    use crate::paint::{CacheHint, GroupKind, LayerNode, LayerOutputOptions};
+    use crate::paint::{
+        BinaryResourceKind, BinaryResourceRef, CacheHint, FontBlobKey, FontBlobResource,
+        FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId, FontInstanceKey,
+        FontPortability, FontResourceSource, GlyphCluster, GlyphRange, GroupKind,
+        LayerAffineTransform, LayerNode, LayerOutputOptions, LayerPoint, PaintTextStyle,
+        PaintVariantMeta, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextSourceId,
+        TextSourceRange, TextSourceSpan, TextVariantKind, WritingMode,
+    };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::ast::EqNode;
     use crate::renderer::equation::layout::EqLayout;
@@ -971,6 +1167,117 @@ mod tests {
 
     fn count_ink(image: &image::RgbaImage) -> usize {
         image.pixels().filter(|pixel| pixel[3] > 0).count()
+    }
+
+    fn portable_font_resources() -> ResourceArena {
+        let mut resources = ResourceArena::default();
+        let blob_key = FontBlobKey("blob-0".to_string());
+        let face_key = FontFaceKey("face-0".to_string());
+        let digest = FontDigest {
+            algorithm: "blake3".to_string(),
+            value: "0123456789abcdef".to_string(),
+        };
+        let data_ref = BinaryResourceRef {
+            kind: BinaryResourceKind::FontBlob,
+            id: "font:blake3:4:0123456789abcdef".to_string(),
+        };
+        resources.font_resources_mut().blobs.push(FontBlobResource {
+            id: blob_key.clone(),
+            digest: Some(digest.clone()),
+            source: FontResourceSource::Embedded,
+            data_ref: Some(data_ref.clone()),
+            portability: FontPortability::PortableBlob { digest, data_ref },
+        });
+        resources.font_resources_mut().faces.push(FontFaceResource {
+            id: face_key,
+            blob_key,
+            face_index: 0,
+            postscript_name: None,
+            family_names: Vec::new(),
+            style_names: Vec::new(),
+            weight_class: None,
+            width_class: None,
+            italic: None,
+        });
+        resources
+    }
+
+    fn portable_glyph_run(orientation: GlyphRunOrientation) -> LayerGlyphRunPaint {
+        let mut variant = PaintVariantMeta::text_run_default("text-0");
+        variant.variant_id = "glyphRun".to_string();
+        variant.variant_kind = TextVariantKind::GlyphRun;
+        variant.is_default_fallback = false;
+        variant.requires = vec!["fontResources".to_string(), "text.glyphRun".to_string()];
+        variant.quality = Some(TextVariantQuality::Exact);
+
+        LayerGlyphRunPaint {
+            source: TextSourceSpan {
+                id: TextSourceId(0),
+                utf8_range: TextSourceRange::new(0, 1),
+                utf16_range: TextSourceRange::new(0, 1),
+                stable_source_key: None,
+            },
+            variant,
+            paint_style: PaintTextStyle::from(&TextStyle {
+                font_family: "Test".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            }),
+            shape_key: ShapeKey {
+                font_instance: FontInstanceKey {
+                    face_key: FontFaceKey("face-0".to_string()),
+                    size_px: 12.0,
+                    variations: Vec::new(),
+                    synthetic_bold: false,
+                    synthetic_italic: false,
+                },
+                direction: TextDirection::Ltr,
+                writing_mode: WritingMode::HorizontalTb,
+                script: Some(ScriptTag("DFLT".to_string())),
+                language: None,
+                features: Vec::new(),
+                shaping_engine: ShapingEngineId("test".to_string()),
+                fallback_policy: FontFallbackPolicyId("none".to_string()),
+            },
+            placement: crate::paint::TextRunPlacement {
+                run_to_page: LayerAffineTransform {
+                    a: 1.0,
+                    b: 0.0,
+                    c: 0.0,
+                    d: 1.0,
+                    e: 0.0,
+                    f: 0.0,
+                },
+                baseline_y: 0.0,
+            },
+            glyph_ids: vec![42],
+            positions: vec![LayerPoint { x: 0.0, y: 0.0 }],
+            advances: None,
+            clusters: vec![GlyphCluster {
+                source_range_utf8: TextSourceRange::new(0, 1),
+                source_range_utf16: Some(TextSourceRange::new(0, 1)),
+                text_range_utf8: Some(TextSourceRange::new(0, 1)),
+                glyph_range: GlyphRange::new(0, 1),
+                flags: Vec::new(),
+            }],
+            direction: TextDirection::Ltr,
+            bidi_level: None,
+            writing_mode: WritingMode::HorizontalTb,
+            orientation,
+            glyph_transforms: None,
+            diagnostics: crate::paint::GlyphRunDiagnostics {
+                quality: TextVariantQuality::Exact,
+                replay_eligibility: GlyphRunReplayEligibility::Portable,
+                strict_visual_eligible: true,
+                max_origin_delta_px: 0.0,
+                max_advance_delta_px: 0.0,
+                max_residual_after_adjustment_px: 0.0,
+                cluster_mismatch_count: 0,
+                missing_glyph_count: 0,
+                used_fallback_font_count: 0,
+                reason: None,
+            },
+        }
     }
 
     fn solid_png(color: [u8; 4]) -> Vec<u8> {
@@ -1007,6 +1314,28 @@ mod tests {
             .write_to(&mut cursor, ImageFormat::Png)
             .expect("encode png");
         cursor.into_inner()
+    }
+
+    #[test]
+    fn native_skia_keeps_glyph_run_disabled_until_blob_typeface_replay_exists() {
+        let resources = portable_font_resources();
+        let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+
+        assert!(native_skia_glyph_run_contract_is_replayable(
+            &run, &resources
+        ));
+        assert!(!native_skia_can_replay_glyph_run(&run, &resources));
+    }
+
+    #[test]
+    fn native_skia_rejects_vertical_glyph_run_contract_for_now() {
+        let resources = portable_font_resources();
+        let run = portable_glyph_run(GlyphRunOrientation::VerticalUpright);
+
+        assert!(!native_skia_glyph_run_contract_is_replayable(
+            &run, &resources
+        ));
+        assert!(!native_skia_can_replay_glyph_run(&run, &resources));
     }
 
     fn solid_rect_tree(

@@ -2300,6 +2300,28 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// [Task #825] 머리말/꼬리말 안 그림의 속성 조회.
+    /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
+    ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
+    #[wasm_bindgen(js_name = getHeaderFooterPictureProperties)]
+    pub fn get_header_footer_picture_properties(
+        &self,
+        section_idx: u32,
+        outer_para_idx: u32,
+        outer_control_idx: u32,
+        inner_para_idx: u32,
+        inner_control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_header_footer_picture_properties_native(
+            section_idx as usize,
+            outer_para_idx as usize,
+            outer_control_idx as usize,
+            inner_para_idx as usize,
+            inner_control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 그림 컨트롤의 속성을 변경한다.
     ///
     /// 반환: JSON `{"ok":true}`
@@ -2315,6 +2337,28 @@ impl HwpDocument {
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
+            props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [Task #825] 머리말/꼬리말 안 그림 속성 변경.
+    #[wasm_bindgen(js_name = setHeaderFooterPictureProperties)]
+    pub fn set_header_footer_picture_properties(
+        &mut self,
+        section_idx: u32,
+        outer_para_idx: u32,
+        outer_control_idx: u32,
+        inner_para_idx: u32,
+        inner_control_idx: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_header_footer_picture_properties_native(
+            section_idx as usize,
+            outer_para_idx as usize,
+            outer_control_idx as usize,
+            inner_para_idx as usize,
+            inner_control_idx as usize,
             props_json,
         )
         .map_err(|e| e.into())
