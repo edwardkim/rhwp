@@ -46,6 +46,34 @@ impl From<special_char::Hwp3SpecialCharError> for Hwp3Error {
     }
 }
 
+/// HWP3 record buffer 할당 허용 상한 (hard cap).
+/// 외부 입력 garbage length 로 인한 거대 alloc → 32-bit WASM panic 방지.
+/// 정상 HWP3 record 는 이보다 훨씬 작음. 본 cap 을 넘는 length 는 corrupted/misaligned
+/// 로 간주하여 graceful Err 반환.
+pub(crate) const HWP3_MAX_RECORD_SIZE: usize = 256 * 1024 * 1024;
+
+/// length 가 cap 안에 있는지 검증 후 zero-filled `Vec<u8>` 할당.
+/// length > cap 일 때 `vec![]` panic 대신 `InvalidData` Err 반환 (#877).
+pub(crate) fn alloc_record_buf(length: usize) -> Result<Vec<u8>, io::Error> {
+    check_record_count(length)?;
+    Ok(vec![0u8; length])
+}
+
+/// 외부 입력 count (예: `point_count: u32`) 를 `Vec::with_capacity` 인자로 쓰기 전 검증.
+/// count > cap 일 때 graceful Err 반환 (#877).
+pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
+    if count > HWP3_MAX_RECORD_SIZE {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "HWP3 record count overflow: requested {}, cap {}",
+                count, HWP3_MAX_RECORD_SIZE
+            ),
+        ));
+    }
+    Ok(())
+}
+
 /// HWP3 개체의 CommonObjAttr 필드들에서 HWP5 attr 비트필드를 계산한다.
 /// serialize_common_obj_attr이 common.attr 값을 직접 기록하므로,
 /// 필드를 설정한 뒤 반드시 이 함수로 attr을 갱신해야 저장→재열기 후 속성이 유지된다.
@@ -670,7 +698,10 @@ pub(crate) fn parse_paragraph_list(
                                 let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
 
                                 let mut cells = Vec::new();
-                                let mut cell_buf = vec![0u8; 27 * (cell_count as usize)];
+                                let mut cell_buf = match alloc_record_buf(27 * (cell_count as usize)) {
+                                    Ok(b) => b,
+                                    Err(_) => break,
+                                };
                                 if let Err(_) = body_cursor.read_exact(&mut cell_buf) { break; }
                                 
                                 let mut xs_raw = Vec::new();
@@ -929,7 +960,11 @@ pub(crate) fn parse_paragraph_list(
                             let n_ext_from_buf = (&info_buf[0..4]).read_u32::<LittleEndian>().unwrap_or(0);
                             let n_ext = n_ext_from_buf;
 
-                            let mut ext_buf = vec![0u8; n_ext as usize];
+                            // [Task #877] garbage length 로 인한 거대 alloc → WASM panic 방지.
+                            let mut ext_buf = match alloc_record_buf(n_ext as usize) {
+                                Ok(b) => b,
+                                Err(_) => break,
+                            };
                             if let Err(_) = body_cursor.read_exact(&mut ext_buf) { break; }
                             
                             let pic_type = info_buf[74];
@@ -2296,6 +2331,53 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn test_alloc_record_buf_overflow_returns_err() {
+        // [Task #877] garbage length 입력 시 panic 대신 graceful Err 반환.
+        // 32-bit WASM 의 RawVec capacity overflow panic 방지 검증.
+        let r = alloc_record_buf(HWP3_MAX_RECORD_SIZE + 1);
+        assert!(r.is_err());
+        let e = r.unwrap_err();
+        assert_eq!(e.kind(), std::io::ErrorKind::InvalidData);
+        let msg = format!("{}", e);
+        assert!(msg.contains("HWP3 record") && msg.contains("overflow"), "msg was: {msg:?}");
+
+        let r2 = alloc_record_buf(0xDC000000); // sample16 실측 garbage 값 (~3.69 GB)
+        assert!(r2.is_err());
+    }
+
+    #[test]
+    fn test_alloc_record_buf_within_cap_ok() {
+        // 정상 범위 길이는 그대로 vec 생성.
+        let r = alloc_record_buf(1024);
+        assert!(r.is_ok());
+        assert_eq!(r.unwrap().len(), 1024);
+    }
+
+    #[test]
+    fn test_check_record_count_overflow_returns_err() {
+        // garbage point_count / cell_count 등을 Vec::with_capacity 전에 가드.
+        assert!(check_record_count(HWP3_MAX_RECORD_SIZE + 1).is_err());
+        assert!(check_record_count(0xFFFFFFFF).is_err());
+        assert!(check_record_count(1024).is_ok());
+    }
+
+    #[test]
+    fn test_hwp3_sample16_load_without_panic() {
+        // [Task #877] hwp3-sample16.hwp 가 WASM 에서 RawVec capacity overflow 로 panic 하던 회귀.
+        // Stage 1 가드 도입 후 panic 없이 graceful 하게 진행되어야 함.
+        // 완전한 정합 파싱 (64쪽 인식) 은 Stage 2 의 alignment 정정 범위.
+        let path = "samples/hwp3-sample16.hwp";
+        if !std::path::Path::new(path).exists() {
+            // 샘플 미커밋 환경에서는 skip.
+            return;
+        }
+        let mut data = Vec::new();
+        File::open(path).unwrap().read_to_end(&mut data).unwrap();
+        // panic 없이 Ok 또는 Err 반환되어야 함 (panic 검증이 본질).
+        let _ = parse_hwp3(&data);
+    }
 
     #[test]
     fn test_parse_sample_dump() {
