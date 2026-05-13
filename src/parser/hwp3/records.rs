@@ -389,7 +389,7 @@ impl Hwp3InfoBlock {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
         let id = reader.read_u16::<LittleEndian>()?;
         let length = reader.read_u16::<LittleEndian>()?;
-        let mut data = vec![0u8; length as usize];
+        let mut data = super::alloc_record_buf(length as usize)?;
         reader.read_exact(&mut data)?;
         Ok(Hwp3InfoBlock { id, length, data })
     }
@@ -410,7 +410,7 @@ impl Hwp3AdditionalInfoBlock {
             return Ok(Hwp3AdditionalInfoBlock { id, length: 0, data: Vec::new() });
         }
         let length = reader.read_u32::<LittleEndian>()?;
-        let mut data = vec![0u8; length as usize];
+        let mut data = super::alloc_record_buf(length as usize)?;
         reader.read_exact(&mut data)?;
         Ok(Hwp3AdditionalInfoBlock { id, length, data })
     }

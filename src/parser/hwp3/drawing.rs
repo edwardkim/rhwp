@@ -342,6 +342,7 @@ impl Hwp3DrawingPolygon {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let point_count = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
+        super::check_record_count(point_count as usize)?;
         let mut points = Vec::with_capacity(point_count as usize);
         for _ in 0..point_count {
             points.push([
@@ -369,7 +370,7 @@ impl Hwp3DrawingTextBox {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
-        let mut paragraph_list_data = vec![0u8; info2_len as usize];
+        let mut paragraph_list_data = super::alloc_record_buf(info2_len as usize)?;
         if info2_len > 0 {
             reader.read_exact(&mut paragraph_list_data)?;
         }
@@ -394,6 +395,7 @@ impl Hwp3DrawingCurve {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let point_count = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
+        super::check_record_count(point_count as usize)?;
         let mut points = Vec::with_capacity(point_count as usize);
         for _ in 0..point_count {
             points.push([
@@ -446,6 +448,7 @@ impl Hwp3DrawingExtendedPolygon {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let point_count = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
+        super::check_record_count(point_count as usize)?;
         let mut points = Vec::with_capacity(point_count as usize);
         for _ in 0..point_count {
             points.push([
@@ -453,7 +456,7 @@ impl Hwp3DrawingExtendedPolygon {
                 reader.read_i32::<LittleEndian>()?,
             ]);
         }
-        let mut line_attrs = vec![0u8; point_count as usize];
+        let mut line_attrs = super::alloc_record_buf(point_count as usize)?;
         if point_count > 0 {
             reader.read_exact(&mut line_attrs)?;
         }
@@ -540,10 +543,10 @@ impl Hwp3DrawingObject {
             _ => {
                 // 알 수 없는 객체
                 let info1_len = reader.read_u32::<LittleEndian>()?;
-                let mut info1 = vec![0u8; info1_len as usize];
+                let mut info1 = super::alloc_record_buf(info1_len as usize)?;
                 reader.read_exact(&mut info1)?;
                 let info2_len = reader.read_u32::<LittleEndian>()?;
-                let mut info2 = vec![0u8; info2_len as usize];
+                let mut info2 = super::alloc_record_buf(info2_len as usize)?;
                 reader.read_exact(&mut info2)?;
                 
                 let mut all_data = Vec::new();
