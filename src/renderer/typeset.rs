@@ -2448,8 +2448,15 @@ impl TypesetEngine {
         let entering_solo_zero = paragraphs[para_idx].controls.iter().any(|c| matches!(c,
             Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0));
         let leaving_solo_zero = st.col_count <= 1 && st.current_zone_design_spacing_px < 0.5;
+        // [Task #866 v3 Stage 1] 헤더 띠 zone (TAC wrap=TopAndBottom 표) 의 leaving 은
+        // `tac_band_extra` 가 이미 표 band 높이만큼 패딩을 추가하므로 `solo_zone_pad` 를 또
+        // 더하면 한컴 PDF 대비 본문 첫 줄이 ~13pt 더 아래로 밀려 사용자 "넓다" 피드백 발생.
+        // tac_band_extra>0 == 헤더 띠 leaving 케이스 → solo_zone_pad 의 leaving 분기 제외.
+        let leaving_is_header_band = leaving_solo_zero && tac_band_extra > 0.5;
         let column_break_new_band = paragraphs[para_idx].column_type == ColumnBreakType::Column;
-        let solo_zone_pad = if entering_solo_zero || leaving_solo_zero || column_break_new_band {
+        let solo_zone_pad = if entering_solo_zero
+            || (leaving_solo_zero && !leaving_is_header_band)
+            || column_break_new_band {
             hwpunit_to_px(1200, self.dpi)
         } else { 0.0 };
         let candidate_offset = st.current_zone_y_offset + vpos_zone_height + tac_band_extra

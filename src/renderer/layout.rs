@@ -1311,6 +1311,9 @@ impl LayoutEngine {
         };
         let mut prev_zone_design_px: f64 = 0.0;
         let mut prev_zone_was_solo: bool = false;
+        // [Task #866 v3 Stage 1] 직전 zone 이 헤더 띠(TAC wrap=TopAndBottom 표만 보유) 였으면
+        // solo_zone_pad 의 leaving 분기를 제외 (typeset.rs::leaving_is_header_band 와 동일).
+        let mut prev_zone_was_header_band: bool = false;
 
         // 다단 레이아웃: body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이
         // (한 단에만 할당되더라도 모든 단에 적용)
@@ -1357,7 +1360,9 @@ impl LayoutEngine {
                 let column_break_new_band = new_zone_first_para.and_then(|pi| paragraphs.get(pi))
                     .map(|p| p.column_type == crate::model::paragraph::ColumnBreakType::Column)
                     .unwrap_or(false);
-                let solo_zone_pad = if new_zone_is_solo_zero || prev_zone_is_solo_zero || column_break_new_band {
+                let solo_zone_pad = if new_zone_is_solo_zero
+                    || (prev_zone_is_solo_zero && !prev_zone_was_header_band)
+                    || column_break_new_band {
                     hwpunit_to_px(1200, self.dpi)
                 } else { 0.0 };
                 if col_content.zone_y_offset > 0.0 {
@@ -1412,6 +1417,8 @@ impl LayoutEngine {
             // shortcut.hwp 2·3쪽 헤더 띠 하단↔본문 ~28~33px). 다음 zone 시작 y 를 그만큼 내림.
             // ColumnDef 간격>0 인 헤더 띠(1쪽 등)는 그 간격이 이미 zone 여백이 되므로 제외.
             // (pagination 측 process_multicolumn_break 의 tac_band_extra 와 동일 시멘틱.)
+            // [Task #866 v3 Stage 1] zone 단위 헤더 띠 leaving flag 갱신.
+            prev_zone_was_header_band = false;
             if let Some(last_para_idx) = col_content.items.last().and_then(|it| match it {
                 PageItem::Table { para_index, .. } => Some(*para_index),
                 _ => None,
@@ -1429,6 +1436,7 @@ impl LayoutEngine {
                             _ => None,
                         }) {
                             prev_zone_y_end += band;
+                            prev_zone_was_header_band = true;
                         }
                     }
                 }
