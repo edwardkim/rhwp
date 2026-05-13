@@ -1155,6 +1155,56 @@ pub(crate) fn parse_paragraph_list(
                                 info_buf.resize(header_val1 as usize, 0);
                                 let _ = body_cursor.read_exact(&mut info_buf);
                             }
+                        } else if ch == 5 {
+                            // [Task #877] 필드 코드 (spec §10.1, 표 33): 가변 길이 8 + n bytes.
+                            // header_val1 = n (필드 코드 세부 정보 길이).
+                            // 현재 8 byte (ch + dword + ch close) 소비 완료, 추가 n bytes 소비.
+                            if header_val1 > 0 {
+                                let mut field_data = match alloc_record_buf(header_val1 as usize) {
+                                    Ok(b) => b,
+                                    Err(_) => break,
+                                };
+                                if let Err(_) = body_cursor.read_exact(&mut field_data) { break; }
+                            }
+                        } else if ch == 6 {
+                            // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
+                            // - offset 0..2: ch=6 (begin) [outer loop 에서 read 완료]
+                            // - offset 2..6: dword 자료구조 길이 = 34 [_=> else 의 header_val1 으로 read 완료]
+                            // - offset 6..8: ch=6 (close) [_=> else 의 ch2 로 read 완료]
+                            // - offset 8..40: hchar array[16] = 책갈피 이름 (32 bytes) — 추가 read 필요
+                            // - offset 40..42: word 책갈피 종류 (2 bytes) — 추가 read 필요
+                            // 총 추가 34 bytes (= header_val1 값과 동일).
+                            // cc count 는 outer i+=3 으로 4 hchars (= 8 bytes) 만 차지.
+                            let mut bookmark_extra = [0u8; 34];
+                            if let Err(_) = body_cursor.read_exact(&mut bookmark_extra) { break; }
+                            let name_buf = &bookmark_extra[0..32];
+                            let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
+                                .trim_end_matches('\0').to_string();
+                            let bookmark_type = (&bookmark_extra[32..34]).read_u16::<LittleEndian>().unwrap_or(0);
+                            let mut field = crate::model::control::Field::default();
+                            field.field_type = crate::model::control::FieldType::Unknown;
+                            field.command = format!("Bookmark:{}:type={}", name, bookmark_type);
+                            controls.push(crate::model::control::Control::Field(field));
+                            ctrl_data_records.push(None);
+                        } else if ch == 7 {
+                            // [Task #877] 날짜 형식 (spec §10.3, 표 37): 84 bytes total.
+                            // - offset 0..2: ch=7 (begin) [outer read]
+                            // - offset 2..82: hchar array[40] = 80 bytes 날짜 형식 (추가 read)
+                            // - offset 82..84: ch=7 (close) (추가 read)
+                            // 현재 outer loop + _=> else 에서 8 byte (ch + 6 byte header) 소비.
+                            // 추가 76 byte 소비 필요.
+                            let mut date_fmt = [0u8; 76];
+                            if let Err(_) = body_cursor.read_exact(&mut date_fmt) { break; }
+                        } else if ch == 8 {
+                            // [Task #877] 날짜 코드 (spec §10.4, 표 38): 96 bytes total.
+                            // - offset 0..2: ch=8 (begin) [outer read]
+                            // - offset 2..82: hchar array[40] 형식 (80 bytes)
+                            // - offset 82..90: word array[4] 날짜 (8 bytes)
+                            // - offset 90..94: word array[2] 시각 (4 bytes)
+                            // - offset 94..96: ch=8 (close) (2 bytes)
+                            // 현재 _=> else 에서 8 byte 소비. 추가 88 byte 필요.
+                            let mut date_code = [0u8; 88];
+                            if let Err(_) = body_cursor.read_exact(&mut date_code) { break; }
                         } else {
                             // 알 수 없음 (코드 0-4, 12, 27 등 예약 문자)
                             // 8바이트 헤더(ch+field+ch2)만 소비. header_val1은 길이 필드가 아님.
@@ -2368,10 +2418,15 @@ mod tests {
     }
 
     #[test]
-    fn test_hwp3_sample16_load_without_panic() {
-        // [Task #877] hwp3-sample16.hwp 가 WASM 에서 RawVec capacity overflow 로 panic 하던 회귀.
-        // Stage 1 가드 도입 후 panic 없이 graceful 하게 진행되어야 함.
-        // 완전한 정합 파싱 (64쪽 인식) 은 Stage 2 의 alignment 정정 범위.
+    fn test_hwp3_sample16_load_alignment() {
+        // [Task #877] hwp3-sample16.hwp panic 회귀 + paragraph alignment 정합.
+        // Stage 1: WASM RawVec overflow panic → graceful Err (가드 도입)
+        // Stage 2: ch=6 책갈피 / ch=7 날짜형식 / ch=8 날짜코드 record size 정합
+        //          (한글문서파일구조3.0 §10.2/§10.3/§10.4 참고)
+        //
+        // 본 sample16 은 표지 picture(ch=11) + 책갈피(ch=6) 가 다수 포함된 64쪽 RFP 문서.
+        // ch=6 가 8 byte (current) 가 아닌 spec 의 42 byte 로 처리되지 않으면 paragraph
+        // stream alignment 가 어긋나 28737 페이지로 폭주 인식됨.
         let path = "samples/hwp3-sample16.hwp";
         if !std::path::Path::new(path).exists() {
             // 샘플 미커밋 환경에서는 skip.
@@ -2379,8 +2434,15 @@ mod tests {
         }
         let mut data = Vec::new();
         File::open(path).unwrap().read_to_end(&mut data).unwrap();
-        // panic 없이 Ok 또는 Err 반환되어야 함 (panic 검증이 본질).
-        let _ = parse_hwp3(&data);
+        let doc = parse_hwp3(&data).expect("sample16 parse failed");
+        // 정상 alignment 시 한컴 HWP5 변환본과 동일한 1058 paragraphs 인식.
+        // 누락/오인 alignment 시 77 (Stage 1 only) 또는 더 적은 수 인식됨.
+        let total_paras: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
+        assert!(
+            total_paras >= 1000,
+            "sample16 paragraph count too low ({}); ch=6/7/8 alignment 회귀 의심",
+            total_paras
+        );
     }
 
     #[test]
