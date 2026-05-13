@@ -454,8 +454,15 @@ impl LayoutEngine {
             wrap_around_paras,
         );
 
-        // 단 구분선
-        self.build_column_separators(&mut tree, &mut body_node, layout);
+        // 단 구분선 — 페이지 안에 zone-specific layout(다단 zone) 이 있으면 zone 별
+        // emit_zone_column_separators 가 이미 sep 을 그리므로 page-level fallback 은 skip.
+        // (Issue #874 Case 4: shortcut.hwp 2쪽~ 페이지 layout 이 2단으로 잡혀 body_area
+        // 전체 길이 점선이 zone-별 sep 위에 중복 그려지는 결함 정정.)
+        let has_zone_specific_layout = page_content.column_contents.iter()
+            .any(|cc| cc.zone_layout.is_some());
+        if !has_zone_specific_layout {
+            self.build_column_separators(&mut tree, &mut body_node, layout);
+        }
 
         // 콘텐츠 레이아웃 후 clip_rect 확정:
         // 자식 노드(표 등)의 실제 바운딩 박스를 재귀적으로 반영하여
