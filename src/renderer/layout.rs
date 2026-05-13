@@ -1252,13 +1252,12 @@ impl LayoutEngine {
             let is_new_zone = (col_content.zone_y_offset - last_zone_y_offset).abs() > 0.1;
             if is_new_zone {
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
-                let new_zone_first_para = col_content.items.first().and_then(|it| match it {
+                let new_zone_first_para = col_content.items.first().map(|it| match it {
                     PageItem::FullParagraph { para_index }
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => Some(*para_index),
-                    _ => None,
+                    | PageItem::Shape { para_index, .. } => *para_index,
                 });
                 let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
                 if col_content.zone_y_offset > 0.0 {
