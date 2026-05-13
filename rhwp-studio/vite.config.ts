@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve, extname, join } from 'path';
 import { readFileSync, readFile } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
+import { yangsikFragmentsPlugin } from './vite-plugin-yangsik-fragments';
 
 const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
 
@@ -24,6 +25,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    yangsikFragmentsPlugin(),
     // [Task #741 후속] dev 서버 영역 영역 /samples/* 경로 영역 영역 parent samples/ dir 영역
     // 영역 정적 serve 영역 — wasm-bridge.ts 영역 영역 외부 image fetch 영역 영역 영역.
     {

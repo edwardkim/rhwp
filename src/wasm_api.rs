@@ -155,6 +155,17 @@ impl HwpDocument {
         self.create_blank_document_native().map_err(|e| e.into())
     }
 
+    /// 내장 HWPX 템플릿에서 빈 문서를 생성한다.
+    ///
+    /// `paste_hwpx_fragment_in_document` 같은 wasm bridge 기능이 raw section/header XML
+    /// 보존을 요구하므로, 양식 부품 paste 등을 사용하려면 본 함수로 새 문서를 시작한다.
+    /// 시드: `saved/04-blank_hwpx_empty.hwpx` (1 section, 1 빈 단락, ~7KB).
+    #[wasm_bindgen(js_name = createBlankHwpxDocument)]
+    pub fn create_blank_hwpx_document(&mut self) -> Result<String, JsValue> {
+        self.create_blank_hwpx_document_native()
+            .map_err(|e| e.into())
+    }
+
     /// 문단부호(¶) 표시 여부를 설정한다.
     #[wasm_bindgen(js_name = setShowParagraphMarks)]
     pub fn set_show_paragraph_marks(&mut self, enabled: bool) {
@@ -259,7 +270,9 @@ impl HwpDocument {
         use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::web_canvas::WebCanvasRenderer;
 
-        let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
+        let tree = self
+            .build_page_layer_tree(page_num)
+            .map_err(JsValue::from)?;
 
         let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
             .map_err(JsValue::from_str)?;
@@ -294,21 +307,25 @@ impl HwpDocument {
         scale: f64,
         layer_kind: &str,
     ) -> Result<(), JsValue> {
+        use crate::model::shape::TextWrap;
         use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::web_canvas::{LayerFilter, WebCanvasRenderer};
-        use crate::model::shape::TextWrap;
 
         let filter = match layer_kind {
             "all" => LayerFilter::All,
             "flow" => LayerFilter::FlowOnly,
             "behind" => LayerFilter::WrapOnly(TextWrap::BehindText),
             "front" => LayerFilter::WrapOnly(TextWrap::InFrontOfText),
-            _ => return Err(JsValue::from_str(
-                "invalid layer_kind: 'all' | 'flow' | 'behind' | 'front'",
-            )),
+            _ => {
+                return Err(JsValue::from_str(
+                    "invalid layer_kind: 'all' | 'flow' | 'behind' | 'front'",
+                ))
+            }
         };
 
-        let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
+        let tree = self
+            .build_page_layer_tree(page_num)
+            .map_err(JsValue::from)?;
 
         let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
             .map_err(JsValue::from_str)?;
@@ -421,7 +438,11 @@ impl HwpDocument {
     /// 현재 구역의 다단 설정을 JSON으로 반환한다.
     #[wasm_bindgen(js_name = getColumnDef)]
     pub fn get_column_def(&self, section_idx: u32) -> Result<String, JsValue> {
-        let sec = self.core.document.sections.get(section_idx as usize)
+        let sec = self
+            .core
+            .document
+            .sections
+            .get(section_idx as usize)
             .ok_or_else(|| JsValue::from_str("구역 인덱스 범위 초과"))?;
         let col_def = HwpDocument::find_initial_column_def(&sec.paragraphs);
         let col_type = match col_def.column_type {
@@ -2185,10 +2206,18 @@ impl HwpDocument {
                     };
                     if let Some(ref path) = pic.image_attr.external_path {
                         let id = pic.image_attr.bin_data_id;
-                        let already_loaded = self.document().bin_data_content.iter()
+                        let already_loaded = self
+                            .document()
+                            .bin_data_content
+                            .iter()
                             .any(|c| c.id == id && !c.data.is_empty());
-                        if already_loaded { continue; }
-                        let basename = path.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(path);
+                        if already_loaded {
+                            continue;
+                        }
+                        let basename = path
+                            .rsplit(|c| c == '/' || c == '\\')
+                            .next()
+                            .unwrap_or(path);
                         names.insert(basename.to_string());
                     }
                 }
@@ -2206,10 +2235,14 @@ impl HwpDocument {
     /// `basename`: 영역 영역 file 영역 영역 (예: "oracle.gif")
     /// `data`: 영역 영역 binary 영역
     /// `display_path`: dialog 영역 영역 영역 영역 표시 영역 영역 path. 빈 문자열 ("") 영역
-    ///                 영역 영역 fallback 영역 영역 `/samples/<basename>` 영역 사용. 한컴 viewer
-    ///                 정합 영역 영역 OS 영역 절대 경로 영역 영역 (예: "/Users/.../samples/rdb02.gif")
+    ///                 영역 영역 fallback 영역 영역 `/samples/<basename>` 영역 사용.
     #[wasm_bindgen(js_name = injectExternalImage)]
-    pub fn inject_external_image(&mut self, basename: &str, data: &[u8], display_path: &str) -> u32 {
+    pub fn inject_external_image(
+        &mut self,
+        basename: &str,
+        data: &[u8],
+        display_path: &str,
+    ) -> u32 {
         use crate::model::control::Control;
         use crate::model::shape::ShapeObject;
 
@@ -2228,14 +2261,27 @@ impl HwpDocument {
                         _ => continue,
                     };
                     if let Some(ref path) = pic.image_attr.external_path {
-                        let path_basename = path.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(path);
-                        if path_basename != basename { continue; }
+                        let path_basename = path
+                            .rsplit(|c| c == '/' || c == '\\')
+                            .next()
+                            .unwrap_or(path);
+                        if path_basename != basename {
+                            continue;
+                        }
                         let id = pic.image_attr.bin_data_id;
-                        let already_loaded = self.document().bin_data_content.iter()
+                        let already_loaded = self
+                            .document()
+                            .bin_data_content
+                            .iter()
                             .any(|c| c.id == id && !c.data.is_empty());
-                        if already_loaded { continue; }
+                        if already_loaded {
+                            continue;
+                        }
                         let ext = std::path::Path::new(basename)
-                            .extension().and_then(|e| e.to_str()).unwrap_or("").to_string();
+                            .extension()
+                            .and_then(|e| e.to_str())
+                            .unwrap_or("")
+                            .to_string();
                         targets.push((id, ext));
                     }
                 }
@@ -2249,11 +2295,13 @@ impl HwpDocument {
                 self.document_mut().bin_data_content[idx].data = data.to_vec();
                 self.document_mut().bin_data_content[idx].extension = ext;
             } else {
-                self.document_mut().bin_data_content.push(
-                    crate::model::bin_data::BinDataContent {
-                        id, data: data.to_vec(), extension: ext,
-                    }
-                );
+                self.document_mut()
+                    .bin_data_content
+                    .push(crate::model::bin_data::BinDataContent {
+                        id,
+                        data: data.to_vec(),
+                        extension: ext,
+                    });
             }
             injected += 1;
 
@@ -2279,7 +2327,8 @@ impl HwpDocument {
                             _ => continue,
                         };
                         if pic.image_attr.bin_data_id == id
-                            && pic.image_attr.external_path.is_some() {
+                            && pic.image_attr.external_path.is_some()
+                        {
                             pic.image_attr.external_path = Some(resolved.clone());
                         }
                     }
@@ -3201,7 +3250,8 @@ impl HwpDocument {
         new_text: &str,
         case_sensitive: bool,
     ) -> Result<String, JsValue> {
-        self.core.replace_one_native(query, new_text, case_sensitive)
+        self.core
+            .replace_one_native(query, new_text, case_sensitive)
             .map_err(|e| e.into())
     }
 
@@ -3917,19 +3967,19 @@ impl HwpDocument {
                 None => "null".to_string(),
             };
             let kind_name = match &w.kind {
-                crate::document_core::validation::WarningKind::LinesegArrayEmpty =>
-                    "LinesegArrayEmpty",
-                crate::document_core::validation::WarningKind::LinesegUncomputed =>
-                    "LinesegUncomputed",
-                crate::document_core::validation::WarningKind::LinesegTextRunReflow =>
-                    "LinesegTextRunReflow",
+                crate::document_core::validation::WarningKind::LinesegArrayEmpty => {
+                    "LinesegArrayEmpty"
+                }
+                crate::document_core::validation::WarningKind::LinesegUncomputed => {
+                    "LinesegUncomputed"
+                }
+                crate::document_core::validation::WarningKind::LinesegTextRunReflow => {
+                    "LinesegTextRunReflow"
+                }
             };
             warning_parts.push(format!(
                 r#"{{"section":{},"paragraph":{},"kind":"{}","cell":{}}}"#,
-                w.section_idx,
-                w.paragraph_idx,
-                kind_name,
-                cell_part,
+                w.section_idx, w.paragraph_idx, kind_name, cell_part,
             ));
         }
 
@@ -5118,6 +5168,45 @@ impl HwpDocument {
         self.measure_width_diagnostic_native(section_idx as usize, para_idx as usize)
             .map_err(|e| e.into())
     }
+
+    /// HWPX fragment(byte-exact)를 caret 위치에 paste 한다.
+    ///
+    /// 외부 hwpx 파일에서 추출한 단편을 source 정의(charPr/paraPr/style/borderFill)와
+    /// 함께 받아, destination DocInfo 에 정의를 머지하고 ID ref 를 remap 한 뒤
+    /// caret 위치에 삽입한다. 한컴오피스의 외부-from-paste 와 동등한 동작.
+    ///
+    /// 인자 (모두 raw HWPX XML 스니펫, 빈 문자열 허용):
+    /// - `fragment_xml`: 1개 이상의 `<hp:p ...>...</hp:p>`
+    /// - `char_prs`: 1개 이상의 `<hh:charPr ...>...</hh:charPr>`
+    /// - `para_prs`: 1개 이상의 `<hh:paraPr ...>...</hh:paraPr>`
+    /// - `styles`: 1개 이상의 `<hh:style .../>`
+    /// - `border_fills`: 1개 이상의 `<hh:borderFill ...>...</hh:borderFill>`
+    ///
+    /// 반환: `{"ok":true,"paraIdx":<idx>,"charOffset":<offset>,"insertedParaCount":<n>}`
+    #[wasm_bindgen(js_name = pasteHwpxFragment)]
+    pub fn paste_hwpx_fragment(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+        fragment_xml: &str,
+        char_prs: &str,
+        para_prs: &str,
+        styles: &str,
+        border_fills: &str,
+    ) -> Result<String, JsValue> {
+        self.paste_hwpx_fragment_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+            fragment_xml,
+            char_prs,
+            para_prs,
+            styles,
+            border_fills,
+        )
+        .map_err(|e| e.into())
+    }
 }
 
 pub(crate) mod event;
@@ -5283,6 +5372,157 @@ pub fn extract_thumbnail(data: &[u8]) -> JsValue {
 fn base64_encode(data: &[u8]) -> String {
     use base64::Engine;
     base64::engine::general_purpose::STANDARD.encode(data)
+}
+
+// ───────────────────────────── HWPX fragment paste in Document (wasm bridge) ─────────────────────────────
+
+#[wasm_bindgen]
+impl HwpDocument {
+    /// 보존된 raw section/header XML 을 사용해 HWPX fragment 를 현재 Document 에 paste 한다.
+    ///
+    /// Phase 2 의 `pasteHwpxFragmentRaw` 와 달리 클라이언트가 zip/unzip 라운드트립을 다룰
+    /// 필요가 없다. Document IR 도 자동으로 재파싱돼 후속 명령(rendering/edit)이 그대로 사용 가능.
+    ///
+    /// 반환 JSON 스키마:
+    /// `{"inserted_para_count":N,"id_remap_char_pr":{...},"id_remap_para_pr":{...},
+    ///   "id_remap_style":{...},"id_remap_border_fill":{...}}`
+    ///
+    /// 에러: 문서가 HWP 로 로드됐거나 raw XML 보존이 없으면 `NoSourceXml`,
+    /// section_idx 가 범위 밖이면 `SectionOutOfRange`,
+    /// fragment 가 well-formed 아니면 `Paste(...)`.
+    #[wasm_bindgen(js_name = pasteHwpxFragmentInDocument)]
+    pub fn paste_hwpx_fragment_in_document(
+        &mut self,
+        section_idx: u32,
+        after_para_idx: u32,
+        fragment_xml: &str,
+        source_char_prs: &str,
+        source_para_prs: &str,
+        source_styles: &str,
+        source_border_fills: &str,
+    ) -> Result<String, JsValue> {
+        use crate::document_core::SourceDefinitions;
+        let source = SourceDefinitions {
+            char_prs: source_char_prs.to_string(),
+            para_prs: source_para_prs.to_string(),
+            styles: source_styles.to_string(),
+            border_fills: source_border_fills.to_string(),
+        };
+        let result = self
+            .core
+            .paste_hwpx_fragment_in_document_native(
+                section_idx as usize,
+                after_para_idx as usize,
+                fragment_xml,
+                &source,
+            )
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        // paste 후 layout 재계산 — 새 IR 위에 page count/measured 가 갱신되도록.
+        // 미호출 시 클라이언트가 refreshPages 해도 pageCount/getPageInfo 가 stale 이라
+        // 캔버스에 새 fragment 가 보이지 않는다.
+        self.core.paginate();
+
+        let mut json = String::with_capacity(256);
+        json.push_str("{\"inserted_para_count\":");
+        json.push_str(&result.inserted_para_count.to_string());
+        json.push_str(",\"id_remap_char_pr\":");
+        push_remap_json(&mut json, &result.id_remap.char_pr);
+        json.push_str(",\"id_remap_para_pr\":");
+        push_remap_json(&mut json, &result.id_remap.para_pr);
+        json.push_str(",\"id_remap_style\":");
+        push_remap_json(&mut json, &result.id_remap.style);
+        json.push_str(",\"id_remap_border_fill\":");
+        push_remap_json(&mut json, &result.id_remap.border_fill);
+        json.push('}');
+        Ok(json)
+    }
+}
+
+// ───────────────────────────── External HWPX fragment paste (Stage 4) ─────────────────────────────
+
+/// 외부 HWPX fragment(원본 양식의 byte-exact slice)를 caret 위치에 byte-preserving + ID remap +
+/// 표 정합성 보존하며 paste 한다.
+///
+/// **Document 모델 미사용** — 클라이언트가 hwpx unzip 후 raw section_xml/header_xml을 인자로
+/// 전달하고, 결과 JSON의 `section_xml`/`header_xml`을 받아 zip에 다시 packing 한다.
+/// 이 설계는 Document IR 동기화 문제를 회피해 byte-preserving 동작을 보장한다.
+#[wasm_bindgen(js_name = pasteHwpxFragmentRaw)]
+pub fn paste_hwpx_fragment_raw(
+    section_xml: &str,
+    header_xml: &str,
+    after_para_idx: u32,
+    fragment_xml: &str,
+    source_char_prs: &str,
+    source_para_prs: &str,
+    source_styles: &str,
+    source_border_fills: &str,
+) -> Result<String, JsValue> {
+    use crate::document_core::{paste_fragment_into_section, SourceDefinitions};
+    let mut header_mut = header_xml.to_string();
+    let source = SourceDefinitions {
+        char_prs: source_char_prs.to_string(),
+        para_prs: source_para_prs.to_string(),
+        styles: source_styles.to_string(),
+        border_fills: source_border_fills.to_string(),
+    };
+    let result = paste_fragment_into_section(
+        section_xml,
+        &mut header_mut,
+        after_para_idx as usize,
+        fragment_xml,
+        &source,
+    )
+    .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let mut json = String::with_capacity(result.new_section_xml.len() + header_mut.len() + 256);
+    json.push_str("{\"section_xml\":");
+    push_paste_json_string(&mut json, &result.new_section_xml);
+    json.push_str(",\"header_xml\":");
+    push_paste_json_string(&mut json, &header_mut);
+    json.push_str(",\"inserted_para_count\":");
+    json.push_str(&result.inserted_para_count.to_string());
+    json.push_str(",\"id_remap_char_pr\":");
+    push_remap_json(&mut json, &result.id_remap.char_pr);
+    json.push_str(",\"id_remap_para_pr\":");
+    push_remap_json(&mut json, &result.id_remap.para_pr);
+    json.push_str(",\"id_remap_style\":");
+    push_remap_json(&mut json, &result.id_remap.style);
+    json.push_str(",\"id_remap_border_fill\":");
+    push_remap_json(&mut json, &result.id_remap.border_fill);
+    json.push('}');
+    Ok(json)
+}
+
+fn push_paste_json_string(out: &mut String, s: &str) {
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+}
+
+fn push_remap_json(out: &mut String, remap: &std::collections::HashMap<u32, u32>) {
+    out.push('{');
+    let mut first = true;
+    for (k, v) in remap {
+        if !first {
+            out.push(',');
+        }
+        first = false;
+        out.push('"');
+        out.push_str(&k.to_string());
+        out.push_str("\":");
+        out.push_str(&v.to_string());
+    }
+    out.push('}');
 }
 
 #[cfg(test)]

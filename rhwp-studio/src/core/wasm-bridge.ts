@@ -355,6 +355,36 @@ export class WasmBridge {
     return this.doc.insertText(sec, para, charOffset, text);
   }
 
+  /**
+   * HWPX fragment 를 Document IR 에 byte-preserving paste 한다.
+   * rhwp `pasteHwpxFragmentInDocument` (wasm bridge) 호출 — section 의 raw XML 보존본 위에서
+   * 직접 동작하므로 zip/unzip 라운드트립 없이 즉시 반영.
+   *
+   * 반환 JSON 스키마:
+   * `{"inserted_para_count":N,"id_remap_char_pr":{...},"id_remap_para_pr":{...},
+   *   "id_remap_style":{...},"id_remap_border_fill":{...}}`
+   */
+  pasteHwpxFragmentInDocument(
+    sec: number,
+    afterParaIdx: number,
+    fragmentXml: string,
+    sourceCharPrs: string,
+    sourceParaPrs: string,
+    sourceStyles: string,
+    sourceBorderFills: string,
+  ): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.pasteHwpxFragmentInDocument(
+      sec,
+      afterParaIdx,
+      fragmentXml,
+      sourceCharPrs,
+      sourceParaPrs,
+      sourceStyles,
+      sourceBorderFills,
+    );
+  }
+
   deleteText(sec: number, para: number, charOffset: number, count: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.deleteText(sec, para, charOffset, count);

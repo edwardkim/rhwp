@@ -9,6 +9,12 @@ pub(crate) use helpers::*;
 mod commands;
 pub mod queries;
 pub mod builders;
+
+// 외부 HWPX fragment paste API — Stage 1~3 산출물 노출 (Stage 4 wasm 통합용).
+pub use commands::fragment_paste::{
+    paste_fragment_into_section, FragmentPasteError, IdRemap, ParagraphPasteResult,
+    SourceDefinitions,
+};
 pub(crate) mod html_table_import;
 pub mod table_calc;
 pub mod validation;
@@ -111,6 +117,13 @@ pub struct DocumentCore {
     /// HWPX 비표준 감지 등 문서 검증 경고.
     /// `from_bytes` 에서 자동 생성되며, 사용자 고지·선택적 reflow 에 사용 (#177).
     pub(crate) validation_report: validation::ValidationReport,
+    /// HWPX 로드 시 보존된 섹션별 raw XML (section_idx → 원본 section{N}.xml 본문).
+    /// HWP 로드 시에는 빈 Vec. paste fragment wasm bridge 가 byte-preserving paste 의
+    /// source/sink 로 사용 (task_local_yangsik_paste_wasm_bridge).
+    pub(crate) source_section_xmls: Vec<String>,
+    /// HWPX 로드 시 보존된 raw header.xml. paste 시 새 정의 추가로 갱신됨.
+    /// HWP 로드 시에는 빈 String.
+    pub(crate) source_header_xml: String,
 }
 
 /// 활성 필드 위치 정보
@@ -229,6 +242,8 @@ impl DocumentCore {
             para_offset: Vec::new(),
             source_format: crate::parser::FileFormat::Hwp,
             validation_report: validation::ValidationReport::new(),
+            source_section_xmls: Vec::new(),
+            source_header_xml: String::new(),
         }
     }
 

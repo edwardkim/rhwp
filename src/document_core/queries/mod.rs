@@ -6,3 +6,4 @@ pub(crate) mod field_query;
 mod form_query;
 mod search_query;
 mod bookmark_query;
+mod raw_xml;

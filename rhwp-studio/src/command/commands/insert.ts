@@ -5,6 +5,12 @@ import { SymbolsDialog } from '@/ui/symbols-dialog';
 import { BookmarkDialog } from '@/ui/bookmark-dialog';
 import { showShapePicker } from '@/ui/shape-picker';
 import type { ShapeType } from '@/ui/shape-picker';
+import {
+  YangsikPartsDialog,
+  fetchYangsikFragmentManifest,
+  fetchYangsikFragmentXml,
+  type FragmentManifestEntry,
+} from '@/ui/yangsik-parts-dialog';
 
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
@@ -389,6 +395,48 @@ export const insertCommands: CommandDef[] = [
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       toggleFlip(services, 'vertFlip');
+    },
+  },
+  {
+    id: 'insert:yangsik-parts',
+    label: '양식 부품',
+    canExecute: (ctx) => ctx.hasDocument && ctx.isEditable,
+    async execute(services) {
+      try {
+        const fragments = await fetchYangsikFragmentManifest();
+        if (fragments.length === 0) {
+          window.alert('양식 부품 카탈로그가 비어있습니다.');
+          return;
+        }
+        const inserter = async (entry: FragmentManifestEntry): Promise<boolean> => {
+          const ih = services.getInputHandler();
+          if (!ih) return false;
+          const pos = ih.getPosition();
+          try {
+            const fragmentXml = await fetchYangsikFragmentXml(entry.fragment_file);
+            const defs = entry.source_definitions ?? {};
+            services.wasm.pasteHwpxFragmentInDocument(
+              pos.sectionIndex,
+              pos.paragraphIndex,
+              fragmentXml,
+              defs.char_prs ?? '',
+              defs.para_prs ?? '',
+              defs.styles ?? '',
+              defs.border_fills ?? '',
+            );
+            ih.triggerAfterEdit();
+            return true;
+          } catch (err) {
+            console.error('[insert:yangsik-parts] paste failed', err);
+            return false;
+          }
+        };
+        new YangsikPartsDialog(fragments, inserter).show();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[insert:yangsik-parts]', msg);
+        window.alert(`양식 부품 목록을 불러오지 못했습니다:\n${msg}`);
+      }
     },
   },
 ];

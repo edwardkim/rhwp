@@ -49,8 +49,19 @@ impl DocumentCore {
 
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
-        let mut document = crate::parser::parse_document(data)
-            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        // HWPX 는 raw XML 까지 함께 보존해야 paste fragment wasm bridge 가 byte-preserving 으로 동작한다.
+        // HWP 또는 미지원 포맷은 기존 parse_document 경로로 fallback (raw 는 빈 값으로 남는다).
+        let (mut document, raw_section_xmls, raw_header_xml) = if matches!(
+            source_format,
+            crate::parser::FileFormat::Hwpx
+        ) {
+            crate::parser::hwpx::parse_hwpx_with_raw_xmls(data)
+                .map_err(|e| HwpError::InvalidFile(e.to_string()))?
+        } else {
+            let doc = crate::parser::parse_document(data)
+                .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+            (doc, Vec::new(), String::new())
+        };
 
         let styles = resolve_styles(&document.doc_info, DEFAULT_DPI);
 
@@ -117,6 +128,8 @@ impl DocumentCore {
             para_offset: Vec::new(),
             source_format,
             validation_report,
+            source_section_xmls: raw_section_xmls,
+            source_header_xml: raw_header_xml,
         };
 
         doc.paginate();
@@ -474,7 +487,7 @@ impl DocumentCore {
         reflowed
     }
 
-    /// 내장 템플릿에서 빈 문서 생성 (네이티브)
+    /// 내장 템플릿에서 빈 HWP 5.0 문서 생성 (네이티브). 기존 동작 유지.
     pub fn create_blank_document_native(&mut self) -> Result<String, HwpError> {
         const BLANK_TEMPLATE: &[u8] = include_bytes!("../../../saved/blank2010.hwp");
 
@@ -499,6 +512,43 @@ impl DocumentCore {
         self.next_snapshot_id = 0;
 
         self.convert_to_editable_native()?;
+        self.paginate();
+
+        Ok(self.get_document_info())
+    }
+
+    /// 내장 HWPX 템플릿에서 빈 문서 생성 (네이티브).
+    ///
+    /// `paste_hwpx_fragment_in_document` 가 raw section/header XML 보존을 요구하므로,
+    /// 양식 부품 paste 같은 wasm bridge 기능을 쓰려면 본 함수로 새 문서를 시작해야 한다.
+    /// 시드: `saved/04-blank_hwpx_empty.hwpx` (1 section, 1 빈 단락, ~7KB).
+    pub fn create_blank_hwpx_document_native(&mut self) -> Result<String, HwpError> {
+        const BLANK_HWPX_TEMPLATE: &[u8] = include_bytes!("../../../saved/04-blank_hwpx_empty.hwpx");
+
+        let (document, raw_section_xmls, raw_header_xml) =
+            crate::parser::hwpx::parse_hwpx_with_raw_xmls(BLANK_HWPX_TEMPLATE)
+                .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+
+        let styles = resolve_styles(&document.doc_info, self.dpi);
+        let composed = document.sections.iter().map(|s| compose_section(s)).collect();
+        let sec_count = document.sections.len();
+
+        self.document = document;
+        self.styles = styles;
+        self.composed = composed;
+        self.clipboard = None;
+        self.dirty_sections = vec![true; sec_count];
+        self.measured_tables = Vec::new();
+        self.measured_sections = Vec::new();
+        self.dirty_paragraphs = Vec::new();
+        self.para_column_map = Vec::new();
+        self.page_tree_cache.borrow_mut().clear();
+        self.snapshot_store.clear();
+        self.next_snapshot_id = 0;
+        self.source_format = crate::parser::FileFormat::Hwpx;
+        self.source_section_xmls = raw_section_xmls;
+        self.source_header_xml = raw_header_xml;
+
         self.paginate();
 
         Ok(self.get_document_info())

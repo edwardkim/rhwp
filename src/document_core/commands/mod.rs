@@ -7,3 +7,6 @@ mod clipboard;
 mod html_import;
 mod header_footer_ops;
 mod footnote_ops;
+mod cross_document_migrate;
+pub(crate) mod fragment_paste;
+pub(crate) mod fragment_paste_in_document;
