@@ -742,27 +742,10 @@ impl LayoutEngine {
         let margin_left = box_margin_left;
         let margin_right = box_margin_right;
         let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Justify);
-        let base_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
-        let base_spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
-        // [Task #866 v3 Stage 2 (paragraph-level)] typeset 측과 동일하게 `<...>` 단독 paragraph
-        // zone 식별 시 spacing_before/after 각 +20px(=1500 HU). 텍스트 `<` 시작 조건 추가
-        // (다른 sample 의 cd=1단 paragraph 회귀 방지).
-        let is_solo_text_zone_start = para
-            .map(|p| {
-                p.controls.iter().any(|c| matches!(c,
-                    Control::ColumnDef(cd) if cd.column_count.max(1) <= 1))
-                    && p.line_segs.first().map(|ls| ls.line_height < 1500).unwrap_or(false)
-                    && !p.controls.iter().any(|c| matches!(c,
-                        Control::Table(t) if t.common.treat_as_char
-                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)))
-                    && p.text.trim_start().starts_with('<')
-            })
-            .unwrap_or(false);
-        let solo_text_extra = if is_solo_text_zone_start {
-            hwpunit_to_px(1500, self.dpi)
-        } else { 0.0 };
-        let spacing_before = base_spacing_before + solo_text_extra;
-        let spacing_after = base_spacing_after + solo_text_extra;
+        let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+        let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+        // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
+        // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
         let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);

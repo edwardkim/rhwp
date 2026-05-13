@@ -1035,27 +1035,13 @@ impl TypesetEngine {
     ) -> FormattedParagraph {
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
-        let base_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
-        let base_spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
-        // [Task #866 v3 Stage 2 (paragraph-level)] `<...>` 단독 paragraph zone 의 paragraph
-        // 자체 height 를 한컴 PDF 모델 정합값(상하 각 +15pt=20px)에 맞춤. 한컴은 이 paragraph
-        // 위·아래에 본문 한 줄 분량의 여백을 paragraph 자체에 포함시킨다 (paragraph
-        // spacing_before/after 가 ParaShape 상은 0 이지만 한컴 layout 단계에서 묵시적 추가).
-        // 식별: ColumnDef cd=1단 직접 보유 + 표 없음 + line_height < 1500 HU + 텍스트가 `<`
-        // 로 시작 (shortcut.hwp 의 `<...>` 소제목 한정 — 다른 sample 의 cd=1단 paragraph
-        // 회귀 방지 위한 좁은 조건).
-        let is_solo_text_zone_start = para.controls.iter().any(|c| matches!(c,
-            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1))
-            && para.line_segs.first().map(|ls| ls.line_height < 1500).unwrap_or(false)
-            && !para.controls.iter().any(|c| matches!(c,
-                Control::Table(t) if t.common.treat_as_char
-                    && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)))
-            && para.text.trim_start().starts_with('<');
-        let solo_text_extra = if is_solo_text_zone_start {
-            hwpunit_to_px(1500, self.dpi)
-        } else { 0.0 };
-        let spacing_before = base_spacing_before + solo_text_extra;
-        let spacing_after = base_spacing_after + solo_text_extra;
+        let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+        let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+        // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
+        // 이전 #866 Stage 2 는 paragraph 위·아래 각 +20px (총 +40px) 을 paragraph 자체 height
+        // 에 포함시켰으나, typeset 의 zone 전환 패딩(solo_zone_pad +16px enter +16px leave)
+        // 이 이미 동일 역할을 담당하므로 이중 패딩이 발생 (한컴 PDF 대비 +48px excess, 4·5쪽
+        // 누적 +17~30pt 사용자 피드백). zone 전환 패딩만 유지.
 
         let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
         let ls_type = para_style.map(|s| s.line_spacing_type)
