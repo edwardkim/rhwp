@@ -13,8 +13,10 @@ pub mod schema;
 pub use builder::LayerBuilder;
 pub use layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
+    TextSourceAnnotation, TextSourceEntry, TextSourceId, TextSourceRange, TextSourceSpan,
+    TextSourceTable,
 };
-pub use paint_op::PaintOp;
+pub use paint_op::{PaintOp, TextDecorationKind};
 pub use profile::RenderProfile;
 pub use resources::{
     image_resource_key, resource_digest_hex, svg_resource_key, ResourceArena,
@@ -22,5 +24,6 @@ pub use resources::{
 };
 pub use schema::{
     LayerTreeSchema, LAYER_TREE_SCHEMA, PAGE_LAYER_TREE_COORDINATE_SYSTEM,
-    PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION, PAGE_LAYER_TREE_SCHEMA_VERSION, PAGE_LAYER_TREE_UNIT,
+    PAGE_LAYER_TREE_RESOURCE_TABLE_MINOR_VERSION, PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
+    PAGE_LAYER_TREE_SCHEMA_MINOR_VERSION, PAGE_LAYER_TREE_SCHEMA_VERSION, PAGE_LAYER_TREE_UNIT,
 };

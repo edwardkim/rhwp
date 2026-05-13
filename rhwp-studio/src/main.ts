@@ -21,11 +21,11 @@ import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showToast } from '@/ui/toast';
+import { initRhwpDev } from '@/core/rhwp-dev';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
-import { initRhwpDev } from '@/core/rhwp-dev';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -34,6 +34,7 @@ const eventBus = new EventBus();
 if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
   (window as any).__eventBus = eventBus;
+  initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
@@ -592,12 +593,21 @@ eventBus.on('open-document-bytes', async (payload) => {
     bytes: Uint8Array;
     fileName: string;
     fileHandle: typeof wasm.currentFileHandle;
+    /** 문서 비교 등: 로드 완료를 기다리는 쪽과 짝을 맞출 때만 전달 */
+    requestId?: string;
+  };
+  const notifyDone = (ok: boolean, error?: string) => {
+    if (!data.requestId) return;
+    eventBus.emit('open-document-bytes:done', { requestId: data.requestId, ok, error });
   };
   try {
     await loadBytes(data.bytes, data.fileName, data.fileHandle);
+    notifyDone(true);
   } catch (error) {
     // #265: WASM 파서 에러 (예: HWP 3.0 미지원) 를 사용자에게 전파
     showLoadError(error);
+    const msg = error instanceof Error ? error.message : String(error);
+    notifyDone(false, msg);
   }
 });
 

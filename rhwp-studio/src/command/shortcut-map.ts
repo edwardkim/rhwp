@@ -51,6 +51,8 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'f', ctrl: true }, 'edit:find'],
   [{ key: 'f2', ctrl: true }, 'edit:find-replace'],
   [{ key: 'l', ctrl: true }, 'edit:find-again'],
+  [{ key: 'v', alt: true, shift: true }, 'edit:compare-documents'],
+  [{ key: 'h', ctrl: true, shift: true }, 'edit:document-history'],
   [{ key: 'g', alt: true }, 'edit:goto'],
   [{ key: 'ㅎ', alt: true }, 'edit:goto'],
 

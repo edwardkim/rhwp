@@ -207,7 +207,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 ### Multi-Renderer Backends (멀티 렌더러 백엔드)
 - `PageRenderTree` can be lowered into a `PageLayerTree` paint IR before backend replay.
 - P1 public surfaces are Rust native `DocumentCore::build_page_layer_tree(page)` and WASM `getPageLayerTree(page)`.
-- Layer JSON starts at `schemaVersion: 1`, uses `unit: "px"`, and uses `coordinateSystem: "page-top-left"` to match the existing page render coordinates.
+- Layer JSON starts at `schemaVersion: 1`, uses additive `schemaMinorVersion` / `resourceTableMinorVersion`, `unit: "px"`, and `coordinateSystem: "page-top-left-y-down"` to match the existing page render coordinates.
 - Compatible schema changes should be additive; incompatible JSON shape changes require a schema version bump.
 - **Legacy SVG** remains the default compatibility output.
 - **Layered SVG** can be exercised with `RHWP_RENDER_PATH=layer-svg`.
@@ -220,6 +220,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - P5 adds native Skia equation replay from `EquationNode.layout_box`, so equations are no longer placeholder boxes in the PNG path.
 - P5 replays the existing equation layout tree directly; it does not add CanvasKit equation replay or native form replay.
 - P6 adds native Skia `RawSvg` fragment rasterization through `resvg`, with external file href loading disabled.
+- P11 adds the Text IR v2 compatibility contract: `textSources`, per-`TextRun` source spans, paint style metadata, run placement/clusters, feature arrays, and explicit special text visual ops. `TextRun` remains the fallback replay path; `GlyphRun` and native glyph replay stay as follow-up work.
 - CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
 - The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; CanvasKit, resource interning/cache, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.

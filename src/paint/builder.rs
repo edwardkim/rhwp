@@ -1,7 +1,8 @@
+use crate::model::style::UnderlineType;
 use crate::paint::layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
-use crate::paint::paint_op::PaintOp;
+use crate::paint::paint_op::{PaintOp, TextDecorationKind};
 use crate::paint::profile::RenderProfile;
 use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
@@ -59,10 +60,9 @@ impl LayerBuilder {
                 bbox: node.bbox,
                 background: background.clone(),
             }]),
-            RenderNodeType::TextRun(run) => Some(vec![PaintOp::TextRun {
-                bbox: node.bbox,
-                run: run.clone(),
-            }]),
+            RenderNodeType::TextRun(run) => {
+                Some(text_run_ops(node.bbox, run.clone(), self.output_options))
+            }
             RenderNodeType::FootnoteMarker(marker) => Some(vec![PaintOp::FootnoteMarker {
                 bbox: node.bbox,
                 marker: marker.clone(),
@@ -201,18 +201,87 @@ impl LayerBuilder {
     }
 }
 
+fn text_run_ops(
+    bbox: crate::renderer::render_tree::BoundingBox,
+    run: crate::renderer::render_tree::TextRunNode,
+    output_options: LayerOutputOptions,
+) -> Vec<PaintOp> {
+    let has_char_overlap = run.char_overlap.is_some();
+    let has_control_mark =
+        (output_options.show_paragraph_marks || output_options.show_control_codes)
+            && (run.field_marker != Default::default() || run.is_para_end || run.is_line_break_end);
+    let has_tab_leader = !run.style.tab_leaders.is_empty();
+    let has_underline = run.style.underline != UnderlineType::None;
+    let has_strikethrough = run.style.strikethrough;
+    let has_emphasis_dot = run.style.emphasis_dot > 0;
+
+    let mut ops = Vec::with_capacity(
+        1 + has_char_overlap as usize
+            + has_control_mark as usize
+            + has_tab_leader as usize
+            + has_underline as usize
+            + has_strikethrough as usize
+            + has_emphasis_dot as usize,
+    );
+    ops.push(PaintOp::TextRun {
+        bbox,
+        run: run.clone(),
+    });
+    if has_char_overlap {
+        ops.push(PaintOp::CharOverlap {
+            bbox,
+            run: run.clone(),
+        });
+    }
+    if has_control_mark {
+        ops.push(PaintOp::TextControlMark {
+            bbox,
+            run: run.clone(),
+        });
+    }
+    if has_tab_leader {
+        ops.push(PaintOp::TabLeader {
+            bbox,
+            run: run.clone(),
+        });
+    }
+    if has_underline {
+        ops.push(PaintOp::TextDecoration {
+            bbox,
+            run: run.clone(),
+            kind: TextDecorationKind::Underline,
+        });
+    }
+    if has_strikethrough {
+        ops.push(PaintOp::TextDecoration {
+            bbox,
+            run: run.clone(),
+            kind: TextDecorationKind::Strikethrough,
+        });
+    }
+    if has_emphasis_dot {
+        ops.push(PaintOp::TextDecoration {
+            bbox,
+            run,
+            kind: TextDecorationKind::EmphasisDot,
+        });
+    }
+    ops
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::model::control::FormType;
+    use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
-        BoundingBox, EllipseNode, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
-        LineNode, PageBackgroundNode, PageNode, PathNode, PlaceholderNode, RawSvgNode,
-        RectangleNode, RenderNode, RenderNodeType, TableCellNode, TableNode, TextLineNode,
-        TextRunNode,
+        BoundingBox, EllipseNode, EquationNode, FieldMarkerType, FootnoteMarkerNode,
+        FormObjectNode, ImageNode, LineNode, PageBackgroundNode, PageNode, PathNode,
+        PlaceholderNode, RawSvgNode, RectangleNode, RenderNode, RenderNodeType, TableCellNode,
+        TableNode, TextLineNode, TextRunNode,
     };
-    use crate::renderer::{LineStyle, PathCommand, ShapeStyle, TextStyle};
+    use crate::renderer::{LineStyle, PathCommand, ShapeStyle, TabLeaderInfo, TextStyle};
 
     #[test]
     fn builds_body_clip_layer() {
@@ -456,6 +525,78 @@ mod tests {
             panic!("expected child text paint op second");
         };
         assert!(matches!(label_ops[0], PaintOp::TextRun { .. }));
+    }
+
+    #[test]
+    fn lowers_text_special_visuals_to_external_paint_ops() {
+        let mut run = text_run("special\ttext");
+        run.field_marker = FieldMarkerType::FieldBegin;
+        run.is_para_end = true;
+        run.char_overlap = Some(CharOverlapInfo {
+            border_type: 1,
+            inner_char_size: 90,
+        });
+        run.style.tab_leaders.push(TabLeaderInfo {
+            start_x: 12.0,
+            end_x: 36.0,
+            fill_type: 3,
+        });
+        run.style.underline = UnderlineType::Bottom;
+        run.style.strikethrough = true;
+        run.style.emphasis_dot = 2;
+
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::TextRun(run),
+            BoundingBox::new(1.0, 2.0, 80.0, 20.0),
+        ));
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen).with_output_options(
+            LayerOutputOptions {
+                show_paragraph_marks: true,
+                show_control_codes: true,
+                ..Default::default()
+            },
+        );
+        let layer_tree = builder.build(&tree);
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        let LayerNodeKind::Leaf { ops } = &children[0].kind else {
+            panic!("expected text leaf");
+        };
+
+        assert!(matches!(ops[0], PaintOp::TextRun { .. }));
+        assert!(ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::CharOverlap { .. })));
+        assert!(ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::TextControlMark { .. })));
+        assert!(ops.iter().any(|op| matches!(op, PaintOp::TabLeader { .. })));
+        assert!(ops.iter().any(|op| matches!(
+            op,
+            PaintOp::TextDecoration {
+                kind: TextDecorationKind::Underline,
+                ..
+            }
+        )));
+        assert!(ops.iter().any(|op| matches!(
+            op,
+            PaintOp::TextDecoration {
+                kind: TextDecorationKind::Strikethrough,
+                ..
+            }
+        )));
+        assert!(ops.iter().any(|op| matches!(
+            op,
+            PaintOp::TextDecoration {
+                kind: TextDecorationKind::EmphasisDot,
+                ..
+            }
+        )));
     }
 
     #[test]

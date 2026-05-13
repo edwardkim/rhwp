@@ -2,6 +2,7 @@ import type { CommandDef } from '../types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
 import { ColumnSettingsDialog } from '@/ui/column-settings-dialog';
+import { NewNumberDialog } from '@/ui/new-number-dialog';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -268,7 +269,25 @@ export const pageCommands: CommandDef[] = [
       navigateHeaderFooter(services, 1);
     },
   },
-  stub('page:new-page-num', '새 번호로 시작'),
+  {
+    id: 'page:new-page-num',
+    label: '새 번호로 시작',
+    canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const cursor = (ih as any).cursor;
+      if (!cursor) return;
+      const pos = cursor.getPosition();
+      const wasm = services.wasm;
+      const eventBus = services.eventBus;
+      if (!wasm || !eventBus) return;
+      const dlg = new NewNumberDialog(wasm, eventBus, {
+        sec: pos.sectionIndex, para: pos.paragraphIndex, offset: pos.charOffset,
+      });
+      dlg.show();
+    },
+  },
   // ─── 머리말/꼬리말 현재 쪽 감추기 ──────────────
   {
     id: 'page:hide-headerfooter',

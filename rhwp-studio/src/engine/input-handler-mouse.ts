@@ -845,6 +845,18 @@ export function onDblClick(this: any, e: MouseEvent): void {
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {
       e.preventDefault();
+      // #686: ppi=0 앵커 도형 (master page 글상자 등)은 모든 페이지에 반복 표시됨.
+      // 텍스트 진입 시 cursor가 page 0으로 잡혀 뷰가 점프하므로, page 0이 아닐 때 차단.
+      if (ref.ppi === 0) {
+        const cursorPage = this.cursor.getRect()?.pageIndex ?? -1;
+        if (cursorPage !== 0) {
+          this.cursor.exitPictureObjectSelection();
+          this.pictureObjectRenderer?.clear();
+          this.eventBus.emit('picture-object-selection-changed', false);
+          this.textarea.focus();
+          return;
+        }
+      }
       this.cursor.exitPictureObjectSelection();
       this.pictureObjectRenderer?.clear();
       this.eventBus.emit('picture-object-selection-changed', false);

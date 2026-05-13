@@ -653,6 +653,10 @@ impl SkiaLayerRenderer {
                                 draw_placeholder(*bbox, "svg");
                             }
                         }
+                        PaintOp::CharOverlap { .. }
+                        | PaintOp::TextControlMark { .. }
+                        | PaintOp::TabLeader { .. }
+                        | PaintOp::TextDecoration { .. } => {}
                     }
                 }
             }
