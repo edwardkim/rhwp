@@ -2404,8 +2404,12 @@ fn fixup_hwp3_outline_bullets(doc: &mut crate::model::document::Document) {
             let ps_id = para.para_shape_id as usize;
             if ps_id >= doc.doc_info.para_shapes.len() { continue; }
             let ps = &doc.doc_info.para_shapes[ps_id];
+            // [Task #877 Stage 4] sample16 의 2단계 글머리 paragraph margins 패턴.
+            // 다른 HWP3 sample 6종에서 매치 0개 검증 완료 (회귀 안전).
+            // ls=130 (paragraph 91/100/110) + ls=145 (paragraph 396/397 등 페이지 16+) 포함.
             if ps.margin_left != 6500 || ps.margin_right != 1000
-                || ps.indent != -2500 || ps.line_spacing != 130 {
+                || ps.indent != -2500
+                || (ps.line_spacing != 130 && ps.line_spacing != 145) {
                 continue;
             }
             if !para.text.starts_with(' ') { continue; }
