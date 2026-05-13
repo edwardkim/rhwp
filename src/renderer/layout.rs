@@ -1419,21 +1419,17 @@ impl LayoutEngine {
             if y_offset > prev_zone_y_end {
                 prev_zone_y_end = y_offset;
             }
-            // [Task #866] 헤더 띠 zone(wrap=위아래 인 글자처럼-취급 표 보유 + 1단 ColumnDef
-            // 간격=0)의 아래에는 한컴이 표 band 높이만큼 추가 여백을 둔다(한컴 PDF 측정:
-            // shortcut.hwp 2·3쪽 헤더 띠 하단↔본문 ~28~33px). 다음 zone 시작 y 를 그만큼 내림.
-            // ColumnDef 간격>0 인 헤더 띠(1쪽 등)는 그 간격이 이미 zone 여백이 되므로 제외.
-            // (pagination 측 process_multicolumn_break 의 tac_band_extra 와 동일 시멘틱.)
-            // [Task #866 v3 Stage 1] zone 단위 헤더 띠 leaving flag 갱신.
+            // [Task #866] 헤더 띠 zone (wrap=위아래 인 글자처럼-취급 표 보유 + 1단 ColumnDef
+            // 간격=0) 의 leaving header band flag 갱신. 종전엔 zone 아래에 표 band 높이만큼
+            // 추가 여백을 더했으나 (Task #874 Case 1 측정 결과), build_single_column 의 y_offset
+            // 이 이미 visual 헤더 띠 끝(표 본체 + outer_margin) 까지 advance 하므로 추가
+            // band 가산은 중복 — 한컴 PDF 대비 본문 첫 줄 +30pt 넓다 (사용자 피드백).
             prev_zone_was_header_band = false;
             if let Some(last_para_idx) = col_content.items.last().and_then(|it| match it {
                 PageItem::Table { para_index, .. } => Some(*para_index),
                 _ => None,
             }) {
                 if let Some(p) = paragraphs.get(last_para_idx) {
-                    // [Task #874 Stage 2] paragraph 자체에 ColumnDef 가 없으면 zone 시작 paragraph
-                    // 까지 거슬러 cd 검사. spacing ≤ 1mm 까지 인정 (shortcut.hwp pi=210 '도구'
-                    // 헤더띠 zone cd 가 pi=209 에 머물고 spacing=1mm 인 케이스).
                     let cd_gap_zero = if p.controls.iter().any(|c| matches!(c, Control::ColumnDef(_))) {
                         p.controls.iter().any(|c| matches!(c,
                             Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0))
@@ -1447,18 +1443,12 @@ impl LayoutEngine {
                                 })))
                             .unwrap_or(false)
                     };
-                    if cd_gap_zero {
-                        if let Some(band) = p.controls.iter().find_map(|c| match c {
+                    if cd_gap_zero
+                        && p.controls.iter().any(|c| matches!(c,
                             Control::Table(t) if t.common.treat_as_char
-                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom) =>
-                                Some(hwpunit_to_px(t.common.height as i32, self.dpi)
-                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)),
-                            _ => None,
-                        }) {
-                            prev_zone_y_end += band;
-                            prev_zone_was_header_band = true;
-                        }
+                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)))
+                    {
+                        prev_zone_was_header_band = true;
                     }
                 }
             }
