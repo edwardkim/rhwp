@@ -788,7 +788,11 @@ fn map_to_shape_object(
         }),
         gradient: None,
         image: None,
-        alpha: 255,
+        // [Task #877 Stage 4] 한컴 호환 alpha convention: 0=불투명, 255=완전 투명.
+        // (renderer/layout/utils.rs:199 의 opacity 식: opacity = 1 - alpha/255)
+        // 기존 alpha=255 → opacity=0 → SVG <rect opacity="0.000"> 완전 투명 회귀.
+        // HWP3 raw 에는 alpha 정보 없음, 한컴 viewer 의 default = 불투명 = alpha 0.
+        alpha: 0,
     };
     
     let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty() {
