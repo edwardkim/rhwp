@@ -74,6 +74,9 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         0x3479 => 0x25B7,   // ▷ WHITE RIGHT-POINTING TRIANGLE
         0x347A => 0x25B6,   // ▶ BLACK RIGHT-POINTING TRIANGLE
         0x3441 => 0x25A0,   // ■ BLACK SQUARE
+        // [Task #877 Stage 3 v4] sample16 paragraph 89 등의 글머리 prefix.
+        // HWP3 0x3366 → 한컴 HWP5 변환본 paragraph 89 첫 char "\u{f03c5}" (PUA — ⓛ 비슷한 글머리).
+        0x3366 => 0xF03C5,
         _ => return None,
     };
     char::from_u32(codepoint)
