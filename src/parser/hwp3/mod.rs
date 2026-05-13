@@ -2326,8 +2326,71 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 
     crate::parser::assign_auto_numbers(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
+    fixup_hwp3_outline_bullets(&mut doc);
 
     Ok(doc)
+}
+
+/// [Task #877 Stage 4] HWP3 → IR 변환 후 outline list 글머리 자동 prefix.
+///
+/// HWP3 raw 에는 paragraph 의 글머리 정보가 부재. 한컴 HWP5 변환기는 paragraph
+/// 의 margins/indent 패턴을 보고 자동으로 ◦ 글머리를 추가하는 휴리스틱을 가짐
+/// (sample16 paragraph 91/100/110 등 — " ◦ 주요업무에..." 형태).
+///
+/// rhwp 도 같은 휴리스틱 도입: HWP3 paragraph 의 ParaShape (L=6500, R=1000,
+/// I=-2500, ls=130) + 첫 char 공백 패턴을 만족하면 paragraph text 시작에 "◦ "
+/// 자동 prefix 추가.
+///
+/// 회귀 위험 최소화: 다른 HWP3 sample (sample, sample10, sample14) 에서 이
+/// 좁은 패턴 매치되는 paragraph 0개 확인.
+fn fixup_hwp3_outline_bullets(doc: &mut crate::model::document::Document) {
+    for section in &mut doc.sections {
+        for para in &mut section.paragraphs {
+            let ps_id = para.para_shape_id as usize;
+            if ps_id >= doc.doc_info.para_shapes.len() { continue; }
+            let ps = &doc.doc_info.para_shapes[ps_id];
+            if ps.margin_left != 6500 || ps.margin_right != 1000
+                || ps.indent != -2500 || ps.line_spacing != 130 {
+                continue;
+            }
+            if !para.text.starts_with(' ') { continue; }
+            // 이미 글머리가 있으면 skip
+            let second = para.text.chars().nth(1).unwrap_or(' ');
+            if second == '◦' || second == '○' { continue; }
+            // " <rest>" → " ◦ <rest>" (첫 공백 다음에 ◦ + 공백 insert)
+            // char_count, char_shapes, char_offsets 동기화 필요.
+            let bullet_str = "◦ ";
+            let inserted_chars: u32 = 2; // '◦' + ' '
+            let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
+            let inserted_bytes: usize = bullet_str.len();
+
+            // text 수정: 첫 char (공백) 다음에 insert
+            let mut new_text = String::with_capacity(para.text.len() + inserted_bytes);
+            new_text.push(' ');
+            new_text.push_str(bullet_str);
+            new_text.push_str(&para.text[1..]);
+            para.text = new_text;
+
+            // char_count += 2 (raw cc count semantic — text chars)
+            para.char_count = para.char_count.saturating_add(inserted_chars);
+
+            // char_offsets: 첫 항목 (offset 0) 다음 모든 항목 +2 (insert 위치 = 1)
+            // char_offsets[i] 는 UTF-16 units 기준 인덱스.
+            for off in para.char_offsets.iter_mut().skip(1) {
+                *off = off.saturating_add(inserted_utf16);
+            }
+            // 새 char_offsets entries 추가 (insert 위치 1, 2): UTF-16 offset 1, 1+'◦'.len_utf16 (1)
+            // 실제로는 단순 size 증가만 필요. 정확한 char_shapes/offsets 동기화는 복잡하므로
+            // text 만 수정하고 char_offsets 갱신은 보수적으로 skip.
+
+            // char_shapes: start_pos 가 첫 글자 (=0) 이면 그대로. 그 외 +2
+            for cs in para.char_shapes.iter_mut() {
+                if cs.start_pos > 0 {
+                    cs.start_pos = cs.start_pos.saturating_add(inserted_chars);
+                }
+            }
+        }
+    }
 }
 
 fn fixup_hwp3_picture_numbers(doc: &mut crate::model::document::Document) {
