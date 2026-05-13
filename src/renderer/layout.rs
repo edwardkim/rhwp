@@ -1103,7 +1103,7 @@ impl LayoutEngine {
             // 8+ (이중선/물결 등) 은 Solid 대체.
             let dash = match layout.separator_type {
                 2 => StrokeDash::Dash,
-                3 => StrokeDash::Dot,
+                3 | 6 | 7 => StrokeDash::Dot,  // 3=점선; 6/7 = 한컴 점선 변형(굵은 점/얇은 점)
                 4 => StrokeDash::DashDot,
                 5 => StrokeDash::DashDotDot,
                 6 => StrokeDash::Dash,       // LongDash → Dash 근사
@@ -1290,6 +1290,11 @@ impl LayoutEngine {
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
+        // [Task #866 v2 Stage 3] zone 별 단 구분선 렌더용. 페이지 단일 layout 기준의 기존
+        // build_column_separators 는 shortcut.hwp 처럼 페이지 내 다단 zone 의 ColumnDef
+        // (예: pi=2 의 2단/구분선 type=7) 를 못 보므로 zone 별로 별도 렌더가 필요.
+        let mut prev_zone_layout_for_sep: Option<PageLayoutInfo> = None;
+        let mut prev_zone_sep_y_start: f64 = 0.0;
         // [Task #853/#866] 직전 zone 의 "디자인 spacing"(1단 ColumnDef 의 `간격`, 다단은 0).
         // 한컴은 zone 전환 시 (이전 zone 디자인 spacing /2)+(새 zone /2) 만큼 세로 여백을
         // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
@@ -1328,6 +1333,11 @@ impl LayoutEngine {
 
             let is_new_zone = (col_content.zone_y_offset - last_zone_y_offset).abs() > 0.1;
             if is_new_zone {
+                // 직전 zone 의 단 구분선 emit (있다면).
+                if let Some(pz) = prev_zone_layout_for_sep.take() {
+                    self.emit_zone_column_separators(tree, body_node, &pz,
+                        prev_zone_sep_y_start, prev_zone_y_end);
+                }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
                 let new_zone_first_para = col_content.items.first().and_then(|it| match it {
                     PageItem::FullParagraph { para_index }
@@ -1338,14 +1348,17 @@ impl LayoutEngine {
                     _ => None,
                 });
                 let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
-                // [Task #866 v2] pagination 측 process_multicolumn_break 의 solo_zone_pad 와 동일:
-                // 1단/간격=0 zone(헤더 띠 / `<...>` 소제목) 진입·이탈 시 ~16px(=1200 HU) 추가.
+                // [Task #866 v2 Stage 2/4] pagination 측 solo_zone_pad 와 동일:
+                //   (1) 1단/간격=0 zone 진입·이탈, (2) [단나누기] 로 시작한 새 zone → +20px.
                 let new_zone_is_solo_zero = new_zone_first_para.and_then(|pi| {
                     paragraphs.get(pi).map(|p| p.controls.iter().any(|c| matches!(c,
                         Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0)))
                 }).unwrap_or(false);
                 let prev_zone_is_solo_zero = prev_zone_design_px < 0.5 && prev_zone_was_solo;
-                let solo_zone_pad = if new_zone_is_solo_zero || prev_zone_is_solo_zero {
+                let column_break_new_band = new_zone_first_para.and_then(|pi| paragraphs.get(pi))
+                    .map(|p| p.column_type == crate::model::paragraph::ColumnBreakType::Column)
+                    .unwrap_or(false);
+                let solo_zone_pad = if new_zone_is_solo_zero || prev_zone_is_solo_zero || column_break_new_band {
                     hwpunit_to_px(1200, self.dpi)
                 } else { 0.0 };
                 if col_content.zone_y_offset > 0.0 {
@@ -1361,6 +1374,13 @@ impl LayoutEngine {
                             Control::ColumnDef(cd) if cd.column_count.max(1) <= 1)))
                         .unwrap_or(false));
                 last_zone_y_offset = col_content.zone_y_offset;
+                // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
+                if zone_layout.column_areas.len() >= 2 && zone_layout.separator_type > 0 {
+                    prev_zone_layout_for_sep = Some(zone_layout.clone());
+                    prev_zone_sep_y_start = current_zone_start_y.max(zone_layout.body_area.y);
+                } else {
+                    prev_zone_layout_for_sep = None;
+                }
             }
 
             let col_area = if current_zone_start_y > col_area_base.y {
@@ -1415,6 +1435,55 @@ impl LayoutEngine {
                 }
             }
             body_node.children.push(col_node);
+        }
+
+        // 마지막 zone 의 단 구분선 emit.
+        if let Some(pz) = prev_zone_layout_for_sep.take() {
+            self.emit_zone_column_separators(tree, body_node, &pz,
+                prev_zone_sep_y_start, prev_zone_y_end);
+        }
+    }
+
+    /// [Task #866 v2 Stage 3] 단일 zone 의 단 구분선을 emit.
+    /// page 전역 build_column_separators 와 동일 모양이나 zone_layout 기준 + y 범위 인자 지정.
+    fn emit_zone_column_separators(
+        &self,
+        tree: &mut PageRenderTree,
+        body_node: &mut RenderNode,
+        zone_layout: &PageLayoutInfo,
+        y_start: f64,
+        y_end: f64,
+    ) {
+        if zone_layout.column_areas.len() < 2 || zone_layout.separator_type == 0 || y_end <= y_start {
+            return;
+        }
+        let line_width = border_width_to_px(zone_layout.separator_width).max(0.5);
+        let dash = match zone_layout.separator_type {
+            2 => StrokeDash::Dash,
+            3 | 6 | 7 => StrokeDash::Dot,
+            4 => StrokeDash::DashDot,
+            5 => StrokeDash::DashDotDot,
+            _ => StrokeDash::Solid,
+        };
+        for i in 0..zone_layout.column_areas.len() - 1 {
+            let left = &zone_layout.column_areas[i];
+            let right = &zone_layout.column_areas[i + 1];
+            let sep_x = (left.x + left.width + right.x) / 2.0;
+            let sep_id = tree.next_id();
+            let sep_node = RenderNode::new(
+                sep_id,
+                RenderNodeType::Line(LineNode::new(
+                    sep_x, y_start, sep_x, y_end,
+                    LineStyle {
+                        color: zone_layout.separator_color,
+                        width: line_width,
+                        dash,
+                        ..Default::default()
+                    },
+                )),
+                BoundingBox::new(sep_x - line_width / 2.0, y_start, line_width, y_end - y_start),
+            );
+            body_node.children.push(sep_node);
         }
     }
 

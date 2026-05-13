@@ -2438,15 +2438,18 @@ impl TypesetEngine {
         } else {
             0.0
         };
-        // [Task #866 v2] 1단/간격=0 zone(헤더 띠 / `<...>` 소제목) 진입 또는 그런 zone 에서의
-        // 이탈 시 한컴은 ~한 본문 줄(=1200 HU ≈ 16px) 추가 여백을 둔다(한컴 PDF 측정:
-        // shortcut.hwp 2쪽 `저장하기`↔`<미리 보기 상태에서>` ~32px, `<미리 보기>`↔`편집 용지`
-        // ~40px — 현 ~21px). design spacing > 0 인 1단 zone(pi=1 형, 10mm) 은 그 간격이 이미
-        // 여백이라 제외. 2단 ↔ 2단 전환에는 적용 안 함(영향: shortcut.hwp 한정).
+        // [Task #866 v2 Stage 2/4] zone 전환 시 추가 세로 여백.
+        // (1) 1단/간격=0 zone(헤더 띠 / `<...>` 소제목) 진입·이탈: +1500 HU(=20px).
+        //     shortcut.hwp 4쪽 `개체 모양 복사`↔`<스타일에서>`, 6쪽 `도구`↔`맞춤법 검사` 등.
+        // (2) [단나누기](ColumnBreakType::Column) 로 시작하는 새 zone: +1500 HU(=20px).
+        //     배분 다단 zone 의 마지막 컬럼 [단나누기] = 같은 ColumnDef 로 새 밴드 → 한컴 PDF
+        //     상 이전 밴드와 ~한 본문 줄 간격(shortcut.hwp 3쪽 `화면 확대 100%`↔`<편집 화면
+        //     분할에서>`). Stage 1 의 Distribute 마지막 컬럼 라우팅과 정합.
         let entering_solo_zero = paragraphs[para_idx].controls.iter().any(|c| matches!(c,
             Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0));
         let leaving_solo_zero = st.col_count <= 1 && st.current_zone_design_spacing_px < 0.5;
-        let solo_zone_pad = if entering_solo_zero || leaving_solo_zero {
+        let column_break_new_band = paragraphs[para_idx].column_type == ColumnBreakType::Column;
+        let solo_zone_pad = if entering_solo_zero || leaving_solo_zero || column_break_new_band {
             hwpunit_to_px(1200, self.dpi)
         } else { 0.0 };
         let candidate_offset = st.current_zone_y_offset + vpos_zone_height + tac_band_extra
