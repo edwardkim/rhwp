@@ -2375,6 +2375,12 @@ export class InputHandler {
     document.execCommand('copy');
   }
 
+  /** 붙이기 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
+  performPaste(): boolean {
+    this.focusTextarea();
+    return document.execCommand('paste');
+  }
+
   /** 잘라내기 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
   performCut(): void {
     // 개체 선택 모드 → 복사 + 삭제
