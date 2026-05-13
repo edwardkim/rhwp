@@ -436,7 +436,20 @@ impl TypesetEngine {
                     // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
                     self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
                 } else if !st.current_items.is_empty() {
-                    st.advance_column_or_new_page();
+                    let is_distribute_zone = st.col_count > 1
+                        && matches!(st.current_zone_column_type, ColumnType::Distribute);
+                    if st.current_column + 1 < st.col_count || !is_distribute_zone {
+                        st.advance_column_or_new_page();
+                    } else {
+                        // [Task #866] 배분(Distribute) 다단 zone 의 마지막 컬럼에서 [단나누기] =
+                        // (현재 ColumnDef 유지한 채) 새 zone 밴드를 시작한다. 배분 단은 짧은
+                        // 균형 컬럼이라 한컴은 같은 페이지에 여유가 있으면 이전 밴드 아래에 이어
+                        // 배치하고, 부족할 때만 새 페이지로 넘긴다 — process_multicolumn_break 가
+                        // 그 판정을 수행. (shortcut.hwp 3쪽 "<편집 화면 분할에서>": 종전엔 페이지
+                        // 하단 여유가 충분한데도 무조건 새 페이지로 밀렸음.) 신문형(Normal) 단은
+                        // 페이지를 가득 채우므로 마지막 컬럼 [단나누기] = 새 페이지(종전 동작 유지).
+                        self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
+                    }
                 }
             }
 
