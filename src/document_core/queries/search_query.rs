@@ -186,6 +186,51 @@ impl DocumentCore {
         }
     }
 
+    /// 문서 전체 검색 (모든 매치 반환)
+    ///
+    /// 본문 문단의 모든 매치를 배열로 반환한다. 표/글상자 내부 포함 여부는
+    /// include_cells 파라미터로 결정.
+    ///
+    /// 반환: JSON `[{"sec":0,"para":1,"charOffset":5,"length":3,"cellContext":...}, ...]`
+    pub fn search_all_text_native(
+        &self,
+        query: &str,
+        case_sensitive: bool,
+        include_cells: bool,
+    ) -> Result<String, HwpError> {
+        if query.is_empty() {
+            return Ok("[]".to_string());
+        }
+
+        let all_hits = search_all(self, query, case_sensitive);
+        if all_hits.is_empty() {
+            return Ok("[]".to_string());
+        }
+
+        let hits: Vec<&SearchHit> = if include_cells {
+            all_hits.iter().collect()
+        } else {
+            all_hits.iter().filter(|h| h.cell_context.is_none()).collect()
+        };
+
+        let mut json_parts: Vec<String> = Vec::with_capacity(hits.len());
+        for h in &hits {
+            let cell_ctx = match &h.cell_context {
+                Some((pp, ci, cell, cp)) => format!(
+                    ",\"cellContext\":{{\"parentPara\":{},\"ctrlIdx\":{},\"cellIdx\":{},\"cellPara\":{}}}",
+                    pp, ci, cell, cp
+                ),
+                None => String::new(),
+            };
+            json_parts.push(format!(
+                "{{\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}}}",
+                h.sec, h.para, h.char_offset, h.length, cell_ctx
+            ));
+        }
+
+        Ok(format!("[{}]", json_parts.join(",")))
+    }
+
     /// 텍스트 치환 (단일)
     ///
     /// 검색 결과 위치의 텍스트를 new_text로 교체한다.

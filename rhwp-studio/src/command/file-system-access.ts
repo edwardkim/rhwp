@@ -32,6 +32,8 @@ export interface SaveDocumentOptions {
   suggestedName: string;
   currentHandle: FileSystemFileHandleLike | null;
   windowLike: FileSystemWindowLike;
+  /** [Task #833] true 시 currentHandle 무시 + 항상 showSaveFilePicker 호출 (다른 이름으로 저장). */
+  forceSaveAs?: boolean;
 }
 
 export interface SaveDocumentResult {
@@ -80,9 +82,10 @@ export async function readFileFromHandle(handle: FileSystemFileHandleLike): Prom
 }
 
 export async function saveDocumentToFileSystem(options: SaveDocumentOptions): Promise<SaveDocumentResult> {
-  const { blob, suggestedName, currentHandle, windowLike } = options;
+  const { blob, suggestedName, currentHandle, windowLike, forceSaveAs } = options;
 
-  if (currentHandle) {
+  // [Task #833] forceSaveAs 시 currentHandle 우회 → 항상 picker (다른 이름으로 저장).
+  if (currentHandle && !forceSaveAs) {
     await writeBlobToHandle(currentHandle, blob);
     return {
       method: 'current-handle',

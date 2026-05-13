@@ -6,7 +6,7 @@ publish = false
 
 [lib]
 name = "rhwp_native_ffi"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 rhwp_core = { package = "rhwp", path = "../.." }

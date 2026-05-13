@@ -48,6 +48,14 @@ pub extern "C" fn rhwp_export_markdown(
 }
 
 #[no_mangle]
+pub extern "C" fn rhwp_read_text(input_path: *const c_char, page: i32) -> *mut c_char {
+    ffi_result(|| {
+        let input_path = read_utf8(input_path, "input_path")?;
+        read_text(Path::new(&input_path), normalize_page(page)?)
+    })
+}
+
+#[no_mangle]
 pub extern "C" fn rhwp_string_free(ptr: *mut c_char) {
     if ptr.is_null() {
         return;
@@ -92,6 +100,25 @@ fn export_text_to_dir(
     }
 
     Ok(success_json(page_count, &written, None))
+}
+
+fn read_text(input_path: &Path, target_page: Option<u32>) -> Result<String, String> {
+    let data = fs::read(input_path)
+        .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", input_path.display(), e))?;
+    let doc = HwpDocument::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+    let page_count = doc.page_count();
+    let pages = select_pages(page_count, target_page)?;
+
+    let mut extracted = Vec::new();
+    for page_num in pages {
+        let mut text = doc
+            .extract_page_text_native(page_num)
+            .map_err(|e| format!("페이지 {} 텍스트 추출 실패 - {:?}", page_num, e))?;
+        ensure_trailing_newline(&mut text);
+        extracted.push((page_num, text));
+    }
+
+    Ok(text_json(page_count, &extracted))
 }
 
 fn export_markdown_to_dir(
@@ -311,6 +338,25 @@ fn success_json(page_count: u32, files: &[PathBuf], image_count: Option<usize>) 
 
 fn error_json(error: &str) -> String {
     format!("{{\"ok\":false,\"error\":\"{}\"}}", json_escape(error))
+}
+
+fn text_json(page_count: u32, pages: &[(u32, String)]) -> String {
+    let pages_json = pages
+        .iter()
+        .map(|(index, text)| {
+            format!(
+                "{{\"index\":{},\"text\":\"{}\"}}",
+                index,
+                json_escape(text)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",");
+
+    format!(
+        "{{\"ok\":true,\"pageCount\":{},\"pages\":[{}]}}",
+        page_count, pages_json
+    )
 }
 
 fn json_escape(s: &str) -> String {

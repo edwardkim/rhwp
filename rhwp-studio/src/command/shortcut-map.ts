@@ -17,6 +17,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'a', ctrl: true }, 'edit:select-all'],
 
   [{ key: 'e', ctrl: true }, 'edit:delete'],
+  [{ key: 'ㄷ', ctrl: true }, 'edit:delete'],
 
   // 파일
   [{ key: 'n', alt: true }, 'file:new-doc'],
@@ -24,6 +25,9 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'o', ctrl: true }, 'file:open'],
   [{ key: 'ㅐ', ctrl: true }, 'file:open'],
   [{ key: 's', ctrl: true }, 'file:save'],
+  // [Task #833] Ctrl+Shift+S → 다른 이름으로 저장 (한글 IME 'ㄴ' 도 함께).
+  [{ key: 's', ctrl: true, shift: true }, 'file:save-as'],
+  [{ key: 'ㄴ', ctrl: true, shift: true }, 'file:save-as'],
   [{ key: 'p', ctrl: true }, 'file:print'],
 
   // 서식
@@ -51,6 +55,8 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'f', ctrl: true }, 'edit:find'],
   [{ key: 'f2', ctrl: true }, 'edit:find-replace'],
   [{ key: 'l', ctrl: true }, 'edit:find-again'],
+  [{ key: 'v', alt: true, shift: true }, 'edit:compare-documents'],
+  [{ key: 'h', ctrl: true, shift: true }, 'edit:document-history'],
   [{ key: 'g', alt: true }, 'edit:goto'],
   [{ key: 'ㅎ', alt: true }, 'edit:goto'],
 

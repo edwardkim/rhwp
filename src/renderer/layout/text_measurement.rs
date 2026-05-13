@@ -403,7 +403,6 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                         f64::INFINITY
                     };
                     let high_byte = (tab_type_raw >> 8) & 0xFF;
-                    let fill_low = tab_type_raw & 0xFF;
                     match (high_byte, tab_type_raw) {
                         (_, 1) => { // 기존 raw 1 (LEFT 또는 잘못된 RIGHT 1) — 호환 유지
                             let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
@@ -414,11 +413,14 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                             let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             x = (tab_target - seg_w / 2.0).max(x);
                         }
-                        (2, _) if fill_low != 0 => {
-                            // RIGHT + leader: ')' 끝이 본문 우측 끝까지 정렬되도록
-                            // x = body_right - our_seg_w. 한컴 ext[0] 는 무시
-                            // (한컴_seg_w 와 our_seg_w 미세 차이로 본문 우측 끝 미달).
-                            let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
+                        (2, _) => {
+                            // RIGHT 인라인 탭: 우변 콘텐츠 끝이 본문 우측 끝까지 정렬되도록
+                            // x = body_right - our_seg_w. 한컴 ext[0] 는 무시 — 한컴 metrics
+                            // 기준 값이라 fallback 폰트 환경에서 우변 폭 차이만큼(~수십 px) 어긋남.
+                            // leader 유무와 무관하게 동일 룰 (cross-run RIGHT 핸들러와 정합).
+                            // [Issue #842 #4] `\t` 가 bold run 시작에 오는 단축키 항목(`끝`+`\tAlt+X`)
+                            // 은 cross-run 핸들러 대상이 아니라 이 in-run 경로를 타므로 여기서 정렬.
+                            let seg_start ={ let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
                             let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
                             x = (body_right - seg_w).max(x);
                         }

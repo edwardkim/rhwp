@@ -20,6 +20,7 @@
           <div class="md-item disabled" data-cmd="file:new-doc"><span class="md-icon icon-new-doc"></span><span class="md-label">새로 만들기</span></div>
           <div class="md-item" data-cmd="file:open"><span class="md-icon"></span><span class="md-label">열기</span></div>
           <div class="md-item disabled" data-cmd="file:save"><span class="md-icon icon-save"></span><span class="md-label">저장</span><span class="md-shortcut">Ctrl+S</span></div>
+          <div class="md-item disabled" data-cmd="file:save-as"><span class="md-icon"></span><span class="md-label">다른 이름으로 저장(A)...</span><span class="md-shortcut">Ctrl+Shift+S</span></div>
           <div class="md-sep"></div>
           <div class="md-item disabled" data-cmd="file:page-setup"><span class="md-icon icon-page-setup"></span><span class="md-label">편집 용지</span><span class="md-shortcut">F7</span></div>
           <div class="md-item disabled" data-cmd="file:print"><span class="md-icon icon-print"></span><span class="md-label">인쇄</span><span class="md-shortcut">Ctrl+P</span></div>
@@ -43,6 +44,8 @@
           <div class="md-item disabled" data-cmd="edit:select-all"><span class="md-icon icon-select-all"></span><span class="md-label">모두 선택</span><span class="md-shortcut">Ctrl+A</span></div>
           <div class="md-sep"></div>
           <div class="md-item" data-cmd="edit:find"><span class="md-icon icon-find"></span><span class="md-label">찾기(F)</span><span class="md-shortcut">Ctrl+F</span></div>
+          <div class="md-item" data-cmd="edit:compare-documents"><span class="md-icon"></span><span class="md-label">문서 비교</span><span class="md-shortcut">Alt+Shift+V</span></div>
+          <div class="md-item" data-cmd="edit:document-history"><span class="md-icon"></span><span class="md-label">문서 이력 관리</span><span class="md-shortcut">Ctrl+Shift+H</span></div>
           <div class="md-item" data-cmd="edit:find-replace"><span class="md-icon icon-find-replace"></span><span class="md-label">찾아 바꾸기(E)</span><span class="md-shortcut">Ctrl+F2</span></div>
           <div class="md-item" data-cmd="edit:find-again"><span class="md-icon"></span><span class="md-label">다시 찾기(X)</span><span class="md-shortcut">Ctrl+L</span></div>
           <div class="md-item" data-cmd="edit:goto"><span class="md-icon"></span><span class="md-label">찾아가기(G)</span><span class="md-shortcut">Alt+G</span></div>
@@ -435,12 +438,16 @@
           <button class="tb-btn tb-split-arrow" title="찾기 메뉴"><span class="tb-arrow-icon">▾</span></button>
           <div class="tb-split-menu">
             <div class="tb-split-item" data-cmd="edit:find">찾기(F) <span class="tb-split-shortcut">Ctrl+F</span></div>
+            <div class="tb-split-item" data-cmd="edit:compare-documents">문서 비교 <span class="tb-split-shortcut">Alt+Shift+V</span></div>
+            <div class="tb-split-item" data-cmd="edit:document-history">문서 이력 관리 <span class="tb-split-shortcut">Ctrl+Shift+H</span></div>
             <div class="tb-split-item" data-cmd="edit:find-replace">찾아 바꾸기(E) <span class="tb-split-shortcut">Ctrl+F2</span></div>
             <div class="tb-split-item" data-cmd="edit:find-again">다시 찾기(X) <span class="tb-split-shortcut">Ctrl+L</span></div>
             <div class="tb-split-sep"></div>
             <div class="tb-split-item" data-cmd="edit:goto">찾아가기(G) <span class="tb-split-shortcut">Alt+G</span></div>
           </div>
         </div>
+        <button class="tb-btn" data-cmd="edit:document-history" title="문서 이력 관리 (Ctrl+Shift+H)"><span class="tb-icon-text">⧉</span><span class="tb-label">이력<br/>관리</span></button>
+        <button class="tb-btn" data-cmd="edit:compare-documents" title="문서 비교 (Alt+Shift+V)"><span class="tb-icon-text">≍</span><span class="tb-label">문서<br/>비교</span></button>
       </div>
       <!-- 머리말/꼬리말 편집 모드 전용 도구상자 (숨김) -->
       <div class="tb-group tb-headerfooter-group" style="display:none">

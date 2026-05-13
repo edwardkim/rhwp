@@ -62,8 +62,9 @@
   #menu-bar .menu-item {
     display: none; /* 기본 숨김 */
   }
-  #menu-bar .menu-item:first-child {
-    display: block; /* 파일 메뉴만 표시 */
+  #menu-bar .menu-item:first-child,
+  #menu-bar .menu-item[data-menu="edit"] {
+    display: block; /* 파일 + 편집 (비교/이력 등은 편집 메뉴에 있음) */
   }
   /* 햄버거 버튼 (JS에서 .mobile-menu-toggle 추가 시 표시) */
   .mobile-menu-toggle {
@@ -86,9 +87,13 @@
     height: auto;
   }
 
-  /* ── 도구 상자: 숨김 (모바일에서는 컨텍스트 메뉴로 대체) ── */
+  /* ── 도구 상자: 태블릿과 같이 한 줄 + 가로 스크롤 (숨기면 비교/이력 등 메뉴에도 없어져 도달 불가) ── */
   #icon-toolbar {
-    display: none;
+    display: flex;
+    height: 40px;
+    padding: 2px 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* ── 서식 도구 모음: 가로 스크롤 + 터치 타겟 확대 ── */

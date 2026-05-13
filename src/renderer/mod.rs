@@ -165,6 +165,11 @@ impl TextStyle {
     pub fn is_visually_bold(&self) -> bool {
         self.bold || crate::renderer::style_resolver::is_heavy_display_face(&self.font_family)
     }
+
+    /// 중고딕 계열(font-weight 500) 여부. SVG/HTML 출력 시 `font-weight: 500` 힌트 삽입에 사용.
+    pub fn is_medium_weight(&self) -> bool {
+        !self.bold && crate::renderer::style_resolver::is_medium_weight_face(&self.font_family)
+    }
 }
 
 impl Default for TextStyle {
@@ -559,6 +564,7 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     if font_family.contains("굴림체") || font_family.contains("바탕체")
         || lower.contains("gulimche") || lower.contains("batangche")
         || lower.contains("coding") || lower.contains("courier")
+        || lower.contains("mono")
     {
         // Monospace: Windows → 오픈소스 → generic
         return "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
@@ -574,10 +580,11 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // 영역 (U+1100-11FF, U+A960-A97F, U+D7B0-D7FF) 만 매칭하므로 일반 한글에 영향 없음.
         return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','Source Han Serif K Old Hangul',serif";
     }
-    // 세리프 키워드 (영문)
+    // 세리프 키워드 (영문) — "serif" 포함하되 "sans" 부분 문자열을 가진 폰트명 전체 제외
     if lower.contains("times") || lower.contains("hymjre")
         || lower.contains("palatino") || lower.contains("georgia")
         || lower.contains("batang") || lower.contains("gungsuh")
+        || (lower.contains("serif") && !lower.contains("sans"))
     {
         return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','Source Han Serif K Old Hangul',serif";
     }
@@ -970,8 +977,32 @@ mod tests {
         assert_eq!(generic_fallback("굴림체"), mono);
         assert_eq!(generic_fallback("바탕체"), mono);
         assert_eq!(generic_fallback("Courier New"), mono);
+        assert_eq!(generic_fallback("D2Coding ligature"), mono);
+        assert_eq!(generic_fallback("Noto Sans Mono"), mono);
+        // 영문 세리프 (issue #616)
+        assert_eq!(generic_fallback("Noto Serif CJK SC"), serif);
+        assert_eq!(generic_fallback("Liberation Serif"), serif);
+        assert_eq!(generic_fallback("Noto Serif KR"), serif);
+        // "sans" 포함 폰트는 세리프로 분류되지 않음
+        assert_eq!(generic_fallback("Liberation Sans"), sans);
+        assert_eq!(generic_fallback("Noto Sans KR"), sans);
         // 빈 문자열
         assert_eq!(generic_fallback(""), sans);
+    }
+
+    #[test]
+    fn test_medium_weight_face() {
+        use crate::renderer::style_resolver::is_medium_weight_face;
+        assert!(is_medium_weight_face("HY중고딕"));
+        assert!(is_medium_weight_face("신명 중고딕"));
+        assert!(is_medium_weight_face("한양중고딕"));
+        assert!(is_medium_weight_face("HY태고딕"));
+        assert!(is_medium_weight_face("신명 태고딕"));
+        assert!(!is_medium_weight_face("HY헤드라인M"));
+        assert!(!is_medium_weight_face("돋움"));
+        assert!(!is_medium_weight_face("바탕"));
+        assert!(!is_medium_weight_face("맑은 고딕"));
+        assert!(!is_medium_weight_face(""));
     }
 
     #[test]

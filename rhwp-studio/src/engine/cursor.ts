@@ -9,6 +9,9 @@ export class CursorState {
   /** 수직 이동 시 원래 X 좌표를 기억 (§6.4.4 preferred X) */
   private preferredX: number | null = null;
 
+  /** 줄 끝 이동 후 경계 위치 판별용 — soft-wrap 줄 경계에서 charEnd == 다음 줄 charStart 동일 문제 해결 */
+  private atLineEnd = false;
+
   /** 선택 시작점 (anchor). null이면 선택 없음 */
   private anchor: DocumentPosition | null = null;
 
@@ -50,6 +53,10 @@ export class CursorState {
   private excludedCells = new Set<string>();
   /** 셀 선택 모드 시 표의 식별 정보 (sec/ppi/ci/dims) */
   private cellTableCtx: { sec: number; ppi: number; ci: number; rowCount: number; colCount: number; cellPath?: CellPathEntry[] } | null = null;
+
+  // ─── F5 본문 블록 선택 모드 (#220) ────────────────────────
+  private _blockSelectionMode = false;
+  private _expandPhase = 0; // F3 확장 단계: 0=none, 1=word, 2=paragraph, 3=section, 4=document
 
   // ─── 표 객체 선택 ──────────────────────────────────────
   private _tableObjectSelected = false;
@@ -172,12 +179,14 @@ export class CursorState {
   /** 커서를 문서 위치로 이동한다 */
   moveTo(pos: DocumentPosition): void {
     this.position = { ...pos };
+    this.atLineEnd = false;
     this.updateRect();
   }
 
   /** preferredX 초기화 (수평 이동/클릭/편집 시) */
   resetPreferredX(): void {
     this.preferredX = null;
+    this.atLineEnd = false;
   }
 
   // ─── 수평 이동 ──────────────────────────────────────────
@@ -185,6 +194,7 @@ export class CursorState {
   /** 커서를 좌/우로 이동한다 — 문서 트리 DFS 기반 통합 이동 */
   moveHorizontal(delta: number): void {
     this.preferredX = null;
+    this.atLineEnd = false;
 
     // 표 셀 내부는 기존 로직 유지 (Tab 셀 이동과 연동)
     if (this.isInCell() && !this.isInTextBox()) {
@@ -364,6 +374,7 @@ export class CursorState {
 
   /** 커서를 위/아래로 이동한다 (delta: -1=위, +1=아래) — WASM 단일 호출 */
   moveVertical(delta: number): void {
+    this.atLineEnd = false;
     const px = this.preferredX ?? -1.0;
     const pos = this.position;
     const depth = this.nestingDepth();
@@ -428,7 +439,22 @@ export class CursorState {
   moveToLineStart(): void {
     this.preferredX = null;
     try {
-      const lineInfo = this.getLineInfoAtCursor();
+      const pos = this.position;
+      let lineInfo = this.getLineInfoAtCursor();
+      // #785: soft-wrap 줄 경계 — charEnd(line N) == charStart(line N+1) 동일 위치.
+      // End 키 후 Home 키 시 getLineInfo 가 다음 줄로 판정하여 charStart = 현재 위치 → 미이동.
+      // atLineEnd 플래그가 설정된 상태에서 현재 위치가 줄 시작과 동일하면 이전 줄로 판정.
+      if (this.atLineEnd && pos.charOffset === lineInfo.charStart && pos.charOffset > 0) {
+        const prevLineInfo = this.isInCell()
+          ? this.wasm.getLineInfoInCell(
+              pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
+              pos.cellIndex!, pos.cellParaIndex!, pos.charOffset - 1)
+          : this.wasm.getLineInfo(pos.sectionIndex, pos.paragraphIndex, pos.charOffset - 1);
+        if (prevLineInfo.charEnd === pos.charOffset) {
+          lineInfo = prevLineInfo;
+        }
+      }
+      this.atLineEnd = false;
       this.position = { ...this.position, charOffset: lineInfo.charStart };
       this.updateRect();
     } catch (e) {
@@ -442,6 +468,7 @@ export class CursorState {
     try {
       const lineInfo = this.getLineInfoAtCursor();
       this.position = { ...this.position, charOffset: lineInfo.charEnd };
+      this.atLineEnd = true;
       this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToLineEnd 실패:', e);
@@ -466,6 +493,7 @@ export class CursorState {
   /** 문서 시작으로 이동 (Ctrl+Home) */
   moveToDocumentStart(): void {
     this.preferredX = null;
+    this.atLineEnd = false;
     this.position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
     this.updateRect();
   }
@@ -473,20 +501,91 @@ export class CursorState {
   /** 문서 끝으로 이동 (Ctrl+End) */
   moveToDocumentEnd(): void {
     this.preferredX = null;
+    this.atLineEnd = false;
     try {
-      // 마지막 구역의 마지막 문단 끝
-      const sec = 0; // 현재 단일 구역 가정
-      const paraCount = this.wasm.getParagraphCount(sec);
+      const secCount = this.wasm.getSectionCount();
+      const lastSec = secCount > 0 ? secCount - 1 : 0;
+      const paraCount = this.wasm.getParagraphCount(lastSec);
       if (paraCount > 0) {
         const lastPara = paraCount - 1;
-        const paraLen = this.wasm.getParagraphLength(sec, lastPara);
-        this.position = { sectionIndex: sec, paragraphIndex: lastPara, charOffset: paraLen };
+        const paraLen = this.wasm.getParagraphLength(lastSec, lastPara);
+        this.position = { sectionIndex: lastSec, paragraphIndex: lastPara, charOffset: paraLen };
       } else {
-        this.position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
+        this.position = { sectionIndex: lastSec, paragraphIndex: 0, charOffset: 0 };
       }
       this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToDocumentEnd 실패:', e);
+    }
+  }
+
+  // ─── 문단 단위 이동 (Ctrl+↑/↓) ────────────────────────
+
+  /** 이전/다음 문단 시작으로 이동 (direction: -1=이전, +1=다음).
+   *  한컴 표준 정합 — 본문은 현재 구역 내 문단 이동 (구역 경계 영역 영역 인접 구역 이동).
+   *  표 셀 내부는 cellParaIndex 이동 (셀 내부 문단 경계). */
+  moveToParagraphBoundary(direction: -1 | 1): void {
+    this.preferredX = null;
+    this.atLineEnd = false;
+    const pos = this.position;
+
+    if (this.isInCell() && !this.isInTextBox()) {
+      try {
+        const sec = pos.sectionIndex;
+        const ppi = pos.parentParaIndex!;
+        const ci = pos.controlIndex!;
+        const cei = pos.cellIndex!;
+        const cpi = pos.cellParaIndex!;
+        const cellParaCount = this.wasm.getCellParagraphCount(sec, ppi, ci, cei);
+        const target = cpi + direction;
+        if (target >= 0 && target < cellParaCount) {
+          this.position = { ...pos, cellParaIndex: target, charOffset: 0 };
+          this.updateRect();
+        }
+      } catch (e) {
+        console.warn('[CursorState] moveToParagraphBoundary (cell) 실패:', e);
+      }
+      return;
+    }
+
+    try {
+      const sec = pos.sectionIndex;
+      const paraCount = this.wasm.getParagraphCount(sec);
+      if (direction === 1) {
+        const target = pos.paragraphIndex + 1;
+        if (target < paraCount) {
+          this.position = { ...pos, paragraphIndex: target, charOffset: 0 };
+        } else {
+          // 구역 경계 — 다음 구역 첫 문단으로
+          const secCount = this.wasm.getSectionCount();
+          if (sec + 1 < secCount) {
+            this.position = { sectionIndex: sec + 1, paragraphIndex: 0, charOffset: 0 };
+          } else {
+            // 문서 마지막 문단 끝
+            const lastPara = paraCount - 1;
+            const paraLen = this.wasm.getParagraphLength(sec, lastPara);
+            this.position = { ...pos, paragraphIndex: lastPara, charOffset: paraLen };
+          }
+        }
+      } else {
+        if (pos.charOffset > 0) {
+          // 현재 문단 시작으로 (한컴 표준)
+          this.position = { ...pos, charOffset: 0 };
+        } else if (pos.paragraphIndex > 0) {
+          this.position = { ...pos, paragraphIndex: pos.paragraphIndex - 1, charOffset: 0 };
+        } else if (sec > 0) {
+          // 구역 경계 — 이전 구역 마지막 문단 시작으로
+          const prevParaCount = this.wasm.getParagraphCount(sec - 1);
+          this.position = {
+            sectionIndex: sec - 1,
+            paragraphIndex: prevParaCount > 0 ? prevParaCount - 1 : 0,
+            charOffset: 0,
+          };
+        }
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] moveToParagraphBoundary 실패:', e);
     }
   }
 
@@ -607,6 +706,7 @@ export class CursorState {
   moveToCellNext(): void {
     if (!this.isInCell()) return;
     this.preferredX = null;
+    this.atLineEnd = false;
 
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
@@ -634,6 +734,7 @@ export class CursorState {
   moveToCellPrev(): void {
     if (!this.isInCell()) return;
     this.preferredX = null;
+    this.atLineEnd = false;
 
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
@@ -869,6 +970,61 @@ export class CursorState {
     return this._cellSelectionMode;
   }
 
+  // ─── F5 본문 블록 선택 (#220) ──────────────────────
+  isInBlockSelectionMode(): boolean { return this._blockSelectionMode; }
+
+  enterBlockSelectionMode(): void {
+    this._blockSelectionMode = true;
+    this._expandPhase = 0;
+    this.anchor = { ...this.position };
+  }
+
+  exitBlockSelectionMode(): void {
+    this._blockSelectionMode = false;
+    this._expandPhase = 0;
+    this.clearSelection();
+  }
+
+  expandSelection(): void {
+    this._expandPhase++;
+    const pos = this.position;
+    const sec = pos.sectionIndex;
+    const para = pos.paragraphIndex;
+    try {
+      if (this._expandPhase === 1) {
+        // 단어 선택 — 현재 위치의 단어 범위
+        const paraLen = this.wasm.getParagraphLength(sec, para);
+        const text = this.wasm.getTextRange(sec, para, 0, paraLen);
+        const { start, end } = findWordAt(text, pos.charOffset);
+        this.anchor = { ...pos, charOffset: start };
+        this.position = { ...pos, charOffset: end };
+      } else if (this._expandPhase === 2) {
+        // 문단 전체 선택
+        const paraLen = this.wasm.getParagraphLength(sec, para);
+        this.anchor = { ...pos, charOffset: 0 };
+        this.position = { ...pos, charOffset: paraLen };
+      } else if (this._expandPhase === 3) {
+        // 구역 전체 선택
+        const paraCount = this.wasm.getParagraphCount(sec);
+        const lastParaLen = this.wasm.getParagraphLength(sec, paraCount - 1);
+        this.anchor = { sectionIndex: sec, paragraphIndex: 0, charOffset: 0 };
+        this.position = { sectionIndex: sec, paragraphIndex: paraCount - 1, charOffset: lastParaLen };
+      } else {
+        // 문서 전체 선택
+        const secCount = this.wasm.getSectionCount();
+        const lastSec = secCount - 1;
+        const lastParaCount = this.wasm.getParagraphCount(lastSec);
+        const lastParaLen = this.wasm.getParagraphLength(lastSec, lastParaCount - 1);
+        this.anchor = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
+        this.position = { sectionIndex: lastSec, paragraphIndex: lastParaCount - 1, charOffset: lastParaLen };
+        this._expandPhase = 4; // cap
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] expandSelection 실패:', e);
+    }
+  }
+
   /** 셀 선택을 화살표 방향으로 이동한다 (anchor/focus 함께 이동, 단일 셀 선택). */
   moveCellSelection(deltaRow: number, deltaCol: number): void {
     if (!this._cellSelectionMode || !this.cellFocus || !this.cellTableCtx) return;
@@ -1049,15 +1205,21 @@ export class CursorState {
 
   // ── 그림/글상자 객체 선택 모드 ─────────────────────────────────
   private _pictureObjectSelected = false;
-  private selectedPictureRef: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number } | null = null;
+  private selectedPictureRef: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null = null;
   /** 다중 선택된 개체 목록 */
   private selectedPictureRefs: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }[] = [];
 
-  /** 지정한 개체(그림/글상자/묶음)를 객체 선택한다. */
-  enterPictureObjectSelectionDirect(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line' = 'image', cellIdx?: number, cellParaIdx?: number): void {
+  /** 지정한 개체(그림/글상자/묶음)를 객체 선택한다.
+   * [Task #825] `headerFooter` — 머리말/꼬리말 안 그림일 때 outer 위치 marker 보존. */
+  enterPictureObjectSelectionDirect(
+    sec: number, ppi: number, ci: number,
+    type: 'image' | 'shape' | 'equation' | 'group' | 'line' = 'image',
+    cellIdx?: number, cellParaIdx?: number,
+    headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number },
+  ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;
-    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx };
+    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, headerFooter };
     this.selectedPictureRefs = [{ sec, ppi, ci, type }];
   }
 
@@ -1093,7 +1255,7 @@ export class CursorState {
   }
 
   /** 선택된 개체의 참조 정보를 반환한다. */
-  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number } | null {
+  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null {
     return this.selectedPictureRef;
   }
 
@@ -1319,7 +1481,7 @@ export class CursorState {
   }
 }
 
-// ─── 단어 경계 탐색 유틸 ──────────────────────────────────
+// ─── 단어 경계 탐색 유틸 (PR #794, Alt+Arrow 단어 이동) ──────────────────────────────────
 
 const enum CharClass { Space, Hangul, Latin, Digit, Punct }
 
@@ -1362,4 +1524,31 @@ function findWordBoundaryBackward(text: string): number {
   const wordClass = classifyChar(text[i - 1]);
   while (i > 0 && classifyChar(text[i - 1]) === wordClass) i--;
   return i;
+}
+
+// ─── 단어 범위 탐색 유틸 (PR #811, F3 단계 1 단어 선택) ──────────────────────────────────
+
+function isWordChar(c: string): boolean {
+  const code = c.charCodeAt(0);
+  if (code >= 0x30 && code <= 0x39) return true; // digit
+  if (code >= 0x41 && code <= 0x5A) return true; // A-Z
+  if (code >= 0x61 && code <= 0x7A) return true; // a-z
+  if (code >= 0xAC00 && code <= 0xD7AF) return true; // Hangul
+  if (code >= 0x3131 && code <= 0x318E) return true; // Hangul Jamo
+  return false;
+}
+
+function findWordAt(text: string, offset: number): { start: number; end: number } {
+  if (!text || offset >= text.length) return { start: offset, end: offset };
+  const atWord = isWordChar(text[offset] ?? '');
+  let start = offset;
+  let end = offset;
+  if (atWord) {
+    while (start > 0 && isWordChar(text[start - 1])) start--;
+    while (end < text.length && isWordChar(text[end])) end++;
+  } else {
+    while (start > 0 && !isWordChar(text[start - 1])) start--;
+    while (end < text.length && !isWordChar(text[end])) end++;
+  }
+  return { start, end };
 }
