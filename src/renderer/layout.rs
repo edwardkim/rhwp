@@ -1359,11 +1359,18 @@ impl LayoutEngine {
                 let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
                 // [Task #866 v2 Stage 2/4] pagination 측 solo_zone_pad 와 동일:
                 //   (1) 1단/간격=0 zone 진입·이탈, (2) [단나누기] 로 시작한 새 zone → +20px.
+                // [Task #874 Case 5 v4] solo_zero 인정 범위를 spacing ≤ 1mm (283 HU) 까지
+                // 확장. shortcut.hwp 의 `<스타일에서>` (pi=148) 등 일부 `<...>` 소제목 zone 은
+                // ColumnDef 가 1단/spacing=1mm 으로 정의되어 있어 strict == 0 검사를 통과 못
+                // 했고, 결과적으로 solo_zone_pad +16 이 누락되어 페이지 4 본문 (스타일 적용
+                // 등) 줄간격이 1.92 px 까지 좁아짐. typeset.rs::tac_band_extra 가 < 4.0 px 까지
+                // 인정하는 것과 동일 시멘틱.
                 let new_zone_is_solo_zero = new_zone_first_para.and_then(|pi| {
                     paragraphs.get(pi).map(|p| p.controls.iter().any(|c| matches!(c,
-                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0)))
+                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)))
                 }).unwrap_or(false);
-                let prev_zone_is_solo_zero = prev_zone_design_px < 0.5 && prev_zone_was_solo;
+                // [Task #874 Case 5 v4] solo_zero leaving 인정 범위도 1mm (3.8 px) 까지 확장.
+                let prev_zone_is_solo_zero = prev_zone_design_px < 4.0 && prev_zone_was_solo;
                 let column_break_new_band = new_zone_first_para.and_then(|pi| paragraphs.get(pi))
                     .map(|p| p.column_type == crate::model::paragraph::ColumnBreakType::Column)
                     .unwrap_or(false);
@@ -1416,22 +1423,21 @@ impl LayoutEngine {
                 &body_wide_reserved,
             );
 
-            // [Task #874 Case 5] zone 의 마지막 paragraph 마지막 라인의 trailing
-            // line_spacing 을 prev_zone_y_end 에 포함하지 않는다. zone 간 gap 은
-            // design_spacing/2 + solo_zone_pad 가 담당하므로 trailing_ls 까지 더하면
-            // 이중 가산. 한컴 PDF 측정 (shortcut.hwp 1쪽): 본문 첫 줄 top 195.3 px
-            // (Hancom) vs 210.7 px (rhwp pre) = +15.4 px (≈11.5pt) 넓다. 제목
-            // paragraph 의 trailing_ls 16 px 이 y_offset 에 포함되어 다음 zone(헤더 띠 +
-            // 본문) 을 일괄 하향. zone 내부 paragraph 의 trailing_ls 는 영향 없음
-            // (y_offset 누적 자체는 유지).
+            // [Task #874 Case 5] solo-single zone (1단 ColumnDef + 1 paragraph) leaving 시
+            // 마지막 paragraph 의 trailing line_spacing 을 prev_zone_y_end 에 포함하지
+            // 않는다. zone 간 gap 은 design_spacing/2 + solo_zone_pad 가 담당하므로
+            // trailing_ls 까지 더하면 이중 가산. 한컴 PDF 측정 (shortcut.hwp 1쪽):
+            // 본문 첫 줄 top 195.3 px (Hancom) vs 210.7 px (rhwp pre) = +15.4 px
+            // (≈11.5pt) 넓다. 제목 paragraph 의 trailing_ls 16 px 이 y_offset 에 포함되어
+            // 다음 zone(헤더 띠 + 본문) 을 일괄 하향. zone 내부 paragraph 의 trailing_ls 는
+            // 영향 없음 (y_offset 누적 자체는 유지).
             //
-            // 예외 (trailing_ls 보존):
-            // 1. TAC 헤더 띠 (wrap=TopAndBottom 표) — pi=81 형식 (페이지 상단 partial
-            //    header band) 의 ls=480 HU 는 한컴 모델 상 의도된 표↔본문 간격.
-            //    제외하면 페이지 3 본문 +6.4 px over-correction.
-            // 2. `<...>` 단독 paragraph (cd=1 spacing=0 + text 가 `<` 로 시작) —
-            //    pi=127 형식의 ls=600 HU (8 px) 도 한컴 의도 간격. 제외하면 페이지 4
-            //    본문 +8 px over-correction (한컴 26.7 px gap → rhwp 16 px).
+            // 적용 조건 (모두 만족):
+            // - prev_zone_was_solo: 현재 zone 이 solo (1단 ColumnDef) — 다단 본문 zone
+            //   leaving 에는 미적용 (페이지 4 "개체 모양 복사" → `<스타일에서>` 전환의
+            //   본문 paragraph 줄간격이 좁아지는 사용자 피드백).
+            // - last paragraph 가 TAC 헤더 띠/ `<...>` solo 가 아닐 것 — pi=81/pi=127
+            //   형식의 ls=480/600 HU 는 한컴 의도 간격이므로 보존.
             let last_para_idx = col_content.items.last()
                 .and_then(|it| match it {
                     PageItem::FullParagraph { para_index } |
@@ -1450,13 +1456,16 @@ impl LayoutEngine {
                     Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0))
                     && p.text.trim_start().starts_with('<'))
                 .unwrap_or(false);
-            let last_para_trailing_ls = if last_is_tac_band || last_is_solo_text {
-                0.0
-            } else {
+            let apply_trailing_ls_subtract = prev_zone_was_solo
+                && !last_is_tac_band
+                && !last_is_solo_text;
+            let last_para_trailing_ls = if apply_trailing_ls_subtract {
                 last_para
                     .and_then(|p| p.line_segs.last())
                     .map(|ls| hwpunit_to_px(ls.line_spacing, self.dpi))
                     .unwrap_or(0.0)
+            } else {
+                0.0
             };
             let y_offset_no_trailing = (y_offset - last_para_trailing_ls).max(0.0);
 
