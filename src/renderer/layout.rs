@@ -1456,10 +1456,18 @@ impl LayoutEngine {
                 prev_zone_y_end = y_offset_no_trailing;
             }
             // [Task #866] 헤더 띠 zone (wrap=위아래 인 글자처럼-취급 표 보유 + 1단 ColumnDef
-            // 간격=0) 의 leaving header band flag 갱신. 종전엔 zone 아래에 표 band 높이만큼
-            // 추가 여백을 더했으나 (Task #874 Case 1 측정 결과), build_single_column 의 y_offset
-            // 이 이미 visual 헤더 띠 끝(표 본체 + outer_margin) 까지 advance 하므로 추가
-            // band 가산은 중복 — 한컴 PDF 대비 본문 첫 줄 +30pt 넓다 (사용자 피드백).
+            // 간격=0) 의 leaving 시 zone 아래 band 가산 + header_band flag 갱신.
+            //
+            // 이력:
+            // - 초기 (#866): `prev_zone_y_end += band` 전체 가산 (≈31px) — 페이지 6 (Table-only
+            //   pi=210) 형식 정합, 그러나 페이지 2·3 (PartialParagraph + Table pi=36/81) 형식
+            //   에서는 본문 첫 줄 +30pt 넓다 (사용자 피드백).
+            // - #874 Case 1: 전체 제거 — 페이지 2·3 -8~-16pt 좁다 over-correction.
+            // - #874 Case 1 v2 (현재): **items 수로 분기**.
+            //     items==1 (Table only, pi=210 형식, 페이지 6 헤더 띠 zone): y_offset 이
+            //       표 높이만 advance 하므로 표 본체 + outer_margin 만큼 추가 가산 필요.
+            //     items>1 (PartialParagraph + Table, pi=36/81 형식, 페이지 2·3): y_offset 이
+            //       text 라인 + 표 라인 까지 advance 한 상태 — band 추가 가산은 이중 가산.
             prev_zone_was_header_band = false;
             if let Some(last_para_idx) = col_content.items.last().and_then(|it| match it {
                 PageItem::Table { para_index, .. } => Some(*para_index),
@@ -1479,12 +1487,27 @@ impl LayoutEngine {
                                 })))
                             .unwrap_or(false)
                     };
-                    if cd_gap_zero
-                        && p.controls.iter().any(|c| matches!(c,
+                    if cd_gap_zero {
+                        if let Some(band) = p.controls.iter().find_map(|c| match c {
                             Control::Table(t) if t.common.treat_as_char
-                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)))
-                    {
-                        prev_zone_was_header_band = true;
+                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom) =>
+                                Some(hwpunit_to_px(t.common.height as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)),
+                            _ => None,
+                        }) {
+                            // Table-only zone (페이지 6 pi=210 형식): 전체 band 가산.
+                            //   y_offset 이 표 높이만 advance → outer_margin 까지 추가 필요.
+                            // PartialParagraph + Table zone (페이지 2·3 pi=36/81 형식):
+                            //   y_offset 이 text 라인 + 표 라인 까지 advance — 일부 중복.
+                            //   half (band/2) 가산으로 측정 정합 (페이지 2 +3.8, 페이지 3 -5.6).
+                            if col_content.items.len() == 1 {
+                                prev_zone_y_end += band;
+                            } else {
+                                prev_zone_y_end += band / 2.0;
+                            }
+                            prev_zone_was_header_band = true;
+                        }
                     }
                 }
             }
