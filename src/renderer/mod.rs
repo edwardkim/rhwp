@@ -111,6 +111,13 @@ pub struct TextStyle {
     pub available_width: f64,
     /// 단 시작으로부터 run 시작 위치 (탭 절대좌표 변환용)
     pub line_x_offset: f64,
+    /// 단 시작으로부터 텍스트 영역 시작 위치 (effective_margin_left, px).
+    /// auto_tab_right 의 col-relative 위치 = text_start_offset + available_width.
+    /// [Task #874] 종전 find_next_tab_stop 의 auto_right 반환값(=available_width) 은
+    /// 텍스트-시작-상대 좌표였으나, 호출자(compute_char_positions / pending_right_tab)
+    /// 가 col-relative 로 해석해 effective_margin_left 만큼 좌측으로 밀린 정렬 발생.
+    /// 본 필드로 변환 보정.
+    pub text_start_offset: f64,
     /// 탭 리더 정보 (compute_char_positions 후 채움)
     pub tab_leaders: Vec<TabLeaderInfo>,
     /// HWPX 인라인 탭 확장 데이터 ([width, leader, type, ...])
@@ -189,6 +196,7 @@ impl Default for TextStyle {
             auto_tab_right: false,
             available_width: 0.0,
             line_x_offset: 0.0,
+            text_start_offset: 0.0,
             tab_leaders: Vec::new(),
             inline_tabs: Vec::new(),
             extra_word_spacing: 0.0,

@@ -123,6 +123,8 @@ pub(crate) fn right_tab_block_width(
         ts.tab_stops = tab_stops.to_vec();
         ts.auto_tab_right = auto_tab_right;
         ts.available_width = available_width;
+        // [Task #874] text_start_offset 은 right_tab_block_width 가 측정만 하므로
+        // 영향 없음 — 0 그대로.
         w += estimate_text_width(&r.text, &ts);
     }
     w
@@ -1046,6 +1048,7 @@ impl LayoutEngine {
                 ts.tab_stops = tab_stops.clone();
                 ts.auto_tab_right = auto_tab_right;
                 ts.available_width = available_width;
+                ts.text_start_offset = effective_margin_left;
                 ts.inline_tabs = composed.tab_extended.clone();
                 // 교차 run 오른쪽/가운데 탭: 이 run의 시작 위치를 역방향으로 조정
                 if let Some((tab_pos, tab_type, fill_type)) = pending_right_tab_est.take() {
@@ -1058,8 +1061,12 @@ impl LayoutEngine {
                         // [Task #279] 리더(fill_type ≠ 0) 가 있는 RIGHT 탭은 "이 줄 우측 끝까지" 의미.
                         // 셀 안 문단에서는 col_area 가 이미 cell padding 적용된 inner_area 이므로
                         // `effective_margin_left + available_width` 가 inner 우측 끝.
-                        let effective_pos = if tab_type == 1 && fill_type != 0 {
-                            effective_margin_left + available_width
+                        // [Task #874] auto_tab_right 의 tab_pos = available_width (text-start
+                        // 상대). RIGHT 탭은 모두 col-start 좌표계로 변환 시 effective_margin_left
+                        // 더해야 함. 종전엔 fill_type ≠ 0 만 변환되어 leader 없는 auto_right tab
+                        // (shortcut.hwp 인쇄/개체 모양 복사 등) 가 ~27 px 왼쪽으로 밀려 렌더됨.
+                        let effective_pos = if tab_type == 1 {
+                            effective_margin_left + (if fill_type != 0 { available_width } else { tab_pos })
                         } else {
                             tab_pos
                         };
@@ -1477,6 +1484,7 @@ impl LayoutEngine {
                 text_style.tab_stops = tab_stops.clone();
                 text_style.auto_tab_right = auto_tab_right;
                 text_style.available_width = available_width;
+                text_style.text_start_offset = effective_margin_left;
                 text_style.inline_tabs = composed.tab_extended.clone();
                 // 교차 run 오른쪽/가운데 탭: 이전 run이 \t로 끝났고
                 // 해당 탭이 오른쪽/가운데 탭이면 이 run을 역방향으로 이동
@@ -1498,8 +1506,9 @@ impl LayoutEngine {
                     // 셀 안 문단에서는 col_area 가 이미 cell padding 적용된 inner_area 이므로
                     // `effective_margin_left + available_width` 가 inner 우측 끝.
                     // tab_pos (HWP 저장값) 이 inner 우측 끝을 초과하면 셀 padding_right 침범이므로 강제 클램핑.
-                    let effective_pos = if tab_type == 1 && fill_type != 0 {
-                        effective_margin_left + available_width
+                    // [Task #874] auto_tab_right (fill_type=0) 도 effective_margin_left 변환 필요.
+                    let effective_pos = if tab_type == 1 {
+                        effective_margin_left + (if fill_type != 0 { available_width } else { tab_pos })
                     } else {
                         tab_pos
                     };
