@@ -2191,6 +2191,10 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 
                 let img_data = block.data[32..].to_vec();
 
+                // [Task #877 Stage 4] WMF/EMF magic detection 추가.
+                // sample16 의 16쪽 다이어그램 등은 WMF format (magic 01 00 09 00 = 표준 WMF
+                // mtType=1, mtHeaderSize=9) 인데 ext="bin" 으로 저장되어 렉더러가 미지원.
+                // 정확한 ext 부여로 rhwp/wmf 모듈이 SVG 변환하도록.
                 let ext = if img_data.starts_with(b"\xFF\xD8\xFF") {
                     "jpg"
                 } else if img_data.starts_with(b"\x89PNG\r\n\x1a\n") {
@@ -2199,6 +2203,17 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
                     "gif"
                 } else if img_data.starts_with(b"BM") {
                     "bmp"
+                } else if img_data.starts_with(b"\xD7\xCD\xC6\x9A")
+                    || img_data.starts_with(b"\x01\x00\x09\x00")
+                {
+                    // Placeable WMF / Standard WMF magic
+                    "wmf"
+                } else if img_data.len() >= 44
+                    && img_data.starts_with(b"\x01\x00\x00\x00")
+                    && &img_data[40..44] == b" EMF"
+                {
+                    // EMF magic (record_type=1, " EMF" signature at offset 40)
+                    "emf"
                 } else {
                     "bin"
                 }.to_string();
