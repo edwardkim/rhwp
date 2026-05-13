@@ -898,6 +898,13 @@ pub(crate) fn parse_paragraph_list(
                             let ref_pos = info_buf[8];
                             pic.common.treat_as_char = ref_pos == 0;
                             match ref_pos {
+                                0 => {
+                                    // [Task #877 Stage 4] Text base (treat_as_char) — paragraph 영역
+                                    // inline 으로 그려져야. default CommonObjAttr (Paper) 그대로 두면
+                                    // 페이지 좌상단에 그려지는 회귀 (sample16 paragraph 5 RFP 박스).
+                                    pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
+                                    pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+                                },
                                 1 => {
                                     pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
                                     pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
