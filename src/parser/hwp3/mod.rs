@@ -2335,6 +2335,35 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         ..Default::default()
     };
 
+    // [Task #877 Stage 4] HWP3 doc_info.border_type / border_margin → SectionDef.page_border_fill
+    // 변환. HWP3 spec §3.2 (문서 정보) offset 112-121 의 페이지 테두리 정보. type=0 이면 없음,
+    // 그 외 = 실선 등. 한컴 viewer 의 PDF 출력에 페이지 외곽선 박스 표시 (sample16 표지/목차/
+    // 본문 모두 페이지 외곽 box). rhwp 가 누락하면 시각 차이.
+    if doc_info.border_type > 0 {
+        use crate::model::style::{BorderFill, BorderLine, BorderLineType};
+        let mut page_border = BorderFill::default();
+        let line_type = match doc_info.border_type {
+            1 => BorderLineType::Solid,
+            2 => BorderLineType::Dash,
+            3 => BorderLineType::Dot,
+            _ => BorderLineType::Solid, // 4 이상: 한컴 사적 type, 일단 Solid 로 fallback
+        };
+        // width: HWP5 BorderLine.width 는 인덱스 (0=0.1mm, 1=0.12mm, ..., 6=0.5mm).
+        // HWP3 raw 의 border 두께 별도 정보 없음 → 기본 1 (얇은 실선) 적용.
+        let bl = BorderLine { line_type, width: 1, color: 0x00000000 };
+        page_border.borders = [bl, bl, bl, bl];
+        doc_border_fills.push(page_border);
+        let bfid = (doc_border_fills.len() - 1) as u16; // 0-based ID
+        section_def.page_border_fill = crate::model::page::PageBorderFill {
+            attr: 0,
+            spacing_left: (doc_info.border_margin_left as i16) * 4,
+            spacing_right: (doc_info.border_margin_right as i16) * 4,
+            spacing_top: (doc_info.border_margin_top as i16) * 4,
+            spacing_bottom: (doc_info.border_margin_bottom as i16) * 4,
+            border_fill_id: bfid,
+        };
+    }
+
     let section = Section {
         section_def,
         paragraphs,
