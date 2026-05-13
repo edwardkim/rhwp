@@ -765,32 +765,30 @@ fn map_to_shape_object(
     };
 
     // [Task #877 Stage 4] HWP3 fill_color 의 high byte (bit 24~31) 가 0 이 아니면
-    // 한컴 HWP3 의 "투명 채우기" / "기본값 없음" flag 로 추정. (sample16 paragraph 5
-    // RFP 박스 raw fill_color=0x10000000 회귀: bit 28 set + RGB=0 → 거의 검정 fill
-    // → 외곽선 가려짐). RGB 0 + high flag 인 case 만 투명 처리하여 외곽선 가시화.
+    // 한컴 HWP3 의 "기본값 없음/투명" flag 로 추정 (sample16 paragraph 5/131/393:
+    // raw 0x10000000 = bit 28 set + RGB 0). rhwp 가 raw 그대로 ColorRef 로 사용
+    // → 거의 검정 fill (alpha=0x10) → 외곽선이 fill 위에 안 보이는 회귀.
+    //
+    // 해결: RGB=0 + high flag set 인 경우 흰색 fill 로 대체. 한컴 viewer 의 실제
+    // 표시 (연한 보라 채우기) 와 100% 정합은 아니나 외곽선 가시화로 본질 표현.
     let raw_fc = header.basic_attr.fill_color;
     let fill_flag = (raw_fc >> 24) & 0xFF;
     let fill_rgb = raw_fc & 0x00FFFFFF;
-    let fill = if fill_flag != 0 && fill_rgb == 0 {
-        Fill {
-            fill_type: crate::model::style::FillType::None,
-            solid: None,
-            gradient: None,
-            image: None,
-            alpha: 255,
-        }
+    let effective_rgb = if fill_flag != 0 && fill_rgb == 0 {
+        0x00FFFFFF
     } else {
-        Fill {
-            fill_type: crate::model::style::FillType::Solid,
-            solid: Some(crate::model::style::SolidFill {
-                background_color: fill_rgb,
-                pattern_color: header.basic_attr.pattern_color,
-                pattern_type: header.basic_attr.pattern_type as i32,
-            }),
-            gradient: None,
-            image: None,
-            alpha: 255,
-        }
+        fill_rgb
+    };
+    let fill = Fill {
+        fill_type: crate::model::style::FillType::Solid,
+        solid: Some(crate::model::style::SolidFill {
+            background_color: effective_rgb,
+            pattern_color: header.basic_attr.pattern_color,
+            pattern_type: header.basic_attr.pattern_type as i32,
+        }),
+        gradient: None,
+        image: None,
+        alpha: 255,
     };
     
     let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty() {
