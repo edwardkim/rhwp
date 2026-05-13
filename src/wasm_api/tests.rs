@@ -224,6 +224,74 @@
         assert_eq!(&bytes[0..4], &[0xD0, 0xCF, 0x11, 0xE0]);
     }
 
+    fn assert_minimal_hwp_writer_streams(bytes: &[u8]) {
+        let mut cfb = crate::parser::cfb_reader::CfbReader::open(bytes)
+            .expect("writer output must be readable as HWP CFB");
+
+        assert!(cfb.has_stream("/FileHeader"));
+        assert!(cfb.has_stream("/DocInfo"));
+        assert!(cfb.has_stream("/BodyText/Section0"));
+
+        let header = cfb
+            .read_file_header()
+            .expect("writer output must include a readable FileHeader stream");
+        assert_eq!(header.len(), 256);
+
+        let parsed = crate::parser::parse_hwp(bytes)
+            .expect("writer output must be reloadable through the HWP parser");
+        assert_eq!(parsed.doc_properties.section_count, 1);
+        assert_eq!(parsed.sections.len(), 1);
+        assert_eq!(parsed.header.version.major, 5);
+    }
+
+    fn create_blank_hwp_writer_document() -> HwpDocument {
+        let mut doc = HwpDocument::create_empty();
+        doc.create_blank_document_native()
+            .expect("blank HWP template should initialize an editable writer document");
+        doc
+    }
+
+    #[test]
+    fn test_hwp_writer_contract_blank_document_roundtrip() {
+        let doc = create_blank_hwp_writer_document();
+
+        let bytes = doc
+            .export_hwp_native()
+            .expect("blank document must export as HWP bytes");
+
+        assert!(bytes.len() > 512);
+        assert_eq!(&bytes[0..4], &[0xD0, 0xCF, 0x11, 0xE0]);
+        assert_minimal_hwp_writer_streams(&bytes);
+
+        let reloaded = HwpDocument::from_bytes(&bytes)
+            .expect("exported blank HWP must reload");
+        assert_eq!(reloaded.page_count(), 1);
+    }
+
+    #[test]
+    fn test_hwp_writer_contract_inserted_text_roundtrip() {
+        let mut doc = create_blank_hwp_writer_document();
+        let text = "한글 English 123";
+
+        doc.insert_text_native(0, 0, 0, text)
+            .expect("text insertion should prepare writer input");
+        let bytes = doc
+            .export_hwp_native()
+            .expect("edited document must export as HWP bytes");
+
+        assert_minimal_hwp_writer_streams(&bytes);
+
+        let reloaded = HwpDocument::from_bytes(&bytes)
+            .expect("exported edited HWP must reload");
+        let paragraph_text = &reloaded.document.sections[0].paragraphs[0].text;
+        assert!(
+            paragraph_text.contains("한글")
+                && paragraph_text.contains("English")
+                && paragraph_text.contains("123"),
+            "reloaded paragraph should preserve mixed text, got: {paragraph_text:?}"
+        );
+    }
+
     #[test]
     fn test_hwp_error_display() {
         let err = HwpError::InvalidFile("테스트".to_string());
