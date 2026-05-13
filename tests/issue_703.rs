@@ -37,17 +37,19 @@ fn issue_703_calendar_year_single_page() {
 // 통합재정통계 케이스는 Task #703 분석 단계에서 함께 식별되었으나 다른 본질의 결함:
 // TopAndBottom TAC 1×1 wrapper + 각주 117 px + safety margin 50 px + 누적 drift 5.9 px 가
 // 합쳐져 trailing pi=14 가 0.84 px 부족으로 밀림. BehindText/InFrontOfText 와는 무관.
-// → Issue #704 로 별도 분리. Task #703 옵션 A 적용 후에도 잔존하는 것 확인 후 #[ignore].
+// → Issue #704 로 별도 분리. Task #703 옵션 A 적용 시점엔 잔존하여 #[ignore] 처리됐으나,
+// Task #676 (PR #679, 커밋 52ae6558) 의 trailing empty paragraph 가드
+// (typeset.rs:1182-1199) 가 동일 시멘틱 (LAYOUT_DRIFT_SAFETY_PX 영역 내 흡수) 으로
+// 이미 본질 정정. Task #704 cleanup 단계에서 #[ignore] 해제.
+// (참고: tests/issue_676_trailing_empty_para.rs 에 동일 케이스 정식 GREEN 테스트 존재.)
 
 #[test]
-#[ignore = "Issue #704 별도 task — TopAndBottom TAC + 각주 환경 0.84 px borderline 결함"]
 fn issue_703_tonghap_2010_11_single_page() {
     let pages = load_page_count("samples/통합재정통계(2010.11월).hwp");
     assert_eq!(pages, 1, "통합재정통계(2010.11월).hwp 는 1 페이지여야 함");
 }
 
 #[test]
-#[ignore = "Issue #704 별도 task — TopAndBottom TAC + 각주 환경 0.84 px borderline 결함"]
 fn issue_703_tonghap_2011_10_single_page() {
     let pages = load_page_count("samples/통합재정통계(2011.10월).hwp");
     assert_eq!(pages, 1, "통합재정통계(2011.10월).hwp 는 1 페이지여야 함");
