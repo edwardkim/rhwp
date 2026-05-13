@@ -61,6 +61,12 @@ pub fn decode_johab(ch: u16) -> char {
 ///
 /// 매핑 출처: hwp3-sample10.hwp ↔ hwp3-sample10-hwp5.hwp paragraph 별 cross-ref.
 fn decode_hwp3_extra(ch: u16) -> Option<char> {
+    // [Task #877 Stage 3] 로마숫자 대문자 Ⅰ~Ⅹ: 0x3590~0x3599 → U+2160~U+2169.
+    // sample16 (hwp3-sample16.hwp) 의 cross-ref 로 도출. 한컴 HWP5 변환본의
+    // paragraph 26/31/36/44 ("Ⅰ. 사업개요", "Ⅱ. 제안 일반사항", "Ⅲ ...", "Ⅳ ...") 정합.
+    if (0x3590..=0x3599).contains(&ch) {
+        return char::from_u32(0x2160 + (ch - 0x3590) as u32);
+    }
     let codepoint: u32 = match ch {
         0x301C => 0xF080F,  // 한컴 PUA — 굵은 가로선 (94.5% 발생)
         0x35E1 => 0x2500,   // ─ BOX DRAWINGS LIGHT HORIZONTAL
