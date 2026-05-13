@@ -151,6 +151,21 @@ struct TypesetState {
     /// process_multicolumn_break 에서 새 ColumnDef 매칭 시 갱신.
     /// Distribute 다단의 짧은 컬럼 vpos-reset 검출 임계값 완화에 사용.
     current_zone_column_type: ColumnType,
+    /// [Task #853] 현재 zone 의 "디자인 spacing"(px) — 1단 ColumnDef 의 `간격` 값.
+    /// 한컴은 1단 ColumnDef 의 `간격`(가로 단 간격이지만 1단이라 무의미)을 zone 진입
+    /// 세로 간격으로 쓴다(shortcut.hwp 1쪽 헤더 띠 = 10mm). zone 전환 시
+    /// (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 zone_y_offset 에
+    /// 더한다. 다단(2+) ColumnDef 의 `간격`은 가로 간격이므로 0 으로 둔다.
+    current_zone_design_spacing_px: f64,
+}
+
+/// [Task #853] ColumnDef 의 "디자인 spacing"(px): 1단이면 `간격`, 다단이면 0.
+fn column_def_design_spacing_px(cd: &ColumnDef, dpi: f64) -> f64 {
+    if cd.column_count.max(1) <= 1 {
+        hwpunit_to_px(cd.spacing as i32, dpi)
+    } else {
+        0.0
+    }
 }
 
 impl TypesetState {
@@ -190,6 +205,7 @@ impl TypesetState {
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
+            current_zone_design_spacing_px: 0.0,
         }
     }
 
@@ -388,6 +404,7 @@ impl TypesetEngine {
             column_def.column_type,
         );
         st.hide_empty_line = hide_empty_line;
+        st.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
 
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
         let (hf_entries, page_number_pos, new_page_numbers, page_hides) =
@@ -439,6 +456,11 @@ impl TypesetEngine {
                         st.current_zone_layout = Some(new_layout.clone());
                         st.layout = new_layout;
                         st.current_zone_column_type = cd.column_type;
+                        // [Task #853] 새 페이지 첫 zone: 디자인 spacing /2 (위쪽 절반)만 추가.
+                        // (이전 zone 은 이전 페이지에 있었으므로 아래쪽 절반은 더하지 않음.)
+                        let new_ds = column_def_design_spacing_px(cd, self.dpi);
+                        st.current_zone_y_offset += new_ds / 2.0;
+                        st.current_zone_design_spacing_px = new_ds;
                     }
                 }
             }
@@ -467,9 +489,17 @@ impl TypesetEngine {
                     //   단일 단/Normal 다단은 영향 없음.
                     let is_distribute = st.col_count > 1
                         && matches!(st.current_zone_column_type, ColumnType::Distribute);
+                    // [Task #853] Distribute 다단의 "1줄짜리 컬럼" 케이스: 직전 문단이
+                    // 단 1줄(예: vpos=0)이고 현재 문단도 vpos=0 이면 `cv < pv` 가 0<0 으로
+                    // 거짓이라 컬럼 전환을 못 잡았다(shortcut.hwp 스타일/속성 섹션). 직전 문단의
+                    // vpos+line_height(=콘텐츠 끝)를 기준으로 비교하면 정상 흐름(cv=pv_end+ls≥pv_end)
+                    // 은 영향 없고 reset(cv≪pv_end)만 잡힌다.
+                    let prev_vpos_end = prev_para.line_segs.last()
+                        .map(|s| s.vertical_pos + s.line_height)
+                        .unwrap_or(pv);
                     let trigger = if st.col_count > 1 {
                         if is_distribute {
-                            cv < pv && pv > 0
+                            cv < prev_vpos_end && prev_vpos_end > 0
                         } else {
                             cv < pv && pv > 5000
                         }
@@ -1768,6 +1798,23 @@ impl TypesetEngine {
         let total_lines = fmt.line_heights.len();
         let pre_table_end_line = if vertical_offset > 0 && !para.text.is_empty() {
             total_lines
+        } else if table.common.treat_as_char && total_lines > 1
+            && para.text.chars().any(|c| c.is_alphanumeric())
+        {
+            // 전폭 TAC 표가 자동 줄바꿈으로 자기 줄(line index N)에 놓인 경우(\n 없음):
+            // 한컴은 LINE_SEG 순서대로 line0=텍스트 → lineN=표 로 렌더한다.
+            // control_text_positions() 는 char_offsets 가 비면 무용하므로, 표 줄의 높이
+            // (표 본체 + outer margin top/bottom)와 일치하는 LINE_SEG 인덱스로 판정한다.
+            // PUA 필러/공백만 있는 문단(예: 복학원서.hwp pi=16 — 한컴이 표 폭만큼 필러로
+            // 줄바꿈시킨 케이스)은 is_alphanumeric() 가 false 라 제외 → compute_tac_leading
+            // 경로 유지. (Task #853, Task #842 결함 #2 의 PUA 필러 판정과 정합)
+            let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+            let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+            let tbl_line_h = hwpunit_to_px(table.common.height as i32, self.dpi) + om_top + om_bot;
+            para.line_segs.iter().enumerate()
+                .find(|(_, ls)| (hwpunit_to_px(ls.line_height, self.dpi) - tbl_line_h).abs() < 1.0)
+                .map(|(i, _)| i)
+                .unwrap_or(0)
         } else {
             0
         };
@@ -1804,10 +1851,19 @@ impl TypesetEngine {
         // - Square wrap (어울림): max(pre_height, v_off + table_total)
         //     호스트 텍스트와 표가 같은 y 영역을 공유하므로 더 큰 쪽만 누적.
         // - 그 외 (TopAndBottom 등): pre_height + table_total 합산 (기존 동작).
+        // 전폭 TAC 표가 자기 줄(line index = pre_table_end_line)에 놓인 split 케이스:
+        // table_total_height(=fmt.height_for_fit)는 pre-text 줄까지 포함하므로 pre_height
+        // 를 따로 더하면 이중 계산이 된다. 또 표가 차지한 줄은 post-text 에서 제외해야 한다.
+        // (Task #853)
+        let tac_wrap_split = table.common.treat_as_char
+            && pre_table_end_line > 0 && pre_table_end_line < total_lines;
+
         if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
             let table_bottom = v_off_px + table_total_height;
             st.current_height += pre_height.max(table_bottom);
+        } else if tac_wrap_split {
+            st.current_height += table_total_height;
         } else {
             st.current_height += pre_height + table_total_height;
         }
@@ -1818,7 +1874,9 @@ impl TypesetEngine {
         let tac_table_count = para.controls.iter()
             .filter(|c| matches!(c, Control::Table(t) if t.attr & 0x01 != 0))
             .count();
-        let post_table_start = if table.attr & 0x01 != 0 {
+        let post_table_start = if tac_wrap_split {
+            (pre_table_end_line + 1).min(total_lines).max(1)
+        } else if table.attr & 0x01 != 0 {
             pre_table_end_line.max(1)
         } else if is_last_table && !is_first_table {
             0
@@ -2339,7 +2397,50 @@ impl TypesetEngine {
         } else {
             st.current_height
         };
-        st.current_zone_y_offset += vpos_zone_height;
+        // [Task #853] zone 전환 시 디자인 spacing(1단 ColumnDef 의 `간격`)을 세로 간격으로:
+        // (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 더한다.
+        // shortcut.hwp 1쪽: 제목 zone(0mm) → 헤더 띠 zone(10mm) → 본문 zone(2단, 0)
+        //   → 제목↔헤더 = 5mm, 헤더↔본문 = 5mm (한컴 PDF 정합).
+        let new_ds = paragraphs[para_idx].controls.iter().find_map(|c| {
+            if let Control::ColumnDef(cd) = c { Some(column_def_design_spacing_px(cd, self.dpi)) } else { None }
+        }).unwrap_or(0.0);
+        // [Task #866] 직전 zone 의 마지막 paragraph 가 wrap=위아래 인 글자처럼-취급 표(헤더 띠)를
+        // 보유하고 그 zone 의 1단 ColumnDef 간격이 0 이면, 한컴은 표 band 높이(표 본체 +
+        // outer_margin top/bottom)만큼을 표 아래에 추가로 비워둔다(한컴 PDF 측정:
+        // shortcut.hwp 2·3쪽 헤더 띠 하단↔본문 ~28~33px). ColumnDef 간격>0 인 헤더 띠(1쪽
+        // 등)는 그 간격이 이미 zone 사이 여백이 되므로 제외.
+        let tac_band_extra: f64 = if st.current_zone_design_spacing_px < 0.5 {
+            (0..para_idx).rev()
+                .find(|&i| !paragraphs[i].line_segs.is_empty())
+                .and_then(|pi| paragraphs[pi].controls.iter().find_map(|c| match c {
+                    Control::Table(t)
+                        if t.common.treat_as_char
+                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom) =>
+                        Some(hwpunit_to_px(t.common.height as i32, self.dpi)
+                            + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                            + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)),
+                    _ => None,
+                }))
+                .unwrap_or(0.0)
+        } else {
+            0.0
+        };
+        let candidate_offset = st.current_zone_y_offset + vpos_zone_height + tac_band_extra
+            + st.current_zone_design_spacing_px / 2.0 + new_ds / 2.0;
+
+        // [Task #853] 새 zone 이 현재 페이지 하단 가까이(여유 ≲ 헤더 띠 1개 높이)에서 시작하면
+        // 그 zone 의 콘텐츠(헤더 띠 ~47px 또는 본문 줄들)가 body 하단을 넘어 렌더되므로 다음
+        // 페이지로 넘긴다. (shortcut.hwp 3쪽~6쪽 — 다단 zone 다수 누적 시 잔여 콘텐츠가
+        // 본문영역을 넘어 바닥 여백에 그려지던 결함)
+        let one_line = hwpunit_to_px(1500, self.dpi);
+        if candidate_offset > st.layout.available_body_height() - 4.0 * one_line {
+            st.push_new_page();
+            // 새 페이지 첫 zone: 새 zone 디자인 spacing /2 만 (이전 zone 은 이전 페이지).
+            st.current_zone_y_offset = new_ds / 2.0;
+        } else {
+            st.current_zone_y_offset = candidate_offset;
+        }
+        st.current_zone_design_spacing_px = new_ds;
         st.current_column = 0;
         st.current_height = 0.0;
         st.on_first_multicolumn_page = true;

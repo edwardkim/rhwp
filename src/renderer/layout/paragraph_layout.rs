@@ -786,10 +786,23 @@ impl LayoutEngine {
         };
 
         // 문단 앞 간격 (첫 줄일 때만)
-        // 단/페이지의 맨 처음 문단은 spacing_before 적용하지 않음
+        // 단/페이지의 맨 처음 문단(column-top)은 spacing_before 를 통째 적용하면 한컴보다
+        // 아래로 밀리므로 종전엔 0 으로 버렸다. 다만 섹션의 첫 문단(para_index==0, 예: 제목)은
+        // 한컴 PDF 가 LINE_SEG.vertical_pos(실제 렌더한 첫 줄 흐름 위치)만큼 앞 간격을 두므로
+        // (제목: spacing_before=52.9px 이지만 vertical_pos=26.5px), 그 경우 spacing_before 를
+        // LINE_SEG.vertical_pos 로 상한 클램프해 적용한다. 페이지 break 후 이어진 column-top
+        // (para_index>0)은 종전대로 0. (Task #853)
         let is_column_top = (y - col_area.y).abs() < 1.0;
-        if start_line == 0 && spacing_before > 0.0 && !is_column_top {
-            y += spacing_before;
+        if start_line == 0 && spacing_before > 0.0 {
+            if !is_column_top {
+                y += spacing_before;
+            } else if para_index == 0 {
+                let vpos0_px = para
+                    .and_then(|p| p.line_segs.first())
+                    .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                y += spacing_before.min(vpos0_px.max(0.0));
+            }
         }
 
         // 문단 전체에서 모든 라인의 runs가 비어있는지 확인
