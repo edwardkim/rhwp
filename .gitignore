@@ -92,5 +92,6 @@ rhwp-safari/HWP Viewer/
 rhwp-safari/.DS_Store
 
 # Xcode 사용자별 설정
+rhwp-ios/DerivedData/
 xcuserdata/
 *.xcuserstate
