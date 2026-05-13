@@ -12,11 +12,14 @@ use super::HwpxError;
 #[derive(Debug, Clone)]
 pub struct PackageItem {
     /// 파일 경로 (ZIP 내 상대 경로, 예: "BinData/image1.png")
+    /// 또는 외부 파일 절대 경로 (예: `C:\path\to\image.gif`, [Task #873])
     pub href: String,
     /// MIME 유형
     pub media_type: String,
     /// 항목 ID
     pub id: String,
+    /// [Task #873] isEmbeded attribute — true = ZIP 내 embedded, false = 외부 file 참조
+    pub is_embedded: bool,
 }
 
 /// content.hpf 파싱 결과
@@ -35,7 +38,8 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
     let mut buf = Vec::new();
 
     // 임시 저장: 모든 item을 수집 후 섹션은 spine 순서로 정렬
-    let mut all_items: Vec<(String, String, String)> = Vec::new(); // (id, href, media_type)
+    // [Task #873] is_embedded 추가 — isEmbeded="0" (외부 file 참조) 식별
+    let mut all_items: Vec<(String, String, String, bool)> = Vec::new(); // (id, href, media_type, is_embedded)
     let mut spine_order: Vec<String> = Vec::new(); // idref 순서
 
     loop {
@@ -48,16 +52,22 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
                         let mut id = String::new();
                         let mut href = String::new();
                         let mut media_type = String::new();
+                        // [Task #873] 기본값 true (BinData/ 폴더 내 embedded image 가 일반적 케이스).
+                        // isEmbeded="0" 인 경우만 false 로 설정.
+                        let mut is_embedded = true;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"id" => id = attr_value(&attr),
                                 b"href" => href = attr_value(&attr),
                                 b"media-type" => media_type = attr_value(&attr),
+                                b"isEmbeded" => {
+                                    is_embedded = attr_value(&attr) != "0";
+                                }
                                 _ => {}
                             }
                         }
                         if !id.is_empty() && !href.is_empty() {
-                            all_items.push((id, href, media_type));
+                            all_items.push((id, href, media_type, is_embedded));
                         }
                     }
                     b"itemref" => {
@@ -79,7 +89,7 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
 
     // spine 순서대로 섹션 파일 추출
     for idref in &spine_order {
-        if let Some((_, href, media_type)) = all_items.iter().find(|(id, _, _)| id == idref) {
+        if let Some((_, href, media_type, _)) = all_items.iter().find(|(id, _, _, _)| id == idref) {
             if media_type == "application/xml" && href.contains("section") {
                 info.section_files.push(href.clone());
             }
@@ -89,19 +99,25 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
     // spine에 없는 섹션도 manifest에서 추출 (fallback)
     if info.section_files.is_empty() {
         let mut section_items: Vec<_> = all_items.iter()
-            .filter(|(_, href, mt)| mt == "application/xml" && href.contains("section"))
+            .filter(|(_, href, mt, _)| mt == "application/xml" && href.contains("section"))
             .collect();
         section_items.sort_by(|a, b| a.1.cmp(&b.1));
-        info.section_files = section_items.into_iter().map(|(_, href, _)| href.clone()).collect();
+        info.section_files = section_items.into_iter().map(|(_, href, _, _)| href.clone()).collect();
     }
 
     // BinData 항목 추출
-    for (id, href, media_type) in &all_items {
-        if href.starts_with("BinData/") || href.contains("/BinData/") {
+    // [Task #873] 기존: BinData/ 폴더 내 항목만 수집 → isEmbeded="0" (외부 file 참조)
+    // image 가 누락되어 HWP3 → HWPX 변환본의 image 가 표시되지 않음.
+    // 정정: media_type 이 image/* 인 모든 item 도 수집.
+    for (id, href, media_type, is_embedded) in &all_items {
+        let is_image = media_type.starts_with("image/");
+        let is_bin_data_path = href.starts_with("BinData/") || href.contains("/BinData/");
+        if is_image || is_bin_data_path {
             info.bin_data_items.push(PackageItem {
                 href: href.clone(),
                 media_type: media_type.clone(),
                 id: id.clone(),
+                is_embedded: *is_embedded,
             });
         }
     }
@@ -152,6 +168,30 @@ mod tests {
         assert_eq!(info.bin_data_items.len(), 2);
         assert_eq!(info.bin_data_items[0].href, "BinData/image1.png");
         assert_eq!(info.bin_data_items[1].id, "image2");
+        // [Task #873] isEmbeded="1" → is_embedded = true
+        assert!(info.bin_data_items[0].is_embedded);
+        assert!(info.bin_data_items[1].is_embedded);
+    }
+
+    #[test]
+    fn test_parse_content_hpf_external_image() {
+        // [Task #873] HWP3 → HWPX 변환본: isEmbeded="0" + 외부 절대 경로
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<opf:package xmlns:opf="http://www.idpf.org/2007/opf/">
+  <opf:manifest>
+    <opf:item id="header" href="Contents/header.xml" media-type="application/xml"/>
+    <opf:item id="image1" href="D:\Work\images\oracle.gif" media-type="image/gif" isEmbeded="0"/>
+    <opf:item id="image2" href="BinData/image2.jpg" media-type="image/jpeg" isEmbeded="1"/>
+    <opf:item id="section0" href="Contents/section0.xml" media-type="application/xml"/>
+  </opf:manifest>
+  <opf:spine><opf:itemref idref="section0"/></opf:spine>
+</opf:package>"#;
+        let info = parse_content_hpf(xml).unwrap();
+        assert_eq!(info.bin_data_items.len(), 2);
+        assert_eq!(info.bin_data_items[0].href, "D:\\Work\\images\\oracle.gif");
+        assert!(!info.bin_data_items[0].is_embedded);
+        assert_eq!(info.bin_data_items[1].href, "BinData/image2.jpg");
+        assert!(info.bin_data_items[1].is_embedded);
     }
 
     #[test]
