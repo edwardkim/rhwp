@@ -1425,10 +1425,13 @@ impl LayoutEngine {
             // 본문) 을 일괄 하향. zone 내부 paragraph 의 trailing_ls 는 영향 없음
             // (y_offset 누적 자체는 유지).
             //
-            // 예외: 마지막 paragraph 가 TAC 헤더 띠 (wrap=TopAndBottom 표) 인 경우 —
-            // pi=81 형식 (페이지 상단 partial header band) 은 ls=480 HU 가 한컴 모델
-            // 상 의도된 표↔본문 간격이므로 제외하면 페이지 3 본문이 추가로 6.4 px
-            // 위로 밀려 over-correction. TAC 헤더 띠 종료 zone 에 한해 trailing_ls 보존.
+            // 예외 (trailing_ls 보존):
+            // 1. TAC 헤더 띠 (wrap=TopAndBottom 표) — pi=81 형식 (페이지 상단 partial
+            //    header band) 의 ls=480 HU 는 한컴 모델 상 의도된 표↔본문 간격.
+            //    제외하면 페이지 3 본문 +6.4 px over-correction.
+            // 2. `<...>` 단독 paragraph (cd=1 spacing=0 + text 가 `<` 로 시작) —
+            //    pi=127 형식의 ls=600 HU (8 px) 도 한컴 의도 간격. 제외하면 페이지 4
+            //    본문 +8 px over-correction (한컴 26.7 px gap → rhwp 16 px).
             let last_para_idx = col_content.items.last()
                 .and_then(|it| match it {
                     PageItem::FullParagraph { para_index } |
@@ -1442,7 +1445,12 @@ impl LayoutEngine {
                     Control::Table(t) if t.common.treat_as_char
                         && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))))
                 .unwrap_or(false);
-            let last_para_trailing_ls = if last_is_tac_band {
+            let last_is_solo_text = last_para
+                .map(|p| p.controls.iter().any(|c| matches!(c,
+                    Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0))
+                    && p.text.trim_start().starts_with('<'))
+                .unwrap_or(false);
+            let last_para_trailing_ls = if last_is_tac_band || last_is_solo_text {
                 0.0
             } else {
                 last_para
