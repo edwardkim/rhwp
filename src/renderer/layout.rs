@@ -1339,13 +1339,12 @@ impl LayoutEngine {
                         prev_zone_sep_y_start, prev_zone_y_end);
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
-                let new_zone_first_para = col_content.items.first().and_then(|it| match it {
+                let new_zone_first_para = col_content.items.first().map(|it| match it {
                     PageItem::FullParagraph { para_index }
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => Some(*para_index),
-                    _ => None,
+                    | PageItem::Shape { para_index, .. } => *para_index,
                 });
                 let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
                 // [Task #866 v2 Stage 2/4] pagination 측 solo_zone_pad 와 동일:
