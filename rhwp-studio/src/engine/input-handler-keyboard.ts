@@ -979,8 +979,38 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
     return;
   }
 
-  // 커맨드 시스템에 없는 직접 처리 (Ctrl+Home/End, Ctrl/Cmd+Arrow 등 커서 이동)
+  // 커맨드 시스템에 없는 직접 처리 (Ctrl/Cmd+Backspace, Ctrl+Home/End, Ctrl/Cmd+Arrow 등)
   switch (e.key.toLowerCase()) {
+    case 'backspace': {
+      e.preventDefault();
+      if (this.cursor.hasSelection()) {
+        this.deleteSelection();
+      } else if (e.metaKey && !e.ctrlKey) {
+        // Cmd+Backspace (macOS): 줄 시작까지 삭제
+        this.cursor.setAnchor();
+        this.cursor.moveToLineStart();
+        if (this.cursor.hasSelection()) this.deleteSelection();
+      } else {
+        // Ctrl+Backspace (Win/Linux): 이전 단어 경계까지 삭제
+        this.cursor.setAnchor();
+        this.cursor.moveToWordBoundary(-1);
+        if (this.cursor.hasSelection()) this.deleteSelection();
+      }
+      break;
+    }
+    case 'delete': {
+      if (!e.ctrlKey) break;
+      e.preventDefault();
+      if (this.cursor.hasSelection()) {
+        this.deleteSelection();
+      } else {
+        // Ctrl+Delete (Win/Linux): 다음 단어 경계까지 삭제
+        this.cursor.setAnchor();
+        this.cursor.moveToWordBoundary(1);
+        if (this.cursor.hasSelection()) this.deleteSelection();
+      }
+      break;
+    }
     case 'home': {
       e.preventDefault();
       if (e.shiftKey) {

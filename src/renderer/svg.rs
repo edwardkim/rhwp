@@ -1452,7 +1452,8 @@ impl SvgRenderer {
         let font_family_str = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            format!("{},sans-serif", style.font_family)
+            let fb = super::generic_fallback(&style.font_family);
+            format!("{},{}", style.font_family, fb)
         };
         let mut font_attrs = format!("font-family=\"{}\" font-size=\"{:.2}\"", escape_xml(&font_family_str), inner_font_size);
         if style.is_visually_bold() { font_attrs.push_str(" font-weight=\"bold\""); }
@@ -1526,7 +1527,8 @@ impl SvgRenderer {
         let font_family_str = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            format!("{},sans-serif", style.font_family)
+            let fb = super::generic_fallback(&style.font_family);
+            format!("{},{}", style.font_family, fb)
         };
         let mut font_attrs = format!("font-family=\"{}\" font-size=\"{:.2}\"", escape_xml(&font_family_str), inner_font_size);
         if style.is_visually_bold() { font_attrs.push_str(" font-weight=\"bold\""); }
