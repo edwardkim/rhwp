@@ -1214,6 +1214,21 @@ impl LayoutEngine {
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
+        // [Task #853/#866] 직전 zone 의 "디자인 spacing"(1단 ColumnDef 의 `간격`, 다단은 0).
+        // 한컴은 zone 전환 시 (이전 zone 디자인 spacing /2)+(새 zone /2) 만큼 세로 여백을
+        // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
+        // pagination 측 process_multicolumn_break 의 동작과 동일 시멘틱.
+        let design_spacing_of = |para_idx: usize| -> f64 {
+            paragraphs.get(para_idx)
+                .and_then(|p| p.controls.iter().find_map(|c| match c {
+                    Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 =>
+                        Some(hwpunit_to_px(cd.spacing as i32, self.dpi)),
+                    Control::ColumnDef(_) => Some(0.0),
+                    _ => None,
+                }))
+                .unwrap_or(0.0)
+        };
+        let mut prev_zone_design_px: f64 = 0.0;
 
         // 다단 레이아웃: body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이
         // (한 단에만 할당되더라도 모든 단에 적용)
@@ -1236,11 +1251,23 @@ impl LayoutEngine {
 
             let is_new_zone = (col_content.zone_y_offset - last_zone_y_offset).abs() > 0.1;
             if is_new_zone {
+                // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
+                let new_zone_first_para = col_content.items.first().and_then(|it| match it {
+                    PageItem::FullParagraph { para_index }
+                    | PageItem::PartialParagraph { para_index, .. }
+                    | PageItem::Table { para_index, .. }
+                    | PageItem::PartialTable { para_index, .. }
+                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                    _ => None,
+                });
+                let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
                 if col_content.zone_y_offset > 0.0 {
-                    current_zone_start_y = prev_zone_y_end;
+                    current_zone_start_y = prev_zone_y_end
+                        + prev_zone_design_px / 2.0 + new_zone_design / 2.0;
                 } else {
                     current_zone_start_y = 0.0;
                 }
+                prev_zone_design_px = new_zone_design;
                 last_zone_y_offset = col_content.zone_y_offset;
             }
 
@@ -1268,6 +1295,32 @@ impl LayoutEngine {
 
             if y_offset > prev_zone_y_end {
                 prev_zone_y_end = y_offset;
+            }
+            // [Task #866] 헤더 띠 zone(wrap=위아래 인 글자처럼-취급 표 보유 + 1단 ColumnDef
+            // 간격=0)의 아래에는 한컴이 표 band 높이만큼 추가 여백을 둔다(한컴 PDF 측정:
+            // shortcut.hwp 2·3쪽 헤더 띠 하단↔본문 ~28~33px). 다음 zone 시작 y 를 그만큼 내림.
+            // ColumnDef 간격>0 인 헤더 띠(1쪽 등)는 그 간격이 이미 zone 여백이 되므로 제외.
+            // (pagination 측 process_multicolumn_break 의 tac_band_extra 와 동일 시멘틱.)
+            if let Some(last_para_idx) = col_content.items.last().and_then(|it| match it {
+                PageItem::Table { para_index, .. } => Some(*para_index),
+                _ => None,
+            }) {
+                if let Some(p) = paragraphs.get(last_para_idx) {
+                    let cd_gap_zero = p.controls.iter().any(|c| matches!(c,
+                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0));
+                    if cd_gap_zero {
+                        if let Some(band) = p.controls.iter().find_map(|c| match c {
+                            Control::Table(t) if t.common.treat_as_char
+                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom) =>
+                                Some(hwpunit_to_px(t.common.height as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)),
+                            _ => None,
+                        }) {
+                            prev_zone_y_end += band;
+                        }
+                    }
+                }
             }
             body_node.children.push(col_node);
         }
