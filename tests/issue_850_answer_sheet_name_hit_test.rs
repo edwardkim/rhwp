@@ -118,3 +118,33 @@ fn issue_850_exam_science_answer_sheet_name_cell_keeps_outer_path() {
     let mut doc = load_sample("exam_science.hwp");
     assert_name_insert_by_path(&mut doc, "exam_science.hwp", 6, &[(6, 0, 3), (0, 1, 0)]);
 }
+
+#[test]
+fn issue_850_exam_social_overlay_images_api_stays_compact_for_input_loop() {
+    let doc = load_sample("exam_social.hwp");
+    let overlay_json = doc
+        .get_page_overlay_images_native(0)
+        .expect("overlay image json");
+    let layer_json = doc
+        .get_page_layer_tree_native(0)
+        .expect("full page layer tree json");
+    let overlay: Value = serde_json::from_str(&overlay_json)
+        .unwrap_or_else(|e| panic!("parse overlay json `{overlay_json}`: {e}"));
+
+    assert_eq!(overlay["behind"].as_array().map(Vec::len), Some(0));
+    assert_eq!(overlay["front"].as_array().map(Vec::len), Some(0));
+    assert!(
+        overlay["imageCount"].as_u64().unwrap_or(0) > 0,
+        "flow images must still be counted for decode retry scheduling: {overlay_json}"
+    );
+    assert!(
+        overlay_json.len() < 128,
+        "input loop overlay JSON must remain compact: len={}, json={overlay_json}",
+        overlay_json.len()
+    );
+    assert!(
+        layer_json.len() > 1_000_000,
+        "test fixture should demonstrate the avoided full layer JSON cost: len={}",
+        layer_json.len()
+    );
+}

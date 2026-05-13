@@ -1453,7 +1453,7 @@ impl DocumentCore {
         }
 
         for &page_num in &pages {
-            let tree = self.build_page_tree(page_num)?;
+            let tree = self.build_page_tree_cached(page_num)?;
             if let Some((pi, x, y, h)) = find_cursor_by_path(
                 &tree.root,
                 parent_para_idx,
@@ -1472,7 +1472,7 @@ impl DocumentCore {
 
         // fallback: 아무 TextRun이라도 찾기
         for &page_num in &pages {
-            let tree = self.build_page_tree(page_num)?;
+            let tree = self.build_page_tree_cached(page_num)?;
             fn find_any_run(
                 node: &RenderNode,
                 parent_para: usize,

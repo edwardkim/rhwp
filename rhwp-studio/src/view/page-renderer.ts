@@ -16,8 +16,15 @@ export interface OverlayImageInfo {
   transform?: { rotation: number; horzFlip: boolean; vertFlip: boolean };
 }
 
+interface OverlayImagesResult {
+  behind: OverlayImageInfo[];
+  front: OverlayImageInfo[];
+  imageCount: number;
+}
+
 export class PageRenderer {
   private reRenderTimers = new Map<number, ReturnType<typeof setTimeout>[]>();
+  private imageRetryCounts = new Map<number, number>();
 
   constructor(private wasm: WasmBridge) {}
 
@@ -28,8 +35,8 @@ export class PageRenderer {
     // 2) overlay (BehindText / InFrontOfText) 는 같은 부모 컨테이너에 <img> 로 추가
     this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow');
     this.drawMarginGuides(pageIdx, canvas, scale);
-    this.applyOverlays(pageIdx, canvas, scale);
-    this.scheduleReRender(pageIdx, canvas, scale);
+    const overlays = this.applyOverlays(pageIdx, canvas, scale);
+    this.scheduleReRender(pageIdx, canvas, scale, overlays.imageCount);
   }
 
   /**
@@ -40,9 +47,9 @@ export class PageRenderer {
    * - mix-blend-mode 로 워터마크 효과 (multiply 등) 적용
    * - pointer-events: none — hit-test 는 Canvas (텍스트) 가 받음
    */
-  private applyOverlays(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  private applyOverlays(pageIdx: number, canvas: HTMLCanvasElement, scale: number): OverlayImagesResult {
     const parent = canvas.parentElement;
-    if (!parent) return;
+    if (!parent) return { behind: [], front: [], imageCount: 0 };
 
     // 페이지 단위 overlay 컨테이너를 Canvas 의 sibling 으로 관리.
     // data-rhwp-overlay-page 속성으로 식별, 페이지 재렌더링 시 갱신.
@@ -55,8 +62,8 @@ export class PageRenderer {
     if (existingBehind) existingBehind.remove();
     if (existingFront) existingFront.remove();
 
-    const { behind, front } = this.getOverlayImages(pageIdx);
-    if (behind.length === 0 && front.length === 0) return;
+    const overlays = this.getOverlayImages(pageIdx);
+    if (overlays.behind.length === 0 && overlays.front.length === 0) return overlays;
 
     // 위치/크기 정합용 공통 정보
     const dpr = scale; // scale = zoom × DPR. CSS 표시 크기 = canvas / dpr
@@ -67,8 +74,8 @@ export class PageRenderer {
     const transform = canvas.style.transform;
 
     // BehindText overlay (Canvas 뒤)
-    if (behind.length > 0) {
-      const layer = this.createOverlayLayer(behind, cssWidth, cssHeight);
+    if (overlays.behind.length > 0) {
+      const layer = this.createOverlayLayer(overlays.behind, cssWidth, cssHeight);
       layer.dataset.rhwpOverlay = `behind-${pageIdx}`;
       layer.style.position = 'absolute';
       layer.style.top = top;
@@ -83,8 +90,8 @@ export class PageRenderer {
     }
 
     // InFrontOfText overlay (Canvas 앞)
-    if (front.length > 0) {
-      const layer = this.createOverlayLayer(front, cssWidth, cssHeight);
+    if (overlays.front.length > 0) {
+      const layer = this.createOverlayLayer(overlays.front, cssWidth, cssHeight);
       layer.dataset.rhwpOverlay = `front-${pageIdx}`;
       layer.style.position = 'absolute';
       layer.style.top = top;
@@ -96,6 +103,7 @@ export class PageRenderer {
       layer.style.zIndex = '2';  // Canvas (z=auto) 보다 앞
       parent.appendChild(layer);
     }
+    return overlays;
   }
 
   /** overlay 레이어 div 를 생성하고 그림 <img> 들을 추가 */
@@ -151,17 +159,32 @@ export class PageRenderer {
   renderPageFlow(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
     this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow');
     this.drawMarginGuides(pageIdx, canvas, scale);
-    this.scheduleReRender(pageIdx, canvas, scale);
+    this.scheduleReRender(pageIdx, canvas, scale, 0);
   }
 
   /**
    * 페이지의 BehindText / InFrontOfText 그림 overlay 정보를 추출한다 (Task #516, Stage 5.2).
    * PageLayerTree JSON 을 파싱하여 wrap = behindText / inFrontOfText 인 image op 만 반환.
    */
-  getOverlayImages(pageIdx: number): { behind: OverlayImageInfo[]; front: OverlayImageInfo[] } {
+  getOverlayImages(pageIdx: number): OverlayImagesResult {
+    const overlayJson = this.wasm.getPageOverlayImages(pageIdx);
+    if (overlayJson) {
+      try {
+        const parsed = JSON.parse(overlayJson);
+        return {
+          behind: Array.isArray(parsed?.behind) ? parsed.behind : [],
+          front: Array.isArray(parsed?.front) ? parsed.front : [],
+          imageCount: typeof parsed?.imageCount === 'number' ? parsed.imageCount : 0,
+        };
+      } catch (e) {
+        console.warn('[PageRenderer] overlay image JSON parse 실패:', e);
+      }
+    }
+
     const json = this.wasm.getPageLayerTree(pageIdx);
     const behind: OverlayImageInfo[] = [];
     const front: OverlayImageInfo[] = [];
+    const imageCount = (json.match(/"type":"image"/g) || []).length;
     try {
       const wrapper = JSON.parse(json);
       // PageLayerTree JSON 의 트리는 wrapper.root 안에 있음.
@@ -173,7 +196,7 @@ export class PageRenderer {
     } catch (e) {
       console.warn('[PageRenderer] PageLayerTree JSON parse 실패:', e);
     }
-    return { behind, front };
+    return { behind, front, imageCount };
   }
 
   /** 편집 용지 여백 가이드라인을 캔버스에 그린다 (4모서리 L자 표시) */
@@ -227,8 +250,16 @@ export class PageRenderer {
    * 아직 디코딩되지 않았을 수 있으므로 점진적 재렌더링한다.
    * 200ms, 600ms 두 번 재시도하여 대부분의 이미지 로드를 커버한다.
    */
-  private scheduleReRender(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  private scheduleReRender(pageIdx: number, canvas: HTMLCanvasElement, scale: number, imageCount: number): void {
+    if (imageCount <= 0) {
+      this.cancelReRender(pageIdx);
+      this.imageRetryCounts.delete(pageIdx);
+      return;
+    }
+    if (this.imageRetryCounts.get(pageIdx) === imageCount) return;
+
     this.cancelReRender(pageIdx);
+    this.imageRetryCounts.set(pageIdx, imageCount);
 
     const delays = [200, 600];
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -260,6 +291,10 @@ export class PageRenderer {
       for (const t of timers) clearTimeout(t);
     }
     this.reRenderTimers.clear();
+  }
+
+  resetImageRetryState(): void {
+    this.imageRetryCounts.clear();
   }
 }
 

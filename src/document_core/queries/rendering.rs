@@ -1,6 +1,7 @@
 //! 렌더링/페이지 정보/구성/페이지네이션/페이지 트리 관련 native 메서드
 
 use std::cell::RefCell;
+use std::fmt::Write as _;
 use crate::model::document::Section;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -32,7 +33,7 @@ impl DocumentCore {
 
     /// 페이지 레이어 트리를 생성하여 반환한다 (native bridge / backend replay용).
     pub fn build_page_layer_tree(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
+        let tree = self.build_page_tree_cached(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: self.show_paragraph_marks,
@@ -391,6 +392,159 @@ impl VlmTarget {
 impl DocumentCore {
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
         Ok(self.build_page_layer_tree(page_num)?.to_json())
+    }
+
+    /// 페이지 overlay 이미지 정보만 작은 JSON으로 반환한다.
+    ///
+    /// Studio는 BehindText/InFrontOfText 그림 overlay 계산을 위해 전체 PageLayerTree JSON을
+    /// 파싱할 필요가 없다. 특히 그림이 본문 layer에만 있는 페이지에서는 빈 overlay 배열과
+    /// imageCount만 반환하여 입력 중 대용량 JSON 직렬화/파싱을 피한다.
+    pub fn get_page_overlay_images_native(&self, page_num: u32) -> Result<String, HwpError> {
+        use base64::Engine;
+        use crate::model::image::ImageEffect;
+        use crate::model::shape::TextWrap;
+        use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
+        use crate::renderer::render_tree::{BoundingBox, ImageNode};
+
+        fn effect_str(value: ImageEffect) -> &'static str {
+            match value {
+                ImageEffect::RealPic => "realPic",
+                ImageEffect::GrayScale => "grayScale",
+                ImageEffect::BlackWhite => "blackWhite",
+                ImageEffect::Pattern8x8 => "pattern8x8",
+            }
+        }
+
+        fn wrap_str(value: TextWrap) -> &'static str {
+            match value {
+                TextWrap::BehindText => "behindText",
+                TextWrap::InFrontOfText => "inFrontOfText",
+                _ => "flow",
+            }
+        }
+
+        fn write_json_str(buf: &mut String, value: &str) {
+            buf.push('"');
+            buf.push_str(&crate::document_core::helpers::json_escape(value));
+            buf.push('"');
+        }
+
+        fn write_bbox(buf: &mut String, bbox: BoundingBox) {
+            let _ = write!(
+                buf,
+                "{{\"x\":{:.3},\"y\":{:.3},\"width\":{:.3},\"height\":{:.3}}}",
+                bbox.x, bbox.y, bbox.width, bbox.height
+            );
+        }
+
+        fn write_overlay_image(
+            buf: &mut String,
+            bbox: BoundingBox,
+            image: &ImageNode,
+            wrap: TextWrap,
+        ) {
+            if !buf.is_empty() {
+                buf.push(',');
+            }
+
+            let mut mime = "application/octet-stream";
+            let mut base64_data = String::new();
+            if let Some(data) = &image.data {
+                let detected = crate::renderer::svg::detect_image_mime_type(data);
+                let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) =
+                    if detected == "image/x-pcx" {
+                        match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if detected == "image/bmp" {
+                        match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else {
+                        (detected, std::borrow::Cow::Borrowed(data.as_slice()))
+                    };
+                mime = final_mime;
+                base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
+            }
+
+            buf.push('{');
+            buf.push_str("\"bbox\":");
+            write_bbox(buf, bbox);
+            buf.push_str(",\"mime\":");
+            write_json_str(buf, mime);
+            buf.push_str(",\"base64\":");
+            write_json_str(buf, &base64_data);
+            buf.push_str(",\"effect\":");
+            write_json_str(buf, effect_str(image.effect));
+            let _ = write!(
+                buf,
+                ",\"brightness\":{},\"contrast\":{},\"wrap\":",
+                image.brightness, image.contrast
+            );
+            write_json_str(buf, wrap_str(wrap));
+
+            let attr = crate::model::image::ImageAttr {
+                brightness: image.brightness,
+                contrast: image.contrast,
+                effect: image.effect,
+                bin_data_id: image.bin_data_id,
+                external_path: None,
+            };
+            if let Some(preset) = attr.watermark_preset() {
+                let _ = write!(buf, ",\"watermark\":{{\"preset\":\"{}\"}}", preset);
+            }
+
+            let _ = write!(
+                buf,
+                ",\"transform\":{{\"rotation\":{:.3},\"horzFlip\":{},\"vertFlip\":{}}}}}",
+                image.transform.rotation, image.transform.horz_flip, image.transform.vert_flip
+            );
+        }
+
+        fn collect(
+            node: &LayerNode,
+            behind: &mut String,
+            front: &mut String,
+            image_count: &mut usize,
+        ) {
+            match &node.kind {
+                LayerNodeKind::Group { children, .. } => {
+                    for child in children {
+                        collect(child, behind, front, image_count);
+                    }
+                }
+                LayerNodeKind::ClipRect { child, .. } => collect(child, behind, front, image_count),
+                LayerNodeKind::Leaf { ops } => {
+                    for op in ops {
+                        if let PaintOp::Image { bbox, image } = op {
+                            *image_count += 1;
+                            match image.text_wrap {
+                                Some(TextWrap::BehindText) => {
+                                    write_overlay_image(behind, *bbox, image, TextWrap::BehindText);
+                                }
+                                Some(TextWrap::InFrontOfText) => {
+                                    write_overlay_image(front, *bbox, image, TextWrap::InFrontOfText);
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let tree = self.build_page_layer_tree(page_num)?;
+        let mut behind = String::new();
+        let mut front = String::new();
+        let mut image_count = 0usize;
+        collect(&tree.root, &mut behind, &mut front, &mut image_count);
+
+        Ok(format!(
+            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{}}}",
+            behind, front, image_count
+        ))
     }
 
     /// 페이지 정보 (네이티브 에러 타입)

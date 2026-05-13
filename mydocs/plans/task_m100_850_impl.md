@@ -181,6 +181,31 @@ cargo test
 - 최종 보고서 승인 요청
 - 작업 브랜치 `local/task850`에 커밋 가능한 상태 정리
 
+### Stage 6 — 성능 후속 정리
+
+작업 내용:
+
+1. `getCursorRectByPath`가 입력마다 uncached page tree를 다시 만드는지 확인한다.
+2. `rhwp-studio` 입력 렌더 루프가 매 입력마다 전체 `getPageLayerTree` JSON을 요청하는지 확인한다.
+3. 불필요한 지연 재렌더 예약 또는 취소가 발생하지 않도록 `PageRenderer` 재시도 조건을 좁힌다.
+4. WASM API와 Studio bridge에 입력 루프용 compact overlay image 조회 경로를 추가한다.
+
+검증 명령:
+
+```bash
+cargo test --test issue_850_answer_sheet_name_hit_test -- --nocapture
+cargo test --test issue_717_table_cell_hit_test -- --nocapture
+cargo test --lib test_task105_nested_table_path_api -- --nocapture
+cd rhwp-studio && npm run build
+docker-compose run --rm wasm
+```
+
+완료 조건:
+
+- `getCursorRectByPath`가 캐시된 page tree 경로를 사용한다.
+- 입력 루프에서 `getPageLayerTree` 1.4MB JSON 대신 compact overlay JSON을 사용한다.
+- 성명 칸 입력 브라우저 검증에서 `홍길동`이 반영되고 `컨트롤 인덱스 0 범위 초과`가 새로 발생하지 않는다.
+
 ## 예상 변경 파일
 
 | 파일 | 변경 종류 | 목적 |
@@ -202,4 +227,3 @@ cargo test
 ## 진행 조건
 
 본 구현 계획서 승인 후 Stage 1 RED 회귀 테스트 작성을 시작한다.
-
