@@ -2441,7 +2441,10 @@ impl TypesetEngine {
         // outer_margin top/bottom)만큼을 표 아래에 추가로 비워둔다(한컴 PDF 측정:
         // shortcut.hwp 2·3쪽 헤더 띠 하단↔본문 ~28~33px). ColumnDef 간격>0 인 헤더 띠(1쪽
         // 등)는 그 간격이 이미 zone 사이 여백이 되므로 제외.
-        let tac_band_extra: f64 = if st.current_zone_design_spacing_px < 0.5 {
+        // [Task #874 Stage 2] design_spacing 조건을 ≤ 1mm(=3.8px) 까지 인정. 페이지 break 후
+        // current_zone_design_spacing_px 가 stale state 로 1mm 남은 경우 (shortcut.hwp 6쪽
+        // pi=210 '도구' 헤더띠 zone cd 가 pi=209 cd=1mm 인 케이스) 도 헤더띠 leaving 으로 식별.
+        let tac_band_extra: f64 = if st.current_zone_design_spacing_px < 4.0 {
             (0..para_idx).rev()
                 .find(|&i| !paragraphs[i].line_segs.is_empty())
                 .and_then(|pi| paragraphs[pi].controls.iter().find_map(|c| match c {

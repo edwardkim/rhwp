@@ -1431,8 +1431,22 @@ impl LayoutEngine {
                 _ => None,
             }) {
                 if let Some(p) = paragraphs.get(last_para_idx) {
-                    let cd_gap_zero = p.controls.iter().any(|c| matches!(c,
-                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0));
+                    // [Task #874 Stage 2] paragraph 자체에 ColumnDef 가 없으면 zone 시작 paragraph
+                    // 까지 거슬러 cd 검사. spacing ≤ 1mm 까지 인정 (shortcut.hwp pi=210 '도구'
+                    // 헤더띠 zone cd 가 pi=209 에 머물고 spacing=1mm 인 케이스).
+                    let cd_gap_zero = if p.controls.iter().any(|c| matches!(c, Control::ColumnDef(_))) {
+                        p.controls.iter().any(|c| matches!(c,
+                            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0))
+                    } else {
+                        (0..last_para_idx).rev()
+                            .find_map(|i| paragraphs.get(i)
+                                .and_then(|pp| pp.controls.iter().find_map(|c| match c {
+                                    Control::ColumnDef(cd) => Some(
+                                        cd.column_count.max(1) <= 1 && cd.spacing <= 283),
+                                    _ => None,
+                                })))
+                            .unwrap_or(false)
+                    };
                     if cd_gap_zero {
                         if let Some(band) = p.controls.iter().find_map(|c| match c {
                             Control::Table(t) if t.common.treat_as_char
