@@ -1416,8 +1416,44 @@ impl LayoutEngine {
                 &body_wide_reserved,
             );
 
-            if y_offset > prev_zone_y_end {
-                prev_zone_y_end = y_offset;
+            // [Task #874 Case 5] zone 의 마지막 paragraph 마지막 라인의 trailing
+            // line_spacing 을 prev_zone_y_end 에 포함하지 않는다. zone 간 gap 은
+            // design_spacing/2 + solo_zone_pad 가 담당하므로 trailing_ls 까지 더하면
+            // 이중 가산. 한컴 PDF 측정 (shortcut.hwp 1쪽): 본문 첫 줄 top 195.3 px
+            // (Hancom) vs 210.7 px (rhwp pre) = +15.4 px (≈11.5pt) 넓다. 제목
+            // paragraph 의 trailing_ls 16 px 이 y_offset 에 포함되어 다음 zone(헤더 띠 +
+            // 본문) 을 일괄 하향. zone 내부 paragraph 의 trailing_ls 는 영향 없음
+            // (y_offset 누적 자체는 유지).
+            //
+            // 예외: 마지막 paragraph 가 TAC 헤더 띠 (wrap=TopAndBottom 표) 인 경우 —
+            // pi=81 형식 (페이지 상단 partial header band) 은 ls=480 HU 가 한컴 모델
+            // 상 의도된 표↔본문 간격이므로 제외하면 페이지 3 본문이 추가로 6.4 px
+            // 위로 밀려 over-correction. TAC 헤더 띠 종료 zone 에 한해 trailing_ls 보존.
+            let last_para_idx = col_content.items.last()
+                .and_then(|it| match it {
+                    PageItem::FullParagraph { para_index } |
+                    PageItem::PartialParagraph { para_index, .. } |
+                    PageItem::Table { para_index, .. } => Some(*para_index),
+                    _ => None,
+                });
+            let last_para = last_para_idx.and_then(|pi| paragraphs.get(pi));
+            let last_is_tac_band = last_para
+                .map(|p| p.controls.iter().any(|c| matches!(c,
+                    Control::Table(t) if t.common.treat_as_char
+                        && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))))
+                .unwrap_or(false);
+            let last_para_trailing_ls = if last_is_tac_band {
+                0.0
+            } else {
+                last_para
+                    .and_then(|p| p.line_segs.last())
+                    .map(|ls| hwpunit_to_px(ls.line_spacing, self.dpi))
+                    .unwrap_or(0.0)
+            };
+            let y_offset_no_trailing = (y_offset - last_para_trailing_ls).max(0.0);
+
+            if y_offset_no_trailing > prev_zone_y_end {
+                prev_zone_y_end = y_offset_no_trailing;
             }
             // [Task #866] 헤더 띠 zone (wrap=위아래 인 글자처럼-취급 표 보유 + 1단 ColumnDef
             // 간격=0) 의 leaving header band flag 갱신. 종전엔 zone 아래에 표 band 높이만큼

@@ -2396,11 +2396,20 @@ impl TypesetEngine {
     ) {
         st.flush_column();
 
+        // [Task #874 Case 5] leaving zone 의 height 계산 시 마지막 라인의 trailing
+        // line_spacing 을 제외한다. zone 간 gap 은 design_spacing/2 + solo_zone_pad 가
+        // 이미 담당하므로 vpos_zone_height 에 trailing_ls 까지 더하면 이중 가산.
+        // 한컴 PDF 측정 (shortcut.hwp 1쪽): 본문 첫 줄 top 195.3 px (Hancom) vs 210.7 px
+        // (rhwp pre) = +15.4 px (≈11.5pt) 넓다. 제목 paragraph 의 trailing_ls 16 px 이
+        // vpos_zone_height 에 포함되어 다음 zone(헤더 띠 + 본문)을 일괄 16 px 하향.
+        // pi=80 (21_언어_기출_편집가능본 test_544) 회귀 없음 — pi=80 은 zone 내부 box
+        // 인접 paragraph 로 trailing_ls 가 layout 의 y_offset 에서 포함됨 (이 변경은 zone
+        // 전환 시의 vpos_zone_height 만 수정).
         let vpos_zone_height = if para_idx > 0 {
             let mut max_vpos_end: i32 = 0;
             for prev_idx in (0..para_idx).rev() {
                 if let Some(last_seg) = paragraphs[prev_idx].line_segs.last() {
-                    let vpos_end = last_seg.vertical_pos + last_seg.line_height + last_seg.line_spacing;
+                    let vpos_end = last_seg.vertical_pos + last_seg.line_height;
                     if vpos_end > max_vpos_end {
                         max_vpos_end = vpos_end;
                     }
