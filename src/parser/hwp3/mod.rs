@@ -1644,13 +1644,26 @@ pub(crate) fn parse_paragraph_list(
                         // 본 환경 HWP3 파서가 line_spacing_ratio (160%) × th (image height)
                         // 기반 계산 → ls=th×0.6 큰 값 → paragraph height 비정상 → 페이지 분할
                         // 위반. TAC 그림 paragraph 시 ls=600 (작은 고정값) 으로 강제.
+                        // [Task #877 Stage 3 v2] sample16 표지 RFP 박스 (Rectangle drawing object,
+                        // treat_as_char=true) 도 TAC 영역에 포함. Picture 이외 ShapeObject
+                        // (Rectangle/Ellipse/Polygon/Line/Arc/Curve/Group) 의 treat_as_char
+                        // 검사 누락으로 ls=th*60% 거대값 → vpos 누적 → 빈 페이지 2 발생.
                         let has_tac_picture = para.controls.iter().any(|c| {
                             match c {
                                 crate::model::control::Control::Picture(p) => p.common.treat_as_char,
                                 crate::model::control::Control::Shape(s) => {
-                                    if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
-                                        p.common.treat_as_char
-                                    } else { false }
+                                    use crate::model::shape::ShapeObject;
+                                    match s.as_ref() {
+                                        ShapeObject::Picture(p) => p.common.treat_as_char,
+                                        ShapeObject::Rectangle(r) => r.common.treat_as_char,
+                                        ShapeObject::Ellipse(e) => e.common.treat_as_char,
+                                        ShapeObject::Polygon(p) => p.common.treat_as_char,
+                                        ShapeObject::Line(l) => l.common.treat_as_char,
+                                        ShapeObject::Arc(a) => a.common.treat_as_char,
+                                        ShapeObject::Curve(c) => c.common.treat_as_char,
+                                        ShapeObject::Group(g) => g.common.treat_as_char,
+                                        _ => false,
+                                    }
                                 }
                                 _ => false,
                             }
