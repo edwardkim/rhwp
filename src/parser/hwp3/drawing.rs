@@ -748,7 +748,19 @@ fn map_to_shape_object(
     let border_line = ShapeBorderLine {
         color: header.basic_attr.line_color,
         width: header.basic_attr.line_width as i32 * HWP3_UNIT_SCALE,
-        attr: header.basic_attr.line_style as u32,
+        // [Task #877 Stage 3] HWP3 drawing line_style = 0 (= "선 종류 없음") 인데
+        // line_width > 0 인 경우 → 실제 한컴 viewer 는 실선으로 표시. (sample16 RFP
+        // 박스 외곽선 회귀: raw line_style=0, line_width=84, line_color=0 검정)
+        // 렌더러 [renderer/layout/utils.rs:163] 의 `attr & 0x3F == 0` 시 외곽선 미표시
+        // 규칙에 맞추기 위해 bit 0..5 = 1 (Solid LineType) 보강.
+        attr: {
+            let raw_attr = header.basic_attr.line_style as u32;
+            if (raw_attr & 0x3F) == 0 && header.basic_attr.line_width > 0 {
+                raw_attr | 0x01
+            } else {
+                raw_attr
+            }
+        },
         outline_style: 0,
     };
 
