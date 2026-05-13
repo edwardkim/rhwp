@@ -56,6 +56,15 @@ pub extern "C" fn rhwp_read_text(input_path: *const c_char, page: i32) -> *mut c
 }
 
 #[no_mangle]
+pub extern "C" fn rhwp_write_text(output_path: *const c_char, text: *const c_char) -> *mut c_char {
+    ffi_result(|| {
+        let output_path = read_utf8(output_path, "output_path")?;
+        let text = read_utf8(text, "text")?;
+        write_text_to_file(Path::new(&output_path), &text)
+    })
+}
+
+#[no_mangle]
 pub extern "C" fn rhwp_string_free(ptr: *mut c_char) {
     if ptr.is_null() {
         return;
@@ -119,6 +128,41 @@ fn read_text(input_path: &Path, target_page: Option<u32>) -> Result<String, Stri
     }
 
     Ok(text_json(page_count, &extracted))
+}
+
+fn write_text_to_file(output_path: &Path, text: &str) -> Result<String, String> {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native()
+        .map_err(|e| format!("빈 HWP 문서 생성 실패 - {}", e))?;
+
+    if !text.is_empty() {
+        doc.insert_text_native(0, 0, 0, text)
+            .map_err(|e| format!("텍스트 삽입 실패 - {}", e))?;
+    }
+
+    let bytes = doc
+        .export_hwp_native()
+        .map_err(|e| format!("HWP 생성 실패 - {}", e))?;
+
+    if let Some(parent) = output_path.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent).map_err(|e| {
+                format!(
+                    "출력 폴더를 생성할 수 없습니다 - {}: {}",
+                    parent.display(),
+                    e
+                )
+            })?;
+        }
+    }
+
+    fs::write(output_path, &bytes)
+        .map_err(|e| format!("HWP 저장 실패 - {}: {}", output_path.display(), e))?;
+
+    let reloaded =
+        HwpDocument::from_bytes(&bytes).map_err(|e| format!("생성 HWP 재검증 실패 - {}", e))?;
+
+    Ok(write_json(reloaded.page_count(), output_path, bytes.len()))
 }
 
 fn export_markdown_to_dir(
@@ -359,6 +403,15 @@ fn text_json(page_count: u32, pages: &[(u32, String)]) -> String {
     )
 }
 
+fn write_json(page_count: u32, output_path: &Path, byte_count: usize) -> String {
+    format!(
+        "{{\"ok\":true,\"pageCount\":{},\"file\":\"{}\",\"byteCount\":{}}}",
+        page_count,
+        json_escape(&output_path.display().to_string()),
+        byte_count
+    )
+}
+
 fn json_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for ch in s.chars() {
@@ -373,4 +426,45 @@ fn json_escape(s: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn write_text_to_file_creates_reloadable_hwp() {
+        let output_dir = unique_temp_dir();
+        let output_path = output_dir.join("created.hwp");
+
+        let result = write_text_to_file(&output_path, "한글 English 123")
+            .expect("write_text_to_file should create HWP bytes");
+
+        assert!(result.contains("\"ok\":true"));
+        assert!(result.contains("\"pageCount\":1"));
+        assert!(result.contains("\"byteCount\":"));
+
+        let data = fs::read(&output_path).expect("created HWP should exist");
+        assert!(data.len() > 512);
+        assert_eq!(&data[0..4], &[0xD0, 0xCF, 0x11, 0xE0]);
+
+        let doc = HwpDocument::from_bytes(&data).expect("created HWP should reload");
+        let text = doc
+            .extract_page_text_native(0)
+            .expect("created HWP should expose page text");
+        assert!(text.contains("한글"));
+        assert!(text.contains("English"));
+        assert!(text.contains("123"));
+
+        let _ = fs::remove_dir_all(output_dir);
+    }
+
+    fn unique_temp_dir() -> PathBuf {
+        let suffix = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock should be after unix epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("rhwp-native-write-{}-{}", std::process::id(), suffix))
+    }
 }

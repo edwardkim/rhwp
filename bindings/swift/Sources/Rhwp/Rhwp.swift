@@ -47,6 +47,18 @@ public struct RhwpDocumentText: Codable, Sendable, Equatable {
     }
 }
 
+public struct RhwpWriteResult: Codable, Sendable, Equatable {
+    public let ok: Bool
+    public let pageCount: Int?
+    public let file: String?
+    public let byteCount: Int?
+    public let error: String?
+
+    public var outputFile: URL? {
+        file.map(URL.init(fileURLWithPath:))
+    }
+}
+
 public enum RhwpError: Error, LocalizedError, Equatable {
     case nativeReturnedNull
     case invalidUTF8
@@ -76,6 +88,17 @@ public enum Rhwp {
             inputFile: inputFile,
             page: page,
             function: rhwp_read_text
+        )
+    }
+
+    public static func writeText(
+        _ text: String,
+        outputFile: URL
+    ) throws -> RhwpWriteResult {
+        try callNativeWrite(
+            outputFile: outputFile,
+            text: text,
+            function: rhwp_write_text
         )
     }
 
@@ -178,5 +201,43 @@ public enum Rhwp {
         }
 
         throw RhwpError.exportFailed(result.error ?? "rhwp read failed.")
+    }
+
+    private static func callNativeWrite(
+        outputFile: URL,
+        text: String,
+        function: (UnsafePointer<CChar>?, UnsafePointer<CChar>?) -> UnsafeMutablePointer<CChar>?
+    ) throws -> RhwpWriteResult {
+        let pointer = outputFile.path.withCString { outputPath in
+            text.withCString { body in
+                function(outputPath, body)
+            }
+        }
+
+        guard let pointer else {
+            throw RhwpError.nativeReturnedNull
+        }
+
+        defer {
+            rhwp_string_free(pointer)
+        }
+
+        guard let payload = String(validatingUTF8: pointer) else {
+            throw RhwpError.invalidUTF8
+        }
+
+        let data = Data(payload.utf8)
+        let result: RhwpWriteResult
+        do {
+            result = try JSONDecoder().decode(RhwpWriteResult.self, from: data)
+        } catch {
+            throw RhwpError.invalidJSON(payload)
+        }
+
+        if result.ok {
+            return result
+        }
+
+        throw RhwpError.exportFailed(result.error ?? "rhwp write failed.")
     }
 }

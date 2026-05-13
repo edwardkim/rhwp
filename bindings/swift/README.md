@@ -5,12 +5,14 @@ Swift wrapper for the shared native ABI in `bindings/Native`.
 The package exposes:
 
 - `Rhwp.readText(inputFile:page:)`
+- `Rhwp.writeText(_:outputFile:)`
 - `Rhwp.exportText(inputFile:outputDirectory:page:)`
 - `Rhwp.exportMarkdown(inputFile:outputDirectory:page:)`
 - `RhwpDocumentTextView(inputFile:page:)` for SwiftUI text display
 
 The export methods return `RhwpExportResult`; direct reads return
-`RhwpDocumentText`. All methods throw `RhwpError` when the native call fails.
+`RhwpDocumentText`; writes return `RhwpWriteResult`. All methods throw
+`RhwpError` when the native call fails.
 
 ## SwiftUI Display
 
@@ -48,6 +50,7 @@ swift test -Xlinker -L../../bindings/Native/target/debug
 ## Examples
 
 `Examples/read_text_ffi.swift` — FFI 직접 호출로 HWP 파일의 텍스트를 읽어 출력하는 예제.
+`Examples/write_text_ffi.swift` — FFI 직접 호출로 단일 문단 HWP 파일을 생성하는 예제.
 
 ```sh
 # 1. 네이티브 라이브러리 빌드
@@ -58,6 +61,12 @@ swift bindings/swift/Examples/read_text_ffi.swift
 
 # 3. 특정 파일 + 특정 페이지
 swift bindings/swift/Examples/read_text_ffi.swift samples/aift.hwp 0
+
+# 4. HWP 생성 예제 (기본 출력: output/ffi-created.hwp)
+swift bindings/swift/Examples/write_text_ffi.swift
+
+# 5. 출력 경로 + 본문 지정
+swift bindings/swift/Examples/write_text_ffi.swift output/hello.hwp "한글 English 123"
 ```
 
 ## XCFramework

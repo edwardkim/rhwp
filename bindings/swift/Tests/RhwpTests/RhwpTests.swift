@@ -49,6 +49,25 @@ final class RhwpTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.outputFiles[0].path))
     }
 
+    func testWriteTextCreatesReloadableHwp() throws {
+        let outputFile = FileManager.default.temporaryDirectory
+            .appendingPathComponent("rhwp-swift-\(UUID().uuidString)")
+            .appendingPathComponent("created.hwp")
+
+        let result = try Rhwp.writeText("한글 English 123", outputFile: outputFile)
+
+        XCTAssertTrue(result.ok)
+        XCTAssertEqual(result.outputFile, outputFile)
+        XCTAssertEqual(result.pageCount, 1)
+        XCTAssertGreaterThan(result.byteCount ?? 0, 512)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: outputFile.path))
+
+        let document = try Rhwp.readText(inputFile: outputFile, page: .index(0))
+        XCTAssertTrue(document.text.contains("한글"))
+        XCTAssertTrue(document.text.contains("English"))
+        XCTAssertTrue(document.text.contains("123"))
+    }
+
     private func repoRoot() -> URL {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
