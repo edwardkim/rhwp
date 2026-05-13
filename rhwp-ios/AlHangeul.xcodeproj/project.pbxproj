@@ -121,7 +121,6 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					5D95FFCC81A27C7524AE135E = {
-						DevelopmentTeam = FSFG3AQ4KZ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -241,7 +240,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = FSFG3AQ4KZ;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -254,7 +252,7 @@
 					"-framework Security",
 					"-framework CoreFoundation",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.edwardkim.alhangeul;
+				PRODUCT_BUNDLE_IDENTIFIER = org.rhwp.alhangeul;
 				PRODUCT_NAME = "알한글";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/rhwp-Bridging-Header.h";
@@ -268,7 +266,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = FSFG3AQ4KZ;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -281,7 +278,7 @@
 					"-framework Security",
 					"-framework CoreFoundation",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.edwardkim.alhangeul;
+				PRODUCT_BUNDLE_IDENTIFIER = org.rhwp.alhangeul;
 				PRODUCT_NAME = "알한글";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/rhwp-Bridging-Header.h";

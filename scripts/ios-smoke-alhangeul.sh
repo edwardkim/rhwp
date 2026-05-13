@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_PATH="$ROOT_DIR/rhwp-ios/AlHangeul.xcodeproj"
 DERIVED_DATA="$ROOT_DIR/rhwp-ios/DerivedData"
 APP_PATH="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/알한글.app"
-BUNDLE_ID="com.edwardkim.alhangeul"
+BUNDLE_ID="org.rhwp.alhangeul"
 SCREENSHOT_PATH="$ROOT_DIR/output/ios-smoke/alhangeul-sample.png"
 
 find_simulator_id() {
