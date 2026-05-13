@@ -51,6 +51,27 @@ function hasCurrentRhwpClipboardMarker(self: any, html: string): boolean {
   return !!token && token === self.rhwpClipboardToken;
 }
 
+function isNestedCellPosition(pos: DocumentPosition): boolean {
+  return pos.parentParaIndex !== undefined && (pos.cellPath?.length ?? 0) > 1;
+}
+
+function pastePlainText(this: any, text: string, hasSelection: boolean): void {
+  if (hasSelection) {
+    this.deleteSelection();
+  }
+  if (!text) return;
+
+  const lines = text.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i]) {
+      this.executeOperation({ kind: 'command', command: new InsertTextCommand(this.cursor.getPosition(), lines[i]) });
+    }
+    if (i < lines.length - 1 && !this.cursor.isInCell()) {
+      this.executeOperation({ kind: 'command', command: new SplitParagraphCommand(this.cursor.getPosition()) });
+    }
+  }
+}
+
 export function prepareRhwpInternalClipboardHtml(self: any, html: string, text = ''): string {
   const token = createRhwpClipboardToken();
   self.rhwpClipboardToken = token;
@@ -1379,6 +1400,11 @@ export function onPaste(this: any, e: ClipboardEvent): void {
 
   // 외부 클립보드: HTML이 있으면 pasteHtml로 표/서식 보존 붙여넣기
   if (html) {
+    if (isNestedCellPosition(this.cursor.getPosition()) && text) {
+      pastePlainText.call(this, text, hasSelection);
+      return;
+    }
+
     this.executeOperation({ kind: 'snapshot', operationType: 'pasteHtml', operation: (wasm: WasmBridge) => {
       if (hasSelection) this.deleteSelection();
       const p = this.cursor.getPosition();
@@ -1412,21 +1438,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
   }
 
   // 플레인 텍스트 붙여넣기 (fallback — 기존 InsertTextCommand 사용, 정밀 undo 유지)
-  if (hasSelection) {
-    this.deleteSelection();
-  }
-  if (!text) return;
-
-  // 줄 단위로 분리하여 InsertText + SplitParagraph 순차 실행
-  const lines = text.split(/\r?\n/);
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i]) {
-      this.executeOperation({ kind: 'command', command: new InsertTextCommand(this.cursor.getPosition(), lines[i]) });
-    }
-    if (i < lines.length - 1 && !this.cursor.isInCell()) {
-      this.executeOperation({ kind: 'command', command: new SplitParagraphCommand(this.cursor.getPosition()) });
-    }
-  }
+  pastePlainText.call(this, text, hasSelection);
 }
 
 /** 클립보드의 이미지 파일을 커서 위치에 삽입한다. */
