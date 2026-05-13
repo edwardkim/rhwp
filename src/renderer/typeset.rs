@@ -2438,8 +2438,19 @@ impl TypesetEngine {
         } else {
             0.0
         };
+        // [Task #866 v2] 1단/간격=0 zone(헤더 띠 / `<...>` 소제목) 진입 또는 그런 zone 에서의
+        // 이탈 시 한컴은 ~한 본문 줄(=1200 HU ≈ 16px) 추가 여백을 둔다(한컴 PDF 측정:
+        // shortcut.hwp 2쪽 `저장하기`↔`<미리 보기 상태에서>` ~32px, `<미리 보기>`↔`편집 용지`
+        // ~40px — 현 ~21px). design spacing > 0 인 1단 zone(pi=1 형, 10mm) 은 그 간격이 이미
+        // 여백이라 제외. 2단 ↔ 2단 전환에는 적용 안 함(영향: shortcut.hwp 한정).
+        let entering_solo_zero = paragraphs[para_idx].controls.iter().any(|c| matches!(c,
+            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0));
+        let leaving_solo_zero = st.col_count <= 1 && st.current_zone_design_spacing_px < 0.5;
+        let solo_zone_pad = if entering_solo_zero || leaving_solo_zero {
+            hwpunit_to_px(1200, self.dpi)
+        } else { 0.0 };
         let candidate_offset = st.current_zone_y_offset + vpos_zone_height + tac_band_extra
-            + st.current_zone_design_spacing_px / 2.0 + new_ds / 2.0;
+            + st.current_zone_design_spacing_px / 2.0 + new_ds / 2.0 + solo_zone_pad;
 
         // [Task #853] 새 zone 이 현재 페이지 하단 가까이(여유 ≲ 헤더 띠 1개 높이)에서 시작하면
         // 그 zone 의 콘텐츠(헤더 띠 ~47px 또는 본문 줄들)가 body 하단을 넘어 렌더되므로 다음

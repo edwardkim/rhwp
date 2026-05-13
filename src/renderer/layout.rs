@@ -1305,6 +1305,7 @@ impl LayoutEngine {
                 .unwrap_or(0.0)
         };
         let mut prev_zone_design_px: f64 = 0.0;
+        let mut prev_zone_was_solo: bool = false;
 
         // 다단 레이아웃: body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이
         // (한 단에만 할당되더라도 모든 단에 적용)
@@ -1337,13 +1338,28 @@ impl LayoutEngine {
                     _ => None,
                 });
                 let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
+                // [Task #866 v2] pagination 측 process_multicolumn_break 의 solo_zone_pad 와 동일:
+                // 1단/간격=0 zone(헤더 띠 / `<...>` 소제목) 진입·이탈 시 ~16px(=1200 HU) 추가.
+                let new_zone_is_solo_zero = new_zone_first_para.and_then(|pi| {
+                    paragraphs.get(pi).map(|p| p.controls.iter().any(|c| matches!(c,
+                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0)))
+                }).unwrap_or(false);
+                let prev_zone_is_solo_zero = prev_zone_design_px < 0.5 && prev_zone_was_solo;
+                let solo_zone_pad = if new_zone_is_solo_zero || prev_zone_is_solo_zero {
+                    hwpunit_to_px(1200, self.dpi)
+                } else { 0.0 };
                 if col_content.zone_y_offset > 0.0 {
                     current_zone_start_y = prev_zone_y_end
-                        + prev_zone_design_px / 2.0 + new_zone_design / 2.0;
+                        + prev_zone_design_px / 2.0 + new_zone_design / 2.0 + solo_zone_pad;
                 } else {
                     current_zone_start_y = 0.0;
                 }
                 prev_zone_design_px = new_zone_design;
+                prev_zone_was_solo = new_zone_is_solo_zero || (new_zone_design > 0.5
+                    && new_zone_first_para.and_then(|pi| paragraphs.get(pi))
+                        .map(|p| p.controls.iter().any(|c| matches!(c,
+                            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1)))
+                        .unwrap_or(false));
                 last_zone_y_offset = col_content.zone_y_offset;
             }
 
