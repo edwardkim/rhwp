@@ -19,6 +19,13 @@ paint style is fill-only. Native Skia deliberately keeps using the `TextRun`
 fallback in P12 because exact blob-backed typeface construction is not wired
 yet.
 
+P13 closes the first diagnostics layer for this contract. The export is still
+schema v1 and still keeps `TextRun` fallback as the replay baseline, but it now
+also reports `textV2` compatibility diagnostics: slot-level variant state,
+structured validation issues, the v1 downgrade path, fallback-free profile
+guards, and line-break risk telemetry for text runs whose shaped replay could
+affect layout-sensitive behavior.
+
 ## Export Contract
 
 Layer JSON now provides additive text metadata:
@@ -41,6 +48,13 @@ Layer JSON now provides additive text metadata:
 - `fontResources`, an additive table for font blob/face identity.
 - Optional `GlyphRun` sidecar ops with `variant`, `shapeKey`, glyph ids,
   glyph positions, shaped clusters, and replay diagnostics.
+- `textV2`, an additive diagnostics object with:
+  - `compatibilityProfile`, currently `v1Compat` for normal exports.
+  - `fallbackRequired`, which stays true for the v1 compatibility writer.
+  - `downgradePath=schemaV1FlattenedTextRunAndGlyphRun`.
+  - `slotDiagnostics`, one entry per v1 text variant group.
+  - `validationIssues`, using stable issue codes and severity.
+  - `lineBreakRisks`, report-only telemetry for complex text runs.
 
 The explicit visual ops are additive. Existing renderers skip them and keep
 drawing the paired `TextRun` mirror, so visual output does not double-paint.
@@ -70,6 +84,18 @@ fallback instead.
   but native Skia selection remains disabled until it can instantiate the exact
   referenced font blob/face. Normal layer lowering still emits `TextRun` only
   unless a shaping pass explicitly inserts glyph alternatives.
+- P13 `textV2` diagnostics are additive and report-only for normal exports.
+  They must not change renderer output or make `GlyphRun` the canonical path.
+- A fallback-free text profile is only valid when every text variant slot has a
+  strict visual variant. In schema v1 the default writer still exports the
+  fallback, and the fallback-free profile is only exposed as a guard/validator.
+- `slotDiagnostics.strictVariantAvailable` requires exact or position-adjusted
+  quality, strict visual eligibility, replayable font eligibility, no missing
+  glyphs, no cluster mismatch, and no unsplit fallback-font use.
+- `lineBreakRisks` is explanatory telemetry. It marks cases such as char
+  overlap, vertical/rotated text, ratio/spacing changes, tab leaders, visible
+  text effects, field markers, and explicit line/paragraph-end markers. It is
+  not a layout decision source.
 - Canvas2D/layered SVG keep using the `TextRun` fallback and ignore glyph
   sidecars.
 - Glyph ids require portable font identity. Consumers must not replay glyph ids
@@ -81,4 +107,5 @@ fallback instead.
 - Add CanvasKit glyph replay behind the same variant gate.
 - Add native glyph outline replay behind a separate strict visual variant.
 - Add resource table entries for font blobs and face identity.
-- Promote renderer diagnostics once glyph alternatives exist.
+- Promote renderer diagnostics from report-only to backend selection telemetry
+  once CanvasKit/native glyph alternatives are actually consumed.
