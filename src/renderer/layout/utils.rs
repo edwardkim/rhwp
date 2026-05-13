@@ -176,6 +176,13 @@ pub(crate) fn drawing_to_shape_style(drawing: &crate::model::shape::DrawingObjAt
         stroke_width = 0.5; // 최소 0.5px (0.12mm 한컴 기본값)
         stroke_color = Some(border.color);
     }
+    // [Task #877 Stage 4] 점선 (LineType=2~7) 의 가시성 보강.
+    // sample16 paragraph 393 본문 점선 외곽선 width=56 HU (0.747 px) 가
+    // 점선 dash gap 으로 시각 인식 어려움. 점선 종류만 최소 1.0 px 보강 (실선 width
+    // 는 SVG snapshot 회귀 방지로 영향 안 줌).
+    if (2..=7).contains(&shape_line_type) && stroke_width > 0.0 && stroke_width < 1.0 {
+        stroke_width = 1.0;
+    }
 
     // stroke dash 매핑 (hwplib LineType 참조)
     // 0=None, 1=Solid, 2=Dash, 3=Dot, 4=DashDot, 5=DashDotDot,
