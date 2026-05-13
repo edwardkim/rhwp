@@ -3,7 +3,8 @@
 Target branch: `ios/devel`
 
 This file tracks the Swift/iOS writer lane. Check an item only when the named
-test, script, or manual gate exists and the result is recorded in the PR.
+test, script, or manual gate exists and the result is recorded here or in the
+PR.
 
 ## Direction
 
@@ -28,7 +29,8 @@ test, script, or manual gate exists and the result is recorded in the PR.
   `src/serializer/cfb_writer.rs::serialize_hwp`.
 - [x] WASM already exposes the writer as `HwpDocument.exportHwp()` and
   verification metadata as `HwpDocument.exportHwpVerify()`.
-- [ ] iOS simulator runtime smoke for the Swift package is recorded.
+- [x] iOS simulator runtime smoke for the AlHangeul app is reproducible through
+  `scripts/ios-smoke-alhangeul.sh`.
 - [ ] HWP writer API for Swift/iOS has a byte-returning native ABI.
 
 ## Milestone -1: Baseline Inventory
@@ -52,18 +54,24 @@ without depending on the production app flow.
 
 - [ ] Add a small iOS smoke target or clearly separated smoke screen under
   `rhwp-ios`.
-- [ ] Build the native library for Apple Silicon simulator in a script.
-- [ ] Launch the smoke app on an iOS simulator and render the result of
-  `rhwp_read_text` from a bundled sample.
-- [ ] Save the reproduction command in `scripts/`.
+- [x] Build the native library for Apple Silicon simulator in a script.
+- [x] Launch the smoke app on an iOS simulator and render a bundled HWPX sample
+  through the native iOS FFI path.
+- [x] Save the reproduction command in `scripts/`.
 - [ ] Record the simulator, command, and result in the PR body.
 
 Suggested first proof:
 
 ```sh
-cargo build --target aarch64-apple-ios-sim --release
-scripts/ios-smoke-read.sh
+scripts/ios-smoke-alhangeul.sh
 ```
+
+Latest local proof:
+
+- Date: 2026-05-13
+- Simulator: iPhone 17, iOS 26.5 (`566832F4-2C84-4145-8D73-1CEEDA1B9B4E`)
+- Result: `sample.hwpx` bundled, app launched, screenshot showed page `1 / 70`
+  rendered.
 
 ## Milestone 1: HWP Writer Red Tests
 
