@@ -1103,11 +1103,11 @@ impl LayoutEngine {
             // 8+ (이중선/물결 등) 은 Solid 대체.
             let dash = match layout.separator_type {
                 2 => StrokeDash::Dash,
-                3 | 6 | 7 => StrokeDash::Dot,  // 3=점선; 6/7 = 한컴 점선 변형(굵은 점/얇은 점)
+                3 => StrokeDash::Dot,
                 4 => StrokeDash::DashDot,
                 5 => StrokeDash::DashDotDot,
-                6 => StrokeDash::Dash,       // LongDash → Dash 근사
-                7 => StrokeDash::Dot,        // Circle(원형 점선) → Dot
+                6 => StrokeDash::Dash,       // LongDash → Dash 근사 (PR #843)
+                7 => StrokeDash::Dot,        // Circle(원형 점선) → Dot (PR #843)
                 _ => StrokeDash::Solid,
             };
             for i in 0..layout.column_areas.len() - 1 {
@@ -1467,9 +1467,11 @@ impl LayoutEngine {
         let line_width = border_width_to_px(zone_layout.separator_width).max(0.5);
         let dash = match zone_layout.separator_type {
             2 => StrokeDash::Dash,
-            3 | 6 | 7 => StrokeDash::Dot,
+            3 => StrokeDash::Dot,
             4 => StrokeDash::DashDot,
             5 => StrokeDash::DashDotDot,
+            6 => StrokeDash::Dash,
+            7 => StrokeDash::Dot,
             _ => StrokeDash::Solid,
         };
         for i in 0..zone_layout.column_areas.len() - 1 {
