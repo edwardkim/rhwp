@@ -158,10 +158,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     height,
                     width,
                 );
@@ -184,10 +186,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     height,
                     width,
                 );
@@ -233,10 +237,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     height,
                     width,
                 );
@@ -259,10 +265,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     height,
                     width,
                 );
@@ -308,10 +316,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     dest_height,
                     dest_width,
                 );
@@ -334,10 +344,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     dest_height,
                     dest_width,
                 );
@@ -397,10 +409,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     dest_height,
                     dest_width,
                 );
@@ -423,10 +437,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
+                let pt = self.context_current
+                    .point_s_to_absolute_point(&PointS { x: x_dest, y: y_dest });
                 let mut operator = TernaryRasterOperator::new(
                     raster_operation,
-                    x_dest,
-                    y_dest,
+                    pt.x,
+                    pt.y,
                     dest_height,
                     dest_width,
                 );
@@ -472,10 +488,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
             ..
         } = record;
 
+        let pt = self.context_current
+            .point_s_to_absolute_point(&PointS { x: x_dst, y: y_dst });
         let mut operator = TernaryRasterOperator::new(
             raster_operation,
-            x_dst,
-            y_dst,
+            pt.x,
+            pt.y,
             dest_height,
             dest_width,
         );
@@ -2322,11 +2340,19 @@ fn element_max_x(elem: &Node) -> Option<i32> {
 }
 
 /// [Task #860] Node 의 y+height attribute 합산 (viewBox 자동 확장용).
+/// [Task #864] text 는 height 미보유 → font-size 사용.
 fn element_max_y(elem: &Node) -> Option<i32> {
     let s = elem.to_string();
     let y = parse_attr_i32(&s, "y").unwrap_or(0);
     let h = parse_attr_i32(&s, "height").unwrap_or(0);
-    if h > 0 { Some(y + h) } else { None }
+    if h > 0 { return Some(y + h); }
+    // text element: y + font-size (approx)
+    if s.starts_with("<text ") {
+        if let Some(fs) = parse_attr_i32(&s, "font-size") {
+            return Some(y + fs);
+        }
+    }
+    None
 }
 
 /// [Task #860 Stage D] Node 의 x attribute (viewBox 위쪽 확장 용).

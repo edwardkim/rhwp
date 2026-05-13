@@ -273,10 +273,11 @@ impl Window {
     }
 
     pub fn as_view_box(&self) -> (i16, i16, i16, i16) {
-        // [Task #860 Stage D] WMF Placeable BoundingBox 또는 SetWindowOrg 의 origin
-        // 을 viewBox 시작점으로 사용. 종전 (0, 0) 사용 시 logical origin 이 (329, 1536)
-        // 같은 sample 에서 element y 좌표가 viewBox 밖으로 나가 시각 어긋남
-        // (HWP3 sample14: 박스 위/캡션 아래 가 한컴과 반대).
-        (self.origin_x, self.origin_y, self.x.abs(), self.y.abs())
+        // [Task #864] element 좌표는 모두 `point_s_to_absolute_point` 로 origin-relative
+        // (device coord) 변환됨. image (TernaryRasterOperator) 도 호출 측에서 동일하게
+        // 변환 (Task #864). viewBox 도 이 device 공간 (0, 0, ext_x, ext_y) 으로 정합.
+        // (Task #860 Stage D 의 (origin_x, origin_y, ...) 변경 revert — image 와 text
+        // 의 좌표 공간이 mismatch 였던 본질을 정정.)
+        (0, 0, self.x.abs(), self.y.abs())
     }
 }
