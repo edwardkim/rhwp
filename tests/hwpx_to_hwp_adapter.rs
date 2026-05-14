@@ -449,6 +449,41 @@ fn task888_expense_report_page_border_fills_survive_hwp_save_reload() {
     assert_eq!(section_def.extra_page_border_fills[1].border_fill_id, 3);
 }
 
+#[test]
+fn task899_business_overview_cell_backgrounds_use_no_pattern() {
+    let bytes = load_sample("business_overview.hwpx");
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드 실패");
+    let doc = core.document();
+
+    for border_fill_id in [5_u16, 6, 7] {
+        let border_fill = doc
+            .doc_info
+            .border_fills
+            .get((border_fill_id - 1) as usize)
+            .unwrap_or_else(|| panic!("BorderFill #{} 없음", border_fill_id));
+        assert!(
+            matches!(border_fill.fill.fill_type, FillType::Solid),
+            "BorderFill #{} must be solid fill",
+            border_fill_id
+        );
+        let solid = border_fill
+            .fill
+            .solid
+            .as_ref()
+            .unwrap_or_else(|| panic!("BorderFill #{} solid fill 없음", border_fill_id));
+        assert!(
+            solid.background_color != 0xffff_ffff,
+            "BorderFill #{} must preserve faceColor",
+            border_fill_id
+        );
+        assert_eq!(
+            solid.pattern_type, -1,
+            "BorderFill #{} has faceColor but no hatchStyle; HWP save must encode no-pattern as -1",
+            border_fill_id
+        );
+    }
+}
+
 // ============================================================
 // Stage 4 — lineseg lh/vpos 사전계산 + SectionDef 컨트롤 삽입 검증
 // ============================================================
