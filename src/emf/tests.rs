@@ -709,7 +709,13 @@ fn parses_stretch_di_bits_and_emits_image() {
     let svg = convert_to_svg(&b, (0.0, 0.0, 100.0, 100.0)).expect("convert");
     assert!(svg.contains("<image "));
     assert!(svg.contains("x=\"10\" y=\"20\" width=\"40\" height=\"50\""));
-    assert!(svg.contains("href=\"data:image/bmp;base64,"));
+    // [Task #860] BMP → PNG 변환 후 embed (SVG renderer 의 BMP URI 미지원).
+    // BMP decode 실패 시 fallback 으로 BMP URI 유지 (graceful degradation).
+    assert!(
+        svg.contains("href=\"data:image/png;base64,")
+            || svg.contains("href=\"data:image/bmp;base64,"),
+        "expected PNG (or BMP fallback) data URI"
+    );
 }
 
 #[test]

@@ -1987,6 +1987,18 @@ impl LayoutEngine {
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
                                     );
                                     line_node.children.push(img_node);
+                                    // [Task #864 Stage G] inline TAC picture 의 위치 등록.
+                                    // layout.rs 의 TAC inline branch (line ~2906) 가
+                                    // already_registered 체크로 중복 emit 방지하나, 기존
+                                    // paragraph_layout 은 picture 에 대해 register 누락
+                                    // → layout.rs branch 가 또 emit 하여 동일 picture 가
+                                    // 두 위치 (top-aligned + baseline-aligned) 에 그려짐.
+                                    // HWP3 sample14 에서 caption 이 duplicate image 에 가려져
+                                    // 보이지 않던 결함 정정.
+                                    tree.set_inline_shape_position(
+                                        section_index, para_index, tac_ci,
+                                        cell_ctx.as_ref(), x, img_y,
+                                    );
                                 }
                             }
                         }

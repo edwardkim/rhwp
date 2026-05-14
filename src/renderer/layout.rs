@@ -3326,10 +3326,19 @@ impl LayoutEngine {
                             use crate::model::shape::CaptionDirection;
                             let caption_spacing = hwpunit_to_px(caption.spacing as i32, self.dpi);
                             let caption_h = self.calculate_caption_height(&pic.caption, styles);
+                            // [Task #864 Stage E v2] paragraph_layout 가 inline TAC image 를
+                            // baseline-aligned (y = pic_y + baseline - pic_h) 위치에 emit
+                            // 함. caption 은 image 바로 아래 (image_bottom = pic_y + baseline)
+                            // 에 위치해야 함. 기존 pic_y + pic_h 사용 시 image 영역 안에
+                            // 그려져 가려짐.
+                            let baseline_px = para.line_segs.first()
+                                .map(|ls| hwpunit_to_px(ls.baseline_distance, self.dpi))
+                                .unwrap_or(pic_h);
+                            let image_bottom = pic_y + baseline_px.max(pic_h);
                             let cap_y = match caption.direction {
-                                CaptionDirection::Bottom => pic_y + pic_h + caption_spacing,
+                                CaptionDirection::Bottom => image_bottom + caption_spacing,
                                 CaptionDirection::Top => pic_y,
-                                _ => pic_y + pic_h + caption_spacing,
+                                _ => image_bottom + caption_spacing,
                             };
                             if caption.direction == CaptionDirection::Top {
                                 let dy = caption_h + caption_spacing;
@@ -3350,6 +3359,17 @@ impl LayoutEngine {
                                 &mut self.auto_counter.borrow_mut(),
                                 Some(cell_ctx),
                             );
+                            // [Task #864 Stage F] caption 이 차지한 영역까지 result_y 진행.
+                            // 미진행 시 다음 paragraph 가 caption 위에 그려져 겹침
+                            // (HWP3 sample14 page 4 "Visual Block을 이용한 대소문자 변경"
+                            // 가 본문 "먼저 원하는 구간을..." 와 겹침). Bottom 만 진행 (Top
+                            // 은 위에서 offset_inline_image_y 로 image 전체를 밀어서 처리).
+                            if matches!(caption.direction, CaptionDirection::Bottom) {
+                                let cap_bottom = cap_y + caption_h;
+                                if cap_bottom > result_y {
+                                    result_y = cap_bottom;
+                                }
+                            }
                         }
                     } else {
                         let is_paper_based = (pic.common.vert_rel_to == VertRelTo::Paper || pic.common.vert_rel_to == VertRelTo::Page)

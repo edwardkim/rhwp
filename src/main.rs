@@ -2005,6 +2005,11 @@ fn dump_controls(args: &[String]) {
                             prefix, pic.crop.left, pic.crop.top, pic.crop.right, pic.crop.bottom,
                             pic.crop.left as f64 / 7200.0 * 25.4, pic.crop.top as f64 / 7200.0 * 25.4,
                             pic.crop.right as f64 / 7200.0 * 25.4, pic.crop.bottom as f64 / 7200.0 * 25.4);
+                        if let Some(ref cap) = pic.caption {
+                            let cap_text: String = cap.paragraphs.iter().map(|p| p.text.clone()).collect::<Vec<_>>().join("|");
+                            println!("{}  caption: dir={:?} width={} paras={} text={:?}",
+                                prefix, cap.direction, cap.width, cap.paragraphs.len(), cap_text);
+                        }
                         dump_common(&pic.common, "  ");
                     }
                     Control::Header(h) => {
