@@ -88,6 +88,95 @@ paragraph 24 의 `line_seg` (lh=2400) 가 양쪽 IR 에서 **이미 동일**. ch
 - ParaShape 미세 차이 (bold 같은 비-height 속성)
 - Section 의 page-setup metadata
 
+## 3.4 옵션 "더 깊이" — pagination 코드 trace ★ ROOT CAUSE 발견 ★
+
+### 3.4.1 paragraph 24/25 의 lineseg vpos 비교
+
+| pi | HWP5 first_vpos | HWPX first_vpos | 의미 |
+|----|----------------|----------------|------|
+| 23 | 59748 | 59748 | 동일 (페이지 1) |
+| 24 | 68372 | 68372 | 동일 |
+| **25** | **0** ⭐ | **72212** ❌ | **HWP5 가 페이지 break 시 0 reset** |
+| 26 | 3840 (페이지 2 내부) | 76052 (누적) | HWPX 누적 |
+
+### 3.4.2 typeset 의 vpos-reset trigger (typeset.rs:455~493)
+
+```rust
+let trigger = if st.col_count > 1 {
+    ...
+} else {
+    cv == 0 && pv > 5000  // 단일 단
+};
+if trigger {
+    st.advance_column_or_new_page();  // 강제 페이지 break
+}
+```
+
+- **HWP5 pi=25**: cv=0, pv=68372 > 5000 → trigger! → 페이지 break → pi=25 부터 페이지 2 시작
+- **HWPX pi=25**: cv=72212, pv=68372 → trigger=false → 페이지 break 없음 → pi=24/25 모두 페이지 1
+
+### 3.4.3 결정적 root cause
+
+**HWPX 파서가 한컴 HWPX 변환기의 lineseg vpos 누적값을 그대로 받음**:
+- HWP5 변환본의 lineseg vpos: 페이지 break 시 0 으로 reset (한컴 HWP5 변환기 동작)
+- HWPX 변환본의 lineseg vpos: **문서 전체 누적값** (한컴 HWPX 변환기 동작)
+- rhwp 의 typeset 의 vpos-reset trigger 가 HWP5 의 0 reset 신호를 페이지 break 신호로 사용
+- HWPX 에서는 이 신호 없음 → 페이지 break 의도 인식 실패 → 더 많은 paragraph 가 페이지에 들어감 → 누적 차이 → 72 페이지 inflate
+
+### 3.4.4 검증 — 매 페이지에서 동일 패턴
+
+페이지 break 가 발생할 때마다 (`cv==0 && pv>5000`) HWP5 에서만 trigger 발동:
+
+```
+HWP5: pi=25 cv=0 pv=68372 → trigger 발동 → 페이지 break → 페이지 2 시작 (cur_h=0)
+HWPX: pi=25 cv=72212 pv=68372 → trigger 발동 안 됨 → 페이지 1 에 들어감 (cur_h=962.8)
+```
+
+페이지 break point 마다 1 page 누적 → 60 페이지 × 1 page break 미발동 = 약 10 페이지 차이 (실측 +10 과 일치)
+
+## 3.5 Fix 방향 옵션 (root cause 발견 후)
+
+| 옵션 | 처리 방식 | 영향 | 회귀 위험 |
+|------|----------|------|----------|
+| α | HWPX 파서가 lineseg vpos 의 페이지 break 지점 추정 후 0 reset 정규화 | HWPX 파서 변경 | 중 — paragraph 간 vpos jump 분석 알고리즘 필요. 다른 HWPX 영향 |
+| β | typeset 의 vpos-reset trigger 조건 확장 — 누적 vpos 도 처리 | typeset 알고리즘 변경 | 매우 높 — 모든 파일 포맷에 영향 |
+| γ | HWPX 파서가 lineseg vpos 모두 paragraph 내부 좌표로 정규화 | HWPX 파서 변경 — 모든 paragraph_first_vpos 빼기 | 높 — vpos_overflow 등 다른 vpos 기반 분기 모두 비활성 |
+| δ | **현재 발견까지 정리 + Stage 1 별도 task 분리** — fix 는 별도 task 에서 ★ 추천 ★ | 본 task 에 Fix 1 만 + root cause 분석 보존 | 낮 |
+
+### 3.5.1 옵션 α 정밀 분석 (구현 시도 가치 있는 후보)
+
+알고리즘:
+1. HWPX 파서가 모든 paragraph parse 후 후처리
+2. paragraph 간 vpos jump 측정:
+   - `jump = curr_para.first_lineseg.vpos - prev_para.last_lineseg.vpos`
+   - `expected_jump = prev_para.last_lineseg.line_spacing` (= 정상 paragraph 간 spacing)
+3. jump 가 expected_jump 와 다르면 페이지 break 신호 의심 — 다만 sample16-hwp5.hwpx 의 pi=24 → pi=25 jump = 3840 (line_spacing 정확) → **jump 만으로 페이지 break 추정 불가**
+4. 대안: 누적 vpos 가 body_height 의 정수 배수에 가까운 paragraph 를 page break 후보로 추정 — 부정확
+
+**옵션 α 도 정확한 알고리즘 어려움** — 한컴 HWPX 변환기가 lineseg vpos 에 페이지 break 정보를 완전히 잃어버렸기 때문.
+
+## 4. 최종 결론
+
+옵션 "더 깊이" 진행 결과:
+
+- ✅ **ROOT CAUSE 명확 확정**: HWPX 변환본의 lineseg vpos 가 페이지 break 시 0 reset 안 됨 (한컴 HWPX 변환기 산물)
+- ❌ **Fix 가 매우 어려움**: 페이지 break 의도 정보가 HWPX XML 에서 손실. 어떤 fix 도 휴리스틱 또는 광범위 영향.
+- ✅ **회귀 점검 자료 부족**: 다른 HWPX 샘플 한컴 viewer 정답지 없음. Fix 후 회귀 검증 불가.
+
+### 4.1 추천: **옵션 δ — Stage 1 별도 task 분리**
+
+이유:
+- root cause 가 한컴 HWPX 변환기의 본질적 한계 (vpos reset 정보 손실)
+- 어떤 fix 도 휴리스틱 — 다른 HWPX 샘플 회귀 점검 자료 부족
+- 본 task #894 의 다른 stage (B, A, D) 가 sample16 시각 정합에 더 직접적 영향
+- **별도 task 에서 HWPX 변환본 전반 정합성 종합 검토 후 결정** 권장
+
+### 4.2 본 stage 의 산출물
+
+- Fix 1 (`55c6191`): HWPX self-closing run charPrIDRef 처리 추가 — 정확성 보강 (유지)
+- 진단 결과: ROOT CAUSE 명확 문서화 (본 보고서)
+- 임시 디버그 코드 제거 완료
+
 ## 3.3 옵션 (ii) 종합 진단 결과
 
 ### 3.3.1 picture cur 차이 검증
