@@ -4,6 +4,7 @@
 **수행 계획서**: [task_m100_894.md](task_m100_894.md)
 **진행 순서**: Stage 1 (C') → Stage 2 (B) → Stage 3 (A)
 **Scope 변경**: 항목 C (HWP5 변환본 inflate) 는 #877 진행 중 이미 해결 → **항목 C' 로 대체**: HWPX 변환본 페이지 수 정합 (72 → 62)
+**Scope 추가**: 항목 D (CLAUDE.md c2955b5 컨트리뷰터 워크플로우 보강) — PR #890 미포함, task894 PR 로 메인테이너 전달. base 자동 포함, 별도 stage 없음
 
 ## Stage 1 — 항목 C' : HWPX 변환본 페이지 수 inflate (72 → 62)
 
