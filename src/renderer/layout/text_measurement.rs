@@ -738,10 +738,15 @@ impl TextMeasurer for WasmTextMeasurer {
                     let tab_type = inline_tab_type(ext);
                     let tab_target = total + tab_width_px;
                     // [Task #874] auto_tab_right paragraph + 단일 tab: native 와 동일.
-                    let has_more_tabs_after = chars[i+1..].iter().any(|c| *c == '\t');
+                    let has_more_tabs_after = chars[i+1..].contains(&'\t');
+                    // [Task #874 #10] tab_type 가 명시적 LEFT(1)/DECIMAL(4) 면
+                    // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp
+                    // p7 item 18 (Task #290) 의 inline LEFT tab WASM 회귀 차단.
+                    let inline_is_explicit_left = tab_type == 1 || tab_type == 4;
                     let override_to_right = style.auto_tab_right
                         && !has_more_tabs_after
-                        && style.available_width > 0.0;
+                        && style.available_width > 0.0
+                        && !inline_is_explicit_left;
                     if override_to_right {
                         // [Task #874 #2] lang split 후속 run 합산 override (native 와 동일).
                         let seg_w = style.right_tab_block_width_override
@@ -880,10 +885,15 @@ impl TextMeasurer for WasmTextMeasurer {
                     let fill_low = (ext[2] & 0xFF) as u8;
                     let tab_target = x + tab_width_px;
                     // [Task #874] auto_tab_right paragraph + 단일 tab: native 와 동일.
-                    let has_more_tabs_after = chars[i+1..].iter().any(|c| *c == '\t');
+                    let has_more_tabs_after = chars[i+1..].contains(&'\t');
+                    // [Task #874 #10] tab_type 가 명시적 LEFT(1)/DECIMAL(4) 면
+                    // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp
+                    // p7 item 18 (Task #290) 의 inline LEFT tab WASM 회귀 차단.
+                    let inline_is_explicit_left = tab_type == 1 || tab_type == 4;
                     let override_to_right = style.auto_tab_right
                         && !has_more_tabs_after
-                        && style.available_width > 0.0;
+                        && style.available_width > 0.0
+                        && !inline_is_explicit_left;
                     // [Issue #630 Stage 6] RIGHT + leader (fill ≠ 0): ')' 끝이 본문
                     // 우측 끝까지 정렬.
                     let body_right_text_rel = if style.available_width > 0.0 {
