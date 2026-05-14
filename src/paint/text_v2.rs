@@ -6,9 +6,11 @@
 //! dropping the required `TextRun` fallback.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 
 use serde::Serialize;
 
+use crate::document_core::helpers::json_escape as raw_json_escape;
 use crate::model::style::UnderlineType;
 use crate::paint::{
     GlyphRunDiagnostics, GlyphRunReplayEligibility, LayerNode, LayerNodeKind, PageLayerTree,
@@ -24,6 +26,16 @@ pub enum TextV2CompatibilityProfile {
     FallbackFreeStrict,
 }
 
+impl TextV2CompatibilityProfile {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::V1Compat => "v1Compat",
+            Self::V2Compat => "v2Compat",
+            Self::FallbackFreeStrict => "fallbackFreeStrict",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TextV2ValidationSeverity {
@@ -32,12 +44,32 @@ pub enum TextV2ValidationSeverity {
     Error,
 }
 
+impl TextV2ValidationSeverity {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Info => "info",
+            Self::Warning => "warning",
+            Self::Error => "error",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TextV2LineBreakRiskLevel {
     NoChangeLikely,
     ChangePossible,
     ChangeLikely,
+}
+
+impl TextV2LineBreakRiskLevel {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::NoChangeLikely => "noChangeLikely",
+            Self::ChangePossible => "changePossible",
+            Self::ChangeLikely => "changeLikely",
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -183,11 +215,134 @@ impl TextV2Diagnostics {
     }
 
     pub fn to_json(&self) -> String {
-        match serde_json::to_string(self) {
-            Ok(json) => json,
-            Err(_) => "{\"compatibilityProfile\":\"v1Compat\",\"fallbackRequired\":true,\"downgradePath\":\"schemaV1FlattenedTextRunAndGlyphRun\",\"slotDiagnostics\":[],\"validationIssues\":[],\"lineBreakRisks\":[]}".to_string(),
-        }
+        let mut buf = String::with_capacity(1024);
+        self.write_json(&mut buf);
+        buf
     }
+
+    pub fn write_json(&self, buf: &mut String) {
+        buf.push('{');
+        let _ = write!(
+            buf,
+            "\"compatibilityProfile\":{},\"fallbackRequired\":{},\"downgradePath\":{},\"slotDiagnostics\":[",
+            json_string(self.compatibility_profile.as_str()),
+            self.fallback_required,
+            json_string(self.downgrade_path)
+        );
+        for (index, slot) in self.slot_diagnostics.iter().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            write_slot_diagnostic(buf, slot);
+        }
+        buf.push_str("],\"validationIssues\":[");
+        for (index, issue) in self.validation_issues.iter().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            write_validation_issue(buf, issue);
+        }
+        buf.push_str("],\"lineBreakRisks\":[");
+        for (index, risk) in self.line_break_risks.iter().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            write_line_break_risk(buf, risk);
+        }
+        buf.push_str("]}");
+    }
+}
+
+fn write_slot_diagnostic(buf: &mut String, slot: &TextV2SlotDiagnostic) {
+    let _ = write!(
+        buf,
+        "{{\"paintOrderSlotId\":{},\"equivalenceGroup\":{},\"leafPath\":{},\"fallbackPresent\":{},\"strictVariantAvailable\":{},\"variants\":[",
+        json_string(&slot.paint_order_slot_id),
+        json_string(&slot.equivalence_group),
+        json_string(&slot.leaf_path),
+        slot.fallback_present,
+        slot.strict_variant_available
+    );
+    for (index, variant) in slot.variants.iter().enumerate() {
+        if index > 0 {
+            buf.push(',');
+        }
+        write_variant_diagnostic(buf, variant);
+    }
+    buf.push(']');
+    if let Some(reason) = &slot.fallback_reason {
+        let _ = write!(buf, ",\"fallbackReason\":{}", json_string(reason));
+    }
+    buf.push('}');
+}
+
+fn write_variant_diagnostic(buf: &mut String, variant: &TextV2VariantDiagnostic) {
+    let _ = write!(
+        buf,
+        "{{\"variantId\":{},\"variantKind\":{},\"requiredFeatures\":[",
+        json_string(&variant.variant_id),
+        json_string(variant.variant_kind)
+    );
+    for (index, feature) in variant.required_features.iter().enumerate() {
+        if index > 0 {
+            buf.push(',');
+        }
+        buf.push_str(&json_string(feature));
+    }
+    let _ = write!(
+        buf,
+        "],\"partCount\":{},\"presentPartCount\":{}",
+        variant.part_count, variant.present_part_count
+    );
+    if let Some(quality) = variant.quality {
+        let _ = write!(buf, ",\"quality\":{}", json_string(quality));
+    }
+    let _ = write!(
+        buf,
+        ",\"strictVisualEligible\":{}",
+        variant.strict_visual_eligible
+    );
+    if let Some(reason) = &variant.fallback_reason {
+        let _ = write!(buf, ",\"fallbackReason\":{}", json_string(reason));
+    }
+    buf.push('}');
+}
+
+fn write_validation_issue(buf: &mut String, issue: &TextV2ValidationIssue) {
+    let _ = write!(
+        buf,
+        "{{\"severity\":{},\"code\":{}",
+        json_string(issue.severity.as_str()),
+        json_string(issue.code)
+    );
+    if let Some(slot_id) = &issue.slot_id {
+        let _ = write!(buf, ",\"slotId\":{}", json_string(slot_id));
+    }
+    if let Some(leaf_path) = &issue.leaf_path {
+        let _ = write!(buf, ",\"leafPath\":{}", json_string(leaf_path));
+    }
+    let _ = write!(buf, ",\"message\":{}}}", json_string(&issue.message));
+}
+
+fn write_line_break_risk(buf: &mut String, risk: &TextV2LineBreakRisk) {
+    let _ = write!(
+        buf,
+        "{{\"leafPath\":{},\"textPreview\":{},\"risk\":{},\"reasons\":[",
+        json_string(&risk.leaf_path),
+        json_string(&risk.text_preview),
+        json_string(risk.risk.as_str())
+    );
+    for (index, reason) in risk.reasons.iter().enumerate() {
+        if index > 0 {
+            buf.push(',');
+        }
+        buf.push_str(&json_string(reason));
+    }
+    buf.push_str("]}");
+}
+
+fn json_string(value: &str) -> String {
+    format!("\"{}\"", raw_json_escape(value))
 }
 
 fn collect_node(
@@ -234,8 +389,8 @@ fn collect_node(
                                     .collect::<BTreeSet<_>>(),
                                 part_count: variant.part_count,
                                 present_parts: BTreeSet::new(),
+                                strict_parts: BTreeSet::new(),
                                 quality: variant.quality,
-                                strict_visual_eligible: false,
                                 fallback_reason: None,
                             }
                         });
@@ -245,7 +400,9 @@ fn collect_node(
                         entry.part_count = entry.part_count.max(variant.part_count);
                         entry.present_parts.insert(variant.part_index);
                         entry.quality = entry.quality.or(variant.quality);
-                        entry.strict_visual_eligible |= glyph_run_is_strict(&run.diagnostics);
+                        if glyph_run_is_strict(&run.diagnostics) {
+                            entry.strict_parts.insert(variant.part_index);
+                        }
                         entry.fallback_reason = entry
                             .fallback_reason
                             .take()
@@ -293,21 +450,25 @@ struct VariantAccumulator {
     required_features: BTreeSet<String>,
     part_count: u32,
     present_parts: BTreeSet<u32>,
+    strict_parts: BTreeSet<u32>,
     quality: Option<TextVariantQuality>,
-    strict_visual_eligible: bool,
     fallback_reason: Option<String>,
 }
 
 impl VariantAccumulator {
     fn finish(self) -> TextV2VariantDiagnostic {
+        let present_part_count = self.present_parts.len() as u32;
+        let strict_visual_eligible = self.part_count > 0
+            && present_part_count == self.part_count
+            && (0..self.part_count).all(|index| self.strict_parts.contains(&index));
         TextV2VariantDiagnostic {
             variant_id: self.variant_id,
             variant_kind: self.variant_kind.as_str(),
             required_features: self.required_features.into_iter().collect(),
             part_count: self.part_count,
-            present_part_count: self.present_parts.len() as u32,
+            present_part_count,
             quality: self.quality.map(TextVariantQuality::as_str),
-            strict_visual_eligible: self.strict_visual_eligible,
+            strict_visual_eligible,
             fallback_reason: self.fallback_reason,
         }
     }
@@ -460,6 +621,15 @@ mod tests {
     }
 
     fn glyph_op(reason: Option<&str>, missing_glyph_count: u32) -> PaintOp {
+        glyph_op_part(reason, missing_glyph_count, 0, 1)
+    }
+
+    fn glyph_op_part(
+        reason: Option<&str>,
+        missing_glyph_count: u32,
+        part_index: u32,
+        part_count: u32,
+    ) -> PaintOp {
         PaintOp::GlyphRun {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             run: Box::new(LayerGlyphRunPaint {
@@ -474,6 +644,8 @@ mod tests {
                     variant.variant_id = "glyphRun".to_string();
                     variant.variant_kind = TextVariantKind::GlyphRun;
                     variant.is_default_fallback = false;
+                    variant.part_index = part_index;
+                    variant.part_count = part_count;
                     variant.requires =
                         vec!["fontResources".to_string(), "text.glyphRun".to_string()];
                     variant.quality = Some(TextVariantQuality::Exact);
@@ -564,6 +736,26 @@ mod tests {
     }
 
     #[test]
+    fn serializes_requested_profile_without_default_profile_fallback() {
+        let tree = PageLayerTree::new(
+            100.0,
+            100.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+                None,
+                vec![text_op("A")],
+            ),
+        );
+        let json = TextV2Diagnostics::from_layer_tree_with_profile(
+            &tree,
+            TextV2CompatibilityProfile::FallbackFreeStrict,
+        )
+        .to_json();
+        assert!(json.contains("\"compatibilityProfile\":\"fallbackFreeStrict\""));
+        assert!(json.contains("\"fallbackRequired\":false"));
+    }
+
+    #[test]
     fn rejects_fallback_free_profile_without_strict_variant() {
         let tree = PageLayerTree::new(
             100.0,
@@ -583,6 +775,33 @@ mod tests {
             diagnostics.validation_issues[0].code,
             "fallbackFreeStrictVariantMissing"
         );
+        assert_eq!(
+            diagnostics.slot_diagnostics[0].fallback_reason.as_deref(),
+            Some("missingGlyph")
+        );
+    }
+
+    #[test]
+    fn rejects_fallback_free_profile_when_only_some_parts_are_strict() {
+        let tree = PageLayerTree::new(
+            100.0,
+            100.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+                None,
+                vec![
+                    text_op("A"),
+                    glyph_op_part(None, 0, 0, 2),
+                    glyph_op_part(Some("missingGlyph"), 1, 1, 2),
+                ],
+            ),
+        );
+        let diagnostics = TextV2Diagnostics::from_layer_tree_with_profile(
+            &tree,
+            TextV2CompatibilityProfile::FallbackFreeStrict,
+        );
+        assert!(diagnostics.has_errors());
+        assert!(!diagnostics.slot_diagnostics[0].strict_variant_available);
         assert_eq!(
             diagnostics.slot_diagnostics[0].fallback_reason.as_deref(),
             Some("missingGlyph")

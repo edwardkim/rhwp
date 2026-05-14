@@ -54,7 +54,7 @@ impl PageLayerTree {
         write_font_resources(&mut buf, self.resources.font_resources());
         write_text_export_metadata(&mut buf, &self.root);
         buf.push_str(",\"textV2\":");
-        buf.push_str(&TextV2Diagnostics::from_layer_tree(self).to_json());
+        TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
         buf.push('}');
         buf
     }
