@@ -22,6 +22,7 @@ import { CommandPalette } from '@/ui/command-palette';
 import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showToast } from '@/ui/toast';
 import { initRhwpDev } from '@/core/rhwp-dev';
+import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
@@ -29,11 +30,14 @@ import { Ruler } from '@/view/ruler';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
+const documentState = new DocumentDirtyState(eventBus);
+documentState.installBeforeUnload(window);
 
 // E2E 테스트용 전역 노출 (개발 모드 전용)
 if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
   (window as any).__eventBus = eventBus;
+  (window as any).__documentState = documentState;
   initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
@@ -60,6 +64,7 @@ function getContext(): EditorContext {
     canRedo: inputHandler?.canRedo() ?? false,
     zoom: canvasView?.getViewportManager().getZoom() ?? 1.0,
     showControlCodes: wasm.getShowControlCodes(),
+    isDirty: documentState.isDirty(),
     sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx') : undefined,
   };
 }
@@ -67,6 +72,7 @@ function getContext(): EditorContext {
 const commandServices: CommandServices = {
   eventBus,
   wasm,
+  documentState,
   getContext,
   getInputHandler: () => inputHandler,
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
@@ -390,6 +396,14 @@ function setupEventListeners(): void {
     document.getElementById('sb-mode')!.textContent = (insertMode as boolean) ? '삽입' : '수정';
   });
 
+  eventBus.on('document-mutated', (reason) => {
+    documentState.markDirty(typeof reason === 'string' ? reason : 'document-mutated');
+  });
+
+  eventBus.on('document-dirty-changed', () => {
+    eventBus.emit('command-state-changed');
+  });
+
   // 필드 정보 표시
   const sbField = document.getElementById('sb-field');
   eventBus.on('field-info-changed', (info) => {
@@ -447,6 +461,7 @@ function setupEventListeners(): void {
 /** 문서 초기화 공통 시퀀스 (loadFile, createNewDocument 양쪽에서 사용) */
 async function initializeDocument(docInfo: DocumentInfo, displayName: string): Promise<void> {
   const msg = sbMessage();
+  let normalizedDuringLoad = false;
   try {
     console.log('[initDoc] 1. 폰트 로딩 시작');
     if (docInfo.fontsUsed?.length) {
@@ -484,10 +499,16 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
           // 렌더 재계산
           canvasView?.loadDocument();
           msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
+          normalizedDuringLoad = n > 0;
         }
       }
     } catch (e) {
       console.warn('[validation] 감지/보정 실패 (치명적이지 않음):', e);
+    }
+    if (normalizedDuringLoad) {
+      documentState.markDirty('validation-auto-fix');
+    } else {
+      documentState.markClean('document-initialized');
     }
   } catch (error) {
     console.error('[initDoc] 오류:', error);

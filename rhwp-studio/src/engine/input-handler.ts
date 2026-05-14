@@ -1559,6 +1559,7 @@ export class InputHandler {
   /** 편집 후 처리: 재렌더링 + 캐럿 갱신 */
   private afterEdit(): void {
     this.lastCellKey = null; // 편집 후 셀 bbox 캐시 무효화
+    this.eventBus.emit('document-mutated', 'input-handler-edit');
     this.eventBus.emit('document-changed');
     this.updateCaret();
   }
