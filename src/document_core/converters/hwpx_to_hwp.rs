@@ -19,10 +19,12 @@
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
 use crate::model::paragraph::Paragraph;
-use crate::model::table::{Cell, Table};
+use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+use crate::model::style::{BorderFill, BorderLineType, FillType};
+use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
 
-use super::common_obj_attr_writer::serialize_common_obj_attr;
+use super::common_obj_attr_writer::{pack_common_attr_bits, serialize_common_obj_attr};
 
 /// 어댑터 실행 보고서.
 ///
@@ -35,8 +37,22 @@ pub struct AdapterReport {
     pub tables_ctrl_data_synthesized: u32,
     /// `table.attr` 재구성 횟수 (Stage 2)
     pub tables_attr_packed: u32,
+    /// HWPX 표의 page_break 를 한컴 HWP 저장 관례에 맞춰 보강한 횟수
+    pub tables_page_break_materialized: u32,
+    /// 표 outer_margin 을 CommonObjAttr.margin 으로 승격한 횟수
+    pub tables_outer_margin_materialized: u32,
+    /// HWPX 표 CTRL_HEADER attr 중 한컴 HWP 저장 관례 비트 보강 횟수
+    pub table_ctrl_header_attr_materialized: u32,
+    /// HWPX 표 CTRL_HEADER height 를 TABLE row_sizes 합산값으로 보강한 횟수
+    pub table_ctrl_header_height_materialized: u32,
+    /// HWPX 표 TABLE record attr 중 한컴 저장 관례 비트 보강 횟수
+    pub table_record_attr_materialized: u32,
+    /// HWPX 표 TABLE record row-size payload 를 행별 셀 수로 보강한 횟수
+    pub table_record_row_sizes_materialized: u32,
     /// `cell.list_attr bit 16` 보강 횟수 (Stage 3)
     pub cells_list_attr_bit16_set: u32,
+    /// paragraph/char shape 참조 BorderFill 무채움 정규화 횟수
+    pub border_fills_no_fill_normalized: u32,
     /// `Control::SectionDef` 컨트롤 삽입 횟수 (Stage 4 — 섹션 개수)
     pub section_def_controls_inserted: u32,
 }
@@ -56,7 +72,14 @@ impl AdapterReport {
         self.skipped_reason.is_none()
             && (self.tables_ctrl_data_synthesized
                 + self.tables_attr_packed
+                + self.tables_page_break_materialized
+                + self.tables_outer_margin_materialized
+                + self.table_ctrl_header_attr_materialized
+                + self.table_ctrl_header_height_materialized
+                + self.table_record_attr_materialized
+                + self.table_record_row_sizes_materialized
                 + self.cells_list_attr_bit16_set
+                + self.border_fills_no_fill_normalized
                 + self.section_def_controls_inserted)
                 > 0
     }
@@ -88,6 +111,8 @@ pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
     for section in &mut doc.sections {
         insert_section_def_control(section, &mut report);
     }
+
+    normalize_paragraph_char_border_fills(doc, &mut report);
 
     // Stage 2/3: 표 ctrl_data + 셀 list_attr (raw_ctrl_data 합성)
     for section in &mut doc.sections {
@@ -132,10 +157,126 @@ fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport)
     if already_has_section_def {
         return;
     }
-    first_para
-        .controls
-        .insert(0, Control::SectionDef(Box::new(section.section_def.clone())));
+    first_para.controls.insert(
+        0,
+        Control::SectionDef(Box::new(section.section_def.clone())),
+    );
     report.section_def_controls_inserted += 1;
+}
+
+fn normalize_paragraph_char_border_fills(doc: &mut Document, report: &mut AdapterReport) {
+    let para_char_refs = collect_paragraph_char_border_fill_refs(doc);
+    if para_char_refs.is_empty() {
+        return;
+    }
+
+    let object_refs = collect_object_border_fill_refs(doc);
+    for id in para_char_refs {
+        if id == 0 || object_refs.contains(&id) {
+            continue;
+        }
+
+        let Some(border_fill) = doc
+            .doc_info
+            .border_fills
+            .get_mut(id.saturating_sub(1) as usize)
+        else {
+            continue;
+        };
+
+        if is_transparent_paragraph_no_fill_candidate(border_fill) {
+            border_fill.fill.fill_type = FillType::None;
+            border_fill.fill.solid = None;
+            border_fill.fill.gradient = None;
+            border_fill.fill.image = None;
+            border_fill.fill.alpha = 0;
+            border_fill.raw_data = None;
+            report.border_fills_no_fill_normalized += 1;
+        }
+    }
+}
+
+fn collect_paragraph_char_border_fill_refs(doc: &Document) -> std::collections::HashSet<u16> {
+    let mut refs = std::collections::HashSet::new();
+    for para_shape in &doc.doc_info.para_shapes {
+        if para_shape.border_fill_id > 0 {
+            refs.insert(para_shape.border_fill_id);
+        }
+    }
+    for char_shape in &doc.doc_info.char_shapes {
+        if char_shape.border_fill_id > 0 {
+            refs.insert(char_shape.border_fill_id);
+        }
+    }
+    refs
+}
+
+fn collect_object_border_fill_refs(doc: &Document) -> std::collections::HashSet<u16> {
+    let mut refs = std::collections::HashSet::new();
+    for section in &doc.sections {
+        if section.section_def.page_border_fill.border_fill_id > 0 {
+            refs.insert(section.section_def.page_border_fill.border_fill_id);
+        }
+        for page_border_fill in &section.section_def.extra_page_border_fills {
+            if page_border_fill.border_fill_id > 0 {
+                refs.insert(page_border_fill.border_fill_id);
+            }
+        }
+        for para in &section.paragraphs {
+            collect_object_border_fill_refs_from_paragraph(para, &mut refs);
+        }
+    }
+    refs
+}
+
+fn collect_object_border_fill_refs_from_paragraph(
+    para: &Paragraph,
+    refs: &mut std::collections::HashSet<u16>,
+) {
+    for ctrl in &para.controls {
+        if let Control::Table(table) = ctrl {
+            collect_table_border_fill_refs(table, refs);
+        }
+    }
+}
+
+fn collect_table_border_fill_refs(table: &Table, refs: &mut std::collections::HashSet<u16>) {
+    if table.border_fill_id > 0 {
+        refs.insert(table.border_fill_id);
+    }
+    for zone in &table.zones {
+        if zone.border_fill_id > 0 {
+            refs.insert(zone.border_fill_id);
+        }
+    }
+    for cell in &table.cells {
+        if cell.border_fill_id > 0 {
+            refs.insert(cell.border_fill_id);
+        }
+        for para in &cell.paragraphs {
+            collect_object_border_fill_refs_from_paragraph(para, refs);
+        }
+    }
+}
+
+fn is_transparent_paragraph_no_fill_candidate(border_fill: &BorderFill) -> bool {
+    if !border_fill
+        .borders
+        .iter()
+        .all(|border| matches!(border.line_type, BorderLineType::None))
+    {
+        return false;
+    }
+
+    if !matches!(border_fill.fill.fill_type, FillType::Solid) {
+        return false;
+    }
+
+    let Some(solid) = border_fill.fill.solid else {
+        return false;
+    };
+
+    border_fill.fill.alpha == 0 && solid.background_color == 0xffff_ffff
 }
 
 fn adapt_paragraph(para: &mut Paragraph, report: &mut AdapterReport) {
@@ -149,22 +290,41 @@ fn adapt_paragraph(para: &mut Paragraph, report: &mut AdapterReport) {
 fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
     // 1. raw_ctrl_data 합성 (HWPX 출처는 비어있음)
     if table.raw_ctrl_data.is_empty() {
+        let materialize_hancom_table = should_materialize_hancom_table_attr(table);
+        let materialize_tac_table = should_materialize_tac_table_ctrl_attr(table);
+        if materialize_hancom_table {
+            materialize_table_outer_margin(table, report);
+            materialize_table_page_break(table, report);
+            materialize_table_record_attr(table, report);
+            materialize_table_record_row_sizes(table, report);
+            materialize_table_ctrl_header_height(table, report);
+            materialize_table_ctrl_header_attr(table, report);
+        } else if materialize_tac_table {
+            materialize_table_record_row_sizes(table, report);
+            materialize_table_ctrl_header_attr(table, report);
+        }
+
         table.raw_ctrl_data = serialize_common_obj_attr(&table.common);
         report.tables_ctrl_data_synthesized += 1;
 
-        // Task #317: HWPX 출처는 common.attr=0 (HWPX 파서가 attr 비트를 채우지 않음).
-        // serialize_common_obj_attr 는 common.attr=0 일 때 enum 으로부터 비트 합성 하지만,
-        // typeset 엔진은 table.attr & 0x01 로 is_tac 을 판정 (common.treat_as_char 아님).
-        // HWPX 직접 로드에서는 attr=0 이므로 모든 표가 block 분기로 처리됨.
-        // 어댑터 경로에서 attr 합성하면 일부 표가 TAC 분기로 분기되어 페이지 누적이 달라짐.
-        // → DIRECT 와 동일하게 attr=0 으로 고정.
         if table.raw_ctrl_data.len() >= 4 {
-            table.raw_ctrl_data[0..4].copy_from_slice(&0u32.to_le_bytes());
+            let packed = u32::from_le_bytes([
+                table.raw_ctrl_data[0],
+                table.raw_ctrl_data[1],
+                table.raw_ctrl_data[2],
+                table.raw_ctrl_data[3],
+            ]);
+            if materialize_hancom_table || materialize_tac_table {
+                if table.attr != packed {
+                    table.attr = packed;
+                    report.tables_attr_packed += 1;
+                }
+            } else {
+                table.raw_ctrl_data[0..4].copy_from_slice(&0u32.to_le_bytes());
+                table.attr = 0;
+            }
         }
     }
-
-    // table.attr 은 raw_ctrl_data 의 진실값과 일치 (=0).
-    table.attr = 0;
 
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
     for cell in &mut table.cells {
@@ -172,6 +332,148 @@ fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
         for cpara in &mut cell.paragraphs {
             adapt_paragraph(cpara, report);
         }
+    }
+}
+
+fn should_materialize_hancom_table_attr(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Column)
+        && matches!(table.page_break, TablePageBreak::CellBreak)
+        && table.repeat_header
+}
+
+fn should_materialize_tac_table_ctrl_attr(table: &Table) -> bool {
+    table.common.treat_as_char && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+}
+
+fn materialize_table_outer_margin(table: &mut Table, report: &mut AdapterReport) {
+    let changed = table.common.margin.left != table.outer_margin_left
+        || table.common.margin.right != table.outer_margin_right
+        || table.common.margin.top != table.outer_margin_top
+        || table.common.margin.bottom != table.outer_margin_bottom;
+    if changed {
+        table.common.margin.left = table.outer_margin_left;
+        table.common.margin.right = table.outer_margin_right;
+        table.common.margin.top = table.outer_margin_top;
+        table.common.margin.bottom = table.outer_margin_bottom;
+        report.tables_outer_margin_materialized += 1;
+    }
+}
+
+fn materialize_table_page_break(table: &mut Table, report: &mut AdapterReport) {
+    if matches!(table.page_break, TablePageBreak::CellBreak) {
+        table.page_break = TablePageBreak::RowBreak;
+        table.raw_table_record_attr = 0;
+        report.tables_page_break_materialized += 1;
+    }
+}
+
+fn materialize_table_record_attr(table: &mut Table, report: &mut AdapterReport) {
+    let mut attr = if table.raw_table_record_attr != 0 {
+        table.raw_table_record_attr
+    } else {
+        let mut a = match table.page_break {
+            TablePageBreak::CellBreak => 0x01,
+            TablePageBreak::RowBreak => 0x02,
+            TablePageBreak::None => 0,
+        };
+        if table.repeat_header {
+            a |= 0x04;
+        }
+        a
+    };
+
+    if table.repeat_header {
+        attr |= 0x0400_0000;
+    }
+
+    if table.raw_table_record_attr != attr {
+        table.raw_table_record_attr = attr;
+        report.table_record_attr_materialized += 1;
+    }
+}
+
+fn materialize_table_record_row_sizes(table: &mut Table, report: &mut AdapterReport) {
+    let mut row_sizes = vec![0i16; table.row_count as usize];
+    for cell in &table.cells {
+        let row = cell.row as usize;
+        if row < row_sizes.len() {
+            row_sizes[row] = row_sizes[row].saturating_add(1);
+        }
+    }
+
+    if row_sizes.is_empty() || row_sizes.iter().all(|&count| count == 0) {
+        return;
+    }
+
+    if table.row_sizes != row_sizes {
+        table.row_sizes = row_sizes;
+        report.table_record_row_sizes_materialized += 1;
+    }
+}
+
+fn materialize_table_ctrl_header_height(table: &mut Table, report: &mut AdapterReport) {
+    let table_height = effective_table_height(table);
+    if table_height == 0 || table.common.height == table_height {
+        return;
+    }
+
+    table.common.height = table_height;
+    report.table_ctrl_header_height_materialized += 1;
+}
+
+fn effective_table_height(table: &Table) -> u32 {
+    let mut row_heights = vec![0u32; table.row_count as usize];
+    row_heights.resize(table.row_count as usize, 0);
+
+    for cell in &table.cells {
+        if cell.row_span != 1 || cell.row as usize >= row_heights.len() {
+            continue;
+        }
+
+        let declared_height = cell.height;
+        let content_height = paragraph_list_height(&cell.paragraphs);
+        let padding_height =
+            (cell.padding.top.max(0) as u32).saturating_add(cell.padding.bottom.max(0) as u32);
+        let visual_height = declared_height.max(content_height.saturating_add(padding_height));
+        if visual_height > row_heights[cell.row as usize] {
+            row_heights[cell.row as usize] = visual_height;
+        }
+    }
+
+    row_heights.into_iter().sum()
+}
+
+fn paragraph_list_height(paragraphs: &[Paragraph]) -> u32 {
+    paragraphs
+        .iter()
+        .filter_map(|para| {
+            let first = para.line_segs.first()?;
+            let last = para.line_segs.last()?;
+            let height = last
+                .vertical_pos
+                .saturating_sub(first.vertical_pos)
+                .saturating_add(last.line_height);
+            Some(height.max(0) as u32)
+        })
+        .max()
+        .unwrap_or(0)
+}
+
+fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterReport) {
+    const HWPX_TABLE_FLOW_WITH_TEXT_BIT: u32 = 0x0000_2000;
+    const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
+
+    let before = table.common.attr;
+    if table.common.attr == 0 {
+        table.common.attr = pack_common_attr_bits(&table.common);
+    }
+    table.common.attr |= HWPX_TABLE_FLOW_WITH_TEXT_BIT | HWPX_TABLE_NUMBERING_BIT;
+
+    if table.common.attr != before {
+        report.table_ctrl_header_attr_materialized += 1;
     }
 }
 
@@ -233,7 +535,10 @@ mod tests {
     fn hwp_source_no_op_via_filter() {
         let mut doc = Document::default();
         let report = convert_if_hwpx_source(&mut doc, FileFormat::Hwp);
-        assert_eq!(report.skipped_reason.as_deref(), Some("source_format != Hwpx/Hwp3"));
+        assert_eq!(
+            report.skipped_reason.as_deref(),
+            Some("source_format != Hwpx/Hwp3")
+        );
     }
 
     #[test]
@@ -300,7 +605,10 @@ mod tests {
 
         // 한컴 파서 해석 (parser/control.rs:371) 와 일치:
         let recovered_apply_inner_margin = (list_attr >> 16) & 0x01 != 0;
-        assert!(recovered_apply_inner_margin, "재파싱 시 apply_inner_margin 회복");
+        assert!(
+            recovered_apply_inner_margin,
+            "재파싱 시 apply_inner_margin 회복"
+        );
     }
 
     #[test]

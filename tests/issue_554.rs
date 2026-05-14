@@ -100,7 +100,8 @@ fn task554_no_regression_exam_kor() {
 #[test]
 fn task554_no_regression_aift() {
     // aift: 단순 -1600 적용 시 -1 회귀였던 케이스
-    assert_eq!(page_count("samples/aift.hwp"), 77);
+    // Task #874 #1~#8 누적 정합 결과 한컴 PDF (pdf/aift-2022.pdf) 와 동일한 74p.
+    assert_eq!(page_count("samples/aift.hwp"), 74);
 }
 
 #[test]
