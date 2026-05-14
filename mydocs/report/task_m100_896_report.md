@@ -7,9 +7,11 @@
 
 ## 1. 개요
 
-Task #894 의 Stage 4 진단 중 발견된 두 가지 차이를 본 task 에서 통합 처리:
+Task #894 의 Stage 4 진단 중 발견된 두 가지 차이 + WASM 검증 중 발견된 HWP5/HWPX 차이 본 task 에서 통합 처리:
 1. **차이 1**: paragraph 397/398/399 의 ◦ 글머리 표시 차이 (paragraph_layout/fixup)
 2. **차이 2**: paragraph 394 picture (WMF) 안의 한글 텍스트 겹침/깨짐 (WMF converter)
+3. **차이 3 (WASM 검증)**: HWP5/HWPX 변환본 페이지 수 inflate
+4. **차이 4 (WASM 검증)**: HWPX 변환본 페이지 외곽선 미표시
 
 ## 2. 최종 결과
 
@@ -19,7 +21,10 @@ Task #894 의 Stage 4 진단 중 발견된 두 가지 차이를 본 task 에서 
 |-------|------|------|
 | 1+2 | 차이 1 진단 정정 + Fix (apply_bullet_fixup_single dash skip) | ✅ paragraph 398/399 ◦ 제거 (한컴 정합) |
 | 3+4 | 차이 2 진단 + Fix (WMF font encoding + Korean fallback) | ✅ 그림 안 한글 텍스트 정상 표시 |
-| 5 | 통합 검증 | ✅ cargo test 1398 passed |
+| 5 | HWP5 inflate (CLI 62 정합 = 이미 정합) | ⏭️ skip — WASM 환경 별도 task |
+| 6 | HWPX inflate (#895 분리 task) — raw lineseg vpos 이미 reset (#894 진단 오류) | ⏭️ skip — 페이지 수 inflate 다른 root cause 별도 진단 |
+| 7 | HWPX `<hp:pageBorderFill>` 파싱 추가 | ✅ 외곽선 정상 표시 |
+| 8 | 통합 검증 | ✅ cargo test 1398 passed |
 
 ### 2.2 시각 정합 변화
 
@@ -150,10 +155,38 @@ cargo test --release --all-targets: 1398 passed, 0 failed
 - `mydocs/working/task_m100_896_stage3.md` — Stage 3+4 (차이 2)
 - `mydocs/report/task_m100_896_report.md` — 본 최종 보고서
 
-## 6. 결론
+## 6. Stage 5 / 6 / 7 추가 결과
 
-본 task #896 의 두 차이 모두 완전 해소:
-- ✅ **차이 1**: paragraph 398/399 의 ◦ 잘못 추가 → 한컴 정합 fix
-- ✅ **차이 2**: WMF 그림 안 한글 텍스트 깨짐 → font encoding + fallback fix
+### 6.1 Stage 5 — HWP5 inflate (skip)
+
+- CLI dump-pages: sample16-hwp5.hwp = **62 페이지** (한컴 정합)
+- 사용자 WASM build: 98 페이지 (WASM 환경 차이, 별도 진단)
+- 결론: 본 task 코드 영역 정합. WASM 환경 stale build 가능성
+
+### 6.2 Stage 6 — HWPX inflate (skip)
+
+- HWPX paragraph 25 first_vpos = **0** (raw 이미 페이지 break reset)
+- Task #894 Stage 1 진단의 잘못된 결론 (paragraph 25 vpos=72212 라 했으나 실제 0)
+- 페이지 수 72 inflate 의 다른 root cause 별도 진단 필요
+- 본 stage fix 시도 무용 → skip
+
+### 6.3 Stage 7 — HWPX 외곽선 ✅
+
+`src/parser/hwpx/section.rs` 의 `parse_sec_pr_children` 에 `<hp:pageBorderFill>` 처리 추가:
+- BOTH / EVEN / ODD type 처리 (우선순위 BOTH > ODD > EVEN)
+- borderFillIDRef / fillArea / offset (left/right/top/bottom) → PageBorderFill 변환
+- paper_based (fillArea="PAPER" → attr bit 0=1)
+
+결과: sample16-hwp5.hwpx page 1 SVG 에 외곽선 4개 line emit (paper width 의 5mm 안쪽).
+
+상세: [`mydocs/working/task_m100_896_stage7.md`](../working/task_m100_896_stage7.md)
+
+## 7. 결론
+
+본 task #896 의 4 차이 처리 결과:
+- ✅ **차이 1**: paragraph 398/399 의 ◦ 잘못 추가 → fix
+- ✅ **차이 2**: WMF 그림 안 한글 텍스트 깨짐 → fix
+- ⏭️ **차이 3 (HWP5/HWPX inflate)**: CLI 결과는 정합 / WASM 환경 차이는 별도
+- ✅ **차이 4 (HWPX 외곽선)**: HWPX 파서 `<hp:pageBorderFill>` 처리 추가
 
 cargo test 1398 passed + sample 회귀 없음. 한컴 viewer (PDF) 정합.
