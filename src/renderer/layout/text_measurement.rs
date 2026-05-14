@@ -263,9 +263,15 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                     // 이탈 발생 (shortcut.hwp pi=144 `Alt+Shift+C` 27 px 부족). auto_right
                     // 일 때는 우리 metric 기준 right-edge - our_seg_w 로 override.
                     let has_more_tabs_after = chars[i+1..].iter().any(|c| *c == '\t');
+                    // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
+                    // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
+                    // item 18 (Task #290) 의 inline LEFT tab 회귀 차단.
+                    let inline_type_hi = ((tab_type >> 8) & 0xFF) as u8;
+                    let inline_is_explicit_left = inline_type_hi == 1 || inline_type_hi == 4;
                     let override_to_right = style.auto_tab_right
                         && !has_more_tabs_after
-                        && style.available_width > 0.0;
+                        && style.available_width > 0.0
+                        && !inline_is_explicit_left;
                     if override_to_right {
                         // [Task #874 #2] lang split 로 post-tab 콘텐츠가 후속 run 으로
                         // 쪼개진 경우 (예: "F3→Alt+I" → "F3"/"→"/"Alt+I"), 현재 run 내부
@@ -415,9 +421,15 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                     // right-tab 결과 위치 (= 우측 끝 - 한컴_seg_w). 우리 폰트의 seg_w 와 차이
                     // 가 있으면 좌측 이탈. col-relative right edge - our_seg_w 로 override.
                     let has_more_tabs_after = chars[i+1..].iter().any(|c| *c == '\t');
+                    // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
+                    // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
+                    // item 18 (Task #290) 의 inline LEFT tab 회귀 차단.
+                    let inline_type_hi = ((tab_type_raw >> 8) & 0xFF) as u8;
+                    let inline_is_explicit_left = inline_type_hi == 1 || inline_type_hi == 4;
                     let override_to_right = style.auto_tab_right
                         && !has_more_tabs_after
-                        && style.available_width > 0.0;
+                        && style.available_width > 0.0
+                        && !inline_is_explicit_left;
                     // [Issue #630 Stage 6] HWP5 inline tab `ext[2]` 인코딩 = `(enum+1)<<8 | fill`
                     // 이므로 high-byte 추출이 정확. 단, RIGHT(high-byte=2) + leader(fill≠0)
                     // 의 경우 한컴 ext[0] 가 이미 "(우측 끝 - 한컴_seg_w)" 까지의 거리로
