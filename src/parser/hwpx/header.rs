@@ -10,7 +10,7 @@ use crate::model::document::{DocInfo, DocProperties};
 use crate::model::style::*;
 
 use super::HwpxError;
-use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool};
+use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool, parse_hatch_style};
 
 /// `<hh:strikeout shape="..."/>` 의 shape 값이 실제 렌더링되는 취소선인지
 /// 판정한다 (화이트리스트).
@@ -815,11 +815,19 @@ fn parse_border_fill(
                         }
                         b"winBrush" => {
                             bf.fill.fill_type = FillType::Solid;
-                            let mut solid = SolidFill::default();
+                            let mut solid = SolidFill {
+                                pattern_type: -1,
+                                ..SolidFill::default()
+                            };
                             for attr in ce.attributes().flatten() {
                                 match attr.key.as_ref() {
                                     b"faceColor" => solid.background_color = parse_color(&attr),
                                     b"hatchColor" => solid.pattern_color = parse_color(&attr),
+                                    b"hatchStyle" => {
+                                        if let Some(pattern_type) = parse_hatch_style(&attr_str(&attr)) {
+                                            solid.pattern_type = pattern_type;
+                                        }
+                                    }
                                     b"alpha" => {
                                         // HWPX alpha: 0.0=완전투명 ~ 1.0=불투명 (float string)
                                         let val = attr_str(&attr);

@@ -79,12 +79,21 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let is_hwp3_origin = hwpml_version.as_deref() == Some("1.4");
 
     // BinData 목록을 DocInfo에 등록
+    // [Task #873] isEmbeded="0" 인 외부 file 참조 (예: HWP3 → HWPX 변환본 의 절대 경로)
+    // 는 BinDataType::Link + abs_path 로 등록. 이후 populate_link_image_paths (parser/mod.rs)
+    // 가 Picture.external_path 설정 → Task #741 fallback 로 같은 dir 영역 image load.
     for (i, item) in package_info.bin_data_items.iter().enumerate() {
         let ext = item.href.rsplit('.').next().unwrap_or("dat").to_string();
+        let (data_type, abs_path) = if item.is_embedded {
+            (BinDataType::Embedding, None)
+        } else {
+            (BinDataType::Link, Some(item.href.clone()))
+        };
         doc_info.bin_data_list.push(BinData {
-            data_type: BinDataType::Embedding,
+            data_type,
             storage_id: (i + 1) as u16,
             extension: Some(ext),
+            abs_path,
             ..Default::default()
         });
     }
@@ -114,6 +123,11 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 5. BinData 이미지 로딩
     let mut bin_data_content = Vec::new();
     for (i, item) in package_info.bin_data_items.iter().enumerate() {
+        // [Task #873] isEmbeded="0" (외부 file 참조) 는 ZIP 영역 영역 부재. skip.
+        // populate_link_image_paths + populate_external_images_from_dir 가 후처리.
+        if !item.is_embedded {
+            continue;
+        }
         match reader.read_file_bytes(&item.href) {
             Ok(data) => {
                 let ext = item.href.rsplit('.').next().unwrap_or("dat").to_string();
@@ -155,7 +169,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         raw_data: None,
     };
 
-    let doc = Document {
+    let mut doc = Document {
         header: model_header,
         doc_properties,
         doc_info,
@@ -164,6 +178,11 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         bin_data_content,
         extra_streams: Vec::new(),
     };
+
+    // [Task #873] BinData Link 타입 의 외부 file path 영역 영역 Picture.external_path 영역
+    // 전달. 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
+    // dir 영역 basename 매칭 영역 image 영역 자동 load. HWP5 parser 와 동일 처리.
+    super::populate_link_image_paths(&mut doc);
 
     Ok(doc)
 }

@@ -90,6 +90,23 @@ pub fn parse_bool(attr: &quick_xml::events::attributes::Attribute) -> bool {
     s == "true" || s == "1"
 }
 
+/// OWPML `winBrush/@hatchStyle`을 HWP 무늬 번호로 변환한다.
+///
+/// HWP 쪽 `pattern_type`은 `-1`이 무늬없음이고, 1~6이 OWPML 스키마의
+/// 6개 hatchStyle 값에 대응한다. HWPX에서 hatchStyle이 생략되면 무늬없음으로
+/// 저장해야 하므로 호출자는 기본값으로 `-1`을 사용한다.
+pub fn parse_hatch_style(value: &str) -> Option<i32> {
+    match value {
+        "HORIZONTAL" => Some(1),
+        "VERTICAL" => Some(2),
+        "BACK_SLASH" => Some(3),
+        "SLASH" => Some(4),
+        "CROSS" => Some(5),
+        "CROSS_DIAGONAL" => Some(6),
+        _ => None,
+    }
+}
+
 /// XML 요소를 자식 포함하여 건너뛰기 (깊이 추적)
 pub fn skip_element(reader: &mut Reader<&[u8]>, _end_tag: &[u8]) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
@@ -140,5 +157,16 @@ mod tests {
         assert_eq!(parse_color_str("#80FF0000"), 0x800000FF);
         assert_eq!(parse_color_str("#FF000000"), 0xFF000000); // 상위 바이트 비제로 → 채우기 없음
         assert_eq!(parse_color_str("#00FF0000"), 0x000000FF); // alpha=00 → 동일
+    }
+
+    #[test]
+    fn test_parse_hatch_style() {
+        assert_eq!(parse_hatch_style("HORIZONTAL"), Some(1));
+        assert_eq!(parse_hatch_style("VERTICAL"), Some(2));
+        assert_eq!(parse_hatch_style("BACK_SLASH"), Some(3));
+        assert_eq!(parse_hatch_style("SLASH"), Some(4));
+        assert_eq!(parse_hatch_style("CROSS"), Some(5));
+        assert_eq!(parse_hatch_style("CROSS_DIAGONAL"), Some(6));
+        assert_eq!(parse_hatch_style(""), None);
     }
 }
