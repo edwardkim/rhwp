@@ -4,13 +4,14 @@
 **수행 계획서**: [task_m100_896.md](task_m100_896.md)
 **Scope (작업지시자 확정)**: **차이 1 + 차이 2 모두 본 task**
 
-## 진행 순서
+## 진행 순서 (scope 확장 후)
 
-1. **Stage 1** — 차이 1 (paragraph_layout ◦ x 좌표) 정밀 진단
-2. **Stage 2** — 차이 1 Fix + 회귀 검증
-3. **Stage 3** — 차이 2 (WMF 그림 안 텍스트 겹침) 정밀 진단
-4. **Stage 4** — 차이 2 Fix + 회귀 검증
-5. **Stage 5** — 통합 검증 + 최종 보고서
+1. **Stage 1+2** — 차이 1 진단 + Fix ✅ (paragraph 398/399 ◦ dash skip)
+2. **Stage 3+4** — 차이 2 진단 + Fix ✅ (WMF font encoding + Korean fallback)
+3. **Stage 5** — HWP5 변환본 페이지 수 inflate (98→62) 진단 + Fix
+4. **Stage 6** — HWPX 변환본 페이지 수 inflate (72→62) 진단 + Fix (#895 통합)
+5. **Stage 7** — HWPX 변환본 페이지 외곽선 미표시 진단 + Fix
+6. **Stage 8** — 통합 검증 + 최종 보고서
 
 ## Stage 1 — 차이 1 정밀 진단 (paragraph_layout)
 
@@ -114,27 +115,80 @@
 
 - `mydocs/working/task_m100_896_stage4.md` — WMF Fix 결과 + 회귀 점검
 
-## Stage 5 — 통합 검증 + 최종 보고서
+## Stage 5 — HWP5 변환본 페이지 수 inflate (98 → 62)
 
-### 5.1 통합 검증
+### 5.1 진단 절차
 
-- [ ] `cargo test --release --all-targets` 1355+ passed
+- [ ] `cargo run --release -- dump-pages samples/hwp3-sample16-hwp5.hwp` 결과 (62 페이지)
+- [ ] rhwp-studio WASM 빌드의 페이지 수 (98 페이지) 와 차이 진단:
+  - dump-pages CLI 와 WASM (브라우저) 의 paginate 코드 경로 비교
+  - RHWP_USE_PAGINATOR 환경변수 (TypesetEngine vs paginator) 영향
+  - WASM 의 옵션 (respect_vpos_reset 등) 확인
+- [ ] HWP5 파서의 line_seg vpos 처리 (HWP3 sample16-hwp5.hwp 의 lineseg vpos 값)
+
+### 5.2 가설 후보
+
+| 가설 | 검증 |
+|------|------|
+| H1: dump-pages 와 WASM 의 typeset/pagination 옵션 다름 | 코드 trace |
+| H2: HWP5 파서가 vpos=0 reset 신호 처리 누락 | line_seg 직접 확인 |
+| H3: WASM 빌드의 hide_empty_line / respect_vpos_reset 차이 | 환경변수 확인 |
+
+## Stage 6 — HWPX 변환본 페이지 수 inflate (72 → 62) — #895 통합
+
+### 6.1 #895 통합
+
+[#895](https://github.com/edwardkim/rhwp/issues/895) 의 진단 결과 본 stage 에서 fix 시도. #895 close 처리.
+
+### 6.2 진단 결과 (Task #894 Stage 1 의 진단 정합)
+
+- HWPX 의 lineseg vpos 가 페이지 break 시 0 reset 되지 않음 (한컴 HWPX 변환기 산물)
+- `typeset.rs:455~493` 의 vpos-reset trigger (`cv==0 && pv>5000`) 발동 실패
+
+### 6.3 Fix 방향
+
+#894 Stage 1 에서 평가한 옵션 (α/β/γ) 중 가장 안전한 fix 시도:
+- α: HWPX 파서 lineseg vpos 의 페이지 break 지점 추정 후 0 reset
+- β: typeset 의 vpos-reset trigger 조건 확장
+- γ: HWPX 파서 lineseg vpos 정규화
+
+## Stage 7 — HWPX 변환본 페이지 외곽선 미표시
+
+### 7.1 진단 절차
+
+- [ ] HWPX 의 `<hp:visibility>` / `<hp:border>` 등 page border 관련 attribute 파싱 확인
+- [ ] HWP5 변환본 (외곽선 표시됨) vs HWPX 변환본 (외곽선 안 보임) IR 차이
+- [ ] HWPX 파서의 page_border_fill 변환 코드 위치
+
+### 7.2 Fix 방향
+
+HWPX 파서가 page_border_fill 변환 시 attr / border_fill_id / spacing 정합
+
+## Stage 8 — 통합 검증 + 최종 보고서
+
+### 8.1 통합 검증
+
+- [ ] `cargo test --release --all-targets` 1398+ passed
 - [ ] HWP3 sample 6종 페이지 수 회귀 없음
 - [ ] HWP5/HWPX 주요 샘플 페이지 수 회귀 없음
 - [ ] golden SVG 회귀 없음
 - [ ] sample16 페이지 18 시각 정합:
   - ◦ x 좌표 (paragraph 397/398/399)
   - WMF 그림 안 텍스트
+  - HWP5 페이지 수 62 정합
+  - HWPX 페이지 수 62 정합
+  - HWPX 외곽선 표시
+- [ ] **WASM 빌드 + rhwp-studio 시각 확인**
 
-### 5.2 최종 보고서
+### 8.2 최종 보고서
 
-- `mydocs/report/task_m100_896_report.md`
+- `mydocs/report/task_m100_896_report.md` (갱신)
 
-### 5.3 PR 생성
+### 8.3 PR 생성
 
 - base: `devel`, head: `jangster77:local/task896`
-- PR body 에 두 차이 모두 명시
-- `closes #896`
+- PR body 에 모든 차이 + 통합 처리 명시
+- `closes #896`, `closes #895`
 
 ## 위험 평가
 
