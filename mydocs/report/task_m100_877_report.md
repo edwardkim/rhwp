@@ -142,11 +142,16 @@ total: passed: 1381, failed: 0
 
 ### 본 task 범위 외 (별도 task)
 
-| 항목 | 비고 |
-|------|------|
-| **HWP3 alpha convention 통일** | drawing.rs 의 alpha=0 convention 이 한컴 사적. HWP5/HWPX 파서 + 모델 / renderer 통일 검토 별도 task. |
-| **HWP3 PUA chars 전반적 매핑** | 0x3366 외 한컴 사적 PUA chars (다양한 글머리/장식 char) 의 표준 unicode 또는 PUA → glyph fallback 매핑. 별도 task 에서 cross-ref 도구로 진행. |
-| **paragraph border_fill 자동 부여** | 분석 결과 본 task 에서 불필요 (`mydocs/tech/hwp3_paragraph_border_fill_analysis.md`). 향후 시각 회귀 발견 시 별도 task. |
+| 항목 | 영역 | 비고 |
+|------|------|------|
+| **HWP3 페이지 외곽선 좌표 기준 정합** | renderer | 목차 페이지 우측 페이지 번호가 외곽선 박스 밖 표시. page border `attr & 0x01` 가드 (paper vs body_area) 검토 필요 |
+| **paragraph multi-line picture SVG 중복 emit** | renderer | paragraph 394 [1] 그림이 ls_count=3 마다 SVG image 3번 emit. typeset/svg renderer 영역 |
+| **HWP5 변환본 페이지 수 inflate** | HWP5 파서 / pagination | `hwp3-sample16-hwp5.hwp` 가 rhwp 에서 98 페이지 (한컴 viewer 62 페이지) |
+| **HWP3 alpha convention 통일** | model / renderer | drawing.rs 의 alpha=0 convention 이 한컴 사적. HWP5/HWPX 파서 통일 검토 |
+| **HWP3 PUA chars 전반적 매핑** | parser/hwp3 | 0x3366 외 한컴 사적 PUA chars 추가 매핑 |
+| **paragraph border_fill 자동 부여** | parser | 분석 결과 본 task 에서 불필요 (`mydocs/tech/hwp3_paragraph_border_fill_analysis.md`) |
+
+상세 분석: [mydocs/working/task_m100_877_residual.md](../working/task_m100_877_residual.md)
 
 ## 결론
 
