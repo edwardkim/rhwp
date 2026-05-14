@@ -255,6 +255,7 @@ export class CanvasView {
   /** 리소스를 정리한다 */
   private reset(): void {
     this.pageRenderer.cancelAll();
+    this.pageRenderer.resetImageRetryState();
     this.canvasPool.releaseAll();
     this.currentVisiblePages = [];
     this.pages = [];
