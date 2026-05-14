@@ -1122,6 +1122,27 @@ impl LayoutEngine {
                 // 마지막 세그먼트 처리
                 let remaining_est: String = run_chars_est[seg_start_est..].iter().collect();
                 ts.line_x_offset = est_x;
+                // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
+                // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
+                // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
+                // 계산해 ts.right_tab_block_width_override 로 주입한다.
+                if auto_tab_right && remaining_est.contains('\t') && run_idx_est + 1 < comp_line.runs.len() {
+                    let tab_byte = remaining_est.rfind('\t').unwrap();
+                    let post_tab: String = remaining_est[tab_byte + '\t'.len_utf8()..].to_string();
+                    let no_more_tabs_after_in_run = !post_tab.contains('\t');
+                    let no_tabs_in_subsequent = comp_line.runs.iter().skip(run_idx_est + 1)
+                        .all(|r| !r.text.contains('\t'));
+                    if no_more_tabs_after_in_run && no_tabs_in_subsequent {
+                        let mut ts_measure = ts.clone();
+                        ts_measure.right_tab_block_width_override = None;
+                        let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                        let subsequent_w = right_tab_block_width(
+                            &comp_line.runs, run_idx_est + 1, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
+                        ts.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
+                    }
+                }
                 if !remaining_est.is_empty() {
                     est_x += estimate_text_width(&remaining_est, &ts);
                 }
@@ -1563,6 +1584,27 @@ impl LayoutEngine {
                 text_style.extra_word_spacing = extra_word_sp;
                 text_style.extra_char_spacing = extra_char_sp;
                 text_style.extra_dash_advance = extra_dash_sp;
+                // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
+                // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
+                // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
+                // 계산해 text_style.right_tab_block_width_override 로 주입한다.
+                if auto_tab_right && run.text.contains('\t') && run_idx + 1 < comp_line.runs.len() {
+                    let tab_byte = run.text.rfind('\t').unwrap();
+                    let post_tab: String = run.text[tab_byte + '\t'.len_utf8()..].to_string();
+                    let no_more_tabs_after_in_run = !post_tab.contains('\t');
+                    let no_tabs_in_subsequent = comp_line.runs.iter().skip(run_idx + 1)
+                        .all(|r| !r.text.contains('\t'));
+                    if no_more_tabs_after_in_run && no_tabs_in_subsequent {
+                        let mut ts_measure = text_style.clone();
+                        ts_measure.right_tab_block_width_override = None;
+                        let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                        let subsequent_w = right_tab_block_width(
+                            &comp_line.runs, run_idx + 1, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
+                        text_style.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
+                    }
+                }
                 let run_border_fill_id = styles.char_styles.get(run.char_style_id as usize)
                     .map(|cs| cs.border_fill_id).unwrap_or(0);
                 let full_width = if run.char_overlap.is_some() {

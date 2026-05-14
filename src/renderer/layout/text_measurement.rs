@@ -267,7 +267,12 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                         && !has_more_tabs_after
                         && style.available_width > 0.0;
                     if override_to_right {
-                        let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        // [Task #874 #2] lang split 로 post-tab 콘텐츠가 후속 run 으로
+                        // 쪼개진 경우 (예: "F3→Alt+I" → "F3"/"→"/"Alt+I"), 현재 run 내부
+                        // 측정만으로는 seg_w 가 부족. paragraph_layout 이 미리 합산한
+                        // block_w override 가 있으면 그것을 사용.
+                        let seg_w = style.right_tab_block_width_override
+                            .unwrap_or_else(|| measure_segment_from(&chars, &cluster_len, i + 1, &char_width));
                         let right_edge_rel = style.text_start_offset + style.available_width - style.line_x_offset;
                         total = (right_edge_rel - seg_w).max(total);
                     } else {
@@ -428,8 +433,13 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                         f64::INFINITY
                     };
                     if override_to_right {
-                        let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
-                        let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
+                        // [Task #874 #2] lang split 후속 run 합산 override.
+                        let seg_w = if let Some(w) = style.right_tab_block_width_override {
+                            w
+                        } else {
+                            let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
+                            measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
+                        };
                         x = (body_right_text_rel - seg_w).max(x);
                     } else {
                         let high_byte = (tab_type_raw >> 8) & 0xFF;
@@ -721,7 +731,9 @@ impl TextMeasurer for WasmTextMeasurer {
                         && !has_more_tabs_after
                         && style.available_width > 0.0;
                     if override_to_right {
-                        let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                        // [Task #874 #2] lang split 후속 run 합산 override (native 와 동일).
+                        let seg_w = style.right_tab_block_width_override
+                            .unwrap_or_else(|| measure_segment_from(&chars, &cluster_len, i + 1, &char_width));
                         let right_edge_rel = style.text_start_offset + style.available_width - style.line_x_offset;
                         total = (right_edge_rel - seg_w).max(total);
                     } else {
@@ -873,8 +885,13 @@ impl TextMeasurer for WasmTextMeasurer {
                         f64::INFINITY
                     };
                     if override_to_right {
-                        let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
-                        let seg_w = measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
+                        // [Task #874 #2] lang split 후속 run 합산 override (native 와 동일).
+                        let seg_w = if let Some(w) = style.right_tab_block_width_override {
+                            w
+                        } else {
+                            let seg_start = { let mut s = i + 1; while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0 { s += 1; } s };
+                            measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
+                        };
                         x = (body_right_text_rel - seg_w).max(x);
                     } else {
                         match tab_type {
@@ -974,6 +991,7 @@ pub(crate) fn resolved_to_text_style(styles: &ResolvedStyleSet, char_style_id: u
             available_width: 0.0,
             line_x_offset: 0.0,
             text_start_offset: 0.0,
+            right_tab_block_width_override: None,
             tab_leaders: Vec::new(),
             inline_tabs: Vec::new(),
             extra_word_spacing: 0.0,
