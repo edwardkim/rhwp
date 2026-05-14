@@ -319,6 +319,15 @@ export class WasmBridge {
     return '{"layers":[]}';
   }
 
+  getPageOverlayImages(pageNum: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getPageOverlayImages?: (p: number) => string };
+    if (typeof d.getPageOverlayImages === 'function') {
+      return d.getPageOverlayImages(pageNum);
+    }
+    return '';
+  }
+
   renderPageSvg(pageNum: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.renderPageSvg(pageNum);
