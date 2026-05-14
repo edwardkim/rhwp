@@ -181,12 +181,44 @@ cargo test --release --all-targets: 1398 passed, 0 failed
 
 상세: [`mydocs/working/task_m100_896_stage7.md`](../working/task_m100_896_stage7.md)
 
-## 7. 결론
+## 7. Stage 9 추가 진단 — WMF text positioning (별도 task #902 분리)
 
-본 task #896 의 4 차이 처리 결과:
+작업지시자 추가 발견 — 두 그림 비교 시 rhwp 의 WMF 그림 안 텍스트가 한컴 viewer 보다 작아 보임 (일부 겹침 효과). timeboxed 정밀 분석:
+
+### 7.1 WMF binary 분석 결과
+
+```
+rec[0] SETMAPMODE mode=8 (MM_ANISOTROPIC)
+rec[1] SETWINDOWEXT (y=72, x=56)
+rec[2] SETWINDOWORG (y=4161, x=6333)
+SETVIEWPORTEXT/ORG: 호출 안 됨
+```
+
+### 7.2 ROOT CAUSE
+
+- WMF spec MM_ANISOTROPIC: WindowExt + ViewportExt 의 비율로 unit scale 결정
+- 한컴 사적 WMF 는 SetWindowExt(56, 72) 단 1회, ViewportExt 미호출
+- 실 element 좌표 (0, 0, 6333, 4212) 와 **비표준 비례**
+- font-size 117 → effective 11.24 px (한컴 viewer 와 크기 차이)
+
+### 7.3 Fix 한계 + 분리 결정
+
+| 후보 | 위험 |
+|------|------|
+| α: WMF unit scale 정밀 처리 | 매우 높 (Task #860 fixture 회귀) |
+| β: font-size scale factor 추가 | 매우 높 (정확값 부재) |
+
+한컴 사적 WMF spec 의 reverse engineering + 정밀 분석 필요. 본 task scope 매우 초과.
+
+→ **별도 task [#902](https://github.com/edwardkim/rhwp/issues/902) 분리**: "WMF unit scale 정합 — 한컴 사적 WMF 의 SetWindowExt 비표준 비례"
+
+## 8. 결론
+
+본 task #896 의 4 + 1 차이 처리 결과:
 - ✅ **차이 1**: paragraph 398/399 의 ◦ 잘못 추가 → fix
 - ✅ **차이 2**: WMF 그림 안 한글 텍스트 깨짐 → fix
 - ⏭️ **차이 3 (HWP5/HWPX inflate)**: CLI 결과는 정합 / WASM 환경 차이는 별도
 - ✅ **차이 4 (HWPX 외곽선)**: HWPX 파서 `<hp:pageBorderFill>` 처리 추가
+- ⏭️ **차이 5 (WMF text positioning)**: 한컴 사적 WMF unit scale → 별도 task #902 분리
 
-cargo test 1398 passed + sample 회귀 없음. 한컴 viewer (PDF) 정합.
+cargo test 1398 passed + sample 회귀 없음. 한컴 viewer 와의 잔존 미세 차이 (WMF unit scale) 는 후속 task.
