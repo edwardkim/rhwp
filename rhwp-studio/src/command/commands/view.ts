@@ -87,7 +87,7 @@ export const viewCommands: CommandDef[] = [
       document.querySelectorAll('[data-cmd="view:para-mark"]').forEach(el => {
         el.classList.toggle('active', next);
       });
-      services.eventBus.emit('document-changed');
+      services.eventBus.emit('document-view-changed');
     },
   },
   (() => {
@@ -103,7 +103,7 @@ export const viewCommands: CommandDef[] = [
         document.querySelectorAll('[data-cmd="view:para-mark"]').forEach(el => {
           el.classList.toggle('active', showParaMarks);
         });
-        services.eventBus.emit('document-changed');
+        services.eventBus.emit('document-view-changed');
       },
     } satisfies CommandDef;
   })(),
@@ -119,7 +119,7 @@ export const viewCommands: CommandDef[] = [
         el.classList.toggle('active', next);
       });
       services.eventBus.emit('transparent-borders-changed', next);
-      services.eventBus.emit('document-changed');
+      services.eventBus.emit('document-view-changed');
     },
   },
   (() => {
@@ -134,7 +134,7 @@ export const viewCommands: CommandDef[] = [
         document.querySelectorAll('[data-cmd="view:toggle-clip"]').forEach(el => {
           el.classList.toggle('active', !clipEnabled);
         });
-        services.eventBus.emit('document-changed');
+        services.eventBus.emit('document-view-changed');
       },
     } satisfies CommandDef;
   })(),

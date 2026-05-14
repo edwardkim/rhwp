@@ -9,7 +9,7 @@ import { loadWebFonts } from '@/core/font-loader';
 import { CommandRegistry } from '@/command/registry';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices } from '@/command/types';
-import { fileCommands } from '@/command/commands/file';
+import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
 import { viewCommands } from '@/command/commands/view';
 import { formatCommands } from '@/command/commands/format';
@@ -252,14 +252,19 @@ function setupFileInput(): void {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
 
   fileInput.addEventListener('change', async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target as HTMLInputElement;
+    const skipUnsavedGuard = input.dataset.skipUnsavedGuard === 'true';
+    delete input.dataset.skipUnsavedGuard;
+    const file = input.files?.[0];
     if (!file) return;
     const name = file.name.toLowerCase();
     if (!name.endsWith('.hwp') && !name.endsWith('.hwpx')) {
       alert('HWP/HWPX 파일만 지원합니다.');
+      fileInput.value = '';
       return;
     }
-    await loadFile(file);
+    await loadFile(file, { skipUnsavedGuard });
+    fileInput.value = '';
   });
 
   // 문서 전체에서 브라우저 기본 드롭 동작 방지 (파일 열기/다운로드 방지)
@@ -400,6 +405,10 @@ function setupEventListeners(): void {
     documentState.markDirty(typeof reason === 'string' ? reason : 'document-mutated');
   });
 
+  eventBus.on('document-changed', (reason) => {
+    documentState.markDirty(typeof reason === 'string' ? reason : 'document-changed');
+  });
+
   eventBus.on('document-dirty-changed', () => {
     eventBus.emit('command-state-changed');
   });
@@ -516,15 +525,21 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
   }
 }
 
-async function loadFile(file: File): Promise<void> {
+async function loadFile(file: File, options: { skipUnsavedGuard?: boolean } = {}): Promise<boolean> {
   const msg = sbMessage();
   try {
+    if (!options.skipUnsavedGuard) {
+      const canReplace = await confirmSaveBeforeReplacingDocument(commandServices);
+      if (!canReplace) return false;
+    }
     msg.textContent = '파일 로딩 중...';
     const startTime = performance.now();
     const data = new Uint8Array(await file.arrayBuffer());
     await loadBytes(data, file.name, null, startTime);
+    return true;
   } catch (error) {
     showLoadError(error);
+    return false;
   }
 }
 
@@ -625,13 +640,24 @@ async function createNewDocument(): Promise<void> {
   }
 }
 
+async function canReplaceCurrentDocument(skipUnsavedGuard?: boolean): Promise<boolean> {
+  return skipUnsavedGuard === true || await confirmSaveBeforeReplacingDocument(commandServices);
+}
+
 // 커맨드에서 새 문서 생성 호출
-eventBus.on('create-new-document', () => { createNewDocument(); });
+eventBus.on('create-new-document', (payload) => {
+  void (async () => {
+    const options = payload as { skipUnsavedGuard?: boolean } | undefined;
+    if (!await canReplaceCurrentDocument(options?.skipUnsavedGuard)) return;
+    await createNewDocument();
+  })();
+});
 eventBus.on('open-document-bytes', async (payload) => {
   const data = payload as {
     bytes: Uint8Array;
     fileName: string;
     fileHandle: typeof wasm.currentFileHandle;
+    skipUnsavedGuard?: boolean;
     /** 문서 비교 등: 로드 완료를 기다리는 쪽과 짝을 맞출 때만 전달 */
     requestId?: string;
   };
@@ -640,6 +666,10 @@ eventBus.on('open-document-bytes', async (payload) => {
     eventBus.emit('open-document-bytes:done', { requestId: data.requestId, ok, error });
   };
   try {
+    if (!await canReplaceCurrentDocument(data.skipUnsavedGuard)) {
+      notifyDone(false, '문서 열기가 취소되었습니다.');
+      return;
+    }
     await loadBytes(data.bytes, data.fileName, data.fileHandle);
     notifyDone(true);
   } catch (error) {
@@ -683,8 +713,7 @@ async function loadFromUrlParam(): Promise<void> {
         if (result.error) throw new Error(result.error);
         const data = new Uint8Array(result.data);
         assertRemoteDocumentBytes(data);
-        const docInfo = wasm.loadDocument(data, fileName);
-        await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지`);
+        await loadBytes(data, fileName, null);
         return;
       }
     } else {
@@ -696,8 +725,7 @@ async function loadFromUrlParam(): Promise<void> {
     const buffer = await response.arrayBuffer();
     const data = new Uint8Array(buffer);
     assertRemoteDocumentBytes(data, contentType);
-    const docInfo = wasm.loadDocument(data, fileName);
-    await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지`);
+    await loadBytes(data, fileName, null);
   } catch (error) {
     showLoadError(error);
   }
@@ -737,10 +765,13 @@ window.addEventListener('message', async (e) => {
   if (msg.type === 'hwpctl-load' && msg.data) {
     try {
       await initPromise;
+      if (!await canReplaceCurrentDocument(Boolean(msg.skipUnsavedGuard))) {
+        e.source?.postMessage({ type: 'rhwp-response', id: msg.id, error: '문서 열기가 취소되었습니다.' }, { targetOrigin: '*' });
+        return;
+      }
       const bytes = new Uint8Array(msg.data);
-      const docInfo = wasm.loadDocument(bytes, msg.fileName || 'document.hwp');
-      await initializeDocument(docInfo, `${msg.fileName || 'document'} — ${docInfo.pageCount}페이지`);
-      e.source?.postMessage({ type: 'rhwp-response', id: msg.id, result: { pageCount: docInfo.pageCount } }, { targetOrigin: '*' });
+      await loadBytes(bytes, msg.fileName || 'document.hwp', null);
+      e.source?.postMessage({ type: 'rhwp-response', id: msg.id, result: { pageCount: wasm.pageCount } }, { targetOrigin: '*' });
     } catch (err: any) {
       e.source?.postMessage({ type: 'rhwp-response', id: msg.id, error: err.message || String(err) }, { targetOrigin: '*' });
     }
@@ -763,10 +794,13 @@ window.addEventListener('message', async (e) => {
         break;
       case 'loadFile': {
         await initPromise;
+        if (!await canReplaceCurrentDocument(Boolean(params?.skipUnsavedGuard))) {
+          reply(undefined, '문서 열기가 취소되었습니다.');
+          break;
+        }
         const bytes = new Uint8Array(params.data);
-        const docInfo = wasm.loadDocument(bytes, params.fileName || 'document.hwp');
-        await initializeDocument(docInfo, `${params.fileName || 'document'} — ${docInfo.pageCount}페이지`);
-        reply({ pageCount: docInfo.pageCount });
+        await loadBytes(bytes, params.fileName || 'document.hwp', null);
+        reply({ pageCount: wasm.pageCount });
         break;
       }
       case 'pageCount':
