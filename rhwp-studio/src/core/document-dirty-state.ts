@@ -14,6 +14,7 @@ export interface DirtyStateChange {
 export class DocumentDirtyState {
   private dirty = false;
   private beforeUnloadWindow: Window | null = null;
+  private readonly eventBus: EventBus;
   private readonly beforeUnloadHandler = (event: BeforeUnloadEvent): string | void => {
     if (!this.dirty) return;
     event.preventDefault();
@@ -21,7 +22,9 @@ export class DocumentDirtyState {
     return '';
   };
 
-  constructor(private readonly eventBus: EventBus) {}
+  constructor(eventBus: EventBus) {
+    this.eventBus = eventBus;
+  }
 
   isDirty(): boolean {
     return this.dirty;
