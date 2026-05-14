@@ -928,6 +928,14 @@ pub(crate) fn parse_paragraph_list(
                                 2 => crate::model::shape::TextWrap::Square, // 어울림
                                 _ => crate::model::shape::TextWrap::Square,
                             };
+                            // [Task #877 Stage 4] treat_as_char=true (ref_pos=0) 이면 wrap=Square 모순
+                            // → InFrontOfText 로 강제. sample16 paragraph 394 picture (treat_as_char=true,
+                            // wrap=Square) 가 paragraph 의 3 lines 마다 SVG image 중복 렌더링되는 회귀.
+                            if pic.common.treat_as_char
+                                && matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
+                            {
+                                pic.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
+                            }
                             
                             pic.common.margin.left = (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
                             pic.common.margin.right = (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
