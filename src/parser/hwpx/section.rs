@@ -21,7 +21,7 @@ use crate::model::shape::{
     VertRelTo, HorzRelTo, VertAlign, HorzAlign, TextWrap,
 };
 use crate::model::style::{ShapeBorderLine, Fill};
-use crate::model::page::{PageDef, ColumnDef, ColumnType, ColumnDirection};
+use crate::model::page::{PageDef, ColumnDef, ColumnType, ColumnDirection, PageBorderFill};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::HwpUnit16;
@@ -372,6 +372,7 @@ fn parse_paragraph(
 fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -> Result<Option<ColumnDef>, HwpxError> {
     let mut buf = Vec::new();
     let mut col_def: Option<ColumnDef> = None;
+    let mut page_border_fill_count = 0usize;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
@@ -382,6 +383,10 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
                     b"colPr" => { col_def = Some(parse_col_pr(e)); }
                     b"startNum" => parse_start_num(e, sec_def),
                     b"visibility" => parse_visibility(e, sec_def),
+                    b"pageBorderFill" => {
+                        let pbf = parse_page_border_fill(e, reader)?;
+                        push_page_border_fill(sec_def, pbf, &mut page_border_fill_count);
+                    }
                     _ => {}
                 }
             }
@@ -393,6 +398,10 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
                     b"colPr" => { col_def = Some(parse_col_pr(e)); }
                     b"startNum" => parse_start_num(e, sec_def),
                     b"visibility" => parse_visibility(e, sec_def),
+                    b"pageBorderFill" => {
+                        let pbf = parse_page_border_fill_empty(e);
+                        push_page_border_fill(sec_def, pbf, &mut page_border_fill_count);
+                    }
                     _ => {}
                 }
             }
@@ -409,6 +418,125 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
         buf.clear();
     }
     Ok(col_def)
+}
+
+fn push_page_border_fill(
+    sec_def: &mut SectionDef,
+    page_border_fill: PageBorderFill,
+    count: &mut usize,
+) {
+    if *count == 0 {
+        sec_def.page_border_fill = page_border_fill;
+    } else {
+        sec_def.extra_page_border_fills.push(page_border_fill);
+    }
+    *count += 1;
+}
+
+fn parse_page_border_fill(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+) -> Result<PageBorderFill, HwpxError> {
+    let mut page_border_fill = parse_page_border_fill_empty(e);
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref child)) | Ok(Event::Empty(ref child)) => {
+                if local_name(child.name().as_ref()) == b"offset" {
+                    parse_page_border_fill_offset(child, &mut page_border_fill);
+                }
+            }
+            Ok(Event::End(ref end)) => {
+                if local_name(end.name().as_ref()) == b"pageBorderFill" {
+                    break;
+                }
+            }
+            Ok(Event::Eof) => break,
+            Err(err) => {
+                return Err(HwpxError::XmlError(format!("pageBorderFill: {}", err)));
+            }
+            _ => {}
+        }
+        buf.clear();
+    }
+    Ok(page_border_fill)
+}
+
+fn parse_page_border_fill_empty(e: &quick_xml::events::BytesStart) -> PageBorderFill {
+    let mut page_border_fill = PageBorderFill::default();
+    let mut text_border = String::new();
+    let mut fill_area = String::new();
+    let mut apply_type = String::new();
+    let mut header_inside = false;
+    let mut footer_inside = false;
+
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"borderFillIDRef" => page_border_fill.border_fill_id = parse_u16(&attr),
+            b"textBorder" => text_border = attr_str(&attr),
+            b"fillArea" => fill_area = attr_str(&attr),
+            b"type" => apply_type = attr_str(&attr),
+            b"headerInside" => header_inside = parse_bool(&attr),
+            b"footerInside" => footer_inside = parse_bool(&attr),
+            _ => {}
+        }
+    }
+
+    page_border_fill.attr = page_border_fill_attr(
+        &text_border,
+        &fill_area,
+        &apply_type,
+        header_inside,
+        footer_inside,
+    );
+    page_border_fill
+}
+
+fn parse_page_border_fill_offset(
+    e: &quick_xml::events::BytesStart,
+    page_border_fill: &mut PageBorderFill,
+) {
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"left" => page_border_fill.spacing_left = parse_i16(&attr),
+            b"right" => page_border_fill.spacing_right = parse_i16(&attr),
+            b"top" => page_border_fill.spacing_top = parse_i16(&attr),
+            b"bottom" => page_border_fill.spacing_bottom = parse_i16(&attr),
+            _ => {}
+        }
+    }
+}
+
+fn page_border_fill_attr(
+    text_border: &str,
+    fill_area: &str,
+    apply_type: &str,
+    header_inside: bool,
+    footer_inside: bool,
+) -> u32 {
+    let mut attr = 0u32;
+
+    if text_border.eq_ignore_ascii_case("PAPER") {
+        attr |= 0x0000_0001;
+    }
+    if header_inside {
+        attr |= 0x0000_0002;
+    }
+    if footer_inside {
+        attr |= 0x0000_0004;
+    }
+
+    attr |= match fill_area {
+        area if area.eq_ignore_ascii_case("PAGE") => 0x0000_0008,
+        area if area.eq_ignore_ascii_case("BORDER") => 0x0000_0010,
+        _ => 0,
+    };
+
+    if apply_type.eq_ignore_ascii_case("BOTH") || apply_type.eq_ignore_ascii_case("EVEN") {
+        attr |= 0x0000_0040;
+    }
+
+    attr
 }
 
 /// <hp:startNum> 요소 파싱

@@ -266,7 +266,7 @@ impl Default for ResolvedBorderStyle {
 }
 
 /// 해소된 스타일 세트 (DocInfo에서 변환)
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
     /// 글자 스타일 목록 (char_shapes[id]에 대응)
     pub char_styles: Vec<ResolvedCharStyle>,
