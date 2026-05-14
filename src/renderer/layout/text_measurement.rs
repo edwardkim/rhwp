@@ -262,7 +262,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                     // 한컴_seg_w) 를 ext[0] 로 저장. 우리 폰트의 seg_w 와 다르면 좌측
                     // 이탈 발생 (shortcut.hwp pi=144 `Alt+Shift+C` 27 px 부족). auto_right
                     // 일 때는 우리 metric 기준 right-edge - our_seg_w 로 override.
-                    let has_more_tabs_after = chars[i+1..].iter().any(|c| *c == '\t');
+                    let has_more_tabs_after = chars[i+1..].contains(&'\t');
                     // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
                     // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
                     // item 18 (Task #290) 의 inline LEFT tab 회귀 차단.
@@ -420,7 +420,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                     // [Task #874] auto_tab_right paragraph + 단일 tab: ext[0] = Hancom의
                     // right-tab 결과 위치 (= 우측 끝 - 한컴_seg_w). 우리 폰트의 seg_w 와 차이
                     // 가 있으면 좌측 이탈. col-relative right edge - our_seg_w 로 override.
-                    let has_more_tabs_after = chars[i+1..].iter().any(|c| *c == '\t');
+                    let has_more_tabs_after = chars[i+1..].contains(&'\t');
                     // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
                     // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
                     // item 18 (Task #290) 의 inline LEFT tab 회귀 차단.
