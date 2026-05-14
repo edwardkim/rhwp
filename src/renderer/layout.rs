@@ -1760,11 +1760,32 @@ impl LayoutEngine {
                         .map(|top_y| text_height + 4.0 <= (top_y - y_offset))
                         .unwrap_or(false);
                     if fits_above {
-                        // Stage 10: anchor para first line vpos 를 함께 저장 → 후속 paragraph
-                        // vpos correction 의 base 로 사용.
-                        let anchor_first_vpos = anchor_para.line_segs.first()
-                            .map(|s| s.vertical_pos).unwrap_or(0);
-                        pending_topbottom_post_jump = Some((bottom_y, anchor_first_vpos));
+                        // Stage 11: 후속 paragraph item 의 first vpos 를 peek 하여 base 직접 계산.
+                        // base = next_para_vpos - (bottom_y - col_area.y) * scale^-1
+                        // → end_y for next para = bottom_y (iris 직하 정합).
+                        let next_para_vpos: Option<i32> = col_content.items.iter()
+                            .skip_while(|it| match it {
+                                PageItem::FullParagraph { para_index } => *para_index != anchor_pi,
+                                PageItem::PartialParagraph { para_index, .. } => *para_index != anchor_pi,
+                                _ => true,
+                            })
+                            .skip(1)  // anchor item 자체 skip
+                            .find_map(|it| match it {
+                                PageItem::FullParagraph { para_index }
+                                | PageItem::PartialParagraph { para_index, .. } => {
+                                    paragraphs.get(*para_index)
+                                        .and_then(|p| p.line_segs.first())
+                                        .map(|s| s.vertical_pos)
+                                }
+                                _ => None,
+                            });
+                        let base_for_post = if let Some(npv) = next_para_vpos {
+                            let visual_diff_hu = ((bottom_y - col_area.y) / self.dpi * 7200.0).round() as i32;
+                            npv - visual_diff_hu
+                        } else {
+                            anchor_para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(0)
+                        };
+                        pending_topbottom_post_jump = Some((bottom_y, base_for_post));
                     } else {
                         y_offset = bottom_y;
                         shape_jumped = true;
