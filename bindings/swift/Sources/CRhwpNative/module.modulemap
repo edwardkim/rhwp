@@ -1,0 +1,5 @@
+module CRhwpNative [system] {
+  header "rhwp_native_ffi.h"
+  link "rhwp_native_ffi"
+  export *
+}

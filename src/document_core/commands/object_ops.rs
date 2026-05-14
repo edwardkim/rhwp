@@ -32,6 +32,46 @@ impl DocumentCore {
             crate::model::control::Control::Picture(p) => p,
             _ => return Err(HwpError::RenderError("지정된 컨트롤이 그림이 아닙니다".to_string())),
         };
+        Self::format_picture_properties_json(pic)
+    }
+
+    /// [Task #825] 머리말/꼬리말 안 그림의 속성 조회.
+    /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
+    ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
+    pub fn get_header_footer_picture_properties_native(
+        &self,
+        section_idx: usize,
+        outer_para_idx: usize,
+        outer_control_idx: usize,
+        inner_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)))?;
+        let outer_para = section.paragraphs.get(outer_para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("외부 문단 인덱스 {} 범위 초과", outer_para_idx)))?;
+        let outer_ctrl = outer_para.controls.get(outer_control_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("외부 컨트롤 인덱스 {} 범위 초과", outer_control_idx)))?;
+
+        let inner_paras: &[crate::model::paragraph::Paragraph] = match outer_ctrl {
+            crate::model::control::Control::Header(h) => &h.paragraphs,
+            crate::model::control::Control::Footer(f) => &f.paragraphs,
+            _ => return Err(HwpError::RenderError("외부 컨트롤이 머리말/꼬리말이 아닙니다".to_string())),
+        };
+
+        let inner_para = inner_paras.get(inner_para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("내부 문단 인덱스 {} 범위 초과", inner_para_idx)))?;
+        let inner_ctrl = inner_para.controls.get(inner_control_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("내부 컨트롤 인덱스 {} 범위 초과", inner_control_idx)))?;
+
+        let pic = match inner_ctrl {
+            crate::model::control::Control::Picture(p) => p,
+            _ => return Err(HwpError::RenderError("지정된 내부 컨트롤이 그림이 아닙니다".to_string())),
+        };
+        Self::format_picture_properties_json(pic)
+    }
+
+    fn format_picture_properties_json(pic: &crate::model::image::Picture) -> Result<String, HwpError> {
 
         let c = &pic.common;
         let vert_rel = match c.vert_rel_to {
@@ -168,7 +208,103 @@ impl DocumentCore {
             crate::model::control::Control::Picture(p) => p,
             _ => return Err(HwpError::RenderError("지정된 컨트롤이 그림이 아닙니다".to_string())),
         };
+        // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
+        let caption_created = Self::apply_picture_props_inner(pic, props_json);
+        // 캡션 생성 시 AutoNumber 재할당 + 텍스트 생성 (본문 path 만 — 머리말/꼬리말은 별도).
+        if caption_created {
+            crate::parser::assign_auto_numbers(&mut self.document);
+            let pic_mut = match &mut self.document.sections[section_idx]
+                .paragraphs[parent_para_idx].controls[control_idx] {
+                crate::model::control::Control::Picture(p) => p,
+                _ => unreachable!(),
+            };
+            let para = &mut pic_mut.caption.as_mut().unwrap().paragraphs[0];
+            para.text = "그림  ".to_string();
+            para.char_offsets = vec![0, 1, 2, 11];
+            para.char_count = 13;
+        }
+        // 리플로우
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.event_log.push(DocumentEvent::PictureResized {
+            section: section_idx, para: parent_para_idx, ctrl: control_idx,
+        });
+        if caption_created {
+            let char_offset = match &self.document.sections[section_idx]
+                .paragraphs[parent_para_idx].controls[control_idx] {
+                crate::model::control::Control::Picture(p) => {
+                    p.caption.as_ref().map_or(0, |c|
+                        c.paragraphs.first().map_or(0, |p| p.text.chars().count()))
+                }
+                _ => 0,
+            };
+            Ok(format!("{{\"ok\":true,\"captionCharOffset\":{}}}", char_offset))
+        } else {
+            Ok("{\"ok\":true}".to_string())
+        }
+    }
 
+    /// [Task #825] 머리말/꼬리말 안 그림 속성 변경.
+    /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
+    ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
+    /// 캡션 신규 생성은 본 함수에서 미지원 (현 dialog UI 가 머리말 picture 캡션
+    /// 변경을 노출하지 않음). caption_created 검출 시 NotSupported 에러.
+    pub fn set_header_footer_picture_properties_native(
+        &mut self,
+        section_idx: usize,
+        outer_para_idx: usize,
+        outer_control_idx: usize,
+        inner_para_idx: usize,
+        inner_control_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let caption_created;
+        {
+            let section = self.document.sections.get_mut(section_idx)
+                .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)))?;
+            let outer_para = section.paragraphs.get_mut(outer_para_idx)
+                .ok_or_else(|| HwpError::RenderError(format!("외부 문단 인덱스 {} 범위 초과", outer_para_idx)))?;
+            let outer_ctrl = outer_para.controls.get_mut(outer_control_idx)
+                .ok_or_else(|| HwpError::RenderError(format!("외부 컨트롤 인덱스 {} 범위 초과", outer_control_idx)))?;
+            let inner_paras: &mut Vec<crate::model::paragraph::Paragraph> = match outer_ctrl {
+                crate::model::control::Control::Header(h) => &mut h.paragraphs,
+                crate::model::control::Control::Footer(f) => &mut f.paragraphs,
+                _ => return Err(HwpError::RenderError("외부 컨트롤이 머리말/꼬리말이 아닙니다".to_string())),
+            };
+            let inner_para = inner_paras.get_mut(inner_para_idx)
+                .ok_or_else(|| HwpError::RenderError(format!("내부 문단 인덱스 {} 범위 초과", inner_para_idx)))?;
+            let inner_ctrl = inner_para.controls.get_mut(inner_control_idx)
+                .ok_or_else(|| HwpError::RenderError(format!("내부 컨트롤 인덱스 {} 범위 초과", inner_control_idx)))?;
+            let pic = match inner_ctrl {
+                crate::model::control::Control::Picture(p) => p,
+                _ => return Err(HwpError::RenderError("지정된 내부 컨트롤이 그림이 아닙니다".to_string())),
+            };
+            caption_created = Self::apply_picture_props_inner(pic, props_json);
+        }
+        if caption_created {
+            return Err(HwpError::RenderError(
+                "머리말/꼬리말 그림에 캡션 신규 생성은 본 버전에서 지원하지 않습니다".to_string()
+            ));
+        }
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.event_log.push(DocumentEvent::PictureResized {
+            section: section_idx, para: outer_para_idx, ctrl: outer_control_idx,
+        });
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    /// [Task #825] Picture 속성 JSON 적용 (mutation only). 후처리 (AutoNumber /
+    /// recompose / paginate / event log) 는 호출자 책임.
+    /// 반환: caption_created (true 면 호출자가 AutoNumber 후처리 필요).
+    fn apply_picture_props_inner(
+        pic: &mut crate::model::image::Picture,
+        props_json: &str,
+    ) -> bool {
         use super::super::helpers::{json_u32, json_i32, json_i16, json_bool, json_str};
 
         // 크기 변경
@@ -330,45 +466,7 @@ impl DocumentCore {
             }
         }
 
-        // 캡션 생성 시 AutoNumber 재할당 + 텍스트 생성
-        // 한컴 방식: "그림 " + [AutoNumber 제어문자 8 code units] + " "
-        // AutoNumber가 번호를 렌더링하므로 텍스트에 번호를 넣지 않는다.
-        if caption_created {
-            crate::parser::assign_auto_numbers(&mut self.document);
-            let pic_mut = match &mut self.document.sections[section_idx]
-                .paragraphs[parent_para_idx].controls[control_idx] {
-                crate::model::control::Control::Picture(p) => p,
-                _ => unreachable!(),
-            };
-            let para = &mut pic_mut.caption.as_mut().unwrap().paragraphs[0];
-            // "그림 " (3글자) + [AutoNumber 8 code units] + " " (1글자)
-            para.text = "그림  ".to_string(); // 그림 + space + space (AutoNumber 사이)
-            // char_offsets: 그(0) 림(1) space(2) space(11=3+8, AutoNumber 뒤)
-            para.char_offsets = vec![0, 1, 2, 11];
-            // char_count = 텍스트 4 code units + AutoNumber 8 + 끝마커 1 = 13
-            para.char_count = 13;
-        }
-
-        // 리플로우
-        let section = &mut self.document.sections[section_idx];
-        section.raw_stream = None;
-        self.recompose_section(section_idx);
-        self.paginate_if_needed();
-
-        self.event_log.push(DocumentEvent::PictureResized { section: section_idx, para: parent_para_idx, ctrl: control_idx });
-        if caption_created {
-            let char_offset = match &self.document.sections[section_idx]
-                .paragraphs[parent_para_idx].controls[control_idx] {
-                crate::model::control::Control::Picture(p) => {
-                    p.caption.as_ref().map_or(0, |c|
-                        c.paragraphs.first().map_or(0, |p| p.text.chars().count()))
-                }
-                _ => 0,
-            };
-            Ok(format!("{{\"ok\":true,\"captionCharOffset\":{}}}", char_offset))
-        } else {
-            Ok("{\"ok\":true}".to_string())
-        }
+        caption_created
     }
 
     /// 그림 컨트롤을 문단에서 삭제한다 (네이티브).

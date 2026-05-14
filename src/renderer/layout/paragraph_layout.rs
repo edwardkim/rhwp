@@ -84,6 +84,50 @@ pub(crate) fn resolve_last_tab_pending(
     }
 }
 
+/// 우측/가운데 탭 정렬 단위의 폭(px).
+///
+/// 탭 직후 run(`start`)부터 `\t` 를 포함하지 않는 연속 run 들의 `estimate_text_width` 합산.
+/// composer(`split_runs_by_lang` / `split_by_char_shapes`)가 char-shape·스크립트 경계로 run 을
+/// 쪼개므로(예: `"Ctrl+(회색)5"` → `["Ctrl+(", "회색)", "5"]`), 탭 직후 한 개 run 폭만 쓰면
+/// 나머지 run 이 탭스톱 우측으로 흘러넘친다 (Issue #842, 결함 #4).
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn right_tab_block_width(
+    runs: &[crate::renderer::composer::ComposedTextRun],
+    start: usize,
+    styles: &ResolvedStyleSet,
+    default_tab_width: f64,
+    tab_stops: &[TabStop],
+    auto_tab_right: bool,
+    available_width: f64,
+) -> f64 {
+    let mut w = 0.0;
+    for r in runs.iter().skip(start) {
+        if r.text.contains('\t') {
+            break;
+        }
+        if let Some(_ov) = &r.char_overlap {
+            let chars: Vec<char> = r.text.chars().collect();
+            let fs = {
+                let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                if ts.font_size > 0.0 { ts.font_size } else { 12.0 }
+            };
+            w += if crate::renderer::composer::decode_pua_overlap_number(&chars).is_some() {
+                fs
+            } else {
+                fs * chars.len() as f64
+            };
+            continue;
+        }
+        let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+        ts.default_tab_width = default_tab_width;
+        ts.tab_stops = tab_stops.to_vec();
+        ts.auto_tab_right = auto_tab_right;
+        ts.available_width = available_width;
+        w += estimate_text_width(&r.text, &ts);
+    }
+    w
+}
+
 impl LayoutEngine {
     pub(crate) fn layout_inline_table_paragraph(
         &self,
@@ -970,7 +1014,7 @@ impl LayoutEngine {
             let mut run_char_pos_est = comp_line.char_start;
             // cross-run 탭 감지용 inline_tabs(composed.tab_extended) 커서 — Task #290
             let mut inline_tab_cursor_est: usize = 0;
-            for run in &comp_line.runs {
+            for (run_idx_est, run) in comp_line.runs.iter().enumerate() {
                 let run_char_count_est = if run.char_overlap.is_some() {
                     let chars: Vec<char> = run.text.chars().collect();
                     if crate::renderer::composer::decode_pua_overlap_number(&chars).is_some() {
@@ -1004,16 +1048,18 @@ impl LayoutEngine {
                         } else {
                             tab_pos
                         };
+                        // [Issue #842 #4] 탭 다음 콘텐츠가 여러 composed run 으로 쪼개진 경우
+                        // (스크립트·char-shape 경계) 전체 블록 폭 기준으로 정렬해야 마지막 글자가
+                        // 탭스톱에 맞는다. (선행 공백 run "예 16" 케이스도 합산에 포함되어 동작 유지.)
+                        let run_w = right_tab_block_width(
+                            &comp_line.runs, run_idx_est, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
                         match tab_type {
                             1 => {
-                                // [Task #279] 전체 run 폭 기준 — 선행 공백이 있는 경우 (예: " 16")
-                                // run 시작 x 가 좌측으로 가서 시각적으로 페이지번호 right edge 가
-                                // effective_pos 에 정렬되도록.
-                                let run_w = estimate_text_width(&run.text, &ts);
                                 est_x = effective_pos - run_w;
                             }
                             2 => {
-                                let run_w = estimate_text_width(&run.text, &ts);
                                 est_x = effective_pos - run_w / 2.0;
                             }
                             _ => {}
@@ -1442,16 +1488,17 @@ impl LayoutEngine {
                     } else {
                         tab_pos
                     };
+                    // [Issue #842 #4] 탭 다음 콘텐츠가 여러 composed run 으로 쪼개진 경우
+                    // (스크립트·char-shape 경계, 예 "Ctrl+(회색)5") 전체 블록 폭 기준 정렬.
+                    let next_w = right_tab_block_width(
+                        &comp_line.runs, run_idx, styles,
+                        tab_width, &tab_stops, auto_tab_right, available_width,
+                    );
                     match tab_type {
                         1 => {
-                            // [Task #279] 전체 run 폭 기준 — 선행 공백이 있는 경우 (예: " 16")
-                            // run 시작 x 가 좌측으로 가서 시각적으로 페이지번호 right edge 가
-                            // effective_pos 에 정렬되도록.
-                            let next_w = estimate_text_width(&run.text, &text_style);
                             x = col_area.x + effective_pos - next_w;
                         }
                         2 => {
-                            let next_w = estimate_text_width(&run.text, &text_style);
                             x = col_area.x + effective_pos - next_w / 2.0;
                         }
                         _ => {}
@@ -3002,7 +3049,7 @@ impl LayoutEngine {
 /// **Supplementary PUA-A 저영역 (0xF0000~0xF00CF)** — 한컴 자체 PUA 저영역.
 ///   요약형 문항 화살표 등 시각 마커. Task #588 의 한컴 PDF 임베디드 폰트
 ///   글리프 외곽 분석 + 정답지 시각 검증으로 매핑 확정.
-pub(crate) fn map_pua_bullet_char(ch: char) -> char {
+pub fn map_pua_bullet_char(ch: char) -> char {
     let code = ch as u32;
 
     // Supplementary PUA-A 저영역 — 한컴 자체 영역 (Task #588 한컴 정답지 정합)
@@ -3056,6 +3103,12 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
             0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
             // 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 — 한컴 PDF 시각 검증 필요
             0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 후 정정)
+            // [Task #826] HWP3 한컴 PUA 그래픽 라인 (PR #753 후속 — johab.rs:65,67).
+            // 한컴 함초롬 폰트는 PUA glyph 보유, rhwp-studio 번들 폰트 (오픈 라이선스)
+            // 부재 → render-time substitution. 측정/렌더링 양쪽 자동 적용.
+            // sample11.hwp 머리말/꼬리말 가로선 패턴 (각 85+ 회) 시각 정합.
+            0xF080F => '\u{2501}', // ━ BOX DRAWINGS HEAVY HORIZONTAL (한컴 — 굵은 가로선)
+            0xF0827 => '\u{25A0}', // ■ BLACK SQUARE (한컴 — 잠정, 시각 판정 후 조정)
             _ => ch,
         };
     }

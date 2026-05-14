@@ -942,10 +942,14 @@ pub(crate) fn parse_paragraph_list(
                                 let _pic_info_size = (&info_buf[58..62]).read_u32::<LittleEndian>().unwrap_or(0);
 
                                 if !pic_name.is_empty() {
-                                    // [Task #741] 외부 file path IR 전달 (Renderer placeholder
-                                    // 처리용). HWP3 spec offset 74 그림 종류 0=외부 파일,
-                                    // 1=OLE, 2=Embedded Image / offset 83~339 그림 파일 이름.
-                                    pic.image_attr.external_path = Some(pic_name.clone());
+                                    // [Task #824] pic_type == 0 (외부 파일) 만 external_path
+                                    // 설정. pic_type == 1 (OLE) / 2 (Embedded) 는 pic_name 이
+                                    // 내부 참조명 (예: "E$$00000.jpg") 이므로 external_path
+                                    // 설정 시 그림 속성 dialog 가 외부 파일로 오표시됨
+                                    // (한컴오피스 2022 정합).
+                                    if pic_type == 0 {
+                                        pic.image_attr.external_path = Some(pic_name.clone());
+                                    }
                                     let next_id = (pic_name_to_id.len() + 1) as u16;
                                     let id = *pic_name_to_id.entry(pic_name).or_insert(next_id);
                                     pic.image_attr.bin_data_id = id;

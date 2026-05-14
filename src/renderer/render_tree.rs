@@ -659,6 +659,32 @@ pub struct ImageNode {
     /// (점선 사각형 + 깨진 image 아이콘) — 한컴 한글 2024 viewer 정합.
     #[serde(default)]
     pub external_path: Option<String>,
+    /// [Task #825] 머리말/꼬리말 그림 식별 marker.
+    /// `Some(ref)` 일 때 본 ImageNode 는 머리말 또는 꼬리말 안에 위치하며,
+    /// `para_index` / `control_index` 는 `Header.paragraphs[]` / `Footer.paragraphs[]`
+    /// 의 inner 인덱스를 가리킨다. `outer` 는 본문 paragraph 의 Header/Footer 컨트롤
+    /// 위치 (body_para_idx + header_ctrl_idx) 를 보존.
+    /// `None` 일 때 본문 그림 (현행 동작).
+    #[serde(default)]
+    pub header_footer_ref: Option<HeaderFooterImageRef>,
+}
+
+/// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+pub struct HeaderFooterImageRef {
+    /// 본문 paragraph 인덱스 (Header/Footer 컨트롤 소속 paragraph)
+    pub outer_para_index: usize,
+    /// 본문 paragraph 안 Header/Footer 컨트롤 인덱스
+    pub outer_control_index: usize,
+    /// "header" or "footer"
+    pub kind: HeaderFooterKind,
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum HeaderFooterKind {
+    Header,
+    Footer,
 }
 
 impl ImageNode {
@@ -675,6 +701,7 @@ impl ImageNode {
             contrast: 0,
             text_wrap: None,
             external_path: None,
+            header_footer_ref: None,
         }
     }
 }

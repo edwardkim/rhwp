@@ -165,6 +165,11 @@ impl TextStyle {
     pub fn is_visually_bold(&self) -> bool {
         self.bold || crate::renderer::style_resolver::is_heavy_display_face(&self.font_family)
     }
+
+    /// 중고딕 계열(font-weight 500) 여부. SVG/HTML 출력 시 `font-weight: 500` 힌트 삽입에 사용.
+    pub fn is_medium_weight(&self) -> bool {
+        !self.bold && crate::renderer::style_resolver::is_medium_weight_face(&self.font_family)
+    }
 }
 
 impl Default for TextStyle {
@@ -983,6 +988,21 @@ mod tests {
         assert_eq!(generic_fallback("Noto Sans KR"), sans);
         // 빈 문자열
         assert_eq!(generic_fallback(""), sans);
+    }
+
+    #[test]
+    fn test_medium_weight_face() {
+        use crate::renderer::style_resolver::is_medium_weight_face;
+        assert!(is_medium_weight_face("HY중고딕"));
+        assert!(is_medium_weight_face("신명 중고딕"));
+        assert!(is_medium_weight_face("한양중고딕"));
+        assert!(is_medium_weight_face("HY태고딕"));
+        assert!(is_medium_weight_face("신명 태고딕"));
+        assert!(!is_medium_weight_face("HY헤드라인M"));
+        assert!(!is_medium_weight_face("돋움"));
+        assert!(!is_medium_weight_face("바탕"));
+        assert!(!is_medium_weight_face("맑은 고딕"));
+        assert!(!is_medium_weight_face(""));
     }
 
     #[test]

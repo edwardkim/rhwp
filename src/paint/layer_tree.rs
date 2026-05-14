@@ -27,7 +27,7 @@ impl PageLayerTree {
             profile: RenderProfile::Screen,
             output_options: LayerOutputOptions::default(),
             root,
-            resources: ResourceArena,
+            resources: ResourceArena::default(),
             text_sources,
         }
     }
@@ -45,7 +45,7 @@ impl PageLayerTree {
             profile,
             output_options: LayerOutputOptions::default(),
             root,
-            resources: ResourceArena,
+            resources: ResourceArena::default(),
             text_sources,
         }
     }

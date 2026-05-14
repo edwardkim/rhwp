@@ -1205,15 +1205,21 @@ export class CursorState {
 
   // ── 그림/글상자 객체 선택 모드 ─────────────────────────────────
   private _pictureObjectSelected = false;
-  private selectedPictureRef: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number } | null = null;
+  private selectedPictureRef: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null = null;
   /** 다중 선택된 개체 목록 */
   private selectedPictureRefs: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }[] = [];
 
-  /** 지정한 개체(그림/글상자/묶음)를 객체 선택한다. */
-  enterPictureObjectSelectionDirect(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line' = 'image', cellIdx?: number, cellParaIdx?: number): void {
+  /** 지정한 개체(그림/글상자/묶음)를 객체 선택한다.
+   * [Task #825] `headerFooter` — 머리말/꼬리말 안 그림일 때 outer 위치 marker 보존. */
+  enterPictureObjectSelectionDirect(
+    sec: number, ppi: number, ci: number,
+    type: 'image' | 'shape' | 'equation' | 'group' | 'line' = 'image',
+    cellIdx?: number, cellParaIdx?: number,
+    headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number },
+  ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;
-    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx };
+    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, headerFooter };
     this.selectedPictureRefs = [{ sec, ppi, ci, type }];
   }
 
@@ -1249,7 +1255,7 @@ export class CursorState {
   }
 
   /** 선택된 개체의 참조 정보를 반환한다. */
-  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number } | null {
+  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null {
     return this.selectedPictureRef;
   }
 

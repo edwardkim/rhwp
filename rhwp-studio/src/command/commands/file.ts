@@ -10,6 +10,17 @@ import {
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
 
+/** [Task #833] 사용자 명시 cancel 에러 검출.
+ * - AbortError: showSaveFilePicker / showOpenFilePicker 다이얼로그 취소
+ * - NotAllowedError: writeBlobToHandle 권한 거부 (Chrome "변경사항 저장" 프롬프트 취소)
+ *
+ * 두 케이스 모두 fallback download 우회 — 사용자가 명시적으로 취소했으므로
+ * 의도하지 않은 Downloads 폴더 저장 + chrome-extension viewer 자동 연결 차단. */
+function isUserCancelError(e: unknown): boolean {
+  return e instanceof DOMException
+      && (e.name === 'AbortError' || e.name === 'NotAllowedError');
+}
+
 function appendPrintStyle(doc: Document, widthMm: number, heightMm: number): void {
   const style = doc.createElement('style');
   style.textContent = `
@@ -170,9 +181,10 @@ export const fileCommands: CommandDef[] = [
             return;
           }
         } catch (e) {
-          // 사용자가 취소하면 AbortError 발생 — 무시
-          if (e instanceof DOMException && e.name === 'AbortError') return;
-          // 그 외 오류는 폴백으로 진행
+          // [Task #833] 사용자 명시 cancel (AbortError / NotAllowedError) 시 fallback
+          // download 우회 — 의도하지 않은 Downloads 폴더 저장 + chrome-extension
+          // viewer 자동 연결 차단.
+          if (isUserCancelError(e)) return;
           console.warn('[file:save] File System Access API 실패, 폴백:', e);
         }
 
@@ -198,6 +210,64 @@ export const fileCommands: CommandDef[] = [
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error('[file:save] 저장 실패:', msg);
+        alert(`파일 저장에 실패했습니다:\n${msg}`);
+      }
+    },
+  },
+  {
+    // [Task #833] 다른 이름으로 저장 — currentFileHandle 무시 + 항상 picker.
+    id: 'file:save-as',
+    label: '다른 이름으로 저장',
+    shortcutLabel: 'Ctrl+Shift+S',
+    // HWPX 출처는 #196 정합 비활성 (file:save 와 동일).
+    canExecute: (ctx) => ctx.hasDocument && ctx.sourceFormat !== 'hwpx',
+    async execute(services) {
+      try {
+        const saveName = services.wasm.fileName;
+        const sourceFormat = services.wasm.getSourceFormat();
+        const isHwpx = sourceFormat === 'hwpx';
+        const bytes = isHwpx ? services.wasm.exportHwpx() : services.wasm.exportHwp();
+        const mimeType = isHwpx ? 'application/hwp+zip' : 'application/x-hwp';
+        const blob = new Blob([bytes as unknown as BlobPart], { type: mimeType });
+        console.log(`[file:save-as] format=${sourceFormat}, ${bytes.length} bytes`);
+
+        try {
+          const saveResult = await saveDocumentToFileSystem({
+            blob,
+            suggestedName: saveName,
+            currentHandle: services.wasm.currentFileHandle,
+            windowLike: window as FileSystemWindowLike,
+            forceSaveAs: true,
+          });
+          if (saveResult.method !== 'fallback') {
+            services.wasm.currentFileHandle = saveResult.handle;
+            services.wasm.fileName = saveResult.fileName;
+            console.log(`[file:save-as] ${saveResult.fileName} (${(bytes.length / 1024).toFixed(1)}KB)`);
+            return;
+          }
+        } catch (e) {
+          if (isUserCancelError(e)) return;
+          console.warn('[file:save-as] File System Access API 실패, 폴백:', e);
+        }
+
+        // 폴백: 파일명 입력 → blob download
+        const baseName = saveName.replace(/\.hwp$/i, '');
+        const result = await showSaveAs(baseName);
+        if (!result) return;
+        const downloadName = result;
+        services.wasm.fileName = downloadName;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = downloadName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        console.log(`[file:save-as] ${downloadName} (${(bytes.length / 1024).toFixed(1)}KB)`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[file:save-as] 저장 실패:', msg);
         alert(`파일 저장에 실패했습니다:\n${msg}`);
       }
     },
