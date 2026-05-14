@@ -2820,8 +2820,17 @@ impl LayoutEngine {
             //     과 정합. (Task #452: 이전 #332 의 layout-only trailing 제외 →
             //     pagination 과 1 ls drift 발생 → 회복)
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
+            // [Task #901 Stage 5] wrap zone paragraph 의 empty-runs line 은 y advance 건너뜀.
+            // pic2.hwp paragraph 0 case: 8 line_segs (4 visible "우/리/나/라" + 4 empty
+            // phantom lines for wrap zone 의 다른 column). empty line 은 한컴 정합 상
+            // vertical space 미차지. has_picture_shape_square_wrap 게이트로 wrap zone
+            // 호스트 paragraph 만 영향, 일반 빈 paragraph 회귀 차단.
+            let skip_advance_empty_wrap = has_picture_shape_square_wrap
+                && comp_line.runs.is_empty();
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
+            } else if skip_advance_empty_wrap {
+                // no advance
             } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
