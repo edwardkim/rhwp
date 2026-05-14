@@ -477,25 +477,12 @@ impl HeightMeasurer {
         let row_count = table.row_count as usize;
         let mut row_heights = vec![0.0f64; row_count];
 
-        // [Task #874 #5] aift.hwp p19 표 pi=236 (1×1 글상자, "기능 간 이벤트 연계
-        // 구성도 이미지") 의 cell.height (11753 HU = 156.7 px) 가 table.common.height
-        // (8464 HU = 112.9 px) 보다 큰 모순. 한컴은 이런 케이스에서 cell.height 를
-        // 무시하고 content+pad 로 행 높이 결정 (= 한컴 PDF p19 끝에서 표가 작게
-        // 렌더되며 p19 안에 들어맞음). 본 가드는 1×1 표 (단일 행·단일 열) 에서
-        // cell.height > table.common.height 일 때만 cell.height 를 건너뛴다.
-        // 다중 행/열 표는 종전 동작 유지 (회귀 방지).
-        let skip_cell_height_clamp_1x1 = row_count == 1
-            && table.col_count == 1
-            && table.cells.len() == 1
-            && table.cells[0].height < 0x80000000
-            && (table.cells[0].height as u32) > (table.common.height);
-
         // 1단계: row_span==1인 셀에서 행별 최대 높이 추출
         // cell.height는 HWP가 저장한 셀 높이 (pad + content, trailing ls 미포함)
         for cell in &table.cells {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
-                if cell.height < 0x80000000 && !skip_cell_height_clamp_1x1 {
+                if cell.height < 0x80000000 {
                     let h = hwpunit_to_px(cell.height as i32, self.dpi);
                     if h > row_heights[r] {
                         row_heights[r] = h;
