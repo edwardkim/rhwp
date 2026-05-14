@@ -384,6 +384,11 @@ fn parse_paragraph(
 fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -> Result<Option<ColumnDef>, HwpxError> {
     let mut buf = Vec::new();
     let mut col_def: Option<ColumnDef> = None;
+    // pageBorderFill type 우선순위: BOTH > ODD > EVEN
+    // 한컴 viewer 기본: BOTH 가 있으면 모든 페이지 적용, 없으면 ODD/EVEN 별도
+    let mut pbf_both: Option<crate::model::page::PageBorderFill> = None;
+    let mut pbf_odd: Option<crate::model::page::PageBorderFill> = None;
+    let mut pbf_even: Option<crate::model::page::PageBorderFill> = None;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
@@ -394,6 +399,15 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
                     b"colPr" => { col_def = Some(parse_col_pr(e)); }
                     b"startNum" => parse_start_num(e, sec_def),
                     b"visibility" => parse_visibility(e, sec_def),
+                    b"pageBorderFill" => {
+                        let (ty, pbf) = parse_page_border_fill_element(e, reader)?;
+                        match ty.as_str() {
+                            "BOTH" => pbf_both = Some(pbf),
+                            "ODD" => pbf_odd = Some(pbf),
+                            "EVEN" => pbf_even = Some(pbf),
+                            _ => {}
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -420,7 +434,71 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
         }
         buf.clear();
     }
+    // 우선순위 BOTH > ODD > EVEN
+    if let Some(pbf) = pbf_both {
+        sec_def.page_border_fill = pbf;
+    } else if let Some(pbf) = pbf_odd {
+        sec_def.page_border_fill = pbf;
+    } else if let Some(pbf) = pbf_even {
+        sec_def.page_border_fill = pbf;
+    }
     Ok(col_def)
+}
+
+/// <hp:pageBorderFill> 요소 + 내부 <hp:offset> 파싱.
+/// 반환: (type 문자열, PageBorderFill)
+fn parse_page_border_fill_element(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+) -> Result<(String, crate::model::page::PageBorderFill), HwpxError> {
+    let mut pbf = crate::model::page::PageBorderFill::default();
+    let mut type_str = String::new();
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"type" => type_str = attr_str(&attr),
+            b"borderFillIDRef" => pbf.border_fill_id = parse_u16(&attr),
+            b"fillArea" => {
+                // fillArea="PAPER" → paper_based (attr bit 0 = 1)
+                if attr_str(&attr) == "PAPER" {
+                    pbf.attr |= 0x01;
+                }
+            }
+            b"headerInside" => {
+                if attr_str(&attr) == "1" { pbf.attr |= 0x02; }
+            }
+            b"footerInside" => {
+                if attr_str(&attr) == "1" { pbf.attr |= 0x04; }
+            }
+            _ => {}
+        }
+    }
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref oe)) | Ok(Event::Start(ref oe)) => {
+                let oname = oe.name();
+                if local_name(oname.as_ref()) == b"offset" {
+                    for attr in oe.attributes().flatten() {
+                        match attr.key.as_ref() {
+                            b"left" => pbf.spacing_left = parse_i32(&attr) as i16,
+                            b"right" => pbf.spacing_right = parse_i32(&attr) as i16,
+                            b"top" => pbf.spacing_top = parse_i32(&attr) as i16,
+                            b"bottom" => pbf.spacing_bottom = parse_i32(&attr) as i16,
+                            _ => {}
+                        }
+                    }
+                }
+            }
+            Ok(Event::End(ref ee)) => {
+                if local_name(ee.name().as_ref()) == b"pageBorderFill" { break; }
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("pageBorderFill: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+    Ok((type_str, pbf))
 }
 
 /// <hp:startNum> 요소 파싱
