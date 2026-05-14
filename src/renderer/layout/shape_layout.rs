@@ -1195,6 +1195,39 @@ impl LayoutEngine {
             height: (h - margin_top - margin_bottom).max(0.0),
         };
 
+        // [Task #874 #3] shortcut.hwp 1 페이지 우측하단 자동번호 "1" 시각 정합:
+        // 도형이 원본 (sa.original_*) 대비 1.5× 이상 확대된 경우 한컴은 글상자 내부
+        // 글꼴 크기를 (original / current) 비율로 축소 렌더링한다. base_size 가 25400
+        // (254 pt) 인 마스터 페이지 글상자가 현재 좌표계에서 그대로 339 px 로 그려지면,
+        // 본문 우측 단축키 (지우기 Ctrl+BackSpace / Ctrl+Y / Alt+Y) 행 위에 자동번호의
+        // 상단이 광범위하게 겹친다 (한컴 PDF 정합 불일치). render_sx/sy ≠ 1.0 (즉
+        // current ≠ original) 일 때만 동작하므로 일반 글상자에는 영향 없음.
+        let sa = &drawing.shape_attr;
+        let local_styles_scaled: Option<ResolvedStyleSet> = {
+            let sw_ratio = if sa.original_width > 0 && sa.current_width > 0 {
+                sa.current_width as f64 / sa.original_width as f64
+            } else { 1.0 };
+            let sh_ratio = if sa.original_height > 0 && sa.current_height > 0 {
+                sa.current_height as f64 / sa.original_height as f64
+            } else { 1.0 };
+            let max_ratio = sw_ratio.max(sh_ratio);
+            if max_ratio > 1.5 {
+                let inv = (1.0 / max_ratio).min(1.0);
+                let mut local = styles.clone();
+                for cs in local.char_styles.iter_mut() {
+                    cs.font_size *= inv;
+                    cs.letter_spacing *= inv;
+                    for ls in cs.letter_spacings.iter_mut() {
+                        *ls *= inv;
+                    }
+                }
+                Some(local)
+            } else {
+                None
+            }
+        };
+        let styles: &ResolvedStyleSet = local_styles_scaled.as_ref().unwrap_or(styles);
+
         // 세로쓰기 판정: 글상자 list_attr bit 0~2 = text_direction
         // (0=가로, 1=영문 눕힘, 2=영문 세움)
         // 주의: 테이블 셀은 bit 16~18이지만 글상자 LIST_HEADER는 bit 0~2

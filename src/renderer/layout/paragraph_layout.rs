@@ -123,6 +123,8 @@ pub(crate) fn right_tab_block_width(
         ts.tab_stops = tab_stops.to_vec();
         ts.auto_tab_right = auto_tab_right;
         ts.available_width = available_width;
+        // [Task #874] text_start_offset 은 right_tab_block_width 가 측정만 하므로
+        // 영향 없음 — 0 그대로.
         w += estimate_text_width(&r.text, &ts);
     }
     w
@@ -744,6 +746,8 @@ impl LayoutEngine {
         let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Justify);
         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+        // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
+        // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
         let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
@@ -786,10 +790,23 @@ impl LayoutEngine {
         };
 
         // 문단 앞 간격 (첫 줄일 때만)
-        // 단/페이지의 맨 처음 문단은 spacing_before 적용하지 않음
+        // 단/페이지의 맨 처음 문단(column-top)은 spacing_before 를 통째 적용하면 한컴보다
+        // 아래로 밀리므로 종전엔 0 으로 버렸다. 다만 섹션의 첫 문단(para_index==0, 예: 제목)은
+        // 한컴 PDF 가 LINE_SEG.vertical_pos(실제 렌더한 첫 줄 흐름 위치)만큼 앞 간격을 두므로
+        // (제목: spacing_before=52.9px 이지만 vertical_pos=26.5px), 그 경우 spacing_before 를
+        // LINE_SEG.vertical_pos 로 상한 클램프해 적용한다. 페이지 break 후 이어진 column-top
+        // (para_index>0)은 종전대로 0. (Task #853)
         let is_column_top = (y - col_area.y).abs() < 1.0;
-        if start_line == 0 && spacing_before > 0.0 && !is_column_top {
-            y += spacing_before;
+        if start_line == 0 && spacing_before > 0.0 {
+            if !is_column_top {
+                y += spacing_before;
+            } else if para_index == 0 {
+                let vpos0_px = para
+                    .and_then(|p| p.line_segs.first())
+                    .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                y += spacing_before.min(vpos0_px.max(0.0));
+            }
         }
 
         // 문단 전체에서 모든 라인의 runs가 비어있는지 확인
@@ -1031,6 +1048,7 @@ impl LayoutEngine {
                 ts.tab_stops = tab_stops.clone();
                 ts.auto_tab_right = auto_tab_right;
                 ts.available_width = available_width;
+                ts.text_start_offset = effective_margin_left;
                 ts.inline_tabs = composed.tab_extended.clone();
                 // 교차 run 오른쪽/가운데 탭: 이 run의 시작 위치를 역방향으로 조정
                 if let Some((tab_pos, tab_type, fill_type)) = pending_right_tab_est.take() {
@@ -1043,8 +1061,12 @@ impl LayoutEngine {
                         // [Task #279] 리더(fill_type ≠ 0) 가 있는 RIGHT 탭은 "이 줄 우측 끝까지" 의미.
                         // 셀 안 문단에서는 col_area 가 이미 cell padding 적용된 inner_area 이므로
                         // `effective_margin_left + available_width` 가 inner 우측 끝.
-                        let effective_pos = if tab_type == 1 && fill_type != 0 {
-                            effective_margin_left + available_width
+                        // [Task #874] auto_tab_right 의 tab_pos = available_width (text-start
+                        // 상대). RIGHT 탭은 모두 col-start 좌표계로 변환 시 effective_margin_left
+                        // 더해야 함. 종전엔 fill_type ≠ 0 만 변환되어 leader 없는 auto_right tab
+                        // (shortcut.hwp 인쇄/개체 모양 복사 등) 가 ~27 px 왼쪽으로 밀려 렌더됨.
+                        let effective_pos = if tab_type == 1 {
+                            effective_margin_left + (if fill_type != 0 { available_width } else { tab_pos })
                         } else {
                             tab_pos
                         };
@@ -1100,6 +1122,27 @@ impl LayoutEngine {
                 // 마지막 세그먼트 처리
                 let remaining_est: String = run_chars_est[seg_start_est..].iter().collect();
                 ts.line_x_offset = est_x;
+                // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
+                // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
+                // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
+                // 계산해 ts.right_tab_block_width_override 로 주입한다.
+                if auto_tab_right && remaining_est.contains('\t') && run_idx_est + 1 < comp_line.runs.len() {
+                    let tab_byte = remaining_est.rfind('\t').unwrap();
+                    let post_tab: String = remaining_est[tab_byte + '\t'.len_utf8()..].to_string();
+                    let no_more_tabs_after_in_run = !post_tab.contains('\t');
+                    let no_tabs_in_subsequent = comp_line.runs.iter().skip(run_idx_est + 1)
+                        .all(|r| !r.text.contains('\t'));
+                    if no_more_tabs_after_in_run && no_tabs_in_subsequent {
+                        let mut ts_measure = ts.clone();
+                        ts_measure.right_tab_block_width_override = None;
+                        let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                        let subsequent_w = right_tab_block_width(
+                            &comp_line.runs, run_idx_est + 1, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
+                        ts.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
+                    }
+                }
                 if !remaining_est.is_empty() {
                     est_x += estimate_text_width(&remaining_est, &ts);
                 }
@@ -1462,6 +1505,7 @@ impl LayoutEngine {
                 text_style.tab_stops = tab_stops.clone();
                 text_style.auto_tab_right = auto_tab_right;
                 text_style.available_width = available_width;
+                text_style.text_start_offset = effective_margin_left;
                 text_style.inline_tabs = composed.tab_extended.clone();
                 // 교차 run 오른쪽/가운데 탭: 이전 run이 \t로 끝났고
                 // 해당 탭이 오른쪽/가운데 탭이면 이 run을 역방향으로 이동
@@ -1483,8 +1527,9 @@ impl LayoutEngine {
                     // 셀 안 문단에서는 col_area 가 이미 cell padding 적용된 inner_area 이므로
                     // `effective_margin_left + available_width` 가 inner 우측 끝.
                     // tab_pos (HWP 저장값) 이 inner 우측 끝을 초과하면 셀 padding_right 침범이므로 강제 클램핑.
-                    let effective_pos = if tab_type == 1 && fill_type != 0 {
-                        effective_margin_left + available_width
+                    // [Task #874] auto_tab_right (fill_type=0) 도 effective_margin_left 변환 필요.
+                    let effective_pos = if tab_type == 1 {
+                        effective_margin_left + (if fill_type != 0 { available_width } else { tab_pos })
                     } else {
                         tab_pos
                     };
@@ -1539,6 +1584,27 @@ impl LayoutEngine {
                 text_style.extra_word_spacing = extra_word_sp;
                 text_style.extra_char_spacing = extra_char_sp;
                 text_style.extra_dash_advance = extra_dash_sp;
+                // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
+                // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
+                // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
+                // 계산해 text_style.right_tab_block_width_override 로 주입한다.
+                if auto_tab_right && run.text.contains('\t') && run_idx + 1 < comp_line.runs.len() {
+                    let tab_byte = run.text.rfind('\t').unwrap();
+                    let post_tab: String = run.text[tab_byte + '\t'.len_utf8()..].to_string();
+                    let no_more_tabs_after_in_run = !post_tab.contains('\t');
+                    let no_tabs_in_subsequent = comp_line.runs.iter().skip(run_idx + 1)
+                        .all(|r| !r.text.contains('\t'));
+                    if no_more_tabs_after_in_run && no_tabs_in_subsequent {
+                        let mut ts_measure = text_style.clone();
+                        ts_measure.right_tab_block_width_override = None;
+                        let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                        let subsequent_w = right_tab_block_width(
+                            &comp_line.runs, run_idx + 1, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
+                        text_style.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
+                    }
+                }
                 let run_border_fill_id = styles.char_styles.get(run.char_style_id as usize)
                     .map(|cs| cs.border_fill_id).unwrap_or(0);
                 let full_width = if run.char_overlap.is_some() {

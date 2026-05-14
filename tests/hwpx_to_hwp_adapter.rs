@@ -3,12 +3,13 @@
 //! Stage 1: 베이스라인 측정 (페이지 폭주 + 영역별 차이 인벤토리).
 //!         아직 어댑터 본체가 동작하지 않으므로 회복 검증 없음 — 측정만.
 
-use rhwp::document_core::DocumentCore;
 use rhwp::document_core::converters::diagnostics::diff_hwpx_vs_serializer_assumptions;
 use rhwp::document_core::converters::hwpx_to_hwp::{
-    convert_if_hwpx_source, convert_hwpx_to_hwp_ir,
+    convert_hwpx_to_hwp_ir, convert_if_hwpx_source,
 };
+use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
+use rhwp::model::style::FillType;
 
 fn load_sample(name: &str) -> Vec<u8> {
     let path = format!("samples/hwpx/{}", name);
@@ -32,7 +33,10 @@ fn page_count_after_hwp_export(hwpx_bytes: &[u8]) -> (u32, u32) {
 /// reloaded == orig 가 되도록 게이트가 강화된다.
 fn assert_explosion_baseline(name: &str, bytes: &[u8]) {
     let (orig, reloaded) = page_count_after_hwp_export(bytes);
-    eprintln!("[#178 baseline] {}: orig={}, reloaded={}", name, orig, reloaded);
+    eprintln!(
+        "[#178 baseline] {}: orig={}, reloaded={}",
+        name, orig, reloaded
+    );
     assert!(orig >= 1, "{}: 원본 페이지 수 측정 실패", name);
     assert!(
         reloaded > orig,
@@ -57,7 +61,10 @@ fn baseline_page_count_explosion_hwpx_h_02() {
 fn baseline_page_count_explosion_hwpx_h_03() {
     let bytes = load_sample("hwpx-h-03.hwpx");
     let (orig, reloaded) = page_count_after_hwp_export(&bytes);
-    eprintln!("[#178 baseline] hwpx-h-03: orig={}, reloaded={}", orig, reloaded);
+    eprintln!(
+        "[#178 baseline] hwpx-h-03: orig={}, reloaded={}",
+        orig, reloaded
+    );
     // hwpx-h-03 은 폭주 여부 자체가 미확정 — 측정만 기록.
     assert!(orig >= 1);
     assert!(reloaded >= 1);
@@ -102,7 +109,10 @@ fn adapter_deterministic_across_clones() {
 fn adapter_skips_hwp_source() {
     let mut doc = rhwp::model::document::Document::default();
     let report = convert_if_hwpx_source(&mut doc, rhwp::parser::FileFormat::Hwp);
-    assert_eq!(report.skipped_reason.as_deref(), Some("source_format != Hwpx/Hwp3"));
+    assert_eq!(
+        report.skipped_reason.as_deref(),
+        Some("source_format != Hwpx/Hwp3")
+    );
 }
 
 // ============================================================
@@ -127,7 +137,10 @@ fn stage2_raw_ctrl_data_synthesized_for_hwpx_h_01() {
             }
         }
     }
-    assert!(empty_count_before > 0, "HWPX 출처에는 빈 raw_ctrl_data 가 있어야 함");
+    assert!(
+        empty_count_before > 0,
+        "HWPX 출처에는 빈 raw_ctrl_data 가 있어야 함"
+    );
 
     // 어댑터 적용
     let mut doc = core.document().clone();
@@ -151,7 +164,10 @@ fn stage2_raw_ctrl_data_synthesized_for_hwpx_h_01() {
             }
         }
     }
-    assert_eq!(empty_count_after, 0, "어댑터 적용 후 모든 표는 raw_ctrl_data 가 채워져야 함");
+    assert_eq!(
+        empty_count_after, 0,
+        "어댑터 적용 후 모든 표는 raw_ctrl_data 가 채워져야 함"
+    );
 }
 
 #[test]
@@ -274,6 +290,165 @@ fn stage2_page_count_after_adapter_hwpx_h_01() {
     );
 }
 
+#[test]
+fn task888_basic_table_materializes_hancom_table_attrs() {
+    let bytes = load_sample("basic-table-01.hwpx");
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드 실패");
+    let mut doc = core.document().clone();
+
+    let report = convert_hwpx_to_hwp_ir(&mut doc);
+    let table = doc
+        .sections
+        .iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .flat_map(|p| p.controls.iter())
+        .find_map(|ctrl| match ctrl {
+            Control::Table(t) => Some(t),
+            _ => None,
+        })
+        .expect("basic-table-01 표 없음");
+
+    assert_eq!(report.table_ctrl_header_attr_materialized, 1);
+    assert_eq!(report.table_record_attr_materialized, 1);
+    assert_eq!(table.raw_table_record_attr, 0x0400_0006);
+    assert_eq!(report.table_record_row_sizes_materialized, 1);
+    assert_eq!(table.row_sizes, vec![4, 4, 4]);
+    assert!(table.raw_ctrl_data.len() >= 4);
+    assert_eq!(
+        u32::from_le_bytes([
+            table.raw_ctrl_data[0],
+            table.raw_ctrl_data[1],
+            table.raw_ctrl_data[2],
+            table.raw_ctrl_data[3],
+        ]),
+        0x082a_2210
+    );
+}
+
+#[test]
+fn task888_expense_report_materializes_tac_table_ctrl_attrs() {
+    let bytes = load_sample("expense_report.hwpx");
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드 실패");
+    let mut doc = core.document().clone();
+
+    let report = convert_hwpx_to_hwp_ir(&mut doc);
+    let mut tac_attrs = Vec::new();
+    let mut tac_row_sizes = Vec::new();
+
+    for section in &doc.sections {
+        for para in &section.paragraphs {
+            for ctrl in &para.controls {
+                if let Control::Table(t) = ctrl {
+                    if t.common.treat_as_char {
+                        assert!(t.raw_ctrl_data.len() >= 4, "TAC table raw_ctrl_data");
+                        let packed = u32::from_le_bytes([
+                            t.raw_ctrl_data[0],
+                            t.raw_ctrl_data[1],
+                            t.raw_ctrl_data[2],
+                            t.raw_ctrl_data[3],
+                        ]);
+                        assert_ne!(packed, 0, "TAC table CTRL_HEADER attr must be materialized");
+                        assert_eq!(t.attr, packed);
+                        tac_attrs.push(packed);
+                        tac_row_sizes.push(t.row_sizes.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    assert_eq!(tac_attrs.len(), 2, "expense_report TAC table count");
+    assert_eq!(
+        tac_row_sizes,
+        vec![vec![5, 3, 3], vec![4, 1, 4, 3, 6, 1, 3, 1, 2]],
+        "TAC table row_sizes must be row cell counts, not row heights"
+    );
+    assert_eq!(report.table_ctrl_header_attr_materialized, 2);
+    assert_eq!(report.table_record_row_sizes_materialized, 2);
+}
+
+#[test]
+fn task888_expense_report_normalizes_transparent_paragraph_border_fill() {
+    let bytes = load_sample("expense_report.hwpx");
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드 실패");
+    let mut doc = core.document().clone();
+
+    let report = convert_hwpx_to_hwp_ir(&mut doc);
+    assert_eq!(report.border_fills_no_fill_normalized, 1);
+
+    let mut refs = std::collections::HashSet::new();
+    for para_shape in &doc.doc_info.para_shapes {
+        if para_shape.border_fill_id > 0 {
+            refs.insert(para_shape.border_fill_id);
+        }
+    }
+    for char_shape in &doc.doc_info.char_shapes {
+        if char_shape.border_fill_id > 0 {
+            refs.insert(char_shape.border_fill_id);
+        }
+    }
+
+    assert!(
+        !refs.is_empty(),
+        "paragraph/char BorderFill refs must exist"
+    );
+    for id in refs {
+        let border_fill = doc
+            .doc_info
+            .border_fills
+            .get(id.saturating_sub(1) as usize)
+            .expect("valid BorderFill ref");
+        assert!(
+            matches!(border_fill.fill.fill_type, FillType::None),
+            "paragraph/char BorderFill #{} must be normalized to no-fill",
+            id
+        );
+    }
+}
+
+#[test]
+fn task888_expense_report_parses_page_border_fills() {
+    let bytes = load_sample("expense_report.hwpx");
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드 실패");
+    let section_def = &core.document().sections[0].section_def;
+
+    assert_eq!(section_def.page_border_fill.attr, 0x0000_0041);
+    assert_eq!(section_def.page_border_fill.border_fill_id, 3);
+    assert_eq!(section_def.page_border_fill.spacing_left, 4252);
+    assert_eq!(section_def.page_border_fill.spacing_right, 4252);
+    assert_eq!(section_def.page_border_fill.spacing_top, 4252);
+    assert_eq!(section_def.page_border_fill.spacing_bottom, 4252);
+
+    assert_eq!(section_def.extra_page_border_fills.len(), 2);
+    assert_eq!(section_def.extra_page_border_fills[0].attr, 0x0000_0041);
+    assert_eq!(section_def.extra_page_border_fills[0].border_fill_id, 3);
+    assert_eq!(section_def.extra_page_border_fills[1].attr, 0x0000_0001);
+    assert_eq!(section_def.extra_page_border_fills[1].border_fill_id, 3);
+}
+
+#[test]
+fn task888_expense_report_page_border_fills_survive_hwp_save_reload() {
+    let bytes = load_sample("expense_report.hwpx");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드 실패");
+
+    let hwp_bytes = core.export_hwp_with_adapter().expect("HWP 직렬화 실패");
+    let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드 실패");
+    let section_def = &reloaded.document().sections[0].section_def;
+
+    assert_eq!(section_def.page_border_fill.attr, 0x0000_0041);
+    assert_eq!(section_def.page_border_fill.border_fill_id, 3);
+    assert_eq!(section_def.page_border_fill.spacing_left, 4252);
+    assert_eq!(section_def.page_border_fill.spacing_right, 4252);
+    assert_eq!(section_def.page_border_fill.spacing_top, 4252);
+    assert_eq!(section_def.page_border_fill.spacing_bottom, 4252);
+
+    assert_eq!(section_def.extra_page_border_fills.len(), 2);
+    assert_eq!(section_def.extra_page_border_fills[0].attr, 0x0000_0041);
+    assert_eq!(section_def.extra_page_border_fills[0].border_fill_id, 3);
+    assert_eq!(section_def.extra_page_border_fills[1].attr, 0x0000_0001);
+    assert_eq!(section_def.extra_page_border_fills[1].border_fill_id, 3);
+}
+
 // ============================================================
 // Stage 4 — lineseg lh/vpos 사전계산 + SectionDef 컨트롤 삽입 검증
 // ============================================================
@@ -286,19 +461,28 @@ fn stage4_section_def_control_inserted() {
     // 어댑터 적용 전: 첫 문단에 SectionDef 컨트롤이 없어야 함 (HWPX 출처 특성)
     let first_para_orig = &core.document().sections[0].paragraphs[0];
     assert!(
-        !first_para_orig.controls.iter().any(|c| matches!(c, Control::SectionDef(_))),
+        !first_para_orig
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::SectionDef(_))),
         "HWPX 출처 첫 문단에 SectionDef 가 이미 있다면 가정 위반"
     );
 
     let mut doc = core.document().clone();
     let report = convert_hwpx_to_hwp_ir(&mut doc);
-    assert!(report.section_def_controls_inserted > 0, "SectionDef 삽입이 발생해야 함");
+    assert!(
+        report.section_def_controls_inserted > 0,
+        "SectionDef 삽입이 발생해야 함"
+    );
 
     // 어댑터 적용 후: 모든 섹션의 첫 문단에 SectionDef 가 있어야 함
     for (s_idx, section) in doc.sections.iter().enumerate() {
         let first_para = &section.paragraphs[0];
         assert!(
-            first_para.controls.iter().any(|c| matches!(c, Control::SectionDef(_))),
+            first_para
+                .controls
+                .iter()
+                .any(|c| matches!(c, Control::SectionDef(_))),
             "섹션 {} 의 첫 문단에 SectionDef 컨트롤 없음",
             s_idx
         );
@@ -314,7 +498,10 @@ fn stage4_section_def_idempotent() {
     let r1 = convert_hwpx_to_hwp_ir(&mut doc);
     let r2 = convert_hwpx_to_hwp_ir(&mut doc);
     assert!(r1.section_def_controls_inserted > 0);
-    assert_eq!(r2.section_def_controls_inserted, 0, "2차 호출 시 삽입 0 (idempotent)");
+    assert_eq!(
+        r2.section_def_controls_inserted, 0,
+        "2차 호출 시 삽입 0 (idempotent)"
+    );
 }
 
 #[test]
@@ -332,16 +519,28 @@ fn stage4_page_def_preserved_after_roundtrip() {
 
     assert_eq!(orig_pd.width, reload_pd.width, "width 보존");
     assert_eq!(orig_pd.height, reload_pd.height, "height 보존");
-    assert_eq!(orig_pd.margin_left, reload_pd.margin_left, "margin_left 보존");
-    assert_eq!(orig_pd.margin_right, reload_pd.margin_right, "margin_right 보존");
+    assert_eq!(
+        orig_pd.margin_left, reload_pd.margin_left,
+        "margin_left 보존"
+    );
+    assert_eq!(
+        orig_pd.margin_right, reload_pd.margin_right,
+        "margin_right 보존"
+    );
     assert_eq!(orig_pd.margin_top, reload_pd.margin_top, "margin_top 보존");
-    assert_eq!(orig_pd.margin_bottom, reload_pd.margin_bottom, "margin_bottom 보존");
+    assert_eq!(
+        orig_pd.margin_bottom, reload_pd.margin_bottom,
+        "margin_bottom 보존"
+    );
 }
 
 /// Stage 4 핵심 게이트: 어댑터 적용 → 직렬화 → 재로드 시 페이지 수가 원본과 일치.
 fn assert_page_count_recovered(name: &str, bytes: &[u8]) {
     let (orig, after) = page_count_with_adapter(bytes);
-    eprintln!("[#178 Stage 4] {}: orig={}, after_adapter={}", name, orig, after);
+    eprintln!(
+        "[#178 Stage 4] {}: orig={}, after_adapter={}",
+        name, orig, after
+    );
     assert_eq!(
         after, orig,
         "{}: 어댑터 적용 후 페이지 수 {} != 원본 {}",
@@ -377,9 +576,13 @@ fn stage5_export_hwp_with_adapter_hwpx_source_recovers_pages() {
     let hwp_bytes = core.export_hwp_with_adapter().expect("HWP 직렬화");
     let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드");
 
-    assert_eq!(reloaded.page_count(), orig,
+    assert_eq!(
+        reloaded.page_count(),
+        orig,
         "어댑터 통합 진입점: 페이지 수 보존 (orig={}, reloaded={})",
-        orig, reloaded.page_count());
+        orig,
+        reloaded.page_count()
+    );
 }
 
 #[test]
@@ -388,29 +591,36 @@ fn stage5_export_hwp_with_adapter_hwp_source_unchanged() {
     let path = "samples/hwp_table_test.hwp";
     let bytes = match std::fs::read(path) {
         Ok(b) => b,
-        Err(_) => { eprintln!("[skip] {} 없음", path); return; }
+        Err(_) => {
+            eprintln!("[skip] {} 없음", path);
+            return;
+        }
     };
     let mut core = DocumentCore::from_bytes(&bytes).expect("HWP 로드");
 
     let bytes_native = core.export_hwp_native().expect("native 직렬화");
     let bytes_adapter = core.export_hwp_with_adapter().expect("adapter 직렬화");
 
-    assert_eq!(bytes_native, bytes_adapter,
-        "HWP 출처는 어댑터 호출이 native 와 동일 결과여야 함");
+    assert_eq!(
+        bytes_native, bytes_adapter,
+        "HWP 출처는 어댑터 호출이 native 와 동일 결과여야 함"
+    );
 }
 
 #[test]
 fn stage5_export_hwp_with_adapter_idempotent_on_repeated_calls() {
-    // 같은 DocumentCore 에 export_hwp_with_adapter() 를 두 번 호출.
-    // 1차 호출이 IR 을 정규화하면, 2차 호출은 어댑터 가드에 막혀 변경 없음.
+    // 같은 DocumentCore 에 export_hwp_with_adapter() 를 두 번 호출해도 저장 결과가 같다.
+    // Stage #854부터 어댑터는 저장용 clone에만 적용되어 live IR을 변경하지 않는다.
     let bytes = load_sample("hwpx-h-01.hwpx");
     let mut core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드");
 
     let first = core.export_hwp_with_adapter().expect("1차");
     let second = core.export_hwp_with_adapter().expect("2차");
 
-    assert_eq!(first, second,
-        "동일 DocumentCore 에 어댑터 통합 진입점 2회 호출 시 같은 bytes");
+    assert_eq!(
+        first, second,
+        "동일 DocumentCore 에 어댑터 통합 진입점 2회 호출 시 같은 bytes"
+    );
 }
 
 #[test]
@@ -423,9 +633,14 @@ fn stage5_all_three_samples_recover_via_unified_entry_point() {
         let hwp_bytes = core.export_hwp_with_adapter().expect("HWP 직렬화");
         let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드");
 
-        assert_eq!(reloaded.page_count(), orig,
+        assert_eq!(
+            reloaded.page_count(),
+            orig,
             "{}: 페이지 수 보존 (orig={}, reloaded={})",
-            name, orig, reloaded.page_count());
+            name,
+            orig,
+            reloaded.page_count()
+        );
     }
 }
 
@@ -442,7 +657,11 @@ fn stage6_verify_recovered_for_hwpx_h_01() {
         "[#178 Stage 6] verify hwpx-h-01: before={}, after={}, recovered={}, bytes={}",
         v.page_count_before, v.page_count_after, v.recovered, v.bytes_len
     );
-    assert!(v.recovered, "페이지 회복 실패: before={} after={}", v.page_count_before, v.page_count_after);
+    assert!(
+        v.recovered,
+        "페이지 회복 실패: before={} after={}",
+        v.page_count_before, v.page_count_after
+    );
     assert_eq!(v.page_count_before, v.page_count_after);
     assert!(v.bytes_len > 0);
 }
@@ -490,7 +709,11 @@ fn stage5_wasm_api_export_hwp_uses_adapter() {
     let hwp_bytes = doc.export_hwp_with_adapter().expect("어댑터 직렬화");
     let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드");
 
-    assert_eq!(reloaded.page_count(), orig as u32,
+    assert_eq!(
+        reloaded.page_count(),
+        orig as u32,
         "wasm_api 경로: 페이지 수 보존 (orig={}, reloaded={})",
-        orig, reloaded.page_count());
+        orig,
+        reloaded.page_count()
+    );
 }
