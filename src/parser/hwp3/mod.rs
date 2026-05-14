@@ -2395,55 +2395,138 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 /// 회귀 위험 최소화: 다른 HWP3 sample (sample, sample10, sample14) 에서 이
 /// 좁은 패턴 매치되는 paragraph 0개 확인.
 fn fixup_hwp3_outline_bullets(doc: &mut crate::model::document::Document) {
+    // [Task #877 Stage 4] 1단계 글머리 ○ 패턴 (sample16 paragraph 393.text_box.p[1] 등):
+    // raw 첫 char 가 공백이고 paragraph 가 본문 같은 영역에 속한 outline list item.
+    // text_box paragraph (nested) 의 PS 패턴 확인 결과:
+    // - p[1] " 업무특성..." ps_id=415 — 외부 paragraph 89 와 다른 ps
+    // 동일 휴리스틱 적용 (margins 패턴) — 단 nested 도 처리하도록 재귀.
+    let para_shapes = doc.doc_info.para_shapes.clone();
     for section in &mut doc.sections {
         for para in &mut section.paragraphs {
-            let ps_id = para.para_shape_id as usize;
-            if ps_id >= doc.doc_info.para_shapes.len() { continue; }
-            let ps = &doc.doc_info.para_shapes[ps_id];
-            // [Task #877 Stage 4] sample16 의 2단계 글머리 paragraph margins 패턴.
-            // 다른 HWP3 sample 6종에서 매치 0개 검증 완료 (회귀 안전).
-            // ls=130 (paragraph 91/100/110) + ls=145 (paragraph 396/397 등 페이지 16+) 포함.
-            if ps.margin_left != 6500 || ps.margin_right != 1000
-                || ps.indent != -2500
-                || (ps.line_spacing != 130 && ps.line_spacing != 145) {
-                continue;
-            }
-            if !para.text.starts_with(' ') { continue; }
-            // 이미 글머리가 있으면 skip
-            let second = para.text.chars().nth(1).unwrap_or(' ');
-            if second == '◦' || second == '○' { continue; }
-            // " <rest>" → " ◦ <rest>" (첫 공백 다음에 ◦ + 공백 insert)
-            // char_count, char_shapes, char_offsets 동기화 필요.
-            let bullet_str = "◦ ";
-            let inserted_chars: u32 = 2; // '◦' + ' '
-            let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
-            let inserted_bytes: usize = bullet_str.len();
+            apply_bullet_fixup_recursive(para, &para_shapes);
+        }
+    }
+}
 
-            // text 수정: 첫 char (공백) 다음에 insert
-            let mut new_text = String::with_capacity(para.text.len() + inserted_bytes);
-            new_text.push(' ');
-            new_text.push_str(bullet_str);
-            new_text.push_str(&para.text[1..]);
-            para.text = new_text;
-
-            // char_count += 2 (raw cc count semantic — text chars)
-            para.char_count = para.char_count.saturating_add(inserted_chars);
-
-            // char_offsets: 첫 항목 (offset 0) 다음 모든 항목 +2 (insert 위치 = 1)
-            // char_offsets[i] 는 UTF-16 units 기준 인덱스.
-            for off in para.char_offsets.iter_mut().skip(1) {
-                *off = off.saturating_add(inserted_utf16);
-            }
-            // 새 char_offsets entries 추가 (insert 위치 1, 2): UTF-16 offset 1, 1+'◦'.len_utf16 (1)
-            // 실제로는 단순 size 증가만 필요. 정확한 char_shapes/offsets 동기화는 복잡하므로
-            // text 만 수정하고 char_offsets 갱신은 보수적으로 skip.
-
-            // char_shapes: start_pos 가 첫 글자 (=0) 이면 그대로. 그 외 +2
-            for cs in para.char_shapes.iter_mut() {
-                if cs.start_pos > 0 {
-                    cs.start_pos = cs.start_pos.saturating_add(inserted_chars);
+fn apply_bullet_fixup_recursive(
+    para: &mut crate::model::paragraph::Paragraph,
+    para_shapes: &[crate::model::style::ParaShape],
+) {
+    apply_bullet_fixup_single(para, para_shapes);
+    // controls 안의 nested paragraphs 재귀 처리
+    for ctrl in &mut para.controls {
+        use crate::model::control::Control;
+        use crate::model::shape::ShapeObject;
+        match ctrl {
+            Control::Shape(s) => {
+                let common_mut: Option<&mut crate::model::shape::DrawingObjAttr> = match s.as_mut() {
+                    ShapeObject::Rectangle(r) => Some(&mut r.drawing),
+                    ShapeObject::Ellipse(e) => Some(&mut e.drawing),
+                    ShapeObject::Polygon(p) => Some(&mut p.drawing),
+                    ShapeObject::Curve(c) => Some(&mut c.drawing),
+                    ShapeObject::Arc(a) => Some(&mut a.drawing),
+                    ShapeObject::Line(l) => Some(&mut l.drawing),
+                    _ => None,
+                };
+                if let Some(d) = common_mut {
+                    if let Some(tb) = &mut d.text_box {
+                        for p in &mut tb.paragraphs {
+                            // nested text_box paragraph: ○ 휴리스틱 추가 적용
+                            apply_textbox_bullet_fixup(p);
+                            apply_bullet_fixup_recursive(p, para_shapes);
+                        }
+                    }
                 }
             }
+            Control::Table(t) => {
+                for cell in &mut t.cells {
+                    for p in &mut cell.paragraphs {
+                        apply_bullet_fixup_recursive(p, para_shapes);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// nested text_box (Rectangle 안 본문 영역) paragraph 의 1단계 ○ 글머리 자동 추가.
+/// 한컴 HWP5 변환기 휴리스틱: text_box 안의 paragraph 가 " " (공백) + (한글/영문) 시작
+/// 이면 ○ prefix 자동 부여. "  - " (공백+공백+dash) 같은 이미 prefix 있는 case 는 skip.
+fn apply_textbox_bullet_fixup(para: &mut crate::model::paragraph::Paragraph) {
+    if !para.text.starts_with(' ') { return; }
+    let chars: Vec<char> = para.text.chars().take(3).collect();
+    if chars.len() < 2 { return; }
+    let second = chars[1];
+    // skip: 이미 글머리 있는 경우 / 두번째 char 가 공백 (sub-item) / 두번째 char 가 dash
+    if second == '○' || second == '◦' || second == '●' { return; }
+    if second == ' ' { return; }
+    if second == '-' { return; }
+
+    let bullet_str = "○ ";
+    let inserted_chars: u32 = 2;
+    let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
+
+    let mut new_text = String::with_capacity(para.text.len() + bullet_str.len());
+    new_text.push(' ');
+    new_text.push_str(bullet_str);
+    new_text.push_str(&para.text[1..]);
+    para.text = new_text;
+    para.char_count = para.char_count.saturating_add(inserted_chars);
+
+    for off in para.char_offsets.iter_mut().skip(1) {
+        *off = off.saturating_add(inserted_utf16);
+    }
+    for cs in para.char_shapes.iter_mut() {
+        if cs.start_pos > 0 {
+            cs.start_pos = cs.start_pos.saturating_add(inserted_chars);
+        }
+    }
+}
+
+fn apply_bullet_fixup_single(
+    para: &mut crate::model::paragraph::Paragraph,
+    para_shapes: &[crate::model::style::ParaShape],
+) {
+    let ps_id = para.para_shape_id as usize;
+    if ps_id >= para_shapes.len() { return; }
+    let ps = &para_shapes[ps_id];
+
+    // 2단계 글머리 ◦ 패턴: margins (L=6500, R=1000, I=-2500) + ls=130|145
+    let is_level2 = ps.margin_left == 6500 && ps.margin_right == 1000
+        && ps.indent == -2500 && (ps.line_spacing == 130 || ps.line_spacing == 145);
+
+    // 1단계 글머리 ○ 패턴 — sample16 paragraph 393.text_box.paragraphs (nested):
+    // p[1] ps_id=415 " 업무특성..." → ps 가 외부 paragraph 와 다름.
+    // ParaShape 패턴 확인 후 적용. 우선 ls=130 + indent=-2000 패턴 (paragraph 89 와 동일) 시도.
+    // 단 nested 처리 시 paragraph 393 text_box 안의 첫 char 가 공백 + 본문 paragraph
+    // 패턴이면 ○ 추가.
+    let is_level1 = ps.margin_left == 6000 && ps.margin_right == 1000
+        && ps.indent == -2000 && ps.line_spacing == 100; // text_box paragraph 의 ls=100
+
+    let bullet_str = if is_level1 { "○ " } else if is_level2 { "◦ " } else { return; };
+
+    if !para.text.starts_with(' ') { return; }
+    let second = para.text.chars().nth(1).unwrap_or(' ');
+    if second == '◦' || second == '○' { return; }
+
+    let inserted_chars: u32 = 2;
+    let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
+    let inserted_bytes: usize = bullet_str.len();
+
+    let mut new_text = String::with_capacity(para.text.len() + inserted_bytes);
+    new_text.push(' ');
+    new_text.push_str(bullet_str);
+    new_text.push_str(&para.text[1..]);
+    para.text = new_text;
+    para.char_count = para.char_count.saturating_add(inserted_chars);
+
+    for off in para.char_offsets.iter_mut().skip(1) {
+        *off = off.saturating_add(inserted_utf16);
+    }
+    for cs in para.char_shapes.iter_mut() {
+        if cs.start_pos > 0 {
+            cs.start_pos = cs.start_pos.saturating_add(inserted_chars);
         }
     }
 }
