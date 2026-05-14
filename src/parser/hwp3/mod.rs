@@ -2362,8 +2362,11 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         page_border.borders = [bl, bl, bl, bl];
         doc_border_fills.push(page_border);
         let bfid = (doc_border_fills.len() - 1) as u16; // 0-based ID
+        // attr bit 0 = paper_based (1) vs body_based (0).
+        // HWP3 spec 명시 없으나 한컴 viewer 의 PDF 출력 정합 비교 결과 paper_based 가 정답
+        // (sample16 페이지 2 목차 우측 페이지 번호가 body_based 박스 밖, paper_based 박스 안).
         section_def.page_border_fill = crate::model::page::PageBorderFill {
-            attr: 0,
+            attr: 1,
             spacing_left: (doc_info.border_margin_left as i16) * 4,
             spacing_right: (doc_info.border_margin_right as i16) * 4,
             spacing_top: (doc_info.border_margin_top as i16) * 4,
