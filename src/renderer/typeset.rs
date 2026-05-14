@@ -1071,9 +1071,26 @@ impl TypesetEngine {
         let ls_type = para_style.map(|s| s.line_spacing_type)
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
+        // [Task #901 Stage 7] wrap zone host paragraph 의 whitespace-only line 은 height 제외.
+        // paragraph_layout 의 skip_advance_empty_wrap 와 정합 — pagination 의 height 계산
+        // 이 시각 렌더링과 어긋나 paragraph 11 등이 잘못 다음 페이지로 분할되는 문제 해소.
+        let has_picture_shape_square_wrap = para.controls.iter().any(|c| {
+            use crate::model::shape::TextWrap;
+            let common_opt = match c {
+                Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
+                Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
+                _ => None,
+            };
+            common_opt.map(|cm| matches!(cm.text_wrap, TextWrap::Square)).unwrap_or(false)
+        });
+
         let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
             comp.lines.iter()
                 .map(|line| {
+                    let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
+                    if has_picture_shape_square_wrap && runs_all_whitespace {
+                        return (0.0, 0.0);
+                    }
                     let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                     let max_fs = line.runs.iter()
                         .map(|r| {
