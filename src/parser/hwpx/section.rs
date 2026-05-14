@@ -284,6 +284,18 @@ fn parse_paragraph(
             Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name(); let local = local_name(cname.as_ref());
                 match local {
+                    b"run" => {
+                        // self-closing 빈 run (예: <hp:run charPrIDRef="42"/>)
+                        // 빈 paragraph 의 char_shape 가 누락되어 default(id=0) 로
+                        // 처리되면 line height 계산이 어긋나 pagination 차이 발생.
+                        for attr in ce.attributes().flatten() {
+                            if attr.key.as_ref() == b"charPrIDRef" {
+                                current_char_shape_id = parse_u32(&attr);
+                            }
+                        }
+                        let utf16_pos = calc_utf16_len_from_parts(&text_parts);
+                        char_shape_changes.push((utf16_pos, current_char_shape_id));
+                    }
                     b"lineBreak" | b"softHyphen" => {
                         text_parts.push("\n".to_string());
                     }
