@@ -88,13 +88,40 @@ paragraph 24 의 `line_seg` (lh=2400) 가 양쪽 IR 에서 **이미 동일**. ch
 - ParaShape 미세 차이 (bold 같은 비-height 속성)
 - Section 의 page-setup metadata
 
-## 4. 결론 — 작업 방향 결정 요청
+## 3.3 옵션 (ii) 종합 진단 결과
 
-옵션 (b) 깊이 진단 진행 결과:
+### 3.3.1 picture cur 차이 검증
+
+- HWPX 의 picture `<hp:curSz width="0" height="0"/>` 가 0 으로 설정됨 (한컴 변환기 산물)
+- HWPX 파서가 `<hp:sz>` 로 common.width/height 정상 설정 (30704×6380), `<hp:curSz>` 는 `shape_attr.current_width/height` 만 0 으로 설정
+- layout / pagination 코드는 `common.width/height` 만 사용, `shape_attr.current_*` 는 composer.rs/object_ops.rs 에서만 사용 (renderer 외부)
+- → **picture cur 차이는 layout 영향 없음**. root cause 아님
+
+### 3.3.2 paragraph 23 / 24 IR diff 정밀 분석
+
+ir-diff 결과 (paragraph 23, paragraph 24 모두):
+- TD (TabDef) 의 pos 값 차이만 존재 (4294707008 = -262144 unsigned, HWP5 가 음수 위치 사용)
+- text, char_count, char_offsets, char_shapes, line_segs, controls, tab_extended, ParaShape 모두 동일
+- → **ir-diff 비교 범위 내에서는 paragraph 23/24 자체 IR 차이 없음**
+
+### 3.3.3 종합 결론
+
+옵션 (ii) "모든 잠재 후보 종합 진단" 결과:
+
+- ✅ paragraph 별 IR 비교 (ir-diff 범위 내) 차이 없음 (TD 제외)
+- ✅ line_seg vpos / lh 등 layout 결정 요소 동일
+- ❌ 그럼에도 페이지 break 위치 다름
+
+→ **root cause 가 ir-diff 비교 항목 외부에 있거나, pagination 알고리즘 자체에 입력 외 분기가 있을 가능성**. 단일 fix 로 해결 불가능. 추가 정밀 분석 (pagination 코드 trace + 모든 paragraph attribute 비교 + section/document metadata 비교) 필요하며, 그 분석 자체가 본 task 규모 초과.
+
+## 4. 작업 방향 결정 요청 (재요청)
+
+옵션 (b) → (ii) 진단 결과:
 
 - ✅ **Fix 1 적용**: HWPX 파서 누락 case (run Empty) 처리 — 정확성 보강
 - ❌ **페이지 inflate 미해결**: 72 → 72 (Fix 1 만으로는 부족)
-- ⚠️ **추가 root cause 후보 존재**: paragraph 23 picture cur=0×0 외 다수 잠재 후보. 각각 정밀 진단 시 시간 큼
+- ⚠️ **picture cur 후보 검증**: shape_attr.current_* 가 layout 미사용 → root cause 아님
+- ⚠️ **paragraph IR 자체 차이 없음**: ir-diff 비교 범위 내에서 paragraph 23/24 동일 → root cause 가 비교 범위 외부 또는 pagination 알고리즘 분기
 
 ### 4.1 다음 옵션
 
