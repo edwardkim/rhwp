@@ -1499,7 +1499,20 @@ impl TypesetEngine {
         };
 
         // 비-TAC 표: 호스트 문단의 trailing line_spacing도 포함
-        let host_line_spacing = if !is_tac {
+        // [Task #874 #7] 비-TAC 1×1 placeholder 표 (paras=1 text-only) 는 host
+        // line_spacing 을 더하지 않는다. 한컴은 표 outer_margin_bottom 만 사용 (호스트
+        // 문단 line_spacing 은 본문 라인 간 간격 의미). aift.hwp p21 표 pi=268
+        // ("협업 시스템 구성도 이미지") 직후 pi=284 ("코멘트 스레드 관리...") 가
+        // 9.6 px 만큼 다음 페이지로 밀려나는 문제 해결.
+        let is_single_cell_placeholder = !is_tac
+            && table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && table.cells.first()
+                .map(|c| c.paragraphs.iter().all(|p|
+                    p.controls.is_empty() && p.line_segs.len() <= 1))
+                .unwrap_or(false);
+        let host_line_spacing = if !is_tac && !is_single_cell_placeholder {
             para.line_segs.last()
                 .filter(|seg| seg.line_spacing > 0)
                 .map(|seg| hwpunit_to_px(seg.line_spacing, self.dpi))
