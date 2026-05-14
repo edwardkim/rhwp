@@ -2085,8 +2085,8 @@ impl LayoutEngine {
         result
     }
 
-    /// TopAndBottom 개체의 하단 y 좌표와 상단 y 좌표를 계산
-    fn calc_shape_bottom_y(
+    /// TopAndBottom 개체의 하단 y 좌표와 상단 y 좌표를 계산 (pub(crate) — Task #901 Stage 8 flow-around)
+    pub(crate) fn calc_shape_bottom_y(
         &self,
         common: &CommonObjAttr,
         col_area: &LayoutRect,

@@ -1640,6 +1640,9 @@ impl LayoutEngine {
                 y_offset = bottom_y;
             }
         }
+        // [Task #901 Stage 8] TopAndBottom flow-around: anchor paragraph 의 text 가 picture
+        // 위에 fit 가능하면 pre-jump skip, render 후 post-jump 적용.
+        let mut pending_topbottom_post_jump: Option<f64> = None;
         // [Task #412] vpos 보정 anchor: 첫 PageItem 이 실제 렌더링되는 y_offset.
         // body_wide_reserved 푸시 후의 y_offset 이 첫 항목의 vpos(=base) 에 대응됨.
         // 이를 anchor 로 사용해야 vpos→y 변환이 정확함 (col_area.y 는 단 영역 top
@@ -1708,12 +1711,46 @@ impl LayoutEngine {
                 PageItem::PartialTable { para_index, .. } => *para_index,
                 PageItem::Shape { para_index, .. } => *para_index,
             };
+            // [Task #901 Stage 8] post-jump 적용: 직전 anchor paragraph 가 flow-around 로
+            // 그림 위에 렌더된 경우 후속 paragraph 의 y_offset 을 picture bottom 으로 jump.
+            if let Some(bottom_y) = pending_topbottom_post_jump.take() {
+                if bottom_y > y_offset {
+                    y_offset = bottom_y;
+                }
+            }
             // TopAndBottom 글상자: 앵커 문단에 도달하면 y_offset을 글상자 하단 아래로 점프
             let mut shape_jumped = false;
             for &(anchor_pi, bottom_y) in &shape_reserved {
                 if item_para == anchor_pi && bottom_y > y_offset {
-                    y_offset = bottom_y;
-                    shape_jumped = true;
+                    // [Task #901 Stage 8] flow-around 시도: anchor 의 text height 가 picture 위
+                    // 영역 (col_area.y ~ picture_top_y) 에 fit 가능하면 pre-jump skip.
+                    use crate::model::shape::TextWrap;
+                    let anchor_para = &paragraphs[anchor_pi];
+                    let picture_top_y_opt: Option<f64> = anchor_para.controls.iter().find_map(|c| {
+                        let common = match c {
+                            Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
+                            Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
+                            Control::Table(t) if !t.common.treat_as_char => Some(&t.common),
+                            _ => None,
+                        }?;
+                        if !matches!(common.text_wrap, TextWrap::TopAndBottom) { return None; }
+                        let (_bot, top) = self.calc_shape_bottom_y(common, col_area, &layout.body_area);
+                        Some(top)
+                    });
+                    let text_height = composed.get(anchor_pi).map(|comp| {
+                        comp.lines.iter().map(|line| {
+                            crate::renderer::hwpunit_to_px(line.line_height + line.line_spacing, self.dpi)
+                        }).sum::<f64>()
+                    }).unwrap_or(f64::MAX);
+                    let fits_above = picture_top_y_opt
+                        .map(|top_y| text_height + 4.0 <= (top_y - y_offset))
+                        .unwrap_or(false);
+                    if fits_above {
+                        pending_topbottom_post_jump = Some(bottom_y);
+                    } else {
+                        y_offset = bottom_y;
+                        shape_jumped = true;
+                    }
                 }
             }
 
