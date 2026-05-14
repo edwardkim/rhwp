@@ -2135,10 +2135,31 @@ impl TypesetEngine {
             } else {
                 0.0
             };
+            // [Task #874 #9] 첫 fragment 의 page_avail 은 host_spacing.before 와
+            // (TopAndBottom + vert=Para + v_offset>0 표의) vertical_offset 를 제외해야 한다.
+            // layout 은 표를 cur_h + host_spacing.before + v_offset 위치에 배치하지만,
+            // typeset 의 page_avail = (table_available - cur_h) 은 두 overhead 를
+            // 포함하지 않아 split 결정 시 actual 가용보다 과대 평가됨 → partial 오버플로우.
+            // aift.hwp p44 pi=584: 41.6 px split_end → 실제 가용 36 px → overflow 37.6 px.
+            let host_before_overhead = if is_continuation { 0.0 } else { ft.host_spacing.before };
+            let vert_offset_overhead = if is_continuation {
+                0.0
+            } else {
+                use crate::model::shape::{TextWrap as TW3, VertRelTo as VR3};
+                let is_para_topbottom = !table.common.treat_as_char
+                    && matches!(table.common.text_wrap, TW3::TopAndBottom)
+                    && matches!(table.common.vert_rel_to, VR3::Para);
+                // HwpUnit=u32 이므로 음수 (u32 wrap) 는 i32 로 캐스트 후 확인.
+                let v_off_i32 = table.common.vertical_offset as i32;
+                if is_para_topbottom && v_off_i32 > 0 {
+                    hwpunit_to_px(v_off_i32, self.dpi)
+                } else { 0.0 }
+            };
             let page_avail = if is_continuation {
                 base_available
             } else {
-                (table_available - st.current_height - caption_extra).max(0.0)
+                (table_available - st.current_height - caption_extra
+                    - host_before_overhead - vert_offset_overhead).max(0.0)
             };
 
             let header_overhead = if is_continuation && mt.repeat_header && mt.has_header_cells && row_count > 1 {
