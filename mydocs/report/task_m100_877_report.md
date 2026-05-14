@@ -1,7 +1,7 @@
 # Task #877 최종 결과 보고서 — hwp3-sample16.hwp WASM 로드 실패 + 시각 정합
 
 **이슈**: [edwardkim/rhwp#877](https://github.com/edwardkim/rhwp/issues/877)
-**브랜치**: `local/task877_v2` (분기: `local/task873`, 16 commits)
+**브랜치**: `local/task877_v2` (분기: `local/task873`, 19 commits)
 **마일스톤**: v1.0.0 (M100)
 **기간**: 2026-05-13 ~ 2026-05-14
 
@@ -67,7 +67,7 @@ panicked at library/alloc/src/raw_vec/mod.rs:28:5: capacity overflow
 | 2d737be | drawing object 모든 variant 의 treat_as_char 검사 (빈 페이지 2 해소: 65→64 페이지) |
 | 9fbb798 | HWP3 0x3366 → PUA U+F03C5 (1단계 글머리) 매핑 |
 
-### Stage 4 (b647227, 5b70dfc, ab1fd83, acf3b09, 202cef9, 8008501, **00d6bba**) — 잔여 처리
+### Stage 4 (b647227, 5b70dfc, ab1fd83, acf3b09, 202cef9, 8008501, **00d6bba**, c8ba53b, 648c2cb) — 잔여 처리 + PDF 정합
 
 | Commit | 내용 |
 |--------|------|
@@ -77,6 +77,8 @@ panicked at library/alloc/src/raw_vec/mod.rs:28:5: capacity overflow
 | acf3b09 | PUA U+F03C5 → ○ (U+25CB) 변경 + picture ref_pos=0 위치 정합 |
 | 202cef9 → 8008501 | fill_color high flag (0x10000000) 처리 — RGB=0+flag → 흰색 |
 | **00d6bba** | **★ 근본 원인 ★** HWP3 drawing Fill.alpha = 0 (한컴 convention) — alpha=255 → opacity=0 완전 투명 회귀 해소 |
+| **c8ba53b** | **HWP3 doc_info 페이지 외곽선 IR 변환** — PDF 정합 (모든 페이지 외곽 box) |
+| 648c2cb | ◦ 글머리 휴리스틱 ls=145 확장 (paragraph 396/397/398/399 등 16쪽 본문) |
 
 #### Stage 4 의 핵심 발견 (00d6bba)
 
