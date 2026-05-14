@@ -5,6 +5,7 @@
 **진행 순서**: Stage 1 (C') → Stage 2 (B) → Stage 3 (A)
 **Scope 변경**: 항목 C (HWP5 변환본 inflate) 는 #877 진행 중 이미 해결 → **항목 C' 로 대체**: HWPX 변환본 페이지 수 정합 (72 → 62)
 **Scope 추가**: 항목 D (CLAUDE.md c2955b5 컨트리뷰터 워크플로우 보강) — PR #890 미포함, task894 PR 로 메인테이너 전달. base 자동 포함, 별도 stage 없음
+**Scope 갱신 (Stage 1 진단 후)**: Stage 1 의 ROOT CAUSE (HWPX lineseg vpos 페이지 break 0 reset 누락) 가 한컴 HWPX 변환기의 본질적 한계. Fix 가 광범위 영향 + 회귀 점검 자료 부족 → **별도 task [#895](https://github.com/edwardkim/rhwp/issues/895) 로 분리**. 본 task 의 Stage 1 은 Fix 1 (HWPX self-closing run charPrIDRef, `55c6191`) 만 유지하는 정확성 보강으로 종료.
 
 ## Stage 1 — 항목 C' : HWPX 변환본 페이지 수 inflate (72 → 62)
 
