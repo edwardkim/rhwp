@@ -27,7 +27,7 @@ use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::HwpUnit16;
 
 use super::HwpxError;
-use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool, skip_element};
+use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool, parse_hatch_style, skip_element};
 
 /// section*.xml을 파싱하여 Section 모델로 변환한다.
 pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
@@ -1705,11 +1705,19 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                 match local {
                     b"winBrush" => {
                         fill.fill_type = FillType::Solid;
-                        let mut solid = SolidFill::default();
+                        let mut solid = SolidFill {
+                            pattern_type: -1,
+                            ..SolidFill::default()
+                        };
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"faceColor" => solid.background_color = parse_color(&attr),
                                 b"hatchColor" => solid.pattern_color = parse_color(&attr),
+                                b"hatchStyle" => {
+                                    if let Some(pattern_type) = parse_hatch_style(&attr_str(&attr)) {
+                                        solid.pattern_type = pattern_type;
+                                    }
+                                }
                                 b"alpha" => {
                                     let val = attr_str(&attr);
                                     if let Ok(f) = val.parse::<f64>() {
