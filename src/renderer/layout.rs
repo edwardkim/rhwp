@@ -1852,8 +1852,26 @@ impl LayoutEngine {
                                 // 안전하게 백워드 보정 가능 (pi_N 마지막 줄과 pi_(N+1) 첫 줄 사이의
                                 // 공백 영역 내에서만 이동).
                                 const MAX_BACKWARD_PX: f64 = 8.0;
+                                // [Task #874 #8] 호스트 paragraph 가 TopAndBottom+vert=Para Table 을
+                                // anchor 하는 경우, HWP 가 stale/inflated vpos 를 인코딩하여
+                                // forward jump 가 비정상적으로 클 수 있다 (aift.hwp p44 pi=579:
+                                // prev_vpos_end=5920 → curr_vpos=33421, 367 px forward jump).
+                                // 한컴 PDF 는 이런 paragraph 를 자연 flow 위치에 배치하므로,
+                                // 큰 forward jump 가 발견되면 correction 을 skip 한다.
+                                // 임계값 100 px: 일반 spacing_before/after 의 4 line 정도.
+                                use crate::model::shape::{TextWrap as TW2, VertRelTo as VR2};
+                                let curr_has_topbottom_para_table = paragraphs.get(item_para).map(|p| {
+                                    p.controls.iter().any(|c| matches!(c, Control::Table(t)
+                                        if !t.common.treat_as_char
+                                        && matches!(t.common.text_wrap, TW2::TopAndBottom)
+                                        && matches!(t.common.vert_rel_to, VR2::Para)))
+                                }).unwrap_or(false);
+                                const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
+                                let stale_table_host_vpos = curr_has_topbottom_para_table
+                                    && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
                                 let applied = end_y >= col_area.y && end_y <= col_area.y + col_area.height
-                                    && end_y >= y_offset - MAX_BACKWARD_PX;
+                                    && end_y >= y_offset - MAX_BACKWARD_PX
+                                    && !stale_table_host_vpos;
                                 if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
                                     let path = if is_page_path { "page" } else { "lazy" };
                                     eprintln!(
