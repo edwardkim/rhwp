@@ -393,17 +393,47 @@ export const insertCommands: CommandDef[] = [
   },
 ];
 
+/** 선택 개체 ref 타입 — cursor.selectedPictureRef 와 정합 (headerFooter optional, [Task #831]) */
+type PictureRef = {
+  sec: number;
+  ppi: number;
+  ci: number;
+  type: string;
+  headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
+};
+
 /** 선택 개체의 속성을 조회/변경 헬퍼 (shape/picture 분기) */
-function getProps(services: import('../types').CommandServices, ref: { sec: number; ppi: number; ci: number; type: string }): Record<string, unknown> {
+function getProps(services: import('../types').CommandServices, ref: PictureRef): Record<string, unknown> {
   if (ref.type === 'shape') {
     return services.wasm.getShapeProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
+  }
+  // [Task #831] 머리말/꼬리말 picture 의 경우 별도 API 호출 (PR #832 의 wasm-bridge).
+  // 미적용 시 본문 lookup 실패 → props 빈/stale → 회전/대칭 무동작.
+  if (ref.headerFooter) {
+    return services.wasm.getHeaderFooterPictureProperties(
+      ref.sec,
+      ref.headerFooter.outerParaIdx,
+      ref.headerFooter.outerControlIdx,
+      ref.ppi,
+      ref.ci,
+    ) as unknown as Record<string, unknown>;
   }
   return services.wasm.getPictureProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
 }
 
-function setProps(services: import('../types').CommandServices, ref: { sec: number; ppi: number; ci: number; type: string }, props: Record<string, unknown>): void {
+function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): void {
   if (ref.type === 'shape') {
     services.wasm.setShapeProperties(ref.sec, ref.ppi, ref.ci, props);
+  } else if (ref.headerFooter) {
+    // [Task #831] 머리말/꼬리말 picture setter — 5-tuple lookup 으로 IR 갱신.
+    services.wasm.setHeaderFooterPictureProperties(
+      ref.sec,
+      ref.headerFooter.outerParaIdx,
+      ref.headerFooter.outerControlIdx,
+      ref.ppi,
+      ref.ci,
+      props,
+    );
   } else {
     services.wasm.setPictureProperties(ref.sec, ref.ppi, ref.ci, props);
   }

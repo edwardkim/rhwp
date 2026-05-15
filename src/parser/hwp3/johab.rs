@@ -61,6 +61,12 @@ pub fn decode_johab(ch: u16) -> char {
 ///
 /// 매핑 출처: hwp3-sample10.hwp ↔ hwp3-sample10-hwp5.hwp paragraph 별 cross-ref.
 fn decode_hwp3_extra(ch: u16) -> Option<char> {
+    // [Task #877 Stage 3] 로마숫자 대문자 Ⅰ~Ⅹ: 0x3590~0x3599 → U+2160~U+2169.
+    // sample16 (hwp3-sample16.hwp) 의 cross-ref 로 도출. 한컴 HWP5 변환본의
+    // paragraph 26/31/36/44 ("Ⅰ. 사업개요", "Ⅱ. 제안 일반사항", "Ⅲ ...", "Ⅳ ...") 정합.
+    if (0x3590..=0x3599).contains(&ch) {
+        return char::from_u32(0x2160 + (ch - 0x3590) as u32);
+    }
     let codepoint: u32 = match ch {
         0x301C => 0xF080F,  // 한컴 PUA — 굵은 가로선 (94.5% 발생)
         0x35E1 => 0x2500,   // ─ BOX DRAWINGS LIGHT HORIZONTAL
@@ -68,6 +74,11 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         0x3479 => 0x25B7,   // ▷ WHITE RIGHT-POINTING TRIANGLE
         0x347A => 0x25B6,   // ▶ BLACK RIGHT-POINTING TRIANGLE
         0x3441 => 0x25A0,   // ■ BLACK SQUARE
+        // [Task #877 Stage 3 v4 → Stage 4] sample16 paragraph 89 등의 글머리 prefix.
+        // HWP3 0x3366 → 한컴 HWP5 변환본 paragraph 89 첫 char "\u{f03c5}" (PUA — ⓛ 비슷한 글머리).
+        // rhwp-studio 의 font fallback 이 PUA glyph 미보유 → invisible 회귀. 표준
+        // unicode '○' (U+25CB WHITE CIRCLE) 로 매핑하여 모든 font 에서 가시 표시.
+        0x3366 => 0x25CB,
         _ => return None,
     };
     char::from_u32(codepoint)

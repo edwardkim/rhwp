@@ -46,6 +46,34 @@ impl From<special_char::Hwp3SpecialCharError> for Hwp3Error {
     }
 }
 
+/// HWP3 record buffer 할당 허용 상한 (hard cap).
+/// 외부 입력 garbage length 로 인한 거대 alloc → 32-bit WASM panic 방지.
+/// 정상 HWP3 record 는 이보다 훨씬 작음. 본 cap 을 넘는 length 는 corrupted/misaligned
+/// 로 간주하여 graceful Err 반환.
+pub(crate) const HWP3_MAX_RECORD_SIZE: usize = 256 * 1024 * 1024;
+
+/// length 가 cap 안에 있는지 검증 후 zero-filled `Vec<u8>` 할당.
+/// length > cap 일 때 `vec![]` panic 대신 `InvalidData` Err 반환 (#877).
+pub(crate) fn alloc_record_buf(length: usize) -> Result<Vec<u8>, io::Error> {
+    check_record_count(length)?;
+    Ok(vec![0u8; length])
+}
+
+/// 외부 입력 count (예: `point_count: u32`) 를 `Vec::with_capacity` 인자로 쓰기 전 검증.
+/// count > cap 일 때 graceful Err 반환 (#877).
+pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
+    if count > HWP3_MAX_RECORD_SIZE {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "HWP3 record count overflow: requested {}, cap {}",
+                count, HWP3_MAX_RECORD_SIZE
+            ),
+        ));
+    }
+    Ok(())
+}
+
 /// HWP3 개체의 CommonObjAttr 필드들에서 HWP5 attr 비트필드를 계산한다.
 /// serialize_common_obj_attr이 common.attr 값을 직접 기록하므로,
 /// 필드를 설정한 뒤 반드시 이 함수로 attr을 갱신해야 저장→재열기 후 속성이 유지된다.
@@ -670,7 +698,10 @@ pub(crate) fn parse_paragraph_list(
                                 let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
 
                                 let mut cells = Vec::new();
-                                let mut cell_buf = vec![0u8; 27 * (cell_count as usize)];
+                                let mut cell_buf = match alloc_record_buf(27 * (cell_count as usize)) {
+                                    Ok(b) => b,
+                                    Err(_) => break,
+                                };
                                 if let Err(_) = body_cursor.read_exact(&mut cell_buf) { break; }
                                 
                                 let mut xs_raw = Vec::new();
@@ -867,6 +898,13 @@ pub(crate) fn parse_paragraph_list(
                             let ref_pos = info_buf[8];
                             pic.common.treat_as_char = ref_pos == 0;
                             match ref_pos {
+                                0 => {
+                                    // [Task #877 Stage 4] Text base (treat_as_char) — paragraph 영역
+                                    // inline 으로 그려져야. default CommonObjAttr (Paper) 그대로 두면
+                                    // 페이지 좌상단에 그려지는 회귀 (sample16 paragraph 5 RFP 박스).
+                                    pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
+                                    pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+                                },
                                 1 => {
                                     pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
                                     pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
@@ -890,6 +928,14 @@ pub(crate) fn parse_paragraph_list(
                                 2 => crate::model::shape::TextWrap::Square, // 어울림
                                 _ => crate::model::shape::TextWrap::Square,
                             };
+                            // [Task #877 Stage 4] treat_as_char=true (ref_pos=0) 이면 wrap=Square 모순
+                            // → InFrontOfText 로 강제. sample16 paragraph 394 picture (treat_as_char=true,
+                            // wrap=Square) 가 paragraph 의 3 lines 마다 SVG image 중복 렌더링되는 회귀.
+                            if pic.common.treat_as_char
+                                && matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
+                            {
+                                pic.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
+                            }
                             
                             pic.common.margin.left = (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
                             pic.common.margin.right = (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
@@ -929,7 +975,11 @@ pub(crate) fn parse_paragraph_list(
                             let n_ext_from_buf = (&info_buf[0..4]).read_u32::<LittleEndian>().unwrap_or(0);
                             let n_ext = n_ext_from_buf;
 
-                            let mut ext_buf = vec![0u8; n_ext as usize];
+                            // [Task #877] garbage length 로 인한 거대 alloc → WASM panic 방지.
+                            let mut ext_buf = match alloc_record_buf(n_ext as usize) {
+                                Ok(b) => b,
+                                Err(_) => break,
+                            };
                             if let Err(_) = body_cursor.read_exact(&mut ext_buf) { break; }
                             
                             let pic_type = info_buf[74];
@@ -1120,6 +1170,56 @@ pub(crate) fn parse_paragraph_list(
                                 info_buf.resize(header_val1 as usize, 0);
                                 let _ = body_cursor.read_exact(&mut info_buf);
                             }
+                        } else if ch == 5 {
+                            // [Task #877] 필드 코드 (spec §10.1, 표 33): 가변 길이 8 + n bytes.
+                            // header_val1 = n (필드 코드 세부 정보 길이).
+                            // 현재 8 byte (ch + dword + ch close) 소비 완료, 추가 n bytes 소비.
+                            if header_val1 > 0 {
+                                let mut field_data = match alloc_record_buf(header_val1 as usize) {
+                                    Ok(b) => b,
+                                    Err(_) => break,
+                                };
+                                if let Err(_) = body_cursor.read_exact(&mut field_data) { break; }
+                            }
+                        } else if ch == 6 {
+                            // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
+                            // - offset 0..2: ch=6 (begin) [outer loop 에서 read 완료]
+                            // - offset 2..6: dword 자료구조 길이 = 34 [_=> else 의 header_val1 으로 read 완료]
+                            // - offset 6..8: ch=6 (close) [_=> else 의 ch2 로 read 완료]
+                            // - offset 8..40: hchar array[16] = 책갈피 이름 (32 bytes) — 추가 read 필요
+                            // - offset 40..42: word 책갈피 종류 (2 bytes) — 추가 read 필요
+                            // 총 추가 34 bytes (= header_val1 값과 동일).
+                            // cc count 는 outer i+=3 으로 4 hchars (= 8 bytes) 만 차지.
+                            let mut bookmark_extra = [0u8; 34];
+                            if let Err(_) = body_cursor.read_exact(&mut bookmark_extra) { break; }
+                            let name_buf = &bookmark_extra[0..32];
+                            let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
+                                .trim_end_matches('\0').to_string();
+                            let bookmark_type = (&bookmark_extra[32..34]).read_u16::<LittleEndian>().unwrap_or(0);
+                            let mut field = crate::model::control::Field::default();
+                            field.field_type = crate::model::control::FieldType::Unknown;
+                            field.command = format!("Bookmark:{}:type={}", name, bookmark_type);
+                            controls.push(crate::model::control::Control::Field(field));
+                            ctrl_data_records.push(None);
+                        } else if ch == 7 {
+                            // [Task #877] 날짜 형식 (spec §10.3, 표 37): 84 bytes total.
+                            // - offset 0..2: ch=7 (begin) [outer read]
+                            // - offset 2..82: hchar array[40] = 80 bytes 날짜 형식 (추가 read)
+                            // - offset 82..84: ch=7 (close) (추가 read)
+                            // 현재 outer loop + _=> else 에서 8 byte (ch + 6 byte header) 소비.
+                            // 추가 76 byte 소비 필요.
+                            let mut date_fmt = [0u8; 76];
+                            if let Err(_) = body_cursor.read_exact(&mut date_fmt) { break; }
+                        } else if ch == 8 {
+                            // [Task #877] 날짜 코드 (spec §10.4, 표 38): 96 bytes total.
+                            // - offset 0..2: ch=8 (begin) [outer read]
+                            // - offset 2..82: hchar array[40] 형식 (80 bytes)
+                            // - offset 82..90: word array[4] 날짜 (8 bytes)
+                            // - offset 90..94: word array[2] 시각 (4 bytes)
+                            // - offset 94..96: ch=8 (close) (2 bytes)
+                            // 현재 _=> else 에서 8 byte 소비. 추가 88 byte 필요.
+                            let mut date_code = [0u8; 88];
+                            if let Err(_) = body_cursor.read_exact(&mut date_code) { break; }
                         } else {
                             // 알 수 없음 (코드 0-4, 12, 27 등 예약 문자)
                             // 8바이트 헤더(ch+field+ch2)만 소비. header_val1은 길이 필드가 아님.
@@ -1559,13 +1659,26 @@ pub(crate) fn parse_paragraph_list(
                         // 본 환경 HWP3 파서가 line_spacing_ratio (160%) × th (image height)
                         // 기반 계산 → ls=th×0.6 큰 값 → paragraph height 비정상 → 페이지 분할
                         // 위반. TAC 그림 paragraph 시 ls=600 (작은 고정값) 으로 강제.
+                        // [Task #877 Stage 3 v2] sample16 표지 RFP 박스 (Rectangle drawing object,
+                        // treat_as_char=true) 도 TAC 영역에 포함. Picture 이외 ShapeObject
+                        // (Rectangle/Ellipse/Polygon/Line/Arc/Curve/Group) 의 treat_as_char
+                        // 검사 누락으로 ls=th*60% 거대값 → vpos 누적 → 빈 페이지 2 발생.
                         let has_tac_picture = para.controls.iter().any(|c| {
                             match c {
                                 crate::model::control::Control::Picture(p) => p.common.treat_as_char,
                                 crate::model::control::Control::Shape(s) => {
-                                    if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
-                                        p.common.treat_as_char
-                                    } else { false }
+                                    use crate::model::shape::ShapeObject;
+                                    match s.as_ref() {
+                                        ShapeObject::Picture(p) => p.common.treat_as_char,
+                                        ShapeObject::Rectangle(r) => r.common.treat_as_char,
+                                        ShapeObject::Ellipse(e) => e.common.treat_as_char,
+                                        ShapeObject::Polygon(p) => p.common.treat_as_char,
+                                        ShapeObject::Line(l) => l.common.treat_as_char,
+                                        ShapeObject::Arc(a) => a.common.treat_as_char,
+                                        ShapeObject::Curve(c) => c.common.treat_as_char,
+                                        ShapeObject::Group(g) => g.common.treat_as_char,
+                                        _ => false,
+                                    }
                                 }
                                 _ => false,
                             }
@@ -2097,6 +2210,10 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 
                 let img_data = block.data[32..].to_vec();
 
+                // [Task #877 Stage 4] WMF/EMF magic detection 추가.
+                // sample16 의 16쪽 다이어그램 등은 WMF format (magic 01 00 09 00 = 표준 WMF
+                // mtType=1, mtHeaderSize=9) 인데 ext="bin" 으로 저장되어 렉더러가 미지원.
+                // 정확한 ext 부여로 rhwp/wmf 모듈이 SVG 변환하도록.
                 let ext = if img_data.starts_with(b"\xFF\xD8\xFF") {
                     "jpg"
                 } else if img_data.starts_with(b"\x89PNG\r\n\x1a\n") {
@@ -2105,6 +2222,17 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
                     "gif"
                 } else if img_data.starts_with(b"BM") {
                     "bmp"
+                } else if img_data.starts_with(b"\xD7\xCD\xC6\x9A")
+                    || img_data.starts_with(b"\x01\x00\x09\x00")
+                {
+                    // Placeable WMF / Standard WMF magic
+                    "wmf"
+                } else if img_data.len() >= 44
+                    && img_data.starts_with(b"\x01\x00\x00\x00")
+                    && &img_data[40..44] == b" EMF"
+                {
+                    // EMF magic (record_type=1, " EMF" signature at offset 40)
+                    "emf"
                 } else {
                     "bin"
                 }.to_string();
@@ -2215,6 +2343,35 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         ..Default::default()
     };
 
+    // [Task #877 Stage 4] HWP3 doc_info.border_type / border_margin → SectionDef.page_border_fill
+    // 변환. HWP3 spec §3.2 (문서 정보) offset 112-121 의 페이지 테두리 정보. type=0 이면 없음,
+    // 그 외 = 실선 등. 한컴 viewer 의 PDF 출력에 페이지 외곽선 박스 표시 (sample16 표지/목차/
+    // 본문 모두 페이지 외곽 box). rhwp 가 누락하면 시각 차이.
+    if doc_info.border_type > 0 {
+        use crate::model::style::{BorderFill, BorderLine, BorderLineType};
+        let mut page_border = BorderFill::default();
+        let line_type = match doc_info.border_type {
+            1 => BorderLineType::Solid,
+            2 => BorderLineType::Dash,
+            3 => BorderLineType::Dot,
+            _ => BorderLineType::Solid, // 4 이상: 한컴 사적 type, 일단 Solid 로 fallback
+        };
+        // width: HWP5 BorderLine.width 는 인덱스 (0=0.1mm, 1=0.12mm, ..., 6=0.5mm).
+        // HWP3 raw 의 border 두께 별도 정보 없음 → 기본 1 (얇은 실선) 적용.
+        let bl = BorderLine { line_type, width: 1, color: 0x00000000 };
+        page_border.borders = [bl, bl, bl, bl];
+        doc_border_fills.push(page_border);
+        let bfid = (doc_border_fills.len() - 1) as u16; // 0-based ID
+        section_def.page_border_fill = crate::model::page::PageBorderFill {
+            attr: 0,
+            spacing_left: (doc_info.border_margin_left as i16) * 4,
+            spacing_right: (doc_info.border_margin_right as i16) * 4,
+            spacing_top: (doc_info.border_margin_top as i16) * 4,
+            spacing_bottom: (doc_info.border_margin_bottom as i16) * 4,
+            border_fill_id: bfid,
+        };
+    }
+
     let section = Section {
         section_def,
         paragraphs,
@@ -2232,8 +2389,158 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 
     crate::parser::assign_auto_numbers(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
+    fixup_hwp3_outline_bullets(&mut doc);
 
     Ok(doc)
+}
+
+/// [Task #877 Stage 4] HWP3 → IR 변환 후 outline list 글머리 자동 prefix.
+///
+/// HWP3 raw 에는 paragraph 의 글머리 정보가 부재. 한컴 HWP5 변환기는 paragraph
+/// 의 margins/indent 패턴을 보고 자동으로 ◦ 글머리를 추가하는 휴리스틱을 가짐
+/// (sample16 paragraph 91/100/110 등 — " ◦ 주요업무에..." 형태).
+///
+/// rhwp 도 같은 휴리스틱 도입: HWP3 paragraph 의 ParaShape (L=6500, R=1000,
+/// I=-2500, ls=130) + 첫 char 공백 패턴을 만족하면 paragraph text 시작에 "◦ "
+/// 자동 prefix 추가.
+///
+/// 회귀 위험 최소화: 다른 HWP3 sample (sample, sample10, sample14) 에서 이
+/// 좁은 패턴 매치되는 paragraph 0개 확인.
+fn fixup_hwp3_outline_bullets(doc: &mut crate::model::document::Document) {
+    // [Task #877 Stage 4] 1단계 글머리 ○ 패턴 (sample16 paragraph 393.text_box.p[1] 등):
+    // raw 첫 char 가 공백이고 paragraph 가 본문 같은 영역에 속한 outline list item.
+    // text_box paragraph (nested) 의 PS 패턴 확인 결과:
+    // - p[1] " 업무특성..." ps_id=415 — 외부 paragraph 89 와 다른 ps
+    // 동일 휴리스틱 적용 (margins 패턴) — 단 nested 도 처리하도록 재귀.
+    let para_shapes = doc.doc_info.para_shapes.clone();
+    for section in &mut doc.sections {
+        for para in &mut section.paragraphs {
+            apply_bullet_fixup_recursive(para, &para_shapes);
+        }
+    }
+}
+
+fn apply_bullet_fixup_recursive(
+    para: &mut crate::model::paragraph::Paragraph,
+    para_shapes: &[crate::model::style::ParaShape],
+) {
+    apply_bullet_fixup_single(para, para_shapes);
+    // controls 안의 nested paragraphs 재귀 처리
+    for ctrl in &mut para.controls {
+        use crate::model::control::Control;
+        use crate::model::shape::ShapeObject;
+        match ctrl {
+            Control::Shape(s) => {
+                let common_mut: Option<&mut crate::model::shape::DrawingObjAttr> = match s.as_mut() {
+                    ShapeObject::Rectangle(r) => Some(&mut r.drawing),
+                    ShapeObject::Ellipse(e) => Some(&mut e.drawing),
+                    ShapeObject::Polygon(p) => Some(&mut p.drawing),
+                    ShapeObject::Curve(c) => Some(&mut c.drawing),
+                    ShapeObject::Arc(a) => Some(&mut a.drawing),
+                    ShapeObject::Line(l) => Some(&mut l.drawing),
+                    _ => None,
+                };
+                if let Some(d) = common_mut {
+                    if let Some(tb) = &mut d.text_box {
+                        for p in &mut tb.paragraphs {
+                            // nested text_box paragraph: ○ 휴리스틱 추가 적용
+                            apply_textbox_bullet_fixup(p);
+                            apply_bullet_fixup_recursive(p, para_shapes);
+                        }
+                    }
+                }
+            }
+            Control::Table(t) => {
+                for cell in &mut t.cells {
+                    for p in &mut cell.paragraphs {
+                        apply_bullet_fixup_recursive(p, para_shapes);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// nested text_box (Rectangle 안 본문 영역) paragraph 의 1단계 ○ 글머리 자동 추가.
+/// 한컴 HWP5 변환기 휴리스틱: text_box 안의 paragraph 가 " " (공백) + (한글/영문) 시작
+/// 이면 ○ prefix 자동 부여. "  - " (공백+공백+dash) 같은 이미 prefix 있는 case 는 skip.
+fn apply_textbox_bullet_fixup(para: &mut crate::model::paragraph::Paragraph) {
+    if !para.text.starts_with(' ') { return; }
+    let chars: Vec<char> = para.text.chars().take(3).collect();
+    if chars.len() < 2 { return; }
+    let second = chars[1];
+    // skip: 이미 글머리 있는 경우 / 두번째 char 가 공백 (sub-item) / 두번째 char 가 dash
+    if second == '○' || second == '◦' || second == '●' { return; }
+    if second == ' ' { return; }
+    if second == '-' { return; }
+
+    let bullet_str = "○ ";
+    let inserted_chars: u32 = 2;
+    let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
+
+    let mut new_text = String::with_capacity(para.text.len() + bullet_str.len());
+    new_text.push(' ');
+    new_text.push_str(bullet_str);
+    new_text.push_str(&para.text[1..]);
+    para.text = new_text;
+    para.char_count = para.char_count.saturating_add(inserted_chars);
+
+    for off in para.char_offsets.iter_mut().skip(1) {
+        *off = off.saturating_add(inserted_utf16);
+    }
+    for cs in para.char_shapes.iter_mut() {
+        if cs.start_pos > 0 {
+            cs.start_pos = cs.start_pos.saturating_add(inserted_chars);
+        }
+    }
+}
+
+fn apply_bullet_fixup_single(
+    para: &mut crate::model::paragraph::Paragraph,
+    para_shapes: &[crate::model::style::ParaShape],
+) {
+    let ps_id = para.para_shape_id as usize;
+    if ps_id >= para_shapes.len() { return; }
+    let ps = &para_shapes[ps_id];
+
+    // 2단계 글머리 ◦ 패턴: margins (L=6500, R=1000, I=-2500) + ls=130|145
+    let is_level2 = ps.margin_left == 6500 && ps.margin_right == 1000
+        && ps.indent == -2500 && (ps.line_spacing == 130 || ps.line_spacing == 145);
+
+    // 1단계 글머리 ○ 패턴 — sample16 paragraph 393.text_box.paragraphs (nested):
+    // p[1] ps_id=415 " 업무특성..." → ps 가 외부 paragraph 와 다름.
+    // ParaShape 패턴 확인 후 적용. 우선 ls=130 + indent=-2000 패턴 (paragraph 89 와 동일) 시도.
+    // 단 nested 처리 시 paragraph 393 text_box 안의 첫 char 가 공백 + 본문 paragraph
+    // 패턴이면 ○ 추가.
+    let is_level1 = ps.margin_left == 6000 && ps.margin_right == 1000
+        && ps.indent == -2000 && ps.line_spacing == 100; // text_box paragraph 의 ls=100
+
+    let bullet_str = if is_level1 { "○ " } else if is_level2 { "◦ " } else { return; };
+
+    if !para.text.starts_with(' ') { return; }
+    let second = para.text.chars().nth(1).unwrap_or(' ');
+    if second == '◦' || second == '○' { return; }
+
+    let inserted_chars: u32 = 2;
+    let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
+    let inserted_bytes: usize = bullet_str.len();
+
+    let mut new_text = String::with_capacity(para.text.len() + inserted_bytes);
+    new_text.push(' ');
+    new_text.push_str(bullet_str);
+    new_text.push_str(&para.text[1..]);
+    para.text = new_text;
+    para.char_count = para.char_count.saturating_add(inserted_chars);
+
+    for off in para.char_offsets.iter_mut().skip(1) {
+        *off = off.saturating_add(inserted_utf16);
+    }
+    for cs in para.char_shapes.iter_mut() {
+        if cs.start_pos > 0 {
+            cs.start_pos = cs.start_pos.saturating_add(inserted_chars);
+        }
+    }
 }
 
 fn fixup_hwp3_picture_numbers(doc: &mut crate::model::document::Document) {
@@ -2300,6 +2607,65 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn test_alloc_record_buf_overflow_returns_err() {
+        // [Task #877] garbage length 입력 시 panic 대신 graceful Err 반환.
+        // 32-bit WASM 의 RawVec capacity overflow panic 방지 검증.
+        let r = alloc_record_buf(HWP3_MAX_RECORD_SIZE + 1);
+        assert!(r.is_err());
+        let e = r.unwrap_err();
+        assert_eq!(e.kind(), std::io::ErrorKind::InvalidData);
+        let msg = format!("{}", e);
+        assert!(msg.contains("HWP3 record") && msg.contains("overflow"), "msg was: {msg:?}");
+
+        let r2 = alloc_record_buf(0xDC000000); // sample16 실측 garbage 값 (~3.69 GB)
+        assert!(r2.is_err());
+    }
+
+    #[test]
+    fn test_alloc_record_buf_within_cap_ok() {
+        // 정상 범위 길이는 그대로 vec 생성.
+        let r = alloc_record_buf(1024);
+        assert!(r.is_ok());
+        assert_eq!(r.unwrap().len(), 1024);
+    }
+
+    #[test]
+    fn test_check_record_count_overflow_returns_err() {
+        // garbage point_count / cell_count 등을 Vec::with_capacity 전에 가드.
+        assert!(check_record_count(HWP3_MAX_RECORD_SIZE + 1).is_err());
+        assert!(check_record_count(0xFFFFFFFF).is_err());
+        assert!(check_record_count(1024).is_ok());
+    }
+
+    #[test]
+    fn test_hwp3_sample16_load_alignment() {
+        // [Task #877] hwp3-sample16.hwp panic 회귀 + paragraph alignment 정합.
+        // Stage 1: WASM RawVec overflow panic → graceful Err (가드 도입)
+        // Stage 2: ch=6 책갈피 / ch=7 날짜형식 / ch=8 날짜코드 record size 정합
+        //          (한글문서파일구조3.0 §10.2/§10.3/§10.4 참고)
+        //
+        // 본 sample16 은 표지 picture(ch=11) + 책갈피(ch=6) 가 다수 포함된 64쪽 RFP 문서.
+        // ch=6 가 8 byte (current) 가 아닌 spec 의 42 byte 로 처리되지 않으면 paragraph
+        // stream alignment 가 어긋나 28737 페이지로 폭주 인식됨.
+        let path = "samples/hwp3-sample16.hwp";
+        if !std::path::Path::new(path).exists() {
+            // 샘플 미커밋 환경에서는 skip.
+            return;
+        }
+        let mut data = Vec::new();
+        File::open(path).unwrap().read_to_end(&mut data).unwrap();
+        let doc = parse_hwp3(&data).expect("sample16 parse failed");
+        // 정상 alignment 시 한컴 HWP5 변환본과 동일한 1058 paragraphs 인식.
+        // 누락/오인 alignment 시 77 (Stage 1 only) 또는 더 적은 수 인식됨.
+        let total_paras: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
+        assert!(
+            total_paras >= 1000,
+            "sample16 paragraph count too low ({}); ch=6/7/8 alignment 회귀 의심",
+            total_paras
+        );
+    }
 
     #[test]
     fn test_parse_sample_dump() {

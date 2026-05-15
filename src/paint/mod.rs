@@ -11,6 +11,7 @@ pub mod profile;
 pub mod resources;
 pub mod schema;
 pub mod text_shape;
+pub mod text_v2;
 pub mod text_variants;
 
 pub use builder::LayerBuilder;
@@ -45,5 +46,9 @@ pub use schema::{
 pub use text_shape::{
     FontRequest, FontResolver, GlyphRunQuality, NoopFontResolver, ResolvedFontFace,
     ResolvedGlyphRun, TextShapeDiagnostic, TextShapeLowerer, TextShapeReport,
+};
+pub use text_v2::{
+    TextV2CompatibilityProfile, TextV2Diagnostics, TextV2LineBreakRisk, TextV2LineBreakRiskLevel,
+    TextV2SlotDiagnostic, TextV2ValidationIssue, TextV2ValidationSeverity, TextV2VariantDiagnostic,
 };
 pub use text_variants::{validate_text_variant_scope, TextVariantScopeError};

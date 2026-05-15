@@ -342,6 +342,7 @@ impl Hwp3DrawingPolygon {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let point_count = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
+        super::check_record_count(point_count as usize)?;
         let mut points = Vec::with_capacity(point_count as usize);
         for _ in 0..point_count {
             points.push([
@@ -369,7 +370,7 @@ impl Hwp3DrawingTextBox {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
-        let mut paragraph_list_data = vec![0u8; info2_len as usize];
+        let mut paragraph_list_data = super::alloc_record_buf(info2_len as usize)?;
         if info2_len > 0 {
             reader.read_exact(&mut paragraph_list_data)?;
         }
@@ -394,6 +395,7 @@ impl Hwp3DrawingCurve {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let point_count = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
+        super::check_record_count(point_count as usize)?;
         let mut points = Vec::with_capacity(point_count as usize);
         for _ in 0..point_count {
             points.push([
@@ -446,6 +448,7 @@ impl Hwp3DrawingExtendedPolygon {
         let info1_len = reader.read_u32::<LittleEndian>()?;
         let point_count = reader.read_u32::<LittleEndian>()?;
         let info2_len = reader.read_u32::<LittleEndian>()?;
+        super::check_record_count(point_count as usize)?;
         let mut points = Vec::with_capacity(point_count as usize);
         for _ in 0..point_count {
             points.push([
@@ -453,7 +456,7 @@ impl Hwp3DrawingExtendedPolygon {
                 reader.read_i32::<LittleEndian>()?,
             ]);
         }
-        let mut line_attrs = vec![0u8; point_count as usize];
+        let mut line_attrs = super::alloc_record_buf(point_count as usize)?;
         if point_count > 0 {
             reader.read_exact(&mut line_attrs)?;
         }
@@ -540,10 +543,10 @@ impl Hwp3DrawingObject {
             _ => {
                 // 알 수 없는 객체
                 let info1_len = reader.read_u32::<LittleEndian>()?;
-                let mut info1 = vec![0u8; info1_len as usize];
+                let mut info1 = super::alloc_record_buf(info1_len as usize)?;
                 reader.read_exact(&mut info1)?;
                 let info2_len = reader.read_u32::<LittleEndian>()?;
-                let mut info2 = vec![0u8; info2_len as usize];
+                let mut info2 = super::alloc_record_buf(info2_len as usize)?;
                 reader.read_exact(&mut info2)?;
                 
                 let mut all_data = Vec::new();
@@ -745,20 +748,51 @@ fn map_to_shape_object(
     let border_line = ShapeBorderLine {
         color: header.basic_attr.line_color,
         width: header.basic_attr.line_width as i32 * HWP3_UNIT_SCALE,
-        attr: header.basic_attr.line_style as u32,
+        // [Task #877 Stage 3] HWP3 drawing line_style = 0 (= "선 종류 없음") 인데
+        // line_width > 0 인 경우 → 실제 한컴 viewer 는 실선으로 표시. (sample16 RFP
+        // 박스 외곽선 회귀: raw line_style=0, line_width=84, line_color=0 검정)
+        // 렌더러 [renderer/layout/utils.rs:163] 의 `attr & 0x3F == 0` 시 외곽선 미표시
+        // 규칙에 맞추기 위해 bit 0..5 = 1 (Solid LineType) 보강.
+        attr: {
+            let raw_attr = header.basic_attr.line_style as u32;
+            if (raw_attr & 0x3F) == 0 && header.basic_attr.line_width > 0 {
+                raw_attr | 0x01
+            } else {
+                raw_attr
+            }
+        },
         outline_style: 0,
     };
 
+    // [Task #877 Stage 4] HWP3 fill_color 의 high byte (bit 24~31) 가 0 이 아니면
+    // 한컴 HWP3 의 "기본값 없음/투명" flag 로 추정 (sample16 paragraph 5/131/393:
+    // raw 0x10000000 = bit 28 set + RGB 0). rhwp 가 raw 그대로 ColorRef 로 사용
+    // → 거의 검정 fill (alpha=0x10) → 외곽선이 fill 위에 안 보이는 회귀.
+    //
+    // 해결: RGB=0 + high flag set 인 경우 흰색 fill 로 대체. 한컴 viewer 의 실제
+    // 표시 (연한 보라 채우기) 와 100% 정합은 아니나 외곽선 가시화로 본질 표현.
+    let raw_fc = header.basic_attr.fill_color;
+    let fill_flag = (raw_fc >> 24) & 0xFF;
+    let fill_rgb = raw_fc & 0x00FFFFFF;
+    let effective_rgb = if fill_flag != 0 && fill_rgb == 0 {
+        0x00FFFFFF
+    } else {
+        fill_rgb
+    };
     let fill = Fill {
         fill_type: crate::model::style::FillType::Solid,
         solid: Some(crate::model::style::SolidFill {
-            background_color: header.basic_attr.fill_color,
+            background_color: effective_rgb,
             pattern_color: header.basic_attr.pattern_color,
             pattern_type: header.basic_attr.pattern_type as i32,
         }),
         gradient: None,
         image: None,
-        alpha: 255,
+        // [Task #877 Stage 4] 한컴 호환 alpha convention: 0=불투명, 255=완전 투명.
+        // (renderer/layout/utils.rs:199 의 opacity 식: opacity = 1 - alpha/255)
+        // 기존 alpha=255 → opacity=0 → SVG <rect opacity="0.000"> 완전 투명 회귀.
+        // HWP3 raw 에는 alpha 정보 없음, 한컴 viewer 의 default = 불투명 = alpha 0.
+        alpha: 0,
     };
     
     let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty() {
