@@ -658,6 +658,8 @@ impl Player for RasterPlayer {
             RasterObject::Font(FontInfo {
                 height: record.font.height,
                 width: record.font.width,
+                escapement: record.font.escapement,
+                orientation: record.font.orientation,
                 weight: record.font.weight,
                 italic: record.font.italic,
                 underline: record.font.underline,

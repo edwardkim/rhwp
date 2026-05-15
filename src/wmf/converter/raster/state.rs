@@ -139,6 +139,8 @@ impl Default for BrushInfo {
 pub struct FontInfo {
     pub height: i16,
     pub width: i16,
+    pub escapement: i16,  // [Stage 22] text rotation angle (1/10 degree)
+    pub orientation: i16,
     pub weight: i16,
     pub italic: bool,
     pub underline: bool,
@@ -152,6 +154,8 @@ impl Default for FontInfo {
         Self {
             height: 12,
             width: 0,
+            escapement: 0,
+            orientation: 0,
             weight: 400,
             italic: false,
             underline: false,
