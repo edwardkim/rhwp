@@ -837,10 +837,31 @@ impl Paragraph {
             }
         }
 
-        // 마지막 문자 이후의 컨트롤 (드문 경우)
+        // 갭 분석으로 발견되지 않은 컨트롤의 위치를 텍스트의 `\u{FFFC}` marker
+        // 위치로 매핑한다. HWP3 파서가 char_offsets 에 control gap (8) 을 추가하지
+        // 않고 sequential [0,1,2,...] 만 push 하는 경우 갭 분석이 실패하여 control
+        // 들이 모두 paragraph 끝에 몰리는 회귀를 차단 (sample16 paragraph 394:
+        // 3 picture 가 같은 line 에 중복 emit). 갭 분석으로 채워진 positions 의
+        // 마지막 인덱스 이후를 search start 로 사용하여 중복 매핑 방지.
+        let already_filled = positions.len();
+        let mut search_start = positions.last().copied().unwrap_or(0);
         while positions.len() < total_controls {
-            positions.push(chars.len());
+            // search_start 위치부터 다음 \u{FFFC} marker 찾기
+            let next_marker = chars[search_start..].iter()
+                .position(|&c| c == '\u{FFFC}')
+                .map(|rel| search_start + rel);
+            match next_marker {
+                Some(abs_pos) => {
+                    positions.push(abs_pos);
+                    search_start = abs_pos + 1;
+                }
+                None => {
+                    // marker 더 이상 없으면 기존 동작 (chars.len() push)
+                    positions.push(chars.len());
+                }
+            }
         }
+        let _ = already_filled; // 향후 디버그용 (현재 미사용)
 
         positions
     }
