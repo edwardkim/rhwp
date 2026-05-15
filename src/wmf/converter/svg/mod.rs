@@ -840,7 +840,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let text_align = self.context_current.as_css_text_align();
         let shape_inside = if let (true, Some(rect)) = (
             record.fw_opts.contains(&ExtTextOutOptions::ETO_CLIPPED),
-            record.rectangle,
+            record.rectangle.as_ref(),
         ) {
             let tl = {
                 let point = PointS { x: rect.left, y: rect.top };
@@ -920,19 +920,40 @@ impl crate::wmf::converter::Player for SVGPlayer {
             // grapheme index 로 접근하면 wide char 마다 매 둘째 dx=0 으로 잘못
             // 산출되어 글자 겹침. unicode_width 의 s.width() (Korean=2, ASCII=1)
             // 로 byte advance 후 합산. absolute x 로 폰트 metric 독립 위치 정합.
+            //
+            // [Task #902 v2 Stage 5] ETO_PDY (0x2000): DX 배열이 (dx,dy) 쌍 — char
+            // 별 x/y advance. byte 당 2 entry → wide char 당 4 entry 차지.
+            let pdy = record
+                .fw_opts
+                .contains(&ExtTextOutOptions::ETO_PDY);
+            let entries_per_byte = if pdy { 2 } else { 1 };
             let mut acc_x: i32 = i32::from(point.x);
+            let mut acc_y: i32 = i32::from(point.y);
             let mut dx_idx: usize = 0;
             for (i, s) in text_content.graphemes(true).enumerate() {
                 let mut tspan = Node::new("tspan").add(Node::new_text(s));
                 if i > 0 {
                     tspan = tspan.set("x", acc_x);
+                    if pdy {
+                        tspan = tspan.set("y", acc_y);
+                    }
                 }
                 let width = s.width().max(1);
-                let advance: i32 = (0..width)
-                    .map(|k| i32::from(*record.dx.get(dx_idx + k).unwrap_or(&0)))
-                    .sum();
-                acc_x += advance;
-                dx_idx += width;
+                let mut dx_advance: i32 = 0;
+                let mut dy_advance: i32 = 0;
+                for k in 0..width {
+                    let base = dx_idx + k * entries_per_byte;
+                    dx_advance +=
+                        i32::from(*record.dx.get(base).unwrap_or(&0));
+                    if pdy {
+                        dy_advance += i32::from(
+                            *record.dx.get(base + 1).unwrap_or(&0),
+                        );
+                    }
+                }
+                acc_x += dx_advance;
+                acc_y += dy_advance;
+                dx_idx += width * entries_per_byte;
                 text = text.add(tspan);
             }
         }
@@ -970,6 +991,31 @@ impl crate::wmf::converter::Player for SVGPlayer {
             self.definitions.push(brush.as_filter().set("id", id.as_str()));
 
             text = text.set("filter", url_string(format!("#{id}").as_str()));
+        }
+
+        // [Task #902 v2 Stage 5] ETO_OPAQUE (0x0002): rectangle 의 영역을 현재
+        // bk_color 로 채우고 그 위에 text 렌더. text 보다 먼저 rect 를 push 하여
+        // 배경이 텍스트 아래에 오도록.
+        if let (true, Some(rect)) = (
+            record.fw_opts.contains(&ExtTextOutOptions::ETO_OPAQUE),
+            record.rectangle.as_ref(),
+        ) {
+            let tl = self.context_current.point_s_to_absolute_point(&PointS {
+                x: rect.left,
+                y: rect.top,
+            });
+            let br = self.context_current.point_s_to_absolute_point(&PointS {
+                x: rect.right,
+                y: rect.bottom,
+            });
+            let bg_color = self.context_current.text_bk_color.clone();
+            let bg_rect = Node::new("rect")
+                .set("x", tl.x)
+                .set("y", tl.y)
+                .set("width", (br.x - tl.x).max(0))
+                .set("height", (br.y - tl.y).max(0))
+                .set("fill", crate::wmf::converter::svg::util::css_color_from_color_ref(&bg_color));
+            self.push_element(record_number, bg_rect);
         }
 
         self.push_element(record_number, text);
