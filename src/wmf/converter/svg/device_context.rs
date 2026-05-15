@@ -10,6 +10,10 @@ pub struct DeviceContext {
     pub text_bk_color: ColorRef,
     pub text_color: ColorRef,
     pub window: Window,
+    /// [Task #902 v2 Stage 4] MM_ANISOTROPIC 에서 Window/Viewport ratio 로
+    /// device 좌표 계산. ViewportExt 미호출 시 Task #860 의 viewBox 자동 확장
+    /// 동작 보존을 위해 ext_explicitly_set 플래그로 분기.
+    pub viewport: Viewport,
 
     // graphics props
     pub bk_mode: MixMode,
@@ -39,6 +43,7 @@ impl Default for DeviceContext {
             text_bk_color: ColorRef::white(),
             text_color: ColorRef::black(),
             window: Window::new(),
+            viewport: Viewport::new(),
         }
     }
 }
@@ -158,6 +163,17 @@ impl DeviceContext {
         self.window = self.window.scale(x, y);
         self
     }
+
+    // [Task #902 v2 Stage 4] Viewport mutators
+    pub fn viewport_ext(mut self, x: i16, y: i16) -> Self {
+        self.viewport = self.viewport.ext(x, y);
+        self
+    }
+
+    pub fn viewport_origin(mut self, x: i16, y: i16) -> Self {
+        self.viewport = self.viewport.origin(x, y);
+        self
+    }
 }
 
 impl DeviceContext {
@@ -180,23 +196,48 @@ impl DeviceContext {
     }
 
     pub fn point_s_to_absolute_point(&self, point: &PointS) -> PointS {
-        let x = (f32::from((point.x - self.window.origin_x).abs())
-            / self.window.scale_x) as i16;
-        let y = (f32::from((point.y - self.window.origin_y).abs())
-            / self.window.scale_y) as i16;
-
-        PointS { x, y }
+        let (dx, dy) = self.logical_to_device_delta(point);
+        PointS {
+            x: dx + self.viewport.origin_x,
+            y: dy + self.viewport.origin_y,
+        }
     }
 
     pub fn point_s_to_relative_point(&self, point: &PointS) -> PointS {
-        let x = (f32::from((point.x - self.window.origin_x).abs())
-            / self.window.scale_x) as i16
-            + self.drawing_position.x;
-        let y = (f32::from((point.y - self.window.origin_y).abs())
-            / self.window.scale_y) as i16
-            + self.drawing_position.y;
+        let (dx, dy) = self.logical_to_device_delta(point);
+        PointS {
+            x: dx + self.viewport.origin_x + self.drawing_position.x,
+            y: dy + self.viewport.origin_y + self.drawing_position.y,
+        }
+    }
 
-        PointS { x, y }
+    /// [Task #902 v2 Stage 4] logical 좌표 → device 좌표 delta 변환.
+    /// MM_ANISOTROPIC 의 Window/Viewport ratio 정합:
+    ///   device = (logical - WindowOrg) × (ViewportExt / WindowExt) + ViewportOrg
+    /// ViewportExt 미설정 시 기존 동작 (window.scale 또는 1:1) 유지하여
+    /// Task #860 의 viewBox 자동 확장 fixture 회귀 방지.
+    fn logical_to_device_delta(&self, point: &PointS) -> (i16, i16) {
+        let dx_logical = f32::from((point.x - self.window.origin_x).abs());
+        let dy_logical = f32::from((point.y - self.window.origin_y).abs());
+
+        let x = if self.viewport.ext_explicitly_set {
+            // MM_ANISOTROPIC with explicit ViewportExt: 정확 ratio
+            let ratio =
+                f32::from(self.viewport.x) / f32::from(self.window.x.max(1));
+            (dx_logical * ratio) as i16
+        } else {
+            (dx_logical / self.window.scale_x) as i16
+        };
+
+        let y = if self.viewport.ext_explicitly_set {
+            let ratio =
+                f32::from(self.viewport.y) / f32::from(self.window.y.max(1));
+            (dy_logical * ratio) as i16
+        } else {
+            (dy_logical / self.window.scale_y) as i16
+        };
+
+        (x, y)
     }
 
     pub fn poly_fill_rule(&self) -> String {
@@ -279,5 +320,49 @@ impl Window {
         // (Task #860 Stage D 의 (origin_x, origin_y, ...) 변경 revert — image 와 text
         // 의 좌표 공간이 mismatch 였던 본질을 정정.)
         (0, 0, self.x.abs(), self.y.abs())
+    }
+}
+
+/// [Task #902 v2 Stage 4] MM_ANISOTROPIC 의 Viewport (device coord) 정보.
+/// SetViewportExt / SetViewportOrg 의 명시 호출 추적.
+#[derive(Clone, Debug)]
+pub struct Viewport {
+    pub x: i16,
+    pub y: i16,
+    pub origin_x: i16,
+    pub origin_y: i16,
+    /// SetViewportExt 가 명시적으로 호출되었는지 여부. true 이면 정확한
+    /// MM_ANISOTROPIC ratio 적용; false 면 기존 Task #860 자동 확장 동작 유지.
+    pub ext_explicitly_set: bool,
+}
+
+impl Default for Viewport {
+    fn default() -> Self {
+        Self {
+            x: 1,
+            y: 1,
+            origin_x: 0,
+            origin_y: 0,
+            ext_explicitly_set: false,
+        }
+    }
+}
+
+impl Viewport {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn ext(mut self, x: i16, y: i16) -> Self {
+        self.x = x;
+        self.y = y;
+        self.ext_explicitly_set = true;
+        self
+    }
+
+    pub fn origin(mut self, origin_x: i16, origin_y: i16) -> Self {
+        self.origin_x = origin_x;
+        self.origin_y = origin_y;
+        self
     }
 }

@@ -2255,11 +2255,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
         err(level = tracing::Level::ERROR, Display),
     ))]
     fn set_viewport_ext(
-        self,
+        mut self,
         record_number: usize,
         record: META_SETVIEWPORTEXT,
     ) -> Result<Self, PlayError> {
-        info!("META_SETVIEWPORTEXT: not implemented");
+        // [Task #902 v2 Stage 4] MM_ANISOTROPIC ratio 정합을 위한 viewport 추적.
+        self.context_current =
+            self.context_current.viewport_ext(record.x, record.y);
+
         Ok(self)
     }
 
@@ -2269,11 +2272,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
         err(level = tracing::Level::ERROR, Display),
     ))]
     fn set_viewport_origin(
-        self,
+        mut self,
         record_number: usize,
         record: META_SETVIEWPORTORG,
     ) -> Result<Self, PlayError> {
-        info!("META_SETVIEWPORTORG: not implemented");
+        // [Task #902 v2 Stage 4] viewport origin 추적.
+        self.context_current =
+            self.context_current.viewport_origin(record.x, record.y);
+
         Ok(self)
     }
 
