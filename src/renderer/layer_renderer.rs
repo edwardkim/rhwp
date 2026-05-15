@@ -254,12 +254,11 @@ impl TextVariantGroupState {
         evaluated.sort_by_key(|evaluated| evaluated.candidate.order);
         let rejected_variants = evaluated
             .iter()
-            .filter_map(|evaluated| {
-                (!evaluated.reasons.is_empty()).then(|| TextVariantRejectReport {
-                    variant_id: evaluated.candidate.variant_id.clone(),
-                    variant_kind: evaluated.candidate.variant_kind,
-                    reasons: evaluated.reasons.clone(),
-                })
+            .filter(|evaluated| !evaluated.reasons.is_empty())
+            .map(|evaluated| TextVariantRejectReport {
+                variant_id: evaluated.candidate.variant_id.clone(),
+                variant_kind: evaluated.candidate.variant_kind,
+                reasons: evaluated.reasons.clone(),
             })
             .collect::<Vec<_>>();
         let outline_selection = options
