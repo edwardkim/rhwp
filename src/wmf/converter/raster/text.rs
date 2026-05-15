@@ -44,64 +44,62 @@ const EMBEDDED_NANUM_GOTHIC: &[u8] =
     include_bytes!("../../../../ttfs/embedded/NanumGothic.ttf");
 
 pub fn get_korean_font() -> Option<&'static Font> {
-    KOREAN_FONT
-        .get_or_init(|| {
-            // 우선: 임베디드 NanumGothic (모든 환경에서 사용 가능, 일관성)
-            if let Ok(font) = Font::from_bytes(
-                EMBEDDED_NANUM_GOTHIC.to_vec(),
-                FontSettings::default(),
-            ) {
-                return Some(font);
-            }
-            // fallback: 시스템 폰트 (native 만)
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                let home = std::env::var("HOME").unwrap_or_default();
-                let user_nanum = format!("{}/Library/Fonts/NanumGothic.ttf", home);
-                let user_malgun = format!("{}/Library/Fonts/MALGUN.TTF", home);
-                return load_font_from_paths(&[
-                    user_nanum.as_str(),
-                    user_malgun.as_str(),
-                    "/Library/Fonts/AppleSDGothicNeo.ttc",
-                    "/System/Library/Fonts/AppleSDGothicNeo.ttc",
-                    "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
-                    "/usr/share/fonts/nanum/NanumGothic.ttf",
-                    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-                    "/usr/share/fonts/opentype/noto/NotoSansCJKkr-Regular.otf",
-                    "C:/Windows/Fonts/malgun.ttf",
-                ]);
-            }
-            #[cfg(target_arch = "wasm32")]
-            None
-        })
-        .as_ref()
+    KOREAN_FONT.get_or_init(load_korean_font).as_ref()
 }
 
-pub fn get_latin_font() -> Option<&'static Font> {
-    LATIN_FONT
-        .get_or_init(|| {
-            // [Stage 28] NanumGothic 은 Latin glyph 도 포함하므로 fallback 으로 동일 사용.
-            // 별도 Latin 폰트 임베드 불필요 (binary size 절약).
-            if let Ok(font) = Font::from_bytes(
-                EMBEDDED_NANUM_GOTHIC.to_vec(),
-                FontSettings::default(),
-            ) {
-                return Some(font);
-            }
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                return load_font_from_paths(&[
-                    "/System/Library/Fonts/Helvetica.ttc",
-                    "/Library/Fonts/Arial.ttf",
-                    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                    "C:/Windows/Fonts/arial.ttf",
-                ]);
-            }
-            #[cfg(target_arch = "wasm32")]
-            None
-        })
-        .as_ref()
+fn load_korean_font() -> Option<Font> {
+    // 우선: 임베디드 NanumGothic (모든 환경에서 사용 가능, 일관성)
+    if let Ok(font) = Font::from_bytes(EMBEDDED_NANUM_GOTHIC, FontSettings::default()) {
+        return Some(font);
+    }
+    load_system_korean_font()
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+fn load_system_korean_font() -> Option<Font> {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let user_nanum = format!("{}/Library/Fonts/NanumGothic.ttf", home);
+    let user_malgun = format!("{}/Library/Fonts/MALGUN.TTF", home);
+    load_font_from_paths(&[
+        user_nanum.as_str(),
+        user_malgun.as_str(),
+        "/Library/Fonts/AppleSDGothicNeo.ttc",
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJKkr-Regular.otf",
+        "C:/Windows/Fonts/malgun.ttf",
+    ])
+}
+
+#[cfg(target_arch = "wasm32")]
+fn load_system_korean_font() -> Option<Font> { None }
+
+pub fn get_latin_font() -> Option<&'static Font> {
+    LATIN_FONT.get_or_init(load_latin_font).as_ref()
+}
+
+fn load_latin_font() -> Option<Font> {
+    // [Stage 28] NanumGothic 은 Latin glyph 도 포함하므로 fallback 으로 동일 사용.
+    if let Ok(font) = Font::from_bytes(EMBEDDED_NANUM_GOTHIC, FontSettings::default()) {
+        return Some(font);
+    }
+    load_system_latin_font()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn load_system_latin_font() -> Option<Font> {
+    load_font_from_paths(&[
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/Library/Fonts/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+    ])
+}
+
+#[cfg(target_arch = "wasm32")]
+fn load_system_latin_font() -> Option<Font> { None }
 
 fn pick_font_for_grapheme(g: &str) -> Option<&'static Font> {
     // CJK 영역: Hangul (U+AC00~U+D7A3), CJK Unified Ideographs, etc.

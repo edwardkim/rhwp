@@ -316,7 +316,7 @@ impl Player for RasterPlayer {
 
         // tiny-skia 의 PathBuilder 는 cubic bezier 만 지원 → 4 개 bezier 로 ellipse 근사
         // 마법 상수 c = 0.5522847498 (4/3 * (sqrt(2) - 1))
-        const KAPPA: f32 = 0.5522847498;
+        const KAPPA: f32 = 0.552_284_8;
         let ox = rx * KAPPA;
         let oy = ry * KAPPA;
         let mut pb = PathBuilder::new();
@@ -344,16 +344,10 @@ impl Player for RasterPlayer {
     ) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawText 포팅 — DX byte-aware 합산 + glyph 렌더
         let Some(font_idx) = self.state.selected_font else { return Ok(self) };
-        let RasterObject::Font(font_info) = self
-            .state
-            .object_table
-            .get(&font_idx)
-            .cloned()
-            .ok_or_else(|| return Ok::<(), PlayError>(()))
-            .map_err(|_| PlayError::InvalidRecord {
-                cause: "selected_font not in table".to_owned(),
-            })?
-        else {
+        let Some(obj) = self.state.object_table.get(&font_idx).cloned() else {
+            return Ok(self);
+        };
+        let RasterObject::Font(font_info) = obj else {
             return Ok(self);
         };
 
@@ -862,7 +856,6 @@ fn lowest_free_slot(table: &std::collections::HashMap<u16, RasterObject>) -> u16
 /// [Stage 20] LO mtftools.cxx GetEllipticalArc 알고리즘 포팅.
 /// bounding rect (x0,y0)-(x1,y1) 의 ellipse 의 start->end 호 경로 생성.
 /// close_chord=true 면 start↔end 직선으로 닫음 (chord). 아니면 open arc.
-
 fn arc_path(
     x0: f32, y0: f32, x1: f32, y1: f32,
     sx: f32, sy: f32, ex: f32, ey: f32,
@@ -901,7 +894,6 @@ fn arc_path(
 }
 
 /// pie 경로 — arc + center 직선 wedge.
-
 fn arc_path_pie(
     x0: f32, y0: f32, x1: f32, y1: f32,
     sx: f32, sy: f32, ex: f32, ey: f32,

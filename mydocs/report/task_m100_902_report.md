@@ -5,7 +5,7 @@
 **Scope 진화**: v1 dx fix → v2 WMF renderer 근본 개선 → LibreOffice emfio 포팅 baseline + 점진 확장 (Stage 18~23)
 **Timebox**: open-ended (작업지시자 결정)
 
-## 0. Stage 17~24 점진 포팅 추가 (사용자 B 옵션 선택 후)
+## 0. Stage 17~31 점진 포팅 + WASM 호환 (사용자 B 옵션 선택 후)
 
 | Stage | 추가 구현 |
 |-------|----------|
@@ -14,16 +14,24 @@
 | 20 | arc / pie / chord (LO DrawArc 알고리즘) |
 | 21 | clipping regions (IntersectClipRect state) |
 | 22 | font escapement / orientation state 추적 |
-| 23 | bitmap records 확장 (DIBBITBLT + STRETCHDIB, blit_dib DRY) |
-| 24 | **WASM SVG 한국어 폰트 @font-face base64 embed (rhwp-studio quality 효과)** |
+| 23 | bitmap records 확장 (DIBBITBLT + STRETCHDIB) |
+| 24 | WASM SVG @font-face base64 embed (sandboxed image 한계 진단) |
+| 25 | inline SVG embed (sandboxed image 우회) |
+| 26~27 | textLength + drop-shadow 패턴 진단 |
+| **28** | **RasterPlayer 를 WASM 호환 전환** (tiny-skia + fontdue + 임베디드 NanumGothic) |
+| **29** | **WebCanvasRenderer 가 WMF 처리 시 RasterPlayer 우선** |
+| **30** | **object_table lowest-free-slot 수정** (WMF spec §3.1.4 정합) |
+| **31** | **wasm-opt 비활성화** (RasterPlayer 코드 잘못된 제거 회피) |
 
-### 0.1 Stage 24 의 중요성
+### 0.1 Stage 31 의 결정적 발견
 
-사용자 보고: "rhwp-studio 화면이 LO/한컴 과 다름"
+사용자 보고: "Stage 29 적용 후 rhwp-studio 에서 shapes/text 미렌더링"
 
-문제 진단: WASM 빌드는 RasterPlayer 사용 불가 (native only). 따라서 Stage 12~23 의 raster 개선이 rhwp-studio (브라우저) 에 적용되지 않음.
+진단: wasm-opt 최적화가 RasterPlayer 의 일부 코드 경로 (tiny-skia path 함수, fontdue rasterize 등) 를 dead-code 로 잘못 판단하여 제거.
 
-해결 (Stage 24): WMF→SVG 출력에 **NanumGothic-Regular.woff2 (SIL OFL)** 를 `<style>@font-face</style>` 로 base64 임베드. 브라우저 fontconfig 의존 제거, 일관된 한국어 glyph.
+해결 (Stage 31): `Cargo.toml` 에 `[package.metadata.wasm-pack.profile.release] wasm-opt = false` 추가. 빌드 크기 +900 KB 증가하지만 rendering 정상화.
+
+**결과**: rhwp-studio 가 RasterPlayer (LO emfio 포팅) + 임베디드 NanumGothic 사용하여 한컴급 quality 시각화. LO 외부 의존성 없이 self-contained.
 
 ## 1. 처리 개요
 
