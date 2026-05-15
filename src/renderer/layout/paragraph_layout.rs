@@ -752,23 +752,10 @@ impl LayoutEngine {
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
 
-        // [Task #489] 비-TAC Picture/Shape with wrap=Square 보유 여부.
-        // 한컴은 어울림 그림이 있는 paragraph 의 LINE_SEG.cs/sw 를 그림 너비만큼 좁혀
-        // 인코딩한다. 표 Square wrap (#362/#439/#463) 은 caller 가 col_area 를 좁혀
-        // wrap_area 로 우회하지만, Picture/Shape 는 호스트 paragraph 와 같은 paragraph
-        // 에 anchor 되므로 별도 우회 경로가 없다. 이 플래그가 true 면 줄별 루프에서
-        // LINE_SEG.cs/sw 를 effective col_x/col_width 로 사용한다.
-        let has_picture_shape_square_wrap = para
-            .map(|p| p.controls.iter().any(|c| {
-                use crate::model::shape::TextWrap;
-                let common_opt = match c {
-                    Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
-                    Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
-                    _ => None,
-                };
-                common_opt.map(|cm| matches!(cm.text_wrap, TextWrap::Square)).unwrap_or(false)
-            }))
-            .unwrap_or(false);
+        // [Issue #908] 줄별 wrap zone 판정은 LineSeg::is_in_wrap_zone 표준 헬퍼로 통일.
+        // 표준 문서: `mydocs/tech/document_ir_lineseg_standard.md`. host 문단의
+        // Picture/Shape 보유 여부와 무관하게, downstream 문단 (anchor 그림 옆 흐름)
+        // 도 LINE_SEG.cs/sw 가 좁아져 있으면 effective col_x/col_width 로 사용한다.
         let col_area_w_hu = px_to_hwpunit(col_area.width, self.dpi);
 
         // treat_as_char 컨트롤의 px 폭 목록 (절대 char 위치, px 폭, control_index) — 정렬 보장
@@ -909,44 +896,39 @@ impl LayoutEngine {
             };
             let effective_margin_left = margin_left + line_indent;
 
-            // [Task #489] Picture/Shape Square wrap (어울림) 시 LINE_SEG.cs/sw 적용.
+            // [Issue #908] LINE_SEG.cs/sw 줄별 적용 — wrap zone 판정은 표준 헬퍼.
             // 한컴이 인코딩한 정답값을 그대로 사용 (휴리스틱 없음).
-            // 표 Square wrap 케이스는 caller 가 col_area 를 이미 wrap_area 로 좁혀
-            // 호출하므로 segment_width ≈ col_area_w_hu → 조건 미발동 (회귀 차단).
-            // 200 HU 임계값은 paragraph_layout 의 multi-col filter 와 동일 (페이지네이션 노이즈 제거).
             //
-            // [Task #568] 인라인 TAC 표(treat_as_char=true) 가 있는 줄도 동일 처리.
-            // HWP 는 인라인 TAC 표가 있는 줄의 segment_width 를 표 폭 + 잔여로 좁게
-            // 인코딩한다 (wrap=TopAndBottom 영향). col_area.width 로 잡으면
-            // Justify slack 이 과대 산출되어 선두 공백이 80 px/space 로 부풀어 표를
-            // 우측으로 민다 (exam_science.hwp pi=61 12번 응답: +175 px 편위).
-            let line_has_inline_tac_table = !tac_offsets_px.is_empty() && para.map(|p| {
-                let line_start = comp_line.char_start;
-                let line_end = line_start + comp_line.runs.iter()
-                    .map(|r| r.text.chars().count()).sum::<usize>();
-                tac_offsets_px.iter().any(|(pos, _, ci)| {
-                    *pos >= line_start && *pos <= line_end
-                        && matches!(p.controls.get(*ci),
-                            Some(Control::Table(t)) if t.common.treat_as_char)
-                })
-            }).unwrap_or(false);
-
-            // [Task #568] 임계값에 column_start 포함 — 실제 가용 line 폭은 (sw + cs).
-            // 단락 들여쓰기를 LINE_SEG.column_start 로 인코딩한 paragraph 의
-            // 정상 라인은 (sw + cs) ≈ col_w_hu 이므로 새 분기 미진입.
-            // Picture/Shape Square wrap 은 cs=0 이라 기존 동작과 동일.
-            let line_avail_hu = comp_line.segment_width.saturating_add(comp_line.column_start);
-            let (effective_col_x, effective_col_w) = if (has_picture_shape_square_wrap
-                || line_has_inline_tac_table)
-                && comp_line.segment_width > 0
-                && line_avail_hu < col_area_w_hu - 200
-            {
+            // 본질: 어울림(Square wrap) 그림 옆 흐름 본문은 host 문단(그림 anchor)
+            // 뿐 아니라 downstream 문단(별도 문단인데 wrap 영역에 이어 흐르는 줄)
+            // 까지 LINE_SEG.cs/sw 가 좁아져 인코딩됨. host 문단 가드를 두면 downstream
+            // 문단의 본문 흐름이 col_area.width 로 깔려 그림과 겹치고, Justify slack
+            // 폭주 / 페이지 분할 위치 어긋남이 발생.
+            //
+            // 임계값 (col_area_w_hu - 200 HU): multi-col 페이지네이션 노이즈 필터.
+            // 표 Square wrap 은 caller 가 col_area 를 wrap_area 로 좁혀 호출하므로
+            // segment_width ≈ col_area_w_hu → 조건 미발동 (회귀 차단).
+            // 단락 들여쓰기는 effective_margin_left 로 별도 처리되어 LINE_SEG.cs 에
+            // 인코딩되지 않으므로, (cs + sw) ≈ col_w_hu 인 정상 줄은 미진입.
+            let is_wrap_zone_line = comp_line.column_start > 0
+                || (comp_line.segment_width > 0
+                    && comp_line.segment_width < col_area_w_hu - 200);
+            let (effective_col_x, effective_col_w) = if is_wrap_zone_line {
                 let cs_px = hwpunit_to_px(comp_line.column_start, self.dpi);
                 let sw_px = hwpunit_to_px(comp_line.segment_width, self.dpi);
                 (col_area.x + cs_px, sw_px)
             } else {
                 (col_area.x, col_area.width)
             };
+            // [Issue #908] wrap zone 줄 (wrap_anchor 비매칭 경로) 에서 LINE_SEG.cs/sw 는
+            // 단락 margin_left 를 이미 흡수해 인코딩 (paragraph 테두리 박스의 cs=margin_left,
+            // downstream wrap text 의 sw=실제 text track 폭). effective_col_x/_w 를 직접
+            // 텍스트 좌표/너비로 사용하고, 정적 margin_left 추가 적용은 0 처리해 이중 적용
+            // 차단. 첫 줄 들여쓰기 (line_indent) 는 cs 에 인코딩되지 않으므로 별도 유지.
+            // wrap_anchor 매칭 경로는 자체 anchor cs/mr 보정 유지.
+            let apply_wrap_zone_inset = is_wrap_zone_line && wrap_anchor.is_none();
+            let line_margin_left = if apply_wrap_zone_inset { line_indent } else { effective_margin_left };
+            let line_margin_right = if apply_wrap_zone_inset { 0.0 } else { margin_right };
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
             let text_y = if has_tac_shape && raw_lh > max_fs * 1.5 {
@@ -1001,14 +983,15 @@ impl LayoutEngine {
                 BoundingBox::new(
                     // [Task #604 R3] wrap_anchor 가 있으면 line_cs_offset 사용 (col_area.x 기준),
                     // 아니면 Task #489 effective_col_x 사용. 두 경로 중복 적용 방지.
+                    // [Issue #908] wrap_zone 줄은 line_margin_left=0 으로 cs/margin 이중 적용 차단.
                     if wrap_anchor.is_some() {
                         col_area.x + effective_margin_left + line_cs_offset
                     } else {
-                        effective_col_x + effective_margin_left
+                        effective_col_x + line_margin_left
                     },
                     text_y,
                     line_avail_w_override
-                        .unwrap_or(effective_col_w - effective_margin_left - margin_right),
+                        .unwrap_or(effective_col_w - line_margin_left - line_margin_right),
                     line_height,
                 ),
             );
@@ -1018,14 +1001,16 @@ impl LayoutEngine {
             let num_offset = if numbering_width > 0.0 { numbering_width } else { 0.0 };
             let available_width = line_avail_w_override
                 .map(|w| w - inline_offset - num_offset)
-                .unwrap_or(effective_col_w - effective_margin_left - margin_right - inline_offset - num_offset);
+                .unwrap_or(effective_col_w - line_margin_left - line_margin_right - inline_offset - num_offset);
 
 
             // 텍스트 정렬을 위한 전체 줄 폭 계산 (자연 폭, 추가 간격 미포함)
             // treat_as_char 이미지 폭도 포함하여 정확한 폭 산출
             // [Task #604 Stage 2] wrap_anchor 가 있는 줄: line_cs_offset 을 est_x 기준점에
             // 포함 (line_x_offset 은 col_area.x 기준 상대좌표).
-            let mut est_x = effective_margin_left + line_cs_offset + inline_offset;
+            // [Issue #908] wrap_zone 줄 (wrap_anchor 비매칭): cs 는 effective_col_x 에 흡수.
+            let cs_for_est = if apply_wrap_zone_inset { effective_col_x - col_area.x } else { 0.0 };
+            let mut est_x = line_margin_left + cs_for_est + line_cs_offset + inline_offset;
             let est_x_start = est_x;
             let mut pending_right_tab_est: Option<(f64, u8, u8)> = None;
             let mut run_char_pos_est = comp_line.char_start;
@@ -1355,10 +1340,11 @@ impl LayoutEngine {
             } else { 0.0 };
             // [Task #604 R3] wrap_anchor 가 있으면 col_area.x + line_cs_offset 기준,
             // 아니면 effective_col_x (Task #489) 기준.
+            // [Issue #908] wrap_zone 줄은 line_margin_left=0 (cs/margin 이중 적용 차단).
             let x_base = if wrap_anchor.is_some() {
                 col_area.x + effective_margin_left + line_cs_offset
             } else {
-                effective_col_x + effective_margin_left
+                effective_col_x + line_margin_left
             };
             let x_start = match alignment {
                 Alignment::Center => {
