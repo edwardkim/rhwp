@@ -53,17 +53,16 @@ fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
         search_from = abs_idx + 5;
     }
 
-    // 현재 결함 상태 (A 해석): HY수평선B 적용. RED 가드 — fix 후 반전.
+    // Fix (해석 B) 적용 후 GREEN 가드: HY헤드라인M 적용 + HY수평선B 미사용.
     assert!(
-        uses_hy_supb && !uses_hy_headlinem,
-        "Issue #884 RED → GREEN 전환 발견! '충' 글자가 더 이상 HY수평선B 가 아님. \
-         (현재 uses_hy_supb={} uses_hy_headlinem={}). \
-         fix 가 적용되었다면 본 assert 반전 (uses_hy_headlinem && !uses_hy_supb).",
+        uses_hy_headlinem && !uses_hy_supb,
+        "Issue #884 회귀: '충' 글자에 HY헤드라인M 가 적용되지 않음. \
+         (uses_hy_supb={} uses_hy_headlinem={}). \
+         해석 B (start_pos as visible char idx) 가 부분적으로 회귀했을 가능성.",
         uses_hy_supb, uses_hy_headlinem
     );
 
-    eprintln!("\nIssue #884 RED 가드 GREEN: '충' 글자가 HY수평선B 로 잘못 렌더 (해석 A 결함 manifest).");
-    eprintln!("                          fix 후 본 assert 반전 (HY헤드라인M 적용).");
+    eprintln!("\nIssue #884 GREEN: '충' 글자 HY헤드라인M 정합 (해석 B 적용 후).");
 }
 
 #[test]
