@@ -609,7 +609,7 @@ impl Player for RasterPlayer {
         record: META_CREATEBRUSHINDIRECT,
     ) -> Result<Self, PlayError> {
         use crate::wmf::parser::LogBrush;
-        let idx = self.state.object_table.len() as u16;
+        let idx = lowest_free_slot(&self.state.object_table);
         let (color, is_null) = match &record.log_brush {
             LogBrush::Solid { color_ref } => (color_ref.clone(), false),
             LogBrush::Hatched { color_ref, .. } => (color_ref.clone(), false),
@@ -629,7 +629,7 @@ impl Player for RasterPlayer {
         record: META_CREATEPENINDIRECT,
     ) -> Result<Self, PlayError> {
         use crate::wmf::parser::PenStyle;
-        let idx = self.state.object_table.len() as u16;
+        let idx = lowest_free_slot(&self.state.object_table);
         let is_null = matches!(record.pen.style.style, PenStyle::PS_NULL);
         self.state.object_table.insert(
             idx,
@@ -648,7 +648,7 @@ impl Player for RasterPlayer {
         _: usize,
         record: META_CREATEFONTINDIRECT,
     ) -> Result<Self, PlayError> {
-        let idx = self.state.object_table.len() as u16;
+        let idx = lowest_free_slot(&self.state.object_table);
         self.state.object_table.insert(
             idx,
             RasterObject::Font(FontInfo {
@@ -671,7 +671,7 @@ impl Player for RasterPlayer {
     fn create_pattern_brush(self, _: usize, _: META_CREATEPATTERNBRUSH) -> Result<Self, PlayError> { Ok(self) }
 
     fn create_region(mut self, _: usize, _record: META_CREATEREGION) -> Result<Self, PlayError> {
-        let idx = self.state.object_table.len() as u16;
+        let idx = lowest_free_slot(&self.state.object_table);
         self.state.object_table.insert(idx, RasterObject::Region);
         Ok(self)
     }
@@ -846,6 +846,17 @@ impl Player for RasterPlayer {
         Ok(self)
     }
     fn escape(self, _: usize, _: META_ESCAPE) -> Result<Self, PlayError> { Ok(self) }
+}
+
+/// [Stage 30] WMF spec [MS-WMF] §3.1.4: 객체는 lowest available slot 에 할당.
+/// DeleteObject 후 인덱스 재사용 — 기존 `len()` 방식은 spec 위반.
+fn lowest_free_slot(table: &std::collections::HashMap<u16, RasterObject>) -> u16 {
+    for i in 0u16..=u16::MAX {
+        if !table.contains_key(&i) {
+            return i;
+        }
+    }
+    0
 }
 
 /// [Stage 20] LO mtftools.cxx GetEllipticalArc 알고리즘 포팅.
