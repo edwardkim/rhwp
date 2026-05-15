@@ -152,10 +152,80 @@ impl Player for RasterPlayer {
         Ok(self)
     }
 
-    // === Bitmap records (Stage 15 구현) ===
+    // === Bitmap records ===
     fn bit_blt(self, _: usize, _: META_BITBLT) -> Result<Self, PlayError> { Ok(self) }
     fn device_independent_bitmap_bit_blt(self, _: usize, _: META_DIBBITBLT) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn device_independent_bitmap_stretch_blt(
+        mut self,
+        _: usize,
+        record: META_DIBSTRETCHBLT,
+    ) -> Result<Self, PlayError> {
+        // [Task #902 v2 Stage 18] LO mtftools.cxx 의 DIBStretchBlt 포팅
+        // DIB → BMP bytes (Bitmap::from) → image crate decode → pixmap blit
+        use crate::wmf::converter::Bitmap;
+        let (x_dest, y_dest, dest_w, dest_h, target) = match record {
+            META_DIBSTRETCHBLT::WithBitmap {
+                x_dest,
+                y_dest,
+                dest_width,
+                dest_height,
+                target,
+                ..
+            } => (x_dest, y_dest, dest_width, dest_height, Some(*target)),
+            META_DIBSTRETCHBLT::WithoutBitmap { .. } => return Ok(self),
+        };
+        let Some(dib) = target else { return Ok(self) };
+
+        let bmp = Bitmap::from(dib).to_vec();
+        let img = match image::load_from_memory_with_format(&bmp, image::ImageFormat::Bmp) {
+            Ok(im) => im,
+            Err(_) => return Ok(self),
+        };
+
+        let (dx0, dy0) = self.logical_to_pixel(x_dest, y_dest);
+        let (dx1, dy1) = self.logical_to_pixel(
+            x_dest.saturating_add(dest_w),
+            y_dest.saturating_add(dest_h),
+        );
+        let target_w = (dx1 - dx0).abs().ceil() as u32;
+        let target_h = (dy1 - dy0).abs().ceil() as u32;
+        if target_w == 0 || target_h == 0 { return Ok(self); }
+
+        let resized = img.resize_exact(
+            target_w,
+            target_h,
+            image::imageops::FilterType::Lanczos3,
+        );
+        let rgba = resized.to_rgba8();
+
+        let x0 = dx0.floor() as i32;
+        let y0 = dy0.floor() as i32;
+        let pw = self.pixmap.width() as i32;
+        let ph = self.pixmap.height() as i32;
+        let pixels = self.pixmap.pixels_mut();
+
+        for sy in 0..target_h as i32 {
+            let py = y0 + sy;
+            if py < 0 || py >= ph { continue; }
+            for sx in 0..target_w as i32 {
+                let px = x0 + sx;
+                if px < 0 || px >= pw { continue; }
+                let p = rgba.get_pixel(sx as u32, sy as u32);
+                if let Some(c) = tiny_skia::PremultipliedColorU8::from_rgba(
+                    p[0], p[1], p[2], 255,
+                ) {
+                    let idx = (py * pw + px) as usize;
+                    pixels[idx] = c;
+                }
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn device_independent_bitmap_stretch_blt(self, _: usize, _: META_DIBSTRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
+
     fn set_device_independent_bitmap_to_dev(self, _: usize, _: META_SETDIBTODEV) -> Result<Self, PlayError> { Ok(self) }
     fn stretch_blt(self, _: usize, _: META_STRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
     fn stretch_device_independent_bitmap(self, _: usize, _: META_STRETCHDIB) -> Result<Self, PlayError> { Ok(self) }
