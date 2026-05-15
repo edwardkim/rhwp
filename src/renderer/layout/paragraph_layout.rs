@@ -849,6 +849,26 @@ impl LayoutEngine {
                 }
             }
 
+            // [Issue #908] HWP wrap zone "tried but didn't fit" filler line_seg 처리.
+            // 한컴 인코더는 wrap zone 좁은 영역에 글자가 안 맞으면 빈 LINE_SEG (text_start
+            // 가 다음 LINE_SEG 와 동일) 를 끼우고 다음 슬롯에 글자를 배치한다. 이 filler
+            // 가 vertical 공간을 점유하면 글자 사이 간격이 PDF 보다 두 배가 된다 (pic2.hwp
+            // "우/리/나/라" 4 글자 간격 119 px → 60 px 정합). filler 검출:
+            //   - 본 line 의 runs 가 비어 있고 (visible 텍스트 없음)
+            //   - 다음 line_seg 의 text_start 가 본 line_seg 와 같음 (zero-range)
+            //   - 강제 줄넘김 아님 (legitimate 빈 paragraph 보호)
+            // 위 모두 만족 시 렌더 + y 전진 모두 skip.
+            let is_filler_line_seg = !comp_line.has_line_break
+                && comp_line.runs.iter().all(|r| r.text.is_empty())
+                && para.map(|p| {
+                    if line_idx + 1 < p.line_segs.len() {
+                        p.line_segs[line_idx + 1].text_start == p.line_segs[line_idx].text_start
+                    } else { false }
+                }).unwrap_or(false);
+            if is_filler_line_seg {
+                continue;
+            }
+
             // 최대 폰트 크기 계산 (line_height 최솟값 보정에도 사용)
             let max_fs = comp_line.runs.iter()
                 .map(|r| {
