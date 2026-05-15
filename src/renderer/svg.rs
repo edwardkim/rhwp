@@ -2426,6 +2426,43 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
     converter.run().ok()
 }
 
+/// [Task #902 v2 Stage 16] 공개 wrapper — examples / 외부 도구용.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn rasterize_wmf_direct_pub(
+    wmf_data: &[u8],
+    target_width_px: f32,
+    target_height_px: f32,
+) -> Option<Vec<u8>> {
+    rasterize_wmf_direct(wmf_data, target_width_px, target_height_px)
+}
+
+/// [Task #902 v2 Stage 16] WMF binary 를 RasterPlayer 로 직접 raster 렌더링한다.
+/// LO emfio 포팅된 RasterPlayer 가 사용 가능하면 우선 (정합도 우수), 실패 시 None.
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn rasterize_wmf_direct(
+    wmf_data: &[u8],
+    target_width_px: f32,
+    target_height_px: f32,
+) -> Option<Vec<u8>> {
+    if target_width_px <= 0.0 || target_height_px <= 0.0 {
+        return None;
+    }
+    const SCALE: f32 = 2.0;
+    let raster_w = (target_width_px * SCALE).ceil() as u32;
+    let raster_h = (target_height_px * SCALE).ceil() as u32;
+    if raster_w == 0 || raster_h == 0 {
+        return None;
+    }
+    const MAX_PIXELS: u64 = 67_108_864;
+    if u64::from(raster_w).checked_mul(u64::from(raster_h))? > MAX_PIXELS {
+        return None;
+    }
+    use crate::wmf::converter::{RasterPlayer, WMFConverter};
+    let player = RasterPlayer::new(raster_w, raster_h)?;
+    let converter = WMFConverter::new(wmf_data, player);
+    converter.run().ok()
+}
+
 /// [Task #902 v2 Stage 10] WMF SVG 를 PNG raster 로 렌더링한다.
 /// usvg + resvg + tiny-skia 로 시스템 폰트 (Apple SD Gothic Neo / Malgun Gothic /
 /// Nanum Gothic 등) 사용한 일관 렌더링. 브라우저 fontconfig 의존 제거 → 한컴
