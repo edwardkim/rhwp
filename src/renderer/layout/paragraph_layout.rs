@@ -849,22 +849,30 @@ impl LayoutEngine {
                 }
             }
 
-            // [Issue #908] HWP wrap zone "tried but didn't fit" filler line_seg 처리.
-            // 한컴 인코더는 wrap zone 좁은 영역에 글자가 안 맞으면 빈 LINE_SEG (text_start
-            // 가 다음 LINE_SEG 와 동일) 를 끼우고 다음 슬롯에 글자를 배치한다. 이 filler
-            // 가 vertical 공간을 점유하면 글자 사이 간격이 PDF 보다 두 배가 된다 (pic2.hwp
-            // "우/리/나/라" 4 글자 간격 119 px → 60 px 정합). filler 검출:
-            //   - 본 line 의 runs 가 비어 있고 (visible 텍스트 없음)
-            //   - 다음 line_seg 의 text_start 가 본 line_seg 와 같음 (zero-range)
-            //   - 강제 줄넘김 아님 (legitimate 빈 paragraph 보호)
-            // 위 모두 만족 시 렌더 + y 전진 모두 skip.
+            // [Issue #908] HWP wrap zone filler LINE_SEG 처리 (PDF 정합).
+            // 한컴 인코더는 wrap zone 좁은 영역에 글자가 안 맞으면 빈 LINE_SEG 를 끼우고
+            // 다음 슬롯에 글자를 배치한다. 또한 단락 선두의 leading whitespace 도 wrap
+            // zone 안에서는 별도 LINE_SEG 로 인코딩된다. 두 경우 모두 visible glyph 가
+            // 없는 invisible filler 인데 vertical 공간을 점유하면 글자 사이/위 간격이
+            // PDF 보다 커진다 (pic2.hwp "우/리/나/라" 글자 간격 119→60 px, 위 여백 60→0).
+            //
+            // filler 판정 (모두 만족):
+            //   1. visible 텍스트 없음 (runs 가 모두 whitespace 또는 비어 있음)
+            //   2. 강제 줄넘김 아님 (legitimate 빈 paragraph 보호)
+            //   3. multi-line paragraph (단일 line_seg 빈 단락은 1 줄 공간 점유 유지)
+            //   4. zero-range filler (다음 line_seg.text_start 동일) OR wrap zone (cs > 0)
+            //      중 하나
             let is_filler_line_seg = !comp_line.has_line_break
-                && comp_line.runs.iter().all(|r| r.text.is_empty())
-                && para.map(|p| {
-                    if line_idx + 1 < p.line_segs.len() {
-                        p.line_segs[line_idx + 1].text_start == p.line_segs[line_idx].text_start
-                    } else { false }
-                }).unwrap_or(false);
+                && comp_line.runs.iter().all(|r| r.text.trim().is_empty())
+                && para.map(|p| p.line_segs.len() > 1).unwrap_or(false)
+                && (
+                    para.map(|p| {
+                        line_idx + 1 < p.line_segs.len()
+                            && p.line_segs[line_idx + 1].text_start
+                                == p.line_segs[line_idx].text_start
+                    }).unwrap_or(false)
+                    || comp_line.column_start > 0
+                );
             if is_filler_line_seg {
                 continue;
             }
