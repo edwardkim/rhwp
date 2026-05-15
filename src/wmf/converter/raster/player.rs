@@ -319,6 +319,8 @@ impl Player for RasterPlayer {
             scale_x,
             scale_y,
             &text_color,
+            font_info.weight,
+            font_info.italic,
         );
 
         Ok(self)
