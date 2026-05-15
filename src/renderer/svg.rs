@@ -1138,29 +1138,31 @@ impl SvgRenderer {
                 }
             }
             #[cfg(target_arch = "wasm32")]
-            match convert_wmf_to_svg(data) {
-                Some(svg_bytes) => {
-                    // [Task #902 v2 Stage 25] WASM 환경: inline <svg> 임베드.
-                    // `<image href=...>` 의 sandboxed 한계 회피 → 부모 SVG 의
-                    // @font-face/@imported style 이 inner WMF SVG 에도 적용됨.
-                    if let Some(inline_svg) = wmf_svg_to_inline(
-                        &svg_bytes,
-                        bbox.x,
-                        bbox.y,
-                        bbox.width,
-                        bbox.height,
-                    ) {
-                        self.output.push_str(&inline_svg);
-                        self.output.push('\n');
-                        // 종료 처리 — 일반 image 경로 우회 (다른 조건 skip)
-                        if is_watermark_image { self.output.push_str("</g>\n"); }
-                        if bc_filter_id.is_some() { self.output.push_str("</g>\n"); }
-                        if effect_filter_id.is_some() { self.output.push_str("</g>\n"); }
-                        return;
+            {
+                // [Stage 28] WASM: RasterPlayer (LO 포팅) 우선 시도 → PNG 임베드.
+                // 실패 시 inline SVG (Stage 25) fallback.
+                let target_w = bbox.width.max(1.0) as f32;
+                let target_h = bbox.height.max(1.0) as f32;
+                if let Some(png_bytes) = rasterize_wmf_direct(data, target_w, target_h) {
+                    (std::borrow::Cow::Owned(png_bytes), "image/png")
+                } else {
+                    match convert_wmf_to_svg(data) {
+                        Some(svg_bytes) => {
+                            if let Some(inline_svg) = wmf_svg_to_inline(
+                                &svg_bytes, bbox.x, bbox.y, bbox.width, bbox.height,
+                            ) {
+                                self.output.push_str(&inline_svg);
+                                self.output.push('\n');
+                                if is_watermark_image { self.output.push_str("</g>\n"); }
+                                if bc_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                                if effect_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                                return;
+                            }
+                            (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
+                        }
+                        None => (std::borrow::Cow::Borrowed(data), mime_type),
                     }
-                    (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
                 }
-                None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else if mime_type == "image/bmp" {
             match bmp_bytes_to_png_bytes(data) {
@@ -2489,7 +2491,7 @@ pub(crate) fn wmf_svg_to_inline(
 }
 
 /// [Task #902 v2 Stage 16] 공개 wrapper — examples / 외부 도구용.
-#[cfg(not(target_arch = "wasm32"))]
+/// [Stage 28] WASM 도 지원 (RasterPlayer 가 WASM 호환으로 전환됨).
 pub fn rasterize_wmf_direct_pub(
     wmf_data: &[u8],
     target_width_px: f32,
@@ -2551,7 +2553,7 @@ pub(crate) fn rasterize_wmf_via_libreoffice(wmf_data: &[u8]) -> Option<Vec<u8>> 
 
 /// [Task #902 v2 Stage 16] WMF binary 를 RasterPlayer 로 직접 raster 렌더링한다.
 /// LO emfio 포팅된 RasterPlayer 가 사용 가능하면 우선 (정합도 우수), 실패 시 None.
-#[cfg(not(target_arch = "wasm32"))]
+/// [Stage 28] WASM 도 지원.
 pub(crate) fn rasterize_wmf_direct(
     wmf_data: &[u8],
     target_width_px: f32,
