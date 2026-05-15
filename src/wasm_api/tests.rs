@@ -15771,6 +15771,68 @@
     }
 
     #[test]
+    fn test_set_table_properties_syncs_square_wrapping() {
+        let bytes = std::fs::read("saved/blank2010.hwp").expect("blank2010.hwp 읽기 실패");
+        let mut doc = HwpDocument::from_bytes(&bytes).unwrap();
+        doc.convert_to_editable_native().unwrap();
+
+        doc.insert_text_native(0, 0, 0, "anchor").unwrap();
+        doc.create_table_ex_native(0, 0, 0, 3, 2, false, Some(&[400, 400])).unwrap();
+
+        let (para_idx, ctrl_idx) = doc.document.sections[0].paragraphs.iter()
+            .enumerate()
+            .find_map(|(pi, para)| {
+                para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
+                    if matches!(ctrl, crate::model::control::Control::Table(_)) {
+                        Some((pi, ci))
+                    } else {
+                        None
+                    }
+                })
+            })
+            .expect("생성된 표 컨트롤");
+
+        doc.set_table_properties_native(
+            0,
+            para_idx,
+            ctrl_idx,
+            r#"{"treatAsChar":false,"textWrap":"Square","vertRelTo":"Para","vertAlign":"Top","horzRelTo":"Column","horzAlign":"Left","vertOffset":123,"horzOffset":456,"tableWidth":800,"tableHeight":1200,"outerLeft":35,"outerRight":35,"outerTop":70,"outerBottom":70,"restrictInPage":true,"allowOverlap":false,"keepWithAnchor":true}"#,
+        ).unwrap();
+
+        let props = doc.get_table_properties_native(0, para_idx, ctrl_idx).unwrap();
+        assert!(props.contains("\"textWrap\":\"Square\""), "props={}", props);
+        assert!(props.contains("\"horzRelTo\":\"Column\""), "props={}", props);
+        assert!(props.contains("\"vertOffset\":123"), "props={}", props);
+        assert!(props.contains("\"horzOffset\":456"), "props={}", props);
+        assert!(props.contains("\"outerLeft\":35"), "props={}", props);
+        assert!(props.contains("\"keepWithAnchor\":true"), "props={}", props);
+
+        if let crate::model::control::Control::Table(t) =
+            &doc.document.sections[0].paragraphs[para_idx].controls[ctrl_idx]
+        {
+            assert!(!t.common.treat_as_char);
+            assert_eq!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
+            assert_eq!(t.common.horz_rel_to, crate::model::shape::HorzRelTo::Column);
+            assert_eq!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para);
+            assert_eq!(t.common.vertical_offset, 123);
+            assert_eq!(t.common.horizontal_offset, 456);
+            assert_eq!(t.common.prevent_page_break, 1);
+            let reparsed = crate::parser::control::parse_common_obj_attr(&t.raw_ctrl_data);
+            assert!(!reparsed.treat_as_char);
+            assert_eq!(reparsed.text_wrap, crate::model::shape::TextWrap::Square);
+            assert_eq!(reparsed.horz_rel_to, crate::model::shape::HorzRelTo::Column);
+            assert_eq!(reparsed.vert_rel_to, crate::model::shape::VertRelTo::Para);
+            assert_eq!(reparsed.vertical_offset, 123);
+            assert_eq!(reparsed.horizontal_offset, 456);
+            assert_eq!(reparsed.margin.left, 35);
+            assert_eq!(reparsed.margin.top, 70);
+            assert_eq!(reparsed.prevent_page_break, 1);
+        } else {
+            panic!("생성된 컨트롤이 표가 아님");
+        }
+    }
+
+    #[test]
     fn test_extract_thumbnail_with_preview() {
         // PrvImage가 있는 HWP 파일 테스트
         let data = std::fs::read("samples/biz_plan.hwp").expect("biz_plan.hwp 읽기 실패");
