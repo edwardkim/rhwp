@@ -716,7 +716,40 @@ impl Player for RasterPlayer {
 
     // === State records ===
     fn animate_palette(self, _: usize, _: META_ANIMATEPALETTE) -> Result<Self, PlayError> { Ok(self) }
-    fn exclude_clip_rect(self, _: usize, _: META_EXCLUDECLIPRECT) -> Result<Self, PlayError> { Ok(self) }
+    fn exclude_clip_rect(self, _: usize, _: META_EXCLUDECLIPRECT) -> Result<Self, PlayError> {
+        // [Stage 21] ExcludeClipRect — 단순화: 현재 clip 유지 (region 차집합 미구현)
+        // 향후 region 처리 follow-up
+        Ok(self)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn intersect_clip_rect(
+        mut self,
+        _: usize,
+        record: META_INTERSECTCLIPRECT,
+    ) -> Result<Self, PlayError> {
+        // [Stage 21] LO mtftools.cxx 의 IntersectClipRect 포팅 —
+        // 현재 clip 과 새 rect 의 교집합 계산.
+        let (x0, y0) = self.logical_to_pixel(record.left, record.top);
+        let (x1, y1) = self.logical_to_pixel(record.right, record.bottom);
+        let new_clip = (
+            x0.floor() as i32,
+            y0.floor() as i32,
+            x1.ceil() as i32,
+            y1.ceil() as i32,
+        );
+        self.state.clip_rect = Some(match self.state.clip_rect {
+            None => new_clip,
+            Some((cx0, cy0, cx1, cy1)) => (
+                cx0.max(new_clip.0),
+                cy0.max(new_clip.1),
+                cx1.min(new_clip.2),
+                cy1.min(new_clip.3),
+            ),
+        });
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn intersect_clip_rect(self, _: usize, _: META_INTERSECTCLIPRECT) -> Result<Self, PlayError> { Ok(self) }
     fn move_to(mut self, _: usize, record: META_MOVETO) -> Result<Self, PlayError> {
         self.state.current_position = (record.x, record.y);
