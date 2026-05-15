@@ -5,7 +5,7 @@
 **Scope 진화**: v1 dx fix → v2 WMF renderer 근본 개선 → LibreOffice emfio 포팅 baseline + 점진 확장 (Stage 18~23)
 **Timebox**: open-ended (작업지시자 결정)
 
-## 0. Stage 17~23 점진 포팅 추가 (사용자 B 옵션 선택 후)
+## 0. Stage 17~24 점진 포팅 추가 (사용자 B 옵션 선택 후)
 
 | Stage | 추가 구현 |
 |-------|----------|
@@ -15,6 +15,15 @@
 | 21 | clipping regions (IntersectClipRect state) |
 | 22 | font escapement / orientation state 추적 |
 | 23 | bitmap records 확장 (DIBBITBLT + STRETCHDIB, blit_dib DRY) |
+| 24 | **WASM SVG 한국어 폰트 @font-face base64 embed (rhwp-studio quality 효과)** |
+
+### 0.1 Stage 24 의 중요성
+
+사용자 보고: "rhwp-studio 화면이 LO/한컴 과 다름"
+
+문제 진단: WASM 빌드는 RasterPlayer 사용 불가 (native only). 따라서 Stage 12~23 의 raster 개선이 rhwp-studio (브라우저) 에 적용되지 않음.
+
+해결 (Stage 24): WMF→SVG 출력에 **NanumGothic-Regular.woff2 (SIL OFL)** 를 `<style>@font-face</style>` 로 base64 임베드. 브라우저 fontconfig 의존 제거, 일관된 한국어 glyph.
 
 ## 1. 처리 개요
 
