@@ -2524,6 +2524,13 @@ fn apply_bullet_fixup_single(
     if !para.text.starts_with(' ') { return; }
     let second = para.text.chars().nth(1).unwrap_or(' ');
     if second == '◦' || second == '○' { return; }
+    // 첫 non-space char 가 '-' (sub-item dash) 면 skip.
+    // sample16 paragraph 398/399 ("◦    - 하드웨어..." 등) 의 raw text 가
+    // 공백 + dash 시작 — 한컴 viewer 는 본 paragraph 에 ◦ 추가 안 함
+    // (sub-item marker 이미 dash 로 표시됨). apply_textbox_bullet_fixup 의
+    // 동일 정책 적용.
+    let first_non_space = para.text.chars().find(|c| *c != ' ').unwrap_or(' ');
+    if first_non_space == '-' { return; }
 
     let inserted_chars: u32 = 2;
     let inserted_utf16: u32 = bullet_str.chars().map(|c| c.len_utf16() as u32).sum();
