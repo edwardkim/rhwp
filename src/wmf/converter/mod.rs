@@ -10,6 +10,13 @@ mod svg;
 
 pub use self::svg::*;
 
+// [Task #902 v2 Stage 12] WMF raster Player (native only) — LO emfio 포팅 baseline.
+#[cfg(not(target_arch = "wasm32"))]
+pub mod raster;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use self::raster::RasterPlayer;
+
 #[derive(Clone, Debug, snafu::prelude::Snafu)]
 pub enum ConvertError {
     #[snafu(display("parse error: {source}"))]
