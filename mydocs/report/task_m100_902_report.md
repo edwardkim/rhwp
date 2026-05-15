@@ -1,9 +1,20 @@
-# Task #902 최종 결과 보고서 — WMF renderer 근본 개선
+# Task #902 최종 결과 보고서 — WMF renderer 근본 개선 + LibreOffice emfio 포팅
 
 **이슈**: [edwardkim/rhwp#902](https://github.com/edwardkim/rhwp/issues/902)
 **브랜치**: `local/task902` (base: `upstream/devel @ 72a6bbc3`)
-**v1 → v2 전환 + raster Player 확장**: 단일 dx fix → WMF renderer 근본 개선 → LibreOffice emfio 포팅 baseline
+**Scope 진화**: v1 dx fix → v2 WMF renderer 근본 개선 → LibreOffice emfio 포팅 baseline + 점진 확장 (Stage 18~23)
 **Timebox**: open-ended (작업지시자 결정)
+
+## 0. Stage 17~23 점진 포팅 추가 (사용자 B 옵션 선택 후)
+
+| Stage | 추가 구현 |
+|-------|----------|
+| 18 | RasterPlayer Bitmap rendering (DIBSTRETCHBLT) — sample16 PNG 92KB→489KB |
+| 19 | synthetic bold (weight≥700) + italic (slant 0.25) |
+| 20 | arc / pie / chord (LO DrawArc 알고리즘) |
+| 21 | clipping regions (IntersectClipRect state) |
+| 22 | font escapement / orientation state 추적 |
+| 23 | bitmap records 확장 (DIBBITBLT + STRETCHDIB, blit_dib DRY) |
 
 ## 1. 처리 개요
 
