@@ -2021,12 +2021,20 @@ impl Renderer for WebCanvasRenderer {
         // 캐시 미스: 새 HtmlImageElement 생성
         let mime_type = detect_image_mime_type(data);
 
-        // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
+        // WMF → 우선 RasterPlayer (LO emfio 포팅) PNG, 실패 시 SVG fallback
+        // [Task #902 v2 Stage 29] rhwp-studio (WebCanvasRenderer) 가 RasterPlayer
+        // 사용 → 임베디드 NanumGothic + LO 알고리즘 으로 일관 한국어 렌더링
         // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
-            match crate::renderer::svg::convert_wmf_to_svg(data) {
-                Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
-                None => (std::borrow::Cow::Borrowed(data), mime_type),
+            if let Some(png_bytes) = crate::renderer::svg::rasterize_wmf_direct_pub(
+                data, w as f32, h as f32,
+            ) {
+                (std::borrow::Cow::Owned(png_bytes), "image/png")
+            } else {
+                match crate::renderer::svg::convert_wmf_to_svg(data) {
+                    Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
             }
         } else if mime_type == "image/x-pcx" {
             match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
