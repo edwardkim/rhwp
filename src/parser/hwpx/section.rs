@@ -211,9 +211,15 @@ fn parse_paragraph(
                         parse_section_def_start(ce, &mut sd);
                         let col_def_opt = parse_sec_pr_children(reader, &mut sd)?;
                         sec_def = Some(sd);
-                        // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의)
+                        // [Task #901] SectionDef 도 HWP 바이너리에서 8 utf16 inline marker —
+                        // line_seg.text_start (file 값) 가 HWP 인코딩 가정. HWPX parser
+                        // 가 utf16_pos 동기화하지 않으면 paragraph 0 의 compose_lines 가
+                        // 모든 chars 를 line 0 에 packing. \u{0002} 추가로 8 utf16 정합.
+                        text_parts.push("\u{0002}".to_string());
+                        // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의) + 8 utf16.
                         if let Some(cd) = col_def_opt {
                             para.controls.push(Control::ColumnDef(cd));
+                            text_parts.push("\u{0002}".to_string());
                         }
                     }
                     b"linesegarray" => {
@@ -2088,6 +2094,8 @@ fn parse_ctrl(
                     b"colPr" => {
                         let cd = parse_col_pr(ce);
                         controls.push(Control::ColumnDef(cd));
+                        // [Task #901] ColumnDef 도 8 utf16 inline marker (HWP 정합).
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"colPr")?;
                     }
                     b"header" => {
@@ -2160,6 +2168,8 @@ fn parse_ctrl(
                     b"colPr" => {
                         let cd = parse_col_pr(ce);
                         controls.push(Control::ColumnDef(cd));
+                        // [Task #901] ColumnDef 도 8 utf16 inline marker (HWP 정합).
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"pageHiding" => {
                         let ph = parse_page_hiding_attrs(ce);
