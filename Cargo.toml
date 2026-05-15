@@ -41,7 +41,7 @@ serde_json = "1"
 # [Task #902 v2 Stage 28] WASM 호환 raster: tiny-skia + fontdue 글로벌화
 # (이전: native target only). RasterPlayer 가 WASM 빌드 에서도 동작 → rhwp-studio
 # 가 LO 포팅된 raster 렌더링 사용 가능.
-tiny-skia = { version = "0.11", default-features = false, features = ["std", "no-std-float", "png-format"] }
+tiny-skia = "0.11"
 fontdue = "0.9"
 
 console_error_panic_hook = { version = "0.1", optional = true }
@@ -157,6 +157,11 @@ unexpected_cfgs = { level = "allow", check-cfg = ['cfg(feature, values("tracing"
 [[example]]
 name = "pr599_png_gateway"
 required-features = ["native-skia"]
+
+# [Task #902 v2 Stage 31] wasm-opt 가 RasterPlayer 의 일부 코드 경로를 잘못
+# 제거할 가능성 진단을 위해 비활성화 옵션 추가.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
 
 [profile.release]
 lto = true
