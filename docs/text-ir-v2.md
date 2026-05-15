@@ -104,7 +104,8 @@ sidecar and use `TextRun`.
   They must not change renderer output or make `GlyphRun` the canonical path.
 - P14 `GlyphOutline` is a strict sidecar. It must carry `anchorOpId`, stay in
   the same `equivalenceGroup`, and complete every declared variant part before
-  selection.
+  selection. In schema v1 the `equivalenceGroup` is also the paint-order slot id
+  because fallback `TextRun` ops do not yet have stable per-op ids.
 - P14 backend selection diagnostics are deterministic and report-only. They
   explain CanvasKit/native eligibility, glyph-id range limits, font portability,
   missing glyphs, cluster mismatch, unsupported text effects, incomplete

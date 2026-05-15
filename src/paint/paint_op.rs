@@ -234,9 +234,7 @@ impl GlyphOutlineStrokeStyle {
             && matches!(self.cap, GlyphOutlineStrokeCap::Butt)
             && matches!(
                 self.paint_order,
-                GlyphOutlinePaintOrder::FillOnly
-                    | GlyphOutlinePaintOrder::FillThenStroke
-                    | GlyphOutlinePaintOrder::StrokeThenFill
+                GlyphOutlinePaintOrder::FillThenStroke | GlyphOutlinePaintOrder::StrokeThenFill
             )
     }
 }

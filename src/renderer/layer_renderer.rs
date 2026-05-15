@@ -139,6 +139,7 @@ pub enum VariantRejectReason {
     GlyphOutlineUnsupported,
     UnsupportedOutlinePayload,
     GlyphOutlineStrokeStyleUnsupported,
+    PositionAdjustedNotAllowed,
     PositionAdjustedResidualTooLarge,
 }
 
@@ -159,6 +160,7 @@ impl VariantRejectReason {
             Self::GlyphOutlineUnsupported => "glyphOutlineUnsupported",
             Self::UnsupportedOutlinePayload => "unsupportedOutlinePayload",
             Self::GlyphOutlineStrokeStyleUnsupported => "glyphOutlineStrokeStyleUnsupported",
+            Self::PositionAdjustedNotAllowed => "positionAdjustedNotAllowed",
             Self::PositionAdjustedResidualTooLarge => "positionAdjustedResidualTooLarge",
         }
     }
@@ -221,7 +223,8 @@ pub fn analyze_text_variant_selection(
     options: TextVariantSelectionOptions,
 ) -> Vec<TextVariantSelectionReport> {
     let mut groups = BTreeMap::<String, TextVariantGroupState>::new();
-    collect_text_variant_groups(&tree.root, &mut groups);
+    let mut next_order = 0usize;
+    collect_text_variant_groups(&tree.root, &mut groups, &mut next_order);
     groups
         .into_iter()
         .map(|(equivalence_group, group)| group.finish(equivalence_group, options))
@@ -240,37 +243,43 @@ impl TextVariantGroupState {
         equivalence_group: String,
         options: TextVariantSelectionOptions,
     ) -> TextVariantSelectionReport {
-        let mut candidates = self.variants.into_values().collect::<Vec<_>>();
-        candidates.sort_by_key(|candidate| candidate.order);
-        let rejected_variants = candidates
-            .iter()
-            .filter_map(|candidate| {
+        let mut evaluated = self
+            .variants
+            .into_values()
+            .map(|candidate| {
                 let reasons = candidate.reject_reasons(options);
-                (!reasons.is_empty()).then(|| TextVariantRejectReport {
-                    variant_id: candidate.variant_id.clone(),
-                    variant_kind: candidate.variant_kind,
-                    reasons,
+                EvaluatedTextVariantCandidate { candidate, reasons }
+            })
+            .collect::<Vec<_>>();
+        evaluated.sort_by_key(|evaluated| evaluated.candidate.order);
+        let rejected_variants = evaluated
+            .iter()
+            .filter_map(|evaluated| {
+                (!evaluated.reasons.is_empty()).then(|| TextVariantRejectReport {
+                    variant_id: evaluated.candidate.variant_id.clone(),
+                    variant_kind: evaluated.candidate.variant_kind,
+                    reasons: evaluated.reasons.clone(),
                 })
             })
             .collect::<Vec<_>>();
         let outline_selection = options
             .prefer_strict_outline
             .then(|| {
-                candidates.iter().find(|candidate| {
-                    candidate.variant_kind == TextVariantKind::GlyphOutline
-                        && candidate.reject_reasons(options).is_empty()
+                evaluated.iter().find(|evaluated| {
+                    evaluated.candidate.variant_kind == TextVariantKind::GlyphOutline
+                        && evaluated.reasons.is_empty()
                 })
             })
             .flatten();
-        let glyph_selection = candidates.iter().find(|candidate| {
-            candidate.variant_kind == TextVariantKind::GlyphRun
-                && candidate.reject_reasons(options).is_empty()
+        let glyph_selection = evaluated.iter().find(|evaluated| {
+            evaluated.candidate.variant_kind == TextVariantKind::GlyphRun
+                && evaluated.reasons.is_empty()
         });
         let fallback_outline_selection = (!options.prefer_strict_outline)
             .then(|| {
-                candidates.iter().find(|candidate| {
-                    candidate.variant_kind == TextVariantKind::GlyphOutline
-                        && candidate.reject_reasons(options).is_empty()
+                evaluated.iter().find(|evaluated| {
+                    evaluated.candidate.variant_kind == TextVariantKind::GlyphOutline
+                        && evaluated.reasons.is_empty()
                 })
             })
             .flatten();
@@ -281,15 +290,9 @@ impl TextVariantGroupState {
             return TextVariantSelectionReport {
                 backend: options.backend,
                 equivalence_group,
-                selected_variant_id: Some(selected.variant_id.clone()),
-                selected_variant_kind: Some(selected.variant_kind),
-                selected_reason: match selected.variant_kind {
-                    TextVariantKind::GlyphRun => VariantSelectedReason::GlyphRunStrictEligible,
-                    TextVariantKind::GlyphOutline => {
-                        VariantSelectedReason::GlyphOutlineStrictProfile
-                    }
-                    TextVariantKind::TextRun => VariantSelectedReason::DefaultTextRunFallback,
-                },
+                selected_variant_id: Some(selected.candidate.variant_id.clone()),
+                selected_variant_kind: Some(selected.candidate.variant_kind),
+                selected_reason: selected_reason_for_variant(selected.candidate.variant_kind),
                 fallback_required: false,
                 rejected_variants,
             };
@@ -306,6 +309,22 @@ impl TextVariantGroupState {
             },
             fallback_required: true,
             rejected_variants,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct EvaluatedTextVariantCandidate {
+    candidate: TextVariantCandidate,
+    reasons: Vec<VariantRejectReason>,
+}
+
+fn selected_reason_for_variant(variant_kind: TextVariantKind) -> VariantSelectedReason {
+    match variant_kind {
+        TextVariantKind::GlyphRun => VariantSelectedReason::GlyphRunStrictEligible,
+        TextVariantKind::GlyphOutline => VariantSelectedReason::GlyphOutlineStrictProfile,
+        TextVariantKind::TextRun => {
+            unreachable!("TextRun fallback is tracked through fallback_present, not candidates")
         }
     }
 }
@@ -352,7 +371,9 @@ impl TextVariantCandidate {
         let mut reasons = BTreeSet::<VariantRejectReason>::new();
         self.collect_structure_reasons(&mut reasons);
         match self.variant_kind {
-            TextVariantKind::TextRun => {}
+            TextVariantKind::TextRun => {
+                unreachable!("TextRun fallback is tracked through fallback_present, not candidates")
+            }
             TextVariantKind::GlyphRun => {
                 if !matches!(
                     options.backend,
@@ -399,20 +420,19 @@ impl TextVariantCandidate {
 fn collect_text_variant_groups(
     node: &LayerNode,
     groups: &mut BTreeMap<String, TextVariantGroupState>,
+    next_order: &mut usize,
 ) {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => {
             for child in children {
-                collect_text_variant_groups(child, groups);
+                collect_text_variant_groups(child, groups, next_order);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_variant_groups(child, groups),
+        LayerNodeKind::ClipRect { child, .. } => {
+            collect_text_variant_groups(child, groups, next_order);
+        }
         LayerNodeKind::Leaf { ops } => {
             let fallback_present = ops.iter().any(|op| matches!(op, PaintOp::TextRun { .. }));
-            let mut order = groups
-                .values()
-                .map(|group| group.variants.len())
-                .sum::<usize>();
             for op in ops {
                 match op {
                     PaintOp::GlyphRun { run, .. } => {
@@ -424,10 +444,10 @@ fn collect_text_variant_groups(
                             .variants
                             .entry(run.variant.variant_id.clone())
                             .or_insert_with(|| {
-                                let next_order = order;
-                                order = order.saturating_add(1);
+                                let order = *next_order;
+                                *next_order = (*next_order).saturating_add(1);
                                 TextVariantCandidate::new(
-                                    next_order,
+                                    order,
                                     run.variant.variant_id.clone(),
                                     run.variant.variant_kind,
                                 )
@@ -443,10 +463,10 @@ fn collect_text_variant_groups(
                             .variants
                             .entry(outline.variant.variant_id.clone())
                             .or_insert_with(|| {
-                                let next_order = order;
-                                order = order.saturating_add(1);
+                                let order = *next_order;
+                                *next_order = (*next_order).saturating_add(1);
                                 TextVariantCandidate::new(
-                                    next_order,
+                                    order,
                                     outline.variant.variant_id.clone(),
                                     outline.variant.variant_kind,
                                 )
@@ -471,37 +491,7 @@ fn collect_glyph_run_reject_reasons(
     if !matches!(run.orientation, GlyphRunOrientation::Horizontal) {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
     }
-    match run.diagnostics.replay_eligibility {
-        GlyphRunReplayEligibility::Portable => {}
-        GlyphRunReplayEligibility::ConditionalExternalFont => {
-            reasons.insert(VariantRejectReason::ExternalFontNotVerified);
-        }
-        GlyphRunReplayEligibility::LocalDiagnosticOnly
-        | GlyphRunReplayEligibility::NotReplayable => {
-            reasons.insert(VariantRejectReason::FontNotPortable);
-        }
-    }
-    match run.diagnostics.quality {
-        TextVariantQuality::Exact => {}
-        TextVariantQuality::PositionAdjusted
-            if options.allow_position_adjusted
-                && run.diagnostics.max_residual_after_adjustment_px
-                    <= options.max_position_adjusted_residual_px => {}
-        TextVariantQuality::PositionAdjusted => {
-            reasons.insert(VariantRejectReason::PositionAdjustedResidualTooLarge);
-        }
-        TextVariantQuality::Approximate
-        | TextVariantQuality::DiagnosticOnly
-        | TextVariantQuality::Omitted => {
-            reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
-        }
-    }
-    if run.diagnostics.missing_glyph_count > 0 {
-        reasons.insert(VariantRejectReason::MissingGlyph);
-    }
-    if run.diagnostics.cluster_mismatch_count > 0 {
-        reasons.insert(VariantRejectReason::ClusterMismatch);
-    }
+    collect_text_variant_diagnostics_reject_reasons(&run.diagnostics, options, reasons);
     if run
         .glyph_ids
         .iter()
@@ -513,7 +503,7 @@ fn collect_glyph_run_reject_reasons(
 
 fn collect_glyph_outline_reject_reasons(
     outline: &LayerGlyphOutlinePaint,
-    _options: TextVariantSelectionOptions,
+    options: TextVariantSelectionOptions,
     reasons: &mut BTreeSet<VariantRejectReason>,
 ) {
     if outline.paths.is_empty() {
@@ -538,32 +528,49 @@ fn collect_glyph_outline_reject_reasons(
             }
         }
     }
-    collect_glyph_run_reject_reasons_for_outline_diagnostics(outline, reasons);
+    collect_text_variant_diagnostics_reject_reasons(&outline.diagnostics, options, reasons);
 }
 
-fn collect_glyph_run_reject_reasons_for_outline_diagnostics(
-    outline: &LayerGlyphOutlinePaint,
+fn collect_text_variant_diagnostics_reject_reasons(
+    diagnostics: &crate::paint::GlyphRunDiagnostics,
+    options: TextVariantSelectionOptions,
     reasons: &mut BTreeSet<VariantRejectReason>,
 ) {
-    if !matches!(
-        outline.diagnostics.replay_eligibility,
-        GlyphRunReplayEligibility::Portable | GlyphRunReplayEligibility::ConditionalExternalFont
-    ) {
-        reasons.insert(VariantRejectReason::FontNotPortable);
+    match diagnostics.replay_eligibility {
+        GlyphRunReplayEligibility::Portable => {}
+        GlyphRunReplayEligibility::ConditionalExternalFont => {
+            reasons.insert(VariantRejectReason::ExternalFontNotVerified);
+        }
+        GlyphRunReplayEligibility::LocalDiagnosticOnly
+        | GlyphRunReplayEligibility::NotReplayable => {
+            reasons.insert(VariantRejectReason::FontNotPortable);
+        }
     }
-    if matches!(
-        outline.diagnostics.quality,
+    match diagnostics.quality {
+        TextVariantQuality::Exact => {}
+        TextVariantQuality::PositionAdjusted if !options.allow_position_adjusted => {
+            reasons.insert(VariantRejectReason::PositionAdjustedNotAllowed);
+        }
+        TextVariantQuality::PositionAdjusted
+            if diagnostics.max_residual_after_adjustment_px
+                <= options.max_position_adjusted_residual_px => {}
+        TextVariantQuality::PositionAdjusted => {
+            reasons.insert(VariantRejectReason::PositionAdjustedResidualTooLarge);
+        }
         TextVariantQuality::Approximate
-            | TextVariantQuality::DiagnosticOnly
-            | TextVariantQuality::Omitted
-    ) {
-        reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
+        | TextVariantQuality::DiagnosticOnly
+        | TextVariantQuality::Omitted => {
+            reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
+        }
     }
-    if outline.diagnostics.missing_glyph_count > 0 {
+    if diagnostics.missing_glyph_count > 0 {
         reasons.insert(VariantRejectReason::MissingGlyph);
     }
-    if outline.diagnostics.cluster_mismatch_count > 0 {
+    if diagnostics.cluster_mismatch_count > 0 {
         reasons.insert(VariantRejectReason::ClusterMismatch);
+    }
+    if diagnostics.used_fallback_font_count > 0 {
+        reasons.insert(VariantRejectReason::FontNotPortable);
     }
 }
 
@@ -851,6 +858,28 @@ mod tests {
     }
 
     #[test]
+    fn canvaskit_can_disallow_position_adjusted_variants() {
+        let mut diagnostics = diagnostics();
+        diagnostics.quality = TextVariantQuality::PositionAdjusted;
+        diagnostics.max_residual_after_adjustment_px = 0.0;
+        let rejected = first_report(
+            vec![text_op(), glyph_run(diagnostics, 42)],
+            TextVariantSelectionOptions {
+                allow_position_adjusted: false,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        assert_eq!(
+            rejected.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert_eq!(
+            rejected.rejected_variants[0].reasons,
+            vec![VariantRejectReason::PositionAdjustedNotAllowed]
+        );
+    }
+
+    #[test]
     fn strict_outline_profile_can_select_glyph_outline() {
         let report = first_report(
             vec![text_op(), glyph_run(diagnostics(), 42), glyph_outline(None)],
@@ -861,6 +890,23 @@ mod tests {
             report.selected_reason,
             VariantSelectedReason::GlyphOutlineStrictProfile
         );
+    }
+
+    #[test]
+    fn glyph_outline_uses_position_adjusted_residual_gate() {
+        let mut outline = glyph_outline(None);
+        if let PaintOp::GlyphOutline { outline, .. } = &mut outline {
+            outline.diagnostics.quality = TextVariantQuality::PositionAdjusted;
+            outline.diagnostics.max_residual_after_adjustment_px = 0.5;
+        }
+        let report = first_report(
+            vec![text_op(), outline],
+            TextVariantSelectionOptions::canvaskit_strict_outline(),
+        );
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::PositionAdjustedResidualTooLarge));
     }
 
     #[test]
@@ -875,6 +921,28 @@ mod tests {
                     cap: GlyphOutlineStrokeCap::Butt,
                     miter_limit: 2.0,
                     paint_order: GlyphOutlinePaintOrder::FillThenStroke,
+                })),
+            ],
+            TextVariantSelectionOptions::canvaskit_strict_outline(),
+        );
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::GlyphOutlineStrokeStyleUnsupported));
+    }
+
+    #[test]
+    fn outline_stroke_payload_rejects_fill_only_paint_order() {
+        let report = first_report(
+            vec![
+                text_op(),
+                glyph_outline(Some(GlyphOutlineStrokeStyle {
+                    color: 0x00000000,
+                    width: 1.0,
+                    join: GlyphOutlineStrokeJoin::Miter,
+                    cap: GlyphOutlineStrokeCap::Butt,
+                    miter_limit: 2.0,
+                    paint_order: GlyphOutlinePaintOrder::FillOnly,
                 })),
             ],
             TextVariantSelectionOptions::canvaskit_strict_outline(),

@@ -63,9 +63,10 @@ impl PageLayerTree {
 
 fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let externalized_visuals = externalized_text_visuals(root);
-    let has_variant_groups = has_text_variant_groups(root);
-    let has_glyph_runs = has_glyph_runs(root);
-    let has_glyph_outlines = has_glyph_outlines(root);
+    let text_variant_features = collect_text_variant_features(root);
+    let has_variant_groups = text_variant_features.has_variant_groups();
+    let has_glyph_runs = text_variant_features.has_glyph_runs;
+    let has_glyph_outlines = text_variant_features.has_glyph_outlines;
     buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\"");
     if has_glyph_runs {
         buf.push_str(",\"fontResources\",\"text.glyphRun\"");
@@ -88,17 +89,21 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     if externalized_visuals.contains(&"decorations") {
         buf.push_str(",\"text.decorationOp\"");
     }
-    buf.push_str("],\"optionalFeatures\":[");
-    let mut optional_feature_count = 0usize;
+    let mut optional_features = Vec::new();
     if has_glyph_runs {
-        buf.push_str("\"fontResources\",\"text.glyphRun\"");
-        optional_feature_count += 2;
+        optional_features.push("fontResources");
+        optional_features.push("text.glyphRun");
     }
     if has_glyph_outlines {
-        if optional_feature_count > 0 {
+        optional_features.push("text.glyphOutline");
+        optional_features.push("text.glyphOutline.strictSidecar");
+    }
+    buf.push_str("],\"optionalFeatures\":[");
+    for (idx, feature) in optional_features.iter().enumerate() {
+        if idx > 0 {
             buf.push(',');
         }
-        buf.push_str("\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\"");
+        buf.push_str(&json_escape(feature));
     }
     buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
@@ -117,50 +122,20 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     buf.push_str("]}");
 }
 
-fn has_text_variant_groups(root: &LayerNode) -> bool {
-    let mut stack = vec![root];
-    while let Some(node) = stack.pop() {
-        match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
-                for child in children {
-                    stack.push(child);
-                }
-            }
-            LayerNodeKind::ClipRect { child, .. } => stack.push(child),
-            LayerNodeKind::Leaf { ops } => {
-                if ops
-                    .iter()
-                    .any(|op| matches!(op, PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. }))
-                {
-                    return true;
-                }
-            }
-        }
-    }
-    false
+#[derive(Debug, Clone, Copy, Default)]
+struct TextVariantFeatureFlags {
+    has_glyph_runs: bool,
+    has_glyph_outlines: bool,
 }
 
-fn has_glyph_runs(root: &LayerNode) -> bool {
-    let mut stack = vec![root];
-    while let Some(node) = stack.pop() {
-        match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
-                for child in children {
-                    stack.push(child);
-                }
-            }
-            LayerNodeKind::ClipRect { child, .. } => stack.push(child),
-            LayerNodeKind::Leaf { ops } => {
-                if ops.iter().any(|op| matches!(op, PaintOp::GlyphRun { .. })) {
-                    return true;
-                }
-            }
-        }
+impl TextVariantFeatureFlags {
+    fn has_variant_groups(self) -> bool {
+        self.has_glyph_runs || self.has_glyph_outlines
     }
-    false
 }
 
-fn has_glyph_outlines(root: &LayerNode) -> bool {
+fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
+    let mut features = TextVariantFeatureFlags::default();
     let mut stack = vec![root];
     while let Some(node) = stack.pop() {
         match &node.kind {
@@ -171,16 +146,20 @@ fn has_glyph_outlines(root: &LayerNode) -> bool {
             }
             LayerNodeKind::ClipRect { child, .. } => stack.push(child),
             LayerNodeKind::Leaf { ops } => {
-                if ops
-                    .iter()
-                    .any(|op| matches!(op, PaintOp::GlyphOutline { .. }))
-                {
-                    return true;
+                for op in ops {
+                    match op {
+                        PaintOp::GlyphRun { .. } => features.has_glyph_runs = true,
+                        PaintOp::GlyphOutline { .. } => features.has_glyph_outlines = true,
+                        _ => {}
+                    }
+                }
+                if features.has_glyph_runs && features.has_glyph_outlines {
+                    return features;
                 }
             }
         }
     }
-    false
+    features
 }
 
 fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {

@@ -267,6 +267,9 @@ fn validate_sidecar_anchor(
             leaf: leaf_path.to_string(),
         });
     };
+    // Schema v1 does not assign an explicit op id to the fallback TextRun.
+    // The equivalence group is the exported paint-order slot id, so P14
+    // sidecars anchor to that slot until per-op ids exist.
     if anchor_op_id != &variant.equivalence_group {
         return Err(TextVariantScopeError::InvalidSidecarAnchor {
             equivalence_group: variant.equivalence_group.clone(),
