@@ -102,6 +102,9 @@ fn pick_font_for_grapheme(g: &str) -> Option<&'static Font> {
 ///   2. 각 grapheme i 의 advance = sum(DX[byte..byte+width])
 ///   3. 각 glyph 의 origin = position.x + sum(advances[0..i])
 ///   4. fontdue 로 glyph rasterize 후 pixmap 에 alpha-blend
+///
+/// [Task #902 v2 Stage 19] synthetic bold (weight ≥ 700) + italic (slant).
+/// 실제 bold/italic 글꼴 변형체가 없는 경우에도 시각 효과 제공.
 #[cfg(not(target_arch = "wasm32"))]
 pub fn draw_text_with_dx(
     pixmap: &mut Pixmap,
@@ -113,11 +116,20 @@ pub fn draw_text_with_dx(
     pixel_per_logical_x: f32,
     pixel_per_logical_y: f32,
     color: &ColorRef,
+    weight: i16,
+    italic: bool,
 ) {
     let font_size_pixel = font_size_logical * pixel_per_logical_y;
     if font_size_pixel < 1.0 {
         return;
     }
+    // synthetic bold: pixel level 의 weight 효과
+    //   weight 400 (normal): no extra
+    //   weight 700+ (bold): glyph 을 1 pixel 두께 확장 (오프셋 +1px 재렌더)
+    let bold_extra = if weight >= 700 { 1 } else { 0 };
+    // synthetic italic: 글자 위 부분이 오른쪽으로 기울어진 효과
+    //   italic_slant = pixel shift per pixel of glyph height
+    let italic_slant: f32 = if italic { 0.25 } else { 0.0 };
 
     let mut acc_x_logical: f32 = 0.0;
     let mut dx_idx: usize = 0;
@@ -139,12 +151,33 @@ pub fn draw_text_with_dx(
             let (metrics, bitmap) = font.rasterize(ch, font_size_pixel);
             if metrics.width == 0 || metrics.height == 0 { continue; }
 
-            // fontdue 의 metrics.xmin/ymin: glyph 의 baseline-relative origin
+            // baseline-relative origin
             let bx = (glyph_x_pixel + metrics.xmin as f32).round() as i32;
-            // baseline-relative ymin (top of glyph), top-down y 변환
             let by = (glyph_y_pixel - metrics.ymin as f32 - metrics.height as f32).round() as i32;
 
-            blit_alpha(pixmap, &bitmap, metrics.width as i32, metrics.height as i32, bx, by, color);
+            blit_alpha(
+                pixmap,
+                &bitmap,
+                metrics.width as i32,
+                metrics.height as i32,
+                bx,
+                by,
+                color,
+                italic_slant,
+            );
+            if bold_extra > 0 {
+                // 1px 오프셋 재렌더로 두께 확장 (synthetic bold)
+                blit_alpha(
+                    pixmap,
+                    &bitmap,
+                    metrics.width as i32,
+                    metrics.height as i32,
+                    bx + bold_extra,
+                    by,
+                    color,
+                    italic_slant,
+                );
+            }
         }
 
         if i > 0 || width > 0 {
@@ -155,6 +188,7 @@ pub fn draw_text_with_dx(
 }
 
 /// Alpha glyph bitmap 을 pixmap 에 alpha-blend.
+/// [Stage 19] italic_slant > 0 시 글자 위쪽이 오른쪽으로 기울어짐 (synthetic italic).
 #[cfg(not(target_arch = "wasm32"))]
 fn blit_alpha(
     pixmap: &mut Pixmap,
@@ -164,6 +198,7 @@ fn blit_alpha(
     dest_x: i32,
     dest_y: i32,
     color: &ColorRef,
+    italic_slant: f32,
 ) {
     let pw = pixmap.width() as i32;
     let ph = pixmap.height() as i32;
@@ -175,8 +210,14 @@ fn blit_alpha(
     for sy in 0..h {
         let py = dest_y + sy;
         if py < 0 || py >= ph { continue; }
+        // italic shear: y 가 작을수록 (글자 위쪽) 오른쪽 shift
+        let shear_offset = if italic_slant > 0.0 {
+            ((h - sy) as f32 * italic_slant).round() as i32
+        } else {
+            0
+        };
         for sx in 0..w {
-            let px = dest_x + sx;
+            let px = dest_x + sx + shear_offset;
             if px < 0 || px >= pw { continue; }
             let alpha = bitmap[(sy * w + sx) as usize];
             if alpha == 0 { continue; }
