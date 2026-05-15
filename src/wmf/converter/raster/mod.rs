@@ -32,5 +32,6 @@
 
 mod player;
 mod state;
+mod text;
 
 pub use self::player::RasterPlayer;

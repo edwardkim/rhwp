@@ -165,6 +165,60 @@ impl Player for RasterPlayer {
     fn chord(self, _: usize, _: META_CHORD) -> Result<Self, PlayError> { Ok(self) }
     fn ellipse(self, _: usize, _: META_ELLIPSE) -> Result<Self, PlayError> { Ok(self) }
     fn ext_flood_fill(self, _: usize, _: META_EXTFLOODFILL) -> Result<Self, PlayError> { Ok(self) }
+    #[cfg(not(target_arch = "wasm32"))]
+    fn ext_text_out(
+        mut self,
+        _: usize,
+        record: META_EXTTEXTOUT,
+    ) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawText 포팅 — DX byte-aware 합산 + glyph 렌더
+        let Some(font_idx) = self.state.selected_font else { return Ok(self) };
+        let RasterObject::Font(font_info) = self
+            .state
+            .object_table
+            .get(&font_idx)
+            .cloned()
+            .ok_or_else(|| return Ok::<(), PlayError>(()))
+            .map_err(|_| PlayError::InvalidRecord {
+                cause: "selected_font not in table".to_owned(),
+            })?
+        else {
+            return Ok(self);
+        };
+
+        // record 의 byte 배열 → UTF-8 변환 (charset 기반)
+        let text = match record.into_utf8(font_info.charset) {
+            Ok(t) => t,
+            Err(_) => return Ok(self),
+        };
+        if text.is_empty() { return Ok(self); }
+
+        let (origin_px_x, origin_px_y) = self.logical_to_pixel(record.x, record.y);
+
+        // logical → pixel scale (font_size_logical 변환)
+        let scale_x = self.canvas_width as f32 / f32::from(self.extent.0.max(1));
+        let scale_y = self.canvas_height as f32 / f32::from(self.extent.1.max(1));
+
+        // font.height: WMF 의 lfHeight 는 음수 = cell height 의 절대값, 양수 = em height
+        let font_size_logical = f32::from(font_info.height.abs());
+
+        let text_color = self.state.text_color.clone();
+
+        super::text::draw_text_with_dx(
+            &mut self.pixmap,
+            &text,
+            &record.dx,
+            origin_px_x,
+            origin_px_y,
+            font_size_logical,
+            scale_x,
+            scale_y,
+            &text_color,
+        );
+
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn ext_text_out(self, _: usize, _: META_EXTTEXTOUT) -> Result<Self, PlayError> { Ok(self) }
     fn fill_region(self, _: usize, _: META_FILLREGION) -> Result<Self, PlayError> { Ok(self) }
     fn flood_fill(self, _: usize, _: META_FLOODFILL) -> Result<Self, PlayError> { Ok(self) }
