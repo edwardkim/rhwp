@@ -231,7 +231,43 @@ impl Player for RasterPlayer {
     fn stretch_device_independent_bitmap(self, _: usize, _: META_STRETCHDIB) -> Result<Self, PlayError> { Ok(self) }
 
     // === Drawing records ===
+    #[cfg(not(target_arch = "wasm32"))]
+    fn arc(mut self, _: usize, record: META_ARC) -> Result<Self, PlayError> {
+        // [Task #902 v2 Stage 20] LO mtftools.cxx 의 DrawArc 포팅
+        // bounding rect 의 ellipse 중심 + start/end 각도로 호 그리기
+        let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
+        let (x1, y1) = self.logical_to_pixel(record.right_rect, record.bottom_rect);
+        let (sx, sy) = self.logical_to_pixel(record.x_start_arc, record.y_start_arc);
+        let (ex, ey) = self.logical_to_pixel(record.x_end_arc, record.y_end_arc);
+        let _ = (sx, sy, ex, ey);
+        if let Some(path) = arc_path(x0, y0, x1, y1, sx, sy, ex, ey, false) {
+            if let Some((sp, s)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(&path, &sp, &s, Transform::identity(), None);
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn arc(self, _: usize, _: META_ARC) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn chord(mut self, _: usize, record: META_CHORD) -> Result<Self, PlayError> {
+        // chord = arc + start/end 연결 직선 (closed path) → fill + stroke
+        let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
+        let (x1, y1) = self.logical_to_pixel(record.right_rect, record.bottom_rect);
+        let (sx, sy) = self.logical_to_pixel(record.x_radial1, record.y_radial1);
+        let (ex, ey) = self.logical_to_pixel(record.x_radial2, record.y_radial2);
+        if let Some(path) = arc_path(x0, y0, x1, y1, sx, sy, ex, ey, true) {
+            if let Some(fp) = self.build_fill_paint() {
+                self.pixmap.fill_path(&path, &fp, FillRule::Winding, Transform::identity(), None);
+            }
+            if let Some((sp, s)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(&path, &sp, &s, Transform::identity(), None);
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn chord(self, _: usize, _: META_CHORD) -> Result<Self, PlayError> { Ok(self) }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -365,6 +401,26 @@ impl Player for RasterPlayer {
 
     fn paint_region(self, _: usize, _: META_PAINTREGION) -> Result<Self, PlayError> { Ok(self) }
     fn pat_blt(self, _: usize, _: META_PATBLT) -> Result<Self, PlayError> { Ok(self) }
+    #[cfg(not(target_arch = "wasm32"))]
+    fn pie(mut self, _: usize, record: META_PIE) -> Result<Self, PlayError> {
+        // pie = arc + center 로 연결된 wedge (closed path) → fill + stroke
+        let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
+        let (x1, y1) = self.logical_to_pixel(record.right_rect, record.bottom_rect);
+        let (sx, sy) = self.logical_to_pixel(record.x_radial1, record.y_radial1);
+        let (ex, ey) = self.logical_to_pixel(record.x_radial2, record.y_radial2);
+        let cx = (x0 + x1) / 2.0;
+        let cy = (y0 + y1) / 2.0;
+        if let Some(path) = arc_path_pie(x0, y0, x1, y1, sx, sy, ex, ey, cx, cy) {
+            if let Some(fp) = self.build_fill_paint() {
+                self.pixmap.fill_path(&path, &fp, FillRule::Winding, Transform::identity(), None);
+            }
+            if let Some((sp, s)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(&path, &sp, &s, Transform::identity(), None);
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn pie(self, _: usize, _: META_PIE) -> Result<Self, PlayError> { Ok(self) }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -773,4 +829,62 @@ impl Player for RasterPlayer {
         Ok(self)
     }
     fn escape(self, _: usize, _: META_ESCAPE) -> Result<Self, PlayError> { Ok(self) }
+}
+
+/// [Stage 20] LO mtftools.cxx GetEllipticalArc 알고리즘 포팅.
+/// bounding rect (x0,y0)-(x1,y1) 의 ellipse 의 start->end 호 경로 생성.
+/// close_chord=true 면 start↔end 직선으로 닫음 (chord). 아니면 open arc.
+#[cfg(not(target_arch = "wasm32"))]
+fn arc_path(
+    x0: f32, y0: f32, x1: f32, y1: f32,
+    sx: f32, sy: f32, ex: f32, ey: f32,
+    close_chord: bool,
+) -> Option<tiny_skia::Path> {
+    let cx = (x0 + x1) / 2.0;
+    let cy = (y0 + y1) / 2.0;
+    let rx = ((x1 - x0).abs()) / 2.0;
+    let ry = ((y1 - y0).abs()) / 2.0;
+    if rx < 0.5 || ry < 0.5 { return None; }
+
+    // start/end 각도 계산 (ellipse normalized space)
+    let start_angle = ((sy - cy) / ry).atan2((sx - cx) / rx);
+    let end_angle = ((ey - cy) / ry).atan2((ex - cx) / rx);
+    // WMF: anti-clockwise from start to end
+    let mut sweep = end_angle - start_angle;
+    if sweep <= 0.0 { sweep += std::f32::consts::TAU; }
+
+    // sweep 을 8 step 으로 cubic bezier 근사
+    let segments = 8;
+    let step = sweep / segments as f32;
+    let mut pb = PathBuilder::new();
+    let p0_x = cx + rx * start_angle.cos();
+    let p0_y = cy + ry * start_angle.sin();
+    pb.move_to(p0_x, p0_y);
+    for i in 1..=segments {
+        let a = start_angle + step * i as f32;
+        let p_x = cx + rx * a.cos();
+        let p_y = cy + ry * a.sin();
+        pb.line_to(p_x, p_y);
+    }
+    if close_chord {
+        pb.close();
+    }
+    pb.finish()
+}
+
+/// pie 경로 — arc + center 직선 wedge.
+#[cfg(not(target_arch = "wasm32"))]
+fn arc_path_pie(
+    x0: f32, y0: f32, x1: f32, y1: f32,
+    sx: f32, sy: f32, ex: f32, ey: f32,
+    cx: f32, cy: f32,
+) -> Option<tiny_skia::Path> {
+    let mut pb = PathBuilder::new();
+    pb.move_to(cx, cy);
+    let _ = (x0, y0, x1, y1, sx, sy, ex, ey);
+    // 단순화: cx→start→end→cx wedge — 향후 정밀화
+    pb.line_to(sx, sy);
+    pb.line_to(ex, ey);
+    pb.close();
+    pb.finish()
 }
