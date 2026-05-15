@@ -1942,11 +1942,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
         err(level = tracing::Level::ERROR, Display),
     ))]
     fn offset_viewport_origin(
-        self,
+        mut self,
         record_number: usize,
         record: META_OFFSETVIEWPORTORG,
     ) -> Result<Self, PlayError> {
-        info!("META_OFFSETVIEWPORTORG: not implemented");
+        // [Task #902 v2 Stage 6] viewport origin delta 합산
+        self.context_current = self
+            .context_current
+            .offset_viewport_origin(record.x_offset, record.y_offset);
         Ok(self)
     }
 
@@ -1956,11 +1959,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
         err(level = tracing::Level::ERROR, Display),
     ))]
     fn offset_window_origin(
-        self,
+        mut self,
         record_number: usize,
         record: META_OFFSETWINDOWORG,
     ) -> Result<Self, PlayError> {
-        info!("META_OFFSETWINDOWORG: not implemented");
+        // [Task #902 v2 Stage 6] window origin delta 합산
+        self.context_current = self
+            .context_current
+            .offset_window_origin(record.x_offset, record.y_offset);
         Ok(self)
     }
 
@@ -2038,11 +2044,17 @@ impl crate::wmf::converter::Player for SVGPlayer {
         err(level = tracing::Level::ERROR, Display),
     ))]
     fn scale_viewport_ext(
-        self,
+        mut self,
         record_number: usize,
         record: META_SCALEVIEWPORTEXT,
     ) -> Result<Self, PlayError> {
-        info!("META_SCALEVIEWPORTEXT: not implemented");
+        // [Task #902 v2 Stage 6] viewport.ext × (num/denom) 적용
+        self.context_current = self.context_current.scale_viewport_ext(
+            record.x_num,
+            record.x_denom,
+            record.y_num,
+            record.y_denom,
+        );
         Ok(self)
     }
 
