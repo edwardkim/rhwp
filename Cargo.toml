@@ -43,13 +43,15 @@ console_error_panic_hook = { version = "0.1", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
-native-skia = ["dep:resvg", "dep:skia-safe"]
+native-skia = ["dep:skia-safe"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
 usvg = "0.45"
-resvg = { version = "0.47", optional = true }
+# [Task #902 v2 Stage 10] WMF raster 렌더링을 위해 resvg non-optional 화
+# (이전: native-skia feature gated)
+resvg = "0.47"
 pdf-writer = "0.12"
 subsetter = "0.2"
 ttf-parser = "0.25"
