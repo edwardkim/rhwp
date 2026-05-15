@@ -3,8 +3,8 @@
  * [Task #902 v2 Stage 12] WMF raster Player — LibreOffice emfio 포팅 baseline.
  *
  * This file incorporates algorithms derived from LibreOffice's emfio module:
- *   https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/wmfreader.cxx
- *   https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/mtftools.cxx
+ *   https://github.com/LibreOffice/core/blob/master/emfio/source/reader/wmfreader.cxx
+ *   https://github.com/LibreOffice/core/blob/master/emfio/source/reader/mtftools.cxx
  *
  * The algorithm references retain attribution per LibreOffice's MPL 2.0 license.
  * This Rust adaptation is provided under rhwp's MIT license; original algorithm
@@ -22,8 +22,11 @@
 //! 렌더링하여 폰트/렌더링 quality 를 자체 제어.
 //!
 //! 알고리즘 출처: LibreOffice emfio (MPL 2.0)
-//! - [`emfreader.cxx`] WMF binary parsing
-//! - [`mtftools.cxx`] DrawText, DrawPolyPolygon, DrawPolygon, DrawText 등 렌더링
+//! - `wmfreader.cxx` — WMF binary parsing
+//! - `mtftools.cxx` — DrawText, DrawPolyPolygon, DrawPolygon 등 렌더링
+//!
+//! 공식 git: <https://gerrit.libreoffice.org/c/core> (freedesktop.org)
+//! GitHub mirror: <https://github.com/LibreOffice/core> (접근 용이)
 //!
 //! 본 Rust 포팅은 LO 알고리즘의 의미를 보존하되 Rust idiom 으로 작성.
 
