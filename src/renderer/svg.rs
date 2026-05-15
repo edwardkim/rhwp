@@ -1119,8 +1119,22 @@ impl SvgRenderer {
         // BMP → PNG 변환 (브라우저는 SVG <image> 내부의 data:image/bmp 미지원)
         // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
+            // [Task #902 v2 Stage 10] WMF → SVG 변환 후 raster (PNG) 우선 시도
+            // 한컴 viewer 와 동일한 폰트 metric 사용으로 시각 정합 개선.
+            // 실패 시 (WASM 등) 기존 SVG embed fallback.
             match convert_wmf_to_svg(data) {
-                Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                Some(svg_bytes) => {
+                    let target_w = bbox.width.max(1.0) as f32;
+                    let target_h = bbox.height.max(1.0) as f32;
+                    match rasterize_wmf_svg_to_png(&svg_bytes, target_w, target_h) {
+                        Some(png_bytes) => {
+                            (std::borrow::Cow::Owned(png_bytes), "image/png")
+                        }
+                        None => {
+                            (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
+                        }
+                    }
+                }
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else if mime_type == "image/bmp" {
@@ -2337,8 +2351,22 @@ impl Renderer for SvgRenderer {
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let mime_type = detect_image_mime_type(data);
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
+            // [Task #902 v2 Stage 10] WMF → SVG → PNG raster 우선 시도
             match convert_wmf_to_svg(data) {
-                Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                Some(svg_bytes) => {
+                    match rasterize_wmf_svg_to_png(
+                        &svg_bytes,
+                        w.max(1.0) as f32,
+                        h.max(1.0) as f32,
+                    ) {
+                        Some(png_bytes) => {
+                            (std::borrow::Cow::Owned(png_bytes), "image/png")
+                        }
+                        None => {
+                            (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
+                        }
+                    }
+                }
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else if mime_type == "image/x-pcx" {
@@ -2396,6 +2424,69 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
     let player = SVGPlayer::new();
     let converter = WMFConverter::new(data, player);
     converter.run().ok()
+}
+
+/// [Task #902 v2 Stage 10] WMF SVG 를 PNG raster 로 렌더링한다.
+/// usvg + resvg + tiny-skia 로 시스템 폰트 (Apple SD Gothic Neo / Malgun Gothic /
+/// Nanum Gothic 등) 사용한 일관 렌더링. 브라우저 fontconfig 의존 제거 → 한컴
+/// viewer 와 더 가까운 시각 정합.
+/// 실패 시 None (caller 는 기존 SVG embed 로 fallback).
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn rasterize_wmf_svg_to_png(
+    svg_bytes: &[u8],
+    target_width_px: f32,
+    target_height_px: f32,
+) -> Option<Vec<u8>> {
+    use resvg::{tiny_skia, usvg};
+
+    if target_width_px <= 0.0 || target_height_px <= 0.0 {
+        return None;
+    }
+
+    // 2x supersampling 으로 crispness 확보
+    const SCALE: f32 = 2.0;
+    let raster_w = (target_width_px * SCALE).ceil() as u32;
+    let raster_h = (target_height_px * SCALE).ceil() as u32;
+    if raster_w == 0 || raster_h == 0 {
+        return None;
+    }
+    // 안전 한계 (skia/image_conv.rs 와 동일)
+    const MAX_PIXELS: u64 = 67_108_864;
+    if u64::from(raster_w).checked_mul(u64::from(raster_h))? > MAX_PIXELS {
+        return None;
+    }
+
+    let svg_str = std::str::from_utf8(svg_bytes).ok()?;
+    let mut options = usvg::Options::default();
+    {
+        let fontdb = options.fontdb_mut();
+        fontdb.load_system_fonts();
+        // 한국어 폰트 fallback 설정 — fontdb 기본 매칭 우선순위 조정
+        fontdb.set_sans_serif_family("Nanum Gothic");
+        fontdb.set_serif_family("Nanum Myeongjo");
+    }
+    let tree = usvg::Tree::from_str(svg_str, &options).ok()?;
+    let tree_size = tree.size();
+    if tree_size.width() <= 0.0 || tree_size.height() <= 0.0 {
+        return None;
+    }
+
+    let mut pixmap = tiny_skia::Pixmap::new(raster_w, raster_h)?;
+    let scale_x = raster_w as f32 / tree_size.width();
+    let scale_y = raster_h as f32 / tree_size.height();
+    let transform = tiny_skia::Transform::from_scale(scale_x, scale_y);
+    resvg::render(&tree, transform, &mut pixmap.as_mut());
+    pixmap.encode_png().ok()
+}
+
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn rasterize_wmf_svg_to_png(
+    _svg_bytes: &[u8],
+    _target_width_px: f32,
+    _target_height_px: f32,
+) -> Option<Vec<u8>> {
+    // WASM: resvg 미가용 → caller 에서 SVG embed fallback
+    None
 }
 
 /// BMP 바이트를 PNG 바이트로 재인코딩한다. 실패 시 None 반환.
