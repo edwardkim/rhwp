@@ -69,6 +69,50 @@ impl RasterPlayer {
         (dx * scale_x, dy * scale_y)
     }
 
+    /// [Stage 23] DIB 를 pixmap 에 blit (DIBSTRETCHBLT/DIBBITBLT/STRETCHDIB 공통).
+    #[cfg(not(target_arch = "wasm32"))]
+    fn blit_dib(
+        &mut self,
+        dib: crate::wmf::parser::DeviceIndependentBitmap,
+        x_dest: i16,
+        y_dest: i16,
+        dest_w: i16,
+        dest_h: i16,
+    ) {
+        use crate::wmf::converter::Bitmap;
+        let bmp = Bitmap::from(dib).to_vec();
+        let Ok(img) = image::load_from_memory_with_format(&bmp, image::ImageFormat::Bmp) else { return };
+        let (dx0, dy0) = self.logical_to_pixel(x_dest, y_dest);
+        let (dx1, dy1) = self.logical_to_pixel(
+            x_dest.saturating_add(dest_w),
+            y_dest.saturating_add(dest_h),
+        );
+        let target_w = (dx1 - dx0).abs().ceil() as u32;
+        let target_h = (dy1 - dy0).abs().ceil() as u32;
+        if target_w == 0 || target_h == 0 { return; }
+
+        let resized = img.resize_exact(target_w, target_h, image::imageops::FilterType::Lanczos3);
+        let rgba = resized.to_rgba8();
+        let x0 = dx0.floor() as i32;
+        let y0 = dy0.floor() as i32;
+        let pw = self.pixmap.width() as i32;
+        let ph = self.pixmap.height() as i32;
+        let pixels = self.pixmap.pixels_mut();
+        for sy in 0..target_h as i32 {
+            let py = y0 + sy;
+            if py < 0 || py >= ph { continue; }
+            for sx in 0..target_w as i32 {
+                let px = x0 + sx;
+                if px < 0 || px >= pw { continue; }
+                let p = rgba.get_pixel(sx as u32, sy as u32);
+                if let Some(c) = tiny_skia::PremultipliedColorU8::from_rgba(p[0], p[1], p[2], 255) {
+                    let idx = (py * pw + px) as usize;
+                    pixels[idx] = c;
+                }
+            }
+        }
+    }
+
     /// Selected pen 기반 stroke 생성.
     #[cfg(not(target_arch = "wasm32"))]
     fn build_stroke_paint(&self) -> Option<(Paint<'static>, Stroke)> {
@@ -154,6 +198,25 @@ impl Player for RasterPlayer {
 
     // === Bitmap records ===
     fn bit_blt(self, _: usize, _: META_BITBLT) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn device_independent_bitmap_bit_blt(
+        mut self,
+        _: usize,
+        record: META_DIBBITBLT,
+    ) -> Result<Self, PlayError> {
+        // [Stage 23] DIBBITBLT — DIBSTRETCHBLT 와 동일 구조이나 source=dest 크기 동일.
+        let (x_dest, y_dest, w, h, target) = match record {
+            META_DIBBITBLT::WithBitmap {
+                x_dest, y_dest, width, height, target, ..
+            } => (x_dest, y_dest, width, height, Some(*target)),
+            META_DIBBITBLT::WithoutBitmap { .. } => return Ok(self),
+        };
+        let Some(dib) = target else { return Ok(self) };
+        self.blit_dib(dib, x_dest, y_dest, w, h);
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn device_independent_bitmap_bit_blt(self, _: usize, _: META_DIBBITBLT) -> Result<Self, PlayError> { Ok(self) }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -228,6 +291,19 @@ impl Player for RasterPlayer {
 
     fn set_device_independent_bitmap_to_dev(self, _: usize, _: META_SETDIBTODEV) -> Result<Self, PlayError> { Ok(self) }
     fn stretch_blt(self, _: usize, _: META_STRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn stretch_device_independent_bitmap(
+        mut self,
+        _: usize,
+        record: META_STRETCHDIB,
+    ) -> Result<Self, PlayError> {
+        // [Stage 23] STRETCHDIB — DIBSTRETCHBLT 와 동일 구조이나 source rect 가
+        // dest rect 와 다를 수 있음 (stretch).
+        self.blit_dib(record.dib, record.x_dst, record.y_dst, record.dest_width, record.dest_height);
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn stretch_device_independent_bitmap(self, _: usize, _: META_STRETCHDIB) -> Result<Self, PlayError> { Ok(self) }
 
     // === Drawing records ===
