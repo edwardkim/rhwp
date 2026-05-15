@@ -42,7 +42,10 @@ fn render_box(
             }
         }
         LayoutKind::Text(text) => {
-            let fi = font_size_from_box(lb, fs);
+            // [Issue #900] SVG 경로 (svg_render.rs:43, commit 5a6f9a87 / Task #142) 와
+            // 동기화 — font_size_from_box(lb.height) 는 복합 박스 (Limit, BigOp 등)
+            // 의 전체 높이를 font-size 로 오용. 부모 전달 fs 사용.
+            let fi = fs;
             // CJK 문자는 italic 미적용. FontStyle::Roman(`rm`)으로 italic=false 가
             // 전달된 경우에도 italic 미적용 (svg_render.rs Text arm 과 동일 정책).
             let has_cjk = text.chars().any(|c| matches!(c,
@@ -53,13 +56,15 @@ fn render_box(
             let _ = ctx.fill_text(text, x, y + lb.baseline);
         }
         LayoutKind::Number(text) => {
-            let fi = font_size_from_box(lb, fs);
+            // [Issue #900] svg_render.rs Number arm 과 동기화 — fs 사용.
+            let fi = fs;
             set_font(ctx, fi, false, bold);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(text, x, y + lb.baseline);
         }
         LayoutKind::Symbol(text) => {
-            let fi = font_size_from_box(lb, fs);
+            // [Issue #900] svg_render.rs Symbol arm 과 동기화 — fs 사용.
+            let fi = fs;
             set_font(ctx, fi, false, false);
             ctx.set_fill_style_str(color);
             ctx.set_text_align("center");
@@ -67,13 +72,17 @@ fn render_box(
             ctx.set_text_align("start");
         }
         LayoutKind::MathSymbol(text) => {
-            let fi = font_size_from_box(lb, fs);
+            // [Issue #900] svg_render.rs MathSymbol arm 과 동기화 (commit 292dbbef).
+            // 적분 기호는 layout 에서 BIG_OP_SCALE 적용된 lb.height 를 font-size 로 사용,
+            // 그 외 MathSymbol 은 부모 전달 fs.
+            let fi = if super::layout::is_integral_symbol(text) { lb.height } else { fs };
             set_font(ctx, fi, false, false);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(text, x, y + lb.baseline);
         }
         LayoutKind::Function(name) => {
-            let fi = font_size_from_box(lb, fs);
+            // [Issue #900] svg_render.rs Function arm 과 동기화 — fs 사용.
+            let fi = fs;
             set_font(ctx, fi, false, false);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(name, x, y + lb.baseline);
@@ -136,13 +145,24 @@ fn render_box(
             render_box(ctx, sup, x, y, color, fs * SCRIPT_SCALE, italic, bold);
         }
         LayoutKind::BigOp { symbol, sub, sup } => {
+            // [Issue #900] svg_render.rs BigOp arm 과 동기화 (commit 292dbbef).
+            // 적분 (∫, ∮ 등): 기호 좌측, 첨자 우상단/우하단 (nolimits)
+            // 그 외 (∑, ∏ 등): 기호 중앙, 첨자 위/아래 (limits)
             let op_fs = fs * BIG_OP_SCALE;
-            let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
-            let op_x = x + (lb.width - estimate_op_width(symbol, op_fs)) / 2.0;
-            let op_y = y + sup_h + op_fs * 0.8;
+            let is_integral = super::layout::is_integral_symbol(symbol);
             set_font(ctx, op_fs, false, false);
             ctx.set_fill_style_str(color);
-            let _ = ctx.fill_text(symbol, op_x, op_y);
+            if is_integral {
+                let op_x = x;
+                let op_y = y + op_fs * 0.8;
+                let _ = ctx.fill_text(symbol, op_x, op_y);
+            } else {
+                let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
+                let op_x = x + (lb.width - estimate_op_width(symbol, op_fs)) / 2.0;
+                let op_y = y + sup_h + op_fs * 0.8;
+                let _ = ctx.fill_text(symbol, op_x, op_y);
+            }
+            // 위/아래 첨자 — LayoutBox 자식 좌표 사용 (적분/일반 공통)
             if let Some(sup_box) = sup {
                 render_box(ctx, sup_box, x, y, color, fs * SCRIPT_SCALE, false, false);
             }
@@ -236,10 +256,6 @@ fn render_box(
         }
         LayoutKind::Space(_) | LayoutKind::Newline | LayoutKind::Empty => {}
     }
-}
-
-fn font_size_from_box(lb: &LayoutBox, base_fs: f64) -> f64 {
-    if lb.height > 0.0 { lb.height } else { base_fs }
 }
 
 fn estimate_op_width(text: &str, fs: f64) -> f64 {
