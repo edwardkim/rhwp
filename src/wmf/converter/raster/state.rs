@@ -44,6 +44,8 @@ pub struct RasterState {
     pub selected_brush: Option<u16>,
     /// Currently selected font object index.
     pub selected_font: Option<u16>,
+    /// [Stage 21] 현재 clip rectangle (device pixel 좌표). None 시 clip 없음 (canvas 전체).
+    pub clip_rect: Option<(i32, i32, i32, i32)>,
 }
 
 impl Default for RasterState {
@@ -66,6 +68,7 @@ impl Default for RasterState {
             selected_pen: None,
             selected_brush: None,
             selected_font: None,
+            clip_rect: None,
         }
     }
 }
