@@ -235,8 +235,24 @@ impl HeightMeasurer {
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
         let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
-            comp.lines.iter()
-                .map(|line| {
+            // [Issue #908] paragraph_layout 의 filler line_seg skip 과 정렬.
+            // wrap zone 의 invisible filler (zero-range or leading whitespace in wrap
+            // zone) 는 vertical 공간 미점유 — 페이지네이션도 동일하게 height 0 처리.
+            let multi_line = para.line_segs.len() > 1;
+            comp.lines.iter().enumerate()
+                .map(|(line_idx, line)| {
+                    let is_filler = multi_line
+                        && !line.has_line_break
+                        && line.runs.iter().all(|r| r.text.trim().is_empty())
+                        && (
+                            (line_idx + 1 < para.line_segs.len()
+                                && para.line_segs[line_idx + 1].text_start
+                                    == para.line_segs[line_idx].text_start)
+                            || line.column_start > 0
+                        );
+                    if is_filler {
+                        return (0.0, 0.0);
+                    }
                     let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                     let max_fs = line.runs.iter()
                         .map(|r| {

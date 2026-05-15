@@ -2040,6 +2040,32 @@ impl LayoutEngine {
                     continue;
                 }
 
+                // [Issue #908] Paper/Page-ref TopAndBottom 그림: anchor 의 첫 LINE_SEG vpos
+                // 가 그림 vpos (section-rel) 보다 작으면 anchor 텍스트는 그림 위로 흐른다
+                // (PDF 정합). 이 경우 reservation skip 하여 anchor 가 그림 아래로 밀리지
+                // 않게 한다. pic2.hwp pi=19 (iris anchor): 첫 line vpos < iris vpos.
+                // anchor 다음 paragraph 들의 vpos jump 가 IR 에 인코딩되어 있어 runtime
+                // layout 이 자연스럽게 그림 영역을 회피한다.
+                let anchor_first_line_vpos = paragraphs.get(*para_index)
+                    .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos));
+                let anchor_last_line_vpos = paragraphs.get(*para_index)
+                    .and_then(|p| p.line_segs.last().map(|s| s.vertical_pos));
+                let next_para_first_vpos = paragraphs.get(*para_index + 1)
+                    .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos));
+                if let (Some(first_vpos), Some(last_vpos), Some(next_vpos))
+                    = (anchor_first_line_vpos, anchor_last_line_vpos, next_para_first_vpos)
+                {
+                    // 다음 paragraph 의 vpos 가 anchor 마지막 line vpos 에서 그림 height
+                    // 만큼 jump 되어 있으면, IR 이 "anchor 위, 그림, next 아래" 구조를
+                    // 인코딩한 것 — reservation skip.
+                    let pic_h_hu = common.height as i32;
+                    let vpos_gap = next_vpos - last_vpos;
+                    let _ = first_vpos;
+                    if vpos_gap > pic_h_hu / 2 {
+                        continue;
+                    }
+                }
+
                 // 수평 겹침 확인
                 if !self.check_horizontal_overlap(common, col_area, body_area) {
                     continue;

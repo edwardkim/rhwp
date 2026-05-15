@@ -1009,6 +1009,14 @@ impl Paginator {
         page_def: &PageDef,
         para_start_height: f64,
     ) {
+        // [Issue #908] 동일 paragraph 내 wrap=Square/TopAndBottom Picture 중복 height 가산 차단.
+        // pic2.hwp pi=0 (의자 두 장: 큰 의자 + 작은 의자, 모두 vertical_offset=9900) 처럼
+        // 같은 vertical 범위에 겹쳐 배치된 그림을 각각 height 가산하면 페이지 1 의 가용
+        // 공간이 두 배로 잡혀 본문이 page 2 로 밀려난다. PDF 는 vertical band 가 겹치는
+        // 영역에 대해 한 번만 공간 점유 — 이를 정합화. vert_rel_to 기준이 같을 때만
+        // 비교 (다른 reference 는 동일 좌표계로 비교 불가).
+        let mut max_pic_bottom_hu: std::collections::HashMap<i32, i32> =
+            std::collections::HashMap::new();
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             match ctrl {
                 Control::Table(table) => {
@@ -1114,10 +1122,32 @@ impl Paginator {
                             crate::model::shape::TextWrap::Square
                             | crate::model::shape::TextWrap::TopAndBottom)
                     {
-                        let pic_h = crate::renderer::hwpunit_to_px(pic.common.height as i32, self.dpi);
-                        let margin_top = crate::renderer::hwpunit_to_px(pic.common.margin.top as i32, self.dpi);
-                        let margin_bottom = crate::renderer::hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
-                        st.current_height += pic_h + margin_top + margin_bottom;
+                        // [Issue #908] 동일 paragraph 내 vertical band 겹침 검출.
+                        // 새 그림의 bottom 이 같은 vert_rel_to 의 기존 max bottom 보다
+                        // 작거나 같으면 vertical 공간 점유 0 (겹침 영역). 큰 경우만
+                        // 증가분 가산.
+                        let pic_top_hu = pic.common.vertical_offset as i32
+                            - pic.common.margin.top as i32;
+                        let pic_bottom_hu = pic.common.vertical_offset as i32
+                            + pic.common.height as i32
+                            + pic.common.margin.bottom as i32;
+                        let rel_key = pic.common.vert_rel_to as i32;
+                        let prev_max = max_pic_bottom_hu.get(&rel_key).copied();
+                        let increment_hu = match prev_max {
+                            Some(prev) if prev >= pic_bottom_hu => 0,
+                            Some(prev) => (pic_bottom_hu - prev).max(0),
+                            None => {
+                                let total = pic.common.height as i32
+                                    + pic.common.margin.top as i32
+                                    + pic.common.margin.bottom as i32;
+                                total
+                            }
+                        };
+                        let _ = pic_top_hu;
+                        st.current_height +=
+                            crate::renderer::hwpunit_to_px(increment_hu, self.dpi);
+                        let new_max = prev_max.map(|p| p.max(pic_bottom_hu)).unwrap_or(pic_bottom_hu);
+                        max_pic_bottom_hu.insert(rel_key, new_max);
                     }
                 }
                 Control::Equation(_) => {
