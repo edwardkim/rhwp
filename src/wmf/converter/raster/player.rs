@@ -163,6 +163,41 @@ impl Player for RasterPlayer {
     // === Drawing records ===
     fn arc(self, _: usize, _: META_ARC) -> Result<Self, PlayError> { Ok(self) }
     fn chord(self, _: usize, _: META_CHORD) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn ellipse(mut self, _: usize, record: META_ELLIPSE) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawEllipse 포팅 — bbox 의 ellipse fill + stroke
+        let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
+        let (x1, y1) = self.logical_to_pixel(record.right_rect, record.bottom_rect);
+        let cx = (x0 + x1) / 2.0;
+        let cy = (y0 + y1) / 2.0;
+        let rx = ((x1 - x0).abs()) / 2.0;
+        let ry = ((y1 - y0).abs()) / 2.0;
+        if rx < 0.5 || ry < 0.5 { return Ok(self); }
+
+        // tiny-skia 의 PathBuilder 는 cubic bezier 만 지원 → 4 개 bezier 로 ellipse 근사
+        // 마법 상수 c = 0.5522847498 (4/3 * (sqrt(2) - 1))
+        const KAPPA: f32 = 0.5522847498;
+        let ox = rx * KAPPA;
+        let oy = ry * KAPPA;
+        let mut pb = PathBuilder::new();
+        pb.move_to(cx - rx, cy);
+        pb.cubic_to(cx - rx, cy - oy,   cx - ox, cy - ry,   cx,      cy - ry);
+        pb.cubic_to(cx + ox, cy - ry,   cx + rx, cy - oy,   cx + rx, cy);
+        pb.cubic_to(cx + rx, cy + oy,   cx + ox, cy + ry,   cx,      cy + ry);
+        pb.cubic_to(cx - ox, cy + ry,   cx - rx, cy + oy,   cx - rx, cy);
+        pb.close();
+        if let Some(path) = pb.finish() {
+            if let Some(fill_paint) = self.build_fill_paint() {
+                self.pixmap.fill_path(&path, &fill_paint, FillRule::Winding, Transform::identity(), None);
+            }
+            if let Some((stroke_paint, stroke)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(&path, &stroke_paint, &stroke, Transform::identity(), None);
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn ellipse(self, _: usize, _: META_ELLIPSE) -> Result<Self, PlayError> { Ok(self) }
     fn ext_flood_fill(self, _: usize, _: META_EXTFLOODFILL) -> Result<Self, PlayError> { Ok(self) }
     #[cfg(not(target_arch = "wasm32"))]
@@ -410,6 +445,28 @@ impl Player for RasterPlayer {
     #[cfg(target_arch = "wasm32")]
     fn rectangle(self, _: usize, _: META_RECTANGLE) -> Result<Self, PlayError> { Ok(self) }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    fn round_rect(mut self, _: usize, record: META_ROUNDRECT) -> Result<Self, PlayError> {
+        // 단순화: 라운드 코너 무시하고 rectangle 로 처리 (Stage 16+ 정밀화)
+        let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
+        let (x1, y1) = self.logical_to_pixel(record.right_rect, record.bottom_rect);
+        let mut pb = PathBuilder::new();
+        pb.move_to(x0, y0);
+        pb.line_to(x1, y0);
+        pb.line_to(x1, y1);
+        pb.line_to(x0, y1);
+        pb.close();
+        if let Some(path) = pb.finish() {
+            if let Some(fp) = self.build_fill_paint() {
+                self.pixmap.fill_path(&path, &fp, FillRule::Winding, Transform::identity(), None);
+            }
+            if let Some((sp, s)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(&path, &sp, &s, Transform::identity(), None);
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn round_rect(self, _: usize, _: META_ROUNDRECT) -> Result<Self, PlayError> { Ok(self) }
     fn set_pixel(self, _: usize, _: META_SETPIXEL) -> Result<Self, PlayError> { Ok(self) }
     fn text_out(self, _: usize, _: META_TEXTOUT) -> Result<Self, PlayError> { Ok(self) }
