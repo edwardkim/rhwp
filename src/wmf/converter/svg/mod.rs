@@ -962,15 +962,6 @@ impl crate::wmf::converter::Player for SVGPlayer {
                         );
                     }
                 }
-                // [Task #902 v2 Stage 26] textLength + lengthAdjust 로 각 glyph
-                // 를 WMF DX 너비에 강제 fit. 한컴 굴림체 metric (WMF 가 가정한
-                // glyph 너비) 와 NanumGothic 등 fallback 폰트 metric 의 차이로
-                // 인한 visual stacking/spillover 회피.
-                if dx_advance > 0 {
-                    tspan = tspan
-                        .set("textLength", dx_advance)
-                        .set("lengthAdjust", "spacingAndGlyphs");
-                }
                 acc_x += dx_advance;
                 acc_y += dy_advance;
                 dx_idx += width * entries_per_byte;
