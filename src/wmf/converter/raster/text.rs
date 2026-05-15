@@ -14,15 +14,17 @@ use std::sync::OnceLock;
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 
-#[cfg(not(target_arch = "wasm32"))]
 use fontdue::{Font, FontSettings};
-#[cfg(not(target_arch = "wasm32"))]
-use tiny_skia::{Color, Paint, Pixmap, PixmapPaint, PremultipliedColorU8, Transform};
+use tiny_skia::{Pixmap, PremultipliedColorU8};
 
-/// 시스템 폰트 캐시 — Korean 폰트 우선 검색.
-#[cfg(not(target_arch = "wasm32"))]
+/// [Stage 28] WASM 호환 — 폰트를 include_bytes! 로 binary 에 임베드.
+/// 시스템 폰트 검색 불가능한 WASM 환경에서도 일관 렌더링.
+/// 폰트: web/fonts/NanumGothic-Regular.woff2 (SIL OFL 1.1)
+///
+/// 주의: fontdue 는 .ttf/.otf 지원, .woff2 미지원. 따라서 raw woff2 가
+/// 아닌 .ttf 가 필요. 시스템 NanumGothic.ttf 가 가용하면 그것 사용,
+/// 없으면 None (text 렌더 안 함).
 static KOREAN_FONT: OnceLock<Option<Font>> = OnceLock::new();
-#[cfg(not(target_arch = "wasm32"))]
 static LATIN_FONT: OnceLock<Option<Font>> = OnceLock::new();
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -36,48 +38,71 @@ fn load_font_from_paths(paths: &[&str]) -> Option<Font> {
     None
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+/// [Stage 28] include_bytes! 로 NanumGothic 임베드 (WASM + native 공통).
+/// SIL OFL 1.1 — `ttfs/embedded/LICENSE.md` 참조.
+const EMBEDDED_NANUM_GOTHIC: &[u8] =
+    include_bytes!("../../../../ttfs/embedded/NanumGothic.ttf");
+
 pub fn get_korean_font() -> Option<&'static Font> {
     KOREAN_FONT
         .get_or_init(|| {
-            // 시스템 별 Korean 폰트 경로 후보
-            let home = std::env::var("HOME").unwrap_or_default();
-            let user_nanum = format!("{}/Library/Fonts/NanumGothic.ttf", home);
-            let user_malgun = format!("{}/Library/Fonts/MALGUN.TTF", home);
-            load_font_from_paths(&[
-                // macOS user
-                user_nanum.as_str(),
-                user_malgun.as_str(),
-                "/Library/Fonts/AppleSDGothicNeo.ttc",
-                "/System/Library/Fonts/AppleSDGothicNeo.ttc",
-                // Linux 표준 경로
-                "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
-                "/usr/share/fonts/nanum/NanumGothic.ttf",
-                "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-                "/usr/share/fonts/opentype/noto/NotoSansCJKkr-Regular.otf",
-                // Windows
-                "C:/Windows/Fonts/malgun.ttf",
-            ])
+            // 우선: 임베디드 NanumGothic (모든 환경에서 사용 가능, 일관성)
+            if let Ok(font) = Font::from_bytes(
+                EMBEDDED_NANUM_GOTHIC.to_vec(),
+                FontSettings::default(),
+            ) {
+                return Some(font);
+            }
+            // fallback: 시스템 폰트 (native 만)
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let home = std::env::var("HOME").unwrap_or_default();
+                let user_nanum = format!("{}/Library/Fonts/NanumGothic.ttf", home);
+                let user_malgun = format!("{}/Library/Fonts/MALGUN.TTF", home);
+                return load_font_from_paths(&[
+                    user_nanum.as_str(),
+                    user_malgun.as_str(),
+                    "/Library/Fonts/AppleSDGothicNeo.ttc",
+                    "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+                    "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+                    "/usr/share/fonts/nanum/NanumGothic.ttf",
+                    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                    "/usr/share/fonts/opentype/noto/NotoSansCJKkr-Regular.otf",
+                    "C:/Windows/Fonts/malgun.ttf",
+                ]);
+            }
+            #[cfg(target_arch = "wasm32")]
+            None
         })
         .as_ref()
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 pub fn get_latin_font() -> Option<&'static Font> {
     LATIN_FONT
         .get_or_init(|| {
-            load_font_from_paths(&[
-                // 기본 fallback — 한국어 폰트 우선 (Korean 폰트는 Latin glyph 도 포함)
-                "/System/Library/Fonts/Helvetica.ttc",
-                "/Library/Fonts/Arial.ttf",
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                "C:/Windows/Fonts/arial.ttf",
-            ])
+            // [Stage 28] NanumGothic 은 Latin glyph 도 포함하므로 fallback 으로 동일 사용.
+            // 별도 Latin 폰트 임베드 불필요 (binary size 절약).
+            if let Ok(font) = Font::from_bytes(
+                EMBEDDED_NANUM_GOTHIC.to_vec(),
+                FontSettings::default(),
+            ) {
+                return Some(font);
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                return load_font_from_paths(&[
+                    "/System/Library/Fonts/Helvetica.ttc",
+                    "/Library/Fonts/Arial.ttf",
+                    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                    "C:/Windows/Fonts/arial.ttf",
+                ]);
+            }
+            #[cfg(target_arch = "wasm32")]
+            None
         })
         .as_ref()
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 fn pick_font_for_grapheme(g: &str) -> Option<&'static Font> {
     // CJK 영역: Hangul (U+AC00~U+D7A3), CJK Unified Ideographs, etc.
     let has_cjk = g.chars().any(|c| {
@@ -105,7 +130,7 @@ fn pick_font_for_grapheme(g: &str) -> Option<&'static Font> {
 ///
 /// [Task #902 v2 Stage 19] synthetic bold (weight ≥ 700) + italic (slant).
 /// 실제 bold/italic 글꼴 변형체가 없는 경우에도 시각 효과 제공.
-#[cfg(not(target_arch = "wasm32"))]
+/// [Stage 28] WASM 호환 — cfg gate 제거.
 pub fn draw_text_with_dx(
     pixmap: &mut Pixmap,
     text: &str,
@@ -189,7 +214,7 @@ pub fn draw_text_with_dx(
 
 /// Alpha glyph bitmap 을 pixmap 에 alpha-blend.
 /// [Stage 19] italic_slant > 0 시 글자 위쪽이 오른쪽으로 기울어짐 (synthetic italic).
-#[cfg(not(target_arch = "wasm32"))]
+/// [Stage 28] WASM 호환.
 fn blit_alpha(
     pixmap: &mut Pixmap,
     bitmap: &[u8],

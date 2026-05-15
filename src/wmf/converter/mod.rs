@@ -10,11 +10,9 @@ mod svg;
 
 pub use self::svg::*;
 
-// [Task #902 v2 Stage 12] WMF raster Player (native only) — LO emfio 포팅 baseline.
-#[cfg(not(target_arch = "wasm32"))]
+// [Task #902 v2 Stage 12] WMF raster Player — LO emfio 포팅.
+// [Stage 28] WASM 호환 (이전 native 전용 → 글로벌). rhwp-studio 도 RasterPlayer 사용.
 pub mod raster;
-
-#[cfg(not(target_arch = "wasm32"))]
 pub use self::raster::RasterPlayer;
 
 #[derive(Clone, Debug, snafu::prelude::Snafu)]

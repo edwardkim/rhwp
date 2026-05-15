@@ -7,7 +7,6 @@ use super::state::*;
 use crate::wmf::converter::{PlayError, Player};
 use crate::wmf::parser::*;
 
-#[cfg(not(target_arch = "wasm32"))]
 use tiny_skia::{
     Color, FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform,
 };
@@ -25,12 +24,10 @@ pub struct RasterPlayer {
     /// 누적 logical 좌표 bbox — header 의 bound 후 SetWindowExt 등에 갱신.
     extent: (i16, i16),
     /// 실제 raster canvas (native only).
-    #[cfg(not(target_arch = "wasm32"))]
     pixmap: Pixmap,
 }
 
 impl RasterPlayer {
-    #[cfg(not(target_arch = "wasm32"))]
     pub fn new(canvas_width: u32, canvas_height: u32) -> Option<Self> {
         let mut pixmap = Pixmap::new(canvas_width.max(1), canvas_height.max(1))?;
         pixmap.fill(Color::WHITE);
@@ -44,23 +41,11 @@ impl RasterPlayer {
         })
     }
 
-    #[cfg(target_arch = "wasm32")]
-    pub fn new(canvas_width: u32, canvas_height: u32) -> Option<Self> {
-        Some(Self {
-            state: RasterState::default(),
-            state_stack: Vec::new(),
-            canvas_width,
-            canvas_height,
-            extent: (1024, 1024),
-        })
-    }
-
     pub fn default_canvas() -> Option<Self> {
         Self::new(1024, 1024)
     }
 
     /// Logical 좌표 → device pixel 변환 (canvas 크기 반영).
-    #[cfg(not(target_arch = "wasm32"))]
     fn logical_to_pixel(&self, x: i16, y: i16) -> (f32, f32) {
         let (dx, dy) = self.state.logical_to_device(x, y);
         // device 좌표를 canvas 크기로 정규화
@@ -70,7 +55,6 @@ impl RasterPlayer {
     }
 
     /// [Stage 23] DIB 를 pixmap 에 blit (DIBSTRETCHBLT/DIBBITBLT/STRETCHDIB 공통).
-    #[cfg(not(target_arch = "wasm32"))]
     fn blit_dib(
         &mut self,
         dib: crate::wmf::parser::DeviceIndependentBitmap,
@@ -114,7 +98,6 @@ impl RasterPlayer {
     }
 
     /// Selected pen 기반 stroke 생성.
-    #[cfg(not(target_arch = "wasm32"))]
     fn build_stroke_paint(&self) -> Option<(Paint<'static>, Stroke)> {
         let pen_idx = self.state.selected_pen?;
         let obj = self.state.object_table.get(&pen_idx)?;
@@ -137,7 +120,6 @@ impl RasterPlayer {
     }
 
     /// Selected brush 기반 fill paint 생성.
-    #[cfg(not(target_arch = "wasm32"))]
     fn build_fill_paint(&self) -> Option<Paint<'static>> {
         let brush_idx = self.state.selected_brush?;
         let obj = self.state.object_table.get(&brush_idx)?;
@@ -159,20 +141,11 @@ impl RasterPlayer {
 
 impl Player for RasterPlayer {
     fn generate(self) -> Result<Vec<u8>, PlayError> {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            self.pixmap
-                .encode_png()
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: format!("PNG encode 실패: {err}"),
-                })
-        }
-        #[cfg(target_arch = "wasm32")]
-        {
-            Err(PlayError::InvalidRecord {
-                cause: "RasterPlayer is native-only".to_owned(),
+        self.pixmap
+            .encode_png()
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: format!("PNG encode 실패: {err}"),
             })
-        }
     }
 
     // === Header / EOF ===
@@ -199,7 +172,6 @@ impl Player for RasterPlayer {
     // === Bitmap records ===
     fn bit_blt(self, _: usize, _: META_BITBLT) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn device_independent_bitmap_bit_blt(
         mut self,
         _: usize,
@@ -216,10 +188,7 @@ impl Player for RasterPlayer {
         self.blit_dib(dib, x_dest, y_dest, w, h);
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn device_independent_bitmap_bit_blt(self, _: usize, _: META_DIBBITBLT) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn device_independent_bitmap_stretch_blt(
         mut self,
         _: usize,
@@ -286,13 +255,10 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn device_independent_bitmap_stretch_blt(self, _: usize, _: META_DIBSTRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
 
     fn set_device_independent_bitmap_to_dev(self, _: usize, _: META_SETDIBTODEV) -> Result<Self, PlayError> { Ok(self) }
     fn stretch_blt(self, _: usize, _: META_STRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn stretch_device_independent_bitmap(
         mut self,
         _: usize,
@@ -303,11 +269,8 @@ impl Player for RasterPlayer {
         self.blit_dib(record.dib, record.x_dst, record.y_dst, record.dest_width, record.dest_height);
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn stretch_device_independent_bitmap(self, _: usize, _: META_STRETCHDIB) -> Result<Self, PlayError> { Ok(self) }
 
     // === Drawing records ===
-    #[cfg(not(target_arch = "wasm32"))]
     fn arc(mut self, _: usize, record: META_ARC) -> Result<Self, PlayError> {
         // [Task #902 v2 Stage 20] LO mtftools.cxx 의 DrawArc 포팅
         // bounding rect 의 ellipse 중심 + start/end 각도로 호 그리기
@@ -323,10 +286,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn arc(self, _: usize, _: META_ARC) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn chord(mut self, _: usize, record: META_CHORD) -> Result<Self, PlayError> {
         // chord = arc + start/end 연결 직선 (closed path) → fill + stroke
         let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
@@ -343,10 +303,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn chord(self, _: usize, _: META_CHORD) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn ellipse(mut self, _: usize, record: META_ELLIPSE) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawEllipse 포팅 — bbox 의 ellipse fill + stroke
         let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
@@ -379,10 +336,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn ellipse(self, _: usize, _: META_ELLIPSE) -> Result<Self, PlayError> { Ok(self) }
     fn ext_flood_fill(self, _: usize, _: META_EXTFLOODFILL) -> Result<Self, PlayError> { Ok(self) }
-    #[cfg(not(target_arch = "wasm32"))]
     fn ext_text_out(
         mut self,
         _: usize,
@@ -437,14 +391,11 @@ impl Player for RasterPlayer {
 
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn ext_text_out(self, _: usize, _: META_EXTTEXTOUT) -> Result<Self, PlayError> { Ok(self) }
     fn fill_region(self, _: usize, _: META_FILLREGION) -> Result<Self, PlayError> { Ok(self) }
     fn flood_fill(self, _: usize, _: META_FLOODFILL) -> Result<Self, PlayError> { Ok(self) }
     fn frame_region(self, _: usize, _: META_FRAMEREGION) -> Result<Self, PlayError> { Ok(self) }
     fn invert_region(self, _: usize, _: META_INVERTREGION) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn line_to(mut self, _: usize, record: META_LINETO) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawLineTo 포팅
         let (x0, y0) = self.logical_to_pixel(
@@ -469,15 +420,8 @@ impl Player for RasterPlayer {
         self.state.current_position = (record.x, record.y);
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn line_to(mut self, _: usize, record: META_LINETO) -> Result<Self, PlayError> {
-        self.state.current_position = (record.x, record.y);
-        Ok(self)
-    }
-
     fn paint_region(self, _: usize, _: META_PAINTREGION) -> Result<Self, PlayError> { Ok(self) }
     fn pat_blt(self, _: usize, _: META_PATBLT) -> Result<Self, PlayError> { Ok(self) }
-    #[cfg(not(target_arch = "wasm32"))]
     fn pie(mut self, _: usize, record: META_PIE) -> Result<Self, PlayError> {
         // pie = arc + center 로 연결된 wedge (closed path) → fill + stroke
         let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
@@ -496,10 +440,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn pie(self, _: usize, _: META_PIE) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn polyline(mut self, _: usize, record: META_POLYLINE) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawPolyLine 포팅
         if record.a_points.is_empty() {
@@ -523,10 +464,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn polyline(self, _: usize, _: META_POLYLINE) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn polygon(mut self, _: usize, record: META_POLYGON) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawPolygon 포팅 — fill + stroke
         if record.a_points.is_empty() {
@@ -564,10 +502,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn polygon(self, _: usize, _: META_POLYGON) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn poly_polygon(mut self, _: usize, record: META_POLYPOLYGON) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawPolyPolygon 포팅
         // 단일 path 의 다중 서브경로로 합성 — fill-rule (winding/alternate) 적용.
@@ -610,10 +545,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn poly_polygon(self, _: usize, _: META_POLYPOLYGON) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn rectangle(mut self, _: usize, record: META_RECTANGLE) -> Result<Self, PlayError> {
         // LO mtftools.cxx 의 DrawRect 포팅
         let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
@@ -646,10 +578,7 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn rectangle(self, _: usize, _: META_RECTANGLE) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn round_rect(mut self, _: usize, record: META_ROUNDRECT) -> Result<Self, PlayError> {
         // 단순화: 라운드 코너 무시하고 rectangle 로 처리 (Stage 16+ 정밀화)
         let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
@@ -670,13 +599,10 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn round_rect(self, _: usize, _: META_ROUNDRECT) -> Result<Self, PlayError> { Ok(self) }
     fn set_pixel(self, _: usize, _: META_SETPIXEL) -> Result<Self, PlayError> { Ok(self) }
     fn text_out(self, _: usize, _: META_TEXTOUT) -> Result<Self, PlayError> { Ok(self) }
 
     // === Object records ===
-    #[cfg(not(target_arch = "wasm32"))]
     fn create_brush_indirect(
         mut self,
         _: usize,
@@ -696,10 +622,7 @@ impl Player for RasterPlayer {
         );
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn create_brush_indirect(self, _: usize, _: META_CREATEBRUSHINDIRECT) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn create_pen_indirect(
         mut self,
         _: usize,
@@ -719,10 +642,7 @@ impl Player for RasterPlayer {
         );
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn create_pen_indirect(self, _: usize, _: META_CREATEPENINDIRECT) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn create_font_indirect(
         mut self,
         _: usize,
@@ -746,22 +666,16 @@ impl Player for RasterPlayer {
         );
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn create_font_indirect(self, _: usize, _: META_CREATEFONTINDIRECT) -> Result<Self, PlayError> { Ok(self) }
 
     fn create_palette(self, _: usize, _: META_CREATEPALETTE) -> Result<Self, PlayError> { Ok(self) }
     fn create_pattern_brush(self, _: usize, _: META_CREATEPATTERNBRUSH) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn create_region(mut self, _: usize, _record: META_CREATEREGION) -> Result<Self, PlayError> {
         let idx = self.state.object_table.len() as u16;
         self.state.object_table.insert(idx, RasterObject::Region);
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn create_region(self, _: usize, _: META_CREATEREGION) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn delete_object(mut self, _: usize, record: META_DELETEOBJECT) -> Result<Self, PlayError> {
         self.state.object_table.remove(&record.object_index);
         if self.state.selected_pen == Some(record.object_index) { self.state.selected_pen = None; }
@@ -769,13 +683,10 @@ impl Player for RasterPlayer {
         if self.state.selected_font == Some(record.object_index) { self.state.selected_font = None; }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn delete_object(self, _: usize, _: META_DELETEOBJECT) -> Result<Self, PlayError> { Ok(self) }
 
     fn create_device_independent_bitmap_pattern_brush(self, _: usize, _: META_DIBCREATEPATTERNBRUSH) -> Result<Self, PlayError> { Ok(self) }
     fn select_clip_region(self, _: usize, _: META_SELECTCLIPREGION) -> Result<Self, PlayError> { Ok(self) }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn select_object(mut self, _: usize, record: META_SELECTOBJECT) -> Result<Self, PlayError> {
         if let Some(obj) = self.state.object_table.get(&record.object_index) {
             match obj {
@@ -787,8 +698,6 @@ impl Player for RasterPlayer {
         }
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn select_object(self, _: usize, _: META_SELECTOBJECT) -> Result<Self, PlayError> { Ok(self) }
 
     fn select_palette(self, _: usize, _: META_SELECTPALETTE) -> Result<Self, PlayError> { Ok(self) }
 
@@ -800,7 +709,6 @@ impl Player for RasterPlayer {
         Ok(self)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn intersect_clip_rect(
         mut self,
         _: usize,
@@ -827,8 +735,6 @@ impl Player for RasterPlayer {
         });
         Ok(self)
     }
-    #[cfg(target_arch = "wasm32")]
-    fn intersect_clip_rect(self, _: usize, _: META_INTERSECTCLIPRECT) -> Result<Self, PlayError> { Ok(self) }
     fn move_to(mut self, _: usize, record: META_MOVETO) -> Result<Self, PlayError> {
         self.state.current_position = (record.x, record.y);
         Ok(self)
@@ -945,7 +851,7 @@ impl Player for RasterPlayer {
 /// [Stage 20] LO mtftools.cxx GetEllipticalArc 알고리즘 포팅.
 /// bounding rect (x0,y0)-(x1,y1) 의 ellipse 의 start->end 호 경로 생성.
 /// close_chord=true 면 start↔end 직선으로 닫음 (chord). 아니면 open arc.
-#[cfg(not(target_arch = "wasm32"))]
+
 fn arc_path(
     x0: f32, y0: f32, x1: f32, y1: f32,
     sx: f32, sy: f32, ex: f32, ey: f32,
@@ -984,7 +890,7 @@ fn arc_path(
 }
 
 /// pie 경로 — arc + center 직선 wedge.
-#[cfg(not(target_arch = "wasm32"))]
+
 fn arc_path_pie(
     x0: f32, y0: f32, x1: f32, y1: f32,
     sx: f32, sy: f32, ex: f32, ey: f32,

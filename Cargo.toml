@@ -38,6 +38,11 @@ image = { version = "0.25", default-features = false, features = ["bmp", "png"] 
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# [Task #902 v2 Stage 28] WASM 호환 raster: tiny-skia + fontdue 글로벌화
+# (이전: native target only). RasterPlayer 가 WASM 빌드 에서도 동작 → rhwp-studio
+# 가 LO 포팅된 raster 렌더링 사용 가능.
+tiny-skia = { version = "0.11", default-features = false, features = ["std", "no-std-float", "png-format"] }
+fontdue = "0.9"
 
 console_error_panic_hook = { version = "0.1", optional = true }
 
@@ -55,11 +60,6 @@ resvg = "0.47"
 pdf-writer = "0.12"
 subsetter = "0.2"
 ttf-parser = "0.25"
-# [Task #902 v2 Stage 12] WMF raster Player 의 텍스트 glyph 렌더링.
-# pure Rust, no_std friendly, LO emfio 포팅 baseline.
-fontdue = "0.9"
-# tiny-skia (이미 resvg 의 transitive dep, 명시적 가져오기)
-tiny-skia = "0.11"
 skia-safe = { version = "0.97.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
