@@ -962,6 +962,16 @@ impl crate::wmf::converter::Player for SVGPlayer {
                         );
                     }
                 }
+                // [Task #902 v2 Stage 27] textLength glyph fit — WMF 의 drop-shadow
+                // 패턴 (같은 텍스트가 약간 offset 으로 백/흑 2번 그려짐) 이 우리
+                // 폰트 (NanumGothic 등 wider) 에서 stacking artifact 로 보임.
+                // textLength 로 glyph 너비를 WMF DX 에 강제 fit → 두 텍스트가
+                // 같은 너비로 정확히 4px offset 으로 겹침 → 한컴 drop-shadow 시각.
+                if dx_advance > 0 {
+                    tspan = tspan
+                        .set("textLength", dx_advance)
+                        .set("lengthAdjust", "spacingAndGlyphs");
+                }
                 acc_x += dx_advance;
                 acc_y += dy_advance;
                 dx_idx += width * entries_per_byte;
