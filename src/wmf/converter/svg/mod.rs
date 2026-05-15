@@ -1378,6 +1378,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_POLYPOLYGON,
     ) -> Result<Self, PlayError> {
+        // [Task #902 v2 Stage 11] WMF POLYPOLYGON 은 단일 영역의 다중 서브경로
+        // (fill-rule 의 alternating/winding 에 따라 hole 처리). 기존 구현은 각
+        // 서브폴리곤을 별도 <polygon> 으로 분리 → fill 이 hole 처리 안 됨,
+        // SVG 요소 수 폭증. SVG <path> + M/L commands 로 단일 path 합성.
         let stroke = Stroke::from(self.selected_pen().clone());
         let fill = match Fill::from(self.selected_brush().clone()) {
             Fill::Pattern { pattern } => {
@@ -1391,6 +1395,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
 
         let mut a_point: VecDeque<_> = record.poly_polygon.a_points.into();
         let mut current_point_index = 0;
+        let mut path_d = String::new();
 
         for i in 0..record.poly_polygon.number_of_polygons {
             let Some(points_of_polygon) =
@@ -1401,9 +1406,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 });
             };
 
-            let mut points = Vec::with_capacity(*points_of_polygon as usize);
-
-            for _ in 0..*points_of_polygon {
+            for j in 0..*points_of_polygon {
                 let Some(point) = a_point.pop_front() else {
                     return Err(PlayError::InvalidRecord {
                         cause: format!(
@@ -1420,17 +1423,26 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     point
                 };
 
-                points.push(as_point_string(&point));
+                if j == 0 {
+                    if !path_d.is_empty() {
+                        path_d.push(' ');
+                    }
+                    path_d.push_str(&format!("M {} {}", point.x, point.y));
+                } else {
+                    path_d.push_str(&format!(" L {} {}", point.x, point.y));
+                }
                 current_point_index += 1;
             }
+            path_d.push_str(" Z");
+        }
 
-            let polygon = Node::new("polygon")
+        if !path_d.is_empty() {
+            let path = Node::new("path")
                 .set("fill", fill.as_str())
                 .set("fill-rule", fill_rule.as_str())
-                .set("points", points.join(" "));
-            let polygon = stroke.set_props(polygon);
-
-            self.push_element(record_number, polygon);
+                .set("d", path_d);
+            let path = stroke.set_props(path);
+            self.push_element(record_number, path);
         }
 
         Ok(self)
