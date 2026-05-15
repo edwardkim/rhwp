@@ -1,25 +1,20 @@
-//! [Task #902 v2 Stage 12] WMF raster Player baseline.
+//! [Task #902 v2 Stage 12~13] WMF raster Player.
 //!
 //! 알고리즘 출처: LibreOffice emfio (MPL 2.0)
-//!   wmfreader.cxx + mtftools.cxx 의 WMF record 처리 로직 포팅 baseline.
-//!
-//! 본 stage 는 Player trait 의 stub 구현. Stage 13+ 에서 점진적으로
-//! tiny-skia + fontdue 로 실제 raster 렌더링 구현.
+//!   wmfreader.cxx + mtftools.cxx 의 WMF record 처리 로직 포팅.
 
 use super::state::*;
 use crate::wmf::converter::{PlayError, Player};
 use crate::wmf::parser::*;
 
 #[cfg(not(target_arch = "wasm32"))]
-use tiny_skia::Pixmap;
+use tiny_skia::{
+    Color, FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform,
+};
 
 /// WMF records 를 tiny-skia Pixmap 에 직접 렌더링하는 Player.
 ///
 /// 출력: PNG bytes (`generate()` 호출 시).
-///
-/// 현재 (Stage 12) state 추적 + state context 만 구현. 실제 drawing 은
-/// Stage 13+ 에서 점진적 구현 — drawing 함수는 NOP (state 만 유지).
-#[derive(Clone, Debug)]
 pub struct RasterPlayer {
     state: RasterState,
     /// DC stack (META_SAVEDC / META_RESTOREDC)
@@ -29,42 +24,104 @@ pub struct RasterPlayer {
     canvas_height: u32,
     /// 누적 logical 좌표 bbox — header 의 bound 후 SetWindowExt 등에 갱신.
     extent: (i16, i16),
+    /// 실제 raster canvas (native only).
+    #[cfg(not(target_arch = "wasm32"))]
+    pixmap: Pixmap,
 }
 
 impl RasterPlayer {
-    pub fn new(canvas_width: u32, canvas_height: u32) -> Self {
-        Self {
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn new(canvas_width: u32, canvas_height: u32) -> Option<Self> {
+        let mut pixmap = Pixmap::new(canvas_width.max(1), canvas_height.max(1))?;
+        pixmap.fill(Color::WHITE);
+        Some(Self {
             state: RasterState::default(),
             state_stack: Vec::new(),
             canvas_width,
             canvas_height,
             extent: (1024, 1024),
-        }
+            pixmap,
+        })
     }
 
-    /// 빈 canvas 생성 (default 1024x1024).
-    pub fn default_canvas() -> Self {
+    #[cfg(target_arch = "wasm32")]
+    pub fn new(canvas_width: u32, canvas_height: u32) -> Option<Self> {
+        Some(Self {
+            state: RasterState::default(),
+            state_stack: Vec::new(),
+            canvas_width,
+            canvas_height,
+            extent: (1024, 1024),
+        })
+    }
+
+    pub fn default_canvas() -> Option<Self> {
         Self::new(1024, 1024)
+    }
+
+    /// Logical 좌표 → device pixel 변환 (canvas 크기 반영).
+    #[cfg(not(target_arch = "wasm32"))]
+    fn logical_to_pixel(&self, x: i16, y: i16) -> (f32, f32) {
+        let (dx, dy) = self.state.logical_to_device(x, y);
+        // device 좌표를 canvas 크기로 정규화
+        let scale_x = self.canvas_width as f32 / f32::from(self.extent.0.max(1));
+        let scale_y = self.canvas_height as f32 / f32::from(self.extent.1.max(1));
+        (dx * scale_x, dy * scale_y)
+    }
+
+    /// Selected pen 기반 stroke 생성.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn build_stroke_paint(&self) -> Option<(Paint<'static>, Stroke)> {
+        let pen_idx = self.state.selected_pen?;
+        let obj = self.state.object_table.get(&pen_idx)?;
+        let RasterObject::Pen(pen) = obj else { return None };
+        if pen.is_null {
+            return None;
+        }
+        let mut paint = Paint::default();
+        paint.set_color_rgba8(
+            pen.color.red,
+            pen.color.green,
+            pen.color.blue,
+            255,
+        );
+        paint.anti_alias = true;
+        let mut stroke = Stroke::default();
+        stroke.width = (pen.width.max(1) as f32)
+            * (self.canvas_width as f32 / f32::from(self.extent.0.max(1)));
+        Some((paint, stroke))
+    }
+
+    /// Selected brush 기반 fill paint 생성.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn build_fill_paint(&self) -> Option<Paint<'static>> {
+        let brush_idx = self.state.selected_brush?;
+        let obj = self.state.object_table.get(&brush_idx)?;
+        let RasterObject::Brush(brush) = obj else { return None };
+        if brush.is_null {
+            return None;
+        }
+        let mut paint = Paint::default();
+        paint.set_color_rgba8(
+            brush.color.red,
+            brush.color.green,
+            brush.color.blue,
+            255,
+        );
+        paint.anti_alias = true;
+        Some(paint)
     }
 }
 
 impl Player for RasterPlayer {
     fn generate(self) -> Result<Vec<u8>, PlayError> {
-        // [Task #902 v2 Stage 12] 임시 stub — 빈 흰색 PNG 반환.
-        // Stage 13+ 에서 실제 raster 출력 구현.
         #[cfg(not(target_arch = "wasm32"))]
         {
-            let mut pixmap = Pixmap::new(self.canvas_width, self.canvas_height)
-                .ok_or_else(|| PlayError::InvalidRecord {
-                    cause: format!(
-                        "canvas size {}x{} 생성 실패",
-                        self.canvas_width, self.canvas_height
-                    ),
-                })?;
-            pixmap.fill(tiny_skia::Color::WHITE);
-            pixmap.encode_png().map_err(|err| PlayError::InvalidRecord {
-                cause: format!("PNG encode 실패: {err}"),
-            })
+            self.pixmap
+                .encode_png()
+                .map_err(|err| PlayError::InvalidRecord {
+                    cause: format!("PNG encode 실패: {err}"),
+                })
         }
         #[cfg(target_arch = "wasm32")]
         {
@@ -81,7 +138,7 @@ impl Player for RasterPlayer {
         _record_number: usize,
         record: MetafileHeader,
     ) -> Result<Self, PlayError> {
-        // Placeable WMF 의 bound (window size 추정) 사용 — emfio 의 ReadHeader.
+        // Placeable WMF 의 bound (window size 추정) — emfio 의 ReadHeader.
         if let MetafileHeader::StartsWithPlaceable(placeable, _header) = &record {
             let w = (placeable.bounding_box.right - placeable.bounding_box.left).abs();
             let h = (placeable.bounding_box.bottom - placeable.bounding_box.top).abs();
@@ -95,7 +152,7 @@ impl Player for RasterPlayer {
         Ok(self)
     }
 
-    // === Bitmap records (Stage 13+ 구현) ===
+    // === Bitmap records (Stage 15 구현) ===
     fn bit_blt(self, _: usize, _: META_BITBLT) -> Result<Self, PlayError> { Ok(self) }
     fn device_independent_bitmap_bit_blt(self, _: usize, _: META_DIBBITBLT) -> Result<Self, PlayError> { Ok(self) }
     fn device_independent_bitmap_stretch_blt(self, _: usize, _: META_DIBSTRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
@@ -103,7 +160,7 @@ impl Player for RasterPlayer {
     fn stretch_blt(self, _: usize, _: META_STRETCHBLT) -> Result<Self, PlayError> { Ok(self) }
     fn stretch_device_independent_bitmap(self, _: usize, _: META_STRETCHDIB) -> Result<Self, PlayError> { Ok(self) }
 
-    // === Drawing records (Stage 13+ 구현) ===
+    // === Drawing records ===
     fn arc(self, _: usize, _: META_ARC) -> Result<Self, PlayError> { Ok(self) }
     fn chord(self, _: usize, _: META_CHORD) -> Result<Self, PlayError> { Ok(self) }
     fn ellipse(self, _: usize, _: META_ELLIPSE) -> Result<Self, PlayError> { Ok(self) }
@@ -113,32 +170,312 @@ impl Player for RasterPlayer {
     fn flood_fill(self, _: usize, _: META_FLOODFILL) -> Result<Self, PlayError> { Ok(self) }
     fn frame_region(self, _: usize, _: META_FRAMEREGION) -> Result<Self, PlayError> { Ok(self) }
     fn invert_region(self, _: usize, _: META_INVERTREGION) -> Result<Self, PlayError> { Ok(self) }
-    fn line_to(self, _: usize, _: META_LINETO) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn line_to(mut self, _: usize, record: META_LINETO) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawLineTo 포팅
+        let (x0, y0) = self.logical_to_pixel(
+            self.state.current_position.0,
+            self.state.current_position.1,
+        );
+        let (x1, y1) = self.logical_to_pixel(record.x, record.y);
+        if let Some((paint, stroke)) = self.build_stroke_paint() {
+            let mut pb = PathBuilder::new();
+            pb.move_to(x0, y0);
+            pb.line_to(x1, y1);
+            if let Some(path) = pb.finish() {
+                self.pixmap.stroke_path(
+                    &path,
+                    &paint,
+                    &stroke,
+                    Transform::identity(),
+                    None,
+                );
+            }
+        }
+        self.state.current_position = (record.x, record.y);
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
+    fn line_to(mut self, _: usize, record: META_LINETO) -> Result<Self, PlayError> {
+        self.state.current_position = (record.x, record.y);
+        Ok(self)
+    }
+
     fn paint_region(self, _: usize, _: META_PAINTREGION) -> Result<Self, PlayError> { Ok(self) }
     fn pat_blt(self, _: usize, _: META_PATBLT) -> Result<Self, PlayError> { Ok(self) }
     fn pie(self, _: usize, _: META_PIE) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn polyline(mut self, _: usize, record: META_POLYLINE) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawPolyLine 포팅
+        if record.a_points.is_empty() {
+            return Ok(self);
+        }
+        if let Some((paint, stroke)) = self.build_stroke_paint() {
+            let mut pb = PathBuilder::new();
+            for (i, p) in record.a_points.iter().enumerate() {
+                let (px, py) = self.logical_to_pixel(p.x, p.y);
+                if i == 0 { pb.move_to(px, py); } else { pb.line_to(px, py); }
+            }
+            if let Some(path) = pb.finish() {
+                self.pixmap.stroke_path(
+                    &path,
+                    &paint,
+                    &stroke,
+                    Transform::identity(),
+                    None,
+                );
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn polyline(self, _: usize, _: META_POLYLINE) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn polygon(mut self, _: usize, record: META_POLYGON) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawPolygon 포팅 — fill + stroke
+        if record.a_points.is_empty() {
+            return Ok(self);
+        }
+        let mut pb = PathBuilder::new();
+        for (i, p) in record.a_points.iter().enumerate() {
+            let (px, py) = self.logical_to_pixel(p.x, p.y);
+            if i == 0 { pb.move_to(px, py); } else { pb.line_to(px, py); }
+        }
+        pb.close();
+        let fill_rule = match self.state.poly_fill_mode {
+            PolyFillMode::ALTERNATE => FillRule::EvenOdd,
+            PolyFillMode::WINDING => FillRule::Winding,
+        };
+        if let Some(path) = pb.finish() {
+            if let Some(fill_paint) = self.build_fill_paint() {
+                self.pixmap.fill_path(
+                    &path,
+                    &fill_paint,
+                    fill_rule,
+                    Transform::identity(),
+                    None,
+                );
+            }
+            if let Some((stroke_paint, stroke)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(
+                    &path,
+                    &stroke_paint,
+                    &stroke,
+                    Transform::identity(),
+                    None,
+                );
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn polygon(self, _: usize, _: META_POLYGON) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn poly_polygon(mut self, _: usize, record: META_POLYPOLYGON) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawPolyPolygon 포팅
+        // 단일 path 의 다중 서브경로로 합성 — fill-rule (winding/alternate) 적용.
+        let mut pb = PathBuilder::new();
+        let mut a_point_iter = record.poly_polygon.a_points.iter();
+        for i in 0..record.poly_polygon.number_of_polygons {
+            let Some(&count) = record.poly_polygon.a_points_per_polygon.get(i as usize) else {
+                continue;
+            };
+            for j in 0..count {
+                let Some(p) = a_point_iter.next() else { break };
+                let (px, py) = self.logical_to_pixel(p.x, p.y);
+                if j == 0 { pb.move_to(px, py); } else { pb.line_to(px, py); }
+            }
+            pb.close();
+        }
+        let fill_rule = match self.state.poly_fill_mode {
+            PolyFillMode::ALTERNATE => FillRule::EvenOdd,
+            PolyFillMode::WINDING => FillRule::Winding,
+        };
+        if let Some(path) = pb.finish() {
+            if let Some(fill_paint) = self.build_fill_paint() {
+                self.pixmap.fill_path(
+                    &path,
+                    &fill_paint,
+                    fill_rule,
+                    Transform::identity(),
+                    None,
+                );
+            }
+            if let Some((stroke_paint, stroke)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(
+                    &path,
+                    &stroke_paint,
+                    &stroke,
+                    Transform::identity(),
+                    None,
+                );
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn poly_polygon(self, _: usize, _: META_POLYPOLYGON) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn rectangle(mut self, _: usize, record: META_RECTANGLE) -> Result<Self, PlayError> {
+        // LO mtftools.cxx 의 DrawRect 포팅
+        let (x0, y0) = self.logical_to_pixel(record.left_rect, record.top_rect);
+        let (x1, y1) = self.logical_to_pixel(record.right_rect, record.bottom_rect);
+        let mut pb = PathBuilder::new();
+        pb.move_to(x0, y0);
+        pb.line_to(x1, y0);
+        pb.line_to(x1, y1);
+        pb.line_to(x0, y1);
+        pb.close();
+        if let Some(path) = pb.finish() {
+            if let Some(fill_paint) = self.build_fill_paint() {
+                self.pixmap.fill_path(
+                    &path,
+                    &fill_paint,
+                    FillRule::Winding,
+                    Transform::identity(),
+                    None,
+                );
+            }
+            if let Some((stroke_paint, stroke)) = self.build_stroke_paint() {
+                self.pixmap.stroke_path(
+                    &path,
+                    &stroke_paint,
+                    &stroke,
+                    Transform::identity(),
+                    None,
+                );
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn rectangle(self, _: usize, _: META_RECTANGLE) -> Result<Self, PlayError> { Ok(self) }
+
     fn round_rect(self, _: usize, _: META_ROUNDRECT) -> Result<Self, PlayError> { Ok(self) }
     fn set_pixel(self, _: usize, _: META_SETPIXEL) -> Result<Self, PlayError> { Ok(self) }
     fn text_out(self, _: usize, _: META_TEXTOUT) -> Result<Self, PlayError> { Ok(self) }
 
-    // === Object records (Stage 13+ 구현) ===
+    // === Object records ===
+    #[cfg(not(target_arch = "wasm32"))]
+    fn create_brush_indirect(
+        mut self,
+        _: usize,
+        record: META_CREATEBRUSHINDIRECT,
+    ) -> Result<Self, PlayError> {
+        use crate::wmf::parser::LogBrush;
+        let idx = self.state.object_table.len() as u16;
+        let (color, is_null) = match &record.log_brush {
+            LogBrush::Solid { color_ref } => (color_ref.clone(), false),
+            LogBrush::Hatched { color_ref, .. } => (color_ref.clone(), false),
+            LogBrush::Null => (ColorRef::white(), true),
+            _ => (ColorRef::white(), false),
+        };
+        self.state.object_table.insert(
+            idx,
+            RasterObject::Brush(BrushInfo { color, style: 0, is_null }),
+        );
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn create_brush_indirect(self, _: usize, _: META_CREATEBRUSHINDIRECT) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn create_pen_indirect(
+        mut self,
+        _: usize,
+        record: META_CREATEPENINDIRECT,
+    ) -> Result<Self, PlayError> {
+        use crate::wmf::parser::PenStyle;
+        let idx = self.state.object_table.len() as u16;
+        let is_null = matches!(record.pen.style.style, PenStyle::PS_NULL);
+        self.state.object_table.insert(
+            idx,
+            RasterObject::Pen(PenInfo {
+                color: record.pen.color_ref.clone(),
+                width: i32::from(record.pen.width.x.max(1)),
+                style: 0,
+                is_null,
+            }),
+        );
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
+    fn create_pen_indirect(self, _: usize, _: META_CREATEPENINDIRECT) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn create_font_indirect(
+        mut self,
+        _: usize,
+        record: META_CREATEFONTINDIRECT,
+    ) -> Result<Self, PlayError> {
+        let idx = self.state.object_table.len() as u16;
+        self.state.object_table.insert(
+            idx,
+            RasterObject::Font(FontInfo {
+                height: record.font.height,
+                width: record.font.width,
+                weight: record.font.weight,
+                italic: record.font.italic,
+                underline: record.font.underline,
+                strike_out: record.font.strike_out,
+                charset: record.font.charset,
+                facename: record.font.facename.clone(),
+            }),
+        );
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn create_font_indirect(self, _: usize, _: META_CREATEFONTINDIRECT) -> Result<Self, PlayError> { Ok(self) }
+
     fn create_palette(self, _: usize, _: META_CREATEPALETTE) -> Result<Self, PlayError> { Ok(self) }
     fn create_pattern_brush(self, _: usize, _: META_CREATEPATTERNBRUSH) -> Result<Self, PlayError> { Ok(self) }
-    fn create_pen_indirect(self, _: usize, _: META_CREATEPENINDIRECT) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn create_region(mut self, _: usize, _record: META_CREATEREGION) -> Result<Self, PlayError> {
+        let idx = self.state.object_table.len() as u16;
+        self.state.object_table.insert(idx, RasterObject::Region);
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn create_region(self, _: usize, _: META_CREATEREGION) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn delete_object(mut self, _: usize, record: META_DELETEOBJECT) -> Result<Self, PlayError> {
+        self.state.object_table.remove(&record.object_index);
+        if self.state.selected_pen == Some(record.object_index) { self.state.selected_pen = None; }
+        if self.state.selected_brush == Some(record.object_index) { self.state.selected_brush = None; }
+        if self.state.selected_font == Some(record.object_index) { self.state.selected_font = None; }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn delete_object(self, _: usize, _: META_DELETEOBJECT) -> Result<Self, PlayError> { Ok(self) }
+
     fn create_device_independent_bitmap_pattern_brush(self, _: usize, _: META_DIBCREATEPATTERNBRUSH) -> Result<Self, PlayError> { Ok(self) }
     fn select_clip_region(self, _: usize, _: META_SELECTCLIPREGION) -> Result<Self, PlayError> { Ok(self) }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn select_object(mut self, _: usize, record: META_SELECTOBJECT) -> Result<Self, PlayError> {
+        if let Some(obj) = self.state.object_table.get(&record.object_index) {
+            match obj {
+                RasterObject::Pen(_) => self.state.selected_pen = Some(record.object_index),
+                RasterObject::Brush(_) => self.state.selected_brush = Some(record.object_index),
+                RasterObject::Font(_) => self.state.selected_font = Some(record.object_index),
+                _ => {}
+            }
+        }
+        Ok(self)
+    }
+    #[cfg(target_arch = "wasm32")]
     fn select_object(self, _: usize, _: META_SELECTOBJECT) -> Result<Self, PlayError> { Ok(self) }
+
     fn select_palette(self, _: usize, _: META_SELECTPALETTE) -> Result<Self, PlayError> { Ok(self) }
 
-    // === State records (Stage 13+ 구현) ===
+    // === State records ===
     fn animate_palette(self, _: usize, _: META_ANIMATEPALETTE) -> Result<Self, PlayError> { Ok(self) }
     fn exclude_clip_rect(self, _: usize, _: META_EXCLUDECLIPRECT) -> Result<Self, PlayError> { Ok(self) }
     fn intersect_clip_rect(self, _: usize, _: META_INTERSECTCLIPRECT) -> Result<Self, PlayError> { Ok(self) }
@@ -161,7 +498,6 @@ impl Player for RasterPlayer {
     fn resize_palette(self, _: usize, _: META_RESIZEPALETTE) -> Result<Self, PlayError> { Ok(self) }
     fn restore_device_context(mut self, _: usize, record: META_RESTOREDC) -> Result<Self, PlayError> {
         if record.n_saved_dc < 0 {
-            // 음수는 top-most 부터 |n| 번째
             for _ in 0..(-record.n_saved_dc as usize).min(self.state_stack.len()) {
                 if let Some(s) = self.state_stack.pop() { self.state = s; }
             }
@@ -239,7 +575,14 @@ impl Player for RasterPlayer {
         Ok(self)
     }
     fn set_window_ext(mut self, _: usize, record: META_SETWINDOWEXT) -> Result<Self, PlayError> {
-        self.state.window_ext = (record.x.abs(), record.y.abs());
+        let (w, h) = (record.x.abs(), record.y.abs());
+        self.state.window_ext = (w, h);
+        // header 의 extent 보다 큰 ext 시 갱신 — placeable 부재 케이스 대응
+        if !matches!(self.extent, (1024, 1024)) {
+            // header 가 이미 설정한 경우는 그대로 유지
+        } else if w > 0 && h > 0 {
+            self.extent = (w, h);
+        }
         Ok(self)
     }
     fn set_window_origin(mut self, _: usize, record: META_SETWINDOWORG) -> Result<Self, PlayError> {
