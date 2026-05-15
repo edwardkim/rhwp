@@ -915,24 +915,24 @@ impl crate::wmf::converter::Player for SVGPlayer {
         if record.dx.len() <= 1 {
             text = text.add(Node::new_text(&text_content));
         } else {
-            // https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/wmfreader.cxx?id=c0b14ab9aa4d713a6b718ef07b9e0379b88e97d3#n693
+            // [Task #902] WMF EXTTEXTOUT 의 DX 배열은 MBCS byte index — Korean
+            // wide char 는 2 byte 이므로 DX 2 entry (실제 advance + 0) 차지.
+            // grapheme index 로 접근하면 wide char 마다 매 둘째 dx=0 으로 잘못
+            // 산출되어 글자 겹침. unicode_width 의 s.width() (Korean=2, ASCII=1)
+            // 로 byte advance 후 합산. absolute x 로 폰트 metric 독립 위치 정합.
+            let mut acc_x: i32 = i32::from(point.x);
+            let mut dx_idx: usize = 0;
             for (i, s) in text_content.graphemes(true).enumerate() {
-                let dx = if i == 0 {
-                    0
-                } else {
-                    *record.dx.get(i - 1).unwrap_or(&0)
-                };
-
                 let mut tspan = Node::new("tspan").add(Node::new_text(s));
-
-                if dx != 0 {
-                    let excess_dx = (font.height.abs() / 2)
-                        * i16::try_from(s.width()).unwrap_or(0);
-                    let dx = core::cmp::max(dx - excess_dx, 0);
-
-                    tspan = tspan.set("dx", dx);
+                if i > 0 {
+                    tspan = tspan.set("x", acc_x);
                 }
-
+                let width = s.width().max(1);
+                let advance: i32 = (0..width)
+                    .map(|k| i32::from(*record.dx.get(dx_idx + k).unwrap_or(&0)))
+                    .sum();
+                acc_x += advance;
+                dx_idx += width;
                 text = text.add(tspan);
             }
         }
