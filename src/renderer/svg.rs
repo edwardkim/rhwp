@@ -1139,7 +1139,27 @@ impl SvgRenderer {
             }
             #[cfg(target_arch = "wasm32")]
             match convert_wmf_to_svg(data) {
-                Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                Some(svg_bytes) => {
+                    // [Task #902 v2 Stage 25] WASM 환경: inline <svg> 임베드.
+                    // `<image href=...>` 의 sandboxed 한계 회피 → 부모 SVG 의
+                    // @font-face/@imported style 이 inner WMF SVG 에도 적용됨.
+                    if let Some(inline_svg) = wmf_svg_to_inline(
+                        &svg_bytes,
+                        bbox.x,
+                        bbox.y,
+                        bbox.width,
+                        bbox.height,
+                    ) {
+                        self.output.push_str(&inline_svg);
+                        self.output.push('\n');
+                        // 종료 처리 — 일반 image 경로 우회 (다른 조건 skip)
+                        if is_watermark_image { self.output.push_str("</g>\n"); }
+                        if bc_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                        if effect_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                        return;
+                    }
+                    (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
+                }
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else if mime_type == "image/bmp" {
@@ -2429,6 +2449,43 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
     let player = SVGPlayer::new();
     let converter = WMFConverter::new(data, player);
     converter.run().ok()
+}
+
+/// [Task #902 v2 Stage 25] WMF SVG 를 outer SVG 에 inline 임베드 가능한
+/// 형태로 변환한다. `<image href=...>` (sandboxed) 대신 inline `<svg>` 로
+/// 임베드하여 부모 namespace 의 @font-face / CSS 가 적용되도록.
+///
+/// 동작: WMF SVG 의 `<?xml ...>` prolog 제거 + 루트 `<svg>` 에 x/y/width/height
+/// attribute 삽입. 결과는 outer SVG 의 child 로 직접 삽입 가능.
+pub(crate) fn wmf_svg_to_inline(
+    svg_bytes: &[u8],
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> Option<String> {
+    let s = std::str::from_utf8(svg_bytes).ok()?;
+    // 1. <?xml ...?> prolog 제거
+    let s = if let Some(end) = s.find("?>") {
+        s[end + 2..].trim_start()
+    } else {
+        s
+    };
+    // 2. 루트 <svg ...> 태그 찾기 + x/y/width/height attribute 삽입
+    let svg_open_end = s.find('>')?;
+    let svg_open = &s[..svg_open_end + 1];
+    let svg_rest = &s[svg_open_end + 1..];
+    // <svg ... > 의 ` ` 후 attr 삽입
+    let pos_attrs = format!(
+        r#" x="{x}" y="{y}" width="{width}" height="{height}" preserveAspectRatio="none""#
+    );
+    let svg_open_with_pos = if svg_open.ends_with("/>") {
+        // self-closing — 매우 드문 케이스
+        svg_open.replace("/>", &format!("{}/>", pos_attrs))
+    } else {
+        svg_open.replace(">", &format!("{}>", pos_attrs))
+    };
+    Some(format!("{svg_open_with_pos}{svg_rest}"))
 }
 
 /// [Task #902 v2 Stage 16] 공개 wrapper — examples / 외부 도구용.
