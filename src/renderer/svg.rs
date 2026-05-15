@@ -1119,22 +1119,27 @@ impl SvgRenderer {
         // BMP → PNG 변환 (브라우저는 SVG <image> 내부의 data:image/bmp 미지원)
         // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
-            // [Task #902 v2 Stage 10] WMF → SVG 변환 후 raster (PNG) 우선 시도
-            // 한컴 viewer 와 동일한 폰트 metric 사용으로 시각 정합 개선.
-            // 실패 시 (WASM 등) 기존 SVG embed fallback.
-            match convert_wmf_to_svg(data) {
-                Some(svg_bytes) => {
-                    let target_w = bbox.width.max(1.0) as f32;
-                    let target_h = bbox.height.max(1.0) as f32;
-                    match rasterize_wmf_svg_to_png(&svg_bytes, target_w, target_h) {
-                        Some(png_bytes) => {
-                            (std::borrow::Cow::Owned(png_bytes), "image/png")
-                        }
-                        None => {
-                            (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
+            // [Task #902 v2 Stage 17] LibreOffice 우선 시도 (RHWP_WMF_USE_LIBREOFFICE=1)
+            // → 실패/미설정 시 [Stage 10] WMF → SVG → resvg PNG → [Stage 9 이전] SVG embed
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(png_bytes) = rasterize_wmf_via_libreoffice(data) {
+                (std::borrow::Cow::Owned(png_bytes), "image/png")
+            } else {
+                match convert_wmf_to_svg(data) {
+                    Some(svg_bytes) => {
+                        let target_w = bbox.width.max(1.0) as f32;
+                        let target_h = bbox.height.max(1.0) as f32;
+                        match rasterize_wmf_svg_to_png(&svg_bytes, target_w, target_h) {
+                            Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                            None => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
                         }
                     }
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
+            }
+            #[cfg(target_arch = "wasm32")]
+            match convert_wmf_to_svg(data) {
+                Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
                 None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else if mime_type == "image/bmp" {
@@ -2434,6 +2439,57 @@ pub fn rasterize_wmf_direct_pub(
     target_height_px: f32,
 ) -> Option<Vec<u8>> {
     rasterize_wmf_direct(wmf_data, target_width_px, target_height_px)
+}
+
+/// [Task #902 v2 Stage 17] LibreOffice 외부 변환 — opt-in quality 최대화 경로.
+/// `RHWP_WMF_USE_LIBREOFFICE=1` 환경 변수 + soffice binary 가 있으면 활성화.
+/// 즉시 한컴급 quality 제공, runtime 의존 (LibreOffice).
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn rasterize_wmf_via_libreoffice(wmf_data: &[u8]) -> Option<Vec<u8>> {
+    if std::env::var("RHWP_WMF_USE_LIBREOFFICE").ok().as_deref() != Some("1") {
+        return None;
+    }
+    let soffice_candidates = [
+        "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+        "/usr/bin/soffice",
+        "/usr/local/bin/soffice",
+        "soffice",
+    ];
+    let soffice = soffice_candidates
+        .iter()
+        .find(|p| std::path::Path::new(p).exists() || **p == "soffice")?;
+
+    let tmp_dir = std::env::temp_dir().join(format!(
+        "rhwp_wmf_{}_{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .ok()?
+            .as_micros()
+    ));
+    std::fs::create_dir_all(&tmp_dir).ok()?;
+    let input_path = tmp_dir.join("input.wmf");
+    std::fs::write(&input_path, wmf_data).ok()?;
+
+    let output = std::process::Command::new(soffice)
+        .args([
+            "--headless",
+            "--convert-to",
+            "png",
+            "--outdir",
+        ])
+        .arg(&tmp_dir)
+        .arg(&input_path)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        let _ = std::fs::remove_dir_all(&tmp_dir);
+        return None;
+    }
+    let output_png = tmp_dir.join("input.png");
+    let png_data = std::fs::read(&output_png).ok();
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    png_data
 }
 
 /// [Task #902 v2 Stage 16] WMF binary 를 RasterPlayer 로 직접 raster 렌더링한다.
