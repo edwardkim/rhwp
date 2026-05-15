@@ -11,7 +11,7 @@ use crate::paint::{
     GroupKind, LayerAffineTransform, LayerNode, LayerNodeKind, LayerPoint, LayerVector,
     PageLayerTree, PaintOp, PaintTextStyle, PaintVariantMeta, RenderProfile, ShapeKey,
     TextDecorationKind, TextSourceAnnotation, TextSourceEntry, TextSourceId, TextSourceRange,
-    TextSourceSpan, TextSourceTable, LAYER_TREE_SCHEMA,
+    TextSourceSpan, TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
@@ -53,6 +53,8 @@ impl PageLayerTree {
         buf.push_str(",\"fontResources\":");
         write_font_resources(&mut buf, self.resources.font_resources());
         write_text_export_metadata(&mut buf, &self.root);
+        buf.push_str(",\"textV2\":");
+        TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
         buf.push('}');
         buf
     }
@@ -62,7 +64,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let externalized_visuals = externalized_text_visuals(root);
     let has_variant_groups = has_text_variant_groups(root);
     let has_glyph_runs = has_glyph_runs(root);
-    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.projectionKind\",\"text.legacyVisuals\"");
+    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\"");
     if has_glyph_runs {
         buf.push_str(",\"fontResources\",\"text.glyphRun\"");
     }
@@ -85,7 +87,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     if has_glyph_runs {
         buf.push_str("\"fontResources\",\"text.glyphRun\"");
     }
-    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -1878,8 +1880,8 @@ mod tests {
 
         assert!(json.contains("\"kind\":\"leaf\""));
         assert!(json.contains("\"schemaVersion\":1"));
-        assert!(json.contains("\"schemaMinorVersion\":9"));
-        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":9}"));
+        assert!(json.contains("\"schemaMinorVersion\":10"));
+        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":10}"));
         assert!(json.contains("\"resourceTableVersion\":1"));
         assert!(json.contains("\"resourceTableMinorVersion\":3"));
         assert!(json.contains("\"resourceTable\":{\"major\":1,\"minor\":3}"));
@@ -1902,8 +1904,11 @@ mod tests {
         assert!(json.contains("\"fieldMarker\":{\"kind\":\"fieldBegin\"}"));
         assert!(json.contains("\"charOverlap\":{\"borderType\":1,\"innerCharSize\":90}"));
         assert!(json.contains("\"usedFeatures\":[\"text.paintStyle\""));
+        assert!(json.contains("\"text.v2.diagnostics\""));
         assert!(json.contains("\"knownFeatures\":[\"fontResources\""));
         assert!(json.contains("\"fontResources\":{\"blobs\":[],\"faces\":[]}"));
+        assert!(json.contains("\"textV2\":{\"compatibilityProfile\":\"v1Compat\""));
+        assert!(json.contains("\"downgradePath\":\"schemaV1FlattenedTextRunAndGlyphRun\""));
         assert!(json.contains("\"text\":{\"defaultVariant\":\"textRun\""));
         assert!(json.contains("\"fontFamily\":\"Noto Sans KR\""));
         assert!(json.contains("\"italic\":true"));
@@ -2142,6 +2147,8 @@ mod tests {
         assert!(json.contains("\"glyphIds\":[42]"));
         assert!(json.contains("\"replayEligibility\":\"portable\""));
         assert!(json.contains("\"strictVisualEligible\":true"));
+        assert!(json.contains("\"slotDiagnostics\":[{\"paintOrderSlotId\":\"text-0\""));
+        assert!(json.contains("\"strictVariantAvailable\":true"));
     }
 
     #[test]

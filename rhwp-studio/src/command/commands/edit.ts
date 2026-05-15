@@ -62,8 +62,8 @@ export const editCommands: CommandDef[] = [
     icon: 'icon-paste',
     shortcutLabel: 'Ctrl+V',
     canExecute: (ctx) => ctx.hasDocument,
-    execute() {
-      document.execCommand('paste');
+    execute(services) {
+      services.getInputHandler()?.performPaste();
     },
   },
   {

@@ -63,6 +63,7 @@ export class Ruler {
       eventBus.on('zoom-changed', () => this.scheduleUpdate()),
       eventBus.on('viewport-resize', () => { this.resize(); this.scheduleUpdate(); }),
       eventBus.on('document-changed', () => this.scheduleUpdate()),
+      eventBus.on('document-view-changed', () => this.scheduleUpdate()),
       eventBus.on('cursor-para-changed', (props) => this.onParaChanged(props as ParaProperties)),
       eventBus.on('cursor-cell-changed', (data) => this.onCellChanged(data as { inCell: boolean; cellX?: number; cellWidth?: number })),
       eventBus.on('cursor-rect-updated', (rect: any) => {
