@@ -128,14 +128,29 @@ LO emfio 알고리즘 참조:
 | RasterPlayer sample16 WMF | 92 KB PNG (2434×1648) |
 | RasterPlayer sample18 WMF | 518 KB PNG (1600×1200) |
 
-## 7. dispatcher 정책
+## 7. dispatcher 정책 (Stage 17 갱신)
 
-| 경로 | 상태 |
-|------|------|
-| WMF → SVG → resvg PNG (기존 + Stage 11 fix) | **default** |
-| WMF → RasterPlayer (LO 포팅) → PNG | **opt-in API** (`rasterize_wmf_direct_pub`) |
+| 경로 | 상태 | 트리거 |
+|------|------|--------|
+| WMF → LibreOffice headless → PNG | **opt-in (즉시 한컴급 quality)** | `RHWP_WMF_USE_LIBREOFFICE=1` + soffice binary |
+| WMF → SVG → resvg PNG (기존 + Stage 11 fix) | **default** | env 미설정 |
+| WMF → RasterPlayer (LO 포팅) → PNG | **opt-in API** | `rasterize_wmf_direct_pub` 직접 호출 |
 
-기존 SVG 경로는 모든 WMF records 지원, 안정. RasterPlayer 는 bitmap 미구현 한계로 default 전환은 follow-up.
+### 7.1 사용 예시 — 한컴급 quality 즉시 활성화
+
+```bash
+# LibreOffice 설치 후
+RHWP_WMF_USE_LIBREOFFICE=1 cargo run --release --bin rhwp -- export-svg sample.hwp
+```
+
+LO 변환 결과를 SVG `<image>` 로 임베드. 한컴 viewer 와 시각 정합 우수.
+
+### 7.2 fallback chain
+
+1. `RHWP_WMF_USE_LIBREOFFICE=1` + soffice 가용 → LibreOffice 변환
+2. 실패 / env 미설정 → resvg via WMF→SVG (Stage 10 raster)
+3. resvg 실패 → SVG 원본 임베드 (호환성 fallback)
+4. WASM → SVG 임베드 (resvg 미가용)
 
 ## 8. 잔존 한계 (follow-up)
 
