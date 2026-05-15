@@ -184,7 +184,18 @@ impl Font {
             let as_charset =
                 crate::wmf::parser::bytes_into_utf8(&bytes[..len], charset)?;
 
-            (as_latin1, as_charset)
+            // WMF spec: facename 은 Latin-1 ANSI character 만 허용. 그러나 한컴
+            // 등 multi-byte charset (HANGUL_CHARSET, SHIFTJIS_CHARSET 등) WMF 는
+            // CP949/SJIS 등 binary 그대로 facename 에 넣음 — spec 위반이나 실제
+            // 한컴 WMF 의 일반적 패턴. charset 이 ANSI 가 아니면 charset 으로
+            // 해석한 결과를 primary 로 사용.
+            // (sample16 paragraph 394 WMF 의 facename "굴림체" 가 Latin-1 으로
+            // 해석되어 "±¼¸²Ã¼" 깨진 글자로 표시되던 회귀.)
+            if charset != crate::wmf::parser::CharacterSet::ANSI_CHARSET {
+                (as_charset, as_latin1)
+            } else {
+                (as_latin1, as_charset)
+            }
         };
 
         let mut fallback_facename = Vec::new();
