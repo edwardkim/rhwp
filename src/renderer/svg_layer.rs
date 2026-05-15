@@ -182,6 +182,7 @@ impl SvgLayerRenderer {
                 *bbox,
             ),
             PaintOp::GlyphRun { .. }
+            | PaintOp::GlyphOutline { .. }
             | PaintOp::CharOverlap { .. }
             | PaintOp::TextControlMark { .. }
             | PaintOp::TabLeader { .. }

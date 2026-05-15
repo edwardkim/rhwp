@@ -749,6 +749,7 @@ impl WebCanvasRenderer {
                                     op,
                                     PaintOp::TextRun { .. }
                                         | PaintOp::GlyphRun { .. }
+                                        | PaintOp::GlyphOutline { .. }
                                         | PaintOp::CharOverlap { .. }
                                         | PaintOp::TextControlMark { .. }
                                         | PaintOp::TabLeader { .. }
@@ -880,6 +881,7 @@ impl WebCanvasRenderer {
                             *bbox,
                         ),
                         PaintOp::GlyphRun { .. }
+                        | PaintOp::GlyphOutline { .. }
                         | PaintOp::CharOverlap { .. }
                         | PaintOp::TextControlMark { .. }
                         | PaintOp::TabLeader { .. }
