@@ -363,6 +363,17 @@ impl Stroke {
     }
 }
 
+/// [Task #902 v2 Stage 7] 한컴 WMF 의 fallback_facename 이 CP949 → Latin-1
+/// 잘못된 인코딩 변환으로 garbled 된 string ("±¼¸²Ã¼" 등) 검출.
+/// font matching 에 무의미하므로 font-family chain 에서 제외.
+fn is_garbled_latin1_korean(s: &str) -> bool {
+    // Latin-1 garbled 패턴: extended Latin (U+0080~U+00FF) 만 으로 구성된 string
+    // 정상 영문 폰트명 (ASCII only) 이나 정상 한국어 (U+AC00~) 와 구별됨.
+    !s.is_empty()
+        && s.chars()
+            .all(|c| ('\u{0080}'..='\u{00FF}').contains(&c))
+}
+
 impl Font {
     pub fn set_props(
         &self,
@@ -414,25 +425,54 @@ impl Font {
         let mut font_family: Vec<String> = vec![];
 
         font_family.push(self.facename.clone());
+
+        // [Task #902 v2 Stage 7] WMF 의 fallback_facename 은 일부 한컴 WMF 에서
+        // Latin-1 으로 잘못 디코드된 garbled string (예: "±¼¸²Ã¼") 일 수 있음.
+        // 비-ASCII garbled 문자는 font matching 에 무의미하므로 필터.
         self.fallback_facename.iter().for_each(|f| {
-            font_family.push(f.clone());
+            if !is_garbled_latin1_korean(f) {
+                font_family.push(f.clone());
+            }
         });
 
         // 한컴 WMF 의 한국어 폰트 (예: "굴림체") 가 시스템에 미설치된 환경에서
         // SVG renderer 가 fallback 못 찾으면 글자가 깨져 보임. facename/fallback
         // 에 한글 char (U+AC00~U+D7A3) 있으면 시스템 한국어 폰트 chain 추가.
+        // [Task #902 v2 Stage 7] Korean 폰트 정합을 위해 facename 명시 매핑 추가:
+        // 굴림/굴림체/돋움 → Nanum Gothic (sans-serif 계열, cross-platform 가용)
+        // 바탕/궁서 → Nanum Myeongjo (serif 계열)
         let has_korean = font_family.iter().any(|f| {
             f.chars().any(|c| ('\u{AC00}'..='\u{D7A3}').contains(&c))
         });
         if has_korean {
-            for fallback in [
-                "Apple SD Gothic Neo",
-                "Malgun Gothic",
-                "Nanum Gothic",
-                "Noto Sans CJK KR",
-                "sans-serif",
-            ] {
-                font_family.push(fallback.to_string());
+            let facename_lower = self.facename.clone();
+            let is_serif = facename_lower.contains("바탕")
+                || facename_lower.contains("궁서")
+                || facename_lower.contains("Batang")
+                || facename_lower.contains("Gungsuh");
+            let fallback_chain: &[&str] = if is_serif {
+                &[
+                    "Batang",
+                    "바탕",
+                    "Nanum Myeongjo",
+                    "AppleMyungjo",
+                    "Noto Serif KR",
+                    "Noto Serif CJK KR",
+                    "serif",
+                ]
+            } else {
+                &[
+                    "Apple SD Gothic Neo",
+                    "Malgun Gothic",
+                    "맑은 고딕",
+                    "Nanum Gothic",
+                    "Noto Sans KR",
+                    "Noto Sans CJK KR",
+                    "sans-serif",
+                ]
+            };
+            for fallback in fallback_chain {
+                font_family.push((*fallback).to_string());
             }
         }
 
