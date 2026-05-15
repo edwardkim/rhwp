@@ -197,6 +197,11 @@ fn parse_hwp_with_cfb(mut cfb: cfb_reader::CfbReader, _raw_data: &[u8]) -> Resul
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
     apply_hwp3_origin_fixup(&mut doc);
 
+    // [Task #873] BinData Link 타입 의 외부 file path 영역 Picture.external_path 전달.
+    // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
+    // dir 영역 basename 매칭 영역 image 영역 자동 load.
+    populate_link_image_paths(&mut doc);
+
     Ok(doc)
 }
 
@@ -353,6 +358,11 @@ fn parse_hwp_with_lenient(lenient: cfb_reader::LenientCfbReader, _raw_data: &[u8
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
     apply_hwp3_origin_fixup(&mut doc);
 
+    // [Task #873] BinData Link 타입 의 외부 file path 영역 Picture.external_path 전달.
+    // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
+    // dir 영역 basename 매칭 영역 image 영역 자동 load.
+    populate_link_image_paths(&mut doc);
+
     Ok(doc)
 }
 
@@ -407,6 +417,49 @@ fn load_bin_data_content_lenient(
     }
 
     contents
+}
+
+/// [Task #873] BinData Link 타입의 외부 file path 를 Picture.image_attr.external_path
+/// 로 전달. 모든 포맷 (HWP5/HWPX) 공통 — HWP3 는 파서 내부에서 직접 설정 (Task #741).
+///
+/// HWP5 의 BinDataType::Link entry, HWPX 의 isEmbeded="0" item 이 abs_path/rel_path
+/// 보유. 본 함수는 Picture.bin_data_id 로 BinData entry lookup → Link 인 경우
+/// external_path 설정. 이후 populate_external_images_from_dir (model/document.rs) 가
+/// HWP 파일 디렉토리에서 basename 매칭으로 실제 image 로드.
+pub(crate) fn populate_link_image_paths(doc: &mut Document) {
+    use crate::model::bin_data::BinDataType;
+    use crate::model::control::Control;
+    use crate::model::shape::ShapeObject;
+
+    let bin_data = doc.doc_info.bin_data_list.clone();
+    for section in &mut doc.sections {
+        for para in &mut section.paragraphs {
+            for ctrl in &mut para.controls {
+                let pic = match ctrl {
+                    Control::Picture(p) => p,
+                    Control::Shape(s) => match s.as_mut() {
+                        ShapeObject::Picture(p) => p,
+                        _ => continue,
+                    },
+                    _ => continue,
+                };
+                if pic.image_attr.external_path.is_some() {
+                    continue;
+                }
+                let bin_idx = (pic.image_attr.bin_data_id as usize).saturating_sub(1);
+                if let Some(bd) = bin_data.get(bin_idx) {
+                    if matches!(bd.data_type, BinDataType::Link) {
+                        let path = bd.abs_path.clone()
+                            .filter(|p| !p.is_empty())
+                            .or_else(|| bd.rel_path.clone().filter(|p| !p.is_empty()));
+                        if let Some(p) = path {
+                            pic.image_attr.external_path = Some(p);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// 문서 내 모든 AutoNumber 컨트롤에 번호를 할당한다.

@@ -42,9 +42,14 @@ export interface SaveDocumentResult {
   fileName: string;
 }
 
-const HWP_PICKER_TYPES = [{
-  description: 'HWP 문서',
+const HWP_OPEN_PICKER_TYPES = [{
+  description: 'HWP/HWPX 문서',
   accept: { 'application/x-hwp': ['.hwp', '.hwpx'] },
+}];
+
+const HWP_SAVE_PICKER_TYPES = [{
+  description: 'HWP 문서',
+  accept: { 'application/x-hwp': ['.hwp'] },
 }];
 
 function isAbortError(error: unknown): boolean {
@@ -64,7 +69,7 @@ export async function pickOpenFileHandle(windowLike: FileSystemWindowLike): Prom
     const handles = await windowLike.showOpenFilePicker({
       excludeAcceptAllOption: true,
       multiple: false,
-      types: HWP_PICKER_TYPES,
+      types: HWP_OPEN_PICKER_TYPES,
     });
     return handles[0] ?? null;
   } catch (error) {
@@ -97,7 +102,7 @@ export async function saveDocumentToFileSystem(options: SaveDocumentOptions): Pr
   if (windowLike.showSaveFilePicker) {
     const handle = await windowLike.showSaveFilePicker({
       suggestedName,
-      types: HWP_PICKER_TYPES,
+      types: HWP_SAVE_PICKER_TYPES,
     });
     await writeBlobToHandle(handle, blob);
     return {

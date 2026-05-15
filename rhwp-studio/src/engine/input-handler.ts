@@ -93,6 +93,8 @@ export class InputHandler {
   private tableObjectRenderer: TableObjectRenderer | null = null;
   private tableResizeRenderer: TableResizeRenderer | null = null;
   private pictureObjectRenderer: TableObjectRenderer | null = null;
+  /** 마지막 rhwp-studio 내부 복사의 시스템 클립보드 marker token */
+  private rhwpClipboardToken: string | null = null;
 
   // 마우스 드래그 선택 상태
   private isDragging = false;
@@ -1559,6 +1561,7 @@ export class InputHandler {
   /** 편집 후 처리: 재렌더링 + 캐럿 갱신 */
   private afterEdit(): void {
     this.lastCellKey = null; // 편집 후 셀 bbox 캐시 무효화
+    this.eventBus.emit('document-mutated', 'input-handler-edit');
     this.eventBus.emit('document-changed');
     this.updateCaret();
   }
@@ -2337,11 +2340,13 @@ export class InputHandler {
           const text = this.wasm.getClipboardText() || '[그림]';
           let html = '';
           try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci) || ''; } catch { /* 무시 */ }
+          const markedHtml = _keyboard.prepareRhwpInternalClipboardHtml(this, html, text);
           if (ref.type === 'image') {
-            _keyboard.writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, html)
+            _keyboard.writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml)
               .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
           } else {
-            navigator.clipboard.writeText(text).catch(() => {});
+            _keyboard.writeTextHtmlToClipboard(text, markedHtml)
+              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
           }
         } catch (err) {
           console.warn('[InputHandler] 개체 복사 실패:', err);
@@ -2355,7 +2360,11 @@ export class InputHandler {
         try {
           this.wasm.copyControl(ref.sec, ref.ppi, ref.ci);
           const text = this.wasm.getClipboardText() || '[표]';
-          navigator.clipboard.writeText(text).catch(() => {});
+          let html = '';
+          try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci) || ''; } catch { /* 무시 */ }
+          const markedHtml = _keyboard.prepareRhwpInternalClipboardHtml(this, html, text);
+          _keyboard.writeTextHtmlToClipboard(text, markedHtml)
+            .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
         } catch (err) {
           console.warn('[InputHandler] 표 복사 실패:', err);
         }
@@ -2365,6 +2374,12 @@ export class InputHandler {
     // 텍스트 선택 → textarea 포커스 후 execCommand
     this.focusTextarea();
     document.execCommand('copy');
+  }
+
+  /** 붙이기 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
+  performPaste(): boolean {
+    this.focusTextarea();
+    return document.execCommand('paste');
   }
 
   /** 잘라내기 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
