@@ -1869,9 +1869,46 @@ impl LayoutEngine {
                                 const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
                                 let stale_table_host_vpos = curr_has_topbottom_para_table
                                     && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
+                                // [Issue #908] prev paragraph 가 TopAndBottom Picture/Shape 를
+                                // anchor 한 경우, HWP 가 그림 height + extra 를 다음 paragraph 의
+                                // vpos 에 인코딩한다. PDF 한컴 2022 는 그림 바로 아래 위치에
+                                // 다음 paragraph 를 배치하므로, IR vpos 의 inflated jump 를 그대로
+                                // 따르면 그림 아래 여백이 과대 발생 (pic2.hwp pi=20: iris bottom 후
+                                // 154 px 추가 여백 → pi=22 가 페이지 하단으로 밀림). 그림 height 의
+                                // 50% 초과 추가 jump 면 stale 로 판정해 correction skip.
+                                let prev_has_topbottom_picture_extra = paragraphs.get(prev_pi).map(|p| {
+                                    p.controls.iter().any(|c| {
+                                        let common = match c {
+                                            Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
+                                            Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
+                                            _ => None,
+                                        };
+                                        common.map(|cm| matches!(cm.text_wrap, TW2::TopAndBottom)
+                                            && !matches!(cm.vert_rel_to, VR2::Para))
+                                            .unwrap_or(false)
+                                    })
+                                }).unwrap_or(false);
+                                let stale_picture_host_vpos = if prev_has_topbottom_picture_extra {
+                                    // 직전 paragraph 의 TopAndBottom Picture height (px)
+                                    let pic_h_px: f64 = paragraphs.get(prev_pi).map(|p| {
+                                        p.controls.iter().filter_map(|c| {
+                                            let common = match c {
+                                                Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
+                                                Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
+                                                _ => None,
+                                            };
+                                            common.filter(|cm| matches!(cm.text_wrap, TW2::TopAndBottom)
+                                                && !matches!(cm.vert_rel_to, VR2::Para))
+                                                .map(|cm| hwpunit_to_px(cm.height as i32, self.dpi))
+                                        }).fold(0.0_f64, f64::max)
+                                    }).unwrap_or(0.0);
+                                    let forward_jump = end_y - y_offset;
+                                    forward_jump > pic_h_px * 1.5
+                                } else { false };
                                 let applied = end_y >= col_area.y && end_y <= col_area.y + col_area.height
                                     && end_y >= y_offset - MAX_BACKWARD_PX
-                                    && !stale_table_host_vpos;
+                                    && !stale_table_host_vpos
+                                    && !stale_picture_host_vpos;
                                 if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
                                     let path = if is_page_path { "page" } else { "lazy" };
                                     eprintln!(
