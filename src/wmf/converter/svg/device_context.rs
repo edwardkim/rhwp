@@ -174,6 +174,34 @@ impl DeviceContext {
         self.viewport = self.viewport.origin(x, y);
         self
     }
+
+    // [Task #902 v2 Stage 6] Offset mutators (delta 합산)
+    pub fn offset_window_origin(mut self, dx: i16, dy: i16) -> Self {
+        self.window.origin_x = self.window.origin_x.saturating_add(dx);
+        self.window.origin_y = self.window.origin_y.saturating_add(dy);
+        self
+    }
+
+    pub fn offset_viewport_origin(mut self, dx: i16, dy: i16) -> Self {
+        self.viewport.origin_x = self.viewport.origin_x.saturating_add(dx);
+        self.viewport.origin_y = self.viewport.origin_y.saturating_add(dy);
+        self
+    }
+
+    pub fn scale_viewport_ext(
+        mut self,
+        x_num: i16,
+        x_denom: i16,
+        y_num: i16,
+        y_denom: i16,
+    ) -> Self {
+        let new_x = (i32::from(self.viewport.x) * i32::from(x_num)
+            / i32::from(x_denom.max(1))) as i16;
+        let new_y = (i32::from(self.viewport.y) * i32::from(y_num)
+            / i32::from(y_denom.max(1))) as i16;
+        self.viewport = self.viewport.ext(new_x, new_y);
+        self
+    }
 }
 
 impl DeviceContext {
