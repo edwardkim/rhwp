@@ -570,7 +570,7 @@ impl LayoutEngine {
                 // 이미지 채우기가 있으면 자식으로 이미지 노드 추가
                 self.add_image_fill_node(tree, &mut node, &rect.drawing, render_x, render_y, render_w, render_h, bin_data_content);
                 // TextBox가 있으면 자식으로 텍스트 레이아웃
-                self.layout_textbox_content(tree, &mut node, &rect.drawing, render_x, render_y, render_w, render_h, section_index, para_index, control_index, styles, bin_data_content, overflow_map, parent_cell_path);
+                self.layout_textbox_content(tree, &mut node, &rect.drawing, render_x, render_y, render_w, render_h, section_index, para_index, control_index, styles, bin_data_content, overflow_map, parent_cell_path, shape.common().treat_as_char);
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
@@ -763,7 +763,7 @@ impl LayoutEngine {
                 );
                 self.add_image_fill_node(tree, &mut node, &ellipse.drawing, render_x, render_y, render_w, render_h, bin_data_content);
                 let empty_map = std::collections::HashMap::new();
-                self.layout_textbox_content(tree, &mut node, &ellipse.drawing, render_x, render_y, render_w, render_h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path);
+                self.layout_textbox_content(tree, &mut node, &ellipse.drawing, render_x, render_y, render_w, render_h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path, shape.common().treat_as_char);
                 parent.children.push(node);
             }
             ShapeObject::Arc(arc) => {
@@ -889,7 +889,7 @@ impl LayoutEngine {
                 );
                 self.add_image_fill_node(tree, &mut node, &poly.drawing, render_x, render_y, render_w, render_h, bin_data_content);
                 let empty_map = std::collections::HashMap::new();
-                self.layout_textbox_content(tree, &mut node, &poly.drawing, base_x, base_y, w, h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path);
+                self.layout_textbox_content(tree, &mut node, &poly.drawing, base_x, base_y, w, h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path, shape.common().treat_as_char);
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
@@ -911,7 +911,7 @@ impl LayoutEngine {
                 );
                 self.add_image_fill_node(tree, &mut node, &curve.drawing, render_x, render_y, render_w, render_h, bin_data_content);
                 let empty_map = std::collections::HashMap::new();
-                self.layout_textbox_content(tree, &mut node, &curve.drawing, base_x, base_y, w, h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path);
+                self.layout_textbox_content(tree, &mut node, &curve.drawing, base_x, base_y, w, h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path, shape.common().treat_as_char);
                 parent.children.push(node);
             }
             ShapeObject::Group(group) => {
@@ -1177,6 +1177,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         overflow_map: &std::collections::HashMap<(usize, usize), Vec<Paragraph>>,
         parent_cell_path: &[CellPathEntry],
+        parent_treat_as_char: bool,
     ) {
         let text_box = match &drawing.text_box {
             Some(tb) => tb,
@@ -1211,7 +1212,13 @@ impl LayoutEngine {
                 sa.current_height as f64 / sa.original_height as f64
             } else { 1.0 };
             let max_ratio = sw_ratio.max(sh_ratio);
-            if max_ratio > 1.5 {
+            // [Task #928] 인라인 도형 (treat_as_char=true) 은 폰트 자동 축소 적용 안 함.
+            // exam_kor 5p 다이어그램의 사각형 [A 단계] 가 original=(2925, 975) HU →
+            // current=(6518, 1983) HU 로 2.2배 확대된 채 IR 인코딩되어 있으나 한컴은
+            // 폰트를 11.5pt 그대로 유지한다. 본 ratio 축소 (#874 #3) 가 잘못 발동하여
+            // 폰트가 6.88px 로 축소되던 회귀를 차단. shortcut.hwp 마스터 페이지
+            // 글상자는 tac=false 라 ratio 적용 유지.
+            if max_ratio > 1.5 && !parent_treat_as_char {
                 let inv = (1.0 / max_ratio).min(1.0);
                 let mut local = styles.clone();
                 for cs in local.char_styles.iter_mut() {

@@ -1693,14 +1693,15 @@ impl LayoutEngine {
                         Control::Picture(pic) => {
                             if pic.common.treat_as_char {
                                 let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                // layout_composed_paragraph에서 텍스트 흐름 안에 렌더링됐는지 확인:
-                                // 이미지 위치가 실제 run 범위에 포함될 때만 스킵
-                                let will_render_inline = composed.tac_controls.iter().any(|&(abs_pos, _, ci)| {
-                                    ci == ctrl_idx && composed.lines.iter().any(|line| {
-                                        let line_chars: usize = line.runs.iter().map(|r| r.text.chars().count()).sum();
-                                        abs_pos >= line.char_start && abs_pos < line.char_start + line_chars
-                                    })
-                                });
+                                // [Task #928] paragraph_layout 이 inline picture 를 emit 한
+                                // 경우 set_inline_shape_position 을 호출하므로 (paragraph_layout.rs
+                                // 라인 2019-2022), 본 가드는 inline_shape_position 등록 여부로
+                                // 판정한다. 기존 tac_controls + line_chars 기반 가드는 boundary
+                                // 케이스 (abs_pos == line_chars) 를 빠뜨려 exam_kor 5p ㉢
+                                // 그림 중복 emit 회귀가 있었다.
+                                let will_render_inline = tree
+                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context.as_ref())
+                                    .is_some();
                                 if !will_render_inline {
                                     // LINE_SEG 기반 줄 판별
                                     let target_line = if all_runs_empty && para.line_segs.len() > 1 {
@@ -1812,17 +1813,13 @@ impl LayoutEngine {
                         Control::Shape(shape) => {
                             if shape.common().treat_as_char {
                                 let shape_w = hwpunit_to_px(shape.common().width as i32, self.dpi);
-                                // [Task #928] Picture 분기와 정합되는 will_render_inline 가드.
-                                // layout_composed_paragraph 의 run_tacs split 이 이미 paragraph
-                                // 텍스트와 inline_shape_position 을 등록한 경우, 본 분기의
-                                // text_before 수동 발행은 두 번째 baseline 에 동일 텍스트를
-                                // 중복 발행한다 (exam_kor 5p `(가) ⇨ [A 단계] ⇨ (나)` 회귀).
-                                let will_render_inline = composed.tac_controls.iter().any(|&(abs_pos, _, ci)| {
-                                    ci == ctrl_idx && composed.lines.iter().any(|line| {
-                                        let line_chars: usize = line.runs.iter().map(|r| r.text.chars().count()).sum();
-                                        abs_pos >= line.char_start && abs_pos < line.char_start + line_chars
-                                    })
-                                });
+                                // [Task #928] paragraph_layout 의 run_tacs 처리 (라인 2026-2034)
+                                // 가 inline Shape 위치를 set_inline_shape_position 으로 등록
+                                // 하므로, 본 가드는 등록 여부로 판정한다. Picture 분기와 동일
+                                // 패턴이며 boundary 케이스에 안전.
+                                let will_render_inline = tree
+                                    .get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context.as_ref())
+                                    .is_some();
                                 // [Task #500] Picture 분기와 정합: target_line 산출 + 줄 변경 시
                                 // inline_x/tac_img_y 리셋. multi-line paragraph 에서 사각형이
                                 // ls[1]+ 에 있을 때 paragraph 첫 줄 좌표가 잘못 사용되던 결함 정정.
