@@ -247,6 +247,7 @@ impl SvgRenderer {
                     let mut attrs = format!("font-family=\"{}\" font-size=\"{}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"central\"",
                         escape_xml(&font_family), font_size, color);
                     if run.style.is_visually_bold() { attrs.push_str(" font-weight=\"bold\""); }
+                    else if run.style.is_medium_weight() { attrs.push_str(" font-weight=\"500\""); }
                     if run.style.italic { attrs.push_str(" font-style=\"italic\""); }
                     for c in run.text.chars() {
                         if c == ' ' { continue; }
@@ -1452,10 +1453,12 @@ impl SvgRenderer {
         let font_family_str = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            format!("{},sans-serif", style.font_family)
+            let fb = super::generic_fallback(&style.font_family);
+            format!("{},{}", style.font_family, fb)
         };
         let mut font_attrs = format!("font-family=\"{}\" font-size=\"{:.2}\"", escape_xml(&font_family_str), inner_font_size);
         if style.is_visually_bold() { font_attrs.push_str(" font-weight=\"bold\""); }
+        else if style.is_medium_weight() { font_attrs.push_str(" font-weight=\"500\""); }
         if style.italic { font_attrs.push_str(" font-style=\"italic\""); }
 
         for (i, ch) in chars.iter().enumerate() {
@@ -1526,10 +1529,12 @@ impl SvgRenderer {
         let font_family_str = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            format!("{},sans-serif", style.font_family)
+            let fb = super::generic_fallback(&style.font_family);
+            format!("{},{}", style.font_family, fb)
         };
         let mut font_attrs = format!("font-family=\"{}\" font-size=\"{:.2}\"", escape_xml(&font_family_str), inner_font_size);
         if style.is_visually_bold() { font_attrs.push_str(" font-weight=\"bold\""); }
+        else if style.is_medium_weight() { font_attrs.push_str(" font-weight=\"500\""); }
         if style.italic { font_attrs.push_str(" font-style=\"italic\""); }
 
         let cx = bbox_x + box_size / 2.0;
@@ -1926,6 +1931,8 @@ impl Renderer for SvgRenderer {
         );
         if style.is_visually_bold() {
             base_attrs.push_str(" font-weight=\"bold\"");
+        } else if style.is_medium_weight() {
+            base_attrs.push_str(" font-weight=\"500\"");
         }
         if style.italic {
             base_attrs.push_str(" font-style=\"italic\"");

@@ -180,7 +180,8 @@ export const insertCommands: CommandDef[] = [
       if (!picturePropsDialog) {
         picturePropsDialog = new PicturePropsDialog(services.wasm, services.eventBus);
       }
-      picturePropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.type);
+      // [Task #825] 머리말/꼬리말 그림은 ref.headerFooter 동반 — dialog 에 전달.
+      picturePropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.type, ref.headerFooter);
     },
   },
   {
@@ -392,28 +393,58 @@ export const insertCommands: CommandDef[] = [
   },
 ];
 
+/** 선택 개체 ref 타입 — cursor.selectedPictureRef 와 정합 (headerFooter optional, [Task #831]) */
+type PictureRef = {
+  sec: number;
+  ppi: number;
+  ci: number;
+  type: string;
+  headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
+};
+
 /** 선택 개체의 속성을 조회/변경 헬퍼 (shape/picture 분기) */
-function getProps(services: import('../types').CommandServices, ref: { sec: number; ppi: number; ci: number; type: string }): Record<string, unknown> {
+function getProps(services: import('../types').CommandServices, ref: PictureRef): Record<string, unknown> {
   if (ref.type === 'shape') {
     return services.wasm.getShapeProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
+  }
+  // [Task #831] 머리말/꼬리말 picture 의 경우 별도 API 호출 (PR #832 의 wasm-bridge).
+  // 미적용 시 본문 lookup 실패 → props 빈/stale → 회전/대칭 무동작.
+  if (ref.headerFooter) {
+    return services.wasm.getHeaderFooterPictureProperties(
+      ref.sec,
+      ref.headerFooter.outerParaIdx,
+      ref.headerFooter.outerControlIdx,
+      ref.ppi,
+      ref.ci,
+    ) as unknown as Record<string, unknown>;
   }
   return services.wasm.getPictureProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
 }
 
-function setProps(services: import('../types').CommandServices, ref: { sec: number; ppi: number; ci: number; type: string }, props: Record<string, unknown>): void {
+function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): void {
   if (ref.type === 'shape') {
     services.wasm.setShapeProperties(ref.sec, ref.ppi, ref.ci, props);
+  } else if (ref.headerFooter) {
+    // [Task #831] 머리말/꼬리말 picture setter — 5-tuple lookup 으로 IR 갱신.
+    services.wasm.setHeaderFooterPictureProperties(
+      ref.sec,
+      ref.headerFooter.outerParaIdx,
+      ref.headerFooter.outerControlIdx,
+      ref.ppi,
+      ref.ci,
+      props,
+    );
   } else {
     services.wasm.setPictureProperties(ref.sec, ref.ppi, ref.ci, props);
   }
 }
 
-/** 현재 회전각에 delta(도)를 더한다 (Shape만 지원). */
+/** 현재 회전각에 delta(도)를 더한다 (shape + image 지원). */
 function applyRotationDelta(services: import('../types').CommandServices, delta: number): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const ref = ih.getSelectedPictureRef();
-  if (!ref || ref.type !== 'shape') return;
+  if (!ref || ref.type === 'equation' || ref.type === 'group' || ref.type === 'line') return;
   const props = getProps(services, ref);
   const cur = ((props.rotationAngle as number) ?? 0);
   let next = cur + delta;
@@ -424,12 +455,12 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   services.eventBus.emit('document-changed');
 }
 
-/** horzFlip/vertFlip을 토글한다 (Shape만 지원). */
+/** horzFlip/vertFlip을 토글한다 (shape + image 지원). */
 function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip' | 'vertFlip'): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const ref = ih.getSelectedPictureRef();
-  if (!ref || ref.type !== 'shape') return;
+  if (!ref || ref.type === 'equation' || ref.type === 'group' || ref.type === 'line') return;
   const props = getProps(services, ref);
   const cur = !!props[key];
   setProps(services, ref, { [key]: !cur });

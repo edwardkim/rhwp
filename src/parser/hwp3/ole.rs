@@ -34,8 +34,8 @@ impl Hwp3OleInfo {
             return Err(Hwp3OleError::IoError { source: io::Error::new(io::ErrorKind::UnexpectedEof, "OLE Info length is too short") });
         }
         let signature = reader.read_u32::<LittleEndian>()?;
-        
-        let mut storage_data = vec![0u8; (total_length - 4) as usize];
+
+        let mut storage_data = super::alloc_record_buf((total_length - 4) as usize)?;
         reader.read_exact(&mut storage_data)?;
 
         // 0xF8995567 (한글 3.0 ~ 3.0a - ILockBytes)

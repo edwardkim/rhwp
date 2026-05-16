@@ -38,6 +38,7 @@ export class CanvasView {
       eventBus.on('viewport-resize', () => this.onViewportResize()),
       eventBus.on('zoom-changed', (zoom) => this.onZoomChanged(zoom as number)),
       eventBus.on('document-changed', () => this.refreshPages()),
+      eventBus.on('document-view-changed', () => this.refreshPages()),
     );
   }
 
@@ -264,6 +265,7 @@ export class CanvasView {
   }
 
   private releaseAllRenderedPages(): void {
+    this.pageRenderer.resetImageRetryState();
     this.pageRenderer.removeAllPageLayers(this.scrollContent);
     this.canvasPool.releaseAll();
   }

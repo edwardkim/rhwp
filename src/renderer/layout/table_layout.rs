@@ -1198,10 +1198,18 @@ impl LayoutEngine {
                 0.0
             };
             let vert_align = table.common.vert_align;
+            // [Task #898] Paper-relative 표는 v_offset 이 외곽 박스 (outer_margin 포함) 기준이므로
+            // 가시 표 상단 = v_offset + outer_margin_top. 한컴 PDF (exam_math.hwp 바탕쪽 쪽번호 박스) 정합.
+            let om_top_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper) {
+                hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+            } else { 0.0 };
+            let om_bottom_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper) {
+                hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+            } else { 0.0 };
             let raw_y = match vert_align {
-                crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside => ref_y + v_offset + caption_top_offset,
+                crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside => ref_y + v_offset + caption_top_offset + om_top_px,
                 crate::model::shape::VertAlign::Center => ref_y + (ref_h - table_height) / 2.0 + v_offset + caption_top_offset,
-                crate::model::shape::VertAlign::Bottom | crate::model::shape::VertAlign::Outside => ref_y + ref_h - table_height - v_offset + caption_top_offset,
+                crate::model::shape::VertAlign::Bottom | crate::model::shape::VertAlign::Outside => ref_y + ref_h - table_height - v_offset + caption_top_offset - om_bottom_px,
             };
             // Para 기준 + bit 13: 본문 영역으로 제한
             // 앞선 표/텍스트가 차지한 영역(y_start) 아래로 밀어내고, 본문 영역 내로 클램핑

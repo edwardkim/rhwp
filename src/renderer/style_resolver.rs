@@ -266,7 +266,7 @@ impl Default for ResolvedBorderStyle {
 }
 
 /// 해소된 스타일 세트 (DocInfo에서 변환)
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
     /// 글자 스타일 목록 (char_shapes[id]에 대응)
     pub char_styles: Vec<ResolvedCharStyle>,
@@ -613,6 +613,20 @@ pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
         | "HY견고딕" | "HY견명조B"
         | "HY그래픽" | "HY그래픽M"
     )
+}
+
+/// 중고딕/태고딕 계열 (CSS font-weight 500) 폰트 판별.
+///
+/// HWP 에서 중고딕 계열은 Regular(400)과 Bold(700) 사이의 Medium(500) weight.
+/// Fallback 폰트 매칭 시 weight 500 힌트를 주어 선명도를 유지한다.
+pub(crate) fn is_medium_weight_face(font_family: &str) -> bool {
+    let primary = font_family.split(',').next().unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
+    let lower = primary.to_lowercase();
+    lower.contains("중고딕") || lower.contains("태고딕")
+        || lower.contains("mediumgothic") || lower.contains("hymedium")
 }
 
 /// ParaShape → ResolvedParaStyle 목록

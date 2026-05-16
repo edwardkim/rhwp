@@ -775,6 +775,8 @@ impl WebCanvasRenderer {
                                 if ops.iter().all(|op| matches!(
                                     op,
                                     PaintOp::TextRun { .. }
+                                        | PaintOp::GlyphRun { .. }
+                                        | PaintOp::GlyphOutline { .. }
                                         | PaintOp::CharOverlap { .. }
                                         | PaintOp::TextControlMark { .. }
                                         | PaintOp::TabLeader { .. }
@@ -908,7 +910,9 @@ impl WebCanvasRenderer {
                             RenderNodeType::RawSvg(raw.clone()),
                             *bbox,
                         ),
-                        PaintOp::CharOverlap { .. }
+                        PaintOp::GlyphRun { .. }
+                        | PaintOp::GlyphOutline { .. }
+                        | PaintOp::CharOverlap { .. }
                         | PaintOp::TextControlMark { .. }
                         | PaintOp::TabLeader { .. }
                         | PaintOp::TextDecoration { .. } => continue,

@@ -111,6 +111,18 @@ fn resolve_metric_alias(name: &str) -> &str {
         "HY신명조" => "HYSinMyeongJo-Medium",
         "HY그래픽" => "HYGraphic-Medium",
         "HY궁서" => "HYGungSo-Bold",
+        // HY 계열 추가 — 한국어 사용명 → DB 단축명 (Task #885)
+        // 한컴 폰트 미설치 환경에서 한국어 face 이름으로 들어온 경우 폴백 메트릭 매칭.
+        "HY수평선B" => "HYsupB",
+        "HY수평선M" => "HYsupM",
+        "HY울릉도B" => "HYwulB",
+        "HY울릉도M" => "HYwulM",
+        "HY태백B" => "HYtbrB",
+        "HY동녘B" => "HYdnkB",
+        "HY동녘M" => "HYdnkM",
+        // HY각헤드라인M: 정확한 메트릭 부재. 헤드라인M으로 근사 (각진/원형 차이로
+        // 글리프 모양은 다르나 폭/베이스라인은 유사 — RMSE 가산 감소 목적).
+        "HY각헤드라인M" => "HYHeadLine-Medium",
         // Source Han Sans 계열 (본한글 · 본고딕) → Pretendard 근사 (Issue #259)
         // 한글 원천 동일 (Source Han Sans KR), OFL 호환, 이미 번들. 본한글vf 의
         // 임의 weight 도 Pretendard Regular/Bold 중 가까운 쪽으로 근사.
@@ -10368,6 +10380,30 @@ mod tests {
         let mm = m.unwrap();
         assert_eq!(mm.metric.name, "HYGothic-Medium");
         assert!(mm.bold_fallback, "HY중고딕 bold 요청 시 bold_fallback=true 여야 함");
+    }
+
+    #[test]
+    fn task885_hy_extra_aliases_resolve() {
+        // Task #885 — 한국어 사용명 → DB 단축명 매핑 회귀 테스트.
+        // 우변 메트릭이 FONT_METRICS 에 실재해야 하며 (feedback_font_metrics_alias_sync),
+        // find_metric 이 Some 반환 + name 일치를 보장한다.
+        for (korean, expected_english) in &[
+            ("HY수평선B", "HYsupB"),
+            ("HY수평선M", "HYsupM"),
+            ("HY울릉도B", "HYwulB"),
+            ("HY울릉도M", "HYwulM"),
+            ("HY태백B", "HYtbrB"),
+            ("HY동녘B", "HYdnkB"),
+            ("HY동녘M", "HYdnkM"),
+            ("HY각헤드라인M", "HYHeadLine-Medium"),
+        ] {
+            let m = find_metric(korean, false, false);
+            assert!(m.is_some(), "{} 별칭 매핑 실패", korean);
+            assert_eq!(
+                m.unwrap().metric.name, *expected_english,
+                "{} 이 {} 에 매핑되지 않음", korean, expected_english
+            );
+        }
     }
 
     #[test]

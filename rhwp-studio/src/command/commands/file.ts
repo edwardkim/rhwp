@@ -1,14 +1,129 @@
-import type { CommandDef } from '../types';
+import type { CommandDef, CommandServices } from '../types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { AboutDialog } from '@/ui/about-dialog';
-import { showConfirm } from '@/ui/confirm-dialog';
 import { showSaveAs } from '@/ui/save-as-dialog';
+import { showUnsavedChangesDialog } from '@/ui/unsaved-changes-dialog';
 import {
   pickOpenFileHandle,
   readFileFromHandle,
   saveDocumentToFileSystem,
+  type FileSystemFileHandleLike,
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
+
+/** [Task #833] 사용자 명시 cancel 에러 검출.
+ * - AbortError: showSaveFilePicker / showOpenFilePicker 다이얼로그 취소
+ * - NotAllowedError: writeBlobToHandle 권한 거부 (Chrome "변경사항 저장" 프롬프트 취소)
+ *
+ * 두 케이스 모두 fallback download 우회 — 사용자가 명시적으로 취소했으므로
+ * 의도하지 않은 Downloads 폴더 저장 + chrome-extension viewer 자동 연결 차단. */
+function isUserCancelError(e: unknown): boolean {
+  return e instanceof DOMException
+      && (e.name === 'AbortError' || e.name === 'NotAllowedError');
+}
+
+function hwpSaveFileName(fileName: string): string {
+  const trimmed = fileName.trim() || 'document.hwp';
+  if (/\.(hwp|hwpx)$/i.test(trimmed)) {
+    return trimmed.replace(/\.(hwp|hwpx)$/i, '.hwp');
+  }
+  return `${trimmed}.hwp`;
+}
+
+function hwpSaveBaseName(fileName: string): string {
+  return hwpSaveFileName(fileName).replace(/\.hwp$/i, '');
+}
+
+function hwpSaveCurrentHandle(
+  sourceFormat: string,
+  handle: FileSystemFileHandleLike | null,
+): FileSystemFileHandleLike | null {
+  if (sourceFormat === 'hwpx' && handle && !handle.name.toLowerCase().endsWith('.hwp')) {
+    return null;
+  }
+  return handle;
+}
+
+export type SaveCurrentDocumentResult = 'saved' | 'cancelled' | 'failed' | 'unsupported';
+
+export async function saveCurrentDocument(services: CommandServices): Promise<SaveCurrentDocumentResult> {
+  try {
+    const saveName = services.wasm.fileName;
+    const sourceFormat = services.wasm.getSourceFormat();
+    const isHwpx = sourceFormat === 'hwpx';
+    if (isHwpx) {
+      alert('HWPX 형식은 현재 베타 단계라 직접 저장이 비활성화되어 있습니다.');
+      return 'unsupported';
+    }
+
+    const bytes = services.wasm.exportHwp();
+    const blob = new Blob([bytes as unknown as BlobPart], { type: 'application/x-hwp' });
+    console.log(`[file:save] format=${sourceFormat}, isHwpx=${isHwpx}, ${bytes.length} bytes`);
+
+    try {
+      const saveResult = await saveDocumentToFileSystem({
+        blob,
+        suggestedName: saveName,
+        currentHandle: services.wasm.currentFileHandle,
+        windowLike: window as FileSystemWindowLike,
+      });
+
+      if (saveResult.method !== 'fallback') {
+        services.wasm.currentFileHandle = saveResult.handle;
+        services.wasm.fileName = saveResult.fileName;
+        services.documentState.markClean('save');
+        console.log(`[file:save] ${saveResult.fileName} (${(bytes.length / 1024).toFixed(1)}KB)`);
+        return 'saved';
+      }
+    } catch (e) {
+      if (isUserCancelError(e)) return 'cancelled';
+      console.warn('[file:save] File System Access API 실패, 폴백:', e);
+    }
+
+    let downloadName = saveName;
+    if (services.wasm.isNewDocument) {
+      const baseName = saveName.replace(/\.hwp$/i, '');
+      const result = await showSaveAs(baseName);
+      if (!result) return 'cancelled';
+      downloadName = result;
+      services.wasm.fileName = downloadName;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = downloadName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    services.documentState.markClean('save');
+    console.log(`[file:save] ${downloadName} (${(bytes.length / 1024).toFixed(1)}KB)`);
+    return 'saved';
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[file:save] 저장 실패:', msg);
+    alert(`파일 저장에 실패했습니다:\n${msg}`);
+    return 'failed';
+  }
+}
+
+export async function confirmSaveBeforeReplacingDocument(
+  services: CommandServices,
+): Promise<boolean> {
+  const ctx = services.getContext();
+  if (!ctx.hasDocument || !ctx.isDirty) return true;
+
+  const choice = await showUnsavedChangesDialog({
+    fileName: services.wasm.fileName,
+    canSave: ctx.sourceFormat !== 'hwpx',
+  });
+
+  if (choice === 'cancel') return false;
+  if (choice === 'discard') return true;
+
+  const result = await saveCurrentDocument(services);
+  return result === 'saved';
+}
 
 function appendPrintStyle(doc: Document, widthMm: number, heightMm: number): void {
   const style = doc.createElement('style');
@@ -101,15 +216,7 @@ export const fileCommands: CommandDef[] = [
     icon: 'icon-new-doc',
     shortcutLabel: 'Alt+N',
     canExecute: () => true,
-    async execute(services) {
-      const ctx = services.getContext();
-      if (ctx.hasDocument) {
-        const ok = await showConfirm(
-          '새로 만들기',
-          '현재 문서를 닫고 새 문서를 만드시겠습니까?\n저장하지 않은 내용은 사라집니다.',
-        );
-        if (!ok) return;
-      }
+    execute(services) {
       services.eventBus.emit('create-new-document');
     },
   },
@@ -118,9 +225,16 @@ export const fileCommands: CommandDef[] = [
     label: '열기',
     async execute(services) {
       try {
+        const canReplace = await confirmSaveBeforeReplacingDocument(services);
+        if (!canReplace) return;
+
         const handle = await pickOpenFileHandle(window as FileSystemWindowLike);
         if (!handle) {
-          document.getElementById('file-input')?.click();
+          const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+          if (fileInput) {
+            fileInput.dataset.skipUnsavedGuard = 'true';
+            fileInput.click();
+          }
           return;
         }
 
@@ -129,6 +243,7 @@ export const fileCommands: CommandDef[] = [
           bytes,
           fileName: name,
           fileHandle: handle,
+          skipUnsavedGuard: true,
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -142,51 +257,52 @@ export const fileCommands: CommandDef[] = [
     label: '저장',
     icon: 'icon-save',
     shortcutLabel: 'Ctrl+S',
-    // #196: HWPX 출처는 저장 비활성화 (베타 단계, #197 완전 변환기 완료 시까지)
-    canExecute: (ctx) => ctx.hasDocument && ctx.sourceFormat !== 'hwpx',
+    canExecute: (ctx) => ctx.hasDocument,
+    async execute(services) {
+      await saveCurrentDocument(services);
+    },
+  },
+  {
+    // [Task #833] 다른 이름으로 저장 — currentFileHandle 무시 + 항상 picker.
+    id: 'file:save-as',
+    label: '다른 이름으로 저장',
+    shortcutLabel: 'Ctrl+Shift+S',
+    canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
       try {
-        const saveName = services.wasm.fileName;
         const sourceFormat = services.wasm.getSourceFormat();
         const isHwpx = sourceFormat === 'hwpx';
-        const bytes = isHwpx ? services.wasm.exportHwpx() : services.wasm.exportHwp();
-        const mimeType = isHwpx ? 'application/hwp+zip' : 'application/x-hwp';
-        const blob = new Blob([bytes as unknown as BlobPart], { type: mimeType });
-        console.log(`[file:save] format=${sourceFormat}, isHwpx=${isHwpx}, ${bytes.length} bytes`);
+        const saveName = hwpSaveFileName(services.wasm.fileName);
+        const bytes = services.wasm.exportHwp();
+        const blob = new Blob([bytes as unknown as BlobPart], { type: 'application/x-hwp' });
+        console.log(`[file:save-as] format=${sourceFormat}, hwpExport=${isHwpx}, ${bytes.length} bytes`);
 
-        // 1) 기존 파일 handle이 있으면 같은 파일에 저장, 없으면 save picker 시도
         try {
           const saveResult = await saveDocumentToFileSystem({
             blob,
             suggestedName: saveName,
-            currentHandle: services.wasm.currentFileHandle,
+            currentHandle: null,
             windowLike: window as FileSystemWindowLike,
+            forceSaveAs: true,
           });
-
           if (saveResult.method !== 'fallback') {
             services.wasm.currentFileHandle = saveResult.handle;
             services.wasm.fileName = saveResult.fileName;
-            console.log(`[file:save] ${saveResult.fileName} (${(bytes.length / 1024).toFixed(1)}KB)`);
+            console.log(`[file:save-as] ${saveResult.fileName} (${(bytes.length / 1024).toFixed(1)}KB)`);
             return;
           }
         } catch (e) {
-          // 사용자가 취소하면 AbortError 발생 — 무시
-          if (e instanceof DOMException && e.name === 'AbortError') return;
-          // 그 외 오류는 폴백으로 진행
-          console.warn('[file:save] File System Access API 실패, 폴백:', e);
+          if (isUserCancelError(e)) return;
+          console.warn('[file:save-as] File System Access API 실패, 폴백:', e);
         }
 
-        // 2) 폴백: 새 문서인 경우 자체 파일이름 대화상자 표시
-        let downloadName = saveName;
-        if (services.wasm.isNewDocument) {
-          const baseName = saveName.replace(/\.hwp$/i, '');
-          const result = await showSaveAs(baseName);
-          if (!result) return;
-          downloadName = result;
-          services.wasm.fileName = downloadName;
-        }
+        // 폴백: 파일명 입력 → blob download
+        const baseName = hwpSaveBaseName(saveName);
+        const result = await showSaveAs(baseName);
+        if (!result) return;
+        const downloadName = result;
+        services.wasm.fileName = downloadName;
 
-        // 3) Blob 다운로드
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -194,10 +310,10 @@ export const fileCommands: CommandDef[] = [
         a.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        console.log(`[file:save] ${downloadName} (${(bytes.length / 1024).toFixed(1)}KB)`);
+        console.log(`[file:save-as] ${downloadName} (${(bytes.length / 1024).toFixed(1)}KB)`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error('[file:save] 저장 실패:', msg);
+        console.error('[file:save-as] 저장 실패:', msg);
         alert(`파일 저장에 실패했습니다:\n${msg}`);
       }
     },

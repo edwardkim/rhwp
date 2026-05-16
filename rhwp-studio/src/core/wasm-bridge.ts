@@ -319,6 +319,15 @@ export class WasmBridge {
     return '{"layers":[]}';
   }
 
+  getPageOverlayImages(pageNum: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getPageOverlayImages?: (p: number) => string };
+    if (typeof d.getPageOverlayImages === 'function') {
+      return d.getPageOverlayImages(pageNum);
+    }
+    return '';
+  }
+
   renderPageSvg(pageNum: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.renderPageSvg(pageNum);
@@ -721,6 +730,37 @@ export class WasmBridge {
   getPictureProperties(sec: number, para: number, ci: number): import('./types').PictureProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getPictureProperties(sec, para, ci));
+  }
+
+  /** [Task #825] 머리말/꼬리말 안 그림 속성 조회. */
+  getHeaderFooterPictureProperties(
+    sec: number,
+    outerPara: number,
+    outerCtrl: number,
+    innerPara: number,
+    innerCtrl: number,
+  ): import('./types').PictureProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(
+      (this.doc as any).getHeaderFooterPictureProperties(sec, outerPara, outerCtrl, innerPara, innerCtrl)
+    );
+  }
+
+  /** [Task #825] 머리말/꼬리말 안 그림 속성 변경. */
+  setHeaderFooterPictureProperties(
+    sec: number,
+    outerPara: number,
+    outerCtrl: number,
+    innerPara: number,
+    innerCtrl: number,
+    props: Record<string, unknown>,
+  ): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(
+      (this.doc as any).setHeaderFooterPictureProperties(
+        sec, outerPara, outerCtrl, innerPara, innerCtrl, JSON.stringify(props),
+      )
+    );
   }
 
   setPictureProperties(sec: number, para: number, ci: number, props: Record<string, unknown>): { ok: boolean } {

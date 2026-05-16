@@ -1,5 +1,6 @@
 import type { EventBus } from '@/core/event-bus';
 import type { WasmBridge } from '@/core/wasm-bridge';
+import type { DocumentDirtyState } from '@/core/document-dirty-state';
 import type { InputHandler } from '@/engine/input-handler';
 import type { ViewportManager } from '@/view/viewport-manager';
 
@@ -29,7 +30,9 @@ export interface EditorContext {
   zoom: number;
   /** 조판부호 보이기 모드인가? */
   showControlCodes: boolean;
-  /** 원본 파일 형식 (#196 — HWPX 출처는 저장 비활성화) */
+  /** 저장되지 않은 문서 변경사항이 있는가? */
+  isDirty: boolean;
+  /** 원본 파일 형식 (#888 — HWPX 출처는 HWP 변환 저장) */
   sourceFormat?: 'hwp' | 'hwpx';
 }
 
@@ -56,6 +59,8 @@ export interface CommandDef {
 export interface CommandServices {
   eventBus: EventBus;
   wasm: WasmBridge;
+  /** 저장되지 않은 문서 변경 상태 */
+  documentState: DocumentDirtyState;
   /** 현재 에디터 상태 스냅샷 */
   getContext: () => EditorContext;
   /** InputHandler 접근 (문서 미로드 시 null) */

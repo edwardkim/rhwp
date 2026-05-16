@@ -3,7 +3,7 @@ FROM rust:latest
 # wasm 타겟 및 wasm-pack 설치
 RUN rustup target add wasm32-unknown-unknown \
     && rustup component add clippy \
-    && cargo install wasm-pack
+    && cargo install wasm-pack@0.15.0
 
 # 호스트 사용자 UID/GID로 실행 (빌드 산출물 소유권 문제 방지)
 ARG UID=1000

@@ -84,6 +84,52 @@ pub(crate) fn resolve_last_tab_pending(
     }
 }
 
+/// 우측/가운데 탭 정렬 단위의 폭(px).
+///
+/// 탭 직후 run(`start`)부터 `\t` 를 포함하지 않는 연속 run 들의 `estimate_text_width` 합산.
+/// composer(`split_runs_by_lang` / `split_by_char_shapes`)가 char-shape·스크립트 경계로 run 을
+/// 쪼개므로(예: `"Ctrl+(회색)5"` → `["Ctrl+(", "회색)", "5"]`), 탭 직후 한 개 run 폭만 쓰면
+/// 나머지 run 이 탭스톱 우측으로 흘러넘친다 (Issue #842, 결함 #4).
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn right_tab_block_width(
+    runs: &[crate::renderer::composer::ComposedTextRun],
+    start: usize,
+    styles: &ResolvedStyleSet,
+    default_tab_width: f64,
+    tab_stops: &[TabStop],
+    auto_tab_right: bool,
+    available_width: f64,
+) -> f64 {
+    let mut w = 0.0;
+    for r in runs.iter().skip(start) {
+        if r.text.contains('\t') {
+            break;
+        }
+        if let Some(_ov) = &r.char_overlap {
+            let chars: Vec<char> = r.text.chars().collect();
+            let fs = {
+                let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                if ts.font_size > 0.0 { ts.font_size } else { 12.0 }
+            };
+            w += if crate::renderer::composer::decode_pua_overlap_number(&chars).is_some() {
+                fs
+            } else {
+                fs * chars.len() as f64
+            };
+            continue;
+        }
+        let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+        ts.default_tab_width = default_tab_width;
+        ts.tab_stops = tab_stops.to_vec();
+        ts.auto_tab_right = auto_tab_right;
+        ts.available_width = available_width;
+        // [Task #874] text_start_offset 은 right_tab_block_width 가 측정만 하므로
+        // 영향 없음 — 0 그대로.
+        w += estimate_text_width(&r.text, &ts);
+    }
+    w
+}
+
 impl LayoutEngine {
     pub(crate) fn layout_inline_table_paragraph(
         &self,
@@ -382,7 +428,15 @@ impl LayoutEngine {
                                 line_run_start = ch_idx;
                             }
                             // FootnoteMarker 노드 삽입 (위첨자로 렌더링됨)
-                            let fn_text = format!("{})", fn_num);
+                            // [Issue #926] Endnote인 경우 "문N)" 형식
+                            let is_endnote = para.controls.get(fn_ctrl_idx)
+                                .map(|c| matches!(c, Control::Endnote(_)))
+                                .unwrap_or(false);
+                            let fn_text = if is_endnote {
+                                format!("문{})", fn_num)
+                            } else {
+                                format!("{})", fn_num)
+                            };
                             let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
                             let sup_font_size = (base_ts.font_size * 0.55).max(7.0);
                             let sup_ts = TextStyle { font_size: sup_font_size, font_family: base_ts.font_family.clone(), ..Default::default() };
@@ -700,6 +754,8 @@ impl LayoutEngine {
         let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Justify);
         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+        // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
+        // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
         let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
@@ -742,10 +798,23 @@ impl LayoutEngine {
         };
 
         // 문단 앞 간격 (첫 줄일 때만)
-        // 단/페이지의 맨 처음 문단은 spacing_before 적용하지 않음
+        // 단/페이지의 맨 처음 문단(column-top)은 spacing_before 를 통째 적용하면 한컴보다
+        // 아래로 밀리므로 종전엔 0 으로 버렸다. 다만 섹션의 첫 문단(para_index==0, 예: 제목)은
+        // 한컴 PDF 가 LINE_SEG.vertical_pos(실제 렌더한 첫 줄 흐름 위치)만큼 앞 간격을 두므로
+        // (제목: spacing_before=52.9px 이지만 vertical_pos=26.5px), 그 경우 spacing_before 를
+        // LINE_SEG.vertical_pos 로 상한 클램프해 적용한다. 페이지 break 후 이어진 column-top
+        // (para_index>0)은 종전대로 0. (Task #853)
         let is_column_top = (y - col_area.y).abs() < 1.0;
-        if start_line == 0 && spacing_before > 0.0 && !is_column_top {
-            y += spacing_before;
+        if start_line == 0 && spacing_before > 0.0 {
+            if !is_column_top {
+                y += spacing_before;
+            } else if para_index == 0 {
+                let vpos0_px = para
+                    .and_then(|p| p.line_segs.first())
+                    .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                y += spacing_before.min(vpos0_px.max(0.0));
+            }
         }
 
         // 문단 전체에서 모든 라인의 runs가 비어있는지 확인
@@ -875,10 +944,19 @@ impl LayoutEngine {
             // 정상 라인은 (sw + cs) ≈ col_w_hu 이므로 새 분기 미진입.
             // Picture/Shape Square wrap 은 cs=0 이라 기존 동작과 동일.
             let line_avail_hu = comp_line.segment_width.saturating_add(comp_line.column_start);
+            // [Task #901] cs > 0 + sw < col_w 인 경우도 effective_col_x 적용.
+            // pic2.hwp paragraph 0 의 ls[1] (cs=39123 sw=3397, avail=col_w) 같은
+            // wrap zone 우측 영역 case 의 X 위치 정합 — paragraph 0 의 한글 char
+            // ("우/리/나/라") 가 그림 사이/우측 좁은 영역에 그려져야 함.
+            // 기존 조건 `avail < col_w - 200` 만으로는 avail == col_w 인 wrap zone
+            // 라인이 분기 미진입 → col_area.x 좌측에 잘못 그려짐.
+            let cs_significant = comp_line.column_start > 0
+                && comp_line.segment_width > 0
+                && comp_line.segment_width < col_area_w_hu;
             let (effective_col_x, effective_col_w) = if (has_picture_shape_square_wrap
                 || line_has_inline_tac_table)
                 && comp_line.segment_width > 0
-                && line_avail_hu < col_area_w_hu - 200
+                && (line_avail_hu < col_area_w_hu - 200 || cs_significant)
             {
                 let cs_px = hwpunit_to_px(comp_line.column_start, self.dpi);
                 let sw_px = hwpunit_to_px(comp_line.segment_width, self.dpi);
@@ -970,7 +1048,7 @@ impl LayoutEngine {
             let mut run_char_pos_est = comp_line.char_start;
             // cross-run 탭 감지용 inline_tabs(composed.tab_extended) 커서 — Task #290
             let mut inline_tab_cursor_est: usize = 0;
-            for run in &comp_line.runs {
+            for (run_idx_est, run) in comp_line.runs.iter().enumerate() {
                 let run_char_count_est = if run.char_overlap.is_some() {
                     let chars: Vec<char> = run.text.chars().collect();
                     if crate::renderer::composer::decode_pua_overlap_number(&chars).is_some() {
@@ -987,6 +1065,7 @@ impl LayoutEngine {
                 ts.tab_stops = tab_stops.clone();
                 ts.auto_tab_right = auto_tab_right;
                 ts.available_width = available_width;
+                ts.text_start_offset = effective_margin_left;
                 ts.inline_tabs = composed.tab_extended.clone();
                 // 교차 run 오른쪽/가운데 탭: 이 run의 시작 위치를 역방향으로 조정
                 if let Some((tab_pos, tab_type, fill_type)) = pending_right_tab_est.take() {
@@ -999,21 +1078,27 @@ impl LayoutEngine {
                         // [Task #279] 리더(fill_type ≠ 0) 가 있는 RIGHT 탭은 "이 줄 우측 끝까지" 의미.
                         // 셀 안 문단에서는 col_area 가 이미 cell padding 적용된 inner_area 이므로
                         // `effective_margin_left + available_width` 가 inner 우측 끝.
-                        let effective_pos = if tab_type == 1 && fill_type != 0 {
-                            effective_margin_left + available_width
+                        // [Task #874] auto_tab_right 의 tab_pos = available_width (text-start
+                        // 상대). RIGHT 탭은 모두 col-start 좌표계로 변환 시 effective_margin_left
+                        // 더해야 함. 종전엔 fill_type ≠ 0 만 변환되어 leader 없는 auto_right tab
+                        // (shortcut.hwp 인쇄/개체 모양 복사 등) 가 ~27 px 왼쪽으로 밀려 렌더됨.
+                        let effective_pos = if tab_type == 1 {
+                            effective_margin_left + (if fill_type != 0 { available_width } else { tab_pos })
                         } else {
                             tab_pos
                         };
+                        // [Issue #842 #4] 탭 다음 콘텐츠가 여러 composed run 으로 쪼개진 경우
+                        // (스크립트·char-shape 경계) 전체 블록 폭 기준으로 정렬해야 마지막 글자가
+                        // 탭스톱에 맞는다. (선행 공백 run "예 16" 케이스도 합산에 포함되어 동작 유지.)
+                        let run_w = right_tab_block_width(
+                            &comp_line.runs, run_idx_est, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
                         match tab_type {
                             1 => {
-                                // [Task #279] 전체 run 폭 기준 — 선행 공백이 있는 경우 (예: " 16")
-                                // run 시작 x 가 좌측으로 가서 시각적으로 페이지번호 right edge 가
-                                // effective_pos 에 정렬되도록.
-                                let run_w = estimate_text_width(&run.text, &ts);
                                 est_x = effective_pos - run_w;
                             }
                             2 => {
-                                let run_w = estimate_text_width(&run.text, &ts);
                                 est_x = effective_pos - run_w / 2.0;
                             }
                             _ => {}
@@ -1054,6 +1139,27 @@ impl LayoutEngine {
                 // 마지막 세그먼트 처리
                 let remaining_est: String = run_chars_est[seg_start_est..].iter().collect();
                 ts.line_x_offset = est_x;
+                // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
+                // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
+                // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
+                // 계산해 ts.right_tab_block_width_override 로 주입한다.
+                if auto_tab_right && remaining_est.contains('\t') && run_idx_est + 1 < comp_line.runs.len() {
+                    let tab_byte = remaining_est.rfind('\t').unwrap();
+                    let post_tab: String = remaining_est[tab_byte + '\t'.len_utf8()..].to_string();
+                    let no_more_tabs_after_in_run = !post_tab.contains('\t');
+                    let no_tabs_in_subsequent = comp_line.runs.iter().skip(run_idx_est + 1)
+                        .all(|r| !r.text.contains('\t'));
+                    if no_more_tabs_after_in_run && no_tabs_in_subsequent {
+                        let mut ts_measure = ts.clone();
+                        ts_measure.right_tab_block_width_override = None;
+                        let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                        let subsequent_w = right_tab_block_width(
+                            &comp_line.runs, run_idx_est + 1, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
+                        ts.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
+                    }
+                }
                 if !remaining_est.is_empty() {
                     est_x += estimate_text_width(&remaining_est, &ts);
                 }
@@ -1416,6 +1522,7 @@ impl LayoutEngine {
                 text_style.tab_stops = tab_stops.clone();
                 text_style.auto_tab_right = auto_tab_right;
                 text_style.available_width = available_width;
+                text_style.text_start_offset = effective_margin_left;
                 text_style.inline_tabs = composed.tab_extended.clone();
                 // 교차 run 오른쪽/가운데 탭: 이전 run이 \t로 끝났고
                 // 해당 탭이 오른쪽/가운데 탭이면 이 run을 역방향으로 이동
@@ -1437,21 +1544,23 @@ impl LayoutEngine {
                     // 셀 안 문단에서는 col_area 가 이미 cell padding 적용된 inner_area 이므로
                     // `effective_margin_left + available_width` 가 inner 우측 끝.
                     // tab_pos (HWP 저장값) 이 inner 우측 끝을 초과하면 셀 padding_right 침범이므로 강제 클램핑.
-                    let effective_pos = if tab_type == 1 && fill_type != 0 {
-                        effective_margin_left + available_width
+                    // [Task #874] auto_tab_right (fill_type=0) 도 effective_margin_left 변환 필요.
+                    let effective_pos = if tab_type == 1 {
+                        effective_margin_left + (if fill_type != 0 { available_width } else { tab_pos })
                     } else {
                         tab_pos
                     };
+                    // [Issue #842 #4] 탭 다음 콘텐츠가 여러 composed run 으로 쪼개진 경우
+                    // (스크립트·char-shape 경계, 예 "Ctrl+(회색)5") 전체 블록 폭 기준 정렬.
+                    let next_w = right_tab_block_width(
+                        &comp_line.runs, run_idx, styles,
+                        tab_width, &tab_stops, auto_tab_right, available_width,
+                    );
                     match tab_type {
                         1 => {
-                            // [Task #279] 전체 run 폭 기준 — 선행 공백이 있는 경우 (예: " 16")
-                            // run 시작 x 가 좌측으로 가서 시각적으로 페이지번호 right edge 가
-                            // effective_pos 에 정렬되도록.
-                            let next_w = estimate_text_width(&run.text, &text_style);
                             x = col_area.x + effective_pos - next_w;
                         }
                         2 => {
-                            let next_w = estimate_text_width(&run.text, &text_style);
                             x = col_area.x + effective_pos - next_w / 2.0;
                         }
                         _ => {}
@@ -1492,6 +1601,27 @@ impl LayoutEngine {
                 text_style.extra_word_spacing = extra_word_sp;
                 text_style.extra_char_spacing = extra_char_sp;
                 text_style.extra_dash_advance = extra_dash_sp;
+                // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
+                // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
+                // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
+                // 계산해 text_style.right_tab_block_width_override 로 주입한다.
+                if auto_tab_right && run.text.contains('\t') && run_idx + 1 < comp_line.runs.len() {
+                    let tab_byte = run.text.rfind('\t').unwrap();
+                    let post_tab: String = run.text[tab_byte + '\t'.len_utf8()..].to_string();
+                    let no_more_tabs_after_in_run = !post_tab.contains('\t');
+                    let no_tabs_in_subsequent = comp_line.runs.iter().skip(run_idx + 1)
+                        .all(|r| !r.text.contains('\t'));
+                    if no_more_tabs_after_in_run && no_tabs_in_subsequent {
+                        let mut ts_measure = text_style.clone();
+                        ts_measure.right_tab_block_width_override = None;
+                        let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                        let subsequent_w = right_tab_block_width(
+                            &comp_line.runs, run_idx + 1, styles,
+                            tab_width, &tab_stops, auto_tab_right, available_width,
+                        );
+                        text_style.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
+                    }
+                }
                 let run_border_fill_id = styles.char_styles.get(run.char_style_id as usize)
                     .map(|cs| cs.border_fill_id).unwrap_or(0);
                 let full_width = if run.char_overlap.is_some() {
@@ -1709,7 +1839,11 @@ impl LayoutEngine {
                                     sub_char_offset += rel_pos - seg_start;
                                 }
                                 // FootnoteMarker 노드
-                                let fn_text = format!("{})", fnum);
+                                // [Issue #926] Endnote인 경우 "문N)" 형식
+                                let is_en = para.and_then(|p| p.controls.get(fni))
+                                    .map(|c| matches!(c, Control::Endnote(_)))
+                                    .unwrap_or(false);
+                                let fn_text = if is_en { format!("문{})", fnum) } else { format!("{})", fnum) };
                                 let base_ts = &text_style;
                                 let sup_size = (base_ts.font_size * 0.55).max(7.0);
                                 let sup_ts = TextStyle { font_size: sup_size, font_family: base_ts.font_family.clone(), color: base_ts.color, ..Default::default() };
@@ -1874,6 +2008,18 @@ impl LayoutEngine {
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
                                     );
                                     line_node.children.push(img_node);
+                                    // [Task #864 Stage G] inline TAC picture 의 위치 등록.
+                                    // layout.rs 의 TAC inline branch (line ~2906) 가
+                                    // already_registered 체크로 중복 emit 방지하나, 기존
+                                    // paragraph_layout 은 picture 에 대해 register 누락
+                                    // → layout.rs branch 가 또 emit 하여 동일 picture 가
+                                    // 두 위치 (top-aligned + baseline-aligned) 에 그려짐.
+                                    // HWP3 sample14 에서 caption 이 duplicate image 에 가려져
+                                    // 보이지 않던 결함 정정.
+                                    tree.set_inline_shape_position(
+                                        section_index, para_index, tac_ci,
+                                        cell_ctx.as_ref(), x, img_y,
+                                    );
                                 }
                             }
                         }
@@ -2686,8 +2832,20 @@ impl LayoutEngine {
             //     과 정합. (Task #452: 이전 #332 의 layout-only trailing 제외 →
             //     pagination 과 1 ls drift 발생 → 회복)
             let is_cell_last_line = is_last_cell_para && line_idx + 1 >= end;
+            // [Task #901 Stage 5/6] wrap zone paragraph 의 empty-runs / whitespace-only
+            // line 은 y advance 건너뜀.
+            // pic2.hwp paragraph 0 case: 8 line_segs (4 visible "우/리/나/라" + 4 empty
+            // phantom lines for wrap zone 의 다른 column). 추가로 첫 idx=0 은 cs=24470
+            // (LEFT narrow wrap zone) 의 공백 한 글자만 가짐 — 한컴 viewer 가 wrap zone
+            // 좌측 영역에 텍스트 미배치한 결과. has_picture_shape_square_wrap 게이트로
+            // wrap zone 호스트 paragraph 만 영향.
+            let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
+            let skip_advance_empty_wrap = has_picture_shape_square_wrap
+                && runs_all_whitespace;
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
+            } else if skip_advance_empty_wrap {
+                // no advance
             } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
                 y += line_height + line_spacing_px;
@@ -3002,7 +3160,7 @@ impl LayoutEngine {
 /// **Supplementary PUA-A 저영역 (0xF0000~0xF00CF)** — 한컴 자체 PUA 저영역.
 ///   요약형 문항 화살표 등 시각 마커. Task #588 의 한컴 PDF 임베디드 폰트
 ///   글리프 외곽 분석 + 정답지 시각 검증으로 매핑 확정.
-pub(crate) fn map_pua_bullet_char(ch: char) -> char {
+pub fn map_pua_bullet_char(ch: char) -> char {
     let code = ch as u32;
 
     // Supplementary PUA-A 저영역 — 한컴 자체 영역 (Task #588 한컴 정답지 정합)
@@ -3056,6 +3214,12 @@ pub(crate) fn map_pua_bullet_char(ch: char) -> char {
             0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
             // 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 — 한컴 PDF 시각 검증 필요
             0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 후 정정)
+            // [Task #826] HWP3 한컴 PUA 그래픽 라인 (PR #753 후속 — johab.rs:65,67).
+            // 한컴 함초롬 폰트는 PUA glyph 보유, rhwp-studio 번들 폰트 (오픈 라이선스)
+            // 부재 → render-time substitution. 측정/렌더링 양쪽 자동 적용.
+            // sample11.hwp 머리말/꼬리말 가로선 패턴 (각 85+ 회) 시각 정합.
+            0xF080F => '\u{2501}', // ━ BOX DRAWINGS HEAVY HORIZONTAL (한컴 — 굵은 가로선)
+            0xF0827 => '\u{25A0}', // ■ BLACK SQUARE (한컴 — 잠정, 시각 판정 후 조정)
             _ => ch,
         };
     }

@@ -21,13 +21,13 @@ use crate::model::shape::{
     VertRelTo, HorzRelTo, VertAlign, HorzAlign, TextWrap,
 };
 use crate::model::style::{ShapeBorderLine, Fill};
-use crate::model::page::{PageDef, ColumnDef, ColumnType, ColumnDirection};
+use crate::model::page::{PageDef, ColumnDef, ColumnType, ColumnDirection, PageBorderFill};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::HwpUnit16;
 
 use super::HwpxError;
-use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool, skip_element};
+use super::utils::{local_name, attr_str, parse_u8, parse_i8, parse_u16, parse_i16, parse_u32, parse_i32, parse_color, parse_bool, parse_hatch_style, skip_element};
 
 /// section*.xml을 파싱하여 Section 모델로 변환한다.
 pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
@@ -211,9 +211,15 @@ fn parse_paragraph(
                         parse_section_def_start(ce, &mut sd);
                         let col_def_opt = parse_sec_pr_children(reader, &mut sd)?;
                         sec_def = Some(sd);
-                        // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의)
+                        // [Task #901] SectionDef 도 HWP 바이너리에서 8 utf16 inline marker —
+                        // line_seg.text_start (file 값) 가 HWP 인코딩 가정. HWPX parser
+                        // 가 utf16_pos 동기화하지 않으면 paragraph 0 의 compose_lines 가
+                        // 모든 chars 를 line 0 에 packing. \u{0002} 추가로 8 utf16 정합.
+                        text_parts.push("\u{0002}".to_string());
+                        // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의) + 8 utf16.
                         if let Some(cd) = col_def_opt {
                             para.controls.push(Control::ColumnDef(cd));
+                            text_parts.push("\u{0002}".to_string());
                         }
                     }
                     b"linesegarray" => {
@@ -284,6 +290,18 @@ fn parse_paragraph(
             Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name(); let local = local_name(cname.as_ref());
                 match local {
+                    b"run" => {
+                        // self-closing 빈 run (예: <hp:run charPrIDRef="42"/>)
+                        // 빈 paragraph 의 char_shape 가 누락되어 default(id=0) 로
+                        // 처리되면 line height 계산이 어긋나 pagination 차이 발생.
+                        for attr in ce.attributes().flatten() {
+                            if attr.key.as_ref() == b"charPrIDRef" {
+                                current_char_shape_id = parse_u32(&attr);
+                            }
+                        }
+                        let utf16_pos = calc_utf16_len_from_parts(&text_parts);
+                        char_shape_changes.push((utf16_pos, current_char_shape_id));
+                    }
                     b"lineBreak" | b"softHyphen" => {
                         text_parts.push("\n".to_string());
                     }
@@ -372,6 +390,7 @@ fn parse_paragraph(
 fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -> Result<Option<ColumnDef>, HwpxError> {
     let mut buf = Vec::new();
     let mut col_def: Option<ColumnDef> = None;
+    let mut page_border_fill_count = 0usize;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
@@ -382,6 +401,10 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
                     b"colPr" => { col_def = Some(parse_col_pr(e)); }
                     b"startNum" => parse_start_num(e, sec_def),
                     b"visibility" => parse_visibility(e, sec_def),
+                    b"pageBorderFill" => {
+                        let pbf = parse_page_border_fill(e, reader)?;
+                        push_page_border_fill(sec_def, pbf, &mut page_border_fill_count);
+                    }
                     _ => {}
                 }
             }
@@ -393,6 +416,10 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
                     b"colPr" => { col_def = Some(parse_col_pr(e)); }
                     b"startNum" => parse_start_num(e, sec_def),
                     b"visibility" => parse_visibility(e, sec_def),
+                    b"pageBorderFill" => {
+                        let pbf = parse_page_border_fill_empty(e);
+                        push_page_border_fill(sec_def, pbf, &mut page_border_fill_count);
+                    }
                     _ => {}
                 }
             }
@@ -409,6 +436,125 @@ fn parse_sec_pr_children(reader: &mut Reader<&[u8]>, sec_def: &mut SectionDef) -
         buf.clear();
     }
     Ok(col_def)
+}
+
+fn push_page_border_fill(
+    sec_def: &mut SectionDef,
+    page_border_fill: PageBorderFill,
+    count: &mut usize,
+) {
+    if *count == 0 {
+        sec_def.page_border_fill = page_border_fill;
+    } else {
+        sec_def.extra_page_border_fills.push(page_border_fill);
+    }
+    *count += 1;
+}
+
+fn parse_page_border_fill(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+) -> Result<PageBorderFill, HwpxError> {
+    let mut page_border_fill = parse_page_border_fill_empty(e);
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref child)) | Ok(Event::Empty(ref child)) => {
+                if local_name(child.name().as_ref()) == b"offset" {
+                    parse_page_border_fill_offset(child, &mut page_border_fill);
+                }
+            }
+            Ok(Event::End(ref end)) => {
+                if local_name(end.name().as_ref()) == b"pageBorderFill" {
+                    break;
+                }
+            }
+            Ok(Event::Eof) => break,
+            Err(err) => {
+                return Err(HwpxError::XmlError(format!("pageBorderFill: {}", err)));
+            }
+            _ => {}
+        }
+        buf.clear();
+    }
+    Ok(page_border_fill)
+}
+
+fn parse_page_border_fill_empty(e: &quick_xml::events::BytesStart) -> PageBorderFill {
+    let mut page_border_fill = PageBorderFill::default();
+    let mut text_border = String::new();
+    let mut fill_area = String::new();
+    let mut apply_type = String::new();
+    let mut header_inside = false;
+    let mut footer_inside = false;
+
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"borderFillIDRef" => page_border_fill.border_fill_id = parse_u16(&attr),
+            b"textBorder" => text_border = attr_str(&attr),
+            b"fillArea" => fill_area = attr_str(&attr),
+            b"type" => apply_type = attr_str(&attr),
+            b"headerInside" => header_inside = parse_bool(&attr),
+            b"footerInside" => footer_inside = parse_bool(&attr),
+            _ => {}
+        }
+    }
+
+    page_border_fill.attr = page_border_fill_attr(
+        &text_border,
+        &fill_area,
+        &apply_type,
+        header_inside,
+        footer_inside,
+    );
+    page_border_fill
+}
+
+fn parse_page_border_fill_offset(
+    e: &quick_xml::events::BytesStart,
+    page_border_fill: &mut PageBorderFill,
+) {
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"left" => page_border_fill.spacing_left = parse_i16(&attr),
+            b"right" => page_border_fill.spacing_right = parse_i16(&attr),
+            b"top" => page_border_fill.spacing_top = parse_i16(&attr),
+            b"bottom" => page_border_fill.spacing_bottom = parse_i16(&attr),
+            _ => {}
+        }
+    }
+}
+
+fn page_border_fill_attr(
+    text_border: &str,
+    fill_area: &str,
+    apply_type: &str,
+    header_inside: bool,
+    footer_inside: bool,
+) -> u32 {
+    let mut attr = 0u32;
+
+    if text_border.eq_ignore_ascii_case("PAPER") {
+        attr |= 0x0000_0001;
+    }
+    if header_inside {
+        attr |= 0x0000_0002;
+    }
+    if footer_inside {
+        attr |= 0x0000_0004;
+    }
+
+    attr |= match fill_area {
+        area if area.eq_ignore_ascii_case("PAGE") => 0x0000_0008,
+        area if area.eq_ignore_ascii_case("BORDER") => 0x0000_0010,
+        _ => 0,
+    };
+
+    if apply_type.eq_ignore_ascii_case("BOTH") || apply_type.eq_ignore_ascii_case("EVEN") {
+        attr |= 0x0000_0040;
+    }
+
+    attr
 }
 
 /// <hp:startNum> 요소 파싱
@@ -1577,11 +1723,19 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                 match local {
                     b"winBrush" => {
                         fill.fill_type = FillType::Solid;
-                        let mut solid = SolidFill::default();
+                        let mut solid = SolidFill {
+                            pattern_type: -1,
+                            ..SolidFill::default()
+                        };
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"faceColor" => solid.background_color = parse_color(&attr),
                                 b"hatchColor" => solid.pattern_color = parse_color(&attr),
+                                b"hatchStyle" => {
+                                    if let Some(pattern_type) = parse_hatch_style(&attr_str(&attr)) {
+                                        solid.pattern_type = pattern_type;
+                                    }
+                                }
                                 b"alpha" => {
                                     let val = attr_str(&attr);
                                     if let Ok(f) = val.parse::<f64>() {
@@ -1952,6 +2106,8 @@ fn parse_ctrl(
                     b"colPr" => {
                         let cd = parse_col_pr(ce);
                         controls.push(Control::ColumnDef(cd));
+                        // [Task #901] ColumnDef 도 8 utf16 inline marker (HWP 정합).
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"colPr")?;
                     }
                     b"header" => {
@@ -2024,6 +2180,8 @@ fn parse_ctrl(
                     b"colPr" => {
                         let cd = parse_col_pr(ce);
                         controls.push(Control::ColumnDef(cd));
+                        // [Task #901] ColumnDef 도 8 utf16 inline marker (HWP 정합).
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"pageHiding" => {
                         let ph = parse_page_hiding_attrs(ce);

@@ -32,6 +32,8 @@ export interface SaveDocumentOptions {
   suggestedName: string;
   currentHandle: FileSystemFileHandleLike | null;
   windowLike: FileSystemWindowLike;
+  /** [Task #833] true 시 currentHandle 무시 + 항상 showSaveFilePicker 호출 (다른 이름으로 저장). */
+  forceSaveAs?: boolean;
 }
 
 export interface SaveDocumentResult {
@@ -40,9 +42,14 @@ export interface SaveDocumentResult {
   fileName: string;
 }
 
-const HWP_PICKER_TYPES = [{
-  description: 'HWP 문서',
+const HWP_OPEN_PICKER_TYPES = [{
+  description: 'HWP/HWPX 문서',
   accept: { 'application/x-hwp': ['.hwp', '.hwpx'] },
+}];
+
+const HWP_SAVE_PICKER_TYPES = [{
+  description: 'HWP 문서',
+  accept: { 'application/x-hwp': ['.hwp'] },
 }];
 
 function isAbortError(error: unknown): boolean {
@@ -62,7 +69,7 @@ export async function pickOpenFileHandle(windowLike: FileSystemWindowLike): Prom
     const handles = await windowLike.showOpenFilePicker({
       excludeAcceptAllOption: true,
       multiple: false,
-      types: HWP_PICKER_TYPES,
+      types: HWP_OPEN_PICKER_TYPES,
     });
     return handles[0] ?? null;
   } catch (error) {
@@ -80,9 +87,10 @@ export async function readFileFromHandle(handle: FileSystemFileHandleLike): Prom
 }
 
 export async function saveDocumentToFileSystem(options: SaveDocumentOptions): Promise<SaveDocumentResult> {
-  const { blob, suggestedName, currentHandle, windowLike } = options;
+  const { blob, suggestedName, currentHandle, windowLike, forceSaveAs } = options;
 
-  if (currentHandle) {
+  // [Task #833] forceSaveAs 시 currentHandle 우회 → 항상 picker (다른 이름으로 저장).
+  if (currentHandle && !forceSaveAs) {
     await writeBlobToHandle(currentHandle, blob);
     return {
       method: 'current-handle',
@@ -94,7 +102,7 @@ export async function saveDocumentToFileSystem(options: SaveDocumentOptions): Pr
   if (windowLike.showSaveFilePicker) {
     const handle = await windowLike.showSaveFilePicker({
       suggestedName,
-      types: HWP_PICKER_TYPES,
+      types: HWP_SAVE_PICKER_TYPES,
     });
     await writeBlobToHandle(handle, blob);
     return {

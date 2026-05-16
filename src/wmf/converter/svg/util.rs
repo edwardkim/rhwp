@@ -19,7 +19,14 @@ pub fn as_point_string(point: &PointS) -> String {
 impl crate::wmf::converter::Bitmap {
     pub fn as_data_url(&self) -> String {
         use base64::{engine::general_purpose::STANDARD, Engine};
-        format!("data:image/bmp;base64,{}", STANDARD.encode(self.as_slice()))
+        // [Task #860] SVG renderer (rsvg-convert, 브라우저) 가 `data:image/bmp` URI 미지원.
+        // BMP → PNG 재인코딩 후 data:image/png URI 로 embed.
+        // BMP decode 실패 시 fallback 으로 BMP URI 유지 (graceful degradation).
+        if let Some(png) = crate::renderer::svg::bmp_bytes_to_png_bytes(self.as_slice()) {
+            format!("data:image/png;base64,{}", STANDARD.encode(&png))
+        } else {
+            format!("data:image/bmp;base64,{}", STANDARD.encode(self.as_slice()))
+        }
     }
 }
 
@@ -404,12 +411,30 @@ impl Font {
             );
         }
 
-        let mut font_family: Vec<&str> = vec![];
+        let mut font_family: Vec<String> = vec![];
 
-        font_family.push(self.facename.as_str());
+        font_family.push(self.facename.clone());
         self.fallback_facename.iter().for_each(|f| {
-            font_family.push(f.as_str());
+            font_family.push(f.clone());
         });
+
+        // 한컴 WMF 의 한국어 폰트 (예: "굴림체") 가 시스템에 미설치된 환경에서
+        // SVG renderer 가 fallback 못 찾으면 글자가 깨져 보임. facename/fallback
+        // 에 한글 char (U+AC00~U+D7A3) 있으면 시스템 한국어 폰트 chain 추가.
+        let has_korean = font_family.iter().any(|f| {
+            f.chars().any(|c| ('\u{AC00}'..='\u{D7A3}').contains(&c))
+        });
+        if has_korean {
+            for fallback in [
+                "Apple SD Gothic Neo",
+                "Malgun Gothic",
+                "Nanum Gothic",
+                "Noto Sans CJK KR",
+                "sans-serif",
+            ] {
+                font_family.push(fallback.to_string());
+            }
+        }
 
         elem = elem
             .set("font-family", format!("'{}'", font_family.join("','")))

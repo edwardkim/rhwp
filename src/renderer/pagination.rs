@@ -17,6 +17,19 @@ use super::height_measurer::{HeightMeasurer, MeasuredSection};
 use super::page_layout::PageLayoutInfo;
 use super::style_resolver::ResolvedStyleSet;
 
+/// 미주 참조
+#[derive(Debug, Clone)]
+pub struct EndnoteRef {
+    /// 미주 번호 (1-based)
+    pub number: u16,
+    /// 소속 구역 인덱스
+    pub section_index: usize,
+    /// 본문 문단 인덱스
+    pub para_index: usize,
+    /// 문단 내 컨트롤 인덱스
+    pub control_index: usize,
+}
+
 /// 페이지 분할 결과: 페이지별 콘텐츠 참조
 #[derive(Debug)]
 pub struct PaginationResult {
@@ -26,6 +39,10 @@ pub struct PaginationResult {
     pub wrap_around_paras: Vec<WrapAroundPara>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
     pub hidden_empty_paras: std::collections::HashSet<usize>,
+    /// 섹션별 미주 목록 (문서 끝 또는 섹션 끝에 렌더)
+    pub endnotes: Vec<EndnoteRef>,
+    /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)
+    pub endnote_paragraphs: Vec<crate::model::paragraph::Paragraph>,
 }
 
 /// 한 페이지에 배치될 콘텐츠

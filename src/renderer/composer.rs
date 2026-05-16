@@ -505,43 +505,27 @@ fn split_by_char_shapes(
     }
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
-    // CharShapeRef.start_pos는 UTF-16 위치이므로 텍스트 인덱스로 변환해야 함
-    let line_utf16_start = if text_start < char_offsets.len() {
-        char_offsets[text_start]
-    } else if !char_offsets.is_empty() {
-        *char_offsets.last().unwrap() + 1
-    } else {
-        text_start as u32
-    };
-
-    let line_utf16_end = if text_end < char_offsets.len() {
-        char_offsets[text_end]
-    } else if !char_offsets.is_empty() {
-        *char_offsets.last().unwrap() + 1
-    } else {
-        text_end as u32
-    };
-
-    // 이 줄에 적용되는 CharShapeRef 구간 수집
-    // 각 구간: (텍스트 내 시작 인덱스, char_style_id)
+    //
+    // [Task #884] CharShapeRef.start_pos 를 visible char index 로 해석 (해석 B).
+    // 이전 해석 A (u16 stream 위치) 는 inline picture 등 다단위 컨트롤이 있는
+    // paragraph 에서 char_shape 적용 영역이 어긋났다 (예: table-in-tbox.hwp
+    // Shape.TextBox > Table > cell[0] " 충남중부권지사장" 의 id=20 HY수평선B 가
+    // visible[1] 부터 잘못 적용).
+    //
+    // 한컴 PDF 정합 확인된 해석:
+    //   text_idx = (cs.start_pos as usize) - text_start
+    //   단 cs.start_pos ≥ text.chars().count() 이면 미적용.
+    let total_chars = char_offsets.len();
     let mut segments: Vec<(usize, u32)> = Vec::new();
 
     for cs in char_shapes {
-        if cs.start_pos < line_utf16_end {
-            // 이 CharShapeRef의 시작 위치를 줄 내 텍스트 인덱스로 변환
-            let text_idx = if cs.start_pos <= line_utf16_start {
-                0 // 줄 시작 이전이면 0
-            } else {
-                // char_offsets에서 cs.start_pos에 해당하는 텍스트 인덱스 찾기
-                let global_idx = char_offsets
-                    .iter()
-                    .position(|&off| off >= cs.start_pos)
-                    .unwrap_or(text_end);
-                global_idx.saturating_sub(text_start)
-            };
-
-            segments.push((text_idx, cs.char_shape_id));
+        let cs_visible_idx = (cs.start_pos as usize).min(total_chars);
+        // cs 가 이 줄 범위 밖이면 skip
+        if cs_visible_idx >= text_end {
+            continue;
         }
+        let text_idx = cs_visible_idx.saturating_sub(text_start);
+        segments.push((text_idx, cs.char_shape_id));
     }
 
     // 시작 인덱스로 정렬 (동일 인덱스 내에서는 원래 순서 유지)
@@ -556,7 +540,7 @@ fn split_by_char_shapes(
     // segments가 비어있으면 첫 번째 CharShapeRef 사용
     if segments.is_empty() {
         // 줄 시작 위치 이전의 마지막 CharShapeRef 찾기
-        let style_id = find_active_char_shape(char_shapes, line_utf16_start);
+        let style_id = find_active_char_shape_visible(char_shapes, text_start);
         return split_runs_by_lang(vec![ComposedTextRun {
             text: line_text.to_string(),
             char_style_id: style_id,
@@ -595,7 +579,7 @@ fn split_by_char_shapes(
 
     // 첫 번째 segment가 0이 아닌 경우, 앞 부분 처리
     if !segments.is_empty() && segments[0].0 > 0 {
-        let style_id = find_active_char_shape(char_shapes, line_utf16_start);
+        let style_id = find_active_char_shape_visible(char_shapes, text_start);
         let end_idx = segments[0].0.min(chars.len());
         let prefix_text: String = chars[..end_idx].iter().collect();
         if !prefix_text.is_empty() {
@@ -613,7 +597,7 @@ fn split_by_char_shapes(
     }
 
     if runs.is_empty() {
-        let style_id = find_active_char_shape(char_shapes, line_utf16_start);
+        let style_id = find_active_char_shape_visible(char_shapes, text_start);
         runs.push(ComposedTextRun {
             text: line_text.to_string(),
             char_style_id: style_id,
@@ -628,10 +612,21 @@ fn split_by_char_shapes(
 }
 
 /// 주어진 UTF-16 위치에서 활성화된 CharShapeRef의 char_shape_id를 찾는다.
+///
+/// [Task #884] 해석 B 적용으로 start_pos 는 visible char index 이므로 이 함수의
+/// utf16_pos 인자는 의미가 모호해진다. 호출자가 char_offsets 통해 utf16 → visible
+/// idx 변환 후 [`find_active_char_shape_visible`] 사용 권장. 본 함수는 호환성을
+/// 위해 유지하나 향후 deprecate 예정.
 pub(crate) fn find_active_char_shape(char_shapes: &[CharShapeRef], utf16_pos: u32) -> u32 {
+    // utf16_pos 를 visible idx 로 직접 비교 (해석 B)
+    find_active_char_shape_visible(char_shapes, utf16_pos as usize)
+}
+
+/// [Task #884] visible char index 로 활성 char_shape 찾기
+pub(crate) fn find_active_char_shape_visible(char_shapes: &[CharShapeRef], visible_idx: usize) -> u32 {
     let mut active_id = char_shapes.first().map(|cs| cs.char_shape_id).unwrap_or(0);
     for cs in char_shapes {
-        if cs.start_pos <= utf16_pos {
+        if (cs.start_pos as usize) <= visible_idx {
             active_id = cs.char_shape_id;
         } else {
             break;

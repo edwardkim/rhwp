@@ -247,6 +247,8 @@ impl CanvasRenderer {
                             self.close_shape_transform_value(&path.transform);
                         }
                         PaintOp::FootnoteMarker { .. }
+                        | PaintOp::GlyphRun { .. }
+                        | PaintOp::GlyphOutline { .. }
                         | PaintOp::CharOverlap { .. }
                         | PaintOp::TextControlMark { .. }
                         | PaintOp::TabLeader { .. }
