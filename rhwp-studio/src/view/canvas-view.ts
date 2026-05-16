@@ -103,6 +103,7 @@ export class CanvasView {
     for (const pageIdx of this.canvasPool.activePages) {
       if (!prefetchSet.has(pageIdx)) {
         this.pageRenderer.cancelReRender(pageIdx);
+        this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
         this.canvasPool.release(pageIdx);
       }
     }
@@ -169,6 +170,7 @@ export class CanvasView {
       this.pageRenderer.renderPage(pageIdx, canvas, renderScale, zoom, dpr);
     } catch (e) {
       console.error(`[CanvasView] 페이지 ${pageIdx} 렌더링 실패:`, e);
+      this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
       this.canvasPool.release(pageIdx);
       return;
     }
@@ -192,7 +194,7 @@ export class CanvasView {
 
     if (wasGrid || isGrid) {
       // 그리드 관련 변경 시 전체 재렌더링
-      this.canvasPool.releaseAll();
+      this.releaseAllRenderedPages();
       this.pageRenderer.cancelAll();
     }
     this.updateVisiblePages();
@@ -222,7 +224,7 @@ export class CanvasView {
     this.viewportManager.setScrollTop(newCenter - vpHeight / 2);
 
     // 모든 Canvas 재렌더링
-    this.canvasPool.releaseAll();
+    this.releaseAllRenderedPages();
     this.pageRenderer.cancelAll();
     this.updateVisiblePages();
 
@@ -247,7 +249,7 @@ export class CanvasView {
     this.recalcLayout();
 
     // 보이는 페이지 재렌더링
-    this.canvasPool.releaseAll();
+    this.releaseAllRenderedPages();
     this.pageRenderer.cancelAll();
     this.updateVisiblePages();
   }
@@ -255,10 +257,15 @@ export class CanvasView {
   /** 리소스를 정리한다 */
   private reset(): void {
     this.pageRenderer.cancelAll();
-    this.canvasPool.releaseAll();
+    this.releaseAllRenderedPages();
     this.currentVisiblePages = [];
     this.pages = [];
     this.scrollContent.replaceChildren();
+  }
+
+  private releaseAllRenderedPages(): void {
+    this.pageRenderer.removeAllPageLayers(this.scrollContent);
+    this.canvasPool.releaseAll();
   }
 
   /** 전체 정리 */

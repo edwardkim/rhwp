@@ -191,6 +191,19 @@ impl Default for LayerFilter {
     fn default() -> Self { LayerFilter::All }
 }
 
+#[cfg(target_arch = "wasm32")]
+fn layer_tree_contains_image_wrap(node: &LayerNode, target: crate::model::shape::TextWrap) -> bool {
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => children
+            .iter()
+            .any(|child| layer_tree_contains_image_wrap(child, target)),
+        LayerNodeKind::ClipRect { child, .. } => layer_tree_contains_image_wrap(child, target),
+        LayerNodeKind::Leaf { ops } => ops.iter().any(
+            |op| matches!(op, PaintOp::Image { image, .. } if image.text_wrap == Some(target)),
+        ),
+    }
+}
+
 /// web-sys의 CanvasRenderingContext2d를 사용하여 실제 브라우저 Canvas에 렌더링한다.
 /// WASM 환경에서만 컴파일된다.
 #[cfg(target_arch = "wasm32")]
@@ -209,6 +222,9 @@ pub struct WebCanvasRenderer {
     scale: f64,
     /// 다층 레이어 필터 (Task #516, 기본 All 은 기존 동작 보존)
     pub layer_filter: LayerFilter,
+    /// BehindText overlay 를 DOM layer 로 합성할 때 flow Canvas 의 페이지 배경을
+    /// 투명하게 둘지 여부.
+    transparent_page_background: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -228,6 +244,7 @@ impl WebCanvasRenderer {
             show_control_codes: false,
             scale: 1.0,
             layer_filter: LayerFilter::All,
+            transparent_page_background: false,
         })
     }
 
@@ -258,6 +275,10 @@ impl WebCanvasRenderer {
         }
     }
 
+    fn should_render_page_background(&self) -> bool {
+        !self.transparent_page_background
+    }
+
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_node(&tree.root);
@@ -267,8 +288,14 @@ impl WebCanvasRenderer {
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
         self.show_paragraph_marks = tree.output_options.show_paragraph_marks;
         self.show_control_codes = tree.output_options.show_control_codes;
+        self.transparent_page_background = matches!(self.layer_filter, LayerFilter::FlowOnly)
+            && layer_tree_contains_image_wrap(
+                &tree.root,
+                crate::model::shape::TextWrap::BehindText,
+            );
         self.begin_page(tree.page_width, tree.page_height);
         self.render_layer_node(&tree.root);
+        self.transparent_page_background = false;
     }
 
     /// 개별 노드 렌더링
@@ -818,6 +845,9 @@ impl WebCanvasRenderer {
                         }
                     }
                     let render_node = match op {
+                        PaintOp::PageBackground { .. } if !self.should_render_page_background() => {
+                            continue;
+                        }
                         PaintOp::PageBackground { bbox, background } => RenderNode::new(
                             node.source_node_id.unwrap_or(0),
                             RenderNodeType::PageBackground(background.clone()),
@@ -1589,9 +1619,13 @@ impl Renderer for WebCanvasRenderer {
         if self.scale != 1.0 {
             let _ = self.ctx.scale(self.scale, self.scale);
         }
-        // 캔버스 초기화 (흰색 배경)
-        self.ctx.set_fill_style_str("#ffffff");
-        self.ctx.fill_rect(0.0, 0.0, width, height);
+        self.ctx.clear_rect(0.0, 0.0, width, height);
+        // 캔버스 초기화 (흰색 배경). BehindText DOM overlay 를 쓰는 flow layer 는
+        // 페이지 배경을 별도 HTML layer 로 두어야 하므로 투명하게 유지한다.
+        if self.should_render_page_background() {
+            self.ctx.set_fill_style_str("#ffffff");
+            self.ctx.fill_rect(0.0, 0.0, width, height);
+        }
     }
 
     fn end_page(&mut self) {

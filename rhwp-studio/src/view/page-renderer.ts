@@ -57,17 +57,14 @@ export class PageRenderer {
 
     // 페이지 단위 overlay 컨테이너를 Canvas 의 sibling 으로 관리.
     // data-rhwp-overlay-page 속성으로 식별, 페이지 재렌더링 시 갱신.
-    const existingBehind = parent.querySelector(
-      `[data-rhwp-overlay="behind-${pageIdx}"]`,
-    ) as HTMLElement | null;
-    const existingFront = parent.querySelector(
-      `[data-rhwp-overlay="front-${pageIdx}"]`,
-    ) as HTMLElement | null;
-    if (existingBehind) existingBehind.remove();
-    if (existingFront) existingFront.remove();
+    this.removePageLayers(parent, pageIdx);
 
     const { behind, front } = this.getOverlayImages(pageIdx);
-    if (behind.length === 0 && front.length === 0) return;
+    if (behind.length === 0 && front.length === 0) {
+      canvas.style.background = '';
+      canvas.style.zIndex = '';
+      return;
+    }
 
     // 위치/크기 정합용 공통 정보. Canvas 물리 픽셀은 page × zoom × DPR 이므로
     // CSS 표시 크기는 실제 DPR 로만 나눈다.
@@ -78,19 +75,32 @@ export class PageRenderer {
     const left = canvas.style.left;
     const transform = canvas.style.transform;
 
+    // BehindText 가 있는 페이지는 flow Canvas 를 투명 배경으로 두고,
+    // 별도 페이지 배경 layer → BehindText → flow Canvas 순서로 합성한다.
+    // Canvas 내부의 흰 배경은 WASM flow 렌더에서 생략된다.
+    if (behind.length > 0) {
+      canvas.style.background = 'transparent';
+      canvas.style.zIndex = '2';
+
+      const background = document.createElement('div');
+      background.dataset.rhwpOverlay = `background-${pageIdx}`;
+      background.dataset.rhwpOverlayPage = String(pageIdx);
+      this.applyPageLayerBox(background, top, left, transform, cssWidth, cssHeight);
+      background.style.background = 'var(--color-surface)';
+      background.style.zIndex = '0';
+      parent.insertBefore(background, canvas);
+    } else {
+      canvas.style.background = '';
+      canvas.style.zIndex = front.length > 0 ? '1' : '';
+    }
+
     // BehindText overlay (Canvas 뒤)
     if (behind.length > 0) {
       const layer = this.createOverlayLayer(behind, displayScale);
       layer.dataset.rhwpOverlay = `behind-${pageIdx}`;
-      layer.style.position = 'absolute';
-      layer.style.top = top;
-      layer.style.left = left;
-      layer.style.transform = transform;
-      layer.style.width = `${cssWidth}px`;
-      layer.style.height = `${cssHeight}px`;
-      layer.style.overflow = 'hidden';
-      layer.style.pointerEvents = 'none';
-      layer.style.zIndex = '0';  // Canvas (z=auto) 보다 뒤
+      layer.dataset.rhwpOverlayPage = String(pageIdx);
+      this.applyPageLayerBox(layer, top, left, transform, cssWidth, cssHeight);
+      layer.style.zIndex = '1';
       // Canvas 보다 먼저 들어가도록 prepend
       parent.insertBefore(layer, canvas);
     }
@@ -99,17 +109,47 @@ export class PageRenderer {
     if (front.length > 0) {
       const layer = this.createOverlayLayer(front, displayScale);
       layer.dataset.rhwpOverlay = `front-${pageIdx}`;
-      layer.style.position = 'absolute';
-      layer.style.top = top;
-      layer.style.left = left;
-      layer.style.transform = transform;
-      layer.style.width = `${cssWidth}px`;
-      layer.style.height = `${cssHeight}px`;
-      layer.style.overflow = 'hidden';
-      layer.style.pointerEvents = 'none';
-      layer.style.zIndex = '2';  // Canvas (z=auto) 보다 앞
+      layer.dataset.rhwpOverlayPage = String(pageIdx);
+      this.applyPageLayerBox(layer, top, left, transform, cssWidth, cssHeight);
+      layer.style.zIndex = behind.length > 0 ? '3' : '2';  // Canvas 보다 앞
       parent.appendChild(layer);
     }
+  }
+
+  private applyPageLayerBox(
+    layer: HTMLElement,
+    top: string,
+    left: string,
+    transform: string,
+    cssWidth: number,
+    cssHeight: number,
+  ): void {
+    layer.style.position = 'absolute';
+    layer.style.top = top;
+    layer.style.left = left;
+    layer.style.transform = transform;
+    layer.style.width = `${cssWidth}px`;
+    layer.style.height = `${cssHeight}px`;
+    layer.style.overflow = 'hidden';
+    layer.style.pointerEvents = 'none';
+  }
+
+  removePageLayers(parent: HTMLElement, pageIdx: number): void {
+    parent.querySelectorAll(
+      `[data-rhwp-overlay-page="${pageIdx}"],` +
+      `[data-rhwp-overlay="background-${pageIdx}"],` +
+      `[data-rhwp-overlay="behind-${pageIdx}"],` +
+      `[data-rhwp-overlay="front-${pageIdx}"]`,
+    ).forEach((el) => el.remove());
+  }
+
+  removeAllPageLayers(parent: HTMLElement): void {
+    parent.querySelectorAll(
+      '[data-rhwp-overlay-page],' +
+      '[data-rhwp-overlay^="background-"],' +
+      '[data-rhwp-overlay^="behind-"],' +
+      '[data-rhwp-overlay^="front-"]',
+    ).forEach((el) => el.remove());
   }
 
   /** overlay 레이어 div 를 생성하고 그림 <img> 들을 추가 */
@@ -146,9 +186,10 @@ export class PageRenderer {
         el.style.filter = filterParts.join(' ');
       }
       // 워터마크는 multiply blend (흰색 배경 = 투명 효과, 텍스트 위 자연 합성).
-      // 회색조 처리 + 투명도 조절의 정합한 시각은 별도 task 로 분리 처리.
       if (img.watermark) {
         el.style.mixBlendMode = 'multiply';
+        // WebCanvasRenderer 의 워터마크 alpha 정책과 동기화 (#677).
+        el.style.opacity = '0.17';
       }
       // transform (회전/플립) — 작업 우선순위 낮음, 본 사이클은 미적용
       layer.appendChild(el);

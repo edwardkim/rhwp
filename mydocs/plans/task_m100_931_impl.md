@@ -144,6 +144,26 @@ this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
 - `mydocs/report/task_m100_931_report.md`
 - `mydocs/orders/20260516.md` 상태 갱신
 
+### Stage 5 — 시각 피드백 보정: flow canvas 배경 분리
+
+**배경**: Stage 4 후 작업지시자 시각 검증에서 워터마크가 보이지 않는 문제가 확인됐다. DOM overlay는 존재하지만 flow canvas의 흰 페이지 배경 뒤에 가려지는 상태였다.
+
+**정정 파일**:
+- `src/renderer/web_canvas.rs`
+- `rhwp-studio/src/view/page-renderer.ts`
+- `rhwp-studio/src/view/canvas-view.ts`
+
+**정정 방향**:
+- BehindText가 있는 flow canvas는 페이지 배경을 투명하게 유지한다.
+- rhwp-studio는 별도 page background DOM layer를 만들고 그 위에 BehindText overlay, 그 위에 transparent flow canvas를 쌓는다.
+- DOM overlay 워터마크에도 기존 canvas renderer와 동일한 `opacity=0.17` 정책을 적용한다.
+- canvas release 시 sibling overlay layer가 남지 않도록 정리 API를 추가한다.
+
+**산출물**:
+- 정정 코드
+- `mydocs/working/task_m100_931_stage5.md`
+- 최종 보고서 갱신
+
 ## 단계별 commit 전략
 
 | Stage | commit | 영역 |
@@ -153,6 +173,7 @@ this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
 | Stage 2 | `Task #931 Stage 2: overlay bbox zoom 배율 적용` | rhwp-studio view 코드 + 보고서 |
 | Stage 3 | `Task #931 Stage 3: 지연 재렌더 flow filter 보존` | page-renderer 코드 + 보고서 |
 | Stage 4 | `Task #931: 최종 검증 보고서 작성` | 최종 보고서 + orders |
+| Stage 5 | `Task #931 Stage 5: 워터마크 layer 가림 보정` | Rust WASM renderer + rhwp-studio view 코드 + 보고서 |
 
 ## 위험 영역 + 가드
 
