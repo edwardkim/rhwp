@@ -428,7 +428,15 @@ impl LayoutEngine {
                                 line_run_start = ch_idx;
                             }
                             // FootnoteMarker 노드 삽입 (위첨자로 렌더링됨)
-                            let fn_text = format!("{})", fn_num);
+                            // [Issue #926] Endnote인 경우 "문N)" 형식
+                            let is_endnote = para.controls.get(fn_ctrl_idx)
+                                .map(|c| matches!(c, Control::Endnote(_)))
+                                .unwrap_or(false);
+                            let fn_text = if is_endnote {
+                                format!("문{})", fn_num)
+                            } else {
+                                format!("{})", fn_num)
+                            };
                             let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
                             let sup_font_size = (base_ts.font_size * 0.55).max(7.0);
                             let sup_ts = TextStyle { font_size: sup_font_size, font_family: base_ts.font_family.clone(), ..Default::default() };
@@ -1831,7 +1839,11 @@ impl LayoutEngine {
                                     sub_char_offset += rel_pos - seg_start;
                                 }
                                 // FootnoteMarker 노드
-                                let fn_text = format!("{})", fnum);
+                                // [Issue #926] Endnote인 경우 "문N)" 형식
+                                let is_en = para.and_then(|p| p.controls.get(fni))
+                                    .map(|c| matches!(c, Control::Endnote(_)))
+                                    .unwrap_or(false);
+                                let fn_text = if is_en { format!("문{})", fnum) } else { format!("{})", fnum) };
                                 let base_ts = &text_style;
                                 let sup_size = (base_ts.font_size * 0.55).max(7.0);
                                 let sup_ts = TextStyle { font_size: sup_size, font_family: base_ts.font_family.clone(), color: base_ts.color, ..Default::default() };
