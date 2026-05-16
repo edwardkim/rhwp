@@ -1,3 +1,14 @@
+/* -*- Mode: rust; tab-width: 4; indent-tabs-mode: nil -*- */
+/*
+ * This file is derived from LibreOffice's emfio module:
+ *   https://github.com/LibreOffice/core/blob/master/emfio/source/reader/mtftools.cxx
+ *   https://github.com/LibreOffice/core/blob/master/emfio/source/reader/wmfreader.cxx
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 //! [Task #902 v2 Stage 14] WMF text rendering via fontdue.
 //!
 //! 알고리즘 출처: LibreOffice emfio (MPL 2.0)
@@ -17,17 +28,12 @@ use unicode_width::UnicodeWidthStr;
 use fontdue::{Font, FontSettings};
 use tiny_skia::{Pixmap, PremultipliedColorU8};
 
-/// [Stage 28] WASM 호환 — 폰트를 include_bytes! 로 binary 에 임베드.
-/// 시스템 폰트 검색 불가능한 WASM 환경에서도 일관 렌더링.
-/// 폰트: web/fonts/NanumGothic-Regular.woff2 (SIL OFL 1.1)
-///
-/// 주의: fontdue 는 .ttf/.otf 지원, .woff2 미지원. 따라서 raw woff2 가
-/// 아닌 .ttf 가 필요. 시스템 NanumGothic.ttf 가 가용하면 그것 사용,
-/// 없으면 None (text 렌더 안 함).
+/// [Task #902 v2] RasterPlayer 의 텍스트 렌더링 — 시스템 폰트 검색 (native 전용).
+/// 폰트 임베딩 제거 (메인테이너 요청). 사용자가 `--font-path` 로 추가 경로 지정 가능.
+/// 폰트 미발견 시 None — 텍스트 미렌더 (graceful degradation).
 static KOREAN_FONT: OnceLock<Option<Font>> = OnceLock::new();
 static LATIN_FONT: OnceLock<Option<Font>> = OnceLock::new();
 
-#[cfg(not(target_arch = "wasm32"))]
 fn load_font_from_paths(paths: &[&str]) -> Option<Font> {
     for path in paths {
         let Ok(bytes) = std::fs::read(path) else { continue };
@@ -38,28 +44,14 @@ fn load_font_from_paths(paths: &[&str]) -> Option<Font> {
     None
 }
 
-/// [Stage 28] include_bytes! 로 NanumGothic 임베드 (WASM + native 공통).
-/// SIL OFL 1.1 — `ttfs/embedded/LICENSE.md` 참조.
-const EMBEDDED_NANUM_GOTHIC: &[u8] =
-    include_bytes!("../../../../ttfs/embedded/NanumGothic.ttf");
-
 pub fn get_korean_font() -> Option<&'static Font> {
     KOREAN_FONT.get_or_init(load_korean_font).as_ref()
 }
 
 fn load_korean_font() -> Option<Font> {
-    // 우선: 임베디드 NanumGothic (모든 환경에서 사용 가능, 일관성)
-    if let Ok(font) = Font::from_bytes(EMBEDDED_NANUM_GOTHIC, FontSettings::default()) {
-        return Some(font);
-    }
-    load_system_korean_font()
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn load_system_korean_font() -> Option<Font> {
     let home = std::env::var("HOME").unwrap_or_default();
-    let user_nanum = format!("{}/Library/Fonts/NanumGothic.ttf", home);
-    let user_malgun = format!("{}/Library/Fonts/MALGUN.TTF", home);
+    let user_nanum = format!("{home}/Library/Fonts/NanumGothic.ttf");
+    let user_malgun = format!("{home}/Library/Fonts/MALGUN.TTF");
     load_font_from_paths(&[
         user_nanum.as_str(),
         user_malgun.as_str(),
@@ -73,33 +65,19 @@ fn load_system_korean_font() -> Option<Font> {
     ])
 }
 
-#[cfg(target_arch = "wasm32")]
-fn load_system_korean_font() -> Option<Font> { None }
-
 pub fn get_latin_font() -> Option<&'static Font> {
     LATIN_FONT.get_or_init(load_latin_font).as_ref()
 }
 
 fn load_latin_font() -> Option<Font> {
-    // [Stage 28] NanumGothic 은 Latin glyph 도 포함하므로 fallback 으로 동일 사용.
-    if let Ok(font) = Font::from_bytes(EMBEDDED_NANUM_GOTHIC, FontSettings::default()) {
-        return Some(font);
-    }
-    load_system_latin_font()
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn load_system_latin_font() -> Option<Font> {
     load_font_from_paths(&[
         "/System/Library/Fonts/Helvetica.ttc",
         "/Library/Fonts/Arial.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "C:/Windows/Fonts/arial.ttf",
     ])
+    // fallback: Korean 폰트 (Latin glyph 포함) — 단 별도 로드 X (caller 가 pick_font_for_grapheme 에서 fallback)
 }
-
-#[cfg(target_arch = "wasm32")]
-fn load_system_latin_font() -> Option<Font> { None }
 
 fn pick_font_for_grapheme(g: &str) -> Option<&'static Font> {
     // CJK 영역: Hangul (U+AC00~U+D7A3), CJK Unified Ideographs, etc.

@@ -1138,31 +1138,9 @@ impl SvgRenderer {
                 }
             }
             #[cfg(target_arch = "wasm32")]
-            {
-                // [Stage 28] WASM: RasterPlayer (LO 포팅) 우선 시도 → PNG 임베드.
-                // 실패 시 inline SVG (Stage 25) fallback.
-                let target_w = bbox.width.max(1.0) as f32;
-                let target_h = bbox.height.max(1.0) as f32;
-                if let Some(png_bytes) = rasterize_wmf_direct(data, target_w, target_h) {
-                    (std::borrow::Cow::Owned(png_bytes), "image/png")
-                } else {
-                    match convert_wmf_to_svg(data) {
-                        Some(svg_bytes) => {
-                            if let Some(inline_svg) = wmf_svg_to_inline(
-                                &svg_bytes, bbox.x, bbox.y, bbox.width, bbox.height,
-                            ) {
-                                self.output.push_str(&inline_svg);
-                                self.output.push('\n');
-                                if is_watermark_image { self.output.push_str("</g>\n"); }
-                                if bc_filter_id.is_some() { self.output.push_str("</g>\n"); }
-                                if effect_filter_id.is_some() { self.output.push_str("</g>\n"); }
-                                return;
-                            }
-                            (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml")
-                        }
-                        None => (std::borrow::Cow::Borrowed(data), mime_type),
-                    }
-                }
+            match convert_wmf_to_svg(data) {
+                Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                None => (std::borrow::Cow::Borrowed(data), mime_type),
             }
         } else if mime_type == "image/bmp" {
             match bmp_bytes_to_png_bytes(data) {
@@ -2453,45 +2431,9 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
     converter.run().ok()
 }
 
-/// [Task #902 v2 Stage 25] WMF SVG 를 outer SVG 에 inline 임베드 가능한
-/// 형태로 변환한다. `<image href=...>` (sandboxed) 대신 inline `<svg>` 로
-/// 임베드하여 부모 namespace 의 @font-face / CSS 가 적용되도록.
-///
-/// 동작: WMF SVG 의 `<?xml ...>` prolog 제거 + 루트 `<svg>` 에 x/y/width/height
-/// attribute 삽입. 결과는 outer SVG 의 child 로 직접 삽입 가능.
-pub(crate) fn wmf_svg_to_inline(
-    svg_bytes: &[u8],
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
-) -> Option<String> {
-    let s = std::str::from_utf8(svg_bytes).ok()?;
-    // 1. <?xml ...?> prolog 제거
-    let s = if let Some(end) = s.find("?>") {
-        s[end + 2..].trim_start()
-    } else {
-        s
-    };
-    // 2. 루트 <svg ...> 태그 찾기 + x/y/width/height attribute 삽입
-    let svg_open_end = s.find('>')?;
-    let svg_open = &s[..svg_open_end + 1];
-    let svg_rest = &s[svg_open_end + 1..];
-    // <svg ... > 의 ` ` 후 attr 삽입
-    let pos_attrs = format!(
-        r#" x="{x}" y="{y}" width="{width}" height="{height}" preserveAspectRatio="none""#
-    );
-    let svg_open_with_pos = if svg_open.ends_with("/>") {
-        // self-closing — 매우 드문 케이스
-        svg_open.replace("/>", &format!("{}/>", pos_attrs))
-    } else {
-        svg_open.replace(">", &format!("{}>", pos_attrs))
-    };
-    Some(format!("{svg_open_with_pos}{svg_rest}"))
-}
 
-/// [Task #902 v2 Stage 16] 공개 wrapper — examples / 외부 도구용.
-/// [Stage 28] WASM 도 지원 (RasterPlayer 가 WASM 호환으로 전환됨).
+/// [Task #902 v2 Stage 16] 공개 wrapper — examples / 외부 도구용 (native 전용).
+#[cfg(not(target_arch = "wasm32"))]
 pub fn rasterize_wmf_direct_pub(
     wmf_data: &[u8],
     target_width_px: f32,
@@ -2551,9 +2493,9 @@ pub(crate) fn rasterize_wmf_via_libreoffice(wmf_data: &[u8]) -> Option<Vec<u8>> 
     png_data
 }
 
-/// [Task #902 v2 Stage 16] WMF binary 를 RasterPlayer 로 직접 raster 렌더링한다.
+/// [Task #902 v2 Stage 16] WMF binary 를 RasterPlayer 로 직접 raster 렌더링한다 (native 전용).
 /// LO emfio 포팅된 RasterPlayer 가 사용 가능하면 우선 (정합도 우수), 실패 시 None.
-/// [Stage 28] WASM 도 지원.
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn rasterize_wmf_direct(
     wmf_data: &[u8],
     target_width_px: f32,
@@ -2583,7 +2525,8 @@ pub(crate) fn rasterize_wmf_direct(
 /// Nanum Gothic 등) 사용한 일관 렌더링. 브라우저 fontconfig 의존 제거 → 한컴
 /// viewer 와 더 가까운 시각 정합.
 /// 실패 시 None (caller 는 기존 SVG embed 로 fallback).
-#[cfg(not(target_arch = "wasm32"))]
+/// [메인테이너 요청] resvg optional — `native-skia` feature 활성화 시만 사용 가능.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub(crate) fn rasterize_wmf_svg_to_png(
     svg_bytes: &[u8],
     target_width_px: f32,
@@ -2631,13 +2574,13 @@ pub(crate) fn rasterize_wmf_svg_to_png(
     pixmap.encode_png().ok()
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(any(target_arch = "wasm32", not(feature = "native-skia")))]
 pub(crate) fn rasterize_wmf_svg_to_png(
     _svg_bytes: &[u8],
     _target_width_px: f32,
     _target_height_px: f32,
 ) -> Option<Vec<u8>> {
-    // WASM: resvg 미가용 → caller 에서 SVG embed fallback
+    // resvg 미가용 (WASM 또는 native-skia feature off) → caller 에서 SVG embed fallback
     None
 }
 

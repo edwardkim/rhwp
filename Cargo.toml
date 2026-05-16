@@ -38,28 +38,27 @@ image = { version = "0.25", default-features = false, features = ["bmp", "png"] 
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# [Task #902 v2 Stage 28] WASM 호환 raster: tiny-skia + fontdue 글로벌화
-# (이전: native target only). RasterPlayer 가 WASM 빌드 에서도 동작 → rhwp-studio
-# 가 LO 포팅된 raster 렌더링 사용 가능.
-tiny-skia = "0.11"
-fontdue = "0.9"
 
 console_error_panic_hook = { version = "0.1", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
-native-skia = ["dep:skia-safe"]
+native-skia = ["dep:skia-safe", "dep:resvg"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
 usvg = "0.45"
-# [Task #902 v2 Stage 10] WMF raster 렌더링을 위해 resvg non-optional 화
-# (이전: native-skia feature gated)
-resvg = "0.47"
+# [Task #902 v2 Stage 10] WMF raster 렌더링을 위해 resvg 사용 (native 전용)
+# [메인테이너 요청] optional 복원
+resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 ttf-parser = "0.25"
+# [Task #902 v2 Stage 28] RasterPlayer (LO emfio 포팅) 의존성 — native 전용.
+# rhwp-studio (WASM) 는 SVG 경로 사용으로 미포함, 빌드 크기 보존.
+tiny-skia = "0.11"
+fontdue = "0.9"
 skia-safe = { version = "0.97.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -157,11 +156,6 @@ unexpected_cfgs = { level = "allow", check-cfg = ['cfg(feature, values("tracing"
 [[example]]
 name = "pr599_png_gateway"
 required-features = ["native-skia"]
-
-# [Task #902 v2 Stage 31] wasm-opt 가 RasterPlayer 의 일부 코드 경로를 잘못
-# 제거할 가능성 진단을 위해 비활성화 옵션 추가.
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = false
 
 [profile.release]
 lto = true

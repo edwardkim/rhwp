@@ -1,3 +1,13 @@
+/* -*- Mode: rust; tab-width: 4; indent-tabs-mode: nil -*- */
+/*
+ * This file is derived from LibreOffice's emfio module:
+ *   https://github.com/LibreOffice/core/blob/master/emfio/source/reader/mtftools.cxx
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 //! [Task #902 v2 Stage 12] WMF raster Player 의 device context state.
 //!
 //! 알고리즘 출처: LibreOffice emfio (MPL 2.0)
