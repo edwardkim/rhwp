@@ -21,15 +21,21 @@ export class PageRenderer {
 
   constructor(private wasm: WasmBridge) {}
 
-  /** 페이지를 Canvas에 렌더링한다 (scale = zoom × DPR) */
-  renderPage(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  /** 페이지를 Canvas에 렌더링한다 (renderScale = zoom × DPR) */
+  renderPage(
+    pageIdx: number,
+    canvas: HTMLCanvasElement,
+    renderScale: number,
+    displayScale: number,
+    dpr: number,
+  ): void {
     // Task #516 Stage 5.2: 다층 layer 모드.
     // 1) 본문 Canvas 는 'flow' 필터로 BehindText/InFrontOfText 그림 제외
     // 2) overlay (BehindText / InFrontOfText) 는 같은 부모 컨테이너에 <img> 로 추가
-    this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow');
-    this.drawMarginGuides(pageIdx, canvas, scale);
-    this.applyOverlays(pageIdx, canvas, scale);
-    this.scheduleReRender(pageIdx, canvas, scale);
+    this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
+    this.drawMarginGuides(pageIdx, canvas, renderScale);
+    this.applyOverlays(pageIdx, canvas, displayScale, dpr);
+    this.scheduleReRender(pageIdx, canvas, renderScale);
   }
 
   /**
@@ -40,7 +46,12 @@ export class PageRenderer {
    * - mix-blend-mode 로 워터마크 효과 (multiply 등) 적용
    * - pointer-events: none — hit-test 는 Canvas (텍스트) 가 받음
    */
-  private applyOverlays(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  private applyOverlays(
+    pageIdx: number,
+    canvas: HTMLCanvasElement,
+    displayScale: number,
+    dpr: number,
+  ): void {
     const parent = canvas.parentElement;
     if (!parent) return;
 
@@ -58,17 +69,18 @@ export class PageRenderer {
     const { behind, front } = this.getOverlayImages(pageIdx);
     if (behind.length === 0 && front.length === 0) return;
 
-    // 위치/크기 정합용 공통 정보
-    const dpr = scale; // scale = zoom × DPR. CSS 표시 크기 = canvas / dpr
-    const cssWidth = canvas.width / dpr;
-    const cssHeight = canvas.height / dpr;
+    // 위치/크기 정합용 공통 정보. Canvas 물리 픽셀은 page × zoom × DPR 이므로
+    // CSS 표시 크기는 실제 DPR 로만 나눈다.
+    const safeDpr = dpr > 0 && Number.isFinite(dpr) ? dpr : 1;
+    const cssWidth = canvas.width / safeDpr;
+    const cssHeight = canvas.height / safeDpr;
     const top = canvas.style.top;
     const left = canvas.style.left;
     const transform = canvas.style.transform;
 
     // BehindText overlay (Canvas 뒤)
     if (behind.length > 0) {
-      const layer = this.createOverlayLayer(behind, cssWidth, cssHeight);
+      const layer = this.createOverlayLayer(behind, displayScale);
       layer.dataset.rhwpOverlay = `behind-${pageIdx}`;
       layer.style.position = 'absolute';
       layer.style.top = top;
@@ -76,6 +88,7 @@ export class PageRenderer {
       layer.style.transform = transform;
       layer.style.width = `${cssWidth}px`;
       layer.style.height = `${cssHeight}px`;
+      layer.style.overflow = 'hidden';
       layer.style.pointerEvents = 'none';
       layer.style.zIndex = '0';  // Canvas (z=auto) 보다 뒤
       // Canvas 보다 먼저 들어가도록 prepend
@@ -84,7 +97,7 @@ export class PageRenderer {
 
     // InFrontOfText overlay (Canvas 앞)
     if (front.length > 0) {
-      const layer = this.createOverlayLayer(front, cssWidth, cssHeight);
+      const layer = this.createOverlayLayer(front, displayScale);
       layer.dataset.rhwpOverlay = `front-${pageIdx}`;
       layer.style.position = 'absolute';
       layer.style.top = top;
@@ -92,6 +105,7 @@ export class PageRenderer {
       layer.style.transform = transform;
       layer.style.width = `${cssWidth}px`;
       layer.style.height = `${cssHeight}px`;
+      layer.style.overflow = 'hidden';
       layer.style.pointerEvents = 'none';
       layer.style.zIndex = '2';  // Canvas (z=auto) 보다 앞
       parent.appendChild(layer);
@@ -101,19 +115,18 @@ export class PageRenderer {
   /** overlay 레이어 div 를 생성하고 그림 <img> 들을 추가 */
   private createOverlayLayer(
     images: OverlayImageInfo[],
-    cssWidth: number,
-    cssHeight: number,
+    displayScale: number,
   ): HTMLDivElement {
     const layer = document.createElement('div');
     for (const img of images) {
       const el = document.createElement('img');
       el.src = `data:${img.mime};base64,${img.base64}`;
       el.style.position = 'absolute';
-      // bbox 는 페이지 좌표계 (CSS px 기준), Canvas 와 동일 좌표계.
-      el.style.left = `${img.bbox.x}px`;
-      el.style.top = `${img.bbox.y}px`;
-      el.style.width = `${img.bbox.width}px`;
-      el.style.height = `${img.bbox.height}px`;
+      // bbox 는 zoom=1 페이지 좌표계이므로 화면 표시 배율을 적용한다.
+      el.style.left = `${img.bbox.x * displayScale}px`;
+      el.style.top = `${img.bbox.y * displayScale}px`;
+      el.style.width = `${img.bbox.width * displayScale}px`;
+      el.style.height = `${img.bbox.height * displayScale}px`;
       el.style.pointerEvents = 'none';
       // CSS filter (그림 효과 + 밝기 + 대비)
       const filterParts: string[] = [];
@@ -138,7 +151,6 @@ export class PageRenderer {
         el.style.mixBlendMode = 'multiply';
       }
       // transform (회전/플립) — 작업 우선순위 낮음, 본 사이클은 미적용
-      void cssWidth; void cssHeight;
       layer.appendChild(el);
     }
     return layer;
@@ -227,7 +239,7 @@ export class PageRenderer {
    * 아직 디코딩되지 않았을 수 있으므로 점진적 재렌더링한다.
    * 200ms, 600ms 두 번 재시도하여 대부분의 이미지 로드를 커버한다.
    */
-  private scheduleReRender(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  private scheduleReRender(pageIdx: number, canvas: HTMLCanvasElement, renderScale: number): void {
     this.cancelReRender(pageIdx);
 
     const delays = [200, 600];
@@ -236,8 +248,8 @@ export class PageRenderer {
     for (const delay of delays) {
       const timer = setTimeout(() => {
         if (canvas.parentElement) {
-          this.wasm.renderPageToCanvas(pageIdx, canvas, scale);
-          this.drawMarginGuides(pageIdx, canvas, scale);
+          this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
+          this.drawMarginGuides(pageIdx, canvas, renderScale);
         }
       }, delay);
       timers.push(timer);

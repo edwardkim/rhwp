@@ -166,7 +166,7 @@ export class CanvasView {
 
     // WASM이 Canvas 크기를 자동 설정한다 (물리 픽셀 = 페이지크기 × zoom × DPR)
     try {
-      this.pageRenderer.renderPage(pageIdx, canvas, renderScale);
+      this.pageRenderer.renderPage(pageIdx, canvas, renderScale, zoom, dpr);
     } catch (e) {
       console.error(`[CanvasView] 페이지 ${pageIdx} 렌더링 실패:`, e);
       this.canvasPool.release(pageIdx);
