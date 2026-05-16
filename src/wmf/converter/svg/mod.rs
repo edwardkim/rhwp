@@ -101,6 +101,16 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("xmlns", "http://www.w3.org/2000/svg")
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
 
+        // [Task #902 v2 옵션 2] 한국어 폰트 @font-face base64 임베딩 — SVG 경로만.
+        // WASM (rhwp-studio Canvas2D) 환경에서 브라우저 fontconfig 의존 제거,
+        // 일관된 한국어 glyph 너비/배치 제공. NanumGothic Regular (SIL OFL 1.1).
+        // RasterPlayer (native 전용) 는 별도, 본 임베딩은 SVG converter 출력에만 적용.
+        if let Some(style_content) = build_font_face_style() {
+            let style_node = Node::new("style")
+                .add(Node::new_text(&style_content));
+            document = document.add(style_node);
+        }
+
         if !definitions.is_empty() {
             let mut defs = Node::new("defs");
             for v in definitions {
@@ -2413,6 +2423,38 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ) -> Result<Self, PlayError> {
         Ok(self)
     }
+}
+
+/// [Task #902 v2 옵션 2] @font-face style 빌드 — NanumGothic Regular embed (SVG 전용).
+/// 1회 base64 encode 캐시 (OnceLock). SIL OFL 1.1 라이센스.
+/// SVG 출력 시작에 `<style>` 노드로 추가되어 WMF 내부 텍스트 렌더링에 적용.
+fn build_font_face_style() -> Option<String> {
+    use base64::Engine;
+    use std::sync::OnceLock;
+    static CACHE: OnceLock<Option<String>> = OnceLock::new();
+    CACHE
+        .get_or_init(|| {
+            let font_bytes: &[u8] = include_bytes!(
+                "../../../../web/fonts/NanumGothic-Regular.woff2"
+            );
+            if font_bytes.is_empty() {
+                return None;
+            }
+            let b64 = base64::engine::general_purpose::STANDARD.encode(font_bytes);
+            let css = format!(
+                r#"@font-face {{
+  font-family: 'NanumGothicEmbedded';
+  src: url('data:font/woff2;base64,{b64}') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}}
+text, tspan {{
+  font-family: 'NanumGothicEmbedded', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif !important;
+}}"#
+            );
+            Some(css)
+        })
+        .clone()
 }
 
 /// [Task #860] Node 의 x+width attribute 합산 (viewBox 자동 확장용).
