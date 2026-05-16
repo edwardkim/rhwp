@@ -222,6 +222,8 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - P6 adds native Skia `RawSvg` fragment rasterization through `resvg`, with external file href loading disabled.
 - P11 adds the Text IR v2 compatibility contract: `textSources`, per-`TextRun` source spans, paint style metadata, run placement/clusters, feature arrays, and explicit special text visual ops. `TextRun` remains the fallback replay path.
 - P12 adds guarded `GlyphRun` sidecar variants, font blob/face identity metadata, and a shape-lowering API. Canvas2D/layered SVG still use `TextRun` fallback; native Skia also keeps the fallback until exact blob-backed typeface replay is wired. Normal lowering does not emit glyph ids until a shaping pass explicitly inserts them.
+- P14 adds guarded `GlyphOutline` sidecar variants and backend text variant selection diagnostics. Existing renderers still keep the `TextRun` fallback path.
+- P15 adds diagnostics-only CanvasKit replay policy planning through `getCanvasKitReplayPlan(page, mode)`. `default` mode forbids hidden Canvas2D overlays, while `compat` mode reports transition overlays explicitly.
 - CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
 - The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; CanvasKit glyph replay, exact native glyph replay, real font blob extraction, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.

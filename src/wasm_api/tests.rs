@@ -92,6 +92,28 @@
     }
 
     #[test]
+    fn test_canvaskit_replay_plan_export_uses_mode_policy() {
+        let doc = HwpDocument::create_empty();
+
+        let default_json = doc
+            .get_canvaskit_replay_plan_native(0, "default")
+            .expect("empty document CanvasKit plan should export");
+        assert!(default_json.contains("\"mode\":\"default\""));
+        assert!(default_json.contains("\"hiddenCanvas2dOverlayAllowed\":false"));
+        assert!(default_json.contains("\"directReplayRequired\":true"));
+
+        let compat_json = doc
+            .get_canvaskit_replay_plan_native(0, "compat")
+            .expect("compat CanvasKit plan should export");
+        assert!(compat_json.contains("\"mode\":\"compat\""));
+        assert!(compat_json.contains("\"hiddenCanvas2dOverlayAllowed\":true"));
+        assert!(compat_json.contains("\"directReplayRequired\":false"));
+
+        let invalid = doc.get_canvaskit_replay_plan_native(0, "canvas2d");
+        assert!(invalid.is_err());
+    }
+
+    #[test]
     fn test_normalize_canvas_scale_rejects_invalid_page_dimensions() {
         for (width, height) in [
             (0.0, 100.0),

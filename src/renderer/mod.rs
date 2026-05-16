@@ -8,6 +8,7 @@ use serde::Serialize;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub mod canvas;
+pub mod canvaskit_policy;
 pub mod composer;
 pub mod equation;
 pub mod font_metrics_data;
