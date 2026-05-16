@@ -7,6 +7,10 @@ use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
 use super::super::helpers::{navigate_path_to_table, border_line_type_to_u8_val, color_ref_to_css};
 
+fn top_level_u32(value: Option<&serde_json::Value>, key: &str) -> Option<u32> {
+    value?.get(key)?.as_u64().and_then(|v| u32::try_from(v).ok())
+}
+
 impl DocumentCore {
     pub(crate) fn get_table_mut(
         &mut self,
@@ -384,11 +388,17 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use super::super::helpers::{json_u32, json_i16, json_u8, json_bool};
 
+        let parsed_json = serde_json::from_str::<serde_json::Value>(json).ok();
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         let cell = table.cells.get_mut(cell_idx)
             .ok_or_else(|| HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx)))?;
 
-        if let Some(v) = json_u32(json, "width") { cell.width = v; }
+        let width = if parsed_json.is_some() {
+            top_level_u32(parsed_json.as_ref(), "width")
+        } else {
+            json_u32(json, "width")
+        };
+        if let Some(v) = width { cell.width = v; }
         if let Some(v) = json_u32(json, "height") { cell.height = v; }
         if let Some(v) = json_i16(json, "paddingLeft") { cell.padding.left = v; }
         if let Some(v) = json_i16(json, "paddingRight") { cell.padding.right = v; }

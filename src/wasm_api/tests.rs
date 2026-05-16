@@ -15833,6 +15833,88 @@
     }
 
     #[test]
+    fn test_set_cell_properties_keeps_width_with_border_widths() {
+        let bytes = std::fs::read("saved/blank2010.hwp").expect("blank2010.hwp 읽기 실패");
+        let mut doc = HwpDocument::from_bytes(&bytes).unwrap();
+        doc.convert_to_editable_native().unwrap();
+
+        doc.create_table_ex_native(0, 0, 0, 1, 1, true, Some(&[400])).unwrap();
+        let (para_idx, ctrl_idx) = doc.document.sections[0].paragraphs.iter()
+            .enumerate()
+            .find_map(|(pi, para)| {
+                para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
+                    if matches!(ctrl, crate::model::control::Control::Table(_)) {
+                        Some((pi, ci))
+                    } else {
+                        None
+                    }
+                })
+            })
+            .expect("생성된 표 컨트롤");
+
+        doc.set_cell_properties_native(
+            0,
+            para_idx,
+            ctrl_idx,
+            0,
+            r##"{"width":400,"height":760,"borderLeft":{"type":1,"width":1,"color":"#000000"},"borderRight":{"type":0,"width":0,"color":"#000000"},"borderTop":{"type":1,"width":1,"color":"#000000"},"borderBottom":{"type":1,"width":1,"color":"#000000"}}"##,
+        )
+        .unwrap();
+
+        if let crate::model::control::Control::Table(t) =
+            &doc.document.sections[0].paragraphs[para_idx].controls[ctrl_idx]
+        {
+            assert_eq!(t.cells[0].width, 400);
+            assert_eq!(t.cells[0].height, 760);
+        } else {
+            panic!("생성된 컨트롤이 표가 아님");
+        }
+    }
+
+    #[test]
+    fn test_update_ctrl_dimensions_writes_common_obj_width_offsets() {
+        let bytes = std::fs::read("saved/blank2010.hwp").expect("blank2010.hwp 읽기 실패");
+        let mut doc = HwpDocument::from_bytes(&bytes).unwrap();
+        doc.convert_to_editable_native().unwrap();
+
+        doc.create_table_ex_native(0, 0, 0, 3, 2, true, Some(&[1, 24])).unwrap();
+        let (para_idx, ctrl_idx) = doc.document.sections[0].paragraphs.iter()
+            .enumerate()
+            .find_map(|(pi, para)| {
+                para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
+                    if matches!(ctrl, crate::model::control::Control::Table(_)) {
+                        Some((pi, ci))
+                    } else {
+                        None
+                    }
+                })
+            })
+            .expect("생성된 표 컨트롤");
+
+        if let crate::model::control::Control::Table(t) =
+            &mut doc.document.sections[0].paragraphs[para_idx].controls[ctrl_idx]
+        {
+            for cell in &mut t.cells {
+                cell.width = if cell.col == 0 { 1 } else { 24 };
+                cell.height = match cell.row {
+                    1 => 260,
+                    _ => 4200,
+                };
+            }
+            t.update_ctrl_dimensions();
+
+            let reparsed = crate::parser::control::parse_common_obj_attr(&t.raw_ctrl_data);
+            assert_eq!(reparsed.horizontal_offset, 0);
+            assert_eq!(reparsed.width, 25);
+            assert_eq!(reparsed.height, 8660);
+            assert_eq!(t.common.width, 25);
+            assert_eq!(t.common.height, 8660);
+        } else {
+            panic!("생성된 컨트롤이 표가 아님");
+        }
+    }
+
+    #[test]
     fn test_extract_thumbnail_with_preview() {
         // PrvImage가 있는 HWP 파일 테스트
         let data = std::fs::read("samples/biz_plan.hwp").expect("biz_plan.hwp 읽기 실패");

@@ -436,22 +436,29 @@ impl DocumentCore {
         let total_width: u32 = col_widths.iter().sum();
         let total_height: u32 = row_heights.iter().sum();
 
-        // raw_ctrl_data: CommonObjAttr (table.attr 이후 데이터)
-        // [0..4] vertical_offset, [4..8] horizontal_offset,
-        // [8..12] width, [12..16] height, [16..20] z_order,
-        // [20..22] margin.left, [22..24] margin.right,
-        // [24..26] margin.top, [26..28] margin.bottom,
-        // [28..32] instance_id, [32..34] desc_len(=0)
+        // table.attr: 기존 문서의 표와 동일한 패턴 사용
+        // 0x082A2311 = treat_as_char | vert_rel_to=Para | horz_rel_to=Column |
+        //              allow_overlap | width_criterion | various layout flags
+        // 정상 HWP 파일의 모든 표에서 사용되는 표준값
+        let table_attr: u32 = 0x082A2311;
+
+        // raw_ctrl_data: CommonObjAttr
+        // [0..4] attr, [4..8] vertical_offset, [8..12] horizontal_offset,
+        // [12..16] width, [16..20] height, [20..24] z_order,
+        // [24..26] margin.left, [26..28] margin.right,
+        // [28..30] margin.top, [30..32] margin.bottom,
+        // [32..36] instance_id, [36..38] desc_len(=0)
         let outer_margin: i16 = 283; // 바깥 여백 ~1mm
         let mut raw_ctrl_data = vec![0u8; 38]; // 32(base) + 2(desc_len) + 4(extra)
-        raw_ctrl_data[8..12].copy_from_slice(&total_width.to_le_bytes());
-        raw_ctrl_data[12..16].copy_from_slice(&total_height.to_le_bytes());
+        raw_ctrl_data[0..4].copy_from_slice(&table_attr.to_le_bytes());
+        raw_ctrl_data[12..16].copy_from_slice(&total_width.to_le_bytes());
+        raw_ctrl_data[16..20].copy_from_slice(&total_height.to_le_bytes());
         // 바깥 여백 (left, right, top, bottom)
-        raw_ctrl_data[20..22].copy_from_slice(&outer_margin.to_le_bytes());
-        raw_ctrl_data[22..24].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[24..26].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[26..28].copy_from_slice(&outer_margin.to_le_bytes());
-        // [28..32] instance_id (DIFF-7 수정: 해시 기반 유니크 값 생성)
+        raw_ctrl_data[28..30].copy_from_slice(&outer_margin.to_le_bytes());
+        raw_ctrl_data[30..32].copy_from_slice(&outer_margin.to_le_bytes());
+        // [32..36] instance_id (DIFF-7 수정: 해시 기반 유니크 값 생성)
         // 정상 HWP 파일에서는 instance_id가 고유한 비-0 값을 가짐
         let instance_id: u32 = {
             // 행/열 수, 셀 수, 총 폭/높이를 조합한 간단한 해시
@@ -464,8 +471,8 @@ impl DocumentCore {
             if h == 0 { h = 0x7c154b69; } // 절대 0이 되지 않도록
             h
         };
-        raw_ctrl_data[28..32].copy_from_slice(&instance_id.to_le_bytes());
-        // [32..34] desc_len = 0, [34..38] reserved = 0
+        raw_ctrl_data[32..36].copy_from_slice(&instance_id.to_le_bytes());
+        // [36..38] desc_len = 0
 
         // row_sizes: 각 행의 셀 수
         let row_sizes: Vec<i16> = (0..row_count)
@@ -494,12 +501,6 @@ impl DocumentCore {
             top: if table_padding_pt[2] > 0.01 { (table_padding_pt[2] * 100.0).round() as i16 } else { 141 },
             bottom: if table_padding_pt[3] > 0.01 { (table_padding_pt[3] * 100.0).round() as i16 } else { 141 },
         };
-
-        // table.attr: 기존 문서의 표와 동일한 패턴 사용
-        // 0x082A2311 = treat_as_char | vert_rel_to=Para | horz_rel_to=Column |
-        //              allow_overlap | width_criterion | various layout flags
-        // 정상 HWP 파일의 모든 표에서 사용되는 표준값
-        let table_attr: u32 = 0x082A2311;
 
         // raw_table_record_attr: 정상 파일 패턴 기반 (DIFF-5 수정)
         // bit 1: 셀 분리 금지 (항상 설정), bit 2: repeat_header

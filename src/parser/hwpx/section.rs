@@ -745,14 +745,10 @@ fn parse_table(
         buf.clear();
     }
 
-    // row_sizes 설정 (행별 셀 높이의 최대값)
+    // row_sizes는 HWP TABLE 레코드의 행별 셀 수이다.
     for r in 0..table.row_count {
-        let max_h = table.cells.iter()
-            .filter(|c| c.row == r && c.row_span == 1)
-            .map(|c| c.height as i16)
-            .max()
-            .unwrap_or(0);
-        row_sizes.push(max_h);
+        let cell_count = table.cells.iter().filter(|c| c.row == r).count() as i16;
+        row_sizes.push(cell_count);
     }
     table.row_sizes = row_sizes;
 
