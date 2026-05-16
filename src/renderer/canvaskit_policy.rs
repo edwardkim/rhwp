@@ -10,7 +10,7 @@ use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectedReason,
     VariantSelectionBackend,
 };
-use crate::renderer::render_tree::{FieldMarkerType, TextRunNode};
+use crate::renderer::render_tree::{FieldMarkerType, PageBackgroundNode, TextRunNode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -290,17 +290,23 @@ impl CanvasKitReplayPlanBuilder {
 
     fn item_for_op(&self, op: &PaintOp, path: String) -> CanvasKitReplayItem {
         match op {
-            PaintOp::PageBackground { .. } => direct_item(
-                path,
-                "pageBackground",
-                CanvasKitReplayFeature::PageBackground,
-            ),
+            PaintOp::PageBackground { background, .. } => {
+                self.page_background_item(path, background)
+            }
             PaintOp::Line { .. }
             | PaintOp::Rectangle { .. }
             | PaintOp::Ellipse { .. }
-            | PaintOp::Path { .. }
-            | PaintOp::FootnoteMarker { .. } => {
+            | PaintOp::Path { .. } => {
                 direct_item(path, paint_op_type(op), CanvasKitReplayFeature::VectorShape)
+            }
+            PaintOp::FootnoteMarker { .. } => {
+                let mut item = self.transition_overlay_item(
+                    path,
+                    paint_op_type(op),
+                    CanvasKitReplayFeature::TextSpecialVisual,
+                );
+                item.detail = Some("footnoteMarker".to_string());
+                item
             }
             PaintOp::Image { .. } => {
                 self.transition_overlay_item(path, "image", CanvasKitReplayFeature::RasterImage)
@@ -345,14 +351,44 @@ impl CanvasKitReplayPlanBuilder {
         }
     }
 
+    fn page_background_item(
+        &self,
+        path: String,
+        background: &PageBackgroundNode,
+    ) -> CanvasKitReplayItem {
+        if background.image.is_some() {
+            let mut item = self.transition_overlay_item(
+                path,
+                "pageBackground",
+                CanvasKitReplayFeature::RasterImage,
+            );
+            item.detail = Some("imageFill".to_string());
+            item
+        } else if background.gradient.is_some() {
+            let mut item = self.transition_overlay_item(
+                path,
+                "pageBackground",
+                CanvasKitReplayFeature::PageBackground,
+            );
+            item.detail = Some("gradientFill".to_string());
+            item
+        } else {
+            direct_item(
+                path,
+                "pageBackground",
+                CanvasKitReplayFeature::PageBackground,
+            )
+        }
+    }
+
     fn text_run_item(&self, path: String, run: &TextRunNode) -> CanvasKitReplayItem {
         if let Some(detail) = text_run_transition_detail(run) {
             let mut item =
-                self.transition_overlay_item(path, "text", CanvasKitReplayFeature::TextRun);
+                self.transition_overlay_item(path, "textRun", CanvasKitReplayFeature::TextRun);
             item.detail = Some(detail.to_string());
             item
         } else {
-            direct_item(path, "text", CanvasKitReplayFeature::TextRun)
+            direct_item(path, "textRun", CanvasKitReplayFeature::TextRun)
         }
     }
 
@@ -455,7 +491,7 @@ fn direct_item(
 fn paint_op_type(op: &PaintOp) -> &'static str {
     match op {
         PaintOp::PageBackground { .. } => "pageBackground",
-        PaintOp::TextRun { .. } => "text",
+        PaintOp::TextRun { .. } => "textRun",
         PaintOp::GlyphRun { .. } => "glyphRun",
         PaintOp::GlyphOutline { .. } => "glyphOutline",
         PaintOp::CharOverlap { .. } => "charOverlap",
@@ -544,9 +580,12 @@ fn selected_reason_as_str(reason: VariantSelectedReason) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::style::ImageFillMode;
     use crate::paint::LayerNode;
-    use crate::renderer::render_tree::{BoundingBox, ImageNode};
-    use crate::renderer::TextStyle;
+    use crate::renderer::render_tree::{
+        BoundingBox, FootnoteMarkerNode, ImageNode, PageBackgroundImage,
+    };
+    use crate::renderer::{GradientFillInfo, TextStyle};
 
     fn bbox() -> BoundingBox {
         BoundingBox::new(0.0, 0.0, 20.0, 20.0)
@@ -579,6 +618,19 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: FieldMarkerType::None,
+        }
+    }
+
+    fn page_background(
+        image: Option<PageBackgroundImage>,
+        gradient: Option<Box<GradientFillInfo>>,
+    ) -> PageBackgroundNode {
+        PageBackgroundNode {
+            background_color: None,
+            border_color: None,
+            border_width: 0.0,
+            gradient,
+            image,
         }
     }
 
@@ -619,6 +671,57 @@ mod tests {
     }
 
     #[test]
+    fn page_background_image_and_gradient_are_policy_visible() {
+        let image_background = page_background(
+            Some(PageBackgroundImage {
+                data: vec![1, 2, 3],
+                fill_mode: ImageFillMode::FitToSize,
+            }),
+            None,
+        );
+        let gradient_background = page_background(
+            None,
+            Some(Box::new(GradientFillInfo {
+                gradient_type: 1,
+                angle: 0,
+                center_x: 50,
+                center_y: 50,
+                colors: vec![0x0000_0000, 0x00FF_FFFF],
+                positions: vec![0.0, 1.0],
+            })),
+        );
+        let tree = tree_with_ops(vec![
+            PaintOp::PageBackground {
+                bbox: bbox(),
+                background: image_background,
+            },
+            PaintOp::PageBackground {
+                bbox: bbox(),
+                background: gradient_background,
+            },
+        ]);
+
+        let default_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(default_plan.summary.direct_required_items, 2);
+        assert_eq!(
+            default_plan.items[0].feature,
+            CanvasKitReplayFeature::RasterImage
+        );
+        assert_eq!(default_plan.items[0].detail.as_deref(), Some("imageFill"));
+        assert_eq!(
+            default_plan.items[1].feature,
+            CanvasKitReplayFeature::PageBackground
+        );
+        assert_eq!(
+            default_plan.items[1].detail.as_deref(),
+            Some("gradientFill")
+        );
+
+        let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
+        assert_eq!(compat_plan.summary.compat_overlay_items, 2);
+    }
+
+    #[test]
     fn simple_text_is_direct_but_text_effect_is_policy_visible() {
         let mut vertical = text_run("A");
         vertical.is_vertical = true;
@@ -645,6 +748,55 @@ mod tests {
         assert_eq!(compat_plan.summary.direct_items, 1);
         assert_eq!(compat_plan.summary.compat_overlay_items, 1);
         assert_eq!(compat_plan.items[1].detail.as_deref(), Some("verticalText"));
+    }
+
+    #[test]
+    fn text_run_op_type_matches_layer_tree_schema_name() {
+        let tree = tree_with_ops(vec![PaintOp::TextRun {
+            bbox: bbox(),
+            run: text_run("A"),
+        }]);
+
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+
+        assert_eq!(plan.items[0].op_type, "textRun");
+    }
+
+    #[test]
+    fn footnote_marker_is_reported_as_text_special_visual() {
+        let tree = tree_with_ops(vec![PaintOp::FootnoteMarker {
+            bbox: bbox(),
+            marker: FootnoteMarkerNode {
+                number: 1,
+                text: "1)".to_string(),
+                base_font_size: 12.0,
+                font_family: "Test".to_string(),
+                color: 0x0000_0000,
+                section_index: 0,
+                para_index: 0,
+                control_index: 0,
+            },
+        }]);
+
+        let default_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(
+            default_plan.items[0].feature,
+            CanvasKitReplayFeature::TextSpecialVisual
+        );
+        assert_eq!(
+            default_plan.items[0].status,
+            CanvasKitReplayStatus::DirectRequired
+        );
+        assert_eq!(
+            default_plan.items[0].detail.as_deref(),
+            Some("footnoteMarker")
+        );
+
+        let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
+        assert_eq!(
+            compat_plan.items[0].status,
+            CanvasKitReplayStatus::CompatOverlay
+        );
     }
 
     #[test]

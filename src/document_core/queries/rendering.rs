@@ -159,7 +159,7 @@ impl DocumentCore {
 
         let mode = CanvasKitReplayMode::from_str(mode).ok_or_else(|| {
             HwpError::RenderError(format!(
-                "지원하지 않는 CanvasKit replay mode입니다: {mode}"
+                "지원하지 않는 CanvasKit replay mode입니다: {mode}. allowed modes: default, compat"
             ))
         })?;
         let tree = self.build_page_layer_tree(page_num)?;

@@ -110,7 +110,10 @@
         assert!(compat_json.contains("\"directReplayRequired\":false"));
 
         let invalid = doc.get_canvaskit_replay_plan_native(0, "canvas2d");
-        assert!(invalid.is_err());
+        let error = invalid.expect_err("unsupported CanvasKit replay mode should fail");
+        let message = error.to_string();
+        assert!(message.contains("canvas2d"));
+        assert!(message.contains("allowed modes: default, compat"));
     }
 
     #[test]
