@@ -7,7 +7,9 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
-use crate::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp, PaintVariantMeta};
+use crate::paint::{
+    LayerNode, LayerNodeKind, PageLayerTree, PaintOp, PaintVariantMeta, TextVariantKind,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TextVariantScopeError {
@@ -18,6 +20,17 @@ pub enum TextVariantScopeError {
     },
     MissingDefaultFallback {
         equivalence_group: String,
+        leaf: String,
+    },
+    MissingSidecarAnchorOpId {
+        equivalence_group: String,
+        variant_id: String,
+        leaf: String,
+    },
+    InvalidSidecarAnchor {
+        equivalence_group: String,
+        variant_id: String,
+        anchor_op_id: String,
         leaf: String,
     },
     EmptyVariantSet {
@@ -57,6 +70,23 @@ impl fmt::Display for TextVariantScopeError {
             } => write!(
                 f,
                 "text variant group `{equivalence_group}` in leaf `{leaf}` has no default fallback"
+            ),
+            Self::MissingSidecarAnchorOpId {
+                equivalence_group,
+                variant_id,
+                leaf,
+            } => write!(
+                f,
+                "text sidecar variant `{variant_id}` in group `{equivalence_group}` at leaf `{leaf}` has no anchorOpId"
+            ),
+            Self::InvalidSidecarAnchor {
+                equivalence_group,
+                variant_id,
+                anchor_op_id,
+                leaf,
+            } => write!(
+                f,
+                "text sidecar variant `{variant_id}` in group `{equivalence_group}` at leaf `{leaf}` anchors `{anchor_op_id}`, expected the same paint-order slot"
             ),
             Self::EmptyVariantSet {
                 equivalence_group,
@@ -140,6 +170,7 @@ fn validate_leaf(
         let Some(variant) = op_variant(op) else {
             continue;
         };
+        validate_sidecar_anchor(&variant, &leaf_path)?;
         if let Some(first_leaf) = group_leaf_paths.get(&variant.equivalence_group) {
             if first_leaf != &leaf_path {
                 return Err(TextVariantScopeError::CrossLeafGroup {
@@ -217,8 +248,37 @@ fn validate_leaf(
 fn op_variant(op: &PaintOp) -> Option<PaintVariantMeta> {
     match op {
         PaintOp::GlyphRun { run, .. } => Some(run.variant.clone()),
+        PaintOp::GlyphOutline { outline, .. } => Some(outline.variant.clone()),
         _ => None,
     }
+}
+
+fn validate_sidecar_anchor(
+    variant: &PaintVariantMeta,
+    leaf_path: &str,
+) -> Result<(), TextVariantScopeError> {
+    if variant.variant_kind != TextVariantKind::GlyphOutline {
+        return Ok(());
+    }
+    let Some(anchor_op_id) = &variant.anchor_op_id else {
+        return Err(TextVariantScopeError::MissingSidecarAnchorOpId {
+            equivalence_group: variant.equivalence_group.clone(),
+            variant_id: variant.variant_id.clone(),
+            leaf: leaf_path.to_string(),
+        });
+    };
+    // Schema v1 does not assign an explicit op id to the fallback TextRun.
+    // The equivalence group is the exported paint-order slot id, so P14
+    // sidecars anchor to that slot until per-op ids exist.
+    if anchor_op_id != &variant.equivalence_group {
+        return Err(TextVariantScopeError::InvalidSidecarAnchor {
+            equivalence_group: variant.equivalence_group.clone(),
+            variant_id: variant.variant_id.clone(),
+            anchor_op_id: anchor_op_id.clone(),
+            leaf: leaf_path.to_string(),
+        });
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -226,15 +286,16 @@ mod tests {
     use super::*;
     use crate::paint::resources::ResourceArena;
     use crate::paint::{
-        FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphRange,
-        GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, LayerAffineTransform,
-        LayerGlyphRunPaint, LayerNode, LayerOutputOptions, LayerPoint, PaintTextStyle,
-        RenderProfile, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextSourceId,
-        TextSourceRange, TextSourceSpan, TextSourceTable, TextVariantKind, TextVariantQuality,
-        WritingMode,
+        FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
+        GlyphOutlinePayloadKind, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
+        GlyphRunReplayEligibility, LayerAffineTransform, LayerGlyphOutlinePaint,
+        LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerOutputOptions, LayerPoint,
+        PaintTextStyle, RenderProfile, ScriptTag, ShapeKey, ShapingEngineId, TextDirection,
+        TextSourceId, TextSourceRange, TextSourceSpan, TextSourceTable, TextVariantKind,
+        TextVariantQuality, WritingMode,
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
-    use crate::renderer::TextStyle;
+    use crate::renderer::{PathCommand, TextStyle};
 
     fn bbox() -> BoundingBox {
         BoundingBox::new(0.0, 0.0, 10.0, 10.0)
@@ -318,6 +379,58 @@ mod tests {
                 writing_mode: WritingMode::HorizontalTb,
                 orientation: GlyphRunOrientation::Horizontal,
                 glyph_transforms: None,
+                diagnostics: GlyphRunDiagnostics {
+                    quality: TextVariantQuality::Exact,
+                    replay_eligibility: GlyphRunReplayEligibility::Portable,
+                    strict_visual_eligible: true,
+                    max_origin_delta_px: 0.0,
+                    max_advance_delta_px: 0.0,
+                    max_residual_after_adjustment_px: 0.0,
+                    cluster_mismatch_count: 0,
+                    missing_glyph_count: 0,
+                    used_fallback_font_count: 0,
+                    reason: None,
+                },
+            }),
+        }
+    }
+
+    fn glyph_outline_op(variant: PaintVariantMeta) -> PaintOp {
+        PaintOp::GlyphOutline {
+            bbox: bbox(),
+            outline: Box::new(LayerGlyphOutlinePaint {
+                source: TextSourceSpan {
+                    id: TextSourceId(0),
+                    utf8_range: TextSourceRange::new(0, 1),
+                    utf16_range: TextSourceRange::new(0, 1),
+                    stable_source_key: None,
+                },
+                variant,
+                payload_kind: GlyphOutlinePayloadKind::MonochromeFill,
+                paint_style: PaintTextStyle::from(&TextStyle::default()),
+                placement: crate::paint::TextRunPlacement {
+                    run_to_page: LayerAffineTransform {
+                        a: 1.0,
+                        b: 0.0,
+                        c: 0.0,
+                        d: 1.0,
+                        e: 0.0,
+                        f: 0.0,
+                    },
+                    baseline_y: 0.0,
+                },
+                paths: vec![LayerGlyphOutlinePath {
+                    glyph_id: 42,
+                    source_range_utf8: TextSourceRange::new(0, 1),
+                    glyph_range: GlyphRange::new(0, 1),
+                    commands: vec![
+                        PathCommand::MoveTo(0.0, 0.0),
+                        PathCommand::LineTo(8.0, 0.0),
+                        PathCommand::ClosePath,
+                    ],
+                    fill_rule: GlyphOutlineFillRule::NonZero,
+                }],
+                stroke: None,
                 diagnostics: GlyphRunDiagnostics {
                     quality: TextVariantQuality::Exact,
                     replay_eligibility: GlyphRunReplayEligibility::Portable,
@@ -439,6 +552,92 @@ mod tests {
         assert!(matches!(
             validate_text_variant_scope(&tree),
             Err(TextVariantScopeError::MissingDefaultFallback { .. })
+        ));
+    }
+
+    #[test]
+    fn accepts_glyph_outline_sidecar_anchored_to_same_slot() {
+        let mut outline = PaintVariantMeta {
+            equivalence_group: "text-1".to_string(),
+            variant_id: "glyphOutline".to_string(),
+            variant_kind: TextVariantKind::GlyphOutline,
+            part_index: 0,
+            part_count: 1,
+            is_default_fallback: false,
+            requires: vec!["text.glyphOutline".to_string()],
+            quality: Some(TextVariantQuality::Exact),
+            anchor_op_id: Some("text-1".to_string()),
+            local_paint_order: Some(0),
+        };
+        let single_part_tree = tree(LayerNode::leaf(
+            bbox(),
+            None,
+            vec![text_op(), glyph_outline_op(outline.clone())],
+        ));
+        validate_text_variant_scope(&single_part_tree).unwrap();
+
+        outline.part_count = 2;
+        let mut part_1 = outline.clone();
+        part_1.part_index = 1;
+        let multipart_tree = tree(LayerNode::leaf(
+            bbox(),
+            None,
+            vec![
+                text_op(),
+                glyph_outline_op(outline),
+                glyph_outline_op(part_1),
+            ],
+        ));
+        validate_text_variant_scope(&multipart_tree).unwrap();
+    }
+
+    #[test]
+    fn rejects_glyph_outline_without_anchor() {
+        let outline = PaintVariantMeta {
+            equivalence_group: "text-1".to_string(),
+            variant_id: "glyphOutline".to_string(),
+            variant_kind: TextVariantKind::GlyphOutline,
+            part_index: 0,
+            part_count: 1,
+            is_default_fallback: false,
+            requires: vec!["text.glyphOutline".to_string()],
+            quality: Some(TextVariantQuality::Exact),
+            anchor_op_id: None,
+            local_paint_order: None,
+        };
+        let tree = tree(LayerNode::leaf(
+            bbox(),
+            None,
+            vec![text_op(), glyph_outline_op(outline)],
+        ));
+        assert!(matches!(
+            validate_text_variant_scope(&tree),
+            Err(TextVariantScopeError::MissingSidecarAnchorOpId { .. })
+        ));
+    }
+
+    #[test]
+    fn rejects_glyph_outline_anchored_to_different_slot() {
+        let outline = PaintVariantMeta {
+            equivalence_group: "text-1".to_string(),
+            variant_id: "glyphOutline".to_string(),
+            variant_kind: TextVariantKind::GlyphOutline,
+            part_index: 0,
+            part_count: 1,
+            is_default_fallback: false,
+            requires: vec!["text.glyphOutline".to_string()],
+            quality: Some(TextVariantQuality::Exact),
+            anchor_op_id: Some("text-2".to_string()),
+            local_paint_order: None,
+        };
+        let tree = tree(LayerNode::leaf(
+            bbox(),
+            None,
+            vec![text_op(), glyph_outline_op(outline)],
+        ));
+        assert!(matches!(
+            validate_text_variant_scope(&tree),
+            Err(TextVariantScopeError::InvalidSidecarAnchor { .. })
         ));
     }
 }

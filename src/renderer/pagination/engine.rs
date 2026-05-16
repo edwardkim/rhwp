@@ -497,7 +497,7 @@ impl Paginator {
         // 페이지 번호 + 머리말/꼬리말 할당
         Self::finalize_pages(&mut st.pages, &hf_entries, &page_number_pos, &page_hides, &new_page_numbers, section_index);
 
-        PaginationResult { pages: st.pages, wrap_around_paras: all_wrap_around_paras, hidden_empty_paras }
+        PaginationResult { pages: st.pages, wrap_around_paras: all_wrap_around_paras, hidden_empty_paras, endnotes: Vec::new(), endnote_paragraphs: Vec::new() }
     }
 
     /// 머리말/꼬리말/쪽 번호 위치/새 번호 컨트롤 수집

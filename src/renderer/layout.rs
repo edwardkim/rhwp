@@ -550,6 +550,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         outer_section_index: Option<usize>,
         outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
+        is_header: bool,
     ) {
         let mut y_offset = area.y;
         for (i, para) in hf_paragraphs.iter().enumerate() {
@@ -564,11 +565,14 @@ impl LayoutEngine {
                             .get(para.para_shape_id as usize)
                             .map(|s| s.alignment)
                             .unwrap_or(Alignment::Left);
-                        // Task #445: 머리말/꼬리말 영역의 wrap=TopAndBottom + vert=Para 표는
+                        // Task #445: 꼬리말 영역의 wrap=TopAndBottom + vert=Para 표는
                         // 첫 라인의 line_height/2 만큼 아래로 anchor 됨 (HWP 가 line center
                         // 기준으로 표를 배치하는 동작과 일치). 이 보정이 없으면 페이지 번호
                         // 박스가 본문 바닥과 붙어 보이는 문제(Task #445) 발생.
-                        let line_anchor_offset = if matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                        // [Issue #924] 머릿말에서는 적용하지 않음 — 표가 header_area 안에 정확히 위치해야 함.
+                        // 꼬리말은 Task #445에서 필요하므로 유지.
+                        let line_anchor_offset = if !is_header
+                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                             && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
                             && i == 0
                         {
@@ -755,7 +759,8 @@ impl LayoutEngine {
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
             let bf_idx = (pbf.border_fill_id - 1) as usize;
             if let Some(bs) = styles.border_styles.get(bf_idx) {
-                let paper_based = (pbf.attr & 0x01) != 0;
+                // [Issue #920] 한글 스펙: attr bit 0 = 0이면 종이 기준, 1이면 본문 기준
+                let paper_based = (pbf.attr & 0x01) == 0;
                 let (base_x, base_y, base_w, base_h) = if paper_based {
                     (0.0, 0.0, layout.page_width, layout.page_height)
                 } else {
@@ -961,6 +966,7 @@ impl LayoutEngine {
                                 bin_data_content,
                                 Some(hf_ref.source_section_index),
                                 Some(outer_ref),
+                                true,
                             );
                         }
                     }
@@ -1076,6 +1082,7 @@ impl LayoutEngine {
                                 bin_data_content,
                                 Some(hf_ref.source_section_index),
                                 Some(outer_ref),
+                                false,
                             );
                         }
                     }

@@ -28,10 +28,12 @@ pub use layer_tree::{
     TextSourceTable,
 };
 pub use paint_op::{
-    GlyphCluster, GlyphClusterFlag, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
-    GlyphTransform, LayerAffineTransform, LayerGlyphRunPaint, LayerPoint, LayerVector, PaintOp,
-    PaintTextStyle, PaintVariantMeta, TextDecorationKind, TextRunPlacement, TextVariantKind,
-    TextVariantQuality,
+    GlyphCluster, GlyphClusterFlag, GlyphOutlineFillRule, GlyphOutlinePaintOrder,
+    GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
+    GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphTransform,
+    LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
+    LayerPoint, LayerVector, PaintOp, PaintTextStyle, PaintVariantMeta, TextDecorationKind,
+    TextRunPlacement, TextVariantKind, TextVariantQuality,
 };
 pub use profile::RenderProfile;
 pub use resources::{

@@ -26,6 +26,12 @@ structured validation issues, the v1 downgrade path, fallback-free profile
 guards, and line-break risk telemetry for text runs whose shaped replay could
 affect layout-sensitive behavior.
 
+P14 adopts the first backend-facing text variant policy. It adds a
+`GlyphOutline` strict sidecar contract for producer-resolved glyph paths and a
+shared backend selection diagnostic that can explain why CanvasKit/native-style
+replay selects a strict variant or falls back to `TextRun`. This is still a
+guarded contract, not a public default path switch.
+
 ## Export Contract
 
 Layer JSON now provides additive text metadata:
@@ -48,6 +54,10 @@ Layer JSON now provides additive text metadata:
 - `fontResources`, an additive table for font blob/face identity.
 - Optional `GlyphRun` sidecar ops with `variant`, `shapeKey`, glyph ids,
   glyph positions, shaped clusters, and replay diagnostics.
+- Optional `GlyphOutline` sidecar ops with `variant`, `anchorOpId`,
+  `payloadKind`, placement, outline paths, strict stroke metadata when present,
+  and replay diagnostics. These sidecars are text alternatives, not generic
+  shape paths.
 - `textV2`, an additive diagnostics object with:
   - `compatibilityProfile`, currently `v1Compat` for normal exports.
   - `fallbackRequired`, which stays true for the v1 compatibility writer.
@@ -65,6 +75,12 @@ legacy mirror.
 `equivalenceGroup`. If a glyph variant is unsupported, incomplete, or fails its
 diagnostics/resource guard, the backend must paint the default `TextRun`
 fallback instead.
+
+`GlyphOutline` follows the same variant rule but is anchored to the same
+paint-order slot through `anchorOpId`. The strict subset currently allows
+monochrome fill outlines and a small fill/stroke subset with deterministic
+stroke style. Backends that cannot preserve that payload must reject the
+sidecar and use `TextRun`.
 
 ## Invariants
 
@@ -86,6 +102,14 @@ fallback instead.
   unless a shaping pass explicitly inserts glyph alternatives.
 - P13 `textV2` diagnostics are additive and report-only for normal exports.
   They must not change renderer output or make `GlyphRun` the canonical path.
+- P14 `GlyphOutline` is a strict sidecar. It must carry `anchorOpId`, stay in
+  the same `equivalenceGroup`, and complete every declared variant part before
+  selection. In schema v1 the `equivalenceGroup` is also the paint-order slot id
+  because fallback `TextRun` ops do not yet have stable per-op ids.
+- P14 backend selection diagnostics are deterministic and report-only. They
+  explain CanvasKit/native eligibility, glyph-id range limits, font portability,
+  missing glyphs, cluster mismatch, unsupported text effects, incomplete
+  variants, and outline payload/stroke rejection.
 - A fallback-free text profile is only valid when every text variant slot has a
   strict visual variant. In schema v1 the default writer still exports the
   fallback, and the fallback-free profile is only exposed as a guard/validator.
@@ -105,7 +129,7 @@ fallback instead.
 
 - Wire real document font blob extraction into `ResourceArena`.
 - Add CanvasKit glyph replay behind the same variant gate.
-- Add native glyph outline replay behind a separate strict visual variant.
+- Add native glyph outline replay behind the strict `GlyphOutline` variant.
 - Add resource table entries for font blobs and face identity.
 - Promote renderer diagnostics from report-only to backend selection telemetry
   once CanvasKit/native glyph alternatives are actually consumed.

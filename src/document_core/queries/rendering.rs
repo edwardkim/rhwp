@@ -1227,7 +1227,7 @@ impl DocumentCore {
         // 벡터 크기 동기화
         let sec_count = self.document.sections.len();
         while self.pagination.len() < sec_count {
-            self.pagination.push(PaginationResult { pages: Vec::new(), wrap_around_paras: Vec::new(), hidden_empty_paras: std::collections::HashSet::new() });
+            self.pagination.push(PaginationResult { pages: Vec::new(), wrap_around_paras: Vec::new(), hidden_empty_paras: std::collections::HashSet::new(), endnotes: Vec::new(), endnote_paragraphs: Vec::new() });
         }
         self.pagination.truncate(sec_count);
         while self.para_column_map.len() < sec_count {
@@ -2043,12 +2043,30 @@ impl DocumentCore {
             self.layout_engine.set_hidden_empty_paras(&pr.hidden_empty_paras);
         }
 
+        // [Task #836] 미주 paragraphs를 본문 paragraphs 뒤에 합쳐서 전달
+        // endnote para_index = paragraphs.len() + idx → combined에서 접근 가능
+        let en_paras = self.pagination.get(sec_idx)
+            .map(|pr| pr.endnote_paragraphs.as_slice())
+            .unwrap_or(&[]);
+        let combined_paragraphs: Vec<Paragraph>;
+        let combined_composed: Vec<crate::renderer::composer::ComposedParagraph>;
+        let (render_paragraphs, render_composed): (&[Paragraph], &[crate::renderer::composer::ComposedParagraph]) = if en_paras.is_empty() {
+            (paragraphs, composed)
+        } else {
+            combined_paragraphs = paragraphs.iter().chain(en_paras.iter()).cloned().collect();
+            let en_composed: Vec<_> = en_paras.iter()
+                .map(|p| crate::renderer::composer::compose_paragraph(p))
+                .collect();
+            combined_composed = composed.iter().cloned().chain(en_composed.into_iter()).collect();
+            (&combined_paragraphs, &combined_composed)
+        };
+
         let mut tree = self.layout_engine.build_render_tree(
             page_content,
-            paragraphs,
+            render_paragraphs,
             header_paragraphs,
             footer_paragraphs,
-            composed,
+            render_composed,
             &self.styles,
             footnote_shape,
             &self.document.bin_data_content,

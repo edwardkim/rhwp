@@ -13,8 +13,9 @@ use serde::Serialize;
 use crate::document_core::helpers::json_escape as raw_json_escape;
 use crate::model::style::UnderlineType;
 use crate::paint::{
-    GlyphRunDiagnostics, GlyphRunReplayEligibility, LayerNode, LayerNodeKind, PageLayerTree,
-    PaintOp, TextVariantKind, TextVariantQuality,
+    GlyphOutlinePayloadKind, GlyphRunDiagnostics, GlyphRunReplayEligibility,
+    LayerGlyphOutlinePaint, LayerNode, LayerNodeKind, PageLayerTree, PaintOp, TextVariantKind,
+    TextVariantQuality,
 };
 use crate::renderer::render_tree::{FieldMarkerType, TextRunNode};
 
@@ -408,6 +409,39 @@ fn collect_node(
                             .take()
                             .or_else(|| glyph_run_fallback_reason(&run.diagnostics));
                     }
+                    PaintOp::GlyphOutline { outline, .. } => {
+                        let variant = &outline.variant;
+                        let group = groups.entry(variant.equivalence_group.clone()).or_default();
+                        let entry = group.entry(variant.variant_id.clone()).or_insert_with(|| {
+                            VariantAccumulator {
+                                variant_id: variant.variant_id.clone(),
+                                variant_kind: variant.variant_kind,
+                                required_features: variant
+                                    .requires
+                                    .iter()
+                                    .cloned()
+                                    .collect::<BTreeSet<_>>(),
+                                part_count: variant.part_count,
+                                present_parts: BTreeSet::new(),
+                                strict_parts: BTreeSet::new(),
+                                quality: variant.quality,
+                                fallback_reason: None,
+                            }
+                        });
+                        entry
+                            .required_features
+                            .extend(variant.requires.iter().cloned());
+                        entry.part_count = entry.part_count.max(variant.part_count);
+                        entry.present_parts.insert(variant.part_index);
+                        entry.quality = entry.quality.or(variant.quality);
+                        if glyph_outline_is_strict(outline) {
+                            entry.strict_parts.insert(variant.part_index);
+                        }
+                        entry.fallback_reason = entry
+                            .fallback_reason
+                            .take()
+                            .or_else(|| glyph_outline_fallback_reason(outline));
+                    }
                     _ => {}
                 }
             }
@@ -512,6 +546,46 @@ fn glyph_run_fallback_reason(diagnostics: &GlyphRunDiagnostics) -> Option<String
     Some("strictVariantUnavailable".to_string())
 }
 
+fn glyph_outline_is_strict(outline: &LayerGlyphOutlinePaint) -> bool {
+    glyph_run_is_strict(&outline.diagnostics)
+        && !outline.paths.is_empty()
+        && outline.paint_style.is_fill_only_glyph_replay()
+        && match outline.payload_kind {
+            GlyphOutlinePayloadKind::MonochromeFill => outline.stroke.is_none(),
+            GlyphOutlinePayloadKind::MonochromeFillStroke => outline
+                .stroke
+                .as_ref()
+                .is_some_and(|stroke| stroke.is_strict_subset()),
+        }
+}
+
+fn glyph_outline_fallback_reason(outline: &LayerGlyphOutlinePaint) -> Option<String> {
+    if glyph_outline_is_strict(outline) {
+        return None;
+    }
+    if outline.paths.is_empty() {
+        return Some("emptyGlyphOutline".to_string());
+    }
+    if !outline.paint_style.is_fill_only_glyph_replay() {
+        return Some("unsupportedPaintEffect".to_string());
+    }
+    match outline.payload_kind {
+        GlyphOutlinePayloadKind::MonochromeFill if outline.stroke.is_some() => {
+            return Some("unexpectedOutlineStroke".to_string());
+        }
+        GlyphOutlinePayloadKind::MonochromeFillStroke
+            if !outline
+                .stroke
+                .as_ref()
+                .is_some_and(|stroke| stroke.is_strict_subset()) =>
+        {
+            return Some("unsupportedOutlineStroke".to_string());
+        }
+        _ => {}
+    }
+    glyph_run_fallback_reason(&outline.diagnostics)
+}
+
 fn line_break_risk_for_run(leaf_path: &str, run: &TextRunNode) -> Option<TextV2LineBreakRisk> {
     let mut reasons = Vec::new();
     if run.char_overlap.is_some() {
@@ -579,13 +653,14 @@ fn line_break_risk_for_run(leaf_path: &str, run: &TextRunNode) -> Option<TextV2L
 mod tests {
     use super::*;
     use crate::paint::{
-        FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphRange,
-        GlyphRunOrientation, LayerAffineTransform, LayerGlyphRunPaint, LayerNode, LayerPoint,
+        FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
+        GlyphOutlinePayloadKind, GlyphRange, GlyphRunOrientation, LayerAffineTransform,
+        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
         PaintTextStyle, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextSourceId,
         TextSourceRange, TextSourceSpan, WritingMode,
     };
     use crate::renderer::render_tree::BoundingBox;
-    use crate::renderer::TextStyle;
+    use crate::renderer::{PathCommand, TextStyle};
 
     fn text_run(text: &str) -> TextRunNode {
         TextRunNode {
@@ -715,6 +790,75 @@ mod tests {
         }
     }
 
+    fn glyph_outline_op() -> PaintOp {
+        PaintOp::GlyphOutline {
+            bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+            outline: Box::new(LayerGlyphOutlinePaint {
+                source: TextSourceSpan {
+                    id: TextSourceId(0),
+                    utf8_range: TextSourceRange::new(0, 1),
+                    utf16_range: TextSourceRange::new(0, 1),
+                    stable_source_key: None,
+                },
+                variant: {
+                    let mut variant = crate::paint::PaintVariantMeta::text_run_default("text-0");
+                    variant.variant_id = "glyphOutline".to_string();
+                    variant.variant_kind = TextVariantKind::GlyphOutline;
+                    variant.is_default_fallback = false;
+                    variant.requires = vec![
+                        "text.glyphOutline".to_string(),
+                        "text.glyphOutline.strictSidecar".to_string(),
+                    ];
+                    variant.quality = Some(TextVariantQuality::Exact);
+                    variant.anchor_op_id = Some("text-0".to_string());
+                    variant
+                },
+                payload_kind: GlyphOutlinePayloadKind::MonochromeFill,
+                paint_style: PaintTextStyle::from(&TextStyle {
+                    font_family: "Test".to_string(),
+                    font_size: 12.0,
+                    shade_color: 0x00FF_FFFF,
+                    ..Default::default()
+                }),
+                placement: crate::paint::TextRunPlacement {
+                    run_to_page: LayerAffineTransform {
+                        a: 1.0,
+                        b: 0.0,
+                        c: 0.0,
+                        d: 1.0,
+                        e: 0.0,
+                        f: 12.0,
+                    },
+                    baseline_y: 0.0,
+                },
+                paths: vec![LayerGlyphOutlinePath {
+                    glyph_id: 42,
+                    source_range_utf8: TextSourceRange::new(0, 1),
+                    glyph_range: GlyphRange::new(0, 1),
+                    commands: vec![
+                        PathCommand::MoveTo(0.0, 0.0),
+                        PathCommand::LineTo(8.0, 0.0),
+                        PathCommand::ClosePath,
+                    ],
+                    fill_rule: GlyphOutlineFillRule::NonZero,
+                }],
+                stroke: None,
+                diagnostics: GlyphRunDiagnostics {
+                    quality: TextVariantQuality::Exact,
+                    replay_eligibility: GlyphRunReplayEligibility::Portable,
+                    strict_visual_eligible: true,
+                    max_origin_delta_px: 0.0,
+                    max_advance_delta_px: 0.0,
+                    max_residual_after_adjustment_px: 0.0,
+                    cluster_mismatch_count: 0,
+                    missing_glyph_count: 0,
+                    used_fallback_font_count: 0,
+                    reason: None,
+                },
+            }),
+        }
+    }
+
     #[test]
     fn reports_strict_glyph_slot_without_validation_errors() {
         let tree = PageLayerTree::new(
@@ -733,6 +877,56 @@ mod tests {
         assert_eq!(diagnostics.slot_diagnostics.len(), 1);
         assert!(diagnostics.slot_diagnostics[0].strict_variant_available);
         assert!(!diagnostics.has_errors());
+    }
+
+    #[test]
+    fn reports_strict_glyph_outline_slot_without_validation_errors() {
+        let tree = PageLayerTree::new(
+            100.0,
+            100.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+                None,
+                vec![text_op("A"), glyph_outline_op()],
+            ),
+        );
+        let diagnostics = TextV2Diagnostics::from_layer_tree_with_profile(
+            &tree,
+            TextV2CompatibilityProfile::FallbackFreeStrict,
+        );
+        assert_eq!(diagnostics.slot_diagnostics.len(), 1);
+        assert!(diagnostics.slot_diagnostics[0].strict_variant_available);
+        assert_eq!(
+            diagnostics.slot_diagnostics[0].variants[0].variant_kind,
+            "glyphOutline"
+        );
+        assert!(!diagnostics.has_errors());
+    }
+
+    #[test]
+    fn reports_glyph_outline_fallback_reason_when_payload_is_not_strict() {
+        let mut op = glyph_outline_op();
+        if let PaintOp::GlyphOutline { outline, .. } = &mut op {
+            outline.paths.clear();
+        }
+        let tree = PageLayerTree::new(
+            100.0,
+            100.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+                None,
+                vec![text_op("A"), op],
+            ),
+        );
+        let diagnostics = TextV2Diagnostics::from_layer_tree_with_profile(
+            &tree,
+            TextV2CompatibilityProfile::FallbackFreeStrict,
+        );
+        assert!(diagnostics.has_errors());
+        assert_eq!(
+            diagnostics.slot_diagnostics[0].fallback_reason.as_deref(),
+            Some("emptyGlyphOutline")
+        );
     }
 
     #[test]

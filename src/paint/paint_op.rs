@@ -7,7 +7,7 @@ use crate::renderer::render_tree::{
     LineNode, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode,
     TextRunNode,
 };
-use crate::renderer::TextStyle;
+use crate::renderer::{PathCommand, TextStyle};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TextDecorationKind {
@@ -43,6 +43,10 @@ pub enum PaintOp {
     GlyphRun {
         bbox: BoundingBox,
         run: Box<LayerGlyphRunPaint>,
+    },
+    GlyphOutline {
+        bbox: BoundingBox,
+        outline: Box<LayerGlyphOutlinePaint>,
     },
     /// HWP 글자겹침의 명시 visual op.
     ///
@@ -116,6 +120,7 @@ impl PaintOp {
             PaintOp::PageBackground { bbox, .. }
             | PaintOp::TextRun { bbox, .. }
             | PaintOp::GlyphRun { bbox, .. }
+            | PaintOp::GlyphOutline { bbox, .. }
             | PaintOp::CharOverlap { bbox, .. }
             | PaintOp::TextControlMark { bbox, .. }
             | PaintOp::TabLeader { bbox, .. }
@@ -153,7 +158,141 @@ pub struct LayerGlyphRunPaint {
     pub diagnostics: GlyphRunDiagnostics,
 }
 
-/// Variant grouping metadata for TextRun/GlyphRun alternatives.
+/// Strict-visual text alternative that carries producer-resolved glyph paths.
+///
+/// A GlyphOutline is still a text variant, not a generic Path. Consumers must
+/// select it through the same equivalence group as the TextRun fallback and
+/// reject it when the backend cannot preserve the declared payload.
+#[derive(Debug, Clone)]
+pub struct LayerGlyphOutlinePaint {
+    pub source: TextSourceSpan,
+    pub variant: PaintVariantMeta,
+    pub payload_kind: GlyphOutlinePayloadKind,
+    pub paint_style: PaintTextStyle,
+    pub placement: TextRunPlacement,
+    pub paths: Vec<LayerGlyphOutlinePath>,
+    pub stroke: Option<GlyphOutlineStrokeStyle>,
+    pub diagnostics: GlyphRunDiagnostics,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GlyphOutlinePayloadKind {
+    MonochromeFill,
+    MonochromeFillStroke,
+}
+
+impl GlyphOutlinePayloadKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::MonochromeFill => "monochromeFill",
+            Self::MonochromeFillStroke => "monochromeFillStroke",
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct LayerGlyphOutlinePath {
+    pub glyph_id: u32,
+    pub source_range_utf8: TextSourceRange,
+    pub glyph_range: GlyphRange,
+    pub commands: Vec<PathCommand>,
+    pub fill_rule: GlyphOutlineFillRule,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GlyphOutlineFillRule {
+    NonZero,
+    EvenOdd,
+}
+
+impl GlyphOutlineFillRule {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::NonZero => "nonzero",
+            Self::EvenOdd => "evenodd",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GlyphOutlineStrokeStyle {
+    pub color: ColorRef,
+    pub width: f64,
+    pub join: GlyphOutlineStrokeJoin,
+    pub cap: GlyphOutlineStrokeCap,
+    pub miter_limit: f64,
+    pub paint_order: GlyphOutlinePaintOrder,
+}
+
+impl GlyphOutlineStrokeStyle {
+    pub fn is_strict_subset(&self) -> bool {
+        self.width.is_finite()
+            && self.width > 0.0
+            && self.miter_limit.is_finite()
+            && self.miter_limit >= 1.0
+            && matches!(self.join, GlyphOutlineStrokeJoin::Miter)
+            && matches!(self.cap, GlyphOutlineStrokeCap::Butt)
+            && matches!(
+                self.paint_order,
+                GlyphOutlinePaintOrder::FillThenStroke | GlyphOutlinePaintOrder::StrokeThenFill
+            )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GlyphOutlineStrokeJoin {
+    Miter,
+    Round,
+    Bevel,
+}
+
+impl GlyphOutlineStrokeJoin {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Miter => "miter",
+            Self::Round => "round",
+            Self::Bevel => "bevel",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GlyphOutlineStrokeCap {
+    Butt,
+    Round,
+    Square,
+}
+
+impl GlyphOutlineStrokeCap {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Butt => "butt",
+            Self::Round => "round",
+            Self::Square => "square",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GlyphOutlinePaintOrder {
+    FillOnly,
+    StrokeOnly,
+    FillThenStroke,
+    StrokeThenFill,
+}
+
+impl GlyphOutlinePaintOrder {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::FillOnly => "fillOnly",
+            Self::StrokeOnly => "strokeOnly",
+            Self::FillThenStroke => "fillThenStroke",
+            Self::StrokeThenFill => "strokeThenFill",
+        }
+    }
+}
+
+/// Variant grouping metadata for TextRun/GlyphRun/GlyphOutline alternatives.
 ///
 /// Consumers select one `variant_id` per `equivalence_group` and paint every
 /// part belonging to that variant. A `TextRun` fallback remains required.
@@ -192,6 +331,7 @@ impl PaintVariantMeta {
 pub enum TextVariantKind {
     TextRun,
     GlyphRun,
+    GlyphOutline,
 }
 
 impl TextVariantKind {
@@ -199,6 +339,7 @@ impl TextVariantKind {
         match self {
             Self::TextRun => "textRun",
             Self::GlyphRun => "glyphRun",
+            Self::GlyphOutline => "glyphOutline",
         }
     }
 }

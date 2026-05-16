@@ -497,6 +497,7 @@ impl SkiaLayerRenderer {
                                 None => true,
                             }
                         }
+                        PaintOp::GlyphOutline { .. } => true,
                         _ => false,
                     };
                     if skip_unselected_text_variant {
@@ -570,6 +571,7 @@ impl SkiaLayerRenderer {
                             // Unreachable until native_skia_can_replay_glyph_run can verify
                             // blob-backed typeface construction. Keep the TextRun fallback.
                         }
+                        PaintOp::GlyphOutline { .. } => {}
                         PaintOp::FootnoteMarker { bbox, marker } => {
                             let style = crate::renderer::TextStyle {
                                 font_family: marker.font_family.clone(),
