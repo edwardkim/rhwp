@@ -624,11 +624,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn empty_doc_no_change() {
+    fn empty_doc_normalizes_file_header_once() {
         let mut doc = Document::default();
         let report = convert_hwpx_to_hwp_ir(&mut doc);
-        assert!(!report.changed_anything());
+        assert!(report.changed_anything());
         assert!(report.skipped_reason.is_none());
+        assert_eq!(report.file_header_compression_normalized, 1);
+        assert!(doc.header.compressed);
+        assert_eq!(doc.header.flags & 0x01, 0x01);
+        assert!(doc.header.raw_data.is_none());
     }
 
     #[test]
@@ -646,9 +650,11 @@ mod tests {
         let mut doc = Document::default();
         let r1 = convert_hwpx_to_hwp_ir(&mut doc);
         let r2 = convert_hwpx_to_hwp_ir(&mut doc);
+        assert_eq!(r1.file_header_compression_normalized, 1);
         // 두 번째 호출은 변경 없음 (이미 정규화됨).
         assert_eq!(r2.tables_ctrl_data_synthesized, 0);
-        assert_eq!(r1, r2);
+        assert_eq!(r2.file_header_compression_normalized, 0);
+        assert!(!r2.changed_anything());
     }
 
     // ============================================================
