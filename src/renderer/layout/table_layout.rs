@@ -1812,6 +1812,17 @@ impl LayoutEngine {
                         Control::Shape(shape) => {
                             if shape.common().treat_as_char {
                                 let shape_w = hwpunit_to_px(shape.common().width as i32, self.dpi);
+                                // [Task #928] Picture 분기와 정합되는 will_render_inline 가드.
+                                // layout_composed_paragraph 의 run_tacs split 이 이미 paragraph
+                                // 텍스트와 inline_shape_position 을 등록한 경우, 본 분기의
+                                // text_before 수동 발행은 두 번째 baseline 에 동일 텍스트를
+                                // 중복 발행한다 (exam_kor 5p `(가) ⇨ [A 단계] ⇨ (나)` 회귀).
+                                let will_render_inline = composed.tac_controls.iter().any(|&(abs_pos, _, ci)| {
+                                    ci == ctrl_idx && composed.lines.iter().any(|line| {
+                                        let line_chars: usize = line.runs.iter().map(|r| r.text.chars().count()).sum();
+                                        abs_pos >= line.char_start && abs_pos < line.char_start + line_chars
+                                    })
+                                });
                                 // [Task #500] Picture 분기와 정합: target_line 산출 + 줄 변경 시
                                 // inline_x/tac_img_y 리셋. multi-line paragraph 에서 사각형이
                                 // ls[1]+ 에 있을 때 paragraph 첫 줄 좌표가 잘못 사용되던 결함 정정.
@@ -1855,108 +1866,119 @@ impl LayoutEngine {
                                             + hwpunit_to_px(seg.vertical_pos - first_vpos, self.dpi);
                                     }
                                 }
-                                // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와
-                                // 이전 Shape의 text_pos 차이에 해당하는 텍스트 너비를 inline_x에 반영
-                                if let Some(&(tac_pos, _, _)) = composed.tac_controls.iter().find(|&&(_, _, ci)| ci == ctrl_idx) {
-                                    // [Task #495] 가드: 사각형이 paragraph 첫 줄(ls[0]) 범위 안에 있을 때만
-                                    // text_before 추출/발행. multi-line paragraph 에서 사각형이 ls[1]+ 에
-                                    // 있는 경우 composed.lines.first() 만 보던 기존 코드는 첫 줄 전체
-                                    // 텍스트를 잘못 추출해 paragraph_layout 결과와 중복 발행했음.
-                                    let in_first_line = composed.lines.first()
-                                        .map(|line| {
-                                            let line_chars: usize = line.runs.iter().map(|r| r.text.chars().count()).sum();
-                                            tac_pos >= line.char_start && tac_pos < line.char_start + line_chars
-                                        })
-                                        .unwrap_or(false);
-                                    // 이 Shape 앞에 아직 inline_x에 반영되지 않은 텍스트가 있는지 계산
-                                    let text_before: String = if in_first_line {
-                                        composed.lines.first()
+                                if !will_render_inline {
+                                    // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와
+                                    // 이전 Shape의 text_pos 차이에 해당하는 텍스트 너비를 inline_x에 반영
+                                    if let Some(&(tac_pos, _, _)) = composed.tac_controls.iter().find(|&&(_, _, ci)| ci == ctrl_idx) {
+                                        // [Task #495] 가드: 사각형이 paragraph 첫 줄(ls[0]) 범위 안에 있을 때만
+                                        // text_before 추출/발행. multi-line paragraph 에서 사각형이 ls[1]+ 에
+                                        // 있는 경우 composed.lines.first() 만 보던 기존 코드는 첫 줄 전체
+                                        // 텍스트를 잘못 추출해 paragraph_layout 결과와 중복 발행했음.
+                                        let in_first_line = composed.lines.first()
                                             .map(|line| {
-                                                let mut chars_so_far = 0usize;
-                                                let mut result = String::new();
-                                                for run in &line.runs {
-                                                    for ch in run.text.chars() {
-                                                        if chars_so_far >= prev_tac_text_pos && chars_so_far < tac_pos {
-                                                            result.push(ch);
-                                                        }
-                                                        chars_so_far += 1;
-                                                    }
-                                                }
-                                                result
+                                                let line_chars: usize = line.runs.iter().map(|r| r.text.chars().count()).sum();
+                                                tac_pos >= line.char_start && tac_pos < line.char_start + line_chars
                                             })
-                                            .unwrap_or_default()
-                                    } else {
-                                        String::new()
-                                    };
-                                    if !text_before.is_empty() {
-                                        let char_style_id = composed.lines.first()
-                                            .and_then(|l| l.runs.first())
-                                            .map(|r| r.char_style_id).unwrap_or(0);
-                                        let lang_index = composed.lines.first()
-                                            .and_then(|l| l.runs.first())
-                                            .map(|r| r.lang_index).unwrap_or(0);
-                                        let ts = resolved_to_text_style(styles, char_style_id, lang_index);
-                                        // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
-                                        let text_before_metrics: String = {
-                                            use super::super::pua_oldhangul::map_pua_old_hangul;
-                                            text_before.chars().flat_map(|ch| {
-                                                if let Some(jamos) = map_pua_old_hangul(ch) {
-                                                    jamos.iter().copied().collect::<Vec<_>>()
-                                                } else { vec![ch] }
-                                            }).collect()
+                                            .unwrap_or(false);
+                                        // 이 Shape 앞에 아직 inline_x에 반영되지 않은 텍스트가 있는지 계산
+                                        let text_before: String = if in_first_line {
+                                            composed.lines.first()
+                                                .map(|line| {
+                                                    let mut chars_so_far = 0usize;
+                                                    let mut result = String::new();
+                                                    for run in &line.runs {
+                                                        for ch in run.text.chars() {
+                                                            if chars_so_far >= prev_tac_text_pos && chars_so_far < tac_pos {
+                                                                result.push(ch);
+                                                            }
+                                                            chars_so_far += 1;
+                                                        }
+                                                    }
+                                                    result
+                                                })
+                                                .unwrap_or_default()
+                                        } else {
+                                            String::new()
                                         };
-                                        let text_w = estimate_text_width(&text_before_metrics, &ts);
-                                        let text_font_size = ts.font_size;
-                                        // 텍스트 렌더링: Shape 사이에 배치
-                                        // 텍스트 y를 Shape 하단 baseline에 맞춤
-                                        // (Shape 높이 - 폰트 줄 높이)만큼 아래로 이동
-                                        let text_baseline = text_font_size * 0.85;
-                                        let font_line_h = text_font_size * 1.2;
-                                        // 인접 Shape의 높이를 사용하여 텍스트 y를 baseline 정렬
-                                        let adjacent_shape_h = para.controls.iter()
-                                            .find_map(|c| if let Control::Shape(s) = c {
-                                                if s.common().treat_as_char { Some(hwpunit_to_px(s.common().height as i32, self.dpi)) } else { None }
-                                            } else { None })
-                                            .unwrap_or(0.0);
-                                        let text_y = para_y_before_compose + (adjacent_shape_h - font_line_h).max(0.0);
-                                        let text_node_id = tree.next_id();
-                                        let text_node = RenderNode::new(
-                                            text_node_id,
-                                            RenderNodeType::TextRun(TextRunNode {
-                                                text: text_before,
-                                                style: ts,
-                                                char_shape_id: Some(char_style_id),
-                                                para_shape_id: Some(composed.para_style_id),
-                                                section_index: Some(section_index),
-                                                para_index: None,
-                                                char_start: None,
-                                                cell_context: None,
-                                                is_para_end: false,
-                                                is_line_break_end: false,
-                                                rotation: 0.0,
-                                                is_vertical: false,
-                                                char_overlap: None,
-                                                border_fill_id: 0,
-                                                baseline: text_baseline,
-                                                field_marker: FieldMarkerType::None,
-                                            }),
-                                            BoundingBox::new(inline_x, text_y, text_w, font_line_h),
-                                        );
-                                        cell_node.children.push(text_node);
-                                        inline_x += text_w;
+                                        if !text_before.is_empty() {
+                                            let char_style_id = composed.lines.first()
+                                                .and_then(|l| l.runs.first())
+                                                .map(|r| r.char_style_id).unwrap_or(0);
+                                            let lang_index = composed.lines.first()
+                                                .and_then(|l| l.runs.first())
+                                                .map(|r| r.lang_index).unwrap_or(0);
+                                            let ts = resolved_to_text_style(styles, char_style_id, lang_index);
+                                            // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
+                                            let text_before_metrics: String = {
+                                                use super::super::pua_oldhangul::map_pua_old_hangul;
+                                                text_before.chars().flat_map(|ch| {
+                                                    if let Some(jamos) = map_pua_old_hangul(ch) {
+                                                        jamos.iter().copied().collect::<Vec<_>>()
+                                                    } else { vec![ch] }
+                                                }).collect()
+                                            };
+                                            let text_w = estimate_text_width(&text_before_metrics, &ts);
+                                            let text_font_size = ts.font_size;
+                                            // 텍스트 렌더링: Shape 사이에 배치
+                                            // 텍스트 y를 Shape 하단 baseline에 맞춤
+                                            // (Shape 높이 - 폰트 줄 높이)만큼 아래로 이동
+                                            let text_baseline = text_font_size * 0.85;
+                                            let font_line_h = text_font_size * 1.2;
+                                            // 인접 Shape의 높이를 사용하여 텍스트 y를 baseline 정렬
+                                            let adjacent_shape_h = para.controls.iter()
+                                                .find_map(|c| if let Control::Shape(s) = c {
+                                                    if s.common().treat_as_char { Some(hwpunit_to_px(s.common().height as i32, self.dpi)) } else { None }
+                                                } else { None })
+                                                .unwrap_or(0.0);
+                                            let text_y = para_y_before_compose + (adjacent_shape_h - font_line_h).max(0.0);
+                                            let text_node_id = tree.next_id();
+                                            let text_node = RenderNode::new(
+                                                text_node_id,
+                                                RenderNodeType::TextRun(TextRunNode {
+                                                    text: text_before,
+                                                    style: ts,
+                                                    char_shape_id: Some(char_style_id),
+                                                    para_shape_id: Some(composed.para_style_id),
+                                                    section_index: Some(section_index),
+                                                    para_index: None,
+                                                    char_start: None,
+                                                    cell_context: None,
+                                                    is_para_end: false,
+                                                    is_line_break_end: false,
+                                                    rotation: 0.0,
+                                                    is_vertical: false,
+                                                    char_overlap: None,
+                                                    border_fill_id: 0,
+                                                    baseline: text_baseline,
+                                                    field_marker: FieldMarkerType::None,
+                                                }),
+                                                BoundingBox::new(inline_x, text_y, text_w, font_line_h),
+                                            );
+                                            cell_node.children.push(text_node);
+                                            inline_x += text_w;
+                                        }
+                                        prev_tac_text_pos = tac_pos;
                                     }
-                                    prev_tac_text_pos = tac_pos;
                                 }
                                 // [Task #520 / #624 복원] target_line 기반 tac_img_y 사용 (Picture 분기와 동일).
                                 // para_y_before_compose 사용 시 multi-line paragraph 의 ls[1]+ inline TAC Shape 가
                                 // 항상 line 0 좌표에 떨어져 본문 텍스트와 겹친다 (exam_science p2 7번 글상자 ㉠).
+                                // [Task #928] will_render_inline=true 인 경우 paragraph_layout 이
+                                // 등록한 inline_shape_position 좌표를 사용해 도형 위치를
+                                // run_tacs split 에서 reserve 한 gap 과 정확히 정합시킨다.
+                                let (shape_x, shape_y) = if will_render_inline {
+                                    tree.get_inline_shape_position(section_index, cp_idx, ctrl_idx, cell_context.as_ref())
+                                        .unwrap_or((inline_x, tac_img_y))
+                                } else {
+                                    (inline_x, tac_img_y)
+                                };
                                 let shape_area = LayoutRect {
-                                    x: inline_x,
-                                    y: tac_img_y,
+                                    x: shape_x,
+                                    y: shape_y,
                                     width: shape_w,
                                     height: inner_area.height,
                                 };
-                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, tac_img_y, Alignment::Left, styles, bin_data_content);
+                                self.layout_cell_shape(tree, &mut cell_node, shape, &shape_area, shape_y, Alignment::Left, styles, bin_data_content);
                                 inline_x += shape_w;
                             } else {
                                 self.layout_cell_shape(tree, &mut cell_node, shape, &inner_area, para_y, para_alignment, styles, bin_data_content);
