@@ -3326,8 +3326,12 @@ impl LayoutEngine {
                         // 박스 프레임 시각이 사라지고 후속 InFrontOfText 표가 위로 겹침.
                         // 호스트 문단에 실제 텍스트가 없으면 여기서 직접 이미지 노드를 생성하고
                         // y_offset을 그림 높이만큼 진행시킨다.
+                        // [Task #935] HWPX 변환본의 whitespace-only 텍스트 paragraph 도 본 분기로
+                        // emit 되어야 함 (paragraph_layout 의 inline 경로는 wrap=TopAndBottom Picture
+                        // 를 skip 하도록 변경; 여기서 받아 적절한 pic_x 로 emit). 공백 외 의미있는
+                        // 문자만 has_real_text 로 카운트.
                         let has_real_text = para.text.chars()
-                            .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                            .any(|c| !c.is_whitespace() && c > '\u{001F}' && c != '\u{FFFC}');
                         // [Task #418/#376] paragraph_layout 의 빈 문단 + TAC Picture 분기에서
                         // 이미 ImageNode 가 emit 되어 inline_shape_position 이 등록된 경우,
                         // 여기서 또 push 하면 이중 emit 이 된다. 등록된 경우 push 를 스킵하고

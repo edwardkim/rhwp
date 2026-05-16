@@ -1973,6 +1973,17 @@ impl LayoutEngine {
                         if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                             if let Some(ctrl) = p.controls.get(tac_ci) {
                                 if let Control::Picture(pic) = ctrl {
+                                    // [Task #935] HWPX 변환본의 top-level paragraph 에 wrap=TopAndBottom
+                                    // Picture 가 선행 TAC (table 등) 뒤에 inline 으로 emit 되면 선행
+                                    // width 만큼 우측 shift → 페이지 외곽 overflow. 표 셀 안의
+                                    // Picture 는 영향 없음 (cell_ctx.is_some()). top-level + TopAndBottom
+                                    // 인 경우만 layout_shape_item 으로 위임.
+                                    if cell_ctx.is_none()
+                                        && matches!(pic.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                    {
+                                        x += tac_w;
+                                        continue;
+                                    }
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let img_y = (y + baseline - pic_h).max(y);
                                     let bin_data_id = pic.image_attr.bin_data_id;
