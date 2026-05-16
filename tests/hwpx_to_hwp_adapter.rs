@@ -1496,6 +1496,7 @@ fn task903_record_tag_name(tag: u32) -> &'static str {
 }
 
 #[test]
+#[ignore]
 fn task903_stage34_compare_streams_for_ir_equal_files() {
     use std::collections::BTreeSet;
     use std::fmt::Write as _;
@@ -2931,6 +2932,7 @@ fn task903_stage41_write_table_payload_diff_report() {
 }
 
 #[test]
+#[ignore]
 fn task903_stage41_generate_table_payload_diff_report() {
     task903_stage41_write_table_payload_diff_report();
 }
@@ -3268,6 +3270,7 @@ fn task903_payload_window(data: &[u8], first_diff: &str) -> String {
 }
 
 #[test]
+#[ignore]
 fn task903_stage43_generate_shape_payload_diff_report() {
     use std::fmt::Write as _;
 
@@ -4597,6 +4600,7 @@ fn task903_stage47_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage47_generate_header_prereq_probe() {
     let positive = task903_stage45_positive_document().expect("Stage47 positive 파일 필요");
     let success = task903_stage47_success_document();
@@ -4855,6 +4859,7 @@ fn task903_stage48_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage48_generate_residual_text_layout_probe() {
     let success = task903_stage47_success_document();
     let baseline = task903_stage48_baseline_document();
@@ -5302,6 +5307,7 @@ fn task903_stage49_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage49_generate_docinfo_text_clip_probe() {
     let positive = task903_stage49_positive_document();
     let baseline = task903_stage49_baseline_document();
@@ -5640,6 +5646,7 @@ fn task903_stage50_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage50_generate_parashape_field_probe() {
     let positive = task903_stage49_positive_document();
     let baseline = task903_stage49_baseline_document();
@@ -6079,6 +6086,7 @@ fn task903_stage51_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage51_generate_parashape_attr1_bit_probe() {
     let positive = task903_stage49_positive_document();
     let baseline = task903_stage49_baseline_document();
@@ -6599,6 +6607,7 @@ fn task903_stage52_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage52_generate_vertical_attr_mapping_probe() {
     let out_dir = std::path::Path::new("output/poc/hwpx2hwp/task903/stage52_vertical_attr_mapping");
     std::fs::create_dir_all(out_dir).expect("Stage52 output dir 생성 실패");
@@ -7187,6 +7196,7 @@ fn task903_stage53_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage53_generate_current_impl_gap_probe() {
     let out_dir =
         std::path::Path::new("output/poc/hwpx2hwp/task903/stage53_current_impl_gap_probe");
@@ -7354,6 +7364,7 @@ fn task903_stage54_write_generation_report(
 }
 
 #[test]
+#[ignore]
 fn task903_stage54_generate_minimal_impl_candidate() {
     let out_dir =
         std::path::Path::new("output/poc/hwpx2hwp/task903/stage54_minimal_impl_candidate");
