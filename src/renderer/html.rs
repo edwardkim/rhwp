@@ -256,10 +256,7 @@ impl Renderer for HtmlRenderer {
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
-        let text = &text
-            .chars()
-            .map(crate::renderer::layout::map_pua_bullet_char)
-            .collect::<String>();
+        let text = &crate::renderer::composer::expand_pua_render_text(text);
 
         let font_size = if style.font_size > 0.0 { style.font_size } else { 12.0 };
         let color = color_to_css(style.color);

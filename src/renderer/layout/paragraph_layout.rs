@@ -7,7 +7,7 @@ use crate::model::bin_data::BinDataContent;
 use super::super::render_tree::*;
 use super::super::page_layout::LayoutRect;
 use super::super::height_measurer::MeasuredTable;
-use super::super::composer::{ComposedParagraph, compose_paragraph};
+use super::super::composer::{ComposedParagraph, compose_paragraph, effective_text_for_metrics};
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{TextStyle, ShapeStyle, TabStop, hwpunit_to_px, px_to_hwpunit, format_number, NumberFormat as NumFmt, AutoNumberCounter};
 use super::{LayoutEngine, CellContext};
@@ -125,7 +125,7 @@ pub(crate) fn right_tab_block_width(
         ts.available_width = available_width;
         // [Task #874] text_start_offset 은 right_tab_block_width 가 측정만 하므로
         // 영향 없음 — 0 그대로.
-        w += estimate_text_width(&r.text, &ts);
+        w += estimate_text_width(effective_text_for_metrics(r), &ts);
     }
     w
 }
@@ -1634,7 +1634,7 @@ impl LayoutEngine {
                         fs * run.text.chars().count() as f64
                     }
                 } else {
-                    estimate_text_width(&run.text, &text_style)
+                    estimate_text_width(effective_text_for_metrics(run), &text_style)
                 };
                 // 탭 리더 계산: 탭이 포함된 run에서 채움 기호 정보 추출
                 // inline_tabs를 일시 제거하여 tab_stops 기반 위치 계산과 일관되게 함

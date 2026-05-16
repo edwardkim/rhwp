@@ -35,7 +35,7 @@ fn expand_pua_old_hangul_canvas(text: &str) -> String {
     }
     out
 }
-use super::composer::{CharOverlapInfo, pua_to_display_text, decode_pua_overlap_number};
+use super::composer::{CharOverlapInfo, decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text};
 use crate::model::control::FormType;
 #[cfg(target_arch = "wasm32")]
 use super::layout::{compute_char_positions, split_into_clusters};
@@ -1605,10 +1605,7 @@ impl Renderer for WebCanvasRenderer {
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
-        let text = &text
-            .chars()
-            .map(crate::renderer::layout::map_pua_bullet_char)
-            .collect::<String>();
+        let text = &expand_pua_render_text(text);
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (KTUG 매핑).
         let text = &expand_pua_old_hangul_canvas(text);
 

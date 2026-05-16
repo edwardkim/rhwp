@@ -6,7 +6,7 @@ use skia_safe::{
 
 use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
-use crate::renderer::composer::{decode_pua_overlap_number, pua_to_display_text, CharOverlapInfo};
+use crate::renderer::composer::{decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo};
 use crate::renderer::layout::{compute_char_positions, split_into_clusters};
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::TextStyle;
@@ -282,6 +282,8 @@ impl SkiaTextReplay<'_> {
                     return;
                 }
 
+                let text = expand_pua_render_text(text);
+                let text = text.as_str();
                 let char_positions = compute_char_positions(text, style);
                 let clusters = split_into_clusters(text);
                 let text_width = *char_positions.last().unwrap_or(&0.0) as f32;

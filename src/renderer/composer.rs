@@ -178,33 +178,37 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     // PUA 테두리 숫자(사각형/원형 안의 숫자) → CharOverlap 런으로 변환
     convert_pua_enclosed_numbers(&mut composed);
 
-    // Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (Task #528)
-    convert_pua_old_hangul(&mut composed);
+    // Hanyang-PUA 옛한글 / 한컴 PUA 표시 문자열 변환 (렌더링·측정용)
+    convert_pua_display_text(&mut composed);
 
     composed
 }
 
-/// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 변환한다.
+/// Hanyang-PUA 옛한글 코드포인트와 한컴 PUA 표시 문자열을 렌더링용 텍스트로 변환한다.
 ///
 /// 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 영역에 옛한글 글리프를 직접
 /// 보유하나, OFL 폰트 (Noto Serif KR / Source Han Serif K 등) 는 KS X 1026-1
 /// 자모 영역만 지원하므로 PUA → 자모 변환 후 합자 렌더링이 필요.
 ///
-/// 본 함수는 `run.text` 를 변경하지 않고 `run.display_text` 에만 변환 결과를
-/// 저장한다. 이는 `char_offsets`, `line.char_start`, `line_chars` 등 인덱싱
-/// 불변성을 유지하기 위함이다 (PUA 1 char = display N jamos).
+/// `U+F012B` 같은 한컴 전용 PUA 기호는 표준 Unicode 단일 문자 대응이 없어서
+/// 표시 문자열(`(인)`)로 확장한다. 본 함수는 `run.text` 를 변경하지 않고
+/// `run.display_text` 에만 변환 결과를 저장한다. 이는 `char_offsets`,
+/// `line.char_start`, `line_chars` 등 인덱싱 불변성을 유지하기 위함이다
+/// (PUA 1 char = display N chars).
 ///
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
-fn convert_pua_old_hangul(composed: &mut ComposedParagraph) {
+fn convert_pua_display_text(composed: &mut ComposedParagraph) {
     use super::pua_oldhangul::map_pua_old_hangul;
     for line in composed.lines.iter_mut() {
         for run in line.runs.iter_mut() {
-            if !run.text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
+            if !run.text.chars().any(|ch| pua_plain_text_display(ch).is_some() || map_pua_old_hangul(ch).is_some()) {
                 continue;
             }
             let mut display = String::with_capacity(run.text.len() * 3);
             for ch in run.text.chars() {
-                if let Some(jamos) = map_pua_old_hangul(ch) {
+                if let Some(replacement) = pua_plain_text_display(ch) {
+                    display.push_str(replacement);
+                } else if let Some(jamos) = map_pua_old_hangul(ch) {
                     display.extend(jamos.iter().copied());
                 } else {
                     display.push(ch);
@@ -1171,11 +1175,37 @@ fn pua_enclosed_border_type(ch: char) -> Option<u8> {
     None
 }
 
-/// PUA 테두리 숫자 문자를 표시 문자열로 변환한다. (렌더러 전용)
+fn pua_plain_text_display(ch: char) -> Option<&'static str> {
+    match ch as u32 {
+        0xF012B => Some("(인)"),
+        _ => None,
+    }
+}
+
+/// 일반 텍스트 렌더링 경로에서 한컴 PUA 문자를 표시 문자열로 확장한다.
+///
+/// CharOverlap 전용 숫자(`U+F02CE..=U+F02E1`)는 여기서 확장하지 않는다.
+/// 해당 문자는 `pua_to_display_text()`가 글자겹침 렌더러에서만 처리한다.
+pub fn expand_pua_render_text(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    for ch in text.chars() {
+        if let Some(replacement) = pua_plain_text_display(ch) {
+            out.push_str(replacement);
+        } else {
+            out.push(super::layout::map_pua_bullet_char(ch));
+        }
+    }
+    out
+}
+
+/// PUA 테두리 숫자와 한컴 PUA 기호를 표시 문자열로 변환한다. (렌더러 전용)
 ///
 /// draw_char_overlap()에서 호출하여, 실제 렌더링 시에만 변환한다.
 pub fn pua_to_display_text(ch: char) -> Option<String> {
     let cp = ch as u32;
+    if let Some(replacement) = pua_plain_text_display(ch) {
+        return Some(replacement.to_string());
+    }
     // U+F02B1~F02C4 는 map_pua_bullet_char 에서 ①~⑳ 으로 매핑 — 여기 도달 불가
     // 반전 사각형 안의 숫자: U+F02CE(1) ~ U+F02E1(20)
     if (0xF02CE..=0xF02E1).contains(&cp) {

@@ -5,7 +5,7 @@
 
 use super::{Renderer, TextStyle, ShapeStyle, LineStyle, PathCommand, GradientFillInfo, PatternFillInfo, StrokeDash};
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType, ImageNode, FormObjectNode, ShapeTransform, BoundingBox};
-use super::composer::{CharOverlapInfo, pua_to_display_text, decode_pua_overlap_number};
+use super::composer::{CharOverlapInfo, decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text};
 use super::pua_oldhangul::map_pua_old_hangul;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
@@ -1904,10 +1904,7 @@ impl Renderer for SvgRenderer {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 — 일반 텍스트도 PUA
         // 변환 적용 (PR #251 정합). 매핑 표는 한컴 PDF 정답지 기준.
-        let text = &text
-            .chars()
-            .map(crate::renderer::layout::map_pua_bullet_char)
-            .collect::<String>();
+        let text = &expand_pua_render_text(text);
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
         // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
         let text = &expand_pua_old_hangul(text);
