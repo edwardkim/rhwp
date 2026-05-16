@@ -140,6 +140,53 @@ headless Chrome 실측:
 - `/private/tmp/rhwp-watermark-analysis/stage5_zoom_100.png`
 - `/private/tmp/rhwp-watermark-analysis/stage5_zoom_25.png`
 
+### 4.5 회귀/최소 수정 검증
+
+Stage 5 수정 후 기존 단일 canvas 방식과 현재 DOM layer 합성 방식을 같은 조건에서 비교했다.
+
+비교 기준:
+
+- 현재 방식: `page background(z=0) → BehindText overlay(z=1) → transparent flow canvas(z=2)`
+- 기존 기준: overlay DOM layer를 제거하고 `renderPageToCanvasFiltered(0, canvas, zoom, 'all')`로 단일 canvas 렌더
+
+픽셀 비교 결과:
+
+| 줌 | 전체 차이 픽셀(`>2`) | 전체 비율 | 로고/워터마크 bbox 외부 차이(`>2`) | bbox 외부 최대 차이 | 판정 |
+|----|----------------------|-----------|------------------------------------|---------------------|------|
+| 100% | 21,307 | 1.33169% | 1,764 | 34 | 이미지 합성/안티앨리어싱 차이로 한정 |
+| 25% | 2,615 | 0.16344% | 7 | 16 | 사실상 이미지 bbox 내부 차이로 한정 |
+
+추가 임계값 확인:
+
+- 100%에서 bbox 외부 차이는 임계값 `>40` 기준 0px
+- 25%에서 bbox 외부 차이는 임계값 `>20` 기준 0px
+
+결론:
+
+- 기존 `all` canvas 렌더와 byte/pixel identity는 아니다.
+- 그러나 의미 있는 차이는 로고/워터마크 이미지 영역에 한정된다.
+- 텍스트, 표, 페이지 배치, 배경 영역에서 회귀로 볼 차이는 확인되지 않았다.
+
+최소 수정성:
+
+- 제품 코드 변경은 `src/renderer/web_canvas.rs`, `rhwp-studio/src/view/page-renderer.ts`, `rhwp-studio/src/view/canvas-view.ts` 3개 파일로 제한됐다.
+- parser/model/layout/SVG/native renderer/폰트 fallback은 변경하지 않았다.
+- `FlowOnly + BehindText`일 때만 flow canvas의 page background를 투명하게 유지하도록 조건부 처리했다.
+
+### 4.6 PDF 기준 후속 차이 분리
+
+작업지시자가 제공한 한컴 기준 PDF(`pdf/복학원서-2022.pdf`)와 비교해 다음 차이를 확인했다.
+
+1. 서명란의 `(인)` 기호가 현재 rhwp-studio에서는 기대와 다르게 렌더링된다.
+2. 중앙 워터마크 이미지가 투명 배경이 아니라 사각 배경 영역을 포함한 이미지처럼 보인다.
+
+분리 판단:
+
+- 워터마크 사각 배경은 기존 `all` canvas 기준 렌더에서도 동일하게 보인다. 따라서 Stage 5 DOM layer 수정으로 새로 생긴 회귀가 아니다.
+- `(인)` 기호 문제는 BehindText overlay 줌/가시성 문제가 아니라 텍스트/특수기호/폰트 매핑 계열 문제로 보인다.
+
+따라서 두 항목은 #931 범위에 포함하지 않고 후속 이슈로 분리한다.
+
 ## 5. 산출물
 
 - 수행계획서: `mydocs/plans/task_m100_931.md`
@@ -149,6 +196,7 @@ headless Chrome 실측:
 - Stage 3 보고서: `mydocs/working/task_m100_931_stage3.md`
 - Stage 4 보고서: `mydocs/working/task_m100_931_stage4.md`
 - Stage 5 보고서: `mydocs/working/task_m100_931_stage5.md`
+- Stage 6 보고서: `mydocs/working/task_m100_931_stage6.md`
 - 최종 보고서: `mydocs/report/task_m100_931_report.md`
 
 ## 6. 직접 검증
@@ -164,6 +212,7 @@ http://127.0.0.1:7700/?url=/samples/%EB%B3%B5%ED%95%99%EC%9B%90%EC%84%9C.hwp&fil
 - high-DPR 디스플레이에서는 `dpr` 보정 경로가 사용되므로 논리상 같은 계산을 적용하지만, 이번 자동 검증은 `devicePixelRatio=1` 중심으로 수행했다.
 - InFrontOfText 샘플 문서에 대한 별도 시각 검증은 수행하지 않았다. 동일 overlay 경로를 사용하므로 코드상 동일한 배율 규칙이 적용된다.
 - BehindText가 있는 페이지의 custom page background는 현재 rhwp-studio DOM background layer가 흰색으로 대체한다. `복학원서.hwp` 재현 범위에서는 문제가 없지만, 비흰색/이미지 page background와 BehindText가 함께 있는 문서는 후속 정밀화 대상이다.
+- 한컴 기준 PDF 대비 `(인)` 기호 렌더링 불일치와 워터마크 사각 배경 문제는 #931 범위 밖의 별도 결함으로 분리했다.
 
 ## 8. 완료 승인 요청
 

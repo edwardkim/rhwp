@@ -164,6 +164,20 @@ this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
 - `mydocs/working/task_m100_931_stage5.md`
 - 최종 보고서 갱신
 
+### Stage 6 — 회귀/최소 수정 검증 + 후속 범위 분리
+
+**배경**: Stage 5 완료 후 작업지시자가 기존 방식의 렌더 결과 대비 회귀 여부와 최소 수정 여부 검증을 요청했다. 추가로 한컴 기준 PDF와 비교했을 때 `(인)` 기호와 워터마크 사각 배경 차이가 확인됐다.
+
+**검증 방향**:
+- 현재 DOM layer 합성 결과와 기존 `renderPageToCanvasFiltered(..., 'all')` canvas 결과를 같은 조건에서 픽셀 비교한다.
+- 로고/워터마크 이미지 bbox 내부 차이와 그 외 텍스트/표/페이지 영역 차이를 분리해 회귀 여부를 판정한다.
+- 제품 코드 diff가 #931 결함 해결에 필요한 범위를 넘지 않았는지 파일 단위로 검토한다.
+- PDF 기준 차이 중 #931의 줌/가시성 결함과 별도 원인인 항목은 후속 이슈로 분리한다.
+
+**산출물**:
+- `mydocs/working/task_m100_931_stage6.md`
+- 최종 보고서 갱신
+
 ## 단계별 commit 전략
 
 | Stage | commit | 영역 |
@@ -174,6 +188,7 @@ this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
 | Stage 3 | `Task #931 Stage 3: 지연 재렌더 flow filter 보존` | page-renderer 코드 + 보고서 |
 | Stage 4 | `Task #931: 최종 검증 보고서 작성` | 최종 보고서 + orders |
 | Stage 5 | `Task #931 Stage 5: 워터마크 layer 가림 보정` | Rust WASM renderer + rhwp-studio view 코드 + 보고서 |
+| Stage 6 | `Task #931 Stage 6: 회귀 검증과 후속 범위 분리` | 회귀 검증 보고서 + 최종 보고서 |
 
 ## 위험 영역 + 가드
 
