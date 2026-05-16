@@ -83,6 +83,8 @@ pub struct SvgRenderer {
     pub font_paths: Vec<std::path::PathBuf>,
     /// 사용된 폰트별 codepoint 수집 (font_family → codepoints)
     font_codepoints: std::collections::HashMap<String, std::collections::HashSet<char>>,
+    /// [Stage 33-A] inline WMF 카운터 — id 충돌 회피용 prefix 생성
+    wmf_inline_counter: u32,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -142,6 +144,7 @@ impl SvgRenderer {
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
             font_codepoints: std::collections::HashMap::new(),
+            wmf_inline_counter: 0,
         }
     }
 
@@ -1114,6 +1117,46 @@ impl SvgRenderer {
         }
 
         let mime_type = detect_image_mime_type(data);
+
+        // [Task #902 v2 Stage 33-A] WMF + FitToSize without crop:
+        // base64 data URL <image> 대신 nested <svg> inline 으로 임베드 — sandboxed
+        // image 의 @font-face / CSS 적용 비일관성 우회. 다른 fill_mode (crop/tile)
+        // 는 png/svg+xml data URL 경로 그대로 유지 (tiling 등 픽셀 단위 동작 필요).
+        let fill_mode_preview = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
+        let wmf_inline_eligible = mime_type == "image/x-wmf"
+            && matches!(fill_mode_preview, ImageFillMode::FitToSize)
+            && img.crop.is_none();
+        if wmf_inline_eligible {
+            // native: libreoffice 외부 변환이 활성화돼 있으면 PNG embed (기존 경로) 우선
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(png_bytes) = rasterize_wmf_via_libreoffice(data) {
+                let base64_data = base64::engine::general_purpose::STANDARD
+                    .encode(&png_bytes);
+                let data_uri = format!("data:image/png;base64,{}", base64_data);
+                self.output.push_str(&format!(
+                    "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{}\"/>\n",
+                    bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
+                ));
+                if is_watermark_image { self.output.push_str("</g>\n"); }
+                if bc_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                if effect_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                return;
+            }
+            if let Some((viewbox, body)) = convert_wmf_to_inline_svg(data) {
+                self.wmf_inline_counter += 1;
+                let prefix = format!("wmf{}", self.wmf_inline_counter);
+                let body = prefix_svg_ids(&body, &prefix);
+                self.output.push_str(&format!(
+                    "<svg x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" viewBox=\"{}\" preserveAspectRatio=\"none\">{}</svg>\n",
+                    bbox.x, bbox.y, bbox.width, bbox.height, viewbox, body,
+                ));
+                if is_watermark_image { self.output.push_str("</g>\n"); }
+                if bc_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                if effect_filter_id.is_some() { self.output.push_str("</g>\n"); }
+                return;
+            }
+            // inline 실패 시 아래 fallback (data URL <image>) 로 진행
+        }
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
         // BMP → PNG 변환 (브라우저는 SVG <image> 내부의 data:image/bmp 미지원)
@@ -2355,8 +2398,22 @@ impl Renderer for SvgRenderer {
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let mime_type = detect_image_mime_type(data);
+        // [Task #902 v2 Stage 33-A] WMF inline 우선 — sandbox 우회.
+        if mime_type == "image/x-wmf" {
+            if let Some((viewbox, body)) = convert_wmf_to_inline_svg(data) {
+                self.wmf_inline_counter += 1;
+                let prefix = format!("wmf{}", self.wmf_inline_counter);
+                let body = prefix_svg_ids(&body, &prefix);
+                self.output.push_str(&format!(
+                    "<svg x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" viewBox=\"{}\" preserveAspectRatio=\"none\">{}</svg>\n",
+                    x, y, w, h, viewbox, body,
+                ));
+                return;
+            }
+        }
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) = if mime_type == "image/x-wmf" {
             // [Task #902 v2 Stage 10] WMF → SVG → PNG raster 우선 시도
+            // (inline 실패 시 fallback)
             match convert_wmf_to_svg(data) {
                 Some(svg_bytes) => {
                     match rasterize_wmf_svg_to_png(
@@ -2429,6 +2486,60 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
     let player = SVGPlayer::new();
     let converter = WMFConverter::new(data, player);
     converter.run().ok()
+}
+
+/// [Task #902 v2 Stage 33-A] WMF 를 inline SVG body 로 변환.
+///
+/// `<image href="data:image/svg+xml;base64,...">` 경로는 브라우저에서 sandboxed
+/// image 가 되어 inner `@font-face` data URL 의 적용이 일관되지 않음 (특히 Safari).
+/// nested `<svg>` 로 outer 에 직접 inline 하면 sandbox 우회 + outer CSS 상속.
+///
+/// 반환: `(viewBox 문자열, opening `<svg>` 와 closing `</svg>` 사이 본문)`.
+/// 본문 안 `id="..."` 와 `url(#...)` 는 caller 가 필요 시 prefix 처리.
+pub(crate) fn convert_wmf_to_inline_svg(data: &[u8]) -> Option<(String, String)> {
+    let svg_bytes = convert_wmf_to_svg(data)?;
+    let s = std::str::from_utf8(&svg_bytes).ok()?;
+    let open_start = s.find("<svg")?;
+    let open_end = s[open_start..].find('>')? + open_start;
+    let opening_tag = &s[open_start..=open_end];
+    let viewbox = extract_attr_value(opening_tag, "viewBox")?;
+    let close = s.rfind("</svg>")?;
+    let body = s[open_end + 1..close].to_string();
+    Some((viewbox.to_string(), body))
+}
+
+/// `<tag attr="value" ...>` 에서 `attr` 의 값을 추출. 매우 단순화된 파서 (XML 정합 SVG 전용).
+fn extract_attr_value<'a>(tag: &'a str, attr: &str) -> Option<&'a str> {
+    let needle = format!("{attr}=\"");
+    let start = tag.find(&needle)? + needle.len();
+    let end = tag[start..].find('"')? + start;
+    Some(&tag[start..end])
+}
+
+/// [Task #902 v2 Stage 33-A] inline SVG body 의 모든 `id="X"` 와 `url(#X)` 에 prefix 부여.
+/// 같은 outer SVG 안 다른 WMF (또는 outer 자체) 와 id 충돌 회피.
+fn prefix_svg_ids(body: &str, prefix: &str) -> String {
+    let mut out = String::with_capacity(body.len() + body.len() / 16);
+    let mut rest = body;
+    loop {
+        let id_pos = rest.find("id=\"");
+        let url_pos = rest.find("url(#");
+        let (pos, marker_len) = match (id_pos, url_pos) {
+            (Some(a), Some(b)) if a < b => (a, 4),
+            (Some(_), Some(b)) => (b, 5),
+            (Some(a), None) => (a, 4),
+            (None, Some(b)) => (b, 5),
+            (None, None) => {
+                out.push_str(rest);
+                break;
+            }
+        };
+        out.push_str(&rest[..pos + marker_len]);
+        out.push_str(prefix);
+        out.push('_');
+        rest = &rest[pos + marker_len..];
+    }
+    out
 }
 
 

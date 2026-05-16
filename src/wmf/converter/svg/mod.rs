@@ -101,15 +101,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("xmlns", "http://www.w3.org/2000/svg")
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
 
-        // [Task #902 v2 옵션 2] 한국어 폰트 @font-face base64 임베딩 — SVG 경로만.
-        // WASM (rhwp-studio Canvas2D) 환경에서 브라우저 fontconfig 의존 제거,
-        // 일관된 한국어 glyph 너비/배치 제공. NanumGothic Regular (SIL OFL 1.1).
-        // RasterPlayer (native 전용) 는 별도, 본 임베딩은 SVG converter 출력에만 적용.
-        if let Some(style_content) = build_font_face_style() {
-            let style_node = Node::new("style")
-                .add(Node::new_text(&style_content));
-            document = document.add(style_node);
-        }
+        // [Task #902 v2 Stage 33-A] @font-face 임베딩 제거 — set_text_align vertical
+        // bits 버그 수정 + Stage 33-A inline <svg> 임베드로 실제 root cause 가 해결되어
+        // woff2 base64 (~1.5MB WASM 증가) 가 더 이상 필요 없음. 외부 폰트 (font-loader.ts /
+        // --font-style / 시스템 폰트 chain) 만으로 정합 렌더 가능.
 
         if !definitions.is_empty() {
             let mut defs = Node::new("defs");
@@ -821,19 +816,25 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 } else {
                     record.y
                 } + match self.context_current.text_align_vertical {
-                    // VTA_TOP: y 좌표에 font ascent를 더해 alphabetic baseline으로 변환
-                    // (dominant-baseline="text-top"은 SVG 렌더러 호환성이 낮음)
+                    // [Task #902 v2 Stage 33-A] WMF 의 ExtTextOut y 는 text_align_vertical
+                    // 에 따라 reference point 가 결정된다:
+                    //   VTA_BASELINE (default): y 가 baseline — 그대로 사용
+                    //   VTA_TOP: y 가 cell 의 top — baseline = y + ascent
+                    //   VTA_BOTTOM: y 가 cell 의 bottom — baseline = y - descent
+                    // font.height 의 부호는 magnitude 의 해석 (cell vs char) 만 바꾸며
+                    // reference point 와 무관하다 (이전 구현이 font.height < 0 일 때
+                    // -font.height 만큼 y 를 더했던 것은 잘못된 보정으로, 텍스트가 박스
+                    // 하단으로 baseline shift 되는 원인).
                     VerticalTextAlignmentMode::VTA_TOP => {
-                        // font.height가 음수면 절대값이 em height, 양수면 cell height
-                        // ascent ≈ 0.8 × em height 근사
                         let em = font.height.abs();
                         (em as f64 * 0.8) as i16
                     }
-                    VerticalTextAlignmentMode::VTA_BASELINE
-                        | VerticalTextAlignmentMode::VTA_BOTTOM
-                        if font.height < 0 => {
-                        -font.height
+                    VerticalTextAlignmentMode::VTA_BOTTOM => {
+                        let em = font.height.abs();
+                        -((em as f64 * 0.2) as i16)
                     }
+                    VerticalTextAlignmentMode::VTA_BASELINE => 0,
+                    // VTA_CENTER / VTA_LEFT: 드물게 사용; baseline 과 동일 처리
                     _ => 0,
                 },
             };
@@ -2278,13 +2279,28 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .into_iter()
                 .find(|a| record.text_alignment_mode & (*a as u16) == *a as u16)
                 .unwrap_or(TextAlignmentMode::TA_LEFT);
-        let align_vertical = [
-            VerticalTextAlignmentMode::VTA_BOTTOM,
-            VerticalTextAlignmentMode::VTA_TOP,
-        ]
-        .into_iter()
-        .find(|a| record.text_alignment_mode & (*a as u16) == *a as u16)
-        .unwrap_or(VerticalTextAlignmentMode::VTA_BASELINE);
+        // [Task #902 v2 Stage 33-A] SetTextAlign vertical bits 정합.
+        // WMF [MS-WMF] 2.1.2.18 TextAlignmentMode 의 vertical 부분:
+        //   TA_TOP = 0x0000 (default)
+        //   TA_BOTTOM = 0x0008
+        //   TA_BASELINE = 0x0018 (TA_BOTTOM | extra bit)
+        // 우리 enum 의 VTA_* 매핑:
+        //   VTA_TOP = 0x0000, VTA_BOTTOM = 0x0002 (사용 안함), VTA_LEFT = 0x0008 (TA_BOTTOM),
+        //   VTA_BASELINE = 0x0018 (TA_BASELINE).
+        // 이전 구현은 `mode & VTA_TOP(=0)` 가 항상 true 라서 BASELINE/BOTTOM 인 mode 도
+        // VTA_TOP 으로 매핑되어 baseline 이 cell-top 보정 (+ascent) 만큼 아래로 shift 되는
+        // 박스 외부 표시 회귀의 원인. 우선순위: BASELINE → BOTTOM → TOP.
+        let v_bits = record.text_alignment_mode & 0x0018;
+        let align_vertical = if v_bits == 0x0018 {
+            VerticalTextAlignmentMode::VTA_BASELINE
+        } else if v_bits == 0x0008 {
+            // TA_BOTTOM — 우리 enum 의 가장 가까운 대응은 VTA_LEFT (값 0x0008) 이지만
+            // 의미상 BOTTOM 이므로 VTA_BOTTOM 으로 매핑 (ext_text_out 의 baseline
+            // 계산 로직에서 동일 처리).
+            VerticalTextAlignmentMode::VTA_BOTTOM
+        } else {
+            VerticalTextAlignmentMode::VTA_TOP
+        };
 
         self.context_current = self
             .context_current
@@ -2423,38 +2439,6 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ) -> Result<Self, PlayError> {
         Ok(self)
     }
-}
-
-/// [Task #902 v2 옵션 2] @font-face style 빌드 — NanumGothic Regular embed (SVG 전용).
-/// 1회 base64 encode 캐시 (OnceLock). SIL OFL 1.1 라이센스.
-/// SVG 출력 시작에 `<style>` 노드로 추가되어 WMF 내부 텍스트 렌더링에 적용.
-fn build_font_face_style() -> Option<String> {
-    use base64::Engine;
-    use std::sync::OnceLock;
-    static CACHE: OnceLock<Option<String>> = OnceLock::new();
-    CACHE
-        .get_or_init(|| {
-            let font_bytes: &[u8] = include_bytes!(
-                "../../../../web/fonts/NanumGothic-Regular.woff2"
-            );
-            if font_bytes.is_empty() {
-                return None;
-            }
-            let b64 = base64::engine::general_purpose::STANDARD.encode(font_bytes);
-            let css = format!(
-                r#"@font-face {{
-  font-family: 'NanumGothicEmbedded';
-  src: url('data:font/woff2;base64,{b64}') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-}}
-text, tspan {{
-  font-family: 'NanumGothicEmbedded', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Nanum Gothic', sans-serif !important;
-}}"#
-            );
-            Some(css)
-        })
-        .clone()
 }
 
 /// [Task #860] Node 의 x+width attribute 합산 (viewBox 자동 확장용).
