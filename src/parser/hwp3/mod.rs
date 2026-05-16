@@ -277,7 +277,18 @@ pub(crate) fn parse_paragraph_list(
 
     loop {
         let para_start_pos = body_cursor.position();
-        let para_info = Hwp3ParaInfo::read(&mut *body_cursor)?;
+        // [diag929 — Stage 1 임시] 실패 지점 추적
+        let _body_len_diag929 = body_cursor.get_ref().len();
+        eprintln!("[diag929] loop iter para_idx={} pos={} body_len={}",
+            paragraphs.len(), para_start_pos, _body_len_diag929);
+        let para_info = Hwp3ParaInfo::read(&mut *body_cursor).map_err(|e| {
+            eprintln!("[diag929] FAIL ParaInfo::read para_idx={} start_pos={} cur_pos={} body_len={} err={:?}",
+                paragraphs.len(), para_start_pos, body_cursor.position(), _body_len_diag929, e);
+            Hwp3Error::IoError { source: e }
+        })?;
+        eprintln!("[diag929]   ParaInfo ok char_count={} line_count={} include_char_shape={} flags={} special_char_flags=0x{:08x} style_index={}",
+            para_info.char_count, para_info.line_count, para_info.include_char_shape,
+            para_info.flags, para_info.special_char_flags, para_info.style_index);
         if para_info.char_count == 0 {
             break; // 빈 문단, 리스트 끝
         }
@@ -309,8 +320,14 @@ pub(crate) fn parse_paragraph_list(
         let rep_char_shape_id = (doc_char_shapes.len() - 1) as u16;
 
         let mut line_infos = Vec::with_capacity(para_info.line_count as usize);
-        for _ in 0..para_info.line_count {
-            line_infos.push(Hwp3LineInfo::read(&mut *body_cursor)?);
+        for _li_idx in 0..para_info.line_count {
+            let _pos_before = body_cursor.position();
+            let li = Hwp3LineInfo::read(&mut *body_cursor).map_err(|e| {
+                eprintln!("[diag929] FAIL LineInfo::read para_idx={} li_idx={}/{} pos_before={} cur_pos={} err={:?}",
+                    paragraphs.len(), _li_idx, para_info.line_count, _pos_before, body_cursor.position(), e);
+                Hwp3Error::IoError { source: e }
+            })?;
+            line_infos.push(li);
         }
 
         let mut hwp3_inline_shapes = Vec::new();
@@ -341,7 +358,15 @@ pub(crate) fn parse_paragraph_list(
                 hwp3_char_to_utf16_pos[i] = utf16_len;
             }
             let ch_pos = body_cursor.position();
-            let ch = body_cursor.read_u16::<LittleEndian>().map_err(|e| Hwp3Error::IoError { source: e })?;
+            let ch = body_cursor.read_u16::<LittleEndian>().map_err(|e| {
+                eprintln!("[diag929] FAIL char read_u16 para_idx={} char_idx={}/{} ch_pos={} err={:?}",
+                    paragraphs.len(), i, para_info.char_count, ch_pos, e);
+                Hwp3Error::IoError { source: e }
+            })?;
+            if ch < 32 && ch != 10 && ch != 13 && ch != 9 {
+                eprintln!("[diag929]   ctrl ch={} pos={} para_char_idx={}/{}",
+                    ch, ch_pos, i, para_info.char_count);
+            }
 
             i += 1;
 
@@ -1162,8 +1187,18 @@ pub(crate) fn parse_paragraph_list(
                             if let Err(_) = body_cursor.read_exact(&mut info_buf) { break; }
                             nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                         } else if ch == 17 { // 각주/미주
+                            // [diag929] ch=17 진입 시점의 cursor·context dump
+                            let _pos_b = body_cursor.position();
+                            let _body_ref = body_cursor.get_ref();
+                            let _peek_end = (_pos_b as usize + 64).min(_body_ref.len());
+                            let _peek_start = (_pos_b as usize).saturating_sub(8);
+                            let _peek: Vec<String> = _body_ref[_peek_start.._peek_end]
+                                .iter().map(|b| format!("{:02x}", b)).collect();
+                            eprintln!("[diag929] ENTER ch=17 ch_pos={} cursor={} info_buf_size=14 peek({}..{}): {}",
+                                ch_pos, _pos_b, _peek_start, _peek_end, _peek.join(" "));
                             info_buf.resize(14, 0);
                             if let Err(_) = body_cursor.read_exact(&mut info_buf) { break; }
+                            eprintln!("[diag929]   ch=17 after info_buf cursor={} (consumed 14, recurse below)", body_cursor.position());
                             nested_paragraphs = parse_paragraph_list(body_cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id, body_left_hu, column_width_hu)?;
                         } else if ch == 29 { // 상호 참조
                             if header_val1 < 1000000 {
