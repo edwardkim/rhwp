@@ -729,3 +729,24 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
         "display_text=None 인 경우 text 그대로 반환. 비-PUA fallback 회귀 가드."
     );
 }
+
+/// Issue #677: U+F081C HWP TAC filler 는 시각 폭 0으로 측정되어야 한다.
+///
+/// filler 원문이 display_text 로 치환되면 `text_measurement` 의 0폭 분기를
+/// 우회하여 복학원서 접수증 블록이 우측으로 밀린다.
+#[test]
+fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
+    let run = ComposedTextRun {
+        text: "\u{F081C}\u{F081C}".to_string(),
+        char_style_id: 0,
+        lang_index: 0,
+        char_overlap: None,
+        footnote_marker: None,
+        display_text: Some("□□".to_string()),
+    };
+    let effective = super::effective_text_for_metrics(&run);
+    assert_eq!(
+        effective, "\u{F081C}\u{F081C}",
+        "U+F081C filler 는 0폭 측정 규칙을 유지하기 위해 원문으로 측정해야 함."
+    );
+}

@@ -1112,6 +1112,12 @@ fn split_composed_line_by_width(
 ///
 /// 단일 룰 (분기/허용오차 없음): 비-PUA 텍스트는 fallback 으로 동일 동작.
 pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
+    // Issue #677: U+F081C 는 HWP TAC filler 이며 text_measurement 경로에서
+    // 시각 폭 0으로 처리해야 한다. display_text 로 바꾸면 이 0폭 규칙을
+    // 우회하므로 원문을 유지한다.
+    if run.text.contains('\u{F081C}') {
+        return &run.text;
+    }
     run.display_text.as_deref().unwrap_or(&run.text)
 }
 
