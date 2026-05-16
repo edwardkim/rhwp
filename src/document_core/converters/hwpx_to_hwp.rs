@@ -16,6 +16,7 @@
 //!
 //! Stage 1 (현재): 진입점만 노출. 영역별 매핑은 Stage 2~ 에서 추가.
 
+use crate::model::bin_data::{BinDataStatus, BinDataType};
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
 use crate::model::paragraph::Paragraph;
@@ -53,6 +54,12 @@ pub struct AdapterReport {
     pub cells_list_attr_bit16_set: u32,
     /// paragraph/char shape 참조 BorderFill 무채움 정규화 횟수
     pub border_fills_no_fill_normalized: u32,
+    /// HWPX 출처 FileHeader를 HWP5 compressed 저장 관례로 보정한 횟수
+    pub file_header_compression_normalized: u32,
+    /// HWPX 출처 DocProperties.section_count 보정 횟수
+    pub doc_properties_section_count_normalized: u32,
+    /// HWPX embedded BinData metadata 보정 횟수
+    pub bin_data_metadata_normalized: u32,
     /// `Control::SectionDef` 컨트롤 삽입 횟수 (Stage 4 — 섹션 개수)
     pub section_def_controls_inserted: u32,
 }
@@ -80,6 +87,9 @@ impl AdapterReport {
                 + self.table_record_row_sizes_materialized
                 + self.cells_list_attr_bit16_set
                 + self.border_fills_no_fill_normalized
+                + self.file_header_compression_normalized
+                + self.doc_properties_section_count_normalized
+                + self.bin_data_metadata_normalized
                 + self.section_def_controls_inserted)
                 > 0
     }
@@ -107,6 +117,10 @@ impl AdapterReport {
 pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
     let mut report = AdapterReport::new();
 
+    normalize_file_header_for_hwp(doc, &mut report);
+    normalize_doc_properties_for_hwp(doc, &mut report);
+    normalize_bin_data_for_hwp(doc, &mut report);
+
     // Stage 4: SectionDef 컨트롤 삽입 (HWPX 파서가 만들지 않으므로 직렬화기가 PAGE_DEF 출력 못 함)
     for section in &mut doc.sections {
         insert_section_def_control(section, &mut report);
@@ -122,6 +136,93 @@ pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
     }
 
     report
+}
+
+/// HWPX embedded BinData를 한컴 HWP 저장 관례에 맞춰 materialize한다.
+///
+/// HWPX parser는 `content.hpf`의 BinData 항목을 모델에 등록하지만 HWP `BIN_DATA`
+/// record 전용 attr/status 값은 비워 둔다. 한컴 HWP 로더는 embedded image의
+/// `BIN_DATA` record에서 `attr=0x0101`, 접근 상태 success 형태를 기대하므로,
+/// HWP 저장 직전에 HWPX 출처 모델을 명시적으로 보정한다.
+fn normalize_bin_data_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
+    let mut changed = false;
+
+    for bin_data in &mut doc.doc_info.bin_data_list {
+        if !matches!(
+            bin_data.data_type,
+            BinDataType::Embedding | BinDataType::Storage
+        ) {
+            continue;
+        }
+
+        if bin_data.attr != 0x0101 {
+            bin_data.attr = 0x0101;
+            changed = true;
+        }
+
+        if !matches!(bin_data.status, BinDataStatus::Success) {
+            bin_data.status = BinDataStatus::Success;
+            changed = true;
+        }
+
+        if bin_data.raw_data.is_some() {
+            bin_data.raw_data = None;
+            changed = true;
+        }
+    }
+
+    if changed {
+        report.bin_data_metadata_normalized += 1;
+        doc.doc_info.raw_stream_dirty = true;
+    }
+}
+
+/// HWPX 출처 문서를 HWP5 저장 관례에 맞춰 압축 문서로 보정한다.
+///
+/// HWPX 파서는 HWP `FileHeader` 원본이 없기 때문에 `compressed=false`, `flags=0`인
+/// 임시 헤더를 만든다. 그러나 HWP 저장기는 이 값을 그대로 사용해 DocInfo/BodyText/BinData
+/// 스트림 압축 여부를 결정한다. Stage30 probe의 공통 기준선도 압축 플래그를 켠 상태였으므로,
+/// HWPX -> HWP 저장 adapter는 HWP5 compressed 헤더를 명시적으로 materialize해야 한다.
+fn normalize_file_header_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
+    let mut changed = false;
+
+    if !doc.header.compressed {
+        doc.header.compressed = true;
+        changed = true;
+    }
+
+    if doc.header.flags & 0x01 == 0 {
+        doc.header.flags |= 0x01;
+        changed = true;
+    }
+
+    if doc.header.raw_data.is_some() {
+        doc.header.raw_data = None;
+        changed = true;
+    }
+
+    if changed {
+        report.file_header_compression_normalized += 1;
+    }
+}
+
+/// HWP `DOCUMENT_PROPERTIES`의 구역 개수를 실제 BodyText 섹션 수와 동기화한다.
+///
+/// HWPX header.xml 파싱 경로는 `DocProperties.section_count`를 기본값 1로 남길 수 있다.
+/// 한컴 HWP 로더는 이 값을 BodyText 섹션 스트림 해석의 상한으로 사용하므로, 실제 섹션이
+/// 2개 이상인 문서에서는 마지막 섹션이 렌더링되지 않는다.
+fn normalize_doc_properties_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
+    let section_count = doc.sections.len().min(u16::MAX as usize) as u16;
+    let changed =
+        doc.doc_properties.section_count != section_count || doc.doc_properties.raw_data.is_some();
+
+    doc.doc_properties.section_count = section_count;
+    doc.doc_properties.raw_data = None;
+
+    if changed {
+        report.doc_properties_section_count_normalized += 1;
+        doc.doc_info.raw_stream_dirty = true;
+    }
 }
 
 /// 섹션의 `section_def` 를 첫 문단의 `controls` 시작 위치에 `Control::SectionDef` 로 삽입한다.
@@ -292,15 +393,14 @@ fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
     if table.raw_ctrl_data.is_empty() {
         let materialize_hancom_table = should_materialize_hancom_table_attr(table);
         let materialize_tac_table = should_materialize_tac_table_ctrl_attr(table);
+        materialize_table_record_row_sizes(table, report);
         if materialize_hancom_table {
             materialize_table_outer_margin(table, report);
             materialize_table_page_break(table, report);
             materialize_table_record_attr(table, report);
-            materialize_table_record_row_sizes(table, report);
             materialize_table_ctrl_header_height(table, report);
             materialize_table_ctrl_header_attr(table, report);
         } else if materialize_tac_table {
-            materialize_table_record_row_sizes(table, report);
             materialize_table_ctrl_header_attr(table, report);
         }
 
@@ -524,11 +624,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn empty_doc_no_change() {
+    fn empty_doc_normalizes_file_header_once() {
         let mut doc = Document::default();
         let report = convert_hwpx_to_hwp_ir(&mut doc);
-        assert!(!report.changed_anything());
+        assert!(report.changed_anything());
         assert!(report.skipped_reason.is_none());
+        assert_eq!(report.file_header_compression_normalized, 1);
+        assert!(doc.header.compressed);
+        assert_eq!(doc.header.flags & 0x01, 0x01);
+        assert!(doc.header.raw_data.is_none());
     }
 
     #[test]
@@ -546,9 +650,11 @@ mod tests {
         let mut doc = Document::default();
         let r1 = convert_hwpx_to_hwp_ir(&mut doc);
         let r2 = convert_hwpx_to_hwp_ir(&mut doc);
+        assert_eq!(r1.file_header_compression_normalized, 1);
         // 두 번째 호출은 변경 없음 (이미 정규화됨).
         assert_eq!(r2.tables_ctrl_data_synthesized, 0);
-        assert_eq!(r1, r2);
+        assert_eq!(r2.file_header_compression_normalized, 0);
+        assert!(!r2.changed_anything());
     }
 
     // ============================================================

@@ -6,21 +6,20 @@
 use super::body_text::serialize_paragraph_list;
 use super::byte_writer::ByteWriter;
 
+use crate::document_core::converters::common_obj_attr_writer::pack_common_attr_bits;
 use crate::model::control::*;
 use crate::model::document::SectionDef;
 use crate::model::footnote::FootnoteShape;
-use crate::model::header_footer::{Header, Footer, HeaderFooterApply};
-use crate::model::footnote::{Footnote, Endnote};
-use crate::model::page::{
-    ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef,
-};
-use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
+use crate::model::footnote::{Endnote, Footnote};
+use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
+use crate::model::image::{ImageEffect, Picture};
+use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef};
 use crate::model::shape::{
-    CommonObjAttr, ShapeObject, ShapeComponentAttr, Caption, CaptionDirection, CaptionVertAlign,
-    DrawingObjAttr,
+    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, ShapeComponentAttr,
+    ShapeObject,
 };
-use crate::model::style::{Fill, FillType, ShapeBorderLine, ImageFillMode};
-use crate::model::image::{Picture, ImageEffect};
+use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine};
+use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::parser::record::Record;
 use crate::parser::tags;
 
@@ -113,10 +112,7 @@ pub fn serialize_control(
             });
         }
         // 미구현 컨트롤은 최소한의 CTRL_HEADER만 생성
-        Control::Hyperlink(_)
-        | Control::Ruby(_)
-        | Control::Form(_)
-        | Control::Unknown(_) => {
+        Control::Hyperlink(_) | Control::Ruby(_) | Control::Form(_) | Control::Unknown(_) => {
             let ctrl_id = match ctrl {
                 Control::Unknown(u) => u.ctrl_id,
                 _ => 0,
@@ -138,12 +134,15 @@ pub fn serialize_control(
     // Picture/Shape 컨트롤은 SHAPE_COMPONENT 내부(level+2)에도 추가 배치됨
     if let Some(data) = ctrl_data_record {
         let ctrl_data_pos = insert_pos + 1; // CTRL_HEADER 바로 다음
-        records.insert(ctrl_data_pos, Record {
-            tag_id: tags::HWPTAG_CTRL_DATA,
-            level: level + 1,
-            size: data.len() as u32,
-            data: data.to_vec(),
-        });
+        records.insert(
+            ctrl_data_pos,
+            Record {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: level + 1,
+                size: data.len() as u32,
+                data: data.to_vec(),
+            },
+        );
     }
 }
 
@@ -185,7 +184,11 @@ fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>)
         w.write_bytes(&sd.raw_ctrl_extra).unwrap();
     }
 
-    records.push(make_ctrl_record(tags::CTRL_SECTION_DEF, level, w.as_bytes()));
+    records.push(make_ctrl_record(
+        tags::CTRL_SECTION_DEF,
+        level,
+        w.as_bytes(),
+    ));
 
     // PAGE_DEF
     records.push(Record {
@@ -345,8 +348,14 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
 fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     // CTRL_HEADER: raw_ctrl_data는 CommonObjAttr 전체 (attr 포함)
     // Task 271에서 파싱 변경: ctrl_data 전체 = CommonObjAttr
-    records.push(make_ctrl_record(tags::CTRL_TABLE, level,
-        if !table.raw_ctrl_data.is_empty() { &table.raw_ctrl_data } else { &[] }
+    records.push(make_ctrl_record(
+        tags::CTRL_TABLE,
+        level,
+        if !table.raw_ctrl_data.is_empty() {
+            &table.raw_ctrl_data
+        } else {
+            &[]
+        },
     ));
 
     // 캡션 (TABLE 이전, level+1)
@@ -593,14 +602,18 @@ fn serialize_auto_number(an: &AutoNumber) -> Vec<u8> {
         AutoNumberType::Equation => 5,
     };
     let mut attr: u32 = type_val & 0x0F;
-    attr |= ((an.format as u32) & 0xFF) << 4;  // bit 4~11: 번호 모양
+    attr |= ((an.format as u32) & 0xFF) << 4; // bit 4~11: 번호 모양
     if an.superscript {
-        attr |= 0x1000;                         // bit 12: 위 첨자
+        attr |= 0x1000; // bit 12: 위 첨자
     }
     let mut data = Vec::new();
     data.extend_from_slice(&attr.to_le_bytes());
     // number가 0이면 assigned_number를 사용 (캡션 등 새로 생성된 AutoNumber)
-    let num = if an.number > 0 { an.number } else { an.assigned_number };
+    let num = if an.number > 0 {
+        an.number
+    } else {
+        an.assigned_number
+    };
     data.extend_from_slice(&num.to_le_bytes());
     data.extend_from_slice(&(an.user_symbol as u16).to_le_bytes());
     data.extend_from_slice(&(an.prefix_char as u16).to_le_bytes());
@@ -685,7 +698,12 @@ fn serialize_char_overlap(co: &CharOverlap) -> Vec<u8> {
 // 그림 ('gso ' + Picture)
 // ============================================================
 
-fn serialize_picture_control(pic: &Picture, level: u16, ctrl_data_record: Option<&[u8]>, records: &mut Vec<Record>) {
+fn serialize_picture_control(
+    pic: &Picture,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+) {
     // CTRL_HEADER: ctrl_id(gso) + common_obj_attr
     records.push(make_ctrl_record(
         tags::CTRL_GEN_SHAPE,
@@ -770,8 +788,8 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
         w.write_u8(pic.border_opacity).unwrap();
         w.write_u32(pic.instance_id).unwrap();
         w.write_u32(0).unwrap(); // image_effect_extra
-        // 원본 이미지 크기(HWPUNIT) + 플래그(1): 한컴 호환 추가 9바이트
-        w.write_u32(pic.crop.right as u32).unwrap();  // original width in HWPUNIT
+                                 // 원본 이미지 크기(HWPUNIT) + 플래그(1): 한컴 호환 추가 9바이트
+        w.write_u32(pic.crop.right as u32).unwrap(); // original width in HWPUNIT
         w.write_u32(pic.crop.bottom as u32).unwrap(); // original height in HWPUNIT
         w.write_u8(0).unwrap(); // flag
     }
@@ -783,7 +801,12 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
 // 도형 ('gso ' + Shape)
 // ============================================================
 
-fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Option<&[u8]>, records: &mut Vec<Record>) {
+fn serialize_shape_control(
+    shape: &ShapeObject,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+) {
     // CTRL_DATA를 SHAPE_COMPONENT 자식으로 배치하는 헬퍼
     let emit_ctrl_data = |records: &mut Vec<Record>| {
         if let Some(data) = ctrl_data_record {
@@ -799,7 +822,11 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
     match shape {
         ShapeObject::Line(line) => {
             let is_connector = line.connector.is_some();
-            let sc_ctrl_id = if is_connector { tags::SHAPE_CONNECTOR_ID } else { tags::SHAPE_LINE_ID };
+            let sc_ctrl_id = if is_connector {
+                tags::SHAPE_CONNECTOR_ID
+            } else {
+                tags::SHAPE_LINE_ID
+            };
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
@@ -833,7 +860,8 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
                 }
                 w.write_bytes(&conn.raw_trailing).unwrap();
             } else {
-                w.write_i32(if line.started_right_or_bottom { 1 } else { 0 }).unwrap();
+                w.write_i32(if line.started_right_or_bottom { 1 } else { 0 })
+                    .unwrap();
             }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT_LINE,
@@ -880,7 +908,11 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
                 size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_ELLIPSE_ID, &ellipse.drawing, true),
+                data: serialize_drawing_shape_component(
+                    tags::SHAPE_ELLIPSE_ID,
+                    &ellipse.drawing,
+                    true,
+                ),
             });
             emit_ctrl_data(records);
             serialize_text_box_if_present(&ellipse.drawing, level + 2, records);
@@ -917,7 +949,11 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
                 size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_POLYGON_ID, &poly.drawing, true),
+                data: serialize_drawing_shape_component(
+                    tags::SHAPE_POLYGON_ID,
+                    &poly.drawing,
+                    true,
+                ),
             });
             emit_ctrl_data(records);
             serialize_text_box_if_present(&poly.drawing, level + 2, records);
@@ -1004,7 +1040,7 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
             {
                 let mut data = serialize_shape_component(0x24636f6e, &group.shape_attr, true); // '$con'
-                // 자식 수 (u16)
+                                                                                               // 자식 수 (u16)
                 let mut w = ByteWriter::new();
                 w.write_u16(group.children.len() as u16).unwrap();
                 // 각 자식의 ctrl_id (u32)
@@ -1096,15 +1132,19 @@ fn serialize_shape_control(shape: &ShapeObject, level: u16, ctrl_data_record: Op
 /// 그룹 자식 개체 직렬화 (CTRL_HEADER 없이 SHAPE_COMPONENT + 도형별 태그)
 fn serialize_group_child(
     child: &ShapeObject,
-    comp_level: u16,    // SHAPE_COMPONENT level
-    type_level: u16,    // 도형별 태그 level
+    comp_level: u16, // SHAPE_COMPONENT level
+    type_level: u16, // 도형별 태그 level
     records: &mut Vec<Record>,
 ) {
     use crate::parser::tags;
 
     match child {
         ShapeObject::Line(line) => {
-            let sc_ctrl_id = if line.connector.is_some() { tags::SHAPE_CONNECTOR_ID } else { tags::SHAPE_LINE_ID };
+            let sc_ctrl_id = if line.connector.is_some() {
+                tags::SHAPE_CONNECTOR_ID
+            } else {
+                tags::SHAPE_LINE_ID
+            };
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
@@ -1131,7 +1171,8 @@ fn serialize_group_child(
                 }
                 w.write_bytes(&conn.raw_trailing).unwrap();
             } else {
-                w.write_i32(if line.started_right_or_bottom { 1 } else { 0 }).unwrap();
+                w.write_i32(if line.started_right_or_bottom { 1 } else { 0 })
+                    .unwrap();
             }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT_LINE,
@@ -1166,7 +1207,11 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_ELLIPSE_ID, &ellipse.drawing, false),
+                data: serialize_drawing_shape_component(
+                    tags::SHAPE_ELLIPSE_ID,
+                    &ellipse.drawing,
+                    false,
+                ),
             });
             serialize_text_box_if_present(&ellipse.drawing, type_level, records);
             let mut w = ByteWriter::new();
@@ -1220,7 +1265,11 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_POLYGON_ID, &poly.drawing, false),
+                data: serialize_drawing_shape_component(
+                    tags::SHAPE_POLYGON_ID,
+                    &poly.drawing,
+                    false,
+                ),
             });
             serialize_text_box_if_present(&poly.drawing, type_level, records);
             let mut w = ByteWriter::new();
@@ -1241,7 +1290,11 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_CURVE_ID, &curve.drawing, false),
+                data: serialize_drawing_shape_component(
+                    tags::SHAPE_CURVE_ID,
+                    &curve.drawing,
+                    false,
+                ),
             });
             serialize_text_box_if_present(&curve.drawing, type_level, records);
             let mut w = ByteWriter::new();
@@ -1293,7 +1346,11 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_drawing_shape_component(chart.drawing.shape_attr.ctrl_id, &chart.drawing, false),
+                data: serialize_drawing_shape_component(
+                    chart.drawing.shape_attr.ctrl_id,
+                    &chart.drawing,
+                    false,
+                ),
             });
             serialize_text_box_if_present(&chart.drawing, type_level, records);
             records.push(Record {
@@ -1309,7 +1366,11 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_drawing_shape_component(ole.drawing.shape_attr.ctrl_id, &ole.drawing, false),
+                data: serialize_drawing_shape_component(
+                    ole.drawing.shape_attr.ctrl_id,
+                    &ole.drawing,
+                    false,
+                ),
             });
             serialize_text_box_if_present(&ole.drawing, type_level, records);
             records.push(Record {
@@ -1323,11 +1384,7 @@ fn serialize_group_child(
 }
 
 /// DrawingObjAttr의 text_box가 있으면 LIST_HEADER + 문단 목록 직렬화
-fn serialize_text_box_if_present(
-    drawing: &DrawingObjAttr,
-    level: u16,
-    records: &mut Vec<Record>,
-) {
+fn serialize_text_box_if_present(drawing: &DrawingObjAttr, level: u16, records: &mut Vec<Record>) {
     if let Some(ref text_box) = drawing.text_box {
         // LIST_HEADER
         let mut w = ByteWriter::new();
@@ -1363,7 +1420,12 @@ fn serialize_text_box_if_present(
 /// CommonObjAttr 직렬화
 fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u32(common.attr).unwrap();
+    let attr = if common.attr != 0 {
+        common.attr
+    } else {
+        pack_common_attr_bits(common)
+    };
+    w.write_u32(attr).unwrap();
     w.write_u32(common.vertical_offset).unwrap();
     w.write_u32(common.horizontal_offset).unwrap();
     w.write_u32(common.width).unwrap();
@@ -1388,7 +1450,11 @@ fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 /// SHAPE_COMPONENT 데이터 직렬화 (ShapeComponentAttr만 — Picture, Group용)
 ///
 /// 구조: ctrl_id(×1 or ×2) + ShapeComponentAttr + rendering_info
-fn serialize_shape_component(default_ctrl_id: u32, attr: &ShapeComponentAttr, top_level: bool) -> Vec<u8> {
+fn serialize_shape_component(
+    default_ctrl_id: u32,
+    attr: &ShapeComponentAttr,
+    top_level: bool,
+) -> Vec<u8> {
     let mut w = ByteWriter::new();
     write_shape_component_base(&mut w, default_ctrl_id, attr, top_level);
     w.into_bytes()
@@ -1397,7 +1463,11 @@ fn serialize_shape_component(default_ctrl_id: u32, attr: &ShapeComponentAttr, to
 /// SHAPE_COMPONENT 데이터 직렬화 (DrawingObjAttr 전체 — 도형용)
 ///
 /// 구조: ctrl_id(×1 or ×2) + ShapeComponentAttr + rendering_info + border_line + fill + shadow
-fn serialize_drawing_shape_component(default_ctrl_id: u32, drawing: &DrawingObjAttr, top_level: bool) -> Vec<u8> {
+fn serialize_drawing_shape_component(
+    default_ctrl_id: u32,
+    drawing: &DrawingObjAttr,
+    top_level: bool,
+) -> Vec<u8> {
     let mut w = ByteWriter::new();
     write_shape_component_base(&mut w, default_ctrl_id, &drawing.shape_attr, top_level);
 
@@ -1425,10 +1495,23 @@ fn serialize_drawing_shape_component(default_ctrl_id: u32, drawing: &DrawingObjA
 }
 
 /// ShapeComponentAttr 공통 기록 (ctrl_id + 속성 + 렌더링 행렬)
-fn write_shape_component_base(w: &mut ByteWriter, default_ctrl_id: u32, attr: &ShapeComponentAttr, top_level: bool) {
+fn write_shape_component_base(
+    w: &mut ByteWriter,
+    default_ctrl_id: u32,
+    attr: &ShapeComponentAttr,
+    top_level: bool,
+) {
     // ctrl_id: 원본에서 보존된 값 사용, 없으면 기본값
-    let actual_id = if attr.ctrl_id != 0 { attr.ctrl_id } else { default_ctrl_id };
-    let is_two = if attr.ctrl_id != 0 { attr.is_two_ctrl_id } else { top_level };
+    let actual_id = if attr.ctrl_id != 0 {
+        attr.ctrl_id
+    } else {
+        default_ctrl_id
+    };
+    let is_two = if attr.ctrl_id != 0 {
+        attr.is_two_ctrl_id
+    } else {
+        top_level
+    };
 
     w.write_u32(actual_id).unwrap();
     if is_two {
@@ -1450,8 +1533,12 @@ fn write_shape_component_base(w: &mut ByteWriter, default_ctrl_id: u32, attr: &S
         attr.flip
     } else {
         let mut f: u32 = 0;
-        if attr.horz_flip { f |= 0x01; }
-        if attr.vert_flip { f |= 0x02; }
+        if attr.horz_flip {
+            f |= 0x01;
+        }
+        if attr.vert_flip {
+            f |= 0x02;
+        }
         f
     };
     w.write_u32(flip).unwrap();
@@ -1463,6 +1550,8 @@ fn write_shape_component_base(w: &mut ByteWriter, default_ctrl_id: u32, attr: &S
     // Rendering 정보 (원본이 있으면 복원, 없으면 적절한 행렬 생성)
     if !attr.raw_rendering.is_empty() {
         w.write_bytes(&attr.raw_rendering).unwrap();
+    } else if has_explicit_rendering_matrix(attr) {
+        write_parsed_rendering_matrix(w, attr);
     } else {
         let is_group_child = attr.group_level > 0;
         let cnt: u16 = if is_group_child { 2 } else { 1 };
@@ -1474,8 +1563,8 @@ fn write_shape_component_base(w: &mut ByteWriter, default_ctrl_id: u32, attr: &S
         w.write_f64(0.0).unwrap();
         w.write_f64(1.0).unwrap();
         w.write_f64(attr.offset_y as f64).unwrap(); // ty
-        // scale matrix = identity [1, 0, 0, 0, 1, 0]
-        // (스케일은 current_width/original_width 값으로 표현 — 행렬에 중복 기록하면 이중 적용됨)
+                                                    // scale matrix = identity [1, 0, 0, 0, 1, 0]
+                                                    // (스케일은 current_width/original_width 값으로 표현 — 행렬에 중복 기록하면 이중 적용됨)
         w.write_f64(1.0).unwrap();
         w.write_f64(0.0).unwrap();
         w.write_f64(0.0).unwrap();
@@ -1507,6 +1596,45 @@ fn write_shape_component_base(w: &mut ByteWriter, default_ctrl_id: u32, attr: &S
             w.write_f64(0.0).unwrap();
         }
     }
+}
+
+fn has_explicit_rendering_matrix(attr: &ShapeComponentAttr) -> bool {
+    const EPSILON: f64 = 0.000_001;
+
+    (attr.render_sx - 1.0).abs() > EPSILON
+        || attr.render_b.abs() > EPSILON
+        || attr.render_tx.abs() > EPSILON
+        || attr.render_c.abs() > EPSILON
+        || (attr.render_sy - 1.0).abs() > EPSILON
+        || attr.render_ty.abs() > EPSILON
+}
+
+fn write_matrix(w: &mut ByteWriter, matrix: [f64; 6]) {
+    for value in matrix {
+        w.write_f64(value).unwrap();
+    }
+}
+
+fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
+    // HWP parser composes rendering info as:
+    // result = translation x rotation x scale
+    //
+    // Store the parsed affine transform so reload reconstructs exactly:
+    // [sx, b, tx; c, sy, ty] = [1,0,tx;0,1,ty] x I x [sx,b,0;c,sy,0]
+    w.write_u16(1).unwrap();
+    write_matrix(w, [1.0, 0.0, attr.render_tx, 0.0, 1.0, attr.render_ty]);
+    write_matrix(
+        w,
+        [
+            attr.render_sx,
+            attr.render_b,
+            0.0,
+            attr.render_c,
+            attr.render_sy,
+            0.0,
+        ],
+    );
+    write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
 }
 
 /// 도형 채우기 직렬화 (SHAPE_COMPONENT 내부 — parse_fill과 동일한 형식)
@@ -1618,7 +1746,6 @@ fn serialize_list_header_with_paragraphs(
 
     serialize_paragraph_list(paragraphs, level + 1, records);
 }
-
 
 // ============================================================
 // 수식 ('eqed')
