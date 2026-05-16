@@ -286,9 +286,16 @@ pub(crate) fn parse_paragraph_list(
                 paragraphs.len(), para_start_pos, body_cursor.position(), _body_len_diag929, e);
             Hwp3Error::IoError { source: e }
         })?;
-        eprintln!("[diag929]   ParaInfo ok char_count={} line_count={} include_char_shape={} flags={} special_char_flags=0x{:08x} style_index={}",
-            para_info.char_count, para_info.line_count, para_info.include_char_shape,
+        eprintln!("[diag929]   ParaInfo ok follow={} char_count={} line_count={} include_char_shape={} flags={} special_char_flags=0x{:08x} style_index={}",
+            para_info.follow_prev_para_shape, para_info.char_count, para_info.line_count, para_info.include_char_shape,
             para_info.flags, para_info.special_char_flags, para_info.style_index);
+        if paragraphs.len() == 21 {
+            let _body = body_cursor.get_ref();
+            let _peek_end = (body_cursor.position() as usize + 80).min(_body.len());
+            let _peek: Vec<String> = _body[body_cursor.position() as usize.._peek_end]
+                .iter().map(|b| format!("{:02x}", b)).collect();
+            eprintln!("[diag929]   para21 body peek({}..{}): {}", body_cursor.position(), _peek_end, _peek.join(" "));
+        }
         if para_info.char_count == 0 {
             break; // 빈 문단, 리스트 끝
         }
@@ -363,9 +370,14 @@ pub(crate) fn parse_paragraph_list(
                     paragraphs.len(), i, para_info.char_count, ch_pos, e);
                 Hwp3Error::IoError { source: e }
             })?;
-            if ch < 32 && ch != 10 && ch != 13 && ch != 9 {
+            if ch < 32 && ch != 10 && ch != 13 {
                 eprintln!("[diag929]   ctrl ch={} pos={} para_char_idx={}/{}",
                     ch, ch_pos, i, para_info.char_count);
+            }
+            // [diag929] trace ALL chars in para 21
+            if paragraphs.len() == 21 {
+                eprintln!("[diag929]     para21 i={} ch_pos={} ch=0x{:04x}",
+                    i, ch_pos, ch);
             }
 
             i += 1;
