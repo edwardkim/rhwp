@@ -389,44 +389,57 @@ impl DocumentCore {
         use super::super::helpers::{json_u32, json_i16, json_u8, json_bool};
 
         let parsed_json = serde_json::from_str::<serde_json::Value>(json).ok();
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        let cell = table.cells.get_mut(cell_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx)))?;
-
         let width = if parsed_json.is_some() {
             top_level_u32(parsed_json.as_ref(), "width")
         } else {
             json_u32(json, "width")
         };
-        if let Some(v) = width { cell.width = v; }
-        if let Some(v) = json_u32(json, "height") { cell.height = v; }
-        if let Some(v) = json_i16(json, "paddingLeft") { cell.padding.left = v; }
-        if let Some(v) = json_i16(json, "paddingRight") { cell.padding.right = v; }
-        if let Some(v) = json_i16(json, "paddingTop") { cell.padding.top = v; }
-        if let Some(v) = json_i16(json, "paddingBottom") { cell.padding.bottom = v; }
-        if let Some(v) = json_u8(json, "verticalAlign") {
-            cell.vertical_align = match v {
-                1 => crate::model::table::VerticalAlign::Center,
-                2 => crate::model::table::VerticalAlign::Bottom,
-                _ => crate::model::table::VerticalAlign::Top,
-            };
-        }
-        if let Some(v) = json_u8(json, "textDirection") { cell.text_direction = v; }
-        if let Some(v) = json_bool(json, "isHeader") {
-            cell.is_header = v;
-            if v {
-                cell.list_header_width_ref |= 0x04;
-            } else {
-                cell.list_header_width_ref &= !0x04;
+        let should_reflow_cell = width.is_some()
+            || json_u32(json, "height").is_some()
+            || json_i16(json, "paddingLeft").is_some()
+            || json_i16(json, "paddingRight").is_some()
+            || json_i16(json, "paddingTop").is_some()
+            || json_i16(json, "paddingBottom").is_some();
+        let cell_para_count = {
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let cell = table.cells.get_mut(cell_idx)
+                .ok_or_else(|| HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx)))?;
+
+            if let Some(v) = width { cell.width = v; }
+            if let Some(v) = json_u32(json, "height") { cell.height = v; }
+            if let Some(v) = json_i16(json, "paddingLeft") { cell.padding.left = v; }
+            if let Some(v) = json_i16(json, "paddingRight") { cell.padding.right = v; }
+            if let Some(v) = json_i16(json, "paddingTop") { cell.padding.top = v; }
+            if let Some(v) = json_i16(json, "paddingBottom") { cell.padding.bottom = v; }
+            if let Some(v) = json_u8(json, "verticalAlign") {
+                cell.vertical_align = match v {
+                    1 => crate::model::table::VerticalAlign::Center,
+                    2 => crate::model::table::VerticalAlign::Bottom,
+                    _ => crate::model::table::VerticalAlign::Top,
+                };
             }
-        }
-        if let Some(v) = json_bool(json, "cellProtect") {
-            if v {
-                cell.list_header_width_ref |= 0x02;
-            } else {
-                cell.list_header_width_ref &= !0x02;
+            if let Some(v) = json_u8(json, "textDirection") { cell.text_direction = v; }
+            if let Some(v) = json_bool(json, "isHeader") {
+                cell.is_header = v;
+                if v {
+                    cell.list_header_width_ref |= 0x04;
+                } else {
+                    cell.list_header_width_ref &= !0x04;
+                }
             }
-        }
+            if let Some(v) = json_bool(json, "cellProtect") {
+                if v {
+                    cell.list_header_width_ref |= 0x02;
+                } else {
+                    cell.list_header_width_ref &= !0x02;
+                }
+            }
+
+            let para_count = cell.paragraphs.len();
+            table.update_ctrl_dimensions();
+            table.dirty = true;
+            para_count
+        };
 
         // BorderFill 변경: borderLeft 등이 포함된 경우 create_border_fill_from_json으로 처리
         let has_border = json.contains("\"borderLeft\"");
@@ -458,6 +471,18 @@ impl DocumentCore {
                 &new_borders,
             );
 
+        }
+
+        if should_reflow_cell {
+            for cell_para_idx in 0..cell_para_count {
+                self.reflow_cell_paragraph(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                );
+            }
         }
 
         self.document.sections[section_idx].raw_stream = None;
@@ -1044,7 +1069,9 @@ impl DocumentCore {
             table.common.margin.bottom = v;
         }
 
-        table.common.attr = table.attr;
+        // `table.attr` is the HWPTAG_TABLE record attr, not CommonObjAttr.
+        // Force CommonObjAttr serialization to pack from the common enum fields.
+        table.common.attr = 0;
         table.raw_ctrl_data =
             crate::document_core::converters::common_obj_attr_writer::serialize_common_obj_attr(&table.common);
         table.dirty = true;

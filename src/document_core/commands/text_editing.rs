@@ -461,6 +461,7 @@ impl DocumentCore {
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
+        let final_width_hwp = crate::renderer::px_to_hwpunit(final_width, self.dpi).max(1);
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx]
@@ -470,6 +471,10 @@ impl DocumentCore {
                 if let Some(cell) = table.cells.get_mut(cell_idx) {
                     if let Some(cell_para) = cell.paragraphs.get_mut(cell_para_idx) {
                         reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        for line_seg in &mut cell_para.line_segs {
+                            line_seg.column_start = 0;
+                            line_seg.segment_width = final_width_hwp;
+                        }
                     }
                 }
             }

@@ -626,6 +626,12 @@ pub(crate) fn reflow_line_segs(
 ) {
     // 기존 LineSeg에서 dimension 값 보존 (원본 HWP 호환성 유지)
     let seg_width_hwp = px_to_hwpunit(available_width_px, dpi);
+    let wrap_column_start_hwp = square_wrap_column_start_hwp(para);
+    let wrap_segment_width_hwp = if wrap_column_start_hwp > 0 {
+        (seg_width_hwp - wrap_column_start_hwp).max(1)
+    } else {
+        seg_width_hwp
+    };
     let orig = para.line_segs.first().cloned();
     let has_valid_orig = orig.as_ref().map(|ls| ls.line_height > 0).unwrap_or(false);
 
@@ -649,7 +655,8 @@ pub(crate) fn reflow_line_segs(
             text_height: text_height_hwp,
             baseline_distance: baseline_distance_hwp,
             line_spacing: line_spacing_hwp,
-            segment_width: seg_width_hwp,
+            column_start: wrap_column_start_hwp,
+            segment_width: wrap_segment_width_hwp,
             tag: if orig_tag != 0 { orig_tag } else { 0x00060000 },
             ..Default::default()
         }
@@ -735,6 +742,36 @@ pub(crate) fn reflow_line_segs(
     }
 
     para.line_segs = new_line_segs;
+}
+
+fn square_wrap_column_start_hwp(para: &Paragraph) -> i32 {
+    para.controls
+        .iter()
+        .filter_map(|control| match control {
+            crate::model::control::Control::Table(table)
+                if !table.common.treat_as_char
+                    && matches!(
+                        table.common.text_wrap,
+                        crate::model::shape::TextWrap::Square
+                            | crate::model::shape::TextWrap::Tight
+                            | crate::model::shape::TextWrap::Through
+                    ) =>
+            {
+                let width = if table.common.width > 0 {
+                    table.common.width
+                } else {
+                    table.get_column_widths().iter().sum()
+                };
+                Some(
+                    width as i32
+                        + table.common.margin.left as i32
+                        + table.common.margin.right as i32,
+                )
+            }
+            _ => None,
+        })
+        .max()
+        .unwrap_or(0)
 }
 
 /// 구역 내 문단들의 vertical_pos를 순차적으로 재계산한다.

@@ -15822,6 +15822,8 @@
             assert_eq!(reparsed.text_wrap, crate::model::shape::TextWrap::Square);
             assert_eq!(reparsed.horz_rel_to, crate::model::shape::HorzRelTo::Column);
             assert_eq!(reparsed.vert_rel_to, crate::model::shape::VertRelTo::Para);
+            assert_eq!(reparsed.width_criterion, crate::model::shape::SizeCriterion::Absolute);
+            assert_eq!(reparsed.height_criterion, crate::model::shape::SizeCriterion::Absolute);
             assert_eq!(reparsed.vertical_offset, 123);
             assert_eq!(reparsed.horizontal_offset, 456);
             assert_eq!(reparsed.margin.left, 35);
