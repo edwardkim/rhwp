@@ -3534,6 +3534,7 @@ impl LayoutEngine {
                                 width: col_area.width,
                                 height: col_area.height - (pic_y - col_area.y),
                             };
+                            let saved_y_offset = y_offset;
                             result_y = self.layout_body_picture(
                                 tree, col_node, pic,
                                 &pic_container, col_area, &layout.body_area,
@@ -3541,6 +3542,30 @@ impl LayoutEngine {
                                 bin_data_content, styles, alignment, pic_y,
                                 page_content.section_index, para_index, control_index,
                             );
+                            // [Task #959] horz_rel_to=Column 의 picture 가 col_area 우측을
+                            // 초과하는 위치에 emit 되면 한컴 viewer 는 column flow 에
+                            // reservation 하지 않음. rhwp 는 cursor 를 picture height 만큼
+                            // advance → 후속 paragraph 처짐.
+                            // (3-11월_실전_통합_2022 page 1 우측 단 pi=69 picture
+                            //  pic_emit_x=767 > col_right=759 → +274px advance → 문9 처짐)
+                            // Picture 의 좌측 edge (x) 가 col_area 우측을 초과하면 advance skip.
+                            if matches!(pic.common.horz_rel_to, HorzRelTo::Column) {
+                                let pic_width_px = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                                let h_offset_px = hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
+                                let pic_emit_x = match pic.common.horz_align {
+                                    crate::model::shape::HorzAlign::Left
+                                    | crate::model::shape::HorzAlign::Inside =>
+                                        col_area.x + h_offset_px,
+                                    crate::model::shape::HorzAlign::Center =>
+                                        col_area.x + (col_area.width - pic_width_px) / 2.0 + h_offset_px,
+                                    crate::model::shape::HorzAlign::Right
+                                    | crate::model::shape::HorzAlign::Outside =>
+                                        col_area.x + col_area.width - pic_width_px - h_offset_px,
+                                };
+                                if pic_emit_x >= col_area.x + col_area.width {
+                                    result_y = saved_y_offset;
+                                }
+                            }
                             // [Task #683] 빈 paragraph (텍스트 없음) + Para-relative TopAndBottom
                             // 그림 (caption 없음) 의 layout 진행량 보정. 한컴 한글 2022 PDF 는
                             // 그림 다음에 paragraph 의 line baseline 1줄(line_height + line_spacing)
