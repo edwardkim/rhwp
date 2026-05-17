@@ -1190,11 +1190,17 @@ fn pua_plain_text_display(ch: char) -> Option<&'static str> {
 
 /// 일반 텍스트 렌더링 경로에서 한컴 PUA 문자를 표시 문자열로 확장한다.
 ///
+/// HWP TAC filler `U+F081C` 는 레이아웃 측정에는 원문으로 남겨 0폭 규칙을
+/// 적용하되, 실제 출력에서는 글리프가 없어 깨진 문자로 보이지 않도록 숨긴다.
+///
 /// CharOverlap 전용 숫자(`U+F02CE..=U+F02E1`)는 여기서 확장하지 않는다.
 /// 해당 문자는 `pua_to_display_text()`가 글자겹침 렌더러에서만 처리한다.
 pub fn expand_pua_render_text(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
+        if ch == '\u{F081C}' {
+            continue;
+        }
         if let Some(replacement) = pua_plain_text_display(ch) {
             out.push_str(replacement);
         } else {

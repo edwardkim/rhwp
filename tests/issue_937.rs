@@ -6,7 +6,7 @@
 
 use rhwp::model::control::Control;
 use rhwp::model::paragraph::Paragraph;
-use rhwp::renderer::composer::pua_to_display_text;
+use rhwp::renderer::composer::{expand_pua_render_text, pua_to_display_text};
 use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
@@ -113,6 +113,20 @@ fn issue_937_f012b_display_text_should_be_signature_seal() {
 }
 
 #[test]
+fn issue_937_f081c_filler_should_not_render_as_text() {
+    assert_eq!(
+        expand_pua_render_text("\u{F081C}"),
+        "",
+        "U+F081C HWP TAC filler 는 실제 렌더 출력에 글리프로 표시되면 안 됨",
+    );
+    assert_eq!(
+        expand_pua_render_text("A\u{F081C}B"),
+        "AB",
+        "U+F081C filler 제거가 주변 텍스트 순서를 바꾸면 안 됨",
+    );
+}
+
+#[test]
 fn issue_937_svg_renders_f012b_as_signature_seal() {
     let bytes = read_bokhakwonseo();
     let doc = HwpDocument::from_bytes(&bytes).expect("parse samples/복학원서.hwp");
@@ -126,5 +140,9 @@ fn issue_937_svg_renders_f012b_as_signature_seal() {
     assert!(
         !svg.contains('\u{F012B}'),
         "복학원서 1페이지 SVG에 원본 PUA U+F012B가 그대로 출력되면 안 됨",
+    );
+    assert!(
+        !svg.contains('\u{F081C}'),
+        "복학원서 1페이지 SVG에 TAC filler U+F081C가 글리프로 출력되면 안 됨",
     );
 }
