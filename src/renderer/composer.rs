@@ -510,20 +510,35 @@ fn split_by_char_shapes(
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
     //
-    // [Issue #915] CharShapeRef.start_pos 는 u16 stream 위치. char_offsets 를 통해
-    // visible char index 로 매핑한다. inline 컨트롤이 없는 문단에서는 stream 위치 =
-    // visible index (char_offsets 가 identity) 이므로 동일 결과. inline 컨트롤이
-    // 있으면 stream 위치 gap 이 발생하며, binary search 로 올바른 visible index 를 찾는다.
+    // [Issue #915 + #884] Hybrid 해석:
+    //   start_pos < total_chars → visible char index 로 직접 사용 (해석 B, PR #913)
+    //   start_pos >= total_chars → char_offsets 에서 binary search (stream position fallback)
+    //
+    // 이유: TextBox 셀처럼 start_pos 가 visible chars 범위 내에 있으면 직접 인덱스로
+    // 해석해야 한컴 정합 (Issue #884). 그러나 inline 컨트롤 gap 으로 인해 start_pos 가
+    // visible chars 수를 넘는 경우, stream position 으로 해석하여 char_offsets 를 통해
+    // 올바른 visible index 를 찾아야 한다 (Issue #915).
     let total_chars = char_offsets.len();
     let mut segments: Vec<(usize, u32)> = Vec::new();
 
     for cs in char_shapes {
-        // start_pos → visible char index: char_offsets 에서 이진탐색
-        let cs_visible_idx = match char_offsets.binary_search(&cs.start_pos) {
-            Ok(idx) => idx,
-            Err(idx) => idx, // 정확히 매칭되지 않으면 삽입 위치 (다음 visible char)
+        let sp = cs.start_pos as usize;
+        let cs_visible_idx = if sp < total_chars {
+            // start_pos 가 visible range 내 → 직접 사용 (해석 B, PR #913)
+            sp
+        } else if sp == total_chars {
+            // start_pos == total_chars → 범위 끝 sentinel (적용 대상 없음)
+            total_chars
+        } else if !char_offsets.is_empty() {
+            // start_pos > total_chars → stream position fallback (Issue #915)
+            // inline 컨트롤 gap 으로 인해 stream offset 이 visible count 를 넘는 경우
+            match char_offsets.binary_search(&cs.start_pos) {
+                Ok(idx) => idx,
+                Err(idx) => idx,
+            }.min(total_chars)
+        } else {
+            total_chars
         };
-        let cs_visible_idx = cs_visible_idx.min(total_chars);
         // cs 가 이 줄 범위 밖이면 skip
         if cs_visible_idx >= text_end {
             continue;
@@ -637,14 +652,23 @@ pub(crate) fn find_active_char_shape_with_offsets(
     visible_idx: usize,
     char_offsets: &[u32],
 ) -> u32 {
-    let stream_pos = if !char_offsets.is_empty() && visible_idx < char_offsets.len() {
-        char_offsets[visible_idx]
-    } else {
-        visible_idx as u32
-    };
+    let total_chars = char_offsets.len();
     let mut active_id = char_shapes.first().map(|cs| cs.char_shape_id).unwrap_or(0);
     for cs in char_shapes {
-        if cs.start_pos <= stream_pos {
+        let sp = cs.start_pos as usize;
+        let cs_vis = if sp < total_chars {
+            sp
+        } else if sp == total_chars {
+            total_chars // sentinel — won't match <= visible_idx
+        } else if !char_offsets.is_empty() {
+            match char_offsets.binary_search(&cs.start_pos) {
+                Ok(idx) => idx,
+                Err(idx) => idx,
+            }.min(total_chars)
+        } else {
+            sp
+        };
+        if cs_vis <= visible_idx {
             active_id = cs.char_shape_id;
         } else {
             break;
