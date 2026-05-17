@@ -813,14 +813,16 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 } + match self.context_current.text_align_vertical {
                     // [Task #965 / PR #918 Stage 33-A] WMF 의 ExtTextOut y 는
                     // text_align_vertical 에 따라 reference point 가 결정된다:
-                    //   VTA_BASELINE (default): y 가 baseline — 그대로 사용
                     //   VTA_TOP: y 가 cell 의 top — baseline = y + ascent
                     //   VTA_BOTTOM: y 가 cell 의 bottom — baseline = y - descent
+                    //   VTA_BASELINE (default): WMF spec 상으로는 y=baseline 이지만,
+                    //     한컴 WMF 생성기는 SetTextAlign 과 무관하게 y 좌표를 텍스트
+                    //     top 기준으로 제공한다 (Issue #914). HWP 내장 WMF 는 모두
+                    //     한컴 생성이므로 VTA_TOP 과 동일하게 ascent 보정한다.
                     // font.height 의 부호는 magnitude 의 해석 (cell vs char) 만 바꾸며
-                    // reference point 와 무관하다 (이전 구현이 font.height < 0 일 때
-                    // -font.height 만큼 y 를 더했던 것은 잘못된 보정으로, 텍스트가 박스
-                    // 하단으로 baseline shift 되는 원인).
-                    VerticalTextAlignmentMode::VTA_TOP => {
+                    // reference point 와 무관하다.
+                    VerticalTextAlignmentMode::VTA_TOP |
+                    VerticalTextAlignmentMode::VTA_BASELINE => {
                         let em = font.height.abs();
                         (em as f64 * 0.8) as i16
                     }
@@ -828,8 +830,6 @@ impl crate::wmf::converter::Player for SVGPlayer {
                         let em = font.height.abs();
                         -((em as f64 * 0.2) as i16)
                     }
-                    VerticalTextAlignmentMode::VTA_BASELINE => 0,
-                    // VTA_CENTER / VTA_LEFT: 드물게 사용; baseline 과 동일 처리
                     _ => 0,
                 },
             };
