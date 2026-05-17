@@ -425,7 +425,8 @@ impl DocumentCore {
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
 
-            for para in &mut section.paragraphs {
+            let mut min_reflowed_idx: Option<usize> = None;
+            for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                 if Self::needs_reflow_broadly(para) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -433,6 +434,9 @@ impl DocumentCore {
                     let available_width = (col_width - margin_left - margin_right).max(1.0);
                     reflow_line_segs(para, available_width, &styles, dpi);
                     reflowed += 1;
+                    if min_reflowed_idx.is_none() {
+                        min_reflowed_idx = Some(pi);
+                    }
                 }
                 // 표 셀 내부 문단도 동일 처리
                 for ctrl in &mut para.controls {
@@ -454,6 +458,17 @@ impl DocumentCore {
                         }
                     }
                 }
+            }
+
+            // [Task #927] reflow 후 vpos 일관성 재계산 — 본문 paragraphs 만.
+            // 빈 lineseg 였던 문단들은 reflow 시 vpos_start=0 으로 시작하여 후속 문단
+            // 의 vpos 연속성이 깨짐. paginator 의 vpos_h 기반 current_height 조정이
+            // 잘못된 값으로 적용되어 페이지가 과다 분할되는 회귀의 원인.
+            if let Some(start) = min_reflowed_idx {
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut section.paragraphs,
+                    start,
+                );
             }
         }
 
