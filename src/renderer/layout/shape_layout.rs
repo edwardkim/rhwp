@@ -1610,38 +1610,65 @@ impl LayoutEngine {
                         // 글상자 내 수식: 항상 글자처럼 인라인 배치
                         let eq_w = hwpunit_to_px(eq.common.width as i32, self.dpi);
                         let eq_h = hwpunit_to_px(eq.common.height as i32, self.dpi);
-                        let (eq_x, eq_y) = {
-                            let x = inline_x;
-                            inline_x += eq_w;
-                            (x, para_start_y)
+                        // [Task #962] 글상자 내부 paragraph 의 inline equation 은
+                        // paragraph_layout 가 layout_composed_paragraph 경로에서 정확한
+                        // gap 위치 (text 사이) 에 emit 한다. 본 두번째 loop 는
+                        // paragraph_layout 미지원 이전의 legacy fallback. paragraph_layout
+                        // 가 이미 inline_shape_position 으로 등록한 경우 중복 emit 차단.
+                        // (시험지 page 2 문14 <보기> textbox 의 6개 inline 수식이
+                        //  paragraph_layout + 본 분기 양쪽에서 각각 emit → 중복).
+                        let equiv_cell_ctx = CellContext {
+                            parent_para_index: para_index,
+                            path: {
+                                let mut p = parent_cell_path.to_vec();
+                                p.push(CellPathEntry {
+                                    control_index,
+                                    cell_index: 0,
+                                    cell_para_index: pi,
+                                    text_direction: 0,
+                                });
+                                p
+                            },
                         };
+                        if tree.get_inline_shape_position(
+                            section_index, pi, ctrl_idx_in_para, Some(&equiv_cell_ctx)
+                        ).is_some() {
+                            // paragraph_layout 가 이미 emit — inline_x 만 advance
+                            inline_x += eq_w;
+                        } else {
+                            let (eq_x, eq_y) = {
+                                let x = inline_x;
+                                inline_x += eq_w;
+                                (x, para_start_y)
+                            };
 
-                        let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
-                        let ast = super::super::equation::parser::EqParser::new(tokens).parse();
-                        let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-                        let layout_box = super::super::equation::layout::EqLayout::new(font_size_px).layout(&ast);
-                        let color_str = super::super::equation::svg_render::eq_color_to_svg(eq.color);
-                        let svg_content = super::super::equation::svg_render::render_equation_svg(
-                            &layout_box, &color_str, font_size_px,
-                        );
+                            let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
+                            let ast = super::super::equation::parser::EqParser::new(tokens).parse();
+                            let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
+                            let layout_box = super::super::equation::layout::EqLayout::new(font_size_px).layout(&ast);
+                            let color_str = super::super::equation::svg_render::eq_color_to_svg(eq.color);
+                            let svg_content = super::super::equation::svg_render::render_equation_svg(
+                                &layout_box, &color_str, font_size_px,
+                            );
 
-                        let eq_node = RenderNode::new(
-                            tree.next_id(),
-                            RenderNodeType::Equation(EquationNode {
-                                svg_content,
-                                layout_box,
-                                color_str,
-                                color: eq.color,
-                                font_size: font_size_px,
-                                section_index: Some(section_index),
-                                para_index: Some(para_index),
-                                control_index: Some(ctrl_idx_in_para),
-                                cell_index: None,
-                                cell_para_index: None,
-                            }),
-                            BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
-                        );
-                        shape_node.children.push(eq_node);
+                            let eq_node = RenderNode::new(
+                                tree.next_id(),
+                                RenderNodeType::Equation(EquationNode {
+                                    svg_content,
+                                    layout_box,
+                                    color_str,
+                                    color: eq.color,
+                                    font_size: font_size_px,
+                                    section_index: Some(section_index),
+                                    para_index: Some(para_index),
+                                    control_index: Some(ctrl_idx_in_para),
+                                    cell_index: None,
+                                    cell_para_index: None,
+                                }),
+                                BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                            );
+                            shape_node.children.push(eq_node);
+                        }
                     }
                     Control::Table(table) => {
                         // TextBox 내 인라인 표 렌더링
