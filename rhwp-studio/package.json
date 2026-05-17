@@ -25,5 +25,8 @@
   },
   "overrides": {
     "serialize-javascript": "7.0.5"
+  },
+  "dependencies": {
+    "canvaskit-wasm": "^0.41.1"
   }
 }
