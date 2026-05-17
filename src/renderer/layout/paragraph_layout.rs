@@ -853,6 +853,45 @@ impl LayoutEngine {
             }
         }
 
+        // [Issue #926] Endnote 인라인 마커 "문N)" — 첫 줄 앞에 일반 텍스트로 emit
+        // 한컴에서 미주 마커는 위첨자가 아닌 본문 크기 텍스트로 표시
+        let mut endnote_marker_x_advance = 0.0f64;
+        if start_line == 0 {
+            if let Some(p) = para {
+                for ctrl in &p.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        let marker_text = format!("문{}) ", en.number);
+                        let first_cs_id = p.char_shapes.first().map(|cs| cs.char_shape_id as usize).unwrap_or(0);
+                        let ts = resolved_to_text_style(styles, first_cs_id as u32, 0);
+                        let marker_w = estimate_text_width(&marker_text, &ts);
+                        let marker_y = y + spacing_before + hwpunit_to_px(
+                            composed.lines.first().map(|l| l.baseline_distance).unwrap_or(0), self.dpi);
+                        let marker_x = col_area.x + margin_left + indent;
+                        let marker_id = tree.next_id();
+                        let marker_node = RenderNode::new(marker_id,
+                            RenderNodeType::TextRun(TextRunNode {
+                                text: marker_text, style: ts,
+                                char_shape_id: Some(first_cs_id as u32),
+                                para_shape_id: Some(composed.para_style_id),
+                                section_index: Some(section_index),
+                                para_index: Some(para_index),
+                                char_start: Some(0),
+                                cell_context: None, is_para_end: false, is_line_break_end: false,
+                                rotation: 0.0, is_vertical: false, char_overlap: None,
+                                border_fill_id: 0,
+                                baseline: hwpunit_to_px(composed.lines.first().map(|l| l.baseline_distance).unwrap_or(0), self.dpi),
+                                field_marker: FieldMarkerType::None,
+                            }),
+                            BoundingBox::new(marker_x, y + spacing_before, marker_w,
+                                hwpunit_to_px(composed.lines.first().map(|l| l.line_height).unwrap_or(0), self.dpi)),
+                        );
+                        col_node.children.push(marker_node);
+                        endnote_marker_x_advance += marker_w;
+                    }
+                }
+            }
+        }
+
         for line_idx in start_line..end {
             let comp_line = &composed.lines[line_idx];
 
@@ -1030,7 +1069,7 @@ impl LayoutEngine {
                 ),
             );
 
-            let inline_offset = if line_idx == start_line { first_line_x_offset } else { 0.0 };
+            let inline_offset = if line_idx == start_line { first_line_x_offset + endnote_marker_x_advance } else { 0.0 };
             // 번호/글머리표 마커: 모든 줄에서 마커 폭만큼 가용폭 차감 (행잉 인덴트)
             let num_offset = if numbering_width > 0.0 { numbering_width } else { 0.0 };
             let available_width = line_avail_w_override

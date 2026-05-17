@@ -125,6 +125,60 @@ sidecar and use `TextRun`.
 - Glyph ids require portable font identity. Consumers must not replay glyph ids
   against an arbitrary local font just because the family name matches.
 
+## CanvasKit Direct Replay and Overlay Policy
+
+P15 promotes CanvasKit planning from an implicit Canvas2D-assisted preview idea
+into an explicit replay policy. This still does not switch the public renderer.
+Instead, `getCanvasKitReplayPlan(page, mode)` exposes a diagnostics-only plan
+from the current `PageLayerTree` so a frontend can see which operations are
+direct replay candidates, which operations need a transition overlay, and which
+text variants select a strict sidecar or fall back to `TextRun`.
+
+CanvasKit has two operational modes:
+
+- `default`: native-preparation mode. CanvasKit should prefer direct replay and
+  must not silently hide unsupported operations behind a Canvas2D overlay. If an
+  operation is not covered yet, the plan reports `directRequired` with
+  `hiddenOverlayForbidden` so the gap remains visible.
+- `compat`: user-visible stability mode. Existing Canvas2D overlays may remain
+  as transition fallbacks while direct replay coverage is expanded. The plan
+  reports those cases as `compatOverlay` and keeps them separate from true
+  direct replay.
+
+The first overlay inventory is deliberately conservative. Raster images,
+equations, form controls, raw SVG fragments, placeholders, special text visual
+ops, and effect-heavy `TextRun` payloads are visible in the plan before any
+hidden overlay is removed. Basic page background, vector primitives, clipping,
+and simple `TextRun` payloads are direct candidates. `GlyphRun` and
+`GlyphOutline` stay under the P14 text variant selection diagnostics: if the
+strict sidecar is not selected, CanvasKit must use the `TextRun` fallback.
+
+Overlay removal should be staged from low-risk paint operations toward text and
+variant-sensitive operations:
+
+1. Raster image replay: crop, tile, image-effect preprocessing, filtering, and
+   resource-cache behavior should match Canvas2D through direct CanvasKit image
+   replay first. `compat` may keep an overlay until the direct path has a parity
+   fixture; `default` should make the gap visible.
+2. Equation and form-object replay: parity fixtures should decide whether the
+   vector/layout-box path or an image fallback is the canonical replay for each
+   operation before the overlay is removed.
+3. TextRun effects: vertical text, rotation, synthetic style, ratio scaling,
+   shade, outline, shadow, decorations, emphasis dots, tab leaders, and control
+   markers should be promoted effect-by-effect. Unsupported text effects must
+   not trigger approximate `GlyphRun` replay.
+4. GlyphRun/GlyphOutline gates: CanvasKit should choose a strict variant only
+   when the P14 selection report says it is replayable. Opening outline replay
+   in CanvasKit is a backend parity milestone, not a schema change.
+
+Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
+output can use fuzzy PNG comparison, but semantic decisions must be exact:
+selected variant id, fallback reason, resource resolution, effect preprocessing
+diagnostics, and cache behavior should be asserted without tolerance. When a
+direct CanvasKit path intentionally differs from Canvas2D because it is closer
+to native Skia semantics, the fixture should label that as a Skia strict replay
+improvement rather than a Canvas2D compatibility match.
+
 ## Follow-Ups
 
 - Wire real document font blob extraction into `ResourceArena`.

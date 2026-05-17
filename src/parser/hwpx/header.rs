@@ -467,114 +467,20 @@ fn parse_para_shape(
         let mut buf = Vec::new();
         loop {
             match reader.read_event_into(&mut buf) {
-                Ok(Event::Empty(ref ce)) | Ok(Event::Start(ref ce)) => {
-                    let cname = ce.name(); let local = local_name(cname.as_ref());
-                    match local {
-                        b"align" => {
-                            for attr in ce.attributes().flatten() {
-                                if attr.key.as_ref() == b"horizontal" {
-                                    ps.alignment = parse_alignment(&attr);
-                                }
-                            }
+                Ok(Event::Empty(ref ce)) => {
+                    parse_para_shape_child(ce, &mut ps);
+                }
+                Ok(Event::Start(ref ce)) => {
+                    match parse_para_shape_child(ce, &mut ps) {
+                        ParaShapeChildKind::Margin => {
+                            parse_para_shape_margin_children(reader, &mut ps)?;
                         }
-                        b"heading" => {
-                            for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"type" => {
-                                        let val = attr_str(&attr);
-                                        ps.head_type = match val.as_str() {
-                                            "OUTLINE" => HeadType::Outline,
-                                            "NUMBER" | "NUMBERING" => HeadType::Number,
-                                            "BULLET" => HeadType::Bullet,
-                                            _ => HeadType::None,
-                                        };
-                                    }
-                                    b"idRef" => ps.numbering_id = parse_u16(&attr),
-                                    b"level" => ps.para_level = parse_u8(&attr),
-                                    _ => {}
-                                }
-                            }
-                        }
-                        b"margin" => {
-                            for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"left" => ps.margin_left = parse_i32(&attr),
-                                    b"right" => ps.margin_right = parse_i32(&attr),
-                                    b"indent" => ps.indent = parse_i32(&attr),
-                                    b"prev" => ps.spacing_before = parse_i32(&attr),
-                                    b"next" => ps.spacing_after = parse_i32(&attr),
-                                    _ => {}
-                                }
-                            }
-                        }
-                        b"lineSpacing" => {
-                            for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"type" => {
-                                        let val = attr_str(&attr);
-                                        ps.line_spacing_type = match val.as_str() {
-                                            "PERCENT" => LineSpacingType::Percent,
-                                            "FIXED" => LineSpacingType::Fixed,
-                                            "SPACEONLY" | "SPACE_ONLY" => LineSpacingType::SpaceOnly,
-                                            "MINIMUM" | "AT_LEAST" => LineSpacingType::Minimum,
-                                            _ => LineSpacingType::Percent,
-                                        };
-                                    }
-                                    b"value" => ps.line_spacing = parse_i32(&attr),
-                                    _ => {}
-                                }
-                            }
-                        }
-                        b"border" => {
-                            for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"borderFillIDRef" => ps.border_fill_id = parse_u16(&attr),
-                                    b"offsetLeft" => ps.border_spacing[0] = parse_i16(&attr),
-                                    b"offsetRight" => ps.border_spacing[1] = parse_i16(&attr),
-                                    b"offsetTop" => ps.border_spacing[2] = parse_i16(&attr),
-                                    b"offsetBottom" => ps.border_spacing[3] = parse_i16(&attr),
-                                    _ => {}
-                                }
-                            }
-                        }
-                        b"breakSetting" => {
-                            for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"widowOrphan" => if parse_bool(&attr) {
-                                        ps.attr2 |= 1 << 5;
-                                    },
-                                    b"keepWithNext" => if parse_bool(&attr) {
-                                        ps.attr2 |= 1 << 6;
-                                    },
-                                    b"keepLines" => if parse_bool(&attr) {
-                                        ps.attr2 |= 1 << 7;
-                                    },
-                                    b"pageBreakBefore" => if parse_bool(&attr) {
-                                        ps.attr2 |= 1 << 8;
-                                    },
-                                    _ => {}
-                                }
-                            }
-                        }
-                        b"autoSpacing" => {
-                            for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"eAsianEng" => if parse_bool(&attr) {
-                                        ps.attr1 |= 1 << 20;
-                                    },
-                                    b"eAsianNum" => if parse_bool(&attr) {
-                                        ps.attr1 |= 1 << 21;
-                                    },
-                                    _ => {}
-                                }
-                            }
-                        }
-                        b"switch" => {
+                        ParaShapeChildKind::Switch => {
                             // <switch>/<case>/<default> 네임스페이스 분기 처리
                             // HwpUnitChar case를 우선 적용, 없으면 default 사용
                             parse_para_shape_switch(reader, &mut ps)?;
                         }
-                        _ => {}
+                        ParaShapeChildKind::Other => {}
                     }
                 }
                 Ok(Event::End(ref ee)) => {
@@ -591,6 +497,183 @@ fn parse_para_shape(
     }
 
     doc_info.para_shapes.push(ps);
+    Ok(())
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ParaShapeChildKind {
+    Margin,
+    Switch,
+    Other,
+}
+
+fn parse_para_shape_child(
+    ce: &quick_xml::events::BytesStart,
+    ps: &mut ParaShape,
+) -> ParaShapeChildKind {
+    let cname = ce.name(); let local = local_name(cname.as_ref());
+    match local {
+        b"align" => {
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"horizontal" => ps.alignment = parse_alignment(&attr),
+                    b"vertical" => {
+                        ps.attr1 = (ps.attr1 & !(0x03 << 20))
+                            | (parse_vertical_alignment_bits(&attr) << 20);
+                    }
+                    _ => {}
+                }
+            }
+            ParaShapeChildKind::Other
+        }
+        b"heading" => {
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"type" => {
+                        let val = attr_str(&attr);
+                        ps.head_type = match val.as_str() {
+                            "OUTLINE" => HeadType::Outline,
+                            "NUMBER" | "NUMBERING" => HeadType::Number,
+                            "BULLET" => HeadType::Bullet,
+                            _ => HeadType::None,
+                        };
+                    }
+                    b"idRef" => ps.numbering_id = parse_u16(&attr),
+                    b"level" => ps.para_level = parse_u8(&attr),
+                    _ => {}
+                }
+            }
+            ParaShapeChildKind::Other
+        }
+        b"margin" => {
+            parse_para_shape_margin_attrs(ce, ps);
+            ParaShapeChildKind::Margin
+        }
+        b"lineSpacing" => {
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"type" => {
+                        let val = attr_str(&attr);
+                        ps.line_spacing_type = match val.as_str() {
+                            "PERCENT" => LineSpacingType::Percent,
+                            "FIXED" => LineSpacingType::Fixed,
+                            "SPACEONLY" | "SPACE_ONLY" => LineSpacingType::SpaceOnly,
+                            "MINIMUM" | "AT_LEAST" => LineSpacingType::Minimum,
+                            _ => LineSpacingType::Percent,
+                        };
+                    }
+                    b"value" => ps.line_spacing = parse_i32(&attr),
+                    _ => {}
+                }
+            }
+            ParaShapeChildKind::Other
+        }
+        b"border" => {
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"borderFillIDRef" => ps.border_fill_id = parse_u16(&attr),
+                    b"offsetLeft" => ps.border_spacing[0] = parse_i16(&attr),
+                    b"offsetRight" => ps.border_spacing[1] = parse_i16(&attr),
+                    b"offsetTop" => ps.border_spacing[2] = parse_i16(&attr),
+                    b"offsetBottom" => ps.border_spacing[3] = parse_i16(&attr),
+                    _ => {}
+                }
+            }
+            ParaShapeChildKind::Other
+        }
+        b"breakSetting" => {
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"widowOrphan" => if parse_bool(&attr) {
+                        ps.attr2 |= 1 << 5;
+                    },
+                    b"keepWithNext" => if parse_bool(&attr) {
+                        ps.attr2 |= 1 << 6;
+                    },
+                    b"keepLines" => if parse_bool(&attr) {
+                        ps.attr2 |= 1 << 7;
+                    },
+                    b"pageBreakBefore" => if parse_bool(&attr) {
+                        ps.attr2 |= 1 << 8;
+                    },
+                    _ => {}
+                }
+            }
+            ParaShapeChildKind::Other
+        }
+        b"autoSpacing" => {
+            // HWPX autoSpacing은 HWP ParaShape.attr1 bits 20..21이 아니다.
+            // 해당 비트는 문단 세로 정렬이며, <align vertical="...">에서 채운다.
+            // autoSpacing의 HWP 저장 위치는 별도 검증 전까지 attr1에 반영하지 않는다.
+            ParaShapeChildKind::Other
+        }
+        b"switch" => ParaShapeChildKind::Switch,
+        _ => ParaShapeChildKind::Other,
+    }
+}
+
+fn parse_para_shape_margin_attrs(
+    ce: &quick_xml::events::BytesStart,
+    ps: &mut ParaShape,
+) {
+    for attr in ce.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"left" => ps.margin_left = parse_i32(&attr),
+            b"right" => ps.margin_right = parse_i32(&attr),
+            b"indent" => ps.indent = parse_i32(&attr),
+            b"prev" => ps.spacing_before = parse_i32(&attr),
+            b"next" => ps.spacing_after = parse_i32(&attr),
+            _ => {}
+        }
+    }
+}
+
+fn parse_para_shape_margin_value_child(
+    ce: &quick_xml::events::BytesStart,
+    ps: &mut ParaShape,
+) {
+    let cname = ce.name(); let local = local_name(cname.as_ref());
+    if !matches!(local, b"intent" | b"left" | b"right" | b"prev" | b"next") {
+        return;
+    }
+
+    for attr in ce.attributes().flatten() {
+        if attr.key.as_ref() != b"value" {
+            continue;
+        }
+        let value = parse_i32(&attr);
+        match local {
+            b"intent" => ps.indent = value,
+            b"left" => ps.margin_left = value,
+            b"right" => ps.margin_right = value,
+            b"prev" => ps.spacing_before = value,
+            b"next" => ps.spacing_after = value,
+            _ => {}
+        }
+    }
+}
+
+fn parse_para_shape_margin_children(
+    reader: &mut Reader<&[u8]>,
+    ps: &mut ParaShape,
+) -> Result<(), HwpxError> {
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref ce)) | Ok(Event::Start(ref ce)) => {
+                parse_para_shape_margin_value_child(ce, ps);
+            }
+            Ok(Event::End(ref ee)) => {
+                let ename = ee.name(); if local_name(ename.as_ref()) == b"margin" {
+                    break;
+                }
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("paraPr margin: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
     Ok(())
 }
 
@@ -1145,6 +1228,16 @@ fn parse_alignment(attr: &quick_xml::events::attributes::Attribute) -> Alignment
     }
 }
 
+fn parse_vertical_alignment_bits(attr: &quick_xml::events::attributes::Attribute) -> u32 {
+    match attr_str(attr).as_str() {
+        "TOP" => 1,
+        "CENTER" => 2,
+        "BOTTOM" => 3,
+        "BASELINE" => 0,
+        _ => 0,
+    }
+}
+
 fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> BorderLineType {
     match attr_str(attr).as_str() {
         "NONE" => BorderLineType::None,
@@ -1224,6 +1317,20 @@ mod tests {
             for attr in e.attributes().flatten() {
                 if attr.key.as_ref() == b"horizontal" {
                     assert_eq!(parse_alignment(&attr), Alignment::Center);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_parse_vertical_alignment_bits() {
+        let xml = r#"<e vertical="CENTER"/>"#;
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
+            for attr in e.attributes().flatten() {
+                if attr.key.as_ref() == b"vertical" {
+                    assert_eq!(parse_vertical_alignment_bits(&attr), 2);
                 }
             }
         }
