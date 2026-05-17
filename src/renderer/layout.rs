@@ -2005,6 +2005,17 @@ impl LayoutEngine {
                 }
             }
 
+            let _dbg_tac = std::env::var("RHWP_DEBUG_TAC_CURSOR").is_ok();
+            let _y_in = y_offset;
+            let _item_desc = if _dbg_tac {
+                match item {
+                    PageItem::FullParagraph { para_index } => format!("FullPara pi={}", para_index),
+                    PageItem::PartialParagraph { para_index, .. } => format!("PartialPara pi={}", para_index),
+                    PageItem::Table { para_index, control_index } => format!("Table pi={} ci={}", para_index, control_index),
+                    PageItem::PartialTable { para_index, control_index, .. } => format!("PartialTable pi={} ci={}", para_index, control_index),
+                    PageItem::Shape { para_index, control_index, .. } => format!("Shape pi={} ci={}", para_index, control_index),
+                }
+            } else { String::new() };
             let (new_y, was_tac) = self.layout_column_item(
                 tree, &mut col_node, paper_images, &mut para_start_y,
                 item, page_content, paragraphs, composed, styles,
@@ -2014,6 +2025,12 @@ impl LayoutEngine {
                 wrap_around_paras,
                 &col_content.wrap_anchors,
             );
+            if _dbg_tac {
+                eprintln!(
+                    "TAC_CURSOR  {} y_in={:.1} y_out={:.1} dy={:.1} was_tac={}",
+                    _item_desc, _y_in, new_y, new_y - _y_in, was_tac,
+                );
+            }
             y_offset = new_y;
             prev_tac_seg_applied = was_tac;
 
@@ -3450,7 +3467,18 @@ impl LayoutEngine {
                             // (HWP3 sample14 page 4 "Visual Block을 이용한 대소문자 변경"
                             // 가 본문 "먼저 원하는 구간을..." 와 겹침). Bottom 만 진행 (Top
                             // 은 위에서 offset_inline_image_y 로 image 전체를 밀어서 처리).
-                            if matches!(caption.direction, CaptionDirection::Bottom) {
+                            //
+                            // [Task #957] 빈 caption (text 없음 + controls 없음) 은 SVG 에 invisible.
+                            // pic_y = para_start_y[para_idx] 가 has_prior_tac 로 인해 후속 위치로
+                            // 갱신되면 image_bottom = pic_y + pic_h 가 페이지 바깥 위치로 계산되어
+                            // result_y 가 phantom +caption_h 만큼 누적 → 후속 paragraph 가 다음
+                            // 페이지로 밀림 (sample16 page 18 pi=394 ci=1 "그림" 의 empty caption
+                            // 으로 +430.6px advance). 빈 caption 은 advance skip.
+                            let caption_is_empty = caption.paragraphs.iter().all(|p|
+                                p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}')
+                                    && p.controls.is_empty()
+                            );
+                            if !caption_is_empty && matches!(caption.direction, CaptionDirection::Bottom) {
                                 let cap_bottom = cap_y + caption_h;
                                 if cap_bottom > result_y {
                                     result_y = cap_bottom;
