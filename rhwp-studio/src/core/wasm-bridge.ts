@@ -319,6 +319,32 @@ export class WasmBridge {
     return '{"layers":[]}';
   }
 
+  getCanvasKitReplayPlan(pageNum: number, mode: 'default' | 'compat' = 'default'): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      getCanvasKitReplayPlan?: (p: number, mode: string) => string;
+    };
+    if (typeof d.getCanvasKitReplayPlan === 'function') {
+      return d.getCanvasKitReplayPlan(pageNum, mode);
+    }
+    return JSON.stringify({
+      mode,
+      hiddenCanvas2dOverlayAllowed: mode === 'compat',
+      directReplayRequired: mode === 'default',
+      summary: {
+        totalItems: 0,
+        directItems: 0,
+        directRequiredItems: 0,
+        compatOverlayItems: 0,
+        textFallbackItems: 0,
+        unsupportedItems: 0,
+        hiddenOverlayViolations: 0,
+      },
+      items: [],
+      textVariants: [],
+    });
+  }
+
   getPageOverlayImages(pageNum: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as { getPageOverlayImages?: (p: number) => string };

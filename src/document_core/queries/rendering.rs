@@ -148,6 +148,29 @@ impl DocumentCore {
         Ok(renderer.command_count() as u32)
     }
 
+    pub fn get_canvaskit_replay_plan_native(
+        &self,
+        page_num: u32,
+        mode: &str,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::canvaskit_policy::{
+            analyze_canvaskit_replay_plan, CanvasKitReplayMode,
+        };
+
+        let mode = CanvasKitReplayMode::from_str(mode).ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "지원하지 않는 CanvasKit replay mode입니다: {mode}. allowed modes: default, compat"
+            ))
+        })?;
+        let tree = self.build_page_layer_tree(page_num)?;
+        let plan = analyze_canvaskit_replay_plan(&tree, mode);
+        serde_json::to_string(&plan).map_err(|error| {
+            HwpError::RenderError(format!(
+                "CanvasKit replay plan JSON 직렬화에 실패했습니다: {error}"
+            ))
+        })
+    }
+
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
     pub fn render_page_png_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
         use crate::renderer::layer_renderer::LayerRasterRenderer;
