@@ -581,6 +581,34 @@ impl TypesetEngine {
                     // 일반 텍스트 또는 컨트롤 보유: 안전마진 1회 비활성화 (단독 텍스트 페이지 차단)
                     st.skip_safety_margin_once = true;
                 }
+            } else if !st.current_items.is_empty() && para_idx + 1 < paragraphs.len() {
+                // [Task #967] 빈 paragraph 직후 force page break (쪽나누기) case 가드:
+                // 빈 paragraph 가 현재 page 잔여 공간 초과 시 별도 page 분기 →
+                // +1 page inflate 회귀 (sample18.hwp 의 pi=27, pi=164).
+                // 한컴은 빈 paragraph 를 trailing overflow 로 흡수 + 쪽나누기로 새 page 시작.
+                // next_will_vpos_reset 가드는 next_force_break 인 경우 발동 안 함
+                // (hwp-multi-001 회귀 차단). 본 추가 가드는 빈 paragraph + 다음 쪽나누기
+                // case 중에서 **현재 page 잔여 공간 부족 (overflow) 시에만** skip — 빈
+                // paragraph 가 page 에 fit 하면 정상 emit (aift.hwp 의 18 case 회귀 방지).
+                let next_para = &paragraphs[para_idx + 1];
+                let next_force_break = next_para.column_type == ColumnBreakType::Page
+                    || next_para.column_type == ColumnBreakType::Section;
+                let is_curr_empty = para.text.is_empty() && para.controls.is_empty();
+                if next_force_break && is_curr_empty {
+                    // empty paragraph 의 예상 height = first line_seg 의 lh + ls
+                    let empty_h_px = para.line_segs.first().map(|s| {
+                        hwpunit_to_px(
+                            (s.line_height + s.line_spacing) as i32,
+                            self.dpi,
+                        )
+                    }).unwrap_or(0.0);
+                    let avail = st.available_height() - st.current_height;
+                    if empty_h_px > avail {
+                        // 빈 paragraph 가 fit 안 됨 → skip 으로 단독 page 차단
+                        continue;
+                    }
+                    // fit 가능 — 정상 emit (기존 동작)
+                }
             }
             // [Task #362] 어울림(Square wrap) 표 옆 paragraph 흡수.
             // Paginator engine.rs:288-320 동일 시멘틱.
