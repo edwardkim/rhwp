@@ -103,14 +103,35 @@ fn write_hwp_cfb(
 
     // 4. /BinData/BIN{XXXX}.{ext}
     // BinData는 개별 압축 속성에 따라 재압축
+    const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
     for content in bin_data_content {
-        let (storage_id, ext, should_compress) = find_bin_data_info_with_compress(bin_data_list, content, compressed);
+        let (storage_id, ext, should_compress) =
+            find_bin_data_info_with_compress(bin_data_list, content, compressed);
         let storage_name = format!("BIN{:04X}.{}", storage_id, ext);
         let path = format!("/BinData/{}", storage_name);
-        let data = if should_compress {
-            compress_stream(&content.data).unwrap_or_else(|_| content.data.clone())
+
+        // OLE Storage 복원: 파서(`load_bin_data_content`)는 내부 CFB 를 바로 노출하기 위해
+        // 선두 4-byte LE size prefix 를 제거(`drain(..4)`)한다. 직렬화 시 이를 다시 붙이지
+        // 않으면 한컴이 CFB 매직(D0CF11E0)을 OLE 개체 크기(~3.75GB)로 오인하여
+        // "메모리 부족" 오류가 발생한다. 파서의 strip 조건을 그대로 미러링한다.
+        let is_ole_storage = content.data.len() >= 8
+            && content.data[..8] == CFB_MAGIC
+            && bin_data_list
+                .iter()
+                .any(|bd| bd.data_type == BinDataType::Storage && bd.storage_id == content.id);
+        let payload: Vec<u8> = if is_ole_storage {
+            let mut v = Vec::with_capacity(content.data.len() + 4);
+            v.extend_from_slice(&(content.data.len() as u32).to_le_bytes());
+            v.extend_from_slice(&content.data);
+            v
         } else {
             content.data.clone()
+        };
+
+        let data = if should_compress {
+            compress_stream(&payload).unwrap_or_else(|_| payload.clone())
+        } else {
+            payload
         };
         streams.push((path, data));
     }

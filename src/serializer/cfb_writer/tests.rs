@@ -1318,3 +1318,89 @@ fn write_hwp_with_cfb_crate(orig_data: &[u8]) -> Vec<u8> {
     let cursor = cfb.into_inner();
     cursor.into_inner()
 }
+
+/// OLE Storage BinData 는 `[4-byte LE size][CFB 컨테이너]` 형식이다.
+/// 파서(`load_bin_data_content`)가 내부 CFB 노출을 위해 size prefix 를 제거하므로,
+/// 직렬화 시 다시 복원해야 한다. 미복원 시 한컴이 CFB 매직(D0CF11E0)을 OLE 개체
+/// 크기(~3.75GB)로 오인하여 "메모리 부족" 오류로 문서를 열지 못한다.
+#[test]
+fn test_ole_storage_size_prefix_restored() {
+    use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+
+    // 가짜 OLE 내부 CFB: CFB 매직 + 임의 페이로드
+    let mut ole_cfb = vec![0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+    ole_cfb.extend_from_slice(&[0x42u8; 64]);
+
+    let mut doc_info = DocInfo::default();
+    doc_info.bin_data_list.push(BinData {
+        data_type: BinDataType::Storage,
+        storage_id: 1,
+        extension: Some("OLE".to_string()),
+        ..Default::default()
+    });
+
+    let doc = Document {
+        header: FileHeader {
+            version: HwpVersion {
+                major: 5,
+                minor: 0,
+                build: 6,
+                revision: 1,
+            },
+            flags: 0,
+            compressed: false,
+            encrypted: false,
+            distribution: false,
+            raw_data: None,
+        },
+        doc_properties: DocProperties {
+            section_count: 1,
+            page_start_num: 1,
+            ..Default::default()
+        },
+        doc_info,
+        sections: vec![crate::model::document::Section {
+            section_def: SectionDef::default(),
+            paragraphs: vec![Paragraph {
+                line_segs: vec![LineSeg {
+                    line_height: 400,
+                    baseline_distance: 320,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            raw_stream: None,
+        }],
+        preview: None,
+        bin_data_content: vec![BinDataContent {
+            id: 1,
+            data: ole_cfb.clone(),
+            extension: "OLE".to_string(),
+        }],
+        extra_streams: Vec::new(),
+    };
+
+    let bytes = serialize_hwp(&doc).unwrap();
+    let mut cfb = crate::parser::cfb_reader::CfbReader::open(&bytes).unwrap();
+    let stream = cfb.read_bin_data("BIN0001.OLE").unwrap();
+
+    // 선두 4바이트 = OLE CFB 길이의 LE size prefix
+    assert!(
+        stream.len() >= 12,
+        "OLE 스트림이 prefix + CFB 매직 길이 이상이어야 한다"
+    );
+    let prefix = u32::from_le_bytes([stream[0], stream[1], stream[2], stream[3]]);
+    assert_eq!(
+        prefix as usize,
+        ole_cfb.len(),
+        "4-byte size prefix 가 OLE CFB 길이와 일치해야 한다"
+    );
+    // prefix 직후가 내부 CFB 매직
+    assert_eq!(
+        &stream[4..12],
+        &[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1],
+        "size prefix 다음은 CFB 매직이어야 한다"
+    );
+    // prefix 를 제외한 본문이 원본 OLE CFB 와 동일
+    assert_eq!(&stream[4..], &ole_cfb[..], "OLE CFB 본문이 보존되어야 한다");
+}
