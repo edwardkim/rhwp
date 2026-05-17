@@ -759,8 +759,22 @@ impl LayoutEngine {
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
             let bf_idx = (pbf.border_fill_id - 1) as usize;
             if let Some(bs) = styles.border_styles.get(bf_idx) {
-                // [Issue #920] 한글 스펙: attr bit 0 = 0이면 종이 기준, 1이면 본문 기준
-                let paper_based = (pbf.attr & 0x01) == 0;
+                // [Issue #952] 한컴 viewer 실측 결과 — 외곽선 위치는 항상 paper-spacing 기준.
+                // HWPX 의 attr bit 0 (textBorder=PAPER) 와 textBorder=CONTENT 양쪽 다,
+                // 그리고 HWP5 attr 값 0/1 양쪽 다 한컴 viewer 가 paper-based outline 렌더.
+                // 즉 bit 0 은 outline 위치 결정 비트가 아닌 별도 의미 (text wrap interaction).
+                // 본 fix 이전 회귀 history:
+                //   - task877 시점: paper_based = (attr & 0x01) != 0 — sample16 (attr=1) 정합, 시험지 (attr=0) 회귀
+                //   - #920 (4bb11289): paper_based = (attr & 0x01) == 0 — 시험지 정합, sample16 회귀
+                //   - #952 (현재): paper_based = true — 모든 sample 한컴 정합
+                let paper_based = true;
+                if std::env::var("RHWP_DEBUG_PAGE_BORDER").is_ok() {
+                    eprintln!(
+                        "PAGE_BORDER: attr=0x{:08x} bit0={} paper_based={} bfid={} spacing(L={},R={},T={},B={})",
+                        pbf.attr, pbf.attr & 0x01, paper_based, pbf.border_fill_id,
+                        pbf.spacing_left, pbf.spacing_right, pbf.spacing_top, pbf.spacing_bottom,
+                    );
+                }
                 let (base_x, base_y, base_w, base_h) = if paper_based {
                     (0.0, 0.0, layout.page_width, layout.page_height)
                 } else {
@@ -2005,6 +2019,17 @@ impl LayoutEngine {
                 }
             }
 
+            let _dbg_tac = std::env::var("RHWP_DEBUG_TAC_CURSOR").is_ok();
+            let _y_in = y_offset;
+            let _item_desc = if _dbg_tac {
+                match item {
+                    PageItem::FullParagraph { para_index } => format!("FullPara pi={}", para_index),
+                    PageItem::PartialParagraph { para_index, .. } => format!("PartialPara pi={}", para_index),
+                    PageItem::Table { para_index, control_index } => format!("Table pi={} ci={}", para_index, control_index),
+                    PageItem::PartialTable { para_index, control_index, .. } => format!("PartialTable pi={} ci={}", para_index, control_index),
+                    PageItem::Shape { para_index, control_index, .. } => format!("Shape pi={} ci={}", para_index, control_index),
+                }
+            } else { String::new() };
             let (new_y, was_tac) = self.layout_column_item(
                 tree, &mut col_node, paper_images, &mut para_start_y,
                 item, page_content, paragraphs, composed, styles,
@@ -2014,6 +2039,12 @@ impl LayoutEngine {
                 wrap_around_paras,
                 &col_content.wrap_anchors,
             );
+            if _dbg_tac {
+                eprintln!(
+                    "TAC_CURSOR  {} y_in={:.1} y_out={:.1} dy={:.1} was_tac={}",
+                    _item_desc, _y_in, new_y, new_y - _y_in, was_tac,
+                );
+            }
             y_offset = new_y;
             prev_tac_seg_applied = was_tac;
 
@@ -3450,7 +3481,18 @@ impl LayoutEngine {
                             // (HWP3 sample14 page 4 "Visual Block을 이용한 대소문자 변경"
                             // 가 본문 "먼저 원하는 구간을..." 와 겹침). Bottom 만 진행 (Top
                             // 은 위에서 offset_inline_image_y 로 image 전체를 밀어서 처리).
-                            if matches!(caption.direction, CaptionDirection::Bottom) {
+                            //
+                            // [Task #957] 빈 caption (text 없음 + controls 없음) 은 SVG 에 invisible.
+                            // pic_y = para_start_y[para_idx] 가 has_prior_tac 로 인해 후속 위치로
+                            // 갱신되면 image_bottom = pic_y + pic_h 가 페이지 바깥 위치로 계산되어
+                            // result_y 가 phantom +caption_h 만큼 누적 → 후속 paragraph 가 다음
+                            // 페이지로 밀림 (sample16 page 18 pi=394 ci=1 "그림" 의 empty caption
+                            // 으로 +430.6px advance). 빈 caption 은 advance skip.
+                            let caption_is_empty = caption.paragraphs.iter().all(|p|
+                                p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}')
+                                    && p.controls.is_empty()
+                            );
+                            if !caption_is_empty && matches!(caption.direction, CaptionDirection::Bottom) {
                                 let cap_bottom = cap_y + caption_h;
                                 if cap_bottom > result_y {
                                     result_y = cap_bottom;
@@ -3492,6 +3534,7 @@ impl LayoutEngine {
                                 width: col_area.width,
                                 height: col_area.height - (pic_y - col_area.y),
                             };
+                            let saved_y_offset = y_offset;
                             result_y = self.layout_body_picture(
                                 tree, col_node, pic,
                                 &pic_container, col_area, &layout.body_area,
@@ -3499,6 +3542,30 @@ impl LayoutEngine {
                                 bin_data_content, styles, alignment, pic_y,
                                 page_content.section_index, para_index, control_index,
                             );
+                            // [Task #959] horz_rel_to=Column 의 picture 가 col_area 우측을
+                            // 초과하는 위치에 emit 되면 한컴 viewer 는 column flow 에
+                            // reservation 하지 않음. rhwp 는 cursor 를 picture height 만큼
+                            // advance → 후속 paragraph 처짐.
+                            // (3-11월_실전_통합_2022 page 1 우측 단 pi=69 picture
+                            //  pic_emit_x=767 > col_right=759 → +274px advance → 문9 처짐)
+                            // Picture 의 좌측 edge (x) 가 col_area 우측을 초과하면 advance skip.
+                            if matches!(pic.common.horz_rel_to, HorzRelTo::Column) {
+                                let pic_width_px = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                                let h_offset_px = hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
+                                let pic_emit_x = match pic.common.horz_align {
+                                    crate::model::shape::HorzAlign::Left
+                                    | crate::model::shape::HorzAlign::Inside =>
+                                        col_area.x + h_offset_px,
+                                    crate::model::shape::HorzAlign::Center =>
+                                        col_area.x + (col_area.width - pic_width_px) / 2.0 + h_offset_px,
+                                    crate::model::shape::HorzAlign::Right
+                                    | crate::model::shape::HorzAlign::Outside =>
+                                        col_area.x + col_area.width - pic_width_px - h_offset_px,
+                                };
+                                if pic_emit_x >= col_area.x + col_area.width {
+                                    result_y = saved_y_offset;
+                                }
+                            }
                             // [Task #683] 빈 paragraph (텍스트 없음) + Para-relative TopAndBottom
                             // 그림 (caption 없음) 의 layout 진행량 보정. 한컴 한글 2022 PDF 는
                             // 그림 다음에 paragraph 의 line baseline 1줄(line_height + line_spacing)
