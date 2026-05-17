@@ -759,8 +759,22 @@ impl LayoutEngine {
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
             let bf_idx = (pbf.border_fill_id - 1) as usize;
             if let Some(bs) = styles.border_styles.get(bf_idx) {
-                // [Issue #920] 한글 스펙: attr bit 0 = 0이면 종이 기준, 1이면 본문 기준
-                let paper_based = (pbf.attr & 0x01) == 0;
+                // [Issue #952] 한컴 viewer 실측 결과 — 외곽선 위치는 항상 paper-spacing 기준.
+                // HWPX 의 attr bit 0 (textBorder=PAPER) 와 textBorder=CONTENT 양쪽 다,
+                // 그리고 HWP5 attr 값 0/1 양쪽 다 한컴 viewer 가 paper-based outline 렌더.
+                // 즉 bit 0 은 outline 위치 결정 비트가 아닌 별도 의미 (text wrap interaction).
+                // 본 fix 이전 회귀 history:
+                //   - task877 시점: paper_based = (attr & 0x01) != 0 — sample16 (attr=1) 정합, 시험지 (attr=0) 회귀
+                //   - #920 (4bb11289): paper_based = (attr & 0x01) == 0 — 시험지 정합, sample16 회귀
+                //   - #952 (현재): paper_based = true — 모든 sample 한컴 정합
+                let paper_based = true;
+                if std::env::var("RHWP_DEBUG_PAGE_BORDER").is_ok() {
+                    eprintln!(
+                        "PAGE_BORDER: attr=0x{:08x} bit0={} paper_based={} bfid={} spacing(L={},R={},T={},B={})",
+                        pbf.attr, pbf.attr & 0x01, paper_based, pbf.border_fill_id,
+                        pbf.spacing_left, pbf.spacing_right, pbf.spacing_top, pbf.spacing_bottom,
+                    );
+                }
                 let (base_x, base_y, base_w, base_h) = if paper_based {
                     (0.0, 0.0, layout.page_width, layout.page_height)
                 } else {
@@ -3467,7 +3481,18 @@ impl LayoutEngine {
                             // (HWP3 sample14 page 4 "Visual Block을 이용한 대소문자 변경"
                             // 가 본문 "먼저 원하는 구간을..." 와 겹침). Bottom 만 진행 (Top
                             // 은 위에서 offset_inline_image_y 로 image 전체를 밀어서 처리).
-                            if matches!(caption.direction, CaptionDirection::Bottom) {
+                            //
+                            // [Task #957] 빈 caption (text 없음 + controls 없음) 은 SVG 에 invisible.
+                            // pic_y = para_start_y[para_idx] 가 has_prior_tac 로 인해 후속 위치로
+                            // 갱신되면 image_bottom = pic_y + pic_h 가 페이지 바깥 위치로 계산되어
+                            // result_y 가 phantom +caption_h 만큼 누적 → 후속 paragraph 가 다음
+                            // 페이지로 밀림 (sample16 page 18 pi=394 ci=1 "그림" 의 empty caption
+                            // 으로 +430.6px advance). 빈 caption 은 advance skip.
+                            let caption_is_empty = caption.paragraphs.iter().all(|p|
+                                p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}')
+                                    && p.controls.is_empty()
+                            );
+                            if !caption_is_empty && matches!(caption.direction, CaptionDirection::Bottom) {
                                 let cap_bottom = cap_y + caption_h;
                                 if cap_bottom > result_y {
                                     result_y = cap_bottom;
