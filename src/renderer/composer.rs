@@ -641,8 +641,9 @@ pub(crate) fn find_active_char_shape(char_shapes: &[CharShapeRef], utf16_pos: u3
     find_active_char_shape_visible(char_shapes, utf16_pos as usize)
 }
 
-/// visible char index 에서 활성 CharShapeRef 찾기.
-/// char_offsets 를 통해 visible_idx 를 stream position 으로 변환하고 cs.start_pos 와 비교.
+/// visible char index 에서 활성 CharShapeRef 찾기 (identity char_offsets 가정).
+/// inline 컨트롤이 없는 문단 전용. inline 컨트롤 있는 문단에서는
+/// [`find_active_char_shape_with_offsets`] 를 char_offsets 와 함께 호출할 것.
 pub(crate) fn find_active_char_shape_visible(char_shapes: &[CharShapeRef], visible_idx: usize) -> u32 {
     find_active_char_shape_with_offsets(char_shapes, visible_idx, &[])
 }
@@ -1352,3 +1353,52 @@ mod tests;
 mod lineseg_compare_tests;
 #[cfg(test)]
 mod re_sample_gen;
+
+#[cfg(test)]
+mod tests_charshape_hybrid {
+    use super::*;
+    use crate::model::paragraph::CharShapeRef;
+
+    #[test]
+    fn start_pos_within_visible_range_uses_direct_index() {
+        // No gap (identity offsets): start_pos=2 → visible char 2
+        let offsets: Vec<u32> = vec![0, 1, 2, 3, 4];
+        let shapes = vec![
+            CharShapeRef { start_pos: 0, char_shape_id: 10 },
+            CharShapeRef { start_pos: 2, char_shape_id: 20 },
+        ];
+        let runs = split_by_char_shapes("abcde", 0, 5, &offsets, &shapes);
+        assert_eq!(runs[0].char_style_id, 10); // "ab"
+        assert_eq!(runs[1].char_style_id, 20); // "cde"
+    }
+
+    #[test]
+    fn start_pos_equals_total_chars_is_sentinel() {
+        // Issue #884: start_pos == total_chars → skip (sentinel)
+        let offsets: Vec<u32> = vec![0, 9, 10, 11, 12, 13, 14, 15, 16];
+        let shapes = vec![
+            CharShapeRef { start_pos: 0, char_shape_id: 14 },
+            CharShapeRef { start_pos: 9, char_shape_id: 20 }, // 9 == total(9) → sentinel
+        ];
+        let runs = split_by_char_shapes("충남중부권지사장a", 0, 9, &offsets, &shapes);
+        // All chars should use id=14 (id=20 never applies)
+        for run in &runs {
+            assert_eq!(run.char_style_id, 14,
+                "start_pos==total_chars should be sentinel: run text={:?}", run.text);
+        }
+    }
+
+    #[test]
+    fn start_pos_exceeds_total_uses_stream_fallback() {
+        // Issue #915: start_pos > total_chars → binary search char_offsets
+        // Simulates inline control gap: offsets [0,1,2, 10,11,12] (gap 3-9 = control)
+        let offsets: Vec<u32> = vec![0, 1, 2, 10, 11, 12];
+        let shapes = vec![
+            CharShapeRef { start_pos: 0, char_shape_id: 5 },
+            CharShapeRef { start_pos: 10, char_shape_id: 45 }, // 10 > total(6) → search → idx 3
+        ];
+        let runs = split_by_char_shapes("abcdef", 0, 6, &offsets, &shapes);
+        assert_eq!(runs[0].char_style_id, 5);  // "abc" (idx 0-2)
+        assert_eq!(runs[1].char_style_id, 45); // "def" (idx 3-5)
+    }
+}
