@@ -1721,10 +1721,24 @@ impl LayoutEngine {
 
                 // treat_as_char 분기점: run 내 이미지 위치 목록 (rel_pos, width_px, control_index)
                 // 마지막 run에서는 run_char_end 위치의 TAC도 포함 (문단 끝 수식/그림)
+                // [Task #960] has_line_break line 의 마지막 run 도 run_char_end 위치 의 TAC
+                // 포함. HWP3 의 char_offsets gap 분석으로 매핑된 control 위치가 `\n` 문자
+                // 에 떨어지면 (예: 시험지 page 2 pi=117 의 cases formula at position 30 =
+                // `\n` 위치), 그 line 의 chars range [start, end) 에서 end 가 `\n` 위치
+                // 이므로 누락. has_line_break line 의 마지막 run 의 end position 도 TAC
+                // 포함하면 line 의 정확한 위치에 inline emit.
+                let allow_end_tac = is_last_run
+                    || (comp_line.has_line_break && is_last_run_of_line(run_idx));
                 let run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px.iter()
-                    .filter(|(pos, _, _)| *pos >= run_char_pos && (*pos < run_char_end || (is_last_run && *pos == run_char_end)))
+                    .filter(|(pos, _, _)| *pos >= run_char_pos && (*pos < run_char_end || (allow_end_tac && *pos == run_char_end)))
                     .map(|(pos, w, ci)| (pos - run_char_pos, *w, *ci))
                     .collect();
+
+                // [Task #960] env-gated TAC line-mapping 추적
+                if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
+                    eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} baseline={:.1} run_tacs={:?}",
+                        para_index, line_idx, run_idx, run_char_pos, run_char_end, y, baseline, run_tacs);
+                }
 
                 if run_tacs.is_empty() {
                     // tac 없음: 기존 렌더링 경로
