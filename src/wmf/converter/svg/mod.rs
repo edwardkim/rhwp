@@ -811,19 +811,25 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 } else {
                     record.y
                 } + match self.context_current.text_align_vertical {
-                    // VTA_TOP: y 좌표에 font ascent를 더해 alphabetic baseline으로 변환
-                    // (dominant-baseline="text-top"은 SVG 렌더러 호환성이 낮음)
+                    // [Task #965 / PR #918 Stage 33-A] WMF 의 ExtTextOut y 는
+                    // text_align_vertical 에 따라 reference point 가 결정된다:
+                    //   VTA_BASELINE (default): y 가 baseline — 그대로 사용
+                    //   VTA_TOP: y 가 cell 의 top — baseline = y + ascent
+                    //   VTA_BOTTOM: y 가 cell 의 bottom — baseline = y - descent
+                    // font.height 의 부호는 magnitude 의 해석 (cell vs char) 만 바꾸며
+                    // reference point 와 무관하다 (이전 구현이 font.height < 0 일 때
+                    // -font.height 만큼 y 를 더했던 것은 잘못된 보정으로, 텍스트가 박스
+                    // 하단으로 baseline shift 되는 원인).
                     VerticalTextAlignmentMode::VTA_TOP => {
-                        // font.height가 음수면 절대값이 em height, 양수면 cell height
-                        // ascent ≈ 0.8 × em height 근사
                         let em = font.height.abs();
                         (em as f64 * 0.8) as i16
                     }
-                    VerticalTextAlignmentMode::VTA_BASELINE
-                        | VerticalTextAlignmentMode::VTA_BOTTOM
-                        if font.height < 0 => {
-                        -font.height
+                    VerticalTextAlignmentMode::VTA_BOTTOM => {
+                        let em = font.height.abs();
+                        -((em as f64 * 0.2) as i16)
                     }
+                    VerticalTextAlignmentMode::VTA_BASELINE => 0,
+                    // VTA_CENTER / VTA_LEFT: 드물게 사용; baseline 과 동일 처리
                     _ => 0,
                 },
             };
@@ -1539,16 +1545,17 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x: record.x_start,
                 y: record.y_start
                     + match self.context_current.text_align_vertical {
-                        // VTA_TOP: y 좌표에 font ascent를 더해 alphabetic baseline으로 변환
+                        // [Task #965 / PR #918 Stage 33-A] META_TEXTOUT 의 y 도 동일.
+                        // ext_text_out 의 baseline 보정과 일관성 유지.
                         VerticalTextAlignmentMode::VTA_TOP => {
                             let em = font.height.abs();
                             (em as f64 * 0.8) as i16
                         }
-                        VerticalTextAlignmentMode::VTA_BASELINE
-                            | VerticalTextAlignmentMode::VTA_BOTTOM
-                            if font.height < 0 => {
-                            -font.height
+                        VerticalTextAlignmentMode::VTA_BOTTOM => {
+                            let em = font.height.abs();
+                            -((em as f64 * 0.2) as i16)
                         }
+                        VerticalTextAlignmentMode::VTA_BASELINE => 0,
                         _ => 0,
                     },
             };
@@ -2188,13 +2195,27 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .into_iter()
                 .find(|a| record.text_alignment_mode & (*a as u16) == *a as u16)
                 .unwrap_or(TextAlignmentMode::TA_LEFT);
-        let align_vertical = [
-            VerticalTextAlignmentMode::VTA_BOTTOM,
-            VerticalTextAlignmentMode::VTA_TOP,
-        ]
-        .into_iter()
-        .find(|a| record.text_alignment_mode & (*a as u16) == *a as u16)
-        .unwrap_or(VerticalTextAlignmentMode::VTA_BASELINE);
+        // [Task #965 / PR #918 Stage 33-A] SetTextAlign vertical bits 정합.
+        // WMF [MS-WMF] 2.1.2.18 TextAlignmentMode 의 vertical 부분:
+        //   TA_TOP = 0x0000 (default)
+        //   TA_BOTTOM = 0x0008
+        //   TA_BASELINE = 0x0018 (TA_BOTTOM | extra bit)
+        // 우리 enum 의 VTA_* 매핑:
+        //   VTA_TOP = 0x0000, VTA_BOTTOM = 0x0002, VTA_LEFT = 0x0008, VTA_BASELINE = 0x0018.
+        // 이전 구현은 `mode & VTA_TOP(=0)` 가 항상 true 라서 BASELINE/BOTTOM 인 mode 도
+        // VTA_TOP 으로 매핑되어 baseline 이 cell-top 보정 (+ascent) 만큼 아래로 shift 되는
+        // 박스 외부 표시 회귀의 원인. 우선순위: BASELINE → BOTTOM → TOP.
+        let v_bits = record.text_alignment_mode & 0x0018;
+        let align_vertical = if v_bits == 0x0018 {
+            VerticalTextAlignmentMode::VTA_BASELINE
+        } else if v_bits == 0x0008 {
+            // TA_BOTTOM — 우리 enum 의 가장 가까운 대응은 VTA_LEFT (값 0x0008) 이지만
+            // 의미상 BOTTOM 이므로 VTA_BOTTOM 으로 매핑 (ext_text_out 의 baseline
+            // 계산 로직에서 동일 처리).
+            VerticalTextAlignmentMode::VTA_BOTTOM
+        } else {
+            VerticalTextAlignmentMode::VTA_TOP
+        };
 
         self.context_current = self
             .context_current
