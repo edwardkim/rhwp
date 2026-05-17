@@ -1547,7 +1547,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     + match self.context_current.text_align_vertical {
                         // [Task #965 / PR #918 Stage 33-A] META_TEXTOUT 의 y 도 동일.
                         // ext_text_out 의 baseline 보정과 일관성 유지.
-                        VerticalTextAlignmentMode::VTA_TOP => {
+                        // Issue #914: 한컴 WMF 생성기는 VTA_BASELINE 에서도 y=top.
+                        VerticalTextAlignmentMode::VTA_TOP |
+                        VerticalTextAlignmentMode::VTA_BASELINE => {
                             let em = font.height.abs();
                             (em as f64 * 0.8) as i16
                         }
@@ -1555,7 +1557,6 @@ impl crate::wmf::converter::Player for SVGPlayer {
                             let em = font.height.abs();
                             -((em as f64 * 0.2) as i16)
                         }
-                        VerticalTextAlignmentMode::VTA_BASELINE => 0,
                         _ => 0,
                     },
             };
