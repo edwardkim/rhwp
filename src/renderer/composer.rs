@@ -510,20 +510,20 @@ fn split_by_char_shapes(
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
     //
-    // [Task #884] CharShapeRef.start_pos 를 visible char index 로 해석 (해석 B).
-    // 이전 해석 A (u16 stream 위치) 는 inline picture 등 다단위 컨트롤이 있는
-    // paragraph 에서 char_shape 적용 영역이 어긋났다 (예: table-in-tbox.hwp
-    // Shape.TextBox > Table > cell[0] " 충남중부권지사장" 의 id=20 HY수평선B 가
-    // visible[1] 부터 잘못 적용).
-    //
-    // 한컴 PDF 정합 확인된 해석:
-    //   text_idx = (cs.start_pos as usize) - text_start
-    //   단 cs.start_pos ≥ text.chars().count() 이면 미적용.
+    // [Issue #915] CharShapeRef.start_pos 는 u16 stream 위치. char_offsets 를 통해
+    // visible char index 로 매핑한다. inline 컨트롤이 없는 문단에서는 stream 위치 =
+    // visible index (char_offsets 가 identity) 이므로 동일 결과. inline 컨트롤이
+    // 있으면 stream 위치 gap 이 발생하며, binary search 로 올바른 visible index 를 찾는다.
     let total_chars = char_offsets.len();
     let mut segments: Vec<(usize, u32)> = Vec::new();
 
     for cs in char_shapes {
-        let cs_visible_idx = (cs.start_pos as usize).min(total_chars);
+        // start_pos → visible char index: char_offsets 에서 이진탐색
+        let cs_visible_idx = match char_offsets.binary_search(&cs.start_pos) {
+            Ok(idx) => idx,
+            Err(idx) => idx, // 정확히 매칭되지 않으면 삽입 위치 (다음 visible char)
+        };
+        let cs_visible_idx = cs_visible_idx.min(total_chars);
         // cs 가 이 줄 범위 밖이면 skip
         if cs_visible_idx >= text_end {
             continue;
@@ -544,7 +544,7 @@ fn split_by_char_shapes(
     // segments가 비어있으면 첫 번째 CharShapeRef 사용
     if segments.is_empty() {
         // 줄 시작 위치 이전의 마지막 CharShapeRef 찾기
-        let style_id = find_active_char_shape_visible(char_shapes, text_start);
+        let style_id = find_active_char_shape_with_offsets(char_shapes, text_start, char_offsets);
         return split_runs_by_lang(vec![ComposedTextRun {
             text: line_text.to_string(),
             char_style_id: style_id,
@@ -583,7 +583,7 @@ fn split_by_char_shapes(
 
     // 첫 번째 segment가 0이 아닌 경우, 앞 부분 처리
     if !segments.is_empty() && segments[0].0 > 0 {
-        let style_id = find_active_char_shape_visible(char_shapes, text_start);
+        let style_id = find_active_char_shape_with_offsets(char_shapes, text_start, char_offsets);
         let end_idx = segments[0].0.min(chars.len());
         let prefix_text: String = chars[..end_idx].iter().collect();
         if !prefix_text.is_empty() {
@@ -601,7 +601,7 @@ fn split_by_char_shapes(
     }
 
     if runs.is_empty() {
-        let style_id = find_active_char_shape_visible(char_shapes, text_start);
+        let style_id = find_active_char_shape_with_offsets(char_shapes, text_start, char_offsets);
         runs.push(ComposedTextRun {
             text: line_text.to_string(),
             char_style_id: style_id,
@@ -626,11 +626,25 @@ pub(crate) fn find_active_char_shape(char_shapes: &[CharShapeRef], utf16_pos: u3
     find_active_char_shape_visible(char_shapes, utf16_pos as usize)
 }
 
-/// [Task #884] visible char index 로 활성 char_shape 찾기
+/// visible char index 에서 활성 CharShapeRef 찾기.
+/// char_offsets 를 통해 visible_idx 를 stream position 으로 변환하고 cs.start_pos 와 비교.
 pub(crate) fn find_active_char_shape_visible(char_shapes: &[CharShapeRef], visible_idx: usize) -> u32 {
+    find_active_char_shape_with_offsets(char_shapes, visible_idx, &[])
+}
+
+pub(crate) fn find_active_char_shape_with_offsets(
+    char_shapes: &[CharShapeRef],
+    visible_idx: usize,
+    char_offsets: &[u32],
+) -> u32 {
+    let stream_pos = if !char_offsets.is_empty() && visible_idx < char_offsets.len() {
+        char_offsets[visible_idx]
+    } else {
+        visible_idx as u32
+    };
     let mut active_id = char_shapes.first().map(|cs| cs.char_shape_id).unwrap_or(0);
     for cs in char_shapes {
-        if (cs.start_pos as usize) <= visible_idx {
+        if cs.start_pos <= stream_pos {
             active_id = cs.char_shape_id;
         } else {
             break;
