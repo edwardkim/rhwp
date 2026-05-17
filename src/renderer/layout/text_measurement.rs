@@ -527,6 +527,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                         x = (body_right_text_rel - seg_w).max(x);
                     } else {
                         let high_byte = (tab_type_raw >> 8) & 0xFF;
+                        let fill_low = tab_type_raw & 0xFF;
                         match (high_byte, tab_type_raw) {
                             (_, 1) => {
                                 // 기존 raw 1 (LEFT 또는 잘못된 RIGHT 1) — 호환 유지
@@ -552,8 +553,54 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                                     measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                                 x = (tab_target - seg_w / 2.0).max(x);
                             }
+                            (2, _) if fill_low != 0 => {
+                                // [Task #874 후속] 단일-run RIGHT + leader (목차 페이지번호) —
+                                // Task #874 는 cross-run RIGHT+leader 의 text_start_offset
+                                // 미포함 본질을 fix (body_right_text_rel +
+                                // right_tab_block_width_override). 단일-run 케이스는
+                                // 여전히 body_right_legacy (= available_width - line_x_offset)
+                                // 사용 → text_start_offset 미포함 으로 cell right inner
+                                // (= text_start_offset + available_width) 미달. 또한 leading
+                                // space skip 으로 seg_w 가 space 폭만큼 과소 → digit right
+                                // edge 가 cell right inner 보다 좌측에 위치 (정렬 미달).
+                                //
+                                // Fix: \t 뒤 content 가 있는 단일-run 은 cell_right_run_rel
+                                // (= text_start_offset + available_width - line_x_offset) 정렬
+                                // + seg_w_full (i+1 부터, leading space 포함). content 없는
+                                // trailing space / 끝 케이스 (= cross-run 직전) 는 원본 path
+                                // 유지 (다음 run 의 pending_right_tab 분기가 처리).
+                                let seg_start_skipped = {
+                                    let mut s = i + 1;
+                                    while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0
+                                    {
+                                        s += 1;
+                                    }
+                                    s
+                                };
+                                let has_content_after = seg_start_skipped < chars.len();
+                                if has_content_after {
+                                    let seg_w_full = measure_segment_from(
+                                        &chars,
+                                        &cluster_len,
+                                        i + 1,
+                                        &char_width,
+                                    );
+                                    let cell_right_run_rel = style.text_start_offset
+                                        + style.available_width
+                                        - style.line_x_offset;
+                                    x = (cell_right_run_rel - seg_w_full).max(x);
+                                } else {
+                                    let seg_w = measure_segment_from(
+                                        &chars,
+                                        &cluster_len,
+                                        seg_start_skipped,
+                                        &char_width,
+                                    );
+                                    x = (body_right_legacy - seg_w).max(x);
+                                }
+                            }
                             (2, _) => {
-                                // RIGHT 인라인 탭: 한컴 metrics 차이 흡수.
+                                // RIGHT 인라인 탭 (no leader): 한컴 metrics 차이 흡수.
                                 let seg_start = {
                                     let mut s = i + 1;
                                     while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0
@@ -1104,8 +1151,13 @@ impl TextMeasurer for WasmTextMeasurer {
                     } else {
                         match tab_type {
                             2 if fill_low != 0 => {
-                                // RIGHT + leader: body_right 정렬
-                                let seg_start = {
+                                // [Task #874 후속] 단일-run RIGHT + leader (목차 페이지번호).
+                                // EmbeddedTextMeasurer 영역 정합 (text_measurement.rs 위쪽 동일
+                                // 분기 본문 참조). \t 뒤 content 가 있는 단일-run 은
+                                // cell_right_run_rel (= text_start_offset + available_width -
+                                // line_x_offset) 정렬 + seg_w_full (leading space 포함).
+                                // content 없는 trailing space / 끝 케이스는 원본 path 유지.
+                                let seg_start_skipped = {
                                     let mut s = i + 1;
                                     while s < chars.len() && chars[s] == ' ' && cluster_len[s] != 0
                                     {
@@ -1113,13 +1165,27 @@ impl TextMeasurer for WasmTextMeasurer {
                                     }
                                     s
                                 };
-                                let seg_w = measure_segment_from(
-                                    &chars,
-                                    &cluster_len,
-                                    seg_start,
-                                    &char_width,
-                                );
-                                x = (body_right_legacy - seg_w).max(x);
+                                let has_content_after = seg_start_skipped < chars.len();
+                                if has_content_after {
+                                    let seg_w_full = measure_segment_from(
+                                        &chars,
+                                        &cluster_len,
+                                        i + 1,
+                                        &char_width,
+                                    );
+                                    let cell_right_run_rel = style.text_start_offset
+                                        + style.available_width
+                                        - style.line_x_offset;
+                                    x = (cell_right_run_rel - seg_w_full).max(x);
+                                } else {
+                                    let seg_w = measure_segment_from(
+                                        &chars,
+                                        &cluster_len,
+                                        seg_start_skipped,
+                                        &char_width,
+                                    );
+                                    x = (body_right_legacy - seg_w).max(x);
+                                }
                             }
                             2 => {
                                 // RIGHT (no leader)
