@@ -4,6 +4,13 @@
 import { InsertTextCommand, InsertLineBreakCommand, InsertTabCommand, SplitParagraphCommand, SplitParagraphInCellCommand } from './command';
 import { matchShortcut, defaultShortcuts } from '@/command/shortcut-map';
 import * as _connector from './input-handler-connector';
+import {
+  detectPlatformKind,
+  getNavigationAction,
+  shouldSuppressUnmappedNavigation,
+  type NavigationAction,
+  type NavigationKeyInput,
+} from './navigation-keymap';
 import type { DocumentPosition } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 
@@ -53,6 +60,62 @@ function hasCurrentRhwpClipboardMarker(self: any, html: string): boolean {
 
 function isNestedCellPosition(pos: DocumentPosition): boolean {
   return pos.parentParaIndex !== undefined && (pos.cellPath?.length ?? 0) > 1;
+}
+
+function toNavigationKeyInput(e: KeyboardEvent): NavigationKeyInput {
+  return {
+    key: e.key,
+    code: e.code,
+    shiftKey: e.shiftKey,
+    ctrlKey: e.ctrlKey,
+    metaKey: e.metaKey,
+    altKey: e.altKey,
+  };
+}
+
+function executeNavigationAction(this: any, action: NavigationAction, shiftKey: boolean): void {
+  if (shiftKey) this.cursor.setAnchor();
+  else this.cursor.clearSelection();
+
+  switch (action) {
+    case 'wordBackward':
+      this.cursor.moveToWordBoundary(-1);
+      break;
+    case 'wordForward':
+      this.cursor.moveToWordBoundary(1);
+      break;
+    case 'lineStart':
+      this.cursor.moveToLineStart();
+      break;
+    case 'lineEnd':
+      this.cursor.moveToLineEnd();
+      break;
+    case 'paragraphBackward':
+      this.cursor.moveToParagraphBoundary(-1);
+      break;
+    case 'paragraphForward':
+      this.cursor.moveToParagraphBoundary(1);
+      break;
+  }
+
+  this.updateCaret();
+  if (shiftKey) this.updateSelection();
+}
+
+function handleNavigationShortcut(this: any, e: KeyboardEvent): boolean {
+  const input = toNavigationKeyInput(e);
+  const platform = detectPlatformKind();
+  const action = getNavigationAction(input, platform);
+  if (action) {
+    e.preventDefault();
+    executeNavigationAction.call(this, action, e.shiftKey);
+    return true;
+  }
+  if (shouldSuppressUnmappedNavigation(input, platform)) {
+    e.preventDefault();
+    return true;
+  }
+  return false;
 }
 
 function pastePlainText(this: any, text: string, hasSelection: boolean): void {
@@ -180,9 +243,10 @@ const chordMapG: Record<string, string> = {
  * 5. F5 셀 선택 모드
  * 6. 셀 선택 모드 키 처리
  * 7. 그림/표 객체 선택 모드 키 처리
- * 8. Ctrl/Meta 조합 → handleCtrlKey() → shortcut-map.ts 단축키 테이블 경유
- * 9. Alt 조합 → shortcut-map.ts 단축키 테이블 경유
- * 10. 본문 키 처리 (Esc, Backspace, Enter, Arrow 등)
+ * 8. 플랫폼별 navigation shortcut 처리
+ * 9. Ctrl/Meta 조합 → handleCtrlKey() → shortcut-map.ts 단축키 테이블 경유
+ * 10. Alt 조합 → shortcut-map.ts 단축키 테이블 경유
+ * 11. 본문 키 처리 (Esc, Backspace, Enter, Arrow 등)
  *
  * 새 단축키 추가 시: shortcut-map.ts의 defaultShortcuts 테이블에 등록
  */
@@ -312,8 +376,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       // 브라우저가 조합을 자연스럽게 종료하도록 두고,
       // compositionEnd 후 탐색 키를 처리하도록 예약
       this._pendingNavAfterIME = {
-        code: e.code, shiftKey: e.shiftKey,
-        ctrlKey: e.ctrlKey, metaKey: e.metaKey,
+        key: e.key, code: e.code, shiftKey: e.shiftKey,
+        ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey,
       };
     }
     return;
@@ -834,6 +898,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     // fall through: 아래 기존 키 처리 계속 진행
   }
 
+  if (handleNavigationShortcut.call(this, e)) return;
+
   // Ctrl/Meta 조합 처리 (Ctrl+Enter, Ctrl+C 등 모두 shortcut-map.ts에서 정의)
   if (e.ctrlKey || e.metaKey) {
     this.handleCtrlKey(e);
@@ -841,12 +907,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   }
 
   // Alt 조합 단축키 처리
-  // - Alt+Arrow → 단어 이동 (아래 Arrow case)
   // - Alt+Backspace → 이전 단어 삭제 (아래 Backspace/Delete case)
   // - Alt+Delete → 표 안 영역 영역 'table:delete-col' (기존 동작 보존),
   //                표 외 영역 영역 다음 단어 삭제 (아래 Backspace/Delete case)
   const isAltWordKey = e.altKey && (
-    e.key.startsWith('Arrow') ||
     e.key === 'Backspace' ||
     (e.key === 'Delete' && !this.cursor.isInCell())
   );
@@ -939,15 +1003,6 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     case 'ArrowUp':
     case 'ArrowDown': {
       e.preventDefault();
-      // Alt/Option+Arrow: 단어 단위 이동 (macOS standard)
-      if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        if (e.shiftKey) this.cursor.setAnchor();
-        else this.cursor.clearSelection();
-        this.cursor.moveToWordBoundary(e.key === 'ArrowLeft' ? -1 : 1);
-        this.updateCaret();
-        if (e.shiftKey) this.updateSelection();
-        break;
-      }
       const vertical = this.cursor.isInVerticalCell();
       // 세로쓰기 셀: ↑↓=글자이동(horizontal), ←→=줄이동(vertical)
       // 가로쓰기:    ←→=글자이동(horizontal), ↑↓=줄이동(vertical)
