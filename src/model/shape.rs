@@ -29,6 +29,18 @@ pub struct CommonObjAttr {
     pub prevent_page_break: i32,
     /// 글자처럼 취급
     pub treat_as_char: bool,
+    /// HWPX `hp:pos@flowWithText`.
+    ///
+    /// HWP5 GenShape CTRL_HEADER attr bit 13 후보로 보존한다.
+    pub flow_with_text: bool,
+    /// HWPX `hp:pos@allowOverlap`.
+    ///
+    /// HWP5 GenShape CTRL_HEADER attr bit 14 후보로 보존한다.
+    pub allow_overlap: bool,
+    /// HWPX 출처 GenShape를 HWP5로 저장할 때 필요한 storage high bit 후보.
+    ///
+    /// Table adapter의 `0x08000000` 보강과 다른 `0x04000000` bit 26이다.
+    pub hwp5_gen_shape_attr_bit26: bool,
     /// 세로 위치 기준
     pub vert_rel_to: VertRelTo,
     /// 세로 정렬 방식
@@ -149,6 +161,10 @@ pub struct ShapeComponentAttr {
     pub vert_flip: bool,
     /// 회전각
     pub rotation_angle: HwpUnit16,
+    /// HWPX rotationInfo@rotateimage 보존.
+    ///
+    /// HWP5 SHAPE_COMPONENT offset 36 storage field의 0x0008_0000 bit로 materialize된다.
+    pub rotate_image: bool,
     /// 회전 중심 좌표
     pub rotation_center: Point,
     /// 렌더링 정보 원본 바이트 (변환 행렬 등, 라운드트립 보존용)
@@ -183,6 +199,7 @@ impl Default for ShapeComponentAttr {
             horz_flip: false,
             vert_flip: false,
             rotation_angle: 0,
+            rotate_image: false,
             rotation_center: Point::default(),
             raw_rendering: Vec::new(),
             render_tx: 0.0,

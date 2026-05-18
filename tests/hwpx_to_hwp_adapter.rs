@@ -755,6 +755,37 @@ fn stage6_verify_for_hwp_source_also_recovered() {
     assert!(v.recovered, "HWP 출처 자기 재로드 페이지 수 일치");
 }
 
+fn first_line_vpos(core: &DocumentCore, section_idx: usize, para_idx: usize) -> i32 {
+    core.document().sections[section_idx].paragraphs[para_idx].line_segs[0].vertical_pos
+}
+
+#[test]
+fn task949_stage33_hwpx_h03_explicit_lineseg_vpos_preserved_on_load() {
+    let bytes = load_sample("hwpx-h-03.hwpx");
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드");
+
+    assert_eq!(
+        first_line_vpos(&core, 0, 18),
+        68258,
+        "HWPX source lineSegArray의 명시 vertpos를 자동 reflow가 덮어쓰면 안 됨"
+    );
+}
+
+#[test]
+fn task949_stage33_hwpx_h03_explicit_lineseg_vpos_survives_adapter_export_reload() {
+    let bytes = load_sample("hwpx-h-03.hwpx");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드");
+
+    let hwp_bytes = core.export_hwp_with_adapter().expect("HWP 직렬화");
+    let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드");
+
+    assert_eq!(
+        first_line_vpos(&reloaded, 0, 18),
+        68258,
+        "HWPX -> HWP 저장/재로드 후에도 paragraph 18의 lineSeg vpos가 보존되어야 함"
+    );
+}
+
 #[test]
 fn stage5_wasm_api_export_hwp_uses_adapter() {
     // wasm_api 의 export_hwp (네이티브 래퍼: export_hwp_native_wrapper 가 아니라
