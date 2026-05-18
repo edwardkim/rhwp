@@ -625,7 +625,13 @@ impl LayoutEngine {
                 layout_rect_to_bbox(&layout.footer_area),
             )
         };
-        self.build_page_number(&mut tree, &mut footer_node, page_content, layout);
+        self.build_page_number(
+            &mut tree,
+            &mut footer_node,
+            page_content,
+            layout,
+            page_border_fill,
+        );
         tree.root.children.push(footer_node);
 
         tree
@@ -923,6 +929,29 @@ impl LayoutEngine {
     }
 
     /// 쪽 테두리선을 렌더링하여 tree에 추가한다.
+    /// 쪽 번호 배치 보정용 — 쪽 번호 baseline 의 y 좌표 (px).
+    ///
+    /// **body 기준 테두리일 때만** Some 을 반환한다. body 기준 테두리는
+    /// 본문을 감싸므로 한컴은 쪽 번호를 본문(테두리) 아래 꼬리말 영역에 둔다.
+    /// 한컴 정답지(sample16) 실측: 쪽 번호는 꼬리말 영역(footer_area)
+    /// *세로 중앙* 에 담겨 출력된다 (테두리 아래로 흘러나가지 않음).
+    /// paper 기준 테두리는 종이 전체를 감싸 쪽 번호가 테두리 *안쪽* 에 오며
+    /// (aift.hwp Task #634), 이 경우 보정하지 않고 None.
+    fn page_number_baseline_y(
+        &self,
+        layout: &PageLayoutInfo,
+        page_border_fill: Option<&crate::model::page::PageBorderFill>,
+        font_size: f64,
+    ) -> Option<f64> {
+        let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
+        let paper_based = (pbf.attr & 0x01) != 0;
+        if paper_based {
+            return None;
+        }
+        // 꼬리말 영역 세로 중앙 baseline (기존 footer 중앙 공식과 동일).
+        Some(layout.footer_area.y + layout.footer_area.height / 2.0 + font_size / 3.0)
+    }
+
     fn build_page_borders(
         &self,
         tree: &mut PageRenderTree,
@@ -933,15 +962,18 @@ impl LayoutEngine {
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
             let bf_idx = (pbf.border_fill_id - 1) as usize;
             if let Some(bs) = styles.border_styles.get(bf_idx) {
-                // [Issue #952] 한컴 viewer 실측 결과 — 외곽선 위치는 항상 paper-spacing 기준.
-                // HWPX 의 attr bit 0 (textBorder=PAPER) 와 textBorder=CONTENT 양쪽 다,
-                // 그리고 HWP5 attr 값 0/1 양쪽 다 한컴 viewer 가 paper-based outline 렌더.
-                // 즉 bit 0 은 outline 위치 결정 비트가 아닌 별도 의미 (text wrap interaction).
-                // 본 fix 이전 회귀 history:
-                //   - task877 시점: paper_based = (attr & 0x01) != 0 — sample16 (attr=1) 정합, 시험지 (attr=0) 회귀
-                //   - #920 (4bb11289): paper_based = (attr & 0x01) == 0 — 시험지 정합, sample16 회귀
-                //   - #952 (현재): paper_based = true — 모든 sample 한컴 정합
-                let paper_based = true;
+                // 외곽선 위치 기준: attr bit 0 (textBorder=PAPER) 존중.
+                //   bit0 = 1 → paper 기준, bit0 = 0 → body 기준 (HWPX/HWP5 본래 의미).
+                // 회귀 history:
+                //   - task877: paper_based = (attr & 0x01) != 0 — sample16 정합, 시험지 회귀
+                //   - #920: paper_based = (attr & 0x01) == 0 — 시험지 정합, sample16 회귀
+                //   - #952: paper_based = true 전역 — 당시 모든 sample 정합 판정
+                // [Task #987] #952 의 "sample16 = paper 정합" 은 bfid off-by-one
+                //   (mod.rs:2816) 으로 잘못된 border_fill 을 읽던 상태의 착시였음.
+                //   off-by-one 수정 후 sample16 한컴 정답지 = body 기준으로 재판정.
+                //   attr 존중 복원: HWPX/HWP5 는 자신의 attr bit0 의미 그대로,
+                //   HWP3 는 파서가 attr=0(body) 주입 (CLAUDE.md HWP3 격리 규칙).
+                let paper_based = (pbf.attr & 0x01) != 0;
                 if std::env::var("RHWP_DEBUG_PAGE_BORDER").is_ok() {
                     eprintln!(
                         "PAGE_BORDER: attr=0x{:08x} bit0={} paper_based={} bfid={} spacing(L={},R={},T={},B={})",
@@ -1497,6 +1529,7 @@ impl LayoutEngine {
         footer_node: &mut RenderNode,
         page_content: &PageContent,
         layout: &PageLayoutInfo,
+        page_border_fill: Option<&crate::model::page::PageBorderFill>,
     ) {
         // 감추기(PageHide)에서 쪽 번호 감추기가 설정되어 있으면 건너뜀
         if let Some(ref ph) = page_content.page_hide {
@@ -1547,7 +1580,29 @@ impl LayoutEngine {
                 _ => target_area.x + (target_area.width - text_width) / 2.0,
             };
 
-            let y = target_area.y + target_area.height / 2.0 + font_size / 3.0;
+            // 기본: target_area(머리말/꼬리말) 세로 중앙.
+            // 단 꼬리말 위치 + body 기준 쪽 테두리가 *이 페이지에 실제로
+            // 그려질 때* 한컴은 쪽 번호를 꼬리말 영역 하단(= 용지 하단에서
+            // margin_footer 만큼 위)에 배치한다 (Task #987 Stage 5).
+            // 쪽 테두리 없거나 paper 기준이거나 hide_border 인 페이지는
+            // 기존 중앙 로직 유지 → 회귀 격리.
+            let border_drawn = !page_content
+                .page_hide
+                .as_ref()
+                .map(|ph| ph.hide_border)
+                .unwrap_or(false);
+            let is_footer = !matches!(pnp.position, 1..=3 | 7 | 9);
+            let footer_center = target_area.y + target_area.height / 2.0 + font_size / 3.0;
+            // body 기준 테두리 + 테두리 실제 그려질 때만 footer_area 중앙으로
+            // 보정 (target_area 가 footer_area 와 다를 수 있는 경우 정합).
+            // 그 외(paper 기준/테두리 없음/hide_border)는 기존 footer_center.
+            let y = if is_footer {
+                self.page_number_baseline_y(layout, page_border_fill, font_size)
+                    .filter(|_| border_drawn)
+                    .unwrap_or(footer_center)
+            } else {
+                footer_center
+            };
 
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(

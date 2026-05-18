@@ -70,9 +70,12 @@ pub fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 /// - bit 5-7: vert_align
 /// - bit 8-9: horz_rel_to
 /// - bit 10-12: horz_align
+/// - bit 13: flow_with_text (HWPX object contract)
+/// - bit 14: allow_overlap (HWPX object contract)
 /// - bit 15-17: width_criterion
 /// - bit 18-19: height_criterion
 /// - bit 21-23: text_wrap
+/// - bit 26: HWPX GenShape storage high bit 후보
 pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     let mut a: u32 = 0;
     if common.treat_as_char {
@@ -82,9 +85,18 @@ pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     a |= (vert_align_to_bits(common.vert_align) & 0x07) << 5;
     a |= (horz_rel_to_to_bits(common.horz_rel_to) & 0x03) << 8;
     a |= (horz_align_to_bits(common.horz_align) & 0x07) << 10;
+    if common.flow_with_text {
+        a |= 1 << 13;
+    }
+    if common.allow_overlap {
+        a |= 1 << 14;
+    }
     a |= (width_criterion_to_bits(common.width_criterion) & 0x07) << 15;
     a |= (height_criterion_to_bits(common.height_criterion) & 0x03) << 18;
     a |= (text_wrap_to_bits(common.text_wrap) & 0x07) << 21;
+    if common.hwp5_gen_shape_attr_bit26 {
+        a |= 1 << 26;
+    }
     a
 }
 
@@ -181,6 +193,9 @@ mod tests {
             instance_id: 0xCAFEBABE,
             prevent_page_break: 0,
             treat_as_char: false,
+            flow_with_text: false,
+            allow_overlap: false,
+            hwp5_gen_shape_attr_bit26: false,
             vert_rel_to: VertRelTo::Para,
             vert_align: VertAlign::Top,
             horz_rel_to: HorzRelTo::Para,
@@ -211,6 +226,12 @@ mod tests {
         assert_eq!(parsed.instance_id, original.instance_id);
         assert_eq!(parsed.prevent_page_break, original.prevent_page_break);
         assert_eq!(parsed.treat_as_char, original.treat_as_char);
+        assert_eq!(parsed.flow_with_text, original.flow_with_text);
+        assert_eq!(parsed.allow_overlap, original.allow_overlap);
+        assert_eq!(
+            parsed.hwp5_gen_shape_attr_bit26,
+            original.hwp5_gen_shape_attr_bit26
+        );
         assert_eq!(parsed.vert_rel_to, original.vert_rel_to);
         assert_eq!(parsed.horz_rel_to, original.horz_rel_to);
         assert_eq!(parsed.text_wrap, original.text_wrap);
@@ -225,6 +246,26 @@ mod tests {
         let parsed = parse_common_obj_attr(&bytes);
         assert!(parsed.treat_as_char);
         assert_eq!(parsed.text_wrap, TextWrap::BehindText);
+    }
+
+    #[test]
+    fn roundtrip_hwpx_object_contract_bits() {
+        let mut original = make_sample();
+        original.flow_with_text = true;
+        original.allow_overlap = true;
+        original.hwp5_gen_shape_attr_bit26 = true;
+
+        let bytes = serialize_common_obj_attr(&original);
+        let attr = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
+
+        assert_ne!(attr & (1 << 13), 0);
+        assert_ne!(attr & (1 << 14), 0);
+        assert_ne!(attr & (1 << 26), 0);
+
+        let parsed = parse_common_obj_attr(&bytes);
+        assert!(parsed.flow_with_text);
+        assert!(parsed.allow_overlap);
+        assert!(parsed.hwp5_gen_shape_attr_bit26);
     }
 
     #[test]

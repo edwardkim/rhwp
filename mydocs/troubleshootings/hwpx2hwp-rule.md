@@ -572,6 +572,48 @@ picture/table control의 CTRL_HEADER와 DocInfo BinData mapping은 함께 검증
 각 HWPX picture/table construct와 한컴 HWP oracle의 BIN_DATA / CTRL_HEADER tuple 대응을
 별도로 확정해야 한다.
 
+### renderingInfo 소수 matrix는 f32 정밀도로 양자화한 뒤 HWP5 double slot에 저장한다
+
+Task #949 Stage 36에서 한컴 파일손상 해소의 마지막 원인은 `SHAPE_COMPONENT` rendering
+matrix precision이었다.
+
+HWP5 `SHAPE_COMPONENT`의 matrix 원소는 double slot에 저장되지만, 한컴 HWPX -> HWP oracle은
+HWPX XML의 소수 matrix 값을 `f64` 그대로 기록하지 않았다.
+
+확인된 규칙:
+
+```text
+정수 matrix 값: 그대로 f64 저장
+소수 matrix 값: f32로 양자화한 뒤 f64로 승격해 저장
+```
+
+예:
+
+```text
+HWPX XML value: 0.723629
+rhwp 기존 저장: f64(0.723629)
+한컴 정답 저장: f64(f32(0.723629))
+```
+
+이 차이는 필드 디코더의 사람이 읽는 출력에서는 같은 값처럼 보일 수 있다. 그러나 payload hash와
+byte-level diff에서는 `SHAPE_COMPONENT` rendering matrix block의 하위 바이트가 달라진다.
+
+규칙:
+
+```text
+HWPX renderingInfo를 HWP5 raw_rendering으로 materialize할 때 소수 matrix 값은 f32 -> f64로 저장한다.
+필드 표시상 값이 같아도 payload hash가 다르면 byte-level diff를 확인한다.
+이 규칙은 HWP5 저장용 raw_rendering payload에만 적용한다.
+렌더러 내부 계산이나 IR 의미값 전체에 무차별 적용하지 않는다.
+```
+
+상세 기록:
+
+```text
+mydocs/troubleshootings/hwpx2hwp_shape_rendering_matrix_precision.md
+mydocs/working/task_m100_949_stage36.md
+```
+
 ### Table attr는 관찰 근거가 있으나 oracle contract 대조가 필요하다
 
 Task #903 Stage 58의 작업지시자 판정표는 `mydocs/working/task_m100_903_stage58.md`에
@@ -764,6 +806,7 @@ HWPX control inventory를 3-way 대조의 세 번째 축으로 추가한다.
 - `mydocs/troubleshootings/task178_hwpx_to_hwp_first_attempt_failure.md`
 - `mydocs/troubleshootings/task178_second_attempt_hancom_rejection.md`
 - `mydocs/troubleshootings/hwpx_lineseg_reflow_trap.md`
+- `mydocs/troubleshootings/hwpx2hwp_shape_rendering_matrix_precision.md`
 - `mydocs/tech/hwpx2hwp-01.md`
 - `mydocs/working/task_m100_903_stage30.md`
 - `mydocs/working/task_m100_903_stage53.md`
