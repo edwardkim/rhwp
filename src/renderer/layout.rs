@@ -4710,8 +4710,11 @@ impl LayoutEngine {
                                 });
                             let para_start =
                                 para_start_y.get(&para_index).copied().unwrap_or(y_offset);
-                            let shape_y =
-                                if has_full_para_item { para_start } else { y_offset };
+                            let shape_y = if has_full_para_item {
+                                para_start
+                            } else {
+                                y_offset
+                            };
 
                             if !already_registered {
                                 let comp = composed.get(para_index);
