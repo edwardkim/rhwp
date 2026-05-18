@@ -451,11 +451,15 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         // [Task #994] HWP5 변환본의 일부 paragraph (sample16 의 󰏅 PUA bullet 들)
         // 는 PARA_LINE_SEG 누락 → 기존 fallback 이 단일 ComposedLine 생성 →
         // layout 이 wrap 없이 한 y 좌표에 모든 텍스트 그림 → 시각 겹침.
-        // 임시 휴리스틱: 공백 기준 word wrap, ~35 chars/line (Korean 13pt 표준) 한도.
+        // 임시 휴리스틱: 공백 기준 word wrap, ~45 chars/line (Korean 13pt 표준) 한도.
         // 정확한 line_height 는 corrected_line_height 가 layout 에서 보정 (max_fs * 1.6).
         // 향후 reflow_line_segs 정식 호출 시 본 휴리스틱 대체.
+        // [Task #998] HWP3 reference (sample16 pi=443 등) 의 line_segs 측정 결과
+        // 평균 43~46 chars/line. 기존 35 는 conservative — 매 paragraph +1 line
+        // 발생 → 페이지 수 inflate (sample16-hwp5.hwp: 64 reference 대비 +3).
+        // 45 로 조정하여 HWP3 정합 개선 (+1 까지 축소, 잔존 ParaShape 데이터 차이).
         let chars: Vec<char> = para.text.chars().collect();
-        const CHARS_PER_LINE: usize = 35;
+        const CHARS_PER_LINE: usize = 45;
         let mut lines = Vec::new();
         let total = chars.len();
         let mut offset = 0;

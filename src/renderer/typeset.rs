@@ -1308,8 +1308,15 @@ impl TypesetEngine {
     ) -> FormattedParagraph {
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
-        let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+        let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+
+        // [Task #998 실험] spacing_before=0 으로 강제 — 효과 측정용
+        let spacing_before = if para.line_segs.is_empty() && !para.text.is_empty() {
+            0.0
+        } else {
+            raw_spacing_before
+        };
         // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
         // 이전 #866 Stage 2 는 paragraph 위·아래 각 +20px (총 +40px) 을 paragraph 자체 height
         // 에 포함시켰으나, typeset 의 zone 전환 패딩(solo_zone_pad +16px enter +16px leave)
