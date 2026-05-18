@@ -109,8 +109,138 @@ pub fn compose_section(section: &Section) -> Vec<ComposedParagraph> {
     section.paragraphs.iter().map(compose_paragraph).collect()
 }
 
+/// [Task #991] HWP5 parser 가 extended ctrl (1-3, 11-12, 14-18, 21-23) 의
+/// inline visible marker (\u{FFFC}) 를 text 에 push 하지 않아서 발생하는 layout
+/// 어긋남 보정. HWP3 parser 는 마커를 push 하므로 HWP3/HWPX 동일 IR 보장.
+///
+/// 검사: para.text 의 \u{FFFC} count < extended inline-visible ctrl count.
+/// 부족하면 char_offsets gap (8 wchar 단위) 에 마커 삽입한 synth paragraph 반환.
+///
+/// 영향 범위: composer 내부만 (rendering pipeline). para 원본 (editor) 영향 없음.
+fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
+    // inline-visible extended ctrls 수 계산 (header/footer/footnote/endnote/hidden 제외)
+    let inline_ctrl_count = para
+        .controls
+        .iter()
+        .filter(|c| {
+            !matches!(
+                c,
+                Control::Header(_)
+                    | Control::Footer(_)
+                    | Control::Footnote(_)
+                    | Control::Endnote(_)
+                    | Control::HiddenComment(_)
+            )
+        })
+        .count();
+
+    if inline_ctrl_count == 0 {
+        return None;
+    }
+
+    let existing_markers = para.text.chars().filter(|c| *c == '\u{FFFC}').count();
+    if existing_markers >= inline_ctrl_count {
+        // HWP3 path — 이미 마커 충분
+        return None;
+    }
+
+    // [Task #991 좁힘] 단일 control 또는 단일 leading ctrl 경우는 fix 미적용.
+    // 본 fix 의 root cause 는 "여러 TAC controls 가 한 paragraph 의 char_offsets
+    // gap 으로 인해 모두 position 0 으로 분석되는" 특정 case (sample16 pi=394).
+    // 일반 case (1-2 TAC + 텍스트) 는 기존 control_text_positions 의 marker 보조
+    // 분기 또는 inline rendering 로 처리 — F2 적용 시 \u{FFFC} 가 text run 에
+    // 추가되어 다른 sample (exam_eng p8 puko box 등) 위치 shift 발생.
+    //
+    // 좁힘 조건:
+    //   - inline_ctrl_count >= 3 (pi=394 = 3 TAC controls 기준)
+    //   - n_leading >= 2 (leading gap 에 2+ ctrl)
+    let first_off = para.char_offsets.first().copied().unwrap_or(0) as usize;
+    let n_leading = first_off / 8;
+    if n_leading < 2 || inline_ctrl_count < 3 {
+        return None;
+    }
+
+    // HWP5 path — char_offsets gap 분석으로 누락된 마커 위치 합성
+    let chars: Vec<char> = para.text.chars().collect();
+    let mut new_text =
+        String::with_capacity(para.text.len() + (inline_ctrl_count - existing_markers) * 3);
+    let mut new_offsets: Vec<u32> =
+        Vec::with_capacity(para.char_offsets.len() + (inline_ctrl_count - existing_markers));
+
+    let offsets = &para.char_offsets;
+    if offsets.is_empty() && chars.is_empty() {
+        // 빈 paragraph + controls — 모든 control 을 위해 마커 push
+        for i in 0..inline_ctrl_count {
+            new_offsets.push((i * 8) as u32);
+            new_text.push('\u{FFFC}');
+        }
+        let mut synth = para.clone();
+        synth.text = new_text;
+        synth.char_offsets = new_offsets;
+        return Some(synth);
+    }
+
+    // 첫 visible char 전 leading gap
+    let first_off = offsets.first().copied().unwrap_or(0) as usize;
+    let n_leading = first_off / 8;
+    for i in 0..n_leading {
+        new_offsets.push((i * 8) as u32);
+        new_text.push('\u{FFFC}');
+    }
+
+    // visible chars 사이 / 후행
+    for (i, &off) in offsets.iter().enumerate() {
+        let ch = chars.get(i).copied().unwrap_or(' ');
+        new_offsets.push(off);
+        new_text.push(ch);
+
+        // 다음 char 까지의 gap 분석
+        let char_width: u32 = if (ch as u32) > 0xFFFF { 2 } else { 1 };
+        let next_off = if i + 1 < offsets.len() {
+            offsets[i + 1] as usize
+        } else {
+            // 마지막 char 후행 controls — trailing gap 추정 불가능하면 종료
+            // (line_segs 분석 등 더 정교한 방법 가능하지만 본 fix 의 좁은 범위 유지)
+            continue;
+        };
+        let gap = next_off
+            .saturating_sub(off as usize)
+            .saturating_sub(char_width as usize);
+        let n_ctrls_between = gap / 8;
+        for k in 0..n_ctrls_between {
+            new_offsets.push((off as usize + char_width as usize + k * 8) as u32);
+            new_text.push('\u{FFFC}');
+        }
+    }
+
+    // 모든 후행 controls 처리 — line_segs.ts 마지막 + 8 단위로 추정
+    let added_so_far = new_text.chars().filter(|c| *c == '\u{FFFC}').count();
+    let still_needed = inline_ctrl_count.saturating_sub(added_so_far);
+    if still_needed > 0 {
+        // 마지막 char_offsets 의 stream pos + char_width 부터 8 단위씩
+        let last_off = offsets.last().copied().unwrap_or(0) as usize;
+        let last_ch = chars.last().copied().unwrap_or(' ');
+        let last_w: usize = if (last_ch as u32) > 0xFFFF { 2 } else { 1 };
+        let mut next_pos = last_off + last_w;
+        for _ in 0..still_needed {
+            new_offsets.push(next_pos as u32);
+            new_text.push('\u{FFFC}');
+            next_pos += 8;
+        }
+    }
+
+    let mut synth = para.clone();
+    synth.text = new_text;
+    synth.char_offsets = new_offsets;
+    Some(synth)
+}
+
 /// 문단을 줄별 텍스트 런으로 분할한다.
 pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
+    // [Task #991] HWP5 parser 의 inline marker 누락 보정 (rendering 전용)
+    let synth_para = synthesize_marker_paragraph(para);
+    let para = synth_para.as_ref().unwrap_or(para);
+
     let mut lines = compose_lines(para);
     let inline_controls = identify_inline_controls(para);
 
