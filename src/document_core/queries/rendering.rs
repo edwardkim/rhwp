@@ -473,22 +473,36 @@ impl DocumentCore {
 
             let mut mime = "application/octet-stream";
             let mut base64_data = String::new();
+            let mut baked_watermark = false;
             if let Some(data) = &image.data {
                 let detected = crate::renderer::svg::detect_image_mime_type(data);
-                let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) =
-                    if detected == "image/x-pcx" {
-                        match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
-                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) = if detected
+                    == "image/x-pcx"
+                {
+                    match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                        Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                        None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                    }
+                } else if detected == "image/bmp" {
+                    match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
+                        Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                        None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                    }
+                } else if detected == "image/jpeg"
+                    && image.effect != ImageEffect::RealPic
+                    && (image.brightness != 0 || image.contrast != 0)
+                {
+                    match crate::renderer::svg::watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
+                    {
+                        Some(png) => {
+                            baked_watermark = true;
+                            ("image/png", std::borrow::Cow::Owned(png))
                         }
-                    } else if detected == "image/bmp" {
-                        match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
-                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
-                        }
-                    } else {
-                        (detected, std::borrow::Cow::Borrowed(data.as_slice()))
-                    };
+                        None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                    }
+                } else {
+                    (detected, std::borrow::Cow::Borrowed(data.as_slice()))
+                };
                 mime = final_mime;
                 base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
             }
@@ -518,6 +532,9 @@ impl DocumentCore {
             };
             if let Some(preset) = attr.watermark_preset() {
                 let _ = write!(buf, ",\"watermark\":{{\"preset\":\"{}\"}}", preset);
+            }
+            if baked_watermark {
+                buf.push_str(",\"bakedWatermark\":true");
             }
 
             let _ = write!(
