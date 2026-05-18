@@ -230,24 +230,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{F081C}' {
                 return 0.0;
             }
-            let base_w_raw = if let Some(w) = measure_char_width_embedded(
-                &style.font_family,
-                style.bold,
-                style.italic,
-                c,
-                font_size,
-            ) {
-                w
-            } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
-                font_size
-            } else if is_narrow_punctuation(c) {
-                // Task #257: 콤마·중점 등은 실제 글리프 폭이 반각보다 뚜렷이
-                // 좁음. 폴백 경로에서 font_size * 0.5 를 쓰면 PDF 대비 뒤
-                // 글자가 2~3px 우측으로 밀림. 0.3 으로 분기.
-                font_size * 0.3
-            } else {
-                font_size * 0.5
-            };
+            let base_w_raw = base_char_width(c, cluster_len[i], style, font_size);
             // Task #352: 3+ 연속 dash 시퀀스(빈칸/leader) 는 좁은 폭으로 재산출.
             // HY신명조 등 한글 폰트 메트릭의 ASCII '-' 폭(0.83 em) 부풀림 회피.
             // 좁은 base 0.3 em 위에 paragraph_layout 가 라인 슬랙을 분배한
@@ -422,22 +405,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{F081C}' {
                 return 0.0;
             }
-            let base_w_raw = if let Some(w) = measure_char_width_embedded(
-                &style.font_family,
-                style.bold,
-                style.italic,
-                c,
-                font_size,
-            ) {
-                w
-            } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
-                font_size
-            } else if is_narrow_punctuation(c) {
-                // Task #257: 콤마·중점 등 narrow glyph 폴백 폭 (0.5 → 0.3).
-                font_size * 0.3
-            } else {
-                font_size * 0.5
-            };
+            let base_w_raw = base_char_width(c, cluster_len[i], style, font_size);
             // Task #352: 3+ 연속 dash leader 좁은 base 0.3 em + 라인 슬랙
             // 분배(extra_dash_advance) 로 PDF elastic leader 모방.
             let is_leader = is_dash_leader_run(&chars, i);
@@ -746,36 +714,6 @@ mod wasm_internals {
         format!("{}{}1000px {}", font_style, font_weight, font_family)
     }
 
-    /// 한컴 webhwp 방식 문자 폭 측정 (HWP 단위 양자화)
-    ///
-    /// 파이프라인: 내장 메트릭 → JS 1000px 측정 → font_size/1000 스케일링 → HWP 단위(×75) → 정수 반올림 → px
-    pub(super) fn measure_char_width_hwp(
-        measure_font: &str,
-        font_family: &str,
-        bold: bool,
-        italic: bool,
-        c: char,
-        hangul_width_hwp: i32,
-        font_size: f64,
-    ) -> f64 {
-        // 1차: 내장 메트릭 (JS 브릿지 호출 불필요)
-        if let Some(w) = super::measure_char_width_embedded(font_family, bold, italic, c, font_size)
-        {
-            return w;
-        }
-
-        // 2차: 한글 음절 → '가' 대리 측정값 재사용 (이미 HWP 단위)
-        if c >= '\u{AC00}' && c <= '\u{D7A3}' {
-            return hangul_width_hwp as f64 / 75.0;
-        }
-
-        // 3차: JS 폴백 (미등록 폰트)
-        let raw_px = cached_js_measure(measure_font, c);
-        let actual_px = raw_px * font_size / 1000.0;
-        let hwp = (actual_px * 75.0).round() as i32;
-        hwp as f64 / 75.0
-    }
-
     /// 한글 '가' 대리 측정값 (HWP 단위, 정수)
     /// 내장 메트릭이 있으면 JS 호출 없이 반환.
     pub(super) fn measure_hangul_width_hwp(
@@ -836,18 +774,13 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{F081C}' {
                 return 0.0;
             }
+            // [#977] 미등록 폰트 단일 문자 폭은 base_char_width 휴리스틱으로
+            // 산출 — 네이티브 EmbeddedTextMeasurer 와 동일 규칙. 합성 클러스터
+            // (옛한글)는 종전대로 '가' 대리 측정값을 사용한다.
             let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
-                wasm_internals::measure_char_width_hwp(
-                    &measure_font,
-                    &style.font_family,
-                    style.bold,
-                    style.italic,
-                    c,
-                    hangul_hwp,
-                    font_size,
-                )
+                base_char_width(c, cluster_len[i], style, font_size)
             };
             // Task #352: dash leader 좁은 base 0.3 em + extra_dash_advance.
             let is_leader = is_dash_leader_run(&chars, i);
@@ -1011,18 +944,13 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{F081C}' {
                 return 0.0;
             }
+            // [#977] 미등록 폰트 단일 문자 폭은 base_char_width 휴리스틱으로
+            // 산출 — 네이티브 EmbeddedTextMeasurer 와 동일 규칙. 합성 클러스터
+            // (옛한글)는 종전대로 '가' 대리 측정값을 사용한다.
             let char_px_raw = if cluster_len[i] > 1 {
                 hangul_hwp as f64 / 75.0
             } else {
-                wasm_internals::measure_char_width_hwp(
-                    &measure_font,
-                    &style.font_family,
-                    style.bold,
-                    style.italic,
-                    c,
-                    hangul_hwp,
-                    font_size,
-                )
+                base_char_width(c, cluster_len[i], style, font_size)
             };
             // Task #352: dash leader 좁은 base 0.3 em + extra_dash_advance.
             let is_leader = is_dash_leader_run(&chars, i);
@@ -1328,6 +1256,34 @@ fn measure_char_width_embedded(
     Some(hwp as f64 / 75.0)
 }
 
+/// 문자 기본 폭 (장평·자간·leader 보정 적용 전, px).
+///
+/// 내장 메트릭 우선, 미등록 폰트는 휴리스틱 폴백을 사용한다.
+/// `EmbeddedTextMeasurer` 와 `WasmTextMeasurer` 가 공용으로 호출하여
+/// 네이티브·WASM 의 문자 폭 산출을 구조적으로 일치시킨다 (#977).
+///
+/// 미등록 폰트에서 WASM 만 브라우저 `measureText` 실측을 쓰면 공백 폭이
+/// 폰트별로 달라져, 선두 공백 폰트가 다른 인접 문단의 개요번호가 WASM
+/// 경로에서만 어긋났다. 폴백을 휴리스틱으로 통일하여 네이티브(=한컴 PDF
+/// 정합)와 일치시킨다.
+///
+/// 휴리스틱: CJK·전각 기호·합성 클러스터 → `font_size`,
+/// narrow 구두점(콤마·중점 등, Task #257) → `font_size * 0.3`,
+/// 그 외(공백·라틴 등) → `font_size * 0.5`.
+fn base_char_width(c: char, cluster_len_i: u8, style: &TextStyle, font_size: f64) -> f64 {
+    if let Some(w) =
+        measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size)
+    {
+        w
+    } else if cluster_len_i > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
+        font_size
+    } else if is_narrow_punctuation(c) {
+        font_size * 0.3
+    } else {
+        font_size * 0.5
+    }
+}
+
 // ── 호환 래퍼 (기존 호출부 변경 없음) ──────────────────────────────
 
 /// 텍스트 폭 추정
@@ -1360,18 +1316,7 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         if c == '\u{F081C}' {
             return 0.0;
         }
-        let base_w_raw = if let Some(w) =
-            measure_char_width_embedded(&style.font_family, style.bold, style.italic, c, font_size)
-        {
-            w
-        } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
-            font_size
-        } else if is_narrow_punctuation(c) {
-            // Task #257: 콤마·중점 등 narrow glyph 폴백 폭 (0.5 → 0.3).
-            font_size * 0.3
-        } else {
-            font_size * 0.5
-        };
+        let base_w_raw = base_char_width(c, cluster_len[i], style, font_size);
         // Task #352: 3+ 연속 dash leader 좁은 base 0.3 em + 라인 슬랙 분배.
         let is_leader = is_dash_leader_run(&chars, i);
         let base_w = if is_leader {
