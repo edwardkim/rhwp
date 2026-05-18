@@ -4691,12 +4691,27 @@ impl LayoutEngine {
                         if !has_real_text {
                             let shape_w = hwpunit_to_px(common.width as i32, self.dpi);
                             let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
-                            // [Task #990] 글상자는 호스트 문단 시작에 배치한다.
-                            // y_offset 은 선행 FullParagraph 항목이 이미 진행시킨
-                            // 값이므로 그대로 쓰면 글상자가 한 줄 아래로 밀린다.
+                            // [Task #990] 해당 문단에 PageItem::FullParagraph 가
+                            // 발행되었으면(빈 문단이 호스트인 RFP 형) layout_paragraph
+                            // 가 이미 LINE_SEG advance 를 마쳤으므로, Shape 항목은
+                            // 글상자를 호스트 문단 시작(para_start)에 배치하고 재진행
+                            // 하지 않는다 — 이중 가산 방지(Task #974 c3e32151 회귀).
+                            // FullParagraph 항목이 없으면(선행 표 등에 이어 붙은
+                            // Shape, 예: hy-001 pi=27) Task #974 동작을 유지한다.
+                            let has_full_para_item =
+                                page_content.column_contents.iter().any(|cc| {
+                                    cc.items.iter().any(|it| {
+                                        matches!(
+                                            it,
+                                            PageItem::FullParagraph { para_index: pi }
+                                                if *pi == para_index
+                                        )
+                                    })
+                                });
                             let para_start =
                                 para_start_y.get(&para_index).copied().unwrap_or(y_offset);
-                            let shape_y = para_start;
+                            let shape_y =
+                                if has_full_para_item { para_start } else { y_offset };
 
                             if !already_registered {
                                 let comp = composed.get(para_index);
@@ -4744,13 +4759,10 @@ impl LayoutEngine {
                                 );
                             }
 
-                            // [Task #990] 빈 문단 위 treat-as-char 글상자: 선행
-                            // FullParagraph 항목의 layout_paragraph 가 이미 LINE_SEG
-                            // advance 를 마쳤다면(y_offset > para_start) 재진행하지
-                            // 않는다 — 이중 가산 방지(Task #974 c3e32151 회귀).
-                            // FullParagraph 항목이 없는 글상자 단독 케이스에서만
-                            // LINE_SEG 1회분을 진행한다.
-                            if y_offset <= para_start {
+                            // [Task #990] FullParagraph 항목이 없는 경우에만
+                            // LINE_SEG 1회분을 진행한다. FullParagraph 가 있으면
+                            // 이미 진행되었으므로 result_y(=y_offset)를 유지한다.
+                            if !has_full_para_item {
                                 let line_advance = para
                                     .line_segs
                                     .first()
@@ -4758,7 +4770,7 @@ impl LayoutEngine {
                                         hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi)
                                     })
                                     .unwrap_or(shape_h);
-                                result_y = para_start + line_advance.max(shape_h);
+                                result_y = shape_y + line_advance.max(shape_h);
                             }
                         }
                     }
