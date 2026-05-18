@@ -106,8 +106,7 @@ impl META_EXTTEXTOUT {
             fw_opts
         };
 
-        let rectangle = if fw_opts
-            .contains(&crate::wmf::parser::ExtTextOutOptions::ETO_OPAQUE)
+        let rectangle = if fw_opts.contains(&crate::wmf::parser::ExtTextOutOptions::ETO_OPAQUE)
             || fw_opts.contains(&crate::wmf::parser::ExtTextOutOptions::ETO_CLIPPED)
         {
             let (v, c) = crate::wmf::parser::Rect::parse(buf)?;
@@ -141,8 +140,7 @@ impl META_EXTTEXTOUT {
             }
         }
 
-        let (_, c) =
-            crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
+        let (_, c) = crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
         record_size.consume(c);
 
         Ok(Self {

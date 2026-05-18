@@ -107,7 +107,10 @@ fn task554_no_regression_aift() {
 #[test]
 fn task554_no_regression_2025_donations_hwpx() {
     // 2025년 기부·답례품 HWPX: hwpml=1.5 (직접 작성) — 휴리스틱 미적용
-    assert_eq!(page_count("samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx"), 30);
+    assert_eq!(
+        page_count("samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx"),
+        30
+    );
 }
 
 #[test]

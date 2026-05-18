@@ -21,11 +21,10 @@ use std::path::Path;
 fn hwpspec_page20_no_duplicate_image_emit() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/hwpspec.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse hwpspec.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse hwpspec.hwp");
 
     // 페이지 20 = index 19
     let svg = doc

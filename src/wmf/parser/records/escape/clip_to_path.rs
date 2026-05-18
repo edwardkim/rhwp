@@ -1,7 +1,5 @@
 impl crate::wmf::parser::META_ESCAPE {
-    pub(in crate::wmf::parser::records::escape) fn parse_as_CLIP_TO_PATH<
-        R: crate::wmf::Read,
-    >(
+    pub(in crate::wmf::parser::records::escape) fn parse_as_CLIP_TO_PATH<R: crate::wmf::Read>(
         buf: &mut R,
         mut record_size: crate::wmf::parser::RecordSize,
         record_function: u16,
@@ -15,22 +13,17 @@ impl crate::wmf::parser::META_ESCAPE {
             crate::wmf::parser::PostScriptClipping::parse(buf)?,
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
         );
-        record_size
-            .consume(byte_count_bytes + clip_function_bytes + reserved1_bytes);
+        record_size.consume(byte_count_bytes + clip_function_bytes + reserved1_bytes);
 
         if byte_count != 0x0004 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: format!(
-                    "The byte_count `{byte_count:#06X}` field must be `0x0004`",
-                ),
+                cause: format!("The byte_count `{byte_count:#06X}` field must be `0x0004`",),
             });
         }
 
         if reserved1 != 0x0000 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: format!(
-                    "The reserved1 `{reserved1:#06X}` field should be `0x0000`",
-                ),
+                cause: format!("The reserved1 `{reserved1:#06X}` field should be `0x0000`",),
             });
         }
 

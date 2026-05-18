@@ -27,14 +27,16 @@ enum Source {
 }
 
 impl TernaryRasterOperator {
-    pub fn new(
-        operation: TernaryRasterOperation,
-        x: i16,
-        y: i16,
-        height: i16,
-        width: i16,
-    ) -> Self {
-        Self { operation, x, y, height, width, brush: None, source: None }
+    pub fn new(operation: TernaryRasterOperation, x: i16, y: i16, height: i16, width: i16) -> Self {
+        Self {
+            operation,
+            x,
+            y,
+            height,
+            width,
+            brush: None,
+            source: None,
+        }
     }
 
     pub fn brush(mut self, brush: Brush) -> Self {
@@ -85,8 +87,7 @@ impl TernaryRasterOperator {
             TernaryRasterOperation::SRCCOPY => {
                 let bitmap = match self.source.unwrap() {
                     Source::Bitmap16(data) => {
-                        let bitmap =
-                            crate::wmf::parser::DeviceIndependentBitmap::from(data);
+                        let bitmap = crate::wmf::parser::DeviceIndependentBitmap::from(data);
                         crate::wmf::converter::Bitmap::from(bitmap)
                     }
                     Source::Bitmap(data) => Bitmap::from(data),
@@ -141,7 +142,17 @@ impl TernaryRasterOperator {
 
 impl From<ColorRef> for RGBQuad {
     fn from(v: ColorRef) -> Self {
-        let ColorRef { red, green, blue, reserved } = v;
-        Self { red, green, blue, reserved }
+        let ColorRef {
+            red,
+            green,
+            blue,
+            reserved,
+        } = v;
+        Self {
+            red,
+            green,
+            blue,
+            reserved,
+        }
     }
 }

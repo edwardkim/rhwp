@@ -3,22 +3,29 @@
 //! 페이지 분할 결과를 받아 각 요소의 정확한 위치와 크기를 계산하고
 //! 렌더 트리(PageRenderTree)를 생성한다.
 
-use crate::model::paragraph::Paragraph;
-use crate::model::shape::{Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, VertAlign, VertRelTo};
-use crate::model::style::{Alignment, BorderLine, BorderLineType, HeadType, Numbering, UnderlineType};
-use crate::model::table::VerticalAlign;
-use crate::model::footnote::{FootnoteShape, NumberFormat};
+use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
+use super::font_metrics_data;
+use super::height_measurer::MeasuredTable;
+use super::page_layout::{LayoutRect, PageLayoutInfo};
+use super::pagination::{ColumnContent, FootnoteRef, FootnoteSource, PageContent, PageItem};
+use super::render_tree::*;
+use super::style_resolver::ResolvedStyleSet;
+use super::{
+    format_number, hwpunit_to_px, ArrowStyle, AutoNumberCounter, LineStyle, NumberFormat as NumFmt,
+    PathCommand, ShapeStyle, StrokeDash, TextStyle, DEFAULT_DPI,
+};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
+use crate::model::footnote::{FootnoteShape, NumberFormat};
 use crate::model::header_footer::MasterPage;
-use super::render_tree::*;
-use super::page_layout::{LayoutRect, PageLayoutInfo};
-use super::pagination::{ColumnContent, PageContent, PageItem, FootnoteRef, FootnoteSource};
-use super::height_measurer::MeasuredTable;
-use super::composer::{ComposedParagraph, compose_paragraph, effective_text_for_metrics};
-use super::style_resolver::ResolvedStyleSet;
-use super::font_metrics_data;
-use super::{TextStyle, ShapeStyle, LineStyle, PathCommand, StrokeDash, ArrowStyle, hwpunit_to_px, DEFAULT_DPI, AutoNumberCounter, format_number, NumberFormat as NumFmt};
+use crate::model::paragraph::Paragraph;
+use crate::model::shape::{
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, VertAlign, VertRelTo,
+};
+use crate::model::style::{
+    Alignment, BorderLine, BorderLineType, HeadType, Numbering, UnderlineType,
+};
+use crate::model::table::VerticalAlign;
 
 /// layout_column_item의 읽기 전용 컨텍스트 (파라미터 묶음)
 struct ColumnItemCtx<'a> {
@@ -62,15 +69,25 @@ pub struct CellContext {
 
 impl CellContext {
     /// 최외곽 표의 컨트롤 인덱스
-    pub fn outermost_control(&self) -> usize { self.path[0].control_index }
+    pub fn outermost_control(&self) -> usize {
+        self.path[0].control_index
+    }
     /// 최외곽 표의 셀 인덱스
-    pub fn outermost_cell(&self) -> usize { self.path[0].cell_index }
+    pub fn outermost_cell(&self) -> usize {
+        self.path[0].cell_index
+    }
     /// 최외곽 표의 셀 문단 인덱스
-    pub fn outermost_cell_para(&self) -> usize { self.path[0].cell_para_index }
+    pub fn outermost_cell_para(&self) -> usize {
+        self.path[0].cell_para_index
+    }
     /// 최내곽 레벨의 엔트리
-    pub fn innermost(&self) -> &CellPathEntry { self.path.last().unwrap() }
+    pub fn innermost(&self) -> &CellPathEntry {
+        self.path.last().unwrap()
+    }
     /// 텍스트 방향 (최내곽 기준)
-    pub fn text_direction(&self) -> u8 { self.innermost().text_direction }
+    pub fn text_direction(&self) -> u8 {
+        self.innermost().text_direction
+    }
 }
 
 /// 문단 번호 상태 (수준별 카운터)
@@ -145,7 +162,6 @@ impl NumberingState {
         // 현재 수준 증가
         self.counters[level] += 1;
 
-
         // 하위 수준 리셋
         for i in (level + 1)..7 {
             self.counters[i] = 0;
@@ -153,7 +169,6 @@ impl NumberingState {
 
         self.counters
     }
-
 }
 
 /// 레이아웃 엔진
@@ -220,7 +235,8 @@ pub struct LayoutEngine {
     /// is_partial_start: 다른 컬럼/페이지에서 이어진 부분 (top edge 미렌더링)
     /// is_partial_end: 다음 컬럼/페이지로 이어지는 부분 (bottom edge 미렌더링)
     /// para_index: 본 range 가 속한 paragraph 인덱스 (Task #468: cross-column 박스 연속 검출용)
-    para_border_ranges: std::cell::RefCell<Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize)>>,
+    para_border_ranges:
+        std::cell::RefCell<Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize)>>,
     /// 문단 외곽선 box geometry override (Task #463): wrap=Square 호스트 문단의
     /// 텍스트는 좁은 wrap_area 에서 layout 되지만, 외곽선은 원래 col_area 의
     /// 전체 너비로 그려야 PDF 와 일치한다 (인라인 floating 표를 박스가 둘러쌈).
@@ -234,7 +250,8 @@ pub struct LayoutEngine {
     /// 현재 활성 필드 위치 — 안내문 렌더링 스킵용
     /// (section_idx, para_idx, control_idx, cell_path)
     /// cell_path: 셀 내 필드일 경우 Some(Vec<(ctrl, cell, para)>)
-    active_field: std::cell::RefCell<Option<(usize, usize, usize, Option<Vec<(usize, usize, usize)>>)>>,
+    active_field:
+        std::cell::RefCell<Option<(usize, usize, usize, Option<Vec<(usize, usize, usize)>>)>>,
     /// 조판부호 표시 여부
     show_control_codes: std::cell::Cell<bool>,
     /// 현재 페이지 용지 너비 (표 HorzRelTo::Paper 위치 계산용)
@@ -244,28 +261,35 @@ pub struct LayoutEngine {
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
 }
 
-mod text_measurement;
+mod border_rendering;
 mod paragraph_layout;
+mod picture_footnote;
+mod shape_layout;
+mod table_cell_content;
 mod table_layout;
 mod table_partial;
-mod table_cell_content;
-mod shape_layout;
-mod picture_footnote;
-mod border_rendering;
+mod text_measurement;
 mod utils;
 
-pub(crate) use text_measurement::{resolved_to_text_style, estimate_text_width, estimate_text_width_unrounded, compute_char_positions, is_cjk_char, split_into_clusters, find_next_tab_stop, extract_tab_leaders_with_extended};
 pub(crate) use paragraph_layout::ensure_min_baseline;
+pub(crate) use text_measurement::{
+    compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
+    extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, resolved_to_text_style,
+    split_into_clusters,
+};
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
-pub use paragraph_layout::map_pua_bullet_char;
-pub(crate) use utils::{resolve_numbering_id, find_bin_data, drawing_to_shape_style, drawing_to_line_style, layout_rect_to_bbox, format_page_number};
 pub(crate) use border_rendering::{border_width_to_px, create_border_line_nodes};
+pub use paragraph_layout::map_pua_bullet_char;
+pub(crate) use utils::{
+    drawing_to_line_style, drawing_to_shape_style, find_bin_data, format_page_number,
+    layout_rect_to_bbox, resolve_numbering_id,
+};
 
 #[cfg(test)]
-mod tests;
-#[cfg(test)]
 mod integration_tests;
+#[cfg(test)]
+mod tests;
 
 impl LayoutEngine {
     pub fn new(dpi: f64) -> Self {
@@ -317,7 +341,12 @@ impl LayoutEngine {
     }
 
     /// 이미 렌더된 인라인 이미지 노드의 y 좌표를 dy만큼 이동 (캡션 Top 보정)
-    fn offset_inline_image_y(node: &mut RenderNode, para_index: usize, control_index: usize, dy: f64) {
+    fn offset_inline_image_y(
+        node: &mut RenderNode,
+        para_index: usize,
+        control_index: usize,
+        dy: f64,
+    ) {
         for child in node.children.iter_mut() {
             if let RenderNodeType::Image(ref img) = child.node_type {
                 if img.para_index == Some(para_index) && img.control_index == Some(control_index) {
@@ -332,7 +361,9 @@ impl LayoutEngine {
 
     /// 번호 카운터를 진행시킨다 (이전 페이지 문단의 번호 재계산용).
     pub fn advance_numbering(&self, numbering_id: u16, level: u8) {
-        self.numbering_state.borrow_mut().advance(numbering_id, level, None);
+        self.numbering_state
+            .borrow_mut()
+            .advance(numbering_id, level, None);
     }
 
     /// 잘림 보기 여부를 설정한다.
@@ -361,7 +392,10 @@ impl LayoutEngine {
     }
 
     /// 활성 필드 설정 (안내문 렌더링 스킵용)
-    pub fn set_active_field(&self, info: Option<(usize, usize, usize, Option<Vec<(usize, usize, usize)>>)>) {
+    pub fn set_active_field(
+        &self,
+        info: Option<(usize, usize, usize, Option<Vec<(usize, usize, usize)>>)>,
+    ) {
         *self.active_field.borrow_mut() = info;
     }
 
@@ -404,34 +438,66 @@ impl LayoutEngine {
         );
 
         // 페이지 배경 (감추기 설정 시 건너뜀)
-        let hide_fill = page_content.page_hide.as_ref()
-            .map(|ph| ph.hide_fill).unwrap_or(false);
+        let hide_fill = page_content
+            .page_hide
+            .as_ref()
+            .map(|ph| ph.hide_fill)
+            .unwrap_or(false);
         if !hide_fill {
-            self.build_page_background(&mut tree, layout, page_border_fill, styles, bin_data_content);
+            self.build_page_background(
+                &mut tree,
+                layout,
+                page_border_fill,
+                styles,
+                bin_data_content,
+            );
         }
 
         // 쪽 테두리선 (감추기 설정 시 건너뜀)
-        let hide_border = page_content.page_hide.as_ref()
-            .map(|ph| ph.hide_border).unwrap_or(false);
+        let hide_border = page_content
+            .page_hide
+            .as_ref()
+            .map(|ph| ph.hide_border)
+            .unwrap_or(false);
         if !hide_border {
             self.build_page_borders(&mut tree, layout, page_border_fill, styles);
         }
 
         // 바탕쪽 (감추기 설정 시 건너뜀)
-        let hide_master = page_content.page_hide.as_ref()
-            .map(|ph| ph.hide_master_page).unwrap_or(false);
+        let hide_master = page_content
+            .page_hide
+            .as_ref()
+            .map(|ph| ph.hide_master_page)
+            .unwrap_or(false);
         if !hide_master {
             self.build_master_page(
-                &mut tree, active_master_page, layout, composed, styles,
-                bin_data_content, page_content.section_index, page_content.page_number,
+                &mut tree,
+                active_master_page,
+                layout,
+                composed,
+                styles,
+                bin_data_content,
+                page_content.section_index,
+                page_content.page_number,
             );
         }
 
         // 머리말 (감추기 설정 시 건너뜀)
-        let hide_header = page_content.page_hide.as_ref()
-            .map(|ph| ph.hide_header).unwrap_or(false);
+        let hide_header = page_content
+            .page_hide
+            .as_ref()
+            .map(|ph| ph.hide_header)
+            .unwrap_or(false);
         if !hide_header {
-            self.build_header(&mut tree, page_content, header_paragraphs, composed, styles, layout, bin_data_content);
+            self.build_header(
+                &mut tree,
+                page_content,
+                header_paragraphs,
+                composed,
+                styles,
+                layout,
+                bin_data_content,
+            );
         }
 
         // 본문 영역 노드 (clip_rect은 콘텐츠 레이아웃 후 확정)
@@ -448,9 +514,17 @@ impl LayoutEngine {
         // 단별 콘텐츠 레이아웃
         let mut paper_images: Vec<RenderNode> = Vec::new();
         self.build_columns(
-            &mut tree, &mut body_node, &mut paper_images,
-            page_content, paragraphs, composed, styles,
-            bin_data_content, measured_tables, layout, outline_numbering_id,
+            &mut tree,
+            &mut body_node,
+            &mut paper_images,
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            measured_tables,
+            layout,
+            outline_numbering_id,
             wrap_around_paras,
         );
 
@@ -458,7 +532,9 @@ impl LayoutEngine {
         // emit_zone_column_separators 가 이미 sep 을 그리므로 page-level fallback 은 skip.
         // (Issue #874 Case 4: shortcut.hwp 2쪽~ 페이지 layout 이 2단으로 잡혀 body_area
         // 전체 길이 점선이 zone-별 sep 위에 중복 그려지는 결함 정정.)
-        let has_zone_specific_layout = page_content.column_contents.iter()
+        let has_zone_specific_layout = page_content
+            .column_contents
+            .iter()
             .any(|cc| cc.zone_layout.is_some());
         if !has_zone_specific_layout {
             self.build_column_separators(&mut tree, &mut body_node, layout);
@@ -516,16 +592,38 @@ impl LayoutEngine {
         }
 
         // 각주 영역
-        self.build_footnote_area(&mut tree, page_content, paragraphs, footnote_shape, styles, layout);
+        self.build_footnote_area(
+            &mut tree,
+            page_content,
+            paragraphs,
+            footnote_shape,
+            styles,
+            layout,
+        );
 
         // 꼬리말 + 쪽 번호 (감추기 설정 시 건너뜀)
-        let hide_footer = page_content.page_hide.as_ref()
-            .map(|ph| ph.hide_footer).unwrap_or(false);
+        let hide_footer = page_content
+            .page_hide
+            .as_ref()
+            .map(|ph| ph.hide_footer)
+            .unwrap_or(false);
         let mut footer_node = if !hide_footer {
-            self.build_footer(&mut tree, page_content, footer_paragraphs, composed, styles, layout, bin_data_content)
+            self.build_footer(
+                &mut tree,
+                page_content,
+                footer_paragraphs,
+                composed,
+                styles,
+                layout,
+                bin_data_content,
+            )
         } else {
             let fid = tree.next_id();
-            RenderNode::new(fid, RenderNodeType::Footer, layout_rect_to_bbox(&layout.footer_area))
+            RenderNode::new(
+                fid,
+                RenderNodeType::Footer,
+                layout_rect_to_bbox(&layout.footer_area),
+            )
         };
         self.build_page_number(&mut tree, &mut footer_node, page_content, layout);
         tree.root.children.push(footer_node);
@@ -557,11 +655,15 @@ impl LayoutEngine {
             // 테이블 컨트롤이 있으면 테이블 렌더링
             let has_table = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
             let has_shape = para.controls.iter().any(|c| matches!(c, Control::Shape(_)));
-            let has_picture = para.controls.iter().any(|c| matches!(c, Control::Picture(_)));
+            let has_picture = para
+                .controls
+                .iter()
+                .any(|c| matches!(c, Control::Picture(_)));
             if has_table {
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Table(t) = ctrl {
-                        let alignment = styles.para_styles
+                        let alignment = styles
+                            .para_styles
                             .get(para.para_shape_id as usize)
                             .map(|s| s.alignment)
                             .unwrap_or(Alignment::Left);
@@ -572,22 +674,42 @@ impl LayoutEngine {
                         // [Issue #924] 머릿말에서는 적용하지 않음 — 표가 header_area 안에 정확히 위치해야 함.
                         // 꼬리말은 Task #445에서 필요하므로 유지.
                         let line_anchor_offset = if !is_header
-                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                            && matches!(
+                                t.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            )
                             && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
                             && i == 0
                         {
-                            let lh_hu = para.line_segs.first().map(|ls| ls.line_height as i32).unwrap_or(0);
+                            let lh_hu = para
+                                .line_segs
+                                .first()
+                                .map(|ls| ls.line_height as i32)
+                                .unwrap_or(0);
                             hwpunit_to_px(lh_hu, self.dpi) / 2.0
                         } else {
                             0.0
                         };
                         let table_y = y_offset + line_anchor_offset;
                         y_offset = self.layout_table(
-                            tree, area_node, t,
-                            0, styles, area, table_y, bin_data_content,
-                            None, 0,
-                            Some((i, ci)), alignment,
-                            None, 0.0, 0.0, None, None, None,
+                            tree,
+                            area_node,
+                            t,
+                            0,
+                            styles,
+                            area,
+                            table_y,
+                            bin_data_content,
+                            None,
+                            0,
+                            Some((i, ci)),
+                            alignment,
+                            None,
+                            0.0,
+                            0.0,
+                            None,
+                            None,
+                            None,
                         );
                     }
                 }
@@ -608,10 +730,15 @@ impl LayoutEngine {
                             // [Task #825] inner para_index = i (hf_paragraphs 안 인덱스),
                             // inner control_index = ci. outer 위치는 outer_hf_ref 보존.
                             self.layout_picture_full(
-                                tree, area_node, pic, &pic_container,
-                                bin_data_content, Alignment::Left,
+                                tree,
+                                area_node,
+                                pic,
+                                &pic_container,
+                                bin_data_content,
+                                Alignment::Left,
                                 outer_section_index,
-                                Some(i), Some(ci),
+                                Some(i),
+                                Some(ci),
                                 outer_hf_ref.clone(),
                             );
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
@@ -621,9 +748,18 @@ impl LayoutEngine {
                 } else {
                     // TAC Picture: layout_paragraph에서 인라인 배치
                     y_offset = self.layout_paragraph(
-                        tree, area_node, para, Some(&comp), styles, area, y_offset,
-                        0, usize::MAX - i, None, Some(bin_data_content),
-                        None,  // 머리말/꼬리말 컨텍스트 — wrap zone 무관
+                        tree,
+                        area_node,
+                        para,
+                        Some(&comp),
+                        styles,
+                        area,
+                        y_offset,
+                        0,
+                        usize::MAX - i,
+                        None,
+                        Some(bin_data_content),
+                        None, // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
                 }
             } else if has_shape {
@@ -631,12 +767,20 @@ impl LayoutEngine {
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Shape(_) = ctrl {
                         self.layout_shape(
-                            tree, area_node,
-                            hf_paragraphs, i, ci,
+                            tree,
+                            area_node,
+                            hf_paragraphs,
+                            i,
+                            ci,
                             0, // section_index
-                            styles, area, area, area,
-                            y_offset, Alignment::Left,
-                            bin_data_content, &std::collections::HashMap::new(),
+                            styles,
+                            area,
+                            area,
+                            area,
+                            y_offset,
+                            Alignment::Left,
+                            bin_data_content,
+                            &std::collections::HashMap::new(),
                         );
                     }
                 }
@@ -645,9 +789,18 @@ impl LayoutEngine {
                     let mut comp = compose_paragraph(para);
                     self.substitute_hf_field_markers(&mut comp, page_number);
                     y_offset = self.layout_paragraph(
-                        tree, area_node, para, Some(&comp), styles, area, y_offset,
-                        0, usize::MAX - i, None, None,
-                        None,  // 머리말/꼬리말 컨텍스트 — wrap zone 무관
+                        tree,
+                        area_node,
+                        para,
+                        Some(&comp),
+                        styles,
+                        area,
+                        y_offset,
+                        0,
+                        usize::MAX - i,
+                        None,
+                        None,
+                        None, // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
                 }
             } else {
@@ -655,9 +808,18 @@ impl LayoutEngine {
                 let mut comp = compose_paragraph(para);
                 self.substitute_hf_field_markers(&mut comp, page_number);
                 y_offset = self.layout_paragraph(
-                    tree, area_node, para, Some(&comp), styles, area, y_offset,
-                    0, usize::MAX - i, None, None,
-                    None,  // 머리말/꼬리말 컨텍스트 — wrap zone 무관
+                    tree,
+                    area_node,
+                    para,
+                    Some(&comp),
+                    styles,
+                    area,
+                    y_offset,
+                    0,
+                    usize::MAX - i,
+                    None,
+                    None,
+                    None, // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                 );
             }
             if y_offset >= area.y + area.height {
@@ -679,12 +841,16 @@ impl LayoutEngine {
         for line in &mut comp.lines {
             let mut new_runs = Vec::new();
             for run in &line.runs {
-                if !run.text.contains('\u{0015}') && !run.text.contains('\u{0016}') && !run.text.contains('\u{0017}') {
+                if !run.text.contains('\u{0015}')
+                    && !run.text.contains('\u{0016}')
+                    && !run.text.contains('\u{0017}')
+                {
                     new_runs.push(run.clone());
                     continue;
                 }
                 // 마커가 포함된 런 → 치환 후 분할
-                let replaced = run.text
+                let replaced = run
+                    .text
                     .replace('\u{0015}', &page_str)
                     .replace('\u{0016}', &total_str)
                     .replace('\u{0017}', &file_name);
@@ -710,11 +876,12 @@ impl LayoutEngine {
                 let bf_idx = (pbf.border_fill_id - 1) as usize;
                 if let Some(bs) = styles.border_styles.get(bf_idx) {
                     let img = bs.image_fill.as_ref().and_then(|img_fill| {
-                        find_bin_data(bin_data_content, img_fill.bin_data_id)
-                            .map(|c| PageBackgroundImage {
+                        find_bin_data(bin_data_content, img_fill.bin_data_id).map(|c| {
+                            PageBackgroundImage {
                                 data: c.data.clone(),
                                 fill_mode: img_fill.fill_mode,
-                            })
+                            }
+                        })
                     });
                     (bs.fill_color.or(Some(0x00FFFFFF)), bs.gradient.clone(), img)
                 } else {
@@ -727,9 +894,16 @@ impl LayoutEngine {
             (Some(0x00FFFFFF), None, None)
         };
 
-        let fill_area = page_border_fill.map(|pbf| (pbf.attr >> 3) & 0x03).unwrap_or(0);
+        let fill_area = page_border_fill
+            .map(|pbf| (pbf.attr >> 3) & 0x03)
+            .unwrap_or(0);
         let bg_bbox = match fill_area {
-            1 => BoundingBox::new(layout.body_area.x, layout.body_area.y, layout.body_area.width, layout.body_area.height),
+            1 => BoundingBox::new(
+                layout.body_area.x,
+                layout.body_area.y,
+                layout.body_area.width,
+                layout.body_area.height,
+            ),
             _ => BoundingBox::new(0.0, 0.0, layout.page_width, layout.page_height),
         };
 
@@ -778,7 +952,12 @@ impl LayoutEngine {
                 let (base_x, base_y, base_w, base_h) = if paper_based {
                     (0.0, 0.0, layout.page_width, layout.page_height)
                 } else {
-                    (layout.body_area.x, layout.body_area.y, layout.body_area.width, layout.body_area.height)
+                    (
+                        layout.body_area.x,
+                        layout.body_area.y,
+                        layout.body_area.width,
+                        layout.body_area.height,
+                    )
                 };
 
                 let sp_l = hwpunit_to_px(pbf.spacing_left as i32, self.dpi);
@@ -788,20 +967,40 @@ impl LayoutEngine {
                 // 종이 기준: 종이 가장자리에서 안쪽(+)으로 spacing
                 // 쪽 기준: 본문 영역에서 바깥쪽(-)으로 spacing
                 let (bx, by, bw, bh) = if paper_based {
-                    (base_x + sp_l, base_y + sp_t, base_w - sp_l - sp_r, base_h - sp_t - sp_b)
+                    (
+                        base_x + sp_l,
+                        base_y + sp_t,
+                        base_w - sp_l - sp_r,
+                        base_h - sp_t - sp_b,
+                    )
                 } else {
-                    (base_x - sp_l, base_y - sp_t, base_w + sp_l + sp_r, base_h + sp_t + sp_b)
+                    (
+                        base_x - sp_l,
+                        base_y - sp_t,
+                        base_w + sp_l + sp_r,
+                        base_h + sp_t + sp_b,
+                    )
                 };
 
                 let borders = &bs.borders;
                 let top_nodes = create_border_line_nodes(tree, &borders[2], bx, by, bx + bw, by);
-                for n in top_nodes { tree.root.children.push(n); }
-                let bottom_nodes = create_border_line_nodes(tree, &borders[3], bx, by + bh, bx + bw, by + bh);
-                for n in bottom_nodes { tree.root.children.push(n); }
+                for n in top_nodes {
+                    tree.root.children.push(n);
+                }
+                let bottom_nodes =
+                    create_border_line_nodes(tree, &borders[3], bx, by + bh, bx + bw, by + bh);
+                for n in bottom_nodes {
+                    tree.root.children.push(n);
+                }
                 let left_nodes = create_border_line_nodes(tree, &borders[0], bx, by, bx, by + bh);
-                for n in left_nodes { tree.root.children.push(n); }
-                let right_nodes = create_border_line_nodes(tree, &borders[1], bx + bw, by, bx + bw, by + bh);
-                for n in right_nodes { tree.root.children.push(n); }
+                for n in left_nodes {
+                    tree.root.children.push(n);
+                }
+                let right_nodes =
+                    create_border_line_nodes(tree, &borders[1], bx + bw, by, bx + bw, by + bh);
+                for n in right_nodes {
+                    tree.root.children.push(n);
+                }
             }
         }
     }
@@ -818,7 +1017,16 @@ impl LayoutEngine {
         section_index: usize,
         page_number: u32,
     ) {
-        self.build_master_page(tree, active_master_page, layout, composed, styles, bin_data_content, section_index, page_number);
+        self.build_master_page(
+            tree,
+            active_master_page,
+            layout,
+            composed,
+            styles,
+            bin_data_content,
+            section_index,
+            page_number,
+        );
     }
 
     /// 바탕쪽 영역 노드를 생성하여 tree에 추가한다.
@@ -842,7 +1050,8 @@ impl LayoutEngine {
             if !mp.paragraphs.is_empty() {
                 let mp_id = tree.next_id();
                 let paper_area = LayoutRect {
-                    x: 0.0, y: 0.0,
+                    x: 0.0,
+                    y: 0.0,
                     width: layout.page_width,
                     height: layout.page_height,
                 };
@@ -862,47 +1071,85 @@ impl LayoutEngine {
                             match ctrl {
                                 Control::Shape(_) | Control::Equation(_) => {
                                     self.layout_shape(
-                                        tree, &mut mp_node,
-                                        &mp.paragraphs, pi, ci,
+                                        tree,
+                                        &mut mp_node,
+                                        &mp.paragraphs,
+                                        pi,
+                                        ci,
                                         section_index,
-                                        styles, body_area, body_area, &paper_area,
-                                        body_area.y, Alignment::Left,
+                                        styles,
+                                        body_area,
+                                        body_area,
+                                        &paper_area,
+                                        body_area.y,
+                                        Alignment::Left,
                                         bin_data_content,
                                         &std::collections::HashMap::new(),
                                     );
                                 }
                                 Control::Picture(pic) => {
                                     let (pic_w, pic_h) = self.resolve_object_size(
-                                        &pic.common, body_area, body_area, &paper_area,
+                                        &pic.common,
+                                        body_area,
+                                        body_area,
+                                        &paper_area,
                                     );
                                     let (pic_x, pic_y) = self.compute_object_position(
-                                        &pic.common, pic_w, pic_h,
-                                        body_area, body_area, body_area, &paper_area,
-                                        body_area.y, Alignment::Left,
+                                        &pic.common,
+                                        pic_w,
+                                        pic_h,
+                                        body_area,
+                                        body_area,
+                                        body_area,
+                                        &paper_area,
+                                        body_area.y,
+                                        Alignment::Left,
                                     );
                                     let pic_area = super::layout::LayoutRect {
-                                        x: pic_x, y: pic_y, width: pic_w, height: pic_h,
+                                        x: pic_x,
+                                        y: pic_y,
+                                        width: pic_w,
+                                        height: pic_h,
                                     };
                                     self.layout_picture(
-                                        tree, &mut mp_node, pic, &pic_area,
-                                        bin_data_content, Alignment::Left,
-                                        Some(section_index), None, None,
+                                        tree,
+                                        &mut mp_node,
+                                        pic,
+                                        &pic_area,
+                                        bin_data_content,
+                                        Alignment::Left,
+                                        Some(section_index),
+                                        None,
+                                        None,
                                     );
                                 }
                                 Control::Table(t) => {
-                                    let alignment = styles.para_styles
+                                    let alignment = styles
+                                        .para_styles
                                         .get(para.para_shape_id as usize)
                                         .map(|s| s.alignment)
                                         .unwrap_or(Alignment::Left);
                                     // 바탕쪽 표: paper_area를 col_area로 전달하여
                                     // compute_table_x/y_position이 올바르게 위치 계산
                                     self.layout_table(
-                                        tree, &mut mp_node,
-                                        t, section_index,
-                                        styles, &paper_area, 0.0,
-                                        bin_data_content, None, 0,
-                                        Some((pi, ci)), alignment,
-                                        None, 0.0, 0.0, None, None, None,
+                                        tree,
+                                        &mut mp_node,
+                                        t,
+                                        section_index,
+                                        styles,
+                                        &paper_area,
+                                        0.0,
+                                        bin_data_content,
+                                        None,
+                                        0,
+                                        Some((pi, ci)),
+                                        alignment,
+                                        None,
+                                        0.0,
+                                        0.0,
+                                        None,
+                                        None,
+                                        None,
                                     );
                                 }
                                 _ => {}
@@ -916,21 +1163,31 @@ impl LayoutEngine {
                         comp.tab_extended.clear();
                         // LINE_SEG vpos로 문단 시작 y 결정 (빈 문단 건너뜀 보상)
                         if let Some(first_ls) = para.line_segs.first() {
-                            let vpos_y = paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                            let vpos_y =
+                                paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                             if vpos_y > mp_y_offset {
                                 mp_y_offset = vpos_y;
                             }
                         }
                         mp_y_offset = self.layout_paragraph(
-                            tree, &mut mp_node, para, Some(&comp), styles,
-                            &paper_area, mp_y_offset,
-                            0, usize::MAX - pi, None, None,
-                            None,  // 바탕쪽 컨텍스트 — wrap zone 무관
+                            tree,
+                            &mut mp_node,
+                            para,
+                            Some(&comp),
+                            styles,
+                            &paper_area,
+                            mp_y_offset,
+                            0,
+                            usize::MAX - pi,
+                            None,
+                            None,
+                            None, // 바탕쪽 컨텍스트 — wrap zone 무관
                         );
                     } else {
                         // 빈 문단: LINE_SEG vpos로 y 위치 갱신
                         if let Some(first_ls) = para.line_segs.first() {
-                            let vpos_y = paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                            let vpos_y =
+                                paper_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                             let lh = hwpunit_to_px(first_ls.line_height, self.dpi);
                             let ls = hwpunit_to_px(first_ls.line_spacing, self.dpi);
                             mp_y_offset = (vpos_y + lh + ls).max(mp_y_offset);
@@ -961,7 +1218,9 @@ impl LayoutEngine {
             layout_rect_to_bbox(&layout.header_area),
         );
         // 감추기 플래그가 설정된 페이지는 머리말 내용을 렌더링하지 않음
-        let hidden = self.hidden_header_footer.borrow()
+        let hidden = self
+            .hidden_header_footer
+            .borrow()
             .contains(&(page_content.page_index, true));
         if !hidden {
             if let Some(hf_ref) = &page_content.active_header {
@@ -975,8 +1234,11 @@ impl LayoutEngine {
                                 kind: crate::renderer::render_tree::HeaderFooterKind::Header,
                             };
                             self.layout_header_footer_paragraphs(
-                                tree, &mut header_node,
-                                &header.paragraphs, composed, styles,
+                                tree,
+                                &mut header_node,
+                                &header.paragraphs,
+                                composed,
+                                styles,
                                 &layout.header_area,
                                 page_content.page_index,
                                 page_content.page_number,
@@ -1003,7 +1265,11 @@ impl LayoutEngine {
                 outer_control_index: hf_ref.control_index,
                 kind: crate::renderer::render_tree::HeaderFooterKind::Header,
             };
-            Self::propagate_header_footer_ref(&mut header_node, &outer_ref, hf_ref.source_section_index);
+            Self::propagate_header_footer_ref(
+                &mut header_node,
+                &outer_ref,
+                hf_ref.source_section_index,
+            );
         }
         tree.root.children.push(header_node);
     }
@@ -1077,7 +1343,9 @@ impl LayoutEngine {
             layout_rect_to_bbox(&layout.footer_area),
         );
         // 감추기 플래그가 설정된 페이지는 꼬리말 내용을 렌더링하지 않음
-        let hidden = self.hidden_header_footer.borrow()
+        let hidden = self
+            .hidden_header_footer
+            .borrow()
             .contains(&(page_content.page_index, false));
         if !hidden {
             if let Some(hf_ref) = &page_content.active_footer {
@@ -1091,8 +1359,11 @@ impl LayoutEngine {
                                 kind: crate::renderer::render_tree::HeaderFooterKind::Footer,
                             };
                             self.layout_header_footer_paragraphs(
-                                tree, &mut footer_node,
-                                &footer.paragraphs, composed, styles,
+                                tree,
+                                &mut footer_node,
+                                &footer.paragraphs,
+                                composed,
+                                styles,
                                 &layout.footer_area,
                                 page_content.page_index,
                                 page_content.page_number,
@@ -1115,7 +1386,11 @@ impl LayoutEngine {
                 outer_control_index: hf_ref.control_index,
                 kind: crate::renderer::render_tree::HeaderFooterKind::Footer,
             };
-            Self::propagate_header_footer_ref(&mut footer_node, &outer_ref, hf_ref.source_section_index);
+            Self::propagate_header_footer_ref(
+                &mut footer_node,
+                &outer_ref,
+                hf_ref.source_section_index,
+            );
         }
         footer_node
     }
@@ -1137,8 +1412,8 @@ impl LayoutEngine {
                 3 => StrokeDash::Dot,
                 4 => StrokeDash::DashDot,
                 5 => StrokeDash::DashDotDot,
-                6 => StrokeDash::Dash,       // LongDash → Dash 근사 (PR #843)
-                7 => StrokeDash::Dot,        // Circle(원형 점선) → Dot (PR #843)
+                6 => StrokeDash::Dash, // LongDash → Dash 근사 (PR #843)
+                7 => StrokeDash::Dot,  // Circle(원형 점선) → Dot (PR #843)
                 _ => StrokeDash::Solid,
             };
             for i in 0..layout.column_areas.len() - 1 {
@@ -1151,7 +1426,10 @@ impl LayoutEngine {
                 let sep_node = RenderNode::new(
                     sep_id,
                     RenderNodeType::Line(LineNode::new(
-                        sep_x, sep_y1, sep_x, sep_y2,
+                        sep_x,
+                        sep_y1,
+                        sep_x,
+                        sep_y2,
                         LineStyle {
                             color: layout.separator_color,
                             width: line_width,
@@ -1159,7 +1437,12 @@ impl LayoutEngine {
                             ..Default::default()
                         },
                     )),
-                    BoundingBox::new(sep_x - line_width / 2.0, sep_y1, line_width, sep_y2 - sep_y1),
+                    BoundingBox::new(
+                        sep_x - line_width / 2.0,
+                        sep_y1,
+                        line_width,
+                        sep_y2 - sep_y1,
+                    ),
                 );
                 body_node.children.push(sep_node);
             }
@@ -1179,7 +1462,9 @@ impl LayoutEngine {
         let mut footnote_layout = layout.clone();
         if !page_content.footnotes.is_empty() {
             let fn_height = self.estimate_footnote_area_height(
-                &page_content.footnotes, paragraphs, footnote_shape,
+                &page_content.footnotes,
+                paragraphs,
+                footnote_shape,
             );
             footnote_layout.update_footnote_area(fn_height);
         }
@@ -1224,8 +1509,11 @@ impl LayoutEngine {
                 return;
             }
             let page_num_text = format_page_number(
-                page_content.page_number, pnp.format,
-                pnp.prefix_char, pnp.suffix_char, pnp.dash_char,
+                page_content.page_number,
+                pnp.format,
+                pnp.prefix_char,
+                pnp.suffix_char,
+                pnp.dash_char,
             );
             let target_area = match pnp.position {
                 1..=3 | 7 | 9 => &layout.header_area,
@@ -1241,17 +1529,21 @@ impl LayoutEngine {
                 3 | 6 => target_area.x + target_area.width - text_width,
                 2 | 5 => target_area.x + (target_area.width - text_width) / 2.0,
                 // 바깥쪽: 홀수쪽→오른쪽, 짝수쪽→왼쪽
-                7 | 8 => if is_odd_page {
-                    target_area.x + target_area.width - text_width
-                } else {
-                    target_area.x
-                },
+                7 | 8 => {
+                    if is_odd_page {
+                        target_area.x + target_area.width - text_width
+                    } else {
+                        target_area.x
+                    }
+                }
                 // 안쪽: 홀수쪽→왼쪽, 짝수쪽→오른쪽
-                9 | 10 => if is_odd_page {
-                    target_area.x
-                } else {
-                    target_area.x + target_area.width - text_width
-                },
+                9 | 10 => {
+                    if is_odd_page {
+                        target_area.x
+                    } else {
+                        target_area.x + target_area.width - text_width
+                    }
+                }
                 _ => target_area.x + (target_area.width - text_width) / 2.0,
             };
 
@@ -1331,13 +1623,17 @@ impl LayoutEngine {
         // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
         // pagination 측 process_multicolumn_break 의 동작과 동일 시멘틱.
         let design_spacing_of = |para_idx: usize| -> f64 {
-            paragraphs.get(para_idx)
-                .and_then(|p| p.controls.iter().find_map(|c| match c {
-                    Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 =>
-                        Some(hwpunit_to_px(cd.spacing as i32, self.dpi)),
-                    Control::ColumnDef(_) => Some(0.0),
-                    _ => None,
-                }))
+            paragraphs
+                .get(para_idx)
+                .and_then(|p| {
+                    p.controls.iter().find_map(|c| match c {
+                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 => {
+                            Some(hwpunit_to_px(cd.spacing as i32, self.dpi))
+                        }
+                        Control::ColumnDef(_) => Some(0.0),
+                        _ => None,
+                    })
+                })
                 .unwrap_or(0.0)
         };
         let mut prev_zone_design_px: f64 = 0.0;
@@ -1350,7 +1646,9 @@ impl LayoutEngine {
         // (한 단에만 할당되더라도 모든 단에 적용)
         let body_wide_reserved: Vec<(usize, f64)> = if page_content.column_contents.len() > 1 {
             self.calculate_body_wide_shape_reserved(
-                paragraphs, &page_content.column_contents, &layout.body_area,
+                paragraphs,
+                &page_content.column_contents,
+                &layout.body_area,
             )
         } else {
             Vec::new()
@@ -1369,8 +1667,13 @@ impl LayoutEngine {
             if is_new_zone {
                 // 직전 zone 의 단 구분선 emit (있다면).
                 if let Some(pz) = prev_zone_layout_for_sep.take() {
-                    self.emit_zone_column_separators(tree, body_node, &pz,
-                        prev_zone_sep_y_start, prev_zone_y_end);
+                    self.emit_zone_column_separators(
+                        tree,
+                        body_node,
+                        &pz,
+                        prev_zone_sep_y_start,
+                        prev_zone_y_end,
+                    );
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
                 let new_zone_first_para = col_content.items.first().map(|it| match it {
@@ -1380,7 +1683,9 @@ impl LayoutEngine {
                     | PageItem::PartialTable { para_index, .. }
                     | PageItem::Shape { para_index, .. } => *para_index,
                 });
-                let new_zone_design = new_zone_first_para.map(|pi| design_spacing_of(pi)).unwrap_or(0.0);
+                let new_zone_design = new_zone_first_para
+                    .map(|pi| design_spacing_of(pi))
+                    .unwrap_or(0.0);
                 // [Task #866 v2 Stage 2/4] pagination 측 solo_zone_pad 와 동일:
                 //   (1) 1단/간격=0 zone 진입·이탈, (2) [단나누기] 로 시작한 새 zone → +20px.
                 // [Task #874 Case 5 v4] solo_zero 인정 범위를 spacing ≤ 1mm (283 HU) 까지
@@ -1389,32 +1694,50 @@ impl LayoutEngine {
                 // 했고, 결과적으로 solo_zone_pad +16 이 누락되어 페이지 4 본문 (스타일 적용
                 // 등) 줄간격이 1.92 px 까지 좁아짐. typeset.rs::tac_band_extra 가 < 4.0 px 까지
                 // 인정하는 것과 동일 시멘틱.
-                let new_zone_is_solo_zero = new_zone_first_para.and_then(|pi| {
-                    paragraphs.get(pi).map(|p| p.controls.iter().any(|c| matches!(c,
-                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)))
-                }).unwrap_or(false);
+                let new_zone_is_solo_zero = new_zone_first_para
+                    .and_then(|pi| {
+                        paragraphs.get(pi).map(|p| {
+                            p.controls.iter().any(|c| {
+                                matches!(c,
+                        Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+                            })
+                        })
+                    })
+                    .unwrap_or(false);
                 // [Task #874 Case 5 v4] solo_zero leaving 인정 범위도 1mm (3.8 px) 까지 확장.
                 let prev_zone_is_solo_zero = prev_zone_design_px < 4.0 && prev_zone_was_solo;
-                let column_break_new_band = new_zone_first_para.and_then(|pi| paragraphs.get(pi))
+                let column_break_new_band = new_zone_first_para
+                    .and_then(|pi| paragraphs.get(pi))
                     .map(|p| p.column_type == crate::model::paragraph::ColumnBreakType::Column)
                     .unwrap_or(false);
                 let solo_zone_pad = if new_zone_is_solo_zero
                     || (prev_zone_is_solo_zero && !prev_zone_was_header_band)
-                    || column_break_new_band {
+                    || column_break_new_band
+                {
                     hwpunit_to_px(1200, self.dpi)
-                } else { 0.0 };
+                } else {
+                    0.0
+                };
                 if col_content.zone_y_offset > 0.0 {
                     current_zone_start_y = prev_zone_y_end
-                        + prev_zone_design_px / 2.0 + new_zone_design / 2.0 + solo_zone_pad;
+                        + prev_zone_design_px / 2.0
+                        + new_zone_design / 2.0
+                        + solo_zone_pad;
                 } else {
                     current_zone_start_y = 0.0;
                 }
                 prev_zone_design_px = new_zone_design;
-                prev_zone_was_solo = new_zone_is_solo_zero || (new_zone_design > 0.5
-                    && new_zone_first_para.and_then(|pi| paragraphs.get(pi))
-                        .map(|p| p.controls.iter().any(|c| matches!(c,
-                            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1)))
-                        .unwrap_or(false));
+                prev_zone_was_solo = new_zone_is_solo_zero
+                    || (new_zone_design > 0.5
+                        && new_zone_first_para
+                            .and_then(|pi| paragraphs.get(pi))
+                            .map(|p| {
+                                p.controls.iter().any(|c| {
+                                    matches!(c,
+                            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1)
+                                })
+                            })
+                            .unwrap_or(false));
                 last_zone_y_offset = col_content.zone_y_offset;
                 // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
                 if zone_layout.column_areas.len() >= 2 && zone_layout.separator_type > 0 {
@@ -1430,18 +1753,26 @@ impl LayoutEngine {
                     x: col_area_base.x,
                     y: current_zone_start_y,
                     width: col_area_base.width,
-                    height: (col_area_base.y + col_area_base.height - current_zone_start_y).max(0.0),
+                    height: (col_area_base.y + col_area_base.height - current_zone_start_y)
+                        .max(0.0),
                 }
             } else {
                 *col_area_base
             };
 
             let (col_node, y_offset) = self.build_single_column(
-                tree, paper_images,
-                col_content, page_content,
-                paragraphs, composed, styles,
-                bin_data_content, measured_tables,
-                layout, zone_layout, &col_area,
+                tree,
+                paper_images,
+                col_content,
+                page_content,
+                paragraphs,
+                composed,
+                styles,
+                bin_data_content,
+                measured_tables,
+                layout,
+                zone_layout,
+                &col_area,
                 outline_numbering_id,
                 wrap_around_paras,
                 &body_wide_reserved,
@@ -1462,13 +1793,12 @@ impl LayoutEngine {
             //   본문 paragraph 줄간격이 좁아지는 사용자 피드백).
             // - last paragraph 가 TAC 헤더 띠/ `<...>` solo 가 아닐 것 — pi=81/pi=127
             //   형식의 ls=480/600 HU 는 한컴 의도 간격이므로 보존.
-            let last_para_idx = col_content.items.last()
-                .and_then(|it| match it {
-                    PageItem::FullParagraph { para_index } |
-                    PageItem::PartialParagraph { para_index, .. } |
-                    PageItem::Table { para_index, .. } => Some(*para_index),
-                    _ => None,
-                });
+            let last_para_idx = col_content.items.last().and_then(|it| match it {
+                PageItem::FullParagraph { para_index }
+                | PageItem::PartialParagraph { para_index, .. }
+                | PageItem::Table { para_index, .. } => Some(*para_index),
+                _ => None,
+            });
             let last_para = last_para_idx.and_then(|pi| paragraphs.get(pi));
             let last_is_tac_band = last_para
                 .map(|p| p.controls.iter().any(|c| matches!(c,
@@ -1476,13 +1806,15 @@ impl LayoutEngine {
                         && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))))
                 .unwrap_or(false);
             let last_is_solo_text = last_para
-                .map(|p| p.controls.iter().any(|c| matches!(c,
-                    Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0))
-                    && p.text.trim_start().starts_with('<'))
+                .map(|p| {
+                    p.controls.iter().any(|c| {
+                        matches!(c,
+                    Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0)
+                    }) && p.text.trim_start().starts_with('<')
+                })
                 .unwrap_or(false);
-            let apply_trailing_ls_subtract = prev_zone_was_solo
-                && !last_is_tac_band
-                && !last_is_solo_text;
+            let apply_trailing_ls_subtract =
+                prev_zone_was_solo && !last_is_tac_band && !last_is_solo_text;
             let last_para_trailing_ls = if apply_trailing_ls_subtract {
                 last_para
                     .and_then(|p| p.line_segs.last())
@@ -1515,26 +1847,43 @@ impl LayoutEngine {
                 _ => None,
             }) {
                 if let Some(p) = paragraphs.get(last_para_idx) {
-                    let cd_gap_zero = if p.controls.iter().any(|c| matches!(c, Control::ColumnDef(_))) {
+                    let cd_gap_zero = if p
+                        .controls
+                        .iter()
+                        .any(|c| matches!(c, Control::ColumnDef(_)))
+                    {
                         p.controls.iter().any(|c| matches!(c,
                             Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0))
                     } else {
-                        (0..last_para_idx).rev()
-                            .find_map(|i| paragraphs.get(i)
-                                .and_then(|pp| pp.controls.iter().find_map(|c| match c {
-                                    Control::ColumnDef(cd) => Some(
-                                        cd.column_count.max(1) <= 1 && cd.spacing <= 283),
-                                    _ => None,
-                                })))
+                        (0..last_para_idx)
+                            .rev()
+                            .find_map(|i| {
+                                paragraphs.get(i).and_then(|pp| {
+                                    pp.controls.iter().find_map(|c| match c {
+                                        Control::ColumnDef(cd) => {
+                                            Some(cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+                                        }
+                                        _ => None,
+                                    })
+                                })
+                            })
                             .unwrap_or(false)
                     };
                     if cd_gap_zero {
                         if let Some(band) = p.controls.iter().find_map(|c| match c {
-                            Control::Table(t) if t.common.treat_as_char
-                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom) =>
-                                Some(hwpunit_to_px(t.common.height as i32, self.dpi)
-                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)),
+                            Control::Table(t)
+                                if t.common.treat_as_char
+                                    && matches!(
+                                        t.common.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    ) =>
+                            {
+                                Some(
+                                    hwpunit_to_px(t.common.height as i32, self.dpi)
+                                        + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                        + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
+                                )
+                            }
                             _ => None,
                         }) {
                             // Table-only zone (페이지 6 pi=210 형식): 전체 band 가산.
@@ -1557,8 +1906,13 @@ impl LayoutEngine {
 
         // 마지막 zone 의 단 구분선 emit.
         if let Some(pz) = prev_zone_layout_for_sep.take() {
-            self.emit_zone_column_separators(tree, body_node, &pz,
-                prev_zone_sep_y_start, prev_zone_y_end);
+            self.emit_zone_column_separators(
+                tree,
+                body_node,
+                &pz,
+                prev_zone_sep_y_start,
+                prev_zone_y_end,
+            );
         }
     }
 
@@ -1572,7 +1926,8 @@ impl LayoutEngine {
         y_start: f64,
         y_end: f64,
     ) {
-        if zone_layout.column_areas.len() < 2 || zone_layout.separator_type == 0 || y_end <= y_start {
+        if zone_layout.column_areas.len() < 2 || zone_layout.separator_type == 0 || y_end <= y_start
+        {
             return;
         }
         let line_width = border_width_to_px(zone_layout.separator_width).max(0.5);
@@ -1593,7 +1948,10 @@ impl LayoutEngine {
             let sep_node = RenderNode::new(
                 sep_id,
                 RenderNodeType::Line(LineNode::new(
-                    sep_x, y_start, sep_x, y_end,
+                    sep_x,
+                    y_start,
+                    sep_x,
+                    y_end,
                     LineStyle {
                         color: zone_layout.separator_color,
                         width: line_width,
@@ -1601,7 +1959,12 @@ impl LayoutEngine {
                         ..Default::default()
                     },
                 )),
-                BoundingBox::new(sep_x - line_width / 2.0, y_start, line_width, y_end - y_start),
+                BoundingBox::new(
+                    sep_x - line_width / 2.0,
+                    y_start,
+                    line_width,
+                    y_end - y_start,
+                ),
             );
             body_node.children.push(sep_node);
         }
@@ -1638,14 +2001,18 @@ impl LayoutEngine {
         self.current_paper_width.set(layout.page_width);
         // 현재 페이지 본문 영역 설정 (표 HorzRelTo::Page / VertRelTo::Page 계산용 — Task #347)
         let ba = &layout.body_area;
-        self.current_body_area.set((ba.x, ba.y, ba.width, ba.height));
+        self.current_body_area
+            .set((ba.x, ba.y, ba.width, ba.height));
 
         // 문단 테두리 범위 수집 초기화
         self.para_border_ranges.borrow_mut().clear();
 
         // TopAndBottom 글상자/표/이미지의 앵커 문단별 예약 높이 목록
         let mut shape_reserved = self.calculate_shape_reserved_heights(
-            paragraphs, &col_content.items, col_area, &layout.body_area,
+            paragraphs,
+            &col_content.items,
+            col_area,
+            &layout.body_area,
         );
         // body_area 전체에 걸치는 개체의 예약 높이 병합 (현재 단에도 반영)
         for &(pi, bottom_y) in body_wide_reserved {
@@ -1677,9 +2044,8 @@ impl LayoutEngine {
         // 으로 vpos=0 이 아니라 vpos=base 도 아닌 일반적으로 어긋난 값).
         let col_anchor_y = y_offset;
 
-
-
-        let mut para_start_y: std::collections::HashMap<usize, f64> = std::collections::HashMap::new();
+        let mut para_start_y: std::collections::HashMap<usize, f64> =
+            std::collections::HashMap::new();
 
         let multi_col_width = if zone_layout.column_areas.len() > 1 {
             let widths: Vec<f64> = zone_layout.column_areas.iter().map(|a| a.width).collect();
@@ -1708,21 +2074,22 @@ impl LayoutEngine {
         // 페이지 첫 항목의 vpos를 기준점으로 삼아 모든 페이지에서 vpos 보정 적용
         let mut vpos_page_base: Option<i32> = col_content.items.first().and_then(|item| {
             match item {
-                PageItem::FullParagraph { para_index } => {
-                    paragraphs.get(*para_index)
-                        .and_then(|p| p.line_segs.first())
-                        .map(|seg| seg.vertical_pos)
-                }
-                PageItem::PartialParagraph { para_index, start_line, .. } => {
-                    paragraphs.get(*para_index)
-                        .and_then(|p| p.line_segs.get(*start_line))
-                        .map(|seg| seg.vertical_pos)
-                }
-                PageItem::Table { para_index, .. } => {
-                    paragraphs.get(*para_index)
-                        .and_then(|p| p.line_segs.first())
-                        .map(|seg| seg.vertical_pos)
-                }
+                PageItem::FullParagraph { para_index } => paragraphs
+                    .get(*para_index)
+                    .and_then(|p| p.line_segs.first())
+                    .map(|seg| seg.vertical_pos),
+                PageItem::PartialParagraph {
+                    para_index,
+                    start_line,
+                    ..
+                } => paragraphs
+                    .get(*para_index)
+                    .and_then(|p| p.line_segs.get(*start_line))
+                    .map(|seg| seg.vertical_pos),
+                PageItem::Table { para_index, .. } => paragraphs
+                    .get(*para_index)
+                    .and_then(|p| p.line_segs.first())
+                    .map(|seg| seg.vertical_pos),
                 // PartialTable/Shape: 지연 보정 사용
                 _ => None,
             }
@@ -1743,8 +2110,10 @@ impl LayoutEngine {
             // 그림 위에 렌더된 경우 후속 paragraph 의 y_offset 을 picture bottom 으로 jump
             // + vpos_lazy_base 를 anchor first_vpos 로 set → file vpos 누적이 visual y 와 정합.
             // Shape/Table item 은 skip (vpos_lazy_base reset 회피).
-            let item_is_paragraph = matches!(item,
-                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { .. });
+            let item_is_paragraph = matches!(
+                item,
+                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { .. }
+            );
             if item_is_paragraph {
                 if let Some((bottom_y, anchor_first_vpos)) = pending_topbottom_post_jump.take() {
                     // y_offset 이 bottom_y 보다 작으면 jump (예: iris Shape pre-jump 미적용 케이스)
@@ -1764,22 +2133,37 @@ impl LayoutEngine {
                     // 영역 (col_area.y ~ picture_top_y) 에 fit 가능하면 pre-jump skip.
                     use crate::model::shape::TextWrap;
                     let anchor_para = &paragraphs[anchor_pi];
-                    let picture_top_y_opt: Option<f64> = anchor_para.controls.iter().find_map(|c| {
-                        let common = match c {
-                            Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
-                            Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
-                            Control::Table(t) if !t.common.treat_as_char => Some(&t.common),
-                            _ => None,
-                        }?;
-                        if !matches!(common.text_wrap, TextWrap::TopAndBottom) { return None; }
-                        let (_bot, top) = self.calc_shape_bottom_y(common, col_area, &layout.body_area);
-                        Some(top)
-                    });
-                    let text_height = composed.get(anchor_pi).map(|comp| {
-                        comp.lines.iter().map(|line| {
-                            crate::renderer::hwpunit_to_px(line.line_height + line.line_spacing, self.dpi)
-                        }).sum::<f64>()
-                    }).unwrap_or(f64::MAX);
+                    let picture_top_y_opt: Option<f64> =
+                        anchor_para.controls.iter().find_map(|c| {
+                            let common = match c {
+                                Control::Picture(pic) if !pic.common.treat_as_char => {
+                                    Some(&pic.common)
+                                }
+                                Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
+                                Control::Table(t) if !t.common.treat_as_char => Some(&t.common),
+                                _ => None,
+                            }?;
+                            if !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+                                return None;
+                            }
+                            let (_bot, top) =
+                                self.calc_shape_bottom_y(common, col_area, &layout.body_area);
+                            Some(top)
+                        });
+                    let text_height = composed
+                        .get(anchor_pi)
+                        .map(|comp| {
+                            comp.lines
+                                .iter()
+                                .map(|line| {
+                                    crate::renderer::hwpunit_to_px(
+                                        line.line_height + line.line_spacing,
+                                        self.dpi,
+                                    )
+                                })
+                                .sum::<f64>()
+                        })
+                        .unwrap_or(f64::MAX);
                     let fits_above = picture_top_y_opt
                         .map(|top_y| text_height + 4.0 <= (top_y - y_offset))
                         .unwrap_or(false);
@@ -1787,27 +2171,35 @@ impl LayoutEngine {
                         // Stage 11: 후속 paragraph item 의 first vpos 를 peek 하여 base 직접 계산.
                         // base = next_para_vpos - (bottom_y - col_area.y) * scale^-1
                         // → end_y for next para = bottom_y (iris 직하 정합).
-                        let next_para_vpos: Option<i32> = col_content.items.iter()
+                        let next_para_vpos: Option<i32> = col_content
+                            .items
+                            .iter()
                             .skip_while(|it| match it {
                                 PageItem::FullParagraph { para_index } => *para_index != anchor_pi,
-                                PageItem::PartialParagraph { para_index, .. } => *para_index != anchor_pi,
+                                PageItem::PartialParagraph { para_index, .. } => {
+                                    *para_index != anchor_pi
+                                }
                                 _ => true,
                             })
-                            .skip(1)  // anchor item 자체 skip
+                            .skip(1) // anchor item 자체 skip
                             .find_map(|it| match it {
                                 PageItem::FullParagraph { para_index }
-                                | PageItem::PartialParagraph { para_index, .. } => {
-                                    paragraphs.get(*para_index)
-                                        .and_then(|p| p.line_segs.first())
-                                        .map(|s| s.vertical_pos)
-                                }
+                                | PageItem::PartialParagraph { para_index, .. } => paragraphs
+                                    .get(*para_index)
+                                    .and_then(|p| p.line_segs.first())
+                                    .map(|s| s.vertical_pos),
                                 _ => None,
                             });
                         let base_for_post = if let Some(npv) = next_para_vpos {
-                            let visual_diff_hu = ((bottom_y - col_area.y) / self.dpi * 7200.0).round() as i32;
+                            let visual_diff_hu =
+                                ((bottom_y - col_area.y) / self.dpi * 7200.0).round() as i32;
                             npv - visual_diff_hu
                         } else {
-                            anchor_para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(0)
+                            anchor_para
+                                .line_segs
+                                .first()
+                                .map(|s| s.vertical_pos)
+                                .unwrap_or(0)
                         };
                         pending_topbottom_post_jump = Some((bottom_y, base_for_post));
                     } else {
@@ -1818,183 +2210,214 @@ impl LayoutEngine {
             }
 
             if !shape_jumped && !prev_tac_seg_applied {
-            if let Some(prev_pi) = prev_layout_para {
-                if item_para != prev_pi {
-                    // 글앞으로/글뒤로/위아래 Shape·Picture가 있는 문단: vpos에 개체 높이가 포함되어 과대 → bypass
-                    // - InFrontOfText/BehindText: 개체 vpos가 텍스트 라인 vpos와 별도 누적 → 합산 시 과대
-                    // - TopAndBottom + vert=Para: 한컴이 후속 문단 vpos에 개체 높이를 더해 기록하므로
-                    //   sequential y_offset이 이미 개체 바닥까지 진행된 상태에서 vpos 보정 lazy_base 산출
-                    //   시 prev_pi의 텍스트 vpos_end만 쓰면 base가 개체 높이만큼 낮게 산출되어
-                    //   다음 문단/표가 개체 높이만큼 추가 점프 (Task #409: 21페이지 차트→2x1 표 521px overflow)
-                    let prev_has_overlay_shape = paragraphs.get(prev_pi).map(|p| {
-                        use crate::model::shape::{TextWrap, VertRelTo};
-                        p.controls.iter().any(|c| match c {
-                            Control::Shape(s) => {
-                                let cm = s.common();
-                                // [Task #539] tac=true Shape 는 paragraph 의 LINE_SEG vpos 에
-                                // 통합되어 누적되므로, overlay 가 vpos 에 별도 영향을 주지 않는다.
-                                // 따라서 prev_has_overlay_shape 가드 제외 — 그렇지 않으면
-                                // tac=true InFrontOfText/BehindText 글박스 호스트 paragraph
-                                // 직후의 vpos correction 이 skipped 되어 trailing-ls drift
-                                // 716 HU 가 잔존 (#539: 21_언어_기출 7p pi=146, 9p pi=182).
-                                if cm.treat_as_char {
-                                    return false;
-                                }
-                                matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
-                                    || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
-                                        && matches!(cm.vert_rel_to, VertRelTo::Para)
-                                        && !cm.treat_as_char)
-                            }
-                            Control::Picture(pic) => {
-                                let cm = &pic.common;
-                                if cm.treat_as_char { return false; }
-                                matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
-                                    || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
-                                        && matches!(cm.vert_rel_to, VertRelTo::Para))
-                            }
-                            _ => false,
-                        })
-                    }).unwrap_or(false);
-                    if !prev_has_overlay_shape {
-                    if let Some(prev_para) = paragraphs.get(prev_pi) {
-                        // Task #332 Stage 5: vpos correction trigger 조건 완화 —
-                        // 기존엔 segment_width 가 col_width 와 ±3000 HWPUNIT 이내일 때만 적용해
-                        // 짧은 단락/indent 가 있는 경우 trigger 누락 → drift 누적. 조건을 완화해
-                        // 마지막 segment 를 사용하되 width 검증 자체는 가드 조건으로 약화.
-                        let prev_seg = prev_para.line_segs.iter().rev().find(|ls| ls.segment_width > 0)
-                            .or_else(|| prev_para.line_segs.last());
-                        if let Some(seg) = prev_seg {
-                            if !(seg.vertical_pos == 0 && prev_pi > 0) {
-                                // [Task #412] vpos_end 결정:
-                                // - page_path: 현재 paragraph 의 first seg vpos 를 직접 사용 (HWP 가 spacing_after 를
-                                //   다음 paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확).
-                                //   현재 항목의 vpos 를 신뢰하지 못하는 경우(0 reset 등) prev 기반 fallback.
-                                // - lazy_path: 기존 prev 기반 vpos_end 유지 (sequential 와의 역산 다리).
-                                let prev_vpos_end = seg.vertical_pos + seg.line_height + seg.line_spacing;
-                                let curr_first_vpos = paragraphs.get(item_para)
-                                    .and_then(|p| p.line_segs.first())
-                                    .map(|ls| ls.vertical_pos);
-                                // [Task #412] page_base / lazy_base 경로 분리:
-                                // - page_base: 첫 PageItem 이 명확한 vpos 를 가짐(FullParagraph/PartialParagraph/Table).
-                                //   sequential 배치는 col_area.y + vpos*scale (절대 vpos 좌표) 으로 동작하므로
-                                //   보정 공식도 base 차감 없이 col_area.y + vpos*scale 사용해야 함.
-                                //   기존 base 차감은 첫 항목 vpos 만큼 보정값을 위로 어긋나게 하여
-                                //   다단 우측 단(base 큼) 에서 보정이 발동하지 않는 문제 발생.
-                                // - lazy_base: 첫 PageItem 이 신뢰 불가(Shape/PartialTable). sequential y_offset
-                                //   으로부터 lazy_base 역산하여 단단을 잇는 다리 역할. 기존 base 차감 유지.
-                                let (base, is_page_path) = if let Some(b) = vpos_page_base {
-                                    (b, true)
-                                } else if let Some(b) = vpos_lazy_base {
-                                    (b, false)
-                                } else {
-                                    // 지연 보정: 첫 보정 시점에서 기준점 산출
-                                    // sequential y_offset에서 역산하여 기준 vpos 결정
-                                    //
-                                    // [Task #537] trailing-ls 보정:
-                                    // paragraph_layout 의 마지막 줄은 trailing line_spacing 을
-                                    // 제외하여 y 를 advance 한다 (Task #479, lh_sum + (n-1)*ls 정책).
-                                    // 그 결과 sequential y_offset 은 IR vpos 누적보다
-                                    // prev_pi 의 last seg ls 만큼 부족해진다.
-                                    // 이 부족분을 y_delta_hu 에 더해야 lazy_base 가
-                                    // IR 절대 좌표와 일치한다 (drift 가 base 에 동결되는 것을 방지).
-                                    let trailing_ls_hu = paragraphs.get(prev_pi)
-                                        .and_then(|p| p.line_segs.last())
-                                        .map(|s| s.line_spacing.max(0))
-                                        .unwrap_or(0);
-                                    let y_delta_hu = ((y_offset - col_area.y) / self.dpi * 7200.0).round() as i32
-                                        + trailing_ls_hu;
-                                    let lazy_base = prev_vpos_end - y_delta_hu;
-                                    // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
-                                    // vpos 누적보다 크게 밀린 것 → 역산 무효
-                                    if lazy_base < 0 {
-                                        // 보정 건너뛰기: base를 vpos_end로 설정하여
-                                        // end_y = col_area.y + 0 → 검증 실패 → 보정 미적용
-                                        (prev_vpos_end, false)
-                                    } else {
-                                        vpos_lazy_base = Some(lazy_base);
-                                        (lazy_base, false)
+                if let Some(prev_pi) = prev_layout_para {
+                    if item_para != prev_pi {
+                        // 글앞으로/글뒤로/위아래 Shape·Picture가 있는 문단: vpos에 개체 높이가 포함되어 과대 → bypass
+                        // - InFrontOfText/BehindText: 개체 vpos가 텍스트 라인 vpos와 별도 누적 → 합산 시 과대
+                        // - TopAndBottom + vert=Para: 한컴이 후속 문단 vpos에 개체 높이를 더해 기록하므로
+                        //   sequential y_offset이 이미 개체 바닥까지 진행된 상태에서 vpos 보정 lazy_base 산출
+                        //   시 prev_pi의 텍스트 vpos_end만 쓰면 base가 개체 높이만큼 낮게 산출되어
+                        //   다음 문단/표가 개체 높이만큼 추가 점프 (Task #409: 21페이지 차트→2x1 표 521px overflow)
+                        let prev_has_overlay_shape = paragraphs
+                            .get(prev_pi)
+                            .map(|p| {
+                                use crate::model::shape::{TextWrap, VertRelTo};
+                                p.controls.iter().any(|c| match c {
+                                    Control::Shape(s) => {
+                                        let cm = s.common();
+                                        // [Task #539] tac=true Shape 는 paragraph 의 LINE_SEG vpos 에
+                                        // 통합되어 누적되므로, overlay 가 vpos 에 별도 영향을 주지 않는다.
+                                        // 따라서 prev_has_overlay_shape 가드 제외 — 그렇지 않으면
+                                        // tac=true InFrontOfText/BehindText 글박스 호스트 paragraph
+                                        // 직후의 vpos correction 이 skipped 되어 trailing-ls drift
+                                        // 716 HU 가 잔존 (#539: 21_언어_기출 7p pi=146, 9p pi=182).
+                                        if cm.treat_as_char {
+                                            return false;
+                                        }
+                                        matches!(
+                                            cm.text_wrap,
+                                            TextWrap::InFrontOfText | TextWrap::BehindText
+                                        ) || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                                            && matches!(cm.vert_rel_to, VertRelTo::Para)
+                                            && !cm.treat_as_char)
                                     }
-                                };
-                                // [Task #412] vpos_end 결정 (page/lazy 공통):
-                                // 현재 paragraph 의 first vpos 우선 사용. HWP 가 spacing_after 를 다음
-                                // paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확.
-                                // vpos reset(0) 이거나 prev 보다 작아진 경우는 prev 기반 fallback.
-                                let vpos_end = match curr_first_vpos {
-                                    Some(v) if v > seg.vertical_pos => v,
-                                    _ => prev_vpos_end,
-                                };
-                                // [Task #412] page_path: col_anchor_y (body_wide_reserved 푸시 적용 후) 가
-                                // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
-                                // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어
-                                //   col_area.y 기준 (vpos_end - base) 차감 공식이 일관.
-                                let raw_end_y = if is_page_path {
-                                    col_anchor_y + hwpunit_to_px(vpos_end - base, self.dpi)
-                                } else {
-                                    col_area.y + hwpunit_to_px(vpos_end - base, self.dpi)
-                                };
-                                // [Task #643] sb_N 사전 차감:
-                                // vpos_end 는 line 0 의 상단 (HWP 가 sb 를 vpos 에 인코딩) 을 의미.
-                                // layout_paragraph 는 시작 시 sb_N 을 다시 더하므로,
-                                // sb_N 만큼 미리 빼서 net 결과가 line 0 == vpos_end 가 되도록.
-                                let curr_sb = paragraphs.get(item_para)
-                                    .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
-                                    .map(|ps| ps.spacing_before)
-                                    .unwrap_or(0.0);
-                                let end_y = (raw_end_y - curr_sb).max(col_area.y);
-                                // 자가 검증: 보정값이 컬럼 영역 내에 있고
-                                // 현재 y_offset 보다 크게 뒤로 가지 않아야 유효.
-                                //
-                                // [Task #643] 백워드 허용폭 확장 1.0 → 8.0px.
-                                // Layout 은 spacing_before(sb_N) 을 pi_N 시작 시 추가하지만,
-                                // HWP 는 sb_(N+1) 을 vpos delta 에 인코딩한다. sb_N ≠ sb_(N+1)
-                                // (특히 빈 문단 sb=0 인접) 에서 드리프트가 누적되어 본문 끝까지
-                                // 밀려 LAYOUT_OVERFLOW 발생. 문단 사이 trailing line_spacing 만큼은
-                                // 안전하게 백워드 보정 가능 (pi_N 마지막 줄과 pi_(N+1) 첫 줄 사이의
-                                // 공백 영역 내에서만 이동).
-                                const MAX_BACKWARD_PX: f64 = 8.0;
-                                // [Task #874 #8] 호스트 paragraph 가 TopAndBottom+vert=Para Table 을
-                                // anchor 하는 경우, HWP 가 stale/inflated vpos 를 인코딩하여
-                                // forward jump 가 비정상적으로 클 수 있다 (aift.hwp p44 pi=579:
-                                // prev_vpos_end=5920 → curr_vpos=33421, 367 px forward jump).
-                                // 한컴 PDF 는 이런 paragraph 를 자연 flow 위치에 배치하므로,
-                                // 큰 forward jump 가 발견되면 correction 을 skip 한다.
-                                // 임계값 100 px: 일반 spacing_before/after 의 4 line 정도.
-                                use crate::model::shape::{TextWrap as TW2, VertRelTo as VR2};
-                                let curr_has_topbottom_para_table = paragraphs.get(item_para).map(|p| {
-                                    p.controls.iter().any(|c| matches!(c, Control::Table(t)
+                                    Control::Picture(pic) => {
+                                        let cm = &pic.common;
+                                        if cm.treat_as_char {
+                                            return false;
+                                        }
+                                        matches!(
+                                            cm.text_wrap,
+                                            TextWrap::InFrontOfText | TextWrap::BehindText
+                                        ) || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                                            && matches!(cm.vert_rel_to, VertRelTo::Para))
+                                    }
+                                    _ => false,
+                                })
+                            })
+                            .unwrap_or(false);
+                        if !prev_has_overlay_shape {
+                            if let Some(prev_para) = paragraphs.get(prev_pi) {
+                                // Task #332 Stage 5: vpos correction trigger 조건 완화 —
+                                // 기존엔 segment_width 가 col_width 와 ±3000 HWPUNIT 이내일 때만 적용해
+                                // 짧은 단락/indent 가 있는 경우 trigger 누락 → drift 누적. 조건을 완화해
+                                // 마지막 segment 를 사용하되 width 검증 자체는 가드 조건으로 약화.
+                                let prev_seg = prev_para
+                                    .line_segs
+                                    .iter()
+                                    .rev()
+                                    .find(|ls| ls.segment_width > 0)
+                                    .or_else(|| prev_para.line_segs.last());
+                                if let Some(seg) = prev_seg {
+                                    if !(seg.vertical_pos == 0 && prev_pi > 0) {
+                                        // [Task #412] vpos_end 결정:
+                                        // - page_path: 현재 paragraph 의 first seg vpos 를 직접 사용 (HWP 가 spacing_after 를
+                                        //   다음 paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확).
+                                        //   현재 항목의 vpos 를 신뢰하지 못하는 경우(0 reset 등) prev 기반 fallback.
+                                        // - lazy_path: 기존 prev 기반 vpos_end 유지 (sequential 와의 역산 다리).
+                                        let prev_vpos_end =
+                                            seg.vertical_pos + seg.line_height + seg.line_spacing;
+                                        let curr_first_vpos = paragraphs
+                                            .get(item_para)
+                                            .and_then(|p| p.line_segs.first())
+                                            .map(|ls| ls.vertical_pos);
+                                        // [Task #412] page_base / lazy_base 경로 분리:
+                                        // - page_base: 첫 PageItem 이 명확한 vpos 를 가짐(FullParagraph/PartialParagraph/Table).
+                                        //   sequential 배치는 col_area.y + vpos*scale (절대 vpos 좌표) 으로 동작하므로
+                                        //   보정 공식도 base 차감 없이 col_area.y + vpos*scale 사용해야 함.
+                                        //   기존 base 차감은 첫 항목 vpos 만큼 보정값을 위로 어긋나게 하여
+                                        //   다단 우측 단(base 큼) 에서 보정이 발동하지 않는 문제 발생.
+                                        // - lazy_base: 첫 PageItem 이 신뢰 불가(Shape/PartialTable). sequential y_offset
+                                        //   으로부터 lazy_base 역산하여 단단을 잇는 다리 역할. 기존 base 차감 유지.
+                                        let (base, is_page_path) = if let Some(b) = vpos_page_base {
+                                            (b, true)
+                                        } else if let Some(b) = vpos_lazy_base {
+                                            (b, false)
+                                        } else {
+                                            // 지연 보정: 첫 보정 시점에서 기준점 산출
+                                            // sequential y_offset에서 역산하여 기준 vpos 결정
+                                            //
+                                            // [Task #537] trailing-ls 보정:
+                                            // paragraph_layout 의 마지막 줄은 trailing line_spacing 을
+                                            // 제외하여 y 를 advance 한다 (Task #479, lh_sum + (n-1)*ls 정책).
+                                            // 그 결과 sequential y_offset 은 IR vpos 누적보다
+                                            // prev_pi 의 last seg ls 만큼 부족해진다.
+                                            // 이 부족분을 y_delta_hu 에 더해야 lazy_base 가
+                                            // IR 절대 좌표와 일치한다 (drift 가 base 에 동결되는 것을 방지).
+                                            let trailing_ls_hu = paragraphs
+                                                .get(prev_pi)
+                                                .and_then(|p| p.line_segs.last())
+                                                .map(|s| s.line_spacing.max(0))
+                                                .unwrap_or(0);
+                                            let y_delta_hu = ((y_offset - col_area.y) / self.dpi
+                                                * 7200.0)
+                                                .round()
+                                                as i32
+                                                + trailing_ls_hu;
+                                            let lazy_base = prev_vpos_end - y_delta_hu;
+                                            // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
+                                            // vpos 누적보다 크게 밀린 것 → 역산 무효
+                                            if lazy_base < 0 {
+                                                // 보정 건너뛰기: base를 vpos_end로 설정하여
+                                                // end_y = col_area.y + 0 → 검증 실패 → 보정 미적용
+                                                (prev_vpos_end, false)
+                                            } else {
+                                                vpos_lazy_base = Some(lazy_base);
+                                                (lazy_base, false)
+                                            }
+                                        };
+                                        // [Task #412] vpos_end 결정 (page/lazy 공통):
+                                        // 현재 paragraph 의 first vpos 우선 사용. HWP 가 spacing_after 를 다음
+                                        // paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확.
+                                        // vpos reset(0) 이거나 prev 보다 작아진 경우는 prev 기반 fallback.
+                                        let vpos_end = match curr_first_vpos {
+                                            Some(v) if v > seg.vertical_pos => v,
+                                            _ => prev_vpos_end,
+                                        };
+                                        // [Task #412] page_path: col_anchor_y (body_wide_reserved 푸시 적용 후) 가
+                                        // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
+                                        // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어
+                                        //   col_area.y 기준 (vpos_end - base) 차감 공식이 일관.
+                                        let raw_end_y = if is_page_path {
+                                            col_anchor_y + hwpunit_to_px(vpos_end - base, self.dpi)
+                                        } else {
+                                            col_area.y + hwpunit_to_px(vpos_end - base, self.dpi)
+                                        };
+                                        // [Task #643] sb_N 사전 차감:
+                                        // vpos_end 는 line 0 의 상단 (HWP 가 sb 를 vpos 에 인코딩) 을 의미.
+                                        // layout_paragraph 는 시작 시 sb_N 을 다시 더하므로,
+                                        // sb_N 만큼 미리 빼서 net 결과가 line 0 == vpos_end 가 되도록.
+                                        let curr_sb = paragraphs
+                                            .get(item_para)
+                                            .and_then(|p| {
+                                                styles.para_styles.get(p.para_shape_id as usize)
+                                            })
+                                            .map(|ps| ps.spacing_before)
+                                            .unwrap_or(0.0);
+                                        let end_y = (raw_end_y - curr_sb).max(col_area.y);
+                                        // 자가 검증: 보정값이 컬럼 영역 내에 있고
+                                        // 현재 y_offset 보다 크게 뒤로 가지 않아야 유효.
+                                        //
+                                        // [Task #643] 백워드 허용폭 확장 1.0 → 8.0px.
+                                        // Layout 은 spacing_before(sb_N) 을 pi_N 시작 시 추가하지만,
+                                        // HWP 는 sb_(N+1) 을 vpos delta 에 인코딩한다. sb_N ≠ sb_(N+1)
+                                        // (특히 빈 문단 sb=0 인접) 에서 드리프트가 누적되어 본문 끝까지
+                                        // 밀려 LAYOUT_OVERFLOW 발생. 문단 사이 trailing line_spacing 만큼은
+                                        // 안전하게 백워드 보정 가능 (pi_N 마지막 줄과 pi_(N+1) 첫 줄 사이의
+                                        // 공백 영역 내에서만 이동).
+                                        const MAX_BACKWARD_PX: f64 = 8.0;
+                                        // [Task #874 #8] 호스트 paragraph 가 TopAndBottom+vert=Para Table 을
+                                        // anchor 하는 경우, HWP 가 stale/inflated vpos 를 인코딩하여
+                                        // forward jump 가 비정상적으로 클 수 있다 (aift.hwp p44 pi=579:
+                                        // prev_vpos_end=5920 → curr_vpos=33421, 367 px forward jump).
+                                        // 한컴 PDF 는 이런 paragraph 를 자연 flow 위치에 배치하므로,
+                                        // 큰 forward jump 가 발견되면 correction 을 skip 한다.
+                                        // 임계값 100 px: 일반 spacing_before/after 의 4 line 정도.
+                                        use crate::model::shape::{
+                                            TextWrap as TW2, VertRelTo as VR2,
+                                        };
+                                        let curr_has_topbottom_para_table = paragraphs
+                                            .get(item_para)
+                                            .map(|p| {
+                                                p.controls.iter().any(|c| {
+                                                    matches!(c, Control::Table(t)
                                         if !t.common.treat_as_char
                                         && matches!(t.common.text_wrap, TW2::TopAndBottom)
-                                        && matches!(t.common.vert_rel_to, VR2::Para)))
-                                }).unwrap_or(false);
-                                const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
-                                let stale_table_host_vpos = curr_has_topbottom_para_table
-                                    && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
-                                let applied = end_y >= col_area.y && end_y <= col_area.y + col_area.height
-                                    && end_y >= y_offset - MAX_BACKWARD_PX
-                                    && !stale_table_host_vpos;
-                                if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
-                                    let path = if is_page_path { "page" } else { "lazy" };
-                                    eprintln!(
+                                        && matches!(t.common.vert_rel_to, VR2::Para))
+                                                })
+                                            })
+                                            .unwrap_or(false);
+                                        const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
+                                        let stale_table_host_vpos = curr_has_topbottom_para_table
+                                            && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
+                                        let applied = end_y >= col_area.y
+                                            && end_y <= col_area.y + col_area.height
+                                            && end_y >= y_offset - MAX_BACKWARD_PX
+                                            && !stale_table_host_vpos;
+                                        if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                                            let path = if is_page_path { "page" } else { "lazy" };
+                                            eprintln!(
                                         "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} applied={}",
                                         path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
                                         vpos_end, base, col_area.y, y_offset, end_y, applied,
                                     );
-                                }
-                                if applied {
-                                    y_offset = end_y;
+                                        }
+                                        if applied {
+                                            y_offset = end_y;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
-            } // !prev_has_overlay_shape
+                } // !prev_has_overlay_shape
             } // !shape_jumped
             prev_layout_para = Some(item_para);
 
             // Percent 전환: 표 하단과 비교 (Task #9)
             if fix_overlay_active {
-                let is_fixed = paragraphs.get(item_para)
+                let is_fixed = paragraphs
+                    .get(item_para)
                     .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
                     .map(|ps| ps.line_spacing_type == crate::model::style::LineSpacingType::Fixed)
                     .unwrap_or(false);
@@ -2006,9 +2429,12 @@ impl LayoutEngine {
                 // paragraph 가 TAC 표 위에 침범하지 않도록 보호) 는 그대로 유지하고,
                 // 빈 paragraph 는 push 대상에서 제외한다. fix_overlay_active 는 유지하여
                 // 후속 비-empty paragraph 가 push 대상이 될 수 있게 한다.
-                let is_empty_para = paragraphs.get(item_para)
-                    .map(|p| p.text.is_empty()
-                        || p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}'))
+                let is_empty_para = paragraphs
+                    .get(item_para)
+                    .map(|p| {
+                        p.text.is_empty()
+                            || p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}')
+                    })
                     .unwrap_or(false);
                 if !is_fixed && !is_empty_para {
                     let table_bottom = fix_table_start_y + fix_table_visual_h;
@@ -2024,17 +2450,44 @@ impl LayoutEngine {
             let _item_desc = if _dbg_tac {
                 match item {
                     PageItem::FullParagraph { para_index } => format!("FullPara pi={}", para_index),
-                    PageItem::PartialParagraph { para_index, .. } => format!("PartialPara pi={}", para_index),
-                    PageItem::Table { para_index, control_index } => format!("Table pi={} ci={}", para_index, control_index),
-                    PageItem::PartialTable { para_index, control_index, .. } => format!("PartialTable pi={} ci={}", para_index, control_index),
-                    PageItem::Shape { para_index, control_index, .. } => format!("Shape pi={} ci={}", para_index, control_index),
+                    PageItem::PartialParagraph { para_index, .. } => {
+                        format!("PartialPara pi={}", para_index)
+                    }
+                    PageItem::Table {
+                        para_index,
+                        control_index,
+                    } => format!("Table pi={} ci={}", para_index, control_index),
+                    PageItem::PartialTable {
+                        para_index,
+                        control_index,
+                        ..
+                    } => format!("PartialTable pi={} ci={}", para_index, control_index),
+                    PageItem::Shape {
+                        para_index,
+                        control_index,
+                        ..
+                    } => format!("Shape pi={} ci={}", para_index, control_index),
                 }
-            } else { String::new() };
+            } else {
+                String::new()
+            };
             let (new_y, was_tac) = self.layout_column_item(
-                tree, &mut col_node, paper_images, &mut para_start_y,
-                item, page_content, paragraphs, composed, styles,
-                bin_data_content, measured_tables, layout, col_area,
-                outline_numbering_id, multi_col_width, y_offset,
+                tree,
+                &mut col_node,
+                paper_images,
+                &mut para_start_y,
+                item,
+                page_content,
+                paragraphs,
+                composed,
+                styles,
+                bin_data_content,
+                measured_tables,
+                layout,
+                col_area,
+                outline_numbering_id,
+                multi_col_width,
+                y_offset,
                 prev_tac_seg_applied,
                 wrap_around_paras,
                 &col_content.wrap_anchors,
@@ -2042,7 +2495,11 @@ impl LayoutEngine {
             if _dbg_tac {
                 eprintln!(
                     "TAC_CURSOR  {} y_in={:.1} y_out={:.1} dy={:.1} was_tac={}",
-                    _item_desc, _y_in, new_y, new_y - _y_in, was_tac,
+                    _item_desc,
+                    _y_in,
+                    new_y,
+                    new_y - _y_in,
+                    was_tac,
                 );
             }
             y_offset = new_y;
@@ -2056,8 +2513,10 @@ impl LayoutEngine {
                             // 표 시작 y와 시각적 높이 저장 (Percent 전환 시 비교용)
                             let ps = styles.para_styles.get(para.para_shape_id as usize);
                             let sa = ps.map(|s| s.spacing_after).unwrap_or(0.0);
-                            fix_table_start_y = y_offset - hwpunit_to_px(
-                                seg.line_height + seg.line_spacing, self.dpi).max(0.0) - sa;
+                            fix_table_start_y = y_offset
+                                - hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi)
+                                    .max(0.0)
+                                - sa;
                             fix_table_visual_h = hwpunit_to_px(seg.line_height, self.dpi);
                             fix_overlay_active = true;
                         }
@@ -2072,9 +2531,15 @@ impl LayoutEngine {
             // 앵커 문단에 attach되므로 후속 문단의 vpos 교정 기준점을 초기화하면 안 됨.
             // 초기화하면 한컴이 Para-float 기준으로 기록한 후속 문단 vpos가 잘못된
             // lazy_base로 교정되어 앵커 y가 상승 → body_bottom clamp → LAYOUT_OVERFLOW.
-            let is_table_or_shape = matches!(item,
-                PageItem::Table { .. } | PageItem::PartialTable { .. } | PageItem::Shape { .. });
-            let is_para_float_table = if let PageItem::Table { para_index, control_index } = item {
+            let is_table_or_shape = matches!(
+                item,
+                PageItem::Table { .. } | PageItem::PartialTable { .. } | PageItem::Shape { .. }
+            );
+            let is_para_float_table = if let PageItem::Table {
+                para_index,
+                control_index,
+            } = item
+            {
                 paragraphs
                     .get(*para_index)
                     .and_then(|p| p.controls.get(*control_index))
@@ -2102,7 +2567,9 @@ impl LayoutEngine {
             if y_offset > col_bottom + tolerance {
                 let (item_type, para_idx) = match item {
                     PageItem::FullParagraph { para_index } => ("FullParagraph", *para_index),
-                    PageItem::PartialParagraph { para_index, .. } => ("PartialParagraph", *para_index),
+                    PageItem::PartialParagraph { para_index, .. } => {
+                        ("PartialParagraph", *para_index)
+                    }
                     PageItem::Table { para_index, .. } => ("Table", *para_index),
                     PageItem::PartialTable { para_index, .. } => ("PartialTable", *para_index),
                     PageItem::Shape { para_index, .. } => ("Shape", *para_index),
@@ -2121,10 +2588,17 @@ impl LayoutEngine {
 
         // 2차 패스: 글상자(Shape) z-order 정렬 후 렌더링
         self.layout_column_shapes_pass(
-            tree, &mut col_node, paper_images,
-            col_content, page_content,
-            paragraphs, composed, styles,
-            bin_data_content, layout, col_area,
+            tree,
+            &mut col_node,
+            paper_images,
+            col_content,
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            layout,
+            col_area,
             &para_start_y,
         );
 
@@ -2141,8 +2615,10 @@ impl LayoutEngine {
                     let idx = (bf_id as usize).saturating_sub(1);
                     let bs = styles.border_styles.get(idx)?;
                     let top = &bs.borders[2];
-                    let any_w = bs.borders.iter().any(|b|
-                        !matches!(b.line_type, BorderLineType::None) && b.width > 0);
+                    let any_w = bs
+                        .borders
+                        .iter()
+                        .any(|b| !matches!(b.line_type, BorderLineType::None) && b.width > 0);
                     if any_w {
                         Some((top.line_type, top.width, top.color))
                     } else {
@@ -2151,8 +2627,21 @@ impl LayoutEngine {
                 };
                 // 그룹 튜플: (bf_id, x, y_start, w, y_end, top_inset, bottom_inset,
                 //              is_partial_start, is_partial_end, first_para_idx, last_para_idx)
-                let mut groups: Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize, usize)> = Vec::new();
-                for &(bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end, para_idx) in ranges.iter() {
+                let mut groups: Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize, usize)> =
+                    Vec::new();
+                for &(
+                    bf_id,
+                    x,
+                    y_start,
+                    w,
+                    y_end,
+                    top_inset,
+                    bottom_inset,
+                    is_partial_start,
+                    is_partial_end,
+                    para_idx,
+                ) in ranges.iter()
+                {
                     if let Some(last) = groups.last_mut() {
                         // bf_id 가 동일하면 기존 동작과 호환 (1차 병합).
                         // 다른 bf_id 지만 동일한 visible stroke 인 경우에만 시각 병합 (None ≠ None 으로 처리).
@@ -2169,11 +2658,11 @@ impl LayoutEngine {
                             // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.
                             // partial_start 는 첫 range 값(last.7)을 유지.
                             last.8 = is_partial_end;
-                            last.10 = para_idx;  // last_para_idx 갱신
-                            // Task #463: 첫 항목이 PartialParagraph (좁은 geometry, 예: pi=50
-                            // 우측 단 시작) 이고 후속 항목이 넓은 geometry 일 때, 박스가 좁게
-                            // 굳어 후속 paragraph 가 박스 밖으로 튀어나오는 것을 방지하기 위해
-                            // merge 그룹의 x/width 를 최대 범위로 확장한다.
+                            last.10 = para_idx; // last_para_idx 갱신
+                                                // Task #463: 첫 항목이 PartialParagraph (좁은 geometry, 예: pi=50
+                                                // 우측 단 시작) 이고 후속 항목이 넓은 geometry 일 때, 박스가 좁게
+                                                // 굳어 후속 paragraph 가 박스 밖으로 튀어나오는 것을 방지하기 위해
+                                                // merge 그룹의 x/width 를 최대 범위로 확장한다.
                             let last_right = last.1 + last.3;
                             let cur_right = x + w;
                             let new_x = last.1.min(x);
@@ -2183,7 +2672,19 @@ impl LayoutEngine {
                             continue;
                         }
                     }
-                    groups.push((bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end, para_idx, para_idx));
+                    groups.push((
+                        bf_id,
+                        x,
+                        y_start,
+                        w,
+                        y_end,
+                        top_inset,
+                        bottom_inset,
+                        is_partial_start,
+                        is_partial_end,
+                        para_idx,
+                        para_idx,
+                    ));
                 }
 
                 // Task #468: cross-column 박스 연속 검출.
@@ -2193,14 +2694,19 @@ impl LayoutEngine {
                 // 그룹의 visual sig 와 인접 paragraph 의 visual sig 비교가 정확.
                 for g in groups.iter_mut() {
                     let bf_id = g.0;
-                    if bf_id == 0 { continue; }
+                    if bf_id == 0 {
+                        continue;
+                    }
                     let first_pi = g.9;
                     let last_pi = g.10;
                     let group_sig = stroke_sig(bf_id);
-                    if group_sig.is_none() { continue; }
+                    if group_sig.is_none() {
+                        continue;
+                    }
 
                     let para_bf = |pi: usize| -> u16 {
-                        composed.get(pi)
+                        composed
+                            .get(pi)
                             .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
                             .map(|s| s.border_fill_id)
                             .unwrap_or(0)
@@ -2228,15 +2734,37 @@ impl LayoutEngine {
                 let col_top = col_area.y;
                 let col_bot = col_area.y + col_area.height;
                 for g in groups.iter_mut() {
-                    if g.2 < col_top { g.2 = col_top; }
-                    if g.4 > col_bot { g.4 = col_bot; }
+                    if g.2 < col_top {
+                        g.2 = col_top;
+                    }
+                    if g.4 > col_bot {
+                        g.4 = col_bot;
+                    }
                 }
                 groups.retain(|g| g.4 > g.2);
 
                 let groups_len = groups.len();
-                for (gi, (bf_id, x, y_start, w, y_end, top_inset, bottom_inset, is_partial_start, is_partial_end, _, _)) in groups.clone().into_iter().enumerate() {
+                for (
+                    gi,
+                    (
+                        bf_id,
+                        x,
+                        y_start,
+                        w,
+                        y_end,
+                        top_inset,
+                        bottom_inset,
+                        is_partial_start,
+                        is_partial_end,
+                        _,
+                        _,
+                    ),
+                ) in groups.clone().into_iter().enumerate()
+                {
                     let height = y_end - y_start;
-                    if height <= 0.0 { continue; }
+                    if height <= 0.0 {
+                        continue;
+                    }
                     // 인접한 다른 border 그룹 (간격 < 4px) 과는 inset 충돌 회피.
                     let prev_touches = gi > 0 && (y_start - groups[gi - 1].4) < 4.0;
                     let next_touches = gi + 1 < groups_len && (groups[gi + 1].2 - y_end) < 4.0;
@@ -2244,11 +2772,16 @@ impl LayoutEngine {
                     let border_style = styles.border_styles.get(idx);
                     let fill_color = border_style.and_then(|bs| bs.fill_color);
                     let (stroke_color, stroke_width) = if let Some(bs) = border_style {
-                        let any_real_width = bs.borders.iter().any(|b|
-                            !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0);
+                        let any_real_width = bs.borders.iter().any(|b| {
+                            !matches!(b.line_type, crate::model::style::BorderLineType::None)
+                                && b.width > 0
+                        });
                         if any_real_width {
                             let top = &bs.borders[2];
-                            (Some(top.color), super::layout::border_rendering::border_width_to_px(top.width))
+                            (
+                                Some(top.color),
+                                super::layout::border_rendering::border_width_to_px(top.width),
+                            )
                         } else {
                             (None, 0.0)
                         }
@@ -2258,8 +2791,16 @@ impl LayoutEngine {
                     // Task #321 v6: ParaShape::border_spacing 정식 반영 + stroke 있을 때 default 2px 최소.
                     // 인접 border 그룹과 충돌 방지를 위해 인접 경계는 inset 0.
                     const DEFAULT_MIN_INSET: f64 = 2.0;
-                    let top_pad = if stroke_width > 0.0 && !prev_touches { top_inset.max(DEFAULT_MIN_INSET) } else { top_inset };
-                    let bot_pad = if stroke_width > 0.0 && !next_touches { bottom_inset.max(DEFAULT_MIN_INSET) } else { bottom_inset };
+                    let top_pad = if stroke_width > 0.0 && !prev_touches {
+                        top_inset.max(DEFAULT_MIN_INSET)
+                    } else {
+                        top_inset
+                    };
+                    let bot_pad = if stroke_width > 0.0 && !next_touches {
+                        bottom_inset.max(DEFAULT_MIN_INSET)
+                    } else {
+                        bottom_inset
+                    };
                     // Task #469: cross-column / cross-page 로 이어진 partial 박스의 후속 부분은
                     // 이전/다음 컬럼에서 이미 inset 이 적용되었으므로 여기서 다시 col_top/col_bot
                     // 너머로 박스를 확장하면 안 된다 (헤더선/꼬리말선과 충돌).
@@ -2319,10 +2860,15 @@ impl LayoutEngine {
                             let lnode = RenderNode::new(
                                 lid,
                                 RenderNodeType::Line(super::render_tree::LineNode::new(
-                                    x1, y1, x2, y2, line_style.clone(),
+                                    x1,
+                                    y1,
+                                    x2,
+                                    y2,
+                                    line_style.clone(),
                                 )),
                                 super::render_tree::BoundingBox::new(
-                                    x1.min(x2), y1.min(y2),
+                                    x1.min(x2),
+                                    y1.min(y2),
                                     (x2 - x1).abs().max(stroke_width),
                                     (y2 - y1).abs().max(stroke_width),
                                 ),
@@ -2376,9 +2922,19 @@ impl LayoutEngine {
         wrap_anchors: &std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
     ) -> (f64, bool) {
         let ctx = ColumnItemCtx {
-            page_content, paragraphs, composed, styles, bin_data_content,
-            measured_tables, layout, col_area, outline_numbering_id,
-            multi_col_width, prev_tac_seg_applied, wrap_around_paras, wrap_anchors,
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            measured_tables,
+            layout,
+            col_area,
+            outline_numbering_id,
+            multi_col_width,
+            prev_tac_seg_applied,
+            wrap_around_paras,
+            wrap_anchors,
         };
         match item {
             PageItem::FullParagraph { para_index } => {
@@ -2389,9 +2945,17 @@ impl LayoutEngine {
                         if let Some(para) = paragraphs.get(*para_index) {
                             para_start_y.insert(*para_index, y_offset);
                             self.layout_paragraph(
-                                tree, col_node, para, Some(comp), styles,
-                                col_area, y_offset, page_content.section_index,
-                                *para_index, multi_col_width, Some(bin_data_content),
+                                tree,
+                                col_node,
+                                para,
+                                Some(comp),
+                                styles,
+                                col_area,
+                                y_offset,
+                                page_content.section_index,
+                                *para_index,
+                                multi_col_width,
+                                Some(bin_data_content),
                                 ctx.wrap_anchors.get(para_index),
                             );
                         }
@@ -2406,14 +2970,26 @@ impl LayoutEngine {
                                 && !crate::renderer::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls))));
                     if has_block_table {
                         let comp = composed.get(*para_index);
-                        let para_style_id = comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize);
+                        let para_style_id = comp
+                            .map(|c| c.para_style_id as usize)
+                            .unwrap_or(para.para_shape_id as usize);
                         if let Some(para_style) = styles.para_styles.get(para_style_id) {
                             // 번호 카운터 전진 (후속 문단의 번호 연속성 유지)
                             // Bullet은 카운터를 사용하지 않으므로 제외
-                            if para_style.head_type == HeadType::Outline || para_style.head_type == HeadType::Number {
-                                let nid = resolve_numbering_id(para_style.head_type, para_style.numbering_id, outline_numbering_id);
+                            if para_style.head_type == HeadType::Outline
+                                || para_style.head_type == HeadType::Number
+                            {
+                                let nid = resolve_numbering_id(
+                                    para_style.head_type,
+                                    para_style.numbering_id,
+                                    outline_numbering_id,
+                                );
                                 if nid > 0 {
-                                    self.numbering_state.borrow_mut().advance(nid, para_style.para_level, para.numbering_restart);
+                                    self.numbering_state.borrow_mut().advance(
+                                        nid,
+                                        para_style.para_level,
+                                        para.numbering_restart,
+                                    );
                                 }
                             }
                             if para_style.spacing_before > 0.0 {
@@ -2423,17 +2999,29 @@ impl LayoutEngine {
                         // 어울림 표 호스트 문단의 텍스트는 layout_wrap_around_paras에서 처리
                         let is_wrap_host = para.controls.iter().any(|c| {
                             if let Control::Table(t) = c {
-                                !t.common.treat_as_char && matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square)
-                            } else { false }
+                                !t.common.treat_as_char
+                                    && matches!(
+                                        t.common.text_wrap,
+                                        crate::model::shape::TextWrap::Square
+                                    )
+                            } else {
+                                false
+                            }
                         });
                         // 블록 표/도형 외에 실제 텍스트가 있는지 확인
                         // (예: [선][선][표][표]참고문헌 → 표 아래에 텍스트 렌더링 필요)
-                        let has_real_text = !is_wrap_host && para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace());
+                        let has_real_text = !is_wrap_host
+                            && para
+                                .text
+                                .chars()
+                                .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace());
                         if has_real_text {
                             if let Some(comp) = comp {
                                 // 컨트롤 전용 줄(runs가 모두 제어문자)을 건너뛰고 텍스트 줄부터 렌더링
                                 let text_start_line = comp.lines.iter().position(|line| {
-                                    line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+                                    line.runs.iter().any(|r| {
+                                        r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                    })
                                 });
                                 if let Some(start_line) = text_start_line {
                                     para_start_y.insert(*para_index, y_offset);
@@ -2479,7 +3067,10 @@ impl LayoutEngine {
                     if has_inline_tables && !has_other_inline_ctrls {
                         // 인라인 표 문단도 번호 카운터 전진 필요
                         self.apply_paragraph_numbering(
-                            composed.get(*para_index), para, styles, outline_numbering_id,
+                            composed.get(*para_index),
+                            para,
+                            styles,
+                            outline_numbering_id,
                         );
                         para_start_y.insert(*para_index, y_offset);
                         y_offset = self.layout_inline_table_paragraph(
@@ -2498,7 +3089,10 @@ impl LayoutEngine {
                     } else {
                         let comp = composed.get(*para_index);
                         let numbered_comp = self.apply_paragraph_numbering(
-                            comp, para, styles, outline_numbering_id,
+                            comp,
+                            para,
+                            styles,
+                            outline_numbering_id,
                         );
                         let final_comp = numbered_comp.as_ref().or(comp);
 
@@ -2523,14 +3117,20 @@ impl LayoutEngine {
                     // LINE_SEG lh가 Shape+캡션+간격을 모두 포함하므로 max(Shape.height, lh)를 사용.
                     // 보정 시 원래 문단 간격(spacing_after)도 유지한다.
                     {
-                        let has_tac_shape = para.controls.iter()
+                        let has_tac_shape = para
+                            .controls
+                            .iter()
                             .any(|c| matches!(c, Control::Shape(s) if s.common().treat_as_char));
                         if has_tac_shape {
                             // LINE_SEG lh = 이미지+캡션+간격 전체 높이
-                            let seg_lh: f64 = para.line_segs.iter()
+                            let seg_lh: f64 = para
+                                .line_segs
+                                .iter()
                                 .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
                                 .fold(0.0f64, f64::max);
-                            let shape_max_h: f64 = para.controls.iter()
+                            let shape_max_h: f64 = para
+                                .controls
+                                .iter()
                                 .filter_map(|c| match c {
                                     Control::Shape(s) if s.common().treat_as_char => {
                                         Some(hwpunit_to_px(s.common().height as i32, self.dpi))
@@ -2543,7 +3143,8 @@ impl LayoutEngine {
                                 let para_start = *para_start_y.get(para_index).unwrap_or(&y_offset);
                                 let shape_bottom = para_start + effective_h;
                                 if shape_bottom > y_offset {
-                                    let spacing = styles.para_styles
+                                    let spacing = styles
+                                        .para_styles
                                         .get(para.para_shape_id as usize)
                                         .map(|s| s.spacing_after)
                                         .unwrap_or(0.0);
@@ -2553,16 +3154,20 @@ impl LayoutEngine {
                         }
                     }
                     // 각주 위첨자: footnote_positions가 있으면 인라인으로 이미 처리됨
-                    let has_inline_fn = composed.get(*para_index)
-                        .map(|c| !c.footnote_positions.is_empty()).unwrap_or(false);
+                    let has_inline_fn = composed
+                        .get(*para_index)
+                        .map(|c| !c.footnote_positions.is_empty())
+                        .unwrap_or(false);
                     if !has_inline_fn {
-                        self.add_footnote_superscripts(
-                            tree, col_node, para, styles,
-                        );
+                        self.add_footnote_superscripts(tree, col_node, para, styles);
                     }
                 }
             }
-            PageItem::PartialParagraph { para_index, start_line, end_line } => {
+            PageItem::PartialParagraph {
+                para_index,
+                start_line,
+                end_line,
+            } => {
                 if let Some(para) = paragraphs.get(*para_index) {
                     // Task #318: wrap=Square 표 호스트 문단의 텍스트는
                     // layout_wrap_around_paras (자가 wrap 경로) 가 처리한다. PartialParagraph
@@ -2572,8 +3177,13 @@ impl LayoutEngine {
                     let is_wrap_host = para.controls.iter().any(|c| {
                         if let Control::Table(t) = c {
                             !t.common.treat_as_char
-                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square)
-                        } else { false }
+                                && matches!(
+                                    t.common.text_wrap,
+                                    crate::model::shape::TextWrap::Square
+                                )
+                        } else {
+                            false
+                        }
                     });
                     if is_wrap_host {
                         return (y_offset, false);
@@ -2582,17 +3192,25 @@ impl LayoutEngine {
                     // TAC 블록 표 문단의 post-text PP: 텍스트가 공백만이면 건너뜀
                     // (Table PageItem에서 이미 y_offset이 결정됨)
                     if prev_tac_seg_applied {
-                        let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-                        let has_tac_block = para.controls.iter().any(|c|
+                        let seg_width =
+                            para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                        let has_tac_block = para.controls.iter().any(|c| {
                             matches!(c, Control::Table(t) if t.common.treat_as_char
                                 && !crate::renderer::height_measurer::is_tac_table_inline(
-                                    t, seg_width, &para.text, &para.controls)));
+                                    t, seg_width, &para.text, &para.controls))
+                        });
                         if has_tac_block {
                             let pp_text_only_ws = if let Some(comp) = composed.get(*para_index) {
                                 comp.lines[*start_line..*end_line].iter().all(|line| {
-                                    line.runs.iter().all(|r| r.text.chars().all(|c| c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'))
+                                    line.runs.iter().all(|r| {
+                                        r.text.chars().all(|c| {
+                                            c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'
+                                        })
+                                    })
                                 })
-                            } else { false };
+                            } else {
+                                false
+                            };
                             if pp_text_only_ws {
                                 // Table PageItem에서 이미 표 높이가 반영됨
                                 // 공백만인 PartialParagraph는 높이 추가 없이 건너뜀
@@ -2603,7 +3221,10 @@ impl LayoutEngine {
                     // 첫 부분에서만 번호 카운터 전진 + 번호 텍스트 적용
                     let comp = if *start_line == 0 {
                         let numbered = self.apply_paragraph_numbering(
-                            composed.get(*para_index), para, styles, outline_numbering_id,
+                            composed.get(*para_index),
+                            para,
+                            styles,
+                            outline_numbering_id,
                         );
                         // numbered가 있으면 composed 업데이트는 불가하므로
                         // layout_partial_paragraph에 직접 전달
@@ -2620,8 +3241,10 @@ impl LayoutEngine {
                     //   2) para 가 TAC 표 보유 (treat_as_char=true)
                     //   3) para_start_y 등록 (Table item 선행 처리됨 → 같은 column)
                     let pp_y_in = if *start_line > 0
-                        && para.controls.iter().any(|c|
-                            matches!(c, Control::Table(t) if t.common.treat_as_char))
+                        && para
+                            .controls
+                            .iter()
+                            .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                         && para_start_y.contains_key(para_index)
                     {
                         if let (Some(seg), Some(seg0), Some(para_top)) = (
@@ -2629,10 +3252,13 @@ impl LayoutEngine {
                             para.line_segs.first(),
                             para_start_y.get(para_index).copied(),
                         ) {
-                            para_top + hwpunit_to_px(
-                                seg.vertical_pos - seg0.vertical_pos, self.dpi)
-                        } else { y_offset }
-                    } else { y_offset };
+                            para_top + hwpunit_to_px(seg.vertical_pos - seg0.vertical_pos, self.dpi)
+                        } else {
+                            y_offset
+                        }
+                    } else {
+                        y_offset
+                    };
                     let pp_y_out = self.layout_partial_paragraph(
                         tree,
                         col_node,
@@ -2654,25 +3280,58 @@ impl LayoutEngine {
                     y_offset = y_offset.max(pp_y_out);
                 }
             }
-            PageItem::Table { para_index, control_index } => {
+            PageItem::Table {
+                para_index,
+                control_index,
+            } => {
                 return self.layout_table_item(
-                    tree, col_node, paper_images, para_start_y,
-                    *para_index, *control_index, &ctx, y_offset,
+                    tree,
+                    col_node,
+                    paper_images,
+                    para_start_y,
+                    *para_index,
+                    *control_index,
+                    &ctx,
+                    y_offset,
                 );
             }
-            PageItem::PartialTable { para_index, control_index, start_row, end_row, is_continuation,
-                split_start_content_offset, split_end_content_limit } => {
+            PageItem::PartialTable {
+                para_index,
+                control_index,
+                start_row,
+                end_row,
+                is_continuation,
+                split_start_content_offset,
+                split_end_content_limit,
+            } => {
                 y_offset = self.layout_partial_table_item(
-                    tree, col_node, para_start_y,
-                    *para_index, *control_index, *start_row, *end_row,
-                    *is_continuation, *split_start_content_offset, *split_end_content_limit,
-                    &ctx, y_offset,
+                    tree,
+                    col_node,
+                    para_start_y,
+                    *para_index,
+                    *control_index,
+                    *start_row,
+                    *end_row,
+                    *is_continuation,
+                    *split_start_content_offset,
+                    *split_end_content_limit,
+                    &ctx,
+                    y_offset,
                 );
             }
-            PageItem::Shape { para_index, control_index } => {
+            PageItem::Shape {
+                para_index,
+                control_index,
+            } => {
                 y_offset = self.layout_shape_item(
-                    tree, col_node, paper_images, para_start_y,
-                    *para_index, *control_index, &ctx, y_offset,
+                    tree,
+                    col_node,
+                    paper_images,
+                    para_start_y,
+                    *para_index,
+                    *control_index,
+                    &ctx,
+                    y_offset,
                 );
             }
         }
@@ -2693,14 +3352,25 @@ impl LayoutEngine {
         mut y_offset: f64,
     ) -> (f64, bool) {
         let ColumnItemCtx {
-            page_content, paragraphs, composed, styles, bin_data_content,
-            measured_tables, layout, col_area, multi_col_width,
-            prev_tac_seg_applied, wrap_around_paras, wrap_anchors, ..
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            measured_tables,
+            layout,
+            col_area,
+            multi_col_width,
+            prev_tac_seg_applied,
+            wrap_around_paras,
+            wrap_anchors,
+            ..
         } = ctx;
         // 표 앵커 문단의 y 위치 등록
         // TAC 표: 이전 TAC가 y_offset을 진행시킨 경우 갱신 (같은 문단 TAC+블록 구조)
         // 비-TAC 표: 문단 시작 y를 유지 (각 표가 독립적으로 vert offset 기준 배치)
-        let is_current_tac = paragraphs.get(para_index)
+        let is_current_tac = paragraphs
+            .get(para_index)
             .and_then(|p| p.controls.get(control_index))
             .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
             .unwrap_or(false);
@@ -2713,25 +3383,32 @@ impl LayoutEngine {
         }
         let para_y_for_table = *para_start_y.get(&para_index).unwrap_or(&y_offset);
         if let Some(para) = paragraphs.get(para_index) {
-            let is_tac = para.controls.get(control_index)
+            let is_tac = para
+                .controls
+                .get(control_index)
                 .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                 .unwrap_or(false);
             // ── 표 위 간격 ──
             {
                 let comp = composed.get(para_index);
-                let ps_id = comp.map(|c| c.para_style_id as usize)
+                let ps_id = comp
+                    .map(|c| c.para_style_id as usize)
                     .unwrap_or(para.para_shape_id as usize);
                 let is_column_top = (y_offset - col_area.y).abs() < 1.0;
                 if is_tac {
                     if !prev_tac_seg_applied {
-                        let outer_margin_top_px = if let Some(Control::Table(t)) = para.controls.get(control_index) {
-                            hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                        } else {
-                            0.0
-                        };
+                        let outer_margin_top_px =
+                            if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                                hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                            } else {
+                                0.0
+                            };
                         if !is_column_top {
-                            let spacing_before = styles.para_styles.get(ps_id)
-                                .map(|ps| ps.spacing_before).unwrap_or(0.0);
+                            let spacing_before = styles
+                                .para_styles
+                                .get(ps_id)
+                                .map(|ps| ps.spacing_before)
+                                .unwrap_or(0.0);
                             if spacing_before > 0.0 {
                                 y_offset += spacing_before;
                             }
@@ -2755,26 +3432,50 @@ impl LayoutEngine {
                 })
             });
             if !is_tac && !text_already_laid_out {
-                let host_is_not_square = if let Some(Control::Table(ht)) = para.controls.get(control_index) {
-                    !matches!(ht.common.text_wrap, crate::model::shape::TextWrap::Square)
-                } else { true };
+                let host_is_not_square =
+                    if let Some(Control::Table(ht)) = para.controls.get(control_index) {
+                        !matches!(ht.common.text_wrap, crate::model::shape::TextWrap::Square)
+                    } else {
+                        true
+                    };
                 if host_is_not_square {
-                    let has_real_text = para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                    let has_real_text =
+                        para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
                     if has_real_text {
                         if let Some(comp) = composed.get(para_index) {
                             let text_start_line = comp.lines.iter().position(|line| {
-                                line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+                                line.runs.iter().any(|r| {
+                                    r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                })
                             });
                             if let Some(start_line) = text_start_line {
-                                let text_end_line = comp.lines.iter().rposition(|line| {
-                                    line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
-                                }).map(|i| i + 1).unwrap_or(comp.lines.len());
+                                let text_end_line = comp
+                                    .lines
+                                    .iter()
+                                    .rposition(|line| {
+                                        line.runs.iter().any(|r| {
+                                            r.text
+                                                .chars()
+                                                .any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                        })
+                                    })
+                                    .map(|i| i + 1)
+                                    .unwrap_or(comp.lines.len());
                                 para_start_y.insert(para_index, y_offset);
                                 let _text_y_end = self.layout_partial_paragraph(
-                                    tree, col_node, para, Some(comp), styles,
-                                    col_area, y_offset, start_line, text_end_line,
-                                    page_content.section_index, para_index,
-                                    *multi_col_width, Some(bin_data_content),
+                                    tree,
+                                    col_node,
+                                    para,
+                                    Some(comp),
+                                    styles,
+                                    col_area,
+                                    y_offset,
+                                    start_line,
+                                    text_end_line,
+                                    page_content.section_index,
+                                    para_index,
+                                    *multi_col_width,
+                                    Some(bin_data_content),
                                     wrap_anchors.get(&para_index),
                                 );
                             }
@@ -2784,42 +3485,41 @@ impl LayoutEngine {
             }
             // ── 표 레이아웃 ──
             let mut tac_seg_applied = false;
-            let tac_table_y_before = y_offset;  // Task #9: 표 렌더 전 y 보존
+            let tac_table_y_before = y_offset; // Task #9: 표 렌더 전 y 보존
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
-                let mt = measured_tables.iter().find(|mt|
-                    mt.para_index == para_index && mt.control_index == control_index
-                );
-                let para_style = styles.para_styles
-                    .get(para.para_shape_id as usize);
-                let alignment = para_style
-                    .map(|s| s.alignment)
-                    .unwrap_or(Alignment::Left);
-                let margin_left = para_style
-                    .map(|s| s.margin_left)
-                    .unwrap_or(0.0);
-                let indent = para_style
-                    .map(|s| s.indent)
-                    .unwrap_or(0.0);
+                let mt = measured_tables
+                    .iter()
+                    .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
+                let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
+                let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
                 let effective_margin = if indent > 0.0 {
                     margin_left + indent
                 } else {
                     margin_left
                 };
-                let margin_right = para_style
-                    .map(|s| s.margin_right)
-                    .unwrap_or(0.0);
+                let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let table_y_before = y_offset;
-                let tbl_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
+                let tbl_is_square =
+                    matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
                 // インラインTAC表: paragraph_layoutで計算された位置を使用
                 let inline_pos = if is_tac {
-                    tree.get_inline_shape_position(page_content.section_index, para_index, control_index, None)
+                    tree.get_inline_shape_position(
+                        page_content.section_index,
+                        para_index,
+                        control_index,
+                        None,
+                    )
                 } else {
                     None
                 };
                 let tbl_inline_x = if let Some((ix, _)) = inline_pos {
                     Some(ix)
-                } else if !is_tac && tbl_is_square
-                    && matches!(t.common.horz_rel_to, crate::model::shape::HorzRelTo::Para) {
+                } else if !is_tac
+                    && tbl_is_square
+                    && matches!(t.common.horz_rel_to, crate::model::shape::HorzRelTo::Para)
+                {
                     // [Issue #480 / #590] horz_rel_to=Para 인 Square wrap 표만 paragraph 영역
                     // (col_area + margin) 기준으로 정렬. horz_rel_to=Column/Page/Paper 는
                     // compute_table_x_position 의 기본 분기에서 명세대로 처리한다.
@@ -2828,10 +3528,13 @@ impl LayoutEngine {
                     let area_x = col_area.x + effective_margin;
                     let area_w = (col_area.width - effective_margin - margin_right).max(0.0);
                     let x = match t.common.horz_align {
-                        crate::model::shape::HorzAlign::Right | crate::model::shape::HorzAlign::Outside =>
-                            area_x + (area_w - tbl_w).max(0.0),
-                        crate::model::shape::HorzAlign::Center =>
-                            area_x + (area_w - tbl_w).max(0.0) / 2.0,
+                        crate::model::shape::HorzAlign::Right
+                        | crate::model::shape::HorzAlign::Outside => {
+                            area_x + (area_w - tbl_w).max(0.0)
+                        }
+                        crate::model::shape::HorzAlign::Center => {
+                            area_x + (area_w - tbl_w).max(0.0) / 2.0
+                        }
                         _ => area_x,
                     };
                     Some(x)
@@ -2850,15 +3553,25 @@ impl LayoutEngine {
                     // "실제 텍스트" 판정은 alphanumeric(한글 음절·라틴·숫자·한자 등 Letter/Number)
                     // 만 인정 — HWP TAC 필러(U+F081C 등 PUA), 공백, 오브젝트마커는 PUA/공백이라
                     // 자동 제외된다 (복학원서.hwp pi=16 line 0 = U+F081C/U+F012B 필러 99개 → 제외).
-                    let line0_has_real_text = composed.get(para_index).map(|c| {
-                        c.lines.len() > 1 && c.lines.first().map(|l0| {
-                            l0.runs.iter().any(|r| r.text.chars().any(|ch| ch.is_alphanumeric()))
-                        }).unwrap_or(false)
-                    }).unwrap_or(false);
+                    let line0_has_real_text = composed
+                        .get(para_index)
+                        .map(|c| {
+                            c.lines.len() > 1
+                                && c.lines
+                                    .first()
+                                    .map(|l0| {
+                                        l0.runs
+                                            .iter()
+                                            .any(|r| r.text.chars().any(|ch| ch.is_alphanumeric()))
+                                    })
+                                    .unwrap_or(false)
+                        })
+                        .unwrap_or(false);
                     let leading = if line0_has_real_text {
                         0.0
                     } else {
-                        composed.get(para_index)
+                        composed
+                            .get(para_index)
                             .map(|c| compute_tac_leading_width(c, control_index, styles))
                             .unwrap_or(0.0)
                     };
@@ -2891,16 +3604,28 @@ impl LayoutEngine {
                 // (Task #295: vert=Page valign=Bottom 푸터 표가 좌단 y_offset을 본문 하단으로
                 //  끌어올려 후속 콘텐츠를 깨뜨리는 문제 수정 — Paper만 다루던 기존 분기를 Page까지 확장)
                 let renders_outside_body = !is_tac
-                    && matches!(t.common.vert_rel_to,
-                        crate::model::shape::VertRelTo::Paper | crate::model::shape::VertRelTo::Page)
-                    && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                    && matches!(
+                        t.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Paper
+                            | crate::model::shape::VertRelTo::Page
+                    )
+                    && matches!(
+                        t.common.text_wrap,
+                        crate::model::shape::TextWrap::TopAndBottom
+                    )
                     && {
                         let tbl_h = hwpunit_to_px(t.common.height as i32, self.dpi);
                         let v_off = hwpunit_to_px(t.common.vertical_offset as i32, self.dpi);
                         let tbl_y = match t.common.vert_align {
-                            crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside => v_off,
-                            crate::model::shape::VertAlign::Center => (layout.page_height - tbl_h) / 2.0 + v_off,
-                            crate::model::shape::VertAlign::Bottom | crate::model::shape::VertAlign::Outside => layout.page_height - tbl_h - v_off,
+                            crate::model::shape::VertAlign::Top
+                            | crate::model::shape::VertAlign::Inside => v_off,
+                            crate::model::shape::VertAlign::Center => {
+                                (layout.page_height - tbl_h) / 2.0 + v_off
+                            }
+                            crate::model::shape::VertAlign::Bottom
+                            | crate::model::shape::VertAlign::Outside => {
+                                layout.page_height - tbl_h - v_off
+                            }
                         };
                         // 표 상단이 본문 위(머리말)이거나, 표 하단이 본문 아래(꼬리말)에 걸치는 경우
                         let body_bottom = layout.body_area.y + layout.body_area.height;
@@ -2914,40 +3639,75 @@ impl LayoutEngine {
                         layout_rect_to_bbox(&layout.body_area),
                     );
                     let _table_y_end = self.layout_table(
-                        tree, &mut tmp_node, t,
-                        page_content.section_index, styles, &layout.body_area,
-                        y_offset, bin_data_content, mt, 0,
+                        tree,
+                        &mut tmp_node,
+                        t,
+                        page_content.section_index,
+                        styles,
+                        &layout.body_area,
+                        y_offset,
+                        bin_data_content,
+                        mt,
+                        0,
                         Some((para_index, control_index)),
-                        alignment, None, effective_margin, margin_right,
-                        tbl_inline_x, None, Some(para_y_for_table),
+                        alignment,
+                        None,
+                        effective_margin,
+                        margin_right,
+                        tbl_inline_x,
+                        None,
+                        Some(para_y_for_table),
                     );
                     for child in tmp_node.children.drain(..) {
                         paper_images.push(child);
                     }
                 } else {
-                    let table_y_start = if let Some((_, iy)) = inline_pos { iy } else { y_offset };
+                    let table_y_start = if let Some((_, iy)) = inline_pos {
+                        iy
+                    } else {
+                        y_offset
+                    };
                     y_offset = self.layout_table(
-                        tree, col_node, t,
-                        page_content.section_index, styles, col_area,
-                        table_y_start, bin_data_content, mt, 0,
+                        tree,
+                        col_node,
+                        t,
+                        page_content.section_index,
+                        styles,
+                        col_area,
+                        table_y_start,
+                        bin_data_content,
+                        mt,
+                        0,
                         Some((para_index, control_index)),
-                        alignment, None, effective_margin, margin_right,
-                        tbl_inline_x, None, Some(para_y_for_table),
+                        alignment,
+                        None,
+                        effective_margin,
+                        margin_right,
+                        tbl_inline_x,
+                        None,
+                        Some(para_y_for_table),
                     );
                 }
                 let table_y_end = y_offset; // layout_table 반환값 보존
-                // ── TAC 표: 줄간격 처리 ──
-                // layout_table 반환값(표 하단)에 line_spacing을 더하여 다음 표 시작 y 결정
+                                            // ── TAC 표: 줄간격 처리 ──
+                                            // layout_table 반환값(표 하단)에 line_spacing을 더하여 다음 표 시작 y 결정
                 if is_tac {
                     let seg_idx = control_index;
-                    let tac_count_total = para.controls.iter()
+                    let tac_count_total = para
+                        .controls
+                        .iter()
                         .filter(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                         .count();
-                    let tac_idx_current = para.controls.iter().take(control_index + 1)
+                    let tac_idx_current = para
+                        .controls
+                        .iter()
+                        .take(control_index + 1)
                         .filter(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                         .count();
                     // TAC 표 사이에 non-TAC 표가 있는지 확인
-                    let has_non_tac_between = para.controls.iter()
+                    let has_non_tac_between = para
+                        .controls
+                        .iter()
                         .skip(control_index + 1)
                         .take_while(|c| !matches!(c, Control::Table(t) if t.common.treat_as_char))
                         .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
@@ -2955,7 +3715,9 @@ impl LayoutEngine {
                         // 다음 TAC가 있으면: vpos 차이분만 추가 (= line_spacing)
                         // 이후 tac_seg_applied 경로의 line_spacing 추가를 스킵하기 위해
                         // 여기서 직접 return (spacing_after/line_spacing 이중 적용 방지)
-                        if let (Some(seg), Some(next_seg)) = (para.line_segs.get(seg_idx), para.line_segs.get(seg_idx + 1)) {
+                        if let (Some(seg), Some(next_seg)) =
+                            (para.line_segs.get(seg_idx), para.line_segs.get(seg_idx + 1))
+                        {
                             let gap = next_seg.vertical_pos - (seg.vertical_pos + seg.line_height);
                             y_offset += hwpunit_to_px(gap, self.dpi);
                         }
@@ -2967,7 +3729,8 @@ impl LayoutEngine {
                             let line_end = para_y_for_table
                                 + hwpunit_to_px(seg.vertical_pos + seg.line_height, self.dpi);
                             let clamped = line_end.min(table_y_end);
-                            let max_correction = hwpunit_to_px(seg.line_spacing * 2 + 1000, self.dpi);
+                            let max_correction =
+                                hwpunit_to_px(seg.line_spacing * 2 + 1000, self.dpi);
                             if clamped > y_offset && (clamped - y_offset) <= max_correction {
                                 y_offset = clamped;
                             }
@@ -2978,7 +3741,8 @@ impl LayoutEngine {
                 // ── 어울림 문단 렌더링 ──
                 // 후속 wrap 문단이 없어도 호스트 본문이 표 옆에 wrap되어야 하므로
                 // wrap_around_paras 비어 있어도 호출 (Task #295: pi=27 자가 wrap 누락 수정)
-                let table_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
+                let table_is_square =
+                    matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
                 if !is_tac && table_is_square {
                     let wrap_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
@@ -2988,11 +3752,20 @@ impl LayoutEngine {
                     // table_layout::compute_table_x_position 와 동일 공식.
                     let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
                     self.layout_wrap_around_paras(
-                        tree, col_node, paragraphs, composed, styles, col_area,
+                        tree,
+                        col_node,
+                        paragraphs,
+                        composed,
+                        styles,
+                        col_area,
                         page_content.section_index,
-                        para_index, wrap_around_paras,
-                        table_y_before, y_offset,
-                        wrap_text_x, wrap_text_width, 0.0,
+                        para_index,
+                        wrap_around_paras,
+                        table_y_before,
+                        y_offset,
+                        wrap_text_x,
+                        wrap_text_width,
+                        0.0,
                         bin_data_content,
                         Some(tbl_x_right),
                     );
@@ -3000,33 +3773,54 @@ impl LayoutEngine {
             }
             // ── 표 아래 간격 ──
             // out-of-flow로 그려진 표(머리말/꼬리말 자리)는 본문 흐름 간격을 추가하지 않는다.
-            let is_outside_body = if let Some(Control::Table(t)) = para.controls.get(control_index) {
+            let is_outside_body = if let Some(Control::Table(t)) = para.controls.get(control_index)
+            {
                 !t.common.treat_as_char
-                    && matches!(t.common.vert_rel_to,
-                        crate::model::shape::VertRelTo::Paper | crate::model::shape::VertRelTo::Page)
-                    && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                    && matches!(
+                        t.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Paper
+                            | crate::model::shape::VertRelTo::Page
+                    )
+                    && matches!(
+                        t.common.text_wrap,
+                        crate::model::shape::TextWrap::TopAndBottom
+                    )
                     && {
                         let tbl_h = hwpunit_to_px(t.common.height as i32, self.dpi);
                         let v_off = hwpunit_to_px(t.common.vertical_offset as i32, self.dpi);
                         let tbl_y = match t.common.vert_align {
-                            crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside => v_off,
-                            crate::model::shape::VertAlign::Center => (layout.page_height - tbl_h) / 2.0 + v_off,
-                            crate::model::shape::VertAlign::Bottom | crate::model::shape::VertAlign::Outside => layout.page_height - tbl_h - v_off,
+                            crate::model::shape::VertAlign::Top
+                            | crate::model::shape::VertAlign::Inside => v_off,
+                            crate::model::shape::VertAlign::Center => {
+                                (layout.page_height - tbl_h) / 2.0 + v_off
+                            }
+                            crate::model::shape::VertAlign::Bottom
+                            | crate::model::shape::VertAlign::Outside => {
+                                layout.page_height - tbl_h - v_off
+                            }
                         };
                         let body_bottom = layout.body_area.y + layout.body_area.height;
                         tbl_y < layout.body_area.y || tbl_y + tbl_h > body_bottom
                     }
-            } else { false };
+            } else {
+                false
+            };
             if !tac_seg_applied && !is_outside_body {
                 let comp = composed.get(para_index);
-                let para_style_id = comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize);
+                let para_style_id = comp
+                    .map(|c| c.para_style_id as usize)
+                    .unwrap_or(para.para_shape_id as usize);
                 if let Some(para_style) = styles.para_styles.get(para_style_id) {
                     if para_style.spacing_after > 0.0 {
                         y_offset += para_style.spacing_after;
                     }
                 }
                 if let Some(seg) = para.line_segs.last() {
-                    let gap = if seg.line_spacing > 0 { seg.line_spacing } else { seg.line_height };
+                    let gap = if seg.line_spacing > 0 {
+                        seg.line_spacing
+                    } else {
+                        seg.line_height
+                    };
                     y_offset += hwpunit_to_px(gap, self.dpi);
                 }
             }
@@ -3037,12 +3831,15 @@ impl LayoutEngine {
                     } else if seg.line_spacing < 0 {
                         // 음수 ls (Fixed 줄간격 TAC 표): y를 문단 advance로 리셋 (Task #9)
                         // 표 렌더 높이가 아닌, 일반 문단과 동일한 lh+ls advance 사용
-                        let advance = hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi).max(0.0);
+                        let advance =
+                            hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi).max(0.0);
                         y_offset = tac_table_y_before + advance;
                     }
                 }
                 let comp = composed.get(para_index);
-                let ps_id = comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize);
+                let ps_id = comp
+                    .map(|c| c.para_style_id as usize)
+                    .unwrap_or(para.para_shape_id as usize);
                 if let Some(ps) = styles.para_styles.get(ps_id) {
                     if ps.spacing_after > 0.0 {
                         y_offset += ps.spacing_after;
@@ -3053,9 +3850,12 @@ impl LayoutEngine {
                 // outer_margin_bottom 으로 한컴이 정의하므로, layout_table 가
                 // cell_h 만 advance 한 후 outer_margin_bottom 을 별도 적용해야
                 // 다음 paragraph 가 정합 (exam_eng p2 18번 ① 위치 -8 px shortfall).
-                let outer_margin_bottom_px = if let Some(Control::Table(t)) = para.controls.get(control_index) {
-                    hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
-                } else { 0.0 };
+                let outer_margin_bottom_px =
+                    if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                        hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
+                    } else {
+                        0.0
+                    };
                 if outer_margin_bottom_px > 0.0 {
                     y_offset += outer_margin_bottom_px;
                 }
@@ -3065,30 +3865,62 @@ impl LayoutEngine {
             if !is_tac {
                 let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                 for (ci, ctrl) in para.controls.iter().enumerate() {
-                    if ci == control_index { continue; }
+                    if ci == control_index {
+                        continue;
+                    }
                     if let Control::Table(inline_t) = ctrl {
                         if inline_t.common.treat_as_char
-                            && crate::renderer::height_measurer::is_tac_table_inline(inline_t, seg_width, &para.text, &para.controls)
+                            && crate::renderer::height_measurer::is_tac_table_inline(
+                                inline_t,
+                                seg_width,
+                                &para.text,
+                                &para.controls,
+                            )
                         {
-                            let mt = measured_tables.iter().find(|m| m.para_index == para_index && m.control_index == ci);
-                            let alignment = composed.get(para_index)
-                                .map(|c| styles.para_styles.get(c.para_style_id as usize)
-                                    .map(|s| s.alignment).unwrap_or(Alignment::Left))
+                            let mt = measured_tables
+                                .iter()
+                                .find(|m| m.para_index == para_index && m.control_index == ci);
+                            let alignment = composed
+                                .get(para_index)
+                                .map(|c| {
+                                    styles
+                                        .para_styles
+                                        .get(c.para_style_id as usize)
+                                        .map(|s| s.alignment)
+                                        .unwrap_or(Alignment::Left)
+                                })
                                 .unwrap_or(Alignment::Left);
                             // paragraph_layout에서 계산된 인라인 좌표 사용
                             let inline_pos = tree.get_inline_shape_position(
-                                page_content.section_index, para_index, ci, None);
+                                page_content.section_index,
+                                para_index,
+                                ci,
+                                None,
+                            );
                             let (inline_x, inline_y) = if let Some((ix, iy)) = inline_pos {
                                 (Some(ix), iy)
                             } else {
                                 (None, para_y_for_table)
                             };
                             let tac_new_y = self.layout_table(
-                                tree, col_node, inline_t,
-                                page_content.section_index, styles, col_area, inline_y,
-                                bin_data_content, mt, 0,
+                                tree,
+                                col_node,
+                                inline_t,
+                                page_content.section_index,
+                                styles,
+                                col_area,
+                                inline_y,
+                                bin_data_content,
+                                mt,
+                                0,
                                 Some((para_index, ci)),
-                                alignment, None, 0.0, 0.0, inline_x, None, None,
+                                alignment,
+                                None,
+                                0.0,
+                                0.0,
+                                inline_x,
+                                None,
+                                None,
                             );
                             y_offset = y_offset.max(tac_new_y);
                         }
@@ -3124,32 +3956,64 @@ impl LayoutEngine {
         mut y_offset: f64,
     ) -> f64 {
         let ColumnItemCtx {
-            page_content, paragraphs, composed, styles, bin_data_content,
-            measured_tables, col_area, multi_col_width, wrap_around_paras, wrap_anchors, ..
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            measured_tables,
+            col_area,
+            multi_col_width,
+            wrap_around_paras,
+            wrap_anchors,
+            ..
         } = ctx;
         // ── 분할 표 첫 부분: 호스트 문단 텍스트 렌더링 ──
         if !is_continuation {
             if let Some(para) = paragraphs.get(para_index) {
-                let is_tac = para.controls.get(control_index)
+                let is_tac = para
+                    .controls
+                    .get(control_index)
                     .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                     .unwrap_or(false);
                 if !is_tac {
-                    let has_real_text = para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                    let has_real_text =
+                        para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
                     if has_real_text {
                         if let Some(comp) = composed.get(para_index) {
                             let text_start_line = comp.lines.iter().position(|line| {
-                                line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+                                line.runs.iter().any(|r| {
+                                    r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                })
                             });
                             if let Some(start_line) = text_start_line {
-                                let text_end_line = comp.lines.iter().rposition(|line| {
-                                    line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
-                                }).map(|i| i + 1).unwrap_or(comp.lines.len());
+                                let text_end_line = comp
+                                    .lines
+                                    .iter()
+                                    .rposition(|line| {
+                                        line.runs.iter().any(|r| {
+                                            r.text
+                                                .chars()
+                                                .any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                        })
+                                    })
+                                    .map(|i| i + 1)
+                                    .unwrap_or(comp.lines.len());
                                 para_start_y.insert(para_index, y_offset);
                                 let _text_y_end = self.layout_partial_paragraph(
-                                    tree, col_node, para, Some(comp), styles,
-                                    col_area, y_offset, start_line, text_end_line,
-                                    page_content.section_index, para_index,
-                                    *multi_col_width, Some(bin_data_content),
+                                    tree,
+                                    col_node,
+                                    para,
+                                    Some(comp),
+                                    styles,
+                                    col_area,
+                                    y_offset,
+                                    start_line,
+                                    text_end_line,
+                                    page_content.section_index,
+                                    para_index,
+                                    *multi_col_width,
+                                    Some(bin_data_content),
                                     wrap_anchors.get(&para_index),
                                 );
                             }
@@ -3167,9 +4031,9 @@ impl LayoutEngine {
         } else {
             (0.0, 0.0)
         };
-        let pt_mt = measured_tables.iter().find(|mt|
-            mt.para_index == para_index && mt.control_index == control_index
-        );
+        let pt_mt = measured_tables
+            .iter()
+            .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
         // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달.
         // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지.
         // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 가드는 음수 비트표현
@@ -3177,7 +4041,10 @@ impl LayoutEngine {
         let pt_y_start = if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 if !t.common.treat_as_char
-                    && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                    && matches!(
+                        t.common.text_wrap,
+                        crate::model::shape::TextWrap::TopAndBottom
+                    )
                     && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
                     && (t.common.vertical_offset as i32) > 0
                 {
@@ -3185,32 +4052,54 @@ impl LayoutEngine {
                 } else {
                     y_offset
                 }
-            } else { y_offset }
-        } else { y_offset };
+            } else {
+                y_offset
+            }
+        } else {
+            y_offset
+        };
         let pt_y_before = y_offset;
         y_offset = self.layout_partial_table(
-            tree, col_node, paragraphs,
-            para_index, control_index,
-            page_content.section_index, styles, col_area,
-            pt_y_start, bin_data_content,
-            start_row, end_row, is_continuation,
-            split_start_content_offset, split_end_content_limit,
-            pt_margin_left, pt_margin_right, pt_mt,
+            tree,
+            col_node,
+            paragraphs,
+            para_index,
+            control_index,
+            page_content.section_index,
+            styles,
+            col_area,
+            pt_y_start,
+            bin_data_content,
+            start_row,
+            end_row,
+            is_continuation,
+            split_start_content_offset,
+            split_end_content_limit,
+            pt_margin_left,
+            pt_margin_right,
+            pt_mt,
         );
         if let Some(para) = paragraphs.get(para_index) {
             let comp = composed.get(para_index);
-            let para_style_id = comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize);
+            let para_style_id = comp
+                .map(|c| c.para_style_id as usize)
+                .unwrap_or(para.para_shape_id as usize);
             if let Some(para_style) = styles.para_styles.get(para_style_id) {
-                let is_tac = para.controls.get(control_index)
+                let is_tac = para
+                    .controls
+                    .get(control_index)
                     .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                     .unwrap_or(false);
                 if is_tac {
                     if para_style.spacing_after > 0.0 {
                         y_offset += para_style.spacing_after;
                     }
-                    let outer_margin_bottom_px = if let Some(Control::Table(t)) = para.controls.get(control_index) {
-                        hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
-                    } else { 0.0 };
+                    let outer_margin_bottom_px =
+                        if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                            hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
+                        } else {
+                            0.0
+                        };
                     if outer_margin_bottom_px > 0.0 {
                         y_offset += outer_margin_bottom_px;
                     }
@@ -3225,7 +4114,8 @@ impl LayoutEngine {
         if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 let pt_is_tac = t.common.treat_as_char;
-                let pt_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
+                let pt_is_square =
+                    matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
                 if !pt_is_tac && pt_is_square && !wrap_around_paras.is_empty() {
                     let wrap_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
@@ -3233,13 +4123,25 @@ impl LayoutEngine {
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                     let content_offset = if let Some(mt) = pt_mt {
                         mt.range_height(0, start_row)
-                    } else { 0.0 };
+                    } else {
+                        0.0
+                    };
                     let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
                     self.layout_wrap_around_paras(
-                        tree, col_node, paragraphs, composed, styles, col_area,
-                        page_content.section_index, para_index, wrap_around_paras,
-                        pt_y_before, y_offset,
-                        wrap_text_x, wrap_text_width, content_offset,
+                        tree,
+                        col_node,
+                        paragraphs,
+                        composed,
+                        styles,
+                        col_area,
+                        page_content.section_index,
+                        para_index,
+                        wrap_around_paras,
+                        pt_y_before,
+                        y_offset,
+                        wrap_text_x,
+                        wrap_text_width,
+                        content_offset,
                         bin_data_content,
                         Some(tbl_x_right),
                     );
@@ -3263,23 +4165,34 @@ impl LayoutEngine {
         y_offset: f64,
     ) -> f64 {
         let ColumnItemCtx {
-            page_content, paragraphs, composed, styles, bin_data_content,
-            layout, col_area, wrap_around_paras, ..
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            layout,
+            col_area,
+            wrap_around_paras,
+            ..
         } = ctx;
         // Task #402: 같은 paragraph 안에 TAC 컨트롤(표/그림/도형) 2개 이상이 서로 다른 line에
         // 배치된 경우, 두 번째 이후의 그림은 paragraph 시작 y가 아니라 진행된 y_offset
         // (선행 TAC 후속 위치)에 그려져야 표와 겹치지 않는다. control_index 이전에 같은
         // paragraph의 TAC 컨트롤이 있고 y_offset이 기존 등록값보다 진행됐으면 갱신한다.
-        let has_prior_tac_in_para = paragraphs.get(para_index)
-            .map(|p| p.controls.iter().take(control_index).any(|c| match c {
-                Control::Table(t) => t.common.treat_as_char,
-                Control::Picture(p) => p.common.treat_as_char,
-                Control::Shape(s) => s.common().treat_as_char,
-                _ => false,
-            }))
+        let has_prior_tac_in_para = paragraphs
+            .get(para_index)
+            .map(|p| {
+                p.controls.iter().take(control_index).any(|c| match c {
+                    Control::Table(t) => t.common.treat_as_char,
+                    Control::Picture(p) => p.common.treat_as_char,
+                    Control::Shape(s) => s.common().treat_as_char,
+                    _ => false,
+                })
+            })
             .unwrap_or(false);
         if has_prior_tac_in_para {
-            let needs_update = para_start_y.get(&para_index)
+            let needs_update = para_start_y
+                .get(&para_index)
                 .map(|&existing| y_offset > existing + 1.0)
                 .unwrap_or(true);
             if needs_update {
@@ -3297,7 +4210,8 @@ impl LayoutEngine {
                         let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                         let pic_y = para_start_y.get(&para_index).copied().unwrap_or(y_offset);
                         let comp = composed.get(para_index);
-                        let para_style_id = comp.map(|c| c.para_style_id as usize)
+                        let para_style_id = comp
+                            .map(|c| c.para_style_id as usize)
                             .unwrap_or(para.para_shape_id as usize);
                         let para_style_ref = styles.para_styles.get(para_style_id);
                         let para_alignment = para_style_ref
@@ -3312,23 +4226,34 @@ impl LayoutEngine {
                         // line 711-716 와 동일). wrap_host (Square wrap 표 보유) paragraph 는
                         // paragraph_layout 미호출되어 본 경로만 emit → inner_pad 누락 시
                         // 위치 결함 (예: exam_kor p18 pi=50/56 의 [A]/[B] 표시기 옆 그림).
-                        let para_border_fill_id_pre = para_style_ref.map(|s| s.border_fill_id).unwrap_or(0);
+                        let para_border_fill_id_pre =
+                            para_style_ref.map(|s| s.border_fill_id).unwrap_or(0);
                         let has_visible_stroke = if para_border_fill_id_pre > 0 {
                             let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
-                            styles.border_styles.get(idx)
-                                .map(|bs| bs.borders.iter().any(|b|
-                                    !matches!(b.line_type, crate::model::style::BorderLineType::None) && b.width > 0))
+                            styles
+                                .border_styles
+                                .get(idx)
+                                .map(|bs| {
+                                    bs.borders.iter().any(|b| {
+                                        !matches!(
+                                            b.line_type,
+                                            crate::model::style::BorderLineType::None
+                                        ) && b.width > 0
+                                    })
+                                })
                                 .unwrap_or(false)
                         } else {
                             false
                         };
                         let bs_left_px = para_style_ref.map(|s| s.border_spacing[0]).unwrap_or(0.0);
-                        let bs_right_px = para_style_ref.map(|s| s.border_spacing[1]).unwrap_or(0.0);
-                        let inner_pad_left = if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
-                            para_margin_left
-                        } else {
-                            0.0
-                        };
+                        let bs_right_px =
+                            para_style_ref.map(|s| s.border_spacing[1]).unwrap_or(0.0);
+                        let inner_pad_left =
+                            if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
+                                para_margin_left
+                            } else {
+                                0.0
+                            };
                         let mut effective_margin_left = if para_indent > 0.0 {
                             para_margin_left + para_indent + inner_pad_left
                         } else {
@@ -3339,19 +4264,27 @@ impl LayoutEngine {
                         // layout_shape_item 은 col_area.x 그대로 사용 → picture (TAC) 가 표
                         // 영역 위에 겹쳐 표시되는 결함 (예: exam_kor p18 pi=50/56 [A]/[B]
                         // 표시기 + 그림). cs 가 effective_margin_left 보다 크면 cs 우선.
-                        let line_seg_cs_px = para.line_segs.first()
+                        let line_seg_cs_px = para
+                            .line_segs
+                            .first()
                             .map(|s| hwpunit_to_px(s.column_start, self.dpi))
                             .unwrap_or(0.0);
                         if line_seg_cs_px > effective_margin_left {
                             effective_margin_left = line_seg_cs_px;
                         }
-                        let para_margin_right = para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
-                        let avail_w = (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
+                        let para_margin_right =
+                            para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
+                        let avail_w =
+                            (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
                         let pic_x = match para_alignment {
-                            Alignment::Center | Alignment::Distribute =>
-                                col_area.x + effective_margin_left + (avail_w - pic_w).max(0.0) / 2.0,
-                            Alignment::Right =>
-                                col_area.x + effective_margin_left + (avail_w - pic_w).max(0.0),
+                            Alignment::Center | Alignment::Distribute => {
+                                col_area.x
+                                    + effective_margin_left
+                                    + (avail_w - pic_w).max(0.0) / 2.0
+                            }
+                            Alignment::Right => {
+                                col_area.x + effective_margin_left + (avail_w - pic_w).max(0.0)
+                            }
                             _ => col_area.x + effective_margin_left,
                         };
 
@@ -3360,15 +4293,20 @@ impl LayoutEngine {
                         // 박스 프레임 시각이 사라지고 후속 InFrontOfText 표가 위로 겹침.
                         // 호스트 문단에 실제 텍스트가 없으면 여기서 직접 이미지 노드를 생성하고
                         // y_offset을 그림 높이만큼 진행시킨다.
-                        let has_real_text = para.text.chars()
-                            .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                        let has_real_text =
+                            para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
                         // [Task #418/#376] paragraph_layout 의 빈 문단 + TAC Picture 분기에서
                         // 이미 ImageNode 가 emit 되어 inline_shape_position 이 등록된 경우,
                         // 여기서 또 push 하면 이중 emit 이 된다. 등록된 경우 push 를 스킵하고
                         // result_y 만 갱신한다.
-                        let already_registered = tree.get_inline_shape_position(
-                            page_content.section_index, para_index, control_index, None,
-                        ).is_some();
+                        let already_registered = tree
+                            .get_inline_shape_position(
+                                page_content.section_index,
+                                para_index,
+                                control_index,
+                                None,
+                            )
+                            .is_some();
                         if !has_real_text && !already_registered {
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data(bin_data_content, bin_data_id)
@@ -3384,7 +4322,10 @@ impl LayoutEngine {
                             let original_size_hu = if pic.shape_attr.original_width > 0
                                 && pic.shape_attr.original_height > 0
                             {
-                                Some((pic.shape_attr.original_width, pic.shape_attr.original_height))
+                                Some((
+                                    pic.shape_attr.original_width,
+                                    pic.shape_attr.original_height,
+                                ))
                             } else {
                                 None
                             };
@@ -3420,20 +4361,29 @@ impl LayoutEngine {
                             }
                             // 후속 InFrontOfText 객체의 para_y 기준이 되도록 위치 등록
                             tree.set_inline_shape_position(
-                                page_content.section_index, para_index, control_index, None, pic_x, pic_y,
+                                page_content.section_index,
+                                para_index,
+                                control_index,
+                                None,
+                                pic_x,
+                                pic_y,
                             );
                             // [Task #462] LINE_SEG 의 lh+ls 를 advance 로 사용 — 이미지 박스
                             // 높이만 사용하면 leading + line_spacing 이 누락되어 다음 문단이
                             // 그림 바로 아래에 붙음. max(pic_h) 는 LINE_SEG 가 비정상적으로
                             // 작은 경우의 안전장치.
-                            let line_advance = para.line_segs.first()
+                            let line_advance = para
+                                .line_segs
+                                .first()
                                 .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
                                 .unwrap_or(pic_h);
                             result_y = pic_y + line_advance.max(pic_h);
                         } else if !has_real_text && already_registered {
                             // [Task #418/#376] paragraph_layout 가 이미 emit 함 — push 스킵, result_y 만 갱신
                             // [Task #462] 동일하게 LINE_SEG 기반 advance 사용
-                            let line_advance = para.line_segs.first()
+                            let line_advance = para
+                                .line_segs
+                                .first()
                                 .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
                                 .unwrap_or(pic_h);
                             result_y = pic_y + line_advance.max(pic_h);
@@ -3448,7 +4398,9 @@ impl LayoutEngine {
                             // 함. caption 은 image 바로 아래 (image_bottom = pic_y + baseline)
                             // 에 위치해야 함. 기존 pic_y + pic_h 사용 시 image 영역 안에
                             // 그려져 가려짐.
-                            let baseline_px = para.line_segs.first()
+                            let baseline_px = para
+                                .line_segs
+                                .first()
                                 .map(|ls| hwpunit_to_px(ls.baseline_distance, self.dpi))
                                 .unwrap_or(pic_h);
                             let image_bottom = pic_y + baseline_px.max(pic_h);
@@ -3459,7 +4411,12 @@ impl LayoutEngine {
                             };
                             if caption.direction == CaptionDirection::Top {
                                 let dy = caption_h + caption_spacing;
-                                Self::offset_inline_image_y(col_node, para_index, control_index, dy);
+                                Self::offset_inline_image_y(
+                                    col_node,
+                                    para_index,
+                                    control_index,
+                                    dy,
+                                );
                             }
                             let cell_ctx = CellContext {
                                 parent_para_index: para_index,
@@ -3471,8 +4428,14 @@ impl LayoutEngine {
                                 }],
                             };
                             self.layout_caption(
-                                tree, col_node, caption, styles, col_area,
-                                pic_x, pic_w, cap_y,
+                                tree,
+                                col_node,
+                                caption,
+                                styles,
+                                col_area,
+                                pic_x,
+                                pic_w,
+                                cap_y,
                                 &mut self.auto_counter.borrow_mut(),
                                 Some(cell_ctx),
                             );
@@ -3488,11 +4451,13 @@ impl LayoutEngine {
                             // result_y 가 phantom +caption_h 만큼 누적 → 후속 paragraph 가 다음
                             // 페이지로 밀림 (sample16 page 18 pi=394 ci=1 "그림" 의 empty caption
                             // 으로 +430.6px advance). 빈 caption 은 advance skip.
-                            let caption_is_empty = caption.paragraphs.iter().all(|p|
+                            let caption_is_empty = caption.paragraphs.iter().all(|p| {
                                 p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}')
                                     && p.controls.is_empty()
-                            );
-                            if !caption_is_empty && matches!(caption.direction, CaptionDirection::Bottom) {
+                            });
+                            if !caption_is_empty
+                                && matches!(caption.direction, CaptionDirection::Bottom)
+                            {
                                 let cap_bottom = cap_y + caption_h;
                                 if cap_bottom > result_y {
                                     result_y = cap_bottom;
@@ -3500,8 +4465,10 @@ impl LayoutEngine {
                             }
                         }
                     } else {
-                        let is_paper_based = (pic.common.vert_rel_to == VertRelTo::Paper || pic.common.vert_rel_to == VertRelTo::Page)
-                            && (pic.common.horz_rel_to == HorzRelTo::Paper || pic.common.horz_rel_to == HorzRelTo::Page);
+                        let is_paper_based = (pic.common.vert_rel_to == VertRelTo::Paper
+                            || pic.common.vert_rel_to == VertRelTo::Page)
+                            && (pic.common.horz_rel_to == HorzRelTo::Paper
+                                || pic.common.horz_rel_to == HorzRelTo::Page);
                         if is_paper_based {
                             let mut temp_parent = RenderNode::new(
                                 tree.next_id(),
@@ -3509,38 +4476,68 @@ impl LayoutEngine {
                                 BoundingBox::new(0.0, 0.0, layout.page_width, layout.page_height),
                             );
                             let paper_area = LayoutRect {
-                                x: 0.0, y: 0.0,
+                                x: 0.0,
+                                y: 0.0,
                                 width: layout.page_width,
                                 height: layout.page_height,
                             };
                             let _ = self.layout_body_picture(
-                                tree, &mut temp_parent, pic,
-                                &paper_area, col_area, &layout.body_area, &paper_area,
-                                bin_data_content, styles, Alignment::Left, 0.0,
-                                page_content.section_index, para_index, control_index,
+                                tree,
+                                &mut temp_parent,
+                                pic,
+                                &paper_area,
+                                col_area,
+                                &layout.body_area,
+                                &paper_area,
+                                bin_data_content,
+                                styles,
+                                Alignment::Left,
+                                0.0,
+                                page_content.section_index,
+                                para_index,
+                                control_index,
                             );
                             for child in temp_parent.children.drain(..) {
                                 paper_images.push(child);
                             }
                         } else {
                             let comp = composed.get(para_index);
-                            let para_style_id = comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize);
-                            let alignment = styles.para_styles.get(para_style_id)
+                            let para_style_id = comp
+                                .map(|c| c.para_style_id as usize)
+                                .unwrap_or(para.para_shape_id as usize);
+                            let alignment = styles
+                                .para_styles
+                                .get(para_style_id)
                                 .map(|s| s.alignment)
                                 .unwrap_or(Alignment::Left);
                             let pic_y = para_start_y.get(&para_index).copied().unwrap_or(y_offset);
                             let pic_container = LayoutRect {
-                                x: col_area.x, y: pic_y,
+                                x: col_area.x,
+                                y: pic_y,
                                 width: col_area.width,
                                 height: col_area.height - (pic_y - col_area.y),
                             };
                             let saved_y_offset = y_offset;
                             result_y = self.layout_body_picture(
-                                tree, col_node, pic,
-                                &pic_container, col_area, &layout.body_area,
-                                &LayoutRect { x: 0.0, y: 0.0, width: layout.page_width, height: layout.page_height },
-                                bin_data_content, styles, alignment, pic_y,
-                                page_content.section_index, para_index, control_index,
+                                tree,
+                                col_node,
+                                pic,
+                                &pic_container,
+                                col_area,
+                                &layout.body_area,
+                                &LayoutRect {
+                                    x: 0.0,
+                                    y: 0.0,
+                                    width: layout.page_width,
+                                    height: layout.page_height,
+                                },
+                                bin_data_content,
+                                styles,
+                                alignment,
+                                pic_y,
+                                page_content.section_index,
+                                para_index,
+                                control_index,
                             );
                             // [Task #959] horz_rel_to=Column 의 picture 가 col_area 우측을
                             // 초과하는 위치에 emit 되면 한컴 viewer 는 column flow 에
@@ -3551,16 +4548,22 @@ impl LayoutEngine {
                             // Picture 의 좌측 edge (x) 가 col_area 우측을 초과하면 advance skip.
                             if matches!(pic.common.horz_rel_to, HorzRelTo::Column) {
                                 let pic_width_px = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                let h_offset_px = hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
+                                let h_offset_px =
+                                    hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
                                 let pic_emit_x = match pic.common.horz_align {
                                     crate::model::shape::HorzAlign::Left
-                                    | crate::model::shape::HorzAlign::Inside =>
-                                        col_area.x + h_offset_px,
-                                    crate::model::shape::HorzAlign::Center =>
-                                        col_area.x + (col_area.width - pic_width_px) / 2.0 + h_offset_px,
+                                    | crate::model::shape::HorzAlign::Inside => {
+                                        col_area.x + h_offset_px
+                                    }
+                                    crate::model::shape::HorzAlign::Center => {
+                                        col_area.x
+                                            + (col_area.width - pic_width_px) / 2.0
+                                            + h_offset_px
+                                    }
                                     crate::model::shape::HorzAlign::Right
-                                    | crate::model::shape::HorzAlign::Outside =>
-                                        col_area.x + col_area.width - pic_width_px - h_offset_px,
+                                    | crate::model::shape::HorzAlign::Outside => {
+                                        col_area.x + col_area.width - pic_width_px - h_offset_px
+                                    }
                                 };
                                 if pic_emit_x >= col_area.x + col_area.width {
                                     result_y = saved_y_offset;
@@ -3571,16 +4574,26 @@ impl LayoutEngine {
                             // 그림 다음에 paragraph 의 line baseline 1줄(line_height + line_spacing)
                             // 을 추가 진행하나 rhwp 기본 layout 은 image_height 만 진행하여
                             // cluster 거리가 1 line 부족 (pr-149.hwp 18864 HU vs 17280 HU 결함).
-                            if matches!(pic.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
-                                && matches!(pic.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
-                                && pic.caption.is_none()
+                            if matches!(
+                                pic.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            ) && matches!(
+                                pic.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            ) && pic.caption.is_none()
                             {
-                                let has_visible_text = para.text.chars()
-                                    .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                                let has_visible_text =
+                                    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
                                 if !has_visible_text {
-                                    let line_advance = para.line_segs.first()
-                                        .map(|ls| hwpunit_to_px(
-                                            ls.line_height + ls.line_spacing, self.dpi))
+                                    let line_advance = para
+                                        .line_segs
+                                        .first()
+                                        .map(|ls| {
+                                            hwpunit_to_px(
+                                                ls.line_height + ls.line_spacing,
+                                                self.dpi,
+                                            )
+                                        })
                                         .unwrap_or(0.0);
                                     result_y += line_advance;
                                 }
@@ -3591,7 +4604,10 @@ impl LayoutEngine {
                             // layout_body_picture의 y_offset은 pic_y(=단락 시작 y)이므로
                             // 반환값이 para_start_y로 거슬러 올라감 — 이를 shape item y로 복원.
                             if matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
-                                && matches!(pic.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                                && matches!(
+                                    pic.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                )
                             {
                                 result_y = y_offset;
                             }
@@ -3606,11 +4622,16 @@ impl LayoutEngine {
                 } else if let Control::Shape(shape) = ctrl {
                     let common = shape.common();
                     if common.treat_as_char {
-                        let has_real_text = para.text.chars()
-                            .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-                        let already_registered = tree.get_inline_shape_position(
-                            page_content.section_index, para_index, control_index, None,
-                        ).is_some();
+                        let has_real_text =
+                            para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                        let already_registered = tree
+                            .get_inline_shape_position(
+                                page_content.section_index,
+                                para_index,
+                                control_index,
+                                None,
+                            )
+                            .is_some();
 
                         if !has_real_text {
                             let shape_w = hwpunit_to_px(common.width as i32, self.dpi);
@@ -3619,33 +4640,37 @@ impl LayoutEngine {
 
                             if !already_registered {
                                 let comp = composed.get(para_index);
-                                let para_style_id = comp.map(|c| c.para_style_id as usize)
+                                let para_style_id = comp
+                                    .map(|c| c.para_style_id as usize)
                                     .unwrap_or(para.para_shape_id as usize);
                                 let para_style_ref = styles.para_styles.get(para_style_id);
                                 let para_alignment = para_style_ref
                                     .map(|s| s.alignment)
                                     .unwrap_or(Alignment::Left);
-                                let para_margin_left = para_style_ref
-                                    .map(|s| s.margin_left)
-                                    .unwrap_or(0.0);
-                                let para_indent = para_style_ref
-                                    .map(|s| s.indent)
-                                    .unwrap_or(0.0);
-                                let para_margin_right = para_style_ref
-                                    .map(|s| s.margin_right)
-                                    .unwrap_or(0.0);
+                                let para_margin_left =
+                                    para_style_ref.map(|s| s.margin_left).unwrap_or(0.0);
+                                let para_indent = para_style_ref.map(|s| s.indent).unwrap_or(0.0);
+                                let para_margin_right =
+                                    para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
                                 let effective_margin_left = if para_indent > 0.0 {
                                     para_margin_left + para_indent
                                 } else {
                                     para_margin_left
                                 };
-                                let avail_w = (col_area.width - effective_margin_left - para_margin_right)
-                                    .max(shape_w);
+                                let avail_w =
+                                    (col_area.width - effective_margin_left - para_margin_right)
+                                        .max(shape_w);
                                 let shape_x = match para_alignment {
-                                    Alignment::Center | Alignment::Distribute =>
-                                        col_area.x + effective_margin_left + (avail_w - shape_w).max(0.0) / 2.0,
-                                    Alignment::Right =>
-                                        col_area.x + effective_margin_left + (avail_w - shape_w).max(0.0),
+                                    Alignment::Center | Alignment::Distribute => {
+                                        col_area.x
+                                            + effective_margin_left
+                                            + (avail_w - shape_w).max(0.0) / 2.0
+                                    }
+                                    Alignment::Right => {
+                                        col_area.x
+                                            + effective_margin_left
+                                            + (avail_w - shape_w).max(0.0)
+                                    }
                                     _ => col_area.x + effective_margin_left,
                                 };
 
@@ -3659,7 +4684,9 @@ impl LayoutEngine {
                                 );
                             }
 
-                            let line_advance = para.line_segs.first()
+                            let line_advance = para
+                                .line_segs
+                                .first()
                                 .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
                                 .unwrap_or(shape_h);
                             result_y = shape_y + line_advance.max(shape_h);
@@ -3695,7 +4722,8 @@ impl LayoutEngine {
         tbl_x_right: Option<f64>,
     ) {
         // 이 표에 연관된 어울림 문단만 필터링
-        let related: Vec<_> = wrap_around_paras.iter()
+        let related: Vec<_> = wrap_around_paras
+            .iter()
             .filter(|wp| wp.table_para_index == table_para_index)
             .collect();
 
@@ -3717,7 +4745,8 @@ impl LayoutEngine {
         // 들여쓰기 됨 (학생3 wrap host 가 학생1 보다 +margin_left 만큼 우측으로 밀림).
         // wrap_area.x 를 margin_left 만큼 좌측으로 보정하고 width 도 그만큼 확장.
         // (inner_pad 는 외곽선 안쪽 여백으로 wrap_cs 와 무관하므로 보정 대상 아님)
-        let host_para_style = composed.get(table_para_index)
+        let host_para_style = composed
+            .get(table_para_index)
             .and_then(|c| styles.para_styles.get(c.para_style_id as usize));
         let host_margin_left = host_para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let host_margin_right = host_para_style.map(|s| s.margin_right).unwrap_or(0.0);
@@ -3729,34 +4758,56 @@ impl LayoutEngine {
         };
 
         // 호스트 문단(표 문단) 텍스트를 어울림 영역에 렌더링
-        let has_host_text = table_para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+        let has_host_text = table_para
+            .text
+            .chars()
+            .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
         if table_content_offset == 0.0 {
             if has_host_text {
                 if let Some(comp) = composed.get(table_para_index) {
                     let text_start_line = comp.lines.iter().position(|line| {
-                        line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+                        line.runs
+                            .iter()
+                            .any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
                     });
                     if let Some(start_line) = text_start_line {
                         // 호스트 본문의 모든 텍스트 줄을 wrap 영역에 렌더링
                         // (Task #295: 자가 wrap host의 다중 줄 누락 수정)
-                        let text_end_line = comp.lines.iter().rposition(|line| {
-                            line.runs.iter().any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
-                        }).map(|i| i + 1).unwrap_or(comp.lines.len());
+                        let text_end_line = comp
+                            .lines
+                            .iter()
+                            .rposition(|line| {
+                                line.runs.iter().any(|r| {
+                                    r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                })
+                            })
+                            .map(|i| i + 1)
+                            .unwrap_or(comp.lines.len());
                         // Task #463: wrap host 의 외곽선은 원래 col_area 너비로 그려야
                         // 인라인 floating 표(인용 따옴표 ｢｣ 등)를 박스가 둘러쌈. tbl_x_right
                         // 가 col_area 우측을 넘으면 그 위치까지 박스 너비를 확장한다.
                         let prev_override = self.border_box_override.get();
                         let extended_width = match tbl_x_right {
-                            Some(tx) if tx > col_area.x + col_area.width =>
-                                tx - col_area.x,
+                            Some(tx) if tx > col_area.x + col_area.width => tx - col_area.x,
                             _ => col_area.width,
                         };
-                        self.border_box_override.set(Some((col_area.x, extended_width)));
+                        self.border_box_override
+                            .set(Some((col_area.x, extended_width)));
                         self.layout_partial_paragraph(
-                            tree, col_node, table_para, Some(comp), styles,
-                            &wrap_area, table_y_start, start_line, text_end_line,
-                            section_index, table_para_index, None, Some(bin_data_content),
-                            None,  // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
+                            tree,
+                            col_node,
+                            table_para,
+                            Some(comp),
+                            styles,
+                            &wrap_area,
+                            table_y_start,
+                            start_line,
+                            text_end_line,
+                            section_index,
+                            table_para_index,
+                            None,
+                            Some(bin_data_content),
+                            None, // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
                         );
                         self.border_box_override.set(prev_override);
                         // 어울림 문단은 항상 ↵ 표시 필요 — 부분 렌더링 시 is_para_end 강제 설정
@@ -3766,8 +4817,12 @@ impl LayoutEngine {
             } else {
                 // 호스트 문단에 텍스트 없음 (빈 문단 + 표): ↵ 마크 렌더링
                 let seg = table_para.line_segs.first();
-                let line_height = seg.map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi)).unwrap_or(13.3);
-                let font_size = seg.map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi)).unwrap_or(13.3);
+                let line_height = seg
+                    .map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi))
+                    .unwrap_or(13.3);
+                let font_size = seg
+                    .map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi))
+                    .unwrap_or(13.3);
                 let baseline = font_size * 0.8;
                 let line_id = tree.next_id();
                 let line_node = RenderNode::new(
@@ -3850,10 +4905,20 @@ impl LayoutEngine {
                 // 그림 어울림: 하나의 WrapAroundPara에 여러 줄이 포함될 수 있어 전체 렌더링.
                 let end_line = comp.map(|c| c.lines.len()).unwrap_or(1);
                 self.layout_partial_paragraph(
-                    tree, col_node, para, comp, styles,
-                    &wrap_area, para_y, 0, end_line,
-                    section_index, wp.para_index, None, Some(bin_data_content),
-                    None,  // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
+                    tree,
+                    col_node,
+                    para,
+                    comp,
+                    styles,
+                    &wrap_area,
+                    para_y,
+                    0,
+                    end_line,
+                    section_index,
+                    wp.para_index,
+                    None,
+                    Some(bin_data_content),
+                    None, // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
                 );
                 // 어울림 문단은 항상 ↵ 표시 필요
                 force_para_end_on_last_run(col_node);
@@ -3862,8 +4927,14 @@ impl LayoutEngine {
                 let line_height = crate::renderer::hwpunit_to_px(seg.line_height, self.dpi);
                 // 문단의 글자 모양에서 실제 폰트 크기 추출
                 let font_size = {
-                    let cs_id = para.char_shapes.first().map(|cs| cs.char_shape_id).unwrap_or(0);
-                    styles.char_styles.get(cs_id as usize)
+                    let cs_id = para
+                        .char_shapes
+                        .first()
+                        .map(|cs| cs.char_shape_id)
+                        .unwrap_or(0);
+                    styles
+                        .char_styles
+                        .get(cs_id as usize)
                         .map(|cs| cs.font_size)
                         .filter(|fs| *fs > 0.0)
                         .unwrap_or(13.3)
@@ -3933,18 +5004,26 @@ impl LayoutEngine {
     ) {
         let mut shape_render_items: Vec<(i32, usize, usize, f64, Alignment)> = Vec::new();
         for item in &col_content.items {
-            if let PageItem::Shape { para_index, control_index } = item {
+            if let PageItem::Shape {
+                para_index,
+                control_index,
+            } = item
+            {
                 let para_y = para_start_y.get(para_index).copied().unwrap_or(col_area.y);
                 let comp = composed.get(*para_index);
                 let para_style_id = if let Some(para) = paragraphs.get(*para_index) {
-                    comp.map(|c| c.para_style_id as usize).unwrap_or(para.para_shape_id as usize)
+                    comp.map(|c| c.para_style_id as usize)
+                        .unwrap_or(para.para_shape_id as usize)
                 } else {
                     0
                 };
-                let alignment = styles.para_styles.get(para_style_id)
+                let alignment = styles
+                    .para_styles
+                    .get(para_style_id)
                     .map(|s| s.alignment)
                     .unwrap_or(Alignment::Left);
-                let z_order = paragraphs.get(*para_index)
+                let z_order = paragraphs
+                    .get(*para_index)
                     .and_then(|p| p.controls.get(*control_index))
                     .map(|ctrl| match ctrl {
                         Control::Shape(shape) => shape.z_order(),
@@ -3960,7 +5039,8 @@ impl LayoutEngine {
         let overflow_map = self.scan_textbox_overflow(paragraphs, &shape_render_items);
 
         for (_, para_index, control_index, para_y, alignment) in shape_render_items {
-            let ctrl = paragraphs.get(para_index)
+            let ctrl = paragraphs
+                .get(para_index)
                 .and_then(|p| p.controls.get(control_index));
             let is_paper_based = ctrl
                 .map(|ctrl| {
@@ -3969,23 +5049,29 @@ impl LayoutEngine {
                         Control::Table(t) => Some(&t.common),
                         _ => None,
                     };
-                    common.map(|c| {
-                        matches!(c.horz_rel_to, HorzRelTo::Paper | HorzRelTo::Page)
-                        || matches!(c.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
-                    }).unwrap_or(false)
+                    common
+                        .map(|c| {
+                            matches!(c.horz_rel_to, HorzRelTo::Paper | HorzRelTo::Page)
+                                || matches!(c.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
+                        })
+                        .unwrap_or(false)
                 })
                 .unwrap_or(false);
-            let is_table_control = ctrl.map(|c| matches!(c, Control::Table(_))).unwrap_or(false);
+            let is_table_control = ctrl
+                .map(|c| matches!(c, Control::Table(_)))
+                .unwrap_or(false);
 
             let paper_area = LayoutRect {
-                x: 0.0, y: 0.0,
+                x: 0.0,
+                y: 0.0,
                 width: layout.page_width,
                 height: layout.page_height,
             };
 
             if is_table_control {
                 // InFrontOfText/BehindText 표: paper 기준 절대 위치에 렌더링
-                if let Some(Control::Table(table)) = paragraphs.get(para_index)
+                if let Some(Control::Table(table)) = paragraphs
+                    .get(para_index)
                     .and_then(|p| p.controls.get(control_index))
                 {
                     let mut temp_parent = RenderNode::new(
@@ -3994,11 +5080,24 @@ impl LayoutEngine {
                         BoundingBox::new(0.0, 0.0, layout.page_width, layout.page_height),
                     );
                     self.layout_table(
-                        tree, &mut temp_parent, table,
-                        page_content.section_index, styles, col_area, para_y,
-                        bin_data_content, None, 0,
+                        tree,
+                        &mut temp_parent,
+                        table,
+                        page_content.section_index,
+                        styles,
+                        col_area,
+                        para_y,
+                        bin_data_content,
+                        None,
+                        0,
                         Some((para_index, control_index)),
-                        alignment, None, 0.0, 0.0, None, None, None,
+                        alignment,
+                        None,
+                        0.0,
+                        0.0,
+                        None,
+                        None,
+                        None,
                     );
                     for child in temp_parent.children.drain(..) {
                         paper_images.push(child);
@@ -4075,8 +5174,11 @@ impl LayoutEngine {
 
         // margin_left를 미리 계산 (text_pos=0 early return에도 사용)
         let para_style_id_for_ml = comp.map(|c| c.para_style_id as usize).unwrap_or(0);
-        let margin_left = styles.para_styles.get(para_style_id_for_ml)
-            .map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_left = styles
+            .para_styles
+            .get(para_style_id_for_ml)
+            .map(|s| s.margin_left)
+            .unwrap_or(0.0);
         // x_base: 텍스트가 시작되는 절대 x 위치 (문단 첫 글자 위치)
         let x_base = col_area.x + margin_left;
 
@@ -4096,11 +5198,18 @@ impl LayoutEngine {
         let available_width = col_area.width - margin_left;
 
         // ctrl_text_pos 이전에 있는 treat_as_char 컨트롤(text_pos > 0)의 너비 목록
-        let mut preceding_tac: Vec<(usize, f64)> = para.controls.iter().enumerate()
+        let mut preceding_tac: Vec<(usize, f64)> = para
+            .controls
+            .iter()
+            .enumerate()
             .filter_map(|(ci, ctrl)| {
-                if ci >= control_index { return None; }
+                if ci >= control_index {
+                    return None;
+                }
                 let tp = positions.get(ci).copied().unwrap_or(0);
-                if tp == 0 || tp >= ctrl_text_pos { return None; }
+                if tp == 0 || tp >= ctrl_text_pos {
+                    return None;
+                }
                 let w = match ctrl {
                     Control::Picture(p) if p.common.treat_as_char => {
                         hwpunit_to_px(p.common.width as i32, self.dpi)
@@ -4144,7 +5253,11 @@ impl LayoutEngine {
                 ts.line_x_offset = est_x;
                 if ch == '\t' {
                     let (tp, _, _) = find_next_tab_stop(
-                        est_x, &ts.tab_stops, ts.default_tab_width, ts.auto_tab_right, ts.available_width,
+                        est_x,
+                        &ts.tab_stops,
+                        ts.default_tab_width,
+                        ts.auto_tab_right,
+                        ts.available_width,
                     );
                     est_x = tp;
                 } else {
@@ -4191,10 +5304,8 @@ fn compute_square_wrap_tbl_x_right(
         // 그러나 실제 렌더된 좌표(empirical: 526.93) 는 ref_x+(ref_w-tw)+h_offset 임.
         // 여기서는 tbl_inline_x(line 2218)와 일관되게 단순 우측정렬 후
         // h_offset 가산식을 사용한다.
-        HorzAlign::Right | HorzAlign::Outside =>
-            col_area.x + col_area.width - tbl_w + h_offset,
-        HorzAlign::Center =>
-            col_area.x + (col_area.width - tbl_w) / 2.0 + h_offset,
+        HorzAlign::Right | HorzAlign::Outside => col_area.x + col_area.width - tbl_w + h_offset,
+        HorzAlign::Center => col_area.x + (col_area.width - tbl_w) / 2.0 + h_offset,
         _ => col_area.x + h_offset,
     };
     tbl_x + tbl_w
@@ -4205,12 +5316,16 @@ fn compute_tac_leading_width(
     target_control_index: usize,
     styles: &ResolvedStyleSet,
 ) -> f64 {
-    let Some(first_line) = composed.lines.first() else { return 0.0; };
+    let Some(first_line) = composed.lines.first() else {
+        return 0.0;
+    };
 
     // target TAC 이 composed.tac_controls 에 있으면 해당 위치까지 합산.
     // 없으면(블록 취급: 너비 ≥ 90% seg_width 등 is_tac_table_inline 이 false 인 경우)
     // 선행 텍스트는 line 0 전체로 간주하고 모든 run 폭 합산.
-    let tac_pos_opt = composed.tac_controls.iter()
+    let tac_pos_opt = composed
+        .tac_controls
+        .iter()
         .find(|(_, _, ci)| *ci == target_control_index)
         .map(|(pos, _, _)| *pos);
 
@@ -4230,14 +5345,17 @@ fn compute_tac_leading_width(
                 let partial_len = tac_pos - char_pos;
                 // partial 추출은 run.text 기준 (인덱싱 불변성). 이후 PUA 변환 적용.
                 let partial: String = run.text.chars().take(partial_len).collect();
-                let partial_display: String = partial.chars().flat_map(|ch| {
-                    use super::pua_oldhangul::map_pua_old_hangul;
-                    if let Some(jamos) = map_pua_old_hangul(ch) {
-                        jamos.iter().copied().collect::<Vec<_>>()
-                    } else {
-                        vec![ch]
-                    }
-                }).collect();
+                let partial_display: String = partial
+                    .chars()
+                    .flat_map(|ch| {
+                        use super::pua_oldhangul::map_pua_old_hangul;
+                        if let Some(jamos) = map_pua_old_hangul(ch) {
+                            jamos.iter().copied().collect::<Vec<_>>()
+                        } else {
+                            vec![ch]
+                        }
+                    })
+                    .collect();
                 width += estimate_text_width(&partial_display, &style);
                 break;
             }

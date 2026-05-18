@@ -1,8 +1,8 @@
 //! 그리기 개체 (Shape, Line, Rect, Ellipse, Arc, Polygon, Curve, Group, TextBox)
 
-use super::*;
 use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
+use super::*;
 
 /// 개체 공통 속성 (모든 개체에 공통)
 #[derive(Debug, Clone, Default)]
@@ -422,7 +422,10 @@ impl LinkLineType {
 
     /// 꺽인 연결선인지
     pub fn is_stroke(&self) -> bool {
-        matches!(self, Self::StrokeNoArrow | Self::StrokeOneWay | Self::StrokeBoth)
+        matches!(
+            self,
+            Self::StrokeNoArrow | Self::StrokeOneWay | Self::StrokeBoth
+        )
     }
 
     /// 곡선 연결선인지

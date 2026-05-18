@@ -46,6 +46,11 @@ impl META_SETVIEWPORTORG {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, y, x })
+        Ok(Self {
+            record_size,
+            record_function,
+            y,
+            x,
+        })
     }
 }

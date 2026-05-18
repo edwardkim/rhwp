@@ -236,8 +236,8 @@ fn inv_sub_bytes(state: &mut [u8; 16]) {
 fn inv_shift_rows(state: &mut [u8; 16]) {
     let s = *state;
     *state = [
-        s[0], s[13], s[10], s[7], s[4], s[1], s[14], s[11], s[8], s[5], s[2], s[15], s[12],
-        s[9], s[6], s[3],
+        s[0], s[13], s[10], s[7], s[4], s[1], s[14], s[11], s[8], s[5], s[2], s[15], s[12], s[9],
+        s[6], s[3],
     ];
 }
 
@@ -332,8 +332,8 @@ pub fn decrypt_viewtext_section(
     // 주의: Record::read_all을 사용하면 안 됨!
     // ViewText 섹션은 [DISTRIBUTE_DOC_DATA 레코드] + [AES 암호문] 구조이므로
     // 암호문 부분을 레코드로 파싱하면 실패한다.
-    let first = read_first_record(section_data)
-        .map_err(|e| CryptoError::RecordError(e.to_string()))?;
+    let first =
+        read_first_record(section_data).map_err(|e| CryptoError::RecordError(e.to_string()))?;
 
     // DISTRIBUTE_DOC_DATA 확인
     if first.tag_id != tags::HWPTAG_DISTRIBUTE_DOC_DATA {
@@ -368,8 +368,7 @@ pub fn decrypt_viewtext_section(
 
     // 압축 해제
     if compressed {
-        decompress_stream(&decrypted_body)
-            .map_err(|e| CryptoError::DecompressError(e.to_string()))
+        decompress_stream(&decrypted_body).map_err(|e| CryptoError::DecompressError(e.to_string()))
     } else {
         Ok(decrypted_body)
     }
@@ -385,7 +384,8 @@ fn read_first_record(data: &[u8]) -> Result<Record, String> {
     }
 
     let mut cursor = Cursor::new(data);
-    let header = cursor.read_u32::<LittleEndian>()
+    let header = cursor
+        .read_u32::<LittleEndian>()
         .map_err(|e| e.to_string())?;
 
     let tag_id = (header & 0x3FF) as u16;
@@ -393,7 +393,8 @@ fn read_first_record(data: &[u8]) -> Result<Record, String> {
     let mut size = (header >> 20) as u32;
 
     if size == 0xFFF {
-        size = cursor.read_u32::<LittleEndian>()
+        size = cursor
+            .read_u32::<LittleEndian>()
             .map_err(|e| e.to_string())?;
     }
 
@@ -401,15 +402,23 @@ fn read_first_record(data: &[u8]) -> Result<Record, String> {
     if pos + size as usize > data.len() {
         return Err(format!(
             "레코드 데이터 부족: tag={}, 필요={}, 가용={}",
-            tag_id, size, data.len() - pos
+            tag_id,
+            size,
+            data.len() - pos
         ));
     }
 
     let mut record_data = vec![0u8; size as usize];
-    cursor.read_exact(&mut record_data)
+    cursor
+        .read_exact(&mut record_data)
         .map_err(|e| e.to_string())?;
 
-    Ok(Record { tag_id, level, size, data: record_data })
+    Ok(Record {
+        tag_id,
+        level,
+        size,
+        data: record_data,
+    })
 }
 
 #[cfg(test)]
@@ -469,7 +478,7 @@ mod tests {
     fn test_extract_aes_key() {
         let mut data = vec![0x42u8; 256];
         data[0] = 0x03; // offset = 4 + (0x03 & 0xF) = 7
-        // key는 data[7..23]
+                        // key는 data[7..23]
 
         let key = extract_aes_key(&data).unwrap();
         assert_eq!(key.len(), 16);

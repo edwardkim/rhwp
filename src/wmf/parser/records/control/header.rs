@@ -77,8 +77,7 @@ impl META_HEADER {
 
         if number_of_members != 0x0000 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: "The number_of_members field should be `0x0000`"
-                    .to_owned(),
+                cause: "The number_of_members field should be `0x0000`".to_owned(),
             });
         }
 

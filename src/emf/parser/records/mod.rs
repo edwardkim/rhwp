@@ -20,17 +20,35 @@ pub enum Record {
     Eof,
 
     // 객체 (단계 11)
-    CreatePen { handle: u32, pen: LogPen },
-    CreateBrushIndirect { handle: u32, brush: LogBrush },
-    ExtCreateFontIndirectW { handle: u32, font: LogFontW },
-    SelectObject { handle: u32 },
-    DeleteObject { handle: u32 },
+    CreatePen {
+        handle: u32,
+        pen: LogPen,
+    },
+    CreateBrushIndirect {
+        handle: u32,
+        brush: LogBrush,
+    },
+    ExtCreateFontIndirectW {
+        handle: u32,
+        font: LogFontW,
+    },
+    SelectObject {
+        handle: u32,
+    },
+    DeleteObject {
+        handle: u32,
+    },
 
     // 상태 — DC 스택 (단계 11)
     SaveDC,
-    RestoreDC { relative: i32 },
+    RestoreDC {
+        relative: i32,
+    },
     SetWorldTransform(XForm),
-    ModifyWorldTransform { xform: XForm, mode: u32 },
+    ModifyWorldTransform {
+        xform: XForm,
+        mode: u32,
+    },
 
     // 상태 — 좌표계 (단계 11)
     SetMapMode(u32),
@@ -49,14 +67,39 @@ pub enum Record {
     MoveToEx(PointL),
     LineTo(PointL),
     Rectangle(RectL),
-    RoundRect { rect: RectL, corner_w: i32, corner_h: i32 },
+    RoundRect {
+        rect: RectL,
+        corner_w: i32,
+        corner_h: i32,
+    },
     Ellipse(RectL),
-    Arc   { rect: RectL, start: PointL, end: PointL },
-    Chord { rect: RectL, start: PointL, end: PointL },
-    Pie   { rect: RectL, start: PointL, end: PointL },
-    Polyline16   { bounds: RectL, points: Vec<(i16, i16)> },
-    Polygon16    { bounds: RectL, points: Vec<(i16, i16)> },
-    PolyBezier16 { bounds: RectL, points: Vec<(i16, i16)> },
+    Arc {
+        rect: RectL,
+        start: PointL,
+        end: PointL,
+    },
+    Chord {
+        rect: RectL,
+        start: PointL,
+        end: PointL,
+    },
+    Pie {
+        rect: RectL,
+        start: PointL,
+        end: PointL,
+    },
+    Polyline16 {
+        bounds: RectL,
+        points: Vec<(i16, i16)>,
+    },
+    Polygon16 {
+        bounds: RectL,
+        points: Vec<(i16, i16)>,
+    },
+    PolyBezier16 {
+        bounds: RectL,
+        points: Vec<(i16, i16)>,
+    },
 
     // 패스 (단계 12)
     BeginPath,
@@ -73,5 +116,8 @@ pub enum Record {
     StretchDIBits(StretchDIBits),
 
     /// 미분기 레코드. `payload`는 type/size 8B를 제외한 나머지.
-    Unknown { record_type: u32, payload: Vec<u8> },
+    Unknown {
+        record_type: u32,
+        payload: Vec<u8>,
+    },
 }

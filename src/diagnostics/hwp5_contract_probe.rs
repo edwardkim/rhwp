@@ -359,11 +359,14 @@ fn patch_doc_info(
             out.extend_from_slice(&generated_raw[cursor..record.offset]);
         }
 
-        if axes.contains(&ProbeAxis::IdMappings)
-            && record.tag == tags::HWPTAG_ID_MAPPINGS
-            && oracle_id_mappings.is_some()
-        {
-            let oracle_record = oracle_id_mappings.unwrap();
+        let id_mappings_replacement =
+            if axes.contains(&ProbeAxis::IdMappings) && record.tag == tags::HWPTAG_ID_MAPPINGS {
+                oracle_id_mappings
+            } else {
+                None
+            };
+
+        if let Some(oracle_record) = id_mappings_replacement {
             out.extend_from_slice(&build_record(
                 oracle_record.tag,
                 oracle_record.level,

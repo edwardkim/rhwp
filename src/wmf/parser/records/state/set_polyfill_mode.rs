@@ -40,8 +40,7 @@ impl META_SETPOLYFILLMODE {
             crate::wmf::parser::RecordType::META_SETPOLYFILLMODE,
         )?;
 
-        let (poly_fill_mode, poly_fill_mode_bytes) =
-            crate::wmf::parser::PolyFillMode::parse(buf)?;
+        let (poly_fill_mode, poly_fill_mode_bytes) = crate::wmf::parser::PolyFillMode::parse(buf)?;
         record_size.consume(poly_fill_mode_bytes);
 
         let reserved = if record_size.byte_count() > 8 {
@@ -54,6 +53,11 @@ impl META_SETPOLYFILLMODE {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, poly_fill_mode, reserved })
+        Ok(Self {
+            record_size,
+            record_function,
+            poly_fill_mode,
+            reserved,
+        })
     }
 }

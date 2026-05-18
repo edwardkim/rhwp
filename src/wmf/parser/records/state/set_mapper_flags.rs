@@ -37,12 +37,15 @@ impl META_SETMAPPERFLAGS {
             crate::wmf::parser::RecordType::META_SETMAPPERFLAGS,
         )?;
 
-        let (mapper_values, mapper_values_bytes) =
-            crate::wmf::parser::read_u32_from_le_bytes(buf)?;
+        let (mapper_values, mapper_values_bytes) = crate::wmf::parser::read_u32_from_le_bytes(buf)?;
         record_size.consume(mapper_values_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, mapper_values })
+        Ok(Self {
+            record_size,
+            record_function,
+            mapper_values,
+        })
     }
 }

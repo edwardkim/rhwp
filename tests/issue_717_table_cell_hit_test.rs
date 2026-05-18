@@ -101,8 +101,14 @@ fn issue_717_exam_social_nested_header_empty_area_returns_editable_path() {
     );
 
     let path = path_tuples(&hit);
-    doc.insert_text_in_cell_by_path(0, 1, &path, hit["charOffset"].as_u64().unwrap() as usize, "X")
-        .unwrap_or_else(|e| panic!("insert_text_in_cell_by_path failed: {e}"));
+    doc.insert_text_in_cell_by_path(
+        0,
+        1,
+        &path,
+        hit["charOffset"].as_u64().unwrap() as usize,
+        "X",
+    )
+    .unwrap_or_else(|e| panic!("insert_text_in_cell_by_path failed: {e}"));
     let inserted = doc
         .get_text_in_cell_by_path(0, 1, &path, 0, 1)
         .expect("get inserted text");

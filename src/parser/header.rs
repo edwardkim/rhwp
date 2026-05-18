@@ -111,7 +111,11 @@ impl std::fmt::Display for HeaderError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             HeaderError::TooShort(size) => {
-                write!(f, "FileHeader 크기 부족: {} (최소 {})", size, FILE_HEADER_SIZE)
+                write!(
+                    f,
+                    "FileHeader 크기 부족: {} (최소 {})",
+                    size, FILE_HEADER_SIZE
+                )
             }
             HeaderError::InvalidSignature => write!(f, "HWP 시그니처가 일치하지 않습니다"),
             HeaderError::UnsupportedVersion(v) => write!(f, "지원하지 않는 HWP 버전: {}", v),
@@ -130,10 +134,7 @@ pub fn parse_file_header(data: &[u8]) -> Result<FileHeader, HeaderError> {
 
     // 시그니처 검증 (0~31, NULL 패딩 제거 후 비교)
     let sig_area = &data[0..32];
-    let sig_end = sig_area
-        .iter()
-        .position(|&b| b == 0)
-        .unwrap_or(32);
+    let sig_end = sig_area.iter().position(|&b| b == 0).unwrap_or(32);
     let signature = &sig_area[..sig_end];
 
     if !signature.starts_with(HWP_SIGNATURE) {
@@ -263,8 +264,26 @@ mod tests {
 
     #[test]
     fn test_version_supported() {
-        assert!(HwpVersion { major: 5, minor: 0, build: 0, revision: 0 }.is_supported());
-        assert!(HwpVersion { major: 5, minor: 1, build: 0, revision: 0 }.is_supported());
-        assert!(!HwpVersion { major: 3, minor: 0, build: 0, revision: 0 }.is_supported());
+        assert!(HwpVersion {
+            major: 5,
+            minor: 0,
+            build: 0,
+            revision: 0
+        }
+        .is_supported());
+        assert!(HwpVersion {
+            major: 5,
+            minor: 1,
+            build: 0,
+            revision: 0
+        }
+        .is_supported());
+        assert!(!HwpVersion {
+            major: 3,
+            minor: 0,
+            build: 0,
+            revision: 0
+        }
+        .is_supported());
     }
 }

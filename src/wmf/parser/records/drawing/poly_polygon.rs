@@ -37,12 +37,15 @@ impl META_POLYPOLYGON {
             crate::wmf::parser::RecordType::META_POLYPOLYGON,
         )?;
 
-        let (poly_polygon, poly_polygon_bytes) =
-            crate::wmf::parser::PolyPolygon::parse(buf)?;
+        let (poly_polygon, poly_polygon_bytes) = crate::wmf::parser::PolyPolygon::parse(buf)?;
         record_size.consume(poly_polygon_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, poly_polygon })
+        Ok(Self {
+            record_size,
+            record_function,
+            poly_polygon,
+        })
     }
 }

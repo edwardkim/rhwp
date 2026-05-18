@@ -9,9 +9,9 @@
 //!
 //! 정상 동작: 행 8 전체가 다음 페이지 상단에 위치, `clip: false` (분할 표시 없음).
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/2022년 국립국어원 업무계획.hwp";
 const TARGET_PI: usize = 586;
@@ -70,7 +70,9 @@ fn issue_713_rowbreak_table_no_intra_row_split() {
     // RowBreak 모드라면 행 8 의 모든 셀이 단일 페이지에 위치하고 clip=false 여야 함.
     let mut all_row8_cells: Vec<(u32, bool)> = Vec::new(); // (page_index, clip)
     for pn in 0..page_count {
-        let tree = doc.build_page_render_tree(pn).expect("build_page_render_tree");
+        let tree = doc
+            .build_page_render_tree(pn)
+            .expect("build_page_render_tree");
         let mut cells = Vec::new();
         collect_row_cells(&tree.root, TARGET_PI, TARGET_CI, TARGET_ROW, &mut cells);
         for cell in cells {
@@ -82,27 +84,34 @@ fn issue_713_rowbreak_table_no_intra_row_split() {
 
     eprintln!(
         "[issue_713] page_count={} row {} cells found across {} (page, clip) entries",
-        page_count, TARGET_ROW, all_row8_cells.len(),
+        page_count,
+        TARGET_ROW,
+        all_row8_cells.len(),
     );
     let split_pages: std::collections::BTreeSet<u32> =
         all_row8_cells.iter().map(|(p, _)| *p).collect();
     let with_clip: Vec<&(u32, bool)> = all_row8_cells.iter().filter(|(_, c)| *c).collect();
     eprintln!(
         "[issue_713] row {} cells appear on pages={:?} clipped_cells={}",
-        TARGET_ROW, split_pages, with_clip.len(),
+        TARGET_ROW,
+        split_pages,
+        with_clip.len(),
     );
 
     // 단언 1: row 8 셀들이 단일 페이지에만 등장 (RowBreak 명세상 행은 분할 불가)
     assert!(
         split_pages.len() == 1,
         "RowBreak 표 행 {} 가 {} 페이지에 분할 등장: pages={:?}",
-        TARGET_ROW, split_pages.len(), split_pages,
+        TARGET_ROW,
+        split_pages.len(),
+        split_pages,
     );
 
     // 단언 2: row 8 셀의 clip 플래그가 모두 false (분할 클리핑 없음)
     assert!(
         with_clip.is_empty(),
         "RowBreak 표 행 {} 의 셀 {} 개가 clip=true (인트라-로우 분할 검출)",
-        TARGET_ROW, with_clip.len(),
+        TARGET_ROW,
+        with_clip.len(),
     );
 }

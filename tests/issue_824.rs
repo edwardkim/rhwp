@@ -16,8 +16,8 @@ fn first_picture_external_path(hwp: &str) -> Option<String> {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let path = Path::new(repo_root).join(hwp);
     let data = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", hwp, e));
-    let doc = rhwp::parser::hwp3::parse_hwp3(&data)
-        .unwrap_or_else(|e| panic!("parse {}: {:?}", hwp, e));
+    let doc =
+        rhwp::parser::hwp3::parse_hwp3(&data).unwrap_or_else(|e| panic!("parse {}: {:?}", hwp, e));
     for sec in &doc.sections {
         for para in &sec.paragraphs {
             for ctrl in &para.controls {

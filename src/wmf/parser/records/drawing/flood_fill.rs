@@ -41,11 +41,7 @@ impl META_FLOODFILL {
             crate::wmf::parser::RecordType::META_FLOODFILL,
         )?;
 
-        let (
-            (color_ref, color_ref_bytes),
-            (y_start, y_start_bytes),
-            (x_start, x_start_bytes),
-        ) = (
+        let ((color_ref, color_ref_bytes), (y_start, y_start_bytes), (x_start, x_start_bytes)) = (
             crate::wmf::parser::ColorRef::parse(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
@@ -54,6 +50,12 @@ impl META_FLOODFILL {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, color_ref, y_start, x_start })
+        Ok(Self {
+            record_size,
+            record_function,
+            color_ref,
+            y_start,
+            x_start,
+        })
     }
 }

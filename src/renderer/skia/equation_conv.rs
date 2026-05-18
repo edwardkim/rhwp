@@ -401,7 +401,9 @@ fn render_box(
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
-                FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => (false, false),
+                FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => {
+                    (false, false)
+                }
                 FontStyleKind::Italic => (true, bold),
                 FontStyleKind::Bold => (italic, true),
                 FontStyleKind::Blackboard => (false, true),

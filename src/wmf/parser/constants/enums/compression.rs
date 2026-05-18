@@ -1,16 +1,6 @@
 /// The Compression Enumeration specifies the type of compression for a bitmap
 /// image.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u32)]
 pub enum Compression {
     /// The bitmap is in uncompressed red green blue (RGB) format that is not

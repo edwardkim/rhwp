@@ -1,17 +1,7 @@
 /// The BrushStyle Enumeration specifies the different possible brush types that
 /// can be used in graphics operations. For more information, see the
 /// specification of the Brush Object.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum BrushStyle {
     /// A brush that paints a single, constant color, either solid or dithered.

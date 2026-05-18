@@ -15,11 +15,16 @@ fn test_svg_begin_end_page() {
 fn test_svg_draw_text() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_text("안녕하세요", 10.0, 20.0, &TextStyle {
-        font_size: 16.0,
-        bold: true,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "안녕하세요",
+        10.0,
+        20.0,
+        &TextStyle {
+            font_size: 16.0,
+            bold: true,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     assert!(output.contains("<text"));
     assert!(output.contains("font-weight=\"bold\""));
@@ -29,14 +34,22 @@ fn test_svg_draw_text() {
 fn test_svg_draw_text_medium_weight() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_text("중고딕", 10.0, 20.0, &TextStyle {
-        font_size: 16.0,
-        font_family: "HY중고딕".to_string(),
-        bold: false,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "중고딕",
+        10.0,
+        20.0,
+        &TextStyle {
+            font_size: 16.0,
+            font_family: "HY중고딕".to_string(),
+            bold: false,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
-    assert!(output.contains("font-weight=\"500\""), "중고딕 계열은 font-weight 500이어야 함");
+    assert!(
+        output.contains("font-weight=\"500\""),
+        "중고딕 계열은 font-weight 500이어야 함"
+    );
     assert!(!output.contains("font-weight=\"bold\""));
 }
 
@@ -44,12 +57,19 @@ fn test_svg_draw_text_medium_weight() {
 fn test_svg_draw_rect() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_rect(10.0, 20.0, 100.0, 50.0, 0.0, &ShapeStyle {
-        fill_color: Some(0x00FF0000),
-        stroke_color: Some(0x00000000),
-        stroke_width: 2.0,
-        ..Default::default()
-    });
+    renderer.draw_rect(
+        10.0,
+        20.0,
+        100.0,
+        50.0,
+        0.0,
+        &ShapeStyle {
+            fill_color: Some(0x00FF0000),
+            stroke_color: Some(0x00000000),
+            stroke_width: 2.0,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     assert!(output.contains("<rect"));
     assert!(output.contains("fill=\"#0000ff\"")); // BGR → RGB
@@ -76,22 +96,34 @@ fn test_svg_draw_path() {
 fn test_svg_text_decoration() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
-    renderer.draw_text("밑줄", 10.0, 20.0, &TextStyle {
-        font_size: 16.0,
-        underline: UnderlineType::Bottom,
-        ..Default::default()
-    });
-    renderer.draw_text("취소", 10.0, 40.0, &TextStyle {
-        font_size: 16.0,
-        strikethrough: true,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "밑줄",
+        10.0,
+        20.0,
+        &TextStyle {
+            font_size: 16.0,
+            underline: UnderlineType::Bottom,
+            ..Default::default()
+        },
+    );
+    renderer.draw_text(
+        "취소",
+        10.0,
+        40.0,
+        &TextStyle {
+            font_size: 16.0,
+            strikethrough: true,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     // 밑줄: <line> 요소로 출력
     let underline_count = output.matches("y1=\"22\"").count(); // y + 2.0
     assert!(underline_count > 0, "밑줄 <line> 요소가 있어야 함");
     // 취소선: <line> 요소로 출력
-    let strike_count = output.matches("stroke=\"#000000\" stroke-width=\"1\"").count();
+    let strike_count = output
+        .matches("stroke=\"#000000\" stroke-width=\"1\"")
+        .count();
     assert!(strike_count >= 2, "취소선과 밑줄 <line> 요소가 있어야 함");
 }
 
@@ -100,11 +132,16 @@ fn test_svg_text_ratio() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
     // ratio 80%: 문자별 transform 적용
-    renderer.draw_text("장평", 50.0, 100.0, &TextStyle {
-        font_size: 16.0,
-        ratio: 0.8,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "장평",
+        50.0,
+        100.0,
+        &TextStyle {
+            font_size: 16.0,
+            ratio: 0.8,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     // 첫 문자 '장': translate(50,100) scale(0.8000,1)
     assert!(output.contains("transform=\"translate(50,100) scale(0.8000,1)\""));
@@ -118,11 +155,16 @@ fn test_svg_text_ratio_default() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
     // ratio 100%: transform 미적용, 문자별 x좌표
-    renderer.draw_text("기본", 50.0, 100.0, &TextStyle {
-        font_size: 16.0,
-        ratio: 1.0,
-        ..Default::default()
-    });
+    renderer.draw_text(
+        "기본",
+        50.0,
+        100.0,
+        &TextStyle {
+            font_size: 16.0,
+            ratio: 1.0,
+            ..Default::default()
+        },
+    );
     let output = renderer.output();
     assert!(!output.contains("transform="));
     // 첫 문자는 x=50
@@ -162,15 +204,14 @@ fn test_color_to_svg() {
     assert_eq!(color_to_svg(0x00FFFFFF), "#ffffff");
 }
 
-
 /// 최소 2x2 BI_RGB 32-bit BMP를 생성한다 (테스트용).
 fn make_minimal_bmp_2x2() -> Vec<u8> {
     // BMP 파일 헤더 (14B): "BM" + file_size + 0 + data_offset(54)
     // DIB 헤더 (BITMAPINFOHEADER 40B): w=2, h=2, planes=1, bpp=32, BI_RGB, size=16
     // 픽셀 데이터: 2*2*4 = 16B (BGRA)
     let pixels: [u8; 16] = [
-        0xFF, 0x00, 0x00, 0xFF,  0x00, 0xFF, 0x00, 0xFF, // row 0 (아래→위 저장)
-        0x00, 0x00, 0xFF, 0xFF,  0xFF, 0xFF, 0xFF, 0xFF, // row 1
+        0xFF, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, // row 0 (아래→위 저장)
+        0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // row 1
     ];
     let file_size: u32 = 14 + 40 + 16;
     let mut v = Vec::new();
@@ -178,17 +219,17 @@ fn make_minimal_bmp_2x2() -> Vec<u8> {
     v.extend_from_slice(&file_size.to_le_bytes());
     v.extend_from_slice(&[0, 0, 0, 0]);
     v.extend_from_slice(&54u32.to_le_bytes());
-    v.extend_from_slice(&40u32.to_le_bytes());          // DIB size
-    v.extend_from_slice(&2i32.to_le_bytes());           // width
-    v.extend_from_slice(&2i32.to_le_bytes());           // height
-    v.extend_from_slice(&1u16.to_le_bytes());           // planes
-    v.extend_from_slice(&32u16.to_le_bytes());          // bpp
-    v.extend_from_slice(&0u32.to_le_bytes());           // BI_RGB
-    v.extend_from_slice(&16u32.to_le_bytes());          // image size
-    v.extend_from_slice(&[0, 0, 0, 0]);                 // x ppm
-    v.extend_from_slice(&[0, 0, 0, 0]);                 // y ppm
-    v.extend_from_slice(&[0, 0, 0, 0]);                 // colors used
-    v.extend_from_slice(&[0, 0, 0, 0]);                 // important colors
+    v.extend_from_slice(&40u32.to_le_bytes()); // DIB size
+    v.extend_from_slice(&2i32.to_le_bytes()); // width
+    v.extend_from_slice(&2i32.to_le_bytes()); // height
+    v.extend_from_slice(&1u16.to_le_bytes()); // planes
+    v.extend_from_slice(&32u16.to_le_bytes()); // bpp
+    v.extend_from_slice(&0u32.to_le_bytes()); // BI_RGB
+    v.extend_from_slice(&16u32.to_le_bytes()); // image size
+    v.extend_from_slice(&[0, 0, 0, 0]); // x ppm
+    v.extend_from_slice(&[0, 0, 0, 0]); // y ppm
+    v.extend_from_slice(&[0, 0, 0, 0]); // colors used
+    v.extend_from_slice(&[0, 0, 0, 0]); // important colors
     v.extend_from_slice(&pixels);
     v
 }
@@ -242,8 +283,14 @@ fn test_brightness_contrast_filter_pure_brightness() {
     let mut renderer = SvgRenderer::new();
     renderer.ensure_brightness_contrast_filter(50, 0);
     let def = &renderer.defs[0];
-    assert!(def.contains("slope=\"1.0000\""), "slope expected 1.0000: {def}");
-    assert!(def.contains("intercept=\"0.5000\""), "intercept expected 0.5000: {def}");
+    assert!(
+        def.contains("slope=\"1.0000\""),
+        "slope expected 1.0000: {def}"
+    );
+    assert!(
+        def.contains("intercept=\"0.5000\""),
+        "intercept expected 0.5000: {def}"
+    );
 }
 
 /// 순수 대비 (b=0, c=50) → slope=1.5, intercept=-0.25
@@ -252,15 +299,23 @@ fn test_brightness_contrast_filter_pure_contrast() {
     let mut renderer = SvgRenderer::new();
     renderer.ensure_brightness_contrast_filter(0, 50);
     let def = &renderer.defs[0];
-    assert!(def.contains("slope=\"1.5000\""), "slope expected 1.5000: {def}");
-    assert!(def.contains("intercept=\"-0.2500\""), "intercept expected -0.2500: {def}");
+    assert!(
+        def.contains("slope=\"1.5000\""),
+        "slope expected 1.5000: {def}"
+    );
+    assert!(
+        def.contains("intercept=\"-0.2500\""),
+        "intercept expected -0.2500: {def}"
+    );
 }
 
 /// HWP 범위 외 입력은 -100..=100 으로 clamp — i8 max/min → 100/-100
 #[test]
 fn test_brightness_contrast_filter_clamp_out_of_range() {
     let mut renderer = SvgRenderer::new();
-    let id = renderer.ensure_brightness_contrast_filter(127, -128).expect("clamp 후 nonzero");
+    let id = renderer
+        .ensure_brightness_contrast_filter(127, -128)
+        .expect("clamp 후 nonzero");
     assert_eq!(id, "rhwp-img-bc-b100c-100");
     assert_eq!(renderer.defs.len(), 1);
 }
@@ -270,11 +325,8 @@ fn test_compute_image_crop_src_exam_kor_header() {
     // [Task #477] HWP 표준 75 HU/px 룰 적용.
     // exam_kor.hwp bin_id=27: image 픽셀 2320×354 (= 174000/75 × 26580/75 HU),
     // crop=(0, 0, 102366, 26580) → 좌측 1364.88px × 354px (= "국어 영역")
-    let (sx, sy, sw, sh) = compute_image_crop_src(
-        (0, 0, 102366, 26580),
-        Some((174000, 26580)),
-        2320.0, 354.0,
-    );
+    let (sx, sy, sw, sh) =
+        compute_image_crop_src((0, 0, 102366, 26580), Some((174000, 26580)), 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
     // 102366 / 75 = 1364.88
@@ -286,11 +338,8 @@ fn test_compute_image_crop_src_exam_kor_header() {
 #[test]
 fn test_compute_image_crop_src_no_crop_full_image() {
     // crop이 원본 전체를 가리키면 src도 이미지 전체와 일치
-    let (sx, sy, sw, sh) = compute_image_crop_src(
-        (0, 0, 174000, 26580),
-        Some((174000, 26580)),
-        2320.0, 354.0,
-    );
+    let (sx, sy, sw, sh) =
+        compute_image_crop_src((0, 0, 174000, 26580), Some((174000, 26580)), 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
     // 174000 / 75 = 2320 (= image width)
@@ -301,11 +350,8 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
     // 좌·상단을 잘라낸 케이스: top=ow/4, left=ow/4 → 우하단 75% 영역
-    let (sx, sy, sw, sh) = compute_image_crop_src(
-        (1000, 500, 4000, 2500),
-        Some((4000, 2500)),
-        400.0, 250.0,
-    );
+    let (sx, sy, sw, sh) =
+        compute_image_crop_src((1000, 500, 4000, 2500), Some((4000, 2500)), 400.0, 250.0);
     // [Task #477] 75 HU/px 룰
     // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
     // src_w = 3000/75 = 40, src_h = 2000/75 = 26.67
@@ -321,11 +367,8 @@ fn test_compute_image_crop_src_kwater_pi31() {
     // PNG (169 × 93 px) 가 이미 crop 적용 후 image — viewBox 가 image 전체와
     // 매칭해야 (좌측 일부만 보이는 결함 정정).
     // crop=(0, 0, 12660, 6960), original 14119×7766 HU.
-    let (sx, sy, sw, sh) = compute_image_crop_src(
-        (0, 0, 12660, 6960),
-        Some((14119, 7766)),
-        169.0, 93.0,
-    );
+    let (sx, sy, sw, sh) =
+        compute_image_crop_src((0, 0, 12660, 6960), Some((14119, 7766)), 169.0, 93.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
     // 12660 / 75 = 168.8 (≈ image width 169)
@@ -337,11 +380,7 @@ fn test_compute_image_crop_src_kwater_pi31() {
 #[test]
 fn test_compute_image_crop_src_fallback_when_original_size_missing() {
     // original_size_hu가 None 이어도 [Task #477] 75 HU/px 룰을 동일하게 적용.
-    let (sx, sy, sw, sh) = compute_image_crop_src(
-        (0, 0, 102366, 26580),
-        None,
-        2320.0, 354.0,
-    );
+    let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 102366, 26580), None, 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
     assert!((sw - 1364.88).abs() < 0.01);

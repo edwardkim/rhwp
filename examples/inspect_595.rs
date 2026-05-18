@@ -44,7 +44,10 @@ fn main() {
         }
         if !header_hits.is_empty() {
             let min = header_hits.iter().cloned().fold(f64::INFINITY, f64::min);
-            let max = header_hits.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            let max = header_hits
+                .iter()
+                .cloned()
+                .fold(f64::NEG_INFINITY, f64::max);
             println!("  Header hit y 범위: {:.1} ~ {:.1}  (50px sweep)", min, max);
             println!("    hit y 좌표: {:?}", header_hits);
         } else {
@@ -52,7 +55,10 @@ fn main() {
         }
         if !footer_hits.is_empty() {
             let min = footer_hits.iter().cloned().fold(f64::INFINITY, f64::min);
-            let max = footer_hits.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            let max = footer_hits
+                .iter()
+                .cloned()
+                .fold(f64::NEG_INFINITY, f64::max);
             println!("  Footer hit y 범위: {:.1} ~ {:.1}  (50px sweep)", min, max);
         }
 
@@ -80,14 +86,19 @@ fn main() {
             let y = (ystep as f64) * 5.0;
             if let Ok(json) = core.hit_test_header_footer_native(page, x, y) {
                 if json.contains("\"hit\":true") && json.contains("\"isHeader\":true") {
-                    if header_min.is_none() { header_min = Some(y); }
+                    if header_min.is_none() {
+                        header_min = Some(y);
+                    }
                     header_max = Some(y);
                 }
             }
         }
         match (header_min, header_max) {
             (Some(min), Some(max)) => {
-                println!("  page {}: Header hit y={:.1} ~ {:.1}  (실제 머리말 영역: 0~147)", page, min, max);
+                println!(
+                    "  page {}: Header hit y={:.1} ~ {:.1}  (실제 머리말 영역: 0~147)",
+                    page, min, max
+                );
             }
             _ => println!("  page {}: Header hit 없음", page),
         }
@@ -100,14 +111,22 @@ fn main() {
         let x = (xstep as f64) * 50.0;
         if let Ok(json) = core.hit_test_header_footer_native(page, x, 209.7) {
             let mark = if json.contains("\"hit\":true") {
-                if json.contains("\"isHeader\":true") { " ← Header HIT" } else { " ← Footer HIT" }
-            } else { "" };
+                if json.contains("\"isHeader\":true") {
+                    " ← Header HIT"
+                } else {
+                    " ← Footer HIT"
+                }
+            } else {
+                ""
+            };
             println!("  x={:5.1} y=209.7 → {}{}", x, json, mark);
         }
     }
 
     // 광범위 sweep — samples/ 전체에서 머리말 본문 침범 페이지 식별
-    println!("\n=== 광범위 sweep — samples/ 전체에서 본문 영역까지 머리말 hit 되는 fixture/페이지 ===");
+    println!(
+        "\n=== 광범위 sweep — samples/ 전체에서 본문 영역까지 머리말 hit 되는 fixture/페이지 ==="
+    );
     use std::path::Path;
     let samples_dir = Path::new("samples");
     let mut total_fixtures = 0usize;
@@ -118,7 +137,10 @@ fn main() {
 
     let entries: Vec<_> = match fs::read_dir(samples_dir) {
         Ok(rd) => rd.flatten().collect(),
-        Err(e) => { eprintln!("read_dir fail: {:?}", e); return; }
+        Err(e) => {
+            eprintln!("read_dir fail: {:?}", e);
+            return;
+        }
     };
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
     for ent in entries {
@@ -133,9 +155,15 @@ fn main() {
     paths.sort();
 
     for path in &paths {
-        let bytes = match fs::read(path) { Ok(b) => b, Err(_) => continue };
+        let bytes = match fs::read(path) {
+            Ok(b) => b,
+            Err(_) => continue,
+        };
         let core_r = rhwp::document_core::DocumentCore::from_bytes(&bytes);
-        let core_local = match core_r { Ok(c) => c, Err(_) => continue };
+        let core_local = match core_r {
+            Ok(c) => c,
+            Err(_) => continue,
+        };
         total_fixtures += 1;
         // 각 페이지 하한 영역 (y=200, 800) 가 머리말 hit 인지 확인
         let pc = core_local.page_count();
@@ -156,17 +184,39 @@ fn main() {
             let pages_str = if fixture_affected_pages.len() <= 5 {
                 format!("{:?}", fixture_affected_pages)
             } else {
-                format!("[{}, ..., {}] ({}건)", fixture_affected_pages[0],
-                    fixture_affected_pages[fixture_affected_pages.len()-1],
-                    fixture_affected_pages.len())
+                format!(
+                    "[{}, ..., {}] ({}건)",
+                    fixture_affected_pages[0],
+                    fixture_affected_pages[fixture_affected_pages.len() - 1],
+                    fixture_affected_pages.len()
+                )
             };
-            affected_summaries.push(format!("  {} ({}/{}p): {}", name, fixture_affected_pages.len(), pc, pages_str));
+            affected_summaries.push(format!(
+                "  {} ({}/{}p): {}",
+                name,
+                fixture_affected_pages.len(),
+                pc,
+                pages_str
+            ));
         }
     }
 
-    println!("\n총 {} fixture / {} 페이지 점검", total_fixtures, total_pages);
-    println!("머리말 hit 본문 침범 fixture: {} / {} ({:.1}%)", affected_fixtures, total_fixtures, 100.0 * affected_fixtures as f64 / total_fixtures as f64);
-    println!("머리말 hit 본문 침범 페이지: {} / {} ({:.1}%)", affected_pages, total_pages, 100.0 * affected_pages as f64 / total_pages as f64);
+    println!(
+        "\n총 {} fixture / {} 페이지 점검",
+        total_fixtures, total_pages
+    );
+    println!(
+        "머리말 hit 본문 침범 fixture: {} / {} ({:.1}%)",
+        affected_fixtures,
+        total_fixtures,
+        100.0 * affected_fixtures as f64 / total_fixtures as f64
+    );
+    println!(
+        "머리말 hit 본문 침범 페이지: {} / {} ({:.1}%)",
+        affected_pages,
+        total_pages,
+        100.0 * affected_pages as f64 / total_pages as f64
+    );
     println!("\n발현 fixture 목록:");
     for line in &affected_summaries {
         println!("{}", line);

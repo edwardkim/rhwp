@@ -165,7 +165,11 @@ mod tests {
     #[test]
     fn test_read_multiple_records() {
         let mut bytes = make_record_bytes(tags::HWPTAG_PARA_HEADER, 0, &[0x01, 0x02]);
-        bytes.extend(make_record_bytes(tags::HWPTAG_PARA_TEXT, 1, &[0x03, 0x04, 0x05]));
+        bytes.extend(make_record_bytes(
+            tags::HWPTAG_PARA_TEXT,
+            1,
+            &[0x03, 0x04, 0x05],
+        ));
 
         let records = Record::read_all(&bytes).unwrap();
         assert_eq!(records.len(), 2);

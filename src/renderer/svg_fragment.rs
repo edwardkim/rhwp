@@ -48,8 +48,7 @@ pub(crate) fn try_parse_single_image_data_url(svg: &str) -> Option<&str> {
     if s.matches('<').count() != 1 {
         return None;
     }
-    let href = find_svg_attr_value(s, "xlink:href")
-        .or_else(|| find_svg_attr_value(s, "href"))?;
+    let href = find_svg_attr_value(s, "xlink:href").or_else(|| find_svg_attr_value(s, "href"))?;
     if !href.starts_with("data:") {
         return None;
     }
@@ -112,7 +111,9 @@ pub(crate) fn decode_base64_data_url(data_url: &str) -> Option<(String, Vec<u8>)
     if !is_base64 {
         return None;
     }
-    let bytes = base64::engine::general_purpose::STANDARD.decode(payload).ok()?;
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(payload)
+        .ok()?;
     Some((mime.to_string(), bytes))
 }
 
@@ -155,7 +156,8 @@ mod tests {
 
     #[test]
     fn parse_single_image_href_only() {
-        let frag = r#"<image x="0" y="0" width="10" height="10" href="data:image/jpeg;base64,ZZZ"/>"#;
+        let frag =
+            r#"<image x="0" y="0" width="10" height="10" href="data:image/jpeg;base64,ZZZ"/>"#;
         assert_eq!(
             try_parse_single_image_data_url(frag),
             Some("data:image/jpeg;base64,ZZZ")
@@ -171,7 +173,8 @@ mod tests {
     #[test]
     fn parse_single_image_rejects_group() {
         // EMF/OOXML 복합 SVG 는 A 경로로 빠지지 않아야 함
-        let g_emf = r#"<g transform="matrix(1,0,0,1,0,0)"><rect x="0" y="0" width="10" height="10"/></g>"#;
+        let g_emf =
+            r#"<g transform="matrix(1,0,0,1,0,0)"><rect x="0" y="0" width="10" height="10"/></g>"#;
         assert_eq!(try_parse_single_image_data_url(g_emf), None);
 
         let g_chart = r#"<g class="hwp-ooxml-chart"><rect/><text>..</text></g>"#;

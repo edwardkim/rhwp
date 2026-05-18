@@ -2,17 +2,7 @@ use crate::wmf::imports::*;
 
 /// The 16-bit PenStyle Enumeration is used to specify different types of pens
 /// that can be used in graphics operations.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum PenStyle {
     /// This value 0x0000 has multiple meanings:

@@ -54,10 +54,18 @@ pub fn serialize_paragraph_list(
 /// 단일 문단을 레코드로 직렬화 (MSB를 위치 기반으로 강제 설정)
 ///
 /// is_last: 이 문단이 현재 스코프(섹션/셀/텍스트박스 등)의 마지막 문단인지 여부
-fn serialize_paragraph_with_msb(para: &Paragraph, base_level: u16, is_last: bool, records: &mut Vec<Record>) {
+fn serialize_paragraph_with_msb(
+    para: &Paragraph,
+    base_level: u16,
+    is_last: bool,
+    records: &mut Vec<Record>,
+) {
     // HWP는 모든 문단에 최소 1개의 PARA_CHAR_SHAPE 엔트리 필요
     // char_shapes가 비어있으면 기본 엔트리(위치 0, char_shape_id 0)를 사용
-    let default_char_shape = [CharShapeRef { start_pos: 0, char_shape_id: 0 }];
+    let default_char_shape = [CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
     let effective_char_shapes: &[CharShapeRef] = if para.char_shapes.is_empty() {
         &default_char_shape
     } else {
@@ -91,7 +99,13 @@ fn serialize_paragraph_with_msb(para: &Paragraph, base_level: u16, is_last: bool
         tag_id: tags::HWPTAG_PARA_HEADER,
         level: base_level,
         size: 0,
-        data: serialize_para_header_with_mask(para, effective_char_shapes.len(), is_last, actual_control_mask, actual_char_count),
+        data: serialize_para_header_with_mask(
+            para,
+            effective_char_shapes.len(),
+            is_last,
+            actual_control_mask,
+            actual_char_count,
+        ),
     });
 
     // PARA_TEXT
@@ -139,7 +153,9 @@ fn serialize_paragraph_with_msb(para: &Paragraph, base_level: u16, is_last: bool
 
     // CTRL_HEADER (컨트롤별) + CTRL_DATA (있으면)
     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
-        let ctrl_data_record = para.ctrl_data_records.get(ctrl_idx)
+        let ctrl_data_record = para
+            .ctrl_data_records
+            .get(ctrl_idx)
             .and_then(|opt| opt.as_ref())
             .map(|v| v.as_slice());
         super::control::serialize_control(ctrl, base_level + 1, ctrl_data_record, records);
@@ -181,7 +197,13 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
 ///
 /// 레이아웃: char_count(u32) + control_mask(u32) + para_shape_id(u16) + style_id(u8) + break_type(u8)
 /// + numCharShapes(u16) + numRangeTags(u16) + numLineSegs(u16) + instanceId(u32) + [추가 바이트]
-fn serialize_para_header_with_mask(para: &Paragraph, num_char_shapes: usize, is_last: bool, control_mask: u32, char_count: u32) -> Vec<u8> {
+fn serialize_para_header_with_mask(
+    para: &Paragraph,
+    num_char_shapes: usize,
+    is_last: bool,
+    control_mask: u32,
+    char_count: u32,
+) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
     // MSB는 위치 기반으로 결정: 현재 스코프의 마지막 문단만 MSB=1
@@ -276,7 +298,9 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     let mut trailing_orphan_ends: Vec<u32> = Vec::new();
 
     for fr in &para.field_ranges {
-        let ctrl_id = if let Some(crate::model::control::Control::Field(f)) = para.controls.get(fr.control_idx) {
+        let ctrl_id = if let Some(crate::model::control::Control::Field(f)) =
+            para.controls.get(fr.control_idx)
+        {
             f.ctrl_id
         } else {
             0
@@ -286,7 +310,10 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         } else {
             // trailing FIELD_END: control_idx가 남은 컨트롤에 포함되는지 판별은
             // 메인 루프 후에 수행 (ctrl_idx 확정 후)
-            trailing_end_after_ctrl.entry(fr.control_idx).or_default().push(ctrl_id);
+            trailing_end_after_ctrl
+                .entry(fr.control_idx)
+                .or_default()
+                .push(ctrl_id);
         }
     }
 
@@ -323,7 +350,9 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                         code_units.push(cu);
                     }
                 } else {
-                    for _ in 0..7 { code_units.push(0); }
+                    for _ in 0..7 {
+                        code_units.push(0);
+                    }
                 }
                 tab_idx += 1;
                 prev_end = offset + 8;
@@ -339,7 +368,9 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
             c => {
                 let mut buf = [0u16; 2];
                 let encoded = c.encode_utf16(&mut buf);
-                for cu in encoded.iter() { code_units.push(*cu); }
+                for cu in encoded.iter() {
+                    code_units.push(*cu);
+                }
                 prev_end = offset + encoded.len() as u32;
             }
         }

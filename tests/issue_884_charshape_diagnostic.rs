@@ -26,9 +26,7 @@ fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
     let bytes = fs::read(&hwp_path).expect("read table-in-tbox.hwp");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
 
-    let svg = doc
-        .render_page_svg(0)
-        .expect("render page 0");
+    let svg = doc.render_page_svg(0).expect("render page 0");
 
     // 결함 검증: 'Shape.TextBox > Table > cell[0]' paragraph 의 "충" 글자의 font-family.
     // 정답 (B 해석): font-family="HY헤드라인M..."
@@ -44,11 +42,17 @@ fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
         let element = &svg[element_start..abs_idx + 5];
         if element.contains("font-family=\"HY수평선B") {
             uses_hy_supb = true;
-            eprintln!("결함 '충' element (HY수평선B): {}", &element[..element.len().min(200)]);
+            eprintln!(
+                "결함 '충' element (HY수평선B): {}",
+                &element[..element.len().min(200)]
+            );
         }
         if element.contains("font-family=\"HY헤드라인M") {
             uses_hy_headlinem = true;
-            eprintln!("정답 '충' element (HY헤드라인M): {}", &element[..element.len().min(200)]);
+            eprintln!(
+                "정답 '충' element (HY헤드라인M): {}",
+                &element[..element.len().min(200)]
+            );
         }
         search_from = abs_idx + 5;
     }
@@ -59,7 +63,8 @@ fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
         "Issue #884 회귀: '충' 글자에 HY헤드라인M 가 적용되지 않음. \
          (uses_hy_supb={} uses_hy_headlinem={}). \
          해석 B (start_pos as visible char idx) 가 부분적으로 회귀했을 가능성.",
-        uses_hy_supb, uses_hy_headlinem
+        uses_hy_supb,
+        uses_hy_headlinem
     );
 
     eprintln!("\nIssue #884 GREEN: '충' 글자 HY헤드라인M 정합 (해석 B 적용 후).");
@@ -86,31 +91,53 @@ fn issue_884_diagnostic_dump() {
                 eprintln!("  char_shapes:");
                 for cs in &p.char_shapes {
                     if let Some(s) = document.doc_info.char_shapes.get(cs.char_shape_id as usize) {
-                        let name = document.doc_info.font_faces.get(0)
+                        let name = document
+                            .doc_info
+                            .font_faces
+                            .get(0)
                             .and_then(|fonts| fonts.get(s.font_ids[0] as usize))
-                            .map(|f| f.name.clone()).unwrap_or_default();
-                        eprintln!("    start_pos={} id={} → {:?} {:.1}pt bold={}",
-                            cs.start_pos, cs.char_shape_id, name,
-                            s.base_size as f64 / 100.0, s.bold);
+                            .map(|f| f.name.clone())
+                            .unwrap_or_default();
+                        eprintln!(
+                            "    start_pos={} id={} → {:?} {:.1}pt bold={}",
+                            cs.start_pos,
+                            cs.char_shape_id,
+                            name,
+                            s.base_size as f64 / 100.0,
+                            s.bold
+                        );
                     }
                 }
                 // 해석 A vs B
-                eprintln!("  해석 A (u16): start_pos=9 → visible[1]=충 (id=20 HY수평선B 잘못 적용)");
+                eprintln!(
+                    "  해석 A (u16): start_pos=9 → visible[1]=충 (id=20 HY수평선B 잘못 적용)"
+                );
                 eprintln!("  해석 B (vis): start_pos=9 → out of range (id=14 HY헤드라인M 전체 유지, 정답)");
                 return true;
             }
             for ctrl in &p.controls {
                 let found = match ctrl {
                     Control::Table(t) => t.cells.iter().any(|c| find(&c.paragraphs, document)),
-                    Control::Shape(s) => s.drawing().and_then(|d| d.text_box.as_ref())
-                        .map(|tb| find(&tb.paragraphs, document)).unwrap_or(false),
+                    Control::Shape(s) => s
+                        .drawing()
+                        .and_then(|d| d.text_box.as_ref())
+                        .map(|tb| find(&tb.paragraphs, document))
+                        .unwrap_or(false),
                     _ => false,
                 };
-                if found { return true; }
+                if found {
+                    return true;
+                }
             }
         }
         false
     }
-    let found = document.sections.iter().any(|s| find(&s.paragraphs, document));
-    assert!(found, "결함 paragraph (table-in-tbox 충남중부권지사장) 미발견 — 샘플 변경?");
+    let found = document
+        .sections
+        .iter()
+        .any(|s| find(&s.paragraphs, document));
+    assert!(
+        found,
+        "결함 paragraph (table-in-tbox 충남중부권지사장) 미발견 — 샘플 변경?"
+    );
 }

@@ -4,28 +4,28 @@
 //! 확장을 읽는다. Description/PixelFormat/OpenGL/Micrometers는 구조만 보존하고
 //! rhwp 렌더에서 직접 사용하지 않는다.
 
-use crate::emf::Error;
-use crate::emf::parser::Cursor;
 use super::rectl::{RectL, SizeL};
+use crate::emf::parser::Cursor;
+use crate::emf::Error;
 
 /// " EMF" 시그니처(offset 40).
 pub const SIGNATURE: u32 = 0x464D4520;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header {
-    pub bounds:          RectL,   // 논리 좌표 bbox
-    pub frame:           RectL,   // 0.01mm bbox
-    pub signature:       u32,     // " EMF"
-    pub version:         u32,
-    pub bytes:           u32,     // 파일 전체 크기
-    pub records:         u32,
-    pub handles:         u16,
-    pub reserved:        u16,
-    pub n_description:   u32,
+    pub bounds: RectL,  // 논리 좌표 bbox
+    pub frame: RectL,   // 0.01mm bbox
+    pub signature: u32, // " EMF"
+    pub version: u32,
+    pub bytes: u32, // 파일 전체 크기
+    pub records: u32,
+    pub handles: u16,
+    pub reserved: u16,
+    pub n_description: u32,
     pub off_description: u32,
-    pub n_pal_entries:   u32,
-    pub device:          SizeL,   // 참조 장치 픽셀
-    pub millimeters:     SizeL,
+    pub n_pal_entries: u32,
+    pub device: SizeL, // 참조 장치 픽셀
+    pub millimeters: SizeL,
 
     // 확장 1 (선택)
     pub ext1: Option<HeaderExt1>,
@@ -35,9 +35,9 @@ pub struct Header {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HeaderExt1 {
-    pub cb_pixel_format:  u32,
+    pub cb_pixel_format: u32,
     pub off_pixel_format: u32,
-    pub b_open_gl:        u32,
+    pub b_open_gl: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -59,21 +59,21 @@ impl Header {
 
         // 고정 88바이트 중 type+size 제외 80바이트 영역에서 순차 읽기.
         let bounds = RectL::read(cursor)?;
-        let frame  = RectL::read(cursor)?;
+        let frame = RectL::read(cursor)?;
         let signature = cursor.u32()?;
         if signature != SIGNATURE {
             return Err(Error::InvalidSignature { got: signature });
         }
-        let version         = cursor.u32()?;
-        let bytes           = cursor.u32()?;
-        let records         = cursor.u32()?;
-        let handles         = cursor.u16()?;
-        let reserved        = cursor.u16()?;
-        let n_description   = cursor.u32()?;
+        let version = cursor.u32()?;
+        let bytes = cursor.u32()?;
+        let records = cursor.u32()?;
+        let handles = cursor.u16()?;
+        let reserved = cursor.u16()?;
+        let n_description = cursor.u32()?;
         let off_description = cursor.u32()?;
-        let n_pal_entries   = cursor.u32()?;
-        let device          = SizeL::read(cursor)?;
-        let millimeters     = SizeL::read(cursor)?;
+        let n_pal_entries = cursor.u32()?;
+        let device = SizeL::read(cursor)?;
+        let millimeters = SizeL::read(cursor)?;
 
         let mut ext1 = None;
         let mut ext2 = None;
@@ -81,9 +81,9 @@ impl Header {
         // 확장 1: Size >= 100 (88 + 12).
         if size >= 100 {
             ext1 = Some(HeaderExt1 {
-                cb_pixel_format:  cursor.u32()?,
+                cb_pixel_format: cursor.u32()?,
                 off_pixel_format: cursor.u32()?,
-                b_open_gl:        cursor.u32()?,
+                b_open_gl: cursor.u32()?,
             });
         }
         // 확장 2: Size >= 108 (100 + 8).
@@ -102,9 +102,21 @@ impl Header {
         }
 
         Ok(Self {
-            bounds, frame, signature, version, bytes, records,
-            handles, reserved, n_description, off_description, n_pal_entries,
-            device, millimeters, ext1, ext2,
+            bounds,
+            frame,
+            signature,
+            version,
+            bytes,
+            records,
+            handles,
+            reserved,
+            n_description,
+            off_description,
+            n_pal_entries,
+            device,
+            millimeters,
+            ext1,
+            ext2,
         })
     }
 }

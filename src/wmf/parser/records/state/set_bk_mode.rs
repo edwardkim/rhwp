@@ -55,6 +55,11 @@ impl META_SETBKMODE {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, bk_mode, reserved })
+        Ok(Self {
+            record_size,
+            record_function,
+            bk_mode,
+            reserved,
+        })
     }
 }

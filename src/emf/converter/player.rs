@@ -4,9 +4,9 @@
 
 use std::fmt::Write;
 
-use crate::emf::Error;
 use crate::emf::parser::objects::{Header, LogBrush, LogPen, PointL, RectL};
 use crate::emf::parser::records::{ExtTextOut, Record, StretchDIBits};
+use crate::emf::Error;
 
 use super::device_context::{DcStack, GraphicsObject, ObjectTable};
 use super::svg::{colorref_to_rgb, escape_xml, SvgBuilder};
@@ -14,15 +14,15 @@ use super::svg::{colorref_to_rgb, escape_xml, SvgBuilder};
 use base64::Engine;
 
 pub struct Player {
-    pub dc_stack:    DcStack,
-    pub objects:     ObjectTable,
-    pub svg:         SvgBuilder,
+    pub dc_stack: DcStack,
+    pub objects: ObjectTable,
+    pub svg: SvgBuilder,
     pub render_rect: (f32, f32, f32, f32),
-    pub header:      Option<Header>,
+    pub header: Option<Header>,
 
     // 패스 상태
     path_active: bool,
-    path_d:      String,
+    path_d: String,
 }
 
 impl Player {
@@ -30,10 +30,10 @@ impl Player {
     pub fn new(render_rect: (f32, f32, f32, f32)) -> Self {
         Self {
             dc_stack: DcStack::new(),
-            objects:  ObjectTable::new(),
-            svg:      SvgBuilder::new(),
+            objects: ObjectTable::new(),
+            svg: SvgBuilder::new(),
             render_rect,
-            header:   None,
+            header: None,
             path_active: false,
             path_d: String::new(),
         }
@@ -59,13 +59,13 @@ impl Player {
         // Bounds → render_rect 매핑. Bounds가 비어 있으면 identity.
         let (rx, ry, rw, rh) = self.render_rect;
         let m = if let Some(h) = &self.header {
-            let w = (h.bounds.right  - h.bounds.left)  as f32;
-            let hh = (h.bounds.bottom - h.bounds.top)   as f32;
+            let w = (h.bounds.right - h.bounds.left) as f32;
+            let hh = (h.bounds.bottom - h.bounds.top) as f32;
             if w > 0.0 && hh > 0.0 {
                 let sx = rw / w;
                 let sy = rh / hh;
                 let tx = rx - h.bounds.left as f32 * sx;
-                let ty = ry - h.bounds.top  as f32 * sy;
+                let ty = ry - h.bounds.top as f32 * sy;
                 [sx, 0.0, 0.0, sy, tx, ty]
             } else {
                 [1.0, 0.0, 0.0, 1.0, rx, ry]
@@ -81,46 +81,58 @@ impl Player {
             Record::Header(_) | Record::Eof => {}
 
             // 객체
-            Record::CreatePen { handle, pen } =>
-                self.objects.insert(*handle, GraphicsObject::Pen(*pen)),
-            Record::CreateBrushIndirect { handle, brush } =>
-                self.objects.insert(*handle, GraphicsObject::Brush(*brush)),
-            Record::ExtCreateFontIndirectW { handle, font } =>
-                self.objects.insert(*handle, GraphicsObject::Font(font.clone())),
+            Record::CreatePen { handle, pen } => {
+                self.objects.insert(*handle, GraphicsObject::Pen(*pen))
+            }
+            Record::CreateBrushIndirect { handle, brush } => {
+                self.objects.insert(*handle, GraphicsObject::Brush(*brush))
+            }
+            Record::ExtCreateFontIndirectW { handle, font } => self
+                .objects
+                .insert(*handle, GraphicsObject::Font(font.clone())),
             Record::SelectObject { handle } => self.select_object(*handle),
-            Record::DeleteObject { handle } => { self.objects.remove(*handle); }
+            Record::DeleteObject { handle } => {
+                self.objects.remove(*handle);
+            }
 
             // 상태 — DC
             Record::SaveDC => self.dc_stack.save(),
-            Record::RestoreDC { relative } => { self.dc_stack.restore(*relative); }
+            Record::RestoreDC { relative } => {
+                self.dc_stack.restore(*relative);
+            }
             Record::SetWorldTransform(_) | Record::ModifyWorldTransform { .. } => {
                 // 단계 12에서는 WorldTransform을 DC에 저장만 하고 출력 적용은 생략.
                 // 단계 13~14에서 개별 도형에 transform 적용.
             }
 
             // 좌표계/색상
-            Record::SetMapMode(m)        => self.dc_stack.current_mut().map_mode = *m,
-            Record::SetWindowExtEx(s)    => self.dc_stack.current_mut().window_ext   = (s.cx, s.cy),
-            Record::SetWindowOrgEx(p)    => self.dc_stack.current_mut().window_org   = (p.x, p.y),
-            Record::SetViewportExtEx(s)  => self.dc_stack.current_mut().viewport_ext = (s.cx, s.cy),
-            Record::SetViewportOrgEx(p)  => self.dc_stack.current_mut().viewport_org = (p.x, p.y),
-            Record::SetBkMode(v)         => self.dc_stack.current_mut().bk_mode    = *v,
-            Record::SetTextAlign(v)      => self.dc_stack.current_mut().text_align = *v,
-            Record::SetTextColor(v)      => self.dc_stack.current_mut().text_color = *v,
-            Record::SetBkColor(v)        => self.dc_stack.current_mut().bk_color   = *v,
+            Record::SetMapMode(m) => self.dc_stack.current_mut().map_mode = *m,
+            Record::SetWindowExtEx(s) => self.dc_stack.current_mut().window_ext = (s.cx, s.cy),
+            Record::SetWindowOrgEx(p) => self.dc_stack.current_mut().window_org = (p.x, p.y),
+            Record::SetViewportExtEx(s) => self.dc_stack.current_mut().viewport_ext = (s.cx, s.cy),
+            Record::SetViewportOrgEx(p) => self.dc_stack.current_mut().viewport_org = (p.x, p.y),
+            Record::SetBkMode(v) => self.dc_stack.current_mut().bk_mode = *v,
+            Record::SetTextAlign(v) => self.dc_stack.current_mut().text_align = *v,
+            Record::SetTextColor(v) => self.dc_stack.current_mut().text_color = *v,
+            Record::SetBkColor(v) => self.dc_stack.current_mut().bk_color = *v,
 
             // 드로잉
             Record::MoveToEx(p) => self.dc_stack.current_mut().current_pos = (p.x, p.y),
-            Record::LineTo(p)   => self.emit_line_to(p),
+            Record::LineTo(p) => self.emit_line_to(p),
             Record::Rectangle(r) => self.emit_rect(r, None),
-            Record::RoundRect { rect, corner_w, corner_h } =>
-                self.emit_rect(rect, Some((*corner_w, *corner_h))),
-            Record::Ellipse(r)  => self.emit_ellipse(r),
-            Record::Arc   { rect, start, end } => self.emit_arc_like(rect, start, end, ArcKind::Arc),
-            Record::Chord { rect, start, end } => self.emit_arc_like(rect, start, end, ArcKind::Chord),
-            Record::Pie   { rect, start, end } => self.emit_arc_like(rect, start, end, ArcKind::Pie),
-            Record::Polyline16   { points, .. } => self.emit_polyline16(points, false),
-            Record::Polygon16    { points, .. } => self.emit_polyline16(points, true),
+            Record::RoundRect {
+                rect,
+                corner_w,
+                corner_h,
+            } => self.emit_rect(rect, Some((*corner_w, *corner_h))),
+            Record::Ellipse(r) => self.emit_ellipse(r),
+            Record::Arc { rect, start, end } => self.emit_arc_like(rect, start, end, ArcKind::Arc),
+            Record::Chord { rect, start, end } => {
+                self.emit_arc_like(rect, start, end, ArcKind::Chord)
+            }
+            Record::Pie { rect, start, end } => self.emit_arc_like(rect, start, end, ArcKind::Pie),
+            Record::Polyline16 { points, .. } => self.emit_polyline16(points, false),
+            Record::Polygon16 { points, .. } => self.emit_polyline16(points, true),
             Record::PolyBezier16 { points, .. } => self.emit_polybezier16(points),
 
             // 패스
@@ -132,7 +144,9 @@ impl Player {
                 self.path_active = false;
             }
             Record::CloseFigure => {
-                if !self.path_d.is_empty() { self.path_d.push_str(" Z"); }
+                if !self.path_d.is_empty() {
+                    self.path_d.push_str(" Z");
+                }
             }
             Record::FillPath(_) => {
                 let (fill, stroke) = (self.fill_spec(), None);
@@ -156,12 +170,18 @@ impl Player {
     }
 
     fn emit_text(&mut self, t: &ExtTextOut) {
-        if t.text.is_empty() { return; }
+        if t.text.is_empty() {
+            return;
+        }
         let dc = self.dc_stack.current();
         let color = colorref_to_rgb(dc.text_color);
         // 폰트
         let (family, size, weight, italic) = if let Some(f) = &dc.font {
-            let fam = if f.face_name.is_empty() { "sans-serif".to_string() } else { f.face_name.clone() };
+            let fam = if f.face_name.is_empty() {
+                "sans-serif".to_string()
+            } else {
+                f.face_name.clone()
+            };
             // LogFontW.height: 음수=cell height, 양수=character height. |height|를 px로 사용.
             let size = f.height.unsigned_abs().max(1) as f32;
             let weight = if f.weight >= 700 { "bold" } else { "normal" };
@@ -190,11 +210,13 @@ impl Player {
     }
 
     fn select_object(&mut self, handle: u32) {
-        let Some(obj) = self.objects.get(handle) else { return; };
+        let Some(obj) = self.objects.get(handle) else {
+            return;
+        };
         match obj {
-            GraphicsObject::Pen(p)   => self.dc_stack.current_mut().pen   = Some(*p),
+            GraphicsObject::Pen(p) => self.dc_stack.current_mut().pen = Some(*p),
             GraphicsObject::Brush(b) => self.dc_stack.current_mut().brush = Some(*b),
-            GraphicsObject::Font(f)  => self.dc_stack.current_mut().font  = Some(f.clone()),
+            GraphicsObject::Font(f) => self.dc_stack.current_mut().font = Some(f.clone()),
         }
     }
 
@@ -203,7 +225,10 @@ impl Player {
             // PS_NULL(5) → 스트로크 없음
             let is_null = (p.style & 0x0F) == 5;
             if is_null {
-                StrokeSpec { color: None, width: 0.0 }
+                StrokeSpec {
+                    color: None,
+                    width: 0.0,
+                }
             } else {
                 StrokeSpec {
                     color: Some(colorref_to_rgb(p.color)),
@@ -211,14 +236,22 @@ impl Player {
                 }
             }
         } else {
-            StrokeSpec { color: Some("black".into()), width: 1.0 }
+            StrokeSpec {
+                color: Some("black".into()),
+                width: 1.0,
+            }
         }
     }
 
     fn fill_spec(&self) -> Option<String> {
         if let Some(b) = self.dc_stack.current().brush {
-            if b.style == 1 { None }                       // BS_NULL
-            else            { Some(colorref_to_rgb(b.color)) }
+            if b.style == 1 {
+                None
+            }
+            // BS_NULL
+            else {
+                Some(colorref_to_rgb(b.color))
+            }
         } else {
             Some("none".into())
         }
@@ -245,7 +278,7 @@ impl Player {
 
     fn emit_rect(&mut self, r: &RectL, corner: Option<(i32, i32)>) {
         let stroke = self.stroke_spec();
-        let fill   = self.fill_spec().unwrap_or_else(|| "none".into());
+        let fill = self.fill_spec().unwrap_or_else(|| "none".into());
         let stroke_color = stroke.color.as_deref().unwrap_or("none");
         let (rx_attr, ry_attr) = match corner {
             Some((cw, ch)) => (format!(" rx=\"{}\"", cw / 2), format!(" ry=\"{}\"", ch / 2)),
@@ -260,7 +293,7 @@ impl Player {
 
     fn emit_ellipse(&mut self, r: &RectL) {
         let stroke = self.stroke_spec();
-        let fill   = self.fill_spec().unwrap_or_else(|| "none".into());
+        let fill = self.fill_spec().unwrap_or_else(|| "none".into());
         let cx = (r.left + r.right) / 2;
         let cy = (r.top + r.bottom) / 2;
         let rx = (r.right - r.left).abs() / 2;
@@ -283,16 +316,16 @@ impl Player {
         let (s, e) = (start, end);
         let stroke = self.stroke_spec();
         let fill = match kind {
-            ArcKind::Arc   => "none".to_string(),
+            ArcKind::Arc => "none".to_string(),
             ArcKind::Chord | ArcKind::Pie => self.fill_spec().unwrap_or_else(|| "none".into()),
         };
         let d = match kind {
-            ArcKind::Arc =>
-                format!("M {} {} A {} {} 0 0 1 {} {}", s.x, s.y, rx, ry, e.x, e.y),
-            ArcKind::Chord =>
-                format!("M {} {} A {} {} 0 0 1 {} {} Z", s.x, s.y, rx, ry, e.x, e.y),
-            ArcKind::Pie =>
-                format!("M {cx} {cy} L {} {} A {} {} 0 0 1 {} {} Z", s.x, s.y, rx, ry, e.x, e.y),
+            ArcKind::Arc => format!("M {} {} A {} {} 0 0 1 {} {}", s.x, s.y, rx, ry, e.x, e.y),
+            ArcKind::Chord => format!("M {} {} A {} {} 0 0 1 {} {} Z", s.x, s.y, rx, ry, e.x, e.y),
+            ArcKind::Pie => format!(
+                "M {cx} {cy} L {} {} A {} {} 0 0 1 {} {} Z",
+                s.x, s.y, rx, ry, e.x, e.y
+            ),
         };
         let stroke_color = stroke.color.as_deref().unwrap_or("none");
         let node = format!(
@@ -303,10 +336,20 @@ impl Player {
     }
 
     fn emit_polyline16(&mut self, points: &[(i16, i16)], close: bool) {
-        if points.is_empty() { return; }
-        let pts: String = points.iter().map(|(x, y)| format!("{x},{y}")).collect::<Vec<_>>().join(" ");
+        if points.is_empty() {
+            return;
+        }
+        let pts: String = points
+            .iter()
+            .map(|(x, y)| format!("{x},{y}"))
+            .collect::<Vec<_>>()
+            .join(" ");
         let stroke = self.stroke_spec();
-        let fill = if close { self.fill_spec().unwrap_or_else(|| "none".into()) } else { "none".into() };
+        let fill = if close {
+            self.fill_spec().unwrap_or_else(|| "none".into())
+        } else {
+            "none".into()
+        };
         let tag = if close { "polygon" } else { "polyline" };
         let stroke_color = stroke.color.as_deref().unwrap_or("none");
         let node = format!(
@@ -317,14 +360,16 @@ impl Player {
     }
 
     fn emit_polybezier16(&mut self, points: &[(i16, i16)]) {
-        if points.is_empty() { return; }
+        if points.is_empty() {
+            return;
+        }
         let mut d = format!("M{} {}", points[0].0, points[0].1);
         // EMF PolyBezier: 첫 점은 시작점, 이후 3점씩 제어1 제어2 끝점(C 커맨드).
         let mut i = 1;
         while i + 2 < points.len() + 1 && i + 2 <= points.len() {
             let (c1x, c1y) = points[i];
             let (c2x, c2y) = points[i + 1];
-            let (ex, ey)   = points[i + 2];
+            let (ex, ey) = points[i + 2];
             let _ = write!(d, " C{c1x} {c1y} {c2x} {c2y} {ex} {ey}");
             i += 3;
         }
@@ -338,11 +383,13 @@ impl Player {
     }
 
     fn emit_path(&mut self, fill: Option<String>, stroke: Option<StrokeSpec>) {
-        if self.path_d.is_empty() { return; }
+        if self.path_d.is_empty() {
+            return;
+        }
         let fill_attr = fill.as_deref().unwrap_or("none");
-        let (stroke_color, stroke_width) = stroke
-            .map_or(("none".into(), 0.0_f32),
-                    |s| (s.color.unwrap_or_else(|| "none".into()), s.width));
+        let (stroke_color, stroke_width) = stroke.map_or(("none".into(), 0.0_f32), |s| {
+            (s.color.unwrap_or_else(|| "none".into()), s.width)
+        });
         let node = format!(
             "<path d=\"{}\" fill=\"{fill_attr}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             self.path_d.trim(),
@@ -354,7 +401,11 @@ impl Player {
 }
 
 #[derive(Copy, Clone)]
-enum ArcKind { Arc, Chord, Pie }
+enum ArcKind {
+    Arc,
+    Chord,
+    Pie,
+}
 
 #[derive(Debug, Clone)]
 pub struct StrokeSpec {
@@ -370,7 +421,7 @@ pub struct StrokeSpec {
 /// `data:image/png` 로 재인코딩 (svg.rs:1118 / shape_layout.rs:1063 과 동일 정책).
 /// BMP decode 실패 시 fallback 으로 BMP URI 반환 (graceful degradation).
 fn dib_to_bmp_data_url(bmi: &[u8], bits: &[u8]) -> String {
-    let bmi_size  = bmi.len() as u32;
+    let bmi_size = bmi.len() as u32;
     let bits_size = bits.len() as u32;
     let file_size = 14 + bmi_size + bits_size;
     let data_offset = 14 + bmi_size;

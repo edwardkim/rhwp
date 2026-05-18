@@ -86,10 +86,7 @@ pub fn write_hyperlink_begin<W: Write>(
 // =====================================================================
 
 /// `<hp:fn>` 각주 뼈대 (내부 문단 직렬화는 #186 에서 연결).
-pub fn write_footnote_open<W: Write>(
-    w: &mut Writer<W>,
-    number: u16,
-) -> Result<(), SerializeError> {
+pub fn write_footnote_open<W: Write>(w: &mut Writer<W>, number: u16) -> Result<(), SerializeError> {
     let n = number.to_string();
     start_tag(w, "hp:fn")?;
     empty_tag(w, "hp:autoNum", &[("num", &n)])?;
@@ -100,10 +97,7 @@ pub fn write_footnote_close<W: Write>(w: &mut Writer<W>) -> Result<(), Serialize
     end_tag(w, "hp:fn")
 }
 
-pub fn write_endnote_open<W: Write>(
-    w: &mut Writer<W>,
-    number: u16,
-) -> Result<(), SerializeError> {
+pub fn write_endnote_open<W: Write>(w: &mut Writer<W>, number: u16) -> Result<(), SerializeError> {
     let n = number.to_string();
     start_tag(w, "hp:en")?;
     empty_tag(w, "hp:autoNum", &[("num", &n)])?;
@@ -119,7 +113,11 @@ pub fn write_endnote_close<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeE
 // =====================================================================
 
 fn bool01(b: bool) -> &'static str {
-    if b { "1" } else { "0" }
+    if b {
+        "1"
+    } else {
+        "0"
+    }
 }
 
 fn field_type_str(t: FieldType) -> &'static str {
@@ -156,7 +154,9 @@ mod tests {
 
     #[test]
     fn bookmark_emits_name() {
-        let bm = Bookmark { name: "chapter1".to_string() };
+        let bm = Bookmark {
+            name: "chapter1".to_string(),
+        };
         let xml = to_string(|w| write_bookmark(w, &bm));
         assert!(xml.contains(r#"<hp:bookmark name="chapter1"/>"#), "{}", xml);
     }

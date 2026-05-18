@@ -2,17 +2,7 @@
 /// which text and graphics are drawn. (Windows NT 3.1, Windows NT 3.5, Windows
 /// NT 3.51, Windows 95, Windows NT 4.0, Windows 98, and Windows Millennium
 /// Edition: This functionality is not supported.)
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum Layout {
     /// Sets the default horizontal layout to be left-to-right.

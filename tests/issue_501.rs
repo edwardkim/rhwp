@@ -18,11 +18,10 @@ use std::path::Path;
 fn mel001_pi22_row0_height_matches_ir() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/mel-001.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse mel-001.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse mel-001.hwp");
 
     // 페이지 2 = index 1
     let svg = doc
@@ -51,14 +50,18 @@ fn mel001_pi22_row0_height_matches_ir() {
     let table_start_y = {
         // x="211.0533333333333" 와 y=... 인 cell-clip rect 추출
         let needle = "x=\"211.0533333333333\" y=\"";
-        let idx = svg.find(needle)
+        let idx = svg
+            .find(needle)
             .expect("pi=22 row 0 첫 cs=1 셀 (x=211.05) 을 찾지 못함");
         let after = &svg[idx + needle.len()..];
         let end = after.find('"').expect("y 종료 인용부호 없음");
         let y: f64 = after[..end].parse().expect("y 값 파싱 실패");
         // dump-pages 정합으로 pi=22 는 page 2 후반부 (y > 600)
-        assert!(y > 600.0 && y < 800.0,
-            "pi=22 행 0 시작 y 가 예상 범위 (600~800) 밖: {}", y);
+        assert!(
+            y > 600.0 && y < 800.0,
+            "pi=22 행 0 시작 y 가 예상 범위 (600~800) 밖: {}",
+            y
+        );
         y
     };
 
@@ -88,16 +91,23 @@ fn mel001_pi22_row0_height_matches_ir() {
         }
     }
 
-    assert!(!found_row0_heights.is_empty(),
-        "pi=22 표의 행 0 영역 cell-clip 을 찾지 못함 (table_start_y={})", table_start_y);
+    assert!(
+        !found_row0_heights.is_empty(),
+        "pi=22 표의 행 0 영역 cell-clip 을 찾지 못함 (table_start_y={})",
+        table_start_y
+    );
 
     // 행 0 영역의 cell-clip 들 중 가장 큰 height 가 IR cell.height (≈26.4px) 정합
     let max_h = found_row0_heights.iter().cloned().fold(0.0f64, f64::max);
-    println!("pi=22 행 0 영역 cell-clip heights: {:?}, max={:.2}",
-        found_row0_heights, max_h);
+    println!(
+        "pi=22 행 0 영역 cell-clip heights: {:?}, max={:.2}",
+        found_row0_heights, max_h
+    );
 
-    assert!(max_h >= 22.0,
+    assert!(
+        max_h >= 22.0,
         "pi=22 행 0 영역 최대 높이 {:.2}px < 22px (IR cell.height=26.4 ± 4 tolerance) — \
          TAC 표 비례 축소 회귀 (raw_table_height 가 common_h 보다 잘못 큰 값)",
-        max_h);
+        max_h
+    );
 }

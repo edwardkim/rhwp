@@ -164,7 +164,8 @@ fn issue_598_backspace_before_marker_keeps_marker_anchor_and_undo_restores_it() 
 
     assert_eq!(doc.get_control_text_positions(0, 3), "[7]");
     assert_eq!(
-        doc.get_text_range_native(0, 3, 6, 2).expect("text around marker"),
+        doc.get_text_range_native(0, 3, 6, 2)
+            .expect("text around marker"),
         "체와"
     );
 
@@ -176,7 +177,8 @@ fn issue_598_backspace_before_marker_keeps_marker_anchor_and_undo_restores_it() 
         "footnote marker should stay between remaining previous text and following text"
     );
     assert_eq!(
-        doc.get_text_range_native(0, 3, 5, 2).expect("text around marker after delete"),
+        doc.get_text_range_native(0, 3, 5, 2)
+            .expect("text around marker after delete"),
         "액와"
     );
 
@@ -188,7 +190,8 @@ fn issue_598_backspace_before_marker_keeps_marker_anchor_and_undo_restores_it() 
         "undo-like insert should restore original footnote marker anchor"
     );
     assert_eq!(
-        doc.get_text_range_native(0, 3, 6, 2).expect("text around marker after restore"),
+        doc.get_text_range_native(0, 3, 6, 2)
+            .expect("text around marker after restore"),
         "체와"
     );
 }

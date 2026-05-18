@@ -850,8 +850,7 @@ impl META_ESCAPE {
             crate::wmf::parser::RecordType::META_ESCAPE,
         )?;
 
-        let (escape, escape_bytes) =
-            crate::wmf::parser::MetafileEscapes::parse(buf)?;
+        let (escape, escape_bytes) = crate::wmf::parser::MetafileEscapes::parse(buf)?;
         record_size.consume(escape_bytes);
 
         let record = match escape {
@@ -862,18 +861,10 @@ impl META_ESCAPE {
                 Self::parse_as_BEGIN_PATH(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::CHECKJPEGFORMAT => {
-                Self::parse_as_CHECKJPEGFORMAT(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_CHECKJPEGFORMAT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::CHECKPNGFORMAT => {
-                Self::parse_as_CHECKPNGFORMAT(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_CHECKPNGFORMAT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::CLIP_TO_PATH => {
                 Self::parse_as_CLIP_TO_PATH(buf, record_size, record_function)?
@@ -885,25 +876,13 @@ impl META_ESCAPE {
                 Self::parse_as_DOWNLOADFACE(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::DOWNLOADHEADER => {
-                Self::parse_as_DOWNLOADHEADER(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_DOWNLOADHEADER(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::DRAWPATTERNRECT => {
-                Self::parse_as_DRAWPATTERNRECT(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_DRAWPATTERNRECT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::ENCAPSULATED_POSTSCRIPT => {
-                Self::parse_as_ENCAPSULATED_POSTSCRIPT(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_ENCAPSULATED_POSTSCRIPT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::END_PATH => {
                 Self::parse_as_END_PATH(buf, record_size, record_function)?
@@ -921,70 +900,34 @@ impl META_ESCAPE {
                 Self::parse_as_GETCOLORTABLE(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETDEVICEUNITS => {
-                Self::parse_as_GETDEVICEUNITS(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GETDEVICEUNITS(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETEXTENDEDTEXTMETRICS => {
-                Self::parse_as_GETEXTENDEDTEXTMETRICS(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GETEXTENDEDTEXTMETRICS(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETFACENAME => {
                 Self::parse_as_GETFACENAME(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETPAIRKERNTABLE => {
-                Self::parse_as_GETPAIRKERNTABLE(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GETPAIRKERNTABLE(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETPHYSPAGESIZE => {
-                Self::parse_as_GETPHYSPAGESIZE(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GETPHYSPAGESIZE(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETPRINTINGOFFSET => {
-                Self::parse_as_GETPRINTINGOFFSET(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GETPRINTINGOFFSET(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GET_PS_FEATURESETTING => {
-                Self::parse_as_GET_PS_FEATURESETTING(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GET_PS_FEATURESETTING(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::GETSCALINGFACTOR => {
-                Self::parse_as_GETSCALINGFACTOR(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_GETSCALINGFACTOR(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::META_ESCAPE_ENHANCED_METAFILE => {
-                Self::parse_as_META_ESCAPE_ENHANCED_METAFILE(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_META_ESCAPE_ENHANCED_METAFILE(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::METAFILE_DRIVER => {
-                Self::parse_as_METAFILE_DRIVER(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_METAFILE_DRIVER(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::NEWFRAME => {
                 Self::parse_as_NEWFRAME(buf, record_size, record_function)?
@@ -996,56 +939,28 @@ impl META_ESCAPE {
                 Self::parse_as_PASSTHROUGH(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::POSTSCRIPT_DATA => {
-                Self::parse_as_POSTSCRIPT_DATA(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_POSTSCRIPT_DATA(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::POSTSCRIPT_IDENTIFY => {
-                Self::parse_as_POSTSCRIPT_IDENTIFY(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_POSTSCRIPT_IDENTIFY(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::POSTSCRIPT_IGNORE => {
-                Self::parse_as_POSTSCRIPT_IGNORE(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_POSTSCRIPT_IGNORE(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::POSTSCRIPT_INJECTION => {
-                Self::parse_as_POSTSCRIPT_INJECTION(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_POSTSCRIPT_INJECTION(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::POSTSCRIPT_PASSTHROUGH => {
-                Self::parse_as_POSTSCRIPT_PASSTHROUGH(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_POSTSCRIPT_PASSTHROUGH(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::OPENCHANNEL => {
                 Self::parse_as_OPENCHANNEL(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::QUERYDIBSUPPORT => {
-                Self::parse_as_QUERYDIBSUPPORT(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_QUERYDIBSUPPORT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::QUERYESCSUPPORT => {
-                Self::parse_as_QUERYESCSUPPORT(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_QUERYESCSUPPORT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::SETCOLORTABLE => {
                 Self::parse_as_SETCOLORTABLE(buf, record_size, record_function)?
@@ -1063,11 +978,7 @@ impl META_ESCAPE {
                 Self::parse_as_SETMITERLIMIT(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::SPCLPASSTHROUGH2 => {
-                Self::parse_as_SPCLPASSTHROUGH2(
-                    buf,
-                    record_size,
-                    record_function,
-                )?
+                Self::parse_as_SPCLPASSTHROUGH2(buf, record_size, record_function)?
             }
             crate::wmf::parser::MetafileEscapes::STARTDOC => {
                 Self::parse_as_STARTDOC(buf, record_size, record_function)?

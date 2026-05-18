@@ -149,9 +149,8 @@ fn run_inner(options: Options) -> Result<(), String> {
 
     let oracle = build_inventory(&options.oracle, options.section)?;
     let generated = build_inventory(&options.generated, options.section)?;
-    let hwpx_bytes = fs::read(&options.hwpx).map_err(|error| {
-        format!("HWPX 파일 읽기 실패 - {}: {error}", options.hwpx.display())
-    })?;
+    let hwpx_bytes = fs::read(&options.hwpx)
+        .map_err(|error| format!("HWPX 파일 읽기 실패 - {}: {error}", options.hwpx.display()))?;
     let hwpx_xml = summarize_hwpx_xml(&hwpx_bytes)?;
     let ir_summary = parse_hwpx(&hwpx_bytes)
         .map(|doc| summarize_ir(&doc))
@@ -266,10 +265,7 @@ fn render_docinfo_contract(
             output,
             "| index | field | oracle | generated | delta | status |"
         );
-        let _ = writeln!(
-            output,
-            "|---:|---|---:|---:|---:|---|"
-        );
+        let _ = writeln!(output, "|---:|---|---:|---:|---:|---|");
         for index in 0..max_len {
             let oracle_value = oracle_values.get(index).copied();
             let generated_value = generated_values.get(index).copied();
@@ -306,10 +302,7 @@ fn render_docinfo_contract(
         output,
         "| tag | paired records | changed payload | size differences | first oracle idx | first generated idx |"
     );
-    let _ = writeln!(
-        output,
-        "|---|---:|---:|---:|---:|---:|"
-    );
+    let _ = writeln!(output, "|---|---:|---:|---:|---:|---:|");
     for row in docinfo_payload_summaries(&oracle_doc, &generated_doc) {
         let _ = writeln!(
             output,
@@ -412,23 +405,28 @@ fn docinfo_payload_summaries(
 
     let mut summaries: BTreeMap<String, PayloadSummaryRow> = BTreeMap::new();
     for key in union_ref_keys(&oracle_by_key, &generated_by_key) {
-        if let (Some(oracle), Some(generated)) = (oracle_by_key.get(&key), generated_by_key.get(&key)) {
-            let row = summaries
-                .entry(oracle.tag_name.clone())
-                .or_insert_with(|| PayloadSummaryRow {
-                    tag_name: oracle.tag_name.clone(),
-                    ..PayloadSummaryRow::default()
-                });
+        if let (Some(oracle), Some(generated)) =
+            (oracle_by_key.get(&key), generated_by_key.get(&key))
+        {
+            let row =
+                summaries
+                    .entry(oracle.tag_name.clone())
+                    .or_insert_with(|| PayloadSummaryRow {
+                        tag_name: oracle.tag_name.clone(),
+                        ..PayloadSummaryRow::default()
+                    });
             row.paired += 1;
             if oracle.payload_hash != generated.payload_hash {
                 row.changed += 1;
                 row.first_oracle_index.get_or_insert(oracle.record_index);
-                row.first_generated_index.get_or_insert(generated.record_index);
+                row.first_generated_index
+                    .get_or_insert(generated.record_index);
             }
             if oracle.size != generated.size {
                 row.size_diffs += 1;
                 row.first_oracle_index.get_or_insert(oracle.record_index);
-                row.first_generated_index.get_or_insert(generated.record_index);
+                row.first_generated_index
+                    .get_or_insert(generated.record_index);
             }
         }
     }
@@ -479,10 +477,7 @@ fn render_bodytext_control_graph(
         output,
         "| key | status | oracle idx | generated idx | ctrl | oracle children | generated children | finding |"
     );
-    let _ = writeln!(
-        output,
-        "|---|---|---:|---:|---|---|---|---|"
-    );
+    let _ = writeln!(output, "|---|---|---:|---:|---|---|---|---|");
 
     for key in union_ref_keys(&oracle_by_key, &generated_by_key) {
         match (oracle_by_key.get(&key), generated_by_key.get(&key)) {
@@ -606,7 +601,9 @@ fn control_summaries(items: &[Hwp5InventoryItem]) -> Vec<ControlSummary> {
             }
             child_count += 1;
             *child_tag_counts.entry(child.tag_name.clone()).or_insert(0) += 1;
-            *child_role_counts.entry(child.tuple_role.clone()).or_insert(0) += 1;
+            *child_role_counts
+                .entry(child.tuple_role.clone())
+                .or_insert(0) += 1;
         }
 
         summaries.push(ControlSummary {
@@ -674,7 +671,11 @@ fn render_hwpx_ir_serializer_trace(
     let _ = writeln!(output, "- line_segs: `{}`", ir_summary.line_segs);
     let _ = writeln!(output, "- table_cells: `{}`", ir_summary.table_cells);
     let _ = writeln!(output, "- bin_data_items: `{}`", ir_summary.bin_data_items);
-    let _ = writeln!(output, "- bin_data_payloads: `{}`", ir_summary.bin_data_payloads);
+    let _ = writeln!(
+        output,
+        "- bin_data_payloads: `{}`",
+        ir_summary.bin_data_payloads
+    );
     let _ = writeln!(output);
     let _ = writeln!(output, "### IR Controls");
     let _ = writeln!(output);
@@ -726,11 +727,7 @@ fn render_hwpx_ir_serializer_trace(
         ),
     ];
     for (area, path, responsibility) in rows {
-        let _ = writeln!(
-            output,
-            "| `{}` | `{}` | {} |",
-            area, path, responsibility
-        );
+        let _ = writeln!(output, "| `{}` | `{}` | {} |", area, path, responsibility);
     }
     output
 }
@@ -765,7 +762,12 @@ fn summarize_hwpx_xml(bytes: &[u8]) -> Result<HwpxXmlSummary, String> {
         add_marker_count(&mut summary.counts, "hp:container", &text, "<hp:container");
         add_marker_count(&mut summary.counts, "hp:ole", &text, "<hp:ole");
         add_marker_count(&mut summary.counts, "hp:chart", &text, "<hp:chart");
-        add_marker_count(&mut summary.counts, "hp:lineSegArray", &text, "lineSegArray");
+        add_marker_count(
+            &mut summary.counts,
+            "hp:lineSegArray",
+            &text,
+            "lineSegArray",
+        );
         add_marker_count(&mut summary.counts, "hp:lineSeg", &text, "<hp:lineSeg");
         add_marker_count(&mut summary.counts, "hp:p", &text, "<hp:p");
         add_marker_count(&mut summary.counts, "hp:run", &text, "<hp:run");
@@ -784,13 +786,29 @@ fn summarize_ir(doc: &Document) -> IrSummary {
     summary.sections = doc.sections.len();
     summary.bin_data_items = doc.doc_info.bin_data_list.len();
     summary.bin_data_payloads = doc.bin_data_content.len();
-    summary.docinfo_counts.insert("bin_data".to_string(), doc.doc_info.bin_data_list.len());
-    summary.docinfo_counts.insert("border_fill".to_string(), doc.doc_info.border_fills.len());
-    summary.docinfo_counts.insert("char_shape".to_string(), doc.doc_info.char_shapes.len());
-    summary.docinfo_counts.insert("para_shape".to_string(), doc.doc_info.para_shapes.len());
-    summary.docinfo_counts.insert("style".to_string(), doc.doc_info.styles.len());
-    summary.docinfo_counts.insert("extra_records".to_string(), doc.doc_info.extra_records.len());
-    summary.docinfo_counts.insert("memo_shape_count".to_string(), doc.doc_info.memo_shape_count as usize);
+    summary
+        .docinfo_counts
+        .insert("bin_data".to_string(), doc.doc_info.bin_data_list.len());
+    summary
+        .docinfo_counts
+        .insert("border_fill".to_string(), doc.doc_info.border_fills.len());
+    summary
+        .docinfo_counts
+        .insert("char_shape".to_string(), doc.doc_info.char_shapes.len());
+    summary
+        .docinfo_counts
+        .insert("para_shape".to_string(), doc.doc_info.para_shapes.len());
+    summary
+        .docinfo_counts
+        .insert("style".to_string(), doc.doc_info.styles.len());
+    summary.docinfo_counts.insert(
+        "extra_records".to_string(),
+        doc.doc_info.extra_records.len(),
+    );
+    summary.docinfo_counts.insert(
+        "memo_shape_count".to_string(),
+        doc.doc_info.memo_shape_count as usize,
+    );
 
     for section in &doc.sections {
         summarize_paragraphs(&section.paragraphs, &mut summary);
@@ -839,7 +857,10 @@ fn summarize_shape(shape: &ShapeObject, summary: &mut IrSummary) {
         summarize_paragraphs(&caption.paragraphs, summary);
     }
     if let ShapeObject::Group(group) = shape {
-        *summary.controls.entry("GroupChild".to_string()).or_insert(0) += group.children.len();
+        *summary
+            .controls
+            .entry("GroupChild".to_string())
+            .or_insert(0) += group.children.len();
         for child in &group.children {
             summarize_shape(child, summary);
         }
@@ -889,11 +910,17 @@ fn control_kind(control: &Control) -> &'static str {
 }
 
 fn docinfo_items(items: &[Hwp5InventoryItem]) -> Vec<&Hwp5InventoryItem> {
-    items.iter().filter(|item| item.owner == "DocInfo").collect()
+    items
+        .iter()
+        .filter(|item| item.owner == "DocInfo")
+        .collect()
 }
 
 fn bodytext_items(items: &[Hwp5InventoryItem]) -> Vec<&Hwp5InventoryItem> {
-    items.iter().filter(|item| item.owner == "BodyText").collect()
+    items
+        .iter()
+        .filter(|item| item.owner == "BodyText")
+        .collect()
 }
 
 fn count_tags(items: &[&Hwp5InventoryItem]) -> BTreeMap<String, usize> {

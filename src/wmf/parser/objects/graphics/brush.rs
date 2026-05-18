@@ -29,8 +29,7 @@ impl Brush {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (style, mut consumed_bytes) =
-            crate::wmf::parser::BrushStyle::parse(buf)?;
+        let (style, mut consumed_bytes) = crate::wmf::parser::BrushStyle::parse(buf)?;
         let v = match style {
             crate::wmf::parser::BrushStyle::BS_DIBPATTERNPT => {
                 use crate::wmf::parser::DeviceIndependentBitmap;
@@ -39,13 +38,13 @@ impl Brush {
                 consumed_bytes += c;
 
                 let (brush_hatch, c) =
-                    DeviceIndependentBitmap::parse_with_color_usage(
-                        buf,
-                        color_usage,
-                    )?;
+                    DeviceIndependentBitmap::parse_with_color_usage(buf, color_usage)?;
                 consumed_bytes += c;
 
-                Self::DIBPatternPT { color_usage, brush_hatch }
+                Self::DIBPatternPT {
+                    color_usage,
+                    brush_hatch,
+                }
             }
             crate::wmf::parser::BrushStyle::BS_HATCHED => {
                 let (color_ref, c) = crate::wmf::parser::ColorRef::parse(buf)?;
@@ -54,7 +53,10 @@ impl Brush {
                 let (brush_hatch, c) = crate::wmf::parser::HatchStyle::parse(buf)?;
                 consumed_bytes += c;
 
-                Self::Hatched { color_ref, brush_hatch }
+                Self::Hatched {
+                    color_ref,
+                    brush_hatch,
+                }
             }
             crate::wmf::parser::BrushStyle::BS_PATTERN => {
                 // SHOULD be ignored.

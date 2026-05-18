@@ -13,7 +13,9 @@ fn extract_page_numbers(dump: &str) -> Vec<u32> {
     for line in dump.lines() {
         if let Some(idx) = line.find("page_num=") {
             let rest = &line[idx + "page_num=".len()..];
-            let end = rest.find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len());
+            let end = rest
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(rest.len());
             if let Ok(n) = rest[..end].parse::<u32>() {
                 nums.push(n);
             }
@@ -42,10 +44,15 @@ fn gugeo_업무계획_post_new_number_monotonic() {
     let dump = doc.dump_page_items(None);
     let nums = extract_page_numbers(&dump);
 
-    assert!(!nums.is_empty(), "page_num 추출 실패 — dump 형식 변경 가능성");
+    assert!(
+        !nums.is_empty(),
+        "page_num 추출 실패 — dump 형식 변경 가능성"
+    );
 
     // NewNumber 트리거 위치 찾기 (직전 page_num > 현재 page_num 인 첫 지점)
-    let trigger_idx = nums.windows(2).position(|w| w[0] >= w[1])
+    let trigger_idx = nums
+        .windows(2)
+        .position(|w| w[0] >= w[1])
         .map(|i| i + 1)
         .unwrap_or(0);
 
@@ -64,7 +71,8 @@ fn gugeo_업무계획_post_new_number_monotonic() {
     assert!(
         post_count >= nums.len().saturating_sub(3),
         "트리거 이후 페이지({}/{})가 너무 적음 — 트리거 위치가 비정상.",
-        post_count, nums.len(),
+        post_count,
+        nums.len(),
     );
 }
 

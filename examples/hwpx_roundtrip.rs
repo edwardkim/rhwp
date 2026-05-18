@@ -29,7 +29,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "Parsed: sections={}, paragraphs={}",
         doc.sections.len(),
-        doc.sections.iter().map(|s| s.paragraphs.len()).sum::<usize>()
+        doc.sections
+            .iter()
+            .map(|s| s.paragraphs.len())
+            .sum::<usize>()
     );
 
     let out_bytes = serialize_hwpx(&doc)?;

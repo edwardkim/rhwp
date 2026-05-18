@@ -207,9 +207,9 @@ fn text_run_ops(
     output_options: LayerOutputOptions,
 ) -> Vec<PaintOp> {
     let has_char_overlap = run.char_overlap.is_some();
-    let has_control_mark =
-        (output_options.show_paragraph_marks || output_options.show_control_codes)
-            && (run.field_marker != Default::default() || run.is_para_end || run.is_line_break_end);
+    let has_control_mark = (output_options.show_paragraph_marks
+        || output_options.show_control_codes)
+        && (run.field_marker != Default::default() || run.is_para_end || run.is_line_break_end);
     let has_tab_leader = !run.style.tab_leaders.is_empty();
     let has_underline = run.style.underline != UnderlineType::None;
     let has_strikethrough = run.style.strikethrough;
@@ -552,13 +552,12 @@ mod tests {
             BoundingBox::new(1.0, 2.0, 80.0, 20.0),
         ));
 
-        let mut builder = LayerBuilder::new(RenderProfile::Screen).with_output_options(
-            LayerOutputOptions {
+        let mut builder =
+            LayerBuilder::new(RenderProfile::Screen).with_output_options(LayerOutputOptions {
                 show_paragraph_marks: true,
                 show_control_codes: true,
                 ..Default::default()
-            },
-        );
+            });
         let layer_tree = builder.build(&tree);
 
         let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {

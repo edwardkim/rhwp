@@ -39,7 +39,10 @@ fn svg_text_content(svg: &str) -> String {
 }
 
 fn collect_shape_texts<'a>(shape: &'a rhwp::model::shape::ShapeObject, out: &mut Vec<&'a str>) {
-    if let Some(text_box) = shape.drawing().and_then(|drawing| drawing.text_box.as_ref()) {
+    if let Some(text_box) = shape
+        .drawing()
+        .and_then(|drawing| drawing.text_box.as_ref())
+    {
         collect_paragraph_texts(&text_box.paragraphs, out);
     }
     if let rhwp::model::shape::ShapeObject::Group(group) = shape {
@@ -130,7 +133,9 @@ fn issue_937_f081c_filler_should_not_render_as_text() {
 fn issue_937_svg_renders_f012b_as_signature_seal() {
     let bytes = read_bokhakwonseo();
     let doc = HwpDocument::from_bytes(&bytes).expect("parse samples/복학원서.hwp");
-    let svg = doc.render_page_svg_native(0).expect("render samples/복학원서.hwp page 1");
+    let svg = doc
+        .render_page_svg_native(0)
+        .expect("render samples/복학원서.hwp page 1");
     let text = svg_text_content(&svg);
 
     assert!(

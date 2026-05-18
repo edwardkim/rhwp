@@ -132,8 +132,7 @@ impl META_DIBBITBLT {
         );
         record_size.consume(raster_operation_bytes + y_src_bytes + x_src_bytes);
 
-        let bitmap_specified =
-            u32::from(record_size) != u32::from((record_function >> 8) + 3);
+        let bitmap_specified = u32::from(record_size) != u32::from((record_function >> 8) + 3);
         let reserved = if bitmap_specified {
             [0; 2]
         } else {
@@ -152,15 +151,13 @@ impl META_DIBBITBLT {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
-        record_size
-            .consume(height_bytes + width_bytes + y_dest_bytes + x_dest_bytes);
+        record_size.consume(height_bytes + width_bytes + y_dest_bytes + x_dest_bytes);
 
         let record = if bitmap_specified {
-            let (target, c) =
-                crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(
-                    buf,
-                    crate::wmf::parser::ColorUsage::DIB_PAL_INDICES,
-                )?;
+            let (target, c) = crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(
+                buf,
+                crate::wmf::parser::ColorUsage::DIB_PAL_INDICES,
+            )?;
             record_size.consume(c);
 
             Self::WithBitmap {

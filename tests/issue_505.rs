@@ -50,7 +50,10 @@ fn issue_505_cases_eqalign_height_ratio() {
     for (script, _w, h) in FIXTURES {
         let lb = layout.layout(&parse(script));
         let hwp_h_px = hwpunit_to_px(*h);
-        assert!(lb.height > 0.0, "layout height must be positive: {script:?}");
+        assert!(
+            lb.height > 0.0,
+            "layout height must be positive: {script:?}"
+        );
         let scale_y = hwp_h_px / lb.height;
         assert!(
             (1.0 / MAX_SCALE..=MAX_SCALE).contains(&scale_y),
@@ -92,12 +95,10 @@ fn issue_505_no_internal_overlap() {
         let lb = layout.layout(&parse(script));
         // CASES 는 Paren { body: Row[ row1, row2 ] } 구조
         let body = match &lb.kind {
-            LayoutKind::Row(children) => {
-                children.iter().find_map(|c| match &c.kind {
-                    LayoutKind::Paren { body, .. } => Some(body.as_ref()),
-                    _ => None,
-                })
-            }
+            LayoutKind::Row(children) => children.iter().find_map(|c| match &c.kind {
+                LayoutKind::Paren { body, .. } => Some(body.as_ref()),
+                _ => None,
+            }),
             _ => None,
         };
         let body = body.unwrap_or_else(|| panic!("no Paren found in {script:?}"));
@@ -150,11 +151,7 @@ fn count_fractions_and_atops(node: &rhwp::renderer::equation::ast::EqNode) -> us
             1 + count_fractions_and_atops(top) + count_fractions_and_atops(bottom)
         }
         EqNode::Row(children) => children.iter().map(count_fractions_and_atops).sum(),
-        EqNode::Matrix { rows, .. } => rows
-            .iter()
-            .flatten()
-            .map(count_fractions_and_atops)
-            .sum(),
+        EqNode::Matrix { rows, .. } => rows.iter().flatten().map(count_fractions_and_atops).sum(),
         EqNode::Cases { rows } | EqNode::Pile { rows, .. } => {
             rows.iter().map(count_fractions_and_atops).sum()
         }

@@ -122,7 +122,7 @@ mod tests {
                 zone_y_offset: 0.0,
                 wrap_around_paras: Vec::new(),
                 used_height: 0.0,
-            wrap_anchors: std::collections::HashMap::new(),
+                wrap_anchors: std::collections::HashMap::new(),
             }],
             active_header: None,
             active_footer: None,
@@ -241,11 +241,17 @@ mod tests {
     fn should_hide_before_first_new_number() {
         let nns = vec![(5usize, 1u16)];
         let mut a = PageNumberAssigner::new(&nns, 1);
-        assert!(a.should_hide_page_number(), "NewNumber 존재 + 미발화 → 숨김");
+        assert!(
+            a.should_hide_page_number(),
+            "NewNumber 존재 + 미발화 → 숨김"
+        );
 
         let p1 = mk_page(vec![PageItem::FullParagraph { para_index: 0 }]);
         a.assign(&p1);
-        assert!(a.should_hide_page_number(), "아직 NewNumber 미트리거 → 숨김");
+        assert!(
+            a.should_hide_page_number(),
+            "아직 NewNumber 미트리거 → 숨김"
+        );
 
         let p2 = mk_page(vec![PageItem::FullParagraph { para_index: 5 }]);
         a.assign(&p2);

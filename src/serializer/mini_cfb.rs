@@ -248,9 +248,8 @@ pub fn build_cfb(named_streams: &[(&str, &[u8])]) -> Result<Vec<u8>, String> {
         for (i, &mf) in mini_fat.iter().enumerate() {
             let sector_idx = i / FAT_ENTRIES_PER_SECTOR;
             let entry_in_sector = i % FAT_ENTRIES_PER_SECTOR;
-            let offset = 512
-                + (mini_fat_start as usize + sector_idx) * SECTOR_SIZE
-                + entry_in_sector * 4;
+            let offset =
+                512 + (mini_fat_start as usize + sector_idx) * SECTOR_SIZE + entry_in_sector * 4;
             output[offset..offset + 4].copy_from_slice(&mf.to_le_bytes());
         }
     }
@@ -544,20 +543,14 @@ mod tests {
         let mut cfb = cfb::CompoundFile::open(cursor).unwrap();
 
         let mut s0 = Vec::new();
-        std::io::Read::read_to_end(
-            &mut cfb.open_stream("/BodyText/Section0").unwrap(),
-            &mut s0,
-        )
-        .unwrap();
+        std::io::Read::read_to_end(&mut cfb.open_stream("/BodyText/Section0").unwrap(), &mut s0)
+            .unwrap();
         assert_eq!(s0.len(), 2000);
         assert!(s0.iter().all(|&b| b == 0x03));
 
         let mut s1 = Vec::new();
-        std::io::Read::read_to_end(
-            &mut cfb.open_stream("/BodyText/Section1").unwrap(),
-            &mut s1,
-        )
-        .unwrap();
+        std::io::Read::read_to_end(&mut cfb.open_stream("/BodyText/Section1").unwrap(), &mut s1)
+            .unwrap();
         assert_eq!(s1.len(), 1500);
         assert!(s1.iter().all(|&b| b == 0x04));
     }
@@ -573,11 +566,8 @@ mod tests {
         let mut cfb = cfb::CompoundFile::open(cursor).unwrap();
 
         let mut read_data = Vec::new();
-        std::io::Read::read_to_end(
-            &mut cfb.open_stream("/BigStream").unwrap(),
-            &mut read_data,
-        )
-        .unwrap();
+        std::io::Read::read_to_end(&mut cfb.open_stream("/BigStream").unwrap(), &mut read_data)
+            .unwrap();
         assert_eq!(read_data, data);
     }
 
@@ -586,10 +576,7 @@ mod tests {
         // 미니 스트림(< 4096)과 정규 스트림(>= 4096) 혼합
         let small = vec![0x11u8; 100];
         let large = vec![0x22u8; 5000];
-        let streams = vec![
-            ("/Small", small.as_slice()),
-            ("/Large", large.as_slice()),
-        ];
+        let streams = vec![("/Small", small.as_slice()), ("/Large", large.as_slice())];
         let bytes = build_cfb(&streams).unwrap();
 
         let cursor = std::io::Cursor::new(&bytes);

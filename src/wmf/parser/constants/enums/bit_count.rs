@@ -1,16 +1,6 @@
 /// The BitCount Enumeration specifies the number of bits that define each pixel
 /// and the maximum number of colors in a device-independent bitmap (DIB).
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum BitCount {
     /// The number of bits per pixel is undefined.

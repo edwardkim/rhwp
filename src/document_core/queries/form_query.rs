@@ -5,7 +5,7 @@
 use crate::document_core::DocumentCore;
 use crate::model::control::{Control, FormType};
 use crate::model::table::Table;
-use crate::renderer::render_tree::{RenderNode, RenderNodeType, FormObjectNode};
+use crate::renderer::render_tree::{FormObjectNode, RenderNode, RenderNodeType};
 
 impl DocumentCore {
     /// 페이지 좌표에서 양식 개체를 찾는다.
@@ -24,14 +24,17 @@ impl DocumentCore {
             let form_type_str = form_type_to_str(form.form_type);
             // 셀 내부 위치 정보 직렬화
             let cell_loc_json = if let Some((tpi, tci, ci_idx, cp_idx)) = form.cell_location {
-                format!(r#","inCell":true,"tablePara":{},"tableCi":{},"cellIdx":{},"cellPara":{}"#,
-                    tpi, tci, ci_idx, cp_idx)
+                format!(
+                    r#","inCell":true,"tablePara":{},"tableCi":{},"cellIdx":{},"cellPara":{}"#,
+                    tpi, tci, ci_idx, cp_idx
+                )
             } else {
                 String::new()
             };
             // sec/para는 최상위 문단 인덱스로 반환
             // cell_location이 있으면 table_para_index를 para로 사용
-            let (ret_para, ret_ci) = if let Some((tpi, _tci, _ci_idx, _cp_idx)) = form.cell_location {
+            let (ret_para, ret_ci) = if let Some((tpi, _tci, _ci_idx, _cp_idx)) = form.cell_location
+            {
                 (tpi, form.control_index)
             } else {
                 (form.para_index, form.control_index)
@@ -46,7 +49,10 @@ impl DocumentCore {
                 form.value,
                 escape_json(&form.caption),
                 escape_json(&form.text),
-                bbox.0, bbox.1, bbox.2, bbox.3,
+                bbox.0,
+                bbox.1,
+                bbox.2,
+                bbox.3,
                 cell_loc_json,
             ))
         } else {
@@ -61,7 +67,10 @@ impl DocumentCore {
         para: usize,
         ci: usize,
     ) -> Result<String, crate::error::HwpError> {
-        let control = self.document.sections.get(sec)
+        let control = self
+            .document
+            .sections
+            .get(sec)
             .and_then(|s| s.paragraphs.get(para))
             .and_then(|p| p.controls.get(ci));
 
@@ -92,7 +101,10 @@ impl DocumentCore {
         ci: usize,
         value_json: &str,
     ) -> Result<String, crate::error::HwpError> {
-        let control = self.document.sections.get_mut(sec)
+        let control = self
+            .document
+            .sections
+            .get_mut(sec)
             .and_then(|s| s.paragraphs.get_mut(para))
             .and_then(|p| p.controls.get_mut(ci));
 
@@ -123,14 +135,29 @@ impl DocumentCore {
         form_ci: usize,
         value_json: &str,
     ) -> Result<String, crate::error::HwpError> {
-        let form = self.document.sections.get_mut(sec)
+        let form = self
+            .document
+            .sections
+            .get_mut(sec)
             .and_then(|s| s.paragraphs.get_mut(table_para))
             .and_then(|p| p.controls.get_mut(table_ci))
-            .and_then(|c| if let Control::Table(ref mut t) = c { Some(t.as_mut()) } else { None })
+            .and_then(|c| {
+                if let Control::Table(ref mut t) = c {
+                    Some(t.as_mut())
+                } else {
+                    None
+                }
+            })
             .and_then(|t: &mut Table| t.cells.get_mut(cell_idx))
             .and_then(|cell| cell.paragraphs.get_mut(cell_para))
             .and_then(|p| p.controls.get_mut(form_ci))
-            .and_then(|c| if let Control::Form(ref mut f) = c { Some(f) } else { None });
+            .and_then(|c| {
+                if let Control::Form(ref mut f) = c {
+                    Some(f)
+                } else {
+                    None
+                }
+            });
 
         match form {
             Some(f) => {
@@ -150,7 +177,10 @@ impl DocumentCore {
         para: usize,
         ci: usize,
     ) -> Result<String, crate::error::HwpError> {
-        let control = self.document.sections.get(sec)
+        let control = self
+            .document
+            .sections
+            .get(sec)
             .and_then(|s| s.paragraphs.get(para))
             .and_then(|p| p.controls.get(ci));
 
@@ -158,20 +188,22 @@ impl DocumentCore {
             Some(Control::Form(f)) => {
                 let form_type_str = form_type_to_str(f.form_type);
                 // properties를 JSON 객체로 직렬화
-                let props: Vec<String> = f.properties.iter()
+                let props: Vec<String> = f
+                    .properties
+                    .iter()
                     .map(|(k, v)| format!(r#""{}":"{}""#, escape_json(k), escape_json(v)))
                     .collect();
                 let props_json = format!("{{{}}}", props.join(","));
 
                 // ComboBox: 스크립트에서 InsertString 항목 추출
                 let items_json = if f.form_type == FormType::ComboBox {
-                    let items = extract_combobox_items_from_script(
-                        &self.document.extra_streams, &f.name,
-                    );
+                    let items =
+                        extract_combobox_items_from_script(&self.document.extra_streams, &f.name);
                     if items.is_empty() {
                         "[]".to_string()
                     } else {
-                        let arr: Vec<String> = items.iter()
+                        let arr: Vec<String> = items
+                            .iter()
                             .map(|s| format!(r#""{}""#, escape_json(s)))
                             .collect();
                         format!("[{}]", arr.join(","))
@@ -215,7 +247,11 @@ fn apply_form_value(f: &mut crate::model::control::FormObject, value_json: &str)
 }
 
 /// 렌더 트리를 재귀 순회하여 좌표에 해당하는 FormObject 노드를 찾는다.
-fn find_form_node_at(node: &RenderNode, x: f64, y: f64) -> Option<(&FormObjectNode, (f64, f64, f64, f64))> {
+fn find_form_node_at(
+    node: &RenderNode,
+    x: f64,
+    y: f64,
+) -> Option<(&FormObjectNode, (f64, f64, f64, f64))> {
     // 자식 먼저 (더 구체적인 노드 우선)
     for child in &node.children {
         if let Some(result) = find_form_node_at(child, x, y) {
@@ -244,10 +280,10 @@ fn form_type_to_str(ft: FormType) -> &'static str {
 
 fn escape_json(s: &str) -> String {
     s.replace('\\', "\\\\")
-     .replace('"', "\\\"")
-     .replace('\n', "\\n")
-     .replace('\r', "\\r")
-     .replace('\t', "\\t")
+        .replace('"', "\\\"")
+        .replace('\n', "\\n")
+        .replace('\r', "\\r")
+        .replace('\t', "\\t")
 }
 
 /// 간단한 JSON에서 정수값 추출: `"key":123`
@@ -256,7 +292,9 @@ fn extract_json_int(json: &str, key: &str) -> Option<i32> {
     if let Some(pos) = json.find(&pattern) {
         let start = pos + pattern.len();
         let rest = &json[start..];
-        let end = rest.find(|c: char| !c.is_ascii_digit() && c != '-').unwrap_or(rest.len());
+        let end = rest
+            .find(|c: char| !c.is_ascii_digit() && c != '-')
+            .unwrap_or(rest.len());
         rest[..end].parse().ok()
     } else {
         None
@@ -287,11 +325,14 @@ fn extract_json_string(json: &str, key: &str) -> Option<String> {
 /// extra_streams에서 Scripts/DefaultJScript 스트림을 찾아 디코딩한다.
 /// HWP 스크립트는 zlib 압축 + UTF-16LE로 저장됨.
 fn decode_hwp_script(extra_streams: &[(String, Vec<u8>)]) -> Option<String> {
-    let data = extra_streams.iter()
+    let data = extra_streams
+        .iter()
         .find(|(path, _)| path == "/Scripts/DefaultJScript" || path == "Scripts/DefaultJScript")
         .map(|(_, data)| data)?;
 
-    if data.is_empty() { return None; }
+    if data.is_empty() {
+        return None;
+    }
 
     // zlib 해제 (raw deflate, no header)
     use std::io::Read;
@@ -302,8 +343,11 @@ fn decode_hwp_script(extra_streams: &[(String, Vec<u8>)]) -> Option<String> {
     }
 
     // UTF-16LE 디코딩
-    if decompressed.len() < 2 { return None; }
-    let u16s: Vec<u16> = decompressed.chunks_exact(2)
+    if decompressed.len() < 2 {
+        return None;
+    }
+    let u16s: Vec<u16> = decompressed
+        .chunks_exact(2)
         .map(|c| u16::from_le_bytes([c[0], c[1]]))
         .collect();
     Some(String::from_utf16_lossy(&u16s))
@@ -351,7 +395,9 @@ fn parse_insert_string_args(args: &str) -> Option<(String, usize)> {
 
     // , 인덱스 추출
     let after_comma = after_quote.trim_start().strip_prefix(',')?;
-    let idx_str: String = after_comma.trim().chars()
+    let idx_str: String = after_comma
+        .trim()
+        .chars()
         .take_while(|c| c.is_ascii_digit())
         .collect();
     let idx = idx_str.parse().unwrap_or(0);

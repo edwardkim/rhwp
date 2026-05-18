@@ -1,11 +1,11 @@
 //! HWP3 그리기 객체 파싱
-//! 
+//!
 //! HWP3 파일에 포함된 그리기 객체(선, 사각형, 타원, 그룹 등)를 파싱하여 렌더링 가능한 모델로 변환한다.
 //! 그리기 객체의 계층 구조(트리)와 캡션, 속성 정보 등을 추출하는 역할을 한다.
 
+use crate::parser::hwp3::encoding::decode_hwp3_string;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{self, Read, Seek, SeekFrom};
-use crate::parser::hwp3::encoding::decode_hwp3_string;
 
 #[derive(Debug, Default)]
 pub struct Hwp3DrawingObjectFrameHeader {
@@ -40,8 +40,8 @@ impl Hwp3DrawingObjectFrameHeader {
 pub struct Hwp3DrawingObjectHypertextInfo {
     pub length: u32,
     pub jump_file_name: String, // 256 kchar
-    pub jump_bookmark: String, // 16 hchar (보통 32 바이트지만 문서에 따라 16 바이트로 처리)
-    pub macro_data: Vec<u8>, // 325 바이트
+    pub jump_bookmark: String,  // 16 hchar (보통 32 바이트지만 문서에 따라 16 바이트로 처리)
+    pub macro_data: Vec<u8>,    // 325 바이트
     pub kind: u8,
     pub reserved: [u8; 3],
 }
@@ -107,15 +107,15 @@ impl Hwp3DrawingObjectBasicAttr {
             options: reader.read_u32::<LittleEndian>()?,
         })
     }
-    
+
     pub fn has_gradient(&self) -> bool {
         (self.options & (1 << 16)) != 0
     }
-    
+
     pub fn has_rotation(&self) -> bool {
         (self.options & (1 << 17)) != 0
     }
-    
+
     pub fn has_bitmap_pattern(&self) -> bool {
         (self.options & (1 << 18)) != 0
     }
@@ -240,21 +240,21 @@ impl Hwp3DrawingObjectCommonHeader {
             reader.read_i32::<LittleEndian>()?,
             reader.read_i32::<LittleEndian>()?,
         ];
-        
+
         let basic_attr = Hwp3DrawingObjectBasicAttr::read(&mut reader)?;
-        
+
         let rotation_attr = if basic_attr.has_rotation() {
             Some(Hwp3DrawingObjectRotationAttr::read(&mut reader)?)
         } else {
             None
         };
-        
+
         let gradient_attr = if basic_attr.has_gradient() {
             Some(Hwp3DrawingObjectGradientAttr::read(&mut reader)?)
         } else {
             None
         };
-        
+
         let bitmap_pattern_attr = if basic_attr.has_bitmap_pattern() {
             Some(Hwp3DrawingObjectBitmapPatternAttr::read(&mut reader)?)
         } else {
@@ -473,11 +473,11 @@ impl Hwp3DrawingExtendedPolygon {
 impl Hwp3DrawingObject {
     pub fn read<R: Read + Seek>(mut reader: R) -> Result<Self, io::Error> {
         let header = Hwp3DrawingObjectCommonHeader::read(&mut reader)?;
-        
+
         // 글상자(6)인 경우, 공통 헤더 바로 뒤에 글상자 정보가 위치함.
         // 테이블 78 "글상자 세부 정보"에 따라 info1_len, info2_len, 문단 리스트가 존재함.
         // 이는 아래에서 처리됨.
-        
+
         match header.object_type {
             0 => {
                 // 컨테이너: 추가 세부 길이 정보 없음
@@ -548,7 +548,7 @@ impl Hwp3DrawingObject {
                 let info2_len = reader.read_u32::<LittleEndian>()?;
                 let mut info2 = super::alloc_record_buf(info2_len as usize)?;
                 reader.read_exact(&mut info2)?;
-                
+
                 let mut all_data = Vec::new();
                 all_data.extend(info1);
                 all_data.extend(info2);
@@ -558,11 +558,14 @@ impl Hwp3DrawingObject {
     }
 }
 
-use crate::model::shape::{ShapeObject, GroupShape, LineShape, RectangleShape, EllipseShape, ArcShape, PolygonShape, CurveShape, CommonObjAttr, DrawingObjAttr, ShapeComponentAttr, TextBox};
+use crate::model::shape::{
+    ArcShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape, GroupShape, LineShape,
+    PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject, TextBox,
+};
+use crate::model::style::{Fill, FillType, ShapeBorderLine};
 use crate::model::Padding;
-use crate::model::style::{Fill, ShapeBorderLine, FillType};
-use std::collections::HashMap;
 use crate::parser::hwp3::Hwp3Error;
+use std::collections::HashMap;
 
 const HWP3_UNIT_SCALE: i32 = 4;
 
@@ -588,7 +591,14 @@ pub fn parse_drawing_object_tree(
         });
     }
 
-    let mut root_nodes = parse_shape_list(cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id)?;
+    let mut root_nodes = parse_shape_list(
+        cursor,
+        doc_char_shapes,
+        doc_para_shapes,
+        doc_border_fills,
+        doc_tab_defs,
+        pic_name_to_id,
+    )?;
 
     if root_nodes.is_empty() {
         return Err(Hwp3Error::ParseError {
@@ -615,25 +625,39 @@ fn parse_shape_list(
 ) -> Result<Vec<ShapeObject>, Hwp3Error> {
     let mut list = Vec::new();
     loop {
-        let raw_obj = Hwp3DrawingObject::read(&mut *cursor)
-            .map_err(|e| Hwp3Error::IoError { source: e })?;
+        let raw_obj =
+            Hwp3DrawingObject::read(&mut *cursor).map_err(|e| Hwp3Error::IoError { source: e })?;
 
-        let (mut node, connection_info) = map_to_shape_object(raw_obj, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id)?;
+        let (mut node, connection_info) = map_to_shape_object(
+            raw_obj,
+            doc_char_shapes,
+            doc_para_shapes,
+            doc_border_fills,
+            doc_tab_defs,
+            pic_name_to_id,
+        )?;
 
         let has_sibling = (connection_info & 0x01) != 0;
         let has_child = (connection_info & 0x02) != 0;
 
         if has_child {
-            let children = parse_shape_list(cursor, doc_char_shapes, doc_para_shapes, doc_border_fills, doc_tab_defs, pic_name_to_id)?;
+            let children = parse_shape_list(
+                cursor,
+                doc_char_shapes,
+                doc_para_shapes,
+                doc_border_fills,
+                doc_tab_defs,
+                pic_name_to_id,
+            )?;
             if let ShapeObject::Group(ref mut g) = node {
                 g.children = children;
             } else {
                 eprintln!("HWP3 그리기 객체에서 컨테이너가 아닌 도형이 자식을 가짐");
             }
         }
-        
+
         list.push(node);
-        
+
         if !has_sibling {
             break;
         }
@@ -652,21 +676,13 @@ fn map_to_shape_object(
     let mut parsed_paragraphs = Vec::new();
 
     let (header, shape) = match raw {
-        Hwp3DrawingObject::Container(hdr) => {
-            (hdr, ShapeObject::Group(GroupShape::default()))
-        }
-        Hwp3DrawingObject::Line(hdr, _details) => {
-            (hdr, ShapeObject::Line(LineShape::default()))
-        }
+        Hwp3DrawingObject::Container(hdr) => (hdr, ShapeObject::Group(GroupShape::default())),
+        Hwp3DrawingObject::Line(hdr, _details) => (hdr, ShapeObject::Line(LineShape::default())),
         Hwp3DrawingObject::Rectangle(hdr) => {
             (hdr, ShapeObject::Rectangle(RectangleShape::default()))
         }
-        Hwp3DrawingObject::Ellipse(hdr) => {
-            (hdr, ShapeObject::Ellipse(EllipseShape::default()))
-        }
-        Hwp3DrawingObject::Arc(hdr, _details) => {
-            (hdr, ShapeObject::Arc(ArcShape::default()))
-        }
+        Hwp3DrawingObject::Ellipse(hdr) => (hdr, ShapeObject::Ellipse(EllipseShape::default())),
+        Hwp3DrawingObject::Arc(hdr, _details) => (hdr, ShapeObject::Arc(ArcShape::default())),
         Hwp3DrawingObject::Polygon(hdr, _details) => {
             (hdr, ShapeObject::Polygon(PolygonShape::default()))
         }
@@ -680,31 +696,25 @@ fn map_to_shape_object(
                     doc_border_fills,
                     doc_tab_defs,
                     pic_name_to_id,
-                    0,          // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
+                    0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
                     i32::MAX / 2, // column_width_hu
                 )?;
                 parsed_paragraphs = paras;
             }
             (hdr, ShapeObject::Rectangle(RectangleShape::default()))
         }
-        Hwp3DrawingObject::Curve(hdr, _details) => {
-            (hdr, ShapeObject::Curve(CurveShape::default()))
-        }
+        Hwp3DrawingObject::Curve(hdr, _details) => (hdr, ShapeObject::Curve(CurveShape::default())),
         Hwp3DrawingObject::ModifiedEllipse(hdr, _details) => {
             (hdr, ShapeObject::Ellipse(EllipseShape::default()))
         }
-        Hwp3DrawingObject::ModifiedArc(hdr) => {
-            (hdr, ShapeObject::Arc(ArcShape::default()))
-        }
+        Hwp3DrawingObject::ModifiedArc(hdr) => (hdr, ShapeObject::Arc(ArcShape::default())),
         Hwp3DrawingObject::ExtendedCurve(hdr, _details) => {
             (hdr, ShapeObject::Curve(CurveShape::default()))
         }
         Hwp3DrawingObject::ClosedPolygon(hdr, _details) => {
             (hdr, ShapeObject::Polygon(PolygonShape::default()))
         }
-        Hwp3DrawingObject::Unknown(hdr, _data) => {
-            (hdr, ShapeObject::Group(GroupShape::default()))
-        }
+        Hwp3DrawingObject::Unknown(hdr, _data) => (hdr, ShapeObject::Group(GroupShape::default())),
     };
 
     let connection_info = header.connection_info;
@@ -722,7 +732,7 @@ fn map_to_shape_object(
         let y0 = rot.parallelogram[1] as f64;
         let x1 = rot.parallelogram[2] as f64;
         let y1 = rot.parallelogram[3] as f64;
-        
+
         let dx = x1 - x0;
         let dy = y1 - y0;
         if dx != 0.0 || dy != 0.0 {
@@ -794,8 +804,9 @@ fn map_to_shape_object(
         // HWP3 raw 에는 alpha 정보 없음, 한컴 viewer 의 default = 불투명 = alpha 0.
         alpha: 0,
     };
-    
-    let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty() {
+
+    let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty()
+    {
         Some(TextBox {
             margin_left: (header.basic_attr.textbox_margin[0] as i32 * HWP3_UNIT_SCALE) as i16,
             margin_top: (header.basic_attr.textbox_margin[1] as i32 * HWP3_UNIT_SCALE) as i16,
@@ -817,13 +828,34 @@ fn map_to_shape_object(
     };
 
     match final_shape {
-        ShapeObject::Line(ref mut s) => { s.common = common; s.drawing = drawing_attr; },
-        ShapeObject::Rectangle(ref mut s) => { s.common = common; s.drawing = drawing_attr; },
-        ShapeObject::Ellipse(ref mut s) => { s.common = common; s.drawing = drawing_attr; },
-        ShapeObject::Arc(ref mut s) => { s.common = common; s.drawing = drawing_attr; },
-        ShapeObject::Polygon(ref mut s) => { s.common = common; s.drawing = drawing_attr; },
-        ShapeObject::Curve(ref mut s) => { s.common = common; s.drawing = drawing_attr; },
-        ShapeObject::Group(ref mut s) => { s.common = common; s.shape_attr = drawing_attr.shape_attr; },
+        ShapeObject::Line(ref mut s) => {
+            s.common = common;
+            s.drawing = drawing_attr;
+        }
+        ShapeObject::Rectangle(ref mut s) => {
+            s.common = common;
+            s.drawing = drawing_attr;
+        }
+        ShapeObject::Ellipse(ref mut s) => {
+            s.common = common;
+            s.drawing = drawing_attr;
+        }
+        ShapeObject::Arc(ref mut s) => {
+            s.common = common;
+            s.drawing = drawing_attr;
+        }
+        ShapeObject::Polygon(ref mut s) => {
+            s.common = common;
+            s.drawing = drawing_attr;
+        }
+        ShapeObject::Curve(ref mut s) => {
+            s.common = common;
+            s.drawing = drawing_attr;
+        }
+        ShapeObject::Group(ref mut s) => {
+            s.common = common;
+            s.shape_attr = drawing_attr.shape_attr;
+        }
         _ => {}
     }
 

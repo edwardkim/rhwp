@@ -158,13 +158,7 @@ pub const FLT_USER: usize = 6;
 
 /// HWPX `<hh:fontface lang="...">` 의 lang 속성 문자열 (인덱스 순)
 pub const FONTFACE_LANG_NAMES: [&str; 7] = [
-    "HANGUL",
-    "LATIN",
-    "HANJA",
-    "JAPANESE",
-    "OTHER",
-    "SYMBOL",
-    "USER",
+    "HANGUL", "LATIN", "HANJA", "JAPANESE", "OTHER", "SYMBOL", "USER",
 ];
 
 // =====================================================================

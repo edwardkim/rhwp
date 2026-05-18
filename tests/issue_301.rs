@@ -15,11 +15,10 @@ use std::path::Path;
 fn z_table_equations_rendered_once() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/exam_math.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse exam_math.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse exam_math.hwp");
 
     // 페이지 12 = index 11
     let svg = doc

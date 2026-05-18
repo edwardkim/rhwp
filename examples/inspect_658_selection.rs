@@ -58,7 +58,11 @@ fn print_rects(label: &str, json: &str, page_width: f64) {
     println!("rect_count={}", rects.len());
     for (idx, rect) in rects.iter().enumerate() {
         let right = rect.x + rect.width;
-        let mark = if right > page_width + 0.5 { " OVERFLOW" } else { "" };
+        let mark = if right > page_width + 0.5 {
+            " OVERFLOW"
+        } else {
+            ""
+        };
         println!(
             "#{idx:02} p={} x={:.1} y={:.1} w={:.1} h={:.1} right={:.1}{mark}",
             rect.page_index, rect.x, rect.y, rect.width, rect.height, right
@@ -86,7 +90,10 @@ fn main() {
     // 영상(2026-05-07 13:28:24)에서 드래그한 페이지 2 오른쪽 자료 박스 부근.
     // section=1, parent_para=16, control=0, cell=0 은 dump-pages/dump로 확인한 1x1 자료 표이다.
     let cases = [
-        ("body question s1 p15 0..66", doc.get_selection_rects(1, 15, 0, 15, 66)),
+        (
+            "body question s1 p15 0..66",
+            doc.get_selection_rects(1, 15, 0, 15, 66),
+        ),
         (
             "data table p16 c0 paragraph 0",
             doc.get_selection_rects_in_cell(1, 16, 0, 0, 0, 0, 0, 209),

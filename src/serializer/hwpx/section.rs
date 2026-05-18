@@ -22,15 +22,17 @@
 use quick_xml::Writer;
 
 use crate::model::control::{Control, Equation};
-use crate::model::footnote::{Footnote, Endnote};
 use crate::model::document::{Document, Section};
+use crate::model::footnote::{Endnote, Footnote};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo};
+use crate::model::shape::{
+    CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo,
+};
 
 use super::context::SerializeContext;
-use super::{picture, table};
 use super::utils::xml_escape;
 use super::SerializeError;
+use super::{picture, table};
 
 const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
 const TEXT_SLOT: &str = "<hp:t/>";
@@ -40,8 +42,7 @@ const PARA_CLOSE: &str = "</hp:p></hs:sec>";
 
 // 템플릿 내 첫 <hp:p> 태그의 실제 문자열 (id="3121190098" 랜덤 해시 포함).
 // 템플릿은 정적이므로 이 문자열이 고정 위치에 있음이 보장됨.
-const TEMPLATE_FIRST_P_TAG: &str =
-    r#"<hp:p id="3121190098" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">"#;
+const TEMPLATE_FIRST_P_TAG: &str = r#"<hp:p id="3121190098" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">"#;
 // 템플릿 내 <hp:run charPrIDRef="0"> 직후에 TEXT_SLOT 이 오는 패턴.
 const TEMPLATE_RUN_BEFORE_TEXT: &str = r#"<hp:run charPrIDRef="0"><hp:t/>"#;
 
@@ -113,8 +114,16 @@ pub fn write_section(
 /// `id` 는 문단 순서 기반(0, 1, 2, ...)로 할당한다. 한컴 샘플은 랜덤 해시도 쓰지만
 /// 파서는 id 를 무시하므로 순차값으로 충분.
 fn render_hp_p_open(p: &Paragraph, id: u32) -> String {
-    let page_break = if matches!(p.column_type, ColumnBreakType::Page) { 1 } else { 0 };
-    let column_break = if matches!(p.column_type, ColumnBreakType::Column) { 1 } else { 0 };
+    let page_break = if matches!(p.column_type, ColumnBreakType::Page) {
+        1
+    } else {
+        0
+    };
+    let column_break = if matches!(p.column_type, ColumnBreakType::Column) {
+        1
+    } else {
+        0
+    };
     format!(
         r#"<hp:p id="{}" paraPrIDRef="{}" styleIDRef="{}" pageBreak="{}" columnBreak="{}" merged="0">"#,
         id, p.para_shape_id, p.style_id, page_break, column_break,
@@ -132,7 +141,11 @@ fn first_run_char_shape_id(p: &Paragraph) -> u32 {
 /// `<hp:lineseg>` 출력 원칙 (#177):
 /// - `para.line_segs` 가 비어있지 않으면 **IR 값 그대로 출력**
 /// - 비어있을 때만 텍스트 내 `\n` 기반으로 fallback 생성 (빈 문단·`Document::default()` 호환)
-fn render_paragraph_parts(para: &Paragraph, vert_start: u32, ctx: &mut SerializeContext) -> (String, String, u32) {
+fn render_paragraph_parts(
+    para: &Paragraph,
+    vert_start: u32,
+    ctx: &mut SerializeContext,
+) -> (String, String, u32) {
     let t_xml = render_run_content(para, ctx);
 
     if !para.line_segs.is_empty() {
@@ -187,7 +200,8 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let slots: Vec<&Control> = if slot_count == para.controls.len() {
         para.controls.iter().collect()
     } else {
-        para.controls.iter()
+        para.controls
+            .iter()
             .filter(|c| is_hwpx_inline_slot(c))
             .collect()
     };
@@ -215,9 +229,7 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             .get(idx)
             .copied()
             .unwrap_or(expected_utf16_pos);
-        while slot_idx < slots.len()
-            && char_pos >= expected_utf16_pos.saturating_add(8)
-        {
+        while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
             flush_text_fragment(&mut out, &mut text_buf);
             render_control_slot(&mut out, slots[slot_idx], ctx);
             slot_idx += 1;
@@ -248,10 +260,7 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
     let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
-    let from_char_count = para.char_count
-        .saturating_sub(1)
-        .saturating_sub(text_units)
-        / 8;
+    let from_char_count = para.char_count.saturating_sub(1).saturating_sub(text_units) / 8;
 
     let mut from_offsets = 0u32;
     let mut expected = 0u32;
@@ -294,18 +303,14 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         Control::Equation(eq) => {
             out.push_str(&render_equation(eq));
         }
-        Control::Table(tbl) => {
-            match writer_to_string(|w| table::write_table(w, tbl, ctx)) {
-                Ok(xml) => out.push_str(&xml),
-                Err(e) => eprintln!("[hwpx] Table 직렬화 실패: {e}"),
-            }
-        }
-        Control::Picture(pic) => {
-            match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
-                Ok(xml) => out.push_str(&xml),
-                Err(e) => eprintln!("[hwpx] Picture 직렬화 실패: {e}"),
-            }
-        }
+        Control::Table(tbl) => match writer_to_string(|w| table::write_table(w, tbl, ctx)) {
+            Ok(xml) => out.push_str(&xml),
+            Err(e) => eprintln!("[hwpx] Table 직렬화 실패: {e}"),
+        },
+        Control::Picture(pic) => match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
+            Ok(xml) => out.push_str(&xml),
+            Err(e) => eprintln!("[hwpx] Picture 직렬화 실패: {e}"),
+        },
         Control::Shape(shape) => {
             out.push_str(&render_shape(shape, ctx));
         }
@@ -326,9 +331,8 @@ where
     let mut writer = Writer::new(Vec::new());
     f(&mut writer)?;
     let bytes = writer.into_inner();
-    String::from_utf8(bytes).map_err(|e| {
-        SerializeError::XmlError(format!("invalid UTF-8 from XML writer: {e}"))
-    })
+    String::from_utf8(bytes)
+        .map_err(|e| SerializeError::XmlError(format!("invalid UTF-8 from XML writer: {e}")))
 }
 
 fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
@@ -336,14 +340,20 @@ fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
     if let ShapeObject::Rectangle(r) = shape {
         return match writer_to_string(|w| super::shape::write_rect(w, r)) {
             Ok(xml) => xml,
-            Err(e) => { eprintln!("[hwpx] Shape::Rectangle 직렬화 실패: {e}"); String::new() }
+            Err(e) => {
+                eprintln!("[hwpx] Shape::Rectangle 직렬화 실패: {e}");
+                String::new()
+            }
         };
     }
     // Line: Writer-based serializer
     if let ShapeObject::Line(l) = shape {
         return match writer_to_string(|w| super::shape::write_line(w, l)) {
             Ok(xml) => xml,
-            Err(e) => { eprintln!("[hwpx] Shape::Line 직렬화 실패: {e}"); String::new() }
+            Err(e) => {
+                eprintln!("[hwpx] Shape::Line 직렬화 실패: {e}");
+                String::new()
+            }
         };
     }
     let (tag, c) = match shape {
@@ -356,7 +366,10 @@ fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
         ShapeObject::Picture(pic) => {
             return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
                 Ok(xml) => xml,
-                Err(e) => { eprintln!("[hwpx] Shape::Picture 직렬화 실패: {e}"); String::new() }
+                Err(e) => {
+                    eprintln!("[hwpx] Shape::Picture 직렬화 실패: {e}");
+                    String::new()
+                }
             };
         }
         ShapeObject::Chart(ch) => ("chart", &ch.common),
@@ -375,22 +388,35 @@ fn render_common_shape_xml(tag: &str, c: &CommonObjAttr) -> String {
             r#"</hp:{tag}>"#,
         ),
         tag = tag,
-        id = c.instance_id, zo = c.z_order,
+        id = c.instance_id,
+        zo = c.z_order,
         tw = text_wrap_to_hwpx(c.text_wrap),
         tac = if c.treat_as_char { "1" } else { "0" },
-        w = c.width, h = c.height,
-        vr = vert_rel_to_hwpx(c.vert_rel_to), va = vert_align_to_hwpx(c.vert_align),
-        hr = horz_rel_to_hwpx(c.horz_rel_to), ha = horz_align_to_hwpx(c.horz_align),
-        vo = c.vertical_offset, ho = c.horizontal_offset,
-        ml = c.margin.left, mr = c.margin.right,
-        mt = c.margin.top, mb = c.margin.bottom,
+        w = c.width,
+        h = c.height,
+        vr = vert_rel_to_hwpx(c.vert_rel_to),
+        va = vert_align_to_hwpx(c.vert_align),
+        hr = horz_rel_to_hwpx(c.horz_rel_to),
+        ha = horz_align_to_hwpx(c.horz_align),
+        vo = c.vertical_offset,
+        ho = c.horizontal_offset,
+        ml = c.margin.left,
+        mr = c.margin.right,
+        mt = c.margin.top,
+        mb = c.margin.bottom,
     )
 }
 
-fn render_note_sublist(tag: &str, number: u16, paragraphs: &[Paragraph], ctx: &mut SerializeContext) -> String {
+fn render_note_sublist(
+    tag: &str,
+    number: u16,
+    paragraphs: &[Paragraph],
+    ctx: &mut SerializeContext,
+) -> String {
     let mut out = format!(
         r#"<hp:ctrl><hp:{tag} number="{num}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
-        tag = tag, num = number,
+        tag = tag,
+        num = number,
     );
     let mut vert_cursor: u32 = 0;
     for (idx, p) in paragraphs.iter().enumerate() {
@@ -550,7 +576,11 @@ fn next_vert_cursor_from_ir(segs: &[LineSeg], vert_start: u32) -> u32 {
         // vertical_pos 는 섹션 시작 기준 절대값일 수도, 문단 기준 상대값일 수도 있음.
         // 현재 rhwp 는 섹션 절대값이므로 그대로 + lh 로 다음 커서 산출.
         let next = (last.vertical_pos as i64) + (last.line_height.max(0) as i64);
-        if next > vert_start as i64 { next as u32 } else { vert_start + VERT_STEP }
+        if next > vert_start as i64 {
+            next as u32
+        } else {
+            vert_start + VERT_STEP
+        }
     } else {
         vert_start + VERT_STEP
     }
@@ -604,7 +634,9 @@ fn push_lineseg_static(out: &mut String, textpos: u32, vertpos: u32) {
 }
 
 fn replace_first_linesegs(xml: &str, new_inner: &str) -> String {
-    let open = xml.find(LINESEG_SLOT_OPEN).expect("template has linesegarray");
+    let open = xml
+        .find(LINESEG_SLOT_OPEN)
+        .expect("template has linesegarray");
     let inner_start = open + LINESEG_SLOT_OPEN.len();
     let close_rel = xml[inner_start..]
         .find(LINESEG_SLOT_CLOSE)
@@ -672,7 +704,8 @@ mod tests {
         assert!(
             xml.contains(r#"<hp:run charPrIDRef="42"><hp:t>hello</hp:t>"#),
             "first run must use char_shape_id 42, xml excerpt around <hp:t>: {:?}",
-            xml.find("<hp:t>").map(|i| &xml[i.saturating_sub(50)..(i + 50).min(xml.len())])
+            xml.find("<hp:t>")
+                .map(|i| &xml[i.saturating_sub(50)..(i + 50).min(xml.len())])
         );
     }
 
@@ -710,11 +743,17 @@ mod tests {
     fn additional_paragraphs_use_their_own_char_shape() {
         let mut p1 = Paragraph::default();
         p1.text = "first".to_string();
-        p1.char_shapes.push(CharShapeRef { start_pos: 0, char_shape_id: 5 });
+        p1.char_shapes.push(CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 5,
+        });
         let mut p2 = Paragraph::default();
         p2.text = "second".to_string();
         p2.para_shape_id = 2;
-        p2.char_shapes.push(CharShapeRef { start_pos: 0, char_shape_id: 6 });
+        p2.char_shapes.push(CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 6,
+        });
         let mut section = Section::default();
         section.paragraphs.push(p1);
         section.paragraphs.push(p2);
@@ -762,7 +801,10 @@ mod tests {
     fn task177_multiple_linesegs_preserved_in_order() {
         let mut para = Paragraph::default();
         para.text = "three\nlines\nhere".to_string();
-        for (i, (tp, vp, lh)) in [(0u32, 0i32, 1000), (6, 1500, 1200), (12, 3100, 1100)].iter().enumerate() {
+        for (i, (tp, vp, lh)) in [(0u32, 0i32, 1000), (6, 1500, 1200), (12, 3100, 1100)]
+            .iter()
+            .enumerate()
+        {
             let _ = i;
             para.line_segs.push(LineSeg {
                 text_start: *tp,
@@ -821,6 +863,9 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
         // IR 에 1개만 있으므로 lineseg 도 1개만 출력 (rhwp 는 원본 보존)
         assert_eq!(xml.matches("<hp:lineseg ").count(), 1);
-        assert!(xml.contains(r#"vertsize="2000""#), "IR value 2000 must be used, not fallback 1000");
+        assert!(
+            xml.contains(r#"vertsize="2000""#),
+            "IR value 2000 must be used, not fallback 1000"
+        );
     }
 }

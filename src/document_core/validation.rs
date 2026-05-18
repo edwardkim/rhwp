@@ -144,7 +144,9 @@ mod tests {
         assert_eq!(summary.len(), 2);
         assert_eq!(summary.get("lineseg 배열이 비어있음").copied(), Some(1));
         assert_eq!(
-            summary.get("lineseg 가 미계산 상태 (line_height=0)").copied(),
+            summary
+                .get("lineseg 가 미계산 상태 (line_height=0)")
+                .copied(),
             Some(2)
         );
     }

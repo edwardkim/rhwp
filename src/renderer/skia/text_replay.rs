@@ -6,7 +6,9 @@ use skia_safe::{
 
 use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
-use crate::renderer::composer::{decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo};
+use crate::renderer::composer::{
+    decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
+};
 use crate::renderer::layout::{compute_char_positions, split_into_clusters};
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::TextStyle;

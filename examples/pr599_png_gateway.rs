@@ -16,8 +16,7 @@ fn main() {
     println!();
 
     let bytes = fs::read(input).expect("read sample");
-    let core = rhwp::document_core::DocumentCore::from_bytes(&bytes)
-        .expect("parse document");
+    let core = rhwp::document_core::DocumentCore::from_bytes(&bytes).expect("parse document");
 
     let page_count = core.page_count();
     println!("페이지 수: {}", page_count);
@@ -50,8 +49,13 @@ fn main() {
 
     println!();
     println!("=== 게이트웨이 결과 ===");
-    println!("성공: {} / 실패: {} / 총 {} bytes ({:.1} MB)",
-        success, failed, total_bytes, total_bytes as f64 / 1024.0 / 1024.0);
+    println!(
+        "성공: {} / 실패: {} / 총 {} bytes ({:.1} MB)",
+        success,
+        failed,
+        total_bytes,
+        total_bytes as f64 / 1024.0 / 1024.0
+    );
 
     if failed > 0 {
         std::process::exit(1);

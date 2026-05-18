@@ -7,15 +7,15 @@
 //! 1. HeightMeasurer로 모든 콘텐츠의 실제 렌더링 높이를 측정
 //! 2. 측정된 높이를 기반으로 정확한 페이지 분할 수행
 
-use crate::model::control::Control;
-use crate::model::header_footer::HeaderFooterApply;
-use crate::model::paragraph::{Paragraph, ColumnBreakType};
-use crate::model::page::{PageDef, ColumnDef};
-use crate::model::shape::CaptionDirection;
 use super::composer::ComposedParagraph;
 use super::height_measurer::{HeightMeasurer, MeasuredSection};
 use super::page_layout::PageLayoutInfo;
 use super::style_resolver::ResolvedStyleSet;
+use crate::model::control::Control;
+use crate::model::header_footer::HeaderFooterApply;
+use crate::model::page::{ColumnDef, PageDef};
+use crate::model::paragraph::{ColumnBreakType, Paragraph};
+use crate::model::shape::CaptionDirection;
 
 /// 미주 참조
 #[derive(Debug, Clone)]
@@ -247,7 +247,10 @@ pub fn find_inline_control_target_page(
 ) -> Option<(usize, usize)> {
     let positions = para.control_text_positions();
     let ctrl_text_pos = *positions.get(ctrl_idx)?;
-    let target_line = para.line_segs.iter().enumerate()
+    let target_line = para
+        .line_segs
+        .iter()
+        .enumerate()
         .rev()
         .find(|(_, ls)| (ls.text_start as usize) <= ctrl_text_pos)
         .map(|(i, _)| i)
@@ -256,8 +259,11 @@ pub fn find_inline_control_target_page(
     // 1) 현재(마지막) 페이지의 current_items 검사 — 박스 line 이 여기 있으면 None (= 현재)
     let in_current = current_items.iter().any(|item| match item {
         PageItem::FullParagraph { para_index } if *para_index == para_idx => true,
-        PageItem::PartialParagraph { para_index, start_line, end_line }
-            if *para_index == para_idx && (*start_line..*end_line).contains(&target_line) => true,
+        PageItem::PartialParagraph {
+            para_index,
+            start_line,
+            end_line,
+        } if *para_index == para_idx && (*start_line..*end_line).contains(&target_line) => true,
         _ => false,
     });
     if in_current {
@@ -269,8 +275,13 @@ pub fn find_inline_control_target_page(
         for (col_idx, col) in page.column_contents.iter().enumerate() {
             let hit = col.items.iter().any(|item| match item {
                 PageItem::FullParagraph { para_index } if *para_index == para_idx => true,
-                PageItem::PartialParagraph { para_index, start_line, end_line }
-                    if *para_index == para_idx && (*start_line..*end_line).contains(&target_line) => true,
+                PageItem::PartialParagraph {
+                    para_index,
+                    start_line,
+                    end_line,
+                } if *para_index == para_idx && (*start_line..*end_line).contains(&target_line) => {
+                    true
+                }
                 _ => false,
             });
             if hit {
@@ -297,19 +308,49 @@ impl PageItem {
     pub fn with_offset(&self, offset: i32) -> Self {
         let adjust = |pi: usize| (pi as i64 + offset as i64).max(0) as usize;
         match self {
-            PageItem::FullParagraph { para_index } =>
-                PageItem::FullParagraph { para_index: adjust(*para_index) },
-            PageItem::PartialParagraph { para_index, start_line, end_line } =>
-                PageItem::PartialParagraph { para_index: adjust(*para_index), start_line: *start_line, end_line: *end_line },
-            PageItem::Table { para_index, control_index } =>
-                PageItem::Table { para_index: adjust(*para_index), control_index: *control_index },
-            PageItem::PartialTable { para_index, control_index, start_row, end_row, is_continuation,
-                split_start_content_offset, split_end_content_limit } =>
-                PageItem::PartialTable { para_index: adjust(*para_index), control_index: *control_index,
-                    start_row: *start_row, end_row: *end_row, is_continuation: *is_continuation,
-                    split_start_content_offset: *split_start_content_offset, split_end_content_limit: *split_end_content_limit },
-            PageItem::Shape { para_index, control_index } =>
-                PageItem::Shape { para_index: adjust(*para_index), control_index: *control_index },
+            PageItem::FullParagraph { para_index } => PageItem::FullParagraph {
+                para_index: adjust(*para_index),
+            },
+            PageItem::PartialParagraph {
+                para_index,
+                start_line,
+                end_line,
+            } => PageItem::PartialParagraph {
+                para_index: adjust(*para_index),
+                start_line: *start_line,
+                end_line: *end_line,
+            },
+            PageItem::Table {
+                para_index,
+                control_index,
+            } => PageItem::Table {
+                para_index: adjust(*para_index),
+                control_index: *control_index,
+            },
+            PageItem::PartialTable {
+                para_index,
+                control_index,
+                start_row,
+                end_row,
+                is_continuation,
+                split_start_content_offset,
+                split_end_content_limit,
+            } => PageItem::PartialTable {
+                para_index: adjust(*para_index),
+                control_index: *control_index,
+                start_row: *start_row,
+                end_row: *end_row,
+                is_continuation: *is_continuation,
+                split_start_content_offset: *split_start_content_offset,
+                split_end_content_limit: *split_end_content_limit,
+            },
+            PageItem::Shape {
+                para_index,
+                control_index,
+            } => PageItem::Shape {
+                para_index: adjust(*para_index),
+                control_index: *control_index,
+            },
         }
     }
 
@@ -317,20 +358,58 @@ impl PageItem {
     fn matches_with_offset(&self, other: &PageItem, offset: i32) -> bool {
         let adj = |pi: usize| (pi as i64 + offset as i64) as usize;
         match (self, other) {
-            (PageItem::FullParagraph { para_index: a }, PageItem::FullParagraph { para_index: b }) =>
-                *a == adj(*b),
-            (PageItem::PartialParagraph { para_index: a, start_line: s1, end_line: e1 },
-             PageItem::PartialParagraph { para_index: b, start_line: s2, end_line: e2 }) =>
-                *a == adj(*b) && s1 == s2 && e1 == e2,
-            (PageItem::Table { para_index: a, control_index: c1 },
-             PageItem::Table { para_index: b, control_index: c2 }) =>
-                *a == adj(*b) && c1 == c2,
-            (PageItem::PartialTable { para_index: a, control_index: c1, start_row: sr1, end_row: er1, .. },
-             PageItem::PartialTable { para_index: b, control_index: c2, start_row: sr2, end_row: er2, .. }) =>
-                *a == adj(*b) && c1 == c2 && sr1 == sr2 && er1 == er2,
-            (PageItem::Shape { para_index: a, control_index: c1 },
-             PageItem::Shape { para_index: b, control_index: c2 }) =>
-                *a == adj(*b) && c1 == c2,
+            (
+                PageItem::FullParagraph { para_index: a },
+                PageItem::FullParagraph { para_index: b },
+            ) => *a == adj(*b),
+            (
+                PageItem::PartialParagraph {
+                    para_index: a,
+                    start_line: s1,
+                    end_line: e1,
+                },
+                PageItem::PartialParagraph {
+                    para_index: b,
+                    start_line: s2,
+                    end_line: e2,
+                },
+            ) => *a == adj(*b) && s1 == s2 && e1 == e2,
+            (
+                PageItem::Table {
+                    para_index: a,
+                    control_index: c1,
+                },
+                PageItem::Table {
+                    para_index: b,
+                    control_index: c2,
+                },
+            ) => *a == adj(*b) && c1 == c2,
+            (
+                PageItem::PartialTable {
+                    para_index: a,
+                    control_index: c1,
+                    start_row: sr1,
+                    end_row: er1,
+                    ..
+                },
+                PageItem::PartialTable {
+                    para_index: b,
+                    control_index: c2,
+                    start_row: sr2,
+                    end_row: er2,
+                    ..
+                },
+            ) => *a == adj(*b) && c1 == c2 && sr1 == sr2 && er1 == er2,
+            (
+                PageItem::Shape {
+                    para_index: a,
+                    control_index: c1,
+                },
+                PageItem::Shape {
+                    para_index: b,
+                    control_index: c2,
+                },
+            ) => *a == adj(*b) && c1 == c2,
             _ => false,
         }
     }
@@ -341,17 +420,26 @@ impl PaginationResult {
     /// offset: 문단 인덱스 변화량 (삽입=+1, 삭제=-1)
     /// 반환: 수렴 시작 페이지 인덱스 (None이면 수렴 없음)
     pub fn find_convergence(&self, old: &PaginationResult, offset: i32) -> Option<usize> {
-        if offset == 0 { return Some(0); }
+        if offset == 0 {
+            return Some(0);
+        }
         for page_idx in 0..self.pages.len().min(old.pages.len()) {
             let new_page = &self.pages[page_idx];
             let old_page = &old.pages[page_idx];
-            if new_page.column_contents.len() != old_page.column_contents.len() { continue; }
-            let matched = new_page.column_contents.iter()
+            if new_page.column_contents.len() != old_page.column_contents.len() {
+                continue;
+            }
+            let matched = new_page
+                .column_contents
+                .iter()
                 .zip(old_page.column_contents.iter())
                 .all(|(nc, oc)| {
                     nc.items.len() == oc.items.len()
-                    && nc.items.iter().zip(oc.items.iter())
-                        .all(|(ni, oi)| ni.matches_with_offset(oi, offset))
+                        && nc
+                            .items
+                            .iter()
+                            .zip(oc.items.iter())
+                            .all(|(ni, oi)| ni.matches_with_offset(oi, offset))
                 });
             if matched {
                 return Some(page_idx);
@@ -361,7 +449,12 @@ impl PaginationResult {
     }
 
     /// 수렴 이후 페이지를 이전 결과에서 복사한다 (para_index offset 적용).
-    pub fn copy_converged_pages(&mut self, old: &PaginationResult, converge_page: usize, offset: i32) {
+    pub fn copy_converged_pages(
+        &mut self,
+        old: &PaginationResult,
+        converge_page: usize,
+        offset: i32,
+    ) {
         // 수렴 페이지 이후를 이전 결과에서 복사
         self.pages.truncate(converge_page);
         for old_page in &old.pages[converge_page..] {
@@ -370,46 +463,92 @@ impl PaginationResult {
                 page_number: old_page.page_number,
                 section_index: old_page.section_index,
                 layout: old_page.layout.clone(),
-                column_contents: old_page.column_contents.iter().map(|cc| {
-                    ColumnContent {
+                column_contents: old_page
+                    .column_contents
+                    .iter()
+                    .map(|cc| ColumnContent {
                         column_index: cc.column_index,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
-                        wrap_around_paras: cc.wrap_around_paras.iter().map(|w| WrapAroundPara {
-                            para_index: (w.para_index as i64 + offset as i64).max(0) as usize,
-                            table_para_index: (w.table_para_index as i64 + offset as i64).max(0) as usize,
-                            has_text: w.has_text,
-                        }).collect(),
-                        used_height: cc.used_height,
-                        wrap_anchors: cc.wrap_anchors.iter().map(|(k, v)| {
-                            ((*k as i64 + offset as i64).max(0) as usize, WrapAnchorRef {
-                                anchor_para_index: (v.anchor_para_index as i64 + offset as i64).max(0) as usize,
-                                anchor_cs: v.anchor_cs,
-                                anchor_sw: v.anchor_sw,
-                                anchor_image_margin_right: v.anchor_image_margin_right,
+                        wrap_around_paras: cc
+                            .wrap_around_paras
+                            .iter()
+                            .map(|w| WrapAroundPara {
+                                para_index: (w.para_index as i64 + offset as i64).max(0) as usize,
+                                table_para_index: (w.table_para_index as i64 + offset as i64).max(0)
+                                    as usize,
+                                has_text: w.has_text,
                             })
-                        }).collect(),
-                    }
-                }).collect(),
+                            .collect(),
+                        used_height: cc.used_height,
+                        wrap_anchors: cc
+                            .wrap_anchors
+                            .iter()
+                            .map(|(k, v)| {
+                                (
+                                    (*k as i64 + offset as i64).max(0) as usize,
+                                    WrapAnchorRef {
+                                        anchor_para_index: (v.anchor_para_index as i64
+                                            + offset as i64)
+                                            .max(0)
+                                            as usize,
+                                        anchor_cs: v.anchor_cs,
+                                        anchor_sw: v.anchor_sw,
+                                        anchor_image_margin_right: v.anchor_image_margin_right,
+                                    },
+                                )
+                            })
+                            .collect(),
+                    })
+                    .collect(),
                 active_header: old_page.active_header.clone(),
                 active_footer: old_page.active_footer.clone(),
                 page_number_pos: old_page.page_number_pos.clone(),
                 page_hide: old_page.page_hide.clone(),
-                footnotes: old_page.footnotes.iter().map(|f| {
-                    let source = match &f.source {
-                        FootnoteSource::Body { para_index, control_index } =>
-                            FootnoteSource::Body { para_index: (*para_index as i64 + offset as i64).max(0) as usize, control_index: *control_index },
-                        FootnoteSource::TableCell { para_index, table_control_index, cell_index, cell_para_index, cell_control_index } =>
-                            FootnoteSource::TableCell { para_index: (*para_index as i64 + offset as i64).max(0) as usize,
-                                table_control_index: *table_control_index, cell_index: *cell_index,
-                                cell_para_index: *cell_para_index, cell_control_index: *cell_control_index },
-                        FootnoteSource::ShapeTextBox { para_index, shape_control_index, tb_para_index, tb_control_index } =>
-                            FootnoteSource::ShapeTextBox { para_index: (*para_index as i64 + offset as i64).max(0) as usize,
-                                shape_control_index: *shape_control_index, tb_para_index: *tb_para_index, tb_control_index: *tb_control_index },
-                    };
-                    FootnoteRef { number: f.number, source }
-                }).collect(),
+                footnotes: old_page
+                    .footnotes
+                    .iter()
+                    .map(|f| {
+                        let source = match &f.source {
+                            FootnoteSource::Body {
+                                para_index,
+                                control_index,
+                            } => FootnoteSource::Body {
+                                para_index: (*para_index as i64 + offset as i64).max(0) as usize,
+                                control_index: *control_index,
+                            },
+                            FootnoteSource::TableCell {
+                                para_index,
+                                table_control_index,
+                                cell_index,
+                                cell_para_index,
+                                cell_control_index,
+                            } => FootnoteSource::TableCell {
+                                para_index: (*para_index as i64 + offset as i64).max(0) as usize,
+                                table_control_index: *table_control_index,
+                                cell_index: *cell_index,
+                                cell_para_index: *cell_para_index,
+                                cell_control_index: *cell_control_index,
+                            },
+                            FootnoteSource::ShapeTextBox {
+                                para_index,
+                                shape_control_index,
+                                tb_para_index,
+                                tb_control_index,
+                            } => FootnoteSource::ShapeTextBox {
+                                para_index: (*para_index as i64 + offset as i64).max(0) as usize,
+                                shape_control_index: *shape_control_index,
+                                tb_para_index: *tb_para_index,
+                                tb_control_index: *tb_control_index,
+                            },
+                        };
+                        FootnoteRef {
+                            number: f.number,
+                            source,
+                        }
+                    })
+                    .collect(),
                 active_master_page: old_page.active_master_page.clone(),
                 extra_master_pages: old_page.extra_master_pages.clone(),
             };
@@ -420,7 +559,11 @@ impl PaginationResult {
         for w in &old.wrap_around_paras {
             let shifted_pi = (w.para_index as i64 + offset as i64).max(0) as usize;
             let shifted_tpi = (w.table_para_index as i64 + offset as i64).max(0) as usize;
-            if !self.wrap_around_paras.iter().any(|e| e.para_index == shifted_pi) {
+            if !self
+                .wrap_around_paras
+                .iter()
+                .any(|e| e.para_index == shifted_pi)
+            {
                 self.wrap_around_paras.push(WrapAroundPara {
                     para_index: shifted_pi,
                     table_para_index: shifted_tpi,
@@ -504,7 +647,14 @@ impl Paginator {
         let measured = measurer.measure_section(paragraphs, composed, styles);
 
         // === 2-패스: 측정된 높이로 페이지 분할 ===
-        let result = self.paginate_with_measured(paragraphs, &measured, page_def, column_def, section_index, &styles.para_styles);
+        let result = self.paginate_with_measured(
+            paragraphs,
+            &measured,
+            page_def,
+            column_def,
+            section_index,
+            &styles.para_styles,
+        );
         (result, measured)
     }
 }

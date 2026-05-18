@@ -1,27 +1,27 @@
 //! 렌더링/페이지 정보/구성/페이지네이션/페이지 트리 관련 native 메서드
 
-use std::cell::RefCell;
-use std::fmt::Write as _;
-use crate::model::document::Section;
-use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
-use crate::model::page::ColumnDef;
-use crate::renderer::pagination::{Paginator, PaginationResult};
-use crate::renderer::height_measurer::{MeasuredTable, MeasuredSection, HeightMeasurer};
-use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::LayoutEngine;
-use crate::renderer::render_tree::PageRenderTree;
-use crate::renderer::svg::SvgRenderer;
-use crate::renderer::svg_layer::SvgLayerRenderer;
-use crate::renderer::html::HtmlRenderer;
-use crate::renderer::canvas::CanvasRenderer;
-use crate::renderer::style_resolver::resolve_styles;
-use crate::renderer::composer::{compose_section, compose_paragraph, ComposedParagraph};
-use crate::renderer::page_layout::PageLayoutInfo;
-use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
+use super::super::helpers::color_ref_to_css;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
-use super::super::helpers::color_ref_to_css;
+use crate::model::control::Control;
+use crate::model::document::Section;
+use crate::model::page::ColumnDef;
+use crate::model::paragraph::Paragraph;
+use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
+use crate::renderer::canvas::CanvasRenderer;
+use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
+use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
+use crate::renderer::html::HtmlRenderer;
+use crate::renderer::layer_renderer::LayerRenderer;
+use crate::renderer::layout::LayoutEngine;
+use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::pagination::{PaginationResult, Paginator};
+use crate::renderer::render_tree::PageRenderTree;
+use crate::renderer::style_resolver::resolve_styles;
+use crate::renderer::svg::SvgRenderer;
+use crate::renderer::svg_layer::SvgLayerRenderer;
+use std::cell::RefCell;
+use std::fmt::Write as _;
 
 impl DocumentCore {
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
@@ -107,9 +107,7 @@ impl DocumentCore {
         // 폰트 임베딩 후처리
         let mut svg = renderer.output().to_string();
         if font_embed_mode != crate::renderer::svg::FontEmbedMode::None {
-            let style_css = crate::renderer::svg::generate_font_style(
-                &renderer, font_paths,
-            );
+            let style_css = crate::renderer::svg::generate_font_style(&renderer, font_paths);
             if !style_css.is_empty() {
                 // <svg ...> 직후에 <style> 삽입
                 if let Some(pos) = svg.find('>') {
@@ -291,11 +289,14 @@ fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
     if pos + 8 > png.len() {
         return png;
     }
-    let ihdr_len = u32::from_be_bytes([png[pos], png[pos + 1], png[pos + 2], png[pos + 3]]) as usize;
+    let ihdr_len =
+        u32::from_be_bytes([png[pos], png[pos + 1], png[pos + 2], png[pos + 3]]) as usize;
     if ihdr_len != IHDR_DATA_LEN || &png[pos + 4..pos + 8] != b"IHDR" {
         return png;
     }
-    let Some(ihdr_end) = pos.checked_add(4 + 4 + ihdr_len + 4) else { return png };
+    let Some(ihdr_end) = pos.checked_add(4 + 4 + ihdr_len + 4) else {
+        return png;
+    };
     if ihdr_end > png.len() {
         return png;
     }
@@ -423,11 +424,11 @@ impl DocumentCore {
     /// 파싱할 필요가 없다. 특히 그림이 본문 layer에만 있는 페이지에서는 빈 overlay 배열과
     /// imageCount만 반환하여 입력 중 대용량 JSON 직렬화/파싱을 피한다.
     pub fn get_page_overlay_images_native(&self, page_num: u32) -> Result<String, HwpError> {
-        use base64::Engine;
         use crate::model::image::ImageEffect;
         use crate::model::shape::TextWrap;
         use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
+        use base64::Engine;
 
         fn effect_str(value: ImageEffect) -> &'static str {
             match value {
@@ -548,7 +549,12 @@ impl DocumentCore {
                                     write_overlay_image(behind, *bbox, image, TextWrap::BehindText);
                                 }
                                 Some(TextWrap::InFrontOfText) => {
-                                    write_overlay_image(front, *bbox, image, TextWrap::InFrontOfText);
+                                    write_overlay_image(
+                                        front,
+                                        *bbox,
+                                        image,
+                                        TextWrap::InFrontOfText,
+                                    );
                                 }
                                 _ => {}
                             }
@@ -583,7 +589,10 @@ impl DocumentCore {
         let mh = hwpunit_to_px(page_def.margin_header as i32, self.dpi);
         let mf = hwpunit_to_px(page_def.margin_footer as i32, self.dpi);
         // 단별 영역 정보
-        let cols_json: String = page_content.layout.column_areas.iter()
+        let cols_json: String = page_content
+            .layout
+            .column_areas
+            .iter()
             .map(|ca| format!("{{\"x\":{:.1},\"width\":{:.1}}}", ca.x, ca.width))
             .collect::<Vec<_>>()
             .join(",");
@@ -595,14 +604,22 @@ impl DocumentCore {
             page_content.layout.page_width,
             page_content.layout.page_height,
             page_content.section_index,
-            ml, mr, mt, mb, mh, mf,
+            ml,
+            mr,
+            mt,
+            mb,
+            mh,
+            mf,
             cols_json,
         ))
     }
 
     /// 구역 정의(SectionDef)를 JSON으로 반환 (네이티브 에러 타입)
     pub fn get_section_def_native(&self, section_idx: usize) -> Result<String, HwpError> {
-        let section = self.document.sections.get(section_idx)
+        let section = self
+            .document
+            .sections
+            .get(section_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
         let sd = &section.section_def;
         Ok(format!(
@@ -620,38 +637,71 @@ impl DocumentCore {
 
     /// 단일 구역의 SectionDef 필드를 JSON에서 업데이트 (재조판 없이)
     fn apply_section_def_json(&mut self, section_idx: usize, json: &str) -> Result<(), HwpError> {
-        use super::super::helpers::{json_u16, json_u32, json_bool};
+        use super::super::helpers::{json_bool, json_u16, json_u32};
 
-        let section = self.document.sections.get_mut(section_idx)
+        let section = self
+            .document
+            .sections
+            .get_mut(section_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
         let sd = &mut section.section_def;
 
-        if let Some(v) = json_u16(json, "pageNum") { sd.page_num = v; }
-        if let Some(v) = json_u16(json, "pageNumType") { sd.page_num_type = v as u8; }
-        if let Some(v) = json_u16(json, "pictureNum") { sd.picture_num = v; }
-        if let Some(v) = json_u16(json, "tableNum") { sd.table_num = v; }
-        if let Some(v) = json_u16(json, "equationNum") { sd.equation_num = v; }
-        if let Some(v) = json_u16(json, "columnSpacing") { sd.column_spacing = v as i16; }
-        if let Some(v) = json_u32(json, "defaultTabSpacing") { sd.default_tab_spacing = v; }
-        if let Some(v) = json_bool(json, "hideHeader") { sd.hide_header = v; }
-        if let Some(v) = json_bool(json, "hideFooter") { sd.hide_footer = v; }
-        if let Some(v) = json_bool(json, "hideMasterPage") { sd.hide_master_page = v; }
-        if let Some(v) = json_bool(json, "hideBorder") { sd.hide_border = v; }
-        if let Some(v) = json_bool(json, "hideFill") { sd.hide_fill = v; }
-        if let Some(v) = json_bool(json, "hideEmptyLine") { sd.hide_empty_line = v; }
+        if let Some(v) = json_u16(json, "pageNum") {
+            sd.page_num = v;
+        }
+        if let Some(v) = json_u16(json, "pageNumType") {
+            sd.page_num_type = v as u8;
+        }
+        if let Some(v) = json_u16(json, "pictureNum") {
+            sd.picture_num = v;
+        }
+        if let Some(v) = json_u16(json, "tableNum") {
+            sd.table_num = v;
+        }
+        if let Some(v) = json_u16(json, "equationNum") {
+            sd.equation_num = v;
+        }
+        if let Some(v) = json_u16(json, "columnSpacing") {
+            sd.column_spacing = v as i16;
+        }
+        if let Some(v) = json_u32(json, "defaultTabSpacing") {
+            sd.default_tab_spacing = v;
+        }
+        if let Some(v) = json_bool(json, "hideHeader") {
+            sd.hide_header = v;
+        }
+        if let Some(v) = json_bool(json, "hideFooter") {
+            sd.hide_footer = v;
+        }
+        if let Some(v) = json_bool(json, "hideMasterPage") {
+            sd.hide_master_page = v;
+        }
+        if let Some(v) = json_bool(json, "hideBorder") {
+            sd.hide_border = v;
+        }
+        if let Some(v) = json_bool(json, "hideFill") {
+            sd.hide_fill = v;
+        }
+        if let Some(v) = json_bool(json, "hideEmptyLine") {
+            sd.hide_empty_line = v;
+        }
 
         // flags 비트플래그 재구성 (파서와 동일한 비트 위치)
         let flags = &mut sd.flags;
         fn set_bit(flags: &mut u32, mask: u32, val: bool) {
-            if val { *flags |= mask; } else { *flags &= !mask; }
+            if val {
+                *flags |= mask;
+            } else {
+                *flags &= !mask;
+            }
         }
-        set_bit(flags, 0x0100, sd.hide_header);      // bit 8
-        set_bit(flags, 0x0200, sd.hide_footer);       // bit 9
-        set_bit(flags, 0x0004, sd.hide_master_page);  // bit 2 (HWP5 스펙, 첫쪽 바탕쪽 감춤)
-        set_bit(flags, 0x0800, sd.hide_border);       // bit 11
-        set_bit(flags, 0x1000, sd.hide_fill);         // bit 12
+        set_bit(flags, 0x0100, sd.hide_header); // bit 8
+        set_bit(flags, 0x0200, sd.hide_footer); // bit 9
+        set_bit(flags, 0x0004, sd.hide_master_page); // bit 2 (HWP5 스펙, 첫쪽 바탕쪽 감춤)
+        set_bit(flags, 0x0800, sd.hide_border); // bit 11
+        set_bit(flags, 0x1000, sd.hide_fill); // bit 12
         set_bit(flags, 0x00080000, sd.hide_empty_line); // bit 19
-        // bit 20-21: 쪽 번호 종류
+                                                        // bit 20-21: 쪽 번호 종류
         *flags &= !0x00300000; // clear bits 20-21
         *flags |= ((sd.page_num_type as u32) & 0x03) << 20;
 
@@ -686,7 +736,10 @@ impl DocumentCore {
 
     /// 재조판 + 재페이지네이션 수행
     fn recompose_and_paginate(&mut self) -> u32 {
-        self.composed = self.document.sections.iter()
+        self.composed = self
+            .document
+            .sections
+            .iter()
             .map(|s| compose_section(s))
             .collect();
         self.mark_all_sections_dirty();
@@ -695,7 +748,11 @@ impl DocumentCore {
     }
 
     /// 구역 정의(SectionDef)를 변경하고 재페이지네이션 (네이티브 에러 타입)
-    pub fn set_section_def_native(&mut self, section_idx: usize, json: &str) -> Result<String, HwpError> {
+    pub fn set_section_def_native(
+        &mut self,
+        section_idx: usize,
+        json: &str,
+    ) -> Result<String, HwpError> {
         self.apply_section_def_json(section_idx, json)?;
         let page_count = self.recompose_and_paginate();
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
@@ -713,7 +770,10 @@ impl DocumentCore {
 
     /// 구역의 용지 설정(PageDef)을 HWPUNIT 원본값으로 반환 (네이티브 에러 타입)
     pub fn get_page_def_native(&self, section_idx: usize) -> Result<String, HwpError> {
-        let section = self.document.sections.get(section_idx)
+        let section = self
+            .document
+            .sections
+            .get(section_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
         let pd = &section.section_def.page_def;
         let binding: u8 = match pd.binding {
@@ -726,33 +786,67 @@ impl DocumentCore {
             \"marginLeft\":{},\"marginRight\":{},\"marginTop\":{},\"marginBottom\":{},\
             \"marginHeader\":{},\"marginFooter\":{},\"marginGutter\":{},\
             \"landscape\":{},\"binding\":{}}}",
-            pd.width, pd.height,
-            pd.margin_left, pd.margin_right, pd.margin_top, pd.margin_bottom,
-            pd.margin_header, pd.margin_footer, pd.margin_gutter,
-            pd.landscape, binding,
+            pd.width,
+            pd.height,
+            pd.margin_left,
+            pd.margin_right,
+            pd.margin_top,
+            pd.margin_bottom,
+            pd.margin_header,
+            pd.margin_footer,
+            pd.margin_gutter,
+            pd.landscape,
+            binding,
         ))
     }
 
     /// 구역의 용지 설정(PageDef)을 변경하고 재페이지네이션 (네이티브 에러 타입)
-    pub fn set_page_def_native(&mut self, section_idx: usize, json: &str) -> Result<String, HwpError> {
+    pub fn set_page_def_native(
+        &mut self,
+        section_idx: usize,
+        json: &str,
+    ) -> Result<String, HwpError> {
         use crate::model::page::BindingMethod;
 
-        let section = self.document.sections.get_mut(section_idx)
+        let section = self
+            .document
+            .sections
+            .get_mut(section_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
         let pd = &mut section.section_def.page_def;
 
-        use super::super::helpers::{json_u32, json_bool};
+        use super::super::helpers::{json_bool, json_u32};
 
-        if let Some(v) = json_u32(json, "width") { pd.width = v; }
-        if let Some(v) = json_u32(json, "height") { pd.height = v; }
-        if let Some(v) = json_u32(json, "marginLeft") { pd.margin_left = v; }
-        if let Some(v) = json_u32(json, "marginRight") { pd.margin_right = v; }
-        if let Some(v) = json_u32(json, "marginTop") { pd.margin_top = v; }
-        if let Some(v) = json_u32(json, "marginBottom") { pd.margin_bottom = v; }
-        if let Some(v) = json_u32(json, "marginHeader") { pd.margin_header = v; }
-        if let Some(v) = json_u32(json, "marginFooter") { pd.margin_footer = v; }
-        if let Some(v) = json_u32(json, "marginGutter") { pd.margin_gutter = v; }
-        if let Some(v) = json_bool(json, "landscape") { pd.landscape = v; }
+        if let Some(v) = json_u32(json, "width") {
+            pd.width = v;
+        }
+        if let Some(v) = json_u32(json, "height") {
+            pd.height = v;
+        }
+        if let Some(v) = json_u32(json, "marginLeft") {
+            pd.margin_left = v;
+        }
+        if let Some(v) = json_u32(json, "marginRight") {
+            pd.margin_right = v;
+        }
+        if let Some(v) = json_u32(json, "marginTop") {
+            pd.margin_top = v;
+        }
+        if let Some(v) = json_u32(json, "marginBottom") {
+            pd.margin_bottom = v;
+        }
+        if let Some(v) = json_u32(json, "marginHeader") {
+            pd.margin_header = v;
+        }
+        if let Some(v) = json_u32(json, "marginFooter") {
+            pd.margin_footer = v;
+        }
+        if let Some(v) = json_u32(json, "marginGutter") {
+            pd.margin_gutter = v;
+        }
+        if let Some(v) = json_bool(json, "landscape") {
+            pd.landscape = v;
+        }
         if let Some(v) = json_u32(json, "binding") {
             pd.binding = match v {
                 1 => BindingMethod::DuplexSided,
@@ -785,7 +879,10 @@ impl DocumentCore {
         section.raw_stream = None;
 
         // 재조판 + 재페이지네이션
-        self.composed = self.document.sections.iter()
+        self.composed = self
+            .document
+            .sections
+            .iter()
             .map(|s| compose_section(s))
             .collect();
         self.mark_all_sections_dirty();
@@ -797,8 +894,8 @@ impl DocumentCore {
 
     /// 텍스트 레이아웃 정보 (네이티브 에러 타입)
     pub fn get_page_text_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
         use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
 
@@ -806,14 +903,16 @@ impl DocumentCore {
         fn collect_text_runs(node: &RenderNode, runs: &mut Vec<String>) {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let positions = compute_char_positions(&text_run.text, &text_run.style);
-                let char_x: Vec<String> = positions.iter()
-                    .map(|v| format!("{:.1}", v))
-                    .collect();
+                let char_x: Vec<String> = positions.iter().map(|v| format!("{:.1}", v)).collect();
 
                 let escaped_text = super::super::helpers::json_escape(&text_run.text);
 
                 // 문서 좌표 (편집용)
-                let doc_coords = match (text_run.section_index, text_run.para_index, text_run.char_start) {
+                let doc_coords = match (
+                    text_run.section_index,
+                    text_run.para_index,
+                    text_run.char_start,
+                ) {
                     (Some(si), Some(pi), Some(cs)) => {
                         format!(",\"secIdx\":{},\"paraIdx\":{},\"charStart\":{}", si, pi, cs)
                     }
@@ -823,10 +922,16 @@ impl DocumentCore {
                 // 표 셀 식별 정보 (편집용)
                 let cell_coords = if let Some(ref ctx) = text_run.cell_context {
                     let outer = &ctx.path[0];
-                    let path_entries: Vec<String> = ctx.path.iter().map(|e| {
-                        format!("{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                            e.control_index, e.cell_index, e.cell_para_index)
-                    }).collect();
+                    let path_entries: Vec<String> = ctx
+                        .path
+                        .iter()
+                        .map(|e| {
+                            format!(
+                                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                e.control_index, e.cell_index, e.cell_para_index
+                            )
+                        })
+                        .collect();
                     format!(",\"parentParaIdx\":{},\"controlIdx\":{},\"cellIdx\":{},\"cellParaIdx\":{},\"cellPath\":[{}]",
                         ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
                         path_entries.join(","))
@@ -848,14 +953,19 @@ impl DocumentCore {
                 // 서식 툴바용 추가 속성
                 let format_info = format!(
                     ",\"underline\":{},\"strikethrough\":{},\"textColor\":\"{}\"",
-                    !matches!(text_run.style.underline, crate::model::style::UnderlineType::None),
+                    !matches!(
+                        text_run.style.underline,
+                        crate::model::style::UnderlineType::None
+                    ),
                     text_run.style.strikethrough,
                     color_ref_to_css(text_run.style.color),
                 );
 
                 // 글자/문단 모양 ID (서식 툴바용)
                 let shape_ids = match (text_run.char_shape_id, text_run.para_shape_id) {
-                    (Some(csid), Some(psid)) => format!(",\"charShapeId\":{},\"paraShapeId\":{}", csid, psid),
+                    (Some(csid), Some(psid)) => {
+                        format!(",\"charShapeId\":{},\"paraShapeId\":{}", csid, psid)
+                    }
                     (Some(csid), None) => format!(",\"charShapeId\":{}", csid),
                     (None, Some(psid)) => format!(",\"paraShapeId\":{}", psid),
                     _ => String::new(),
@@ -898,9 +1008,16 @@ impl DocumentCore {
             match &node.node_type {
                 RenderNodeType::Table(table_node) => {
                     // 문서 좌표
-                    let doc_coords = match (table_node.section_index, table_node.para_index, table_node.control_index) {
+                    let doc_coords = match (
+                        table_node.section_index,
+                        table_node.para_index,
+                        table_node.control_index,
+                    ) {
                         (Some(si), Some(pi), Some(ci)) => {
-                            format!(",\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}", si, pi, ci)
+                            format!(
+                                ",\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}",
+                                si, pi, ci
+                            )
                         }
                         _ => String::new(),
                     };
@@ -928,9 +1045,16 @@ impl DocumentCore {
                     // Table 내부도 탐색 (셀 내 수식 등 수집)
                 }
                 RenderNodeType::Equation(eq_node) => {
-                    let doc_coords = match (eq_node.section_index, eq_node.para_index, eq_node.control_index) {
+                    let doc_coords = match (
+                        eq_node.section_index,
+                        eq_node.para_index,
+                        eq_node.control_index,
+                    ) {
                         (Some(si), Some(pi), Some(ci)) => {
-                            format!(",\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}", si, pi, ci)
+                            format!(
+                                ",\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}",
+                                si, pi, ci
+                            )
                         }
                         _ => String::new(),
                     };
@@ -949,21 +1073,34 @@ impl DocumentCore {
                     return;
                 }
                 RenderNodeType::Image(image_node) => {
-                    let doc_coords = match (image_node.section_index, image_node.para_index, image_node.control_index) {
+                    let doc_coords = match (
+                        image_node.section_index,
+                        image_node.para_index,
+                        image_node.control_index,
+                    ) {
                         (Some(si), Some(pi), Some(ci)) => {
-                            format!(",\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}", si, pi, ci)
+                            format!(
+                                ",\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}",
+                                si, pi, ci
+                            )
                         }
                         _ => String::new(),
                     };
                     // Task #516 결함 3: hit-test 정합 (옵션 3-C) — wrap 모드 노출.
                     // BehindText 그림은 텍스트 영역 위에서는 hit-test 후순위 처리.
                     let wrap_str = match image_node.text_wrap {
-                        Some(crate::model::shape::TextWrap::BehindText) => ",\"wrap\":\"behindText\"",
-                        Some(crate::model::shape::TextWrap::InFrontOfText) => ",\"wrap\":\"inFrontOfText\"",
+                        Some(crate::model::shape::TextWrap::BehindText) => {
+                            ",\"wrap\":\"behindText\""
+                        }
+                        Some(crate::model::shape::TextWrap::InFrontOfText) => {
+                            ",\"wrap\":\"inFrontOfText\""
+                        }
                         Some(crate::model::shape::TextWrap::Square) => ",\"wrap\":\"square\"",
                         Some(crate::model::shape::TextWrap::Tight) => ",\"wrap\":\"tight\"",
                         Some(crate::model::shape::TextWrap::Through) => ",\"wrap\":\"through\"",
-                        Some(crate::model::shape::TextWrap::TopAndBottom) => ",\"wrap\":\"topAndBottom\"",
+                        Some(crate::model::shape::TextWrap::TopAndBottom) => {
+                            ",\"wrap\":\"topAndBottom\""
+                        }
                         None => "",
                     };
                     // [Task #825] 머리말/꼬리말 그림 marker — rhwp-studio findPictureAtClick
@@ -990,7 +1127,11 @@ impl DocumentCore {
                     return;
                 }
                 RenderNodeType::Group(group_node) => {
-                    if let (Some(si), Some(pi), Some(ci)) = (group_node.section_index, group_node.para_index, group_node.control_index) {
+                    if let (Some(si), Some(pi), Some(ci)) = (
+                        group_node.section_index,
+                        group_node.para_index,
+                        group_node.control_index,
+                    ) {
                         controls.push(format!(
                             "{{\"type\":\"group\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
@@ -1001,7 +1142,11 @@ impl DocumentCore {
                 }
                 RenderNodeType::Rectangle(rect_node) => {
                     // 문서 좌표가 있는 Rectangle만 shape로 수집 (배경 사각형 제외)
-                    if let (Some(si), Some(pi), Some(ci)) = (rect_node.section_index, rect_node.para_index, rect_node.control_index) {
+                    if let (Some(si), Some(pi), Some(ci)) = (
+                        rect_node.section_index,
+                        rect_node.para_index,
+                        rect_node.control_index,
+                    ) {
                         controls.push(format!(
                             "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
@@ -1011,7 +1156,11 @@ impl DocumentCore {
                     }
                 }
                 RenderNodeType::Line(line_node) => {
-                    if let (Some(si), Some(pi), Some(ci)) = (line_node.section_index, line_node.para_index, line_node.control_index) {
+                    if let (Some(si), Some(pi), Some(ci)) = (
+                        line_node.section_index,
+                        line_node.para_index,
+                        line_node.control_index,
+                    ) {
                         controls.push(format!(
                             "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
@@ -1022,7 +1171,11 @@ impl DocumentCore {
                     }
                 }
                 RenderNodeType::Ellipse(ell_node) => {
-                    if let (Some(si), Some(pi), Some(ci)) = (ell_node.section_index, ell_node.para_index, ell_node.control_index) {
+                    if let (Some(si), Some(pi), Some(ci)) = (
+                        ell_node.section_index,
+                        ell_node.para_index,
+                        ell_node.control_index,
+                    ) {
                         controls.push(format!(
                             "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
@@ -1032,7 +1185,11 @@ impl DocumentCore {
                     }
                 }
                 RenderNodeType::Path(path_node) => {
-                    if let (Some(si), Some(pi), Some(ci)) = (path_node.section_index, path_node.para_index, path_node.control_index) {
+                    if let (Some(si), Some(pi), Some(ci)) = (
+                        path_node.section_index,
+                        path_node.para_index,
+                        path_node.control_index,
+                    ) {
                         if let Some((x1, y1, x2, y2)) = path_node.connector_endpoints {
                             // 연결선: 선 선택 방식 (시작/끝 좌표 포함)
                             controls.push(format!(
@@ -1079,10 +1236,15 @@ impl DocumentCore {
     /// 특정 문단에 적용되는 ColumnDef를 찾는다.
     /// 문단 순서대로 탐색하여 para_idx 이하에서 가장 마지막 ColumnDef를 반환한다.
     /// (한 구역 내에서 다단↔단일단 전환이 여러 번 일어날 수 있음)
-    pub(crate) fn find_column_def_for_paragraph(paragraphs: &[Paragraph], para_idx: usize) -> ColumnDef {
+    pub(crate) fn find_column_def_for_paragraph(
+        paragraphs: &[Paragraph],
+        para_idx: usize,
+    ) -> ColumnDef {
         let mut last_cd = ColumnDef::default();
         for (i, para) in paragraphs.iter().enumerate() {
-            if i > para_idx { break; }
+            if i > para_idx {
+                break;
+            }
             for ctrl in &para.controls {
                 if let Control::ColumnDef(cd) = ctrl {
                     last_cd = cd.clone();
@@ -1116,7 +1278,9 @@ impl DocumentCore {
 
     /// 문단 dirty 비트 설정
     pub(crate) fn mark_paragraph_dirty(&mut self, section_idx: usize, para_idx: usize) {
-        if section_idx >= self.dirty_paragraphs.len() { return; }
+        if section_idx >= self.dirty_paragraphs.len() {
+            return;
+        }
         let para_count = self.document.sections[section_idx].paragraphs.len();
         match &mut self.dirty_paragraphs[section_idx] {
             None => {
@@ -1156,8 +1320,8 @@ impl DocumentCore {
         // dirty_paragraphs: 삽입된 문단과 분할 원본만 dirty 표시
         if section_idx < self.dirty_paragraphs.len() {
             let para_count = self.document.sections[section_idx].paragraphs.len();
-            let bits = self.dirty_paragraphs[section_idx]
-                .get_or_insert_with(|| vec![false; para_count]);
+            let bits =
+                self.dirty_paragraphs[section_idx].get_or_insert_with(|| vec![false; para_count]);
             // 기존 비트맵에 삽입 위치 추가 (후속 인덱스 shift)
             if para_idx <= bits.len() {
                 bits.insert(para_idx, true);
@@ -1165,10 +1329,14 @@ impl DocumentCore {
             // 비트맵 길이를 문단 수에 맞춤
             bits.resize(para_count, false);
             // 분할 원본 문단도 dirty
-            if para_idx > 0 { bits[para_idx - 1] = true; }
+            if para_idx > 0 {
+                bits[para_idx - 1] = true;
+            }
         }
         // para_offset 누적 (수렴 감지용)
-        while self.para_offset.len() <= section_idx { self.para_offset.push(0); }
+        while self.para_offset.len() <= section_idx {
+            self.para_offset.push(0);
+        }
         self.para_offset[section_idx] += 1;
     }
 
@@ -1186,18 +1354,24 @@ impl DocumentCore {
         // dirty_paragraphs: 병합 대상 문단만 dirty 표시
         if section_idx < self.dirty_paragraphs.len() {
             let para_count = self.document.sections[section_idx].paragraphs.len();
-            let bits = self.dirty_paragraphs[section_idx]
-                .get_or_insert_with(|| vec![false; para_count]);
+            let bits =
+                self.dirty_paragraphs[section_idx].get_or_insert_with(|| vec![false; para_count]);
             if para_idx < bits.len() {
                 bits.remove(para_idx);
             }
             bits.resize(para_count, false);
             // 병합 결과 문단 dirty
-            if para_idx < bits.len() { bits[para_idx] = true; }
-            if para_idx > 0 && para_idx - 1 < bits.len() { bits[para_idx - 1] = true; }
+            if para_idx < bits.len() {
+                bits[para_idx] = true;
+            }
+            if para_idx > 0 && para_idx - 1 < bits.len() {
+                bits[para_idx - 1] = true;
+            }
         }
         // para_offset 누적 (수렴 감지용)
-        while self.para_offset.len() <= section_idx { self.para_offset.push(0); }
+        while self.para_offset.len() <= section_idx {
+            self.para_offset.push(0);
+        }
         self.para_offset[section_idx] -= 1;
     }
 
@@ -1250,7 +1424,13 @@ impl DocumentCore {
         // 벡터 크기 동기화
         let sec_count = self.document.sections.len();
         while self.pagination.len() < sec_count {
-            self.pagination.push(PaginationResult { pages: Vec::new(), wrap_around_paras: Vec::new(), hidden_empty_paras: std::collections::HashSet::new(), endnotes: Vec::new(), endnote_paragraphs: Vec::new() });
+            self.pagination.push(PaginationResult {
+                pages: Vec::new(),
+                wrap_around_paras: Vec::new(),
+                hidden_empty_paras: std::collections::HashSet::new(),
+                endnotes: Vec::new(),
+                endnote_paragraphs: Vec::new(),
+            });
         }
         self.pagination.truncate(sec_count);
         while self.para_column_map.len() < sec_count {
@@ -1264,7 +1444,10 @@ impl DocumentCore {
         self.dirty_sections.resize(sec_count, true);
         self.dirty_sections.truncate(sec_count);
         while self.measured_sections.len() < sec_count {
-            self.measured_sections.push(MeasuredSection { paragraphs: Vec::new(), tables: Vec::new() });
+            self.measured_sections.push(MeasuredSection {
+                paragraphs: Vec::new(),
+                tables: Vec::new(),
+            });
         }
         self.measured_sections.truncate(sec_count);
         while self.dirty_paragraphs.len() < sec_count {
@@ -1297,12 +1480,18 @@ impl DocumentCore {
                     for page in &pages.pages {
                         let is_odd = page.page_number % 2 == 1;
                         if page.active_header.is_some() {
-                            if is_odd { carry_header_odd = page.active_header.clone(); }
-                            else { carry_header_even = page.active_header.clone(); }
+                            if is_odd {
+                                carry_header_odd = page.active_header.clone();
+                            } else {
+                                carry_header_even = page.active_header.clone();
+                            }
                         }
                         if page.active_footer.is_some() {
-                            if is_odd { carry_footer_odd = page.active_footer.clone(); }
-                            else { carry_footer_even = page.active_footer.clone(); }
+                            if is_odd {
+                                carry_footer_odd = page.active_footer.clone();
+                            } else {
+                                carry_footer_even = page.active_footer.clone();
+                            }
                         }
                     }
                 }
@@ -1317,7 +1506,9 @@ impl DocumentCore {
 
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
             let measured = if !self.measured_sections[idx].paragraphs.is_empty() {
-                let dirty_paras = self.dirty_paragraphs.get(idx)
+                let dirty_paras = self
+                    .dirty_paragraphs
+                    .get(idx)
                     .and_then(|opt| opt.as_deref());
                 measurer.measure_section_selective(
                     &section.paragraphs,
@@ -1332,7 +1523,9 @@ impl DocumentCore {
 
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             // TypesetEngine을 main pagination으로 사용. RHWP_USE_PAGINATOR=1 로 fallback 가능.
-            let use_paginator = std::env::var("RHWP_USE_PAGINATOR").map(|v| v == "1").unwrap_or(false);
+            let use_paginator = std::env::var("RHWP_USE_PAGINATOR")
+                .map(|v| v == "1")
+                .unwrap_or(false);
             let mut result = if use_paginator {
                 paginator.paginate_with_measured_opts(
                     &section.paragraphs,
@@ -1372,17 +1565,30 @@ impl DocumentCore {
                 if let Some(converge_page) = result.find_convergence(old_result, offset) {
                     let new_page_count = result.pages.len();
                     let old_page_count = old_result.pages.len();
-                    if converge_page > 0 && converge_page < new_page_count && converge_page < old_page_count {
+                    if converge_page > 0
+                        && converge_page < new_page_count
+                        && converge_page < old_page_count
+                    {
                         // 검증: full pagination에서 수렴 이후 페이지가 old+offset와 일치하는지 확인
                         let mut verified = true;
                         let check_end = result.pages.len().min(old_page_count);
                         for pi in converge_page..check_end {
                             let new_page = &result.pages[pi];
                             let old_page = &old_result.pages[pi];
-                            let new_items: Vec<usize> = new_page.column_contents.iter()
-                                .flat_map(|cc| cc.items.iter().map(|it| it.para_index())).collect();
-                            let old_items: Vec<usize> = old_page.column_contents.iter()
-                                .flat_map(|cc| cc.items.iter().map(|it| (it.para_index() as i64 + offset as i64) as usize)).collect();
+                            let new_items: Vec<usize> = new_page
+                                .column_contents
+                                .iter()
+                                .flat_map(|cc| cc.items.iter().map(|it| it.para_index()))
+                                .collect();
+                            let old_items: Vec<usize> = old_page
+                                .column_contents
+                                .iter()
+                                .flat_map(|cc| {
+                                    cc.items
+                                        .iter()
+                                        .map(|it| (it.para_index() as i64 + offset as i64) as usize)
+                                })
+                                .collect();
                             if new_items != old_items {
                                 eprintln!("CONVERGENCE_VERIFY_FAIL: sec{} page {} new={:?} old+offset={:?}",
                                     idx, pi + 1, new_items, old_items);
@@ -1395,8 +1601,12 @@ impl DocumentCore {
                         }
 
                         if verified {
-                            eprintln!("CONVERGENCE: sec{} page {} 수렴 확인 ({}페이지 재사용 가능)",
-                                idx, converge_page + 1, old_page_count - converge_page);
+                            eprintln!(
+                                "CONVERGENCE: sec{} page {} 수렴 확인 ({}페이지 재사용 가능)",
+                                idx,
+                                converge_page + 1,
+                                old_page_count - converge_page
+                            );
                         }
                     }
                 }
@@ -1409,11 +1619,19 @@ impl DocumentCore {
 
                 let mps = &section.section_def.master_pages;
                 // 기본 바탕쪽 (비확장 Both/Odd/Even)
-                let mp_both = mps.iter().position(|m| m.apply_to == HeaderFooterApply::Both && !m.is_extension);
-                let mp_odd = mps.iter().position(|m| m.apply_to == HeaderFooterApply::Odd && !m.is_extension);
-                let mp_even = mps.iter().position(|m| m.apply_to == HeaderFooterApply::Even && !m.is_extension);
+                let mp_both = mps
+                    .iter()
+                    .position(|m| m.apply_to == HeaderFooterApply::Both && !m.is_extension);
+                let mp_odd = mps
+                    .iter()
+                    .position(|m| m.apply_to == HeaderFooterApply::Odd && !m.is_extension);
+                let mp_even = mps
+                    .iter()
+                    .position(|m| m.apply_to == HeaderFooterApply::Even && !m.is_extension);
                 // 확장 바탕쪽 (is_extension=true, 마지막 쪽/임의 쪽)
-                let ext_mp_indices: Vec<usize> = mps.iter().enumerate()
+                let ext_mp_indices: Vec<usize> = mps
+                    .iter()
+                    .enumerate()
                     .filter(|(_, m)| m.is_extension)
                     .map(|(i, _)| i)
                     .collect();
@@ -1446,12 +1664,16 @@ impl DocumentCore {
                     // 겹치기(overlap): 기존 바탕쪽 위에 추가
                     // 비겹치기: 기존 바탕쪽 대체
                     if is_last && !ext_mp_indices.is_empty() {
-                        let overlap_exts: Vec<usize> = ext_mp_indices.iter()
+                        let overlap_exts: Vec<usize> = ext_mp_indices
+                            .iter()
                             .filter(|&&i| mps[i].overlap)
-                            .copied().collect();
-                        let replace_exts: Vec<usize> = ext_mp_indices.iter()
+                            .copied()
+                            .collect();
+                        let replace_exts: Vec<usize> = ext_mp_indices
+                            .iter()
                             .filter(|&&i| !mps[i].overlap)
-                            .copied().collect();
+                            .copied()
+                            .collect();
 
                         // 대체형 확장이 있으면 active를 대체
                         if let Some(&replace_idx) = replace_exts.last() {
@@ -1464,7 +1686,9 @@ impl DocumentCore {
                         // - apply_to 가 active 와 동일: 같은 위치(헤더/푸터/배경) 컨텐츠가 충돌 → active 대체
                         //   (HWP 작성자가 마지막 쪽 전용 헤더로 의도. 한컴 PDF 출력 동작과 일치)
                         // - apply_to 가 다름(예: active=Odd, 확장=Both): 보조 컨텐츠 추가 → extra
-                        let active_apply = page.active_master_page.as_ref()
+                        let active_apply = page
+                            .active_master_page
+                            .as_ref()
                             .and_then(|mp_ref| mps.get(mp_ref.master_page_index))
                             .map(|m| m.apply_to);
                         let mut remaining_overlap_exts: Vec<usize> = Vec::new();
@@ -1479,8 +1703,12 @@ impl DocumentCore {
                             }
                         }
                         if !remaining_overlap_exts.is_empty() {
-                            page.extra_master_pages = remaining_overlap_exts.iter()
-                                .map(|&mi| MasterPageRef { section_index: idx, master_page_index: mi })
+                            page.extra_master_pages = remaining_overlap_exts
+                                .iter()
+                                .map(|&mi| MasterPageRef {
+                                    section_index: idx,
+                                    master_page_index: mi,
+                                })
                                 .collect();
                         }
                     }
@@ -1496,19 +1724,41 @@ impl DocumentCore {
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
                             Control::Header(h) => {
-                                let r = HeaderFooterRef { para_index: pi, control_index: ci, source_section_index: idx };
+                                let r = HeaderFooterRef {
+                                    para_index: pi,
+                                    control_index: ci,
+                                    source_section_index: idx,
+                                };
                                 match h.apply_to {
-                                    HFA::Both => { carry_header_odd = Some(r.clone()); carry_header_even = Some(r); }
-                                    HFA::Odd => { carry_header_odd = Some(r); }
-                                    HFA::Even => { carry_header_even = Some(r); }
+                                    HFA::Both => {
+                                        carry_header_odd = Some(r.clone());
+                                        carry_header_even = Some(r);
+                                    }
+                                    HFA::Odd => {
+                                        carry_header_odd = Some(r);
+                                    }
+                                    HFA::Even => {
+                                        carry_header_even = Some(r);
+                                    }
                                 }
                             }
                             Control::Footer(f) => {
-                                let r = HeaderFooterRef { para_index: pi, control_index: ci, source_section_index: idx };
+                                let r = HeaderFooterRef {
+                                    para_index: pi,
+                                    control_index: ci,
+                                    source_section_index: idx,
+                                };
                                 match f.apply_to {
-                                    HFA::Both => { carry_footer_odd = Some(r.clone()); carry_footer_even = Some(r); }
-                                    HFA::Odd => { carry_footer_odd = Some(r); }
-                                    HFA::Even => { carry_footer_even = Some(r); }
+                                    HFA::Both => {
+                                        carry_footer_odd = Some(r.clone());
+                                        carry_footer_even = Some(r);
+                                    }
+                                    HFA::Odd => {
+                                        carry_footer_odd = Some(r);
+                                    }
+                                    HFA::Even => {
+                                        carry_footer_even = Some(r);
+                                    }
                                 }
                             }
                             _ => {}
@@ -1529,7 +1779,7 @@ impl DocumentCore {
 
             // 구역 간 쪽번호 연속: NewNumber(Page) 컨트롤이 없으면 이전 구역에서 이어짐
             if idx > 0 && carry_last_page_number > 0 {
-                use crate::model::control::{Control, AutoNumberType};
+                use crate::model::control::{AutoNumberType, Control};
                 let has_new_number = section.paragraphs.iter().any(|p|
                     p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
                 );
@@ -1547,9 +1797,13 @@ impl DocumentCore {
                     for (pi, page) in result.pages.iter_mut().enumerate() {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_header = if is_odd {
-                            carry_header_odd.clone().or_else(|| carry_header_even.clone())
+                            carry_header_odd
+                                .clone()
+                                .or_else(|| carry_header_even.clone())
                         } else {
-                            carry_header_even.clone().or_else(|| carry_header_odd.clone())
+                            carry_header_even
+                                .clone()
+                                .or_else(|| carry_header_odd.clone())
                         };
                     }
                 }
@@ -1558,9 +1812,13 @@ impl DocumentCore {
                     for (pi, page) in result.pages.iter_mut().enumerate() {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_footer = if is_odd {
-                            carry_footer_odd.clone().or_else(|| carry_footer_even.clone())
+                            carry_footer_odd
+                                .clone()
+                                .or_else(|| carry_footer_even.clone())
                         } else {
-                            carry_footer_even.clone().or_else(|| carry_footer_odd.clone())
+                            carry_footer_even
+                                .clone()
+                                .or_else(|| carry_footer_odd.clone())
                         };
                     }
                 }
@@ -1599,23 +1857,44 @@ impl DocumentCore {
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
                             Control::Header(h) => {
-                                let r = HeaderFooterRef { para_index: pi, control_index: ci, source_section_index: idx };
-                                match h.apply_to { HFA::Both => sec_h_both = Some(r), HFA::Even => sec_h_even = Some(r), HFA::Odd => sec_h_odd = Some(r) }
+                                let r = HeaderFooterRef {
+                                    para_index: pi,
+                                    control_index: ci,
+                                    source_section_index: idx,
+                                };
+                                match h.apply_to {
+                                    HFA::Both => sec_h_both = Some(r),
+                                    HFA::Even => sec_h_even = Some(r),
+                                    HFA::Odd => sec_h_odd = Some(r),
+                                }
                             }
                             Control::Footer(f) => {
-                                let r = HeaderFooterRef { para_index: pi, control_index: ci, source_section_index: idx };
-                                match f.apply_to { HFA::Both => sec_f_both = Some(r), HFA::Even => sec_f_even = Some(r), HFA::Odd => sec_f_odd = Some(r) }
+                                let r = HeaderFooterRef {
+                                    para_index: pi,
+                                    control_index: ci,
+                                    source_section_index: idx,
+                                };
+                                match f.apply_to {
+                                    HFA::Both => sec_f_both = Some(r),
+                                    HFA::Even => sec_f_even = Some(r),
+                                    HFA::Odd => sec_f_odd = Some(r),
+                                }
                             }
                             _ => {}
                         }
                     }
                 }
-                let has_hf = sec_h_odd.is_some() || sec_h_even.is_some() || sec_h_both.is_some()
-                    || sec_f_odd.is_some() || sec_f_even.is_some() || sec_f_both.is_some();
+                let has_hf = sec_h_odd.is_some()
+                    || sec_h_even.is_some()
+                    || sec_h_both.is_some()
+                    || sec_f_odd.is_some()
+                    || sec_f_even.is_some()
+                    || sec_f_both.is_some();
                 // 머리말/꼬리말이 정의된 문단이 시작되는 페이지를 찾아
                 // 그 페이지부터만 적용 (정의 이전 페이지에는 미적용)
                 use crate::renderer::pagination::PageItem;
-                let hdr_start_page = [&sec_h_odd, &sec_h_even, &sec_h_both].iter()
+                let hdr_start_page = [&sec_h_odd, &sec_h_even, &sec_h_both]
+                    .iter()
                     .filter_map(|r| r.as_ref())
                     .map(|r| r.para_index)
                     .min()
@@ -1625,7 +1904,9 @@ impl DocumentCore {
                                 cc.items.iter().any(|item| {
                                     let pi = match item {
                                         PageItem::FullParagraph { para_index } => *para_index,
-                                        PageItem::PartialParagraph { para_index, .. } => *para_index,
+                                        PageItem::PartialParagraph { para_index, .. } => {
+                                            *para_index
+                                        }
                                         PageItem::Table { para_index, .. } => *para_index,
                                         PageItem::PartialTable { para_index, .. } => *para_index,
                                         PageItem::Shape { para_index, .. } => *para_index,
@@ -1636,7 +1917,8 @@ impl DocumentCore {
                         })
                     })
                     .unwrap_or(0);
-                let ftr_start_page = [&sec_f_odd, &sec_f_even, &sec_f_both].iter()
+                let ftr_start_page = [&sec_f_odd, &sec_f_even, &sec_f_both]
+                    .iter()
                     .filter_map(|r| r.as_ref())
                     .map(|r| r.para_index)
                     .min()
@@ -1646,7 +1928,9 @@ impl DocumentCore {
                                 cc.items.iter().any(|item| {
                                     let pi = match item {
                                         PageItem::FullParagraph { para_index } => *para_index,
-                                        PageItem::PartialParagraph { para_index, .. } => *para_index,
+                                        PageItem::PartialParagraph { para_index, .. } => {
+                                            *para_index
+                                        }
                                         PageItem::Table { para_index, .. } => *para_index,
                                         PageItem::PartialTable { para_index, .. } => *para_index,
                                         PageItem::Shape { para_index, .. } => *para_index,
@@ -1670,7 +1954,9 @@ impl DocumentCore {
                             // pagination에서 할당된 머리말의 apply_to가 현재 페이지 홀짝과 맞지 않으면 교체
                             if let Some(ref hdr_ref) = page.active_header {
                                 if let Some(para) = section.paragraphs.get(hdr_ref.para_index) {
-                                    if let Some(Control::Header(h)) = para.controls.get(hdr_ref.control_index) {
+                                    if let Some(Control::Header(h)) =
+                                        para.controls.get(hdr_ref.control_index)
+                                    {
                                         let correct = match h.apply_to {
                                             HFA::Both => true,
                                             HFA::Odd => is_odd,
@@ -1696,7 +1982,9 @@ impl DocumentCore {
                         } else {
                             if let Some(ref ftr_ref) = page.active_footer {
                                 if let Some(para) = section.paragraphs.get(ftr_ref.para_index) {
-                                    if let Some(Control::Footer(f)) = para.controls.get(ftr_ref.control_index) {
+                                    if let Some(Control::Footer(f)) =
+                                        para.controls.get(ftr_ref.control_index)
+                                    {
                                         let correct = match f.apply_to {
                                             HFA::Both => true,
                                             HFA::Odd => is_odd,
@@ -1765,7 +2053,17 @@ impl DocumentCore {
     }
 
     /// 글로벌 페이지 번호로 해당 페이지와 문단/구성 목록을 찾는다.
-    pub(crate) fn find_page(&self, page_num: u32) -> Result<(&crate::renderer::pagination::PageContent, &[crate::model::paragraph::Paragraph], &[ComposedParagraph]), HwpError> {
+    pub(crate) fn find_page(
+        &self,
+        page_num: u32,
+    ) -> Result<
+        (
+            &crate::renderer::pagination::PageContent,
+            &[crate::model::paragraph::Paragraph],
+            &[ComposedParagraph],
+        ),
+        HwpError,
+    > {
         let mut offset = 0u32;
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
             if (page_num as usize) < offset as usize + pr.pages.len() {
@@ -1790,17 +2088,21 @@ impl DocumentCore {
     /// 페이지네이션 결과를 텍스트로 덤프 (디버깅용).
     /// page_filter: None이면 전체, Some(n)이면 해당 페이지만.
     pub fn dump_page_items(&self, page_filter: Option<u32>) -> String {
-        use crate::renderer::pagination::PageItem;
         use crate::model::control::Control;
         use crate::renderer::hwpunit_to_px;
+        use crate::renderer::pagination::PageItem;
 
         let dpi = self.dpi;
         let mut out = String::new();
         let mut global_page = 0u32;
 
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
-            let paragraphs = self.document.sections.get(sec_idx)
-                .map(|s| &s.paragraphs[..]).unwrap_or(&[]);
+            let paragraphs = self
+                .document
+                .sections
+                .get(sec_idx)
+                .map(|s| &s.paragraphs[..])
+                .unwrap_or(&[]);
             let measured = self.measured_sections.get(sec_idx);
 
             for (local_idx, page) in pr.pages.iter().enumerate() {
@@ -1811,104 +2113,194 @@ impl DocumentCore {
                     }
                 }
 
-                out.push_str(&format!("\n=== 페이지 {} (global_idx={}, section={}, page_num={}) ===\n",
-                    global_page + 1, global_page, sec_idx, page.page_number));
+                out.push_str(&format!(
+                    "\n=== 페이지 {} (global_idx={}, section={}, page_num={}) ===\n",
+                    global_page + 1,
+                    global_page,
+                    sec_idx,
+                    page.page_number
+                ));
 
                 // 페이지 레이아웃 정보
                 let la = &page.layout;
-                out.push_str(&format!("  body_area: x={:.1} y={:.1} w={:.1} h={:.1}\n",
-                    la.body_area.x, la.body_area.y, la.body_area.width, la.body_area.height));
+                out.push_str(&format!(
+                    "  body_area: x={:.1} y={:.1} w={:.1} h={:.1}\n",
+                    la.body_area.x, la.body_area.y, la.body_area.width, la.body_area.height
+                ));
 
                 for (col_idx, cc) in page.column_contents.iter().enumerate() {
                     let hwp_used_px = compute_hwp_used_height(cc, paragraphs, dpi);
                     let diff_str = match hwp_used_px {
-                        Some(hwp) => format!(", hwp_used≈{:.1}px, diff={:+.1}px", hwp, cc.used_height - hwp),
+                        Some(hwp) => format!(
+                            ", hwp_used≈{:.1}px, diff={:+.1}px",
+                            hwp,
+                            cc.used_height - hwp
+                        ),
                         None => String::new(),
                     };
-                    out.push_str(&format!("  단 {} (items={}, used={:.1}px{}{})\n",
-                        col_idx, cc.items.len(), cc.used_height, diff_str,
-                        if cc.zone_y_offset > 0.0 { format!(", zone_y_offset={:.1}", cc.zone_y_offset) } else { String::new() }));
+                    out.push_str(&format!(
+                        "  단 {} (items={}, used={:.1}px{}{})\n",
+                        col_idx,
+                        cc.items.len(),
+                        cc.used_height,
+                        diff_str,
+                        if cc.zone_y_offset > 0.0 {
+                            format!(", zone_y_offset={:.1}", cc.zone_y_offset)
+                        } else {
+                            String::new()
+                        }
+                    ));
 
                     for item in &cc.items {
                         match item {
                             PageItem::FullParagraph { para_index } => {
-                                let text_preview = paragraphs.get(*para_index)
+                                let text_preview = paragraphs
+                                    .get(*para_index)
                                     .map(|p| {
-                                        let t: String = p.text.chars()
+                                        let t: String = p
+                                            .text
+                                            .chars()
                                             .filter(|c| *c > '\u{001F}')
-                                            .take(40).collect();
-                                        if t.is_empty() { "(빈)".to_string() } else { t }
+                                            .take(40)
+                                            .collect();
+                                        if t.is_empty() {
+                                            "(빈)".to_string()
+                                        } else {
+                                            t
+                                        }
                                     })
                                     .unwrap_or_default();
-                                let height = measured.and_then(|m| m.get_measured_paragraph(*para_index))
+                                let height = measured
+                                    .and_then(|m| m.get_measured_paragraph(*para_index))
                                     .map(|mp| {
                                         let sb = mp.spacing_before;
                                         let sa = mp.spacing_after;
                                         let lines: f64 = mp.line_heights.iter().sum();
-                                        format!("h={:.1} (sb={:.1} lines={:.1} sa={:.1})", sb + lines + sa, sb, lines, sa)
+                                        format!(
+                                            "h={:.1} (sb={:.1} lines={:.1} sa={:.1})",
+                                            sb + lines + sa,
+                                            sb,
+                                            lines,
+                                            sa
+                                        )
                                     })
                                     .unwrap_or_default();
-                                let vpos_info = format_vpos_range(paragraphs.get(*para_index), None, None);
-                                out.push_str(&format!("    FullParagraph  pi={}  {}  {}  \"{}\"\n",
-                                    para_index, height, vpos_info, text_preview));
+                                let vpos_info =
+                                    format_vpos_range(paragraphs.get(*para_index), None, None);
+                                out.push_str(&format!(
+                                    "    FullParagraph  pi={}  {}  {}  \"{}\"\n",
+                                    para_index, height, vpos_info, text_preview
+                                ));
                             }
-                            PageItem::PartialParagraph { para_index, start_line, end_line } => {
-                                let vpos_info = format_vpos_range(paragraphs.get(*para_index), Some(*start_line), Some(*end_line));
-                                out.push_str(&format!("    PartialParagraph  pi={}  lines={}..{}  {}\n",
-                                    para_index, start_line, end_line, vpos_info));
+                            PageItem::PartialParagraph {
+                                para_index,
+                                start_line,
+                                end_line,
+                            } => {
+                                let vpos_info = format_vpos_range(
+                                    paragraphs.get(*para_index),
+                                    Some(*start_line),
+                                    Some(*end_line),
+                                );
+                                out.push_str(&format!(
+                                    "    PartialParagraph  pi={}  lines={}..{}  {}\n",
+                                    para_index, start_line, end_line, vpos_info
+                                ));
                             }
-                            PageItem::Table { para_index, control_index } => {
-                                let table_info = paragraphs.get(*para_index)
+                            PageItem::Table {
+                                para_index,
+                                control_index,
+                            } => {
+                                let table_info = paragraphs
+                                    .get(*para_index)
                                     .and_then(|p| p.controls.get(*control_index))
                                     .map(|c| {
                                         if let Control::Table(t) = c {
                                             let h = hwpunit_to_px(t.common.height as i32, dpi);
                                             let w = hwpunit_to_px(t.common.width as i32, dpi);
-                                            format!("{}x{}  {:.1}x{:.1}px  wrap={:?} tac={}",
-                                                t.row_count, t.col_count, w, h,
-                                                t.common.text_wrap, t.common.treat_as_char)
-                                        } else { String::new() }
+                                            format!(
+                                                "{}x{}  {:.1}x{:.1}px  wrap={:?} tac={}",
+                                                t.row_count,
+                                                t.col_count,
+                                                w,
+                                                h,
+                                                t.common.text_wrap,
+                                                t.common.treat_as_char
+                                            )
+                                        } else {
+                                            String::new()
+                                        }
                                     })
                                     .unwrap_or_default();
-                                let vpos_info = format_vpos_range(paragraphs.get(*para_index), None, None);
-                                out.push_str(&format!("    Table          pi={} ci={}  {}  {}\n",
-                                    para_index, control_index, table_info, vpos_info));
+                                let vpos_info =
+                                    format_vpos_range(paragraphs.get(*para_index), None, None);
+                                out.push_str(&format!(
+                                    "    Table          pi={} ci={}  {}  {}\n",
+                                    para_index, control_index, table_info, vpos_info
+                                ));
                             }
-                            PageItem::PartialTable { para_index, control_index, start_row, end_row, is_continuation,
-                                                     split_start_content_offset, split_end_content_limit } => {
-                                let table_info = paragraphs.get(*para_index)
+                            PageItem::PartialTable {
+                                para_index,
+                                control_index,
+                                start_row,
+                                end_row,
+                                is_continuation,
+                                split_start_content_offset,
+                                split_end_content_limit,
+                            } => {
+                                let table_info = paragraphs
+                                    .get(*para_index)
                                     .and_then(|p| p.controls.get(*control_index))
                                     .map(|c| {
                                         if let Control::Table(t) = c {
                                             format!("{}x{}", t.row_count, t.col_count)
-                                        } else { String::new() }
+                                        } else {
+                                            String::new()
+                                        }
                                     })
                                     .unwrap_or_default();
-                                let vpos_info = format_vpos_range(paragraphs.get(*para_index), None, None);
+                                let vpos_info =
+                                    format_vpos_range(paragraphs.get(*para_index), None, None);
                                 // [Task #431] 분할 표 진단 정보 — split_start/end 가 0 이 아니면 셀 내 분할
-                                let split_info = if *split_start_content_offset > 0.0 || *split_end_content_limit > 0.0 {
-                                    format!("  split_start={:.1} split_end={:.1}", split_start_content_offset, split_end_content_limit)
+                                let split_info = if *split_start_content_offset > 0.0
+                                    || *split_end_content_limit > 0.0
+                                {
+                                    format!(
+                                        "  split_start={:.1} split_end={:.1}",
+                                        split_start_content_offset, split_end_content_limit
+                                    )
                                 } else {
                                     String::new()
                                 };
                                 out.push_str(&format!("    PartialTable   pi={} ci={}  rows={}..{}  cont={}  {}  {}{}\n",
                                     para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info, split_info));
                             }
-                            PageItem::Shape { para_index, control_index } => {
-                                let shape_info = paragraphs.get(*para_index)
+                            PageItem::Shape {
+                                para_index,
+                                control_index,
+                            } => {
+                                let shape_info = paragraphs
+                                    .get(*para_index)
                                     .and_then(|p| p.controls.get(*control_index))
-                                    .map(|c| {
-                                        match c {
-                                            Control::Shape(s) => format!("wrap={:?} tac={}", s.common().text_wrap, s.common().treat_as_char),
-                                            Control::Picture(p) => format!("그림 tac={}", p.common.treat_as_char),
-                                            Control::Equation(_) => "수식".to_string(),
-                                            _ => String::new(),
+                                    .map(|c| match c {
+                                        Control::Shape(s) => format!(
+                                            "wrap={:?} tac={}",
+                                            s.common().text_wrap,
+                                            s.common().treat_as_char
+                                        ),
+                                        Control::Picture(p) => {
+                                            format!("그림 tac={}", p.common.treat_as_char)
                                         }
+                                        Control::Equation(_) => "수식".to_string(),
+                                        _ => String::new(),
                                     })
                                     .unwrap_or_default();
-                                let vpos_info = format_vpos_range(paragraphs.get(*para_index), None, None);
-                                out.push_str(&format!("    Shape          pi={} ci={}  {}  {}\n",
-                                    para_index, control_index, shape_info, vpos_info));
+                                let vpos_info =
+                                    format_vpos_range(paragraphs.get(*para_index), None, None);
+                                out.push_str(&format!(
+                                    "    Shape          pi={} ci={}  {}  {}\n",
+                                    para_index, control_index, shape_info, vpos_info
+                                ));
                             }
                         }
                     }
@@ -1967,60 +2359,98 @@ impl DocumentCore {
 
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
-        use crate::renderer::pagination::PageItem;
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
+        use crate::renderer::pagination::PageItem;
 
-        self.layout_engine.set_show_transparent_borders(self.show_transparent_borders);
+        self.layout_engine
+            .set_show_transparent_borders(self.show_transparent_borders);
         self.layout_engine.set_clip_enabled(self.clip_enabled);
-        self.layout_engine.set_show_control_codes(self.show_control_codes);
+        self.layout_engine
+            .set_show_control_codes(self.show_control_codes);
         // 활성 필드 정보를 레이아웃 엔진에 전달 (안내문 숨김용)
-        self.layout_engine.set_active_field(
-            self.active_field.as_ref().map(|af| (af.section_idx, af.para_idx, af.control_idx, af.cell_path.clone()))
-        );
+        self.layout_engine
+            .set_active_field(self.active_field.as_ref().map(|af| {
+                (
+                    af.section_idx,
+                    af.para_idx,
+                    af.control_idx,
+                    af.cell_path.clone(),
+                )
+            }));
         let (page_content, paragraphs, composed) = self.find_page(page_num)?;
         // 구역의 각주 모양 정보
         let footnote_shape = if page_content.section_index < self.document.sections.len() {
-            &self.document.sections[page_content.section_index].section_def.footnote_shape
+            &self.document.sections[page_content.section_index]
+                .section_def
+                .footnote_shape
         } else {
             &crate::model::footnote::FootnoteShape::default()
         };
         // 활성 바탕쪽 조회
         let active_mp = page_content.active_master_page.as_ref().and_then(|mp_ref| {
-            self.document.sections.get(mp_ref.section_index)
+            self.document
+                .sections
+                .get(mp_ref.section_index)
                 .and_then(|s| s.section_def.master_pages.get(mp_ref.master_page_index))
         });
         // 확장 바탕쪽 조회
-        let extra_mps: Vec<&crate::model::header_footer::MasterPage> = page_content.extra_master_pages.iter()
+        let extra_mps: Vec<&crate::model::header_footer::MasterPage> = page_content
+            .extra_master_pages
+            .iter()
             .filter_map(|mp_ref| {
-                self.document.sections.get(mp_ref.section_index)
+                self.document
+                    .sections
+                    .get(mp_ref.section_index)
                     .and_then(|s| s.section_def.master_pages.get(mp_ref.master_page_index))
             })
             .collect();
-        let sec_measured = self.measured_tables.get(page_content.section_index)
-            .map(|v| v.as_slice()).unwrap_or(&[]);
+        let sec_measured = self
+            .measured_tables
+            .get(page_content.section_index)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[]);
         // 쪽 테두리/배경 조회
-        let page_border_fill = self.document.sections.get(page_content.section_index)
+        let page_border_fill = self
+            .document
+            .sections
+            .get(page_content.section_index)
             .map(|s| &s.section_def.page_border_fill);
-        let outline_num_id = self.document.sections.get(page_content.section_index)
-            .map(|s| s.section_def.outline_numbering_id).unwrap_or(0);
+        let outline_num_id = self
+            .document
+            .sections
+            .get(page_content.section_index)
+            .map(|s| s.section_def.outline_numbering_id)
+            .unwrap_or(0);
 
         // 번호 상태 리셋 후, 이 페이지 이전의 번호 문단을 재계산하여 카운터 복원
         // (이전 구역 + 현재 구역의 이전 페이지 모두 포함하여 구역 간 번호 연속 지원)
         self.layout_engine.reset_numbering_state();
         let sec_idx = page_content.section_index;
-        let sec_page_offset: usize = self.pagination.iter().take(sec_idx).map(|p| p.pages.len()).sum();
+        let sec_page_offset: usize = self
+            .pagination
+            .iter()
+            .take(sec_idx)
+            .map(|p| p.pages.len())
+            .sum();
         let local_idx = (page_num as usize).saturating_sub(sec_page_offset);
         {
-            let mut replayed_partial: std::collections::HashSet<(usize, usize)> = std::collections::HashSet::new();
+            let mut replayed_partial: std::collections::HashSet<(usize, usize)> =
+                std::collections::HashSet::new();
             // 이전 구역들의 모든 페이지 replay
             for prev_sec in 0..sec_idx {
                 if let Some(pr) = self.pagination.get(prev_sec) {
                     let prev_paras = &self.document.sections[prev_sec].paragraphs;
-                    let prev_outline_id = self.document.sections[prev_sec].section_def.outline_numbering_id;
+                    let prev_outline_id = self.document.sections[prev_sec]
+                        .section_def
+                        .outline_numbering_id;
                     for pg in &pr.pages {
                         self.replay_numbering_page(
-                            pg, prev_paras, prev_outline_id, &mut replayed_partial, prev_sec,
+                            pg,
+                            prev_paras,
+                            prev_outline_id,
+                            &mut replayed_partial,
+                            prev_sec,
                         );
                     }
                 }
@@ -2030,7 +2460,11 @@ impl DocumentCore {
                 for prev_local in 0..local_idx {
                     if let Some(prev_page) = pr.pages.get(prev_local) {
                         self.replay_numbering_page(
-                            prev_page, paragraphs, outline_num_id, &mut replayed_partial, sec_idx,
+                            prev_page,
+                            paragraphs,
+                            outline_num_id,
+                            &mut replayed_partial,
+                            sec_idx,
                         );
                     }
                 }
@@ -2038,49 +2472,65 @@ impl DocumentCore {
         }
 
         // 머리말/꼬리말이 상속된 경우 원본 구역의 문단을 조회 (source_section_index 기반)
-        let header_paragraphs: &[crate::model::paragraph::Paragraph] =
-            page_content.active_header.as_ref()
-                .and_then(|hf| self.document.sections.get(hf.source_section_index))
-                .map(|s| s.paragraphs.as_slice())
-                .unwrap_or(paragraphs);
-        let footer_paragraphs: &[crate::model::paragraph::Paragraph] =
-            page_content.active_footer.as_ref()
-                .and_then(|hf| self.document.sections.get(hf.source_section_index))
-                .map(|s| s.paragraphs.as_slice())
-                .unwrap_or(paragraphs);
+        let header_paragraphs: &[crate::model::paragraph::Paragraph] = page_content
+            .active_header
+            .as_ref()
+            .and_then(|hf| self.document.sections.get(hf.source_section_index))
+            .map(|s| s.paragraphs.as_slice())
+            .unwrap_or(paragraphs);
+        let footer_paragraphs: &[crate::model::paragraph::Paragraph] = page_content
+            .active_footer
+            .as_ref()
+            .and_then(|hf| self.document.sections.get(hf.source_section_index))
+            .map(|s| s.paragraphs.as_slice())
+            .unwrap_or(paragraphs);
 
         // 머리말/꼬리말 감추기 세트를 레이아웃 엔진에 전달
-        self.layout_engine.set_hidden_header_footer(&self.hidden_header_footer);
+        self.layout_engine
+            .set_hidden_header_footer(&self.hidden_header_footer);
 
         // 총 쪽수·파일 이름을 레이아웃 엔진에 전달 (머리말/꼬리말 필드 치환용)
         let total_pages: u32 = self.pagination.iter().map(|p| p.pages.len() as u32).sum();
         self.layout_engine.set_total_pages(total_pages);
         self.layout_engine.set_file_name(&self.file_name);
 
-        let wrap_around_paras = self.pagination.get(sec_idx)
+        let wrap_around_paras = self
+            .pagination
+            .get(sec_idx)
             .map(|pr| pr.wrap_around_paras.as_slice())
             .unwrap_or(&[]);
 
         // 빈 줄 감추기 문단 집합을 레이아웃 엔진에 전달
         if let Some(pr) = self.pagination.get(sec_idx) {
-            self.layout_engine.set_hidden_empty_paras(&pr.hidden_empty_paras);
+            self.layout_engine
+                .set_hidden_empty_paras(&pr.hidden_empty_paras);
         }
 
         // [Task #836] 미주 paragraphs를 본문 paragraphs 뒤에 합쳐서 전달
         // endnote para_index = paragraphs.len() + idx → combined에서 접근 가능
-        let en_paras = self.pagination.get(sec_idx)
+        let en_paras = self
+            .pagination
+            .get(sec_idx)
             .map(|pr| pr.endnote_paragraphs.as_slice())
             .unwrap_or(&[]);
         let combined_paragraphs: Vec<Paragraph>;
         let combined_composed: Vec<crate::renderer::composer::ComposedParagraph>;
-        let (render_paragraphs, render_composed): (&[Paragraph], &[crate::renderer::composer::ComposedParagraph]) = if en_paras.is_empty() {
+        let (render_paragraphs, render_composed): (
+            &[Paragraph],
+            &[crate::renderer::composer::ComposedParagraph],
+        ) = if en_paras.is_empty() {
             (paragraphs, composed)
         } else {
             combined_paragraphs = paragraphs.iter().chain(en_paras.iter()).cloned().collect();
-            let en_composed: Vec<_> = en_paras.iter()
+            let en_composed: Vec<_> = en_paras
+                .iter()
                 .map(|p| crate::renderer::composer::compose_paragraph(p))
                 .collect();
-            combined_composed = composed.iter().cloned().chain(en_composed.into_iter()).collect();
+            combined_composed = composed
+                .iter()
+                .cloned()
+                .chain(en_composed.into_iter())
+                .collect();
             (&combined_paragraphs, &combined_composed)
         };
 
@@ -2102,10 +2552,14 @@ impl DocumentCore {
         // 확장 바탕쪽 추가 렌더링
         for ext_mp in &extra_mps {
             self.layout_engine.build_master_page_into(
-                &mut tree, Some(*ext_mp),
-                &page_content.layout, composed, &self.styles,
+                &mut tree,
+                Some(*ext_mp),
+                &page_content.layout,
+                composed,
+                &self.styles,
                 &self.document.bin_data_content,
-                page_content.section_index, page_content.page_number,
+                page_content.section_index,
+                page_content.page_number,
             );
         }
         Ok(tree)
@@ -2120,24 +2574,32 @@ impl DocumentCore {
         replayed: &mut std::collections::HashSet<(usize, usize)>,
         sec_idx: usize,
     ) {
-        use crate::renderer::pagination::PageItem;
         use crate::model::style::HeadType;
+        use crate::renderer::pagination::PageItem;
         for col in &page.column_contents {
             for item in &col.items {
                 let pi = match item {
-                    PageItem::FullParagraph { para_index } |
-                    PageItem::PartialParagraph { para_index, .. } |
-                    PageItem::Table { para_index, .. } => {
-                        if replayed.insert((sec_idx, *para_index)) { Some(*para_index) } else { None }
+                    PageItem::FullParagraph { para_index }
+                    | PageItem::PartialParagraph { para_index, .. }
+                    | PageItem::Table { para_index, .. } => {
+                        if replayed.insert((sec_idx, *para_index)) {
+                            Some(*para_index)
+                        } else {
+                            None
+                        }
                     }
                     _ => None,
                 };
                 if let Some(pi) = pi {
                     if let Some(para) = paras.get(pi) {
                         if let Some(ps) = self.styles.para_styles.get(para.para_shape_id as usize) {
-                            if ps.head_type == HeadType::Outline || ps.head_type == HeadType::Number {
+                            if ps.head_type == HeadType::Outline || ps.head_type == HeadType::Number
+                            {
                                 let nid = crate::renderer::layout::resolve_numbering_id(
-                                    ps.head_type, ps.numbering_id, outline_num_id);
+                                    ps.head_type,
+                                    ps.numbering_id,
+                                    outline_num_id,
+                                );
                                 if nid > 0 {
                                     self.layout_engine.advance_numbering(nid, ps.para_level);
                                 }
@@ -2154,7 +2616,6 @@ impl DocumentCore {
         self.recompose_section(section_idx);
         self.paginate();
     }
-
 
     /// 페이지에 렌더된 텍스트를 줄 단위로 추출한다.
     ///
@@ -2311,14 +2772,15 @@ impl DocumentCore {
                 grid[r][c] = table_cell_text(cell);
             }
 
-            let make_row = |cells: &[String]| -> String {
-                format!("| {} |", cells.join(" | "))
-            };
+            let make_row = |cells: &[String]| -> String { format!("| {} |", cells.join(" | ")) };
 
             let header = make_row(&grid[0]);
             let separator = format!(
                 "| {} |",
-                std::iter::repeat("---").take(cols).collect::<Vec<_>>().join(" | ")
+                std::iter::repeat("---")
+                    .take(cols)
+                    .collect::<Vec<_>>()
+                    .join(" | ")
             );
 
             let mut lines = vec![header, separator];
@@ -2454,11 +2916,9 @@ impl DocumentCore {
             .map(|(md, _)| md)
     }
 
-
     // =====================================================================
     // 클립보드 API (내부)
     // =====================================================================
-
 }
 
 /// 단이 HWP 원본 layout 에서 사용했을 높이를 LINE_SEG vpos 기준으로 추정 (px).
@@ -2473,23 +2933,36 @@ fn compute_hwp_used_height(
     paragraphs: &[Paragraph],
     dpi: f64,
 ) -> Option<f64> {
-    use crate::renderer::pagination::PageItem;
     use crate::renderer::hwpunit_to_px;
+    use crate::renderer::pagination::PageItem;
 
     // 1) 단 항목 내 첫 vpos-reset 검색
     for item in &cc.items {
         let (para_idx, range_start, range_end) = match item {
             PageItem::FullParagraph { para_index } => {
-                let p = match paragraphs.get(*para_index) { Some(p) => p, None => continue };
+                let p = match paragraphs.get(*para_index) {
+                    Some(p) => p,
+                    None => continue,
+                };
                 (*para_index, 0usize, p.line_segs.len())
             }
-            PageItem::PartialParagraph { para_index, start_line, end_line } => {
-                let p = match paragraphs.get(*para_index) { Some(p) => p, None => continue };
+            PageItem::PartialParagraph {
+                para_index,
+                start_line,
+                end_line,
+            } => {
+                let p = match paragraphs.get(*para_index) {
+                    Some(p) => p,
+                    None => continue,
+                };
                 (*para_index, *start_line, (*end_line).min(p.line_segs.len()))
             }
             _ => continue,
         };
-        let p = match paragraphs.get(para_idx) { Some(p) => p, None => continue };
+        let p = match paragraphs.get(para_idx) {
+            Some(p) => p,
+            None => continue,
+        };
         // line>0 인 줄 중 vertical_pos==0 첫 줄 찾기
         for i in range_start.max(1)..range_end {
             if let Some(seg) = p.line_segs.get(i) {
@@ -2508,13 +2981,24 @@ fn compute_hwp_used_height(
     let (para_idx, line_idx) = match last_item {
         PageItem::FullParagraph { para_index } => {
             let p = paragraphs.get(*para_index)?;
-            if p.line_segs.is_empty() { return None; }
+            if p.line_segs.is_empty() {
+                return None;
+            }
             (*para_index, p.line_segs.len() - 1)
         }
-        PageItem::PartialParagraph { para_index, end_line, .. } => {
+        PageItem::PartialParagraph {
+            para_index,
+            end_line,
+            ..
+        } => {
             let p = paragraphs.get(*para_index)?;
-            if p.line_segs.is_empty() { return None; }
-            (*para_index, end_line.saturating_sub(1).min(p.line_segs.len() - 1))
+            if p.line_segs.is_empty() {
+                return None;
+            }
+            (
+                *para_index,
+                end_line.saturating_sub(1).min(p.line_segs.len() - 1),
+            )
         }
         _ => return None,
     };
@@ -2534,11 +3018,15 @@ fn format_vpos_range(
     end_line: Option<usize>,
 ) -> String {
     let Some(p) = para else { return String::new() };
-    if p.line_segs.is_empty() { return String::new() };
+    if p.line_segs.is_empty() {
+        return String::new();
+    };
     let total = p.line_segs.len();
     let s = start_line.unwrap_or(0).min(total.saturating_sub(1));
     let e = end_line.unwrap_or(total - 1).min(total - 1);
-    if s > e { return String::new() };
+    if s > e {
+        return String::new();
+    };
 
     let first = p.line_segs[s].vertical_pos;
     let last = p.line_segs[e].vertical_pos;
@@ -2648,7 +3136,7 @@ mod tests {
         // 최소 PNG: 8-byte signature + IHDR chunk (13 bytes data)
         let mut png = Vec::new();
         png.extend_from_slice(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]); // signature
-        // IHDR: length=13
+                                                                                  // IHDR: length=13
         png.extend_from_slice(&13u32.to_be_bytes());
         png.extend_from_slice(b"IHDR");
         png.extend_from_slice(&[0u8; 13]); // dummy IHDR data
@@ -2660,7 +3148,7 @@ mod tests {
         });
         png.extend_from_slice(&ihdr_crc.to_be_bytes());
         let ihdr_end = png.len(); // 8 + 4 + 4 + 13 + 4 = 33
-        // IDAT dummy
+                                  // IDAT dummy
         png.extend_from_slice(&4u32.to_be_bytes());
         png.extend_from_slice(b"IDAT");
         png.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
@@ -2678,14 +3166,18 @@ mod tests {
         assert_eq!(&result[ihdr_end + 4..ihdr_end + 8], b"pHYs");
         // pHYs data length = 9
         let phys_len = u32::from_be_bytes([
-            result[ihdr_end], result[ihdr_end + 1],
-            result[ihdr_end + 2], result[ihdr_end + 3],
+            result[ihdr_end],
+            result[ihdr_end + 1],
+            result[ihdr_end + 2],
+            result[ihdr_end + 3],
         ]);
         assert_eq!(phys_len, 9);
         // 300 DPI → 11811 ppm (300 / 0.0254 = 11811.02...)
         let ppm = u32::from_be_bytes([
-            result[ihdr_end + 8], result[ihdr_end + 9],
-            result[ihdr_end + 10], result[ihdr_end + 11],
+            result[ihdr_end + 8],
+            result[ihdr_end + 9],
+            result[ihdr_end + 10],
+            result[ihdr_end + 11],
         ]);
         assert_eq!(ppm, 11811);
         // unit = 1 (meter)
@@ -2710,7 +3202,10 @@ mod tests {
         assert_eq!(VlmTarget::from_str("claude"), Some(VlmTarget::Claude));
         assert_eq!(VlmTarget::from_str("gpt4v-low"), Some(VlmTarget::Gpt4vLow));
         assert_eq!(VlmTarget::from_str("gpt4v_low"), Some(VlmTarget::Gpt4vLow));
-        assert_eq!(VlmTarget::from_str("gpt4v-high"), Some(VlmTarget::Gpt4vHigh));
+        assert_eq!(
+            VlmTarget::from_str("gpt4v-high"),
+            Some(VlmTarget::Gpt4vHigh)
+        );
         assert_eq!(VlmTarget::from_str("gpt4v"), Some(VlmTarget::Gpt4vHigh));
         assert_eq!(VlmTarget::from_str("gemini"), Some(VlmTarget::Gemini));
         assert_eq!(VlmTarget::from_str("qwen-vl"), Some(VlmTarget::QwenVl));
@@ -2726,15 +3221,22 @@ mod tests {
     fn vlm_target_constraints_are_sane() {
         use super::VlmTarget;
         let targets = [
-            VlmTarget::Claude, VlmTarget::Gpt4vLow, VlmTarget::Gpt4vHigh,
-            VlmTarget::Gemini, VlmTarget::QwenVl, VlmTarget::Llava,
+            VlmTarget::Claude,
+            VlmTarget::Gpt4vLow,
+            VlmTarget::Gpt4vHigh,
+            VlmTarget::Gemini,
+            VlmTarget::QwenVl,
+            VlmTarget::Llava,
         ];
         for t in &targets {
             let (edge, pixels) = t.constraints();
             assert!(edge > 0, "{:?} edge should be positive", t);
             assert!(pixels > 0, "{:?} pixels should be positive", t);
-            assert!((edge as u64) * (edge as u64) >= pixels,
-                "{:?} max_pixels should be reachable within edge", t);
+            assert!(
+                (edge as u64) * (edge as u64) >= pixels,
+                "{:?} max_pixels should be reachable within edge",
+                t
+            );
         }
     }
 }

@@ -36,8 +36,14 @@ fn test_compose_single_line_multi_style() {
         char_offsets: vec![0, 1, 2, 3, 4],
         char_count: 6,
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-            CharShapeRef { start_pos: 3, char_shape_id: 2 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 1,
+            },
+            CharShapeRef {
+                start_pos: 3,
+                char_shape_id: 2,
+            },
         ],
         line_segs: vec![LineSeg {
             text_start: 0,
@@ -99,9 +105,18 @@ fn test_compose_multi_line_multi_style() {
         char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         char_count: 11,
         char_shapes: vec![
-            CharShapeRef { start_pos: 0, char_shape_id: 1 },
-            CharShapeRef { start_pos: 3, char_shape_id: 2 },
-            CharShapeRef { start_pos: 6, char_shape_id: 3 },
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 1,
+            },
+            CharShapeRef {
+                start_pos: 3,
+                char_shape_id: 2,
+            },
+            CharShapeRef {
+                start_pos: 6,
+                char_shape_id: 3,
+            },
         ],
         line_segs: vec![
             LineSeg {
@@ -206,7 +221,10 @@ fn test_identify_inline_controls_table() {
 
     let composed = compose_paragraph(&para);
     assert_eq!(composed.inline_controls.len(), 1);
-    assert_eq!(composed.inline_controls[0].control_type, InlineControlType::Table);
+    assert_eq!(
+        composed.inline_controls[0].control_type,
+        InlineControlType::Table
+    );
     assert_eq!(composed.inline_controls[0].control_index, 0);
 }
 
@@ -236,9 +254,18 @@ fn test_utf16_range_no_offsets() {
 #[test]
 fn test_find_active_char_shape() {
     let shapes = vec![
-        CharShapeRef { start_pos: 0, char_shape_id: 1 },
-        CharShapeRef { start_pos: 10, char_shape_id: 2 },
-        CharShapeRef { start_pos: 20, char_shape_id: 3 },
+        CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        },
+        CharShapeRef {
+            start_pos: 10,
+            char_shape_id: 2,
+        },
+        CharShapeRef {
+            start_pos: 20,
+            char_shape_id: 3,
+        },
     ];
 
     assert_eq!(find_active_char_shape(&shapes, 0), 1);
@@ -271,8 +298,14 @@ fn test_reflow_short_text_single_line() {
         text: "안녕".to_string(),
         char_offsets: vec![0, 1],
         char_count: 3,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -291,8 +324,14 @@ fn test_reflow_long_text_multi_line() {
         text: "가나다라마바사아자차".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         char_count: 11,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -323,8 +362,14 @@ fn test_reflow_latin_text() {
         text: "ABCDEFGHIJ".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         char_count: 11,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -343,8 +388,14 @@ fn test_reflow_line_height() {
         text: "가".to_string(),
         char_offsets: vec![0],
         char_count: 2,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -366,7 +417,8 @@ fn test_split_runs_by_lang_korean_english() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: None,    }];
+        display_text: None,
+    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
     assert_eq!(result[0].text, "안녕");
@@ -386,7 +438,8 @@ fn test_split_runs_by_lang_no_split() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: None,    }];
+        display_text: None,
+    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].text, "안녕하세요");
@@ -402,7 +455,8 @@ fn test_split_runs_by_lang_space_follows_prev() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: None,    }];
+        display_text: None,
+    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
     assert_eq!(result[0].text, "안녕 ");
@@ -422,7 +476,8 @@ fn test_split_runs_by_lang_empty() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: None,    }];
+        display_text: None,
+    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].text, "");
@@ -437,7 +492,8 @@ fn test_split_runs_by_lang_english_only() {
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: None,    }];
+        display_text: None,
+    }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].text, "Hello World");
@@ -467,9 +523,12 @@ fn test_reflow_lang_aware_mixed() {
             font_family: "함초롬돋움".to_string(),
             font_families: vec![
                 "함초롬돋움".to_string(), // 한국어
-                "Arial".to_string(),       // 영어
-                "".to_string(), "".to_string(), "".to_string(),
-                "".to_string(), "".to_string(),
+                "Arial".to_string(),      // 영어
+                "".to_string(),
+                "".to_string(),
+                "".to_string(),
+                "".to_string(),
+                "".to_string(),
             ],
             font_size: 16.0,
             ratio: 1.0,
@@ -487,8 +546,14 @@ fn test_reflow_lang_aware_mixed() {
         text: "가나다ABC".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4, 5],
         char_count: 7,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -498,7 +563,10 @@ fn test_reflow_lang_aware_mixed() {
 
     // 너비 부족 → 여러 줄 (언어별 폰트 적용 확인)
     reflow_line_segs(&mut para, 30.0, &styles, 96.0);
-    assert!(para.line_segs.len() > 1, "좁은 너비에서 줄 바꿈이 발생해야 함");
+    assert!(
+        para.line_segs.len() > 1,
+        "좁은 너비에서 줄 바꿈이 발생해야 함"
+    );
 }
 
 /// estimate_composed_line_width 기본 테스트
@@ -512,8 +580,9 @@ fn test_estimate_composed_line_width() {
             char_style_id: 0,
             lang_index: 0,
             char_overlap: None,
-        footnote_marker: None,
-        display_text: None,        }],
+            footnote_marker: None,
+            display_text: None,
+        }],
         line_height: 400,
         baseline_distance: 320,
         segment_width: 0,
@@ -539,8 +608,14 @@ fn test_reflow_korean_eojeol_wrap() {
         text: "안녕하세요 반갑습니다".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         char_count: 12,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -563,8 +638,14 @@ fn test_reflow_english_word_wrap() {
         text: "Hello World".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         char_count: 12,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -584,8 +665,14 @@ fn test_reflow_forced_line_break() {
         text: "가나\n다라".to_string(),
         char_offsets: vec![0, 1, 2, 3, 4],
         char_count: 6,
-        char_shapes: vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }],
-        line_segs: vec![LineSeg { text_start: 0, ..Default::default() }],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -622,14 +709,31 @@ fn test_tokenize_korean_eojeol() {
     let styles = make_styles_with_font_size(16.0);
     let text: Vec<char> = "가나 다라".chars().collect();
     let offsets: Vec<u32> = (0..text.len() as u32).collect();
-    let shapes = vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }];
+    let shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
 
     let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
     // "가나" (Text) + " " (Space) + "다라" (Text) = 3 tokens
     assert_eq!(tokens.len(), 3);
-    assert!(matches!(tokens[0], BreakToken::Text { start_idx: 0, end_idx: 2, .. }));
+    assert!(matches!(
+        tokens[0],
+        BreakToken::Text {
+            start_idx: 0,
+            end_idx: 2,
+            ..
+        }
+    ));
     assert!(matches!(tokens[1], BreakToken::Space { idx: 2, .. }));
-    assert!(matches!(tokens[2], BreakToken::Text { start_idx: 3, end_idx: 5, .. }));
+    assert!(matches!(
+        tokens[2],
+        BreakToken::Text {
+            start_idx: 3,
+            end_idx: 5,
+            ..
+        }
+    ));
 }
 
 /// 토크나이저: 영어 단어 토큰화
@@ -638,14 +742,31 @@ fn test_tokenize_english_words() {
     let styles = make_styles_with_font_size(16.0);
     let text: Vec<char> = "AB CD".chars().collect();
     let offsets: Vec<u32> = (0..text.len() as u32).collect();
-    let shapes = vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }];
+    let shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
 
     let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
     // "AB" (Text) + " " (Space) + "CD" (Text) = 3 tokens
     assert_eq!(tokens.len(), 3);
-    assert!(matches!(tokens[0], BreakToken::Text { start_idx: 0, end_idx: 2, .. }));
+    assert!(matches!(
+        tokens[0],
+        BreakToken::Text {
+            start_idx: 0,
+            end_idx: 2,
+            ..
+        }
+    ));
     assert!(matches!(tokens[1], BreakToken::Space { idx: 2, .. }));
-    assert!(matches!(tokens[2], BreakToken::Text { start_idx: 3, end_idx: 5, .. }));
+    assert!(matches!(
+        tokens[2],
+        BreakToken::Text {
+            start_idx: 3,
+            end_idx: 5,
+            ..
+        }
+    ));
 }
 
 /// 토크나이저: 줄 바꿈 토큰
@@ -654,7 +775,10 @@ fn test_tokenize_line_break() {
     let styles = make_styles_with_font_size(16.0);
     let text: Vec<char> = "가\n나".chars().collect();
     let offsets: Vec<u32> = (0..text.len() as u32).collect();
-    let shapes = vec![CharShapeRef { start_pos: 0, char_shape_id: 0 }];
+    let shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
 
     let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
     assert_eq!(tokens.len(), 3);
@@ -672,12 +796,12 @@ fn test_tokenize_line_break() {
 #[test]
 fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
     let run = ComposedTextRun {
-        text: "\u{F861}".to_string(),  // PUA 책괄호 (1 char)
+        text: "\u{F861}".to_string(), // PUA 책괄호 (1 char)
         char_style_id: 0,
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: Some("《".to_string()),  // 변환된 자모 (1 char in this case)
+        display_text: Some("《".to_string()), // 변환된 자모 (1 char in this case)
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -694,16 +818,17 @@ fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
 #[test]
 fn test_555_effective_text_for_metrics_multi_jamo_cluster() {
     let run = ComposedTextRun {
-        text: "\u{F8E0}".to_string(),  // PUA 옛한글 합자 (가상 codepoint, 1 char)
+        text: "\u{F8E0}".to_string(), // PUA 옛한글 합자 (가상 codepoint, 1 char)
         char_style_id: 0,
         lang_index: 0,
         char_overlap: None,
         footnote_marker: None,
-        display_text: Some("ᄃᆞᄫᆡ".to_string()),  // 4 jamo chars
+        display_text: Some("ᄃᆞᄫᆡ".to_string()), // 4 jamo chars
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
-        effective.chars().count(), 4,
+        effective.chars().count(),
+        4,
         "옛한글 합자 PUA → 4-jamo 시퀀스 변환 시 폰트 매트릭스 char count 도 4 이어야 함."
     );
     assert_eq!(effective, "ᄃᆞᄫᆡ");

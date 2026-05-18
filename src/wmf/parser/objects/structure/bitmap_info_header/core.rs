@@ -47,8 +47,7 @@ impl BitmapInfoHeaderCore {
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
             crate::wmf::parser::BitCount::parse(buf)?,
         );
-        let consumed_bytes =
-            width_bytes + height_bytes + planes_bytes + bit_count_bytes;
+        let consumed_bytes = width_bytes + height_bytes + planes_bytes + bit_count_bytes;
 
         if planes != 0x0001 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
@@ -64,15 +63,18 @@ impl BitmapInfoHeaderCore {
                 | crate::wmf::parser::BitCount::BI_BITCOUNT_5
         ) {
             return Err(crate::wmf::parser::ParseError::UnexpectedEnumValue {
-                cause: format!(
-                    "Invalid BitCount `{}` as Core type.",
-                    bit_count as u16
-                ),
+                cause: format!("Invalid BitCount `{}` as Core type.", bit_count as u16),
             });
         }
 
         Ok((
-            Self { header_size, width, height, planes, bit_count },
+            Self {
+                header_size,
+                width,
+                height,
+                planes,
+                bit_count,
+            },
             consumed_bytes,
         ))
     }

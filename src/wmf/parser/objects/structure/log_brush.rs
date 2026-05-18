@@ -25,8 +25,7 @@ impl LogBrush {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (style, mut consumed_bytes) =
-            crate::wmf::parser::BrushStyle::parse(buf)?;
+        let (style, mut consumed_bytes) = crate::wmf::parser::BrushStyle::parse(buf)?;
         let v = match style {
             crate::wmf::parser::BrushStyle::BS_DIBPATTERN => {
                 let (_, c) = crate::wmf::parser::read::<R, 6>(buf)?;
@@ -41,16 +40,16 @@ impl LogBrush {
                 Self::DIBPatternPT
             }
             crate::wmf::parser::BrushStyle::BS_HATCHED => {
-                let (
-                    (color_ref, color_ref_bytes),
-                    (brush_hatch, brush_hatch_bytes),
-                ) = (
+                let ((color_ref, color_ref_bytes), (brush_hatch, brush_hatch_bytes)) = (
                     crate::wmf::parser::ColorRef::parse(buf)?,
                     crate::wmf::parser::HatchStyle::parse(buf)?,
                 );
                 consumed_bytes += color_ref_bytes + brush_hatch_bytes;
 
-                Self::Hatched { color_ref, brush_hatch }
+                Self::Hatched {
+                    color_ref,
+                    brush_hatch,
+                }
             }
             crate::wmf::parser::BrushStyle::BS_PATTERN => {
                 let (_, c) = crate::wmf::parser::read::<R, 6>(buf)?;

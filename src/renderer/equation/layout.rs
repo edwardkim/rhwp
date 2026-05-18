@@ -125,14 +125,14 @@ pub struct EqLayout {
 }
 
 /// 비율 상수
-pub(crate) const SCRIPT_SCALE: f64 = 0.7;        // 첨자 크기 비율
-const FRAC_LINE_PAD: f64 = 0.2;       // 분수선 상하 여백 (font_size 비율)
-const FRAC_LINE_THICK: f64 = 0.04;    // 분수선 두께 (font_size 비율)
-const SQRT_PAD: f64 = 0.1;            // 제곱근 내부 상단 여백
-const PAREN_PAD: f64 = 0.08;          // 괄호 내부 좌우 여백
-pub(crate) const BIG_OP_SCALE: f64 = 1.5;        // 큰 연산자 크기 비율
-const MATRIX_COL_GAP: f64 = 0.8;      // 행렬 열 간격 (font_size 비율)
-const MATRIX_ROW_GAP: f64 = 0.3;      // 행렬 행 간격 (font_size 비율)
+pub(crate) const SCRIPT_SCALE: f64 = 0.7; // 첨자 크기 비율
+const FRAC_LINE_PAD: f64 = 0.2; // 분수선 상하 여백 (font_size 비율)
+const FRAC_LINE_THICK: f64 = 0.04; // 분수선 두께 (font_size 비율)
+const SQRT_PAD: f64 = 0.1; // 제곱근 내부 상단 여백
+const PAREN_PAD: f64 = 0.08; // 괄호 내부 좌우 여백
+pub(crate) const BIG_OP_SCALE: f64 = 1.5; // 큰 연산자 크기 비율
+const MATRIX_COL_GAP: f64 = 0.8; // 행렬 열 간격 (font_size 비율)
+const MATRIX_ROW_GAP: f64 = 0.3; // 행렬 행 간격 (font_size 비율)
 /// 수식 축 높이 (TeX axis_height = 0.25em) — 분수선이 배치되는 기준 위치
 pub(crate) const AXIS_HEIGHT: f64 = 0.25;
 /// 텍스트 기본 baseline 비율 (상단에서 baseline까지)
@@ -176,11 +176,19 @@ impl EqLayout {
             EqNode::Color { body, .. } => self.layout_node(body, fs),
             EqNode::Space(kind) => self.layout_space(*kind, fs),
             EqNode::Newline => LayoutBox {
-                x: 0.0, y: 0.0, width: 0.0, height: 0.0, baseline: 0.0,
+                x: 0.0,
+                y: 0.0,
+                width: 0.0,
+                height: 0.0,
+                baseline: 0.0,
                 kind: LayoutKind::Newline,
             },
             EqNode::Empty => LayoutBox {
-                x: 0.0, y: 0.0, width: 0.0, height: 0.0, baseline: 0.0,
+                x: 0.0,
+                y: 0.0,
+                width: 0.0,
+                height: 0.0,
+                baseline: 0.0,
                 kind: LayoutKind::Empty,
             },
         }
@@ -189,26 +197,38 @@ impl EqLayout {
     fn layout_row(&self, children: &[EqNode], fs: f64) -> LayoutBox {
         if children.is_empty() {
             return LayoutBox {
-                x: 0.0, y: 0.0, width: 0.0, height: fs, baseline: fs * 0.8,
+                x: 0.0,
+                y: 0.0,
+                width: 0.0,
+                height: fs,
+                baseline: fs * 0.8,
                 kind: LayoutKind::Row(Vec::new()),
             };
         }
 
-        let mut boxes: Vec<LayoutBox> = children.iter()
+        let mut boxes: Vec<LayoutBox> = children
+            .iter()
             .map(|c| self.layout_node(c, fs))
             .filter(|b| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
             .collect();
 
         if boxes.is_empty() {
             return LayoutBox {
-                x: 0.0, y: 0.0, width: 0.0, height: fs, baseline: fs * 0.8,
+                x: 0.0,
+                y: 0.0,
+                width: 0.0,
+                height: fs,
+                baseline: fs * 0.8,
                 kind: LayoutKind::Row(Vec::new()),
             };
         }
 
         // 기준선 정렬: 가장 높은 baseline과 가장 깊은 descent
         let max_ascent = boxes.iter().map(|b| b.baseline).fold(0.0f64, f64::max);
-        let max_descent = boxes.iter().map(|b| b.height - b.baseline).fold(0.0f64, f64::max);
+        let max_descent = boxes
+            .iter()
+            .map(|b| b.height - b.baseline)
+            .fold(0.0f64, f64::max);
         let total_height = max_ascent + max_descent;
 
         let mut x = 0.0;
@@ -219,7 +239,8 @@ impl EqLayout {
         }
 
         LayoutBox {
-            x: 0.0, y: 0.0,
+            x: 0.0,
+            y: 0.0,
             width: x,
             height: total_height,
             baseline: max_ascent,
@@ -229,12 +250,17 @@ impl EqLayout {
 
     fn layout_text(&self, text: &str, fs: f64) -> LayoutBox {
         // CJK/한글 텍스트는 이탤릭이 아니므로 italic 보정 제외
-        let has_cjk = text.chars().any(|c| matches!(c,
-            '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
-        ));
+        let has_cjk = text.chars().any(|c| {
+            matches!(c,
+                '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
+            )
+        });
         let w = estimate_text_width(text, fs, !has_cjk);
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: fs,
             baseline: fs * 0.8,
             kind: LayoutKind::Text(text.to_string()),
         }
@@ -243,7 +269,10 @@ impl EqLayout {
     fn layout_number(&self, text: &str, fs: f64) -> LayoutBox {
         let w = estimate_text_width(text, fs, false);
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: fs,
             baseline: fs * 0.8,
             kind: LayoutKind::Number(text.to_string()),
         }
@@ -258,7 +287,10 @@ impl EqLayout {
             fs * 0.05
         };
         LayoutBox {
-            x: 0.0, y: 0.0, width: w + pad * 2.0, height: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w + pad * 2.0,
+            height: fs,
             baseline: fs * 0.8,
             kind: LayoutKind::Symbol(text.to_string()),
         }
@@ -270,14 +302,20 @@ impl EqLayout {
             let op_fs = fs * BIG_OP_SCALE;
             let w = estimate_text_width(text, op_fs, false);
             return LayoutBox {
-                x: 0.0, y: 0.0, width: w, height: op_fs,
+                x: 0.0,
+                y: 0.0,
+                width: w,
+                height: op_fs,
                 baseline: op_fs * 0.7, // 적분 기호 baseline: 기호 높이의 70%
                 kind: LayoutKind::MathSymbol(text.to_string()),
             };
         }
         let w = estimate_text_width(text, fs, false);
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: fs,
             baseline: fs * 0.8,
             kind: LayoutKind::MathSymbol(text.to_string()),
         }
@@ -286,7 +324,10 @@ impl EqLayout {
     fn layout_function(&self, name: &str, fs: f64) -> LayoutBox {
         let w = estimate_text_width(name, fs, false);
         LayoutBox {
-            x: 0.0, y: 0.0, width: w + fs * 0.02, height: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w + fs * 0.02,
+            height: fs,
             baseline: fs * 0.8,
             kind: LayoutKind::Function(name.to_string()),
         }
@@ -320,7 +361,11 @@ impl EqLayout {
         d_box.y = numer_h + line_thick;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: total_h, baseline,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: total_h,
+            baseline,
             kind: LayoutKind::Fraction {
                 numer: Box::new(n_box),
                 denom: Box::new(d_box),
@@ -350,7 +395,11 @@ impl EqLayout {
         bottom_box.y = top_h;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: total_h, baseline,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: total_h,
+            baseline,
             kind: LayoutKind::Atop {
                 top: Box::new(top_box),
                 bottom: Box::new(bottom_box),
@@ -379,7 +428,10 @@ impl EqLayout {
         body_box.y = pad;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w, height: body_h,
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: body_h,
             baseline: body_box.y + body_box.baseline,
             kind: LayoutKind::Sqrt {
                 index: idx.map(Box::new),
@@ -419,7 +471,10 @@ impl EqLayout {
         let total_w = base_box.width + sup_box.width;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: total_h,
             baseline: base_box.y + base_box.baseline,
             kind: LayoutKind::Superscript {
                 base: Box::new(base_box),
@@ -446,7 +501,10 @@ impl EqLayout {
         let total_w = base_box.width + sub_box.width;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: total_h,
             baseline: base_box.baseline,
             kind: LayoutKind::Subscript {
                 base: Box::new(base_box),
@@ -465,8 +523,8 @@ impl EqLayout {
 
         if is_integral {
             // 적분 전용 배치: 상한은 기호 상단 오른쪽, 하한은 기호 하단 오른쪽
-            let sup_offset_y = fs * 0.13;  // 상한: 기호 상단에서 위로 ~2mm
-            let sub_offset_y = fs * 0.25;  // 하한: 기호 하단에서 위로 이동
+            let sup_offset_y = fs * 0.13; // 상한: 기호 상단에서 위로 ~2mm
+            let sub_offset_y = fs * 0.25; // 하한: 기호 하단에서 위로 이동
             let sub_offset_x = -(fs * 0.42); // 하한: 왼쪽으로 추가 1mm
 
             let mut base_box = b;
@@ -483,12 +541,16 @@ impl EqLayout {
             sub_box.x = base_box.width + sub_offset_x;
             sub_box.y = base_box.y + base_box.height - sub_offset_y;
 
-            let script_w = sup_box.width.max(sub_box.x + sub_box.width - base_box.width);
+            let script_w = sup_box
+                .width
+                .max(sub_box.x + sub_box.width - base_box.width);
             let total_w = base_box.width + script_w.max(0.0);
             let total_h = (sub_box.y + sub_box.height).max(base_box.y + base_box.height);
 
             return LayoutBox {
-                x: 0.0, y: 0.0, width: total_w,
+                x: 0.0,
+                y: 0.0,
+                width: total_w,
                 height: total_h,
                 baseline: base_box.y + base_box.baseline,
                 kind: LayoutKind::SubSup {
@@ -502,11 +564,24 @@ impl EqLayout {
         let sup_shift = b.baseline - sp.height * 0.7;
         let sub_shift = b.baseline * 0.4;
 
-        let ascent = if sup_shift < 0.0 { sp.height - sup_shift.abs() } else { sp.height.max(0.0) };
+        let ascent = if sup_shift < 0.0 {
+            sp.height - sup_shift.abs()
+        } else {
+            sp.height.max(0.0)
+        };
         let top = sup_shift.min(0.0).abs();
-        let total_h = (top + b.height).max(top + sub_shift + sb.height).max(ascent + b.height);
+        let total_h = (top + b.height)
+            .max(top + sub_shift + sb.height)
+            .max(ascent + b.height);
 
-        let base_y = top.max(if sup_shift > 0.0 { 0.0 } else { sp.height - sup_shift.abs() - b.baseline }.max(0.0));
+        let base_y = top.max(
+            if sup_shift > 0.0 {
+                0.0
+            } else {
+                sp.height - sup_shift.abs() - b.baseline
+            }
+            .max(0.0),
+        );
 
         let mut base_box = b;
         base_box.x = 0.0;
@@ -524,8 +599,12 @@ impl EqLayout {
         let total_w = base_box.width + script_w;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w,
-            height: total_h.max(base_box.y + base_box.height).max(sub_box.y + sub_box.height),
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: total_h
+                .max(base_box.y + base_box.height)
+                .max(sub_box.y + sub_box.height),
             baseline: base_box.y + base_box.baseline,
             kind: LayoutKind::SubSup {
                 base: Box::new(base_box),
@@ -535,7 +614,13 @@ impl EqLayout {
         }
     }
 
-    fn layout_big_op(&self, symbol: &str, sub: &Option<Box<EqNode>>, sup: &Option<Box<EqNode>>, fs: f64) -> LayoutBox {
+    fn layout_big_op(
+        &self,
+        symbol: &str,
+        sub: &Option<Box<EqNode>>,
+        sup: &Option<Box<EqNode>>,
+        fs: f64,
+    ) -> LayoutBox {
         // 적분 기호: nolimits 스타일 (큰 기호 + 오른쪽 위/아래 첨자)
         if is_integral_symbol(symbol) {
             return self.layout_integral(symbol, sub, sup, fs);
@@ -548,12 +633,24 @@ impl EqLayout {
         let sub_box = sub.as_ref().map(|s| self.layout_node(s, fs * SCRIPT_SCALE));
         let sup_box = sup.as_ref().map(|s| self.layout_node(s, fs * SCRIPT_SCALE));
 
-        let sup_h = sup_box.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
-        let sub_h = sub_box.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
+        let sup_h = sup_box
+            .as_ref()
+            .map(|b| b.height + fs * 0.05)
+            .unwrap_or(0.0);
+        let sub_h = sub_box
+            .as_ref()
+            .map(|b| b.height + fs * 0.05)
+            .unwrap_or(0.0);
 
         let total_h = sup_h + op_h + sub_h;
-        let max_w = [op_w, sub_box.as_ref().map(|b| b.width).unwrap_or(0.0), sup_box.as_ref().map(|b| b.width).unwrap_or(0.0)]
-            .iter().copied().fold(0.0f64, f64::max);
+        let max_w = [
+            op_w,
+            sub_box.as_ref().map(|b| b.width).unwrap_or(0.0),
+            sup_box.as_ref().map(|b| b.width).unwrap_or(0.0),
+        ]
+        .iter()
+        .copied()
+        .fold(0.0f64, f64::max);
 
         let baseline = sup_h + op_h * 0.6;
 
@@ -569,7 +666,11 @@ impl EqLayout {
         });
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: max_w, height: total_h, baseline,
+            x: 0.0,
+            y: 0.0,
+            width: max_w,
+            height: total_h,
+            baseline,
             kind: LayoutKind::BigOp {
                 symbol: symbol.to_string(),
                 sub: sub_laid.map(Box::new),
@@ -579,7 +680,13 @@ impl EqLayout {
     }
 
     /// 적분 기호 레이아웃: 큰 기호 + 오른쪽 위/아래 첨자 (nolimits 스타일)
-    fn layout_integral(&self, symbol: &str, sub: &Option<Box<EqNode>>, sup: &Option<Box<EqNode>>, fs: f64) -> LayoutBox {
+    fn layout_integral(
+        &self,
+        symbol: &str,
+        sub: &Option<Box<EqNode>>,
+        sup: &Option<Box<EqNode>>,
+        fs: f64,
+    ) -> LayoutBox {
         let op_fs = fs * BIG_OP_SCALE;
         let op_w = estimate_text_width(symbol, op_fs, false);
         let op_h = op_fs;
@@ -592,7 +699,7 @@ impl EqLayout {
 
         // 위첨자: 기호 오른쪽 위
         let sup_shift = op_h * 0.1; // 기호 상단에서 약간 아래
-        // 아래첨자: 기호 오른쪽 아래
+                                    // 아래첨자: 기호 오른쪽 아래
         let sub_shift = op_h * 0.55; // 기호 중앙 아래
 
         let script_x = op_w; // 첨자는 기호 오른쪽에 배치
@@ -616,7 +723,10 @@ impl EqLayout {
         });
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: total_h,
             baseline: op_baseline,
             kind: LayoutKind::BigOp {
                 symbol: symbol.to_string(),
@@ -632,7 +742,10 @@ impl EqLayout {
         let name_h = fs;
 
         let sub_box = sub.as_ref().map(|s| self.layout_node(s, fs * SCRIPT_SCALE));
-        let sub_h = sub_box.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
+        let sub_h = sub_box
+            .as_ref()
+            .map(|b| b.height + fs * 0.05)
+            .unwrap_or(0.0);
         let sub_w = sub_box.as_ref().map(|b| b.width).unwrap_or(0.0);
 
         let w = name_w.max(sub_w);
@@ -645,7 +758,10 @@ impl EqLayout {
         });
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: total_h,
             baseline: fs * 0.8,
             kind: LayoutKind::Limit {
                 is_upper,
@@ -657,7 +773,11 @@ impl EqLayout {
     fn layout_matrix(&self, rows: &[Vec<EqNode>], style: MatrixStyle, fs: f64) -> LayoutBox {
         if rows.is_empty() {
             return LayoutBox {
-                x: 0.0, y: 0.0, width: 0.0, height: fs, baseline: fs * 0.8,
+                x: 0.0,
+                y: 0.0,
+                width: 0.0,
+                height: fs,
+                baseline: fs * 0.8,
                 kind: LayoutKind::Empty,
             };
         }
@@ -666,7 +786,8 @@ impl EqLayout {
         let row_gap = fs * MATRIX_ROW_GAP;
 
         // 모든 셀 레이아웃
-        let mut cell_boxes: Vec<Vec<LayoutBox>> = rows.iter()
+        let mut cell_boxes: Vec<Vec<LayoutBox>> = rows
+            .iter()
             .map(|row| row.iter().map(|c| self.layout_node(c, fs)).collect())
             .collect();
 
@@ -683,7 +804,8 @@ impl EqLayout {
         }
 
         // 행 높이 계산
-        let mut row_heights: Vec<f64> = cell_boxes.iter()
+        let mut row_heights: Vec<f64> = cell_boxes
+            .iter()
             .map(|row| row.iter().map(|c| c.height).fold(fs, f64::max))
             .collect();
 
@@ -693,7 +815,11 @@ impl EqLayout {
             let rh = row_heights[ri];
             let mut x = 0.0;
             for (ci, cell) in row.iter_mut().enumerate() {
-                let cw = if ci < num_cols { col_widths[ci] } else { cell.width };
+                let cw = if ci < num_cols {
+                    col_widths[ci]
+                } else {
+                    cell.width
+                };
                 cell.x = x + (cw - cell.width) / 2.0;
                 cell.y = y + (rh - cell.height) / 2.0;
                 x += cw + if ci + 1 < num_cols { col_gap } else { 0.0 };
@@ -701,7 +827,8 @@ impl EqLayout {
             y += rh + row_gap;
         }
 
-        let total_w: f64 = col_widths.iter().sum::<f64>() + col_gap * (num_cols.saturating_sub(1)) as f64;
+        let total_w: f64 =
+            col_widths.iter().sum::<f64>() + col_gap * (num_cols.saturating_sub(1)) as f64;
         let total_h = y - row_gap;
         let bracket_pad = fs * 0.2;
 
@@ -721,17 +848,21 @@ impl EqLayout {
         }
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: full_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: full_w,
+            height: total_h,
             baseline: total_h / 2.0,
-            kind: LayoutKind::Matrix { cells: cell_boxes, style },
+            kind: LayoutKind::Matrix {
+                cells: cell_boxes,
+                style,
+            },
         }
     }
 
     fn layout_cases(&self, rows: &[EqNode], fs: f64) -> LayoutBox {
         let row_gap = fs * MATRIX_ROW_GAP;
-        let mut row_boxes: Vec<LayoutBox> = rows.iter()
-            .map(|r| self.layout_node(r, fs))
-            .collect();
+        let mut row_boxes: Vec<LayoutBox> = rows.iter().map(|r| self.layout_node(r, fs)).collect();
 
         let max_w = row_boxes.iter().map(|b| b.width).fold(0.0f64, f64::max);
         let mut y = 0.0;
@@ -745,13 +876,19 @@ impl EqLayout {
 
         // 중괄호 포함 레이아웃 → Paren으로 래핑
         let inner = LayoutBox {
-            x: 0.0, y: 0.0, width: full_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: full_w,
+            height: total_h,
             baseline: total_h / 2.0,
             kind: LayoutKind::Row(row_boxes),
         };
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: full_w + fs * 0.3, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: full_w + fs * 0.3,
+            height: total_h,
             baseline: total_h / 2.0,
             kind: LayoutKind::Paren {
                 left: "{".to_string(),
@@ -761,7 +898,13 @@ impl EqLayout {
         }
     }
 
-    fn layout_rel(&self, arrow: &str, over: &EqNode, under: &Option<Box<EqNode>>, fs: f64) -> LayoutBox {
+    fn layout_rel(
+        &self,
+        arrow: &str,
+        over: &EqNode,
+        under: &Option<Box<EqNode>>,
+        fs: f64,
+    ) -> LayoutBox {
         let small_fs = fs * 0.7;
         let gap = fs * 0.1;
 
@@ -773,7 +916,8 @@ impl EqLayout {
         let mut under_box = under.as_ref().map(|u| self.layout_node(u, small_fs));
 
         // 전체 폭: 가장 넓은 요소 기준
-        let max_w = arrow_box.width
+        let max_w = arrow_box
+            .width
             .max(over_box.width)
             .max(under_box.as_ref().map(|u| u.width).unwrap_or(0.0));
 
@@ -800,7 +944,10 @@ impl EqLayout {
         }
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: max_w, height: y,
+            x: 0.0,
+            y: 0.0,
+            width: max_w,
+            height: y,
             baseline: arrow_center_y,
             kind: LayoutKind::Rel {
                 arrow: Box::new(arrow_box),
@@ -815,12 +962,16 @@ impl EqLayout {
         let align_gap = fs * 0.15; // & 기준 좌우 사이 간격
 
         // 각 행의 왼쪽/오른쪽 레이아웃 계산
-        let mut laid_rows: Vec<(LayoutBox, LayoutBox)> = rows.iter()
+        let mut laid_rows: Vec<(LayoutBox, LayoutBox)> = rows
+            .iter()
             .map(|(l, r)| (self.layout_node(l, fs), self.layout_node(r, fs)))
             .collect();
 
         // 왼쪽 최대 폭 (& 정렬 기준)
-        let max_left_w = laid_rows.iter().map(|(l, _)| l.width).fold(0.0f64, f64::max);
+        let max_left_w = laid_rows
+            .iter()
+            .map(|(l, _)| l.width)
+            .fold(0.0f64, f64::max);
 
         let mut y = 0.0;
         let mut total_w = 0.0f64;
@@ -842,7 +993,10 @@ impl EqLayout {
         let total_h = (y - row_gap).max(0.0);
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: total_h,
             baseline: total_h / 2.0,
             kind: LayoutKind::EqAlign { rows: laid_rows },
         }
@@ -850,9 +1004,7 @@ impl EqLayout {
 
     fn layout_pile(&self, rows: &[EqNode], align: PileAlign, fs: f64) -> LayoutBox {
         let row_gap = fs * MATRIX_ROW_GAP;
-        let mut row_boxes: Vec<LayoutBox> = rows.iter()
-            .map(|r| self.layout_node(r, fs))
-            .collect();
+        let mut row_boxes: Vec<LayoutBox> = rows.iter().map(|r| self.layout_node(r, fs)).collect();
 
         let max_w = row_boxes.iter().map(|b| b.width).fold(0.0f64, f64::max);
         let mut y = 0.0;
@@ -868,7 +1020,10 @@ impl EqLayout {
         let total_h = y - row_gap;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: max_w, height: total_h,
+            x: 0.0,
+            y: 0.0,
+            width: max_w,
+            height: total_h,
             baseline: total_h / 2.0,
             kind: LayoutKind::Row(row_boxes),
         }
@@ -890,7 +1045,10 @@ impl EqLayout {
         let total_w = left_w + pad + body_box.width + pad + right_w;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: total_w, height: body_box.height,
+            x: 0.0,
+            y: 0.0,
+            width: total_w,
+            height: body_box.height,
             baseline: body_box.baseline,
             kind: LayoutKind::Paren {
                 left: left.to_string(),
@@ -900,7 +1058,12 @@ impl EqLayout {
         }
     }
 
-    fn layout_decoration(&self, kind: super::symbols::DecoKind, body: &EqNode, fs: f64) -> LayoutBox {
+    fn layout_decoration(
+        &self,
+        kind: super::symbols::DecoKind,
+        body: &EqNode,
+        fs: f64,
+    ) -> LayoutBox {
         let b = self.layout_node(body, fs);
         let deco_h = fs * 0.25;
 
@@ -908,7 +1071,10 @@ impl EqLayout {
         body_box.y = deco_h;
 
         LayoutBox {
-            x: 0.0, y: 0.0, width: body_box.width, height: body_box.height + deco_h,
+            x: 0.0,
+            y: 0.0,
+            width: body_box.width,
+            height: body_box.height + deco_h,
             baseline: body_box.y + body_box.baseline,
             kind: LayoutKind::Decoration {
                 kind,
@@ -917,10 +1083,18 @@ impl EqLayout {
         }
     }
 
-    fn layout_font_style(&self, style: super::symbols::FontStyleKind, body: &EqNode, fs: f64) -> LayoutBox {
+    fn layout_font_style(
+        &self,
+        style: super::symbols::FontStyleKind,
+        body: &EqNode,
+        fs: f64,
+    ) -> LayoutBox {
         let b = self.layout_node(body, fs);
         LayoutBox {
-            x: 0.0, y: 0.0, width: b.width, height: b.height,
+            x: 0.0,
+            y: 0.0,
+            width: b.width,
+            height: b.height,
             baseline: b.baseline,
             kind: LayoutKind::FontStyle {
                 style,
@@ -936,7 +1110,10 @@ impl EqLayout {
             SpaceKind::Tab => fs * 1.0,
         };
         LayoutBox {
-            x: 0.0, y: 0.0, width: w, height: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: fs,
             baseline: fs * 0.8,
             kind: LayoutKind::Space(w),
         }
@@ -953,10 +1130,15 @@ fn estimate_text_width(text: &str, font_size: f64, italic: bool) -> f64 {
     let mut w = 0.0;
     for ch in text.chars() {
         let ratio = if ch.is_ascii() {
-            if ch.is_ascii_uppercase() { 0.65 }
-            else if ch.is_ascii_lowercase() { 0.55 }
-            else if ch.is_ascii_digit() { 0.55 }
-            else { 0.5 }
+            if ch.is_ascii_uppercase() {
+                0.65
+            } else if ch.is_ascii_lowercase() {
+                0.55
+            } else if ch.is_ascii_digit() {
+                0.55
+            } else {
+                0.5
+            }
         } else {
             estimate_unicode_char_width(ch)
         };
@@ -980,9 +1162,13 @@ fn estimate_unicode_char_width(ch: char) -> f64 {
         // 수학 연산자 — 중간 너비
         '±' | '∓' | '×' | '÷' | '·' | '∘' | '†' | '‡' | '•' => 0.6,
         // 관계 기호 — 등호 너비와 유사
-        '≠' | '≤' | '≥' | '≈' | '≡' | '≅' | '∼' | '≃' | '≍' | '≐' | '∝' | '≺' | '≻' => 0.7,
+        '≠' | '≤' | '≥' | '≈' | '≡' | '≅' | '∼' | '≃' | '≍' | '≐' | '∝' | '≺' | '≻' => {
+            0.7
+        }
         // 집합/논리 기호
-        '∈' | '∉' | '∋' | '⊂' | '⊃' | '⊆' | '⊇' | '∀' | '∃' | '¬' | '∧' | '∨' => 0.65,
+        '∈' | '∉' | '∋' | '⊂' | '⊃' | '⊆' | '⊇' | '∀' | '∃' | '¬' | '∧' | '∨' => {
+            0.65
+        }
         '⊏' | '⊐' | '⊑' | '⊒' | '⊻' | '⊢' | '⊣' | '⊨' => 0.65,
         // 큰 연산자 기호 (단독 텍스트로 사용될 때)
         '∫' | '∬' | '∭' | '∮' | '∯' | '∰' => 0.5,
@@ -1002,8 +1188,7 @@ fn estimate_unicode_char_width(ch: char) -> f64 {
         '℃' | '℉' => 0.9,
         '△' | '▽' | '○' | '◇' | '⋄' => 0.7,
         // CJK — 전각
-        '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' |
-        '\u{AC00}'..='\u{D7AF}' => 1.0,
+        '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}' => 1.0,
         // 기타 비-ASCII — 중간 너비 기본값
         _ => 0.6,
     }
@@ -1060,14 +1245,21 @@ mod tests {
             _ => panic!("Expected Superscript or Row, got {:?}", lb.kind),
         };
         // sup의 상단(y)이 base의 상단보다 높거나 같아야 함
-        assert!(sup_box.y <= base_box.y,
-            "sup.y ({}) should be <= base.y ({})", sup_box.y, base_box.y);
+        assert!(
+            sup_box.y <= base_box.y,
+            "sup.y ({}) should be <= base.y ({})",
+            sup_box.y,
+            base_box.y
+        );
         // sup의 baseline이 base baseline보다 위에 있어야 함
         let sup_baseline_abs = sup_box.y + sup_box.baseline;
         let base_baseline_abs = base_box.y + base_box.baseline;
-        assert!(sup_baseline_abs < base_baseline_abs,
+        assert!(
+            sup_baseline_abs < base_baseline_abs,
             "sup baseline ({}) should be above base baseline ({})",
-            sup_baseline_abs, base_baseline_abs);
+            sup_baseline_abs,
+            base_baseline_abs
+        );
     }
 
     #[test]
@@ -1096,7 +1288,8 @@ mod tests {
             LayoutKind::Row(children) => children,
             other => panic!("Top-level should be Row, got {:?}", other),
         };
-        let cases_paren = top_children.iter()
+        let cases_paren = top_children
+            .iter()
             .find(|c| matches!(&c.kind, LayoutKind::Paren { .. }))
             .expect("Should contain a Paren (CASES) element");
         let cases_body = match &cases_paren.kind {
@@ -1112,9 +1305,12 @@ mod tests {
         let row2 = &rows[1];
         let row1_bottom = row1.y + row1.height;
         let row2_top = row2.y;
-        assert!(row2_top >= row1_bottom,
+        assert!(
+            row2_top >= row1_bottom,
             "CASES rows should not overlap: row1 bottom={:.1}, row2 top={:.1}",
-            row1_bottom, row2_top);
+            row1_bottom,
+            row2_top
+        );
     }
 
     #[test]
@@ -1123,8 +1319,11 @@ mod tests {
         let korean = parse_and_layout("홀수인~경우", 20.0);
         let latin = parse_and_layout("abcdef", 20.0);
         // 한글 6자(전각 1.0×) > 라틴 6자(~0.55×)
-        assert!(korean.width > latin.width,
+        assert!(
+            korean.width > latin.width,
             "Korean text width ({:.1}) should be larger than Latin ({:.1})",
-            korean.width, latin.width);
+            korean.width,
+            latin.width
+        );
     }
 }

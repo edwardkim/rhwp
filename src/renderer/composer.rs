@@ -4,12 +4,12 @@
 //! CharShapeRef 경계에 따라 다중 TextRun으로 분할한다.
 //! 인라인 컨트롤(표/도형) 삽입 위치를 식별한다.
 
+use super::layout::{estimate_text_width, resolved_to_text_style};
+use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
+use super::{px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
 use crate::model::document::Section;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use super::layout::{estimate_text_width, resolved_to_text_style};
-use super::style_resolver::{ResolvedStyleSet, detect_lang_category};
-use super::{TextStyle, px_to_hwpunit};
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, serde::Serialize)]
@@ -106,11 +106,7 @@ pub struct ComposedParagraph {
 
 /// 구역의 문단 목록을 구성한다.
 pub fn compose_section(section: &Section) -> Vec<ComposedParagraph> {
-    section
-        .paragraphs
-        .iter()
-        .map(compose_paragraph)
-        .collect()
+    section.paragraphs.iter().map(compose_paragraph).collect()
 }
 
 /// 문단을 줄별 텍스트 런으로 분할한다.
@@ -121,7 +117,10 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     // treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 수집
     let tac_positions = find_control_text_positions(para);
     let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-    let tac_controls: Vec<(usize, i32, usize)> = para.controls.iter().enumerate()
+    let tac_controls: Vec<(usize, i32, usize)> = para
+        .controls
+        .iter()
+        .enumerate()
         .filter_map(|(i, ctrl)| {
             let pos = *tac_positions.get(i)?;
             match ctrl {
@@ -135,11 +134,16 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                     // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
                     Some((pos, eq.common.width as i32, i))
                 }
-                Control::Form(f) => {
-                    Some((pos, f.width as i32, i))
-                }
-                Control::Table(t) if t.common.treat_as_char
-                    && super::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls) => {
+                Control::Form(f) => Some((pos, f.width as i32, i)),
+                Control::Table(t)
+                    if t.common.treat_as_char
+                        && super::height_measurer::is_tac_table_inline(
+                            t,
+                            seg_width,
+                            &para.text,
+                            &para.controls,
+                        ) =>
+                {
                     let table_width: u32 = t.get_column_widths().iter().sum();
                     Some((pos, table_width as i32, i))
                 }
@@ -149,7 +153,10 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
         .collect();
 
     // 각주/미주 위치 수집
-    let footnote_positions: Vec<(usize, u16, usize)> = para.controls.iter().enumerate()
+    let footnote_positions: Vec<(usize, u16, usize)> = para
+        .controls
+        .iter()
+        .enumerate()
         .filter_map(|(i, ctrl)| {
             let pos = *tac_positions.get(i)?;
             match ctrl {
@@ -201,7 +208,11 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
     use super::pua_oldhangul::map_pua_old_hangul;
     for line in composed.lines.iter_mut() {
         for run in line.runs.iter_mut() {
-            if !run.text.chars().any(|ch| pua_plain_text_display(ch).is_some() || map_pua_old_hangul(ch).is_some()) {
+            if !run
+                .text
+                .chars()
+                .any(|ch| pua_plain_text_display(ch).is_some() || map_pua_old_hangul(ch).is_some())
+            {
                 continue;
             }
             let mut display = String::with_capacity(run.text.len() * 3);
@@ -227,8 +238,15 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
         // char_pos에 해당하는 줄과 런 찾기
         for line in lines.iter_mut() {
             let line_start = line.char_start;
-            let line_end = line_start + line.runs.iter().map(|r| r.text.chars().count()).sum::<usize>();
-            if char_pos < line_start || char_pos > line_end { continue; }
+            let line_end = line_start
+                + line
+                    .runs
+                    .iter()
+                    .map(|r| r.text.chars().count())
+                    .sum::<usize>();
+            if char_pos < line_start || char_pos > line_end {
+                continue;
+            }
 
             // 이 줄 내에서 char_pos에 해당하는 런 찾기
             let mut run_char = line_start;
@@ -260,7 +278,8 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     lang_index: lang,
                     char_overlap: None,
                     footnote_marker: Some(number),
-                    display_text: None,                };
+                    display_text: None,
+                };
 
                 let mut new_runs = Vec::new();
                 // 앞부분에서 기존 런 교체
@@ -273,7 +292,8 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 lang_index: lang,
                                 char_overlap: run.char_overlap.clone(),
                                 footnote_marker: None,
-                                display_text: None,                            });
+                                display_text: None,
+                            });
                         }
                         new_runs.push(marker_run.clone());
                         if !after.is_empty() {
@@ -283,7 +303,8 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 lang_index: lang,
                                 char_overlap: run.char_overlap.clone(),
                                 footnote_marker: None,
-                                display_text: None,                            });
+                                display_text: None,
+                            });
                         }
                     } else {
                         new_runs.push(run.clone());
@@ -314,8 +335,9 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 char_style_id: default_style_id,
                 lang_index: 0,
                 char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,            }]),
+                footnote_marker: None,
+                display_text: None,
+            }]),
             line_height: 400,
             baseline_distance: 320,
             segment_width: 0,
@@ -354,11 +376,17 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         );
 
         // 이 줄의 텍스트 추출
-        let line_text: String = para.text.chars().skip(text_start).take(text_end - text_start).collect();
+        let line_text: String = para
+            .text
+            .chars()
+            .skip(text_start)
+            .take(text_end - text_start)
+            .collect();
 
         // TAC 표 문단 감지
-        let has_tac = para.controls.iter().any(|c|
-            matches!(c, crate::model::control::Control::Table(t) if t.common.treat_as_char));
+        let has_tac = para.controls.iter().any(
+            |c| matches!(c, crate::model::control::Control::Table(t) if t.common.treat_as_char),
+        );
 
         // 강제 줄넘김(\n) + TAC 표 문단 처리 (Task #19/Task #20)
         let newline_pos = line_text.find('\n');
@@ -370,19 +398,26 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 // \n 앞 텍스트를 이전 ComposedLine에 합침 (한컴 방식: \n 전 전체가 한 줄)
                 let prev: &mut ComposedLine = lines.last_mut().unwrap();
                 let mut extra_runs = split_by_char_shapes(
-                    &pre_text, text_start, pre_end,
-                    &para.char_offsets, &para.char_shapes,
+                    &pre_text,
+                    text_start,
+                    pre_end,
+                    &para.char_offsets,
+                    &para.char_shapes,
                 );
                 prev.runs.append(&mut extra_runs);
                 prev.has_line_break = true;
             } else if !pre_text.is_empty() {
                 // 이전 줄이 없으면 새 ComposedLine 생성
                 let pre_runs = split_by_char_shapes(
-                    &pre_text, text_start, pre_end,
-                    &para.char_offsets, &para.char_shapes,
+                    &pre_text,
+                    text_start,
+                    pre_end,
+                    &para.char_offsets,
+                    &para.char_shapes,
                 );
                 let pre_lh = if line_seg.text_height > 0
-                    && line_seg.text_height < line_seg.line_height / 3 {
+                    && line_seg.text_height < line_seg.line_height / 3
+                {
                     line_seg.text_height
                 } else {
                     line_seg.line_height
@@ -404,8 +439,11 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             let post_text: String = line_text.chars().skip(nl_pos + 1).collect();
             let post_text_clean = post_text.trim_end_matches('\n').to_string();
             let post_runs = split_by_char_shapes(
-                &post_text_clean, post_start, text_end,
-                &para.char_offsets, &para.char_shapes,
+                &post_text_clean,
+                post_start,
+                text_end,
+                &para.char_offsets,
+                &para.char_shapes,
             );
             lines.push(ComposedLine {
                 runs: post_runs,
@@ -427,8 +465,11 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             };
 
             let runs = split_by_char_shapes(
-                &line_text, text_start, text_end,
-                &para.char_offsets, &para.char_shapes,
+                &line_text,
+                text_start,
+                text_end,
+                &para.char_offsets,
+                &para.char_shapes,
             );
 
             // TAC 표 문단: lh에 표 높이가 포함된 텍스트 줄은 th로 보정 (Task #19)
@@ -504,8 +545,9 @@ fn split_by_char_shapes(
             char_style_id: 0,
             lang_index: 0,
             char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,        }]);
+            footnote_marker: None,
+            display_text: None,
+        }]);
     }
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
@@ -550,8 +592,9 @@ fn split_by_char_shapes(
             char_style_id: style_id,
             lang_index: 0,
             char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,        }]);
+            footnote_marker: None,
+            display_text: None,
+        }]);
     }
 
     // TextRun 생성
@@ -576,7 +619,8 @@ fn split_by_char_shapes(
                     lang_index: 0,
                     char_overlap: None,
                     footnote_marker: None,
-                    display_text: None,                });
+                    display_text: None,
+                });
             }
         }
     }
@@ -595,7 +639,8 @@ fn split_by_char_shapes(
                     lang_index: 0,
                     char_overlap: None,
                     footnote_marker: None,
-                    display_text: None,                },
+                    display_text: None,
+                },
             );
         }
     }
@@ -607,8 +652,9 @@ fn split_by_char_shapes(
             char_style_id: style_id,
             lang_index: 0,
             char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,        });
+            footnote_marker: None,
+            display_text: None,
+        });
     }
 
     // 언어 카테고리별로 Run을 세분화
@@ -627,7 +673,10 @@ pub(crate) fn find_active_char_shape(char_shapes: &[CharShapeRef], utf16_pos: u3
 }
 
 /// [Task #884] visible char index 로 활성 char_shape 찾기
-pub(crate) fn find_active_char_shape_visible(char_shapes: &[CharShapeRef], visible_idx: usize) -> u32 {
+pub(crate) fn find_active_char_shape_visible(
+    char_shapes: &[CharShapeRef],
+    visible_idx: usize,
+) -> u32 {
     let mut active_id = char_shapes.first().map(|cs| cs.char_shape_id).unwrap_or(0);
     for cs in char_shapes {
         if (cs.start_pos as usize) <= visible_idx {
@@ -656,7 +705,8 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
         }
 
         // 첫 번째 비중립 문자의 언어를 찾아 초기 언어로 설정
-        let initial_lang = chars.iter()
+        let initial_lang = chars
+            .iter()
             .map(|&c| detect_lang_category(c))
             .find(|&lang| lang != 0 || chars.iter().all(|&c| detect_lang_category(c) == 0))
             .unwrap_or(0);
@@ -688,8 +738,9 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                         char_style_id: run.char_style_id,
                         lang_index: current_lang,
                         char_overlap: run.char_overlap.clone(),
-                    footnote_marker: None,
-                    display_text: None,                    });
+                        footnote_marker: None,
+                        display_text: None,
+                    });
                 }
                 current_lang = char_lang;
                 current_start = i;
@@ -704,8 +755,9 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                 char_style_id: run.char_style_id,
                 lang_index: current_lang,
                 char_overlap: run.char_overlap.clone(),
-                    footnote_marker: None,
-                    display_text: None,            });
+                footnote_marker: None,
+                display_text: None,
+            });
         }
     }
 
@@ -733,7 +785,9 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
         let control_type = match ctrl {
             Control::Table(_) => InlineControlType::Table,
-            Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => InlineControlType::Shape,
+            Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
+                InlineControlType::Shape
+            }
             Control::SectionDef(_) | Control::ColumnDef(_) => InlineControlType::Other,
             _ => continue,
         };
@@ -766,10 +820,16 @@ fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
 /// 해당 위치의 composed line에서 기존 텍스트 런을 분할하여 CharOverlap 런을 삽입한다.
 fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) {
     // CharOverlap 컨트롤과 인덱스 수집
-    let char_overlap_indices: Vec<(usize, &crate::model::control::CharOverlap)> = para.controls.iter()
+    let char_overlap_indices: Vec<(usize, &crate::model::control::CharOverlap)> = para
+        .controls
+        .iter()
         .enumerate()
         .filter_map(|(i, c)| {
-            if let Control::CharOverlap(co) = c { Some((i, co)) } else { None }
+            if let Control::CharOverlap(co) = c {
+                Some((i, co))
+            } else {
+                None
+            }
         })
         .collect();
 
@@ -784,22 +844,30 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
     let mut insertions: Vec<(usize, ComposedTextRun)> = Vec::new();
     for (ctrl_idx, co) in &char_overlap_indices {
         let text: String = co.chars.iter().collect();
-        if text.is_empty() { continue; }
-        let char_style_id = co.char_shape_ids.iter()
+        if text.is_empty() {
+            continue;
+        }
+        let char_style_id = co
+            .char_shape_ids
+            .iter()
             .find(|&&id| id != 0xFFFFFFFF)
             .copied()
             .unwrap_or(0);
         let text_pos = control_positions.get(*ctrl_idx).copied().unwrap_or(0);
-        insertions.push((text_pos, ComposedTextRun {
-            text,
-            char_style_id,
-            lang_index: 0,
-            char_overlap: Some(CharOverlapInfo {
-                border_type: co.border_type,
-                inner_char_size: co.inner_char_size,
-            }),
-            footnote_marker: None,
-            display_text: None,        }));
+        insertions.push((
+            text_pos,
+            ComposedTextRun {
+                text,
+                char_style_id,
+                lang_index: 0,
+                char_overlap: Some(CharOverlapInfo {
+                    border_type: co.border_type,
+                    inner_char_size: co.inner_char_size,
+                }),
+                footnote_marker: None,
+                display_text: None,
+            },
+        ));
     }
 
     if insertions.is_empty() {
@@ -808,7 +876,9 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
 
     if composed.lines.is_empty() {
         // 빈 문단: line_segs에서 줄 정보를 가져와 새 줄 생성
-        let (lh, bd, ls) = para.line_segs.first()
+        let (lh, bd, ls) = para
+            .line_segs
+            .first()
             .map(|s| (s.line_height, s.baseline_distance, s.line_spacing))
             .unwrap_or((400, 340, 0));
         composed.lines.push(ComposedLine {
@@ -842,7 +912,9 @@ fn insert_overlap_run(
     let mut char_offset = 0usize;
 
     for line in composed.lines.iter_mut() {
-        let line_char_count: usize = line.runs.iter()
+        let line_char_count: usize = line
+            .runs
+            .iter()
             .filter(|r| r.char_overlap.is_none())
             .map(|r| r.text.chars().count())
             .sum();
@@ -883,8 +955,9 @@ fn insert_overlap_run(
                         char_style_id: style_id,
                         lang_index: lang_idx,
                         char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,                    };
+                        footnote_marker: None,
+                        display_text: None,
+                    };
 
                     // overlap_run과 after_run을 삽입
                     line.runs.insert(run_idx + 1, after_run);
@@ -914,10 +987,13 @@ fn insert_overlap_run(
 /// 각 run별로 해당 언어의 폰트/자간/장평을 적용하여 측정한다.
 /// 진단 API에서 저장된 segment_width와 비교하는 데 사용한다.
 pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleSet) -> f64 {
-    line.runs.iter().map(|run| {
-        let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-        estimate_text_width(effective_text_for_metrics(run), &ts)
-    }).sum()
+    line.runs
+        .iter()
+        .map(|run| {
+            let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+            estimate_text_width(effective_text_for_metrics(run), &ts)
+        })
+        .sum()
 }
 
 /// [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
@@ -974,24 +1050,23 @@ fn split_composed_line_by_width(
     let mut current_run_text = String::new();
     let mut current_run_template: Option<ComposedTextRun> = None;
 
-    let flush_run = |runs: &mut Vec<ComposedTextRun>,
-                     text: &mut String,
-                     template: &Option<ComposedTextRun>| {
-        if !text.is_empty() {
-            if let Some(t) = template {
-                runs.push(ComposedTextRun {
-                    text: std::mem::take(text),
-                    char_style_id: t.char_style_id,
-                    lang_index: t.lang_index,
-                    char_overlap: t.char_overlap.clone(),
-                    footnote_marker: t.footnote_marker,
-                    display_text: None,
-                });
-            } else {
-                text.clear();
+    let flush_run =
+        |runs: &mut Vec<ComposedTextRun>, text: &mut String, template: &Option<ComposedTextRun>| {
+            if !text.is_empty() {
+                if let Some(t) = template {
+                    runs.push(ComposedTextRun {
+                        text: std::mem::take(text),
+                        char_style_id: t.char_style_id,
+                        lang_index: t.lang_index,
+                        char_overlap: t.char_overlap.clone(),
+                        footnote_marker: t.footnote_marker,
+                        display_text: None,
+                    });
+                } else {
+                    text.clear();
+                }
             }
-        }
-    };
+        };
 
     let push_line = |result: &mut Vec<ComposedLine>,
                      runs: &mut Vec<ComposedTextRun>,
@@ -1018,10 +1093,16 @@ fn split_composed_line_by_width(
     for run in &src.runs {
         let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
         // 현재 run 의 template 변경 (char_style 다른 run 들 처리)
-        if current_run_template.as_ref().map(|t| {
-            t.char_style_id != run.char_style_id || t.lang_index != run.lang_index
-        }).unwrap_or(true) {
-            flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
+        if current_run_template
+            .as_ref()
+            .map(|t| t.char_style_id != run.char_style_id || t.lang_index != run.lang_index)
+            .unwrap_or(true)
+        {
+            flush_run(
+                &mut current_runs,
+                &mut current_run_text,
+                &current_run_template,
+            );
             current_run_template = Some(run.clone());
         }
         // run 텍스트를 단어 단위로 분할 (공백 포함)
@@ -1032,11 +1113,22 @@ fn split_composed_line_by_width(
             if ch == ' ' || ch == '\t' {
                 let word_width = estimate_text_width(&word, &ts);
                 // 현재 단어가 추가되면 max_width 초과하는지 검사
-                if current_width + word_width > max_width_px && (chars_in_line > 0 || !current_run_text.is_empty()) {
+                if current_width + word_width > max_width_px
+                    && (chars_in_line > 0 || !current_run_text.is_empty())
+                {
                     // 현재 줄을 flush 후 새 줄 시작
-                    flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
-                    push_line(&mut result, &mut current_runs, &mut current_char_start,
-                              &mut chars_in_line, &mut current_width);
+                    flush_run(
+                        &mut current_runs,
+                        &mut current_run_text,
+                        &current_run_template,
+                    );
+                    push_line(
+                        &mut result,
+                        &mut current_runs,
+                        &mut current_char_start,
+                        &mut chars_in_line,
+                        &mut current_width,
+                    );
                 }
                 // 단어 자체가 max_width 초과 시 글자 단위 break
                 if word_width > max_width_px && current_width == 0.0 {
@@ -1044,9 +1136,18 @@ fn split_composed_line_by_width(
                         let wch_str: String = std::iter::once(wch).collect();
                         let wch_width = estimate_text_width(&wch_str, &ts);
                         if current_width + wch_width > max_width_px && chars_in_line > 0 {
-                            flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
-                            push_line(&mut result, &mut current_runs, &mut current_char_start,
-                                      &mut chars_in_line, &mut current_width);
+                            flush_run(
+                                &mut current_runs,
+                                &mut current_run_text,
+                                &current_run_template,
+                            );
+                            push_line(
+                                &mut result,
+                                &mut current_runs,
+                                &mut current_char_start,
+                                &mut chars_in_line,
+                                &mut current_width,
+                            );
                         }
                         current_run_text.push(wch);
                         current_width += wch_width;
@@ -1063,10 +1164,21 @@ fn split_composed_line_by_width(
         // run 끝에 남은 단어 처리
         if !word.is_empty() {
             let word_width = estimate_text_width(&word, &ts);
-            if current_width + word_width > max_width_px && (chars_in_line > 0 || !current_run_text.is_empty()) {
-                flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
-                push_line(&mut result, &mut current_runs, &mut current_char_start,
-                          &mut chars_in_line, &mut current_width);
+            if current_width + word_width > max_width_px
+                && (chars_in_line > 0 || !current_run_text.is_empty())
+            {
+                flush_run(
+                    &mut current_runs,
+                    &mut current_run_text,
+                    &current_run_template,
+                );
+                push_line(
+                    &mut result,
+                    &mut current_runs,
+                    &mut current_char_start,
+                    &mut chars_in_line,
+                    &mut current_width,
+                );
             }
             // 단어 자체가 max_width 초과 시 글자 단위 break
             if word_width > max_width_px && current_width == 0.0 {
@@ -1074,9 +1186,18 @@ fn split_composed_line_by_width(
                     let wch_str: String = std::iter::once(wch).collect();
                     let wch_width = estimate_text_width(&wch_str, &ts);
                     if current_width + wch_width > max_width_px && chars_in_line > 0 {
-                        flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
-                        push_line(&mut result, &mut current_runs, &mut current_char_start,
-                                  &mut chars_in_line, &mut current_width);
+                        flush_run(
+                            &mut current_runs,
+                            &mut current_run_text,
+                            &current_run_template,
+                        );
+                        push_line(
+                            &mut result,
+                            &mut current_runs,
+                            &mut current_char_start,
+                            &mut chars_in_line,
+                            &mut current_width,
+                        );
                     }
                     current_run_text.push(wch);
                     current_width += wch_width;
@@ -1090,9 +1211,18 @@ fn split_composed_line_by_width(
         }
     }
     // 마지막 줄 flush
-    flush_run(&mut current_runs, &mut current_run_text, &current_run_template);
-    push_line(&mut result, &mut current_runs, &mut current_char_start,
-              &mut chars_in_line, &mut current_width);
+    flush_run(
+        &mut current_runs,
+        &mut current_run_text,
+        &current_run_template,
+    );
+    push_line(
+        &mut result,
+        &mut current_runs,
+        &mut current_char_start,
+        &mut chars_in_line,
+        &mut current_width,
+    );
 
     if result.is_empty() {
         // 안전장치: 절대 빈 결과 반환하지 않음
@@ -1146,12 +1276,22 @@ pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
 fn pua_overlap_digit(ch: char) -> Option<(u8, u8)> {
     let cp = ch as u32;
     // 2자리 블록
-    if (0xF0289..=0xF0291).contains(&cp) { return Some((0, (cp - 0xF0288) as u8)); } // tens 1-9
-    if (0xF0292..=0xF029B).contains(&cp) { return Some((1, (cp - 0xF0292) as u8)); } // ones 0-9
-    // 3자리 블록
-    if (0xF0491..=0xF0499).contains(&cp) { return Some((0, (cp - 0xF0490) as u8)); } // hundreds 1-9
-    if (0xF049A..=0xF04A3).contains(&cp) { return Some((1, (cp - 0xF049A) as u8)); } // tens 0-9
-    if (0xF04A4..=0xF04AD).contains(&cp) { return Some((2, (cp - 0xF04A4) as u8)); } // ones 0-9
+    if (0xF0289..=0xF0291).contains(&cp) {
+        return Some((0, (cp - 0xF0288) as u8));
+    } // tens 1-9
+    if (0xF0292..=0xF029B).contains(&cp) {
+        return Some((1, (cp - 0xF0292) as u8));
+    } // ones 0-9
+      // 3자리 블록
+    if (0xF0491..=0xF0499).contains(&cp) {
+        return Some((0, (cp - 0xF0490) as u8));
+    } // hundreds 1-9
+    if (0xF049A..=0xF04A3).contains(&cp) {
+        return Some((1, (cp - 0xF049A) as u8));
+    } // tens 0-9
+    if (0xF04A4..=0xF04AD).contains(&cp) {
+        return Some((2, (cp - 0xF04A4) as u8));
+    } // ones 0-9
     None
 }
 
@@ -1160,7 +1300,9 @@ fn pua_overlap_digit(ch: char) -> Option<(u8, u8)> {
 /// 모든 문자가 PUA 겹침용 숫자인 경우에만 디코딩 성공 (Some).
 /// 그룹 번호(0=최상위자리, 1=중간, 2=최하위)로 정렬하여 올바른 자릿수 순서를 보장한다.
 pub fn decode_pua_overlap_number(chars: &[char]) -> Option<String> {
-    if chars.is_empty() { return None; }
+    if chars.is_empty() {
+        return None;
+    }
     let mut groups: Vec<(u8, u8)> = Vec::with_capacity(chars.len());
     for &ch in chars {
         groups.push(pua_overlap_digit(ch)?);
@@ -1247,7 +1389,10 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
             }
 
             // PUA 테두리 숫자 문자가 있는지 확인
-            let has_pua = run.text.chars().any(|ch| pua_enclosed_border_type(ch).is_some());
+            let has_pua = run
+                .text
+                .chars()
+                .any(|ch| pua_enclosed_border_type(ch).is_some());
             if !has_pua {
                 new_runs.push(run.clone());
                 continue;
@@ -1265,8 +1410,9 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             char_style_id: run.char_style_id,
                             lang_index: run.lang_index,
                             char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,                        });
+                            footnote_marker: None,
+                            display_text: None,
+                        });
                         buf.clear();
                     }
                     // PUA 문자 그대로 유지 + CharOverlapInfo 부착
@@ -1279,7 +1425,8 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             inner_char_size: 0,
                         }),
                         footnote_marker: None,
-                        display_text: None,                    });
+                        display_text: None,
+                    });
                 } else {
                     buf.push(ch);
                 }
@@ -1293,7 +1440,8 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                     lang_index: run.lang_index,
                     char_overlap: None,
                     footnote_marker: None,
-                    display_text: None,                });
+                    display_text: None,
+                });
             }
         }
 
@@ -1306,11 +1454,14 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
 mod line_breaking;
 pub mod lineseg_compare;
 
-pub(crate) use line_breaking::{reflow_line_segs, recalculate_section_vpos, is_line_start_forbidden, is_line_end_forbidden, tokenize_paragraph, BreakToken};
+pub(crate) use line_breaking::{
+    is_line_end_forbidden, is_line_start_forbidden, recalculate_section_vpos, reflow_line_segs,
+    tokenize_paragraph, BreakToken,
+};
 
-#[cfg(test)]
-mod tests;
 #[cfg(test)]
 mod lineseg_compare_tests;
 #[cfg(test)]
 mod re_sample_gen;
+#[cfg(test)]
+mod tests;

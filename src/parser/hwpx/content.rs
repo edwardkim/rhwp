@@ -98,11 +98,15 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
 
     // spine에 없는 섹션도 manifest에서 추출 (fallback)
     if info.section_files.is_empty() {
-        let mut section_items: Vec<_> = all_items.iter()
+        let mut section_items: Vec<_> = all_items
+            .iter()
             .filter(|(_, href, mt, _)| mt == "application/xml" && href.contains("section"))
             .collect();
         section_items.sort_by(|a, b| a.1.cmp(&b.1));
-        info.section_files = section_items.into_iter().map(|(_, href, _, _)| href.clone()).collect();
+        info.section_files = section_items
+            .into_iter()
+            .map(|(_, href, _, _)| href.clone())
+            .collect();
     }
 
     // BinData 항목 추출

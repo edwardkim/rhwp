@@ -115,7 +115,8 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
         if let Ok(entries) = std::panic::catch_unwind(|| {
             let cursor = Cursor::new(cfb_bytes);
             CompoundFile::open(cursor).ok().map(|mut comp| {
-                comp.walk().filter(|e| e.is_stream())
+                comp.walk()
+                    .filter(|e| e.is_stream())
                     .map(|e| e.path().to_string_lossy().to_string())
                     .collect::<Vec<_>>()
             })
@@ -155,7 +156,9 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
 
 /// 바이트 슬라이스의 선두 매직으로 이미지 포맷을 판별
 pub fn detect_native_image(data: &[u8]) -> Option<(NativeImageKind, Vec<u8>)> {
-    if data.len() < 4 { return None; }
+    if data.len() < 4 {
+        return None;
+    }
     if data.starts_with(b"BM") {
         return Some((NativeImageKind::Bmp, data.to_vec()));
     }
@@ -179,20 +182,33 @@ fn extract_dib_as_bmp(data: &[u8]) -> Option<Vec<u8>> {
     let scan_limit = data.len().min(4096);
     for i in 0..scan_limit.saturating_sub(40) {
         // BITMAPINFOHEADER.biSize == 40
-        let bi_size = u32::from_le_bytes([data[i], data[i+1], data[i+2], data[i+3]]);
-        if bi_size != 40 { continue; }
+        let bi_size = u32::from_le_bytes([data[i], data[i + 1], data[i + 2], data[i + 3]]);
+        if bi_size != 40 {
+            continue;
+        }
         // 유효성: width/height가 현실적인 범위
-        let w = i32::from_le_bytes([data[i+4], data[i+5], data[i+6], data[i+7]]);
-        let h = i32::from_le_bytes([data[i+8], data[i+9], data[i+10], data[i+11]]);
-        if w <= 0 || w > 100_000 || h.abs() == 0 || h.abs() > 100_000 { continue; }
-        let bit_count = u16::from_le_bytes([data[i+14], data[i+15]]);
-        if !matches!(bit_count, 1 | 4 | 8 | 16 | 24 | 32) { continue; }
-        let compression = u32::from_le_bytes([data[i+16], data[i+17], data[i+18], data[i+19]]);
+        let w = i32::from_le_bytes([data[i + 4], data[i + 5], data[i + 6], data[i + 7]]);
+        let h = i32::from_le_bytes([data[i + 8], data[i + 9], data[i + 10], data[i + 11]]);
+        if w <= 0 || w > 100_000 || h.abs() == 0 || h.abs() > 100_000 {
+            continue;
+        }
+        let bit_count = u16::from_le_bytes([data[i + 14], data[i + 15]]);
+        if !matches!(bit_count, 1 | 4 | 8 | 16 | 24 | 32) {
+            continue;
+        }
+        let compression =
+            u32::from_le_bytes([data[i + 16], data[i + 17], data[i + 18], data[i + 19]]);
         // 색상 테이블 크기 계산
-        let clr_used = u32::from_le_bytes([data[i+32], data[i+33], data[i+34], data[i+35]]);
+        let clr_used = u32::from_le_bytes([data[i + 32], data[i + 33], data[i + 34], data[i + 35]]);
         let palette_entries = if bit_count <= 8 {
-            if clr_used > 0 && clr_used <= 256 { clr_used } else { 1u32 << bit_count }
-        } else { 0 };
+            if clr_used > 0 && clr_used <= 256 {
+                clr_used
+            } else {
+                1u32 << bit_count
+            }
+        } else {
+            0
+        };
         let palette_bytes = palette_entries * 4;
         let dib_and_data = &data[i..];
         let offset_to_pixels = 14 + 40 + palette_bytes as usize;

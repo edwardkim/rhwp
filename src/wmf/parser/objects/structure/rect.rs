@@ -25,12 +25,7 @@ impl Rect {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (
-            (left, left_bytes),
-            (top, top_bytes),
-            (right, right_bytes),
-            (bottom, bottom_bytes),
-        ) = (
+        let ((left, left_bytes), (top, top_bytes), (right, right_bytes), (bottom, bottom_bytes)) = (
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
@@ -38,7 +33,12 @@ impl Rect {
         );
 
         Ok((
-            Self { left, top, right, bottom },
+            Self {
+                left,
+                top,
+                right,
+                bottom,
+            },
             left_bytes + top_bytes + right_bytes + bottom_bytes,
         ))
     }
@@ -50,7 +50,12 @@ impl Rect {
         let bottom = self.bottom.max(other.bottom);
 
         if left < right && bottom < top {
-            Some(Rect { left, top, right, bottom })
+            Some(Rect {
+                left,
+                top,
+                right,
+                bottom,
+            })
         } else {
             None
         }

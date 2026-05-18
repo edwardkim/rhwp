@@ -25,17 +25,13 @@ impl Palette {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (
-            (start, start_bytes),
-            (number_of_entries, number_of_entries_bytes),
-        ) = (
+        let ((start, start_bytes), (number_of_entries, number_of_entries_bytes)) = (
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
         );
 
         let mut consumed_bytes = start_bytes + number_of_entries_bytes;
-        let mut a_palette_entries =
-            Vec::with_capacity(number_of_entries as usize);
+        let mut a_palette_entries = Vec::with_capacity(number_of_entries as usize);
 
         for _ in 0..number_of_entries {
             let (v, c) = crate::wmf::parser::PaletteEntry::parse(buf)?;
@@ -45,7 +41,11 @@ impl Palette {
         }
 
         Ok((
-            Self { start, number_of_entries, a_palette_entries },
+            Self {
+                start,
+                number_of_entries,
+                a_palette_entries,
+            },
             consumed_bytes,
         ))
     }

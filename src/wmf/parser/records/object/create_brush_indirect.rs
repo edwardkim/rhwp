@@ -42,19 +42,25 @@ impl META_CREATEBRUSHINDIRECT {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, log_brush })
+        Ok(Self {
+            record_size,
+            record_function,
+            log_brush,
+        })
     }
 
     pub fn create_brush(&self) -> crate::wmf::parser::Brush {
         match self.log_brush.clone() {
-            crate::wmf::parser::LogBrush::DIBPatternPT => {
-                crate::wmf::parser::Brush::Solid {
-                    color_ref: crate::wmf::parser::ColorRef::black(),
-                }
-            }
-            crate::wmf::parser::LogBrush::Hatched { color_ref, brush_hatch } => {
-                crate::wmf::parser::Brush::Hatched { color_ref, brush_hatch }
-            }
+            crate::wmf::parser::LogBrush::DIBPatternPT => crate::wmf::parser::Brush::Solid {
+                color_ref: crate::wmf::parser::ColorRef::black(),
+            },
+            crate::wmf::parser::LogBrush::Hatched {
+                color_ref,
+                brush_hatch,
+            } => crate::wmf::parser::Brush::Hatched {
+                color_ref,
+                brush_hatch,
+            },
             crate::wmf::parser::LogBrush::Solid { color_ref } => {
                 crate::wmf::parser::Brush::Solid { color_ref }
             }

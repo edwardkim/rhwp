@@ -6,15 +6,20 @@
 //   PageHide(header=true, footer=true, master=true,
 //            border=true, fill=true, page_num=true)
 
-use std::fs;
 use rhwp::model::control::{Control, PageHide};
 use rhwp::model::table::Table;
+use std::fs;
 
 fn dump_pagehide(loc: &str, ph: &PageHide) {
     println!(
         "  {} PageHide(header={} footer={} master={} border={} fill={} page_num={})",
-        loc, ph.hide_header, ph.hide_footer, ph.hide_master_page,
-        ph.hide_border, ph.hide_fill, ph.hide_page_num
+        loc,
+        ph.hide_header,
+        ph.hide_footer,
+        ph.hide_master_page,
+        ph.hide_border,
+        ph.hide_fill,
+        ph.hide_page_num
     );
 }
 
@@ -33,7 +38,10 @@ fn scan_table(loc_prefix: &str, table: &Table, counter: &mut usize) {
                         *counter += 1;
                     }
                     Control::Table(inner) => {
-                        let inner_loc = format!("{}/셀[{}]/p[{}]/Table[{}]", loc_prefix, cell_idx, cp_idx, ci);
+                        let inner_loc = format!(
+                            "{}/셀[{}]/p[{}]/Table[{}]",
+                            loc_prefix, cell_idx, cp_idx, ci
+                        );
                         scan_table(&inner_loc, inner, counter);
                     }
                     _ => {}
@@ -44,7 +52,8 @@ fn scan_table(loc_prefix: &str, table: &Table, counter: &mut usize) {
 }
 
 fn main() {
-    let path = std::env::args().nth(1)
+    let path = std::env::args()
+        .nth(1)
         .unwrap_or_else(|| "samples/aift.hwp".to_string());
     println!("=== inspect_705: {} ===", path);
 

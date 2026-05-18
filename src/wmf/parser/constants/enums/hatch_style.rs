@@ -1,15 +1,5 @@
 /// The HatchStyle Enumeration specifies the hatch pattern.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum HatchStyle {
     /// A horizontal hatch.

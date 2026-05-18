@@ -181,8 +181,7 @@ impl Font {
             )?;
 
             // Convert bytes to UTF-8 string from specified charset
-            let as_charset =
-                crate::wmf::parser::bytes_into_utf8(&bytes[..len], charset)?;
+            let as_charset = crate::wmf::parser::bytes_into_utf8(&bytes[..len], charset)?;
 
             // WMF spec: facename 은 Latin-1 ANSI character 만 허용. 그러나 한컴
             // 등 multi-byte charset (HANGUL_CHARSET, SHIFTJIS_CHARSET 등) WMF 는

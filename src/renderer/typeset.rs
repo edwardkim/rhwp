@@ -9,10 +9,10 @@
 //! MS Word/OOXML의 cantSplit/tblHeader를 참고.
 
 use crate::model::control::Control;
-use crate::model::shape::CaptionDirection;
 use crate::model::header_footer::HeaderFooterApply;
-use crate::model::paragraph::{Paragraph, ColumnBreakType};
-use crate::model::page::{PageDef, ColumnDef, ColumnType};
+use crate::model::page::{ColumnDef, ColumnType, PageDef};
+use crate::model::paragraph::{ColumnBreakType, Paragraph};
+use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::page_layout::PageLayoutInfo;
@@ -22,8 +22,8 @@ use crate::renderer::{hwpunit_to_px, DEFAULT_DPI};
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
 use super::pagination::{
-    PaginationResult, PageContent, ColumnContent, PageItem,
-    HeaderFooterRef, FootnoteRef, FootnoteSource, EndnoteRef,
+    ColumnContent, EndnoteRef, FootnoteRef, FootnoteSource, HeaderFooterRef, PageContent, PageItem,
+    PaginationResult,
 };
 
 // ========================================================
@@ -152,7 +152,8 @@ struct TypesetState {
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
     /// [Task #604 R3] 현재 단의 wrap text 문단 ↔ anchor 메타데이터.
     /// wrap_around state machine 매칭 시 등록. flush_column 에서 ColumnContent 로 전달.
-    current_column_wrap_anchors: std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
+    current_column_wrap_anchors:
+        std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
     /// [Task #702] 현재 zone 의 ColumnType (Normal/Distribute/Parallel).
     /// process_multicolumn_break 에서 새 ColumnDef 매칭 시 갱신.
     /// Distribute 다단의 짧은 컬럼 vpos-reset 검출 임계값 완화에 사용.
@@ -371,7 +372,8 @@ impl FormattedParagraph {
 
     /// 줄 범위의 advance 합계
     fn line_advances_sum(&self, range: std::ops::Range<usize>) -> f64 {
-        range.into_iter()
+        range
+            .into_iter()
             .map(|i| self.line_heights[i] + self.line_spacings[i])
             .sum()
     }
@@ -407,8 +409,11 @@ impl TypesetEngine {
         let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
 
         let mut st = TypesetState::new(
-            layout, col_count, section_index,
-            footnote_separator_overhead, footnote_safety_margin,
+            layout,
+            col_count,
+            section_index,
+            footnote_separator_overhead,
+            footnote_safety_margin,
             column_def.column_type,
         );
         st.hide_empty_line = hide_empty_line;
@@ -426,12 +431,19 @@ impl TypesetEngine {
             // [쪽나누기]+단정의:1단 (header) → [단나누기]+단정의:2단 (content) 패턴 사용.
             // [다단나누기] 외에도 Page/Column break 의 ColumnDef 차이도 zone 재정의 신호로 인식.
             let new_col_def_opt: Option<ColumnDef> = para.controls.iter().find_map(|c| {
-                if let Control::ColumnDef(cd) = c { Some(cd.clone()) } else { None }
+                if let Control::ColumnDef(cd) = c {
+                    Some(cd.clone())
+                } else {
+                    None
+                }
             });
-            let has_diff_col_def = new_col_def_opt.as_ref().map(|cd| {
-                cd.column_count.max(1) != st.col_count
-                    || cd.column_type != st.current_zone_column_type
-            }).unwrap_or(false);
+            let has_diff_col_def = new_col_def_opt
+                .as_ref()
+                .map(|cd| {
+                    cd.column_count.max(1) != st.col_count
+                        || cd.column_type != st.current_zone_column_type
+                })
+                .unwrap_or(false);
 
             // 다단 나누기
             if para.column_type == ColumnBreakType::MultiColumn {
@@ -515,7 +527,9 @@ impl TypesetEngine {
                     // 거짓이라 컬럼 전환을 못 잡았다(shortcut.hwp 스타일/속성 섹션). 직전 문단의
                     // vpos+line_height(=콘텐츠 끝)를 기준으로 비교하면 정상 흐름(cv=pv_end+ls≥pv_end)
                     // 은 영향 없고 reset(cv≪pv_end)만 잡힌다.
-                    let prev_vpos_end = prev_para.line_segs.last()
+                    let prev_vpos_end = prev_para
+                        .line_segs
+                        .last()
                         .map(|s| s.vertical_pos + s.line_height)
                         .unwrap_or(pv);
                     let trigger = if st.col_count > 1 {
@@ -552,22 +566,25 @@ impl TypesetEngine {
             // 가드 제외 조건:
             //   - 다음 pi 가 force_page_break (column_type==Page/Section) 인 경우 발동 안 함
             //     (정상 쪽나누기 신호 — 단독 페이지 발생 안 함, hwp-multi-001 회귀 차단)
-            let next_will_vpos_reset = if !st.current_items.is_empty() && para_idx + 1 < paragraphs.len() {
-                let next_para = &paragraphs[para_idx + 1];
-                let next_force_break = next_para.column_type == ColumnBreakType::Page
-                    || next_para.column_type == ColumnBreakType::Section;
-                if next_force_break {
-                    false
-                } else {
-                    let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
-                    let curr_last_vpos = para.line_segs.last().map(|s| s.vertical_pos);
-                    // [Task #470] 다단 섹션에서는 nv == 0 → nv < cl 로 완화 (컬럼 헤더 오프셋).
-                    // 단일 단에서는 partial-table split 회귀 (issue #418) 회피 위해 nv == 0 유지.
-                    let multi_col = st.col_count > 1;
-                    matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl))
+            let next_will_vpos_reset =
+                if !st.current_items.is_empty() && para_idx + 1 < paragraphs.len() {
+                    let next_para = &paragraphs[para_idx + 1];
+                    let next_force_break = next_para.column_type == ColumnBreakType::Page
+                        || next_para.column_type == ColumnBreakType::Section;
+                    if next_force_break {
+                        false
+                    } else {
+                        let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
+                        let curr_last_vpos = para.line_segs.last().map(|s| s.vertical_pos);
+                        // [Task #470] 다단 섹션에서는 nv == 0 → nv < cl 로 완화 (컬럼 헤더 오프셋).
+                        // 단일 단에서는 partial-table split 회귀 (issue #418) 회피 위해 nv == 0 유지.
+                        let multi_col = st.col_count > 1;
+                        matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl))
                         if (if multi_col { nv < cl } else { nv == 0 }) && cl > 5000)
-                }
-            } else { false };
+                    }
+                } else {
+                    false
+                };
 
             if next_will_vpos_reset {
                 // [Task #362] 빈 paragraph 가 표/도형/그림 컨트롤을 포함하면 skip 안 함
@@ -596,12 +613,11 @@ impl TypesetEngine {
                 let is_curr_empty = para.text.is_empty() && para.controls.is_empty();
                 if next_force_break && is_curr_empty {
                     // empty paragraph 의 예상 height = first line_seg 의 lh + ls
-                    let empty_h_px = para.line_segs.first().map(|s| {
-                        hwpunit_to_px(
-                            (s.line_height + s.line_spacing) as i32,
-                            self.dpi,
-                        )
-                    }).unwrap_or(0.0);
+                    let empty_h_px = para
+                        .line_segs
+                        .first()
+                        .map(|s| hwpunit_to_px((s.line_height + s.line_spacing) as i32, self.dpi))
+                        .unwrap_or(0.0);
                     let avail = st.available_height() - st.current_height;
                     if empty_h_px > avail {
                         // 빈 paragraph 가 fit 안 됨 → skip 으로 단독 page 차단
@@ -616,53 +632,83 @@ impl TypesetEngine {
             // 후속 paragraph 는 표 옆에 배치되므로 height 소비 없이 wrap_around_paras 에 기록.
             if st.wrap_around_cs >= 0 && !has_table {
                 let para_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                let para_sw = para.line_segs.first().map(|s| s.segment_width as i32).unwrap_or(0);
-                let is_empty_para = para.text.chars().all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n')
+                let para_sw = para
+                    .line_segs
+                    .first()
+                    .map(|s| s.segment_width as i32)
+                    .unwrap_or(0);
+                let is_empty_para = para
+                    .text
+                    .chars()
+                    .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n')
                     && para.controls.is_empty();
-                let any_seg_matches = para.line_segs.iter().any(|s|
-                    s.column_start == st.wrap_around_cs && s.segment_width as i32 == st.wrap_around_sw
-                );
-                let body_w = (page_def.width as i32) - (page_def.margin_left as i32) - (page_def.margin_right as i32);
-                let sw0_match = st.wrap_around_sw == 0 && is_empty_para && para_sw > 0
-                    && para_sw < body_w / 2;
+                let any_seg_matches = para.line_segs.iter().any(|s| {
+                    s.column_start == st.wrap_around_cs
+                        && s.segment_width as i32 == st.wrap_around_sw
+                });
+                let body_w = (page_def.width as i32)
+                    - (page_def.margin_left as i32)
+                    - (page_def.margin_right as i32);
+                let sw0_match =
+                    st.wrap_around_sw == 0 && is_empty_para && para_sw > 0 && para_sw < body_w / 2;
                 // [Task #724] HWP5 변환본 case: anchor host 의 wrap=Square image 위치/폭/margin
                 // 으로 expected_cs 정확 계산 후 para_cs 일치 확인. anchor cs=0 (caption-style)
                 // 한정 가드. expected_cs = (image_x_offset + width + 2*margin) - body_left.
                 let anchor_image_match = if st.wrap_around_cs == 0 {
                     let body_left = page_def.margin_left as i32;
-                    let expected_cs_hu = paragraphs.get(st.wrap_around_table_para)
-                        .and_then(|p| p.controls.iter().find_map(|c| {
-                            let cm = match c {
-                                Control::Picture(pic) => Some(&pic.common),
-                                Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
-                                    Some(&pic.common)
-                                } else { None },
-                                _ => None,
-                            };
-                            cm.filter(|cm| !cm.treat_as_char
-                                && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square))
-                                .map(|cm| cm.horizontal_offset as i32 + cm.width as i32
-                                    + 2 * cm.margin.right as i32 - body_left)
-                        }))
+                    let expected_cs_hu = paragraphs
+                        .get(st.wrap_around_table_para)
+                        .and_then(|p| {
+                            p.controls.iter().find_map(|c| {
+                                let cm = match c {
+                                    Control::Picture(pic) => Some(&pic.common),
+                                    Control::Shape(s) => {
+                                        if let crate::model::shape::ShapeObject::Picture(pic) =
+                                            s.as_ref()
+                                        {
+                                            Some(&pic.common)
+                                        } else {
+                                            None
+                                        }
+                                    }
+                                    _ => None,
+                                };
+                                cm.filter(|cm| {
+                                    !cm.treat_as_char
+                                        && matches!(
+                                            cm.text_wrap,
+                                            crate::model::shape::TextWrap::Square
+                                        )
+                                })
+                                .map(|cm| {
+                                    cm.horizontal_offset as i32
+                                        + cm.width as i32
+                                        + 2 * cm.margin.right as i32
+                                        - body_left
+                                })
+                            })
+                        })
                         .unwrap_or(0);
                     expected_cs_hu > 0
                         && (para_cs - expected_cs_hu).abs() < 200
                         && para_sw > 0
                         && para_cs + para_sw <= body_w + 200
-                } else { false };
+                } else {
+                    false
+                };
                 // [Task #901] cs 일치 + 합리적 sw 매칭 (anchor 의 wrap zone region 다양성).
                 // pic2.hwp paragraph 1 (cs=24470 sw=18050) vs anchor (wrap_around_cs=24470 sw=2570)
                 // — cs 같지만 sw 다름 (다른 wrap region). 기존 매칭 실패 → wrap_anchors 미등록
                 // → paragraph 좌측 그려짐. anchor_any_seg 가 활성이면 cs 정확 일치 만으로
                 // wrap zone 내부 paragraph 로 인정.
-                let cs_only_match = st.wrap_around_any_seg
-                    && para_cs == st.wrap_around_cs
-                    && para_sw > 0;
+                let cs_only_match =
+                    st.wrap_around_any_seg && para_cs == st.wrap_around_cs && para_sw > 0;
                 if (para_cs == st.wrap_around_cs && para_sw == st.wrap_around_sw)
                     || (any_seg_matches && (is_empty_para || st.wrap_around_any_seg))
                     || sw0_match
                     || anchor_image_match
-                    || cs_only_match {
+                    || cs_only_match
+                {
                     // [Task #604 R3] wrap_around 매칭 분기를 anchor 종류 기반으로 본질화.
                     //
                     // - Picture (그림 Square wrap) anchor: wrap text 가 LineSeg cs/sw 로
@@ -673,33 +719,55 @@ impl TypesetEngine {
                     //
                     // Stage 2b: Paragraph.wrap_precomputed (HWP3 휴리스틱 IR 누설) 제거.
                     // anchor paragraph 의 controls 검사로 본질 정합 대체.
-                    let anchor_is_picture = paragraphs.get(st.wrap_around_table_para)
-                        .map(|p| p.controls.iter().any(|c| match c {
-                            Control::Picture(pic) => !pic.common.treat_as_char,
-                            Control::Shape(s) => {
-                                if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
-                                    !pic.common.treat_as_char
-                                } else { false }
-                            }
-                            _ => false,
-                        }))
+                    let anchor_is_picture = paragraphs
+                        .get(st.wrap_around_table_para)
+                        .map(|p| {
+                            p.controls.iter().any(|c| match c {
+                                Control::Picture(pic) => !pic.common.treat_as_char,
+                                Control::Shape(s) => {
+                                    if let crate::model::shape::ShapeObject::Picture(pic) =
+                                        s.as_ref()
+                                    {
+                                        !pic.common.treat_as_char
+                                    } else {
+                                        false
+                                    }
+                                }
+                                _ => false,
+                            })
+                        })
                         .unwrap_or(false);
                     if anchor_is_picture {
                         // Picture anchor: wrap_anchors 등록 + FullParagraph 통과
                         // [Task #722] anchor image 의 outer margin_right (HU) 추출
-                        let anchor_margin_right = paragraphs.get(st.wrap_around_table_para)
-                            .and_then(|p| p.controls.iter().find_map(|c| {
-                                let cm = match c {
-                                    Control::Picture(pic) => Some(&pic.common),
-                                    Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(pic) = s.as_ref() {
-                                        Some(&pic.common)
-                                    } else { None },
-                                    _ => None,
-                                };
-                                cm.filter(|cm| !cm.treat_as_char
-                                    && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square))
+                        let anchor_margin_right = paragraphs
+                            .get(st.wrap_around_table_para)
+                            .and_then(|p| {
+                                p.controls.iter().find_map(|c| {
+                                    let cm = match c {
+                                        Control::Picture(pic) => Some(&pic.common),
+                                        Control::Shape(s) => {
+                                            if let crate::model::shape::ShapeObject::Picture(pic) =
+                                                s.as_ref()
+                                            {
+                                                Some(&pic.common)
+                                            } else {
+                                                None
+                                            }
+                                        }
+                                        _ => None,
+                                    };
+                                    cm.filter(|cm| {
+                                        !cm.treat_as_char
+                                            && matches!(
+                                                cm.text_wrap,
+                                                crate::model::shape::TextWrap::Square
+                                            )
+                                    })
                                     .map(|cm| cm.margin.right as i32)
-                            })).unwrap_or(0);
+                                })
+                            })
+                            .unwrap_or(0);
                         st.current_column_wrap_anchors.insert(
                             para_idx,
                             crate::renderer::pagination::WrapAnchorRef {
@@ -717,16 +785,21 @@ impl TypesetEngine {
                         // 통째로 페이지 흐름에서 누락된다. 이 경우 wrap zone 을 종료하고
                         // 일반 텍스트 배치로 폴백한다 (LINE_SEG cs/sw 가 이미 wrap 형상을
                         // 인코딩하므로 layout 이 첫 줄을 표 옆에, 나머지를 표 아래에 렌더).
-                        let last_seg_match = para.line_segs.last().map(|s|
-                            s.column_start == st.wrap_around_cs && s.segment_width as i32 == st.wrap_around_sw
-                        ).unwrap_or(false);
+                        let last_seg_match = para
+                            .line_segs
+                            .last()
+                            .map(|s| {
+                                s.column_start == st.wrap_around_cs
+                                    && s.segment_width as i32 == st.wrap_around_sw
+                            })
+                            .unwrap_or(false);
                         if last_seg_match || is_empty_para {
                             st.current_column_wrap_around_paras.push(
                                 crate::renderer::pagination::WrapAroundPara {
                                     para_index: para_idx,
                                     table_para_index: st.wrap_around_table_para,
                                     has_text: !is_empty_para,
-                                }
+                                },
                             );
                             continue;
                         }
@@ -782,10 +855,7 @@ impl TypesetEngine {
             // Stage 1 진단 로그 분석으로 false positive 41건 → 1건(pi=83)으로 축소.
             // page_top_vpos 는 current_items 의 첫 item para_index 를 통해 즉시 계산
             // (TypesetState 필드 추적은 typeset_paragraph 내부 페이지 flush 와 동기 안 됨).
-            if !st.current_items.is_empty()
-                && st.wrap_around_cs < 0
-                && st.col_count == 1
-            {
+            if !st.current_items.is_empty() && st.wrap_around_cs < 0 && st.col_count == 1 {
                 let page_first_para_idx = st.current_items.first().map(|item| match item {
                     PageItem::FullParagraph { para_index } => *para_index,
                     PageItem::PartialParagraph { para_index, .. } => *para_index,
@@ -806,10 +876,7 @@ impl TypesetEngine {
                         .line_segs
                         .iter()
                         .map(|s| {
-                            crate::renderer::hwpunit_to_px(
-                                s.line_height + s.line_spacing,
-                                self.dpi,
-                            )
+                            crate::renderer::hwpunit_to_px(s.line_height + s.line_spacing, self.dpi)
                         })
                         .sum();
                     let para_h_hu = crate::renderer::px_to_hwpunit(para_h_px, self.dpi);
@@ -843,8 +910,7 @@ impl TypesetEngine {
                         })
                         .unwrap_or(0.0);
                     let next_substantial = next_h_px > 30.0;
-                    let next_doesnt_fit =
-                        st.current_height + para_h_px + next_h_px > avail;
+                    let next_doesnt_fit = st.current_height + para_h_px + next_h_px > avail;
 
                     if current_fits && vpos_overflow && next_substantial && next_doesnt_fit {
                         st.advance_column_or_new_page();
@@ -860,8 +926,13 @@ impl TypesetEngine {
             } else {
                 // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
                 self.typeset_table_paragraph(
-                    &mut st, para_idx, para, composed.get(para_idx),
-                    styles, measured_tables, page_def,
+                    &mut st,
+                    para_idx,
+                    para,
+                    composed.get(para_idx),
+                    styles,
+                    measured_tables,
+                    page_def,
                 );
             }
 
@@ -869,21 +940,25 @@ impl TypesetEngine {
             // Paginator engine.rs:356-372 동일 시멘틱.
             // 후속 paragraph 가 동일 cs/sw 를 가지면 흡수.
             if has_table {
-                let has_tac_block = para.controls.iter().any(|c| {
-                    matches!(c, Control::Table(t) if t.common.treat_as_char)
-                });
+                let has_tac_block = para
+                    .controls
+                    .iter()
+                    .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char));
                 let has_non_tac_table = !has_tac_block;
                 if has_non_tac_table {
                     let is_wrap_around = para.controls.iter().any(|c| {
                         if let Control::Table(t) = c {
                             matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square)
-                        } else { false }
+                        } else {
+                            false
+                        }
                     });
                     if is_wrap_around {
-                        st.wrap_around_cs = para.line_segs.first()
-                            .map(|s| s.column_start)
-                            .unwrap_or(0);
-                        st.wrap_around_sw = para.line_segs.first()
+                        st.wrap_around_cs =
+                            para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
+                        st.wrap_around_sw = para
+                            .line_segs
+                            .first()
                             .map(|s| s.segment_width as i32)
                             .unwrap_or(0);
                         st.wrap_around_table_para = para_idx;
@@ -897,14 +972,28 @@ impl TypesetEngine {
                 let has_non_tac_pic_square = para.controls.iter().any(|c| {
                     let cm = match c {
                         Control::Picture(p) => Some(&p.common),
-                        Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() { Some(&p.common) } else { None },
+                        Control::Shape(s) => {
+                            if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
+                                Some(&p.common)
+                            } else {
+                                None
+                            }
+                        }
                         _ => None,
                     };
-                    cm.map(|cm| !cm.treat_as_char && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)).unwrap_or(false)
+                    cm.map(|cm| {
+                        !cm.treat_as_char
+                            && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square)
+                    })
+                    .unwrap_or(false)
                 });
                 if has_non_tac_pic_square {
                     let anchor_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                    let anchor_sw = para.line_segs.first().map(|s| s.segment_width as i32).unwrap_or(0);
+                    let anchor_sw = para
+                        .line_segs
+                        .first()
+                        .map(|s| s.segment_width as i32)
+                        .unwrap_or(0);
                     if anchor_cs > 0 || anchor_sw > 0 {
                         st.wrap_around_cs = anchor_cs;
                         st.wrap_around_sw = anchor_sw;
@@ -923,23 +1012,41 @@ impl TypesetEngine {
                         //   - LINE_SEG 1 + caption_room > line_height → caption-style (자기
                         //     미등록 → col_area 전체 폭 layout, image 위 자유 영역 표시)
                         let body_top_hu = page_def.margin_top as i32;
-                        let line_height_hu = para.line_segs.first()
-                            .map(|s| s.line_height as i32).unwrap_or(900);
-                        let (image_voff_hu, image_margin_right_hu) = para.controls.iter().find_map(|c| {
-                            let cm = match c {
-                                Control::Picture(p) => Some(&p.common),
-                                Control::Shape(s) => if let crate::model::shape::ShapeObject::Picture(p) = s.as_ref() {
-                                    Some(&p.common)
-                                } else { None },
-                                _ => None,
-                            };
-                            cm.filter(|cm| !cm.treat_as_char
-                                && matches!(cm.text_wrap, crate::model::shape::TextWrap::Square))
+                        let line_height_hu = para
+                            .line_segs
+                            .first()
+                            .map(|s| s.line_height as i32)
+                            .unwrap_or(900);
+                        let (image_voff_hu, image_margin_right_hu) = para
+                            .controls
+                            .iter()
+                            .find_map(|c| {
+                                let cm = match c {
+                                    Control::Picture(p) => Some(&p.common),
+                                    Control::Shape(s) => {
+                                        if let crate::model::shape::ShapeObject::Picture(p) =
+                                            s.as_ref()
+                                        {
+                                            Some(&p.common)
+                                        } else {
+                                            None
+                                        }
+                                    }
+                                    _ => None,
+                                };
+                                cm.filter(|cm| {
+                                    !cm.treat_as_char
+                                        && matches!(
+                                            cm.text_wrap,
+                                            crate::model::shape::TextWrap::Square
+                                        )
+                                })
                                 .map(|cm| (cm.vertical_offset as i32, cm.margin.right as i32))
-                        }).unwrap_or((0, 0));
+                            })
+                            .unwrap_or((0, 0));
                         let caption_room_hu = image_voff_hu - body_top_hu;
-                        let is_caption_style = para.line_segs.len() == 1
-                            && caption_room_hu > line_height_hu;
+                        let is_caption_style =
+                            para.line_segs.len() == 1 && caption_room_hu > line_height_hu;
                         // [PR #732 후속 — exam_science 회귀 가드] image_mr=0 (margin 부재) 이면
                         // 본 환경 OLD 동작 보존 — Task #722 host_self register skip.
                         // 본질: image_mr > 0 인 경우 (한컴 viewer 가 inter-image-text gap 으로
@@ -966,10 +1073,9 @@ impl TypesetEngine {
             // Task #321: col 0 처리 중 body-wide TopAndBottom 표/도형이 발견되면
             // col 1+ advance 시 적용할 current_height 시작값을 미리 등록.
             // layout의 body_wide_reserved와 동일 조건으로 detect.
-            if st.col_count > 1 && st.current_column == 0 && st.pending_body_wide_top_reserve == 0.0 {
-                let reserve = compute_body_wide_top_reserve_for_para(
-                    para, &st.layout, self.dpi,
-                );
+            if st.col_count > 1 && st.current_column == 0 && st.pending_body_wide_top_reserve == 0.0
+            {
+                let reserve = compute_body_wide_top_reserve_for_para(para, &st.layout, self.dpi);
                 if reserve > 0.0 {
                     st.pending_body_wide_top_reserve = reserve;
                 }
@@ -988,7 +1094,11 @@ impl TypesetEngine {
                                 Control::Shape(s) if s.common().treat_as_char);
                             let routed = if is_tac_shape {
                                 crate::renderer::pagination::find_inline_control_target_page(
-                                    &st.pages, &st.current_items, para_idx, ctrl_idx, para,
+                                    &st.pages,
+                                    &st.current_items,
+                                    para_idx,
+                                    ctrl_idx,
+                                    para,
                                 )
                             } else {
                                 None
@@ -1024,16 +1134,27 @@ impl TypesetEngine {
                             // 개체 높이를 current_height 에 누적.
                             use crate::model::shape::{TextWrap, VertRelTo};
                             let pushdown_h: Option<f64> = match ctrl {
-                                Control::Picture(pic) if !pic.common.treat_as_char
-                                    && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
-                                    && matches!(pic.common.vert_rel_to, VertRelTo::Para) => {
+                                Control::Picture(pic)
+                                    if !pic.common.treat_as_char
+                                        && matches!(
+                                            pic.common.text_wrap,
+                                            TextWrap::TopAndBottom
+                                        )
+                                        && matches!(pic.common.vert_rel_to, VertRelTo::Para) =>
+                                {
                                     let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                    let mb = hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
+                                    let mb =
+                                        hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
                                     Some(h + mb)
                                 }
-                                Control::Shape(s) if !s.common().treat_as_char
-                                    && matches!(s.common().text_wrap, TextWrap::TopAndBottom)
-                                    && matches!(s.common().vert_rel_to, VertRelTo::Para) => {
+                                Control::Shape(s)
+                                    if !s.common().treat_as_char
+                                        && matches!(
+                                            s.common().text_wrap,
+                                            TextWrap::TopAndBottom
+                                        )
+                                        && matches!(s.common().vert_rel_to, VertRelTo::Para) =>
+                                {
                                     let cm = s.common();
                                     let h = hwpunit_to_px(cm.height as i32, self.dpi);
                                     let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
@@ -1081,14 +1202,16 @@ impl TypesetEngine {
         if !st.endnotes.is_empty() {
             let endnote_refs: Vec<EndnoteRef> = st.endnotes.clone();
             // 본문 마지막 paragraph의 vpos 끝 위치 계산
-            let mut vpos_offset: i32 = paragraphs.last()
+            let mut vpos_offset: i32 = paragraphs
+                .last()
                 .and_then(|p| p.line_segs.last())
                 .map(|ls| ls.vertical_pos + ls.line_height + ls.line_spacing)
                 .unwrap_or(0);
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
-                    if let Some(Control::Endnote(en_ctrl)) = para.controls.get(en_ref.control_index) {
+                    if let Some(Control::Endnote(en_ctrl)) = para.controls.get(en_ref.control_index)
+                    {
                         // endnote 단위로 시작점 결정
                         let endnote_start = vpos_offset;
                         for (ep_idx, en_para) in en_ctrl.paragraphs.iter().enumerate() {
@@ -1113,8 +1236,13 @@ impl TypesetEngine {
                             }
                             // endnote 끝 위치 추적
                             if let Some(last_ls) = en_para.line_segs.last() {
-                                let end = endnote_start + last_ls.vertical_pos + last_ls.line_height + last_ls.line_spacing;
-                                if end > vpos_offset { vpos_offset = end; }
+                                let end = endnote_start
+                                    + last_ls.vertical_pos
+                                    + last_ls.line_height
+                                    + last_ls.line_spacing;
+                                if end > vpos_offset {
+                                    vpos_offset = end;
+                                }
                             }
                             st.endnote_paragraphs.push(en_para_copy);
 
@@ -1122,11 +1250,19 @@ impl TypesetEngine {
                             let fmt = self.format_paragraph(en_para, Some(&composed), &styles);
                             let available = st.available_height();
 
-                            if st.current_height + fmt.height_for_fit > available && !st.current_items.is_empty() {
+                            if st.current_height + fmt.height_for_fit > available
+                                && !st.current_items.is_empty()
+                            {
                                 st.advance_column_or_new_page();
                             }
-                            st.current_items.push(PageItem::FullParagraph { para_index: en_para_idx });
-                            st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
+                            st.current_items.push(PageItem::FullParagraph {
+                                para_index: en_para_idx,
+                            });
+                            st.current_height += if st.col_count > 1 {
+                                fmt.height_for_fit
+                            } else {
+                                fmt.total_height
+                            };
                         }
                     }
                 }
@@ -1141,11 +1277,21 @@ impl TypesetEngine {
 
         // 페이지 번호 + 머리말/꼬리말 할당
         Self::finalize_pages(
-            &mut st.pages, &hf_entries, &page_number_pos,
-            &new_page_numbers, &page_hides, section_index,
+            &mut st.pages,
+            &hf_entries,
+            &page_number_pos,
+            &new_page_numbers,
+            &page_hides,
+            section_index,
         );
 
-        PaginationResult { pages: st.pages, wrap_around_paras: Vec::new(), hidden_empty_paras: st.hidden_empty_paras, endnotes: st.endnotes, endnote_paragraphs: st.endnote_paragraphs }
+        PaginationResult {
+            pages: st.pages,
+            wrap_around_paras: Vec::new(),
+            hidden_empty_paras: st.hidden_empty_paras,
+            endnotes: st.endnotes,
+            endnote_paragraphs: st.endnote_paragraphs,
+        }
     }
 
     // ========================================================
@@ -1171,7 +1317,8 @@ impl TypesetEngine {
         // 누적 +17~30pt 사용자 피드백). zone 전환 패딩만 유지.
 
         let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
-        let ls_type = para_style.map(|s| s.line_spacing_type)
+        let ls_type = para_style
+            .map(|s| s.line_spacing_type)
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
         // [Task #901 Stage 7] wrap zone host paragraph 의 whitespace-only line 은 height 제외.
@@ -1184,20 +1331,27 @@ impl TypesetEngine {
                 Control::Shape(s) if !s.common().treat_as_char => Some(s.common()),
                 _ => None,
             };
-            common_opt.map(|cm| matches!(cm.text_wrap, TextWrap::Square)).unwrap_or(false)
+            common_opt
+                .map(|cm| matches!(cm.text_wrap, TextWrap::Square))
+                .unwrap_or(false)
         });
 
         let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
-            comp.lines.iter()
+            comp.lines
+                .iter()
                 .map(|line| {
                     let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
                     if has_picture_shape_square_wrap && runs_all_whitespace {
                         return (0.0, 0.0);
                     }
                     let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
-                    let max_fs = line.runs.iter()
+                    let max_fs = line
+                        .runs
+                        .iter()
                         .map(|r| {
-                            styles.char_styles.get(r.char_style_id as usize)
+                            styles
+                                .char_styles
+                                .get(r.char_style_id as usize)
                                 .map(|cs| cs.font_size)
                                 .unwrap_or(0.0)
                         })
@@ -1205,10 +1359,10 @@ impl TypesetEngine {
                     let lh = if max_fs > 0.0 && raw_lh < max_fs {
                         use crate::model::style::LineSpacingType;
                         let computed = match ls_type {
-                            LineSpacingType::Percent   => max_fs * ls_val / 100.0,
-                            LineSpacingType::Fixed     => ls_val.max(max_fs),
+                            LineSpacingType::Percent => max_fs * ls_val / 100.0,
+                            LineSpacingType::Fixed => ls_val.max(max_fs),
                             LineSpacingType::SpaceOnly => max_fs + ls_val,
-                            LineSpacingType::Minimum   => ls_val.max(max_fs),
+                            LineSpacingType::Minimum => ls_val.max(max_fs),
                         };
                         computed.max(max_fs)
                     } else {
@@ -1218,17 +1372,22 @@ impl TypesetEngine {
                 })
                 .unzip()
         } else if !para.line_segs.is_empty() {
-            para.line_segs.iter()
-                .map(|seg| (
-                    hwpunit_to_px(seg.line_height, self.dpi),
-                    hwpunit_to_px(seg.line_spacing, self.dpi),
-                ))
+            para.line_segs
+                .iter()
+                .map(|seg| {
+                    (
+                        hwpunit_to_px(seg.line_height, self.dpi),
+                        hwpunit_to_px(seg.line_spacing, self.dpi),
+                    )
+                })
                 .unzip()
         } else {
             (vec![hwpunit_to_px(400, self.dpi)], vec![0.0])
         };
 
-        let lines_total: f64 = line_heights.iter().zip(line_spacings.iter())
+        let lines_total: f64 = line_heights
+            .iter()
+            .zip(line_spacings.iter())
             .map(|(h, s)| h + s)
             .sum();
         let total_height = spacing_before + lines_total + spacing_after;
@@ -1274,10 +1433,8 @@ impl TypesetEngine {
         // [Task #643] VPOS_CORR 백워드 허용 (8px) 으로 layout drift 누적이 해소됨.
         // 트레일링 ls 누적 fit 산식 정정과 함께 안전마진 10 → 4 축소.
         const LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
-        let prev_is_partial_table = matches!(
-            st.current_items.last(),
-            Some(PageItem::PartialTable { .. })
-        );
+        let prev_is_partial_table =
+            matches!(st.current_items.last(), Some(PageItem::PartialTable { .. }));
         let safety = if st.skip_safety_margin_once {
             st.skip_safety_margin_once = false;
             0.0
@@ -1291,10 +1448,18 @@ impl TypesetEngine {
         // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
         // Stage 5a 확장: per-paragraph 카테고리 분해 (sb/sa/lines/line_sum/ls_sum)
         if std::env::var("RHWP_TYPESET_DRIFT").is_ok() {
-            let vpos_h: Option<f64> = if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
+            let vpos_h: Option<f64> = if let (Some(first), Some(last)) =
+                (para.line_segs.first(), para.line_segs.last())
+            {
                 let span_hu = (last.vertical_pos + last.line_height) - first.vertical_pos;
-                if span_hu > 0 { Some(crate::renderer::hwpunit_to_px(span_hu, self.dpi)) } else { None }
-            } else { None };
+                if span_hu > 0 {
+                    Some(crate::renderer::hwpunit_to_px(span_hu, self.dpi))
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
             let first_vpos = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
             let last_vpos = para.line_segs.last().map(|s| s.vertical_pos).unwrap_or(-1);
             let lh_sum: f64 = fmt.line_heights.iter().sum();
@@ -1305,7 +1470,9 @@ impl TypesetEngine {
                 Some(v) => fmt.total_height - v,
                 None => 0.0,
             };
-            let vpos_h_str = vpos_h.map(|v| format!("{:.1}", v)).unwrap_or_else(|| "-".to_string());
+            let vpos_h_str = vpos_h
+                .map(|v| format!("{:.1}", v))
+                .unwrap_or_else(|| "-".to_string());
             eprintln!(
                 "TYPESET_DRIFT_PI: pi={} col={} sb={:.1} sa={:.1} lines={} lh_sum={:.1} ls_sum={:.1} trail_ls={:.1} fmt_total={:.1} vpos_h={} diff={:+.1} first_vpos={} last_vpos={} cur_h={:.1} avail={:.1}",
                 para_idx, st.current_column, fmt.spacing_before, fmt.spacing_after,
@@ -1317,10 +1484,19 @@ impl TypesetEngine {
 
             // 옵션: per-line 분해 (LINE_SEG 와 비교)
             if std::env::var("RHWP_TYPESET_DRIFT_LINES").is_ok() {
-                for (li, (lh, ls)) in fmt.line_heights.iter().zip(fmt.line_spacings.iter()).enumerate() {
+                for (li, (lh, ls)) in fmt
+                    .line_heights
+                    .iter()
+                    .zip(fmt.line_spacings.iter())
+                    .enumerate()
+                {
                     let seg = para.line_segs.get(li);
-                    let seg_lh = seg.map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi)).unwrap_or(-1.0);
-                    let seg_ls = seg.map(|s| crate::renderer::hwpunit_to_px(s.line_spacing, self.dpi)).unwrap_or(-1.0);
+                    let seg_lh = seg
+                        .map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi))
+                        .unwrap_or(-1.0);
+                    let seg_ls = seg
+                        .map(|s| crate::renderer::hwpunit_to_px(s.line_spacing, self.dpi))
+                        .unwrap_or(-1.0);
                     let seg_vpos = seg.map(|s| s.vertical_pos).unwrap_or(-1);
                     eprintln!(
                         "TYPESET_DRIFT_LINE: pi={} li={} fmt_lh={:.1} fmt_ls={:.1} seg_lh={:.1} seg_ls={:.1} vpos={}",
@@ -1377,10 +1553,7 @@ impl TypesetEngine {
         // (통합재정통계 2010.11/2011.10: pi=14 cur_h=751.0 + 16.0 = 767.0 > avail 766.2,
         //  overflow=0.8px ≤ safety_margin 10px → 흡수.)
         // hide_empty_line (Task #362) 분기와 달리 SectionDef bit 무관, 섹션 마지막 1개만 흡수.
-        if is_last_in_section
-            && st.col_count == 1
-            && !st.current_items.is_empty()
-        {
+        if is_last_in_section && st.col_count == 1 && !st.current_items.is_empty() {
             let trimmed = para.text.replace(|c: char| c.is_control(), "");
             let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
             if is_empty_para {
@@ -1388,7 +1561,9 @@ impl TypesetEngine {
                 let fit_fail_within_safety =
                     total_h > available && total_h <= available + LAYOUT_DRIFT_SAFETY_PX;
                 if fit_fail_within_safety {
-                    st.current_items.push(PageItem::FullParagraph { para_index: para_idx });
+                    st.current_items.push(PageItem::FullParagraph {
+                        para_index: para_idx,
+                    });
                     return;
                 }
             }
@@ -1411,7 +1586,11 @@ impl TypesetEngine {
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
             // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
             // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
+            st.current_height += if st.col_count > 1 {
+                fmt.height_for_fit
+            } else {
+                fmt.total_height
+            };
             return;
         }
 
@@ -1427,9 +1606,7 @@ impl TypesetEngine {
                 Control::Shape(s) => s.common().treat_as_char,
                 _ => false,
             });
-        if is_atomic_tac_singleton
-            && st.current_height < available
-            && !st.current_items.is_empty()
+        if is_atomic_tac_singleton && st.current_height < available && !st.current_items.is_empty()
         {
             // 추가 가드: 본문 + 하단 여백 안에 들어가야 함 (footer 침범 금지)
             let bottom_margin_px = hwpunit_to_px(
@@ -1447,7 +1624,11 @@ impl TypesetEngine {
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
                 });
-                st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
+                st.current_height += if st.col_count > 1 {
+                    fmt.height_for_fit
+                } else {
+                    fmt.total_height
+                };
                 return;
             }
         }
@@ -1463,7 +1644,11 @@ impl TypesetEngine {
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
             // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
             // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            st.current_height += if st.col_count > 1 { fmt.height_for_fit } else { fmt.total_height };
+            st.current_height += if st.col_count > 1 {
+                fmt.height_for_fit
+            } else {
+                fmt.total_height
+            };
             return;
         }
 
@@ -1488,13 +1673,21 @@ impl TypesetEngine {
                 0.0
             };
             let page_avail = if cursor_line == 0 {
-                (base_available - st.current_footnote_height - fn_margin
-                    - st.current_height - st.current_zone_y_offset).max(0.0)
+                (base_available
+                    - st.current_footnote_height
+                    - fn_margin
+                    - st.current_height
+                    - st.current_zone_y_offset)
+                    .max(0.0)
             } else {
                 base_available
             };
 
-            let sp_b = if cursor_line == 0 { fmt.spacing_before } else { 0.0 };
+            let sp_b = if cursor_line == 0 {
+                fmt.spacing_before
+            } else {
+                0.0
+            };
             // Task #332 Stage 4b: partial split 의 줄 단위 fit 검사에도 layout drift 마진 적용
             let avail_for_lines = (page_avail - sp_b - LAYOUT_DRIFT_SAFETY_PX).max(0.0);
 
@@ -1508,7 +1701,11 @@ impl TypesetEngine {
                 // 다단 한정 적용 — 단일 단은 partial-table split 회귀 (issue #418) 차단 위해 미적용.
                 if st.col_count > 1
                     && li > cursor_line
-                    && para.line_segs.get(li).map(|s| s.vertical_pos == 0).unwrap_or(false)
+                    && para
+                        .line_segs
+                        .get(li)
+                        .map(|s| s.vertical_pos == 0)
+                        .unwrap_or(false)
                 {
                     break;
                 }
@@ -1521,14 +1718,22 @@ impl TypesetEngine {
                     // 손실을 차단하기 위해 HWP 신호를 우선한다.
                     // 조건: (1) 다음 줄의 vpos==0 (페이지 경계 신호)
                     //       (2) 현재 줄의 hwp 좌표 vpos+lh 가 body_available 안
-                    let hwp_authoritative = para.line_segs.get(li + 1)
+                    let hwp_authoritative = para
+                        .line_segs
+                        .get(li + 1)
                         .map(|next| next.vertical_pos == 0)
                         .unwrap_or(false)
-                        && para.line_segs.get(li).map(|cur| {
-                            let bottom_px = crate::renderer::hwpunit_to_px(
-                                cur.vertical_pos + cur.line_height, self.dpi);
-                            bottom_px <= st.base_available_height()
-                        }).unwrap_or(false);
+                        && para
+                            .line_segs
+                            .get(li)
+                            .map(|cur| {
+                                let bottom_px = crate::renderer::hwpunit_to_px(
+                                    cur.vertical_pos + cur.line_height,
+                                    self.dpi,
+                                );
+                                bottom_px <= st.base_available_height()
+                            })
+                            .unwrap_or(false);
                     if !hwp_authoritative {
                         break;
                     }
@@ -1542,7 +1747,11 @@ impl TypesetEngine {
             }
 
             let part_line_height = fmt.line_advances_sum(cursor_line..end_line);
-            let part_sp_after = if end_line >= line_count { fmt.spacing_after } else { 0.0 };
+            let part_sp_after = if end_line >= line_count {
+                fmt.spacing_after
+            } else {
+                0.0
+            };
             let part_height = sp_b + part_line_height + part_sp_after;
 
             if cursor_line == 0 && end_line >= line_count {
@@ -1551,7 +1760,11 @@ impl TypesetEngine {
                     matches!(item, PageItem::Table { .. } | PageItem::PartialTable { .. })
                 });
                 let overflow_threshold = if prev_is_table {
-                    let trailing_ls = fmt.line_spacings.get(end_line.saturating_sub(1)).copied().unwrap_or(0.0);
+                    let trailing_ls = fmt
+                        .line_spacings
+                        .get(end_line.saturating_sub(1))
+                        .copied()
+                        .unwrap_or(0.0);
                     cumulative - trailing_ls
                 } else {
                     cumulative
@@ -1617,15 +1830,16 @@ impl TypesetEngine {
         composed: Option<&ComposedParagraph>,
         is_column_top: bool,
     ) -> FormattedTable {
-        let mt = measured_tables.iter().find(|mt|
-            mt.para_index == para_idx && mt.control_index == ctrl_idx
-        );
+        let mt = measured_tables
+            .iter()
+            .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
 
         let is_tac = table.attr & 0x01 != 0;
         let table_text_wrap = (table.attr >> 21) & 0x07;
 
         // host_spacing 계산 — layout과 동일한 규칙
-        let para_style_id = composed.map(|c| c.para_style_id as usize)
+        let para_style_id = composed
+            .map(|c| c.para_style_id as usize)
             .unwrap_or(para.para_shape_id as usize);
         let para_style = styles.para_styles.get(para_style_id);
         let sb = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
@@ -1652,12 +1866,18 @@ impl TypesetEngine {
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
-            && table.cells.first()
-                .map(|c| c.paragraphs.iter().all(|p|
-                    p.controls.is_empty() && p.line_segs.len() <= 1))
+            && table
+                .cells
+                .first()
+                .map(|c| {
+                    c.paragraphs
+                        .iter()
+                        .all(|p| p.controls.is_empty() && p.line_segs.len() <= 1)
+                })
                 .unwrap_or(false);
         let host_line_spacing = if !is_tac && !is_single_cell_placeholder {
-            para.line_segs.last()
+            para.line_segs
+                .last()
                 .filter(|seg| seg.line_spacing > 0)
                 .map(|seg| hwpunit_to_px(seg.line_spacing, self.dpi))
                 .unwrap_or(0.0)
@@ -1675,11 +1895,27 @@ impl TypesetEngine {
             (if !is_column_top { sb } else { 0.0 }) + outer_top
         };
         let after = sa + outer_bottom + host_line_spacing;
-        let host_spacing = HostSpacing { before, after, spacing_after_only: sa };
+        let host_spacing = HostSpacing {
+            before,
+            after,
+            spacing_after_only: sa,
+        };
 
-        let (row_heights, cell_spacing, effective_height, caption_height,
-             cumulative_heights, page_break, cells, header_row_count) = if let Some(mt) = mt {
-            let hrc = if mt.repeat_header && mt.has_header_cells { 1 } else { 0 };
+        let (
+            row_heights,
+            cell_spacing,
+            effective_height,
+            caption_height,
+            cumulative_heights,
+            page_break,
+            cells,
+            header_row_count,
+        ) = if let Some(mt) = mt {
+            let hrc = if mt.repeat_header && mt.has_header_cells {
+                1
+            } else {
+                0
+            };
             (
                 mt.row_heights.clone(),
                 mt.cell_spacing,
@@ -1691,7 +1927,16 @@ impl TypesetEngine {
                 hrc,
             )
         } else {
-            (Vec::new(), 0.0, 0.0, 0.0, vec![0.0], Default::default(), Vec::new(), 0)
+            (
+                Vec::new(),
+                0.0,
+                0.0,
+                0.0,
+                vec![0.0],
+                Default::default(),
+                Vec::new(),
+                0,
+            )
         };
 
         let total_height = effective_height + host_spacing.before + host_spacing.after;
@@ -1747,12 +1992,18 @@ impl TypesetEngine {
         let fmt = self.format_paragraph(para, composed, styles);
 
         // TAC 표 카운트 및 플러시 판단
-        let tac_count = para.controls.iter()
+        let tac_count = para
+            .controls
+            .iter()
             .filter(|c| matches!(c, Control::Table(t) if t.attr & 0x01 != 0))
             .count();
 
         let has_tac = tac_count > 0;
-        let height_for_fit = if has_tac { fmt.height_for_fit } else { fmt.total_height };
+        let height_for_fit = if has_tac {
+            fmt.height_for_fit
+        } else {
+            fmt.total_height
+        };
 
         // 넘치면 flush (단일 TAC 표만)
         if st.current_height + height_for_fit > st.available_height()
@@ -1793,16 +2044,27 @@ impl TypesetEngine {
                     }
                     let is_column_top = st.current_height < 1.0;
                     let ft = self.format_table(
-                        para, para_idx, ctrl_idx, table,
-                        measured_tables, styles, composed, is_column_top,
+                        para,
+                        para_idx,
+                        ctrl_idx,
+                        table,
+                        measured_tables,
+                        styles,
+                        composed,
+                        is_column_top,
                     );
 
-                    let mt = measured_tables.iter().find(|mt|
-                        mt.para_index == para_idx && mt.control_index == ctrl_idx);
+                    let mt = measured_tables
+                        .iter()
+                        .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
                     if ft.is_tac {
-                        self.typeset_tac_table(st, para_idx, ctrl_idx, para, table, &ft, &fmt, tac_count);
+                        self.typeset_tac_table(
+                            st, para_idx, ctrl_idx, para, table, &ft, &fmt, tac_count,
+                        );
                     } else {
-                        self.typeset_block_table(st, para_idx, ctrl_idx, para, table, &ft, &fmt, mt);
+                        self.typeset_block_table(
+                            st, para_idx, ctrl_idx, para, table, &ft, &fmt, mt,
+                        );
                     }
 
                     // 표 셀 내 각주 수집 (Paginator engine.rs:679-701 동일)
@@ -1822,7 +2084,8 @@ impl TypesetEngine {
                                             },
                                         });
                                     }
-                                    let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
+                                    let fn_height =
+                                        Self::estimate_footnote_height(fn_ctrl, self.dpi);
                                     st.add_footnote_height(fn_height);
                                 }
                             }
@@ -1837,19 +2100,29 @@ impl TypesetEngine {
                         Control::Picture(p) if p.common.treat_as_char => Some(()),
                         Control::Shape(s) if s.common().treat_as_char => Some(()),
                         _ => None,
-                    }.and_then(|_| {
-                        let prior_tac_count = para.controls.iter().take(ctrl_idx).filter(|c| match c {
-                            Control::Table(t) => t.common.treat_as_char,
-                            Control::Picture(p) => p.common.treat_as_char,
-                            Control::Shape(s) => s.common().treat_as_char,
-                            _ => false,
-                        }).count();
-                        if prior_tac_count == 0 { return None; }
+                    }
+                    .and_then(|_| {
+                        let prior_tac_count = para
+                            .controls
+                            .iter()
+                            .take(ctrl_idx)
+                            .filter(|c| match c {
+                                Control::Table(t) => t.common.treat_as_char,
+                                Control::Picture(p) => p.common.treat_as_char,
+                                Control::Shape(s) => s.common().treat_as_char,
+                                _ => false,
+                            })
+                            .count();
+                        if prior_tac_count == 0 {
+                            return None;
+                        }
                         para.line_segs.get(prior_tac_count).map(|seg| {
                             let lh = hwpunit_to_px(seg.line_height, self.dpi);
                             let ls_extra = if seg.line_spacing > 0 {
                                 hwpunit_to_px(seg.line_spacing, self.dpi)
-                            } else { 0.0 };
+                            } else {
+                                0.0
+                            };
                             lh + ls_extra
                         })
                     });
@@ -1884,7 +2157,8 @@ impl TypesetEngine {
                     if t.attr & 0x01 != 0 {
                         if let Some(seg) = para.line_segs.get(tac_idx) {
                             let seg_lh = hwpunit_to_px(seg.line_height, self.dpi);
-                            let mt_h = measured_tables.iter()
+                            let mt_h = measured_tables
+                                .iter()
                                 .find(|mt| mt.para_index == para_idx && mt.control_index == ci)
                                 .map(|mt| mt.total_height)
                                 .unwrap_or(0.0);
@@ -1899,10 +2173,13 @@ impl TypesetEngine {
             let cap = if tac_seg_total > 0.0 {
                 let is_col_top = height_before < 1.0;
                 let effective_sb = if is_col_top { 0.0 } else { fmt.spacing_before };
-                let outer_top: f64 = para.controls.iter()
+                let outer_top: f64 = para
+                    .controls
+                    .iter()
                     .filter_map(|c| match c {
-                        Control::Table(t) if t.attr & 0x01 != 0 =>
-                            Some(hwpunit_to_px(t.outer_margin_top as i32, self.dpi)),
+                        Control::Table(t) if t.attr & 0x01 != 0 => {
+                            Some(hwpunit_to_px(t.outer_margin_top as i32, self.dpi))
+                        }
                         _ => None,
                     })
                     .sum();
@@ -1930,18 +2207,24 @@ impl TypesetEngine {
     ) {
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
         let table_height = if tac_count > 1 {
-            let tac_idx = para.controls.iter().take(ctrl_idx)
+            let tac_idx = para
+                .controls
+                .iter()
+                .take(ctrl_idx)
                 .filter(|c| matches!(c, Control::Table(t) if t.attr & 0x01 != 0))
                 .count();
             let is_last_tac = tac_idx + 1 == tac_count;
-            para.line_segs.get(tac_idx).map(|seg| {
-                let line_h = hwpunit_to_px(seg.line_height, self.dpi);
-                if is_last_tac {
-                    line_h
-                } else {
-                    line_h + hwpunit_to_px(seg.line_spacing, self.dpi)
-                }
-            }).unwrap_or(ft.total_height)
+            para.line_segs
+                .get(tac_idx)
+                .map(|seg| {
+                    let line_h = hwpunit_to_px(seg.line_height, self.dpi);
+                    if is_last_tac {
+                        line_h
+                    } else {
+                        line_h + hwpunit_to_px(seg.line_spacing, self.dpi)
+                    }
+                })
+                .unwrap_or(ft.total_height)
         } else if fmt.total_height > 0.0 {
             // 단일 TAC: 호스트 문단의 height_for_fit 사용
             fmt.height_for_fit
@@ -1973,7 +2256,8 @@ impl TypesetEngine {
         let total_lines = fmt.line_heights.len();
         let pre_table_end_line = if vertical_offset > 0 && !para.text.is_empty() {
             total_lines
-        } else if table.common.treat_as_char && total_lines > 1
+        } else if table.common.treat_as_char
+            && total_lines > 1
             && para.text.chars().any(|c| c.is_alphanumeric())
         {
             // 전폭 TAC 표가 자동 줄바꿈으로 자기 줄(line index N)에 놓인 경우(\n 없음):
@@ -1986,7 +2270,9 @@ impl TypesetEngine {
             let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
             let tbl_line_h = hwpunit_to_px(table.common.height as i32, self.dpi) + om_top + om_bot;
-            para.line_segs.iter().enumerate()
+            para.line_segs
+                .iter()
+                .enumerate()
                 .find(|(_, ls)| (hwpunit_to_px(ls.line_height, self.dpi) - tbl_line_h).abs() < 1.0)
                 .map(|(i, _)| i)
                 .unwrap_or(0)
@@ -1999,10 +2285,16 @@ impl TypesetEngine {
         // current_height 누적은 max(host_text, v_off + table) 한 번만.
         // engine.rs:1328 와 동일 시멘틱.
         let is_wrap_around_table = !table.common.treat_as_char
-            && matches!(table.common.text_wrap, crate::model::shape::TextWrap::Square);
+            && matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::Square
+            );
 
         // pre-table 텍스트 (첫 번째 표에서만)
-        let is_first_table = !para.controls.iter().take(ctrl_idx)
+        let is_first_table = !para
+            .controls
+            .iter()
+            .take(ctrl_idx)
             .any(|c| matches!(c, Control::Table(_)));
         let pre_height: f64 = if pre_table_end_line > 0 && is_first_table {
             let h = fmt.line_advances_sum(0..pre_table_end_line);
@@ -2031,7 +2323,8 @@ impl TypesetEngine {
         // 를 따로 더하면 이중 계산이 된다. 또 표가 차지한 줄은 post-text 에서 제외해야 한다.
         // (Task #853)
         let tac_wrap_split = table.common.treat_as_char
-            && pre_table_end_line > 0 && pre_table_end_line < total_lines;
+            && pre_table_end_line > 0
+            && pre_table_end_line < total_lines;
 
         if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
@@ -2044,9 +2337,14 @@ impl TypesetEngine {
         }
 
         // post-table 텍스트
-        let is_last_table = !para.controls.iter().skip(ctrl_idx + 1)
+        let is_last_table = !para
+            .controls
+            .iter()
+            .skip(ctrl_idx + 1)
             .any(|c| matches!(c, Control::Table(_)));
-        let tac_table_count = para.controls.iter()
+        let tac_table_count = para
+            .controls
+            .iter()
             .filter(|c| matches!(c, Control::Table(t) if t.attr & 0x01 != 0))
             .count();
         let post_table_start = if tac_wrap_split {
@@ -2061,11 +2359,16 @@ impl TypesetEngine {
         // 중복 방지: 이전 표가 이미 같은 문단의 pre-text(start_line=0)를 추가했으면 건너뜀
         // (engine.rs:1418-1421 와 동일한 가드 — 다중 TopAndBottom 표 문단에서
         //  같은 line 범위가 두 번 emit되어 본문이 두 번 렌더되는 문제 차단)
-        let pre_text_exists = post_table_start == 0 && st.current_items.iter().any(|item| {
-            matches!(item, PageItem::PartialParagraph { para_index, start_line, .. }
+        let pre_text_exists = post_table_start == 0
+            && st.current_items.iter().any(|item| {
+                matches!(item, PageItem::PartialParagraph { para_index, start_line, .. }
                 if *para_index == para_idx && *start_line == 0)
-        });
-        let should_add_post_text = is_last_table && tac_table_count <= 1 && !para.text.is_empty() && total_lines > post_table_start && !pre_text_exists;
+            });
+        let should_add_post_text = is_last_table
+            && tac_table_count <= 1
+            && !para.text.is_empty()
+            && total_lines > post_table_start
+            && !pre_text_exists;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
             st.current_items.push(PageItem::PartialParagraph {
@@ -2106,8 +2409,14 @@ impl TypesetEngine {
             0.0
         };
         let total_footnote = st.current_footnote_height + table_fn_h + fn_separator;
-        let fn_margin = if total_footnote > 0.0 { st.footnote_safety_margin } else { 0.0 };
-        let available = (st.base_available_height() - total_footnote - fn_margin - st.current_zone_y_offset).max(0.0);
+        let fn_margin = if total_footnote > 0.0 {
+            st.footnote_safety_margin
+        } else {
+            0.0
+        };
+        let available =
+            (st.base_available_height() - total_footnote - fn_margin - st.current_zone_y_offset)
+                .max(0.0);
 
         let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after;
         let table_total = ft.effective_height + host_spacing_total;
@@ -2118,18 +2427,16 @@ impl TypesetEngine {
         // 위해 host paragraph 의 first_vpos 만큼 cur_h 를 미리 jump 하고 표 advance 를
         // 본문 라인 만큼으로 축소.
         use crate::model::shape::{TextWrap, VertRelTo};
-        let is_paper_topbottom_block =
-            !table.common.treat_as_char
+        let is_paper_topbottom_block = !table.common.treat_as_char
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Paper);
         if is_paper_topbottom_block && st.current_column == 0 {
             if let Some(first_seg) = para.line_segs.first() {
-                let target_y = crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
+                let target_y =
+                    crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
                 // 호스트 본문 lines + 표는 절대 좌표 → cur_h 는 first_vpos + host lines 만 진행.
                 let pre_lines_h = fmt.line_advances_sum(0..fmt.line_heights.len());
-                if target_y > st.current_height
-                    && target_y + pre_lines_h <= available
-                {
+                if target_y > st.current_height && target_y + pre_lines_h <= available {
                     st.current_height = target_y;
                     // table_total = 0: 표 자체는 cur_h advance 에 영향 없음 (Paper-absolute).
                     // 호스트 본문 lines 만 place_table_with_text 가 pre_height 로 추가.
@@ -2173,7 +2480,9 @@ impl TypesetEngine {
         let remaining_on_page = (table_available - st.current_height).max(0.0);
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
             mt.row_block_for(0)
-        } else { (0, 0, 0.0) };
+        } else {
+            (0, 0, 0.0)
+        };
         let first_block_size = first_block_end.saturating_sub(first_block_start);
         let first_block_is_single_row = first_block_size == 1;
         // [Task #474] RowBreak 표는 보호 블록 정책 비적용
@@ -2195,9 +2504,8 @@ impl TypesetEngine {
             // 를 가질 때 (line_count == 1 → is_row_splittable=false 라 의도 분할 불가)
             // 한컴은 page 경계에서 셀 빈 영역을 자르고 다음 페이지로 연속 렌더한다.
             // can_intra_split 이고 첫 행이 가용 공간보다 큰 force-split 케이스로 분기.
-            let first_row_force_splittable = !first_block_protected
-                && can_intra_split
-                && remaining_on_page > 0.0;
+            let first_row_force_splittable =
+                !first_block_protected && can_intra_split && remaining_on_page > 0.0;
             let min_content = if first_row_splittable {
                 mt.min_first_line_height_for_row(0, 0.0) + mt.max_padding_for_row(0)
             } else if first_row_force_splittable {
@@ -2209,30 +2517,48 @@ impl TypesetEngine {
                 f64::MAX
             };
             if (!first_row_splittable && !first_row_force_splittable)
-                || remaining_on_page < min_content {
+                || remaining_on_page < min_content
+            {
                 st.advance_column_or_new_page();
             }
         }
 
         // 캡션 처리
-        let caption_is_top = para.controls.get(ctrl_idx).and_then(|c| {
-            if let Control::Table(t) = c {
-                t.caption.as_ref().map(|cap|
-                    matches!(cap.direction, CaptionDirection::Top))
-            } else { None }
-        }).unwrap_or(false);
+        let caption_is_top = para
+            .controls
+            .get(ctrl_idx)
+            .and_then(|c| {
+                if let Control::Table(t) = c {
+                    t.caption
+                        .as_ref()
+                        .map(|cap| matches!(cap.direction, CaptionDirection::Top))
+                } else {
+                    None
+                }
+            })
+            .unwrap_or(false);
 
-        let host_line_spacing_for_caption = para.line_segs.first()
+        let host_line_spacing_for_caption = para
+            .line_segs
+            .first()
             .map(|seg| hwpunit_to_px(seg.line_spacing, self.dpi))
             .unwrap_or(0.0);
         let caption_base_overhead = {
             let ch = ft.caption_height;
             if ch > 0.0 {
-                let cs_val = para.controls.get(ctrl_idx).and_then(|c| {
-                    if let Control::Table(t) = c {
-                        t.caption.as_ref().map(|cap| hwpunit_to_px(cap.spacing as i32, self.dpi))
-                    } else { None }
-                }).unwrap_or(0.0);
+                let cs_val = para
+                    .controls
+                    .get(ctrl_idx)
+                    .and_then(|c| {
+                        if let Control::Table(t) = c {
+                            t.caption
+                                .as_ref()
+                                .map(|cap| hwpunit_to_px(cap.spacing as i32, self.dpi))
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(0.0);
                 ch + cs_val
             } else {
                 0.0
@@ -2251,7 +2577,8 @@ impl TypesetEngine {
 
         while cursor_row < row_count {
             // 이전 분할에서 모든 콘텐츠가 소진된 행은 건너뜀
-            if content_offset > 0.0 && can_intra_split
+            if content_offset > 0.0
+                && can_intra_split
                 && mt.remaining_content_for_row(cursor_row, content_offset) <= 0.0
             {
                 cursor_row += 1;
@@ -2259,18 +2586,23 @@ impl TypesetEngine {
                 continue;
             }
 
-            let caption_extra = if !is_continuation && cursor_row == 0 && content_offset == 0.0 && caption_is_top {
-                caption_overhead
-            } else {
-                0.0
-            };
+            let caption_extra =
+                if !is_continuation && cursor_row == 0 && content_offset == 0.0 && caption_is_top {
+                    caption_overhead
+                } else {
+                    0.0
+                };
             // [Task #874 #9] 첫 fragment 의 page_avail 은 host_spacing.before 와
             // (TopAndBottom + vert=Para + v_offset>0 표의) vertical_offset 를 제외해야 한다.
             // layout 은 표를 cur_h + host_spacing.before + v_offset 위치에 배치하지만,
             // typeset 의 page_avail = (table_available - cur_h) 은 두 overhead 를
             // 포함하지 않아 split 결정 시 actual 가용보다 과대 평가됨 → partial 오버플로우.
             // aift.hwp p44 pi=584: 41.6 px split_end → 실제 가용 36 px → overflow 37.6 px.
-            let host_before_overhead = if is_continuation { 0.0 } else { ft.host_spacing.before };
+            let host_before_overhead = if is_continuation {
+                0.0
+            } else {
+                ft.host_spacing.before
+            };
             let vert_offset_overhead = if is_continuation {
                 0.0
             } else {
@@ -2282,20 +2614,27 @@ impl TypesetEngine {
                 let v_off_i32 = table.common.vertical_offset as i32;
                 if is_para_topbottom && v_off_i32 > 0 {
                     hwpunit_to_px(v_off_i32, self.dpi)
-                } else { 0.0 }
+                } else {
+                    0.0
+                }
             };
             let page_avail = if is_continuation {
                 base_available
             } else {
-                (table_available - st.current_height - caption_extra
-                    - host_before_overhead - vert_offset_overhead).max(0.0)
+                (table_available
+                    - st.current_height
+                    - caption_extra
+                    - host_before_overhead
+                    - vert_offset_overhead)
+                    .max(0.0)
             };
 
-            let header_overhead = if is_continuation && mt.repeat_header && mt.has_header_cells && row_count > 1 {
-                header_row_height + cs
-            } else {
-                0.0
-            };
+            let header_overhead =
+                if is_continuation && mt.repeat_header && mt.has_header_cells && row_count > 1 {
+                    header_row_height + cs
+                } else {
+                    0.0
+                };
             let avail_for_rows = (page_avail - header_overhead).max(0.0);
 
             let effective_first_row_h = if content_offset > 0.0 && can_intra_split {
@@ -2311,7 +2650,8 @@ impl TypesetEngine {
             {
                 const MIN_SPLIT_CONTENT_PX: f64 = 10.0;
 
-                let approx_end_raw = mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
+                let approx_end_raw =
+                    mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
                 // Task #398: rowspan 묶음 중간에서 잘리지 않도록 블록 경계로 스냅
                 let approx_end = mt.snap_to_block_boundary(approx_end_raw);
 
@@ -2322,7 +2662,8 @@ impl TypesetEngine {
                 let cur_block_protected = !mt.allows_row_break_split()
                     && cur_block_size >= 2
                     && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                let cur_can_intra_split = (cur_block_single || !cur_block_protected) && can_intra_split;
+                let cur_can_intra_split =
+                    (cur_block_single || !cur_block_protected) && can_intra_split;
 
                 if approx_end <= cursor_row {
                     let r = cursor_row;
@@ -2374,7 +2715,8 @@ impl TypesetEngine {
                     let next_block_protected = !mt.allows_row_break_split()
                         && next_block_size >= 2
                         && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                    let next_can_intra_split = (next_block_single || !next_block_protected) && can_intra_split;
+                    let next_can_intra_split =
+                        (next_block_single || !next_block_protected) && can_intra_split;
                     if next_can_intra_split && mt.is_row_splittable(r) {
                         let row_cs = cs;
                         let padding = mt.max_padding_for_row(r);
@@ -2440,7 +2782,11 @@ impl TypesetEngine {
             let actual_split_end = split_end_limit;
 
             // 마지막 파트에 Bottom 캡션 공간 확보
-            if end_row >= row_count && split_end_limit == 0.0 && !caption_is_top && caption_overhead > 0.0 {
+            if end_row >= row_count
+                && split_end_limit == 0.0
+                && !caption_is_top
+                && caption_overhead > 0.0
+            {
                 let total_with_caption = partial_height + caption_overhead;
                 let avail = if is_continuation {
                     (page_avail - header_overhead).max(0.0)
@@ -2457,7 +2803,11 @@ impl TypesetEngine {
 
             if end_row >= row_count && split_end_limit == 0.0 {
                 // 나머지 전부가 현재 페이지에 들어감
-                let bottom_caption_extra = if !caption_is_top { caption_overhead } else { 0.0 };
+                let bottom_caption_extra = if !caption_is_top {
+                    caption_overhead
+                } else {
+                    0.0
+                };
                 if cursor_row == 0 && !is_continuation && content_offset == 0.0 {
                     st.current_items.push(PageItem::Table {
                         para_index: para_idx,
@@ -2476,7 +2826,8 @@ impl TypesetEngine {
                     });
                     // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                     // host_line_spacing과 outer_bottom은 포함하지 않음
-                    st.current_height += partial_height + bottom_caption_extra + ft.host_spacing.spacing_after_only;
+                    st.current_height +=
+                        partial_height + bottom_caption_extra + ft.host_spacing.spacing_after_only;
                 }
                 break;
             }
@@ -2620,9 +2971,17 @@ impl TypesetEngine {
         // (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 더한다.
         // shortcut.hwp 1쪽: 제목 zone(0mm) → 헤더 띠 zone(10mm) → 본문 zone(2단, 0)
         //   → 제목↔헤더 = 5mm, 헤더↔본문 = 5mm (한컴 PDF 정합).
-        let new_ds = paragraphs[para_idx].controls.iter().find_map(|c| {
-            if let Control::ColumnDef(cd) = c { Some(column_def_design_spacing_px(cd, self.dpi)) } else { None }
-        }).unwrap_or(0.0);
+        let new_ds = paragraphs[para_idx]
+            .controls
+            .iter()
+            .find_map(|c| {
+                if let Control::ColumnDef(cd) = c {
+                    Some(column_def_design_spacing_px(cd, self.dpi))
+                } else {
+                    None
+                }
+            })
+            .unwrap_or(0.0);
         // [Task #866] 직전 zone 의 마지막 paragraph 가 wrap=위아래 인 글자처럼-취급 표(헤더 띠)를
         // 보유하고 그 zone 의 1단 ColumnDef 간격이 0 이면, 한컴은 표 band 높이(표 본체 +
         // outer_margin top/bottom)만큼을 표 아래에 추가로 비워둔다(한컴 PDF 측정:
@@ -2632,17 +2991,27 @@ impl TypesetEngine {
         // current_zone_design_spacing_px 가 stale state 로 1mm 남은 경우 (shortcut.hwp 6쪽
         // pi=210 '도구' 헤더띠 zone cd 가 pi=209 cd=1mm 인 케이스) 도 헤더띠 leaving 으로 식별.
         let tac_band_extra: f64 = if st.current_zone_design_spacing_px < 4.0 {
-            (0..para_idx).rev()
+            (0..para_idx)
+                .rev()
                 .find(|&i| !paragraphs[i].line_segs.is_empty())
-                .and_then(|pi| paragraphs[pi].controls.iter().find_map(|c| match c {
-                    Control::Table(t)
-                        if t.common.treat_as_char
-                            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom) =>
-                        Some(hwpunit_to_px(t.common.height as i32, self.dpi)
-                            + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                            + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)),
-                    _ => None,
-                }))
+                .and_then(|pi| {
+                    paragraphs[pi].controls.iter().find_map(|c| match c {
+                        Control::Table(t)
+                            if t.common.treat_as_char
+                                && matches!(
+                                    t.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                ) =>
+                        {
+                            Some(
+                                hwpunit_to_px(t.common.height as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
+                            )
+                        }
+                        _ => None,
+                    })
+                })
                 .unwrap_or(0.0)
         } else {
             0.0
@@ -2654,8 +3023,10 @@ impl TypesetEngine {
         //     배분 다단 zone 의 마지막 컬럼 [단나누기] = 같은 ColumnDef 로 새 밴드 → 한컴 PDF
         //     상 이전 밴드와 ~한 본문 줄 간격(shortcut.hwp 3쪽 `화면 확대 100%`↔`<편집 화면
         //     분할에서>`). Stage 1 의 Distribute 마지막 컬럼 라우팅과 정합.
-        let entering_solo_zero = paragraphs[para_idx].controls.iter().any(|c| matches!(c,
-            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0));
+        let entering_solo_zero = paragraphs[para_idx].controls.iter().any(|c| {
+            matches!(c,
+            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0)
+        });
         let leaving_solo_zero = st.col_count <= 1 && st.current_zone_design_spacing_px < 0.5;
         // [Task #866 v3 Stage 1] 헤더 띠 zone (TAC wrap=TopAndBottom 표) 의 leaving 은
         // `tac_band_extra` 가 이미 표 band 높이만큼 패딩을 추가하므로 `solo_zone_pad` 를 또
@@ -2665,11 +3036,18 @@ impl TypesetEngine {
         let column_break_new_band = paragraphs[para_idx].column_type == ColumnBreakType::Column;
         let solo_zone_pad = if entering_solo_zero
             || (leaving_solo_zero && !leaving_is_header_band)
-            || column_break_new_band {
+            || column_break_new_band
+        {
             hwpunit_to_px(1200, self.dpi)
-        } else { 0.0 };
-        let candidate_offset = st.current_zone_y_offset + vpos_zone_height + tac_band_extra
-            + st.current_zone_design_spacing_px / 2.0 + new_ds / 2.0 + solo_zone_pad;
+        } else {
+            0.0
+        };
+        let candidate_offset = st.current_zone_y_offset
+            + vpos_zone_height
+            + tac_band_extra
+            + st.current_zone_design_spacing_px / 2.0
+            + new_ds / 2.0
+            + solo_zone_pad;
 
         // [Task #853] 새 zone 이 현재 페이지 하단 가까이(여유 ≲ 헤더 띠 1개 높이)에서 시작하면
         // 그 zone 의 콘텐츠(헤더 띠 ~47px 또는 본문 줄들)가 body 하단을 넘어 렌더되므로 다음
@@ -2777,7 +3155,9 @@ impl TypesetEngine {
         for (offset, p) in paragraphs[para_idx..].iter().enumerate() {
             if offset > 0
                 && (p.column_type != ColumnBreakType::None
-                    || p.controls.iter().any(|c| matches!(c, Control::ColumnDef(_))))
+                    || p.controls
+                        .iter()
+                        .any(|c| matches!(c, Control::ColumnDef(_))))
             {
                 break;
             }
@@ -2891,13 +3271,16 @@ impl TypesetEngine {
         // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
         let mut current_header: Option<HeaderFooterRef> = None;
         let mut current_footer: Option<HeaderFooterRef> = None;
-        let mut assigner = crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
+        let mut assigner =
+            crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
 
         for page in pages.iter_mut() {
             let page_num = assigner.assign(page);
 
             // 이 페이지에 속하는 머리말/꼬리말 갱신
-            let page_last_para = page.column_contents.iter()
+            let page_last_para = page
+                .column_contents
+                .iter()
                 .flat_map(|col| col.items.iter())
                 .map(|item| match item {
                     PageItem::FullParagraph { para_index } => *para_index,
@@ -2940,8 +3323,11 @@ impl TypesetEngine {
                 let starts = page.column_contents.iter().any(|col| {
                     col.items.iter().any(|item| match item {
                         PageItem::FullParagraph { para_index } => *para_index == *ph_para,
-                        PageItem::PartialParagraph { para_index, start_line, .. } =>
-                            *para_index == *ph_para && *start_line == 0,
+                        PageItem::PartialParagraph {
+                            para_index,
+                            start_line,
+                            ..
+                        } => *para_index == *ph_para && *start_line == 0,
                         PageItem::Table { para_index, .. } => *para_index == *ph_para,
                         PageItem::PartialTable { para_index, .. } => *para_index == *ph_para,
                         PageItem::Shape { para_index, .. } => *para_index == *ph_para,
@@ -3025,7 +3411,10 @@ fn compute_body_wide_top_reserve_for_para(
             if shape_bottom_abs <= body_top {
                 continue;
             }
-            ((shape_top_abs - body_top).max(0.0), shape_bottom_abs - body_top)
+            (
+                (shape_top_abs - body_top).max(0.0),
+                shape_bottom_abs - body_top,
+            )
         } else {
             (raw_v_offset, raw_v_offset + shape_h)
         };
@@ -3045,8 +3434,8 @@ fn compute_body_wide_top_reserve_for_para(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::paragraph::{Paragraph, LineSeg};
-    use crate::model::page::{PageDef, ColumnDef};
+    use crate::model::page::{ColumnDef, PageDef};
+    use crate::model::paragraph::{LineSeg, Paragraph};
     use crate::renderer::composer::ComposedParagraph;
     use crate::renderer::height_measurer::HeightMeasurer;
     use crate::renderer::pagination::Paginator;
@@ -3078,11 +3467,7 @@ mod tests {
     }
 
     /// 두 PaginationResult의 페이지 수와 각 페이지의 항목 수가 동일한지 비교
-    fn assert_pagination_match(
-        old: &PaginationResult,
-        new: &PaginationResult,
-        label: &str,
-    ) {
+    fn assert_pagination_match(old: &PaginationResult, new: &PaginationResult, label: &str) {
         assert_eq!(
             old.pages.len(),
             new.pages.len(),
@@ -3097,17 +3482,23 @@ mod tests {
                 old_page.column_contents.len(),
                 new_page.column_contents.len(),
                 "{}: p{} 단 수 불일치",
-                label, pi,
+                label,
+                pi,
             );
 
-            for (ci, (old_col, new_col)) in old_page.column_contents.iter()
-                .zip(new_page.column_contents.iter()).enumerate()
+            for (ci, (old_col, new_col)) in old_page
+                .column_contents
+                .iter()
+                .zip(new_page.column_contents.iter())
+                .enumerate()
             {
                 assert_eq!(
                     old_col.items.len(),
                     new_col.items.len(),
                     "{}: p{} col{} 항목 수 불일치 (old={}, new={})",
-                    label, pi, ci,
+                    label,
+                    pi,
+                    ci,
                     old_col.items.len(),
                     new_col.items.len(),
                 );
@@ -3128,8 +3519,14 @@ mod tests {
         let composed: Vec<ComposedParagraph> = Vec::new();
 
         let result = engine.typeset_section(
-            &[], &composed, &styles,
-            &a4_page_def(), &ColumnDef::default(), 0, &[], false,
+            &[],
+            &composed,
+            &styles,
+            &a4_page_def(),
+            &ColumnDef::default(),
+            0,
+            &[],
+            false,
         );
 
         assert_eq!(result.pages.len(), 1, "빈 문서도 최소 1페이지");
@@ -3145,12 +3542,17 @@ mod tests {
         let page_def = a4_page_def();
         let col_def = ColumnDef::default();
 
-        let (old_result, measured) = paginator.paginate(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-        );
+        let (old_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
         let new_result = engine.typeset_section(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-            &measured.tables, false,
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
         );
 
         assert_pagination_match(&old_result, &new_result, "single_paragraph");
@@ -3161,19 +3563,22 @@ mod tests {
         let engine = TypesetEngine::with_default_dpi();
         let paginator = Paginator::with_default_dpi();
         let styles = ResolvedStyleSet::default();
-        let paras: Vec<Paragraph> = (0..100)
-            .map(|_| make_paragraph_with_height(2000))
-            .collect();
+        let paras: Vec<Paragraph> = (0..100).map(|_| make_paragraph_with_height(2000)).collect();
         let composed: Vec<ComposedParagraph> = Vec::new();
         let page_def = a4_page_def();
         let col_def = ColumnDef::default();
 
-        let (old_result, measured) = paginator.paginate(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-        );
+        let (old_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
         let new_result = engine.typeset_section(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-            &measured.tables, false,
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
         );
 
         assert_pagination_match(&old_result, &new_result, "page_overflow");
@@ -3187,23 +3592,30 @@ mod tests {
 
         // 여러 줄이 있는 큰 문단 (페이지 경계에서 줄 단위 분할)
         let paras = vec![Paragraph {
-            line_segs: (0..50).map(|_| LineSeg {
-                line_height: 1800,
-                line_spacing: 200,
-                ..Default::default()
-            }).collect(),
+            line_segs: (0..50)
+                .map(|_| LineSeg {
+                    line_height: 1800,
+                    line_spacing: 200,
+                    ..Default::default()
+                })
+                .collect(),
             ..Default::default()
         }];
         let composed: Vec<ComposedParagraph> = Vec::new();
         let page_def = a4_page_def();
         let col_def = ColumnDef::default();
 
-        let (old_result, measured) = paginator.paginate(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-        );
+        let (old_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
         let new_result = engine.typeset_section(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-            &measured.tables, false,
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
         );
 
         assert_pagination_match(&old_result, &new_result, "line_split");
@@ -3218,22 +3630,27 @@ mod tests {
         // 다양한 높이의 문단 혼합
         let paras: Vec<Paragraph> = vec![
             make_paragraph_with_height(400),
-            make_paragraph_with_height(10000),  // 큰 문단
+            make_paragraph_with_height(10000), // 큰 문단
             make_paragraph_with_height(400),
             make_paragraph_with_height(800),
-            make_paragraph_with_height(20000),  // 매우 큰 문단
+            make_paragraph_with_height(20000), // 매우 큰 문단
             make_paragraph_with_height(400),
         ];
         let composed: Vec<ComposedParagraph> = Vec::new();
         let page_def = a4_page_def();
         let col_def = ColumnDef::default();
 
-        let (old_result, measured) = paginator.paginate(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-        );
+        let (old_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
         let new_result = engine.typeset_section(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-            &measured.tables, false,
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
         );
 
         assert_pagination_match(&old_result, &new_result, "mixed_paragraphs");
@@ -3259,12 +3676,17 @@ mod tests {
         let page_def = a4_page_def();
         let col_def = ColumnDef::default();
 
-        let (old_result, measured) = paginator.paginate(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-        );
+        let (old_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
         let new_result = engine.typeset_section(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-            &measured.tables, false,
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
         );
 
         assert_pagination_match(&old_result, &new_result, "page_break");
@@ -3297,14 +3719,14 @@ mod tests {
         for (sec_idx, section) in doc.document.sections.iter().enumerate() {
             let composed = &doc.composed[sec_idx];
             let measured_tables = &doc.measured_tables[sec_idx];
-            let column_def = crate::document_core::DocumentCore::find_initial_column_def(
-                &section.paragraphs,
-            );
+            let column_def =
+                crate::document_core::DocumentCore::find_initial_column_def(&section.paragraphs);
 
             // 구역에 표가 포함되어 있는지 확인
-            let has_tables = section.paragraphs.iter().any(|p|
-                p.controls.iter().any(|c| matches!(c, Control::Table(_)))
-            );
+            let has_tables = section
+                .paragraphs
+                .iter()
+                .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
 
             let new_result = engine.typeset_section(
                 &section.paragraphs,
@@ -3325,7 +3747,9 @@ mod tests {
                 if old_result.pages.len() != new_result.pages.len() {
                     eprintln!(
                         "WARN {}: 표 포함 구역 페이지 수 차이 (old={}, new={}) — Phase 2에서 해결",
-                        label, old_result.pages.len(), new_result.pages.len(),
+                        label,
+                        old_result.pages.len(),
+                        new_result.pages.len(),
                     );
                 }
             } else {
@@ -3334,17 +3758,23 @@ mod tests {
                     old_result.pages.len(),
                     new_result.pages.len(),
                     "{}: 페이지 수 불일치 (old={}, new={})",
-                    label, old_result.pages.len(), new_result.pages.len(),
+                    label,
+                    old_result.pages.len(),
+                    new_result.pages.len(),
                 );
 
-                for (pi, (old_page, new_page)) in old_result.pages.iter()
-                    .zip(new_result.pages.iter()).enumerate()
+                for (pi, (old_page, new_page)) in old_result
+                    .pages
+                    .iter()
+                    .zip(new_result.pages.iter())
+                    .enumerate()
                 {
                     assert_eq!(
                         old_page.column_contents.len(),
                         new_page.column_contents.len(),
                         "{}: p{} 단 수 불일치",
-                        label, pi,
+                        label,
+                        pi,
                     );
                 }
             }
@@ -3397,8 +3827,12 @@ mod tests {
             row_count: 1,
             col_count: 1,
             cells: vec![crate::model::table::Cell {
-                col: 0, row: 0, col_span: 1, row_span: 1,
-                width: 51974, height: 60000,
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 51974,
+                height: 60000,
                 paragraphs: vec![Paragraph::default()],
                 ..Default::default()
             }],
@@ -3411,7 +3845,8 @@ mod tests {
 
         let host_para = Paragraph {
             line_segs: vec![LineSeg {
-                line_height: 1000, line_spacing: 600,
+                line_height: 1000,
+                line_spacing: 600,
                 ..Default::default()
             }],
             controls: vec![crate::model::control::Control::Table(Box::new(table))],
@@ -3426,23 +3861,30 @@ mod tests {
             paras.push(make_paragraph_with_height(1000));
         }
 
-        let (paginator_result, measured) = paginator.paginate(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-        );
+        let (paginator_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
         let typeset_result = engine.typeset_section(
-            &paras, &composed, &styles, &page_def, &col_def, 0,
-            &measured.tables, false,
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
         );
 
         // 검증 1: paginator (engine.rs reference) 는 1 페이지에 모두 배치
         assert_eq!(
-            paginator_result.pages.len(), 1,
+            paginator_result.pages.len(),
+            1,
             "[reference] BehindText 표 + 5 후속 paragraph 는 paginator 에서 1 페이지에 들어가야 함",
         );
 
         // 검증 2: typeset 결과도 1 페이지 (현재 결함 시 RED — typeset 이 BehindText 표 height 를 누적)
         assert_eq!(
-            typeset_result.pages.len(), 1,
+            typeset_result.pages.len(),
+            1,
             "[BUG #703] typeset 도 1 페이지여야 함. 결함 시 BehindText 표 height ≈800 px 가 \
              cur_h 에 가산되어 후속 paragraph 가 다음 페이지로 밀림 (RED)",
         );

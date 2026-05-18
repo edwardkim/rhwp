@@ -26,8 +26,10 @@ fn main() {
             if let Some(para) = section.paragraphs.get(pi) {
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Table(table) = ctrl {
-                        println!("\n--- pi={} ci={} Table {}행×{}열, repeat_header={} ---",
-                            pi, ci, table.row_count, table.col_count, table.repeat_header);
+                        println!(
+                            "\n--- pi={} ci={} Table {}행×{}열, repeat_header={} ---",
+                            pi, ci, table.row_count, table.col_count, table.repeat_header
+                        );
 
                         let mut header_rows: std::collections::BTreeSet<u16> = Default::default();
                         for cell in &table.cells {
@@ -35,23 +37,35 @@ fn main() {
                                 header_rows.insert(cell.row);
                             }
                         }
-                        println!("  is_header rows: {:?} ({}개)", header_rows, header_rows.len());
+                        println!(
+                            "  is_header rows: {:?} ({}개)",
+                            header_rows,
+                            header_rows.len()
+                        );
 
                         if header_rows.is_empty() {
                             println!("  → 본 표는 is_header 셀 부재 영역. 본 PR fix 분기 미발현.");
                         } else if header_rows.len() == 1 {
                             println!("  → 본 표는 단일 제목행 영역. 기존 (devel) 동작과 본 PR fix 동등 (회귀 0).");
                         } else {
-                            println!("  → 본 표는 다중 제목행 영역 ({} 행). 본 PR fix 권위 발현 케이스.",
-                                header_rows.len());
+                            println!(
+                                "  → 본 표는 다중 제목행 영역 ({} 행). 본 PR fix 권위 발현 케이스.",
+                                header_rows.len()
+                            );
                         }
 
                         // is_header 영역 + 행 0~2 영역 셀 명세
                         for cell in &table.cells {
                             if cell.is_header || cell.row < 3 {
-                                println!("    cell r={} c={} rs={} cs={} is_header={} bf={}",
-                                    cell.row, cell.col, cell.row_span, cell.col_span,
-                                    cell.is_header, cell.border_fill_id);
+                                println!(
+                                    "    cell r={} c={} rs={} cs={} is_header={} bf={}",
+                                    cell.row,
+                                    cell.col,
+                                    cell.row_span,
+                                    cell.col_span,
+                                    cell.is_header,
+                                    cell.border_fill_id
+                                );
                             }
                         }
                     }
@@ -80,7 +94,13 @@ fn main() {
                     } else if header_rows.len() == 1 {
                         single_header_count += 1;
                     } else {
-                        multi_header_tables.push((sec_idx, pi, table.row_count, table.col_count, header_rows.len()));
+                        multi_header_tables.push((
+                            sec_idx,
+                            pi,
+                            table.row_count,
+                            table.col_count,
+                            header_rows.len(),
+                        ));
                     }
                 }
             }
@@ -92,7 +112,10 @@ fn main() {
     if !multi_header_tables.is_empty() {
         println!("  → 본 PR fix 권위 발현 영역 (분할 가능 시):");
         for (sec, pi, rows, cols, hr_count) in &multi_header_tables {
-            println!("    s{} pi={} {}행×{}열 (제목행 {}개)", sec, pi, rows, cols, hr_count);
+            println!(
+                "    s{} pi={} {}행×{}열 (제목행 {}개)",
+                sec, pi, rows, cols, hr_count
+            );
         }
     } else {
         println!("  → 본 환경 aift.hwp 의 모든 표는 단일/부재 제목행 영역. 본 PR fix 의 시각적 발현 영역 부재.");

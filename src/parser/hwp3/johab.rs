@@ -1,5 +1,5 @@
 //! 조합형 텍스트 변환 로직
-//! 
+//!
 //! `johab_map.rs`의 테이블을 활용하여 실제 조합형 텍스트를 유니코드(UTF-8) 문자로
 //! 디코딩하는 함수(`decode_johab`)를 제공한다.
 
@@ -15,13 +15,16 @@ pub fn decode_johab(ch: u16) -> char {
         let jong_idx = ch & 0x1F;
 
         let cho_map: [i32; 32] = [
-            -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+            -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1,
         ];
         let jung_map: [i32; 32] = [
-            -1, -1, -1, 0, 1, 2, 3, 4, -1, -1, 5, 6, 7, 8, 9, 10, -1, -1, 11, 12, 13, 14, 15, 16, -1, -1, 17, 18, 19, 20, -1, -1
+            -1, -1, -1, 0, 1, 2, 3, 4, -1, -1, 5, 6, 7, 8, 9, 10, -1, -1, 11, 12, 13, 14, 15, 16,
+            -1, -1, 17, 18, 19, 20, -1, -1,
         ];
         let jong_map: [i32; 32] = [
-            -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, -1, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, -1, -1
+            -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, -1, 17, 18, 19, 20, 21,
+            22, 23, 24, 25, 26, 27, -1, -1,
         ];
 
         let cho = cho_map[cho_idx as usize];
@@ -29,13 +32,15 @@ pub fn decode_johab(ch: u16) -> char {
         let mut jong = jong_map[jong_idx as usize];
 
         if cho != -1 && jung != -1 {
-            if jong == -1 { jong = 0; }
+            if jong == -1 {
+                jong = 0;
+            }
             let uni_val = 0xAC00 + (cho * 21 * 28) + (jung * 28) + jong;
             if let Some(c) = std::char::from_u32(uni_val as u32) {
-                 return c;
+                return c;
             }
         }
-        
+
         // 한자 및 기호 영역 (이진 탐색)
         if let Ok(idx) = johab_map::JOHAB_SYMBOLS.binary_search_by_key(&ch, |&(k, _)| k) {
             return johab_map::JOHAB_SYMBOLS[idx].1;
@@ -68,12 +73,12 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         return char::from_u32(0x2160 + (ch - 0x3590) as u32);
     }
     let codepoint: u32 = match ch {
-        0x301C => 0xF080F,  // 한컴 PUA — 굵은 가로선 (94.5% 발생)
-        0x35E1 => 0x2500,   // ─ BOX DRAWINGS LIGHT HORIZONTAL
-        0x303D => 0xF0827,  // 한컴 PUA
-        0x3479 => 0x25B7,   // ▷ WHITE RIGHT-POINTING TRIANGLE
-        0x347A => 0x25B6,   // ▶ BLACK RIGHT-POINTING TRIANGLE
-        0x3441 => 0x25A0,   // ■ BLACK SQUARE
+        0x301C => 0xF080F, // 한컴 PUA — 굵은 가로선 (94.5% 발생)
+        0x35E1 => 0x2500,  // ─ BOX DRAWINGS LIGHT HORIZONTAL
+        0x303D => 0xF0827, // 한컴 PUA
+        0x3479 => 0x25B7,  // ▷ WHITE RIGHT-POINTING TRIANGLE
+        0x347A => 0x25B6,  // ▶ BLACK RIGHT-POINTING TRIANGLE
+        0x3441 => 0x25A0,  // ■ BLACK SQUARE
         // [Task #877 Stage 3 v4 → Stage 4] sample16 paragraph 89 등의 글머리 prefix.
         // HWP3 0x3366 → 한컴 HWP5 변환본 paragraph 89 첫 char "\u{f03c5}" (PUA — ⓛ 비슷한 글머리).
         // rhwp-studio 의 font fallback 이 PUA glyph 미보유 → invisible 회귀. 표준

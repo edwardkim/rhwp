@@ -20,13 +20,25 @@ fn first_sukyul_x_in_left_column(svg: &str) -> Option<f64> {
     // The first "수" in that range (excluding the title "수학 영역" which sits in the
     // page header area around y<150) is item 18's "수" at y~162.
     for line in svg.lines() {
-        if !line.contains(">수<") { continue; }
-        let Some(tx_start) = line.find("translate(") else { continue };
+        if !line.contains(">수<") {
+            continue;
+        }
+        let Some(tx_start) = line.find("translate(") else {
+            continue;
+        };
         let rest = &line[tx_start + "translate(".len()..];
-        let Some(comma) = rest.find(',') else { continue };
-        let Some(x) = rest[..comma].parse::<f64>().ok() else { continue };
-        let Some(paren) = rest.find(')') else { continue };
-        let Some(y) = rest[comma + 1..paren].parse::<f64>().ok() else { continue };
+        let Some(comma) = rest.find(',') else {
+            continue;
+        };
+        let Some(x) = rest[..comma].parse::<f64>().ok() else {
+            continue;
+        };
+        let Some(paren) = rest.find(')') else {
+            continue;
+        };
+        let Some(y) = rest[comma + 1..paren].parse::<f64>().ok() else {
+            continue;
+        };
         // Skip title "수학 영역" (y < 150) and right column (x > 500). Take the first hit
         // in body y (150~200) and left column (x < 300 normal, x > 300 = bug).
         if y >= 150.0 && y < 200.0 && x < 500.0 {

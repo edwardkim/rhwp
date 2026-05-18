@@ -1,16 +1,6 @@
 /// The RecordType Enumeration defines the types of records that can be used in
 /// WMF metafiles.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum RecordType {
     /// This record specifies the end of the file, the last record in the

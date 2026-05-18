@@ -65,11 +65,7 @@ impl META_PATBLT {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
         record_size.consume(
-            raster_operation_bytes
-                + height_bytes
-                + width_bytes
-                + y_left_bytes
-                + x_left_bytes,
+            raster_operation_bytes + height_bytes + width_bytes + y_left_bytes + x_left_bytes,
         );
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;

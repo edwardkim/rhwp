@@ -41,6 +41,10 @@ impl META_RESIZEPALETTE {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, number_of_entries })
+        Ok(Self {
+            record_size,
+            record_function,
+            number_of_entries,
+        })
     }
 }

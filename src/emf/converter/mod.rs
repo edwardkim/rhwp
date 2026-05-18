@@ -7,4 +7,4 @@ pub mod svg;
 
 pub use device_context::{DcStack, DeviceContext, GraphicsObject, ObjectTable};
 pub use player::Player;
-pub use svg::{SvgBuilder, colorref_to_rgb, escape_xml};
+pub use svg::{colorref_to_rgb, escape_xml, SvgBuilder};

@@ -449,3 +449,7 @@ gh pr create --repo edwardkim/rhwp --base devel --head {contributor}:feature/my-
 ### 작업 규칙
 
 - 작업 시간의 시작과 종료는 작업지시자가 결정한다. 클로드가 임의로 작업 종료를 제안하거나 시간을 한정하지 않는다.
+- 기능 변경과 포맷 변경은 같은 커밋에 섞지 않는다.
+- 전체 `cargo fmt --all`은 포맷 전용 이슈/브랜치에서만 실행한다.
+- 기능/조사 브랜치에서는 새로 만들거나 직접 수정한 파일만 필요한 범위에서 정리하고, 무관한 rustfmt diff를 만들지 않는다.
+- Rust formatter 기준은 저장소 루트의 `rust-toolchain.toml`과 `rustfmt.toml`을 따른다.

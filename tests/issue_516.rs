@@ -42,7 +42,10 @@ fn issue_516_image_attr_helper_custom_watermark() {
         external_path: None,
     };
     assert!(attr.is_watermark(), "사용자 정의도 워터마크");
-    assert!(!attr.is_hancom_watermark_preset(), "한컴 자동 프리셋 미정합");
+    assert!(
+        !attr.is_hancom_watermark_preset(),
+        "한컴 자동 프리셋 미정합"
+    );
     assert_eq!(attr.watermark_preset(), Some("custom"));
 }
 
@@ -82,7 +85,9 @@ fn issue_516_layer_tree_json_includes_watermark_for_emblem() {
     let bytes = std::fs::read(&hwp_path).expect("read 복학원서.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 복학원서.hwp");
 
-    let json = doc.get_page_layer_tree_native(0).expect("layer tree page 1");
+    let json = doc
+        .get_page_layer_tree_native(0)
+        .expect("layer tree page 1");
 
     // 본 fixture 의 엠블렘은 custom 워터마크
     assert!(
@@ -105,7 +110,9 @@ fn issue_516_layer_tree_json_no_watermark_for_normal_image() {
     let bytes = std::fs::read(&hwp_path).expect("read 복학원서.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 복학원서.hwp");
 
-    let json = doc.get_page_layer_tree_native(0).expect("layer tree page 1");
+    let json = doc
+        .get_page_layer_tree_native(0)
+        .expect("layer tree page 1");
 
     // watermark 필드 출현 횟수 = 1 (엠블렘만)
     let watermark_count = json.matches("\"watermark\":").count();
@@ -125,7 +132,9 @@ fn issue_516_layer_tree_json_includes_wrap_for_behind_text() {
     let bytes = std::fs::read(&hwp_path).expect("read 복학원서.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 복학원서.hwp");
 
-    let json = doc.get_page_layer_tree_native(0).expect("layer tree page 1");
+    let json = doc
+        .get_page_layer_tree_native(0)
+        .expect("layer tree page 1");
 
     // 두 그림 모두 BehindText → JSON 에 "wrap":"behindText" 출현
     assert!(
@@ -133,7 +142,6 @@ fn issue_516_layer_tree_json_includes_wrap_for_behind_text() {
         "복학원서.hwp 의 BehindText 그림에 wrap 필드가 직렬화되어야 함"
     );
 }
-
 
 #[test]
 fn issue_516_diag_count_image_ops() {
@@ -146,8 +154,10 @@ fn issue_516_diag_count_image_ops() {
     let wrap_behind = json.matches("\"wrap\":\"behindText\"").count();
     let mime_png = json.matches("\"mime\":\"image/png\"").count();
     let mime_jpg = json.matches("\"mime\":\"image/jpeg\"").count();
-    eprintln!("image ops: {}, wrap=behindText: {}, mime png: {}, mime jpg: {}",
-              image_count, wrap_behind, mime_png, mime_jpg);
+    eprintln!(
+        "image ops: {}, wrap=behindText: {}, mime png: {}, mime jpg: {}",
+        image_count, wrap_behind, mime_png, mime_jpg
+    );
 }
 
 #[test]
@@ -164,7 +174,12 @@ fn issue_516_diag_image_op_locations() {
     while let Some(found) = json[idx..].find("\"type\":\"image\"") {
         let abs = idx + found;
         let start = abs.saturating_sub(80);
-        eprintln!("--- image op #{} at pos {}: ...{}", count, abs, &json[start..abs.min(json.len())]);
+        eprintln!(
+            "--- image op #{} at pos {}: ...{}",
+            count,
+            abs,
+            &json[start..abs.min(json.len())]
+        );
         // 그리고 mime 까지 포함
         let end = (abs + 100).min(json.len());
         eprintln!("    after image: {}", &json[abs..end]);

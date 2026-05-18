@@ -40,7 +40,8 @@ impl DiffSummary {
 
     /// 영역별 카운트.
     pub fn counts_by_area(&self) -> Vec<(&'static str, usize)> {
-        let mut map: std::collections::BTreeMap<&'static str, usize> = std::collections::BTreeMap::new();
+        let mut map: std::collections::BTreeMap<&'static str, usize> =
+            std::collections::BTreeMap::new();
         for it in &self.items {
             *map.entry(it.area).or_insert(0) += 1;
         }
@@ -135,9 +136,11 @@ fn check_paragraph(
                     hwp_value: "(CommonObjAttr 직렬화 필요)".into(),
                 });
             }
-            if t.raw_table_record_attr == 0 && (t.attr != 0
-                || t.repeat_header
-                || !matches!(t.page_break, crate::model::table::TablePageBreak::None)) {
+            if t.raw_table_record_attr == 0
+                && (t.attr != 0
+                    || t.repeat_header
+                    || !matches!(t.page_break, crate::model::table::TablePageBreak::None))
+            {
                 summary.push(IrFieldDiff {
                     area: "table.raw_table_record_attr",
                     location: format!(
@@ -220,11 +223,9 @@ mod tests {
         // 빈 문서엔 표/lineseg 자체가 없으므로 critical 영역 차이 0
         let counts = summary.counts_by_area();
         assert!(
-            counts
-                .iter()
-                .all(|(a, _)| *a != "table.raw_ctrl_data"
-                    && *a != "cell.list_attr.bit16"
-                    && *a != "paragraph.line_seg.vertical_pos"),
+            counts.iter().all(|(a, _)| *a != "table.raw_ctrl_data"
+                && *a != "cell.list_attr.bit16"
+                && *a != "paragraph.line_seg.vertical_pos"),
             "empty doc should have no critical-area diffs, got: {:?}",
             counts
         );

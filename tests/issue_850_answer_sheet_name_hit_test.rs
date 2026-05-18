@@ -100,7 +100,11 @@ fn assert_name_insert_by_path(
         .unwrap_or_else(|e| panic!("{sample_name}: get_cursor_rect_by_path failed: {e:?}"));
     let rect: Value = serde_json::from_str(&rect_json)
         .unwrap_or_else(|e| panic!("{sample_name}: parse cursor rect `{rect_json}`: {e}"));
-    assert_eq!(rect["pageIndex"].as_u64(), Some(0), "{sample_name}: rect={rect}");
+    assert_eq!(
+        rect["pageIndex"].as_u64(),
+        Some(0),
+        "{sample_name}: rect={rect}"
+    );
     assert!(
         rect["height"].as_f64().unwrap_or(0.0) > 0.0,
         "{sample_name}: cursor rect height must be positive, rect={rect}"

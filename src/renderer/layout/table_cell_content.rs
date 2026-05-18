@@ -1,19 +1,23 @@
 //! 표 셀 내용 레이아웃 (세로쓰기, 셀 도형, 내장 표)
 
-use crate::model::paragraph::Paragraph;
-use crate::model::control::Control;
-use crate::model::style::Alignment;
-use crate::model::bin_data::BinDataContent;
-use crate::model::table::VerticalAlign;
-use super::super::render_tree::*;
-use super::super::page_layout::LayoutRect;
 use super::super::composer::{compose_paragraph, ComposedParagraph};
+use super::super::page_layout::LayoutRect;
+use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, TextStyle, ShapeStyle};
-use super::{LayoutEngine, CellContext, CellPathEntry};
-use super::border_rendering::{build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders};
-use super::text_measurement::{resolved_to_text_style, is_cjk_char, is_vertical_rotate_char, vertical_substitute_char};
+use super::super::{hwpunit_to_px, ShapeStyle, TextStyle};
+use super::border_rendering::{
+    build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
+};
+use super::text_measurement::{
+    is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
+};
 use super::utils::{extract_shape_transform, find_bin_data};
+use super::{CellContext, CellPathEntry, LayoutEngine};
+use crate::model::bin_data::BinDataContent;
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
+use crate::model::style::Alignment;
+use crate::model::table::VerticalAlign;
 
 impl LayoutEngine {
     /// 세로쓰기 셀의 텍스트를 수직 방향으로 배치한다.
@@ -62,7 +66,9 @@ impl LayoutEngine {
         }
 
         let get_alignment = |para_style_id: u16| -> Alignment {
-            styles.para_styles.get(para_style_id as usize)
+            styles
+                .para_styles
+                .get(para_style_id as usize)
                 .map(|s| s.alignment)
                 .unwrap_or(Alignment::Left)
         };
@@ -78,11 +84,14 @@ impl LayoutEngine {
                 // 빈 문단: 빈 열 추가 (개행)
                 // 칼럼 너비 = line_height + line_spacing (전체 피치를 칼럼에 흡수)
                 let ls = para.and_then(|p| p.line_segs.first());
-                let spacing = ls.map(|l| hwpunit_to_px(l.line_spacing, self.dpi)).unwrap_or(0.0);
+                let spacing = ls
+                    .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                    .unwrap_or(0.0);
                 columns.push(ColumnInfo {
                     start_idx: chars.len(),
                     end_idx: chars.len(),
-                    col_width: ls.map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                    col_width: ls
+                        .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
                         .unwrap_or(13.0),
                     col_spacing: 0.0,
                     total_height: 0.0,
@@ -97,27 +106,30 @@ impl LayoutEngine {
                 let ls = para.and_then(|p| p.line_segs.get(line_idx));
                 // 칼럼 너비 = line_height + line_spacing (전체 피치 흡수)
                 // 마지막 칼럼은 후처리로 line_spacing분 제거
-                let col_width = ls.map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                let col_width = ls
+                    .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
                     .unwrap_or(13.0);
                 let col_spacing = 0.0;
-                let absorbed_spacing = ls.map(|l| hwpunit_to_px(l.line_spacing, self.dpi)).unwrap_or(0.0);
+                let absorbed_spacing = ls
+                    .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                    .unwrap_or(0.0);
 
                 let col_start = chars.len();
                 let mut col_height = 0.0;
 
                 for run in &line.runs {
-                    let text_style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    let text_style =
+                        resolved_to_text_style(styles, run.char_style_id, run.lang_index);
                     for ch in run.text.chars() {
                         if ch == '\n' || ch == '\r' {
                             char_offset += 1;
                             continue;
                         }
                         let is_rotate = is_vertical_rotate_char(ch);
-                        let needs_rotation = is_rotate
-                            || (text_direction == 1 && !is_cjk_char(ch));
+                        let needs_rotation = is_rotate || (text_direction == 1 && !is_cjk_char(ch));
                         // 세로쓰기에서 구두점/기호만 반칸 advance (영문/숫자는 캐릭터 높이)
-                        let half_advance = needs_rotation
-                            || (!is_cjk_char(ch) && !ch.is_ascii_alphanumeric());
+                        let half_advance =
+                            needs_rotation || (!is_cjk_char(ch) && !ch.is_ascii_alphanumeric());
                         let advance = if half_advance {
                             text_style.font_size * 0.5
                         } else {
@@ -173,7 +185,10 @@ impl LayoutEngine {
             0.0
         } else {
             columns.iter().map(|c| c.col_width).sum::<f64>()
-                + columns[..columns.len() - 1].iter().map(|c| c.col_spacing).sum::<f64>()
+                + columns[..columns.len() - 1]
+                    .iter()
+                    .map(|c| c.col_spacing)
+                    .sum::<f64>()
         };
 
         // 열이 셀보다 넓으면 첫 열이 오른쪽 가장자리에서 시작하도록 클램핑
@@ -194,22 +209,22 @@ impl LayoutEngine {
             col_x -= col.col_width;
 
             let free_space = (inner_area.height - col.total_height).max(0.0);
-            let y_start = inner_area.y + match col.alignment {
-                Alignment::Center | Alignment::Distribute => free_space / 2.0,
-                Alignment::Right => free_space,
-                _ => 0.0,
-            };
+            let y_start = inner_area.y
+                + match col.alignment {
+                    Alignment::Center | Alignment::Distribute => free_space / 2.0,
+                    Alignment::Right => free_space,
+                    _ => 0.0,
+                };
             let mut char_y = y_start;
             let col_bottom = inner_area.y + inner_area.height;
 
             for i in col.start_idx..col.end_idx {
                 let ci = &chars[i];
                 let is_rotate = is_vertical_rotate_char(ci.ch);
-                let needs_rotation = is_rotate
-                    || (text_direction == 1 && !is_cjk_char(ci.ch));
+                let needs_rotation = is_rotate || (text_direction == 1 && !is_cjk_char(ci.ch));
                 // 세로쓰기에서 구두점/기호만 반칸 advance (영문/숫자는 캐릭터 높이)
-                let half_advance = needs_rotation
-                    || (!is_cjk_char(ci.ch) && !ci.ch.is_ascii_alphanumeric());
+                let half_advance =
+                    needs_rotation || (!is_cjk_char(ci.ch) && !ci.ch.is_ascii_alphanumeric());
                 let advance = if half_advance {
                     ci.style.font_size * 0.5
                 } else {
@@ -277,8 +292,11 @@ impl LayoutEngine {
                         rotation,
                         is_vertical: true,
                         char_overlap: None,
-                        border_fill_id: styles.char_styles.get(ci.char_style_id as usize)
-                            .map(|cs| cs.border_fill_id).unwrap_or(0),
+                        border_fill_id: styles
+                            .char_styles
+                            .get(ci.char_style_id as usize)
+                            .map(|cs| cs.border_fill_id)
+                            .unwrap_or(0),
                         baseline: advance * 0.85,
                         field_marker: FieldMarkerType::None,
                     }),
@@ -294,7 +312,6 @@ impl LayoutEngine {
             col_x -= col.col_spacing;
         }
     }
-
 
     /// 테이블 셀 내 도형(Shape) 컨트롤을 레이아웃한다.
     pub(crate) fn layout_cell_shape(
@@ -319,9 +336,7 @@ impl LayoutEngine {
                 Alignment::Center | Alignment::Distribute => {
                     inner_area.x + (inner_area.width - child_w).max(0.0) / 2.0
                 }
-                Alignment::Right => {
-                    inner_area.x + (inner_area.width - child_w).max(0.0)
-                }
+                Alignment::Right => inner_area.x + (inner_area.width - child_w).max(0.0),
                 _ => inner_area.x,
             };
             (x, para_y)
@@ -334,18 +349,14 @@ impl LayoutEngine {
                 HorzAlign::Right | HorzAlign::Outside => {
                     inner_area.x + inner_area.width - child_w - h_offset
                 }
-                HorzAlign::Center => {
-                    inner_area.x + (inner_area.width - child_w) / 2.0 + h_offset
-                }
+                HorzAlign::Center => inner_area.x + (inner_area.width - child_w) / 2.0 + h_offset,
                 _ => inner_area.x + h_offset,
             };
             let y = match child_common.vert_align {
                 VertAlign::Bottom | VertAlign::Outside => {
                     inner_area.y + inner_area.height - child_h - v_offset
                 }
-                VertAlign::Center => {
-                    inner_area.y + (inner_area.height - child_h) / 2.0 + v_offset
-                }
+                VertAlign::Center => inner_area.y + (inner_area.height - child_h) / 2.0 + v_offset,
                 _ => inner_area.y + v_offset,
             };
             (x, y)
@@ -353,10 +364,18 @@ impl LayoutEngine {
 
         let empty_map = std::collections::HashMap::new();
         self.layout_shape_object(
-            tree, cell_node, shape,
-            child_x, child_y, child_w, child_h,
-            0, 0, 0,
-            styles, bin_data_content,
+            tree,
+            cell_node,
+            shape,
+            child_x,
+            child_y,
+            child_w,
+            child_h,
+            0,
+            0,
+            0,
+            styles,
+            bin_data_content,
             &empty_map,
             &[],
         );
@@ -423,23 +442,35 @@ impl LayoutEngine {
         // 누적 위치 계산
         let mut col_x = vec![0.0f64; col_count + 1];
         for i in 0..col_count {
-            col_x[i + 1] = col_x[i] + col_widths[i] + if i + 1 < col_count { cell_spacing } else { 0.0 };
+            col_x[i + 1] =
+                col_x[i] + col_widths[i] + if i + 1 < col_count { cell_spacing } else { 0.0 };
         }
         let mut row_y = vec![0.0f64; row_count + 1];
         for i in 0..row_count {
-            row_y[i + 1] = row_y[i] + row_heights[i] + if i + 1 < row_count { cell_spacing } else { 0.0 };
+            row_y[i + 1] =
+                row_y[i] + row_heights[i] + if i + 1 < row_count { cell_spacing } else { 0.0 };
         }
 
         // 행별 열 위치 계산 (셀별 독립 너비 지원)
-        let row_col_x = build_row_col_x(table, &col_widths, col_count, row_count, cell_spacing, self.dpi);
+        let row_col_x = build_row_col_x(
+            table,
+            &col_widths,
+            col_count,
+            row_count,
+            cell_spacing,
+            self.dpi,
+        );
 
-        let table_width = row_col_x.iter()
+        let table_width = row_col_x
+            .iter()
             .map(|rx| rx.last().copied().unwrap_or(0.0))
             .fold(col_x.last().copied().unwrap_or(0.0), f64::max);
         let table_height = row_y.last().copied().unwrap_or(0.0);
         // TAC 표: 호스트 문단 정렬에 따라 배치
         let table_x = match host_alignment {
-            Alignment::Center | Alignment::Distribute => container.x + (container.width - table_width).max(0.0) / 2.0,
+            Alignment::Center | Alignment::Distribute => {
+                container.x + (container.width - table_width).max(0.0) / 2.0
+            }
             Alignment::Right => container.x + (container.width - table_width).max(0.0),
             _ => container.x, // 왼쪽 정렬 (기본)
         };
@@ -470,8 +501,13 @@ impl LayoutEngine {
             let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
             if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
                 self.render_cell_background(
-                    tree, &mut table_node, Some(tbl_bs),
-                    table_x, table_y, table_width, table_height,
+                    tree,
+                    &mut table_node,
+                    Some(tbl_bs),
+                    table_x,
+                    table_y,
+                    table_width,
+                    table_height,
                     bin_data_content,
                 );
             }
@@ -542,23 +578,35 @@ impl LayoutEngine {
             // 셀 테두리를 엣지 그리드에 수집
             if let Some(bs) = border_style {
                 collect_cell_borders(
-                    &mut h_edges, &mut v_edges,
-                    c, r, cell.col_span as usize, cell.row_span as usize,
+                    &mut h_edges,
+                    &mut v_edges,
+                    c,
+                    r,
+                    cell.col_span as usize,
+                    cell.row_span as usize,
                     &bs.borders,
                 );
             }
 
             // 셀 패딩 (apply_inner_margin 고려)
-            let (mut pad_left, mut pad_right, pad_top, _pad_bottom) = self.resolve_cell_padding(cell, table);
+            let (mut pad_left, mut pad_right, pad_top, _pad_bottom) =
+                self.resolve_cell_padding(cell, table);
 
             // 셀 내 문단 레이아웃
-            let composed_paras: Vec<_> = cell.paragraphs.iter()
+            let composed_paras: Vec<_> = cell
+                .paragraphs
+                .iter()
                 .map(|p| compose_paragraph(p))
                 .collect();
 
             // 텍스트 오버플로우 시 좌우 패딩 축소
             let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
-                pad_left, pad_right, cell_w, &composed_paras, &cell.paragraphs, styles,
+                pad_left,
+                pad_right,
+                cell_w,
+                &composed_paras,
+                &cell.paragraphs,
+                styles,
             );
             pad_left = new_pl;
             pad_right = new_pr;
@@ -575,7 +623,11 @@ impl LayoutEngine {
             let mut para_y = cell_y + pad_top;
             let para_count = composed_paras.len();
             let cell_idx = cell_enum_idx;
-            for (pidx, (composed, para)) in composed_paras.iter().zip(cell.paragraphs.iter()).enumerate() {
+            for (pidx, (composed, para)) in composed_paras
+                .iter()
+                .zip(cell.paragraphs.iter())
+                .enumerate()
+            {
                 // enclosing context가 있으면 글상자 경로 + 표 셀 경로를 합성
                 let cell_ctx = enclosing_ctx.map(|(sec_idx, para_idx, parent_path, table_ci)| {
                     let mut path = parent_path.to_vec();
@@ -585,10 +637,14 @@ impl LayoutEngine {
                         cell_para_index: pidx,
                         text_direction: cell.text_direction,
                     });
-                    (sec_idx, para_idx, CellContext {
-                        parent_para_index: para_idx,
-                        path,
-                    })
+                    (
+                        sec_idx,
+                        para_idx,
+                        CellContext {
+                            parent_para_index: para_idx,
+                            path,
+                        },
+                    )
                 });
                 let (sec_for_layout, para_for_layout, ctx) = match cell_ctx {
                     Some((s, p, c)) => (s, pidx, Some(c)),
@@ -603,11 +659,15 @@ impl LayoutEngine {
                     para_y,
                     0,
                     composed.lines.len(),
-                    sec_for_layout, para_for_layout, ctx,
+                    sec_for_layout,
+                    para_for_layout,
+                    ctx,
                     pidx + 1 == para_count,
                     0.0,
-                    None, Some(para), None,
-                    None,  // 셀 컨텍스트 — wrap zone 무관
+                    None,
+                    Some(para),
+                    None,
+                    None, // 셀 컨텍스트 — wrap zone 무관
                 );
 
                 // 셀 내 그림/도형 컨트롤 렌더링
@@ -618,7 +678,11 @@ impl LayoutEngine {
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             // 셀 내부에 맞추어 크기 제한
                             let fit_w = pic_w.min(inner_width);
-                            let fit_h = if pic_w > 0.0 { pic_h * (fit_w / pic_w) } else { pic_h };
+                            let fit_h = if pic_w > 0.0 {
+                                pic_h * (fit_w / pic_w)
+                            } else {
+                                pic_h
+                            };
                             // TAC: 문단 시작 위치 (표의 왼쪽 상단)
                             let pic_x = inner_x;
                             // vpos 기반 y 위치: LINE_SEG의 vertical_pos 사용
@@ -629,8 +693,8 @@ impl LayoutEngine {
                             };
 
                             let bin_id = pic.image_attr.bin_data_id;
-                            let img_data = find_bin_data(bin_data_content, bin_id)
-                                .map(|bd| bd.data.clone());
+                            let img_data =
+                                find_bin_data(bin_data_content, bin_id).map(|bd| bd.data.clone());
                             let img_node_id = tree.next_id();
                             let img_node = RenderNode::new(
                                 img_node_id,

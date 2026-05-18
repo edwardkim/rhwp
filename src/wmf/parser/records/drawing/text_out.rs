@@ -54,17 +54,12 @@ impl META_TEXTOUT {
             crate::wmf::parser::RecordType::META_TEXTOUT,
         )?;
 
-        let (string_length, string_length_bytes) =
-            crate::wmf::parser::read_i16_from_le_bytes(buf)?;
+        let (string_length, string_length_bytes) = crate::wmf::parser::read_i16_from_le_bytes(buf)?;
         record_size.consume(string_length_bytes);
 
         let string_len = string_length + (string_length % 2);
 
-        let (
-            (string, string_bytes),
-            (y_start, y_start_bytes),
-            (x_start, x_start_bytes),
-        ) = (
+        let ((string, string_bytes), (y_start, y_start_bytes), (x_start, x_start_bytes)) = (
             crate::wmf::parser::read_variable(buf, string_len as usize)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,

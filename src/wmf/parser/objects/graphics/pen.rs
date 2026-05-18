@@ -22,18 +22,18 @@ impl Pen {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (
-            (style, style_bytes),
-            (width, width_bytes),
-            (color_ref, color_ref_bytes),
-        ) = (
+        let ((style, style_bytes), (width, width_bytes), (color_ref, color_ref_bytes)) = (
             PenStyleSubsection::parse(buf)?,
             crate::wmf::parser::PointS::parse(buf)?,
             crate::wmf::parser::ColorRef::parse(buf)?,
         );
 
         Ok((
-            Self { style, width, color_ref },
+            Self {
+                style,
+                width,
+                color_ref,
+            },
             style_bytes + width_bytes + color_ref_bytes,
         ))
     }
@@ -56,8 +56,7 @@ impl PenStyleSubsection {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (style_u16, style_bytes) =
-            crate::wmf::parser::read_u16_from_le_bytes(buf)?;
+        let (style_u16, style_bytes) = crate::wmf::parser::read_u16_from_le_bytes(buf)?;
 
         Ok((
             Self {

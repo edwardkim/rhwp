@@ -20,8 +20,8 @@ fn issue_676_t재정통계_2010_11_single_page() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/통합재정통계(2010.11월).hwp");
     let bytes = fs::read(&hwp_path).expect("read 통합재정통계(2010.11월).hwp");
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse 통합재정통계(2010.11월).hwp");
+    let doc =
+        rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 통합재정통계(2010.11월).hwp");
 
     // 한컴2022 정합 정답지: 1 페이지
     // 회귀 시: 2 페이지 (pi=14 trailing 빈 줄이 단독 페이지 발생)
@@ -37,8 +37,8 @@ fn issue_676_t재정통계_2011_10_single_page() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/통합재정통계(2011.10월).hwp");
     let bytes = fs::read(&hwp_path).expect("read 통합재정통계(2011.10월).hwp");
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse 통합재정통계(2011.10월).hwp");
+    let doc =
+        rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 통합재정통계(2011.10월).hwp");
 
     // 한컴2022 정합 정답지: 1 페이지 (2010.11 과 동일 패턴)
     assert_eq!(
@@ -54,7 +54,7 @@ fn issue_676_t재정통계_2014_08_no_regression() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/통합재정통계(2014.8월).hwp");
     let bytes = fs::read(&hwp_path).expect("read 통합재정통계(2014.8월).hwp");
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse 통합재정통계(2014.8월).hwp");
+    let doc =
+        rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 통합재정통계(2014.8월).hwp");
     assert_eq!(doc.page_count(), 1);
 }

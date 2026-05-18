@@ -79,8 +79,11 @@ fn stage5_ref_table_smoke() {
     }
     // 표가 section.xml 에 아직 출력되지 않으므로 IrDiff 가 있을 수 있다.
     // 단, 파싱·직렬화 자체는 성공해야 함 (크래시 금지).
-    assert!(diff.is_empty() || !diff.differences.is_empty(),
-        "ref_table roundtrip must not crash, diff={}", diff.differences.len());
+    assert!(
+        diff.is_empty() || !diff.differences.is_empty(),
+        "ref_table roundtrip must not crash, diff={}",
+        diff.differences.len()
+    );
 }
 
 #[test]
@@ -115,7 +118,9 @@ fn stage5_table_control_preserved_on_roundtrip() {
     let bytes = include_bytes!("../samples/표-텍스트.hwpx");
     let doc1 = parse_hwpx(bytes).expect("parse 표-텍스트");
 
-    let orig_tables: usize = doc1.sections.iter()
+    let orig_tables: usize = doc1
+        .sections
+        .iter()
         .flat_map(|s| s.paragraphs.iter())
         .flat_map(|p| p.controls.iter())
         .filter(|c| matches!(c, Control::Table(_)))
@@ -125,14 +130,17 @@ fn stage5_table_control_preserved_on_roundtrip() {
     let out = serialize_hwpx(&doc1).expect("serialize");
     let doc2 = parse_hwpx(&out).expect("reparse");
 
-    let rt_tables: usize = doc2.sections.iter()
+    let rt_tables: usize = doc2
+        .sections
+        .iter()
         .flat_map(|s| s.paragraphs.iter())
         .flat_map(|p| p.controls.iter())
         .filter(|c| matches!(c, Control::Table(_)))
         .count();
     assert_eq!(
         rt_tables, orig_tables,
-        "Table count: original={}, roundtrip={}", orig_tables, rt_tables
+        "Table count: original={}, roundtrip={}",
+        orig_tables, rt_tables
     );
 }
 
@@ -145,13 +153,18 @@ fn stage5_picture_bindata_preserved_on_roundtrip() {
     let bytes = include_bytes!("../samples/tac-img-02.hwpx");
     let doc1 = parse_hwpx(bytes).expect("parse tac-img-02");
 
-    let orig_pics: usize = doc1.sections.iter()
+    let orig_pics: usize = doc1
+        .sections
+        .iter()
         .flat_map(|s| s.paragraphs.iter())
         .flat_map(|p| p.controls.iter())
         .filter(|c| matches!(c, Control::Picture(_)))
         .count();
     assert!(orig_pics > 0, "tac-img-02.hwpx must contain pictures");
-    assert!(!doc1.bin_data_content.is_empty(), "tac-img-02.hwpx must contain BinData");
+    assert!(
+        !doc1.bin_data_content.is_empty(),
+        "tac-img-02.hwpx must contain BinData"
+    );
 
     let out = serialize_hwpx(&doc1).expect("serialize");
     let doc2 = parse_hwpx(&out).expect("reparse");
@@ -162,23 +175,33 @@ fn stage5_picture_bindata_preserved_on_roundtrip() {
         "BinData count mismatch"
     );
 
-    for (i, (orig, rt)) in doc1.bin_data_content.iter()
-        .zip(doc2.bin_data_content.iter()).enumerate()
+    for (i, (orig, rt)) in doc1
+        .bin_data_content
+        .iter()
+        .zip(doc2.bin_data_content.iter())
+        .enumerate()
     {
         assert_eq!(
-            orig.data.len(), rt.data.len(),
-            "[BinData#{}] size: {} vs {}", i, orig.data.len(), rt.data.len()
+            orig.data.len(),
+            rt.data.len(),
+            "[BinData#{}] size: {} vs {}",
+            i,
+            orig.data.len(),
+            rt.data.len()
         );
     }
 
-    let rt_pics: usize = doc2.sections.iter()
+    let rt_pics: usize = doc2
+        .sections
+        .iter()
         .flat_map(|s| s.paragraphs.iter())
         .flat_map(|p| p.controls.iter())
         .filter(|c| matches!(c, Control::Picture(_)))
         .count();
     assert_eq!(
         rt_pics, orig_pics,
-        "Picture count: original={}, roundtrip={}", orig_pics, rt_pics
+        "Picture count: original={}, roundtrip={}",
+        orig_pics, rt_pics
     );
 }
 
@@ -191,7 +214,9 @@ fn stage5_large_doc_table_count_preserved() {
     let bytes = include_bytes!("../samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx");
     let doc1 = parse_hwpx(bytes).expect("parse");
 
-    let orig_tables: usize = doc1.sections.iter()
+    let orig_tables: usize = doc1
+        .sections
+        .iter()
         .flat_map(|s| s.paragraphs.iter())
         .flat_map(|p| p.controls.iter())
         .filter(|c| matches!(c, Control::Table(_)))
@@ -200,7 +225,9 @@ fn stage5_large_doc_table_count_preserved() {
     let out = serialize_hwpx(&doc1).expect("serialize");
     let doc2 = parse_hwpx(&out).expect("reparse");
 
-    let rt_tables: usize = doc2.sections.iter()
+    let rt_tables: usize = doc2
+        .sections
+        .iter()
         .flat_map(|s| s.paragraphs.iter())
         .flat_map(|p| p.controls.iter())
         .filter(|c| matches!(c, Control::Table(_)))
@@ -208,7 +235,8 @@ fn stage5_large_doc_table_count_preserved() {
 
     assert_eq!(
         rt_tables, orig_tables,
-        "Large doc table count: original={}, roundtrip={}", orig_tables, rt_tables
+        "Large doc table count: original={}, roundtrip={}",
+        orig_tables, rt_tables
     );
 }
 
@@ -228,27 +256,51 @@ fn task177_lineseg_preserved_on_roundtrip_ref_text() {
 
     assert_eq!(doc1.sections.len(), doc2.sections.len());
     for (si, (s1, s2)) in doc1.sections.iter().zip(doc2.sections.iter()).enumerate() {
-        assert_eq!(s1.paragraphs.len(), s2.paragraphs.len(), "section {} paragraph count", si);
+        assert_eq!(
+            s1.paragraphs.len(),
+            s2.paragraphs.len(),
+            "section {} paragraph count",
+            si
+        );
         for (pi, (p1, p2)) in s1.paragraphs.iter().zip(s2.paragraphs.iter()).enumerate() {
             assert_eq!(
                 p1.line_segs.len(),
                 p2.line_segs.len(),
                 "section {} paragraph {} line_segs count",
-                si, pi,
+                si,
+                pi,
             );
             for (li, (l1, l2)) in p1.line_segs.iter().zip(p2.line_segs.iter()).enumerate() {
-                assert_eq!(l1.text_start, l2.text_start,
-                    "sec {} para {} lineseg {} text_start", si, pi, li);
-                assert_eq!(l1.vertical_pos, l2.vertical_pos,
-                    "sec {} para {} lineseg {} vertical_pos", si, pi, li);
-                assert_eq!(l1.line_height, l2.line_height,
-                    "sec {} para {} lineseg {} line_height", si, pi, li);
-                assert_eq!(l1.text_height, l2.text_height,
-                    "sec {} para {} lineseg {} text_height", si, pi, li);
-                assert_eq!(l1.baseline_distance, l2.baseline_distance,
-                    "sec {} para {} lineseg {} baseline_distance", si, pi, li);
-                assert_eq!(l1.line_spacing, l2.line_spacing,
-                    "sec {} para {} lineseg {} line_spacing", si, pi, li);
+                assert_eq!(
+                    l1.text_start, l2.text_start,
+                    "sec {} para {} lineseg {} text_start",
+                    si, pi, li
+                );
+                assert_eq!(
+                    l1.vertical_pos, l2.vertical_pos,
+                    "sec {} para {} lineseg {} vertical_pos",
+                    si, pi, li
+                );
+                assert_eq!(
+                    l1.line_height, l2.line_height,
+                    "sec {} para {} lineseg {} line_height",
+                    si, pi, li
+                );
+                assert_eq!(
+                    l1.text_height, l2.text_height,
+                    "sec {} para {} lineseg {} text_height",
+                    si, pi, li
+                );
+                assert_eq!(
+                    l1.baseline_distance, l2.baseline_distance,
+                    "sec {} para {} lineseg {} baseline_distance",
+                    si, pi, li
+                );
+                assert_eq!(
+                    l1.line_spacing, l2.line_spacing,
+                    "sec {} para {} lineseg {} line_spacing",
+                    si, pi, li
+                );
             }
         }
     }
@@ -269,8 +321,11 @@ fn task177_lineseg_preserved_on_roundtrip_ref_mixed() {
     let p2 = &doc2.sections[0].paragraphs[0];
     assert_eq!(p1.line_segs.len(), p2.line_segs.len());
     for (a, b) in p1.line_segs.iter().zip(p2.line_segs.iter()) {
-        assert_eq!(a.line_height, b.line_height,
-            "line_height 보존 실패: IR {} vs reparsed {}", a.line_height, b.line_height);
+        assert_eq!(
+            a.line_height, b.line_height,
+            "line_height 보존 실패: IR {} vs reparsed {}",
+            a.line_height, b.line_height
+        );
         assert_eq!(a.vertical_pos, b.vertical_pos);
     }
 }
@@ -289,14 +344,23 @@ fn task177_linebreak_preserved_on_roundtrip_ref_mixed() {
 
     assert_eq!(doc1.sections.len(), doc2.sections.len());
     for (si, (s1, s2)) in doc1.sections.iter().zip(doc2.sections.iter()).enumerate() {
-        assert_eq!(s1.paragraphs.len(), s2.paragraphs.len(), "section {} paragraph count", si);
+        assert_eq!(
+            s1.paragraphs.len(),
+            s2.paragraphs.len(),
+            "section {} paragraph count",
+            si
+        );
         for (pi, (p1, p2)) in s1.paragraphs.iter().zip(s2.paragraphs.iter()).enumerate() {
             if !p1.text.contains('\n') {
                 continue;
             }
             newline_paragraphs += 1;
             assert_eq!(p1.text, p2.text, "sec {} para {} text", si, pi);
-            assert_eq!(p1.char_offsets, p2.char_offsets, "sec {} para {} char_offsets", si, pi);
+            assert_eq!(
+                p1.char_offsets, p2.char_offsets,
+                "sec {} para {} char_offsets",
+                si, pi
+            );
         }
     }
 
@@ -319,19 +383,32 @@ fn task177_hwpx_02_regression() {
     let doc2 = parse_hwpx(&out).expect("reparse hwpx-02");
 
     // 섹션·문단 개수 보존
-    assert_eq!(doc1.sections.len(), doc2.sections.len(),
-        "hwpx-02 섹션 개수 불일치: {} vs {}", doc1.sections.len(), doc2.sections.len());
+    assert_eq!(
+        doc1.sections.len(),
+        doc2.sections.len(),
+        "hwpx-02 섹션 개수 불일치: {} vs {}",
+        doc1.sections.len(),
+        doc2.sections.len()
+    );
 
     // 첫 섹션의 문단별 line_segs 길이 일치 확인
     let s1 = &doc1.sections[0];
     let s2 = &doc2.sections[0];
-    assert_eq!(s1.paragraphs.len(), s2.paragraphs.len(),
-        "hwpx-02 문단 개수 불일치");
+    assert_eq!(
+        s1.paragraphs.len(),
+        s2.paragraphs.len(),
+        "hwpx-02 문단 개수 불일치"
+    );
 
     for (pi, (p1, p2)) in s1.paragraphs.iter().zip(s2.paragraphs.iter()).enumerate() {
-        assert_eq!(p1.line_segs.len(), p2.line_segs.len(),
+        assert_eq!(
+            p1.line_segs.len(),
+            p2.line_segs.len(),
             "hwpx-02 paragraph {} line_segs 길이 불일치: {} vs {}",
-            pi, p1.line_segs.len(), p2.line_segs.len());
+            pi,
+            p1.line_segs.len(),
+            p2.line_segs.len()
+        );
     }
 }
 
@@ -343,8 +420,8 @@ fn task177_hwpx_02_regression() {
 // 이 테스트는 cargo test --nocapture 로 돌려 수치를 관찰한다.
 
 fn count_validation_warnings(bytes: &[u8]) -> (usize, usize, usize, usize) {
-    use rhwp::document_core::DocumentCore;
     use rhwp::document_core::validation::WarningKind;
+    use rhwp::document_core::DocumentCore;
     let doc = DocumentCore::from_bytes(bytes).expect("load doc");
     let report = doc.validation_report();
     let mut empty = 0;
@@ -383,9 +460,15 @@ fn task177_hwpx_02_lineseg_histogram() {
                 paragraphs_with_segs += 1;
                 total_segs += p.line_segs.len();
                 for s in &p.line_segs {
-                    if s.line_height == 0 { zero_lh += 1; }
-                    if s.vertical_pos == 0 { zero_vpos += 1; }
-                    if s.segment_width == 0 { zero_sw += 1; }
+                    if s.line_height == 0 {
+                        zero_lh += 1;
+                    }
+                    if s.vertical_pos == 0 {
+                        zero_vpos += 1;
+                    }
+                    if s.segment_width == 0 {
+                        zero_sw += 1;
+                    }
                 }
             }
         }
@@ -404,28 +487,52 @@ fn task177_hwpx_02_lineseg_histogram() {
 #[test]
 fn task177_false_positive_measurement() {
     let samples = [
-        ("blank_hwpx", include_bytes!("../samples/hwpx/blank_hwpx.hwpx") as &[u8]),
-        ("ref_empty", include_bytes!("../samples/hwpx/ref/ref_empty.hwpx")),
-        ("ref_text", include_bytes!("../samples/hwpx/ref/ref_text.hwpx")),
-        ("ref_table", include_bytes!("../samples/hwpx/ref/ref_table.hwpx")),
-        ("ref_mixed", include_bytes!("../samples/hwpx/ref/ref_mixed.hwpx")),
+        (
+            "blank_hwpx",
+            include_bytes!("../samples/hwpx/blank_hwpx.hwpx") as &[u8],
+        ),
+        (
+            "ref_empty",
+            include_bytes!("../samples/hwpx/ref/ref_empty.hwpx"),
+        ),
+        (
+            "ref_text",
+            include_bytes!("../samples/hwpx/ref/ref_text.hwpx"),
+        ),
+        (
+            "ref_table",
+            include_bytes!("../samples/hwpx/ref/ref_table.hwpx"),
+        ),
+        (
+            "ref_mixed",
+            include_bytes!("../samples/hwpx/ref/ref_mixed.hwpx"),
+        ),
         ("hwpx-02", include_bytes!("../samples/hwpx/hwpx-02.hwpx")),
         ("form-002", include_bytes!("../samples/hwpx/form-002.hwpx")),
-        ("2025-q1", include_bytes!("../samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx")),
-        ("2025-q2", include_bytes!("../samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx")),
+        (
+            "2025-q1",
+            include_bytes!("../samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx"),
+        ),
+        (
+            "2025-q2",
+            include_bytes!("../samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx"),
+        ),
     ];
 
     eprintln!("\n=== #177 lineseg validation 경고 측정 ===");
-    eprintln!("{:<15} {:>8} {:>10} {:>11} {:>13}",
-        "sample", "total", "empty", "uncomputed", "textRunRefl");
+    eprintln!(
+        "{:<15} {:>8} {:>10} {:>11} {:>13}",
+        "sample", "total", "empty", "uncomputed", "textRunRefl"
+    );
     eprintln!("{}", "-".repeat(65));
     for (name, bytes) in samples {
         let (total, empty, uncomp, textrun) = count_validation_warnings(bytes);
-        eprintln!("{:<15} {:>8} {:>10} {:>11} {:>13}",
-            name, total, empty, uncomp, textrun);
+        eprintln!(
+            "{:<15} {:>8} {:>10} {:>11} {:>13}",
+            name, total, empty, uncomp, textrun
+        );
     }
     eprintln!();
 
     // assertion 없음 — 측정 결과는 기술문서에 기록
 }
-

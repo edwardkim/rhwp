@@ -14,13 +14,13 @@ use crate::parser::hwp3::johab::decode_johab;
 pub fn decode_hwp3_string(bytes: &[u8]) -> String {
     let mut result = String::with_capacity(bytes.len());
     let mut i = 0;
-    
+
     while i < bytes.len() {
         let b1 = bytes[i];
         if b1 == 0 {
             break; // 널(Null) 종료 문자
         }
-        
+
         if b1 < 0x80 {
             // 1바이트 ASCII 문자
             result.push(b1 as char);
@@ -39,7 +39,7 @@ pub fn decode_hwp3_string(bytes: &[u8]) -> String {
             }
         }
     }
-    
+
     result
 }
 

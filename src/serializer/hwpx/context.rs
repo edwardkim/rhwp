@@ -30,7 +30,10 @@ pub struct IdPool<T: Copy + Eq + std::hash::Hash> {
 
 impl<T: Copy + Eq + std::hash::Hash> IdPool<T> {
     pub fn new() -> Self {
-        Self { registered: HashSet::new(), referenced: HashSet::new() }
+        Self {
+            registered: HashSet::new(),
+            referenced: HashSet::new(),
+        }
     }
 
     /// header/DocInfo에서 정의되는 ID를 등록.
@@ -49,7 +52,10 @@ impl<T: Copy + Eq + std::hash::Hash> IdPool<T> {
 
     /// `referenced - registered`: 참조됐으나 등록되지 않은 ID.
     pub fn unresolved(&self) -> Vec<T> {
-        self.referenced.difference(&self.registered).copied().collect()
+        self.referenced
+            .difference(&self.registered)
+            .copied()
+            .collect()
     }
 
     pub fn registered_count(&self) -> usize {
@@ -132,7 +138,11 @@ impl SerializeContext {
 
         // BinData: bin_data_content의 storage_id → manifest 엔트리 생성
         for (i, bd) in doc.bin_data_content.iter().enumerate() {
-            let ext = if bd.extension.is_empty() { "bin" } else { bd.extension.as_str() };
+            let ext = if bd.extension.is_empty() {
+                "bin"
+            } else {
+                bd.extension.as_str()
+            };
             let manifest_id = format!("image{}", i + 1);
             let href = format!("BinData/{}.{}", manifest_id, ext);
             let media_type = mime_from_ext(ext);
@@ -159,7 +169,9 @@ impl SerializeContext {
 
     /// `bin_data_id` → manifest id 조회 (Stage 4의 `<hc:img binaryItemIDRef="...">` 용).
     pub fn resolve_bin_id(&self, bin_data_id: u16) -> Option<&str> {
-        self.bin_data_map.get(&bin_data_id).map(|e| e.manifest_id.as_str())
+        self.bin_data_map
+            .get(&bin_data_id)
+            .map(|e| e.manifest_id.as_str())
     }
 
     /// 모든 참조가 해소되었는지 단언. 해소되지 않은 ID가 있으면 `SerializeError::XmlError` 반환.
@@ -240,8 +252,16 @@ mod tests {
         ctx.char_shape_ids.reference(42); // 등록되지 않은 ID 참조
         let err = ctx.assert_all_refs_resolved().unwrap_err();
         let msg = format!("{}", err);
-        assert!(msg.contains("charPrIDRef"), "error message should name charPrIDRef: {}", msg);
-        assert!(msg.contains("42"), "error message should include id 42: {}", msg);
+        assert!(
+            msg.contains("charPrIDRef"),
+            "error message should name charPrIDRef: {}",
+            msg
+        );
+        assert!(
+            msg.contains("42"),
+            "error message should include id 42: {}",
+            msg
+        );
     }
 
     #[test]

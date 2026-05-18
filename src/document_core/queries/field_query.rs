@@ -3,9 +3,9 @@
 //! 문서 전체에서 필드를 재귀 탐색하여 조회·설정하는 기능을 제공한다.
 
 use crate::document_core::DocumentCore;
+use crate::error::HwpError;
 use crate::model::control::{Control, Field, FieldType};
 use crate::model::paragraph::Paragraph;
-use crate::error::HwpError;
 
 /// 필드 위치 정보
 #[derive(Debug, Clone)]
@@ -20,9 +20,16 @@ pub struct FieldLocation {
 #[derive(Debug, Clone)]
 pub enum NestedEntry {
     /// 표 셀: (control_index, cell_index, para_index)
-    TableCell { control_index: usize, cell_index: usize, para_index: usize },
+    TableCell {
+        control_index: usize,
+        cell_index: usize,
+        para_index: usize,
+    },
     /// 글상자: (control_index, para_index)
-    TextBox { control_index: usize, para_index: usize },
+    TextBox {
+        control_index: usize,
+        para_index: usize,
+    },
 }
 
 /// 필드 검색 결과
@@ -79,7 +86,10 @@ impl DocumentCore {
         let fields = self.collect_all_fields();
         for fi in &fields {
             if fi.field.field_id == field_id {
-                return Ok(format!("{{\"ok\":true,\"value\":{}}}", json_escape(&fi.value)));
+                return Ok(format!(
+                    "{{\"ok\":true,\"value\":{}}}",
+                    json_escape(&fi.value)
+                ));
             }
         }
         Err(HwpError::InvalidField(format!("필드 ID {} 없음", field_id)))
@@ -103,10 +113,16 @@ impl DocumentCore {
     }
 
     /// setFieldValue: field_id로 필드 값 설정
-    pub fn set_field_value_by_id(&mut self, field_id: u32, value: &str) -> Result<String, HwpError> {
+    pub fn set_field_value_by_id(
+        &mut self,
+        field_id: u32,
+        value: &str,
+    ) -> Result<String, HwpError> {
         // 먼저 필드 위치 찾기
         let fields = self.collect_all_fields();
-        let fi = fields.iter().find(|f| f.field.field_id == field_id)
+        let fi = fields
+            .iter()
+            .find(|f| f.field.field_id == field_id)
             .ok_or_else(|| HwpError::InvalidField(format!("필드 ID {} 없음", field_id)))?;
 
         let location = fi.location.clone();
@@ -128,9 +144,10 @@ impl DocumentCore {
     /// setFieldValueByName: 필드 이름으로 값 설정
     pub fn set_field_value_by_name(&mut self, name: &str, value: &str) -> Result<String, HwpError> {
         let fields = self.collect_all_fields();
-        let fi = fields.iter().find(|f| {
-            f.field.field_name().map(|n| n == name).unwrap_or(false)
-        }).ok_or_else(|| HwpError::InvalidField(format!("필드 이름 '{}' 없음", name)))?;
+        let fi = fields
+            .iter()
+            .find(|f| f.field.field_name().map(|n| n == name).unwrap_or(false))
+            .ok_or_else(|| HwpError::InvalidField(format!("필드 이름 '{}' 없음", name)))?;
 
         let field_id = fi.field.field_id;
         let location = fi.location.clone();
@@ -164,51 +181,94 @@ impl DocumentCore {
 
     /// 셀 필드의 텍스트를 교체한다 (셀의 첫 문단 텍스트를 value로 대체).
     /// 중첩 표를 재귀적으로 탐색하여 임의 깊이를 지원한다.
-    fn set_cell_field_text(&mut self, location: &FieldLocation, value: &str) -> Result<(), HwpError> {
+    fn set_cell_field_text(
+        &mut self,
+        location: &FieldLocation,
+        value: &str,
+    ) -> Result<(), HwpError> {
         if location.nested_path.is_empty() {
-            return Err(HwpError::InvalidField("셀 필드 위치에 중첩 경로 없음".into()));
+            return Err(HwpError::InvalidField(
+                "셀 필드 위치에 중첩 경로 없음".into(),
+            ));
         }
-        let sec = self.document.sections.get_mut(location.section_index)
+        let sec = self
+            .document
+            .sections
+            .get_mut(location.section_index)
             .ok_or_else(|| HwpError::InvalidField("구역 초과".into()))?;
-        let mut para: &mut Paragraph = sec.paragraphs.get_mut(location.para_index)
+        let mut para: &mut Paragraph = sec
+            .paragraphs
+            .get_mut(location.para_index)
             .ok_or_else(|| HwpError::InvalidField("문단 초과".into()))?;
 
         // 마지막 항목 직전까지 중첩 탐색
-        for (i, entry) in location.nested_path[..location.nested_path.len() - 1].iter().enumerate() {
+        for (i, entry) in location.nested_path[..location.nested_path.len() - 1]
+            .iter()
+            .enumerate()
+        {
             para = match entry {
-                NestedEntry::TableCell { control_index, cell_index, para_index } => {
-                    let ctrl = para.controls.get_mut(*control_index)
-                        .ok_or_else(|| HwpError::InvalidField(
-                            format!("경로[{}]: 컨트롤 인덱스 {} 초과", i, control_index)))?;
+                NestedEntry::TableCell {
+                    control_index,
+                    cell_index,
+                    para_index,
+                } => {
+                    let ctrl = para.controls.get_mut(*control_index).ok_or_else(|| {
+                        HwpError::InvalidField(format!(
+                            "경로[{}]: 컨트롤 인덱스 {} 초과",
+                            i, control_index
+                        ))
+                    })?;
                     if let Control::Table(ref mut table) = ctrl {
-                        let cell = table.cells.get_mut(*cell_index)
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: 셀 인덱스 {} 초과", i, cell_index)))?;
-                        cell.paragraphs.get_mut(*para_index)
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: 셀 문단 인덱스 {} 초과", i, para_index)))?
+                        let cell = table.cells.get_mut(*cell_index).ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: 셀 인덱스 {} 초과",
+                                i, cell_index
+                            ))
+                        })?;
+                        cell.paragraphs.get_mut(*para_index).ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: 셀 문단 인덱스 {} 초과",
+                                i, para_index
+                            ))
+                        })?
                     } else {
-                        return Err(HwpError::InvalidField(
-                            format!("경로[{}]: controls[{}]가 Table이 아님", i, control_index)));
+                        return Err(HwpError::InvalidField(format!(
+                            "경로[{}]: controls[{}]가 Table이 아님",
+                            i, control_index
+                        )));
                     }
                 }
-                NestedEntry::TextBox { control_index, para_index } => {
-                    let ctrl = para.controls.get_mut(*control_index)
-                        .ok_or_else(|| HwpError::InvalidField(
-                            format!("경로[{}]: 컨트롤 인덱스 {} 초과", i, control_index)))?;
+                NestedEntry::TextBox {
+                    control_index,
+                    para_index,
+                } => {
+                    let ctrl = para.controls.get_mut(*control_index).ok_or_else(|| {
+                        HwpError::InvalidField(format!(
+                            "경로[{}]: 컨트롤 인덱스 {} 초과",
+                            i, control_index
+                        ))
+                    })?;
                     if let Control::Shape(ref mut shape) = ctrl {
-                        let drawing = shape.drawing_mut()
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: Shape에 DrawingObjAttr 없음", i)))?;
-                        let tb = drawing.text_box.as_mut()
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: Shape에 TextBox 없음", i)))?;
-                        tb.paragraphs.get_mut(*para_index)
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: 글상자 문단 인덱스 {} 초과", i, para_index)))?
+                        let drawing = shape.drawing_mut().ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: Shape에 DrawingObjAttr 없음",
+                                i
+                            ))
+                        })?;
+                        let tb = drawing.text_box.as_mut().ok_or_else(|| {
+                            HwpError::InvalidField(format!("경로[{}]: Shape에 TextBox 없음", i))
+                        })?;
+                        tb.paragraphs.get_mut(*para_index).ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: 글상자 문단 인덱스 {} 초과",
+                                i, para_index
+                            ))
+                        })?
                     } else {
-                        return Err(HwpError::InvalidField(
-                            format!("경로[{}]: controls[{}]가 Shape가 아님", i, control_index)));
+                        return Err(HwpError::InvalidField(format!(
+                            "경로[{}]: controls[{}]가 Shape가 아님",
+                            i, control_index
+                        )));
                     }
                 }
             };
@@ -218,22 +278,34 @@ impl DocumentCore {
         let last_idx = location.nested_path.len() - 1;
         let last = location.nested_path.last().unwrap();
         match last {
-            NestedEntry::TableCell { control_index, cell_index, .. } => {
-                let ctrl = para.controls.get_mut(*control_index)
-                    .ok_or_else(|| HwpError::InvalidField(
-                        format!("경로[{}]: 컨트롤 인덱스 {} 초과", last_idx, control_index)))?;
+            NestedEntry::TableCell {
+                control_index,
+                cell_index,
+                ..
+            } => {
+                let ctrl = para.controls.get_mut(*control_index).ok_or_else(|| {
+                    HwpError::InvalidField(format!(
+                        "경로[{}]: 컨트롤 인덱스 {} 초과",
+                        last_idx, control_index
+                    ))
+                })?;
                 if let Control::Table(ref mut table) = ctrl {
-                    let cell = table.cells.get_mut(*cell_index)
-                        .ok_or_else(|| HwpError::InvalidField(
-                            format!("경로[{}]: 셀 인덱스 {} 초과", last_idx, cell_index)))?;
+                    let cell = table.cells.get_mut(*cell_index).ok_or_else(|| {
+                        HwpError::InvalidField(format!(
+                            "경로[{}]: 셀 인덱스 {} 초과",
+                            last_idx, cell_index
+                        ))
+                    })?;
                     if let Some(cell_para) = cell.paragraphs.first_mut() {
                         cell_para.text = value.to_string();
                         rebuild_char_offsets(cell_para);
                     }
                     Ok(())
                 } else {
-                    Err(HwpError::InvalidField(
-                        format!("경로[{}]: controls[{}]가 Table이 아님", last_idx, control_index)))
+                    Err(HwpError::InvalidField(format!(
+                        "경로[{}]: controls[{}]가 Table이 아님",
+                        last_idx, control_index
+                    )))
                 }
             }
             _ => Err(HwpError::InvalidField("셀 필드가 아닌 위치".into())),
@@ -241,13 +313,20 @@ impl DocumentCore {
     }
 
     /// 필드 위치에서 텍스트를 교체한다.
-    fn set_field_text_at(&mut self, location: &FieldLocation, field_range_index: usize, value: &str) -> Result<(), HwpError> {
+    fn set_field_text_at(
+        &mut self,
+        location: &FieldLocation,
+        field_range_index: usize,
+        value: &str,
+    ) -> Result<(), HwpError> {
         // raw_stream 무효화: 직렬화 시 수정된 모델을 사용하도록 강제
         if let Some(sec) = self.document.sections.get_mut(location.section_index) {
             sec.raw_stream = None;
         }
         let para = self.get_para_mut_at_location(location)?;
-        let fr = para.field_ranges.get(field_range_index)
+        let fr = para
+            .field_ranges
+            .get(field_range_index)
             .ok_or_else(|| HwpError::InvalidField("field_range 인덱스 초과".into()))?
             .clone();
 
@@ -286,47 +365,84 @@ impl DocumentCore {
     /// FieldLocation에 해당하는 Paragraph의 가변 참조를 반환한다.
     ///
     /// 중첩 표/글상자를 재귀적으로 탐색하여 임의 깊이를 지원한다.
-    fn get_para_mut_at_location(&mut self, location: &FieldLocation) -> Result<&mut Paragraph, HwpError> {
-        let sec = self.document.sections.get_mut(location.section_index)
+    fn get_para_mut_at_location(
+        &mut self,
+        location: &FieldLocation,
+    ) -> Result<&mut Paragraph, HwpError> {
+        let sec = self
+            .document
+            .sections
+            .get_mut(location.section_index)
             .ok_or_else(|| HwpError::InvalidField("구역 인덱스 초과".into()))?;
-        let mut para = sec.paragraphs.get_mut(location.para_index)
+        let mut para = sec
+            .paragraphs
+            .get_mut(location.para_index)
             .ok_or_else(|| HwpError::InvalidField("문단 인덱스 초과".into()))?;
 
         for (i, entry) in location.nested_path.iter().enumerate() {
             para = match entry {
-                NestedEntry::TableCell { control_index, cell_index, para_index } => {
-                    let ctrl = para.controls.get_mut(*control_index)
-                        .ok_or_else(|| HwpError::InvalidField(
-                            format!("경로[{}]: 컨트롤 인덱스 {} 초과", i, control_index)))?;
+                NestedEntry::TableCell {
+                    control_index,
+                    cell_index,
+                    para_index,
+                } => {
+                    let ctrl = para.controls.get_mut(*control_index).ok_or_else(|| {
+                        HwpError::InvalidField(format!(
+                            "경로[{}]: 컨트롤 인덱스 {} 초과",
+                            i, control_index
+                        ))
+                    })?;
                     if let Control::Table(ref mut table) = ctrl {
-                        let cell = table.cells.get_mut(*cell_index)
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: 셀 인덱스 {} 초과", i, cell_index)))?;
-                        cell.paragraphs.get_mut(*para_index)
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: 셀 문단 인덱스 {} 초과", i, para_index)))?
+                        let cell = table.cells.get_mut(*cell_index).ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: 셀 인덱스 {} 초과",
+                                i, cell_index
+                            ))
+                        })?;
+                        cell.paragraphs.get_mut(*para_index).ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: 셀 문단 인덱스 {} 초과",
+                                i, para_index
+                            ))
+                        })?
                     } else {
-                        return Err(HwpError::InvalidField(
-                            format!("경로[{}]: controls[{}]가 Table이 아님", i, control_index)));
+                        return Err(HwpError::InvalidField(format!(
+                            "경로[{}]: controls[{}]가 Table이 아님",
+                            i, control_index
+                        )));
                     }
                 }
-                NestedEntry::TextBox { control_index, para_index } => {
-                    let ctrl = para.controls.get_mut(*control_index)
-                        .ok_or_else(|| HwpError::InvalidField(
-                            format!("경로[{}]: 컨트롤 인덱스 {} 초과", i, control_index)))?;
+                NestedEntry::TextBox {
+                    control_index,
+                    para_index,
+                } => {
+                    let ctrl = para.controls.get_mut(*control_index).ok_or_else(|| {
+                        HwpError::InvalidField(format!(
+                            "경로[{}]: 컨트롤 인덱스 {} 초과",
+                            i, control_index
+                        ))
+                    })?;
                     if let Control::Shape(ref mut shape) = ctrl {
-                        let drawing = shape.drawing_mut()
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: Shape에 DrawingObjAttr 없음", i)))?;
-                        let tb = drawing.text_box.as_mut()
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: Shape에 TextBox 없음", i)))?;
-                        tb.paragraphs.get_mut(*para_index)
-                            .ok_or_else(|| HwpError::InvalidField(
-                                format!("경로[{}]: 글상자 문단 인덱스 {} 초과", i, para_index)))?
+                        let drawing = shape.drawing_mut().ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: Shape에 DrawingObjAttr 없음",
+                                i
+                            ))
+                        })?;
+                        let tb = drawing.text_box.as_mut().ok_or_else(|| {
+                            HwpError::InvalidField(format!("경로[{}]: Shape에 TextBox 없음", i))
+                        })?;
+                        tb.paragraphs.get_mut(*para_index).ok_or_else(|| {
+                            HwpError::InvalidField(format!(
+                                "경로[{}]: 글상자 문단 인덱스 {} 초과",
+                                i, para_index
+                            ))
+                        })?
                     } else {
-                        return Err(HwpError::InvalidField(
-                            format!("경로[{}]: controls[{}]가 Shape가 아님", i, control_index)));
+                        return Err(HwpError::InvalidField(format!(
+                            "경로[{}]: controls[{}]가 Shape가 아님",
+                            i, control_index
+                        )));
                     }
                 }
             };
@@ -338,8 +454,16 @@ impl DocumentCore {
     /// 본문 문단의 커서 위치에서 필드를 제거한다 (텍스트 유지, 필드 마커만 삭제).
     ///
     /// 성공 시 `{"ok":true}`, 필드가 없으면 에러를 반환한다.
-    pub fn remove_field_at(&mut self, section_idx: usize, para_idx: usize, char_offset: usize) -> Result<String, HwpError> {
-        let para = self.document.sections.get_mut(section_idx)
+    pub fn remove_field_at(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let para = self
+            .document
+            .sections
+            .get_mut(section_idx)
             .and_then(|s| s.paragraphs.get_mut(para_idx))
             .ok_or_else(|| HwpError::InvalidField("문단 위치 초과".into()))?;
         remove_field_in_para(para, char_offset)?;
@@ -359,27 +483,39 @@ impl DocumentCore {
         is_textbox: bool,
     ) -> Result<String, HwpError> {
         let para = {
-            let host = self.document.sections.get_mut(section_idx)
+            let host = self
+                .document
+                .sections
+                .get_mut(section_idx)
                 .and_then(|s| s.paragraphs.get_mut(parent_para_idx))
                 .ok_or_else(|| HwpError::InvalidField("호스트 문단 위치 초과".into()))?;
-            let ctrl = host.controls.get_mut(control_idx)
+            let ctrl = host
+                .controls
+                .get_mut(control_idx)
                 .ok_or_else(|| HwpError::InvalidField("컨트롤 인덱스 초과".into()))?;
             if is_textbox {
                 if let Control::Shape(shape) = ctrl {
-                    let drawing = shape.drawing_mut()
-                        .ok_or_else(|| HwpError::InvalidField("Shape에 DrawingObjAttr 없음".into()))?;
-                    let tb = drawing.text_box.as_mut()
+                    let drawing = shape.drawing_mut().ok_or_else(|| {
+                        HwpError::InvalidField("Shape에 DrawingObjAttr 없음".into())
+                    })?;
+                    let tb = drawing
+                        .text_box
+                        .as_mut()
                         .ok_or_else(|| HwpError::InvalidField("Shape에 TextBox 없음".into()))?;
-                    tb.paragraphs.get_mut(cell_para_idx)
+                    tb.paragraphs
+                        .get_mut(cell_para_idx)
                         .ok_or_else(|| HwpError::InvalidField("글상자 문단 인덱스 초과".into()))?
                 } else {
                     return Err(HwpError::InvalidField("예상된 Shape 컨트롤이 아님".into()));
                 }
             } else {
                 if let Control::Table(table) = ctrl {
-                    let cell = table.cells.get_mut(cell_idx)
+                    let cell = table
+                        .cells
+                        .get_mut(cell_idx)
                         .ok_or_else(|| HwpError::InvalidField("셀 인덱스 초과".into()))?;
-                    cell.paragraphs.get_mut(cell_para_idx)
+                    cell.paragraphs
+                        .get_mut(cell_para_idx)
                         .ok_or_else(|| HwpError::InvalidField("셀 문단 인덱스 초과".into()))?
                 } else {
                     return Err(HwpError::InvalidField("예상된 Table 컨트롤이 아님".into()));
@@ -396,12 +532,20 @@ impl DocumentCore {
     /// 본문 문단: `set_active_field(sec, para, char_offset)`
     /// 설정 후 해당 페이지의 렌더 트리 캐시를 무효화한다.
     /// 활성 필드를 설정한다. 변경이 발생하면 true를 반환한다.
-    pub fn set_active_field(&mut self, section_idx: usize, para_idx: usize, char_offset: usize) -> bool {
+    pub fn set_active_field(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> bool {
         use super::super::ActiveFieldInfo;
         let ctrl_idx = self.find_field_control_idx(section_idx, para_idx, char_offset, None);
         if let Some(ci) = ctrl_idx {
             let new_info = ActiveFieldInfo {
-                section_idx, para_idx, control_idx: ci, cell_path: None,
+                section_idx,
+                para_idx,
+                control_idx: ci,
+                cell_path: None,
             };
             if self.active_field.as_ref() != Some(&new_info) {
                 self.active_field = Some(new_info);
@@ -414,17 +558,32 @@ impl DocumentCore {
 
     /// 셀/글상자 내 활성 필드를 설정한다. 변경이 발생하면 true를 반환한다.
     pub fn set_active_field_in_cell(
-        &mut self, section_idx: usize, parent_para_idx: usize, control_idx: usize,
-        cell_idx: usize, cell_para_idx: usize, char_offset: usize, is_textbox: bool,
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        is_textbox: bool,
     ) -> bool {
         use super::super::ActiveFieldInfo;
         let cell_path = Some(vec![(control_idx, cell_idx, cell_para_idx)]);
         let ctrl_idx = self.find_field_control_idx_in_cell(
-            section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset, is_textbox,
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            is_textbox,
         );
         if let Some(ci) = ctrl_idx {
             let new_info = ActiveFieldInfo {
-                section_idx, para_idx: cell_para_idx, control_idx: ci, cell_path,
+                section_idx,
+                para_idx: cell_para_idx,
+                control_idx: ci,
+                cell_path,
             };
             if self.active_field.as_ref() != Some(&new_info) {
                 self.active_field = Some(new_info);
@@ -447,8 +606,16 @@ impl DocumentCore {
     ///
     /// 커서가 필드 범위 내에 있으면 필드 정보를 JSON으로 반환하고,
     /// 필드 밖이면 `{"inField":false}`를 반환한다.
-    pub fn get_field_info_at(&self, section_idx: usize, para_idx: usize, char_offset: usize) -> String {
-        let para = match self.document.sections.get(section_idx)
+    pub fn get_field_info_at(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> String {
+        let para = match self
+            .document
+            .sections
+            .get(section_idx)
             .and_then(|s| s.paragraphs.get(para_idx))
         {
             Some(p) => p,
@@ -469,8 +636,12 @@ impl DocumentCore {
         is_textbox: bool,
     ) -> String {
         let para = (|| {
-            let host = self.document.sections.get(section_idx)?
-                .paragraphs.get(parent_para_idx)?;
+            let host = self
+                .document
+                .sections
+                .get(section_idx)?
+                .paragraphs
+                .get(parent_para_idx)?;
             let ctrl = host.controls.get(control_idx)?;
             if is_textbox {
                 if let Control::Shape(shape) = ctrl {
@@ -493,8 +664,11 @@ impl DocumentCore {
 
     /// path 기반: 중첩 표 셀의 필드 범위 정보를 조회한다.
     pub fn get_field_info_at_by_path(
-        &self, section_idx: usize, parent_para_idx: usize,
-        path: &[(usize, usize, usize)], char_offset: usize,
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
     ) -> String {
         match self.resolve_paragraph_by_path(section_idx, parent_para_idx, path) {
             Ok(para) => field_info_at_in_para(para, char_offset),
@@ -504,8 +678,11 @@ impl DocumentCore {
 
     /// path 기반: 중첩 표 셀 내 활성 필드를 설정한다.
     pub fn set_active_field_by_path(
-        &mut self, section_idx: usize, parent_para_idx: usize,
-        path: &[(usize, usize, usize)], char_offset: usize,
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
     ) -> bool {
         use super::super::ActiveFieldInfo;
         let para = match self.resolve_paragraph_by_path(section_idx, parent_para_idx, path) {
@@ -519,7 +696,10 @@ impl DocumentCore {
             // cell_path: 전체 path를 저장 (중첩 표 구분용)
             let cell_path = Some(path.to_vec());
             let new_info = ActiveFieldInfo {
-                section_idx, para_idx: cell_para_idx, control_idx: ci, cell_path,
+                section_idx,
+                para_idx: cell_para_idx,
+                control_idx: ci,
+                cell_path,
             };
             if self.active_field.as_ref() != Some(&new_info) {
                 self.active_field = Some(new_info);
@@ -601,7 +781,9 @@ fn collect_fields_from_paragraph(
                             para_index: 0,
                         });
                         // 셀의 첫 문단 텍스트를 값으로 사용
-                        let value = cell.paragraphs.first()
+                        let value = cell
+                            .paragraphs
+                            .first()
                             .map(|p| p.text.clone())
                             .unwrap_or_default();
                         result.push(FieldInfo {
@@ -670,7 +852,9 @@ fn field_location_json(loc: &FieldLocation) -> String {
         }).collect();
         format!(
             "{{\"sectionIndex\":{},\"paraIndex\":{},\"path\":[{}]}}",
-            loc.section_index, loc.para_index, path_entries.join(","),
+            loc.section_index,
+            loc.para_index,
+            path_entries.join(","),
         )
     }
 }
@@ -678,31 +862,52 @@ fn field_location_json(loc: &FieldLocation) -> String {
 impl DocumentCore {
     /// 본문 문단에서 커서 위치의 필드 컨트롤 인덱스를 찾는다.
     fn find_field_control_idx(
-        &self, section_idx: usize, para_idx: usize, char_offset: usize,
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
         _cell_path: Option<(usize, usize, usize)>,
     ) -> Option<usize> {
-        let para = self.document.sections.get(section_idx)?
-            .paragraphs.get(para_idx)?;
+        let para = self
+            .document
+            .sections
+            .get(section_idx)?
+            .paragraphs
+            .get(para_idx)?;
         find_field_ctrl_idx_in_para(para, char_offset)
     }
 
     /// 셀/글상자 내 문단에서 커서 위치의 필드 컨트롤 인덱스를 찾는다.
     fn find_field_control_idx_in_cell(
-        &self, section_idx: usize, parent_para_idx: usize, control_idx: usize,
-        cell_idx: usize, cell_para_idx: usize, char_offset: usize, is_textbox: bool,
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        is_textbox: bool,
     ) -> Option<usize> {
-        let host = self.document.sections.get(section_idx)?
-            .paragraphs.get(parent_para_idx)?;
+        let host = self
+            .document
+            .sections
+            .get(section_idx)?
+            .paragraphs
+            .get(parent_para_idx)?;
         let ctrl = host.controls.get(control_idx)?;
         let para = if is_textbox {
             if let Control::Shape(shape) = ctrl {
                 let tb = shape.drawing()?.text_box.as_ref()?;
                 tb.paragraphs.get(cell_para_idx)?
-            } else { return None; }
+            } else {
+                return None;
+            }
         } else {
             if let Control::Table(table) = ctrl {
                 table.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)?
-            } else { return None; }
+            } else {
+                return None;
+            }
         };
         find_field_ctrl_idx_in_para(para, char_offset)
     }
@@ -712,7 +917,9 @@ impl DocumentCore {
 fn find_field_ctrl_idx_in_para(para: &Paragraph, char_offset: usize) -> Option<usize> {
     for fr in &para.field_ranges {
         if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
-            if field.field_type != FieldType::ClickHere { continue; }
+            if field.field_type != FieldType::ClickHere {
+                continue;
+            }
             if char_offset >= fr.start_char_idx && char_offset <= fr.end_char_idx {
                 return Some(fr.control_idx);
             }
@@ -738,7 +945,9 @@ fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<(), 
             para.field_ranges.remove(i);
             Ok(())
         }
-        None => Err(HwpError::InvalidField("커서 위치에 누름틀 필드 없음".into())),
+        None => Err(HwpError::InvalidField(
+            "커서 위치에 누름틀 필드 없음".into(),
+        )),
     }
 }
 
@@ -911,7 +1120,7 @@ mod tests {
 
         // ctrls_before_text = 8/8 = 1
         // 라=8(+1) 벨=9(+1) :=10(+1) ' '=11(+1) → field_begin gap +8 → N=20(+1) E=21(+1) W=22
-        assert_eq!(para.char_offsets[0], 8);  // 라
+        assert_eq!(para.char_offsets[0], 8); // 라
         assert_eq!(para.char_offsets[3], 11); // ' '
         assert_eq!(para.char_offsets[4], 20); // N — 8-byte gap after ' ' for FIELD_BEGIN
         let gap = para.char_offsets[4] as i64 - (para.char_offsets[3] as i64 + 1);

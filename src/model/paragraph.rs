@@ -169,8 +169,7 @@ impl LineSeg {
     /// - `segment_width > 0 AND segment_width < col_w_hu`: 너비가 단 너비보다 작음 → wrap zone
     /// - 모두 거짓: full width 정상 줄
     pub fn is_in_wrap_zone(&self, col_w_hu: i32) -> bool {
-        self.column_start > 0
-            || (self.segment_width > 0 && self.segment_width < col_w_hu)
+        self.column_start > 0 || (self.segment_width > 0 && self.segment_width < col_w_hu)
     }
 
     /// 컬럼의 첫 줄인지 여부
@@ -223,7 +222,11 @@ impl Paragraph {
 
     /// 문자의 UTF-16 코드 유닛 수를 반환한다.
     fn char_utf16_len(c: char) -> u32 {
-        if (c as u32) > 0xFFFF { 2 } else { 1 }
+        if (c as u32) > 0xFFFF {
+            2
+        } else {
+            1
+        }
     }
 
     /// char_offset 위치에 텍스트를 삽입한다.
@@ -266,13 +269,17 @@ impl Paragraph {
                 });
 
         // 바이트 삽입 위치 계산
-        let byte_offset: usize = text_chars[..effective_char_offset].iter().map(|c| c.len_utf8()).sum();
+        let byte_offset: usize = text_chars[..effective_char_offset]
+            .iter()
+            .map(|c| c.len_utf8())
+            .sum();
 
         // 삽입 지점의 UTF-16 위치 결정
         let utf16_insert_pos: u32 = if char_offset > text_len && !self.char_offsets.is_empty() {
             // 텍스트 끝 이후 (인라인 컨트롤 뒤): 마지막 문자의 UTF-16 위치 + 폭 + 후행 갭
             let last_idx = self.char_offsets.len() - 1;
-            let last_char_end = self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx]);
+            let last_char_end =
+                self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx]);
             // 후행 컨트롤 수 = char_offset - text_len
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
@@ -407,7 +414,8 @@ impl Paragraph {
         self.text.drain(byte_start..byte_end);
 
         // 2. char_offsets: 삭제 범위 제거 + 이후 엔트리 시프트
-        let mut updated_offsets = Vec::with_capacity(self.char_offsets.len().saturating_sub(actual_count));
+        let mut updated_offsets =
+            Vec::with_capacity(self.char_offsets.len().saturating_sub(actual_count));
         updated_offsets.extend_from_slice(&self.char_offsets[..char_offset]);
         for &offset in &self.char_offsets[del_end..] {
             updated_offsets.push(offset - utf16_delta);
@@ -462,7 +470,8 @@ impl Paragraph {
         }
         // start > end (역전)인 경우만 제거. start == end (빈 필드)는 유효한 상태이므로 유지.
         // IME 조합 중 delete→insert 사이클에서 필드가 일시적으로 비워질 수 있음.
-        self.field_ranges.retain(|fr| fr.start_char_idx <= fr.end_char_idx);
+        self.field_ranges
+            .retain(|fr| fr.start_char_idx <= fr.end_char_idx);
 
         // 6. char_count 갱신
         self.char_count -= actual_count as u32;
@@ -506,7 +515,9 @@ impl Paragraph {
         // 3. char_shapes 분할
         let mut new_char_shapes: Vec<CharShapeRef> = Vec::new();
         // 분할 지점에서의 활성 스타일 찾기
-        let mut active_style_id: u32 = self.char_shapes.first()
+        let mut active_style_id: u32 = self
+            .char_shapes
+            .first()
             .map(|cs| cs.char_shape_id)
             .unwrap_or(0);
         for cs in &self.char_shapes {
@@ -531,10 +542,13 @@ impl Paragraph {
         }
         // 새 문단의 시작(pos 0)에 스타일이 없으면 활성 스타일 추가
         if !has_zero_pos {
-            new_char_shapes.insert(0, CharShapeRef {
-                start_pos: 0,
-                char_shape_id: active_style_id,
-            });
+            new_char_shapes.insert(
+                0,
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: active_style_id,
+                },
+            );
         }
 
         // 원래 문단의 char_shapes: 분할 지점 이후 제거
@@ -552,8 +566,12 @@ impl Paragraph {
         let orig_line_seg = self.line_segs.first().cloned();
         let (lh, th, bd, ls, sw, tag) = match orig_line_seg {
             Some(ref o) if o.line_height > 0 => (
-                o.line_height, o.text_height, o.baseline_distance,
-                o.line_spacing, o.segment_width, o.tag,
+                o.line_height,
+                o.text_height,
+                o.baseline_distance,
+                o.line_spacing,
+                o.segment_width,
+                o.tag,
             ),
             _ => (400, 400, 320, 0, 0, 0x00060000),
         };
@@ -669,7 +687,12 @@ impl Paragraph {
         for cs in &other.char_shapes {
             let new_pos = cs.start_pos + utf16_end;
             // 중복 위치에 같은 스타일이면 스킵
-            if self.char_shapes.last().map(|last| last.start_pos == new_pos && last.char_shape_id == cs.char_shape_id).unwrap_or(false) {
+            if self
+                .char_shapes
+                .last()
+                .map(|last| last.start_pos == new_pos && last.char_shape_id == cs.char_shape_id)
+                .unwrap_or(false)
+            {
                 continue;
             }
             self.char_shapes.push(CharShapeRef {
@@ -682,8 +705,12 @@ impl Paragraph {
         let orig_line_seg = self.line_segs.first().cloned();
         let (lh, th, bd, ls, sw, tag) = match orig_line_seg {
             Some(ref o) if o.line_height > 0 => (
-                o.line_height, o.text_height, o.baseline_distance,
-                o.line_spacing, o.segment_width, o.tag,
+                o.line_height,
+                o.text_height,
+                o.baseline_distance,
+                o.line_spacing,
+                o.segment_width,
+                o.tag,
             ),
             _ => (400, 400, 320, 0, 0, 0x00060000),
         };
@@ -739,7 +766,9 @@ impl Paragraph {
             // 문단 끝 위치
             let last = *self.char_offsets.last().unwrap();
             let last_char = self.text.chars().nth(self.char_offsets.len() - 1);
-            last + last_char.map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 }).unwrap_or(1)
+            last + last_char
+                .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                .unwrap_or(1)
         } else {
             0
         };
@@ -847,7 +876,8 @@ impl Paragraph {
         let mut search_start = positions.last().copied().unwrap_or(0);
         while positions.len() < total_controls {
             // search_start 위치부터 다음 \u{FFFC} marker 찾기
-            let next_marker = chars[search_start..].iter()
+            let next_marker = chars[search_start..]
+                .iter()
                 .position(|&c| c == '\u{FFFC}')
                 .map(|rel| search_start + rel);
             match next_marker {
@@ -914,7 +944,9 @@ impl Paragraph {
         } else if !self.char_offsets.is_empty() {
             let last = *self.char_offsets.last().unwrap();
             let last_char = self.text.chars().nth(self.char_offsets.len() - 1);
-            last + last_char.map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 }).unwrap_or(1)
+            last + last_char
+                .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                .unwrap_or(1)
         } else {
             return;
         };
@@ -930,9 +962,12 @@ impl Paragraph {
             let last_idx = self.char_offsets.len() - 1;
             let last_char = self.text.chars().nth(last_idx);
             self.char_offsets[last_idx]
-                + last_char.map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 }).unwrap_or(1)
+                + last_char
+                    .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                    .unwrap_or(1)
         } else {
-            self.text.chars()
+            self.text
+                .chars()
                 .map(|c| if (c as u32) > 0xFFFF { 2u32 } else { 1u32 })
                 .sum()
         };
@@ -965,7 +1000,8 @@ impl Paragraph {
                 // 새 ID 삽입 (범위 시작점)
                 let insert_start = utf16_start.max(seg_start);
                 // 이미 같은 위치에 new_char_shape_id가 있는지 확인
-                let already_inserted = new_refs.last()
+                let already_inserted = new_refs
+                    .last()
                     .map(|r| r.start_pos == insert_start && r.char_shape_id == new_char_shape_id)
                     .unwrap_or(false);
                 if !already_inserted {
@@ -1011,7 +1047,6 @@ impl Paragraph {
         self.char_shapes = merged;
     }
 }
-
 
 #[cfg(test)]
 mod tests;

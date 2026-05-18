@@ -32,11 +32,19 @@ pub struct Token {
 
 impl Token {
     pub fn new(ty: TokenType, value: impl Into<String>, pos: usize) -> Self {
-        Self { ty, value: value.into(), pos }
+        Self {
+            ty,
+            value: value.into(),
+            pos,
+        }
     }
 
     pub fn eof(pos: usize) -> Self {
-        Self { ty: TokenType::Eof, value: String::new(), pos }
+        Self {
+            ty: TokenType::Eof,
+            value: String::new(),
+            pos,
+        }
     }
 }
 
@@ -73,7 +81,10 @@ impl Tokenizer {
     fn skip_spaces(&mut self) {
         // 일반 공백/탭 + 개행. HWP 수식 스크립트는 `#`/`&` 으로 명시적 행/탭 구분을 하므로
         // 실제 개행 문자는 의미 없는 포맷팅으로 간주하여 건너뛴다 (#505).
-        while matches!(self.current(), Some(' ') | Some('\t') | Some('\n') | Some('\r')) {
+        while matches!(
+            self.current(),
+            Some(' ') | Some('\t') | Some('\n') | Some('\r')
+        ) {
             self.pos += 1;
         }
     }
@@ -243,18 +254,42 @@ impl Tokenizer {
 
         // 괄호
         match ch {
-            '{' => { self.pos += 1; return Token::new(TokenType::LBrace, "{", start); }
-            '}' => { self.pos += 1; return Token::new(TokenType::RBrace, "}", start); }
-            '(' => { self.pos += 1; return Token::new(TokenType::LParen, "(", start); }
-            ')' => { self.pos += 1; return Token::new(TokenType::RParen, ")", start); }
-            '[' => { self.pos += 1; return Token::new(TokenType::LBracket, "[", start); }
-            ']' => { self.pos += 1; return Token::new(TokenType::RBracket, "]", start); }
+            '{' => {
+                self.pos += 1;
+                return Token::new(TokenType::LBrace, "{", start);
+            }
+            '}' => {
+                self.pos += 1;
+                return Token::new(TokenType::RBrace, "}", start);
+            }
+            '(' => {
+                self.pos += 1;
+                return Token::new(TokenType::LParen, "(", start);
+            }
+            ')' => {
+                self.pos += 1;
+                return Token::new(TokenType::RParen, ")", start);
+            }
+            '[' => {
+                self.pos += 1;
+                return Token::new(TokenType::LBracket, "[", start);
+            }
+            ']' => {
+                self.pos += 1;
+                return Token::new(TokenType::RBracket, "]", start);
+            }
             _ => {}
         }
 
         // 첨자
-        if ch == '_' { self.pos += 1; return Token::new(TokenType::Subscript, "_", start); }
-        if ch == '^' { self.pos += 1; return Token::new(TokenType::Superscript, "^", start); }
+        if ch == '_' {
+            self.pos += 1;
+            return Token::new(TokenType::Subscript, "_", start);
+        }
+        if ch == '^' {
+            self.pos += 1;
+            return Token::new(TokenType::Superscript, "^", start);
+        }
 
         // 따옴표 문자열
         if ch == '"' {
@@ -312,7 +347,10 @@ impl Tokenizer {
         }
 
         // 단일 기호
-        if matches!(ch, '+' | '-' | '*' | '/' | '=' | '<' | '>' | '!' | '|' | ':' | ',' | '.' | '\'') {
+        if matches!(
+            ch,
+            '+' | '-' | '*' | '/' | '=' | '<' | '>' | '!' | '|' | ':' | ',' | '.' | '\''
+        ) {
             self.pos += 1;
             return Token::new(TokenType::Symbol, ch.to_string(), start);
         }
@@ -370,14 +408,16 @@ mod tests {
     use super::*;
 
     fn values(tokens: &[Token]) -> Vec<&str> {
-        tokens.iter()
+        tokens
+            .iter()
             .filter(|t| t.ty != TokenType::Eof)
             .map(|t| t.value.as_str())
             .collect()
     }
 
     fn types(tokens: &[Token]) -> Vec<TokenType> {
-        tokens.iter()
+        tokens
+            .iter()
             .filter(|t| t.ty != TokenType::Eof)
             .map(|t| t.ty)
             .collect()
@@ -387,9 +427,10 @@ mod tests {
     fn test_simple_fraction() {
         let tokens = tokenize("1 over 2");
         assert_eq!(values(&tokens), vec!["1", "over", "2"]);
-        assert_eq!(types(&tokens), vec![
-            TokenType::Number, TokenType::Command, TokenType::Number
-        ]);
+        assert_eq!(
+            types(&tokens),
+            vec![TokenType::Number, TokenType::Command, TokenType::Number]
+        );
     }
 
     #[test]
@@ -401,13 +442,17 @@ mod tests {
     #[test]
     fn test_subscript_superscript() {
         let tokens = tokenize("sum_{i=0}^n");
-        assert_eq!(values(&tokens), vec!["sum", "_", "{", "i", "=", "0", "}", "^", "n"]);
+        assert_eq!(
+            values(&tokens),
+            vec!["sum", "_", "{", "i", "=", "0", "}", "^", "n"]
+        );
     }
 
     #[test]
     fn test_whitespace_chars() {
         let tokens = tokenize("a~b`c#d&e");
-        let ws_tokens: Vec<_> = tokens.iter()
+        let ws_tokens: Vec<_> = tokens
+            .iter()
             .filter(|t| t.ty == TokenType::Whitespace)
             .map(|t| t.value.as_str())
             .collect();
@@ -417,25 +462,28 @@ mod tests {
     #[test]
     fn test_korean_text() {
         let tokens = tokenize("평점=입찰가격");
-        assert_eq!(types(&tokens), vec![
-            TokenType::Text, TokenType::Symbol, TokenType::Text
-        ]);
+        assert_eq!(
+            types(&tokens),
+            vec![TokenType::Text, TokenType::Symbol, TokenType::Text]
+        );
         assert_eq!(values(&tokens), vec!["평점", "=", "입찰가격"]);
     }
 
     #[test]
     fn test_quoted_string() {
         let tokens = tokenize("\"1234567890\" over 5");
-        assert_eq!(types(&tokens), vec![
-            TokenType::Quoted, TokenType::Command, TokenType::Number
-        ]);
+        assert_eq!(
+            types(&tokens),
+            vec![TokenType::Quoted, TokenType::Command, TokenType::Number]
+        );
         assert_eq!(values(&tokens), vec!["1234567890", "over", "5"]);
     }
 
     #[test]
     fn test_multi_char_symbols() {
         let tokens = tokenize("a <= b >= c != d == e");
-        let syms: Vec<_> = tokens.iter()
+        let syms: Vec<_> = tokens
+            .iter()
             .filter(|t| t.ty == TokenType::Symbol)
             .map(|t| t.value.as_str())
             .collect();
@@ -451,15 +499,19 @@ mod tests {
     #[test]
     fn test_left_right() {
         let tokens = tokenize("LEFT ( a over b RIGHT )");
-        assert_eq!(values(&tokens), vec!["LEFT", "(", "a", "over", "b", "RIGHT", ")"]);
+        assert_eq!(
+            values(&tokens),
+            vec!["LEFT", "(", "a", "over", "b", "RIGHT", ")"]
+        );
     }
 
     #[test]
     fn test_matrix() {
         let tokens = tokenize("matrix{a & b # c & d}");
-        assert_eq!(values(&tokens), vec![
-            "matrix", "{", "a", "&", "b", "#", "c", "&", "d", "}"
-        ]);
+        assert_eq!(
+            values(&tokens),
+            vec!["matrix", "{", "a", "&", "b", "#", "c", "&", "d", "}"]
+        );
     }
 
     #[test]
@@ -473,7 +525,8 @@ mod tests {
     fn test_sample_eq01() {
         // 실제 eq-01.hwp 수식 스크립트의 일부
         let tokens = tokenize("TIMES  LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )");
-        let cmds: Vec<_> = tokens.iter()
+        let cmds: Vec<_> = tokens
+            .iter()
             .filter(|t| t.ty == TokenType::Command)
             .map(|t| t.value.as_str())
             .collect();
@@ -536,21 +589,27 @@ mod tests {
     fn test_existing_commands_unchanged() {
         // 기존 명령은 회귀 없음
         let tokens = tokenize("OVER MATRIX SQRT alpha beta");
-        assert_eq!(values(&tokens), vec!["OVER", "MATRIX", "SQRT", "alpha", "beta"]);
+        assert_eq!(
+            values(&tokens),
+            vec!["OVER", "MATRIX", "SQRT", "alpha", "beta"]
+        );
     }
 
     #[test]
     fn test_latex_command_prefix() {
         let tokens = tokenize(r"\frac{1}{2}");
-        assert_eq!(types(&tokens), vec![
-            TokenType::Command,
-            TokenType::LBrace,
-            TokenType::Number,
-            TokenType::RBrace,
-            TokenType::LBrace,
-            TokenType::Number,
-            TokenType::RBrace,
-        ]);
+        assert_eq!(
+            types(&tokens),
+            vec![
+                TokenType::Command,
+                TokenType::LBrace,
+                TokenType::Number,
+                TokenType::RBrace,
+                TokenType::LBrace,
+                TokenType::Number,
+                TokenType::RBrace,
+            ]
+        );
         assert_eq!(values(&tokens), vec!["frac", "{", "1", "}", "{", "2", "}"]);
     }
 

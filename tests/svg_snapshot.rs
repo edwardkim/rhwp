@@ -36,8 +36,8 @@ use std::path::{Path, PathBuf};
 fn check_snapshot(hwpx_relpath: &str, page: u32, golden_name: &str) {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwpx_path = Path::new(repo_root).join(hwpx_relpath);
-    let bytes = fs::read(&hwpx_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwpx_path.display(), e));
+    let bytes =
+        fs::read(&hwpx_path).unwrap_or_else(|e| panic!("read {}: {}", hwpx_path.display(), e));
 
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .unwrap_or_else(|e| panic!("parse {}: {}", hwpx_relpath, e));
@@ -138,8 +138,8 @@ fn issue_677_bokhakwonseo_page1() {
 #[test]
 fn render_is_deterministic_within_process() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let bytes = fs::read(Path::new(repo_root).join("samples/hwpx/form-002.hwpx"))
-        .expect("sample present");
+    let bytes =
+        fs::read(Path::new(repo_root).join("samples/hwpx/form-002.hwpx")).expect("sample present");
 
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
     let a = doc.render_page_svg_native(0).expect("render #1");

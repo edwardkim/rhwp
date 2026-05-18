@@ -1,11 +1,11 @@
 //! HWP3 OLE 개체 파싱
-//! 
+//!
 //! 문서 내에 삽입된 OLE(Object Linking and Embedding) 개체 정보를 파싱한다.
 //! 외부 애플리케이션에서 생성된 데이터 구조를 안전하게 읽고 무시하거나 추출할 수 있게 한다.
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use std::io::{self, Read, Seek};
 use snafu::Snafu;
+use std::io::{self, Read, Seek};
 
 #[derive(Debug, Snafu)]
 pub enum Hwp3OleError {
@@ -31,7 +31,12 @@ pub struct Hwp3OleInfo {
 impl Hwp3OleInfo {
     pub fn read<R: Read>(mut reader: R, total_length: u32) -> Result<Self, Hwp3OleError> {
         if total_length < 4 {
-            return Err(Hwp3OleError::IoError { source: io::Error::new(io::ErrorKind::UnexpectedEof, "OLE Info length is too short") });
+            return Err(Hwp3OleError::IoError {
+                source: io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "OLE Info length is too short",
+                ),
+            });
         }
         let signature = reader.read_u32::<LittleEndian>()?;
 
@@ -54,7 +59,7 @@ impl Hwp3OleInfo {
 /// 자체 관리 정보 (.inf 스트림에 저장)
 #[derive(Debug)]
 pub struct Hwp3OleStreamInfo {
-    pub width: u32, // HIMETRIC 단위
+    pub width: u32,  // HIMETRIC 단위
     pub height: u32, // HIMETRIC 단위
     pub aspect: u32, // DVASPECT_CONTENT 또는 DVASPECT_ICON
     pub reserved: [u8; 116],
@@ -92,7 +97,7 @@ impl Hwp3OleStreamInfo {
 #[derive(Debug)]
 pub struct Hwp3ChartConnectionInfo {
     pub linked: u16, // 비트 0 = 연결 여부, 비트 1-15 = 예약
-    pub tblid: u16, // 표ID
+    pub tblid: u16,  // 표ID
     pub entire: u32, // 비트 0 = 전체 표 여부
     pub startcol: u32,
     pub startrow: u32,

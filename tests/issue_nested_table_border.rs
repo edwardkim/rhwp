@@ -36,27 +36,32 @@ fn nested_table_border_exam_social_p1_q4_outline_present() {
     let rx = "940.5333333333334";
 
     // 좌측선: x1==x2==lx (수직선)
-    let has_left_line = svg.contains(&format!(
-        "<line x1=\"{lx}\" y1="
-    )) && svg.matches(&format!("x1=\"{lx}\" y1=\""))
-         .filter(|_| true)
-         .count() >= 1
-         && svg.contains(&format!("x2=\"{lx}\""));
+    let has_left_line = svg.contains(&format!("<line x1=\"{lx}\" y1="))
+        && svg
+            .matches(&format!("x1=\"{lx}\" y1=\""))
+            .filter(|_| true)
+            .count()
+            >= 1
+        && svg.contains(&format!("x2=\"{lx}\""));
     // 우측선: x1==x2==rx (수직선)
-    let has_right_line = svg.contains(&format!(
-        "<line x1=\"{rx}\" y1="
-    )) && svg.contains(&format!("x2=\"{rx}\""));
+    let has_right_line =
+        svg.contains(&format!("<line x1=\"{rx}\" y1=")) && svg.contains(&format!("x2=\"{rx}\""));
     // 상/하: x1==lx, x2==rx (수평선)
-    let has_horizontal_line = svg.contains(&format!(
-        "x1=\"{lx}\" y1="
-    )) && svg.contains(&format!("x2=\"{rx}\""));
+    let has_horizontal_line =
+        svg.contains(&format!("x1=\"{lx}\" y1=")) && svg.contains(&format!("x2=\"{rx}\""));
 
     assert!(has_left_line, "4번 박스 좌측 외곽선 누락 (x={lx})");
     assert!(has_right_line, "4번 박스 우측 외곽선 누락 (x={rx})");
-    assert!(has_horizontal_line, "4번 박스 수평 외곽선 누락 (x={lx}~{rx})");
+    assert!(
+        has_horizontal_line,
+        "4번 박스 수평 외곽선 누락 (x={lx}~{rx})"
+    );
 
     // 외곽선 stroke=#000000 width=0.75 (3 조건 AND 가드 영역 발동 영역의 본 PR 영역의 본질 영역)
     let outline_pattern = format!("x1=\"{lx}\"");
     let outline_count = svg.matches(&outline_pattern).count();
-    assert!(outline_count >= 2, "4번 박스 좌측+상단 라인 영역의 lx 좌표 ≥ 2건 영역 필요 영역 (실제: {outline_count})");
+    assert!(
+        outline_count >= 2,
+        "4번 박스 좌측+상단 라인 영역의 lx 좌표 ≥ 2건 영역 필요 영역 (실제: {outline_count})"
+    );
 }

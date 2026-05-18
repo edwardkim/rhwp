@@ -61,7 +61,10 @@ mod tests {
         let he: HwpError = pe.into();
         let msg = format!("{he}");
         // Display 전파: "유효하지 않은 파일: 지원하지 않는 포맷입니다: HWP 3.0. 다시 저장해주세요."
-        assert!(msg.contains("HWP 3.0"), "HWP 3.0 must appear in display: {msg}");
+        assert!(
+            msg.contains("HWP 3.0"),
+            "HWP 3.0 must appear in display: {msg}"
+        );
         assert!(msg.contains("다시 저장해주세요"), "hint must appear: {msg}");
         // Debug 형식 (variant 이름·중괄호) 이 누출되지 않아야 한다.
         assert!(!msg.contains("UnsupportedFormat"), "Debug leaked: {msg}");

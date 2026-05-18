@@ -9,10 +9,10 @@
 use std::env;
 use std::process::ExitCode;
 
-use rhwp::document_core::DocumentCore;
 use rhwp::document_core::converters::diagnostics::{
     diff_hwpx_vs_hwp, diff_hwpx_vs_serializer_assumptions,
 };
+use rhwp::document_core::DocumentCore;
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();

@@ -29,7 +29,10 @@ fn summary_mode_categorizes_diffs() {
     );
 
     // 최종 합계 라인 보존
-    assert!(stdout.contains("=== 비교 완료: 차이 "), "비교 완료 합계 누락");
+    assert!(
+        stdout.contains("=== 비교 완료: 차이 "),
+        "비교 완료 합계 누락"
+    );
 
     // 본 모드에서는 paragraph 헤더(`--- 문단 ... ---`) 출력 안 됨
     assert!(
@@ -46,12 +49,16 @@ fn summary_mode_categorizes_diffs() {
     // 카테고리별 카운트 형식: "  {N}건  {category}" 한 줄 이상 존재
     let has_count_line = stdout.lines().any(|l| {
         let t = l.trim_start();
-        t.split_whitespace().next()
+        t.split_whitespace()
+            .next()
             .and_then(|s| s.strip_suffix("건"))
             .and_then(|s| s.parse::<u32>().ok())
             .is_some()
     });
-    assert!(has_count_line, "카테고리별 카운트 라인 (`{{N}}건  {{category}}`) 누락");
+    assert!(
+        has_count_line,
+        "카테고리별 카운트 라인 (`{{N}}건  {{category}}`) 누락"
+    );
 }
 
 #[test]
@@ -76,7 +83,10 @@ fn max_lines_truncates() {
     );
 
     // 최종 합계 라인은 항상 출력 (가드 외부)
-    assert!(stdout.contains("=== 비교 완료: 차이 "), "비교 완료 합계 누락");
+    assert!(
+        stdout.contains("=== 비교 완료: 차이 "),
+        "비교 완료 합계 누락"
+    );
 }
 
 #[test]
@@ -84,11 +94,7 @@ fn no_flags_preserves_full_output() {
     // 회귀 가드: --summary / --max-lines 없으면 기존 출력 형식 보존
     let exe = env!("CARGO_BIN_EXE_rhwp");
     let output = Command::new(exe)
-        .args([
-            "ir-diff",
-            "samples/hwpx/aift.hwpx",
-            "samples/aift.hwp",
-        ])
+        .args(["ir-diff", "samples/hwpx/aift.hwpx", "samples/aift.hwp"])
         .output()
         .expect("rhwp ir-diff 실행 실패");
 
@@ -98,7 +104,10 @@ fn no_flags_preserves_full_output() {
     assert!(stdout.contains("=== IR 비교:"), "IR 비교 헤더 누락");
     assert!(stdout.contains("--- 문단 "), "paragraph 헤더 누락");
     assert!(stdout.contains("[차이]"), "차이 라인 prefix 누락");
-    assert!(stdout.contains("=== 비교 완료: 차이 "), "비교 완료 합계 누락");
+    assert!(
+        stdout.contains("=== 비교 완료: 차이 "),
+        "비교 완료 합계 누락"
+    );
     assert!(
         !stdout.contains("=== 카테고리별 차이 요약 ==="),
         "기본 모드에서는 요약 출력이 없어야 함"

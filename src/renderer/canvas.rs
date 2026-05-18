@@ -325,8 +325,7 @@ impl Renderer for CanvasRenderer {
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, _style: &TextStyle) {
         let text = crate::renderer::composer::expand_pua_render_text(text);
-        self.commands
-            .push(CanvasCommand::FillText(text, x, y));
+        self.commands.push(CanvasCommand::FillText(text, x, y));
     }
 
     fn draw_rect(

@@ -1,21 +1,26 @@
 //! 도형/글상자/그룹 개체 레이아웃
 
-use crate::model::paragraph::Paragraph;
-use crate::model::style::Alignment;
-use crate::model::control::Control;
-use crate::model::shape::CommonObjAttr;
-use crate::model::bin_data::BinDataContent;
-use super::super::render_tree::*;
-use super::super::page_layout::LayoutRect;
 use super::super::composer::{compose_paragraph, ComposedParagraph};
-use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, PathCommand, TextStyle, ShapeStyle};
+use super::super::page_layout::LayoutRect;
 use super::super::pagination::PageItem;
-use crate::model::shape::{HorzRelTo, HorzAlign, VertRelTo, VertAlign};
+use super::super::render_tree::*;
+use super::super::style_resolver::ResolvedStyleSet;
+use super::super::{hwpunit_to_px, PathCommand, ShapeStyle, TextStyle};
+use super::text_measurement::{
+    estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
+    vertical_substitute_char,
+};
+use super::utils::{
+    drawing_to_line_style, drawing_to_shape_style, extract_shape_transform, find_bin_data,
+};
 use super::LayoutEngine;
-use super::utils::{drawing_to_shape_style, drawing_to_line_style, find_bin_data, extract_shape_transform};
-use super::text_measurement::{resolved_to_text_style, estimate_text_width, is_cjk_char, is_vertical_rotate_char, vertical_substitute_char};
 use super::{CellContext, CellPathEntry};
+use crate::model::bin_data::BinDataContent;
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
+use crate::model::shape::CommonObjAttr;
+use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
+use crate::model::style::Alignment;
 
 fn measure_composed_text_range_width(
     composed: &ComposedParagraph,
@@ -28,7 +33,8 @@ fn measure_composed_text_range_width(
         return 0.0;
     }
 
-    let tab_width = styles.para_styles
+    let tab_width = styles
+        .para_styles
         .get(composed.para_style_id as usize)
         .map(|s| s.default_tab_width)
         .unwrap_or(0.0);
@@ -43,7 +49,8 @@ fn measure_composed_text_range_width(
             let seg_end = end.min(run_end);
 
             if seg_start < seg_end {
-                let seg_text: String = run.text
+                let seg_text: String = run
+                    .text
                     .chars()
                     .skip(seg_start - run_start)
                     .take(seg_end - seg_start)
@@ -127,12 +134,18 @@ impl LayoutEngine {
 
         // 1단계: 오버플로우 문단 수집 (소스 텍스트박스에서)
         let mut overflow_paras: Vec<(i32, Vec<Paragraph>)> = Vec::new(); // (target_sw, paragraphs)
-        // 빈 텍스트박스 수집 (타겟 후보)
+                                                                         // 빈 텍스트박스 수집 (타겟 후보)
         let mut empty_targets: Vec<(usize, usize, i32)> = Vec::new(); // (para_idx, ctrl_idx, inner_sw)
 
         for &(_, pi, ci, _, _) in shape_items {
-            let para = match paragraphs.get(pi) { Some(p) => p, None => continue };
-            let ctrl = match para.controls.get(ci) { Some(c) => c, None => continue };
+            let para = match paragraphs.get(pi) {
+                Some(p) => p,
+                None => continue,
+            };
+            let ctrl = match para.controls.get(ci) {
+                Some(c) => c,
+                None => continue,
+            };
             let drawing = match ctrl {
                 Control::Shape(s) => match s.as_ref() {
                     ShapeObject::Rectangle(r) => &r.drawing,
@@ -140,14 +153,19 @@ impl LayoutEngine {
                 },
                 _ => continue,
             };
-            let tb = match &drawing.text_box { Some(tb) => tb, None => continue };
+            let tb = match &drawing.text_box {
+                Some(tb) => tb,
+                None => continue,
+            };
 
             // 텍스트가 있는 문단 수
             let has_text = tb.paragraphs.iter().any(|p| !p.text.is_empty());
             if !has_text {
                 // 빈 텍스트박스: 첫 문단의 line_seg sw를 inner_sw로 사용하거나 계산
                 // 실제로는 오버플로우 문단이 렌더링될 때 sw를 사용
-                let inner_sw = tb.paragraphs.first()
+                let inner_sw = tb
+                    .paragraphs
+                    .first()
                     .and_then(|p| p.line_segs.first())
                     .map(|ls| ls.segment_width)
                     .unwrap_or(0);
@@ -156,7 +174,9 @@ impl LayoutEngine {
             }
 
             // 오버플로우 감지: 첫 문단의 sw와 다른 sw를 가진 문단 찾기
-            let first_sw = tb.paragraphs.first()
+            let first_sw = tb
+                .paragraphs
+                .first()
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| ls.segment_width)
                 .unwrap_or(0);
@@ -164,18 +184,25 @@ impl LayoutEngine {
             let mut overflow_idx: Option<usize> = None;
             for (tpi, tp) in tb.paragraphs.iter().enumerate() {
                 if let Some(first_ls) = tp.line_segs.first() {
-                    if tpi > 0 && first_ls.segment_width != first_sw && first_ls.vertical_pos < max_vpos_end {
+                    if tpi > 0
+                        && first_ls.segment_width != first_sw
+                        && first_ls.vertical_pos < max_vpos_end
+                    {
                         overflow_idx = Some(tpi);
                         break;
                     }
                     if let Some(last_ls) = tp.line_segs.last() {
                         let end = last_ls.vertical_pos + last_ls.line_height;
-                        if end > max_vpos_end { max_vpos_end = end; }
+                        if end > max_vpos_end {
+                            max_vpos_end = end;
+                        }
                     }
                 }
             }
             if let Some(oi) = overflow_idx {
-                let target_sw = tb.paragraphs[oi].line_segs.first()
+                let target_sw = tb.paragraphs[oi]
+                    .line_segs
+                    .first()
                     .map(|ls| ls.segment_width)
                     .unwrap_or(0);
                 let overflow: Vec<Paragraph> = tb.paragraphs[oi..].to_vec();
@@ -187,7 +214,8 @@ impl LayoutEngine {
         let mut result = std::collections::HashMap::new();
         for (target_sw, paras) in overflow_paras {
             // sw가 가장 가까운 빈 텍스트박스 찾기
-            let best = empty_targets.iter()
+            let best = empty_targets
+                .iter()
                 .enumerate()
                 .min_by_key(|(_, (_, _, esw))| (target_sw - *esw).abs());
             if let Some((idx, &(pi, ci, _))) = best {
@@ -232,7 +260,8 @@ impl LayoutEngine {
         // 수식 컨트롤 처리
         if let Control::Equation(eq) = ctrl {
             // 인라인 좌표가 등록되어 있으면 paragraph_layout에서 이미 렌더링됨 → 스킵
-            let inline_pos = tree.get_inline_shape_position(section_index, para_index, control_index, None);
+            let inline_pos =
+                tree.get_inline_shape_position(section_index, para_index, control_index, None);
             if inline_pos.is_some() {
                 return;
             }
@@ -244,9 +273,7 @@ impl LayoutEngine {
                 Alignment::Center | Alignment::Distribute => {
                     col_area.x + (col_area.width - eq_w).max(0.0) / 2.0
                 }
-                Alignment::Right => {
-                    col_area.x + (col_area.width - eq_w).max(0.0)
-                }
+                Alignment::Right => col_area.x + (col_area.width - eq_w).max(0.0),
                 _ => col_area.x,
             };
             let eq_y = para_y;
@@ -255,10 +282,13 @@ impl LayoutEngine {
             let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
             let ast = super::super::equation::parser::EqParser::new(tokens).parse();
             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-            let layout_box = super::super::equation::layout::EqLayout::new(font_size_px).layout(&ast);
+            let layout_box =
+                super::super::equation::layout::EqLayout::new(font_size_px).layout(&ast);
             let color_str = super::super::equation::svg_render::eq_color_to_svg(eq.color);
             let svg_content = super::super::equation::svg_render::render_equation_svg(
-                &layout_box, &color_str, font_size_px,
+                &layout_box,
+                &color_str,
+                font_size_px,
             );
 
             let eq_node = RenderNode::new(
@@ -288,7 +318,8 @@ impl LayoutEngine {
 
         let common = shape.common();
 
-        let (mut shape_w, mut shape_h) = self.resolve_object_size(common, col_area, body_area, paper_area);
+        let (mut shape_w, mut shape_h) =
+            self.resolve_object_size(common, col_area, body_area, paper_area);
 
         // current size가 common size보다 크면 current size 사용
         // (스케일 행렬이 적용된 글상자 등에서 common.height < current_height인 경우)
@@ -296,23 +327,22 @@ impl LayoutEngine {
             let sa = shape.shape_attr();
             let cur_w = hwpunit_to_px(sa.current_width as i32, self.dpi);
             let cur_h = hwpunit_to_px(sa.current_height as i32, self.dpi);
-            if cur_w > shape_w && cur_w > 0.0 { shape_w = cur_w; }
-            if cur_h > shape_h && cur_h > 0.0 { shape_h = cur_h; }
+            if cur_w > shape_w && cur_w > 0.0 {
+                shape_w = cur_w;
+            }
+            if cur_h > shape_h && cur_h > 0.0 {
+                shape_h = cur_h;
+            }
         }
 
         // 문단 여백 반영: Para 기준 위치 지정 시 문단의 왼쪽/오른쪽 여백 고려
-        let composed_para = paragraphs.get(para_index)
-            .and_then(|_| {
-                // composed 데이터가 없으므로 paragraphs에서 직접 para_shape_id 사용
-                let pid = para.para_shape_id as usize;
-                styles.para_styles.get(pid)
-            });
-        let para_margin_left = composed_para
-            .map(|ps| ps.margin_left)
-            .unwrap_or(0.0);
-        let para_margin_right = composed_para
-            .map(|ps| ps.margin_right)
-            .unwrap_or(0.0);
+        let composed_para = paragraphs.get(para_index).and_then(|_| {
+            // composed 데이터가 없으므로 paragraphs에서 직접 para_shape_id 사용
+            let pid = para.para_shape_id as usize;
+            styles.para_styles.get(pid)
+        });
+        let para_margin_left = composed_para.map(|ps| ps.margin_left).unwrap_or(0.0);
+        let para_margin_right = composed_para.map(|ps| ps.margin_right).unwrap_or(0.0);
 
         // 인라인 Shape: paragraph_layout에서 계산된 좌표가 있으면 사용
         let inline_pos = if common.treat_as_char {
@@ -328,8 +358,10 @@ impl LayoutEngine {
         // 본질 수정 전까지(paginator A 단계) fallback 그리기를 차단한다.
         if common.treat_as_char && inline_pos.is_none() {
             if std::env::var("RHWP_DEBUG_LAYOUT").is_ok() {
-                eprintln!("[#476 skip] inline Shape without inline_pos: sec={} para={} ci={}",
-                    section_index, para_index, control_index);
+                eprintln!(
+                    "[#476 skip] inline Shape without inline_pos: sec={} para={} ci={}",
+                    section_index, para_index, control_index
+                );
             }
             return;
         }
@@ -345,22 +377,32 @@ impl LayoutEngine {
             (ix, iy)
         } else {
             self.compute_object_position(
-                common, shape_w, shape_h, &shape_container, col_area, body_area, paper_area, para_y, alignment,
+                common,
+                shape_w,
+                shape_h,
+                &shape_container,
+                col_area,
+                body_area,
+                paper_area,
+                para_y,
+                alignment,
             )
         };
 
         // 캡션 높이 및 간격 계산
         let drawing = shape.drawing();
-        let caption_opt = drawing.and_then(|d| d.caption.clone())
-            .or_else(|| {
-                if let ShapeObject::Group(g) = shape { g.caption.clone() } else { None }
-            });
+        let caption_opt = drawing.and_then(|d| d.caption.clone()).or_else(|| {
+            if let ShapeObject::Group(g) = shape {
+                g.caption.clone()
+            } else {
+                None
+            }
+        });
         let caption = caption_opt.as_ref();
-        let caption_height = self.calculate_caption_height(
-            &caption_opt,
-            styles,
-        );
-        let caption_spacing = caption.map(|c| hwpunit_to_px(c.spacing as i32, self.dpi)).unwrap_or(0.0);
+        let caption_height = self.calculate_caption_height(&caption_opt, styles);
+        let caption_spacing = caption
+            .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
+            .unwrap_or(0.0);
 
         use crate::model::shape::CaptionDirection;
 
@@ -382,10 +424,18 @@ impl LayoutEngine {
 
         // 도형 타입별 렌더 노드 생성
         self.layout_shape_object(
-            tree, parent, shape,
-            adjusted_shape_x, adjusted_shape_y, shape_w, shape_h,
-            section_index, para_index, control_index,
-            styles, bin_data_content,
+            tree,
+            parent,
+            shape,
+            adjusted_shape_x,
+            adjusted_shape_y,
+            shape_w,
+            shape_h,
+            section_index,
+            para_index,
+            control_index,
+            styles,
+            bin_data_content,
             overflow_map,
             &[],
         );
@@ -395,7 +445,11 @@ impl LayoutEngine {
             use crate::model::shape::CaptionVertAlign;
             let (cap_x, cap_w, cap_y) = match caption.direction {
                 CaptionDirection::Top => (adjusted_shape_x, shape_w, shape_y),
-                CaptionDirection::Bottom => (adjusted_shape_x, shape_w, adjusted_shape_y + shape_h + caption_spacing),
+                CaptionDirection::Bottom => (
+                    adjusted_shape_x,
+                    shape_w,
+                    adjusted_shape_y + shape_h + caption_spacing,
+                ),
                 CaptionDirection::Left | CaptionDirection::Right => {
                     let cw = hwpunit_to_px(caption.width as i32, self.dpi);
                     let cx = if caption.direction == CaptionDirection::Left {
@@ -406,15 +460,25 @@ impl LayoutEngine {
                     // Left/Right 캡션의 세로 정렬
                     let cy = match caption.vert_align {
                         CaptionVertAlign::Top => adjusted_shape_y,
-                        CaptionVertAlign::Center => adjusted_shape_y + (shape_h - caption_height).max(0.0) / 2.0,
-                        CaptionVertAlign::Bottom => adjusted_shape_y + (shape_h - caption_height).max(0.0),
+                        CaptionVertAlign::Center => {
+                            adjusted_shape_y + (shape_h - caption_height).max(0.0) / 2.0
+                        }
+                        CaptionVertAlign::Bottom => {
+                            adjusted_shape_y + (shape_h - caption_height).max(0.0)
+                        }
                     };
                     (cx, cw, cy)
                 }
             };
             self.layout_caption(
-                tree, parent, caption, styles, col_area,
-                cap_x, cap_w, cap_y,
+                tree,
+                parent,
+                caption,
+                styles,
+                col_area,
+                cap_x,
+                cap_w,
+                cap_y,
                 &mut self.auto_counter.borrow_mut(),
                 None,
             );
@@ -504,10 +568,7 @@ impl LayoutEngine {
                 let (x2, y2) = transform_pt(line.end.x as f64, line.end.y as f64);
                 let min_x = x1.min(x2);
                 let min_y = y1.min(y2);
-                let commands = vec![
-                    PathCommand::MoveTo(x1, y1),
-                    PathCommand::LineTo(x2, y2),
-                ];
+                let commands = vec![PathCommand::MoveTo(x1, y1), PathCommand::LineTo(x2, y2)];
                 let node_id = tree.next_id();
                 let node = RenderNode::new(
                     node_id,
@@ -527,17 +588,22 @@ impl LayoutEngine {
                 if !points.is_empty() {
                     let (px, py) = transform_pt(points[0].x as f64, points[0].y as f64);
                     commands.push(PathCommand::MoveTo(px, py));
-                    min_x = min_x.min(px); min_y = min_y.min(py);
-                    max_x = max_x.max(px); max_y = max_y.max(py);
+                    min_x = min_x.min(px);
+                    min_y = min_y.min(py);
+                    max_x = max_x.max(px);
+                    max_y = max_y.max(py);
                     let mut i = 1;
                     while i + 2 < points.len() {
                         let (cx1, cy1) = transform_pt(points[i].x as f64, points[i].y as f64);
-                        let (cx2, cy2) = transform_pt(points[i+1].x as f64, points[i+1].y as f64);
-                        let (ex, ey) = transform_pt(points[i+2].x as f64, points[i+2].y as f64);
+                        let (cx2, cy2) =
+                            transform_pt(points[i + 1].x as f64, points[i + 1].y as f64);
+                        let (ex, ey) = transform_pt(points[i + 2].x as f64, points[i + 2].y as f64);
                         commands.push(PathCommand::CurveTo(cx1, cy1, cx2, cy2, ex, ey));
-                        for &(px, py) in &[(cx1,cy1),(cx2,cy2),(ex,ey)] {
-                            min_x = min_x.min(px); min_y = min_y.min(py);
-                            max_x = max_x.max(px); max_y = max_y.max(py);
+                        for &(px, py) in &[(cx1, cy1), (cx2, cy2), (ex, ey)] {
+                            min_x = min_x.min(px);
+                            min_y = min_y.min(py);
+                            max_x = max_x.max(px);
+                            max_y = max_y.max(py);
                         }
                         i += 3;
                     }
@@ -565,8 +631,10 @@ impl LayoutEngine {
                 let mut max_y = f64::MIN;
                 for (i, &(ox, oy)) in corners.iter().enumerate() {
                     let (px, py) = transform_pt(ox, oy);
-                    min_x = min_x.min(px); min_y = min_y.min(py);
-                    max_x = max_x.max(px); max_y = max_y.max(py);
+                    min_x = min_x.min(px);
+                    min_y = min_y.min(py);
+                    max_x = max_x.max(px);
+                    max_y = max_y.max(py);
                     if i == 0 {
                         commands.push(PathCommand::MoveTo(px, py));
                     } else {
@@ -578,7 +646,12 @@ impl LayoutEngine {
                 let node = RenderNode::new(
                     node_id,
                     RenderNodeType::Path(PathNode::new(commands, style, gradient)),
-                    BoundingBox::new(min_x, min_y, (max_x - min_x).max(0.0), (max_y - min_y).max(0.0)),
+                    BoundingBox::new(
+                        min_x,
+                        min_y,
+                        (max_x - min_x).max(0.0),
+                        (max_y - min_y).max(0.0),
+                    ),
                 );
                 parent.children.push(node);
             }
@@ -592,10 +665,18 @@ impl LayoutEngine {
                 let child_h = (p1y - p0y).abs();
                 let empty_map = std::collections::HashMap::new();
                 self.layout_shape_object(
-                    tree, parent, child,
-                    child_x, child_y, child_w, child_h,
-                    section_index, para_index, control_index,
-                    styles, bin_data_content,
+                    tree,
+                    parent,
+                    child,
+                    child_x,
+                    child_y,
+                    child_w,
+                    child_h,
+                    section_index,
+                    para_index,
+                    control_index,
+                    styles,
+                    bin_data_content,
                     &empty_map,
                     parent_cell_path,
                 );
@@ -668,15 +749,48 @@ impl LayoutEngine {
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
                 // 이미지 채우기가 있으면 자식으로 이미지 노드 추가
-                self.add_image_fill_node(tree, &mut node, &rect.drawing, render_x, render_y, render_w, render_h, bin_data_content);
+                self.add_image_fill_node(
+                    tree,
+                    &mut node,
+                    &rect.drawing,
+                    render_x,
+                    render_y,
+                    render_w,
+                    render_h,
+                    bin_data_content,
+                );
                 // TextBox가 있으면 자식으로 텍스트 레이아웃
-                self.layout_textbox_content(tree, &mut node, &rect.drawing, render_x, render_y, render_w, render_h, section_index, para_index, control_index, styles, bin_data_content, overflow_map, parent_cell_path, shape.common().treat_as_char);
+                self.layout_textbox_content(
+                    tree,
+                    &mut node,
+                    &rect.drawing,
+                    render_x,
+                    render_y,
+                    render_w,
+                    render_h,
+                    section_index,
+                    para_index,
+                    control_index,
+                    styles,
+                    bin_data_content,
+                    overflow_map,
+                    parent_cell_path,
+                    shape.common().treat_as_char,
+                );
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
                 let sa = &line.drawing.shape_attr;
-                let sx = if sa.original_width > 0 { render_w / hwpunit_to_px(sa.original_width as i32, self.dpi) } else { 1.0 };
-                let sy = if sa.original_height > 0 { render_h / hwpunit_to_px(sa.original_height as i32, self.dpi) } else { 1.0 };
+                let sx = if sa.original_width > 0 {
+                    render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
+                } else {
+                    1.0
+                };
+                let sy = if sa.original_height > 0 {
+                    render_h / hwpunit_to_px(sa.original_height as i32, self.dpi)
+                } else {
+                    1.0
+                };
 
                 // 연결선: 제어점이 있으면 Path로, 없으면 Line으로 렌더링
                 if let Some(ref conn) = line.connector {
@@ -685,11 +799,15 @@ impl LayoutEngine {
                         // 연결선 화살표: LinkLineType → ArrowStyle
                         use crate::model::shape::LinkLineType;
                         match conn.link_type {
-                            LinkLineType::StraightOneWay | LinkLineType::StrokeOneWay | LinkLineType::ArcOneWay => {
+                            LinkLineType::StraightOneWay
+                            | LinkLineType::StrokeOneWay
+                            | LinkLineType::ArcOneWay => {
                                 line_style.end_arrow = super::super::ArrowStyle::Arrow;
                                 line_style.end_arrow_size = 4; // 중간 크기
                             }
-                            LinkLineType::StraightBoth | LinkLineType::StrokeBoth | LinkLineType::ArcBoth => {
+                            LinkLineType::StraightBoth
+                            | LinkLineType::StrokeBoth
+                            | LinkLineType::ArcBoth => {
                                 line_style.start_arrow = super::super::ArrowStyle::Arrow;
                                 line_style.start_arrow_size = 4;
                                 line_style.end_arrow = super::super::ArrowStyle::Arrow;
@@ -711,12 +829,15 @@ impl LayoutEngine {
                             let end_x = conn_x2;
                             let end_y = conn_y2;
                             // type=2인 제어점만 추출
-                            let ctrl_pts: Vec<(f64, f64)> = cps.iter()
+                            let ctrl_pts: Vec<(f64, f64)> = cps
+                                .iter()
                                 .filter(|cp| cp.point_type == 2)
-                                .map(|cp| (
-                                    render_x + hwpunit_to_px(cp.x, self.dpi) * sx,
-                                    render_y + hwpunit_to_px(cp.y, self.dpi) * sy,
-                                ))
+                                .map(|cp| {
+                                    (
+                                        render_x + hwpunit_to_px(cp.x, self.dpi) * sx,
+                                        render_y + hwpunit_to_px(cp.y, self.dpi) * sy,
+                                    )
+                                })
                                 .collect();
                             match ctrl_pts.len() {
                                 0 => {
@@ -735,13 +856,17 @@ impl LayoutEngine {
                                     let cy1 = (sy0 + 2.0 * qy) / 3.0;
                                     let cx2 = (2.0 * qx + end_x) / 3.0;
                                     let cy2 = (2.0 * qy + end_y) / 3.0;
-                                    commands.push(PathCommand::CurveTo(cx1, cy1, cx2, cy2, end_x, end_y));
+                                    commands.push(PathCommand::CurveTo(
+                                        cx1, cy1, cx2, cy2, end_x, end_y,
+                                    ));
                                 }
                                 2 => {
                                     // 제어점 2개 → cubic bezier
                                     let (cx1, cy1) = ctrl_pts[0];
                                     let (cx2, cy2) = ctrl_pts[1];
-                                    commands.push(PathCommand::CurveTo(cx1, cy1, cx2, cy2, end_x, end_y));
+                                    commands.push(PathCommand::CurveTo(
+                                        cx1, cy1, cx2, cy2, end_x, end_y,
+                                    ));
                                 }
                                 _ => {
                                     // 3개 이상 → 여러 cubic bezier 세그먼트
@@ -750,11 +875,15 @@ impl LayoutEngine {
                                         let (cx1, cy1) = ctrl_pts[i];
                                         let (cx2, cy2) = ctrl_pts[i + 1];
                                         let (ex, ey) = if i + 2 < ctrl_pts.len() {
-                                            ((cx2 + ctrl_pts[i + 2].0) / 2.0, (cy2 + ctrl_pts[i + 2].1) / 2.0)
+                                            (
+                                                (cx2 + ctrl_pts[i + 2].0) / 2.0,
+                                                (cy2 + ctrl_pts[i + 2].1) / 2.0,
+                                            )
                                         } else {
                                             (end_x, end_y)
                                         };
-                                        commands.push(PathCommand::CurveTo(cx1, cy1, cx2, cy2, ex, ey));
+                                        commands
+                                            .push(PathCommand::CurveTo(cx1, cy1, cx2, cy2, ex, ey));
                                         i += 2;
                                     }
                                 }
@@ -784,7 +913,9 @@ impl LayoutEngine {
                         path_node.transform = transform;
                         // 연결선: 시작/끝 좌표 (선 선택 방식용) + 화살표
                         path_node.connector_endpoints = Some((conn_x1, conn_y1, conn_x2, conn_y2));
-                        if line_style.start_arrow != super::super::ArrowStyle::None || line_style.end_arrow != super::super::ArrowStyle::None {
+                        if line_style.start_arrow != super::super::ArrowStyle::None
+                            || line_style.end_arrow != super::super::ArrowStyle::None
+                        {
                             path_node.line_style = Some(line_style);
                         }
                         let node = RenderNode::new(
@@ -798,11 +929,15 @@ impl LayoutEngine {
                         let mut line_style = drawing_to_line_style(&line.drawing);
                         use crate::model::shape::LinkLineType;
                         match conn.link_type {
-                            LinkLineType::StraightOneWay | LinkLineType::StrokeOneWay | LinkLineType::ArcOneWay => {
+                            LinkLineType::StraightOneWay
+                            | LinkLineType::StrokeOneWay
+                            | LinkLineType::ArcOneWay => {
                                 line_style.end_arrow = super::super::ArrowStyle::Arrow;
                                 line_style.end_arrow_size = 4;
                             }
-                            LinkLineType::StraightBoth | LinkLineType::StrokeBoth | LinkLineType::ArcBoth => {
+                            LinkLineType::StraightBoth
+                            | LinkLineType::StrokeBoth
+                            | LinkLineType::ArcBoth => {
                                 line_style.start_arrow = super::super::ArrowStyle::Arrow;
                                 line_style.start_arrow_size = 4;
                                 line_style.end_arrow = super::super::ArrowStyle::Arrow;
@@ -861,17 +996,50 @@ impl LayoutEngine {
                     RenderNodeType::Ellipse(ell_node),
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
-                self.add_image_fill_node(tree, &mut node, &ellipse.drawing, render_x, render_y, render_w, render_h, bin_data_content);
+                self.add_image_fill_node(
+                    tree,
+                    &mut node,
+                    &ellipse.drawing,
+                    render_x,
+                    render_y,
+                    render_w,
+                    render_h,
+                    bin_data_content,
+                );
                 let empty_map = std::collections::HashMap::new();
-                self.layout_textbox_content(tree, &mut node, &ellipse.drawing, render_x, render_y, render_w, render_h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path, shape.common().treat_as_char);
+                self.layout_textbox_content(
+                    tree,
+                    &mut node,
+                    &ellipse.drawing,
+                    render_x,
+                    render_y,
+                    render_w,
+                    render_h,
+                    section_index,
+                    para_index,
+                    control_index,
+                    styles,
+                    bin_data_content,
+                    &empty_map,
+                    parent_cell_path,
+                    shape.common().treat_as_char,
+                );
                 parent.children.push(node);
             }
             ShapeObject::Arc(arc) => {
                 let (style, gradient) = drawing_to_shape_style(&arc.drawing);
                 // 호(Arc) 좌표 계산: center, axis1, axis2를 렌더 좌표로 변환
                 let sa = &arc.drawing.shape_attr;
-                let sx = if sa.original_width > 0 { render_w / hwpunit_to_px(sa.original_width as i32, self.dpi) } else { 1.0 };
-                let sy = if sa.original_height > 0 { render_h / hwpunit_to_px(sa.original_height as i32, self.dpi) } else { 1.0 };
+                let sx = if sa.original_width > 0 {
+                    render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
+                } else {
+                    1.0
+                };
+                let sy = if sa.original_height > 0 {
+                    render_h / hwpunit_to_px(sa.original_height as i32, self.dpi)
+                } else {
+                    1.0
+                };
 
                 let cx = render_x + hwpunit_to_px(arc.center.x, self.dpi) * sx;
                 let cy = render_y + hwpunit_to_px(arc.center.y, self.dpi) * sy;
@@ -900,7 +1068,8 @@ impl LayoutEngine {
                         // axis1이 y축 근처(90° 또는 -90°)이고 axis2가 x축 근처(0° 또는 180°)
                         if (a1_abs - std::f64::consts::FRAC_PI_2).abs() < 0.3 && a2_abs < 0.3 {
                             (r2, r1) // axis2→rx, axis1→ry
-                        } else if a1_abs < 0.3 && (a2_abs - std::f64::consts::FRAC_PI_2).abs() < 0.3 {
+                        } else if a1_abs < 0.3 && (a2_abs - std::f64::consts::FRAC_PI_2).abs() < 0.3
+                        {
                             (r1, r2) // axis1→rx, axis2→ry
                         } else {
                             (r1.max(r2), r1.min(r2))
@@ -917,12 +1086,16 @@ impl LayoutEngine {
                 // axis1→axis2 방향: 반시계 방향(SVG 좌표) = sweep=0
                 // 각도 차이로 large_arc 결정
                 let mut sweep_angle = angle1 - angle2;
-                if sweep_angle < 0.0 { sweep_angle += 2.0 * std::f64::consts::PI; }
+                if sweep_angle < 0.0 {
+                    sweep_angle += 2.0 * std::f64::consts::PI;
+                }
                 let large_arc = sweep_angle > std::f64::consts::PI;
 
                 let mut commands = Vec::new();
                 commands.push(PathCommand::MoveTo(ax1, ay1));
-                commands.push(PathCommand::ArcTo(ell_rx, ell_ry, 0.0, large_arc, false, ax2, ay2));
+                commands.push(PathCommand::ArcTo(
+                    ell_rx, ell_ry, 0.0, large_arc, false, ax2, ay2,
+                ));
 
                 match arc.arc_type {
                     1 => {
@@ -956,8 +1129,16 @@ impl LayoutEngine {
                 let (style, gradient) = drawing_to_shape_style(&poly.drawing);
                 // 꼭짓점 좌표를 PathCommand로 변환 (원본→렌더 스케일링 적용)
                 let sa = &poly.drawing.shape_attr;
-                let sx = if sa.original_width > 0 { render_w / hwpunit_to_px(sa.original_width as i32, self.dpi) } else { 1.0 };
-                let sy = if sa.original_height > 0 { render_h / hwpunit_to_px(sa.original_height as i32, self.dpi) } else { 1.0 };
+                let sx = if sa.original_width > 0 {
+                    render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
+                } else {
+                    1.0
+                };
+                let sy = if sa.original_height > 0 {
+                    render_h / hwpunit_to_px(sa.original_height as i32, self.dpi)
+                } else {
+                    1.0
+                };
                 let mut commands = Vec::new();
                 for (i, pt) in poly.points.iter().enumerate() {
                     let px = render_x + hwpunit_to_px(pt.x, self.dpi) * sx;
@@ -987,17 +1168,51 @@ impl LayoutEngine {
                     RenderNodeType::Path(path_node),
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
-                self.add_image_fill_node(tree, &mut node, &poly.drawing, render_x, render_y, render_w, render_h, bin_data_content);
+                self.add_image_fill_node(
+                    tree,
+                    &mut node,
+                    &poly.drawing,
+                    render_x,
+                    render_y,
+                    render_w,
+                    render_h,
+                    bin_data_content,
+                );
                 let empty_map = std::collections::HashMap::new();
-                self.layout_textbox_content(tree, &mut node, &poly.drawing, base_x, base_y, w, h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path, shape.common().treat_as_char);
+                self.layout_textbox_content(
+                    tree,
+                    &mut node,
+                    &poly.drawing,
+                    base_x,
+                    base_y,
+                    w,
+                    h,
+                    section_index,
+                    para_index,
+                    control_index,
+                    styles,
+                    bin_data_content,
+                    &empty_map,
+                    parent_cell_path,
+                    shape.common().treat_as_char,
+                );
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
                 let (style, gradient) = drawing_to_shape_style(&curve.drawing);
                 let sa = &curve.drawing.shape_attr;
-                let sx = if sa.original_width > 0 { render_w / hwpunit_to_px(sa.original_width as i32, self.dpi) } else { 1.0 };
-                let sy = if sa.original_height > 0 { render_h / hwpunit_to_px(sa.original_height as i32, self.dpi) } else { 1.0 };
-                let commands = self.curve_to_path_commands_scaled(curve, render_x, render_y, sx, sy);
+                let sx = if sa.original_width > 0 {
+                    render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
+                } else {
+                    1.0
+                };
+                let sy = if sa.original_height > 0 {
+                    render_h / hwpunit_to_px(sa.original_height as i32, self.dpi)
+                } else {
+                    1.0
+                };
+                let commands =
+                    self.curve_to_path_commands_scaled(curve, render_x, render_y, sx, sy);
                 let node_id = tree.next_id();
                 let mut path_node = PathNode::new(commands, style, gradient);
                 path_node.section_index = Some(section_index);
@@ -1009,9 +1224,34 @@ impl LayoutEngine {
                     RenderNodeType::Path(path_node),
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
-                self.add_image_fill_node(tree, &mut node, &curve.drawing, render_x, render_y, render_w, render_h, bin_data_content);
+                self.add_image_fill_node(
+                    tree,
+                    &mut node,
+                    &curve.drawing,
+                    render_x,
+                    render_y,
+                    render_w,
+                    render_h,
+                    bin_data_content,
+                );
                 let empty_map = std::collections::HashMap::new();
-                self.layout_textbox_content(tree, &mut node, &curve.drawing, base_x, base_y, w, h, section_index, para_index, control_index, styles, bin_data_content, &empty_map, parent_cell_path, shape.common().treat_as_char);
+                self.layout_textbox_content(
+                    tree,
+                    &mut node,
+                    &curve.drawing,
+                    base_x,
+                    base_y,
+                    w,
+                    h,
+                    section_index,
+                    para_index,
+                    control_index,
+                    styles,
+                    bin_data_content,
+                    &empty_map,
+                    parent_cell_path,
+                    shape.common().treat_as_char,
+                );
                 parent.children.push(node);
             }
             ShapeObject::Group(group) => {
@@ -1028,8 +1268,16 @@ impl LayoutEngine {
                 );
                 // 그룹 스케일 팩터: current_size / original_size (리사이즈 시 적용)
                 let gsa = &group.shape_attr;
-                let group_sx = if gsa.original_width > 0 { gsa.current_width as f64 / gsa.original_width as f64 } else { 1.0 };
-                let group_sy = if gsa.original_height > 0 { gsa.current_height as f64 / gsa.original_height as f64 } else { 1.0 };
+                let group_sx = if gsa.original_width > 0 {
+                    gsa.current_width as f64 / gsa.original_width as f64
+                } else {
+                    1.0
+                };
+                let group_sy = if gsa.original_height > 0 {
+                    gsa.current_height as f64 / gsa.original_height as f64
+                } else {
+                    1.0
+                };
 
                 for (_ci, child) in group.children.iter().enumerate() {
                     let sa = child.shape_attr();
@@ -1037,23 +1285,46 @@ impl LayoutEngine {
 
                     if has_rotation {
                         self.layout_group_child_affine(
-                            tree, &mut group_node, child, base_x, base_y,
-                            sa, section_index, para_index, control_index,
-                            styles, bin_data_content, parent_cell_path,
+                            tree,
+                            &mut group_node,
+                            child,
+                            base_x,
+                            base_y,
+                            sa,
+                            section_index,
+                            para_index,
+                            control_index,
+                            styles,
+                            bin_data_content,
+                            parent_cell_path,
                         );
                     } else {
                         // render_tx/ty와 render_sx/sy에는 이미 그룹 스케일이 반영되어 있으므로
                         // group_sx/sy를 추가 적용하지 않음
                         let child_x = base_x + hwpunit_to_px(sa.render_tx as i32, self.dpi);
                         let child_y = base_y + hwpunit_to_px(sa.render_ty as i32, self.dpi);
-                        let child_w = hwpunit_to_px((sa.original_width as f64 * sa.render_sx.abs()) as i32, self.dpi);
-                        let child_h = hwpunit_to_px((sa.original_height as f64 * sa.render_sy.abs()) as i32, self.dpi);
+                        let child_w = hwpunit_to_px(
+                            (sa.original_width as f64 * sa.render_sx.abs()) as i32,
+                            self.dpi,
+                        );
+                        let child_h = hwpunit_to_px(
+                            (sa.original_height as f64 * sa.render_sy.abs()) as i32,
+                            self.dpi,
+                        );
                         let empty_map = std::collections::HashMap::new();
                         self.layout_shape_object(
-                            tree, &mut group_node, child,
-                            child_x, child_y, child_w, child_h,
-                            section_index, para_index, control_index,
-                            styles, bin_data_content,
+                            tree,
+                            &mut group_node,
+                            child,
+                            child_x,
+                            child_y,
+                            child_w,
+                            child_h,
+                            section_index,
+                            para_index,
+                            control_index,
+                            styles,
+                            bin_data_content,
                             &empty_map,
                             parent_cell_path,
                         );
@@ -1064,8 +1335,8 @@ impl LayoutEngine {
             ShapeObject::Picture(pic) => {
                 // 그룹 내 그림: common이 비어있으므로 w, h(shape_attr 기반)를 직접 사용
                 let bin_data_id = pic.image_attr.bin_data_id;
-                let image_data = find_bin_data(bin_data_content, bin_data_id)
-                    .map(|c| c.data.clone());
+                let image_data =
+                    find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.clone());
                 let img_id = tree.next_id();
                 let img_node = RenderNode::new(
                     img_id,
@@ -1103,7 +1374,8 @@ impl LayoutEngine {
                     // HWPX에서 주입된 OOXML 차트 XML 직접 경로 (CFB 컨테이너 없음)
                     if content.extension == "ooxml_chart" {
                         if let Some(chart) = crate::ooxml_chart::OoxmlChart::parse(&content.data) {
-                            let svg_fragment = chart.render_svg(render_x, render_y, render_w, render_h);
+                            let svg_fragment =
+                                chart.render_svg(render_x, render_y, render_w, render_h);
                             let node_id = tree.next_id();
                             let node = RenderNode::new(
                                 node_id,
@@ -1117,37 +1389,96 @@ impl LayoutEngine {
                         }
                     }
                     if !rendered {
-                    if let Some(container) = crate::parser::ole_container::parse_ole_container(&content.data) {
-                        if let Some(ooxml_bytes) = container.ooxml_chart.as_ref() {
-                            if let Some(chart) = crate::ooxml_chart::OoxmlChart::parse(ooxml_bytes) {
-                                let svg_fragment = chart.render_svg(render_x, render_y, render_w, render_h);
-                                let node_id = tree.next_id();
-                                let node = RenderNode::new(
-                                    node_id,
-                                    RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode {
-                                        svg: svg_fragment,
-                                    }),
-                                    BoundingBox::new(render_x, render_y, render_w, render_h),
-                                );
-                                parent.children.push(node);
-                                rendered = true;
-                            }
-                        }
-
-                        // Task #195 단계 14: OOXML 차트 부재 시 EMF 네이티브 SVG 폴백
-                        if !rendered {
-                            if let Some(emf_bytes) = container.preview_emf.as_ref() {
-                                let render_rect = (
-                                    render_x as f32, render_y as f32,
-                                    render_w as f32, render_h as f32,
-                                );
-                                if let Ok(svg_fragment) = crate::emf::convert_to_svg(emf_bytes, render_rect) {
+                        if let Some(container) =
+                            crate::parser::ole_container::parse_ole_container(&content.data)
+                        {
+                            if let Some(ooxml_bytes) = container.ooxml_chart.as_ref() {
+                                if let Some(chart) =
+                                    crate::ooxml_chart::OoxmlChart::parse(ooxml_bytes)
+                                {
+                                    let svg_fragment =
+                                        chart.render_svg(render_x, render_y, render_w, render_h);
                                     let node_id = tree.next_id();
                                     let node = RenderNode::new(
                                         node_id,
-                                        RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode {
-                                            svg: svg_fragment,
-                                        }),
+                                        RenderNodeType::RawSvg(
+                                            crate::renderer::render_tree::RawSvgNode {
+                                                svg: svg_fragment,
+                                            },
+                                        ),
+                                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                                    );
+                                    parent.children.push(node);
+                                    rendered = true;
+                                }
+                            }
+
+                            // Task #195 단계 14: OOXML 차트 부재 시 EMF 네이티브 SVG 폴백
+                            if !rendered {
+                                if let Some(emf_bytes) = container.preview_emf.as_ref() {
+                                    let render_rect = (
+                                        render_x as f32,
+                                        render_y as f32,
+                                        render_w as f32,
+                                        render_h as f32,
+                                    );
+                                    if let Ok(svg_fragment) =
+                                        crate::emf::convert_to_svg(emf_bytes, render_rect)
+                                    {
+                                        let node_id = tree.next_id();
+                                        let node = RenderNode::new(
+                                            node_id,
+                                            RenderNodeType::RawSvg(
+                                                crate::renderer::render_tree::RawSvgNode {
+                                                    svg: svg_fragment,
+                                                },
+                                            ),
+                                            BoundingBox::new(
+                                                render_x, render_y, render_w, render_h,
+                                            ),
+                                        );
+                                        parent.children.push(node);
+                                        rendered = true;
+                                    }
+                                }
+                            }
+
+                            // 네이티브 임베딩 이미지(BMP/PNG/JPEG/GIF) 폴백
+                            if !rendered {
+                                if let Some((kind, bytes)) = container.native_image.as_ref() {
+                                    use base64::Engine;
+                                    // BMP → PNG 재인코딩 (SVG <image>는 data:image/bmp 미지원)
+                                    let (render_bytes, render_mime): (
+                                        std::borrow::Cow<[u8]>,
+                                        &str,
+                                    ) = if kind.mime() == "image/bmp" {
+                                        match crate::renderer::svg::bmp_bytes_to_png_bytes(bytes) {
+                                            Some(png) => {
+                                                (std::borrow::Cow::Owned(png), "image/png")
+                                            }
+                                            None => (
+                                                std::borrow::Cow::Borrowed(bytes.as_slice()),
+                                                kind.mime(),
+                                            ),
+                                        }
+                                    } else {
+                                        (std::borrow::Cow::Borrowed(bytes.as_slice()), kind.mime())
+                                    };
+                                    let b64 = base64::engine::general_purpose::STANDARD
+                                        .encode(&*render_bytes);
+                                    let href = format!("data:{};base64,{}", render_mime, b64);
+                                    let svg_fragment = format!(
+                                    "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                    render_x, render_y, render_w, render_h, href, href
+                                );
+                                    let node_id = tree.next_id();
+                                    let node = RenderNode::new(
+                                        node_id,
+                                        RenderNodeType::RawSvg(
+                                            crate::renderer::render_tree::RawSvgNode {
+                                                svg: svg_fragment,
+                                            },
+                                        ),
                                         BoundingBox::new(render_x, render_y, render_w, render_h),
                                     );
                                     parent.children.push(node);
@@ -1155,40 +1486,6 @@ impl LayoutEngine {
                                 }
                             }
                         }
-
-                        // 네이티브 임베딩 이미지(BMP/PNG/JPEG/GIF) 폴백
-                        if !rendered {
-                            if let Some((kind, bytes)) = container.native_image.as_ref() {
-                                use base64::Engine;
-                                // BMP → PNG 재인코딩 (SVG <image>는 data:image/bmp 미지원)
-                                let (render_bytes, render_mime): (std::borrow::Cow<[u8]>, &str) =
-                                    if kind.mime() == "image/bmp" {
-                                        match crate::renderer::svg::bmp_bytes_to_png_bytes(bytes) {
-                                            Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                                            None => (std::borrow::Cow::Borrowed(bytes.as_slice()), kind.mime()),
-                                        }
-                                    } else {
-                                        (std::borrow::Cow::Borrowed(bytes.as_slice()), kind.mime())
-                                    };
-                                let b64 = base64::engine::general_purpose::STANDARD.encode(&*render_bytes);
-                                let href = format!("data:{};base64,{}", render_mime, b64);
-                                let svg_fragment = format!(
-                                    "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
-                                    render_x, render_y, render_w, render_h, href, href
-                                );
-                                let node_id = tree.next_id();
-                                let node = RenderNode::new(
-                                    node_id,
-                                    RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode {
-                                        svg: svg_fragment,
-                                    }),
-                                    BoundingBox::new(render_x, render_y, render_w, render_h),
-                                );
-                                parent.children.push(node);
-                                rendered = true;
-                            }
-                        }
-                    }
                     } // !rendered (CFB path)
                 }
 
@@ -1198,11 +1495,13 @@ impl LayoutEngine {
                     let node_id = tree.next_id();
                     let node = RenderNode::new(
                         node_id,
-                        RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode {
-                            fill_color: 0xFFF0F0F0,
-                            stroke_color: 0xFF707070,
-                            label,
-                        }),
+                        RenderNodeType::Placeholder(
+                            crate::renderer::render_tree::PlaceholderNode {
+                                fill_color: 0xFFF0F0F0,
+                                stroke_color: 0xFF707070,
+                                label,
+                            },
+                        ),
                         BoundingBox::new(render_x, render_y, render_w, render_h),
                     );
                     parent.children.push(node);
@@ -1227,8 +1526,8 @@ impl LayoutEngine {
         if drawing.fill.fill_type == FillType::Image {
             if let Some(ref img_fill) = drawing.fill.image {
                 let bin_data_id = img_fill.bin_data_id;
-                let image_data = find_bin_data(bin_data_content, bin_data_id)
-                    .map(|c| c.data.clone());
+                let image_data =
+                    find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.clone());
                 // 이미지 원본 크기: shape_attr의 original_width/height (HWPUNIT)
                 let original_size = {
                     let ow = drawing.shape_attr.original_width;
@@ -1314,10 +1613,14 @@ impl LayoutEngine {
         let local_styles_scaled: Option<ResolvedStyleSet> = {
             let sw_ratio = if sa.original_width > 0 && sa.current_width > 0 {
                 sa.current_width as f64 / sa.original_width as f64
-            } else { 1.0 };
+            } else {
+                1.0
+            };
             let sh_ratio = if sa.original_height > 0 && sa.current_height > 0 {
                 sa.current_height as f64 / sa.original_height as f64
-            } else { 1.0 };
+            } else {
+                1.0
+            };
             let max_ratio = sw_ratio.max(sh_ratio);
             let min_ratio = sw_ratio.min(sh_ratio);
             // [Task #928] 인라인 도형 (treat_as_char=true) 은 폰트 자동 축소 적용 안 함.
@@ -1354,14 +1657,22 @@ impl LayoutEngine {
             if text_direction != 0 {
                 // 세로쓰기 오버플로우 수신: 오버플로우 문단을 세로 레이아웃으로 렌더링
                 self.layout_vertical_textbox_text_with_paras(
-                    tree, shape_node, overflow_paras, text_box, styles,
-                    &inner_area, text_direction,
-                    section_index, para_index, control_index,
+                    tree,
+                    shape_node,
+                    overflow_paras,
+                    text_box,
+                    styles,
+                    &inner_area,
+                    text_direction,
+                    section_index,
+                    para_index,
+                    control_index,
                     parent_cell_path,
                 );
             } else {
                 // 이 텍스트박스는 연결된 텍스트박스의 타겟: 오버플로우 문단 렌더링
-                let composed_paras: Vec<_> = overflow_paras.iter()
+                let composed_paras: Vec<_> = overflow_paras
+                    .iter()
                     .map(|p| compose_paragraph(p))
                     .collect();
                 let mut para_y = inner_area.y;
@@ -1371,7 +1682,10 @@ impl LayoutEngine {
                         let vpos_y = inner_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                         para_y = vpos_y.max(para_y);
                     }
-                    let para_col_area = LayoutRect { y: para_y, ..inner_area };
+                    let para_col_area = LayoutRect {
+                        y: para_y,
+                        ..inner_area
+                    };
                     let cell_ctx = CellContext {
                         parent_para_index: para_index,
                         path: {
@@ -1395,11 +1709,15 @@ impl LayoutEngine {
                         para_y,
                         0,
                         composed.lines.len(),
-                        section_index, tb_para_idx, Some(cell_ctx),
+                        section_index,
+                        tb_para_idx,
+                        Some(cell_ctx),
                         is_last_para,
                         0.0,
-                        None, Some(para), None,
-                        None,  // 도형 컨텍스트 — wrap zone 무관
+                        None,
+                        Some(para),
+                        None,
+                        None, // 도형 컨텍스트 — wrap zone 무관
                     );
                 }
             }
@@ -1409,7 +1727,9 @@ impl LayoutEngine {
         // 오버플로우 감지 (가로/세로 공통): 텍스트박스 내 문단의 line_segs에서
         // vpos가 리셋(이전 문단보다 감소)되고 sw가 변경되면
         // 해당 문단은 다른 텍스트박스(연결된 글상자)에 속함
-        let first_sw = text_box.paragraphs.first()
+        let first_sw = text_box
+            .paragraphs
+            .first()
             .and_then(|p| p.line_segs.first())
             .map(|ls| ls.segment_width)
             .unwrap_or(0);
@@ -1440,17 +1760,23 @@ impl LayoutEngine {
         // 세로쓰기: 오버플로우 감지 후 세로 레이아웃으로 분기
         if text_direction != 0 {
             self.layout_vertical_textbox_text_with_paras(
-                tree, shape_node,
+                tree,
+                shape_node,
                 &text_box.paragraphs[..para_count],
-                text_box, styles,
-                &inner_area, text_direction,
-                section_index, para_index, control_index,
+                text_box,
+                styles,
+                &inner_area,
+                text_direction,
+                section_index,
+                para_index,
+                control_index,
                 parent_cell_path,
             );
             return;
         }
 
-        let mut composed_paras: Vec<_> = text_box.paragraphs[..para_count].iter()
+        let mut composed_paras: Vec<_> = text_box.paragraphs[..para_count]
+            .iter()
             .map(|p| compose_paragraph(p))
             .collect();
 
@@ -1458,9 +1784,10 @@ impl LayoutEngine {
         let current_pn = self.current_page_number.get();
         if current_pn > 0 {
             for (pi, para) in text_box.paragraphs[..para_count].iter().enumerate() {
-                let has_page_auto = para.controls.iter().any(|c|
+                let has_page_auto = para.controls.iter().any(|c| {
                     matches!(c, crate::model::control::Control::AutoNumber(an)
-                        if an.number_type == crate::model::control::AutoNumberType::Page));
+                        if an.number_type == crate::model::control::AutoNumberType::Page)
+                });
                 if has_page_auto {
                     let page_str = current_pn.to_string();
                     if let Some(comp) = composed_paras.get_mut(pi) {
@@ -1484,7 +1811,8 @@ impl LayoutEngine {
             match text_box.vertical_align {
                 VerticalAlign::Center | VerticalAlign::Bottom => {
                     // 전체 텍스트 높이 = 마지막 문단의 마지막 line_seg 끝 위치
-                    let total_text_height = text_box.paragraphs[..para_count].iter()
+                    let total_text_height = text_box.paragraphs[..para_count]
+                        .iter()
                         .flat_map(|p| p.line_segs.last())
                         .map(|ls| hwpunit_to_px(ls.vertical_pos + ls.line_height, self.dpi))
                         .last()
@@ -1507,12 +1835,15 @@ impl LayoutEngine {
             // 더 큰 값 사용 (원본 호환 + 편집 후 정상 배치 모두 지원)
             let para = &text_box.paragraphs[tb_para_idx];
             if let Some(first_ls) = para.line_segs.first() {
-                let vpos_y = inner_area.y + vert_offset + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
+                let vpos_y =
+                    inner_area.y + vert_offset + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
                 para_y = vpos_y.max(para_y);
             }
             // 인라인(treat_as_char) 컨트롤의 총 폭 계산
-            let tb_inline_width: f64 = para.controls.iter().map(|ctrl| {
-                match ctrl {
+            let tb_inline_width: f64 = para
+                .controls
+                .iter()
+                .map(|ctrl| match ctrl {
                     Control::Picture(pic) if pic.common.treat_as_char => {
                         hwpunit_to_px(pic.common.width as i32, self.dpi)
                     }
@@ -1520,9 +1851,12 @@ impl LayoutEngine {
                         hwpunit_to_px(shape.common().width as i32, self.dpi)
                     }
                     _ => 0.0,
-                }
-            }).sum();
-            let para_col_area = LayoutRect { y: para_y, ..inner_area };
+                })
+                .sum();
+            let para_col_area = LayoutRect {
+                y: para_y,
+                ..inner_area
+            };
             let cell_ctx = CellContext {
                 parent_para_index: para_index,
                 path: {
@@ -1546,11 +1880,15 @@ impl LayoutEngine {
                 para_y,
                 0,
                 composed.lines.len(),
-                section_index, tb_para_idx, Some(cell_ctx),
+                section_index,
+                tb_para_idx,
+                Some(cell_ctx),
                 is_last_para,
                 tb_inline_width,
-                None, Some(para), None,
-                None,  // 도형 컨텍스트 — wrap zone 무관
+                None,
+                Some(para),
+                None,
+                None, // 도형 컨텍스트 — wrap zone 무관
             );
         }
 
@@ -1574,7 +1912,9 @@ impl LayoutEngine {
             // 문단 정렬 조회
             let para_alignment = if pi < composed_paras.len() {
                 let para_style_id = composed_paras[pi].para_style_id as usize;
-                styles.para_styles.get(para_style_id)
+                styles
+                    .para_styles
+                    .get(para_style_id)
                     .map(|s| s.alignment)
                     .unwrap_or(Alignment::Left)
             } else {
@@ -1592,19 +1932,23 @@ impl LayoutEngine {
                     Control::Shape(shape) => {
                         let child_common = shape.as_ref().common();
                         if child_common.treat_as_char {
-                            total_inline_width += hwpunit_to_px(child_common.width as i32, self.dpi);
-                            max_inline_height = max_inline_height.max(hwpunit_to_px(child_common.height as i32, self.dpi));
+                            total_inline_width +=
+                                hwpunit_to_px(child_common.width as i32, self.dpi);
+                            max_inline_height = max_inline_height
+                                .max(hwpunit_to_px(child_common.height as i32, self.dpi));
                         }
                     }
                     Control::Picture(pic) => {
                         if pic.common.treat_as_char {
                             total_inline_width += hwpunit_to_px(pic.common.width as i32, self.dpi);
-                            max_inline_height = max_inline_height.max(hwpunit_to_px(pic.common.height as i32, self.dpi));
+                            max_inline_height = max_inline_height
+                                .max(hwpunit_to_px(pic.common.height as i32, self.dpi));
                         }
                     }
                     Control::Equation(eq) => {
                         total_inline_width += hwpunit_to_px(eq.common.width as i32, self.dpi);
-                        max_inline_height = max_inline_height.max(hwpunit_to_px(eq.common.height as i32, self.dpi));
+                        max_inline_height =
+                            max_inline_height.max(hwpunit_to_px(eq.common.height as i32, self.dpi));
                     }
                     _ => {}
                 }
@@ -1612,25 +1956,37 @@ impl LayoutEngine {
 
             // 인라인 컨트롤의 시작 x 위치 (정렬 기반)
             // 이미지+텍스트 전체 폭을 기준으로 정렬 (함께 센터링)
-            let first_line_text_width: f64 = if total_inline_width > 0.0 && pi < composed_paras.len() {
+            let first_line_text_width: f64 = if total_inline_width > 0.0
+                && pi < composed_paras.len()
+            {
                 if let Some(first_line) = composed_paras[pi].lines.first() {
-                    let tab_width = styles.para_styles.get(composed_paras[pi].para_style_id as usize)
-                        .map(|s| s.default_tab_width).unwrap_or(0.0);
-                    first_line.runs.iter().map(|run| {
-                        let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                        ts.default_tab_width = tab_width;
-                        estimate_text_width(&run.text, &ts)
-                    }).sum()
-                } else { 0.0 }
-            } else { 0.0 };
+                    let tab_width = styles
+                        .para_styles
+                        .get(composed_paras[pi].para_style_id as usize)
+                        .map(|s| s.default_tab_width)
+                        .unwrap_or(0.0);
+                    first_line
+                        .runs
+                        .iter()
+                        .map(|run| {
+                            let mut ts =
+                                resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                            ts.default_tab_width = tab_width;
+                            estimate_text_width(&run.text, &ts)
+                        })
+                        .sum()
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            };
             let total_line_width = total_inline_width + first_line_text_width;
             let mut inline_x = match para_alignment {
                 Alignment::Center | Alignment::Distribute => {
                     inner_area.x + (inner_area.width - total_line_width).max(0.0) / 2.0
                 }
-                Alignment::Right => {
-                    inner_area.x + (inner_area.width - total_line_width).max(0.0)
-                }
+                Alignment::Right => inner_area.x + (inner_area.width - total_line_width).max(0.0),
                 _ => inner_area.x,
             };
 
@@ -1683,8 +2039,13 @@ impl LayoutEngine {
                         } else {
                             // 절대 위치 도형
                             (
-                                base_x + hwpunit_to_px(child_common.horizontal_offset as i32, self.dpi),
-                                base_y + hwpunit_to_px(child_common.vertical_offset as i32, self.dpi),
+                                base_x
+                                    + hwpunit_to_px(
+                                        child_common.horizontal_offset as i32,
+                                        self.dpi,
+                                    ),
+                                base_y
+                                    + hwpunit_to_px(child_common.vertical_offset as i32, self.dpi),
                             )
                         };
 
@@ -1698,10 +2059,18 @@ impl LayoutEngine {
                         });
                         let empty_map = std::collections::HashMap::new();
                         self.layout_shape_object(
-                            tree, shape_node, shape.as_ref(),
-                            child_x, child_y, child_w, child_h,
-                            section_index, para_index, ctrl_idx_in_para,
-                            styles, bin_data_content,
+                            tree,
+                            shape_node,
+                            shape.as_ref(),
+                            child_x,
+                            child_y,
+                            child_w,
+                            child_h,
+                            section_index,
+                            para_index,
+                            ctrl_idx_in_para,
+                            styles,
+                            bin_data_content,
                             &empty_map,
                             &nested_parent_path,
                         );
@@ -1725,7 +2094,17 @@ impl LayoutEngine {
                                 width: clamped_w,
                                 height: clamped_h,
                             };
-                            self.layout_picture(tree, shape_node, pic, &pic_container, bin_data_content, Alignment::Left, None, None, None);
+                            self.layout_picture(
+                                tree,
+                                shape_node,
+                                pic,
+                                &pic_container,
+                                bin_data_content,
+                                Alignment::Left,
+                                None,
+                                None,
+                                None,
+                            );
                             inline_x += clamped_w;
                         } else {
                             // 절대 위치 이미지
@@ -1735,7 +2114,17 @@ impl LayoutEngine {
                                 width: inner_area.width,
                                 height: (inner_area.height - (inline_y - inner_area.y)).max(0.0),
                             };
-                            self.layout_picture(tree, shape_node, pic, &pic_container, bin_data_content, para_alignment, None, None, None);
+                            self.layout_picture(
+                                tree,
+                                shape_node,
+                                pic,
+                                &pic_container,
+                                bin_data_content,
+                                para_alignment,
+                                None,
+                                None,
+                                None,
+                            );
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             max_inline_height = max_inline_height.max(pic_h);
                         }
@@ -1764,9 +2153,15 @@ impl LayoutEngine {
                                 p
                             },
                         };
-                        if tree.get_inline_shape_position(
-                            section_index, pi, ctrl_idx_in_para, Some(&equiv_cell_ctx)
-                        ).is_some() {
+                        if tree
+                            .get_inline_shape_position(
+                                section_index,
+                                pi,
+                                ctrl_idx_in_para,
+                                Some(&equiv_cell_ctx),
+                            )
+                            .is_some()
+                        {
                             // paragraph_layout 가 이미 emit — inline_x 만 advance
                             inline_x += eq_w;
                         } else {
@@ -1779,11 +2174,17 @@ impl LayoutEngine {
                             let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
                             let ast = super::super::equation::parser::EqParser::new(tokens).parse();
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-                            let layout_box = super::super::equation::layout::EqLayout::new(font_size_px).layout(&ast);
-                            let color_str = super::super::equation::svg_render::eq_color_to_svg(eq.color);
-                            let svg_content = super::super::equation::svg_render::render_equation_svg(
-                                &layout_box, &color_str, font_size_px,
-                            );
+                            let layout_box =
+                                super::super::equation::layout::EqLayout::new(font_size_px)
+                                    .layout(&ast);
+                            let color_str =
+                                super::super::equation::svg_render::eq_color_to_svg(eq.color);
+                            let svg_content =
+                                super::super::equation::svg_render::render_equation_svg(
+                                    &layout_box,
+                                    &color_str,
+                                    font_size_px,
+                                );
 
                             let eq_node = RenderNode::new(
                                 tree.next_id(),
@@ -1815,14 +2216,24 @@ impl LayoutEngine {
                             text_direction: 0,
                         });
                         // 호스트 문단의 정렬 속성
-                        let host_align = styles.para_styles
+                        let host_align = styles
+                            .para_styles
                             .get(para.para_shape_id as usize)
                             .map(|ps| ps.alignment)
                             .unwrap_or(Alignment::Left);
                         inline_y = self.layout_embedded_table(
-                            tree, shape_node, table, styles,
-                            &inner_area, para_start_y,
-                            Some((section_index, para_index, &table_enclosing_path, ctrl_idx_in_para)),
+                            tree,
+                            shape_node,
+                            table,
+                            styles,
+                            &inner_area,
+                            para_start_y,
+                            Some((
+                                section_index,
+                                para_index,
+                                &table_enclosing_path,
+                                ctrl_idx_in_para,
+                            )),
                             bin_data_content,
                             host_align,
                         );
@@ -1873,19 +2284,19 @@ impl LayoutEngine {
         struct ColumnInfo {
             start_idx: usize,
             end_idx: usize,
-            col_width: f64,   // line_height + line_spacing (px), 마지막 칼럼은 line_height만
+            col_width: f64, // line_height + line_spacing (px), 마지막 칼럼은 line_height만
             col_spacing: f64, // 항상 0 (line_spacing이 col_width에 흡수됨)
             total_height: f64,
             alignment: Alignment,
             absorbed_spacing: f64, // 흡수된 line_spacing (px) — 마지막 칼럼 후처리용
         }
 
-        let composed_paras: Vec<_> = paragraphs.iter()
-            .map(|p| compose_paragraph(p))
-            .collect();
+        let composed_paras: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
         let get_alignment = |para_style_id: u16| -> Alignment {
-            styles.para_styles.get(para_style_id as usize)
+            styles
+                .para_styles
+                .get(para_style_id as usize)
                 .map(|s| s.alignment)
                 .unwrap_or(Alignment::Left)
         };
@@ -1901,11 +2312,14 @@ impl LayoutEngine {
                 // 빈 문단: 빈 열 추가
                 // 칼럼 너비 = line_height + line_spacing (전체 피치를 칼럼에 흡수)
                 let ls = para.line_segs.first();
-                let spacing = ls.map(|l| hwpunit_to_px(l.line_spacing, self.dpi)).unwrap_or(0.0);
+                let spacing = ls
+                    .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                    .unwrap_or(0.0);
                 columns.push(ColumnInfo {
                     start_idx: chars.len(),
                     end_idx: chars.len(),
-                    col_width: ls.map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                    col_width: ls
+                        .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
                         .unwrap_or(13.0),
                     col_spacing: 0.0,
                     total_height: 0.0,
@@ -1919,27 +2333,30 @@ impl LayoutEngine {
             for (line_idx, line) in composed.lines.iter().enumerate() {
                 let ls = para.line_segs.get(line_idx);
                 // 칼럼 너비 = line_height + line_spacing (전체 피치 흡수)
-                let col_width = ls.map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                let col_width = ls
+                    .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
                     .unwrap_or(13.0);
                 let col_spacing = 0.0;
-                let absorbed_spacing = ls.map(|l| hwpunit_to_px(l.line_spacing, self.dpi)).unwrap_or(0.0);
+                let absorbed_spacing = ls
+                    .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                    .unwrap_or(0.0);
 
                 let col_start = chars.len();
                 let mut col_height = 0.0;
 
                 for run in &line.runs {
-                    let text_style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    let text_style =
+                        resolved_to_text_style(styles, run.char_style_id, run.lang_index);
                     for ch in run.text.chars() {
                         if ch == '\n' || ch == '\r' {
                             char_offset += 1;
                             continue;
                         }
                         let is_rotate = is_vertical_rotate_char(ch);
-                        let needs_rotation = is_rotate
-                            || (text_direction == 1 && !is_cjk_char(ch));
+                        let needs_rotation = is_rotate || (text_direction == 1 && !is_cjk_char(ch));
                         // 세로쓰기에서 구두점/기호만 반칸 advance (영문/숫자는 캐릭터 높이)
-                        let half_advance = needs_rotation
-                            || (!is_cjk_char(ch) && !ch.is_ascii_alphanumeric());
+                        let half_advance =
+                            needs_rotation || (!is_cjk_char(ch) && !ch.is_ascii_alphanumeric());
                         let advance = if half_advance {
                             text_style.font_size * 0.5
                         } else {
@@ -1993,7 +2410,10 @@ impl LayoutEngine {
             0.0
         } else {
             columns.iter().map(|c| c.col_width).sum::<f64>()
-                + columns[..columns.len() - 1].iter().map(|c| c.col_spacing).sum::<f64>()
+                + columns[..columns.len() - 1]
+                    .iter()
+                    .map(|c| c.col_spacing)
+                    .sum::<f64>()
         };
 
         use crate::model::table::VerticalAlign;
@@ -2015,22 +2435,22 @@ impl LayoutEngine {
             col_x -= col.col_width;
 
             let free_space = (inner_area.height - col.total_height).max(0.0);
-            let y_start = inner_area.y + match col.alignment {
-                Alignment::Center | Alignment::Distribute => free_space / 2.0,
-                Alignment::Right => free_space,
-                _ => 0.0,
-            };
+            let y_start = inner_area.y
+                + match col.alignment {
+                    Alignment::Center | Alignment::Distribute => free_space / 2.0,
+                    Alignment::Right => free_space,
+                    _ => 0.0,
+                };
             let mut char_y = y_start;
             let col_bottom = inner_area.y + inner_area.height;
 
             for i in col.start_idx..col.end_idx {
                 let ci = &chars[i];
                 let is_rotate = is_vertical_rotate_char(ci.ch);
-                let needs_rotation = is_rotate
-                    || (text_direction == 1 && !is_cjk_char(ci.ch));
+                let needs_rotation = is_rotate || (text_direction == 1 && !is_cjk_char(ci.ch));
                 // 세로쓰기에서 구두점/기호만 반칸 advance (영문/숫자는 캐릭터 높이)
-                let half_advance = needs_rotation
-                    || (!is_cjk_char(ci.ch) && !ci.ch.is_ascii_alphanumeric());
+                let half_advance =
+                    needs_rotation || (!is_cjk_char(ci.ch) && !ci.ch.is_ascii_alphanumeric());
                 let advance = if half_advance {
                     ci.style.font_size * 0.5
                 } else {
@@ -2100,8 +2520,11 @@ impl LayoutEngine {
                         rotation,
                         is_vertical: true,
                         char_overlap: None,
-                        border_fill_id: styles.char_styles.get(ci.char_style_id as usize)
-                            .map(|cs| cs.border_fill_id).unwrap_or(0),
+                        border_fill_id: styles
+                            .char_styles
+                            .get(ci.char_style_id as usize)
+                            .map(|cs| cs.border_fill_id)
+                            .unwrap_or(0),
                         baseline: advance * 0.85,
                         field_marker: FieldMarkerType::None,
                     }),
@@ -2131,11 +2554,15 @@ impl LayoutEngine {
             return commands;
         }
 
-        let pts: Vec<(f64, f64)> = curve.points.iter()
-            .map(|p| (
-                base_x + hwpunit_to_px(p.x, self.dpi) * sx,
-                base_y + hwpunit_to_px(p.y, self.dpi) * sy,
-            ))
+        let pts: Vec<(f64, f64)> = curve
+            .points
+            .iter()
+            .map(|p| {
+                (
+                    base_x + hwpunit_to_px(p.x, self.dpi) * sx,
+                    base_y + hwpunit_to_px(p.y, self.dpi) * sy,
+                )
+            })
             .collect();
 
         commands.push(PathCommand::MoveTo(pts[0].0, pts[0].1));
@@ -2147,9 +2574,12 @@ impl LayoutEngine {
             if seg_type == 1 && i + 2 < pts.len() {
                 // 베지어 곡선: 제어점 2개 + 끝점 1개
                 commands.push(PathCommand::CurveTo(
-                    pts[i].0, pts[i].1,
-                    pts[i + 1].0, pts[i + 1].1,
-                    pts[i + 2].0, pts[i + 2].1,
+                    pts[i].0,
+                    pts[i].1,
+                    pts[i + 1].0,
+                    pts[i + 1].1,
+                    pts[i + 2].0,
+                    pts[i + 2].1,
                 ));
                 i += 3;
             } else {
@@ -2179,8 +2609,14 @@ impl LayoutEngine {
 
         for item in items {
             let (para_index, control_index) = match item {
-                PageItem::Shape { para_index, control_index } => (para_index, control_index),
-                PageItem::Table { para_index, control_index } => (para_index, control_index),
+                PageItem::Shape {
+                    para_index,
+                    control_index,
+                } => (para_index, control_index),
+                PageItem::Table {
+                    para_index,
+                    control_index,
+                } => (para_index, control_index),
                 _ => continue,
             };
             {
@@ -2237,9 +2673,8 @@ impl LayoutEngine {
                     None
                 };
                 let effective_ref = effective_common.as_ref().unwrap_or(common);
-                let (bottom_y, shape_y) = self.calc_shape_bottom_y(
-                    effective_ref, col_area, body_area,
-                );
+                let (bottom_y, shape_y) =
+                    self.calc_shape_bottom_y(effective_ref, col_area, body_area);
 
                 // 본문 시작 근처만 고려 (페이지 하단 개체는 제외)
                 let threshold_y = col_area.y + col_area.height / 3.0;
@@ -2268,7 +2703,7 @@ impl LayoutEngine {
         col_area: &LayoutRect,
         body_area: &LayoutRect,
     ) -> (f64, f64) {
-        use crate::model::shape::{VertRelTo, VertAlign};
+        use crate::model::shape::{VertAlign, VertRelTo};
         let v_offset = hwpunit_to_px(common.vertical_offset as i32, self.dpi);
         let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
         let (ref_y, ref_h) = match common.vert_rel_to {
@@ -2301,8 +2736,14 @@ impl LayoutEngine {
         for col_content in column_contents {
             for item in &col_content.items {
                 let (para_index, control_index) = match item {
-                    super::super::pagination::PageItem::Shape { para_index, control_index } => (para_index, control_index),
-                    super::super::pagination::PageItem::Table { para_index, control_index } => (para_index, control_index),
+                    super::super::pagination::PageItem::Shape {
+                        para_index,
+                        control_index,
+                    } => (para_index, control_index),
+                    super::super::pagination::PageItem::Table {
+                        para_index,
+                        control_index,
+                    } => (para_index, control_index),
                     _ => continue,
                 };
                 let para = match paragraphs.get(*para_index) {
@@ -2358,7 +2799,9 @@ impl LayoutEngine {
     /// 표의 실제 렌더링 높이를 계산 (셀 콘텐츠 + 패딩 포함)
     fn measure_table_actual_height(&self, table: &crate::model::table::Table) -> u32 {
         let row_count = table.row_count as usize;
-        if row_count == 0 { return table.common.height; }
+        if row_count == 0 {
+            return table.common.height;
+        }
         let mut row_heights = vec![0u32; row_count];
         for cell in &table.cells {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
@@ -2375,10 +2818,22 @@ impl LayoutEngine {
                 let (pad_top, pad_bottom) = if !cell.apply_inner_margin {
                     (table.padding.top as u32, table.padding.bottom as u32)
                 } else {
-                    (if cell.padding.top != 0 { cell.padding.top as u32 } else { table.padding.top as u32 },
-                     if cell.padding.bottom != 0 { cell.padding.bottom as u32 } else { table.padding.bottom as u32 })
+                    (
+                        if cell.padding.top != 0 {
+                            cell.padding.top as u32
+                        } else {
+                            table.padding.top as u32
+                        },
+                        if cell.padding.bottom != 0 {
+                            cell.padding.bottom as u32
+                        } else {
+                            table.padding.bottom as u32
+                        },
+                    )
                 };
-                let content_h: i32 = cell.paragraphs.iter()
+                let content_h: i32 = cell
+                    .paragraphs
+                    .iter()
                     .flat_map(|p| p.line_segs.last())
                     .map(|s| s.vertical_pos + s.line_height)
                     .max()
@@ -2400,7 +2855,7 @@ impl LayoutEngine {
         col_area: &LayoutRect,
         body_area: &LayoutRect,
     ) -> bool {
-        use crate::model::shape::{HorzRelTo, HorzAlign};
+        use crate::model::shape::{HorzAlign, HorzRelTo};
         let h_offset = hwpunit_to_px(common.horizontal_offset as i32, self.dpi);
         let shape_w = hwpunit_to_px(common.width as i32, self.dpi);
         let (ref_x, ref_w) = match common.horz_rel_to {

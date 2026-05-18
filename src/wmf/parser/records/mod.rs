@@ -7,9 +7,7 @@ mod escape;
 mod object;
 mod state;
 
-pub use self::{
-    bitmap::*, control::*, drawing::*, escape::*, object::*, state::*,
-};
+pub use self::{bitmap::*, control::*, drawing::*, escape::*, object::*, state::*};
 
 /// Check lower byte MUST match the lower byte of the RecordType Enumeration
 /// table value.
@@ -34,9 +32,8 @@ fn consume_remaining_bytes<R: crate::wmf::Read>(
     buf: &mut R,
     record_size: crate::wmf::parser::RecordSize,
 ) -> Result<(crate::wmf::imports::Vec<u8>, usize), crate::wmf::parser::ParseError> {
-    crate::wmf::parser::read_variable(buf, record_size.remaining_bytes()).map_err(
-        |err| crate::wmf::parser::ParseError::FailedReadBuffer { cause: err },
-    )
+    crate::wmf::parser::read_variable(buf, record_size.remaining_bytes())
+        .map_err(|err| crate::wmf::parser::ParseError::FailedReadBuffer { cause: err })
 }
 
 /// A 32-bit unsigned integer that defines the number of 16-bit WORD structures,
@@ -50,9 +47,7 @@ impl RecordSize {
         skip_all,
         err(level = tracing::Level::ERROR, Display),
     ))]
-    pub fn parse<R: crate::wmf::Read>(
-        buf: &mut R,
-    ) -> Result<Self, crate::wmf::parser::ParseError> {
+    pub fn parse<R: crate::wmf::Read>(buf: &mut R) -> Result<Self, crate::wmf::parser::ParseError> {
         let (v, c) = crate::wmf::parser::read_u32_from_le_bytes(buf)?;
 
         Ok(Self(v, c))

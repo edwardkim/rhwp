@@ -259,7 +259,9 @@ impl HwpDocument {
         use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::web_canvas::WebCanvasRenderer;
 
-        let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
+        let tree = self
+            .build_page_layer_tree(page_num)
+            .map_err(JsValue::from)?;
 
         let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
             .map_err(JsValue::from_str)?;
@@ -294,21 +296,25 @@ impl HwpDocument {
         scale: f64,
         layer_kind: &str,
     ) -> Result<(), JsValue> {
+        use crate::model::shape::TextWrap;
         use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::web_canvas::{LayerFilter, WebCanvasRenderer};
-        use crate::model::shape::TextWrap;
 
         let filter = match layer_kind {
             "all" => LayerFilter::All,
             "flow" => LayerFilter::FlowOnly,
             "behind" => LayerFilter::WrapOnly(TextWrap::BehindText),
             "front" => LayerFilter::WrapOnly(TextWrap::InFrontOfText),
-            _ => return Err(JsValue::from_str(
-                "invalid layer_kind: 'all' | 'flow' | 'behind' | 'front'",
-            )),
+            _ => {
+                return Err(JsValue::from_str(
+                    "invalid layer_kind: 'all' | 'flow' | 'behind' | 'front'",
+                ))
+            }
         };
 
-        let tree = self.build_page_layer_tree(page_num).map_err(JsValue::from)?;
+        let tree = self
+            .build_page_layer_tree(page_num)
+            .map_err(JsValue::from)?;
 
         let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
             .map_err(JsValue::from_str)?;
@@ -375,11 +381,7 @@ impl HwpDocument {
     ///
     /// `mode` 는 `"default"` 또는 `"compat"` 를 받는다. 빈 문자열은 `"default"` 로 처리한다.
     #[wasm_bindgen(js_name = getCanvasKitReplayPlan)]
-    pub fn get_canvaskit_replay_plan(
-        &self,
-        page_num: u32,
-        mode: &str,
-    ) -> Result<String, JsValue> {
+    pub fn get_canvaskit_replay_plan(&self, page_num: u32, mode: &str) -> Result<String, JsValue> {
         self.get_canvaskit_replay_plan_native(page_num, mode)
             .map_err(|e| e.into())
     }
@@ -434,7 +436,11 @@ impl HwpDocument {
     /// 현재 구역의 다단 설정을 JSON으로 반환한다.
     #[wasm_bindgen(js_name = getColumnDef)]
     pub fn get_column_def(&self, section_idx: u32) -> Result<String, JsValue> {
-        let sec = self.core.document.sections.get(section_idx as usize)
+        let sec = self
+            .core
+            .document
+            .sections
+            .get(section_idx as usize)
             .ok_or_else(|| JsValue::from_str("구역 인덱스 범위 초과"))?;
         let col_def = HwpDocument::find_initial_column_def(&sec.paragraphs);
         let col_type = match col_def.column_type {
@@ -2198,10 +2204,18 @@ impl HwpDocument {
                     };
                     if let Some(ref path) = pic.image_attr.external_path {
                         let id = pic.image_attr.bin_data_id;
-                        let already_loaded = self.document().bin_data_content.iter()
+                        let already_loaded = self
+                            .document()
+                            .bin_data_content
+                            .iter()
                             .any(|c| c.id == id && !c.data.is_empty());
-                        if already_loaded { continue; }
-                        let basename = path.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(path);
+                        if already_loaded {
+                            continue;
+                        }
+                        let basename = path
+                            .rsplit(|c| c == '/' || c == '\\')
+                            .next()
+                            .unwrap_or(path);
                         names.insert(basename.to_string());
                     }
                 }
@@ -2222,7 +2236,12 @@ impl HwpDocument {
     ///                 영역 영역 fallback 영역 영역 `/samples/<basename>` 영역 사용. 한컴 viewer
     ///                 정합 영역 영역 OS 영역 절대 경로 영역 영역 (예: "/Users/.../samples/rdb02.gif")
     #[wasm_bindgen(js_name = injectExternalImage)]
-    pub fn inject_external_image(&mut self, basename: &str, data: &[u8], display_path: &str) -> u32 {
+    pub fn inject_external_image(
+        &mut self,
+        basename: &str,
+        data: &[u8],
+        display_path: &str,
+    ) -> u32 {
         use crate::model::control::Control;
         use crate::model::shape::ShapeObject;
 
@@ -2241,14 +2260,27 @@ impl HwpDocument {
                         _ => continue,
                     };
                     if let Some(ref path) = pic.image_attr.external_path {
-                        let path_basename = path.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(path);
-                        if path_basename != basename { continue; }
+                        let path_basename = path
+                            .rsplit(|c| c == '/' || c == '\\')
+                            .next()
+                            .unwrap_or(path);
+                        if path_basename != basename {
+                            continue;
+                        }
                         let id = pic.image_attr.bin_data_id;
-                        let already_loaded = self.document().bin_data_content.iter()
+                        let already_loaded = self
+                            .document()
+                            .bin_data_content
+                            .iter()
                             .any(|c| c.id == id && !c.data.is_empty());
-                        if already_loaded { continue; }
+                        if already_loaded {
+                            continue;
+                        }
                         let ext = std::path::Path::new(basename)
-                            .extension().and_then(|e| e.to_str()).unwrap_or("").to_string();
+                            .extension()
+                            .and_then(|e| e.to_str())
+                            .unwrap_or("")
+                            .to_string();
                         targets.push((id, ext));
                     }
                 }
@@ -2262,11 +2294,13 @@ impl HwpDocument {
                 self.document_mut().bin_data_content[idx].data = data.to_vec();
                 self.document_mut().bin_data_content[idx].extension = ext;
             } else {
-                self.document_mut().bin_data_content.push(
-                    crate::model::bin_data::BinDataContent {
-                        id, data: data.to_vec(), extension: ext,
-                    }
-                );
+                self.document_mut()
+                    .bin_data_content
+                    .push(crate::model::bin_data::BinDataContent {
+                        id,
+                        data: data.to_vec(),
+                        extension: ext,
+                    });
             }
             injected += 1;
 
@@ -2292,7 +2326,8 @@ impl HwpDocument {
                             _ => continue,
                         };
                         if pic.image_attr.bin_data_id == id
-                            && pic.image_attr.external_path.is_some() {
+                            && pic.image_attr.external_path.is_some()
+                        {
                             pic.image_attr.external_path = Some(resolved.clone());
                         }
                     }
@@ -3214,7 +3249,8 @@ impl HwpDocument {
         new_text: &str,
         case_sensitive: bool,
     ) -> Result<String, JsValue> {
-        self.core.replace_one_native(query, new_text, case_sensitive)
+        self.core
+            .replace_one_native(query, new_text, case_sensitive)
             .map_err(|e| e.into())
     }
 
@@ -3930,19 +3966,19 @@ impl HwpDocument {
                 None => "null".to_string(),
             };
             let kind_name = match &w.kind {
-                crate::document_core::validation::WarningKind::LinesegArrayEmpty =>
-                    "LinesegArrayEmpty",
-                crate::document_core::validation::WarningKind::LinesegUncomputed =>
-                    "LinesegUncomputed",
-                crate::document_core::validation::WarningKind::LinesegTextRunReflow =>
-                    "LinesegTextRunReflow",
+                crate::document_core::validation::WarningKind::LinesegArrayEmpty => {
+                    "LinesegArrayEmpty"
+                }
+                crate::document_core::validation::WarningKind::LinesegUncomputed => {
+                    "LinesegUncomputed"
+                }
+                crate::document_core::validation::WarningKind::LinesegTextRunReflow => {
+                    "LinesegTextRunReflow"
+                }
             };
             warning_parts.push(format!(
                 r#"{{"section":{},"paragraph":{},"kind":"{}","cell":{}}}"#,
-                w.section_idx,
-                w.paragraph_idx,
-                kind_name,
-                cell_part,
+                w.section_idx, w.paragraph_idx, kind_name, cell_part,
             ));
         }
 

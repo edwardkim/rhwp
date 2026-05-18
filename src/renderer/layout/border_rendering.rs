@@ -1,14 +1,18 @@
 //! 표 테두리 수집/렌더링 + 문단 테두리 라인 생성
 
-use crate::model::style::{BorderLine, BorderLineType};
-use crate::model::table::Table;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
-use super::super::{StrokeDash, LineStyle};
+use super::super::{LineStyle, StrokeDash};
+use crate::model::style::{BorderLine, BorderLineType};
+use crate::model::table::Table;
 
 fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
-    if a.line_type == BorderLineType::None { return *b; }
-    if b.line_type == BorderLineType::None { return *a; }
+    if a.line_type == BorderLineType::None {
+        return *b;
+    }
+    if b.line_type == BorderLineType::None {
+        return *a;
+    }
 
     let a_w = border_width_to_px(a.width);
     let b_w = border_width_to_px(b.width);
@@ -20,17 +24,25 @@ fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
         match lt {
             BorderLineType::None => 0,
             BorderLineType::ThinThickThinTriple => 4,
-            BorderLineType::Double | BorderLineType::ThinThickDouble | BorderLineType::ThickThinDouble => 3,
+            BorderLineType::Double
+            | BorderLineType::ThinThickDouble
+            | BorderLineType::ThickThinDouble => 3,
             BorderLineType::Wave | BorderLineType::DoubleWave => 2,
             _ => 1,
         }
     };
-    if priority(a.line_type) >= priority(b.line_type) { *a } else { *b }
+    if priority(a.line_type) >= priority(b.line_type) {
+        *a
+    } else {
+        *b
+    }
 }
 
 /// 엣지 그리드 슬롯에 테두리를 병합 저장
 fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine) {
-    if border.line_type == BorderLineType::None { return; }
+    if border.line_type == BorderLineType::None {
+        return;
+    }
     *slot = Some(match *slot {
         Some(existing) => merge_border(&existing, border),
         None => *border,
@@ -64,7 +76,8 @@ pub(crate) fn build_row_col_x(
     // 열 너비는 col_widths(전체 행 최대값)로 균일 적용 (한컴 동작)
     let mut base_rx = vec![0.0f64; col_count + 1];
     for c in 0..col_count {
-        base_rx[c + 1] = base_rx[c] + col_widths[c] + if c + 1 < col_count { cell_spacing } else { 0.0 };
+        base_rx[c + 1] =
+            base_rx[c] + col_widths[c] + if c + 1 < col_count { cell_spacing } else { 0.0 };
     }
     vec![base_rx; row_count]
 }
@@ -76,7 +89,10 @@ pub(crate) fn build_row_col_x(
 pub(crate) fn collect_cell_borders(
     h_edges: &mut [Vec<Option<BorderLine>>],
     v_edges: &mut [Vec<Option<BorderLine>>],
-    col: usize, row: usize, col_span: usize, row_span: usize,
+    col: usize,
+    row: usize,
+    col_span: usize,
+    row_span: usize,
     borders: &[BorderLine; 4],
 ) {
     let h_rows = h_edges.len();
@@ -140,7 +156,9 @@ pub(crate) fn render_edge_borders(
 
         for (ci, edge_opt) in h_row.iter().enumerate() {
             let same_style = match (edge_opt, &seg_border) {
-                (Some(e), Some(s)) => e.line_type == s.line_type && e.width == s.width && e.color == s.color,
+                (Some(e), Some(s)) => {
+                    e.line_type == s.line_type && e.width == s.width && e.color == s.color
+                }
                 _ => false,
             };
 
@@ -182,10 +200,18 @@ pub(crate) fn render_edge_borders(
         let mut seg_x: f64 = 0.0;
 
         for (ri, edge_opt) in v_col.iter().enumerate() {
-            let x = table_x + row_col_x.get(ri).and_then(|rx| rx.get(ci).copied()).unwrap_or(0.0);
+            let x = table_x
+                + row_col_x
+                    .get(ri)
+                    .and_then(|rx| rx.get(ci).copied())
+                    .unwrap_or(0.0);
             let same_style = match (edge_opt, &seg_border) {
-                (Some(e), Some(s)) => e.line_type == s.line_type && e.width == s.width && e.color == s.color
-                    && (x - seg_x).abs() < 0.01,
+                (Some(e), Some(s)) => {
+                    e.line_type == s.line_type
+                        && e.width == s.width
+                        && e.color == s.color
+                        && (x - seg_x).abs() < 0.01
+                }
                 _ => false,
             };
 
@@ -271,7 +297,11 @@ pub(crate) fn render_transparent_borders(
         let mut seg_x: f64 = 0.0;
 
         for (ri, edge_opt) in v_col.iter().enumerate() {
-            let x = table_x + row_col_x.get(ri).and_then(|rx| rx.get(ci).copied()).unwrap_or(0.0);
+            let x = table_x
+                + row_col_x
+                    .get(ri)
+                    .and_then(|rx| rx.get(ci).copied())
+                    .unwrap_or(0.0);
             if edge_opt.is_none() {
                 if seg_start.is_none() {
                     seg_start = Some(ri);
@@ -280,21 +310,27 @@ pub(crate) fn render_transparent_borders(
                     // x가 바뀌면 이전 세그먼트 마무리 후 새 세그먼트 시작
                     let y1 = table_y + row_y[seg_start.unwrap()];
                     let y2 = table_y + row_y[ri];
-                    nodes.extend(create_single_line(tree, color, width, dash, seg_x, y1, seg_x, y2));
+                    nodes.extend(create_single_line(
+                        tree, color, width, dash, seg_x, y1, seg_x, y2,
+                    ));
                     seg_start = Some(ri);
                     seg_x = x;
                 }
             } else if let Some(start) = seg_start {
                 let y1 = table_y + row_y[start];
                 let y2 = table_y + row_y[ri];
-                nodes.extend(create_single_line(tree, color, width, dash, seg_x, y1, seg_x, y2));
+                nodes.extend(create_single_line(
+                    tree, color, width, dash, seg_x, y1, seg_x, y2,
+                ));
                 seg_start = None;
             }
         }
         if let Some(start) = seg_start {
             let y1 = table_y + row_y[start];
             let y2 = table_y + row_y.get(v_col.len()).copied().unwrap_or(row_y[start]);
-            nodes.extend(create_single_line(tree, color, width, dash, seg_x, y1, seg_x, y2));
+            nodes.extend(create_single_line(
+                tree, color, width, dash, seg_x, y1, seg_x, y2,
+            ));
         }
     }
 
@@ -306,7 +342,10 @@ pub(crate) fn render_transparent_borders(
 pub(crate) fn create_border_line_nodes(
     tree: &mut PageRenderTree,
     border: &BorderLine,
-    x1: f64, y1: f64, x2: f64, y2: f64,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
 ) -> Vec<RenderNode> {
     if border.line_type == BorderLineType::None {
         return vec![];
@@ -323,8 +362,16 @@ pub(crate) fn create_border_line_nodes(
             let sub_w = (total * 0.3).max(0.4);
             let gap = (total * 0.4).max(1.0);
             let offset = (gap + sub_w) / 2.0;
-            create_parallel_lines(tree, border.color, x1, y1, x2, y2,
-                &[(-offset, sub_w), (offset, sub_w)], StrokeDash::Solid)
+            create_parallel_lines(
+                tree,
+                border.color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[(-offset, sub_w), (offset, sub_w)],
+                StrokeDash::Solid,
+            )
         }
 
         // 가는선-굵은선 이중선
@@ -335,8 +382,16 @@ pub(crate) fn create_border_line_nodes(
             let gap = (total * 0.4).max(1.0);
             let thin_offset = -(gap + thin_w) / 2.0;
             let thick_offset = (gap + thick_w) / 2.0;
-            create_parallel_lines(tree, border.color, x1, y1, x2, y2,
-                &[(thin_offset, thin_w), (thick_offset, thick_w)], StrokeDash::Solid)
+            create_parallel_lines(
+                tree,
+                border.color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[(thin_offset, thin_w), (thick_offset, thick_w)],
+                StrokeDash::Solid,
+            )
         }
 
         // 굵은선-가는선 이중선
@@ -347,8 +402,16 @@ pub(crate) fn create_border_line_nodes(
             let gap = (total * 0.4).max(1.0);
             let thick_offset = -(gap + thick_w) / 2.0;
             let thin_offset = (gap + thin_w) / 2.0;
-            create_parallel_lines(tree, border.color, x1, y1, x2, y2,
-                &[(thick_offset, thick_w), (thin_offset, thin_w)], StrokeDash::Solid)
+            create_parallel_lines(
+                tree,
+                border.color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[(thick_offset, thick_w), (thin_offset, thin_w)],
+                StrokeDash::Solid,
+            )
         }
 
         // 가는선-굵은선-가는선 삼중선
@@ -358,8 +421,20 @@ pub(crate) fn create_border_line_nodes(
             let thick_w = (total * 0.3).max(0.6);
             let gap = (total * 0.15).max(0.8);
             let outer_offset = thick_w / 2.0 + gap + thin_w / 2.0;
-            create_parallel_lines(tree, border.color, x1, y1, x2, y2,
-                &[(-outer_offset, thin_w), (0.0, thick_w), (outer_offset, thin_w)], StrokeDash::Solid)
+            create_parallel_lines(
+                tree,
+                border.color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[
+                    (-outer_offset, thin_w),
+                    (0.0, thick_w),
+                    (outer_offset, thin_w),
+                ],
+                StrokeDash::Solid,
+            )
         }
 
         // 단일선 타입들
@@ -378,7 +453,10 @@ pub(crate) fn create_border_line_nodes(
 fn create_parallel_lines(
     tree: &mut PageRenderTree,
     color: u32,
-    x1: f64, y1: f64, x2: f64, y2: f64,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
     lines: &[(f64, f64)],
     dash: StrokeDash,
 ) -> Vec<RenderNode> {
@@ -396,7 +474,10 @@ fn create_parallel_lines(
         nodes.push(RenderNode::new(
             id,
             RenderNodeType::Line(LineNode::new(
-                lx1, ly1, lx2, ly2,
+                lx1,
+                ly1,
+                lx2,
+                ly2,
                 LineStyle {
                     color,
                     width,
@@ -422,13 +503,19 @@ fn create_single_line(
     color: u32,
     width: f64,
     dash: StrokeDash,
-    x1: f64, y1: f64, x2: f64, y2: f64,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
 ) -> Vec<RenderNode> {
     let id = tree.next_id();
     vec![RenderNode::new(
         id,
         RenderNodeType::Line(LineNode::new(
-            x1, y1, x2, y2,
+            x1,
+            y1,
+            x2,
+            y2,
             LineStyle {
                 color,
                 width,

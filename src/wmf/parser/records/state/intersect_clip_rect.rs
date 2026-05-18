@@ -46,22 +46,23 @@ impl META_INTERSECTCLIPRECT {
             crate::wmf::parser::RecordType::META_INTERSECTCLIPRECT,
         )?;
 
-        let (
-            (bottom, bottom_bytes),
-            (right, right_bytes),
-            (top, top_bytes),
-            (left, left_bytes),
-        ) = (
+        let ((bottom, bottom_bytes), (right, right_bytes), (top, top_bytes), (left, left_bytes)) = (
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
-        record_size
-            .consume(bottom_bytes + right_bytes + top_bytes + left_bytes);
+        record_size.consume(bottom_bytes + right_bytes + top_bytes + left_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, bottom, right, top, left })
+        Ok(Self {
+            record_size,
+            record_function,
+            bottom,
+            right,
+            top,
+            left,
+        })
     }
 }

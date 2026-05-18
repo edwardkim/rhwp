@@ -10,9 +10,9 @@
 //!
 //! 권위 자료: `pdf/2022년 국립국어원 업무계획-2022.pdf` (한글 2022 편집기 PDF)
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/2022년 국립국어원 업무계획.hwp";
 // pi=585 / pi=586 가 등장하는 페이지 인덱스는 빌드의 pagination 결과에 의존:
@@ -37,7 +37,6 @@ fn find_table_bbox(root: &RenderNode, target_pi: usize, target_ci: usize) -> Opt
     None
 }
 
-
 #[test]
 fn issue_712_pi586_table_does_not_invade_pi585_outer_box() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -52,7 +51,9 @@ fn issue_712_pi586_table_does_not_invade_pi585_outer_box() {
     let mut target_page: Option<u32> = None;
     let mut target_tree = None;
     for pn in 0..page_count {
-        let t = doc.build_page_render_tree(pn).expect("build_page_render_tree");
+        let t = doc
+            .build_page_render_tree(pn)
+            .expect("build_page_render_tree");
         let p585 = find_table_bbox(&t.root, 585, 0);
         let p586 = find_table_bbox(&t.root, 586, 0);
         if let (Some(_), Some(_)) = (p585, p586) {
@@ -61,15 +62,18 @@ fn issue_712_pi586_table_does_not_invade_pi585_outer_box() {
             break;
         }
     }
-    let target_page = target_page.unwrap_or_else(||
-        panic!("pi=585 + pi=586 동시 등장 페이지를 찾지 못함 (page_count={})", page_count)
-    );
+    let target_page = target_page.unwrap_or_else(|| {
+        panic!(
+            "pi=585 + pi=586 동시 등장 페이지를 찾지 못함 (page_count={})",
+            page_count
+        )
+    });
     let tree = target_tree.unwrap();
 
-    let (pi585_top, pi585_bottom) = find_table_bbox(&tree.root, 585, 0)
-        .expect("pi=585 ci=0 (1x3 TAC 제목 표) Table 노드 누락");
-    let (pi586_top, pi586_bottom) = find_table_bbox(&tree.root, 586, 0)
-        .expect("pi=586 ci=0 (12x5 일정 표) Table 노드 누락");
+    let (pi585_top, pi585_bottom) =
+        find_table_bbox(&tree.root, 585, 0).expect("pi=585 ci=0 (1x3 TAC 제목 표) Table 노드 누락");
+    let (pi586_top, pi586_bottom) =
+        find_table_bbox(&tree.root, 586, 0).expect("pi=586 ci=0 (12x5 일정 표) Table 노드 누락");
 
     eprintln!(
         "[issue_712] page_index={} (page_count={}) pi585=[{:.2}..{:.2}] pi586=[{:.2}..{:.2}]",
@@ -82,7 +86,10 @@ fn issue_712_pi586_table_does_not_invade_pi585_outer_box() {
         pi586_top >= pi585_bottom - 0.5,
         "pi=586 12x5 표가 pi=585 1x3 표 안쪽으로 침범. \
          pi585=[{:.2}..{:.2}] pi586=[{:.2}..{:.2}] 침범={:.2} px",
-        pi585_top, pi585_bottom, pi586_top, pi586_bottom,
+        pi585_top,
+        pi585_bottom,
+        pi586_top,
+        pi586_bottom,
         pi585_bottom - pi586_top,
     );
 }

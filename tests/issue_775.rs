@@ -15,9 +15,9 @@
 //! - Task #703 fix 적용 시 InFrontOfText 표를 cur_h 누적에서 제외 → 단 0/1 컨텐츠 분배 변경
 //!   → pi=181 paragraph 가 단 1 상단(y≈277)에서 단 1 중반(y≈723)으로 밀림
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/exam_eng.hwp";
 const TARGET_PAGE: u32 = 3; // 0-indexed: page 4
@@ -47,7 +47,8 @@ fn issue_775_exam_eng_p4_pi181_table_at_column_top() {
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .unwrap_or_else(|e| panic!("parse {}: {}", SAMPLE, e));
 
-    let tree = doc.build_page_render_tree(TARGET_PAGE)
+    let tree = doc
+        .build_page_render_tree(TARGET_PAGE)
         .expect("build_page_render_tree page 4");
 
     // pi=181 ci=1 = 1×1 InFrontOfText 표 (27번 보기 그림 위 데코레이션)
@@ -56,7 +57,9 @@ fn issue_775_exam_eng_p4_pi181_table_at_column_top() {
 
     eprintln!(
         "[issue_775] page=4 pi=181 ci=1 bbox=[{:.2}..{:.2}] (height={:.2})",
-        pi181_top, pi181_bottom, pi181_bottom - pi181_top,
+        pi181_top,
+        pi181_bottom,
+        pi181_bottom - pi181_top,
     );
 
     // 정상 동작: pi=181 ci=1 표가 단 1 상단 ≈ y=277.08 px (PDF 권위 정합).
@@ -68,6 +71,7 @@ fn issue_775_exam_eng_p4_pi181_table_at_column_top() {
          실제 y={:.2} px (PDF 정상값과 차이={:.2} px). \
          회귀 진원지: a759a1c2 (Task #703 / PR #707) — typeset.rs:1550 InFrontOfText 가드 \
          가 다단 영역에서 컬럼 분배를 변경.",
-        pi181_top, pi181_top - 277.08,
+        pi181_top,
+        pi181_top - 277.08,
     );
 }

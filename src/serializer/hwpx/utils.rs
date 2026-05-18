@@ -9,8 +9,12 @@ use super::SerializeError;
 
 /// `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` 선언을 쓴다.
 pub fn write_xml_decl<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    w.write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), Some("yes"))))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
+    w.write_event(Event::Decl(BytesDecl::new(
+        "1.0",
+        Some("UTF-8"),
+        Some("yes"),
+    )))
+    .map_err(|e| SerializeError::XmlError(e.to_string()))?;
     Ok(())
 }
 

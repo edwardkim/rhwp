@@ -1,6 +1,6 @@
 //! 계산식 평가기: AST → 숫자 결과
 
-use super::parser::{FormulaNode, BinOpKind, parse_formula};
+use super::parser::{parse_formula, BinOpKind, FormulaNode};
 use super::tokenizer::DirectionKind;
 
 /// 셀 값 조회 함수 타입
@@ -29,16 +29,11 @@ pub fn evaluate_formula(
     ctx: &TableContext,
     get_cell: CellValueFn,
 ) -> Result<f64, String> {
-    let ast = parse_formula(formula)
-        .ok_or_else(|| "수식 파싱 실패".to_string())?;
+    let ast = parse_formula(formula).ok_or_else(|| "수식 파싱 실패".to_string())?;
     eval_node(&ast, ctx, get_cell)
 }
 
-fn eval_node(
-    node: &FormulaNode,
-    ctx: &TableContext,
-    get_cell: CellValueFn,
-) -> Result<f64, String> {
+fn eval_node(node: &FormulaNode, ctx: &TableContext, get_cell: CellValueFn) -> Result<f64, String> {
     match node {
         FormulaNode::Number(n) => Ok(*n),
 
@@ -47,9 +42,7 @@ fn eval_node(
             Ok(get_cell(c, r).unwrap_or(0.0))
         }
 
-        FormulaNode::Negate(inner) => {
-            Ok(-eval_node(inner, ctx, get_cell)?)
-        }
+        FormulaNode::Negate(inner) => Ok(-eval_node(inner, ctx, get_cell)?),
 
         FormulaNode::BinOp { op, left, right } => {
             let l = eval_node(left, ctx, get_cell)?;
@@ -59,23 +52,20 @@ fn eval_node(
                 BinOpKind::Sub => Ok(l - r),
                 BinOpKind::Mul => Ok(l * r),
                 BinOpKind::Div => {
-                    if r == 0.0 { Err("0으로 나눌 수 없음".into()) }
-                    else { Ok(l / r) }
+                    if r == 0.0 {
+                        Err("0으로 나눌 수 없음".into())
+                    } else {
+                        Ok(l / r)
+                    }
                 }
             }
         }
 
-        FormulaNode::Range { .. } => {
-            Err("범위 참조는 함수 인수로만 사용 가능".into())
-        }
+        FormulaNode::Range { .. } => Err("범위 참조는 함수 인수로만 사용 가능".into()),
 
-        FormulaNode::Direction(_) => {
-            Err("방향 지정자는 함수 인수로만 사용 가능".into())
-        }
+        FormulaNode::Direction(_) => Err("방향 지정자는 함수 인수로만 사용 가능".into()),
 
-        FormulaNode::FuncCall { name, args } => {
-            eval_function(name, args, ctx, get_cell)
-        }
+        FormulaNode::FuncCall { name, args } => eval_function(name, args, ctx, get_cell),
     }
 }
 
@@ -84,27 +74,28 @@ fn resolve_cell_ref(col: char, row: u32, ctx: &TableContext) -> Result<(usize, u
     let c = if col == '?' {
         ctx.current_col
     } else {
-        (col as usize).checked_sub('A' as usize)
+        (col as usize)
+            .checked_sub('A' as usize)
             .ok_or_else(|| format!("잘못된 열: {}", col))?
     };
     let r = if row == 0 {
         ctx.current_row // 와일드카드 행
     } else {
-        (row as usize).checked_sub(1)
+        (row as usize)
+            .checked_sub(1)
             .ok_or_else(|| "행은 1부터 시작".to_string())?
     };
     Ok((c, r))
 }
 
 /// 범위/방향에서 셀 좌표 목록을 수집
-fn collect_cells(
-    arg: &FormulaNode,
-    ctx: &TableContext,
-) -> Result<Vec<(usize, usize)>, String> {
+fn collect_cells(arg: &FormulaNode, ctx: &TableContext) -> Result<Vec<(usize, usize)>, String> {
     match arg {
         FormulaNode::Range { start, end } => {
-            if let (FormulaNode::CellRef { col: c1, row: r1 },
-                    FormulaNode::CellRef { col: c2, row: r2 }) = (start.as_ref(), end.as_ref())
+            if let (
+                FormulaNode::CellRef { col: c1, row: r1 },
+                FormulaNode::CellRef { col: c2, row: r2 },
+            ) = (start.as_ref(), end.as_ref())
             {
                 let (sc, sr) = resolve_cell_ref(*c1, *r1, ctx)?;
                 let (ec, er) = resolve_cell_ref(*c2, *r2, ctx)?;
@@ -200,7 +191,9 @@ fn eval_function(
         }
         "AVERAGE" | "AVG" => {
             let vals = collect_values(args, ctx, get_cell)?;
-            if vals.is_empty() { return Ok(0.0); }
+            if vals.is_empty() {
+                return Ok(0.0);
+            }
             Ok(vals.iter().sum::<f64>() / vals.len() as f64)
         }
         "PRODUCT" => {
@@ -233,7 +226,13 @@ fn eval_function(
         "ATAN" => unary_fn(args, ctx, get_cell, f64::atan),
         "RADIAN" => unary_fn(args, ctx, get_cell, |d| d * std::f64::consts::PI / 180.0),
         "SIGN" => unary_fn(args, ctx, get_cell, |v| {
-            if v > 0.0 { 1.0 } else if v < 0.0 { -1.0 } else { 0.0 }
+            if v > 0.0 {
+                1.0
+            } else if v < 0.0 {
+                -1.0
+            } else {
+                0.0
+            }
         }),
         "INT" => unary_fn(args, ctx, get_cell, |v| v.trunc()),
         "CEILING" => unary_fn(args, ctx, get_cell, f64::ceil),
@@ -246,8 +245,11 @@ fn eval_function(
             }
             let a = eval_node(&args[0], ctx, get_cell)?;
             let b = eval_node(&args[1], ctx, get_cell)?;
-            if b == 0.0 { Err("0으로 나눌 수 없음".into()) }
-            else { Ok(a % b) }
+            if b == 0.0 {
+                Err("0으로 나눌 수 없음".into())
+            } else {
+                Ok(a % b)
+            }
         }
         "IF" => {
             if args.len() < 3 {
@@ -282,7 +284,12 @@ mod tests {
     use super::*;
 
     fn make_ctx() -> TableContext {
-        TableContext { row_count: 5, col_count: 5, current_row: 4, current_col: 0 }
+        TableContext {
+            row_count: 5,
+            col_count: 5,
+            current_row: 4,
+            current_col: 0,
+        }
     }
 
     fn sample_cell(col: usize, row: usize) -> Option<f64> {
@@ -394,7 +401,8 @@ mod tests {
         // a1=11, b3=32, sum(a1:b5)=11+12+21+22+31+32+41+42+51+52=315
         // avg(c3, e5-3) = avg(33, 55-3) = avg(33, 52) = 42.5
         // = 11 + (32-3)*2 + (315 + 42.5) = 11 + 58 + 357.5 = 426.5
-        let r = evaluate_formula("=a1+(b3-3)*2+sum(a1:b5,avg(c3,e5-3))", &ctx, &sample_cell).unwrap();
+        let r =
+            evaluate_formula("=a1+(b3-3)*2+sum(a1:b5,avg(c3,e5-3))", &ctx, &sample_cell).unwrap();
         assert_eq!(r, 426.5);
     }
 

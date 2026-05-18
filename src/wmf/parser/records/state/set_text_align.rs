@@ -56,6 +56,11 @@ impl META_SETTEXTALIGN {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, text_alignment_mode, reserved })
+        Ok(Self {
+            record_size,
+            record_function,
+            text_alignment_mode,
+            reserved,
+        })
     }
 }

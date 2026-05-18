@@ -21,6 +21,18 @@ fn load_sample(name: &str) -> Vec<u8> {
     std::fs::read(&path).unwrap_or_else(|e| panic!("샘플 로드 실패 {}: {}", path, e))
 }
 
+fn oracle_hwp_page_count_for_hwpx(name: &str) -> Option<u32> {
+    let stem = name.strip_suffix(".hwpx").unwrap_or(name);
+    let path = format!("samples/hwpx/hancom-hwp/{}.hwp", stem);
+    let bytes = std::fs::read(&path).ok()?;
+    let core = DocumentCore::from_bytes(&bytes).ok()?;
+    Some(core.page_count())
+}
+
+fn expected_hwp_page_count(name: &str, fallback_hwpx_pages: u32) -> u32 {
+    oracle_hwp_page_count_for_hwpx(name).unwrap_or(fallback_hwpx_pages)
+}
+
 fn page_count_after_hwp_export(hwpx_bytes: &[u8]) -> (u32, u32) {
     let core = DocumentCore::from_bytes(hwpx_bytes).expect("HWPX 로드 실패");
     let original_pages = core.page_count();
@@ -315,7 +327,10 @@ fn task888_basic_table_materializes_hancom_table_attrs() {
 
     assert_eq!(report.table_ctrl_header_attr_materialized, 1);
     assert_eq!(report.table_record_attr_materialized, 1);
-    assert_eq!(table.raw_table_record_attr, 0x0400_0006);
+    assert_eq!(
+        table.raw_table_record_attr, 0x0000_0006,
+        "HWPX table record attr는 pageBreak/repeatHeader/noAdjust 계약 필드로 재구성한다"
+    );
     assert_eq!(report.table_record_row_sizes_materialized, 1);
     assert_eq!(table.row_sizes, vec![4, 4, 4]);
     assert!(table.raw_ctrl_data.len() >= 4);
@@ -574,17 +589,18 @@ fn stage4_page_def_preserved_after_roundtrip() {
     );
 }
 
-/// Stage 4 핵심 게이트: 어댑터 적용 → 직렬화 → 재로드 시 페이지 수가 원본과 일치.
+/// Stage 4 핵심 게이트: 어댑터 적용 → 직렬화 → 재로드 시 페이지 수가 HWP 저장 기준과 일치.
 fn assert_page_count_recovered(name: &str, bytes: &[u8]) {
     let (orig, after) = page_count_with_adapter(bytes);
+    let expected = expected_hwp_page_count(name, orig);
     eprintln!(
-        "[#178 Stage 4] {}: orig={}, after_adapter={}",
-        name, orig, after
+        "[#178 Stage 4] {}: orig={}, expected_hwp={}, after_adapter={}",
+        name, orig, expected, after
     );
     assert_eq!(
-        after, orig,
-        "{}: 어댑터 적용 후 페이지 수 {} != 원본 {}",
-        name, after, orig
+        after, expected,
+        "{}: 어댑터 적용 후 페이지 수 {} != HWP 저장 기준 {} (HWPX 원본 {})",
+        name, after, expected, orig
     );
 }
 
@@ -669,16 +685,18 @@ fn stage5_all_three_samples_recover_via_unified_entry_point() {
         let bytes = load_sample(name);
         let mut core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드");
         let orig = core.page_count();
+        let expected = expected_hwp_page_count(name, orig);
 
         let hwp_bytes = core.export_hwp_with_adapter().expect("HWP 직렬화");
         let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드");
 
         assert_eq!(
             reloaded.page_count(),
-            orig,
-            "{}: 페이지 수 보존 (orig={}, reloaded={})",
+            expected,
+            "{}: HWP 저장 기준 페이지 수 일치 (orig={}, expected_hwp={}, reloaded={})",
             name,
             orig,
+            expected,
             reloaded.page_count()
         );
     }
@@ -712,10 +730,11 @@ fn stage6_verify_recovered_for_all_three_samples() {
         let bytes = load_sample(name);
         let mut core = DocumentCore::from_bytes(&bytes).expect("HWPX 로드");
         let v = core.serialize_hwp_with_verify().expect("verify");
-        assert!(
-            v.recovered,
-            "{}: before={} after={}",
-            name, v.page_count_before, v.page_count_after
+        let expected = expected_hwp_page_count(name, v.page_count_before);
+        assert_eq!(
+            v.page_count_after, expected,
+            "{}: HWP 저장 기준 페이지 수 불일치 before={} expected_hwp={} after={}",
+            name, v.page_count_before, expected, v.page_count_after
         );
     }
 }

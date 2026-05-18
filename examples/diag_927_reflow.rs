@@ -11,9 +11,10 @@ use std::path::PathBuf;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let path = args.get(1).map(PathBuf::from).unwrap_or_else(|| {
-        PathBuf::from("samples/hwp3-sample16-hwp5.hwp")
-    });
+    let path = args
+        .get(1)
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("samples/hwp3-sample16-hwp5.hwp"));
     let bytes = std::fs::read(&path).expect("read file");
     let mut core = DocumentCore::from_bytes(&bytes).expect("parse");
 
@@ -25,5 +26,8 @@ fn main() {
     println!("페이지 (reflow 전): {}", pages_before);
     println!("reflow 된 문단 수: {}", reflowed);
     println!("페이지 (reflow 후): {}", pages_after);
-    println!("차이: {:+} 페이지", pages_after as i64 - pages_before as i64);
+    println!(
+        "차이: {:+} 페이지",
+        pages_after as i64 - pages_before as i64
+    );
 }

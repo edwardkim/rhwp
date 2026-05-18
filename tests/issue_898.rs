@@ -15,11 +15,10 @@ use std::path::Path;
 fn master_page_table_includes_outer_margin_top() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/exam_math.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse exam_math.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse exam_math.hwp");
 
     let svg = doc
         .render_page_svg_native(0)
@@ -30,8 +29,7 @@ fn master_page_table_includes_outer_margin_top() {
     //
     // SVG 부동소수 표현 차이 흡수: y="1378" 이 포함되는지 확인.
     // 회귀(미적용) 값은 1359.x 이므로 "y=\"1378" 패턴 매칭 시 충분.
-    let has_correct_y = svg.contains("y=\"1378.")
-        || svg.contains("y=\"1378\"");
+    let has_correct_y = svg.contains("y=\"1378.") || svg.contains("y=\"1378\"");
     assert!(
         has_correct_y,
         "바탕쪽 표 셀 y 좌표가 outer_margin_top 미반영 (회귀). SVG snippet:\n{}",

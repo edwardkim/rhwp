@@ -50,39 +50,92 @@ pub struct IrDiffAllow {
 /// 발견된 단일 차이.
 #[derive(Debug, Clone)]
 pub enum IrDifference {
-    SectionCount { expected: usize, actual: usize },
-    ParagraphCount { section: usize, expected: usize, actual: usize },
-    CharShapeCount { expected: usize, actual: usize },
-    ParaShapeCount { expected: usize, actual: usize },
-    BorderFillCount { expected: usize, actual: usize },
-    TabDefCount { expected: usize, actual: usize },
-    NumberingCount { expected: usize, actual: usize },
-    StyleCount { expected: usize, actual: usize },
-    BinDataContentCount { expected: usize, actual: usize },
+    SectionCount {
+        expected: usize,
+        actual: usize,
+    },
+    ParagraphCount {
+        section: usize,
+        expected: usize,
+        actual: usize,
+    },
+    CharShapeCount {
+        expected: usize,
+        actual: usize,
+    },
+    ParaShapeCount {
+        expected: usize,
+        actual: usize,
+    },
+    BorderFillCount {
+        expected: usize,
+        actual: usize,
+    },
+    TabDefCount {
+        expected: usize,
+        actual: usize,
+    },
+    NumberingCount {
+        expected: usize,
+        actual: usize,
+    },
+    StyleCount {
+        expected: usize,
+        actual: usize,
+    },
+    BinDataContentCount {
+        expected: usize,
+        actual: usize,
+    },
 }
 
 impl std::fmt::Display for IrDifference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use IrDifference::*;
         match self {
-            SectionCount { expected, actual } =>
-                write!(f, "section count: expected={} actual={}", expected, actual),
-            ParagraphCount { section, expected, actual } =>
-                write!(f, "section[{}] paragraph count: expected={} actual={}", section, expected, actual),
-            CharShapeCount { expected, actual } =>
-                write!(f, "char_shapes count: expected={} actual={}", expected, actual),
-            ParaShapeCount { expected, actual } =>
-                write!(f, "para_shapes count: expected={} actual={}", expected, actual),
-            BorderFillCount { expected, actual } =>
-                write!(f, "border_fills count: expected={} actual={}", expected, actual),
-            TabDefCount { expected, actual } =>
-                write!(f, "tab_defs count: expected={} actual={}", expected, actual),
-            NumberingCount { expected, actual } =>
-                write!(f, "numberings count: expected={} actual={}", expected, actual),
-            StyleCount { expected, actual } =>
-                write!(f, "styles count: expected={} actual={}", expected, actual),
-            BinDataContentCount { expected, actual } =>
-                write!(f, "bin_data_content count: expected={} actual={}", expected, actual),
+            SectionCount { expected, actual } => {
+                write!(f, "section count: expected={} actual={}", expected, actual)
+            }
+            ParagraphCount {
+                section,
+                expected,
+                actual,
+            } => write!(
+                f,
+                "section[{}] paragraph count: expected={} actual={}",
+                section, expected, actual
+            ),
+            CharShapeCount { expected, actual } => write!(
+                f,
+                "char_shapes count: expected={} actual={}",
+                expected, actual
+            ),
+            ParaShapeCount { expected, actual } => write!(
+                f,
+                "para_shapes count: expected={} actual={}",
+                expected, actual
+            ),
+            BorderFillCount { expected, actual } => write!(
+                f,
+                "border_fills count: expected={} actual={}",
+                expected, actual
+            ),
+            TabDefCount { expected, actual } => {
+                write!(f, "tab_defs count: expected={} actual={}", expected, actual)
+            }
+            NumberingCount { expected, actual } => write!(
+                f,
+                "numberings count: expected={} actual={}",
+                expected, actual
+            ),
+            StyleCount { expected, actual } => {
+                write!(f, "styles count: expected={} actual={}", expected, actual)
+            }
+            BinDataContentCount { expected, actual } => write!(
+                f,
+                "bin_data_content count: expected={} actual={}",
+                expected, actual
+            ),
         }
     }
 }
@@ -201,7 +254,10 @@ mod tests {
         assert_eq!(diff.differences.len(), 1);
         assert!(matches!(
             diff.differences[0],
-            IrDifference::SectionCount { expected: 0, actual: 1 }
+            IrDifference::SectionCount {
+                expected: 0,
+                actual: 1
+            }
         ));
     }
 }

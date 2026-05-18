@@ -60,12 +60,8 @@ impl META_RECTANGLE {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
-        record_size.consume(
-            bottom_rect_bytes
-                + right_rect_bytes
-                + top_rect_bytes
-                + left_rect_bytes,
-        );
+        record_size
+            .consume(bottom_rect_bytes + right_rect_bytes + top_rect_bytes + left_rect_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 

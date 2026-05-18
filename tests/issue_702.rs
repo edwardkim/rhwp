@@ -22,11 +22,10 @@ use std::path::Path;
 fn shortcut_distribute_short_column_split() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/basic/shortcut.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse shortcut.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse shortcut.hwp");
 
     let page_count = doc.page_count();
     assert!(
@@ -44,11 +43,10 @@ fn shortcut_page2_has_three_sections() {
     // 직접 substring 검색 대신 글자 수와 동일 y 좌표 클러스터링을 사용한다.
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/basic/shortcut.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse shortcut.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse shortcut.hwp");
 
     let svg = doc
         .render_page_svg_native(1)
@@ -59,13 +57,21 @@ fn shortcut_page2_has_three_sections() {
     let mut by_y: BTreeMap<i32, Vec<(f64, String)>> = BTreeMap::new();
     let mut i = 0;
     while i < svg.len() {
-        let Some(rel) = svg[i..].find("<text ") else { break };
+        let Some(rel) = svg[i..].find("<text ") else {
+            break;
+        };
         let abs = i + rel;
         let after = &svg[abs + 6..];
-        let Some(close) = after.find('>') else { i = abs + 6; continue };
+        let Some(close) = after.find('>') else {
+            i = abs + 6;
+            continue;
+        };
         let attrs = &after[..close];
         let content_start = abs + 6 + close + 1;
-        let Some(end_rel) = svg[content_start..].find("</text>") else { i = abs + 6; continue };
+        let Some(end_rel) = svg[content_start..].find("</text>") else {
+            i = abs + 6;
+            continue;
+        };
         let content = &svg[content_start..content_start + end_rel];
         // SVG renderer 는 `transform="translate(x,y) scale(..)"` 로 좌표 인코딩.
         let xy = attrs.find("translate(").and_then(|p| {
@@ -79,7 +85,9 @@ fn shortcut_page2_has_three_sections() {
         });
         if let Some((x, y)) = xy {
             let y_key = (y * 10.0).round() as i32;
-            by_y.entry(y_key).or_default().push((x, content.to_string()));
+            by_y.entry(y_key)
+                .or_default()
+                .push((x, content.to_string()));
         }
         i = content_start + end_rel + 7;
     }
@@ -89,8 +97,12 @@ fn shortcut_page2_has_three_sections() {
     for (_y, mut chars) in by_y {
         chars.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         let line: String = chars.iter().map(|(_, s)| s.as_str()).collect();
-        if line.contains("파일") { has_file = true; }
-        if line.contains("편집") { has_edit = true; }
+        if line.contains("파일") {
+            has_file = true;
+        }
+        if line.contains("편집") {
+            has_edit = true;
+        }
     }
 
     assert!(

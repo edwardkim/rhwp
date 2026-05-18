@@ -4,10 +4,10 @@
 
 use super::ast::*;
 use super::symbols::{
-    self, is_big_operator, is_function, is_structure_command,
-    lookup_symbol, lookup_function, DECORATIONS, FONT_STYLES, FontStyleKind,
+    self, is_big_operator, is_function, is_structure_command, lookup_function, lookup_symbol,
+    FontStyleKind, DECORATIONS, FONT_STYLES,
 };
-use super::tokenizer::{Token, TokenType, tokenize};
+use super::tokenizer::{tokenize, Token, TokenType};
 
 /// 수식 파서
 pub struct EqParser {
@@ -25,11 +25,17 @@ impl EqParser {
     }
 
     fn current_type(&self) -> TokenType {
-        self.tokens.get(self.pos).map(|t| t.ty).unwrap_or(TokenType::Eof)
+        self.tokens
+            .get(self.pos)
+            .map(|t| t.ty)
+            .unwrap_or(TokenType::Eof)
     }
 
     fn current_value(&self) -> &str {
-        self.tokens.get(self.pos).map(|t| t.value.as_str()).unwrap_or("")
+        self.tokens
+            .get(self.pos)
+            .map(|t| t.value.as_str())
+            .unwrap_or("")
     }
 
     fn at_end(&self) -> bool {
@@ -190,8 +196,7 @@ impl EqParser {
                 let group = self.parse_group();
                 self.try_parse_scripts(group)
             }
-            TokenType::LParen | TokenType::RParen |
-            TokenType::LBracket | TokenType::RBracket => {
+            TokenType::LParen | TokenType::RParen | TokenType::LBracket | TokenType::RBracket => {
                 self.pos += 1;
                 EqNode::Symbol(val)
             }
@@ -252,7 +257,10 @@ impl EqParser {
         }
 
         // LaTeX spacing: \quad, \qquad, \,, \:, \;, \!
-        if matches!(cu, "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE") {
+        if matches!(
+            cu,
+            "QUAD" | "QQUAD" | "THINSPACE" | "MEDSPACE" | "THICKSPACE" | "NEGSPACE" | "ENSPACE"
+        ) {
             let space = lookup_symbol(cu).unwrap_or(" ");
             return EqNode::Text(space.to_string());
         }
@@ -290,10 +298,22 @@ impl EqParser {
         }
 
         // 적분 기호 — nolimits: 큰 기호 + 일반 첨자 (BigOp이 아닌 MathSymbol로 처리)
-        if matches!(cu, "INT" | "INTEGRAL" | "SMALLINT" | "DINT" | "TINT"
-            | "OINT" | "SMALLOINT" | "ODINT" | "OTINT")
-        {
-            let symbol = lookup_symbol(cu).or_else(|| lookup_symbol(cmd)).unwrap_or("∫").to_string();
+        if matches!(
+            cu,
+            "INT"
+                | "INTEGRAL"
+                | "SMALLINT"
+                | "DINT"
+                | "TINT"
+                | "OINT"
+                | "SMALLOINT"
+                | "ODINT"
+                | "OTINT"
+        ) {
+            let symbol = lookup_symbol(cu)
+                .or_else(|| lookup_symbol(cmd))
+                .unwrap_or("∫")
+                .to_string();
             let node = EqNode::MathSymbol(symbol);
             return self.try_parse_scripts(node);
         }
@@ -615,9 +635,7 @@ impl EqParser {
                 break;
             }
             // Thin 공백(`) 뒤에 첨자가 바로 오는 경우 공백을 건너뛰기
-            if self.current_type() == TokenType::Whitespace
-                && self.current_value() == "`"
-            {
+            if self.current_type() == TokenType::Whitespace && self.current_value() == "`" {
                 let next_pos = self.pos + 1;
                 if next_pos < self.tokens.len() {
                     let next_ty = self.tokens[next_pos].ty;
@@ -679,7 +697,10 @@ impl EqParser {
                             lr_depth += 1;
                         } else if Self::cmd_eq(&t.value, "RIGHT") {
                             lr_depth -= 1;
-                        } else if Self::cmd_eq(&t.value, "OVER") && brace_depth == 0 && lr_depth == 0 {
+                        } else if Self::cmd_eq(&t.value, "OVER")
+                            && brace_depth == 0
+                            && lr_depth == 0
+                        {
                             found = Some(i);
                             break;
                         }
@@ -726,7 +747,9 @@ impl EqParser {
             if self.current_type() == TokenType::RBrace {
                 break;
             }
-            if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+            if self.current_type() == TokenType::Command
+                && Self::cmd_eq(self.current_value(), "RIGHT")
+            {
                 break;
             }
             after_nodes.push(self.parse_element());
@@ -1022,7 +1045,9 @@ impl EqParser {
             if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
                 self.pos += 1;
                 let left = EqNode::Row(current_left).simplify();
-                let right = current_right.map(|r| EqNode::Row(r).simplify()).unwrap_or(EqNode::Empty);
+                let right = current_right
+                    .map(|r| EqNode::Row(r).simplify())
+                    .unwrap_or(EqNode::Empty);
                 eq_rows.push((left, right));
                 current_left = Vec::new();
                 current_right = None;
@@ -1037,7 +1062,9 @@ impl EqParser {
                 } else {
                     self.try_consume_infix_over_atop(&mut current_left)
                 };
-                if consumed { continue; }
+                if consumed {
+                    continue;
+                }
                 if let Some(ref mut right) = current_right {
                     right.push(self.parse_element());
                 } else {
@@ -1048,7 +1075,9 @@ impl EqParser {
 
         if !current_left.is_empty() || current_right.is_some() {
             let left = EqNode::Row(current_left).simplify();
-            let right = current_right.map(|r| EqNode::Row(r).simplify()).unwrap_or(EqNode::Empty);
+            let right = current_right
+                .map(|r| EqNode::Row(r).simplify())
+                .unwrap_or(EqNode::Empty);
             eq_rows.push((left, right));
         }
 
@@ -1162,7 +1191,10 @@ impl EqParser {
             } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
                 // && (연속 &): 큰 탭 공간으로 조건 부분 분리
                 let mut amp_count = 0;
-                while self.pos < end && self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                while self.pos < end
+                    && self.current_type() == TokenType::Whitespace
+                    && self.current_value() == "&"
+                {
                     amp_count += 1;
                     self.pos += 1;
                 }
@@ -1239,7 +1271,8 @@ impl EqParser {
             if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
                 // 새 행: 현재 행 완료
                 let left = EqNode::Row(current_left).simplify();
-                let right = current_right.map(|r| EqNode::Row(r).simplify())
+                let right = current_right
+                    .map(|r| EqNode::Row(r).simplify())
                     .unwrap_or(EqNode::Empty);
                 rows.push((left, right));
                 current_left = Vec::new();
@@ -1249,7 +1282,10 @@ impl EqParser {
                 // & 구분: 왼쪽→오른쪽 전환
                 // 연속 &&: 큰 탭 공간 (조건 부분 분리용)
                 let mut amp_count = 0;
-                while self.pos < end && self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
+                while self.pos < end
+                    && self.current_type() == TokenType::Whitespace
+                    && self.current_value() == "&"
+                {
                     amp_count += 1;
                     self.pos += 1;
                 }
@@ -1288,7 +1324,8 @@ impl EqParser {
         // 마지막 행 추가
         if !current_left.is_empty() || current_right.is_some() {
             let left = EqNode::Row(current_left).simplify();
-            let right = current_right.map(|r| EqNode::Row(r).simplify())
+            let right = current_right
+                .map(|r| EqNode::Row(r).simplify())
                 .unwrap_or(EqNode::Empty);
             rows.push((left, right));
         }
@@ -1309,7 +1346,8 @@ impl EqParser {
         let body = self.parse_expression();
 
         // RIGHT 건너뛰기
-        if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+        if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT")
+        {
             self.pos += 1;
         }
 
@@ -1333,9 +1371,12 @@ impl EqParser {
         let val = self.current_value().to_string();
 
         match ty {
-            TokenType::LParen | TokenType::RParen |
-            TokenType::LBracket | TokenType::RBracket |
-            TokenType::LBrace | TokenType::RBrace => {
+            TokenType::LParen
+            | TokenType::RParen
+            | TokenType::LBracket
+            | TokenType::RBracket
+            | TokenType::LBrace
+            | TokenType::RBrace => {
                 self.pos += 1;
                 val
             }
@@ -1416,7 +1457,9 @@ impl EqParser {
         // 분수 뒤 나머지 요소
         let mut after_nodes = Vec::new();
         while self.pos < end && !self.at_end() {
-            if self.current_type() == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT") {
+            if self.current_type() == TokenType::Command
+                && Self::cmd_eq(self.current_value(), "RIGHT")
+            {
                 break;
             }
             after_nodes.push(self.parse_element());
@@ -1478,8 +1521,8 @@ pub fn parse(script: &str) -> EqNode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::symbols::{DecoKind, FontStyleKind};
+    use super::*;
 
     #[test]
     fn test_simple_fraction() {
@@ -1656,7 +1699,8 @@ mod tests {
     #[test]
     fn test_sample_eq01_script() {
         // samples/eq-01.hwp의 첫 번째 수식
-        let script = "평점=입찰가격평가~배점한도 TIMES  LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )";
+        let script =
+            "평점=입찰가격평가~배점한도 TIMES  LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )";
         let ast = parse(script);
         // 파싱 실패 없이 AST 생성되면 성공
         match &ast {
@@ -1684,8 +1728,11 @@ mod tests {
         assert!(ast_str.contains("cos"), "cos가 있어야 함");
         assert!(ast_str.contains("Paren"), "Paren이 있어야 함");
         // Fraction{1,5}가 독립적으로 존재해야 함
-        assert!(ast_str.contains("Fraction { numer: Number(\"1\"), denom: Number(\"5\")"),
-            "Fraction{{1,5}}가 있어야 함: {}", ast_str);
+        assert!(
+            ast_str.contains("Fraction { numer: Number(\"1\"), denom: Number(\"5\")"),
+            "Fraction{{1,5}}가 있어야 함: {}",
+            ast_str
+        );
     }
 
     #[test]
@@ -1704,8 +1751,16 @@ mod tests {
     fn test_latex_quadratic_slice() {
         let ast = parse(r"x=\frac{-b \pm \sqrt{b^2}}{2a}");
         let ast_str = format!("{:?}", ast);
-        assert!(ast_str.contains("Fraction"), "Fraction이 있어야 함: {}", ast_str);
-        assert!(ast_str.contains("MathSymbol(\"±\")"), "± 기호가 있어야 함: {}", ast_str);
+        assert!(
+            ast_str.contains("Fraction"),
+            "Fraction이 있어야 함: {}",
+            ast_str
+        );
+        assert!(
+            ast_str.contains("MathSymbol(\"±\")"),
+            "± 기호가 있어야 함: {}",
+            ast_str
+        );
         assert!(ast_str.contains("Sqrt"), "Sqrt가 있어야 함: {}", ast_str);
     }
 
@@ -1732,7 +1787,11 @@ fn test_lim_fraction() {
     // lim_{h→0} 가 있어야 함
     assert!(ast_str.contains("Limit"), "Limit가 있어야 함: {}", ast_str);
     // Fraction이 있어야 함
-    assert!(ast_str.contains("Fraction"), "Fraction이 있어야 함: {}", ast_str);
+    assert!(
+        ast_str.contains("Fraction"),
+        "Fraction이 있어야 함: {}",
+        ast_str
+    );
 }
 
 #[cfg(test)]
@@ -1744,7 +1803,10 @@ fn test_bar_rm_it() {
     let ast_str = format!("{:?}", ast);
     assert!(ast_str.contains("Decoration"), "Decoration이 있어야 함");
     // }} 가 텍스트로 나오면 안 됨
-    assert!(!ast_str.contains(r#"Text("}")"#), "brace가 텍스트로 나오면 안 됨");
+    assert!(
+        !ast_str.contains(r#"Text("}")"#),
+        "brace가 텍스트로 나오면 안 됨"
+    );
 }
 
 #[cfg(test)]
@@ -1771,98 +1833,210 @@ fn test_rm_p_left() {
 
 #[cfg(test)]
 mod latex_compat_tests {
+    use super::symbols::{DecoKind, FontStyleKind};
     use super::*;
-    use super::symbols::{FontStyleKind, DecoKind};
 
     #[test]
     fn test_latex_dfrac_tfrac() {
         for cmd in [r"\dfrac{1}{2}", r"\tfrac{1}{2}"] {
             let ast = parse(cmd);
-            assert!(matches!(&ast, EqNode::Fraction { .. }), "{cmd}: Expected Fraction, got {:?}", ast);
+            assert!(
+                matches!(&ast, EqNode::Fraction { .. }),
+                "{cmd}: Expected Fraction, got {:?}",
+                ast
+            );
         }
     }
 
     #[test]
     fn test_latex_mathrm() {
         let ast = parse(r"\mathrm{kg}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Roman, .. }),
-            r"Expected FontStyle(Roman) for \mathrm, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::FontStyle {
+                    style: FontStyleKind::Roman,
+                    ..
+                }
+            ),
+            r"Expected FontStyle(Roman) for \mathrm, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_mathbf() {
         let ast = parse(r"\mathbf{F}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Bold, .. }),
-            r"Expected FontStyle(Bold) for \mathbf, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::FontStyle {
+                    style: FontStyleKind::Bold,
+                    ..
+                }
+            ),
+            r"Expected FontStyle(Bold) for \mathbf, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_mathbb() {
         let ast = parse(r"\mathbb{R}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Blackboard, .. }),
-            r"Expected FontStyle(Blackboard) for \mathbb, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::FontStyle {
+                    style: FontStyleKind::Blackboard,
+                    ..
+                }
+            ),
+            r"Expected FontStyle(Blackboard) for \mathbb, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_mathcal() {
         let ast = parse(r"\mathcal{L}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Calligraphy, .. }),
-            r"Expected FontStyle(Calligraphy) for \mathcal, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::FontStyle {
+                    style: FontStyleKind::Calligraphy,
+                    ..
+                }
+            ),
+            r"Expected FontStyle(Calligraphy) for \mathcal, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_mathfrak_mathsf_mathtt() {
         let ast = parse(r"\mathfrak{g}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Fraktur, .. }));
+        assert!(matches!(
+            &ast,
+            EqNode::FontStyle {
+                style: FontStyleKind::Fraktur,
+                ..
+            }
+        ));
 
         let ast = parse(r"\mathsf{AB}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::SansSerif, .. }));
+        assert!(matches!(
+            &ast,
+            EqNode::FontStyle {
+                style: FontStyleKind::SansSerif,
+                ..
+            }
+        ));
 
         let ast = parse(r"\mathtt{code}");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Monospace, .. }));
+        assert!(matches!(
+            &ast,
+            EqNode::FontStyle {
+                style: FontStyleKind::Monospace,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn test_latex_text() {
         let ast = parse(r"\text{if }");
-        assert!(matches!(&ast, EqNode::FontStyle { style: FontStyleKind::Roman, .. }),
-            r"Expected FontStyle(Roman) for \text, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::FontStyle {
+                    style: FontStyleKind::Roman,
+                    ..
+                }
+            ),
+            r"Expected FontStyle(Roman) for \text, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_overline_lowercase() {
         let ast = parse(r"\overline{AB}");
-        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Overline, .. }),
-            r"Expected Decoration(Overline) for \overline, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::Decoration {
+                    kind: DecoKind::Overline,
+                    ..
+                }
+            ),
+            r"Expected Decoration(Overline) for \overline, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_underline_lowercase() {
         let ast = parse(r"\underline{x}");
-        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Underline, .. }),
-            r"Expected Decoration(Underline) for \underline, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::Decoration {
+                    kind: DecoKind::Underline,
+                    ..
+                }
+            ),
+            r"Expected Decoration(Underline) for \underline, got {:?}",
+            ast
+        );
     }
 
     #[test]
     fn test_latex_widehat_widetilde() {
         let ast = parse(r"\widehat{ABC}");
-        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Hat, .. }));
+        assert!(matches!(
+            &ast,
+            EqNode::Decoration {
+                kind: DecoKind::Hat,
+                ..
+            }
+        ));
 
         let ast = parse(r"\widetilde{x}");
-        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Tilde, .. }));
+        assert!(matches!(
+            &ast,
+            EqNode::Decoration {
+                kind: DecoKind::Tilde,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn test_latex_overrightarrow() {
         let ast = parse(r"\overrightarrow{AB}");
-        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::Vec, .. }));
+        assert!(matches!(
+            &ast,
+            EqNode::Decoration {
+                kind: DecoKind::Vec,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn test_latex_not_lowercase() {
         let ast = parse(r"\not{=}");
-        assert!(matches!(&ast, EqNode::Decoration { kind: DecoKind::StrikeThrough, .. }),
-            r"Expected Decoration(StrikeThrough) for \not, got {:?}", ast);
+        assert!(
+            matches!(
+                &ast,
+                EqNode::Decoration {
+                    kind: DecoKind::StrikeThrough,
+                    ..
+                }
+            ),
+            r"Expected Decoration(StrikeThrough) for \not, got {:?}",
+            ast
+        );
     }
 
     #[test]
@@ -1877,8 +2051,11 @@ mod latex_compat_tests {
     #[test]
     fn test_latex_binom() {
         let ast = parse(r"\binom{n}{k}");
-        assert!(matches!(&ast, EqNode::Paren { left, right, .. } if left == "(" && right == ")"),
-            r"Expected Paren for \binom, got {:?}", ast);
+        assert!(
+            matches!(&ast, EqNode::Paren { left, right, .. } if left == "(" && right == ")"),
+            r"Expected Paren for \binom, got {:?}",
+            ast
+        );
     }
 
     #[test]
@@ -1886,9 +2063,21 @@ mod latex_compat_tests {
         assert!(matches!(parse("1 over 2"), EqNode::Fraction { .. }));
         assert!(matches!(parse("SQRT x"), EqNode::Sqrt { .. }));
         assert!(matches!(parse("SUM_{i=0}^n"), EqNode::BigOp { .. }));
-        assert!(matches!(parse("rm abc"), EqNode::FontStyle { style: FontStyleKind::Roman, .. }));
+        assert!(matches!(
+            parse("rm abc"),
+            EqNode::FontStyle {
+                style: FontStyleKind::Roman,
+                ..
+            }
+        ));
         assert!(matches!(parse("hat x"), EqNode::Decoration { .. }));
-        assert!(matches!(parse("OVERLINE{abc}"), EqNode::Decoration { kind: DecoKind::Overline, .. }));
+        assert!(matches!(
+            parse("OVERLINE{abc}"),
+            EqNode::Decoration {
+                kind: DecoKind::Overline,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -1944,7 +2133,11 @@ mod latex_compat_tests {
         use super::super::tokenizer::{tokenize, TokenType};
         let tokens = tokenize(r"a \\ b");
         let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
-        assert!(types.contains(&TokenType::Whitespace), "\\\\는 Whitespace(#)로 토큰화돼야 함: {:?}", tokens);
+        assert!(
+            types.contains(&TokenType::Whitespace),
+            "\\\\는 Whitespace(#)로 토큰화돼야 함: {:?}",
+            tokens
+        );
     }
 
     #[test]
@@ -1955,7 +2148,10 @@ mod latex_compat_tests {
                 assert_eq!(*style, FontStyleKind::Roman);
                 assert!(format!("{:?}", body).contains("argmax"));
             }
-            _ => panic!(r"Expected FontStyle(Roman) for \operatorname, got {:?}", ast),
+            _ => panic!(
+                r"Expected FontStyle(Roman) for \operatorname, got {:?}",
+                ast
+            ),
         }
     }
 
@@ -1963,14 +2159,20 @@ mod latex_compat_tests {
     fn test_latex_spacing_quad() {
         let ast = parse(r"a \quad b");
         let s = format!("{:?}", ast);
-        assert!(s.contains("Text") || s.contains("Symbol"), r"\quad should produce a text node: {}", s);
+        assert!(
+            s.contains("Text") || s.contains("Symbol"),
+            r"\quad should produce a text node: {}",
+            s
+        );
     }
 
     #[test]
     fn test_latex_thin_space() {
         use super::super::tokenizer::{tokenize, TokenType};
         let tokens = tokenize(r"a \, b");
-        let has_cmd = tokens.iter().any(|t| t.ty == TokenType::Command && t.value == "THINSPACE");
+        let has_cmd = tokens
+            .iter()
+            .any(|t| t.ty == TokenType::Command && t.value == "THINSPACE");
         assert!(has_cmd, r"\, should tokenize as THINSPACE: {:?}", tokens);
     }
 
@@ -2014,13 +2216,21 @@ mod latex_compat_tests {
     fn test_latex_leq_geq() {
         let ast = parse(r"a \leq b \geq c");
         let s = format!("{:?}", ast);
-        assert!(s.contains("≤") && s.contains("≥"), r"\leq \geq should produce ≤ ≥: {}", s);
+        assert!(
+            s.contains("≤") && s.contains("≥"),
+            r"\leq \geq should produce ≤ ≥: {}",
+            s
+        );
     }
 
     #[test]
     fn test_latex_phantom() {
         let ast = parse(r"\phantom{x}");
-        assert!(!matches!(ast, EqNode::Empty), r"\phantom should produce a space node, not Empty: {:?}", ast);
+        assert!(
+            !matches!(ast, EqNode::Empty),
+            r"\phantom should produce a space node, not Empty: {:?}",
+            ast
+        );
     }
 
     #[test]
@@ -2053,7 +2263,11 @@ mod latex_compat_tests {
         match &ast {
             EqNode::Superscript { sup, .. } => {
                 let s = format!("{:?}", sup);
-                assert!(s.contains("def"), r"\stackrel sup should contain 'def': {}", s);
+                assert!(
+                    s.contains("def"),
+                    r"\stackrel sup should contain 'def': {}",
+                    s
+                );
             }
             _ => panic!(r"Expected Superscript for \stackrel, got {:?}", ast),
         }
@@ -2098,7 +2312,11 @@ mod latex_compat_tests {
         use super::super::tokenizer::{tokenize, TokenType};
         let tokens = tokenize(r"\left\{ x \right\}");
         let types: Vec<_> = tokens.iter().map(|t| t.ty).collect();
-        assert!(types.contains(&TokenType::LBrace), r"\{{ should tokenize as LBrace: {:?}", tokens);
+        assert!(
+            types.contains(&TokenType::LBrace),
+            r"\{{ should tokenize as LBrace: {:?}",
+            tokens
+        );
     }
 
     #[test]
@@ -2127,7 +2345,11 @@ mod latex_compat_tests {
                 _ => false,
             }
         }
-        assert!(has_infinity(&ast), "hwpeq 'inf' must produce ∞, not function text: {:?}", ast);
+        assert!(
+            has_infinity(&ast),
+            "hwpeq 'inf' must produce ∞, not function text: {:?}",
+            ast
+        );
     }
 
     #[test]
@@ -2140,6 +2362,10 @@ mod latex_compat_tests {
                 _ => false,
             }
         }
-        assert!(contains_degree(&ast), "hwpeq 'deg' must produce °, not function text: {:?}", ast);
+        assert!(
+            contains_degree(&ast),
+            "hwpeq 'deg' must produce °, not function text: {:?}",
+            ast
+        );
     }
 }

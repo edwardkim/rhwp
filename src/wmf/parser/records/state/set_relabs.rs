@@ -35,6 +35,9 @@ impl META_SETRELABS {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function })
+        Ok(Self {
+            record_size,
+            record_function,
+        })
     }
 }

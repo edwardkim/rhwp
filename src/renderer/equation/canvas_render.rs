@@ -3,10 +3,10 @@
 //! LayoutBox를 HTML5 Canvas 2D API로 직접 렌더링한다.
 //! WASM 환경에서만 컴파일된다.
 
-use web_sys::CanvasRenderingContext2d;
+use super::ast::MatrixStyle;
 use super::layout::*;
 use super::symbols::{DecoKind, FontStyleKind};
-use super::ast::MatrixStyle;
+use web_sys::CanvasRenderingContext2d;
 
 /// 수식을 Canvas에 렌더링
 pub fn render_equation_canvas(
@@ -19,7 +19,16 @@ pub fn render_equation_canvas(
 ) {
     // 진입점 default: italic=true (hwpeq 변수 기본 스타일).
     // FontStyle::Roman(`rm`) 적용 영역에서는 자식 렌더링 시 italic=false 로 전환된다.
-    render_box(ctx, layout, origin_x, origin_y, color, base_font_size, true, false);
+    render_box(
+        ctx,
+        layout,
+        origin_x,
+        origin_y,
+        color,
+        base_font_size,
+        true,
+        false,
+    );
 }
 
 fn render_box(
@@ -48,9 +57,11 @@ fn render_box(
             let fi = fs;
             // CJK 문자는 italic 미적용. FontStyle::Roman(`rm`)으로 italic=false 가
             // 전달된 경우에도 italic 미적용 (svg_render.rs Text arm 과 동일 정책).
-            let has_cjk = text.chars().any(|c| matches!(c,
-                '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
-            ));
+            let has_cjk = text.chars().any(|c| {
+                matches!(c,
+                    '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
+                )
+            });
             set_font(ctx, fi, !has_cjk && italic, bold);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(text, x, y + lb.baseline);
@@ -75,7 +86,11 @@ fn render_box(
             // [Issue #900] svg_render.rs MathSymbol arm 과 동기화 (commit 292dbbef).
             // 적분 기호는 layout 에서 BIG_OP_SCALE 적용된 lb.height 를 font-size 로 사용,
             // 그 외 MathSymbol 은 부모 전달 fs.
-            let fi = if super::layout::is_integral_symbol(text) { lb.height } else { fs };
+            let fi = if super::layout::is_integral_symbol(text) {
+                lb.height
+            } else {
+                fs
+            };
             set_font(ctx, fi, false, false);
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(text, x, y + lb.baseline);
@@ -192,7 +207,16 @@ fn render_box(
             };
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(ctx, bracket_chars.0, x, y, fs * 0.3, lb.height, color, fs);
-                draw_stretch_bracket(ctx, bracket_chars.1, x + lb.width - fs * 0.3, y, fs * 0.3, lb.height, color, fs);
+                draw_stretch_bracket(
+                    ctx,
+                    bracket_chars.1,
+                    x + lb.width - fs * 0.3,
+                    y,
+                    fs * 0.3,
+                    lb.height,
+                    color,
+                    fs,
+                );
             }
             for row in cells {
                 for cell in row {
@@ -246,7 +270,9 @@ fn render_box(
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
-                FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => (false, false),
+                FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => {
+                    (false, false)
+                }
                 FontStyleKind::Italic => (true, bold),
                 FontStyleKind::Bold => (italic, true),
                 FontStyleKind::Blackboard => (false, true),
@@ -275,7 +301,13 @@ fn set_font(ctx: &CanvasRenderingContext2d, size: f64, italic: bool, bold: bool)
 /// 늘림 괄호 렌더링
 fn draw_stretch_bracket(
     ctx: &CanvasRenderingContext2d,
-    bracket: &str, x: f64, y: f64, w: f64, h: f64, color: &str, fs: f64,
+    bracket: &str,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    color: &str,
+    fs: f64,
 ) {
     let mid_x = x + w / 2.0;
     let stroke_w = fs * 0.04;
@@ -316,8 +348,18 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.move_to(mid_x + w * 0.2, y);
             let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y, mid_x - w * 0.1, y + qh);
-            let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.3, y + qh * 2.0);
-            let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.1, y + qh * 3.0);
+            let _ = ctx.quadratic_curve_to(
+                mid_x - w * 0.1,
+                y + qh * 2.0,
+                mid_x - w * 0.3,
+                y + qh * 2.0,
+            );
+            let _ = ctx.quadratic_curve_to(
+                mid_x - w * 0.1,
+                y + qh * 2.0,
+                mid_x - w * 0.1,
+                y + qh * 3.0,
+            );
             let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + h, mid_x + w * 0.2, y + h);
             ctx.stroke();
         }
@@ -326,8 +368,18 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.move_to(mid_x - w * 0.2, y);
             let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y, mid_x + w * 0.1, y + qh);
-            let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.3, y + qh * 2.0);
-            let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.1, y + qh * 3.0);
+            let _ = ctx.quadratic_curve_to(
+                mid_x + w * 0.1,
+                y + qh * 2.0,
+                mid_x + w * 0.3,
+                y + qh * 2.0,
+            );
+            let _ = ctx.quadratic_curve_to(
+                mid_x + w * 0.1,
+                y + qh * 2.0,
+                mid_x + w * 0.1,
+                y + qh * 3.0,
+            );
             let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + h, mid_x - w * 0.2, y + h);
             ctx.stroke();
         }
@@ -351,7 +403,12 @@ fn draw_stretch_bracket(
 /// 장식 렌더링
 fn draw_decoration(
     ctx: &CanvasRenderingContext2d,
-    kind: DecoKind, mid_x: f64, y: f64, width: f64, color: &str, fs: f64,
+    kind: DecoKind,
+    mid_x: f64,
+    y: f64,
+    width: f64,
+    color: &str,
+    fs: f64,
 ) {
     let stroke_w = fs * 0.03;
     let half_w = width / 2.0;
@@ -389,7 +446,12 @@ fn draw_decoration(
             ctx.begin_path();
             ctx.move_to(mid_x - half_w * 0.6, ty);
             let _ = ctx.quadratic_curve_to(mid_x - half_w * 0.2, ty - fs * 0.08, mid_x, ty);
-            let _ = ctx.quadratic_curve_to(mid_x + half_w * 0.2, ty + fs * 0.08, mid_x + half_w * 0.6, ty);
+            let _ = ctx.quadratic_curve_to(
+                mid_x + half_w * 0.2,
+                ty + fs * 0.08,
+                mid_x + half_w * 0.6,
+                ty,
+            );
             ctx.stroke();
         }
         DecoKind::Dot => {
@@ -402,10 +464,22 @@ fn draw_decoration(
             let gap = fs * 0.1;
             ctx.set_fill_style_str(color);
             ctx.begin_path();
-            let _ = ctx.arc(mid_x - gap, y + fs * 0.06, fs * 0.03, 0.0, std::f64::consts::TAU);
+            let _ = ctx.arc(
+                mid_x - gap,
+                y + fs * 0.06,
+                fs * 0.03,
+                0.0,
+                std::f64::consts::TAU,
+            );
             ctx.fill();
             ctx.begin_path();
-            let _ = ctx.arc(mid_x + gap, y + fs * 0.06, fs * 0.03, 0.0, std::f64::consts::TAU);
+            let _ = ctx.arc(
+                mid_x + gap,
+                y + fs * 0.06,
+                fs * 0.03,
+                0.0,
+                std::f64::consts::TAU,
+            );
             ctx.fill();
         }
         DecoKind::Underline | DecoKind::Under => {

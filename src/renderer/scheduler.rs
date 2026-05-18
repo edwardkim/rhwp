@@ -4,7 +4,7 @@
 //! - **RenderWorker**: 렌더링 작업을 우선순위에 따라 실행
 //! - **RenderScheduler**: Observer와 Worker를 연결하여 효율적인 렌더링을 조율
 
-use super::render_tree::{PageRenderTree, BoundingBox};
+use super::render_tree::{BoundingBox, PageRenderTree};
 
 /// 렌더링 작업 우선순위
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -215,7 +215,11 @@ impl RenderScheduler {
     /// 현재 뷰포트에서 보이는 페이지 인덱스 목록
     pub fn visible_pages(&self) -> Vec<u32> {
         if self.page_offsets.is_empty() {
-            return if self.total_pages > 0 { vec![0] } else { vec![] };
+            return if self.total_pages > 0 {
+                vec![0]
+            } else {
+                vec![]
+            };
         }
 
         let vp_top = self.viewport.scroll_y;
@@ -241,7 +245,9 @@ impl RenderScheduler {
     pub fn next_task(&mut self) -> Option<&RenderTask> {
         // Pending 작업 중 우선순위가 가장 높은 것
         self.task_queue.sort_by_key(|t| t.priority);
-        self.task_queue.iter().find(|t| t.status == TaskStatus::Pending)
+        self.task_queue
+            .iter()
+            .find(|t| t.status == TaskStatus::Pending)
     }
 
     /// 작업 완료 마킹
@@ -253,14 +259,16 @@ impl RenderScheduler {
 
     /// 완료/취소된 작업 정리
     pub fn cleanup_tasks(&mut self) {
-        self.task_queue.retain(|t| {
-            t.status == TaskStatus::Pending || t.status == TaskStatus::InProgress
-        });
+        self.task_queue
+            .retain(|t| t.status == TaskStatus::Pending || t.status == TaskStatus::InProgress);
     }
 
     /// 대기 중인 작업 수
     pub fn pending_count(&self) -> usize {
-        self.task_queue.iter().filter(|t| t.status == TaskStatus::Pending).count()
+        self.task_queue
+            .iter()
+            .filter(|t| t.status == TaskStatus::Pending)
+            .count()
     }
 
     // --- 내부 메서드 ---
@@ -292,14 +300,15 @@ impl RenderScheduler {
     fn enqueue_task(&mut self, page_index: u32, priority: RenderPriority) {
         let id = self.next_task_id;
         self.next_task_id += 1;
-        self.task_queue.push(RenderTask::new(id, page_index, priority));
+        self.task_queue
+            .push(RenderTask::new(id, page_index, priority));
     }
 
     /// 특정 페이지에 대기 중인 작업이 있는지 확인
     fn has_pending_task(&self, page_index: u32) -> bool {
-        self.task_queue.iter().any(|t| {
-            t.page_index == page_index && t.status == TaskStatus::Pending
-        })
+        self.task_queue
+            .iter()
+            .any(|t| t.page_index == page_index && t.status == TaskStatus::Pending)
     }
 
     /// 모든 대기 작업 취소
@@ -318,9 +327,9 @@ impl RenderScheduler {
             RenderPriority::Immediate
         } else {
             // 인접 페이지이면 Prefetch
-            let near_visible = visible.iter().any(|&v| {
-                page_index.abs_diff(v) <= self.prefetch_range
-            });
+            let near_visible = visible
+                .iter()
+                .any(|&v| page_index.abs_diff(v) <= self.prefetch_range);
             if near_visible {
                 RenderPriority::Prefetch
             } else {
@@ -444,7 +453,13 @@ mod tests {
         let before = scheduler.task_queue.len();
         scheduler.cleanup_tasks();
         // 완료된 작업은 제거됨
-        assert!(scheduler.task_queue.len() < before || scheduler.task_queue.iter().all(|t| t.status != TaskStatus::Completed));
+        assert!(
+            scheduler.task_queue.len() < before
+                || scheduler
+                    .task_queue
+                    .iter()
+                    .all(|t| t.status != TaskStatus::Completed)
+        );
     }
 
     #[test]

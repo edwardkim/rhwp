@@ -42,8 +42,7 @@ impl META_SETROP2 {
             crate::wmf::parser::RecordType::META_SETROP2,
         )?;
 
-        let (draw_mode, draw_mode_bytes) =
-            crate::wmf::parser::BinaryRasterOperation::parse(buf)?;
+        let (draw_mode, draw_mode_bytes) = crate::wmf::parser::BinaryRasterOperation::parse(buf)?;
         record_size.consume(draw_mode_bytes);
 
         let reserved = if record_size.byte_count() > 8 {
@@ -57,6 +56,11 @@ impl META_SETROP2 {
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 
-        Ok(Self { record_size, record_function, draw_mode, reserved })
+        Ok(Self {
+            record_size,
+            record_function,
+            draw_mode,
+            reserved,
+        })
     }
 }

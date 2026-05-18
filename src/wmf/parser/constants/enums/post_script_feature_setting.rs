@@ -2,17 +2,7 @@
 /// retrieve information about specific features in a PostScript printer driver.
 /// (Windows NT 3.1, Windows NT 3.5, Windows NT 3.51, Windows 95, Windows 98,
 /// and Windows Millennium Edition: This functionality is not supported.)
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u32)]
 pub enum PostScriptFeatureSetting {
     /// Specifies the n-up printing (page layout) setting.

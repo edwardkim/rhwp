@@ -42,15 +42,17 @@ impl DeviceIndependentBitmap {
 
         //  TODO: Not written in [MS-WMF] how to parse this field.
         let undefined_space = vec![];
-        let (a_data, c) =
-            crate::wmf::parser::read_variable(buf, dib_header_info.size())?;
+        let (a_data, c) = crate::wmf::parser::read_variable(buf, dib_header_info.size())?;
         consumed_bytes += c;
 
         Ok((
             Self {
                 dib_header_info,
                 colors,
-                bitmap_buffer: BitmapBuffer { undefined_space, a_data },
+                bitmap_buffer: BitmapBuffer {
+                    undefined_space,
+                    a_data,
+                },
             },
             consumed_bytes,
         ))
@@ -84,11 +86,7 @@ impl Colors {
             dib_header_info,
             crate::wmf::parser::BitmapInfoHeader::Core { .. }
         ) {
-            return Self::parse_with_core_header(
-                buf,
-                color_usage,
-                dib_header_info,
-            );
+            return Self::parse_with_core_header(buf, color_usage, dib_header_info);
         }
 
         Self::parse_with_info_header(buf, color_usage, dib_header_info)
@@ -136,14 +134,12 @@ impl Colors {
             crate::wmf::parser::BitCount::BI_BITCOUNT_0 => unreachable!(),
             crate::wmf::parser::BitCount::BI_BITCOUNT_1
             | crate::wmf::parser::BitCount::BI_BITCOUNT_2
-            | crate::wmf::parser::BitCount::BI_BITCOUNT_3 => {
-                Self::parse_from_color_usage(
-                    buf,
-                    color_usage,
-                    dib_header_info.color_used() as usize,
-                    false,
-                )
-            }
+            | crate::wmf::parser::BitCount::BI_BITCOUNT_3 => Self::parse_from_color_usage(
+                buf,
+                color_usage,
+                dib_header_info.color_used() as usize,
+                false,
+            ),
             crate::wmf::parser::BitCount::BI_BITCOUNT_5 => {
                 // ignore result
                 let (_, bytes) = Self::parse_from_color_usage(
@@ -161,19 +157,13 @@ impl Colors {
                 match &dib_header_info {
                     crate::wmf::parser::BitmapInfoHeader::Core(_) => unreachable!(),
                     crate::wmf::parser::BitmapInfoHeader::Info(
-                        crate::wmf::parser::BitmapInfoHeaderInfo {
-                            compression, ..
-                        },
+                        crate::wmf::parser::BitmapInfoHeaderInfo { compression, .. },
                     )
                     | crate::wmf::parser::BitmapInfoHeader::V4(
-                        crate::wmf::parser::BitmapInfoHeaderV4 {
-                            compression, ..
-                        },
+                        crate::wmf::parser::BitmapInfoHeaderV4 { compression, .. },
                     )
                     | crate::wmf::parser::BitmapInfoHeader::V5(
-                        crate::wmf::parser::BitmapInfoHeaderV5 {
-                            compression, ..
-                        },
+                        crate::wmf::parser::BitmapInfoHeaderV5 { compression, .. },
                     ) => match compression {
                         crate::wmf::parser::Compression::BI_RGB => {
                             // ignore result

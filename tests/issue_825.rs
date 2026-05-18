@@ -13,9 +13,7 @@ use std::fs;
 use std::path::Path;
 
 /// 머리말 picture 위치를 IR 에서 찾아 path 5-tuple 반환.
-fn find_header_picture(hwp: &str)
-    -> Option<(usize, usize, usize, usize, usize)>
-{
+fn find_header_picture(hwp: &str) -> Option<(usize, usize, usize, usize, usize)> {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let path = Path::new(repo_root).join(hwp);
     let data = fs::read(&path).ok()?;
@@ -59,8 +57,8 @@ fn issue_825_header_picture_lookup_via_existing_api_fails() {
     let data = fs::read(&p).expect("read");
     let doc = HwpDocument::from_bytes(&data).expect("parse");
 
-    let (si, bi, hi, _ipi, _ici) = find_header_picture("samples/hwp3-sample11.hwp")
-        .expect("header picture must exist");
+    let (si, bi, hi, _ipi, _ici) =
+        find_header_picture("samples/hwp3-sample11.hwp").expect("header picture must exist");
 
     // 현행 API: (sec, body_para_idx, header_ctrl_idx) 호출 → 실패 (Header 컨트롤이지 Picture 아님)
     let result = doc.get_picture_properties_native(si, bi, hi);
@@ -80,8 +78,8 @@ fn issue_825_header_picture_lookup_via_new_api_succeeds() {
     let data = fs::read(&p).expect("read");
     let doc = HwpDocument::from_bytes(&data).expect("parse");
 
-    let (si, bi, hi, ipi, ici) = find_header_picture("samples/hwp3-sample11.hwp")
-        .expect("header picture must exist");
+    let (si, bi, hi, ipi, ici) =
+        find_header_picture("samples/hwp3-sample11.hwp").expect("header picture must exist");
 
     // 신규 API: (sec, outer_body_para, outer_header_ctrl, inner_para, inner_ctrl)
     let result = doc.get_header_footer_picture_properties_native(si, bi, hi, ipi, ici);

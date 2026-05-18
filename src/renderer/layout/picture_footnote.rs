@@ -1,21 +1,26 @@
 //! 그림/캡션 레이아웃 + 각주 영역 레이아웃
 
-use crate::model::paragraph::Paragraph;
-use crate::model::style::Alignment;
-use crate::model::shape::{Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
-use crate::model::footnote::{FootnoteShape, NumberFormat};
-use super::super::pagination::{FootnoteRef, FootnoteSource};
-use crate::model::control::Control;
-use crate::model::bin_data::BinDataContent;
-use super::super::render_tree::*;
-use super::super::page_layout::LayoutRect;
 use super::super::composer::{compose_paragraph, ComposedParagraph};
+use super::super::page_layout::LayoutRect;
+use super::super::pagination::{FootnoteRef, FootnoteSource};
+use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, StrokeDash, LineStyle, TextStyle, AutoNumberCounter, format_number, NumberFormat as NumFmt};
-use super::LayoutEngine;
+use super::super::{
+    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt, StrokeDash,
+    TextStyle,
+};
 use super::border_rendering::border_width_to_px;
+use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{extract_shape_transform, find_bin_data};
-use super::text_measurement::{resolved_to_text_style, estimate_text_width};
+use super::LayoutEngine;
+use crate::model::bin_data::BinDataContent;
+use crate::model::control::Control;
+use crate::model::footnote::{FootnoteShape, NumberFormat};
+use crate::model::paragraph::Paragraph;
+use crate::model::shape::{
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
+};
+use crate::model::style::Alignment;
 
 impl LayoutEngine {
     pub(crate) fn layout_picture(
@@ -32,8 +37,16 @@ impl LayoutEngine {
     ) {
         // [Task #825] 본문 picture 경로 — header_footer_ref = None
         self.layout_picture_full(
-            tree, parent_node, picture, container, bin_data_content, alignment,
-            section_index, para_index, control_index, None,
+            tree,
+            parent_node,
+            picture,
+            container,
+            bin_data_content,
+            alignment,
+            section_index,
+            para_index,
+            control_index,
+            None,
         );
     }
 
@@ -79,12 +92,16 @@ impl LayoutEngine {
             let x = match picture.common.horz_align {
                 HorzAlign::Left | HorzAlign::Inside => container.x + h_offset,
                 HorzAlign::Center => container.x + (container.width - pic_width) / 2.0 + h_offset,
-                HorzAlign::Right | HorzAlign::Outside => container.x + container.width - pic_width - h_offset,
+                HorzAlign::Right | HorzAlign::Outside => {
+                    container.x + container.width - pic_width - h_offset
+                }
             };
             let y = match picture.common.vert_align {
                 VertAlign::Top | VertAlign::Inside => container.y + v_offset,
                 VertAlign::Center => container.y + (container.height - pic_height) / 2.0 + v_offset,
-                VertAlign::Bottom | VertAlign::Outside => container.y + container.height - pic_height - v_offset,
+                VertAlign::Bottom | VertAlign::Outside => {
+                    container.y + container.height - pic_height - v_offset
+                }
             };
             (x, y)
         } else {
@@ -92,9 +109,7 @@ impl LayoutEngine {
                 Alignment::Center | Alignment::Distribute => {
                     container.x + (container.width - pic_width).max(0.0) / 2.0
                 }
-                Alignment::Right => {
-                    container.x + (container.width - pic_width).max(0.0)
-                }
+                Alignment::Right => container.x + (container.width - pic_width).max(0.0),
                 _ => container.x,
             };
             (x, container.y)
@@ -102,13 +117,15 @@ impl LayoutEngine {
 
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
         let bin_data_id = picture.image_attr.bin_data_id;
-        let image_data = find_bin_data(bin_data_content, bin_data_id)
-            .map(|c| c.data.clone());
+        let image_data = find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.clone());
 
         // 그림 자르기: crop 좌표를 그대로 저장 (렌더러에서 이미지 px 크기와 비교)
         let crop = {
             let c = &picture.crop;
-            if c.right > c.left && c.bottom > c.top && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0) {
+            if c.right > c.left
+                && c.bottom > c.top
+                && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
+            {
                 Some((c.left, c.top, c.right, c.bottom))
             } else {
                 None
@@ -116,13 +133,15 @@ impl LayoutEngine {
         };
 
         // 원본 이미지 크기(HU) — crop 좌표 보정용
-        let original_size_hu = if picture.shape_attr.original_width > 0
-            && picture.shape_attr.original_height > 0
-        {
-            Some((picture.shape_attr.original_width, picture.shape_attr.original_height))
-        } else {
-            None
-        };
+        let original_size_hu =
+            if picture.shape_attr.original_width > 0 && picture.shape_attr.original_height > 0 {
+                Some((
+                    picture.shape_attr.original_width,
+                    picture.shape_attr.original_height,
+                ))
+            } else {
+                None
+            };
 
         // 이미지 노드 생성
         let img_id = tree.next_id();
@@ -149,7 +168,15 @@ impl LayoutEngine {
         parent_node.children.push(img_node);
 
         // 그림 테두리(선) 렌더링
-        self.render_picture_border(tree, parent_node, picture, pic_x, pic_y, pic_width, pic_height);
+        self.render_picture_border(
+            tree,
+            parent_node,
+            picture,
+            pic_x,
+            pic_y,
+            pic_width,
+            pic_height,
+        );
     }
 
     /// 개체(Picture/Shape)의 절대 좌표 (x, y)를 계산한다.
@@ -205,9 +232,7 @@ impl LayoutEngine {
                 Alignment::Center | Alignment::Distribute => {
                     container.x + (container.width - obj_width).max(0.0) / 2.0
                 }
-                Alignment::Right => {
-                    container.x + (container.width - obj_width).max(0.0)
-                }
+                Alignment::Right => container.x + (container.width - obj_width).max(0.0),
                 _ => container.x,
             }
         } else {
@@ -293,7 +318,15 @@ impl LayoutEngine {
 
         // 통합 좌표 계산 (캡션 포함 전체 크기 기준)
         let (pic_x, base_y) = self.compute_object_position(
-            &picture.common, total_width, total_height, container, col_area, body_area, paper_area, y_offset, alignment,
+            &picture.common,
+            total_width,
+            total_height,
+            container,
+            col_area,
+            body_area,
+            paper_area,
+            y_offset,
+            alignment,
         );
 
         // 캡션 방향에 따라 그림 위치 오프셋 계산
@@ -315,8 +348,7 @@ impl LayoutEngine {
 
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
         let bin_data_id = picture.image_attr.bin_data_id;
-        let image_data = find_bin_data(bin_data_content, bin_data_id)
-            .map(|c| c.data.clone());
+        let image_data = find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.clone());
 
         // 그림 자르기
         let crop = {
@@ -329,13 +361,15 @@ impl LayoutEngine {
         };
 
         // 원본 이미지 크기(HU)
-        let original_size_hu = if picture.shape_attr.original_width > 0
-            && picture.shape_attr.original_height > 0
-        {
-            Some((picture.shape_attr.original_width, picture.shape_attr.original_height))
-        } else {
-            None
-        };
+        let original_size_hu =
+            if picture.shape_attr.original_width > 0 && picture.shape_attr.original_height > 0 {
+                Some((
+                    picture.shape_attr.original_width,
+                    picture.shape_attr.original_height,
+                ))
+            } else {
+                None
+            };
 
         // 이미지 노드 생성
         let img_id = tree.next_id();
@@ -360,14 +394,26 @@ impl LayoutEngine {
         parent_node.children.push(img_node);
 
         // 그림 테두리(선) 렌더링
-        self.render_picture_border(tree, parent_node, picture, adjusted_pic_x, pic_y, pic_width, pic_height);
+        self.render_picture_border(
+            tree,
+            parent_node,
+            picture,
+            adjusted_pic_x,
+            pic_y,
+            pic_width,
+            pic_height,
+        );
 
         // 캡션 렌더링
         if let Some(ref caption) = picture.caption {
             use crate::model::shape::CaptionVertAlign;
             let (cap_x, cap_w, cap_y) = match caption.direction {
                 CaptionDirection::Top => (adjusted_pic_x, pic_width, base_y),
-                CaptionDirection::Bottom => (adjusted_pic_x, pic_width, pic_y + pic_height + caption_spacing),
+                CaptionDirection::Bottom => (
+                    adjusted_pic_x,
+                    pic_width,
+                    pic_y + pic_height + caption_spacing,
+                ),
                 CaptionDirection::Left | CaptionDirection::Right => {
                     let cw = hwpunit_to_px(caption.width as i32, self.dpi);
                     let cx = if caption.direction == CaptionDirection::Left {
@@ -377,7 +423,9 @@ impl LayoutEngine {
                     };
                     let cy = match caption.vert_align {
                         CaptionVertAlign::Top => pic_y,
-                        CaptionVertAlign::Center => pic_y + (pic_height - caption_height).max(0.0) / 2.0,
+                        CaptionVertAlign::Center => {
+                            pic_y + (pic_height - caption_height).max(0.0) / 2.0
+                        }
                         CaptionVertAlign::Bottom => pic_y + (pic_height - caption_height).max(0.0),
                     };
                     (cx, cw, cy)
@@ -394,8 +442,14 @@ impl LayoutEngine {
                 }],
             };
             self.layout_caption(
-                tree, parent_node, caption, styles, col_area,
-                cap_x, cap_w, cap_y,
+                tree,
+                parent_node,
+                caption,
+                styles,
+                col_area,
+                cap_x,
+                cap_w,
+                cap_y,
                 &mut self.auto_counter.borrow_mut(),
                 Some(cell_ctx),
             );
@@ -407,7 +461,13 @@ impl LayoutEngine {
         // base_y는 vert_offset이 적용된 실제 그림 상단 y이므로, base_y + total_height가
         // 그림 하단 y가 된다. y_offset(앵커 단락 y) 대신 base_y를 기준으로 반환해야
         // vert_offset이 있는 혼합 단락(텍스트+그림)에서 후속 단락이 그림 위로 겹치지 않는다.
-        let total_height = pic_height + caption_height + if caption_height > 0.0 { caption_spacing } else { 0.0 };
+        let total_height = pic_height
+            + caption_height
+            + if caption_height > 0.0 {
+                caption_spacing
+            } else {
+                0.0
+            };
         match (picture.common.vert_rel_to, picture.common.text_wrap) {
             (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
             (VertRelTo::Para, _) => base_y + total_height,
@@ -502,8 +562,15 @@ impl LayoutEngine {
                 para_y,
                 0,
                 composed.lines.len(),
-                0, 0, ctx, false, 0.0, None, None, None,
-                None,  // 캡션 컨텍스트 — wrap zone 무관
+                0,
+                0,
+                ctx,
+                false,
+                0.0,
+                None,
+                None,
+                None,
+                None, // 캡션 컨텍스트 — wrap zone 무관
             );
         }
     }
@@ -574,7 +641,10 @@ impl LayoutEngine {
         let sep_node = RenderNode::new(
             sep_id,
             RenderNodeType::Line(LineNode::new(
-                fn_area.x, y, fn_area.x + sep_length, y,
+                fn_area.x,
+                y,
+                fn_area.x + sep_length,
+                y,
                 LineStyle {
                     color: shape.separator_color,
                     width: line_width,
@@ -596,14 +666,17 @@ impl LayoutEngine {
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
         for (i, fn_ref) in footnotes.iter().enumerate() {
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
-            let number_text = format_footnote_number(fn_ref.number, &shape.number_format, shape.suffix_char);
+            let number_text =
+                format_footnote_number(fn_ref.number, &shape.number_format, shape.suffix_char);
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
                 let composed = compose_paragraph(para);
                 let marker_section = i; // footnote_index
                 let marker_para = usize::MAX - 2000 - p_idx; // 각주 내 문단 인덱스
-                // 각주 번호 스타일용 기본 char_shape_id (빈/비빈 문단 모두 동일)
-                let base_cs_id = para.char_shapes.first()
+                                                             // 각주 번호 스타일용 기본 char_shape_id (빈/비빈 문단 모두 동일)
+                let base_cs_id = para
+                    .char_shapes
+                    .first()
                     .map(|cs| cs.char_shape_id as u32)
                     .unwrap_or(composed.para_style_id as u32);
 
@@ -615,21 +688,45 @@ impl LayoutEngine {
                 if p_idx == 0 {
                     // 첫 문단: 각주 번호를 텍스트 앞에 삽입
                     y = self.layout_footnote_paragraph_with_number(
-                        tree, fn_node, &composed, styles, fn_area, y, &number_text,
-                        marker_section, marker_para, base_cs_id,
+                        tree,
+                        fn_node,
+                        &composed,
+                        styles,
+                        fn_area,
+                        y,
+                        &number_text,
+                        marker_section,
+                        marker_para,
+                        base_cs_id,
                         is_last_para_of_fn,
                     );
                 } else {
                     let returned_y = self.layout_composed_paragraph(
-                        tree, fn_node, &composed, styles, fn_area, y, 0, composed.lines.len(),
-                        marker_section, marker_para, None, false, 0.0, None, None, None,
-                        None,  // 각주 컨텍스트 — wrap zone 무관
+                        tree,
+                        fn_node,
+                        &composed,
+                        styles,
+                        fn_area,
+                        y,
+                        0,
+                        composed.lines.len(),
+                        marker_section,
+                        marker_para,
+                        None,
+                        false,
+                        0.0,
+                        None,
+                        None,
+                        None,
+                        None, // 각주 컨텍스트 — wrap zone 무관
                     );
                     if is_last_para_of_fn {
                         // layout_composed_paragraph 가 마지막 line 의 trailing line_spacing 을
                         // 포함시키므로, 각주 마지막 paragraph 에서는 그만큼 빼서 note_spacing
                         // 과의 이중 합산을 막는다.
-                        let trail_ls = composed.lines.last()
+                        let trail_ls = composed
+                            .lines
+                            .last()
                             .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
                             .unwrap_or(0.0);
                         y = returned_y - trail_ls;
@@ -795,7 +892,9 @@ impl LayoutEngine {
     ) {
         // layout_composed_paragraph에서 이미 인라인 FootnoteMarker를 삽입한 경우 건너뜀
         let has_inline_markers = parent.children.iter().any(|line| {
-            line.children.iter().any(|n| matches!(n.node_type, RenderNodeType::FootnoteMarker(_)))
+            line.children
+                .iter()
+                .any(|n| matches!(n.node_type, RenderNodeType::FootnoteMarker(_)))
         });
         if has_inline_markers {
             return;
@@ -833,7 +932,9 @@ impl LayoutEngine {
             // TextRun의 char_start로 각주 위치 찾기
             if *char_pos < usize::MAX {
                 'outer: for (li, line_node) in parent.children.iter().enumerate() {
-                    if !matches!(line_node.node_type, RenderNodeType::TextLine(_)) { continue; }
+                    if !matches!(line_node.node_type, RenderNodeType::TextLine(_)) {
+                        continue;
+                    }
                     // 이 줄의 char_start 범위 확인: 첫 run의 char_start ~ 마지막 run의 (char_start + len)
                     let mut line_min_cs = usize::MAX;
                     let mut line_max_end = 0usize;
@@ -846,7 +947,9 @@ impl LayoutEngine {
                         }
                     }
                     // 각주 위치가 이 줄에 포함되지 않으면 다음 줄
-                    if *char_pos > line_max_end || line_min_cs == usize::MAX { continue; }
+                    if *char_pos > line_max_end || line_min_cs == usize::MAX {
+                        continue;
+                    }
 
                     for run_node in &line_node.children {
                         if let RenderNodeType::TextRun(ref run) = run_node.node_type {
@@ -855,8 +958,10 @@ impl LayoutEngine {
                                 let run_end = cs + run_len;
                                 if *char_pos >= cs && *char_pos <= run_end {
                                     let chars_before = char_pos - cs;
-                                    let partial_text: String = run.text.chars().take(chars_before).collect();
-                                    let partial_width = estimate_text_width(&partial_text, &run.style);
+                                    let partial_text: String =
+                                        run.text.chars().take(chars_before).collect();
+                                    let partial_width =
+                                        estimate_text_width(&partial_text, &run.style);
                                     insert_x = run_node.bbox.x + partial_width;
                                     line_height = line_node.bbox.height;
                                     line_y = line_node.bbox.y;
@@ -873,9 +978,17 @@ impl LayoutEngine {
 
             // 최종 폴백: 마지막 TextLine 끝
             if target_line_idx.is_none() {
-                if let Some(li) = parent.children.iter().rposition(|n| matches!(n.node_type, RenderNodeType::TextLine(_))) {
+                if let Some(li) = parent
+                    .children
+                    .iter()
+                    .rposition(|n| matches!(n.node_type, RenderNodeType::TextLine(_)))
+                {
                     let line = &parent.children[li];
-                    insert_x = line.children.last().map(|c| c.bbox.x + c.bbox.width).unwrap_or(line.bbox.x);
+                    insert_x = line
+                        .children
+                        .last()
+                        .map(|c| c.bbox.x + c.bbox.width)
+                        .unwrap_or(line.bbox.x);
                     line_height = line.bbox.height;
                     line_y = line.bbox.y;
                     if let Some(last_run) = line.children.last() {
@@ -935,7 +1048,10 @@ fn get_footnote_paragraphs<'a>(
     paragraphs: &'a [Paragraph],
 ) -> &'a [Paragraph] {
     match &fn_ref.source {
-        FootnoteSource::Body { para_index, control_index } => {
+        FootnoteSource::Body {
+            para_index,
+            control_index,
+        } => {
             if let Some(para) = paragraphs.get(*para_index) {
                 if let Some(Control::Footnote(footnote)) = para.controls.get(*control_index) {
                     return &footnote.paragraphs;
@@ -954,7 +1070,9 @@ fn get_footnote_paragraphs<'a>(
                 if let Some(Control::Table(table)) = para.controls.get(*table_control_index) {
                     if let Some(cell) = table.cells.get(*cell_index) {
                         if let Some(cp) = cell.paragraphs.get(*cell_para_index) {
-                            if let Some(Control::Footnote(footnote)) = cp.controls.get(*cell_control_index) {
+                            if let Some(Control::Footnote(footnote)) =
+                                cp.controls.get(*cell_control_index)
+                            {
                                 return &footnote.paragraphs;
                             }
                         }
@@ -973,7 +1091,9 @@ fn get_footnote_paragraphs<'a>(
                 if let Some(Control::Shape(shape_obj)) = para.controls.get(*shape_control_index) {
                     if let Some(text_box) = shape_obj.drawing().and_then(|d| d.text_box.as_ref()) {
                         if let Some(tp) = text_box.paragraphs.get(*tb_para_index) {
-                            if let Some(Control::Footnote(footnote)) = tp.controls.get(*tb_control_index) {
+                            if let Some(Control::Footnote(footnote)) =
+                                tp.controls.get(*tb_control_index)
+                            {
                                 return &footnote.paragraphs;
                             }
                         }
@@ -1037,7 +1157,10 @@ impl LayoutEngine {
         tree: &mut PageRenderTree,
         parent: &mut RenderNode,
         picture: &crate::model::image::Picture,
-        x: f64, y: f64, w: f64, h: f64,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
     ) {
         let line_type = picture.border_attr.attr & 0x3F;
         // 선 종류 0 = 없음
@@ -1051,9 +1174,9 @@ impl LayoutEngine {
             0.1 / 25.4 * self.dpi
         };
         let stroke_dash = match line_type {
-            2 => super::super::StrokeDash::Dot,      // 점선
-            3 => super::super::StrokeDash::Dash,      // 긴 점선 (파선)
-            4 => super::super::StrokeDash::DashDot,   // 일점쇄선
+            2 => super::super::StrokeDash::Dot,        // 점선
+            3 => super::super::StrokeDash::Dash,       // 긴 점선 (파선)
+            4 => super::super::StrokeDash::DashDot,    // 일점쇄선
             5 => super::super::StrokeDash::DashDotDot, // 이점쇄선
             _ => super::super::StrokeDash::Solid,      // 1=실선, 기타
         };

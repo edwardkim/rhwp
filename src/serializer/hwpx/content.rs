@@ -44,9 +44,15 @@ pub fn write_content_hpf(
             ("xmlns:hpf", "http://www.hancom.co.kr/schema/2011/hpf"),
             ("xmlns:dc", "http://purl.org/dc/elements/1.1/"),
             ("xmlns:opf", "http://www.idpf.org/2007/opf/"),
-            ("xmlns:ooxmlchart", "http://www.hancom.co.kr/hwpml/2016/ooxmlchart"),
+            (
+                "xmlns:ooxmlchart",
+                "http://www.hancom.co.kr/hwpml/2016/ooxmlchart",
+            ),
             ("xmlns:epub", "http://www.idpf.org/2007/ops"),
-            ("xmlns:config", "urn:oasis:names:tc:opendocument:xmlns:config:1.0"),
+            (
+                "xmlns:config",
+                "urn:oasis:names:tc:opendocument:xmlns:config:1.0",
+            ),
             ("version", ""),
             ("unique-identifier", ""),
             ("id", ""),
@@ -59,11 +65,23 @@ pub fn write_content_hpf(
     start_tag_attrs(&mut w, "opf:language", &[])?;
     text(&mut w, "ko")?;
     end_tag(&mut w, "opf:language")?;
-    start_tag_attrs(&mut w, "opf:meta", &[("name", "creator"), ("content", "text")])?;
+    start_tag_attrs(
+        &mut w,
+        "opf:meta",
+        &[("name", "creator"), ("content", "text")],
+    )?;
     text(&mut w, "rhwp")?;
     end_tag(&mut w, "opf:meta")?;
-    empty_tag(&mut w, "opf:meta", &[("name", "CreatedDate"), ("content", "text")])?;
-    empty_tag(&mut w, "opf:meta", &[("name", "ModifiedDate"), ("content", "text")])?;
+    empty_tag(
+        &mut w,
+        "opf:meta",
+        &[("name", "CreatedDate"), ("content", "text")],
+    )?;
+    empty_tag(
+        &mut w,
+        "opf:meta",
+        &[("name", "ModifiedDate"), ("content", "text")],
+    )?;
     end_tag(&mut w, "opf:metadata")?;
 
     // <opf:manifest>

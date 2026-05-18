@@ -1,4 +1,4 @@
-//! samples/table-vpos-01.hwp 5쪽 인라인 표 셀 클릭 진입 불가 — RED 회귀 테스트.
+//! samples/table-vpos-01.hwp 5쪽 인라인 표 셀 클릭 진입 회귀 테스트.
 //!
 //! 재현 문서: `samples/table-vpos-01.hwp`
 //! 대상: 5쪽 (page index = 4) 의 3개 TAC inline 표:
@@ -10,7 +10,7 @@
 //! SVG 의 cell-clip 영역에서 측정 (96 DPI).
 //!
 //! 본 테스트는 hit_test_native 반환 검증 + 실제 cell-entry(insert_text_in_cell_by_path)
-//! 검증을 모두 수행한다. 작성 시점에 page 5 의 inner 11x3 셀 케이스가 FAIL 해야 한다.
+//! 검증을 모두 수행한다.
 
 use std::path::Path;
 
@@ -49,7 +49,11 @@ fn path_tuples(hit: &Value) -> Vec<(usize, usize, usize)> {
 
 /// hit_test 결과가 (parent_para, control_index) 외곽 표에 안착했는지 + 셀 path 가 비어있지 않은지 검증.
 fn assert_table_hit(hit: &Value, parent_para: u64, control: u64) {
-    assert_eq!(hit["sectionIndex"].as_u64(), Some(0), "section must be 0, hit={hit}");
+    assert_eq!(
+        hit["sectionIndex"].as_u64(),
+        Some(0),
+        "section must be 0, hit={hit}"
+    );
     assert_eq!(
         hit["parentParaIndex"].as_u64(),
         Some(parent_para),
@@ -168,14 +172,14 @@ fn page5_inner_11x3_c0_row9_label_cell() {
 }
 
 // =======================================================================
-// pi=34 inner 11x3 — c=2 column 본문 셀들 (외곽 placeholder x_range 안에 들어가 FAIL 예상)
+// pi=34 inner 11x3 — c=2 column 본문 셀들
 // =======================================================================
 
-/// cell[2] r=0,c=2 "국민 주도..." — cell-clip-61 (x=177.6 y=298.0 w=529.9 h=45.1), 중심 (442.5, 320.5)
+/// cell[2] r=0,c=2 "국민 주도..." — cell-clip-61 (x=177.6 y=328.9 w=529.9 h=45.1), 중심 (442.5, 351.4)
 #[test]
 fn page5_inner_11x3_c2_row0_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 320.5);
+    let hit = hit_json(&doc, 4, 442.5, 351.4);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 2);
 }
@@ -189,20 +193,20 @@ fn page5_inner_11x3_c2_row1_content_cell() {
     assert_nested_inner_cell(&hit, 3);
 }
 
-/// cell[9] r=3,c=2 "포용과 균형의 기본사회 구현" — cell-clip-91 (x=177.6 y=475.6 w=529.9 h=45.1), 중심 (442.5, 498.1)
+/// cell[9] r=3,c=2 "포용과 균형의 기본사회 구현" — cell-clip-91 (x=177.6 y=506.4 w=529.9 h=45.1), 중심 (442.5, 529.0)
 #[test]
 fn page5_inner_11x3_c2_row3_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 498.1);
+    let hit = hit_json(&doc, 4, 442.5, 529.0);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 9);
 }
 
-/// cell[16] r=6,c=2 "성과로 신뢰..." — cell-clip-120 (x=177.6 y=653.1 w=529.9 h=45.1), 중심 (442.5, 675.7)
+/// cell[16] r=6,c=2 "성과로 신뢰..." — cell-clip-120 (x=177.6 y=684.0 w=529.9 h=45.1), 중심 (442.5, 706.5)
 #[test]
 fn page5_inner_11x3_c2_row6_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 675.7);
+    let hit = hit_json(&doc, 4, 442.5, 706.5);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 16);
 }
@@ -220,7 +224,7 @@ fn page5_inner_11x3_c2_row6_content_cell() {
 #[test]
 fn page5_inner_11x3_c2_row0_insert_lands_in_inner_cell() {
     let mut doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 320.5);
+    let hit = hit_json(&doc, 4, 442.5, 351.4);
     let path = path_tuples(&hit);
     let parent_para = hit["parentParaIndex"].as_u64().expect("parentParaIndex") as usize;
     let char_offset = hit["charOffset"].as_u64().expect("charOffset") as usize;

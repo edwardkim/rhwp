@@ -25,10 +25,10 @@ struct ParseState {
     in_chart_title: bool,
     in_v: bool,
     in_a_t: bool,
-    in_sp_pr: bool,          // c:spPr — 시리즈/figure의 shape properties
-    in_solid_fill: bool,     // a:solidFill
-    in_ln: bool,             // a:ln (stroke)
-    in_num_cache: bool,      // c:numCache — formatCode 파싱
+    in_sp_pr: bool,      // c:spPr — 시리즈/figure의 shape properties
+    in_solid_fill: bool, // a:solidFill
+    in_ln: bool,         // a:ln (stroke)
+    in_num_cache: bool,  // c:numCache — formatCode 파싱
     bar_dir: Option<BarDir>,
     // 현재 파싱 중인 plot 블록 (barChart/lineChart/pieChart) 안에 있는지
     cur_plot_type: Option<OoxmlChartType>,
@@ -85,7 +85,10 @@ pub fn parse_chart_xml(xml: &[u8]) -> Option<OoxmlChart> {
     }
 
     // 가로/세로 막대 최종 분기 (chart_type이 Column 상태면 barDir로 확정)
-    if matches!(chart.chart_type, OoxmlChartType::Column | OoxmlChartType::Bar) {
+    if matches!(
+        chart.chart_type,
+        OoxmlChartType::Column | OoxmlChartType::Bar
+    ) {
         if let Some(BarDir::Bar) = state.bar_dir {
             chart.chart_type = OoxmlChartType::Bar;
         } else {
@@ -109,22 +112,34 @@ pub fn parse_chart_xml(xml: &[u8]) -> Option<OoxmlChart> {
     let mut primary_axid: Option<String> = None;
     let mut secondary_axid: Option<String> = None;
     // 순회 순서를 안정적으로 하기 위해 정렬
-    let mut entries: Vec<(String, String)> = state.val_ax_map.iter()
-        .map(|(k, v)| (k.clone(), v.clone())).collect();
+    let mut entries: Vec<(String, String)> = state
+        .val_ax_map
+        .iter()
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
     entries.sort_by(|a, b| a.0.cmp(&b.0));
     for (axid, pos) in &entries {
         match pos.as_str() {
             "l" | "b" => {
-                if primary_axid.is_none() { primary_axid = Some(axid.clone()); }
-                else if secondary_axid.is_none() { secondary_axid = Some(axid.clone()); }
+                if primary_axid.is_none() {
+                    primary_axid = Some(axid.clone());
+                } else if secondary_axid.is_none() {
+                    secondary_axid = Some(axid.clone());
+                }
             }
             "r" | "t" => {
-                if secondary_axid.is_none() { secondary_axid = Some(axid.clone()); }
-                else if primary_axid.is_none() { primary_axid = Some(axid.clone()); }
+                if secondary_axid.is_none() {
+                    secondary_axid = Some(axid.clone());
+                } else if primary_axid.is_none() {
+                    primary_axid = Some(axid.clone());
+                }
             }
             _ => {
-                if primary_axid.is_none() { primary_axid = Some(axid.clone()); }
-                else if secondary_axid.is_none() { secondary_axid = Some(axid.clone()); }
+                if primary_axid.is_none() {
+                    primary_axid = Some(axid.clone());
+                } else if secondary_axid.is_none() {
+                    secondary_axid = Some(axid.clone());
+                }
             }
         }
     }
@@ -205,7 +220,9 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                 if let Some(val) = attr_val(e, "val") {
                     if let Some(rgb) = parse_rgb_hex(&val) {
                         if let Some(ser) = st.cur_series.as_mut() {
-                            if ser.color.is_none() { ser.color = Some(rgb); }
+                            if ser.color.is_none() {
+                                ser.color = Some(rgb);
+                            }
                         }
                     }
                 }
@@ -216,7 +233,9 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                 if let Some(val) = attr_val(e, "val") {
                     if let Some(rgb) = scheme_color(&val) {
                         if let Some(ser) = st.cur_series.as_mut() {
-                            if ser.color.is_none() { ser.color = Some(rgb); }
+                            if ser.color.is_none() {
+                                ser.color = Some(rgb);
+                            }
                         }
                     }
                 }
@@ -346,7 +365,9 @@ fn attr_val(e: &quick_xml::events::BytesStart, key: &str) -> Option<String> {
 
 fn parse_rgb_hex(s: &str) -> Option<u32> {
     let t = s.trim().trim_start_matches('#');
-    if t.len() != 6 { return None; }
+    if t.len() != 6 {
+        return None;
+    }
     u32::from_str_radix(t, 16).ok()
 }
 

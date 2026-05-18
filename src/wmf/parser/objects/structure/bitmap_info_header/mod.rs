@@ -17,20 +17,17 @@ impl BitmapInfoHeader {
     pub fn parse<R: crate::wmf::Read>(
         buf: &mut R,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
-        let (header_size, mut consumed_bytes) =
-            crate::wmf::parser::read_u32_from_le_bytes(buf)?;
+        let (header_size, mut consumed_bytes) = crate::wmf::parser::read_u32_from_le_bytes(buf)?;
 
         match header_size {
             0x0000000C => {
-                let (header, c) =
-                    BitmapInfoHeaderCore::parse(buf, header_size)?;
+                let (header, c) = BitmapInfoHeaderCore::parse(buf, header_size)?;
                 consumed_bytes += c;
 
                 Ok((Self::Core(header), consumed_bytes))
             }
             13..=40 => {
-                let (header, c) =
-                    BitmapInfoHeaderInfo::parse(buf, header_size)?;
+                let (header, c) = BitmapInfoHeaderInfo::parse(buf, header_size)?;
                 consumed_bytes += c;
 
                 Ok((Self::Info(header), consumed_bytes))
@@ -82,10 +79,7 @@ impl BitmapInfoHeader {
                 planes,
                 bit_count,
                 ..
-            }) => u32::from(
-                (((width * planes * (*bit_count as u16) + 31) & !31) / 8)
-                    * height,
-            ),
+            }) => u32::from((((width * planes * (*bit_count as u16) + 31) & !31) / 8) * height),
             Self::Info(BitmapInfoHeaderInfo {
                 width,
                 height,
@@ -116,12 +110,7 @@ impl BitmapInfoHeader {
                 crate::wmf::parser::Compression::BI_RGB
                 | crate::wmf::parser::Compression::BI_BITFIELDS
                 | crate::wmf::parser::Compression::BI_CMYK => {
-                    ((((*width as u32)
-                        * u32::from(*planes)
-                        * (*bit_count as u32)
-                        + 31)
-                        & !31)
-                        / 8)
+                    ((((*width as u32) * u32::from(*planes) * (*bit_count as u32) + 31) & !31) / 8)
                         * height.unsigned_abs()
                 }
                 _ => *image_size,
@@ -133,14 +122,22 @@ impl BitmapInfoHeader {
 
     pub fn color_used(&self) -> u32 {
         match self {
-            Self::Core(BitmapInfoHeaderCore { bit_count, .. }) => {
-                2u32.pow(*bit_count as u32)
-            }
+            Self::Core(BitmapInfoHeaderCore { bit_count, .. }) => 2u32.pow(*bit_count as u32),
             Self::Info(BitmapInfoHeaderInfo {
-                bit_count, color_used, ..
+                bit_count,
+                color_used,
+                ..
             })
-            | Self::V4(BitmapInfoHeaderV4 { bit_count, color_used, .. })
-            | Self::V5(BitmapInfoHeaderV5 { bit_count, color_used, .. }) => {
+            | Self::V4(BitmapInfoHeaderV4 {
+                bit_count,
+                color_used,
+                ..
+            })
+            | Self::V5(BitmapInfoHeaderV5 {
+                bit_count,
+                color_used,
+                ..
+            }) => {
                 if *color_used == 0
                     && matches!(
                         bit_count,
@@ -159,9 +156,7 @@ impl BitmapInfoHeader {
 
     pub fn height(&self) -> usize {
         match self {
-            Self::Core(BitmapInfoHeaderCore { height, .. }) => {
-                usize::from(*height)
-            }
+            Self::Core(BitmapInfoHeaderCore { height, .. }) => usize::from(*height),
             Self::Info(BitmapInfoHeaderInfo { height, .. })
             | Self::V4(BitmapInfoHeaderV4 { height, .. })
             | Self::V5(BitmapInfoHeaderV5 { height, .. }) => *height as usize,
@@ -170,9 +165,7 @@ impl BitmapInfoHeader {
 
     pub fn width(&self) -> usize {
         match self {
-            Self::Core(BitmapInfoHeaderCore { width, .. }) => {
-                usize::from(*width)
-            }
+            Self::Core(BitmapInfoHeaderCore { width, .. }) => usize::from(*width),
             Self::Info(BitmapInfoHeaderInfo { width, .. })
             | Self::V4(BitmapInfoHeaderV4 { width, .. })
             | Self::V5(BitmapInfoHeaderV5 { width, .. }) => *width as usize,

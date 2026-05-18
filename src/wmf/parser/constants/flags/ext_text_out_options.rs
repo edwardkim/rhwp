@@ -1,16 +1,6 @@
 /// ExtTextOutOptions Flags specify various characteristics of the output of
 /// text. These flags can be combined to specify multiple options.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u16)]
 pub enum ExtTextOutOptions {
     /// Indicates that the background color that is defined in the playback

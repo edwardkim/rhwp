@@ -2,17 +2,7 @@ use crate::wmf::imports::*;
 
 /// The CharacterSet Enumeration defines the possible sets of character glyphs
 /// that are defined in fonts for graphics output.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u8)]
 pub enum CharacterSet {
     /// Specifies the English character set.
@@ -158,8 +148,7 @@ static mut CODEPAGE_TABLE: BTreeMap<CharacterSet, u16> = BTreeMap::new();
 
 fn codepage_table() -> &'static BTreeMap<CharacterSet, u16> {
     if !CODEPAGE_TABLE_INITIALIZED.load(core::sync::atomic::Ordering::Acquire) {
-        CODEPAGE_TABLE_INITIALIZED
-            .store(true, core::sync::atomic::Ordering::Release);
+        CODEPAGE_TABLE_INITIALIZED.store(true, core::sync::atomic::Ordering::Release);
 
         unsafe {
             // via: https://en.wikipedia.org/wiki/Code_page

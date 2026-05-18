@@ -56,7 +56,9 @@ impl Node {
     }
 
     fn escape_attr(value: impl ToString) -> String {
-        Self::escape_text(value).replace('"', "&quot;").replace('\'', "&apos;")
+        Self::escape_text(value)
+            .replace('"', "&quot;")
+            .replace('\'', "&apos;")
     }
 }
 
@@ -69,9 +71,7 @@ impl core::fmt::Display for Node {
                     "<{name} {}>{}</{name}>",
                     self.attrs
                         .iter()
-                        .map(|(k, v)| {
-                            format!(r#"{k}="{}""#, Self::escape_attr(v))
-                        })
+                        .map(|(k, v)| { format!(r#"{k}="{}""#, Self::escape_attr(v)) })
                         .collect::<Vec<_>>()
                         .join(" "),
                     self.inner

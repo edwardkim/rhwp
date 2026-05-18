@@ -1,18 +1,18 @@
 //! HWP3 문단(Paragraph) 구조 및 파싱
-//! 
+//!
 //! HWP3 문서의 문단 정보를 담고 있는 데이터 구조체(`Hwp3ParaInfo`, `Hwp3LineInfo`)를 정의한다.
 //! 문단의 글자 수, 라인 수, 스타일 상속 관계 등을 파싱하여 제공한다.
 
+use super::records::{Hwp3CharShape, Hwp3ParaShape};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{self, Read};
-use super::records::{Hwp3CharShape, Hwp3ParaShape};
 
 #[derive(Debug, Default)]
 pub struct Hwp3LineInfo {
     pub start_pos: u16,
     pub space_correction: i16,
     pub line_height: u16,
-    pub pgy: u16,   // 한글97이 계산한 줄 Y 좌표 (1/1800인치 단위). pgy 감소 시 새 페이지.
+    pub pgy: u16, // 한글97이 계산한 줄 Y 좌표 (1/1800인치 단위). pgy 감소 시 새 페이지.
     pub sx: u16,
     pub psx: u16,
     pub break_flag: u16,
@@ -79,9 +79,9 @@ impl Hwp3ParaInfo {
         let flags = reader.read_u8()?;
         let special_char_flags = reader.read_u32::<LittleEndian>()?;
         let style_index = reader.read_u8()?;
-        
+
         let rep_char_shape = Hwp3CharShape::read(&mut reader)?;
-        
+
         let para_shape = if follow_prev_para_shape == 0 {
             Some(Hwp3ParaShape::read(&mut reader)?)
         } else {

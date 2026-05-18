@@ -16,9 +16,9 @@
 //!
 //! 정상 동작: page 0 의 모든 TextLine 의 bbox 하단이 Body 영역 하단 이내.
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/20250130-hongbo.hwp";
 
@@ -40,7 +40,10 @@ fn find_body_bbox(node: &RenderNode) -> Option<(f64, f64, f64, f64)> {
 /// 머리말/꼬리말 (Header/Footer 자식) 영역은 제외 — 본문 컬럼 결함만 검증.
 fn collect_body_text_line_bboxes(node: &RenderNode, out: &mut Vec<(f64, f64)>, in_body: bool) {
     let now_in_body = in_body || matches!(node.node_type, RenderNodeType::Body { .. });
-    let in_header_footer = matches!(node.node_type, RenderNodeType::Header | RenderNodeType::Footer);
+    let in_header_footer = matches!(
+        node.node_type,
+        RenderNodeType::Header | RenderNodeType::Footer
+    );
     if in_header_footer {
         return; // 머리말/꼬리말 제외
     }
@@ -62,10 +65,11 @@ fn issue_716_page1_last_text_line_within_body() {
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .unwrap_or_else(|e| panic!("parse {}: {}", SAMPLE, e));
 
-    let tree = doc.build_page_render_tree(0).expect("build_page_render_tree(0)");
+    let tree = doc
+        .build_page_render_tree(0)
+        .expect("build_page_render_tree(0)");
 
-    let (body_x, body_y, body_w, body_h) = find_body_bbox(&tree.root)
-        .expect("Body 노드 bbox 누락");
+    let (body_x, body_y, body_w, body_h) = find_body_bbox(&tree.root).expect("Body 노드 bbox 누락");
     let body_bottom = body_y + body_h;
 
     let mut bboxes = Vec::new();
@@ -78,8 +82,14 @@ fn issue_716_page1_last_text_line_within_body() {
     eprintln!(
         "[issue_716] page 0 body=[x={:.2} y={:.2} w={:.2} h={:.2} bottom={:.2}] \
          text_lines={} max_bottom={:.2} overflow={:+.2}",
-        body_x, body_y, body_w, body_h, body_bottom,
-        bboxes.len(), max_bottom, overflow,
+        body_x,
+        body_y,
+        body_w,
+        body_h,
+        body_bottom,
+        bboxes.len(),
+        max_bottom,
+        overflow,
     );
 
     // 0.5 px 허용 오차 (sub-pixel rounding).

@@ -1,11 +1,18 @@
 //! 드로잉 레코드 — 선/사각형/타원/호/폴리라인16.
 
+use crate::emf::parser::{
+    objects::{PointL, RectL},
+    Cursor,
+};
 use crate::emf::Error;
-use crate::emf::parser::{Cursor, objects::{PointL, RectL}};
 
-pub fn parse_point(c: &mut Cursor<'_>) -> Result<PointL, Error> { PointL::read(c) }
+pub fn parse_point(c: &mut Cursor<'_>) -> Result<PointL, Error> {
+    PointL::read(c)
+}
 
-pub fn parse_rect(c: &mut Cursor<'_>) -> Result<RectL, Error> { RectL::read(c) }
+pub fn parse_rect(c: &mut Cursor<'_>) -> Result<RectL, Error> {
+    RectL::read(c)
+}
 
 /// EMR_ROUNDRECT: RectL + SizeL(corner width/height)
 pub fn parse_round_rect(c: &mut Cursor<'_>) -> Result<(RectL, i32, i32), Error> {

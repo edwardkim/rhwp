@@ -10,7 +10,9 @@ pub struct SvgBuilder {
 
 impl SvgBuilder {
     #[must_use]
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     pub fn push(&mut self, node: &str) {
         self.buf.push_str(node);
@@ -25,13 +27,19 @@ impl SvgBuilder {
         );
     }
 
-    pub fn close_group(&mut self) { self.buf.push_str("</g>"); }
+    pub fn close_group(&mut self) {
+        self.buf.push_str("</g>");
+    }
 
     #[must_use]
-    pub fn into_string(self) -> String { self.buf }
+    pub fn into_string(self) -> String {
+        self.buf
+    }
 
     #[must_use]
-    pub fn as_str(&self) -> &str { self.buf.as_str() }
+    pub fn as_str(&self) -> &str {
+        self.buf.as_str()
+    }
 }
 
 /// COLORREF(0x00BBGGRR) → SVG `rgb(R,G,B)` 문자열.
@@ -49,10 +57,10 @@ pub fn escape_xml(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for ch in s.chars() {
         match ch {
-            '<'  => out.push_str("&lt;"),
-            '>'  => out.push_str("&gt;"),
-            '&'  => out.push_str("&amp;"),
-            '"'  => out.push_str("&quot;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '&' => out.push_str("&amp;"),
+            '"' => out.push_str("&quot;"),
             '\'' => out.push_str("&apos;"),
             _ => out.push(ch),
         }

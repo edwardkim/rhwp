@@ -148,7 +148,7 @@ mod tests {
         assert_eq!(parse_color_str("#00FF00"), 0x0000FF00); // 초록
         assert_eq!(parse_color_str("#0000FF"), 0x00FF0000); // 파랑
         assert_eq!(parse_color_str("#000000"), 0x00000000); // 검정
-        assert_eq!(parse_color_str("none"), 0xFFFFFFFF);    // 투명
+        assert_eq!(parse_color_str("none"), 0xFFFFFFFF); // 투명
     }
 
     #[test]

@@ -26,7 +26,9 @@ mod tests {
 
     #[test]
     fn empty_header_contains_hh_head_root() {
-        assert!(EMPTY_HEADER_XML.contains("<hh:head"),
-            "empty_header.xml should contain <hh:head> root");
+        assert!(
+            EMPTY_HEADER_XML.contains("<hh:head"),
+            "empty_header.xml should contain <hh:head> root"
+        );
     }
 }

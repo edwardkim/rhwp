@@ -836,11 +836,17 @@ mod tests {
         let data = std::fs::read("samples/hwpx/hwpx-h-03.hwpx").expect("sample exists");
         let mut core = crate::document_core::DocumentCore::from_bytes(&data).expect("parse hwpx");
 
-        assert_eq!(count_ctrl_data_records_in_sections(&core.document.sections), 0);
+        assert_eq!(
+            count_ctrl_data_records_in_sections(&core.document.sections),
+            0
+        );
         let report = convert_hwpx_to_hwp_ir(&mut core.document);
 
         assert_eq!(report.picture_href_ctrl_data_materialized, 1);
-        assert_eq!(count_ctrl_data_records_in_sections(&core.document.sections), 1);
+        assert_eq!(
+            count_ctrl_data_records_in_sections(&core.document.sections),
+            1
+        );
     }
 
     #[test]

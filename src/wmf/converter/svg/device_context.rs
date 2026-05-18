@@ -113,18 +113,12 @@ impl DeviceContext {
         self
     }
 
-    pub fn text_align_horizontal(
-        mut self,
-        text_align_horizontal: TextAlignmentMode,
-    ) -> Self {
+    pub fn text_align_horizontal(mut self, text_align_horizontal: TextAlignmentMode) -> Self {
         self.text_align_horizontal = text_align_horizontal;
         self
     }
 
-    pub fn text_align_vertical(
-        mut self,
-        text_align_vertical: VerticalTextAlignmentMode,
-    ) -> Self {
+    pub fn text_align_vertical(mut self, text_align_vertical: VerticalTextAlignmentMode) -> Self {
         self.text_align_vertical = text_align_vertical;
         self
     }
@@ -180,20 +174,16 @@ impl DeviceContext {
     }
 
     pub fn point_s_to_absolute_point(&self, point: &PointS) -> PointS {
-        let x = (f32::from((point.x - self.window.origin_x).abs())
-            / self.window.scale_x) as i16;
-        let y = (f32::from((point.y - self.window.origin_y).abs())
-            / self.window.scale_y) as i16;
+        let x = (f32::from((point.x - self.window.origin_x).abs()) / self.window.scale_x) as i16;
+        let y = (f32::from((point.y - self.window.origin_y).abs()) / self.window.scale_y) as i16;
 
         PointS { x, y }
     }
 
     pub fn point_s_to_relative_point(&self, point: &PointS) -> PointS {
-        let x = (f32::from((point.x - self.window.origin_x).abs())
-            / self.window.scale_x) as i16
+        let x = (f32::from((point.x - self.window.origin_x).abs()) / self.window.scale_x) as i16
             + self.drawing_position.x;
-        let y = (f32::from((point.y - self.window.origin_y).abs())
-            / self.window.scale_y) as i16
+        let y = (f32::from((point.y - self.window.origin_y).abs()) / self.window.scale_y) as i16
             + self.drawing_position.y;
 
         PointS { x, y }

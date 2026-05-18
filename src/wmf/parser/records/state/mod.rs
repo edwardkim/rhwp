@@ -34,13 +34,11 @@ mod set_window_ext;
 mod set_window_org;
 
 pub use self::{
-    animate_palette::*, exclude_clip_rect::*, intersect_clip_rect::*,
-    move_to::*, offset_clip_rgn::*, offset_viewport_org::*,
-    offset_window_org::*, realize_palette::*, resize_palette::*, restore_dc::*,
-    save_dc::*, scale_viewport_ext::*, scale_window_ext::*, set_bk_color::*,
-    set_bk_mode::*, set_layout::*, set_map_mode::*, set_mapper_flags::*,
-    set_pal_entries::*, set_polyfill_mode::*, set_relabs::*, set_rop2::*,
-    set_stretch_blt_mode::*, set_text_align::*, set_text_char_extra::*,
-    set_text_color::*, set_text_justification::*, set_viewport_ext::*,
-    set_viewport_org::*, set_window_ext::*, set_window_org::*,
+    animate_palette::*, exclude_clip_rect::*, intersect_clip_rect::*, move_to::*,
+    offset_clip_rgn::*, offset_viewport_org::*, offset_window_org::*, realize_palette::*,
+    resize_palette::*, restore_dc::*, save_dc::*, scale_viewport_ext::*, scale_window_ext::*,
+    set_bk_color::*, set_bk_mode::*, set_layout::*, set_map_mode::*, set_mapper_flags::*,
+    set_pal_entries::*, set_polyfill_mode::*, set_relabs::*, set_rop2::*, set_stretch_blt_mode::*,
+    set_text_align::*, set_text_char_extra::*, set_text_color::*, set_text_justification::*,
+    set_viewport_ext::*, set_viewport_org::*, set_window_ext::*, set_window_org::*,
 };

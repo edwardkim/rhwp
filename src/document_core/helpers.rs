@@ -2,11 +2,11 @@
 //!
 //! JSON 파싱, 색상 변환, HTML 처리, CSS 파싱 등 유틸리티 함수.
 
-use crate::model::paragraph::Paragraph;
-use crate::model::control::Control;
-use crate::model::style::BorderLineType;
-use crate::model::path::PathSegment;
 use crate::error::HwpError;
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
+use crate::model::path::PathSegment;
+use crate::model::style::BorderLineType;
 
 /// 문단의 탐색 가능한 텍스트 길이를 반환한다.
 ///
@@ -14,20 +14,31 @@ use crate::error::HwpError;
 /// 레이아웃에서 각 overlap이 char_offset 1개를 차지하므로 보정한다.
 pub(crate) fn navigable_text_len(para: &Paragraph) -> usize {
     let text_len = para.text.chars().count();
-    let char_overlap_count = para.controls.iter()
+    let char_overlap_count = para
+        .controls
+        .iter()
         .filter(|c| matches!(c, Control::CharOverlap(_)))
         .count();
     // 인라인 컨트롤의 최대 position을 구하여, text_len보다 클 경우 확장
     let positions = find_control_text_positions(para);
-    let max_inline_pos = para.controls.iter().enumerate()
-        .filter(|(_, c)| matches!(c,
-            Control::Shape(_) | Control::Table(_) |
-            Control::Picture(_) | Control::Equation(_) |
-            Control::Footnote(_) | Control::Endnote(_)
-        ))
+    let max_inline_pos = para
+        .controls
+        .iter()
+        .enumerate()
+        .filter(|(_, c)| {
+            matches!(
+                c,
+                Control::Shape(_)
+                    | Control::Table(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Footnote(_)
+                    | Control::Endnote(_)
+            )
+        })
         .filter_map(|(i, _)| positions.get(i).copied())
         .max()
-        .map(|p| p + 1)  // position 뒤에 커서가 위치할 수 있으므로 +1
+        .map(|p| p + 1) // position 뒤에 커서가 위치할 수 있으므로 +1
         .unwrap_or(0);
     text_len.max(max_inline_pos) + char_overlap_count
 }
@@ -50,7 +61,9 @@ pub(crate) fn logical_to_text_offset(para: &Paragraph, logical_offset: usize) ->
     // 텍스트 "abc[ctrl]XYZ" → 논리적: a(0) b(1) c(2) [ctrl](3) X(4) Y(5) Z(6)
     // ctrl_positions = [3] (텍스트 인덱스 3에 컨트롤 삽입)
     // 정렬된 (텍스트위치, 컨트롤인덱스) 목록
-    let mut sorted_ctrls: Vec<(usize, usize)> = ctrl_positions.iter().enumerate()
+    let mut sorted_ctrls: Vec<(usize, usize)> = ctrl_positions
+        .iter()
+        .enumerate()
         .map(|(ci, &pos)| (pos, ci))
         .collect();
     sorted_ctrls.sort_by_key(|(pos, _)| *pos);
@@ -92,7 +105,10 @@ pub(crate) fn text_to_logical_offset(para: &Paragraph, text_offset: usize) -> us
     // text_offset 이전(미만)에 있는 컨트롤 수를 더함
     // pos < text_offset: 해당 컨트롤은 text_offset 앞에 위치
     // pos == text_offset: 컨트롤과 텍스트가 같은 위치 → 컨트롤이 먼저
-    let before_count = ctrl_positions.iter().filter(|&&pos| pos < text_offset).count();
+    let before_count = ctrl_positions
+        .iter()
+        .filter(|&&pos| pos < text_offset)
+        .count();
     text_offset + before_count
 }
 
@@ -112,7 +128,9 @@ pub(crate) fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
 }
 
 /// ShapeObject에서 TextBox를 추출하는 헬퍼
-pub(crate) fn get_textbox_from_shape(shape: &crate::model::shape::ShapeObject) -> Option<&crate::model::shape::TextBox> {
+pub(crate) fn get_textbox_from_shape(
+    shape: &crate::model::shape::ShapeObject,
+) -> Option<&crate::model::shape::TextBox> {
     use crate::model::shape::ShapeObject;
     let drawing = match shape {
         ShapeObject::Rectangle(s) => &s.drawing,
@@ -125,7 +143,9 @@ pub(crate) fn get_textbox_from_shape(shape: &crate::model::shape::ShapeObject) -
 }
 
 /// ShapeObject에서 TextBox 가변 참조를 추출하는 헬퍼
-pub(crate) fn get_textbox_from_shape_mut(shape: &mut crate::model::shape::ShapeObject) -> Option<&mut crate::model::shape::TextBox> {
+pub(crate) fn get_textbox_from_shape_mut(
+    shape: &mut crate::model::shape::ShapeObject,
+) -> Option<&mut crate::model::shape::TextBox> {
     use crate::model::shape::ShapeObject;
     let drawing = match shape {
         ShapeObject::Rectangle(s) => &mut s.drawing,
@@ -148,30 +168,29 @@ pub(crate) fn navigate_path_to_table<'a>(
 ) -> Result<&'a mut crate::model::table::Table, HwpError> {
     match path {
         [PathSegment::Paragraph(pi), PathSegment::Control(ci)] => {
-            let para = paragraphs.get_mut(*pi).ok_or_else(|| {
-                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", pi))
-            })?;
+            let para = paragraphs
+                .get_mut(*pi)
+                .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", pi)))?;
             match para.controls.get_mut(*ci) {
                 Some(Control::Table(t)) => Ok(t),
                 Some(_) => Err(HwpError::RenderError(
                     "지정된 컨트롤이 표가 아닙니다".to_string(),
                 )),
                 None => Err(HwpError::RenderError(format!(
-                    "컨트롤 인덱스 {} 범위 초과", ci
+                    "컨트롤 인덱스 {} 범위 초과",
+                    ci
                 ))),
             }
         }
         [PathSegment::Paragraph(pi), PathSegment::Control(ci), PathSegment::Cell(row, col), rest @ ..] =>
         {
-            let para = paragraphs.get_mut(*pi).ok_or_else(|| {
-                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", pi))
-            })?;
+            let para = paragraphs
+                .get_mut(*pi)
+                .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", pi)))?;
             match para.controls.get_mut(*ci) {
                 Some(Control::Table(t)) => {
                     let cell = t.cell_at_mut(*row, *col).ok_or_else(|| {
-                        HwpError::RenderError(format!(
-                            "셀({},{}) 접근 실패", row, col
-                        ))
+                        HwpError::RenderError(format!("셀({},{}) 접근 실패", row, col))
                     })?;
                     navigate_path_to_table(&mut cell.paragraphs, rest)
                 }
@@ -179,7 +198,8 @@ pub(crate) fn navigate_path_to_table<'a>(
                     "지정된 컨트롤이 표가 아닙니다".to_string(),
                 )),
                 None => Err(HwpError::RenderError(format!(
-                    "컨트롤 인덱스 {} 범위 초과", ci
+                    "컨트롤 인덱스 {} 범위 초과",
+                    ci
                 ))),
             }
         }
@@ -189,7 +209,10 @@ pub(crate) fn navigate_path_to_table<'a>(
 
 /// UTF-16 위치를 char 인덱스로 변환한다.
 pub(crate) fn utf16_pos_to_char_idx(char_offsets: &[u32], utf16_pos: u32) -> usize {
-    char_offsets.iter().position(|&off| off >= utf16_pos).unwrap_or(char_offsets.len())
+    char_offsets
+        .iter()
+        .position(|&off| off >= utf16_pos)
+        .unwrap_or(char_offsets.len())
 }
 
 /// 줄 정보 결과 (구조체 반환용)
@@ -202,7 +225,9 @@ pub(crate) struct LineInfoResult {
 
 /// 문단이 표 컨트롤을 포함하면 해당 control_idx를 반환한다.
 pub(crate) fn has_table_control(para: &Paragraph) -> Option<usize> {
-    para.controls.iter().position(|c| matches!(c, Control::Table(_)))
+    para.controls
+        .iter()
+        .position(|c| matches!(c, Control::Table(_)))
 }
 
 /// COLORREF (BGR) → CSS 색상 문자열 변환 (클립보드용).
@@ -239,14 +264,30 @@ pub(crate) fn parse_char_shape_mods(json: &str) -> crate::model::style::CharShap
     use crate::model::style::{CharShapeMods, UnderlineType};
     let mut mods = CharShapeMods::default();
 
-    if let Some(v) = json_bool(json, "bold") { mods.bold = Some(v); }
-    if let Some(v) = json_bool(json, "italic") { mods.italic = Some(v); }
-    if let Some(v) = json_bool(json, "underline") { mods.underline = Some(v); }
-    if let Some(v) = json_bool(json, "strikethrough") { mods.strikethrough = Some(v); }
-    if let Some(v) = json_i32(json, "fontSize") { mods.base_size = Some(v); }
-    if let Some(v) = json_u16(json, "fontId") { mods.font_id = Some(v); }
-    if let Some(v) = json_color(json, "textColor") { mods.text_color = Some(v); }
-    if let Some(v) = json_color(json, "shadeColor") { mods.shade_color = Some(v); }
+    if let Some(v) = json_bool(json, "bold") {
+        mods.bold = Some(v);
+    }
+    if let Some(v) = json_bool(json, "italic") {
+        mods.italic = Some(v);
+    }
+    if let Some(v) = json_bool(json, "underline") {
+        mods.underline = Some(v);
+    }
+    if let Some(v) = json_bool(json, "strikethrough") {
+        mods.strikethrough = Some(v);
+    }
+    if let Some(v) = json_i32(json, "fontSize") {
+        mods.base_size = Some(v);
+    }
+    if let Some(v) = json_u16(json, "fontId") {
+        mods.font_id = Some(v);
+    }
+    if let Some(v) = json_color(json, "textColor") {
+        mods.text_color = Some(v);
+    }
+    if let Some(v) = json_color(json, "shadeColor") {
+        mods.shade_color = Some(v);
+    }
     // 확장 속성
     if let Some(v) = json_str(json, "underlineType") {
         mods.underline_type = Some(match v.as_str() {
@@ -255,28 +296,68 @@ pub(crate) fn parse_char_shape_mods(json: &str) -> crate::model::style::CharShap
             _ => UnderlineType::None,
         });
     }
-    if let Some(v) = json_color(json, "underlineColor") { mods.underline_color = Some(v); }
-    if let Some(v) = json_i32(json, "outlineType") { mods.outline_type = Some(v as u8); }
-    if let Some(v) = json_i32(json, "shadowType") { mods.shadow_type = Some(v as u8); }
-    if let Some(v) = json_color(json, "shadowColor") { mods.shadow_color = Some(v); }
-    if let Some(v) = json_i32(json, "shadowOffsetX") { mods.shadow_offset_x = Some(v as i8); }
-    if let Some(v) = json_i32(json, "shadowOffsetY") { mods.shadow_offset_y = Some(v as i8); }
-    if let Some(v) = json_color(json, "strikeColor") { mods.strike_color = Some(v); }
-    if let Some(v) = json_bool(json, "subscript") { mods.subscript = Some(v); }
-    if let Some(v) = json_bool(json, "superscript") { mods.superscript = Some(v); }
-    if let Some(v) = json_bool(json, "emboss") { mods.emboss = Some(v); }
-    if let Some(v) = json_bool(json, "engrave") { mods.engrave = Some(v); }
+    if let Some(v) = json_color(json, "underlineColor") {
+        mods.underline_color = Some(v);
+    }
+    if let Some(v) = json_i32(json, "outlineType") {
+        mods.outline_type = Some(v as u8);
+    }
+    if let Some(v) = json_i32(json, "shadowType") {
+        mods.shadow_type = Some(v as u8);
+    }
+    if let Some(v) = json_color(json, "shadowColor") {
+        mods.shadow_color = Some(v);
+    }
+    if let Some(v) = json_i32(json, "shadowOffsetX") {
+        mods.shadow_offset_x = Some(v as i8);
+    }
+    if let Some(v) = json_i32(json, "shadowOffsetY") {
+        mods.shadow_offset_y = Some(v as i8);
+    }
+    if let Some(v) = json_color(json, "strikeColor") {
+        mods.strike_color = Some(v);
+    }
+    if let Some(v) = json_bool(json, "subscript") {
+        mods.subscript = Some(v);
+    }
+    if let Some(v) = json_bool(json, "superscript") {
+        mods.superscript = Some(v);
+    }
+    if let Some(v) = json_bool(json, "emboss") {
+        mods.emboss = Some(v);
+    }
+    if let Some(v) = json_bool(json, "engrave") {
+        mods.engrave = Some(v);
+    }
     // 강조점/밑줄모양/취소선모양/커닝
-    if let Some(v) = json_i32(json, "emphasisDot") { mods.emphasis_dot = Some(v as u8); }
-    if let Some(v) = json_i32(json, "underlineShape") { mods.underline_shape = Some(v as u8); }
-    if let Some(v) = json_i32(json, "strikeShape") { mods.strike_shape = Some(v as u8); }
-    if let Some(v) = json_bool(json, "kerning") { mods.kerning = Some(v); }
+    if let Some(v) = json_i32(json, "emphasisDot") {
+        mods.emphasis_dot = Some(v as u8);
+    }
+    if let Some(v) = json_i32(json, "underlineShape") {
+        mods.underline_shape = Some(v as u8);
+    }
+    if let Some(v) = json_i32(json, "strikeShape") {
+        mods.strike_shape = Some(v as u8);
+    }
+    if let Some(v) = json_bool(json, "kerning") {
+        mods.kerning = Some(v);
+    }
     // 언어별 배열
-    if let Some(arr) = json_u16_array(json, "fontIds") { mods.font_ids = Some(arr); }
-    if let Some(arr) = json_u8_array(json, "ratios") { mods.ratios = Some(arr); }
-    if let Some(arr) = json_i8_array(json, "spacings") { mods.spacings = Some(arr); }
-    if let Some(arr) = json_u8_array(json, "relativeSizes") { mods.relative_sizes = Some(arr); }
-    if let Some(arr) = json_i8_array(json, "charOffsets") { mods.char_offsets = Some(arr); }
+    if let Some(arr) = json_u16_array(json, "fontIds") {
+        mods.font_ids = Some(arr);
+    }
+    if let Some(arr) = json_u8_array(json, "ratios") {
+        mods.ratios = Some(arr);
+    }
+    if let Some(arr) = json_i8_array(json, "spacings") {
+        mods.spacings = Some(arr);
+    }
+    if let Some(arr) = json_u8_array(json, "relativeSizes") {
+        mods.relative_sizes = Some(arr);
+    }
+    if let Some(arr) = json_i8_array(json, "charOffsets") {
+        mods.char_offsets = Some(arr);
+    }
 
     mods
 }
@@ -287,11 +368,14 @@ pub(crate) fn json_u8_array(json: &str, key: &str) -> Option<[u8; 7]> {
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
     let end = rest.find(']')?;
-    let nums: Vec<u8> = rest[..end].split(',')
+    let nums: Vec<u8> = rest[..end]
+        .split(',')
         .filter_map(|s| s.trim().parse().ok())
         .collect();
     if nums.len() == 7 {
-        Some([nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6]])
+        Some([
+            nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6],
+        ])
     } else {
         None
     }
@@ -303,11 +387,14 @@ pub(crate) fn json_i8_array(json: &str, key: &str) -> Option<[i8; 7]> {
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
     let end = rest.find(']')?;
-    let nums: Vec<i8> = rest[..end].split(',')
+    let nums: Vec<i8> = rest[..end]
+        .split(',')
         .filter_map(|s| s.trim().parse().ok())
         .collect();
     if nums.len() == 7 {
-        Some([nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6]])
+        Some([
+            nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6],
+        ])
     } else {
         None
     }
@@ -319,11 +406,14 @@ pub(crate) fn json_u16_array(json: &str, key: &str) -> Option<[u16; 7]> {
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
     let end = rest.find(']')?;
-    let nums: Vec<u16> = rest[..end].split(',')
+    let nums: Vec<u16> = rest[..end]
+        .split(',')
         .filter_map(|s| s.trim().parse().ok())
         .collect();
     if nums.len() == 7 {
-        Some([nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6]])
+        Some([
+            nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6],
+        ])
     } else {
         None
     }
@@ -331,8 +421,10 @@ pub(crate) fn json_u16_array(json: &str, key: &str) -> Option<[u16; 7]> {
 
 /// JSON에 border/fill 관련 키가 포함되어 있는지 확인한다.
 pub(crate) fn json_has_border_keys(json: &str) -> bool {
-    json.contains("\"borderLeft\"") || json.contains("\"borderRight\"")
-        || json.contains("\"borderTop\"") || json.contains("\"borderBottom\"")
+    json.contains("\"borderLeft\"")
+        || json.contains("\"borderRight\"")
+        || json.contains("\"borderTop\"")
+        || json.contains("\"borderBottom\"")
         || json.contains("\"fillType\"")
 }
 
@@ -341,7 +433,7 @@ pub(crate) fn json_object(json: &str, key: &str) -> Option<String> {
     let pattern = format!("\"{}\":{{", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len() - 1..]; // '{' 포함
-    // 중괄호 매칭
+                                                 // 중괄호 매칭
     let mut depth = 0;
     let mut end = 0;
     for (i, ch) in rest.char_indices() {
@@ -357,12 +449,16 @@ pub(crate) fn json_object(json: &str, key: &str) -> Option<String> {
             _ => {}
         }
     }
-    if end > 0 { Some(rest[..end].to_string()) } else { None }
+    if end > 0 {
+        Some(rest[..end].to_string())
+    } else {
+        None
+    }
 }
 
 /// JSON 문자열에서 ParaShapeMods를 파싱한다.
 pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShapeMods {
-    use crate::model::style::{ParaShapeMods, Alignment, LineSpacingType, HeadType};
+    use crate::model::style::{Alignment, HeadType, LineSpacingType, ParaShapeMods};
     let mut mods = ParaShapeMods::default();
 
     if let Some(v) = json_str(json, "alignment") {
@@ -375,7 +471,9 @@ pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShap
             _ => Alignment::Justify,
         });
     }
-    if let Some(v) = json_i32(json, "lineSpacing") { mods.line_spacing = Some(v); }
+    if let Some(v) = json_i32(json, "lineSpacing") {
+        mods.line_spacing = Some(v);
+    }
     if let Some(v) = json_str(json, "lineSpacingType") {
         mods.line_spacing_type = Some(match v.as_str() {
             "Fixed" => LineSpacingType::Fixed,
@@ -384,11 +482,21 @@ pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShap
             _ => LineSpacingType::Percent,
         });
     }
-    if let Some(v) = json_i32(json, "indent") { mods.indent = Some(v); }
-    if let Some(v) = json_i32(json, "marginLeft") { mods.margin_left = Some(v); }
-    if let Some(v) = json_i32(json, "marginRight") { mods.margin_right = Some(v); }
-    if let Some(v) = json_i32(json, "spacingBefore") { mods.spacing_before = Some(v); }
-    if let Some(v) = json_i32(json, "spacingAfter") { mods.spacing_after = Some(v); }
+    if let Some(v) = json_i32(json, "indent") {
+        mods.indent = Some(v);
+    }
+    if let Some(v) = json_i32(json, "marginLeft") {
+        mods.margin_left = Some(v);
+    }
+    if let Some(v) = json_i32(json, "marginRight") {
+        mods.margin_right = Some(v);
+    }
+    if let Some(v) = json_i32(json, "spacingBefore") {
+        mods.spacing_before = Some(v);
+    }
+    if let Some(v) = json_i32(json, "spacingAfter") {
+        mods.spacing_after = Some(v);
+    }
     // 확장 탭 속성
     if let Some(v) = json_str(json, "headType") {
         mods.head_type = Some(match v.as_str() {
@@ -398,26 +506,54 @@ pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShap
             _ => HeadType::None,
         });
     }
-    if let Some(v) = json_i32(json, "paraLevel") { mods.para_level = Some(v as u8); }
-    if let Some(v) = json_i32(json, "numberingId") { mods.numbering_id = Some(v as u16); }
-    if let Some(v) = json_bool(json, "widowOrphan") { mods.widow_orphan = Some(v); }
-    if let Some(v) = json_bool(json, "keepWithNext") { mods.keep_with_next = Some(v); }
-    if let Some(v) = json_bool(json, "keepLines") { mods.keep_lines = Some(v); }
-    if let Some(v) = json_bool(json, "pageBreakBefore") { mods.page_break_before = Some(v); }
-    if let Some(v) = json_bool(json, "fontLineHeight") { mods.font_line_height = Some(v); }
-    if let Some(v) = json_bool(json, "singleLine") { mods.single_line = Some(v); }
-    if let Some(v) = json_bool(json, "autoSpaceKrEn") { mods.auto_space_kr_en = Some(v); }
-    if let Some(v) = json_bool(json, "autoSpaceKrNum") { mods.auto_space_kr_num = Some(v); }
-    if let Some(v) = json_i32(json, "verticalAlign") { mods.vertical_align = Some(v as u8); }
-    if let Some(v) = json_i32(json, "englishBreakUnit") { mods.english_break_unit = Some(v as u8); }
-    if let Some(v) = json_i32(json, "koreanBreakUnit") { mods.korean_break_unit = Some(v as u8); }
+    if let Some(v) = json_i32(json, "paraLevel") {
+        mods.para_level = Some(v as u8);
+    }
+    if let Some(v) = json_i32(json, "numberingId") {
+        mods.numbering_id = Some(v as u16);
+    }
+    if let Some(v) = json_bool(json, "widowOrphan") {
+        mods.widow_orphan = Some(v);
+    }
+    if let Some(v) = json_bool(json, "keepWithNext") {
+        mods.keep_with_next = Some(v);
+    }
+    if let Some(v) = json_bool(json, "keepLines") {
+        mods.keep_lines = Some(v);
+    }
+    if let Some(v) = json_bool(json, "pageBreakBefore") {
+        mods.page_break_before = Some(v);
+    }
+    if let Some(v) = json_bool(json, "fontLineHeight") {
+        mods.font_line_height = Some(v);
+    }
+    if let Some(v) = json_bool(json, "singleLine") {
+        mods.single_line = Some(v);
+    }
+    if let Some(v) = json_bool(json, "autoSpaceKrEn") {
+        mods.auto_space_kr_en = Some(v);
+    }
+    if let Some(v) = json_bool(json, "autoSpaceKrNum") {
+        mods.auto_space_kr_num = Some(v);
+    }
+    if let Some(v) = json_i32(json, "verticalAlign") {
+        mods.vertical_align = Some(v as u8);
+    }
+    if let Some(v) = json_i32(json, "englishBreakUnit") {
+        mods.english_break_unit = Some(v as u8);
+    }
+    if let Some(v) = json_i32(json, "koreanBreakUnit") {
+        mods.korean_break_unit = Some(v as u8);
+    }
 
     mods
 }
 
 /// JSON에 탭 설정 관련 키가 포함되어 있는지 확인한다.
 pub(crate) fn json_has_tab_keys(json: &str) -> bool {
-    json.contains("\"tabStops\"") || json.contains("\"tabAutoLeft\"") || json.contains("\"tabAutoRight\"")
+    json.contains("\"tabStops\"")
+        || json.contains("\"tabAutoLeft\"")
+        || json.contains("\"tabAutoRight\"")
 }
 
 /// JSON에서 TabDef를 구성한다. 기존 TabDef를 기반으로 변경된 필드만 덮어쓴다.
@@ -427,12 +563,21 @@ pub(crate) fn build_tab_def_from_json(
     tab_defs: &[crate::model::style::TabDef],
 ) -> crate::model::style::TabDef {
     use crate::model::style::TabDef;
-    let base = tab_defs.get(base_tab_id as usize).cloned().unwrap_or_default();
+    let base = tab_defs
+        .get(base_tab_id as usize)
+        .cloned()
+        .unwrap_or_default();
     let auto_left = json_bool(json, "tabAutoLeft").unwrap_or(base.auto_tab_left);
     let auto_right = json_bool(json, "tabAutoRight").unwrap_or(base.auto_tab_right);
     let tabs = parse_tab_stops_json(json).unwrap_or(base.tabs);
     let attr = (if auto_left { 1u32 } else { 0 }) | (if auto_right { 2u32 } else { 0 });
-    TabDef { raw_data: None, attr, tabs, auto_tab_left: auto_left, auto_tab_right: auto_right }
+    TabDef {
+        raw_data: None,
+        attr,
+        tabs,
+        auto_tab_left: auto_left,
+        auto_tab_right: auto_right,
+    }
 }
 
 /// JSON "tabStops":[...] 배열에서 Vec<TabItem>을 파싱한다.
@@ -454,10 +599,18 @@ pub(crate) fn parse_tab_stops_json(json: &str) -> Option<Vec<crate::model::style
                 let position = json_i32(obj, "position").unwrap_or(0) as u32;
                 let tab_type = json_i32(obj, "type").unwrap_or(0) as u8;
                 let fill_type = json_i32(obj, "fill").unwrap_or(0) as u8;
-                tabs.push(TabItem { position, tab_type, fill_type });
+                tabs.push(TabItem {
+                    position,
+                    tab_type,
+                    fill_type,
+                });
                 pos += obj_start + obj_end + 1;
-            } else { break; }
-        } else { break; }
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
     }
     Some(tabs)
 }
@@ -469,10 +622,15 @@ pub(crate) fn parse_json_i16_array(json: &str, key: &str, count: usize) -> Optio
     let rest = &json[start + pattern.len()..];
     let end = rest.find(']')?;
     let arr_str = &rest[..end];
-    let vals: Vec<i16> = arr_str.split(',')
+    let vals: Vec<i16> = arr_str
+        .split(',')
         .filter_map(|s| s.trim().parse::<i16>().ok())
         .collect();
-    if vals.len() == count { Some(vals) } else { None }
+    if vals.len() == count {
+        Some(vals)
+    } else {
+        None
+    }
 }
 
 /// 간단한 JSON boolean 파싱
@@ -481,9 +639,13 @@ pub(crate) fn json_bool(json: &str, key: &str) -> Option<bool> {
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
     let rest = rest.trim_start();
-    if rest.starts_with("true") { Some(true) }
-    else if rest.starts_with("false") { Some(false) }
-    else { None }
+    if rest.starts_with("true") {
+        Some(true)
+    } else if rest.starts_with("false") {
+        Some(false)
+    } else {
+        None
+    }
 }
 
 /// 간단한 JSON i32 파싱
@@ -492,7 +654,9 @@ pub(crate) fn json_i32(json: &str, key: &str) -> Option<i32> {
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
     let rest = rest.trim_start();
-    let end = rest.find(|c: char| !c.is_ascii_digit() && c != '-').unwrap_or(rest.len());
+    let end = rest
+        .find(|c: char| !c.is_ascii_digit() && c != '-')
+        .unwrap_or(rest.len());
     rest[..end].parse().ok()
 }
 
@@ -518,7 +682,10 @@ pub(crate) fn json_str(json: &str, key: &str) -> Option<String> {
                 Some('t') => result.push('\t'),
                 Some('\\') => result.push('\\'),
                 Some('"') => result.push('"'),
-                Some(c) => { result.push('\\'); result.push(c); }
+                Some(c) => {
+                    result.push('\\');
+                    result.push(c);
+                }
                 None => return None,
             },
             Some(c) => result.push(c),
@@ -530,7 +697,9 @@ pub(crate) fn json_str(json: &str, key: &str) -> Option<String> {
 /// CSS hex (#rrggbb) → HWP BGR (0x00BBGGRR) 변환
 pub(crate) fn css_color_to_bgr(css: &str) -> Option<u32> {
     let hex = css.strip_prefix('#')?;
-    if hex.len() != 6 { return None; }
+    if hex.len() != 6 {
+        return None;
+    }
     let r = u32::from_str_radix(&hex[0..2], 16).ok()?;
     let g = u32::from_str_radix(&hex[2..4], 16).ok()?;
     let b = u32::from_str_radix(&hex[4..6], 16).ok()?;
@@ -549,7 +718,9 @@ pub(crate) fn json_u32(json: &str, key: &str) -> Option<u32> {
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
     let rest = rest.trim_start();
-    let end = rest.find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len());
+    let end = rest
+        .find(|c: char| !c.is_ascii_digit())
+        .unwrap_or(rest.len());
     rest[..end].parse().ok()
 }
 
@@ -568,7 +739,9 @@ pub(crate) fn json_f64(json: &str, key: &str) -> Option<f64> {
     let pattern = format!("\"{}\":", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
-    let num_str: String = rest.trim_start().chars()
+    let num_str: String = rest
+        .trim_start()
+        .chars()
         .take_while(|c| c.is_ascii_digit() || *c == '.' || *c == '-')
         .collect();
     num_str.parse::<f64>().ok()
@@ -577,13 +750,17 @@ pub(crate) fn json_f64(json: &str, key: &str) -> Option<f64> {
 /// JSON 필수 필드 usize 파싱 (없으면 에러)
 pub(crate) fn json_usize(json: &str, key: &str) -> Result<usize, HwpError> {
     let pattern = format!("\"{}\":", key);
-    let pos = json.find(&pattern)
+    let pos = json
+        .find(&pattern)
         .ok_or_else(|| HwpError::RenderError(format!("JSON 필드 '{}' 없음", key)))?;
     let rest = &json[pos + pattern.len()..];
-    let num_str: String = rest.trim_start().chars()
+    let num_str: String = rest
+        .trim_start()
+        .chars()
         .take_while(|c| c.is_ascii_digit())
         .collect();
-    num_str.parse::<usize>()
+    num_str
+        .parse::<usize>()
         .map_err(|_| HwpError::RenderError(format!("JSON 필드 '{}' 값 파싱 실패", key)))
 }
 
@@ -637,7 +814,9 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
 /// chars 배열에서 pos부터 target 문자를 찾아 인덱스를 반환한다.
 pub(crate) fn find_char(chars: &[char], start: usize, target: char) -> usize {
     for i in start..chars.len() {
-        if chars[i] == target { return i; }
+        if chars[i] == target {
+            return i;
+        }
     }
     chars.len()
 }
@@ -645,8 +824,12 @@ pub(crate) fn find_char(chars: &[char], start: usize, target: char) -> usize {
 /// HTML에서 닫는 태그의 다음 위치를 찾는다 (중첩 고려).
 /// ASCII 대소문자 무시 바이트 비교
 pub(crate) fn ascii_starts_with_ci(haystack: &[u8], needle: &[u8]) -> bool {
-    if haystack.len() < needle.len() { return false; }
-    haystack.iter().zip(needle.iter())
+    if haystack.len() < needle.len() {
+        return false;
+    }
+    haystack
+        .iter()
+        .zip(needle.iter())
         .all(|(h, n)| h.to_ascii_lowercase() == *n)
 }
 
@@ -797,7 +980,10 @@ pub(crate) fn css_color_to_hwp_bgr(css: &str) -> Option<u32> {
         }
     } else if css.starts_with("rgb(") || css.starts_with("rgb (") {
         // rgb(r, g, b) 형식
-        let inner = css.trim_start_matches("rgb").trim_start_matches('(').trim_end_matches(')');
+        let inner = css
+            .trim_start_matches("rgb")
+            .trim_start_matches('(')
+            .trim_end_matches(')');
         let parts: Vec<&str> = inner.split(',').collect();
         if parts.len() >= 3 {
             let r: u32 = parts[0].trim().parse().ok()?;
@@ -839,25 +1025,32 @@ pub(crate) fn html_strip_tags(html: &str) -> String {
     let mut result = String::new();
     let mut in_tag = false;
     for c in html.chars() {
-        if c == '<' { in_tag = true; continue; }
-        if c == '>' { in_tag = false; continue; }
-        if !in_tag { result.push(c); }
+        if c == '<' {
+            in_tag = true;
+            continue;
+        }
+        if c == '>' {
+            in_tag = false;
+            continue;
+        }
+        if !in_tag {
+            result.push(c);
+        }
     }
     result
 }
 
 /// HTML을 플레인 텍스트로 변환한다 (태그 제거 + 엔티티 디코딩).
 pub(crate) fn html_to_plain_text(html: &str) -> String {
-    decode_html_entities(&html_strip_tags(html)).trim().to_string()
+    decode_html_entities(&html_strip_tags(html))
+        .trim()
+        .to_string()
 }
 
 /// HTML 태그에서 숫자 속성값을 추출한다.
 pub(crate) fn parse_html_attr_f64(tag: &str, attr: &str) -> Option<f64> {
     // width="200" 또는 width='200' 형식
-    let patterns = [
-        format!("{}=\"", attr),
-        format!("{}='", attr),
-    ];
+    let patterns = [format!("{}=\"", attr), format!("{}='", attr)];
     for pat in &patterns {
         if let Some(start) = tag.to_lowercase().find(&pat.to_lowercase()) {
             let after = &tag[start + pat.len()..];
@@ -884,15 +1077,34 @@ pub(crate) fn parse_css_dimension_pt(css: &str, property: &str) -> f64 {
     if let Some(val) = parse_css_value(css, property) {
         let val = val.trim();
         if val.ends_with("pt") {
-            val.trim_end_matches("pt").trim().parse::<f64>().unwrap_or(0.0)
+            val.trim_end_matches("pt")
+                .trim()
+                .parse::<f64>()
+                .unwrap_or(0.0)
         } else if val.ends_with("px") {
-            val.trim_end_matches("px").trim().parse::<f64>().unwrap_or(0.0) * 0.75
+            val.trim_end_matches("px")
+                .trim()
+                .parse::<f64>()
+                .unwrap_or(0.0)
+                * 0.75
         } else if val.ends_with("cm") {
-            val.trim_end_matches("cm").trim().parse::<f64>().unwrap_or(0.0) * 28.3465
+            val.trim_end_matches("cm")
+                .trim()
+                .parse::<f64>()
+                .unwrap_or(0.0)
+                * 28.3465
         } else if val.ends_with("mm") {
-            val.trim_end_matches("mm").trim().parse::<f64>().unwrap_or(0.0) * 2.83465
+            val.trim_end_matches("mm")
+                .trim()
+                .parse::<f64>()
+                .unwrap_or(0.0)
+                * 2.83465
         } else if val.ends_with("in") {
-            val.trim_end_matches("in").trim().parse::<f64>().unwrap_or(0.0) * 72.0
+            val.trim_end_matches("in")
+                .trim()
+                .parse::<f64>()
+                .unwrap_or(0.0)
+                * 72.0
         } else if val.ends_with('%') {
             0.0 // 백분율은 무시
         } else {
@@ -910,24 +1122,27 @@ pub(crate) fn parse_css_padding_pt(css: &str) -> [f64; 4] {
 
     // 축약형 padding: "1.41pt 5.10pt" 또는 "5pt" 또는 "5pt 10pt 5pt 10pt"
     if let Some(val) = parse_css_value(css, "padding") {
-        let parts: Vec<f64> = val.split_whitespace()
+        let parts: Vec<f64> = val
+            .split_whitespace()
             .map(|p| parse_single_dimension_pt(p))
             .collect();
         match parts.len() {
-            1 => { result = [parts[0]; 4]; },
+            1 => {
+                result = [parts[0]; 4];
+            }
             2 => {
                 // top/bottom, left/right
                 result = [parts[1], parts[1], parts[0], parts[0]];
-            },
+            }
             3 => {
                 // top, left/right, bottom
                 result = [parts[1], parts[1], parts[0], parts[2]];
-            },
+            }
             4 => {
                 // top, right, bottom, left
                 result = [parts[3], parts[1], parts[0], parts[2]];
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 
@@ -952,15 +1167,34 @@ pub(crate) fn parse_css_padding_pt(css: &str) -> [f64; 4] {
 pub(crate) fn parse_single_dimension_pt(s: &str) -> f64 {
     let s = s.trim();
     if s.ends_with("pt") {
-        s.trim_end_matches("pt").trim().parse::<f64>().unwrap_or(0.0)
+        s.trim_end_matches("pt")
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(0.0)
     } else if s.ends_with("px") {
-        s.trim_end_matches("px").trim().parse::<f64>().unwrap_or(0.0) * 0.75
+        s.trim_end_matches("px")
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(0.0)
+            * 0.75
     } else if s.ends_with("cm") {
-        s.trim_end_matches("cm").trim().parse::<f64>().unwrap_or(0.0) * 28.3465
+        s.trim_end_matches("cm")
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(0.0)
+            * 28.3465
     } else if s.ends_with("mm") {
-        s.trim_end_matches("mm").trim().parse::<f64>().unwrap_or(0.0) * 2.83465
+        s.trim_end_matches("mm")
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(0.0)
+            * 2.83465
     } else if s.ends_with("in") {
-        s.trim_end_matches("in").trim().parse::<f64>().unwrap_or(0.0) * 72.0
+        s.trim_end_matches("in")
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(0.0)
+            * 72.0
     } else {
         s.parse::<f64>().unwrap_or(0.0)
     }
@@ -983,13 +1217,31 @@ pub(crate) fn parse_css_border_shorthand(val: &str) -> (f64, u32, u8) {
         let p = part.trim();
         // 스타일 키워드
         match p {
-            "solid" => { style = 1; continue; },
-            "dashed" => { style = 2; continue; },
-            "dotted" => { style = 3; continue; },
-            "double" => { style = 4; continue; },
-            "none" => { style = 0; continue; },
-            "hidden" => { style = 0; continue; },
-            _ => {},
+            "solid" => {
+                style = 1;
+                continue;
+            }
+            "dashed" => {
+                style = 2;
+                continue;
+            }
+            "dotted" => {
+                style = 3;
+                continue;
+            }
+            "double" => {
+                style = 4;
+                continue;
+            }
+            "none" => {
+                style = 0;
+                continue;
+            }
+            "hidden" => {
+                style = 0;
+                continue;
+            }
+            _ => {}
         }
         // 색상 (#hex 또는 rgb())
         if p.starts_with('#') || p.starts_with("rgb") {
@@ -1012,29 +1264,47 @@ pub(crate) fn parse_css_border_shorthand(val: &str) -> (f64, u32, u8) {
 /// HWP 스펙: width 값이 선 굵기 인덱스 (0: 0.1mm, 1: 0.12mm, 2: 0.15mm, 3: 0.2mm, 4: 0.25mm, 5: 0.3mm, 6: 0.4mm, 7: 0.5mm)
 pub(crate) fn css_border_width_to_hwp(pt: f64) -> u8 {
     let mm = pt * 0.3528; // 1pt ≈ 0.3528mm
-    if mm < 0.11 { 0 }
-    else if mm < 0.14 { 1 }
-    else if mm < 0.18 { 2 }
-    else if mm < 0.23 { 3 }
-    else if mm < 0.28 { 4 }
-    else if mm < 0.35 { 5 }
-    else if mm < 0.45 { 6 }
-    else { 7 }
+    if mm < 0.11 {
+        0
+    } else if mm < 0.14 {
+        1
+    } else if mm < 0.18 {
+        2
+    } else if mm < 0.23 {
+        3
+    } else if mm < 0.28 {
+        4
+    } else if mm < 0.35 {
+        5
+    } else if mm < 0.45 {
+        6
+    } else {
+        7
+    }
 }
 
 /// BorderLineType을 u8 값으로 변환한다.
 pub(crate) fn border_line_type_to_u8_val(lt: crate::model::style::BorderLineType) -> u8 {
     use crate::model::style::BorderLineType;
     match lt {
-        BorderLineType::None => 0, BorderLineType::Solid => 1,
-        BorderLineType::Dash => 2, BorderLineType::Dot => 3,
-        BorderLineType::DashDot => 4, BorderLineType::DashDotDot => 5,
-        BorderLineType::LongDash => 6, BorderLineType::Circle => 7,
-        BorderLineType::Double => 8, BorderLineType::ThinThickDouble => 9,
-        BorderLineType::ThickThinDouble => 10, BorderLineType::ThinThickThinTriple => 11,
-        BorderLineType::Wave => 12, BorderLineType::DoubleWave => 13,
-        BorderLineType::Thick3D => 14, BorderLineType::Thick3DReverse => 15,
-        BorderLineType::Thin3D => 16, BorderLineType::Thin3DReverse => 17,
+        BorderLineType::None => 0,
+        BorderLineType::Solid => 1,
+        BorderLineType::Dash => 2,
+        BorderLineType::Dot => 3,
+        BorderLineType::DashDot => 4,
+        BorderLineType::DashDotDot => 5,
+        BorderLineType::LongDash => 6,
+        BorderLineType::Circle => 7,
+        BorderLineType::Double => 8,
+        BorderLineType::ThinThickDouble => 9,
+        BorderLineType::ThickThinDouble => 10,
+        BorderLineType::ThinThickThinTriple => 11,
+        BorderLineType::Wave => 12,
+        BorderLineType::DoubleWave => 13,
+        BorderLineType::Thick3D => 14,
+        BorderLineType::Thick3DReverse => 15,
+        BorderLineType::Thin3D => 16,
+        BorderLineType::Thin3DReverse => 17,
     }
 }
 
@@ -1042,29 +1312,51 @@ pub(crate) fn border_line_type_to_u8_val(lt: crate::model::style::BorderLineType
 pub(crate) fn u8_to_border_line_type(v: u8) -> crate::model::style::BorderLineType {
     use crate::model::style::BorderLineType;
     match v {
-        0 => BorderLineType::None, 1 => BorderLineType::Solid,
-        2 => BorderLineType::Dash, 3 => BorderLineType::Dot,
-        4 => BorderLineType::DashDot, 5 => BorderLineType::DashDotDot,
-        6 => BorderLineType::LongDash, 7 => BorderLineType::Circle,
-        8 => BorderLineType::Double, 9 => BorderLineType::ThinThickDouble,
-        10 => BorderLineType::ThickThinDouble, 11 => BorderLineType::ThinThickThinTriple,
-        12 => BorderLineType::Wave, 13 => BorderLineType::DoubleWave,
-        14 => BorderLineType::Thick3D, 15 => BorderLineType::Thick3DReverse,
-        16 => BorderLineType::Thin3D, 17 => BorderLineType::Thin3DReverse,
+        0 => BorderLineType::None,
+        1 => BorderLineType::Solid,
+        2 => BorderLineType::Dash,
+        3 => BorderLineType::Dot,
+        4 => BorderLineType::DashDot,
+        5 => BorderLineType::DashDotDot,
+        6 => BorderLineType::LongDash,
+        7 => BorderLineType::Circle,
+        8 => BorderLineType::Double,
+        9 => BorderLineType::ThinThickDouble,
+        10 => BorderLineType::ThickThinDouble,
+        11 => BorderLineType::ThinThickThinTriple,
+        12 => BorderLineType::Wave,
+        13 => BorderLineType::DoubleWave,
+        14 => BorderLineType::Thick3D,
+        15 => BorderLineType::Thick3DReverse,
+        16 => BorderLineType::Thin3D,
+        17 => BorderLineType::Thin3DReverse,
         _ => BorderLineType::None,
     }
 }
 
 /// 두 BorderFill이 동일한지 비교한다.
-pub(crate) fn border_fills_equal(a: &crate::model::style::BorderFill, b: &crate::model::style::BorderFill) -> bool {
-    if a.attr != b.attr { return false; }
+pub(crate) fn border_fills_equal(
+    a: &crate::model::style::BorderFill,
+    b: &crate::model::style::BorderFill,
+) -> bool {
+    if a.attr != b.attr {
+        return false;
+    }
     for i in 0..4 {
-        if a.borders[i].line_type != b.borders[i].line_type { return false; }
-        if a.borders[i].width != b.borders[i].width { return false; }
-        if a.borders[i].color != b.borders[i].color { return false; }
+        if a.borders[i].line_type != b.borders[i].line_type {
+            return false;
+        }
+        if a.borders[i].width != b.borders[i].width {
+            return false;
+        }
+        if a.borders[i].color != b.borders[i].color {
+            return false;
+        }
     }
     // fill 비교 (fill_type + solid color)
-    if a.fill.fill_type != b.fill.fill_type { return false; }
+    if a.fill.fill_type != b.fill.fill_type {
+        return false;
+    }
     match (&a.fill.solid, &b.fill.solid) {
         (Some(sa), Some(sb)) => sa.background_color == sb.background_color,
         (None, None) => true,

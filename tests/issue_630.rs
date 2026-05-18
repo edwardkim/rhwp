@@ -24,13 +24,21 @@ fn extract_page_marker_paren_x_positions(svg: &str) -> Vec<f64> {
 
     let mut i = 0;
     while i < svg.len() {
-        let Some(rel) = svg[i..].find("<text ") else { break };
+        let Some(rel) = svg[i..].find("<text ") else {
+            break;
+        };
         let abs = i + rel;
         let after = &svg[abs + 6..];
-        let Some(close) = after.find('>') else { i = abs + 6; continue };
+        let Some(close) = after.find('>') else {
+            i = abs + 6;
+            continue;
+        };
         let attrs = &after[..close];
         let content_start = abs + 6 + close + 1;
-        let Some(end_rel) = svg[content_start..].find("</text>") else { i = abs + 6; continue };
+        let Some(end_rel) = svg[content_start..].find("</text>") else {
+            i = abs + 6;
+            continue;
+        };
         let content = &svg[content_start..content_start + end_rel];
 
         let parse_attr = |key: &str| -> Option<f64> {
@@ -42,7 +50,9 @@ fn extract_page_marker_paren_x_positions(svg: &str) -> Vec<f64> {
 
         if let (Some(x), Some(y)) = (parse_attr("x"), parse_attr("y")) {
             let y_key = (y * 10.0).round() as i32;
-            by_y.entry(y_key).or_default().push((x, content.to_string()));
+            by_y.entry(y_key)
+                .or_default()
+                .push((x, content.to_string()));
         }
         i = content_start + end_rel + 7;
     }
@@ -71,11 +81,10 @@ fn extract_page_marker_paren_x_positions(svg: &str) -> Vec<f64> {
 fn test_630_aift_p4_toc_paren_alignment() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/aift.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("parse aift.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse aift.hwp");
 
     // 페이지 4 (0-indexed page=3) — 목차 페이지
     let svg = doc
@@ -100,6 +109,9 @@ fn test_630_aift_p4_toc_paren_alignment() {
         "aift p4 목차 `(페이지 표기)` 시작 `(` 가 단일 그룹 (±1.5px) 안에 정렬되어야 함.\n  \
          lines={} min_x={:.2} max_x={:.2} spread={:.2}px (예상 ≤1.5)\n  \
          8.67px 이탈 = `·` 반각/전각 측정 차이 (Issue #630).",
-        paren_xs.len(), min_x, max_x, spread
+        paren_xs.len(),
+        min_x,
+        max_x,
+        spread
     );
 }

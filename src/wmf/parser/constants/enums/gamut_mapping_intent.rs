@@ -1,17 +1,7 @@
 /// The GamutMappingIntent Enumeration specifies the relationship between
 /// logical and physical colors. (Windows NT 3.1, Windows NT 3.5, and Windows NT
 /// 3.51: This functionality is not supported.)
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u32)]
 pub enum GamutMappingIntent {
     /// Specifies that saturation SHOULD be maintained. Typically used for

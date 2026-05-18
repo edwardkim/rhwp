@@ -1,7 +1,10 @@
 //! 상태 레코드 — DC 스택, WorldTransform, Window/Viewport, 색상/모드.
 
+use crate::emf::parser::{
+    objects::{PointL, SizeL, XForm},
+    Cursor,
+};
 use crate::emf::Error;
-use crate::emf::parser::{Cursor, objects::{PointL, SizeL, XForm}};
 
 pub fn parse_restore_dc(c: &mut Cursor<'_>) -> Result<i32, Error> {
     c.i32()

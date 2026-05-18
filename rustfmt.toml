@@ -1,0 +1,8 @@
+# rhwp rustfmt policy
+#
+# Keep this file on stable rustfmt options only. Formatting policy changes must
+# be handled in a dedicated tooling issue, not mixed into feature branches.
+edition = "2021"
+max_width = 100
+newline_style = "Unix"
+use_small_heuristics = "Default"

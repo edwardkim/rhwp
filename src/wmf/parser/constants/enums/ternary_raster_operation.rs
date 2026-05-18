@@ -3,17 +3,7 @@ use crate::wmf::imports::*;
 /// The TernaryRasterOperation Enumeration specifies ternary raster operation
 /// codes, which define how to combine the bits in a source bitmap with the bits
 /// in a destination bitmap.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    strum::FromRepr,
-    strum::EnumIter,
-)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, strum::FromRepr, strum::EnumIter)]
 #[repr(u32)]
 pub enum TernaryRasterOperation {
     // cSpell:disable
@@ -540,11 +530,13 @@ impl TernaryRasterOperation {
     const OPERAND_SOURCE_BITMAP: &'static str = "S";
 
     pub fn use_selected_brush(&self) -> bool {
-        self.as_reverse_polish_notation().contains(Self::OPERAND_SELECTED_BRUSH)
+        self.as_reverse_polish_notation()
+            .contains(Self::OPERAND_SELECTED_BRUSH)
     }
 
     pub fn use_source(&self) -> bool {
-        self.as_reverse_polish_notation().contains(Self::OPERAND_SOURCE_BITMAP)
+        self.as_reverse_polish_notation()
+            .contains(Self::OPERAND_SOURCE_BITMAP)
     }
 
     fn as_reverse_polish_notation(self) -> String {

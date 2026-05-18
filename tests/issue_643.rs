@@ -17,16 +17,19 @@ use std::path::Path;
 fn page6_pi80_last_line_stays_on_page6() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/2022년 국립국어원 업무계획.hwp");
-    let bytes = fs::read(&hwp_path)
-        .unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
+    let bytes =
+        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .expect("parse 2022년 국립국어원 업무계획.hwp");
 
     // 전체 덤프에서 pi=80 항목 찾기 (페이지 번호는 다른 정정으로 변동 가능)
     let dump = doc.dump_page_items(None);
-    let pi80_line = dump.lines()
-        .find(|l| l.contains("pi=80") && (l.contains("FullParagraph") || l.contains("PartialParagraph")))
+    let pi80_line = dump
+        .lines()
+        .find(|l| {
+            l.contains("pi=80") && (l.contains("FullParagraph") || l.contains("PartialParagraph"))
+        })
         .unwrap_or_else(|| panic!("pi=80 항목을 찾지 못함.\n--- dump ---\n{}", dump));
 
     // 정정 기대:
@@ -37,8 +40,8 @@ fn page6_pi80_last_line_stays_on_page6() {
     // - PartialParagraph pi=80  lines=0..1  ... (line 1 누락)
 
     let is_full = pi80_line.contains("FullParagraph");
-    let is_complete_partial = pi80_line.contains("PartialParagraph")
-        && pi80_line.contains("lines=0..2");
+    let is_complete_partial =
+        pi80_line.contains("PartialParagraph") && pi80_line.contains("lines=0..2");
 
     assert!(
         is_full || is_complete_partial,

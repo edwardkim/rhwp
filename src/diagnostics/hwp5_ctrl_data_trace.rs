@@ -270,7 +270,9 @@ fn decode_parameter_set(
     let mut cursor = offset + 6;
     for index in 0..count {
         if cursor + 4 > data.len() {
-            return Err(format!("ParameterItem header 부족: index={index} offset={cursor}"));
+            return Err(format!(
+                "ParameterItem header 부족: index={index} offset={cursor}"
+            ));
         }
         let item_id = read_u16(data, cursor)?;
         let item_type = read_u16(data, cursor + 2)?;
@@ -291,7 +293,10 @@ fn decode_parameter_set(
                     return Err(format!("String value 부족: len={len} offset={cursor}"));
                 }
                 let value = decode_utf16le(&data[cursor..cursor + byte_len]);
-                lines.push(format!("{}string len={len} value=\"{value}\"", indent(depth + 2)));
+                lines.push(format!(
+                    "{}string len={len} value=\"{value}\"",
+                    indent(depth + 2)
+                ));
                 cursor += byte_len;
             }
             0x0002..=0x0009 => {

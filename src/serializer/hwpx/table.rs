@@ -28,7 +28,7 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
-use crate::model::shape::{CommonObjAttr, TextWrap, VertAlign, VertRelTo, HorzAlign, HorzRelTo};
+use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
 use super::context::SerializeContext;
@@ -94,11 +94,7 @@ pub fn write_table<W: Write>(
     // tr[]: 행 단위 반복. 각 행에 속한 셀 (cell.row == r) 을 col 오름차순으로 출력.
     for row_idx in 0..table.row_count {
         start_tag(w, "hp:tr")?;
-        let mut row_cells: Vec<&Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row == row_idx)
-            .collect();
+        let mut row_cells: Vec<&Cell> = table.cells.iter().filter(|c| c.row == row_idx).collect();
         row_cells.sort_by_key(|c| c.col);
         for cell in row_cells {
             write_cell(w, cell, ctx)?;
@@ -228,7 +224,14 @@ fn write_sub_list<W: Write>(
         "hp:subList",
         &[
             ("id", ""),
-            ("textDirection", if cell.text_direction == 1 { "VERTICAL" } else { "HORIZONTAL" }),
+            (
+                "textDirection",
+                if cell.text_direction == 1 {
+                    "VERTICAL"
+                } else {
+                    "HORIZONTAL"
+                },
+            ),
             ("lineWrap", "BREAK"),
             ("vertAlign", cell_vert_align_str(cell.vertical_align)),
             ("linkListIDRef", "0"),
@@ -264,7 +267,11 @@ fn write_sub_list<W: Write>(
             ],
         )?;
 
-        let cs = para.char_shapes.first().map(|r| r.char_shape_id).unwrap_or(0);
+        let cs = para
+            .char_shapes
+            .first()
+            .map(|r| r.char_shape_id)
+            .unwrap_or(0);
         let cs_str = cs.to_string();
         start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
         // 텍스트만 출력 (탭·소프트브레이크는 Stage 3 범위에서 제외 — section.rs 와 동일 방식으로 단순화)
@@ -298,7 +305,7 @@ fn write_sub_list<W: Write>(
 }
 
 fn write_cell_text<W: Write>(w: &mut Writer<W>, text: &str) -> Result<(), SerializeError> {
-    use quick_xml::events::{BytesStart, BytesEnd, BytesText, Event};
+    use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
     // <hp:t>text</hp:t>
     w.write_event(Event::Start(BytesStart::new("hp:t")))
         .map_err(|e| SerializeError::XmlError(e.to_string()))?;
@@ -344,7 +351,11 @@ fn write_cell_margin<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), Ser
 // ---------- enum 변환 헬퍼 ----------
 
 fn bool01(b: bool) -> &'static str {
-    if b { "1" } else { "0" }
+    if b {
+        "1"
+    } else {
+        "0"
+    }
 }
 
 fn text_wrap_str(w: TextWrap) -> &'static str {
@@ -480,7 +491,9 @@ mod tests {
         let cc = xml.find("colCnt=").unwrap();
         let bf = xml.find("borderFillIDRef=").unwrap();
         let na = xml.find("noAdjust=").unwrap();
-        assert!(ip < zp && zp < nt && nt < tw && tw < tf && tf < rc && rc < cc && cc < bf && bf < na);
+        assert!(
+            ip < zp && zp < nt && nt < tw && tw < tf && tf < rc && rc < cc && cc < bf && bf < na
+        );
     }
 
     #[test]

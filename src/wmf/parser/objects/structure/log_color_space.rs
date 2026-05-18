@@ -91,8 +91,7 @@ impl LogColorSpace {
             + gamma_blue_bytes;
 
         let filename = if size as usize - consumed_bytes >= 260 {
-            let (bytes, filename_bytes) =
-                crate::wmf::parser::read_variable(buf, 260)?;
+            let (bytes, filename_bytes) = crate::wmf::parser::read_variable(buf, 260)?;
             consumed_bytes += filename_bytes;
 
             Some(String::from_utf8_lossy(&bytes).to_string())

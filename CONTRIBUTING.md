@@ -87,11 +87,28 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 ### PR 전 체크리스트
 
 ```bash
+cargo fmt --all -- --check        # 포맷 정책 준수
 cargo test                       # 1,100+ 테스트 통과
 cargo clippy -- -D warnings      # 린트 경고 0건
 ```
 
-두 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
+세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
+
+### 포맷 정책
+
+rhwp는 저장소 루트의 `rust-toolchain.toml`과 `rustfmt.toml`을 기준으로 Rust 포맷을 관리합니다.
+
+```bash
+cargo fmt --all                  # 로컬 포맷 적용
+cargo fmt --all -- --check       # CI와 같은 포맷 검증
+```
+
+기여 시 다음 원칙을 지켜주세요.
+
+- 기능 변경과 전체 포맷 정규화는 같은 커밋에 섞지 않습니다.
+- PR에서 본인이 수정한 파일 외 대량 포맷 diff가 생기면, 먼저 `devel` 기준으로 rebase한 뒤 다시 확인합니다.
+- 저장소 전체 `cargo fmt --all`은 포맷 전용 이슈/브랜치에서만 수행합니다.
+- rustfmt 옵션이나 Rust toolchain 버전을 바꾸는 작업은 별도 이슈로 분리합니다.
 
 ### 한컴 PDF 와의 일치 검증에 대해
 

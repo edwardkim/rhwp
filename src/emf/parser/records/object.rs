@@ -1,7 +1,10 @@
 //! 객체 레코드 — 펜/브러시/폰트 생성·선택·삭제.
 
+use crate::emf::parser::{
+    objects::{LogBrush, LogFontW, LogPen},
+    Cursor,
+};
 use crate::emf::Error;
-use crate::emf::parser::{Cursor, objects::{LogBrush, LogFontW, LogPen}};
 
 /// EMR_CREATEPEN: ihPen(u32) + LogPen(16B) = 20B.
 pub fn parse_create_pen(c: &mut Cursor<'_>) -> Result<(u32, LogPen), Error> {

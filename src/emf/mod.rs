@@ -15,7 +15,7 @@
     clippy::upper_case_acronyms,
     dead_code,
     unused_imports,
-    unused_variables,
+    unused_variables
 )]
 
 pub mod converter;
@@ -24,8 +24,8 @@ pub mod parser;
 #[cfg(test)]
 mod tests;
 
-pub use parser::Header;
 pub use parser::records::Record;
+pub use parser::Header;
 
 /// EMF 파서/컨버터 공용 오류.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -45,16 +45,24 @@ pub enum Error {
 impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            Self::InvalidSignature { got } =>
-                write!(f, "invalid EMF signature: 0x{got:08X} (expected 0x464D4520 ' EMF')"),
-            Self::InvalidFirstRecord { got } =>
-                write!(f, "first record must be EMR_HEADER (type=1), got type={got}"),
-            Self::UnexpectedEof { at, need } =>
-                write!(f, "unexpected EOF at offset {at}, needed {need} bytes"),
-            Self::MisalignedRecord { offset, size } =>
-                write!(f, "misaligned record at offset {offset}: size={size} is not multiple of 4"),
-            Self::RecordTooSmall { offset, size } =>
-                write!(f, "record at offset {offset} too small: size={size} < 8"),
+            Self::InvalidSignature { got } => write!(
+                f,
+                "invalid EMF signature: 0x{got:08X} (expected 0x464D4520 ' EMF')"
+            ),
+            Self::InvalidFirstRecord { got } => write!(
+                f,
+                "first record must be EMR_HEADER (type=1), got type={got}"
+            ),
+            Self::UnexpectedEof { at, need } => {
+                write!(f, "unexpected EOF at offset {at}, needed {need} bytes")
+            }
+            Self::MisalignedRecord { offset, size } => write!(
+                f,
+                "misaligned record at offset {offset}: size={size} is not multiple of 4"
+            ),
+            Self::RecordTooSmall { offset, size } => {
+                write!(f, "record at offset {offset} too small: size={size} < 8")
+            }
         }
     }
 }
@@ -72,10 +80,7 @@ pub fn parse_emf(bytes: &[u8]) -> Result<Vec<Record>, Error> {
 /// EMF Bounds → render_rect 매핑 행렬을 자동 계산하여 `<g transform="...">`으로 감싼다.
 ///
 /// 반환값은 viewBox/xmlns가 없는 **fragment**로, rhwp 렌더 트리의 RawSvg로 삽입된다.
-pub fn convert_to_svg(
-    bytes: &[u8],
-    render_rect: (f32, f32, f32, f32),
-) -> Result<String, Error> {
+pub fn convert_to_svg(bytes: &[u8], render_rect: (f32, f32, f32, f32)) -> Result<String, Error> {
     let records = parse_emf(bytes)?;
     let mut player = converter::Player::new(render_rect);
     player.play(&records)?;

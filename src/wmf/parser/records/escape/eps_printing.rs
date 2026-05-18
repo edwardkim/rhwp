@@ -1,15 +1,10 @@
 impl crate::wmf::parser::META_ESCAPE {
-    pub(in crate::wmf::parser::records::escape) fn parse_as_EPSPRINTING<
-        R: crate::wmf::Read,
-    >(
+    pub(in crate::wmf::parser::records::escape) fn parse_as_EPSPRINTING<R: crate::wmf::Read>(
         buf: &mut R,
         mut record_size: crate::wmf::parser::RecordSize,
         record_function: u16,
     ) -> Result<Self, crate::wmf::parser::ParseError> {
-        let (
-            (byte_count, byte_count_bytes),
-            (set_eps_printing, set_eps_printing_bytes),
-        ) = (
+        let ((byte_count, byte_count_bytes), (set_eps_printing, set_eps_printing_bytes)) = (
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
             crate::wmf::parser::read_u16_from_le_bytes(buf)?,
         );
@@ -17,9 +12,7 @@ impl crate::wmf::parser::META_ESCAPE {
 
         if byte_count != 0x0002 {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: format!(
-                    "The byte_count `{byte_count:#06X}` field must be `0x0002`",
-                ),
+                cause: format!("The byte_count `{byte_count:#06X}` field must be `0x0002`",),
             });
         }
 

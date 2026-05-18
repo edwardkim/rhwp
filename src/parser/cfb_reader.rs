@@ -44,8 +44,8 @@ impl CfbReader {
     /// 바이트 데이터에서 CFB 컨테이너 열기
     pub fn open(data: &[u8]) -> Result<Self, CfbError> {
         let cursor = Cursor::new(data.to_vec());
-        let compound = cfb::CompoundFile::open(cursor)
-            .map_err(|e| CfbError::OpenError(e.to_string()))?;
+        let compound =
+            cfb::CompoundFile::open(cursor).map_err(|e| CfbError::OpenError(e.to_string()))?;
 
         Ok(CfbReader { compound })
     }
@@ -61,7 +61,8 @@ impl CfbReader {
             return Err(CfbError::StreamNotFound(path.to_string()));
         }
 
-        let mut stream = self.compound
+        let mut stream = self
+            .compound
             .open_stream(path)
             .map_err(|e| CfbError::StreamError(format!("{}: {}", path, e)))?;
 
@@ -145,8 +146,12 @@ impl CfbReader {
     pub fn section_count(&self) -> u32 {
         let mut count = 0;
         loop {
-            let has_body = self.compound.is_stream(&format!("/BodyText/Section{}", count));
-            let has_view = self.compound.is_stream(&format!("/ViewText/Section{}", count));
+            let has_body = self
+                .compound
+                .is_stream(&format!("/BodyText/Section{}", count));
+            let has_view = self
+                .compound
+                .is_stream(&format!("/ViewText/Section{}", count));
             let has_root = self.compound.is_stream(&format!("/Section{}", count));
 
             if has_body || has_view || has_root {
@@ -282,13 +287,16 @@ impl LenientCfbReader {
         let mini_sector_size_power = u16::from_le_bytes([data[32], data[33]]) as usize;
         let _mini_sector_size = 1usize << mini_sector_size_power;
 
-        let fat_sectors_count = u32::from_le_bytes([data[44], data[45], data[46], data[47]]) as usize;
+        let fat_sectors_count =
+            u32::from_le_bytes([data[44], data[45], data[46], data[47]]) as usize;
         let first_dir_sector = u32::from_le_bytes([data[48], data[49], data[50], data[51]]);
         let mini_stream_cutoff = u32::from_le_bytes([data[56], data[57], data[58], data[59]]);
         let first_mini_fat_sector = u32::from_le_bytes([data[60], data[61], data[62], data[63]]);
-        let mini_fat_sectors_count = u32::from_le_bytes([data[64], data[65], data[66], data[67]]) as usize;
+        let mini_fat_sectors_count =
+            u32::from_le_bytes([data[64], data[65], data[66], data[67]]) as usize;
         let first_difat_sector = u32::from_le_bytes([data[68], data[69], data[70], data[71]]);
-        let difat_sectors_count = u32::from_le_bytes([data[72], data[73], data[74], data[75]]) as usize;
+        let difat_sectors_count =
+            u32::from_le_bytes([data[72], data[73], data[74], data[75]]) as usize;
 
         // DIFAT 읽기: 헤더의 109개 + 추가 DIFAT 섹터
         let mut fat_sector_ids = Vec::new();
@@ -304,19 +312,33 @@ impl LenientCfbReader {
             let mut dsid = first_difat_sector;
             for _ in 0..difat_sectors_count {
                 let off = 512 + dsid as usize * sector_size;
-                if off + sector_size > data.len() { break; }
+                if off + sector_size > data.len() {
+                    break;
+                }
                 let entries_per = sector_size / 4 - 1;
                 for i in 0..entries_per {
                     let eoff = off + i * 4;
-                    let sid = u32::from_le_bytes([data[eoff], data[eoff + 1], data[eoff + 2], data[eoff + 3]]);
+                    let sid = u32::from_le_bytes([
+                        data[eoff],
+                        data[eoff + 1],
+                        data[eoff + 2],
+                        data[eoff + 3],
+                    ]);
                     if sid != Self::FREE_SECT && sid != Self::END_OF_CHAIN {
                         fat_sector_ids.push(sid);
                     }
                 }
                 // 다음 DIFAT 섹터
                 let next_off = off + entries_per * 4;
-                dsid = u32::from_le_bytes([data[next_off], data[next_off + 1], data[next_off + 2], data[next_off + 3]]);
-                if dsid == Self::END_OF_CHAIN || dsid == Self::FREE_SECT { break; }
+                dsid = u32::from_le_bytes([
+                    data[next_off],
+                    data[next_off + 1],
+                    data[next_off + 2],
+                    data[next_off + 3],
+                ]);
+                if dsid == Self::END_OF_CHAIN || dsid == Self::FREE_SECT {
+                    break;
+                }
             }
         }
 
@@ -324,11 +346,18 @@ impl LenientCfbReader {
         let mut fat = Vec::new();
         for &fsid in &fat_sector_ids {
             let off = 512 + fsid as usize * sector_size;
-            if off + sector_size > data.len() { continue; }
+            if off + sector_size > data.len() {
+                continue;
+            }
             let entries = sector_size / 4;
             for i in 0..entries {
                 let eoff = off + i * 4;
-                fat.push(u32::from_le_bytes([data[eoff], data[eoff + 1], data[eoff + 2], data[eoff + 3]]));
+                fat.push(u32::from_le_bytes([
+                    data[eoff],
+                    data[eoff + 1],
+                    data[eoff + 2],
+                    data[eoff + 3],
+                ]));
             }
         }
 
@@ -343,23 +372,30 @@ impl LenientCfbReader {
             let name = if name_len > 2 {
                 let name_bytes = &dir_data[eoff..eoff + name_len - 2]; // UTF-16LE, exclude null
                 String::from_utf16_lossy(
-                    &name_bytes.chunks(2)
+                    &name_bytes
+                        .chunks(2)
                         .map(|c| u16::from_le_bytes([c[0], c.get(1).copied().unwrap_or(0)]))
-                        .collect::<Vec<_>>()
+                        .collect::<Vec<_>>(),
                 )
             } else {
                 String::new()
             };
             let obj_type = dir_data[eoff + 66];
             let start_sector = u32::from_le_bytes([
-                dir_data[eoff + 116], dir_data[eoff + 117],
-                dir_data[eoff + 118], dir_data[eoff + 119],
+                dir_data[eoff + 116],
+                dir_data[eoff + 117],
+                dir_data[eoff + 118],
+                dir_data[eoff + 119],
             ]);
             let size = u64::from_le_bytes([
-                dir_data[eoff + 120], dir_data[eoff + 121],
-                dir_data[eoff + 122], dir_data[eoff + 123],
-                dir_data[eoff + 124], dir_data[eoff + 125],
-                dir_data[eoff + 126], dir_data[eoff + 127],
+                dir_data[eoff + 120],
+                dir_data[eoff + 121],
+                dir_data[eoff + 122],
+                dir_data[eoff + 123],
+                dir_data[eoff + 124],
+                dir_data[eoff + 125],
+                dir_data[eoff + 126],
+                dir_data[eoff + 127],
             ]);
 
             if obj_type == 1 || obj_type == 2 || obj_type == 5 {
@@ -401,9 +437,13 @@ impl LenientCfbReader {
         let mut sid = start;
         let mut visited = std::collections::HashSet::new();
         while sid != Self::END_OF_CHAIN && sid != Self::FREE_SECT {
-            if !visited.insert(sid) { break; } // 순환 방지
+            if !visited.insert(sid) {
+                break;
+            } // 순환 방지
             let off = 512 + sid as usize * sector_size;
-            if off + sector_size > data.len() { break; }
+            if off + sector_size > data.len() {
+                break;
+            }
             result.extend_from_slice(&data[off..off + sector_size]);
             if (sid as usize) < fat.len() {
                 sid = fat[sid as usize];
@@ -420,9 +460,13 @@ impl LenientCfbReader {
         let mut sid = start;
         let mut visited = std::collections::HashSet::new();
         while sid != Self::END_OF_CHAIN && sid != Self::FREE_SECT {
-            if !visited.insert(sid) { break; }
+            if !visited.insert(sid) {
+                break;
+            }
             let off = sid as usize * mini_sector_size;
-            if off + mini_sector_size > self.mini_stream.len() { break; }
+            if off + mini_sector_size > self.mini_stream.len() {
+                break;
+            }
             result.extend_from_slice(&self.mini_stream[off..off + mini_sector_size]);
             if (sid as usize) < self.mini_fat.len() {
                 sid = self.mini_fat[sid as usize];
@@ -439,7 +483,9 @@ impl LenientCfbReader {
     fn find_entry_idx(&self, path: &str) -> Option<usize> {
         // 경로 "/" 제거 및 트리 탐색 단순화: 이름으로 검색
         let parts: Vec<&str> = path.trim_start_matches('/').split('/').collect();
-        if parts.is_empty() { return None; }
+        if parts.is_empty() {
+            return None;
+        }
 
         // 간단한 DFS - directory entries가 Red-Black 트리이므로
         // child_id/sibling을 써야 하지만, 이름 기반 단순 매칭으로 충분
@@ -453,15 +499,21 @@ impl LenientCfbReader {
 
         // 정확한 경로 매칭이 필요하면 트리 탐색해야 하지만,
         // HWP에서는 이름이 유일하므로 단순 매칭
-        self.entries.iter().position(|(name, _, _, _)| name == &target_name)
+        self.entries
+            .iter()
+            .position(|(name, _, _, _)| name == &target_name)
     }
 
     pub fn read_stream(&self, path: &str) -> Result<Vec<u8>, CfbError> {
-        let idx = self.find_entry_idx(path)
+        let idx = self
+            .find_entry_idx(path)
             .ok_or_else(|| CfbError::StreamNotFound(path.to_string()))?;
         let (_, start, size, obj_type) = &self.entries[idx];
         if *obj_type != 2 {
-            return Err(CfbError::StreamError(format!("{}: 스트림이 아님 (type={})", path, obj_type)));
+            return Err(CfbError::StreamError(format!(
+                "{}: 스트림이 아님 (type={})",
+                path, obj_type
+            )));
         }
 
         if *size < self.mini_stream_cutoff as u64 {
@@ -486,7 +538,11 @@ impl LenientCfbReader {
         }
     }
 
-    pub fn read_body_text_section(&self, index: u32, compressed: bool) -> Result<Vec<u8>, CfbError> {
+    pub fn read_body_text_section(
+        &self,
+        index: u32,
+        compressed: bool,
+    ) -> Result<Vec<u8>, CfbError> {
         let name = format!("Section{}", index);
         let raw = self.read_stream(&name)?;
         if compressed {
@@ -616,8 +672,16 @@ mod tests {
 
         println!("\n{}", "=".repeat(60));
         println!("  CFB Stream Structure Comparison");
-        println!("  CLI-saved (works):   {} ({} bytes)", cli_path, cli_data.len());
-        println!("  Browser-saved (bad): {} ({} bytes)", browser_path, browser_data.len());
+        println!(
+            "  CLI-saved (works):   {} ({} bytes)",
+            cli_path,
+            cli_data.len()
+        );
+        println!(
+            "  Browser-saved (bad): {} ({} bytes)",
+            browser_path,
+            browser_data.len()
+        );
         println!("{}\n", "=".repeat(60));
 
         let cli_cfb = CfbReader::open(&cli_data).expect("CLI CFB 열기 실패");
@@ -658,7 +722,8 @@ mod tests {
         println!();
 
         // Streams only in CLI
-        let cli_only: Vec<_> = cli_entries.keys()
+        let cli_only: Vec<_> = cli_entries
+            .keys()
             .filter(|k| !browser_entries.contains_key(*k))
             .collect();
         if !cli_only.is_empty() {
@@ -671,7 +736,8 @@ mod tests {
         }
 
         // Streams only in Browser
-        let browser_only: Vec<_> = browser_entries.keys()
+        let browser_only: Vec<_> = browser_entries
+            .keys()
             .filter(|k| !cli_entries.contains_key(*k))
             .collect();
         if !browser_only.is_empty() {
@@ -691,8 +757,10 @@ mod tests {
                 if cli_size != browser_size && *cli_is_stream {
                     let diff = *browser_size as i64 - *cli_size as i64;
                     let sign = if diff > 0 { "+" } else { "" };
-                    println!("  {:<40} CLI: {:>8}  Browser: {:>8}  ({}{})",
-                        path, cli_size, browser_size, sign, diff);
+                    println!(
+                        "  {:<40} CLI: {:>8}  Browser: {:>8}  ({}{})",
+                        path, cli_size, browser_size, sign, diff
+                    );
                     size_diffs += 1;
                 }
             }
@@ -704,10 +772,12 @@ mod tests {
         // Specifically analyze BinData streams
         println!("\n--- BinData Stream Analysis ---");
         println!();
-        let cli_bins: Vec<_> = cli_entries.keys()
+        let cli_bins: Vec<_> = cli_entries
+            .keys()
             .filter(|k| k.starts_with("/BinData/"))
             .collect();
-        let browser_bins: Vec<_> = browser_entries.keys()
+        let browser_bins: Vec<_> = browser_entries
+            .keys()
             .filter(|k| k.starts_with("/BinData/"))
             .collect();
 
@@ -717,7 +787,10 @@ mod tests {
             println!("  {:<45} size: {}", path, size);
         }
 
-        println!("\nBrowser-saved BinData streams ({} total):", browser_bins.len());
+        println!(
+            "\nBrowser-saved BinData streams ({} total):",
+            browser_bins.len()
+        );
         for path in &browser_bins {
             let (size, _) = browser_entries[*path];
             println!("  {:<45} size: {}", path, size);
@@ -729,34 +802,44 @@ mod tests {
             if let Some(name) = path.strip_prefix("/BinData/") {
                 if name.starts_with("BIN") {
                     // Extract the numeric part
-                    let num_part: String = name.chars()
+                    let num_part: String = name
+                        .chars()
                         .skip(3)
                         .take_while(|c| c.is_ascii_digit())
                         .collect();
-                    let ext_part: String = name.chars()
-                        .skip(3 + num_part.len())
-                        .collect();
-                    let source = if cli_entries.contains_key(*path) && browser_entries.contains_key(*path) {
-                        "BOTH"
-                    } else if cli_entries.contains_key(*path) {
-                        "CLI-ONLY"
-                    } else {
-                        "BROWSER-ONLY"
-                    };
-                    println!("  {} => prefix=BIN, num='{}' (digits={}), ext='{}' [{}]",
-                        name, num_part, num_part.len(), ext_part, source);
+                    let ext_part: String = name.chars().skip(3 + num_part.len()).collect();
+                    let source =
+                        if cli_entries.contains_key(*path) && browser_entries.contains_key(*path) {
+                            "BOTH"
+                        } else if cli_entries.contains_key(*path) {
+                            "CLI-ONLY"
+                        } else {
+                            "BROWSER-ONLY"
+                        };
+                    println!(
+                        "  {} => prefix=BIN, num='{}' (digits={}), ext='{}' [{}]",
+                        name,
+                        num_part,
+                        num_part.len(),
+                        ext_part,
+                        source
+                    );
                 }
             }
         }
 
         // Summary
         println!("\n--- SUMMARY ---");
-        println!("CLI-saved:     {} total entries ({} streams)",
+        println!(
+            "CLI-saved:     {} total entries ({} streams)",
             cli_entries.len(),
-            cli_entries.values().filter(|(_, is)| *is).count());
-        println!("Browser-saved: {} total entries ({} streams)",
+            cli_entries.values().filter(|(_, is)| *is).count()
+        );
+        println!(
+            "Browser-saved: {} total entries ({} streams)",
             browser_entries.len(),
-            browser_entries.values().filter(|(_, is)| *is).count());
+            browser_entries.values().filter(|(_, is)| *is).count()
+        );
         println!("Only in CLI:     {}", cli_only.len());
         println!("Only in Browser: {}", browser_only.len());
         println!("Size differences: {}", size_diffs);
@@ -767,15 +850,23 @@ mod tests {
             let mut records = Vec::new();
             let mut pos = 0;
             while pos + 4 <= data.len() {
-                let header = u32::from_le_bytes([data[pos], data[pos+1], data[pos+2], data[pos+3]]);
+                let header =
+                    u32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
                 let tag_id = header & 0x3FF;
                 let level = (header >> 10) & 0x3FF;
                 let size_field = (header >> 20) & 0xFFF;
                 let mut size = size_field as u32;
                 let mut data_offset = pos + 4;
                 if size_field == 0xFFF {
-                    if pos + 8 > data.len() { break; }
-                    size = u32::from_le_bytes([data[pos+4], data[pos+5], data[pos+6], data[pos+7]]);
+                    if pos + 8 > data.len() {
+                        break;
+                    }
+                    size = u32::from_le_bytes([
+                        data[pos + 4],
+                        data[pos + 5],
+                        data[pos + 6],
+                        data[pos + 7],
+                    ]);
                     data_offset = pos + 8;
                 }
                 records.push((tag_id, level, size, pos));
@@ -825,8 +916,14 @@ mod tests {
         let cli_section = cli_cfb3.read_body_text_section(0, true, false).unwrap();
         let browser_section = browser_cfb3.read_body_text_section(0, true, false).unwrap();
 
-        println!("CLI Section0 decompressed size:     {} bytes", cli_section.len());
-        println!("Browser Section0 decompressed size: {} bytes", browser_section.len());
+        println!(
+            "CLI Section0 decompressed size:     {} bytes",
+            cli_section.len()
+        );
+        println!(
+            "Browser Section0 decompressed size: {} bytes",
+            browser_section.len()
+        );
 
         let cli_records = parse_records(&cli_section);
         let browser_records = parse_records(&browser_section);
@@ -836,21 +933,33 @@ mod tests {
 
         // Print all records side by side (only show differences and nearby context)
         let max_records = std::cmp::max(cli_records.len(), browser_records.len());
-        println!("\n{:<5} {:<30} {:>4} {:>6}  |  {:<30} {:>4} {:>6}  | Match",
-            "#", "CLI Tag", "Lvl", "Size", "Browser Tag", "Lvl", "Size");
+        println!(
+            "\n{:<5} {:<30} {:>4} {:>6}  |  {:<30} {:>4} {:>6}  | Match",
+            "#", "CLI Tag", "Lvl", "Size", "Browser Tag", "Lvl", "Size"
+        );
         println!("{:-<120}", "");
 
         for i in 0..max_records {
             let cli_str = if i < cli_records.len() {
                 let (tag, lvl, sz, _) = cli_records[i];
-                format!("{:<30} {:>4} {:>6}", format!("{} ({})", tag_name(tag), tag), lvl, sz)
+                format!(
+                    "{:<30} {:>4} {:>6}",
+                    format!("{} ({})", tag_name(tag), tag),
+                    lvl,
+                    sz
+                )
             } else {
                 format!("{:<30} {:>4} {:>6}", "---", "", "")
             };
 
             let browser_str = if i < browser_records.len() {
                 let (tag, lvl, sz, _) = browser_records[i];
-                format!("{:<30} {:>4} {:>6}", format!("{} ({})", tag_name(tag), tag), lvl, sz)
+                format!(
+                    "{:<30} {:>4} {:>6}",
+                    format!("{} ({})", tag_name(tag), tag),
+                    lvl,
+                    sz
+                )
             } else {
                 format!("{:<30} {:>4} {:>6}", "---", "", "")
             };
@@ -862,8 +971,13 @@ mod tests {
                     let cli_data_start = if cs == 0xFFF { co + 8 } else { co + 4 };
                     let browser_data_start = if bs == 0xFFF { bo + 8 } else { bo + 4 };
                     let cli_slice = &cli_section[cli_data_start..cli_data_start + cs as usize];
-                    let browser_slice = &browser_section[browser_data_start..browser_data_start + bs as usize];
-                    if cli_slice == browser_slice { "OK" } else { "DATA DIFF" }
+                    let browser_slice =
+                        &browser_section[browser_data_start..browser_data_start + bs as usize];
+                    if cli_slice == browser_slice {
+                        "OK"
+                    } else {
+                        "DATA DIFF"
+                    }
                 } else if ct == bt && cl == bl {
                     "SIZE DIFF"
                 } else {
@@ -882,20 +996,32 @@ mod tests {
         // Hex dump of key differing records
         println!("\n--- Hex Dump of Key Differing Records ---");
         for idx in [19usize, 20, 21, 32, 33, 34, 225, 226, 227] {
-            if idx >= cli_records.len() && idx >= browser_records.len() { continue; }
+            if idx >= cli_records.len() && idx >= browser_records.len() {
+                continue;
+            }
             println!("\n=== Record #{} ===", idx);
             if idx < cli_records.len() {
                 let (tag, lvl, sz, off) = cli_records[idx];
                 let data_start = if sz >= 0xFFF { off + 8 } else { off + 4 };
                 let data_end = data_start + sz as usize;
-                println!("CLI: tag={} ({}) level={} size={} offset={:#x}",
-                    tag_name(tag), tag, lvl, sz, off);
+                println!(
+                    "CLI: tag={} ({}) level={} size={} offset={:#x}",
+                    tag_name(tag),
+                    tag,
+                    lvl,
+                    sz,
+                    off
+                );
                 if data_end <= cli_section.len() {
                     let bytes = &cli_section[data_start..data_end];
                     let show_len = std::cmp::min(bytes.len(), 80);
                     print!("  hex: ");
-                    for b in &bytes[..show_len] { print!("{:02x} ", b); }
-                    if bytes.len() > show_len { print!("...({} more bytes)", bytes.len() - show_len); }
+                    for b in &bytes[..show_len] {
+                        print!("{:02x} ", b);
+                    }
+                    if bytes.len() > show_len {
+                        print!("...({} more bytes)", bytes.len() - show_len);
+                    }
                     println!();
                 }
             }
@@ -903,14 +1029,24 @@ mod tests {
                 let (tag, lvl, sz, off) = browser_records[idx];
                 let data_start = if sz >= 0xFFF { off + 8 } else { off + 4 };
                 let data_end = data_start + sz as usize;
-                println!("Browser: tag={} ({}) level={} size={} offset={:#x}",
-                    tag_name(tag), tag, lvl, sz, off);
+                println!(
+                    "Browser: tag={} ({}) level={} size={} offset={:#x}",
+                    tag_name(tag),
+                    tag,
+                    lvl,
+                    sz,
+                    off
+                );
                 if data_end <= browser_section.len() {
                     let bytes = &browser_section[data_start..data_end];
                     let show_len = std::cmp::min(bytes.len(), 80);
                     print!("  hex: ");
-                    for b in &bytes[..show_len] { print!("{:02x} ", b); }
-                    if bytes.len() > show_len { print!("...({} more bytes)", bytes.len() - show_len); }
+                    for b in &bytes[..show_len] {
+                        print!("{:02x} ", b);
+                    }
+                    if bytes.len() > show_len {
+                        print!("...({} more bytes)", bytes.len() - show_len);
+                    }
                     println!();
                 }
             }
@@ -935,21 +1071,57 @@ mod tests {
 
         // CTRL_HEADER sizes
         println!("\n--- All CTRL_HEADER (71) sizes ---");
-        let cli_ctrl: Vec<_> = cli_records.iter().enumerate()
-            .filter(|(_,(t,_,_,_))| *t == 71).collect();
-        let browser_ctrl: Vec<_> = browser_records.iter().enumerate()
-            .filter(|(_,(t,_,_,_))| *t == 71).collect();
-        println!("CLI:     {:?}", cli_ctrl.iter().map(|(i, (_,l,s,_))| format!("#{}: lvl={} sz={}", i, l, s)).collect::<Vec<_>>());
-        println!("Browser: {:?}", browser_ctrl.iter().map(|(i, (_,l,s,_))| format!("#{}: lvl={} sz={}", i, l, s)).collect::<Vec<_>>());
+        let cli_ctrl: Vec<_> = cli_records
+            .iter()
+            .enumerate()
+            .filter(|(_, (t, _, _, _))| *t == 71)
+            .collect();
+        let browser_ctrl: Vec<_> = browser_records
+            .iter()
+            .enumerate()
+            .filter(|(_, (t, _, _, _))| *t == 71)
+            .collect();
+        println!(
+            "CLI:     {:?}",
+            cli_ctrl
+                .iter()
+                .map(|(i, (_, l, s, _))| format!("#{}: lvl={} sz={}", i, l, s))
+                .collect::<Vec<_>>()
+        );
+        println!(
+            "Browser: {:?}",
+            browser_ctrl
+                .iter()
+                .map(|(i, (_, l, s, _))| format!("#{}: lvl={} sz={}", i, l, s))
+                .collect::<Vec<_>>()
+        );
 
         // SHAPE_COMPONENT sizes
         println!("\n--- All SHAPE_COMPONENT (76) sizes ---");
-        let cli_shape: Vec<_> = cli_records.iter().enumerate()
-            .filter(|(_,(t,_,_,_))| *t == 76).collect();
-        let browser_shape: Vec<_> = browser_records.iter().enumerate()
-            .filter(|(_,(t,_,_,_))| *t == 76).collect();
-        println!("CLI:     {:?}", cli_shape.iter().map(|(i, (_,l,s,_))| format!("#{}: lvl={} sz={}", i, l, s)).collect::<Vec<_>>());
-        println!("Browser: {:?}", browser_shape.iter().map(|(i, (_,l,s,_))| format!("#{}: lvl={} sz={}", i, l, s)).collect::<Vec<_>>());
+        let cli_shape: Vec<_> = cli_records
+            .iter()
+            .enumerate()
+            .filter(|(_, (t, _, _, _))| *t == 76)
+            .collect();
+        let browser_shape: Vec<_> = browser_records
+            .iter()
+            .enumerate()
+            .filter(|(_, (t, _, _, _))| *t == 76)
+            .collect();
+        println!(
+            "CLI:     {:?}",
+            cli_shape
+                .iter()
+                .map(|(i, (_, l, s, _))| format!("#{}: lvl={} sz={}", i, l, s))
+                .collect::<Vec<_>>()
+        );
+        println!(
+            "Browser: {:?}",
+            browser_shape
+                .iter()
+                .map(|(i, (_, l, s, _))| format!("#{}: lvl={} sz={}", i, l, s))
+                .collect::<Vec<_>>()
+        );
 
         // Compare FileHeader bytes
         println!("\n--- FileHeader Comparison ---");
@@ -972,9 +1144,12 @@ mod tests {
                 let cli_byte = cli_header.get(i).copied();
                 let browser_byte = browser_header.get(i).copied();
                 if cli_byte != browser_byte {
-                    println!("  offset {:#06x}: CLI={:?} Browser={:?}",
-                        i, cli_byte.map(|b| format!("{:#04x}", b)),
-                        browser_byte.map(|b| format!("{:#04x}", b)));
+                    println!(
+                        "  offset {:#06x}: CLI={:?} Browser={:?}",
+                        i,
+                        cli_byte.map(|b| format!("{:#04x}", b)),
+                        browser_byte.map(|b| format!("{:#04x}", b))
+                    );
                     diff_count += 1;
                     if diff_count > 20 {
                         println!("  ... (truncated, more differences exist)");
@@ -984,5 +1159,4 @@ mod tests {
             }
         }
     }
-
 }

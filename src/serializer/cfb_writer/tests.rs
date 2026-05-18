@@ -225,8 +225,7 @@ fn test_full_roundtrip_uncompressed() {
 
     // BodyText 라운드트립
     let section_data = cfb.read_body_text_section(0, false, false).unwrap();
-    let parsed_section =
-        crate::parser::body_text::parse_body_text_section(&section_data).unwrap();
+    let parsed_section = crate::parser::body_text::parse_body_text_section(&section_data).unwrap();
     assert_eq!(parsed_section.paragraphs.len(), 1);
     assert_eq!(parsed_section.paragraphs[0].text, "안녕하세요");
 }
@@ -294,8 +293,7 @@ fn test_full_roundtrip_compressed() {
 
     // BodyText 라운드트립 (압축 해제)
     let section_data = cfb.read_body_text_section(0, true, false).unwrap();
-    let parsed_section =
-        crate::parser::body_text::parse_body_text_section(&section_data).unwrap();
+    let parsed_section = crate::parser::body_text::parse_body_text_section(&section_data).unwrap();
     assert_eq!(parsed_section.paragraphs[0].text, "Hello World");
 }
 
@@ -358,22 +356,35 @@ fn test_serialize_after_edit_roundtrip() {
         assert!(result.is_ok(), "{}: 텍스트 삽입 실패", file_path);
 
         // 직렬화
-        let bytes = doc.export_hwp_native()
+        let bytes = doc
+            .export_hwp_native()
             .unwrap_or_else(|e| panic!("{}: 직렬화 실패: {}", file_path, e));
 
         // CFB 매직 확인
-        assert_eq!(&bytes[0..4], &[0xD0, 0xCF, 0x11, 0xE0],
-            "{}: CFB 매직 불일치", file_path);
+        assert_eq!(
+            &bytes[0..4],
+            &[0xD0, 0xCF, 0x11, 0xE0],
+            "{}: CFB 매직 불일치",
+            file_path
+        );
 
         // 라운드트립: 다시 파싱 가능한지 검증
         let parsed = crate::parser::parse_hwp(&bytes);
-        assert!(parsed.is_ok(), "{}: 라운드트립 파싱 실패: {:?}", file_path, parsed.err());
+        assert!(
+            parsed.is_ok(),
+            "{}: 라운드트립 파싱 실패: {:?}",
+            file_path,
+            parsed.err()
+        );
 
         let parsed = parsed.unwrap();
         let para_text = &parsed.sections[0].paragraphs[0].text;
-        assert!(para_text.starts_with("테스트추가"),
-            "{}: 삽입된 텍스트 미발견, 실제: '{}'", file_path,
-            &para_text[..para_text.len().min(30)]);
+        assert!(
+            para_text.starts_with("테스트추가"),
+            "{}: 삽입된 텍스트 미발견, 실제: '{}'",
+            file_path,
+            &para_text[..para_text.len().min(30)]
+        );
 
         eprintln!("{}: 라운드트립 성공 ({}KB)", file_path, bytes.len() / 1024);
     }
@@ -411,8 +422,12 @@ fn test_serialize_real_hwp_files() {
             Ok(bytes) => {
                 eprintln!("  직렬화 성공: {}KB", bytes.len() / 1024);
                 // CFB 시그니처 확인
-                assert_eq!(&bytes[0..4], &[0xD0, 0xCF, 0x11, 0xE0],
-                    "{}: CFB 시그니처 불일치", fname);
+                assert_eq!(
+                    &bytes[0..4],
+                    &[0xD0, 0xCF, 0x11, 0xE0],
+                    "{}: CFB 시그니처 불일치",
+                    fname
+                );
             }
             Err(e) => {
                 panic!("{}: 직렬화 실패: {}", fname, e);
@@ -441,7 +456,11 @@ fn test_table_structure_change_roundtrip() {
         doc.insert_table_row_native(0, 3, 0, 0, true).unwrap();
         let bytes = doc.export_hwp_native().unwrap();
         let parsed = crate::parser::parse_hwp(&bytes);
-        assert!(parsed.is_ok(), "행 추가 후 라운드트립 실패: {:?}", parsed.err());
+        assert!(
+            parsed.is_ok(),
+            "행 추가 후 라운드트립 실패: {:?}",
+            parsed.err()
+        );
         eprintln!("행 추가 라운드트립: 성공");
     }
 
@@ -452,7 +471,11 @@ fn test_table_structure_change_roundtrip() {
         doc.insert_table_column_native(0, 3, 0, 0, true).unwrap();
         let bytes = doc.export_hwp_native().unwrap();
         let parsed = crate::parser::parse_hwp(&bytes);
-        assert!(parsed.is_ok(), "열 추가 후 라운드트립 실패: {:?}", parsed.err());
+        assert!(
+            parsed.is_ok(),
+            "열 추가 후 라운드트립 실패: {:?}",
+            parsed.err()
+        );
         eprintln!("열 추가 라운드트립: 성공");
     }
 
@@ -463,7 +486,11 @@ fn test_table_structure_change_roundtrip() {
         doc.delete_table_row_native(0, 3, 0, 0).unwrap();
         let bytes = doc.export_hwp_native().unwrap();
         let parsed = crate::parser::parse_hwp(&bytes);
-        assert!(parsed.is_ok(), "행 삭제 후 라운드트립 실패: {:?}", parsed.err());
+        assert!(
+            parsed.is_ok(),
+            "행 삭제 후 라운드트립 실패: {:?}",
+            parsed.err()
+        );
         eprintln!("행 삭제 라운드트립: 성공");
     }
 
@@ -474,7 +501,11 @@ fn test_table_structure_change_roundtrip() {
         doc.delete_table_column_native(0, 3, 0, 0).unwrap();
         let bytes = doc.export_hwp_native().unwrap();
         let parsed = crate::parser::parse_hwp(&bytes);
-        assert!(parsed.is_ok(), "열 삭제 후 라운드트립 실패: {:?}", parsed.err());
+        assert!(
+            parsed.is_ok(),
+            "열 삭제 후 라운드트립 실패: {:?}",
+            parsed.err()
+        );
         eprintln!("열 삭제 라운드트립: 성공");
     }
 }
@@ -501,15 +532,19 @@ fn test_delete_table_control_roundtrip() {
     // 라운드트립: 직렬화 → 파싱
     let bytes = doc.export_hwp_native().unwrap();
     let parsed = crate::parser::parse_hwp(&bytes);
-    assert!(parsed.is_ok(), "표 삭제 후 라운드트립 실패: {:?}", parsed.err());
+    assert!(
+        parsed.is_ok(),
+        "표 삭제 후 라운드트립 실패: {:?}",
+        parsed.err()
+    );
     eprintln!("표 삭제 라운드트립: 성공");
 }
 
 /// 원본 HWP와 직렬화 결과를 스트림별로 비교하는 진단 테스트
 #[test]
 fn test_roundtrip_stream_comparison() {
-    use std::path::Path;
     use crate::parser::record::Record;
+    use std::path::Path;
 
     let path = Path::new("samples/hwp_table_test.hwp");
     if !path.exists() {
@@ -534,7 +569,13 @@ fn test_roundtrip_stream_comparison() {
     // 파싱
     let doc = crate::parser::parse_hwp(&original_data).unwrap();
     eprintln!("\n=== Document 구조 ===");
-    eprintln!("  버전: {}.{}.{}.{}", doc.header.version.major, doc.header.version.minor, doc.header.version.build, doc.header.version.revision);
+    eprintln!(
+        "  버전: {}.{}.{}.{}",
+        doc.header.version.major,
+        doc.header.version.minor,
+        doc.header.version.build,
+        doc.header.version.revision
+    );
     eprintln!("  flags: 0x{:08X}", doc.header.flags);
     eprintln!("  compressed: {}", doc.header.compressed);
     eprintln!("  섹션수: {}", doc.sections.len());
@@ -575,13 +616,20 @@ fn test_roundtrip_stream_comparison() {
     // FileHeader 비교
     let ser_header = ser_cfb.read_file_header().unwrap();
     eprintln!("\n=== FileHeader 비교 (256바이트) ===");
-    eprintln!("  원본 크기: {}, 직렬화 크기: {}", orig_header.len(), ser_header.len());
+    eprintln!(
+        "  원본 크기: {}, 직렬화 크기: {}",
+        orig_header.len(),
+        ser_header.len()
+    );
     let mut header_diffs = 0;
     for i in 0..256.min(orig_header.len()).min(ser_header.len()) {
         if orig_header[i] != ser_header[i] {
             header_diffs += 1;
             if header_diffs <= 20 {
-                eprintln!("  [{}] 원본=0x{:02X} 직렬화=0x{:02X}", i, orig_header[i], ser_header[i]);
+                eprintln!(
+                    "  [{}] 원본=0x{:02X} 직렬화=0x{:02X}",
+                    i, orig_header[i], ser_header[i]
+                );
             }
         }
     }
@@ -624,8 +672,14 @@ fn test_roundtrip_stream_comparison() {
                 let data_match = o.data == s.data;
                 if !tag_match || !level_match || !data_match {
                     let tag_name = crate::parser::tags::tag_name(o.tag_id);
-                    eprintln!("  [{}] {} (tag={}, level={}, size={})",
-                        i, tag_name, o.tag_id, o.level, o.data.len());
+                    eprintln!(
+                        "  [{}] {} (tag={}, level={}, size={})",
+                        i,
+                        tag_name,
+                        o.tag_id,
+                        o.level,
+                        o.data.len()
+                    );
                     if !tag_match {
                         eprintln!("       TAG 불일치: 원본={} 직렬화={}", o.tag_id, s.tag_id);
                     }
@@ -633,11 +687,18 @@ fn test_roundtrip_stream_comparison() {
                         eprintln!("       LEVEL 불일치: 원본={} 직렬화={}", o.level, s.level);
                     }
                     if !data_match {
-                        eprintln!("       DATA 불일치: 원본 {}B vs 직렬화 {}B", o.data.len(), s.data.len());
+                        eprintln!(
+                            "       DATA 불일치: 원본 {}B vs 직렬화 {}B",
+                            o.data.len(),
+                            s.data.len()
+                        );
                         let min_len = o.data.len().min(s.data.len()).min(64);
                         for j in 0..min_len {
                             if o.data[j] != s.data[j] {
-                                eprintln!("         첫 차이 offset={}: 0x{:02X} vs 0x{:02X}", j, o.data[j], s.data[j]);
+                                eprintln!(
+                                    "         첫 차이 offset={}: 0x{:02X} vs 0x{:02X}",
+                                    j, o.data[j], s.data[j]
+                                );
                                 break;
                             }
                         }
@@ -646,11 +707,23 @@ fn test_roundtrip_stream_comparison() {
             }
             (Some(o), None) => {
                 let tag_name = crate::parser::tags::tag_name(o.tag_id);
-                eprintln!("  [{}] 직렬화에 누락: {} (tag={}, size={})", i, tag_name, o.tag_id, o.data.len());
+                eprintln!(
+                    "  [{}] 직렬화에 누락: {} (tag={}, size={})",
+                    i,
+                    tag_name,
+                    o.tag_id,
+                    o.data.len()
+                );
             }
             (None, Some(s)) => {
                 let tag_name = crate::parser::tags::tag_name(s.tag_id);
-                eprintln!("  [{}] 직렬화에 추가: {} (tag={}, size={})", i, tag_name, s.tag_id, s.data.len());
+                eprintln!(
+                    "  [{}] 직렬화에 추가: {} (tag={}, size={})",
+                    i,
+                    tag_name,
+                    s.tag_id,
+                    s.data.len()
+                );
             }
             _ => {}
         }
@@ -691,21 +764,37 @@ fn test_roundtrip_stream_comparison() {
                 let data_match = o.data == s.data;
                 if !tag_match || !level_match || !data_match {
                     let tag_name = crate::parser::tags::tag_name(o.tag_id);
-                    eprintln!("  [{}] {} (tag={}, level={}, size={})",
-                        i, tag_name, o.tag_id, o.level, o.data.len());
+                    eprintln!(
+                        "  [{}] {} (tag={}, level={}, size={})",
+                        i,
+                        tag_name,
+                        o.tag_id,
+                        o.level,
+                        o.data.len()
+                    );
                     if !tag_match {
                         let s_tag_name = crate::parser::tags::tag_name(s.tag_id);
-                        eprintln!("       TAG 불일치: 원본={}({}) 직렬화={}({})", o.tag_id, tag_name, s.tag_id, s_tag_name);
+                        eprintln!(
+                            "       TAG 불일치: 원본={}({}) 직렬화={}({})",
+                            o.tag_id, tag_name, s.tag_id, s_tag_name
+                        );
                     }
                     if !level_match {
                         eprintln!("       LEVEL 불일치: 원본={} 직렬화={}", o.level, s.level);
                     }
                     if !data_match {
-                        eprintln!("       DATA 불일치: 원본 {}B vs 직렬화 {}B", o.data.len(), s.data.len());
+                        eprintln!(
+                            "       DATA 불일치: 원본 {}B vs 직렬화 {}B",
+                            o.data.len(),
+                            s.data.len()
+                        );
                         let min_len = o.data.len().min(s.data.len()).min(64);
                         for j in 0..min_len {
                             if o.data[j] != s.data[j] {
-                                eprintln!("         첫 차이 offset={}: 0x{:02X} vs 0x{:02X}", j, o.data[j], s.data[j]);
+                                eprintln!(
+                                    "         첫 차이 offset={}: 0x{:02X} vs 0x{:02X}",
+                                    j, o.data[j], s.data[j]
+                                );
                                 break;
                             }
                         }
@@ -714,11 +803,25 @@ fn test_roundtrip_stream_comparison() {
             }
             (Some(o), None) => {
                 let tag_name = crate::parser::tags::tag_name(o.tag_id);
-                eprintln!("  [{}] 직렬화에 누락: {} (tag={}, level={}, size={})", i, tag_name, o.tag_id, o.level, o.data.len());
+                eprintln!(
+                    "  [{}] 직렬화에 누락: {} (tag={}, level={}, size={})",
+                    i,
+                    tag_name,
+                    o.tag_id,
+                    o.level,
+                    o.data.len()
+                );
             }
             (None, Some(s)) => {
                 let tag_name = crate::parser::tags::tag_name(s.tag_id);
-                eprintln!("  [{}] 직렬화에 추가: {} (tag={}, level={}, size={})", i, tag_name, s.tag_id, s.level, s.data.len());
+                eprintln!(
+                    "  [{}] 직렬화에 추가: {} (tag={}, level={}, size={})",
+                    i,
+                    tag_name,
+                    s.tag_id,
+                    s.level,
+                    s.data.len()
+                );
             }
             _ => {}
         }
@@ -760,8 +863,16 @@ fn test_roundtrip_stream_comparison() {
                     if saved_fh.len() >= 32 {
                         let sig = std::str::from_utf8(&saved_fh[0..17]).unwrap_or("?");
                         eprintln!("    시그니처: '{}'", sig);
-                        eprintln!("    버전: {}.{}.{}.{}", saved_fh[35], saved_fh[34], saved_fh[33], saved_fh[32]);
-                        let flags = u32::from_le_bytes([saved_fh[36], saved_fh[37], saved_fh[38], saved_fh[39]]);
+                        eprintln!(
+                            "    버전: {}.{}.{}.{}",
+                            saved_fh[35], saved_fh[34], saved_fh[33], saved_fh[32]
+                        );
+                        let flags = u32::from_le_bytes([
+                            saved_fh[36],
+                            saved_fh[37],
+                            saved_fh[38],
+                            saved_fh[39],
+                        ]);
                         eprintln!("    flags: 0x{:08X} (compressed={})", flags, flags & 1 != 0);
                     }
                 }
@@ -818,8 +929,16 @@ fn test_cfb_structure_comparison() {
     let saved_data = std::fs::read(saved_path).unwrap();
 
     eprintln!("\n=== CFB 헤더 비교 (512바이트) ===");
-    eprintln!("원본 크기: {} bytes ({} sectors)", orig_data.len(), (orig_data.len() - 512) / 512);
-    eprintln!("저장본 크기: {} bytes ({} sectors)", saved_data.len(), (saved_data.len() - 512) / 512);
+    eprintln!(
+        "원본 크기: {} bytes ({} sectors)",
+        orig_data.len(),
+        (orig_data.len() - 512) / 512
+    );
+    eprintln!(
+        "저장본 크기: {} bytes ({} sectors)",
+        saved_data.len(),
+        (saved_data.len() - 512) / 512
+    );
 
     // 헤더 주요 필드 비교
     let orig_hdr = &orig_data[..512];
@@ -846,7 +965,10 @@ fn test_cfb_structure_comparison() {
         let o = &orig_hdr[*start..*end];
         let s = &saved_hdr[*start..*end];
         if o != s {
-            eprintln!("  {} [{}..{}]: 원본={:?} 저장본={:?}", name, start, end, o, s);
+            eprintln!(
+                "  {} [{}..{}]: 원본={:?} 저장본={:?}",
+                name, start, end, o, s
+            );
         }
     }
 
@@ -854,8 +976,18 @@ fn test_cfb_structure_comparison() {
     eprintln!("\n--- DIFAT ---");
     for i in 0..5 {
         let offset = 76 + i * 4;
-        let o = u32::from_le_bytes([orig_hdr[offset], orig_hdr[offset+1], orig_hdr[offset+2], orig_hdr[offset+3]]);
-        let s = u32::from_le_bytes([saved_hdr[offset], saved_hdr[offset+1], saved_hdr[offset+2], saved_hdr[offset+3]]);
+        let o = u32::from_le_bytes([
+            orig_hdr[offset],
+            orig_hdr[offset + 1],
+            orig_hdr[offset + 2],
+            orig_hdr[offset + 3],
+        ]);
+        let s = u32::from_le_bytes([
+            saved_hdr[offset],
+            saved_hdr[offset + 1],
+            saved_hdr[offset + 2],
+            saved_hdr[offset + 3],
+        ]);
         if o != 0xFFFFFFFF || s != 0xFFFFFFFF {
             eprintln!("  DIFAT[{}]: 원본=0x{:08X} 저장본=0x{:08X}", i, o, s);
         }
@@ -869,8 +1001,12 @@ fn test_cfb_structure_comparison() {
     fn walk_entries(cf: &cfb::CompoundFile<std::io::Cursor<&Vec<u8>>>, label: &str) {
         eprintln!("  [{}]", label);
         for entry in cf.walk() {
-            eprintln!("    {:?} path={} len={}",
-                entry.name(), entry.path().display(), entry.len());
+            eprintln!(
+                "    {:?} path={} len={}",
+                entry.name(),
+                entry.path().display(),
+                entry.len()
+            );
         }
     }
     walk_entries(&orig_cfb, "원본");
@@ -879,37 +1015,47 @@ fn test_cfb_structure_comparison() {
     // 원본의 Raw 디렉토리 엔트리 바이트 비교
     eprintln!("\n=== Raw 디렉토리 엔트리 비교 ===");
     // 원본 디렉토리: 첫 섹터부터
-    let orig_first_dir = u32::from_le_bytes([orig_hdr[48], orig_hdr[49], orig_hdr[50], orig_hdr[51]]) as usize;
-    let saved_first_dir = u32::from_le_bytes([saved_hdr[48], saved_hdr[49], saved_hdr[50], saved_hdr[51]]) as usize;
+    let orig_first_dir =
+        u32::from_le_bytes([orig_hdr[48], orig_hdr[49], orig_hdr[50], orig_hdr[51]]) as usize;
+    let saved_first_dir =
+        u32::from_le_bytes([saved_hdr[48], saved_hdr[49], saved_hdr[50], saved_hdr[51]]) as usize;
     eprintln!("  원본 첫 Dir 섹터: {}", orig_first_dir);
     eprintln!("  저장본 첫 Dir 섹터: {}", saved_first_dir);
 
     // 각 디렉토리 엔트리 상세 비교
     fn read_entry_name(entry: &[u8]) -> String {
         let name_size = u16::from_le_bytes([entry[64], entry[65]]) as usize;
-        if name_size <= 2 { return "(empty)".to_string(); }
+        if name_size <= 2 {
+            return "(empty)".to_string();
+        }
         let char_count = (name_size / 2) - 1;
         let mut chars = Vec::new();
         for j in 0..char_count {
-            let ch = u16::from_le_bytes([entry[j*2], entry[j*2+1]]);
+            let ch = u16::from_le_bytes([entry[j * 2], entry[j * 2 + 1]]);
             chars.push(ch);
         }
         String::from_utf16_lossy(&chars)
     }
 
     fn read_entry_at(data: &[u8], off: usize) -> Option<(String, u8)> {
-        if off + 128 > data.len() { return None; }
-        let e = &data[off..off+128];
+        if off + 128 > data.len() {
+            return None;
+        }
+        let e = &data[off..off + 128];
         let obj_type = e[66];
-        if obj_type == 0 { return None; }
+        if obj_type == 0 {
+            return None;
+        }
         let name_size = u16::from_le_bytes([e[64], e[65]]) as usize;
-        if name_size <= 2 { return Some(("(empty)".to_string(), obj_type)); }
+        if name_size <= 2 {
+            return Some(("(empty)".to_string(), obj_type));
+        }
         let char_count = ((name_size / 2) - 1).min(31);
         let mut chars = Vec::new();
         for j in 0..char_count {
             let pos = j * 2;
             if pos + 1 < 64 {
-                let ch = u16::from_le_bytes([e[pos], e[pos+1]]);
+                let ch = u16::from_le_bytes([e[pos], e[pos + 1]]);
                 chars.push(ch);
             }
         }
@@ -925,12 +1071,22 @@ fn test_cfb_structure_comparison() {
         let mut fat = Vec::new();
         for fi in 0..fat_sectors {
             let difat_off = 76 + fi * 4;
-            let fat_sid = u32::from_le_bytes([data[difat_off], data[difat_off+1], data[difat_off+2], data[difat_off+3]]) as usize;
+            let fat_sid = u32::from_le_bytes([
+                data[difat_off],
+                data[difat_off + 1],
+                data[difat_off + 2],
+                data[difat_off + 3],
+            ]) as usize;
             let fat_off = 512 + fat_sid * 512;
             for j in 0..128 {
                 let entry_off = fat_off + j * 4;
                 if entry_off + 4 <= data.len() {
-                    let v = u32::from_le_bytes([data[entry_off], data[entry_off+1], data[entry_off+2], data[entry_off+3]]);
+                    let v = u32::from_le_bytes([
+                        data[entry_off],
+                        data[entry_off + 1],
+                        data[entry_off + 2],
+                        data[entry_off + 3],
+                    ]);
                     fat.push(v);
                 }
             }
@@ -950,13 +1106,21 @@ fn test_cfb_structure_comparison() {
         for &sec in &dir_sectors {
             for slot in 0..4 {
                 let off = 512 + sec * 512 + slot * 128;
-                if off + 128 > data.len() { continue; }
-                let e = &data[off..off+128];
+                if off + 128 > data.len() {
+                    continue;
+                }
+                let e = &data[off..off + 128];
                 let obj_type = e[66];
-                if obj_type == 0 { entry_idx += 1; continue; }
+                if obj_type == 0 {
+                    entry_idx += 1;
+                    continue;
+                }
                 let name = match read_entry_at(data, off) {
                     Some((n, _)) => n,
-                    None => { entry_idx += 1; continue; }
+                    None => {
+                        entry_idx += 1;
+                        continue;
+                    }
                 };
                 let color = e[67];
                 let left = u32::from_le_bytes([e[68], e[69], e[70], e[71]]);
@@ -966,9 +1130,23 @@ fn test_cfb_structure_comparison() {
                 let size = u32::from_le_bytes([e[120], e[121], e[122], e[123]]);
                 let clsid = &e[80..96];
                 let clsid_nonzero = clsid.iter().any(|&b| b != 0);
-                eprintln!("    [{}] '{}' type={} color={} start={} size={} L/R/C={}/{}/{}{}",
-                    entry_idx, name, obj_type, color, start, size, left, right, child,
-                    if clsid_nonzero { format!(" CLSID={:02X?}", clsid) } else { String::new() });
+                eprintln!(
+                    "    [{}] '{}' type={} color={} start={} size={} L/R/C={}/{}/{}{}",
+                    entry_idx,
+                    name,
+                    obj_type,
+                    color,
+                    start,
+                    size,
+                    left,
+                    right,
+                    child,
+                    if clsid_nonzero {
+                        format!(" CLSID={:02X?}", clsid)
+                    } else {
+                        String::new()
+                    }
+                );
                 let ctime = &e[100..108];
                 let mtime = &e[108..116];
                 let has_time = ctime.iter().any(|&b| b != 0) || mtime.iter().any(|&b| b != 0);
@@ -986,7 +1164,10 @@ fn test_cfb_structure_comparison() {
     // 네이티브 직렬화 결과 생성 및 비교
     let doc = crate::parser::parse_hwp(&orig_data).unwrap();
     let serialized = super::serialize_hwp(&doc).unwrap();
-    eprintln!("\n  네이티브 직렬화(mini_cfb) 크기: {} bytes", serialized.len());
+    eprintln!(
+        "\n  네이티브 직렬화(mini_cfb) 크기: {} bytes",
+        serialized.len()
+    );
     dump_entries(&serialized, "네이티브 직렬화(mini_cfb)");
 
     // cfb 크레이트로 생성한 파일과 비교
@@ -1000,9 +1181,15 @@ fn test_cfb_structure_comparison() {
     // cfb 크레이트 출력 재파싱 검증
     match crate::parser::parse_hwp(&cfb_bytes) {
         Ok(reparsed) => {
-            eprintln!("  cfb 크레이트 결과 재파싱 성공: {} 섹션, {} 문단",
+            eprintln!(
+                "  cfb 크레이트 결과 재파싱 성공: {} 섹션, {} 문단",
                 reparsed.sections.len(),
-                reparsed.sections.iter().map(|s| s.paragraphs.len()).sum::<usize>());
+                reparsed
+                    .sections
+                    .iter()
+                    .map(|s| s.paragraphs.len())
+                    .sum::<usize>()
+            );
         }
         Err(e) => eprintln!("  cfb 크레이트 결과 재파싱 실패: {}", e),
     }
@@ -1015,15 +1202,24 @@ fn test_cfb_structure_comparison() {
     }
     let no_raw_bytes = super::serialize_hwp(&doc_no_raw).unwrap();
     let _ = std::fs::write("output/roundtrip_no_raw.hwp", &no_raw_bytes);
-    eprintln!("\n  raw_stream 없이 재직렬화 크기: {} bytes", no_raw_bytes.len());
+    eprintln!(
+        "\n  raw_stream 없이 재직렬화 크기: {} bytes",
+        no_raw_bytes.len()
+    );
     dump_entries(&no_raw_bytes, "재직렬화(raw 없음)");
 
     // 재직렬화 결과 재파싱 검증
     match crate::parser::parse_hwp(&no_raw_bytes) {
         Ok(reparsed) => {
-            eprintln!("  재직렬화(raw 없음) 재파싱 성공: {} 섹션, {} 문단",
+            eprintln!(
+                "  재직렬화(raw 없음) 재파싱 성공: {} 섹션, {} 문단",
                 reparsed.sections.len(),
-                reparsed.sections.iter().map(|s| s.paragraphs.len()).sum::<usize>());
+                reparsed
+                    .sections
+                    .iter()
+                    .map(|s| s.paragraphs.len())
+                    .sum::<usize>()
+            );
         }
         Err(e) => eprintln!("  재직렬화(raw 없음) 재파싱 실패: {}", e),
     }
@@ -1038,9 +1234,12 @@ fn test_cfb_structure_comparison() {
         let mut ncfb = crate::parser::cfb_reader::CfbReader::open(&no_raw_bytes).unwrap();
         ncfb.read_doc_info(true).unwrap()
     };
-    eprintln!("  DocInfo: 저장본={}B  재직렬화={}B  동일={}",
-        saved_decompressed_di.len(), noraw_decompressed_di.len(),
-        saved_decompressed_di == noraw_decompressed_di);
+    eprintln!(
+        "  DocInfo: 저장본={}B  재직렬화={}B  동일={}",
+        saved_decompressed_di.len(),
+        noraw_decompressed_di.len(),
+        saved_decompressed_di == noraw_decompressed_di
+    );
 
     let saved_decompressed_bt = {
         let mut scfb = crate::parser::cfb_reader::CfbReader::open(&saved_data).unwrap();
@@ -1050,15 +1249,22 @@ fn test_cfb_structure_comparison() {
         let mut ncfb = crate::parser::cfb_reader::CfbReader::open(&no_raw_bytes).unwrap();
         ncfb.read_body_text_section(0, true, false).unwrap()
     };
-    eprintln!("  BodyText: 저장본={}B  재직렬화={}B  동일={}",
-        saved_decompressed_bt.len(), noraw_decompressed_bt.len(),
-        saved_decompressed_bt == noraw_decompressed_bt);
+    eprintln!(
+        "  BodyText: 저장본={}B  재직렬화={}B  동일={}",
+        saved_decompressed_bt.len(),
+        noraw_decompressed_bt.len(),
+        saved_decompressed_bt == noraw_decompressed_bt
+    );
 
     if saved_decompressed_bt != noraw_decompressed_bt {
         // 레코드별 비교
         let saved_recs = crate::parser::record::Record::read_all(&saved_decompressed_bt).unwrap();
         let noraw_recs = crate::parser::record::Record::read_all(&noraw_decompressed_bt).unwrap();
-        eprintln!("  레코드 수: 저장본={}  재직렬화={}", saved_recs.len(), noraw_recs.len());
+        eprintln!(
+            "  레코드 수: 저장본={}  재직렬화={}",
+            saved_recs.len(),
+            noraw_recs.len()
+        );
         let max = saved_recs.len().max(noraw_recs.len());
         let mut diff_count = 0;
         for i in 0..max {
@@ -1068,8 +1274,17 @@ fn test_cfb_structure_comparison() {
                         diff_count += 1;
                         if diff_count <= 10 {
                             let tag = crate::parser::tags::tag_name(s.tag_id);
-                            eprintln!("  [{}] {} tag={}/{} level={}/{} size={}/{}",
-                                i, tag, s.tag_id, n.tag_id, s.level, n.level, s.data.len(), n.data.len());
+                            eprintln!(
+                                "  [{}] {} tag={}/{} level={}/{} size={}/{}",
+                                i,
+                                tag,
+                                s.tag_id,
+                                n.tag_id,
+                                s.level,
+                                n.level,
+                                s.data.len(),
+                                n.data.len()
+                            );
                         }
                     }
                 }
@@ -1096,13 +1311,22 @@ fn test_cfb_structure_comparison() {
     }
     let browser_sim_bytes = super::serialize_hwp(&doc_browser_sim).unwrap();
     let _ = std::fs::write("output/roundtrip_browser_sim.hwp", &browser_sim_bytes);
-    eprintln!("\n  브라우저 시뮬레이션 크기: {} bytes", browser_sim_bytes.len());
+    eprintln!(
+        "\n  브라우저 시뮬레이션 크기: {} bytes",
+        browser_sim_bytes.len()
+    );
     dump_entries(&browser_sim_bytes, "브라우저 시뮬레이션");
     match crate::parser::parse_hwp(&browser_sim_bytes) {
         Ok(reparsed) => {
-            eprintln!("  브라우저 시뮬레이션 재파싱 성공: {} 섹션, {} 문단",
+            eprintln!(
+                "  브라우저 시뮬레이션 재파싱 성공: {} 섹션, {} 문단",
                 reparsed.sections.len(),
-                reparsed.sections.iter().map(|s| s.paragraphs.len()).sum::<usize>());
+                reparsed
+                    .sections
+                    .iter()
+                    .map(|s| s.paragraphs.len())
+                    .sum::<usize>()
+            );
         }
         Err(e) => eprintln!("  브라우저 시뮬레이션 재파싱 실패: {}", e),
     }
@@ -1111,8 +1335,8 @@ fn test_cfb_structure_comparison() {
 /// 원본 BodyText와 재직렬화 BodyText를 레코드 단위로 비교
 #[test]
 fn test_bodytext_reserialization_diff() {
-    use std::path::Path;
     use crate::parser::record::Record;
+    use std::path::Path;
 
     let path = Path::new("samples/hwp_table_test.hwp");
     if !path.exists() {
@@ -1125,7 +1349,9 @@ fn test_bodytext_reserialization_diff() {
 
     // 원본 decompressed BodyText
     let mut cfb = crate::parser::cfb_reader::CfbReader::open(&orig_data).unwrap();
-    let orig_bt = cfb.read_body_text_section(0, doc.header.compressed, false).unwrap();
+    let orig_bt = cfb
+        .read_body_text_section(0, doc.header.compressed, false)
+        .unwrap();
 
     // 재직렬화 BodyText (raw_stream = None으로 강제)
     doc.sections[0].raw_stream = None;
@@ -1155,23 +1381,41 @@ fn test_bodytext_reserialization_diff() {
                     if diff_count <= 30 {
                         let tag = crate::parser::tags::tag_name(o.tag_id);
                         let rtag = crate::parser::tags::tag_name(r.tag_id);
-                        eprintln!("  [{}] 원본: {} L{} {}B | 재직렬화: {} L{} {}B",
-                            i, tag, o.level, o.data.len(), rtag, r.level, r.data.len());
+                        eprintln!(
+                            "  [{}] 원본: {} L{} {}B | 재직렬화: {} L{} {}B",
+                            i,
+                            tag,
+                            o.level,
+                            o.data.len(),
+                            rtag,
+                            r.level,
+                            r.data.len()
+                        );
                         if o.tag_id == r.tag_id && o.data.len() == r.data.len() {
                             // 같은 크기면 바이트 차이 표시
                             for j in 0..o.data.len().min(64) {
                                 if o.data[j] != r.data[j] {
-                                    eprintln!("    offset {}: 0x{:02X} → 0x{:02X}", j, o.data[j], r.data[j]);
+                                    eprintln!(
+                                        "    offset {}: 0x{:02X} → 0x{:02X}",
+                                        j, o.data[j], r.data[j]
+                                    );
                                 }
                             }
                         } else if o.tag_id == r.tag_id && o.data.len() != r.data.len() {
-                            eprintln!("    크기 차이: {}B vs {}B ({}B)", o.data.len(), r.data.len(),
-                                r.data.len() as i64 - o.data.len() as i64);
+                            eprintln!(
+                                "    크기 차이: {}B vs {}B ({}B)",
+                                o.data.len(),
+                                r.data.len(),
+                                r.data.len() as i64 - o.data.len() as i64
+                            );
                             // 앞부분 비교
                             let min_len = o.data.len().min(r.data.len()).min(32);
                             for j in 0..min_len {
                                 if o.data[j] != r.data[j] {
-                                    eprintln!("    첫 차이 offset {}: 0x{:02X} → 0x{:02X}", j, o.data[j], r.data[j]);
+                                    eprintln!(
+                                        "    첫 차이 offset {}: 0x{:02X} → 0x{:02X}",
+                                        j, o.data[j], r.data[j]
+                                    );
                                     break;
                                 }
                             }
@@ -1183,29 +1427,53 @@ fn test_bodytext_reserialization_diff() {
                 missing_count += 1;
                 let tag = crate::parser::tags::tag_name(o.tag_id);
                 if missing_count <= 20 {
-                    eprintln!("  [{}] 재직렬화에 없음: {} L{} {}B", i, tag, o.level, o.data.len());
+                    eprintln!(
+                        "  [{}] 재직렬화에 없음: {} L{} {}B",
+                        i,
+                        tag,
+                        o.level,
+                        o.data.len()
+                    );
                 }
             }
             (None, Some(r)) => {
                 extra_count += 1;
                 let tag = crate::parser::tags::tag_name(r.tag_id);
                 if extra_count <= 20 {
-                    eprintln!("  [{}] 원본에 없음: {} L{} {}B", i, tag, r.level, r.data.len());
+                    eprintln!(
+                        "  [{}] 원본에 없음: {} L{} {}B",
+                        i,
+                        tag,
+                        r.level,
+                        r.data.len()
+                    );
                 }
             }
             _ => {}
         }
     }
-    eprintln!("  차이: {} 레코드, 누락: {}, 추가: {}", diff_count, missing_count, extra_count);
+    eprintln!(
+        "  차이: {} 레코드, 누락: {}, 추가: {}",
+        diff_count, missing_count, extra_count
+    );
 
     // DocInfo도 비교
     let orig_di = cfb.read_doc_info(doc.header.compressed).unwrap();
-    let reser_di = crate::serializer::doc_info::serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+    let reser_di =
+        crate::serializer::doc_info::serialize_doc_info(&doc.doc_info, &doc.doc_properties);
     let orig_di_recs = Record::read_all(&orig_di).unwrap();
     let reser_di_recs = Record::read_all(&reser_di).unwrap();
     eprintln!("\n=== DocInfo 비교 ===");
-    eprintln!("  원본: {} records, {} bytes", orig_di_recs.len(), orig_di.len());
-    eprintln!("  재직렬화: {} records, {} bytes", reser_di_recs.len(), reser_di.len());
+    eprintln!(
+        "  원본: {} records, {} bytes",
+        orig_di_recs.len(),
+        orig_di.len()
+    );
+    eprintln!(
+        "  재직렬화: {} records, {} bytes",
+        reser_di_recs.len(),
+        reser_di.len()
+    );
 
     // DocInfo에서 누락된 태그 식별
     let max_di = orig_di_recs.len().max(reser_di_recs.len());
@@ -1217,17 +1485,37 @@ fn test_bodytext_reserialization_diff() {
                 if di_diff <= 10 {
                     let otag = crate::parser::tags::tag_name(o.tag_id);
                     let rtag = crate::parser::tags::tag_name(r.tag_id);
-                    eprintln!("  [{}] 원본: {} L{} {}B | 재직렬화: {} L{} {}B",
-                        i, otag, o.level, o.data.len(), rtag, r.level, r.data.len());
+                    eprintln!(
+                        "  [{}] 원본: {} L{} {}B | 재직렬화: {} L{} {}B",
+                        i,
+                        otag,
+                        o.level,
+                        o.data.len(),
+                        rtag,
+                        r.level,
+                        r.data.len()
+                    );
                 }
             }
             (Some(o), None) => {
                 let tag = crate::parser::tags::tag_name(o.tag_id);
-                eprintln!("  [{}] 재직렬화에 없음: {} L{} {}B", i, tag, o.level, o.data.len());
+                eprintln!(
+                    "  [{}] 재직렬화에 없음: {} L{} {}B",
+                    i,
+                    tag,
+                    o.level,
+                    o.data.len()
+                );
             }
             (None, Some(r)) => {
                 let tag = crate::parser::tags::tag_name(r.tag_id);
-                eprintln!("  [{}] 원본에 없음: {} L{} {}B", i, tag, r.level, r.data.len());
+                eprintln!(
+                    "  [{}] 원본에 없음: {} L{} {}B",
+                    i,
+                    tag,
+                    r.level,
+                    r.data.len()
+                );
             }
             _ => {}
         }

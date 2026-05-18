@@ -47,7 +47,10 @@ fn main() {
 
     for path in &paths {
         let mut buf = Vec::new();
-        if File::open(path).and_then(|mut f| f.read_to_end(&mut buf)).is_err() {
+        if File::open(path)
+            .and_then(|mut f| f.read_to_end(&mut buf))
+            .is_err()
+        {
             continue;
         }
         let doc = match rhwp::parser::parse_document(&buf) {
@@ -58,9 +61,7 @@ fn main() {
 
         for (s_idx, sec) in doc.sections.iter().enumerate() {
             // composed paragraphs
-            let composed: Vec<_> = sec.paragraphs.iter()
-                .map(compose_paragraph)
-                .collect();
+            let composed: Vec<_> = sec.paragraphs.iter().map(compose_paragraph).collect();
             let measured = measurer.measure_section(&sec.paragraphs, &composed, &styles);
 
             for mt in &measured.tables {
@@ -70,10 +71,14 @@ fn main() {
                 let para = sec_local.and_then(|s| s.paragraphs.get(pi));
                 let ctrl = para.and_then(|p| p.controls.get(ci));
                 if let Some(Control::Table(tbl)) = ctrl {
-                    if !tbl.common.treat_as_char { continue; }
+                    if !tbl.common.treat_as_char {
+                        continue;
+                    }
                     total_tac += 1;
                     let common_h_px = tbl.common.height as f64 * dpi / 7200.0;
-                    if common_h_px <= 0.0 { continue; }
+                    if common_h_px <= 0.0 {
+                        continue;
+                    }
                     let cell_spacing = tbl.cell_spacing as f64 * dpi / 7200.0;
                     let row_count = mt.row_heights.len();
                     let raw_h: f64 = mt.row_heights.iter().sum::<f64>()
@@ -93,7 +98,10 @@ fn main() {
             }
         }
     }
-    println!("\n# Total TAC tables: {}, Shrink發動: {}", total_tac, total_shrink);
+    println!(
+        "\n# Total TAC tables: {}, Shrink發動: {}",
+        total_tac, total_shrink
+    );
     if !diffs.is_empty() {
         diffs.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
         println!("# Min diff%: {:+.4}", diffs.first().unwrap().1);
@@ -101,7 +109,10 @@ fn main() {
         println!("# Distribution buckets:");
         let buckets = [0.0, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, f64::INFINITY];
         for w in buckets.windows(2) {
-            let count = diffs.iter().filter(|(_, r)| *r > w[0] && *r <= w[1]).count();
+            let count = diffs
+                .iter()
+                .filter(|(_, r)| *r > w[0] && *r <= w[1])
+                .count();
             println!("  {:>6.2}% ~ {:>6.2}%: {} tables", w[0], w[1], count);
         }
     }

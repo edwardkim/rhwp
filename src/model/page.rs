@@ -191,9 +191,9 @@ mod tests {
         // A4 기본 설정 (210mm x 297mm)
         // 1mm = 283.46 HWPUNIT (7200/25.4)
         let page = PageDef {
-            width: 59528,   // ~210mm
-            height: 84188,  // ~297mm
-            margin_left: 8504,   // ~30mm
+            width: 59528,      // ~210mm
+            height: 84188,     // ~297mm
+            margin_left: 8504, // ~30mm
             margin_right: 8504,
             margin_top: 5669,    // ~20mm
             margin_bottom: 4252, // ~15mm

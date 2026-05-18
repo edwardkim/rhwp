@@ -68,10 +68,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let mut doc = base_doc.clone();
-    let section = doc
-        .sections
-        .first_mut()
-        .ok_or("clone has no sections")?;
+    let section = doc.sections.first_mut().ok_or("clone has no sections")?;
     section.raw_stream = None;
     section.paragraphs.clear();
 
