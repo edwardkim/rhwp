@@ -126,6 +126,9 @@ struct TypesetState {
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
     skip_safety_margin_once: bool,
+    /// [Task #1007] HWP3-origin HWP5 변환본 여부 — widow 방지 등 variant-specific
+    /// behavior 분기에 사용.
+    is_hwp3_variant: bool,
     /// [Task #362] 한컴 빈 줄 감추기 옵션 (SectionDef bit 19). true 이면 페이지 시작에서
     /// overflow 유발하는 빈 paragraph 최대 2개까지 height=0 처리.
     hide_empty_line: bool,
@@ -201,6 +204,7 @@ impl TypesetState {
             on_first_multicolumn_page: false,
             pending_body_wide_top_reserve: 0.0,
             skip_safety_margin_once: false,
+            is_hwp3_variant: false,
             hide_empty_line: false,
             hidden_empty_lines: 0,
             hidden_empty_page_idx: usize::MAX,
@@ -403,10 +407,53 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         hide_empty_line: bool,
     ) -> PaginationResult {
+        self.typeset_section_with_variant(
+            paragraphs,
+            composed,
+            styles,
+            page_def,
+            column_def,
+            section_index,
+            measured_tables,
+            hide_empty_line,
+            false,
+        )
+    }
+
+    /// [Task #1007] HWP3 → HWP5 변환본 인지 typeset.
+    /// 변환본 시 cross-paragraph vpos reset (이전 last vpos > body/2 + 현재 first vpos < body/4)
+    /// 감지하여 page break 트리거 (한컴 인코딩 page break 시그널).
+    #[allow(clippy::too_many_arguments)]
+    pub fn typeset_section_with_variant(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        measured_tables: &[MeasuredTable],
+        hide_empty_line: bool,
+        is_hwp3_variant: bool,
+    ) -> PaginationResult {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         let col_count = column_def.column_count.max(1);
         let footnote_separator_overhead = hwpunit_to_px(400, self.dpi);
         let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
+        // [Task #1007] variant cross-paragraph vpos reset THRESHOLD 계산용 body height (HU)
+        let body_height_hu_for_variant: i32 = if is_hwp3_variant {
+            page_def.height.saturating_sub(
+                page_def
+                    .margin_top
+                    .saturating_add(page_def.margin_bottom)
+                    .saturating_add(page_def.margin_header)
+                    .saturating_add(page_def.margin_footer),
+            ) as i32
+        } else {
+            0
+        };
+        // [Task #1007] 이전 paragraph 인덱스 (variant vpos reset 감지용)
+        let mut variant_prev_para_idx: Option<usize> = None;
 
         let mut st = TypesetState::new(
             layout,
@@ -417,6 +464,7 @@ impl TypesetEngine {
             column_def.column_type,
         );
         st.hide_empty_line = hide_empty_line;
+        st.is_hwp3_variant = is_hwp3_variant;
         st.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
 
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
@@ -479,7 +527,87 @@ impl TypesetEngine {
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
             let para_style_break = para_style.map(|s| s.page_break_before).unwrap_or(false);
 
-            if (force_page_break || para_style_break) && !st.current_items.is_empty() {
+            // [Task #1007] Cross-paragraph vpos reset 감지 — variant 한컴 인코딩
+            // page break 시그널. 한컴 변환본은 page break 위치에서 다음 paragraph 의
+            // line_segs.vertical_pos 를 0 근처로 reset 한다. 이를 직접 감지.
+            //   1. variant document
+            //   2. prev/curr line_seg 가 synth (tag top bit set) 가 아님
+            //   3. prev_last_vpos > body_height_hu × 0.85 (페이지 거의 끝)
+            //   4. curr_first_vpos < 1500 HU (encoder page-reset 시 작은 값)
+            let mut variant_vpos_reset_break = false;
+            if is_hwp3_variant && body_height_hu_for_variant > 0 {
+                let is_synth = |ls: &crate::model::paragraph::LineSeg| ls.tag & 0x80000000 != 0;
+                // prev = 가장 가까운 line_seg 보유 직전 paragraph (empty line_segs skip)
+                let prev_real_idx_and_ls = variant_prev_para_idx.and_then(|prev_pi| {
+                    (0..=prev_pi).rev().find_map(|i| {
+                        paragraphs
+                            .get(i)
+                            .and_then(|p| p.line_segs.last())
+                            .filter(|ls| !is_synth(ls))
+                            .map(|ls| (i, ls))
+                    })
+                });
+                let prev_real_idx = prev_real_idx_and_ls.map(|(i, _)| i);
+                let prev_real = prev_real_idx_and_ls.map(|(_, ls)| ls);
+                // curr = 자신 또는 직후 line_seg 보유 paragraph (empty self skip)
+                let curr_real = para
+                    .line_segs
+                    .first()
+                    .filter(|ls| !is_synth(ls))
+                    .or_else(|| {
+                        (para_idx + 1..paragraphs.len()).find_map(|i| {
+                            paragraphs
+                                .get(i)
+                                .and_then(|p| p.line_segs.first())
+                                .filter(|ls| !is_synth(ls))
+                        })
+                    });
+                if let (Some(prev_last), Some(curr_first)) = (prev_real, curr_real) {
+                    // prev_end = vpos + line_height (wrap shape 의 lh 큰 값 대응)
+                    let prev_end_vpos = prev_last.vertical_pos + prev_last.line_height;
+                    let curr_first_vpos = curr_first.vertical_pos;
+                    let high_threshold = body_height_hu_for_variant * 85 / 100;
+                    // curr paragraph 가 line_segs 비어있는 경우 — encoder 가 typeset 하지
+                    // 않은 ("새 페이지 첫 단락" 으로 간주된) 신호. 더 느슨한 threshold 적용.
+                    let low_threshold = if para.line_segs.is_empty() && !para.text.is_empty() {
+                        4000i32
+                    } else {
+                        1500i32
+                    };
+                    let main_trigger =
+                        prev_end_vpos > high_threshold && curr_first_vpos < low_threshold;
+                    // [Task #1007] 보조 신호: curr 가 명확한 "새 페이지 첫 단락 vpos"
+                    // (< 1500) 인데 prev_real 이 empty paragraph 다수 너머의 paragraph
+                    // 인 경우 — 중간 empty paragraph 들이 page-bottom 까지 채운 것으로
+                    // 간주, prev_end 가 낮아도 break.
+                    // [Task #1007] 보조 신호: curr 가 자신의 line_seg 로 vpos < 1500
+                    // (encoder 의 명확한 page-reset 신호) 인데, 직전 prev_real 과 사이에
+                    // line_segs 누락 paragraph 가 2개 이상 → 중간 empty 들이 page-bottom
+                    // 까지 채운 것으로 간주, prev_end 가 낮아도 break.
+                    let aux_trigger =
+                        if !main_trigger && !para.line_segs.is_empty() && curr_first_vpos < 1500 {
+                            let start = prev_real_idx.unwrap_or(0);
+                            let empty_between = (start + 1..para_idx)
+                                .filter(|i| {
+                                    paragraphs
+                                        .get(*i)
+                                        .map(|p| p.line_segs.is_empty() && !p.text.is_empty())
+                                        .unwrap_or(false)
+                                })
+                                .count();
+                            empty_between >= 2 && prev_end_vpos > body_height_hu_for_variant / 2
+                        } else {
+                            false
+                        };
+                    if main_trigger || aux_trigger {
+                        variant_vpos_reset_break = true;
+                    }
+                }
+            }
+
+            if (force_page_break || para_style_break || variant_vpos_reset_break)
+                && !st.current_items.is_empty()
+            {
                 st.force_new_page();
                 // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용
                 if has_diff_col_def {
@@ -1194,6 +1322,8 @@ impl TypesetEngine {
                     _ => {}
                 }
             }
+            // [Task #1007] variant vpos reset 감지용 prev_para_idx 갱신
+            variant_prev_para_idx = Some(para_idx);
         }
 
         // [Task #836] 미주 paragraphs를 본문 흐름에 가상 삽입
@@ -1376,10 +1506,6 @@ impl TypesetEngine {
                     } else {
                         raw_lh
                     };
-                    // [Task #969] lh 재계산이 ParaShape ls_type 기반으로 일어났다면
-                    // preset 의 line_spacing 은 이미 재계산된 lh 에 흡수된 값 (e.g. HWPX
-                    // 의 linesegArray: lh=font, ls=extra) → 별도 가산 시 double-count
-                    // (160% 가 lh+ls 양쪽). HWPX +8 페이지 inflate (sample16-hwp5) 원인.
                     let line_spacing_px = if recompute_lh {
                         0.0
                     } else {

@@ -37,9 +37,10 @@ pub struct Document {
     /// 파서가 모델링하지 않는 추가 CFB 스트림 (라운드트립 보존용)
     /// (스트림 경로, 데이터)
     pub extra_streams: Vec<(String, Vec<u8>)>,
-    /// [Task #1001] HWP3 → HWP5 변환본 여부 (휴리스틱 식별).
-    /// 변환본의 ParaShape spacing/margin 은 HWP3 원본의 2배 단위로 저장되어
-    /// 한컴 viewer 와 일치하려면 typeset 단계에서 1/2 보정 필요.
+    /// [Task #1001/#1007] HWP3 → HWP5 변환본 식별 플래그.
+    /// HwpSummaryInformation 의 HWP3 시대 년도 + ParaShape/CharShape 비율로
+    /// `parser/mod.rs` 가 결정. 변환본 specific paginator 분기 (cross-paragraph
+    /// vpos reset 감지 등) 의 trigger 로 사용.
     pub is_hwp3_variant: bool,
 }
 

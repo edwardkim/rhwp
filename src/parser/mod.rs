@@ -175,6 +175,12 @@ fn parse_hwp_with_cfb(
     let bin_data_content = load_bin_data_content(&mut cfb, &doc_info.bin_data_list, compressed);
     let extra_streams = collect_extra_streams(&mut cfb, &doc_info.bin_data_list);
 
+    // [Task #1001/#1007] HWP3 변환본 식별 — HwpSummary HWP3 시대 년 검출.
+    // sample16-hwp5 같은 복잡한 변환본 (Task #554 의 PS<0.05 휴리스틱 미적용)
+    // 도 식별. 단 false positive (예: HWP5 에 HWP3 시대 텍스트만 인용된 일반
+    // 문서) 차단 위해 PS/CS 비율도 추가 검증.
+    let summary_hwp3_era = cfb.detect_hwp3_variant();
+
     // Document 조립
     let model_header = ModelFileHeader {
         version: ModelHwpVersion {
@@ -214,9 +220,9 @@ fn parse_hwp_with_cfb(
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
     apply_hwp3_origin_fixup(&mut doc);
 
-    // [Task #1001] HwpSummary HWP3 시대 년 AND PS/CS 비율 작음 → 변환본 확정.
-    // 두 신호 결합으로 false positive 차단 (exam_eng 등 일반 HWP5 가 본문에
-    // HWP3 시대 텍스트만 인용한 경우).
+    // [Task #1001/#1007] HwpSummary HWP3 시대 년 AND PS/CS 비율 작음 → 변환본 확정.
+    // 두 신호 결합으로 false positive 차단 (hwpspec.hwp 같은 spec 문서 등 일반
+    // HWP5 가 ratio 만으로는 false-positive 되는 경우 차단).
     if summary_hwp3_era {
         let total_paras: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
         if total_paras > 50 {
@@ -224,11 +230,6 @@ fn parse_hwp_with_cfb(
             let cs_r = doc.doc_info.char_shapes.len() as f64 / total_paras as f64;
             if ps_r < 0.20 && cs_r < 0.20 {
                 doc.is_hwp3_variant = true;
-                // [Task #1001 Stage 11] line_segs.vertical_pos /2 보정 revert —
-                // 실제 raw vpos 비교 결과 HWP5 변환본 vpos 는 HWP3 의 2배가 아닌
-                // ~1.15배 (15% 만 차이). /2 fix 시 HWP5 가 HWP3 보다 더 compact 되어
-                // 한컴 정합 페이지 분할 회귀 (한컴은 section 2 가 새 페이지 vs rhwp
-                // 는 같은 페이지에 packed). vpos 보정 없이 ParaShape /4 만으로 정합.
             }
         }
     }
@@ -257,26 +258,6 @@ fn parse_hwp_with_cfb(
 /// - **`Paragraph > 50`** 가드: 매우 짧은 문서는 비율이 왜곡되므로 제외
 ///
 /// 27 fixture 검증에서 100% 정확 분류 (Stage 1 보고서 §3.2 참조).
-/// [Task #1001] 변환본의 line_segs 단위 보정.
-/// vertical_pos 만 ParaShape spacing 누적 영향으로 변환본에서 2배 단위.
-/// 나머지 필드 (line_height/text_height/baseline_distance/line_spacing/column_start/
-/// segment_width) 는 단위 동일 (HWP3 와 같음) 이라 보정 불필요.
-fn fixup_line_segs_for_variant(paragraphs: &mut [crate::model::paragraph::Paragraph]) {
-    for para in paragraphs.iter_mut() {
-        for ls in para.line_segs.iter_mut() {
-            ls.vertical_pos /= 2;
-        }
-        // 표 셀 내부 paragraph 재귀
-        for control in para.controls.iter_mut() {
-            if let crate::model::control::Control::Table(table) = control {
-                for cell in table.cells.iter_mut() {
-                    fixup_line_segs_for_variant(&mut cell.paragraphs);
-                }
-            }
-        }
-    }
-}
-
 fn apply_hwp3_origin_fixup(doc: &mut Document) {
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
@@ -285,7 +266,6 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     let ps_ratio = doc.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
     let cs_ratio = doc.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
     if ps_ratio < 0.05 && cs_ratio < 0.15 {
-        // [Task #554] 변환본 의심 시 margin_bottom 보정 (한글97 의 마지막 줄
         // tolerance 모방). is_hwp3_variant 플래그 설정은 caller 가 별도 (HwpSummary
         // HWP3-era + 더 관대한 ratio AND 조건) 로 처리 — hwpspec.hwp 같은 spec 문서
         // false-positive 차단 위해 ratio 단독 변환본 확정 회피.
