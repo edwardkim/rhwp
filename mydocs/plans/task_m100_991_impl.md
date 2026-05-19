@@ -1,76 +1,59 @@
-# Task #991 구현 계획서 — F2 composer-only marker synthesis
+# 구현계획서 — 쪽 분할된 글자처럼 취급 표의 셀 내용 렌더링 누락
 
-- 이슈: [#991](https://github.com/edwardkim/rhwp/issues/991)
-- 선행: [수행 계획서](task_m100_991.md), [Stage 1 진단](../working/task_m100_991_stage1.md)
-- 브랜치: `local/task991-fix`
+- 타스크: 로컬 task991
+- 브랜치: `local/task991`
+- 수행계획서: `task_m100_991.md` (승인 완료)
+- 작성일: 2026-05-19
 
-## 1. 결정된 fix 후보: F2-narrow
+## 추가 확인된 사실 (수행계획서 이후)
 
-Stage 1 진단 결과로 후보 평가:
+렌더러 코드 추적 + SVG 산출물 정밀 비교로 버그 범위가 좁혀졌다.
 
-| 후보 | cargo test fail | Editor 영향 | 회귀 |
-|------|---------------|------------|------|
-| F1 (parser 광범위) | 9 | **있음** | 큼 |
-| F1-narrow (ch=11/14) | 5 | 적음 | 중 |
-| F2-wide (composer synth, 조건 무) | 5 | 없음 | 중 |
-| **F2-narrow** (좁힘 조건) | **0** | 없음 | **없음** |
+- 문제의 `treat_as_char=true` 표는 빈 문단에 단독 앵커되어 6→7쪽으로 **쪽 분할**된다(`PartialTable`).
+- SVG 산출물 확인 결과 **표 테두리(외곽 박스 rect/line)는 6·7쪽 모두 정상 렌더링**된다.
+- 누락된 것은 **셀 내부 5개 문단의 텍스트뿐**이다.
+- 즉 버그는 `src/renderer/layout/table_partial.rs` 의 `layout_partial_table` → 셀 내용 렌더 경로(`compute_cell_line_ranges` / 분할 행 line_ranges 처리)에 국한된다.
 
-→ **F2-narrow 채택**.
+가설: 쪽 분할 행(`is_in_split_row`)에서 셀 문단의 가시 줄 범위(`line_ranges`)가 빈 범위로 계산되거나, 분할 오프셋(`split_start_content_offset` / `split_end_content_limit`)과 셀 문단의 줄 좌표가 어긋나 모든 줄이 잘려나가는 것으로 보인다. 정확한 지점은 1단계에서 확정한다.
 
-## 2. 구현 위치 + 시그니처
+## 구현 단계 (3단계)
 
-```rust
-// src/renderer/composer.rs
+### 1단계 — 누락 지점 확정 (조사, 소스 수정 없음)
 
-/// HWP5 parser 가 누락한 \u{FFFC} 인라인 마커를 합성하여
-/// composer 내부에서만 사용하는 paragraph 반환.
-fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph>;
+- `layout_partial_table` 의 셀 내용 렌더 경로를 추적한다:
+  - `compute_cell_line_ranges` 가 이 셀(빈 문단 단독 앵커, 5개 셀 문단)에 대해 반환하는 `line_ranges` 값 확인.
+  - `split_start_content_offset` / `split_end_content_limit` 와 셀 문단 줄 좌표(`compose_paragraph` 결과)의 정합성 확인.
+  - 6쪽(split_end)·7쪽(split_start) 각각에서 어느 줄이 가시/비가시로 판정되는지 확인.
+- 디버그 출력(임시 로그 또는 기존 `dump`/`dump-pages`)으로 가설을 검증한다.
+- 산출물: `task_m100_991_stage1.md` — 누락 근본 원인과 정확한 수정 지점.
 
-pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
-    let synth = synthesize_marker_paragraph(para);
-    let para = synth.as_ref().unwrap_or(para);  // shadow
-    // 기존 logic 유지
-}
-```
+### 2단계 — 수정 구현
 
-## 3. F2 합성 알고리즘
+- 1단계에서 확정한 지점을 수정하여 분할된 TAC 표의 셀 문단이 정확한 줄 범위로 렌더링되도록 한다.
+- 수정 범위는 `src/renderer/layout/table_partial.rs` (또는 1단계가 지목하는 관련 렌더러 파일)로 한정한다. 파서·문서 모델·페이지네이션 로직은 건드리지 않는다.
+- 비-분할 TAC 표, 비-TAC 분할 표 등 인접 케이스에 회귀가 없도록 최소 침습으로 수정한다.
+- 산출물: `task_m100_991_stage2.md` + 소스 커밋.
 
-### 좁힘 조건 (모두 만족 시만 합성)
-1. `inline_ctrl_count >= 3` — pi=394 패턴 (3 TAC controls)
-2. `n_leading >= 2` — leading char_offsets gap 에 2+ extended ctrl
-3. `existing_markers < inline_ctrl_count` — HWP3 (markers 있음) 자동 차단
+### 3단계 — 검증 및 보고
 
-### 합성 로직
-1. inline-visible extended ctrl 수 계산 (Header/Footer/Footnote/Endnote/HiddenComment 제외)
-2. char_offsets gap (8 wchar 단위) 분석:
-   - Leading gap (char_offsets[0] / 8) → leading 마커 push
-   - Inter-char gap → 사이 마커 push
-   - Trailing → 남은 controls 8 wchar 단위로 push
-3. 새 (text, char_offsets) 로 clone paragraph 반환
+- `cargo build` / `cargo test` 전체 통과 확인.
+- `cargo clippy` 경고 없음 확인.
+- 골든 SVG 테스트(`tests/golden_svg/`) 회귀 없음 확인.
+- 비공개 샘플 재현: `export-svg` 로 셀 5개 문단(불릿 목록)이 6·7쪽에 정상 표시되는지, 한컴 PDF와 시각 정합되는지 확인.
+- 다른 공개 샘플로 분할 표/TAC 표 교차 회귀 확인.
+- WASM 동작에 영향 있으면 Docker로 WASM 재빌드.
+- 산출물: `task_m100_991_stage3.md` + `report/task_m100_991_report.md` + `orders/20260519.md` 갱신.
 
-## 4. 영향 분석
+## 비공개 문서 / 테스트 픽스처 처리
 
-### Editor pipeline
-- 영향 없음 — parser 미변경 (para.text 원본 유지)
-- insert_text / save / cursor / logical_offset 보존
+- 재현용 HWPX/PDF는 커밋하지 않는다.
+- 회귀 방지 테스트가 필요하면:
+  - 우선 공개 가능한 샘플 중 동일 구조(빈 문단 단독 앵커 + 쪽 분할 TAC 표)를 찾아 골든 테스트로 추가한다.
+  - 적합한 공개 샘플이 없으면 비공개 픽스처 기반 테스트는 비커밋 처리하고, 그 사실과 검증 결과를 3단계 보고서에 명시한다.
+- 커밋 전 `git status` 로 비공개 hwp/pdf 가 스테이징되지 않았는지 확인한다.
 
-### Renderer pipeline
-- compose_paragraph 진입 시 synth → ComposedParagraph 에 marker 반영
-- layout 의 utf16_range_to_text_range 가 마커 포함 text 기준 line 매핑
+## 범위 제외
 
-## 5. 단계 구성 (구현 계획)
-
-| Stage | 내용 | 산출물 |
-|-------|------|--------|
-| 2 | F2-narrow 구현 | composer.rs +95 lines |
-| 3 | cargo test --release --lib | 1297 passed, 0 failed (목표) |
-| 4 | 240 sample 페이지 수 회귀 측정 | 변동 0 (목표) |
-| 5 | HWP5 sample16 p18 시각 검증 | PDF 정합 (목표) |
-| 6 | commit + 보고서 + PR 준비 | PR 생성 |
-
-## 6. 회귀 방어
-
-- 좁힘 조건 (3개 모두) 으로 pi=394 패턴만 catch
-- 1-2 TAC paragraph (대부분 sample) 미적용
-- HWP3 (markers 있음) 자동 차단
-- cargo test 통과 + 240 sample 회귀 0 검증
+- 페이지 수 ±1 누적 드리프트(별도 타스크).
+- HWP3 경로.
+- 파서·공통 문서 모델·페이지네이션 로직.

@@ -1,79 +1,53 @@
-# Task #991 Stage 2 — F2 후보 시도 + 좁힘 조건 결정
+# 2단계 보고서 — 1차 수정 시도와 회귀, 재분석
 
-- 이슈: [#991](https://github.com/edwardkim/rhwp/issues/991)
-- 선행: [Stage 1 진단](task_m100_991_stage1.md)
-- 브랜치: `local/task991-fix`
+- 타스크: 로컬 task991
+- 단계: 2/3 (수정 구현 — **1차 시도 실패, 접근 재설계 필요**)
+- 작성일: 2026-05-19
 
-## 1. F2 wide (초기 시도) — 조건 없음
+## 1. 1차 수정 시도
 
-```rust
-if existing_markers >= inline_ctrl_count {
-    return None;
-}
-// 모든 부족 case 에 synth 적용
-```
+구현계획서 v2 대로 `compute_cell_line_ranges` 의 분할 시작 페이지(offset) 줄 스킵 기준을 `line_end_pos = cum + line_h` 에서 `line_break_pos = cum + h` 로 일치화했다.
 
-**결과**: cargo test 5 fail
-- test_548_cell_inline_shape_first_line_indent_p8 (puko box 위치 shift)
-- test_521_tac_table_outer_margin_bottom_p2
-- test_cursor_rect_after_line_break
-- test_cursor_rect_after_line_break_at_end
-- test_hy001_textbox_inline_pictures_render_for_hwp_and_hwpx
+결과:
+- ☞ 표(6·7쪽): 중복된 `☞ 사용자 편의성…` 줄 제거됨 ✓
+- 전체 테스트(`cargo test`) 통과, `cargo clippy` 경고 없음.
 
-→ exam_eng p8 의 puko box x=168.60 (기대 155.60, -13px 어긋남).
+## 2. 회귀 발견
 
-## 2. F2 narrow 시도 1 — `n_leading >= 2`
+수정 전후 SVG 전 180쪽 텍스트를 비교한 결과 4개 쪽이 변했다(7·96·127·168). 한컴 PDF 와 대조:
 
-```rust
-if n_leading < 2 {
-    return None;
-}
-```
+| 쪽 | 변화 | 판정 |
+|----|------|------|
+| 7 | 중복 `☞ 사용자 편의성…` 제거 | 정정 ✓ |
+| 96 | `수우미양가` → `수우미양가하` (누락된 `하` 복원) | 정정 ✓ (PDF 일치) |
+| 127 | 텍스트 일부 변동 | 미확정 |
+| 168 | `ｏ 지방자치단체 입찰 및 계약 집행 기준(행정안전부예규)` 줄 **소실** | **회귀** ✗ |
 
-**결과**: 3 fail
-- test_548 (puko box x=162.60, -7px)
-- test_cursor_rect_after_line_break*
+168쪽: 표 pi=525(3행×2열, 셀[5] 37개 문단)가 167→168쪽으로 분할(167쪽 `split_end=356.6`, 168쪽 `split_start=356.6`). 수정 후 16번째 항목이 167쪽·168쪽 어디에도 없다(수정 전엔 168쪽에 정상 표시).
 
-→ 일부 sample 에 여전히 광범위 적용.
+→ **1차 수정은 중복은 없애지만 누락을 만든다.** 원본 복원함(`git checkout`).
 
-## 3. F2 narrow 시도 2 — `n_leading >= 2 AND inline_ctrl_count >= 3` ✓
+## 3. 재분석 — 근본 원인 정정
 
-```rust
-if n_leading < 2 || inline_ctrl_count < 3 {
-    return None;
-}
-```
+`compute_cell_line_ranges` 는 분할 끝 페이지와 분할 시작 페이지를 위해 **독립적으로 2회 호출**되며, 두 호출이 줄 집합을 정확히 분할(상보)해야 한다. 그러나 단순 기준 일치화로는 상보가 보장되지 않는다:
 
-**결과**: **0 fail, cargo test 전체 통과**
+- **`limit_reached` 전파 (Task #485)**: 끝 페이지에서 한 줄이 한도를 넘으면 이후 문단 전체가 스킵 마커 처리된다 → 끝 페이지는 줄 prefix `[0,k)` 만 렌더.
+- **vpos 리셋 컷 (Task #697)**: 셀 첫 문단 vpos==0 일 때, 끝 페이지(`has_limit`)는 vpos 리셋 검출 시 `cum` 을 `abs_limit` 로 강제 진행해 컷하지만, 시작 페이지(`has_offset`)는 그렇지 않다. 두 호출의 `cum` 궤적이 달라진다.
+- **vpos 동기화 (Task #700)**: `cum` 이 단조 증가가 아니라 문단 vpos 절대값으로 점프할 수 있다.
 
-조건 의미:
-- `inline_ctrl_count >= 3`: pi=394 (3 TAC) 패턴 — 일반적인 1-2 TAC paragraph 미해당
-- `n_leading >= 2`: leading char_offsets gap 2+ extended ctrl — 대부분 paragraph 는 0-1
-- 두 조건 AND → sample16 pi=394 특유의 경우만 catch
+따라서 끝 페이지의 실제 컷 인덱스 `k_end` 는 "첫 `cum+h > limit`" 가 아니라 `limit_reached`·vpos 리셋의 영향을 받는다. 시작 페이지가 같은 `k_end` 를 독립 재계산으로 맞추는 것이 단순 기준 변경으로는 불가능하다.
 
-## 4. 최종 구현
+이는 기존에도 **중복과 누락이 모두 산발적으로 존재**함을 의미한다(96쪽은 수정 전 `하` 누락 = 기존 gap, 6·7쪽은 기존 중복).
 
-```rust
-fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
-    // 1. inline-visible ctrl count (Header/Footer/Footnote/Endnote/HiddenComment 제외)
-    let inline_ctrl_count = ...;
-    if inline_ctrl_count == 0 { return None; }
-    
-    // 2. 기존 marker 검사 (HWP3 차단)
-    let existing_markers = para.text.chars().filter(|c| *c == '\u{FFFC}').count();
-    if existing_markers >= inline_ctrl_count { return None; }
-    
-    // 3. 좁힘 조건
-    let first_off = para.char_offsets.first().copied().unwrap_or(0) as usize;
-    let n_leading = first_off / 8;
-    if n_leading < 2 || inline_ctrl_count < 3 { return None; }
-    
-    // 4. char_offsets gap 분석 + 마커 push
-    // ...
-}
-```
+## 4. 제안 — 2차 접근
 
-## 5. 검증 (Stage 2 종결)
+분할 시작 페이지의 컷을 독립 재계산하지 말고 **끝 페이지 패스 결과에서 유도**한다:
 
-- cargo test --release --lib: **1297 passed, 0 failed**
-- 정량적 좁힘 조건 검증 — 의도된 case 만 catch
+- `compute_cell_line_ranges` 가 `has_offset` 로 호출될 때, 내부에서 끝 페이지 기준(`content_limit = content_offset`, `content_offset = 0`)으로 한 번 더 패스를 돌려 끝 페이지가 렌더한 줄 집합(prefix)을 구하고, 시작 페이지는 정확히 그 보집합 `[k_end, end)` 를 렌더한다.
+- 이러면 `limit_reached`·vpos 리셋·vpos 동기화가 양쪽에서 동일하게 작동해 중복·누락이 정의상 불가능해진다.
+
+이는 단순 한 줄 변경이 아니라 함수 구조 변경이므로, 구현계획서를 v3 로 정정하고 회귀 검증(골든 SVG + 다중 분할 표 샘플)을 강화해야 한다.
+
+## 5. 다음 단계
+
+구현계획서 v3 작성 → 승인 → 2차 수정 → 전체 회귀 검증.

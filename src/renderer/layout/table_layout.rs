@@ -3100,9 +3100,41 @@ impl LayoutEngine {
         // - content_offset > 0: [0, content_offset) 영역의 콘텐츠는 이전 페이지 → 스킵.
         // - content_limit > 0: [0, content_limit] 영역의 콘텐츠만 표시.
         // - 중첩 표(atomic) 문단은 분할 불가 — 경계를 걸치면 한쪽 페이지에만 렌더링.
-        let mut result = Vec::with_capacity(composed_paras.len());
         let has_offset = content_offset > 0.0;
         let has_limit = content_limit > 0.0;
+
+        // [Task #991] 분할 시작/중간 페이지(has_offset)의 줄 컷을 독립 재계산하지
+        // 않고, 끝 페이지 패스(prefix 패스)에서 유도한다.
+        //
+        // 끝 페이지(`!has_offset`)와 시작 페이지가 분할 경계를 각자 계산하면,
+        // `limit_reached` 전파(Task #485)·vpos 리셋 컷(Task #697)·vpos 동기화
+        // (Task #700)가 두 경로에서 다르게 작동해 줄이 중복되거나 누락된다.
+        // 모든 컷을 동일한 prefix 패스(`cell_line_prefix_counts`)로 통일하면,
+        // - 시작 줄 = budget `content_offset` 안에 들어가는 prefix 줄 수
+        // - 끝 줄   = budget `content_offset + content_limit` 안의 prefix 줄 수
+        //   (limit 없으면 문단 전체)
+        // 가 되어, 끝 페이지 포함분과 정확히 상보가 된다(중복·누락 불가).
+        if has_offset {
+            let skip =
+                self.cell_line_prefix_counts(cell, composed_paras, content_offset, styles);
+            let keep: Vec<usize> = if has_limit {
+                self.cell_line_prefix_counts(
+                    cell,
+                    composed_paras,
+                    content_offset + content_limit,
+                    styles,
+                )
+            } else {
+                composed_paras.iter().map(|c| c.lines.len()).collect()
+            };
+            return skip
+                .iter()
+                .zip(keep.iter())
+                .map(|(&s, &e)| (s, e.max(s)))
+                .collect();
+        }
+
+        let mut result = Vec::with_capacity(composed_paras.len());
         let mut cum: f64 = 0.0;
         // [Task #431] content_limit 은 현재 페이지에서 표시할 상대 길이(px) 의미이므로
         // 절대 좌표(cum 기반)와 비교하려면 content_offset 을 더해 절대 끝 좌표로 변환한다.
@@ -3335,6 +3367,30 @@ impl LayoutEngine {
         }
 
         result
+    }
+
+    /// [Task #991] 셀 콘텐츠를 누적하며 예산 `budget_px` 안에 들어가는 문단별 prefix
+    /// 줄 수를 반환한다.
+    ///
+    /// 끝 페이지 패스(`compute_cell_line_ranges` 를 `offset=0, limit=budget` 로 호출)의
+    /// 결과에서 추출한다. `offset=0` 이므로 재귀 호출은 `has_offset=false` 경로(끝 페이지
+    /// 로직)를 타며 더 이상 재귀하지 않는다.
+    ///
+    /// 끝 페이지 결과 `(s, e)`:
+    /// - `s == 0`: `e` 가 budget 안에 들어간 prefix 가시 줄 수.
+    /// - `s != 0`: 한도 초과 스킵 마커 → prefix 0줄.
+    fn cell_line_prefix_counts(
+        &self,
+        cell: &crate::model::table::Cell,
+        composed_paras: &[ComposedParagraph],
+        budget_px: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<usize> {
+        let ranges = self.compute_cell_line_ranges(cell, composed_paras, 0.0, budget_px, styles);
+        ranges
+            .iter()
+            .map(|&(s, e)| if s == 0 { e } else { 0 })
+            .collect()
     }
 
     /// 줄 범위(line_ranges)에 해당하는 셀 콘텐츠의 실제 렌더링 높이를 계산한다.
