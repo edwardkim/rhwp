@@ -816,6 +816,14 @@ mod wasm_internals {
             return hangul_width_hwp as f64 / 75.0;
         }
 
+        // 좁은 구두점 폴백 — native EmbeddedTextMeasurer 와 동기화.
+        // measure_char_width_embedded 의 is_narrow_punctuation 분기 (0.3 em) 가
+        // 적용되지 못한 미등록 폰트 케이스 (예: 휴먼명조 U+2027) 에서 JS Canvas
+        // 측정값 (~0.5 em) 이 그대로 들어가지 않도록 동일 폴백 적용.
+        if super::is_narrow_punctuation(c) {
+            return font_size * 0.3;
+        }
+
         // 3차: JS 폴백 (미등록 폰트)
         let raw_px = cached_js_measure(measure_font, c);
         let actual_px = raw_px * font_size / 1000.0;
@@ -1372,7 +1380,15 @@ fn measure_char_width_embedded(
             c,
             '\u{2018}'..='\u{2027}' // ''‚‛""„‟†‡•‣․‥…‧ 구두점/기호
         );
-        if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
+        // 휴먼명조/HY중고딕/HY신명조/HY견명조 등 일부 폰트 DB 가 U+2018/U+2019/
+        // U+2027 을 fullwidth (1.0 em) 로 잘못 기록한 케이스 정정. em/2 (0.5 em)
+        // 강제 시 한컴 대비 약 4px (font-size 20px 기준, 0.5→0.3 em 차) 과대.
+        // glyph_w 가 비정상 fullwidth (>= em_size) 일 때만 0.3 em 강제 — 함초롬
+        // 바탕 (0.32) / Pretendard (0.22) 등 정상 DB 값은 조건 미충족으로 영향 없음.
+        let is_narrow_unicode_punct = matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}');
+        if is_narrow_unicode_punct && glyph_w >= mm.metric.em_size {
+            (mm.metric.em_size as f64 * 0.3) as u16
+        } else if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
             mm.metric.em_size / 2
         } else {
             glyph_w
@@ -1505,10 +1521,18 @@ pub(crate) fn is_cjk_char(c: char) -> bool {
 /// 실제 글리프 폭이 반각(em/2)보다 뚜렷이 좁은 구두점·기호.
 /// 메트릭 DB 미등록 폰트의 폴백 폭 계산 시 `font_size * 0.5` 대신
 /// `font_size * 0.3` 을 쓰도록 분기하는 기준 (Task #257).
+///
+/// General Punctuation 좁은 글리프 확장: 휴먼명조 U+2027 등 DB 미수록
+/// 폰트의 폴백 `font_size * 0.5` 가 한컴 대비 ~10px 과대 (font-size 20px
+/// 기준). 한컴은 약 0.25-0.3 em 으로 렌더하므로 동일 분기 적용.
 fn is_narrow_punctuation(c: char) -> bool {
     matches!(
         c,
-        ',' | '.' | ':' | ';' | '\'' | '"' | '`' | '\u{00B7}' // · MIDDLE DOT
+        ',' | '.' | ':' | ';' | '\'' | '"' | '`' |
+        '\u{00B7}' |  // · MIDDLE DOT
+        '\u{2018}' |  // ' LEFT SINGLE QUOTATION MARK
+        '\u{2019}' |  // ' RIGHT SINGLE QUOTATION MARK
+        '\u{2027}' // ‧ HYPHENATION POINT
     )
 }
 
