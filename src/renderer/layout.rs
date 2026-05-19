@@ -4775,19 +4775,20 @@ impl LayoutEngine {
                                 );
                             }
 
-                            // [Task #1001 격차 D] PageItem::FullParagraph (pi) 가 이미 line_height
-                            // 만큼 y_offset 을 진행했음. Shape PageItem 의 추가 line_advance 진행은
-                            // double count → ~Shape height 만큼 extra empty space 발생.
-                            // 그러나 Stage 9 의 완전 차단 (result_y = y_offset) 은 너무 compact.
-                            // 한컴 정합을 위해 line_spacing × 3 (~30 px) buffer 추가 — 박스 아래
-                            // visual breathing room 확보. (한컴 viewer 가 사용하는 정확한 공식 미상,
-                            // 사용자 시각 판정 결과 60 px gap 정합 위해 휴리스틱).
-                            let line_spacing_px = para
+                            // [Task #1001 격차 D revert] line_spacing × 3 heuristic 은
+                            // non-variant 문서 (table-vpos-01 등) 의 treat_as_char Shape
+                            // 가 본 분기 통해 result_y 가 작아져 후속 paragraph (Table 등)
+                            // 위치 어긋남 (issue_table_vpos_01_page5 cell hit-test 회귀).
+                            // 이전 동작 (shape_y + line_advance.max(shape_h)) 으로 복원.
+                            // sample16-hwp5 variant cover 의 시각 breathing room 은 별도
+                            // follow-up — variant flag 를 layout 까지 thread 한 후 variant
+                            // -only 분기 적용 (PR #1005 scope 외).
+                            let line_advance = para
                                 .line_segs
                                 .first()
-                                .map(|ls| hwpunit_to_px(ls.line_spacing, self.dpi))
-                                .unwrap_or(0.0);
-                            result_y = y_offset + line_spacing_px * 3.0;
+                                .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
+                                .unwrap_or(shape_h);
+                            result_y = shape_y + line_advance.max(shape_h);
                         }
                     }
                 }

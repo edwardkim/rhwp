@@ -285,9 +285,10 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     let ps_ratio = doc.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
     let cs_ratio = doc.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
     if ps_ratio < 0.05 && cs_ratio < 0.15 {
-        // [Task #1001] 변환본 식별 결과를 IR 에 보존 — typeset 단계에서
-        // ParaShape spacing/margin 1/2 보정 (HwpUnitChar 단위) 에 사용.
-        doc.is_hwp3_variant = true;
+        // [Task #554] 변환본 의심 시 margin_bottom 보정 (한글97 의 마지막 줄
+        // tolerance 모방). is_hwp3_variant 플래그 설정은 caller 가 별도 (HwpSummary
+        // HWP3-era + 더 관대한 ratio AND 조건) 로 처리 — hwpspec.hwp 같은 spec 문서
+        // false-positive 차단 위해 ratio 단독 변환본 확정 회피.
         for section in doc.sections.iter_mut() {
             section.section_def.page_def.margin_bottom = section
                 .section_def
