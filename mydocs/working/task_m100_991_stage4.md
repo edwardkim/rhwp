@@ -1,57 +1,43 @@
-# Task #991 Stage 4 — 시각 검증
+# 4단계 보고서 — 쪽 분할 표 직후 문단 vpos 팬텀 해소
 
-- 이슈: [#991](https://github.com/edwardkim/rhwp/issues/991)
-- 선행: [Stage 3 회귀 검증](task_m100_991_stage3.md)
+- 타스크: 로컬 task991
+- 단계: 4/5
+- 구현계획서: `task_m100_991_impl_v5.md`
+- 작성일: 2026-05-19
 
-## 1. HWP5 sample16 페이지 18
+## 1. 문제
 
-### Pre-fix (작업지시자 rhwp-studio screenshot)
-- 박스 본문 (○ 5 items)
-- 다이어그램 (with internal "주전산센터 목표시스템 구성(안)" 제목)
-- "가. 주전산센터 목표시스템 구성(안)" 라벨 — **다이어그램 아래**
-- "☒ 통합모델..." 다음 paragraph
+13쪽 "나. 요구사항 목록" 제목이 표 바로 아래가 아니라 페이지 하단(y≈1047)에 위치. 13쪽은 쪽 분할 표 pi=200(13×3, 12→13쪽 분할)의 연속분으로 시작하며, 표(그려진 하단 y=630)와 다음 문단 pi=201(y=987) 사이에 ~357px 팬텀 공백이 있었다.
 
-→ PDF 정답: 가. 라벨이 다이어그램 위. 우리 결과: 라벨이 아래 (어긋남).
+## 2. 원인
 
-### Post-fix (`/tmp/final5_p18.png`)
-- 박스 본문 (○ 5 items)
-- "가. 주전산센터 목표시스템 구성(안)" — **다이어그램 위** ✓
-- 다이어그램 (with internal title)
-- "나. 주요 과업내용" — **다이어그램 아래** ✓
-- "☒ 통합모델..." 다음 paragraph
+`layout.rs` 1차 패스 vpos 보정. 분할 표 호스트 문단 pi=200 의 LINE_SEG(`vpos=725470 lh=1400`)는 텍스트 줄 높이만 담고 표 높이를 반영하지 못한다. 다음 문단 pi=201 의 vpos(753641)는 한컴이 표 높이 포함해 인코딩한 값이라, lazy_base 산출 시 `vpos_end(pi=201) − prev_vpos_end(pi=200)` 차이에 표 높이가 통째로 들어가 표 높이만큼 추가 점프(sequential 로 이미 표를 지난 위치에서 이중 가산).
 
-→ **PDF 정합** 확인.
+`prev_has_overlay_shape` 가드는 `Shape`·`Picture`만 다루고 표를 누락. 쪽 분할 표(`PartialTable`)에서만 호스트 LINE_SEG 가 실제 높이를 못 담아 팬텀이 심각하다.
 
-## 2. 측정 데이터
+## 3. 1차 시도와 정정
 
-```
-pi=394 (HWP5 sample16):
-  text="  " (2 chars, original)
-  char_offsets=[16, 17]
-  3 controls (가. table + diagram picture + 나. table)
-  3 line_segs (ls[0] ts=0, ls[1] ts=8, ls[2] ts=18)
+`prev_has_overlay_shape` 에 `Control::Table` 분기를 추가(모든 비-TAC TopAndBottom+Para 표)했더니 골든 테스트 `issue_157_page_1` 이 깨졌다 — issue-157 의 "(대리참석 위임)" 줄이 2.05px 이동. issue-157 은 **분할 안 된 표**(`PageItem::Table`)로, 이 경우 vpos 인코딩이 정합하여 2px 보정이 정상이었다.
 
-F2 synth (composer 내부, para 원본 영향 없음):
-  text="\u{FFFC}\u{FFFC}  \u{FFFC}" (5 chars)
-  char_offsets=[0, 8, 16, 17, 18]
+→ 가드를 **직전 항목이 `PartialTable`(쪽 분할 표)일 때**로 좁혔다.
 
-composer.utf16_range_to_text_range (post-synth):
-  ls[0] (0..8):  [0..1) — \u{FFFC} (가. 라벨) ✓
-  ls[1] (8..18): [1..4) — \u{FFFC}  (다이어그램 + 공백) ✓
-  ls[2] (18..end): [4..5) — \u{FFFC} (나. 라벨) ✓
-```
+## 4. 수정
 
-## 3. 다른 sample 시각 회귀
+`src/renderer/layout.rs` 1차 패스 루프(`layout_column`):
 
-- HWPX sample16 (multi-TAC + leading 2): F2 조건 미해당 (parser path 다름) — 시각 미변동
-- exam_eng p8 (puko box): F2 조건 미해당 (3+ ctrl 아님) — 시각 미변동
-- HWP3 sample16: 이미 markers 있음 → F2 자동 차단 — 시각 미변동
+- `prev_item_was_partial_table: bool` 추가 — 루프 끝에서 `matches!(item, PageItem::PartialTable { .. })` 로 갱신.
+- vpos 보정 진입 조건에 `&& !prev_item_was_partial_table` 추가.
+- 분할 표 직후 첫 문단은 vpos 보정을 건너뛰고 sequential 배치(정확히 그린 y_offset)를 신뢰.
 
-## 4. 종합
+분할 안 된 표(`PageItem::Table`) 직후 문단은 불변.
 
-| 항목 | 결과 |
-|------|------|
-| HWP5 sample16 p18 | PDF 정합 ✓ |
-| HWPX sample16 p19 | 미변동 (별도 fundamental 한계) |
-| exam_eng p8 puko box | 미변동 ✓ |
-| 그 외 sample | 미변동 ✓ |
+## 5. 검증
+
+- 13쪽 "나. 요구사항 목록" y=1047 → **707.9**(표 직하)로 정상화. SVG 렌더 — 표, 제목, 다음 표가 연속 배치.
+- 페이지 수 **181 불변**(연쇄 페이지 변동 없음).
+- `cargo test --release` 전체 **1482 passed, 0 failed** — 골든 SVG issue-157 포함 통과.
+- `cargo clippy --release` 경고 0.
+
+## 6. 다음 단계
+
+5단계: 최종 결과보고서 + WASM 재빌드 영향 확인 + `orders/20260519.md` 갱신.

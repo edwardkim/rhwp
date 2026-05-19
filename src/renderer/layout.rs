@@ -2150,6 +2150,13 @@ impl LayoutEngine {
             }
         });
         let mut vpos_lazy_base: Option<i32> = None;
+        // [Task #991] 직전 PageItem 이 쪽 분할 표(PartialTable)였는지.
+        // 분할 표 호스트 문단의 LINE_SEG line_height 는 텍스트 줄 높이만 담고
+        // 실제 표 높이를 반영하지 못한다. 직후 문단의 vpos 보정에 이 prev 를
+        // 쓰면 lazy_base 가 표 높이만큼 낮게 산출되어 다음 문단이 표 높이만큼
+        // 추가 점프한다(분할 표 직후 콘텐츠가 페이지 하단으로 밀리는 결함).
+        // 분할 표 직후 첫 문단은 vpos 보정을 건너뛰고 sequential 배치를 신뢰한다.
+        let mut prev_item_was_partial_table = false;
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
         for item in col_content.items.iter() {
@@ -2311,7 +2318,7 @@ impl LayoutEngine {
                                 })
                             })
                             .unwrap_or(false);
-                        if !prev_has_overlay_shape {
+                        if !prev_has_overlay_shape && !prev_item_was_partial_table {
                             if let Some(prev_para) = paragraphs.get(prev_pi) {
                                 // Task #332 Stage 5: vpos correction trigger 조건 완화 —
                                 // 기존엔 segment_width 가 col_width 와 ±3000 HWPUNIT 이내일 때만 적용해
@@ -2559,6 +2566,8 @@ impl LayoutEngine {
             }
             y_offset = new_y;
             prev_tac_seg_applied = was_tac;
+            // [Task #991] 다음 반복의 vpos 보정용 — 직전 항목이 분할 표였는지 기록.
+            prev_item_was_partial_table = matches!(item, PageItem::PartialTable { .. });
 
             // 고정값 줄간격 TAC 표 병행 (Task #9)
             if was_tac {
