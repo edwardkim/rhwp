@@ -674,3 +674,276 @@ export interface BookmarkInfo {
   ctrlIdx: number;
   charPos: number;
 }
+
+export type LayerRenderProfile = 'fastPreview' | 'screen' | 'print' | 'highQuality';
+
+export interface LayerBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PageLayerTree {
+  schemaVersion?: number;
+  schemaMinorVersion?: number;
+  schema?: {
+    major: number;
+    minor: number;
+  };
+  unit?: 'px';
+  coordinateSystem?: string;
+  profile?: LayerRenderProfile;
+  pageWidth: number;
+  pageHeight: number;
+  outputOptions?: {
+    showParagraphMarks?: boolean;
+    showControlCodes?: boolean;
+    showTransparentBorders?: boolean;
+    clipEnabled?: boolean;
+    debugOverlay?: boolean;
+  };
+  resources?: LayerResources;
+  root: LayerNode;
+}
+
+export interface LayerResources {
+  tableId?: number;
+  images?: Array<Uint8Array | number[] | string | undefined>;
+  imageHashes?: string[];
+  imageKeys?: string[];
+  svgFragments?: Array<string | undefined>;
+  svgHashes?: string[];
+  svgKeys?: string[];
+}
+
+export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;
+
+export interface LayerGroupNode {
+  kind: 'group';
+  bounds: LayerBounds;
+  groupKind?: { kind: string; [key: string]: unknown };
+  cacheHint?: LayerCacheHint;
+  children: LayerNode[];
+}
+
+export interface LayerClipNode {
+  kind: 'clipRect';
+  bounds: LayerBounds;
+  clip: LayerBounds;
+  clipKind: 'body' | 'tableCell' | 'generic';
+  child: LayerNode;
+}
+
+export interface LayerLeafNode {
+  kind: 'leaf';
+  bounds: LayerBounds;
+  ops: LayerPaintOp[];
+}
+
+export type LayerCacheHint =
+  | 'none'
+  | 'staticSubtree'
+  | 'preferRaster'
+  | 'preferVectorRecording';
+
+export type LayerPaintOp =
+  | LayerPageBackgroundOp
+  | LayerTextRunOp
+  | LayerFootnoteMarkerOp
+  | LayerLineOp
+  | LayerRectangleOp
+  | LayerEllipseOp
+  | LayerPathOp
+  | LayerImageOp
+  | LayerEquationOp
+  | LayerFormObjectOp
+  | LayerPlaceholderOp
+  | LayerRawSvgOp
+  | LayerTextDecorationOp
+  | LayerTextControlMarkOp
+  | LayerTabLeaderOp
+  | LayerCharOverlapOp
+  | LayerGlyphRunOp
+  | LayerGlyphOutlineOp;
+
+export interface LayerPageBackgroundOp {
+  type: 'pageBackground';
+  bbox: LayerBounds;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+}
+
+export interface LayerTextStyle {
+  fontFamily?: string;
+  fontSize?: number;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+  ratio?: number;
+  underline?: string;
+  strikethrough?: boolean;
+  shadeColor?: string;
+}
+
+export interface LayerTextRunOp {
+  type: 'textRun';
+  bbox: LayerBounds;
+  text: string;
+  baseline?: number;
+  rotation?: number;
+  isVertical?: boolean;
+  style?: LayerTextStyle;
+  positions?: number[];
+}
+
+export interface LayerFootnoteMarkerOp {
+  type: 'footnoteMarker';
+  bbox: LayerBounds;
+  text: string;
+  fontFamily?: string;
+  fontSize?: number;
+  color?: string;
+}
+
+export interface LayerLineStyle {
+  color?: string;
+  width?: number;
+  dash?: string;
+  lineType?: string;
+  startArrow?: string;
+  endArrow?: string;
+}
+
+export interface LayerShapeStyle {
+  fillColor?: string | null;
+  strokeColor?: string | null;
+  strokeWidth?: number;
+  strokeDash?: string;
+  opacity?: number;
+}
+
+export interface LayerLineOp {
+  type: 'line';
+  bbox: LayerBounds;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  style?: LayerLineStyle;
+}
+
+export interface LayerRectangleOp {
+  type: 'rectangle';
+  bbox: LayerBounds;
+  cornerRadius?: number;
+  style?: LayerShapeStyle;
+}
+
+export interface LayerEllipseOp {
+  type: 'ellipse';
+  bbox: LayerBounds;
+  style?: LayerShapeStyle;
+}
+
+export type LayerPathCommand =
+  | { type: 'moveTo'; x: number; y: number }
+  | { type: 'lineTo'; x: number; y: number }
+  | { type: 'curveTo'; x1: number; y1: number; x2: number; y2: number; x3: number; y3: number }
+  | { type: 'arcTo'; rx: number; ry: number; rotation: number; largeArc: boolean; sweep: boolean; x: number; y: number }
+  | { type: 'closePath' };
+
+export interface LayerPathOp {
+  type: 'path';
+  bbox: LayerBounds;
+  commands?: LayerPathCommand[];
+  style?: LayerShapeStyle;
+  lineStyle?: LayerLineStyle;
+}
+
+export interface LayerImageOp {
+  type: 'image';
+  bbox: LayerBounds;
+  mime?: string;
+  base64?: string;
+  imageRef?: number | string;
+  fillMode?: string;
+  effect?: string;
+  brightness?: number;
+  contrast?: number;
+  wrap?: 'behindText' | 'inFrontOfText' | string;
+}
+
+export interface LayerEquationOp {
+  type: 'equation';
+  bbox: LayerBounds;
+  svgContent?: string;
+  color?: string;
+  fontSize?: number;
+}
+
+export interface LayerFormObjectOp {
+  type: 'formObject';
+  bbox: LayerBounds;
+  formType?: string;
+  caption?: string;
+  text?: string;
+  foreColor?: string;
+  backColor?: string;
+  value?: boolean;
+  enabled?: boolean;
+}
+
+export interface LayerPlaceholderOp {
+  type: 'placeholder';
+  bbox: LayerBounds;
+  fillColor?: string;
+  strokeColor?: string;
+  label?: string;
+}
+
+export interface LayerRawSvgOp {
+  type: 'rawSvg';
+  bbox: LayerBounds;
+  svg?: string;
+}
+
+export interface LayerTextDecorationOp {
+  type: 'textDecoration';
+  bbox: LayerBounds;
+  decoration?: unknown;
+}
+
+export interface LayerTextControlMarkOp {
+  type: 'textControlMark';
+  bbox: LayerBounds;
+  fieldMarker?: string | { kind?: string };
+}
+
+export interface LayerTabLeaderOp {
+  type: 'tabLeader';
+  bbox: LayerBounds;
+  leaders?: Array<{ startX: number; endX: number; fillType: number }>;
+  color?: string;
+  fontSize?: number;
+  baseline?: number;
+}
+
+export interface LayerCharOverlapOp {
+  type: 'charOverlap';
+  bbox: LayerBounds;
+  text?: string;
+  baseline?: number;
+  style?: LayerTextStyle;
+}
+
+export interface LayerGlyphRunOp {
+  type: 'glyphRun';
+  bbox: LayerBounds;
+}
+
+export interface LayerGlyphOutlineOp {
+  type: 'glyphOutline';
+  bbox: LayerBounds;
+}

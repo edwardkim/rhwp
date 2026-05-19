@@ -27,6 +27,13 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import type { CanvasKitLayerRenderer } from '@/view/canvaskit-renderer';
+import {
+  resolveCanvasKitRenderMode,
+  resolveCanvasKitSurfaceRequest,
+  resolveRenderBackendRequest,
+  resolveRenderProfile,
+} from '@/view/render-backend';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -106,10 +113,39 @@ async function initialize(): Promise<void> {
     if (import.meta.env.DEV) {
       initRhwpDev(wasm);
     }
+    const renderBackendRequest = resolveRenderBackendRequest(window.location.search);
+    const canvaskitMode = resolveCanvasKitRenderMode(window.location.search);
+    const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
+    const renderProfile = resolveRenderProfile(window.location.search);
+    if (renderBackendRequest.unsupportedReason) {
+      console.warn(
+        `[main] 지원하지 않는 renderer 값입니다: ${renderBackendRequest.requested}; Canvas2D를 사용합니다.`,
+      );
+    }
+    let renderBackend = renderBackendRequest.backend;
+    let canvaskitRenderer: CanvasKitLayerRenderer | null = null;
+
+    if (renderBackend === 'canvaskit') {
+      msg.textContent = 'CanvasKit 로딩 중...';
+      try {
+        const { CanvasKitLayerRenderer } = await import('@/view/canvaskit-renderer');
+        canvaskitRenderer = await CanvasKitLayerRenderer.create(canvaskitMode, canvaskitSurfaceRequest);
+      } catch (error) {
+        console.error('[main] CanvasKit 초기화 실패, Canvas2D로 폴백합니다:', error);
+        renderBackend = 'canvas2d';
+      }
+    }
     msg.textContent = 'HWP 파일을 선택해주세요.';
 
     const container = document.getElementById('scroll-container')!;
-    canvasView = new CanvasView(container, wasm, eventBus);
+    canvasView = new CanvasView(
+      container,
+      wasm,
+      eventBus,
+      renderBackend,
+      renderProfile,
+      canvaskitRenderer,
+    );
 
     // 눈금자 초기화
     ruler = new Ruler(
@@ -208,6 +244,10 @@ async function initialize(): Promise<void> {
     if (import.meta.env.DEV) {
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
+      (window as any).__renderBackend = renderBackend;
+      (window as any).__canvaskitRenderMode = canvaskitMode;
+      (window as any).__canvaskitSurfaceRequest = canvaskitSurfaceRequest;
+      (window as any).__renderProfile = renderProfile;
     }
   } catch (error) {
     msg.textContent = `WASM 초기화 실패: ${error}`;
