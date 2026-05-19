@@ -1,118 +1,51 @@
-# Task #991 최종 보고서 — F2 composer synth marker (HWP5 multi-TAC paragraph 정합)
+# 최종 결과보고서 — task991: 분할 표 렌더링 정합
 
-- 이슈: [#991](https://github.com/edwardkim/rhwp/issues/991)
-- 브랜치: `local/task991-fix`
-- 결정: **F2-narrow** (composer-only marker synthesis)
-- 일자: 2026-05-18
+- 타스크: 로컬 task991 (GitHub 이슈 미발행 — 비공개 문서 검증 사안, 로컬 진행)
+- 브랜치: `local/task991` (`local/devel`에서 분기 → Task #990 위로 재구성)
+- 마일스톤: M100 (v1.0.0)
+- 기간: 2026-05-19
+- 결과: **stage 2~4 완료·커밋. stage 5(페이지 8/9)는 시도 후 회귀로 폐기.**
 
-## 1. 작업 결과
+## 1. 배경 및 전제 정정
 
-`samples/hwp3-sample16-hwp5.hwp` 페이지 18 의 다이어그램 + 라벨 z-order 어긋남 해소.
+비공개 샘플 HWPX(공공기관 제안요청서)를 SVG로 내보내 한컴 2022 PDF와 비교하던 중 발견된 표 렌더링 불일치를 다뤘다.
 
-### 변경 파일
-- `src/renderer/composer.rs` (+95 lines) — `synthesize_marker_paragraph` 함수 + `compose_paragraph` 호출
+초기 진단("글자처럼취급 표 누락")은 **조사자의 SVG 텍스트 추출 스크립트 결함**(회색 `#5d5d5d` 셀 텍스트를 `#000000` 필터로 누락)에 의한 오진이었다. 1단계에서 이를 바로잡고 실제 결함들을 확인했다(상세: `working/task_m100_991_stage1.md`).
 
-### 효과
-- HWP5 sample16 p18 시각: **PDF 정합** (가. 위, 다이어그램, 나. 아래)
-- cargo test --release --lib: **1297 passed, 0 failed** ✓
-- 240 sample 페이지 수: **0 변동** ✓
-- HWP5 page count: 62 (변동 없음)
-- Editor 기능 (insert_text/save/cursor): 영향 없음 (parser 미변경)
+## 2. 완료된 수정 (stage 2~4)
 
-## 2. Root cause (KS X 6101 spec 정합)
+### Stage 2 — 분할 셀 줄 범위 중복·누락 (`b2a212e4`)
 
-### HWP3 vs HWP5 parser 차이
-- HWP3: 확장 컨트롤마다 `\u{FFFC}` 마커 push (spec 정합)
-- HWP5: 마커 미푸시 (sparse text + char_offsets)
+쪽 경계에서 분할되는 표 셀의 줄 범위(`compute_cell_line_ranges`)가 분할 끝 페이지와 시작 페이지에서 비대칭 기준을 써 줄이 중복(또는 누락)됐다. 분할 시작/중간 페이지의 컷을 **끝 페이지 패스(prefix 패스)에서 유도**하도록 교체 — 양쪽이 동일 기준을 공유해 중복·누락이 정의상 불가능.
 
-### pi=394 (HWP5 sample16) 예
-```
-3 TAC controls + 3 line_segs:
-  ls[0] ts=0 contains 가. label
-  ls[1] ts=8 contains diagram
-  ls[2] ts=18 contains 나. label
+### Stage 3 — 1행 글자처럼취급 표 분할 금지 (`565c5805`)
 
-HWP5 IR (sparse):
-  text="  ", char_offsets=[16, 17]
-  composer.utf16_range_to_text_range(0, 8): [0, 0) — 빈!
-  → ls[0] (가.) 빈 라인 처리 → 라벨 어긋남
+빈 문단에 단독 앵커된 1행 `treat_as_char` 표가 인라인 판정을 못 받아 `typeset_block_table`로 가서 인트라-셀 분할됐다. 1행 표는 행 경계가 없어 분할이 부적절 — `treat_as_char && row_count<=1` 표는 통째로 다음 페이지 이동(한컴 정합).
 
-Fix 후 synth IR:
-  text="\u{FFFC}\u{FFFC}  \u{FFFC}", char_offsets=[0, 8, 16, 17, 18]
-  composer 의 line 별 text 범위 정확 매핑 ✓
-```
+### Stage 4 — 쪽 분할 표 직후 문단 vpos 팬텀 (`276b28eb`)
 
-## 3. Fix 설계 (F2-narrow)
+쪽 분할 표(`PartialTable`) 호스트 문단의 LINE_SEG line_height는 표 높이를 반영하지 못해, 직후 문단의 vpos 보정이 표 높이를 이중 가산 → 콘텐츠가 페이지 하단으로 ~357px 밀림. 직전 항목이 `PartialTable`이면 vpos 보정을 건너뛰고 sequential 배치를 신뢰하도록 수정.
 
-`src/renderer/composer.rs` 의 `compose_paragraph` 입구에 marker synthesis layer:
+## 3. 폐기된 시도 (stage 5)
 
-```rust
-fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
-    // 1. inline-visible extended ctrl count
-    //    (Header/Footer/Footnote/Endnote/HiddenComment 제외)
-    let inline_ctrl_count = ...;
-    
-    // 2. 기존 marker count
-    let existing_markers = para.text.chars().filter(|c| *c == '\u{FFFC}').count();
-    if existing_markers >= inline_ctrl_count { return None; }  // HWP3 path
-    
-    // 3. 좁힘 조건 — pi=394 패턴만 catch
-    let first_off = para.char_offsets.first().copied().unwrap_or(0) as usize;
-    let n_leading = first_off / 8;
-    if n_leading < 2 || inline_ctrl_count < 3 { return None; }
-    
-    // 4. char_offsets gap 분석으로 \u{FFFC} 마커 위치 합성
-    // ...
-}
+페이지 8/9 경계에서 "※ 추진일정은…" 문장이 한컴 대비 한 쪽 밀리는 현상을 다뤘으나, 빈 호스트 문단 표의 `host_line_spacing` 제거 수정이 **과도 보정**(다음 항목 "5. 추진방안"까지 끌어와 페이지 넘침)을 일으켜 되돌렸다(`git reset`). 이 증상은 단일 결함이 아니라 누적 sub-pixel 페이지네이션 드리프트로, 본 타스크 방식(증상별 단일 수정)으로는 해결 불가임을 확인했다.
 
-pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
-    let synth_para = synthesize_marker_paragraph(para);
-    let para = synth_para.as_ref().unwrap_or(para);  // shadow
-    // ... 기존 logic ...
-}
-```
+## 4. 검증
 
-### 좁힘 조건의 의미
-- `inline_ctrl_count >= 3`: pi=394 (3 TAC) 패턴 — 일반적인 1-2 TAC paragraph 미해당
-- `n_leading >= 2`: leading char_offsets gap 에 2+ 컨트롤 — 대부분 paragraph 는 0-1 leading
-- `existing_markers >= inline_ctrl_count`: HWP3 (markers 있음) 자동 차단
+- `cargo test --release` 전체 **1482 passed, 0 failed** — 골든 SVG 회귀 없음.
+- `cargo clippy --release` 경고 0.
+- 비공개 샘플 180쪽 전수 비교 — 변경 페이지 각각을 한컴 PDF와 대조해 정정 확인.
+- **부수 효과**: 페이지 밖으로 그려지던 콘텐츠가 stage 2~4로 6개 페이지 → 2개 페이지로 감소.
 
-## 4. 회귀 영향
+## 5. 남은 사안 (신규 타스크 인계)
 
-### cargo test --release --lib
-```
-test result: ok. 1297 passed; 0 failed; 2 ignored; 0 measured
-```
+- **페이지 밖 콘텐츠 (143·171쪽)**: `height_measurer`가 *문단 51개 + 다중 중첩표를 가진 분할 셀*의 높이를 ~500px 과소 측정 → 페이지네이터가 추가 분할을 안 해 렌더러가 페이지 밖까지 그림. 별도 전용 타스크로 분리.
+- **페이지 수 드리프트 (SVG 180 vs PDF 179)**: 문서 전반의 누적 측정 정밀도 차. 별도 사안.
 
-이전 F1 시도들의 fail:
-- F1 광범위: 9 fail (editor 영향)
-- F1-narrow (ch=11/14만): 5 fail
-- F2-wide (composer synth without narrow): 5 fail
-- **F2-narrow: 0 fail** ✓
+## 6. WASM
 
-### 240 sample 페이지 수
-- 변동: 0 건 (hy-001.hwpx 1건은 baseline 에 없던 신규 sample)
-- HWP5 sample16: 62 → 62 (그대로)
+수정은 렌더러(`table_layout.rs`/`typeset.rs`/`layout.rs`)에 있어 WASM 빌드에 영향. 릴리즈 시 Docker로 WASM 재빌드 필요.
 
-### Editor 기능
-parser 미변경 → insert_text / save / cursor / logical_offset 등 모두 보존.
+## 7. 비공개 문서
 
-## 5. 잔존 영향
-
-### HWPX 변종
-HWPX 의 pi=394 는 다른 path (HWPX parser + linesegarray preset) — 본 F2 미적용. HWPX page 19 의 z-order 어긋남은 별도 fundamental 한계 (#942/#988 close 영역).
-
-### 다른 multi-TAC paragraph
-좁힘 조건 (3+ TAC + 2+ leading) 으로 sample16 pi=394 와 동일 패턴의 paragraph 만 fix 적용. 다른 패턴 (1-2 TAC, leading=0/1) 은 미적용.
-
-## 6. 향후 확장 가능성
-
-- 좁힘 조건 완화 시도 (별도 task) — 1-2 TAC 의 동일 root cause 패턴 catch
-- HWP5 parser 의 spec 정합 (다이일 작업) — 모든 downstream 영향 검증 필요
-
-## 7. 산출물
-
-- `mydocs/plans/task_m100_991.md` (수행 계획서)
-- `mydocs/working/task_m100_991_stage1.md` (Stage 1 진단)
-- 본 보고서
-- 소스 변경: `src/renderer/composer.rs` +95 lines
+재현용 HWPX/PDF는 비공개 문서로 커밋하지 않았다. 테스트는 기존 공개 골든 SVG로 검증했으며, 비공개 픽스처 기반 테스트는 추가하지 않았다.
