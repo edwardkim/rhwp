@@ -1483,6 +1483,10 @@ fn pua_enclosed_border_type(ch: char) -> Option<u8> {
 fn pua_plain_text_display(ch: char) -> Option<&'static str> {
     match ch as u32 {
         0xF012B => Some("(인)"),
+        // [Task #1001] 한컴 변환본 (HWP3→HWP5) 의 글머리표 PUA. 한컴 viewer 는
+        // 빈 체크박스 모양으로 표시. "□" (U+25A1 WHITE SQUARE) 매핑.
+        // 실제 sample16-hwp5 의 PUA codepoint 는 U+F03C5 (글자 분석 결과).
+        0xF03C5 => Some("□"),
         _ => None,
     }
 }

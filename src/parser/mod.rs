@@ -190,6 +190,13 @@ fn parse_hwp_with_cfb(
         raw_data: Some(header_data),
     };
 
+    // [Task #1001] HWP3 변환본 식별 — HwpSummary HWP3 시대 년 검출.
+    // sample16-hwp5 같은 복잡한 변환본 (Task #554 의 PS<0.05 휴리스틱 미적용)
+    // 도 식별. 단 false positive (예: HWP5 에 HWP3 시대 텍스트만 인용된 일반
+    // 문서 — exam_eng) 차단 위해 PS/CS 비율도 추가 검증 (variant 는 작성자
+    // 다양한 스타일 사용 안하므로 작은 비율).
+    let summary_hwp3_era = cfb.detect_hwp3_variant();
+
     let mut doc = Document {
         header: model_header,
         doc_properties,
@@ -198,6 +205,7 @@ fn parse_hwp_with_cfb(
         preview,
         bin_data_content,
         extra_streams,
+        is_hwp3_variant: false,
     };
 
     // 자동 번호 할당 (문서 전체에서 순차적으로)
@@ -205,6 +213,25 @@ fn parse_hwp_with_cfb(
 
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
     apply_hwp3_origin_fixup(&mut doc);
+
+    // [Task #1001] HwpSummary HWP3 시대 년 AND PS/CS 비율 작음 → 변환본 확정.
+    // 두 신호 결합으로 false positive 차단 (exam_eng 등 일반 HWP5 가 본문에
+    // HWP3 시대 텍스트만 인용한 경우).
+    if summary_hwp3_era {
+        let total_paras: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
+        if total_paras > 50 {
+            let ps_r = doc.doc_info.para_shapes.len() as f64 / total_paras as f64;
+            let cs_r = doc.doc_info.char_shapes.len() as f64 / total_paras as f64;
+            if ps_r < 0.20 && cs_r < 0.20 {
+                doc.is_hwp3_variant = true;
+                // [Task #1001 Stage 11] line_segs.vertical_pos /2 보정 revert —
+                // 실제 raw vpos 비교 결과 HWP5 변환본 vpos 는 HWP3 의 2배가 아닌
+                // ~1.15배 (15% 만 차이). /2 fix 시 HWP5 가 HWP3 보다 더 compact 되어
+                // 한컴 정합 페이지 분할 회귀 (한컴은 section 2 가 새 페이지 vs rhwp
+                // 는 같은 페이지에 packed). vpos 보정 없이 ParaShape /4 만으로 정합.
+            }
+        }
+    }
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 Picture.external_path 전달.
     // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
@@ -230,6 +257,26 @@ fn parse_hwp_with_cfb(
 /// - **`Paragraph > 50`** 가드: 매우 짧은 문서는 비율이 왜곡되므로 제외
 ///
 /// 27 fixture 검증에서 100% 정확 분류 (Stage 1 보고서 §3.2 참조).
+/// [Task #1001] 변환본의 line_segs 단위 보정.
+/// vertical_pos 만 ParaShape spacing 누적 영향으로 변환본에서 2배 단위.
+/// 나머지 필드 (line_height/text_height/baseline_distance/line_spacing/column_start/
+/// segment_width) 는 단위 동일 (HWP3 와 같음) 이라 보정 불필요.
+fn fixup_line_segs_for_variant(paragraphs: &mut [crate::model::paragraph::Paragraph]) {
+    for para in paragraphs.iter_mut() {
+        for ls in para.line_segs.iter_mut() {
+            ls.vertical_pos /= 2;
+        }
+        // 표 셀 내부 paragraph 재귀
+        for control in para.controls.iter_mut() {
+            if let crate::model::control::Control::Table(table) = control {
+                for cell in table.cells.iter_mut() {
+                    fixup_line_segs_for_variant(&mut cell.paragraphs);
+                }
+            }
+        }
+    }
+}
+
 fn apply_hwp3_origin_fixup(doc: &mut Document) {
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
@@ -238,6 +285,10 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     let ps_ratio = doc.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
     let cs_ratio = doc.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
     if ps_ratio < 0.05 && cs_ratio < 0.15 {
+        // [Task #554] 변환본 의심 시 margin_bottom 보정 (한글97 의 마지막 줄
+        // tolerance 모방). is_hwp3_variant 플래그 설정은 caller 가 별도 (HwpSummary
+        // HWP3-era + 더 관대한 ratio AND 조건) 로 처리 — hwpspec.hwp 같은 spec 문서
+        // false-positive 차단 위해 ratio 단독 변환본 확정 회피.
         for section in doc.sections.iter_mut() {
             section.section_def.page_def.margin_bottom = section
                 .section_def
@@ -364,11 +415,13 @@ fn parse_hwp_with_lenient(
         preview: None,
         bin_data_content,
         extra_streams: Vec::new(),
+        is_hwp3_variant: false,
     };
 
     assign_auto_numbers(&mut doc);
 
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
+    // [Task #1001] 변환본 식별 시 doc.is_hwp3_variant = true 설정
     apply_hwp3_origin_fixup(&mut doc);
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 Picture.external_path 전달.

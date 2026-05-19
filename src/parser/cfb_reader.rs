@@ -247,6 +247,40 @@ impl CfbReader {
             Some(text)
         }
     }
+
+    /// [Task #1001] HWP3 → HWP5 변환본 식별 (휴리스틱).
+    ///
+    /// HwpSummaryInformation stream 의 text properties 안에 HWP3 시대 (1990-2003)
+    /// 의 년 (예: "1998년") 이 포함되어 있으면 변환본으로 판정. 한컴이 HWP3 →
+    /// HWP5 변환 시 원본 작성일 / 메모 등을 HwpSummary 의 string field 에 보존
+    /// 하는 패턴을 활용.
+    ///
+    /// 변환본은 ParaShape spacing/margin 값이 HWP3 원본의 2배로 저장되어 있어
+    /// 한컴 viewer 가 표시 시 1/2 보정 (HwpUnitChar 단위) 한다. rhwp 도 동일
+    /// 보정을 위해 본 식별 신호 사용.
+    ///
+    /// Misid risk: HwpSummary 의 다른 field 가 우연히 HWP3 시대 년 포함 시
+    /// false positive. 그러나 변환본이 아닌 일반 HWP5 의 ParaShape spacing 은
+    /// 대부분 0 이라 1/2 보정 영향이 미미함 (시각 회귀 안전).
+    pub fn detect_hwp3_variant(&mut self) -> bool {
+        // HwpSummaryInformation stream 시도 (다양한 경로)
+        let raw = self
+            .read_stream_raw("/\u{0005}HwpSummaryInformation")
+            .or_else(|_| self.read_stream_raw("\u{0005}HwpSummaryInformation"))
+            .or_else(|_| self.read_stream_raw("HwpSummaryInformation"))
+            .unwrap_or_default();
+        if raw.len() < 16 {
+            return false;
+        }
+        // UTF-16LE 디코딩
+        let utf16: Vec<u16> = raw
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
+        let s = String::from_utf16_lossy(&utf16);
+        // HWP3 시대 (1990-2003) 의 년 검출 — HWP5 도입 (2007년) 이전
+        (1990..=2003).any(|y| s.contains(&format!("{}년", y)))
+    }
 }
 
 /// Lenient CFB 리더 (FAT 검증 무시)
