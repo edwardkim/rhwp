@@ -2469,6 +2469,23 @@ impl TypesetEngine {
             return;
         }
 
+        // [Task #991] 1행짜리 글자처럼취급(treat_as_char) 표는 페이지 경계에서
+        // 분할하지 않고 통째로 다음 페이지/단으로 이동한다.
+        //
+        // 표 분할은 행 경계 분할이 기본이고, 행 경계가 없는 1행 표는 셀 내용을
+        // 페이지 중간에서 자르는 인트라-셀 분할만 가능하다. 글자처럼취급 표는
+        // 본문 흐름 안의 한 글자 같은 인라인 개체이므로 인트라-셀 분할은 부적절하다
+        // (한컴은 통째로 다음 페이지로 넘김). 다행(多行) tac 표는 행 경계 분할이
+        // 가능하므로 기존 로직을 유지하고, 1행 tac 표만 통째 이동시킨다.
+        // 한 페이지에도 안 들어가는 초대형 표는 분할 외 방법이 없으므로 폴백한다.
+        if table.common.treat_as_char && table.row_count <= 1 && table_total <= available {
+            if !st.current_items.is_empty() {
+                st.advance_column_or_new_page();
+            }
+            self.place_table_with_text(st, para_idx, ctrl_idx, para, table, fmt, table_total);
+            return;
+        }
+
         // MeasuredTable이 없거나 행이 없으면 강제 배치
         let mt = match mt {
             Some(m) if !m.row_heights.is_empty() => m,
