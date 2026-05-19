@@ -21,7 +21,7 @@ use crate::model::control::Control;
 use crate::model::document::{Document, Section};
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::ShapeObject;
+use crate::model::shape::{ShapeObject, TextBox};
 use crate::model::style::{BorderFill, BorderLineType, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
@@ -65,6 +65,10 @@ pub struct AdapterReport {
     pub section_def_controls_inserted: u32,
     /// HWPX `hp:pic@href` 를 HWP CTRL_DATA ParameterSet 으로 materialize한 횟수
     pub picture_href_ctrl_data_materialized: u32,
+    /// HWPX drawText TextBox LIST_HEADER tail materialize 횟수
+    pub text_box_list_header_tail_materialized: u32,
+    /// HWPX drawText 내부 paragraph PARA_HEADER tail materialize 횟수
+    pub text_box_para_header_tail_materialized: u32,
 }
 
 impl AdapterReport {
@@ -94,7 +98,9 @@ impl AdapterReport {
                 + self.doc_properties_section_count_normalized
                 + self.bin_data_metadata_normalized
                 + self.section_def_controls_inserted
-                + self.picture_href_ctrl_data_materialized)
+                + self.picture_href_ctrl_data_materialized
+                + self.text_box_list_header_tail_materialized
+                + self.text_box_para_header_tail_materialized)
                 > 0
     }
 }
@@ -428,6 +434,7 @@ fn adapt_paragraph(para: &mut Paragraph, report: &mut AdapterReport) {
 fn adapt_shape(shape: &mut ShapeObject, report: &mut AdapterReport) {
     if let Some(drawing) = shape.drawing_mut() {
         if let Some(text_box) = &mut drawing.text_box {
+            materialize_text_box_hwp5_envelope(text_box, report);
             for para in &mut text_box.paragraphs {
                 adapt_paragraph(para, report);
             }
@@ -439,6 +446,44 @@ fn adapt_shape(shape: &mut ShapeObject, report: &mut AdapterReport) {
             adapt_shape(child, report);
         }
     }
+}
+
+fn materialize_text_box_hwp5_envelope(text_box: &mut TextBox, report: &mut AdapterReport) {
+    if !is_draw_text_hwp5_envelope_candidate(text_box) {
+        return;
+    }
+
+    if text_box.raw_list_header_extra.is_empty() {
+        text_box.raw_list_header_extra = vec![0; 13];
+        report.text_box_list_header_tail_materialized += 1;
+    }
+
+    for para in &mut text_box.paragraphs {
+        if para.raw_header_extra.len() >= 12 {
+            continue;
+        }
+
+        let mut extra = vec![0; 12];
+        let char_shape_count = para.char_shapes.len().max(1).min(u16::MAX as usize) as u16;
+        let range_tag_count = para.range_tags.len().min(u16::MAX as usize) as u16;
+        let line_seg_count = para.line_segs.len().min(u16::MAX as usize) as u16;
+
+        extra[0..2].copy_from_slice(&char_shape_count.to_le_bytes());
+        extra[2..4].copy_from_slice(&range_tag_count.to_le_bytes());
+        extra[4..6].copy_from_slice(&line_seg_count.to_le_bytes());
+        extra[6..10].copy_from_slice(&0x8000_0000_u32.to_le_bytes());
+
+        para.raw_header_extra = extra;
+        report.text_box_para_header_tail_materialized += 1;
+    }
+}
+
+fn is_draw_text_hwp5_envelope_candidate(text_box: &TextBox) -> bool {
+    text_box.paragraphs.iter().any(|para| {
+        para.controls
+            .iter()
+            .any(|control| matches!(control, Control::Picture(_)))
+    })
 }
 
 fn adapt_picture_href_ctrl_data(
@@ -856,11 +901,14 @@ mod tests {
 
         let shape = find_shape_by_description(&core.document, "사각형입니다.")
             .expect("hp:rect shapeComment must survive into CommonObjAttr.description");
-        let text_box = shape
-            .drawing()
-            .and_then(|drawing| drawing.text_box.as_ref())
+        let drawing = shape.drawing().expect("hp:rect must have DrawingObjAttr");
+        let text_box = drawing
+            .text_box
+            .as_ref()
             .expect("hp:rect/drawText must survive as TextBox");
 
+        assert_eq!(shape.common().instance_id, 1875692958);
+        assert_eq!(drawing.inst_id, 801951135);
         assert_eq!(
             text_box.list_attr & (0b11 << 5),
             1 << 5,
@@ -868,6 +916,62 @@ mod tests {
         );
         assert_eq!(text_box.max_width, 25698);
         assert_eq!(text_box.paragraphs.len(), 1);
+
+        let pictures: Vec<_> = text_box.paragraphs[0]
+            .controls
+            .iter()
+            .filter_map(|control| match control {
+                Control::Picture(pic) => Some(pic.as_ref()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(pictures.len(), 2);
+        assert_eq!(pictures[0].common.instance_id, 1875692960);
+        assert_eq!(pictures[0].instance_id, 801951137);
+        assert_eq!(pictures[1].common.instance_id, 1875692962);
+        assert_eq!(pictures[1].instance_id, 801951139);
+    }
+
+    #[test]
+    fn hwpx_h_03_draw_text_envelope_materializes_with_id_instid_contract() {
+        let data = std::fs::read("samples/hwpx/hwpx-h-03.hwpx").expect("sample exists");
+        let mut core = crate::document_core::DocumentCore::from_bytes(&data).expect("parse hwpx");
+
+        let report = convert_hwpx_to_hwp_ir(&mut core.document);
+        assert!(report.text_box_list_header_tail_materialized > 0);
+        assert!(report.text_box_para_header_tail_materialized > 0);
+
+        let shape = find_shape_by_description(&core.document, "사각형입니다.")
+            .expect("hp:rect shapeComment must survive into CommonObjAttr.description");
+        let drawing = shape.drawing().expect("hp:rect must have DrawingObjAttr");
+        let text_box = drawing
+            .text_box
+            .as_ref()
+            .expect("hp:rect/drawText must survive as TextBox");
+
+        assert_eq!(shape.common().instance_id, 1875692958);
+        assert_eq!(drawing.inst_id, 801951135);
+        assert_eq!(text_box.raw_list_header_extra, vec![0; 13]);
+        assert_eq!(text_box.paragraphs.len(), 1);
+        assert_eq!(text_box.paragraphs[0].raw_header_extra.len(), 12);
+        assert_eq!(
+            &text_box.paragraphs[0].raw_header_extra[6..10],
+            &[0, 0, 0, 0x80]
+        );
+
+        let pictures: Vec<_> = text_box.paragraphs[0]
+            .controls
+            .iter()
+            .filter_map(|control| match control {
+                Control::Picture(pic) => Some(pic.as_ref()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(pictures.len(), 2);
+        assert_eq!(pictures[0].common.instance_id, 1875692960);
+        assert_eq!(pictures[0].instance_id, 801951137);
+        assert_eq!(pictures[1].common.instance_id, 1875692962);
+        assert_eq!(pictures[1].instance_id, 801951139);
     }
 
     fn find_shape_by_description<'a>(

@@ -25,7 +25,7 @@ byteorder = "1.5"
 base64 = "0.22"
 blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
-quick-xml = "0.39"
+quick-xml = "0.40"
 codepage = "0.1.2"
 embedded-io = "0.7.1"
 encoding_rs = "0.8.35"
@@ -34,7 +34,7 @@ snafu = "0.9.0"
 strum = { version = "0.28.0", default-features = false, features = ["derive"] }
 unicode-segmentation = "1.12.0"
 unicode-width = "0.2.2"
-image = { version = "0.25", default-features = false, features = ["bmp", "png"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "jpeg", "png"] }
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

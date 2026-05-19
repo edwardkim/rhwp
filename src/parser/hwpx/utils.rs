@@ -51,6 +51,22 @@ pub fn parse_i32(attr: &quick_xml::events::attributes::Attribute) -> i32 {
     attr_str(attr).parse().unwrap_or(0)
 }
 
+/// HWPX는 음수 HWPUNIT 값을 unsigned 32-bit decimal 문자열로 저장하는 경우가 있다.
+///
+/// 예: `4294964867`은 HWP5 little-endian 필드에서 `0xfffff683`, 즉 signed `-2429`이다.
+/// 일반 `i32::parse`는 이 값을 overflow로 실패하므로, 먼저 i32를 시도하고 실패하면
+/// u32로 읽어 wrapping cast 한다.
+pub fn parse_i32_wrapping(attr: &quick_xml::events::attributes::Attribute) -> i32 {
+    let s = attr_str(attr);
+    if let Ok(v) = s.parse::<i32>() {
+        return v;
+    }
+    if let Ok(v) = s.parse::<u32>() {
+        return v as i32;
+    }
+    0
+}
+
 /// "#RRGGBB" → 0x00BBGGRR, "#AARRGGBB" → 0xAABBGGRR (alpha 보존)
 pub fn parse_color(attr: &quick_xml::events::attributes::Attribute) -> u32 {
     let s = attr_str(attr);

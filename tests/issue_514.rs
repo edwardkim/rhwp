@@ -49,8 +49,9 @@ fn issue_514_pcx_logo_converted_to_png() {
 }
 
 #[test]
-fn issue_514_jpeg_watermark_unchanged() {
-    // 회귀 가드: PCX 변환 분기가 다른 포맷 (JPEG 워터마크) 에 영향 없음
+fn issue_514_watermark_jpeg_converted_by_issue_938() {
+    // 회귀 가드: #938 이후 복학원서 워터마크 JPEG 는 한컴 정답지 톤 PNG 로 전처리된다.
+    // #514 의 핵심은 PCX 변환 실패로 octet-stream 이 나오지 않는 것이다.
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/복학원서.hwp");
     let bytes = fs::read(&hwp_path).expect("read 복학원서.hwp");
@@ -61,10 +62,10 @@ fn issue_514_jpeg_watermark_unchanged() {
         .render_page_svg_native(0)
         .expect("render 복학원서.hwp page 1");
 
-    // 워터마크 (JPEG) 는 변경 없이 유지
+    // 복학원서 1쪽의 학교 로고 PCX 와 중앙 워터마크 JPEG 가 모두 PNG 로 emit 된다.
     assert!(
-        svg.contains("data:image/jpeg;base64,"),
-        "JPEG 워터마크는 변경 없이 emit 되어야 함"
+        !svg.contains("data:image/jpeg;base64,"),
+        "복학원서 워터마크 JPEG 는 #938 전처리로 baked PNG 로 emit 되어야 함"
     );
 }
 

@@ -23,6 +23,9 @@ pub struct PageDef {
     pub margin_footer: HwpUnit,
     /// 제본 여백
     pub margin_gutter: HwpUnit,
+    /// 페이지네이션 하단 허용치 (HWPUNIT). margin_bottom 을 변조하지 않고
+    /// paginator 에게만 추가 공간을 허용할 때 사용. 기본 0.
+    pub pagination_bottom_tolerance: HwpUnit,
     /// 속성 비트 플래그
     pub attr: u32,
     /// 용지 방향 (0: 좁게/세로, 1: 넓게/가로)

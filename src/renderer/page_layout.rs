@@ -28,6 +28,8 @@ pub struct PageLayoutInfo {
     pub separator_width: u8,
     /// 단 구분선 색상
     pub separator_color: u32,
+    /// 페이지네이션 하단 허용치 (px). body_area 를 변경하지 않고 paginator 에게만 추가 공간 제공.
+    pub pagination_tolerance_px: f64,
 }
 
 /// 레이아웃 영역 (픽셀 단위)
@@ -73,6 +75,9 @@ impl PageLayoutInfo {
         // 다단 영역 계산
         let column_areas = calculate_column_areas(&body_area, column_def, dpi);
 
+        let pagination_tolerance_px =
+            hwpunit_to_px(page_def.pagination_bottom_tolerance as i32, dpi);
+
         Self {
             page_width,
             page_height,
@@ -85,6 +90,7 @@ impl PageLayoutInfo {
             separator_type: column_def.separator_type,
             separator_width: column_def.separator_width,
             separator_color: column_def.separator_color,
+            pagination_tolerance_px,
         }
     }
 
@@ -93,9 +99,9 @@ impl PageLayoutInfo {
         Self::from_page_def(page_def, column_def, DEFAULT_DPI)
     }
 
-    /// 본문 영역의 사용 가능한 높이 (각주 영역 제외)
+    /// 본문 영역의 사용 가능한 높이 (각주 영역 제외 + 페이지네이션 허용치 포함)
     pub fn available_body_height(&self) -> f64 {
-        self.body_area.height - self.footnote_area.height
+        self.body_area.height - self.footnote_area.height + self.pagination_tolerance_px
     }
 
     /// 단 너비 (HWPUNIT) — vpos 보정에서 segment_width 비교에 사용

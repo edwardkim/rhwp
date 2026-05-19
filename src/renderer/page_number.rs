@@ -106,6 +106,7 @@ mod tests {
             separator_type: 0,
             separator_width: 0,
             separator_color: 0,
+            pagination_tolerance_px: 0.0,
         }
     }
 

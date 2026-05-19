@@ -246,6 +246,7 @@ impl DocumentCore {
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
 
+            let mut body_line_seg_changed = false;
             for para in &mut section.paragraphs {
                 // 본문 문단 reflow
                 if Self::needs_line_seg_reflow(para) {
@@ -254,6 +255,7 @@ impl DocumentCore {
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                     let available_width = (col_width - margin_left - margin_right).max(1.0);
                     reflow_line_segs(para, available_width, styles, dpi);
+                    body_line_seg_changed = true;
                 }
 
                 // HWPX: TAC 표가 있는 문단의 LINE_SEG lh 보정
@@ -276,6 +278,7 @@ impl DocumentCore {
                         if let Some(seg) = para.line_segs.first_mut() {
                             if seg.line_height < max_tac_h {
                                 seg.line_height = max_tac_h;
+                                body_line_seg_changed = true;
                             }
                         }
                     }
@@ -306,52 +309,12 @@ impl DocumentCore {
                 }
             }
 
-            // HWPX: TAC 표 LINE_SEG 보정 후 문단 간 vpos 재계산
-            // 보정된 문단의 끝 vpos가 변하면 후속 문단들의 vpos도 연쇄 갱신
-            let mut need_vpos_recalc = false;
-            for para in section.paragraphs.iter() {
-                for ctrl in &para.controls {
-                    match ctrl {
-                        Control::Table(t)
-                            if t.common.treat_as_char
-                                && t.raw_ctrl_data.is_empty()
-                                && t.common.height > 0 =>
-                        {
-                            need_vpos_recalc = true;
-                            break;
-                        }
-                        // 비-TAC TopAndBottom Picture/Table: LINE_SEG에 개체 높이 미포함
-                        Control::Picture(p)
-                            if !p.common.treat_as_char
-                                && matches!(
-                                    p.common.text_wrap,
-                                    crate::model::shape::TextWrap::TopAndBottom
-                                )
-                                && p.common.height > 0 =>
-                        {
-                            need_vpos_recalc = true;
-                            break;
-                        }
-                        Control::Table(t)
-                            if !t.common.treat_as_char
-                                && matches!(
-                                    t.common.text_wrap,
-                                    crate::model::shape::TextWrap::TopAndBottom
-                                )
-                                && t.common.height > 0
-                                && t.raw_ctrl_data.is_empty() =>
-                        {
-                            need_vpos_recalc = true;
-                            break;
-                        }
-                        _ => {}
-                    }
-                }
-                if need_vpos_recalc {
-                    break;
-                }
-            }
-            if need_vpos_recalc {
+            // HWPX: LINE_SEG를 실제로 합성/보정한 경우에만 문단 간 vpos를 재계산한다.
+            //
+            // 명시적인 lineSegArray가 이미 계산 완료 상태인 문서는 source의 vertpos를 보존해야 한다.
+            // 비-TAC TopAndBottom 표/그림이 있다는 이유만으로 section vpos를 다시 계산하면, 한컴이
+            // 저장한 HWPX의 vertpos까지 덮어써 page sequence가 어긋난다 (#949 Stage 32).
+            if body_line_seg_changed {
                 let mut running_vpos: i32 = 0;
                 for para in section.paragraphs.iter_mut() {
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
