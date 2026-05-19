@@ -101,7 +101,7 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
 /// 그림 효과 / 밝기 / 대비를 CSS filter 문자열로 합성한다 (Task #516).
 ///
 /// CSS filter ↔ SVG feComponentTransfer 매핑은 미세 차이 가능 (Stage 5 시각 판정 게이트).
-/// 한컴 워터마크 효과 (`effect=GrayScale + brightness=70 + contrast=-50`) 도 본 함수로 통합 적용.
+/// 한컴 워터마크가 Rust 쪽에서 선보정되지 않은 경우에도 본 함수로 폴백 적용한다.
 #[cfg(target_arch = "wasm32")]
 fn compose_image_filter(
     effect: crate::model::image::ImageEffect,
@@ -560,15 +560,35 @@ impl WebCanvasRenderer {
                     let is_watermark_image =
                         !matches!(img.effect, crate::model::image::ImageEffect::RealPic)
                             && (img.brightness != 0 || img.contrast != 0);
-                    let filter_str = compose_image_filter(img.effect, img.brightness, img.contrast);
+                    let mut baked_watermark = false;
+                    let render_data: std::borrow::Cow<[u8]> = if is_watermark_image
+                        && crate::renderer::svg::detect_image_mime_type(data) == "image/jpeg"
+                    {
+                        match crate::renderer::svg::watermark_jpeg_bytes_to_hancom_baked_png_bytes(
+                            data,
+                        ) {
+                            Some(png) => {
+                                baked_watermark = true;
+                                std::borrow::Cow::Owned(png)
+                            }
+                            None => std::borrow::Cow::Borrowed(data.as_slice()),
+                        }
+                    } else {
+                        std::borrow::Cow::Borrowed(data.as_slice())
+                    };
+                    let filter_str = if baked_watermark {
+                        None
+                    } else {
+                        compose_image_filter(img.effect, img.brightness, img.contrast)
+                    };
                     if let Some(ref f) = filter_str {
                         self.ctx.set_filter(f);
                     }
-                    if is_watermark_image {
+                    if is_watermark_image && !baked_watermark {
                         self.ctx.set_global_alpha(0.17);
                     }
                     self.draw_image_with_fill_mode(
-                        data,
+                        render_data.as_ref(),
                         &node.bbox,
                         img.fill_mode,
                         img.original_size,
@@ -576,7 +596,7 @@ impl WebCanvasRenderer {
                         img.original_size_hu,
                     );
                     // 다음 그리기 작업에 영향 없도록 reset
-                    if is_watermark_image {
+                    if is_watermark_image && !baked_watermark {
                         self.ctx.set_global_alpha(1.0);
                     }
                     if filter_str.is_some() {
