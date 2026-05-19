@@ -439,7 +439,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
 /// 문단의 텍스트를 줄별로 분할하고, 각 줄 내에서 CharShapeRef 경계에 따라 분할한다.
 fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     if para.line_segs.is_empty() {
-        // LineSeg가 없으면 전체 텍스트를 하나의 줄로
+        // LineSeg가 없으면 텍스트를 ComposedLine 으로 분할
         if para.text.is_empty() {
             return Vec::new();
         }
@@ -448,23 +448,57 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             .first()
             .map(|cs| cs.char_shape_id)
             .unwrap_or(0);
-        return vec![ComposedLine {
-            runs: split_runs_by_lang(vec![ComposedTextRun {
-                text: para.text.clone(),
-                char_style_id: default_style_id,
-                lang_index: 0,
-                char_overlap: None,
-                footnote_marker: None,
-                display_text: None,
-            }]),
-            line_height: 400,
-            baseline_distance: 320,
-            segment_width: 0,
-            column_start: 0,
-            line_spacing: 0,
-            has_line_break: false,
-            char_start: 0,
-        }];
+        // [Task #994] HWP5 변환본의 일부 paragraph (sample16 의 󰏅 PUA bullet 들)
+        // 는 PARA_LINE_SEG 누락 → 기존 fallback 이 단일 ComposedLine 생성 →
+        // layout 이 wrap 없이 한 y 좌표에 모든 텍스트 그림 → 시각 겹침.
+        // 임시 휴리스틱: 공백 기준 word wrap, ~35 chars/line (Korean 13pt 표준) 한도.
+        // 정확한 line_height 는 corrected_line_height 가 layout 에서 보정 (max_fs * 1.6).
+        // 향후 reflow_line_segs 정식 호출 시 본 휴리스틱 대체.
+        let chars: Vec<char> = para.text.chars().collect();
+        const CHARS_PER_LINE: usize = 35;
+        let mut lines = Vec::new();
+        let total = chars.len();
+        let mut offset = 0;
+        while offset < total {
+            let max_end = (offset + CHARS_PER_LINE).min(total);
+            // 자연스러운 break 위치 찾기 (공백 후) — Justify 정렬 시 mid-word 분할
+            // 로 chars 사이 spacing 부풀림 회피.
+            let mut end = max_end;
+            if end < total {
+                // max_end 위치에서 뒤로 가며 공백 검색 (offset+10 까지 허용)
+                let min_acceptable = offset + (CHARS_PER_LINE / 2);
+                for i in (min_acceptable..max_end).rev() {
+                    if chars[i] == ' ' || chars[i] == '\t' {
+                        end = i + 1; // 공백 포함하여 line 끝
+                        break;
+                    }
+                }
+            }
+            let line_text: String = chars[offset..end].iter().collect();
+            let is_last_line = end >= total;
+            lines.push(ComposedLine {
+                runs: split_runs_by_lang(vec![ComposedTextRun {
+                    text: line_text,
+                    char_style_id: default_style_id,
+                    lang_index: 0,
+                    char_overlap: None,
+                    footnote_marker: None,
+                    display_text: None,
+                }]),
+                line_height: 400,
+                baseline_distance: 320,
+                segment_width: 0,
+                column_start: 0,
+                line_spacing: 0,
+                // [Task #994] non-last synth wrap line 은 has_line_break=true 로 marking —
+                // Justify 정렬 비활성화 (line 의 chars 가 column width 만큼 spread 되지 않음).
+                // 마지막 line 은 false (기존 paragraph 동작 유지).
+                has_line_break: !is_last_line,
+                char_start: offset,
+            });
+            offset = end;
+        }
+        return lines;
     }
 
     let mut lines = Vec::new();
