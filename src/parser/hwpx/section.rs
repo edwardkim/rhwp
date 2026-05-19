@@ -523,6 +523,8 @@ fn parse_page_border_fill_empty(e: &quick_xml::events::BytesStart) -> PageBorder
         header_inside,
         footer_inside,
     );
+    // [Task #1006] HWPX: PR #956 한컴 viewer 정합 — paper-based.
+    page_border_fill.basis = crate::model::page::PageBorderBasis::PaperBased;
     page_border_fill
 }
 

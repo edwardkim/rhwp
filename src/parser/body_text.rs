@@ -865,6 +865,8 @@ fn parse_page_border_fill(data: &[u8]) -> PageBorderFill {
     pbf.spacing_top = r.read_i16().unwrap_or(0);
     pbf.spacing_bottom = r.read_i16().unwrap_or(0);
     pbf.border_fill_id = r.read_u16().unwrap_or(0);
+    // [Task #1006] HWP5: PR #956 한컴 viewer 정합 — paper-based.
+    pbf.basis = crate::model::page::PageBorderBasis::PaperBased;
 
     pbf
 }

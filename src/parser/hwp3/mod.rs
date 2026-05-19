@@ -2832,6 +2832,12 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
             spacing_top: (doc_info.border_margin_top as i16) * 4,
             spacing_bottom: (doc_info.border_margin_bottom as i16) * 4,
             border_fill_id: bfid,
+            // [Task #1006] HWP3: paper-based (작업지시자 Hancom Office 시각 판정).
+            // 이전 #987 의 "body-based" 재판정은 close-up 비교 부재로 인한 오판단이었음.
+            // Hancom Office close-up: outline 이 paper-spacing edge 에서 시작 + logo 가
+            // outline 내부 top-left 위치 (HWP5 변환본과 동일). HWP3/HWP5/HWPX 모두 동일
+            // contract (PaperBased) 로 통합.
+            basis: crate::model::page::PageBorderBasis::PaperBased,
         };
     }
 

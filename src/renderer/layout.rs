@@ -944,7 +944,8 @@ impl LayoutEngine {
         font_size: f64,
     ) -> Option<f64> {
         let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
-        let paper_based = (pbf.attr & 0x01) != 0;
+        use crate::model::page::PageBorderBasis;
+        let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
         if paper_based {
             return None;
         }
@@ -962,32 +963,25 @@ impl LayoutEngine {
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
             let bf_idx = (pbf.border_fill_id - 1) as usize;
             if let Some(bs) = styles.border_styles.get(bf_idx) {
-                // 외곽선 위치 기준: attr bit 0 (textBorder=PAPER) 존중.
-                //   bit0 = 1 → paper 기준, bit0 = 0 → body 기준 (HWPX/HWP5 본래 의미).
+                // 외곽선 위치 기준: PageBorderFill.basis (PaperBased/BodyBased).
                 // 회귀 history:
                 //   - task877: paper_based = (attr & 0x01) != 0 — sample16 정합, 시험지 회귀
                 //   - #920: paper_based = (attr & 0x01) == 0 — 시험지 정합, sample16 회귀
                 //   - #952: paper_based = true 전역 — 당시 모든 sample 정합 판정
-                // [Task #987] #952 의 "sample16 = paper 정합" 은 bfid off-by-one
-                //   (mod.rs:2816) 으로 잘못된 border_fill 을 읽던 상태의 착시였음.
-                //   off-by-one 수정 후 sample16 한컴 정답지 = body 기준으로 재판정.
-                //   attr 존중 복원: HWPX/HWP5 는 자신의 attr bit0 의미 그대로,
-                //   HWP3 는 파서가 attr=0(body) 주입 (CLAUDE.md HWP3 격리 규칙).
-                let paper_based = (pbf.attr & 0x01) != 0;
-                // [Task #1001] HWP5 spec 표 136 bit 1/2: 외곽선이 머리말/꼬리말 영역
-                //   진입 차단. 한컴 변환본 (HWP3→HWP5 등) 의 attr=0x01 default 는
-                //   bit1=0/bit2=0 (머/꼬 미포함) → paper 기준 외곽선이 꼬리말 영역
-                //   (페이지 번호 위치) 까지 확장되는 회귀 발생. body_area 가 머/꼬
-                //   영역을 제외한 영역이므로, !header_inside 시 border top 을
-                //   body_area.y 이상으로, !footer_inside 시 border bottom 을
-                //   body_area.y + body_area.height 이하로 clip.
-                let header_inside = (pbf.attr & 0x02) != 0;
+                //   - #987: bfid 정정 + attr 존중 — 변환본 logo overlap 회귀 (#1006)
+                // 정답 (#1006): 포맷별 분리 (PageBorderFill.basis) + 모두 PaperBased.
+                // 작업지시자 Hancom Office close-up 시각 판정: HWP3/HWP5/HWPX 모두
+                // logo 가 outline 내부 top-left 위치 → 세 포맷 모두 PaperBased contract.
+                // 또한 머리말 conditional clip 제거 (그림 이동 시 외곽선 shrink 회귀 해소),
+                // 꼬리말 clip 은 유지 (페이지 번호 외곽선 안쪽 회귀 해소 — PR #1011).
+                use crate::model::page::PageBorderBasis;
+                let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
                 let footer_inside = (pbf.attr & 0x04) != 0;
                 if std::env::var("RHWP_DEBUG_PAGE_BORDER").is_ok() {
                     eprintln!(
-                        "PAGE_BORDER: attr=0x{:08x} bit0={} bit1={} bit2={} paper_based={} header_inside={} footer_inside={} bfid={} spacing(L={},R={},T={},B={})",
+                        "PAGE_BORDER: attr=0x{:08x} bit0={} bit1={} bit2={} paper_based={} footer_inside={} bfid={} spacing(L={},R={},T={},B={})",
                         pbf.attr, pbf.attr & 0x01, (pbf.attr >> 1) & 0x01, (pbf.attr >> 2) & 0x01,
-                        paper_based, header_inside, footer_inside, pbf.border_fill_id,
+                        paper_based, footer_inside, pbf.border_fill_id,
                         pbf.spacing_left, pbf.spacing_right, pbf.spacing_top, pbf.spacing_bottom,
                     );
                 }
@@ -1008,7 +1002,7 @@ impl LayoutEngine {
                 let sp_b = hwpunit_to_px(pbf.spacing_bottom as i32, self.dpi);
                 // 종이 기준: 종이 가장자리에서 안쪽(+)으로 spacing
                 // 쪽 기준: 본문 영역에서 바깥쪽(-)으로 spacing
-                let (mut bx, mut by, mut bw, mut bh) = if paper_based {
+                let (bx, mut by, bw, mut bh) = if paper_based {
                     (
                         base_x + sp_l,
                         base_y + sp_t,
@@ -1023,32 +1017,18 @@ impl LayoutEngine {
                         base_h + sp_t + sp_b,
                     )
                 };
-                // bit 1/2 clip — 머/꼬 영역 진입 차단 (paper 기준 회귀 해소).
-                // body 기준 + spacing>0 케이스도 spec 정합으로 동일 처리 — body_area
-                // 정확히 일치 시 외곽선 spacing 효과 없어짐 (HWP3 sample16 baseline
-                // 변동 가능, Stage 4 시각 검증). 회귀 발견 시 paper_based 조건으로 좁힐 수 있음.
-                if !header_inside {
-                    // [Task #1001] body_area.y 기준 clip. 20px buffer 추가 시도
-                    // (sample16-hwp5 cover 머릿말 logo overlap 해결) → 페이지 3
-                    // "Ⅰ.사업개요" 타이틀이 outline 밖으로 밀려 회귀 발생 → revert.
-                    // 머릿말 logo overlap 은 별도 fix (paragraph object 감지 후
-                    // selective push-down) 필요 — 후속 task.
-                    let header_bottom = layout.body_area.y;
-                    if by < header_bottom {
-                        bh -= header_bottom - by;
-                        by = header_bottom;
-                    }
-                }
+                // [Task #1006 part 2] header_inside 는 clip 미적용 (cover logo
+                // 가 외곽선 내부 top-left 위치 — 작업지시자 Hancom Office close-up
+                // 시각 판정), footer_inside 만 clip 적용 (페이지 번호가 외곽선 바깥
+                // 위치 — 한컴 viewer 정합 — PR #1011). attr bit 1 (header) 무시,
+                // bit 2 (footer) 존중. spec 정의와 다르지만 한컴 실제 동작 정합 우선.
                 if !footer_inside {
                     let footer_top = layout.body_area.y + layout.body_area.height;
                     if by + bh > footer_top {
                         bh = footer_top - by;
                     }
                 }
-                // 좌/우는 spec bit 1/2 적용 대상 아님 — body 기준은 left/right margin
-                // 외부, paper 기준은 paper 가장자리에서 spacing 만큼 그대로 유지.
-                let _ = &mut bx;
-                let _ = &mut bw;
+                let _ = &mut by;
 
                 let borders = &bs.borders;
                 let top_nodes = create_border_line_nodes(tree, &borders[2], bx, by, bx + bw, by);
