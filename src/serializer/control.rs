@@ -1714,8 +1714,14 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
         }
     }
 
-    // 추가 속성 (additional_size = 0)
-    w.write_u32(0).unwrap();
+    // 추가 속성. 그라데이션은 HWP5 fill contract상 blurring center 1바이트를 가진다.
+    if fill_type_val & 0x04 != 0 {
+        w.write_u32(1).unwrap();
+        w.write_u8(fill.gradient.as_ref().map(|g| g.step_center).unwrap_or(0))
+            .unwrap();
+    } else {
+        w.write_u32(0).unwrap();
+    }
 
     // alpha 바이트 (채우기 종류별 각 1바이트)
     if fill_type_val & 0x01 != 0 {

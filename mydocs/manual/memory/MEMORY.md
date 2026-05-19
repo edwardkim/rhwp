@@ -1,39 +1,67 @@
-- [작업 시간 제한 금지](feedback_no_time_limits.md) — 클로드가 임의로 작업 종료 제안 금지, 작업지시자가 결정
-- [한컴 LINE_SEG 자동 재계산](project_hancom_lineseg_behavior.md) — LINE_SEG가 비어있어도 한컴이 자체 재계산. 역공학 샘플 전략의 기반
-- [타스크 번호는 GitHub Issues로 채번](feedback_task_numbering.md) — gh issue create로 자동 채번, 수동 번호 할당 금지
-- [마일스톤 표기 규칙](feedback_milestone_notation.md) — v1.0.0→M100, v0.5.x→M05x. 오늘할일에서 M100 #1 형식 사용
-- [안드로이드 IME 미구현](project_android_ime_pending.md) — 기기 미보유로 미테스트. iOS는 contentEditable+디바운스로 해결. 기기 확보 시 구현 필요
-- [Discord 커뮤니티](reference_discord.md) — Rust Discord에 프로젝트 소개 (2026-04-04)
-- [타스크 프로세스 반드시 준수](feedback_process_must_follow.md) — 이슈→브랜치→할일→계획서→구현 순서 절대 생략 금지. #61에서 위반 발생
-- [이슈 클로즈는 작업지시자 승인 필수](feedback_no_close_without_approval.md) — 미해결 상태 임의 클로즈 금지. #62에서 위반 발생
-- [로컬 폰트 경로](reference_font_path.md) — TTF 폰트는 /home/edward/mygithub/ttfs에 프로젝트 외부 분리
+## user
+- [작업지시자 정체성 + 역할](user_role_identity.md) — edwardkim, rhwp 메인테이너, Windows + WSL2 + macOS(ios/devel)
+- [기술 스택 + 협업 분배](user_tech_stack.md) — 본인 보유(Rust/WASM) vs Claude 위임(문서/cherry-pick) vs 직접 결정(시각 판정)
+- [작업 스타일](user_work_style.md) — 하이퍼-워터폴, 시각 판정 게이트, 광범위 sweep 정량화, 외부 PR 옵션 분류
+
+## feedback — 워크플로우/프로세스
+- [작업 시간 제한 금지](feedback_no_time_limits.md) — 클로드가 임의로 작업 종료 제안 금지
+- [타스크 프로세스 반드시 준수](feedback_process_must_follow.md) — 이슈→브랜치→할일→계획서→구현 순서 절대 생략 금지
+- [Hyper-Waterfall 워크플로우 필수 준수](hyper_waterfall_workflow.md) — 수행계획서→구현계획서→단계별 보고, 승인 없이 코딩 금지
+- [이슈 클로즈는 작업지시자 승인 필수](feedback_no_close_without_approval.md) — 미해결 상태 임의 클로즈 금지
+- [이슈 close 시 devel 머지 검증 필수](feedback_close_issue_verify_merged.md) — close 전 git branch --contains 검증
+- [이슈 착수 시 즉시 assignee 지정 필수](feedback_assign_issue_before_work.md) — 진짜 일차 방어선
+- [이슈 작업 전 열린 PR 확인 필수](feedback_check_open_prs_first.md) — gh pr list로 외부 기여 확인, 이차 방어선
+- [타스크 번호는 GitHub Issues로 채번](feedback_task_numbering.md) — gh issue create로 자동 채번
+- [마일스톤 표기 규칙](feedback_milestone_notation.md) — v1.0.0→M100, v0.5.x→M05x
+- [보고서는 타스크 브랜치에서 커밋](feedback_commit_reports_in_branch.md) — merge 전 git status 필수
+- [오늘할일 문서 갱신 필수](feedback_update_daily_orders.md) — 세션 종료 전 커밋
+
+## feedback — 문서/명명 규칙
 - [작업 문서 네이밍 규칙](feedback_working_doc_naming.md) — task_m100_{번호}_stage{단계}.md 패턴 필수
-- [최종 보고서 위치 규칙](feedback_report_location.md) — 최종 보고서는 mydocs/report/, 단계별 보고서는 mydocs/working/
-- [보고서는 타스크 브랜치에서 커밋](feedback_commit_reports_in_branch.md) — 보고서·오늘할일 갱신은 타스크 브랜치에서 소스와 함께 커밋. merge 전 git status 필수
-- [오늘할일 문서 작업일지 갱신 필수](feedback_update_daily_orders.md) — 작업한 내용은 반드시 mydocs/orders/yyyymmdd.md에 기록. 세션 종료 전 커밋
-- [알한글 iOS 프로젝트](project_alhangeul_ios.md) — iPad HWP 학습 도구, 맥북 전용(ios/devel), 리눅스에서 빌드 불가. 현재 환경에서 작업 불가
-- [output 폴더 서브폴더 구조](project_output_folder_structure.md) — output/re/(재현검증), output/svg/(SVG), output/debug/(디버그) 용도별 분리. 새 출력 코드는 반드시 서브폴더에 저장
-- [수식 컨트롤은 항상 TAC](project_equation_always_tac.md) — 한컴 수식은 모두 treat_as_char. paragraph_layout 인라인 배치가 핵심 경로
-- [rhwp 자기 검증 ≠ 한컴 호환](feedback_self_verification_not_hancom.md) — 자기 라운드트립 통과해도 한컴 거부 가능. HWP 저장 작업은 한컴2020 수동 검증 게이트 필수
-- [트러블슈팅 폴더 사전 검색 의무](feedback_search_troubleshootings_first.md) — 직렬화·한컴 호환·파일 손상 작업 시작 전 mydocs/troubleshootings/ 전수 검색
-- [HWPX→HWP 단순 어댑터의 한계](project_hwpx_to_hwp_adapter_limit.md) — 단순 어댑터로 한컴 호환 불가. 다음 시도는 "완전 변환기" 정체성 필요
-- [hwp2hwpx Java 라이브러리](reference_hwp2hwpx_library.md) — HWP↔HWPX 변환 매핑 권위 자료. /home/edward/vsworks/hwp2hwpx (Apache 2.0)
-- [릴리즈 작업 전 main 동기화 점검 필수](feedback_release_sync_check.md) — devel→main 머지/태그 작업 시작 전 git pull --ff-only origin main. 분기 발견 시 즉시 중단
-- [릴리즈/배포 작업 시 매뉴얼 정독 필수](feedback_release_manual_required.md) — mydocs/manual/ 관련 매뉴얼 전체 정독. 부분 검색 금지. 매뉴얼 체크리스트와 1:1 대조
-- [외부 공개 문서 자기검열 체크리스트](feedback_external_docs_self_censor.md) — 구체 회사명 비교/최상급 주장/개인정보/공공기관 오인 등 7개 카테고리 점검. 커밋 전 grep 자동 검증
-- [AMO 제출 4대 함정](feedback_amo_submission_gotchas.md) — data_collection_permissions 필수/gecko_android 키 생략/gecko id 플랫폼 suffix/소스 zip 필수 업로드. Firefox 확장 제출 전 체크리스트
-- [한글 폰트 추가 시 resolve_metric_alias 동기화 필수](feedback_font_alias_sync.md) — style_resolver(별칭→정규명) + font_metrics_data(정규명→영문DB) 2-계층 모두 등록 필수. 누락 시 글자 겹침
-- [이슈 작업 전 열린 PR 확인 필수](feedback_check_open_prs_first.md) — gh pr list로 외부 기여자 PR 존재 확인. 이차 방어선 (일차는 assign)
-- [이슈 착수 시 즉시 assignee 지정 필수](feedback_assign_issue_before_work.md) — assignee 없는 이슈는 외부 기여자에게 "오픈 타스크" 로 인식됨. 내부 작업 결정 즉시 gh issue edit --add-assignee. 진짜 일차 방어선 (#259/#264 사건의 근본 원인)
-- [PR 댓글 톤 — 과도한 표현 자제](feedback_pr_comment_tone.md) — "정말 감사합니다" / "정성스러운 PR" 등 자제. 차분하고 사실 중심. 반복 컨트리뷰터에 매번 같은 인사 부적절
-- [한컴 호환은 일반화보다 케이스별 명시 가드](feedback_hancom_compat_specific_over_general.md) — 한컴 비일관성 때문에 일반화 알고리즘은 다른 케이스 회귀 위험. `has_nested_table` 같은 구조 가드가 측정 의존 clamp 보다 안전
-- [PDF 는 정답지가 아니다](feedback_pdf_not_authoritative.md) — 한컴 PDF 출력은 환경별 (버전/폰트/OS) 로 다름. 권위 기준 미입증 → PR/task 검증에서 1차 기준 수용 금지. cargo test + svg_snapshot 등 결정적 검증 우선
-- [작업지시자 정답지 한컴 환경](reference_authoritative_hancom.md) — 한컴 2010 + 한컴 2022 의 편집기 출력만 정답지. 한글뷰어 / macOS 인쇄 / 외부 변환은 정답지 아님
-- [v0.7.6 페이지 레이아웃 회귀의 origin](feedback_v076_regression_origin.md) — 외부 PR 컨트리뷰터들이 자기 환경 PDF 를 정답지로 사용 → 작업지시자 환경에서 회귀. 머지 전 작업지시자 직접 시각 검증을 게이트로
-- [이슈 close 시 정정 commit devel 머지 검증 필수](feedback_close_issue_verify_merged.md) — Task #376 정정 commit 이 임시 브랜치에만 있고 devel 미머지 → 동일 결함 재발 (Task #418). close 전 git branch --contains 검증
-- [작은 단위 PATCH 회전 운영 철학](feedback_small_batch_release_strategy.md) — 활발한 컨트리뷰션 사이클 (9명 외부 기여자) 에서 큰 묶음으로 완성도 높이려는 시도가 오히려 위험 누적. v0.x 단계에서 신규 API/모듈 (opt-in, 하위 호환성 100%) 도 PATCH 로 묶어 빠른 회전 — 컨트리뷰터 동기 + 위험 분산
-- [페이지 총 수 검증 한계 — 시각 회귀 비중 증가](feedback_visual_regression_grows.md) — 페이지 총 수 byte 비교만으로는 셀 안 그림 클램프 같은 시각 결함 검출 불가. 작업지시자 시각 판정이 절차의 핵심 게이트
-- [단어 선택 — "산수" 대신 "계산"](feedback_word_choice_calculation.md) — 기술 문서 / 코드 주석 / 보고서에서 "산수" 표현 금지, "계산" 사용
-- [renderer 별 별도 image 함수 — 시각 결함 정정 시 모든 경로 점검](feedback_image_renderer_paths_separate.md) — svg.rs / web_canvas.rs / paint/json.rs 등 별도 사본. Task #514 + #516 의 발견. 정정 시 사전 sweep 필수
-- [rhwp 정체성 — 한국형 DTP 엔진 + 워드프로세서](project_dtp_identity.md) — 아래아한글 = QuarkXPress 대체 의도. 다층 레이어 / WebGPU / 마스터 페이지는 DTP 인프라 토대. M200+ 후보 B (WebGPU) 합리화 근거
-- [rhwp 자체 시각 해석 권위](feedback_rhwp_visual_authority.md) — 한컴 출력 권위 미입증, IR 충실보다 시각 본질 우선 가능. 편집자 의도 보존 + 시각 본질 보장 균형
+- [최종 보고서 위치 규칙](feedback_report_location.md) — 최종은 report/, 단계별은 working/
+- [한국어 단어 선택 + 자기검열](feedback_kr_word_choices.md) — "산수" 금지, 비교/최상급/공공기관 오인 회피
+- [단어 선택 — "산수" 대신 "계산"](feedback_word_choice_calculation.md) — 기술 문서에서 "산수" 금지
+- [기계적 어휘 회피](feedback_machine_vocabulary.md) — "본질/정합 영역" 반복 금지, 자연스러운 한국어 산문
+- [외부 공개 문서 자기검열 체크리스트](feedback_external_docs_self_censor.md) — 7개 카테고리 점검
+
+## feedback — PR/컨트리뷰터 관련
+- [첫 PR 컨트리뷰터 환영](feedback_first_pr_courtesy.md) — "rhwp 첫 PR" 표현, fork base 동기화 권장
+- [PR 댓글 톤 — 과도한 표현 자제](feedback_pr_comment_tone.md) — 차분하고 사실 중심
+- [작은 단위 PATCH 회전 운영](feedback_small_batch_release_strategy.md) — 빠른 회전, 위험 분산
+
+## feedback — 시각 판정/한컴 호환
+- [시각 판정 권위](feedback_visual_judgment_authority.md) — 한컴 2022 정답지, Claude는 정량 측정만 보조
+- [rhwp 자체 시각 해석 권위](feedback_rhwp_visual_authority.md) — IR 충실보다 시각 본질 우선 가능
+- [PDF 는 정답지가 아니다](feedback_pdf_not_authoritative.md) — 한컴 PDF 출력은 환경별로 다름, 1차 기준 수용 금지
+- [한컴 호환은 케이스별 명시 가드](feedback_hancom_compat_specific_over_general.md) — 일반화보다 구조 가드가 안전
+- [자기 검증 ≠ 한컴 호환](feedback_self_verification_not_hancom.md) — 한컴2020 수동 검증 게이트 필수
+- [v0.7.6 회귀의 origin](feedback_v076_regression_origin.md) — 컨트리뷰터 PDF 정답지 사용 → 회귀. 시각 검증 게이트
+- [시각 회귀 비중 증가](feedback_visual_regression_grows.md) — 페이지 수 비교만으로 검출 불가, 시각 판정이 핵심
+
+## feedback — 코드/렌더링 관련
+- [renderer별 별도 image 함수 sweep](feedback_image_renderer_paths_separate.md) — svg/canvas/paint/json 4 backend 점검
+- [폰트 추가 시 alias 동기화 필수](feedback_font_alias_sync.md) — style_resolver + font_metrics_data 2계층 등록
+- [트러블슈팅 폴더 사전 검색 의무](feedback_search_troubleshootings_first.md) — 직렬화/한컴 호환 작업 전 전수 검색
+
+## feedback — 릴리즈/배포
+- [릴리즈 전 main 동기화 점검 필수](feedback_release_sync_check.md) — git pull --ff-only origin main
+- [릴리즈 작업 시 매뉴얼 정독 필수](feedback_release_manual_required.md) — 부분 검색 금지, 체크리스트 1:1 대조
+- [AMO 제출 4대 함정](feedback_amo_submission_gotchas.md) — Firefox 확장 제출 전 체크리스트
+
+## project
+- [브랜치 정책 + iOS 분기](project_branch_policy.md) — main/devel/local-devel + ios/devel(맥북 전용)
+- [외부 컨트리뷰터 명단](project_external_contributors.md) — v0.7.x 누적 20명, 첫 PR 식별용
+- [알한글 iOS 프로젝트](project_alhangeul_ios.md) — iPad HWP 학습 도구, 맥북 전용
+- [안드로이드 IME 미구현](project_android_ime_pending.md) — 기기 미보유
+- [rhwp 정체성 — DTP 엔진 + 워드프로세서](project_dtp_identity.md) — 아래아한글 = QuarkXPress 대체 의도
+- [수식 컨트롤은 항상 TAC](project_equation_always_tac.md) — paragraph_layout 인라인 배치 핵심 경로
+- [한컴 LINE_SEG 자동 재계산](project_hancom_lineseg_behavior.md) — LINE_SEG 비어있어도 한컴이 재계산
+- [HWPX→HWP 어댑터의 한계](project_hwpx_to_hwp_adapter_limit.md) — 다음 시도는 "완전 변환기" 필요
+- [output 폴더 서브폴더 구조](project_output_folder_structure.md) — re/svg/debug 용도별 분리
+- [HWPX switch/case와 줄간격 유형](hwpx_switch_case.md) — HwpUnitChar case=글자에따라, default=고정값
+
+## reference
+- [작업지시자 정답지 한컴 환경](reference_authoritative_hancom.md) — 한컴 2010+2022 편집기만 정답지
+- [로컬 폰트 경로](reference_font_path.md) — TTF 폰트 프로젝트 외부 분리
+- [hwp2hwpx Java 라이브러리](reference_hwp2hwpx_library.md) — HWP↔HWPX 변환 매핑 권위 자료
+- [Discord 커뮤니티](reference_discord.md) — Rust Discord 소개 (2026-04-04)

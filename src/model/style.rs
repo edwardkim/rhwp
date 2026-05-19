@@ -475,6 +475,8 @@ pub struct GradientFill {
     pub center_y: i16,
     /// 번짐 정도 (0~100)
     pub blur: i16,
+    /// 번짐 중심 (0~100)
+    pub step_center: u8,
     /// 색상 목록
     pub colors: Vec<ColorRef>,
     /// 색상 위치 목록

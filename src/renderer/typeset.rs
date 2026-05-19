@@ -1356,7 +1356,8 @@ impl TypesetEngine {
                                 .unwrap_or(0.0)
                         })
                         .fold(0.0f64, f64::max);
-                    let lh = if max_fs > 0.0 && raw_lh < max_fs {
+                    let recompute_lh = max_fs > 0.0 && raw_lh < max_fs;
+                    let lh = if recompute_lh {
                         use crate::model::style::LineSpacingType;
                         let computed = match ls_type {
                             LineSpacingType::Percent => max_fs * ls_val / 100.0,
@@ -1368,7 +1369,16 @@ impl TypesetEngine {
                     } else {
                         raw_lh
                     };
-                    (lh, hwpunit_to_px(line.line_spacing, self.dpi))
+                    // [Task #969] lh 재계산이 ParaShape ls_type 기반으로 일어났다면
+                    // preset 의 line_spacing 은 이미 재계산된 lh 에 흡수된 값 (e.g. HWPX
+                    // 의 linesegArray: lh=font, ls=extra) → 별도 가산 시 double-count
+                    // (160% 가 lh+ls 양쪽). HWPX +8 페이지 inflate (sample16-hwp5) 원인.
+                    let line_spacing_px = if recompute_lh {
+                        0.0
+                    } else {
+                        hwpunit_to_px(line.line_spacing, self.dpi)
+                    };
+                    (lh, line_spacing_px)
                 })
                 .unzip()
         } else if !para.line_segs.is_empty() {

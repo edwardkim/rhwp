@@ -123,6 +123,17 @@ pub fn parse_hatch_style(value: &str) -> Option<i32> {
     }
 }
 
+/// OWPML gradient type 값을 HWP5 gradient kind 값으로 변환한다.
+pub fn parse_gradient_type(value: &str) -> i16 {
+    match value {
+        "LINEAR" => 1,
+        "RADIAL" => 2,
+        "CONICAL" => 3,
+        "SQUARE" => 4,
+        _ => value.parse().unwrap_or(0),
+    }
+}
+
 /// XML 요소를 자식 포함하여 건너뛰기 (깊이 추적)
 pub fn skip_element(reader: &mut Reader<&[u8]>, _end_tag: &[u8]) -> Result<(), HwpxError> {
     let mut buf = Vec::new();

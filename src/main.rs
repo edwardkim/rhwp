@@ -25,6 +25,18 @@ fn main() {
         Some("hwp5-ctrl-data-trace") => rhwp::diagnostics::hwp5_ctrl_data_trace::run(&args[2..]),
         Some("hwp5-contract-probe") => rhwp::diagnostics::hwp5_contract_probe::run(&args[2..]),
         Some("hwp5-table-probe") => rhwp::diagnostics::hwp5_table_probe::run(&args[2..]),
+        Some("hwp5-mel-personnel-probe") => {
+            rhwp::diagnostics::hwp5_mel_personnel_probe::run(&args[2..])
+        }
+        Some("hwp5-borderfill-diagonal-probe") => {
+            rhwp::diagnostics::hwp5_borderfill_diagonal_probe::run(&args[2..])
+        }
+        Some("hwp5-first-para-control-probe") => {
+            rhwp::diagnostics::hwp5_first_para_control_probe::run(&args[2..])
+        }
+        Some("hwp5-cell-header-probe") => {
+            rhwp::diagnostics::hwp5_cell_header_probe::run(&args[2..])
+        }
         Some("dump-records") => dump_raw_records(&args[2..]),
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
         Some("test-caption") => test_caption(&args[2..]),
@@ -126,6 +138,18 @@ fn print_help() {
     println!();
     println!("  hwp5-table-probe <oracle.hwp> <generated.hwp> --out-dir <폴더>");
     println!("      TABLE/CTRL_HEADER(Table) field 축별 판정용 HWP probe 생성");
+    println!();
+    println!("  hwp5-mel-personnel-probe <oracle.hwp> <generated.hwp> --out-dir <폴더>");
+    println!("      mel-001 인원현황 표 TABLE/LIST_HEADER/PARA_HEADER 축별 판정용 HWP probe 생성");
+    println!();
+    println!("  hwp5-borderfill-diagonal-probe <oracle.hwp> <generated.hwp> --out-dir <폴더>");
+    println!("      DocInfo BORDER_FILL 대각선 attr/payload 축별 판정용 HWP probe 생성");
+    println!();
+    println!("  hwp5-first-para-control-probe <oracle.hwp> <generated.hwp> --out-dir <폴더>");
+    println!("      첫 문단 control/PARA_TEXT/PARA_CHAR_SHAPE 계약 축별 판정용 HWP probe 생성");
+    println!();
+    println!("  hwp5-cell-header-probe <oracle.hwp> <generated.hwp> --out-dir <폴더>");
+    println!("      표 셀 LIST_HEADER/PARA_HEADER 계약 축별 판정용 HWP probe 생성");
     println!();
     println!("  convert <입력.hwp|입력.hwpx> <출력.hwp>");
     println!("      배포용(읽기전용) HWP를 편집 가능한 HWP로 변환");
@@ -2318,10 +2342,11 @@ fn dump_controls(args: &[String]) {
                                     .map(|p| p.text.chars().take(30).collect::<String>())
                                     .collect::<Vec<_>>()
                                     .join("|");
-                                println!("{}셀[{}] r={},c={} rs={},cs={} h={} w={} pad=({},{},{},{}) aim={} bf={} paras={} text=\"{}\"",
+                                println!("{}셀[{}] r={},c={} rs={},cs={} h={} w={} pad=({},{},{},{}) valign={:?} aim={} bf={} paras={} text=\"{}\"",
                                     indent, ci, cell.row, cell.col, cell.row_span, cell.col_span,
                                     cell.height, cell.width,
                                     cell.padding.left, cell.padding.right, cell.padding.top, cell.padding.bottom,
+                                    cell.vertical_align,
                                     cell.apply_inner_margin,
                                     cell.border_fill_id, cell.paragraphs.len(), text_preview);
                                 if let Some(ref fname) = cell.field_name {

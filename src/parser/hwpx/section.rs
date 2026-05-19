@@ -26,8 +26,9 @@ use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::HwpUnit16;
 
 use super::utils::{
-    attr_str, local_name, parse_bool, parse_color, parse_hatch_style, parse_i16, parse_i32,
-    parse_i32_wrapping, parse_i8, parse_u16, parse_u32, parse_u8, skip_element,
+    attr_str, local_name, parse_bool, parse_color, parse_gradient_type, parse_hatch_style,
+    parse_i16, parse_i32, parse_i32_wrapping, parse_i8, parse_u16, parse_u32, parse_u8,
+    skip_element,
 };
 use super::HwpxError;
 
@@ -315,17 +316,7 @@ fn parse_paragraph(
                     }
                     b"tab" => {
                         text_parts.push("\t".to_string());
-                        // HWPX 인라인 탭 속성 파싱 → tab_extended에 저장
-                        let mut ext = [0u16; 7];
-                        for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
-                                b"width" => ext[0] = parse_u16(&attr),
-                                b"leader" => ext[1] = parse_u16(&attr),
-                                b"type" => ext[2] = parse_u16(&attr),
-                                _ => {}
-                            }
-                        }
-                        para.tab_extended.push(ext);
+                        para.tab_extended.push(parse_tab_extension(ce));
                     }
                     b"lineseg" => {
                         // 단독 lineseg (linesegarray 밖에 나올 경우)
@@ -736,17 +727,7 @@ fn read_text_content_with_tabs(
                     b"lineBreak" | b"columnBreak" => text.push('\n'),
                     b"tab" => {
                         text.push('\t');
-                        // HWPX 인라인 탭 속성 → tab_ext_buf에 임시 저장
-                        let mut ext = [0u16; 7];
-                        for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
-                                b"width" => ext[0] = parse_u16(&attr),
-                                b"leader" => ext[1] = parse_u16(&attr),
-                                b"type" => ext[2] = parse_u16(&attr),
-                                _ => {}
-                            }
-                        }
-                        tab_ext_buf.push(ext);
+                        tab_ext_buf.push(parse_tab_extension(ce));
                     }
                     b"nbSpace" => text.push('\u{00A0}'),
                     b"fwSpace" => text.push('\u{2007}'),
@@ -761,6 +742,25 @@ fn read_text_content_with_tabs(
     }
 
     Ok((text, tab_ext_buf))
+}
+
+fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
+    let mut ext = [0u16; 7];
+    ext[3] = 0x0020;
+    ext[4] = 0x0020;
+    ext[5] = 0x0020;
+    ext[6] = 0x0009;
+
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"width" => ext[0] = parse_u16(&attr),
+            b"leader" => ext[1] = parse_u16(&attr),
+            b"type" => ext[2] = (parse_u16(&attr) & 0x00ff) << 8,
+            _ => {}
+        }
+    }
+
+    ext
 }
 
 // ─── Table ───
@@ -2128,10 +2128,20 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                         let mut grad = GradientFill::default();
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"type" => grad.gradient_type = parse_i16(&attr),
+                                b"type" => {
+                                    grad.gradient_type = parse_gradient_type(&attr_str(&attr))
+                                }
                                 b"angle" => grad.angle = parse_i16(&attr),
                                 b"centerX" => grad.center_x = parse_i16(&attr),
                                 b"centerY" => grad.center_y = parse_i16(&attr),
+                                b"blur" | b"step" => grad.blur = parse_i16(&attr),
+                                b"stepCenter" => grad.step_center = parse_u8(&attr),
+                                b"alpha" => {
+                                    let val = attr_str(&attr);
+                                    if let Ok(f) = val.parse::<f64>() {
+                                        fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                    }
+                                }
                                 _ => {}
                             }
                         }
@@ -2578,10 +2588,12 @@ fn parse_ctrl(
                     b"header" => {
                         let ctrl = parse_ctrl_header(ce, reader)?;
                         controls.push(ctrl);
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"footer" => {
                         let ctrl = parse_ctrl_footer(ce, reader)?;
                         controls.push(ctrl);
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"footNote" => {
                         let ctrl = parse_ctrl_footnote(ce, reader)?;
@@ -2616,11 +2628,13 @@ fn parse_ctrl(
                     b"pageHiding" => {
                         let ph = parse_page_hiding_attrs(ce);
                         controls.push(Control::PageHide(ph));
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"pageHiding")?;
                     }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"pageNum")?;
                     }
                     b"bookmark" => {
@@ -2652,10 +2666,12 @@ fn parse_ctrl(
                     b"pageHiding" => {
                         let ph = parse_page_hiding_attrs(ce);
                         controls.push(Control::PageHide(ph));
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);

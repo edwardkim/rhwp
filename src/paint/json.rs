@@ -14,6 +14,7 @@ use crate::paint::{
     TextSourceEntry, TextSourceId, TextSourceRange, TextSourceSpan, TextSourceTable,
     TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
+use crate::renderer::composer::expand_pua_display_text;
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, ShapeTransform, TextRunNode};
 use crate::renderer::{
@@ -67,7 +68,11 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let has_variant_groups = text_variant_features.has_variant_groups();
     let has_glyph_runs = text_variant_features.has_glyph_runs;
     let has_glyph_outlines = text_variant_features.has_glyph_outlines;
+    let has_display_text = text_variant_features.has_display_text;
     buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\"");
+    if has_display_text {
+        buf.push_str(",\"text.displayText\"");
+    }
     if has_glyph_runs {
         buf.push_str(",\"fontResources\",\"text.glyphRun\"");
     }
@@ -105,7 +110,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
         }
         buf.push_str(&json_escape(feature));
     }
-    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -126,6 +131,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
 struct TextVariantFeatureFlags {
     has_glyph_runs: bool,
     has_glyph_outlines: bool,
+    has_display_text: bool,
 }
 
 impl TextVariantFeatureFlags {
@@ -148,12 +154,18 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     match op {
+                        PaintOp::TextRun { run, .. } => {
+                            features.has_display_text |= display_text_for_text_run(run).is_some()
+                        }
                         PaintOp::GlyphRun { .. } => features.has_glyph_runs = true,
                         PaintOp::GlyphOutline { .. } => features.has_glyph_outlines = true,
                         _ => {}
                     }
                 }
-                if features.has_glyph_runs && features.has_glyph_outlines {
+                if features.has_glyph_runs
+                    && features.has_glyph_outlines
+                    && features.has_display_text
+                {
                     return features;
                 }
             }
@@ -314,6 +326,7 @@ impl PaintOp {
                 buf.push_str("\"type\":\"textRun\",\"bbox\":");
                 write_bbox(buf, *bbox);
                 let source = text_sources.next_text_run_span(run);
+                let display_text = display_text_for_text_run(run);
                 let _ = write!(
                     buf,
                     ",\"text\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"orientation\":{},\"projectionKind\":{},\"clusterBasis\":\"legacyPosition\"",
@@ -324,6 +337,9 @@ impl PaintOp {
                     json_escape(text_orientation_str(run)),
                     json_escape(text_projection_kind_str(run)),
                 );
+                if let Some(display_text) = &display_text {
+                    let _ = write!(buf, ",\"displayText\":{}", json_escape(display_text));
+                }
                 buf.push_str(",\"placement\":");
                 write_text_run_placement(buf, *bbox, run);
                 buf.push_str(",\"clusters\":");
@@ -344,6 +360,14 @@ impl PaintOp {
                 write_text_legacy_visuals(buf, run, leaf_visuals);
                 buf.push_str(",\"positions\":");
                 write_text_positions(buf, run);
+                if let Some(display_text) = &display_text {
+                    buf.push_str(",\"displayPositions\":");
+                    if display_text.is_empty() {
+                        buf.push_str("[]");
+                    } else {
+                        write_text_positions_for_text(buf, display_text, &run.style);
+                    }
+                }
                 if !run.style.tab_leaders.is_empty() {
                     buf.push_str(",\"tabLeaders\":");
                     write_tab_leaders(buf, &run.style.tab_leaders);
@@ -1178,7 +1202,11 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
 }
 
 fn write_text_positions(buf: &mut String, run: &TextRunNode) {
-    let positions = compute_char_positions(&run.text, &run.style);
+    write_text_positions_for_text(buf, &run.text, &run.style);
+}
+
+fn write_text_positions_for_text(buf: &mut String, text: &str, style: &TextStyle) {
+    let positions = compute_char_positions(text, style);
     buf.push('[');
     for (idx, position) in positions.iter().enumerate() {
         if idx > 0 {
@@ -1187,6 +1215,11 @@ fn write_text_positions(buf: &mut String, run: &TextRunNode) {
         let _ = write!(buf, "{:.3}", position);
     }
     buf.push(']');
+}
+
+fn display_text_for_text_run(run: &TextRunNode) -> Option<String> {
+    let display_text = expand_pua_display_text(&run.text);
+    (display_text != run.text.as_str()).then_some(display_text)
 }
 
 fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
@@ -1986,8 +2019,8 @@ mod tests {
 
         assert!(json.contains("\"kind\":\"leaf\""));
         assert!(json.contains("\"schemaVersion\":1"));
-        assert!(json.contains("\"schemaMinorVersion\":11"));
-        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":11}"));
+        assert!(json.contains("\"schemaMinorVersion\":12"));
+        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":12}"));
         assert!(json.contains("\"resourceTableVersion\":1"));
         assert!(json.contains("\"resourceTableMinorVersion\":3"));
         assert!(json.contains("\"resourceTable\":{\"major\":1,\"minor\":3}"));
@@ -2005,6 +2038,8 @@ mod tests {
         assert!(json.contains("\"clusters\":[{\"sourceRangeUtf8\""));
         assert!(json.contains("\"legacyVisuals\":{"));
         assert!(json.contains(&positions_json));
+        assert!(!json.contains("\"displayText\""));
+        assert!(!json.contains("\"displayPositions\""));
         assert!(json.contains("\"isParaEnd\":true"));
         assert!(json.contains("\"isLineBreakEnd\":true"));
         assert!(json.contains("\"fieldMarker\":{\"kind\":\"fieldBegin\"}"));
@@ -2022,6 +2057,116 @@ mod tests {
         assert!(json.contains("\"emphasisDot\":2"));
         assert!(json.contains("\"type\":\"rectangle\""));
         assert!(json.contains("\"cornerRadius\":4.000"));
+    }
+
+    #[test]
+    fn serializes_display_text_for_pua_text_run() {
+        let style = TextStyle {
+            font_family: "Noto Sans KR".to_string(),
+            font_size: 16.0,
+            ..Default::default()
+        };
+        let text = "\u{F012B}(Signature)";
+        let display_text = "(인)(Signature)";
+        let source_positions = compute_char_positions(text, &style);
+        let display_positions = compute_char_positions(display_text, &style);
+        let text_run = PaintOp::TextRun {
+            bbox: BoundingBox::new(10.0, 20.0, 80.0, 18.0),
+            run: TextRunNode {
+                text: text.to_string(),
+                style: style.clone(),
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 13.0,
+                field_marker: FieldMarkerType::None,
+            },
+        };
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 80.0),
+                None,
+                vec![text_run],
+            ),
+        );
+
+        let json = tree.to_json();
+        let source_positions_json = format!(
+            "\"positions\":[{}]",
+            source_positions
+                .iter()
+                .map(|position| format!("{:.3}", position))
+                .collect::<Vec<_>>()
+                .join(",")
+        );
+        let display_positions_json = format!(
+            "\"displayPositions\":[{}]",
+            display_positions
+                .iter()
+                .map(|position| format!("{:.3}", position))
+                .collect::<Vec<_>>()
+                .join(",")
+        );
+
+        assert!(json.contains(&format!("\"text\":\"{}\"", text)));
+        assert!(json.contains(&format!("\"displayText\":\"{}\"", display_text)));
+        assert!(json.contains(&source_positions_json));
+        assert!(json.contains(&display_positions_json));
+        assert!(json.contains("\"text.displayText\""));
+    }
+
+    #[test]
+    fn serializes_empty_display_positions_for_hidden_pua_filler() {
+        let text_run = PaintOp::TextRun {
+            bbox: BoundingBox::new(10.0, 20.0, 80.0, 18.0),
+            run: TextRunNode {
+                text: "\u{F081C}".to_string(),
+                style: TextStyle {
+                    font_family: "Noto Sans KR".to_string(),
+                    font_size: 16.0,
+                    ..Default::default()
+                },
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 13.0,
+                field_marker: FieldMarkerType::None,
+            },
+        };
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 80.0),
+                None,
+                vec![text_run],
+            ),
+        );
+
+        let json = tree.to_json();
+
+        assert!(json.contains("\"displayText\":\"\""));
+        assert!(json.contains("\"displayPositions\":[]"));
     }
 
     #[test]
