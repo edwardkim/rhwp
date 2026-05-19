@@ -426,7 +426,9 @@ impl DocumentCore {
     pub fn get_page_overlay_images_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::model::image::ImageEffect;
         use crate::model::shape::TextWrap;
-        use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
+        use crate::paint::{
+            LayerNode, LayerNodeKind, PaintOp, ResolvedImageKind, ResolvedImagePayload,
+        };
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
         use base64::Engine;
 
@@ -465,6 +467,7 @@ impl DocumentCore {
             buf: &mut String,
             bbox: BoundingBox,
             image: &ImageNode,
+            resolved: Option<&ResolvedImagePayload>,
             wrap: TextWrap,
         ) {
             if !buf.is_empty() {
@@ -474,35 +477,26 @@ impl DocumentCore {
             let mut mime = "application/octet-stream";
             let mut base64_data = String::new();
             let mut baked_watermark = false;
-            if let Some(data) = &image.data {
+            if let Some(payload) = resolved {
+                mime = payload.mime;
+                base64_data = base64::engine::general_purpose::STANDARD.encode(&payload.data);
+                baked_watermark = matches!(payload.kind, ResolvedImageKind::BakedWatermark);
+            } else if let Some(data) = &image.data {
                 let detected = crate::renderer::svg::detect_image_mime_type(data);
-                let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) = if detected
-                    == "image/x-pcx"
-                {
-                    match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
-                        Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                        None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
-                    }
-                } else if detected == "image/bmp" {
-                    match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
-                        Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                        None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
-                    }
-                } else if detected == "image/jpeg"
-                    && image.effect != ImageEffect::RealPic
-                    && (image.brightness != 0 || image.contrast != 0)
-                {
-                    match crate::renderer::svg::watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
-                    {
-                        Some(png) => {
-                            baked_watermark = true;
-                            ("image/png", std::borrow::Cow::Owned(png))
+                let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) =
+                    if detected == "image/x-pcx" {
+                        match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
                         }
-                        None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
-                    }
-                } else {
-                    (detected, std::borrow::Cow::Borrowed(data.as_slice()))
-                };
+                    } else if detected == "image/bmp" {
+                        match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else {
+                        (detected, std::borrow::Cow::Borrowed(data.as_slice()))
+                    };
                 mime = final_mime;
                 base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
             }
@@ -559,17 +553,29 @@ impl DocumentCore {
                 LayerNodeKind::ClipRect { child, .. } => collect(child, behind, front, image_count),
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
-                        if let PaintOp::Image { bbox, image } = op {
+                        if let PaintOp::Image {
+                            bbox,
+                            image,
+                            resolved,
+                        } = op
+                        {
                             *image_count += 1;
                             match image.text_wrap {
                                 Some(TextWrap::BehindText) => {
-                                    write_overlay_image(behind, *bbox, image, TextWrap::BehindText);
+                                    write_overlay_image(
+                                        behind,
+                                        *bbox,
+                                        image,
+                                        resolved.as_deref(),
+                                        TextWrap::BehindText,
+                                    );
                                 }
                                 Some(TextWrap::InFrontOfText) => {
                                     write_overlay_image(
                                         front,
                                         *bbox,
                                         image,
+                                        resolved.as_deref(),
                                         TextWrap::InFrontOfText,
                                     );
                                 }

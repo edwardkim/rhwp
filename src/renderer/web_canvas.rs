@@ -1057,9 +1057,18 @@ impl WebCanvasRenderer {
                             RenderNodeType::Path(path.clone()),
                             *bbox,
                         ),
-                        PaintOp::Image { bbox, image } => RenderNode::new(
+                        PaintOp::Image {
+                            bbox,
+                            image,
+                            resolved,
+                        } => RenderNode::new(
                             node.source_node_id.unwrap_or(0),
-                            RenderNodeType::Image(image.clone()),
+                            RenderNodeType::Image(
+                                crate::renderer::image_resolver::image_node_with_resolved_payload(
+                                    image,
+                                    resolved.as_deref(),
+                                ),
+                            ),
                             *bbox,
                         ),
                         PaintOp::Equation { bbox, equation } => RenderNode::new(

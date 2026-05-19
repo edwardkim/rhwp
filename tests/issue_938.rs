@@ -85,6 +85,25 @@ fn watermark_tone_stats(bytes: &[u8]) -> WatermarkToneStats {
     }
 }
 
+fn collect_image_ops<'a>(value: &'a Value, out: &mut Vec<&'a Value>) {
+    match value {
+        Value::Object(map) => {
+            if value.get("type").and_then(Value::as_str) == Some("image") {
+                out.push(value);
+            }
+            for child in map.values() {
+                collect_image_ops(child, out);
+            }
+        }
+        Value::Array(items) => {
+            for child in items {
+                collect_image_ops(child, out);
+            }
+        }
+        _ => {}
+    }
+}
+
 #[test]
 fn issue_938_svg_watermark_is_hancom_baked_png() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -149,6 +168,59 @@ fn issue_938_svg_watermark_is_hancom_baked_png() {
         "중앙 워터마크 중간 톤이 정답 PDF 근처여야 함: {:?}",
         stats
     );
+}
+
+#[test]
+fn issue_938_layer_tree_watermark_is_resolved_hancom_baked_png() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let hwp_path = std::path::Path::new(repo_root).join("samples/복학원서.hwp");
+    let bytes = std::fs::read(&hwp_path).expect("read 복학원서.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse 복학원서.hwp");
+
+    let json = doc
+        .get_page_layer_tree_native(0)
+        .expect("layer tree page 1");
+    let parsed: Value = serde_json::from_str(&json).expect("PageLayerTree JSON");
+    let mut images = Vec::new();
+    collect_image_ops(&parsed, &mut images);
+
+    let watermark = images
+        .iter()
+        .copied()
+        .find(|entry| entry.get("watermark").is_some())
+        .expect("watermark PaintOp::Image");
+
+    assert_eq!(watermark["mime"], "image/png");
+    assert_eq!(watermark["effect"], "grayScale");
+    assert_eq!(watermark["brightness"], -50);
+    assert_eq!(watermark["contrast"], 70);
+    assert_eq!(
+        watermark["bakedWatermark"], true,
+        "PageLayerTree image op must carry resolved baked watermark state"
+    );
+    assert!(
+        !images
+            .iter()
+            .any(|entry| entry.get("watermark").is_some() && entry["mime"] == "image/jpeg"),
+        "watermark PaintOp::Image should no longer expose the original JPEG payload"
+    );
+
+    let base64 = watermark["base64"].as_str().expect("base64");
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(base64)
+        .expect("decode layer tree image");
+    let stats = watermark_tone_stats(&bytes);
+    assert_eq!(stats.dims, (728, 729));
+    assert_eq!(stats.min_alpha, 255);
+    assert_eq!(stats.max_alpha, 255);
+    assert!((236.0..=244.0).contains(&stats.mean_gray), "{:?}", stats);
+    assert!(
+        (230_000..=330_000).contains(&stats.visible_count),
+        "{:?}",
+        stats
+    );
+    assert!((190..=210).contains(&stats.visible_p10), "{:?}", stats);
+    assert!((232..=244).contains(&stats.visible_p50), "{:?}", stats);
 }
 
 #[test]

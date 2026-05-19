@@ -234,9 +234,17 @@ impl CanvasRenderer {
                             );
                             self.close_shape_transform_value(&ellipse.transform);
                         }
-                        PaintOp::Image { bbox, image } => {
+                        PaintOp::Image {
+                            bbox,
+                            image,
+                            resolved,
+                        } => {
                             self.open_shape_transform(&image.transform, bbox);
-                            if let Some(ref data) = image.data {
+                            let data = resolved
+                                .as_deref()
+                                .map(|payload| payload.data.as_slice())
+                                .or(image.data.as_deref());
+                            if let Some(data) = data {
                                 self.draw_image(data, bbox.x, bbox.y, bbox.width, bbox.height);
                             }
                             self.close_shape_transform_value(&image.transform);

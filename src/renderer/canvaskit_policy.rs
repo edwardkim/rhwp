@@ -639,6 +639,7 @@ mod tests {
         let tree = tree_with_ops(vec![PaintOp::Image {
             bbox: bbox(),
             image: ImageNode::new(1, Some(vec![1, 2, 3])),
+            resolved: None,
         }]);
 
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
@@ -659,6 +660,7 @@ mod tests {
         let tree = tree_with_ops(vec![PaintOp::Image {
             bbox: bbox(),
             image: ImageNode::new(1, Some(vec![1, 2, 3])),
+            resolved: None,
         }]);
 
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);

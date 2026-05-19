@@ -26,6 +26,20 @@ impl TextDecorationKind {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResolvedImageKind {
+    FormatConverted,
+    BakedWatermark,
+}
+
+#[derive(Debug, Clone)]
+pub struct ResolvedImagePayload {
+    pub data: Vec<u8>,
+    pub mime: &'static str,
+    pub kind: ResolvedImageKind,
+    pub suppress_effects: bool,
+}
+
 /// backend가 재생하는 leaf paint operation.
 ///
 /// 1차 전환에서는 기존 leaf payload를 최대한 그대로 유지해
@@ -95,6 +109,7 @@ pub enum PaintOp {
     Image {
         bbox: BoundingBox,
         image: ImageNode,
+        resolved: Option<Box<ResolvedImagePayload>>,
     },
     Equation {
         bbox: BoundingBox,

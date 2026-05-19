@@ -10,9 +10,9 @@ use crate::paint::{
     CacheHint, ClipKind, FontResourceTable, GlyphCluster, GlyphOutlineStrokeStyle,
     GlyphRunDiagnostics, GlyphTransform, GroupKind, LayerAffineTransform, LayerGlyphOutlinePath,
     LayerNode, LayerNodeKind, LayerPoint, LayerVector, PageLayerTree, PaintOp, PaintTextStyle,
-    PaintVariantMeta, RenderProfile, ShapeKey, TextDecorationKind, TextSourceAnnotation,
-    TextSourceEntry, TextSourceId, TextSourceRange, TextSourceSpan, TextSourceTable,
-    TextV2Diagnostics, LAYER_TREE_SCHEMA,
+    PaintVariantMeta, RenderProfile, ResolvedImageKind, ShapeKey, TextDecorationKind,
+    TextSourceAnnotation, TextSourceEntry, TextSourceId, TextSourceRange, TextSourceSpan,
+    TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
 use crate::renderer::composer::expand_pua_display_text;
 use crate::renderer::layout::compute_char_positions;
@@ -620,11 +620,27 @@ impl PaintOp {
                 write_transform(buf, path.transform);
                 buf.push('}');
             }
-            PaintOp::Image { bbox, image } => {
+            PaintOp::Image {
+                bbox,
+                image,
+                resolved,
+            } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"image\",\"bbox\":");
                 write_bbox(buf, *bbox);
-                if let Some(data) = &image.data {
+                if let Some(payload) = resolved.as_deref() {
+                    let base64_data =
+                        base64::engine::general_purpose::STANDARD.encode(&payload.data);
+                    let _ = write!(
+                        buf,
+                        ",\"mime\":\"{}\",\"base64\":{}",
+                        payload.mime,
+                        json_escape(&base64_data)
+                    );
+                    if matches!(payload.kind, ResolvedImageKind::BakedWatermark) {
+                        buf.push_str(",\"bakedWatermark\":true");
+                    }
+                } else if let Some(data) = &image.data {
                     // Task #516 Stage 5.2: overlay layer 의 <img> data URL 생성용 mime 노출.
                     // PCX 등 비표준은 PNG 변환 후 emit (CLI SVG 와 동일 정책 적용).
                     let mime = crate::renderer::svg::detect_image_mime_type(data);
@@ -2019,8 +2035,8 @@ mod tests {
 
         assert!(json.contains("\"kind\":\"leaf\""));
         assert!(json.contains("\"schemaVersion\":1"));
-        assert!(json.contains("\"schemaMinorVersion\":12"));
-        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":12}"));
+        assert!(json.contains("\"schemaMinorVersion\":13"));
+        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":13}"));
         assert!(json.contains("\"resourceTableVersion\":1"));
         assert!(json.contains("\"resourceTableMinorVersion\":3"));
         assert!(json.contains("\"resourceTable\":{\"major\":1,\"minor\":3}"));
@@ -2563,6 +2579,7 @@ mod tests {
                     PaintOp::Image {
                         bbox: BoundingBox::new(3.0, 4.0, 30.0, 20.0),
                         image,
+                        resolved: None,
                     },
                     PaintOp::Equation {
                         bbox: BoundingBox::new(5.0, 6.0, 30.0, 20.0),

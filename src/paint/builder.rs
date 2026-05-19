@@ -86,6 +86,8 @@ impl LayerBuilder {
             RenderNodeType::Image(image) => Some(vec![PaintOp::Image {
                 bbox: node.bbox,
                 image: image.clone(),
+                resolved: crate::renderer::image_resolver::resolve_image_payload(image)
+                    .map(Box::new),
             }]),
             RenderNodeType::Equation(equation) => Some(vec![PaintOp::Equation {
                 bbox: node.bbox,

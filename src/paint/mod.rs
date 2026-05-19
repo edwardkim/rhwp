@@ -32,8 +32,9 @@ pub use paint_op::{
     GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
     GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphTransform,
     LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
-    LayerPoint, LayerVector, PaintOp, PaintTextStyle, PaintVariantMeta, TextDecorationKind,
-    TextRunPlacement, TextVariantKind, TextVariantQuality,
+    LayerPoint, LayerVector, PaintOp, PaintTextStyle, PaintVariantMeta, ResolvedImageKind,
+    ResolvedImagePayload, TextDecorationKind, TextRunPlacement, TextVariantKind,
+    TextVariantQuality,
 };
 pub use profile::RenderProfile;
 pub use resources::{

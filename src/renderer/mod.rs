@@ -14,6 +14,7 @@ pub mod equation;
 pub mod font_metrics_data;
 pub mod height_measurer;
 pub mod html;
+pub mod image_resolver;
 pub mod layer_renderer;
 pub mod layout;
 pub mod page_layout;

@@ -872,6 +872,7 @@ export interface LayerImageOp {
   effect?: string;
   brightness?: number;
   contrast?: number;
+  bakedWatermark?: boolean;
   wrap?: 'behindText' | 'inFrontOfText' | string;
 }
 

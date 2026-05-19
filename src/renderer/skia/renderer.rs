@@ -773,18 +773,34 @@ impl SkiaLayerRenderer {
                                 canvas.restore();
                             }
                         }
-                        PaintOp::Image { bbox, image } => {
+                        PaintOp::Image {
+                            bbox,
+                            image,
+                            resolved,
+                        } => {
                             if image.transform.has_transform() {
                                 open_shape_transform(image.transform, bbox);
                             }
-                            if let Some(data) = image.data.as_deref() {
+                            let data = resolved
+                                .as_deref()
+                                .map(|payload| payload.data.as_slice())
+                                .or(image.data.as_deref());
+                            if let Some(data) = data {
+                                let effect = if resolved
+                                    .as_deref()
+                                    .is_some_and(|payload| payload.suppress_effects)
+                                {
+                                    ImageEffect::RealPic
+                                } else {
+                                    image.effect
+                                };
                                 draw_image(
                                     data,
                                     *bbox,
                                     image.fill_mode,
                                     image.original_size,
                                     image.crop,
-                                    image.effect,
+                                    effect,
                                 );
                             } else {
                                 draw_placeholder(*bbox, "image");
@@ -1826,10 +1842,12 @@ mod tests {
                     PaintOp::Image {
                         bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                         image: ImageNode::new(1, Some(solid_png([0, 0, 255, 255]))),
+                        resolved: None,
                     },
                     PaintOp::Image {
                         bbox: BoundingBox::new(10.0, 0.0, 8.0, 8.0),
                         image: ImageNode::new(2, Some(vec![1, 2, 3, 4])),
+                        resolved: None,
                     },
                 ],
             ),
@@ -1861,6 +1879,7 @@ mod tests {
                 vec![PaintOp::Image {
                     bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                     image: node,
+                    resolved: None,
                 }],
             ),
         );
@@ -1891,6 +1910,7 @@ mod tests {
                 vec![PaintOp::Image {
                     bbox: BoundingBox::new(0.0, 0.0, 16.0, 4.0),
                     image: node,
+                    resolved: None,
                 }],
             ),
         );
@@ -1922,6 +1942,7 @@ mod tests {
                 vec![PaintOp::Image {
                     bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                     image: node,
+                    resolved: None,
                 }],
             ),
         );
@@ -1948,6 +1969,7 @@ mod tests {
                 vec![PaintOp::Image {
                     bbox: BoundingBox::new(f64::NAN, 0.0, 8.0, 8.0),
                     image: ImageNode::new(1, Some(solid_png([255, 0, 0, 255]))),
+                    resolved: None,
                 }],
             ),
         );
