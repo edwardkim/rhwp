@@ -16444,6 +16444,47 @@ fn test_hy001_textbox_inline_pictures_render_for_hwp_and_hwpx() {
     assert_textbox_picture_roundtrip("samples/hwpx/hy-001.hwpx");
 }
 
+#[test]
+fn test_hy002_textbox_non_tac_picture_keeps_declared_size() {
+    use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn collect_images(node: &RenderNode, out: &mut Vec<(u16, f64, f64)>) {
+        if let RenderNodeType::Image(img) = &node.node_type {
+            out.push((img.bin_data_id, node.bbox.width, node.bbox.height));
+        }
+        for child in &node.children {
+            collect_images(child, out);
+        }
+    }
+
+    fn assert_textbox_picture_size(path: &str) {
+        if !std::path::Path::new(path).exists() {
+            eprintln!("SKIP: {} 없음", path);
+            return;
+        }
+
+        let data = std::fs::read(path).unwrap();
+        let doc = HwpDocument::from_bytes(&data).unwrap();
+        let tree = doc.build_page_tree(1).unwrap();
+
+        let mut images = Vec::new();
+        collect_images(&tree.root, &mut images);
+        let image2 = images
+            .iter()
+            .find(|(id, width, height)| *id == 2 && *width > 600.0 && *height > 50.0);
+
+        assert!(
+            image2.is_some(),
+            "{}: text box non-TAC image should keep declared display size near 642x58px (actual: {:?})",
+            path,
+            images
+        );
+    }
+
+    assert_textbox_picture_size("samples/hwpx/hancom-hwp/hy-002.hwp");
+    assert_textbox_picture_size("samples/hwpx/hy-002.hwpx");
+}
+
 /// 타스크 79: 투명선 표시 기능 — show_transparent_borders=true 시 추가 Line 노드 생성 검증
 #[test]
 fn test_task79_transparent_border_lines() {

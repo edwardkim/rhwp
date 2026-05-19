@@ -6,6 +6,9 @@ import { CanvasPool } from './canvas-pool';
 import { PageRenderer } from './page-renderer';
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
+import type { CanvasKitLayerRenderer } from './canvaskit-renderer';
+import { clampRenderScale, type RenderBackend } from './render-backend';
+import type { LayerRenderProfile } from '@/core/types';
 
 export class CanvasView {
   private virtualScroll: VirtualScroll;
@@ -23,10 +26,13 @@ export class CanvasView {
     private container: HTMLElement,
     private wasm: WasmBridge,
     private eventBus: EventBus,
+    renderBackend: RenderBackend = 'canvas2d',
+    renderProfile: LayerRenderProfile = 'screen',
+    canvaskitRenderer: CanvasKitLayerRenderer | null = null,
   ) {
     this.virtualScroll = new VirtualScroll();
     this.canvasPool = new CanvasPool();
-    this.pageRenderer = new PageRenderer(wasm);
+    this.pageRenderer = new PageRenderer(wasm, renderBackend, renderProfile, canvaskitRenderer);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
 
@@ -136,20 +142,15 @@ export class CanvasView {
     const zoom = this.viewportManager.getZoom();
     const rawDpr = window.devicePixelRatio || 1;
 
-    // iOS WebKit Canvas 최대 크기 제한 (64MP = 67,108,864 pixels)
-    // 물리 크기 = pageSize × zoom × dpr 가 제한을 초과하면 dpr을 낮춘다
     const pageInfo = this.pages[pageIdx];
-    const MAX_CANVAS_PIXELS = 67108864;
-    let dpr = rawDpr;
-    if (pageInfo) {
-      const physW = pageInfo.width * zoom * dpr;
-      const physH = pageInfo.height * zoom * dpr;
-      if (physW * physH > MAX_CANVAS_PIXELS) {
-        dpr = Math.sqrt(MAX_CANVAS_PIXELS / (pageInfo.width * zoom * pageInfo.height * zoom));
-        dpr = Math.max(1, Math.floor(dpr)); // 최소 1, 정수로 내림
-      }
+    if (!pageInfo) {
+      console.error(`[CanvasView] 페이지 ${pageIdx} 정보가 없습니다`);
+      this.canvasPool.release(pageIdx);
+      return;
     }
-    const renderScale = zoom * dpr;
+    // iOS/WebKit과 GPU surface가 감당하기 어려운 물리 픽셀 수를 중앙 정책으로 제한한다.
+    const renderScale = clampRenderScale(pageInfo, zoom * rawDpr);
+    const dpr = renderScale / (zoom > 0 ? zoom : 1);
 
     // Canvas를 DOM에 추가하고 위치를 설정한다
     canvas.style.top = `${this.virtualScroll.getPageOffset(pageIdx)}px`;
@@ -273,6 +274,7 @@ export class CanvasView {
   /** 전체 정리 */
   dispose(): void {
     this.reset();
+    this.pageRenderer.dispose();
     this.viewportManager.detach();
     for (const unsub of this.unsubscribers) {
       unsub();
@@ -286,6 +288,10 @@ export class CanvasView {
 
   getViewportManager(): ViewportManager {
     return this.viewportManager;
+  }
+
+  getRenderBackend(): RenderBackend {
+    return this.pageRenderer.getBackend();
   }
 
   getCoordinateSystem(): CoordinateSystem {

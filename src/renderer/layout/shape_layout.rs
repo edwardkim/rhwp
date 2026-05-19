@@ -1805,19 +1805,51 @@ impl LayoutEngine {
             }
         }
 
-        // 세로 정렬: 전체 텍스트 높이를 계산하여 center/bottom 오프셋 적용
+        // 세로 정렬: 전체 콘텐츠 높이를 계산하여 center/bottom 오프셋 적용
         let vert_offset = {
             use crate::model::table::VerticalAlign;
             match text_box.vertical_align {
                 VerticalAlign::Center | VerticalAlign::Bottom => {
-                    // 전체 텍스트 높이 = 마지막 문단의 마지막 line_seg 끝 위치
-                    let total_text_height = text_box.paragraphs[..para_count]
+                    // 전체 콘텐츠 높이 = line_seg 끝 위치와 글상자 내부 non-TAC 개체 높이의 최대값.
+                    //
+                    // HWPX hy-002처럼 글상자 문단이 빈 line_seg + non-TAC 그림 하나로 구성되면
+                    // line_seg 높이만으로 CENTER 오프셋을 계산할 수 없다. 그렇게 하면 그림이 실제
+                    // 콘텐츠 높이에서 빠지고, 아래 picture container가 오프셋 이후 남은 높이로
+                    // 줄어들어 한컴보다 과도하게 축소된다.
+                    let mut total_content_height = text_box.paragraphs[..para_count]
                         .iter()
                         .flat_map(|p| p.line_segs.last())
                         .map(|ls| hwpunit_to_px(ls.vertical_pos + ls.line_height, self.dpi))
                         .last()
                         .unwrap_or(0.0);
-                    let free_space = (inner_area.height - total_text_height).max(0.0);
+
+                    for para in &text_box.paragraphs[..para_count] {
+                        let para_vpos = para
+                            .line_segs
+                            .first()
+                            .map(|ls| ls.vertical_pos)
+                            .unwrap_or(0);
+                        for ctrl in &para.controls {
+                            let common = match ctrl {
+                                Control::Picture(pic) if !pic.common.treat_as_char => {
+                                    Some(&pic.common)
+                                }
+                                Control::Shape(shape) if !shape.as_ref().common().treat_as_char => {
+                                    Some(shape.as_ref().common())
+                                }
+                                _ => None,
+                            };
+
+                            if let Some(common) = common {
+                                let top = para_vpos.saturating_add(common.vertical_offset as i32);
+                                let bottom = top.saturating_add(common.height as i32);
+                                total_content_height =
+                                    total_content_height.max(hwpunit_to_px(bottom, self.dpi));
+                            }
+                        }
+                    }
+
+                    let free_space = (inner_area.height - total_content_height).max(0.0);
                     match text_box.vertical_align {
                         VerticalAlign::Center => free_space / 2.0,
                         VerticalAlign::Bottom => free_space,
