@@ -1,4 +1,7 @@
 import { WasmBridge } from '@/core/wasm-bridge';
+import type { LayerRenderProfile } from '@/core/types';
+import type { CanvasKitLayerRenderer } from './canvaskit-renderer';
+import type { RenderBackend } from './render-backend';
 
 /**
  * PageLayerTree JSON 의 PaintOp::Image 메타정보 (Task #516, Stage 5.2).
@@ -27,7 +30,12 @@ export class PageRenderer {
   private reRenderTimers = new Map<number, ReturnType<typeof setTimeout>[]>();
   private imageRetryCounts = new Map<number, number>();
 
-  constructor(private wasm: WasmBridge) {}
+  constructor(
+    private wasm: WasmBridge,
+    private backend: RenderBackend = 'canvas2d',
+    private renderProfile: LayerRenderProfile = 'screen',
+    private canvaskitRenderer: CanvasKitLayerRenderer | null = null,
+  ) {}
 
   /** 페이지를 Canvas에 렌더링한다 (renderScale = zoom × DPR) */
   renderPage(
@@ -37,6 +45,11 @@ export class PageRenderer {
     displayScale: number,
     dpr: number,
   ): void {
+    if (this.backend === 'canvaskit') {
+      this.renderPageCanvasKit(pageIdx, canvas, renderScale);
+      return;
+    }
+
     // Task #516 Stage 5.2: 다층 layer 모드.
     // 1) 본문 Canvas 는 'flow' 필터로 BehindText/InFrontOfText 그림 제외
     // 2) overlay (BehindText / InFrontOfText) 는 같은 부모 컨테이너에 <img> 로 추가
@@ -44,6 +57,42 @@ export class PageRenderer {
     this.drawMarginGuides(pageIdx, canvas, renderScale);
     const overlays = this.applyOverlays(pageIdx, canvas, displayScale, dpr);
     this.scheduleReRender(pageIdx, canvas, renderScale, overlays.imageCount);
+  }
+
+  getBackend(): RenderBackend {
+    return this.backend;
+  }
+
+  private renderPageCanvasKit(
+    pageIdx: number,
+    canvas: HTMLCanvasElement,
+    renderScale: number,
+  ): void {
+    if (!this.canvaskitRenderer) {
+      throw new Error('CanvasKit renderer가 초기화되지 않았습니다');
+    }
+
+    const parent = canvas.parentElement;
+    if (parent) {
+      this.removePageLayers(parent, pageIdx);
+    }
+
+    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    canvas.width = Math.max(1, Math.floor(pageInfo.width * renderScale));
+    canvas.height = Math.max(1, Math.floor(pageInfo.height * renderScale));
+
+    const tree = this.wasm.getPageLayerTreeObject(pageIdx, this.renderProfile);
+    try {
+      this.canvaskitRenderer.renderPage(tree, canvas, renderScale, pageInfo);
+    } catch (error) {
+      this.canvaskitRenderer.recordRenderFailure(error);
+      console.error(`[PageRenderer] CanvasKit 페이지 렌더링 실패 (page=${pageIdx}):`, error);
+      this.cancelReRender(pageIdx);
+      this.imageRetryCounts.delete(pageIdx);
+      return;
+    }
+    this.cancelReRender(pageIdx);
+    this.imageRetryCounts.delete(pageIdx);
   }
 
   /**
@@ -357,6 +406,12 @@ export class PageRenderer {
 
   resetImageRetryState(): void {
     this.imageRetryCounts.clear();
+  }
+
+  dispose(): void {
+    this.cancelAll();
+    this.canvaskitRenderer?.dispose();
+    this.canvaskitRenderer = null;
   }
 }
 

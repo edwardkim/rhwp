@@ -1,5 +1,5 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
-import type { DocumentInfo, PageInfo, PageDef, SectionDef, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, NavContextEntry, FieldInfoResult, BookmarkInfo } from './types';
+import type { DocumentInfo, PageInfo, PageDef, SectionDef, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree } from './types';
 
 /** HWPX 비표준 감지 경고 리포트 (#177). */
 export interface ValidationReport {
@@ -316,7 +316,56 @@ export class WasmBridge {
     if (typeof d.getPageLayerTree === 'function') {
       return d.getPageLayerTree(pageNum);
     }
-    return '{"layers":[]}';
+    return '{"pageWidth":0,"pageHeight":0,"profile":"screen","root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
+  }
+
+  getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      getPageLayerTreeWithProfile?: (p: number, profile: string) => string;
+      getPageLayerTree?: (p: number) => string;
+    };
+    const json = typeof d.getPageLayerTreeWithProfile === 'function'
+      ? d.getPageLayerTreeWithProfile(pageNum, profile)
+      : this.getPageLayerTree(pageNum);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(json);
+    } catch (error) {
+      throw new Error(`[WasmBridge] PageLayerTree JSON parse 실패 (page=${pageNum}): ${error}`);
+    }
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): object가 아닙니다`);
+    }
+    const tree = parsed as Partial<PageLayerTree> & { layers?: unknown };
+    if (!tree.root || typeof tree.root !== 'object' || !('kind' in tree.root)) {
+      if (Array.isArray(tree.layers)) {
+        const pageInfo = this.getPageInfo(pageNum);
+        return {
+          pageWidth: pageInfo.width,
+          pageHeight: pageInfo.height,
+          profile,
+          root: {
+            kind: 'leaf',
+            bounds: { x: 0, y: 0, width: pageInfo.width, height: pageInfo.height },
+            ops: [],
+          },
+        };
+      }
+      throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): root.kind가 없습니다`);
+    }
+    const rootKind = (tree.root as { kind?: unknown }).kind;
+    if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'leaf') {
+      throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): 알 수 없는 root.kind=${String(rootKind)}`);
+    }
+    if (!tree.profile) {
+      tree.profile = profile;
+    }
+    return tree as PageLayerTree;
+  }
+
+  clearLayerResourceCache(): void {
+    /* Reserved for JS-value resource transport builds. JSON export is self-contained. */
   }
 
   getCanvasKitReplayPlan(pageNum: number, mode: 'default' | 'compat' = 'default'): string {
