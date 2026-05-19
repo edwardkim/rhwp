@@ -183,6 +183,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         preview: None,
         bin_data_content,
         extra_streams: Vec::new(),
+        is_hwp3_variant: false,
     };
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 영역 Picture.external_path 영역

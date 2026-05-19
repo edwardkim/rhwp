@@ -974,10 +974,20 @@ impl LayoutEngine {
                 //   attr 존중 복원: HWPX/HWP5 는 자신의 attr bit0 의미 그대로,
                 //   HWP3 는 파서가 attr=0(body) 주입 (CLAUDE.md HWP3 격리 규칙).
                 let paper_based = (pbf.attr & 0x01) != 0;
+                // [Task #1001] HWP5 spec 표 136 bit 1/2: 외곽선이 머리말/꼬리말 영역
+                //   진입 차단. 한컴 변환본 (HWP3→HWP5 등) 의 attr=0x01 default 는
+                //   bit1=0/bit2=0 (머/꼬 미포함) → paper 기준 외곽선이 꼬리말 영역
+                //   (페이지 번호 위치) 까지 확장되는 회귀 발생. body_area 가 머/꼬
+                //   영역을 제외한 영역이므로, !header_inside 시 border top 을
+                //   body_area.y 이상으로, !footer_inside 시 border bottom 을
+                //   body_area.y + body_area.height 이하로 clip.
+                let header_inside = (pbf.attr & 0x02) != 0;
+                let footer_inside = (pbf.attr & 0x04) != 0;
                 if std::env::var("RHWP_DEBUG_PAGE_BORDER").is_ok() {
                     eprintln!(
-                        "PAGE_BORDER: attr=0x{:08x} bit0={} paper_based={} bfid={} spacing(L={},R={},T={},B={})",
-                        pbf.attr, pbf.attr & 0x01, paper_based, pbf.border_fill_id,
+                        "PAGE_BORDER: attr=0x{:08x} bit0={} bit1={} bit2={} paper_based={} header_inside={} footer_inside={} bfid={} spacing(L={},R={},T={},B={})",
+                        pbf.attr, pbf.attr & 0x01, (pbf.attr >> 1) & 0x01, (pbf.attr >> 2) & 0x01,
+                        paper_based, header_inside, footer_inside, pbf.border_fill_id,
                         pbf.spacing_left, pbf.spacing_right, pbf.spacing_top, pbf.spacing_bottom,
                     );
                 }
@@ -998,7 +1008,7 @@ impl LayoutEngine {
                 let sp_b = hwpunit_to_px(pbf.spacing_bottom as i32, self.dpi);
                 // 종이 기준: 종이 가장자리에서 안쪽(+)으로 spacing
                 // 쪽 기준: 본문 영역에서 바깥쪽(-)으로 spacing
-                let (bx, by, bw, bh) = if paper_based {
+                let (mut bx, mut by, mut bw, mut bh) = if paper_based {
                     (
                         base_x + sp_l,
                         base_y + sp_t,
@@ -1013,6 +1023,32 @@ impl LayoutEngine {
                         base_h + sp_t + sp_b,
                     )
                 };
+                // bit 1/2 clip — 머/꼬 영역 진입 차단 (paper 기준 회귀 해소).
+                // body 기준 + spacing>0 케이스도 spec 정합으로 동일 처리 — body_area
+                // 정확히 일치 시 외곽선 spacing 효과 없어짐 (HWP3 sample16 baseline
+                // 변동 가능, Stage 4 시각 검증). 회귀 발견 시 paper_based 조건으로 좁힐 수 있음.
+                if !header_inside {
+                    // [Task #1001] body_area.y 기준 clip. 20px buffer 추가 시도
+                    // (sample16-hwp5 cover 머릿말 logo overlap 해결) → 페이지 3
+                    // "Ⅰ.사업개요" 타이틀이 outline 밖으로 밀려 회귀 발생 → revert.
+                    // 머릿말 logo overlap 은 별도 fix (paragraph object 감지 후
+                    // selective push-down) 필요 — 후속 task.
+                    let header_bottom = layout.body_area.y;
+                    if by < header_bottom {
+                        bh -= header_bottom - by;
+                        by = header_bottom;
+                    }
+                }
+                if !footer_inside {
+                    let footer_top = layout.body_area.y + layout.body_area.height;
+                    if by + bh > footer_top {
+                        bh = footer_top - by;
+                    }
+                }
+                // 좌/우는 spec bit 1/2 적용 대상 아님 — body 기준은 left/right margin
+                // 외부, paper 기준은 paper 가장자리에서 spacing 만큼 그대로 유지.
+                let _ = &mut bx;
+                let _ = &mut bw;
 
                 let borders = &bs.borders;
                 let top_nodes = create_border_line_nodes(tree, &borders[2], bx, by, bx + bw, by);
@@ -4739,12 +4775,19 @@ impl LayoutEngine {
                                 );
                             }
 
-                            let line_advance = para
+                            // [Task #1001 격차 D] PageItem::FullParagraph (pi) 가 이미 line_height
+                            // 만큼 y_offset 을 진행했음. Shape PageItem 의 추가 line_advance 진행은
+                            // double count → ~Shape height 만큼 extra empty space 발생.
+                            // 그러나 Stage 9 의 완전 차단 (result_y = y_offset) 은 너무 compact.
+                            // 한컴 정합을 위해 line_spacing × 3 (~30 px) buffer 추가 — 박스 아래
+                            // visual breathing room 확보. (한컴 viewer 가 사용하는 정확한 공식 미상,
+                            // 사용자 시각 판정 결과 60 px gap 정합 위해 휴리스틱).
+                            let line_spacing_px = para
                                 .line_segs
                                 .first()
-                                .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
-                                .unwrap_or(shape_h);
-                            result_y = shape_y + line_advance.max(shape_h);
+                                .map(|ls| hwpunit_to_px(ls.line_spacing, self.dpi))
+                                .unwrap_or(0.0);
+                            result_y = y_offset + line_spacing_px * 3.0;
                         }
                     }
                 }

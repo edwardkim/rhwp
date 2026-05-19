@@ -282,8 +282,19 @@ pub struct ResolvedStyleSet {
 
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
 pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
+    resolve_styles_with_variant(doc_info, dpi, false)
+}
+
+/// [Task #1001] HWP3 → HWP5 변환본 인지하여 ParaShape spacing/margin 추가 보정.
+/// 변환본의 ParaShape 단위는 일반 HWP5 의 2배 (HwpUnitChar / HWPUNIT 의 2배 스케일)
+/// 이므로 추가 1/2 보정 적용. 호출자가 Document::is_hwp3_variant 를 전달.
+pub fn resolve_styles_with_variant(
+    doc_info: &DocInfo,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) -> ResolvedStyleSet {
     let char_styles = resolve_char_styles(doc_info, dpi);
-    let para_styles = resolve_para_styles(doc_info, dpi);
+    let para_styles = resolve_para_styles_with_variant(doc_info, dpi, is_hwp3_variant);
     let border_styles = resolve_border_styles(doc_info);
     let numberings = doc_info.numberings.clone();
     let bullets = doc_info.bullets.clone();
@@ -674,15 +685,29 @@ pub(crate) fn is_medium_weight_face(font_family: &str) -> bool {
 
 /// ParaShape → ResolvedParaStyle 목록
 fn resolve_para_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedParaStyle> {
+    resolve_para_styles_with_variant(doc_info, dpi, false)
+}
+
+/// [Task #1001] 변환본 인지 ParaShape 해소
+fn resolve_para_styles_with_variant(
+    doc_info: &DocInfo,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) -> Vec<ResolvedParaStyle> {
     doc_info
         .para_shapes
         .iter()
-        .map(|ps| resolve_single_para_style(ps, &doc_info.tab_defs, dpi))
+        .map(|ps| resolve_single_para_style(ps, &doc_info.tab_defs, dpi, is_hwp3_variant))
         .collect()
 }
 
 /// 개별 ParaShape 해소
-fn resolve_single_para_style(ps: &ParaShape, tab_defs: &[TabDef], dpi: f64) -> ResolvedParaStyle {
+fn resolve_single_para_style(
+    ps: &ParaShape,
+    tab_defs: &[TabDef],
+    dpi: f64,
+    is_hwp3_variant: bool,
+) -> ResolvedParaStyle {
     let line_spacing = match ps.line_spacing_type {
         LineSpacingType::Percent => ps.line_spacing as f64,
         _ => hwpunit_to_px(ps.line_spacing, dpi),
@@ -713,15 +738,20 @@ fn resolve_single_para_style(ps: &ParaShape, tab_defs: &[TabDef], dpi: f64) -> R
     // margin_left/right/indent: LineSeg.column_start와 비교하면 column_start = margin_left / 2
     // spacing_before/after: pyhwpx 확인 결과 동일하게 2배 스케일 저장
     // 실제 렌더링 시 2로 나누어야 올바른 값이 된다.
+    //
+    // [Task #1001] HWP3 → HWP5 변환본은 추가 2배 스케일 (총 4배) 로 저장됨.
+    // 한컴 viewer 가 변환본의 ParaShape 단위를 HwpUnitChar 로 해석하여 1/2
+    // 보정 적용. rhwp 도 같은 보정 필요.
+    let variant_div = if is_hwp3_variant { 4.0 } else { 2.0 };
     ResolvedParaStyle {
         alignment: ps.alignment,
         line_spacing,
         line_spacing_type: ps.line_spacing_type,
-        margin_left: hwpunit_to_px(ps.margin_left, dpi) / 2.0,
-        margin_right: hwpunit_to_px(ps.margin_right, dpi) / 2.0,
-        indent: hwpunit_to_px(ps.indent, dpi) / 2.0,
-        spacing_before: hwpunit_to_px(ps.spacing_before, dpi) / 2.0,
-        spacing_after: hwpunit_to_px(ps.spacing_after, dpi) / 2.0,
+        margin_left: hwpunit_to_px(ps.margin_left, dpi) / variant_div,
+        margin_right: hwpunit_to_px(ps.margin_right, dpi) / variant_div,
+        indent: hwpunit_to_px(ps.indent, dpi) / variant_div,
+        spacing_before: hwpunit_to_px(ps.spacing_before, dpi) / variant_div,
+        spacing_after: hwpunit_to_px(ps.spacing_after, dpi) / variant_div,
         head_type: ps.head_type,
         para_level: ps.para_level,
         numbering_id: ps.numbering_id,

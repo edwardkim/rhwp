@@ -200,9 +200,13 @@ impl DocumentCore {
 
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
-        use crate::renderer::style_resolver::resolve_styles;
+        use crate::renderer::style_resolver::resolve_styles_with_variant;
         self.dpi = dpi;
-        self.styles = resolve_styles(&self.document.doc_info, dpi);
+        self.styles = resolve_styles_with_variant(
+            &self.document.doc_info,
+            dpi,
+            self.document.is_hwp3_variant,
+        );
         self.paginate();
     }
 

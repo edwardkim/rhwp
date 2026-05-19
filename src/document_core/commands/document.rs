@@ -52,7 +52,12 @@ impl DocumentCore {
         let mut document = crate::parser::parse_document(data)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
 
-        let styles = resolve_styles(&document.doc_info, DEFAULT_DPI);
+        // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
+        let styles = crate::renderer::style_resolver::resolve_styles_with_variant(
+            &document.doc_info,
+            DEFAULT_DPI,
+            document.is_hwp3_variant,
+        );
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
