@@ -1798,9 +1798,10 @@ impl LayoutEngine {
                 cell.vertical_align
             };
             // Task #347: HWP는 LineSeg.vertical_pos에 첫 줄의 절대 위치(셀 내부 컨텐츠 상단부터)
-            // 를 기록한다. 이 값을 그대로 적용하면 모든 vertical_align (Top/Center/Bottom)에서
-            // PDF와 일치하는 텍스트 시작 y가 자동으로 결정됨 (mechanical_offset 불필요).
-            // 단, line_segs가 비어있는 케이스는 기존 mechanical_offset 폴백 유지.
+            // 를 기록한다. 다만 이 값을 모든 vertical_align에 곧바로 적용하면 Center/Bottom
+            // 지정 셀도 Top처럼 배치된다. vpos 앵커링은 Top 셀의 세부 줄 위치 보정으로만
+            // 사용하고, Center/Bottom은 전체 콘텐츠 높이 기반의 기존 정렬 계산을 유지한다.
+            // 단, line_segs가 비어있는 Top 케이스는 기존 폴백 유지.
             // [Task #362] 셀 안에 nested table 이 있는 경우 vpos 적용 제외.
             // nested table 케이스에서 LineSeg.vpos 가 셀 콘텐츠 시작 오프셋 의미가 아니라
             // 셀 안의 누적 위치로 사용되어, vpos 를 추가하면 콘텐츠가 표 높이를 초과하여 클립 발생.
@@ -1814,23 +1815,26 @@ impl LayoutEngine {
                 .first()
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi));
-            let text_y_start =
-                if !has_nested_table && first_line_vpos.filter(|&v| v > 0.0).is_some() {
-                    // vpos는 셀 컨텐츠 상단(=cell_y+pad_top)으로부터의 첫 줄 top y 오프셋
-                    cell_y + pad_top + first_line_vpos.unwrap()
-                } else {
-                    match effective_valign {
-                        VerticalAlign::Top => cell_y + pad_top,
-                        VerticalAlign::Center => {
-                            let mechanical_offset =
-                                (inner_height - total_content_height).max(0.0) / 2.0;
-                            cell_y + pad_top + mechanical_offset
-                        }
-                        VerticalAlign::Bottom => {
-                            cell_y + pad_top + (inner_height - total_content_height).max(0.0)
-                        }
+            let use_top_vpos_anchor = matches!(effective_valign, VerticalAlign::Top);
+            let text_y_start = if use_top_vpos_anchor
+                && !has_nested_table
+                && first_line_vpos.filter(|&v| v > 0.0).is_some()
+            {
+                // vpos는 셀 컨텐츠 상단(=cell_y+pad_top)으로부터의 첫 줄 top y 오프셋
+                cell_y + pad_top + first_line_vpos.unwrap()
+            } else {
+                match effective_valign {
+                    VerticalAlign::Top => cell_y + pad_top,
+                    VerticalAlign::Center => {
+                        let mechanical_offset =
+                            (inner_height - total_content_height).max(0.0) / 2.0;
+                        cell_y + pad_top + mechanical_offset
                     }
-                };
+                    VerticalAlign::Bottom => {
+                        cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                    }
+                }
+            };
 
             // 세로쓰기 셀
             if cell.text_direction != 0 {
@@ -1902,6 +1906,30 @@ impl LayoutEngine {
                         .controls
                         .iter()
                         .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
+
+                    // HWP/HWPX가 셀 내부 문단의 LINE_SEG.vpos를 제공하는 경우에는
+                    // 누적 y 대신 그 절대 위치를 우선한다. 조직도형 표처럼 셀 하나에
+                    // 여러 짧은 문단이 있고 paraPr spacing/lineSpacing이 함께 지정된
+                    // 문서는 한컴이 각 문단 top을 vpos로 고정해 둔다. 누적 y만 쓰면
+                    // spacing_before가 중복되거나 음수 line_spacing이 누적되어 줄 위치가
+                    // 점점 어긋난다.
+                    if use_top_vpos_anchor && !has_nested_table {
+                        if let Some(first_seg) = para.line_segs.first() {
+                            if first_seg.vertical_pos >= 0 {
+                                let spacing_before = styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map(|s| s.spacing_before)
+                                    .unwrap_or(0.0);
+                                let anchored_y = cell_y
+                                    + pad_top
+                                    + hwpunit_to_px(first_seg.vertical_pos, self.dpi);
+                                // layout_composed_paragraph()가 spacing_before를 더하므로
+                                // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
+                                para_y = anchored_y - spacing_before;
+                            }
+                        }
+                    }
 
                     let para_y_before_compose = para_y;
 

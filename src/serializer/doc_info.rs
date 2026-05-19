@@ -331,19 +331,25 @@ fn serialize_fill(w: &mut ByteWriter, fill: &crate::model::style::Fill) {
         }
         FillType::Gradient => {
             if let Some(ref grad) = fill.gradient {
-                w.write_i16(grad.gradient_type).unwrap();
-                w.write_i16(grad.angle).unwrap();
-                w.write_i16(grad.center_x).unwrap();
-                w.write_i16(grad.center_y).unwrap();
-                w.write_i16(grad.blur).unwrap();
+                w.write_u8(grad.gradient_type as u8).unwrap();
+                w.write_u32(grad.angle as u32).unwrap();
+                w.write_u32(grad.center_x as u32).unwrap();
+                w.write_u32(grad.center_y as u32).unwrap();
+                w.write_u32(grad.blur as u32).unwrap();
                 w.write_u32(grad.colors.len() as u32).unwrap();
+                if grad.colors.len() > 2 {
+                    for &pos in &grad.positions {
+                        w.write_i32(pos).unwrap();
+                    }
+                }
                 for &color in &grad.colors {
                     w.write_color_ref(color).unwrap();
                 }
-                for &pos in &grad.positions {
-                    w.write_i32(pos).unwrap();
-                }
             }
+            w.write_u32(1).unwrap();
+            w.write_u8(fill.gradient.as_ref().map(|g| g.step_center).unwrap_or(0))
+                .unwrap();
+            w.write_u8(fill.alpha).unwrap();
         }
         FillType::Image => {
             if let Some(ref img) = fill.image {

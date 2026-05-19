@@ -11,8 +11,8 @@ use crate::model::style::*;
 use crate::parser::tags;
 
 use super::utils::{
-    attr_str, local_name, parse_bool, parse_color, parse_hatch_style, parse_i16, parse_i32,
-    parse_i8, parse_u16, parse_u32, parse_u8,
+    attr_str, local_name, parse_bool, parse_color, parse_gradient_type, parse_hatch_style,
+    parse_i16, parse_i32, parse_i8, parse_u16, parse_u32, parse_u8,
 };
 use super::HwpxError;
 
@@ -1014,8 +1014,11 @@ fn parse_border_fill(
                         b"diagonal" => {
                             for attr in ce.attributes().flatten() {
                                 match attr.key.as_ref() {
-                                    b"type" => bf.diagonal.diagonal_type = parse_u8(&attr),
-                                    b"width" => bf.diagonal.width = parse_border_width(&attr),
+                                    b"type" => {
+                                        bf.diagonal.diagonal_type =
+                                            parse_border_line_type_code(&attr)
+                                    }
+                                    b"width" => bf.diagonal.width = parse_diagonal_width(&attr),
                                     b"color" => bf.diagonal.color = parse_color(&attr),
                                     _ => {}
                                 }
@@ -1059,11 +1062,20 @@ fn parse_border_fill(
                             let mut grad = GradientFill::default();
                             for attr in ce.attributes().flatten() {
                                 match attr.key.as_ref() {
-                                    b"type" => grad.gradient_type = parse_i16(&attr),
+                                    b"type" => {
+                                        grad.gradient_type = parse_gradient_type(&attr_str(&attr))
+                                    }
                                     b"angle" => grad.angle = parse_i16(&attr),
                                     b"centerX" => grad.center_x = parse_i16(&attr),
                                     b"centerY" => grad.center_y = parse_i16(&attr),
-                                    b"blur" => grad.blur = parse_i16(&attr),
+                                    b"blur" | b"step" => grad.blur = parse_i16(&attr),
+                                    b"stepCenter" => grad.step_center = parse_u8(&attr),
+                                    b"alpha" => {
+                                        let val = attr_str(&attr);
+                                        if let Ok(f) = val.parse::<f64>() {
+                                            bf.fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                        }
+                                    }
                                     _ => {}
                                 }
                             }
@@ -1124,8 +1136,30 @@ fn parse_border_fill(
                         b"slash" => {
                             for attr in ce.attributes().flatten() {
                                 match attr.key.as_ref() {
-                                    b"type" => bf.diagonal.diagonal_type = parse_u8(&attr),
-                                    b"width" => bf.diagonal.width = parse_border_width(&attr),
+                                    b"type" => {
+                                        let line_type = parse_border_line_type_code(&attr);
+                                        set_diagonal_attr_bits(&mut bf, 2, line_type);
+                                        if line_type != 0 {
+                                            bf.diagonal.diagonal_type = line_type;
+                                        }
+                                    }
+                                    b"width" => bf.diagonal.width = parse_diagonal_width(&attr),
+                                    b"color" => bf.diagonal.color = parse_color(&attr),
+                                    _ => {}
+                                }
+                            }
+                        }
+                        b"backSlash" => {
+                            for attr in ce.attributes().flatten() {
+                                match attr.key.as_ref() {
+                                    b"type" => {
+                                        let line_type = parse_border_line_type_code(&attr);
+                                        set_diagonal_attr_bits(&mut bf, 5, line_type);
+                                        if line_type != 0 {
+                                            bf.diagonal.diagonal_type = line_type;
+                                        }
+                                    }
+                                    b"width" => bf.diagonal.width = parse_diagonal_width(&attr),
                                     b"color" => bf.diagonal.color = parse_color(&attr),
                                     _ => {}
                                 }
@@ -1401,6 +1435,44 @@ fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> Bo
         "DOUBLE_WAVE" => BorderLineType::DoubleWave,
         _ => BorderLineType::Solid,
     }
+}
+
+fn parse_border_line_type_code(attr: &quick_xml::events::attributes::Attribute) -> u8 {
+    match parse_border_line_type(attr) {
+        BorderLineType::None => 0,
+        BorderLineType::Solid => 1,
+        BorderLineType::Dash => 2,
+        BorderLineType::Dot => 3,
+        BorderLineType::DashDot => 4,
+        BorderLineType::DashDotDot => 5,
+        BorderLineType::LongDash => 6,
+        BorderLineType::Circle => 7,
+        BorderLineType::Double => 8,
+        BorderLineType::ThinThickDouble => 9,
+        BorderLineType::ThickThinDouble => 10,
+        BorderLineType::ThinThickThinTriple => 11,
+        BorderLineType::Wave => 12,
+        BorderLineType::DoubleWave => 13,
+        BorderLineType::Thick3D => 14,
+        BorderLineType::Thick3DReverse => 15,
+        BorderLineType::Thin3D => 16,
+        BorderLineType::Thin3DReverse => 17,
+    }
+}
+
+fn set_diagonal_attr_bits(bf: &mut BorderFill, shift: u16, line_type: u8) {
+    let mask = 0x07u16 << shift;
+    bf.attr &= !mask;
+    if line_type != 0 {
+        // HWP5 BORDER_FILL attr stores diagonal direction presence separately
+        // from DiagonalLine(type,width,color). Hancom-authored samples use
+        // value 2 for a visible slash/backSlash direction bit-field.
+        bf.attr |= 0x02u16 << shift;
+    }
+}
+
+fn parse_diagonal_width(attr: &quick_xml::events::attributes::Attribute) -> u8 {
+    parse_border_width(attr).max(1)
 }
 
 fn parse_border_width(attr: &quick_xml::events::attributes::Attribute) -> u8 {

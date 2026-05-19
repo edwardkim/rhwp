@@ -407,6 +407,7 @@ pub(crate) fn parse_fill(r: &mut ByteReader) -> Fill {
             center_x: cx,
             center_y: cy,
             blur,
+            step_center: 0,
             colors,
             positions,
         });
@@ -449,7 +450,11 @@ pub(crate) fn parse_fill(r: &mut ByteReader) -> Fill {
     if additional_size > 0 {
         if fill_type_val & 0x04 != 0 {
             // 그라데이션 번짐 정도 중심 (blurring center)
-            let _blurring_center = r.read_u8().unwrap_or(0);
+            if let Some(ref mut grad) = fill.gradient {
+                grad.step_center = r.read_u8().unwrap_or(0);
+            } else {
+                let _ = r.read_u8();
+            }
         } else {
             let _ = r.skip(additional_size);
         }

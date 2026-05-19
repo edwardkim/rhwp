@@ -1256,53 +1256,62 @@ impl SvgRenderer {
             }
         };
 
-        // 그림 효과(그레이스케일/흑백) → SVG 필터 래핑
-        let effect_filter_id = self.ensure_image_effect_filter(img.effect);
-        if let Some(ref fid) = effect_filter_id {
-            self.output
-                .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
-        }
-        // 밝기/대비 → SVG 필터 래핑
-        // [Issue #677] 한컴 워터마크 효과 (effect != RealPic 이고 brightness/contrast 가
-        // 비-zero) 는 저장값을 그대로 brightness/contrast 필터로 적용 (회색조 + 강대비
-        // 영역) + opacity 0.5 반투명 영역으로 본문 텍스트 가독성 보존. PDF 정답지 영역
-        // 의 시각 — 진한 회색 워터마크 + 본문 텍스트가 워터마크 위로 가독 정합.
         let is_watermark_image = !matches!(img.effect, crate::model::image::ImageEffect::RealPic)
             && (img.brightness != 0 || img.contrast != 0);
-        let bc_filter_id = self.ensure_brightness_contrast_filter(img.brightness, img.contrast);
-        if let Some(ref fid) = bc_filter_id {
-            self.output
-                .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
-        }
-        // 워터마크 반투명 영역 (PDF 정합 — 본문 가독성 보존)
-        if is_watermark_image {
-            self.output.push_str("<g opacity=\"0.17\">\n");
-        }
-
         let mime_type = detect_image_mime_type(data);
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
         // BMP → PNG 변환 (브라우저는 SVG <image> 내부의 data:image/bmp 미지원)
         // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
-        let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) =
+        let (render_data, render_mime, baked_watermark): (std::borrow::Cow<[u8]>, &str, bool) =
             if mime_type == "image/x-wmf" {
                 match convert_wmf_to_svg(data) {
-                    Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
-                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                    Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
             } else if mime_type == "image/bmp" {
                 match bmp_bytes_to_png_bytes(data) {
-                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
-                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
             } else if mime_type == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(data) {
-                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
-                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
+            } else if is_watermark_image && mime_type == "image/jpeg" {
+                match watermark_jpeg_bytes_to_hancom_baked_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", true),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
             } else {
-                (std::borrow::Cow::Borrowed(data), mime_type)
+                (std::borrow::Cow::Borrowed(data), mime_type, false)
             };
+
+        // 그림 효과(그레이스케일/흑백) → SVG 필터 래핑
+        let effect_filter_id = if baked_watermark {
+            None
+        } else {
+            self.ensure_image_effect_filter(img.effect)
+        };
+        if let Some(ref fid) = effect_filter_id {
+            self.output
+                .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
+        }
+        // 밝기/대비 → SVG 필터 래핑
+        let bc_filter_id = if baked_watermark {
+            None
+        } else {
+            self.ensure_brightness_contrast_filter(img.brightness, img.contrast)
+        };
+        if let Some(ref fid) = bc_filter_id {
+            self.output
+                .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
+        }
+        // 선보정이 실패한 워터마크는 기존 런타임 합성 정책을 유지한다.
+        if is_watermark_image && !baked_watermark {
+            self.output.push_str("<g opacity=\"0.17\">\n");
+        }
 
         let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
@@ -1402,7 +1411,7 @@ impl SvgRenderer {
             }
         }
 
-        if is_watermark_image {
+        if is_watermark_image && !baked_watermark {
             self.output.push_str("</g>\n");
         }
         if bc_filter_id.is_some() {
@@ -2879,6 +2888,92 @@ pub(crate) fn pcx_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
         }
     }
     let img = RgbaImage::from_raw(width, height, rgba)?;
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+        .ok()?;
+    Some(out)
+}
+
+/// 워터마크 JPEG 를 한컴 PDF 정답지에 가까운 회색 톤 PNG 로 변환한다.
+pub(crate) fn watermark_jpeg_bytes_to_hancom_baked_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::{load_from_memory_with_format, ImageFormat};
+    use std::io::Cursor;
+
+    let mut img = load_from_memory_with_format(data, ImageFormat::Jpeg)
+        .ok()?
+        .to_rgba8();
+    let width = img.width();
+    let height = img.height();
+    if width == 0 || height == 0 {
+        return None;
+    }
+
+    fn is_near_white(px: [u8; 4]) -> bool {
+        px[0] >= 245 && px[1] >= 245 && px[2] >= 245
+    }
+
+    let mut border_total = 0u64;
+    let mut border_near_white = 0u64;
+    for x in 0..width {
+        for y in [0, height - 1] {
+            border_total += 1;
+            if is_near_white(img.get_pixel(x, y).0) {
+                border_near_white += 1;
+            }
+        }
+    }
+    if height > 2 {
+        for y in 1..height - 1 {
+            for x in [0, width - 1] {
+                border_total += 1;
+                if is_near_white(img.get_pixel(x, y).0) {
+                    border_near_white += 1;
+                }
+            }
+        }
+    }
+
+    let mut all_near_white = 0u64;
+    for px in img.pixels() {
+        if is_near_white(px.0) {
+            all_near_white += 1;
+        }
+    }
+
+    let pixel_total = (width as u64) * (height as u64);
+    if (border_near_white as f64 / border_total as f64) < 0.85
+        || (all_near_white as f64 / pixel_total as f64) < 0.20
+    {
+        return None;
+    }
+
+    fn map_watermark_gray(gray: f64) -> u8 {
+        let value = if gray < 50.0 {
+            198.0 + 0.46 * gray
+        } else if gray < 80.0 {
+            221.0 + 0.47 * (gray - 50.0)
+        } else if gray < 100.0 {
+            235.1 + 0.14 * (gray - 80.0)
+        } else if gray < 120.0 {
+            237.9 + 0.385 * (gray - 100.0)
+        } else if gray < 160.0 {
+            245.6 + 0.1625 * (gray - 120.0)
+        } else {
+            252.1 + 0.032 * (gray - 160.0)
+        };
+        value.clamp(0.0, 255.0).round() as u8
+    }
+
+    for px in img.pixels_mut() {
+        if is_near_white(px.0) {
+            px.0 = [255, 255, 255, 255];
+        } else {
+            let gray = 0.299 * px.0[0] as f64 + 0.587 * px.0[1] as f64 + 0.114 * px.0[2] as f64;
+            let mapped = map_watermark_gray(gray);
+            px.0 = [mapped, mapped, mapped, 255];
+        }
+    }
+
     let mut out = Vec::new();
     img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
         .ok()?;

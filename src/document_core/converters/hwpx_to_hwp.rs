@@ -53,6 +53,8 @@ pub struct AdapterReport {
     pub table_record_extra_materialized: u32,
     /// `cell.list_attr bit 16` 보강 횟수 (Stage 3)
     pub cells_list_attr_bit16_set: u32,
+    /// HWPX 출처 셀 LIST_HEADER width_ref/raw_list_extra materialize 횟수
+    pub cells_list_header_contract_materialized: u32,
     /// paragraph/char shape 참조 BorderFill 무채움 정규화 횟수
     pub border_fills_no_fill_normalized: u32,
     /// HWPX 출처 FileHeader를 HWP5 compressed 저장 관례로 보정한 횟수
@@ -93,6 +95,7 @@ impl AdapterReport {
                 + self.table_record_row_sizes_materialized
                 + self.table_record_extra_materialized
                 + self.cells_list_attr_bit16_set
+                + self.cells_list_header_contract_materialized
                 + self.border_fills_no_fill_normalized
                 + self.file_header_compression_normalized
                 + self.doc_properties_section_count_normalized
@@ -562,11 +565,50 @@ fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
     }
 
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
+    let use_cell_width_ref = table_requires_cell_width_ref_contract(table);
     for cell in &mut table.cells {
         adapt_cell_list_attr(cell, report);
+        materialize_cell_list_header_contract(cell, use_cell_width_ref, report);
         for cpara in &mut cell.paragraphs {
             adapt_paragraph(cpara, report);
         }
+    }
+}
+
+fn table_requires_cell_width_ref_contract(table: &Table) -> bool {
+    // HWPX 조직도류 표는 많은 논리 열로 셀 폭을 쪼개어 만든 micro-grid 형태다.
+    // 이 계열은 LIST_HEADER width_ref bit가 없으면 한컴이 셀 내부 줄나눔 폭을 너무 좁게 잡는다.
+    //
+    // 반대로 mel-001의 8x12 인원 현황 표는 같은 bit를 세우면 한컴이 병합 셀 높이를 과도하게
+    // 계산했다. 따라서 raw_list_extra는 모든 셀에 materialize하되 width_ref bit는
+    // 고열 수 micro-grid 표에만 적용한다.
+    table.col_count >= 30
+}
+
+fn materialize_cell_list_header_contract(
+    cell: &mut Cell,
+    use_width_ref: bool,
+    report: &mut AdapterReport,
+) {
+    let before_width_ref = cell.list_header_width_ref;
+    let before_extra_len = cell.raw_list_extra.len();
+
+    if use_width_ref {
+        cell.list_header_width_ref |= 0x0001;
+    } else {
+        cell.list_header_width_ref &= !0x0001;
+    }
+
+    if cell.raw_list_extra.is_empty() {
+        let mut extra = vec![0u8; 13];
+        extra[0..4].copy_from_slice(&cell.width.to_le_bytes());
+        cell.raw_list_extra = extra;
+    }
+
+    if cell.list_header_width_ref != before_width_ref
+        || cell.raw_list_extra.len() != before_extra_len
+    {
+        report.cells_list_header_contract_materialized += 1;
     }
 }
 
@@ -640,11 +682,16 @@ fn materialize_table_record_extra(table: &mut Table, report: &mut AdapterReport)
 fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterReport) {
     const HWPX_TABLE_FLOW_WITH_TEXT_BIT: u32 = 0x0000_2000;
     const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
+    const HWP5_TABLE_CAPTION_COMMON_ATTR_BIT: u32 = 0x2000_0000;
 
     let before = table.common.attr;
-    table.common.attr = pack_common_attr_bits(&table.common)
+    let mut attr = pack_common_attr_bits(&table.common)
         | HWPX_TABLE_FLOW_WITH_TEXT_BIT
         | HWPX_TABLE_NUMBERING_BIT;
+    if table.caption.is_some() {
+        attr |= HWP5_TABLE_CAPTION_COMMON_ATTR_BIT;
+    }
+    table.common.attr = attr;
 
     if table.common.attr != before {
         report.table_ctrl_header_attr_materialized += 1;
@@ -782,6 +829,115 @@ mod tests {
             ),
             (283, 283, 283, 283)
         );
+    }
+
+    #[test]
+    fn captioned_table_materializes_hancom_caption_common_attr_bit() {
+        use crate::model::shape::{
+            Caption, CaptionDirection, CommonObjAttr, HorzRelTo, TextWrap, VertRelTo,
+        };
+        use crate::model::Padding;
+
+        let mut table = Table {
+            row_count: 12,
+            col_count: 5,
+            padding: Padding {
+                left: 141,
+                right: 141,
+                top: 141,
+                bottom: 141,
+            },
+            cells: (0..5)
+                .map(|col| Cell {
+                    col,
+                    row: 0,
+                    col_span: 1,
+                    row_span: 1,
+                    ..Default::default()
+                })
+                .collect(),
+            page_break: TablePageBreak::CellBreak,
+            repeat_header: true,
+            attr: 0x08,
+            common: CommonObjAttr {
+                treat_as_char: true,
+                text_wrap: TextWrap::TopAndBottom,
+                vert_rel_to: VertRelTo::Para,
+                horz_rel_to: HorzRelTo::Para,
+                width: 47152,
+                height: 14976,
+                z_order: 6,
+                ..Default::default()
+            },
+            outer_margin_left: 141,
+            outer_margin_right: 141,
+            outer_margin_top: 141,
+            outer_margin_bottom: 141,
+            border_fill_id: 97,
+            caption: Some(Caption {
+                direction: CaptionDirection::Top,
+                width: 8504,
+                spacing: 283,
+                max_width: 47152,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::new();
+        adapt_table(&mut table, &mut report);
+
+        assert_eq!(
+            u32::from_le_bytes(table.raw_ctrl_data[0..4].try_into().unwrap()),
+            0x282a_2311
+        );
+    }
+
+    #[test]
+    fn cell_list_header_contract_materializes_width_ref_and_extra() {
+        let mut cell = Cell {
+            width: 2266,
+            list_header_width_ref: 0,
+            raw_list_extra: Vec::new(),
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+
+        materialize_cell_list_header_contract(&mut cell, true, &mut report);
+
+        assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
+        assert_eq!(cell.raw_list_extra.len(), 13);
+        assert_eq!(
+            u32::from_le_bytes(cell.raw_list_extra[0..4].try_into().unwrap()),
+            2266
+        );
+        assert!(cell.raw_list_extra[4..].iter().all(|&byte| byte == 0));
+        assert_eq!(report.cells_list_header_contract_materialized, 1);
+
+        materialize_cell_list_header_contract(&mut cell, true, &mut report);
+        assert_eq!(report.cells_list_header_contract_materialized, 1);
+    }
+
+    #[test]
+    fn cell_list_header_contract_keeps_width_ref_clear_for_normal_tables() {
+        let mut cell = Cell {
+            width: 2266,
+            list_header_width_ref: 0x0001,
+            raw_list_extra: Vec::new(),
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+
+        materialize_cell_list_header_contract(&mut cell, false, &mut report);
+
+        assert_eq!(cell.list_header_width_ref & 0x0001, 0);
+        assert_eq!(cell.raw_list_extra.len(), 13);
+        assert_eq!(
+            u32::from_le_bytes(cell.raw_list_extra[0..4].try_into().unwrap()),
+            2266
+        );
+        assert_eq!(report.cells_list_header_contract_materialized, 1);
     }
 
     #[test]
