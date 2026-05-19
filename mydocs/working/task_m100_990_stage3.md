@@ -3,6 +3,9 @@
 **이슈**: [#990](https://github.com/edwardkim/rhwp/issues/990)
 **브랜치**: `local/task990`
 
+> **후속 정정**: RED 테스트(`tests/issue_990.rs`)와 픽스처는 비공개 문서
+> 기반이라 작업지시자 지시로 git 에서 제거됨 — 산출물 표에서 제외.
+
 ---
 
 ## 1. 전체 테스트
@@ -47,9 +50,9 @@
 | 파일 | 변경 |
 |------|------|
 | `src/renderer/layout.rs` | `layout_shape_item` 빈 문단 분기 (Stage 2 v2, fmt 정리) |
-| `tests/issue_990.rs` | RED→GREEN 회귀 테스트 (Stage 1) |
-| `samples/issue-990-tac-box.hwpx` | 재현 픽스처 (Stage 1) |
 | `tests/issue_table_vpos_01_page5_cell_hit_test.rs` | #974 박제 좌표 8건 −30.84px 정정 |
+
+(개발 단계의 `tests/issue_990.rs` + 픽스처는 비공개 문서 기반 — 비커밋.)
 
 ## 5. 다음 단계 (Stage 4)
 

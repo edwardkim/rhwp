@@ -46,9 +46,13 @@ Task #974 의 `set_inline_shape_position` 등록 의도는 보존.
 
 ## 4. 검증
 
-- **회귀 테스트**: `tests/issue_990.rs` + 픽스처 `samples/issue-990-tac-box.hwpx`
-  — 박스 advance 132.88px → **66.44px**(RED→GREEN). PDF 비율 1.92 정합.
-- **전체 `cargo test`**: 1477 passed, 0 failed.
+- **회귀 진단(개발 단계)**: 비공개 문서(treat-as-char 글상자 3개)로
+  RED 재현 — 박스 advance 132.88px → **66.44px**, PDF 비율 1.92 정합.
+  해당 문서·임시 테스트는 비공개 자료라 커밋하지 않음(작업지시자 지시).
+- **커밋된 회귀 가드**: `issue_table_vpos_01_page5_cell_hit_test` —
+  `table-vpos-01.hwp` 5쪽 `pi=33`(빈 문단 + treat-as-char 도형)이 본 정정의
+  동일 코드 경로를 거치므로, 이중 가산이 재발하면 셀 hit-test 가 실패한다.
+- **전체 `cargo test`**: 1483 passed, 0 failed.
 - **`cargo clippy` / `fmt`**: clean.
 - **광범위 SVG sweep**(14 샘플): 123 byte-identical, 회귀 0.
   - `hy-001`: devel 과 동일(Task #974 동작 보존 확인).
@@ -63,9 +67,10 @@ Task #974 의 `set_inline_shape_position` 등록 의도는 보존.
 | 파일 | 내용 |
 |------|------|
 | `src/renderer/layout.rs` | `layout_shape_item` 빈 문단 분기 정정 |
-| `tests/issue_990.rs` | 회귀 테스트 (신규) |
-| `samples/issue-990-tac-box.hwpx` | 재현 픽스처 (신규) |
 | `tests/issue_table_vpos_01_page5_cell_hit_test.rs` | #974 박제 좌표 8건 정정 |
+
+> 개발 중 작성한 임시 회귀 테스트(`tests/issue_990.rs`)와 재현 픽스처는
+> 비공개 문서 기반이라 커밋하지 않는다.
 
 ## 6. WASM 빌드
 

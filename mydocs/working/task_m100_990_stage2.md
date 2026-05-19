@@ -3,6 +3,9 @@
 **이슈**: [#990](https://github.com/edwardkim/rhwp/issues/990)
 **브랜치**: `local/task990`
 
+> **후속 정정**: 본 보고서가 참조하는 RED 테스트(`tests/issue_990.rs`)와
+> 픽스처는 비공개 문서 기반이라 작업지시자 지시로 git 에서 제거됨.
+
 ---
 
 ## 1. 정정 내용

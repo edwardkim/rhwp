@@ -3,6 +3,11 @@
 **이슈**: [#990](https://github.com/edwardkim/rhwp/issues/990)
 **브랜치**: `local/task990`
 
+> **후속 정정**: 아래 재현 픽스처(`samples/issue-990-tac-box.hwpx`)와 RED
+> 테스트(`tests/issue_990.rs`)는 비공개 문서 기반이라 작업지시자 지시로
+> git 에서 제거됨 — 개발 단계 로컬 검증 기록으로만 참조. 커밋된 회귀
+> 가드는 `issue_table_vpos_01_page5_cell_hit_test`.
+
 ---
 
 ## 1. 재현 픽스처
