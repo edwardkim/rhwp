@@ -3115,8 +3115,7 @@ impl LayoutEngine {
         //   (limit 없으면 문단 전체)
         // 가 되어, 끝 페이지 포함분과 정확히 상보가 된다(중복·누락 불가).
         if has_offset {
-            let skip =
-                self.cell_line_prefix_counts(cell, composed_paras, content_offset, styles);
+            let skip = self.cell_line_prefix_counts(cell, composed_paras, content_offset, styles);
             let keep: Vec<usize> = if has_limit {
                 self.cell_line_prefix_counts(
                     cell,
