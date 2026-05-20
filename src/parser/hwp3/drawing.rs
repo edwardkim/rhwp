@@ -789,14 +789,35 @@ fn map_to_shape_object(
     } else {
         fill_rgb
     };
+    // [Task #1008 격차 A] HWP3 gradient_attr 이 파싱된 경우 IR Fill.gradient 에 매핑.
+    // HWP3 raw stream 의 Hwp3DrawingObjectGradientAttr (drawing.rs:149~170) 은 이미
+    // basic_attr.has_gradient() 시 파싱되어 header.gradient_attr 에 보존되지만, 종전
+    // 코드는 fill_type 을 항상 Solid 로 하드코딩하여 데이터가 무시되었음. HWP5 의
+    // doc_info.rs:404 매핑과 동일 contract 로 IR 주입 (step→blur, 2-stop colors,
+    // positions=vec![] → renderer 가 균등 분포).
+    let (fill_type, gradient) = if let Some(g) = header.gradient_attr.as_ref() {
+        let grad = crate::model::style::GradientFill {
+            gradient_type: g.kind as i16,
+            angle: g.angle as i16,
+            center_x: g.center_x as i16,
+            center_y: g.center_y as i16,
+            blur: g.step as i16,
+            step_center: 0,
+            colors: vec![g.start_color, g.end_color],
+            positions: vec![],
+        };
+        (crate::model::style::FillType::Gradient, Some(grad))
+    } else {
+        (crate::model::style::FillType::Solid, None)
+    };
     let fill = Fill {
-        fill_type: crate::model::style::FillType::Solid,
+        fill_type,
         solid: Some(crate::model::style::SolidFill {
             background_color: effective_rgb,
             pattern_color: header.basic_attr.pattern_color,
             pattern_type: header.basic_attr.pattern_type as i32,
         }),
-        gradient: None,
+        gradient,
         image: None,
         // [Task #877 Stage 4] 한컴 호환 alpha convention: 0=불투명, 255=완전 투명.
         // (renderer/layout/utils.rs:199 의 opacity 식: opacity = 1 - alpha/255)
