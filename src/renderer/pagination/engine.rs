@@ -2213,8 +2213,7 @@ impl Paginator {
                 }
             };
 
-            let actual_split_start = content_offset;
-            let actual_split_end = split_end_limit;
+            let _ = (content_offset, split_end_limit);
 
             // 마지막 파트에 Bottom 캡션 공간 확보
             if end_row >= row_count
@@ -2256,8 +2255,8 @@ impl Paginator {
                         start_row: cursor_row,
                         end_row,
                         is_continuation,
-                        split_start_content_offset: actual_split_start,
-                        split_end_content_limit: 0.0,
+                        start_cut: Vec::new(),
+                        end_cut: Vec::new(),
                     });
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
                     let mp = measured.get_measured_paragraph(para_idx);
@@ -2274,8 +2273,8 @@ impl Paginator {
                 start_row: cursor_row,
                 end_row,
                 is_continuation,
-                split_start_content_offset: actual_split_start,
-                split_end_content_limit: actual_split_end,
+                start_cut: Vec::new(),
+                end_cut: Vec::new(),
             });
             st.advance_column_or_new_page();
 

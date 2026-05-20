@@ -42,8 +42,8 @@ impl LayoutEngine {
         start_row: usize,
         end_row: usize,
         is_continuation: bool,
-        split_start_content_offset: f64,
-        split_end_content_limit: f64,
+        start_cut: &[usize],
+        end_cut: &[usize],
         host_margin_left: f64,
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
@@ -95,79 +95,44 @@ impl LayoutEngine {
         let mut row_heights =
             self.resolve_row_heights(table, col_count, row_count, measured_table, styles);
 
-        // ── 2b. 분할 행 높이 오버라이드 ──
-        if split_start_content_offset > 0.0 && start_row < row_count {
-            // start_row가 continuation: 줄 범위 기반으로 실제 렌더링될 콘텐츠 높이 계산
-            // (continuous total-offset 방식 대신 discrete line-range 방식 사용)
-            let mut max_remaining_h = 0.0f64;
-            for cell in &table.cells {
-                if cell.row_span == 1 && cell.row as usize == start_row {
-                    let (pad_left, pad_right, pad_top, pad_bottom) =
-                        self.resolve_cell_padding(cell, table);
-                    let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, self.dpi);
-                    let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
-
-                    // Task #324 v3: 중첩 표 포함 여부와 무관하게 통일된 경로 사용.
-                    // compute_cell_line_ranges 가 cumulative position 기반으로 nested table
-                    // atomic 처리를 정확히 수행하므로 별도 분기 불필요.
-                    // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
-                    // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
-                    let composed: Vec<_> = cell
-                        .paragraphs
-                        .iter()
-                        .map(|p| {
-                            let mut comp = compose_paragraph(p);
-                            crate::renderer::composer::recompose_for_cell_width(
-                                &mut comp,
-                                p,
-                                inner_width,
-                                styles,
-                            );
-                            comp
-                        })
-                        .collect();
-                    let ranges = self.compute_cell_line_ranges(
-                        cell,
-                        &composed,
-                        split_start_content_offset,
-                        0.0,
-                        styles,
-                    );
-                    // [Task #362] split_start 시 한 페이지보다 큰 nested table 의 잔여 높이가
-                    // 정확히 계산되도록 content_offset 을 함께 전달.
-                    let remaining = self.calc_visible_content_height_from_ranges_with_offset(
-                        &composed,
-                        &cell.paragraphs,
-                        &ranges,
-                        styles,
-                        split_start_content_offset,
-                    );
-                    let cell_h = remaining + pad_top + pad_bottom;
-                    if cell_h > max_remaining_h {
-                        max_remaining_h = cell_h;
+        // ── 2b. 행 높이 오버라이드 (Task #993: 컷 기반) ──
+        // 렌더 대상 모든 행의 높이를 페이지네이터와 동일한 컷 측정
+        // (row_cut_content_height)으로 정정한다. 페이지네이터(typeset)와 렌더러가
+        // 단일 측정 공간(advance_row_cut/cell_units)을 공유해야 분할 표가
+        // 페이지를 넘지 않는다. 분할 행은 start_cut/end_cut 범위, 그 외 행은
+        // 전체 콘텐츠. rowspan 연속 행(컷 0)은 resolve_row_heights 결과 유지.
+        {
+            let split_last_row = end_row.saturating_sub(1);
+            let mut rows_to_set: std::collections::BTreeSet<usize> = (start_row..end_row).collect();
+            // 연속분 머리행 반복 — start_row 이전의 is_header 행도 렌더된다.
+            if is_continuation && table.repeat_header && start_row > 0 {
+                for c in &table.cells {
+                    if c.is_header && (c.row as usize) < start_row {
+                        rows_to_set.insert(c.row as usize);
                     }
                 }
             }
-            if max_remaining_h > 0.0 {
-                row_heights[start_row] = max_remaining_h;
-            }
-        }
-        if split_end_content_limit > 0.0 {
-            let last_row = end_row.saturating_sub(1);
-            if last_row < row_count {
-                // last_row가 인트라-로우 분할: 제한된 높이 적용
-                let mut max_split_h = 0.0f64;
-                for cell in &table.cells {
-                    if cell.row_span == 1 && cell.row as usize == last_row {
-                        let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
-                        let cell_h = split_end_content_limit + pad_top + pad_bottom;
-                        if cell_h > max_split_h {
-                            max_split_h = cell_h;
-                        }
-                    }
+            for r in rows_to_set {
+                if r >= row_count {
+                    continue;
                 }
-                if max_split_h > 0.0 {
-                    row_heights[last_row] = max_split_h;
+                // rowspan 셀이 걸친 행은 컷 모델이 측정 못 함 — resolve_row_heights
+                // (MeasuredTable) 결과 유지. 페이지네이터도 동일하게 폴백한다.
+                let rowspan_touched = table.cells.iter().any(|c| {
+                    c.row_span > 1
+                        && (c.row as usize) <= r
+                        && r < c.row as usize + c.row_span as usize
+                });
+                if rowspan_touched {
+                    continue;
+                }
+                let su: &[usize] = if r == start_row { start_cut } else { &[] };
+                let eu: &[usize] = if r == split_last_row { end_cut } else { &[] };
+                // [Task #1022] row_cut_content_height 가 행 총 높이(패딩 포함)를
+                // 반환 — 별도 padding 가산 금지.
+                let h = self.row_cut_content_height(table, r, su, eu, styles);
+                if h > 0.0 {
+                    row_heights[r] = h;
                 }
             }
         }
@@ -253,8 +218,8 @@ impl LayoutEngine {
         grid_row_y.push(partial_table_height);
 
         // ── 4b. 캡션 처리 (첫 번째 파트에서만 렌더링) ──
-        let is_first_part = start_row == 0 && !is_continuation && split_start_content_offset == 0.0;
-        let is_last_part = end_row >= row_count && split_end_content_limit == 0.0;
+        let is_first_part = start_row == 0 && !is_continuation && start_cut.is_empty();
+        let is_last_part = end_row >= row_count && end_cut.is_empty();
         let (caption_height, caption_spacing) = if is_first_part || is_last_part {
             let ch = self.calculate_caption_height(&table.caption, styles);
             let cs = table
@@ -395,9 +360,8 @@ impl LayoutEngine {
             }
 
             // 이 셀이 분할 행에 속하는지 판별 (clip 플래그에 사용)
-            let is_split_start_row = split_start_content_offset > 0.0 && cell_row == start_row;
-            let is_split_end_row =
-                split_end_content_limit > 0.0 && cell_row == end_row.saturating_sub(1);
+            let is_split_start_row = !start_cut.is_empty() && cell_row == start_row;
+            let is_split_end_row = !end_cut.is_empty() && cell_row == end_row.saturating_sub(1);
             let is_in_split_row = is_split_start_row || is_split_end_row;
 
             let cell_id = tree.next_id();
@@ -476,19 +440,25 @@ impl LayoutEngine {
                 }
             }
 
-            // 분할 행: compute_cell_line_ranges()로 표시할 줄 범위 계산
+            // 분할 행: [Task #993] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
+            // 셀 인덱스는 advance_row_cut 과 동일하게 row_span==1 셀의 col 순위.
             let line_ranges: Option<Vec<(usize, usize)>> = if is_in_split_row {
-                let co = if is_split_start_row {
-                    split_start_content_offset
+                let cut_idx = table
+                    .cells
+                    .iter()
+                    .filter(|c| c.row_span == 1 && c.row == cell.row && c.col < cell.col)
+                    .count();
+                let start_unit = if is_split_start_row {
+                    start_cut.get(cut_idx).copied().unwrap_or(0)
                 } else {
-                    0.0
+                    0
                 };
-                let cl = if is_split_end_row {
-                    split_end_content_limit
+                let end_unit = if is_split_end_row {
+                    end_cut.get(cut_idx).copied().unwrap_or(usize::MAX)
                 } else {
-                    0.0
+                    usize::MAX
                 };
-                Some(self.compute_cell_line_ranges(cell, &composed_paras, co, cl, styles))
+                Some(self.cell_line_ranges_from_cut(cell, table, styles, start_unit, end_unit))
             } else {
                 None
             };
@@ -664,8 +634,6 @@ impl LayoutEngine {
 
             let mut para_y = text_y_start;
             let mut has_preceding_text = false;
-            // 분할 셀에서 중첩 표 오프셋 계산을 위한 누적 콘텐츠 높이 추적
-            let mut content_y_accum = 0.0f64;
             for (cp_idx, (composed, para)) in composed_paras
                 .iter()
                 .zip(cell.paragraphs.iter())
@@ -682,90 +650,12 @@ impl LayoutEngine {
                     (0, composed.lines.len())
                 };
 
-                // 분할 셀에서 offset에 의해 완전히 소비된 문단은 스킵
-                // (중첩 표 포함 문단도 range가 (n,n)이면 이전 페이지에서 이미 렌더링됨)
-                let has_nested_table = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                // [Task #993] 컷 범위 밖 문단은 이전/다음 페이지 소속 — 이 페이지에서
+                // 스킵한다. cell_line_ranges_from_cut 이 가시 유닛만 범위에 넣으므로
+                // (중첩 표/빈 문단 포함) start_line>=end_line 이면 비가시가 확정이다.
+                // content_y_accum 은 가시 콘텐츠만 추적하므로 스킵 시 전진하지 않는다.
                 if start_line >= end_line {
-                    // 중첩 표 문단: offset 범위 안에 있으면 스킵, 아니면 렌더링 필요
-                    if has_nested_table && is_in_split_row && split_start_content_offset > 0.0 {
-                        // content_y_accum으로 이 문단의 중첩 표가 완전히 offset 이전인지 판단
-                        let nested_h: f64 = para
-                            .controls
-                            .iter()
-                            .map(|ctrl| {
-                                if let Control::Table(t) = ctrl {
-                                    self.calc_nested_table_height(t, styles)
-                                } else {
-                                    0.0
-                                }
-                            })
-                            .sum();
-                        let nested_end = content_y_accum + nested_h;
-                        if nested_end <= split_start_content_offset {
-                            // 이전 페이지에서 완전히 렌더링됨 → content_y_accum 전진 후 스킵
-                            content_y_accum += nested_h;
-                            continue;
-                        }
-                    } else if has_nested_table && is_in_split_row && split_end_content_limit > 0.0 {
-                        // 분할 끝 행: compute_cell_line_ranges가 중첩 표를 limit 초과로
-                        // 다음 페이지로 미뤘음(=(line_count, line_count)). 이 페이지에서는 스킵.
-                        let nested_h: f64 = para
-                            .controls
-                            .iter()
-                            .map(|ctrl| {
-                                if let Control::Table(t) = ctrl {
-                                    self.calc_nested_table_height(t, styles)
-                                } else {
-                                    0.0
-                                }
-                            })
-                            .sum();
-                        content_y_accum += nested_h;
-                        continue;
-                    } else if !has_nested_table {
-                        // 일반 문단이 offset 으로 완전히 소비됨 → content_y_accum 갱신 후 스킵.
-                        // (Task #324 후속: 이 갱신 누락으로 후속 nested-table 문단의 content_y_accum
-                        //  이 부정확하여 split_start 페이지에서 렌더 위치가 잘못 판정되던 결함 수정.)
-                        if is_in_split_row {
-                            let p_style = styles.para_styles.get(para.para_shape_id as usize);
-                            let sp_before = if cp_idx > 0 {
-                                p_style.map(|s| s.spacing_before).unwrap_or(0.0)
-                            } else {
-                                0.0
-                            };
-                            let sp_after = if cp_idx + 1 != split_para_count {
-                                p_style.map(|s| s.spacing_after).unwrap_or(0.0)
-                            } else {
-                                0.0
-                            };
-                            let lc = composed.lines.len();
-                            let is_lp = cp_idx + 1 == split_para_count;
-                            let h = if lc == 0 {
-                                sp_before + hwpunit_to_px(400, self.dpi) + sp_after
-                            } else {
-                                composed
-                                    .lines
-                                    .iter()
-                                    .enumerate()
-                                    .map(|(li, line)| {
-                                        let lh = hwpunit_to_px(line.line_height, self.dpi);
-                                        let ls = hwpunit_to_px(line.line_spacing, self.dpi);
-                                        let is_cell_last = is_lp && li + 1 == lc;
-                                        let mut h = if !is_cell_last { lh + ls } else { lh };
-                                        if li == 0 {
-                                            h += sp_before;
-                                        }
-                                        if li == lc - 1 {
-                                            h += sp_after;
-                                        }
-                                        h
-                                    })
-                                    .sum()
-                            };
-                            content_y_accum += h;
-                        }
-                        continue;
-                    }
+                    continue;
                 }
 
                 let cell_context = CellContext {
@@ -800,57 +690,6 @@ impl LayoutEngine {
                         _ => 0.0,
                     })
                     .sum();
-
-                // 이 문단의 전체 텍스트 높이 계산 (분할 셀에서 콘텐츠 위치 추적용)
-                // (보이지 않는 줄 포함 — content_y_accum은 실제 콘텐츠 위치를 추적)
-                let para_full_text_h: f64 = if is_in_split_row {
-                    let p_style = styles.para_styles.get(para.para_shape_id as usize);
-                    let sp_before = p_style.map(|s| s.spacing_before).unwrap_or(0.0);
-                    let sp_after = p_style.map(|s| s.spacing_after).unwrap_or(0.0);
-                    let lc = composed.lines.len();
-                    let is_lp = cp_idx + 1 == split_para_count;
-                    let line_based_h = if lc == 0 {
-                        sp_before + hwpunit_to_px(400, self.dpi) + sp_after
-                    } else {
-                        composed
-                            .lines
-                            .iter()
-                            .enumerate()
-                            .map(|(li, line)| {
-                                let h = hwpunit_to_px(line.line_height, self.dpi);
-                                let ls = hwpunit_to_px(line.line_spacing, self.dpi);
-                                let is_cell_last = is_lp && li + 1 == lc;
-                                let mut lh = if !is_cell_last { h + ls } else { h };
-                                if li == 0 {
-                                    lh += sp_before;
-                                }
-                                if li == lc - 1 {
-                                    lh += sp_after;
-                                }
-                                lh
-                            })
-                            .sum()
-                    };
-                    // 중첩 표가 있으면 실제 높이로 대체
-                    let nested_h: f64 = para
-                        .controls
-                        .iter()
-                        .map(|ctrl| {
-                            if let Control::Table(t) = ctrl {
-                                self.calc_nested_table_height(t, styles)
-                            } else {
-                                0.0
-                            }
-                        })
-                        .sum();
-                    if nested_h > 0.0 {
-                        nested_h.max(line_based_h)
-                    } else {
-                        line_based_h
-                    }
-                } else {
-                    0.0
-                };
 
                 // 표 컨트롤이 없는 문단: 텍스트 먼저, 컨트롤 나중 (기존 동작)
                 // 표 컨트롤이 있는 문단: 문단 앞 간격 적용 → 표 먼저 배치 → 텍스트(엔터 등) 나중
@@ -1087,139 +926,12 @@ impl LayoutEngine {
                             Control::Table(nested_table) => {
                                 let nested_h = self.calc_nested_table_height(nested_table, styles);
 
-                                // 분할 셀에서 중첩 표의 가시성 판단 및 행 범위 필터링
-                                if is_in_split_row {
-                                    // LINE_SEG.lh에 중첩 표 높이가 이미 포함되어 있으므로
-                                    // 중첩 표 시작 위치는 content_y_accum (현재 문단 시작)으로 추정
-                                    let nested_content_start = content_y_accum;
-                                    let nested_content_end = nested_content_start + nested_h;
-
-                                    // 중첩 표가 split_start_content_offset 이전에 완전히 끝나면 스킵
-                                    // (LINE_SEG.lh에 이미 포함되므로 content_y_accum에 별도 추가 불필요)
-                                    if split_start_content_offset > 0.0
-                                        && nested_content_end <= split_start_content_offset
-                                    {
-                                        continue;
-                                    }
-                                    // 중첩 표가 split_end_content_limit 이후에 시작하면 스킵
-                                    if split_end_content_limit > 0.0
-                                        && nested_content_start >= split_end_content_limit
-                                    {
-                                        continue;
-                                    }
-
-                                    // 중첩 표 내에서의 오프셋 (연속 페이지: 표 시작이 오프셋 이전)
-                                    let offset_into_table =
-                                        if split_start_content_offset > nested_content_start {
-                                            (split_start_content_offset - nested_content_start)
-                                                .min(nested_h)
-                                        } else {
-                                            0.0
-                                        };
-
-                                    // 중첩 표에 할당 가능한 공간 계산
-                                    let visible_space = if split_end_content_limit > 0.0 {
-                                        let end_in_table = (split_end_content_limit
-                                            - nested_content_start)
-                                            .min(nested_h);
-                                        (end_in_table - offset_into_table).max(0.0)
-                                    } else {
-                                        nested_h - offset_into_table
-                                    };
-
-                                    // 행 범위 계산: 보이는 부분에 해당하는 행만 렌더링
-                                    let ncol = nested_table.col_count as usize;
-                                    let nrow = nested_table.row_count as usize;
-                                    let nrow_heights = self.resolve_row_heights(
-                                        nested_table,
-                                        ncol,
-                                        nrow,
-                                        None,
-                                        styles,
-                                    );
-                                    let ncell_spacing =
-                                        hwpunit_to_px(nested_table.cell_spacing as i32, self.dpi);
-                                    let split_info = calc_nested_split_rows(
-                                        &nrow_heights,
-                                        ncell_spacing,
-                                        offset_into_table,
-                                        visible_space,
-                                    );
-
-                                    // 전체 행이 모두 보이면 split 없이, 아니면 행 범위 필터 적용
-                                    let need_split =
-                                        split_info.start_row > 0 || split_info.end_row < nrow;
-
-                                    let nested_y = if has_preceding_text {
-                                        para_y
-                                    } else {
-                                        inner_area.y
-                                    };
-                                    // TAC(글자처럼 취급) 표: 앞 텍스트 너비만큼 x 오프셋 적용
-                                    let tac_text_offset = if nested_table.common.treat_as_char {
-                                        let mut text_w = 0.0;
-                                        for line in &composed.lines {
-                                            for run in &line.runs {
-                                                if !run.text.is_empty() {
-                                                    let ts = resolved_to_text_style(
-                                                        styles,
-                                                        run.char_style_id,
-                                                        run.lang_index,
-                                                    );
-                                                    text_w += estimate_text_width(&run.text, &ts);
-                                                }
-                                            }
-                                        }
-                                        text_w
-                                    } else {
-                                        0.0
-                                    };
-                                    let ctrl_area = LayoutRect {
-                                        x: inner_area.x + tac_text_offset,
-                                        y: nested_y,
-                                        width: (inner_area.width - tac_text_offset).max(0.0),
-                                        height: visible_space,
-                                    };
-                                    let nested_ctx = cell_context_opt.as_ref().map(|ctx| {
-                                        let mut new_ctx = ctx.clone();
-                                        new_ctx.path.push(CellPathEntry {
-                                            control_index: ctrl_idx,
-                                            cell_index: 0,
-                                            cell_para_index: 0,
-                                            text_direction: 0,
-                                        });
-                                        new_ctx
-                                    });
-                                    let split_ref =
-                                        if need_split { Some(&split_info) } else { None };
-                                    let table_h_rendered = self.layout_table(
-                                        tree,
-                                        &mut cell_node,
-                                        nested_table,
-                                        section_index,
-                                        styles,
-                                        &ctrl_area,
-                                        nested_y,
-                                        bin_data_content,
-                                        None,
-                                        1,
-                                        None,
-                                        para_alignment,
-                                        nested_ctx,
-                                        0.0,
-                                        0.0,
-                                        None,
-                                        split_ref,
-                                        None,
-                                    );
-                                    // 렌더링된 높이만큼 para_y 전진
-                                    para_y = nested_y + table_h_rendered;
-                                    // LINE_SEG.lh에 이미 중첩 표 높이가 반영되어 있으므로
-                                    // content_y_accum에 nested_h를 별도로 추가하면 이중 계산됨.
-                                    // para_full_text_h (line 817에서 추가)에 이미 포함됨.
-                                    has_preceding_text = true;
-                                } else {
-                                    // 비분할 행: 중첩 표가 셀 가용 공간을 초과하면 행 범위 필터 적용
+                                // [Task #993] 컷 모델: 중첩 표는 atomic 유닛이라
+                                // line_ranges 가 가시 여부를 이미 결정했다. 가시
+                                // 중첩 표는 전체 렌더하되 셀 가용 공간을 초과하면
+                                // calc_nested_split_rows 로 행 범위를 필터한다.
+                                {
+                                    // 중첩 표가 셀 가용 공간을 초과하면 행 범위 필터 적용
                                     let nested_y = if has_preceding_text {
                                         para_y
                                     } else {
@@ -1333,11 +1045,6 @@ impl LayoutEngine {
                             }
                         }
                     }
-                }
-
-                // 분할 셀 콘텐츠 위치 추적: 텍스트 높이 누적
-                if is_in_split_row {
-                    content_y_accum += para_full_text_h;
                 }
             }
 

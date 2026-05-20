@@ -2261,6 +2261,20 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                                     text_box.list_attr =
                                         (text_box.list_attr & !(0b11 << 5)) | (align_code << 5);
                                 }
+                                // [Task #1028] HWPX 글상자 세로쓰기 (textDirection)
+                                // 파싱. HWP5 LIST_HEADER 의 list_attr bit 0~2
+                                // (text_direction) 영역에 set — renderer 의
+                                // shape_layout.rs:1652 `(list_attr & 0x07)` 분기
+                                // 가 세로쓰기 (`layout_vertical_textbox_text_with_paras`)
+                                // 활성화. "VERTICAL"/"VERTICALALL" 모두 code 1.
+                                b"textDirection" => {
+                                    let direction_code: u32 = match attr_str(&attr).as_str() {
+                                        "VERTICAL" | "VERTICALALL" => 1,
+                                        _ => 0,
+                                    };
+                                    text_box.list_attr =
+                                        (text_box.list_attr & !0b111) | direction_code;
+                                }
                                 _ => {}
                             }
                         }

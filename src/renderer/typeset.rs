@@ -2047,11 +2047,29 @@ impl TypesetEngine {
                     // [Issue #775] 단일 컬럼 한정. 다단(col_count>=2) 영역에서는 InFrontOfText/BehindText
                     // 표라도 cur_h 누적이 컬럼 분배에 필요 (exam_eng.hwp p4 27번 보기 그림 위
                     // 데코레이션 표 회귀 차단).
+                    //
+                    // [Task #992] 페이지 본문보다 큰 다행(多行) 표는 데코레이션이 아니라
+                    // 쪽 분할이 필요한 본문 표다. 데코레이션 단축 분기에서 제외해 정상
+                    // 페이지네이션(format_table → typeset_block_table)을 타게 한다.
+                    // 제외하지 않으면 페이지보다 큰 표가 한 페이지에 통째로 그려져
+                    // 본문 영역을 넘는다.
+                    // 워터마크/배경 데코레이션(글뒤로 1×1 래퍼 등, Issue #703)은
+                    // 본문보다 작아 단축 분기를 그대로 탄다 — page_break/repeat_header
+                    // 만으로는 구분 불가(calendar_year.hwp 1×1 래퍼도 RowBreak +
+                    // repeat_header 비트를 가짐).
+                    let table_measured_h = measured_tables
+                        .iter()
+                        .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx)
+                        .map(|mt| mt.total_height)
+                        .unwrap_or(0.0);
+                    let oversized_multirow =
+                        table.row_count > 1 && table_measured_h > st.base_available_height();
                     if matches!(
                         table.common.text_wrap,
                         crate::model::shape::TextWrap::InFrontOfText
                             | crate::model::shape::TextWrap::BehindText
                     ) && st.col_count == 1
+                        && !oversized_multirow
                     {
                         st.current_items.push(PageItem::Shape {
                             para_index: para_idx,
@@ -2080,7 +2098,7 @@ impl TypesetEngine {
                         );
                     } else {
                         self.typeset_block_table(
-                            st, para_idx, ctrl_idx, para, table, &ft, &fmt, mt,
+                            st, para_idx, ctrl_idx, para, table, &ft, &fmt, mt, styles,
                         );
                     }
 
@@ -2407,6 +2425,7 @@ impl TypesetEngine {
 
     /// 비-TAC 블록 표의 조판: fits → place / split(Break Token 기반).
     /// 기존 Paginator의 split_table_rows와 동일한 세밀한 분할 로직.
+    #[allow(clippy::too_many_arguments)]
     fn typeset_block_table(
         &self,
         st: &mut TypesetState,
@@ -2417,6 +2436,7 @@ impl TypesetEngine {
         ft: &FormattedTable,
         fmt: &FormattedParagraph,
         mt: Option<&MeasuredTable>,
+        styles: &ResolvedStyleSet,
     ) {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let table_fn_h = ft.table_footnote_height;
@@ -2504,10 +2524,39 @@ impl TypesetEngine {
 
         let row_count = mt.row_heights.len();
         let cs = mt.cell_spacing;
-        let header_row_height = mt.row_heights[0];
         let can_intra_split = !mt.cells.is_empty();
         let base_available = st.base_available_height();
         let table_available = available; // 각주/존 오프셋 차감된 가용 높이
+
+        // [Task #993] advance_row_cut 호출용 LayoutEngine — 컷 측정은 dpi 와
+        // 셀 패딩/중첩 표 높이 계산에만 의존하므로 ad hoc 인스턴스로 충분하다.
+        let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        // [Task #993] rowspan(row_span>1) 셀이 걸친 행 — 컷 모델(advance_row_cut)은
+        // row_span==1 셀만 다루므로 rowspan 셀 높이를 측정하지 못한다. 구현계획서
+        // §4대로 rowspan 행은 MeasuredTable 행 높이를 권위로 쓴다(렌더러도 동일).
+        let rowspan_touched: Vec<bool> = (0..row_count)
+            .map(|r| {
+                table.cells.iter().any(|c| {
+                    c.row_span > 1
+                        && (c.row as usize) <= r
+                        && r < c.row as usize + c.row_span as usize
+                })
+            })
+            .collect();
+        // [Task #993/#1022] 행별 전체 높이(fresh, 빈 컷). HeightMeasurer 와 정합된
+        // row_cut_content_height(셀별 max(cell.height, content+pad_cell) 의 행 max)
+        // 로 측정해 렌더러와 단일 측정 공간을 공유한다. rowspan 행은 컷 모델 범위
+        // 밖이므로 MeasuredTable.row_heights 폴백.
+        let cut_row_h: Vec<f64> = (0..row_count)
+            .map(|r| {
+                if rowspan_touched[r] {
+                    mt.row_heights[r]
+                } else {
+                    layout_engine.row_cut_content_height(table, r, &[], &[], styles)
+                }
+            })
+            .collect();
+        let header_row_height = cut_row_h.first().copied().unwrap_or(0.0);
 
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
@@ -2607,21 +2656,27 @@ impl TypesetEngine {
         // 행 단위 + 인트라-로우 분할 루프 (기존 Paginator split_table_rows 동일)
         let mut cursor_row: usize = 0;
         let mut is_continuation = false;
-        let mut content_offset: f64 = 0.0;
+        // [Task #993] 분할 상태를 px content_offset 대신 행 컷(셀별 소비 유닛
+        // 수)으로 추적한다. 빈 Vec = cursor_row 를 처음부터. 컷은 advance_row_cut
+        // 에 의해 유닛을 ≥1개씩 단조 전진하므로 무한 루프가 구조적으로 불가능하다.
+        let mut start_cut: Vec<usize> = Vec::new();
 
         while cursor_row < row_count {
             // 이전 분할에서 모든 콘텐츠가 소진된 행은 건너뜀
-            if content_offset > 0.0
+            if !start_cut.is_empty()
                 && can_intra_split
-                && mt.remaining_content_for_row(cursor_row, content_offset) <= 0.0
+                && layout_engine
+                    .advance_row_cut(table, cursor_row, &start_cut, f64::MAX, styles)
+                    .consumed_height
+                    <= 0.0
             {
                 cursor_row += 1;
-                content_offset = 0.0;
+                start_cut = Vec::new();
                 continue;
             }
 
             let caption_extra =
-                if !is_continuation && cursor_row == 0 && content_offset == 0.0 && caption_is_top {
+                if !is_continuation && cursor_row == 0 && start_cut.is_empty() && caption_is_top {
                     caption_overhead
                 } else {
                     0.0
@@ -2663,157 +2718,154 @@ impl TypesetEngine {
                     .max(0.0)
             };
 
+            // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
+            // start_row 이전의 is_header 행을 모두 반복하므로(다중 머리행: rs>=2
+            // 헤더 셀 등), 페이지네이터도 동일하게 머리행 전체 높이 + 각 행 뒤
+            // cs(본문 첫 행 앞 cs 포함)를 계산한다. 종전엔 행 0만 계산해 다중
+            // 머리행 표(예: pi=111 75x10, rs=2 헤더)에서 본문 초과 발생.
             let header_overhead =
                 if is_continuation && mt.repeat_header && mt.has_header_cells && row_count > 1 {
-                    header_row_height + cs
+                    let mut hr: Vec<usize> = table
+                        .cells
+                        .iter()
+                        .filter(|c| c.is_header && (c.row as usize) < cursor_row)
+                        .map(|c| c.row as usize)
+                        .collect();
+                    hr.sort_unstable();
+                    hr.dedup();
+                    if hr.is_empty() {
+                        header_row_height + cs
+                    } else {
+                        let h: f64 = hr.iter().map(|&r| cut_row_h[r]).sum();
+                        h + cs * hr.len() as f64
+                    }
                 } else {
                     0.0
                 };
             let avail_for_rows = (page_avail - header_overhead).max(0.0);
 
-            let effective_first_row_h = if content_offset > 0.0 && can_intra_split {
-                mt.effective_row_height(cursor_row, content_offset)
-            } else {
-                mt.row_heights[cursor_row]
-            };
+            // [Task #993] 컷 기반 행 경계 walk — cursor_row 부터 avail_for_rows
+            // 안에 들어가는 행을 advance_row_cut(단일 권위 함수)으로 누적 배치한다.
+            // 예산을 못 채우거나 vpos 리셋(hard break)을 만난 첫 행이 분할 행이
+            // 된다. rowspan 보호 블록(#398/#474)은 블록 전체를 한 단위로 다룬다.
+            // 측정 공간이 advance_row_cut/cell_units 로 단일화되어 렌더러와
+            // 정의상 일치한다(px content_offset·MeasuredTable 누적 제거).
+            const MIN_TOP_KEEP_PX: f64 = 25.0;
 
-            // 현재 페이지에 들어갈 행 범위 결정 (find_break_row + 인트라-로우)
             let mut end_row = cursor_row;
+            let mut split_end_cut: Vec<usize> = Vec::new();
             let mut split_end_limit: f64 = 0.0;
-
+            let mut consumed: f64 = 0.0; // 완전 배치된 행들의 누적 높이
             {
-                const MIN_SPLIT_CONTENT_PX: f64 = 10.0;
-
-                let approx_end_raw =
-                    mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
-                // Task #398: rowspan 묶음 중간에서 잘리지 않도록 블록 경계로 스냅
-                let approx_end = mt.snap_to_block_boundary(approx_end_raw);
-
-                let (cur_b_start, cur_b_end, _) = mt.row_block_for(cursor_row);
-                let cur_block_size = cur_b_end.saturating_sub(cur_b_start);
-                let cur_block_single = cur_block_size == 1;
-                // [Task #474] RowBreak 표는 보호 블록 정책 비적용
-                let cur_block_protected = !mt.allows_row_break_split()
-                    && cur_block_size >= 2
-                    && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                let cur_can_intra_split =
-                    (cur_block_single || !cur_block_protected) && can_intra_split;
-
-                if approx_end <= cursor_row {
-                    let r = cursor_row;
-                    let splittable = cur_can_intra_split && mt.is_row_splittable(r);
-                    if splittable {
-                        let padding = mt.max_padding_for_row(r);
-                        let avail_content = (avail_for_rows - padding).max(0.0);
-                        let total_content = mt.remaining_content_for_row(r, content_offset);
-                        let remaining_content = total_content - avail_content;
-                        let min_first_line = mt.min_first_line_height_for_row(r, content_offset);
-                        if avail_content >= MIN_SPLIT_CONTENT_PX
-                            && avail_content >= min_first_line
-                            && remaining_content >= MIN_SPLIT_CONTENT_PX
-                        {
-                            end_row = r + 1;
-                            split_end_limit = avail_content;
-                        } else {
-                            end_row = r + 1;
+                let mut r = cursor_row;
+                while r < row_count {
+                    let cs_before = if r > cursor_row { cs } else { 0.0 };
+                    // rowspan 보호 블록 — 블록 전체를 분할 없이 한 단위로.
+                    let (b_start, b_end, _) = mt.row_block_for(r);
+                    let block_size = b_end.saturating_sub(b_start);
+                    let protected = !mt.allows_row_break_split()
+                        && block_size >= 2
+                        && block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                    if protected && b_start == r {
+                        let block_h: f64 = (b_start..b_end).map(|x| cut_row_h[x]).sum::<f64>()
+                            + cs * block_size.saturating_sub(1) as f64;
+                        if r == cursor_row || consumed + cs_before + block_h <= avail_for_rows {
+                            consumed += cs_before + block_h;
+                            r = b_end;
+                            end_row = r;
+                            continue;
                         }
-                    } else if cur_can_intra_split && effective_first_row_h > avail_for_rows {
-                        let padding = mt.max_padding_for_row(r);
-                        let avail_content = (avail_for_rows - padding).max(0.0);
-                        if avail_content >= MIN_SPLIT_CONTENT_PX {
-                            end_row = r + 1;
-                            split_end_limit = avail_content;
-                        } else {
-                            end_row = r + 1;
+                        end_row = r;
+                        break;
+                    }
+
+                    // rowspan 셀이 걸친 행 — 컷 분할 불가, MeasuredTable 높이로
+                    // 통째 배치(컷 모델은 row_span>1 셀을 측정 못 함).
+                    if rowspan_touched[r] {
+                        let h = cut_row_h[r];
+                        if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
+                            consumed += cs_before + h;
+                            r += 1;
+                            end_row = r;
+                            continue;
                         }
-                    } else if cur_block_protected {
-                        // Task #398: 보호 블록(2~3 rows)이 들어가지 않으면 블록 전체 배치.
-                        end_row = cur_b_end;
+                        end_row = r;
+                        break;
+                    }
+
+                    // [Task #1022] 일반 행 r — 배치 높이는 row_cut_content_height
+                    // (=cut_row_h)로, 분할 컷 산정만 advance_row_cut 으로 수행한다.
+                    let row_start_cut: &[usize] = if r == cursor_row { &start_cut } else { &[] };
+                    let row_total = if row_start_cut.is_empty() {
+                        cut_row_h[r]
+                    } else {
+                        // 연속분 cursor_row — 시작 컷 적용. row_cut_content_height 가
+                        // 셀별 (content+pad) 행 max 를 반환(분할 행이므로 cell.height
+                        // 강제 없음).
+                        layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
+                    };
+                    if consumed + cs_before + row_total <= avail_for_rows {
+                        // 행 전체가 예산 안에 들어감.
+                        consumed += cs_before + row_total;
+                        r += 1;
+                        end_row = r;
+                        continue;
+                    }
+                    // 행 r 이 예산 초과 — 인트라-분할 시도.
+                    // [Task #77] 분할 불가 행(이미지 셀 등)은 통째 배치 / 다음 페이지.
+                    let splittable = can_intra_split && mt.is_row_splittable(r);
+                    if !splittable {
+                        if r == cursor_row {
+                            // 페이지 시작 행 — 강제 통째 배치(오버플로 감수).
+                            consumed += cs_before + row_total;
+                            end_row = r + 1;
+                        } else {
+                            end_row = r;
+                        }
+                        break;
+                    }
+                    let padding = mt.max_padding_for_row(r);
+                    let budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+                    let res =
+                        layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+                    if res.fully_consumed {
+                        // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
+                        if r == cursor_row {
+                            consumed += cs_before + row_total;
+                            end_row = r + 1;
+                        } else {
+                            end_row = r;
+                        }
+                        break;
+                    }
+                    // [Task #713] sliver(orphan) 회피 — 페이지 시작 행이 아니면서
+                    // 너무 적게 들어가면 행 전체를 다음 페이지로 미룬다.
+                    if r > cursor_row && res.consumed_height < MIN_TOP_KEEP_PX {
+                        end_row = r;
                     } else {
                         end_row = r + 1;
+                        split_end_cut = res.end_cut.clone();
+                        split_end_limit = res.consumed_height;
+                        // 분할 행의 행 총 높이(per-cell content+pad) 를 consumed 에 가산.
+                        let split_total = layout_engine.row_cut_content_height(
+                            table,
+                            r,
+                            row_start_cut,
+                            &res.end_cut,
+                            styles,
+                        );
+                        consumed += cs_before + split_total;
                     }
-                } else if approx_end < row_count {
-                    end_row = approx_end;
-                    let r = approx_end;
-                    let delta = if content_offset > 0.0 && can_intra_split {
-                        mt.row_heights[cursor_row] - effective_first_row_h
-                    } else {
-                        0.0
-                    };
-                    let range_h = mt.range_height(cursor_row, approx_end) - delta;
-                    let remaining_avail = avail_for_rows - range_h;
-                    let (next_b_start, next_b_end, _) = mt.row_block_for(r);
-                    let next_block_size = next_b_end.saturating_sub(next_b_start);
-                    let next_block_single = next_block_size == 1;
-                    // [Task #474] RowBreak 표는 보호 블록 정책 비적용
-                    let next_block_protected = !mt.allows_row_break_split()
-                        && next_block_size >= 2
-                        && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                    let next_can_intra_split =
-                        (next_block_single || !next_block_protected) && can_intra_split;
-                    if next_can_intra_split && mt.is_row_splittable(r) {
-                        let row_cs = cs;
-                        let padding = mt.max_padding_for_row(r);
-                        let avail_content_for_r = (remaining_avail - row_cs - padding).max(0.0);
-                        let total_content = mt.remaining_content_for_row(r, 0.0);
-                        let remaining_content = total_content - avail_content_for_r;
-                        let min_first_line = mt.min_first_line_height_for_row(r, 0.0);
-                        // [Task #713] avail_content_for_r 가 한 줄 정도로 너무 작으면 (orphan)
-                        // 분할 대신 행 전체를 다음 페이지로 push. 한컴은 페이지 끝의 작은
-                        // sliver(예: 17.6 px) 를 두지 않고 행 단위로 이동
-                        // (2022 국립국어원 p31 row 8 케이스). 임계값 25 px 는
-                        // synam-001 의 정합 분할 (27.3 px) 과 본 결함 (17.6 px) 사이.
-                        const MIN_TOP_KEEP_PX: f64 = 25.0;
-                        if avail_content_for_r >= MIN_SPLIT_CONTENT_PX
-                            && avail_content_for_r >= min_first_line
-                            && avail_content_for_r >= MIN_TOP_KEEP_PX
-                            && remaining_content >= MIN_SPLIT_CONTENT_PX
-                        {
-                            end_row = r + 1;
-                            split_end_limit = avail_content_for_r;
-                        }
-                    } else if next_can_intra_split && mt.row_heights[r] > base_available {
-                        let row_cs = cs;
-                        let padding = mt.max_padding_for_row(r);
-                        let avail_content_for_r = (remaining_avail - row_cs - padding).max(0.0);
-                        if avail_content_for_r >= MIN_SPLIT_CONTENT_PX {
-                            end_row = r + 1;
-                            split_end_limit = avail_content_for_r;
-                        }
-                    }
-                } else {
-                    end_row = row_count;
+                    break;
                 }
             }
-
             if end_row <= cursor_row {
                 end_row = cursor_row + 1;
             }
 
-            // 이 범위의 높이 계산
-            let partial_height: f64 = {
-                let delta = if content_offset > 0.0 && can_intra_split {
-                    mt.row_heights[cursor_row] - effective_first_row_h
-                } else {
-                    0.0
-                };
-                if split_end_limit > 0.0 {
-                    let complete_range = if end_row > cursor_row + 1 {
-                        mt.range_height(cursor_row, end_row - 1) - delta
-                    } else {
-                        0.0
-                    };
-                    let split_row = end_row - 1;
-                    let split_row_h = split_end_limit + mt.max_padding_for_row(split_row);
-                    let split_row_cs = if split_row > cursor_row { cs } else { 0.0 };
-                    complete_range + split_row_cs + split_row_h + header_overhead
-                } else {
-                    mt.range_height(cursor_row, end_row) - delta + header_overhead
-                }
-            };
-
-            let actual_split_start = content_offset;
-            let actual_split_end = split_end_limit;
+            // [Task #1022] walk 가 consumed 에 분할 행 기여까지 누적하므로
+            // partial_height = consumed + header_overhead 로 단일화.
+            let partial_height: f64 = consumed + header_overhead;
 
             // 마지막 파트에 Bottom 캡션 공간 확보
             if end_row >= row_count
@@ -2842,7 +2894,7 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
-                if cursor_row == 0 && !is_continuation && content_offset == 0.0 {
+                if cursor_row == 0 && !is_continuation && start_cut.is_empty() {
                     st.current_items.push(PageItem::Table {
                         para_index: para_idx,
                         control_index: ctrl_idx,
@@ -2855,8 +2907,8 @@ impl TypesetEngine {
                         start_row: cursor_row,
                         end_row,
                         is_continuation,
-                        split_start_content_offset: actual_split_start,
-                        split_end_content_limit: 0.0,
+                        start_cut: start_cut.clone(),
+                        end_cut: Vec::new(),
                     });
                     // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                     // host_line_spacing과 outer_bottom은 포함하지 않음
@@ -2873,23 +2925,18 @@ impl TypesetEngine {
                 start_row: cursor_row,
                 end_row,
                 is_continuation,
-                split_start_content_offset: actual_split_start,
-                split_end_content_limit: actual_split_end,
+                start_cut: start_cut.clone(),
+                end_cut: split_end_cut.clone(),
             });
             st.advance_column_or_new_page();
 
-            // 커서 전진
+            // 커서 전진 — [Task #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
             if split_end_limit > 0.0 {
-                let split_row = end_row - 1;
-                if split_row == cursor_row {
-                    content_offset += split_end_limit;
-                } else {
-                    content_offset = split_end_limit;
-                }
-                cursor_row = split_row;
+                cursor_row = end_row - 1;
+                start_cut = split_end_cut;
             } else {
                 cursor_row = end_row;
-                content_offset = 0.0;
+                start_cut = Vec::new();
             }
             is_continuation = true;
         }

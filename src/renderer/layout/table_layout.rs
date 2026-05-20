@@ -1,6 +1,6 @@
 //! 표 레이아웃 (layout_table + 셀 높이/줄범위 계산)
 
-use super::super::composer::{compose_paragraph, ComposedParagraph};
+use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
 use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -47,6 +47,37 @@ use super::{CellContext, CellPathEntry, LayoutEngine};
 
 // 표 수평 정렬: model::shape 타입 사용
 use crate::model::shape::{HorzAlign, HorzRelTo};
+
+/// [Task #993] 분할 표 행 컷 — 행에 속한 셀(col 오름차순)별 "소비한 콘텐츠 유닛 수".
+/// 빈 Vec = 처음부터(아무것도 소비 안 함).
+pub(crate) type RowCut = Vec<usize>;
+
+/// [Task #993] `advance_row_cut` 결과.
+#[derive(Debug, Clone)]
+pub(crate) struct RowCutResult {
+    /// 셀별 소비 유닛 수 (전진 후).
+    pub end_cut: RowCut,
+    /// 어느 셀이든 vpos 리셋(hard break)에서 멈췄는가.
+    pub hit_hard_break: bool,
+    /// 모든 셀이 모든 유닛을 소비했는가.
+    pub fully_consumed: bool,
+    /// 이 프래그먼트의 콘텐츠 높이 (셀별 표시 높이의 최댓값, 패딩 제외).
+    pub consumed_height: f64,
+}
+
+/// [Task #993] 한 셀의 콘텐츠 유닛 — 합성 줄 1개 또는 중첩 표 atom 1개.
+struct CellUnit {
+    /// 유닛 높이 (px).
+    height: f64,
+    /// 이 유닛 앞에 vpos 리셋(셀 내부 페이지 분할)이 있는가.
+    hard_break_before: bool,
+    /// 이 유닛이 속한 문단 인덱스 (셀 내).
+    para_idx: usize,
+    /// 이 유닛이 visible 일 때 기여하는 문단 내 줄 범위 `[vis_start, vis_end)`.
+    /// 텍스트 줄 유닛 = `(li, li+1)`, 중첩/빈 atom = `(0, line_count.max(1))`.
+    vis_start: usize,
+    vis_end: usize,
+}
 
 /// 중첩 표 부분 렌더링을 위한 행 범위 정보
 pub(crate) struct NestedTableSplit {
@@ -3392,6 +3423,372 @@ impl LayoutEngine {
             .collect()
     }
 
+    /// [Task #993] 한 셀의 콘텐츠를 "유닛" 시퀀스로 평탄화한다.
+    ///
+    /// 유닛 1개 = 합성 줄 1개 또는 중첩 표 atom 1개(중첩 표 문단 = 유닛 1개,
+    /// 분할 불가). 유닛 높이는 `compute_cell_line_ranges`/`calc_visible_content_*`
+    /// 의 줄 높이 계산과 동일 규칙(줄 h+ls, 셀 마지막 줄 ls 제외, 문단 첫·마지막
+    /// 줄에 spacing_before/after). `hard_break_before` = 이 유닛 앞에 HWP vpos
+    /// 리셋(셀 내부 페이지 분할, `[Task #697]`)이 있는가.
+    fn cell_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<CellUnit> {
+        let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+        let cell_w = if cell.width < 0x8000_0000 {
+            hwpunit_to_px(cell.width as i32, self.dpi)
+        } else {
+            0.0
+        };
+        let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+        // [Task #700] vpos 동기화 가드와 동일 — 한컴 정상 인코딩(첫 문단 vpos=0) 한정.
+        let cell_first_vpos = cell
+            .paragraphs
+            .first()
+            .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos))
+            .unwrap_or(-1);
+        let para_count = cell.paragraphs.len();
+        let mut units: Vec<CellUnit> = Vec::new();
+        for (pi, p) in cell.paragraphs.iter().enumerate() {
+            let mut comp = compose_paragraph(p);
+            crate::renderer::composer::recompose_for_cell_width(&mut comp, p, inner_width, styles);
+            let para_style = styles.para_styles.get(p.para_shape_id as usize);
+            let is_last_para = pi + 1 == para_count;
+            let spacing_before = if pi > 0 {
+                para_style.map(|s| s.spacing_before).unwrap_or(0.0)
+            } else {
+                0.0
+            };
+            let spacing_after = if !is_last_para {
+                para_style.map(|s| s.spacing_after).unwrap_or(0.0)
+            } else {
+                0.0
+            };
+            // vpos 리셋 검출: 직전 문단 끝보다 현재 문단 시작 vpos 가 작으면 리셋.
+            let reset_before = if pi > 0 && cell_first_vpos == 0 {
+                let prev = &cell.paragraphs[pi - 1];
+                let prev_end = prev
+                    .line_segs
+                    .last()
+                    .map(|s| s.vertical_pos + s.line_height)
+                    .unwrap_or(-1);
+                let cur_first = p.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
+                cur_first >= 0 && prev_end > 0 && cur_first < prev_end
+            } else {
+                false
+            };
+            // [Task #993] 줄 높이는 렌더러(layout_composed_paragraph)와 동일하게
+            // corrected_line_height 를 적용한다 — raw line_height 가 폰트보다
+            // 작은 폴백 케이스에서 렌더러가 키운 높이를 컷 측정이 따라가지
+            // 못하면 분할 표가 페이지를 넘는다(측정 공간 불일치).
+            let corrected_h = |line: &ComposedLine| -> f64 {
+                let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
+                match para_style {
+                    Some(ps) => {
+                        let max_fs = line
+                            .runs
+                            .iter()
+                            .map(|r| {
+                                let ts = super::text_measurement::resolved_to_text_style(
+                                    styles,
+                                    r.char_style_id,
+                                    r.lang_index,
+                                );
+                                if ts.font_size > 0.0 {
+                                    ts.font_size
+                                } else {
+                                    12.0
+                                }
+                            })
+                            .fold(0.0f64, f64::max);
+                        crate::renderer::corrected_line_height(
+                            raw_lh,
+                            max_fs,
+                            ps.line_spacing_type,
+                            ps.line_spacing,
+                        )
+                    }
+                    None => raw_lh,
+                }
+            };
+            let has_table_in_para = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
+            let line_count = comp.lines.len();
+            if line_count == 0 || has_table_in_para {
+                // 중첩 표/빈 문단 — atomic 유닛 1개.
+                let nested_h: f64 = p
+                    .controls
+                    .iter()
+                    .map(|ctrl| {
+                        if let Control::Table(t) = ctrl {
+                            self.calc_nested_table_height(t, styles)
+                        } else {
+                            0.0
+                        }
+                    })
+                    .sum();
+                let para_h = if line_count == 0 {
+                    let h = if nested_h > 0.0 {
+                        nested_h
+                    } else {
+                        hwpunit_to_px(400, self.dpi)
+                    };
+                    spacing_before + h + spacing_after
+                } else {
+                    let line_based_h: f64 = comp
+                        .lines
+                        .iter()
+                        .enumerate()
+                        .map(|(li, line)| {
+                            let h = corrected_h(line);
+                            let ls = hwpunit_to_px(line.line_spacing, self.dpi);
+                            let is_cell_last_line = is_last_para && li + 1 == line_count;
+                            // [Task #1022] trailing ls 규칙 — HeightMeasurer 와 정합:
+                            // 셀 마지막 줄은 단일 문단 단일 줄 셀에서만 제외.
+                            let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                            let mut lh = if include_trailing_ls { h + ls } else { h };
+                            if li == 0 {
+                                lh += spacing_before;
+                            }
+                            if li == line_count - 1 {
+                                lh += spacing_after;
+                            }
+                            lh
+                        })
+                        .sum();
+                    nested_h.max(line_based_h)
+                };
+                units.push(CellUnit {
+                    height: para_h,
+                    hard_break_before: reset_before,
+                    para_idx: pi,
+                    vis_start: 0,
+                    vis_end: line_count.max(1),
+                });
+            } else {
+                // 일반 텍스트 문단 — 합성 줄마다 유닛 1개.
+                for (li, line) in comp.lines.iter().enumerate() {
+                    let h = corrected_h(line);
+                    let ls = hwpunit_to_px(line.line_spacing, self.dpi);
+                    let is_cell_last_line = is_last_para && li + 1 == line_count;
+                    let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                    let mut lh = if include_trailing_ls { h + ls } else { h };
+                    if li == 0 {
+                        lh += spacing_before;
+                    }
+                    if li == line_count - 1 {
+                        lh += spacing_after;
+                    }
+                    units.push(CellUnit {
+                        height: lh,
+                        hard_break_before: reset_before && li == 0,
+                        para_idx: pi,
+                        vis_start: li,
+                        vis_end: li + 1,
+                    });
+                }
+            }
+        }
+
+        // [Task #1022] 비인라인 Picture/Shape(wrap=TopAndBottom) — LINE_SEG.lh 에
+        // 미포함이므로 HeightMeasurer 와 동일하게 cell_units 끝에 별도 가산.
+        // 분할 가능하도록 ~16px 단위로 쪼개되, 가시 줄은 없다(filler).
+        {
+            use crate::model::shape::TextWrap;
+            let mut non_inline_h = 0.0f64;
+            for para in &cell.paragraphs {
+                for ctrl in &para.controls {
+                    match ctrl {
+                        Control::Picture(pic)
+                            if !pic.common.treat_as_char
+                                && matches!(pic.common.text_wrap, TextWrap::TopAndBottom) =>
+                        {
+                            non_inline_h += hwpunit_to_px(pic.common.height as i32, self.dpi);
+                        }
+                        crate::model::control::Control::Shape(shape)
+                            if !shape.common().treat_as_char
+                                && matches!(shape.common().text_wrap, TextWrap::TopAndBottom) =>
+                        {
+                            non_inline_h += hwpunit_to_px(shape.common().height as i32, self.dpi);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            if non_inline_h > 0.5 {
+                let last_para = para_count.saturating_sub(1);
+                const FILLER_UNIT_PX: f64 = 16.0;
+                let mut remaining = non_inline_h;
+                while remaining > 0.5 {
+                    let h = remaining.min(FILLER_UNIT_PX);
+                    units.push(CellUnit {
+                        height: h,
+                        hard_break_before: false,
+                        para_idx: last_para,
+                        vis_start: 0,
+                        vis_end: 0,
+                    });
+                    remaining -= h;
+                }
+            }
+        }
+        let _ = (pad_top, pad_bottom); // [Task #1022] cell.height 필러 제거 — row_cut_content_height 가 셀별 max(cell.height, content+pad) 로 행 단계에서 정합.
+        units
+    }
+
+    /// [Task #993] 분할 표 행 컷을 전진시킨다 — 분할 표 페이지네이션의 단일 권위 함수.
+    ///
+    /// `start_cut`(이전 페이지까지 셀별 소비 유닛 수)에서 시작해, 각 셀을 공통
+    /// 높이 예산 `avail_height` 안에서 동시 전진시킨다. 어느 유닛도 `avail_height`
+    /// 안에 안 들어가면 진행 보장을 위해 셀당 유닛 1개는 강제 소비한다. vpos
+    /// 리셋(hard break)을 만나면 그 셀은 거기서 정지한다.
+    ///
+    /// 페이지네이터(분할 판정)와 렌더러(가시 범위)가 모두 이 함수를 호출하므로
+    /// 두 경로의 컷이 정의상 일치한다.
+    pub(crate) fn advance_row_cut(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        avail_height: f64,
+        styles: &ResolvedStyleSet,
+    ) -> RowCutResult {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|c| c.col);
+
+        let mut end_cut: RowCut = Vec::with_capacity(row_cells.len());
+        let mut hit_hard_break = false;
+        let mut fully_consumed = true;
+        let mut consumed_height = 0.0f64;
+        for (i, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            let mut j = start;
+            let mut h = 0.0f64;
+            while j < units.len() {
+                let u = &units[j];
+                // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
+                if j > start && u.hard_break_before {
+                    hit_hard_break = true;
+                    break;
+                }
+                if j > start && h + u.height > avail_height {
+                    break;
+                }
+                h += u.height;
+                j += 1;
+            }
+            if j < units.len() {
+                fully_consumed = false;
+            }
+            if h > consumed_height {
+                consumed_height = h;
+            }
+            end_cut.push(j);
+        }
+        RowCutResult {
+            end_cut,
+            hit_hard_break,
+            fully_consumed,
+            consumed_height,
+        }
+    }
+
+    /// [Task #993] 한 셀의 유닛 범위 `[start_unit, end_unit)`를 문단별 줄 범위로
+    /// 변환한다. `layout_partial_table`이 `RowCut`으로 가시 범위를 렌더할 때
+    /// 사용 — 결과는 종전 `compute_cell_line_ranges`와 같은
+    /// `Vec<(start_line, end_line)>` 형식(문단마다 1개, 미가시 문단은 `(0,0)`).
+    pub(crate) fn cell_line_ranges_from_cut(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+    ) -> Vec<(usize, usize)> {
+        let units = self.cell_units(cell, table, styles);
+        let mut ranges = vec![(0usize, 0usize); cell.paragraphs.len()];
+        let mut seen = vec![false; cell.paragraphs.len()];
+        let lo = start_unit.min(units.len());
+        let hi = end_unit.min(units.len());
+        for u in units.iter().take(hi).skip(lo) {
+            if u.para_idx >= ranges.len() {
+                continue;
+            }
+            if !seen[u.para_idx] {
+                ranges[u.para_idx] = (u.vis_start, u.vis_end);
+                seen[u.para_idx] = true;
+            } else {
+                let r = &mut ranges[u.para_idx];
+                r.0 = r.0.min(u.vis_start);
+                r.1 = r.1.max(u.vis_end);
+            }
+        }
+        ranges
+    }
+
+    /// [Task #993 / #1022] 분할 행에서 컷 범위 `[start_cut, end_cut)` 사이의
+    /// **행 총 높이**(패딩 포함)를 반환한다. HeightMeasurer 와 정합 — 셀별로
+    /// `max(cell.height, content + pad_cell)` 를 산출해 행 max.
+    ///
+    /// - 분할 아닌 행(start_cut/end_cut 모두 빈 Vec): `max(cell.height,
+    ///   content+pad_cell)` per cell, row max.
+    /// - 분할 행(컷 범위 일부): `content_in_range + pad_cell` per cell, row max.
+    ///   분할 시 cell.height 강제는 적용하지 않는다(콘텐츠가 부분이므로).
+    ///
+    /// 셀 인덱스는 `advance_row_cut` 과 동일하게 `row_span==1` 셀을 col
+    /// 오름차순 정렬한 순서다.
+    pub(crate) fn row_cut_content_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|c| c.col);
+        let is_whole_row = start_cut.is_empty() && end_cut.is_empty();
+        let mut max_h = 0.0f64;
+        for (i, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let su = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            let eu = end_cut
+                .get(i)
+                .copied()
+                .unwrap_or(units.len())
+                .clamp(su, units.len());
+            let content: f64 = units[su..eu].iter().map(|u| u.height).sum();
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+            let pad_cell = pad_top + pad_bottom;
+            let cell_h_px = if cell.height < 0x8000_0000 {
+                hwpunit_to_px(cell.height as i32, self.dpi)
+            } else {
+                0.0
+            };
+            let h = if is_whole_row {
+                // HeightMeasurer required_height + row 단계 1 cell.height max 정합.
+                (content + pad_cell).max(cell_h_px)
+            } else {
+                // 분할 행 — cell.height 강제 없음.
+                content + pad_cell
+            };
+            if h > max_h {
+                max_h = h;
+            }
+        }
+        max_h
+    }
+
     /// 줄 범위(line_ranges)에 해당하는 셀 콘텐츠의 실제 렌더링 높이를 계산한다.
     /// compute_cell_line_ranges()의 결과를 받아서, 렌더링될 줄들의 높이를 합산한다.
     /// MeasuredCell 규칙: 첫 문단 spacing_before 없음, 마지막 문단 spacing_after 없음,
@@ -3588,5 +3985,120 @@ impl LayoutEngine {
             cum_pos += line_based_h;
         }
         total
+    }
+}
+
+#[cfg(test)]
+mod row_cut_tests {
+    use super::LayoutEngine;
+    use crate::model::paragraph::{LineSeg, Paragraph};
+    use crate::model::table::{Cell, Table};
+    use crate::renderer::style_resolver::ResolvedStyleSet;
+
+    /// line_height=1200 HU (=16 px @96dpi), line_spacing=0 인 N줄 텍스트 문단.
+    /// vpos 는 vpos_start 부터 1200 HU 간격.
+    fn text_para(n_lines: usize, vpos_start: i32) -> Paragraph {
+        Paragraph {
+            line_segs: (0..n_lines)
+                .map(|i| LineSeg {
+                    vertical_pos: vpos_start + i as i32 * 1200,
+                    line_height: 1200,
+                    line_spacing: 0,
+                    ..Default::default()
+                })
+                .collect(),
+            ..Default::default()
+        }
+    }
+
+    fn cell(row: u16, col: u16, paragraphs: Vec<Paragraph>) -> Cell {
+        Cell {
+            row,
+            col,
+            row_span: 1,
+            col_span: 1,
+            width: 10000,
+            paragraphs,
+            ..Default::default()
+        }
+    }
+
+    fn table(cells: Vec<Cell>) -> Table {
+        let row_count = cells.iter().map(|c| c.row + 1).max().unwrap_or(1);
+        let col_count = cells.iter().map(|c| c.col + 1).max().unwrap_or(1);
+        Table {
+            row_count,
+            col_count,
+            cells,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_advance_row_cut_basic_split() {
+        // 1행 1셀, 6줄(각 16px). avail=50 → 3줄(48px) 소비, 4번째(64px)는 초과.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![cell(0, 0, vec![text_para(6, 0)])]);
+        let r = eng.advance_row_cut(&t, 0, &vec![], 50.0, &styles);
+        assert_eq!(r.end_cut, vec![3]);
+        assert!(!r.fully_consumed);
+        assert!(!r.hit_hard_break);
+        assert!((r.consumed_height - 48.0).abs() < 0.5);
+    }
+
+    #[test]
+    fn test_advance_row_cut_fully_consumed() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![cell(0, 0, vec![text_para(6, 0)])]);
+        let r = eng.advance_row_cut(&t, 0, &vec![], 500.0, &styles);
+        assert_eq!(r.end_cut, vec![6]);
+        assert!(r.fully_consumed);
+    }
+
+    #[test]
+    fn test_advance_row_cut_force_progress() {
+        // avail 이 한 줄(16px)보다 작아도 시작 유닛 1개는 강제 소비 — 무한 루프 방지.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![cell(0, 0, vec![text_para(6, 0)])]);
+        let r = eng.advance_row_cut(&t, 0, &vec![], 5.0, &styles);
+        assert_eq!(r.end_cut, vec![1]);
+        assert!(!r.fully_consumed);
+    }
+
+    #[test]
+    fn test_advance_row_cut_vpos_reset_hard_break() {
+        // 문단0(3줄 vpos 0..2400) + 문단1(2줄 vpos 1000..) — 문단1 시작 vpos 가
+        // 문단0 끝(3600)보다 작아 vpos 리셋 → 문단1 앞에서 강제 분할.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![cell(0, 0, vec![text_para(3, 0), text_para(2, 1000)])]);
+        // avail 충분해도 리셋에서 정지.
+        let r = eng.advance_row_cut(&t, 0, &vec![], 1000.0, &styles);
+        assert_eq!(r.end_cut, vec![3]);
+        assert!(r.hit_hard_break);
+        assert!(!r.fully_consumed);
+        // 다음 프래그먼트: 리셋 지점부터 재개 — 시작 유닛은 리셋이어도 소비.
+        let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1000.0, &styles);
+        assert_eq!(r2.end_cut, vec![5]);
+        assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_advance_row_cut_multi_cell() {
+        // 1행 2셀: 셀0=3줄, 셀1=6줄. avail 충분 → 각 셀 전부 소비,
+        // consumed_height = 두 셀 표시 높이의 최댓값(셀1, 96px).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![
+            cell(0, 0, vec![text_para(3, 0)]),
+            cell(0, 1, vec![text_para(6, 0)]),
+        ]);
+        let r = eng.advance_row_cut(&t, 0, &vec![], 500.0, &styles);
+        assert_eq!(r.end_cut, vec![3, 6]);
+        assert!(r.fully_consumed);
+        assert!((r.consumed_height - 96.0).abs() < 0.5);
     }
 }
