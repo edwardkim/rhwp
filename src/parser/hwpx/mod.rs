@@ -11,6 +11,7 @@
 //! 5. BinData → 이미지 로딩
 
 pub mod content;
+mod contract_streams;
 pub mod header;
 pub mod reader;
 pub mod section;
@@ -175,6 +176,16 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         raw_data: None,
     };
 
+    // [Task #852 Stage 2.1] HWPX ZIP 컨테이너 → HWP OLE contract 스트림 변환.
+    // 한컴 HWP 정답지 contract (Preview/PrvText, Preview/PrvImage, Scripts/
+    // DefaultJScript) 를 HWPX 컨테이너 동등 파일 (Preview/PrvText.txt,
+    // Preview/PrvImage.png, Scripts/sourceScripts) 로부터 변환. HWPX 에
+    // 동등 데이터가 없는 contract 스트림 (HwpSummaryInformation, DocOptions/
+    // _LinkDoc, Scripts/JScriptVersion) 은 Stage 2.2 의 blank2010.hwp
+    // fallback 으로 보강. cfb_writer (`src/serializer/cfb_writer.rs:155`)
+    // 가 Document::extra_streams 를 그대로 OLE 스트림으로 작성.
+    let contract = contract_streams::extract_contract_streams(&mut reader);
+
     let mut doc = Document {
         header: model_header,
         doc_properties,
@@ -182,7 +193,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         sections,
         preview: None,
         bin_data_content,
-        extra_streams: Vec::new(),
+        extra_streams: contract.streams,
         is_hwp3_variant: false,
     };
 

@@ -14,6 +14,7 @@ use crate::model::page::{ColumnDef, ColumnType, PageDef};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::ComposedParagraph;
+use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -164,6 +165,14 @@ struct TypesetState {
     /// (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 zone_y_offset 에
     /// 더한다. 다단(2+) ColumnDef 의 `간격`은 가로 간격이므로 0 으로 둔다.
     current_zone_design_spacing_px: f64,
+    /// [Task #1027 Stage D] 컬럼 단위 vpos 스냅 상태 (렌더러 build_single_column 정합).
+    /// current_height 상대공간(col_area_y=0)에서 HeightCursor 를 구동한다.
+    vpos_page_base: Option<i32>,
+    vpos_lazy_base: Option<i32>,
+    vpos_prev_layout_para: Option<usize>,
+    vpos_prev_partial_table: bool,
+    /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).
+    vpos_col_anchor: f64,
 }
 
 /// [Task #853] ColumnDef 의 "디자인 spacing"(px): 1단이면 `간격`, 다단이면 0.
@@ -215,7 +224,23 @@ impl TypesetState {
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
             current_zone_design_spacing_px: 0.0,
+            vpos_page_base: None,
+            vpos_lazy_base: None,
+            vpos_prev_layout_para: None,
+            vpos_prev_partial_table: false,
+            vpos_col_anchor: 0.0,
         }
+    }
+
+    /// [Task #1027 Stage D] 컬럼 경계에서 vpos 스냅 상태 초기화.
+    /// 렌더러 build_single_column 진입 정합: page/lazy base·prev 초기화,
+    /// anchor 를 현 current_height(컬럼 시작값)로 설정.
+    fn reset_vpos_cursor(&mut self) {
+        self.vpos_page_base = None;
+        self.vpos_lazy_base = None;
+        self.vpos_prev_layout_para = None;
+        self.vpos_prev_partial_table = false;
+        self.vpos_col_anchor = self.current_height;
     }
 
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
@@ -292,6 +317,7 @@ impl TypesetState {
             // layout은 body_wide_reserved로 별도 처리하므로 여기서 zone_y_offset에
             // 넣으면 double-shift가 발생.
             self.current_height = self.pending_body_wide_top_reserve;
+            self.reset_vpos_cursor();
         } else {
             self.push_new_page();
         }
@@ -326,6 +352,7 @@ impl TypesetState {
         self.current_zone_y_offset = 0.0;
         self.current_zone_layout = None;
         self.on_first_multicolumn_page = false;
+        self.reset_vpos_cursor();
     }
 
     fn new_page_content(&self, column_contents: Vec<ColumnContent>) -> PageContent {
@@ -922,6 +949,8 @@ impl TypesetEngine {
                 // --- 핵심: format → fits → place/split ---
                 let formatted = self.format_paragraph(para, composed.get(para_idx), styles);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
+                // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
+                self.vpos_snap_current_height(&mut st, para_idx, paragraphs, styles);
                 self.typeset_paragraph(&mut st, para_idx, para, &formatted, is_last_in_section);
             } else {
                 // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
@@ -934,6 +963,28 @@ impl TypesetEngine {
                     measured_tables,
                     page_def,
                 );
+            }
+
+            // [Task #1027 Stage D] 항목 배치 후 vpos 커서 prev/base 추적 (렌더러 정합).
+            // 렌더러 build_single_column: 매 항목 후 prev_layout_para 갱신, 표/Shape/
+            // PartialTable 배치 후 page/lazy base 무효화(LINE_SEG lh 가 개체 높이를
+            // 반영 못 해 drift 유발 → 직후 paragraph 는 lazy 역산으로 재산출). 단단 전용.
+            if st.col_count == 1 {
+                st.vpos_prev_layout_para = Some(para_idx);
+                let last = st.current_items.last();
+                st.vpos_prev_partial_table = matches!(last, Some(PageItem::PartialTable { .. }));
+                if matches!(
+                    last,
+                    Some(
+                        PageItem::Table { .. }
+                            | PageItem::PartialTable { .. }
+                            | PageItem::Shape { .. }
+                    )
+                ) {
+                    // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
+                    st.vpos_page_base = None;
+                    st.vpos_lazy_base = None;
+                }
             }
 
             // [Task #362] Square wrap 표 처리 후 wrap zone 활성화.
@@ -1299,6 +1350,50 @@ impl TypesetEngine {
     // ========================================================
 
     /// 문단의 렌더링 높이를 계산한다 (format).
+    /// [Task #1027 Stage D] 항목 fit 직전, `current_height` 를 vpos-정합 위치로 스냅한다.
+    ///
+    /// 렌더러 `build_single_column` 의 inter-item VPOS_CORR(Stage C `HeightCursor::vpos_adjust`)
+    /// 를 페이지네이터에서도 적용해, 단락마다 `+= total_height` 로 누적된 sb·trailing_ls
+    /// drift 를 다음 항목 진입 시 제거한다(렌더러와 동일 측정). 단단(col_count==1) 전용 —
+    /// 다단/flow-around 는 Stage E.
+    ///
+    /// HeightCursor 는 `current_height` 상대공간(col_area_y=0)에서 구동한다.
+    fn vpos_snap_current_height(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) {
+        if st.col_count != 1 {
+            return; // 다단은 Stage E
+        }
+        // 컬럼 첫 항목: anchor + page_base 확립 (렌더러 2186/2216 정합).
+        // items.first() 의 vpos 를 page_base 로, 현 current_height 를 anchor 로 둔다.
+        if st.current_items.is_empty() {
+            st.vpos_col_anchor = st.current_height;
+            st.vpos_page_base = paragraphs
+                .get(para_idx)
+                .and_then(|p| p.line_segs.first())
+                .map(|s| s.vertical_pos);
+            st.vpos_lazy_base = None;
+        }
+        let mut hc = HeightCursor {
+            dpi: self.dpi,
+            col_area_y: 0.0,
+            col_area_height: st.base_available_height(),
+            col_anchor_y: st.vpos_col_anchor,
+            vpos_page_base: st.vpos_page_base,
+            vpos_lazy_base: st.vpos_lazy_base,
+            prev_layout_para: st.vpos_prev_layout_para,
+            prev_item_was_partial_table: st.vpos_prev_partial_table,
+        };
+        let y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.
+        st.vpos_lazy_base = hc.vpos_lazy_base;
+        st.current_height = y;
+    }
+
     /// 기존 HeightMeasurer::measure_paragraph()와 동일한 로직.
     fn format_paragraph(
         &self,
@@ -1617,10 +1712,20 @@ impl TypesetEngine {
         // HWP 시멘틱 — atomic 항목은 strict bottom-fit 대신 top-fit 으로 판정.
         // (대상 샘플 23페이지 차트 pi=208: lh=316px, 시작 y=721.4 < 1028(본문 끝),
         //  끝 y=1037.4 가 9.4px 초과하지만 하단 여백 56.7px 안이므로 HWP 가 23페이지 배치.)
+        // [Task #1027 Stage E2] atomic top-fit 스필은 진짜 인라인 atomic 개체(차트/그림 등,
+        // #409)에만 적용한다. 위아래(TopAndBottom) 글상자(Shape)는 한컴이 본문 항목처럼
+        // 다음 페이지로 넘기므로(예: AI 184p box pi=142 → 10쪽) 스필 대상에서 제외 —
+        // 그렇지 않으면 하드코딩 60px 허용폭으로 페이지 하단에 잘못 스필되어 overflow.
         let is_atomic_tac_singleton = fmt.line_heights.len() == 1
             && para.controls.iter().any(|c| match c {
                 Control::Picture(p) => p.common.treat_as_char,
-                Control::Shape(s) => s.common().treat_as_char,
+                Control::Shape(s) => {
+                    s.common().treat_as_char
+                        && !matches!(
+                            s.common().text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        )
+                }
                 _ => false,
             });
         if is_atomic_tac_singleton && st.current_height < available && !st.current_items.is_empty()
@@ -2456,7 +2561,19 @@ impl TypesetEngine {
                 .max(0.0);
 
         let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after;
-        let table_total = ft.effective_height + host_spacing_total;
+        let mut table_total = ft.effective_height + host_spacing_total;
+        // [Task #1027 Stage E1] treat_as_char 인라인 표 advance 정합.
+        // 렌더러는 글자처럼취급 표를 호스트 문단의 한 LINE_SEG(line_height+line_spacing)로
+        // advance 하나(=fmt.total_height), 페이지네이터는 측정된 표 effective_height 만
+        // 더해 ~수십px 과소측정 → 표 이후 콘텐츠가 렌더러보다 위에 fit 판정되어 overflow
+        // (Stage D 조사: p71 pi=349 +16.9px). 호스트가 표 한 줄로 구성된 경우(line==1)
+        // 렌더러 advance(fmt.total_height)로 정합한다.
+        if table.common.treat_as_char
+            && fmt.line_heights.len() == 1
+            && fmt.total_height > table_total
+        {
+            table_total = fmt.total_height;
+        }
 
         // Task #321 v5: Paper-anchored TopAndBottom block 표는 절대 좌표로 그려지므로
         // cur_h advance 에 표 effective_height 를 그대로 더하면 본문 LINE_SEG vpos 와
