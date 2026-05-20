@@ -678,6 +678,25 @@ impl DocumentCore {
             )
         };
 
+        // [Task #1037] dialog 표시 한컴 정합:
+        // - margin/indent 는 raw_ps 직접 사용 (variant_div 미적용)
+        // - HWP3 native: raw margin_left 는 continuation 라인 position 으로 저장 → 한컴 dialog
+        //   "왼쪽 여백" 은 effective first-line position 으로 (margin_left + min(0, indent)) 변환
+        // - HWP5 변환본 (is_hwp3_variant=true): Task #1037 parser normalize 후 raw 는 한컴 dialog 표준
+        //   의미로 정합 (margin_left = first-line position) → 직접 사용
+        let is_variant = self.document.is_hwp3_variant;
+        let (raw_left_hu, raw_right_hu, raw_indent_hu) = raw_ps
+            .map(|r| (r.margin_left, r.margin_right, r.indent))
+            .unwrap_or((0, 0, 0));
+        let effective_left_hu = if is_variant {
+            raw_left_hu
+        } else {
+            raw_left_hu + raw_indent_hu.min(0)
+        };
+        let dialog_margin_left_px = crate::renderer::hwpunit_to_px(effective_left_hu, self.dpi);
+        let dialog_margin_right_px = crate::renderer::hwpunit_to_px(raw_right_hu, self.dpi);
+        let dialog_indent_px = crate::renderer::hwpunit_to_px(raw_indent_hu, self.dpi);
+
         match ps {
             Some(ps) => {
                 let align_str = match ps.alignment {
@@ -728,7 +747,7 @@ impl DocumentCore {
                     ),
                     align_str,
                     ps.line_spacing, ps.line_spacing_type,
-                    ps.margin_left, ps.margin_right, ps.indent,
+                    dialog_margin_left_px, dialog_margin_right_px, dialog_indent_px,
                     // spacing_before/after는 원본 HWPUNIT → px (1x) 변환 (Task #9)
                     // ResolvedParaStyle은 /2.0이 적용되어 UI 표시에 부적합
                     raw_ps.map(|r| crate::renderer::hwpunit_to_px(r.spacing_before, self.dpi)).unwrap_or(ps.spacing_before),
