@@ -12,6 +12,7 @@ pub mod canvaskit_policy;
 pub mod composer;
 pub mod equation;
 pub mod font_metrics_data;
+pub mod height_cursor;
 pub mod height_measurer;
 pub mod html;
 pub mod image_resolver;
