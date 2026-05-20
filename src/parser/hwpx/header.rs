@@ -1134,34 +1134,22 @@ fn parse_border_fill(
                             }
                         }
                         b"slash" => {
+                            // slash/backSlash 의 type 은 대각선 "방향/형태" enum 이며
+                            // 선 종류가 아니다. 방향 비트(attr bits 2~4)만 설정하고,
+                            // 선 종류/굵기/색은 <hh:diagonal> 요소가 전담한다.
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"type" => {
-                                        let line_type = parse_border_line_type_code(&attr);
-                                        set_diagonal_attr_bits(&mut bf, 2, line_type);
-                                        if line_type != 0 {
-                                            bf.diagonal.diagonal_type = line_type;
-                                        }
-                                    }
-                                    b"width" => bf.diagonal.width = parse_diagonal_width(&attr),
-                                    b"color" => bf.diagonal.color = parse_color(&attr),
-                                    _ => {}
+                                if attr.key.as_ref() == b"type" {
+                                    let code = parse_slash_shape_code(&attr);
+                                    set_diagonal_attr_bits(&mut bf, 2, code);
                                 }
                             }
                         }
                         b"backSlash" => {
+                            // backSlash 방향 비트(attr bits 5~7)만 설정.
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"type" => {
-                                        let line_type = parse_border_line_type_code(&attr);
-                                        set_diagonal_attr_bits(&mut bf, 5, line_type);
-                                        if line_type != 0 {
-                                            bf.diagonal.diagonal_type = line_type;
-                                        }
-                                    }
-                                    b"width" => bf.diagonal.width = parse_diagonal_width(&attr),
-                                    b"color" => bf.diagonal.color = parse_color(&attr),
-                                    _ => {}
+                                if attr.key.as_ref() == b"type" {
+                                    let code = parse_slash_shape_code(&attr);
+                                    set_diagonal_attr_bits(&mut bf, 5, code);
                                 }
                             }
                         }
@@ -1460,15 +1448,33 @@ fn parse_border_line_type_code(attr: &quick_xml::events::attributes::Attribute) 
     }
 }
 
-fn set_diagonal_attr_bits(bf: &mut BorderFill, shift: u16, line_type: u8) {
+/// HWPX slash/backSlash 의 형태(type) enum 을 HWP5 BORDER_FILL attr 의
+/// 3비트 방향 코드로 변환한다. (선 종류가 아니라 대각선 방향/형태)
+///
+/// | HWPX type     | 3비트 | 의미              |
+/// |---------------|-------|-------------------|
+/// | NONE          | 0     | 없음              |
+/// | CENTER        | 0b010 | 단순 슬래시       |
+/// | CENTER_BELOW  | 0b011 | 가운데 + 아래     |
+/// | CENTER_ABOVE  | 0b110 | 가운데 + 위       |
+/// | 기타/ALL      | 0b111 | 3방향             |
+fn parse_slash_shape_code(attr: &quick_xml::events::attributes::Attribute) -> u8 {
+    match attr_str(attr).as_str() {
+        "NONE" => 0,
+        "CENTER" => 0b010,
+        "CENTER_BELOW" => 0b011,
+        "CENTER_ABOVE" => 0b110,
+        _ => 0b111,
+    }
+}
+
+/// HWP5 BORDER_FILL attr 의 대각선 방향 비트 필드를 설정한다.
+/// slash 는 shift=2, backSlash 는 shift=5 위치의 3비트.
+/// `code` 는 [`parse_slash_shape_code`] 가 반환한 3비트 방향 코드.
+fn set_diagonal_attr_bits(bf: &mut BorderFill, shift: u16, code: u8) {
     let mask = 0x07u16 << shift;
     bf.attr &= !mask;
-    if line_type != 0 {
-        // HWP5 BORDER_FILL attr stores diagonal direction presence separately
-        // from DiagonalLine(type,width,color). Hancom-authored samples use
-        // value 2 for a visible slash/backSlash direction bit-field.
-        bf.attr |= 0x02u16 << shift;
-    }
+    bf.attr |= ((code as u16) & 0x07) << shift;
 }
 
 fn parse_diagonal_width(attr: &quick_xml::events::attributes::Attribute) -> u8 {
@@ -1637,5 +1643,98 @@ mod tests {
         assert!(!is_real_strike_shape("Ghost"));
         assert!(!is_real_strike_shape(""));
         assert!(!is_real_strike_shape("solid")); // 대소문자 구분
+    }
+
+    /// `slash`/`backSlash` 의 type 속성으로 [`parse_slash_shape_code`] 를 호출한다.
+    fn slash_code(type_val: &str) -> u8 {
+        let xml = format!(r#"<e type="{type_val}"/>"#);
+        let mut reader = Reader::from_str(&xml);
+        let mut buf = Vec::new();
+        if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
+            for attr in e.attributes().flatten() {
+                if attr.key.as_ref() == b"type" {
+                    return parse_slash_shape_code(&attr);
+                }
+            }
+        }
+        panic!("type 속성 파싱 실패");
+    }
+
+    #[test]
+    fn test_parse_slash_shape_code() {
+        // 형태 enum → HWP5 attr 3비트 방향 코드. (선 종류가 아님)
+        assert_eq!(slash_code("NONE"), 0);
+        assert_eq!(slash_code("CENTER"), 0b010);
+        assert_eq!(slash_code("CENTER_BELOW"), 0b011);
+        assert_eq!(slash_code("CENTER_ABOVE"), 0b110);
+        // 미지 형태는 3방향(0b111)으로 폴백.
+        assert_eq!(slash_code("ALL"), 0b111);
+    }
+
+    #[test]
+    fn test_set_diagonal_attr_bits() {
+        let mut bf = BorderFill::default();
+        // slash = shift 2 (bits 2~4)
+        set_diagonal_attr_bits(&mut bf, 2, 0b010);
+        assert_eq!((bf.attr >> 2) & 0x07, 0b010);
+        // backSlash = shift 5 (bits 5~7), slash 비트 보존
+        set_diagonal_attr_bits(&mut bf, 5, 0b011);
+        assert_eq!((bf.attr >> 5) & 0x07, 0b011);
+        assert_eq!((bf.attr >> 2) & 0x07, 0b010);
+        // code 0 → 비트 클리어
+        set_diagonal_attr_bits(&mut bf, 2, 0);
+        assert_eq!((bf.attr >> 2) & 0x07, 0);
+    }
+
+    /// 단일 borderFill 을 헤더 XML 로 감싸 파싱한 뒤 첫 borderFill 을 돌려준다.
+    fn parse_single_border_fill(border_fill_xml: &str) -> BorderFill {
+        let xml = format!(
+            r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"
+         xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hh:refList>
+    <hh:borderFills itemCnt="1">{border_fill_xml}</hh:borderFills>
+  </hh:refList>
+</hh:head>"##
+        );
+        let (doc_info, _) = parse_hwpx_header(&xml).unwrap();
+        doc_info
+            .border_fills
+            .into_iter()
+            .next()
+            .expect("borderFill 파싱 실패")
+    }
+
+    #[test]
+    fn test_slash_center_without_diagonal_no_line() {
+        // #1038 회귀 가드: slash type="CENTER" 만 있고 <hh:diagonal> 가 없으면
+        // 방향 비트만 설정되고 diagonal_type 은 0 으로 남아야 한다(대각선 미표시).
+        let bf = parse_single_border_fill(
+            r#"<hh:borderFill id="341">
+                 <hh:slash type="CENTER" Crooked="0" isCounter="0"/>
+                 <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+               </hh:borderFill>"#,
+        );
+        assert_eq!((bf.attr >> 2) & 0x07, 0b010, "slash 방향 비트 설정");
+        assert_eq!((bf.attr >> 5) & 0x07, 0, "backSlash 비트 없음");
+        assert_eq!(
+            bf.diagonal.diagonal_type, 0,
+            "diagonal 요소 없음 → diagonal_type 0 (대각선 미표시)"
+        );
+    }
+
+    #[test]
+    fn test_diagonal_element_sets_line_independent_of_slash() {
+        // slash type="NONE" 이라도 <hh:diagonal type="SOLID"> 가 있으면
+        // diagonal_type 은 선 종류에서 설정되고, slash 방향 비트는 0.
+        let bf = parse_single_border_fill(
+            r##"<hh:borderFill id="1">
+                 <hh:slash type="NONE" Crooked="0" isCounter="0"/>
+                 <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+                 <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+               </hh:borderFill>"##,
+        );
+        assert_eq!((bf.attr >> 2) & 0x07, 0, "slash 방향 비트 없음");
+        assert_eq!(bf.diagonal.diagonal_type, 1, "diagonal SOLID → 선 종류 1");
     }
 }
