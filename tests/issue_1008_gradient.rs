@@ -119,7 +119,11 @@ fn hwp3_sample16_font_name_mapped_to_hwp5_convention() {
     let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
     let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
 
-    let group0 = doc.doc_info.font_faces.first().expect("group 0 (한글) 존재");
+    let group0 = doc
+        .doc_info
+        .font_faces
+        .first()
+        .expect("group 0 (한글) 존재");
 
     // HWP3 raw idx 1 = "신명조" 가 "HY신명조" 로 매핑된 후 alt_name 에 원본 보존
     let f1 = &group0[1];
