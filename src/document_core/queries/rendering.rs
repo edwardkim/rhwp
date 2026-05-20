@@ -2272,6 +2272,7 @@ impl DocumentCore {
                                 is_continuation,
                                 start_cut,
                                 end_cut,
+                                ..
                             } => {
                                 let table_info = paragraphs
                                     .get(*para_index)

@@ -3699,6 +3699,119 @@ impl LayoutEngine {
         }
     }
 
+    /// [Task #1025] 행블록 컷 — rowspan(rs>1) 셀로 묶인 연속 행 블록 `[b_start, b_end)`
+    /// 의 셀을 `(row, col)` 안정 순서로 순회하며 CellUnit(줄/중첩 atom) 단위로 진행한다.
+    /// `advance_row_cut` 의 블록 일반화: 블록을 걸친 rs>1 셀 + 블록 내 각 행의 셀을 모두
+    /// 포함한다. rs>1 라벨 셀은 첫 조각(start_cut 비었을 때)에서 전량 소비되고, 연속
+    /// 조각에선 시작 인덱스가 이미 끝이라 0 유닛 진행 → 렌더 공란(한컴 정답).
+    /// 거대 `row_span==1` 셀은 줄 단위로 페이지 경계까지 채우고 잔여를 다음 조각으로 넘긴다.
+    ///
+    /// 셀 순서·인덱스는 `row_block_content_height` / 렌더러와 공유하는 단일 정의다.
+    /// 단일 비-rowspan 행(`b_end==b_start+1`, 블록 내 rs>1 셀 없음)에서는
+    /// `advance_row_cut` 과 동일 결과를 낸다(회귀 0).
+    pub(crate) fn advance_row_block_cut(
+        &self,
+        table: &crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+        start_cut: &[usize],
+        avail_height: f64,
+        styles: &ResolvedStyleSet,
+    ) -> RowCutResult {
+        let mut cells = Self::row_block_cells(table, b_start, b_end);
+        // 안정 순서: (row, col) 오름차순.
+        cells.sort_by_key(|c| (c.row, c.col));
+
+        let mut end_cut: RowCut = Vec::with_capacity(cells.len());
+        let mut hit_hard_break = false;
+        let mut fully_consumed = true;
+        let mut consumed_height = 0.0f64;
+        for (i, cell) in cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            let mut j = start;
+            let mut h = 0.0f64;
+            while j < units.len() {
+                let u = &units[j];
+                // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
+                if j > start && u.hard_break_before {
+                    hit_hard_break = true;
+                    break;
+                }
+                if j > start && h + u.height > avail_height {
+                    break;
+                }
+                h += u.height;
+                j += 1;
+            }
+            if j < units.len() {
+                fully_consumed = false;
+            }
+            if h > consumed_height {
+                consumed_height = h;
+            }
+            end_cut.push(j);
+        }
+        RowCutResult {
+            end_cut,
+            hit_hard_break,
+            fully_consumed,
+            consumed_height,
+        }
+    }
+
+    /// [Task #1025] 행블록 `[b_start, b_end)` 와 교차하는 셀(rs>1 포함)을 모은다.
+    /// `advance_row_block_cut` / `row_block_content_height` / 렌더러 공유 — 순서는
+    /// 호출부에서 `(row, col)` 로 정렬한다.
+    pub(crate) fn row_block_cells<'a>(
+        table: &'a crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+    ) -> Vec<&'a crate::model::table::Cell> {
+        table
+            .cells
+            .iter()
+            .filter(|c| {
+                let cr = c.row as usize;
+                let ce = cr + (c.row_span as usize).max(1);
+                cr < b_end && ce > b_start
+            })
+            .collect()
+    }
+
+    /// [Task #1025] 행블록 컷 범위 `[start_cut, end_cut)` 의 블록 표시 높이(패딩 포함).
+    /// 블록 셀별 `content_in_cut + pad`, 블록 max. `advance_row_block_cut` 과 동일한
+    /// `(row, col)` 셀 순서를 사용한다.
+    pub(crate) fn row_block_content_height(
+        &self,
+        table: &crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut cells = Self::row_block_cells(table, b_start, b_end);
+        cells.sort_by_key(|c| (c.row, c.col));
+        let mut max_h = 0.0f64;
+        for (i, cell) in cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let su = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            let eu = end_cut
+                .get(i)
+                .copied()
+                .unwrap_or(units.len())
+                .clamp(su, units.len());
+            let content: f64 = units[su..eu].iter().map(|u| u.height).sum();
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+            let h = content + pad_top + pad_bottom;
+            if h > max_h {
+                max_h = h;
+            }
+        }
+        max_h
+    }
+
     /// [Task #993] 한 셀의 유닛 범위 `[start_unit, end_unit)`를 문단별 줄 범위로
     /// 변환한다. `layout_partial_table`이 `RowCut`으로 가시 범위를 렌더할 때
     /// 사용 — 결과는 종전 `compute_cell_line_ranges`와 같은
@@ -4100,5 +4213,62 @@ mod row_cut_tests {
         assert_eq!(r.end_cut, vec![3, 6]);
         assert!(r.fully_consumed);
         assert!((r.consumed_height - 96.0).abs() < 0.5);
+    }
+
+    fn rscell(row: u16, col: u16, row_span: u16, paragraphs: Vec<Paragraph>) -> Cell {
+        Cell {
+            row,
+            col,
+            row_span,
+            col_span: 1,
+            width: 10000,
+            paragraphs,
+            ..Default::default()
+        }
+    }
+
+    /// [Task #1025] 단일 비-rowspan 행에서 advance_row_block_cut == advance_row_cut (회귀 0).
+    #[test]
+    fn test_block_cut_single_row_parity() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![
+            cell(0, 0, vec![text_para(3, 0)]),
+            cell(0, 1, vec![text_para(6, 0)]),
+        ]);
+        for avail in [50.0, 96.0, 500.0, 5.0] {
+            let a = eng.advance_row_cut(&t, 0, &[], avail, &styles);
+            let b = eng.advance_row_block_cut(&t, 0, 1, &[], avail, &styles);
+            assert_eq!(a.end_cut, b.end_cut, "avail={avail}");
+            assert_eq!(a.fully_consumed, b.fully_consumed, "avail={avail}");
+            assert_eq!(a.hit_hard_break, b.hit_hard_break, "avail={avail}");
+            assert!(
+                (a.consumed_height - b.consumed_height).abs() < 0.5,
+                "avail={avail}"
+            );
+        }
+    }
+
+    /// [Task #1025] rowspan 블록(rows 0-1)에서 거대 row_span==1 셀이 줄 단위로 분할.
+    /// cell[label] r=0 rs=2(2줄), cell[a] r=0(2줄), cell[big] r=1(10줄).
+    /// avail=80px(=5줄): 첫 조각은 라벨2 + a2 + big5 까지, big 잔여 5줄은 다음 조각.
+    #[test]
+    fn test_block_cut_rowspan_giant_split() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = table(vec![
+            rscell(0, 0, 2, vec![text_para(2, 0)]), // 라벨 (rows 0-1 걸침)
+            cell(0, 1, vec![text_para(2, 0)]),      // row 0 일반 셀
+            cell(1, 1, vec![text_para(10, 0)]),     // row 1 거대 셀 (10줄=160px)
+        ]);
+        // 셀 순서 (row,col): [ (0,0)라벨, (0,1)a, (1,1)big ]
+        let first = eng.advance_row_block_cut(&t, 0, 2, &[], 80.0, &styles);
+        // 라벨 2줄 전량, a 2줄 전량, big 5줄(80px) 까지.
+        assert_eq!(first.end_cut, vec![2, 2, 5], "first: {:?}", first.end_cut);
+        assert!(!first.fully_consumed);
+        // 연속 조각: 라벨/a 는 이미 전량(공란), big 잔여 5줄.
+        let cont = eng.advance_row_block_cut(&t, 0, 2, &first.end_cut, 500.0, &styles);
+        assert_eq!(cont.end_cut, vec![2, 2, 10], "cont: {:?}", cont.end_cut);
+        assert!(cont.fully_consumed);
     }
 }
