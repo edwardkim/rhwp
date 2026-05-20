@@ -1882,7 +1882,23 @@ pub(crate) fn parse_paragraph_list(
             }
         }
 
-        para.char_shapes = char_shapes;
+        // [Task #1008 격차 D] 같은 start_pos 에 여러 CharShape 가 push 된 경우
+        // (rep CharShape + inline shape change at pos=0) 마지막 (inline) 만 유지.
+        // HWP3 raw 구조상 rep + inline pos=0 둘 다 발생 가능 — sample16 pi=4 에서
+        // rep id=57 base_size=1000 (10pt) + inline id=58 base_size=1400 (14pt)
+        // 중복 시, renderer 가 첫 번째 (10pt) 를 leading 8 chars 에 적용하여
+        // cumulative char-by-char drift 발생. inline override 가 의미적으로 정확.
+        let mut deduped: Vec<CharShapeRef> = Vec::with_capacity(char_shapes.len());
+        for cs in char_shapes {
+            if let Some(last) = deduped.last_mut() {
+                if last.start_pos == cs.start_pos {
+                    *last = cs;
+                    continue;
+                }
+            }
+            deduped.push(cs);
+        }
+        para.char_shapes = deduped;
 
         let mut base_size = 1000;
         let mut line_spacing_ratio = 160;
