@@ -1560,12 +1560,13 @@ impl DocumentCore {
                     crate::renderer::pagination::PaginationOpts {
                         hide_empty_line: section.section_def.hide_empty_line,
                         respect_vpos_reset: self.respect_vpos_reset,
+                        is_hwp3_variant: self.document.is_hwp3_variant,
                     },
                 )
             } else {
                 use crate::renderer::typeset::TypesetEngine;
                 let typesetter = TypesetEngine::new(self.dpi);
-                typesetter.typeset_section(
+                typesetter.typeset_section_with_variant(
                     &section.paragraphs,
                     composed,
                     &self.styles,
@@ -1574,6 +1575,7 @@ impl DocumentCore {
                     idx,
                     &measured.tables,
                     section.section_def.hide_empty_line,
+                    self.document.is_hwp3_variant,
                 )
             };
 

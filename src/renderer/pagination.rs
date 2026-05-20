@@ -589,6 +589,11 @@ pub struct PaginationOpts {
     pub hide_empty_line: bool,
     /// LINE_SEG vpos-reset (vertical_pos==0, line>0) 위치를 강제 단/페이지 경계로 처리
     pub respect_vpos_reset: bool,
+    /// [Task #1007] HWP3 → HWP5 변환본 (한컴 변환 산출물).
+    /// 변환본의 cross-paragraph vpos reset (이전 paragraph 의 last_line vpos 가
+    /// 페이지 절반 이상 + 현재 paragraph 의 first_line vpos 가 페이지 1/4 이내)
+    /// 시 강제 page break — 한컴 변환 시 인코딩한 page break 시그널 인식.
+    pub is_hwp3_variant: bool,
 }
 
 /// 페이지 분할 엔진
