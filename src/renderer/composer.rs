@@ -709,20 +709,32 @@ fn split_by_char_shapes(
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
     //
-    // [Task #884] CharShapeRef.start_pos 를 visible char index 로 해석 (해석 B).
-    // 이전 해석 A (u16 stream 위치) 는 inline picture 등 다단위 컨트롤이 있는
-    // paragraph 에서 char_shape 적용 영역이 어긋났다 (예: table-in-tbox.hwp
-    // Shape.TextBox > Table > cell[0] " 충남중부권지사장" 의 id=20 HY수평선B 가
-    // visible[1] 부터 잘못 적용).
+    // [#915] CharShapeRef.start_pos 는 paragraph 텍스트의 UTF-16 stream offset
+    // 이다 (해석 A). char_offsets[i] 가 가시문자 i 의 stream offset 이므로,
+    // start_pos 이상인 첫 char_offsets 항목이 char_shape 적용 시작 가시문자다.
     //
-    // 한컴 PDF 정합 확인된 해석:
-    //   text_idx = (cs.start_pos as usize) - text_start
-    //   단 cs.start_pos ≥ text.chars().count() 이면 미적용.
+    // 해석 이력: #884 가 start_pos 를 visible char index 로 해석(해석 B)하도록
+    // 바꿨으나, 그 근거였던 table-in-tbox.hwp footer "충남중부권지사장" 의
+    // "26pt" 판정이 오진(실제 HY수평선B 16pt — 한컴 폰트 패널 확인)이었다.
+    // 해석 B 는 인라인 제어자가 문단 중간에 있는 경우(char_offsets gap) start_pos
+    // 가 범위 밖으로 부풀려져 char_shape 가 통째 누락된다 (#915 — table-in-tbox
+    // p2 "충남중부권지사" 가 1pt 로 렌더). 또한 paragraph_layout.rs /
+    // line_breaking.rs 는 줄곧 해석 A 를 써 와서 #884 이후 composer 와 불일치
+    // 상태였다 — 본 수정으로 전 경로가 해석 A 로 일관된다.
     let total_chars = char_offsets.len();
+    // [#915] 줄 시작 가시문자의 stream offset — fallback active-shape 조회용.
+    let line_stream_start = char_offsets
+        .get(text_start)
+        .copied()
+        .unwrap_or(text_start as u32);
     let mut segments: Vec<(usize, u32)> = Vec::new();
 
     for cs in char_shapes {
-        let cs_visible_idx = (cs.start_pos as usize).min(total_chars);
+        // start_pos(stream offset) 이상인 첫 가시문자가 char_shape 적용 시작점.
+        let cs_visible_idx = char_offsets
+            .iter()
+            .position(|&off| off >= cs.start_pos)
+            .unwrap_or(total_chars);
         // cs 가 이 줄 범위 밖이면 skip
         if cs_visible_idx >= text_end {
             continue;
@@ -743,7 +755,7 @@ fn split_by_char_shapes(
     // segments가 비어있으면 첫 번째 CharShapeRef 사용
     if segments.is_empty() {
         // 줄 시작 위치 이전의 마지막 CharShapeRef 찾기
-        let style_id = find_active_char_shape_visible(char_shapes, text_start);
+        let style_id = find_active_char_shape(char_shapes, line_stream_start);
         return split_runs_by_lang(vec![ComposedTextRun {
             text: line_text.to_string(),
             char_style_id: style_id,
@@ -784,7 +796,7 @@ fn split_by_char_shapes(
 
     // 첫 번째 segment가 0이 아닌 경우, 앞 부분 처리
     if !segments.is_empty() && segments[0].0 > 0 {
-        let style_id = find_active_char_shape_visible(char_shapes, text_start);
+        let style_id = find_active_char_shape(char_shapes, line_stream_start);
         let end_idx = segments[0].0.min(chars.len());
         let prefix_text: String = chars[..end_idx].iter().collect();
         if !prefix_text.is_empty() {
@@ -803,7 +815,7 @@ fn split_by_char_shapes(
     }
 
     if runs.is_empty() {
-        let style_id = find_active_char_shape_visible(char_shapes, text_start);
+        let style_id = find_active_char_shape(char_shapes, line_stream_start);
         runs.push(ComposedTextRun {
             text: line_text.to_string(),
             char_style_id: style_id,

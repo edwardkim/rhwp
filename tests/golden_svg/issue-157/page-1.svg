@@ -118,7 +118,7 @@
 <text x="100" y="206.80000000000004" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" fill="#000000">다</text>
 <text x="113.33333333333334" y="206.80000000000004" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" fill="#000000">.</text>
 <text x="120" y="206.80000000000004" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" fill="#000000">)</text>
-<line x1="132" y1="232.40000000000003" x2="746.8062015503878" y2="232.40000000000003" stroke="#000000" stroke-width="1"/>
+<line x1="68" y1="232.40000000000003" x2="746.6821705426358" y2="232.40000000000003" stroke="#000000" stroke-width="1"/>
 <g clip-path="url(#cell-clip-25)"><rect x="60.00000000000001" y="246.4266666666667" width="679.0933333333332" height="25.906666666666666" fill="#cccccc"/>
 <text x="336.0466666666667" y="264.0466666666667" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" font-weight="bold" fill="#000000">실</text>
 <text x="349.38" y="264.0466666666667" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" font-weight="bold" fill="#000000">질</text>

@@ -1,26 +1,32 @@
-//! Issue #884 RED: CharShape start_pos 해석 결함
+//! Issue #884 / #915: CharShape `start_pos` 해석 회귀 가드.
 //!
-//! `samples/table-in-tbox.hwp` 의 글상자 안 표 셀 r=0,c=0 paragraph (" 충남중부권지사장")
-//! 에 char_shape (start_pos=0 id=14 HY헤드라인M 26pt), (start_pos=9 id=20 HY수평선B 16pt)
-//! 가 정의되어 있다.
+//! `samples/table-in-tbox.hwp` page 1 footer (글상자 안 표 셀) paragraph
+//! " 충남중부권지사장" 의 char_shape:
+//!   - (start_pos=0, id=14 HY헤드라인M 26pt)
+//!   - (start_pos=9, id=20 HY수평선B 16pt)
+//! char_offsets = [8,9,…,16] — 선두 인라인 그림이 stream offset 0~7 을 점유.
 //!
-//! 9 visible chars (인덱스 0~8) 에 대해:
-//! - 해석 A (현재 코드, u16 stream): start_pos=9 가 char_offsets[1]=9 와 일치하여
-//!   id=20 (HY수평선B) 가 visible[1]("충") 부터 적용. 잘못된 결과.
-//! - 해석 B (visible char idx): start_pos=9 가 text 길이 9 보다 ≥ 이므로 미적용,
-//!   전체 id=14 (HY헤드라인M) 적용. 한컴 PDF 정합 정답.
+//! `start_pos` 는 paragraph 텍스트의 UTF-16 stream offset 이다 (해석 A):
+//!   - start_pos=0 → offset 0 이상 첫 가시문자 = visible[0](" ") → id=14
+//!   - start_pos=9 → offset 9 이상 첫 가시문자 = visible[1]("충") → id=20
+//!   ⇒ "충남중부권지사장" = id=20 HY수평선B 16pt.
 //!
-//! 이슈 본문 (Task #696 B-2-Z 실험):
-//!   table-in-tbox.hwp 푸터 정상 (HY헤드라인M 26pt #14, 이전 HY수평선B 16pt #20)
+//! 이력: #884 가 이 footer 를 "26pt HY헤드라인M" 으로 오진(HY수평선B 굵은
+//! 글꼴 + 로고 옆 배치로 인한 육안 착시)하고 `start_pos` 를 visible char
+//! index 로 해석(해석 B)하도록 composer 를 바꿨다. 해석 B 는 인라인 제어자가
+//! 문단 *중간* 에 있는 문단에서 `start_pos` 가 char_offsets gap 만큼 부풀려져
+//! char_shape 를 통째 누락시켜 #915(table-in-tbox p2 "충남중부권지사" 1pt
+//! 렌더)를 유발했다. 한컴2024 글자모양 패널 확인 결과 footer 는 실제로
+//! HY수평선B 16.0pt — 해석 A 가 정답이며 #915 에서 해석 A 로 복원했다.
 //!
-//! 본 테스트는 결함이 존재함을 가드 — fix 후 assert 반전 필요.
+//! 본 테스트는 footer "충" 이 HY수평선B(해석 A)로 렌더됨을 가드한다.
 
 use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
 #[test]
-fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
+fn issue_884_chungnam_jisajang_uses_hy_supb_per_stream_offset() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path = Path::new(repo_root).join("samples/table-in-tbox.hwp");
     let bytes = fs::read(&hwp_path).expect("read table-in-tbox.hwp");
@@ -28,11 +34,9 @@ fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
 
     let svg = doc.render_page_svg(0).expect("render page 0");
 
-    // 결함 검증: 'Shape.TextBox > Table > cell[0]' paragraph 의 "충" 글자의 font-family.
-    // 정답 (B 해석): font-family="HY헤드라인M..."
-    // 현재 (A 해석): font-family="HY수평선B..."
-
-    // 모든 "충" element 를 찾고 그 중 결함 위치 (HY수평선B 또는 HY헤드라인M 사용) 식별
+    // footer "충남중부권지사장" 의 "충" font-family 검증.
+    // 해석 A 정답: char_shape start_pos=9 (stream offset) → visible[1]="충" →
+    // id=20 HY수평선B. 해석 B 회귀 시: footer 전체가 id=14 HY헤드라인M.
     let mut search_from = 0;
     let mut uses_hy_supb = false;
     let mut uses_hy_headlinem = false;
@@ -42,32 +46,20 @@ fn issue_884_chungnam_jisajang_should_be_hy_headlinem() {
         let element = &svg[element_start..abs_idx + 5];
         if element.contains("font-family=\"HY수평선B") {
             uses_hy_supb = true;
-            eprintln!(
-                "결함 '충' element (HY수평선B): {}",
-                &element[..element.len().min(200)]
-            );
         }
         if element.contains("font-family=\"HY헤드라인M") {
             uses_hy_headlinem = true;
-            eprintln!(
-                "정답 '충' element (HY헤드라인M): {}",
-                &element[..element.len().min(200)]
-            );
         }
         search_from = abs_idx + 5;
     }
 
-    // Fix (해석 B) 적용 후 GREEN 가드: HY헤드라인M 적용 + HY수평선B 미사용.
     assert!(
-        uses_hy_headlinem && !uses_hy_supb,
-        "Issue #884 회귀: '충' 글자에 HY헤드라인M 가 적용되지 않음. \
-         (uses_hy_supb={} uses_hy_headlinem={}). \
-         해석 B (start_pos as visible char idx) 가 부분적으로 회귀했을 가능성.",
-        uses_hy_supb,
-        uses_hy_headlinem
+        uses_hy_supb && !uses_hy_headlinem,
+        "Issue #884/#915 회귀: footer '충' 은 HY수평선B (해석 A — start_pos=9 \
+         는 UTF-16 stream offset → visible[1]) 로 렌더되어야 함. \
+         (uses_hy_supb={uses_hy_supb} uses_hy_headlinem={uses_hy_headlinem}). \
+         HY헤드라인M 가 잡히면 composer 가 해석 B(#884 오진)로 회귀한 것."
     );
-
-    eprintln!("\nIssue #884 GREEN: '충' 글자 HY헤드라인M 정합 (해석 B 적용 후).");
 }
 
 #[test]
@@ -79,7 +71,7 @@ fn issue_884_diagnostic_dump() {
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let document = doc.document();
 
-    // Locate the failing paragraph and dump its raw data
+    // 결함 paragraph 의 raw 데이터를 덤프한다 (회귀 진단 보조).
     fn find(
         paragraphs: &[rhwp::model::paragraph::Paragraph],
         document: &rhwp::model::document::Document,
@@ -94,7 +86,7 @@ fn issue_884_diagnostic_dump() {
                         let name = document
                             .doc_info
                             .font_faces
-                            .get(0)
+                            .first()
                             .and_then(|fonts| fonts.get(s.font_ids[0] as usize))
                             .map(|f| f.name.clone())
                             .unwrap_or_default();
@@ -108,11 +100,10 @@ fn issue_884_diagnostic_dump() {
                         );
                     }
                 }
-                // 해석 A vs B
                 eprintln!(
-                    "  해석 A (u16): start_pos=9 → visible[1]=충 (id=20 HY수평선B 잘못 적용)"
+                    "  해석 A (stream offset, 정답): start_pos=9 → char_offsets 에서 \
+                     9 이상 첫 항목 = visible[1]=충 → id=20 HY수평선B 16pt 적용"
                 );
-                eprintln!("  해석 B (vis): start_pos=9 → out of range (id=14 HY헤드라인M 전체 유지, 정답)");
                 return true;
             }
             for ctrl in &p.controls {
