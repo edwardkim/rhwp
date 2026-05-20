@@ -1,97 +1,104 @@
-# Task #1008 Stage 5 완료 보고서 — 격차 D 부분 fix (HWP3 CharShape dedupe)
+# Task #1008 Stage 5 완료 보고서 — 격차 D 완료 (HWP3 CharShape dedupe + 폰트명 매핑)
 
 **Issue**: [#1008 HWP3 sample16 Shape/Text 정합 격차 종합](https://github.com/edwardkim/regression-rhwp/issues/1008)
 **Branch**: `local/task1008`
-**작업 내용**: HWP3 parser 의 같은 pos 중복 CharShape dedupe — root cause 부분 해소
+**작업 내용**: HWP3 char advance drift root cause 2 항목 해소 — CharShape dedupe + 폰트명 매핑
 
 ---
 
-## 1. Root cause 추적
+## 1. 격차 D 의 두 root cause
 
-진단 test (`diag_1008_charshape`) 로 pi=4 의 char_shapes 단언:
+### 1.1 CharShape pos 중복 (Step 1)
 
-```
-HWP3 native pi=4 (BEFORE fix):
-  pos=0 id=57 base_size=1000 bold=false ← rep CharShape (10pt)
-  pos=0 id=58 base_size=1400 bold=true  ← inline shape change at pos=0 (14pt)
-  pos=8 id=59 base_size=1400 bold=false ← `"세계 3대...기업"`
-  pos=31 id=60 base_size=1400 bold=true
+HWP3 raw 의 char_shapes 빌드 시 rep CharShape + inline shape change 가 같은 pos=0 으로 모두 push (sample16 pi=4: rep id=57 base_size=1000 + inline id=58 base_size=1400). 한컴 변환기는 dedupe.
 
-HWP5 변환본 pi=4:
-  pos=0 id=21 base_size=1400 bold=true  ← 단일 (한컴 변환기 dedupe)
-  pos=8 id=27 base_size=1400 bold=false
-  pos=31 id=28 base_size=1400 bold=true
-```
+**Fix**: `mod.rs:1869~1900` 의 char_shapes 빌드 후 dedupe loop 추가.
 
-→ HWP3 raw 의 **rep CharShape (id=57, 10pt) + inline shape change (id=58, 14pt) 양쪽 모두 pos=0 으로 push** 됨. 한컴 변환기는 변환 시 dedupe 하여 inline override 만 유지.
+### 1.2 HWP3 legacy 폰트명 (Step 2 — 핵심 root cause)
 
----
+진단 test 로 단언:
+- HWP3 CharShape id=59 (`"세계 3대...기업"` 영역): font_ids[0]=1 → group 0 idx 1 = **"신명조"**
+- HWP5 변환본 id=27: font_ids[0]=4 → **"한양신명조"**
 
-## 2. Fix — CharShape dedupe in HWP3 parser
+→ HWP3 raw 의 "신명조" 와 HWP5 변환본의 "한양신명조" 가 **다른 폰트 metric 으로 평가**되어 char advance 좌표 차이. SVG font-family 의 첫 폰트가 다름 → rhwp 의 폰트 metric 측정이 다른 폰트로 fallback → cumulative drift.
 
-`src/parser/hwp3/mod.rs:1869~1900` 의 char_shapes 빌드 후 dedupe 추가:
+**Fix**: HWP3 parser 의 font_faces 로딩 시 legacy 명칭 → HWP5 정합 명칭 매핑 (한컴 변환기 mimic):
 
 ```rust
-// 같은 start_pos 에 여러 CharShape 가 push 된 경우 마지막 (inline) 만 유지
-let mut deduped: Vec<CharShapeRef> = Vec::with_capacity(char_shapes.len());
-for cs in char_shapes {
-    if let Some(last) = deduped.last_mut() {
-        if last.start_pos == cs.start_pos {
-            *last = cs;
-            continue;
-        }
+fn hwp3_font_name_to_hwp5(name: &str) -> String {
+    match name.trim() {
+        "신명조" | "신명" => "HY신명조".to_string(),
+        "고딕" => "HY고딕".to_string(),
+        "중고딕" => "HY중고딕".to_string(),
+        "견고딕" => "HY견고딕".to_string(),
+        "그래픽" => "HY그래픽".to_string(),
+        _ => name.to_string(),
     }
-    deduped.push(cs);
 }
-para.char_shapes = deduped;
+```
+
+`Font.alt_name` 에 원본 명칭 보존 (트레이싱용).
+
+---
+
+## 2. dump 단언
+
+### 2.1 CharShape dedupe (Step 1)
+
+```
+HWP3 sample16 pi=4 (AFTER):
+  [CS] pos=0 id=58 bold=true   ← id=57 (10pt) 제거됨
+  [CS] pos=8 id=59 bold=false
+  [CS] pos=31 id=60 bold=true
+```
+
+HWP5 변환본 구조와 동일 (3개).
+
+### 2.2 폰트명 매핑 (Step 2)
+
+```
+HWP3 sample16 doc_info.font_faces[0]:
+  idx=0 name="HY고딕"  alt="고딕"
+  idx=1 name="HY신명조"  alt="신명조"
+  idx=2 name="HY중고딕"  alt="중고딕"
+  idx=3 name="HY견고딕"  alt="견고딕"
+  idx=4 name="HY그래픽"  alt="그래픽"
 ```
 
 ---
 
-## 3. dump 단언 (AFTER)
+## 3. SVG 좌표 정합 단언 (HWP3 vs HWP5 변환본)
 
-```
-HWP3 sample16 pi=4 (AFTER fix):
-  [CS] pos=0 id=58 bold=true spacing=0% char=" "   ← id=57 제거됨
-  [CS] pos=8 id=59 bold=false spacing=-12% char="\""
-  [CS] pos=31 id=60 bold=true spacing=0% char=""
-```
+| Char | HWP3 BEFORE | HWP3 AFTER | HWP5 변환본 | 정합? |
+|------|-------------|------------|-------------|------|
+| `"` | 131.69 | 131.69 | 131.69 | ✓ |
+| 세 | 134.69 | **137.69** | 137.69 | ✓ |
+| 계 | 151.12 | **154.12** | 154.12 | ✓ |
+| 3 | 174.69 | **177.69** | 177.69 | ✓ |
+| 대 | 181.69 | **186.69** | 186.69 | ✓ |
+| 물 | 205.21 | **210.21** | 210.21 | ✓ |
+| ... | ... | ... | ... | ✓ |
+| 한 | 401.21 | **408.37** | 408.37 | ✓ |
 
-HWP5 변환본 구조와 동일 (3개 CharShape).
-
----
-
-## 4. SVG 좌표 단언 (BEFORE/AFTER 격차 D fix)
-
-```
-BEFORE:
-  HWP3 cover caption: 첫 `"` x=131.69 → 세 x=134.69 (advance=3.0)
-  HWP5 변환본 동일:    `"` x=131.69 → 세 x=137.69 (advance=6.0)
-
-AFTER (dedupe만):
-  HWP3: 좌표 변동 없음 — id=57 (10pt) 가 chars 0-7 (leading spaces) 에만 영향
-        leading spaces 는 invisible glyph 이므로 visual diff 없음
-```
-
-→ **dedupe fix 는 데이터 무결성 향상이나 visual drift 직접 해소 안 됨**. char-by-char advance width 차이 (HWP3 vs HWP5) 가 별도 root cause.
+→ **HWP3 SVG 좌표가 HWP5 변환본과 byte-for-byte 일치**.
 
 ---
 
-## 5. 격차 D 잔존 — Visual drift root cause 미해소
+## 4. SVG font-family 단언
 
-dedupe 후에도 HWP3 vs HWP5 변환본의 char 좌표 차이 (3-7px 누적 drift) 잔존. 추가 root cause 후보:
+```
+HWP3 native cover (AFTER):
+  font-family="HY신명조, 'Batang', '바탕', 'Nanum Myeongjo', ..."
 
-1. **font_ids 차이**: HWP3 id=58/59/60 의 `font_ids[0]=1`, HWP5 id=21/27/28 의 `font_ids[0]=4` — 다른 font index. 같은 텍스트의 advance width 가 폰트별로 다름
-2. **font_faces 매핑**: HWP3 group 0 idx 1 = "신명조", HWP5 group ? — 폰트 metric 차이 가능
-3. **renderer 의 char advance 계산**: 폰트 metric 의존 — 본 task 범위 외
+HWP5 변환본 cover:
+  font-family="HY신명조, 'Batang', '바탕', 'Nanum Myeongjo', ..."
+```
 
-본 격차 D 의 visual drift root cause 는 **HWP3 polyfont mapping + renderer advance metric 처리** 영역으로 단언, 본 task 범위에서 완전 해소 불가.
-
-→ 잔존 격차 D 는 본 PR 후속 별도 issue 로 추적 권고.
+→ 동일 font-family chain → 동일 폰트 metric → 동일 advance width.
 
 ---
 
-## 6. 회귀 sweep
+## 5. 회귀 sweep
 
 | 항목 | 결과 |
 |------|------|
@@ -99,25 +106,24 @@ dedupe 후에도 HWP3 vs HWP5 변환본의 char 좌표 차이 (3-7px 누적 drif
 | `cargo clippy --release --lib -- -D warnings` | ✓ clean |
 | `cargo fmt --check` | ✓ clean |
 | `cargo test --release --lib` | ✓ 1307 passed |
-| `cargo test --release --test issue_1008_gradient` | ✓ 3 passed (격차 A + B + C) |
+| `cargo test --release --test issue_1008_gradient` | ✓ **4 passed** (격차 A + B + C + D) |
+| `cargo test --release --tests` | ✓ all passed (FAILED 0) |
 
-### 6.1 페이지 수 sweep (전체 HWP3 + 변환본 + 일반 fixture)
+### 5.1 페이지 수 sweep (HWP3 11 + HWP5 + 일반 fixture)
 
-| Sample | 페이지 |
-|--------|--------|
-| hwp3-sample (-hwp5) | 16 / 16 ✓ |
-| hwp3-sample10 (-hwp5) | 763 / 763 ✓ |
-| hwp3-sample11 (-hwp5) | 151 / 151 ✓ |
-| hwp3-sample13 (-hwp5) | 3 / 3 ✓ |
-| hwp3-sample14 (-hwp5) | 11 / 11 ✓ |
-| hwp3-sample16 (-hwp5) | 64 / 64 ✓ |
-| hwp3-sample19 (-hwp5) | 2 / 2 ✓ |
-| hwp3-sample4 (-hwp5) | 36 / 36 ✓ |
-| hwp3-sample5 + 4 variants | 64 (모두) ✓ |
-| exam_kor / eng / math | 20 / 8 / 20 ✓ |
-| aift / biz_plan | 74 / 6 ✓ |
+모든 fixture 페이지 수 회귀 0.
 
-→ 모든 fixture 페이지 수 회귀 0.
+### 5.2 HWP5/HWPX 변환본 — 영향 없음 단언
+
+HWP3 parser 측 변경. HWP5/HWPX parser 무수정. font_faces 매핑은 HWP3 only.
+
+---
+
+## 6. 단위 테스트 추가
+
+`tests/issue_1008_gradient.rs::hwp3_sample16_font_name_mapped_to_hwp5_convention`:
+- group 0 idx 0~4 의 매핑 단언 (고딕→HY고딕, 신명조→HY신명조 등)
+- alt_name 원본 보존 단언
 
 ---
 
@@ -125,7 +131,7 @@ dedupe 후에도 HWP3 vs HWP5 변환본의 char 좌표 차이 (3-7px 누적 drif
 
 | 조건 | 결과 |
 |------|------|
-| C4: HWP3 한글 단어 공백 정합 | **부분** — dedupe 적용, visual drift 잔존 |
+| C4: HWP3 한글 단어 공백 정합 (격차 D) | ✓ **byte-for-byte HWP5 변환본 정합** |
 | C5: 페이지 수 64 유지 | ✓ |
 | C6: 변환본/일반 fixture 회귀 0 | ✓ |
 | C7: cargo test | ✓ |
@@ -133,6 +139,20 @@ dedupe 후에도 HWP3 vs HWP5 변환본의 char 좌표 차이 (3-7px 누적 drif
 
 ---
 
-## 8. 다음 단계 (Stage 6)
+## 8. 4 격차 종합 fix 위치 summary
 
-최종 보고서 갱신 + orders 갱신 + PR 생성 (작업지시자 승인 후). 격차 D 잔존 visual drift 는 별도 issue 로 후속 추적 권고.
+| 격차 | 파일 | 라인 |
+|------|------|------|
+| A | `src/parser/hwp3/drawing.rs` | 792~830 (Fill IR gradient 매핑) |
+| B | `src/parser/hwp3/drawing.rs` | 758~783 (LineType 2~7 → Solid normalize) |
+| C | `src/parser/hwp3/mod.rs` | 2870~2960 (fixup_hwp3_heading_decoration) |
+| D-1 | `src/parser/hwp3/mod.rs` | 1869~1900 (CharShape pos dedupe) |
+| D-2 | `src/parser/hwp3/mod.rs` | 2570~2585, 2908~2924 (font name 매핑) |
+
+→ **2 파일** (`drawing.rs` + `mod.rs`) 한정 수정. 다른 parser/renderer/model 무수정.
+
+---
+
+## 9. 다음 단계 (Stage 6)
+
+최종 보고서 갱신 (4 격차 모두 완료 반영) + orders 갱신 + PR 생성 (작업지시자 승인 후).

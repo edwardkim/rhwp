@@ -111,3 +111,31 @@ fn hwp3_sample16_business_box_border_solid() {
         "HWP3 raw line_style=2 (Dash) 가 1 (Solid) 로 normalize 되어야 함 (격차 B)"
     );
 }
+
+/// 격차 D: HWP3 legacy 폰트명 ("신명조" 등) → 한컴 변환기 정합 명칭 ("HY신명조" 등)
+/// 매핑 회귀 가드. font_faces[0] 의 "신명조" 가 "HY신명조" 로 매핑되어야 함.
+#[test]
+fn hwp3_sample16_font_name_mapped_to_hwp5_convention() {
+    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
+    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
+
+    let group0 = doc.doc_info.font_faces.first().expect("group 0 (한글) 존재");
+
+    // HWP3 raw idx 1 = "신명조" 가 "HY신명조" 로 매핑된 후 alt_name 에 원본 보존
+    let f1 = &group0[1];
+    assert_eq!(
+        f1.name, "HY신명조",
+        "신명조 → HY신명조 매핑 (격차 D, 한컴 변환기 mimic)"
+    );
+    assert_eq!(
+        f1.alt_name.as_deref(),
+        Some("신명조"),
+        "alt_name 에 원본 폰트명 보존"
+    );
+
+    // 다른 매핑 단언
+    assert_eq!(group0[0].name, "HY고딕", "고딕 → HY고딕");
+    assert_eq!(group0[2].name, "HY중고딕", "중고딕 → HY중고딕");
+    assert_eq!(group0[3].name, "HY견고딕", "견고딕 → HY견고딕");
+    assert_eq!(group0[4].name, "HY그래픽", "그래픽 → HY그래픽");
+}

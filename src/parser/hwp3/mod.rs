@@ -2568,7 +2568,18 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
             let font_name = crate::parser::hwp3::encoding::decode_hwp3_string(&font_name_buf);
             use crate::model::style::Font;
             let mut font = Font::default();
-            font.name = font_name;
+            // [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
+            // HWP3 → HWP5 변환기는 "신명조"/"고딕"/"중고딕"/"견고딕"/"그래픽" 등 legacy
+            // 명칭을 "HY신명조"/"한양*" 으로 변환하여 저장. rhwp SVG 출력의 font-family
+            // 첫 폰트가 다르면 시스템 fallback 미스 + 폰트 metric 측정 차이로 char-by-char
+            // advance drift 발생 (HWP3 vs HWP5 변환본 3-7px 누적). 한컴 변환기 동작
+            // mimic 으로 HWP3 측 폰트명을 HWP5 정합 명칭으로 매핑하여 동일 SVG 출력 +
+            // 폰트 metric 정합. alt_name 에 원본 보존 (트레이싱용).
+            let mapped_name = hwp3_font_name_to_hwp5(&font_name);
+            if mapped_name != font_name {
+                font.alt_name = Some(font_name.clone());
+            }
+            font.name = mapped_name;
             face_list.push(font);
         }
         font_faces.push(face_list);
@@ -2894,6 +2905,22 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 /// - 두 `■` 사이의 텍스트가 실제 heading 내용
 ///
 /// 회귀 risk: 의도된 `═` 사용 사례. 단언: 다른 HWP3 sample sweep 시 회귀 0.
+//
+// [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
+// HWP3 → HWP5 변환기는 "신명조" 등 legacy 명칭을 "HY신명조" 등 표준 명칭으로
+// 변환하여 저장. rhwp 도 동일 mapping 적용으로 HWP3 ↔ HWP5 변환본 SVG 정합.
+fn hwp3_font_name_to_hwp5(name: &str) -> String {
+    match name.trim() {
+        "신명조" => "HY신명조".to_string(),
+        "신명" => "HY신명조".to_string(),
+        "고딕" => "HY고딕".to_string(),
+        "중고딕" => "HY중고딕".to_string(),
+        "견고딕" => "HY견고딕".to_string(),
+        "그래픽" => "HY그래픽".to_string(),
+        _ => name.to_string(),
+    }
+}
+
 fn fixup_hwp3_heading_decoration(doc: &mut crate::model::document::Document) {
     for section in &mut doc.sections {
         for paragraph in &mut section.paragraphs {
