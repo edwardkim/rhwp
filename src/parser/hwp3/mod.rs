@@ -2859,8 +2859,87 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     crate::parser::assign_auto_numbers(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
+    fixup_hwp3_heading_decoration(&mut doc);
 
     Ok(doc)
+}
+
+/// [Task #1008 격차 C] HWP3 의 heading decoration text strip.
+///
+/// HWP3 raw 의 일부 paragraph 는 "═════■ NUM.title ■═════" 형태 decoration text
+/// 를 plain text 로 저장 (sample16 pi=70: "════...■ 1.추진목적 ■════..." 52자).
+/// 한컴 변환기 HWP3→HWP5 는 decoration 을 strip 하여 clean text 만 보존 (HWP5
+/// pi=70: "1. 추진목적" 7자). 한컴 한글 viewer 의 HWP3 rendering 도 동일 strip
+/// 으로 추정 — HWP3 spec 미명문화이나 작업지시자 시각 판정 권위.
+///
+/// 휴리스틱 detection:
+/// - 텍스트가 `═{5+}` 로 시작 + `═{5+}` 로 종료
+/// - 중간에 `■` 가 시작 + 종료에 등장 (decoration marker)
+/// - 두 `■` 사이의 텍스트가 실제 heading 내용
+///
+/// 회귀 risk: 의도된 `═` 사용 사례. 단언: 다른 HWP3 sample sweep 시 회귀 0.
+fn fixup_hwp3_heading_decoration(doc: &mut crate::model::document::Document) {
+    for section in &mut doc.sections {
+        for paragraph in &mut section.paragraphs {
+            if let Some(cleaned) = strip_heading_decoration(&paragraph.text) {
+                paragraph.text = cleaned;
+            }
+        }
+    }
+}
+
+/// HWP3 heading decoration pattern detection + strip.
+/// Returns Some(stripped_text) 시 매치, None 시 패턴 비매치 (원본 유지).
+fn strip_heading_decoration(text: &str) -> Option<String> {
+    const DECORATION_CHAR: char = '═';
+    const MARKER_CHAR: char = '■';
+    const MIN_DECORATION: usize = 5;
+
+    let chars: Vec<char> = text.chars().collect();
+    let len = chars.len();
+    if len < MIN_DECORATION * 2 + 2 {
+        return None;
+    }
+
+    // Leading ═ count
+    let mut leading = 0;
+    while leading < len && chars[leading] == DECORATION_CHAR {
+        leading += 1;
+    }
+    if leading < MIN_DECORATION {
+        return None;
+    }
+
+    // Trailing ═ count
+    let mut trailing_end = len;
+    while trailing_end > 0 && chars[trailing_end - 1] == DECORATION_CHAR {
+        trailing_end -= 1;
+    }
+    if len - trailing_end < MIN_DECORATION {
+        return None;
+    }
+
+    // Middle slice (between leading and trailing ═ runs)
+    let mid: String = chars[leading..trailing_end].iter().collect();
+    let mid = mid.trim();
+    let mid_chars: Vec<char> = mid.chars().collect();
+    if mid_chars.len() < 3 {
+        return None;
+    }
+
+    // Must start AND end with ■
+    if mid_chars[0] != MARKER_CHAR || mid_chars[mid_chars.len() - 1] != MARKER_CHAR {
+        return None;
+    }
+
+    // Extract content between ■...■
+    let core: String = mid_chars[1..mid_chars.len() - 1].iter().collect();
+    let core = core.trim();
+    if core.is_empty() {
+        return None;
+    }
+
+    Some(core.to_string())
 }
 
 /// [Task #877 Stage 4] HWP3 → IR 변환 후 outline list 글머리 자동 prefix.

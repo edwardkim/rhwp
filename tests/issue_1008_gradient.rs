@@ -55,3 +55,29 @@ fn hwp3_sample16_business_box_has_gradient() {
         "HWP3 raw 는 start_color + end_color 2-stop"
     );
 }
+
+/// 격차 C: HWP3 heading decoration ("═══■ 1.추진목적 ■═══") strip 회귀 가드.
+/// fixup_hwp3_heading_decoration 후 paragraph.text 가 decoration 제거된 상태인지 단언.
+#[test]
+fn hwp3_sample16_heading_decoration_stripped() {
+    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
+    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
+
+    // pi=70 이 1.추진목적 heading paragraph
+    let para = &doc.sections[0].paragraphs[70];
+    assert!(
+        !para.text.contains('═'),
+        "decoration char ═ 잔존 — heading strip 회귀 (text={:?})",
+        para.text
+    );
+    assert!(
+        !para.text.contains('■'),
+        "marker char ■ 잔존 — heading strip 회귀 (text={:?})",
+        para.text
+    );
+    assert!(
+        para.text.contains("추진목적"),
+        "heading 본문 보존 (text={:?})",
+        para.text
+    );
+}
