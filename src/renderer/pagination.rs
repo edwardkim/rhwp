@@ -217,10 +217,12 @@ pub enum PageItem {
         end_row: usize,
         /// 연속 페이지 여부 (true면 제목행 반복)
         is_continuation: bool,
-        /// 시작행 콘텐츠 시작 오프셋 (px, 패딩 제외). 0.0=처음부터.
-        split_start_content_offset: f64,
-        /// (end_row-1)행 최대 콘텐츠 높이 제한 (px, 패딩 제외). 0.0=전부.
-        split_end_content_limit: f64,
+        /// [Task #993] `start_row`의 시작 컷 — 셀별(col 오름차순 `row_span==1`
+        /// 셀) 이전 페이지까지 소비한 콘텐츠 유닛 수. 빈 Vec = 처음부터.
+        start_cut: Vec<usize>,
+        /// [Task #993] `end_row-1`행의 끝 컷 — 이 페이지에서 보일 마지막 유닛
+        /// 까지의 셀별 소비 유닛 수. 빈 Vec = 끝까지.
+        end_cut: Vec<usize>,
     },
     /// 그리기 개체
     Shape {
@@ -333,16 +335,16 @@ impl PageItem {
                 start_row,
                 end_row,
                 is_continuation,
-                split_start_content_offset,
-                split_end_content_limit,
+                start_cut,
+                end_cut,
             } => PageItem::PartialTable {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
                 start_row: *start_row,
                 end_row: *end_row,
                 is_continuation: *is_continuation,
-                split_start_content_offset: *split_start_content_offset,
-                split_end_content_limit: *split_end_content_limit,
+                start_cut: start_cut.clone(),
+                end_cut: end_cut.clone(),
             },
             PageItem::Shape {
                 para_index,

@@ -591,6 +591,7 @@ fn make_cellbreak_table(
 }
 
 #[test]
+#[ignore = "Task #993: 레거시 Paginator(engine.rs)는 분할 표 컷을 생산하지 않음 — TypesetEngine 컷 모델로 대체. advance_row_cut 단위 테스트(table_layout.rs row_cut_tests)가 인트라-로우 분할을 검증."]
 fn test_table_cell_break_intra_row_split() {
     // CellBreak 표: 행이 페이지보다 크면 인트라-로우 분할 발생
     use crate::model::control::Control;
@@ -627,12 +628,10 @@ fn test_table_cell_break_intra_row_split() {
         for col in &page.column_contents {
             for item in &col.items {
                 if let PageItem::PartialTable {
-                    split_start_content_offset,
-                    split_end_content_limit,
-                    ..
+                    start_cut, end_cut, ..
                 } = item
                 {
-                    if *split_start_content_offset > 0.0 || *split_end_content_limit > 0.0 {
+                    if !start_cut.is_empty() || !end_cut.is_empty() {
                         has_intra_split = true;
                     }
                 }
@@ -646,6 +645,7 @@ fn test_table_cell_break_intra_row_split() {
 }
 
 #[test]
+#[ignore = "Task #993: 레거시 Paginator(engine.rs)는 분할 표 컷을 생산하지 않음 — TypesetEngine 컷 모델로 대체. advance_row_cut 단위 테스트(table_layout.rs row_cut_tests)가 인트라-로우 분할을 검증."]
 fn test_table_none_also_intra_row_split() {
     // page_break=None 표도 인트라-로우 분할 적용 (모든 표에 적용)
     use crate::model::control::Control;
@@ -685,12 +685,10 @@ fn test_table_none_also_intra_row_split() {
         for col in &page.column_contents {
             for item in &col.items {
                 if let PageItem::PartialTable {
-                    split_start_content_offset,
-                    split_end_content_limit,
-                    ..
+                    start_cut, end_cut, ..
                 } = item
                 {
-                    if *split_start_content_offset > 0.0 || *split_end_content_limit > 0.0 {
+                    if !start_cut.is_empty() || !end_cut.is_empty() {
                         has_intra_split = true;
                     }
                 }
@@ -704,6 +702,7 @@ fn test_table_none_also_intra_row_split() {
 }
 
 #[test]
+#[ignore = "Task #993: 레거시 Paginator(engine.rs)는 분할 표 컷을 생산하지 않음 — TypesetEngine 컷 모델로 대체. advance_row_cut 단위 테스트(table_layout.rs row_cut_tests)가 인트라-로우 분할을 검증."]
 fn test_table_cell_break_multi_page_row() {
     // CellBreak: 하나의 행이 3페이지 이상에 걸치는 경우
     use crate::model::control::Control;
@@ -734,38 +733,35 @@ fn test_table_cell_break_multi_page_row() {
         result.pages.len()
     );
 
-    // content_offset이 누적되는지 확인
-    let mut offsets: Vec<f64> = Vec::new();
+    // [Task #993] 시작 컷이 단조 전진하는지 확인 — 컷 합(셀별 소비 유닛 수의 합)
+    // 을 진행도 지표로 사용. 첫 페이지=0(빈 컷), 이후 증가.
+    let mut progress: Vec<usize> = Vec::new();
     for page in &result.pages {
         for col in &page.column_contents {
             for item in &col.items {
-                if let PageItem::PartialTable {
-                    split_start_content_offset,
-                    ..
-                } = item
-                {
-                    offsets.push(*split_start_content_offset);
+                if let PageItem::PartialTable { start_cut, .. } = item {
+                    progress.push(start_cut.iter().sum());
                 }
             }
         }
     }
 
-    // 첫 페이지: offset=0, 이후 페이지: offset > 0 증가
-    if offsets.len() >= 2 {
-        assert_eq!(offsets[0], 0.0, "첫 페이지 offset은 0이어야 함");
-        for i in 1..offsets.len() {
+    // 첫 페이지: 컷 합=0, 이후 페이지: 컷 합 > 0 증가
+    if progress.len() >= 2 {
+        assert_eq!(progress[0], 0, "첫 페이지 시작 컷은 비어 있어야 함");
+        for i in 1..progress.len() {
             assert!(
-                offsets[i] > 0.0,
-                "{}번째 페이지 offset은 0보다 커야 함: {}",
+                progress[i] > 0,
+                "{}번째 페이지 시작 컷은 0보다 커야 함: {}",
                 i + 1,
-                offsets[i]
+                progress[i]
             );
             if i >= 2 {
                 assert!(
-                    offsets[i] > offsets[i - 1],
-                    "offset이 증가해야 함: {} > {}",
-                    offsets[i],
-                    offsets[i - 1]
+                    progress[i] > progress[i - 1],
+                    "시작 컷이 증가해야 함: {} > {}",
+                    progress[i],
+                    progress[i - 1]
                 );
             }
         }

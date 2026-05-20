@@ -220,8 +220,8 @@ mod tests {
             start_row: 0,
             end_row: 3,
             is_continuation: false,
-            split_start_content_offset: 0.0,
-            split_end_content_limit: 0.0,
+            start_cut: Vec::new(),
+            end_cut: Vec::new(),
         }]);
         assert_eq!(a.assign(&p1), 1);
 
@@ -232,8 +232,8 @@ mod tests {
             start_row: 3,
             end_row: 6,
             is_continuation: true,
-            split_start_content_offset: 0.0,
-            split_end_content_limit: 0.0,
+            start_cut: Vec::new(),
+            end_cut: Vec::new(),
         }]);
         assert_eq!(a.assign(&p2), 2);
     }

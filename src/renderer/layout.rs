@@ -2359,13 +2359,24 @@ impl LayoutEngine {
                                             // 지연 보정: 첫 보정 시점에서 기준점 산출
                                             // sequential y_offset에서 역산하여 기준 vpos 결정
                                             //
-                                            // [Task #537] trailing-ls 보정:
-                                            // paragraph_layout 의 마지막 줄은 trailing line_spacing 을
-                                            // 제외하여 y 를 advance 한다 (Task #479, lh_sum + (n-1)*ls 정책).
-                                            // 그 결과 sequential y_offset 은 IR vpos 누적보다
-                                            // prev_pi 의 last seg ls 만큼 부족해진다.
-                                            // 이 부족분을 y_delta_hu 에 더해야 lazy_base 가
-                                            // IR 절대 좌표와 일치한다 (drift 가 base 에 동결되는 것을 방지).
+                                            // [Task #1022 v2] Task #537 trailing-ls 보정의 조건부 복원.
+                                            //
+                                            // 배경: #537 은 paragraph_layout 의 마지막 줄 trailing
+                                            // line_spacing 이 sequential y_offset 에 누락되던 시기에
+                                            // +trailing_ls_hu 로 IR 절대좌표를 맞췄다. 이후 Task #452 가
+                                            // body advance 에 trailing_ls 를 포함(`paragraph_layout.rs:
+                                            // 3583~3589`)하도록 회복하면서, 컬럼이 vpos 0 에서 시작해
+                                            // sequential 이 IR 을 정확히 추적하는 경우(drift 0)에는
+                                            // +trailing_ls_hu 가 over-correction 이 된다(lazy_base 가
+                                            // 음수로 떨어져 표 페이지 overflow 유발 — exam_kor p5).
+                                            //
+                                            // 그러나 컬럼이 vpos 0 이 아닌 위치에서 시작하는 경우
+                                            // (상단 제목 박스/도형 뒤 본문 — footnote-01 p1)에는
+                                            // 여전히 trailing_ls 만큼의 bridge 가 필요하다(미적용 시
+                                            // 본문이 한 ls 위로 밀려 한컴 정답지에서 멀어짐).
+                                            //
+                                            // 게이트: 보정된 lazy_base 가 0 이상이면 보정 적용,
+                                            // 음수면 비보정 lazy_base 사용(=drift 0 추적 신뢰).
                                             let trailing_ls_hu = paragraphs
                                                 .get(prev_pi)
                                                 .and_then(|p| p.line_segs.last())
@@ -2374,9 +2385,14 @@ impl LayoutEngine {
                                             let y_delta_hu = ((y_offset - col_area.y) / self.dpi
                                                 * 7200.0)
                                                 .round()
-                                                as i32
-                                                + trailing_ls_hu;
-                                            let lazy_base = prev_vpos_end - y_delta_hu;
+                                                as i32;
+                                            let lazy_base_corrected =
+                                                prev_vpos_end - (y_delta_hu + trailing_ls_hu);
+                                            let lazy_base = if lazy_base_corrected >= 0 {
+                                                lazy_base_corrected
+                                            } else {
+                                                prev_vpos_end - y_delta_hu
+                                            };
                                             // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
                                             // vpos 누적보다 크게 밀린 것 → 역산 무효
                                             if lazy_base < 0 {
@@ -3365,8 +3381,8 @@ impl LayoutEngine {
                 start_row,
                 end_row,
                 is_continuation,
-                split_start_content_offset,
-                split_end_content_limit,
+                start_cut,
+                end_cut,
             } => {
                 y_offset = self.layout_partial_table_item(
                     tree,
@@ -3377,8 +3393,8 @@ impl LayoutEngine {
                     *start_row,
                     *end_row,
                     *is_continuation,
-                    *split_start_content_offset,
-                    *split_end_content_limit,
+                    start_cut,
+                    end_cut,
                     &ctx,
                     y_offset,
                 );
@@ -4014,8 +4030,8 @@ impl LayoutEngine {
         start_row: usize,
         end_row: usize,
         is_continuation: bool,
-        split_start_content_offset: f64,
-        split_end_content_limit: f64,
+        start_cut: &[usize],
+        end_cut: &[usize],
         ctx: &ColumnItemCtx,
         mut y_offset: f64,
     ) -> f64 {
@@ -4137,8 +4153,8 @@ impl LayoutEngine {
             start_row,
             end_row,
             is_continuation,
-            split_start_content_offset,
-            split_end_content_limit,
+            start_cut,
+            end_cut,
             pt_margin_left,
             pt_margin_right,
             pt_mt,
