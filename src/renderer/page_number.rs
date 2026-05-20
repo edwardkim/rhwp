@@ -222,6 +222,7 @@ mod tests {
             is_continuation: false,
             start_cut: Vec::new(),
             end_cut: Vec::new(),
+            is_block_split: false,
         }]);
         assert_eq!(a.assign(&p1), 1);
 
@@ -234,6 +235,7 @@ mod tests {
             is_continuation: true,
             start_cut: Vec::new(),
             end_cut: Vec::new(),
+            is_block_split: false,
         }]);
         assert_eq!(a.assign(&p2), 2);
     }

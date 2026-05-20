@@ -29,6 +29,10 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
         return raw.clone();
     }
 
+    // [Task #852 Stage 2.4] Form 컨트롤의 z-order/TabOrder 카운터 reset.
+    // 한 섹션 내 Form 등장순으로 0..N-1 부여 → 정답지 패턴 재현.
+    super::control::reset_form_order_counter();
+
     let mut records = Vec::new();
     let para_count = section.paragraphs.len();
     for (i, para) in section.paragraphs.iter().enumerate() {
