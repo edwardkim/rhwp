@@ -763,10 +763,21 @@ fn map_to_shape_object(
         // 박스 외곽선 회귀: raw line_style=0, line_width=84, line_color=0 검정)
         // 렌더러 [renderer/layout/utils.rs:163] 의 `attr & 0x3F == 0` 시 외곽선 미표시
         // 규칙에 맞추기 위해 bit 0..5 = 1 (Solid LineType) 보강.
+        //
+        // [Task #1008 격차 B] HWP3 raw line_style 의 LineType=2~7 (점선/일점쇄선
+        // 등) 도 한컴 viewer 는 실선으로 렌더 (sample16 pi=71 사업개요 박스 raw
+        // line_style=2 → 한컴 정답 = 실선). HWP3 native LineType 변형은 spec
+        // 상 존재하나 한컴 동작은 일관 solid — 작업지시자 한컴 한글 정답지 시각
+        // 정답 단언. HWP3 sample 분포 sweep: line_style=2 는 sample16 한정 (다른
+        // fixture: 0/1 만), narrow fix 회귀 risk 0. HWP3 한정 (HWP5/HWPX 무영향).
         attr: {
             let raw_attr = header.basic_attr.line_style as u32;
-            if (raw_attr & 0x3F) == 0 && header.basic_attr.line_width > 0 {
+            let line_type = raw_attr & 0x3F;
+            if line_type == 0 && header.basic_attr.line_width > 0 {
                 raw_attr | 0x01
+            } else if (2..=7).contains(&line_type) {
+                // HWP3 의 LineType 2~7 을 1 (Solid) 로 normalize
+                (raw_attr & !0x3F) | 0x01
             } else {
                 raw_attr
             }
@@ -789,14 +800,35 @@ fn map_to_shape_object(
     } else {
         fill_rgb
     };
+    // [Task #1008 격차 A] HWP3 gradient_attr 이 파싱된 경우 IR Fill.gradient 에 매핑.
+    // HWP3 raw stream 의 Hwp3DrawingObjectGradientAttr (drawing.rs:149~170) 은 이미
+    // basic_attr.has_gradient() 시 파싱되어 header.gradient_attr 에 보존되지만, 종전
+    // 코드는 fill_type 을 항상 Solid 로 하드코딩하여 데이터가 무시되었음. HWP5 의
+    // doc_info.rs:404 매핑과 동일 contract 로 IR 주입 (step→blur, 2-stop colors,
+    // positions=vec![] → renderer 가 균등 분포).
+    let (fill_type, gradient) = if let Some(g) = header.gradient_attr.as_ref() {
+        let grad = crate::model::style::GradientFill {
+            gradient_type: g.kind as i16,
+            angle: g.angle as i16,
+            center_x: g.center_x as i16,
+            center_y: g.center_y as i16,
+            blur: g.step as i16,
+            step_center: 0,
+            colors: vec![g.start_color, g.end_color],
+            positions: vec![],
+        };
+        (crate::model::style::FillType::Gradient, Some(grad))
+    } else {
+        (crate::model::style::FillType::Solid, None)
+    };
     let fill = Fill {
-        fill_type: crate::model::style::FillType::Solid,
+        fill_type,
         solid: Some(crate::model::style::SolidFill {
             background_color: effective_rgb,
             pattern_color: header.basic_attr.pattern_color,
             pattern_type: header.basic_attr.pattern_type as i32,
         }),
-        gradient: None,
+        gradient,
         image: None,
         // [Task #877 Stage 4] 한컴 호환 alpha convention: 0=불투명, 255=완전 투명.
         // (renderer/layout/utils.rs:199 의 opacity 식: opacity = 1 - alpha/255)

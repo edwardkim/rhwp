@@ -1882,7 +1882,23 @@ pub(crate) fn parse_paragraph_list(
             }
         }
 
-        para.char_shapes = char_shapes;
+        // [Task #1008 격차 D] 같은 start_pos 에 여러 CharShape 가 push 된 경우
+        // (rep CharShape + inline shape change at pos=0) 마지막 (inline) 만 유지.
+        // HWP3 raw 구조상 rep + inline pos=0 둘 다 발생 가능 — sample16 pi=4 에서
+        // rep id=57 base_size=1000 (10pt) + inline id=58 base_size=1400 (14pt)
+        // 중복 시, renderer 가 첫 번째 (10pt) 를 leading 8 chars 에 적용하여
+        // cumulative char-by-char drift 발생. inline override 가 의미적으로 정확.
+        let mut deduped: Vec<CharShapeRef> = Vec::with_capacity(char_shapes.len());
+        for cs in char_shapes {
+            if let Some(last) = deduped.last_mut() {
+                if last.start_pos == cs.start_pos {
+                    *last = cs;
+                    continue;
+                }
+            }
+            deduped.push(cs);
+        }
+        para.char_shapes = deduped;
 
         let mut base_size = 1000;
         let mut line_spacing_ratio = 160;
@@ -2552,7 +2568,18 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
             let font_name = crate::parser::hwp3::encoding::decode_hwp3_string(&font_name_buf);
             use crate::model::style::Font;
             let mut font = Font::default();
-            font.name = font_name;
+            // [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
+            // HWP3 → HWP5 변환기는 "신명조"/"고딕"/"중고딕"/"견고딕"/"그래픽" 등 legacy
+            // 명칭을 "HY신명조"/"한양*" 으로 변환하여 저장. rhwp SVG 출력의 font-family
+            // 첫 폰트가 다르면 시스템 fallback 미스 + 폰트 metric 측정 차이로 char-by-char
+            // advance drift 발생 (HWP3 vs HWP5 변환본 3-7px 누적). 한컴 변환기 동작
+            // mimic 으로 HWP3 측 폰트명을 HWP5 정합 명칭으로 매핑하여 동일 SVG 출력 +
+            // 폰트 metric 정합. alt_name 에 원본 보존 (트레이싱용).
+            let mapped_name = hwp3_font_name_to_hwp5(&font_name);
+            if mapped_name != font_name {
+                font.alt_name = Some(font_name.clone());
+            }
+            font.name = mapped_name;
             face_list.push(font);
         }
         font_faces.push(face_list);
@@ -2859,8 +2886,103 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     crate::parser::assign_auto_numbers(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
+    fixup_hwp3_heading_decoration(&mut doc);
 
     Ok(doc)
+}
+
+/// [Task #1008 격차 C] HWP3 의 heading decoration text strip.
+///
+/// HWP3 raw 의 일부 paragraph 는 "═════■ NUM.title ■═════" 형태 decoration text
+/// 를 plain text 로 저장 (sample16 pi=70: "════...■ 1.추진목적 ■════..." 52자).
+/// 한컴 변환기 HWP3→HWP5 는 decoration 을 strip 하여 clean text 만 보존 (HWP5
+/// pi=70: "1. 추진목적" 7자). 한컴 한글 viewer 의 HWP3 rendering 도 동일 strip
+/// 으로 추정 — HWP3 spec 미명문화이나 작업지시자 시각 판정 권위.
+///
+/// 휴리스틱 detection:
+/// - 텍스트가 `═{5+}` 로 시작 + `═{5+}` 로 종료
+/// - 중간에 `■` 가 시작 + 종료에 등장 (decoration marker)
+/// - 두 `■` 사이의 텍스트가 실제 heading 내용
+///
+/// 회귀 risk: 의도된 `═` 사용 사례. 단언: 다른 HWP3 sample sweep 시 회귀 0.
+//
+// [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
+// HWP3 → HWP5 변환기는 "신명조" 등 legacy 명칭을 "HY신명조" 등 표준 명칭으로
+// 변환하여 저장. rhwp 도 동일 mapping 적용으로 HWP3 ↔ HWP5 변환본 SVG 정합.
+fn hwp3_font_name_to_hwp5(name: &str) -> String {
+    match name.trim() {
+        "신명조" => "HY신명조".to_string(),
+        "신명" => "HY신명조".to_string(),
+        "고딕" => "HY고딕".to_string(),
+        "중고딕" => "HY중고딕".to_string(),
+        "견고딕" => "HY견고딕".to_string(),
+        "그래픽" => "HY그래픽".to_string(),
+        _ => name.to_string(),
+    }
+}
+
+fn fixup_hwp3_heading_decoration(doc: &mut crate::model::document::Document) {
+    for section in &mut doc.sections {
+        for paragraph in &mut section.paragraphs {
+            if let Some(cleaned) = strip_heading_decoration(&paragraph.text) {
+                paragraph.text = cleaned;
+            }
+        }
+    }
+}
+
+/// HWP3 heading decoration pattern detection + strip.
+/// Returns Some(stripped_text) 시 매치, None 시 패턴 비매치 (원본 유지).
+fn strip_heading_decoration(text: &str) -> Option<String> {
+    const DECORATION_CHAR: char = '═';
+    const MARKER_CHAR: char = '■';
+    const MIN_DECORATION: usize = 5;
+
+    let chars: Vec<char> = text.chars().collect();
+    let len = chars.len();
+    if len < MIN_DECORATION * 2 + 2 {
+        return None;
+    }
+
+    // Leading ═ count
+    let mut leading = 0;
+    while leading < len && chars[leading] == DECORATION_CHAR {
+        leading += 1;
+    }
+    if leading < MIN_DECORATION {
+        return None;
+    }
+
+    // Trailing ═ count
+    let mut trailing_end = len;
+    while trailing_end > 0 && chars[trailing_end - 1] == DECORATION_CHAR {
+        trailing_end -= 1;
+    }
+    if len - trailing_end < MIN_DECORATION {
+        return None;
+    }
+
+    // Middle slice (between leading and trailing ═ runs)
+    let mid: String = chars[leading..trailing_end].iter().collect();
+    let mid = mid.trim();
+    let mid_chars: Vec<char> = mid.chars().collect();
+    if mid_chars.len() < 3 {
+        return None;
+    }
+
+    // Must start AND end with ■
+    if mid_chars[0] != MARKER_CHAR || mid_chars[mid_chars.len() - 1] != MARKER_CHAR {
+        return None;
+    }
+
+    // Extract content between ■...■
+    let core: String = mid_chars[1..mid_chars.len() - 1].iter().collect();
+    let core = core.trim();
+    if core.is_empty() {
+        return None;
+    }
+
+    Some(core.to_string())
 }
 
 /// [Task #877 Stage 4] HWP3 → IR 변환 후 outline list 글머리 자동 prefix.
