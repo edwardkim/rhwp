@@ -223,6 +223,10 @@ pub enum PageItem {
         /// [Task #993] `end_row-1`행의 끝 컷 — 이 페이지에서 보일 마지막 유닛
         /// 까지의 셀별 소비 유닛 수. 빈 Vec = 끝까지.
         end_cut: Vec<usize>,
+        /// [Task #1025] true 이면 컷이 rowspan 블록-셀 `(row,col)` 인덱스
+        /// (`advance_row_block_cut`). false 이면 단일 행 `row_span==1` col 인덱스
+        /// (`advance_row_cut`, 기존). page-larger 셀 내부 분할에서만 true.
+        is_block_split: bool,
     },
     /// 그리기 개체
     Shape {
@@ -337,6 +341,7 @@ impl PageItem {
                 is_continuation,
                 start_cut,
                 end_cut,
+                is_block_split,
             } => PageItem::PartialTable {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
@@ -345,6 +350,7 @@ impl PageItem {
                 is_continuation: *is_continuation,
                 start_cut: start_cut.clone(),
                 end_cut: end_cut.clone(),
+                is_block_split: *is_block_split,
             },
             PageItem::Shape {
                 para_index,

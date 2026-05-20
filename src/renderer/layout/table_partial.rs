@@ -21,6 +21,61 @@ use crate::model::style::{Alignment, BorderLine};
 
 // 표 수평 정렬 보조 타입은 table_layout.rs에 통합됨
 
+/// [Task #1025] `row` 를 포함하는 rowspan 블록 범위 `[b_start, b_end)`.
+/// rs>1 셀이 겹치는 행을 전이적으로 확장한다(겹침 없으면 `[row, row+1)`).
+/// 페이지네이터 `mt.row_block_for` / `advance_row_block_cut` 와 동일한 블록 정의.
+fn rowspan_block_range(table: &crate::model::table::Table, row: usize) -> (usize, usize) {
+    let mut b_start = row;
+    let mut b_end = row + 1;
+    loop {
+        let mut changed = false;
+        for c in &table.cells {
+            if c.row_span <= 1 {
+                continue;
+            }
+            let cs = c.row as usize;
+            let ce = cs + c.row_span as usize;
+            if cs < b_end && ce > b_start {
+                if cs < b_start {
+                    b_start = cs;
+                    changed = true;
+                }
+                if ce > b_end {
+                    b_end = ce;
+                    changed = true;
+                }
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+    (b_start, b_end)
+}
+
+/// [Task #1025] 블록 `[b_start, b_end)` 컷 벡터에서 `cell` 의 인덱스.
+/// `advance_row_block_cut` 과 동일한 `(row, col)` 안정 순서. 없으면 None.
+fn block_cut_index(
+    table: &crate::model::table::Table,
+    b_start: usize,
+    b_end: usize,
+    cell: &crate::model::table::Cell,
+) -> Option<usize> {
+    let mut cells: Vec<&crate::model::table::Cell> = table
+        .cells
+        .iter()
+        .filter(|c| {
+            let cr = c.row as usize;
+            let ce = cr + (c.row_span as usize).max(1);
+            cr < b_end && ce > b_start
+        })
+        .collect();
+    cells.sort_by_key(|c| (c.row, c.col));
+    cells
+        .iter()
+        .position(|c| c.row == cell.row && c.col == cell.col)
+}
+
 impl LayoutEngine {
     /// 표의 일부 행만 레이아웃한다 (페이지 분할).
     ///
@@ -44,6 +99,7 @@ impl LayoutEngine {
         is_continuation: bool,
         start_cut: &[usize],
         end_cut: &[usize],
+        is_block_split: bool,
         host_margin_left: f64,
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
@@ -112,27 +168,75 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [Task #1025] page-larger 블록 분할(is_block_split)이면 컷이 rowspan
+            // 블록-셀 인덱스 → 블록 범위(rowspan-확장)로 per-row 컷 매핑. 그 외(일반
+            // 분할)는 기존 per-row(row_span==1) 경로 유지(rowspan 행은 atomic).
+            let start_block = if is_block_split && !start_cut.is_empty() {
+                Some(rowspan_block_range(table, start_row))
+            } else {
+                None
+            };
+            let end_block = if is_block_split && !end_cut.is_empty() {
+                Some(rowspan_block_range(table, split_last_row))
+            } else {
+                None
+            };
             for r in rows_to_set {
                 if r >= row_count {
                     continue;
                 }
-                // rowspan 셀이 걸친 행은 컷 모델이 측정 못 함 — resolve_row_heights
-                // (MeasuredTable) 결과 유지. 페이지네이터도 동일하게 폴백한다.
                 let rowspan_touched = table.cells.iter().any(|c| {
                     c.row_span > 1
                         && (c.row as usize) <= r
                         && r < c.row as usize + c.row_span as usize
                 });
-                if rowspan_touched {
-                    continue;
-                }
-                let su: &[usize] = if r == start_row { start_cut } else { &[] };
-                let eu: &[usize] = if r == split_last_row { end_cut } else { &[] };
-                // [Task #1022] row_cut_content_height 가 행 총 높이(패딩 포함)를
-                // 반환 — 별도 padding 가산 금지.
-                let h = self.row_cut_content_height(table, r, su, eu, styles);
-                if h > 0.0 {
-                    row_heights[r] = h;
+                if is_block_split {
+                    let in_start = start_block.is_some_and(|(s, e)| s <= r && r < e);
+                    let in_end = end_block.is_some_and(|(s, e)| s <= r && r < e);
+                    // 분할 블록 밖 rowspan 행은 컷 모델 밖 — resolve_row_heights 유지.
+                    if rowspan_touched && !in_start && !in_end {
+                        continue;
+                    }
+                    // 행 r 의 row_span==1 셀(col 순)별 블록 컷 → per-row 컷 매핑.
+                    let mut rcells: Vec<&crate::model::table::Cell> = table
+                        .cells
+                        .iter()
+                        .filter(|c| c.row as usize == r && c.row_span == 1)
+                        .collect();
+                    rcells.sort_by_key(|c| c.col);
+                    let per_start: Vec<usize> = rcells
+                        .iter()
+                        .map(|c| match (in_start, start_block) {
+                            (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
+                                .and_then(|i| start_cut.get(i).copied())
+                                .unwrap_or(0),
+                            _ => 0,
+                        })
+                        .collect();
+                    let per_end: Vec<usize> = rcells
+                        .iter()
+                        .map(|c| match (in_end, end_block) {
+                            (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
+                                .and_then(|i| end_cut.get(i).copied())
+                                .unwrap_or(usize::MAX),
+                            _ => usize::MAX,
+                        })
+                        .collect();
+                    let h = self.row_cut_content_height(table, r, &per_start, &per_end, styles);
+                    if h > 0.0 {
+                        row_heights[r] = h;
+                    }
+                } else {
+                    // 기존 per-row 경로: rowspan 행은 atomic(resolve_row_heights) 유지.
+                    if rowspan_touched {
+                        continue;
+                    }
+                    let su: &[usize] = if r == start_row { start_cut } else { &[] };
+                    let eu: &[usize] = if r == split_last_row { end_cut } else { &[] };
+                    let h = self.row_cut_content_height(table, r, su, eu, styles);
+                    if h > 0.0 {
+                        row_heights[r] = h;
+                    }
                 }
             }
         }
@@ -360,8 +464,28 @@ impl LayoutEngine {
             }
 
             // 이 셀이 분할 행에 속하는지 판별 (clip 플래그에 사용)
-            let is_split_start_row = !start_cut.is_empty() && cell_row == start_row;
-            let is_split_end_row = !end_cut.is_empty() && cell_row == end_row.saturating_sub(1);
+            // [Task #1025] page-larger 블록 분할이면 컷이 블록-셀 인덱스 → 블록 범위
+            // (rowspan-확장)와 셀 교차로 판정. 그 외는 기존 per-row 판정.
+            let split_start_block = if is_block_split && !start_cut.is_empty() {
+                Some(rowspan_block_range(table, start_row))
+            } else {
+                None
+            };
+            let split_end_block = if is_block_split && !end_cut.is_empty() {
+                Some(rowspan_block_range(table, end_row.saturating_sub(1)))
+            } else {
+                None
+            };
+            let is_split_start_row = if is_block_split {
+                split_start_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
+            } else {
+                !start_cut.is_empty() && cell_row == start_row
+            };
+            let is_split_end_row = if is_block_split {
+                split_end_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
+            } else {
+                !end_cut.is_empty() && cell_row == end_row.saturating_sub(1)
+            };
             let is_in_split_row = is_split_start_row || is_split_end_row;
 
             let cell_id = tree.next_id();
@@ -440,23 +564,40 @@ impl LayoutEngine {
                 }
             }
 
-            // 분할 행: [Task #993] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
-            // 셀 인덱스는 advance_row_cut 과 동일하게 row_span==1 셀의 col 순위.
+            // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
+            // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
             let line_ranges: Option<Vec<(usize, usize)>> = if is_in_split_row {
-                let cut_idx = table
-                    .cells
-                    .iter()
-                    .filter(|c| c.row_span == 1 && c.row == cell.row && c.col < cell.col)
-                    .count();
-                let start_unit = if is_split_start_row {
-                    start_cut.get(cut_idx).copied().unwrap_or(0)
+                let (start_unit, end_unit) = if is_block_split {
+                    let su = match (is_split_start_row, split_start_block) {
+                        (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
+                            .and_then(|i| start_cut.get(i).copied())
+                            .unwrap_or(0),
+                        _ => 0,
+                    };
+                    let eu = match (is_split_end_row, split_end_block) {
+                        (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
+                            .and_then(|i| end_cut.get(i).copied())
+                            .unwrap_or(usize::MAX),
+                        _ => usize::MAX,
+                    };
+                    (su, eu)
                 } else {
-                    0
-                };
-                let end_unit = if is_split_end_row {
-                    end_cut.get(cut_idx).copied().unwrap_or(usize::MAX)
-                } else {
-                    usize::MAX
+                    let cut_idx = table
+                        .cells
+                        .iter()
+                        .filter(|c| c.row_span == 1 && c.row == cell.row && c.col < cell.col)
+                        .count();
+                    let su = if is_split_start_row {
+                        start_cut.get(cut_idx).copied().unwrap_or(0)
+                    } else {
+                        0
+                    };
+                    let eu = if is_split_end_row {
+                        end_cut.get(cut_idx).copied().unwrap_or(usize::MAX)
+                    } else {
+                        usize::MAX
+                    };
+                    (su, eu)
                 };
                 Some(self.cell_line_ranges_from_cut(cell, table, styles, start_unit, end_unit))
             } else {

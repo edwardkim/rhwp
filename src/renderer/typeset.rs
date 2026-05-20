@@ -2777,10 +2777,19 @@ impl TypesetEngine {
         // 수)으로 추적한다. 빈 Vec = cursor_row 를 처음부터. 컷은 advance_row_cut
         // 에 의해 유닛을 ≥1개씩 단조 전진하므로 무한 루프가 구조적으로 불가능하다.
         let mut start_cut: Vec<usize> = Vec::new();
+        // [Task #1025] 현재 start_cut 이 rowspan 블록-셀 인덱스인지(직전 블록 분할의
+        // 연속분). PartialTable.is_block_split 로 렌더러에 전달.
+        let mut start_cut_is_block = false;
 
         while cursor_row < row_count {
-            // 이전 분할에서 모든 콘텐츠가 소진된 행은 건너뜀
-            if !start_cut.is_empty()
+            // 이전 분할에서 모든 콘텐츠가 소진된 행은 건너뜀.
+            // [Task #1025] 블록 컷(start_cut_is_block)은 per-row(row_span==1) 컷이 아니라
+            // 블록-셀 인덱스다. advance_row_cut(per-row)로 판정하면 블록 첫 행이 소진돼도
+            // 거대 셀이 남은 경우를 "소진"으로 오판해 cursor 를 전진시키고 start_cut 을
+            // 비워 블록 컷을 잃는다(연속분이 거대 셀을 처음부터 다시 렌더 → overflow).
+            // 블록 컷이면 이 가드를 건너뛰어 컷을 보존한다.
+            if !start_cut_is_block
+                && !start_cut.is_empty()
                 && can_intra_split
                 && layout_engine
                     .advance_row_cut(table, cursor_row, &start_cut, f64::MAX, styles)
@@ -2872,6 +2881,8 @@ impl TypesetEngine {
             let mut end_row = cursor_row;
             let mut split_end_cut: Vec<usize> = Vec::new();
             let mut split_end_limit: f64 = 0.0;
+            // [Task #1025] 블록 분할 시 연속분 커서가 블록 시작 행으로 복귀하도록 기록.
+            let mut split_block_start: Option<usize> = None;
             let mut consumed: f64 = 0.0; // 완전 배치된 행들의 누적 높이
             {
                 let mut r = cursor_row;
@@ -2884,9 +2895,68 @@ impl TypesetEngine {
                         && block_size >= 2
                         && block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
                     if protected && b_start == r {
-                        let block_h: f64 = (b_start..b_end).map(|x| cut_row_h[x]).sum::<f64>()
-                            + cs * block_size.saturating_sub(1) as f64;
-                        if r == cursor_row || consumed + cs_before + block_h <= avail_for_rows {
+                        // [Task #1025] 연속분 커서가 블록 중간이면 블록 시작 컷을 적용.
+                        let blk_start_cut: &[usize] =
+                            if r == cursor_row { &start_cut } else { &[] };
+                        let block_h: f64 = if blk_start_cut.is_empty() {
+                            (b_start..b_end).map(|x| cut_row_h[x]).sum::<f64>()
+                                + cs * block_size.saturating_sub(1) as f64
+                        } else {
+                            layout_engine.row_block_content_height(
+                                table,
+                                b_start,
+                                b_end,
+                                blk_start_cut,
+                                &[],
+                                styles,
+                            ) + cs * block_size.saturating_sub(1) as f64
+                        };
+                        if consumed + cs_before + block_h <= avail_for_rows {
+                            consumed += cs_before + block_h;
+                            r = b_end;
+                            end_row = r;
+                            continue;
+                        }
+                        // [Task #1025] 블록이 가용 초과 — 거대 row_span==1 셀을 줄 단위로
+                        // 분할 시도(블록 컷). 분할 가능 + (페이지 시작이거나 충분히 채움)이면
+                        // 블록 내부 컷 분할, 아니면 다음 페이지로 미룬다.
+                        let budget = (avail_for_rows - consumed - cs_before).max(0.0);
+                        let res = layout_engine.advance_row_block_cut(
+                            table,
+                            b_start,
+                            b_end,
+                            blk_start_cut,
+                            budget,
+                            styles,
+                        );
+                        // [Task #1025] 블록이 fresh 페이지에도 안 들어가야(진짜 page-larger)
+                        // 페이지 중간에서 분할한다. fresh 페이지엔 들어가면(잔여 공간만
+                        // 부족) 통째로 다음 페이지로 미뤄 잔여 overflow 를 피한다(기존 동작).
+                        // 페이지 시작 행(r==cursor_row)은 더 미룰 수 없으므로 무조건 분할.
+                        let genuinely_page_larger = block_h > st.base_available_height();
+                        if can_intra_split
+                            && !res.fully_consumed
+                            && (r == cursor_row
+                                || (genuinely_page_larger
+                                    && res.consumed_height >= MIN_TOP_KEEP_PX))
+                        {
+                            end_row = b_end;
+                            split_end_cut = res.end_cut.clone();
+                            split_end_limit = res.consumed_height;
+                            split_block_start = Some(b_start);
+                            let split_total = layout_engine.row_block_content_height(
+                                table,
+                                b_start,
+                                b_end,
+                                blk_start_cut,
+                                &res.end_cut,
+                                styles,
+                            );
+                            consumed += cs_before + split_total;
+                            break;
+                        }
+                        if r == cursor_row {
+                            // 분할 불가 — 강제 통째 배치(기존 overflow 동작 유지).
                             consumed += cs_before + block_h;
                             r = b_end;
                             end_row = r;
@@ -3026,6 +3096,7 @@ impl TypesetEngine {
                         is_continuation,
                         start_cut: start_cut.clone(),
                         end_cut: Vec::new(),
+                        is_block_split: start_cut_is_block,
                     });
                     // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                     // host_line_spacing과 outer_bottom은 포함하지 않음
@@ -3044,16 +3115,22 @@ impl TypesetEngine {
                 is_continuation,
                 start_cut: start_cut.clone(),
                 end_cut: split_end_cut.clone(),
+                // [Task #1025] 이번 분할이 블록 분할이거나 start_cut 이 이미 블록 인덱스.
+                is_block_split: split_block_start.is_some() || start_cut_is_block,
             });
             st.advance_column_or_new_page();
 
             // 커서 전진 — [Task #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
             if split_end_limit > 0.0 {
-                cursor_row = end_row - 1;
+                // [Task #1025] 블록 분할이면 커서를 블록 시작 행으로(end_row-1 아님).
+                cursor_row = split_block_start.unwrap_or(end_row - 1);
                 start_cut = split_end_cut;
+                // 다음 fragment 의 start_cut 이 블록 인덱스인지 전파.
+                start_cut_is_block = split_block_start.is_some();
             } else {
                 cursor_row = end_row;
                 start_cut = Vec::new();
+                start_cut_is_block = false;
             }
             is_continuation = true;
         }
