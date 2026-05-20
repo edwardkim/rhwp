@@ -229,6 +229,22 @@ fn parse_hwp_with_cfb(
                 // ~1.15배 (15% 만 차이). /2 fix 시 HWP5 가 HWP3 보다 더 compact 되어
                 // 한컴 정합 페이지 분할 회귀 (한컴은 section 2 가 새 페이지 vs rhwp
                 // 는 같은 페이지에 packed). vpos 보정 없이 ParaShape /4 만으로 정합.
+
+                // [Task #1037] ParaShape unit semantic normalize — HWP3 → HWP5 변환본은
+                // 한컴 변환기가 ParaShape 의 margin/indent/spacing 값을 2× 로 저장 (raw
+                // HWPUNIT 의 2배). 종전 style_resolver.rs 의 variant_div=4 가 rendering
+                // 측에서 보정하나, dialog 등 raw 값을 직접 사용하는 컴포넌트에서는 2× 로
+                // 표시 (한컴 정답 8.5pt → rhwp HWP5 17.0pt). 변환본 식별 직후 ParaShape
+                // 의 raw 값을 절반으로 normalize 하여 모든 후속 코드 (dialog, rendering,
+                // dump) 가 일관된 값 사용. style_resolver.rs 의 variant_div 는 normal=2
+                // 로 통일 가능 (별도 변경).
+                for ps in &mut doc.doc_info.para_shapes {
+                    ps.margin_left /= 2;
+                    ps.margin_right /= 2;
+                    ps.indent /= 2;
+                    ps.spacing_before /= 2;
+                    ps.spacing_after /= 2;
+                }
             }
         }
     }

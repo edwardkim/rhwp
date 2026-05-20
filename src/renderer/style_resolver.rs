@@ -739,10 +739,11 @@ fn resolve_single_para_style(
     // spacing_before/after: pyhwpx 확인 결과 동일하게 2배 스케일 저장
     // 실제 렌더링 시 2로 나누어야 올바른 값이 된다.
     //
-    // [Task #1001] HWP3 → HWP5 변환본은 추가 2배 스케일 (총 4배) 로 저장됨.
-    // 한컴 viewer 가 변환본의 ParaShape 단위를 HwpUnitChar 로 해석하여 1/2
-    // 보정 적용. rhwp 도 같은 보정 필요.
-    let variant_div = if is_hwp3_variant { 4.0 } else { 2.0 };
+    // [Task #1037] HWP5 변환본 의 추가 2배 스케일 (총 4배) 은 parser 단계 (parser/mod.rs)
+    // 에서 normalize (halve) 되어 본 단계에서는 normal HWP5 동등 (2배 스케일) — uniform
+    // variant_div=2 적용. 종전 variant_div=4 는 raw 값 normalize 전 보정 패턴이었음.
+    let _ = is_hwp3_variant;
+    let variant_div = 2.0;
     ResolvedParaStyle {
         alignment: ps.alignment,
         line_spacing,
