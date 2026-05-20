@@ -5,6 +5,7 @@
 
 use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
 use super::font_metrics_data;
+use super::height_cursor::HeightCursor;
 use super::height_measurer::MeasuredTable;
 use super::page_layout::{LayoutRect, PageLayoutInfo};
 use super::pagination::{ColumnContent, FootnoteRef, FootnoteSource, PageContent, PageItem};
@@ -208,6 +209,80 @@ fn force_para_end_on_last_run(col_node: &mut RenderNode) {
             }
         }
     }
+}
+
+/// [Task #1027 Stage A] VPOS_CORR 의 보정 목표 y(end_y) 계산 + 클램프(순수).
+/// 렌더러(layout)와 페이지네이터(typeset)가 동일 측정을 쓰도록 추출한 공용 함수.
+///
+/// vpos_end/base 로 보정 목표를 구하고, 렌더러와 동일한 자가검증을 적용한다:
+/// - 본문 영역 내(`col_area_y ..= col_area_y+height`)
+/// - 단계당 ≤8px 백워드(`MAX_BACKWARD_PX`)
+/// - stale table-host(TopAndBottom+vert=Para Table) forward jump 가드(>100px)
+///
+/// 반환: `(end_y, applied)`. `applied==true` 이면 호출자는 y 를 `end_y` 로 갱신.
+pub(crate) fn vpos_corrected_end_y(
+    is_page_path: bool,
+    col_anchor_y: f64,
+    col_area_y: f64,
+    col_area_height: f64,
+    vpos_end: i32,
+    base: i32,
+    curr_sb: f64,
+    y_offset: f64,
+    curr_has_topbottom_para_table: bool,
+    dpi: f64,
+) -> (f64, bool) {
+    // [Task #412] page_path: col_anchor_y 기준, lazy_path: col_area_y 기준.
+    let anchor = if is_page_path {
+        col_anchor_y
+    } else {
+        col_area_y
+    };
+    let raw_end_y = anchor + hwpunit_to_px(vpos_end - base, dpi);
+    // [Task #643] sb_N 사전 차감 — vpos_end 는 line 0 상단, layout 이 sb_N 을 다시 더함.
+    let end_y = (raw_end_y - curr_sb).max(col_area_y);
+    // [Task #643] 단계당 백워드 허용폭 8px.
+    const MAX_BACKWARD_PX: f64 = 8.0;
+    // [Task #874 #8] stale/inflated vpos forward jump 가드.
+    const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
+    let stale_table_host_vpos =
+        curr_has_topbottom_para_table && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
+    let applied = end_y >= col_area_y
+        && end_y <= col_area_y + col_area_height
+        && end_y >= y_offset - MAX_BACKWARD_PX
+        && !stale_table_host_vpos;
+    (end_y, applied)
+}
+
+/// [Task #1027 Stage B] 문단이 vpos 보정을 무효화하는 overlay 개체를 포함하는지.
+/// 글앞으로/글뒤로(InFrontOfText/BehindText) 또는 위아래(TopAndBottom)+vert=Para 인
+/// 비-TAC Shape/Picture 는 vpos 에 개체 높이가 포함되어 과대하므로, 다음 항목의 vpos
+/// 보정 base 산출에서 이 문단을 제외(bypass)한다. tac=true 는 LINE_SEG 에 통합되므로
+/// 제외 대상 아님(#539). 렌더러·페이지네이터 공유.
+pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    para.controls.iter().any(|c| match c {
+        Control::Shape(s) => {
+            let cm = s.common();
+            if cm.treat_as_char {
+                return false;
+            }
+            matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+                || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                    && matches!(cm.vert_rel_to, VertRelTo::Para)
+                    && !cm.treat_as_char)
+        }
+        Control::Picture(pic) => {
+            let cm = &pic.common;
+            if cm.treat_as_char {
+                return false;
+            }
+            matches!(cm.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+                || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
+                    && matches!(cm.vert_rel_to, VertRelTo::Para))
+        }
+        _ => false,
+    })
 }
 
 pub struct LayoutEngine {
@@ -2136,7 +2211,6 @@ impl LayoutEngine {
         };
 
         let col_width_hu = (col_area.width / self.dpi * 7200.0).round() as i32;
-        let mut prev_layout_para: Option<usize> = None;
         let mut prev_tac_seg_applied = false;
 
         // 고정값 줄간격 TAC 표 병행 (Task #9): 표 하단 비교용
@@ -2146,7 +2220,7 @@ impl LayoutEngine {
 
         // vpos 보정을 위한 페이지 기준 vpos 계산
         // 페이지 첫 항목의 vpos를 기준점으로 삼아 모든 페이지에서 vpos 보정 적용
-        let mut vpos_page_base: Option<i32> = col_content.items.first().and_then(|item| {
+        let vpos_page_base_init: Option<i32> = col_content.items.first().and_then(|item| {
             match item {
                 PageItem::FullParagraph { para_index } => paragraphs
                     .get(*para_index)
@@ -2168,14 +2242,16 @@ impl LayoutEngine {
                 _ => None,
             }
         });
-        let mut vpos_lazy_base: Option<i32> = None;
-        // [Task #991] 직전 PageItem 이 쪽 분할 표(PartialTable)였는지.
-        // 분할 표 호스트 문단의 LINE_SEG line_height 는 텍스트 줄 높이만 담고
-        // 실제 표 높이를 반영하지 못한다. 직후 문단의 vpos 보정에 이 prev 를
-        // 쓰면 lazy_base 가 표 높이만큼 낮게 산출되어 다음 문단이 표 높이만큼
-        // 추가 점프한다(분할 표 직후 콘텐츠가 페이지 하단으로 밀리는 결함).
-        // 분할 표 직후 첫 문단은 vpos 보정을 건너뛰고 sequential 배치를 신뢰한다.
-        let mut prev_item_was_partial_table = false;
+        // [Task #1027 Stage C] inter-item VPOS_CORR 상태머신을 HeightCursor 로 캡슐화.
+        // vpos_page_base/lazy_base, prev_layout_para, prev_item_was_partial_table(#991:
+        // 분할 표 직후 첫 문단은 sequential 신뢰)를 보유하며 항목 사이 vpos 보정을 위임.
+        let mut hcursor = HeightCursor::new(
+            self.dpi,
+            col_area.y,
+            col_area.height,
+            col_anchor_y,
+            vpos_page_base_init,
+        );
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
         for item in col_content.items.iter() {
@@ -2202,8 +2278,8 @@ impl LayoutEngine {
                         y_offset = bottom_y;
                     }
                     // vpos_lazy_base 는 항상 set (anchor first_vpos 기준 후속 paragraph 정합)
-                    vpos_lazy_base = Some(anchor_first_vpos);
-                    vpos_page_base = None;
+                    hcursor.vpos_lazy_base = Some(anchor_first_vpos);
+                    hcursor.vpos_page_base = None;
                 }
             }
             // TopAndBottom 글상자: 앵커 문단에 도달하면 y_offset을 글상자 하단 아래로 점프
@@ -2291,225 +2367,12 @@ impl LayoutEngine {
             }
 
             if !shape_jumped && !prev_tac_seg_applied {
-                if let Some(prev_pi) = prev_layout_para {
-                    if item_para != prev_pi {
-                        // 글앞으로/글뒤로/위아래 Shape·Picture가 있는 문단: vpos에 개체 높이가 포함되어 과대 → bypass
-                        // - InFrontOfText/BehindText: 개체 vpos가 텍스트 라인 vpos와 별도 누적 → 합산 시 과대
-                        // - TopAndBottom + vert=Para: 한컴이 후속 문단 vpos에 개체 높이를 더해 기록하므로
-                        //   sequential y_offset이 이미 개체 바닥까지 진행된 상태에서 vpos 보정 lazy_base 산출
-                        //   시 prev_pi의 텍스트 vpos_end만 쓰면 base가 개체 높이만큼 낮게 산출되어
-                        //   다음 문단/표가 개체 높이만큼 추가 점프 (Task #409: 21페이지 차트→2x1 표 521px overflow)
-                        let prev_has_overlay_shape = paragraphs
-                            .get(prev_pi)
-                            .map(|p| {
-                                use crate::model::shape::{TextWrap, VertRelTo};
-                                p.controls.iter().any(|c| match c {
-                                    Control::Shape(s) => {
-                                        let cm = s.common();
-                                        // [Task #539] tac=true Shape 는 paragraph 의 LINE_SEG vpos 에
-                                        // 통합되어 누적되므로, overlay 가 vpos 에 별도 영향을 주지 않는다.
-                                        // 따라서 prev_has_overlay_shape 가드 제외 — 그렇지 않으면
-                                        // tac=true InFrontOfText/BehindText 글박스 호스트 paragraph
-                                        // 직후의 vpos correction 이 skipped 되어 trailing-ls drift
-                                        // 716 HU 가 잔존 (#539: 21_언어_기출 7p pi=146, 9p pi=182).
-                                        if cm.treat_as_char {
-                                            return false;
-                                        }
-                                        matches!(
-                                            cm.text_wrap,
-                                            TextWrap::InFrontOfText | TextWrap::BehindText
-                                        ) || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
-                                            && matches!(cm.vert_rel_to, VertRelTo::Para)
-                                            && !cm.treat_as_char)
-                                    }
-                                    Control::Picture(pic) => {
-                                        let cm = &pic.common;
-                                        if cm.treat_as_char {
-                                            return false;
-                                        }
-                                        matches!(
-                                            cm.text_wrap,
-                                            TextWrap::InFrontOfText | TextWrap::BehindText
-                                        ) || (matches!(cm.text_wrap, TextWrap::TopAndBottom)
-                                            && matches!(cm.vert_rel_to, VertRelTo::Para))
-                                    }
-                                    _ => false,
-                                })
-                            })
-                            .unwrap_or(false);
-                        if !prev_has_overlay_shape && !prev_item_was_partial_table {
-                            if let Some(prev_para) = paragraphs.get(prev_pi) {
-                                // Task #332 Stage 5: vpos correction trigger 조건 완화 —
-                                // 기존엔 segment_width 가 col_width 와 ±3000 HWPUNIT 이내일 때만 적용해
-                                // 짧은 단락/indent 가 있는 경우 trigger 누락 → drift 누적. 조건을 완화해
-                                // 마지막 segment 를 사용하되 width 검증 자체는 가드 조건으로 약화.
-                                let prev_seg = prev_para
-                                    .line_segs
-                                    .iter()
-                                    .rev()
-                                    .find(|ls| ls.segment_width > 0)
-                                    .or_else(|| prev_para.line_segs.last());
-                                if let Some(seg) = prev_seg {
-                                    if !(seg.vertical_pos == 0 && prev_pi > 0) {
-                                        // [Task #412] vpos_end 결정:
-                                        // - page_path: 현재 paragraph 의 first seg vpos 를 직접 사용 (HWP 가 spacing_after 를
-                                        //   다음 paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확).
-                                        //   현재 항목의 vpos 를 신뢰하지 못하는 경우(0 reset 등) prev 기반 fallback.
-                                        // - lazy_path: 기존 prev 기반 vpos_end 유지 (sequential 와의 역산 다리).
-                                        let prev_vpos_end =
-                                            seg.vertical_pos + seg.line_height + seg.line_spacing;
-                                        let curr_first_vpos = paragraphs
-                                            .get(item_para)
-                                            .and_then(|p| p.line_segs.first())
-                                            .map(|ls| ls.vertical_pos);
-                                        // [Task #412] page_base / lazy_base 경로 분리:
-                                        // - page_base: 첫 PageItem 이 명확한 vpos 를 가짐(FullParagraph/PartialParagraph/Table).
-                                        //   sequential 배치는 col_area.y + vpos*scale (절대 vpos 좌표) 으로 동작하므로
-                                        //   보정 공식도 base 차감 없이 col_area.y + vpos*scale 사용해야 함.
-                                        //   기존 base 차감은 첫 항목 vpos 만큼 보정값을 위로 어긋나게 하여
-                                        //   다단 우측 단(base 큼) 에서 보정이 발동하지 않는 문제 발생.
-                                        // - lazy_base: 첫 PageItem 이 신뢰 불가(Shape/PartialTable). sequential y_offset
-                                        //   으로부터 lazy_base 역산하여 단단을 잇는 다리 역할. 기존 base 차감 유지.
-                                        let (base, is_page_path) = if let Some(b) = vpos_page_base {
-                                            (b, true)
-                                        } else if let Some(b) = vpos_lazy_base {
-                                            (b, false)
-                                        } else {
-                                            // 지연 보정: 첫 보정 시점에서 기준점 산출
-                                            // sequential y_offset에서 역산하여 기준 vpos 결정
-                                            //
-                                            // [Task #1022 v2] Task #537 trailing-ls 보정의 조건부 복원.
-                                            //
-                                            // 배경: #537 은 paragraph_layout 의 마지막 줄 trailing
-                                            // line_spacing 이 sequential y_offset 에 누락되던 시기에
-                                            // +trailing_ls_hu 로 IR 절대좌표를 맞췄다. 이후 Task #452 가
-                                            // body advance 에 trailing_ls 를 포함(`paragraph_layout.rs:
-                                            // 3583~3589`)하도록 회복하면서, 컬럼이 vpos 0 에서 시작해
-                                            // sequential 이 IR 을 정확히 추적하는 경우(drift 0)에는
-                                            // +trailing_ls_hu 가 over-correction 이 된다(lazy_base 가
-                                            // 음수로 떨어져 표 페이지 overflow 유발 — exam_kor p5).
-                                            //
-                                            // 그러나 컬럼이 vpos 0 이 아닌 위치에서 시작하는 경우
-                                            // (상단 제목 박스/도형 뒤 본문 — footnote-01 p1)에는
-                                            // 여전히 trailing_ls 만큼의 bridge 가 필요하다(미적용 시
-                                            // 본문이 한 ls 위로 밀려 한컴 정답지에서 멀어짐).
-                                            //
-                                            // 게이트: 보정된 lazy_base 가 0 이상이면 보정 적용,
-                                            // 음수면 비보정 lazy_base 사용(=drift 0 추적 신뢰).
-                                            let trailing_ls_hu = paragraphs
-                                                .get(prev_pi)
-                                                .and_then(|p| p.line_segs.last())
-                                                .map(|s| s.line_spacing.max(0))
-                                                .unwrap_or(0);
-                                            let y_delta_hu = ((y_offset - col_area.y) / self.dpi
-                                                * 7200.0)
-                                                .round()
-                                                as i32;
-                                            let lazy_base_corrected =
-                                                prev_vpos_end - (y_delta_hu + trailing_ls_hu);
-                                            let lazy_base = if lazy_base_corrected >= 0 {
-                                                lazy_base_corrected
-                                            } else {
-                                                prev_vpos_end - y_delta_hu
-                                            };
-                                            // lazy_base가 음수이면 자리차지 표 등으로 y_offset이
-                                            // vpos 누적보다 크게 밀린 것 → 역산 무효
-                                            if lazy_base < 0 {
-                                                // 보정 건너뛰기: base를 vpos_end로 설정하여
-                                                // end_y = col_area.y + 0 → 검증 실패 → 보정 미적용
-                                                (prev_vpos_end, false)
-                                            } else {
-                                                vpos_lazy_base = Some(lazy_base);
-                                                (lazy_base, false)
-                                            }
-                                        };
-                                        // [Task #412] vpos_end 결정 (page/lazy 공통):
-                                        // 현재 paragraph 의 first vpos 우선 사용. HWP 가 spacing_after 를 다음
-                                        // paragraph 의 first vpos 에 인코딩하므로 prev.vpos+lh+ls 보다 정확.
-                                        // vpos reset(0) 이거나 prev 보다 작아진 경우는 prev 기반 fallback.
-                                        let vpos_end = match curr_first_vpos {
-                                            Some(v) if v > seg.vertical_pos => v,
-                                            _ => prev_vpos_end,
-                                        };
-                                        // [Task #412] page_path: col_anchor_y (body_wide_reserved 푸시 적용 후) 가
-                                        // 첫 항목의 vpos(=base) 를 의미. 따라서 vpos=N 의 y = col_anchor_y + (N-base)*scale.
-                                        // lazy_path: lazy_base 는 col_area.y 가 vpos=lazy_base 가 되도록 역산되어 있어
-                                        //   col_area.y 기준 (vpos_end - base) 차감 공식이 일관.
-                                        let raw_end_y = if is_page_path {
-                                            col_anchor_y + hwpunit_to_px(vpos_end - base, self.dpi)
-                                        } else {
-                                            col_area.y + hwpunit_to_px(vpos_end - base, self.dpi)
-                                        };
-                                        // [Task #643] sb_N 사전 차감:
-                                        // vpos_end 는 line 0 의 상단 (HWP 가 sb 를 vpos 에 인코딩) 을 의미.
-                                        // layout_paragraph 는 시작 시 sb_N 을 다시 더하므로,
-                                        // sb_N 만큼 미리 빼서 net 결과가 line 0 == vpos_end 가 되도록.
-                                        let curr_sb = paragraphs
-                                            .get(item_para)
-                                            .and_then(|p| {
-                                                styles.para_styles.get(p.para_shape_id as usize)
-                                            })
-                                            .map(|ps| ps.spacing_before)
-                                            .unwrap_or(0.0);
-                                        let end_y = (raw_end_y - curr_sb).max(col_area.y);
-                                        // 자가 검증: 보정값이 컬럼 영역 내에 있고
-                                        // 현재 y_offset 보다 크게 뒤로 가지 않아야 유효.
-                                        //
-                                        // [Task #643] 백워드 허용폭 확장 1.0 → 8.0px.
-                                        // Layout 은 spacing_before(sb_N) 을 pi_N 시작 시 추가하지만,
-                                        // HWP 는 sb_(N+1) 을 vpos delta 에 인코딩한다. sb_N ≠ sb_(N+1)
-                                        // (특히 빈 문단 sb=0 인접) 에서 드리프트가 누적되어 본문 끝까지
-                                        // 밀려 LAYOUT_OVERFLOW 발생. 문단 사이 trailing line_spacing 만큼은
-                                        // 안전하게 백워드 보정 가능 (pi_N 마지막 줄과 pi_(N+1) 첫 줄 사이의
-                                        // 공백 영역 내에서만 이동).
-                                        const MAX_BACKWARD_PX: f64 = 8.0;
-                                        // [Task #874 #8] 호스트 paragraph 가 TopAndBottom+vert=Para Table 을
-                                        // anchor 하는 경우, HWP 가 stale/inflated vpos 를 인코딩하여
-                                        // forward jump 가 비정상적으로 클 수 있다 (aift.hwp p44 pi=579:
-                                        // prev_vpos_end=5920 → curr_vpos=33421, 367 px forward jump).
-                                        // 한컴 PDF 는 이런 paragraph 를 자연 flow 위치에 배치하므로,
-                                        // 큰 forward jump 가 발견되면 correction 을 skip 한다.
-                                        // 임계값 100 px: 일반 spacing_before/after 의 4 line 정도.
-                                        use crate::model::shape::{
-                                            TextWrap as TW2, VertRelTo as VR2,
-                                        };
-                                        let curr_has_topbottom_para_table = paragraphs
-                                            .get(item_para)
-                                            .map(|p| {
-                                                p.controls.iter().any(|c| {
-                                                    matches!(c, Control::Table(t)
-                                        if !t.common.treat_as_char
-                                        && matches!(t.common.text_wrap, TW2::TopAndBottom)
-                                        && matches!(t.common.vert_rel_to, VR2::Para))
-                                                })
-                                            })
-                                            .unwrap_or(false);
-                                        const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
-                                        let stale_table_host_vpos = curr_has_topbottom_para_table
-                                            && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
-                                        let applied = end_y >= col_area.y
-                                            && end_y <= col_area.y + col_area.height
-                                            && end_y >= y_offset - MAX_BACKWARD_PX
-                                            && !stale_table_host_vpos;
-                                        if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
-                                            let path = if is_page_path { "page" } else { "lazy" };
-                                            eprintln!(
-                                        "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} applied={}",
-                                        path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                                        vpos_end, base, col_area.y, y_offset, end_y, applied,
-                                    );
-                                        }
-                                        if applied {
-                                            y_offset = end_y;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } // !prev_has_overlay_shape
+                // [Task #1027 Stage C] inter-item VPOS_CORR 보정을 HeightCursor 에 위임 (동작 동일).
+                // 이전 문단 overlay-shape/분할표 bypass, page/lazy base 산출, sb 차감,
+                // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
+                y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
             } // !shape_jumped
-            prev_layout_para = Some(item_para);
+            hcursor.prev_layout_para = Some(item_para);
 
             // Percent 전환: 표 하단과 비교 (Task #9)
             if fix_overlay_active {
@@ -2602,7 +2465,7 @@ impl LayoutEngine {
             y_offset = new_y;
             prev_tac_seg_applied = was_tac;
             // [Task #991] 다음 반복의 vpos 보정용 — 직전 항목이 분할 표였는지 기록.
-            prev_item_was_partial_table = matches!(item, PageItem::PartialTable { .. });
+            hcursor.prev_item_was_partial_table = matches!(item, PageItem::PartialTable { .. });
 
             // 고정값 줄간격 TAC 표 병행 (Task #9)
             if was_tac {
@@ -2656,8 +2519,8 @@ impl LayoutEngine {
                 false
             };
             if was_tac || (is_table_or_shape && !is_para_float_table) {
-                vpos_page_base = None;
-                vpos_lazy_base = None;
+                hcursor.vpos_page_base = None;
+                hcursor.vpos_lazy_base = None;
             }
 
             // 자가 검증: 배치 후 y_offset이 단 영역 하단을 초과하는지 확인

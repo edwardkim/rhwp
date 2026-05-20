@@ -92,6 +92,16 @@ pub fn serialize_control(
         Control::Field(f) => {
             // 필드 컨트롤 직렬화 (표 154)
             // ctrl_id(4) + 속성(4) + 기타속성(1) + command_len(2) + command(가변) + id(4)
+            //
+            // [Task #852 Stage 2.5] ClickHere 의 field_id 는 정답지 패턴 (form 마지막 +1) 우선.
+            // form_order_counter 가 form 다음 ClickHere 시점에 5 (form 0..4 다음) → instance_id =
+            // 0x7dcd59d6 + 5 = 0x7dcd59db (정답지와 일치).
+            let field_id =
+                if matches!(f.field_type, FieldType::ClickHere) && peek_form_order_counter() > 0 {
+                    0x7dcd_59d6u32.wrapping_add(peek_form_order_counter())
+                } else {
+                    f.field_id
+                };
             let cmd_utf16: Vec<u16> = f.command.encode_utf16().collect();
             let cmd_len = cmd_utf16.len();
             let mut data = Vec::with_capacity(4 + 4 + 1 + 2 + cmd_len * 2 + 4);
@@ -102,7 +112,7 @@ pub fn serialize_control(
             for ch in &cmd_utf16 {
                 data.extend_from_slice(&ch.to_le_bytes());
             }
-            data.extend_from_slice(&f.field_id.to_le_bytes());
+            data.extend_from_slice(&field_id.to_le_bytes());
             data.extend_from_slice(&f.memo_index.to_le_bytes());
             records.push(Record {
                 tag_id: tags::HWPTAG_CTRL_HEADER,
@@ -110,9 +120,44 @@ pub fn serialize_control(
                 size: data.len() as u32,
                 data,
             });
+            // [Task #852 Stage 2.5] ClickHere 필드의 CTRL_DATA 자식 레코드 (0x57, 26 bytes).
+            // 정답지 (samples/form-01.hwp) reverse engineering 구조:
+            //   0..2   0x021b (헤더 magic)
+            //   2..6   0x00000001
+            //   6..8   0x4000 (HWP5 CTRL_DATA flag — 정답지 관찰)
+            //   8..10  0x0001
+            //   10..12 u16 LE wchar_count (필드 이름 길이)
+            //   12..   UTF-16 LE 필드 이름 (예: "myMsg01")
+            //
+            // ctrl_data_name (HWPX `<hp:fieldBegin name="...">`) 우선, 비어있으면 생성 안 함.
+            if matches!(f.field_type, FieldType::ClickHere) {
+                if let Some(name) = &f.ctrl_data_name {
+                    if !name.is_empty() {
+                        let name_utf16: Vec<u16> = name.encode_utf16().collect();
+                        let nlen = name_utf16.len();
+                        let mut cdata = Vec::with_capacity(12 + nlen * 2);
+                        cdata.extend_from_slice(&0x021bu16.to_le_bytes());
+                        cdata.extend_from_slice(&0x00000001u32.to_le_bytes());
+                        cdata.extend_from_slice(&0x4000u16.to_le_bytes());
+                        cdata.extend_from_slice(&0x0001u16.to_le_bytes());
+                        cdata.extend_from_slice(&(nlen as u16).to_le_bytes());
+                        for ch in &name_utf16 {
+                            cdata.extend_from_slice(&ch.to_le_bytes());
+                        }
+                        records.push(Record {
+                            tag_id: tags::HWPTAG_CTRL_DATA,
+                            level: level + 1,
+                            size: cdata.len() as u32,
+                            data: cdata,
+                        });
+                    }
+                }
+            }
         }
+        // [Task #852 Stage 2.4] 양식 개체 직렬화 — CTRL_HEADER + HWPTAG_FORM_OBJECT
+        Control::Form(form) => serialize_form_control(form, level, records),
         // 미구현 컨트롤은 최소한의 CTRL_HEADER만 생성
-        Control::Hyperlink(_) | Control::Ruby(_) | Control::Form(_) | Control::Unknown(_) => {
+        Control::Hyperlink(_) | Control::Ruby(_) | Control::Unknown(_) => {
             let ctrl_id = match ctrl {
                 Control::Unknown(u) => u.ctrl_id,
                 _ => 0,
@@ -1794,6 +1839,305 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
         size: 0,
         data: w.into_bytes(),
     });
+}
+
+// ============================================================
+// [Task #852 Stage 2.4] 양식 개체 ('form')
+// ============================================================
+
+// 한 섹션 내 Form 컨트롤의 등장순 0-base 카운터.
+// `serialize_section` 시작 시 0으로 reset, 각 Form 직렬화 후 +1.
+// 정답지 form-01.hwp 의 5 form 이 TabOrder/order 0..4 로 단조증가하는 패턴 재현.
+thread_local! {
+    static FORM_ORDER_COUNTER: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+pub(super) fn reset_form_order_counter() {
+    FORM_ORDER_COUNTER.with(|c| c.set(0));
+}
+
+fn next_form_order() -> u32 {
+    FORM_ORDER_COUNTER.with(|c| {
+        let o = c.get();
+        c.set(o + 1);
+        o
+    })
+}
+
+/// 현재 카운터 값 조회 (다음 Form 직렬화 시 사용될 order). Form 5 개 직렬화 직후 = 5.
+fn peek_form_order_counter() -> u32 {
+    FORM_ORDER_COUNTER.with(|c| c.get())
+}
+
+/// 양식 개체 직렬화 — CTRL_HEADER (46 bytes) + HWPTAG_FORM_OBJECT 자식
+///
+/// 정답지 `samples/form-01.hwp` reverse engineering 결과를 기반으로 작성.
+/// 자세한 구조는 `mydocs/plans/task_m100_852_stage24.md` 참조.
+fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Record>) {
+    let order = next_form_order();
+
+    // 1) CTRL_HEADER "form" — 46 bytes 고정
+    //
+    // 구조:
+    //   0..4   ctrl_id "form" (LE: "mrof")
+    //   4..8   attr = 0x002a6211 (HWP5 common ctrl property flag, 정답지 고정값)
+    //   8..12  y_offset = 0 (i32)
+    //   12..16 x_offset = 0 (i32)
+    //   16..20 width  (u32, HWPUNIT)
+    //   20..24 height (u32, HWPUNIT)
+    //   24..28 order  (u32, z-order/TabOrder-1, 0-base)
+    //   28..36 zero (8 bytes)
+    //   36..40 instance_id (u32, 0x7dcd59d6 + order)
+    //   40..46 zero (6 bytes)
+    let mut hdr = Vec::with_capacity(46);
+    hdr.extend_from_slice(b"mrof"); // ctrl_id "form" little-endian
+    hdr.extend_from_slice(&0x002a_6211u32.to_le_bytes());
+    hdr.extend_from_slice(&0i32.to_le_bytes()); // y_offset
+    hdr.extend_from_slice(&0i32.to_le_bytes()); // x_offset
+    hdr.extend_from_slice(&form.width.to_le_bytes());
+    hdr.extend_from_slice(&form.height.to_le_bytes());
+    hdr.extend_from_slice(&order.to_le_bytes());
+    hdr.extend_from_slice(&[0u8; 8]);
+    hdr.extend_from_slice(&(0x7dcd_59d6u32.wrapping_add(order)).to_le_bytes());
+    hdr.extend_from_slice(&[0u8; 6]);
+    debug_assert_eq!(hdr.len(), 46);
+    records.push(Record {
+        tag_id: tags::HWPTAG_CTRL_HEADER,
+        level,
+        size: hdr.len() as u32,
+        data: hdr,
+    });
+
+    // 2) HWPTAG_FORM_OBJECT 자식 (level + 1)
+    //
+    // 구조:
+    //   0..4   type_id (ASCII "tbp+"/"tbc+"/"boc+"/"tbr+"/"tde+")
+    //   4..8   type_id 중복 (magic marker)
+    //   8..12  wchar_count (u32)
+    //   12..14 wchar_count (u16, 8..12 와 동일 값)
+    //   14..   UTF-16 LE 속성 문자열 (wchar_count chars)
+    let type_id: &[u8; 4] = match form.form_type {
+        FormType::PushButton => b"tbp+",
+        FormType::CheckBox => b"tbc+",
+        FormType::ComboBox => b"boc+",
+        FormType::RadioButton => b"tbr+",
+        FormType::Edit => b"tde+",
+    };
+    let prop_str = build_form_prop_str(form, order);
+    let wchars: Vec<u16> = prop_str.encode_utf16().collect();
+    let wlen = wchars.len();
+
+    let mut fo = Vec::with_capacity(14 + wlen * 2);
+    fo.extend_from_slice(type_id);
+    fo.extend_from_slice(type_id);
+    fo.extend_from_slice(&(wlen as u32).to_le_bytes());
+    fo.extend_from_slice(&(wlen as u16).to_le_bytes());
+    for w in &wchars {
+        fo.extend_from_slice(&w.to_le_bytes());
+    }
+    records.push(Record {
+        tag_id: tags::HWPTAG_FORM_OBJECT,
+        level: level + 1,
+        size: fo.len() as u32,
+        data: fo,
+    });
+}
+
+/// 정답지 fall-back BorderType (FormObject.properties 에 키가 없을 때).
+fn default_border_type(ft: FormType) -> i32 {
+    match ft {
+        FormType::PushButton => 4,
+        FormType::CheckBox => 0,
+        FormType::RadioButton => 0,
+        FormType::ComboBox => 5,
+        FormType::Edit => 5,
+    }
+}
+
+/// `FormObject.properties` 에서 키를 정수로 읽거나 fallback 반환.
+fn prop_int(form: &FormObject, key: &str, fallback: i32) -> i32 {
+    form.properties
+        .get(key)
+        .and_then(|v| v.parse::<i32>().ok())
+        .unwrap_or(fallback)
+}
+
+/// 정답지 포맷 속성 문자열 합성.
+///
+/// 정답지 reverse engineering 결과 구조 (set:N 의 N 은 chars 수):
+/// ```text
+/// CommonSet:set:{N1}:{common_body} CharShapeSet:set:{N2}:{char_body} {TypeSet}:set:{N3}:{type_body}
+/// ```
+///
+/// 자세한 키 순서는 mydocs/plans/task_m100_852_stage24.md 참조.
+fn build_form_prop_str(form: &FormObject, order: u32) -> String {
+    let common = build_common_set(form, order);
+    let char_shape = build_char_shape_set_for(form);
+    let (type_name, type_body) = build_type_set(form);
+
+    format!(
+        "CommonSet:set:{}:{} CharShapeSet:set:{}:{} {}:set:{}:{} ",
+        common.chars().count(),
+        common,
+        char_shape.chars().count(),
+        char_shape,
+        type_name,
+        type_body.chars().count(),
+        type_body,
+    )
+}
+
+fn build_common_set(form: &FormObject, order: u32) -> String {
+    let name = &form.name;
+    let group = form
+        .properties
+        .get("GroupName")
+        .cloned()
+        .unwrap_or_default();
+    let command = form.properties.get("Command").cloned().unwrap_or_default();
+    let border_type = prop_int(form, "BorderType", default_border_type(form.form_type));
+    let draw_frame = prop_int(form, "DrawFrame", 1);
+    let tab_stop = prop_int(form, "TabStop", 1);
+    let editable = prop_int(form, "Editable", 1);
+    let printable = prop_int(form, "Printable", 1);
+    // HWPX `tabOrder` (1-base, 정답지와 동일) 우선, 없으면 카운터+1.
+    let tab_order = prop_int(form, "TabOrder", (order + 1) as i32);
+    format!(
+        "Name:wstring:{}:{} ForeColor:int:{} BackColor:int:{} GroupName:wstring:{}:{} \
+         TabStop:bool:{} TabOrder:int:{} Enabled:bool:{} BorderType:int:{} DrawFrame:bool:{} \
+         Command:wstring:{}:{} Editable:bool:{} Printable:bool:{} ",
+        name.chars().count(),
+        name,
+        form.fore_color,
+        form.back_color,
+        group.chars().count(),
+        group,
+        tab_stop,
+        tab_order,
+        if form.enabled { 1 } else { 0 },
+        border_type,
+        draw_frame,
+        command.chars().count(),
+        command,
+        editable,
+        printable,
+    )
+}
+
+fn build_char_shape_set_for(form: &FormObject) -> String {
+    // HWPX `<hp:formCharPr charPrIDRef="..." followContext="..." autoSz="..." wordWrap="..."/>`
+    // 보존 속성 우선. 없으면 정답지 기본값 (ComboBox 만 AutoSize=1).
+    let char_shape_id = prop_int(form, "CharShapeID", 0);
+    let follow_context = prop_int(form, "FollowContext", 0);
+    let auto_size = prop_int(
+        form,
+        "AutoSize",
+        if matches!(form.form_type, FormType::ComboBox) {
+            1
+        } else {
+            0
+        },
+    );
+    let word_wrap = prop_int(form, "WordWrap", 0);
+    format!(
+        "CharShapeID:int:{} FollowContext:bool:{} AutoSize:bool:{} WordWrap:bool:{} ",
+        char_shape_id, follow_context, auto_size, word_wrap,
+    )
+}
+
+fn build_type_set(form: &FormObject) -> (&'static str, String) {
+    match form.form_type {
+        FormType::PushButton => (
+            "ButtonSet",
+            format!(
+                "Caption:wstring:{}:{} ",
+                form.caption.chars().count(),
+                form.caption,
+            ),
+        ),
+        FormType::CheckBox => (
+            "ButtonSet",
+            format!(
+                "Caption:wstring:{}:{} Value:int:{} TriState:bool:{} BackStyle:int:{} ",
+                form.caption.chars().count(),
+                form.caption,
+                form.value,
+                prop_int(form, "TriState", 0),
+                prop_int(form, "BackStyle", 1),
+            ),
+        ),
+        FormType::RadioButton => {
+            let group = form
+                .properties
+                .get("RadioGroupName")
+                .cloned()
+                .unwrap_or_default();
+            (
+                "ButtonSet",
+                format!(
+                    "Caption:wstring:{}:{} RadioGroupName:wstring:{}:{} Value:int:{} \
+                     TriState:bool:{} BackStyle:int:{} ",
+                    form.caption.chars().count(),
+                    form.caption,
+                    group.chars().count(),
+                    group,
+                    form.value,
+                    prop_int(form, "TriState", 0),
+                    prop_int(form, "BackStyle", 1),
+                ),
+            )
+        }
+        FormType::ComboBox => {
+            // HWPX `<hp:listItem value="...">` 의 첫 항목이 정답지의 ComboBox Text.
+            // HWPX parser 가 form.properties["listItem0"] 로 보존. form.text 우선,
+            // 비어있으면 listItem0 fallback.
+            let text = if form.text.is_empty() {
+                form.properties
+                    .get("listItem0")
+                    .cloned()
+                    .unwrap_or_default()
+            } else {
+                form.text.clone()
+            };
+            (
+                "ComboBoxSet",
+                format!(
+                    "ListBoxRows:int:{} Text:wstring:{}:{} ListBoxWidth:int:{} EditEnable:bool:{} ",
+                    prop_int(form, "ListBoxRows", 4),
+                    text.chars().count(),
+                    text,
+                    prop_int(form, "ListBoxWidth", 0),
+                    prop_int(form, "EditEnable", 1),
+                ),
+            )
+        }
+        FormType::Edit => {
+            let password = form
+                .properties
+                .get("PasswordChar")
+                .cloned()
+                .unwrap_or_default();
+            (
+                "EditSet",
+                format!(
+                    "Text:wstring:{}:{} MultiLine:bool:{} PasswordChar:wstring:{}:{} \
+                     MaxLength:int:{} ScrollBars:int:{} TabKeyBehavior:int:{} Number:bool:{} \
+                     ReadOnly:bool:{} AlignText:int:{} ",
+                    form.text.chars().count(),
+                    form.text,
+                    prop_int(form, "MultiLine", 0),
+                    password.chars().count(),
+                    password,
+                    prop_int(form, "MaxLength", 2147483647),
+                    prop_int(form, "ScrollBars", 0),
+                    prop_int(form, "TabKeyBehavior", 0),
+                    prop_int(form, "Number", 0),
+                    prop_int(form, "ReadOnly", 0),
+                    prop_int(form, "AlignText", 0),
+                ),
+            )
+        }
+    }
 }
 
 #[cfg(test)]
