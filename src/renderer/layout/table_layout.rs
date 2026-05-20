@@ -239,8 +239,11 @@ impl LayoutEngine {
                                 || cell.padding.top != 0
                                 || cell.padding.bottom != 0;
                             if has_outer_padding {
-                                if let Some(bs) =
-                                    styles.border_styles.get(cell.border_fill_id as usize)
+                                // border_fill_id 는 1-based(borderFillIDRef), border_styles 는
+                                // 0-based Vec 이므로 -1 변환한다. (일반 셀/표/zone lookup 과 동일)
+                                if let Some(bs) = styles
+                                    .border_styles
+                                    .get((cell.border_fill_id as usize).saturating_sub(1))
                                 {
                                     let any_border = bs.borders.iter().any(|b| {
                                         b.line_type != crate::model::style::BorderLineType::None
