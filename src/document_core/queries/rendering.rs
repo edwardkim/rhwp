@@ -2268,8 +2268,8 @@ impl DocumentCore {
                                 start_row,
                                 end_row,
                                 is_continuation,
-                                split_start_content_offset,
-                                split_end_content_limit,
+                                start_cut,
+                                end_cut,
                             } => {
                                 let table_info = paragraphs
                                     .get(*para_index)
@@ -2284,14 +2284,10 @@ impl DocumentCore {
                                     .unwrap_or_default();
                                 let vpos_info =
                                     format_vpos_range(paragraphs.get(*para_index), None, None);
-                                // [Task #431] 분할 표 진단 정보 — split_start/end 가 0 이 아니면 셀 내 분할
-                                let split_info = if *split_start_content_offset > 0.0
-                                    || *split_end_content_limit > 0.0
-                                {
-                                    format!(
-                                        "  split_start={:.1} split_end={:.1}",
-                                        split_start_content_offset, split_end_content_limit
-                                    )
+                                // [Task #993] 분할 표 진단 정보 — 행 컷이 비어 있지
+                                // 않으면 셀 내 분할(컷 = 셀별 소비 유닛 수).
+                                let split_info = if !start_cut.is_empty() || !end_cut.is_empty() {
+                                    format!("  start_cut={:?} end_cut={:?}", start_cut, end_cut)
                                 } else {
                                     String::new()
                                 };

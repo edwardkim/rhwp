@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="793.7066666666667" height="1122.48" viewBox="0 0 793.7066666666667 1122.48">
 <defs>
-<clipPath id="body-clip-3"><rect x="75.58666666666667" y="94.48" width="858.4733333333332" height="933.9200000000001"/></clipPath>
-<clipPath id="cell-clip-301"><rect x="75.58666666666667" y="581.2" width="635.64" height="446.80000000000007"/></clipPath>
+<clipPath id="body-clip-3"><rect x="75.58666666666667" y="94.48" width="858.4733333333332" height="933.5200000000001"/></clipPath>
+<clipPath id="cell-clip-301"><rect x="75.58666666666667" y="581.2" width="635.64" height="429.3333333333334"/></clipPath>
 <clipPath id="cell-clip-335"><rect x="92.34666666666666" y="826.1866666666668" width="610.1466666666666" height="27.30666666666667"/></clipPath>
 </defs>
 <rect x="0" y="0" width="793.7066666666667" height="1122.48" fill="#ffffff"/>
@@ -935,8 +935,8 @@
 <line x1="75.58666666666667" y1="495.76000000000005" x2="711.2266666666667" y2="495.76000000000005" stroke="#000000" stroke-width="0.4"/>
 <line x1="75.58666666666667" y1="553.8933333333333" x2="711.2266666666667" y2="553.8933333333333" stroke="#000000" stroke-width="0.4"/>
 <line x1="75.58666666666667" y1="581.2" x2="258.04" y2="581.2" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="1028" x2="711.2266666666667" y2="1028" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="94.48" x2="75.58666666666667" y2="1028" stroke="#000000" stroke-width="0.4"/>
+<line x1="75.58666666666667" y1="1010.5333333333335" x2="711.2266666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.4"/>
+<line x1="75.58666666666667" y1="94.48" x2="75.58666666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.4"/>
 <line x1="192.73333333333335" y1="94.48" x2="192.73333333333335" y2="553.8933333333333" stroke="#000000" stroke-width="0.4"/>
 <line x1="258.04" y1="553.8933333333333" x2="258.04" y2="581.2" stroke="#000000" stroke-width="0.4"/>
 <line x1="261.81333333333333" y1="238.40000000000003" x2="261.81333333333333" y2="337.2" stroke="#000000" stroke-width="0.4"/>
@@ -945,7 +945,7 @@
 <line x1="451.88" y1="442.9066666666667" x2="451.88" y2="469.33333333333337" stroke="#000000" stroke-width="0.4"/>
 <line x1="477.69333333333327" y1="94.48" x2="477.69333333333327" y2="159.12" stroke="#000000" stroke-width="0.4"/>
 <line x1="594.28" y1="94.48" x2="594.28" y2="159.12" stroke="#000000" stroke-width="0.4"/>
-<line x1="711.2266666666667" y1="94.48" x2="711.2266666666667" y2="1028" stroke="#000000" stroke-width="0.4"/>
+<line x1="711.2266666666667" y1="94.48" x2="711.2266666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.4"/>
 </g>
 <text x="387.85333333333335" y="1060.2266666666667" font-family="바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="10" fill="#000000">-</text>
 <text x="394.09333333333336" y="1060.2266666666667" font-family="바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="10" fill="#000000">1</text>
