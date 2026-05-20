@@ -81,3 +81,33 @@ fn hwp3_sample16_heading_decoration_stripped() {
         para.text
     );
 }
+
+/// 격차 B: HWP3 Shape border LineType 2~7 → Solid normalization 회귀 가드.
+/// HWP3 raw line_style=2 (Dash per spec) 인 sample16 사업개요 박스 (pi=71) 의
+/// border attr 가 1 (Solid) 로 normalize 되어야 함.
+#[test]
+fn hwp3_sample16_business_box_border_solid() {
+    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
+    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
+
+    let para = &doc.sections[0].paragraphs[71];
+    let shape = para
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            Control::Shape(s) => Some(s.as_ref()),
+            _ => None,
+        })
+        .expect("pi=71 Shape control 존재");
+
+    let rect = match shape {
+        ShapeObject::Rectangle(r) => r,
+        other => panic!("expected Rectangle, got {:?}", other),
+    };
+
+    let line_type = (rect.drawing.border_line.attr as u32) & 0x3F;
+    assert_eq!(
+        line_type, 1,
+        "HWP3 raw line_style=2 (Dash) 가 1 (Solid) 로 normalize 되어야 함 (격차 B)"
+    );
+}

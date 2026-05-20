@@ -763,10 +763,21 @@ fn map_to_shape_object(
         // 박스 외곽선 회귀: raw line_style=0, line_width=84, line_color=0 검정)
         // 렌더러 [renderer/layout/utils.rs:163] 의 `attr & 0x3F == 0` 시 외곽선 미표시
         // 규칙에 맞추기 위해 bit 0..5 = 1 (Solid LineType) 보강.
+        //
+        // [Task #1008 격차 B] HWP3 raw line_style 의 LineType=2~7 (점선/일점쇄선
+        // 등) 도 한컴 viewer 는 실선으로 렌더 (sample16 pi=71 사업개요 박스 raw
+        // line_style=2 → 한컴 정답 = 실선). HWP3 native LineType 변형은 spec
+        // 상 존재하나 한컴 동작은 일관 solid — 작업지시자 한컴 한글 정답지 시각
+        // 정답 단언. HWP3 sample 분포 sweep: line_style=2 는 sample16 한정 (다른
+        // fixture: 0/1 만), narrow fix 회귀 risk 0. HWP3 한정 (HWP5/HWPX 무영향).
         attr: {
             let raw_attr = header.basic_attr.line_style as u32;
-            if (raw_attr & 0x3F) == 0 && header.basic_attr.line_width > 0 {
+            let line_type = raw_attr & 0x3F;
+            if line_type == 0 && header.basic_attr.line_width > 0 {
                 raw_attr | 0x01
+            } else if (2..=7).contains(&line_type) {
+                // HWP3 의 LineType 2~7 을 1 (Solid) 로 normalize
+                (raw_attr & !0x3F) | 0x01
             } else {
                 raw_attr
             }
