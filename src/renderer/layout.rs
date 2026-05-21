@@ -4,6 +4,9 @@
 //! 렌더 트리(PageRenderTree)를 생성한다.
 
 use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
+use super::float_placement::{
+    horizontal_range, is_para_topbottom_float, signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+};
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
 use super::height_measurer::MeasuredTable;
@@ -45,6 +48,8 @@ struct ColumnItemCtx<'a> {
     /// [Task #604 R3] anchor ↔ wrap text 매칭 메타데이터 (typeset 출력 → layout 소비)
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
 }
+
+type ParaFloatLanes = std::collections::HashMap<usize, FloatLaneSet>;
 
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
 #[derive(Debug, Clone, Copy, serde::Serialize)]
@@ -89,6 +94,10 @@ impl CellContext {
     pub fn text_direction(&self) -> u8 {
         self.innermost().text_direction
     }
+}
+
+fn para_has_visible_text(para: &Paragraph) -> bool {
+    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
 /// 문단 번호 상태 (수준별 카운터)
@@ -2195,6 +2204,7 @@ impl LayoutEngine {
 
         let mut para_start_y: std::collections::HashMap<usize, f64> =
             std::collections::HashMap::new();
+        let mut para_float_lanes: ParaFloatLanes = std::collections::HashMap::new();
 
         let multi_col_width = if zone_layout.column_areas.len() > 1 {
             let widths: Vec<f64> = zone_layout.column_areas.iter().map(|a| a.width).collect();
@@ -2436,6 +2446,7 @@ impl LayoutEngine {
                 &mut col_node,
                 paper_images,
                 &mut para_start_y,
+                &mut para_float_lanes,
                 item,
                 page_content,
                 paragraphs,
@@ -2867,6 +2878,7 @@ impl LayoutEngine {
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
+        para_float_lanes: &mut ParaFloatLanes,
         item: &PageItem,
         page_content: &PageContent,
         paragraphs: &[Paragraph],
@@ -3251,6 +3263,7 @@ impl LayoutEngine {
                     col_node,
                     paper_images,
                     para_start_y,
+                    para_float_lanes,
                     *para_index,
                     *control_index,
                     &ctx,
@@ -3310,6 +3323,7 @@ impl LayoutEngine {
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
+        para_float_lanes: &mut ParaFloatLanes,
         para_index: usize,
         control_index: usize,
         ctx: &ColumnItemCtx,
@@ -3352,6 +3366,17 @@ impl LayoutEngine {
                 .get(control_index)
                 .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
                 .unwrap_or(false);
+            let is_current_empty_para_float = para
+                .controls
+                .get(control_index)
+                .map(|c| {
+                    matches!(
+                        c,
+                        Control::Table(t)
+                            if is_para_topbottom_float(&t.common) && !para_has_visible_text(para)
+                    )
+                })
+                .unwrap_or(false);
             // ── 표 위 간격 ──
             {
                 let comp = composed.get(para_index);
@@ -3381,7 +3406,7 @@ impl LayoutEngine {
                             y_offset += outer_margin_top_px;
                         }
                     }
-                } else {
+                } else if !is_current_empty_para_float {
                     if let Some(ps) = styles.para_styles.get(ps_id) {
                         if ps.spacing_before > 0.0 && !is_column_top {
                             y_offset += ps.spacing_before;
@@ -3450,6 +3475,7 @@ impl LayoutEngine {
             // ── 표 레이아웃 ──
             let mut tac_seg_applied = false;
             let tac_table_y_before = y_offset; // Task #9: 표 렌더 전 y 보존
+            let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64)> = None;
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 let mt = measured_tables
                     .iter()
@@ -3595,6 +3621,25 @@ impl LayoutEngine {
                         let body_bottom = layout.body_area.y + layout.body_area.height;
                         tbl_y < layout.body_area.y || tbl_y + tbl_h > body_bottom
                     };
+                if is_current_empty_para_float && !renders_outside_body {
+                    let width_px = hwpunit_to_px(signed_hwpunit(t.common.width), self.dpi);
+                    if width_px > 0.0 {
+                        let placement_ctx = FloatPlacementContext::new(**col_area)
+                            .with_body_area(layout.body_area)
+                            .with_paper_width(layout.page_width)
+                            .with_host_margins(effective_margin, margin_right);
+                        let (x_start, x_end) =
+                            horizontal_range(&t.common, width_px, placement_ctx, self.dpi);
+                        let v_offset_px =
+                            hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi);
+                        let raw_top = (para_y_for_table + v_offset_px).max(para_y_for_table);
+                        let lane_top = para_float_lanes
+                            .entry(para_index)
+                            .or_default()
+                            .pushed_top(x_start, x_end, raw_top);
+                        para_float_lane_info = Some((x_start, x_end, raw_top, lane_top, y_offset));
+                    }
+                }
                 if renders_outside_body {
                     let tmp_id = tree.next_id();
                     let mut tmp_node = RenderNode::new(
@@ -3626,7 +3671,9 @@ impl LayoutEngine {
                         paper_images.push(child);
                     }
                 } else {
-                    let table_y_start = if let Some((_, iy)) = inline_pos {
+                    let table_y_start = if let Some((_, _, _, lane_top, _)) = para_float_lane_info {
+                        lane_top
+                    } else if let Some((_, iy)) = inline_pos {
                         iy
                     } else {
                         y_offset
@@ -3780,13 +3827,24 @@ impl LayoutEngine {
                     }
                 }
                 if let Some(seg) = para.line_segs.last() {
-                    let gap = if seg.line_spacing > 0 {
+                    let gap = if is_current_empty_para_float {
+                        seg.line_spacing.max(0)
+                    } else if seg.line_spacing > 0 {
                         seg.line_spacing
                     } else {
                         seg.line_height
                     };
-                    y_offset += hwpunit_to_px(gap, self.dpi);
+                    if gap > 0 {
+                        y_offset += hwpunit_to_px(gap, self.dpi);
+                    }
                 }
+            }
+            if let Some((x_start, x_end, raw_top, lane_top, global_y_before)) = para_float_lane_info
+            {
+                let reserved_height = (y_offset - lane_top).max(0.0);
+                let lanes = para_float_lanes.entry(para_index).or_default();
+                lanes.place(x_start, x_end, raw_top, reserved_height);
+                y_offset = global_y_before.max(lanes.max_bottom());
             }
             if tac_seg_applied {
                 if let Some(seg) = para.line_segs.get(control_index) {
