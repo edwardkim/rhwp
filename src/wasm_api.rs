@@ -380,6 +380,8 @@ impl HwpDocument {
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
     ///
     /// `mode` 는 `"default"` 또는 `"compat"` 를 받는다. 빈 문자열은 `"default"` 로 처리한다.
+    /// 현재 두 mode 모두 hidden Canvas2D overlay 없이 direct replay required 정책을 따른다.
+    /// `compat` 는 API/URL 호환성과 이후 보수적인 direct replay 튜닝을 위해 남겨 둔 선택지다.
     #[wasm_bindgen(js_name = getCanvasKitReplayPlan)]
     pub fn get_canvaskit_replay_plan(&self, page_num: u32, mode: &str) -> Result<String, JsValue> {
         self.get_canvaskit_replay_plan_native(page_num, mode)

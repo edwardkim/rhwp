@@ -682,10 +682,7 @@ export class WasmBridge {
   /** [Task #919] 글상자/도형 컨트롤의 페이지 좌표 바운딩박스 */
   getShapeBBox(sec: number, parentPara: number, controlIdx: number): { pageIndex: number; x: number; y: number; width: number; height: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    const d = this.doc as unknown as {
-      getShapeBBox: (sectionIdx: number, parentParaIdx: number, controlIdx: number) => string;
-    };
-    return JSON.parse(d.getShapeBBox(sec, parentPara, controlIdx));
+    return JSON.parse(this.doc.getShapeBBox(sec, parentPara, controlIdx));
   }
 
   deleteTableControl(sec: number, parentPara: number, controlIdx: number): { ok: boolean } {
