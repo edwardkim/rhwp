@@ -433,6 +433,9 @@ impl TypesetEngine {
         section_index: usize,
         measured_tables: &[MeasuredTable],
         hide_empty_line: bool,
+        // [Task #1046] 사후 reflow: 이 para_idx 들은 현재 페이지에 이미 항목이 있으면
+        // 새 페이지에서 시작한다 (layout overflow 로 판정된 항목 이월). 빈 셋이면 무동작.
+        force_break_before: &std::collections::HashSet<usize>,
     ) -> PaginationResult {
         self.typeset_section_with_variant(
             paragraphs,
@@ -444,6 +447,7 @@ impl TypesetEngine {
             measured_tables,
             hide_empty_line,
             false,
+            force_break_before,
         )
     }
 
@@ -462,6 +466,9 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         hide_empty_line: bool,
         is_hwp3_variant: bool,
+        // [Task #1046] 사후 reflow: 이 para_idx 들은 현재 페이지에 이미 항목이 있으면
+        // 새 페이지에서 시작한다 (layout overflow 로 판정된 항목 이월). 빈 셋이면 무동작.
+        force_break_before: &std::collections::HashSet<usize>,
     ) -> PaginationResult {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         let col_count = column_def.column_count.max(1);
@@ -626,6 +633,14 @@ impl TypesetEngine {
                         st.current_zone_design_spacing_px = new_ds;
                     }
                 }
+            }
+
+            // [Task #1046] 사후 reflow 이월: layout 에서 본문 하단 overflow 로 판정된 항목은
+            // 현재 페이지에 렌더링하지 않고 다음 페이지로 넘긴다. force_break_before 에 등록된
+            // para_idx 가 현재 페이지에 이미 항목이 있으면 새 페이지를 강제 (force_page_break 등가).
+            // 빈 셋(reflow hint 없음)이면 무동작 → 기존 출력 불변.
+            if force_break_before.contains(&para_idx) && !st.current_items.is_empty() {
+                st.force_new_page();
             }
 
             // Task #321: 문단간 vpos-reset 기반 강제 분할
@@ -2694,6 +2709,27 @@ impl TypesetEngine {
 
         let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after;
         let mut table_total = ft.effective_height + host_spacing_total;
+
+        // [Task #1046 Stage 1] 표 측정 드리프트 진단: 페이지네이터 effective_height vs
+        // MeasuredTable 행높이 합(+cell_spacing). RHWP_TABLE_DRIFT=1 시 출력.
+        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+            let (mt_sum, mt_rows, mt_cs) = match mt {
+                Some(m) => {
+                    let cs_total = m.cell_spacing * (m.row_heights.len() as f64 + 1.0);
+                    (
+                        m.row_heights.iter().sum::<f64>() + cs_total,
+                        m.row_heights.len(),
+                        m.cell_spacing,
+                    )
+                }
+                None => (f64::NAN, 0, 0.0),
+            };
+            eprintln!(
+                "TABLE_DRIFT: pi={} sec={} eff_h={:.1} host_sp={:.1} table_total={:.1} mt_sum={:.1} mt_rows={} cs={:.1} cur_h={:.1} tac={} rows={}",
+                para_idx, st.section_index, ft.effective_height, host_spacing_total, table_total,
+                mt_sum, mt_rows, mt_cs, st.current_height, table.common.treat_as_char, table.row_count,
+            );
+        }
         // [Task #1027 Stage E1] treat_as_char 인라인 표 advance 정합.
         // 렌더러는 글자처럼취급 표를 호스트 문단의 한 LINE_SEG(line_height+line_spacing)로
         // advance 하나(=fmt.total_height), 페이지네이터는 측정된 표 effective_height 만
@@ -2807,9 +2843,44 @@ impl TypesetEngine {
             .collect();
         let header_row_height = cut_row_h.first().copied().unwrap_or(0.0);
 
+        // [Task #1046 Stage 1] 분할 표 cut 행높이 vs 렌더러 MeasuredTable 행높이 비교.
+        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+            let cut_sum: f64 = cut_row_h.iter().sum();
+            let mt_sum: f64 = mt.row_heights.iter().sum();
+            eprintln!(
+                "TABLE_CUT_DRIFT: pi={} sec={} cut_sum={:.1} mt_sum={:.1} diff={:+.1} cut_rows={:?} mt_rows={:?}",
+                para_idx, st.section_index, cut_sum, mt_sum, mt_sum - cut_sum,
+                cut_row_h.iter().map(|h| (h * 10.0).round() / 10.0).collect::<Vec<_>>(),
+                mt.row_heights.iter().map(|h| (h * 10.0).round() / 10.0).collect::<Vec<_>>(),
+            );
+        }
+
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
-        let remaining_on_page = (table_available - st.current_height).max(0.0);
+        // [Task #1046 Stage 2] 첫(비연속) fragment 의 렌더러 y_start 점프 — host_spacing.before
+        // 와 (TopAndBottom+vert=Para+v_off>0 표의) vertical_offset — 를 잔여공간에서 차감한다.
+        // 종전엔 미차감해 잔여를 과대평가 → 첫 행이 실제 안 들어가는데도 가드를 통과시켜
+        // 일반 행 강제 배치 경로가 통째로 밀어넣어 본문 초과(예: pi=242 vert_off 38px,
+        // 잔여 65.4px 로 보였으나 실가용 23.4px < 행0 34.9px). 루프 내 page_avail
+        // (host_before_overhead/vert_offset_overhead) 와 동일 overhead 를 가드에도 적용.
+        let first_frag_overhead = {
+            let host_before = ft.host_spacing.before;
+            let vert_off = {
+                use crate::model::shape::{TextWrap as TW, VertRelTo as VR};
+                let is_para_topbottom = !table.common.treat_as_char
+                    && matches!(table.common.text_wrap, TW::TopAndBottom)
+                    && matches!(table.common.vert_rel_to, VR::Para);
+                let v = table.common.vertical_offset as i32;
+                if is_para_topbottom && v > 0 {
+                    hwpunit_to_px(v, self.dpi)
+                } else {
+                    0.0
+                }
+            };
+            host_before + vert_off
+        };
+        let remaining_on_page =
+            (table_available - st.current_height - first_frag_overhead).max(0.0);
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
             mt.row_block_for(0)
         } else {
@@ -2848,8 +2919,21 @@ impl TypesetEngine {
             } else {
                 f64::MAX
             };
+            // [Task #1046 Stage 3] 다행(多行) 표의 비분할 첫 행/블록이 잔여공간엔 안
+            // 들어가지만 fresh 페이지엔 통째 들어가면 다음 페이지로 이월한다. 첫 행은
+            // 행 내부 분할이 안 되고(=is_row_splittable=false) 표에 후속 행 경계가 있어
+            // 깨끗한 이월이 가능하므로(요구사항 표 계열, 한컴 PDF상 통째 배치) force-split
+            // 추정으로 현재 페이지에 붙잡지 않는다(pi=290 8.7px). genuine page-larger 와
+            // 1×1 단일 셀(row_count==1, 행 경계 없어 셀 내부 컷 필요, #874)은 제외 —
+            // fits_fresh_page/row_count 조건으로 기존 force-split(렌더러 경계 컷) 유지.
+            let fits_fresh_page = split_unit_h <= (base_available - first_frag_overhead).max(0.0);
+            let multirow_clean_defer = !first_row_splittable
+                && row_count > 1
+                && first_block_end < row_count
+                && fits_fresh_page;
             if (!first_row_splittable && !first_row_force_splittable)
                 || remaining_on_page < min_content
+                || multirow_clean_defer
             {
                 st.advance_column_or_new_page();
             }
@@ -3001,6 +3085,17 @@ impl TypesetEngine {
                     0.0
                 };
             let avail_for_rows = (page_avail - header_overhead).max(0.0);
+
+            // [Task #1046 Stage 2 진단] 첫/연속 fragment 의 가용공간 분해 — 렌더러
+            // y_start 점프(vert_offset)·host_before 와의 정합 확인용. 동작 불변(게이트).
+            if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                eprintln!(
+                    "TABLE_SPLIT_AVAIL: pi={} sec={} cursor_row={} cont={} cur_h={:.1} table_avail={:.1} caption={:.1} host_before={:.1} vert_off={:.1} page_avail={:.1} header_oh={:.1} avail_for_rows={:.1} start_cut={:?}",
+                    para_idx, st.section_index, cursor_row, is_continuation, st.current_height,
+                    table_available, caption_extra, host_before_overhead, vert_offset_overhead,
+                    page_avail, header_overhead, avail_for_rows, start_cut,
+                );
+            }
 
             // [Task #993] 컷 기반 행 경계 walk — cursor_row 부터 avail_for_rows
             // 안에 들어가는 행을 advance_row_cut(단일 권위 함수)으로 누적 배치한다.
@@ -3185,6 +3280,15 @@ impl TypesetEngine {
             // [Task #1022] walk 가 consumed 에 분할 행 기여까지 누적하므로
             // partial_height = consumed + header_overhead 로 단일화.
             let partial_height: f64 = consumed + header_overhead;
+
+            // [Task #1046 Stage 2 진단] walk 결과 — fragment 경계/소비 높이. 동작 불변.
+            if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                eprintln!(
+                    "TABLE_SPLIT_RESULT: pi={} sec={} cursor_row={} end_row={} consumed={:.1} partial_h={:.1} split_end_limit={:.1} avail_for_rows={:.1} fits={}",
+                    para_idx, st.section_index, cursor_row, end_row, consumed, partial_height,
+                    split_end_limit, avail_for_rows, partial_height <= avail_for_rows + 0.1,
+                );
+            }
 
             // 마지막 파트에 Bottom 캡션 공간 확보
             if end_row >= row_count
@@ -3934,6 +4038,7 @@ mod tests {
             0,
             &[],
             false,
+            &std::collections::HashSet::new(),
         );
 
         assert_eq!(result.pages.len(), 1, "빈 문서도 최소 1페이지");
@@ -3960,6 +4065,7 @@ mod tests {
             0,
             &measured.tables,
             false,
+            &std::collections::HashSet::new(),
         );
 
         assert_pagination_match(&old_result, &new_result, "single_paragraph");
@@ -3986,6 +4092,7 @@ mod tests {
             0,
             &measured.tables,
             false,
+            &std::collections::HashSet::new(),
         );
 
         assert_pagination_match(&old_result, &new_result, "page_overflow");
@@ -4023,6 +4130,7 @@ mod tests {
             0,
             &measured.tables,
             false,
+            &std::collections::HashSet::new(),
         );
 
         assert_pagination_match(&old_result, &new_result, "line_split");
@@ -4058,6 +4166,7 @@ mod tests {
             0,
             &measured.tables,
             false,
+            &std::collections::HashSet::new(),
         );
 
         assert_pagination_match(&old_result, &new_result, "mixed_paragraphs");
@@ -4094,10 +4203,69 @@ mod tests {
             0,
             &measured.tables,
             false,
+            &std::collections::HashSet::new(),
         );
 
         assert_pagination_match(&old_result, &new_result, "page_break");
         assert_eq!(new_result.pages.len(), 2, "쪽 나누기로 2페이지");
+    }
+
+    // [Task #1046] 사후 reflow force-break hint 메커니즘 검증.
+    #[test]
+    fn test_typeset_force_break_before_hint() {
+        let engine = TypesetEngine::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        // 한 페이지에 충분히 들어가는 3개 문단
+        let paras = vec![
+            make_paragraph_with_height(400),
+            make_paragraph_with_height(400),
+            make_paragraph_with_height(400),
+        ];
+        let composed: Vec<ComposedParagraph> = Vec::new();
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+
+        // hint 없음 → 1페이지
+        let baseline = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &[],
+            false,
+            &std::collections::HashSet::new(),
+        );
+        assert_eq!(baseline.pages.len(), 1, "hint 없으면 3문단 모두 1페이지");
+
+        // para_idx=1 에 force-break hint → para 1 이 2페이지에서 시작
+        let mut hint = std::collections::HashSet::new();
+        hint.insert(1usize);
+        let reflowed = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &[],
+            false,
+            &hint,
+        );
+        assert_eq!(reflowed.pages.len(), 2, "para1 force-break 로 2페이지");
+        let page0_paras: Vec<usize> = reflowed.pages[0]
+            .column_contents
+            .iter()
+            .flat_map(|cc| cc.items.iter().map(|it| it.para_index()))
+            .collect();
+        let page1_paras: Vec<usize> = reflowed.pages[1]
+            .column_contents
+            .iter()
+            .flat_map(|cc| cc.items.iter().map(|it| it.para_index()))
+            .collect();
+        assert_eq!(page0_paras, vec![0], "1페이지엔 para0 만");
+        assert_eq!(page1_paras, vec![1, 2], "2페이지엔 para1,2");
     }
 
     // ========================================================
@@ -4144,6 +4312,7 @@ mod tests {
                 sec_idx,
                 measured_tables,
                 section.section_def.hide_empty_line,
+                &std::collections::HashSet::new(),
             );
 
             let old_result = &doc.pagination[sec_idx];
@@ -4279,6 +4448,7 @@ mod tests {
             0,
             &measured.tables,
             false,
+            &std::collections::HashSet::new(),
         );
 
         // 검증 1: paginator (engine.rs reference) 는 1 페이지에 모두 배치
