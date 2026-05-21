@@ -42,5 +42,26 @@ mod tests {
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 3);
         assert_eq!(LAYER_TREE_SCHEMA.unit, "px");
         assert_eq!(LAYER_TREE_SCHEMA.coordinate_system, "page-top-left-y-down");
+        assert_eq!(
+            PAGE_LAYER_TREE_SCHEMA_VERSION,
+            LAYER_TREE_SCHEMA.schema_version
+        );
+        assert_eq!(
+            PAGE_LAYER_TREE_SCHEMA_MINOR_VERSION,
+            LAYER_TREE_SCHEMA.schema_minor_version
+        );
+        assert_eq!(
+            PAGE_LAYER_TREE_RESOURCE_TABLE_VERSION,
+            LAYER_TREE_SCHEMA.resource_table_version
+        );
+        assert_eq!(
+            PAGE_LAYER_TREE_RESOURCE_TABLE_MINOR_VERSION,
+            LAYER_TREE_SCHEMA.resource_table_minor_version
+        );
+        assert_eq!(PAGE_LAYER_TREE_UNIT, LAYER_TREE_SCHEMA.unit);
+        assert_eq!(
+            PAGE_LAYER_TREE_COORDINATE_SYSTEM,
+            LAYER_TREE_SCHEMA.coordinate_system
+        );
     }
 }

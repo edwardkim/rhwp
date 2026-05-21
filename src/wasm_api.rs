@@ -377,7 +377,7 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
-    /// CanvasKit direct replay/compat overlay 정책 진단을 JSON 문자열로 반환한다.
+    /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
     ///
     /// `mode` 는 `"default"` 또는 `"compat"` 를 받는다. 빈 문자열은 `"default"` 로 처리한다.
     #[wasm_bindgen(js_name = getCanvasKitReplayPlan)]

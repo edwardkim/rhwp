@@ -72,3 +72,14 @@ test('CanvasKit renderer source does not introduce Canvas2D overlay replay', () 
   assert.equal(source.includes('renderPageToCanvas'), false);
   assert.equal(source.includes('rhwpOverlay'), false);
 });
+
+test('CanvasKit replay bridge fallback keeps compat on direct replay contract', () => {
+  const source = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
+  const fallbackStart = source.indexOf('return JSON.stringify({\n      mode,');
+  assert.notEqual(fallbackStart, -1);
+  const fallback = source.slice(fallbackStart, fallbackStart + 260);
+  assert.match(fallback, /hiddenCanvas2dOverlayAllowed:\s*false/);
+  assert.match(fallback, /directReplayRequired:\s*true/);
+  assert.equal(fallback.includes("mode === 'compat'"), false);
+  assert.equal(fallback.includes("mode === 'default'"), false);
+});
