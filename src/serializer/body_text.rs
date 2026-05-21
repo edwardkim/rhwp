@@ -328,6 +328,31 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
             prev_end
         };
 
+        // [Task #1050] AutoNumber placeholder 검출:
+        // char_offsets[i] == prev_end 이고 ch == ' ' 이고 다음 char_offset 이 prev_end + 8 +
+        // (실제 char 폭)인 경우 = placeholder space (i char 한 자리 차지 + 다음 char 가 8 점프 후).
+        // 이 경우 ' ' 대신 AUTO_NUMBER 컨트롤 8 cu 작성 + prev_end = offset + 8.
+        let next_offset = if i + 1 < para.char_offsets.len() {
+            Some(para.char_offsets[i + 1])
+        } else {
+            None
+        };
+        let is_autonum_placeholder = *ch == ' '
+            && offset == prev_end
+            && ctrl_idx < para.controls.len()
+            && matches!(
+                control_char_code_and_id(&para.controls[ctrl_idx]).0,
+                0x0011 | 0x0012
+            )
+            && next_offset.map_or(false, |n| n >= offset + 8);
+        if is_autonum_placeholder {
+            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            ctrl_idx += 1;
+            prev_end = offset + 8;
+            continue;
+        }
+
         // 갭에 컨트롤 문자 배치 (각 컨트롤 = 8 code unit)
         while prev_end + 8 <= offset && ctrl_idx < para.controls.len() {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);

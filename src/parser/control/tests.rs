@@ -126,11 +126,17 @@ fn test_parse_footer_control() {
 
 #[test]
 fn test_parse_footnote_control() {
+    // [Task #1050] CTRL_FOOTNOTE payload (size=20):
+    // number(UInt4) + before(WChar) + after(WChar) + numberShape(UInt4) + instanceId(UInt4)
     let mut ctrl_data = Vec::new();
-    ctrl_data.extend_from_slice(&3u16.to_le_bytes()); // number = 3
+    ctrl_data.extend_from_slice(&3u32.to_le_bytes()); // number = 3 (UInt4)
+    ctrl_data.extend_from_slice(&0u16.to_le_bytes()); // before = 0
+    ctrl_data.extend_from_slice(&0x0029u16.to_le_bytes()); // after = ')'
+    ctrl_data.extend_from_slice(&0u32.to_le_bytes()); // numberShape = 0
+    ctrl_data.extend_from_slice(&42u32.to_le_bytes()); // instanceId = 42
 
     let child_records = vec![
-        make_record(tags::HWPTAG_LIST_HEADER, 2, vec![0; 6]),
+        make_record(tags::HWPTAG_LIST_HEADER, 2, vec![0; 16]),
         make_record(tags::HWPTAG_PARA_HEADER, 3, make_para_header_data(5)),
         make_record(tags::HWPTAG_PARA_TEXT, 4, make_para_text_data("각주")),
     ];
@@ -138,6 +144,8 @@ fn test_parse_footnote_control() {
     let ctrl = parse_footnote_control(&ctrl_data, &child_records);
     if let Control::Footnote(fn_) = ctrl {
         assert_eq!(fn_.number, 3);
+        assert_eq!(fn_.after_decoration_letter, 0x0029);
+        assert_eq!(fn_.instance_id, 42);
         assert_eq!(fn_.paragraphs.len(), 1);
         assert_eq!(fn_.paragraphs[0].text, "각주");
     } else {

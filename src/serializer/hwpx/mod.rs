@@ -742,6 +742,8 @@ mod tests {
         para.controls.push(Control::Footnote(Box::new(Footnote {
             number: 1,
             paragraphs: vec![fn_para],
+            after_decoration_letter: 0x0029,
+            ..Default::default()
         })));
 
         let mut en_para = Paragraph::default();
@@ -749,6 +751,8 @@ mod tests {
         para.controls.push(Control::Endnote(Box::new(Endnote {
             number: 1,
             paragraphs: vec![en_para],
+            after_decoration_letter: 0x0029,
+            ..Default::default()
         })));
 
         section.paragraphs.push(para);

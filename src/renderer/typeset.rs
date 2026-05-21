@@ -1291,6 +1291,37 @@ impl TypesetEngine {
                                     st.current_items.push(item);
                                 }
                             }
+                            // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
+                            // footnote-tbox-01.hwpx 의 글상자 안 각주 본문이 페이지 하단 영역
+                            // 에 누락되는 결함 정정. engine.rs (legacy) 는 이미 처리하나
+                            // typeset.rs (main, default) 만 누락 — feedback_image_renderer_paths_separate.
+                            if let Control::Shape(shape_obj) = ctrl {
+                                if let Some(text_box) =
+                                    shape_obj.drawing().and_then(|d| d.text_box.as_ref())
+                                {
+                                    for (tp_idx, tp) in text_box.paragraphs.iter().enumerate() {
+                                        for (tc_idx, tc) in tp.controls.iter().enumerate() {
+                                            if let Control::Footnote(fn_ctrl) = tc {
+                                                if let Some(page) = st.pages.last_mut() {
+                                                    page.footnotes.push(FootnoteRef {
+                                                        number: fn_ctrl.number,
+                                                        source: FootnoteSource::ShapeTextBox {
+                                                            para_index: para_idx,
+                                                            shape_control_index: ctrl_idx,
+                                                            tb_para_index: tp_idx,
+                                                            tb_control_index: tc_idx,
+                                                        },
+                                                    });
+                                                    let fn_height = Self::estimate_footnote_height(
+                                                        fn_ctrl, self.dpi,
+                                                    );
+                                                    st.add_footnote_height(fn_height);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             // Task #409 v2: 비-TAC TopAndBottom + vert=Para Picture/Shape 는
                             // layout 에서 picture_footnote.rs:356 의 `y_offset + total_height`
                             // 패턴으로 후속 콘텐츠를 개체 높이만큼 밀어냄. 하지만 paragraph

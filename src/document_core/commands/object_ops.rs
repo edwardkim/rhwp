@@ -4572,6 +4572,9 @@ impl DocumentCore {
         let footnote = Footnote {
             number: footnote_number,
             paragraphs: vec![inner_para],
+            // [Task #1050] HWP5 CTRL_FOOTNOTE 한컴 default
+            after_decoration_letter: 0x0029, // ')'
+            ..Default::default()
         };
 
         // 문단에 각주 컨트롤 삽입

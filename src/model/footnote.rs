@@ -4,21 +4,49 @@ use super::paragraph::Paragraph;
 use super::*;
 
 /// 각주 ('fn  ' 컨트롤)
+///
+/// [Task #1050] HWP5 CTRL_FOOTNOTE payload 전체 보존 (size=20):
+/// number(UInt4) + beforeDecorationLetter(WChar) + afterDecorationLetter(WChar)
+/// + numberShape(UInt4) + instanceId(UInt4, optional).
+///
+/// LIST_HEADER for Footnote (size=16): paraCount(SInt4) + property(UInt4) + 8 byte zero padding.
+///
+/// 참조: `hwplib::ControlFootnote` + `CtrlHeaderFootnote`.
 #[derive(Debug, Default, Clone)]
 pub struct Footnote {
     /// 각주 번호
     pub number: u16,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
+    /// 앞 장식 문자 (WChar, default 0 = 없음)
+    pub before_decoration_letter: u16,
+    /// 뒤 장식 문자 (WChar, default 0x0029 = ')')
+    pub after_decoration_letter: u16,
+    /// 번호 모양 (UInt4, default 0 = Digit)
+    pub number_shape: u32,
+    /// 문서 내 고유 식별자 (UInt4, optional)
+    pub instance_id: u32,
+    /// LIST_HEADER property (UInt4, default 0)
+    pub list_header_property: u32,
 }
 
-/// 미주 ('en  ' 컨트롤)
+/// 미주 ('en  ' 컨트롤) — [Task #1050] Footnote 와 동일 구조
 #[derive(Debug, Default, Clone)]
 pub struct Endnote {
     /// 미주 번호
     pub number: u16,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
+    /// 앞 장식 문자 (WChar)
+    pub before_decoration_letter: u16,
+    /// 뒤 장식 문자 (WChar)
+    pub after_decoration_letter: u16,
+    /// 번호 모양 (UInt4)
+    pub number_shape: u32,
+    /// 문서 내 고유 식별자 (UInt4)
+    pub instance_id: u32,
+    /// LIST_HEADER property (UInt4)
+    pub list_header_property: u32,
 }
 
 /// 각주/미주 모양 (HWPTAG_FOOTNOTE_SHAPE)

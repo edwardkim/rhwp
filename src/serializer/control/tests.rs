@@ -313,6 +313,9 @@ fn test_roundtrip_footnote() {
             }],
             ..Default::default()
         }],
+        // [Task #1050] CTRL_FOOTNOTE 한컴 default
+        after_decoration_letter: 0x0029,
+        ..Default::default()
     };
 
     let para = Paragraph {

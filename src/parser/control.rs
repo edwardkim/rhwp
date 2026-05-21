@@ -518,13 +518,25 @@ fn parse_footer_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
 /// 각주 컨트롤 파싱
 fn parse_footnote_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
     let mut footnote = Footnote::default();
-
-    if ctrl_data.len() >= 2 {
+    // [Task #1050] hwplib CtrlHeaderFootnote 정합:
+    //   number(UInt4) + before(WChar) + after(WChar) + numberShape(UInt4) + instanceId(UInt4, optional)
+    if ctrl_data.len() >= 4 {
         let mut r = ByteReader::new(ctrl_data);
-        footnote.number = r.read_u16().unwrap_or(0);
+        footnote.number = r.read_u32().unwrap_or(0) as u16;
+        if ctrl_data.len() >= 8 {
+            footnote.before_decoration_letter = r.read_u16().unwrap_or(0);
+            footnote.after_decoration_letter = r.read_u16().unwrap_or(0);
+        }
+        if ctrl_data.len() >= 12 {
+            footnote.number_shape = r.read_u32().unwrap_or(0);
+        }
+        if ctrl_data.len() >= 16 {
+            footnote.instance_id = r.read_u32().unwrap_or(0);
+        }
     }
 
     footnote.paragraphs = find_list_header_paragraphs(child_records);
+    footnote.list_header_property = find_list_header_property_for_footnote_endnote(child_records);
 
     Control::Footnote(Box::new(footnote))
 }
@@ -532,15 +544,39 @@ fn parse_footnote_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
 /// 미주 컨트롤 파싱
 fn parse_endnote_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
     let mut endnote = Endnote::default();
-
-    if ctrl_data.len() >= 2 {
+    // [Task #1050] CTRL_FOOTNOTE 와 동일 구조
+    if ctrl_data.len() >= 4 {
         let mut r = ByteReader::new(ctrl_data);
-        endnote.number = r.read_u16().unwrap_or(0);
+        endnote.number = r.read_u32().unwrap_or(0) as u16;
+        if ctrl_data.len() >= 8 {
+            endnote.before_decoration_letter = r.read_u16().unwrap_or(0);
+            endnote.after_decoration_letter = r.read_u16().unwrap_or(0);
+        }
+        if ctrl_data.len() >= 12 {
+            endnote.number_shape = r.read_u32().unwrap_or(0);
+        }
+        if ctrl_data.len() >= 16 {
+            endnote.instance_id = r.read_u32().unwrap_or(0);
+        }
     }
 
     endnote.paragraphs = find_list_header_paragraphs(child_records);
+    endnote.list_header_property = find_list_header_property_for_footnote_endnote(child_records);
 
     Control::Endnote(Box::new(endnote))
+}
+
+/// [Task #1050] CTRL_FOOTNOTE / CTRL_ENDNOTE 의 직속 LIST_HEADER property 읽기.
+/// 형식: paraCount(SInt4) + property(UInt4) + 8 byte zero padding.
+fn find_list_header_property_for_footnote_endnote(child_records: &[Record]) -> u32 {
+    for record in child_records {
+        if record.tag_id == crate::parser::tags::HWPTAG_LIST_HEADER && record.data.len() >= 8 {
+            let mut r = ByteReader::new(&record.data);
+            let _para_count = r.read_i32().unwrap_or(0);
+            return r.read_u32().unwrap_or(0);
+        }
+    }
+    0
 }
 
 // ============================================================
