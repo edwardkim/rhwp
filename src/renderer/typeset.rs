@@ -14,6 +14,9 @@ use crate::model::page::{ColumnDef, ColumnType, PageDef};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::ComposedParagraph;
+use crate::renderer::float_placement::{
+    horizontal_range, is_para_topbottom_float, signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+};
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::page_layout::PageLayoutInfo;
@@ -185,6 +188,10 @@ fn column_def_design_spacing_px(cd: &ColumnDef, dpi: f64) -> f64 {
     } else {
         0.0
     }
+}
+
+fn para_has_visible_text(para: &Paragraph) -> bool {
+    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
 impl TypesetState {
@@ -2240,7 +2247,9 @@ impl TypesetEngine {
         st.ensure_page();
 
         let height_before = st.current_height;
+        let para_start_height = st.current_height;
         let page_count_before = st.pages.len();
+        let mut para_float_lanes = FloatLaneSet::new();
 
         // 각 컨트롤에 대해 format → fits → place/split
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -2302,6 +2311,19 @@ impl TypesetEngine {
                         self.typeset_tac_table(
                             st, para_idx, ctrl_idx, para, table, &ft, &fmt, tac_count,
                         );
+                    } else if self.try_typeset_empty_para_float_table(
+                        st,
+                        para_idx,
+                        ctrl_idx,
+                        para,
+                        table,
+                        &ft,
+                        composed,
+                        styles,
+                        para_start_height,
+                        &mut para_float_lanes,
+                    ) {
+                        // Empty host para-float table placed by horizontal lane reservation.
                     } else {
                         self.typeset_block_table(
                             st, para_idx, ctrl_idx, para, table, &ft, &fmt, mt, styles,
@@ -2432,6 +2454,98 @@ impl TypesetEngine {
                 st.current_height = height_before + cap;
             }
         }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn try_typeset_empty_para_float_table(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        ctrl_idx: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        ft: &FormattedTable,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        para_start_height: f64,
+        lanes: &mut FloatLaneSet,
+    ) -> bool {
+        if !is_para_topbottom_float(&table.common) || para_has_visible_text(para) {
+            return false;
+        }
+        let para_float_count = para
+            .controls
+            .iter()
+            .filter(|ctrl| matches!(ctrl, Control::Table(t) if is_para_topbottom_float(&t.common)))
+            .take(2)
+            .count();
+        if para_float_count < 2 {
+            return false;
+        }
+
+        let column_area = st
+            .layout
+            .column_areas
+            .get(st.current_column as usize)
+            .copied()
+            .unwrap_or(st.layout.body_area);
+        let width_px = hwpunit_to_px(signed_hwpunit(table.common.width), self.dpi);
+        if width_px <= 0.0 || ft.effective_height <= 0.0 {
+            return false;
+        }
+
+        let para_style_id = composed
+            .map(|c| c.para_style_id as usize)
+            .unwrap_or(para.para_shape_id as usize);
+        let para_style = styles.para_styles.get(para_style_id);
+        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+        let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+        let effective_margin = if indent > 0.0 {
+            margin_left + indent
+        } else {
+            margin_left
+        };
+        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+
+        let placement_ctx = FloatPlacementContext::new(column_area)
+            .with_body_area(st.layout.body_area)
+            .with_paper_width(st.layout.page_width)
+            .with_host_margins(effective_margin, margin_right);
+        let (x_start, x_end) = horizontal_range(&table.common, width_px, placement_ctx, self.dpi);
+
+        let v_offset_px = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), self.dpi);
+        let raw_top = (para_start_height + v_offset_px).max(para_start_height);
+        let reserved_height = ft.effective_height + ft.host_spacing.after;
+        let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
+        let lane_bottom = lane_top + reserved_height;
+
+        let table_footnote = ft.table_footnote_height;
+        let fn_separator = if table_footnote > 0.0 && st.is_first_footnote_on_page {
+            st.footnote_separator_overhead
+        } else {
+            0.0
+        };
+        let total_footnote = st.current_footnote_height + table_footnote + fn_separator;
+        let fn_margin = if total_footnote > 0.0 {
+            st.footnote_safety_margin
+        } else {
+            0.0
+        };
+        let available =
+            (st.base_available_height() - total_footnote - fn_margin - st.current_zone_y_offset)
+                .max(0.0);
+
+        if lane_bottom > available + 0.5 {
+            return false;
+        }
+
+        st.current_items.push(PageItem::Table {
+            para_index: para_idx,
+            control_index: ctrl_idx,
+        });
+        lanes.place(x_start, x_end, raw_top, reserved_height);
+        st.current_height = st.current_height.max(lanes.max_bottom());
+        true
     }
 
     /// TAC(treat_as_char) 표의 조판.
