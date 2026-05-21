@@ -11,6 +11,7 @@ pub mod canvas;
 pub mod canvaskit_policy;
 pub mod composer;
 pub mod equation;
+pub mod float_placement;
 pub mod font_metrics_data;
 pub mod height_cursor;
 pub mod height_measurer;
