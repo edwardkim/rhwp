@@ -122,11 +122,28 @@ impl HeightCursor {
             // +trailing_ls 는 over-correction(lazy_base 음수 → 표 overflow, exam_kor p5).
             // 그러나 컬럼이 vpos 0 이 아닌 곳에서 시작(상단 박스/도형 뒤 본문, footnote-01 p1)
             // 하면 trailing_ls bridge 가 필요. 게이트: 보정 lazy_base ≥ 0 이면 보정 적용.
-            let trailing_ls_hu = paragraphs
-                .get(prev_pi)
-                .and_then(|p| p.line_segs.last())
-                .map(|s| s.line_spacing.max(0))
-                .unwrap_or(0);
+            // [Task #1049] 직전이 실텍스트 본문 문단이고 vpos 가 연속
+            // (curr_first_vpos == prev_vpos_end)이면, 그 문단의 trailing 줄간격이 이미
+            // 연속 vpos 흐름·sequential y 에 포함되어 있으므로 trailing-ls bridge 를 끈다
+            // (인라인 TAC 리셋 직후 +trailing_ls 가 12.8px 과대 전진을 일으키는 회귀 차단).
+            // - curr_first_vpos 가 prev_vpos_end 초과(gap: top-box 후 본문·footnote-01 p1)
+            //   또는 미상이면 종전대로 bridge 적용(#1022 v2).
+            // - 직전이 빈 문단이면 렌더러의 빈줄 높이 억제로 trailing_ls 가 sequential y 에
+            //   반영되지 않을 수 있어 bridge 유지(복학원서 page1: 빈 문단 뒤 폼 표).
+            let prev_has_text = prev_para
+                .text
+                .chars()
+                .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+            let vpos_continuous = matches!(curr_first_vpos, Some(v) if v <= prev_vpos_end);
+            let trailing_ls_hu = if vpos_continuous && prev_has_text {
+                0
+            } else {
+                paragraphs
+                    .get(prev_pi)
+                    .and_then(|p| p.line_segs.last())
+                    .map(|s| s.line_spacing.max(0))
+                    .unwrap_or(0)
+            };
             let y_delta_hu = ((y_offset - self.col_area_y) / self.dpi * 7200.0).round() as i32;
             let lazy_base_corrected = prev_vpos_end - (y_delta_hu + trailing_ls_hu);
             let lazy_base = if lazy_base_corrected >= 0 {
