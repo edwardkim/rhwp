@@ -250,6 +250,40 @@ fn test_utf16_range_no_offsets() {
     assert_eq!(e, 5);
 }
 
+#[test]
+fn test_compose_decreasing_lineseg_text_start_uses_empty_range() {
+    let para = Paragraph {
+        text: "ABCDE".to_string(),
+        char_offsets: vec![0, 1, 2, 3, 4],
+        char_count: 6,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 1,
+        }],
+        line_segs: vec![
+            LineSeg {
+                text_start: 4,
+                line_height: 400,
+                baseline_distance: 320,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 0,
+                line_height: 400,
+                baseline_distance: 320,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let composed = compose_paragraph(&para);
+    assert_eq!(composed.lines.len(), 2);
+    assert!(composed.lines[0].runs.is_empty());
+    assert_eq!(composed.lines[0].char_start, 4);
+    assert_eq!(composed.lines[1].runs[0].text, "ABCDE");
+}
+
 /// find_active_char_shape 테스트
 #[test]
 fn test_find_active_char_shape() {

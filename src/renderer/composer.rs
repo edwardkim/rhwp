@@ -525,12 +525,15 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         };
 
         // UTF-16 위치 → 텍스트 문자 인덱스로 변환
-        let (text_start, text_end) = utf16_range_to_text_range(
+        let (text_start, mut text_end) = utf16_range_to_text_range(
             &para.char_offsets,
             utf16_start,
             utf16_end,
             para.text.chars().count(),
         );
+        if text_end < text_start {
+            text_end = text_start;
+        }
 
         // 이 줄의 텍스트 추출
         let line_text: String = para
