@@ -161,6 +161,7 @@ impl Paginator {
 
             let base_available_height = st.base_available_height();
             let available_height = st.available_height();
+            const LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
 
             // 쪽/단 나누기 감지
             let force_page_break = para.column_type == ColumnBreakType::Page
@@ -351,6 +352,55 @@ impl Paginator {
 
             // 페이지가 아직 없으면 생성
             st.ensure_page();
+
+            // TypesetEngine trailing empty guard 와 동일한 fallback 보호.
+            // 마지막 빈 문단이 직전 trailing line_spacing 때문에 안전 가용 높이 밖에서
+            // 단독 페이지로 밀리는 경우, 보이는 내용이 없으므로 현재 페이지에 흡수한다.
+            if para_idx + 1 == paragraphs.len()
+                && col_count == 1
+                && !has_table
+                && !st.current_items.is_empty()
+            {
+                let trimmed = para.text.replace(|c: char| c.is_control(), "");
+                let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
+                if is_empty_para {
+                    let trailing_ls = para
+                        .line_segs
+                        .last()
+                        .filter(|seg| seg.line_spacing > 0)
+                        .map(|seg| crate::renderer::hwpunit_to_px(seg.line_spacing, self.dpi))
+                        .unwrap_or(0.0);
+                    let height_for_fit = (para_height - trailing_ls).max(0.0);
+                    let total_h = st.current_height + height_for_fit;
+                    let fit_fail_within_safety = total_h > available_height
+                        && total_h <= available_height + LAYOUT_DRIFT_SAFETY_PX;
+                    let prior_trailing_drift = st.current_height > available_height
+                        && st.current_height <= available_height + LAYOUT_DRIFT_SAFETY_PX + 0.5;
+                    let previous_item_is_empty_para = st
+                        .current_items
+                        .last()
+                        .and_then(|item| match item {
+                            PageItem::FullParagraph { para_index } => Some(*para_index),
+                            _ => None,
+                        })
+                        .and_then(|prev_idx| paragraphs.get(prev_idx))
+                        .map(|prev_para| {
+                            let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
+                            trimmed.trim().is_empty() && prev_para.controls.is_empty()
+                        })
+                        .unwrap_or(false);
+                    if prior_trailing_drift && previous_item_is_empty_para {
+                        hidden_empty_paras.insert(para_idx);
+                        continue;
+                    }
+                    if fit_fail_within_safety {
+                        st.current_items.push(PageItem::FullParagraph {
+                            para_index: para_idx,
+                        });
+                        continue;
+                    }
+                }
+            }
 
             // vpos 기준점 설정: 페이지 첫 문단
             if st.page_vpos_base.is_none() {

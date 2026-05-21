@@ -89,11 +89,10 @@ fn issue_986_receipt_tables_do_not_split_to_later_pages() {
     let doc = load_doc();
     let page_count = doc.page_count();
 
-    assert!(
-        page_count <= 2,
-        "{} should not split back to three pages; actual page_count={}",
-        SAMPLE,
-        page_count
+    assert_eq!(
+        page_count, 1,
+        "{} should fit on one page; actual page_count={}",
+        SAMPLE, page_count,
     );
 
     for ci in 2..=8 {

@@ -1061,7 +1061,14 @@ impl TypesetEngine {
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
                 // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
                 self.vpos_snap_current_height(&mut st, para_idx, paragraphs, styles);
-                self.typeset_paragraph(&mut st, para_idx, para, &formatted, is_last_in_section);
+                self.typeset_paragraph(
+                    &mut st,
+                    para_idx,
+                    para,
+                    &formatted,
+                    paragraphs,
+                    is_last_in_section,
+                );
             } else {
                 // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
                 self.typeset_table_paragraph(
@@ -1638,6 +1645,7 @@ impl TypesetEngine {
         para_idx: usize,
         para: &Paragraph,
         fmt: &FormattedParagraph,
+        paragraphs: &[Paragraph],
         is_last_in_section: bool,
     ) {
         // Task #332 Stage 4a: layout drift 안전 마진.
@@ -1780,6 +1788,25 @@ impl TypesetEngine {
                 let total_h = st.current_height + fmt.height_for_fit;
                 let fit_fail_within_safety =
                     total_h > available && total_h <= available + LAYOUT_DRIFT_SAFETY_PX;
+                let prior_trailing_drift = st.current_height > available
+                    && st.current_height <= available + LAYOUT_DRIFT_SAFETY_PX + 0.5;
+                let previous_item_is_empty_para = st
+                    .current_items
+                    .last()
+                    .and_then(|item| match item {
+                        PageItem::FullParagraph { para_index } => Some(*para_index),
+                        _ => None,
+                    })
+                    .and_then(|prev_idx| paragraphs.get(prev_idx))
+                    .map(|prev_para| {
+                        let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
+                        trimmed.trim().is_empty() && prev_para.controls.is_empty()
+                    })
+                    .unwrap_or(false);
+                if prior_trailing_drift && previous_item_is_empty_para {
+                    st.hidden_empty_paras.insert(para_idx);
+                    return;
+                }
                 if fit_fail_within_safety {
                     st.current_items.push(PageItem::FullParagraph {
                         para_index: para_idx,
