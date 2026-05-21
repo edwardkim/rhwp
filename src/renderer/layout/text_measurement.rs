@@ -1352,6 +1352,36 @@ pub(crate) fn resolved_to_text_style(
 
 // ── 내장 폰트 메트릭 측정 ───────────────────────────────────────────
 
+/// 폰트가 고정폭(monospace)인지 판정한다.
+///
+/// Basic Latin (U+0021~U+007E) 의 0 이 아닌 글자폭이 모두 동일하면 monospace.
+/// 돋움체/바탕체/굴림체 등 한컴 고정폭 폰트는 `·` 를 포함한 모든 글리프가
+/// em_size 폭을 가지므로, U+00B7 의 `.notdef` 위장값 가드에서 이들을 제외해
+/// 전각 측정을 보존하기 위함이다 (Issue #630, aift 목차 right-tab 정합).
+fn is_monospace_metric(metric: &font_metrics_data::FontMetric) -> bool {
+    let mut common: Option<u16> = None;
+    let mut count = 0u32;
+    for range in metric.latin_ranges {
+        if range.start > 0x007E || range.end < 0x0021 {
+            continue;
+        }
+        for (i, &w) in range.widths.iter().enumerate() {
+            let code = range.start + i as u32;
+            if !(0x0021..=0x007E).contains(&code) || w == 0 {
+                continue;
+            }
+            count += 1;
+            match common {
+                None => common = Some(w),
+                Some(cw) if cw != w => return false,
+                _ => {}
+            }
+        }
+    }
+    // 표본이 충분할 때만 monospace 로 판정 (Latin 글리프가 거의 없는 폰트 오판 방지).
+    count >= 16
+}
+
 /// 내장 폰트 메트릭으로 문자 폭 측정 (em 단위 → px 변환)
 ///
 /// 내장 메트릭이 있으면 JS 브릿지 호출 없이 즉시 반환.
@@ -1386,7 +1416,17 @@ fn measure_char_width_embedded(
         // glyph_w 가 비정상 fullwidth (>= em_size) 일 때만 0.3 em 강제 — 함초롬
         // 바탕 (0.32) / Pretendard (0.22) 등 정상 DB 값은 조건 미충족으로 영향 없음.
         let is_narrow_unicode_punct = matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}');
-        if is_narrow_unicode_punct && glyph_w >= mm.metric.em_size {
+        // [U+00B7 .notdef 위장값 정정] 비례폰트(휴먼명조 등)가 `·` (가운뎃점)
+        // 글리프를 갖지 않으면 cmap 이 .notdef(glyph 0) 로 매핑돼 advance 가
+        // em_size(전각) 로 기록된다. 한컴은 이 경우 점 글리프를 가진 대체
+        // 폰트(바탕 ≈0.33em 등)로 `·` 를 렌더하므로 전각 advance 는 PDF 대비
+        // 과대 (시·군 점 좌우 공백 큼). 비례폰트에서 U+00B7 이 전각이면 위장값
+        // 으로 보고 0.3em 으로 정정한다. 고정폭(monospace) 폰트(돋움체 등)는
+        // 모든 글리프가 em_size 이므로 제외 — 해당 `·` 는 진짜 전각이다
+        // (Issue #630, aift 목차 right-tab 정합 보존).
+        let is_b7_notdef_artifact =
+            c == '\u{00B7}' && glyph_w >= mm.metric.em_size && !is_monospace_metric(mm.metric);
+        if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact {
             (mm.metric.em_size as f64 * 0.3) as u16
         } else if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
             mm.metric.em_size / 2
@@ -2180,6 +2220,33 @@ mod tests {
             expected,
             dot_advance,
             expected / 2.0
+        );
+    }
+
+    /// [U+00B7 .notdef 위장값 정정] 비례폰트(휴먼명조)에서 `·`(U+00B7) 글리프
+    /// 부재로 cmap 이 .notdef(em_size) 로 위장 → 전각 측정되던 것을 narrow 로
+    /// 정정한다. 한컴은 점 글리프를 가진 대체 폰트(바탕 ≈0.33em)로 `·` 를
+    /// 렌더하므로 한컴 PDF 정합. 고정폭 폰트(돋움체)는 영향 없음 —
+    /// test_630_middle_dot_full_width_in_registered_font 가 전각 보존을 가드.
+    #[test]
+    fn test_b7_notdef_artifact_narrow_in_proportional_font() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: "휴먼명조".to_string(),
+            font_size: 20.0,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        let positions = m.compute_char_positions("가\u{00B7}나", &style);
+        assert!(positions.len() >= 3, "positions should have ≥ 3 entries");
+        let dot_advance = positions[2] - positions[1];
+        // 비례폰트의 .notdef 위장 전각(≈20px) 이 아니라 narrow(0.3em ≈ 6px) 여야 함.
+        assert!(
+            dot_advance <= style.font_size * 0.4,
+            "휴먼명조의 `·` (U+00B7) 는 .notdef 위장 전각이 아니라 narrow \
+             (≤ font_size * 0.4 = {:.2}) 로 측정되어야 함, got {:.2}",
+            style.font_size * 0.4,
+            dot_advance
         );
     }
 
