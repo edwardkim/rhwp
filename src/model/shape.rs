@@ -9,7 +9,7 @@ use super::*;
 /// `parse_common_obj_attr` 및 `serialize_common_obj_attr` 과 일치해야 한다.
 /// `table_ops.rs`, `object_ops.rs`, `html_table_import.rs` 등에서 직접 바이트
 /// 인덱싱 대신 이 상수를 사용한다.
-pub mod common_obj_offsets {
+pub(crate) mod common_obj_offsets {
     pub const FLAGS: std::ops::Range<usize> = 0..4;
     pub const V_OFFSET: std::ops::Range<usize> = 4..8;
     pub const H_OFFSET: std::ops::Range<usize> = 8..12;
@@ -21,7 +21,7 @@ pub mod common_obj_offsets {
     pub const MARGIN_TOP: std::ops::Range<usize> = 28..30;
     pub const MARGIN_BOTTOM: std::ops::Range<usize> = 30..32;
     pub const INSTANCE_ID: std::ops::Range<usize> = 32..36;
-    pub const MIN_LEN: usize = 36;
+    pub const MIN_LEN: usize = INSTANCE_ID.end;
 }
 
 /// 개체 공통 속성 (모든 개체에 공통)
