@@ -2623,6 +2623,11 @@ impl TypesetEngine {
             (pre_table_end_line + 1).min(total_lines).max(1)
         } else if table.attr & 0x01 != 0 {
             pre_table_end_line.max(1)
+        } else if table.common.treat_as_char && total_lines > pre_table_end_line + 1 {
+            // HWPX TAC 표(attr 비트0=0): 표줄(pre_table_end_line) 다음에 실제 본문 줄이
+            // 있으면 표줄을 post-text 에서 제외(HWP5 attr&0x01 의 pre_end.max(1) 와 정합).
+            // 단일 줄(표줄만)은 건드리지 않아 기존 동작 보존.
+            pre_table_end_line + 1
         } else if is_last_table && !is_first_table {
             0
         } else {
