@@ -1586,7 +1586,8 @@ impl TypesetEngine {
                             // overflow 로 잘림). pagination 측에서도 layout 과 동일하게
                             // 개체 높이를 current_height 에 누적.
                             use crate::model::shape::{TextWrap, VertRelTo};
-                            let pushdown_h: Option<f64> = match ctrl {
+                            // (obj_h, extra=obj_h+margin_bottom)
+                            let pushdown_h: Option<(f64, f64)> = match ctrl {
                                 Control::Picture(pic)
                                     if !pic.common.treat_as_char
                                         && matches!(
@@ -1598,7 +1599,7 @@ impl TypesetEngine {
                                     let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let mb =
                                         hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
-                                    Some(h + mb)
+                                    Some((h, h + mb))
                                 }
                                 Control::Shape(s)
                                     if !s.common().treat_as_char
@@ -1611,12 +1612,33 @@ impl TypesetEngine {
                                     let cm = s.common();
                                     let h = hwpunit_to_px(cm.height as i32, self.dpi);
                                     let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
-                                    Some(h + mb)
+                                    Some((h, h + mb))
                                 }
                                 _ => None,
                             };
-                            if let Some(extra) = pushdown_h {
-                                st.current_height += extra;
+                            if let Some((obj_h, extra)) = pushdown_h {
+                                // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄
+                                // 앞 gap ≥ 그림 높이)하면 VPOS_CORR sync 가 그 공간을 따르므로
+                                // pushdown 가산은 이중 계상. gap 이 그림 높이 미만(파일 vpos
+                                // 미반영, Task #409 계열)일 때만 가산.
+                                const PUSHDOWN_GAP_TOL_PX: f64 = 8.0;
+                                let already_accounted = para_idx > 0 && {
+                                    let v_cur = para.line_segs.first().map(|s| s.vertical_pos);
+                                    let prev_end = paragraphs[para_idx - 1]
+                                        .line_segs
+                                        .last()
+                                        .map(|s| s.vertical_pos + s.line_height);
+                                    match (v_cur, prev_end) {
+                                        (Some(vc), Some(pe)) if vc > pe => {
+                                            hwpunit_to_px((vc - pe) as i32, self.dpi)
+                                                >= obj_h - PUSHDOWN_GAP_TOL_PX
+                                        }
+                                        _ => false,
+                                    }
+                                };
+                                if !already_accounted {
+                                    st.current_height += extra;
+                                }
                             }
                         }
                     }

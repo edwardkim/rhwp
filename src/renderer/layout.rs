@@ -4697,6 +4697,7 @@ impl LayoutEngine {
                                 page_content.section_index,
                                 para_index,
                                 control_index,
+                                false,
                             );
                             for child in temp_parent.children.drain(..) {
                                 paper_images.push(child);
@@ -4719,6 +4720,28 @@ impl LayoutEngine {
                                 height: col_area.height - (pic_y - col_area.y),
                             };
                             let saved_y_offset = y_offset;
+                            // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞
+                            // gap ≥ 그림 높이)하면 그림 높이 추가 진행 생략(typeset pushdown
+                            // 게이트와 동일 조건). #409 계열(gap 작음)은 현행 유지.
+                            let vpos_accounts_for_height = para_index > 0 && {
+                                const PUSHDOWN_GAP_TOL_PX: f64 = 8.0;
+                                let obj_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                let v_cur = paragraphs[para_index]
+                                    .line_segs
+                                    .first()
+                                    .map(|s| s.vertical_pos);
+                                let prev_end = paragraphs[para_index - 1]
+                                    .line_segs
+                                    .last()
+                                    .map(|s| s.vertical_pos + s.line_height);
+                                match (v_cur, prev_end) {
+                                    (Some(vc), Some(pe)) if vc > pe => {
+                                        hwpunit_to_px((vc - pe) as i32, self.dpi)
+                                            >= obj_h - PUSHDOWN_GAP_TOL_PX
+                                    }
+                                    _ => false,
+                                }
+                            };
                             result_y = self.layout_body_picture(
                                 tree,
                                 col_node,
@@ -4739,6 +4762,7 @@ impl LayoutEngine {
                                 page_content.section_index,
                                 para_index,
                                 control_index,
+                                vpos_accounts_for_height,
                             );
                             // [Task #959] horz_rel_to=Column 의 picture 가 col_area 우측을
                             // 초과하는 위치에 emit 되면 한컴 viewer 는 column flow 에
