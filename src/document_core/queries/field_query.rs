@@ -297,7 +297,13 @@ impl DocumentCore {
                         ))
                     })?;
                     if let Some(cell_para) = cell.paragraphs.first_mut() {
-                        cell_para.text = value.to_string();
+                        let old_len = cell_para.text.chars().count();
+                        if old_len > 0 {
+                            cell_para.delete_text_at(0, old_len);
+                        }
+                        if !value.is_empty() {
+                            cell_para.insert_text_at(0, value);
+                        }
                         rebuild_char_offsets(cell_para);
                     }
                     Ok(())
