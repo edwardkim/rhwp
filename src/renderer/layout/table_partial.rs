@@ -567,8 +567,8 @@ impl LayoutEngine {
 
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
             // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
-            let line_ranges: Option<Vec<(usize, usize)>> = if is_in_split_row {
-                let (start_unit, end_unit) = if is_block_split {
+            let cut_units: Option<(usize, usize)> = if is_in_split_row {
+                let pair = if is_block_split {
                     let su = match (is_split_start_row, split_start_block) {
                         (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
                             .and_then(|i| start_cut.get(i).copied())
@@ -600,10 +600,25 @@ impl LayoutEngine {
                     };
                     (su, eu)
                 };
-                Some(self.cell_line_ranges_from_cut(cell, table, styles, start_unit, end_unit))
+                Some(pair)
             } else {
                 None
             };
+            let line_ranges: Option<Vec<(usize, usize)>> = cut_units
+                .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
+            // [Task #1073] 이 셀이 per-중첩행 분해 대상(단일 문단 + 가시 텍스트 없음 + 단일
+            // 중첩 표 2행+)이면 cut 유닛 인덱스가 곧 중첩행 범위 → 렌더 NestedTableSplit 에
+            // start_row 로 전달(연속 페이지가 중첩행 0부터 재렌더되는 결함 정정).
+            let nested_cut_range: Option<(usize, usize)> = cut_units.filter(|_| {
+                cell.paragraphs.len() == 1
+                    && cell.paragraphs[0].text.trim().is_empty()
+                    && cell.paragraphs[0]
+                        .controls
+                        .iter()
+                        .filter(|c| matches!(c, crate::model::control::Control::Table(_)))
+                        .count()
+                        == 1
+            });
 
             // 셀 내 텍스트 높이 (분할 행이면 줄 범위 내만 계산)
             // spacing_before: 셀 첫 문단 제외, spacing_after: 셀 마지막 문단 제외
@@ -1118,7 +1133,39 @@ impl LayoutEngine {
                                     };
 
                                     // 중첩 표가 가용 공간을 초과하면 NestedTableSplit 적용
-                                    let split_info = if nested_h > available_h + 0.5 {
+                                    let split_info = if let Some((su, eu)) = nested_cut_range {
+                                        // [Task #1073] 페이지네이션 컷(중첩행 범위)으로 직접
+                                        // NestedTableSplit 구성 — 연속 페이지가 start_row 부터
+                                        // 렌더(available_h 휴리스틱의 row0 재렌더 결함 정정).
+                                        let ncol = nested_table.col_count as usize;
+                                        let nrow = nested_table.row_count as usize;
+                                        let nrow_heights = self.resolve_row_heights(
+                                            nested_table,
+                                            ncol,
+                                            nrow,
+                                            None,
+                                            styles,
+                                        );
+                                        let ncs = hwpunit_to_px(
+                                            nested_table.cell_spacing as i32,
+                                            self.dpi,
+                                        );
+                                        let start_row = su.min(nrow);
+                                        let end_row = eu.min(nrow);
+                                        let mut vis_h = 0.0;
+                                        for r in start_row..end_row {
+                                            vis_h += nrow_heights[r];
+                                            if r + 1 < end_row {
+                                                vis_h += ncs;
+                                            }
+                                        }
+                                        Some(NestedTableSplit {
+                                            start_row,
+                                            end_row,
+                                            visible_height: vis_h,
+                                            offset_within_start: 0.0,
+                                        })
+                                    } else if nested_h > available_h + 0.5 {
                                         let ncol = nested_table.col_count as usize;
                                         let nrow = nested_table.row_count as usize;
                                         let nrow_heights = self.resolve_row_heights(

@@ -77,6 +77,9 @@ struct CellUnit {
     /// 텍스트 줄 유닛 = `(li, li+1)`, 중첩/빈 atom = `(0, line_count.max(1))`.
     vis_start: usize,
     vis_end: usize,
+    /// [Task #1073] 이 유닛이 중첩 표의 한 행을 표현하면 그 행 인덱스. 텍스트/일반 유닛은 None.
+    /// 분할 행에서 컷 → `NestedTableSplit`(중첩행 범위) 매핑에 사용.
+    nested_row: Option<usize>,
 }
 
 /// 중첩 표 부분 렌더링을 위한 행 범위 정보
@@ -1683,6 +1686,16 @@ impl LayoutEngine {
                 .iter()
                 .map(|p| compose_paragraph(p))
                 .collect();
+
+            // [Task #1073] 중첩 표 분할 연속 페이지(row_filter sr>0)에서 분할 시작 행보다
+            // 먼저 시작한 rowspan 셀(r < sr)은 라벨이 이전 페이지에 이미 렌더됨 → 연속
+            // 페이지에선 공란(영역/배경만, 텍스트 미렌더). 외부 표 advance_row_block_cut 의
+            // rs>1 라벨 공란 정합. row_filter 는 중첩 표 분할 전용(외부 표는 별도 경로).
+            if let Some((sr, _)) = row_filter {
+                if sr > 0 && r < sr {
+                    composed_paras.clear();
+                }
+            }
 
             // 텍스트 오버플로우 시 좌우 패딩 축소
             let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
@@ -3516,6 +3529,52 @@ impl LayoutEngine {
             };
             let has_table_in_para = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
             let line_count = comp.lines.len();
+            // [Task #1073] 텍스트 없는 문단(가시 텍스트 없음 — 합성 줄은 placeholder)에 단일
+            // 중첩 표가 있고 그 표가 2행 이상이면 per-중첩행 유닛으로 분해 — advance_row_cut 가
+            // 중첩 표 행 경계에서 페이지 분할할 수 있게 한다. whole-row 높이 합은
+            // calc_nested_table_height 와 정확히 일치(드리프트 0):
+            // Σ row_h + cs*(n-1) + om_top + om_bottom + spacing.
+            // 2단계+ 중첩/텍스트 동거 문단은 아래 atom 폴백 유지(범위 외).
+            if has_table_in_para && p.text.trim().is_empty() {
+                let nested_tables: Vec<&crate::model::table::Table> = p
+                    .controls
+                    .iter()
+                    .filter_map(|c| match c {
+                        Control::Table(t) => Some(t.as_ref()),
+                        _ => None,
+                    })
+                    .collect();
+                if nested_tables.len() == 1 && nested_tables[0].row_count >= 2 {
+                    let nt = nested_tables[0];
+                    let ncol = nt.col_count as usize;
+                    let nrow = nt.row_count as usize;
+                    let rhs = self.resolve_row_heights(nt, ncol, nrow, None, styles);
+                    let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
+                    let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
+                    let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
+                    for (ri, rh) in rhs.iter().enumerate() {
+                        let mut uh = *rh;
+                        if ri + 1 < nrow {
+                            uh += ncs;
+                        }
+                        if ri == 0 {
+                            uh += om_top + spacing_before;
+                        }
+                        if ri + 1 == nrow {
+                            uh += om_bot + spacing_after;
+                        }
+                        units.push(CellUnit {
+                            height: uh,
+                            hard_break_before: reset_before && ri == 0,
+                            para_idx: pi,
+                            vis_start: 0,
+                            vis_end: line_count.max(1),
+                            nested_row: Some(ri),
+                        });
+                    }
+                    continue;
+                }
+            }
             if line_count == 0 || has_table_in_para {
                 // 중첩 표/빈 문단 — atomic 유닛 1개.
                 let nested_h: f64 = p
@@ -3566,6 +3625,7 @@ impl LayoutEngine {
                     para_idx: pi,
                     vis_start: 0,
                     vis_end: line_count.max(1),
+                    nested_row: None,
                 });
             } else {
                 // 일반 텍스트 문단 — 합성 줄마다 유닛 1개.
@@ -3587,6 +3647,7 @@ impl LayoutEngine {
                         para_idx: pi,
                         vis_start: li,
                         vis_end: li + 1,
+                        nested_row: None,
                     });
                 }
             }
@@ -3629,6 +3690,7 @@ impl LayoutEngine {
                         para_idx: last_para,
                         vis_start: 0,
                         vis_end: 0,
+                        nested_row: None,
                     });
                     remaining -= h;
                 }

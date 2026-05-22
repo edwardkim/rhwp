@@ -146,6 +146,9 @@ pub struct MeasuredCell {
     pub para_line_counts: Vec<usize>,
     /// 셀 내 중첩 표 포함 여부
     pub has_nested_table: bool,
+    /// [Task #1073] 셀이 분할 가능한 단일 중첩 표(텍스트 없는 문단 + 2행 이상)를 가지면
+    /// 그 표의 행 수. 아니면 0. `is_row_splittable` 가 중첩행 분할 가부 판정에 사용.
+    pub nested_split_row_count: usize,
 }
 
 /// 구역 전체의 측정 결과
@@ -1137,6 +1140,33 @@ impl HeightMeasurer {
                         .iter()
                         .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
 
+                    // [Task #1073] cell_units 의 per-중첩행 분해 조건과 동일:
+                    // 텍스트 없는 문단(line_segs 합성 줄 0) + 단일 중첩 표 + 2행 이상.
+                    let nested_split_row_count = cell
+                        .paragraphs
+                        .iter()
+                        .filter_map(|p| {
+                            let tables: Vec<&crate::model::table::Table> = p
+                                .controls
+                                .iter()
+                                .filter_map(|c| match c {
+                                    Control::Table(t) => Some(t.as_ref()),
+                                    _ => None,
+                                })
+                                .collect();
+                            // 가시 텍스트 없는 문단의 단일 중첩 표만 분해 대상
+                            if p.text.trim().is_empty()
+                                && tables.len() == 1
+                                && tables[0].row_count >= 2
+                            {
+                                Some(tables[0].row_count as usize)
+                            } else {
+                                None
+                            }
+                        })
+                        .next()
+                        .unwrap_or(0);
+
                     MeasuredCell {
                         row: cell.row as usize,
                         col: cell.col as usize,
@@ -1147,6 +1177,7 @@ impl HeightMeasurer {
                         total_content_height: line_sum,
                         para_line_counts,
                         has_nested_table,
+                        nested_split_row_count,
                     }
                 })
                 .collect::<Vec<_>>()
@@ -1496,7 +1527,10 @@ impl MeasuredTable {
         if cells_in_row.is_empty() {
             return false;
         }
-        cells_in_row.iter().any(|c| c.line_heights.len() > 1)
+        // [Task #1073] 다줄 셀 또는 per-중첩행 분해 가능한 중첩 표 셀(2행 이상)이면 분할 가능.
+        cells_in_row
+            .iter()
+            .any(|c| c.line_heights.len() > 1 || c.nested_split_row_count > 1)
     }
 
     /// 지정 행에서 첫 번째 줄의 최소 높이를 반환한다 (인트라-로우 분할 가능 여부 판단용).
