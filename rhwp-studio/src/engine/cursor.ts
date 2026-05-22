@@ -1602,7 +1602,6 @@ function findSentenceAt(text: string, offset: number): { start: number; end: num
     if (SENTENCE_TERMINATORS.has(text[end])) { end++; break; }
     end++;
   }
-  while (end < len && (text[end] === ' ' || text[end] === '\t')) end++;
 
   return { start, end };
 }
