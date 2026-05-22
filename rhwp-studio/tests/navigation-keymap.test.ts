@@ -129,9 +129,12 @@ test('formatShortcutLabel은 Ctrl이 없는 라벨을 변경하지 않는다', (
 
 test('formatShortcutLabel은 테스트 override를 존중한다', () => {
   const globalForTest = globalThis as typeof globalThis & { __rhwpTestPlatformKind?: PlatformKind };
-  globalForTest.__rhwpTestPlatformKind = 'mac';
-  assert.equal(formatShortcutLabel('Ctrl+S'), 'Command+S');
-  globalForTest.__rhwpTestPlatformKind = 'other';
-  assert.equal(formatShortcutLabel('Ctrl+S'), 'Ctrl+S');
-  delete globalForTest.__rhwpTestPlatformKind;
+  try {
+    globalForTest.__rhwpTestPlatformKind = 'mac';
+    assert.equal(formatShortcutLabel('Ctrl+S'), 'Command+S');
+    globalForTest.__rhwpTestPlatformKind = 'other';
+    assert.equal(formatShortcutLabel('Ctrl+S'), 'Ctrl+S');
+  } finally {
+    delete globalForTest.__rhwpTestPlatformKind;
+  }
 });

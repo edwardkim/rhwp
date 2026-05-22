@@ -155,7 +155,7 @@ export class CommandPalette {
     return this.items.filter(def => {
       if (def.label.toLowerCase().includes(q)) return true;
       if (def.id.toLowerCase().includes(q)) return true;
-      if (def.shortcutLabel && formatShortcutLabel(def.shortcutLabel).toLowerCase().includes(q)) return true;
+      if (def.shortcutLabel && (def.shortcutLabel.toLowerCase().includes(q) || formatShortcutLabel(def.shortcutLabel).toLowerCase().includes(q))) return true;
       return false;
     });
   }
