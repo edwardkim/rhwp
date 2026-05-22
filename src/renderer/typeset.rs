@@ -1437,7 +1437,45 @@ impl TypesetEngine {
                             let fmt = self.format_paragraph(en_para, Some(&composed), &styles);
                             let available = st.available_height();
 
-                            if st.current_height + fmt.height_for_fit > available
+                            // [Task #1062] 다단 미주 누적/판정을 렌더러 vpos 전진과 통일.
+                            // 렌더러(height_cursor)는 미주를 vpos 로 배치하는데, 종전 다단 누적
+                            // height_for_fit(trailing_ls 제외)은 미주당 ~6px 과소 계상되어
+                            // 페이지당 미주 과밀 → 본문 하단 overflow 를 유발했다.
+                            // 미주 문단 vpos 전진 = last.vpos+lh+ls − first.vpos (끝위치 추적과 동일 식).
+                            // 단단(col_count==1)은 종전(total_height/height_for_fit) 유지.
+                            let (en_fit, en_advance) = if st.col_count > 1 {
+                                let advance =
+                                    match (en_para.line_segs.first(), en_para.line_segs.last()) {
+                                        (Some(f), Some(l)) => {
+                                            let span_hu =
+                                                (l.vertical_pos + l.line_height + l.line_spacing)
+                                                    - f.vertical_pos;
+                                            if span_hu > 0 {
+                                                hwpunit_to_px(span_hu, self.dpi)
+                                            } else {
+                                                fmt.total_height
+                                            }
+                                        }
+                                        _ => fmt.total_height,
+                                    };
+                                // fit 판정: 마지막 항목 trailing_ls 제외 (vpos 전진 − trailing_ls).
+                                let trailing_ls = en_para
+                                    .line_segs
+                                    .last()
+                                    .map(|l| hwpunit_to_px(l.line_spacing.max(0), self.dpi))
+                                    .unwrap_or(0.0);
+                                // 안전 하한: 종전 height_for_fit 미만으로 내려가지 않게 floor.
+                                // (vpos 전진이 formatter 추정보다 작은 미주에서 종전보다 조밀
+                                // 해지거나 늦게 끊겨 신규 overflow 가 생기는 회귀 차단. 단일 줄
+                                // 미주는 vpos 전진 > height_for_fit 이라 floor 영향 없음.)
+                                let fit = (advance - trailing_ls).max(fmt.height_for_fit);
+                                let acc = advance.max(fmt.height_for_fit);
+                                (fit, acc)
+                            } else {
+                                (fmt.height_for_fit, fmt.total_height)
+                            };
+
+                            if st.current_height + en_fit > available
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
@@ -1445,11 +1483,7 @@ impl TypesetEngine {
                             st.current_items.push(PageItem::FullParagraph {
                                 para_index: en_para_idx,
                             });
-                            st.current_height += if st.col_count > 1 {
-                                fmt.height_for_fit
-                            } else {
-                                fmt.total_height
-                            };
+                            st.current_height += en_advance;
                         }
                     }
                 }
