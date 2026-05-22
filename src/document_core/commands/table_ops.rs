@@ -1827,8 +1827,14 @@ mod tests {
         data[16..20].copy_from_slice(&3000_u32.to_le_bytes()); // height
 
         let common = parse_common_obj_attr(&data);
-        assert_eq!(common.vertical_offset, 42, "v_offset must be at bytes [4..8]");
-        assert_eq!(common.horizontal_offset, 99, "h_offset must be at bytes [8..12]");
+        assert_eq!(
+            common.vertical_offset, 42,
+            "v_offset must be at bytes [4..8]"
+        );
+        assert_eq!(
+            common.horizontal_offset, 99,
+            "h_offset must be at bytes [8..12]"
+        );
         assert_eq!(common.width, 5000);
         assert_eq!(common.height, 3000);
     }
