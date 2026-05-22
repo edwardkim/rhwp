@@ -2375,7 +2375,10 @@ fn test_paste_html_table_as_control() {
         // [24..32]=margins, [32..36]=instance_id
         assert!(tbl.raw_ctrl_data.len() >= 36, "raw_ctrl_data >= 36 bytes");
         let ctrl_flags = u32::from_le_bytes(tbl.raw_ctrl_data[0..4].try_into().unwrap());
-        assert_eq!(ctrl_flags, tbl.attr, "raw_ctrl_data[0..4] flags must match table.attr");
+        assert_eq!(
+            ctrl_flags, tbl.attr,
+            "raw_ctrl_data[0..4] flags must match table.attr"
+        );
         let ctrl_instance_id = u32::from_le_bytes(tbl.raw_ctrl_data[32..36].try_into().unwrap());
         assert_ne!(
             ctrl_instance_id, 0,

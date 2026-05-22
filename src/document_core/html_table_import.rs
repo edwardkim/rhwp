@@ -501,7 +501,7 @@ impl DocumentCore {
         let outer_margin: i16 = 283; // 바깥 여백 ~1mm
         let mut raw_ctrl_data = vec![0u8; 38];
         raw_ctrl_data[0..4].copy_from_slice(&0x082A2311_u32.to_le_bytes()); // flags (= table_attr below)
-        // [4..12] v_offset, h_offset = 0 (default)
+                                                                            // [4..12] v_offset, h_offset = 0 (default)
         raw_ctrl_data[12..16].copy_from_slice(&total_width.to_le_bytes());
         raw_ctrl_data[16..20].copy_from_slice(&total_height.to_le_bytes());
         // [20..24] z_order = 0
