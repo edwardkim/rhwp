@@ -862,43 +862,43 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
 
-        // raw_ctrl_data가 8바이트 미만이면 0으로 패딩
-        while table.raw_ctrl_data.len() < 8 {
+        // CommonObjAttr 바이트 레이아웃: [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset
+        while table.raw_ctrl_data.len() < 12 {
             table.raw_ctrl_data.push(0);
         }
 
         let is_treat_as_char = (table.attr & 0x01) != 0;
 
-        // vertical_offset: raw_ctrl_data[0..4] (i32 LE)
+        // vertical_offset: raw_ctrl_data[4..8] (i32 LE)
         let mut new_v = if delta_v != 0 {
             let cur_v = i32::from_le_bytes([
-                table.raw_ctrl_data[0],
-                table.raw_ctrl_data[1],
-                table.raw_ctrl_data[2],
-                table.raw_ctrl_data[3],
-            ]);
-            let nv = cur_v.wrapping_add(delta_v);
-            table.raw_ctrl_data[0..4].copy_from_slice(&nv.to_le_bytes());
-            nv
-        } else {
-            i32::from_le_bytes([
-                table.raw_ctrl_data[0],
-                table.raw_ctrl_data[1],
-                table.raw_ctrl_data[2],
-                table.raw_ctrl_data[3],
-            ])
-        };
-
-        // horizontal_offset: raw_ctrl_data[4..8] (i32 LE)
-        if delta_h != 0 {
-            let cur_h = i32::from_le_bytes([
                 table.raw_ctrl_data[4],
                 table.raw_ctrl_data[5],
                 table.raw_ctrl_data[6],
                 table.raw_ctrl_data[7],
             ]);
+            let nv = cur_v.wrapping_add(delta_v);
+            table.raw_ctrl_data[4..8].copy_from_slice(&nv.to_le_bytes());
+            nv
+        } else {
+            i32::from_le_bytes([
+                table.raw_ctrl_data[4],
+                table.raw_ctrl_data[5],
+                table.raw_ctrl_data[6],
+                table.raw_ctrl_data[7],
+            ])
+        };
+
+        // horizontal_offset: raw_ctrl_data[8..12] (i32 LE)
+        if delta_h != 0 {
+            let cur_h = i32::from_le_bytes([
+                table.raw_ctrl_data[8],
+                table.raw_ctrl_data[9],
+                table.raw_ctrl_data[10],
+                table.raw_ctrl_data[11],
+            ]);
             let new_h = cur_h.wrapping_add(delta_h);
-            table.raw_ctrl_data[4..8].copy_from_slice(&new_h.to_le_bytes());
+            table.raw_ctrl_data[8..12].copy_from_slice(&new_h.to_le_bytes());
         }
 
         // treat_as_char 표: 문단 경계를 넘으면 문단 이동 (다중 경계 루프)
@@ -940,7 +940,7 @@ impl DocumentCore {
             // 최종 v_offset 갱신
             if result_ppi != parent_para_idx {
                 let tbl = self.get_table_mut(section_idx, result_ppi, control_idx)?;
-                tbl.raw_ctrl_data[0..4].copy_from_slice(&new_v.to_le_bytes());
+                tbl.raw_ctrl_data[4..8].copy_from_slice(&new_v.to_le_bytes());
             }
         }
 
@@ -1076,13 +1076,14 @@ impl DocumentCore {
             crate::model::shape::HorzAlign::Inside => "Inside",
             crate::model::shape::HorzAlign::Outside => "Outside",
         };
-        let vert_offset = if rd.len() >= 4 {
-            i32::from_le_bytes([rd[0], rd[1], rd[2], rd[3]])
+        // CommonObjAttr: [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset
+        let vert_offset = if rd.len() >= 8 {
+            i32::from_le_bytes([rd[4], rd[5], rd[6], rd[7]])
         } else {
             0
         };
-        let horz_offset = if rd.len() >= 8 {
-            i32::from_le_bytes([rd[4], rd[5], rd[6], rd[7]])
+        let horz_offset = if rd.len() >= 12 {
+            i32::from_le_bytes([rd[8], rd[9], rd[10], rd[11]])
         } else {
             0
         };
@@ -1208,15 +1209,15 @@ impl DocumentCore {
             };
             table.attr = (table.attr & !(0x07 << 10)) | (bits << 10);
         }
-        // 위치 오프셋: raw_ctrl_data
-        while table.raw_ctrl_data.len() < 8 {
+        // 위치 오프셋: CommonObjAttr [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset
+        while table.raw_ctrl_data.len() < 12 {
             table.raw_ctrl_data.push(0);
         }
         if let Some(v) = json_i32(json, "vertOffset") {
-            table.raw_ctrl_data[0..4].copy_from_slice(&v.to_le_bytes());
+            table.raw_ctrl_data[4..8].copy_from_slice(&v.to_le_bytes());
         }
         if let Some(v) = json_i32(json, "horzOffset") {
-            table.raw_ctrl_data[4..8].copy_from_slice(&v.to_le_bytes());
+            table.raw_ctrl_data[8..12].copy_from_slice(&v.to_le_bytes());
         }
         // restrictInPage → attr bit 13
         if let Some(v) = json_bool(json, "restrictInPage") {
