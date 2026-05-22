@@ -2370,17 +2370,16 @@ fn test_paste_html_table_as_control() {
         ]);
         assert_eq!(inst, 0x80000000, "table para instance_id=0x80000000");
 
-        // DIFF-7: CTRL_HEADER instance_id (raw_ctrl_data[28..32]) 가 0이 아닌지 검증
-        assert!(tbl.raw_ctrl_data.len() >= 32, "raw_ctrl_data >= 32 bytes");
-        let ctrl_instance_id = u32::from_le_bytes([
-            tbl.raw_ctrl_data[28],
-            tbl.raw_ctrl_data[29],
-            tbl.raw_ctrl_data[30],
-            tbl.raw_ctrl_data[31],
-        ]);
+        // CommonObjAttr byte layout: [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset,
+        // [12..16]=width, [16..20]=height, [20..24]=z_order,
+        // [24..32]=margins, [32..36]=instance_id
+        assert!(tbl.raw_ctrl_data.len() >= 36, "raw_ctrl_data >= 36 bytes");
+        let ctrl_flags = u32::from_le_bytes(tbl.raw_ctrl_data[0..4].try_into().unwrap());
+        assert_eq!(ctrl_flags, tbl.attr, "raw_ctrl_data[0..4] flags must match table.attr");
+        let ctrl_instance_id = u32::from_le_bytes(tbl.raw_ctrl_data[32..36].try_into().unwrap());
         assert_ne!(
             ctrl_instance_id, 0,
-            "DIFF-7: CTRL_HEADER instance_id != 0 (got 0x{:08X})",
+            "CTRL_HEADER instance_id != 0 (got 0x{:08X})",
             ctrl_instance_id
         );
     } else {
