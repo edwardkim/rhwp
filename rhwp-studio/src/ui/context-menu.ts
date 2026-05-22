@@ -1,5 +1,6 @@
 import type { CommandDispatcher } from '@/command/dispatcher';
 import type { CommandRegistry } from '@/command/registry';
+import { formatShortcutLabel } from '@/engine/navigation-keymap';
 
 /** 컨텍스트 메뉴 항목 정의 */
 export interface ContextMenuItem {
@@ -61,7 +62,7 @@ export class ContextMenu {
       if (def.shortcutLabel) {
         const shortcut = document.createElement('span');
         shortcut.className = 'md-shortcut';
-        shortcut.textContent = def.shortcutLabel;
+        shortcut.textContent = formatShortcutLabel(def.shortcutLabel);
         row.appendChild(shortcut);
       }
 

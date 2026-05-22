@@ -103,3 +103,11 @@ export function shouldSuppressUnmappedNavigation(
     !input.metaKey &&
     (key === 'ArrowLeft' || key === 'ArrowRight');
 }
+
+export function formatShortcutLabel(
+  label: string,
+  platform: PlatformKind = detectPlatformKind(),
+): string {
+  if (platform !== 'mac') return label;
+  return label.replace(/\bCtrl\b/g, 'Command');
+}

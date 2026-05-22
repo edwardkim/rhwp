@@ -1,6 +1,7 @@
 import type { CommandDef } from './types';
 import type { CommandRegistry } from './registry';
 import type { CommandDispatcher } from './dispatcher';
+import { formatShortcutLabel } from '@/engine/navigation-keymap';
 
 /**
  * 고객사 확장 API
@@ -60,7 +61,7 @@ export class StudioExtensionAPI {
     if (def.shortcutLabel) {
       const shortcut = document.createElement('span');
       shortcut.className = 'md-shortcut';
-      shortcut.textContent = def.shortcutLabel;
+      shortcut.textContent = formatShortcutLabel(def.shortcutLabel);
       item.appendChild(shortcut);
     }
 
