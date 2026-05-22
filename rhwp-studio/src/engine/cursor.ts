@@ -56,7 +56,7 @@ export class CursorState {
 
   // ─── F5 본문 블록 선택 모드 (#220) ────────────────────────
   private _blockSelectionMode = false;
-  private _expandPhase = 0; // F3 확장 단계: 0=none, 1=word, 2=paragraph, 3=section, 4=document
+  private _expandPhase = 0; // F3 확장 단계: 0=none, 1=word, 2=sentence, 3=paragraph, 4=section, 5=document
 
   // ─── 표 객체 선택 ──────────────────────────────────────
   private _tableObjectSelected = false;
@@ -999,11 +999,18 @@ export class CursorState {
         this.anchor = { ...pos, charOffset: start };
         this.position = { ...pos, charOffset: end };
       } else if (this._expandPhase === 2) {
+        // 문장 선택 (#839, 한컴 F3 5단계 정합)
+        const paraLen = this.wasm.getParagraphLength(sec, para);
+        const text = this.wasm.getTextRange(sec, para, 0, paraLen);
+        const { start, end } = findSentenceAt(text, pos.charOffset);
+        this.anchor = { ...pos, charOffset: start };
+        this.position = { ...pos, charOffset: end };
+      } else if (this._expandPhase === 3) {
         // 문단 전체 선택
         const paraLen = this.wasm.getParagraphLength(sec, para);
         this.anchor = { ...pos, charOffset: 0 };
         this.position = { ...pos, charOffset: paraLen };
-      } else if (this._expandPhase === 3) {
+      } else if (this._expandPhase === 4) {
         // 구역 전체 선택
         const paraCount = this.wasm.getParagraphCount(sec);
         const lastParaLen = this.wasm.getParagraphLength(sec, paraCount - 1);
@@ -1017,7 +1024,7 @@ export class CursorState {
         const lastParaLen = this.wasm.getParagraphLength(lastSec, lastParaCount - 1);
         this.anchor = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
         this.position = { sectionIndex: lastSec, paragraphIndex: lastParaCount - 1, charOffset: lastParaLen };
-        this._expandPhase = 4; // cap
+        this._expandPhase = 5; // cap
       }
       this.updateRect();
     } catch (e) {
@@ -1570,5 +1577,32 @@ function findWordAt(text: string, offset: number): { start: number; end: number 
     while (start > 0 && !isWordChar(text[start - 1])) start--;
     while (end < text.length && !isWordChar(text[end])) end++;
   }
+  return { start, end };
+}
+
+// ─── 문장 범위 탐색 유틸 (#839, F3 단계 2 문장 선택) ──────────────────────────────────
+
+const SENTENCE_TERMINATORS = new Set(['.', '?', '!', '。', '？', '！']);
+
+function findSentenceAt(text: string, offset: number): { start: number; end: number } {
+  if (!text) return { start: offset, end: offset };
+  const len = text.length;
+  const clampedOffset = Math.min(offset, len);
+
+  let start = clampedOffset;
+  while (start > 0) {
+    const prev = text[start - 1];
+    if (SENTENCE_TERMINATORS.has(prev)) break;
+    start--;
+  }
+  while (start < clampedOffset && (text[start] === ' ' || text[start] === '\t')) start++;
+
+  let end = clampedOffset;
+  while (end < len) {
+    if (SENTENCE_TERMINATORS.has(text[end])) { end++; break; }
+    end++;
+  }
+  while (end < len && (text[end] === ' ' || text[end] === '\t')) end++;
+
   return { start, end };
 }
