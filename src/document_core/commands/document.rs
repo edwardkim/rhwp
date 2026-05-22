@@ -279,11 +279,23 @@ impl DocumentCore {
                         }
                     }
                     if max_tac_h > 0 {
-                        // TAC 표가 있는 문단: lh가 표 높이보다 작으면 표 높이로 확대
-                        if let Some(seg) = para.line_segs.first_mut() {
-                            if seg.line_height < max_tac_h {
-                                seg.line_height = max_tac_h;
-                                body_line_seg_changed = true;
+                        // [Task #1068] 이미 표 높이를 담은 LINE_SEG 가 있으면(한컴이
+                        // 저장한 실제 linesegarray 보유 — 표 줄 seg 의 vertsize 가 표
+                        // 높이) 보정 불필요. 무조건 first_mut() 을 확대하면 표가 두 번째
+                        // 이후 줄에 있는 문단(제목줄 + 표줄)의 제목줄 lh 까지 표 높이로
+                        // 오염되어, 렌더러의 lh 기반 표 줄 탐지(place_table_with_text)가
+                        // 첫 줄을 오매칭 → 표 줄 이중 그리기 overflow (#1068 제안요청서
+                        // para 567: 제목줄 vertsize=2200 → 63234 오염, 839px overflow).
+                        // linesegarray 가 없어 기본 lh=100 단일 seg 만 있는 경우에만
+                        // 첫 seg 를 표 높이로 확대한다.
+                        let already_covered =
+                            para.line_segs.iter().any(|s| s.line_height >= max_tac_h);
+                        if !already_covered {
+                            if let Some(seg) = para.line_segs.first_mut() {
+                                if seg.line_height < max_tac_h {
+                                    seg.line_height = max_tac_h;
+                                    body_line_seg_changed = true;
+                                }
                             }
                         }
                     }
