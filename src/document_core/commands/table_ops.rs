@@ -989,35 +989,38 @@ impl DocumentCore {
 
         let bf_json = self.build_border_fill_json_by_id(table.border_fill_id);
 
-        // raw_ctrl_data에서 표 크기 & 바깥 여백 추출
+        // raw_ctrl_data에서 표 크기 & 바깥 여백 추출 (parse_common_obj_attr 정합)
+        // [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset, [12..16]=width, [16..20]=height
         let rd = &table.raw_ctrl_data;
-        let table_width = if rd.len() >= 12 {
-            u32::from_le_bytes([rd[8], rd[9], rd[10], rd[11]])
-        } else {
-            0
-        };
-        let table_height = if rd.len() >= 16 {
+        let table_width = if rd.len() >= 16 {
             u32::from_le_bytes([rd[12], rd[13], rd[14], rd[15]])
         } else {
             0
         };
-        let outer_left = if rd.len() >= 22 {
-            i16::from_le_bytes([rd[20], rd[21]])
+        let table_height = if rd.len() >= 20 {
+            u32::from_le_bytes([rd[16], rd[17], rd[18], rd[19]])
         } else {
             0
         };
-        let outer_right = if rd.len() >= 24 {
-            i16::from_le_bytes([rd[22], rd[23]])
-        } else {
-            0
-        };
-        let outer_top = if rd.len() >= 26 {
+        // outer_margin: [24..32] (parse_common_obj_attr 정합)
+        // [20..24]=z_order, [24..26]=left, [26..28]=right, [28..30]=top, [30..32]=bottom
+        let outer_left = if rd.len() >= 26 {
             i16::from_le_bytes([rd[24], rd[25]])
         } else {
             0
         };
-        let outer_bottom = if rd.len() >= 28 {
+        let outer_right = if rd.len() >= 28 {
             i16::from_le_bytes([rd[26], rd[27]])
+        } else {
+            0
+        };
+        let outer_top = if rd.len() >= 30 {
+            i16::from_le_bytes([rd[28], rd[29]])
+        } else {
+            0
+        };
+        let outer_bottom = if rd.len() >= 32 {
+            i16::from_le_bytes([rd[30], rd[31]])
         } else {
             0
         };
@@ -1089,9 +1092,10 @@ impl DocumentCore {
         };
         let restrict_in_page = (table.attr >> 13) & 0x01 != 0;
         let allow_overlap = (table.attr >> 14) & 0x01 != 0;
-        // raw_ctrl_data[32..36] = prevent_page_break (개체와 조판부호를 항상 같은 쪽에 놓기)
-        let keep_with_anchor = if rd.len() >= 36 {
-            i32::from_le_bytes([rd[32], rd[33], rd[34], rd[35]]) != 0
+        // raw_ctrl_data[36..40] = prevent_page_break (parse_common_obj_attr 정합)
+        // [32..36]=instance_id, [36..40]=prevent_page_break
+        let keep_with_anchor = if rd.len() >= 40 {
+            i32::from_le_bytes([rd[36], rd[37], rd[38], rd[39]]) != 0
         } else {
             false
         };
@@ -1235,28 +1239,31 @@ impl DocumentCore {
                 table.attr &= !(1 << 14);
             }
         }
-        // keepWithAnchor → raw_ctrl_data[32..36] (prevent_page_break)
+        // keepWithAnchor → raw_ctrl_data[36..40] (prevent_page_break)
+        // [32..36]=instance_id, [36..40]=prevent_page_break (parse_common_obj_attr 정합)
         if let Some(v) = json_bool(json, "keepWithAnchor") {
-            while table.raw_ctrl_data.len() < 36 {
+            while table.raw_ctrl_data.len() < 40 {
                 table.raw_ctrl_data.push(0);
             }
             let val: i32 = if v { 1 } else { 0 };
-            table.raw_ctrl_data[32..36].copy_from_slice(&val.to_le_bytes());
+            table.raw_ctrl_data[36..40].copy_from_slice(&val.to_le_bytes());
         }
 
-        // 바깥 여백 (raw_ctrl_data[20..28])
-        if table.raw_ctrl_data.len() >= 28 {
+        // 바깥 여백 (raw_ctrl_data[24..32], parse_common_obj_attr 정합)
+        // [20..24]=z_order, [24..26]=margin_left, [26..28]=margin_right,
+        // [28..30]=margin_top, [30..32]=margin_bottom
+        if table.raw_ctrl_data.len() >= 32 {
             if let Some(v) = json_i16(json, "outerLeft") {
-                table.raw_ctrl_data[20..22].copy_from_slice(&v.to_le_bytes());
-            }
-            if let Some(v) = json_i16(json, "outerRight") {
-                table.raw_ctrl_data[22..24].copy_from_slice(&v.to_le_bytes());
-            }
-            if let Some(v) = json_i16(json, "outerTop") {
                 table.raw_ctrl_data[24..26].copy_from_slice(&v.to_le_bytes());
             }
-            if let Some(v) = json_i16(json, "outerBottom") {
+            if let Some(v) = json_i16(json, "outerRight") {
                 table.raw_ctrl_data[26..28].copy_from_slice(&v.to_le_bytes());
+            }
+            if let Some(v) = json_i16(json, "outerTop") {
+                table.raw_ctrl_data[28..30].copy_from_slice(&v.to_le_bytes());
+            }
+            if let Some(v) = json_i16(json, "outerBottom") {
+                table.raw_ctrl_data[30..32].copy_from_slice(&v.to_le_bytes());
             }
         }
 
@@ -1837,5 +1844,42 @@ mod tests {
         );
         assert_eq!(common.width, 5000);
         assert_eq!(common.height, 3000);
+    }
+
+    #[test]
+    fn update_ctrl_dimensions_writes_correct_slots() {
+        use crate::model::table::{Cell, Table};
+
+        let mut tbl = Table::default();
+        tbl.col_count = 2;
+        tbl.row_count = 1;
+        tbl.cells = vec![
+            Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 5000,
+                height: 3000,
+                ..Default::default()
+            },
+            Cell {
+                row: 0,
+                col: 1,
+                col_span: 1,
+                row_span: 1,
+                width: 4000,
+                height: 3000,
+                ..Default::default()
+            },
+        ];
+        tbl.raw_ctrl_data = vec![0u8; 36];
+
+        tbl.update_ctrl_dimensions();
+
+        let common = parse_common_obj_attr(&tbl.raw_ctrl_data);
+        assert_eq!(common.width, 9000, "width at [12..16]");
+        assert_eq!(common.height, 3000, "height at [16..20]");
+        assert_eq!(common.horizontal_offset, 0, "h_offset at [8..12] untouched");
     }
 }
