@@ -2277,12 +2277,28 @@ impl DocumentCore {
         let mut global_page = 0u32;
 
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
-            let paragraphs = self
+            let body_paragraphs = self
                 .document
                 .sections
                 .get(sec_idx)
                 .map(|s| &s.paragraphs[..])
                 .unwrap_or(&[]);
+            // [Task #1082] 미주 paragraphs 를 본문 뒤에 합쳐 인덱싱 정합.
+            // 미주 PageItem 의 para_index = body_paragraphs.len() + 미주 로컬 인덱스
+            // (typeset.rs en_para_idx 와 동일). 합치지 않으면 미주 항목이 out-of-bounds 로
+            // 본문이 빈 것처럼 표시된다(시험지 다단 미주 디버깅 차단).
+            let body_len = body_paragraphs.len();
+            let combined: Vec<Paragraph>;
+            let paragraphs: &[Paragraph] = if pr.endnote_paragraphs.is_empty() {
+                body_paragraphs
+            } else {
+                combined = body_paragraphs
+                    .iter()
+                    .chain(pr.endnote_paragraphs.iter())
+                    .cloned()
+                    .collect();
+                &combined
+            };
             let measured = self.measured_sections.get(sec_idx);
 
             for (local_idx, page) in pr.pages.iter().enumerate() {
@@ -2371,9 +2387,14 @@ impl DocumentCore {
                                     .unwrap_or_default();
                                 let vpos_info =
                                     format_vpos_range(paragraphs.get(*para_index), None, None);
+                                let kind = if *para_index >= body_len {
+                                    "FullParagraph[미주]"
+                                } else {
+                                    "FullParagraph"
+                                };
                                 out.push_str(&format!(
-                                    "    FullParagraph  pi={}  {}  {}  \"{}\"\n",
-                                    para_index, height, vpos_info, text_preview
+                                    "    {}  pi={}  {}  {}  \"{}\"\n",
+                                    kind, para_index, height, vpos_info, text_preview
                                 ));
                             }
                             PageItem::PartialParagraph {

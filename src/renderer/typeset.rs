@@ -102,6 +102,9 @@ struct TypesetState {
     current_items: Vec<PageItem>,
     /// 현재 단에서 소비된 높이 (px)
     current_height: f64,
+    /// [Task #1082] 현재 단에서 마지막으로 배치된 본문 FullParagraph 의 bottom vpos (HU,
+    /// 섹션 절대값). 미주 vpos-delta 누적의 첫 항목 base 시드용. 단 advance 시 None.
+    prev_body_bottom_vpos: Option<i32>,
     /// 현재 단 인덱스
     current_column: u16,
     /// 단 수
@@ -291,6 +294,7 @@ impl TypesetState {
             pages: Vec::new(),
             current_items: Vec::new(),
             current_height: 0.0,
+            prev_body_bottom_vpos: None,
             current_column: 0,
             col_count,
             layout,
@@ -383,6 +387,8 @@ impl TypesetState {
         } else {
             self.pages.push(self.new_page_content(vec![col_content]));
         }
+        // [Task #1082] 단 flush 시 본문 last bottom vpos 리셋(미주 vpos-delta 시드 정합).
+        self.prev_body_bottom_vpos = None;
     }
 
     /// 비어있어도 flush
@@ -1662,6 +1668,10 @@ impl TypesetEngine {
                 .and_then(|p| p.line_segs.last())
                 .map(|ls| ls.vertical_pos + ls.line_height + ls.line_spacing)
                 .unwrap_or(0);
+            // [Task #1082] 다단 미주 vpos-delta 누적용 prev tracker.
+            // 시드 = 현재 단의 본문 last bottom vpos(body→endnote 전환 정합); 없으면 None
+            // (단의 첫 미주 → 자체 높이 사용). 단 advance 시 flush_column 에서 prev_body 리셋.
+            let mut prev_en_bottom_vpos: Option<i32> = st.prev_body_bottom_vpos;
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
@@ -1716,53 +1726,69 @@ impl TypesetEngine {
                             );
                             let available = st.available_height();
 
-                            // [Task #1062] 다단 미주 누적/판정을 렌더러 vpos 전진과 통일.
-                            // 렌더러(height_cursor)는 미주를 vpos 로 배치하는데, 종전 다단 누적
-                            // height_for_fit(trailing_ls 제외)은 미주당 ~6px 과소 계상되어
-                            // 페이지당 미주 과밀 → 본문 하단 overflow 를 유발했다.
-                            // 미주 문단 vpos 전진 = last.vpos+lh+ls − first.vpos (끝위치 추적과 동일 식).
-                            // 단단(col_count==1)은 종전(total_height/height_for_fit) 유지.
-                            let (en_fit, en_advance) = if st.col_count > 1 {
-                                let advance =
-                                    match (en_para.line_segs.first(), en_para.line_segs.last()) {
-                                        (Some(f), Some(l)) => {
-                                            let span_hu =
-                                                (l.vertical_pos + l.line_height + l.line_spacing)
-                                                    - f.vertical_pos;
-                                            if span_hu > 0 {
-                                                hwpunit_to_px(span_hu, self.dpi)
-                                            } else {
-                                                fmt.total_height
-                                            }
-                                        }
-                                        _ => fmt.total_height,
-                                    };
-                                // fit 판정: 마지막 항목 trailing_ls 제외 (vpos 전진 − trailing_ls).
-                                let trailing_ls = en_para
-                                    .line_segs
-                                    .last()
-                                    .map(|l| hwpunit_to_px(l.line_spacing.max(0), self.dpi))
-                                    .unwrap_or(0.0);
-                                // 안전 하한: 종전 height_for_fit 미만으로 내려가지 않게 floor.
-                                // (vpos 전진이 formatter 추정보다 작은 미주에서 종전보다 조밀
-                                // 해지거나 늦게 끊겨 신규 overflow 가 생기는 회귀 차단. 단일 줄
-                                // 미주는 vpos 전진 > height_for_fit 이라 floor 영향 없음.)
-                                let fit = (advance - trailing_ls).max(fmt.height_for_fit);
-                                let acc = advance.max(fmt.height_for_fit);
-                                (fit, acc)
-                            } else {
-                                (fmt.height_for_fit, fmt.total_height)
+                            // [Task #1082] 다단 미주 누적/판정을 렌더 vpos 정규화와 정합.
+                            // 렌더는 미주를 px(vpos − 단 첫아이템 vpos)에 배치하므로 단 used
+                            // = px(마지막 bottom_vpos − 첫 first_vpos). 종전(#1062)은 미주 para
+                            // 내부 span(자체 높이)만 더해 미주 간 vpos 간격(빈줄/문단간격)을
+                            // 누락 → 단 과충전 → 렌더 overflow(3-09/10/11월 교육·실전).
+                            // 본 정합: 직전 배치 아이템 bottom 기준 vpos delta(px)로 누적.
+                            // 시드 prev_en_bottom_vpos = body→endnote 전환 시 본문 last bottom
+                            // (위 prev_body_bottom_vpos), 단 advance 후엔 None(자체 높이).
+                            // #1062 안전 floor(fmt.height_for_fit) 유지 — vpos delta 가
+                            // formatter 추정보다 작은 케이스 회귀 차단. 단단은 종전.
+                            let this_first_offset = en_para
+                                .line_segs
+                                .first()
+                                .map(|s| s.vertical_pos + endnote_start);
+                            let this_bottom_offset = en_para.line_segs.last().map(|s| {
+                                s.vertical_pos + s.line_height + s.line_spacing + endnote_start
+                            });
+                            let trailing_ls_px = en_para
+                                .line_segs
+                                .last()
+                                .map(|l| hwpunit_to_px(l.line_spacing.max(0), self.dpi))
+                                .unwrap_or(0.0);
+
+                            let col_count = st.col_count;
+                            let dpi = self.dpi;
+                            let h4f = fmt.height_for_fit;
+                            let tot = fmt.total_height;
+                            let compute_en_metrics = |prev: Option<i32>| -> (f64, f64) {
+                                if col_count > 1 {
+                                    if let (Some(tf), Some(tb)) =
+                                        (this_first_offset, this_bottom_offset)
+                                    {
+                                        let base = prev.unwrap_or(tf);
+                                        let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
+                                        let fit = (advance_px - trailing_ls_px).max(h4f);
+                                        let acc = advance_px.max(h4f);
+                                        (fit, acc)
+                                    } else {
+                                        (h4f, tot)
+                                    }
+                                } else {
+                                    (h4f, tot)
+                                }
                             };
 
+                            let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
                             if st.current_height + en_fit > available
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
                             }
+                            // advance 후 재평가 — 새 단 첫 미주는 prev=None → 자체 높이.
+                            let (_, en_advance) = compute_en_metrics(prev_en_bottom_vpos);
+
                             st.current_items.push(PageItem::FullParagraph {
                                 para_index: en_para_idx,
                             });
                             st.current_height += en_advance;
+                            // 다음 미주의 base 가 될 본 미주 bottom 기록.
+                            if let Some(tb) = this_bottom_offset {
+                                prev_en_bottom_vpos = Some(tb);
+                            }
                         }
                     }
                 }
@@ -2200,6 +2226,12 @@ impl TypesetEngine {
         // (k-water-rfp p3 case: 36 items × 평균 ~9px = ~311px LAYOUT_OVERFLOW).
         // trailing_ls 는 페이지 마지막 항목의 fit 판정에만 의미가 있음
         // (페이지 끝에는 다음 줄이 없으니 line_spacing 미적용).
+        // [Task #1082] 본문 para 의 bottom offset vpos — 미주 vpos-delta 시드용.
+        let body_bottom_vpos: Option<i32> = para
+            .line_segs
+            .last()
+            .map(|s| s.vertical_pos + s.line_height + s.line_spacing);
+
         if forced_page_break_line.is_none() && st.current_height + fmt.height_for_fit <= available {
             // place: 전체 배치
             st.current_items.push(PageItem::FullParagraph {
@@ -2215,6 +2247,9 @@ impl TypesetEngine {
             } else {
                 fmt.total_height
             };
+            if let Some(v) = body_bottom_vpos {
+                st.prev_body_bottom_vpos = Some(v);
+            }
             return;
         }
 
@@ -2263,6 +2298,9 @@ impl TypesetEngine {
                 } else {
                     fmt.total_height
                 };
+                if let Some(v) = body_bottom_vpos {
+                    st.prev_body_bottom_vpos = Some(v);
+                }
                 return;
             }
         }
@@ -2283,6 +2321,9 @@ impl TypesetEngine {
             } else {
                 fmt.total_height
             };
+            if let Some(v) = body_bottom_vpos {
+                st.prev_body_bottom_vpos = Some(v);
+            }
             return;
         }
 
