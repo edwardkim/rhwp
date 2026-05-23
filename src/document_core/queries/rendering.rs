@@ -1510,7 +1510,19 @@ impl DocumentCore {
     }
 
     /// 모든 구역을 페이지로 분할한다 (dirty 구역만 재처리, 증분 표 측정).
+    ///
+    /// [Task #1046] 사후 reflow(A) 접근은 페이지네이터↔렌더러 측정 드리프트로 인해
+    /// overflow 를 줄이지 못함이 확인되어(stage3 findings) 단일 패스로 둔다. 근본 해소는
+    /// 측정 통일(B). `paginate_pass` 의 `force_break_before` 훅과 `LayoutOverflow` 의
+    /// section_index/is_first_in_column 계측은 측정 통일 작업의 진단·후속용으로 유지한다.
     pub(crate) fn paginate(&mut self) {
+        let sec_count = self.document.sections.len().max(1);
+        let empty_breaks: Vec<std::collections::HashSet<usize>> =
+            vec![std::collections::HashSet::new(); sec_count];
+        self.paginate_pass(&empty_breaks);
+    }
+
+    fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         self.invalidate_page_tree_cache();
         let paginator = Paginator::new(self.dpi);
         let hwp3_origin_flow_spacing_before =
@@ -1590,6 +1602,8 @@ impl DocumentCore {
         let mut carry_footer_odd: Option<HeaderFooterRef> = None;
         let mut carry_footer_even: Option<HeaderFooterRef> = None;
 
+        // [Task #1046] reflow force-break hint (구역별). reflow 루프(paginate)가 누적해 전달.
+        let empty_breaks: std::collections::HashSet<usize> = std::collections::HashSet::new();
         for (idx, section) in self.document.sections.iter().enumerate() {
             if !self.dirty_sections[idx] {
                 // dirty가 아닌 구역에서도 carry를 업데이트
@@ -1709,6 +1723,7 @@ impl DocumentCore {
                     self.document.is_hwp3_variant,
                     hwp3_origin_flow_spacing_before,
                     hwp3_origin_page_tolerance,
+                    force_breaks.get(idx).unwrap_or(&empty_breaks),
                 )
             };
 

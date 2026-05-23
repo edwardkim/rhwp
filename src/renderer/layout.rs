@@ -189,10 +189,15 @@ pub struct LayoutOverflow {
     pub page_index: u32,
     /// 단 번호 (0-based)
     pub column_index: usize,
-    /// 문단 인덱스
+    /// 구역 인덱스 (0-based). [Task #1046] reflow hint 키 = (section_index, para_index).
+    pub section_index: usize,
+    /// 문단 인덱스 (구역-로컬)
     pub para_index: usize,
     /// 요소 종류
     pub item_type: &'static str,
+    /// [Task #1046] 이 항목이 단의 첫 항목인가. true 면 다음 페이지로 이월해도 또 넘침
+    /// (본문보다 큰 단일 항목 = page-larger) → reflow 대상 아님.
+    pub is_first_in_column: bool,
     /// 요소의 실제 Y 좌표 (배치 후)
     pub element_y: f64,
     /// 단 영역 하단 Y 좌표
@@ -203,9 +208,9 @@ pub struct LayoutOverflow {
 
 impl std::fmt::Display for LayoutOverflow {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "LAYOUT_OVERFLOW: page={}, col={}, para={}, type={}, y={:.1}, bottom={:.1}, overflow={:.1}px",
-            self.page_index, self.column_index, self.para_index,
-            self.item_type, self.element_y, self.column_bottom, self.overflow_px)
+        write!(f, "LAYOUT_OVERFLOW: page={}, sec={}, col={}, para={}, type={}, first={}, y={:.1}, bottom={:.1}, overflow={:.1}px",
+            self.page_index, self.section_index, self.column_index, self.para_index,
+            self.item_type, self.is_first_in_column, self.element_y, self.column_bottom, self.overflow_px)
     }
 }
 
@@ -337,6 +342,13 @@ pub struct LayoutEngine {
     border_box_override: std::cell::Cell<Option<(f64, f64)>>,
     /// 레이아웃 검증 결과: 경계 초과 목록
     layout_overflows: std::cell::RefCell<Vec<LayoutOverflow>>,
+    /// [Task #1046 Stage 3 Class B/C/D] 직전 렌더한 항목(표/문단)의 실제 콘텐츠 하단(y).
+    /// 표 뒤/문단 끝에 더해지는 trailing 간격(줄간격/spacing_after/outer_margin)이
+    /// 포함된 y_offset 과 달리, 콘텐츠(표 행/마지막 텍스트 줄)가 실제로 점유한 마지막
+    /// y 다. overflow 검출이 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록
+    /// 이 값으로 비교한다(페이지네이터의 trailing_ls 정책 #359/#404 와 정합). 항목
+    /// 디스패치마다 NaN 으로 리셋되고 표/문단 렌더에서만 설정된다.
+    last_item_content_bottom: std::cell::Cell<f64>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
     hidden_empty_paras: std::cell::RefCell<std::collections::HashSet<usize>>,
     /// 현재 활성 필드 위치 — 안내문 렌더링 스킵용
@@ -402,6 +414,7 @@ impl LayoutEngine {
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
             border_box_override: std::cell::Cell::new(None),
             layout_overflows: std::cell::RefCell::new(Vec::new()),
+            last_item_content_bottom: std::cell::Cell::new(f64::NAN),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             active_field: std::cell::RefCell::new(None),
             show_control_codes: std::cell::Cell::new(false),
@@ -2438,7 +2451,7 @@ impl LayoutEngine {
         );
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
-        for item in col_content.items.iter() {
+        for (item_ordinal, item) in col_content.items.iter().enumerate() {
             // vpos 기반 y_offset 보정
             let item_para = match item {
                 PageItem::FullParagraph { para_index } => *para_index,
@@ -2615,6 +2628,9 @@ impl LayoutEngine {
             } else {
                 String::new()
             };
+            // [Task #1046 Stage 3 Class B] 표 콘텐츠 하단 기록을 항목마다 리셋 —
+            // 표 항목 렌더에서만 설정되므로, 비-표 항목/다른 표에 stale 값이 새지 않는다.
+            self.last_item_content_bottom.set(f64::NAN);
             let (new_y, was_tac) = self.layout_column_item(
                 tree,
                 &mut col_node,
@@ -2708,10 +2724,42 @@ impl LayoutEngine {
                 hcursor.vpos_lazy_base = None;
             }
 
+            // [Task #1046 Stage 1] 렌더러 항목별 y_offset 진행 로그 (페이지네이터 cur_h 대조).
+            if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                eprintln!(
+                    "LAYOUT_Y: page={} sec={} ord={} pi={} y_after={:.1} (body_top={:.1})",
+                    page_content.page_index,
+                    page_content.section_index,
+                    item_ordinal,
+                    item_para,
+                    y_offset,
+                    col_area.y,
+                );
+            }
+
             // 자가 검증: 배치 후 y_offset이 단 영역 하단을 초과하는지 확인
             let col_bottom = col_area.y + col_area.height;
             let tolerance = 2.0; // 반올림 오차 허용 (2px)
-            if y_offset > col_bottom + tolerance {
+                                 // [Task #1046 Stage 3 Class B] 표 항목은 표 뒤 trailing 간격(host 문단 줄간격/
+                                 // spacing_after)이 더해진 y_offset 대신 실제 콘텐츠 하단으로 초과를 판정한다.
+                                 // 페이지 바닥의 후행 간격은 다음 항목이 다음 페이지로 가므로 시각적 초과가
+                                 // 아니다(문단 trailing_ls 정책 #359/#404 의 표 대응). 표가 아니거나 콘텐츠
+                                 // 하단 미기록(NaN)이면 종전대로 y_offset 사용.
+            let check_y = match item {
+                PageItem::Table { .. }
+                | PageItem::PartialTable { .. }
+                | PageItem::FullParagraph { .. }
+                | PageItem::PartialParagraph { .. } => {
+                    let cb = self.last_item_content_bottom.get();
+                    if cb.is_finite() {
+                        cb
+                    } else {
+                        y_offset
+                    }
+                }
+                _ => y_offset,
+            };
+            if check_y > col_bottom + tolerance {
                 let (item_type, para_idx) = match item {
                     PageItem::FullParagraph { para_index } => ("FullParagraph", *para_index),
                     PageItem::PartialParagraph { para_index, .. } => {
@@ -2723,12 +2771,14 @@ impl LayoutEngine {
                 };
                 self.record_overflow(LayoutOverflow {
                     page_index: page_content.page_index,
+                    section_index: page_content.section_index,
                     column_index: col_content.column_index as usize,
                     para_index: para_idx,
                     item_type,
-                    element_y: y_offset,
+                    is_first_in_column: item_ordinal == 0,
+                    element_y: check_y,
                     column_bottom: col_bottom,
-                    overflow_px: y_offset - col_bottom,
+                    overflow_px: check_y - col_bottom,
                 });
             }
         }
@@ -3875,8 +3925,24 @@ impl LayoutEngine {
                     );
                 }
                 let table_y_end = y_offset; // layout_table 반환값 보존
-                                            // ── TAC 표: 줄간격 처리 ──
-                                            // layout_table 반환값(표 하단)에 line_spacing을 더하여 다음 표 시작 y 결정
+                                            // [Task #1046 Stage 3 Class B] 표 실제 콘텐츠 하단 기록 — 이후 더해지는
+                                            // 표 뒤 trailing 간격(tac 줄간격/표 아래 간격)을 제외한 값. overflow 검출이
+                                            // 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록 한다.
+                self.last_item_content_bottom.set(table_y_end);
+                // [Task #1046 Stage 3 Class B 진단] 통째 표 렌더 분해 — 표 시작/끝,
+                // para 시작, host before. 동작 불변(게이트).
+                if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                    eprintln!(
+                        "WHOLE_TABLE_Y: pi={} sec={} tac={} table_y_start={:.1} table_y_end={:.1} table_h={:.1} para_y={:.1} table_y_before={:.1}",
+                        para_index, page_content.section_index, is_tac,
+                        if let Some((_, iy)) = inline_pos { iy } else { table_y_before },
+                        table_y_end,
+                        table_y_end - (if let Some((_, iy)) = inline_pos { iy } else { table_y_before }),
+                        para_y_for_table, table_y_before,
+                    );
+                }
+                // ── TAC 표: 줄간격 처리 ──
+                // layout_table 반환값(표 하단)에 line_spacing을 더하여 다음 표 시작 y 결정
                 if is_tac {
                     let seg_idx = control_index;
                     let tac_count_total = para
@@ -4280,6 +4346,10 @@ impl LayoutEngine {
             pt_mt,
             false,
         );
+        // [Task #1046 Stage 3 Class B/C] 분할 표 실제 콘텐츠 하단 기록 — 이후 더해지는
+        // spacing_after/outer_margin_bottom(표 뒤 trailing 간격) 제외. overflow 검출이
+        // 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록 한다.
+        self.last_item_content_bottom.set(y_offset);
         if let Some(para) = paragraphs.get(para_index) {
             let comp = composed.get(para_index);
             let para_style_id = comp

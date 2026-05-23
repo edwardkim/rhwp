@@ -3772,6 +3772,13 @@ impl LayoutEngine {
             // wrap zone 호스트 paragraph 만 영향.
             let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
             let skip_advance_empty_wrap = has_picture_shape_square_wrap && runs_all_whitespace;
+            // [Task #1046 Stage 3 Class D] 본문 문단(셀 밖)의 콘텐츠 하단(=현재 줄 텍스트
+            // 바닥, trailing 줄간격/spacing_after 제외) 기록. overflow 검출이 페이지 바닥
+            // 후행 줄간격을 콘텐츠 초과로 오판하지 않도록 한다(페이지네이터의 마지막 줄
+            // trailing_ls 허용 #359/#404 와 정합). 매 줄 갱신 → 마지막 렌더 줄 값이 남는다.
+            if cell_ctx.is_none() && !skip_advance_empty_wrap {
+                self.last_item_content_bottom.set(y + line_height);
+            }
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
             } else if skip_advance_empty_wrap {
