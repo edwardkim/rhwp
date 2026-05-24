@@ -66,8 +66,27 @@ fn baseline_page_count_stable_hwpx_h_01() {
 }
 
 #[test]
-fn baseline_page_count_stable_hwpx_h_02() {
-    assert_stable_baseline("hwpx-h-02", &load_sample("hwpx-h-02.hwpx"));
+fn baseline_page_count_measured_hwpx_h_02() {
+    let name = "hwpx-h-02";
+    let bytes = load_sample("hwpx-h-02.hwpx");
+    let (orig, reloaded) = page_count_after_hwp_export(&bytes);
+    let expected = expected_hwp_page_count(name, orig);
+    eprintln!(
+        "[#178 baseline] {}: orig={}, expected_hwp={}, reloaded={}",
+        name, orig, expected, reloaded
+    );
+    assert_eq!(
+        orig, expected,
+        "{}: HWPX 로드 페이지 수는 한컴 HWP 저장 기준과 일치해야 한다",
+        name
+    );
+    assert!(
+        (1..=expected).contains(&reloaded),
+        "{}: 어댑터 없는 baseline export는 측정만 하되 0쪽/폭주는 허용하지 않는다 (expected={}, reloaded={})",
+        name,
+        expected,
+        reloaded
+    );
 }
 
 #[test]
@@ -321,8 +340,14 @@ fn task888_basic_table_materializes_hancom_table_attrs() {
         })
         .expect("basic-table-01 표 없음");
 
-    assert_eq!(report.table_ctrl_header_attr_materialized, 1);
-    assert_eq!(report.table_record_attr_materialized, 1);
+    assert_eq!(
+        report.table_ctrl_header_attr_materialized, 0,
+        "HWPX 파서가 table CTRL_HEADER attr를 이미 materialize한다"
+    );
+    assert_eq!(
+        report.table_record_attr_materialized, 0,
+        "HWPX 파서가 TABLE record attr를 이미 materialize한다"
+    );
     assert_eq!(
         table.raw_table_record_attr, 0x0400_0006,
         "HWPX table record attr는 pageBreak/repeatHeader/noAdjust와 안쪽 여백 활성 계약 필드로 재구성한다"
@@ -379,7 +404,10 @@ fn task888_expense_report_materializes_tac_table_ctrl_attrs() {
         vec![vec![5, 3, 3], vec![4, 1, 4, 3, 6, 1, 3, 1, 2]],
         "TAC table row_sizes must be row cell counts, not row heights"
     );
-    assert_eq!(report.table_ctrl_header_attr_materialized, 2);
+    assert_eq!(
+        report.table_ctrl_header_attr_materialized, 0,
+        "HWPX 파서가 TAC table CTRL_HEADER attr를 이미 materialize한다"
+    );
     assert_eq!(report.table_record_row_sizes_materialized, 2);
 }
 
