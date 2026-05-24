@@ -1,6 +1,7 @@
-//! Issue #1086: k-water-rfp.hwp RowBreak/rowspan over-split regression.
+//! Issue #1086: HWP3-origin pagination and RowBreak/rowspan over-split regressions.
 //!
 //! The Hancom 2022 PDF oracle for `samples/k-water-rfp.hwp` has 27 pages.
+//! The Hancom HWP5 conversion oracle for `samples/hwp3-sample16-hwp5.hwp` has 64 pages.
 
 use std::fs;
 use std::path::Path;
@@ -26,6 +27,11 @@ fn page_dump(rel_path: &str, page_idx: u32) -> String {
 #[test]
 fn task1086_k_water_rfp_page_count_matches_hancom_pdf() {
     assert_eq!(page_count("samples/k-water-rfp.hwp"), 27);
+}
+
+#[test]
+fn task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office() {
+    assert_eq!(page_count("samples/hwp3-sample16-hwp5.hwp"), 64);
 }
 
 #[test]
