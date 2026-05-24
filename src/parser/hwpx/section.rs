@@ -1425,10 +1425,15 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
 
     table.common.attr = pack_hwpx_common_obj_attr(&table.common) | HWPX_TABLE_NUMBERING_BIT;
-    // HWP/HWP3 parsers synchronize table.attr with CommonObjAttr.attr because parts of
-    // layout still use table.attr for legacy TAC/text-wrap decisions.
-    table.attr = table.common.attr;
-
+    // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
+    // table.attr bit0 for some inline-table decisions. Only mirror the minimum
+    // renderer compatibility bit here; the HWP5 storage attr is packed later by
+    // the HWP adapter.
+    table.attr = if table.common.treat_as_char && table.common.flow_with_text {
+        0x01
+    } else {
+        0
+    };
     let mut record_attr = match table.page_break {
         TablePageBreak::CellBreak => 0x01,
         TablePageBreak::RowBreak => 0x02,
@@ -4934,7 +4939,7 @@ mod tests {
         assert!(table.common.treat_as_char);
         assert_eq!(table.common.text_wrap, TextWrap::TopAndBottom);
         assert_eq!(table.common.attr, 0x082a_2211);
-        assert_eq!(table.attr, table.common.attr);
+        assert_eq!(table.attr, 0x01);
         assert_eq!(table.raw_table_record_attr, 0x0400_000e);
     }
 
