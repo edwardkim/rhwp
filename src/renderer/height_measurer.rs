@@ -689,14 +689,18 @@ impl HeightMeasurer {
                                             cell_ls_type,
                                             cell_ls_val,
                                         );
-                                        // [Task #874 #4] 다중 paragraph 셀의 마지막 paragraph 마지막
-                                        // line 의 line_spacing 도 셀 콘텐츠 높이에 포함 (= 셀 하단
-                                        // trailing gap). 한컴 PDF 정합 — aift.hwp p10 표 pi=123 의
-                                        // 4.자연어 행이 다음 페이지로 넘어가는 분할 보존. 단일
-                                        // paragraph 셀은 종전 동작 유지 (회귀 방지).
+                                        // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
+                                        // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
+                                        // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
+                                        // trailing 을 제외(k-water-rfp pi=180).
                                         let is_cell_last_line = is_last_para && i + 1 == line_count;
+                                        let is_block_rowbreak =
+                                            matches!(table.page_break, TablePageBreak::RowBreak)
+                                                && !table.common.treat_as_char;
                                         let include_trailing_ls =
                                             !is_cell_last_line || cell_para_count > 1;
+                                        let include_trailing_ls = include_trailing_ls
+                                            && (!is_cell_last_line || !is_block_rowbreak);
                                         if include_trailing_ls {
                                             h + hwpunit_to_px(line.line_spacing, self.dpi)
                                         } else {
@@ -931,14 +935,18 @@ impl HeightMeasurer {
                                             cell_ls_type,
                                             cell_ls_val,
                                         );
-                                        // [Task #874 #4] 다중 paragraph 셀의 마지막 paragraph 마지막
-                                        // line 의 line_spacing 도 셀 콘텐츠 높이에 포함 (= 셀 하단
-                                        // trailing gap). 한컴 PDF 정합 — aift.hwp p10 표 pi=123 의
-                                        // 4.자연어 행이 다음 페이지로 넘어가는 분할 보존. 단일
-                                        // paragraph 셀은 종전 동작 유지 (회귀 방지).
+                                        // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
+                                        // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
+                                        // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
+                                        // trailing 을 제외(k-water-rfp pi=180).
                                         let is_cell_last_line = is_last_para && i + 1 == line_count;
+                                        let is_block_rowbreak =
+                                            matches!(table.page_break, TablePageBreak::RowBreak)
+                                                && !table.common.treat_as_char;
                                         let include_trailing_ls =
                                             !is_cell_last_line || cell_para_count > 1;
+                                        let include_trailing_ls = include_trailing_ls
+                                            && (!is_cell_last_line || !is_block_rowbreak);
                                         if include_trailing_ls {
                                             h + hwpunit_to_px(line.line_spacing, self.dpi)
                                         } else {

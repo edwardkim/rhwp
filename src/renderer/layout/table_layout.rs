@@ -3539,9 +3539,17 @@ impl LayoutEngine {
                             let h = corrected_h(line);
                             let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                             let is_cell_last_line = is_last_para && li + 1 == line_count;
-                            // [Task #1022] trailing ls 규칙 — HeightMeasurer 와 정합:
-                            // 셀 마지막 줄은 단일 문단 단일 줄 셀에서만 제외.
+                            // [Task #1022/#1086] trailing ls 규칙 — HeightMeasurer 와
+                            // 정합. CellBreak/TAC 표는 기존 trailing geometry 를 보존하고,
+                            // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
+                            // trailing 을 제외해 행 fit 을 맞춘다.
+                            let is_block_rowbreak = matches!(
+                                table.page_break,
+                                crate::model::table::TablePageBreak::RowBreak
+                            ) && !table.common.treat_as_char;
                             let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                            let include_trailing_ls =
+                                include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
                             let mut lh = if include_trailing_ls { h + ls } else { h };
                             if li == 0 {
                                 lh += spacing_before;
@@ -3567,7 +3575,13 @@ impl LayoutEngine {
                     let h = corrected_h(line);
                     let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                     let is_cell_last_line = is_last_para && li + 1 == line_count;
+                    let is_block_rowbreak = matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    ) && !table.common.treat_as_char;
                     let include_trailing_ls = !is_cell_last_line || para_count > 1;
+                    let include_trailing_ls =
+                        include_trailing_ls && (!is_cell_last_line || !is_block_rowbreak);
                     let mut lh = if include_trailing_ls { h + ls } else { h };
                     if li == 0 {
                         lh += spacing_before;
@@ -3753,6 +3767,26 @@ impl LayoutEngine {
             fully_consumed,
             consumed_height,
         }
+    }
+
+    /// RowBreak 표의 rowspan 블록 중 셀 내부 HWP page reset 이 있는 블록만
+    /// 블록 컷 대상으로 삼기 위한 가드. 단순 rowspan 라벨 표는 기존 행 경계
+    /// 분할을 유지한다.
+    pub(crate) fn row_block_has_internal_hard_break(
+        &self,
+        table: &crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        Self::row_block_cells(table, b_start, b_end)
+            .iter()
+            .any(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .enumerate()
+                    .any(|(i, unit)| i > 0 && unit.hard_break_before)
+            })
     }
 
     /// [Task #1025] 행블록 `[b_start, b_end)` 와 교차하는 셀(rs>1 포함)을 모은다.

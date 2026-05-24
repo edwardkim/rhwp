@@ -451,6 +451,7 @@ impl TypesetEngine {
             measured_tables,
             hide_empty_line,
             false,
+            false,
         )
     }
 
@@ -469,6 +470,7 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         hide_empty_line: bool,
         is_hwp3_variant: bool,
+        hwp3_origin_page_tolerance: bool,
     ) -> PaginationResult {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         let col_count = column_def.column_count.max(1);
@@ -669,6 +671,31 @@ impl TypesetEngine {
                         .last()
                         .map(|s| s.vertical_pos + s.line_height)
                         .unwrap_or(pv);
+                    // [Task #1086 Stage 3] HWP3-origin page tolerance 대상 문서는
+                    // 새 페이지 첫 문단을 vpos=0 이 아니라 200/500HU 근방으로
+                    // 인코딩하기도 한다(hwpspec.hwp s2:pi=89, pi=104). 단일 단에서
+                    // 모든 cv<pv 를 reset 으로 보면 일반 직접 작성 HWP(2022년
+                    // 국립국어원), partial-table 직후 정상 흐름(hwpspec pi=78→79),
+                    // 표 host 문단(hwpspec pi=57)을 깨므로, 비영 near-top reset 은
+                    // 직전 문단이 페이지 하단부에 있고 대상이 텍스트/그림-only 문단일
+                    // 때만 인정한다.
+                    // 그림만 든 빈 문단은 한컴이 조금 더 일찍 새 페이지로 넘기는 케이스
+                    // (hwpspec.hwp s3:pi=93)가 있어 표/텍스트보다 낮은 하단 기준을 쓴다.
+                    let shape_only_para = para.text.trim().is_empty()
+                        && !para.controls.is_empty()
+                        && para
+                            .controls
+                            .iter()
+                            .all(|c| matches!(c, Control::Picture(_) | Control::Shape(_)));
+                    let has_table_control =
+                        para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                    let near_page_top_reset = hwp3_origin_page_tolerance
+                        && cv > 0
+                        && ((shape_only_para && cv <= 200 && prev_vpos_end > 52_000)
+                            || (!shape_only_para
+                                && !has_table_control
+                                && cv <= 500
+                                && prev_vpos_end > 60_000));
                     let trigger = if st.col_count > 1 {
                         if is_distribute {
                             cv < prev_vpos_end && prev_vpos_end > 0
@@ -676,7 +703,7 @@ impl TypesetEngine {
                             cv < pv && pv > 5000
                         }
                     } else {
-                        cv == 0 && pv > 5000
+                        (cv == 0 && pv > 5000) || near_page_top_reset
                     };
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
@@ -1980,8 +2007,30 @@ impl TypesetEngine {
         // 남은 공간이 없거나 첫 줄도 못 넣으면 먼저 다음 단/페이지로
         let first_line_h = fmt.line_heights[0];
         let remaining = (available - st.current_height).max(0.0);
+        // [Task #1086] 단일 단에서도 HWP가 paragraph 내부 page reset 을
+        // LINE_SEG(vpos=0) 로 인코딩하는 케이스가 있다(k-water-rfp pi=66).
+        // 첫 줄의 HWP 좌표가 본문 안에 있고 다음 줄이 reset 이면, 보수적
+        // safety margin 으로 미리 페이지를 넘기지 말고 줄 단위 split 루프에서
+        // 첫 줄만 현재 페이지에 배치하게 둔다.
+        let hwp_first_line_before_reset_fits = para
+            .line_segs
+            .get(1)
+            .map(|next| next.vertical_pos == 0)
+            .unwrap_or(false)
+            && para
+                .line_segs
+                .first()
+                .map(|cur| {
+                    let bottom_px = crate::renderer::hwpunit_to_px(
+                        cur.vertical_pos + cur.line_height,
+                        self.dpi,
+                    );
+                    bottom_px <= st.base_available_height() + 0.5
+                })
+                .unwrap_or(false);
         if (st.current_height >= available || remaining < first_line_h)
             && !st.current_items.is_empty()
+            && !hwp_first_line_before_reset_fits
         {
             st.advance_column_or_new_page();
         }
@@ -3206,7 +3255,18 @@ impl TypesetEngine {
                     let protected = !mt.allows_row_break_split()
                         && block_size >= 2
                         && block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                    if protected && b_start == r {
+                    // [Task #1086] RowBreak 표는 행 경계 분할 정책이라 보호 블록
+                    // snap 은 피하지만, rowspan label 이 걸친 블록 안의 큰 row_span==1
+                    // 셀은 셀 내부 hard-break(vpos reset) 기준으로 쪼갤 수 있어야 한다.
+                    // 이때는 기존 블록 컷 경로를 재사용해 rowspan 셀과 일반 셀의 cut
+                    // 인덱스를 같은 정의로 렌더러까지 전달한다.
+                    let rowbreak_rowspan_block = mt.allows_row_break_split()
+                        && b_start == r
+                        && block_size >= 2
+                        && rowspan_touched.get(r).copied().unwrap_or(false)
+                        && layout_engine
+                            .row_block_has_internal_hard_break(table, b_start, b_end, styles);
+                    if (protected || rowbreak_rowspan_block) && b_start == r {
                         // [Task #1025] 연속분 커서가 블록 중간이면 블록 시작 컷을 적용.
                         let blk_start_cut: &[usize] =
                             if r == cursor_row { &start_cut } else { &[] };
@@ -3229,9 +3289,11 @@ impl TypesetEngine {
                             end_row = r;
                             continue;
                         }
-                        // [Task #1025] 블록이 가용 초과 — 거대 row_span==1 셀을 줄 단위로
-                        // 분할 시도(블록 컷). 분할 가능 + (페이지 시작이거나 충분히 채움)이면
-                        // 블록 내부 컷 분할, 아니면 다음 페이지로 미룬다.
+                        // [Task #1025/#1086] 블록이 가용 초과 — 거대 row_span==1 셀을
+                        // 줄 단위로 분할 시도(블록 컷). 보호 블록은 기존처럼 fresh
+                        // page 에도 안 들어가는 경우만 페이지 중간에서 쪼갠다. RowBreak
+                        // rowspan 블록은 hard-break(vpos reset)를 만난 경우에만 중간
+                        // 분할을 허용해 일반 RowBreak 행 경계 정책의 blast radius 를 줄인다.
                         let budget = (avail_for_rows - consumed - cs_before).max(0.0);
                         let res = layout_engine.advance_row_block_cut(
                             table,
@@ -3246,12 +3308,14 @@ impl TypesetEngine {
                         // 부족) 통째로 다음 페이지로 미뤄 잔여 overflow 를 피한다(기존 동작).
                         // 페이지 시작 행(r==cursor_row)은 더 미룰 수 없으므로 무조건 분할.
                         let genuinely_page_larger = block_h > st.base_available_height();
-                        if can_intra_split
-                            && !res.fully_consumed
-                            && (r == cursor_row
-                                || (genuinely_page_larger
-                                    && res.consumed_height >= MIN_TOP_KEEP_PX))
-                        {
+                        let allow_block_split = if rowbreak_rowspan_block {
+                            r == cursor_row
+                                || (res.hit_hard_break && res.consumed_height >= MIN_TOP_KEEP_PX)
+                        } else {
+                            r == cursor_row
+                                || (genuinely_page_larger && res.consumed_height >= MIN_TOP_KEEP_PX)
+                        };
+                        if can_intra_split && !res.fully_consumed && allow_block_split {
                             end_row = b_end;
                             split_end_cut = res.end_cut.clone();
                             split_end_limit = res.consumed_height;

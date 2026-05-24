@@ -4,9 +4,9 @@ use super::super::helpers::color_ref_to_css;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::document::Section;
+use crate::model::document::{Document, Section};
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
 use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
@@ -15,13 +15,109 @@ use crate::renderer::html::HtmlRenderer;
 use crate::renderer::layer_renderer::LayerRenderer;
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::pagination::{PaginationResult, Paginator};
+use crate::renderer::pagination::{PageContent, PaginationResult, Paginator};
 use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use std::cell::RefCell;
 use std::fmt::Write as _;
+
+fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
+    let total_paragraphs: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
+    if total_paragraphs <= 50 {
+        return false;
+    }
+
+    let para_shape_ratio = document.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
+    let char_shape_ratio = document.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
+    para_shape_ratio < 0.05 && char_shape_ratio < 0.15
+}
+
+fn should_insert_hwp3_title_filler_page(
+    hwp3_origin_page_tolerance: bool,
+    section_index: usize,
+    section: &Section,
+    carry_last_page_number: u32,
+) -> bool {
+    if !hwp3_origin_page_tolerance
+        || section_index == 0
+        || carry_last_page_number == 0
+        || carry_last_page_number.is_multiple_of(2)
+    {
+        return false;
+    }
+
+    let Some(first_para) = section.paragraphs.first() else {
+        return false;
+    };
+
+    let title_section_flags = section.section_def.flags & 0x3 == 0x3
+        || first_para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::SectionDef(section_def) if section_def.flags & 0x3 == 0x3
+            )
+        });
+    let has_first_page_hide = first_para.controls.iter().any(|control| {
+        matches!(
+            control,
+            Control::PageHide(hide) if hide.hide_header && hide.hide_page_num
+        )
+    });
+    let has_full_page_figure = first_para.controls.iter().any(|control| match control {
+        Control::Picture(picture) => {
+            !picture.common.treat_as_char
+                && picture.common.width >= section.section_def.page_def.width * 9 / 10
+                && picture.common.height >= section.section_def.page_def.height * 9 / 10
+        }
+        Control::Shape(shape) => {
+            let common = shape.common();
+            !common.treat_as_char
+                && common.width >= section.section_def.page_def.width * 9 / 10
+                && common.height >= section.section_def.page_def.height * 9 / 10
+        }
+        _ => false,
+    });
+    let has_early_explicit_page_break = section.paragraphs.iter().take(40).any(|para| {
+        matches!(
+            para.column_type,
+            ColumnBreakType::Page | ColumnBreakType::Section
+        )
+    });
+
+    title_section_flags
+        && has_first_page_hide
+        && has_full_page_figure
+        && has_early_explicit_page_break
+}
+
+fn insert_hwp3_title_filler_page(result: &mut PaginationResult, section_index: usize) {
+    let Some(first_page) = result.pages.first() else {
+        return;
+    };
+
+    let blank = PageContent {
+        page_index: 0,
+        page_number: 1,
+        section_index,
+        layout: first_page.layout.clone(),
+        column_contents: Vec::new(),
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    for (page_idx, page) in result.pages.iter_mut().enumerate() {
+        page.page_index = (page_idx + 1) as u32;
+        page.page_number = page.page_number.saturating_add(1);
+    }
+    result.pages.insert(0, blank);
+}
 
 impl DocumentCore {
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
@@ -1544,6 +1640,8 @@ impl DocumentCore {
                 measurer.measure_section(&section.paragraphs, composed, &self.styles)
             };
 
+            let hwp3_origin_page_tolerance =
+                self.document.is_hwp3_variant || uses_hwp3_origin_page_tolerance(&self.document);
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             // TypesetEngine을 main pagination으로 사용. RHWP_USE_PAGINATOR=1 로 fallback 가능.
             let use_paginator = std::env::var("RHWP_USE_PAGINATOR")
@@ -1576,8 +1674,22 @@ impl DocumentCore {
                     &measured.tables,
                     section.section_def.hide_empty_line,
                     self.document.is_hwp3_variant,
+                    hwp3_origin_page_tolerance,
                 )
             };
+
+            // [Task #1086 Stage 3] HWP3 변환본의 표지성 구역은 한컴이 직전
+            // 구역이 홀수 쪽에서 끝날 때 빈 쪽을 하나 삽입해 다음 구역 제목을
+            // 홀수 쪽으로 맞춘다(hwpspec.hwp Part II). 본문 조판 규칙을 넓히지
+            // 않도록 첫 문단의 표지/감추기/쪽나누기 패턴이 모두 맞는 경우만 보정한다.
+            if should_insert_hwp3_title_filler_page(
+                hwp3_origin_page_tolerance,
+                idx,
+                section,
+                carry_last_page_number,
+            ) {
+                insert_hwp3_title_filler_page(&mut result, idx);
+            }
 
             self.measured_tables[idx] = measured.tables.clone();
             self.measured_sections[idx] = measured;

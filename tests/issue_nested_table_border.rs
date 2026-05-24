@@ -89,44 +89,50 @@ fn parse_lines(svg: &str) -> Vec<(f64, f64, f64, f64, bool)> {
 
 /// #1043 회귀 가드: 중첩 표(1×1 wrapper) 외곽 테두리 누락 정정 (HWP5 케이스).
 ///
-/// `samples/k-water-rfp.hwp` 19페이지(index 18)는 외곽 1×1 wrapper 표 안에 내부 표가
-/// 든 자료 박스 구조다. 내부 표의 외곽 격자는 점선(`stroke-dasharray`)으로, wrapper
-/// 외곽 테두리는 그 위에 겹치는 실선으로 그려진다. off-by-one lookup 버그에서는
-/// wrapper 외곽 borderFill 을 한 칸 어긋나게 읽어(NONE) 실선 외곽선이 통째로 누락되고
-/// 내부 표 점선만 남았다. 정정 후에는 점선 외곽과 같은 y 에 실선 외곽선이 존재해야 한다.
+/// `samples/k-water-rfp.hwp` 안에는 외곽 1×1 wrapper 표 안에 내부 표가 든 자료 박스
+/// 구조가 있다. 내부 표의 외곽 격자는 점선(`stroke-dasharray`)으로, wrapper 외곽
+/// 테두리는 그 위에 겹치는 실선으로 그려진다. off-by-one lookup 버그에서는 wrapper
+/// 외곽 borderFill 을 한 칸 어긋나게 읽어(NONE) 실선 외곽선이 통째로 누락되고 내부 표
+/// 점선만 남았다. 정정 후에는 점선 외곽과 같은 y 에 실선 외곽선이 존재해야 한다.
 ///
 /// 가드: 전폭(>500px) 수평선 중 **점선과 y 가 일치하는 실선**이 ≥1 존재하는지 확인한다.
 /// 좌표를 hardcode 하지 않고 "외곽 박스 = 내부 표 외곽" 관계로 판정하므로, 무관한
 /// 다른 표의 실선(겹치는 점선 없음)이나 페이지네이션 시프트에 영향받지 않는다.
 /// (버그: 일치 0건 → 실패 / 정정: 상·하 2건 일치 → 통과)
 #[test]
-fn nested_table_border_kwater_rfp_p19_outer_outline_present() {
+fn nested_table_border_kwater_rfp_outer_outline_present() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let path = Path::new(repo_root).join("samples/k-water-rfp.hwp");
     let bytes = fs::read(&path).expect("read k-water-rfp.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse k-water-rfp.hwp");
 
-    // 페이지 19 (index 18) 렌더
-    let svg = doc.render_page_svg(18).expect("render_page_svg p19");
-
-    let lines = parse_lines(&svg);
-    // 전폭(>500px) 수평선만 추려 점선/실선 y 집합으로 분리한다.
-    let is_wide_horiz =
-        |x1: f64, y1: f64, x2: f64, y2: f64| (y1 - y2).abs() < 0.01 && (x2 - x1).abs() > 500.0;
-    let dashed_ys: Vec<f64> = lines
-        .iter()
-        .filter(|(x1, y1, x2, y2, dashed)| *dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
-        .map(|(_, y1, ..)| *y1)
-        .collect();
-    // 점선(내부 표 외곽 격자)과 y 가 일치(±1px)하는 실선(wrapper 외곽 테두리) 개수.
-    let outer_solid_on_inner = lines
-        .iter()
-        .filter(|(x1, y1, x2, y2, dashed)| !*dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
-        .filter(|(_, y1, ..)| dashed_ys.iter().any(|dy| (dy - *y1).abs() < 1.0))
-        .count();
+    let mut matched_pages = Vec::new();
+    for page_idx in 0..doc.page_count() {
+        let svg = doc
+            .render_page_svg(page_idx)
+            .unwrap_or_else(|e| panic!("render_page_svg page {}: {e:?}", page_idx + 1));
+        let lines = parse_lines(&svg);
+        // 전폭(>500px) 수평선만 추려 점선/실선 y 집합으로 분리한다.
+        let is_wide_horiz =
+            |x1: f64, y1: f64, x2: f64, y2: f64| (y1 - y2).abs() < 0.01 && (x2 - x1).abs() > 500.0;
+        let dashed_ys: Vec<f64> = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2, dashed)| *dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
+            .map(|(_, y1, ..)| *y1)
+            .collect();
+        // 점선(내부 표 외곽 격자)과 y 가 일치(±1px)하는 실선(wrapper 외곽 테두리) 개수.
+        let outer_solid_on_inner = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2, dashed)| !*dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
+            .filter(|(_, y1, ..)| dashed_ys.iter().any(|dy| (dy - *y1).abs() < 1.0))
+            .count();
+        if outer_solid_on_inner >= 1 {
+            matched_pages.push((page_idx + 1, outer_solid_on_inner));
+        }
+    }
 
     assert!(
-        outer_solid_on_inner >= 1,
-        "wrapper 외곽 실선 테두리 누락 (내부 표 점선 외곽과 겹치는 전폭 실선 {outer_solid_on_inner}건)"
+        !matched_pages.is_empty(),
+        "wrapper 외곽 실선 테두리 누락 (내부 표 점선 외곽과 겹치는 전폭 실선 0건)"
     );
 }
