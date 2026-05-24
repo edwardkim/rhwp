@@ -610,7 +610,26 @@ impl TypesetEngine {
                     } else {
                         1500i32
                     };
-                    if prev_end_vpos > high_threshold && curr_first_vpos < low_threshold {
+                    let bridge_missing_count = prev_real_idx_and_ls.map(|(prev_i, _)| {
+                        (prev_i + 1..para_idx)
+                            .filter(|&i| {
+                                paragraphs.get(i).is_some_and(|p| {
+                                    p.line_segs.is_empty()
+                                        && p.controls.is_empty()
+                                        && para_has_visible_text(p)
+                                })
+                            })
+                            .count()
+                    });
+                    let bridged_reset = bridge_missing_count.unwrap_or(0) >= 2
+                        && para.line_segs.first().is_some_and(|ls| !is_synth(ls))
+                        && para.controls.is_empty()
+                        && para_has_visible_text(para)
+                        && curr_first_vpos <= 1500
+                        && prev_end_vpos > body_height_hu_for_variant * 75 / 100;
+                    if (prev_end_vpos > high_threshold && curr_first_vpos < low_threshold)
+                        || bridged_reset
+                    {
                         variant_vpos_reset_break = true;
                     }
                 }
@@ -1084,7 +1103,8 @@ impl TypesetEngine {
 
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
-                let formatted = self.format_paragraph(para, composed.get(para_idx), styles);
+                let formatted =
+                    self.format_paragraph(para, composed.get(para_idx), styles, st.is_hwp3_variant);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
                 // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
                 self.vpos_snap_current_height(&mut st, para_idx, paragraphs, styles);
@@ -1475,7 +1495,8 @@ impl TypesetEngine {
                             st.endnote_paragraphs.push(en_para_copy);
 
                             let composed = crate::renderer::composer::compose_paragraph(en_para);
-                            let fmt = self.format_paragraph(en_para, Some(&composed), &styles);
+                            let fmt =
+                                self.format_paragraph(en_para, Some(&composed), &styles, false);
                             let available = st.available_height();
 
                             // [Task #1062] 다단 미주 누적/판정을 렌더러 vpos 전진과 통일.
@@ -1611,6 +1632,7 @@ impl TypesetEngine {
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
         styles: &ResolvedStyleSet,
+        is_hwp3_variant: bool,
     ) -> FormattedParagraph {
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
@@ -1670,18 +1692,13 @@ impl TypesetEngine {
                         })
                         .fold(0.0f64, f64::max);
                     let recompute_lh = max_fs > 0.0 && raw_lh < max_fs;
-                    let lh = if recompute_lh {
-                        use crate::model::style::LineSpacingType;
-                        let computed = match ls_type {
-                            LineSpacingType::Percent => max_fs * ls_val / 100.0,
-                            LineSpacingType::Fixed => ls_val.max(max_fs),
-                            LineSpacingType::SpaceOnly => max_fs + ls_val,
-                            LineSpacingType::Minimum => ls_val.max(max_fs),
-                        };
-                        computed.max(max_fs)
-                    } else {
-                        raw_lh
-                    };
+                    let lh = crate::renderer::corrected_line_height_for_variant_synthetic(
+                        raw_lh,
+                        max_fs,
+                        ls_type,
+                        ls_val,
+                        is_hwp3_variant && para.line_segs.is_empty() && !para.text.is_empty(),
+                    );
                     let line_spacing_px = if recompute_lh {
                         0.0
                     } else {
@@ -2360,7 +2377,7 @@ impl TypesetEngine {
         _page_def: &PageDef,
     ) {
         // 호스트 문단 format (TAC 표의 높이 보정용)
-        let fmt = self.format_paragraph(para, composed, styles);
+        let fmt = self.format_paragraph(para, composed, styles, st.is_hwp3_variant);
 
         // TAC 표 카운트 및 플러시 판단
         let tac_count = para
@@ -3009,6 +3026,7 @@ impl TypesetEngine {
         // [Task #993] advance_row_cut 호출용 LayoutEngine — 컷 측정은 dpi 와
         // 셀 패딩/중첩 표 높이 계산에만 의존하므로 ad hoc 인스턴스로 충분하다.
         let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        layout_engine.set_hwp3_variant(st.is_hwp3_variant);
         // [Task #993] rowspan(row_span>1) 셀이 걸친 행 — 컷 모델(advance_row_cut)은
         // row_span==1 셀만 다루므로 rowspan 셀 높이를 측정하지 못한다. 구현계획서
         // §4대로 rowspan 행은 MeasuredTable 행 높이를 권위로 쓴다(렌더러도 동일).

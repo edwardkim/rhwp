@@ -561,6 +561,25 @@ pub fn corrected_line_height(
     }
 }
 
+/// HWP3-origin HWP5 conversions may omit PARA_LINE_SEG for body paragraphs.
+/// The composer then emits synthetic lines with a tiny raw line height. For
+/// those synthetic lines, applying ParaShape's percent line spacing again makes
+/// the paragraph too tall compared with Hancom's converted layout.
+#[inline]
+pub fn corrected_line_height_for_variant_synthetic(
+    raw_lh: f64,
+    max_fs: f64,
+    ls_type: LineSpacingType,
+    ls_val: f64,
+    hwp3_variant_synthetic: bool,
+) -> f64 {
+    if hwp3_variant_synthetic && max_fs > 0.0 && raw_lh < max_fs {
+        max_fs
+    } else {
+        corrected_line_height(raw_lh, max_fs, ls_type, ls_val)
+    }
+}
+
 /// HWPUNIT을 픽셀로 변환
 #[inline]
 pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {

@@ -1513,7 +1513,8 @@ impl DocumentCore {
     pub(crate) fn paginate(&mut self) {
         self.invalidate_page_tree_cache();
         let paginator = Paginator::new(self.dpi);
-        let measurer = HeightMeasurer::new(self.dpi);
+        let measurer =
+            HeightMeasurer::new(self.dpi).with_hwp3_variant(self.document.is_hwp3_variant);
 
         if self.document.sections.is_empty() {
             self.pagination.clear();
@@ -2502,6 +2503,8 @@ impl DocumentCore {
         self.layout_engine.set_clip_enabled(self.clip_enabled);
         self.layout_engine
             .set_show_control_codes(self.show_control_codes);
+        self.layout_engine
+            .set_hwp3_variant(self.document.is_hwp3_variant);
         // 활성 필드 정보를 레이아웃 엔진에 전달 (안내문 숨김용)
         self.layout_engine
             .set_active_field(self.active_field.as_ref().map(|af| {

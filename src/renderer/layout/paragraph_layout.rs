@@ -1163,7 +1163,15 @@ impl LayoutEngine {
                 let ls_type = para_style
                     .map(|s| s.line_spacing_type)
                     .unwrap_or(LineSpacingType::Percent);
-                crate::renderer::corrected_line_height(raw_lh, max_fs, ls_type, ls_val)
+                let hwp3_variant_synthetic = self.is_hwp3_variant.get()
+                    && para.is_some_and(|p| p.line_segs.is_empty() && !p.text.is_empty());
+                crate::renderer::corrected_line_height_for_variant_synthetic(
+                    raw_lh,
+                    max_fs,
+                    ls_type,
+                    ls_val,
+                    hwp3_variant_synthetic,
+                )
             };
             // 인라인 Shape(글상자)가 있는 줄: line_height에 Shape 높이가 포함됨
             // Shape는 별도 패스에서 para_y 기준으로 렌더링되므로,

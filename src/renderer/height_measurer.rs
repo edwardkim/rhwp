@@ -160,11 +160,20 @@ pub struct MeasuredSection {
 /// 높이 측정 엔진
 pub struct HeightMeasurer {
     dpi: f64,
+    is_hwp3_variant: bool,
 }
 
 impl HeightMeasurer {
     pub fn new(dpi: f64) -> Self {
-        Self { dpi }
+        Self {
+            dpi,
+            is_hwp3_variant: false,
+        }
+    }
+
+    pub fn with_hwp3_variant(mut self, enabled: bool) -> Self {
+        self.is_hwp3_variant = enabled;
+        self
     }
 
     pub fn with_default_dpi() -> Self {
@@ -238,7 +247,13 @@ impl HeightMeasurer {
         // 문단 스타일에서 spacing 조회
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
-        let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+        let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+        let spacing_before =
+            if self.is_hwp3_variant && para.line_segs.is_empty() && !para.text.is_empty() {
+                0.0
+            } else {
+                raw_spacing_before
+            };
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
         // 줄별 높이 계산: 콘텐츠 높이(line_height)와 줄간격(line_spacing)을 분리 저장
@@ -269,8 +284,13 @@ impl HeightMeasurer {
                                 .unwrap_or(0.0)
                         })
                         .fold(0.0f64, f64::max);
-                    let lh =
-                        crate::renderer::corrected_line_height(raw_lh, max_fs, ls_type, ls_val);
+                    let lh = crate::renderer::corrected_line_height_for_variant_synthetic(
+                        raw_lh,
+                        max_fs,
+                        ls_type,
+                        ls_val,
+                        self.is_hwp3_variant && para.line_segs.is_empty() && !para.text.is_empty(),
+                    );
                     (lh, hwpunit_to_px(line.line_spacing, self.dpi))
                 })
                 .unzip()
@@ -683,11 +703,15 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let h = crate::renderer::corrected_line_height(
+                                        let h =
+                                            crate::renderer::corrected_line_height_for_variant_synthetic(
                                             raw_lh,
                                             max_fs,
                                             cell_ls_type,
                                             cell_ls_val,
+                                            self.is_hwp3_variant
+                                                && p.line_segs.is_empty()
+                                                && !p.text.is_empty(),
                                         );
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
@@ -929,11 +953,15 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let h = crate::renderer::corrected_line_height(
+                                        let h =
+                                            crate::renderer::corrected_line_height_for_variant_synthetic(
                                             raw_lh,
                                             max_fs,
                                             cell_ls_type,
                                             cell_ls_val,
+                                            self.is_hwp3_variant
+                                                && p.line_segs.is_empty()
+                                                && !p.text.is_empty(),
                                         );
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
@@ -1115,12 +1143,16 @@ impl HeightMeasurer {
                                             .unwrap_or(0.0)
                                     })
                                     .fold(0.0f64, f64::max);
-                                let h = crate::renderer::corrected_line_height(
-                                    raw_lh,
-                                    max_fs,
-                                    cell_ls_type,
-                                    cell_ls_val,
-                                );
+                                let h =
+                                    crate::renderer::corrected_line_height_for_variant_synthetic(
+                                        raw_lh,
+                                        max_fs,
+                                        cell_ls_type,
+                                        cell_ls_val,
+                                        self.is_hwp3_variant
+                                            && p.line_segs.is_empty()
+                                            && !p.text.is_empty(),
+                                    );
                                 let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                                 // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
                                 let is_cell_last_line = is_last_para && li + 1 == line_count;

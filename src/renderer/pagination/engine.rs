@@ -10,6 +10,10 @@ use crate::model::shape::CaptionDirection;
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection};
 use crate::renderer::page_layout::PageLayoutInfo;
 
+fn para_has_visible_text(para: &Paragraph) -> bool {
+    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+}
+
 impl Paginator {
     pub fn paginate_with_measured(
         &self,
@@ -59,7 +63,7 @@ impl Paginator {
             0
         };
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
-        let measurer = HeightMeasurer::new(self.dpi);
+        let measurer = HeightMeasurer::new(self.dpi).with_hwp3_variant(is_hwp3_variant);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
         let (hf_entries, page_number_pos, page_hides, new_page_numbers) =
@@ -217,7 +221,26 @@ impl Paginator {
                     } else {
                         1500i32
                     };
-                    if prev_end_vpos > high_threshold && curr_first_vpos < low_threshold {
+                    let bridge_missing_count = prev_real_idx_and_ls.map(|(prev_i, _)| {
+                        (prev_i + 1..para_idx)
+                            .filter(|&i| {
+                                paragraphs.get(i).is_some_and(|p| {
+                                    p.line_segs.is_empty()
+                                        && p.controls.is_empty()
+                                        && para_has_visible_text(p)
+                                })
+                            })
+                            .count()
+                    });
+                    let bridged_reset = bridge_missing_count.unwrap_or(0) >= 2
+                        && para.line_segs.first().is_some_and(|ls| !is_synth(ls))
+                        && para.controls.is_empty()
+                        && para_has_visible_text(para)
+                        && curr_first_vpos <= 1500
+                        && prev_end_vpos > body_height_hu_for_variant * 75 / 100;
+                    if (prev_end_vpos > high_threshold && curr_first_vpos < low_threshold)
+                        || bridged_reset
+                    {
                         variant_vpos_reset_break = true;
                     }
                 }

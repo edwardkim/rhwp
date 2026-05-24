@@ -343,6 +343,8 @@ pub struct LayoutEngine {
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
     /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
+    /// HWP3-origin HWP5 변환본 여부.
+    is_hwp3_variant: std::cell::Cell<bool>,
 }
 
 mod border_rendering;
@@ -395,6 +397,7 @@ impl LayoutEngine {
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
+            is_hwp3_variant: std::cell::Cell::new(false),
         }
     }
 
@@ -422,6 +425,10 @@ impl LayoutEngine {
     /// 번호 상태를 초기화한다.
     pub fn reset_numbering_state(&self) {
         self.numbering_state.borrow_mut().reset();
+    }
+
+    pub fn set_hwp3_variant(&self, enabled: bool) {
+        self.is_hwp3_variant.set(enabled);
     }
 
     /// 이미 렌더된 인라인 이미지 노드의 y 좌표를 dy만큼 이동 (캡션 Top 보정)

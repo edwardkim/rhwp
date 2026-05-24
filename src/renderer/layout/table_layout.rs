@@ -1043,6 +1043,7 @@ impl LayoutEngine {
                 );
                 self.calc_para_lines_height(
                     &comp.lines,
+                    self.is_hwp3_variant.get() && p.line_segs.is_empty() && !p.text.is_empty(),
                     pidx,
                     cell_para_count,
                     styles.para_styles.get(p.para_shape_id as usize),
@@ -1067,6 +1068,9 @@ impl LayoutEngine {
             .map(|(pidx, (comp, para))| {
                 self.calc_para_lines_height(
                     &comp.lines,
+                    self.is_hwp3_variant.get()
+                        && para.line_segs.is_empty()
+                        && !para.text.is_empty(),
                     pidx,
                     cell_para_count,
                     styles.para_styles.get(para.para_shape_id as usize),
@@ -1085,6 +1089,7 @@ impl LayoutEngine {
     fn calc_para_lines_height(
         &self,
         lines: &[crate::renderer::composer::ComposedLine],
+        hwp3_variant_synthetic: bool,
         pidx: usize,
         total_para_count: usize,
         para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
@@ -1125,11 +1130,12 @@ impl LayoutEngine {
                                 .unwrap_or(0.0)
                         })
                         .fold(0.0f64, f64::max);
-                    let h = crate::renderer::corrected_line_height(
+                    let h = crate::renderer::corrected_line_height_for_variant_synthetic(
                         raw_lh,
                         max_fs,
                         cell_ls_type,
                         cell_ls_val,
+                        hwp3_variant_synthetic,
                     );
                     let is_cell_last_line = is_last_para && i + 1 == line_count;
                     if !is_cell_last_line {
@@ -3000,7 +3006,8 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi);
+        let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(self.is_hwp3_variant.get());
         measurer.cell_controls_height(&cell.paragraphs, styles, 0)
     }
 
@@ -3498,11 +3505,14 @@ impl LayoutEngine {
                                 }
                             })
                             .fold(0.0f64, f64::max);
-                        crate::renderer::corrected_line_height(
+                        crate::renderer::corrected_line_height_for_variant_synthetic(
                             raw_lh,
                             max_fs,
                             ps.line_spacing_type,
                             ps.line_spacing,
+                            self.is_hwp3_variant.get()
+                                && p.line_segs.is_empty()
+                                && !p.text.is_empty(),
                         )
                     }
                     None => raw_lh,
