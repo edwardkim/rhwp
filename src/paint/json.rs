@@ -2500,9 +2500,18 @@ mod tests {
         );
 
         assert!(json.contains("\"kind\":\"leaf\""));
-        assert!(json.contains("\"schemaVersion\":1"));
-        assert!(json.contains("\"schemaMinorVersion\":14"));
-        assert!(json.contains("\"schema\":{\"major\":1,\"minor\":13}"));
+        assert!(json.contains(&format!(
+            "\"schemaVersion\":{}",
+            LAYER_TREE_SCHEMA.schema_version
+        )));
+        assert!(json.contains(&format!(
+            "\"schemaMinorVersion\":{}",
+            LAYER_TREE_SCHEMA.schema_minor_version
+        )));
+        assert!(json.contains(&format!(
+            "\"schema\":{{\"major\":{},\"minor\":{}}}",
+            LAYER_TREE_SCHEMA.schema_version, LAYER_TREE_SCHEMA.schema_minor_version
+        )));
         assert!(json.contains("\"resourceTableVersion\":1"));
         assert!(json.contains("\"resourceTableMinorVersion\":3"));
         assert!(json.contains("\"resourceTable\":{\"major\":1,\"minor\":3}"));
