@@ -14,7 +14,9 @@ use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply, MasterPage};
 use crate::model::image::{CropInfo, ImageAttr, ImageEffect};
-use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef};
+use crate::model::page::{
+    BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef,
+};
 use crate::model::paragraph::{CharShapeRef, FieldRange, LineSeg, Paragraph};
 use crate::model::shape::{
     ArcShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape, GroupShape, HorzAlign,
@@ -229,6 +231,20 @@ fn parse_page_pr(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
             // HWP 바이너리는 항상 짧은변=width, 긴변=height로 저장하고
             // landscape=true일 때 렌더러가 교환하지만, HWPX는 다른 규약을 따른다.
             b"landscape" => { /* 무시: landscape = false 유지 */ }
+            b"gutterType" => {
+                let value = attr_str(&attr);
+                let binding_code = match value.as_str() {
+                    "LEFT_RIGHT" => 1,
+                    "TOP_BOTTOM" => 2,
+                    _ => 0,
+                };
+                page.attr = (page.attr & !(0x03 << 1)) | (binding_code << 1);
+                page.binding = match binding_code {
+                    1 => BindingMethod::DuplexSided,
+                    2 => BindingMethod::TopFlip,
+                    _ => BindingMethod::SingleSided,
+                };
+            }
             _ => {}
         }
     }
@@ -263,6 +279,8 @@ fn parse_paragraph(
     // HWPX 의 id 값 ("0" 또는 "2147483648"=0x80000000) 이 한컴 정답지의 instance_id 패턴과
     // 정확 일치. 누락 시 한컴편집기가 각주 추가 시 본문 다단계 목록 부여 (Task #1058 본질).
     let mut hp_p_id: u32 = 0;
+    let mut has_column_break_attr = false;
+    let mut has_page_break_attr = false;
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"id" => {
@@ -274,11 +292,13 @@ fn parse_paragraph(
             b"styleIDRef" => para.style_id = parse_u8(&attr),
             b"columnBreak" => {
                 if parse_u8(&attr) == 1 {
+                    has_column_break_attr = true;
                     para.column_type = crate::model::paragraph::ColumnBreakType::Column;
                 }
             }
             b"pageBreak" => {
                 if parse_u8(&attr) == 1 {
+                    has_page_break_attr = true;
                     para.column_type = crate::model::paragraph::ColumnBreakType::Page;
                 }
             }
@@ -583,19 +603,42 @@ fn parse_paragraph(
     // [Task #1058 후속] column_type/raw_break_type — HWP 정합 (스펙 표 59):
     //   bit 0 (0x01) = 구역 나누기, bit 1 (0x02) = 다단 나누기,
     //   bit 2 (0x04) = 쪽 나누기,  bit 3 (0x08) = 단 나누기
-    // 본문 첫 paragraph (sec_def 보유 또는 colPr 보유) 의 break_type 정합:
-    //   - sec_def Some + ColumnDef → 0x03 (구역 + 다단)
-    //   - sec_def Some 만 → 0x01 (구역)
-    // ColumnDef 는 para.controls 에 push 되었음. sec_def 는 별도 변수.
+    // HWPX는 pageBreak/columnBreak attr 과 secPr/colPr 구조를 분리해 저장하므로, HWP5
+    // PARA_HEADER 에서는 각 축을 bitwise 로 합성해야 한다. 후속 구역이라고 해서
+    // 무조건 0x04(쪽 나누기)로 덮으면, pageBreak 없는 "구역+다단" 문단이 한컴에서
+    // 다른 layout contract 로 해석된다.
     let has_section = sec_def.is_some();
     let has_column_def = para
         .controls
         .iter()
         .any(|c| matches!(c, Control::ColumnDef(_)));
-    if has_section && has_column_def && para.raw_break_type == 0 {
-        para.raw_break_type = 0x03;
-    } else if has_section && para.raw_break_type == 0 {
-        para.raw_break_type = 0x01;
+    if para.raw_break_type == 0 {
+        let mut break_type = 0u8;
+        if has_section {
+            break_type |= 0x01;
+        }
+        if has_column_def {
+            break_type |= 0x02;
+        }
+        if has_page_break_attr {
+            break_type |= 0x04;
+        }
+        if has_column_break_attr {
+            break_type |= 0x08;
+        }
+
+        if break_type != 0 {
+            para.raw_break_type = break_type;
+            para.column_type = if break_type & 0x04 != 0 {
+                crate::model::paragraph::ColumnBreakType::Page
+            } else if break_type & 0x08 != 0 {
+                crate::model::paragraph::ColumnBreakType::Column
+            } else if break_type & 0x01 != 0 {
+                crate::model::paragraph::ColumnBreakType::Section
+            } else {
+                crate::model::paragraph::ColumnBreakType::MultiColumn
+            };
+        }
     }
 
     // 기본 line_seg (빈 문단이라도 최소 1개)
@@ -703,6 +746,7 @@ fn parse_note_pr_children(
     shape: &mut crate::model::footnote::FootnoteShape,
     end_tag: &[u8],
 ) -> Result<(), HwpxError> {
+    let is_end_note = end_tag == b"endNotePr";
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf) {
@@ -743,8 +787,12 @@ fn parse_note_pr_children(
                             match attr.key.as_ref() {
                                 b"length" => {
                                     if let Ok(s) = std::str::from_utf8(&attr.value) {
-                                        if let Ok(v) = s.parse::<i16>() {
-                                            shape.separator_length = v;
+                                        if let Ok(v) = s.parse::<i32>() {
+                                            shape.separator_length = if v < 0 {
+                                                v as i16
+                                            } else {
+                                                (v as u32 as u16) as i16
+                                            };
                                         }
                                     }
                                 }
@@ -827,7 +875,12 @@ fn parse_note_pr_children(
                         // [Task #1050] separator_margin_top: HWPX 미보유 → 한컴 default -1 (sentinel).
                         // 단, 미주 noteLine type="NONE" 에서는 한컴 저장본이 0을 유지한다.
                         if shape.separator_margin_top == 0 && shape.separator_line_type != 0 {
-                            shape.separator_margin_top = -1;
+                            shape.separator_margin_top =
+                                if is_end_note && shape.separator_length > 0 {
+                                    224
+                                } else {
+                                    -1
+                                };
                         }
                     }
                     b"numbering" => {
@@ -2584,6 +2637,21 @@ fn parse_rendering_info(
 
 /// `<hp:lineShape>` 요소에서 ShapeBorderLine을 파싱한다.
 fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
+    fn arrow_size(value: &str) -> Option<u32> {
+        match value {
+            "SMALL_SMALL" => Some(0),
+            "SMALL_MEDIUM" => Some(1),
+            "SMALL_BIG" | "SMALL_LARGE" => Some(2),
+            "MEDIUM_SMALL" => Some(3),
+            "MEDIUM_MEDIUM" => Some(4),
+            "MEDIUM_BIG" | "MEDIUM_LARGE" => Some(5),
+            "BIG_SMALL" | "LARGE_SMALL" => Some(6),
+            "BIG_MEDIUM" | "LARGE_MEDIUM" => Some(7),
+            "BIG_BIG" | "LARGE_LARGE" => Some(8),
+            _ => None,
+        }
+    }
+
     let mut bl = ShapeBorderLine::default();
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -2608,6 +2676,15 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
                 };
                 bl.attr = (bl.attr & !0xFF) | style_val;
             }
+            b"endCap" => {
+                let end_cap: u32 = match attr_str(&attr).as_str() {
+                    "ROUND" => 0,
+                    "FLAT" => 1,
+                    "SQUARE" => 2,
+                    _ => 0,
+                };
+                bl.attr = (bl.attr & !(0x0F << 6)) | ((end_cap & 0x0F) << 6);
+            }
             b"headfill" => {
                 if parse_bool(&attr) {
                     bl.attr |= 0x8000_0000;
@@ -2620,6 +2697,16 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
                     bl.attr |= 0x4000_0000;
                 } else {
                     bl.attr &= !0x4000_0000;
+                }
+            }
+            b"headSz" => {
+                if let Some(size) = arrow_size(&attr_str(&attr)) {
+                    bl.attr = (bl.attr & !(0x0F << 22)) | ((size & 0x0F) << 22);
+                }
+            }
+            b"tailSz" => {
+                if let Some(size) = arrow_size(&attr_str(&attr)) {
+                    bl.attr = (bl.attr & !(0x0F << 26)) | ((size & 0x0F) << 26);
                 }
             }
             b"outlineStyle" => {
@@ -3264,6 +3351,11 @@ fn parse_ctrl(
                     b"newNum" => {
                         let nn = parse_new_num_attrs(ce);
                         controls.push(Control::NewNumber(nn));
+                        // HWPX newNum is an inline page-control marker in HWP5
+                        // PARA_TEXT. It occupies 8 UTF-16 code units like
+                        // pageHiding, but it must not synthesize a visible
+                        // placeholder space; that behavior is only for autoNum.
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"newNum")?;
                     }
                     _ => {
@@ -3299,6 +3391,10 @@ fn parse_ctrl(
                     b"newNum" => {
                         let nn = parse_new_num_attrs(ce);
                         controls.push(Control::NewNumber(nn));
+                        // See the Start branch above. Without this marker the
+                        // following pageHiding/header controls drift behind the
+                        // visible text when saved back to HWP5.
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"autoNum" => {
                         let an = parse_autonum_attrs(ce);
@@ -4773,6 +4869,111 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_endnote_long_note_line_keeps_hwp5_low_word() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" outlineShapeIDRef="1" masterPageCnt="1">
+        <hp:pagePr landscape="WIDELY" width="77102" height="111685" gutterType="LEFT_RIGHT">
+          <hp:margin header="4960" footer="3401" gutter="0" left="5300" right="5300" top="6236" bottom="5952"/>
+        </hp:pagePr>
+        <hp:endNotePr>
+          <hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+          <hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/>
+          <hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>
+          <hp:numbering type="CONTINUOUS" newNum="1"/>
+          <hp:placement place="END_OF_DOCUMENT" beneathText="0"/>
+        </hp:endNotePr>
+      </hp:secPr>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(xml).unwrap();
+
+        assert_eq!(section.section_def.endnote_shape.separator_length, 0x2ff8);
+        assert_eq!(section.section_def.endnote_shape.separator_margin_top, 224);
+        assert_eq!(
+            section.section_def.endnote_shape.separator_margin_bottom,
+            850
+        );
+        assert_eq!(section.section_def.endnote_shape.note_spacing, 567);
+    }
+
+    #[test]
+    fn test_parse_page_pr_gutter_type_materializes_hwp5_binding_attr() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr textDirection="HORIZONTAL">
+        <hp:pagePr landscape="WIDELY" width="77102" height="111685" gutterType="LEFT_RIGHT">
+          <hp:margin header="4960" footer="3401" gutter="0" left="5300" right="5300" top="6236" bottom="5952"/>
+        </hp:pagePr>
+      </hp:secPr>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+
+        assert_eq!(
+            section.section_def.page_def.binding,
+            BindingMethod::DuplexSided
+        );
+        assert_eq!(section.section_def.page_def.attr & (0x03 << 1), 0x02);
+    }
+
+    #[test]
+    fn test_parse_section_col_pr_break_type_without_page_break() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr textDirection="HORIZONTAL">
+        <hp:colPr type="NEWSPAPER" layout="LEFT" colCount="2" sameSz="1" sameGap="1134"/>
+      </hp:secPr>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.raw_break_type, 0x03);
+        assert_eq!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::Section
+        );
+    }
+
+    #[test]
+    fn test_parse_section_col_pr_break_type_with_page_break() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0" pageBreak="1" columnBreak="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr textDirection="HORIZONTAL">
+        <hp:colPr type="NEWSPAPER" layout="LEFT" colCount="2" sameSz="1" sameGap="1134"/>
+      </hp:secPr>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.raw_break_type, 0x07);
+        assert_eq!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::Page
+        );
+    }
+
+    #[test]
     fn test_parse_linebreak_preserves_offsets() {
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -4957,7 +5158,10 @@ mod tests {
           <hp:orgSz width="100" height="100"/>
           <hp:curSz width="1" height="92409"/>
           <hp:rotationInfo angle="0" centerX="0" centerY="46204" rotateimage="1"/>
-          <hp:lineShape color="#000000" width="113" style="SOLID"/>
+          <hp:lineShape color="#000000" width="113" style="SOLID"
+                        endCap="FLAT" headfill="1" tailfill="1"
+                        headSz="MEDIUM_MEDIUM" tailSz="MEDIUM_MEDIUM"
+                        outlineStyle="NORMAL"/>
           <hp:sz width="1" widthRelTo="ABSOLUTE" height="92409" heightRelTo="ABSOLUTE"/>
           <hp:pos treatAsChar="0" flowWithText="0" allowOverlap="1"
                   vertRelTo="PAPER" horzRelTo="PARA" vertAlign="TOP" horzAlign="CENTER"
@@ -4984,6 +5188,10 @@ mod tests {
         assert_eq!(line.common.text_wrap, TextWrap::BehindText);
         assert_eq!(line.common.width_criterion, SizeCriterion::Absolute);
         assert_eq!(line.common.height_criterion, SizeCriterion::Absolute);
+        assert_eq!(line.drawing.border_line.color, 0x000000);
+        assert_eq!(line.drawing.border_line.width, 113);
+        assert_eq!(line.drawing.border_line.attr, 0xd100_0041);
+        assert_eq!(line.drawing.border_line.outline_style, 0);
         assert_eq!(line.start.x, 0);
         assert_eq!(line.start.y, 0);
         assert_eq!(line.end.x, 100);

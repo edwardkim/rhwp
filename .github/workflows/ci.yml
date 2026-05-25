@@ -49,6 +49,19 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # [Task #1109] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
+      # cargo test (28 examples + integration tests) 빌드 시 디스크 한도 초과 방지.
+      # 메인테이너 레포 설정 cache 한도 증가 (10→15GB, 7→3일) 와 함께 다층 안전망.
+      - name: Free disk space (remove unused pre-installed toolchains)
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -105,6 +118,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      # [Task #1109] wasm-build job 도 build-and-test 와 동일 패턴 (선제적 안전망).
+      # WASM 빌드 산출물 크기 + wasm-pack 도구 + cargo cache 누적 영역 보호.
+      - name: Free disk space (remove unused pre-installed toolchains)
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable

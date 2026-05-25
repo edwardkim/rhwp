@@ -343,6 +343,7 @@ fn parse_cell(records: &[Record]) -> Cell {
     //   bit 1 (=property bit 17): 셀 보호
     //   bit 2 (=property bit 18): 제목 셀
     //   bit 3 (=property bit 19): 양식모드 편집 가능
+    // 현재 IR은 미해석 확장 bit를 분해하지 않고 list_header_width_ref 원값으로 보존한다.
     cell.is_header = (cell.list_header_width_ref & 0x04) != 0;
 
     // 셀 속성 (표 82: 26바이트)

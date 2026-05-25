@@ -7468,3 +7468,647 @@ fn task903_stage54_generate_minimal_impl_candidate() {
 
     assert_eq!(pages, Some(9), "Stage54 rhwp 재로드 기준 9페이지 필요");
 }
+
+fn task1110_stage19_load_hwp(path: &str) -> Option<Document> {
+    let bytes = match std::fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(err) => {
+            eprintln!("[skip] {} 읽기 실패: {}", path, err);
+            return None;
+        }
+    };
+    let core = DocumentCore::from_bytes(&bytes)
+        .unwrap_or_else(|err| panic!("{} HWP 파싱 실패: {:?}", path, err));
+    Some(core.document().clone())
+}
+
+fn task1110_stage19_prepare(doc: &mut Document) {
+    doc.header.compressed = true;
+    doc.header.flags |= 0x01;
+    doc.doc_info.raw_stream_dirty = false;
+}
+
+fn task1110_stage19_write_probe(
+    out_dir: &std::path::Path,
+    name: &str,
+    mut doc: Document,
+) -> (String, usize, Option<u32>, String) {
+    task1110_stage19_prepare(&mut doc);
+    let hwp_bytes = rhwp::serializer::serialize_hwp(&doc).expect("Stage19 HWP 직렬화 실패");
+    let hash = task903_short_hash(&hwp_bytes);
+    let out_path = out_dir.join(name);
+    std::fs::write(&out_path, &hwp_bytes).expect("Stage19 HWP 저장 실패");
+    let pages = DocumentCore::from_bytes(&hwp_bytes)
+        .map(|core| core.page_count())
+        .ok();
+    eprintln!(
+        "[#1110 Stage19] generated {} bytes={} rhwp_pages={:?} hash={}",
+        out_path.display(),
+        hwp_bytes.len(),
+        pages,
+        hash
+    );
+    (name.to_string(), hwp_bytes.len(), pages, hash)
+}
+
+fn task1110_stage19_write_report(
+    out_dir: &std::path::Path,
+    rows: &[(String, usize, Option<u32>, String)],
+) {
+    use std::fmt::Write as _;
+
+    let mut report = String::new();
+    writeln!(
+        report,
+        "# Task M100-1110 Stage 19 Hancom 2020 p1 Warning Probe"
+    )
+    .unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "## 1. 생성 파일").unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "| file | bytes | rhwp reload | hash |").unwrap();
+    writeln!(report, "|---|---:|---|---|").unwrap();
+    for (name, bytes, pages, hash) in rows {
+        writeln!(
+            report,
+            "| `{}` | {} | {} | `{}` |",
+            name,
+            bytes,
+            pages
+                .map(|page_count| format!("ok, pages={}", page_count))
+                .unwrap_or_else(|| "failed".to_string()),
+            hash
+        )
+        .unwrap();
+    }
+
+    writeln!(report).unwrap();
+    writeln!(report, "## 2. 판정표").unwrap();
+    writeln!(report).unwrap();
+    writeln!(
+        report,
+        "| file | 한컴2020 판정 | 한컴2010 판정 | p1 렌더링 | 비고 |"
+    )
+    .unwrap();
+    writeln!(report, "|---|---|---|---|---|").unwrap();
+    for (name, _, _, _) in rows {
+        let note = match name.as_str() {
+            "01_stage18_current.hwp" => "Stage18 p1 baseline",
+            "02_oracle_file_header.hwp" => "FileHeader만 정답지 raw 사용",
+            "03_oracle_docinfo.hwp" => "DocInfo/DocProperties만 정답지 raw/model 사용",
+            "04_oracle_bodytext.hwp" => "BodyText Section0만 정답지 raw 사용",
+            "05_oracle_docinfo_bodytext.hwp" => "DocInfo + BodyText Section0 정답지 사용",
+            "06_oracle_file_header_docinfo_bodytext.hwp" => {
+                "FileHeader + DocInfo + BodyText Section0 정답지 사용"
+            }
+            "07_oracle_container_meta.hwp" => "FileHeader + preview/extra stream 정답지 사용",
+            _ => "",
+        };
+        writeln!(report, "| `{}` |  |  |  | {} |", name, note).unwrap();
+    }
+
+    writeln!(report).unwrap();
+    writeln!(report, "## 3. 해석 기준").unwrap();
+    writeln!(report).unwrap();
+    writeln!(
+        report,
+        "한컴2020의 손상/변조 가능성 판정은 Stage10 p1에서도 재현되므로 Stage18 FACE_NAME/typeInfo 변경만의 회귀로 보지 않는다."
+    )
+    .unwrap();
+    writeln!(
+        report,
+        "이 probe는 p1 공통 계약을 FileHeader, DocInfo, BodyText, container metadata 축으로 분리하기 위한 것이다."
+    )
+    .unwrap();
+
+    std::fs::write(out_dir.join("stage19_generation.md"), report)
+        .expect("Stage19 generation report 저장 실패");
+}
+
+#[test]
+#[ignore]
+fn task1110_stage19_generate_p1_hancom2020_warning_probe() {
+    let out_dir =
+        std::path::Path::new("output/poc/hwpx2hwp/task1110/stage19_p1_hancom2020_warning_probe");
+    std::fs::create_dir_all(out_dir).expect("Stage19 output dir 생성 실패");
+
+    let Some(baseline) = task1110_stage19_load_hwp(
+        "output/poc/hwpx2hwp/task1110/stage18_facename_typeinfo_contract/exam_social-p1-stage18.hwp",
+    ) else {
+        return;
+    };
+    let oracle = task1110_stage19_load_hwp("samples/exam_social-p1.hwp")
+        .expect("Stage19 oracle p1 HWP 필요");
+
+    let mut rows = Vec::new();
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "01_stage18_current.hwp",
+        baseline.clone(),
+    ));
+
+    let mut file_header = baseline.clone();
+    file_header.header = oracle.header.clone();
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "02_oracle_file_header.hwp",
+        file_header,
+    ));
+
+    let mut docinfo = baseline.clone();
+    docinfo.doc_properties = oracle.doc_properties.clone();
+    docinfo.doc_info = oracle.doc_info.clone();
+    docinfo.doc_info.raw_stream_dirty = false;
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "03_oracle_docinfo.hwp",
+        docinfo,
+    ));
+
+    let mut bodytext = baseline.clone();
+    bodytext.sections[0].raw_stream = oracle.sections[0].raw_stream.clone();
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "04_oracle_bodytext.hwp",
+        bodytext,
+    ));
+
+    let mut docinfo_bodytext = baseline.clone();
+    docinfo_bodytext.doc_properties = oracle.doc_properties.clone();
+    docinfo_bodytext.doc_info = oracle.doc_info.clone();
+    docinfo_bodytext.doc_info.raw_stream_dirty = false;
+    docinfo_bodytext.sections[0].raw_stream = oracle.sections[0].raw_stream.clone();
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "05_oracle_docinfo_bodytext.hwp",
+        docinfo_bodytext,
+    ));
+
+    let mut all_core_streams = baseline.clone();
+    all_core_streams.header = oracle.header.clone();
+    all_core_streams.doc_properties = oracle.doc_properties.clone();
+    all_core_streams.doc_info = oracle.doc_info.clone();
+    all_core_streams.doc_info.raw_stream_dirty = false;
+    all_core_streams.sections[0].raw_stream = oracle.sections[0].raw_stream.clone();
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "06_oracle_file_header_docinfo_bodytext.hwp",
+        all_core_streams,
+    ));
+
+    let mut container_meta = baseline.clone();
+    container_meta.header = oracle.header.clone();
+    container_meta.preview = oracle.preview.clone();
+    container_meta.extra_streams = oracle.extra_streams.clone();
+    rows.push(task1110_stage19_write_probe(
+        out_dir,
+        "07_oracle_container_meta.hwp",
+        container_meta,
+    ));
+
+    task1110_stage19_write_report(out_dir, &rows);
+}
+
+fn task1110_stage20_patch_section0_tags(
+    baseline: &Document,
+    oracle: &Document,
+    tags: &[u32],
+) -> Document {
+    let mut doc = baseline.clone();
+    let target_raw = doc.sections[0]
+        .raw_stream
+        .as_ref()
+        .expect("Stage20 target Section0 raw_stream 필요");
+    let oracle_raw = oracle.sections[0]
+        .raw_stream
+        .as_ref()
+        .expect("Stage20 oracle Section0 raw_stream 필요");
+    let patched = task1110_stage20_graft_record_tags_allow_level_diff(target_raw, oracle_raw, tags);
+    doc.sections[0].raw_stream = Some(patched);
+    doc
+}
+
+fn task1110_stage20_graft_record_tags_allow_level_diff(
+    target_raw: &[u8],
+    oracle_raw: &[u8],
+    tags: &[u32],
+) -> Vec<u8> {
+    let target_records = task903_parse_records(target_raw);
+    let oracle_records = task903_parse_records(oracle_raw);
+    assert_eq!(
+        target_records.len(),
+        oracle_records.len(),
+        "Stage20 BodyText record count mismatch"
+    );
+
+    let mut out = Vec::with_capacity(target_raw.len().max(oracle_raw.len()));
+    let mut cursor = 0usize;
+    for (idx, target_record) in target_records.iter().enumerate() {
+        let oracle_record = &oracle_records[idx];
+        assert_eq!(
+            target_record.tag, oracle_record.tag,
+            "Stage20 record tag mismatch at idx {}: target={} oracle={}",
+            idx, target_record.tag, oracle_record.tag
+        );
+
+        if cursor < target_record.offset {
+            out.extend_from_slice(&target_raw[cursor..target_record.offset]);
+        }
+
+        if tags.contains(&target_record.tag) {
+            out.extend_from_slice(
+                &oracle_raw[oracle_record.offset..task903_record_end(oracle_record)],
+            );
+        } else {
+            out.extend_from_slice(
+                &target_raw[target_record.offset..task903_record_end(target_record)],
+            );
+        }
+        cursor = task903_record_end(target_record);
+    }
+    if cursor < target_raw.len() {
+        out.extend_from_slice(&target_raw[cursor..]);
+    }
+    out
+}
+
+fn task1110_stage20_unique_tags(doc: &Document) -> Vec<u32> {
+    let raw = doc.sections[0]
+        .raw_stream
+        .as_ref()
+        .expect("Stage20 Section0 raw_stream 필요");
+    let mut tags = std::collections::BTreeSet::new();
+    for record in task903_parse_records(raw) {
+        tags.insert(record.tag);
+    }
+    tags.into_iter().collect()
+}
+
+fn task1110_stage20_write_report(
+    out_dir: &std::path::Path,
+    rows: &[(String, usize, Option<u32>, String, String)],
+) {
+    use std::fmt::Write as _;
+
+    let mut report = String::new();
+    writeln!(
+        report,
+        "# Task M100-1110 Stage 20 Section0 Tag Contract Probe"
+    )
+    .unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "## 1. 생성 파일").unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "| file | bytes | rhwp reload | hash | tags |").unwrap();
+    writeln!(report, "|---|---:|---|---|---|").unwrap();
+    for (name, bytes, pages, hash, tags) in rows {
+        writeln!(
+            report,
+            "| `{}` | {} | {} | `{}` | {} |",
+            name,
+            bytes,
+            pages
+                .map(|page_count| format!("ok, pages={}", page_count))
+                .unwrap_or_else(|| "failed".to_string()),
+            hash,
+            tags
+        )
+        .unwrap();
+    }
+
+    writeln!(report).unwrap();
+    writeln!(report, "## 2. 판정표").unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "| file | 한컴2020 판정 | p1 렌더링 | 비고 |").unwrap();
+    writeln!(report, "|---|---|---|---|").unwrap();
+    for (name, _, _, _, tags) in rows {
+        writeln!(report, "| `{}` |  |  | {} |", name, tags).unwrap();
+    }
+
+    writeln!(report).unwrap();
+    writeln!(report, "## 3. 해석 기준").unwrap();
+    writeln!(report).unwrap();
+    writeln!(
+        report,
+        "Stage19에서 BodyText Section0만 정답지로 치환한 후보가 한컴2020 정상 판정을 받았다."
+    )
+    .unwrap();
+    writeln!(
+        report,
+        "이 단계는 Section0 내부 record tag 단위로 경고 원인을 분리한다."
+    )
+    .unwrap();
+
+    std::fs::write(out_dir.join("stage20_generation.md"), report)
+        .expect("Stage20 generation report 저장 실패");
+}
+
+#[test]
+#[ignore]
+fn task1110_stage20_generate_p1_section0_tag_probe() {
+    let out_dir =
+        std::path::Path::new("output/poc/hwpx2hwp/task1110/stage20_p1_section0_tag_probe");
+    std::fs::create_dir_all(out_dir).expect("Stage20 output dir 생성 실패");
+
+    let Some(baseline) = task1110_stage19_load_hwp(
+        "output/poc/hwpx2hwp/task1110/stage18_facename_typeinfo_contract/exam_social-p1-stage18.hwp",
+    ) else {
+        return;
+    };
+    let oracle = task1110_stage19_load_hwp("samples/exam_social-p1.hwp")
+        .expect("Stage20 oracle p1 HWP 필요");
+
+    let variants: &[(&str, &[u32], &str)] = &[
+        ("01_para_header.hwp", &[66], "PARA_HEADER"),
+        ("02_para_text.hwp", &[67], "PARA_TEXT"),
+        ("03_para_char_shape.hwp", &[68], "PARA_CHAR_SHAPE"),
+        ("04_para_line_seg.hwp", &[69], "PARA_LINE_SEG"),
+        ("05_para_range_tag.hwp", &[70], "PARA_RANGE_TAG"),
+        ("06_ctrl_header.hwp", &[71], "CTRL_HEADER"),
+        ("07_list_header.hwp", &[72], "LIST_HEADER"),
+        (
+            "08_page_records.hwp",
+            &[73, 74, 75],
+            "PAGE_DEF/FOOTNOTE_SHAPE/PAGE_BORDER_FILL",
+        ),
+        (
+            "09_shape_records.hwp",
+            &[76, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87],
+            "SHAPE/CTRL_DATA records",
+        ),
+        ("10_table_records.hwp", &[77], "TABLE"),
+        (
+            "11_para_core.hwp",
+            &[66, 67, 68, 69, 70],
+            "PARA_HEADER/TEXT/CHAR/LINE/RANGE",
+        ),
+        (
+            "12_control_envelope.hwp",
+            &[71, 72, 73, 74, 75, 76, 77, 78, 79, 82, 85, 86, 87],
+            "control/list/page/shape/table",
+        ),
+        (
+            "13_text_layout_table.hwp",
+            &[66, 67, 68, 69, 70, 77],
+            "paragraph core + TABLE",
+        ),
+    ];
+
+    let mut rows = Vec::new();
+    for (name, tags, label) in variants {
+        let doc = task1110_stage20_patch_section0_tags(&baseline, &oracle, tags);
+        let (file, bytes, pages, hash) = task1110_stage19_write_probe(out_dir, name, doc);
+        rows.push((file, bytes, pages, hash, (*label).to_string()));
+    }
+
+    let all_tags = task1110_stage20_unique_tags(&oracle);
+    let all_doc = task1110_stage20_patch_section0_tags(&baseline, &oracle, &all_tags);
+    let all_label = format!(
+        "all Section0 tags: {}",
+        all_tags
+            .iter()
+            .map(|tag| tag.to_string())
+            .collect::<Vec<_>>()
+            .join(",")
+    );
+    let (file, bytes, pages, hash) =
+        task1110_stage19_write_probe(out_dir, "14_all_section0_tags.hwp", all_doc);
+    rows.push((file, bytes, pages, hash, all_label));
+
+    task1110_stage20_write_report(out_dir, &rows);
+}
+
+fn task1110_stage21_write_report(
+    out_dir: &std::path::Path,
+    rows: &[(String, usize, Option<u32>, String, String)],
+) {
+    use std::fmt::Write as _;
+
+    let mut report = String::new();
+    writeln!(report, "# Task M100-1110 Stage 21 Para Core Combo Probe").unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "## 1. 생성 파일").unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "| file | bytes | rhwp reload | hash | tags |").unwrap();
+    writeln!(report, "|---|---:|---|---|---|").unwrap();
+    for (name, bytes, pages, hash, tags) in rows {
+        writeln!(
+            report,
+            "| `{}` | {} | {} | `{}` | {} |",
+            name,
+            bytes,
+            pages
+                .map(|page_count| format!("ok, pages={}", page_count))
+                .unwrap_or_else(|| "failed".to_string()),
+            hash,
+            tags
+        )
+        .unwrap();
+    }
+
+    writeln!(report).unwrap();
+    writeln!(report, "## 2. 판정표").unwrap();
+    writeln!(report).unwrap();
+    writeln!(report, "| file | 한컴2020 판정 | p1 렌더링 | 비고 |").unwrap();
+    writeln!(report, "|---|---|---|---|").unwrap();
+    for (name, _, _, _, tags) in rows {
+        writeln!(report, "| `{}` |  |  | {} |", name, tags).unwrap();
+    }
+
+    writeln!(report).unwrap();
+    writeln!(report, "## 3. 해석 기준").unwrap();
+    writeln!(report).unwrap();
+    writeln!(
+        report,
+        "Stage20에서 PARA_HEADER/TEXT/CHAR_SHAPE/LINE_SEG/RANGE_TAG 묶음이 한컴2020 정상 판정을 받았다."
+    )
+    .unwrap();
+    writeln!(
+        report,
+        "이 단계는 para core 내부의 최소 정상화 조합을 찾기 위한 것이다."
+    )
+    .unwrap();
+
+    std::fs::write(out_dir.join("stage21_generation.md"), report)
+        .expect("Stage21 generation report 저장 실패");
+}
+
+#[test]
+#[ignore]
+fn task1110_stage21_generate_p1_para_core_combo_probe() {
+    let out_dir =
+        std::path::Path::new("output/poc/hwpx2hwp/task1110/stage21_p1_para_core_combo_probe");
+    std::fs::create_dir_all(out_dir).expect("Stage21 output dir 생성 실패");
+
+    let Some(baseline) = task1110_stage19_load_hwp(
+        "output/poc/hwpx2hwp/task1110/stage18_facename_typeinfo_contract/exam_social-p1-stage18.hwp",
+    ) else {
+        return;
+    };
+    let oracle = task1110_stage19_load_hwp("samples/exam_social-p1.hwp")
+        .expect("Stage21 oracle p1 HWP 필요");
+
+    let variants: &[(&str, &[u32], &str)] = &[
+        ("01_header_text.hwp", &[66, 67], "PARA_HEADER + PARA_TEXT"),
+        (
+            "02_header_char.hwp",
+            &[66, 68],
+            "PARA_HEADER + PARA_CHAR_SHAPE",
+        ),
+        (
+            "03_header_line.hwp",
+            &[66, 69],
+            "PARA_HEADER + PARA_LINE_SEG",
+        ),
+        (
+            "04_header_range.hwp",
+            &[66, 70],
+            "PARA_HEADER + PARA_RANGE_TAG",
+        ),
+        ("05_text_char.hwp", &[67, 68], "PARA_TEXT + PARA_CHAR_SHAPE"),
+        ("06_text_line.hwp", &[67, 69], "PARA_TEXT + PARA_LINE_SEG"),
+        ("07_text_range.hwp", &[67, 70], "PARA_TEXT + PARA_RANGE_TAG"),
+        (
+            "08_char_line.hwp",
+            &[68, 69],
+            "PARA_CHAR_SHAPE + PARA_LINE_SEG",
+        ),
+        (
+            "09_char_range.hwp",
+            &[68, 70],
+            "PARA_CHAR_SHAPE + PARA_RANGE_TAG",
+        ),
+        (
+            "10_line_range.hwp",
+            &[69, 70],
+            "PARA_LINE_SEG + PARA_RANGE_TAG",
+        ),
+        (
+            "11_header_text_char.hwp",
+            &[66, 67, 68],
+            "PARA_HEADER + PARA_TEXT + PARA_CHAR_SHAPE",
+        ),
+        (
+            "12_header_text_line.hwp",
+            &[66, 67, 69],
+            "PARA_HEADER + PARA_TEXT + PARA_LINE_SEG",
+        ),
+        (
+            "13_header_text_range.hwp",
+            &[66, 67, 70],
+            "PARA_HEADER + PARA_TEXT + PARA_RANGE_TAG",
+        ),
+        (
+            "14_header_char_line.hwp",
+            &[66, 68, 69],
+            "PARA_HEADER + PARA_CHAR_SHAPE + PARA_LINE_SEG",
+        ),
+        (
+            "15_header_char_range.hwp",
+            &[66, 68, 70],
+            "PARA_HEADER + PARA_CHAR_SHAPE + PARA_RANGE_TAG",
+        ),
+        (
+            "16_header_line_range.hwp",
+            &[66, 69, 70],
+            "PARA_HEADER + PARA_LINE_SEG + PARA_RANGE_TAG",
+        ),
+        (
+            "17_text_char_line.hwp",
+            &[67, 68, 69],
+            "PARA_TEXT + PARA_CHAR_SHAPE + PARA_LINE_SEG",
+        ),
+        (
+            "18_text_char_range.hwp",
+            &[67, 68, 70],
+            "PARA_TEXT + PARA_CHAR_SHAPE + PARA_RANGE_TAG",
+        ),
+        (
+            "19_text_line_range.hwp",
+            &[67, 69, 70],
+            "PARA_TEXT + PARA_LINE_SEG + PARA_RANGE_TAG",
+        ),
+        (
+            "20_char_line_range.hwp",
+            &[68, 69, 70],
+            "PARA_CHAR_SHAPE + PARA_LINE_SEG + PARA_RANGE_TAG",
+        ),
+    ];
+
+    let mut rows = Vec::new();
+    for (name, tags, label) in variants {
+        let doc = task1110_stage20_patch_section0_tags(&baseline, &oracle, tags);
+        let (file, bytes, pages, hash) = task1110_stage19_write_probe(out_dir, name, doc);
+        rows.push((file, bytes, pages, hash, (*label).to_string()));
+    }
+
+    task1110_stage21_write_report(out_dir, &rows);
+}
+
+#[test]
+#[ignore]
+fn task1110_stage23_generate_p1_header_text_payload_pair_probe() {
+    let out_dir = std::path::Path::new(
+        "output/poc/hwpx2hwp/task1110/stage23_p1_header_text_payload_pair_probe",
+    );
+    std::fs::create_dir_all(out_dir).expect("Stage23 output dir 생성 실패");
+
+    let Some(baseline) = task1110_stage19_load_hwp(
+        "output/poc/hwpx2hwp/task1110/stage22_header_footer_para_level_candidate/exam_social-p1-stage22.hwp",
+    ) else {
+        return;
+    };
+    let oracle = task1110_stage19_load_hwp("samples/exam_social-p1.hwp")
+        .expect("Stage23 oracle p1 HWP 필요");
+    let baseline_raw = baseline.sections[0]
+        .raw_stream
+        .as_ref()
+        .expect("Stage23 baseline Section0 raw_stream 필요");
+    let oracle_raw = oracle.sections[0]
+        .raw_stream
+        .as_ref()
+        .expect("Stage23 oracle Section0 raw_stream 필요");
+
+    let variants: &[(&str, &[usize], &str)] = &[
+        ("01_pair_0_1.hwp", &[0, 1], "records 0/1"),
+        ("02_pair_67_68.hwp", &[67, 68], "records 67/68"),
+        ("03_pair_72_73.hwp", &[72, 73], "records 72/73"),
+        ("04_pair_90_91.hwp", &[90, 91], "records 90/91"),
+        ("05_pair_134_135.hwp", &[134, 135], "records 134/135"),
+        ("06_pair_147_148.hwp", &[147, 148], "records 147/148"),
+        ("07_pair_154_155.hwp", &[154, 155], "records 154/155"),
+        ("08_pair_169_170.hwp", &[169, 170], "records 169/170"),
+        ("09_pair_176_177.hwp", &[176, 177], "records 176/177"),
+        (
+            "10_front_pairs.hwp",
+            &[0, 1, 67, 68, 72, 73, 90, 91],
+            "front changed PARA_HEADER/TEXT pairs",
+        ),
+        (
+            "11_late_pairs.hwp",
+            &[134, 135, 147, 148, 154, 155, 169, 170, 176, 177],
+            "late changed PARA_HEADER/TEXT pairs",
+        ),
+        (
+            "12_all_changed_pairs.hwp",
+            &[
+                0, 1, 67, 68, 72, 73, 90, 91, 134, 135, 147, 148, 154, 155, 169, 170, 176, 177,
+            ],
+            "all changed PARA_HEADER/TEXT pairs",
+        ),
+    ];
+
+    let mut rows = Vec::new();
+    for (name, indices, label) in variants {
+        let mut doc = baseline.clone();
+        doc.sections[0].raw_stream = Some(task903_graft_record_indices(
+            baseline_raw,
+            oracle_raw,
+            indices,
+        ));
+        let (file, bytes, pages, hash) = task1110_stage19_write_probe(out_dir, name, doc);
+        rows.push((file, bytes, pages, hash, (*label).to_string()));
+    }
+
+    task1110_stage21_write_report(out_dir, &rows);
+}

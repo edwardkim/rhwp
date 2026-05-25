@@ -60,6 +60,7 @@ fn test_serialize_face_name_simple() {
         name: "함초롬바탕".to_string(),
         alt_type: 0,
         alt_name: None,
+        type_info: None,
         default_name: None,
     };
 
@@ -78,6 +79,7 @@ fn test_serialize_face_name_with_alt() {
         name: "맑은 고딕".to_string(),
         alt_type: 1,
         alt_name: Some("Malgun Gothic".to_string()),
+        type_info: None,
         default_name: None,
     };
 
@@ -88,8 +90,32 @@ fn test_serialize_face_name_with_alt() {
     assert_eq!(attr & 0x03, 1); // alt_type
     let name = r.read_hwp_string().unwrap();
     assert_eq!(name, "맑은 고딕");
+    assert_eq!(r.read_u8().unwrap(), 1);
     let alt_name = r.read_hwp_string().unwrap();
     assert_eq!(alt_name, "Malgun Gothic");
+}
+
+#[test]
+fn test_serialize_face_name_with_type_info_and_default_name() {
+    let font = Font {
+        raw_data: None,
+        name: "굴림".to_string(),
+        alt_type: 1,
+        alt_name: None,
+        type_info: Some([2, 11, 6, 0, 0, 1, 1, 1, 1, 1]),
+        default_name: Some("Gulim".to_string()),
+    };
+
+    let data = serialize_face_name(&font);
+
+    assert_eq!(
+        data,
+        vec![
+            0x61, 0x02, 0x00, 0x74, 0xad, 0xbc, 0xb9, 0x02, 0x0b, 0x06, 0x00, 0x00, 0x01, 0x01,
+            0x01, 0x01, 0x01, 0x05, 0x00, 0x47, 0x00, 0x75, 0x00, 0x6c, 0x00, 0x69, 0x00, 0x6d,
+            0x00,
+        ]
+    );
 }
 
 #[test]
@@ -184,6 +210,7 @@ fn test_serialize_para_shape_roundtrip() {
     };
 
     let data = serialize_para_shape(&ps);
+    assert_eq!(data.len(), 58);
     let mut r = crate::parser::byte_reader::ByteReader::new(&data);
     assert_eq!(r.read_u32().unwrap(), 0x04);
     assert_eq!(r.read_i32().unwrap(), 1000);
@@ -195,6 +222,7 @@ fn test_serialize_para_shape_roundtrip() {
     assert_eq!(r.read_u16().unwrap(), 1);
     assert_eq!(r.read_u16().unwrap(), 2);
     assert_eq!(r.read_u16().unwrap(), 3);
+    assert_eq!(&data[54..58], &[0, 0, 0, 0]);
 }
 
 #[test]
@@ -401,6 +429,7 @@ fn test_serialize_doc_info_roundtrip() {
         name: "함초롬바탕".to_string(),
         alt_type: 0,
         alt_name: None,
+        type_info: None,
         default_name: None,
     });
     doc_info.char_shapes.push(CharShape {

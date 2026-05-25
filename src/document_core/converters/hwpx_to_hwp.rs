@@ -83,6 +83,20 @@ pub struct AdapterReport {
     pub section_def_master_page_tail_materialized: u32,
     /// HWPX 후속 구역 첫 문단 break_type 을 한컴 HWP 저장 관례로 보정한 횟수
     pub following_section_break_type_materialized: u32,
+    /// HWPX SectionDef masterPageCnt=1 flags 를 한컴 HWP 저장 관례로 보정한 횟수
+    pub section_def_single_master_page_flags_materialized: u32,
+    /// HWPX SectionDef masterPageCnt=2 flags 를 한컴 HWP 저장 관례로 보정한 횟수
+    pub section_def_multi_master_page_flags_materialized: u32,
+    /// HWPX AutoNumber 뒤 fixed-width space 문단의 HWP5 PARA_RANGE_TAG materialize 횟수
+    pub autonum_fwspace_range_tag_materialized: u32,
+    /// HWPX AutoNumber 뒤 fixed-width space 문단의 char shape start_pos 보정 횟수
+    pub autonum_fwspace_char_shape_offsets_materialized: u32,
+    /// HWPX fixed-width space를 HWP5 fixed blank control로 보존한 횟수
+    pub header_footer_fwspace_control_materialized: u32,
+    /// HWPX 바탕쪽 AutoNumber-only 문단의 placeholder space 제거 횟수
+    pub master_page_autonum_placeholder_removed: u32,
+    /// HWPX 바탕쪽 line shape rendering matrix를 HWP5 size ratio contract로 보정한 횟수
+    pub master_page_line_rendering_size_ratio_materialized: u32,
 }
 
 impl AdapterReport {
@@ -121,7 +135,14 @@ impl AdapterReport {
                 + self.equation_ctrl_header_attr_materialized
                 + self.equation_font_version_normalized
                 + self.section_def_master_page_tail_materialized
-                + self.following_section_break_type_materialized)
+                + self.following_section_break_type_materialized
+                + self.section_def_single_master_page_flags_materialized
+                + self.section_def_multi_master_page_flags_materialized
+                + self.autonum_fwspace_range_tag_materialized
+                + self.autonum_fwspace_char_shape_offsets_materialized
+                + self.header_footer_fwspace_control_materialized
+                + self.master_page_autonum_placeholder_removed
+                + self.master_page_line_rendering_size_ratio_materialized)
                 > 0
     }
 }
@@ -320,14 +341,15 @@ fn materialize_following_section_break_type(
         .controls
         .iter()
         .any(|control| matches!(control, Control::SectionDef(_)));
-    if !has_section_def || first_para.raw_break_type == 0x04 {
+    if !has_section_def || first_para.raw_break_type != 0 {
         return;
     }
 
-    // 한컴 HWPX->HWP 정답지는 후속 구역 첫 문단에 SectionDef control을 유지하면서도
-    // PARA_HEADER break_type은 구역나누기(0x01/0x03)가 아니라 쪽나누기(0x04)로 저장한다.
-    // full exam_kor처럼 선택 과목이 섹션으로 분리된 문서에서 한컴 로더는 이 조합에 민감하다.
-    first_para.raw_break_type = 0x04;
+    // HWPX parser가 pageBreak/columnBreak/secPr/colPr를 HWP5 break flag로 합성한다.
+    // 이 adapter는 과거 IR처럼 raw_break_type이 완전히 비어 있는 경우에만 최소 section
+    // break를 보강한다. 이미 materialize된 0x03/0x07 같은 조합을 덮어쓰면 한컴이
+    // 후속 section의 바탕쪽/머리말 layout을 다르게 해석한다.
+    first_para.raw_break_type = 0x01;
     report.following_section_break_type_materialized += 1;
 }
 
@@ -467,7 +489,26 @@ fn is_transparent_paragraph_no_fill_candidate(border_fill: &BorderFill) -> bool 
     border_fill.fill.alpha == 0 && solid.background_color == 0xffff_ffff
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ParagraphContext {
+    Body,
+    HeaderFooter,
+    MasterPage,
+}
+
 fn adapt_paragraph(para: &mut Paragraph, report: &mut AdapterReport) {
+    adapt_paragraph_with_context(para, report, ParagraphContext::Body);
+}
+
+fn adapt_paragraph_with_context(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+    context: ParagraphContext,
+) {
+    materialize_master_page_autonum_placeholder(para, report, context);
+    materialize_autonum_fwspace_range_tag(para, report);
+    materialize_autonum_fwspace_char_shape_offsets(para, report);
+    materialize_fixed_width_space_control(para, report, context);
     materialize_para_header_tail(para, report);
 
     if para.ctrl_data_records.len() < para.controls.len() {
@@ -480,25 +521,156 @@ fn adapt_paragraph(para: &mut Paragraph, report: &mut AdapterReport) {
     for (idx, ctrl) in controls.iter_mut().enumerate() {
         match ctrl {
             Control::Table(table) => {
-                adapt_table(table, report);
+                adapt_table_with_context(table, report, context);
                 adapt_table_layout_ctrl_data(table, &mut ctrl_data_records[idx], report);
             }
-            Control::Header(header) => adapt_paragraphs(&mut header.paragraphs, report),
-            Control::Footer(footer) => adapt_paragraphs(&mut footer.paragraphs, report),
+            Control::Header(header) => adapt_paragraphs_with_context(
+                &mut header.paragraphs,
+                report,
+                ParagraphContext::HeaderFooter,
+            ),
+            Control::Footer(footer) => adapt_paragraphs_with_context(
+                &mut footer.paragraphs,
+                report,
+                ParagraphContext::HeaderFooter,
+            ),
             Control::Picture(pic) => {
                 adapt_picture_href_ctrl_data(pic, &mut ctrl_data_records[idx], report)
             }
-            Control::Shape(shape) => adapt_shape(shape, report),
+            Control::Shape(shape) => adapt_shape_with_context(shape, report, context),
             Control::Equation(eq) => adapt_equation(eq, report),
             _ => {}
         }
     }
 }
 
-fn adapt_paragraphs(paragraphs: &mut [Paragraph], report: &mut AdapterReport) {
-    for para in paragraphs {
-        adapt_paragraph(para, report);
+fn materialize_autonum_fwspace_range_tag(para: &mut Paragraph, report: &mut AdapterReport) {
+    const HWP5_AUTONUM_FWSPACE_TRAILING_TAG: u32 = 0x0100_0023;
+
+    if para
+        .range_tags
+        .iter()
+        .any(|tag| tag.tag == HWP5_AUTONUM_FWSPACE_TRAILING_TAG)
+    {
+        return;
     }
+
+    if !para
+        .controls
+        .iter()
+        .any(|ctrl| matches!(ctrl, Control::AutoNumber(_)))
+    {
+        return;
+    }
+
+    let mut chars = para.text.chars();
+    if chars.next() != Some(' ') || chars.next() != Some('\u{2007}') {
+        return;
+    }
+
+    if para.text.chars().count() <= 2 || para.char_offsets.len() != para.text.chars().count() {
+        return;
+    }
+
+    let Some(last_char) = para.text.chars().last() else {
+        return;
+    };
+    let Some(&start) = para.char_offsets.last() else {
+        return;
+    };
+
+    let end = start + last_char.len_utf16() as u32;
+    if end <= start {
+        return;
+    }
+
+    // Hancom's HWPX->HWP save materializes an otherwise implicit range tag on
+    // the final visible character in paragraphs shaped as:
+    //   AutoNumber placeholder + fixed-width space + visible heading text.
+    //
+    // Without this tag the file is structurally readable by rhwp, but Hancom
+    // reports corruption around the first AutoNumber/PageHide boundary in
+    // exam_social.hwpx.
+    para.range_tags.push(crate::model::paragraph::RangeTag {
+        start,
+        end,
+        tag: HWP5_AUTONUM_FWSPACE_TRAILING_TAG,
+    });
+    report.autonum_fwspace_range_tag_materialized += 1;
+}
+
+fn materialize_autonum_fwspace_char_shape_offsets(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+) {
+    if !para
+        .controls
+        .iter()
+        .any(|ctrl| matches!(ctrl, Control::AutoNumber(_)))
+    {
+        return;
+    }
+
+    if !para.text.starts_with(" \u{2007}") {
+        return;
+    }
+
+    if !para
+        .char_shapes
+        .iter()
+        .any(|char_shape| (2..9).contains(&char_shape.start_pos))
+    {
+        return;
+    }
+
+    // HWPX positions are based on logical characters:
+    //   placeholder space(1) + fixed-width space(1) + visible text...
+    // HWP5 stores the AutoNumber as an 8-code-unit extended control and the
+    // fixed-width space as 0x001f, so style boundaries after the placeholder
+    // move by +7 code units. This matches Hancom's HWPX->HWP output.
+    for char_shape in &mut para.char_shapes {
+        if char_shape.start_pos >= 2 {
+            char_shape.start_pos += 7;
+        }
+    }
+    report.autonum_fwspace_char_shape_offsets_materialized += 1;
+}
+
+fn adapt_paragraphs(paragraphs: &mut [Paragraph], report: &mut AdapterReport) {
+    adapt_paragraphs_with_context(paragraphs, report, ParagraphContext::Body);
+}
+
+fn adapt_paragraphs_with_context(
+    paragraphs: &mut [Paragraph],
+    report: &mut AdapterReport,
+    context: ParagraphContext,
+) {
+    for para in paragraphs {
+        adapt_paragraph_with_context(para, report, context);
+    }
+}
+
+fn materialize_fixed_width_space_control(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+    context: ParagraphContext,
+) {
+    const HWP5_FIXED_WIDTH_SPACE_MASK: u32 = 1u32 << 0x001f;
+
+    if context != ParagraphContext::Body || !para.text.contains('\u{2007}') {
+        return;
+    }
+
+    if para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK != 0 {
+        return;
+    }
+
+    // Hancom's HWPX->HWP path stores body fixed-width blanks as HWP5
+    // control char 0x001f in the affected exam_social body paragraphs.
+    // Header/footer and master page paragraphs keep literal U+2007 because
+    // page-number placeholder replacement depends on that visible spacer.
+    para.control_mask |= HWP5_FIXED_WIDTH_SPACE_MASK;
+    report.header_footer_fwspace_control_materialized += 1;
 }
 
 fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport) {
@@ -525,11 +697,77 @@ fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport
 }
 
 fn adapt_section_def(section_def: &mut SectionDef, report: &mut AdapterReport) {
+    materialize_single_master_page_flags(section_def, report);
+    materialize_multi_master_page_flags(section_def, report);
     materialize_section_def_master_page_tail(section_def, report);
 
     for master_page in &mut section_def.master_pages {
-        adapt_paragraphs(&mut master_page.paragraphs, report);
+        adapt_paragraphs_with_context(
+            &mut master_page.paragraphs,
+            report,
+            ParagraphContext::MasterPage,
+        );
     }
+}
+
+fn materialize_master_page_autonum_placeholder(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+    context: ParagraphContext,
+) {
+    if context != ParagraphContext::MasterPage {
+        return;
+    }
+
+    if para.text != " "
+        || para.char_offsets.as_slice() != [0]
+        || para.controls.len() != 1
+        || !matches!(para.controls.first(), Some(Control::AutoNumber(_)))
+    {
+        return;
+    }
+
+    // HWPX emits an empty <hp:t/> after master-page PAGE AutoNumber controls.
+    // The generic HWPX parser materializes the AutoNumber placeholder as a
+    // visible space, but Hancom's HWPX->HWP save stores the master-page page
+    // number paragraph as AutoNumber-only: no leading U+0020 before the control.
+    para.text.clear();
+    para.char_offsets.clear();
+    para.char_count = 9;
+    para.has_para_text = true;
+    report.master_page_autonum_placeholder_removed += 1;
+}
+
+fn materialize_single_master_page_flags(section_def: &mut SectionDef, report: &mut AdapterReport) {
+    const HWPX_SINGLE_MASTER_PAGE_FLAGS: u32 = 0x4000_0000;
+    const HANCOM_SINGLE_MASTER_PAGE_FLAGS: u32 = 0x2000_0000;
+    const MASTER_PAGE_FLAGS_MASK: u32 = 0xe000_0000;
+
+    if section_def.master_pages.len() != 1
+        || section_def.flags & MASTER_PAGE_FLAGS_MASK != HWPX_SINGLE_MASTER_PAGE_FLAGS
+    {
+        return;
+    }
+
+    section_def.flags =
+        (section_def.flags & !MASTER_PAGE_FLAGS_MASK) | HANCOM_SINGLE_MASTER_PAGE_FLAGS;
+    report.section_def_single_master_page_flags_materialized += 1;
+}
+
+fn materialize_multi_master_page_flags(section_def: &mut SectionDef, report: &mut AdapterReport) {
+    const HWPX_TWO_MASTER_PAGE_FLAGS: u32 = 0x8000_0000;
+    const HANCOM_MULTI_MASTER_PAGE_FLAGS: u32 = 0xC000_0000;
+    const MASTER_PAGE_FLAGS_MASK: u32 = 0xe000_0000;
+
+    if section_def.master_pages.len() < 2
+        || section_def.flags & MASTER_PAGE_FLAGS_MASK != HWPX_TWO_MASTER_PAGE_FLAGS
+    {
+        return;
+    }
+
+    section_def.flags =
+        (section_def.flags & !MASTER_PAGE_FLAGS_MASK) | HANCOM_MULTI_MASTER_PAGE_FLAGS;
+    report.section_def_multi_master_page_flags_materialized += 1;
 }
 
 fn materialize_section_def_master_page_tail(
@@ -542,11 +780,17 @@ fn materialize_section_def_master_page_tail(
 
     // HWPX 출처 SectionDef는 HWP 원본 CTRL_HEADER tail이 없지만, 한컴이 HWPX를
     // HWP5로 저장한 정답지는 바탕쪽이 있는 구역에서 대표Language(0) 뒤에
-    // 0x0001 marker + 15 byte zero 확장 영역을 붙여 총 43 byte ctrl_data
-    // (CTRL_HEADER 47 byte)를 만든다.
+    // 17 byte 확장 영역을 붙여 총 43 byte ctrl_data (CTRL_HEADER 47 byte)를 만든다.
+    //
+    // 관찰된 계약:
+    // - exam_kor: masterPageCnt=3 -> 0x0001 marker + 15 byte zero
+    // - exam_social-p1: 단일 Both 바탕쪽 -> 17 byte zero
+    // - exam_social section1: Both + Odd 2개 바탕쪽 -> 17 byte zero
     let mut extra = vec![0; 19];
     extra[0..2].copy_from_slice(&0u16.to_le_bytes());
-    extra[2..4].copy_from_slice(&1u16.to_le_bytes());
+    if section_def.master_pages.len() >= 3 {
+        extra[2..4].copy_from_slice(&1u16.to_le_bytes());
+    }
     section_def.raw_ctrl_extra = extra;
     report.section_def_master_page_tail_materialized += 1;
 }
@@ -579,18 +823,104 @@ fn adapt_equation(eq: &mut crate::model::control::Equation, report: &mut Adapter
 }
 
 fn adapt_shape(shape: &mut ShapeObject, report: &mut AdapterReport) {
+    adapt_shape_with_context(shape, report, ParagraphContext::Body);
+}
+
+fn adapt_shape_with_context(
+    shape: &mut ShapeObject,
+    report: &mut AdapterReport,
+    context: ParagraphContext,
+) {
+    if context == ParagraphContext::MasterPage {
+        if let ShapeObject::Line(line) = shape {
+            materialize_master_page_line_rendering_size_ratio(line, report);
+        }
+    }
+
     if let Some(drawing) = shape.drawing_mut() {
         if let Some(text_box) = &mut drawing.text_box {
             materialize_text_box_hwp5_envelope(text_box, report);
-            adapt_paragraphs(&mut text_box.paragraphs, report);
+            adapt_paragraphs_with_context(&mut text_box.paragraphs, report, context);
         }
     }
 
     if let ShapeObject::Group(group) = shape {
         for child in &mut group.children {
-            adapt_shape(child, report);
+            adapt_shape_with_context(child, report, context);
         }
     }
+}
+
+fn materialize_master_page_line_rendering_size_ratio(
+    line: &mut crate::model::shape::LineShape,
+    report: &mut AdapterReport,
+) {
+    const COUNT_SIZE: usize = 2;
+    const MATRIX_SIZE: usize = 6 * 8;
+    const SCALE_START: usize = COUNT_SIZE + MATRIX_SIZE;
+    const ROTATION_START: usize = SCALE_START + MATRIX_SIZE;
+    const MIN_RAW_LEN: usize = ROTATION_START + MATRIX_SIZE;
+    const EPSILON: f64 = 0.01;
+
+    let attr = &mut line.drawing.shape_attr;
+    if attr.raw_rendering.len() < MIN_RAW_LEN
+        || attr.original_width == 0
+        || attr.original_height == 0
+    {
+        return;
+    }
+
+    let count = u16::from_le_bytes([attr.raw_rendering[0], attr.raw_rendering[1]]);
+    if count == 0 {
+        return;
+    }
+
+    let exact_sx = attr.current_width as f64 / attr.original_width as f64;
+    let exact_sy = attr.current_height as f64 / attr.original_height as f64;
+    let Some(raw_sx) = read_raw_rendering_f64(&attr.raw_rendering, SCALE_START) else {
+        return;
+    };
+    let Some(raw_sy) = read_raw_rendering_f64(&attr.raw_rendering, SCALE_START + 4 * 8) else {
+        return;
+    };
+
+    if (raw_sx - exact_sx).abs() > EPSILON || (raw_sy - exact_sy).abs() > EPSILON {
+        return;
+    }
+
+    let mut changed = false;
+    changed |= write_raw_rendering_f64(&mut attr.raw_rendering, SCALE_START, exact_sx);
+    changed |= write_raw_rendering_f64(&mut attr.raw_rendering, SCALE_START + 4 * 8, exact_sy);
+
+    if matches!(
+        read_raw_rendering_f64(&attr.raw_rendering, ROTATION_START + 8),
+        Some(value) if value == 0.0
+    ) {
+        changed |= write_raw_rendering_f64(&mut attr.raw_rendering, ROTATION_START + 8, -0.0);
+    }
+
+    if changed {
+        attr.render_sx = exact_sx;
+        attr.render_sy = exact_sy;
+        report.master_page_line_rendering_size_ratio_materialized += 1;
+    }
+}
+
+fn read_raw_rendering_f64(raw: &[u8], offset: usize) -> Option<f64> {
+    let bytes = raw.get(offset..offset + 8)?;
+    Some(f64::from_le_bytes(bytes.try_into().ok()?))
+}
+
+fn write_raw_rendering_f64(raw: &mut [u8], offset: usize, value: f64) -> bool {
+    let Some(target) = raw.get_mut(offset..offset + 8) else {
+        return false;
+    };
+    let bytes = value.to_le_bytes();
+    if target == bytes {
+        return false;
+    }
+    target.copy_from_slice(&bytes);
+    true
 }
 
 fn materialize_text_box_hwp5_envelope(text_box: &mut TextBox, report: &mut AdapterReport) {
@@ -723,6 +1053,14 @@ fn build_table_layout_ctrl_data() -> Vec<u8> {
 }
 
 fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
+    adapt_table_with_context(table, report, ParagraphContext::Body);
+}
+
+fn adapt_table_with_context(
+    table: &mut Table,
+    report: &mut AdapterReport,
+    context: ParagraphContext,
+) {
     // 1. raw_ctrl_data 합성 (HWPX 출처는 비어있음)
     if table.raw_ctrl_data.is_empty() {
         materialize_table_outer_margin(table, report);
@@ -754,7 +1092,7 @@ fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
         adapt_cell_list_attr(cell, report);
         materialize_cell_list_header_contract(cell, use_cell_width_ref, report);
         for cpara in &mut cell.paragraphs {
-            adapt_paragraph(cpara, report);
+            adapt_paragraph_with_context(cpara, report, context);
         }
     }
 }
@@ -922,6 +1260,7 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::paragraph::CharShapeRef;
 
     #[test]
     fn empty_doc_normalizes_file_header_once() {
@@ -1156,7 +1495,7 @@ mod tests {
     }
 
     #[test]
-    fn following_section_first_paragraph_break_type_materializes_as_page_break() {
+    fn following_section_first_paragraph_break_type_preserves_materialized_flags() {
         let mut first_para = Paragraph {
             raw_break_type: 0x01,
             ..Default::default()
@@ -1172,6 +1511,9 @@ mod tests {
         following_para
             .controls
             .push(Control::SectionDef(Box::<SectionDef>::default()));
+        following_para
+            .controls
+            .push(Control::ColumnDef(Default::default()));
 
         let mut doc = Document {
             sections: vec![
@@ -1190,11 +1532,41 @@ mod tests {
         let report = convert_hwpx_to_hwp_ir(&mut doc);
 
         assert_eq!(doc.sections[0].paragraphs[0].raw_break_type, 0x01);
-        assert_eq!(doc.sections[1].paragraphs[0].raw_break_type, 0x04);
-        assert_eq!(report.following_section_break_type_materialized, 1);
+        assert_eq!(doc.sections[1].paragraphs[0].raw_break_type, 0x03);
+        assert_eq!(report.following_section_break_type_materialized, 0);
 
         let second = convert_hwpx_to_hwp_ir(&mut doc);
         assert_eq!(second.following_section_break_type_materialized, 0);
+    }
+
+    #[test]
+    fn following_section_first_paragraph_break_type_fills_missing_section_flag() {
+        let mut following_para = Paragraph {
+            raw_break_type: 0,
+            ..Default::default()
+        };
+        following_para
+            .controls
+            .push(Control::SectionDef(Box::<SectionDef>::default()));
+
+        let mut doc = Document {
+            sections: vec![
+                Section {
+                    paragraphs: vec![Paragraph::default()],
+                    ..Default::default()
+                },
+                Section {
+                    paragraphs: vec![following_para],
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let report = convert_hwpx_to_hwp_ir(&mut doc);
+
+        assert_eq!(doc.sections[1].paragraphs[0].raw_break_type, 0x01);
+        assert_eq!(report.following_section_break_type_materialized, 1);
     }
 
     #[test]
@@ -1284,6 +1656,77 @@ mod tests {
 
         assert_eq!(report.table_layout_ctrl_data_materialized, 0);
         assert!(para.ctrl_data_records[0].is_none());
+    }
+
+    #[test]
+    fn single_master_page_flags_materialize_hancom_save_contract() {
+        let mut section_def = SectionDef {
+            flags: 0x4000_0000,
+            master_pages: vec![Default::default()],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::new();
+        adapt_section_def(&mut section_def, &mut report);
+
+        assert_eq!(section_def.flags, 0x2000_0000);
+        assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
+
+        let mut second = AdapterReport::new();
+        adapt_section_def(&mut section_def, &mut second);
+        assert_eq!(second.section_def_single_master_page_flags_materialized, 0);
+    }
+
+    #[test]
+    fn two_master_page_flags_materialize_hancom_save_contract() {
+        let mut section_def = SectionDef {
+            flags: 0x8000_0000,
+            master_pages: vec![Default::default(), Default::default()],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::new();
+        adapt_section_def(&mut section_def, &mut report);
+
+        assert_eq!(section_def.flags, 0xC000_0000);
+        assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
+
+        let mut second = AdapterReport::new();
+        adapt_section_def(&mut section_def, &mut second);
+        assert_eq!(second.section_def_multi_master_page_flags_materialized, 0);
+    }
+
+    #[test]
+    fn section_def_master_page_tail_marker_depends_on_master_page_count() {
+        let mut single = SectionDef {
+            master_pages: vec![Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_master_page_tail(&mut single, &mut report);
+        assert_eq!(single.raw_ctrl_extra.len(), 19);
+        assert_eq!(&single.raw_ctrl_extra[0..4], &[0, 0, 0, 0]);
+        assert_eq!(report.section_def_master_page_tail_materialized, 1);
+
+        let mut pair = SectionDef {
+            master_pages: vec![Default::default(), Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_master_page_tail(&mut pair, &mut report);
+        assert_eq!(pair.raw_ctrl_extra.len(), 19);
+        assert_eq!(&pair.raw_ctrl_extra[0..4], &[0, 0, 0, 0]);
+        assert_eq!(report.section_def_master_page_tail_materialized, 1);
+
+        let mut triple = SectionDef {
+            master_pages: vec![Default::default(), Default::default(), Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_master_page_tail(&mut triple, &mut report);
+        assert_eq!(triple.raw_ctrl_extra.len(), 19);
+        assert_eq!(&triple.raw_ctrl_extra[0..4], &[0, 0, 1, 0]);
+        assert_eq!(report.section_def_master_page_tail_materialized, 1);
     }
 
     #[test]
@@ -1670,5 +2113,219 @@ mod tests {
         // 2차 호출은 width_ref bit0이 이미 1이므로 변경 없음
         assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
         assert_eq!(r2.cells_list_attr_bit16_set, 0);
+    }
+
+    #[test]
+    fn autonum_fwspace_materializes_hancom_range_tag_once() {
+        let mut para = Paragraph {
+            text: " \u{2007}(사회·문화)".to_string(),
+            char_offsets: vec![0, 8, 9, 10, 11, 12, 13, 14, 15],
+            char_count: 17,
+            controls: vec![Control::AutoNumber(Default::default())],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut report);
+
+        assert_eq!(report.autonum_fwspace_range_tag_materialized, 1);
+        assert_eq!(para.range_tags.len(), 1);
+        assert_eq!(para.range_tags[0].start, 15);
+        assert_eq!(para.range_tags[0].end, 16);
+        assert_eq!(para.range_tags[0].tag, 0x0100_0023);
+
+        let mut second_report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut second_report);
+        assert_eq!(second_report.autonum_fwspace_range_tag_materialized, 0);
+        assert_eq!(para.range_tags.len(), 1);
+    }
+
+    #[test]
+    fn hwp5_save_fwspace_marks_fixed_blank_control() {
+        const HWP5_FIXED_WIDTH_SPACE_MASK: u32 = 1u32 << 0x001f;
+
+        let mut header_para = Paragraph {
+            text: "사회탐구\u{2007}영역".to_string(),
+            char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8],
+            char_count: 10,
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        adapt_paragraph_with_context(
+            &mut header_para,
+            &mut report,
+            ParagraphContext::HeaderFooter,
+        );
+
+        assert_eq!(report.header_footer_fwspace_control_materialized, 0);
+        assert_eq!(header_para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK, 0);
+
+        let mut body_para = Paragraph {
+            text: "사회탐구\u{2007}영역".to_string(),
+            char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8],
+            char_count: 10,
+            ..Default::default()
+        };
+        let mut body_report = AdapterReport::new();
+        adapt_paragraph_with_context(&mut body_para, &mut body_report, ParagraphContext::Body);
+
+        assert_eq!(body_report.header_footer_fwspace_control_materialized, 1);
+        assert_ne!(body_para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK, 0);
+
+        let mut master_para = Paragraph {
+            text: "사회탐구\u{2007}영역".to_string(),
+            char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8],
+            char_count: 10,
+            ..Default::default()
+        };
+        let mut master_report = AdapterReport::new();
+        adapt_paragraph_with_context(
+            &mut master_para,
+            &mut master_report,
+            ParagraphContext::MasterPage,
+        );
+
+        assert_eq!(master_report.header_footer_fwspace_control_materialized, 0);
+        assert_eq!(master_para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK, 0);
+    }
+
+    #[test]
+    fn master_page_autonum_removes_parser_placeholder_space() {
+        let mut master_page_para = Paragraph {
+            text: " ".to_string(),
+            char_offsets: vec![0],
+            char_count: 9,
+            controls: vec![Control::AutoNumber(Default::default())],
+            has_para_text: true,
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph_with_context(
+            &mut master_page_para,
+            &mut report,
+            ParagraphContext::MasterPage,
+        );
+
+        assert_eq!(report.master_page_autonum_placeholder_removed, 1);
+        assert!(master_page_para.text.is_empty());
+        assert!(master_page_para.char_offsets.is_empty());
+        assert_eq!(master_page_para.char_count, 9);
+
+        let mut body_para = Paragraph {
+            text: " ".to_string(),
+            char_offsets: vec![0],
+            char_count: 9,
+            controls: vec![Control::AutoNumber(Default::default())],
+            has_para_text: true,
+            ..Default::default()
+        };
+        let mut body_report = AdapterReport::new();
+        adapt_paragraph_with_context(&mut body_para, &mut body_report, ParagraphContext::Body);
+
+        assert_eq!(body_report.master_page_autonum_placeholder_removed, 0);
+        assert_eq!(body_para.text, " ");
+        assert_eq!(body_para.char_offsets, vec![0]);
+    }
+
+    #[test]
+    fn master_page_line_rendering_uses_exact_size_ratio() {
+        use crate::model::shape::{LineShape, ShapeComponentAttr};
+
+        fn matrix(values: [f64; 6]) -> Vec<u8> {
+            let mut bytes = Vec::with_capacity(48);
+            for value in values {
+                bytes.extend_from_slice(&value.to_le_bytes());
+            }
+            bytes
+        }
+
+        let mut raw_rendering = Vec::new();
+        raw_rendering.extend_from_slice(&1_u16.to_le_bytes());
+        raw_rendering.extend_from_slice(&matrix([1.0, 0.0, 0.0, 0.0, 1.0, 0.0]));
+        raw_rendering.extend_from_slice(&matrix([
+            f64::from(0.01_f32),
+            0.0,
+            0.0,
+            0.0,
+            f64::from(924.090_027_f32),
+            0.0,
+        ]));
+        raw_rendering.extend_from_slice(&matrix([1.0, 0.0, 0.0, 0.0, 1.0, 0.0]));
+
+        let mut shape = ShapeObject::Line(LineShape {
+            drawing: crate::model::shape::DrawingObjAttr {
+                shape_attr: ShapeComponentAttr {
+                    original_width: 100,
+                    original_height: 100,
+                    current_width: 1,
+                    current_height: 92409,
+                    raw_rendering,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+        let mut report = AdapterReport::new();
+
+        adapt_shape_with_context(&mut shape, &mut report, ParagraphContext::MasterPage);
+
+        let line = match shape {
+            ShapeObject::Line(line) => line,
+            other => panic!("expected line, got {:?}", other),
+        };
+        assert_eq!(report.master_page_line_rendering_size_ratio_materialized, 1);
+        let raw = &line.drawing.shape_attr.raw_rendering;
+        assert_eq!(read_raw_rendering_f64(raw, 2 + 48), Some(0.01));
+        assert_eq!(read_raw_rendering_f64(raw, 2 + 48 + 4 * 8), Some(924.09));
+        assert_eq!(
+            read_raw_rendering_f64(raw, 2 + 48 + 48 + 8)
+                .unwrap()
+                .to_bits(),
+            (-0.0_f64).to_bits()
+        );
+    }
+
+    #[test]
+    fn autonum_fwspace_materializes_char_shape_offsets_once() {
+        let mut para = Paragraph {
+            text: " \u{2007}(사회·문화)".to_string(),
+            char_offsets: vec![0, 8, 9, 10, 11, 12, 13, 14, 15],
+            char_count: 17,
+            controls: vec![Control::AutoNumber(Default::default())],
+            char_shapes: vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 63,
+                },
+                CharShapeRef {
+                    start_pos: 2,
+                    char_shape_id: 74,
+                },
+                CharShapeRef {
+                    start_pos: 9,
+                    char_shape_id: 76,
+                },
+            ],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut report);
+
+        assert_eq!(report.autonum_fwspace_char_shape_offsets_materialized, 1);
+        assert_eq!(para.char_shapes[0].start_pos, 0);
+        assert_eq!(para.char_shapes[1].start_pos, 9);
+        assert_eq!(para.char_shapes[2].start_pos, 16);
+
+        let mut second_report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut second_report);
+        assert_eq!(
+            second_report.autonum_fwspace_char_shape_offsets_materialized,
+            0
+        );
+        assert_eq!(para.char_shapes[1].start_pos, 9);
+        assert_eq!(para.char_shapes[2].start_pos, 16);
     }
 }

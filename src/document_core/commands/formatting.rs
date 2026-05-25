@@ -808,6 +808,7 @@ impl DocumentCore {
             name: name.to_string(),
             alt_type: 0,
             alt_name: None,
+            type_info: None,
             default_name: None,
         };
 
@@ -853,6 +854,7 @@ impl DocumentCore {
             name: name.to_string(),
             alt_type: 0,
             alt_name: None,
+            type_info: None,
             default_name: None,
         };
 

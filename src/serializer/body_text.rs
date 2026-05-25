@@ -317,6 +317,11 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     if para.text.contains('\n') {
         mask |= 1u32 << 0x000A;
     }
+    // FIXED_WIDTH_SPACE (0x001F): HWPX에서 들어온 일부 문맥은 U+2007을
+    // literal code point가 아니라 HWP5 fixed blank control로 저장해야 한다.
+    if should_serialize_figure_space_as_hwp_fixed_blank(para) {
+        mask |= 1u32 << 0x001F;
+    }
     mask
 }
 
@@ -517,6 +522,14 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                 code_units.push(0x0018);
                 prev_end = offset + 1;
             }
+            '\u{2007}' => {
+                if should_serialize_figure_space_as_hwp_fixed_blank(para) {
+                    code_units.push(0x001F);
+                } else {
+                    code_units.push(0x2007);
+                }
+                prev_end = offset + 1;
+            }
             c => {
                 let mut buf = [0u16; 2];
                 let encoded = c.encode_utf16(&mut buf);
@@ -667,6 +680,25 @@ fn serialize_para_range_tag(range_tags: &[RangeTag]) -> Vec<u8> {
     w.into_bytes()
 }
 
+fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
+    const HWP5_AUTONUM_FWSPACE_TRAILING_TAG: u32 = 0x0100_0023;
+    const HWP5_FIXED_WIDTH_SPACE_MASK: u32 = 1u32 << 0x001f;
+
+    if para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK != 0 && para.text.contains('\u{2007}') {
+        return true;
+    }
+
+    para.text.starts_with(" \u{2007}")
+        && para
+            .controls
+            .iter()
+            .any(|ctrl| matches!(ctrl, Control::AutoNumber(_)))
+        && para
+            .range_tags
+            .iter()
+            .any(|range_tag| range_tag.tag == HWP5_AUTONUM_FWSPACE_TRAILING_TAG)
+}
+
 /// 컨트롤에 대응하는 PARA_TEXT 내 제어 문자 코드와 ctrl_id를 반환
 ///
 /// HWP 5.0 제어 문자 분류 (표 6):
@@ -675,8 +707,8 @@ fn serialize_para_range_tag(range_tags: &[RangeTag]) -> Vec<u8> {
 ///   0x000F: 숨은 설명 (tcmt)
 ///   0x0010: 머리말/꼬리말 (head, foot)
 ///   0x0011: 각주/미주 (fn, en)
-///   0x0012: 자동번호/새번호 (atno, nwno)
-///   0x0015: 페이지 컨트롤 (pgnp, pghi)
+///   0x0012: 자동번호 (atno)
+///   0x0015: 페이지 컨트롤/새 번호 (pgnp, pghi, nwno)
 ///   0x0016: 책갈피 (bokm)
 fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
     match ctrl {
@@ -691,7 +723,10 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::Footnote(_) => (0x0011, tags::CTRL_FOOTNOTE),
         Control::Endnote(_) => (0x0011, tags::CTRL_ENDNOTE),
         Control::AutoNumber(_) => (0x0012, tags::CTRL_AUTO_NUMBER),
-        Control::NewNumber(_) => (0x0012, tags::CTRL_NEW_NUMBER),
+        // Hancom HWP5 oracle files store `nwno` in the 0x0015 page-control
+        // family. Serializing it as 0x0012 makes Hancom 2020 treat the first
+        // section paragraph as damaged/modified around the page control chain.
+        Control::NewNumber(_) => (0x0015, tags::CTRL_NEW_NUMBER),
         Control::PageNumberPos(_) => (0x0015, tags::CTRL_PAGE_NUM_POS),
         Control::PageHide(_) => (0x0015, tags::CTRL_PAGE_HIDE),
         Control::Bookmark(_) => (0x0016, tags::CTRL_BOOKMARK),
@@ -708,7 +743,7 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::control::{AutoNumber, Field, FieldType};
+    use crate::model::control::{AutoNumber, Field, FieldType, NewNumber};
     use crate::model::document::{Section, SectionDef};
     use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, RangeTag};
     use crate::parser::body_text::parse_body_text_section;
@@ -1032,6 +1067,56 @@ mod tests {
         assert_eq!(parsed.paragraphs[0].range_tags[0].tag, 0x01000003);
     }
 
+    #[test]
+    fn test_plain_fixed_width_space_keeps_unicode_code_point() {
+        let para = Paragraph {
+            char_count: 2,
+            text: "\u{2007}".to_string(),
+            char_offsets: vec![0],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[0..2], &0x2007_u16.to_le_bytes());
+    }
+
+    #[test]
+    fn test_autonum_range_tagged_fixed_width_space_serializes_as_hwp_control_code() {
+        let para = Paragraph {
+            char_count: 17,
+            text: " \u{2007}(사회·문화)".to_string(),
+            char_offsets: vec![0, 8, 9, 10, 11, 12, 13, 14, 15],
+            controls: vec![Control::AutoNumber(AutoNumber::default())],
+            range_tags: vec![RangeTag {
+                start: 15,
+                end: 16,
+                tag: 0x0100_0023,
+            }],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[16..18], &0x001F_u16.to_le_bytes());
+    }
+
+    #[test]
+    fn test_control_mask_fixed_width_space_serializes_as_hwp_control_code() {
+        let para = Paragraph {
+            char_count: 10,
+            control_mask: 1u32 << 0x001f,
+            text: "사회탐구\u{2007}영역".to_string(),
+            char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[8..10], &0x001F_u16.to_le_bytes());
+        assert_ne!(compute_control_mask(&para) & (1u32 << 0x001f), 0);
+    }
+
     /// 컨트롤 문자 코드 매핑 테스트
     #[test]
     fn test_control_char_code() {
@@ -1042,6 +1127,10 @@ mod tests {
         assert_eq!(
             control_char_code_and_id(&Control::AutoNumber(AutoNumber::default())).0,
             0x0012
+        );
+        assert_eq!(
+            control_char_code_and_id(&Control::NewNumber(NewNumber::default())).0,
+            0x0015
         );
     }
 
