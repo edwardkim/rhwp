@@ -1987,7 +1987,10 @@ fn serialize_header_footer_list_header_with_paragraphs(
         ),
     });
 
-    serialize_paragraph_list(paragraphs, level + 1, records);
+    // HWP5 header/footer sub-list paragraphs are siblings of the LIST_HEADER
+    // record, not one level deeper. Hancom 2020 treats the deeper
+    // PARA_HEADER/PARA_TEXT pair as a damaged/modified BodyText contract.
+    serialize_paragraph_list(paragraphs, level, records);
 }
 
 fn build_header_footer_list_header(

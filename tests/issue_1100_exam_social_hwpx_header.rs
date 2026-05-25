@@ -104,11 +104,11 @@ fn issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only() 
         "page auto number must render once at the first placeholder"
     );
     assert!(
-        has_text_node_at(&svg, 93.46666666666667, 122.42666666666668, "\u{2007}"),
+        has_text_node_at(&svg, 100.46666666666667, 122.42666666666668, "\u{2007}"),
         "the full-width space after the page auto number must remain a space"
     );
     assert!(
-        !has_text_node_at(&svg, 93.46666666666667, 122.42666666666668, "2"),
+        !has_text_node_at(&svg, 100.46666666666667, 122.42666666666668, "2"),
         "the full-width space after the page auto number must not be replaced by a second page number"
     );
 }

@@ -236,15 +236,22 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     if font.alt_name.is_some() {
         attr |= 0x80;
     }
-    if font.default_name.is_some() {
+    if font.type_info.is_some() {
         attr |= 0x40;
+    }
+    if font.default_name.is_some() {
+        attr |= 0x20;
     }
     w.write_u8(attr).unwrap();
 
     w.write_hwp_string(&font.name).unwrap();
 
     if let Some(ref alt_name) = font.alt_name {
+        w.write_u8(font.alt_type & 0x03).unwrap();
         w.write_hwp_string(alt_name).unwrap();
+    }
+    if let Some(type_info) = font.type_info {
+        w.write_bytes(&type_info).unwrap();
     }
     if let Some(ref default_name) = font.default_name {
         w.write_hwp_string(default_name).unwrap();
@@ -617,6 +624,13 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     w.write_u32(ps.attr3).unwrap();
     // 줄 간격 (5.0.2.5 이상)
     w.write_u32(ps.line_spacing_v2).unwrap();
+    // 한컴 편집기가 현재 HWP5 저장 시 붙이는 PARA_SHAPE 말미 4바이트.
+    //
+    // 공개 스펙 표 43은 전체 길이를 54바이트로 적지만, 한컴이 HWPX를 HWP로
+    // 내보낸 정답지들은 PARA_SHAPE를 58바이트로 저장한다. 이 tail이 없으면
+    // 한컴 편집기가 일부 masterpage/header 글상자 내부 줄나눔 폭을 다르게
+    // 해석해 페이지 번호가 다음 줄로 밀리는 사례가 있다.
+    w.write_u32(0).unwrap();
     w.into_bytes()
 }
 

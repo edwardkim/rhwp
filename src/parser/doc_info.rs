@@ -272,12 +272,29 @@ fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         .map_err(|e| DocInfoError::IoError(e.to_string()))?;
 
     let alt_name = if attr & 0x80 != 0 {
+        let _alt_type = r.read_u8().unwrap_or(0);
         r.read_hwp_string().ok()
     } else {
         None
     };
 
-    let default_name = if attr & 0x40 != 0 {
+    let type_info = if attr & 0x40 != 0 {
+        let mut bytes = [0u8; 10];
+        let mut ok = true;
+        for b in &mut bytes {
+            if let Ok(value) = r.read_u8() {
+                *b = value;
+            } else {
+                ok = false;
+                break;
+            }
+        }
+        ok.then_some(bytes)
+    } else {
+        None
+    };
+
+    let default_name = if attr & 0x20 != 0 {
         r.read_hwp_string().ok()
     } else {
         None
@@ -288,6 +305,7 @@ fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         name,
         alt_type: attr & 0x03,
         alt_name,
+        type_info,
         default_name,
     })
 }
@@ -906,11 +924,27 @@ mod tests {
         let mut data = Vec::new();
         data.push(0x80); // attr: alt_name 있음
         data.extend(make_hwp_string("맑은 고딕"));
+        data.push(1); // alternate font type
         data.extend(make_hwp_string("Malgun Gothic"));
 
         let font = parse_face_name(&data).unwrap();
         assert_eq!(font.name, "맑은 고딕");
         assert_eq!(font.alt_name, Some("Malgun Gothic".to_string()));
+    }
+
+    #[test]
+    fn test_parse_face_name_with_type_info_and_default_name() {
+        let mut data = Vec::new();
+        data.push(0x61); // TTF + type_info + default font
+        data.extend(make_hwp_string("굴림"));
+        data.extend([2, 11, 6, 0, 0, 1, 1, 1, 1, 1]);
+        data.extend(make_hwp_string("Gulim"));
+
+        let font = parse_face_name(&data).unwrap();
+        assert_eq!(font.name, "굴림");
+        assert_eq!(font.alt_type, 1);
+        assert_eq!(font.type_info, Some([2, 11, 6, 0, 0, 1, 1, 1, 1, 1]));
+        assert_eq!(font.default_name, Some("Gulim".to_string()));
     }
 
     #[test]

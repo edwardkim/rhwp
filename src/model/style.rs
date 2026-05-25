@@ -9,10 +9,12 @@ pub struct Font {
     pub raw_data: Option<Vec<u8>>,
     /// 글꼴 이름
     pub name: String,
-    /// 대체 글꼴 유형 (0: 알 수 없음, 1: TTF, 2: HFT)
+    /// 글꼴 유형 (0: 알 수 없음, 1: TTF, 2: HFT)
     pub alt_type: u8,
     /// 대체 글꼴 이름
     pub alt_name: Option<String>,
+    /// 글꼴 유형 정보 (HWP5 FACE_NAME type info 10바이트)
+    pub type_info: Option<[u8; 10]>,
     /// 기본 글꼴 이름
     pub default_name: Option<String>,
 }

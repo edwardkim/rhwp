@@ -131,6 +131,7 @@ fn test_full_roundtrip_uncompressed() {
         name: "함초롬바탕".to_string(),
         alt_type: 0,
         alt_name: None,
+        type_info: None,
         default_name: None,
     });
     doc_info.char_shapes.push(CharShape {
