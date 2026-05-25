@@ -624,8 +624,11 @@ mod tests {
     use super::*;
     use crate::paint::{
         BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, ColorGlyphFormat,
-        ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind, ColorPaintGraphPayload,
-        FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
+        ColorGradientStop, ColorLayersPayload, ColorLinearGradient, ColorPaintGraphNode,
+        ColorPaintGraphNodeKind, ColorPaintGraphPayload, ColorPaintLinearGradientPathNode,
+        ColorPaintRadialGradientPathNode, ColorPaintSolidPathNode, ColorPaintSweepGradientPathNode,
+        ColorRadialGradient, ColorSweepGradient, FontColorGlyphRef, FontFaceKey,
+        FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
         GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
         GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
         GlyphRunOrientation, ImageResourceId, LayerAffineTransform, LayerGlyphOutlinePath,
@@ -825,9 +828,110 @@ mod tests {
     }
 
     fn color_layers_payload(kind: ColorPaintGraphNodeKind) -> ColorLayersPayload {
+        let source_font_ref = FontColorGlyphRef {
+            face_key: Some("fixture-face".to_string()),
+            glyph_id: Some(42),
+            palette_index: Some(0),
+            color_format: Some(ColorGlyphFormat::ColrV1),
+        };
+        let source_range_utf8 = Some(TextSourceRange::new(0, 1));
+        let glyph_range = Some(GlyphRange::new(0, 1));
+        let black = ResolvedColor {
+            color_space: Some("sRGB".to_string()),
+            rgba: [0.0, 0.0, 0.0, 1.0],
+        };
+        let commands = vec![
+            PathCommand::MoveTo(0.0, 0.0),
+            PathCommand::LineTo(10.0, 0.0),
+            PathCommand::LineTo(10.0, 10.0),
+            PathCommand::ClosePath,
+        ];
+        let red = ResolvedColor {
+            color_space: Some("sRGB".to_string()),
+            rgba: [1.0, 0.0, 0.0, 1.0],
+        };
+        let stops = vec![
+            ColorGradientStop {
+                offset: 0.0,
+                color: black.clone(),
+            },
+            ColorGradientStop {
+                offset: 1.0,
+                color: red,
+            },
+        ];
+        let (solid_path, linear_gradient_path, radial_gradient_path, sweep_gradient_path) =
+            match kind {
+                ColorPaintGraphNodeKind::SolidPath => (
+                    Some(ColorPaintSolidPathNode {
+                        commands: commands.clone(),
+                        fill: black.clone(),
+                        fill_rule: GlyphOutlineFillRule::NonZero,
+                        source_glyph_id: Some(42),
+                        palette_index: Some(0),
+                    }),
+                    None,
+                    None,
+                    None,
+                ),
+                ColorPaintGraphNodeKind::LinearGradientPath => (
+                    None,
+                    Some(ColorPaintLinearGradientPathNode {
+                        commands: commands.clone(),
+                        gradient: ColorLinearGradient {
+                            x0: 0.0,
+                            y0: 0.0,
+                            x1: 10.0,
+                            y1: 10.0,
+                            stops: stops.clone(),
+                        },
+                        fill_rule: GlyphOutlineFillRule::NonZero,
+                        source_glyph_id: Some(42),
+                        palette_index: Some(0),
+                    }),
+                    None,
+                    None,
+                ),
+                ColorPaintGraphNodeKind::RadialGradientPath => (
+                    None,
+                    None,
+                    Some(ColorPaintRadialGradientPathNode {
+                        commands: commands.clone(),
+                        gradient: ColorRadialGradient {
+                            cx: 5.0,
+                            cy: 5.0,
+                            radius: 5.0,
+                            stops: stops.clone(),
+                        },
+                        fill_rule: GlyphOutlineFillRule::NonZero,
+                        source_glyph_id: Some(42),
+                        palette_index: Some(0),
+                    }),
+                    None,
+                ),
+                ColorPaintGraphNodeKind::SweepGradientPath => (
+                    None,
+                    None,
+                    None,
+                    Some(ColorPaintSweepGradientPathNode {
+                        commands,
+                        gradient: ColorSweepGradient {
+                            cx: 5.0,
+                            cy: 5.0,
+                            start_angle_degrees: 0.0,
+                            end_angle_degrees: 360.0,
+                            stops,
+                        },
+                        fill_rule: GlyphOutlineFillRule::NonZero,
+                        source_glyph_id: Some(42),
+                        palette_index: Some(0),
+                    }),
+                ),
+                _ => (None, None, None, None),
+            };
         ColorLayersPayload {
             color_format: ColorGlyphFormat::ColrV1,
-            source_font_ref: None,
+            source_font_ref: Some(source_font_ref.clone()),
             palette_ref: None,
             layers: Vec::new(),
             paint_graph: Some(ColorPaintGraphPayload {
@@ -835,25 +939,18 @@ mod tests {
                 nodes: vec![ColorPaintGraphNode {
                     node_id: 0,
                     kind,
-                    commands: Some(vec![
-                        PathCommand::MoveTo(0.0, 0.0),
-                        PathCommand::LineTo(10.0, 0.0),
-                        PathCommand::ClosePath,
-                    ]),
-                    fill: Some(ResolvedColor {
-                        color_space: Some("sRGB".to_string()),
-                        rgba: [0.0, 0.0, 0.0, 1.0],
-                    }),
-                    fill_rule: Some(GlyphOutlineFillRule::NonZero),
-                    child_node_id: None,
+                    solid_path,
+                    linear_gradient_path,
+                    radial_gradient_path,
+                    sweep_gradient_path,
                     transform: None,
-                    source_range_utf8: Some(TextSourceRange::new(0, 1)),
-                    glyph_range: Some(GlyphRange::new(0, 1)),
-                    source_font_ref: None,
+                    source_range_utf8,
+                    glyph_range,
+                    source_font_ref: Some(source_font_ref),
                 }],
             }),
-            source_range_utf8: Some(TextSourceRange::new(0, 1)),
-            glyph_range: Some(GlyphRange::new(0, 1)),
+            source_range_utf8,
+            glyph_range,
         }
     }
 
@@ -1180,11 +1277,33 @@ mod tests {
     }
 
     #[test]
-    fn colrv1_graph_node_kind_gate_is_explicit() {
+    fn colrv1_graph_supported_gradient_gate_can_select_gradient_subset() {
+        for kind in [
+            ColorPaintGraphNodeKind::LinearGradientPath,
+            ColorPaintGraphNodeKind::RadialGradientPath,
+            ColorPaintGraphNodeKind::SweepGradientPath,
+        ] {
+            let report = first_report(
+                vec![text_op(), color_layers_outline(kind)],
+                TextVariantSelectionOptions {
+                    allow_colrv1_stage1_color_graph: true,
+                    ..TextVariantSelectionOptions::canvaskit_strict_outline()
+                },
+            );
+            assert_eq!(
+                report.selected_variant_kind,
+                Some(TextVariantKind::GlyphOutline)
+            );
+            assert!(report.rejected_variants.is_empty());
+        }
+    }
+
+    #[test]
+    fn colrv1_unsupported_graph_node_kind_gate_is_explicit() {
         let report = first_report(
             vec![
                 text_op(),
-                color_layers_outline(ColorPaintGraphNodeKind::SweepGradientPath),
+                color_layers_outline(ColorPaintGraphNodeKind::Composite),
             ],
             TextVariantSelectionOptions {
                 allow_colrv1_stage1_color_graph: true,

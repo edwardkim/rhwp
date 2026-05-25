@@ -18,6 +18,7 @@ import type {
   LayerClipNode,
   LayerEllipseOp,
   LayerFormObjectOp,
+  LayerGlyphOutlineOp,
   LayerImageOp,
   LayerLeafNode,
   LayerLineOp,
@@ -54,6 +55,8 @@ type SkCanvas = Canvas;
 type SkPaint = Paint;
 type SkSurface = Surface;
 type MutablePath = Path & Pick<PathBuilder, 'arcToRotated' | 'close' | 'cubicTo' | 'lineTo' | 'moveTo'>;
+type LayerColorGraph = NonNullable<NonNullable<LayerGlyphOutlineOp['colorLayers']>['paintGraph']>;
+type LayerColorGraphNode = NonNullable<LayerColorGraph['nodes']>[number];
 
 export interface CanvasKitRenderDiagnostics {
   mode: CanvasKitRenderMode;
@@ -295,7 +298,11 @@ export class CanvasKitLayerRenderer {
         this.unsupportedOps.add(op.type);
         return;
       case 'glyphOutline': {
-        const status = glyphOutlinePayloadStatus(op);
+        const status = glyphOutlinePayloadStatus(op, { allowColrv1Stage1ColorGraph: true });
+        if (status.supported && op.payloadKind === 'colorLayers') {
+          this.renderGlyphOutline(canvas, op);
+          return;
+        }
         this.unsupportedOps.add(status.reason ? `glyphOutline:${status.reason}` : 'glyphOutline');
         return;
       }
@@ -414,6 +421,172 @@ export class CanvasKitLayerRenderer {
     }
     this.recordImageCoverageGaps(op);
     this.withImageTransform(canvas, op.bbox, op.transform, () => this.drawImageOp(canvas, image, op));
+  }
+
+  private renderGlyphOutline(canvas: SkCanvas, op: LayerGlyphOutlineOp): void {
+    const graph = op.colorLayers?.paintGraph;
+    const nodes = graph?.nodes ?? [];
+    if (!graph || nodes.length === 0 || graph.rootNodeId === undefined) {
+      this.unsupportedOps.add('glyphOutline:unsupportedColorGlyph');
+      return;
+    }
+    const nodesById = new Map<number, LayerColorGraphNode>();
+    for (const node of nodes) {
+      if (node.nodeId !== undefined) {
+        nodesById.set(node.nodeId, node);
+      }
+    }
+    canvas.save();
+    const transform = op.placement?.runToPage;
+    if (transform) {
+      (canvas as unknown as { concat?: (matrix: number[]) => void }).concat?.([
+        transform.a,
+        transform.c,
+        transform.e,
+        transform.b,
+        transform.d,
+        transform.f,
+        0,
+        0,
+        1,
+      ]);
+    }
+    try {
+      this.renderColorPaintGraphNode(canvas, nodesById, graph.rootNodeId, new Set());
+    } finally {
+      canvas.restore();
+    }
+  }
+
+  private renderColorPaintGraphNode(
+    canvas: SkCanvas,
+    nodesById: Map<number, LayerColorGraphNode>,
+    nodeId: number,
+    visited: Set<number>,
+  ): void {
+    if (visited.has(nodeId)) return;
+    visited.add(nodeId);
+    const node = nodesById.get(nodeId);
+    if (!node) return;
+    if (node.kind === 'transform') {
+      const transformNode = node.transform;
+      if (!transformNode?.transform || transformNode.childNodeId === undefined) return;
+      const tr = transformNode.transform;
+      canvas.save();
+      (canvas as unknown as { concat?: (matrix: number[]) => void }).concat?.([
+        tr.a,
+        tr.c,
+        tr.e,
+        tr.b,
+        tr.d,
+        tr.f,
+        0,
+        0,
+        1,
+      ]);
+      try {
+        this.renderColorPaintGraphNode(canvas, nodesById, transformNode.childNodeId, visited);
+      } finally {
+        canvas.restore();
+      }
+      return;
+    }
+    const pathNode = node.solidPath ?? node.linearGradientPath ?? node.radialGradientPath ?? node.sweepGradientPath;
+    if (!pathNode?.commands) return;
+    const path = new this.canvasKit.Path() as MutablePath;
+    let currentX = 0;
+    let currentY = 0;
+    for (const command of pathNode.commands) {
+      [currentX, currentY] = this.applyPathCommand(path, command, currentX, currentY);
+    }
+    this.applyFillRule(path, pathNode.fillRule);
+    const paint = new this.canvasKit.Paint();
+    let shader: unknown | undefined;
+    try {
+      paint.setAntiAlias?.(true);
+      paint.setStyle(this.canvasKit.PaintStyle.Fill);
+      if (node.kind === 'solidPath' && node.solidPath?.fill) {
+        paint.setColor(this.resolvedColor(node.solidPath.fill));
+      } else if (node.kind === 'linearGradientPath' && node.linearGradientPath?.gradient) {
+        shader = this.makeLinearGradientShader(node.linearGradientPath.gradient);
+        if (!shader) {
+          return;
+        }
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(shader);
+      } else if (node.kind === 'radialGradientPath' && node.radialGradientPath?.gradient) {
+        shader = this.makeRadialGradientShader(node.radialGradientPath.gradient);
+        if (!shader) {
+          return;
+        }
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(shader);
+      } else if (node.kind === 'sweepGradientPath' && node.sweepGradientPath?.gradient) {
+        shader = this.makeSweepGradientShader(node.sweepGradientPath.gradient);
+        if (!shader) {
+          return;
+        }
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(shader);
+      } else {
+        return;
+      }
+      canvas.drawPath(path, paint);
+    } finally {
+      (shader as { delete?: () => void } | undefined)?.delete?.();
+      paint.delete?.();
+      path.delete?.();
+    }
+  }
+
+  private applyFillRule(path: MutablePath, fillRule: string | undefined): void {
+    if (fillRule === 'evenodd') {
+      (path as unknown as { setFillType?: (fillType: unknown) => void }).setFillType?.(this.canvasKit.FillType.EvenOdd);
+    }
+  }
+
+  private resolvedColor(color: { rgba?: number[] }): Color {
+    const rgba = color.rgba ?? [0, 0, 0, 1];
+    return this.canvasKit.Color(
+      clampUnit(rgba[0]),
+      clampUnit(rgba[1]),
+      clampUnit(rgba[2]),
+      clampUnit(rgba[3]),
+    );
+  }
+
+  private makeLinearGradientShader(gradient: NonNullable<LayerColorGraphNode['linearGradientPath']>['gradient']): unknown {
+    const shaderApi = this.canvasKit.Shader as unknown as { MakeLinearGradient?: (...args: unknown[]) => unknown };
+    return shaderApi.MakeLinearGradient?.(
+      [gradient?.x0 ?? 0, gradient?.y0 ?? 0],
+      [gradient?.x1 ?? 0, gradient?.y1 ?? 0],
+      gradientColors(gradient?.stops),
+      gradientPositions(gradient?.stops),
+      this.canvasKit.TileMode.Clamp,
+    );
+  }
+
+  private makeRadialGradientShader(gradient: NonNullable<LayerColorGraphNode['radialGradientPath']>['gradient']): unknown {
+    const shaderApi = this.canvasKit.Shader as unknown as { MakeRadialGradient?: (...args: unknown[]) => unknown };
+    return shaderApi.MakeRadialGradient?.(
+      [gradient?.cx ?? 0, gradient?.cy ?? 0],
+      gradient?.radius ?? 1,
+      gradientColors(gradient?.stops),
+      gradientPositions(gradient?.stops),
+      this.canvasKit.TileMode.Clamp,
+    );
+  }
+
+  private makeSweepGradientShader(gradient: NonNullable<LayerColorGraphNode['sweepGradientPath']>['gradient']): unknown {
+    const shaderApi = this.canvasKit.Shader as unknown as { MakeSweepGradient?: (...args: unknown[]) => unknown };
+    return shaderApi.MakeSweepGradient?.(
+      gradient?.cx ?? 0,
+      gradient?.cy ?? 0,
+      gradientColors(gradient?.stops),
+      gradientPositions(gradient?.stops),
+      this.canvasKit.TileMode.Clamp,
+      null,
+      0,
+      gradient?.startAngleDegrees ?? 0,
+      gradient?.endAngleDegrees ?? 360,
+    );
   }
 
   private drawImageOp(canvas: SkCanvas, image: SkImage, op: LayerImageOp): void {
@@ -794,6 +967,26 @@ function parseCssColor(value: string): { r: number; g: number; b: number; a: num
     };
   }
   return { r: 0, g: 0, b: 0, a: 1 };
+}
+
+function clampUnit(value: number | undefined): number {
+  return Math.max(0, Math.min(1, Number.isFinite(value) ? value ?? 0 : 0));
+}
+
+function gradientColors(stops: Array<{ color?: { rgba?: number[] } }> | undefined): number[][] {
+  return (stops ?? []).map((stop) => {
+    const rgba = stop.color?.rgba ?? [0, 0, 0, 1];
+    return [
+      clampUnit(rgba[0]),
+      clampUnit(rgba[1]),
+      clampUnit(rgba[2]),
+      clampUnit(rgba[3]),
+    ];
+  });
+}
+
+function gradientPositions(stops: Array<{ offset?: number }> | undefined): number[] {
+  return (stops ?? []).map((stop) => Math.max(0, Math.min(1, stop.offset ?? 0)));
 }
 
 function base64ToBytes(base64: string): Uint8Array {

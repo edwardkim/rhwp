@@ -29,14 +29,17 @@ pub use layer_tree::{
 };
 pub use paint_op::{
     BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, ColorGlyphFormat,
-    ColorLayerNode, ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind,
-    ColorPaintGraphPayload, FontColorGlyphRef, GlyphCluster, GlyphClusterFlag,
-    GlyphOutlineFillRule, GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
-    GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
-    GlyphRunOrientation, GlyphTransform, LayerAffineTransform, LayerGlyphOutlinePaint,
-    LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerPoint, LayerVector, PaintOp, PaintTextStyle,
-    PaintVariantMeta, PaletteRef, ResolvedColor, ResolvedImageKind, ResolvedImagePayload,
-    SvgGlyphPayload, TextDecorationKind, TextRunPlacement, TextVariantKind, TextVariantQuality,
+    ColorGradientStop, ColorLayerNode, ColorLayersPayload, ColorLinearGradient,
+    ColorPaintGraphNode, ColorPaintGraphNodeKind, ColorPaintGraphPayload,
+    ColorPaintLinearGradientPathNode, ColorPaintRadialGradientPathNode, ColorPaintSolidPathNode,
+    ColorPaintSweepGradientPathNode, ColorPaintTransformNode, ColorRadialGradient,
+    ColorSweepGradient, FontColorGlyphRef, GlyphCluster, GlyphClusterFlag, GlyphOutlineFillRule,
+    GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
+    GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphTransform,
+    LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
+    LayerPoint, LayerVector, PaintOp, PaintTextStyle, PaintVariantMeta, PaletteRef, ResolvedColor,
+    ResolvedImageKind, ResolvedImagePayload, SvgGlyphPayload, TextDecorationKind, TextRunPlacement,
+    TextVariantKind, TextVariantQuality,
 };
 pub use profile::RenderProfile;
 pub use resources::{

@@ -1686,9 +1686,10 @@ fn write_color_layers_payload(buf: &mut String, payload: &ColorLayersPayload) {
     }
     let _ = write!(
         buf,
-        ",\"colrv0ResolvedLayerContract\":{},\"colrv1Stage1GraphContract\":{}",
+        ",\"colrv0ResolvedLayerContract\":{},\"colrv1Stage1GraphContract\":{},\"colrv1SupportedGraphContract\":{}",
         payload.has_colrv0_resolved_layer_contract(),
-        payload.has_colrv1_stage1_graph_contract()
+        payload.has_colrv1_stage1_graph_contract(),
+        payload.has_colrv1_supported_graph_contract()
     );
     buf.push('}');
 }
@@ -1770,23 +1771,25 @@ fn write_color_paint_graph_node(buf: &mut String, node: &ColorPaintGraphNode) {
         node.node_id,
         json_escape(node.kind.as_str())
     );
-    if let Some(commands) = &node.commands {
-        buf.push_str(",\"commands\":");
-        write_path_commands(buf, commands);
+    if let Some(solid) = &node.solid_path {
+        buf.push_str(",\"solidPath\":");
+        write_color_paint_solid_path_node(buf, solid);
     }
-    if let Some(fill) = &node.fill {
-        buf.push_str(",\"fill\":");
-        write_resolved_color(buf, fill);
+    if let Some(gradient_path) = &node.linear_gradient_path {
+        buf.push_str(",\"linearGradientPath\":");
+        write_color_paint_linear_gradient_path_node(buf, gradient_path);
     }
-    if let Some(fill_rule) = node.fill_rule {
-        let _ = write!(buf, ",\"fillRule\":{}", json_escape(fill_rule.as_str()));
+    if let Some(gradient_path) = &node.radial_gradient_path {
+        buf.push_str(",\"radialGradientPath\":");
+        write_color_paint_radial_gradient_path_node(buf, gradient_path);
     }
-    if let Some(child_node_id) = node.child_node_id {
-        let _ = write!(buf, ",\"childNodeId\":{}", child_node_id);
+    if let Some(gradient_path) = &node.sweep_gradient_path {
+        buf.push_str(",\"sweepGradientPath\":");
+        write_color_paint_sweep_gradient_path_node(buf, gradient_path);
     }
-    if let Some(transform) = node.transform {
+    if let Some(transform) = &node.transform {
         buf.push_str(",\"transform\":");
-        write_affine_transform(buf, transform);
+        write_color_paint_transform_node(buf, transform);
     }
     if let Some(range) = node.source_range_utf8 {
         buf.push_str(",\"sourceRangeUtf8\":");
@@ -1803,6 +1806,136 @@ fn write_color_paint_graph_node(buf: &mut String, node: &ColorPaintGraphNode) {
         buf.push_str(",\"sourceFontRef\":");
         write_font_color_glyph_ref(buf, source_font_ref);
     }
+    buf.push('}');
+}
+
+fn write_color_paint_solid_path_node(
+    buf: &mut String,
+    solid: &crate::paint::ColorPaintSolidPathNode,
+) {
+    buf.push_str("{\"commands\":");
+    write_path_commands(buf, &solid.commands);
+    buf.push_str(",\"fill\":");
+    write_resolved_color(buf, &solid.fill);
+    let _ = write!(
+        buf,
+        ",\"fillRule\":{}",
+        json_escape(solid.fill_rule.as_str())
+    );
+    if let Some(source_glyph_id) = solid.source_glyph_id {
+        let _ = write!(buf, ",\"sourceGlyphId\":{}", source_glyph_id);
+    }
+    if let Some(palette_index) = solid.palette_index {
+        let _ = write!(buf, ",\"paletteIndex\":{}", palette_index);
+    }
+    buf.push('}');
+}
+
+fn write_color_gradient_stops(buf: &mut String, stops: &[crate::paint::ColorGradientStop]) {
+    buf.push('[');
+    for (idx, stop) in stops.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        let _ = write!(buf, "{{\"offset\":{}", stop.offset);
+        buf.push_str(",\"color\":");
+        write_resolved_color(buf, &stop.color);
+        buf.push('}');
+    }
+    buf.push(']');
+}
+
+fn write_color_paint_linear_gradient_path_node(
+    buf: &mut String,
+    gradient_path: &crate::paint::ColorPaintLinearGradientPathNode,
+) {
+    buf.push_str("{\"commands\":");
+    write_path_commands(buf, &gradient_path.commands);
+    let _ = write!(
+        buf,
+        ",\"gradient\":{{\"x0\":{},\"y0\":{},\"x1\":{},\"y1\":{},\"stops\":",
+        gradient_path.gradient.x0,
+        gradient_path.gradient.y0,
+        gradient_path.gradient.x1,
+        gradient_path.gradient.y1
+    );
+    write_color_gradient_stops(buf, &gradient_path.gradient.stops);
+    let _ = write!(
+        buf,
+        "}},\"fillRule\":{}",
+        json_escape(gradient_path.fill_rule.as_str())
+    );
+    if let Some(source_glyph_id) = gradient_path.source_glyph_id {
+        let _ = write!(buf, ",\"sourceGlyphId\":{}", source_glyph_id);
+    }
+    if let Some(palette_index) = gradient_path.palette_index {
+        let _ = write!(buf, ",\"paletteIndex\":{}", palette_index);
+    }
+    buf.push('}');
+}
+
+fn write_color_paint_radial_gradient_path_node(
+    buf: &mut String,
+    gradient_path: &crate::paint::ColorPaintRadialGradientPathNode,
+) {
+    buf.push_str("{\"commands\":");
+    write_path_commands(buf, &gradient_path.commands);
+    let _ = write!(
+        buf,
+        ",\"gradient\":{{\"cx\":{},\"cy\":{},\"radius\":{},\"stops\":",
+        gradient_path.gradient.cx, gradient_path.gradient.cy, gradient_path.gradient.radius
+    );
+    write_color_gradient_stops(buf, &gradient_path.gradient.stops);
+    let _ = write!(
+        buf,
+        "}},\"fillRule\":{}",
+        json_escape(gradient_path.fill_rule.as_str())
+    );
+    if let Some(source_glyph_id) = gradient_path.source_glyph_id {
+        let _ = write!(buf, ",\"sourceGlyphId\":{}", source_glyph_id);
+    }
+    if let Some(palette_index) = gradient_path.palette_index {
+        let _ = write!(buf, ",\"paletteIndex\":{}", palette_index);
+    }
+    buf.push('}');
+}
+
+fn write_color_paint_sweep_gradient_path_node(
+    buf: &mut String,
+    gradient_path: &crate::paint::ColorPaintSweepGradientPathNode,
+) {
+    buf.push_str("{\"commands\":");
+    write_path_commands(buf, &gradient_path.commands);
+    let _ = write!(
+        buf,
+        ",\"gradient\":{{\"cx\":{},\"cy\":{},\"startAngleDegrees\":{},\"endAngleDegrees\":{},\"stops\":",
+        gradient_path.gradient.cx,
+        gradient_path.gradient.cy,
+        gradient_path.gradient.start_angle_degrees,
+        gradient_path.gradient.end_angle_degrees
+    );
+    write_color_gradient_stops(buf, &gradient_path.gradient.stops);
+    let _ = write!(
+        buf,
+        "}},\"fillRule\":{}",
+        json_escape(gradient_path.fill_rule.as_str())
+    );
+    if let Some(source_glyph_id) = gradient_path.source_glyph_id {
+        let _ = write!(buf, ",\"sourceGlyphId\":{}", source_glyph_id);
+    }
+    if let Some(palette_index) = gradient_path.palette_index {
+        let _ = write!(buf, ",\"paletteIndex\":{}", palette_index);
+    }
+    buf.push('}');
+}
+
+fn write_color_paint_transform_node(
+    buf: &mut String,
+    transform: &crate::paint::ColorPaintTransformNode,
+) {
+    let _ = write!(buf, "{{\"childNodeId\":{}", transform.child_node_id);
+    buf.push_str(",\"transform\":");
+    write_affine_transform(buf, transform.transform);
     buf.push('}');
 }
 
@@ -2269,15 +2402,15 @@ mod tests {
     use super::*;
     use crate::paint::{
         CacheHint, ClipKind, ColorGlyphFormat, ColorLayersPayload, ColorPaintGraphNode,
-        ColorPaintGraphNodeKind, ColorPaintGraphPayload, FontFaceKey, FontFallbackPolicyId,
-        FontInstanceKey, GlyphCluster, GlyphOutlineFillRule, GlyphOutlinePayloadKind,
-        GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange,
-        GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, GroupKind,
-        LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
-        LayerNode, LayerPoint, LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta,
-        ResolvedColor, ScriptTag, ShapeKey, ShapingEngineId, TextDecorationKind, TextDirection,
-        TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality,
-        WritingMode,
+        ColorPaintGraphNodeKind, ColorPaintGraphPayload, ColorPaintSolidPathNode,
+        FontColorGlyphRef, FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster,
+        GlyphOutlineFillRule, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
+        GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
+        GlyphRunOrientation, GlyphRunReplayEligibility, GroupKind, LayerAffineTransform,
+        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
+        LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta, ResolvedColor, ScriptTag,
+        ShapeKey, ShapingEngineId, TextDecorationKind, TextDirection, TextSourceId,
+        TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -2913,7 +3046,12 @@ mod tests {
                 payload_kind: GlyphOutlinePayloadKind::ColorLayers,
                 color_layers: Some(ColorLayersPayload {
                     color_format: ColorGlyphFormat::ColrV1,
-                    source_font_ref: None,
+                    source_font_ref: Some(FontColorGlyphRef {
+                        face_key: Some("fixture-face".to_string()),
+                        glyph_id: Some(42),
+                        palette_index: Some(0),
+                        color_format: Some(ColorGlyphFormat::ColrV1),
+                    }),
                     palette_ref: None,
                     layers: Vec::new(),
                     paint_graph: Some(ColorPaintGraphPayload {
@@ -2921,21 +3059,32 @@ mod tests {
                         nodes: vec![ColorPaintGraphNode {
                             node_id: 0,
                             kind: ColorPaintGraphNodeKind::SolidPath,
-                            commands: Some(vec![
-                                PathCommand::MoveTo(0.0, 0.0),
-                                PathCommand::LineTo(10.0, 0.0),
-                                PathCommand::ClosePath,
-                            ]),
-                            fill: Some(ResolvedColor {
-                                color_space: Some("sRGB".to_string()),
-                                rgba: [0.0, 0.0, 0.0, 1.0],
+                            solid_path: Some(ColorPaintSolidPathNode {
+                                commands: vec![
+                                    PathCommand::MoveTo(0.0, 0.0),
+                                    PathCommand::LineTo(10.0, 0.0),
+                                    PathCommand::ClosePath,
+                                ],
+                                fill: ResolvedColor {
+                                    color_space: Some("sRGB".to_string()),
+                                    rgba: [0.0, 0.0, 0.0, 1.0],
+                                },
+                                fill_rule: GlyphOutlineFillRule::NonZero,
+                                source_glyph_id: Some(42),
+                                palette_index: Some(0),
                             }),
-                            fill_rule: Some(GlyphOutlineFillRule::NonZero),
-                            child_node_id: None,
+                            linear_gradient_path: None,
+                            radial_gradient_path: None,
+                            sweep_gradient_path: None,
                             transform: None,
                             source_range_utf8: Some(TextSourceRange::new(0, 1)),
                             glyph_range: Some(GlyphRange::new(0, 1)),
-                            source_font_ref: None,
+                            source_font_ref: Some(FontColorGlyphRef {
+                                face_key: Some("fixture-face".to_string()),
+                                glyph_id: Some(42),
+                                palette_index: Some(0),
+                                color_format: Some(ColorGlyphFormat::ColrV1),
+                            }),
                         }],
                     }),
                     source_range_utf8: Some(TextSourceRange::new(0, 1)),

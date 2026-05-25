@@ -140,9 +140,14 @@ test('GlyphOutline advanced payload gates reject richer payloads by default', ()
           nodes: [{
             nodeId: 0,
             kind: 'solidPath',
-            commands: [{ type: 'moveTo', x: 0, y: 0 }],
-            fill: { rgba: [0, 0, 0, 1] },
-            fillRule: 'nonzero',
+            solidPath: {
+              commands: [{ type: 'moveTo', x: 0, y: 0 }],
+              fill: { rgba: [0, 0, 0, 1] },
+              fillRule: 'nonzero',
+            },
+            sourceRangeUtf8: { start: 0, end: 1 },
+            glyphRange: { start: 0, end: 1 },
+            sourceFontRef: { faceKey: 'fixture-face', glyphId: 42, colorFormat: 'colrV1' },
           }],
         },
       },
@@ -195,16 +200,66 @@ test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () 
       colorFormat: 'colrV1',
       paintGraph: {
         rootNodeId: 0,
-        nodes: [{ nodeId: 0, kind: 'sweepGradientPath' }],
+        nodes: [{ nodeId: 0, kind: 'composite' }],
       },
     },
   }, { allowColrv1Stage1ColorGraph: true });
   assert.equal(status.reason, 'unsupportedColorGlyph');
-  assert.equal(status.detail, 'colrV1Node:sweepGradientPath');
+  assert.equal(status.detail, 'colrV1Node:composite');
+});
+
+test('GlyphOutline COLRv1 gradient graph subset can pass the explicit gate', () => {
+  const commands = [{ type: 'moveTo', x: 0, y: 0 }, { type: 'lineTo', x: 10, y: 0 }, { type: 'closePath' }];
+  const stops = [
+    { offset: 0, color: { rgba: [1, 0, 0, 1] } },
+    { offset: 1, color: { rgba: [0, 0, 1, 1] } },
+  ];
+  const cases = [
+    {
+      kind: 'linearGradientPath',
+      field: 'linearGradientPath',
+      value: { commands, gradient: { x0: 0, y0: 0, x1: 10, y1: 10, stops }, fillRule: 'nonzero' },
+    },
+    {
+      kind: 'radialGradientPath',
+      field: 'radialGradientPath',
+      value: { commands, gradient: { cx: 5, cy: 5, radius: 5, stops }, fillRule: 'nonzero' },
+    },
+    {
+      kind: 'sweepGradientPath',
+      field: 'sweepGradientPath',
+      value: { commands, gradient: { cx: 5, cy: 5, startAngleDegrees: 0, endAngleDegrees: 360, stops }, fillRule: 'nonzero' },
+    },
+  ];
+  for (const entry of cases) {
+    const status = glyphOutlinePayloadStatus({
+      type: 'glyphOutline',
+      bbox: { x: 0, y: 0, width: 10, height: 10 },
+      payloadKind: 'colorLayers',
+      colorLayers: {
+        colorFormat: 'colrV1',
+        sourceRangeUtf8: { start: 0, end: 1 },
+        glyphRange: { start: 0, end: 1 },
+        sourceFontRef: { faceKey: 'fixture-face', glyphId: 42, colorFormat: 'colrV1' },
+        paintGraph: {
+          rootNodeId: 0,
+          nodes: [{
+            nodeId: 0,
+            kind: entry.kind,
+            [entry.field]: entry.value,
+            sourceRangeUtf8: { start: 0, end: 1 },
+            glyphRange: { start: 0, end: 1 },
+            sourceFontRef: { faceKey: 'fixture-face', glyphId: 42, colorFormat: 'colrV1' },
+          }],
+        },
+      },
+    }, { allowColrv1Stage1ColorGraph: true });
+    assert.equal(status.supported, true, entry.kind);
+  }
 });
 
 test('CanvasKit renderer diagnostics keep GlyphOutline payload reject reasons visible', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(source, /glyphOutlinePayloadStatus\(op\)/);
+  assert.match(source, /glyphOutlinePayloadStatus\(op, \{ allowColrv1Stage1ColorGraph: true \}\)/);
   assert.match(source, /glyphOutline:\$\{status\.reason\}/);
 });

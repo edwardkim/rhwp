@@ -978,6 +978,7 @@ export interface LayerGlyphOutlineOp {
   bbox: LayerBounds;
   variant?: LayerTextVariantMeta;
   payloadKind?: LayerGlyphOutlinePayloadKind;
+  placement?: { runToPage?: LayerAffineTransform; baselineY?: number };
   paths?: LayerGlyphOutlinePath[];
   stroke?: LayerGlyphOutlineStroke;
   colorLayers?: LayerColorLayersPayload;
@@ -1034,16 +1035,89 @@ export interface LayerResolvedColor {
   rgba?: number[];
 }
 
-export interface LayerColorPaintGraphNode {
-  nodeId?: number;
-  kind?: string;
+export interface LayerColorGradientStop {
+  offset?: number;
+  color?: LayerResolvedColor;
+}
+
+export interface LayerColorSolidPathNode {
   commands?: LayerPathCommand[];
   fill?: LayerResolvedColor;
   fillRule?: 'nonzero' | 'evenodd' | string;
+  sourceGlyphId?: number;
+  paletteIndex?: number;
+}
+
+export interface LayerColorLinearGradient {
+  x0?: number;
+  y0?: number;
+  x1?: number;
+  y1?: number;
+  stops?: LayerColorGradientStop[];
+}
+
+export interface LayerColorRadialGradient {
+  cx?: number;
+  cy?: number;
+  radius?: number;
+  stops?: LayerColorGradientStop[];
+}
+
+export interface LayerColorSweepGradient {
+  cx?: number;
+  cy?: number;
+  startAngleDegrees?: number;
+  endAngleDegrees?: number;
+  stops?: LayerColorGradientStop[];
+}
+
+export interface LayerColorLinearGradientPathNode {
+  commands?: LayerPathCommand[];
+  gradient?: LayerColorLinearGradient;
+  fillRule?: 'nonzero' | 'evenodd' | string;
+  sourceGlyphId?: number;
+  paletteIndex?: number;
+}
+
+export interface LayerColorRadialGradientPathNode {
+  commands?: LayerPathCommand[];
+  gradient?: LayerColorRadialGradient;
+  fillRule?: 'nonzero' | 'evenodd' | string;
+  sourceGlyphId?: number;
+  paletteIndex?: number;
+}
+
+export interface LayerColorSweepGradientPathNode {
+  commands?: LayerPathCommand[];
+  gradient?: LayerColorSweepGradient;
+  fillRule?: 'nonzero' | 'evenodd' | string;
+  sourceGlyphId?: number;
+  paletteIndex?: number;
+}
+
+export interface LayerColorTransformNode {
   childNodeId?: number;
   transform?: LayerAffineTransform;
+}
+
+export interface LayerFontColorGlyphRef {
+  faceKey?: string;
+  glyphId?: number;
+  paletteIndex?: number;
+  colorFormat?: 'colrV0' | 'colrV1' | 'other' | string;
+}
+
+export interface LayerColorPaintGraphNode {
+  nodeId?: number;
+  kind?: string;
+  solidPath?: LayerColorSolidPathNode;
+  linearGradientPath?: LayerColorLinearGradientPathNode;
+  radialGradientPath?: LayerColorRadialGradientPathNode;
+  sweepGradientPath?: LayerColorSweepGradientPathNode;
+  transform?: LayerColorTransformNode;
   sourceRangeUtf8?: LayerTextRange;
   glyphRange?: LayerTextRange;
+  sourceFontRef?: LayerFontColorGlyphRef;
 }
 
 export interface LayerColorPaintGraphPayload {
@@ -1053,6 +1127,7 @@ export interface LayerColorPaintGraphPayload {
 
 export interface LayerColorLayersPayload {
   colorFormat?: 'colrV0' | 'colrV1' | 'other' | string;
+  sourceFontRef?: LayerFontColorGlyphRef;
   layers?: Array<{
     layerIndex?: number | null;
     glyphId?: number;

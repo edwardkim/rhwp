@@ -225,9 +225,9 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - P14 adds guarded `GlyphOutline` sidecar variants and backend text variant selection diagnostics. Existing renderers still keep the `TextRun` fallback path.
 - P15-P17 add diagnostics-only CanvasKit replay policy planning and the browser CanvasKit direct renderer. Both `default` and `compat` keep hidden Canvas2D overlays forbidden; `compat` is a conservative direct replay policy, not an overlay fallback.
 - P18 expands CanvasKit image replay to consume crop, fill mode, original size, transform, and payload-fingerprint cache keys while leaving image effects as deterministic diagnostics.
-- P19 adds guarded richer `GlyphOutline` payload vocabulary for color layers, bitmap glyphs, and sanitized static SVG glyphs. These payload families stay behind explicit selection gates and keep the `TextRun` fallback.
+- P19 adds guarded richer `GlyphOutline` payload vocabulary for color layers, bitmap glyphs, and sanitized static SVG glyphs. It also opens the first explicit CanvasKit replay subset for COLRv1 solid/linear/radial/sweep color glyph paths while keeping unsupported graph nodes and the other payload families on the `TextRun` fallback.
 - CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
-- The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; CanvasKit glyph replay, exact native glyph replay, real font blob extraction, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
+- The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; full CanvasKit glyph replay, exact native glyph replay, real font blob extraction, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.
 - `ResourceArena` now reserves font blob storage and font resource identity for glyph replay; document image/SVG interning stays as follow-up work.
 - This phase establishes the frontend/backend boundary for later CanvasKit and fuller native Skia backends.

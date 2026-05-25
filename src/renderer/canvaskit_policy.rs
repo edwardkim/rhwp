@@ -164,6 +164,7 @@ pub fn analyze_canvaskit_replay_plan(
         tree,
         TextVariantSelectionOptions {
             backend: VariantSelectionBackend::CanvasKit,
+            allow_colrv1_stage1_color_graph: true,
             ..TextVariantSelectionOptions::canvaskit()
         },
     );

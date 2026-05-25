@@ -179,6 +179,11 @@ turning them into default replay paths.
   data. `ColorLayers.colrV0` uses resolved solid layer paths. `ColorLayers.colrV1`
   starts with a bounded graph vocabulary where `node.kind` is validated before a
   backend may select the variant.
+- CanvasKit may select only the bounded COLRv1 graph subset covered by this
+  phase: solid paths, single linear/radial/sweep gradient paths, and transform
+  chains that end in exactly one supported leaf. Composite, blend, clip, nested
+  paint, partial sweep angle, and invalid gradient-stop graphs still reject
+  deterministically and use the `TextRun` fallback.
 - `payloadKind: "bitmapGlyph"` is reserved for one producer-selected image strike.
   It must carry deterministic placement, scaling, and filtering metadata. Backend
   default strike selection is not part of the strict contract.
@@ -207,7 +212,7 @@ improvement rather than a Canvas2D compatibility match.
 ## Follow-Ups
 
 - Wire real document font blob extraction into `ResourceArena`.
-- Add CanvasKit glyph replay behind the same variant gate.
+- Expand CanvasKit glyph replay beyond the guarded COLRv1 solid/gradient subset.
 - Add native glyph outline replay behind the strict `GlyphOutline` variant.
 - Add resource table entries for font blobs and face identity.
 - Promote renderer diagnostics from report-only to backend selection telemetry
