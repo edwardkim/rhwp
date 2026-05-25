@@ -16,6 +16,7 @@ import {
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
+import { glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
 
 test('render backend resolver keeps Canvas2D as the default and accepts skia aliases', () => {
   assert.equal(resolveRenderBackend(''), 'canvas2d');
@@ -122,4 +123,88 @@ test('CanvasKit image fill-mode tiling detection stays explicit', () => {
   for (const mode of [undefined, 'fitToSize', 'none', 'center', 'leftTop', 'rightBottom']) {
     assert.equal(canvasKitImageFillModeTiles(mode), false);
   }
+});
+
+test('GlyphOutline advanced payload gates reject richer payloads by default', () => {
+  assert.deepEqual(
+    glyphOutlinePayloadStatus({
+      type: 'glyphOutline',
+      bbox: { x: 0, y: 0, width: 10, height: 10 },
+      payloadKind: 'colorLayers',
+      colorLayers: {
+        colorFormat: 'colrV1',
+        sourceRangeUtf8: { start: 0, end: 1 },
+        glyphRange: { start: 0, end: 1 },
+        paintGraph: {
+          rootNodeId: 0,
+          nodes: [{
+            nodeId: 0,
+            kind: 'solidPath',
+            commands: [{ type: 'moveTo', x: 0, y: 0 }],
+            fill: { rgba: [0, 0, 0, 1] },
+            fillRule: 'nonzero',
+          }],
+        },
+      },
+    }).reason,
+    'unsupportedColorGlyph',
+  );
+  assert.equal(
+    glyphOutlinePayloadStatus({
+      type: 'glyphOutline',
+      bbox: { x: 0, y: 0, width: 10, height: 10 },
+      payloadKind: 'bitmapGlyph',
+      bitmapGlyph: {
+        imageRef: 1,
+        sourceRangeUtf8: { start: 0, end: 1 },
+        glyphRange: { start: 0, end: 1 },
+        placement: { x: 0, y: 0, width: 10, height: 10 },
+        scalingPolicy: 'sourceExact',
+        filtering: 'linear',
+      },
+    }).reason,
+    'unsupportedBitmapGlyph',
+  );
+  assert.equal(
+    glyphOutlinePayloadStatus({
+      type: 'glyphOutline',
+      bbox: { x: 0, y: 0, width: 10, height: 10 },
+      payloadKind: 'svgGlyph',
+      svgGlyph: {
+        svgRef: 1,
+        sourceRangeUtf8: { start: 0, end: 1 },
+        glyphRange: { start: 0, end: 1 },
+        viewBox: { x: 0, y: 0, width: 10, height: 10 },
+        staticSanitized: true,
+        scriptAllowed: false,
+        animationAllowed: false,
+        externalResourcesAllowed: false,
+        interactivityAllowed: false,
+      },
+    }).reason,
+    'unsupportedSvgGlyph',
+  );
+});
+
+test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () => {
+  const status = glyphOutlinePayloadStatus({
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    payloadKind: 'colorLayers',
+    colorLayers: {
+      colorFormat: 'colrV1',
+      paintGraph: {
+        rootNodeId: 0,
+        nodes: [{ nodeId: 0, kind: 'sweepGradientPath' }],
+      },
+    },
+  }, { allowColrv1Stage1ColorGraph: true });
+  assert.equal(status.reason, 'unsupportedColorGlyph');
+  assert.equal(status.detail, 'colrV1Node:sweepGradientPath');
+});
+
+test('CanvasKit renderer diagnostics keep GlyphOutline payload reject reasons visible', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /glyphOutlinePayloadStatus\(op\)/);
+  assert.match(source, /glyphOutline:\$\{status\.reason\}/);
 });

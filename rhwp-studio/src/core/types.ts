@@ -684,6 +684,15 @@ export interface LayerBounds {
   height: number;
 }
 
+export interface LayerAffineTransform {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  e: number;
+  f: number;
+}
+
 export interface PageLayerTree {
   schemaVersion?: number;
   schemaMinorVersion?: number;
@@ -961,9 +970,128 @@ export interface LayerCharOverlapOp {
 export interface LayerGlyphRunOp {
   type: 'glyphRun';
   bbox: LayerBounds;
+  variant?: LayerTextVariantMeta;
 }
 
 export interface LayerGlyphOutlineOp {
   type: 'glyphOutline';
   bbox: LayerBounds;
+  variant?: LayerTextVariantMeta;
+  payloadKind?: LayerGlyphOutlinePayloadKind;
+  paths?: LayerGlyphOutlinePath[];
+  stroke?: LayerGlyphOutlineStroke;
+  colorLayers?: LayerColorLayersPayload;
+  bitmapGlyph?: LayerBitmapGlyphPayload;
+  svgGlyph?: LayerSvgGlyphPayload;
+}
+
+export interface LayerTextVariantMeta {
+  equivalenceGroup?: string;
+  variantId?: string;
+  variantKind?: 'textRun' | 'glyphRun' | 'glyphOutline' | string;
+  partIndex?: number;
+  partCount?: number;
+  isDefaultFallback?: boolean;
+  requires?: string[];
+  quality?: string;
+  anchorOpId?: string;
+  localPaintOrder?: number;
+}
+
+export type LayerGlyphOutlinePayloadKind =
+  | 'monochromeFill'
+  | 'monochromeFillStroke'
+  | 'colorLayers'
+  | 'bitmapGlyph'
+  | 'svgGlyph'
+  | string;
+
+export interface LayerGlyphOutlinePath {
+  glyphId?: number;
+  sourceRangeUtf8?: LayerTextRange;
+  glyphRange?: LayerTextRange;
+  fillRule?: 'nonzero' | 'evenodd' | string;
+  commands?: LayerPathCommand[];
+}
+
+export interface LayerGlyphOutlineStroke {
+  color?: string;
+  width?: number;
+  join?: 'miter' | 'round' | 'bevel' | string;
+  cap?: 'butt' | 'round' | 'square' | string;
+  miterLimit?: number;
+  paintOrder?: 'fillOnly' | 'strokeOnly' | 'fillThenStroke' | 'strokeThenFill' | string;
+  strictSubset?: boolean;
+}
+
+export interface LayerTextRange {
+  start?: number;
+  end?: number;
+}
+
+export interface LayerResolvedColor {
+  colorSpace?: string;
+  rgba?: number[];
+}
+
+export interface LayerColorPaintGraphNode {
+  nodeId?: number;
+  kind?: string;
+  commands?: LayerPathCommand[];
+  fill?: LayerResolvedColor;
+  fillRule?: 'nonzero' | 'evenodd' | string;
+  childNodeId?: number;
+  transform?: LayerAffineTransform;
+  sourceRangeUtf8?: LayerTextRange;
+  glyphRange?: LayerTextRange;
+}
+
+export interface LayerColorPaintGraphPayload {
+  rootNodeId?: number;
+  nodes?: LayerColorPaintGraphNode[];
+}
+
+export interface LayerColorLayersPayload {
+  colorFormat?: 'colrV0' | 'colrV1' | 'other' | string;
+  layers?: Array<{
+    layerIndex?: number | null;
+    glyphId?: number;
+    glyphRange?: LayerTextRange;
+    sourceRangeUtf8?: LayerTextRange;
+    commands?: LayerPathCommand[];
+    fill?: LayerResolvedColor;
+    fillRule?: 'nonzero' | 'evenodd' | string;
+    paletteIndex?: number;
+    color?: string;
+    opacity?: number;
+    transformToRun?: LayerAffineTransform;
+  }>;
+  paintGraph?: LayerColorPaintGraphPayload;
+  sourceRangeUtf8?: LayerTextRange;
+  glyphRange?: LayerTextRange;
+}
+
+export interface LayerBitmapGlyphPayload {
+  imageRef?: number;
+  sourceRangeUtf8?: LayerTextRange;
+  glyphRange?: LayerTextRange;
+  placement?: LayerBounds;
+  alphaPremultiplied?: boolean;
+  scalingPolicy?: 'sourceExact' | 'pixelAligned' | 'backendDefault' | string;
+  filtering?: 'nearest' | 'linear' | string;
+  transformToRun?: LayerAffineTransform;
+}
+
+export interface LayerSvgGlyphPayload {
+  svgRef?: number;
+  sourceRangeUtf8?: LayerTextRange;
+  glyphRange?: LayerTextRange;
+  viewBox?: LayerBounds;
+  intrinsicSize?: { width?: number; height?: number };
+  staticSanitized?: boolean;
+  scriptAllowed?: boolean;
+  animationAllowed?: boolean;
+  externalResourcesAllowed?: boolean;
+  interactivityAllowed?: boolean;
+  transformToRun?: LayerAffineTransform;
 }

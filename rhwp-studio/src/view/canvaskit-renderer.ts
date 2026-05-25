@@ -47,6 +47,7 @@ import {
   canvasKitImageSourceRect,
 } from './canvaskit/image-replay';
 import { canvaskitClipRightPad } from './canvaskit/policy';
+import { glyphOutlinePayloadStatus } from './glyph-outline-payload-status';
 
 type CanvasKitApi = CanvasKit;
 type SkCanvas = Canvas;
@@ -288,12 +289,16 @@ export class CanvasKitLayerRenderer {
       case 'rawSvg':
       case 'charOverlap':
       case 'glyphRun':
-      case 'glyphOutline':
       case 'tabLeader':
       case 'textControlMark':
       case 'textDecoration':
         this.unsupportedOps.add(op.type);
         return;
+      case 'glyphOutline': {
+        const status = glyphOutlinePayloadStatus(op);
+        this.unsupportedOps.add(status.reason ? `glyphOutline:${status.reason}` : 'glyphOutline');
+        return;
+      }
       default:
         this.unsupportedOps.add((op as { type?: string }).type ?? 'unknown');
     }
