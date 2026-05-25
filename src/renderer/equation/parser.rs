@@ -1537,6 +1537,44 @@ mod tests {
     }
 
     #[test]
+    fn test_task1122_over_followed_by_number_parses_as_fraction() {
+        for (script, expected_numer, expected_denom) in [
+            ("11 over20", "11", "20"),
+            ("3 over5", "3", "5"),
+            ("7 OVER10", "7", "10"),
+            ("{8} over {13}", "8", "13"),
+        ] {
+            let ast = parse(script);
+            match &ast {
+                EqNode::Fraction { numer, denom } => {
+                    assert!(
+                        matches!(numer.as_ref(), EqNode::Number(n) if n == expected_numer),
+                        "unexpected numerator for {script:?}: {ast:?}"
+                    );
+                    assert!(
+                        matches!(denom.as_ref(), EqNode::Number(n) if n == expected_denom),
+                        "unexpected denominator for {script:?}: {ast:?}"
+                    );
+                }
+                _ => panic!("Expected Fraction for {script:?}, got {:?}", ast),
+            }
+        }
+    }
+
+    #[test]
+    fn test_task1122_over_prefix_non_numeric_identifiers_parse_as_text() {
+        let ast = parse("overlap");
+        assert!(matches!(ast, EqNode::Text(ref t) if t == "overlap"));
+
+        let ast = parse(r"\overline{AB}");
+        assert!(
+            matches!(ast, EqNode::Decoration { kind: DecoKind::Overline, .. }),
+            r"Expected Decoration(Overline), got {:?}",
+            ast
+        );
+    }
+
+    #[test]
     fn test_atop() {
         let ast = parse("a atop b");
         match &ast {

@@ -8,6 +8,7 @@ use super::super::{
 };
 use crate::model::bin_data::BinDataContent;
 use crate::model::footnote::NumberFormat;
+use crate::model::image::Picture;
 use crate::model::style::{HeadType, Numbering};
 
 /// bin_data_id(1-indexed 순번)로 BinDataContent를 찾는다.
@@ -31,6 +32,28 @@ pub(crate) fn find_bin_data<'a>(
     }
     // 인덱스 범위 밖 (HWPX 차트 sparse id 60000+N 등) — id 직접 검색
     bin_data_content.iter().find(|c| c.id == bin_data_id)
+}
+
+/// Picture의 렌더 표시 크기(HWPUNIT)를 반환한다.
+///
+/// 일부 HWP5 그림은 `CommonObjAttr.width/height`보다
+/// `SHAPE_COMPONENT.current_width/current_height`가 실제 한컴 표시 크기에 가깝다.
+/// 기존 도형 경로와 동일하게 current 값이 더 큰 축만 채택해 축소 회귀 위험을 줄인다.
+pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    let mut width = picture.common.width as i32;
+    let mut height = picture.common.height as i32;
+
+    let current_width = picture.shape_attr.current_width as i32;
+    if current_width > 0 && current_width > width {
+        width = current_width;
+    }
+
+    let current_height = picture.shape_attr.current_height as i32;
+    if current_height > 0 && current_height > height {
+        height = current_height;
+    }
+
+    (width, height)
 }
 
 /// 문단의 실효 numbering_id를 반환한다.
@@ -408,8 +431,9 @@ pub(crate) fn layout_rect_to_bbox(rect: &LayoutRect) -> BoundingBox {
 
 #[cfg(test)]
 mod tests {
-    use super::find_bin_data;
+    use super::{find_bin_data, picture_display_size_hu};
     use crate::model::bin_data::BinDataContent;
+    use crate::model::image::Picture;
 
     fn mk(id: u16, ext: &str) -> BinDataContent {
         BinDataContent {
@@ -417,6 +441,28 @@ mod tests {
             data: vec![],
             extension: ext.to_string(),
         }
+    }
+
+    #[test]
+    fn picture_display_size_uses_larger_current_axis() {
+        let mut picture = Picture::default();
+        picture.common.width = 3365;
+        picture.common.height = 9446;
+        picture.shape_attr.current_width = 9014;
+        picture.shape_attr.current_height = 9446;
+
+        assert_eq!(picture_display_size_hu(&picture), (9014, 9446));
+    }
+
+    #[test]
+    fn picture_display_size_keeps_common_when_current_is_smaller() {
+        let mut picture = Picture::default();
+        picture.common.width = 9000;
+        picture.common.height = 8000;
+        picture.shape_attr.current_width = 3000;
+        picture.shape_attr.current_height = 4000;
+
+        assert_eq!(picture_display_size_hu(&picture), (9000, 8000));
     }
 
     /// bin_data_id=0 은 항상 None

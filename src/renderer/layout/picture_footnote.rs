@@ -11,7 +11,7 @@ use super::super::{
 };
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
-use super::utils::{extract_shape_transform, find_bin_data};
+use super::utils::{extract_shape_transform, find_bin_data, picture_display_size_hu};
 use super::LayoutEngine;
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
@@ -68,9 +68,9 @@ impl LayoutEngine {
         header_footer_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
     ) {
         // 그림 크기 (HWPUNIT → 픽셀)
-        // CommonObjAttr의 width/height가 개체의 실제 표시 크기
-        let mut pic_width = hwpunit_to_px(picture.common.width as i32, self.dpi);
-        let mut pic_height = hwpunit_to_px(picture.common.height as i32, self.dpi);
+        let (pic_width_hu, pic_height_hu) = picture_display_size_hu(picture);
+        let mut pic_width = hwpunit_to_px(pic_width_hu, self.dpi);
+        let mut pic_height = hwpunit_to_px(pic_height_hu, self.dpi);
 
         // 컨테이너 초과 시 비율 유지하며 축소 (표 셀 등)
         if container.width > 0.0 && pic_width > container.width {
@@ -290,8 +290,9 @@ impl LayoutEngine {
         control_index: usize,
     ) -> f64 {
         // 그림 크기 (HWPUNIT → 픽셀)
-        let pic_width = hwpunit_to_px(picture.common.width as i32, self.dpi);
-        let pic_height = hwpunit_to_px(picture.common.height as i32, self.dpi);
+        let (pic_width_hu, pic_height_hu) = picture_display_size_hu(picture);
+        let pic_width = hwpunit_to_px(pic_width_hu, self.dpi);
+        let pic_height = hwpunit_to_px(pic_height_hu, self.dpi);
 
         // 캡션 높이 및 간격 계산
         let caption_height = self.calculate_caption_height(&picture.caption, styles);

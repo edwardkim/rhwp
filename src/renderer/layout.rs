@@ -369,7 +369,7 @@ pub(crate) use border_rendering::{border_width_to_px, create_border_line_nodes};
 pub use paragraph_layout::map_pua_bullet_char;
 pub(crate) use utils::{
     drawing_to_line_style, drawing_to_shape_style, find_bin_data, format_page_number,
-    layout_rect_to_bbox, resolve_numbering_id,
+    layout_rect_to_bbox, picture_display_size_hu, resolve_numbering_id,
 };
 
 #[cfg(test)]
@@ -4731,7 +4731,8 @@ impl LayoutEngine {
                             //  pic_emit_x=767 > col_right=759 → +274px advance → 문9 처짐)
                             // Picture 의 좌측 edge (x) 가 col_area 우측을 초과하면 advance skip.
                             if matches!(pic.common.horz_rel_to, HorzRelTo::Column) {
-                                let pic_width_px = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                                let (pic_width_hu, _) = picture_display_size_hu(pic);
+                                let pic_width_px = hwpunit_to_px(pic_width_hu, self.dpi);
                                 let h_offset_px =
                                     hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
                                 let pic_emit_x = match pic.common.horz_align {
