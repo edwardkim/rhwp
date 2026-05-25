@@ -556,6 +556,9 @@ fn glyph_outline_is_strict(outline: &LayerGlyphOutlinePaint) -> bool {
                 .stroke
                 .as_ref()
                 .is_some_and(|stroke| stroke.is_strict_subset()),
+            GlyphOutlinePayloadKind::ColorLayers
+            | GlyphOutlinePayloadKind::BitmapGlyph
+            | GlyphOutlinePayloadKind::SvgGlyph => false,
         }
 }
 
@@ -580,6 +583,15 @@ fn glyph_outline_fallback_reason(outline: &LayerGlyphOutlinePaint) -> Option<Str
                 .is_some_and(|stroke| stroke.is_strict_subset()) =>
         {
             return Some("unsupportedOutlineStroke".to_string());
+        }
+        GlyphOutlinePayloadKind::ColorLayers => {
+            return Some("unsupportedColorGlyph".to_string());
+        }
+        GlyphOutlinePayloadKind::BitmapGlyph => {
+            return Some("unsupportedBitmapGlyph".to_string());
+        }
+        GlyphOutlinePayloadKind::SvgGlyph => {
+            return Some("unsupportedSvgGlyph".to_string());
         }
         _ => {}
     }
@@ -814,6 +826,9 @@ mod tests {
                     variant
                 },
                 payload_kind: GlyphOutlinePayloadKind::MonochromeFill,
+                color_layers: None,
+                bitmap_glyph: None,
+                svg_glyph: None,
                 paint_style: PaintTextStyle::from(&TextStyle {
                     font_family: "Test".to_string(),
                     font_size: 12.0,

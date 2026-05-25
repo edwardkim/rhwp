@@ -7,12 +7,14 @@ use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use crate::paint::{
-    CacheHint, ClipKind, FontResourceTable, GlyphCluster, GlyphOutlineStrokeStyle,
-    GlyphRunDiagnostics, GlyphTransform, GroupKind, LayerAffineTransform, LayerGlyphOutlinePath,
-    LayerNode, LayerNodeKind, LayerPoint, LayerVector, PageLayerTree, PaintOp, PaintTextStyle,
-    PaintVariantMeta, RenderProfile, ResolvedImageKind, ShapeKey, TextDecorationKind,
-    TextSourceAnnotation, TextSourceEntry, TextSourceId, TextSourceRange, TextSourceSpan,
-    TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
+    BitmapGlyphPayload, CacheHint, ClipKind, ColorLayerNode, ColorLayersPayload,
+    ColorPaintGraphNode, ColorPaintGraphPayload, FontColorGlyphRef, FontResourceTable,
+    GlyphCluster, GlyphOutlinePayloadKind, GlyphOutlineStrokeStyle, GlyphRunDiagnostics,
+    GlyphTransform, GroupKind, LayerAffineTransform, LayerGlyphOutlinePath, LayerNode,
+    LayerNodeKind, LayerPoint, LayerVector, PageLayerTree, PaintOp, PaintTextStyle,
+    PaintVariantMeta, PaletteRef, RenderProfile, ResolvedColor, ResolvedImageKind, ShapeKey,
+    SvgGlyphPayload, TextDecorationKind, TextSourceAnnotation, TextSourceEntry, TextSourceId,
+    TextSourceRange, TextSourceSpan, TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
 use crate::renderer::composer::expand_pua_display_text;
 use crate::renderer::layout::compute_char_positions;
@@ -68,6 +70,9 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let has_variant_groups = text_variant_features.has_variant_groups();
     let has_glyph_runs = text_variant_features.has_glyph_runs;
     let has_glyph_outlines = text_variant_features.has_glyph_outlines;
+    let has_glyph_outline_color_layers = text_variant_features.has_glyph_outline_color_layers;
+    let has_glyph_outline_bitmap = text_variant_features.has_glyph_outline_bitmap;
+    let has_glyph_outline_svg = text_variant_features.has_glyph_outline_svg;
     let has_display_text = text_variant_features.has_display_text;
     buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\"");
     if has_display_text {
@@ -78,6 +83,15 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     }
     if has_glyph_outlines {
         buf.push_str(",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\"");
+    }
+    if has_glyph_outline_color_layers {
+        buf.push_str(",\"text.glyphOutline.colorLayers\"");
+    }
+    if has_glyph_outline_bitmap {
+        buf.push_str(",\"text.glyphOutline.bitmapGlyph\"");
+    }
+    if has_glyph_outline_svg {
+        buf.push_str(",\"text.glyphOutline.svgGlyph\"");
     }
     if has_variant_groups {
         buf.push_str(",\"text.variantGroups\"");
@@ -103,6 +117,15 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
         optional_features.push("text.glyphOutline");
         optional_features.push("text.glyphOutline.strictSidecar");
     }
+    if has_glyph_outline_color_layers {
+        optional_features.push("text.glyphOutline.colorLayers");
+    }
+    if has_glyph_outline_bitmap {
+        optional_features.push("text.glyphOutline.bitmapGlyph");
+    }
+    if has_glyph_outline_svg {
+        optional_features.push("text.glyphOutline.svgGlyph");
+    }
     buf.push_str("],\"optionalFeatures\":[");
     for (idx, feature) in optional_features.iter().enumerate() {
         if idx > 0 {
@@ -110,7 +133,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
         }
         buf.push_str(&json_escape(feature));
     }
-    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.glyphOutline.colorLayers\",\"text.glyphOutline.colorLayers.colrV0\",\"text.glyphOutline.colorLayers.colrV1\",\"text.glyphOutline.bitmapGlyph\",\"text.glyphOutline.svgGlyph\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -131,6 +154,9 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
 struct TextVariantFeatureFlags {
     has_glyph_runs: bool,
     has_glyph_outlines: bool,
+    has_glyph_outline_color_layers: bool,
+    has_glyph_outline_bitmap: bool,
+    has_glyph_outline_svg: bool,
     has_display_text: bool,
 }
 
@@ -158,15 +184,21 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
                             features.has_display_text |= display_text_for_text_run(run).is_some()
                         }
                         PaintOp::GlyphRun { .. } => features.has_glyph_runs = true,
-                        PaintOp::GlyphOutline { .. } => features.has_glyph_outlines = true,
+                        PaintOp::GlyphOutline { outline, .. } => {
+                            features.has_glyph_outlines = true;
+                            features.has_glyph_outline_color_layers |= matches!(
+                                outline.payload_kind,
+                                GlyphOutlinePayloadKind::ColorLayers
+                            );
+                            features.has_glyph_outline_bitmap |= matches!(
+                                outline.payload_kind,
+                                GlyphOutlinePayloadKind::BitmapGlyph
+                            );
+                            features.has_glyph_outline_svg |=
+                                matches!(outline.payload_kind, GlyphOutlinePayloadKind::SvgGlyph);
+                        }
                         _ => {}
                     }
-                }
-                if features.has_glyph_runs
-                    && features.has_glyph_outlines
-                    && features.has_display_text
-                {
-                    return features;
                 }
             }
         }
@@ -451,6 +483,18 @@ impl PaintOp {
                 if let Some(stroke) = &outline.stroke {
                     buf.push_str(",\"stroke\":");
                     write_glyph_outline_stroke(buf, stroke);
+                }
+                if let Some(color_layers) = &outline.color_layers {
+                    buf.push_str(",\"colorLayers\":");
+                    write_color_layers_payload(buf, color_layers);
+                }
+                if let Some(bitmap_glyph) = &outline.bitmap_glyph {
+                    buf.push_str(",\"bitmapGlyph\":");
+                    write_bitmap_glyph_payload(buf, bitmap_glyph);
+                }
+                if let Some(svg_glyph) = &outline.svg_glyph {
+                    buf.push_str(",\"svgGlyph\":");
+                    write_svg_glyph_payload(buf, svg_glyph);
                 }
                 buf.push_str(",\"diagnostics\":");
                 write_glyph_run_diagnostics(buf, &outline.diagnostics);
@@ -1609,6 +1653,293 @@ fn write_glyph_outline_stroke(buf: &mut String, stroke: &GlyphOutlineStrokeStyle
     );
 }
 
+fn write_color_layers_payload(buf: &mut String, payload: &ColorLayersPayload) {
+    let _ = write!(
+        buf,
+        "{{\"colorFormat\":{}",
+        json_escape(payload.color_format.as_str())
+    );
+    if let Some(source_font_ref) = &payload.source_font_ref {
+        buf.push_str(",\"sourceFontRef\":");
+        write_font_color_glyph_ref(buf, source_font_ref);
+    }
+    if let Some(palette_ref) = &payload.palette_ref {
+        buf.push_str(",\"paletteRef\":");
+        write_palette_ref(buf, palette_ref);
+    }
+    buf.push_str(",\"layers\":");
+    write_color_layer_nodes(buf, &payload.layers);
+    if let Some(graph) = &payload.paint_graph {
+        buf.push_str(",\"paintGraph\":");
+        write_color_paint_graph(buf, graph);
+    }
+    if let Some(range) = payload.source_range_utf8 {
+        buf.push_str(",\"sourceRangeUtf8\":");
+        write_text_source_range(buf, range);
+    }
+    if let Some(range) = payload.glyph_range {
+        let _ = write!(
+            buf,
+            ",\"glyphRange\":{{\"start\":{},\"end\":{}}}",
+            range.start, range.end
+        );
+    }
+    let _ = write!(
+        buf,
+        ",\"colrv0ResolvedLayerContract\":{},\"colrv1Stage1GraphContract\":{}",
+        payload.has_colrv0_resolved_layer_contract(),
+        payload.has_colrv1_stage1_graph_contract()
+    );
+    buf.push('}');
+}
+
+fn write_color_layer_nodes(buf: &mut String, layers: &[ColorLayerNode]) {
+    buf.push('[');
+    for (idx, layer) in layers.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        buf.push('{');
+        if let Some(layer_index) = layer.layer_index {
+            let _ = write!(buf, "\"layerIndex\":{}", layer_index);
+        } else {
+            buf.push_str("\"layerIndex\":null");
+        }
+        if let Some(glyph_id) = layer.glyph_id {
+            let _ = write!(buf, ",\"glyphId\":{}", glyph_id);
+        }
+        if let Some(range) = layer.glyph_range {
+            let _ = write!(
+                buf,
+                ",\"glyphRange\":{{\"start\":{},\"end\":{}}}",
+                range.start, range.end
+            );
+        }
+        if let Some(range) = layer.source_range_utf8 {
+            buf.push_str(",\"sourceRangeUtf8\":");
+            write_text_source_range(buf, range);
+        }
+        if let Some(source_font_ref) = &layer.source_font_ref {
+            buf.push_str(",\"sourceFontRef\":");
+            write_font_color_glyph_ref(buf, source_font_ref);
+        }
+        if let Some(commands) = &layer.commands {
+            buf.push_str(",\"commands\":");
+            write_path_commands(buf, commands);
+        }
+        if let Some(fill) = &layer.fill {
+            buf.push_str(",\"fill\":");
+            write_resolved_color(buf, fill);
+        }
+        if let Some(fill_rule) = layer.fill_rule {
+            let _ = write!(buf, ",\"fillRule\":{}", json_escape(fill_rule.as_str()));
+        }
+        if let Some(palette_index) = layer.palette_index {
+            let _ = write!(buf, ",\"paletteIndex\":{}", palette_index);
+        }
+        if let Some(color) = layer.color {
+            let _ = write!(buf, ",\"color\":{}", json_escape(&color_ref_to_css(color)));
+        }
+        if let Some(opacity) = layer.opacity {
+            let _ = write!(buf, ",\"opacity\":{:.6}", opacity);
+        }
+        if let Some(transform) = layer.transform_to_run {
+            buf.push_str(",\"transformToRun\":");
+            write_affine_transform(buf, transform);
+        }
+        buf.push('}');
+    }
+    buf.push(']');
+}
+
+fn write_color_paint_graph(buf: &mut String, graph: &ColorPaintGraphPayload) {
+    let _ = write!(buf, "{{\"rootNodeId\":{},\"nodes\":[", graph.root_node_id);
+    for (idx, node) in graph.nodes.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        write_color_paint_graph_node(buf, node);
+    }
+    buf.push_str("]}");
+}
+
+fn write_color_paint_graph_node(buf: &mut String, node: &ColorPaintGraphNode) {
+    let _ = write!(
+        buf,
+        "{{\"nodeId\":{},\"kind\":{}",
+        node.node_id,
+        json_escape(node.kind.as_str())
+    );
+    if let Some(commands) = &node.commands {
+        buf.push_str(",\"commands\":");
+        write_path_commands(buf, commands);
+    }
+    if let Some(fill) = &node.fill {
+        buf.push_str(",\"fill\":");
+        write_resolved_color(buf, fill);
+    }
+    if let Some(fill_rule) = node.fill_rule {
+        let _ = write!(buf, ",\"fillRule\":{}", json_escape(fill_rule.as_str()));
+    }
+    if let Some(child_node_id) = node.child_node_id {
+        let _ = write!(buf, ",\"childNodeId\":{}", child_node_id);
+    }
+    if let Some(transform) = node.transform {
+        buf.push_str(",\"transform\":");
+        write_affine_transform(buf, transform);
+    }
+    if let Some(range) = node.source_range_utf8 {
+        buf.push_str(",\"sourceRangeUtf8\":");
+        write_text_source_range(buf, range);
+    }
+    if let Some(range) = node.glyph_range {
+        let _ = write!(
+            buf,
+            ",\"glyphRange\":{{\"start\":{},\"end\":{}}}",
+            range.start, range.end
+        );
+    }
+    if let Some(source_font_ref) = &node.source_font_ref {
+        buf.push_str(",\"sourceFontRef\":");
+        write_font_color_glyph_ref(buf, source_font_ref);
+    }
+    buf.push('}');
+}
+
+fn write_bitmap_glyph_payload(buf: &mut String, payload: &BitmapGlyphPayload) {
+    let _ = write!(
+        buf,
+        "{{\"imageRef\":{},\"sourceRangeUtf8\":",
+        payload.image_ref.0
+    );
+    write_text_source_range(buf, payload.source_range_utf8);
+    let _ = write!(
+        buf,
+        ",\"glyphRange\":{{\"start\":{},\"end\":{}}},\"placement\":",
+        payload.glyph_range.start, payload.glyph_range.end
+    );
+    write_bbox(buf, payload.placement);
+    let _ = write!(
+        buf,
+        ",\"alphaPremultiplied\":{},\"scalingPolicy\":{},\"filtering\":{},\"strictVisualContract\":{}",
+        payload.alpha_premultiplied,
+        json_escape(payload.scaling_policy.as_str()),
+        json_escape(payload.filtering.as_str()),
+        payload.has_strict_visual_contract()
+    );
+    if let Some(transform) = payload.transform_to_run {
+        buf.push_str(",\"transformToRun\":");
+        write_affine_transform(buf, transform);
+    }
+    buf.push('}');
+}
+
+fn write_svg_glyph_payload(buf: &mut String, payload: &SvgGlyphPayload) {
+    let _ = write!(
+        buf,
+        "{{\"svgRef\":{},\"sourceRangeUtf8\":",
+        payload.svg_ref.0
+    );
+    write_text_source_range(buf, payload.source_range_utf8);
+    let _ = write!(
+        buf,
+        ",\"glyphRange\":{{\"start\":{},\"end\":{}}},\"viewBox\":",
+        payload.glyph_range.start, payload.glyph_range.end
+    );
+    write_bbox(buf, payload.view_box);
+    if let Some(size) = payload.intrinsic_size {
+        let _ = write!(
+            buf,
+            ",\"intrinsicSize\":{{\"width\":{:.6},\"height\":{:.6}}}",
+            size.dx, size.dy
+        );
+    }
+    let _ = write!(
+        buf,
+        ",\"staticSanitized\":{},\"scriptAllowed\":{},\"animationAllowed\":{},\"externalResourcesAllowed\":{},\"interactivityAllowed\":{},\"staticSanitizedContract\":{}",
+        payload.static_sanitized,
+        payload.script_allowed,
+        payload.animation_allowed,
+        payload.external_resources_allowed,
+        payload.interactivity_allowed,
+        payload.has_static_sanitized_contract()
+    );
+    if let Some(transform) = payload.transform_to_run {
+        buf.push_str(",\"transformToRun\":");
+        write_affine_transform(buf, transform);
+    }
+    buf.push('}');
+}
+
+fn write_font_color_glyph_ref(buf: &mut String, value: &FontColorGlyphRef) {
+    buf.push('{');
+    let mut wrote = false;
+    if let Some(face_key) = &value.face_key {
+        let _ = write!(buf, "\"faceKey\":{}", json_escape(face_key));
+        wrote = true;
+    }
+    if let Some(glyph_id) = value.glyph_id {
+        if wrote {
+            buf.push(',');
+        }
+        let _ = write!(buf, "\"glyphId\":{}", glyph_id);
+        wrote = true;
+    }
+    if let Some(palette_index) = value.palette_index {
+        if wrote {
+            buf.push(',');
+        }
+        let _ = write!(buf, "\"paletteIndex\":{}", palette_index);
+        wrote = true;
+    }
+    if let Some(color_format) = value.color_format {
+        if wrote {
+            buf.push(',');
+        }
+        let _ = write!(
+            buf,
+            "\"colorFormat\":{}",
+            json_escape(color_format.as_str())
+        );
+    }
+    buf.push('}');
+}
+
+fn write_palette_ref(buf: &mut String, value: &PaletteRef) {
+    buf.push('{');
+    let mut wrote = false;
+    if let Some(id) = &value.id {
+        let _ = write!(buf, "\"id\":{}", json_escape(id));
+        wrote = true;
+    }
+    if let Some(index) = value.index {
+        if wrote {
+            buf.push(',');
+        }
+        let _ = write!(buf, "\"index\":{}", index);
+        wrote = true;
+    }
+    if let Some(cpal_digest) = &value.cpal_digest {
+        if wrote {
+            buf.push(',');
+        }
+        let _ = write!(buf, "\"cpalDigest\":{}", json_escape(cpal_digest));
+    }
+    buf.push('}');
+}
+
+fn write_resolved_color(buf: &mut String, color: &ResolvedColor) {
+    buf.push('{');
+    if let Some(color_space) = &color.color_space {
+        let _ = write!(buf, "\"colorSpace\":{},", json_escape(color_space));
+    }
+    let _ = write!(
+        buf,
+        "\"rgba\":[{:.6},{:.6},{:.6},{:.6}]}}",
+        color.rgba[0], color.rgba[1], color.rgba[2], color.rgba[3]
+    );
+}
+
 fn write_glyph_transforms(buf: &mut String, transforms: &[GlyphTransform]) {
     buf.push('[');
     for (idx, transform) in transforms.iter().enumerate() {
@@ -1937,14 +2268,16 @@ fn form_type_str(value: FormType) -> &'static str {
 mod tests {
     use super::*;
     use crate::paint::{
-        CacheHint, ClipKind, FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster,
-        GlyphOutlineFillRule, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
-        GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
-        GlyphRunOrientation, GlyphRunReplayEligibility, GroupKind, LayerAffineTransform,
-        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
-        LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta, ScriptTag, ShapeKey,
-        ShapingEngineId, TextDecorationKind, TextDirection, TextSourceId, TextSourceRange,
-        TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode,
+        CacheHint, ClipKind, ColorGlyphFormat, ColorLayersPayload, ColorPaintGraphNode,
+        ColorPaintGraphNodeKind, ColorPaintGraphPayload, FontFaceKey, FontFallbackPolicyId,
+        FontInstanceKey, GlyphCluster, GlyphOutlineFillRule, GlyphOutlinePayloadKind,
+        GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange,
+        GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, GroupKind,
+        LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
+        LayerNode, LayerPoint, LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta,
+        ResolvedColor, ScriptTag, ShapeKey, ShapingEngineId, TextDecorationKind, TextDirection,
+        TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality,
+        WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -2035,7 +2368,7 @@ mod tests {
 
         assert!(json.contains("\"kind\":\"leaf\""));
         assert!(json.contains("\"schemaVersion\":1"));
-        assert!(json.contains("\"schemaMinorVersion\":13"));
+        assert!(json.contains("\"schemaMinorVersion\":14"));
         assert!(json.contains("\"schema\":{\"major\":1,\"minor\":13}"));
         assert!(json.contains("\"resourceTableVersion\":1"));
         assert!(json.contains("\"resourceTableMinorVersion\":3"));
@@ -2472,6 +2805,9 @@ mod tests {
                     local_paint_order: Some(0),
                 },
                 payload_kind: GlyphOutlinePayloadKind::MonochromeFillStroke,
+                color_layers: None,
+                bitmap_glyph: None,
+                svg_glyph: None,
                 paint_style: PaintTextStyle::from(&TextStyle {
                     font_family: "Test".to_string(),
                     font_size: 12.0,
@@ -2545,6 +2881,115 @@ mod tests {
         assert!(json.contains("\"text.glyphOutline.strictSidecar\""));
         assert!(json.contains("\"variants\":[\"textRun\",\"glyphOutline\"]"));
         assert!(json.contains("\"variantKind\":\"glyphOutline\""));
+    }
+
+    #[test]
+    fn serializes_advanced_glyph_outline_payload_gate_metadata() {
+        let outline = PaintOp::GlyphOutline {
+            bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+            outline: Box::new(LayerGlyphOutlinePaint {
+                source: TextSourceSpan {
+                    id: TextSourceId(0),
+                    utf8_range: TextSourceRange::new(0, 1),
+                    utf16_range: TextSourceRange::new(0, 1),
+                    stable_source_key: None,
+                },
+                variant: PaintVariantMeta {
+                    equivalence_group: "text-0".to_string(),
+                    variant_id: "glyphOutlineColor".to_string(),
+                    variant_kind: TextVariantKind::GlyphOutline,
+                    part_index: 0,
+                    part_count: 1,
+                    is_default_fallback: false,
+                    requires: vec![
+                        "text.glyphOutline".to_string(),
+                        "text.glyphOutline.colorLayers".to_string(),
+                        "text.glyphOutline.colorLayers.colrV1".to_string(),
+                    ],
+                    quality: Some(TextVariantQuality::Exact),
+                    anchor_op_id: Some("text-0".to_string()),
+                    local_paint_order: Some(0),
+                },
+                payload_kind: GlyphOutlinePayloadKind::ColorLayers,
+                color_layers: Some(ColorLayersPayload {
+                    color_format: ColorGlyphFormat::ColrV1,
+                    source_font_ref: None,
+                    palette_ref: None,
+                    layers: Vec::new(),
+                    paint_graph: Some(ColorPaintGraphPayload {
+                        root_node_id: 0,
+                        nodes: vec![ColorPaintGraphNode {
+                            node_id: 0,
+                            kind: ColorPaintGraphNodeKind::SolidPath,
+                            commands: Some(vec![
+                                PathCommand::MoveTo(0.0, 0.0),
+                                PathCommand::LineTo(10.0, 0.0),
+                                PathCommand::ClosePath,
+                            ]),
+                            fill: Some(ResolvedColor {
+                                color_space: Some("sRGB".to_string()),
+                                rgba: [0.0, 0.0, 0.0, 1.0],
+                            }),
+                            fill_rule: Some(GlyphOutlineFillRule::NonZero),
+                            child_node_id: None,
+                            transform: None,
+                            source_range_utf8: Some(TextSourceRange::new(0, 1)),
+                            glyph_range: Some(GlyphRange::new(0, 1)),
+                            source_font_ref: None,
+                        }],
+                    }),
+                    source_range_utf8: Some(TextSourceRange::new(0, 1)),
+                    glyph_range: Some(GlyphRange::new(0, 1)),
+                }),
+                bitmap_glyph: None,
+                svg_glyph: None,
+                paint_style: PaintTextStyle::from(&TextStyle {
+                    font_family: "Test".to_string(),
+                    font_size: 12.0,
+                    shade_color: 0x00FF_FFFF,
+                    ..Default::default()
+                }),
+                placement: crate::paint::TextRunPlacement {
+                    run_to_page: LayerAffineTransform {
+                        a: 1.0,
+                        b: 0.0,
+                        c: 0.0,
+                        d: 1.0,
+                        e: 0.0,
+                        f: 12.0,
+                    },
+                    baseline_y: 0.0,
+                },
+                paths: Vec::new(),
+                stroke: None,
+                diagnostics: GlyphRunDiagnostics {
+                    quality: TextVariantQuality::Exact,
+                    replay_eligibility: GlyphRunReplayEligibility::Portable,
+                    strict_visual_eligible: true,
+                    max_origin_delta_px: 0.0,
+                    max_advance_delta_px: 0.0,
+                    max_residual_after_adjustment_px: 0.0,
+                    cluster_mismatch_count: 0,
+                    missing_glyph_count: 0,
+                    used_fallback_font_count: 0,
+                    reason: None,
+                },
+            }),
+        };
+
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 120.0, 80.0), None, vec![outline]),
+        );
+        let json = tree.to_json();
+
+        assert!(json.contains("\"payloadKind\":\"colorLayers\""));
+        assert!(json.contains("\"colorLayers\":{\"colorFormat\":\"colrV1\""));
+        assert!(json.contains("\"kind\":\"solidPath\""));
+        assert!(json.contains("\"colrv1Stage1GraphContract\":true"));
+        assert!(json.contains("\"text.glyphOutline.colorLayers\""));
+        assert!(json.contains("\"text.glyphOutline.colorLayers.colrV1\""));
     }
 
     #[test]

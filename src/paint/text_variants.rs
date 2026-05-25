@@ -33,6 +33,11 @@ pub enum TextVariantScopeError {
         anchor_op_id: String,
         leaf: String,
     },
+    MixedGlyphOutlinePayload {
+        equivalence_group: String,
+        variant_id: String,
+        leaf: String,
+    },
     EmptyVariantSet {
         equivalence_group: String,
         variant_id: String,
@@ -87,6 +92,14 @@ impl fmt::Display for TextVariantScopeError {
             } => write!(
                 f,
                 "text sidecar variant `{variant_id}` in group `{equivalence_group}` at leaf `{leaf}` anchors `{anchor_op_id}`, expected the same paint-order slot"
+            ),
+            Self::MixedGlyphOutlinePayload {
+                equivalence_group,
+                variant_id,
+                leaf,
+            } => write!(
+                f,
+                "glyph outline variant `{variant_id}` in group `{equivalence_group}` at leaf `{leaf}` mixes payload families"
             ),
             Self::EmptyVariantSet {
                 equivalence_group,
@@ -171,6 +184,15 @@ fn validate_leaf(
             continue;
         };
         validate_sidecar_anchor(&variant, &leaf_path)?;
+        if let PaintOp::GlyphOutline { outline, .. } = op {
+            if !outline.has_exclusive_payload_family() {
+                return Err(TextVariantScopeError::MixedGlyphOutlinePayload {
+                    equivalence_group: variant.equivalence_group.clone(),
+                    variant_id: variant.variant_id.clone(),
+                    leaf: leaf_path,
+                });
+            }
+        }
         if let Some(first_leaf) = group_leaf_paths.get(&variant.equivalence_group) {
             if first_leaf != &leaf_path {
                 return Err(TextVariantScopeError::CrossLeafGroup {
@@ -287,12 +309,13 @@ mod tests {
     use crate::paint::resources::ResourceArena;
     use crate::paint::{
         FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
-        GlyphOutlinePayloadKind, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
-        GlyphRunReplayEligibility, LayerAffineTransform, LayerGlyphOutlinePaint,
-        LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerOutputOptions, LayerPoint,
-        PaintTextStyle, RenderProfile, ScriptTag, ShapeKey, ShapingEngineId, TextDirection,
-        TextSourceId, TextSourceRange, TextSourceSpan, TextSourceTable, TextVariantKind,
-        TextVariantQuality, WritingMode,
+        GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
+        GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
+        GlyphRunOrientation, GlyphRunReplayEligibility, LayerAffineTransform,
+        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode,
+        LayerOutputOptions, LayerPoint, PaintTextStyle, RenderProfile, ScriptTag, ShapeKey,
+        ShapingEngineId, TextDirection, TextSourceId, TextSourceRange, TextSourceSpan,
+        TextSourceTable, TextVariantKind, TextVariantQuality, WritingMode,
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
     use crate::renderer::{PathCommand, TextStyle};
@@ -407,6 +430,9 @@ mod tests {
                 },
                 variant,
                 payload_kind: GlyphOutlinePayloadKind::MonochromeFill,
+                color_layers: None,
+                bitmap_glyph: None,
+                svg_glyph: None,
                 paint_style: PaintTextStyle::from(&TextStyle::default()),
                 placement: crate::paint::TextRunPlacement {
                     run_to_page: LayerAffineTransform {
@@ -638,6 +664,38 @@ mod tests {
         assert!(matches!(
             validate_text_variant_scope(&tree),
             Err(TextVariantScopeError::InvalidSidecarAnchor { .. })
+        ));
+    }
+
+    #[test]
+    fn rejects_mixed_glyph_outline_payload_family() {
+        let outline = PaintVariantMeta {
+            equivalence_group: "text-1".to_string(),
+            variant_id: "glyphOutline".to_string(),
+            variant_kind: TextVariantKind::GlyphOutline,
+            part_index: 0,
+            part_count: 1,
+            is_default_fallback: false,
+            requires: vec!["text.glyphOutline".to_string()],
+            quality: Some(TextVariantQuality::Exact),
+            anchor_op_id: Some("text-1".to_string()),
+            local_paint_order: None,
+        };
+        let mut op = glyph_outline_op(outline);
+        if let PaintOp::GlyphOutline { outline, .. } = &mut op {
+            outline.stroke = Some(GlyphOutlineStrokeStyle {
+                color: 0x00000000,
+                width: 1.0,
+                join: GlyphOutlineStrokeJoin::Miter,
+                cap: GlyphOutlineStrokeCap::Butt,
+                miter_limit: 2.0,
+                paint_order: GlyphOutlinePaintOrder::FillThenStroke,
+            });
+        }
+        let tree = tree(LayerNode::leaf(bbox(), None, vec![text_op(), op]));
+        assert!(matches!(
+            validate_text_variant_scope(&tree),
+            Err(TextVariantScopeError::MixedGlyphOutlinePayload { .. })
         ));
     }
 }

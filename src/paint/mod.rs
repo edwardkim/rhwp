@@ -28,13 +28,15 @@ pub use layer_tree::{
     TextSourceTable,
 };
 pub use paint_op::{
-    GlyphCluster, GlyphClusterFlag, GlyphOutlineFillRule, GlyphOutlinePaintOrder,
-    GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
-    GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphTransform,
-    LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
-    LayerPoint, LayerVector, PaintOp, PaintTextStyle, PaintVariantMeta, ResolvedImageKind,
-    ResolvedImagePayload, TextDecorationKind, TextRunPlacement, TextVariantKind,
-    TextVariantQuality,
+    BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, ColorGlyphFormat,
+    ColorLayerNode, ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind,
+    ColorPaintGraphPayload, FontColorGlyphRef, GlyphCluster, GlyphClusterFlag,
+    GlyphOutlineFillRule, GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
+    GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
+    GlyphRunOrientation, GlyphTransform, LayerAffineTransform, LayerGlyphOutlinePaint,
+    LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerPoint, LayerVector, PaintOp, PaintTextStyle,
+    PaintVariantMeta, PaletteRef, ResolvedColor, ResolvedImageKind, ResolvedImagePayload,
+    SvgGlyphPayload, TextDecorationKind, TextRunPlacement, TextVariantKind, TextVariantQuality,
 };
 pub use profile::RenderProfile;
 pub use resources::{

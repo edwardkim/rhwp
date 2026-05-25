@@ -139,6 +139,9 @@ pub enum VariantRejectReason {
     GlyphOutlineUnsupported,
     UnsupportedOutlinePayload,
     GlyphOutlineStrokeStyleUnsupported,
+    UnsupportedColorGlyph,
+    UnsupportedBitmapGlyph,
+    UnsupportedSvgGlyph,
     PositionAdjustedNotAllowed,
     PositionAdjustedResidualTooLarge,
 }
@@ -160,6 +163,9 @@ impl VariantRejectReason {
             Self::GlyphOutlineUnsupported => "glyphOutlineUnsupported",
             Self::UnsupportedOutlinePayload => "unsupportedOutlinePayload",
             Self::GlyphOutlineStrokeStyleUnsupported => "glyphOutlineStrokeStyleUnsupported",
+            Self::UnsupportedColorGlyph => "unsupportedColorGlyph",
+            Self::UnsupportedBitmapGlyph => "unsupportedBitmapGlyph",
+            Self::UnsupportedSvgGlyph => "unsupportedSvgGlyph",
             Self::PositionAdjustedNotAllowed => "positionAdjustedNotAllowed",
             Self::PositionAdjustedResidualTooLarge => "positionAdjustedResidualTooLarge",
         }
@@ -173,6 +179,10 @@ pub struct TextVariantSelectionOptions {
     pub allow_position_adjusted: bool,
     pub max_position_adjusted_residual_px: f64,
     pub max_canvas_glyph_id: u32,
+    pub allow_colrv0_color_layers: bool,
+    pub allow_colrv1_stage1_color_graph: bool,
+    pub allow_bitmap_glyph: bool,
+    pub allow_svg_glyph: bool,
 }
 
 impl Default for TextVariantSelectionOptions {
@@ -189,6 +199,10 @@ impl TextVariantSelectionOptions {
             allow_position_adjusted: true,
             max_position_adjusted_residual_px: 0.25,
             max_canvas_glyph_id: u16::MAX as u32,
+            allow_colrv0_color_layers: false,
+            allow_colrv1_stage1_color_graph: false,
+            allow_bitmap_glyph: false,
+            allow_svg_glyph: false,
         }
     }
 
@@ -505,7 +519,14 @@ fn collect_glyph_outline_reject_reasons(
     options: TextVariantSelectionOptions,
     reasons: &mut BTreeSet<VariantRejectReason>,
 ) {
-    if outline.paths.is_empty() {
+    if !outline.has_exclusive_payload_family() {
+        reasons.insert(VariantRejectReason::UnsupportedOutlinePayload);
+    }
+    if matches!(
+        outline.payload_kind,
+        GlyphOutlinePayloadKind::MonochromeFill | GlyphOutlinePayloadKind::MonochromeFillStroke
+    ) && outline.paths.is_empty()
+    {
         reasons.insert(VariantRejectReason::UnsupportedOutlinePayload);
     }
     if !outline.paint_style.is_fill_only_glyph_replay() {
@@ -526,6 +547,31 @@ fn collect_glyph_outline_reject_reasons(
                 reasons.insert(VariantRejectReason::GlyphOutlineStrokeStyleUnsupported);
             }
         }
+        GlyphOutlinePayloadKind::ColorLayers => match outline.color_layers.as_ref() {
+            Some(color_layers)
+                if color_layers.has_colrv0_resolved_layer_contract()
+                    && options.allow_colrv0_color_layers => {}
+            Some(color_layers)
+                if color_layers.has_colrv1_stage1_graph_contract()
+                    && options.allow_colrv1_stage1_color_graph => {}
+            _ => {
+                reasons.insert(VariantRejectReason::UnsupportedColorGlyph);
+            }
+        },
+        GlyphOutlinePayloadKind::BitmapGlyph => match outline.bitmap_glyph.as_ref() {
+            Some(bitmap_glyph)
+                if bitmap_glyph.has_strict_visual_contract() && options.allow_bitmap_glyph => {}
+            _ => {
+                reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
+            }
+        },
+        GlyphOutlinePayloadKind::SvgGlyph => match outline.svg_glyph.as_ref() {
+            Some(svg_glyph)
+                if svg_glyph.has_static_sanitized_contract() && options.allow_svg_glyph => {}
+            _ => {
+                reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
+            }
+        },
     }
     collect_text_variant_diagnostics_reject_reasons(&outline.diagnostics, options, reasons);
 }
@@ -577,11 +623,14 @@ fn collect_text_variant_diagnostics_reject_reasons(
 mod tests {
     use super::*;
     use crate::paint::{
+        BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, ColorGlyphFormat,
+        ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind, ColorPaintGraphPayload,
         FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
         GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
         GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
-        GlyphRunOrientation, LayerAffineTransform, LayerGlyphOutlinePath, LayerNode, LayerPoint,
-        PaintTextStyle, PaintVariantMeta, ScriptTag, ShapeKey, ShapingEngineId, TextDirection,
+        GlyphRunOrientation, ImageResourceId, LayerAffineTransform, LayerGlyphOutlinePath,
+        LayerNode, LayerPoint, LayerVector, PaintTextStyle, PaintVariantMeta, ResolvedColor,
+        ScriptTag, ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDirection,
         TextRunPlacement, TextSourceId, TextSourceRange, TextSourceSpan, WritingMode,
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
@@ -747,6 +796,9 @@ mod tests {
                 } else {
                     GlyphOutlinePayloadKind::MonochromeFill
                 },
+                color_layers: None,
+                bitmap_glyph: None,
+                svg_glyph: None,
                 paint_style: PaintTextStyle::from(&TextStyle {
                     font_family: "Test".to_string(),
                     font_size: 12.0,
@@ -770,6 +822,106 @@ mod tests {
                 diagnostics: diagnostics(),
             }),
         }
+    }
+
+    fn color_layers_payload(kind: ColorPaintGraphNodeKind) -> ColorLayersPayload {
+        ColorLayersPayload {
+            color_format: ColorGlyphFormat::ColrV1,
+            source_font_ref: None,
+            palette_ref: None,
+            layers: Vec::new(),
+            paint_graph: Some(ColorPaintGraphPayload {
+                root_node_id: 0,
+                nodes: vec![ColorPaintGraphNode {
+                    node_id: 0,
+                    kind,
+                    commands: Some(vec![
+                        PathCommand::MoveTo(0.0, 0.0),
+                        PathCommand::LineTo(10.0, 0.0),
+                        PathCommand::ClosePath,
+                    ]),
+                    fill: Some(ResolvedColor {
+                        color_space: Some("sRGB".to_string()),
+                        rgba: [0.0, 0.0, 0.0, 1.0],
+                    }),
+                    fill_rule: Some(GlyphOutlineFillRule::NonZero),
+                    child_node_id: None,
+                    transform: None,
+                    source_range_utf8: Some(TextSourceRange::new(0, 1)),
+                    glyph_range: Some(GlyphRange::new(0, 1)),
+                    source_font_ref: None,
+                }],
+            }),
+            source_range_utf8: Some(TextSourceRange::new(0, 1)),
+            glyph_range: Some(GlyphRange::new(0, 1)),
+        }
+    }
+
+    fn color_layers_outline(kind: ColorPaintGraphNodeKind) -> PaintOp {
+        let mut op = glyph_outline(None);
+        if let PaintOp::GlyphOutline { outline, .. } = &mut op {
+            outline.payload_kind = GlyphOutlinePayloadKind::ColorLayers;
+            outline.paths.clear();
+            outline.color_layers = Some(color_layers_payload(kind));
+            outline
+                .variant
+                .requires
+                .push("text.glyphOutline.colorLayers".to_string());
+            outline
+                .variant
+                .requires
+                .push("text.glyphOutline.colorLayers.colrV1".to_string());
+        }
+        op
+    }
+
+    fn bitmap_glyph_outline() -> PaintOp {
+        let mut op = glyph_outline(None);
+        if let PaintOp::GlyphOutline { outline, .. } = &mut op {
+            outline.payload_kind = GlyphOutlinePayloadKind::BitmapGlyph;
+            outline.paths.clear();
+            outline.bitmap_glyph = Some(BitmapGlyphPayload {
+                image_ref: ImageResourceId(0),
+                source_range_utf8: TextSourceRange::new(0, 1),
+                glyph_range: GlyphRange::new(0, 1),
+                placement: BoundingBox::new(0.0, 0.0, 12.0, 12.0),
+                alpha_premultiplied: true,
+                scaling_policy: BitmapGlyphScalingPolicy::SourceExact,
+                filtering: BitmapGlyphFiltering::Linear,
+                transform_to_run: None,
+            });
+            outline
+                .variant
+                .requires
+                .push("text.glyphOutline.bitmapGlyph".to_string());
+        }
+        op
+    }
+
+    fn svg_glyph_outline() -> PaintOp {
+        let mut op = glyph_outline(None);
+        if let PaintOp::GlyphOutline { outline, .. } = &mut op {
+            outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+            outline.paths.clear();
+            outline.svg_glyph = Some(SvgGlyphPayload {
+                svg_ref: SvgResourceId(0),
+                source_range_utf8: TextSourceRange::new(0, 1),
+                glyph_range: GlyphRange::new(0, 1),
+                view_box: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                intrinsic_size: Some(LayerVector { dx: 10.0, dy: 10.0 }),
+                static_sanitized: true,
+                script_allowed: false,
+                animation_allowed: false,
+                external_resources_allowed: false,
+                interactivity_allowed: false,
+                transform_to_run: None,
+            });
+            outline
+                .variant
+                .requires
+                .push("text.glyphOutline.svgGlyph".to_string());
+        }
+        op
     }
 
     fn tree(ops: Vec<PaintOp>) -> PageLayerTree {
@@ -983,5 +1135,95 @@ mod tests {
         assert!(report.rejected_variants[0]
             .reasons
             .contains(&VariantRejectReason::VariantPartsIncomplete));
+    }
+
+    #[test]
+    fn advanced_glyph_outline_payloads_are_gated_by_default() {
+        let color_report = first_report(
+            vec![
+                text_op(),
+                color_layers_outline(ColorPaintGraphNodeKind::SolidPath),
+            ],
+            TextVariantSelectionOptions::canvaskit_strict_outline(),
+        );
+        assert_eq!(
+            color_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(color_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedColorGlyph));
+
+        let bitmap_report = first_report(
+            vec![text_op(), bitmap_glyph_outline()],
+            TextVariantSelectionOptions::canvaskit_strict_outline(),
+        );
+        assert_eq!(
+            bitmap_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(bitmap_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedBitmapGlyph));
+
+        let svg_report = first_report(
+            vec![text_op(), svg_glyph_outline()],
+            TextVariantSelectionOptions::canvaskit_strict_outline(),
+        );
+        assert_eq!(
+            svg_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(svg_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedSvgGlyph));
+    }
+
+    #[test]
+    fn colrv1_graph_node_kind_gate_is_explicit() {
+        let report = first_report(
+            vec![
+                text_op(),
+                color_layers_outline(ColorPaintGraphNodeKind::SweepGradientPath),
+            ],
+            TextVariantSelectionOptions {
+                allow_colrv1_stage1_color_graph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedColorGlyph));
+    }
+
+    #[test]
+    fn canvaskit_and_canvas2d_share_advanced_payload_reject_reason() {
+        let canvas_kit = first_report(
+            vec![
+                text_op(),
+                color_layers_outline(ColorPaintGraphNodeKind::SolidPath),
+            ],
+            TextVariantSelectionOptions::canvaskit_strict_outline(),
+        );
+        let canvas_2d = first_report(
+            vec![
+                text_op(),
+                color_layers_outline(ColorPaintGraphNodeKind::SolidPath),
+            ],
+            TextVariantSelectionOptions {
+                backend: VariantSelectionBackend::Canvas2D,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert!(canvas_kit.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedColorGlyph));
+        assert!(canvas_2d.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedColorGlyph));
+        assert!(canvas_2d.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::BackendDoesNotSupportVariant));
     }
 }
