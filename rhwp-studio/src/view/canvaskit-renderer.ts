@@ -40,6 +40,12 @@ import {
   type CanvasKitSurfacePreference,
   type CanvasKitSurfaceRequest,
 } from './render-backend';
+import {
+  canvasKitImageCacheKey,
+  canvasKitImageFillModeTiles,
+  canvasKitImagePlacement,
+  canvasKitImageSourceRect,
+} from './canvaskit/image-replay';
 import { canvaskitClipRightPad } from './canvaskit/policy';
 
 type CanvasKitApi = CanvasKit;
@@ -58,6 +64,9 @@ export interface CanvasKitRenderDiagnostics {
 }
 
 export class CanvasKitLayerRenderer {
+  // Prevent pathological tiled fills from monopolizing the render loop.
+  private static readonly MAX_IMAGE_TILE_DRAWS = 4096;
+
   private readonly imageCache = new Map<string, SkImage>();
   private readonly unsupportedOps = new Set<string>();
   private surfaceFallbackReason: string | null = null;
@@ -395,24 +404,181 @@ export class CanvasKitLayerRenderer {
   private renderImage(canvas: SkCanvas, op: LayerImageOp): void {
     const image = this.imageForOp(op);
     if (!image) {
-      this.unsupportedOps.add('image');
+      this.unsupportedOps.add('image:dataMissing');
       return;
     }
+    this.recordImageCoverageGaps(op);
+    this.withImageTransform(canvas, op.bbox, op.transform, () => this.drawImageOp(canvas, image, op));
+  }
+
+  private drawImageOp(canvas: SkCanvas, image: SkImage, op: LayerImageOp): void {
+    const imageWithDimensions = image as SkImage & { width?: unknown; height?: unknown };
+    const widthMember = imageWithDimensions.width;
+    const heightMember = imageWithDimensions.height;
+    const imageWidth = typeof widthMember === 'function'
+      ? (widthMember as () => number).call(image)
+      : typeof widthMember === 'number'
+        ? widthMember
+        : null;
+    const imageHeight = typeof heightMember === 'function'
+      ? (heightMember as () => number).call(image)
+      : typeof heightMember === 'number'
+        ? heightMember
+        : null;
+    if (!this.boundsAreDrawable(op.bbox)) {
+      this.unsupportedOps.add('image:invalidBounds');
+      return;
+    }
+    if (
+      imageWidth === null
+      || imageHeight === null
+      || !Number.isFinite(imageWidth)
+      || !Number.isFinite(imageHeight)
+      || imageWidth <= 0
+      || imageHeight <= 0
+    ) {
+      const paint = new this.canvasKit.Paint();
+      paint.setAntiAlias?.(true);
+      try {
+        canvas.drawImage(image, op.bbox.x, op.bbox.y, paint);
+        this.unsupportedOps.add('image:dimensionUnavailable');
+      } finally {
+        paint.delete?.();
+      }
+      return;
+    }
+
+    const crop = canvasKitImageSourceRect(imageWidth, imageHeight, op.crop);
+    const drawImage = (dstX: number, dstY: number, dstW: number, dstH: number) => {
+      const src = crop
+        ? this.canvasKit.XYWHRect(crop.x, crop.y, crop.width, crop.height)
+        : this.canvasKit.XYWHRect(0, 0, imageWidth, imageHeight);
+      this.drawImageRect(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH));
+    };
+
+    const fillMode = op.fillMode ?? 'fitToSize';
+    if (fillMode === 'fitToSize') {
+      drawImage(op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height);
+      return;
+    }
+
+    let tileWidth = op.originalSize?.width ?? imageWidth;
+    let tileHeight = op.originalSize?.height ?? imageHeight;
+    if (!Number.isFinite(tileWidth) || tileWidth <= 0) tileWidth = imageWidth;
+    if (!Number.isFinite(tileHeight) || tileHeight <= 0) tileHeight = imageHeight;
+
+    canvas.save();
+    try {
+      canvas.clipRect(this.rect(op.bbox), this.canvasKit.ClipOp?.Intersect ?? 0, true);
+      if (canvasKitImageFillModeTiles(fillMode)) {
+        this.drawTiledImage(canvas, op.bbox, fillMode, tileWidth, tileHeight, drawImage);
+      } else {
+        const placed = canvasKitImagePlacement(fillMode, op.bbox, tileWidth, tileHeight);
+        drawImage(placed.x, placed.y, tileWidth, tileHeight);
+      }
+    } finally {
+      canvas.restore();
+    }
+  }
+
+  private drawImageRect(canvas: SkCanvas, image: SkImage, source: Rect, dest: Rect): void {
     const paint = new this.canvasKit.Paint();
     paint.setAntiAlias?.(true);
-    const dest = this.rect(op.bbox);
-    const source = typeof image.width === 'function' && typeof image.height === 'function'
-      ? this.canvasKit.XYWHRect(0, 0, image.width(), image.height())
-      : null;
     try {
-      if (source) {
-        canvas.drawImageRect(image, source, dest, paint);
-      } else {
-        canvas.drawImage(image, op.bbox.x, op.bbox.y, paint);
-      }
+      canvas.drawImageRect(image, source, dest, paint);
     } finally {
       paint.delete?.();
     }
+  }
+
+  private drawTiledImage(
+    canvas: SkCanvas,
+    bbox: LayerBounds,
+    fillMode: string,
+    tileWidth: number,
+    tileHeight: number,
+    drawImage: (dstX: number, dstY: number, dstW: number, dstH: number) => void,
+  ): void {
+    const maxTileDraws = CanvasKitLayerRenderer.MAX_IMAGE_TILE_DRAWS;
+    let tileDraws = 0;
+    const drawTile = (x: number, y: number) => {
+      if (tileDraws >= maxTileDraws) return;
+      drawImage(x, y, tileWidth, tileHeight);
+      tileDraws += 1;
+    };
+
+    if (fillMode === 'tileAll') {
+      for (let y = bbox.y; y < bbox.y + bbox.height && tileDraws < maxTileDraws; y += tileHeight) {
+        for (let x = bbox.x; x < bbox.x + bbox.width && tileDraws < maxTileDraws; x += tileWidth) {
+          drawTile(x, y);
+        }
+      }
+    } else if (fillMode === 'tileHorzTop' || fillMode === 'tileHorzBottom') {
+      const y = fillMode === 'tileHorzTop' ? bbox.y : bbox.y + bbox.height - tileHeight;
+      for (let x = bbox.x; x < bbox.x + bbox.width && tileDraws < maxTileDraws; x += tileWidth) {
+        drawTile(x, y);
+      }
+    } else {
+      const x = fillMode === 'tileVertLeft' ? bbox.x : bbox.x + bbox.width - tileWidth;
+      for (let y = bbox.y; y < bbox.y + bbox.height && tileDraws < maxTileDraws; y += tileHeight) {
+        drawTile(x, y);
+      }
+    }
+
+    if (tileDraws >= maxTileDraws) {
+      this.unsupportedOps.add('image:tileLimit');
+    }
+  }
+
+  private withImageTransform(
+    canvas: SkCanvas,
+    bounds: LayerBounds,
+    transform: LayerImageOp['transform'],
+    draw: () => void,
+  ): void {
+    const rotation = transform?.rotation ?? 0;
+    const horzFlip = transform?.horzFlip ?? false;
+    const vertFlip = transform?.vertFlip ?? false;
+    if (rotation === 0 && !horzFlip && !vertFlip) {
+      draw();
+      return;
+    }
+
+    const cx = bounds.x + bounds.width / 2;
+    const cy = bounds.y + bounds.height / 2;
+    canvas.save();
+    try {
+      if (horzFlip || vertFlip) {
+        canvas.translate(cx, cy);
+        canvas.scale(horzFlip ? -1 : 1, vertFlip ? -1 : 1);
+        canvas.translate(-cx, -cy);
+      }
+      if (rotation !== 0) {
+        canvas.rotate(rotation, cx, cy);
+      }
+      draw();
+    } finally {
+      canvas.restore();
+    }
+  }
+
+  private recordImageCoverageGaps(op: LayerImageOp): void {
+    if (op.bakedWatermark) return;
+    if (op.effect && op.effect !== 'realPic') {
+      this.unsupportedOps.add(`imageEffect:${op.effect}`);
+    }
+    if ((op.brightness ?? 0) !== 0 || (op.contrast ?? 0) !== 0) {
+      this.unsupportedOps.add('imageEffect:brightnessContrast');
+    }
+  }
+
+  private boundsAreDrawable(bounds: LayerBounds): boolean {
+    return Number.isFinite(bounds.x)
+      && Number.isFinite(bounds.y)
+      && Number.isFinite(bounds.width)
+      && Number.isFinite(bounds.height)
+      && bounds.width > 0
+      && bounds.height > 0;
   }
 
   private renderTextRun(canvas: SkCanvas, op: LayerTextRunOp): void {
@@ -533,17 +699,7 @@ export class CanvasKitLayerRenderer {
   }
 
   private imageForOp(op: LayerImageOp): SkImage | null {
-    let key: string | null = null;
-    if (op.imageRef !== undefined) {
-      key = `ref:${String(op.imageRef)}`;
-    } else if (op.base64) {
-      let hash = 2166136261;
-      for (let i = 0; i < op.base64.length; i += 1) {
-        hash ^= op.base64.charCodeAt(i);
-        hash = Math.imul(hash, 16777619);
-      }
-      key = `${op.mime ?? 'application/octet-stream'}:${op.base64.length}:${(hash >>> 0).toString(16)}`;
-    }
+    const key = canvasKitImageCacheKey(op);
     if (!key) return null;
     const cached = this.imageCache.get(key);
     if (cached) return cached;

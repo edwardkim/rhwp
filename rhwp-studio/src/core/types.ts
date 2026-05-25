@@ -885,11 +885,14 @@ export interface LayerImageOp {
   base64?: string;
   imageRef?: number | string;
   fillMode?: string;
+  originalSize?: { width: number; height: number };
+  crop?: { left: number; top: number; right: number; bottom: number };
   effect?: string;
   brightness?: number;
   contrast?: number;
   bakedWatermark?: boolean;
   wrap?: 'behindText' | 'inFrontOfText' | string;
+  transform?: LayerPathTransform;
 }
 
 export interface LayerEquationOp {

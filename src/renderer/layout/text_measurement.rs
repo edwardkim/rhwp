@@ -824,17 +824,30 @@ mod wasm_internals {
             return font_size * 0.3;
         }
 
-        // 3차: JS 폴백 (미등록 폰트)
-        let raw_px = cached_js_measure(measure_font, c);
-        let actual_px = raw_px * font_size / 1000.0;
-        let hwp = (actual_px * 75.0).round() as i32;
-        hwp as f64 / 75.0
+        // [Task #977] 미등록 폰트 폴백을 native EmbeddedTextMeasurer 와 동기화한다.
+        // 종전(PR #1026 이전)은 JS Canvas `measureText` 실측값을 사용했으나, 미등록
+        // 폰트는 브라우저 fallback 폰트로 측정되어 폰트별로 폭이 달라(예: 나눔바른
+        // 고딕 ≠ 맑은 고딕) 목차 페이지의 선두 공백 CharShape 가 인접 문단과 다를 때
+        // 개요번호 시작 x 가 ~9~10px 어긋났다. native compute_char_positions 와 동일한
+        // 휴리스틱(공백·일반 0.5em, CJK·fullwidth em, narrow_punct 0.3em)으로 폰트 무관
+        // 통일한다. PR #1026 의 narrow_punct 분기는 위에서 이미 처리(보존).
+        if super::is_cjk_char(c) || super::is_fullwidth_symbol(c) {
+            return font_size;
+        }
+        font_size * 0.5
     }
 
     /// 한글 '가' 대리 측정값 (HWP 단위, 정수)
     /// 내장 메트릭이 있으면 JS 호출 없이 반환.
+    ///
+    /// [Task #977 v3] 미등록 폰트의 한글 폭은 native `EmbeddedTextMeasurer`
+    /// 폴백(`font_size`, 1.0 em CJK 휴리스틱)과 동기화한다. 종전 JS `cached_js_measure('가')`
+    /// 폴백은 브라우저의 폰트 대체 결과(폰트별 ≠ 한컴 metrics)를 폭으로 채택해
+    /// 한컴 저장값(tab_extended[0] = "tab_pos - 한컴_선행텍스트폭")과 합산 시 오차가
+    /// 누적, 목차 페이지번호의 디지트 x 좌표가 행별로 어긋났다.
+    /// 미등록 한글 폰트(나눔바른고딕 등)에서도 native 와 일관된 폭으로 폴백한다.
     pub(super) fn measure_hangul_width_hwp(
-        measure_font: &str,
+        _measure_font: &str,
         font_family: &str,
         bold: bool,
         italic: bool,
@@ -845,9 +858,8 @@ mod wasm_internals {
         {
             return (w * 75.0).round() as i32;
         }
-        let raw_px = cached_js_measure(measure_font, '\u{AC00}');
-        let actual_px = raw_px * font_size / 1000.0;
-        (actual_px * 75.0).round() as i32
+        // native EmbeddedTextMeasurer 동기화: 미등록 폰트의 한글(CJK)은 font_size (1.0 em).
+        (font_size * 75.0).round() as i32
     }
 }
 
