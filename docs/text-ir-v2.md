@@ -140,10 +140,9 @@ CanvasKit has two operational modes:
   must not silently hide unsupported operations behind a Canvas2D overlay. If an
   operation is not covered yet, the plan reports `directRequired` with
   `hiddenOverlayForbidden` so the gap remains visible.
-- `compat`: user-visible stability mode. Existing Canvas2D overlays may remain
-  as transition fallbacks while direct replay coverage is expanded. The plan
-  reports those cases as `compatOverlay` and keeps them separate from true
-  direct replay.
+- `compat`: conservative direct replay mode. It may choose more conservative
+  policy values such as clip padding or sampling, but it does not mean a hidden
+  Canvas2D overlay fallback.
 
 The first overlay inventory is deliberately conservative. Raster images,
 equations, form controls, raw SVG fragments, placeholders, special text visual
@@ -168,8 +167,34 @@ variant-sensitive operations:
    markers should be promoted effect-by-effect. Unsupported text effects must
    not trigger approximate `GlyphRun` replay.
 4. GlyphRun/GlyphOutline gates: CanvasKit should choose a strict variant only
-   when the P14 selection report says it is replayable. Opening outline replay
-   in CanvasKit is a backend parity milestone, not a schema change.
+   when the selection report says it is replayable. Opening outline replay in
+   CanvasKit is a backend parity milestone, not a schema change.
+
+## P19 Advanced Glyph Payload Gates
+
+P19 adds schema-v1 vocabulary for richer `GlyphOutline` payload families without
+turning them into default replay paths.
+
+- `payloadKind: "colorLayers"` is reserved for producer-normalized color glyph
+  data. `ColorLayers.colrV0` uses resolved solid layer paths. `ColorLayers.colrV1`
+  starts with a bounded graph vocabulary where `node.kind` is validated before a
+  backend may select the variant.
+- `payloadKind: "bitmapGlyph"` is reserved for one producer-selected image strike.
+  It must carry deterministic placement, scaling, and filtering metadata. Backend
+  default strike selection is not part of the strict contract.
+- `payloadKind: "svgGlyph"` is reserved for sanitized static vector resources.
+  Script, animation, external resource loading, and interactivity flags must stay
+  false before a backend may consider the payload strict.
+- Each `GlyphOutline` op may carry only one payload family. Mixing stroke,
+  color-layer, bitmap, and SVG payload fields is a validation error.
+- CanvasKit and Canvas2D report the same high-level reject reasons for advanced
+  payload families: `unsupportedColorGlyph`, `unsupportedBitmapGlyph`, and
+  `unsupportedSvgGlyph`. Canvas2D can still add
+  `backendDoesNotSupportVariant`.
+
+These gates keep writer emission closed until a payload family has a proof
+fixture and backend-specific replay path. The required `TextRun` fallback remains
+the compatibility path.
 
 Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
 output can use fuzzy PNG comparison, but semantic decisions must be exact:
