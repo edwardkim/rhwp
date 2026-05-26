@@ -3022,9 +3022,16 @@ impl LayoutEngine {
             // run 루프 종료 후, run 범위 밖(pos >= run_char_pos)의 미매칭 TAC 이미지 렌더링
             if !comp_line.runs.is_empty() && !tac_offsets_px.is_empty() {
                 if let (Some(p), Some(bdc)) = (para, bin_data_content) {
+                    let line_start_char = comp_line.char_start;
+                    let line_end_char = line_start_char
+                        + comp_line
+                            .runs
+                            .iter()
+                            .map(|r| r.text.chars().count())
+                            .sum::<usize>();
                     for &(tac_pos, tac_w, tac_ci) in &tac_offsets_px {
-                        if tac_pos <= run_char_pos {
-                            continue; // run 범위 내(또는 끝): 이미 run 내에서 처리됨
+                        if tac_pos <= run_char_pos || tac_pos > line_end_char {
+                            continue; // run 범위 내/끝 또는 미래 줄 TAC: 여기서 처리하지 않음
                         }
                         if let Some(ctrl) = p.controls.get(tac_ci) {
                             if let Control::Picture(pic) = ctrl {

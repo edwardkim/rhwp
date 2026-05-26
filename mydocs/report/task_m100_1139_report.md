@@ -51,3 +51,24 @@ Stage 3 추가 검증:
 - `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
 
 UI/렌더링 정합 작업이므로 한컴오피스 화면과 rhwp-studio 화면의 최종 시각 확인은 작업지시자 판정 대기 상태다.
+
+## Stage 5 재분류 및 추가 수정
+
+작업지시자가 Stage 4 괄호 glyph 실험 후에도 한컴오피스와 완전히 다르다고 재보고했다. Stage 4 변경은 본질과 맞지 않아 커밋하지 않고 원복했다.
+
+새 진단 결과, 문27 우측 문단의 작은 inline `Picture`는 원본에 `pi321 ci10`, `pi323 ci4` 두 개만 존재하지만 렌더 트리에는 각각 3회/2회로 중복 출력되고 있었다. 원인은 `paragraph_layout.rs`의 run 종료 후 TAC Picture fallback이 현재 줄 이후의 미래 TAC까지 매 줄마다 미리 렌더한 것이다.
+
+수정:
+
+- fallback에서 현재 line range 밖(`tac_pos > line_end_char`)의 TAC는 처리하지 않도록 제한했다.
+- `tests/issue_1139_inline_picture_duplicate.rs`를 추가해 page 5의 작은 `bin=5` inline picture가 원본 컨트롤 2개만 렌더되는지 검증했다.
+
+Stage 5 검증:
+
+- `cargo fmt --check`: 통과
+- `cargo test --test issue_1139_inline_picture_duplicate`: 1 passed
+- `cargo build --release`: 성공
+- `./target/release/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -p 4 -o output/diag_1139_stage5`: 성공
+- stage5 SVG의 작은 `23.8x17.6` inline picture: 5개에서 2개로 감소
+- `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
+- `wasm-pack build --target web --out-dir pkg`: 성공
