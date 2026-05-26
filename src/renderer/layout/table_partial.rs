@@ -530,10 +530,15 @@ impl LayoutEngine {
                 self.resolve_cell_padding(cell, table);
 
             // 셀 내 문단 구성
-            let mut composed_paras: Vec<_> = cell
+            // [Task Y-2] 자동 번호 적용 (table_layout.rs / table_cell_content.rs 정합)
+            let mut composed_paras: Vec<crate::renderer::composer::ComposedParagraph> = cell
                 .paragraphs
                 .iter()
-                .map(|p| compose_paragraph(p))
+                .map(|p| {
+                    let comp = compose_paragraph(p);
+                    self.apply_paragraph_numbering(Some(&comp), p, styles, 0)
+                        .unwrap_or(comp)
+                })
                 .collect();
 
             // 텍스트 오버플로우 시 좌우 패딩 축소

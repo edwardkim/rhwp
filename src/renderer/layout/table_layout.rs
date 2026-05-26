@@ -1687,10 +1687,17 @@ impl LayoutEngine {
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
 
-            let mut composed_paras: Vec<_> = cell
+            // [Task Y-2] 본문 표 cell paragraph 의 자동 번호 적용. 본문 paragraph path
+            // (layout.rs:2036/2055/2160) 와 동일 패턴. table_cell_content.rs (embedded table)
+            // 도 동일 fix 적용. 미적용 시 셀 안 head_type=Number paragraph 의 "1." 누락.
+            let mut composed_paras: Vec<crate::renderer::composer::ComposedParagraph> = cell
                 .paragraphs
                 .iter()
-                .map(|p| compose_paragraph(p))
+                .map(|p| {
+                    let comp = compose_paragraph(p);
+                    self.apply_paragraph_numbering(Some(&comp), p, styles, 0)
+                        .unwrap_or(comp)
+                })
                 .collect();
 
             // [Task #1073] 중첩 표 분할 연속 페이지(row_filter sr>0)에서 분할 시작 행보다

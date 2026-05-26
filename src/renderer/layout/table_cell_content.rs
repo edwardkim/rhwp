@@ -606,10 +606,20 @@ impl LayoutEngine {
                 self.resolve_cell_padding(cell, table);
 
             // 셀 내 문단 레이아웃
-            let composed_paras: Vec<_> = cell
+            // [Task Y-2] head_type=Number/Outline paragraph 의 자동 번호 ("1." 등) 적용.
+            // 본문 paragraph path (layout.rs:2036/2055/2160) 는 호출하나 셀 path 는 호출 안 함.
+            // 결과: 셀 안 head_type=Number paragraph 의 numbering_text 미생성 → "1." 누락.
+            // 본문 path 와 동일 패턴: apply_paragraph_numbering 호출 → 결과 ComposedParagraph
+            // 사용. outline_numbering_id=0 (셀 안 paragraph 는 outline 영역 아님 — Number 타입은
+            // outline_numbering_id 영향 X).
+            let composed_paras: Vec<crate::renderer::composer::ComposedParagraph> = cell
                 .paragraphs
                 .iter()
-                .map(|p| compose_paragraph(p))
+                .map(|p| {
+                    let comp = compose_paragraph(p);
+                    self.apply_paragraph_numbering(Some(&comp), p, styles, 0)
+                        .unwrap_or(comp)
+                })
                 .collect();
 
             // 텍스트 오버플로우 시 좌우 패딩 축소

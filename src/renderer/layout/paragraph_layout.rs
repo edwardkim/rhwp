@@ -4042,7 +4042,20 @@ impl LayoutEngine {
                 if text.is_empty() {
                     return None;
                 }
-                text
+                // [Task Y-2 공백] Bullet 분기와 동일 패턴 — NumberingHead.text_distance > 0 시
+                // numbering text 와 body 사이 trailing space 추가. 한컴 렌더 룰 정합.
+                // HWP raw level_format 은 "^1." 형식 (공백 미포함). 한컴은 head.text_distance 로
+                // 본문과 간격 자동 추가. rhwp 미적용 시 "1.신뢰받는..." 으로 공백 누락.
+                let has_distance = numbering
+                    .heads
+                    .get(level_idx)
+                    .map(|h| h.text_distance > 0)
+                    .unwrap_or(false);
+                if has_distance {
+                    format!("{} ", text)
+                } else {
+                    text
+                }
             }
             HeadType::Bullet => {
                 // Bullet: numbering_id(1-based)로 Bullet 참조
