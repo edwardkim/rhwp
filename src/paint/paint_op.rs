@@ -475,7 +475,7 @@ fn color_gradient_stops_are_valid(stops: &[ColorGradientStop]) -> bool {
     })
 }
 
-fn color_sweep_angles_are_supported(start_angle_degrees: f64, end_angle_degrees: f64) -> bool {
+fn color_sweep_is_supported_full_circle(start_angle_degrees: f64, end_angle_degrees: f64) -> bool {
     start_angle_degrees.is_finite()
         && end_angle_degrees.is_finite()
         && start_angle_degrees < end_angle_degrees
@@ -485,11 +485,14 @@ fn color_sweep_angles_are_supported(start_angle_degrees: f64, end_angle_degrees:
 fn graph_leaf_metadata_is_valid(node: &ColorPaintGraphNode) -> bool {
     node.source_range_utf8
         .is_some_and(text_source_range_is_valid)
-        && node.glyph_range.is_some_and(glyph_range_is_valid)
+        && node.glyph_range.is_some_and(GlyphRange::is_non_empty)
         && node.source_font_ref.is_some()
 }
 
 impl ColorPaintGraphPayload {
+    /// Compatibility alias for the P19 first supported COLRv1 graph contract.
+    /// New code should use `has_colrv1_supported_graph_contract`.
+    #[deprecated(note = "use has_colrv1_supported_graph_contract")]
     pub fn has_colrv1_stage1_contract(&self) -> bool {
         self.has_colrv1_supported_graph_contract()
     }
@@ -591,7 +594,7 @@ impl ColorPaintGraphPayload {
                     return path_commands_are_finite(&gradient_path.commands)
                         && gradient_path.gradient.cx.is_finite()
                         && gradient_path.gradient.cy.is_finite()
-                        && color_sweep_angles_are_supported(
+                        && color_sweep_is_supported_full_circle(
                             gradient_path.gradient.start_angle_degrees,
                             gradient_path.gradient.end_angle_degrees,
                         )
@@ -667,6 +670,9 @@ impl ColorLayersPayload {
             })
     }
 
+    /// Compatibility alias for the P19 first supported COLRv1 graph contract.
+    /// New code should use `has_colrv1_supported_graph_contract`.
+    #[deprecated(note = "use has_colrv1_supported_graph_contract")]
     pub fn has_colrv1_stage1_graph_contract(&self) -> bool {
         self.has_colrv1_supported_graph_contract()
     }

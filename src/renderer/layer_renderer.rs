@@ -138,6 +138,8 @@ pub enum VariantRejectReason {
     VariantPartsIncomplete,
     GlyphOutlineUnsupported,
     UnsupportedOutlinePayload,
+    MixedGlyphOutlinePayload,
+    EmptyGlyphOutlinePayload,
     GlyphOutlineStrokeStyleUnsupported,
     UnsupportedColorGlyph,
     UnsupportedBitmapGlyph,
@@ -162,6 +164,8 @@ impl VariantRejectReason {
             Self::VariantPartsIncomplete => "variantPartsIncomplete",
             Self::GlyphOutlineUnsupported => "glyphOutlineUnsupported",
             Self::UnsupportedOutlinePayload => "unsupportedOutlinePayload",
+            Self::MixedGlyphOutlinePayload => "mixedGlyphOutlinePayload",
+            Self::EmptyGlyphOutlinePayload => "emptyGlyphOutlinePayload",
             Self::GlyphOutlineStrokeStyleUnsupported => "glyphOutlineStrokeStyleUnsupported",
             Self::UnsupportedColorGlyph => "unsupportedColorGlyph",
             Self::UnsupportedBitmapGlyph => "unsupportedBitmapGlyph",
@@ -180,6 +184,9 @@ pub struct TextVariantSelectionOptions {
     pub max_position_adjusted_residual_px: f64,
     pub max_canvas_glyph_id: u32,
     pub allow_colrv0_color_layers: bool,
+    /// Compatibility name for the first P19-supported COLRv1 graph subset:
+    /// solid paths, single linear/radial/full-circle sweep gradient paths, and
+    /// transform chains ending in one supported leaf.
     pub allow_colrv1_stage1_color_graph: bool,
     pub allow_bitmap_glyph: bool,
     pub allow_svg_glyph: bool,
@@ -520,14 +527,14 @@ fn collect_glyph_outline_reject_reasons(
     reasons: &mut BTreeSet<VariantRejectReason>,
 ) {
     if !outline.has_exclusive_payload_family() {
-        reasons.insert(VariantRejectReason::UnsupportedOutlinePayload);
+        reasons.insert(VariantRejectReason::MixedGlyphOutlinePayload);
     }
     if matches!(
         outline.payload_kind,
         GlyphOutlinePayloadKind::MonochromeFill | GlyphOutlinePayloadKind::MonochromeFillStroke
     ) && outline.paths.is_empty()
     {
-        reasons.insert(VariantRejectReason::UnsupportedOutlinePayload);
+        reasons.insert(VariantRejectReason::EmptyGlyphOutlinePayload);
     }
     if !outline.paint_style.is_fill_only_glyph_replay() {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
@@ -552,7 +559,7 @@ fn collect_glyph_outline_reject_reasons(
                 if color_layers.has_colrv0_resolved_layer_contract()
                     && options.allow_colrv0_color_layers => {}
             Some(color_layers)
-                if color_layers.has_colrv1_stage1_graph_contract()
+                if color_layers.has_colrv1_supported_graph_contract()
                     && options.allow_colrv1_stage1_color_graph => {}
             _ => {
                 reasons.insert(VariantRejectReason::UnsupportedColorGlyph);

@@ -111,10 +111,10 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
     colorLayers?.colorFormat !== 'colrV1'
     || !graph
     || nodes.length === 0
+    || nodes.length > 64
     || colorLayers.sourceFontRef === undefined
     || !isValidTextRange(colorLayers.sourceRangeUtf8)
-    || !isValidTextRange(topLevelGlyphRange)
-    || (topLevelGlyphRange?.end ?? 0) <= (topLevelGlyphRange?.start ?? 0)
+    || !isNonEmptyTextRange(topLevelGlyphRange)
   ) {
     return false;
   }
@@ -189,7 +189,7 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
           && isValidPathCommands(node.sweepGradientPath.commands)
           && Number.isFinite(node.sweepGradientPath.gradient?.cx)
           && Number.isFinite(node.sweepGradientPath.gradient?.cy)
-          && isSupportedSweepGradientAngleRange(
+          && isSupportedFullCircleSweepGradient(
             node.sweepGradientPath.gradient?.startAngleDegrees,
             node.sweepGradientPath.gradient?.endAngleDegrees,
           )
@@ -218,7 +218,7 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
 
 function isLeafMetadataValid(node: LayerColorPaintGraphNode): boolean {
   return isValidTextRange(node.sourceRangeUtf8)
-    && isValidTextRange(node.glyphRange)
+    && isNonEmptyTextRange(node.glyphRange)
     && node.sourceFontRef !== undefined;
 }
 
@@ -227,6 +227,10 @@ function isValidTextRange(range: { start?: number; end?: number } | undefined): 
     && Number.isInteger(range.start)
     && Number.isInteger(range.end)
     && (range.end ?? -1) >= (range.start ?? 0);
+}
+
+function isNonEmptyTextRange(range: { start?: number; end?: number } | undefined): boolean {
+  return isValidTextRange(range) && (range?.end ?? 0) > (range?.start ?? 0);
 }
 
 function isFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): boolean {
@@ -269,7 +273,7 @@ function isValidColorGradientStops(stops: Array<{ offset?: number; color?: { rgb
   return true;
 }
 
-function isSupportedSweepGradientAngleRange(
+function isSupportedFullCircleSweepGradient(
   startAngleDegrees: number | undefined,
   endAngleDegrees: number | undefined,
 ): boolean {

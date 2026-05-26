@@ -18,6 +18,7 @@ import type {
   LayerClipNode,
   LayerEllipseOp,
   LayerFormObjectOp,
+  LayerAffineTransform,
   LayerGlyphOutlineOp,
   LayerImageOp,
   LayerLeafNode,
@@ -437,19 +438,9 @@ export class CanvasKitLayerRenderer {
       }
     }
     canvas.save();
-    const transform = op.placement?.runToPage;
-    if (transform) {
-      (canvas as unknown as { concat?: (matrix: number[]) => void }).concat?.([
-        transform.a,
-        transform.c,
-        transform.e,
-        transform.b,
-        transform.d,
-        transform.f,
-        0,
-        0,
-        1,
-      ]);
+    const matrix = this.affineToCanvasKitMatrix(op.placement?.runToPage);
+    if (matrix) {
+      (canvas as unknown as { concat?: (matrix: number[]) => void }).concat?.(matrix);
     }
     try {
       this.renderColorPaintGraphNode(canvas, nodesById, graph.rootNodeId, new Set());
@@ -464,26 +455,25 @@ export class CanvasKitLayerRenderer {
     nodeId: number,
     visited: Set<number>,
   ): void {
-    if (visited.has(nodeId)) return;
+    if (visited.has(nodeId)) {
+      this.unsupportedOps.add('glyphOutline:unsupportedColorGlyph');
+      return;
+    }
     visited.add(nodeId);
     const node = nodesById.get(nodeId);
-    if (!node) return;
+    if (!node) {
+      this.unsupportedOps.add('glyphOutline:unsupportedColorGlyph');
+      return;
+    }
     if (node.kind === 'transform') {
       const transformNode = node.transform;
-      if (!transformNode?.transform || transformNode.childNodeId === undefined) return;
-      const tr = transformNode.transform;
+      const matrix = this.affineToCanvasKitMatrix(transformNode?.transform);
+      if (!matrix || transformNode?.childNodeId === undefined) {
+        this.unsupportedOps.add('glyphOutline:unsupportedColorGlyph');
+        return;
+      }
       canvas.save();
-      (canvas as unknown as { concat?: (matrix: number[]) => void }).concat?.([
-        tr.a,
-        tr.c,
-        tr.e,
-        tr.b,
-        tr.d,
-        tr.f,
-        0,
-        0,
-        1,
-      ]);
+      (canvas as unknown as { concat?: (matrix: number[]) => void }).concat?.(matrix);
       try {
         this.renderColorPaintGraphNode(canvas, nodesById, transformNode.childNodeId, visited);
       } finally {
@@ -492,7 +482,10 @@ export class CanvasKitLayerRenderer {
       return;
     }
     const pathNode = node.solidPath ?? node.linearGradientPath ?? node.radialGradientPath ?? node.sweepGradientPath;
-    if (!pathNode?.commands) return;
+    if (!pathNode?.commands) {
+      this.unsupportedOps.add('glyphOutline:unsupportedColorGlyph');
+      return;
+    }
     const path = new this.canvasKit.Path() as MutablePath;
     let currentX = 0;
     let currentY = 0;
@@ -534,6 +527,21 @@ export class CanvasKitLayerRenderer {
       paint.delete?.();
       path.delete?.();
     }
+  }
+
+  private affineToCanvasKitMatrix(transform: LayerAffineTransform | undefined): number[] | null {
+    if (!transform) return null;
+    return [
+      transform.a,
+      transform.c,
+      transform.e,
+      transform.b,
+      transform.d,
+      transform.f,
+      0,
+      0,
+      1,
+    ];
   }
 
   private applyFillRule(path: MutablePath, fillRule: string | undefined): void {

@@ -202,6 +202,15 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
                 }
             }
         }
+        if features.has_glyph_runs
+            && features.has_glyph_outlines
+            && features.has_glyph_outline_color_layers
+            && features.has_glyph_outline_bitmap
+            && features.has_glyph_outline_svg
+            && features.has_display_text
+        {
+            return features;
+        }
     }
     features
 }
@@ -1688,7 +1697,7 @@ fn write_color_layers_payload(buf: &mut String, payload: &ColorLayersPayload) {
         buf,
         ",\"colrv0ResolvedLayerContract\":{},\"colrv1Stage1GraphContract\":{},\"colrv1SupportedGraphContract\":{}",
         payload.has_colrv0_resolved_layer_contract(),
-        payload.has_colrv1_stage1_graph_contract(),
+        payload.has_colrv1_supported_graph_contract(),
         payload.has_colrv1_supported_graph_contract()
     );
     buf.push('}');
@@ -1837,7 +1846,7 @@ fn write_color_gradient_stops(buf: &mut String, stops: &[crate::paint::ColorGrad
         if idx > 0 {
             buf.push(',');
         }
-        let _ = write!(buf, "{{\"offset\":{}", stop.offset);
+        let _ = write!(buf, "{{\"offset\":{:.6}", stop.offset);
         buf.push_str(",\"color\":");
         write_resolved_color(buf, &stop.color);
         buf.push('}');
@@ -1853,7 +1862,7 @@ fn write_color_paint_linear_gradient_path_node(
     write_path_commands(buf, &gradient_path.commands);
     let _ = write!(
         buf,
-        ",\"gradient\":{{\"x0\":{},\"y0\":{},\"x1\":{},\"y1\":{},\"stops\":",
+        ",\"gradient\":{{\"x0\":{:.6},\"y0\":{:.6},\"x1\":{:.6},\"y1\":{:.6},\"stops\":",
         gradient_path.gradient.x0,
         gradient_path.gradient.y0,
         gradient_path.gradient.x1,
@@ -1882,7 +1891,7 @@ fn write_color_paint_radial_gradient_path_node(
     write_path_commands(buf, &gradient_path.commands);
     let _ = write!(
         buf,
-        ",\"gradient\":{{\"cx\":{},\"cy\":{},\"radius\":{},\"stops\":",
+        ",\"gradient\":{{\"cx\":{:.6},\"cy\":{:.6},\"radius\":{:.6},\"stops\":",
         gradient_path.gradient.cx, gradient_path.gradient.cy, gradient_path.gradient.radius
     );
     write_color_gradient_stops(buf, &gradient_path.gradient.stops);
@@ -1908,7 +1917,7 @@ fn write_color_paint_sweep_gradient_path_node(
     write_path_commands(buf, &gradient_path.commands);
     let _ = write!(
         buf,
-        ",\"gradient\":{{\"cx\":{},\"cy\":{},\"startAngleDegrees\":{},\"endAngleDegrees\":{},\"stops\":",
+        ",\"gradient\":{{\"cx\":{:.6},\"cy\":{:.6},\"startAngleDegrees\":{:.6},\"endAngleDegrees\":{:.6},\"stops\":",
         gradient_path.gradient.cx,
         gradient_path.gradient.cy,
         gradient_path.gradient.start_angle_degrees,
