@@ -345,8 +345,8 @@ fn render_box(
         }
         LayoutKind::Paren { left, right, body } => {
             // 텍스트 높이 파렌(`(`, `)`)은 폰트 글리프로 렌더, 그 외는 path. (Task #283)
-            let paren_w = fs * 0.333;
             let use_glyph = lb.height <= fs * 1.2;
+            let paren_w = if use_glyph { fs * 0.333 } else { fs * 0.27 };
             // 왼쪽 괄호
             if !left.is_empty() {
                 if use_glyph && (left == "(" || left == ")") {
@@ -421,7 +421,7 @@ fn draw_stretch_bracket(
 ) {
     let mid_x = x + w / 2.0;
     let stroke_w = if matches!(bracket, "(" | ")") {
-        (fs * 0.055).max(0.55)
+        (fs * 0.042).max(0.48)
     } else {
         fs * 0.04
     };

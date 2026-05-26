@@ -38,5 +38,16 @@ cargo test --lib
 
 ## 후속
 
-자동 검증은 완료됐다. UI/렌더링 정합 작업이므로 한컴오피스 화면과 rhwp-studio 화면의 최종 시각 확인은 작업지시자 판정 대기 상태다.
+Stage 2 수정 후 작업지시자가 한컴오피스 화면과 아직 다르다고 재보고했다. Stage 3에서 큰 둥근 괄호 폭/패딩/선폭을 추가로 줄였고 자동 검증은 완료했다.
 
+Stage 3 추가 검증:
+
+- `cargo fmt --check`: 통과
+- `cargo test issue_1139 --lib`: 1 passed
+- `cargo build --release`: 성공
+- `./target/release/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -p 4 -o output/diag_1139_stage3`: 성공
+- `cargo test renderer::equation::svg_render::tests --lib`: 13 passed
+- `wasm-pack build --target web --out-dir pkg`: 성공
+- `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
+
+UI/렌더링 정합 작업이므로 한컴오피스 화면과 rhwp-studio 화면의 최종 시각 확인은 작업지시자 판정 대기 상태다.
