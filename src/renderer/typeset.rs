@@ -3191,6 +3191,26 @@ impl TypesetEngine {
         is_first_placed: bool,
         is_last_placed: bool,
     ) {
+        // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드.
+        // empty-text host paragraph 가 N controls + N line_segs 1:1 매핑이고,
+        // 현재 TAC 표의 매핑 line_seg(ctrl_idx>0) 의 vpos==0 이면 HWP 가 "이 표를
+        // 새 페이지 상단부터" 라고 명시한 신호. fit 검사는 표 크기가 잔여 영역에
+        // 들어가면 통과시키지만 명시 신호를 존중하려면 fit 이전에 advance.
+        // 케이스: 2022년 국립국어원 업무계획.hwp pi=586 ci=1 (별첨 박스).
+        if !st.current_items.is_empty()
+            && ctrl_idx > 0
+            && para.text.is_empty()
+            && para.line_segs.len() == para.controls.len()
+            && para
+                .line_segs
+                .get(ctrl_idx)
+                .map(|s| s.vertical_pos)
+                .unwrap_or(-1)
+                == 0
+        {
+            st.advance_column_or_new_page();
+        }
+
         let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
         let table_height = if tac_count > 1 {
