@@ -180,7 +180,7 @@ impl DocumentCore {
             })
             .collect();
         format!(
-            "{{\"version\":\"{}.{}.{}.{}\",\"sectionCount\":{},\"pageCount\":{},\"encrypted\":{},\"fallbackFont\":\"{}\",\"fontsUsed\":[{}]}}",
+            "{{\"version\":\"{}.{}.{}.{}\",\"sectionCount\":{},\"pageCount\":{},\"encrypted\":{},\"hwp3Variant\":{},\"fallbackFont\":\"{}\",\"fontsUsed\":[{}]}}",
             self.document.header.version.major,
             self.document.header.version.minor,
             self.document.header.version.build,
@@ -188,6 +188,7 @@ impl DocumentCore {
             self.document.sections.len(),
             self.page_count(),
             self.document.header.encrypted,
+            self.document.is_hwp3_variant,
             escaped_fallback,
             fonts_json.join(","),
         )

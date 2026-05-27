@@ -61,6 +61,22 @@ export function normalizeGridSettings(settings: GridViewSettings): GridViewSetti
   };
 }
 
+export function convertGridOffsetForOrigin(
+  offset: GridOffsetMm,
+  from: GridOrigin,
+  to: GridOrigin,
+  originBases: Record<GridOrigin, GridOffsetMm>,
+): GridOffsetMm {
+  const currentBase = originBases[from];
+  const nextBase = originBases[to];
+  const absoluteX = finiteOrZero(offset.x) + currentBase.x;
+  const absoluteY = finiteOrZero(offset.y) + currentBase.y;
+  return {
+    x: roundMm(absoluteX - nextBase.x),
+    y: roundMm(absoluteY - nextBase.y),
+  };
+}
+
 function clampGridMm(value: number): number {
   if (!Number.isFinite(value)) return 3;
   return Math.min(50, Math.max(0.5, value));
@@ -69,4 +85,12 @@ function clampGridMm(value: number): number {
 function clampOffsetMm(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.min(500, Math.max(-500, value));
+}
+
+function finiteOrZero(value: number): number {
+  return Number.isFinite(value) ? value : 0;
+}
+
+function roundMm(value: number): number {
+  return Math.round(value * 100) / 100;
 }

@@ -4,6 +4,7 @@ export interface DocumentInfo {
   sectionCount: number;
   pageCount: number;
   encrypted: boolean;
+  hwp3Variant?: boolean;
   fallbackFont: string;
   fontsUsed: string[];  // 문서에서 사용하는 폰트 이름 목록
 }
