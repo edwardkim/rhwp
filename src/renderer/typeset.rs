@@ -1787,13 +1787,23 @@ impl TypesetEngine {
                                 .line_segs
                                 .first()
                                 .map(|s| s.vertical_pos + endnote_start);
-                            let this_bottom_offset = en_para.line_segs.last().map(|s| {
-                                s.vertical_pos + s.line_height + s.line_spacing + endnote_start
-                            });
-                            let trailing_ls_px = en_para
+                            let endnote_bottom_with_spacing = en_para
                                 .line_segs
-                                .last()
-                                .map(|l| hwpunit_to_px(l.line_spacing.max(0), self.dpi))
+                                .iter()
+                                .map(|s| {
+                                    (
+                                        s.vertical_pos
+                                            + s.line_height
+                                            + s.line_spacing
+                                            + endnote_start,
+                                        s.line_spacing,
+                                    )
+                                })
+                                .max_by_key(|(bottom, _)| *bottom);
+                            let this_bottom_offset =
+                                endnote_bottom_with_spacing.map(|(bottom, _)| bottom);
+                            let trailing_ls_px = endnote_bottom_with_spacing
+                                .map(|(_, spacing)| hwpunit_to_px(spacing.max(0), self.dpi))
                                 .unwrap_or(0.0);
 
                             let col_count = st.col_count;

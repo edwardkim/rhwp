@@ -72,3 +72,28 @@ Stage 5 검증:
 - stage5 SVG의 작은 `23.8x17.6` inline picture: 5개에서 2개로 감소
 - `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
 - `wasm-pack build --target web --out-dir pkg`: 성공
+
+## Stage 6 페이지 수 정합
+
+작업지시자가 `3-09월_교육_통합_2022.hwp`가 한컴오피스 기준 23쪽인데 rhwp-studio에서는 24쪽으로 표시되며, 9쪽부터 화면이 달라진다고 보고했다.
+
+원인은 미주 배치 루프의 문단 bottom 누적 기준이었다. 일부 미주 문단은 내부 `LINE_SEG.vertical_pos`가 뒤쪽 줄에서 더 작은 값으로 되감기는데, 기존 코드는 미주 문단의 bottom을 마지막 line segment 기준으로 저장했다. 이 때문에 다음 미주 문단과의 간격이 실제보다 크게 계산되어 9쪽에서 `pi=523` 이후 미주가 밀리기 시작했고, 최종적으로 24쪽이 추가 생성됐다.
+
+수정:
+
+- `src/renderer/typeset.rs`에서 미주 문단 bottom과 trailing line spacing을 마지막 줄이 아니라 가장 큰 line bottom을 가진 줄 기준으로 계산하도록 변경했다.
+- `tests/issue_1139_inline_picture_duplicate.rs`에 한컴 기준 23페이지 및 9쪽 미주 연속 배치 회귀 테스트를 추가했다.
+
+Stage 6 검증:
+
+- `cargo fmt --check`: 통과
+- `cargo test --test issue_1139_inline_picture_duplicate`: 2 passed
+- `cargo test --test issue_1082_endnote_multicolumn_drift`: 4 passed
+- `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
+- `cargo build --release`: 성공
+- `./target/release/rhwp dump-pages samples/3-09월_교육_통합_2022.hwp`: 23페이지
+- `./target/release/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -p 8 -o output/diag_1139_stage6_page9`: 성공
+- `./target/release/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -p 22 -o output/diag_1139_stage6_page23`: 성공
+- `wasm-pack build --target web --out-dir pkg`: 성공
+
+UI/렌더링 정합 작업이므로 최종 한컴오피스 대비 시각 확인은 작업지시자 판정 대기 상태다.

@@ -30,3 +30,17 @@ fn issue_1139_small_inline_picture_rendered_once_per_control() {
         "문27 작은 inline Picture는 원본 컨트롤 2개만 렌더되어야 함"
     );
 }
+
+#[test]
+fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    assert_eq!(doc.page_count(), 23, "한컴오피스 기준 페이지 수");
+
+    let page9 = doc.dump_page_items(Some(8));
+    assert!(
+        page9.contains("FullParagraph[미주]  pi=523"),
+        "9쪽에서 pi=522 뒤 미주가 같은 쪽에 이어져야 함\n{page9}"
+    );
+}
