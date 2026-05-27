@@ -70,7 +70,7 @@ fn print_help() {
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!("      --show-grid[=Nmm]       격자 오버레이 (기본: 1mm, 예: --show-grid=3mm)");
-    println!("      --grid-origin=X,Y       격자 종이 기준 위치 (예: --grid-origin=15mm,20mm)");
+    println!("      --grid-origin=X,Y|auto  격자 종이 기준 위치 (예: --grid-origin=15mm,20mm)");
     println!("      --font-style            @font-face local() 참조 삽입 (폰트 데이터 미포함)");
     println!("      --embed-fonts           폰트 서브셋 임베딩 (사용 글자만 base64)");
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
@@ -192,7 +192,7 @@ fn export_svg(args: &[String]) {
     let mut show_control_codes = false;
     let mut debug_overlay = false;
     let mut grid_mm: Option<f64> = None;
-    let mut grid_origin_mm = (0.0_f64, 0.0_f64);
+    let mut grid_origin = GridOriginOption::Fixed((0.0_f64, 0.0_f64));
     let mut respect_vpos_reset = false;
     let mut font_embed_mode = rhwp::renderer::svg::FontEmbedMode::None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
@@ -258,11 +258,11 @@ fn export_svg(args: &[String]) {
             }
             arg if arg == "--grid-origin" || arg == "--grid-paper-origin" => {
                 if i + 1 < args.len() {
-                    match parse_grid_origin_mm(&args[i + 1]) {
-                        Some(v) => grid_origin_mm = v,
+                    match parse_grid_origin_option(&args[i + 1]) {
+                        Some(v) => grid_origin = v,
                         None => {
                             eprintln!(
-                                "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm"
+                                "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm 또는 --grid-origin=auto"
                             );
                             return;
                         }
@@ -278,11 +278,11 @@ fn export_svg(args: &[String]) {
                     .strip_prefix("--grid-origin=")
                     .or_else(|| arg.strip_prefix("--grid-paper-origin="))
                     .unwrap_or_default();
-                match parse_grid_origin_mm(value) {
-                    Some(v) => grid_origin_mm = v,
+                match parse_grid_origin_option(value) {
+                    Some(v) => grid_origin = v,
                     None => {
                         eprintln!(
-                            "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm"
+                            "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm 또는 --grid-origin=auto"
                         );
                         return;
                     }
@@ -400,7 +400,22 @@ fn export_svg(args: &[String]) {
             Ok(mut svg) => {
                 // 격자 오버레이 삽입
                 if let Some(mm) = grid_mm {
-                    svg = insert_grid_overlay(&svg, mm, grid_origin_mm);
+                    let origin_mm = match grid_origin {
+                        GridOriginOption::Fixed(origin) => origin,
+                        GridOriginOption::AutoPaper => {
+                            match grid_paper_origin_mm(&doc, *page_num) {
+                                Some(origin) => origin,
+                                None => {
+                                    eprintln!(
+                                        "오류: 페이지 {}의 격자 기준 위치를 계산할 수 없습니다.",
+                                        page_num
+                                    );
+                                    continue;
+                                }
+                            }
+                        }
+                    };
+                    svg = insert_grid_overlay(&svg, mm, origin_mm);
                 }
                 let svg_filename = if page_count == 1 {
                     format!("{}.svg", file_stem)
@@ -442,9 +457,38 @@ fn parse_grid_mm(value: &str) -> Option<f64> {
     }
 }
 
+#[derive(Clone, Copy)]
+enum GridOriginOption {
+    Fixed((f64, f64)),
+    AutoPaper,
+}
+
+fn parse_grid_origin_option(value: &str) -> Option<GridOriginOption> {
+    if value.eq_ignore_ascii_case("auto") {
+        return Some(GridOriginOption::AutoPaper);
+    }
+    parse_grid_origin_mm(value).map(GridOriginOption::Fixed)
+}
+
 fn parse_grid_origin_mm(value: &str) -> Option<(f64, f64)> {
     let (x, y) = value.split_once(',')?;
     Some((parse_grid_mm(x)?, parse_grid_mm(y)?))
+}
+
+fn grid_paper_origin_mm(doc: &rhwp::wasm_api::HwpDocument, page_num: u32) -> Option<(f64, f64)> {
+    let page_info = doc.get_page_info_native(page_num).ok()?;
+    let page_info: serde_json::Value = serde_json::from_str(&page_info).ok()?;
+    let section_idx = page_info.get("sectionIndex")?.as_u64()? as usize;
+    let page_def = &doc
+        .document()
+        .sections
+        .get(section_idx)?
+        .section_def
+        .page_def;
+    Some((
+        hu_to_mm(page_def.margin_left),
+        hu_to_mm(page_def.margin_top + page_def.margin_header),
+    ))
 }
 
 /// SVG에 mm 단위 점 격자 오버레이를 삽입한다.
