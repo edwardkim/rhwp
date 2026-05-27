@@ -1979,6 +1979,7 @@ impl DocumentCore {
                     hwp3_origin_flow_spacing_before,
                     hwp3_origin_page_tolerance,
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
+                    matches!(self.source_format, crate::parser::FileFormat::Hwpx),
                 )
             };
 
@@ -2845,6 +2846,10 @@ impl DocumentCore {
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             self.document.is_hwp3_variant || self.document.header.version.major == 3,
         );
+        self.layout_engine.set_hwpx_source(matches!(
+            self.source_format,
+            crate::parser::FileFormat::Hwpx
+        ));
         // 활성 필드 정보를 레이아웃 엔진에 전달 (안내문 숨김용)
         self.layout_engine
             .set_active_field(self.active_field.as_ref().map(|af| {

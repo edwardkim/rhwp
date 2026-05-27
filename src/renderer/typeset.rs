@@ -136,6 +136,9 @@ struct TypesetState {
     /// [Task #1007] HWP3-origin HWP5 변환본 여부 — widow 방지 등 variant-specific
     /// behavior 분기에 사용.
     is_hwp3_variant: bool,
+    /// [Task #1147] HWPX 원본 여부 — HWPX 의 LINE_SEG 시멘틱은 빈 앵커 TopAndBottom 표에서
+    /// host_line_spacing 을 표 다음 갭으로 더하지 않음. HWP5/HWP3 와 분리.
+    is_hwpx_source: bool,
     /// [Task #362] 한컴 빈 줄 감추기 옵션 (SectionDef bit 19). true 이면 페이지 시작에서
     /// overflow 유발하는 빈 paragraph 최대 2개까지 height=0 처리.
     hide_empty_line: bool,
@@ -309,6 +312,7 @@ impl TypesetState {
             pending_body_wide_top_reserve: 0.0,
             skip_safety_margin_once: false,
             is_hwp3_variant: false,
+            is_hwpx_source: false,
             hide_empty_line: false,
             hidden_empty_lines: 0,
             hidden_empty_page_idx: usize::MAX,
@@ -549,6 +553,7 @@ impl TypesetEngine {
             false,
             false,
             force_break_before,
+            false,
         )
     }
 
@@ -574,6 +579,7 @@ impl TypesetEngine {
         skip_spacing_before_prededuct: bool,
         hwp3_origin_page_tolerance: bool,
         force_break_before: &std::collections::HashSet<usize>,
+        is_hwpx_source: bool,
     ) -> PaginationResult {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         let col_count = column_def.column_count.max(1);
@@ -604,6 +610,7 @@ impl TypesetEngine {
         );
         st.hide_empty_line = hide_empty_line;
         st.is_hwp3_variant = is_hwp3_variant;
+        st.is_hwpx_source = is_hwpx_source;
         st.skip_spacing_before_prededuct = skip_spacing_before_prededuct;
         st.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
 
@@ -2562,6 +2569,7 @@ impl TypesetEngine {
 
     /// 표의 조판 높이를 계산한다 (format 단계).
     /// MeasuredTable + host_spacing을 통합하여 layout과 동일한 규칙으로 계산.
+    #[allow(clippy::too_many_arguments)]
     fn format_table(
         &self,
         para: &Paragraph,
@@ -2572,6 +2580,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         composed: Option<&ComposedParagraph>,
         is_column_top: bool,
+        is_hwpx_source: bool,
     ) -> FormattedTable {
         let mt = measured_tables
             .iter()
@@ -2618,7 +2627,22 @@ impl TypesetEngine {
                         .all(|p| p.controls.is_empty() && p.line_segs.len() <= 1)
                 })
                 .unwrap_or(false);
-        let host_line_spacing = if !is_tac && !is_single_cell_placeholder {
+        // [Task #1147] HWPX 원본 의 wrap=TopAndBottom 비-TAC 표 + 빈 앵커 문단:
+        //   HWPX LINE_SEG 시멘틱상 빈 앵커 문단 vpos = 직전 문단 종료 vpos (갭 0).
+        //   PS.spacing_before / host_line_spacing 을 별도 가산하면 HWPX vpos delta 와
+        //   +sb +leading 만큼 어긋나 페이지 overflow 유발.
+        //   HWP5/HWP3 는 LINE_SEG 인코딩이 달라 기존 동작 유지 (hwpspec 등 178p 정합).
+        let is_topbottom_empty_anchor_hwpx = is_hwpx_source
+            && !is_tac
+            && matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            && para.text.is_empty();
+
+        let host_line_spacing = if is_topbottom_empty_anchor_hwpx {
+            0.0
+        } else if !is_tac && !is_single_cell_placeholder {
             para.line_segs
                 .last()
                 .filter(|seg| seg.line_spacing > 0)
@@ -2632,7 +2656,10 @@ impl TypesetEngine {
         // - 자리차지(text_wrap=1) 비-TAC 표: spacing_before 제외
         //   (layout에서 v_offset 기반 절대 위치로 배치)
         // - 단 상단: spacing_before 제외
+        // - [Task #1147] HWPX 빈 앵커 TopAndBottom 비-TAC 표: spacing_before 제외 (위 주석)
         let before = if !is_tac && table_text_wrap == 1 {
+            outer_top
+        } else if is_topbottom_empty_anchor_hwpx && !is_column_top {
             outer_top
         } else {
             (if !is_column_top { sb } else { 0.0 }) + outer_top
@@ -2881,6 +2908,7 @@ impl TypesetEngine {
                         styles,
                         composed,
                         is_column_top,
+                        st.is_hwpx_source,
                     );
 
                     let mt = measured_tables
@@ -3585,6 +3613,7 @@ impl TypesetEngine {
         // 셀 패딩/중첩 표 높이 계산에만 의존하므로 ad hoc 인스턴스로 충분하다.
         let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
         layout_engine.set_hwp3_variant(st.is_hwp3_variant);
+        layout_engine.set_hwpx_source(st.is_hwpx_source);
         // [Task #993] rowspan(row_span>1) 셀이 걸친 행 — 컷 모델(advance_row_cut)은
         // row_span==1 셀만 다루므로 rowspan 셀 높이를 측정하지 못한다. 구현계획서
         // §4대로 rowspan 행은 MeasuredTable 행 높이를 권위로 쓴다(렌더러도 동일).

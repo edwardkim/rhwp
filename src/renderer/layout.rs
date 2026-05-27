@@ -367,6 +367,9 @@ pub struct LayoutEngine {
     is_hwp3_variant: std::cell::Cell<bool>,
     /// HWP3 원본 및 HWP3-origin HWP5 변환본의 본문 흐름 spacing_before 보정 여부.
     use_hwp3_origin_flow_spacing_before: std::cell::Cell<bool>,
+    /// [Task #1147 v2] HWPX 원본 여부 — 빈 앵커 TopAndBottom 비-TAC 표 직후 갭을
+    /// typeset (host_line_spacing=0) 과 동일하게 0 으로 억제하기 위한 트리거.
+    is_hwpx_source: std::cell::Cell<bool>,
 }
 
 mod border_rendering;
@@ -424,6 +427,7 @@ impl LayoutEngine {
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             is_hwp3_variant: std::cell::Cell::new(false),
             use_hwp3_origin_flow_spacing_before: std::cell::Cell::new(false),
+            is_hwpx_source: std::cell::Cell::new(false),
         }
     }
 
@@ -460,6 +464,11 @@ impl LayoutEngine {
 
     pub fn set_hwp3_origin_flow_spacing_before(&self, enabled: bool) {
         self.use_hwp3_origin_flow_spacing_before.set(enabled);
+    }
+
+    /// [Task #1147 v2] HWPX 원본 소스 표시.
+    pub fn set_hwpx_source(&self, enabled: bool) {
+        self.is_hwpx_source.set(enabled);
     }
 
     /// 이미 렌더된 인라인 이미지 노드의 y 좌표를 dy만큼 이동 (캡션 Top 보정)
@@ -4079,8 +4088,17 @@ impl LayoutEngine {
                         y_offset += para_style.spacing_after;
                     }
                 }
+                // [Task #1147 v2] HWPX 원본의 빈 앵커 TopAndBottom 비-TAC 표는 typeset
+                // 측 is_topbottom_empty_anchor_hwpx 보정으로 host_line_spacing=0 처리되므로,
+                // 렌더러도 앵커 line_spacing 을 표 아래 갭으로 가산하지 않는다. 가산 시
+                // typeset 의 cur_h 와 layout 의 y_offset 가 18 px 어긋나 표 직후 문단이
+                // 시각상 아래로 밀려난다 (작업지시자 시각 검수, 권위 PDF 정합).
+                let is_topbottom_empty_anchor_hwpx =
+                    self.is_hwpx_source.get() && is_current_empty_para_float;
                 if let Some(seg) = para.line_segs.last() {
-                    let gap = if is_current_empty_para_float {
+                    let gap = if is_topbottom_empty_anchor_hwpx {
+                        0
+                    } else if is_current_empty_para_float {
                         seg.line_spacing.max(0)
                     } else if seg.line_spacing > 0 {
                         seg.line_spacing
