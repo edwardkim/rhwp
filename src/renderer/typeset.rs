@@ -9,6 +9,7 @@
 //! MS Word/OOXML의 cantSplit/tblHeader를 참고.
 
 use crate::model::control::Control;
+use crate::model::footnote::FootnoteShape;
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, ColumnType, PageDef};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
@@ -19,6 +20,7 @@ use crate::renderer::float_placement::{
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::MeasuredTable;
+use crate::renderer::layout::border_width_to_px;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{hwpunit_to_px, DEFAULT_DPI};
@@ -552,6 +554,7 @@ impl TypesetEngine {
             false,
             false,
             false,
+            None,
             force_break_before,
             false,
         )
@@ -578,6 +581,7 @@ impl TypesetEngine {
         is_hwp3_variant: bool,
         skip_spacing_before_prededuct: bool,
         hwp3_origin_page_tolerance: bool,
+        endnote_shape: Option<&FootnoteShape>,
         force_break_before: &std::collections::HashSet<usize>,
         is_hwpx_source: bool,
     ) -> PaginationResult {
@@ -1271,12 +1275,13 @@ impl TypesetEngine {
             // page_top_vpos 는 current_items 의 첫 item para_index 를 통해 즉시 계산
             // (TypesetState 필드 추적은 typeset_paragraph 내부 페이지 flush 와 동기 안 됨).
             if !st.current_items.is_empty() && st.wrap_around_cs < 0 && st.col_count == 1 {
-                let page_first_para_idx = st.current_items.first().map(|item| match item {
-                    PageItem::FullParagraph { para_index } => *para_index,
-                    PageItem::PartialParagraph { para_index, .. } => *para_index,
-                    PageItem::Table { para_index, .. } => *para_index,
-                    PageItem::PartialTable { para_index, .. } => *para_index,
-                    PageItem::Shape { para_index, .. } => *para_index,
+                let page_first_para_idx = st.current_items.iter().find_map(|item| match item {
+                    PageItem::FullParagraph { para_index } => Some(*para_index),
+                    PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
+                    PageItem::Table { para_index, .. } => Some(*para_index),
+                    PageItem::PartialTable { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. } => Some(*para_index),
+                    PageItem::EndnoteSeparator { .. } => None,
                 });
                 let page_top_vpos_opt = page_first_para_idx
                     .and_then(|pi| paragraphs.get(pi))
@@ -1720,11 +1725,32 @@ impl TypesetEngine {
             // (단의 첫 미주 → 자체 높이 사용). 단 advance 시 flush_column 에서 prev_body 리셋.
             let mut prev_en_bottom_vpos: Option<i32> = st.prev_body_bottom_vpos;
             let mut prev_endnote_had_vpos_rewind = false;
+            let mut emitted_endnote_separator = false;
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
                     if let Some(Control::Endnote(en_ctrl)) = para.controls.get(en_ref.control_index)
                     {
+                        if !emitted_endnote_separator {
+                            if let Some(shape) = endnote_shape {
+                                let sep_height = endnote_separator_height_px(shape, self.dpi);
+                                if sep_height > 0.0 {
+                                    st.current_items.push(PageItem::EndnoteSeparator {
+                                        separator_length: shape.separator_length,
+                                        margin_above: shape.separator_margin_top,
+                                        margin_below: endnote_separator_below_margin(shape),
+                                        line_type: shape.separator_line_type,
+                                        line_width: shape.separator_line_width,
+                                        color: shape.separator_color,
+                                    });
+                                    // 한컴의 미주 lineSeg vpos에는 구분선 이후 미주 본문
+                                    // 위치가 이미 반영되어 있다. 페이지 분할 높이에 다시
+                                    // 더하면 3-09월 샘플이 24쪽으로 밀리므로 렌더 단계의
+                                    // 시각 오프셋으로만 소비한다.
+                                }
+                            }
+                            emitted_endnote_separator = true;
+                        }
                         if st.col_count > 1
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
@@ -4587,12 +4613,13 @@ impl TypesetEngine {
                 if cc.zone_y_offset != zone_off {
                     break;
                 }
-                let last_para_idx = cc.items.last().map(|it| match it {
+                let last_para_idx = cc.items.iter().rev().find_map(|it| match it {
                     PageItem::FullParagraph { para_index }
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => *para_index,
+                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                    PageItem::EndnoteSeparator { .. } => None,
                 });
                 if let Some(pi) = last_para_idx {
                     if let Some(seg) = paragraphs.get(pi).and_then(|p| p.line_segs.last()) {
@@ -4762,12 +4789,13 @@ impl TypesetEngine {
                 .column_contents
                 .iter()
                 .flat_map(|col| col.items.iter())
-                .map(|item| match item {
-                    PageItem::FullParagraph { para_index } => *para_index,
-                    PageItem::PartialParagraph { para_index, .. } => *para_index,
-                    PageItem::Table { para_index, .. } => *para_index,
-                    PageItem::PartialTable { para_index, .. } => *para_index,
-                    PageItem::Shape { para_index, .. } => *para_index,
+                .filter_map(|item| match item {
+                    PageItem::FullParagraph { para_index } => Some(*para_index),
+                    PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
+                    PageItem::Table { para_index, .. } => Some(*para_index),
+                    PageItem::PartialTable { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. } => Some(*para_index),
+                    PageItem::EndnoteSeparator { .. } => None,
                 })
                 .max();
 
@@ -4811,6 +4839,7 @@ impl TypesetEngine {
                         PageItem::Table { para_index, .. } => *para_index == *ph_para,
                         PageItem::PartialTable { para_index, .. } => *para_index == *ph_para,
                         PageItem::Shape { para_index, .. } => *para_index == *ph_para,
+                        PageItem::EndnoteSeparator { .. } => false,
                     })
                 });
                 if starts {
@@ -4909,6 +4938,28 @@ fn compute_body_wide_top_reserve_for_para(
         }
     }
     max_bottom
+}
+
+fn endnote_separator_below_margin(shape: &FootnoteShape) -> i16 {
+    // HWP5 FOOTNOTE_SHAPE에서 3-09월_교육_통합_2022.hwp의 "구분선 아래"
+    // UI 값은 note_spacing 슬롯에 들어온다.
+    if shape.note_spacing != 0 {
+        shape.note_spacing
+    } else {
+        shape.separator_margin_bottom
+    }
+}
+
+fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    let has_separator = shape.separator_line_type != 0
+        || shape.separator_line_width != 0
+        || shape.separator_length != 0;
+    if !has_separator {
+        return 0.0;
+    }
+    hwpunit_to_px(shape.separator_margin_top as i32, dpi)
+        + border_width_to_px(shape.separator_line_width).max(0.5)
+        + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
 }
 
 #[cfg(test)]

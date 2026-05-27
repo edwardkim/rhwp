@@ -19,6 +19,18 @@ fn collect_small_bin5_images(node: &RenderNode, out: &mut Vec<(Option<usize>, Op
     }
 }
 
+fn collect_green_separator_lines(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
+    if let RenderNodeType::Line(line) = &node.node_type {
+        let width = (line.x2 - line.x1).abs();
+        if line.style.color & 0x00ff_ffff == 0x0059_b859 && (width - 188.98).abs() < 1.0 {
+            out.push((line.y1, width));
+        }
+    }
+    for child in &node.children {
+        collect_green_separator_lines(child, out);
+    }
+}
+
 fn render_tree_contains_text(node: &RenderNode, needle: &str) -> bool {
     if let RenderNodeType::TextRun(run) = &node.node_type {
         if run.text.contains(needle) {
@@ -81,6 +93,10 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
         "9쪽에는 문7 미주 마지막 문단 pi=522가 남아야 함\n{page9}"
     );
     assert!(
+        page9.contains("EndnoteSeparator"),
+        "9쪽 미주 시작 앞에는 한컴 미주 구분선이 있어야 함\n{page9}"
+    );
+    assert!(
         !page9.contains("FullParagraph[미주]  pi=523"),
         "한컴오피스 기준 문8 미주 pi=523은 9쪽에 들어가면 안 됨\n{page9}"
     );
@@ -99,6 +115,13 @@ fn issue_1139_page9_endnote_shape_textbox_is_rendered() {
     assert!(
         render_tree_contains_text(&tree.root, "다른 풀이"),
         "9쪽 문7 미주 내부 TAC Shape 그룹의 글상자 텍스트가 렌더되어야 함"
+    );
+
+    let mut lines = Vec::new();
+    collect_green_separator_lines(&tree.root, &mut lines);
+    assert!(
+        !lines.is_empty(),
+        "9쪽 미주 시작에는 50mm 녹색 구분선이 렌더되어야 함"
     );
 }
 

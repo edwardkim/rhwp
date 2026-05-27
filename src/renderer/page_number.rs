@@ -82,6 +82,7 @@ impl<'a> PageNumberAssigner<'a> {
                     ..
                 } => *para_index == target_pi && !*is_continuation,
                 PageItem::Shape { para_index, .. } => *para_index == target_pi,
+                PageItem::EndnoteSeparator { .. } => false,
             })
         })
     }

@@ -2049,12 +2049,13 @@ impl LayoutEngine {
                     );
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
-                let new_zone_first_para = col_content.items.first().map(|it| match it {
+                let new_zone_first_para = col_content.items.first().and_then(|it| match it {
                     PageItem::FullParagraph { para_index }
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => *para_index,
+                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                    PageItem::EndnoteSeparator { .. } => None,
                 });
                 let new_zone_design = new_zone_first_para
                     .map(|pi| design_spacing_of(pi))
@@ -2495,6 +2496,32 @@ impl LayoutEngine {
                 PageItem::Table { para_index, .. } => *para_index,
                 PageItem::PartialTable { para_index, .. } => *para_index,
                 PageItem::Shape { para_index, .. } => *para_index,
+                PageItem::EndnoteSeparator { .. } => {
+                    let (new_y, _) = self.layout_column_item(
+                        tree,
+                        &mut col_node,
+                        paper_images,
+                        &mut para_start_y,
+                        &mut para_float_lanes,
+                        item,
+                        page_content,
+                        paragraphs,
+                        composed,
+                        styles,
+                        bin_data_content,
+                        measured_tables,
+                        layout,
+                        col_area,
+                        outline_numbering_id,
+                        multi_col_width,
+                        y_offset,
+                        prev_tac_seg_applied,
+                        wrap_around_paras,
+                        &col_content.wrap_anchors,
+                    );
+                    y_offset = new_y;
+                    continue;
+                }
             };
             // [Task #901 Stage 8/10] post-jump 적용: 직전 anchor paragraph 가 flow-around 로
             // 그림 위에 렌더된 경우 후속 paragraph 의 y_offset 을 picture bottom 으로 jump
@@ -2660,6 +2687,7 @@ impl LayoutEngine {
                         control_index,
                         ..
                     } => format!("Shape pi={} ci={}", para_index, control_index),
+                    PageItem::EndnoteSeparator { .. } => "EndnoteSeparator".to_string(),
                 }
             } else {
                 String::new()
@@ -2812,6 +2840,7 @@ impl LayoutEngine {
                     PageItem::Table { para_index, .. } => ("Table", *para_index),
                     PageItem::PartialTable { para_index, .. } => ("PartialTable", *para_index),
                     PageItem::Shape { para_index, .. } => ("Shape", *para_index),
+                    PageItem::EndnoteSeparator { .. } => ("EndnoteSeparator", usize::MAX),
                 };
                 self.record_overflow(LayoutOverflow {
                     page_index: page_content.page_index,
@@ -3584,8 +3613,76 @@ impl LayoutEngine {
                     y_offset,
                 );
             }
+            PageItem::EndnoteSeparator {
+                separator_length,
+                margin_above,
+                margin_below,
+                line_type,
+                line_width,
+                color,
+            } => {
+                y_offset = self.layout_endnote_separator_item(
+                    tree,
+                    col_node,
+                    ctx.col_area,
+                    y_offset,
+                    *separator_length,
+                    *margin_above,
+                    *margin_below,
+                    *line_type,
+                    *line_width,
+                    *color,
+                );
+            }
         }
         (y_offset, false)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn layout_endnote_separator_item(
+        &self,
+        tree: &mut PageRenderTree,
+        col_node: &mut RenderNode,
+        col_area: &LayoutRect,
+        mut y_offset: f64,
+        separator_length: i16,
+        margin_above: i16,
+        margin_below: i16,
+        _line_type: u8,
+        line_width_raw: u8,
+        color: crate::model::ColorRef,
+    ) -> f64 {
+        y_offset += hwpunit_to_px(margin_above as i32, self.dpi);
+        let line_width = border_width_to_px(line_width_raw).max(0.5);
+        let sep_length = if separator_length > 0 {
+            hwpunit_to_px(separator_length as i32, self.dpi).min(col_area.width)
+        } else {
+            col_area.width / 3.0
+        };
+        let line_id = tree.next_id();
+        let line_node = RenderNode::new(
+            line_id,
+            RenderNodeType::Line(LineNode::new(
+                col_area.x,
+                y_offset,
+                col_area.x + sep_length,
+                y_offset,
+                LineStyle {
+                    color,
+                    width: line_width,
+                    dash: StrokeDash::Solid,
+                    ..Default::default()
+                },
+            )),
+            BoundingBox::new(
+                col_area.x,
+                y_offset - line_width / 2.0,
+                sep_length,
+                line_width,
+            ),
+        );
+        col_node.children.push(line_node);
+        y_offset + line_width + hwpunit_to_px(margin_below as i32, self.dpi)
     }
 
     /// Table PageItem 레이아웃 (layout_column_item에서 분리)

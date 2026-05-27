@@ -407,6 +407,9 @@ impl DocumentCore {
                                 crate::renderer::pagination::PageItem::Shape {
                                     para_index, ..
                                 } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::EndnoteSeparator {
+                                    ..
+                                } => None,
                             };
                             if let Some(para_idx) = pi {
                                 return Ok(format!(

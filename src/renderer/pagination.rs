@@ -234,6 +234,21 @@ pub enum PageItem {
         para_index: usize,
         control_index: usize,
     },
+    /// 미주 영역 시작 구분선
+    EndnoteSeparator {
+        /// 구분선 길이 (HWP 단위)
+        separator_length: i16,
+        /// 구분선 위 여백 (HWP 단위)
+        margin_above: i16,
+        /// 구분선 아래 여백 (HWP 단위)
+        margin_below: i16,
+        /// 구분선 종류
+        line_type: u8,
+        /// 구분선 굵기
+        line_width: u8,
+        /// 구분선 색상
+        color: crate::model::ColorRef,
+    },
 }
 
 /// [Issue #476] 인라인(treat_as_char) 컨트롤이 라우팅된 페이지/단을 찾는다.
@@ -307,6 +322,7 @@ impl PageItem {
             PageItem::Table { para_index, .. } => *para_index,
             PageItem::PartialTable { para_index, .. } => *para_index,
             PageItem::Shape { para_index, .. } => *para_index,
+            PageItem::EndnoteSeparator { .. } => usize::MAX,
         }
     }
 
@@ -358,6 +374,21 @@ impl PageItem {
             } => PageItem::Shape {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
+            },
+            PageItem::EndnoteSeparator {
+                separator_length,
+                margin_above,
+                margin_below,
+                line_type,
+                line_width,
+                color,
+            } => PageItem::EndnoteSeparator {
+                separator_length: *separator_length,
+                margin_above: *margin_above,
+                margin_below: *margin_below,
+                line_type: *line_type,
+                line_width: *line_width,
+                color: *color,
             },
         }
     }
@@ -418,6 +449,7 @@ impl PageItem {
                     control_index: c2,
                 },
             ) => *a == adj(*b) && c1 == c2,
+            (PageItem::EndnoteSeparator { .. }, PageItem::EndnoteSeparator { .. }) => true,
             _ => false,
         }
     }

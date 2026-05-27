@@ -2129,6 +2129,9 @@ impl DocumentCore {
                                 crate::renderer::pagination::PageItem::Shape {
                                     para_index, ..
                                 } => Some(*para_index),
+                                crate::renderer::pagination::PageItem::EndnoteSeparator {
+                                    ..
+                                } => None,
                             };
                             if pi == Some(para_idx) {
                                 if result.last() != Some(&global_page) {

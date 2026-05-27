@@ -2051,6 +2051,7 @@ impl DocumentCore {
                     self.document.is_hwp3_variant,
                     hwp3_origin_flow_spacing_before,
                     hwp3_origin_page_tolerance,
+                    Some(&section.section_def.endnote_shape),
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
                     matches!(self.source_format, crate::parser::FileFormat::Hwpx),
                 )
@@ -2418,15 +2419,18 @@ impl DocumentCore {
                             p.column_contents.iter().any(|cc| {
                                 cc.items.iter().any(|item| {
                                     let pi = match item {
-                                        PageItem::FullParagraph { para_index } => *para_index,
+                                        PageItem::FullParagraph { para_index } => Some(*para_index),
                                         PageItem::PartialParagraph { para_index, .. } => {
-                                            *para_index
+                                            Some(*para_index)
                                         }
-                                        PageItem::Table { para_index, .. } => *para_index,
-                                        PageItem::PartialTable { para_index, .. } => *para_index,
-                                        PageItem::Shape { para_index, .. } => *para_index,
+                                        PageItem::Table { para_index, .. } => Some(*para_index),
+                                        PageItem::PartialTable { para_index, .. } => {
+                                            Some(*para_index)
+                                        }
+                                        PageItem::Shape { para_index, .. } => Some(*para_index),
+                                        PageItem::EndnoteSeparator { .. } => None,
                                     };
-                                    pi >= hdr_pi
+                                    pi.is_some_and(|pi| pi >= hdr_pi)
                                 })
                             })
                         })
@@ -2442,15 +2446,18 @@ impl DocumentCore {
                             p.column_contents.iter().any(|cc| {
                                 cc.items.iter().any(|item| {
                                     let pi = match item {
-                                        PageItem::FullParagraph { para_index } => *para_index,
+                                        PageItem::FullParagraph { para_index } => Some(*para_index),
                                         PageItem::PartialParagraph { para_index, .. } => {
-                                            *para_index
+                                            Some(*para_index)
                                         }
-                                        PageItem::Table { para_index, .. } => *para_index,
-                                        PageItem::PartialTable { para_index, .. } => *para_index,
-                                        PageItem::Shape { para_index, .. } => *para_index,
+                                        PageItem::Table { para_index, .. } => Some(*para_index),
+                                        PageItem::PartialTable { para_index, .. } => {
+                                            Some(*para_index)
+                                        }
+                                        PageItem::Shape { para_index, .. } => Some(*para_index),
+                                        PageItem::EndnoteSeparator { .. } => None,
                                     };
-                                    pi >= ftr_pi
+                                    pi.is_some_and(|pi| pi >= ftr_pi)
                                 })
                             })
                         })
@@ -2548,6 +2555,7 @@ impl DocumentCore {
                                 PageItem::Table { para_index, .. } => *para_index,
                                 PageItem::PartialTable { para_index, .. } => *para_index,
                                 PageItem::Shape { para_index, .. } => *para_index,
+                                PageItem::EndnoteSeparator { .. } => usize::MAX,
                             };
                             if pi < col_map.len() {
                                 col_map[pi] = ci;
@@ -2846,6 +2854,19 @@ impl DocumentCore {
                                 out.push_str(&format!(
                                     "    Shape          pi={} ci={}  {}  {}\n",
                                     para_index, control_index, shape_info, vpos_info
+                                ));
+                            }
+                            PageItem::EndnoteSeparator {
+                                separator_length,
+                                margin_above,
+                                margin_below,
+                                line_width,
+                                color,
+                                ..
+                            } => {
+                                out.push_str(&format!(
+                                    "    EndnoteSeparator len={} above={} below={} width={} color=#{:06x}\n",
+                                    separator_length, margin_above, margin_below, line_width, color & 0x00ff_ffff
                                 ));
                             }
                         }

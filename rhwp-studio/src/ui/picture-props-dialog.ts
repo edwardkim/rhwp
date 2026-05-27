@@ -66,7 +66,7 @@ export class PicturePropsDialog {
   private sec = 0;
   private para = 0;
   private ci = 0;
-  private objectType: 'image' | 'shape' | 'line' = 'image';
+  private objectType: 'image' | 'shape' | 'line' | 'group' = 'image';
   /** [Task #825] 머리말/꼬리말 그림 marker (Some 일 때 신규 API 사용). */
   private headerFooter: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } | undefined;
   /** [Task #1138] 표 셀 내 객체 marker (Some 일 때 by_path API 사용). */
@@ -224,7 +224,7 @@ export class PicturePropsDialog {
     sec: number,
     para: number,
     ci: number,
-    type: 'image' | 'shape' | 'line' = 'image',
+    type: 'image' | 'shape' | 'line' | 'group' = 'image',
     headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number },
     cellPath?: CellPath,
     innerControlIdx?: number,
@@ -240,12 +240,11 @@ export class PicturePropsDialog {
     this.innerControlIdx = innerControlIdx ?? 0;
 
     // getter 분기:
-    // - shape/line: cellPath > 외부 (셀 안 도형은 by_path API)
+    // - shape/line/group: cellPath > 외부 (셀 안 도형은 by_path API)
     // - picture: headerFooter > cellPath > 외부
-    //   [Task #1151 v4] picture cellPath 분기 추가 — 셀 안 inline picture
-    //   (tac-img-02.hwp 같은 케이스) 조회. Shape 와 같은 getCellPicturePropertiesByPath
+    //   [Task #1151 v4] 셀 안 inline picture 는 getCellPicturePropertiesByPath
     //   wasm API 호출.
-    if (type === 'shape' || type === 'line') {
+    if (type === 'shape' || type === 'line' || type === 'group') {
       if (cellPath) {
         this.shapeProps = this.wasm.getCellShapePropertiesByPath(sec, para, cellPath, this.innerControlIdx);
       } else {
@@ -2163,12 +2162,11 @@ export class PicturePropsDialog {
 
     if (Object.keys(updated).length > 0) {
       // setter 분기:
-      // - shape/line: cellPath > 외부
+      // - shape/line/group: cellPath > 외부
       // - picture: headerFooter > cellPath > 외부
-      //   [Task #1151 v4] picture 도 cellPath 분기 추가 — 셀 안 inline picture
-      //   (tac-img-02.hwp 같은 케이스) 속성 변경. Shape 와 같은 setCellPicturePropertiesByPath
+      //   [Task #1151 v4] 셀 안 inline picture 는 setCellPicturePropertiesByPath
       //   wasm API 호출. 본문 picture (cellPath 없음) 는 기존 setPictureProperties.
-      if (this.objectType === 'shape' || this.objectType === 'line') {
+      if (this.objectType === 'shape' || this.objectType === 'line' || this.objectType === 'group') {
         if (this.cellPath) {
           this.wasm.setCellShapePropertiesByPath(
             this.sec, this.para, this.cellPath, this.innerControlIdx, updated,

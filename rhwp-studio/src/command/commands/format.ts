@@ -451,7 +451,7 @@ export const formatCommands: CommandDef[] = [
       // 그림/도형 선택 시
       if (ih.isInPictureObjectSelection()) {
         const ref = ih.getSelectedPictureRef();
-        if (!ref || ref.type === 'equation' || ref.type === 'group') return;
+        if (!ref || ref.type === 'equation') return;
         const dialog = new PicturePropsDialog(services.wasm, services.eventBus);
         dialog.open(ref.sec, ref.ppi, ref.ci, ref.type);
         return;
