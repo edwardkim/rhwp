@@ -20950,26 +20950,8 @@ fn test_page13_enter_propagation() {
     let mut before_pages: Vec<(usize, usize, usize)> = Vec::new(); // (first_pi, last_pi, item_count)
     for page in &doc.pagination[0].pages {
         let items = &page.column_contents[0].items;
-        let first = items
-            .first()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
-        let last = items
-            .last()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
+        let first = items.first().map(PageItem::para_index).unwrap_or(0);
+        let last = items.last().map(PageItem::para_index).unwrap_or(0);
         before_pages.push((first, last, items.len()));
     }
 
@@ -20985,26 +20967,8 @@ fn test_page13_enter_propagation() {
     let mut last_diff_page = 0;
     for (pidx, page) in doc.pagination[0].pages.iter().enumerate() {
         let items = &page.column_contents[0].items;
-        let first = items
-            .first()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
-        let last = items
-            .last()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
+        let first = items.first().map(PageItem::para_index).unwrap_or(0);
+        let last = items.last().map(PageItem::para_index).unwrap_or(0);
 
         let before = before_pages.get(pidx);
         let changed = before
@@ -21057,20 +21021,8 @@ fn test_page13_enter_propagation() {
             .get(pidx)
             .map(|p| &p.column_contents[0].items);
 
-        let pi1_first = items1.and_then(|i| i.first()).map(|it| match it {
-            PageItem::FullParagraph { para_index }
-            | PageItem::Table { para_index, .. }
-            | PageItem::PartialParagraph { para_index, .. }
-            | PageItem::PartialTable { para_index, .. }
-            | PageItem::Shape { para_index, .. } => *para_index,
-        });
-        let pi2_first = items2.and_then(|i| i.first()).map(|it| match it {
-            PageItem::FullParagraph { para_index }
-            | PageItem::Table { para_index, .. }
-            | PageItem::PartialParagraph { para_index, .. }
-            | PageItem::PartialTable { para_index, .. }
-            | PageItem::Shape { para_index, .. } => *para_index,
-        });
+        let pi1_first = items1.and_then(|i| i.first()).map(PageItem::para_index);
+        let pi2_first = items2.and_then(|i| i.first()).map(PageItem::para_index);
         let count1 = items1.map(|i| i.len()).unwrap_or(0);
         let count2 = items2.map(|i| i.len()).unwrap_or(0);
 

@@ -1291,11 +1291,13 @@ impl LayoutEngine {
                         body_page_border_outset(&borders[0]),
                         body_page_border_outset(&borders[1]),
                         body_page_border_outset(&borders[2]),
-                        body_page_border_outset(&borders[3]),
+                        0.0,
                     )
                 };
                 // 종이 기준: 종이 가장자리에서 안쪽(+)으로 spacing
                 // 쪽 기준: 본문 영역에서 바깥쪽(-)으로 spacing + 선 묶음 폭만큼 확장
+                // 단 하단은 footer/쪽번호 영역과 맞닿으므로 한컴처럼 spacing까지만
+                // 반영한다. 상단/좌우 outset은 Stage 29 로고 정합을 유지한다.
                 let (bx, by, bw, bh) = if paper_based {
                     (
                         base_x + sp_l,

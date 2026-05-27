@@ -752,7 +752,7 @@ impl DocumentCore {
         } else {
             (0.0, 0.0, 0.0, 0.0)
         };
-        let (out_l, out_r, out_t, out_b) = visual_outsets;
+        let (out_l, out_r, out_t, _out_b) = visual_outsets;
         let (page_border_left, page_border_right, page_border_top, page_border_bottom) =
             match page_border_fill.basis {
                 PageBorderBasis::PaperBased => (pbf_left, pbf_right, pbf_top, pbf_bottom),
@@ -760,7 +760,7 @@ impl DocumentCore {
                     (ml - pbf_left - out_l).max(0.0),
                     (mr - pbf_right - out_r).max(0.0),
                     (body_top - pbf_top - out_t).max(0.0),
-                    (body_bottom_margin - pbf_bottom - out_b).max(0.0),
+                    (body_bottom_margin - pbf_bottom).max(0.0),
                 ),
             };
         // 단별 영역 정보
