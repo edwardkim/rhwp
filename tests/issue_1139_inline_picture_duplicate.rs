@@ -14,6 +14,17 @@ fn collect_small_bin5_images(node: &RenderNode, out: &mut Vec<(Option<usize>, Op
     }
 }
 
+fn render_tree_contains_text(node: &RenderNode, needle: &str) -> bool {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.text.contains(needle) {
+            return true;
+        }
+    }
+    node.children
+        .iter()
+        .any(|child| render_tree_contains_text(child, needle))
+}
+
 #[test]
 fn issue_1139_small_inline_picture_rendered_once_per_control() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
@@ -42,5 +53,17 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
     assert!(
         page9.contains("FullParagraph[미주]  pi=523"),
         "9쪽에서 pi=522 뒤 미주가 같은 쪽에 이어져야 함\n{page9}"
+    );
+}
+
+#[test]
+fn issue_1139_page9_endnote_shape_textbox_is_rendered() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(8).expect("page 9 render tree");
+
+    assert!(
+        render_tree_contains_text(&tree.root, "다른 풀이"),
+        "9쪽 문7 미주 내부 TAC Shape 그룹의 글상자 텍스트가 렌더되어야 함"
     );
 }

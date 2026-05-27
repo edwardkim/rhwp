@@ -1841,6 +1841,14 @@ impl TypesetEngine {
                             st.current_items.push(PageItem::FullParagraph {
                                 para_index: en_para_idx,
                             });
+                            for (ctrl_idx, ctrl) in en_para.controls.iter().enumerate() {
+                                if matches!(ctrl, Control::Shape(_)) {
+                                    st.current_items.push(PageItem::Shape {
+                                        para_index: en_para_idx,
+                                        control_index: ctrl_idx,
+                                    });
+                                }
+                            }
                             st.current_height += en_advance;
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
                             if let Some(tb) = this_bottom_offset {

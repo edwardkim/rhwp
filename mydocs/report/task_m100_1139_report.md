@@ -97,3 +97,28 @@ Stage 6 검증:
 - `wasm-pack build --target web --out-dir pkg`: 성공
 
 UI/렌더링 정합 작업이므로 최종 한컴오피스 대비 시각 확인은 작업지시자 판정 대기 상태다.
+
+## Stage 7 미주 내부 Shape 렌더링 보정
+
+작업지시자가 9쪽 `문7)` 풀이 중간의 `[다른 풀이]`가 rhwp-studio에서 표시되지 않는다고 재보고했고, 개체 속성 화면으로 해당 표식이 일반 문단 텍스트가 아니라 도형/글상자 개체임을 확인했다.
+
+진단 결과 `[다른 풀이]`는 `문7)` 미주 내부의 TAC `Control::Shape` 그룹에 포함된 글상자 텍스트였다. 본문 문단 경로는 `Control::Shape`를 `PageItem::Shape`로 별도 등록하지만, 미주 가상 문단 삽입 경로는 `FullParagraph`만 추가하고 도형 렌더 항목을 만들지 않아 실제 Shape와 글상자 텍스트가 렌더 트리에 들어가지 않았다.
+
+수정:
+
+- `src/renderer/typeset.rs`에서 미주 가상 문단을 추가할 때 해당 미주 문단의 `Control::Shape`도 `PageItem::Shape`로 등록하도록 변경했다.
+- `tests/issue_1139_inline_picture_duplicate.rs`에 9쪽 렌더 트리에 `다른 풀이` 텍스트가 포함되는지 확인하는 회귀 테스트를 추가했다.
+
+Stage 7 검증:
+
+- `cargo fmt --check`: 통과
+- `cargo test --test issue_1139_inline_picture_duplicate`: 3 passed
+- `cargo test --test issue_1082_endnote_multicolumn_drift`: 4 passed
+- `cargo build --release`: 성공
+- `./target/release/rhwp dump-pages samples/3-09월_교육_통합_2022.hwp`: 23페이지
+- `./target/release/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -p 8 -o output/diag_1139_stage7_page9`: 성공
+- Stage 7 page 9 SVG: `다른 풀이` 글상자 glyph 포함 확인
+- `wasm-pack build --target web --out-dir pkg`: 성공
+- `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
+
+UI/렌더링 정합 작업이므로 한컴오피스 대비 실제 위치와 흐름은 작업지시자 판정 대기 상태다. 왼쪽 단 `문5)` 세로 위치 차이는 이번 단계에서 별도 위치 보정으로 확정하지 않았다.
