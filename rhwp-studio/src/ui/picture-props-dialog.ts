@@ -366,7 +366,7 @@ export class PicturePropsDialog {
     this.panels = [];
 
     const tabNames = this.objectType === 'line' ? LINE_TAB_NAMES
-      : this.objectType === 'shape' ? SHAPE_TAB_NAMES
+      : (this.objectType === 'shape' || this.objectType === 'group') ? SHAPE_TAB_NAMES
       : PICTURE_TAB_NAMES;
     tabNames.forEach((name, i) => {
       const btn = document.createElement('button');
@@ -1923,7 +1923,7 @@ export class PicturePropsDialog {
     if (desc !== this.props.description) updated['description'] = desc;
 
     // Shape(글상자) 전용 속성
-    if ((this.objectType === 'shape' || this.objectType === 'line') && this.shapeProps) {
+    if ((this.objectType === 'shape' || this.objectType === 'line' || this.objectType === 'group') && this.shapeProps) {
       // 글상자 여백
       const ml = mmToHwp(parseFloat(this.tbMarginLeftInput?.value) || 0);
       const mr = mmToHwp(parseFloat(this.tbMarginRightInput?.value) || 0);
@@ -2231,7 +2231,7 @@ export class PicturePropsDialog {
     this.updatePositionVisibility();
 
     // Shape/Line 전용 필드
-    if ((this.objectType === 'shape' || this.objectType === 'line') && this.shapeProps) {
+    if ((this.objectType === 'shape' || this.objectType === 'line' || this.objectType === 'group') && this.shapeProps) {
       const sp = this.shapeProps;
 
       // 기본 탭 — 회전/대칭

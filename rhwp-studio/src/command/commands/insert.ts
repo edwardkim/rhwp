@@ -176,7 +176,7 @@ export const insertCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
-      if (!ref || ref.type === 'equation' || ref.type === 'group') return;
+      if (!ref || ref.type === 'equation') return;
       if (!picturePropsDialog) {
         picturePropsDialog = new PicturePropsDialog(services.wasm, services.eventBus);
       }
