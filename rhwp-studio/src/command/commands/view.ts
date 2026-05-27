@@ -6,6 +6,7 @@ import {
   setGridViewSettings,
   toggleGridVisibility,
 } from '../../view/grid-settings';
+import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -29,11 +30,16 @@ function getGridOriginDefaults(services: Parameters<CommandDef['execute']>[0]): 
   }
 
   const pageInfo = services.wasm.getPageInfo(pageIndex);
+  const rawPageDef = services.wasm.getPageDef(pageInfo.sectionIndex ?? 0);
+  const paperX = roundMm(rawPageDef.marginLeft / HWPUNIT_PER_MM);
+  const paperY = roundMm(rawPageDef.marginTop / HWPUNIT_PER_MM)
+    + roundMm(rawPageDef.marginHeader / HWPUNIT_PER_MM);
+
   return {
     page: { x: 0, y: 0 },
     paper: {
-      x: roundMm(pageInfo.marginLeft * PX_TO_MM),
-      y: roundMm((pageInfo.marginTop + pageInfo.marginHeader) * PX_TO_MM),
+      x: paperX,
+      y: roundMm(paperY),
     },
   };
 }

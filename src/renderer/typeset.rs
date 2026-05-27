@@ -1784,11 +1784,42 @@ impl TypesetEngine {
                                 }
                             }
                         }
-                        prev_endnote_had_vpos_rewind = en_ctrl.paragraphs.iter().any(|p| {
-                            p.line_segs
+                        let mut prev_group_bottom: Option<i32> = None;
+                        let endnote_has_vpos_rewind = en_ctrl.paragraphs.iter().any(|p| {
+                            let internal_rewind = p
+                                .line_segs
                                 .windows(2)
-                                .any(|w| w[1].vertical_pos < w[0].vertical_pos)
+                                .any(|w| w[1].vertical_pos < w[0].vertical_pos);
+                            let first = p.line_segs.first().map(|s| s.vertical_pos);
+                            let bottom = p
+                                .line_segs
+                                .iter()
+                                .map(|s| s.vertical_pos + s.line_height + s.line_spacing)
+                                .max();
+                            let group_rewind = matches!(
+                                (prev_group_bottom, first),
+                                (Some(prev), Some(cur)) if cur < prev
+                            );
+                            if let Some(b) = bottom {
+                                prev_group_bottom = Some(b);
+                            }
+                            internal_rewind || group_rewind
                         });
+                        if st.col_count > 1
+                            && !st.current_items.is_empty()
+                            && endnote_has_vpos_rewind
+                            && st.current_height > st.available_height() * 0.75
+                        {
+                            if let Some(shape) = endnote_shape {
+                                let note_gap = hwpunit_to_px(shape.raw_unknown as i32, self.dpi);
+                                if note_gap > 0.0
+                                    && st.current_height + note_gap < st.available_height()
+                                {
+                                    st.current_height += note_gap;
+                                }
+                            }
+                        }
+                        prev_endnote_had_vpos_rewind = endnote_has_vpos_rewind;
 
                         // endnote 단위로 시작점 결정
                         let endnote_start = vpos_offset;
@@ -1870,19 +1901,68 @@ impl TypesetEngine {
                                 .map(|(_, spacing)| hwpunit_to_px(spacing.max(0), self.dpi))
                                 .unwrap_or(0.0);
 
+                            // 같은 미주 안에서도 LINE_SEG vpos 가 되감기며 다음 단 시작을
+                            // 표시하는 문서가 있다. 특히 3-09월_교육_통합_2022.hwp 9쪽의
+                            // 문5) 풀이처럼 단 하단에서 다음 paragraph first_vpos 가 직전
+                            // bottom 보다 작아지는 경우, 한컴은 같은 단에 겹쳐 쌓지 않고
+                            // 다음 단으로 넘긴다.
+                            if st.col_count > 1
+                                && !st.current_items.is_empty()
+                                && st.current_height > available * 0.85
+                                && matches!(
+                                    (prev_en_bottom_vpos, this_first_offset),
+                                    (Some(prev), Some(first)) if first < prev
+                                )
+                            {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            let local_vpos_rewind = matches!(
+                                (prev_en_bottom_vpos, this_first_offset),
+                                (Some(prev), Some(first)) if first < prev
+                            );
+                            let large_vpos_jump_at_column_top = st.col_count > 1
+                                && st.current_height < available * 0.20
+                                && matches!(
+                                    (prev_en_bottom_vpos, this_first_offset),
+                                    (Some(prev), Some(first))
+                                        if first > prev
+                                            && hwpunit_to_px(first - prev, self.dpi)
+                                                > available * 0.75
+                                );
+                            let internal_vpos_rewind = en_para
+                                .line_segs
+                                .windows(2)
+                                .any(|w| w[1].vertical_pos < w[0].vertical_pos);
+
                             let col_count = st.col_count;
                             let dpi = self.dpi;
                             let h4f = fmt.height_for_fit;
                             let tot = fmt.total_height;
+                            let min_vpos_rewind_height = en_para
+                                .line_segs
+                                .first()
+                                .map(|s| hwpunit_to_px(s.line_height.max(1), dpi))
+                                .unwrap_or(h4f);
                             let compute_en_metrics = |prev: Option<i32>| -> (f64, f64) {
                                 if col_count > 1 {
                                     if let (Some(tf), Some(tb)) =
                                         (this_first_offset, this_bottom_offset)
                                     {
-                                        let base = prev.unwrap_or(tf);
+                                        let base =
+                                            if local_vpos_rewind || large_vpos_jump_at_column_top {
+                                                tf
+                                            } else {
+                                                prev.unwrap_or(tf)
+                                            };
                                         let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
-                                        let fit = (advance_px - trailing_ls_px).max(h4f);
-                                        let acc = advance_px.max(h4f);
+                                        let min_h = if internal_vpos_rewind {
+                                            min_vpos_rewind_height
+                                        } else {
+                                            h4f
+                                        };
+                                        let fit = (advance_px - trailing_ls_px).max(min_h);
+                                        let acc = advance_px.max(min_h);
                                         (fit, acc)
                                     } else {
                                         (h4f, tot)

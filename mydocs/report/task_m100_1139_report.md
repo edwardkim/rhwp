@@ -149,3 +149,31 @@ Stage 8 검증:
 - `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
 
 UI/렌더링 정합 작업이므로 Stage 8도 최종 한컴오피스 대비 시각 확인은 작업지시자 판정 대기 상태다.
+
+## Stage 11 격자 기준과 9쪽 미주 단 흐름 재보정
+
+작업지시자가 rhwp-studio 격자 설정의 종이 기준 세로 값이 한컴오피스 `24.00mm`와 달리 `24.02mm`로 표시되고, 값을 맞춘 뒤에도 9쪽 레이아웃이 전체적으로 다르다고 재보고했다.
+
+수정:
+
+- `rhwp-studio/src/command/commands/view.ts`에서 격자 종이 기준 기본값을 `PageInfo` 픽셀값 재환산이 아니라 HWP 원본 `PageDef` HWPUNIT 기준으로 계산하도록 변경했다.
+- `src/renderer/typeset.rs`에서 미주 paragraph의 `vpos`가 단 하단에서 되감기면 다음 단으로 넘기도록 보정했다.
+- 후반 미주에서 전체 페이지 수가 24쪽으로 늘어나는 부작용을 막기 위해, 단 상단 근처의 큰 `vpos` 점프와 내부 `vpos` 되감기 paragraph는 lineSeg 위치 span을 우선하도록 보정했다.
+- 추가 판정에서 왼쪽 단 `문5)`가 아직 높아 보여, 단 하단에서 다음 단으로 이어지는 `vpos` 되감김 미주 묶음이 시작될 때만 한컴 `미주 사이 7mm` 값을 반영하도록 좁게 보정했다.
+
+Stage 11 검증:
+
+- `cargo build`: 성공
+- `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 5 passed
+- `npm run build` (`rhwp-studio`): 성공
+- `npm test` (`rhwp-studio`): 38 passed
+- `wasm-pack build --target web --out-dir pkg`: 성공
+- `target/debug/rhwp info samples/3-09월_교육_통합_2022.hwp`: 23페이지 확인
+- `target/debug/rhwp dump-pages samples/3-09월_교육_통합_2022.hwp -p 8`: 9쪽 `문5)` 뒤 풀이가 오른쪽 단으로 이동하고, 왼쪽 단 `문5)` 시작 위치가 하단으로 보정됨
+- `target/debug/rhwp dump-pages samples/3-09월_교육_통합_2022.hwp -p 22`: 최종 23쪽 배치 확인
+- `target/debug/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -o output/task1139_stage11b_svg -p 8 --show-grid=3mm`: 성공
+
+시각 판정용 산출물:
+
+- `output/task1139_stage11b_svg/3-09월_교육_통합_2022_009.svg`
+- `output/task1139_stage11b_svg/3-09월_교육_통합_2022_009_558.png`
