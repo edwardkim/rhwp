@@ -1719,11 +1719,51 @@ impl TypesetEngine {
             // 시드 = 현재 단의 본문 last bottom vpos(body→endnote 전환 정합); 없으면 None
             // (단의 첫 미주 → 자체 높이 사용). 단 advance 시 flush_column 에서 prev_body 리셋.
             let mut prev_en_bottom_vpos: Option<i32> = st.prev_body_bottom_vpos;
+            let mut prev_endnote_had_vpos_rewind = false;
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
                     if let Some(Control::Endnote(en_ctrl)) = para.controls.get(en_ref.control_index)
                     {
+                        if st.col_count > 1
+                            && !st.current_items.is_empty()
+                            && prev_endnote_had_vpos_rewind
+                            && st.current_height > st.available_height() * 0.85
+                        {
+                            let group_first = en_ctrl
+                                .paragraphs
+                                .iter()
+                                .filter_map(|p| p.line_segs.first().map(|s| s.vertical_pos))
+                                .min();
+                            let group_bottom = en_ctrl
+                                .paragraphs
+                                .iter()
+                                .flat_map(|p| {
+                                    p.line_segs
+                                        .iter()
+                                        .map(|s| s.vertical_pos + s.line_height + s.line_spacing)
+                                })
+                                .max();
+                            if let (Some(first), Some(bottom)) = (group_first, group_bottom) {
+                                let group_h = hwpunit_to_px((bottom - first).max(0), self.dpi);
+                                let available = st.available_height();
+                                if group_h > 0.0
+                                    && group_h <= available + 0.5
+                                    && st.current_height + group_h > available
+                                {
+                                    let reclaimed = (available - st.current_height).max(0.0);
+                                    st.advance_column_or_new_page();
+                                    st.current_height -= reclaimed;
+                                    prev_en_bottom_vpos = None;
+                                }
+                            }
+                        }
+                        prev_endnote_had_vpos_rewind = en_ctrl.paragraphs.iter().any(|p| {
+                            p.line_segs
+                                .windows(2)
+                                .any(|w| w[1].vertical_pos < w[0].vertical_pos)
+                        });
+
                         // endnote 단위로 시작점 결정
                         let endnote_start = vpos_offset;
                         for (ep_idx, en_para) in en_ctrl.paragraphs.iter().enumerate() {
@@ -1745,16 +1785,6 @@ impl TypesetEngine {
                                 let mut new_offsets: Vec<u32> = (0..shift).collect();
                                 new_offsets.extend_from_slice(&en_para_copy.char_offsets);
                                 en_para_copy.char_offsets = new_offsets;
-                            }
-                            // endnote 끝 위치 추적
-                            if let Some(last_ls) = en_para.line_segs.last() {
-                                let end = endnote_start
-                                    + last_ls.vertical_pos
-                                    + last_ls.line_height
-                                    + last_ls.line_spacing;
-                                if end > vpos_offset {
-                                    vpos_offset = end;
-                                }
                             }
                             st.endnote_paragraphs.push(en_para_copy);
 
@@ -1802,6 +1832,14 @@ impl TypesetEngine {
                                 .max_by_key(|(bottom, _)| *bottom);
                             let this_bottom_offset =
                                 endnote_bottom_with_spacing.map(|(bottom, _)| bottom);
+                            // 다음 미주 묶음의 시작점도 렌더상 가장 낮은 줄 기준으로 갱신한다.
+                            // 마지막 LINE_SEG가 위쪽으로 되감기는 문단에서는 last 기준이
+                            // 다음 미주를 현재 쪽에 과도하게 붙인다.
+                            if let Some(tb) = this_bottom_offset {
+                                if tb > vpos_offset {
+                                    vpos_offset = tb;
+                                }
+                            }
                             let trailing_ls_px = endnote_bottom_with_spacing
                                 .map(|(_, spacing)| hwpunit_to_px(spacing.max(0), self.dpi))
                                 .unwrap_or(0.0);
@@ -1837,7 +1875,6 @@ impl TypesetEngine {
                             }
                             // advance 후 재평가 — 새 단 첫 미주는 prev=None → 자체 높이.
                             let (_, en_advance) = compute_en_metrics(prev_en_bottom_vpos);
-
                             st.current_items.push(PageItem::FullParagraph {
                                 para_index: en_para_idx,
                             });

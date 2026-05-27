@@ -122,3 +122,30 @@ Stage 7 검증:
 - `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
 
 UI/렌더링 정합 작업이므로 한컴오피스 대비 실제 위치와 흐름은 작업지시자 판정 대기 상태다. 왼쪽 단 `문5)` 세로 위치 차이는 이번 단계에서 별도 위치 보정으로 확정하지 않았다.
+
+## Stage 8 미주 흐름과 가상 Shape 속성 보정
+
+작업지시자가 9쪽에서 `문5)` 시작 위치가 여전히 높고, `문8)`은 한컴오피스처럼 10쪽에서 시작해야 한다고 재보고했다. 추가로 `[다른 풀이]` 개체를 선택한 뒤 `개체 속성(P)...`으로 진입하지 못하는 문제도 확인했다.
+
+수정:
+
+- Stage 6 회귀 테스트의 잘못된 가정(`pi=523`이 9쪽에 남아야 함)을 한컴 기준으로 정정했다.
+- `src/renderer/typeset.rs`에서 되감기는 `LINE_SEG.vertical_pos` 뒤의 미주 묶음 fit 판단을 보정해 9쪽은 `pi=522`까지, 10쪽은 `pi=523 "문8)   ①"`부터 시작하도록 맞췄다.
+- `src/document_core/commands/object_ops.rs`에서 Shape 속성 조회/수정 API가 미주 가상 문단 인덱스(`paraIdx=518`)를 실제 `Control::Endnote` 내부 문단으로 역해석하도록 수정했다.
+- 작업지시자가 제공한 한컴오피스 미주 설정(`문`, `)`, 구분선 50mm, 미주 사이 7mm, 구분선 아래 2mm)을 회귀 테스트로 확인했다. 이 샘플의 7mm 값은 HWP5 `FOOTNOTE_SHAPE.raw_unknown`에 보존되지만, `LINE_SEG` 흐름에 이미 반영되어 있어 typeset에 별도 가산하지 않는다.
+
+Stage 8 검증:
+
+- `cargo fmt --check`: 통과
+- `cargo test --test issue_1139_inline_picture_duplicate`: 5 passed
+- `cargo test --test issue_1082_endnote_multicolumn_drift`: 4 passed
+- `cargo build --release`: 성공
+- `./target/release/rhwp dump-pages samples/3-09월_교육_통합_2022.hwp`: 23페이지
+- page 9 dump: `pi=522` 포함, `pi=523` 없음
+- page 10 dump: `pi=523 "문8)   ①"` 시작 확인
+- `./target/release/rhwp export-svg samples/3-09월_교육_통합_2022.hwp -p 8 -o output/diag_1139_stage8_page9`: 성공
+- `wasm-pack build --target web --out-dir pkg`: 성공
+- Node/WASM 확인: `pageCount()` 23, `[다른 풀이]` group `paraIdx=518`, `getShapeProperties(0, 518, 0)` 성공
+- `cargo test --lib`: 1406 passed, 0 failed, 6 ignored
+
+UI/렌더링 정합 작업이므로 Stage 8도 최종 한컴오피스 대비 시각 확인은 작업지시자 판정 대기 상태다.

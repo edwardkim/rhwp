@@ -15,6 +15,96 @@ use crate::model::shape::{common_obj_offsets, ShapeObject};
 const MIN_SHAPE_SIZE: u32 = 200;
 
 impl DocumentCore {
+    fn resolve_shape_control_ref(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&ShapeObject, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &section.paragraphs {
+                for ctrl in &body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Shape(s) => Ok(s.as_ref()),
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 Shape이 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    fn resolve_shape_control_mut(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&mut ShapeObject, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &mut section.paragraphs {
+                for ctrl in &mut body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get_mut(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Shape(s) => Ok(s.as_mut()),
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 Shape이 아닙니다".to_string(),
+            )),
+        }
+    }
+
     pub fn get_picture_properties_native(
         &self,
         section_idx: usize,
@@ -2112,24 +2202,7 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let shape = match ctrl {
-            Control::Shape(s) => s.as_ref(),
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 Shape이 아닙니다".to_string(),
-                ))
-            }
-        };
+        let shape = self.resolve_shape_control_ref(section_idx, parent_para_idx, control_idx)?;
 
         let c = shape.common();
         let common_json = Self::common_obj_attr_to_json(c);
@@ -2256,24 +2329,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use super::super::helpers::{json_bool, json_i32, json_str};
 
-        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let shape = match ctrl {
-            Control::Shape(s) => s.as_mut(),
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 Shape이 아닙니다".to_string(),
-                ))
-            }
-        };
+        let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
 
         // CommonObjAttr 업데이트
         // 리사이즈 핸들을 반대편으로 끌어당길 때 studio가 width/height=0 을 보내

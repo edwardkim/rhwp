@@ -2,6 +2,11 @@
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
+use serde_json::Value;
+
+fn hwpunit_to_mm(hu: i32) -> f64 {
+    hu as f64 * 25.4 / 7200.0
+}
 
 fn collect_small_bin5_images(node: &RenderNode, out: &mut Vec<(Option<usize>, Option<usize>)>) {
     if let RenderNodeType::Image(img) = &node.node_type {
@@ -23,6 +28,26 @@ fn render_tree_contains_text(node: &RenderNode, needle: &str) -> bool {
     node.children
         .iter()
         .any(|child| render_tree_contains_text(child, needle))
+}
+
+#[test]
+fn issue_1139_exam_2022_endnote_shape_matches_hancom_reference() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let shape = &doc.document().sections[0].section_def.endnote_shape;
+
+    assert_eq!(shape.prefix_char, '문');
+    assert_eq!(shape.suffix_char, '\u{ff09}');
+    assert!((hwpunit_to_mm(shape.separator_length as i32) - 50.0).abs() < 0.05);
+    assert_eq!(shape.separator_margin_top, 0);
+    assert!(
+        (hwpunit_to_mm(shape.note_spacing as i32) - 2.0).abs() < 0.05,
+        "HWP5 binary field maps to Hancom '구분선 아래'"
+    );
+    assert!(
+        (hwpunit_to_mm(shape.raw_unknown as i32) - 7.0).abs() < 0.05,
+        "HWP5 raw_unknown preserves Hancom '미주 사이'"
+    );
 }
 
 #[test]
@@ -50,9 +75,18 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
     assert_eq!(doc.page_count(), 23, "한컴오피스 기준 페이지 수");
 
     let page9 = doc.dump_page_items(Some(8));
+    let page10 = doc.dump_page_items(Some(9));
     assert!(
-        page9.contains("FullParagraph[미주]  pi=523"),
-        "9쪽에서 pi=522 뒤 미주가 같은 쪽에 이어져야 함\n{page9}"
+        page9.contains("FullParagraph[미주]  pi=522"),
+        "9쪽에는 문7 미주 마지막 문단 pi=522가 남아야 함\n{page9}"
+    );
+    assert!(
+        !page9.contains("FullParagraph[미주]  pi=523"),
+        "한컴오피스 기준 문8 미주 pi=523은 9쪽에 들어가면 안 됨\n{page9}"
+    );
+    assert!(
+        page10.contains("FullParagraph[미주]  pi=523"),
+        "한컴오피스 기준 문8 미주 pi=523은 10쪽에서 시작해야 함\n{page10}"
     );
 }
 
@@ -65,5 +99,37 @@ fn issue_1139_page9_endnote_shape_textbox_is_rendered() {
     assert!(
         render_tree_contains_text(&tree.root, "다른 풀이"),
         "9쪽 문7 미주 내부 TAC Shape 그룹의 글상자 텍스트가 렌더되어야 함"
+    );
+}
+
+#[test]
+fn issue_1139_page9_endnote_shape_properties_resolve_virtual_para_index() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let layout = doc
+        .get_page_control_layout_native(8)
+        .expect("page 9 control layout");
+    let parsed: Value = serde_json::from_str(&layout).expect("control layout json");
+
+    let group = parsed["controls"]
+        .as_array()
+        .expect("controls array")
+        .iter()
+        .find(|ctrl| {
+            ctrl["type"] == "group"
+                && ctrl["paraIdx"].as_u64() == Some(518)
+                && ctrl["controlIdx"].as_u64() == Some(0)
+        })
+        .expect("문7 [다른 풀이] group shape");
+
+    assert_eq!(group["secIdx"].as_u64(), Some(0));
+
+    let props = doc
+        .get_shape_properties_native(0, 518, 0)
+        .expect("미주 가상 문단 Shape 속성 조회");
+    let props: Value = serde_json::from_str(&props).expect("shape props json");
+    assert!(
+        props["width"].as_u64().unwrap_or(0) > 0,
+        "미주 내부 Shape 속성이 실제 값으로 조회되어야 함: {props}"
     );
 }
