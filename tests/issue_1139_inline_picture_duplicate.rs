@@ -137,6 +137,38 @@ fn issue_1139_exam_2022_endnote_shape_matches_hancom_reference() {
 }
 
 #[test]
+fn issue_1139_endnote_spacing_reference_files_match_hancom_page_counts() {
+    let below20 = std::fs::read("samples/3-09월_교육_통합_2024-구분선아래20.hwp").expect("below20");
+    let below20_doc = HwpDocument::from_bytes(&below20).expect("parse below20");
+    let below20_shape = &below20_doc.document().sections[0].section_def.endnote_shape;
+    assert!(
+        (hwpunit_to_mm(below20_shape.note_spacing as i32) - 20.0).abs() < 0.05,
+        "note_spacing은 한컴 UI '구분선 아래' 값이어야 함"
+    );
+    assert!(
+        (hwpunit_to_mm(below20_shape.raw_unknown as i32) - 7.0).abs() < 0.05,
+        "raw_unknown은 한컴 UI '미주 사이' 값이어야 함"
+    );
+    assert_eq!(below20_doc.page_count(), 23, "구분선 아래 20mm 한컴 기준");
+
+    let between20 =
+        std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("between20");
+    let between20_doc = HwpDocument::from_bytes(&between20).expect("parse between20");
+    let between20_shape = &between20_doc.document().sections[0]
+        .section_def
+        .endnote_shape;
+    assert!(
+        (hwpunit_to_mm(between20_shape.note_spacing as i32) - 2.0).abs() < 0.05,
+        "note_spacing은 한컴 UI '구분선 아래' 값이어야 함"
+    );
+    assert!(
+        (hwpunit_to_mm(between20_shape.raw_unknown as i32) - 20.0).abs() < 0.05,
+        "raw_unknown은 한컴 UI '미주 사이' 값이어야 함"
+    );
+    assert_eq!(between20_doc.page_count(), 24, "미주 사이 20mm 한컴 기준");
+}
+
+#[test]
 fn issue_1139_small_inline_picture_rendered_once_per_control() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");

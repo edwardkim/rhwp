@@ -1726,6 +1726,8 @@ impl TypesetEngine {
             let mut prev_en_bottom_vpos: Option<i32> = st.prev_body_bottom_vpos;
             let mut prev_endnote_had_vpos_rewind = false;
             let mut emitted_endnote_separator = false;
+            let mut emitted_endnote_count = 0usize;
+            let mut last_render_endnote_para_local_idx: Option<usize> = None;
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
@@ -1805,23 +1807,40 @@ impl TypesetEngine {
                             }
                             internal_rewind || group_rewind
                         });
-                        if st.col_count > 1
-                            && !st.current_items.is_empty()
-                            && endnote_has_vpos_rewind
-                            && st.current_height > st.available_height() * 0.75
-                        {
-                            if let Some(shape) = endnote_shape {
-                                let note_gap = hwpunit_to_px(shape.raw_unknown as i32, self.dpi);
-                                if note_gap > 0.0
-                                    && st.current_height + note_gap < st.available_height()
-                                {
-                                    st.current_height += note_gap;
-                                }
-                            }
-                        }
                         prev_endnote_had_vpos_rewind = endnote_has_vpos_rewind;
 
                         // endnote 단위로 시작점 결정
+                        if emitted_endnote_count > 0 {
+                            if let (Some(shape), Some(prev_local_idx)) =
+                                (endnote_shape, last_render_endnote_para_local_idx)
+                            {
+                                let between_notes = endnote_between_notes_margin(shape) as i32;
+                                if between_notes > 0 {
+                                    let prev_spacing = st
+                                        .endnote_paragraphs
+                                        .get(prev_local_idx)
+                                        .and_then(|p| p.line_segs.last())
+                                        .map(|s| s.line_spacing.max(0))
+                                        .unwrap_or(0);
+                                    let extra_gap = (between_notes - prev_spacing).max(0);
+                                    if extra_gap > 0 {
+                                        let pagination_gap = (between_notes
+                                            - ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU)
+                                            .max(0);
+                                        if pagination_gap > 0 {
+                                            vpos_offset += pagination_gap;
+                                        }
+                                        if let Some(prev_para) =
+                                            st.endnote_paragraphs.get_mut(prev_local_idx)
+                                        {
+                                            if let Some(last_seg) = prev_para.line_segs.last_mut() {
+                                                last_seg.line_spacing = between_notes;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         let endnote_start = vpos_offset;
                         for (ep_idx, en_para) in en_ctrl.paragraphs.iter().enumerate() {
                             let en_para_idx = paragraphs.len() + st.endnote_paragraphs.len();
@@ -1843,7 +1862,9 @@ impl TypesetEngine {
                                 new_offsets.extend_from_slice(&en_para_copy.char_offsets);
                                 en_para_copy.char_offsets = new_offsets;
                             }
+                            let en_para_local_idx = st.endnote_paragraphs.len();
                             st.endnote_paragraphs.push(en_para_copy);
+                            last_render_endnote_para_local_idx = Some(en_para_local_idx);
 
                             let composed = crate::renderer::composer::compose_paragraph(en_para);
                             let en_col_w = st
@@ -1998,6 +2019,7 @@ impl TypesetEngine {
                                 prev_en_bottom_vpos = Some(tb);
                             }
                         }
+                        emitted_endnote_count += 1;
                     }
                 }
             }
@@ -5029,6 +5051,20 @@ fn endnote_separator_below_margin(shape: &FootnoteShape) -> i16 {
         shape.separator_margin_bottom
     }
 }
+
+fn endnote_between_notes_margin(shape: &FootnoteShape) -> u16 {
+    // 한컴 도움말: "미주 사이"는 앞 번호 미주 내용과 다음 번호 미주
+    // 내용 사이의 간격이다. HWP5 실제 FOOTNOTE_SHAPE는 스펙 26바이트
+    // 뒤에 2바이트를 더 두며, 이 샘플에서는 그 값이 between-notes로
+    // 저장된다. HWPX 경로도 betweenNotes를 raw_unknown에 보존한다.
+    shape.raw_unknown
+}
+
+// 3-09월_교육_통합_2022.hwp의 기본 "미주 사이 7mm"는 원본 LINE_SEG
+// 흐름에 이미 상당 부분 녹아 있어 추가 pagination 높이로 더하지 않는다.
+// 별도 저장한 "미주사이20" 기준 파일에서는 7mm를 넘는 초과분만 다음
+// 미주 묶음 vpos에 반영할 때 한컴오피스의 24쪽 분기와 맞는다.
+const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 
 fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     let has_separator = shape.separator_line_type != 0
