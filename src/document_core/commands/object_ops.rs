@@ -105,31 +105,172 @@ impl DocumentCore {
         }
     }
 
+    fn resolve_picture_control_ref(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&crate::model::image::Picture, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &section.paragraphs {
+                for ctrl in &body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Picture(p) => Ok(p),
+            Control::Shape(shape) => match shape.as_ref() {
+                ShapeObject::Picture(p) => Ok(p),
+                _ => Err(HwpError::RenderError(
+                    "지정된 Shape 컨트롤이 그림이 아닙니다".to_string(),
+                )),
+            },
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 그림이 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    fn resolve_picture_control_mut(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&mut crate::model::image::Picture, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &mut section.paragraphs {
+                for ctrl in &mut body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get_mut(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Picture(p) => Ok(p),
+            Control::Shape(shape) => match shape.as_mut() {
+                ShapeObject::Picture(p) => Ok(p),
+                _ => Err(HwpError::RenderError(
+                    "지정된 Shape 컨트롤이 그림이 아닙니다".to_string(),
+                )),
+            },
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 그림이 아닙니다".to_string(),
+            )),
+        }
+    }
+
     pub fn get_picture_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let pic = match ctrl {
-            crate::model::control::Control::Picture(p) => p,
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 그림이 아닙니다".to_string(),
-                ))
-            }
-        };
+        let pic = self.resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)?;
         Self::format_picture_properties_json(pic)
+    }
+
+    fn picture_crop_extent_hu(pic: &crate::model::image::Picture) -> (i32, i32) {
+        let width = if pic.shape_attr.original_width > 0 {
+            pic.shape_attr.original_width
+        } else {
+            pic.shape_attr.current_width
+        };
+        let height = if pic.shape_attr.original_height > 0 {
+            pic.shape_attr.original_height
+        } else {
+            pic.shape_attr.current_height
+        };
+        (
+            i32::try_from(width).unwrap_or(i32::MAX),
+            i32::try_from(height).unwrap_or(i32::MAX),
+        )
+    }
+
+    fn picture_crop_ui_amounts(pic: &crate::model::image::Picture) -> (i32, i32, i32, i32) {
+        let (extent_w, extent_h) = Self::picture_crop_extent_hu(pic);
+        let left = pic.crop.left.max(0);
+        let top = pic.crop.top.max(0);
+        let right = if extent_w > 0 && pic.crop.right > left {
+            (extent_w - pic.crop.right).max(0)
+        } else {
+            0
+        };
+        let bottom = if extent_h > 0 && pic.crop.bottom > top {
+            (extent_h - pic.crop.bottom).max(0)
+        } else {
+            0
+        };
+        (left, top, right, bottom)
+    }
+
+    fn set_picture_crop_from_ui_amounts(
+        pic: &mut crate::model::image::Picture,
+        left: i32,
+        top: i32,
+        right: i32,
+        bottom: i32,
+    ) {
+        let (extent_w, extent_h) = Self::picture_crop_extent_hu(pic);
+        pic.crop.left = left.max(0);
+        pic.crop.top = top.max(0);
+        if extent_w > 0 {
+            pic.crop.right = (extent_w - right.max(0)).max(pic.crop.left);
+        } else {
+            pic.crop.right = right.max(0);
+        }
+        if extent_h > 0 {
+            pic.crop.bottom = (extent_h - bottom.max(0)).max(pic.crop.top);
+        } else {
+            pic.crop.bottom = bottom.max(0);
+        }
     }
 
     /// [Task #825] 머리말/꼬리말 안 그림의 속성 조회.
@@ -242,6 +383,7 @@ impl DocumentCore {
         };
 
         let sa = &pic.shape_attr;
+        let (crop_left, crop_top, crop_right, crop_bottom) = Self::picture_crop_ui_amounts(pic);
 
         Ok(format!(
             concat!(
@@ -280,7 +422,7 @@ impl DocumentCore {
             // 원본 크기
             sa.original_width, sa.original_height,
             // 자르기
-            pic.crop.left, pic.crop.top, pic.crop.right, pic.crop.bottom,
+            crop_left, crop_top, crop_right, crop_bottom,
             // 안쪽 여백
             pic.padding.left, pic.padding.top, pic.padding.right, pic.padding.bottom,
             // 바깥 여백
@@ -317,59 +459,70 @@ impl DocumentCore {
         props_json: &str,
     ) -> Result<String, HwpError> {
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
-        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let pic = match ctrl {
-            crate::model::control::Control::Picture(p) => p,
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 그림이 아닙니다".to_string(),
-                ))
-            }
-        };
-        // [Task #1151 v2] tac false→true migration 검출용 snapshot.
-        let was_tac = pic.common.treat_as_char;
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
-        let caption_created = Self::apply_picture_props_inner(pic, props_json);
-        let now_tac = pic.common.treat_as_char;
+        let (caption_created, should_migrate_to_inline) = {
+            let pic =
+                self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
+            // [Task #1151 v2] tac false→true migration 검출용 snapshot.
+            let was_tac = pic.common.treat_as_char;
+            let caption_created = Self::apply_picture_props_inner(pic, props_json);
+            let now_tac = pic.common.treat_as_char;
+            (caption_created, !was_tac && now_tac)
+        };
 
         // [Task #1151 v2] floating → inline migration (H1 정합, samples/tac-verify/).
         // 한컴 산출물 Scenario A~D 분석: tac false→true 시 picture 의 control 위치는
         // 불변이고, 4 필드만 갱신 (treat_as_char / h/v_rel_to=Para / h/v_offset=0 /
         // parent line_segs[0]). text/char_offsets/paragraph 수 변화 없음.
-        if !was_tac && now_tac {
-            let para = section
-                .paragraphs
-                .get_mut(parent_para_idx)
-                .expect("paragraph snapshot 직후, 인덱스 유효");
+        if should_migrate_to_inline {
+            let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            let body_len = section.paragraphs.len();
+            let para = if parent_para_idx < body_len {
+                section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+                })?
+            } else {
+                let mut virtual_idx = parent_para_idx - body_len;
+                let mut found = None;
+                'outer: for body_para in &mut section.paragraphs {
+                    for ctrl in &mut body_para.controls {
+                        if let Control::Endnote(en) = ctrl {
+                            if virtual_idx < en.paragraphs.len() {
+                                found = en.paragraphs.get_mut(virtual_idx);
+                                break 'outer;
+                            }
+                            virtual_idx -= en.paragraphs.len();
+                        }
+                    }
+                }
+                found.ok_or_else(|| {
+                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+                })?
+            };
             let crate::model::paragraph::Paragraph {
                 line_segs,
                 controls,
                 ..
             } = &mut *para;
-            if let Some(crate::model::control::Control::Picture(pic_box)) =
-                controls.get_mut(control_idx)
-            {
-                Self::migrate_picture_floating_to_inline(line_segs, pic_box.as_mut());
+            match controls.get_mut(control_idx) {
+                Some(Control::Picture(pic_box)) => {
+                    Self::migrate_picture_floating_to_inline(line_segs, pic_box.as_mut());
+                }
+                Some(Control::Shape(shape)) => {
+                    if let ShapeObject::Picture(pic) = shape.as_mut() {
+                        Self::migrate_picture_floating_to_inline(line_segs, pic);
+                    }
+                }
+                _ => {}
             }
         }
         // 캡션 생성 시 AutoNumber 재할당 + 텍스트 생성 (본문 path 만 — 머리말/꼬리말은 별도).
         if caption_created {
             crate::parser::assign_auto_numbers(&mut self.document);
-            let pic_mut = match &mut self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls[control_idx]
-            {
-                crate::model::control::Control::Picture(p) => p,
-                _ => unreachable!(),
-            };
+            let pic_mut =
+                self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
             let para = &mut pic_mut.caption.as_mut().unwrap().paragraphs[0];
             para.text = "그림  ".to_string();
             para.char_offsets = vec![0, 1, 2, 11];
@@ -391,14 +544,13 @@ impl DocumentCore {
             ctrl: control_idx,
         });
         if caption_created {
-            let char_offset = match &self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls[control_idx]
-            {
-                crate::model::control::Control::Picture(p) => p.caption.as_ref().map_or(0, |c| {
+            let char_offset = self
+                .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)?
+                .caption
+                .as_ref()
+                .map_or(0, |c| {
                     c.paragraphs.first().map_or(0, |p| p.text.chars().count())
-                }),
-                _ => 0,
-            };
+                });
             Ok(format!(
                 "{{\"ok\":true,\"captionCharOffset\":{}}}",
                 char_offset
@@ -705,18 +857,31 @@ impl DocumentCore {
             }
         }
 
-        // 자르기
-        if let Some(v) = json_i32(props_json, "cropLeft") {
-            pic.crop.left = v;
-        }
-        if let Some(v) = json_i32(props_json, "cropTop") {
-            pic.crop.top = v;
-        }
-        if let Some(v) = json_i32(props_json, "cropRight") {
-            pic.crop.right = v;
-        }
-        if let Some(v) = json_i32(props_json, "cropBottom") {
-            pic.crop.bottom = v;
+        // 자르기: HWP 내부 crop은 원본 이미지의 source rect 좌표이고,
+        // 속성 창 UI는 네 방향에서 잘라낸 양을 표시한다.
+        let crop_left = json_i32(props_json, "cropLeft");
+        let crop_top = json_i32(props_json, "cropTop");
+        let crop_right = json_i32(props_json, "cropRight");
+        let crop_bottom = json_i32(props_json, "cropBottom");
+        if crop_left.is_some()
+            || crop_top.is_some()
+            || crop_right.is_some()
+            || crop_bottom.is_some()
+        {
+            let (mut left, mut top, mut right, mut bottom) = Self::picture_crop_ui_amounts(pic);
+            if let Some(v) = crop_left {
+                left = v;
+            }
+            if let Some(v) = crop_top {
+                top = v;
+            }
+            if let Some(v) = crop_right {
+                right = v;
+            }
+            if let Some(v) = crop_bottom {
+                bottom = v;
+            }
+            Self::set_picture_crop_from_ui_amounts(pic, left, top, right, bottom);
         }
 
         // 안쪽 여백 (그림 여백)

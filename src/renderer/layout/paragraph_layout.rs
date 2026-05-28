@@ -44,6 +44,46 @@ pub(crate) fn ensure_min_baseline(raw_baseline: f64, max_font_size: f64) -> f64 
     raw_baseline.max(min_baseline)
 }
 
+fn tac_picture_or_shape_height_for_line(
+    para: Option<&Paragraph>,
+    raw_line_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    let para = para?;
+    para.controls.iter().find_map(|ctrl| {
+        let height_hu = match ctrl {
+            Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
+            Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
+            _ => return None,
+        };
+        let height = hwpunit_to_px(height_hu, dpi);
+        if height > 8.0 && raw_line_height + 4.0 >= height && raw_line_height <= height + 8.0 {
+            Some(height)
+        } else {
+            None
+        }
+    })
+}
+
+fn tac_picture_label_extra_px(
+    runs_all_whitespace: bool,
+    raw_line_height: f64,
+    reserved_picture_height: Option<f64>,
+    max_font_size: f64,
+    line_spacing_px: f64,
+) -> f64 {
+    let Some(pic_h) = reserved_picture_height else {
+        return 0.0;
+    };
+    if runs_all_whitespace || max_font_size <= 0.0 {
+        return 0.0;
+    }
+    if (raw_line_height - pic_h).abs() > 4.0 || raw_line_height <= max_font_size * 2.0 {
+        return 0.0;
+    }
+    max_font_size + line_spacing_px.max(0.0)
+}
+
 /// run 이 `\t` 로 끝날 때, 그 마지막 `\t` 가 cross-run 우측/가운데 탭으로 동작해야 하는지 판정한다.
 ///
 /// HWP 본문 탭에는 두 가지 정보원이 있다:
@@ -1156,8 +1196,10 @@ impl LayoutEngine {
             }
         }
 
+        let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for line_idx in start_line..end {
             let comp_line = &composed.lines[line_idx];
+            let mut current_line_reserved_tac_picture_height: Option<f64> = None;
 
             // 다단 필터링: segment_width가 현재 단 너비와 불일치하면 건너뜀
             if let Some(col_w) = multi_col_width_hu {
@@ -2306,8 +2348,8 @@ impl LayoutEngine {
 
                 // [Task #960] env-gated TAC line-mapping 추적
                 if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
-                    eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} baseline={:.1} run_tacs={:?}",
-                        para_index, line_idx, run_idx, run_char_pos, run_char_end, y, baseline, run_tacs);
+                    eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
+                        para_index, line_idx, run_idx, run_char_pos, run_char_end, y, line_height, line_spacing_px, raw_lh, baseline, run_tacs);
                 }
 
                 if run_tacs.is_empty() {
@@ -2653,8 +2695,22 @@ impl LayoutEngine {
                                         calc_sibling_topandbottom_table_reserved_hu(&p.controls);
                                     let sibling_table_reserved_px =
                                         hwpunit_to_px(sibling_table_reserved_hu, self.dpi);
-                                    let img_y =
-                                        (y + baseline - pic_h).max(y) + sibling_table_reserved_px;
+                                    if raw_lh + 4.0 >= pic_h {
+                                        current_line_reserved_tac_picture_height = Some(pic_h);
+                                    }
+                                    let label_extra = tac_picture_label_extra_px(
+                                        comp_line.runs.iter().all(|r| r.text.trim().is_empty()),
+                                        raw_lh,
+                                        current_line_reserved_tac_picture_height,
+                                        max_fs,
+                                        line_spacing_px,
+                                    );
+                                    let base_img_y = if label_extra > 0.0 {
+                                        y + label_extra
+                                    } else {
+                                        (y + baseline - pic_h).max(y)
+                                    };
+                                    let img_y = base_img_y + sibling_table_reserved_px;
                                     let bin_data_id = pic.image_attr.bin_data_id;
                                     let image_data =
                                         find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
@@ -2722,7 +2778,21 @@ impl LayoutEngine {
                             if let Some(Control::Shape(shape)) = p.controls.get(tac_ci) {
                                 let common = shape.common();
                                 let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
-                                let shape_y = (y + baseline - shape_h).max(y);
+                                if raw_lh + 4.0 >= shape_h {
+                                    current_line_reserved_tac_picture_height = Some(shape_h);
+                                }
+                                let label_extra = tac_picture_label_extra_px(
+                                    comp_line.runs.iter().all(|r| r.text.trim().is_empty()),
+                                    raw_lh,
+                                    current_line_reserved_tac_picture_height,
+                                    max_fs,
+                                    line_spacing_px,
+                                );
+                                let shape_y = if label_extra > 0.0 {
+                                    y + label_extra
+                                } else {
+                                    (y + baseline - shape_h).max(y)
+                                };
                                 // 인라인 좌표 등록 → shape_layout.rs에서 이 Shape를 스킵
                                 tree.set_inline_shape_position(
                                     section_index,
@@ -3036,6 +3106,9 @@ impl LayoutEngine {
                         if let Some(ctrl) = p.controls.get(tac_ci) {
                             if let Control::Picture(pic) = ctrl {
                                 let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                if raw_lh + 4.0 >= pic_h {
+                                    current_line_reserved_tac_picture_height = Some(pic_h);
+                                }
                                 let img_y = (y + baseline - pic_h).max(y);
                                 let bin_data_id = pic.image_attr.bin_data_id;
                                 let image_data =
@@ -3179,8 +3252,22 @@ impl LayoutEngine {
                                         calc_sibling_topandbottom_table_reserved_hu(&p.controls);
                                     let sibling_table_reserved_px =
                                         hwpunit_to_px(sibling_table_reserved_hu, self.dpi);
-                                    let img_y =
-                                        (y + baseline - pic_h).max(y) + sibling_table_reserved_px;
+                                    if raw_lh + 4.0 >= pic_h {
+                                        current_line_reserved_tac_picture_height = Some(pic_h);
+                                    }
+                                    let label_extra = tac_picture_label_extra_px(
+                                        comp_line.runs.iter().all(|r| r.text.trim().is_empty()),
+                                        raw_lh,
+                                        current_line_reserved_tac_picture_height,
+                                        max_fs,
+                                        line_spacing_px,
+                                    );
+                                    let base_img_y = if label_extra > 0.0 {
+                                        y + label_extra
+                                    } else {
+                                        (y + baseline - pic_h).max(y)
+                                    };
+                                    let img_y = base_img_y + sibling_table_reserved_px;
                                     let bin_data_id = pic.image_attr.bin_data_id;
                                     let image_data =
                                         find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
@@ -3767,21 +3854,59 @@ impl LayoutEngine {
             // 좌측 영역에 텍스트 미배치한 결과. has_picture_shape_square_wrap 게이트로
             // wrap zone 호스트 paragraph 만 영향.
             let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
+            if !runs_all_whitespace && current_line_reserved_tac_picture_height.is_none() {
+                current_line_reserved_tac_picture_height =
+                    tac_picture_or_shape_height_for_line(para, raw_lh, self.dpi);
+            }
+            let tac_picture_label_extra = tac_picture_label_extra_px(
+                runs_all_whitespace,
+                raw_lh,
+                current_line_reserved_tac_picture_height,
+                max_fs,
+                line_spacing_px,
+            );
             let skip_advance_empty_wrap = has_picture_shape_square_wrap && runs_all_whitespace;
+            let skip_advance_empty_tac_picture = runs_all_whitespace
+                && current_line_reserved_tac_picture_height.is_none()
+                && prev_line_reserved_tac_picture_height
+                    .map(|pic_h| (raw_lh - pic_h).abs() <= 4.0)
+                    .unwrap_or(false);
+            let skip_advance_empty_line = skip_advance_empty_wrap || skip_advance_empty_tac_picture;
+            if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok()
+                && (para_index == 651 || para_index == 652)
+            {
+                eprintln!(
+                    "  TAC_ADV pi={} line_idx={} y={:.1} raw_lh={:.1} lh={:.1} ls={:.1} label_extra={:.1} whitespace={} cur_pic={:?} prev_pic={:?} skip_wrap={} skip_pic={} skip={}",
+                    para_index,
+                    line_idx,
+                    y,
+                    raw_lh,
+                    line_height,
+                    line_spacing_px,
+                    tac_picture_label_extra,
+                    runs_all_whitespace,
+                    current_line_reserved_tac_picture_height,
+                    prev_line_reserved_tac_picture_height,
+                    skip_advance_empty_wrap,
+                    skip_advance_empty_tac_picture,
+                    skip_advance_empty_line,
+                );
+            }
             // [Task #1046 Stage 3 Class D] 본문 문단(셀 밖)의 콘텐츠 하단(=현재 줄 텍스트
             // 바닥, trailing 줄간격/spacing_after 제외) 기록. overflow 검출이 페이지 바닥
             // 후행 줄간격을 콘텐츠 초과로 오판하지 않도록 한다(페이지네이터의 마지막 줄
             // trailing_ls 허용 #359/#404 와 정합). 매 줄 갱신 → 마지막 렌더 줄 값이 남는다.
-            if cell_ctx.is_none() && !skip_advance_empty_wrap {
+            if cell_ctx.is_none() && !skip_advance_empty_line {
                 self.last_item_content_bottom.set(y + line_height);
             }
             if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
-            } else if skip_advance_empty_wrap {
+            } else if skip_advance_empty_line {
                 // no advance
             } else {
-                y += line_height + line_spacing_px;
+                y += line_height + line_spacing_px + tac_picture_label_extra;
             }
+            prev_line_reserved_tac_picture_height = current_line_reserved_tac_picture_height;
         }
 
         // 문단 테두리/배경 범위 수집 (build_single_column에서 연속 그룹으로 병합 렌더링)

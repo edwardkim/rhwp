@@ -270,3 +270,54 @@ fn issue_1139_page9_endnote_shape_properties_resolve_virtual_para_index() {
         "미주 내부 Shape 속성이 실제 값으로 조회되어야 함: {props}"
     );
 }
+
+#[test]
+fn issue_1139_page12_endnote_shape_picture_properties_resolve_virtual_para_index() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let layout = doc
+        .get_page_control_layout_native(11)
+        .expect("page 12 control layout");
+    let parsed: Value = serde_json::from_str(&layout).expect("control layout json");
+
+    for (para_idx, control_idx) in [(651, 1), (652, 1)] {
+        let image = parsed["controls"]
+            .as_array()
+            .expect("controls array")
+            .iter()
+            .find(|ctrl| {
+                ctrl["type"] == "image"
+                    && ctrl["paraIdx"].as_u64() == Some(para_idx)
+                    && ctrl["controlIdx"].as_u64() == Some(control_idx)
+            })
+            .unwrap_or_else(|| {
+                panic!("12쪽 그래프 image control 누락: para={para_idx}, ctrl={control_idx}")
+            });
+
+        assert_eq!(image["secIdx"].as_u64(), Some(0));
+
+        let props = doc
+            .get_picture_properties_native(0, para_idx as usize, control_idx as usize)
+            .expect("미주 가상 문단 ShapeObject::Picture 속성 조회");
+        let props: Value = serde_json::from_str(&props).expect("picture props json");
+        assert_eq!(
+            props["treatAsChar"].as_bool(),
+            Some(true),
+            "12쪽 그래프는 한컴 기준 '글자처럼 취급'이어야 함: {props}"
+        );
+        assert!(
+            props["width"].as_u64().unwrap_or(0) > 0 && props["height"].as_u64().unwrap_or(0) > 0,
+            "ShapeObject::Picture 속성이 실제 크기로 조회되어야 함: {props}"
+        );
+        assert_eq!(
+            (
+                props["cropLeft"].as_i64(),
+                props["cropTop"].as_i64(),
+                props["cropRight"].as_i64(),
+                props["cropBottom"].as_i64(),
+            ),
+            (Some(0), Some(0), Some(0), Some(0)),
+            "한컴 그림 탭 기준 원본 전체 crop rect는 자르기 0mm로 표시되어야 함: {props}"
+        );
+    }
+}

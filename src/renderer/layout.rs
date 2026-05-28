@@ -24,7 +24,8 @@ use crate::model::footnote::{FootnoteShape, NumberFormat};
 use crate::model::header_footer::MasterPage;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
-    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, VertAlign, VertRelTo,
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, VertAlign,
+    VertRelTo,
 };
 use crate::model::style::{
     Alignment, BorderLine, BorderLineType, HeadType, Numbering, UnderlineType,
@@ -50,6 +51,34 @@ struct ColumnItemCtx<'a> {
 }
 
 type ParaFloatLanes = std::collections::HashMap<usize, FloatLaneSet>;
+
+fn render_node_contains_text_for_para(node: &RenderNode, para_index: usize) -> bool {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.para_index == Some(para_index) {
+            return true;
+        }
+    }
+    node.children
+        .iter()
+        .any(|child| render_node_contains_text_for_para(child, para_index))
+}
+
+fn insert_before_para_text(parent: &mut RenderNode, para_index: usize, mut nodes: Vec<RenderNode>) {
+    if nodes.is_empty() {
+        return;
+    }
+    if let Some(pos) = parent
+        .children
+        .iter()
+        .position(|child| render_node_contains_text_for_para(child, para_index))
+    {
+        for (offset, node) in nodes.drain(..).enumerate() {
+            parent.children.insert(pos + offset, node);
+        }
+    } else {
+        parent.children.extend(nodes);
+    }
+}
 
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
 #[derive(Debug, Clone, Copy, serde::Serialize)]
@@ -4683,7 +4712,9 @@ impl LayoutEngine {
             if let Some(ctrl) = para.controls.get(control_index) {
                 if let Control::Picture(pic) = ctrl {
                     if pic.common.treat_as_char {
-                        let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                        let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi).max(
+                            hwpunit_to_px(pic.shape_attr.current_height as i32, self.dpi),
+                        );
                         let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                         // [Task #1151 v3] 같은 paragraph 의 sibling wrap=TopAndBottom 표
                         // (tac=false) 가 차지하는 vertical 영역만큼 picture y 보정.
@@ -4712,15 +4743,25 @@ impl LayoutEngine {
                             .unwrap_or(false);
 
                         // pic_y 결정:
-                        // - 단일 picture / 시퀀스 첫 picture: para_start_y + sibling_table_reserved
+                        // - 단일 picture / 시퀀스 첫 picture: paragraph 시작 y + sibling_table_reserved
+                        //   + 라벨/그림 높이 정합 보정
                         // - 시퀀스 후속 picture: state.line_top_y (pic_x wrap 처리 후 결정 — 아래)
                         // [Task #1151 v9 결함 D fix] pic_y 의 시퀀스 후속 picture 결정은 pic_x
                         // (wrap 처리 포함) 뒤로 옮김. 그 전에는 placeholder 로 default 값 사용.
                         let _ = is_single_pic;
-                        let default_pic_y =
-                            para_start_y.get(&para_index).copied().unwrap_or(y_offset)
-                                + sibling_table_reserved_px;
                         let comp = composed.get(para_index);
+                        let para_y_for_pic = para_start_y
+                            .get(&para_index)
+                            .copied()
+                            .unwrap_or(y_offset)
+                            + sibling_table_reserved_px;
+                        let default_pic_y = self.compute_tac_picture_shape_y(
+                            para,
+                            comp,
+                            styles,
+                            para_y_for_pic,
+                            pic_h,
+                        );
                         let para_style_id = comp
                             .map(|c| c.para_style_id as usize)
                             .unwrap_or(para.para_shape_id as usize);
@@ -5765,6 +5806,12 @@ impl LayoutEngine {
             let is_table_control = ctrl
                 .map(|c| matches!(c, Control::Table(_)))
                 .unwrap_or(false);
+            let is_tac_picture_shape = matches!(
+                ctrl,
+                Some(Control::Shape(shape))
+                    if shape.common().treat_as_char
+                        && matches!(shape.as_ref(), ShapeObject::Picture(_))
+            );
 
             let paper_area = LayoutRect {
                 x: 0.0,
@@ -5810,6 +5857,58 @@ impl LayoutEngine {
                         paper_images.push(child);
                     }
                 }
+            } else if is_tac_picture_shape {
+                let mut temp_parent = RenderNode::new(
+                    tree.next_id(),
+                    RenderNodeType::Column(0),
+                    col_node.bbox.clone(),
+                );
+                if let (Some(para), Some(Control::Shape(shape))) =
+                    (paragraphs.get(para_index), ctrl)
+                {
+                    let common = shape.common();
+                    let comp = composed.get(para_index);
+                    let base_x =
+                        self.compute_tac_pic_x(para, comp, styles, col_area, control_index);
+                    let inline_x =
+                        base_x + hwpunit_to_px(signed_hwpunit(common.horizontal_offset), self.dpi);
+                    let shape_attr = shape.shape_attr();
+                    let shape_h = hwpunit_to_px(common.height as i32, self.dpi)
+                        .max(hwpunit_to_px(shape_attr.current_height as i32, self.dpi));
+                    let inline_y = self
+                        .compute_tac_picture_shape_y(para, comp, styles, para_y, shape_h)
+                        + hwpunit_to_px(signed_hwpunit(common.vertical_offset), self.dpi);
+                    tree.set_inline_shape_position(
+                        page_content.section_index,
+                        para_index,
+                        control_index,
+                        None,
+                        inline_x,
+                        inline_y,
+                    );
+                }
+                self.layout_shape(
+                    tree,
+                    &mut temp_parent,
+                    paragraphs,
+                    para_index,
+                    control_index,
+                    page_content.section_index,
+                    styles,
+                    col_area,
+                    &layout.body_area,
+                    &paper_area,
+                    para_y,
+                    alignment,
+                    bin_data_content,
+                    &overflow_map,
+                    false,
+                );
+                insert_before_para_text(
+                    col_node,
+                    para_index,
+                    temp_parent.children.drain(..).collect(),
+                );
             } else if is_paper_based {
                 let mut temp_parent = RenderNode::new(
                     tree.next_id(),
@@ -5862,6 +5961,51 @@ impl LayoutEngine {
             // 제거. Task #604 Stage 2 의 wrap_anchors 메타데이터 채널로 FullParagraph
             // path 가 cs offset 을 정확히 적용하므로 별도 호출 불필요.
         }
+    }
+
+    /// `Control::Shape(ShapeObject::Picture)` 형태의 글자처럼 취급 그림은
+    /// paragraph_layout 이 직접 ImageNode 를 만들지 않고 shape pass 에서 그린다.
+    /// 한컴은 라벨 텍스트와 그림 높이가 같은 LINE_SEG에 있을 때 라벨 한 줄을 먼저
+    /// 배치한 뒤 그림을 아래에 둔다. raw line y 그대로 배치하면 라벨이 그림에 가려진다.
+    fn compute_tac_picture_shape_y(
+        &self,
+        _para: &Paragraph,
+        comp: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        para_y: f64,
+        shape_height_px: f64,
+    ) -> f64 {
+        let Some(comp) = comp else {
+            return para_y;
+        };
+        let mut offset_y = 0.0;
+        for line in &comp.lines {
+            let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
+            let line_spacing_px = hwpunit_to_px(line.line_spacing, self.dpi);
+            let max_fs = line
+                .runs
+                .iter()
+                .map(|r| {
+                    let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                    if ts.font_size > 0.0 {
+                        ts.font_size
+                    } else {
+                        12.0
+                    }
+                })
+                .fold(0.0f64, f64::max);
+            if (raw_lh - shape_height_px).abs() <= 4.0 && raw_lh > max_fs * 2.0 {
+                let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
+                let label_extra = if !runs_all_whitespace {
+                    max_fs + line_spacing_px.max(0.0)
+                } else {
+                    0.0
+                };
+                return para_y + offset_y + label_extra;
+            }
+            offset_y += raw_lh + line_spacing_px;
+        }
+        para_y
     }
 
     /// treat_as_char 이미지의 x 좌표를 텍스트 위치 기반으로 계산한다.
