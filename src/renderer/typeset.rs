@@ -104,6 +104,10 @@ struct TypesetState {
     current_items: Vec<PageItem>,
     /// 현재 단에서 소비된 높이 (px)
     current_height: f64,
+    /// 현재 단 시작 시점의 논리 높이 (px)
+    current_start_height: f64,
+    /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
+    current_endnote_flow: bool,
     /// [Task #1082] 현재 단에서 마지막으로 배치된 본문 FullParagraph 의 bottom vpos (HU,
     /// 섹션 절대값). 미주 vpos-delta 누적의 첫 항목 base 시드용. 단 advance 시 None.
     prev_body_bottom_vpos: Option<i32>,
@@ -204,6 +208,14 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_has_visible_text_or_equation(para: &Paragraph) -> bool {
+    para_has_visible_text(para)
+        || para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
+}
+
 fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
     para.text.starts_with('\u{F03C5}')
         && para
@@ -299,6 +311,8 @@ impl TypesetState {
             pages: Vec::new(),
             current_items: Vec::new(),
             current_height: 0.0,
+            current_start_height: 0.0,
+            current_endnote_flow: false,
             prev_body_bottom_vpos: None,
             current_column: 0,
             col_count,
@@ -381,6 +395,8 @@ impl TypesetState {
         }
         let col_content = ColumnContent {
             column_index: self.current_column,
+            start_height: self.current_start_height,
+            endnote_flow: self.current_endnote_flow,
             items: std::mem::take(&mut self.current_items),
             zone_layout: self.current_zone_layout.clone(),
             zone_y_offset: self.current_zone_y_offset,
@@ -401,6 +417,8 @@ impl TypesetState {
     fn flush_column_always(&mut self) {
         let col_content = ColumnContent {
             column_index: self.current_column,
+            start_height: self.current_start_height,
+            endnote_flow: self.current_endnote_flow,
             items: std::mem::take(&mut self.current_items),
             zone_layout: self.current_zone_layout.clone(),
             zone_y_offset: self.current_zone_y_offset,
@@ -425,6 +443,8 @@ impl TypesetState {
             // layout은 body_wide_reserved로 별도 처리하므로 여기서 zone_y_offset에
             // 넣으면 double-shift가 발생.
             self.current_height = self.pending_body_wide_top_reserve;
+            self.current_start_height = self.current_height;
+            self.current_endnote_flow = false;
             self.reset_vpos_cursor();
         } else {
             self.push_new_page();
@@ -455,6 +475,8 @@ impl TypesetState {
     fn reset_for_new_page(&mut self) {
         self.current_column = 0;
         self.current_height = 0.0;
+        self.current_start_height = 0.0;
+        self.current_endnote_flow = false;
         self.current_footnote_height = 0.0;
         self.is_first_footnote_on_page = true;
         self.current_zone_y_offset = 0.0;
@@ -1728,6 +1750,9 @@ impl TypesetEngine {
             let mut emitted_endnote_separator = false;
             let mut emitted_endnote_count = 0usize;
             let mut last_render_endnote_para_local_idx: Option<usize> = None;
+            let compact_endnote_separator_profile = endnote_shape
+                .map(endnote_has_compact_separator_below)
+                .unwrap_or(true);
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
@@ -1745,6 +1770,7 @@ impl TypesetEngine {
                                         line_width: shape.separator_line_width,
                                         color: shape.separator_color,
                                     });
+                                    st.current_endnote_flow = true;
                                     // 한컴의 미주 lineSeg vpos에는 구분선 이후 미주 본문
                                     // 위치가 이미 반영되어 있다. 페이지 분할 높이에 다시
                                     // 더하면 3-09월 샘플이 24쪽으로 밀리므로 렌더 단계의
@@ -1754,6 +1780,7 @@ impl TypesetEngine {
                             emitted_endnote_separator = true;
                         }
                         if st.col_count > 1
+                            && compact_endnote_separator_profile
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
                             && st.current_height > st.available_height() * 0.85
@@ -1782,6 +1809,9 @@ impl TypesetEngine {
                                     let reclaimed = (available - st.current_height).max(0.0);
                                     st.advance_column_or_new_page();
                                     st.current_height -= reclaimed;
+                                    st.current_start_height = st.current_height;
+                                    st.current_endnote_flow = true;
+                                    st.reset_vpos_cursor();
                                     prev_en_bottom_vpos = None;
                                 }
                             }
@@ -1955,6 +1985,31 @@ impl TypesetEngine {
                                 .line_segs
                                 .windows(2)
                                 .any(|w| w[1].vertical_pos < w[0].vertical_pos);
+                            let internal_rewind_split = if compact_endnote_separator_profile
+                                && st.col_count > 1
+                                && st.current_height > available * 0.75
+                                && para_has_visible_text_or_equation(en_para)
+                            {
+                                en_para
+                                    .line_segs
+                                    .windows(2)
+                                    .position(|w| w[1].vertical_pos < w[0].vertical_pos)
+                                    .map(|idx| idx + 1)
+                                    .filter(|split| {
+                                        *split > 0
+                                            && *split < en_para.line_segs.len()
+                                            && *split < fmt.line_heights.len()
+                                    })
+                            } else {
+                                None
+                            };
+                            let move_internal_rewind_equation_to_next =
+                                compact_endnote_separator_profile
+                                    && internal_vpos_rewind
+                                    && internal_rewind_split.is_none()
+                                    && st.col_count > 1
+                                    && st.current_height > available * 0.75
+                                    && para_has_visible_text_or_equation(en_para);
 
                             let col_count = st.col_count;
                             let dpi = self.dpi;
@@ -1977,13 +2032,27 @@ impl TypesetEngine {
                                                 prev.unwrap_or(tf)
                                             };
                                         let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
-                                        let min_h = if internal_vpos_rewind {
+                                        let compact_local_rewind =
+                                            compact_endnote_separator_profile && local_vpos_rewind;
+                                        let min_h = if internal_vpos_rewind || compact_local_rewind
+                                        {
                                             min_vpos_rewind_height
                                         } else {
                                             h4f
                                         };
-                                        let fit = (advance_px - trailing_ls_px).max(min_h);
-                                        let acc = advance_px.max(min_h);
+                                        let stale_forward_vpos = compact_endnote_separator_profile
+                                            && !local_vpos_rewind
+                                            && !large_vpos_jump_at_column_top
+                                            && advance_px > h4f + 100.0;
+                                        let metric_advance_px = if compact_local_rewind {
+                                            min_vpos_rewind_height
+                                        } else if stale_forward_vpos {
+                                            h4f
+                                        } else {
+                                            advance_px
+                                        };
+                                        let fit = (metric_advance_px - trailing_ls_px).max(min_h);
+                                        let acc = metric_advance_px.max(min_h);
                                         (fit, acc)
                                     } else {
                                         (h4f, tot)
@@ -1994,26 +2063,93 @@ impl TypesetEngine {
                             };
 
                             let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
+                            let split_endnote_to_fit = if compact_endnote_separator_profile
+                                && st.col_count > 1
+                                && !local_vpos_rewind
+                                && internal_rewind_split.is_none()
+                                && st.current_height < available
+                                && st.current_height + en_fit > available
+                                && st.current_height
+                                    + fmt.line_advances_sum(0..fmt.line_heights.len())
+                                    > available
+                                && fmt.line_heights.len() > 1
+                                && para_has_visible_text_or_equation(en_para)
+                            {
+                                let mut sum = 0.0;
+                                let remaining = (available - st.current_height).max(0.0);
+                                let mut split = 0usize;
+                                for line_idx in 0..fmt.line_heights.len() {
+                                    let line_h = fmt.line_advance(line_idx);
+                                    if sum + line_h > remaining {
+                                        break;
+                                    }
+                                    sum += line_h;
+                                    split = line_idx + 1;
+                                }
+                                (split > 0 && split < fmt.line_heights.len()).then_some(split)
+                            } else {
+                                None
+                            };
                             if st.current_height + en_fit > available
+                                && split_endnote_to_fit.is_none()
                                 && !st.current_items.is_empty()
+                            {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            if st.col_count > 1
+                                && compact_endnote_separator_profile
+                                && ep_idx == 0
+                                && emitted_endnote_count > 0
+                                && st.current_height > available * 0.88
+                                && !st.current_items.is_empty()
+                            {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            if move_internal_rewind_equation_to_next && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
                             // advance 후 재평가 — 새 단 첫 미주는 prev=None → 자체 높이.
                             let (_, en_advance) = compute_en_metrics(prev_en_bottom_vpos);
-                            st.current_items.push(PageItem::FullParagraph {
-                                para_index: en_para_idx,
-                            });
-                            for (ctrl_idx, ctrl) in en_para.controls.iter().enumerate() {
-                                if matches!(ctrl, Control::Shape(_)) {
-                                    st.current_items.push(PageItem::Shape {
-                                        para_index: en_para_idx,
-                                        control_index: ctrl_idx,
-                                    });
+                            if let Some(split_line) = internal_rewind_split.or(split_endnote_to_fit)
+                            {
+                                let first_h = fmt.line_advances_sum(0..split_line);
+                                st.current_items.push(PageItem::PartialParagraph {
+                                    para_index: en_para_idx,
+                                    start_line: 0,
+                                    end_line: split_line,
+                                });
+                                st.current_height += first_h;
+                                st.current_endnote_flow = true;
+                                st.advance_column_or_new_page();
+                                let rest_h = fmt
+                                    .line_advances_sum(split_line..fmt.line_heights.len())
+                                    + fmt.spacing_after;
+                                st.current_items.push(PageItem::PartialParagraph {
+                                    para_index: en_para_idx,
+                                    start_line: split_line,
+                                    end_line: fmt.line_heights.len(),
+                                });
+                                st.current_height += rest_h;
+                                st.current_endnote_flow = true;
+                            } else {
+                                st.current_items.push(PageItem::FullParagraph {
+                                    para_index: en_para_idx,
+                                });
+                                st.current_endnote_flow = true;
+                                for (ctrl_idx, ctrl) in en_para.controls.iter().enumerate() {
+                                    if matches!(ctrl, Control::Shape(_) | Control::Picture(_)) {
+                                        st.current_items.push(PageItem::Shape {
+                                            para_index: en_para_idx,
+                                            control_index: ctrl_idx,
+                                        });
+                                    }
                                 }
+                                st.current_height += en_advance;
                             }
-                            st.current_height += en_advance;
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
                             if let Some(tb) = this_bottom_offset {
                                 prev_en_bottom_vpos = Some(tb);
@@ -2093,6 +2229,9 @@ impl TypesetEngine {
             prev_layout_para: st.vpos_prev_layout_para,
             prev_item_was_partial_table: st.vpos_prev_partial_table,
             skip_spacing_before_prededuct: st.skip_spacing_before_prededuct,
+            allow_vpos_rewind: false,
+            allow_start_height_backtrack: false,
+            suppress_large_forward_jump: false,
         };
         let y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.
@@ -2172,7 +2311,6 @@ impl TypesetEngine {
                 .map(|cm| matches!(cm.text_wrap, TextWrap::Square))
                 .unwrap_or(false)
         });
-
         let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
             comp.lines
                 .iter()
@@ -5065,6 +5203,11 @@ fn endnote_between_notes_margin(shape: &FootnoteShape) -> u16 {
 // 별도 저장한 "미주사이20" 기준 파일에서는 7mm를 넘는 초과분만 다음
 // 미주 묶음 vpos에 반영할 때 한컴오피스의 24쪽 분기와 맞는다.
 const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
+const ENDNOTE_COMPACT_SEPARATOR_BELOW_MAX_HU: i16 = 1000;
+
+fn endnote_has_compact_separator_below(shape: &FootnoteShape) -> bool {
+    endnote_separator_below_margin(shape) <= ENDNOTE_COMPACT_SEPARATOR_BELOW_MAX_HU
+}
 
 fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     let has_separator = shape.separator_line_type != 0

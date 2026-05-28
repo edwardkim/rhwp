@@ -195,8 +195,8 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
     let page9 = doc.dump_page_items(Some(8));
     let page10 = doc.dump_page_items(Some(9));
     assert!(
-        page9.contains("FullParagraph[미주]  pi=522"),
-        "9쪽에는 문7 미주 마지막 문단 pi=522가 남아야 함\n{page9}"
+        page9.contains("PartialParagraph  pi=522  lines=0..4"),
+        "9쪽에는 문7 미주 마지막 문단의 앞부분 pi=522 lines=0..4가 남아야 함\n{page9}"
     );
     assert!(
         page9.contains("EndnoteSeparator"),
@@ -207,8 +207,16 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
         "한컴오피스 기준 문8 미주 pi=523은 9쪽에 들어가면 안 됨\n{page9}"
     );
     assert!(
+        page10.contains("PartialParagraph  pi=522  lines=4..5"),
+        "한컴오피스 기준 문7 미주 마지막 수식 줄은 10쪽 첫 줄로 넘어가야 함\n{page10}"
+    );
+    assert!(
         page10.contains("FullParagraph[미주]  pi=523"),
         "한컴오피스 기준 문8 미주 pi=523은 10쪽에서 시작해야 함\n{page10}"
+    );
+    assert!(
+        page10.contains("FullParagraph[미주]  pi=557"),
+        "한컴오피스 기준 문11 미주는 10쪽 오른쪽 단에서 시작해야 함\n{page10}"
     );
 }
 

@@ -85,6 +85,8 @@ impl PaginationState {
         }
         let col_content = ColumnContent {
             column_index: self.current_column,
+            start_height: 0.0,
+            endnote_flow: false,
             items: std::mem::take(&mut self.current_items),
             zone_layout: self.current_zone_layout.clone(),
             zone_y_offset: self.current_zone_y_offset,
@@ -103,6 +105,8 @@ impl PaginationState {
     pub fn flush_column_always(&mut self) {
         let col_content = ColumnContent {
             column_index: self.current_column,
+            start_height: 0.0,
+            endnote_flow: false,
             items: std::mem::take(&mut self.current_items),
             zone_layout: self.current_zone_layout.clone(),
             zone_y_offset: self.current_zone_y_offset,

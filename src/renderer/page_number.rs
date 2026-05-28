@@ -119,6 +119,8 @@ mod tests {
             layout: mk_layout(),
             column_contents: vec![ColumnContent {
                 column_index: 0,
+                start_height: 0.0,
+                endnote_flow: false,
                 items,
                 zone_layout: None,
                 zone_y_offset: 0.0,

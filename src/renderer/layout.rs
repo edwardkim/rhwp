@@ -259,6 +259,7 @@ pub(crate) fn vpos_corrected_end_y(
     y_offset: f64,
     curr_has_topbottom_para_table: bool,
     skip_spacing_before_prededuct: bool,
+    allow_large_backward: bool,
     dpi: f64,
 ) -> (f64, bool) {
     // [Task #412] page_path: col_anchor_y 기준, lazy_path: col_area_y 기준.
@@ -283,9 +284,10 @@ pub(crate) fn vpos_corrected_end_y(
     const MAX_TABLE_HOST_FORWARD_PX: f64 = 100.0;
     let stale_table_host_vpos =
         curr_has_topbottom_para_table && end_y > y_offset + MAX_TABLE_HOST_FORWARD_PX;
+    let backward_ok = end_y >= y_offset - MAX_BACKWARD_PX || allow_large_backward;
     let applied = end_y >= col_area_y
         && end_y <= col_area_y + col_area_height
-        && end_y >= y_offset - MAX_BACKWARD_PX
+        && backward_ok
         && !stale_table_host_vpos;
     (end_y, applied)
 }
@@ -2400,7 +2402,10 @@ impl LayoutEngine {
                 shape_reserved.push((pi, bottom_y));
             }
         }
-        let mut y_offset = col_area.y;
+        let start_shift = col_content.start_height.min(0.0);
+        let visual_col_y = col_area.y + start_shift;
+        let visual_col_height = col_area.height - start_shift;
+        let mut y_offset = visual_col_y;
         // body_area 전체에 걸치는 개체: 단 시작 y_offset을 개체 하단 아래로 초기화
         for &(_, bottom_y) in body_wide_reserved {
             if bottom_y > y_offset {
@@ -2482,11 +2487,14 @@ impl LayoutEngine {
         // 분할 표 직후 첫 문단은 sequential 신뢰)를 보유하며 항목 사이 vpos 보정을 위임.
         let mut hcursor = HeightCursor::new(
             self.dpi,
-            col_area.y,
-            col_area.height,
+            visual_col_y,
+            visual_col_height,
             col_anchor_y,
             vpos_page_base_init,
             self.use_hwp3_origin_flow_spacing_before.get(),
+            false,
+            col_content.endnote_flow && col_content.start_height < -0.5,
+            col_content.endnote_flow,
         );
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
@@ -2634,7 +2642,19 @@ impl LayoutEngine {
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
                 y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
             } // !shape_jumped
-            hcursor.prev_layout_para = Some(item_para);
+            if matches!(
+                item,
+                PageItem::PartialParagraph { start_line, .. } if *start_line > 0
+            ) {
+                // 이어지는 partial paragraph는 이전 쪽/단에서 시작한 문단의 나머지다.
+                // 다음 항목과의 간격은 원본 절대 vpos 차이가 아니라 현재 쪽의 순차 y를
+                // 따라야 한다. 그렇지 않으면 3-09월 10쪽 첫 수식 뒤 문8)이 크게 밀린다.
+                hcursor.prev_layout_para = None;
+                hcursor.vpos_page_base = None;
+                hcursor.vpos_lazy_base = None;
+            } else {
+                hcursor.prev_layout_para = Some(item_para);
+            }
 
             // Percent 전환: 표 하단과 비교 (Task #9)
             if fix_overlay_active {
@@ -4866,7 +4886,7 @@ impl LayoutEngine {
                             }
                         }
 
-                        if !has_real_text && !already_registered {
+                        if !already_registered {
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data(bin_data_content, bin_data_id)
                                 .map(|c| c.data.clone());
@@ -4932,31 +4952,35 @@ impl LayoutEngine {
                                 pic_x,
                                 pic_y,
                             );
-                            // [Task #462] LINE_SEG 의 lh+ls 를 advance 로 사용 — 이미지 박스
-                            // 높이만 사용하면 leading + line_spacing 이 누락되어 다음 문단이
-                            // 그림 바로 아래에 붙음. max(pic_h) 는 LINE_SEG 가 비정상적으로
-                            // 작은 경우의 안전장치.
-                            // [Task #1151 v9 결함 D] 가로 분배 시퀀스의 중간 picture 는 result_y
-                            // 진행 안 함 (y_offset 유지). 시퀀스 마지막 picture 또는 단일 picture
-                            // 에서만 advance — 다음 paragraph 가 가로 분배 영역 아래로 진행.
-                            let line_advance = para
-                                .line_segs
-                                .first()
-                                .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
-                                .unwrap_or(pic_h);
-                            if is_single_pic || is_last_in_seq {
-                                // 시퀀스 마지막: state 의 line_height (시퀀스 최대 height) 기반 advance
-                                let line_top_y = para_inline_state
-                                    .get(&para_index)
-                                    .map(|s| s.line_top_y)
-                                    .unwrap_or(pic_y);
-                                let line_height = para_inline_state
-                                    .get(&para_index)
-                                    .map(|s| s.line_height)
+                            if !has_real_text {
+                                // [Task #462] LINE_SEG 의 lh+ls 를 advance 로 사용 — 이미지 박스
+                                // 높이만 사용하면 leading + line_spacing 이 누락되어 다음 문단이
+                                // 그림 바로 아래에 붙음. max(pic_h) 는 LINE_SEG 가 비정상적으로
+                                // 작은 경우의 안전장치.
+                                // [Task #1151 v9 결함 D] 가로 분배 시퀀스의 중간 picture 는 result_y
+                                // 진행 안 함 (y_offset 유지). 시퀀스 마지막 picture 또는 단일 picture
+                                // 에서만 advance — 다음 paragraph 가 가로 분배 영역 아래로 진행.
+                                let line_advance = para
+                                    .line_segs
+                                    .first()
+                                    .map(|ls| {
+                                        hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi)
+                                    })
                                     .unwrap_or(pic_h);
-                                result_y = line_top_y + line_advance.max(line_height);
+                                if is_single_pic || is_last_in_seq {
+                                    // 시퀀스 마지막: state 의 line_height (시퀀스 최대 height) 기반 advance
+                                    let line_top_y = para_inline_state
+                                        .get(&para_index)
+                                        .map(|s| s.line_top_y)
+                                        .unwrap_or(pic_y);
+                                    let line_height = para_inline_state
+                                        .get(&para_index)
+                                        .map(|s| s.line_height)
+                                        .unwrap_or(pic_h);
+                                    result_y = line_top_y + line_advance.max(line_height);
+                                }
+                                // 중간 picture: result_y = y_offset (그대로 유지, line 4527 의 default)
                             }
-                            // 중간 picture: result_y = y_offset (그대로 유지, line 4527 의 default)
                         } else if !has_real_text && already_registered {
                             // [Task #418/#376] paragraph_layout 가 이미 emit 함 — push 스킵, result_y 만 갱신
                             // [Task #462] 동일하게 LINE_SEG 기반 advance 사용

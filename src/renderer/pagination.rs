@@ -133,6 +133,17 @@ pub struct FootnoteRef {
 pub struct ColumnContent {
     /// 단 인덱스 (0-based)
     pub column_index: u16,
+    /// 단 시작 시점의 논리 높이(px).
+    ///
+    /// 미주 vpos 되감김 보정은 다음 단/쪽을 음수 높이에서 시작시켜
+    /// 페이지 수를 한컴과 맞춘다. 렌더러도 같은 시작 높이를 알아야
+    /// typeset에서 허용한 항목들이 실제 그림에서 하단을 넘지 않는다.
+    pub start_height: f64,
+    /// 이 단이 미주 흐름을 포함하는지 여부.
+    ///
+    /// 미주 본문은 일반 본문과 달리 한 단 안에서도 LINE_SEG vpos가 크게
+    /// 되감길 수 있으므로, 렌더러의 vpos 보정 가드에서 별도 취급한다.
+    pub endnote_flow: bool,
     /// 배치될 문단 슬라이스 정보
     pub items: Vec<PageItem>,
     /// 이 존의 레이아웃 (None이면 page.layout 사용). 다단 설정 나누기로 같은 페이지 내 단 수 변경 시 사용.
@@ -508,6 +519,8 @@ impl PaginationResult {
                     .iter()
                     .map(|cc| ColumnContent {
                         column_index: cc.column_index,
+                        start_height: cc.start_height,
+                        endnote_flow: cc.endnote_flow,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,

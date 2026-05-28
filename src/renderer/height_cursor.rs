@@ -40,6 +40,12 @@ pub(crate) struct HeightCursor {
     pub prev_item_was_partial_table: bool,
     /// HWP3-origin 흐름에서는 vpos 보정에서 spacing_before 사전 차감을 생략한다(#1116).
     pub skip_spacing_before_prededuct: bool,
+    /// 미주 흐름에서는 LINE_SEG vpos 가 같은 단 안에서 크게 되감길 수 있다.
+    pub allow_vpos_rewind: bool,
+    /// 음수 시작 높이를 가진 미주 단은 되감김이 없는 일반 vpos 보정도 크게 뒤로 갈 수 있다.
+    pub allow_start_height_backtrack: bool,
+    /// 미주 흐름의 큰 forward vpos 점프는 단/쪽 재배치 흔적일 수 있어 순차 배치를 유지한다.
+    pub suppress_large_forward_jump: bool,
 }
 
 impl HeightCursor {
@@ -51,6 +57,9 @@ impl HeightCursor {
         col_anchor_y: f64,
         vpos_page_base: Option<i32>,
         skip_spacing_before_prededuct: bool,
+        allow_vpos_rewind: bool,
+        allow_start_height_backtrack: bool,
+        suppress_large_forward_jump: bool,
     ) -> Self {
         HeightCursor {
             dpi,
@@ -62,6 +71,9 @@ impl HeightCursor {
             prev_layout_para: None,
             prev_item_was_partial_table: false,
             skip_spacing_before_prededuct,
+            allow_vpos_rewind,
+            allow_start_height_backtrack,
+            suppress_large_forward_jump,
         }
     }
 
@@ -182,7 +194,9 @@ impl HeightCursor {
         // 빈 공간을 만든 뒤 표를 다시 배치하게 된다(PR #1088 hwp-multi-001 pi=14).
         // 이 경우에는 직전 문단의 line-seg 끝만 신뢰하고, 표 위치/높이는 Table
         // PageItem 렌더 단계에서 반영한다.
+        let vpos_rewind = matches!(curr_first_vpos, Some(v) if v < seg.vertical_pos);
         let vpos_end = match curr_first_vpos {
+            Some(v) if self.allow_vpos_rewind && vpos_rewind => v,
             Some(v) if v > seg.vertical_pos && !curr_has_topbottom_para_table => v,
             _ => prev_vpos_end,
         };
@@ -204,17 +218,20 @@ impl HeightCursor {
             y_offset,
             curr_has_topbottom_para_table,
             self.skip_spacing_before_prededuct,
+            (self.allow_vpos_rewind && vpos_rewind) || self.allow_start_height_backtrack,
             self.dpi,
         );
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
+            let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
             eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} applied={}",
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} applied={}",
                 path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                vpos_end, base, self.col_area_y, y_offset, end_y, applied,
+                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, applied && !stale_forward,
             );
         }
-        if applied {
+        let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
+        if applied && !stale_forward {
             end_y
         } else {
             y_offset
@@ -258,11 +275,15 @@ mod tests {
     }
 
     fn cursor(page_base: Option<i32>) -> HeightCursor {
-        HeightCursor::new(DPI, COL_Y, COL_H, COL_Y, page_base, false)
+        HeightCursor::new(
+            DPI, COL_Y, COL_H, COL_Y, page_base, false, false, false, false,
+        )
     }
 
     fn hwp3_origin_cursor(page_base: Option<i32>) -> HeightCursor {
-        HeightCursor::new(DPI, COL_Y, COL_H, COL_Y, page_base, true)
+        HeightCursor::new(
+            DPI, COL_Y, COL_H, COL_Y, page_base, true, false, false, false,
+        )
     }
 
     /// 직전 문단이 없으면 보정하지 않는다.
