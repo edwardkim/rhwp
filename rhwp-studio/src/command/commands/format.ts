@@ -5,7 +5,7 @@ import { NumberingDialog } from '@/ui/numbering-dialog';
 import { StyleDialog } from '@/ui/style-dialog';
 import { StyleEditDialog } from '@/ui/style-edit-dialog';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
-import { EquationEditorDialog } from '@/ui/equation-editor-dialog';
+import { EquationPropertiesDialog } from '@/ui/equation-props-dialog';
 import { TableCellPropsDialog } from '@/ui/table-cell-props-dialog';
 
 export const formatCommands: CommandDef[] = [
@@ -454,7 +454,7 @@ export const formatCommands: CommandDef[] = [
         const ref = ih.getSelectedPictureRef();
         if (!ref) return;
         if (ref.type === 'equation') {
-          const dialog = new EquationEditorDialog(services.wasm, services.eventBus);
+          const dialog = new EquationPropertiesDialog(services.wasm, services.eventBus);
           dialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
           return;
         }

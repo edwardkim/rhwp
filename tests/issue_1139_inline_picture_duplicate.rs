@@ -1,6 +1,6 @@
 //! Task #1139: 문27 inline TAC Picture가 다음 줄까지 미리 렌더되어 중복 출력되던 회귀 방지.
 
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
@@ -96,6 +96,36 @@ fn sample16_page3_bottom_border_and_page_number(svg: &str) -> (f64, f64) {
             .copied()
             .expect("bottom page number baseline"),
     )
+}
+
+fn find_table_bbox(
+    node: &RenderNode,
+    para_index: usize,
+    control_index: usize,
+) -> Option<BoundingBox> {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(para_index) && table.control_index == Some(control_index) {
+            return Some(node.bbox.clone());
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_table_bbox(child, para_index, control_index))
+}
+
+fn min_para_text_y(node: &RenderNode, para_index: usize) -> Option<f64> {
+    let own = match &node.node_type {
+        RenderNodeType::TextLine(line) if line.para_index == Some(para_index) => Some(node.bbox.y),
+        RenderNodeType::TextRun(run) if run.para_index == Some(para_index) => Some(node.bbox.y),
+        _ => None,
+    };
+    own.into_iter()
+        .chain(
+            node.children
+                .iter()
+                .filter_map(|child| min_para_text_y(child, para_index)),
+        )
+        .min_by(|a, b| a.partial_cmp(b).unwrap())
 }
 
 #[test]
@@ -217,6 +247,21 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
     assert!(
         page10.contains("FullParagraph[미주]  pi=557"),
         "한컴오피스 기준 문11 미주는 10쪽 오른쪽 단에서 시작해야 함\n{page10}"
+    );
+}
+
+#[test]
+fn issue_1139_page9_endnote_table_does_not_overlap_header() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(8).expect("page 9 render tree");
+
+    let answer_table = find_table_bbox(&tree.root, 466, 0).expect("page 9 answer table");
+    let first_endnote_y = min_para_text_y(&tree.root, 468).expect("page 9 first endnote");
+    let table_bottom = answer_table.y + answer_table.height;
+    assert!(
+        first_endnote_y >= table_bottom + 8.0,
+        "9쪽 첫 미주가 상단 정답표 아래에서 시작해야 함: first_endnote_y={first_endnote_y}, table_bottom={table_bottom}, table={answer_table:?}"
     );
 }
 

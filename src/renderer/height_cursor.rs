@@ -177,8 +177,16 @@ impl HeightCursor {
                 prev_vpos_end - y_delta_hu
             };
             if lazy_base < 0 {
-                // 역산 무효(자리차지 표 등) → base=vpos_end 로 검증 실패 유도.
-                (prev_vpos_end, false)
+                // 역산 무효(자리차지 표 등): 이전 개체 높이가 sequential y 에 이미
+                // 반영된 상태다. 여기서 vpos 보정을 적용하면 단 상단으로 되감겨
+                // 본문 표와 뒤따르는 미주가 겹친다.
+                if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                    eprintln!(
+                        "VPOS_CORR_SKIP: pi={} prev_pi={} y_in={:.2} prev_vpos_end={} lazy_base_corrected={} lazy_base={}",
+                        item_para, prev_pi, y_offset, prev_vpos_end, lazy_base_corrected, lazy_base,
+                    );
+                }
+                return y_offset;
             } else {
                 self.vpos_lazy_base = Some(lazy_base);
                 (lazy_base, false)
@@ -204,8 +212,13 @@ impl HeightCursor {
         // 이 경우에는 직전 문단의 line-seg 끝만 신뢰하고, 표 위치/높이는 Table
         // PageItem 렌더 단계에서 반영한다.
         let vpos_rewind = matches!(curr_first_vpos, Some(v) if v < seg.vertical_pos);
+        let compact_endnote_bottom_rewind = self.suppress_large_forward_jump
+            && vpos_rewind
+            && y_offset > self.col_area_y + self.col_area_height * 0.75;
         let vpos_end = match curr_first_vpos {
-            Some(v) if self.allow_vpos_rewind && vpos_rewind => v,
+            Some(v) if (self.allow_vpos_rewind || compact_endnote_bottom_rewind) && vpos_rewind => {
+                v
+            }
             Some(v) if v > seg.vertical_pos && !curr_has_topbottom_para_table => v,
             _ => prev_vpos_end,
         };
@@ -257,9 +270,9 @@ impl HeightCursor {
             let path = if is_page_path { "page" } else { "lazy" };
             let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
             eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} compact_tac_pic_gap={} applied={}",
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} compact_tac_pic_gap={} compact_bottom_rewind={} applied={}",
                 path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, compact_endnote_tac_picture_gap, applied && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
+                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind, applied && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
             );
         }
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
@@ -332,6 +345,12 @@ mod tests {
     fn hwp3_origin_cursor(page_base: Option<i32>) -> HeightCursor {
         HeightCursor::new(
             DPI, COL_Y, COL_H, COL_Y, page_base, true, false, false, false,
+        )
+    }
+
+    fn compact_endnote_cursor(page_base: Option<i32>) -> HeightCursor {
+        HeightCursor::new(
+            DPI, COL_Y, COL_H, COL_Y, page_base, false, false, false, true,
         )
     }
 
@@ -441,5 +460,48 @@ mod tests {
         ];
         // y_in=500: end_y=100+100/75=101.33 < 500-8=492 → 미적용
         assert_eq!(c.vpos_adjust(500.0, 1, &ps, &styles(0.0)), 500.0);
+    }
+
+    /// Compact 미주 하단에서 VPOS가 크게 되감기면 현재 문단 first_vpos를 재앵커한다.
+    #[test]
+    fn compact_endnote_bottom_rewind_uses_current_vpos() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 55350, 900, 0, 5000), // prev_vpos_end=56250 → y=850
+            para(0, 45000, 900, 0, 5000), // rewind → y=700
+        ];
+
+        let got = c.vpos_adjust(850.0, 1, &ps, &styles(0.0));
+        assert!((got - 700.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 같은 compact 미주 되감김이라도 단 하단부가 아니면 기존 순차 흐름을 유지한다.
+    #[test]
+    fn compact_endnote_rewind_above_bottom_keeps_previous_vpos() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 44100, 900, 0, 5000), // prev_vpos_end=45000 → y=700
+            para(0, 37500, 900, 0, 5000), // rewind → y=600, but above bottom band
+        ];
+
+        let got = c.vpos_adjust(700.0, 1, &ps, &styles(0.0));
+        assert!((got - 700.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 앞선 TAC 표 높이 때문에 lazy base 역산이 음수가 되면 되감김 보정을 건너뛴다.
+    #[test]
+    fn invalid_lazy_base_skips_backtrack_after_tall_object() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 18177, 900, 452, 5000), // prev_vpos_end=19529
+            para(0, 19529, 900, 452, 5000),
+        ];
+
+        let got = c.vpos_adjust(361.37, 1, &ps, &styles(0.0));
+        assert!((got - 361.37).abs() < 1e-6, "got={got}");
+        assert_eq!(c.vpos_lazy_base, None);
     }
 }

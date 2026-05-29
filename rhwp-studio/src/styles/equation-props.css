@@ -1,0 +1,54 @@
+/* ── 수식 속성 대화상자 ─── */
+.eq-props-dialog {
+  width: 660px;
+}
+
+.eq-props-dialog .dialog-body {
+  min-height: 430px;
+}
+
+.eq-props-dialog .dialog-label {
+  min-width: 64px;
+}
+
+.eq-props-dialog .cs-fieldset {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.eq-props-row {
+  flex-wrap: wrap;
+}
+
+.eq-props-row .dialog-input {
+  width: 80px;
+}
+
+.eq-props-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.eq-props-color {
+  width: 42px;
+  height: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1px;
+  background: var(--color-surface);
+}
+
+.eq-props-script {
+  width: 100%;
+  min-height: 116px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-light);
+  color: var(--color-text);
+}

@@ -1,6 +1,7 @@
 import type { CommandDef } from '../types';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { EquationEditorDialog } from '@/ui/equation-editor-dialog';
+import { EquationPropertiesDialog } from '@/ui/equation-props-dialog';
 import { SymbolsDialog } from '@/ui/symbols-dialog';
 import { BookmarkDialog } from '@/ui/bookmark-dialog';
 import { showShapePicker } from '@/ui/shape-picker';
@@ -20,6 +21,7 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
 
 let picturePropsDialog: PicturePropsDialog | null = null;
 let equationEditorDialog: EquationEditorDialog | null = null;
+let equationPropsDialog: EquationPropertiesDialog | null = null;
 let symbolsDialog: SymbolsDialog | null = null;
 let bookmarkDialog: BookmarkDialog | null = null;
 
@@ -178,10 +180,10 @@ export const insertCommands: CommandDef[] = [
       const ref = ih.getSelectedPictureRef();
       if (!ref) return;
       if (ref.type === 'equation') {
-        if (!equationEditorDialog) {
-          equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
+        if (!equationPropsDialog) {
+          equationPropsDialog = new EquationPropertiesDialog(services.wasm, services.eventBus);
         }
-        equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
+        equationPropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
         return;
       }
       if (!picturePropsDialog) {
