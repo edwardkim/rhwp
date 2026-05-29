@@ -176,7 +176,14 @@ export const insertCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
-      if (!ref || ref.type === 'equation') return;
+      if (!ref) return;
+      if (ref.type === 'equation') {
+        if (!equationEditorDialog) {
+          equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
+        }
+        equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
+        return;
+      }
       if (!picturePropsDialog) {
         picturePropsDialog = new PicturePropsDialog(services.wasm, services.eventBus);
       }
@@ -217,7 +224,7 @@ export const insertCommands: CommandDef[] = [
       if (!equationEditorDialog) {
         equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
       }
-      equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx);
+      equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
     },
   },
   {

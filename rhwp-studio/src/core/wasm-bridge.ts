@@ -963,9 +963,34 @@ export class WasmBridge {
     return JSON.parse(this.doc.getEquationProperties(sec, para, ci, cellIdx ?? -1, cellParaIdx ?? -1));
   }
 
+  getNoteEquationProperties(noteRef: import('./types').NoteControlRef): import('./types').EquationProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getNoteEquationProperties(
+      noteRef.kind,
+      noteRef.sectionIdx,
+      noteRef.paraIdx,
+      noteRef.controlIdx,
+      noteRef.noteParaIdx,
+      noteRef.innerControlIdx,
+    ));
+  }
+
   setEquationProperties(sec: number, para: number, ci: number, cellIdx: number | undefined, cellParaIdx: number | undefined, props: Record<string, unknown>): { ok: boolean } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setEquationProperties(sec, para, ci, cellIdx ?? -1, cellParaIdx ?? -1, JSON.stringify(props)));
+  }
+
+  setNoteEquationProperties(noteRef: import('./types').NoteControlRef, props: Record<string, unknown>): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).setNoteEquationProperties(
+      noteRef.kind,
+      noteRef.sectionIdx,
+      noteRef.paraIdx,
+      noteRef.controlIdx,
+      noteRef.noteParaIdx,
+      noteRef.innerControlIdx,
+      JSON.stringify(props),
+    ));
   }
 
   renderEquationPreview(script: string, fontSizeHwpunit: number, color: number): string {

@@ -2865,6 +2865,11 @@ impl LayoutEngine {
                                     } else {
                                         (None, None)
                                     };
+                                let note_ref = if cell_ctx.is_none() {
+                                    self.note_ref_for_endnote_equation(para_index, tac_ci)
+                                } else {
+                                    None
+                                };
                                 let eq_node = RenderNode::new(
                                     tree.next_id(),
                                     RenderNodeType::Equation(
@@ -2874,9 +2879,14 @@ impl LayoutEngine {
                                             color_str,
                                             color: eq.color,
                                             font_size: font_size_px,
-                                            section_index: Some(section_index),
+                                            section_index: note_ref
+                                                .as_ref()
+                                                .map(|r| r.section_index)
+                                                .or(Some(section_index)),
                                             para_index: if let Some(ref ctx) = cell_ctx {
                                                 Some(ctx.parent_para_index)
+                                            } else if let Some(ref r) = note_ref {
+                                                Some(r.para_index)
                                             } else {
                                                 Some(para_index)
                                             },
@@ -2887,6 +2897,7 @@ impl LayoutEngine {
                                             },
                                             cell_index: eq_cell_idx,
                                             cell_para_index: eq_cell_para_idx,
+                                            note_ref,
                                         },
                                     ),
                                     BoundingBox::new(x, eq_y, tac_w, eq_h),
@@ -3440,6 +3451,11 @@ impl LayoutEngine {
                             } else {
                                 (None, None)
                             };
+                            let note_ref = if cell_ctx.is_none() {
+                                self.note_ref_for_endnote_equation(para_index, tac_ci)
+                            } else {
+                                None
+                            };
                             let eq_node = RenderNode::new(
                                 tree.next_id(),
                                 RenderNodeType::Equation(
@@ -3449,9 +3465,14 @@ impl LayoutEngine {
                                         color_str,
                                         color: eq.color,
                                         font_size: font_size_px,
-                                        section_index: Some(section_index),
+                                        section_index: note_ref
+                                            .as_ref()
+                                            .map(|r| r.section_index)
+                                            .or(Some(section_index)),
                                         para_index: if let Some(ref ctx) = cell_ctx {
                                             Some(ctx.parent_para_index)
+                                        } else if let Some(ref r) = note_ref {
+                                            Some(r.para_index)
                                         } else {
                                             Some(para_index)
                                         },
@@ -3462,6 +3483,7 @@ impl LayoutEngine {
                                         },
                                         cell_index: eq_cell_idx,
                                         cell_para_index: eq_cell_para_idx,
+                                        note_ref,
                                     },
                                 ),
                                 BoundingBox::new(inline_x, eq_y, tac_w, eq_h),

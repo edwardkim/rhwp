@@ -1454,11 +1454,22 @@ impl DocumentCore {
                         }
                         _ => String::new(),
                     };
+                    let note_ref = eq_node.note_ref.as_ref().map_or_else(String::new, |r| {
+                        format!(
+                            ",\"noteRef\":{{\"kind\":\"{}\",\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"noteParaIdx\":{},\"innerControlIdx\":{}}}",
+                            r.kind,
+                            r.section_index,
+                            r.para_index,
+                            r.control_index,
+                            r.note_para_index,
+                            r.inner_control_index
+                        )
+                    });
 
                     controls.push(format!(
-                        "{{\"type\":\"equation\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}}}",
+                        "{{\"type\":\"equation\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords, cell_coords
+                        doc_coords, cell_coords, note_ref
                     ));
                     return;
                 }
@@ -1894,6 +1905,7 @@ impl DocumentCore {
                 hidden_empty_paras: std::collections::HashSet::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
+                endnote_para_sources: Vec::new(),
             });
         }
         self.pagination.truncate(sec_count);
@@ -3080,6 +3092,8 @@ impl DocumentCore {
         if let Some(pr) = self.pagination.get(sec_idx) {
             self.layout_engine
                 .set_hidden_empty_paras(&pr.hidden_empty_paras);
+            self.layout_engine
+                .set_endnote_para_sources(paragraphs.len(), &pr.endnote_para_sources);
         }
 
         // [Task #836] 미주 paragraphs를 본문 paragraphs 뒤에 합쳐서 전달

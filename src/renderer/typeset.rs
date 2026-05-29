@@ -28,8 +28,8 @@ use crate::renderer::{hwpunit_to_px, DEFAULT_DPI};
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
 use super::pagination::{
-    ColumnContent, EndnoteRef, FootnoteRef, FootnoteSource, HeaderFooterRef, PageContent, PageItem,
-    PaginationResult,
+    ColumnContent, EndnoteParaSource, EndnoteRef, FootnoteRef, FootnoteSource, HeaderFooterRef,
+    PageContent, PageItem, PaginationResult,
 };
 
 // ========================================================
@@ -157,6 +157,7 @@ struct TypesetState {
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     endnotes: Vec<EndnoteRef>,
     endnote_paragraphs: Vec<Paragraph>,
+    endnote_para_sources: Vec<EndnoteParaSource>,
     /// [Task #362] Square wrap 표의 column_start (HU). -1 = 비활성. 후속 같은 cs/sw paragraph 흡수용.
     wrap_around_cs: i32,
     /// [Task #362] Square wrap 표의 segment_width (HU). -1 = 비활성.
@@ -344,6 +345,7 @@ impl TypesetState {
             hidden_empty_paras: std::collections::HashSet::new(),
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
+            endnote_para_sources: Vec::new(),
             wrap_around_cs: -1,
             wrap_around_sw: -1,
             wrap_around_table_para: 0,
@@ -1903,6 +1905,12 @@ impl TypesetEngine {
                             }
                             let en_para_local_idx = st.endnote_paragraphs.len();
                             st.endnote_paragraphs.push(en_para_copy);
+                            st.endnote_para_sources.push(EndnoteParaSource {
+                                section_index: en_ref.section_index,
+                                para_index: en_ref.para_index,
+                                control_index: en_ref.control_index,
+                                note_para_index: ep_idx,
+                            });
                             last_render_endnote_para_local_idx = Some(en_para_local_idx);
 
                             let composed = crate::renderer::composer::compose_paragraph(en_para);
@@ -2218,6 +2226,7 @@ impl TypesetEngine {
             hidden_empty_paras: st.hidden_empty_paras,
             endnotes: st.endnotes,
             endnote_paragraphs: st.endnote_paragraphs,
+            endnote_para_sources: st.endnote_para_sources,
         }
     }
 

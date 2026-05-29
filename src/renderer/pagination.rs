@@ -30,6 +30,19 @@ pub struct EndnoteRef {
     pub control_index: usize,
 }
 
+/// 렌더용으로 가상 삽입된 미주 문단의 원본 위치.
+#[derive(Debug, Clone)]
+pub struct EndnoteParaSource {
+    /// 소속 구역 인덱스
+    pub section_index: usize,
+    /// 원본 Endnote 컨트롤이 있는 본문 문단 인덱스
+    pub para_index: usize,
+    /// 본문 문단 내 Endnote 컨트롤 인덱스
+    pub control_index: usize,
+    /// Endnote 내부 문단 인덱스
+    pub note_para_index: usize,
+}
+
 /// 페이지 분할 결과: 페이지별 콘텐츠 참조
 #[derive(Debug)]
 pub struct PaginationResult {
@@ -43,6 +56,8 @@ pub struct PaginationResult {
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)
     pub endnote_paragraphs: Vec<crate::model::paragraph::Paragraph>,
+    /// `endnote_paragraphs` 각 항목의 원본 Endnote 내부 위치.
+    pub endnote_para_sources: Vec<EndnoteParaSource>,
 }
 
 /// 한 페이지에 배치될 콘텐츠

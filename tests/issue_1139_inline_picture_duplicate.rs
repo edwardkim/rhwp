@@ -321,3 +321,49 @@ fn issue_1139_page12_endnote_shape_picture_properties_resolve_virtual_para_index
         );
     }
 }
+
+#[test]
+fn issue_1139_endnote_equation_exposes_note_ref_and_properties() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let mut found = None;
+    for page in 8..18 {
+        let layout = doc
+            .get_page_control_layout_native(page)
+            .unwrap_or_else(|e| panic!("page {} control layout: {e}", page + 1));
+        let parsed: Value = serde_json::from_str(&layout).expect("control layout json");
+        if let Some(eq) = parsed["controls"]
+            .as_array()
+            .expect("controls array")
+            .iter()
+            .find(|ctrl| ctrl["type"] == "equation" && ctrl["noteRef"]["kind"] == "endnote")
+        {
+            found = Some(eq.clone());
+            break;
+        }
+    }
+
+    let eq = found.expect("미주 내부 수식은 noteRef와 함께 control layout에 노출되어야 함");
+    let note = &eq["noteRef"];
+    let props = doc
+        .get_note_equation_properties_native(
+            note["kind"].as_str().unwrap(),
+            note["sectionIdx"].as_u64().unwrap() as usize,
+            note["paraIdx"].as_u64().unwrap() as usize,
+            note["controlIdx"].as_u64().unwrap() as usize,
+            note["noteParaIdx"].as_u64().unwrap() as usize,
+            note["innerControlIdx"].as_u64().unwrap() as usize,
+        )
+        .expect("미주 내부 수식 속성 조회");
+    let props: Value = serde_json::from_str(&props).expect("equation props json");
+
+    assert!(
+        props["script"].as_str().is_some_and(|s| !s.is_empty()),
+        "미주 내부 수식 script가 조회되어야 함: {props}"
+    );
+    assert!(
+        props["fontSize"].as_u64().unwrap_or(0) > 0,
+        "미주 내부 수식 fontSize가 조회되어야 함: {props}"
+    );
+}

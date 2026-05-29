@@ -2729,6 +2729,52 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 각주/미주 내부 수식 컨트롤의 속성을 조회한다.
+    #[wasm_bindgen(js_name = getNoteEquationProperties)]
+    pub fn get_note_equation_properties(
+        &self,
+        kind: &str,
+        section_idx: u32,
+        parent_para_idx: u32,
+        note_control_idx: u32,
+        note_para_idx: u32,
+        inner_control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_note_equation_properties_native(
+            kind,
+            section_idx as usize,
+            parent_para_idx as usize,
+            note_control_idx as usize,
+            note_para_idx as usize,
+            inner_control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 각주/미주 내부 수식 컨트롤의 속성을 변경한다.
+    #[wasm_bindgen(js_name = setNoteEquationProperties)]
+    pub fn set_note_equation_properties(
+        &mut self,
+        kind: &str,
+        section_idx: u32,
+        parent_para_idx: u32,
+        note_control_idx: u32,
+        note_para_idx: u32,
+        inner_control_idx: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_note_equation_properties_native(
+            kind,
+            section_idx as usize,
+            parent_para_idx as usize,
+            note_control_idx as usize,
+            note_para_idx as usize,
+            inner_control_idx as usize,
+            props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 수식 스크립트를 SVG로 렌더링하여 반환한다 (미리보기 전용).
     ///
     /// 반환: 완전한 `<svg>` 문자열

@@ -5102,58 +5102,105 @@ impl DocumentCore {
         }
     }
 
-    pub fn get_equation_properties_native(
+    fn find_note_equation_ref(
         &self,
+        kind: &str,
         section_idx: usize,
         parent_para_idx: usize,
-        control_idx: usize,
-        cell_idx: Option<usize>,
-        cell_para_idx: Option<usize>,
-    ) -> Result<String, HwpError> {
-        let eq = self.find_equation_ref(
-            section_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-        )?;
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<&crate::model::control::Equation, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+        })?;
+        let note_para = match para.controls.get(note_control_idx) {
+            Some(Control::Footnote(note)) if kind == "footnote" => {
+                note.paragraphs.get(note_para_idx)
+            }
+            Some(Control::Endnote(note)) if kind == "endnote" => note.paragraphs.get(note_para_idx),
+            _ => None,
+        }
+        .ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "각주/미주 문단을 찾을 수 없습니다: kind={} sec={} para={} ctrl={} note_para={}",
+                kind, section_idx, parent_para_idx, note_control_idx, note_para_idx
+            ))
+        })?;
+        match note_para.controls.get(inner_control_idx) {
+            Some(Control::Equation(eq)) => Ok(eq),
+            _ => Err(HwpError::RenderError(format!(
+                "각주/미주 내부 컨트롤 {}은 수식이 아닙니다",
+                inner_control_idx
+            ))),
+        }
+    }
 
+    fn find_note_equation_mut(
+        &mut self,
+        kind: &str,
+        section_idx: usize,
+        parent_para_idx: usize,
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<&mut crate::model::control::Equation, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+        })?;
+        let note_para = match para.controls.get_mut(note_control_idx) {
+            Some(Control::Footnote(note)) if kind == "footnote" => {
+                note.paragraphs.get_mut(note_para_idx)
+            }
+            Some(Control::Endnote(note)) if kind == "endnote" => {
+                note.paragraphs.get_mut(note_para_idx)
+            }
+            _ => None,
+        }
+        .ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "각주/미주 문단을 찾을 수 없습니다: kind={} sec={} para={} ctrl={} note_para={}",
+                kind, section_idx, parent_para_idx, note_control_idx, note_para_idx
+            ))
+        })?;
+        match note_para.controls.get_mut(inner_control_idx) {
+            Some(Control::Equation(eq)) => Ok(eq),
+            _ => Err(HwpError::RenderError(format!(
+                "각주/미주 내부 컨트롤 {}은 수식이 아닙니다",
+                inner_control_idx
+            ))),
+        }
+    }
+
+    fn equation_properties_json(eq: &crate::model::control::Equation) -> String {
         let script_escaped = super::super::helpers::json_escape(&eq.script);
         let font_name_escaped = super::super::helpers::json_escape(&eq.font_name);
 
-        Ok(format!(
+        format!(
             concat!(
                 "{{\"script\":\"{}\",\"fontSize\":{},\"color\":{},",
                 "\"baseline\":{},\"fontName\":\"{}\"}}"
             ),
             script_escaped, eq.font_size, eq.color, eq.baseline, font_name_escaped,
-        ))
+        )
     }
 
-    /// 수식 컨트롤의 속성을 변경한다 (네이티브).
-    pub fn set_equation_properties_native(
-        &mut self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        control_idx: usize,
-        cell_idx: Option<usize>,
-        cell_para_idx: Option<usize>,
+    fn apply_equation_properties(
+        eq: &mut crate::model::control::Equation,
+        dpi: f64,
         props_json: &str,
-    ) -> Result<String, HwpError> {
+    ) {
         use super::super::helpers::{json_i32, json_str, json_u32};
         use crate::renderer::equation::layout::EqLayout;
         use crate::renderer::equation::parser::EqParser;
         use crate::renderer::equation::tokenizer::tokenize;
         use crate::renderer::hwpunit_to_px;
-
-        let dpi = self.dpi;
-        let eq = self.find_equation_mut(
-            section_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-        )?;
 
         if let Some(s) = json_str(props_json, "script") {
             eq.script = s;
@@ -5171,7 +5218,6 @@ impl DocumentCore {
             eq.font_name = fn_;
         }
 
-        // 수식 레이아웃 실행 → 개체 크기(common.width/height) 갱신
         let font_size_px = hwpunit_to_px(eq.font_size as i32, dpi);
         let tokens = tokenize(&eq.script);
         let ast = EqParser::new(tokens).parse();
@@ -5180,6 +5226,46 @@ impl DocumentCore {
         let new_h = crate::renderer::px_to_hwpunit(layout_box.height, dpi).max(0) as u32;
         eq.common.width = new_w;
         eq.common.height = new_h;
+    }
+
+    pub fn get_equation_properties_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: Option<usize>,
+        cell_para_idx: Option<usize>,
+    ) -> Result<String, HwpError> {
+        let eq = self.find_equation_ref(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+
+        Ok(Self::equation_properties_json(eq))
+    }
+
+    /// 수식 컨트롤의 속성을 변경한다 (네이티브).
+    pub fn set_equation_properties_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: Option<usize>,
+        cell_para_idx: Option<usize>,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let dpi = self.dpi;
+        let eq = self.find_equation_mut(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+        Self::apply_equation_properties(eq, dpi, props_json);
 
         // 표 셀 내 수식인 경우 표 dirty 플래그 설정
         if cell_idx.is_some() {
@@ -5193,6 +5279,55 @@ impl DocumentCore {
         }
 
         // 재조판
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok(super::super::helpers::json_ok())
+    }
+
+    pub fn get_note_equation_properties_native(
+        &self,
+        kind: &str,
+        section_idx: usize,
+        parent_para_idx: usize,
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let eq = self.find_note_equation_ref(
+            kind,
+            section_idx,
+            parent_para_idx,
+            note_control_idx,
+            note_para_idx,
+            inner_control_idx,
+        )?;
+        Ok(Self::equation_properties_json(eq))
+    }
+
+    pub fn set_note_equation_properties_native(
+        &mut self,
+        kind: &str,
+        section_idx: usize,
+        parent_para_idx: usize,
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let dpi = self.dpi;
+        let eq = self.find_note_equation_mut(
+            kind,
+            section_idx,
+            parent_para_idx,
+            note_control_idx,
+            note_para_idx,
+            inner_control_idx,
+        )?;
+        Self::apply_equation_properties(eq, dpi, props_json);
+
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;
         self.recompose_section(section_idx);

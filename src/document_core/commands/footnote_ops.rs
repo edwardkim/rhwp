@@ -357,7 +357,9 @@ impl DocumentCore {
         if json_has_tab_keys(props_json) {
             let para = self
                 .get_footnote_paragraph_ref(section_idx, para_idx, control_idx, fn_para_idx)
-                .ok_or_else(|| HwpError::RenderError("각주/미주 문단을 찾을 수 없음".to_string()))?;
+                .ok_or_else(|| {
+                    HwpError::RenderError("각주/미주 문단을 찾을 수 없음".to_string())
+                })?;
             let base_tab_def_id = self
                 .document
                 .doc_info

@@ -16,7 +16,7 @@ function pointToSegmentDist(px: number, py: number, x1: number, y1: number, x2: 
 
 export function findPictureAtClick(this: any,
   pageIdx: number, pageX: number, pageY: number,
-): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; x1?: number; y1?: number; x2?: number; y2?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null {
+): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; noteRef?: any; x1?: number; y1?: number; x2?: number; y2?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null {
   try {
     const layout = this.wasm.getPageControlLayout(pageIdx);
     // Task #516 결함 3 (옵션 3-C): BehindText 그림은 텍스트 영역 위에서는 후순위.
@@ -83,7 +83,7 @@ export function findPictureAtClick(this: any,
         // bbox 히트 판정
         if (pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
             pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h) {
-          return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, headerFooter: ctrl.headerFooter };
+          return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter };
         }
       }
     }
@@ -106,7 +106,7 @@ export function findPictureAtClick(this: any,
         for (const ctrl of behindCtrls) {
           if (pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
               pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h) {
-            return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, headerFooter: ctrl.headerFooter };
+            return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter };
           }
         }
       }
@@ -117,7 +117,7 @@ export function findPictureAtClick(this: any,
 
 /** 선택된 개체의 bbox를 페이지 레이아웃에서 찾는다. */
 export function findPictureBbox(this: any,
-  ref: { sec: number; ppi: number; ci: number; type?: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number },
+  ref: { sec: number; ppi: number; ci: number; type?: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; noteRef?: any },
 ): { pageIndex: number; x: number; y: number; w: number; h: number; x1?: number; y1?: number; x2?: number; y2?: number } | null {
   const matchType = ref.type ?? 'image';
   // line은 shape의 하위 타입 → layout에서 'line'으로 반환됨
@@ -132,6 +132,16 @@ export function findPictureBbox(this: any,
           // 표 셀 내 수식: cellIdx/cellParaIdx도 매칭
           if (matchType === 'equation' && ref.cellIdx !== undefined) {
             if (ctrl.cellIdx !== ref.cellIdx || ctrl.cellParaIdx !== ref.cellParaIdx) continue;
+          }
+          if (matchType === 'equation' && ref.noteRef) {
+            const nr = ctrl.noteRef;
+            if (!nr ||
+                nr.kind !== ref.noteRef.kind ||
+                nr.sectionIdx !== ref.noteRef.sectionIdx ||
+                nr.paraIdx !== ref.noteRef.paraIdx ||
+                nr.controlIdx !== ref.noteRef.controlIdx ||
+                nr.noteParaIdx !== ref.noteRef.noteParaIdx ||
+                nr.innerControlIdx !== ref.noteRef.innerControlIdx) continue;
           }
           return { pageIndex: p, x: ctrl.x, y: ctrl.y, w: ctrl.w, h: ctrl.h,
             x1: ctrl.x1, y1: ctrl.y1, x2: ctrl.x2, y2: ctrl.y2 };
@@ -195,6 +205,16 @@ export function renderPictureObjectSelection(this: any): void {
           // 표 셀 내 수식: cellIdx/cellParaIdx도 매칭
           if (matchType === 'equation' && ref.cellIdx !== undefined) {
             if (ctrl.cellIdx !== ref.cellIdx || ctrl.cellParaIdx !== ref.cellParaIdx) continue;
+          }
+          if (matchType === 'equation' && ref.noteRef) {
+            const nr = ctrl.noteRef;
+            if (!nr ||
+                nr.kind !== ref.noteRef.kind ||
+                nr.sectionIdx !== ref.noteRef.sectionIdx ||
+                nr.paraIdx !== ref.noteRef.paraIdx ||
+                nr.controlIdx !== ref.noteRef.controlIdx ||
+                nr.noteParaIdx !== ref.noteRef.noteParaIdx ||
+                nr.innerControlIdx !== ref.noteRef.innerControlIdx) continue;
           }
 
           if (matchType === 'line') {

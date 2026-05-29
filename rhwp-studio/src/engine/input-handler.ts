@@ -1971,7 +1971,7 @@ export class InputHandler {
   /** 그림/글상자 클릭 감지 — getPageControlLayout으로 개체 bbox 겹침 확인 */
   private findPictureAtClick(
     pageIdx: number, pageX: number, pageY: number,
-  ): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; x1?: number; y1?: number; x2?: number; y2?: number } | null {
+  ): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; noteRef?: any; x1?: number; y1?: number; x2?: number; y2?: number } | null {
     return _picture.findPictureAtClick.call(this, pageIdx, pageX, pageY);
   }
 
@@ -2221,7 +2221,7 @@ export class InputHandler {
   isInPictureObjectSelection(): boolean { return this.cursor.isInPictureObjectSelection(); }
 
   /** 선택된 그림/글상자 참조 반환 ([Task #825] headerFooter 동반 시 머리말/꼬리말 picture marker) */
-  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
+  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; noteRef?: any; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
 
   /** 다중 선택된 개체 목록 */
   getSelectedPictureRefs(): { sec: number; ppi: number; ci: number; type: string }[] { return this.cursor.getSelectedPictureRefs(); }

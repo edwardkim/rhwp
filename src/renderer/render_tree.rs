@@ -955,6 +955,23 @@ pub struct GroupNode {
     pub control_index: Option<usize>,
 }
 
+/// 각주/미주 내부에 있는 컨트롤의 원본 위치.
+#[derive(Debug, Clone, Serialize)]
+pub struct NoteControlRef {
+    /// `footnote` 또는 `endnote`
+    pub kind: String,
+    /// 원본 각주/미주 컨트롤이 있는 구역 인덱스
+    pub section_index: usize,
+    /// 원본 각주/미주 컨트롤이 있는 본문 문단 인덱스
+    pub para_index: usize,
+    /// 본문 문단 내 각주/미주 컨트롤 인덱스
+    pub control_index: usize,
+    /// 각주/미주 내부 문단 인덱스
+    pub note_para_index: usize,
+    /// 각주/미주 내부 문단 내 컨트롤 인덱스
+    pub inner_control_index: usize,
+}
+
 /// 수식 노드 (SVG 인라인 렌더링)
 #[derive(Debug, Clone, Serialize)]
 pub struct EquationNode {
@@ -978,6 +995,8 @@ pub struct EquationNode {
     pub cell_index: Option<usize>,
     /// 표 셀 내 수식인 경우: 셀 내 문단 인덱스
     pub cell_para_index: Option<usize>,
+    /// 각주/미주 내부 수식인 경우 원본 위치
+    pub note_ref: Option<NoteControlRef>,
 }
 
 /// 인라인 Shape 좌표 맵 키. 섹션 단위 + 셀 경로로 셀 내 paragraph/control

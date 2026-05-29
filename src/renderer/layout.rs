@@ -11,7 +11,9 @@ use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
 use super::height_measurer::MeasuredTable;
 use super::page_layout::{LayoutRect, PageLayoutInfo};
-use super::pagination::{ColumnContent, FootnoteRef, FootnoteSource, PageContent, PageItem};
+use super::pagination::{
+    ColumnContent, EndnoteParaSource, FootnoteRef, FootnoteSource, PageContent, PageItem,
+};
 use super::render_tree::*;
 use super::style_resolver::ResolvedStyleSet;
 use super::{
@@ -80,10 +82,7 @@ fn insert_before_para_text(parent: &mut RenderNode, para_index: usize, mut nodes
     }
 }
 
-fn page_item_is_treat_as_char_picture_only(
-    item: &PageItem,
-    paragraphs: &[Paragraph],
-) -> bool {
+fn page_item_is_treat_as_char_picture_only(item: &PageItem, paragraphs: &[Paragraph]) -> bool {
     let para_index = match item {
         PageItem::FullParagraph { para_index }
         | PageItem::PartialParagraph { para_index, .. }
@@ -421,6 +420,10 @@ pub struct LayoutEngine {
     last_item_content_bottom: std::cell::Cell<f64>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
     hidden_empty_paras: std::cell::RefCell<std::collections::HashSet<usize>>,
+    /// 렌더용 가상 미주 문단 시작 인덱스
+    endnote_para_base: std::cell::Cell<usize>,
+    /// 가상 미주 문단별 원본 위치
+    endnote_para_sources: std::cell::RefCell<Vec<EndnoteParaSource>>,
     /// 현재 활성 필드 위치 — 안내문 렌더링 스킵용
     /// (section_idx, para_idx, control_idx, cell_path)
     /// cell_path: 셀 내 필드일 경우 Some(Vec<(ctrl, cell, para)>)
@@ -491,6 +494,8 @@ impl LayoutEngine {
             layout_overflows: std::cell::RefCell::new(Vec::new()),
             last_item_content_bottom: std::cell::Cell::new(f64::NAN),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
+            endnote_para_base: std::cell::Cell::new(usize::MAX),
+            endnote_para_sources: std::cell::RefCell::new(Vec::new()),
             active_field: std::cell::RefCell::new(None),
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
@@ -520,6 +525,30 @@ impl LayoutEngine {
     /// 빈 줄 감추기 문단 집합 설정
     pub fn set_hidden_empty_paras(&self, paras: &std::collections::HashSet<usize>) {
         *self.hidden_empty_paras.borrow_mut() = paras.clone();
+    }
+
+    /// 렌더용 가상 미주 문단과 원본 Endnote 내부 문단의 매핑을 설정한다.
+    pub fn set_endnote_para_sources(&self, base: usize, sources: &[EndnoteParaSource]) {
+        self.endnote_para_base.set(base);
+        *self.endnote_para_sources.borrow_mut() = sources.to_vec();
+    }
+
+    fn note_ref_for_endnote_equation(
+        &self,
+        para_index: usize,
+        inner_control_index: usize,
+    ) -> Option<NoteControlRef> {
+        let base = self.endnote_para_base.get();
+        let local_idx = para_index.checked_sub(base)?;
+        let src = self.endnote_para_sources.borrow().get(local_idx)?.clone();
+        Some(NoteControlRef {
+            kind: "endnote".to_string(),
+            section_index: src.section_index,
+            para_index: src.para_index,
+            control_index: src.control_index,
+            note_para_index: src.note_para_index,
+            inner_control_index,
+        })
     }
 
     /// 번호 상태를 초기화한다.

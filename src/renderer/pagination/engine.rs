@@ -919,6 +919,7 @@ impl Paginator {
             hidden_empty_paras,
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
+            endnote_para_sources: Vec::new(),
         }
     }
 

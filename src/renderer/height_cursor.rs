@@ -227,7 +227,9 @@ impl HeightCursor {
             y_offset,
             curr_has_topbottom_para_table,
             self.skip_spacing_before_prededuct,
-            (self.allow_vpos_rewind && vpos_rewind) || self.allow_start_height_backtrack,
+            (self.allow_vpos_rewind && vpos_rewind)
+                || self.allow_start_height_backtrack
+                || self.suppress_large_forward_jump,
             self.dpi,
         );
         let compact_endnote_new_note_jump = self.suppress_large_forward_jump

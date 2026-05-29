@@ -465,8 +465,17 @@ export interface TableProperties {
 }
 
 /** WASM getPageControlLayout() 반환 요소 */
+export interface NoteControlRef {
+  kind: 'footnote' | 'endnote';
+  sectionIdx: number;
+  paraIdx: number;
+  controlIdx: number;
+  noteParaIdx: number;
+  innerControlIdx: number;
+}
+
 export interface ControlLayoutItem {
-  type: 'table' | 'image' | 'shape' | 'equation' | 'group';
+  type: 'table' | 'image' | 'shape' | 'equation' | 'group' | 'line';
   x: number;
   y: number;
   w: number;
@@ -478,6 +487,10 @@ export interface ControlLayoutItem {
   cellIdx?: number;
   /** 표 셀 내 수식인 경우: 셀 내 문단 인덱스 */
   cellParaIdx?: number;
+  /** 각주/미주 내부 컨트롤인 경우 원본 위치 */
+  noteRef?: NoteControlRef;
+  outerTableControlIdx?: number;
+  headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
 }
 
 /** 개체 참조 (그림/글상자 공용) */
@@ -485,11 +498,12 @@ export interface ObjectRef {
   sec: number;
   ppi: number;
   ci: number;
-  type: 'image' | 'shape' | 'equation' | 'group';
+  type: 'image' | 'shape' | 'equation' | 'group' | 'line';
   /** 표 셀 내 수식인 경우: 셀 인덱스 */
   cellIdx?: number;
   /** 표 셀 내 수식인 경우: 셀 내 문단 인덱스 */
   cellParaIdx?: number;
+  noteRef?: NoteControlRef;
 }
 
 /** WASM getShapeProperties() 반환 타입 */

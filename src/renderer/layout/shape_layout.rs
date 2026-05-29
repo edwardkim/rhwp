@@ -305,6 +305,7 @@ impl LayoutEngine {
                     control_index: Some(control_index),
                     cell_index: None,
                     cell_para_index: None,
+                    note_ref: None,
                 }),
                 BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
             );
@@ -2290,6 +2291,7 @@ impl LayoutEngine {
                                     control_index: Some(ctrl_idx_in_para),
                                     cell_index: None,
                                     cell_para_index: None,
+                                    note_ref: None,
                                 }),
                                 BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
                             );

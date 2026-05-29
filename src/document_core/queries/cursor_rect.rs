@@ -3514,17 +3514,11 @@ impl DocumentCore {
             bbox_h: f64,
         }
 
-        fn collect_runs(
-            node: &RenderNode,
-            footnote_index: usize,
-            runs: &mut Vec<FnRunInfo>,
-        ) {
+        fn collect_runs(node: &RenderNode, footnote_index: usize, runs: &mut Vec<FnRunInfo>) {
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
                 if tr.section_index == Some(footnote_index) {
                     if let (Some(marker_para), Some(cs)) = (tr.para_index, tr.char_start) {
-                        if marker_para >= (usize::MAX - 3000)
-                            && marker_para < (usize::MAX - 1000)
-                        {
+                        if marker_para >= (usize::MAX - 3000) && marker_para < (usize::MAX - 1000) {
                             let fn_para_idx = usize::MAX - 2000 - marker_para;
                             runs.push(FnRunInfo {
                                 fn_para_idx,
@@ -3546,9 +3540,7 @@ impl DocumentCore {
         }
 
         fn cmp_pos(a_para: usize, a_off: usize, b_para: usize, b_off: usize) -> std::cmp::Ordering {
-            a_para
-                .cmp(&b_para)
-                .then_with(|| a_off.cmp(&b_off))
+            a_para.cmp(&b_para).then_with(|| a_off.cmp(&b_off))
         }
 
         fn x_at(run: &FnRunInfo, char_offset: usize) -> f64 {

@@ -2381,6 +2381,7 @@ mod tests {
             control_index: Some(0),
             cell_index: None,
             cell_para_index: None,
+            note_ref: None,
         };
         let tree = PageLayerTree::new(
             64.0,
@@ -2427,6 +2428,7 @@ mod tests {
             control_index: Some(0),
             cell_index: None,
             cell_para_index: None,
+            note_ref: None,
         };
         let tree = PageLayerTree::new(
             64.0,
