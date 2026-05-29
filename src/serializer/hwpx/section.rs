@@ -258,6 +258,115 @@ pub(super) fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -
     }
 }
 
+/// CharShape 경계와 control 슬롯을 동시에 처리하여 run 목록을 반환한다.
+/// controls가 있고 다중 CharShape 경계가 텍스트 범위 안에 있을 때 table.rs에서 호출한다.
+pub(super) fn split_runs_charshapes_controls(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> Vec<(u32, String)> {
+    let slot_count = inferred_control_slot_count(para);
+    let slots: Vec<&Control> = if slot_count == para.controls.len() {
+        para.controls.iter().collect()
+    } else {
+        para.controls
+            .iter()
+            .filter(|c| is_hwpx_inline_slot(c))
+            .collect()
+    };
+
+    let mut sorted = para.char_shapes.clone();
+    sorted.sort_by_key(|s| s.start_pos);
+
+    let mut runs: Vec<(u32, String)> = Vec::new();
+    let mut current_cs = sorted.first().map(|s| s.char_shape_id).unwrap_or(0);
+    let mut text_buf = String::new();
+    let mut content = String::new();
+    let mut slot_idx = 0usize;
+    let mut expected_utf16_pos = 0u32;
+
+    for (idx, c) in para.text.chars().enumerate() {
+        let char_pos = para
+            .char_offsets
+            .get(idx)
+            .copied()
+            .unwrap_or(expected_utf16_pos);
+
+        // control 슬롯 처리 (이 문자 앞에 오는 control)
+        while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
+            flush_text_fragment(&mut content, &mut text_buf);
+            let ctrl_cs = shape_id_at(&sorted, expected_utf16_pos);
+            if ctrl_cs != current_cs {
+                if !content.is_empty() {
+                    runs.push((current_cs, std::mem::take(&mut content)));
+                }
+                current_cs = ctrl_cs;
+            }
+            render_control_slot(&mut content, slots[slot_idx], ctx);
+            slot_idx += 1;
+            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+        }
+
+        // CharShape 경계 처리
+        let new_cs = shape_id_at(&sorted, char_pos);
+        if new_cs != current_cs {
+            flush_text_fragment(&mut content, &mut text_buf);
+            if !content.is_empty() {
+                runs.push((current_cs, std::mem::take(&mut content)));
+            }
+            current_cs = new_cs;
+        }
+
+        // 문자 누적 (render_hp_t_content와 동일 규칙)
+        match c {
+            '\t' => {
+                flush_text_fragment(&mut content, &mut text_buf);
+                content.push_str(&format!(
+                    r#"<hp:tab width="{TAB_DEFAULT_WIDTH}" leader="0" type="1"/>"#
+                ));
+            }
+            '\n' => {
+                flush_text_fragment(&mut content, &mut text_buf);
+                content.push_str("<hp:lineBreak/>");
+            }
+            ch if (ch as u32) < 0x20 => {}
+            ch => text_buf.push(ch),
+        }
+
+        let width = char_utf16_width(c);
+        if char_pos >= expected_utf16_pos {
+            expected_utf16_pos = char_pos.saturating_add(width);
+        } else {
+            expected_utf16_pos = expected_utf16_pos.saturating_add(width);
+        }
+    }
+
+    // 남은 텍스트 및 trailing control 처리
+    flush_text_fragment(&mut content, &mut text_buf);
+    while slot_idx < slots.len() {
+        render_control_slot(&mut content, slots[slot_idx], ctx);
+        slot_idx += 1;
+    }
+    if !content.is_empty() {
+        runs.push((current_cs, content));
+    }
+    if runs.is_empty() {
+        runs.push((current_cs, render_hp_t_content("")));
+    }
+    runs
+}
+
+fn shape_id_at(sorted_shapes: &[crate::model::paragraph::CharShapeRef], pos: u32) -> u32 {
+    let mut result = sorted_shapes.first().map(|s| s.char_shape_id).unwrap_or(0);
+    for s in sorted_shapes {
+        if s.start_pos <= pos {
+            result = s.char_shape_id;
+        } else {
+            break;
+        }
+    }
+    result
+}
+
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
     let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
     let from_char_count = para.char_count.saturating_sub(1).saturating_sub(text_units) / 8;

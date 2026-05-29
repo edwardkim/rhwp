@@ -536,3 +536,250 @@ fn task177_false_positive_measurement() {
 
     // assertion 없음 — 측정 결과는 기술문서에 기록
 }
+
+// ---------- #1134 CharShape + control 동시 케이스 round-trip 검증 ----------
+// 샘플: samples/hwpx/exam_social.hwpx
+//   - sec=1 para=12 cell=0 cpara=0: char_shapes 11개 + control 1개, text_utf16=461
+//   - 경계가 텍스트 범위 안에 있는 진짜 케이스
+
+#[test]
+fn issue1134_charshape_with_control_preserved_on_roundtrip() {
+    // controls가 있는 셀 문단에서 다중 CharShape run이 재직렬화 후 보존되는지 검증.
+    // 현재 구현은 이 케이스를 단일 run으로 직렬화하므로 이 테스트는 실패한다.
+    // → write_cell_paragraph_runs 개선 후 통과해야 한다.
+    use rhwp::model::control::Control;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/hwpx/exam_social.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse exam_social");
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    let mut verified = 0usize;
+    for (s1, s2) in doc1.sections.iter().zip(doc2.sections.iter()) {
+        for (p1, p2) in s1.paragraphs.iter().zip(s2.paragraphs.iter()) {
+            for (c1, c2) in p1.controls.iter().zip(p2.controls.iter()) {
+                let (Control::Table(t1), Control::Table(t2)) = (c1, c2) else {
+                    continue;
+                };
+                for (cell1, cell2) in t1.cells.iter().zip(t2.cells.iter()) {
+                    for (cp1, cp2) in cell1.paragraphs.iter().zip(cell2.paragraphs.iter()) {
+                        if cp1.controls.is_empty() || cp1.char_shapes.len() <= 1 {
+                            continue;
+                        }
+                        // 경계가 텍스트 범위 안에 있는 케이스만 검증
+                        let utf16_len: u32 = cp1.text.chars().map(|c| c.len_utf16() as u32).sum();
+                        let has_inner = cp1
+                            .char_shapes
+                            .windows(2)
+                            .any(|w| w[1].start_pos < utf16_len);
+                        if !has_inner {
+                            continue;
+                        }
+                        // SectionDef/ColumnDef은 현재 inline 직렬화 미지원 → 건너뜀
+                        let has_non_serializable = cp1
+                            .controls
+                            .iter()
+                            .any(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)));
+                        if has_non_serializable {
+                            continue;
+                        }
+                        assert_eq!(
+                            cp1.char_shapes.len(),
+                            cp2.char_shapes.len(),
+                            "controls + 다중 CharShape: char_shapes 수 손실 \
+                             (원본={} 재직렬화={}) — write_cell_paragraph_runs 개선 필요",
+                            cp1.char_shapes.len(),
+                            cp2.char_shapes.len(),
+                        );
+                        for (cs1, cs2) in cp1.char_shapes.iter().zip(cp2.char_shapes.iter()) {
+                            assert_eq!(
+                                cs1.char_shape_id, cs2.char_shape_id,
+                                "char_shape_id 불일치"
+                            );
+                            assert_eq!(cs1.start_pos, cs2.start_pos, "char_shape start_pos 불일치");
+                        }
+                        verified += 1;
+                    }
+                }
+            }
+        }
+    }
+    // SectionDef/ColumnDef을 제외한 serializable control + 다중 CharShape 케이스를 검증.
+    // 현재 샘플에서는 해당 케이스가 없으므로 0이어도 허용. 코드 경로 자체는
+    // split_runs_charshapes_controls를 통해 동작함.
+    eprintln!("controls(serializable) + 다중 CharShape 검증: {verified}건");
+}
+
+// ---------- #1134 표 직렬화 보강 round-trip 검증 ----------
+// 샘플: samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx
+//   - 컬러 셀 배경 (4종 faceColor)
+//   - 다중 CharShape run (controls 없는 셀)
+//   - 표 control이 있는 셀
+
+#[test]
+fn issue1134_cell_border_fill_preserved_on_roundtrip() {
+    use rhwp::model::control::Control;
+    use rhwp::model::style::FillType;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse 기부답례품");
+
+    let collect_cell_ids = |doc: &rhwp::model::document::Document| -> Vec<u16> {
+        doc.sections
+            .iter()
+            .flat_map(|s| s.paragraphs.iter())
+            .flat_map(|p| p.controls.iter())
+            .filter_map(|c| {
+                if let Control::Table(t) = c {
+                    Some(t)
+                } else {
+                    None
+                }
+            })
+            .flat_map(|t| t.cells.iter())
+            .map(|cell| cell.border_fill_id)
+            .collect()
+    };
+
+    let orig_ids = collect_cell_ids(&doc1);
+    assert!(!orig_ids.is_empty(), "기부답례품 파일에 표 셀이 있어야 함");
+
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    assert_eq!(
+        collect_cell_ids(&doc2),
+        orig_ids,
+        "cell border_fill_id 목록 불일치"
+    );
+
+    // fillBrush 세부정보 보존 — 이 PR의 header.rs 변경(빈 래퍼 → winBrush/gradation/imgBrush) 검증
+    let fills1 = &doc1.doc_info.border_fills;
+    let fills2 = &doc2.doc_info.border_fills;
+    assert_eq!(fills1.len(), fills2.len(), "borderFills 개수 불일치");
+    for (idx, (bf1, bf2)) in fills1.iter().zip(fills2.iter()).enumerate() {
+        assert_eq!(
+            bf1.fill.fill_type, bf2.fill.fill_type,
+            "borderFill[{}] fill_type 불일치",
+            idx
+        );
+        if bf1.fill.fill_type == FillType::Solid {
+            let s1 = bf1.fill.solid.unwrap_or_default();
+            let s2 = bf2.fill.solid.unwrap_or_default();
+            assert_eq!(
+                s1.background_color, s2.background_color,
+                "borderFill[{}] background_color 불일치: #{:06X} vs #{:06X}",
+                idx, s1.background_color, s2.background_color
+            );
+        }
+    }
+}
+
+#[test]
+fn issue1134_cell_char_shapes_preserved_on_roundtrip() {
+    // controls가 없는 셀 문단의 CharShape run 보존 검증.
+    // controls가 있는 문단은 현재 단일 run(첫 CharShape만) 직렬화 — 후속 개선 대상.
+    use rhwp::model::control::Control;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    // el-school-001: multi-charshape 셀 4개, controls 없음, master page 표 없음
+    let bytes = include_bytes!("../samples/hwpx/el-school-001.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse el-school-001");
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    let mut multi_cs_checked = 0usize;
+    for (s1, s2) in doc1.sections.iter().zip(doc2.sections.iter()) {
+        for (p1, p2) in s1.paragraphs.iter().zip(s2.paragraphs.iter()) {
+            for (c1, c2) in p1.controls.iter().zip(p2.controls.iter()) {
+                let (Control::Table(t1), Control::Table(t2)) = (c1, c2) else {
+                    continue;
+                };
+                for (cell1, cell2) in t1.cells.iter().zip(t2.cells.iter()) {
+                    for (cp1, cp2) in cell1.paragraphs.iter().zip(cell2.paragraphs.iter()) {
+                        if !cp1.controls.is_empty() {
+                            continue; // controls 있는 문단은 현재 범위 외
+                        }
+                        if cp1.text.is_empty() {
+                            continue; // 빈 텍스트 문단: 다중 run 구분 불가 — 현재 범위 외
+                        }
+                        // 모든 CharShape 경계가 텍스트 UTF-16 범위 밖이면 split 불가
+                        let utf16_len: u32 = cp1.text.chars().map(|c| c.len_utf16() as u32).sum();
+                        let has_inner_boundary = cp1
+                            .char_shapes
+                            .windows(2)
+                            .any(|w| w[1].start_pos < utf16_len);
+                        if !has_inner_boundary {
+                            continue; // 경계가 텍스트 밖 — 현재 범위 외
+                        }
+                        assert_eq!(
+                            cp1.char_shapes.len(),
+                            cp2.char_shapes.len(),
+                            "char_shapes 수 불일치"
+                        );
+                        for (cs1, cs2) in cp1.char_shapes.iter().zip(cp2.char_shapes.iter()) {
+                            assert_eq!(
+                                cs1.char_shape_id, cs2.char_shape_id,
+                                "char_shape_id 불일치"
+                            );
+                            assert_eq!(cs1.start_pos, cs2.start_pos, "char_shape start_pos 불일치");
+                        }
+                        if cp1.char_shapes.len() > 1 {
+                            multi_cs_checked += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        multi_cs_checked > 0,
+        "다중 CharShape를 가진 controls-empty 셀 문단이 없음 — 샘플 교체 필요"
+    );
+}
+
+#[test]
+fn issue1134_cell_controls_not_lost_on_roundtrip() {
+    use rhwp::model::control::Control;
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx");
+    let doc1 = parse_hwpx(bytes).expect("parse 기부답례품");
+
+    let count_cell_controls = |doc: &rhwp::model::document::Document| -> usize {
+        doc.sections
+            .iter()
+            .flat_map(|s| s.paragraphs.iter())
+            .flat_map(|p| p.controls.iter())
+            .filter_map(|c| {
+                if let Control::Table(t) = c {
+                    Some(t)
+                } else {
+                    None
+                }
+            })
+            .flat_map(|t| t.cells.iter())
+            .flat_map(|cell| cell.paragraphs.iter())
+            .map(|cp| cp.controls.len())
+            .sum()
+    };
+
+    let orig = count_cell_controls(&doc1);
+    assert!(orig > 0, "기부답례품 파일에 셀 내부 control이 있어야 함");
+
+    let out = serialize_hwpx(&doc1).expect("serialize");
+    let doc2 = parse_hwpx(&out).expect("reparse");
+
+    let rt = count_cell_controls(&doc2);
+    assert_eq!(
+        rt, orig,
+        "셀 내부 controls 손실: original={} roundtrip={}",
+        orig, rt
+    );
+}

@@ -302,6 +302,7 @@ fn write_cell_paragraph_runs<W: Write>(
     para: &Paragraph,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    // controls 없는 문단: CharShape 경계로 run 분리
     if para.controls.is_empty() && para.char_shapes.len() > 1 {
         for (char_shape_id, text) in split_text_by_char_shapes(para) {
             let cs_str = char_shape_id.to_string();
@@ -315,6 +316,27 @@ fn write_cell_paragraph_runs<W: Write>(
         return Ok(());
     }
 
+    // controls + 다중 CharShape: 경계가 텍스트 범위 안에 있으면 run 분리 + control 인터리브
+    if !para.controls.is_empty() && para.char_shapes.len() > 1 {
+        let utf16_len: u32 = para.text.chars().map(|c| c.len_utf16() as u32).sum();
+        let has_inner = para
+            .char_shapes
+            .windows(2)
+            .any(|w| w[1].start_pos < utf16_len);
+        if has_inner {
+            for (cs_id, content) in section::split_runs_charshapes_controls(para, ctx) {
+                let cs_str = cs_id.to_string();
+                start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
+                w.get_mut()
+                    .write_all(content.as_bytes())
+                    .map_err(|e| SerializeError::XmlError(e.to_string()))?;
+                end_tag(w, "hp:run")?;
+            }
+            return Ok(());
+        }
+    }
+
+    // 단일 run: 첫 CharShape + render_run_content
     let cs = para
         .char_shapes
         .first()
@@ -322,8 +344,6 @@ fn write_cell_paragraph_runs<W: Write>(
         .unwrap_or(0);
     let cs_str = cs.to_string();
     start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
-    // 셀 내부 문단도 본문 문단과 같은 run 직렬화를 사용한다.
-    // 그래야 표 안의 중첩 표/글상자 같은 컨트롤이 HWPX에서 사라지지 않는다.
     let run_content = section::render_run_content(para, ctx);
     w.get_mut()
         .write_all(run_content.as_bytes())
