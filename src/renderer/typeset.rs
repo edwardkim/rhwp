@@ -216,6 +216,15 @@ fn para_has_visible_text_or_equation(para: &Paragraph) -> bool {
             .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
 }
 
+fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
+    para.text.trim().is_empty()
+        && para.controls.iter().any(|ctrl| match ctrl {
+            Control::Picture(pic) => pic.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            _ => false,
+        })
+}
+
 fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
     para.text.starts_with('\u{F03C5}')
         && para
@@ -1909,6 +1918,17 @@ impl TypesetEngine {
                                 &styles,
                                 Some(en_col_w),
                             );
+                            if compact_endnote_separator_profile
+                                && st.col_count > 1
+                                && st.current_items.is_empty()
+                                && st.current_height < -0.5
+                                && !para_is_treat_as_char_picture_only(en_para)
+                            {
+                                st.current_height = 0.0;
+                                st.current_start_height = 0.0;
+                                st.reset_vpos_cursor();
+                                prev_en_bottom_vpos = None;
+                            }
                             let available = st.available_height();
                             // [Task #1082] 다단 미주 누적/판정을 렌더 vpos 정규화와 정합.
                             // 렌더는 미주를 px(vpos − 단 첫아이템 vpos)에 배치하므로 단 used

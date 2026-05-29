@@ -1090,6 +1090,16 @@ export class WasmBridge {
     } catch { return null; }
   }
 
+  getParaPropertiesInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number): ParaProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getParaPropertiesInFootnote(sec, para, controlIdx, fnParaIdx));
+  }
+
+  applyParaFormatInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, propsJson: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).applyParaFormatInFootnote(sec, para, controlIdx, fnParaIdx, propsJson);
+  }
+
   moveLineEndpoint(sec: number, para: number, ci: number, sx: number, sy: number, ex: number, ey: number): void {
     if (!this.doc) return;
     (this.doc as any).moveLineEndpoint(sec, para, ci, sx, sy, ex, ey);
@@ -1160,6 +1170,11 @@ export class WasmBridge {
   getSelectionRectsInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number): SelectionRect[] {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getSelectionRectsInCell(sec, parentPara, controlIdx, cellIdx, startCellPara, startOffset, endCellPara, endOffset));
+  }
+
+  getSelectionRectsInFootnote(pageNum: number, footnoteIndex: number, startFnPara: number, startOffset: number, endFnPara: number, endOffset: number): SelectionRect[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getSelectionRectsInFootnote(pageNum, footnoteIndex, startFnPara, startOffset, endFnPara, endOffset));
   }
 
   deleteRange(sec: number, startPara: number, startOffset: number, endPara: number, endOffset: number): { ok: boolean; paraIdx: number; charOffset: number } {

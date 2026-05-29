@@ -14,6 +14,8 @@ export class CursorState {
 
   /** 선택 시작점 (anchor). null이면 선택 없음 */
   private anchor: DocumentPosition | null = null;
+  /** 각주/미주 내부 선택 시작점. 본문 anchor와 별도로 관리한다. */
+  private fnAnchor: { fnParaIdx: number; charOffset: number } | null = null;
 
   // ─── 머리말/꼬리말 편집 모드 ──────────────────────────────
   private _headerFooterMode: 'none' | 'header' | 'footer' = 'none';
@@ -68,7 +70,7 @@ export class CursorState {
 
   /** 선택 영역이 있는지 반환한다 */
   hasSelection(): boolean {
-    return this.anchor !== null;
+    return this.anchor !== null || this.fnAnchor !== null;
   }
 
   /** 선택 영역 (anchor → focus)을 반환한다 */
@@ -88,6 +90,48 @@ export class CursorState {
     }
   }
 
+  /** 각주/미주 내부 선택 영역을 반환한다. */
+  getFootnoteSelection(): {
+    anchor: { fnParaIdx: number; charOffset: number };
+    focus: { fnParaIdx: number; charOffset: number };
+    pageNum: number;
+    footnoteIndex: number;
+  } | null {
+    if (!this.fnAnchor) return null;
+    return {
+      anchor: { ...this.fnAnchor },
+      focus: { fnParaIdx: this._fnInnerParaIdx, charOffset: this._fnCharOffset },
+      pageNum: this._fnPageNum,
+      footnoteIndex: this._fnFootnoteIndex,
+    };
+  }
+
+  /** 각주/미주 내부 선택 영역을 start < end 순서로 반환한다. */
+  getFootnoteSelectionOrdered(): {
+    start: { fnParaIdx: number; charOffset: number };
+    end: { fnParaIdx: number; charOffset: number };
+    pageNum: number;
+    footnoteIndex: number;
+  } | null {
+    if (!this.fnAnchor) return null;
+    const focus = { fnParaIdx: this._fnInnerParaIdx, charOffset: this._fnCharOffset };
+    const cmp = CursorState.compareFootnotePositions(this.fnAnchor, focus);
+    if (cmp <= 0) {
+      return {
+        start: { ...this.fnAnchor },
+        end: focus,
+        pageNum: this._fnPageNum,
+        footnoteIndex: this._fnFootnoteIndex,
+      };
+    }
+    return {
+      start: focus,
+      end: { ...this.fnAnchor },
+      pageNum: this._fnPageNum,
+      footnoteIndex: this._fnFootnoteIndex,
+    };
+  }
+
   /** 현재 위치를 anchor로 설정 (선택 시작) */
   setAnchor(): void {
     if (!this.anchor) {
@@ -95,9 +139,29 @@ export class CursorState {
     }
   }
 
+  /** 현재 각주/미주 내부 위치를 anchor로 설정한다. */
+  setFnAnchor(): void {
+    if (!this.fnAnchor) {
+      this.fnAnchor = {
+        fnParaIdx: this._fnInnerParaIdx,
+        charOffset: this._fnCharOffset,
+      };
+    }
+  }
+
   /** 선택을 해제한다 */
   clearSelection(): void {
     this.anchor = null;
+    this.fnAnchor = null;
+  }
+
+  static compareFootnotePositions(
+    a: { fnParaIdx: number; charOffset: number },
+    b: { fnParaIdx: number; charOffset: number },
+  ): number {
+    if (a.fnParaIdx !== b.fnParaIdx) return a.fnParaIdx < b.fnParaIdx ? -1 : 1;
+    if (a.charOffset !== b.charOffset) return a.charOffset < b.charOffset ? -1 : 1;
+    return 0;
   }
 
   /** 두 DocumentPosition을 비교한다 (-1: a<b, 0: a==b, 1: a>b) */

@@ -3479,6 +3479,147 @@ impl DocumentCore {
         ))
     }
 
+    /// 각주/미주 내부 선택 영역의 줄별 사각형을 계산한다.
+    pub fn get_selection_rects_in_footnote_native(
+        &self,
+        page_num: u32,
+        footnote_index: usize,
+        start_fn_para_idx: usize,
+        start_char_offset: usize,
+        end_fn_para_idx: usize,
+        end_char_offset: usize,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        let tree = self.build_page_tree(page_num)?;
+        let Some(fn_node) = tree
+            .root
+            .children
+            .iter()
+            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea))
+        else {
+            return Ok("[]".to_string());
+        };
+
+        #[derive(Clone)]
+        struct FnRunInfo {
+            fn_para_idx: usize,
+            char_start: usize,
+            char_count: usize,
+            char_positions: Vec<f64>,
+            bbox_x: f64,
+            bbox_y: f64,
+            bbox_w: f64,
+            bbox_h: f64,
+        }
+
+        fn collect_runs(
+            node: &RenderNode,
+            footnote_index: usize,
+            runs: &mut Vec<FnRunInfo>,
+        ) {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if tr.section_index == Some(footnote_index) {
+                    if let (Some(marker_para), Some(cs)) = (tr.para_index, tr.char_start) {
+                        if marker_para >= (usize::MAX - 3000)
+                            && marker_para < (usize::MAX - 1000)
+                        {
+                            let fn_para_idx = usize::MAX - 2000 - marker_para;
+                            runs.push(FnRunInfo {
+                                fn_para_idx,
+                                char_start: cs,
+                                char_count: tr.text.chars().count(),
+                                char_positions: compute_char_positions(&tr.text, &tr.style),
+                                bbox_x: node.bbox.x,
+                                bbox_y: node.bbox.y,
+                                bbox_w: node.bbox.width,
+                                bbox_h: node.bbox.height,
+                            });
+                        }
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_runs(child, footnote_index, runs);
+            }
+        }
+
+        fn cmp_pos(a_para: usize, a_off: usize, b_para: usize, b_off: usize) -> std::cmp::Ordering {
+            a_para
+                .cmp(&b_para)
+                .then_with(|| a_off.cmp(&b_off))
+        }
+
+        fn x_at(run: &FnRunInfo, char_offset: usize) -> f64 {
+            if char_offset <= run.char_start {
+                return run.bbox_x;
+            }
+            let local_idx = char_offset - run.char_start;
+            if local_idx < run.char_positions.len() {
+                run.bbox_x + run.char_positions[local_idx]
+            } else {
+                run.bbox_x + run.bbox_w
+            }
+        }
+
+        let mut runs = Vec::new();
+        collect_runs(fn_node, footnote_index, &mut runs);
+        runs.sort_by(|a, b| {
+            a.fn_para_idx
+                .cmp(&b.fn_para_idx)
+                .then_with(|| {
+                    a.bbox_y
+                        .partial_cmp(&b.bbox_y)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+                .then_with(|| {
+                    a.bbox_x
+                        .partial_cmp(&b.bbox_x)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+        });
+
+        let mut rects = Vec::new();
+        for run in runs {
+            let run_start = (run.fn_para_idx, run.char_start);
+            let run_end = (run.fn_para_idx, run.char_start + run.char_count);
+
+            if cmp_pos(run_end.0, run_end.1, start_fn_para_idx, start_char_offset)
+                != std::cmp::Ordering::Greater
+                || cmp_pos(run_start.0, run_start.1, end_fn_para_idx, end_char_offset)
+                    != std::cmp::Ordering::Less
+            {
+                continue;
+            }
+
+            let sel_start = if run.fn_para_idx == start_fn_para_idx {
+                start_char_offset.max(run.char_start)
+            } else {
+                run.char_start
+            };
+            let sel_end = if run.fn_para_idx == end_fn_para_idx {
+                end_char_offset.min(run.char_start + run.char_count)
+            } else {
+                run.char_start + run.char_count
+            };
+
+            if sel_end <= sel_start {
+                continue;
+            }
+
+            let x1 = x_at(&run, sel_start);
+            let x2 = x_at(&run, sel_end);
+            let width = (x2 - x1).max(1.0);
+            rects.push(format!(
+                "{{\"pageIndex\":{},\"x\":{:.2},\"y\":{:.2},\"width\":{:.2},\"height\":{:.2}}}",
+                page_num, x1, run.bbox_y, width, run.bbox_h
+            ));
+        }
+
+        Ok(format!("[{}]", rects.join(",")))
+    }
+
     /// 각주 내 커서 위치 (커서 렉트) 계산
     ///
     /// 반환: JSON `{"pageIndex":N,"x":F,"y":F,"height":F}`

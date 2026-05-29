@@ -80,6 +80,31 @@ fn insert_before_para_text(parent: &mut RenderNode, para_index: usize, mut nodes
     }
 }
 
+fn page_item_is_treat_as_char_picture_only(
+    item: &PageItem,
+    paragraphs: &[Paragraph],
+) -> bool {
+    let para_index = match item {
+        PageItem::FullParagraph { para_index }
+        | PageItem::PartialParagraph { para_index, .. }
+        | PageItem::Table { para_index, .. }
+        | PageItem::PartialTable { para_index, .. }
+        | PageItem::Shape { para_index, .. } => *para_index,
+        PageItem::EndnoteSeparator { .. } => return false,
+    };
+    paragraphs
+        .get(para_index)
+        .map(|para| {
+            para.text.trim().is_empty()
+                && para.controls.iter().any(|ctrl| match ctrl {
+                    Control::Picture(pic) => pic.common.treat_as_char,
+                    Control::Shape(shape) => shape.common().treat_as_char,
+                    _ => false,
+                })
+        })
+        .unwrap_or(false)
+}
+
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 pub struct CellPathEntry {
@@ -2431,7 +2456,18 @@ impl LayoutEngine {
                 shape_reserved.push((pi, bottom_y));
             }
         }
-        let start_shift = col_content.start_height.min(0.0);
+        let allow_negative_visual_start = col_content.endnote_flow
+            && col_content.start_height < -0.5
+            && col_content
+                .items
+                .first()
+                .map(|item| page_item_is_treat_as_char_picture_only(item, paragraphs))
+                .unwrap_or(false);
+        let start_shift = if allow_negative_visual_start {
+            col_content.start_height.min(0.0)
+        } else {
+            0.0
+        };
         let visual_col_y = col_area.y + start_shift;
         let visual_col_height = col_area.height - start_shift;
         let mut y_offset = visual_col_y;
@@ -2671,13 +2707,33 @@ impl LayoutEngine {
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
                 y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
             } // !shape_jumped
+            let current_vpos_rewinds_from_prev = hcursor
+                .prev_layout_para
+                .and_then(|prev_pi| {
+                    let prev_first = paragraphs
+                        .get(prev_pi)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|seg| seg.vertical_pos)?;
+                    let curr_first = paragraphs
+                        .get(item_para)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|seg| seg.vertical_pos)?;
+                    Some(curr_first < prev_first)
+                })
+                .unwrap_or(false);
+
             if matches!(
                 item,
                 PageItem::PartialParagraph { start_line, .. } if *start_line > 0
-            ) {
+            ) || current_vpos_rewinds_from_prev
+            {
                 // 이어지는 partial paragraph는 이전 쪽/단에서 시작한 문단의 나머지다.
                 // 다음 항목과의 간격은 원본 절대 vpos 차이가 아니라 현재 쪽의 순차 y를
                 // 따라야 한다. 그렇지 않으면 3-09월 10쪽 첫 수식 뒤 문8)이 크게 밀린다.
+                //
+                // compact endnote 에서는 같은 쪽/단 안에서도 다음 미주 묶음이 낮은 vpos 로
+                // 되감기는 구간이 있다(3-09월 p17/p18). 되감긴 문단을 다음 문단의 기준으로
+                // 계속 쓰면 다음 줄이 위로 끌려가 겹치므로 여기서 vpos 기준을 끊는다.
                 hcursor.prev_layout_para = None;
                 hcursor.vpos_page_base = None;
                 hcursor.vpos_lazy_base = None;

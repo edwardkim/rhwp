@@ -21,6 +21,15 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{TextWrap, VertRelTo};
 
+fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
+    para.text.trim().is_empty()
+        && para.controls.iter().any(|ctrl| match ctrl {
+            Control::Picture(pic) => pic.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            _ => false,
+        })
+}
+
 pub(crate) struct HeightCursor {
     /// DPI (px/inch).
     pub dpi: f64,
@@ -230,21 +239,32 @@ impl HeightCursor {
             && seg.line_spacing > 1000
             && end_y > y_offset + 32.0
             && end_y < y_offset + 80.0;
+        let compact_endnote_tac_picture_gap = self.suppress_large_forward_jump
+            && !is_page_path
+            && end_y > y_offset
+            && end_y <= y_offset + 12.0
+            && (paragraphs
+                .get(prev_pi)
+                .map(para_is_treat_as_char_picture_only)
+                .unwrap_or(false)
+                || paragraphs
+                    .get(item_para)
+                    .map(para_is_treat_as_char_picture_only)
+                    .unwrap_or(false));
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
             let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
             eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} applied={}",
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} compact_tac_pic_gap={} applied={}",
                 path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, applied && !stale_forward && !compact_endnote_new_note_jump,
+                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, compact_endnote_tac_picture_gap, applied && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
             );
         }
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
-        if applied && compact_endnote_new_note_jump {
-            // Compact endnote flow encodes a large absolute vpos gap at the
-            // beginning of a new numbered endnote. When rendering suppresses
-            // that visual jump, carry the same delta into the vpos base so the
-            // following endnote lines do not reintroduce the suppressed gap.
+        if applied && (compact_endnote_new_note_jump || compact_endnote_tac_picture_gap) {
+            // Compact endnote flow encodes visual gaps in absolute vpos.
+            // Suppressed gaps must also move the vpos base, otherwise the next
+            // line restores the skipped gap.
             let suppressed_hu = ((end_y - y_offset) / self.dpi * 7200.0).round() as i32;
             if suppressed_hu > 0 {
                 if is_page_path {
@@ -254,7 +274,11 @@ impl HeightCursor {
                 }
             }
         }
-        if applied && !stale_forward && !compact_endnote_new_note_jump {
+        if applied
+            && !stale_forward
+            && !compact_endnote_new_note_jump
+            && !compact_endnote_tac_picture_gap
+        {
             end_y
         } else {
             y_offset
