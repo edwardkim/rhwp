@@ -2311,13 +2311,25 @@ impl TypesetEngine {
                 .map(|cm| matches!(cm.text_wrap, TextWrap::Square))
                 .unwrap_or(false)
         });
-        let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
-            comp.lines
-                .iter()
-                .map(|line| {
+        let has_treat_as_char_picture_shape = para.controls.iter().any(|c| {
+            matches!(
+                c,
+                Control::Picture(pic) if pic.common.treat_as_char
+            ) || matches!(
+                c,
+                Control::Shape(shape) if shape.common().treat_as_char
+            )
+        });
+        let (mut line_heights, mut line_spacings): (Vec<f64>, Vec<f64>) =
+            if let Some(comp) = composed {
+                let mut pairs = Vec::with_capacity(comp.lines.len());
+                let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
+                for line in &comp.lines {
                     let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
                     if has_picture_shape_square_wrap && runs_all_whitespace {
-                        return (0.0, 0.0);
+                        pairs.push((0.0, 0.0));
+                        prev_line_reserved_tac_picture_height = None;
+                        continue;
                     }
                     let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                     let max_fs = line
@@ -2331,6 +2343,40 @@ impl TypesetEngine {
                                 .unwrap_or(0.0)
                         })
                         .fold(0.0f64, f64::max);
+                    let tac_picture_height = para.controls.iter().find_map(|ctrl| {
+                        let height_hu = match ctrl {
+                            Control::Picture(pic) if pic.common.treat_as_char => {
+                                pic.common.height as i32
+                            }
+                            Control::Shape(shape) if shape.common().treat_as_char => {
+                                shape.common().height as i32
+                            }
+                            _ => return None,
+                        };
+                        let height = hwpunit_to_px(height_hu, self.dpi);
+                        if height > 8.0 && raw_lh + 4.0 >= height && raw_lh <= height + 8.0 {
+                            Some(height)
+                        } else {
+                            None
+                        }
+                    });
+                    let tac_picture_height = tac_picture_height.or_else(|| {
+                        (has_treat_as_char_picture_shape
+                            && !runs_all_whitespace
+                            && max_fs > 0.0
+                            && raw_lh > max_fs * 2.0)
+                            .then_some(raw_lh)
+                    });
+                    if runs_all_whitespace
+                        && tac_picture_height.is_none()
+                        && prev_line_reserved_tac_picture_height
+                            .map(|prev| (raw_lh - prev).abs() <= 8.0)
+                            .unwrap_or(false)
+                    {
+                        pairs.push((0.0, 0.0));
+                        prev_line_reserved_tac_picture_height = None;
+                        continue;
+                    }
                     let recompute_lh = max_fs > 0.0 && raw_lh < max_fs;
                     let (lh, line_spacing_px) = if recompute_lh {
                         // [Task #1042 Stage 6c] HWP3/HWP5 line_segs 의 (line_height=base,
@@ -2350,22 +2396,31 @@ impl TypesetEngine {
                     } else {
                         (raw_lh, hwpunit_to_px(line.line_spacing, self.dpi))
                     };
-                    (lh, line_spacing_px)
-                })
-                .unzip()
-        } else if !para.line_segs.is_empty() {
-            para.line_segs
-                .iter()
-                .map(|seg| {
-                    (
-                        hwpunit_to_px(seg.line_height, self.dpi),
-                        hwpunit_to_px(seg.line_spacing, self.dpi),
-                    )
-                })
-                .unzip()
-        } else {
-            (vec![hwpunit_to_px(400, self.dpi)], vec![0.0])
-        };
+                    pairs.push((lh, line_spacing_px));
+                    prev_line_reserved_tac_picture_height = tac_picture_height;
+                }
+                pairs.into_iter().unzip()
+            } else if !para.line_segs.is_empty() {
+                para.line_segs
+                    .iter()
+                    .map(|seg| {
+                        (
+                            hwpunit_to_px(seg.line_height, self.dpi),
+                            hwpunit_to_px(seg.line_spacing, self.dpi),
+                        )
+                    })
+                    .unzip()
+            } else {
+                (vec![hwpunit_to_px(400, self.dpi)], vec![0.0])
+            };
+        if has_treat_as_char_picture_shape
+            && line_heights.len() == 2
+            && line_heights[0] > 80.0
+            && (line_heights[0] - line_heights[1]).abs() <= 8.0
+        {
+            line_heights[1] = 0.0;
+            line_spacings[1] = 0.0;
+        }
 
         let lines_total: f64 = line_heights
             .iter()

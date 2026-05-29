@@ -65,6 +65,21 @@ fn tac_picture_or_shape_height_for_line(
     })
 }
 
+fn has_treat_as_char_picture_or_shape(para: Option<&Paragraph>) -> bool {
+    para.map(|para| {
+        para.controls.iter().any(|ctrl| {
+            matches!(
+                ctrl,
+                Control::Picture(pic) if pic.common.treat_as_char
+            ) || matches!(
+                ctrl,
+                Control::Shape(shape) if shape.common().treat_as_char
+            )
+        })
+    })
+    .unwrap_or(false)
+}
+
 fn tac_picture_label_extra_px(
     runs_all_whitespace: bool,
     raw_line_height: f64,
@@ -3857,6 +3872,13 @@ impl LayoutEngine {
             if !runs_all_whitespace && current_line_reserved_tac_picture_height.is_none() {
                 current_line_reserved_tac_picture_height =
                     tac_picture_or_shape_height_for_line(para, raw_lh, self.dpi);
+                if current_line_reserved_tac_picture_height.is_none()
+                    && has_treat_as_char_picture_or_shape(para)
+                    && max_fs > 0.0
+                    && raw_lh > max_fs * 2.0
+                {
+                    current_line_reserved_tac_picture_height = Some(raw_lh);
+                }
             }
             let tac_picture_label_extra = tac_picture_label_extra_px(
                 runs_all_whitespace,
