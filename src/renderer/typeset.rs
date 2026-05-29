@@ -1910,7 +1910,6 @@ impl TypesetEngine {
                                 Some(en_col_w),
                             );
                             let available = st.available_height();
-
                             // [Task #1082] 다단 미주 누적/판정을 렌더 vpos 정규화와 정합.
                             // 렌더는 미주를 px(vpos − 단 첫아이템 vpos)에 배치하므로 단 used
                             // = px(마지막 bottom_vpos − 첫 first_vpos). 종전(#1062)은 미주 para
@@ -2015,6 +2014,16 @@ impl TypesetEngine {
                             let dpi = self.dpi;
                             let h4f = fmt.height_for_fit;
                             let tot = fmt.total_height;
+                            let new_endnote_between_notes_px = if ep_idx == 0
+                                && emitted_endnote_count > 0
+                                && compact_endnote_separator_profile
+                            {
+                                endnote_shape
+                                    .map(endnote_between_notes_margin)
+                                    .map(|gap| hwpunit_to_px(gap as i32, dpi))
+                            } else {
+                                None
+                            };
                             let min_vpos_rewind_height = en_para
                                 .line_segs
                                 .first()
@@ -2044,8 +2053,14 @@ impl TypesetEngine {
                                             && !local_vpos_rewind
                                             && !large_vpos_jump_at_column_top
                                             && advance_px > h4f + 100.0;
+                                        let capped_new_endnote_advance =
+                                            new_endnote_between_notes_px
+                                                .map(|gap| h4f + gap)
+                                                .filter(|cap| advance_px > *cap + 12.0);
                                         let metric_advance_px = if compact_local_rewind {
                                             min_vpos_rewind_height
+                                        } else if let Some(cap) = capped_new_endnote_advance {
+                                            cap
                                         } else if stale_forward_vpos {
                                             h4f
                                         } else {

@@ -221,17 +221,40 @@ impl HeightCursor {
             (self.allow_vpos_rewind && vpos_rewind) || self.allow_start_height_backtrack,
             self.dpi,
         );
+        let compact_endnote_new_note_jump = self.suppress_large_forward_jump
+            && paragraphs
+                .get(item_para)
+                .map(|p| p.text.trim_start().starts_with('문'))
+                .unwrap_or(false)
+            && seg.line_height > 1500
+            && seg.line_spacing > 1000
+            && end_y > y_offset + 32.0
+            && end_y < y_offset + 80.0;
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
             let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
             eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} applied={}",
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} applied={}",
                 path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, applied && !stale_forward,
+                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, applied && !stale_forward && !compact_endnote_new_note_jump,
             );
         }
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
-        if applied && !stale_forward {
+        if applied && compact_endnote_new_note_jump {
+            // Compact endnote flow encodes a large absolute vpos gap at the
+            // beginning of a new numbered endnote. When rendering suppresses
+            // that visual jump, carry the same delta into the vpos base so the
+            // following endnote lines do not reintroduce the suppressed gap.
+            let suppressed_hu = ((end_y - y_offset) / self.dpi * 7200.0).round() as i32;
+            if suppressed_hu > 0 {
+                if is_page_path {
+                    self.vpos_page_base = Some(base + suppressed_hu);
+                } else {
+                    self.vpos_lazy_base = Some(base + suppressed_hu);
+                }
+            }
+        }
+        if applied && !stale_forward && !compact_endnote_new_note_jump {
             end_y
         } else {
             y_offset
