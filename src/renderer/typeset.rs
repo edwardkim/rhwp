@@ -1790,11 +1790,18 @@ impl TypesetEngine {
                             }
                             emitted_endnote_separator = true;
                         }
+                        let rewind_group_advance_threshold = if st.current_column + 1 < st.col_count
+                        {
+                            0.85
+                        } else {
+                            0.95
+                        };
                         if st.col_count > 1
                             && compact_endnote_separator_profile
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
-                            && st.current_height > st.available_height() * 0.85
+                            && st.current_height
+                                > st.available_height() * rewind_group_advance_threshold
                         {
                             let group_first = en_ctrl
                                 .paragraphs
@@ -2140,16 +2147,30 @@ impl TypesetEngine {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
+                            let new_endnote_advance_threshold =
+                                if st.current_column + 1 < st.col_count {
+                                    0.88
+                                } else {
+                                    0.95
+                                };
                             if st.col_count > 1
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
-                                && st.current_height > available * 0.88
+                                && st.current_height > available * new_endnote_advance_threshold
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
+                            let advance_after_new_endnote_anchor = st.col_count > 1
+                                && compact_endnote_separator_profile
+                                && ep_idx == 0
+                                && emitted_endnote_count > 0
+                                && st.current_column + 1 >= st.col_count
+                                && st.current_height > available * 0.88
+                                && st.current_height <= available * 0.95
+                                && !st.current_items.is_empty();
                             if move_internal_rewind_equation_to_next && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
@@ -2192,6 +2213,10 @@ impl TypesetEngine {
                                     }
                                 }
                                 st.current_height += en_advance;
+                            }
+                            if advance_after_new_endnote_anchor {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
                             }
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
                             if let Some(tb) = this_bottom_offset {

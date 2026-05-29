@@ -251,6 +251,24 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
 }
 
 #[test]
+fn issue_1139_page17_endnote_question30_starts_on_right_column() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page17 = doc.dump_page_items(Some(16));
+    let page18 = doc.dump_page_items(Some(17));
+
+    assert!(
+        page17.contains("FullParagraph[미주]  pi=928"),
+        "한컴오피스 기준 문30 첫 문단(pi=928)은 17쪽 우측 단 하단에서 시작해야 함\n{page17}"
+    );
+    assert!(
+        !page18.contains("FullParagraph[미주]  pi=928"),
+        "문30 첫 문단(pi=928)이 18쪽으로 이월되면 17쪽 하단 배치가 한컴 기준보다 일찍 끊김\n{page18}"
+    );
+}
+
+#[test]
 fn issue_1139_page9_endnote_table_does_not_overlap_header() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
