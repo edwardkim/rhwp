@@ -28,10 +28,12 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
+use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
 use super::context::SerializeContext;
+use super::section;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
 
@@ -243,11 +245,11 @@ fn write_sub_list<W: Write>(
         ],
     )?;
 
-    // 셀 내부 문단 재귀 — 각 문단은 간단한 <hp:p><hp:run><hp:t>텍스트</hp:t></hp:run></hp:p> 구조
+    // 셀 내부 문단 재귀.
     for (pi, para) in cell.paragraphs.iter().enumerate() {
         ctx.para_shape_ids.reference(para.para_shape_id);
         ctx.style_ids.reference(para.style_id as u16);
-        if let Some(cs_ref) = para.char_shapes.first() {
+        for cs_ref in &para.char_shapes {
             ctx.char_shape_ids.reference(cs_ref.char_shape_id);
         }
 
@@ -267,16 +269,7 @@ fn write_sub_list<W: Write>(
             ],
         )?;
 
-        let cs = para
-            .char_shapes
-            .first()
-            .map(|r| r.char_shape_id)
-            .unwrap_or(0);
-        let cs_str = cs.to_string();
-        start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
-        // 텍스트만 출력 (탭·소프트브레이크는 Stage 3 범위에서 제외 — section.rs 와 동일 방식으로 단순화)
-        write_cell_text(w, &para.text)?;
-        end_tag(w, "hp:run")?;
+        write_cell_paragraph_runs(w, para, ctx)?;
 
         // <hp:linesegarray> 최소 1개 lineseg
         start_tag(w, "hp:linesegarray")?;
@@ -304,18 +297,72 @@ fn write_sub_list<W: Write>(
     Ok(())
 }
 
-fn write_cell_text<W: Write>(w: &mut Writer<W>, text: &str) -> Result<(), SerializeError> {
-    use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-    // <hp:t>text</hp:t>
-    w.write_event(Event::Start(BytesStart::new("hp:t")))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    if !text.is_empty() {
-        w.write_event(Event::Text(BytesText::new(text)))
-            .map_err(|e| SerializeError::XmlError(e.to_string()))?;
+fn write_cell_paragraph_runs<W: Write>(
+    w: &mut Writer<W>,
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> Result<(), SerializeError> {
+    if para.controls.is_empty() && para.char_shapes.len() > 1 {
+        for (char_shape_id, text) in split_text_by_char_shapes(para) {
+            let cs_str = char_shape_id.to_string();
+            start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
+            let run_content = section::render_hp_t_content(&text);
+            w.get_mut()
+                .write_all(run_content.as_bytes())
+                .map_err(|e| SerializeError::XmlError(e.to_string()))?;
+            end_tag(w, "hp:run")?;
+        }
+        return Ok(());
     }
-    w.write_event(Event::End(BytesEnd::new("hp:t")))
+
+    let cs = para
+        .char_shapes
+        .first()
+        .map(|r| r.char_shape_id)
+        .unwrap_or(0);
+    let cs_str = cs.to_string();
+    start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
+    // 셀 내부 문단도 본문 문단과 같은 run 직렬화를 사용한다.
+    // 그래야 표 안의 중첩 표/글상자 같은 컨트롤이 HWPX에서 사라지지 않는다.
+    let run_content = section::render_run_content(para, ctx);
+    w.get_mut()
+        .write_all(run_content.as_bytes())
         .map_err(|e| SerializeError::XmlError(e.to_string()))?;
+    end_tag(w, "hp:run")?;
     Ok(())
+}
+
+fn split_text_by_char_shapes(para: &Paragraph) -> Vec<(u32, String)> {
+    let mut shapes = para.char_shapes.clone();
+    shapes.sort_by_key(|shape| shape.start_pos);
+
+    let mut runs: Vec<(u32, String)> = Vec::new();
+    let mut shape_idx = 0usize;
+    let mut active = shapes.first().map(|shape| shape.char_shape_id).unwrap_or(0);
+    let mut expected_utf16_pos = 0u32;
+
+    for (idx, ch) in para.text.chars().enumerate() {
+        let pos = para
+            .char_offsets
+            .get(idx)
+            .copied()
+            .unwrap_or(expected_utf16_pos);
+        while shape_idx + 1 < shapes.len() && shapes[shape_idx + 1].start_pos <= pos {
+            shape_idx += 1;
+            active = shapes[shape_idx].char_shape_id;
+        }
+
+        match runs.last_mut() {
+            Some((last_shape, text)) if *last_shape == active => text.push(ch),
+            _ => runs.push((active, ch.to_string())),
+        }
+        expected_utf16_pos = pos.saturating_add(ch.len_utf16() as u32);
+    }
+
+    if runs.is_empty() {
+        runs.push((active, String::new()));
+    }
+    runs
 }
 
 fn write_cell_addr<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), SerializeError> {
@@ -384,7 +431,7 @@ fn table_page_break_str(pb: TablePageBreak) -> &'static str {
     match pb {
         None => "NONE",
         CellBreak => "CELL",
-        RowBreak => "TABLE",
+        RowBreak => "ROW",
     }
 }
 
@@ -442,7 +489,7 @@ fn cell_vert_align_str(v: VerticalAlign) -> &'static str {
 mod tests {
     use super::*;
     use crate::model::document::Document;
-    use crate::model::paragraph::Paragraph;
+    use crate::model::paragraph::{CharShapeRef, Paragraph};
     use crate::model::table::{Cell, Table};
     use crate::serializer::hwpx::context::SerializeContext;
 
@@ -551,5 +598,34 @@ mod tests {
         write_table(&mut w, &t, &mut ctx).unwrap();
         // 99 는 등록되지 않은 borderFill → unresolved
         assert!(ctx.border_fill_ids.unresolved().contains(&99u16));
+    }
+
+    #[test]
+    fn row_break_serializes_as_row() {
+        let mut t = empty_table(1, 1);
+        t.page_break = TablePageBreak::RowBreak;
+        let xml = serialize(&t);
+        assert!(xml.contains(r#"pageBreak="ROW""#));
+    }
+
+    #[test]
+    fn cell_paragraph_preserves_char_shape_runs() {
+        let mut t = empty_table(1, 1);
+        t.cells[0].paragraphs[0].text = "abcd".to_string();
+        t.cells[0].paragraphs[0].char_offsets = vec![0, 1, 2, 3];
+        t.cells[0].paragraphs[0].char_shapes = vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 1,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 2,
+            },
+        ];
+
+        let xml = serialize(&t);
+        assert!(xml.contains(r#"<hp:run charPrIDRef="1"><hp:t>ab</hp:t></hp:run>"#));
+        assert!(xml.contains(r#"<hp:run charPrIDRef="2"><hp:t>cd</hp:t></hp:run>"#));
     }
 }

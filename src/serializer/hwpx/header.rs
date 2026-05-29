@@ -17,8 +17,9 @@ use quick_xml::Writer;
 
 use crate::model::document::{DocInfo, DocProperties, Document};
 use crate::model::style::{
-    Alignment, BorderFill, BorderLine, BorderLineType, CharShape, DiagonalLine, FillType, Font,
-    HeadType, LineSpacingType, Numbering, ParaShape, Style, TabDef,
+    Alignment, BorderFill, BorderLine, BorderLineType, CharShape, DiagonalLine, Fill, FillType,
+    Font, GradientFill, HeadType, ImageFill, ImageFillMode, LineSpacingType, Numbering, ParaShape,
+    SolidFill, Style, TabDef,
 };
 use crate::model::ColorRef;
 
@@ -174,7 +175,6 @@ fn write_border_fills<W: Write>(
     doc_info: &DocInfo,
     ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
-    let _ = ctx;
     if doc_info.border_fills.is_empty() {
         return Ok(());
     }
@@ -186,7 +186,7 @@ fn write_border_fills<W: Write>(
     // HWPX borderFill의 id는 1부터 시작 (관찰값: ref_empty.hwpx).
     // 그러나 rhwp parser는 인덱스 기반으로 저장하므로 id는 배열 인덱스 그대로 사용.
     for (idx, bf) in doc_info.border_fills.iter().enumerate() {
-        write_border_fill(w, idx as u16, bf)?;
+        write_border_fill(w, idx as u16, bf, ctx)?;
     }
     end_tag(w, "hh:borderFills")?;
     Ok(())
@@ -196,6 +196,7 @@ fn write_border_fill<W: Write>(
     w: &mut Writer<W>,
     id: u16,
     bf: &BorderFill,
+    ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
     // 속성 순서 (BorderFillType.cpp:64-68): id, threeD, shadow, centerLine, breakCellSeparateLine
     start_tag_attrs(
@@ -220,16 +221,195 @@ fn write_border_fill<W: Write>(
     write_border_line(w, "hh:bottomBorder", &bf.borders[3])?;
     write_diagonal(w, &bf.diagonal)?;
 
-    // fillBrush: Fill이 존재할 때만
-    if !matches!(bf.fill.fill_type, FillType::None) {
-        start_tag(w, "hc:fillBrush")?;
-        // Stage 1에서는 Fill 내부를 완전 직렬화하지 않고 빈 래퍼만 출력.
-        // (한컴 관찰: ref_empty의 borderFill id=2 에 빈 fillBrush 존재)
-        end_tag(w, "hc:fillBrush")?;
-    }
+    write_fill_brush(w, &bf.fill, ctx)?;
 
     end_tag(w, "hh:borderFill")?;
     Ok(())
+}
+
+fn write_fill_brush<W: Write>(
+    w: &mut Writer<W>,
+    fill: &Fill,
+    ctx: &SerializeContext,
+) -> Result<(), SerializeError> {
+    match fill.fill_type {
+        FillType::None => Ok(()),
+        FillType::Solid => {
+            start_tag(w, "hc:fillBrush")?;
+            write_win_brush(w, fill.solid.unwrap_or_default(), fill.alpha)?;
+            end_tag(w, "hc:fillBrush")
+        }
+        FillType::Gradient => {
+            start_tag(w, "hc:fillBrush")?;
+            write_gradation(w, fill.gradient.as_ref())?;
+            end_tag(w, "hc:fillBrush")
+        }
+        FillType::Image => {
+            start_tag(w, "hc:fillBrush")?;
+            write_img_brush(w, fill.image.as_ref(), ctx, fill.alpha)?;
+            end_tag(w, "hc:fillBrush")
+        }
+    }
+}
+
+fn write_win_brush<W: Write>(
+    w: &mut Writer<W>,
+    solid: SolidFill,
+    alpha: u8,
+) -> Result<(), SerializeError> {
+    let face_color = color_hex(solid.background_color);
+    let hatch_color = color_hex(solid.pattern_color);
+    let alpha_s = alpha_to_hwpx(alpha);
+    if solid.pattern_type >= 0 {
+        empty_tag(
+            w,
+            "hc:winBrush",
+            &[
+                ("faceColor", &face_color),
+                ("hatchColor", &hatch_color),
+                ("hatchStyle", hatch_style_str(solid.pattern_type)),
+                ("alpha", &alpha_s),
+            ],
+        )
+    } else {
+        empty_tag(
+            w,
+            "hc:winBrush",
+            &[
+                ("faceColor", &face_color),
+                ("hatchColor", &hatch_color),
+                ("alpha", &alpha_s),
+            ],
+        )
+    }
+}
+
+fn write_gradation<W: Write>(
+    w: &mut Writer<W>,
+    gradient: Option<&GradientFill>,
+) -> Result<(), SerializeError> {
+    let Some(gradient) = gradient else {
+        return Ok(());
+    };
+    let angle = gradient.angle.to_string();
+    let center_x = gradient.center_x.to_string();
+    let center_y = gradient.center_y.to_string();
+    let step = gradient.blur.to_string();
+    let color_num = gradient.colors.len().to_string();
+    start_tag_attrs(
+        w,
+        "hc:gradation",
+        &[
+            ("type", gradation_type_str(gradient.gradient_type)),
+            ("angle", &angle),
+            ("centerX", &center_x),
+            ("centerY", &center_y),
+            ("step", &step),
+            ("colorNum", &color_num),
+        ],
+    )?;
+    for color in &gradient.colors {
+        empty_tag(w, "hc:color", &[("value", &color_hex(*color))])?;
+    }
+    end_tag(w, "hc:gradation")
+}
+
+fn write_img_brush<W: Write>(
+    w: &mut Writer<W>,
+    image: Option<&ImageFill>,
+    ctx: &SerializeContext,
+    alpha: u8,
+) -> Result<(), SerializeError> {
+    let Some(image) = image else {
+        return Ok(());
+    };
+    let manifest_id = ctx.resolve_bin_id(image.bin_data_id).ok_or_else(|| {
+        SerializeError::XmlError(format!(
+            "<hc:imgBrush> binaryItemIDRef 미등록 bin_data_id={} (BinDataContent 누락)",
+            image.bin_data_id
+        ))
+    })?;
+    let bright = image.brightness.to_string();
+    let contrast = image.contrast.to_string();
+    let alpha_s = alpha_to_hwpx(alpha);
+    start_tag_attrs(
+        w,
+        "hc:imgBrush",
+        &[("mode", image_fill_mode_str(image.fill_mode))],
+    )?;
+    empty_tag(
+        w,
+        "hc:img",
+        &[
+            ("binaryItemIDRef", manifest_id),
+            ("bright", &bright),
+            ("contrast", &contrast),
+            ("effect", image_fill_effect_str(image.effect)),
+            ("alpha", &alpha_s),
+        ],
+    )?;
+    end_tag(w, "hc:imgBrush")
+}
+
+fn alpha_to_hwpx(alpha: u8) -> String {
+    if alpha == 0 {
+        "1".to_string()
+    } else if alpha == 255 {
+        "0".to_string()
+    } else {
+        format!("{:.3}", 1.0 - f64::from(alpha) / 255.0)
+    }
+}
+
+fn hatch_style_str(pattern_type: i32) -> &'static str {
+    match pattern_type {
+        1 => "HORIZONTAL",
+        2 => "VERTICAL",
+        3 => "BACK_SLASH",
+        4 => "SLASH",
+        5 => "CROSS",
+        6 => "CROSS_DIAGONAL",
+        _ => "NONE",
+    }
+}
+
+fn gradation_type_str(gradient_type: i16) -> &'static str {
+    match gradient_type {
+        1 => "LINEAR",
+        2 => "RADIAL",
+        3 => "CONICAL",
+        4 => "SQUARE",
+        _ => "LINEAR",
+    }
+}
+
+fn image_fill_mode_str(mode: ImageFillMode) -> &'static str {
+    match mode {
+        ImageFillMode::TileAll => "TILE",
+        ImageFillMode::TileHorzTop => "TILE_HORZ_TOP",
+        ImageFillMode::TileHorzBottom => "TILE_HORZ_BOTTOM",
+        ImageFillMode::TileVertLeft => "TILE_VERT_LEFT",
+        ImageFillMode::TileVertRight => "TILE_VERT_RIGHT",
+        ImageFillMode::FitToSize => "TOTAL",
+        ImageFillMode::Center => "CENTER",
+        ImageFillMode::CenterTop => "CENTER_TOP",
+        ImageFillMode::CenterBottom => "CENTER_BOTTOM",
+        ImageFillMode::LeftCenter => "LEFT_CENTER",
+        ImageFillMode::LeftTop => "TOP_LEFT_ALIGN",
+        ImageFillMode::LeftBottom => "LEFT_BOTTOM",
+        ImageFillMode::RightCenter => "RIGHT_CENTER",
+        ImageFillMode::RightTop => "RIGHT_TOP",
+        ImageFillMode::RightBottom => "RIGHT_BOTTOM",
+        ImageFillMode::None => "NONE",
+    }
+}
+
+fn image_fill_effect_str(effect: u8) -> &'static str {
+    match effect {
+        1 => "GRAY_SCALE",
+        2 => "BLACK_WHITE",
+        _ => "REAL_PIC",
+    }
 }
 
 fn write_diag_line<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
@@ -981,5 +1161,43 @@ mod tests {
         let sm = snippet.find("symMark=").unwrap();
         let bf = snippet.find("borderFillIDRef=").unwrap();
         assert!(ip < hp && hp < tc && tc < sc && sc < uf && uf < uk && uk < sm && sm < bf);
+    }
+
+    #[test]
+    fn border_fill_solid_fill_brush_is_serialized() {
+        let mut doc = Document::default();
+        let mut border_fill = BorderFill::default();
+        border_fill.fill.fill_type = FillType::Solid;
+        border_fill.fill.solid = Some(SolidFill {
+            background_color: 0x0000_00FF,
+            pattern_color: 0x0000_FF00,
+            pattern_type: 1,
+        });
+        border_fill.fill.alpha = 255;
+        doc.doc_info.border_fills.push(border_fill);
+
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_header(&doc, &ctx).unwrap()).unwrap();
+        assert!(xml.contains("<hc:fillBrush>"));
+        assert!(xml.contains(
+            r##"<hc:winBrush faceColor="#FF0000" hatchColor="#00FF00" hatchStyle="HORIZONTAL" alpha="0"/>"##
+        ));
+    }
+
+    #[test]
+    fn fill_helpers_match_hwpx_values() {
+        assert_eq!(hatch_style_str(-1), "NONE");
+        assert_eq!(hatch_style_str(1), "HORIZONTAL");
+        assert_eq!(hatch_style_str(2), "VERTICAL");
+        assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
+
+        assert_eq!(alpha_to_hwpx(0), "1");
+        assert_eq!(alpha_to_hwpx(255), "0");
+        assert_eq!(alpha_to_hwpx(128), "0.498");
+
+        assert_eq!(image_fill_mode_str(ImageFillMode::FitToSize), "TOTAL");
+        assert_eq!(image_fill_effect_str(0), "REAL_PIC");
+        assert_eq!(image_fill_effect_str(1), "GRAY_SCALE");
+        assert_eq!(image_fill_effect_str(2), "BLACK_WHITE");
     }
 }

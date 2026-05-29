@@ -169,7 +169,7 @@ fn render_paragraph_parts_for_text(text: &str, vert_start: u32) -> (String, Stri
 }
 
 /// `<hp:t>...</hp:t>` 본문 생성 — 탭/소프트브레이크/XML escape 포함.
-fn render_hp_t_content(text: &str) -> String {
+pub(super) fn render_hp_t_content(text: &str) -> String {
     let mut t_xml = String::from("<hp:t>");
     let mut buf = String::new();
     for c in text.chars() {
@@ -195,7 +195,7 @@ fn render_hp_t_content(text: &str) -> String {
 }
 
 /// Paragraph의 본문 run 콘텐츠를 `<hp:t>`와 인라인 컨트롤 XML로 직렬화한다.
-fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
+pub(super) fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let slot_count = inferred_control_slot_count(para);
     let slots: Vec<&Control> = if slot_count == para.controls.len() {
         para.controls.iter().collect()
