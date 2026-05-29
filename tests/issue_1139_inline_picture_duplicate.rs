@@ -263,8 +263,20 @@ fn issue_1139_page17_endnote_question30_starts_on_right_column() {
         "한컴오피스 기준 문30 첫 문단(pi=928)은 17쪽 우측 단 하단에서 시작해야 함\n{page17}"
     );
     assert!(
-        !page18.contains("FullParagraph[미주]  pi=928"),
-        "문30 첫 문단(pi=928)이 18쪽으로 이월되면 17쪽 하단 배치가 한컴 기준보다 일찍 끊김\n{page18}"
+        page17.contains("FullParagraph[미주]  pi=929")
+            && page17.contains("FullParagraph[미주]  pi=930"),
+        "한컴오피스 기준 17쪽 우측 단에는 문30 풀이 본문 일부(pi=929, pi=930)도 이어져야 함\n{page17}"
+    );
+    assert!(
+        !page18.contains("FullParagraph[미주]  pi=928")
+            && !page18.contains("FullParagraph[미주]  pi=929")
+            && !page18.contains("FullParagraph[미주]  pi=930"),
+        "문30 앞부분(pi=928..930)이 18쪽으로 이월되면 17쪽 하단 배치가 한컴 기준보다 일찍 끊김\n{page18}"
+    );
+    assert!(
+        page18.contains("FullParagraph[미주]  pi=931")
+            && !page18.contains("PartialParagraph  pi=931"),
+        "17쪽 하단에서 계산된 내부 VPOS split이 18쪽 첫 단에 stale 적용되면 안 됨\n{page18}"
     );
 }
 

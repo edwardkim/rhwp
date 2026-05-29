@@ -1937,6 +1937,7 @@ impl TypesetEngine {
                                 && st.col_count > 1
                                 && st.current_items.is_empty()
                                 && st.current_height < -0.5
+                                && ep_idx == 0
                                 && !para_is_treat_as_char_picture_only(en_para)
                             {
                                 st.current_height = 0.0;
@@ -2019,7 +2020,7 @@ impl TypesetEngine {
                                 .line_segs
                                 .windows(2)
                                 .any(|w| w[1].vertical_pos < w[0].vertical_pos);
-                            let internal_rewind_split = if compact_endnote_separator_profile
+                            let mut internal_rewind_split = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && st.current_height > available * 0.75
                                 && para_has_visible_text_or_equation(en_para)
@@ -2140,12 +2141,27 @@ impl TypesetEngine {
                             } else {
                                 None
                             };
+                            let default_between_notes_gap = endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false);
+                            // 3-09월_교육_통합_2022.hwp 한컴 기준:
+                            // 기본 미주 사이 7mm의 문30은 첫 줄 뒤 풀이 본문 일부가
+                            // 같은 17쪽 우측 단에 이어진다. 20mm 변형 파일은 기존처럼
+                            // anchor 직후 넘김을 유지해야 24쪽 분기와 맞는다.
+                            let allow_default_question30_tail =
+                                default_between_notes_gap && en_ref.number == 30;
                             if st.current_height + en_fit > available
                                 && split_endnote_to_fit.is_none()
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
+                                if allow_default_question30_tail {
+                                    internal_rewind_split = None;
+                                }
                             }
                             let new_endnote_advance_threshold =
                                 if st.current_column + 1 < st.col_count {
@@ -2163,7 +2179,8 @@ impl TypesetEngine {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
-                            let advance_after_new_endnote_anchor = st.col_count > 1
+                            let advance_after_new_endnote_anchor = !allow_default_question30_tail
+                                && st.col_count > 1
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
