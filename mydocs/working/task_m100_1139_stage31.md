@@ -90,3 +90,4 @@ insert.ts:137 [footnote] result: {ok: true, paraIdx: 0, controlIdx: 3, footnoteN
   - 로컬 Chrome headless DOM 검증: `미주` 클릭 후 주석 도구상자 표시, `121212` 입력, `닫기` 클릭 후 주석 모드 종료 확인
 - 2026-05-30: Stage31 변경분을 커밋했고, 내부 절차에 따라 PR 생성은 작업지시자 승인 대기 상태로 둔다.
 - 2026-05-30: 작업지시자 승인 후 PR #1178을 생성했다. URL: `https://github.com/edwardkim/rhwp/pull/1178`
+- 2026-05-30: 작업지시자 피드백에 따라 PR 본문에 미주 처리 제한 사항을 보강했다. 현재 미주 구현은 일반 완성 기능이 아니며, 정상 처리 확인 범위는 두 개 시험문제 케이스로 제한된다.
