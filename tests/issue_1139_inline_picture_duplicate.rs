@@ -113,6 +113,21 @@ fn find_table_bbox(
         .find_map(|child| find_table_bbox(child, para_index, control_index))
 }
 
+fn find_image_bbox(
+    node: &RenderNode,
+    para_index: usize,
+    control_index: usize,
+) -> Option<BoundingBox> {
+    if let RenderNodeType::Image(image) = &node.node_type {
+        if image.para_index == Some(para_index) && image.control_index == Some(control_index) {
+            return Some(node.bbox.clone());
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_image_bbox(child, para_index, control_index))
+}
+
 fn count_table_nodes(node: &RenderNode, para_index: usize, control_index: usize) -> usize {
     let own = match &node.node_type {
         RenderNodeType::Table(table)
@@ -453,6 +468,46 @@ fn issue_1139_page19_question29_starts_on_right_column() {
 }
 
 #[test]
+fn issue_1139_page20_starts_after_question29_tail() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page19 = doc.dump_page_items(Some(18));
+    let page20 = doc.dump_page_items(Some(19));
+
+    assert!(
+        page19.contains("FullParagraph[미주]  pi=1020")
+            && page19.contains("FullParagraph[미주]  pi=1021"),
+        "PDF 기준 19쪽 오른쪽 단 하단에는 문29 풀이의 마지막 계산과 설명(pi=1020/1021)이 남아야 함\n{page19}"
+    );
+    assert!(
+        !page20.contains("FullParagraph[미주]  pi=1020")
+            && !page20.contains("FullParagraph[미주]  pi=1021"),
+        "pi=1020/1021이 20쪽으로 밀리면 20쪽 시작이 PDF 기준보다 앞당겨짐\n{page20}"
+    );
+    assert!(
+        page20.contains("FullParagraph[미주]  pi=1022")
+            && page20.contains("FullParagraph[미주]  pi=1087"),
+        "20쪽은 PDF 기준처럼 g'(2) 계산 이후부터 시작해 문27 제목까지 이어져야 함\n{page20}"
+    );
+}
+
+#[test]
+fn issue_1139_page23_split_endnote_empty_line_picture_is_rendered() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(22).expect("page 23 render tree");
+
+    let picture = find_image_bbox(&tree.root, 1175, 20)
+        .expect("문30) pi=1175 line 10 빈 줄 TAC Picture가 23쪽에 렌더되어야 함");
+
+    assert!(
+        picture.y < 140.0 && picture.width > 250.0 && picture.height > 220.0,
+        "PDF 기준 23쪽 상단 그래프가 빠지거나 뒤쪽에 밀리면 안 됨: {picture:?}"
+    );
+}
+
+#[test]
 fn issue_1139_page22_question29_intro_moves_to_previous_page() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
@@ -478,6 +533,10 @@ fn issue_1139_page22_question29_intro_moves_to_previous_page() {
         page22.contains("Table          pi=1169 ci=0"),
         "한컴오피스 기준 문30 그래프 표(pi=1169)는 22쪽 우측 단에 렌더되어야 함\n{page22}"
     );
+    assert!(
+        page22.contains("PartialParagraph  pi=1175  lines=0..10"),
+        "PDF 기준 22쪽 끝에는 문30 (i) 풀이의 마지막 텍스트 줄까지 남아야 함\n{page22}"
+    );
 
     let tree = doc.build_page_render_tree(21).expect("page 22 render tree");
     let graph_table = find_table_bbox(&tree.root, 1169, 0).expect("문30 그래프 표");
@@ -485,6 +544,30 @@ fn issue_1139_page22_question29_intro_moves_to_previous_page() {
         graph_table.width > 200.0 && graph_table.height > 170.0,
         "문30 그래프 표 bbox가 너무 작거나 누락됨: {:?}",
         graph_table
+    );
+}
+
+#[test]
+fn issue_1139_page23_question30_picture_line_is_rendered() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page23 = doc.dump_page_items(Some(22));
+    assert!(
+        page23.contains("PartialParagraph  pi=1175  lines=10..13"),
+        "PDF 기준 23쪽은 문30 (ii) 그림 줄부터 시작해야 함\n{page23}"
+    );
+
+    let tree = doc.build_page_render_tree(22).expect("page 23 render tree");
+    assert!(
+        !render_tree_contains_text(&tree.root, "호이다"),
+        "문30 (i)의 마지막 텍스트 줄은 22쪽에 남고 23쪽 첫머리에 반복되면 안 됨"
+    );
+    let picture = find_image_bbox(&tree.root, 1175, 20).expect("문30 (ii) 시작 그림");
+    assert!(
+        picture.width > 250.0 && picture.height > 220.0 && picture.y < 160.0,
+        "23쪽 시작 그림 bbox가 PDF 기준 위치/크기에서 벗어남: {:?}",
+        picture
     );
 }
 

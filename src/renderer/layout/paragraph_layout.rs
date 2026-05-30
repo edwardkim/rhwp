@@ -65,6 +65,104 @@ fn tac_picture_or_shape_height_for_line(
     })
 }
 
+fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
+    if let Some(next) = comp.lines.get(line_idx + 1) {
+        return next.char_start;
+    }
+    let Some(line) = comp.lines.get(line_idx) else {
+        return 0;
+    };
+    line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>()
+        + usize::from(line.has_line_break)
+}
+
+fn char_pos_in_line(pos: usize, start: usize, end: usize) -> bool {
+    if end > start {
+        pos >= start && pos < end
+    } else {
+        pos == start
+    }
+}
+
+fn tac_offsets_for_line(
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+) -> Vec<(usize, f64, usize)> {
+    let Some(line) = comp.lines.get(line_idx) else {
+        return Vec::new();
+    };
+    let start = line.char_start;
+    let end = composed_line_char_end(comp, line_idx);
+    tac_offsets_px
+        .iter()
+        .copied()
+        .filter(|(pos, _, _)| char_pos_in_line(*pos, start, end))
+        .collect()
+}
+
+fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
+    let height_hu = match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
+        Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
+        _ => return None,
+    };
+    Some(hwpunit_to_px(height_hu, dpi))
+}
+
+fn line_tac_picture_or_shape_height(
+    para: Option<&Paragraph>,
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+    dpi: f64,
+) -> Option<f64> {
+    let para = para?;
+    tac_offsets_for_line(comp, tac_offsets_px, line_idx)
+        .iter()
+        .find_map(|(_, _, ci)| {
+            para.controls
+                .get(*ci)
+                .and_then(|ctrl| tac_picture_or_shape_height_px(ctrl, dpi))
+        })
+}
+
+fn text_line_is_picture_lead_in(
+    para: Option<&Paragraph>,
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+    raw_lh: f64,
+    max_fs: f64,
+    dpi: f64,
+) -> bool {
+    if max_fs <= 0.0 || raw_lh <= max_fs * 2.0 {
+        return false;
+    }
+    let Some(line) = comp.lines.get(line_idx) else {
+        return false;
+    };
+    if line.runs.iter().all(|run| run.text.trim().is_empty())
+        || line_tac_picture_or_shape_height(para, comp, tac_offsets_px, line_idx, dpi).is_some()
+    {
+        return false;
+    }
+    let Some(next) = comp.lines.get(line_idx + 1) else {
+        return false;
+    };
+    if !next.runs.iter().all(|run| run.text.trim().is_empty()) {
+        return false;
+    }
+    line_tac_picture_or_shape_height(para, comp, tac_offsets_px, line_idx + 1, dpi)
+        .map(|height| (raw_lh - height).abs() <= 8.0)
+        .unwrap_or(false)
+}
+
 fn has_treat_as_char_picture_or_shape(para: Option<&Paragraph>) -> bool {
     para.map(|para| {
         para.controls.iter().any(|ctrl| {
@@ -1056,7 +1154,6 @@ impl LayoutEngine {
             v.sort_by_key(|(p, _, _)| *p);
             v
         };
-
         // 문단 배경색: border_fill_id 조회
         let para_border_fill_id = para_style.map(|s| s.border_fill_id).unwrap_or(0);
         let para_fill_color = if para_border_fill_id > 0 {
@@ -1268,10 +1365,20 @@ impl LayoutEngine {
                     }
                 })
                 .fold(0.0f64, f64::max);
+            let line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
             // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
             // PARA_LINE_SEG가 없는 폴백(400 HWPUNIT=5.333px) 등 line_height가 폰트 크기보다 작으면,
             // ParaShape의 줄간격 설정(line_spacing_type + line_spacing)으로 올바른 줄 높이를 계산한다.
             let raw_lh = hwpunit_to_px(comp_line.line_height, self.dpi);
+            let text_before_picture_line = text_line_is_picture_lead_in(
+                para,
+                composed,
+                &tac_offsets_px,
+                line_idx,
+                raw_lh,
+                max_fs,
+                self.dpi,
+            );
             let (line_height, line_spacing_px) = {
                 let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
                 let ls_type = para_style
@@ -1299,7 +1406,11 @@ impl LayoutEngine {
                         })
                     })
                     .unwrap_or(false);
-            let (line_height, baseline) = if has_tac_shape && raw_lh > max_fs * 1.5 {
+            let (line_height, baseline) = if text_before_picture_line {
+                let font_lh = max_fs.max(1.0);
+                let font_bl = max_fs * 0.85;
+                (font_lh, ensure_min_baseline(font_bl, max_fs))
+            } else if has_tac_shape && raw_lh > max_fs * 1.5 {
                 // Shape 높이가 line_height에 포함 → 폰트 기반 line_height 사용
                 let font_lh = max_fs * 1.2; // 폰트 크기의 120%
                 let font_bl = max_fs * 0.85;
@@ -1313,7 +1424,6 @@ impl LayoutEngine {
                     ),
                 )
             };
-
             // 들여쓰기/내어쓰기: 문단 여백은 무조건 적용
             // - 보통(ind=0): 모든 줄 margin_left
             // - 들여쓰기(ind>0): 첫줄 margin_left+indent, 다음줄 margin_left
@@ -1349,17 +1459,8 @@ impl LayoutEngine {
             let line_has_inline_tac_table = !tac_offsets_px.is_empty()
                 && para
                     .map(|p| {
-                        let line_start = comp_line.char_start;
-                        let line_end = line_start
-                            + comp_line
-                                .runs
-                                .iter()
-                                .map(|r| r.text.chars().count())
-                                .sum::<usize>();
-                        tac_offsets_px.iter().any(|(pos, _, ci)| {
-                            *pos >= line_start
-                                && *pos <= line_end
-                                && matches!(p.controls.get(*ci),
+                        line_tac_offsets.iter().any(|(_, _, ci)| {
+                            matches!(p.controls.get(*ci),
                             Some(Control::Table(t)) if t.common.treat_as_char)
                         })
                     })
@@ -3255,15 +3356,12 @@ impl LayoutEngine {
             if comp_line.runs.is_empty() {
                 // runs가 없는 빈 줄에서 treat_as_char 이미지 렌더링
                 // 테이블 셀 내부에서는 table_layout.rs가 layout_picture로 이미 처리하므로 스킵.
-                // 셀 외부에서 텍스트 없이 TAC만 있는 문단인 경우에만 여기서 렌더링.
-                if cell_ctx.is_none()
-                    && all_runs_empty
-                    && !tac_offsets_px.is_empty()
-                    && line_idx == start_line
-                {
+                // 셀 외부에서 해당 줄 범위에 걸린 TAC만 여기서 렌더링.
+                if cell_ctx.is_none() && !line_tac_offsets.is_empty() {
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                         // TAC 이미지 전체 폭 계산 후 문단 정렬 적용
-                        let total_tac_width: f64 = tac_offsets_px.iter().map(|(_, w, _)| w).sum();
+                        let total_tac_width: f64 =
+                            line_tac_offsets.iter().map(|(_, w, _)| *w).sum();
                         let align_offset = match alignment {
                             Alignment::Center | Alignment::Distribute => {
                                 (available_width - total_tac_width).max(0.0) / 2.0
@@ -3272,7 +3370,7 @@ impl LayoutEngine {
                             _ => 0.0, // Left, Justify
                         };
                         let mut img_x = effective_col_x + effective_margin_left + align_offset;
-                        for &(_, tac_w, tac_ci) in &tac_offsets_px {
+                        for &(_, tac_w, tac_ci) in &line_tac_offsets {
                             if let Some(ctrl) = p.controls.get(tac_ci) {
                                 // [Issue #476] 빈 문단 + 인라인 Shape: inline_pos 등록 후 shape_layout 이 그리도록 위임.
                                 // 등록하지 않으면 layout_shape 가 inline_pos=None 으로 받아 fallback 위치에 그리거나,
@@ -3916,7 +4014,10 @@ impl LayoutEngine {
             // 좌측 영역에 텍스트 미배치한 결과. has_picture_shape_square_wrap 게이트로
             // wrap zone 호스트 paragraph 만 영향.
             let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
-            if !runs_all_whitespace && current_line_reserved_tac_picture_height.is_none() {
+            if !runs_all_whitespace
+                && !text_before_picture_line
+                && current_line_reserved_tac_picture_height.is_none()
+            {
                 current_line_reserved_tac_picture_height =
                     tac_picture_or_shape_height_for_line(para, raw_lh, self.dpi);
                 if current_line_reserved_tac_picture_height.is_none()
