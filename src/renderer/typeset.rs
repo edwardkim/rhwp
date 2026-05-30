@@ -226,6 +226,14 @@ fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
         })
 }
 
+fn para_has_treat_as_char_picture_or_shape(para: &Paragraph) -> bool {
+    para.controls.iter().any(|ctrl| match ctrl {
+        Control::Picture(pic) => pic.common.treat_as_char,
+        Control::Shape(shape) => shape.common().treat_as_char,
+        _ => false,
+    })
+}
+
 fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
     if let Some(next) = comp.lines.get(line_idx + 1) {
         return next.char_start;
@@ -1840,6 +1848,7 @@ impl TypesetEngine {
             // (단의 첫 미주 → 자체 높이 사용). 단 advance 시 flush_column 에서 prev_body 리셋.
             let mut prev_en_bottom_vpos: Option<i32> = st.prev_body_bottom_vpos;
             let mut prev_endnote_had_vpos_rewind = false;
+            let mut prev_endnote_had_inline_object_vpos_overestimate = false;
             let mut emitted_endnote_separator = false;
             let mut emitted_endnote_count = 0usize;
             let mut last_render_endnote_para_local_idx: Option<usize> = None;
@@ -1887,11 +1896,40 @@ impl TypesetEngine {
                                 .unwrap_or(false)
                             && matches!(en_ref.number, 29 | 30)
                             && st.current_column + 1 >= st.col_count;
+                        let default_question_group_head_tail = compact_endnote_separator_profile
+                            && prev_endnote_had_inline_object_vpos_overestimate
+                            && endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false)
+                            && {
+                                let head_h: f64 = en_ctrl
+                                    .paragraphs
+                                    .iter()
+                                    .take(2)
+                                    .filter_map(|p| {
+                                        let first = p.line_segs.first()?.vertical_pos;
+                                        let bottom = p
+                                            .line_segs
+                                            .iter()
+                                            .map(|s| {
+                                                s.vertical_pos + s.line_height + s.line_spacing
+                                            })
+                                            .max()?;
+                                        Some(hwpunit_to_px((bottom - first).max(0), self.dpi))
+                                    })
+                                    .sum();
+                                head_h > 0.0
+                                    && st.current_height + head_h <= st.available_height() - 8.0
+                            };
                         if st.col_count > 1
                             && compact_endnote_separator_profile
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
                             && !default_late_question_group_tail
+                            && !default_question_group_head_tail
                             && st.current_height
                                 > st.available_height() * rewind_group_advance_threshold
                         {
@@ -1948,6 +1986,7 @@ impl TypesetEngine {
                             internal_rewind || group_rewind
                         });
                         prev_endnote_had_vpos_rewind = endnote_has_vpos_rewind;
+                        let mut current_endnote_had_inline_object_vpos_overestimate = false;
 
                         // endnote 단위로 시작점 결정
                         if emitted_endnote_count > 0 {
@@ -2190,7 +2229,9 @@ impl TypesetEngine {
                                 .first()
                                 .map(|s| hwpunit_to_px(s.line_height.max(1), dpi))
                                 .unwrap_or(h4f);
-                            let compute_en_metrics = |prev: Option<i32>| -> (f64, f64) {
+                            let has_treat_as_char_picture_shape =
+                                para_has_treat_as_char_picture_or_shape(en_para);
+                            let mut compute_en_metrics = |prev: Option<i32>| -> (f64, f64) {
                                 if col_count > 1 {
                                     if let (Some(tf), Some(tb)) =
                                         (this_first_offset, this_bottom_offset)
@@ -2204,8 +2245,26 @@ impl TypesetEngine {
                                         let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
                                         let compact_local_rewind =
                                             compact_endnote_separator_profile && local_vpos_rewind;
-                                        let min_h = if internal_vpos_rewind || compact_local_rewind
-                                        {
+                                        // 한컴 저장본의 미주 LineSeg는 TAC 도형을 포함한 문단의
+                                        // 다음 줄/문단 시작 vpos까지 이미 반영한다. formatter가
+                                        // inline object 높이를 다시 큰 floor로 잡으면 2023 12쪽처럼
+                                        // 다음 문제 시작이 한 단 늦게 밀린다.
+                                        let inline_object_formatter_overestimate =
+                                            compact_endnote_separator_profile
+                                                && has_treat_as_char_picture_shape
+                                                && !internal_vpos_rewind
+                                                && !compact_local_rewind
+                                                && !large_vpos_jump_at_column_top
+                                                && h4f > advance_px + 80.0
+                                                && advance_px > min_vpos_rewind_height + 40.0;
+                                        if inline_object_formatter_overestimate {
+                                            current_endnote_had_inline_object_vpos_overestimate =
+                                                true;
+                                        }
+                                        let min_h = if inline_object_formatter_overestimate {
+                                            (advance_px - trailing_ls_px)
+                                                .max(min_vpos_rewind_height)
+                                        } else if internal_vpos_rewind || compact_local_rewind {
                                             min_vpos_rewind_height
                                         } else {
                                             h4f
@@ -2294,14 +2353,14 @@ impl TypesetEngine {
                                 && st.current_height < available + 40.0
                                 && st.current_height + en_fit <= available + 90.0
                                 && para_has_visible_text_or_equation(en_para);
-                            if st.current_height + en_fit > available
+                            let advance_for_fit = st.current_height + en_fit > available
                                 && split_endnote_to_fit.is_none()
                                 && (!default_between_notes_gap || internal_rewind_split.is_none())
                                 && !late_question_title_small_overflow
                                 && !late_question_intro_tail
                                 && !late_question_continuation_tail
-                                && !st.current_items.is_empty()
-                            {
+                                && !st.current_items.is_empty();
+                            if advance_for_fit {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
@@ -2316,21 +2375,28 @@ impl TypesetEngine {
                             } else {
                                 0.95
                             };
-                            if st.col_count > 1
+                            let allow_default_question_title_tail = default_between_notes_gap
+                                && prev_endnote_had_inline_object_vpos_overestimate
+                                && ep_idx == 0
+                                && en_fit <= 24.0
+                                && st.current_height + en_fit <= available - 40.0;
+                            let advance_for_new_endnote = st.col_count > 1
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
                                 && !allow_default_late_question_tail
+                                && !allow_default_question_title_tail
                                 && !endnote_has_vpos_rewind
                                 && !new_endnote_stale_forward_vpos
                                 && st.current_height > available * new_endnote_advance_threshold
-                                && !st.current_items.is_empty()
-                            {
+                                && !st.current_items.is_empty();
+                            if advance_for_new_endnote {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
-                            if move_internal_rewind_equation_to_next && !st.current_items.is_empty()
-                            {
+                            let advance_for_internal_rewind = move_internal_rewind_equation_to_next
+                                && !st.current_items.is_empty();
+                            if advance_for_internal_rewind {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
@@ -2402,6 +2468,8 @@ impl TypesetEngine {
                                 prev_en_bottom_vpos = Some(tb);
                             }
                         }
+                        prev_endnote_had_inline_object_vpos_overestimate =
+                            current_endnote_had_inline_object_vpos_overestimate;
                         emitted_endnote_count += 1;
                     }
                 }

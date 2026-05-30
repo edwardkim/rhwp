@@ -167,6 +167,55 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn square_wrap_table_line_anchor_y(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    para_y: f64,
+    dpi: f64,
+) -> Option<f64> {
+    if table.common.treat_as_char
+        || !matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::Square
+        )
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || !matches!(
+            table.common.horz_align,
+            HorzAlign::Right | HorzAlign::Outside
+        )
+        || !para_has_visible_text(para)
+        || para.line_segs.len() < 2
+    {
+        return None;
+    }
+
+    let first = para.line_segs.first()?;
+    let max_width = para
+        .line_segs
+        .iter()
+        .map(|seg| seg.segment_width)
+        .max()
+        .unwrap_or(0);
+    if max_width <= 0 {
+        return None;
+    }
+
+    let table_width = signed_hwpunit(table.common.width).max(0);
+    let min_reduction = (table_width / 3).max(256);
+    let anchor = para.line_segs.iter().skip(1).find(|seg| {
+        if seg.vertical_pos < first.vertical_pos {
+            return false;
+        }
+        let width_reduced =
+            max_width > seg.segment_width && max_width - seg.segment_width >= min_reduction;
+        let start_shifted = seg.column_start != first.column_start;
+        width_reduced || start_shifted
+    })?;
+
+    Some(para_y + hwpunit_to_px(anchor.vertical_pos - first.vertical_pos, dpi))
+}
+
 /// 문단 번호 상태 (수준별 카운터)
 #[derive(Debug, Clone, Default)]
 struct NumberingState {
@@ -4147,6 +4196,8 @@ impl LayoutEngine {
                         para_float_lane_info = Some((x_start, x_end, raw_top, lane_top, y_offset));
                     }
                 }
+                let mut table_visual_shift = 0.0;
+                let mut table_y_end = y_offset;
                 if renders_outside_body {
                     let tmp_id = tree.next_id();
                     let mut tmp_node = RenderNode::new(
@@ -4180,14 +4231,22 @@ impl LayoutEngine {
                         paper_images.push(child);
                     }
                 } else {
+                    let square_anchor_y = if !is_tac && tbl_is_square {
+                        square_wrap_table_line_anchor_y(para, t, para_y_for_table, self.dpi)
+                    } else {
+                        None
+                    };
                     let table_y_start = if let Some((_, _, _, lane_top, _)) = para_float_lane_info {
                         lane_top
                     } else if let Some((_, iy)) = inline_pos {
                         iy
+                    } else if let Some(anchor_y) = square_anchor_y {
+                        table_visual_shift = (anchor_y - y_offset).max(0.0);
+                        anchor_y
                     } else {
                         y_offset
                     };
-                    y_offset = self.layout_table(
+                    let table_visual_end = self.layout_table(
                         tree,
                         col_node,
                         t,
@@ -4209,11 +4268,16 @@ impl LayoutEngine {
                         Some(para_y_for_table),
                         false,
                     );
+                    table_y_end = table_visual_end;
+                    y_offset = if table_visual_shift > 0.0 {
+                        (table_visual_end - table_visual_shift).max(table_y_before)
+                    } else {
+                        table_visual_end
+                    };
                 }
-                let table_y_end = y_offset; // layout_table 반환값 보존
-                                            // [Task #1046 Stage 3 Class B] 표 실제 콘텐츠 하단 기록 — 이후 더해지는
-                                            // 표 뒤 trailing 간격(tac 줄간격/표 아래 간격)을 제외한 값. overflow 검출이
-                                            // 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록 한다.
+                // [Task #1046 Stage 3 Class B] 표 실제 콘텐츠 하단 기록 — 이후 더해지는
+                // 표 뒤 trailing 간격(tac 줄간격/표 아래 간격)을 제외한 값. overflow 검출이
+                // 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록 한다.
                 self.last_item_content_bottom.set(table_y_end);
                 // [Task #1046 Stage 3 Class B 진단] 통째 표 렌더 분해 — 표 시작/끝,
                 // para 시작, host before. 동작 불변(게이트).
@@ -4979,6 +5043,15 @@ impl LayoutEngine {
                         // y_offset을 그림 높이만큼 진행시킨다.
                         let has_real_text =
                             para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                        let has_full_para_item = page_content.column_contents.iter().any(|cc| {
+                            cc.items.iter().any(|it| {
+                                matches!(
+                                    it,
+                                    PageItem::FullParagraph { para_index: pi }
+                                        if *pi == para_index
+                                )
+                            })
+                        });
                         // [Task #418/#376] paragraph_layout 의 빈 문단 + TAC Picture 분기에서
                         // 이미 ImageNode 가 emit 되어 inline_shape_position 이 등록된 경우,
                         // 여기서 또 push 하면 이중 emit 이 된다. 등록된 경우 push 를 스킵하고
@@ -5086,28 +5159,33 @@ impl LayoutEngine {
                                 // [Task #1151 v9 결함 D] 가로 분배 시퀀스의 중간 picture 는 result_y
                                 // 진행 안 함 (y_offset 유지). 시퀀스 마지막 picture 또는 단일 picture
                                 // 에서만 advance — 다음 paragraph 가 가로 분배 영역 아래로 진행.
-                                let line_advance = para
-                                    .line_segs
-                                    .first()
-                                    .map(|ls| {
-                                        hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi)
-                                    })
-                                    .unwrap_or(pic_h);
-                                if is_single_pic || is_last_in_seq {
-                                    // 시퀀스 마지막: state 의 line_height (시퀀스 최대 height) 기반 advance
-                                    let line_top_y = para_inline_state
-                                        .get(&para_index)
-                                        .map(|s| s.line_top_y)
-                                        .unwrap_or(pic_y);
-                                    let line_height = para_inline_state
-                                        .get(&para_index)
-                                        .map(|s| s.line_height)
+                                if !has_full_para_item {
+                                    let line_advance = para
+                                        .line_segs
+                                        .first()
+                                        .map(|ls| {
+                                            hwpunit_to_px(
+                                                ls.line_height + ls.line_spacing,
+                                                self.dpi,
+                                            )
+                                        })
                                         .unwrap_or(pic_h);
-                                    result_y = line_top_y + line_advance.max(line_height);
+                                    if is_single_pic || is_last_in_seq {
+                                        // 시퀀스 마지막: state 의 line_height (시퀀스 최대 height) 기반 advance
+                                        let line_top_y = para_inline_state
+                                            .get(&para_index)
+                                            .map(|s| s.line_top_y)
+                                            .unwrap_or(pic_y);
+                                        let line_height = para_inline_state
+                                            .get(&para_index)
+                                            .map(|s| s.line_height)
+                                            .unwrap_or(pic_h);
+                                        result_y = line_top_y + line_advance.max(line_height);
+                                    }
+                                    // 중간 picture: result_y = y_offset (그대로 유지, line 4527 의 default)
                                 }
-                                // 중간 picture: result_y = y_offset (그대로 유지, line 4527 의 default)
                             }
-                        } else if !has_real_text && already_registered {
+                        } else if !has_real_text && already_registered && !has_full_para_item {
                             // [Task #418/#376] paragraph_layout 가 이미 emit 함 — push 스킵, result_y 만 갱신
                             // [Task #462] 동일하게 LINE_SEG 기반 advance 사용
                             // [Task #1151 v9 결함 D] 가로 분배 시퀀스의 중간 picture 는 result_y

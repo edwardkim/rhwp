@@ -572,6 +572,68 @@ fn issue_1139_page23_question30_picture_line_is_rendered() {
 }
 
 #[test]
+fn issue_1139_2023_page4_question26_square_table_uses_anchor_line() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2023.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(3).expect("page 4 render tree");
+
+    let table = find_table_bbox(&tree.root, 258, 5).expect("문26 표준정규분포표");
+    let first_text_y = min_para_text_y(&tree.root, 258).expect("문26 본문 텍스트");
+
+    assert!(
+        table.y > first_text_y + 70.0 && table.y < first_text_y + 120.0,
+        "문26 Square wrap 표는 문단 첫 줄이 아니라 LineSeg가 좁아지는 후반 줄에 붙어야 함: table={table:?}, first_text_y={first_text_y}"
+    );
+}
+
+#[test]
+fn issue_1139_2023_pages12_13_endnote_boundary_matches_pdf() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2023.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page12 = doc.dump_page_items(Some(11));
+    let page13 = doc.dump_page_items(Some(12));
+
+    let page12_col1 = page12.find("  단 1").expect("page 12 second column");
+    let q14_title = page12
+        .find("FullParagraph[미주]  pi=611")
+        .expect("page 12 question 14 title");
+    let q14_graph_host = page12
+        .find("FullParagraph[미주]  pi=613")
+        .expect("page 12 question 14 graph host");
+    assert!(
+        q14_title < page12_col1,
+        "PDF 기준 12쪽 왼쪽 단 하단에서 문14 제목이 시작해야 함\n{page12}"
+    );
+    assert!(
+        q14_graph_host > page12_col1,
+        "PDF 기준 12쪽 오른쪽 단은 문14 그래프 영역부터 이어져야 함\n{page12}"
+    );
+    assert!(
+        page12.contains("FullParagraph[미주]  pi=635")
+            && page12.contains("FullParagraph[미주]  pi=636")
+            && !page12.contains("Shape          pi=637 ci=0"),
+        "PDF 기준 문14 tail(pi=635/636)은 12쪽에 남고 그래프(pi=637)는 13쪽에서 시작해야 함\n{page12}"
+    );
+    assert!(
+        !page13.contains("FullParagraph[미주]  pi=635")
+            && !page13.contains("FullParagraph[미주]  pi=636"),
+        "13쪽 첫머리에 이전 tail(pi=635/636)이 남으면 PDF보다 시작점이 늦음\n{page13}"
+    );
+
+    let graph = page13
+        .find("Shape          pi=637 ci=0  그림 tac=true")
+        .expect("page 13 starts with question 14 graph");
+    let q15_title = page13
+        .find("FullParagraph[미주]  pi=638")
+        .expect("page 13 question 15 title");
+    assert!(
+        graph < q15_title,
+        "PDF 기준 13쪽은 문15 제목 전에 문14 그래프가 먼저 보여야 함\n{page13}"
+    );
+}
+
+#[test]
 fn issue_1139_page13_question20_table_is_not_duplicated() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
