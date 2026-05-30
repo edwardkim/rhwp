@@ -294,6 +294,17 @@ impl HeightCursor {
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset > self.col_area_y + self.col_area_height * 0.90
             && y_offset - end_y <= 80.0;
+        let compact_endnote_title_tail_backtrack = self.suppress_large_forward_jump
+            && !is_page_path
+            && !vpos_rewind
+            && follows_endnote_title
+            && paragraphs
+                .get(item_para)
+                .map(|p| p.line_segs.len() >= 3)
+                .unwrap_or(false)
+            && end_y < y_offset - 8.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.90
+            && y_offset - end_y <= 80.0;
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
             let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
@@ -322,7 +333,9 @@ impl HeightCursor {
                 }
             }
         }
-        if (applied || compact_endnote_deep_backtrack)
+        if compact_endnote_title_tail_backtrack {
+            y_offset - (y_offset - end_y).min(16.0)
+        } else if (applied || compact_endnote_deep_backtrack)
             && !stale_forward
             && !compact_endnote_new_note_jump
             && !compact_endnote_tac_picture_gap
@@ -601,6 +614,41 @@ mod tests {
 
         let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
         assert!((got - 1030.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 제목 직후의 다줄 꼬리 문단은 하단 overflow를 막기 위해 제한적으로만 당긴다.
+    #[test]
+    fn compact_endnote_limited_backtrack_after_note_title_tail() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![para(0, 70100, 900, 0, 5000), para(0, 70150, 900, 0, 5000)];
+        ps[0].text = "문27)".to_string();
+        ps[1].line_segs.push(LineSeg {
+            vertical_pos: 71502,
+            line_height: 900,
+            text_height: 900,
+            baseline_distance: 765,
+            line_spacing: 452,
+            column_start: 0,
+            segment_width: 5000,
+            text_start: 0,
+            tag: 0,
+        });
+        ps[1].line_segs.push(LineSeg {
+            vertical_pos: 72854,
+            line_height: 900,
+            text_height: 900,
+            baseline_distance: 765,
+            line_spacing: 452,
+            column_start: 0,
+            segment_width: 5000,
+            text_start: 0,
+            tag: 0,
+        });
+
+        let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
+        assert!(got < 1030.0, "got={got}");
+        assert!(got >= 1014.0, "backtrack must stay capped: got={got}");
     }
 
     /// 되감긴 목표가 직전 줄 내용 하단보다 위이면 overflow보다 겹침 위험이 크다.

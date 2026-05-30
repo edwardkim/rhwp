@@ -113,6 +113,23 @@ fn find_table_bbox(
         .find_map(|child| find_table_bbox(child, para_index, control_index))
 }
 
+fn count_table_nodes(node: &RenderNode, para_index: usize, control_index: usize) -> usize {
+    let own = match &node.node_type {
+        RenderNodeType::Table(table)
+            if table.para_index == Some(para_index)
+                && table.control_index == Some(control_index) =>
+        {
+            1
+        }
+        _ => 0,
+    };
+    own + node
+        .children
+        .iter()
+        .map(|child| count_table_nodes(child, para_index, control_index))
+        .sum::<usize>()
+}
+
 fn min_para_text_y(node: &RenderNode, para_index: usize) -> Option<f64> {
     let own = match &node.node_type {
         RenderNodeType::TextLine(line) if line.para_index == Some(para_index) => Some(node.bbox.y),
@@ -432,6 +449,65 @@ fn issue_1139_page19_question29_starts_on_right_column() {
     assert!(
         !page20.contains("FullParagraph[미주]  pi=995"),
         "문29 시작이 20쪽으로 밀리면 19쪽 우측 단이 한컴보다 비어 보임\n{page20}"
+    );
+}
+
+#[test]
+fn issue_1139_page22_question29_intro_moves_to_previous_page() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page21 = doc.dump_page_items(Some(20));
+    let page22 = doc.dump_page_items(Some(21));
+
+    assert!(
+        page21.contains("FullParagraph[미주]  pi=1129")
+            && page21.contains("FullParagraph[미주]  pi=1130"),
+        "한컴오피스 기준 21쪽 하단에는 문29 제목과 [출제의도] 문단이 남아야 함\n{page21}"
+    );
+    assert!(
+        !page22.contains("FullParagraph[미주]  pi=1129")
+            && !page22.contains("FullParagraph[미주]  pi=1130"),
+        "문29 제목/출제의도가 22쪽 첫머리에 남으면 22쪽 렌더링이 한컴보다 늦게 시작함\n{page22}"
+    );
+    assert!(
+        page22.contains("Shape          pi=1131 ci=0  그림 tac=true"),
+        "한컴오피스 기준 22쪽은 문29의 큰 구 그림(pi=1131)부터 시작해야 함\n{page22}"
+    );
+    assert!(
+        page22.contains("Table          pi=1169 ci=0"),
+        "한컴오피스 기준 문30 그래프 표(pi=1169)는 22쪽 우측 단에 렌더되어야 함\n{page22}"
+    );
+
+    let tree = doc.build_page_render_tree(21).expect("page 22 render tree");
+    let graph_table = find_table_bbox(&tree.root, 1169, 0).expect("문30 그래프 표");
+    assert!(
+        graph_table.width > 200.0 && graph_table.height > 170.0,
+        "문30 그래프 표 bbox가 너무 작거나 누락됨: {:?}",
+        graph_table
+    );
+}
+
+#[test]
+fn issue_1139_page13_question20_table_is_not_duplicated() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page13 = doc.dump_page_items(Some(12));
+    assert!(
+        page13.contains("FullParagraph[미주]  pi=739"),
+        "문20 변화표 host 문단은 13쪽에 있어야 함\n{page13}"
+    );
+    assert!(
+        !page13.contains("Table          pi=739 ci=0"),
+        "문20 변화표 TAC table은 host paragraph 안에서 렌더되므로 별도 Table PageItem으로 중복 배치되면 안 됨\n{page13}"
+    );
+
+    let tree = doc.build_page_render_tree(12).expect("page 13 render tree");
+    assert_eq!(
+        count_table_nodes(&tree.root, 739, 0),
+        1,
+        "문20 변화표 pi=739 ci=0은 13쪽에 한 번만 렌더되어야 함"
     );
 }
 

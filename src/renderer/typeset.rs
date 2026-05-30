@@ -1796,10 +1796,20 @@ impl TypesetEngine {
                         } else {
                             0.95
                         };
+                        let default_late_question_group_tail = compact_endnote_separator_profile
+                            && endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false)
+                            && matches!(en_ref.number, 29 | 30)
+                            && st.current_column + 1 >= st.col_count;
                         if st.col_count > 1
                             && compact_endnote_separator_profile
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
+                            && !default_late_question_group_tail
                             && st.current_height
                                 > st.available_height() * rewind_group_advance_threshold
                         {
@@ -1990,6 +2000,17 @@ impl TypesetEngine {
                             let trailing_ls_px = endnote_bottom_with_spacing
                                 .map(|(_, spacing)| hwpunit_to_px(spacing.max(0), self.dpi))
                                 .unwrap_or(0.0);
+                            let default_between_notes_gap_before_rewind = endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false);
+                            let current_default_late_question_title =
+                                default_between_notes_gap_before_rewind
+                                    && matches!(en_ref.number, 29 | 30)
+                                    && ep_idx == 0
+                                    && st.current_column + 1 >= st.col_count;
 
                             // 같은 미주 안에서도 LINE_SEG vpos 가 되감기며 다음 단 시작을
                             // 표시하는 문서가 있다. 특히 3-09월_교육_통합_2022.hwp 9쪽의
@@ -1999,6 +2020,7 @@ impl TypesetEngine {
                             if st.col_count > 1
                                 && !st.current_items.is_empty()
                                 && st.current_height > available * 0.85
+                                && !current_default_late_question_title
                                 && matches!(
                                     (prev_en_bottom_vpos, this_first_offset),
                                     (Some(prev), Some(first)) if first < prev
@@ -2060,9 +2082,20 @@ impl TypesetEngine {
                                         <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
                                 })
                                 .unwrap_or(false);
+                            // 3-09월_교육_통합_2022.hwp 한컴 기준:
+                            // 기본 미주 사이 7mm의 문29/문30은 단 하단에서도 제목 뒤
+                            // 풀이 본문 일부가 같은 쪽에 이어진다. 20mm 변형 파일은
+                            // 기존처럼 anchor 직후 넘김을 유지해야 24쪽 분기와 맞는다.
+                            let allow_default_late_question_tail =
+                                default_between_notes_gap && matches!(en_ref.number, 29 | 30);
+                            let suppress_late_question_gap_for_fit =
+                                allow_default_late_question_tail
+                                    && st.current_column + 1 >= st.col_count
+                                    && st.current_height > available * 0.90;
                             let new_endnote_between_notes_px = if ep_idx == 0
                                 && emitted_endnote_count > 0
                                 && compact_endnote_separator_profile
+                                && !suppress_late_question_gap_for_fit
                             {
                                 endnote_shape
                                     .map(endnote_between_notes_margin)
@@ -2126,13 +2159,6 @@ impl TypesetEngine {
                             let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
                             let total_advance_fit =
                                 fmt.line_advances_sum(0..fmt.line_heights.len());
-                            let split_title_tail_near_column_bottom = default_between_notes_gap
-                                && prev_rendered_endnote_is_title
-                                && st.col_count > 1
-                                && st.current_column + 1 >= st.col_count
-                                && st.current_height > available * 0.80
-                                && fmt.line_heights.len() > 2
-                                && para_has_visible_text_or_equation(en_para);
                             let split_endnote_to_fit = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && !local_vpos_rewind
@@ -2154,17 +2180,9 @@ impl TypesetEngine {
                                     split = line_idx + 1;
                                 }
                                 (split > 0 && split < fmt.line_heights.len()).then_some(split)
-                            } else if split_title_tail_near_column_bottom {
-                                Some(fmt.line_heights.len() - 1)
                             } else {
                                 None
                             };
-                            // 3-09월_교육_통합_2022.hwp 한컴 기준:
-                            // 기본 미주 사이 7mm의 문30은 첫 줄 뒤 풀이 본문 일부가
-                            // 같은 17쪽 우측 단에 이어진다. 20mm 변형 파일은 기존처럼
-                            // anchor 직후 넘김을 유지해야 24쪽 분기와 맞는다.
-                            let allow_default_question30_tail =
-                                default_between_notes_gap && en_ref.number == 30;
                             let new_endnote_stale_forward_vpos = compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
@@ -2175,9 +2193,23 @@ impl TypesetEngine {
                                     (Some(prev), Some(_), Some(bottom))
                                         if hwpunit_to_px((bottom - prev).max(0), self.dpi) > h4f + 100.0
                                 );
+                            let late_question_title_small_overflow =
+                                allow_default_late_question_tail
+                                    && ep_idx == 0
+                                    && st.current_column + 1 >= st.col_count
+                                    && st.current_height < available
+                                    && st.current_height + en_fit <= available + 40.0;
+                            let late_question_intro_tail = allow_default_late_question_tail
+                                && ep_idx == 1
+                                && en_ref.number == 29
+                                && st.current_column + 1 >= st.col_count
+                                && st.current_height < available + 40.0
+                                && st.current_height + en_fit <= available + 90.0;
                             if st.current_height + en_fit > available
                                 && split_endnote_to_fit.is_none()
                                 && (!default_between_notes_gap || internal_rewind_split.is_none())
+                                && !late_question_title_small_overflow
+                                && !late_question_intro_tail
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
@@ -2198,7 +2230,7 @@ impl TypesetEngine {
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
-                                && !allow_default_question30_tail
+                                && !allow_default_late_question_tail
                                 && !endnote_has_vpos_rewind
                                 && !new_endnote_stale_forward_vpos
                                 && st.current_height > available * new_endnote_advance_threshold
@@ -2238,16 +2270,37 @@ impl TypesetEngine {
                                 st.current_endnote_flow = true;
                                 split_endnote_emitted = true;
                             } else {
-                                st.current_items.push(PageItem::FullParagraph {
-                                    para_index: en_para_idx,
-                                });
-                                st.current_endnote_flow = true;
+                                let table_only_endnote_para = en_para.text.is_empty()
+                                    && en_para
+                                        .controls
+                                        .iter()
+                                        .any(|ctrl| matches!(ctrl, Control::Table(_)))
+                                    && !en_para.controls.iter().any(|ctrl| {
+                                        matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char)
+                                    });
+                                if !table_only_endnote_para {
+                                    st.current_items.push(PageItem::FullParagraph {
+                                        para_index: en_para_idx,
+                                    });
+                                    st.current_endnote_flow = true;
+                                }
                                 for (ctrl_idx, ctrl) in en_para.controls.iter().enumerate() {
-                                    if matches!(ctrl, Control::Shape(_) | Control::Picture(_)) {
-                                        st.current_items.push(PageItem::Shape {
-                                            para_index: en_para_idx,
-                                            control_index: ctrl_idx,
-                                        });
+                                    match ctrl {
+                                        Control::Table(_) if table_only_endnote_para => {
+                                            st.current_items.push(PageItem::Table {
+                                                para_index: en_para_idx,
+                                                control_index: ctrl_idx,
+                                            });
+                                            st.current_endnote_flow = true;
+                                        }
+                                        Control::Shape(_) | Control::Picture(_) => {
+                                            st.current_items.push(PageItem::Shape {
+                                                para_index: en_para_idx,
+                                                control_index: ctrl_idx,
+                                            });
+                                            st.current_endnote_flow = true;
+                                        }
+                                        _ => {}
                                     }
                                 }
                                 st.current_height += en_advance;
