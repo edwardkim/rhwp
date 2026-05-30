@@ -2559,6 +2559,9 @@ export class PicturePropsDialog {
       const rect = this.dialog.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
+      this.dialog.style.position = 'fixed';
+      this.dialog.style.left = `${rect.left}px`;
+      this.dialog.style.top = `${rect.top}px`;
       e.preventDefault();
     });
     document.addEventListener('mousemove', (e) => {

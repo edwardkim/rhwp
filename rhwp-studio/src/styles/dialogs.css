@@ -32,6 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: move;
 }
 
 .dialog-close {
@@ -45,6 +46,7 @@
   line-height: 16px;
   text-align: center;
   padding: 0;
+  cursor: pointer;
 }
 
 .dialog-close:hover {

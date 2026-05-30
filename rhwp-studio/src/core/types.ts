@@ -552,6 +552,27 @@ export interface ShapeProperties {
 
 /** WASM getEquationProperties() 반환 타입 */
 export interface EquationProperties {
+  width?: number;
+  height?: number;
+  treatAsChar?: boolean;
+  vertRelTo?: string;
+  vertAlign?: string;
+  horzRelTo?: string;
+  horzAlign?: string;
+  vertOffset?: number;
+  horzOffset?: number;
+  textWrap?: string;
+  zOrder?: number;
+  instanceId?: number;
+  outerMarginLeft?: number;
+  outerMarginTop?: number;
+  outerMarginRight?: number;
+  outerMarginBottom?: number;
+  hasCaption?: boolean;
+  captionDirection?: string;
+  captionWidth?: number;
+  captionSpacing?: number;
+  description?: string;
   script: string;
   fontSize: number;
   color: number;

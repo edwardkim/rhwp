@@ -1910,6 +1910,10 @@ impl TypesetEngine {
                                 new_offsets.extend_from_slice(&en_para_copy.char_offsets);
                                 en_para_copy.char_offsets = new_offsets;
                             }
+                            let prev_rendered_endnote_is_title = last_render_endnote_para_local_idx
+                                .and_then(|idx| st.endnote_paragraphs.get(idx))
+                                .map(|p| p.text.trim_start().starts_with('문'))
+                                .unwrap_or(false);
                             let en_para_local_idx = st.endnote_paragraphs.len();
                             st.endnote_paragraphs.push(en_para_copy);
                             st.endnote_para_sources.push(EndnoteParaSource {
@@ -2020,7 +2024,7 @@ impl TypesetEngine {
                                 .line_segs
                                 .windows(2)
                                 .any(|w| w[1].vertical_pos < w[0].vertical_pos);
-                            let mut internal_rewind_split = if compact_endnote_separator_profile
+                            let internal_rewind_split = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && st.current_height > available * 0.75
                                 && para_has_visible_text_or_equation(en_para)
@@ -2050,6 +2054,12 @@ impl TypesetEngine {
                             let dpi = self.dpi;
                             let h4f = fmt.height_for_fit;
                             let tot = fmt.total_height;
+                            let default_between_notes_gap = endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false);
                             let new_endnote_between_notes_px = if ep_idx == 0
                                 && emitted_endnote_count > 0
                                 && compact_endnote_separator_profile
@@ -2116,6 +2126,13 @@ impl TypesetEngine {
                             let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
                             let total_advance_fit =
                                 fmt.line_advances_sum(0..fmt.line_heights.len());
+                            let split_title_tail_near_column_bottom = default_between_notes_gap
+                                && prev_rendered_endnote_is_title
+                                && st.col_count > 1
+                                && st.current_column + 1 >= st.col_count
+                                && st.current_height > available * 0.80
+                                && fmt.line_heights.len() > 2
+                                && para_has_visible_text_or_equation(en_para);
                             let split_endnote_to_fit = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && !local_vpos_rewind
@@ -2137,33 +2154,41 @@ impl TypesetEngine {
                                     split = line_idx + 1;
                                 }
                                 (split > 0 && split < fmt.line_heights.len()).then_some(split)
+                            } else if split_title_tail_near_column_bottom {
+                                Some(fmt.line_heights.len() - 1)
                             } else {
                                 None
                             };
-                            let default_between_notes_gap = endnote_shape
-                                .map(|shape| {
-                                    endnote_between_notes_margin(shape) as i32
-                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
-                                })
-                                .unwrap_or(false);
                             // 3-09월_교육_통합_2022.hwp 한컴 기준:
                             // 기본 미주 사이 7mm의 문30은 첫 줄 뒤 풀이 본문 일부가
                             // 같은 17쪽 우측 단에 이어진다. 20mm 변형 파일은 기존처럼
                             // anchor 직후 넘김을 유지해야 24쪽 분기와 맞는다.
                             let allow_default_question30_tail =
                                 default_between_notes_gap && en_ref.number == 30;
+                            let new_endnote_stale_forward_vpos = compact_endnote_separator_profile
+                                && ep_idx == 0
+                                && emitted_endnote_count > 0
+                                && !local_vpos_rewind
+                                && !large_vpos_jump_at_column_top
+                                && matches!(
+                                    (prev_en_bottom_vpos, this_first_offset, this_bottom_offset),
+                                    (Some(prev), Some(_), Some(bottom))
+                                        if hwpunit_to_px((bottom - prev).max(0), self.dpi) > h4f + 100.0
+                                );
                             if st.current_height + en_fit > available
                                 && split_endnote_to_fit.is_none()
+                                && (!default_between_notes_gap || internal_rewind_split.is_none())
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
-                                if allow_default_question30_tail {
-                                    internal_rewind_split = None;
-                                }
                             }
                             let new_endnote_advance_threshold = if default_between_notes_gap {
-                                0.95
+                                if st.current_column + 1 < st.col_count {
+                                    0.88
+                                } else {
+                                    0.95
+                                }
                             } else if st.current_column + 1 < st.col_count {
                                 0.88
                             } else {
@@ -2173,21 +2198,15 @@ impl TypesetEngine {
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
+                                && !allow_default_question30_tail
+                                && !endnote_has_vpos_rewind
+                                && !new_endnote_stale_forward_vpos
                                 && st.current_height > available * new_endnote_advance_threshold
                                 && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
-                            let advance_after_new_endnote_anchor = !allow_default_question30_tail
-                                && st.col_count > 1
-                                && compact_endnote_separator_profile
-                                && ep_idx == 0
-                                && emitted_endnote_count > 0
-                                && st.current_column + 1 >= st.col_count
-                                && st.current_height > available * 0.88
-                                && st.current_height <= available * 0.95
-                                && !st.current_items.is_empty();
                             if move_internal_rewind_equation_to_next && !st.current_items.is_empty()
                             {
                                 st.advance_column_or_new_page();
@@ -2232,10 +2251,6 @@ impl TypesetEngine {
                                     }
                                 }
                                 st.current_height += en_advance;
-                            }
-                            if advance_after_new_endnote_anchor {
-                                st.advance_column_or_new_page();
-                                prev_en_bottom_vpos = None;
                             }
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
                             if split_endnote_emitted {

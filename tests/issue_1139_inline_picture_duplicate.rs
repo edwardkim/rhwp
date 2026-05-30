@@ -128,6 +128,34 @@ fn min_para_text_y(node: &RenderNode, para_index: usize) -> Option<f64> {
         .min_by(|a, b| a.partial_cmp(b).unwrap())
 }
 
+fn max_para_content_bottom(node: &RenderNode, para_index: usize) -> Option<f64> {
+    let own = match &node.node_type {
+        RenderNodeType::TextLine(line) if line.para_index == Some(para_index) => {
+            Some(node.bbox.y + node.bbox.height)
+        }
+        RenderNodeType::TextRun(run) if run.para_index == Some(para_index) => {
+            Some(node.bbox.y + node.bbox.height)
+        }
+        RenderNodeType::Equation(eq) if eq.para_index == Some(para_index) => {
+            Some(node.bbox.y + node.bbox.height)
+        }
+        RenderNodeType::Image(img) if img.para_index == Some(para_index) => {
+            Some(node.bbox.y + node.bbox.height)
+        }
+        RenderNodeType::Table(table) if table.para_index == Some(para_index) => {
+            Some(node.bbox.y + node.bbox.height)
+        }
+        _ => None,
+    };
+    own.into_iter()
+        .chain(
+            node.children
+                .iter()
+                .filter_map(|child| max_para_content_bottom(child, para_index)),
+        )
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+}
+
 #[test]
 fn issue_1139_sample16_page3_page_number_stays_below_bottom_border() {
     let bytes = std::fs::read("samples/hwp3-sample16-hwp5.hwp").expect("sample16");
@@ -248,6 +276,14 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
         page10.contains("FullParagraph[미주]  pi=557"),
         "한컴오피스 기준 문11 미주는 10쪽 오른쪽 단에서 시작해야 함\n{page10}"
     );
+    let page10_col1 = page10.find("  단 1").expect("page10 second column");
+    let page10_q11 = page10
+        .find("FullParagraph[미주]  pi=557")
+        .expect("page10 question 11");
+    assert!(
+        page10_q11 > page10_col1,
+        "문11(pi=557)이 10쪽 왼쪽 단 하단에 남으면 미주 사이가 깨지고 하단 overflow가 발생함\n{page10}"
+    );
 }
 
 #[test]
@@ -288,6 +324,31 @@ fn issue_1139_page17_endnote_question30_starts_on_right_column() {
 }
 
 #[test]
+fn issue_1139_page17_question30_followup_lines_do_not_overlap() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(16).expect("page 17 render tree");
+
+    let title_y = min_para_text_y(&tree.root, 928).expect("문30 title");
+    let condition_y = min_para_text_y(&tree.root, 929).expect("문30 condition line");
+    let either_y = min_para_text_y(&tree.root, 930).expect("문30 n(A) line");
+    let case_y = min_para_text_y(&tree.root, 931).expect("문30 case split");
+
+    assert!(
+        condition_y > title_y + 10.0,
+        "문30 제목과 조건 줄이 겹치면 안 됨: title_y={title_y}, condition_y={condition_y}"
+    );
+    assert!(
+        either_y > condition_y + 10.0,
+        "문30 n(A)=2 또는 n(A)=3 줄이 조건 줄과 겹치면 안 됨: condition_y={condition_y}, either_y={either_y}"
+    );
+    assert!(
+        case_y > either_y + 10.0,
+        "문30 (i) 줄이 직전 줄과 겹치면 안 됨: either_y={either_y}, case_y={case_y}"
+    );
+}
+
+#[test]
 fn issue_1139_endnote_virtual_paragraph_selection_rects_are_available() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
@@ -321,6 +382,56 @@ fn issue_1139_endnote_virtual_paragraph_selection_rects_are_available() {
             rect["pageIndex"].as_u64() == Some(15) && rect["width"].as_f64().unwrap_or(0.0) > 0.0
         }),
         "드래그 선택 하이라이트용 사각형이 16쪽 미주 문단에서 생성되어야 함: {rects:?}"
+    );
+}
+
+#[test]
+fn issue_1139_endnote_virtual_paragraph_para_shape_api_uses_source_note() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let props = doc
+        .get_para_properties_at(0, 868)
+        .unwrap_or_else(|e| panic!("미주 가상 문단 문단 모양 조회 실패: {e:?}"));
+    let props: Value = serde_json::from_str(&props).expect("para props json");
+    assert!(
+        props["paraShapeId"].as_u64().is_some(),
+        "미주 가상 문단 문단 모양이 조회되어야 함: {props}"
+    );
+
+    doc.apply_para_format(0, 868, r#"{"alignment":"center"}"#)
+        .unwrap_or_else(|e| panic!("미주 가상 문단 문단 모양 적용 실패: {e:?}"));
+
+    let after = doc
+        .get_para_properties_at(0, 868)
+        .unwrap_or_else(|e| panic!("미주 가상 문단 문단 모양 재조회 실패: {e:?}"));
+    let after: Value = serde_json::from_str(&after).expect("para props json");
+    assert_eq!(
+        after["alignment"].as_str(),
+        Some("center"),
+        "미주 가상 문단 문단 모양 적용은 원본 Endnote 문단에 반영되어야 함: {after}"
+    );
+}
+
+#[test]
+fn issue_1139_page19_question29_starts_on_right_column() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page19 = doc.dump_page_items(Some(18));
+    let page20 = doc.dump_page_items(Some(19));
+
+    assert!(
+        page19.contains("PartialParagraph  pi=992  lines=1..3"),
+        "한컴오피스 기준 pi=992의 reset 이후 줄은 19쪽 우측 단으로 이어져야 함\n{page19}"
+    );
+    assert!(
+        page19.contains("FullParagraph[미주]  pi=995"),
+        "한컴오피스 기준 문29(pi=995)는 19쪽 우측 단에서 시작해야 함\n{page19}"
+    );
+    assert!(
+        !page20.contains("FullParagraph[미주]  pi=995"),
+        "문29 시작이 20쪽으로 밀리면 19쪽 우측 단이 한컴보다 비어 보임\n{page20}"
     );
 }
 
@@ -442,6 +553,22 @@ fn issue_1139_page12_endnote_shape_picture_properties_resolve_virtual_para_index
 }
 
 #[test]
+fn issue_1139_page12_question15_keeps_hancom_endnote_gap() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(11).expect("page 12 render tree");
+
+    let prev_bottom = max_para_content_bottom(&tree.root, 664).expect("문14 final content");
+    let question15_y = min_para_text_y(&tree.root, 665).expect("문15 title");
+    let gap = question15_y - prev_bottom;
+
+    assert!(
+        (24.0..32.0).contains(&gap),
+        "12쪽 우측 하단 문15 시작 전에는 한컴 미주 사이 7mm에 해당하는 gap이 보존되어야 함: prev_bottom={prev_bottom}, question15_y={question15_y}, gap={gap}"
+    );
+}
+
+#[test]
 fn issue_1139_endnote_equation_exposes_note_ref_and_properties() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
@@ -484,5 +611,26 @@ fn issue_1139_endnote_equation_exposes_note_ref_and_properties() {
     assert!(
         props["fontSize"].as_u64().unwrap_or(0) > 0,
         "미주 내부 수식 fontSize가 조회되어야 함: {props}"
+    );
+    assert!(
+        props["width"].as_u64().unwrap_or(0) > 0 && props["height"].as_u64().unwrap_or(0) > 0,
+        "미주 내부 수식 기본 탭의 너비/높이가 실제 값으로 조회되어야 함: {props}"
+    );
+    assert_eq!(
+        props["treatAsChar"].as_bool(),
+        Some(true),
+        "미주 내부 수식은 한컴 기준 '글자처럼 취급'이어야 함: {props}"
+    );
+    assert!(
+        props["outerMarginLeft"].is_number()
+            && props["outerMarginTop"].is_number()
+            && props["outerMarginRight"].is_number()
+            && props["outerMarginBottom"].is_number(),
+        "수식 속성 여백/캡션 탭의 바깥 여백 값이 조회되어야 함: {props}"
+    );
+    assert_eq!(
+        props["hasCaption"].as_bool(),
+        Some(false),
+        "캡션이 없는 수식은 수식 속성 여백/캡션 탭에서 위치 없음으로 표시되어야 함: {props}"
     );
 }

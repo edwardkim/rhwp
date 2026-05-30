@@ -247,6 +247,15 @@ impl HeightCursor {
             allow_large_backward,
             self.dpi,
         );
+        let prev_line_spacing_px = (seg.line_spacing.max(0) as f64) / 7200.0 * self.dpi;
+        let bottom_new_note_gap_cap = if self.suppress_large_forward_jump
+            && y_offset > self.col_area_y + self.col_area_height * 0.75
+            && end_y <= self.col_area_y + self.col_area_height
+        {
+            Some((y_offset + prev_line_spacing_px).min(end_y))
+        } else {
+            None
+        };
         let compact_endnote_new_note_jump = self.suppress_large_forward_jump
             && paragraphs
                 .get(item_para)
@@ -268,13 +277,30 @@ impl HeightCursor {
                     .get(item_para)
                     .map(para_is_treat_as_char_picture_only)
                     .unwrap_or(false));
+        let follows_endnote_title = self.suppress_large_forward_jump
+            && paragraphs
+                .get(prev_pi)
+                .map(|p| p.text.trim_start().starts_with('문'))
+                .unwrap_or(false);
+        let follows_tall_inline_item = self.suppress_large_forward_jump && seg.line_height > 1500;
+        let prev_content_bottom_y = y_offset - prev_line_spacing_px;
+        let compact_endnote_deep_backtrack = self.suppress_large_forward_jump
+            && !is_page_path
+            && !vpos_rewind
+            && !follows_endnote_title
+            && !follows_tall_inline_item
+            && end_y < y_offset - 8.0
+            && end_y >= prev_content_bottom_y
+            && end_y <= self.col_area_y + self.col_area_height
+            && y_offset > self.col_area_y + self.col_area_height * 0.90
+            && y_offset - end_y <= 80.0;
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
             let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
             eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} compact_tac_pic_gap={} compact_bottom_rewind={} applied={}",
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} compact_tac_pic_gap={} compact_bottom_rewind={} compact_deep_backtrack={} applied={}",
                 path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind, applied && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
+                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind, compact_endnote_deep_backtrack, (applied || compact_endnote_deep_backtrack) && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
             );
         }
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
@@ -282,7 +308,12 @@ impl HeightCursor {
             // Compact endnote flow encodes visual gaps in absolute vpos.
             // Suppressed gaps must also move the vpos base, otherwise the next
             // line restores the skipped gap.
-            let suppressed_hu = ((end_y - y_offset) / self.dpi * 7200.0).round() as i32;
+            let rendered_y = if compact_endnote_new_note_jump {
+                bottom_new_note_gap_cap.unwrap_or(y_offset)
+            } else {
+                y_offset
+            };
+            let suppressed_hu = ((end_y - rendered_y).max(0.0) / self.dpi * 7200.0).round() as i32;
             if suppressed_hu > 0 {
                 if is_page_path {
                     self.vpos_page_base = Some(base + suppressed_hu);
@@ -291,12 +322,14 @@ impl HeightCursor {
                 }
             }
         }
-        if applied
+        if (applied || compact_endnote_deep_backtrack)
             && !stale_forward
             && !compact_endnote_new_note_jump
             && !compact_endnote_tac_picture_gap
         {
             end_y
+        } else if compact_endnote_new_note_jump {
+            bottom_new_note_gap_cap.unwrap_or(y_offset)
         } else {
             y_offset
         }
@@ -490,6 +523,95 @@ mod tests {
 
         let got = c.vpos_adjust(700.0, 1, &ps, &styles(0.0));
         assert!((got - 700.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// Compact 미주 하단에서 reset 없는 VPOS 후퇴가 80px 이내면 overflow 완화를 위해 적용한다.
+    #[test]
+    fn compact_endnote_deep_backtrack_uses_vpos_near_column_bottom() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 71900, 900, 6000, 5000), // prev_vpos_end=78800; spacing 안에서만 backtrack 허용
+            para(0, 71950, 900, 0, 5000),    // curr advances, but VPOS target is behind y
+        ];
+
+        let got = c.vpos_adjust(980.0, 1, &ps, &styles(0.0));
+        assert!(
+            (got - (100.0 + (71950.0 - 6800.0) / 75.0)).abs() < 1e-6,
+            "got={got}"
+        );
+    }
+
+    /// Page-base가 이미 확정된 흐름에서는 같은 보정이 직전 줄과 겹칠 수 있어 적용하지 않는다.
+    #[test]
+    fn compact_endnote_deep_backtrack_skips_page_path() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let ps = vec![para(0, 65000, 2700, 0, 5000), para(0, 66000, 900, 0, 5000)];
+
+        let got = c.vpos_adjust(1005.0, 1, &ps, &styles(0.0));
+        assert!((got - 1005.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 수식처럼 tall inline 항목 뒤에서는 되감김이 수식 bbox와 다음 문단을 겹치게 만든다.
+    #[test]
+    fn compact_endnote_deep_backtrack_skips_after_tall_line() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let ps = vec![para(0, 70100, 2200, 0, 5000), para(0, 70150, 900, 0, 5000)];
+
+        let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
+        assert!((got - 1030.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 새 미주 제목은 미주 사이 간격을 보존해야 하므로 deep backtrack 대상이 아니다.
+    #[test]
+    fn compact_endnote_deep_backtrack_skips_new_note_title() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![para(0, 70100, 900, 0, 5000), para(0, 70150, 900, 0, 5000)];
+        ps[1].text = "문11)".to_string();
+
+        let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
+        assert!((got - 1030.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 직전 문단의 line spacing 안으로만 당겨지는 새 미주 제목은 하단 overflow 완화를 위해 허용한다.
+    #[test]
+    fn compact_endnote_deep_backtrack_allows_safe_new_note_title() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![
+            para(0, 70100, 900, 6000, 5000),
+            para(0, 70150, 900, 0, 5000),
+        ];
+        ps[1].text = "문30)".to_string();
+
+        let got = c.vpos_adjust(980.0, 1, &ps, &styles(0.0));
+        assert!(got < 980.0, "got={got}");
+    }
+
+    /// 새 미주 제목 바로 다음 문단도 제목 위로 되감기면 미주 사이 간격과 제목이 깨진다.
+    #[test]
+    fn compact_endnote_deep_backtrack_skips_after_note_title() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![para(0, 70100, 900, 0, 5000), para(0, 70150, 900, 0, 5000)];
+        ps[0].text = "문11)".to_string();
+
+        let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
+        assert!((got - 1030.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// 되감긴 목표가 직전 줄 내용 하단보다 위이면 overflow보다 겹침 위험이 크다.
+    #[test]
+    fn compact_endnote_deep_backtrack_skips_if_it_crosses_previous_content() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        let ps = vec![para(0, 70100, 900, 452, 5000), para(0, 70150, 900, 0, 5000)];
+
+        let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
+        assert!((got - 1030.0).abs() < 1e-6, "got={got}");
     }
 
     /// 앞선 TAC 표 높이 때문에 lazy base 역산이 음수가 되면 되감김 보정을 건너뛴다.

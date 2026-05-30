@@ -7,6 +7,14 @@ type TabName = '기본' | '여백/캡션' | '수식';
 
 const TAB_NAMES: TabName[] = ['기본', '여백/캡션', '수식'];
 
+function hwpunitToMm(hu: number): number {
+  return hu * 25.4 / 7200;
+}
+
+function formatMm(hu: number | undefined): string {
+  return typeof hu === 'number' && Number.isFinite(hu) ? hwpunitToMm(hu).toFixed(2) : '';
+}
+
 function colorRefToHex(colorRef: number): string {
   const r = colorRef & 0xFF;
   const g = (colorRef >> 8) & 0xFF;
@@ -39,6 +47,18 @@ export class EquationPropertiesDialog {
   private noteRef?: NoteControlRef;
   private props: EquationProperties | null = null;
 
+  private widthInput!: HTMLInputElement;
+  private heightInput!: HTMLInputElement;
+  private treatAsCharInput!: HTMLInputElement;
+  private horzOffsetInput!: HTMLInputElement;
+  private vertOffsetInput!: HTMLInputElement;
+  private outerMarginLeftInput!: HTMLInputElement;
+  private outerMarginRightInput!: HTMLInputElement;
+  private outerMarginTopInput!: HTMLInputElement;
+  private outerMarginBottomInput!: HTMLInputElement;
+  private captionPositionSelect!: HTMLSelectElement;
+  private captionWidthInput!: HTMLInputElement;
+  private captionSpacingInput!: HTMLInputElement;
   private fontSizeInput!: HTMLInputElement;
   private colorInput!: HTMLInputElement;
   private baselineInput!: HTMLInputElement;
@@ -184,15 +204,21 @@ export class EquationPropertiesDialog {
     const panel = this.panel();
 
     const sizeFs = this.fieldset('크기');
-    sizeFs.appendChild(this.row('너비', this.select(['고정값'], true), this.textInput('', true), this.unit('mm')));
-    sizeFs.appendChild(this.row('높이', this.select(['고정값'], true), this.textInput('', true), this.unit('mm'), this.checkbox('크기 고정', true, true)));
+    this.widthInput = this.textInput('', true);
+    this.heightInput = this.textInput('', true);
+    sizeFs.appendChild(this.row('너비', this.select(['고정값'], true), this.widthInput, this.unit('mm')));
+    sizeFs.appendChild(this.row('높이', this.select(['고정값'], true), this.heightInput, this.unit('mm'), this.checkbox('크기 고정', true, true)));
     panel.appendChild(sizeFs);
 
     const posFs = this.fieldset('위치');
-    posFs.appendChild(this.row('', this.checkbox('글자처럼 취급', true, true)));
+    const treatAsChar = this.checkboxWithInput('글자처럼 취급', true, true);
+    this.treatAsCharInput = treatAsChar.input;
+    posFs.appendChild(this.row('', treatAsChar.label));
     posFs.appendChild(this.row('본문과의 배치', this.wrapButton(), this.wrapButton(), this.wrapButton(), this.wrapButton(), this.label('본문 위치'), this.select(['양쪽'], true)));
-    posFs.appendChild(this.row('가로', this.select(['문단'], true), this.unit('의'), this.select(['왼쪽'], true), this.label('기준'), this.textInput('0.00', true), this.unit('mm')));
-    posFs.appendChild(this.row('세로', this.select(['문단'], true), this.unit('의'), this.select(['위'], true), this.label('기준'), this.textInput('0.00', true), this.unit('mm')));
+    this.horzOffsetInput = this.textInput('0.00', true);
+    this.vertOffsetInput = this.textInput('0.00', true);
+    posFs.appendChild(this.row('가로', this.select(['문단'], true), this.unit('의'), this.select(['왼쪽'], true), this.label('기준'), this.horzOffsetInput, this.unit('mm')));
+    posFs.appendChild(this.row('세로', this.select(['문단'], true), this.unit('의'), this.select(['위'], true), this.label('기준'), this.vertOffsetInput, this.unit('mm')));
     posFs.appendChild(this.row('', this.checkbox('쪽 영역 안으로 제한', true, true)));
     posFs.appendChild(this.row('', this.checkbox('서로 겹침 허용', false, true)));
     posFs.appendChild(this.row('', this.checkbox('개체와 조판 부호를 항상 같은 쪽에 놓기', false, true)));
@@ -220,13 +246,20 @@ export class EquationPropertiesDialog {
     const panel = this.panel();
 
     const marginFs = this.fieldset('바깥 여백');
-    marginFs.appendChild(this.row('왼쪽', this.textInput('0.00', true), this.unit('mm'), this.label('오른쪽'), this.textInput('0.00', true), this.unit('mm')));
-    marginFs.appendChild(this.row('위쪽', this.textInput('0.00', true), this.unit('mm'), this.label('아래쪽'), this.textInput('0.00', true), this.unit('mm')));
+    this.outerMarginLeftInput = this.textInput('0.00', true);
+    this.outerMarginRightInput = this.textInput('0.00', true);
+    this.outerMarginTopInput = this.textInput('0.00', true);
+    this.outerMarginBottomInput = this.textInput('0.00', true);
+    marginFs.appendChild(this.row('왼쪽', this.outerMarginLeftInput, this.unit('mm'), this.label('오른쪽'), this.outerMarginRightInput, this.unit('mm')));
+    marginFs.appendChild(this.row('위쪽', this.outerMarginTopInput, this.unit('mm'), this.label('아래쪽'), this.outerMarginBottomInput, this.unit('mm')));
     panel.appendChild(marginFs);
 
     const captionFs = this.fieldset('캡션');
-    captionFs.appendChild(this.row('위치', this.select(['없음'], true)));
-    captionFs.appendChild(this.row('폭', this.textInput('', true), this.unit('mm'), this.label('간격'), this.textInput('', true), this.unit('mm')));
+    this.captionPositionSelect = this.select(['없음', '위', '아래', '왼쪽', '오른쪽'], true);
+    this.captionWidthInput = this.textInput('', true);
+    this.captionSpacingInput = this.textInput('', true);
+    captionFs.appendChild(this.row('위치', this.captionPositionSelect));
+    captionFs.appendChild(this.row('폭', this.captionWidthInput, this.unit('mm'), this.label('간격'), this.captionSpacingInput, this.unit('mm')));
     panel.appendChild(captionFs);
 
     return panel;
@@ -272,6 +305,18 @@ export class EquationPropertiesDialog {
 
   private populate(): void {
     if (!this.props) return;
+    this.widthInput.value = formatMm(this.props.width);
+    this.heightInput.value = formatMm(this.props.height);
+    this.treatAsCharInput.checked = this.props.treatAsChar ?? true;
+    this.horzOffsetInput.value = formatMm(this.props.horzOffset ?? 0);
+    this.vertOffsetInput.value = formatMm(this.props.vertOffset ?? 0);
+    this.outerMarginLeftInput.value = formatMm(this.props.outerMarginLeft ?? 0);
+    this.outerMarginRightInput.value = formatMm(this.props.outerMarginRight ?? 0);
+    this.outerMarginTopInput.value = formatMm(this.props.outerMarginTop ?? 0);
+    this.outerMarginBottomInput.value = formatMm(this.props.outerMarginBottom ?? 0);
+    this.captionPositionSelect.value = this.captionPositionLabel();
+    this.captionWidthInput.value = this.props.hasCaption ? formatMm(this.props.captionWidth ?? 0) : '';
+    this.captionSpacingInput.value = this.props.hasCaption ? formatMm(this.props.captionSpacing ?? 0) : '';
     this.fontNameInput.value = this.props.fontName || '';
     this.fontSizeInput.value = String(Math.round(this.props.fontSize / 100));
     this.colorInput.value = colorRefToHex(this.props.color);
@@ -313,6 +358,22 @@ export class EquationPropertiesDialog {
     this.hide();
     const editor = new EquationEditorDialog(this.wasm, this.eventBus);
     editor.open(this.sec, this.para, this.ci, this.cellIdx, this.cellParaIdx, this.noteRef);
+  }
+
+  private captionPositionLabel(): string {
+    if (!this.props?.hasCaption) return '없음';
+    switch (this.props.captionDirection) {
+      case 'Top':
+        return '위';
+      case 'Bottom':
+        return '아래';
+      case 'Left':
+        return '왼쪽';
+      case 'Right':
+        return '오른쪽';
+      default:
+        return '없음';
+    }
   }
 
   private panel(): HTMLDivElement {
@@ -374,6 +435,10 @@ export class EquationPropertiesDialog {
   }
 
   private checkbox(text: string, checked: boolean, disabled: boolean): HTMLLabelElement {
+    return this.checkboxWithInput(text, checked, disabled).label;
+  }
+
+  private checkboxWithInput(text: string, checked: boolean, disabled: boolean): { label: HTMLLabelElement; input: HTMLInputElement } {
     const label = document.createElement('label');
     label.className = 'dialog-checkbox';
     const input = document.createElement('input');
@@ -381,7 +446,7 @@ export class EquationPropertiesDialog {
     input.checked = checked;
     input.disabled = disabled;
     label.append(input, document.createTextNode(text));
-    return label;
+    return { label, input };
   }
 
   private wrapButton(): HTMLButtonElement {
@@ -403,6 +468,9 @@ export class EquationPropertiesDialog {
       const rect = this.dialog.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
+      this.dialog.style.position = 'fixed';
+      this.dialog.style.left = `${rect.left}px`;
+      this.dialog.style.top = `${rect.top}px`;
       e.preventDefault();
     });
     document.addEventListener('mousemove', (e) => {

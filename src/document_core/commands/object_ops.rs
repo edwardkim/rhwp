@@ -2267,7 +2267,10 @@ impl DocumentCore {
              \"vertRelTo\":\"{}\",\"vertAlign\":\"{}\",\
              \"horzRelTo\":\"{}\",\"horzAlign\":\"{}\",\
              \"vertOffset\":{},\"horzOffset\":{},\
-             \"textWrap\":\"{}\",\"zOrder\":{},\"instanceId\":{},\"description\":\"{}\"",
+             \"textWrap\":\"{}\",\"zOrder\":{},\"instanceId\":{},\
+             \"outerMarginLeft\":{},\"outerMarginTop\":{},\
+             \"outerMarginRight\":{},\"outerMarginBottom\":{},\
+             \"description\":\"{}\"",
             c.width,
             c.height,
             c.treat_as_char,
@@ -2280,6 +2283,10 @@ impl DocumentCore {
             text_wrap,
             c.z_order,
             c.instance_id,
+            c.margin.left,
+            c.margin.top,
+            c.margin.right,
+            c.margin.bottom,
             desc_escaped,
         )
     }
@@ -2289,7 +2296,7 @@ impl DocumentCore {
         c: &mut crate::model::shape::CommonObjAttr,
         props_json: &str,
     ) {
-        use super::super::helpers::{json_bool, json_str, json_u32};
+        use super::super::helpers::{json_bool, json_i16, json_str, json_u32};
 
         if let Some(w) = json_u32(props_json, "width") {
             c.width = w.max(MIN_SHAPE_SIZE);
@@ -2357,6 +2364,18 @@ impl DocumentCore {
         }
         if let Some(v) = json_str(props_json, "description") {
             c.description = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginLeft") {
+            c.margin.left = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginTop") {
+            c.margin.top = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginRight") {
+            c.margin.right = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginBottom") {
+            c.margin.bottom = v;
         }
     }
 
@@ -5179,15 +5198,18 @@ impl DocumentCore {
     }
 
     fn equation_properties_json(eq: &crate::model::control::Equation) -> String {
+        let common_json = Self::common_obj_attr_to_json(&eq.common);
         let script_escaped = super::super::helpers::json_escape(&eq.script);
         let font_name_escaped = super::super::helpers::json_escape(&eq.font_name);
 
         format!(
             concat!(
-                "{{\"script\":\"{}\",\"fontSize\":{},\"color\":{},",
-                "\"baseline\":{},\"fontName\":\"{}\"}}"
+                "{{{},\"script\":\"{}\",\"fontSize\":{},\"color\":{},",
+                "\"baseline\":{},\"fontName\":\"{}\",",
+                "\"hasCaption\":false,\"captionDirection\":\"None\",",
+                "\"captionWidth\":0,\"captionSpacing\":0}}"
             ),
-            script_escaped, eq.font_size, eq.color, eq.baseline, font_name_escaped,
+            common_json, script_escaped, eq.font_size, eq.color, eq.baseline, font_name_escaped,
         )
     }
 
@@ -5217,6 +5239,7 @@ impl DocumentCore {
         if let Some(fn_) = json_str(props_json, "fontName") {
             eq.font_name = fn_;
         }
+        Self::apply_common_obj_attr_from_json(&mut eq.common, props_json);
 
         let font_size_px = hwpunit_to_px(eq.font_size as i32, dpi);
         let tokens = tokenize(&eq.script);

@@ -76,10 +76,20 @@ impl DocumentCore {
             .sections
             .get(sec_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
-        let para = section
-            .paragraphs
-            .get(para_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("문단 {} 범위 초과", para_idx)))?;
+        let Some(para) = section.paragraphs.get(para_idx) else {
+            if let Some(src) = self.virtual_endnote_para_source(sec_idx, para_idx) {
+                return self.get_para_properties_in_footnote_native(
+                    src.section_index,
+                    src.para_index,
+                    src.control_index,
+                    src.note_para_index,
+                );
+            }
+            return Err(HwpError::RenderError(format!(
+                "문단 {} 범위 초과",
+                para_idx
+            )));
+        };
         let mut json = self.build_para_properties_json(para.para_shape_id, sec_idx);
 
         // 번호 시작 방식 판별: numbering_id 패턴 기반
@@ -131,6 +141,20 @@ impl DocumentCore {
         }
 
         Ok(json)
+    }
+
+    fn virtual_endnote_para_source(
+        &self,
+        sec_idx: usize,
+        para_idx: usize,
+    ) -> Option<crate::renderer::pagination::EndnoteParaSource> {
+        let body_len = self.document.sections.get(sec_idx)?.paragraphs.len();
+        let local_idx = para_idx.checked_sub(body_len)?;
+        self.pagination
+            .get(sec_idx)?
+            .endnote_para_sources
+            .get(local_idx)
+            .cloned()
     }
 
     /// 셀 내부 문단의 문단 속성 조회 (네이티브)
@@ -1071,6 +1095,15 @@ impl DocumentCore {
             return Err(HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)));
         }
         if para_idx >= self.document.sections[sec_idx].paragraphs.len() {
+            if let Some(src) = self.virtual_endnote_para_source(sec_idx, para_idx) {
+                return self.apply_para_format_in_footnote_native(
+                    src.section_index,
+                    src.para_index,
+                    src.control_index,
+                    src.note_para_index,
+                    props_json,
+                );
+            }
             return Err(HwpError::RenderError(format!(
                 "문단 {} 범위 초과",
                 para_idx
