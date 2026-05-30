@@ -263,6 +263,11 @@ fn issue_1139_page17_endnote_question30_starts_on_right_column() {
         "한컴오피스 기준 문30 첫 문단(pi=928)은 17쪽 우측 단 하단에서 시작해야 함\n{page17}"
     );
     assert!(
+        page17.contains("FullParagraph[미주]  pi=900")
+            && page17.contains("FullParagraph[미주]  pi=901"),
+        "한컴오피스 기준 문29 시작은 17쪽 좌측 단 하단에 남아야 함\n{page17}"
+    );
+    assert!(
         page17.contains("FullParagraph[미주]  pi=929")
             && page17.contains("FullParagraph[미주]  pi=930"),
         "한컴오피스 기준 17쪽 우측 단에는 문30 풀이 본문 일부(pi=929, pi=930)도 이어져야 함\n{page17}"
@@ -274,9 +279,48 @@ fn issue_1139_page17_endnote_question30_starts_on_right_column() {
         "문30 앞부분(pi=928..930)이 18쪽으로 이월되면 17쪽 하단 배치가 한컴 기준보다 일찍 끊김\n{page18}"
     );
     assert!(
-        page18.contains("FullParagraph[미주]  pi=931")
-            && !page18.contains("PartialParagraph  pi=931"),
-        "17쪽 하단에서 계산된 내부 VPOS split이 18쪽 첫 단에 stale 적용되면 안 됨\n{page18}"
+        page17.contains("PartialParagraph  pi=931  lines=0..4")
+            && page18.contains("PartialParagraph  pi=931  lines=4..9")
+            && !page17.contains("FullParagraph[미주]  pi=931")
+            && !page18.contains("FullParagraph[미주]  pi=931"),
+        "문30 본문은 17/18쪽에서 줄 단위로 이어져야 함\n{page17}\n{page18}"
+    );
+}
+
+#[test]
+fn issue_1139_endnote_virtual_paragraph_selection_rects_are_available() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let line_info = doc
+        .get_line_info(0, 868, 4)
+        .unwrap_or_else(|e| panic!("미주 가상 문단 줄 정보 조회 실패: {e:?}"));
+    let line_info: Value = serde_json::from_str(&line_info).expect("line info json");
+    assert!(
+        line_info["lineCount"].as_u64().unwrap_or(0) > 0,
+        "미주 가상 문단도 줄 정보를 반환해야 함: {line_info}"
+    );
+
+    let cursor = doc
+        .get_cursor_rect(0, 868, 4)
+        .unwrap_or_else(|e| panic!("미주 가상 문단 커서 조회 실패: {e:?}"));
+    let cursor: Value = serde_json::from_str(&cursor).expect("cursor rect json");
+    assert_eq!(
+        cursor["pageIndex"].as_u64(),
+        Some(15),
+        "문26 미주 가상 문단은 16쪽에서 커서 좌표를 찾아야 함: {cursor}"
+    );
+
+    let rects = doc
+        .get_selection_rects(0, 868, 0, 868, 8)
+        .unwrap_or_else(|e| panic!("미주 가상 문단 선택 사각형 조회 실패: {e:?}"));
+    let rects: Value = serde_json::from_str(&rects).expect("selection rects json");
+    let rects = rects.as_array().expect("selection rect array");
+    assert!(
+        rects.iter().any(|rect| {
+            rect["pageIndex"].as_u64() == Some(15) && rect["width"].as_f64().unwrap_or(0.0) > 0.0
+        }),
+        "드래그 선택 하이라이트용 사각형이 16쪽 미주 문단에서 생성되어야 함: {rects:?}"
     );
 }
 

@@ -1211,10 +1211,35 @@ impl LayoutEngine {
             }
         }
 
+        let endnote_line_vpos_base: Option<(i32, f64)> = {
+            let base = self.endnote_para_base.get();
+            if cell_ctx.is_none() && para_index >= base && end > start_line + 1 {
+                para.and_then(|p| {
+                    let range = p.line_segs.get(start_line..end)?;
+                    if range
+                        .windows(2)
+                        .all(|w| w[1].vertical_pos >= w[0].vertical_pos)
+                    {
+                        range.first().map(|seg| (seg.vertical_pos, y))
+                    } else {
+                        None
+                    }
+                })
+            } else {
+                None
+            }
+        };
+        let mut endnote_line_vpos_y_end: Option<f64> = None;
         let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for line_idx in start_line..end {
             let comp_line = &composed.lines[line_idx];
             let mut current_line_reserved_tac_picture_height: Option<f64> = None;
+            if let (Some((base_vpos, base_y)), Some(seg)) = (
+                endnote_line_vpos_base,
+                para.and_then(|p| p.line_segs.get(line_idx)),
+            ) {
+                y = base_y + hwpunit_to_px(seg.vertical_pos - base_vpos, self.dpi);
+            }
 
             // 다단 필터링: segment_width가 현재 단 너비와 불일치하면 건너뜀
             if let Some(col_w) = multi_col_width_hu {
@@ -3943,7 +3968,23 @@ impl LayoutEngine {
             if cell_ctx.is_none() && !skip_advance_empty_line {
                 self.last_item_content_bottom.set(y + line_height);
             }
-            if is_cell_last_line && cell_ctx.is_some() {
+            if endnote_line_vpos_base.is_some() {
+                let line_bottom = if skip_advance_empty_line {
+                    y
+                } else {
+                    let trailing = if line_idx + 1 < end {
+                        line_spacing_px
+                    } else {
+                        0.0
+                    };
+                    y + line_height + trailing + tac_picture_label_extra
+                };
+                let next_y = endnote_line_vpos_y_end
+                    .map(|prev| prev.max(line_bottom))
+                    .unwrap_or(line_bottom);
+                endnote_line_vpos_y_end = Some(next_y);
+                y = next_y;
+            } else if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
             } else if skip_advance_empty_line {
                 // no advance

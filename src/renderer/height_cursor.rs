@@ -51,7 +51,7 @@ pub(crate) struct HeightCursor {
     pub skip_spacing_before_prededuct: bool,
     /// 미주 흐름에서는 LINE_SEG vpos 가 같은 단 안에서 크게 되감길 수 있다.
     pub allow_vpos_rewind: bool,
-    /// 음수 시작 높이를 가진 미주 단은 되감김이 없는 일반 vpos 보정도 크게 뒤로 갈 수 있다.
+    /// 미주 단은 하단부에서 뒤로 크게 되감을 수 있다.
     pub allow_start_height_backtrack: bool,
     /// 미주 흐름의 큰 forward vpos 점프는 단/쪽 재배치 흔적일 수 있어 순차 배치를 유지한다.
     pub suppress_large_forward_jump: bool,
@@ -229,6 +229,10 @@ impl HeightCursor {
             .map(|ps| ps.spacing_before)
             .unwrap_or(0.0);
         // [Task #1027 Stage A] 공유 클램프 함수.
+        let allow_large_backward = (self.allow_vpos_rewind && vpos_rewind)
+            || (self.allow_start_height_backtrack
+                && y_offset > self.col_area_y + self.col_area_height * 0.75)
+            || compact_endnote_bottom_rewind;
         let (end_y, applied) = vpos_corrected_end_y(
             is_page_path,
             self.col_anchor_y,
@@ -240,9 +244,7 @@ impl HeightCursor {
             y_offset,
             curr_has_topbottom_para_table,
             self.skip_spacing_before_prededuct,
-            (self.allow_vpos_rewind && vpos_rewind)
-                || self.allow_start_height_backtrack
-                || compact_endnote_bottom_rewind,
+            allow_large_backward,
             self.dpi,
         );
         let compact_endnote_new_note_jump = self.suppress_large_forward_jump
@@ -503,5 +505,23 @@ mod tests {
         let got = c.vpos_adjust(361.37, 1, &ps, &styles(0.0));
         assert!((got - 361.37).abs() < 1e-6, "got={got}");
         assert_eq!(c.vpos_lazy_base, None);
+    }
+
+    /// VPOS가 하단부에서 크게 되감길 때(8px 이상)에도 보정이 적용되면
+    /// 반환 y 자체가 새 기준이므로 page base는 추가로 움직이지 않는다.
+    #[test]
+    fn backward_correction_keeps_page_base() {
+        let mut c = HeightCursor::new(DPI, COL_Y, COL_H, COL_Y, Some(0), false, true, true, false);
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 1000, 1000, 0, 5000), // prev end: 1100
+            para(0, 200, 1000, 0, 5000),  // vpos rewind candidate
+        ];
+
+        let got = c.vpos_adjust(780.0, 1, &ps, &styles(0.0));
+        let expected_end_y = 100.0 + 200.0 / 75.0;
+
+        assert!((got - expected_end_y).abs() < 1e-6, "got={got}");
+        assert_eq!(c.vpos_page_base, Some(0));
     }
 }

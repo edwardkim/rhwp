@@ -37,10 +37,8 @@ impl DocumentCore {
         let pages = self.find_pages_for_paragraph(section_idx, para_idx)?;
 
         let footnote_marker_positions: Vec<(usize, usize)> = self
-            .document
-            .sections
-            .get(section_idx)
-            .and_then(|section| section.paragraphs.get(para_idx))
+            .get_render_paragraph_ref(section_idx, para_idx)
+            .ok()
             .map(|para| {
                 let ctrl_positions = find_logical_control_positions(para);
                 para.controls
@@ -514,21 +512,19 @@ impl DocumentCore {
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
             if !self.show_control_codes {
-                if let Some(section) = self.document.sections.get(section_idx) {
-                    if let Some(para) = section.paragraphs.get(para_idx) {
-                        if let Some(hit) = find_inline_flow_cursor_hit(
-                            &tree,
-                            section_idx,
-                            para_idx,
-                            para,
-                            char_offset,
-                            page_num,
-                        ) {
-                            return Ok(format!(
-                                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                                hit.page_index, hit.x, hit.y, hit.height
-                            ));
-                        }
+                if let Ok(para) = self.get_render_paragraph_ref(section_idx, para_idx) {
+                    if let Some(hit) = find_inline_flow_cursor_hit(
+                        &tree,
+                        section_idx,
+                        para_idx,
+                        para,
+                        char_offset,
+                        page_num,
+                    ) {
+                        return Ok(format!(
+                            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                            hit.page_index, hit.x, hit.y, hit.height
+                        ));
                     }
                 }
             }
@@ -563,58 +559,56 @@ impl DocumentCore {
         // 조판부호 감추기 모드: 인라인 도형 컨트롤 위치에서 커서 좌표 반환
         // treat_as_char Shape는 inline_shape_positions에서 좌표를 가져와 커서 표시
         if !self.show_control_codes {
-            if let Some(section) = self.document.sections.get(section_idx) {
-                if let Some(para) = section.paragraphs.get(para_idx) {
-                    let text_len = para.text.chars().count();
-                    let ctrl_positions =
-                        crate::document_core::helpers::find_logical_control_positions(para);
+            if let Ok(para) = self.get_render_paragraph_ref(section_idx, para_idx) {
+                let text_len = para.text.chars().count();
+                let ctrl_positions =
+                    crate::document_core::helpers::find_logical_control_positions(para);
 
-                    // char_offset 위치에 인라인 컨트롤이 있는지 확인
-                    let inline_ctrl = para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                        matches!(
-                            ctrl,
-                            Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                        ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
-                            && char_offset != text_len
-                    });
-                    // 텍스트 범위 밖이지만 navigable 범위 내 (도형이 텍스트 뒤에 있을 때)
-                    let beyond_ctrl =
-                        if char_offset > text_len && char_offset <= navigable_text_len(para) {
-                            para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                                matches!(
-                                    ctrl,
-                                    Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                                ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
-                            })
+                // char_offset 위치에 인라인 컨트롤이 있는지 확인
+                let inline_ctrl = para.controls.iter().enumerate().find(|(ci, ctrl)| {
+                    matches!(
+                        ctrl,
+                        Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
+                    ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                        && char_offset != text_len
+                });
+                // 텍스트 범위 밖이지만 navigable 범위 내 (도형이 텍스트 뒤에 있을 때)
+                let beyond_ctrl =
+                    if char_offset > text_len && char_offset <= navigable_text_len(para) {
+                        para.controls.iter().enumerate().find(|(ci, ctrl)| {
+                            matches!(
+                                ctrl,
+                                Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
+                            ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                        })
+                    } else {
+                        None
+                    };
+
+                if let Some((ci, _ctrl)) = inline_ctrl.or(beyond_ctrl) {
+                    // inline_shape_positions에서 Shape 좌표 조회
+                    let first_page = pages[0];
+                    let tree = self.build_page_tree(first_page)?;
+                    if let Some((sx, sy)) =
+                        tree.get_inline_shape_position(section_idx, para_idx, ci, None)
+                    {
+                        let shape_h = if let Some(Control::Shape(s)) = para.controls.get(ci) {
+                            crate::renderer::hwpunit_to_px(
+                                s.common().height as i32,
+                                crate::renderer::DEFAULT_DPI,
+                            )
+                        } else if let Some(Control::Picture(p)) = para.controls.get(ci) {
+                            crate::renderer::hwpunit_to_px(
+                                p.common.height as i32,
+                                crate::renderer::DEFAULT_DPI,
+                            )
                         } else {
-                            None
+                            16.0
                         };
-
-                    if let Some((ci, _ctrl)) = inline_ctrl.or(beyond_ctrl) {
-                        // inline_shape_positions에서 Shape 좌표 조회
-                        let first_page = pages[0];
-                        let tree = self.build_page_tree(first_page)?;
-                        if let Some((sx, sy)) =
-                            tree.get_inline_shape_position(section_idx, para_idx, ci, None)
-                        {
-                            let shape_h = if let Some(Control::Shape(s)) = para.controls.get(ci) {
-                                crate::renderer::hwpunit_to_px(
-                                    s.common().height as i32,
-                                    crate::renderer::DEFAULT_DPI,
-                                )
-                            } else if let Some(Control::Picture(p)) = para.controls.get(ci) {
-                                crate::renderer::hwpunit_to_px(
-                                    p.common.height as i32,
-                                    crate::renderer::DEFAULT_DPI,
-                                )
-                            } else {
-                                16.0
-                            };
-                            return Ok(format!(
-                                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                                first_page, sx, sy, shape_h
-                            ));
-                        }
+                        return Ok(format!(
+                            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                            first_page, sx, sy, shape_h
+                        ));
                     }
                 }
             }

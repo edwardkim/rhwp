@@ -17,16 +17,32 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        let para = self
-            .document
-            .sections
-            .get(section_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)))?
-            .paragraphs
-            .get(para_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        let para = self.get_render_paragraph_ref(section_idx, para_idx)?;
 
         Self::compute_line_info(para, char_offset)
+    }
+
+    pub(crate) fn get_render_paragraph_ref(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<&Paragraph, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        if let Some(para) = section.paragraphs.get(para_idx) {
+            return Ok(para);
+        }
+
+        let local_idx = para_idx
+            .checked_sub(section.paragraphs.len())
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+
+        self.pagination
+            .get(section_idx)
+            .and_then(|pagination| pagination.endnote_paragraphs.get(local_idx))
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))
     }
 
     /// 셀 내 문단의 줄 정보를 반환한다 (네이티브).
@@ -342,13 +358,7 @@ impl DocumentCore {
                     ))
                 })
         } else {
-            self.document
-                .sections
-                .get(sec)
-                .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", sec)))?
-                .paragraphs
-                .get(para)
-                .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para)))
+            self.get_render_paragraph_ref(sec, para)
         }
     }
 
@@ -1521,17 +1531,7 @@ impl DocumentCore {
                         ))
                     })?
             } else {
-                self.document
-                    .sections
-                    .get(section_idx)
-                    .ok_or_else(|| {
-                        HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-                    })?
-                    .paragraphs
-                    .get(para_idx)
-                    .ok_or_else(|| {
-                        HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx))
-                    })?
+                self.get_render_paragraph_ref(section_idx, para_idx)?
             };
 
             let char_count = navigable_text_len(para);

@@ -2114,15 +2114,14 @@ impl TypesetEngine {
                             };
 
                             let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
+                            let total_advance_fit =
+                                fmt.line_advances_sum(0..fmt.line_heights.len());
                             let split_endnote_to_fit = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && !local_vpos_rewind
-                                && internal_rewind_split.is_none()
                                 && st.current_height < available
-                                && st.current_height + en_fit > available
-                                && st.current_height
-                                    + fmt.line_advances_sum(0..fmt.line_heights.len())
-                                    > available
+                                && (st.current_height + en_fit > available
+                                    || st.current_height + total_advance_fit > available)
                                 && fmt.line_heights.len() > 1
                                 && para_has_visible_text_or_equation(en_para)
                             {
@@ -2163,12 +2162,13 @@ impl TypesetEngine {
                                     internal_rewind_split = None;
                                 }
                             }
-                            let new_endnote_advance_threshold =
-                                if st.current_column + 1 < st.col_count {
-                                    0.88
-                                } else {
-                                    0.95
-                                };
+                            let new_endnote_advance_threshold = if default_between_notes_gap {
+                                0.95
+                            } else if st.current_column + 1 < st.col_count {
+                                0.88
+                            } else {
+                                0.95
+                            };
                             if st.col_count > 1
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
@@ -2195,7 +2195,8 @@ impl TypesetEngine {
                             }
                             // advance 후 재평가 — 새 단 첫 미주는 prev=None → 자체 높이.
                             let (_, en_advance) = compute_en_metrics(prev_en_bottom_vpos);
-                            if let Some(split_line) = internal_rewind_split.or(split_endnote_to_fit)
+                            let mut split_endnote_emitted = false;
+                            if let Some(split_line) = split_endnote_to_fit.or(internal_rewind_split)
                             {
                                 let first_h = fmt.line_advances_sum(0..split_line);
                                 st.current_items.push(PageItem::PartialParagraph {
@@ -2216,6 +2217,7 @@ impl TypesetEngine {
                                 });
                                 st.current_height += rest_h;
                                 st.current_endnote_flow = true;
+                                split_endnote_emitted = true;
                             } else {
                                 st.current_items.push(PageItem::FullParagraph {
                                     para_index: en_para_idx,
@@ -2236,7 +2238,9 @@ impl TypesetEngine {
                                 prev_en_bottom_vpos = None;
                             }
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
-                            if let Some(tb) = this_bottom_offset {
+                            if split_endnote_emitted {
+                                prev_en_bottom_vpos = None;
+                            } else if let Some(tb) = this_bottom_offset {
                                 prev_en_bottom_vpos = Some(tb);
                             }
                         }
