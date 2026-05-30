@@ -91,3 +91,4 @@ insert.ts:137 [footnote] result: {ok: true, paraIdx: 0, controlIdx: 3, footnoteN
 - 2026-05-30: Stage31 변경분을 커밋했고, 내부 절차에 따라 PR 생성은 작업지시자 승인 대기 상태로 둔다.
 - 2026-05-30: 작업지시자 승인 후 PR #1178을 생성했다. URL: `https://github.com/edwardkim/rhwp/pull/1178`
 - 2026-05-30: 작업지시자 피드백에 따라 PR 본문에 미주 처리 제한 사항을 보강했다. 현재 미주 구현은 일반 완성 기능이 아니며, 정상 처리 확인 범위는 두 개 시험문제 케이스로 제한된다.
+- 2026-05-30: PR #1178 Build & Test 실패를 확인했다. 원인은 `examples/diag_1139_para_shape.rs`의 오래된 IR 필드 참조였고, 현재 모델의 글상자 문단 접근 및 line 길이 계산 방식으로 수정했다.

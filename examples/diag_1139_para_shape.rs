@@ -17,7 +17,9 @@ fn collect_endnote_paragraphs<'a>(paras: &'a [Paragraph], out: &mut Vec<&'a Para
                     }
                 }
                 Control::Shape(shape) => {
-                    collect_endnote_paragraphs(&shape.paragraphs, out);
+                    if let Some(text_box) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
+                        collect_endnote_paragraphs(&text_box.paragraphs, out);
+                    }
                 }
                 _ => {}
             }
@@ -90,6 +92,12 @@ fn main() {
             );
         }
         for (li, seg) in para.line_segs.iter().enumerate() {
+            let line_end = para
+                .line_segs
+                .get(li + 1)
+                .map(|next| next.text_start)
+                .unwrap_or(para.char_count);
+            let line_len = line_end.saturating_sub(seg.text_start);
             println!(
                 "  line[{li}] vpos={} height={} spacing={} text_h={} base={} col_start={} width={} start={} len={}",
                 seg.vertical_pos,
@@ -100,7 +108,7 @@ fn main() {
                 seg.column_start,
                 seg.segment_width,
                 seg.text_start,
-                seg.text_length
+                line_len
             );
         }
     }
