@@ -89,3 +89,4 @@ insert.ts:137 [footnote] result: {ok: true, paraIdx: 0, controlIdx: 3, footnoteN
   - `wasm-pack build --target web --out-dir pkg`
   - 로컬 Chrome headless DOM 검증: `미주` 클릭 후 주석 도구상자 표시, `121212` 입력, `닫기` 클릭 후 주석 모드 종료 확인
 - 2026-05-30: Stage31 변경분을 커밋했고, 내부 절차에 따라 PR 생성은 작업지시자 승인 대기 상태로 둔다.
+- 2026-05-30: 작업지시자 승인 후 PR #1178을 생성했다. URL: `https://github.com/edwardkim/rhwp/pull/1178`
