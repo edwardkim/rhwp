@@ -903,6 +903,17 @@ export class CursorState {
 
       // 각주 편집 모드
       if (this._footnoteMode) {
+        const noteRect = this.wasm.getCursorRectInNote?.(
+          this._fnSectionIdx,
+          this._fnParaIdx,
+          this._fnControlIdx,
+          this._fnInnerParaIdx,
+          this._fnCharOffset,
+        );
+        if (noteRect) {
+          this.rect = noteRect;
+          return;
+        }
         this.rect = this.wasm.getCursorRectInFootnote(
           this._fnPageNum, this._fnFootnoteIndex, this._fnInnerParaIdx, this._fnCharOffset,
         );

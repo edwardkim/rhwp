@@ -23,7 +23,9 @@ use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::layout::border_width_to_px;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
-use crate::renderer::{hwpunit_to_px, DEFAULT_DPI};
+use crate::renderer::{
+    format_number, hwpunit_to_px, NumberFormat as RenderNumberFormat, DEFAULT_DPI,
+};
 
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
@@ -31,6 +33,43 @@ use super::pagination::{
     ColumnContent, EndnoteParaSource, EndnoteRef, FootnoteRef, FootnoteSource, HeaderFooterRef,
     PageContent, PageItem, PaginationResult,
 };
+
+fn note_number_format_from_hwp_code(code: u8) -> RenderNumberFormat {
+    match code {
+        0 => RenderNumberFormat::Digit,
+        1 => RenderNumberFormat::CircledDigit,
+        2 => RenderNumberFormat::RomanUpper,
+        3 => RenderNumberFormat::RomanLower,
+        4 => RenderNumberFormat::LatinUpper,
+        5 => RenderNumberFormat::LatinLower,
+        8 => RenderNumberFormat::HangulGaNaDa,
+        12 => RenderNumberFormat::HangulNumber,
+        13 => RenderNumberFormat::HanjaNumber,
+        _ => RenderNumberFormat::Digit,
+    }
+}
+
+fn note_decoration_char(value: u16) -> Option<char> {
+    if value == 0 {
+        None
+    } else {
+        char::from_u32(value as u32).filter(|ch| *ch != '\0')
+    }
+}
+
+fn format_endnote_marker_text(endnote: &crate::model::footnote::Endnote) -> String {
+    let number = format_number(
+        endnote.number,
+        note_number_format_from_hwp_code(endnote.number_shape as u8),
+    );
+    let prefix = note_decoration_char(endnote.before_decoration_letter)
+        .map(|ch| ch.to_string())
+        .unwrap_or_default();
+    let suffix = note_decoration_char(endnote.after_decoration_letter)
+        .unwrap_or(')')
+        .to_string();
+    format!("{}{}{}", prefix, number, suffix)
+}
 
 // ========================================================
 // Break Token — 조판 분할 지점 (Chromium LayoutNG 참고)
@@ -2028,9 +2067,9 @@ impl TypesetEngine {
                             for ls in &mut en_para_copy.line_segs {
                                 ls.vertical_pos += endnote_start;
                             }
-                            // 첫 paragraph에 미주 번호 prepend ("문N) ")
+                            // 첫 paragraph에 미주 번호 prepend
                             if ep_idx == 0 {
-                                let prefix = format!("문{}) ", en_ref.number);
+                                let prefix = format!("{} ", format_endnote_marker_text(en_ctrl));
                                 en_para_copy.text = format!("{}{}", prefix, en_para_copy.text);
                                 en_para_copy.char_count += prefix.encode_utf16().count() as u32;
                                 let shift = prefix.encode_utf16().count() as u32;

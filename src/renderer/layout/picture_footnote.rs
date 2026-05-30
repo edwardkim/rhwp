@@ -711,8 +711,12 @@ impl LayoutEngine {
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
         for (i, fn_ref) in footnotes.iter().enumerate() {
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
-            let number_text =
-                format_footnote_number(fn_ref.number, &shape.number_format, shape.suffix_char);
+            let number_text = format_footnote_number(
+                fn_ref.number,
+                &shape.number_format,
+                shape.prefix_char,
+                shape.suffix_char,
+            );
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
                 let composed = compose_paragraph(para);
@@ -948,16 +952,26 @@ impl LayoutEngine {
         // 각주/미주의 (번호, 텍스트 위치) 수집 — ComposedParagraph에서 미리 계산된 위치 사용
         // 폴백: find_control_text_positions로 직접 계산
         let ctrl_positions = crate::document_core::helpers::find_control_text_positions(para);
-        let mut footnotes: Vec<(u16, usize)> = Vec::new();
+        let mut footnotes: Vec<(String, usize)> = Vec::new();
         for (ci, ctrl) in para.controls.iter().enumerate() {
-            let num = match ctrl {
-                Control::Footnote(fn_ctrl) => Some(fn_ctrl.number),
-                Control::Endnote(en_ctrl) => Some(en_ctrl.number),
+            let marker_text = match ctrl {
+                Control::Footnote(fn_ctrl) => Some(format_control_note_marker(
+                    fn_ctrl.number,
+                    fn_ctrl.number_shape,
+                    fn_ctrl.before_decoration_letter,
+                    fn_ctrl.after_decoration_letter,
+                )),
+                Control::Endnote(en_ctrl) => Some(format_control_note_marker(
+                    en_ctrl.number,
+                    en_ctrl.number_shape,
+                    en_ctrl.before_decoration_letter,
+                    en_ctrl.after_decoration_letter,
+                )),
                 _ => None,
             };
-            if let Some(n) = num {
+            if let Some(text) = marker_text {
                 let pos = ctrl_positions.get(ci).copied().unwrap_or(usize::MAX);
-                footnotes.push((n, pos));
+                footnotes.push((text, pos));
             }
         }
 
@@ -966,7 +980,7 @@ impl LayoutEngine {
         }
 
         // 각 각주 위첨자를 렌더링: char_start 기반으로 정확한 TextRun 위치에 삽입
-        for (_fn_idx, (num, char_pos)) in footnotes.iter().enumerate() {
+        for (_fn_idx, (number_text, char_pos)) in footnotes.iter().enumerate() {
             let mut target_line_idx: Option<usize> = None;
             let mut insert_x = 0.0;
             let mut line_height = 18.0;
@@ -1049,7 +1063,6 @@ impl LayoutEngine {
             if let Some(line_idx) = target_line_idx {
                 let sup_font_size = (base_font_size * 0.6).max(7.0);
                 let sup_y_offset = line_height * 0.35;
-                let number_text = format!("{})", num);
                 let style = TextStyle {
                     font_size: sup_font_size,
                     font_family: base_font_family,
@@ -1061,7 +1074,7 @@ impl LayoutEngine {
                 let run_node = RenderNode::new(
                     run_id,
                     RenderNodeType::TextRun(TextRunNode {
-                        text: number_text,
+                        text: number_text.clone(),
                         style,
                         char_shape_id: None,
                         para_shape_id: None,
@@ -1150,8 +1163,52 @@ fn get_footnote_paragraphs<'a>(
     }
 }
 
+fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
+    match code {
+        0 => NumFmt::Digit,
+        1 => NumFmt::CircledDigit,
+        2 => NumFmt::RomanUpper,
+        3 => NumFmt::RomanLower,
+        4 => NumFmt::LatinUpper,
+        5 => NumFmt::LatinLower,
+        8 => NumFmt::HangulGaNaDa,
+        12 => NumFmt::HangulNumber,
+        13 => NumFmt::HanjaNumber,
+        _ => NumFmt::Digit,
+    }
+}
+
+fn note_decoration_char(value: u16) -> Option<char> {
+    if value == 0 {
+        None
+    } else {
+        char::from_u32(value as u32).filter(|ch| *ch != '\0')
+    }
+}
+
+fn format_control_note_marker(
+    number: u16,
+    number_shape: u32,
+    before_decoration_letter: u16,
+    after_decoration_letter: u16,
+) -> String {
+    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
+    let prefix = note_decoration_char(before_decoration_letter)
+        .map(|ch| ch.to_string())
+        .unwrap_or_default();
+    let suffix = note_decoration_char(after_decoration_letter)
+        .unwrap_or(')')
+        .to_string();
+    format!("{}{}{}", prefix, number, suffix)
+}
+
 /// 각주 번호 포맷 (NumberFormat에 따른 변환)
-fn format_footnote_number(number: u16, format: &NumberFormat, suffix: char) -> String {
+fn format_footnote_number(
+    number: u16,
+    format: &NumberFormat,
+    prefix: char,
+    suffix: char,
+) -> String {
     let num_str = match format {
         NumberFormat::Digit => number.to_string(),
         NumberFormat::CircledDigit => {
@@ -1185,13 +1242,18 @@ fn format_footnote_number(number: u16, format: &NumberFormat, suffix: char) -> S
         _ => number.to_string(), // 기타 형식은 숫자로 fallback
     };
 
+    let prefix_str = if prefix != '\0' {
+        prefix.to_string()
+    } else {
+        String::new()
+    };
     let suffix_str = if suffix != '\0' {
         suffix.to_string()
     } else {
         ")".to_string()
     };
 
-    format!("{}{} ", num_str, suffix_str)
+    format!("{}{}{} ", prefix_str, num_str, suffix_str)
 }
 
 impl LayoutEngine {

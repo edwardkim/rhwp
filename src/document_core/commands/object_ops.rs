@@ -5490,6 +5490,339 @@ impl DocumentCore {
 
     // ─── 각주 삽입/삭제 API ──────────────────────────────
 
+    fn footnote_shape_number_format_code(format: crate::model::footnote::NumberFormat) -> u8 {
+        use crate::model::footnote::NumberFormat;
+        match format {
+            NumberFormat::Digit => 0,
+            NumberFormat::CircledDigit => 1,
+            NumberFormat::UpperRoman => 2,
+            NumberFormat::LowerRoman => 3,
+            NumberFormat::UpperAlpha => 4,
+            NumberFormat::LowerAlpha => 5,
+            NumberFormat::CircledUpperAlpha => 6,
+            NumberFormat::CircledLowerAlpha => 7,
+            NumberFormat::HangulSyllable => 8,
+            NumberFormat::CircledHangulSyllable => 9,
+            NumberFormat::HangulJamo => 10,
+            NumberFormat::CircledHangulJamo => 11,
+            NumberFormat::HangulDigit => 12,
+            NumberFormat::HanjaDigit => 13,
+            NumberFormat::CircledHanjaDigit => 14,
+            NumberFormat::HanjaGapEul => 15,
+            NumberFormat::HanjaGapEulHanja => 16,
+            NumberFormat::FourSymbol => 17,
+            NumberFormat::UserChar => 18,
+        }
+    }
+
+    fn footnote_shape_number_format_from_str(
+        value: &str,
+        fallback: crate::model::footnote::NumberFormat,
+    ) -> crate::model::footnote::NumberFormat {
+        use crate::model::footnote::NumberFormat;
+        match value {
+            "digit" => NumberFormat::Digit,
+            "circledDigit" => NumberFormat::CircledDigit,
+            "upperRoman" => NumberFormat::UpperRoman,
+            "lowerRoman" => NumberFormat::LowerRoman,
+            "upperAlpha" => NumberFormat::UpperAlpha,
+            "lowerAlpha" => NumberFormat::LowerAlpha,
+            "circledUpperAlpha" => NumberFormat::CircledUpperAlpha,
+            "circledLowerAlpha" => NumberFormat::CircledLowerAlpha,
+            "hangulSyllable" => NumberFormat::HangulSyllable,
+            "circledHangulSyllable" => NumberFormat::CircledHangulSyllable,
+            "hangulJamo" => NumberFormat::HangulJamo,
+            "circledHangulJamo" => NumberFormat::CircledHangulJamo,
+            "hangulDigit" => NumberFormat::HangulDigit,
+            "hanjaDigit" => NumberFormat::HanjaDigit,
+            "circledHanjaDigit" => NumberFormat::CircledHanjaDigit,
+            "hanjaGapEul" => NumberFormat::HanjaGapEul,
+            "hanjaGapEulHanja" => NumberFormat::HanjaGapEulHanja,
+            "fourSymbol" => NumberFormat::FourSymbol,
+            "userChar" => NumberFormat::UserChar,
+            _ => fallback,
+        }
+    }
+
+    fn footnote_shape_number_format_name(
+        format: crate::model::footnote::NumberFormat,
+    ) -> &'static str {
+        use crate::model::footnote::NumberFormat;
+        match format {
+            NumberFormat::Digit => "digit",
+            NumberFormat::CircledDigit => "circledDigit",
+            NumberFormat::UpperRoman => "upperRoman",
+            NumberFormat::LowerRoman => "lowerRoman",
+            NumberFormat::UpperAlpha => "upperAlpha",
+            NumberFormat::LowerAlpha => "lowerAlpha",
+            NumberFormat::CircledUpperAlpha => "circledUpperAlpha",
+            NumberFormat::CircledLowerAlpha => "circledLowerAlpha",
+            NumberFormat::HangulSyllable => "hangulSyllable",
+            NumberFormat::CircledHangulSyllable => "circledHangulSyllable",
+            NumberFormat::HangulJamo => "hangulJamo",
+            NumberFormat::CircledHangulJamo => "circledHangulJamo",
+            NumberFormat::HangulDigit => "hangulDigit",
+            NumberFormat::HanjaDigit => "hanjaDigit",
+            NumberFormat::CircledHanjaDigit => "circledHanjaDigit",
+            NumberFormat::HanjaGapEul => "hanjaGapEul",
+            NumberFormat::HanjaGapEulHanja => "hanjaGapEulHanja",
+            NumberFormat::FourSymbol => "fourSymbol",
+            NumberFormat::UserChar => "userChar",
+        }
+    }
+
+    fn footnote_numbering_name(
+        numbering: crate::model::footnote::FootnoteNumbering,
+    ) -> &'static str {
+        use crate::model::footnote::FootnoteNumbering;
+        match numbering {
+            FootnoteNumbering::Continue => "continue",
+            FootnoteNumbering::RestartSection => "restartSection",
+            FootnoteNumbering::RestartPage => "restartPage",
+        }
+    }
+
+    fn footnote_numbering_from_str(
+        value: &str,
+        fallback: crate::model::footnote::FootnoteNumbering,
+    ) -> crate::model::footnote::FootnoteNumbering {
+        use crate::model::footnote::FootnoteNumbering;
+        match value {
+            "continue" => FootnoteNumbering::Continue,
+            "restartSection" => FootnoteNumbering::RestartSection,
+            "restartPage" => FootnoteNumbering::RestartPage,
+            _ => fallback,
+        }
+    }
+
+    fn footnote_placement_name(
+        placement: crate::model::footnote::FootnotePlacement,
+    ) -> &'static str {
+        use crate::model::footnote::FootnotePlacement;
+        match placement {
+            FootnotePlacement::EachColumn => "documentEnd",
+            FootnotePlacement::BelowText => "sectionEnd",
+            FootnotePlacement::RightColumn => "rightColumn",
+        }
+    }
+
+    fn footnote_placement_from_str(
+        value: &str,
+        fallback: crate::model::footnote::FootnotePlacement,
+    ) -> crate::model::footnote::FootnotePlacement {
+        use crate::model::footnote::FootnotePlacement;
+        match value {
+            "documentEnd" | "eachColumn" => FootnotePlacement::EachColumn,
+            "sectionEnd" | "belowText" => FootnotePlacement::BelowText,
+            "rightColumn" => FootnotePlacement::RightColumn,
+            _ => fallback,
+        }
+    }
+
+    fn encode_footnote_shape_attr(shape: &crate::model::footnote::FootnoteShape) -> u32 {
+        use crate::model::footnote::{FootnoteNumbering, FootnotePlacement};
+        let number_format = Self::footnote_shape_number_format_code(shape.number_format) as u32;
+        let placement_numbering_bits = match (shape.numbering, shape.placement) {
+            (FootnoteNumbering::RestartPage, _) | (_, FootnotePlacement::RightColumn) => 2,
+            (FootnoteNumbering::RestartSection, _) | (_, FootnotePlacement::BelowText) => 1,
+            _ => 0,
+        };
+        (shape.attr & !0x03ff) | number_format | ((placement_numbering_bits & 0x03) << 8)
+    }
+
+    fn first_char_or_nul(value: &str) -> char {
+        value.chars().next().unwrap_or('\0')
+    }
+
+    fn json_escape_note_char(ch: char) -> String {
+        if ch == '\0' {
+            String::new()
+        } else {
+            crate::document_core::helpers::json_escape(&ch.to_string())
+        }
+    }
+
+    fn hwpunit16_from_json(json: &str, key: &str) -> Option<i16> {
+        crate::document_core::helpers::json_i32(json, key)
+            .map(|v| v.clamp(i16::MIN as i32, i16::MAX as i32) as i16)
+    }
+
+    fn make_note_inner_paragraph(
+        number_type: crate::model::control::AutoNumberType,
+        number: u16,
+        format: u8,
+        prefix_char: char,
+        suffix_char: char,
+        default_char_shape_id: u32,
+        para_shape_id: u16,
+        style_id: u8,
+    ) -> crate::model::paragraph::Paragraph {
+        use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+
+        let auto_num = crate::model::control::AutoNumber {
+            number_type,
+            format,
+            superscript: false,
+            number,
+            assigned_number: number,
+            user_symbol: '\0',
+            prefix_char,
+            suffix_char,
+        };
+
+        Paragraph {
+            text: "  ".to_string(),
+            char_count: 10,
+            char_count_msb: true,
+            control_mask: 1u32 << 0x12,
+            char_offsets: vec![0, 8],
+            para_shape_id,
+            style_id,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: default_char_shape_id,
+            }],
+            controls: vec![crate::model::control::Control::AutoNumber(auto_num)],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 1000,
+                text_height: 1000,
+                baseline_distance: 850,
+                line_spacing: 600,
+                segment_width: 0,
+                tag: 0x00060000,
+                ..Default::default()
+            }],
+            has_para_text: true,
+            ..Default::default()
+        }
+    }
+
+    fn endnote_style_defaults(&self, section_idx: usize, para_idx: usize) -> (u32, u16, u8) {
+        let section = &self.document.sections[section_idx];
+
+        for para in &section.paragraphs {
+            for ctrl in &para.controls {
+                if let Control::Endnote(en) = ctrl {
+                    if let Some(ep) = en.paragraphs.first() {
+                        let char_shape_id = ep
+                            .char_shapes
+                            .first()
+                            .map(|cs| cs.char_shape_id)
+                            .unwrap_or(0);
+                        return (char_shape_id, ep.para_shape_id, ep.style_id);
+                    }
+                }
+            }
+        }
+
+        for (idx, style) in self.document.doc_info.styles.iter().enumerate() {
+            if style.local_name == "미주" || style.english_name.eq_ignore_ascii_case("Endnote") {
+                return (
+                    style.char_shape_id as u32,
+                    style.para_shape_id,
+                    idx.min(u8::MAX as usize) as u8,
+                );
+            }
+        }
+
+        let current_para = &section.paragraphs[para_idx];
+        (
+            current_para
+                .char_shapes
+                .first()
+                .map(|cs| cs.char_shape_id)
+                .unwrap_or(0),
+            current_para.para_shape_id,
+            current_para.style_id,
+        )
+    }
+
+    fn sync_endnote_control_with_shape(
+        endnote: &mut crate::model::footnote::Endnote,
+        number_format_code: u8,
+        prefix_char: char,
+        suffix_char: char,
+    ) {
+        use crate::model::control::{AutoNumberType, Control};
+
+        endnote.before_decoration_letter = if prefix_char == '\0' {
+            0
+        } else {
+            prefix_char as u16
+        };
+        endnote.after_decoration_letter = if suffix_char == '\0' {
+            0
+        } else {
+            suffix_char as u16
+        };
+        endnote.number_shape = number_format_code as u32;
+
+        for para in &mut endnote.paragraphs {
+            for ctrl in &mut para.controls {
+                if let Control::AutoNumber(auto_num) = ctrl {
+                    if auto_num.number_type == AutoNumberType::Endnote {
+                        auto_num.format = number_format_code;
+                        auto_num.prefix_char = prefix_char;
+                        auto_num.suffix_char = suffix_char;
+                        auto_num.number = endnote.number;
+                        auto_num.assigned_number = endnote.number;
+                    }
+                }
+            }
+        }
+    }
+
+    fn renumber_paragraph_endnotes_with_shape(
+        paragraphs: &mut [crate::model::paragraph::Paragraph],
+        next_number: &mut u16,
+        number_format_code: u8,
+        prefix_char: char,
+        suffix_char: char,
+    ) {
+        for para in paragraphs {
+            for ctrl in &mut para.controls {
+                match ctrl {
+                    Control::Endnote(endnote) => {
+                        endnote.number = *next_number;
+                        Self::sync_endnote_control_with_shape(
+                            endnote,
+                            number_format_code,
+                            prefix_char,
+                            suffix_char,
+                        );
+                        *next_number = next_number.saturating_add(1);
+                    }
+                    Control::Table(table) => {
+                        for cell in &mut table.cells {
+                            Self::renumber_paragraph_endnotes_with_shape(
+                                &mut cell.paragraphs,
+                                next_number,
+                                number_format_code,
+                                prefix_char,
+                                suffix_char,
+                            );
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(text_box) =
+                            shape.drawing_mut().and_then(|d| d.text_box.as_mut())
+                        {
+                            Self::renumber_paragraph_endnotes_with_shape(
+                                &mut text_box.paragraphs,
+                                next_number,
+                                number_format_code,
+                                prefix_char,
+                                suffix_char,
+                            );
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
     /// 각주를 삽입한다.
     /// 커서 위치에 각주 컨트롤을 추가하고 빈 문단 1개를 생성한다.
     /// 반환: JSON `{"ok":true, "paraIdx":N, "controlIdx":N, "footnoteNumber":N}`
@@ -5805,6 +6138,332 @@ impl DocumentCore {
             "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"footnoteNumber\":{}}}",
             para_idx, insert_idx, footnote_number
         ))
+    }
+
+    /// 미주를 삽입한다.
+    /// 커서 위치에 미주 컨트롤을 추가하고 빈 미주 문단 1개를 생성한다.
+    /// 반환: JSON `{"ok":true, "paraIdx":N, "controlIdx":N, "endnoteNumber":N}`
+    pub fn insert_endnote_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        use crate::model::footnote::Endnote;
+
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과",
+                section_idx
+            )));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과",
+                para_idx
+            )));
+        }
+
+        let shape = self.document.sections[section_idx]
+            .section_def
+            .endnote_shape
+            .clone();
+        let start_number = shape.start_number.max(1);
+        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+        let endnote_number = {
+            let mut count = 0u16;
+            let section = &self.document.sections[section_idx];
+            for (pi, para) in section.paragraphs.iter().enumerate() {
+                let is_before = pi < para_idx;
+                let is_same = pi == para_idx;
+                for (ci, ctrl) in para.controls.iter().enumerate() {
+                    match ctrl {
+                        Control::Endnote(_) => {
+                            if is_before {
+                                count += 1;
+                            } else if is_same {
+                                let positions =
+                                    crate::document_core::helpers::find_control_text_positions(
+                                        para,
+                                    );
+                                let pos = positions.get(ci).copied().unwrap_or(usize::MAX);
+                                if pos <= char_offset {
+                                    count += 1;
+                                }
+                            }
+                        }
+                        Control::Table(table) if is_before || is_same => {
+                            for cell in &table.cells {
+                                for cp in &cell.paragraphs {
+                                    count +=
+                                        cp.controls
+                                            .iter()
+                                            .filter(|c| matches!(c, Control::Endnote(_)))
+                                            .count() as u16;
+                                }
+                            }
+                        }
+                        Control::Shape(shape) if is_before || is_same => {
+                            if let Some(text_box) =
+                                shape.drawing().and_then(|d| d.text_box.as_ref())
+                            {
+                                for tp in &text_box.paragraphs {
+                                    count +=
+                                        tp.controls
+                                            .iter()
+                                            .filter(|c| matches!(c, Control::Endnote(_)))
+                                            .count() as u16;
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            start_number.saturating_add(count)
+        };
+
+        let (default_char_shape_id, para_shape_id, style_id) =
+            self.endnote_style_defaults(section_idx, para_idx);
+        let prefix_char = if shape.prefix_char == '\0' {
+            '\0'
+        } else {
+            shape.prefix_char
+        };
+        let suffix_char = if shape.suffix_char == '\0' {
+            ')'
+        } else {
+            shape.suffix_char
+        };
+
+        let inner_para = Self::make_note_inner_paragraph(
+            crate::model::control::AutoNumberType::Endnote,
+            endnote_number,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+            default_char_shape_id,
+            para_shape_id,
+            style_id,
+        );
+
+        let endnote = Endnote {
+            number: endnote_number,
+            paragraphs: vec![inner_para],
+            before_decoration_letter: prefix_char as u16,
+            after_decoration_letter: suffix_char as u16,
+            number_shape: number_format_code as u32,
+            ..Default::default()
+        };
+
+        self.document.sections[section_idx].raw_stream = None;
+        let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+
+        let insert_idx = {
+            let positions = crate::document_core::helpers::find_control_text_positions(paragraph);
+            let mut idx = paragraph.controls.len();
+            for (i, &pos) in positions.iter().enumerate() {
+                if pos > char_offset {
+                    idx = i;
+                    break;
+                }
+            }
+            idx
+        };
+
+        paragraph
+            .controls
+            .insert(insert_idx, Control::Endnote(Box::new(endnote)));
+        paragraph.ctrl_data_records.insert(insert_idx, None);
+
+        if !paragraph.char_offsets.is_empty() {
+            let text_len = paragraph.text.chars().count();
+            let safe_offset = char_offset.min(text_len);
+            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
+                *co += 8;
+            }
+        }
+        paragraph.char_count += 8;
+        paragraph.control_mask |= 1u32 << 0x0011;
+        paragraph.has_para_text = true;
+
+        let mut next_number = start_number;
+        Self::renumber_paragraph_endnotes_with_shape(
+            &mut self.document.sections[section_idx].paragraphs,
+            &mut next_number,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+        );
+
+        self.reflow_footnote_paragraph(section_idx, para_idx, insert_idx, 0);
+
+        {
+            use crate::renderer::composer::reflow_line_segs;
+            use crate::renderer::hwpunit_to_px;
+            let page_def = &self.document.sections[section_idx].section_def.page_def;
+            let text_width =
+                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
+            let available_width = hwpunit_to_px(text_width, self.dpi);
+            let para_style = self.styles.para_styles.get(
+                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize,
+            );
+            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+            let final_width = (available_width - margin_left - margin_right).max(0.0);
+            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
+        }
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        self.event_log.push(DocumentEvent::PictureInserted {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(format!(
+            "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"endnoteNumber\":{}}}",
+            para_idx, insert_idx, endnote_number
+        ))
+    }
+
+    /// 현재 구역의 미주 모양을 조회한다.
+    pub fn get_endnote_shape_native(&self, section_idx: usize) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let shape = &section.section_def.endnote_shape;
+        let separator_enabled = shape.separator_length != 0
+            || shape.separator_line_type != 0
+            || shape.separator_line_width != 0;
+        let separator_color =
+            crate::document_core::helpers::clipboard_color_to_css(shape.separator_color);
+
+        Ok(format!(
+            concat!(
+                "{{\"ok\":true,",
+                "\"numberFormat\":\"{}\",",
+                "\"userChar\":\"{}\",",
+                "\"prefixChar\":\"{}\",",
+                "\"suffixChar\":\"{}\",",
+                "\"startNumber\":{},",
+                "\"separatorEnabled\":{},",
+                "\"separatorLength\":{},",
+                "\"separatorMarginTop\":{},",
+                "\"separatorMarginBottom\":{},",
+                "\"noteSpacing\":{},",
+                "\"separatorLineType\":{},",
+                "\"separatorLineWidth\":{},",
+                "\"separatorColor\":\"{}\",",
+                "\"numbering\":\"{}\",",
+                "\"placement\":\"{}\"",
+                "}}"
+            ),
+            Self::footnote_shape_number_format_name(shape.number_format),
+            Self::json_escape_note_char(shape.user_char),
+            Self::json_escape_note_char(shape.prefix_char),
+            Self::json_escape_note_char(shape.suffix_char),
+            shape.start_number,
+            if separator_enabled { "true" } else { "false" },
+            shape.separator_length,
+            shape.separator_margin_top,
+            if shape.note_spacing != 0 {
+                shape.note_spacing
+            } else {
+                shape.separator_margin_bottom
+            },
+            shape.raw_unknown,
+            shape.separator_line_type,
+            shape.separator_line_width,
+            separator_color,
+            Self::footnote_numbering_name(shape.numbering),
+            Self::footnote_placement_name(shape.placement),
+        ))
+    }
+
+    /// 현재 구역의 미주 모양을 적용한다.
+    pub fn apply_endnote_shape_native(
+        &mut self,
+        section_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let shape = &mut section.section_def.endnote_shape;
+
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numberFormat") {
+            shape.number_format =
+                Self::footnote_shape_number_format_from_str(&v, shape.number_format);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "userChar") {
+            shape.user_char = Self::first_char_or_nul(&v);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "prefixChar") {
+            shape.prefix_char = Self::first_char_or_nul(&v);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "suffixChar") {
+            shape.suffix_char = Self::first_char_or_nul(&v);
+        }
+        if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
+            shape.start_number = v.max(1);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
+            shape.separator_length = v.max(0);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginTop") {
+            shape.separator_margin_top = v.max(0);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginBottom") {
+            shape.note_spacing = v.max(0);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "noteSpacing") {
+            shape.raw_unknown = v.max(0) as u16;
+        }
+        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineType") {
+            shape.separator_line_type = v;
+        }
+        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineWidth") {
+            shape.separator_line_width = v;
+        }
+        if let Some(v) = crate::document_core::helpers::json_color(props_json, "separatorColor") {
+            shape.separator_color = v;
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numbering") {
+            shape.numbering = Self::footnote_numbering_from_str(&v, shape.numbering);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "placement") {
+            shape.placement = Self::footnote_placement_from_str(&v, shape.placement);
+        }
+        if let Some(false) =
+            crate::document_core::helpers::json_bool(props_json, "separatorEnabled")
+        {
+            shape.separator_length = 0;
+            shape.separator_line_type = 0;
+            shape.separator_line_width = 0;
+        }
+        shape.attr = Self::encode_footnote_shape_attr(shape);
+        let start_number = shape.start_number.max(1);
+        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+        let prefix_char = shape.prefix_char;
+        let suffix_char = shape.suffix_char;
+        let mut next_number = start_number;
+        Self::renumber_paragraph_endnotes_with_shape(
+            &mut section.paragraphs,
+            &mut next_number,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+        );
+        section.raw_stream = None;
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        Ok(super::super::helpers::json_ok())
     }
 
     /// 본문 문단에 수식을 삽입한다 (표 셀/글상자 내부는 미지원).

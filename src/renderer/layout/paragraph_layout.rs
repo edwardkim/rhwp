@@ -115,6 +115,63 @@ fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
     Some(hwpunit_to_px(height_hu, dpi))
 }
 
+fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
+    match code {
+        0 => NumFmt::Digit,
+        1 => NumFmt::CircledDigit,
+        2 => NumFmt::RomanUpper,
+        3 => NumFmt::RomanLower,
+        4 => NumFmt::LatinUpper,
+        5 => NumFmt::LatinLower,
+        8 => NumFmt::HangulGaNaDa,
+        12 => NumFmt::HangulNumber,
+        13 => NumFmt::HanjaNumber,
+        _ => NumFmt::Digit,
+    }
+}
+
+fn note_decoration_char(value: u16) -> Option<char> {
+    if value == 0 {
+        None
+    } else {
+        char::from_u32(value as u32).filter(|ch| *ch != '\0')
+    }
+}
+
+fn format_note_marker_text(
+    number: u16,
+    number_shape: u32,
+    before_decoration_letter: u16,
+    after_decoration_letter: u16,
+) -> String {
+    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
+    let prefix = note_decoration_char(before_decoration_letter)
+        .map(|ch| ch.to_string())
+        .unwrap_or_default();
+    let suffix = note_decoration_char(after_decoration_letter)
+        .unwrap_or(')')
+        .to_string();
+    format!("{}{}{}", prefix, number, suffix)
+}
+
+fn note_marker_text_from_control(ctrl: Option<&Control>, fallback_number: u16) -> String {
+    match ctrl {
+        Some(Control::Footnote(footnote)) => format_note_marker_text(
+            fallback_number,
+            footnote.number_shape,
+            footnote.before_decoration_letter,
+            footnote.after_decoration_letter,
+        ),
+        Some(Control::Endnote(endnote)) => format_note_marker_text(
+            fallback_number,
+            endnote.number_shape,
+            endnote.before_decoration_letter,
+            endnote.after_decoration_letter,
+        ),
+        _ => format!("{})", fallback_number),
+    }
+}
+
 fn line_tac_picture_or_shape_height(
     para: Option<&Paragraph>,
     comp: &ComposedParagraph,
@@ -667,17 +724,10 @@ impl LayoutEngine {
                                 line_run_start = ch_idx;
                             }
                             // FootnoteMarker 노드 삽입 (위첨자로 렌더링됨)
-                            // [Issue #926] Endnote인 경우 "문N)" 형식
-                            let is_endnote = para
-                                .controls
-                                .get(fn_ctrl_idx)
-                                .map(|c| matches!(c, Control::Endnote(_)))
-                                .unwrap_or(false);
-                            let fn_text = if is_endnote {
-                                format!("문{})", fn_num)
-                            } else {
-                                format!("{})", fn_num)
-                            };
+                            let fn_text = note_marker_text_from_control(
+                                para.controls.get(fn_ctrl_idx),
+                                fn_num,
+                            );
                             let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
                             let sup_font_size = (base_ts.font_size * 0.55).max(7.0);
                             let sup_ts = TextStyle {
@@ -1237,14 +1287,15 @@ impl LayoutEngine {
             }
         }
 
-        // [Issue #926] Endnote 인라인 마커 "문N)" — 첫 줄 앞에 일반 텍스트로 emit
+        // [Issue #926] Endnote 인라인 마커 — 첫 줄 앞에 일반 텍스트로 emit
         // 한컴에서 미주 마커는 위첨자가 아닌 본문 크기 텍스트로 표시
         let mut endnote_marker_x_advance = 0.0f64;
         if start_line == 0 {
             if let Some(p) = para {
                 for ctrl in &p.controls {
                     if let Control::Endnote(en) = ctrl {
-                        let marker_text = format!("문{}) ", en.number);
+                        let marker_text =
+                            format!("{} ", note_marker_text_from_control(Some(ctrl), en.number));
                         let first_cs_id = p
                             .char_shapes
                             .first()
@@ -1815,12 +1866,15 @@ impl LayoutEngine {
                         .map(|r| r.text.chars().count())
                         .sum::<usize>()
                         + comp_line.char_start;
-                for &(fpos, fnum, _) in composed.footnote_positions.iter() {
+                for &(fpos, fnum, ctrl_idx) in composed.footnote_positions.iter() {
                     if fpos >= run_char_pos_est
                         && (fpos < run_char_end_est
                             || (is_last_run_est && fpos == run_char_end_est))
                     {
-                        let fn_text = format!("{})", fnum);
+                        let fn_text = note_marker_text_from_control(
+                            para.and_then(|p| p.controls.get(ctrl_idx)),
+                            fnum,
+                        );
                         let sup_size = (ts.font_size * 0.55).max(7.0);
                         let sup_ts = TextStyle {
                             font_size: sup_size,
@@ -2579,17 +2633,17 @@ impl LayoutEngine {
 
                     let mut fn_split_extra = 0.0f64; // 각주 마커 삽입으로 인한 추가 폭
                     {
-                        // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스)
+                        // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
                         // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
                         let is_last = is_last_run_of_line(run_idx);
-                        let run_fn_markers: Vec<(usize, u16, usize)> = fn_positions
+                        let run_fn_markers: Vec<(usize, u16, usize, usize)> = fn_positions
                             .iter()
                             .enumerate()
-                            .filter_map(|(fni, &(fpos, fnum, _))| {
+                            .filter_map(|(fni, &(fpos, fnum, ctrl_idx))| {
                                 let in_range = fpos >= run_char_pos
                                     && (fpos < run_char_end || (is_last && fpos == run_char_end));
                                 if !fn_marker_inserted[fni] && in_range {
-                                    Some((fpos - run_char_pos, fnum, fni))
+                                    Some((fpos - run_char_pos, fnum, fni, ctrl_idx))
                                 } else {
                                     None
                                 }
@@ -2629,7 +2683,7 @@ impl LayoutEngine {
                             let mut sub_x = x;
                             let mut sub_char_offset = char_offset;
 
-                            for &(rel_pos, fnum, fni) in &run_fn_markers {
+                            for &(rel_pos, fnum, fni, ctrl_idx) in &run_fn_markers {
                                 fn_marker_inserted[fni] = true;
                                 // 각주 앞 텍스트 세그먼트
                                 if rel_pos > seg_start {
@@ -2664,16 +2718,10 @@ impl LayoutEngine {
                                     sub_char_offset += rel_pos - seg_start;
                                 }
                                 // FootnoteMarker 노드
-                                // [Issue #926] Endnote인 경우 "문N)" 형식
-                                let is_en = para
-                                    .and_then(|p| p.controls.get(fni))
-                                    .map(|c| matches!(c, Control::Endnote(_)))
-                                    .unwrap_or(false);
-                                let fn_text = if is_en {
-                                    format!("문{})", fnum)
-                                } else {
-                                    format!("{})", fnum)
-                                };
+                                let fn_text = note_marker_text_from_control(
+                                    para.and_then(|p| p.controls.get(ctrl_idx)),
+                                    fnum,
+                                );
                                 let base_ts = &text_style;
                                 let sup_size = (base_ts.font_size * 0.55).max(7.0);
                                 let sup_ts = TextStyle {
@@ -2694,7 +2742,7 @@ impl LayoutEngine {
                                         color: base_ts.color,
                                         section_index,
                                         para_index,
-                                        control_index: fni,
+                                        control_index: ctrl_idx,
                                     }),
                                     BoundingBox::new(sub_x, y, sup_w, line_height),
                                 );

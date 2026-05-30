@@ -23,6 +23,48 @@ fn effective_char_count(text_run: &TextRunNode) -> usize {
     text_run.text.chars().count()
 }
 
+fn note_number_format_from_hwp_code(code: u8) -> crate::renderer::NumberFormat {
+    match code {
+        0 => crate::renderer::NumberFormat::Digit,
+        1 => crate::renderer::NumberFormat::CircledDigit,
+        2 => crate::renderer::NumberFormat::RomanUpper,
+        3 => crate::renderer::NumberFormat::RomanLower,
+        4 => crate::renderer::NumberFormat::LatinUpper,
+        5 => crate::renderer::NumberFormat::LatinLower,
+        8 => crate::renderer::NumberFormat::HangulGaNaDa,
+        12 => crate::renderer::NumberFormat::HangulNumber,
+        13 => crate::renderer::NumberFormat::HanjaNumber,
+        _ => crate::renderer::NumberFormat::Digit,
+    }
+}
+
+fn note_decoration_char(value: u16) -> Option<char> {
+    if value == 0 {
+        None
+    } else {
+        char::from_u32(value as u32).filter(|ch| *ch != '\0')
+    }
+}
+
+fn note_marker_text(
+    number: u16,
+    number_shape: u32,
+    before_decoration_letter: u16,
+    after_decoration_letter: u16,
+) -> String {
+    let number = crate::renderer::format_number(
+        number,
+        note_number_format_from_hwp_code(number_shape as u8),
+    );
+    let prefix = note_decoration_char(before_decoration_letter)
+        .map(|ch| ch.to_string())
+        .unwrap_or_default();
+    let suffix = note_decoration_char(after_decoration_letter)
+        .unwrap_or(')')
+        .to_string();
+    format!("{}{}{}", prefix, number, suffix)
+}
+
 impl DocumentCore {
     pub fn get_cursor_rect_native(
         &self,
@@ -3604,6 +3646,288 @@ impl DocumentCore {
         }
 
         Ok(format!("[{}]", rects.join(",")))
+    }
+
+    fn global_page_base_for_section(&self, section_idx: usize) -> u32 {
+        self.pagination
+            .iter()
+            .take(section_idx)
+            .map(|pr| pr.pages.len() as u32)
+            .sum()
+    }
+
+    fn cursor_rect_for_render_paragraph(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> Result<Option<String>, HwpError> {
+        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        struct CursorRun {
+            char_start: usize,
+            char_count: usize,
+            char_positions: Vec<f64>,
+            bbox_x: f64,
+            bbox_y: f64,
+            baseline: f64,
+            font_size: f64,
+        }
+
+        fn collect_runs(
+            node: &RenderNode,
+            section_idx: usize,
+            para_idx: usize,
+            runs: &mut Vec<CursorRun>,
+        ) {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if tr.section_index == Some(section_idx) && tr.para_index == Some(para_idx) {
+                    if let Some(cs) = tr.char_start {
+                        let positions = compute_char_positions(&tr.text, &tr.style);
+                        runs.push(CursorRun {
+                            char_start: cs,
+                            char_count: effective_char_count(tr),
+                            char_positions: positions,
+                            bbox_x: node.bbox.x,
+                            bbox_y: node.bbox.y,
+                            baseline: tr.baseline,
+                            font_size: tr.style.font_size,
+                        });
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_runs(child, section_idx, para_idx, runs);
+            }
+        }
+
+        let tree = self.build_page_tree(page_num)?;
+        let mut runs = Vec::new();
+        collect_runs(&tree.root, section_idx, para_idx, &mut runs);
+        runs.sort_by(|a, b| {
+            a.char_start
+                .cmp(&b.char_start)
+                .then_with(|| {
+                    a.bbox_y
+                        .partial_cmp(&b.bbox_y)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+                .then_with(|| {
+                    a.bbox_x
+                        .partial_cmp(&b.bbox_x)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+        });
+        if runs.is_empty() {
+            return Ok(None);
+        }
+
+        for run in &runs {
+            if char_offset >= run.char_start && char_offset <= run.char_start + run.char_count {
+                let local_idx = char_offset - run.char_start;
+                let cursor_x = if local_idx < run.char_positions.len() {
+                    run.bbox_x + run.char_positions[local_idx]
+                } else if !run.char_positions.is_empty() {
+                    run.bbox_x + run.char_positions.last().copied().unwrap_or(0.0)
+                } else {
+                    run.bbox_x
+                };
+                let ascent = run.font_size * 0.8;
+                let cursor_y = run.bbox_y + run.baseline - ascent;
+                return Ok(Some(format!(
+                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                    page_num, cursor_x, cursor_y, run.font_size
+                )));
+            }
+        }
+
+        let last = runs.last().unwrap();
+        let cursor_x = if !last.char_positions.is_empty() {
+            last.bbox_x + last.char_positions.last().copied().unwrap_or(0.0)
+        } else {
+            last.bbox_x
+        };
+        let ascent = last.font_size * 0.8;
+        let cursor_y = last.bbox_y + last.baseline - ascent;
+        Ok(Some(format!(
+            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+            page_num, cursor_x, cursor_y, last.font_size
+        )))
+    }
+
+    fn find_body_footnote_edit_target(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) -> Option<(u32, usize)> {
+        use crate::renderer::pagination::FootnoteSource;
+
+        let pr = self.pagination.get(section_idx)?;
+        let page_base = self.global_page_base_for_section(section_idx);
+        for (local_page_idx, page) in pr.pages.iter().enumerate() {
+            if let Some(footnote_idx) = page.footnotes.iter().position(|fn_ref| {
+                matches!(
+                    &fn_ref.source,
+                    FootnoteSource::Body { para_index, control_index }
+                        if *para_index == para_idx && *control_index == control_idx
+                )
+            }) {
+                return Some((page_base + local_page_idx as u32, footnote_idx));
+            }
+        }
+        None
+    }
+
+    fn find_endnote_edit_target(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        note_para_idx: usize,
+    ) -> Option<(u32, usize, usize)> {
+        let pr = self.pagination.get(section_idx)?;
+        let local_idx = pr.endnote_para_sources.iter().position(|src| {
+            src.section_index == section_idx
+                && src.para_index == para_idx
+                && src.control_index == control_idx
+                && src.note_para_index == note_para_idx
+        })?;
+        let virtual_para_idx =
+            self.document.sections.get(section_idx)?.paragraphs.len() + local_idx;
+        let page_base = self.global_page_base_for_section(section_idx);
+        for (local_page_idx, page) in pr.pages.iter().enumerate() {
+            if page
+                .column_contents
+                .iter()
+                .flat_map(|col| col.items.iter())
+                .any(|item| item.para_index() == virtual_para_idx)
+            {
+                return Some((
+                    page_base + local_page_idx as u32,
+                    local_idx,
+                    virtual_para_idx,
+                ));
+            }
+        }
+        None
+    }
+
+    pub fn get_note_edit_info_native(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+
+        match ctrl {
+            Control::Footnote(_) => {
+                let (page_num, footnote_index) = self
+                    .find_body_footnote_edit_target(section_idx, para_idx, control_idx)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("각주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                Ok(format!(
+                    "{{\"ok\":true,\"kind\":\"footnote\",\"pageNum\":{},\"footnoteIndex\":{},\"fnParaIndex\":0,\"charOffset\":2}}",
+                    page_num, footnote_index
+                ))
+            }
+            Control::Endnote(_) => {
+                let (page_num, endnote_index, virtual_para_idx) = self
+                    .find_endnote_edit_target(section_idx, para_idx, control_idx, 0)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                Ok(format!(
+                    "{{\"ok\":true,\"kind\":\"endnote\",\"pageNum\":{},\"footnoteIndex\":{},\"fnParaIndex\":0,\"charOffset\":2,\"virtualParaIndex\":{}}}",
+                    page_num, endnote_index, virtual_para_idx
+                ))
+            }
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 각주/미주가 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    pub fn get_cursor_rect_in_note_native(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        note_para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+
+        match ctrl {
+            Control::Footnote(_) => {
+                let (page_num, footnote_index) = self
+                    .find_body_footnote_edit_target(section_idx, para_idx, control_idx)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("각주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                self.get_cursor_rect_in_footnote_native(
+                    page_num,
+                    footnote_index,
+                    note_para_idx,
+                    char_offset,
+                )
+            }
+            Control::Endnote(endnote) => {
+                let (page_num, _, virtual_para_idx) = self
+                    .find_endnote_edit_target(section_idx, para_idx, control_idx, note_para_idx)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                let render_char_offset = if note_para_idx == 0 {
+                    char_offset
+                        + note_marker_text(
+                            endnote.number,
+                            endnote.number_shape,
+                            endnote.before_decoration_letter,
+                            endnote.after_decoration_letter,
+                        )
+                        .chars()
+                        .count()
+                        + 1
+                } else {
+                    char_offset
+                };
+                self.cursor_rect_for_render_paragraph(
+                    page_num,
+                    section_idx,
+                    virtual_para_idx,
+                    render_char_offset,
+                )?
+                .ok_or_else(|| {
+                    HwpError::RenderError("미주 커서 위치를 찾을 수 없습니다".to_string())
+                })
+            }
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 각주/미주가 아닙니다".to_string(),
+            )),
+        }
     }
 
     /// 각주 내 커서 위치 (커서 렉트) 계산

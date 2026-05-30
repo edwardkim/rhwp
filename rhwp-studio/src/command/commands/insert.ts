@@ -4,6 +4,7 @@ import { EquationEditorDialog } from '@/ui/equation-editor-dialog';
 import { EquationPropertiesDialog } from '@/ui/equation-props-dialog';
 import { SymbolsDialog } from '@/ui/symbols-dialog';
 import { BookmarkDialog } from '@/ui/bookmark-dialog';
+import { EndnoteShapeDialog } from '@/ui/endnote-shape-dialog';
 import { showShapePicker } from '@/ui/shape-picker';
 import type { ShapeType } from '@/ui/shape-picker';
 
@@ -24,6 +25,32 @@ let equationEditorDialog: EquationEditorDialog | null = null;
 let equationPropsDialog: EquationPropertiesDialog | null = null;
 let symbolsDialog: SymbolsDialog | null = null;
 let bookmarkDialog: BookmarkDialog | null = null;
+let endnoteShapeDialog: EndnoteShapeDialog | null = null;
+
+function enterNoteEditing(
+  services: any,
+  ih: any,
+  sectionIdx: number,
+  paraIdx: number,
+  controlIdx: number,
+): void {
+  const info = services.wasm.getNoteEditInfo(sectionIdx, paraIdx, controlIdx);
+  if (!info?.ok) return;
+  const cursor = (ih as any).cursor;
+  if (!cursor?.enterFootnoteMode) return;
+  cursor.enterFootnoteMode(
+    sectionIdx,
+    paraIdx,
+    controlIdx,
+    info.footnoteIndex ?? 0,
+    info.pageNum ?? 0,
+  );
+  cursor.setFnCursorPosition(info.fnParaIndex ?? 0, info.charOffset ?? 2);
+  services.eventBus.emit('footnoteModeChanged', true);
+  (ih as any).active = true;
+  (ih as any).updateCaret?.();
+  (ih as any).textarea?.focus();
+}
 
 export const insertCommands: CommandDef[] = [
   {
@@ -131,19 +158,65 @@ export const insertCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
-      console.log('[footnote] pos:', pos);
       try {
         const result = services.wasm.insertFootnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
-        console.log('[footnote] result:', result);
         if (result.ok) {
           services.eventBus.emit('document-changed');
+          enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
         }
       } catch (err) {
         console.warn('[insert:footnote] 각주 삽입 실패:', err);
       }
     },
   },
-  stub('insert:endnote', '미주', 'icon-endnote'),
+  {
+    id: 'insert:endnote',
+    label: '미주',
+    icon: 'icon-endnote',
+    canExecute: () => true,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getPosition();
+      try {
+        const result = services.wasm.insertEndnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
+        if (result.ok) {
+          services.eventBus.emit('document-changed');
+          enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
+        }
+      } catch (err) {
+        console.warn('[insert:endnote] 미주 삽입 실패:', err);
+      }
+    },
+  },
+  {
+    id: 'insert:note-close',
+    label: '닫기',
+    icon: 'icon-delete',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const cursor = (ih as any).cursor;
+      if (!cursor?.isInFootnote?.()) return;
+      cursor.exitFootnoteMode();
+      services.eventBus.emit('footnoteModeChanged', false);
+      (ih as any).updateCaret?.();
+      (ih as any).textarea?.focus();
+    },
+  },
+  {
+    id: 'insert:endnote-shape',
+    label: '미주 모양',
+    icon: 'icon-endnote',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const pos = services.getInputHandler()?.getPosition();
+      const sectionIdx = pos?.sectionIndex ?? 0;
+      endnoteShapeDialog = new EndnoteShapeDialog(services.wasm, services.eventBus, sectionIdx);
+      endnoteShapeDialog.show();
+    },
+  },
   {
     id: 'insert:symbols',
     label: '문자표',

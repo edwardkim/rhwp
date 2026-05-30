@@ -470,16 +470,18 @@ function setupEventListeners(): void {
 
   // 개체 선택 시 회전/대칭 버튼 그룹 표시/숨김
   const rotateGroup = document.querySelector('.tb-rotate-group') as HTMLElement | null;
+  let noteToolbarActive = false;
   if (rotateGroup) {
     eventBus.on('picture-object-selection-changed', (selected) => {
-      rotateGroup.style.display = (selected as boolean) ? '' : 'none';
+      rotateGroup.style.display = (selected as boolean) && !noteToolbarActive ? '' : 'none';
     });
   }
 
   // 머리말/꼬리말 편집 모드 시 도구상자 전환 + 본문 dimming
   const hfGroup = document.querySelector('.tb-headerfooter-group') as HTMLElement | null;
   const hfLabel = hfGroup?.querySelector('.tb-hf-label') as HTMLElement | null;
-  const defaultTbGroups = document.querySelectorAll('#icon-toolbar > .tb-group:not(.tb-headerfooter-group):not(.tb-rotate-group), #icon-toolbar > .tb-sep');
+  const noteGroup = document.querySelector('.tb-note-group') as HTMLElement | null;
+  const defaultTbGroups = document.querySelectorAll('#icon-toolbar > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar > .tb-sep');
   const scrollContainer = document.getElementById('scroll-container');
   const styleBar = document.getElementById('style-bar');
 
@@ -504,6 +506,20 @@ function setupEventListeners(): void {
         scrollContainer.classList.remove('hf-editing');
       }
     }
+  });
+
+  eventBus.on('footnoteModeChanged', (active) => {
+    const isActive = active as boolean;
+    noteToolbarActive = isActive;
+    if (noteGroup) {
+      noteGroup.style.display = isActive ? '' : 'none';
+    }
+    if (rotateGroup && isActive) {
+      rotateGroup.style.display = 'none';
+    }
+    defaultTbGroups.forEach((el) => {
+      (el as HTMLElement).style.display = isActive ? 'none' : '';
+    });
   });
 }
 

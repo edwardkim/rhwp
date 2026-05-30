@@ -36,10 +36,10 @@ fn collect_green_separator_lines(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
 }
 
 fn render_tree_contains_text(node: &RenderNode, needle: &str) -> bool {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.text.contains(needle) {
-            return true;
-        }
+    match &node.node_type {
+        RenderNodeType::TextRun(run) if run.text.contains(needle) => return true,
+        RenderNodeType::FootnoteMarker(marker) if marker.text.contains(needle) => return true,
+        _ => {}
     }
     node.children
         .iter()
@@ -228,6 +228,221 @@ fn issue_1139_exam_2022_endnote_shape_matches_hancom_reference() {
         (hwpunit_to_mm(shape.raw_unknown as i32) - 7.0).abs() < 0.05,
         "HWP5 raw_unknown preserves Hancom '미주 사이'"
     );
+}
+
+#[test]
+fn issue_1139_stage31_insert_endnote_on_blank_document_renders_marker() {
+    use rhwp::model::control::Control;
+
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native()
+        .expect("create blank document");
+
+    let result = doc
+        .insert_endnote_native(0, 0, 0)
+        .expect("insert_endnote_native");
+    let parsed: Value = serde_json::from_str(&result).expect("insert result json");
+    assert_eq!(parsed["ok"], true);
+    assert_eq!(parsed["endnoteNumber"], 1);
+
+    let para = &doc.document().sections[0].paragraphs[0];
+    let endnote = para
+        .controls
+        .iter()
+        .find_map(|ctrl| match ctrl {
+            Control::Endnote(en) => Some(en),
+            _ => None,
+        })
+        .expect("본문 문단에 Endnote 컨트롤이 생성되어야 함");
+    assert_eq!(endnote.number, 1);
+    assert_eq!(endnote.paragraphs.len(), 1);
+    assert_eq!(
+        endnote.paragraphs[0].controls.len(),
+        1,
+        "미주 내용 문단은 AutoNumber anchor를 포함해야 함"
+    );
+
+    let tree = doc
+        .build_page_render_tree(0)
+        .expect("page render tree after endnote");
+    assert!(
+        render_tree_contains_text(&tree.root, "1)"),
+        "본문에는 기본 미주 마커 형식인 '1)'이 렌더되어야 함"
+    );
+}
+
+#[test]
+fn issue_1139_stage31_insert_endnote_enters_editable_note_body() {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native()
+        .expect("create blank document");
+
+    let result = doc
+        .insert_endnote_native(0, 0, 0)
+        .expect("insert_endnote_native");
+    let parsed: Value = serde_json::from_str(&result).expect("insert result json");
+    let control_idx = parsed["controlIdx"].as_u64().expect("controlIdx") as usize;
+
+    let edit_info = doc
+        .get_note_edit_info_native(0, 0, control_idx)
+        .expect("get_note_edit_info_native");
+    let edit_info: Value = serde_json::from_str(&edit_info).expect("edit info json");
+    assert_eq!(edit_info["ok"], true);
+    assert_eq!(edit_info["kind"], "endnote");
+    assert_eq!(edit_info["fnParaIndex"], 0);
+    assert_eq!(edit_info["charOffset"], 2);
+    assert!(
+        edit_info["virtualParaIndex"].as_u64().is_some(),
+        "미주 편집 대상은 렌더링용 가상 문단을 제공해야 함"
+    );
+
+    let cursor_rect = doc
+        .get_cursor_rect_in_note_native(0, 0, control_idx, 0, 2)
+        .expect("get_cursor_rect_in_note_native");
+    let cursor_rect: Value = serde_json::from_str(&cursor_rect).expect("cursor rect json");
+    assert!(
+        cursor_rect["x"].as_f64().is_some() && cursor_rect["y"].as_f64().is_some(),
+        "미주 편집 위치의 캐럿 좌표를 계산해야 함"
+    );
+
+    let inserted = doc
+        .insert_text_in_footnote_native(0, 0, control_idx, 0, 2, "test")
+        .expect("insert text in endnote through note edit API");
+    let inserted: Value = serde_json::from_str(&inserted).expect("insert text json");
+    assert_eq!(inserted["ok"], true);
+    assert_eq!(inserted["charOffset"], 6);
+
+    let tree = doc
+        .build_page_render_tree(0)
+        .expect("page render tree after endnote text input");
+    assert!(
+        render_tree_contains_text(&tree.root, "1)"),
+        "미주 내용 번호가 함께 렌더되어야 함"
+    );
+    assert!(
+        render_tree_contains_text(&tree.root, "test"),
+        "미주 내용 편집 API로 입력한 텍스트가 렌더되어야 함"
+    );
+}
+
+#[test]
+fn issue_1139_stage31_endnote_shape_prefix_renders_in_existing_endnote() {
+    use rhwp::model::control::{AutoNumberType, Control};
+
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native()
+        .expect("create blank document");
+    doc.insert_endnote_native(0, 0, 0)
+        .expect("insert default endnote");
+
+    doc.apply_endnote_shape_native(
+        0,
+        r##"{
+            "numberFormat":"digit",
+            "prefixChar":"(",
+            "suffixChar":")",
+            "startNumber":5,
+            "separatorEnabled":true
+        }"##,
+    )
+    .expect("apply endnote shape");
+
+    let para = &doc.document().sections[0].paragraphs[0];
+    let endnote = para
+        .controls
+        .iter()
+        .find_map(|ctrl| match ctrl {
+            Control::Endnote(en) => Some(en),
+            _ => None,
+        })
+        .expect("Endnote control");
+    assert_eq!(endnote.number, 5);
+    assert_eq!(endnote.before_decoration_letter, '(' as u16);
+    assert_eq!(endnote.after_decoration_letter, ')' as u16);
+
+    let auto_num = endnote.paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|ctrl| match ctrl {
+            Control::AutoNumber(an) if an.number_type == AutoNumberType::Endnote => Some(an),
+            _ => None,
+        })
+        .expect("Endnote AutoNumber");
+    assert_eq!(auto_num.assigned_number, 5);
+    assert_eq!(auto_num.prefix_char, '(');
+    assert_eq!(auto_num.suffix_char, ')');
+
+    let tree = doc
+        .build_page_render_tree(0)
+        .expect("page render tree after shape apply");
+    assert!(
+        render_tree_contains_text(&tree.root, "(5)"),
+        "앞 장식 문자와 시작 번호를 바꾼 뒤 본문/미주 번호가 '(5)'로 렌더되어야 함"
+    );
+    assert!(
+        !render_tree_contains_text(&tree.root, "문1)"),
+        "기존 미주도 새 장식 문자를 따라야 하므로 '문1)'이 남으면 안 됨"
+    );
+}
+
+#[test]
+fn issue_1139_stage31_endnote_shape_api_updates_section_shape() {
+    use rhwp::model::footnote::{FootnoteNumbering, FootnotePlacement, NumberFormat};
+
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native()
+        .expect("create blank document");
+
+    let before = doc
+        .get_endnote_shape_native(0)
+        .expect("get_endnote_shape_native");
+    let before_json: Value = serde_json::from_str(&before).expect("shape json");
+    assert_eq!(before_json["ok"], true);
+
+    doc.apply_endnote_shape_native(
+        0,
+        r##"{
+            "numberFormat":"hangulSyllable",
+            "prefixChar":"[",
+            "suffixChar":"]",
+            "startNumber":3,
+            "separatorEnabled":true,
+            "separatorLength":1417,
+            "separatorMarginTop":100,
+            "separatorMarginBottom":200,
+            "noteSpacing":300,
+            "separatorLineType":1,
+            "separatorLineWidth":2,
+            "separatorColor":"#11aa55",
+            "numbering":"restartSection",
+            "placement":"sectionEnd"
+        }"##,
+    )
+    .expect("apply_endnote_shape_native");
+
+    let shape = &doc.document().sections[0].section_def.endnote_shape;
+    assert_eq!(shape.number_format, NumberFormat::HangulSyllable);
+    assert_eq!(shape.prefix_char, '[');
+    assert_eq!(shape.suffix_char, ']');
+    assert_eq!(shape.start_number, 3);
+    assert_eq!(shape.separator_length, 1417);
+    assert_eq!(shape.separator_margin_top, 100);
+    assert_eq!(shape.note_spacing, 200, "구분선 아래 UI 값");
+    assert_eq!(shape.raw_unknown, 300, "미주 사이 UI 값");
+    assert_eq!(shape.separator_line_type, 1);
+    assert_eq!(shape.separator_line_width, 2);
+    assert_eq!(shape.separator_color, 0x0055_aa11);
+    assert_eq!(shape.numbering, FootnoteNumbering::RestartSection);
+    assert_eq!(shape.placement, FootnotePlacement::BelowText);
+
+    let after = doc
+        .get_endnote_shape_native(0)
+        .expect("get_endnote_shape_native after apply");
+    let after_json: Value = serde_json::from_str(&after).expect("shape json after apply");
+    assert_eq!(after_json["numberFormat"], "hangulSyllable");
+    assert_eq!(after_json["separatorColor"], "#11aa55");
+    assert_eq!(after_json["noteSpacing"], 300);
+    assert_eq!(after_json["placement"], "sectionEnd");
 }
 
 #[test]

@@ -3050,6 +3050,40 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 미주를 삽입한다.
+    #[wasm_bindgen(js_name = insertEndnote)]
+    pub fn insert_endnote(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.insert_endnote_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 미주 모양을 조회한다.
+    #[wasm_bindgen(js_name = getEndnoteShape)]
+    pub fn get_endnote_shape(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_endnote_shape_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 미주 모양을 적용한다.
+    #[wasm_bindgen(js_name = applyEndnoteShape)]
+    pub fn apply_endnote_shape(
+        &mut self,
+        section_idx: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_endnote_shape_native(section_idx as usize, props_json)
+            .map_err(|e| e.into())
+    }
+
     /// 수식을 삽입한다.
     #[wasm_bindgen(js_name = insertEquation)]
     pub fn insert_equation(
@@ -3244,6 +3278,42 @@ impl HwpDocument {
             page_num,
             footnote_index as usize,
             fn_para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 각주/미주 편집 모드 진입 대상 조회
+    #[wasm_bindgen(js_name = getNoteEditInfo)]
+    pub fn get_note_edit_info(
+        &self,
+        section_idx: u32,
+        para_idx: u32,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_note_edit_info_native(
+            section_idx as usize,
+            para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 각주/미주 내부 커서 렉트 계산
+    #[wasm_bindgen(js_name = getCursorRectInNote)]
+    pub fn get_cursor_rect_in_note(
+        &self,
+        section_idx: u32,
+        para_idx: u32,
+        control_idx: u32,
+        note_para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.get_cursor_rect_in_note_native(
+            section_idx as usize,
+            para_idx as usize,
+            control_idx as usize,
+            note_para_idx as usize,
             char_offset as usize,
         )
         .map_err(|e| e.into())
