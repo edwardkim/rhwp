@@ -8,6 +8,10 @@ fn hwpunit_to_mm(hu: i32) -> f64 {
     hu as f64 * 25.4 / 7200.0
 }
 
+fn hwpunit_to_px(hu: i32) -> f64 {
+    hu as f64 * 96.0 / 7200.0
+}
+
 fn collect_small_bin5_images(node: &RenderNode, out: &mut Vec<(Option<usize>, Option<usize>)>) {
     if let RenderNodeType::Image(img) = &node.node_type {
         if img.bin_data_id == 5 && (node.bbox.width - 23.8).abs() < 0.1 {
@@ -223,6 +227,26 @@ fn issue_1139_exam_2022_endnote_shape_matches_hancom_reference() {
     assert!(
         (hwpunit_to_mm(shape.raw_unknown as i32) - 7.0).abs() < 0.05,
         "HWP5 raw_unknown preserves Hancom '미주 사이'"
+    );
+}
+
+#[test]
+fn issue_1139_exam_2022_page1_header_table_uses_page_border_spacing() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(0).expect("page 1 render tree");
+
+    let header_table = find_table_bbox(&tree.root, 0, 0).expect("page 1 header title table");
+    let expected_x = hwpunit_to_px(1984);
+    let expected_y = hwpunit_to_px(1984);
+
+    assert!(
+        (header_table.x - expected_x).abs() < 0.5,
+        "PDF/한컴 기준 머리말 제목 표는 paper-based 쪽 테두리 왼쪽 간격과 맞아야 함: table={header_table:?}, expected_x={expected_x}"
+    );
+    assert!(
+        (header_table.y - expected_y).abs() < 0.5,
+        "머리말 제목 표의 세로 위치는 기존 7mm 머리말 시작점을 유지해야 함: table={header_table:?}, expected_y={expected_y}"
     );
 }
 

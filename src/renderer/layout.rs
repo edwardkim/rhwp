@@ -24,6 +24,7 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::footnote::{FootnoteShape, NumberFormat};
 use crate::model::header_footer::MasterPage;
+use crate::model::page::{PageBorderBasis, PageBorderFill};
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, VertAlign,
@@ -705,7 +706,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         active_master_page: Option<&MasterPage>,
         measured_tables: &[MeasuredTable],
-        page_border_fill: Option<&crate::model::page::PageBorderFill>,
+        page_border_fill: Option<&PageBorderFill>,
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
     ) -> PageRenderTree {
@@ -776,6 +777,7 @@ impl LayoutEngine {
                 styles,
                 layout,
                 bin_data_content,
+                page_border_fill,
             );
         }
 
@@ -928,6 +930,7 @@ impl LayoutEngine {
         _composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
+        table_area: Option<&LayoutRect>,
         page_index: u32,
         page_number: u32,
         bin_data_content: &[BinDataContent],
@@ -976,6 +979,7 @@ impl LayoutEngine {
                             0.0
                         };
                         let table_y = y_offset + line_anchor_offset;
+                        let table_area = table_area.unwrap_or(area);
                         y_offset = self.layout_table(
                             tree,
                             area_node,
@@ -983,7 +987,7 @@ impl LayoutEngine {
                             0,
                             styles,
                             0,
-                            area,
+                            table_area,
                             table_y,
                             bin_data_content,
                             None,
@@ -1285,7 +1289,7 @@ impl LayoutEngine {
         &self,
         tree: &mut PageRenderTree,
         layout: &PageLayoutInfo,
-        page_border_fill: Option<&crate::model::page::PageBorderFill>,
+        page_border_fill: Option<&PageBorderFill>,
         styles: &ResolvedStyleSet,
         bin_data_content: &[BinDataContent],
     ) {
@@ -1355,11 +1359,10 @@ impl LayoutEngine {
     fn page_number_baseline_y(
         &self,
         layout: &PageLayoutInfo,
-        page_border_fill: Option<&crate::model::page::PageBorderFill>,
+        page_border_fill: Option<&PageBorderFill>,
         font_size: f64,
     ) -> Option<f64> {
         let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
-        use crate::model::page::PageBorderBasis;
         let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
         if paper_based {
             return None;
@@ -1372,7 +1375,7 @@ impl LayoutEngine {
         &self,
         tree: &mut PageRenderTree,
         layout: &PageLayoutInfo,
-        page_border_fill: Option<&crate::model::page::PageBorderFill>,
+        page_border_fill: Option<&PageBorderFill>,
         styles: &ResolvedStyleSet,
     ) {
         if let Some(pbf) = page_border_fill.filter(|p| p.border_fill_id > 0) {
@@ -1392,7 +1395,6 @@ impl LayoutEngine {
                 // [Task #1029] PR #1003 cherry-pick `--theirs` 충돌 해소로 본 로직이
                 // PR #987 attr 비트 해석으로 revert 되어 HWP3 native (attr=0) 만
                 // body-edge 로 좁아진 시각 회귀 발생 — 본 task 에서 PR #1011 상태 복원.
-                use crate::model::page::PageBorderBasis;
                 let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
                 if std::env::var("RHWP_DEBUG_PAGE_BORDER").is_ok() {
                     eprintln!(
@@ -1468,6 +1470,28 @@ impl LayoutEngine {
                 }
             }
         }
+    }
+
+    fn header_table_area_from_page_border(
+        &self,
+        layout: &PageLayoutInfo,
+        page_border_fill: Option<&PageBorderFill>,
+    ) -> Option<LayoutRect> {
+        let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
+        if !matches!(pbf.basis, PageBorderBasis::PaperBased) {
+            return None;
+        }
+
+        let left = hwpunit_to_px(pbf.spacing_left as i32, self.dpi);
+        let right = layout.page_width - hwpunit_to_px(pbf.spacing_right as i32, self.dpi);
+        if right <= left {
+            return None;
+        }
+
+        let mut area = layout.header_area;
+        area.x = left;
+        area.width = right - left;
+        Some(area)
     }
 
     /// 확장 바탕쪽을 기존 렌더 트리에 추가한다 (외부 호출용).
@@ -1695,6 +1719,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         layout: &PageLayoutInfo,
         bin_data_content: &[BinDataContent],
+        page_border_fill: Option<&PageBorderFill>,
     ) {
         self.current_page_number.set(page_content.page_number);
         let header_id = tree.next_id();
@@ -1713,6 +1738,8 @@ impl LayoutEngine {
                 if let Some(para) = paragraphs.get(hf_ref.para_index) {
                     if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
                         if let Control::Header(header) = ctrl {
+                            let header_table_area =
+                                self.header_table_area_from_page_border(layout, page_border_fill);
                             // [Task #825] 머리말 그림 hit-test marker.
                             let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
                                 outer_para_index: hf_ref.para_index,
@@ -1726,6 +1753,7 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.header_area,
+                                header_table_area.as_ref(),
                                 page_content.page_index,
                                 page_content.page_number,
                                 bin_data_content,
@@ -1851,6 +1879,7 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.footer_area,
+                                None,
                                 page_content.page_index,
                                 page_content.page_number,
                                 bin_data_content,
@@ -1983,7 +2012,7 @@ impl LayoutEngine {
         footer_node: &mut RenderNode,
         page_content: &PageContent,
         layout: &PageLayoutInfo,
-        page_border_fill: Option<&crate::model::page::PageBorderFill>,
+        page_border_fill: Option<&PageBorderFill>,
     ) {
         // 감추기(PageHide)에서 쪽 번호 감추기가 설정되어 있으면 건너뜀
         if let Some(ref ph) = page_content.page_hide {
