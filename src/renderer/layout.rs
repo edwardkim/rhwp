@@ -2685,6 +2685,7 @@ impl LayoutEngine {
                         paper_images,
                         &mut para_start_y,
                         &mut para_float_lanes,
+                        &mut para_inline_state,
                         item,
                         page_content,
                         paragraphs,
@@ -4928,11 +4929,9 @@ impl LayoutEngine {
                         // (wrap 처리 포함) 뒤로 옮김. 그 전에는 placeholder 로 default 값 사용.
                         let _ = is_single_pic;
                         let comp = composed.get(para_index);
-                        let para_y_for_pic = para_start_y
-                            .get(&para_index)
-                            .copied()
-                            .unwrap_or(y_offset)
-                            + sibling_table_reserved_px;
+                        let para_y_for_pic =
+                            para_start_y.get(&para_index).copied().unwrap_or(y_offset)
+                                + sibling_table_reserved_px;
                         let default_pic_y = self.compute_tac_picture_shape_y(
                             para,
                             comp,

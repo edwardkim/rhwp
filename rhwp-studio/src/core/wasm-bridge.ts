@@ -841,7 +841,7 @@ export class WasmBridge {
                 // 셀 floating 분기에서 사용. undefined 면 셀 좌상단 default (기존 동작).
                 paperOffsetXHu?: number, paperOffsetYHu?: number): { ok: boolean; paraIdx: number; controlIdx: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse(this.doc.insertPicture(
+    return JSON.parse((this.doc as any).insertPicture(
       sec, paraIdx, charOffset, cellPathJson, imageData,
       width, height, naturalWidthPx, naturalHeightPx, extension, description,
       paperOffsetXHu, paperOffsetYHu,
