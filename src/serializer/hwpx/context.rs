@@ -87,6 +87,8 @@ pub struct SerializeContext {
     pub style_ids: IdPool<u16>,
     /// `bin_data_id` (IR) → manifest 엔트리 매핑
     pub bin_data_map: HashMap<u16, BinDataEntry>,
+    /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
+    para_id_counter: u32,
 }
 
 impl SerializeContext {
@@ -210,6 +212,13 @@ impl SerializeContext {
                 missing.join("; ")
             )))
         }
+    }
+
+    /// 문서 전역 문단 ID를 하나 발급하고 카운터를 증가시킨다.
+    pub fn next_para_id(&mut self) -> u32 {
+        let id = self.para_id_counter;
+        self.para_id_counter += 1;
+        id
     }
 }
 
