@@ -246,14 +246,14 @@ fn write_sub_list<W: Write>(
     )?;
 
     // 셀 내부 문단 재귀.
-    for (pi, para) in cell.paragraphs.iter().enumerate() {
+    for para in cell.paragraphs.iter() {
         ctx.para_shape_ids.reference(para.para_shape_id);
         ctx.style_ids.reference(para.style_id as u16);
         for cs_ref in &para.char_shapes {
             ctx.char_shape_ids.reference(cs_ref.char_shape_id);
         }
 
-        let pi_str = pi.to_string();
+        let pi_str = ctx.next_para_id().to_string();
         let ppr = para.para_shape_id.to_string();
         let sp = para.style_id.to_string();
         start_tag_attrs(
@@ -647,5 +647,27 @@ mod tests {
         let xml = serialize(&t);
         assert!(xml.contains(r#"<hp:run charPrIDRef="1"><hp:t>ab</hp:t></hp:run>"#));
         assert!(xml.contains(r#"<hp:run charPrIDRef="2"><hp:t>cd</hp:t></hp:run>"#));
+    }
+
+    #[test]
+    fn cell_paragraph_ids_are_globally_unique() {
+        // 2×2 표 = 셀 4개, 각 셀에 문단 1개 → id="0", id="1", id="2", id="3"
+        let t = empty_table(2, 2);
+        let xml = serialize(&t);
+        // id="0" 이 문서 내에서 정확히 한 번만 나타나야 한다.
+        assert_eq!(
+            xml.matches(r#"<hp:p id="0""#).count(),
+            1,
+            "셀 문단 id=0 이 중복됨: {}",
+            &xml[..xml.len().min(400)]
+        );
+        // 문단 4개가 각각 다른 id(0,1,2,3)를 가져야 한다.
+        for expected_id in 0..4u32 {
+            assert!(
+                xml.contains(&format!(r#"<hp:p id="{}""#, expected_id)),
+                "id={} 가 없음",
+                expected_id
+            );
+        }
     }
 }
