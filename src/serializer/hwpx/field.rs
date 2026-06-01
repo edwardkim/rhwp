@@ -189,7 +189,7 @@ mod tests {
     }
 
     #[test]
-    fn footnote_emits_autoNum() {
+    fn footnote_emits_auto_num() {
         let xml = to_string(|w| {
             write_footnote_open(w, 3)?;
             write_footnote_close(w)

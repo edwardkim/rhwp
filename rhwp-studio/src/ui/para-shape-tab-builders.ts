@@ -550,8 +550,12 @@ export function buildBorderTab(
   const bgPatShapeSelect = document.createElement('select');
   bgPatShapeSelect.className = 'dialog-select';
   bgPatShapeSelect.style.width = '90px';
+  // [Issue #1172] "없음" 의 value 는 -1 (IR patternType: 무늬 없음 = -1).
+  // 종전엔 0 이라, patternType=-1 문단을 dialog 에 표시하면 select 가 0 으로
+  // 폴백되고, collectMods 가 0!=-1 을 변경으로 오인하여 fillType=solid 를 강제
+  // 주입 → 여백만 바꾸거나 확인만 눌러도 의도치 않은 배경/테두리가 생성됐다.
   for (const [val, lbl] of [
-    ['0', '없음'], ['1', '━'], ['2', '┃'],
+    ['-1', '없음'], ['1', '━'], ['2', '┃'],
     ['3', '╲'], ['4', '╱'], ['5', '┼'], ['6', '╳'],
   ] as const) {
     const o = document.createElement('option');

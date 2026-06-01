@@ -70,26 +70,21 @@ pub struct ImageAttr {
 }
 
 impl ImageAttr {
-    /// 워터마크 효과가 적용되어 있는지 식별 (Task #516).
-    /// effect 가 RealPic 이 아니고 brightness/contrast 중 하나라도 변경된 경우.
+    /// 워터마크 효과가 적용되어 있는지 식별 (Task #516, Issue #1156 정정).
+    ///
+    /// HWP/HWPX 에는 워터마크 적용을 나타내는 별도 비트/속성이 **존재하지 않는다**
+    /// (한컴 공식 파일구조 3.0/5.0 + water-mark.hwp/.hwpx 두 그림 비교로 확정).
+    /// 한컴 편집기는 "워터마크 효과" 체크를 해제하면 밝기·대비를 모두 0 으로
+    /// 되돌리고, 체크하면 0 이 아닌 밝기·대비 값을 부여한다 (기본 70/-50, 사용자
+    /// 변경 가능). 따라서 워터마크 여부는 **밝기·대비가 둘 다 0 이 아닌 경우**
+    /// 로 판정한다 (effect 종류 무관, 한쪽이라도 0 이면 워터마크 아님).
     pub fn is_watermark(&self) -> bool {
-        !matches!(self.effect, ImageEffect::RealPic) && (self.brightness != 0 || self.contrast != 0)
-    }
-
-    /// 한컴 자동 워터마크 프리셋 정합 여부 (Task #516).
-    /// 한컴 도구의 "이미지 → 회색조 → 워터마크 효과" 체크 시 자동 적용:
-    /// effect=GrayScale, brightness=70, contrast=-50.
-    pub fn is_hancom_watermark_preset(&self) -> bool {
-        matches!(self.effect, ImageEffect::GrayScale)
-            && self.brightness == 70
-            && self.contrast == -50
+        self.brightness != 0 && self.contrast != 0
     }
 
     /// 워터마크 preset 분류 (Task #516, AI 메타정보).
     pub fn watermark_preset(&self) -> Option<&'static str> {
-        if self.is_hancom_watermark_preset() {
-            Some("hancom-watermark")
-        } else if self.is_watermark() {
+        if self.is_watermark() {
             Some("custom")
         } else {
             None

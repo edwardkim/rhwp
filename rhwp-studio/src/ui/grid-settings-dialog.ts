@@ -7,7 +7,7 @@ import type {
   GridSnapMode,
   GridViewSettings,
 } from '../view/grid-settings';
-import { normalizeGridSettings } from '../view/grid-settings';
+import { convertGridOffsetForOrigin, normalizeGridSettings } from '../view/grid-settings';
 
 /**
  * 격자 설정 대화상자 — 보기 격자와 표/개체 이동 간격을 설정한다.
@@ -21,19 +21,19 @@ export class GridSettingsDialog extends ModalDialog {
   private moveStepInput!: HTMLInputElement;
   private callback: (settings: GridViewSettings, moveStepMm: number) => void;
   private currentSettings: GridViewSettings;
-  private originDefaults: Record<GridOrigin, GridOffsetMm>;
+  private originBases: Record<GridOrigin, GridOffsetMm>;
   private currentMoveStepMm: number;
   private lastOrigin: GridOrigin;
 
   constructor(
     currentSettings: GridViewSettings,
-    originDefaults: Record<GridOrigin, GridOffsetMm>,
+    originBases: Record<GridOrigin, GridOffsetMm>,
     currentMoveStepMm: number,
     onConfirm: (settings: GridViewSettings, moveStepMm: number) => void,
   ) {
     super('격자 설정', 430);
     this.currentSettings = currentSettings;
-    this.originDefaults = originDefaults;
+    this.originBases = originBases;
     this.currentMoveStepMm = currentMoveStepMm;
     this.lastOrigin = currentSettings.origin;
     this.callback = onConfirm;
@@ -211,27 +211,22 @@ export class GridSettingsDialog extends ModalDialog {
 
   private onOriginChanged(nextOrigin: GridOrigin): void {
     if (nextOrigin === this.lastOrigin) return;
-    const currentDefault = this.originDefaults[this.lastOrigin];
-    const nextDefault = this.originDefaults[nextOrigin];
-    if (this.isDefaultOffset(currentDefault)) {
-      this.offsetXInput.value = String(nextDefault.x);
-      this.offsetYInput.value = String(nextDefault.y);
-    }
+    const nextOffset = convertGridOffsetForOrigin(
+      {
+        x: parseFloat(this.offsetXInput.value),
+        y: parseFloat(this.offsetYInput.value),
+      },
+      this.lastOrigin,
+      nextOrigin,
+      this.originBases,
+    );
+    this.offsetXInput.value = String(nextOffset.x);
+    this.offsetYInput.value = String(nextOffset.y);
     this.lastOrigin = nextOrigin;
-  }
-
-  private isDefaultOffset(defaultOffset: GridOffsetMm): boolean {
-    const x = parseFloat(this.offsetXInput.value);
-    const y = parseFloat(this.offsetYInput.value);
-    return closeMm(x, defaultOffset.x) && closeMm(y, defaultOffset.y);
   }
 
   private clampMoveStep(value: number): number {
     if (!Number.isFinite(value)) return this.currentMoveStepMm;
     return Math.min(50, Math.max(0.5, value));
   }
-}
-
-function closeMm(a: number, b: number): boolean {
-  return Number.isFinite(a) && Math.abs(a - b) < 0.01;
 }

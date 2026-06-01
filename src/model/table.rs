@@ -246,7 +246,16 @@ impl Table {
         self.cells.get_mut(cell_idx)
     }
 
-    /// raw_ctrl_data 내 CommonObjAttr의 width/height를 재계산하여 갱신한다.
+    /// raw_ctrl_data 내 CommonObjAttr의 width/height를 재계산하여 갱신한다 (의도된 dual).
+    ///
+    /// **Dual maintenance 의 이유** (Picture/Shape 와 다른 점):
+    /// - **Table**: `serializer/control.rs:461` 가 `table.raw_ctrl_data` 를 그대로 기록 →
+    ///   `raw_ctrl_data` 가 **source-of-truth**. 본 함수가 cell 조절 후 갱신 필수.
+    /// - **Picture/Shape**: `serializer/control.rs:895` 가 `&serialize_common_obj_attr(&pic.common)`
+    ///   으로 매번 재생성 → `self.common` 이 source-of-truth, raw bytes 는 derived.
+    ///
+    /// Table 만 dual 인 것은 serializer 의 source-of-truth 정책 차이로 의도된 구조.
+    /// 추후 모델 통일 (Picture/Shape 정합으로 Table 전환) 시 본 함수도 단순화 가능.
     ///
     /// raw_ctrl_data 레이아웃 (parse_common_obj_attr 정합):
     ///   [0..4] flags, [4..8] v_offset, [8..12] h_offset,
@@ -258,8 +267,14 @@ impl Table {
         }
         let total_width: HwpUnit = self.get_column_widths().iter().sum();
         let total_height: HwpUnit = self.get_row_heights().iter().sum();
+        // (1) serialize source — raw_ctrl_data bytes (HWP 직렬화 시 사용).
         self.raw_ctrl_data[common_obj_offsets::WIDTH].copy_from_slice(&total_width.to_le_bytes());
         self.raw_ctrl_data[common_obj_offsets::HEIGHT].copy_from_slice(&total_height.to_le_bytes());
+        // (2) [Task #1151 v6] paragraph_layout cache — self.common.width/height.
+        // v3 helper (calc_sibling_topandbottom_table_reserved_hu) 가 self.common.height 사용.
+        // dual maintenance 가 필수 — 한쪽만 갱신 시 stale 결함.
+        self.common.width = total_width;
+        self.common.height = total_height;
     }
 
     /// 열별 폭을 추출한다 (col_span==1인 셀 기준).

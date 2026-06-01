@@ -1,6 +1,6 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
-import type { EquationProperties } from '@/core/types';
+import type { EquationProperties, NoteControlRef } from '@/core/types';
 import { appendSvgMarkup } from './dom-utils';
 
 /**
@@ -231,6 +231,7 @@ export class EquationEditorDialog {
   private ci = 0;
   private cellIdx?: number;
   private cellParaIdx?: number;
+  private noteRef?: NoteControlRef;
 
   // 원본 속성 (비교용)
   private origProps: EquationProperties | null = null;
@@ -244,16 +245,19 @@ export class EquationEditorDialog {
   }
 
   /** 대화상자 열기 */
-  open(sec: number, para: number, ci: number, cellIdx?: number, cellParaIdx?: number): void {
+  open(sec: number, para: number, ci: number, cellIdx?: number, cellParaIdx?: number, noteRef?: NoteControlRef): void {
     this.build();
     this.sec = sec;
     this.para = para;
     this.ci = ci;
     this.cellIdx = cellIdx;
     this.cellParaIdx = cellParaIdx;
+    this.noteRef = noteRef;
 
     try {
-      this.origProps = this.wasm.getEquationProperties(sec, para, ci, cellIdx, cellParaIdx);
+      this.origProps = noteRef
+        ? this.wasm.getNoteEquationProperties(noteRef)
+        : this.wasm.getEquationProperties(sec, para, ci, cellIdx, cellParaIdx);
     } catch (err) {
       console.warn('[EquationEditor] 수식 속성 가져오기 실패:', err);
       return;
@@ -696,7 +700,11 @@ export class EquationEditorDialog {
 
     if (Object.keys(updated).length > 0) {
       try {
-        this.wasm.setEquationProperties(this.sec, this.para, this.ci, this.cellIdx, this.cellParaIdx, updated);
+        if (this.noteRef) {
+          this.wasm.setNoteEquationProperties(this.noteRef, updated);
+        } else {
+          this.wasm.setEquationProperties(this.sec, this.para, this.ci, this.cellIdx, this.cellParaIdx, updated);
+        }
         this.eventBus.emit('document-changed');
       } catch (err) {
         console.warn('[EquationEditor] 수식 속성 설정 실패:', err);

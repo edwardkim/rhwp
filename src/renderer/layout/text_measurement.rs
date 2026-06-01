@@ -303,6 +303,10 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
+            // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
+            if c == '\u{FFFC}' {
+                return 0.0;
+            }
             // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
             // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
             // 한컴 PDF 정합 — 폭 0 으로 라인 inline x 에 영향 없음. fillers 가
@@ -515,6 +519,10 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             let c = chars[i];
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            }
+            // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
+            if c == '\u{FFFC}' {
+                return 0.0;
             }
             // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
             // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
@@ -1021,6 +1029,10 @@ impl TextMeasurer for WasmTextMeasurer {
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
             }
+            // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
+            if c == '\u{FFFC}' {
+                return 0.0;
+            }
             // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
             // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
             // 한컴 PDF 정합 — 폭 0 으로 라인 inline x 에 영향 없음. fillers 가
@@ -1216,6 +1228,10 @@ impl TextMeasurer for WasmTextMeasurer {
             let c = chars[i];
             if c == '\u{2007}' {
                 return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            }
+            // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
+            if c == '\u{FFFC}' {
+                return 0.0;
             }
             // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
             // 한컴이 인라인 TAC 표/도형 앞에 삽입하는 placeholder 채움 문자.
@@ -1660,6 +1676,10 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         let c = chars[i];
         if c == '\u{2007}' {
             return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+        }
+        // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
+        if c == '\u{FFFC}' {
+            return 0.0;
         }
         // [Issue #677] HWP PUA 채움 문자 (U+F081C) — 시각 폭 0
         if c == '\u{F081C}' {
@@ -2161,6 +2181,26 @@ mod tests {
         for (a, b) in free_fn_result.iter().zip(trait_result.iter()) {
             assert!((a - b).abs() < 0.01, "position mismatch: {} != {}", a, b);
         }
+    }
+
+    #[test]
+    fn test_inline_object_placeholder_has_zero_advance() {
+        let style = TextStyle {
+            font_family: "Haansoft Dotum".to_string(),
+            font_size: 12.0,
+            ..Default::default()
+        };
+
+        assert_eq!(estimate_text_width("\u{FFFC}", &style), 0.0);
+        assert_eq!(
+            estimate_text_width("\u{FFFC}\u{FFFC}A", &style),
+            estimate_text_width("A", &style),
+            "U+FFFC placeholder 는 실제 TAC 노드가 따로 폭을 차지하므로 텍스트 폭에 더하면 안 됨"
+        );
+
+        let positions = compute_char_positions("\u{FFFC}A", &style);
+        assert_eq!(positions[0], positions[1]);
+        assert!(positions[2] > positions[1]);
     }
 
     // ── 오버플로우 압축 회귀 테스트 (Task #229) ──

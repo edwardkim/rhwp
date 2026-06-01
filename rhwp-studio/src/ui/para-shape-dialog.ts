@@ -872,8 +872,12 @@ export class ParaShapeDialog {
     if (newFillColor !== (p.fillColor ?? '#ffffff')) mods.fillColor = newFillColor;
     const newPatColor = this.borderResult.bgPatColorInput.value;
     if (newPatColor !== (p.patternColor ?? '#000000')) mods.patternColor = newPatColor;
-    const newPatType = parseInt(this.borderResult.bgPatShapeSelect.value) || 0;
-    if (newPatType !== (p.patternType ?? 0)) mods.patternType = newPatType;
+    // [Issue #1172] patternType: 무늬 없음 = -1 (IR 정합). select '없음' value=-1.
+    // 종전 `|| 0` 은 -1(truthy)을 보존하나 폴백 기본값을 0 으로 두어, patternType=-1
+    // 문단에서 0!=-1 변경 오인 → fillType=solid 강제 주입(배경 생성) 결함을 냈다.
+    const parsedPat = parseInt(this.borderResult.bgPatShapeSelect.value, 10);
+    const newPatType = Number.isNaN(parsedPat) ? -1 : parsedPat;
+    if (newPatType !== (p.patternType ?? -1)) mods.patternType = newPatType;
     // 배경이 변경되었으면 fillType도 함께 전송
     if (mods.fillColor || mods.patternColor || mods.patternType !== undefined) {
       if (!mods.fillType) mods.fillType = newFillType;

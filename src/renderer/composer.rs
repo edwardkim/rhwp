@@ -138,6 +138,28 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
         return None;
     }
 
+    // HWP3 정답지의 미주 수식 문단은 본문 텍스트 없이 줄바꿈/탭과
+    // TAC 수식만으로 LINE_SEG를 구성한다. 이 경우 char_offsets와 line_seg
+    // text_start가 이미 컨트롤 줄 위치를 표현하므로 HWP5 누락 마커 보정을 적용하면
+    // 수식이 뒤 줄로 밀린다.
+    let text_has_only_layout_space = para
+        .text
+        .chars()
+        .all(|ch| matches!(ch, '\n' | '\r' | '\t' | ' ' | '\u{2007}'));
+    let controls_are_tac_objects = para.controls.iter().all(|ctrl| {
+        matches!(
+            ctrl,
+            Control::Equation(_)
+                | Control::Picture(_)
+                | Control::Shape(_)
+                | Control::Table(_)
+                | Control::Form(_)
+        )
+    });
+    if text_has_only_layout_space && controls_are_tac_objects {
+        return None;
+    }
+
     let existing_markers = para.text.chars().filter(|c| *c == '\u{FFFC}').count();
     if existing_markers >= inline_ctrl_count {
         // HWP3 path — 이미 마커 충분

@@ -30,6 +30,19 @@ pub struct EndnoteRef {
     pub control_index: usize,
 }
 
+/// 렌더용으로 가상 삽입된 미주 문단의 원본 위치.
+#[derive(Debug, Clone)]
+pub struct EndnoteParaSource {
+    /// 소속 구역 인덱스
+    pub section_index: usize,
+    /// 원본 Endnote 컨트롤이 있는 본문 문단 인덱스
+    pub para_index: usize,
+    /// 본문 문단 내 Endnote 컨트롤 인덱스
+    pub control_index: usize,
+    /// Endnote 내부 문단 인덱스
+    pub note_para_index: usize,
+}
+
 /// 페이지 분할 결과: 페이지별 콘텐츠 참조
 #[derive(Debug)]
 pub struct PaginationResult {
@@ -43,6 +56,8 @@ pub struct PaginationResult {
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)
     pub endnote_paragraphs: Vec<crate::model::paragraph::Paragraph>,
+    /// `endnote_paragraphs` 각 항목의 원본 Endnote 내부 위치.
+    pub endnote_para_sources: Vec<EndnoteParaSource>,
 }
 
 /// 한 페이지에 배치될 콘텐츠
@@ -133,6 +148,17 @@ pub struct FootnoteRef {
 pub struct ColumnContent {
     /// 단 인덱스 (0-based)
     pub column_index: u16,
+    /// 단 시작 시점의 논리 높이(px).
+    ///
+    /// 미주 vpos 되감김 보정은 다음 단/쪽을 음수 높이에서 시작시켜
+    /// 페이지 수를 한컴과 맞춘다. 렌더러도 같은 시작 높이를 알아야
+    /// typeset에서 허용한 항목들이 실제 그림에서 하단을 넘지 않는다.
+    pub start_height: f64,
+    /// 이 단이 미주 흐름을 포함하는지 여부.
+    ///
+    /// 미주 본문은 일반 본문과 달리 한 단 안에서도 LINE_SEG vpos가 크게
+    /// 되감길 수 있으므로, 렌더러의 vpos 보정 가드에서 별도 취급한다.
+    pub endnote_flow: bool,
     /// 배치될 문단 슬라이스 정보
     pub items: Vec<PageItem>,
     /// 이 존의 레이아웃 (None이면 page.layout 사용). 다단 설정 나누기로 같은 페이지 내 단 수 변경 시 사용.
@@ -234,6 +260,21 @@ pub enum PageItem {
         para_index: usize,
         control_index: usize,
     },
+    /// 미주 영역 시작 구분선
+    EndnoteSeparator {
+        /// 구분선 길이 (HWP 단위)
+        separator_length: i16,
+        /// 구분선 위 여백 (HWP 단위)
+        margin_above: i16,
+        /// 구분선 아래 여백 (HWP 단위)
+        margin_below: i16,
+        /// 구분선 종류
+        line_type: u8,
+        /// 구분선 굵기
+        line_width: u8,
+        /// 구분선 색상
+        color: crate::model::ColorRef,
+    },
 }
 
 /// [Issue #476] 인라인(treat_as_char) 컨트롤이 라우팅된 페이지/단을 찾는다.
@@ -307,6 +348,7 @@ impl PageItem {
             PageItem::Table { para_index, .. } => *para_index,
             PageItem::PartialTable { para_index, .. } => *para_index,
             PageItem::Shape { para_index, .. } => *para_index,
+            PageItem::EndnoteSeparator { .. } => usize::MAX,
         }
     }
 
@@ -358,6 +400,21 @@ impl PageItem {
             } => PageItem::Shape {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
+            },
+            PageItem::EndnoteSeparator {
+                separator_length,
+                margin_above,
+                margin_below,
+                line_type,
+                line_width,
+                color,
+            } => PageItem::EndnoteSeparator {
+                separator_length: *separator_length,
+                margin_above: *margin_above,
+                margin_below: *margin_below,
+                line_type: *line_type,
+                line_width: *line_width,
+                color: *color,
             },
         }
     }
@@ -418,6 +475,7 @@ impl PageItem {
                     control_index: c2,
                 },
             ) => *a == adj(*b) && c1 == c2,
+            (PageItem::EndnoteSeparator { .. }, PageItem::EndnoteSeparator { .. }) => true,
             _ => false,
         }
     }
@@ -476,6 +534,8 @@ impl PaginationResult {
                     .iter()
                     .map(|cc| ColumnContent {
                         column_index: cc.column_index,
+                        start_height: cc.start_height,
+                        endnote_flow: cc.endnote_flow,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,

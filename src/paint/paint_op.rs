@@ -239,6 +239,217 @@ impl LayerGlyphOutlinePaint {
             }
         }
     }
+
+    /// Stable, export-local identity for payload resources that sit behind a
+    /// GlyphOutline sidecar. This is not a binary digest; it is the replay
+    /// decision key that keeps color/bitmap/SVG payload families from sharing a
+    /// cache slot merely because a producer reused the same numeric resource id.
+    pub fn payload_resource_key(&self) -> Option<String> {
+        if !self.has_payload_resource_key() {
+            return None;
+        }
+        match self.payload_kind {
+            GlyphOutlinePayloadKind::MonochromeFill
+            | GlyphOutlinePayloadKind::MonochromeFillStroke => None,
+            GlyphOutlinePayloadKind::ColorLayers => self
+                .color_layers
+                .as_ref()
+                .map(color_layers_payload_resource_key),
+            GlyphOutlinePayloadKind::BitmapGlyph => self
+                .bitmap_glyph
+                .as_ref()
+                .map(bitmap_glyph_payload_resource_key),
+            GlyphOutlinePayloadKind::SvgGlyph => {
+                self.svg_glyph.as_ref().map(svg_glyph_payload_resource_key)
+            }
+        }
+    }
+
+    pub fn has_payload_resource_key(&self) -> bool {
+        match self.payload_kind {
+            GlyphOutlinePayloadKind::MonochromeFill
+            | GlyphOutlinePayloadKind::MonochromeFillStroke => false,
+            GlyphOutlinePayloadKind::ColorLayers => {
+                self.color_layers.as_ref().is_some_and(|payload| {
+                    payload.has_colrv0_resolved_layer_contract()
+                        || payload.has_colrv1_supported_graph_contract()
+                })
+            }
+            GlyphOutlinePayloadKind::BitmapGlyph => self
+                .bitmap_glyph
+                .as_ref()
+                .is_some_and(BitmapGlyphPayload::has_strict_visual_contract),
+            GlyphOutlinePayloadKind::SvgGlyph => self
+                .svg_glyph
+                .as_ref()
+                .is_some_and(SvgGlyphPayload::has_static_sanitized_contract),
+        }
+    }
+}
+
+fn color_layers_payload_resource_key(payload: &ColorLayersPayload) -> String {
+    let mut key = format!(
+        "glyphPayload:colorLayers:format:{}:source:{}:palette:{}:range:{}:glyphRange:{}",
+        payload.color_format.as_str(),
+        font_color_glyph_ref_key(payload.source_font_ref.as_ref()),
+        palette_ref_key(payload.palette_ref.as_ref()),
+        optional_text_range_key(payload.source_range_utf8),
+        optional_glyph_range_key(payload.glyph_range),
+    );
+    if let Some(graph) = &payload.paint_graph {
+        key.push_str(":graph:");
+        key.push_str(&color_paint_graph_key(graph));
+    } else if !payload.layers.is_empty() {
+        key.push_str(":layers:");
+        for (idx, layer) in payload.layers.iter().enumerate() {
+            if idx > 0 {
+                key.push('|');
+            }
+            key.push_str(&format!(
+                "{}:{}:{}:{}:{}:{}",
+                layer
+                    .layer_index
+                    .map(|value| value.to_string())
+                    .unwrap_or_else(|| "-".to_string()),
+                layer
+                    .glyph_id
+                    .map(|value| value.to_string())
+                    .unwrap_or_else(|| "-".to_string()),
+                optional_glyph_range_key(layer.glyph_range),
+                optional_text_range_key(layer.source_range_utf8),
+                font_color_glyph_ref_key(layer.source_font_ref.as_ref()),
+                layer
+                    .palette_index
+                    .map(|value| value.to_string())
+                    .unwrap_or_else(|| "-".to_string()),
+            ));
+        }
+    }
+    key
+}
+
+fn color_paint_graph_key(graph: &ColorPaintGraphPayload) -> String {
+    let mut key = format!("root:{}:nodes:", graph.root_node_id);
+    for (idx, node) in graph.nodes.iter().enumerate() {
+        if idx > 0 {
+            key.push('|');
+        }
+        key.push_str(&format!(
+            "{}:{}:{}:{}",
+            node.node_id,
+            node.kind.as_str(),
+            optional_glyph_range_key(node.glyph_range),
+            font_color_glyph_ref_key(node.source_font_ref.as_ref()),
+        ));
+    }
+    key
+}
+
+fn bitmap_glyph_payload_resource_key(payload: &BitmapGlyphPayload) -> String {
+    format!(
+        "glyphPayload:bitmapGlyph:imageRef:{}:range:{}:glyphRange:{}:placement:{}:alphaPremultiplied:{}:scaling:{}:filtering:{}:transform:{}",
+        payload.image_ref.0,
+        text_range_key(payload.source_range_utf8),
+        glyph_range_key(payload.glyph_range),
+        bbox_key(payload.placement),
+        payload.alpha_premultiplied,
+        payload.scaling_policy.as_str(),
+        payload.filtering.as_str(),
+        optional_affine_key(payload.transform_to_run),
+    )
+}
+
+fn svg_glyph_payload_resource_key(payload: &SvgGlyphPayload) -> String {
+    format!(
+        "glyphPayload:svgGlyph:svgRef:{}:range:{}:glyphRange:{}:viewBox:{}:intrinsicSize:{}:staticSanitized:{}:script:{}:animation:{}:external:{}:interactive:{}:transform:{}",
+        payload.svg_ref.0,
+        text_range_key(payload.source_range_utf8),
+        glyph_range_key(payload.glyph_range),
+        bbox_key(payload.view_box),
+        payload
+            .intrinsic_size
+            .map(|size| format!("{:.6},{:.6}", size.dx, size.dy))
+            .unwrap_or_else(|| "-".to_string()),
+        payload.static_sanitized,
+        payload.script_allowed,
+        payload.animation_allowed,
+        payload.external_resources_allowed,
+        payload.interactivity_allowed,
+        optional_affine_key(payload.transform_to_run),
+    )
+}
+
+fn font_color_glyph_ref_key(value: Option<&FontColorGlyphRef>) -> String {
+    match value {
+        Some(value) => format!(
+            "face:{}:glyph:{}:palette:{}:format:{}",
+            value.face_key.as_deref().unwrap_or("-"),
+            value
+                .glyph_id
+                .map(|glyph_id| glyph_id.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            value
+                .palette_index
+                .map(|palette_index| palette_index.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            value
+                .color_format
+                .map(ColorGlyphFormat::as_str)
+                .unwrap_or("-"),
+        ),
+        None => "-".to_string(),
+    }
+}
+
+fn palette_ref_key(value: Option<&PaletteRef>) -> String {
+    match value {
+        Some(value) => format!(
+            "id:{}:index:{}:digest:{}",
+            value.id.as_deref().unwrap_or("-"),
+            value
+                .index
+                .map(|index| index.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            value.cpal_digest.as_deref().unwrap_or("-"),
+        ),
+        None => "-".to_string(),
+    }
+}
+
+fn optional_text_range_key(range: Option<TextSourceRange>) -> String {
+    range.map(text_range_key).unwrap_or_else(|| "-".to_string())
+}
+
+fn text_range_key(range: TextSourceRange) -> String {
+    format!("{}..{}", range.start, range.end)
+}
+
+fn optional_glyph_range_key(range: Option<GlyphRange>) -> String {
+    range
+        .map(glyph_range_key)
+        .unwrap_or_else(|| "-".to_string())
+}
+
+fn glyph_range_key(range: GlyphRange) -> String {
+    format!("{}..{}", range.start, range.end)
+}
+
+fn bbox_key(bbox: BoundingBox) -> String {
+    format!(
+        "{:.6},{:.6},{:.6},{:.6}",
+        bbox.x, bbox.y, bbox.width, bbox.height
+    )
+}
+
+fn optional_affine_key(transform: Option<LayerAffineTransform>) -> String {
+    transform.map(affine_key).unwrap_or_else(|| "-".to_string())
+}
+
+fn affine_key(transform: LayerAffineTransform) -> String {
+    format!(
+        "{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}",
+        transform.a, transform.b, transform.c, transform.d, transform.e, transform.f
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

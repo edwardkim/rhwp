@@ -233,6 +233,82 @@ pub struct SectionDef {
 }
 
 impl Document {
+    /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
+    ///
+    /// 렌더러는 `bin_data_id - 1` 인덱스를 먼저 조회하므로, 저장소 엔트리의
+    /// `id` 필드보다 인덱스 위치를 우선한다. 인덱스가 없을 때만 `id` 검색으로
+    /// fallback한다.
+    pub(crate) fn external_image_loaded(&self, bin_data_id: u16) -> bool {
+        if bin_data_id == 0 {
+            return false;
+        }
+
+        if let Some(content) = self.bin_data_content.get((bin_data_id - 1) as usize) {
+            return !content.data.is_empty();
+        }
+
+        self.bin_data_content
+            .iter()
+            .any(|content| content.id == bin_data_id && !content.data.is_empty())
+    }
+
+    /// 외부 이미지 바이너리를 렌더러 조회 규칙에 맞는 위치에 주입한다.
+    ///
+    /// 반환값은 실제 주입 여부이다. 호출자는 true일 때 렌더 캐시를 무효화해야 한다.
+    pub(crate) fn inject_external_image_data(
+        &mut self,
+        bin_data_id: u16,
+        data: Vec<u8>,
+        extension: String,
+    ) -> bool {
+        if bin_data_id == 0 {
+            return false;
+        }
+
+        let idx = (bin_data_id as usize).saturating_sub(1);
+        if idx < self.bin_data_content.len() {
+            self.bin_data_content[idx].id = bin_data_id;
+            self.bin_data_content[idx].data = data;
+            self.bin_data_content[idx].extension = extension;
+        } else {
+            self.bin_data_content
+                .push(crate::model::bin_data::BinDataContent {
+                    id: bin_data_id,
+                    data,
+                    extension,
+                });
+        }
+
+        true
+    }
+
+    /// 같은 binDataId를 참조하는 외부 이미지의 표시 경로를 갱신한다.
+    pub(crate) fn update_external_image_display_path(
+        &mut self,
+        bin_data_id: u16,
+        display_path: &str,
+    ) {
+        for section in &mut self.sections {
+            for para in &mut section.paragraphs {
+                for ctrl in &mut para.controls {
+                    let pic = match ctrl {
+                        crate::model::control::Control::Picture(p) => p,
+                        crate::model::control::Control::Shape(s) => match s.as_mut() {
+                            crate::model::shape::ShapeObject::Picture(p) => p,
+                            _ => continue,
+                        },
+                        _ => continue,
+                    };
+                    if pic.image_attr.bin_data_id == bin_data_id
+                        && pic.image_attr.external_path.is_some()
+                    {
+                        pic.image_attr.external_path = Some(display_path.to_string());
+                    }
+                }
+            }
+        }
+    }
+
     /// 배포용(읽기전용) 문서를 편집 가능한 일반 문서로 변환한다.
     ///
     /// 변환 내용:
@@ -355,10 +431,11 @@ impl Document {
     pub fn populate_external_images_from_dir(&mut self, base_dir: &std::path::Path) -> usize {
         use crate::model::control::Control;
         use crate::model::shape::ShapeObject;
+        use std::collections::BTreeMap;
 
         let mut loaded = 0;
         // (storage_id, basename, extension) 영역 영역 image 영역 수집
-        let mut to_load: Vec<(u16, String, String)> = Vec::new();
+        let mut to_load: BTreeMap<u16, (String, String)> = BTreeMap::new();
         for section in &self.sections {
             for para in &section.paragraphs {
                 for ctrl in &para.controls {
@@ -373,11 +450,7 @@ impl Document {
                     if let Some(ref path) = pic.image_attr.external_path {
                         let id = pic.image_attr.bin_data_id;
                         // 이미 load 영역 (bin_data_content 영역 영역 entry 보유) 영역 skip
-                        let already_loaded = self
-                            .bin_data_content
-                            .iter()
-                            .any(|c| c.id == id && !c.data.is_empty());
-                        if already_loaded {
+                        if self.external_image_loaded(id) {
                             continue;
                         }
 
@@ -391,54 +464,26 @@ impl Document {
                             .and_then(|e| e.to_str())
                             .unwrap_or("")
                             .to_string();
-                        to_load.push((id, basename.to_string(), ext));
+                        to_load.entry(id).or_insert((basename.to_string(), ext));
                     }
                 }
             }
         }
 
-        for (id, basename, ext) in to_load {
+        for (id, (basename, ext)) in to_load {
             let full_path = base_dir.join(&basename);
             if let Ok(data) = std::fs::read(&full_path) {
-                // 본질: bin_data_content 영역 영역 (id-1) index 영역 영역 access (utils.rs:23).
-                let idx = (id as usize).saturating_sub(1);
-                if idx < self.bin_data_content.len() {
-                    self.bin_data_content[idx].id = id;
-                    self.bin_data_content[idx].data = data;
-                    self.bin_data_content[idx].extension = ext;
-                } else {
-                    self.bin_data_content
-                        .push(crate::model::bin_data::BinDataContent {
-                            id,
-                            data,
-                            extension: ext,
-                        });
+                if !self.inject_external_image_data(id, data, ext) {
+                    continue;
                 }
+
                 loaded += 1;
 
                 // [한컴 viewer 정합] 원본 절대 경로 영역 영역 access 부재 시 HWP file 영역
                 // 영역 같은 dir 영역 image 영역 발견 영역 영역 dialog 영역 영역 영역 의 path 영역
                 // resolved local path 영역 영역 갱신 (basename 영역만 부재 영역).
                 let resolved = full_path.to_string_lossy().to_string();
-                for section in &mut self.sections {
-                    for para in &mut section.paragraphs {
-                        for ctrl in &mut para.controls {
-                            let pic = match ctrl {
-                                crate::model::control::Control::Picture(p) => p,
-                                crate::model::control::Control::Shape(s) => match s.as_mut() {
-                                    crate::model::shape::ShapeObject::Picture(p) => p,
-                                    _ => continue,
-                                },
-                                _ => continue,
-                            };
-                            if pic.image_attr.bin_data_id == id
-                                && pic.image_attr.external_path.is_some()
-                            {
-                                pic.image_attr.external_path = Some(resolved.clone());
-                            }
-                        }
-                    }
-                }
+                self.update_external_image_display_path(id, &resolved);
             }
         }
         loaded

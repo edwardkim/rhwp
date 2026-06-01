@@ -375,14 +375,8 @@ impl WebCanvasRenderer {
                     // PageBackground RealPic 워터마크 프리셋은 한컴의 색상 있는 배경 워터마크에 맞춰
                     // 색감을 살린 뒤 반투명으로 합성한다.
                     let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
-                    // [Issue #1156] 페이지 배경 이미지는 본질적으로 워터마크. effect=RealPic
-                    // 이지만 톤 프리셋이 아닌 배경(brightness=contrast=0)도 워터마크 opacity
-                    // 적용 (svg.rs render_page_background_image 와 동일 — 렌더러 경로 정합).
-                    let is_watermark_image =
-                        (!matches!(img.effect, crate::model::image::ImageEffect::RealPic)
-                            && (img.brightness != 0 || img.contrast != 0))
-                            || (!preserve_color_watermark
-                                && matches!(img.effect, crate::model::image::ImageEffect::RealPic));
+                    // [Issue #1156] 워터마크 판정 = 밝기·대비가 둘 다 0 이 아님 (effect 무관).
+                    let is_watermark_image = img.is_watermark();
                     let mut baked_color_watermark = false;
                     let render_data: std::borrow::Cow<[u8]> = if preserve_color_watermark {
                         match crate::renderer::image_resolver::real_picture_watermark_bytes_to_hancom_tone_png_bytes(
@@ -626,9 +620,8 @@ impl WebCanvasRenderer {
                     // PDF 정답지 영역의 시각 — 진한 회색 워터마크 + 본문 텍스트가 워터마크
                     // 위로 가독 정합. SVG 영역과 동기.
                     let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
-                    let is_watermark_image =
-                        !matches!(img.effect, crate::model::image::ImageEffect::RealPic)
-                            && (img.brightness != 0 || img.contrast != 0);
+                    // [Issue #1156] 워터마크 판정 = 밝기·대비가 둘 다 0 이 아님 (effect 무관).
+                    let is_watermark_image = img.is_watermark();
                     let mut baked_watermark = false;
                     let render_data: std::borrow::Cow<[u8]> = if preserve_color_watermark {
                         match crate::renderer::image_resolver::real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes(
@@ -806,19 +799,14 @@ impl WebCanvasRenderer {
                 self.ctx.clip();
             }
             RenderNodeType::Equation(eq) => {
-                // SVG 경로 (svg.rs 의 Equation 분기) 와 동일하게 bbox 크기에 맞춰
-                // X/Y 스케일링 적용. HWP 저장 영역(bbox)과 레이아웃 산출 크기(layout_box)
-                // 가 다를 때 수식이 정확한 영역에 그려지도록 한다.
+                // SVG/Skia 경로와 동일하게 bbox 너비만 맞춘다. bbox 높이는 줄 높이와
+                // 여백을 포함한 배치 영역이라 세로 스케일을 걸면 식 글자가 찌그러진다.
                 let scale_x = if eq.layout_box.width > 0.0 && node.bbox.width > 0.0 {
                     node.bbox.width / eq.layout_box.width
                 } else {
                     1.0
                 };
-                let scale_y = if eq.layout_box.height > 0.0 && node.bbox.height > 0.0 {
-                    node.bbox.height / eq.layout_box.height
-                } else {
-                    1.0
-                };
+                let scale_y = 1.0_f64;
                 self.ctx.save();
                 let _ = self.ctx.translate(node.bbox.x, node.bbox.y);
                 let needs_scale = (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01;
@@ -1086,6 +1074,14 @@ impl WebCanvasRenderer {
                         node.bounds.width + 4.0,
                         node.bounds.height,
                     );
+                    self.ctx.clip();
+                    self.render_layer_node(child);
+                    self.ctx.restore();
+                }
+                ClipKind::TextBox => {
+                    self.ctx.save();
+                    self.ctx.begin_path();
+                    self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
                     self.ctx.clip();
                     self.render_layer_node(child);
                     self.ctx.restore();

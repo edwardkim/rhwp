@@ -201,6 +201,25 @@ These gates keep writer emission closed until a payload family has a proof
 fixture and backend-specific replay path. The required `TextRun` fallback remains
 the compatibility path.
 
+## P20 Glyph Payload Resource Proof
+
+P20 keeps the P19 payload families behind the same gates, but makes their
+resource identity and native font-construction blockers explicit.
+
+- Each advanced `GlyphOutline` payload may export `payloadResourceKey`. The key
+  includes the payload family (`colorLayers`, `bitmapGlyph`, or `svgGlyph`) and
+  the replay-relevant placement/source metadata, so a bitmap `imageRef: 7` and a
+  static SVG `svgRef: 7` cannot accidentally share a cache entry.
+- Bitmap and SVG glyph payload fixtures are treated as resource identity proofs,
+  not replay enablement. They can satisfy their strict payload contract while
+  still requiring backend gates before direct replay.
+- Native Skia now has a glyph-run replay proof matrix that separates portable
+  variant contract checks from exact typeface construction. Missing font blob
+  bytes, non-zero TTC/OTC face index, variation axes, and the intentionally
+  unimplemented exact typeface constructor are reported distinctly.
+- The public compatibility path is unchanged: unsupported or unconstructed
+  glyph variants continue to use the `TextRun` fallback.
+
 Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
 output can use fuzzy PNG comparison, but semantic decisions must be exact:
 selected variant id, fallback reason, resource resolution, effect preprocessing
@@ -214,6 +233,7 @@ improvement rather than a Canvas2D compatibility match.
 - Wire real document font blob extraction into `ResourceArena`.
 - Expand CanvasKit glyph replay beyond the guarded COLRv1 solid/gradient subset.
 - Add native glyph outline replay behind the strict `GlyphOutline` variant.
-- Add resource table entries for font blobs and face identity.
+- Add document-backed resource table entries for image/SVG glyph payload bytes
+  once writer emission starts.
 - Promote renderer diagnostics from report-only to backend selection telemetry
   once CanvasKit/native glyph alternatives are actually consumed.

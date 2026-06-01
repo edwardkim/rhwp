@@ -5,8 +5,11 @@
 /* editor-area: 눈금자 + 스크롤 영역을 2×2 Grid로 배치 */
 #editor-area {
   display: grid;
-  grid-template-columns: 20px 1fr;
-  grid-template-rows: 20px 1fr;
+  /* minmax(0, 1fr): 1fr(=minmax(auto,1fr))은 콘텐츠 기반 최소 크기가 한 방향
+     래칫으로 작동해 창을 넓혔다 줄이면 트랙이 줄지 않는다(#1191). 최소를 0으로
+     고정해 창 축소 시에도 트랙이 정상 축소되어 가운데 정렬이 유지된다. */
+  grid-template-columns: 20px minmax(0, 1fr);
+  grid-template-rows: 20px minmax(0, 1fr);
   flex: 1;
   overflow: hidden;
 }

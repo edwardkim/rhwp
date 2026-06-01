@@ -1,0 +1,11 @@
+# git author/committer 정규화 매핑 (git-shortlog(1) MAPPING AUTHORS 참조)
+#
+# 형식: 정규 이름 <정규 이메일> <기록된 이메일>
+#       정규 이름 <정규 이메일> 기록된이름 <기록된 이메일>
+#
+# 과거 PR 커밋이 GitHub 계정과 연결되지 않는 author 로 기록된 경우를 정정한다.
+# 히스토리는 재작성하지 않고 git log/shortlog/blame 의 표시만 통합한다.
+
+# @xogh3198 (taeho) — PR #571/#799 (rhwp-studio 문서 비교·이력 + diff-engine)
+# 커밋이 "thlee2 <thlee2>" 로 기록되어 GitHub 기여에서 누락됨.
+taeho <92752011+xogh3198@users.noreply.github.com> thlee2 <thlee2>

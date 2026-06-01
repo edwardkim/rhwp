@@ -2,10 +2,12 @@ import type { CommandDef } from '../types';
 import { GridSettingsDialog } from '../../ui/grid-settings-dialog';
 import {
   type GridOffsetMm,
+  type GridViewSettings,
   getGridViewSettings,
   setGridViewSettings,
   toggleGridVisibility,
 } from '../../view/grid-settings';
+import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -20,7 +22,12 @@ function zoomLevel(pct: number): CommandDef {
   };
 }
 
-function getGridOriginDefaults(services: Parameters<CommandDef['execute']>[0]): Record<'page' | 'paper', GridOffsetMm> {
+interface GridOriginMetrics {
+  defaults: Record<'page' | 'paper', GridOffsetMm>;
+  bases: Record<'page' | 'paper', GridOffsetMm>;
+}
+
+function getGridOriginMetrics(services: Parameters<CommandDef['execute']>[0]): GridOriginMetrics {
   let pageIndex = 0;
   const ih = services.getInputHandler();
   const cursor = ih ? (ih as any).cursor : null;
@@ -29,17 +36,60 @@ function getGridOriginDefaults(services: Parameters<CommandDef['execute']>[0]): 
   }
 
   const pageInfo = services.wasm.getPageInfo(pageIndex);
+  const documentInfo = services.wasm.getDocumentInfo();
+  const sectionDef = services.wasm.getSectionDef(pageInfo.sectionIndex ?? 0);
+  const pageBorderFill = services.wasm.getPageBorderFill(pageInfo.sectionIndex ?? 0);
+  const rawPageDef = services.wasm.getPageDef(pageInfo.sectionIndex ?? 0);
+  const paperX = roundMm(rawPageDef.marginLeft / HWPUNIT_PER_MM);
+  const paperBaseY = roundMm((rawPageDef.marginTop + rawPageDef.marginHeader) / HWPUNIT_PER_MM);
+  const hwp3PageYOffsetY = documentInfo.hwp3Variant && pageBorderFill.basis === 'page'
+    ? roundMm(sectionDef.columnSpacing / HWPUNIT_PER_MM)
+    : 0;
+  const paperDefaultY = hwp3PageYOffsetY > 0
+    ? roundMm(
+      roundMm(rawPageDef.marginTop / HWPUNIT_PER_MM)
+      + roundMm(rawPageDef.marginHeader / HWPUNIT_PER_MM)
+      + hwp3PageYOffsetY,
+    )
+    : paperBaseY;
+  const pageDefaultY = roundMm(paperDefaultY - paperBaseY);
+
   return {
-    page: { x: 0, y: 0 },
-    paper: {
-      x: roundMm(pageInfo.marginLeft * PX_TO_MM),
-      y: roundMm((pageInfo.marginTop + pageInfo.marginHeader) * PX_TO_MM),
+    defaults: {
+      page: { x: 0, y: pageDefaultY },
+      paper: {
+        x: paperX,
+        y: paperDefaultY,
+      },
+    },
+    bases: {
+      page: {
+        x: paperX,
+        y: paperBaseY,
+      },
+      paper: { x: 0, y: 0 },
     },
   };
 }
 
 function roundMm(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function applyGridDefaults(settings: GridViewSettings, defaults: GridOriginMetrics['defaults']): GridViewSettings {
+  if (!closeMm(settings.offsetXmm, 0) || !closeMm(settings.offsetYmm, 0)) {
+    return settings;
+  }
+  const defaultOffset = defaults[settings.origin];
+  return {
+    ...settings,
+    offsetXmm: defaultOffset.x,
+    offsetYmm: defaultOffset.y,
+  };
+}
+
+function closeMm(a: number, b: number): boolean {
+  return Number.isFinite(a) && Math.abs(a - b) < 0.01;
 }
 
 export const viewCommands: CommandDef[] = [
@@ -188,9 +238,10 @@ export const viewCommands: CommandDef[] = [
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       const ih = services.getInputHandler();
+      const originMetrics = getGridOriginMetrics(services);
       new GridSettingsDialog(
-        getGridViewSettings(),
-        getGridOriginDefaults(services),
+        applyGridDefaults(getGridViewSettings(), originMetrics.defaults),
+        originMetrics.bases,
         ih?.getGridStepMm() ?? 3,
         (settings, moveStepMm) => {
           const next = setGridViewSettings(settings);

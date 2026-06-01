@@ -44,6 +44,216 @@ pub(crate) fn ensure_min_baseline(raw_baseline: f64, max_font_size: f64) -> f64 
     raw_baseline.max(min_baseline)
 }
 
+fn tac_picture_or_shape_height_for_line(
+    para: Option<&Paragraph>,
+    raw_line_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    let para = para?;
+    para.controls.iter().find_map(|ctrl| {
+        let height_hu = match ctrl {
+            Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
+            Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
+            _ => return None,
+        };
+        let height = hwpunit_to_px(height_hu, dpi);
+        if height > 8.0 && raw_line_height + 4.0 >= height && raw_line_height <= height + 8.0 {
+            Some(height)
+        } else {
+            None
+        }
+    })
+}
+
+fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
+    if let Some(next) = comp.lines.get(line_idx + 1) {
+        return next.char_start;
+    }
+    let Some(line) = comp.lines.get(line_idx) else {
+        return 0;
+    };
+    line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>()
+        + usize::from(line.has_line_break)
+}
+
+fn char_pos_in_line(pos: usize, start: usize, end: usize) -> bool {
+    if end > start {
+        pos >= start && pos < end
+    } else {
+        pos == start
+    }
+}
+
+fn tac_offsets_for_line(
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+) -> Vec<(usize, f64, usize)> {
+    let Some(line) = comp.lines.get(line_idx) else {
+        return Vec::new();
+    };
+    let start = line.char_start;
+    let end = composed_line_char_end(comp, line_idx);
+    tac_offsets_px
+        .iter()
+        .copied()
+        .filter(|(pos, _, _)| char_pos_in_line(*pos, start, end))
+        .collect()
+}
+
+fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
+    let height_hu = match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
+        Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
+        _ => return None,
+    };
+    Some(hwpunit_to_px(height_hu, dpi))
+}
+
+fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
+    match code {
+        0 => NumFmt::Digit,
+        1 => NumFmt::CircledDigit,
+        2 => NumFmt::RomanUpper,
+        3 => NumFmt::RomanLower,
+        4 => NumFmt::LatinUpper,
+        5 => NumFmt::LatinLower,
+        8 => NumFmt::HangulGaNaDa,
+        12 => NumFmt::HangulNumber,
+        13 => NumFmt::HanjaNumber,
+        _ => NumFmt::Digit,
+    }
+}
+
+fn note_decoration_char(value: u16) -> Option<char> {
+    if value == 0 {
+        None
+    } else {
+        char::from_u32(value as u32).filter(|ch| *ch != '\0')
+    }
+}
+
+fn format_note_marker_text(
+    number: u16,
+    number_shape: u32,
+    before_decoration_letter: u16,
+    after_decoration_letter: u16,
+) -> String {
+    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
+    let prefix = note_decoration_char(before_decoration_letter)
+        .map(|ch| ch.to_string())
+        .unwrap_or_default();
+    let suffix = note_decoration_char(after_decoration_letter)
+        .unwrap_or(')')
+        .to_string();
+    format!("{}{}{}", prefix, number, suffix)
+}
+
+fn note_marker_text_from_control(ctrl: Option<&Control>, fallback_number: u16) -> String {
+    match ctrl {
+        Some(Control::Footnote(footnote)) => format_note_marker_text(
+            fallback_number,
+            footnote.number_shape,
+            footnote.before_decoration_letter,
+            footnote.after_decoration_letter,
+        ),
+        Some(Control::Endnote(endnote)) => format_note_marker_text(
+            fallback_number,
+            endnote.number_shape,
+            endnote.before_decoration_letter,
+            endnote.after_decoration_letter,
+        ),
+        _ => format!("{})", fallback_number),
+    }
+}
+
+fn line_tac_picture_or_shape_height(
+    para: Option<&Paragraph>,
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+    dpi: f64,
+) -> Option<f64> {
+    let para = para?;
+    tac_offsets_for_line(comp, tac_offsets_px, line_idx)
+        .iter()
+        .find_map(|(_, _, ci)| {
+            para.controls
+                .get(*ci)
+                .and_then(|ctrl| tac_picture_or_shape_height_px(ctrl, dpi))
+        })
+}
+
+fn text_line_is_picture_lead_in(
+    para: Option<&Paragraph>,
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+    raw_lh: f64,
+    max_fs: f64,
+    dpi: f64,
+) -> bool {
+    if max_fs <= 0.0 || raw_lh <= max_fs * 2.0 {
+        return false;
+    }
+    let Some(line) = comp.lines.get(line_idx) else {
+        return false;
+    };
+    if line.runs.iter().all(|run| run.text.trim().is_empty())
+        || line_tac_picture_or_shape_height(para, comp, tac_offsets_px, line_idx, dpi).is_some()
+    {
+        return false;
+    }
+    let Some(next) = comp.lines.get(line_idx + 1) else {
+        return false;
+    };
+    if !next.runs.iter().all(|run| run.text.trim().is_empty()) {
+        return false;
+    }
+    line_tac_picture_or_shape_height(para, comp, tac_offsets_px, line_idx + 1, dpi)
+        .map(|height| (raw_lh - height).abs() <= 8.0)
+        .unwrap_or(false)
+}
+
+fn has_treat_as_char_picture_or_shape(para: Option<&Paragraph>) -> bool {
+    para.map(|para| {
+        para.controls.iter().any(|ctrl| {
+            matches!(
+                ctrl,
+                Control::Picture(pic) if pic.common.treat_as_char
+            ) || matches!(
+                ctrl,
+                Control::Shape(shape) if shape.common().treat_as_char
+            )
+        })
+    })
+    .unwrap_or(false)
+}
+
+fn tac_picture_label_extra_px(
+    runs_all_whitespace: bool,
+    raw_line_height: f64,
+    reserved_picture_height: Option<f64>,
+    max_font_size: f64,
+    line_spacing_px: f64,
+) -> f64 {
+    let Some(pic_h) = reserved_picture_height else {
+        return 0.0;
+    };
+    if runs_all_whitespace || max_font_size <= 0.0 {
+        return 0.0;
+    }
+    if (raw_line_height - pic_h).abs() > 4.0 || raw_line_height <= max_font_size * 2.0 {
+        return 0.0;
+    }
+    max_font_size + line_spacing_px.max(0.0)
+}
+
 /// run 이 `\t` 로 끝날 때, 그 마지막 `\t` 가 cross-run 우측/가운데 탭으로 동작해야 하는지 판정한다.
 ///
 /// HWP 본문 탭에는 두 가지 정보원이 있다:
@@ -514,17 +724,10 @@ impl LayoutEngine {
                                 line_run_start = ch_idx;
                             }
                             // FootnoteMarker 노드 삽입 (위첨자로 렌더링됨)
-                            // [Issue #926] Endnote인 경우 "문N)" 형식
-                            let is_endnote = para
-                                .controls
-                                .get(fn_ctrl_idx)
-                                .map(|c| matches!(c, Control::Endnote(_)))
-                                .unwrap_or(false);
-                            let fn_text = if is_endnote {
-                                format!("문{})", fn_num)
-                            } else {
-                                format!("{})", fn_num)
-                            };
+                            let fn_text = note_marker_text_from_control(
+                                para.controls.get(fn_ctrl_idx),
+                                fn_num,
+                            );
                             let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
                             let sup_font_size = (base_ts.font_size * 0.55).max(7.0);
                             let sup_ts = TextStyle {
@@ -898,6 +1101,7 @@ impl LayoutEngine {
                 para_index,
                 None,
                 false,
+                false,
                 0.0,
                 multi_col_width_hu,
                 Some(para),
@@ -914,6 +1118,9 @@ impl LayoutEngine {
 
     /// ComposedParagraph를 사용한 레이아웃
     /// `is_last_cell_para`: 셀 내 마지막 문단이면 true (마지막 줄의 trailing line_spacing 제외)
+    /// `suppress_column_top_vpos_fallback`: caller가 첫 줄 vpos를 이미 y에 반영한
+    /// 경우 true. 글상자 내부 문단처럼 LINE_SEG.vertical_pos 기반으로 선배치한 뒤
+    /// 다시 column-top fallback을 적용하면 y가 이중 보정된다.
     /// `multi_col_width_hu`: 다단 문서에서 현재 단 너비(HWPUNIT). Some이면 segment_width 불일치 줄 건너뜀.
     /// `para`: 원본 문단 (treat_as_char 이미지 인라인 렌더링에 사용)
     /// `bin_data_content`: 이미지 데이터 (treat_as_char 이미지 인라인 렌더링에 사용)
@@ -930,6 +1137,7 @@ impl LayoutEngine {
         section_index: usize,
         para_index: usize,
         cell_ctx: Option<CellContext>,
+        suppress_column_top_vpos_fallback: bool,
         is_last_cell_para: bool,
         first_line_x_offset: f64,
         multi_col_width_hu: Option<i32>,
@@ -1001,7 +1209,6 @@ impl LayoutEngine {
             v.sort_by_key(|(p, _, _)| *p);
             v
         };
-
         // 문단 배경색: border_fill_id 조회
         let para_border_fill_id = para_style.map(|s| s.border_fill_id).unwrap_or(0);
         let para_fill_color = if para_border_fill_id > 0 {
@@ -1022,7 +1229,7 @@ impl LayoutEngine {
         if start_line == 0 && spacing_before > 0.0 {
             if !is_column_top {
                 y += spacing_before;
-            } else if para_index == 0 {
+            } else if para_index == 0 && !suppress_column_top_vpos_fallback {
                 let vpos0_px = para
                     .and_then(|p| p.line_segs.first())
                     .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
@@ -1035,7 +1242,12 @@ impl LayoutEngine {
         // 인라인 wrap 조합) — line_seg.vpos 를 직접 y 에 가산하여 텍스트가 wrap
         // shape 아래로 위치하도록 함. wrap 메커니즘이 별도로 처리하지 못하는
         // case 의 fallback. start_line==0 + column-top + para_index==0 으로 한정.
-        if start_line == 0 && spacing_before == 0.0 && is_column_top && para_index == 0 {
+        if start_line == 0
+            && spacing_before == 0.0
+            && is_column_top
+            && para_index == 0
+            && !suppress_column_top_vpos_fallback
+        {
             let vpos0_px = para
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
@@ -1085,14 +1297,15 @@ impl LayoutEngine {
             }
         }
 
-        // [Issue #926] Endnote 인라인 마커 "문N)" — 첫 줄 앞에 일반 텍스트로 emit
+        // [Issue #926] Endnote 인라인 마커 — 첫 줄 앞에 일반 텍스트로 emit
         // 한컴에서 미주 마커는 위첨자가 아닌 본문 크기 텍스트로 표시
         let mut endnote_marker_x_advance = 0.0f64;
         if start_line == 0 {
             if let Some(p) = para {
                 for ctrl in &p.controls {
                     if let Control::Endnote(en) = ctrl {
-                        let marker_text = format!("문{}) ", en.number);
+                        let marker_text =
+                            format!("{} ", note_marker_text_from_control(Some(ctrl), en.number));
                         let first_cs_id = p
                             .char_shapes
                             .first()
@@ -1156,8 +1369,35 @@ impl LayoutEngine {
             }
         }
 
+        let endnote_line_vpos_base: Option<(i32, f64)> = {
+            let base = self.endnote_para_base.get();
+            if cell_ctx.is_none() && para_index >= base && end > start_line + 1 {
+                para.and_then(|p| {
+                    let range = p.line_segs.get(start_line..end)?;
+                    if range
+                        .windows(2)
+                        .all(|w| w[1].vertical_pos >= w[0].vertical_pos)
+                    {
+                        range.first().map(|seg| (seg.vertical_pos, y))
+                    } else {
+                        None
+                    }
+                })
+            } else {
+                None
+            }
+        };
+        let mut endnote_line_vpos_y_end: Option<f64> = None;
+        let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for line_idx in start_line..end {
             let comp_line = &composed.lines[line_idx];
+            let mut current_line_reserved_tac_picture_height: Option<f64> = None;
+            if let (Some((base_vpos, base_y)), Some(seg)) = (
+                endnote_line_vpos_base,
+                para.and_then(|p| p.line_segs.get(line_idx)),
+            ) {
+                y = base_y + hwpunit_to_px(seg.vertical_pos - base_vpos, self.dpi);
+            }
 
             // 다단 필터링: segment_width가 현재 단 너비와 불일치하면 건너뜀
             if let Some(col_w) = multi_col_width_hu {
@@ -1186,10 +1426,20 @@ impl LayoutEngine {
                     }
                 })
                 .fold(0.0f64, f64::max);
+            let line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
             // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
             // PARA_LINE_SEG가 없는 폴백(400 HWPUNIT=5.333px) 등 line_height가 폰트 크기보다 작으면,
             // ParaShape의 줄간격 설정(line_spacing_type + line_spacing)으로 올바른 줄 높이를 계산한다.
             let raw_lh = hwpunit_to_px(comp_line.line_height, self.dpi);
+            let text_before_picture_line = text_line_is_picture_lead_in(
+                para,
+                composed,
+                &tac_offsets_px,
+                line_idx,
+                raw_lh,
+                max_fs,
+                self.dpi,
+            );
             let (line_height, line_spacing_px) = {
                 let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
                 let ls_type = para_style
@@ -1217,7 +1467,11 @@ impl LayoutEngine {
                         })
                     })
                     .unwrap_or(false);
-            let (line_height, baseline) = if has_tac_shape && raw_lh > max_fs * 1.5 {
+            let (line_height, baseline) = if text_before_picture_line {
+                let font_lh = max_fs.max(1.0);
+                let font_bl = max_fs * 0.85;
+                (font_lh, ensure_min_baseline(font_bl, max_fs))
+            } else if has_tac_shape && raw_lh > max_fs * 1.5 {
                 // Shape 높이가 line_height에 포함 → 폰트 기반 line_height 사용
                 let font_lh = max_fs * 1.2; // 폰트 크기의 120%
                 let font_bl = max_fs * 0.85;
@@ -1231,7 +1485,6 @@ impl LayoutEngine {
                     ),
                 )
             };
-
             // 들여쓰기/내어쓰기: 문단 여백은 무조건 적용
             // - 보통(ind=0): 모든 줄 margin_left
             // - 들여쓰기(ind>0): 첫줄 margin_left+indent, 다음줄 margin_left
@@ -1267,17 +1520,8 @@ impl LayoutEngine {
             let line_has_inline_tac_table = !tac_offsets_px.is_empty()
                 && para
                     .map(|p| {
-                        let line_start = comp_line.char_start;
-                        let line_end = line_start
-                            + comp_line
-                                .runs
-                                .iter()
-                                .map(|r| r.text.chars().count())
-                                .sum::<usize>();
-                        tac_offsets_px.iter().any(|(pos, _, ci)| {
-                            *pos >= line_start
-                                && *pos <= line_end
-                                && matches!(p.controls.get(*ci),
+                        line_tac_offsets.iter().any(|(_, _, ci)| {
+                            matches!(p.controls.get(*ci),
                             Some(Control::Table(t)) if t.common.treat_as_char)
                         })
                     })
@@ -1632,12 +1876,15 @@ impl LayoutEngine {
                         .map(|r| r.text.chars().count())
                         .sum::<usize>()
                         + comp_line.char_start;
-                for &(fpos, fnum, _) in composed.footnote_positions.iter() {
+                for &(fpos, fnum, ctrl_idx) in composed.footnote_positions.iter() {
                     if fpos >= run_char_pos_est
                         && (fpos < run_char_end_est
                             || (is_last_run_est && fpos == run_char_end_est))
                     {
-                        let fn_text = format!("{})", fnum);
+                        let fn_text = note_marker_text_from_control(
+                            para.and_then(|p| p.controls.get(ctrl_idx)),
+                            fnum,
+                        );
                         let sup_size = (ts.font_size * 0.55).max(7.0);
                         let sup_ts = TextStyle {
                             font_size: sup_size,
@@ -2306,8 +2553,8 @@ impl LayoutEngine {
 
                 // [Task #960] env-gated TAC line-mapping 추적
                 if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
-                    eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} baseline={:.1} run_tacs={:?}",
-                        para_index, line_idx, run_idx, run_char_pos, run_char_end, y, baseline, run_tacs);
+                    eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
+                        para_index, line_idx, run_idx, run_char_pos, run_char_end, y, line_height, line_spacing_px, raw_lh, baseline, run_tacs);
                 }
 
                 if run_tacs.is_empty() {
@@ -2396,17 +2643,17 @@ impl LayoutEngine {
 
                     let mut fn_split_extra = 0.0f64; // 각주 마커 삽입으로 인한 추가 폭
                     {
-                        // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스)
+                        // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
                         // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
                         let is_last = is_last_run_of_line(run_idx);
-                        let run_fn_markers: Vec<(usize, u16, usize)> = fn_positions
+                        let run_fn_markers: Vec<(usize, u16, usize, usize)> = fn_positions
                             .iter()
                             .enumerate()
-                            .filter_map(|(fni, &(fpos, fnum, _))| {
+                            .filter_map(|(fni, &(fpos, fnum, ctrl_idx))| {
                                 let in_range = fpos >= run_char_pos
                                     && (fpos < run_char_end || (is_last && fpos == run_char_end));
                                 if !fn_marker_inserted[fni] && in_range {
-                                    Some((fpos - run_char_pos, fnum, fni))
+                                    Some((fpos - run_char_pos, fnum, fni, ctrl_idx))
                                 } else {
                                     None
                                 }
@@ -2446,7 +2693,7 @@ impl LayoutEngine {
                             let mut sub_x = x;
                             let mut sub_char_offset = char_offset;
 
-                            for &(rel_pos, fnum, fni) in &run_fn_markers {
+                            for &(rel_pos, fnum, fni, ctrl_idx) in &run_fn_markers {
                                 fn_marker_inserted[fni] = true;
                                 // 각주 앞 텍스트 세그먼트
                                 if rel_pos > seg_start {
@@ -2481,16 +2728,10 @@ impl LayoutEngine {
                                     sub_char_offset += rel_pos - seg_start;
                                 }
                                 // FootnoteMarker 노드
-                                // [Issue #926] Endnote인 경우 "문N)" 형식
-                                let is_en = para
-                                    .and_then(|p| p.controls.get(fni))
-                                    .map(|c| matches!(c, Control::Endnote(_)))
-                                    .unwrap_or(false);
-                                let fn_text = if is_en {
-                                    format!("문{})", fnum)
-                                } else {
-                                    format!("{})", fnum)
-                                };
+                                let fn_text = note_marker_text_from_control(
+                                    para.and_then(|p| p.controls.get(ctrl_idx)),
+                                    fnum,
+                                );
                                 let base_ts = &text_style;
                                 let sup_size = (base_ts.font_size * 0.55).max(7.0);
                                 let sup_ts = TextStyle {
@@ -2511,7 +2752,7 @@ impl LayoutEngine {
                                         color: base_ts.color,
                                         section_index,
                                         para_index,
-                                        control_index: fni,
+                                        control_index: ctrl_idx,
                                     }),
                                     BoundingBox::new(sub_x, y, sup_w, line_height),
                                 );
@@ -2646,7 +2887,29 @@ impl LayoutEngine {
                             if let Some(ctrl) = p.controls.get(tac_ci) {
                                 if let Control::Picture(pic) = ctrl {
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                    let img_y = (y + baseline - pic_h).max(y);
+                                    // [Task #1151 v3] sibling wrap=TopAndBottom 표 (tac=false) 가
+                                    // 차지하는 vertical 영역만큼 picture y 보정. 한컴 정합
+                                    // (samples/tac-verify/scenario-{a..d}-after.hwp).
+                                    let sibling_table_reserved_hu =
+                                        calc_sibling_topandbottom_table_reserved_hu(&p.controls);
+                                    let sibling_table_reserved_px =
+                                        hwpunit_to_px(sibling_table_reserved_hu, self.dpi);
+                                    if raw_lh + 4.0 >= pic_h {
+                                        current_line_reserved_tac_picture_height = Some(pic_h);
+                                    }
+                                    let label_extra = tac_picture_label_extra_px(
+                                        comp_line.runs.iter().all(|r| r.text.trim().is_empty()),
+                                        raw_lh,
+                                        current_line_reserved_tac_picture_height,
+                                        max_fs,
+                                        line_spacing_px,
+                                    );
+                                    let base_img_y = if label_extra > 0.0 {
+                                        y + label_extra
+                                    } else {
+                                        (y + baseline - pic_h).max(y)
+                                    };
+                                    let img_y = base_img_y + sibling_table_reserved_px;
                                     let bin_data_id = pic.image_attr.bin_data_id;
                                     let image_data =
                                         find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
@@ -2674,22 +2937,18 @@ impl LayoutEngine {
                                     } else {
                                         None
                                     };
-                                    let img_id = tree.next_id();
-                                    let img_node = RenderNode::new(
-                                        img_id,
-                                        RenderNodeType::Image(ImageNode {
-                                            section_index: Some(section_index),
-                                            para_index: Some(para_index),
-                                            control_index: Some(tac_ci),
-                                            crop,
-                                            original_size_hu,
-                                            effect: pic.image_attr.effect,
-                                            brightness: pic.image_attr.brightness,
-                                            contrast: pic.image_attr.contrast,
-                                            text_wrap: Some(pic.common.text_wrap),
-                                            transform: extract_shape_transform(&pic.shape_attr),
-                                            ..ImageNode::new(bin_data_id, image_data)
-                                        }),
+                                    // [Task #1151 v7 항목 7] ImageNode 생성 helper 통합.
+                                    let img_node = make_picture_image_node(
+                                        tree,
+                                        pic,
+                                        section_index,
+                                        para_index,
+                                        tac_ci,
+                                        cell_ctx.as_ref(),
+                                        crop,
+                                        original_size_hu,
+                                        bin_data_id,
+                                        image_data,
                                         BoundingBox::new(x, img_y, tac_w, pic_h),
                                     );
                                     line_node.children.push(img_node);
@@ -2718,7 +2977,21 @@ impl LayoutEngine {
                             if let Some(Control::Shape(shape)) = p.controls.get(tac_ci) {
                                 let common = shape.common();
                                 let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
-                                let shape_y = (y + baseline - shape_h).max(y);
+                                if raw_lh + 4.0 >= shape_h {
+                                    current_line_reserved_tac_picture_height = Some(shape_h);
+                                }
+                                let label_extra = tac_picture_label_extra_px(
+                                    comp_line.runs.iter().all(|r| r.text.trim().is_empty()),
+                                    raw_lh,
+                                    current_line_reserved_tac_picture_height,
+                                    max_fs,
+                                    line_spacing_px,
+                                );
+                                let shape_y = if label_extra > 0.0 {
+                                    y + label_extra
+                                } else {
+                                    (y + baseline - shape_h).max(y)
+                                };
                                 // 인라인 좌표 등록 → shape_layout.rs에서 이 Shape를 스킵
                                 tree.set_inline_shape_position(
                                     section_index,
@@ -2761,12 +3034,7 @@ impl LayoutEngine {
                                 };
                                 // 수식 baseline을 텍스트 baseline에 맞춤
                                 // HWP 높이와 레이아웃 높이가 다르면 baseline도 비례 조정
-                                let eq_y = if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
-                                    let scale = hwp_eq_h / layout_box.height;
-                                    (y + baseline - layout_box.baseline * scale).max(y)
-                                } else {
-                                    (y + baseline - layout_box.baseline).max(y)
-                                };
+                                let eq_y = (y + baseline - layout_box.baseline).max(y);
                                 let (eq_cell_idx, eq_cell_para_idx) =
                                     if let Some(ref ctx) = cell_ctx {
                                         (
@@ -2776,6 +3044,11 @@ impl LayoutEngine {
                                     } else {
                                         (None, None)
                                     };
+                                let note_ref = if cell_ctx.is_none() {
+                                    self.note_ref_for_endnote_equation(para_index, tac_ci)
+                                } else {
+                                    None
+                                };
                                 let eq_node = RenderNode::new(
                                     tree.next_id(),
                                     RenderNodeType::Equation(
@@ -2785,9 +3058,14 @@ impl LayoutEngine {
                                             color_str,
                                             color: eq.color,
                                             font_size: font_size_px,
-                                            section_index: Some(section_index),
+                                            section_index: note_ref
+                                                .as_ref()
+                                                .map(|r| r.section_index)
+                                                .or(Some(section_index)),
                                             para_index: if let Some(ref ctx) = cell_ctx {
                                                 Some(ctx.parent_para_index)
+                                            } else if let Some(ref r) = note_ref {
+                                                Some(r.para_index)
                                             } else {
                                                 Some(para_index)
                                             },
@@ -2798,6 +3076,7 @@ impl LayoutEngine {
                                             },
                                             cell_index: eq_cell_idx,
                                             cell_para_index: eq_cell_para_idx,
+                                            note_ref,
                                         },
                                     ),
                                     BoundingBox::new(x, eq_y, tac_w, eq_h),
@@ -3018,13 +3297,23 @@ impl LayoutEngine {
             // run 루프 종료 후, run 범위 밖(pos >= run_char_pos)의 미매칭 TAC 이미지 렌더링
             if !comp_line.runs.is_empty() && !tac_offsets_px.is_empty() {
                 if let (Some(p), Some(bdc)) = (para, bin_data_content) {
+                    let line_start_char = comp_line.char_start;
+                    let line_end_char = line_start_char
+                        + comp_line
+                            .runs
+                            .iter()
+                            .map(|r| r.text.chars().count())
+                            .sum::<usize>();
                     for &(tac_pos, tac_w, tac_ci) in &tac_offsets_px {
-                        if tac_pos <= run_char_pos {
-                            continue; // run 범위 내(또는 끝): 이미 run 내에서 처리됨
+                        if tac_pos <= run_char_pos || tac_pos > line_end_char {
+                            continue; // run 범위 내/끝 또는 미래 줄 TAC: 여기서 처리하지 않음
                         }
                         if let Some(ctrl) = p.controls.get(tac_ci) {
                             if let Control::Picture(pic) = ctrl {
                                 let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                if raw_lh + 4.0 >= pic_h {
+                                    current_line_reserved_tac_picture_height = Some(pic_h);
+                                }
                                 let img_y = (y + baseline - pic_h).max(y);
                                 let bin_data_id = pic.image_attr.bin_data_id;
                                 let image_data =
@@ -3053,22 +3342,18 @@ impl LayoutEngine {
                                 } else {
                                     None
                                 };
-                                let img_id = tree.next_id();
-                                let img_node = RenderNode::new(
-                                    img_id,
-                                    RenderNodeType::Image(ImageNode {
-                                        section_index: Some(section_index),
-                                        para_index: Some(para_index),
-                                        control_index: Some(tac_ci),
-                                        crop,
-                                        original_size_hu,
-                                        effect: pic.image_attr.effect,
-                                        brightness: pic.image_attr.brightness,
-                                        contrast: pic.image_attr.contrast,
-                                        text_wrap: Some(pic.common.text_wrap),
-                                        transform: extract_shape_transform(&pic.shape_attr),
-                                        ..ImageNode::new(bin_data_id, image_data)
-                                    }),
+                                // [Task #1151 v7 항목 7] ImageNode 생성 helper 통합.
+                                let img_node = make_picture_image_node(
+                                    tree,
+                                    pic,
+                                    section_index,
+                                    para_index,
+                                    tac_ci,
+                                    cell_ctx.as_ref(),
+                                    crop,
+                                    original_size_hu,
+                                    bin_data_id,
+                                    image_data,
                                     BoundingBox::new(x, img_y, tac_w, pic_h),
                                 );
                                 line_node.children.push(img_node);
@@ -3124,15 +3409,12 @@ impl LayoutEngine {
             if comp_line.runs.is_empty() {
                 // runs가 없는 빈 줄에서 treat_as_char 이미지 렌더링
                 // 테이블 셀 내부에서는 table_layout.rs가 layout_picture로 이미 처리하므로 스킵.
-                // 셀 외부에서 텍스트 없이 TAC만 있는 문단인 경우에만 여기서 렌더링.
-                if cell_ctx.is_none()
-                    && all_runs_empty
-                    && !tac_offsets_px.is_empty()
-                    && line_idx == start_line
-                {
+                // 셀 외부에서 해당 줄 범위에 걸린 TAC만 여기서 렌더링.
+                if cell_ctx.is_none() && !line_tac_offsets.is_empty() {
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                         // TAC 이미지 전체 폭 계산 후 문단 정렬 적용
-                        let total_tac_width: f64 = tac_offsets_px.iter().map(|(_, w, _)| w).sum();
+                        let total_tac_width: f64 =
+                            line_tac_offsets.iter().map(|(_, w, _)| *w).sum();
                         let align_offset = match alignment {
                             Alignment::Center | Alignment::Distribute => {
                                 (available_width - total_tac_width).max(0.0) / 2.0
@@ -3141,7 +3423,7 @@ impl LayoutEngine {
                             _ => 0.0, // Left, Justify
                         };
                         let mut img_x = effective_col_x + effective_margin_left + align_offset;
-                        for &(_, tac_w, tac_ci) in &tac_offsets_px {
+                        for &(_, tac_w, tac_ci) in &line_tac_offsets {
                             if let Some(ctrl) = p.controls.get(tac_ci) {
                                 // [Issue #476] 빈 문단 + 인라인 Shape: inline_pos 등록 후 shape_layout 이 그리도록 위임.
                                 // 등록하지 않으면 layout_shape 가 inline_pos=None 으로 받아 fallback 위치에 그리거나,
@@ -3163,7 +3445,31 @@ impl LayoutEngine {
                                 }
                                 if let Control::Picture(pic) = ctrl {
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                    let img_y = (y + baseline - pic_h).max(y);
+                                    // [Task #1151 v3] 같은 paragraph 의 sibling wrap=TopAndBottom
+                                    // 표 (tac=false) 가 차지하는 vertical 영역만큼 picture y 보정.
+                                    // 한컴 정합 (samples/tac-verify/scenario-{a..d}-after.hwp): picture
+                                    // 가 표 아래에 그려져 오버랩 차단. sibling 표가 없으면 reserved=0
+                                    // → 기존 동작 보존 (회귀 0).
+                                    let sibling_table_reserved_hu =
+                                        calc_sibling_topandbottom_table_reserved_hu(&p.controls);
+                                    let sibling_table_reserved_px =
+                                        hwpunit_to_px(sibling_table_reserved_hu, self.dpi);
+                                    if raw_lh + 4.0 >= pic_h {
+                                        current_line_reserved_tac_picture_height = Some(pic_h);
+                                    }
+                                    let label_extra = tac_picture_label_extra_px(
+                                        comp_line.runs.iter().all(|r| r.text.trim().is_empty()),
+                                        raw_lh,
+                                        current_line_reserved_tac_picture_height,
+                                        max_fs,
+                                        line_spacing_px,
+                                    );
+                                    let base_img_y = if label_extra > 0.0 {
+                                        y + label_extra
+                                    } else {
+                                        (y + baseline - pic_h).max(y)
+                                    };
+                                    let img_y = base_img_y + sibling_table_reserved_px;
                                     let bin_data_id = pic.image_attr.bin_data_id;
                                     let image_data =
                                         find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
@@ -3191,22 +3497,18 @@ impl LayoutEngine {
                                     } else {
                                         None
                                     };
-                                    let img_id = tree.next_id();
-                                    let img_node = RenderNode::new(
-                                        img_id,
-                                        RenderNodeType::Image(ImageNode {
-                                            section_index: Some(section_index),
-                                            para_index: Some(para_index),
-                                            control_index: Some(tac_ci),
-                                            crop,
-                                            original_size_hu,
-                                            effect: pic.image_attr.effect,
-                                            brightness: pic.image_attr.brightness,
-                                            contrast: pic.image_attr.contrast,
-                                            text_wrap: Some(pic.common.text_wrap),
-                                            transform: extract_shape_transform(&pic.shape_attr),
-                                            ..ImageNode::new(bin_data_id, image_data)
-                                        }),
+                                    // [Task #1151 v7 항목 7] ImageNode 생성 helper 통합.
+                                    let img_node = make_picture_image_node(
+                                        tree,
+                                        pic,
+                                        section_index,
+                                        para_index,
+                                        tac_ci,
+                                        cell_ctx.as_ref(),
+                                        crop,
+                                        original_size_hu,
+                                        bin_data_id,
+                                        image_data,
                                         BoundingBox::new(img_x, img_y, tac_w, pic_h),
                                     );
                                     line_node.children.push(img_node);
@@ -3311,12 +3613,7 @@ impl LayoutEngine {
                             } else {
                                 layout_box.height
                             };
-                            let eq_y = if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
-                                let scale = hwp_eq_h / layout_box.height;
-                                (y + baseline - layout_box.baseline * scale).max(y)
-                            } else {
-                                (y + baseline - layout_box.baseline).max(y)
-                            };
+                            let eq_y = (y + baseline - layout_box.baseline).max(y);
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (
                                     Some(ctx.path[0].cell_index),
@@ -3324,6 +3621,11 @@ impl LayoutEngine {
                                 )
                             } else {
                                 (None, None)
+                            };
+                            let note_ref = if cell_ctx.is_none() {
+                                self.note_ref_for_endnote_equation(para_index, tac_ci)
+                            } else {
+                                None
                             };
                             let eq_node = RenderNode::new(
                                 tree.next_id(),
@@ -3334,9 +3636,14 @@ impl LayoutEngine {
                                         color_str,
                                         color: eq.color,
                                         font_size: font_size_px,
-                                        section_index: Some(section_index),
+                                        section_index: note_ref
+                                            .as_ref()
+                                            .map(|r| r.section_index)
+                                            .or(Some(section_index)),
                                         para_index: if let Some(ref ctx) = cell_ctx {
                                             Some(ctx.parent_para_index)
+                                        } else if let Some(ref r) = note_ref {
+                                            Some(r.para_index)
                                         } else {
                                             Some(para_index)
                                         },
@@ -3347,6 +3654,7 @@ impl LayoutEngine {
                                         },
                                         cell_index: eq_cell_idx,
                                         cell_para_index: eq_cell_para_idx,
+                                        note_ref,
                                     },
                                 ),
                                 BoundingBox::new(inline_x, eq_y, tac_w, eq_h),
@@ -3754,21 +4062,85 @@ impl LayoutEngine {
             // 좌측 영역에 텍스트 미배치한 결과. has_picture_shape_square_wrap 게이트로
             // wrap zone 호스트 paragraph 만 영향.
             let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
+            if !runs_all_whitespace
+                && !text_before_picture_line
+                && current_line_reserved_tac_picture_height.is_none()
+            {
+                current_line_reserved_tac_picture_height =
+                    tac_picture_or_shape_height_for_line(para, raw_lh, self.dpi);
+                if current_line_reserved_tac_picture_height.is_none()
+                    && has_treat_as_char_picture_or_shape(para)
+                    && max_fs > 0.0
+                    && raw_lh > max_fs * 2.0
+                {
+                    current_line_reserved_tac_picture_height = Some(raw_lh);
+                }
+            }
+            let tac_picture_label_extra = tac_picture_label_extra_px(
+                runs_all_whitespace,
+                raw_lh,
+                current_line_reserved_tac_picture_height,
+                max_fs,
+                line_spacing_px,
+            );
             let skip_advance_empty_wrap = has_picture_shape_square_wrap && runs_all_whitespace;
+            let skip_advance_empty_tac_picture = runs_all_whitespace
+                && current_line_reserved_tac_picture_height.is_none()
+                && prev_line_reserved_tac_picture_height
+                    .map(|pic_h| (raw_lh - pic_h).abs() <= 4.0)
+                    .unwrap_or(false);
+            let skip_advance_empty_line = skip_advance_empty_wrap || skip_advance_empty_tac_picture;
+            if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok()
+                && (para_index == 651 || para_index == 652)
+            {
+                eprintln!(
+                    "  TAC_ADV pi={} line_idx={} y={:.1} raw_lh={:.1} lh={:.1} ls={:.1} label_extra={:.1} whitespace={} cur_pic={:?} prev_pic={:?} skip_wrap={} skip_pic={} skip={}",
+                    para_index,
+                    line_idx,
+                    y,
+                    raw_lh,
+                    line_height,
+                    line_spacing_px,
+                    tac_picture_label_extra,
+                    runs_all_whitespace,
+                    current_line_reserved_tac_picture_height,
+                    prev_line_reserved_tac_picture_height,
+                    skip_advance_empty_wrap,
+                    skip_advance_empty_tac_picture,
+                    skip_advance_empty_line,
+                );
+            }
             // [Task #1046 Stage 3 Class D] 본문 문단(셀 밖)의 콘텐츠 하단(=현재 줄 텍스트
             // 바닥, trailing 줄간격/spacing_after 제외) 기록. overflow 검출이 페이지 바닥
             // 후행 줄간격을 콘텐츠 초과로 오판하지 않도록 한다(페이지네이터의 마지막 줄
             // trailing_ls 허용 #359/#404 와 정합). 매 줄 갱신 → 마지막 렌더 줄 값이 남는다.
-            if cell_ctx.is_none() && !skip_advance_empty_wrap {
+            if cell_ctx.is_none() && !skip_advance_empty_line {
                 self.last_item_content_bottom.set(y + line_height);
             }
-            if is_cell_last_line && cell_ctx.is_some() {
+            if endnote_line_vpos_base.is_some() {
+                let line_bottom = if skip_advance_empty_line {
+                    y
+                } else {
+                    let trailing = if line_idx + 1 < end {
+                        line_spacing_px
+                    } else {
+                        0.0
+                    };
+                    y + line_height + trailing + tac_picture_label_extra
+                };
+                let next_y = endnote_line_vpos_y_end
+                    .map(|prev| prev.max(line_bottom))
+                    .unwrap_or(line_bottom);
+                endnote_line_vpos_y_end = Some(next_y);
+                y = next_y;
+            } else if is_cell_last_line && cell_ctx.is_some() {
                 y += line_height;
-            } else if skip_advance_empty_wrap {
+            } else if skip_advance_empty_line {
                 // no advance
             } else {
-                y += line_height + line_spacing_px;
+                y += line_height + line_spacing_px + tac_picture_label_extra;
             }
+            prev_line_reserved_tac_picture_height = current_line_reserved_tac_picture_height;
         }
 
         // 문단 테두리/배경 범위 수집 (build_single_column에서 연속 그룹으로 병합 렌더링)
@@ -4117,6 +4489,291 @@ impl LayoutEngine {
                 }
             }
         }
+    }
+}
+
+/// [Task #1151 v3] paragraph 의 sibling controls 중 `wrap=TopAndBottom` +
+/// `treat_as_char=false` 인 표가 차지하는 vertical 영역 (HWPUNIT) 합산.
+///
+/// 한컴 layout 정합 (`mydocs/tech/topandbottom_table_inline_picture_layout.md` H1):
+/// 같은 paragraph 의 sibling tac picture 가 표 아래 영역에 그려지도록 picture
+/// 의 y 위치 보정값을 계산한다. 표가 없으면 0 반환 (회귀 0 보장).
+///
+/// 합산 공식: `table.common.height + outer_margin_top + outer_margin_bottom`
+/// (한컴 산출물 `samples/tac-verify/scenario-a-after.hwp` 의 표 outer_margin
+/// 1.0mm 정합).
+pub(crate) fn calc_sibling_topandbottom_table_reserved_hu(
+    controls: &[crate::model::control::Control],
+) -> i32 {
+    use crate::model::control::Control;
+    use crate::model::shape::TextWrap;
+    controls
+        .iter()
+        .map(|c| match c {
+            Control::Table(t)
+                if matches!(t.common.text_wrap, TextWrap::TopAndBottom)
+                    && !t.common.treat_as_char =>
+            {
+                t.common.height as i32 + t.outer_margin_top as i32 + t.outer_margin_bottom as i32
+            }
+            _ => 0,
+        })
+        .sum()
+}
+
+/// [Task #1151 v7 항목 7] paragraph_layout 의 3 곳에서 반복되던 ImageNode 생성
+/// boilerplate 통합 (cell_ctx → 3 필드 + outer paragraph idx 노출 + picture 의
+/// effect/brightness/contrast/text_wrap/transform 매핑). picture_footnote 의
+/// `layout_picture_full` 가 본문/머리말/꼬리말 path 의 진입점 helper 인 것과 짝.
+#[allow(clippy::too_many_arguments)]
+fn make_picture_image_node(
+    tree: &mut PageRenderTree,
+    pic: &crate::model::image::Picture,
+    section_index: usize,
+    para_index: usize,
+    ctrl_idx: usize,
+    cell_ctx: Option<&CellContext>,
+    crop: Option<(i32, i32, i32, i32)>,
+    original_size_hu: Option<(u32, u32)>,
+    bin_data_id: u16,
+    image_data: Option<Vec<u8>>,
+    bbox: BoundingBox,
+) -> RenderNode {
+    let (cei, cpi, otci) = cell_ctx
+        .map(|c| c.last_image_indices())
+        .unwrap_or((None, None, None));
+    let para_for_image = cell_ctx.map(|c| c.parent_para_index).unwrap_or(para_index);
+    let img_id = tree.next_id();
+    RenderNode::new(
+        img_id,
+        RenderNodeType::Image(ImageNode {
+            section_index: Some(section_index),
+            para_index: Some(para_for_image),
+            control_index: Some(ctrl_idx),
+            cell_index: cei,
+            cell_para_index: cpi,
+            outer_table_control_index: otci,
+            crop,
+            original_size_hu,
+            effect: pic.image_attr.effect,
+            brightness: pic.image_attr.brightness,
+            contrast: pic.image_attr.contrast,
+            text_wrap: Some(pic.common.text_wrap),
+            transform: extract_shape_transform(&pic.shape_attr),
+            external_path: pic.image_attr.external_path.clone(),
+            ..ImageNode::new(bin_data_id, image_data)
+        }),
+        bbox,
+    )
+}
+
+/// [Task #1151 v9 결함 D] paragraph 의 sibling TAC picture 들의 (control_idx, width_px)
+/// 시퀀스 수집 (시점순). layout_shape_item 의 가로 분배 cursor / alignment 계산용.
+///
+/// 한컴 native 정합: 동일 paragraph 안 sibling tac=true picture 들이 가로로 inline
+/// 분배 (inline glyph 처럼). 첫 picture 시점에 전체 시퀀스 폭을 알아야 alignment
+/// (center / right) 의 시작 x 가 정확히 계산되므로 pre-scan helper 가 필요.
+pub(crate) fn collect_sibling_tac_picture_widths_px(
+    controls: &[crate::model::control::Control],
+    dpi: f64,
+) -> Vec<(usize, f64)> {
+    use crate::model::control::Control;
+    controls
+        .iter()
+        .enumerate()
+        .filter_map(|(ci, c)| match c {
+            Control::Picture(p) if p.common.treat_as_char => {
+                Some((ci, hwpunit_to_px(p.common.width as i32, dpi)))
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+/// [Task #1151 v9 결함 D] paragraph 단위 inline picture 의 가로 분배 cursor 상태.
+/// layout_shape_item 이 같은 paragraph 의 sibling TAC picture 들을 순서대로 처리할 때
+/// HashMap<para_index, ParaInlineState> 에 보관하여 가로 누적 + line wrap 처리.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct ParaInlineState {
+    /// 다음 picture 의 x 시작점 (paper-relative px)
+    pub cursor_x: f64,
+    /// 현재 line 의 y (= first picture 의 pic_y, 가로 분배 시 유지)
+    pub line_top_y: f64,
+    /// 현재 line 의 최대 picture height (line wrap 임계 + 다음 line advance 용)
+    pub line_height: f64,
+}
+
+#[cfg(test)]
+mod issue_1151_v3_helper_tests {
+    //! Issue #1151 v3: calc_sibling_topandbottom_table_reserved_hu helper 단위 검증.
+    //!
+    //! 한컴 정합 (samples/tac-verify/scenario-{a..d}-after.hwp): wrap=TopAndBottom +
+    //! tac=false 인 표만 vertical 영역 reservation 으로 합산. 그 외 (TAC 표 / Square
+    //! wrap / picture 등) 은 0.
+
+    use super::calc_sibling_topandbottom_table_reserved_hu;
+    use crate::model::control::Control;
+    use crate::model::image::Picture;
+    use crate::model::shape::{CommonObjAttr, TextWrap};
+    use crate::model::table::Table;
+
+    fn make_table(width: u32, height: u32, wrap: TextWrap, tac: bool) -> Table {
+        Table {
+            common: CommonObjAttr {
+                width,
+                height,
+                text_wrap: wrap,
+                treat_as_char: tac,
+                ..Default::default()
+            },
+            outer_margin_left: 283,
+            outer_margin_right: 283,
+            outer_margin_top: 283,
+            outer_margin_bottom: 283,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn topandbottom_table_reserved_single() {
+        // scenario-a-after.hwp 의 표: 13630×12498, outer_margin (top=283, bottom=283).
+        // 합산 = 12498 + 283 + 283 = 13064 HU.
+        let table = make_table(13630, 12498, TextWrap::TopAndBottom, false);
+        let controls = vec![Control::Table(Box::new(table))];
+        assert_eq!(
+            calc_sibling_topandbottom_table_reserved_hu(&controls),
+            13064
+        );
+    }
+
+    #[test]
+    fn topandbottom_table_reserved_none_when_no_table() {
+        let controls: Vec<Control> = vec![];
+        assert_eq!(calc_sibling_topandbottom_table_reserved_hu(&controls), 0);
+    }
+
+    #[test]
+    fn topandbottom_table_reserved_excludes_tac_table() {
+        let table = make_table(13630, 12498, TextWrap::TopAndBottom, true); // tac=true 제외
+        let controls = vec![Control::Table(Box::new(table))];
+        assert_eq!(calc_sibling_topandbottom_table_reserved_hu(&controls), 0);
+    }
+
+    #[test]
+    fn topandbottom_table_reserved_excludes_square_wrap() {
+        let table = make_table(13630, 12498, TextWrap::Square, false); // wrap=Square 제외
+        let controls = vec![Control::Table(Box::new(table))];
+        assert_eq!(calc_sibling_topandbottom_table_reserved_hu(&controls), 0);
+    }
+
+    #[test]
+    fn topandbottom_table_reserved_ignores_picture_control() {
+        // Picture 는 합산 대상 아님 (sibling Picture 자체는 inline 글리프).
+        let pic = Picture::default();
+        let controls = vec![Control::Picture(Box::new(pic))];
+        assert_eq!(calc_sibling_topandbottom_table_reserved_hu(&controls), 0);
+    }
+
+    #[test]
+    fn topandbottom_table_reserved_sums_multiple_tables() {
+        let t1 = make_table(13630, 10000, TextWrap::TopAndBottom, false);
+        let t2 = make_table(13630, 5000, TextWrap::TopAndBottom, false);
+        let controls = vec![Control::Table(Box::new(t1)), Control::Table(Box::new(t2))];
+        // (10000 + 283 + 283) + (5000 + 283 + 283) = 10566 + 5566 = 16132
+        assert_eq!(
+            calc_sibling_topandbottom_table_reserved_hu(&controls),
+            16132
+        );
+    }
+}
+
+#[cfg(test)]
+mod issue_1151_v9_helper_tests {
+    //! [Task #1151 v9 결함 D] collect_sibling_tac_picture_widths_px helper 단위 검증.
+
+    use super::collect_sibling_tac_picture_widths_px;
+    use crate::model::control::Control;
+    use crate::model::image::Picture;
+    use crate::model::shape::CommonObjAttr;
+    use crate::model::table::Table;
+
+    fn make_pic(width: u32, height: u32, tac: bool) -> Picture {
+        Picture {
+            common: CommonObjAttr {
+                width,
+                height,
+                treat_as_char: tac,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn empty_controls_returns_empty() {
+        assert!(collect_sibling_tac_picture_widths_px(&[], 96.0).is_empty());
+    }
+
+    #[test]
+    fn collects_single_tac_picture() {
+        // 5670 HU @ 96 dpi = 5670 * 96 / 7200 = 75.6 px
+        let controls = vec![Control::Picture(Box::new(make_pic(5670, 5670, true)))];
+        let result = collect_sibling_tac_picture_widths_px(&controls, 96.0);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].0, 0);
+        assert!((result[0].1 - 75.6).abs() < 0.01);
+    }
+
+    #[test]
+    fn collects_multiple_tac_pictures_in_order() {
+        let controls = vec![
+            Control::Picture(Box::new(make_pic(3000, 3000, true))),
+            Control::Picture(Box::new(make_pic(4500, 4500, true))),
+        ];
+        let result = collect_sibling_tac_picture_widths_px(&controls, 96.0);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].0, 0);
+        assert_eq!(result[1].0, 1);
+    }
+
+    #[test]
+    fn skips_non_tac_picture() {
+        // tac=false 인 picture (floating) 는 가로 분배 대상 아님 — 제외.
+        let controls = vec![
+            Control::Picture(Box::new(make_pic(3000, 3000, false))),
+            Control::Picture(Box::new(make_pic(4500, 4500, true))),
+        ];
+        let result = collect_sibling_tac_picture_widths_px(&controls, 96.0);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].0, 1); // 두 번째 (tac=true) 만
+    }
+
+    #[test]
+    fn skips_table_and_other_controls() {
+        // Table / Shape 는 가로 분배 대상 아님 (Picture 만).
+        let controls = vec![
+            Control::Table(Box::new(Table::default())),
+            Control::Picture(Box::new(make_pic(5670, 5670, true))),
+            Control::Picture(Box::new(make_pic(5670, 5670, true))),
+        ];
+        let result = collect_sibling_tac_picture_widths_px(&controls, 96.0);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].0, 1);
+        assert_eq!(result[1].0, 2);
+    }
+
+    #[test]
+    fn realistic_v1_scenario_1x1_table_two_tac_pictures() {
+        // 사용자 시연 정확 재현: [Table(tac=false), Pic1(tac=true), Pic2(tac=true)]
+        let controls = vec![
+            Control::Table(Box::new(Table::default())),
+            Control::Picture(Box::new(make_pic(5670, 5670, true))),
+            Control::Picture(Box::new(make_pic(5670, 5670, true))),
+        ];
+        let result = collect_sibling_tac_picture_widths_px(&controls, 96.0);
+        assert_eq!(result.len(), 2);
+        let total_width: f64 = result.iter().map(|(_, w)| w).sum();
+        assert!((total_width - 151.2).abs() < 0.01); // 75.6 + 75.6
     }
 }
 

@@ -264,8 +264,13 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
   if (!hit) { this.cancelImagePlacement(); return; }
 
   const sec = hit.sectionIndex;
-  const paraIdx = hit.paragraphIndex;
+  // 표 셀 안 클릭 (#1151): floating picture 분기를 위해 cellPath 와
+  // parentParaIndex (= 표가 들어있는 outer paragraph) 사용. 본문 클릭은
+  // 기존 paragraphIndex 그대로.
+  const inCell = (hit.cellPath?.length ?? 0) > 0 && hit.parentParaIndex !== undefined;
+  const paraIdx = inCell ? hit.parentParaIndex! : hit.paragraphIndex;
   const charOffset = hit.charOffset;
+  const cellPathJson = inCell ? JSON.stringify(hit.cellPath) : '';
 
   // 크기 결정
   const zoom = this.viewportManager.getZoom();
@@ -286,6 +291,28 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
   let wHwp = Math.round(wPx * 75);
   let hHwp = Math.round(hPx * 75);
 
+  // [Task #1151 v8 결함 C / v9 결함 E] 셀 안 + 본문 floating picture 의 paper-relative
+  // offset 계산. 사용자가 드래그/클릭한 위치 (drag.startClientX/Y) 를 page (= paper)
+  // 좌표로 변환. v9 결함 E 후 본문 path 도 floating sibling 으로 통합되었으므로
+  // inCell 제한 제거 — 본문에서도 사용자 클릭 위치 전달 필요.
+  let paperOffsetXHu: number | undefined;
+  let paperOffsetYHu: number | undefined;
+  {
+    const scrollContent = this.container.querySelector('#scroll-content');
+    if (scrollContent) {
+      const contentRect = scrollContent.getBoundingClientRect();
+      const dragContentX = drag.startClientX - contentRect.left;
+      const dragContentY = drag.startClientY - contentRect.top;
+      const pageIdx = this.virtualScroll.getPageAtPoint(dragContentX, dragContentY);
+      const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
+      const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
+      const dragPageX = (dragContentX - pageLeft) / zoom;
+      const dragPageY = (dragContentY - pageOffset) / zoom;
+      paperOffsetXHu = Math.round(dragPageX * 75);
+      paperOffsetYHu = Math.round(dragPageY * 75);
+    }
+  }
+
   // 열 폭 초과 시 비례 축소
   try {
     const pageDef = this.wasm.getPageDef(sec);
@@ -302,7 +329,12 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
 
   // WASM 호출
   try {
-    const result = this.wasm.insertPicture(sec, paraIdx, charOffset, imgData.data, wHwp, hHwp, imgData.naturalWidth, imgData.naturalHeight, imgData.ext, desc);
+    const result = this.wasm.insertPicture(
+      sec, paraIdx, charOffset, cellPathJson, imgData.data,
+      wHwp, hHwp, imgData.naturalWidth, imgData.naturalHeight,
+      imgData.ext, desc,
+      paperOffsetXHu, paperOffsetYHu,
+    );
     if (result.ok) {
       this.eventBus.emit('document-changed');
     }

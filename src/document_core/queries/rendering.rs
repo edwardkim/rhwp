@@ -613,6 +613,14 @@ impl DocumentCore {
             );
             write_json_str(buf, wrap_str(wrap));
 
+            if let Some((left, top, right, bottom)) = image.crop {
+                let _ = write!(
+                    buf,
+                    ",\"crop\":{{\"left\":{},\"top\":{},\"right\":{},\"bottom\":{}}}",
+                    left, top, right, bottom
+                );
+            }
+
             let attr = crate::model::image::ImageAttr {
                 brightness: image.brightness,
                 contrast: image.contrast,
@@ -649,34 +657,42 @@ impl DocumentCore {
                 LayerNodeKind::ClipRect { child, .. } => collect(child, behind, front, image_count),
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
-                        if let PaintOp::Image {
-                            bbox,
-                            image,
-                            resolved,
-                        } = op
-                        {
-                            *image_count += 1;
-                            match image.text_wrap {
-                                Some(TextWrap::BehindText) => {
-                                    write_overlay_image(
-                                        behind,
-                                        *bbox,
-                                        image,
-                                        resolved.as_deref(),
-                                        TextWrap::BehindText,
-                                    );
+                        match op {
+                            PaintOp::Image {
+                                bbox,
+                                image,
+                                resolved,
+                            } => {
+                                *image_count += 1;
+                                match image.text_wrap {
+                                    Some(TextWrap::BehindText) => {
+                                        write_overlay_image(
+                                            behind,
+                                            *bbox,
+                                            image,
+                                            resolved.as_deref(),
+                                            TextWrap::BehindText,
+                                        );
+                                    }
+                                    Some(TextWrap::InFrontOfText) => {
+                                        write_overlay_image(
+                                            front,
+                                            *bbox,
+                                            image,
+                                            resolved.as_deref(),
+                                            TextWrap::InFrontOfText,
+                                        );
+                                    }
+                                    _ => {}
                                 }
-                                Some(TextWrap::InFrontOfText) => {
-                                    write_overlay_image(
-                                        front,
-                                        *bbox,
-                                        image,
-                                        resolved.as_deref(),
-                                        TextWrap::InFrontOfText,
-                                    );
-                                }
-                                _ => {}
                             }
+                            // OLE/차트 미리보기 등은 RawSvg 로 emit 되며 web_canvas 의 draw_image
+                            // 경로(IMAGE_CACHE 비동기 디코드)를 그대로 탄다. scheduleReRender 재시도
+                            // 발화를 위해 image_count 에 포함한다.
+                            PaintOp::RawSvg { .. } => {
+                                *image_count += 1;
+                            }
+                            _ => {}
                         }
                     }
                 }
@@ -736,7 +752,7 @@ impl DocumentCore {
         } else {
             (0.0, 0.0, 0.0, 0.0)
         };
-        let (out_l, out_r, out_t, out_b) = visual_outsets;
+        let (out_l, out_r, out_t, _out_b) = visual_outsets;
         let (page_border_left, page_border_right, page_border_top, page_border_bottom) =
             match page_border_fill.basis {
                 PageBorderBasis::PaperBased => (pbf_left, pbf_right, pbf_top, pbf_bottom),
@@ -744,7 +760,7 @@ impl DocumentCore {
                     (ml - pbf_left - out_l).max(0.0),
                     (mr - pbf_right - out_r).max(0.0),
                     (body_top - pbf_top - out_t).max(0.0),
-                    (body_bottom_margin - pbf_bottom - out_b).max(0.0),
+                    (body_bottom_margin - pbf_bottom).max(0.0),
                 ),
             };
         // 단별 영역 정보
@@ -1438,11 +1454,22 @@ impl DocumentCore {
                         }
                         _ => String::new(),
                     };
+                    let note_ref = eq_node.note_ref.as_ref().map_or_else(String::new, |r| {
+                        format!(
+                            ",\"noteRef\":{{\"kind\":\"{}\",\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"noteParaIdx\":{},\"innerControlIdx\":{}}}",
+                            r.kind,
+                            r.section_index,
+                            r.para_index,
+                            r.control_index,
+                            r.note_para_index,
+                            r.inner_control_index
+                        )
+                    });
 
                     controls.push(format!(
-                        "{{\"type\":\"equation\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}}}",
+                        "{{\"type\":\"equation\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords, cell_coords
+                        doc_coords, cell_coords, note_ref
                     ));
                     return;
                 }
@@ -1492,10 +1519,24 @@ impl DocumentCore {
                         }
                         None => String::new(),
                     };
+                    // [Task #1151 v4] 셀 안 inline picture 의 cellIdx/cellParaIdx /
+                    // outerTableControlIdx 전달. RectangleNode 처리 (라인 1533-1546)
+                    // 와 동일 패턴. 셀 외부 picture 는 cell_index 등이 None → 빈 문자열
+                    // → 기존 JSON 출력 그대로 (회귀 0).
+                    let cell_str = match (image_node.cell_index, image_node.cell_para_index) {
+                        (Some(cei), Some(cpi)) => {
+                            format!(",\"cellIdx\":{},\"cellParaIdx\":{}", cei, cpi)
+                        }
+                        _ => String::new(),
+                    };
+                    let outer_table_str = match image_node.outer_table_control_index {
+                        Some(otci) => format!(",\"outerTableControlIdx\":{}", otci),
+                        None => String::new(),
+                    };
                     controls.push(format!(
-                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}}}",
+                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords, wrap_str, hf_str
+                        doc_coords, wrap_str, hf_str, cell_str, outer_table_str
                     ));
                     return;
                 }
@@ -1864,6 +1905,7 @@ impl DocumentCore {
                 hidden_empty_paras: std::collections::HashSet::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
+                endnote_para_sources: Vec::new(),
             });
         }
         self.pagination.truncate(sec_count);
@@ -2021,6 +2063,7 @@ impl DocumentCore {
                     self.document.is_hwp3_variant,
                     hwp3_origin_flow_spacing_before,
                     hwp3_origin_page_tolerance,
+                    Some(&section.section_def.endnote_shape),
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
                     matches!(self.source_format, crate::parser::FileFormat::Hwpx),
                 )
@@ -2388,15 +2431,18 @@ impl DocumentCore {
                             p.column_contents.iter().any(|cc| {
                                 cc.items.iter().any(|item| {
                                     let pi = match item {
-                                        PageItem::FullParagraph { para_index } => *para_index,
+                                        PageItem::FullParagraph { para_index } => Some(*para_index),
                                         PageItem::PartialParagraph { para_index, .. } => {
-                                            *para_index
+                                            Some(*para_index)
                                         }
-                                        PageItem::Table { para_index, .. } => *para_index,
-                                        PageItem::PartialTable { para_index, .. } => *para_index,
-                                        PageItem::Shape { para_index, .. } => *para_index,
+                                        PageItem::Table { para_index, .. } => Some(*para_index),
+                                        PageItem::PartialTable { para_index, .. } => {
+                                            Some(*para_index)
+                                        }
+                                        PageItem::Shape { para_index, .. } => Some(*para_index),
+                                        PageItem::EndnoteSeparator { .. } => None,
                                     };
-                                    pi >= hdr_pi
+                                    pi.is_some_and(|pi| pi >= hdr_pi)
                                 })
                             })
                         })
@@ -2412,15 +2458,18 @@ impl DocumentCore {
                             p.column_contents.iter().any(|cc| {
                                 cc.items.iter().any(|item| {
                                     let pi = match item {
-                                        PageItem::FullParagraph { para_index } => *para_index,
+                                        PageItem::FullParagraph { para_index } => Some(*para_index),
                                         PageItem::PartialParagraph { para_index, .. } => {
-                                            *para_index
+                                            Some(*para_index)
                                         }
-                                        PageItem::Table { para_index, .. } => *para_index,
-                                        PageItem::PartialTable { para_index, .. } => *para_index,
-                                        PageItem::Shape { para_index, .. } => *para_index,
+                                        PageItem::Table { para_index, .. } => Some(*para_index),
+                                        PageItem::PartialTable { para_index, .. } => {
+                                            Some(*para_index)
+                                        }
+                                        PageItem::Shape { para_index, .. } => Some(*para_index),
+                                        PageItem::EndnoteSeparator { .. } => None,
                                     };
-                                    pi >= ftr_pi
+                                    pi.is_some_and(|pi| pi >= ftr_pi)
                                 })
                             })
                         })
@@ -2518,6 +2567,7 @@ impl DocumentCore {
                                 PageItem::Table { para_index, .. } => *para_index,
                                 PageItem::PartialTable { para_index, .. } => *para_index,
                                 PageItem::Shape { para_index, .. } => *para_index,
+                                PageItem::EndnoteSeparator { .. } => usize::MAX,
                             };
                             if pi < col_map.len() {
                                 col_map[pi] = ci;
@@ -2818,6 +2868,19 @@ impl DocumentCore {
                                     para_index, control_index, shape_info, vpos_info
                                 ));
                             }
+                            PageItem::EndnoteSeparator {
+                                separator_length,
+                                margin_above,
+                                margin_below,
+                                line_width,
+                                color,
+                                ..
+                            } => {
+                                out.push_str(&format!(
+                                    "    EndnoteSeparator len={} above={} below={} width={} color=#{:06x}\n",
+                                    separator_length, margin_above, margin_below, line_width, color & 0x00ff_ffff
+                                ));
+                            }
                         }
                     }
                 }
@@ -3029,6 +3092,8 @@ impl DocumentCore {
         if let Some(pr) = self.pagination.get(sec_idx) {
             self.layout_engine
                 .set_hidden_empty_paras(&pr.hidden_empty_paras);
+            self.layout_engine
+                .set_endnote_para_sources(paragraphs.len(), &pr.endnote_para_sources);
         }
 
         // [Task #836] 미주 paragraphs를 본문 paragraphs 뒤에 합쳐서 전달
@@ -3087,6 +3152,10 @@ impl DocumentCore {
                 page_content.page_number,
             );
         }
+        // Task #1154: 동일 bin_data_id Pic 컨트롤이 수직으로 인접 겹쳐 그려질 때
+        // 두 그림의 미세한 세로 스케일 차이로 인한 잔상(이중 라인) 제거.
+        // build 직후 1회만 적용 — 모든 렌더러(SVG/Canvas/Skia/HTML/Layer) 공통.
+        tree.clip_overlapping_same_bin_images();
         Ok(tree)
     }
 

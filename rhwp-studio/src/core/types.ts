@@ -4,6 +4,7 @@ export interface DocumentInfo {
   sectionCount: number;
   pageCount: number;
   encrypted: boolean;
+  hwp3Variant?: boolean;
   fallbackFont: string;
   fontsUsed: string[];  // 문서에서 사용하는 폰트 이름 목록
 }
@@ -85,6 +86,48 @@ export interface PageBorderFillSettings {
   patternColor: string;
   patternType: number;
   applyPage?: 'all' | 'exceptFirst' | 'firstOnly';
+}
+
+export type EndnoteNumberFormat =
+  | 'digit'
+  | 'circledDigit'
+  | 'upperRoman'
+  | 'lowerRoman'
+  | 'upperAlpha'
+  | 'lowerAlpha'
+  | 'hangulSyllable'
+  | 'hangulJamo'
+  | 'hangulDigit'
+  | 'hanjaDigit';
+
+/** WASM getEndnoteShape() 반환 타입 — HWPUNIT 원본값 */
+export interface EndnoteShapeSettings {
+  ok?: boolean;
+  numberFormat: EndnoteNumberFormat | string;
+  userChar: string;
+  prefixChar: string;
+  suffixChar: string;
+  startNumber: number;
+  separatorEnabled: boolean;
+  separatorLength: number;
+  separatorMarginTop: number;
+  separatorMarginBottom: number;
+  noteSpacing: number;
+  separatorLineType: number;
+  separatorLineWidth: number;
+  separatorColor: string;
+  numbering: 'continue' | 'restartSection' | 'restartPage' | string;
+  placement: 'documentEnd' | 'sectionEnd' | string;
+}
+
+export interface NoteEditInfo {
+  ok: boolean;
+  kind: 'footnote' | 'endnote' | string;
+  pageNum: number;
+  footnoteIndex: number;
+  fnParaIndex: number;
+  charOffset: number;
+  virtualParaIndex?: number;
 }
 
 /** 구역 정의 (SectionDef) */
@@ -464,8 +507,17 @@ export interface TableProperties {
 }
 
 /** WASM getPageControlLayout() 반환 요소 */
+export interface NoteControlRef {
+  kind: 'footnote' | 'endnote';
+  sectionIdx: number;
+  paraIdx: number;
+  controlIdx: number;
+  noteParaIdx: number;
+  innerControlIdx: number;
+}
+
 export interface ControlLayoutItem {
-  type: 'table' | 'image' | 'shape' | 'equation' | 'group';
+  type: 'table' | 'image' | 'shape' | 'equation' | 'group' | 'line';
   x: number;
   y: number;
   w: number;
@@ -477,6 +529,10 @@ export interface ControlLayoutItem {
   cellIdx?: number;
   /** 표 셀 내 수식인 경우: 셀 내 문단 인덱스 */
   cellParaIdx?: number;
+  /** 각주/미주 내부 컨트롤인 경우 원본 위치 */
+  noteRef?: NoteControlRef;
+  outerTableControlIdx?: number;
+  headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
 }
 
 /** 개체 참조 (그림/글상자 공용) */
@@ -484,11 +540,12 @@ export interface ObjectRef {
   sec: number;
   ppi: number;
   ci: number;
-  type: 'image' | 'shape' | 'equation' | 'group';
+  type: 'image' | 'shape' | 'equation' | 'group' | 'line';
   /** 표 셀 내 수식인 경우: 셀 인덱스 */
   cellIdx?: number;
   /** 표 셀 내 수식인 경우: 셀 내 문단 인덱스 */
   cellParaIdx?: number;
+  noteRef?: NoteControlRef;
 }
 
 /** WASM getShapeProperties() 반환 타입 */
@@ -537,6 +594,27 @@ export interface ShapeProperties {
 
 /** WASM getEquationProperties() 반환 타입 */
 export interface EquationProperties {
+  width?: number;
+  height?: number;
+  treatAsChar?: boolean;
+  vertRelTo?: string;
+  vertAlign?: string;
+  horzRelTo?: string;
+  horzAlign?: string;
+  vertOffset?: number;
+  horzOffset?: number;
+  textWrap?: string;
+  zOrder?: number;
+  instanceId?: number;
+  outerMarginLeft?: number;
+  outerMarginTop?: number;
+  outerMarginRight?: number;
+  outerMarginBottom?: number;
+  hasCaption?: boolean;
+  captionDirection?: string;
+  captionWidth?: number;
+  captionSpacing?: number;
+  description?: string;
   script: string;
   fontSize: number;
   color: number;
@@ -791,7 +869,7 @@ export interface LayerClipNode {
   kind: 'clipRect';
   bounds: LayerBounds;
   clip: LayerBounds;
-  clipKind: 'body' | 'tableCell' | 'generic';
+  clipKind: 'body' | 'tableCell' | 'textBox' | 'generic';
   child: LayerNode;
 }
 
@@ -1029,6 +1107,7 @@ export interface LayerGlyphOutlineOp {
   bbox: LayerBounds;
   variant?: LayerTextVariantMeta;
   payloadKind?: LayerGlyphOutlinePayloadKind;
+  payloadResourceKey?: string;
   placement?: { runToPage?: LayerAffineTransform; baselineY?: number };
   paths?: LayerGlyphOutlinePath[];
   stroke?: LayerGlyphOutlineStroke;
@@ -1158,6 +1237,12 @@ export interface LayerFontColorGlyphRef {
   colorFormat?: 'colrV0' | 'colrV1' | 'other' | string;
 }
 
+export interface LayerPaletteRef {
+  id?: string;
+  index?: number;
+  cpalDigest?: string;
+}
+
 export interface LayerColorPaintGraphNode {
   nodeId?: number;
   kind?: string;
@@ -1179,11 +1264,13 @@ export interface LayerColorPaintGraphPayload {
 export interface LayerColorLayersPayload {
   colorFormat?: 'colrV0' | 'colrV1' | 'other' | string;
   sourceFontRef?: LayerFontColorGlyphRef;
+  paletteRef?: LayerPaletteRef;
   layers?: Array<{
     layerIndex?: number | null;
     glyphId?: number;
     glyphRange?: LayerTextRange;
     sourceRangeUtf8?: LayerTextRange;
+    sourceFontRef?: LayerFontColorGlyphRef;
     commands?: LayerPathCommand[];
     fill?: LayerResolvedColor;
     fillRule?: 'nonzero' | 'evenodd' | string;

@@ -71,6 +71,7 @@ pub fn write_section(
 
     let mut out = EMPTY_SECTION_XML.replacen(TEXT_SLOT, &first_t, 1);
     out = replace_first_linesegs(&out, &first_linesegs);
+    out = replace_page_pr(&out, &section.section_def.page_def);
 
     // 첫 문단 `<hp:p>` 태그를 IR 기반 속성으로 교체
     if let Some(p) = first_para {
@@ -756,6 +757,33 @@ fn replace_first_linesegs(xml: &str, new_inner: &str) -> String {
     out.push_str(new_inner);
     out.push_str(&xml[inner_end..]);
     out
+}
+
+/// [#1166] 템플릿 pagePr 의 고정 용지 속성(landscape/width/height)을 IR page_def
+/// 값으로 치환한다. 종전엔 템플릿 하드코딩값(landscape="WIDELY" width=59528
+/// height=84186)이 그대로 출력되어 HWPX 저장 시 가로/세로 + 용지 크기가 손실됐다.
+///
+/// OWPML landscape: WIDELY=세로(landscape=false), NARROWLY=가로(landscape=true).
+/// width/height 는 짧은변/긴변 그대로 (HWP 바이너리 동일 규약).
+fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String {
+    // 템플릿의 pagePr 여는 태그(고정 문자열) → IR 기반으로 교체.
+    const TEMPLATE_PAGE_PR: &str =
+        r#"<hp:pagePr landscape="WIDELY" width="59528" height="84186" gutterType="LEFT_ONLY">"#;
+    let landscape = if page_def.landscape {
+        "NARROWLY"
+    } else {
+        "WIDELY"
+    };
+    let new_page_pr = format!(
+        r#"<hp:pagePr landscape="{}" width="{}" height="{}" gutterType="LEFT_ONLY">"#,
+        landscape, page_def.width, page_def.height,
+    );
+    if xml.contains(TEMPLATE_PAGE_PR) {
+        xml.replacen(TEMPLATE_PAGE_PR, &new_page_pr, 1)
+    } else {
+        // 템플릿이 변경됐거나 이미 치환된 경우 — 원본 유지(회귀 방지).
+        xml.to_string()
+    }
 }
 
 // `TEMPLATE_RUN_BEFORE_TEXT` 는 패턴 인식용 상수로만 쓰이므로 명시 참조.

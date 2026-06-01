@@ -44,7 +44,11 @@ impl DocumentCore {
     /// 반환: load 영역 image 영역.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn populate_external_images_from_dir(&mut self, base_dir: &std::path::Path) -> usize {
-        self.document.populate_external_images_from_dir(base_dir)
+        let loaded = self.document.populate_external_images_from_dir(base_dir);
+        if loaded > 0 {
+            self.invalidate_page_tree_cache();
+        }
+        loaded
     }
 
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {

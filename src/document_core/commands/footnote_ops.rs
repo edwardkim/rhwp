@@ -1,5 +1,9 @@
 //! 각주 내용 편집 관련 native 메서드
 
+use super::super::helpers::{
+    build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_json_i16_array,
+    parse_para_shape_mods,
+};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -21,9 +25,16 @@ impl DocumentCore {
                         for cell in &mut table.cells {
                             for cell_para in &mut cell.paragraphs {
                                 for cell_ctrl in &mut cell_para.controls {
-                                    if let Control::Footnote(footnote) = cell_ctrl {
-                                        footnote.number = number;
-                                        number += 1;
+                                    match cell_ctrl {
+                                        Control::Footnote(footnote) => {
+                                            footnote.number = number;
+                                            number += 1;
+                                        }
+                                        Control::Endnote(endnote) => {
+                                            endnote.number = number;
+                                            number += 1;
+                                        }
+                                        _ => {}
                                     }
                                 }
                             }
@@ -35,9 +46,16 @@ impl DocumentCore {
                         {
                             for text_para in &mut text_box.paragraphs {
                                 for text_ctrl in &mut text_para.controls {
-                                    if let Control::Footnote(footnote) = text_ctrl {
-                                        footnote.number = number;
-                                        number += 1;
+                                    match text_ctrl {
+                                        Control::Footnote(footnote) => {
+                                            footnote.number = number;
+                                            number += 1;
+                                        }
+                                        Control::Endnote(endnote) => {
+                                            endnote.number = number;
+                                            number += 1;
+                                        }
+                                        _ => {}
                                     }
                                 }
                             }
@@ -219,8 +237,18 @@ impl DocumentCore {
                 }
                 Ok(&mut f.paragraphs[fn_para_idx])
             }
+            Control::Endnote(e) => {
+                let len = e.paragraphs.len();
+                if fn_para_idx >= len {
+                    return Err(HwpError::RenderError(format!(
+                        "미주 문단 인덱스 {} 범위 초과 (총 {}개)",
+                        fn_para_idx, len
+                    )));
+                }
+                Ok(&mut e.paragraphs[fn_para_idx])
+            }
             _ => Err(HwpError::RenderError(format!(
-                "컨트롤 {}은 각주가 아닙니다",
+                "컨트롤 {}은 각주/미주가 아닙니다",
                 control_idx
             ))),
         }
@@ -239,6 +267,7 @@ impl DocumentCore {
         let ctrl = para.controls.get(control_idx)?;
         match ctrl {
             Control::Footnote(f) => f.paragraphs.get(fn_para_idx),
+            Control::Endnote(e) => e.paragraphs.get(fn_para_idx),
             _ => None,
         }
     }
@@ -280,11 +309,108 @@ impl DocumentCore {
         // 가변 참조로 리플로우 실행
         let section = &mut self.document.sections[section_idx];
         let ctrl = &mut section.paragraphs[para_idx].controls[control_idx];
-        if let Control::Footnote(f) = ctrl {
-            if let Some(para) = f.paragraphs.get_mut(fn_para_idx) {
-                reflow_line_segs(para, final_width, &self.styles, self.dpi);
+        match ctrl {
+            Control::Footnote(f) => {
+                if let Some(para) = f.paragraphs.get_mut(fn_para_idx) {
+                    reflow_line_segs(para, final_width, &self.styles, self.dpi);
+                }
             }
+            Control::Endnote(e) => {
+                if let Some(para) = e.paragraphs.get_mut(fn_para_idx) {
+                    reflow_line_segs(para, final_width, &self.styles, self.dpi);
+                }
+            }
+            _ => {}
         }
+    }
+
+    /// 각주/미주 내부 문단 속성 조회.
+    pub fn get_para_properties_in_footnote_native(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        fn_para_idx: usize,
+    ) -> Result<String, HwpError> {
+        let para = self
+            .get_footnote_paragraph_ref(section_idx, para_idx, control_idx, fn_para_idx)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "각주/미주 문단을 찾을 수 없습니다: sec={} para={} ctrl={} fn_para={}",
+                    section_idx, para_idx, control_idx, fn_para_idx
+                ))
+            })?;
+        Ok(self.build_para_properties_json(para.para_shape_id, section_idx))
+    }
+
+    /// 각주/미주 내부 문단 속성 적용.
+    pub fn apply_para_format_in_footnote_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        fn_para_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let mut mods = parse_para_shape_mods(props_json);
+
+        if json_has_tab_keys(props_json) {
+            let para = self
+                .get_footnote_paragraph_ref(section_idx, para_idx, control_idx, fn_para_idx)
+                .ok_or_else(|| {
+                    HwpError::RenderError("각주/미주 문단을 찾을 수 없음".to_string())
+                })?;
+            let base_tab_def_id = self
+                .document
+                .doc_info
+                .para_shapes
+                .get(para.para_shape_id as usize)
+                .map(|ps| ps.tab_def_id)
+                .unwrap_or(0);
+            let new_td = build_tab_def_from_json(
+                props_json,
+                base_tab_def_id,
+                &self.document.doc_info.tab_defs,
+            );
+            let new_tab_id = self.document.find_or_create_tab_def(new_td);
+            mods.tab_def_id = Some(new_tab_id);
+        }
+
+        if json_has_border_keys(props_json) {
+            let bf_id = self.create_border_fill_from_json(props_json);
+            mods.border_fill_id = Some(bf_id);
+        }
+        if let Some(arr) = parse_json_i16_array(props_json, "borderSpacing", 4) {
+            mods.border_spacing = Some([arr[0], arr[1], arr[2], arr[3]]);
+        }
+
+        let base_id = self
+            .get_footnote_paragraph_ref(section_idx, para_idx, control_idx, fn_para_idx)
+            .ok_or_else(|| HwpError::RenderError("각주/미주 문단을 찾을 수 없음".to_string()))?
+            .para_shape_id;
+        let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+        {
+            let fn_para =
+                self.get_footnote_paragraph_mut(section_idx, para_idx, control_idx, fn_para_idx)?;
+            fn_para.para_shape_id = new_id;
+        }
+
+        if mods.line_spacing.is_some()
+            || mods.line_spacing_type.is_some()
+            || mods.margin_left.is_some()
+            || mods.margin_right.is_some()
+            || mods.indent.is_some()
+        {
+            self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
+        }
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.rebuild_section(section_idx);
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok("{\"ok\":true}".to_string())
     }
 
     /// 각주 문단 정보를 반환한다.
@@ -322,8 +448,24 @@ impl DocumentCore {
                     texts.iter().map(|t| format!("\"{}\"", t)).collect::<Vec<_>>().join(","),
                 ))
             }
+            Control::Endnote(e) => {
+                let para_count = e.paragraphs.len();
+                let texts: Vec<String> = e
+                    .paragraphs
+                    .iter()
+                    .map(|p| p.text.replace('\\', "\\\\").replace('"', "\\\""))
+                    .collect();
+                let total_len: usize = e.paragraphs.iter().map(|p| p.text.chars().count()).sum();
+                Ok(format!(
+                    "{{\"ok\":true,\"paraCount\":{},\"totalTextLen\":{},\"number\":{},\"texts\":[{}]}}",
+                    para_count,
+                    total_len,
+                    e.number,
+                    texts.iter().map(|t| format!("\"{}\"", t)).collect::<Vec<_>>().join(","),
+                ))
+            }
             _ => Err(HwpError::RenderError(format!(
-                "컨트롤 {}은 각주가 아닙니다",
+                "컨트롤 {}은 각주/미주가 아닙니다",
                 control_idx
             ))),
         }
@@ -425,9 +567,18 @@ impl DocumentCore {
                     }
                     f.paragraphs[fn_para_idx].split_at(char_offset)
                 }
+                Control::Endnote(e) => {
+                    if fn_para_idx >= e.paragraphs.len() {
+                        return Err(HwpError::RenderError(format!(
+                            "미주 문단 인덱스 {} 범위 초과",
+                            fn_para_idx
+                        )));
+                    }
+                    e.paragraphs[fn_para_idx].split_at(char_offset)
+                }
                 _ => {
                     return Err(HwpError::RenderError(
-                        "컨트롤이 각주가 아닙니다".to_string(),
+                        "컨트롤이 각주/미주가 아닙니다".to_string(),
                     ))
                 }
             }
@@ -438,8 +589,10 @@ impl DocumentCore {
         {
             let ctrl =
                 &mut self.document.sections[section_idx].paragraphs[para_idx].controls[control_idx];
-            if let Control::Footnote(f) = ctrl {
-                f.paragraphs.insert(new_para_idx, new_para);
+            match ctrl {
+                Control::Footnote(f) => f.paragraphs.insert(new_para_idx, new_para),
+                Control::Endnote(e) => e.paragraphs.insert(new_para_idx, new_para),
+                _ => {}
             }
         }
 
@@ -499,9 +652,20 @@ impl DocumentCore {
                     let removed = f.paragraphs.remove(fn_para_idx);
                     f.paragraphs[fn_para_idx - 1].merge_from(&removed);
                 }
+                Control::Endnote(e) => {
+                    if fn_para_idx >= e.paragraphs.len() {
+                        return Err(HwpError::RenderError(format!(
+                            "미주 문단 인덱스 {} 범위 초과",
+                            fn_para_idx
+                        )));
+                    }
+                    merge_offset = e.paragraphs[fn_para_idx - 1].text.chars().count();
+                    let removed = e.paragraphs.remove(fn_para_idx);
+                    e.paragraphs[fn_para_idx - 1].merge_from(&removed);
+                }
                 _ => {
                     return Err(HwpError::RenderError(
-                        "컨트롤이 각주가 아닙니다".to_string(),
+                        "컨트롤이 각주/미주가 아닙니다".to_string(),
                     ))
                 }
             }

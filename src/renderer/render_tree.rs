@@ -418,8 +418,13 @@ pub struct PageBackgroundImage {
 }
 
 impl PageBackgroundImage {
-    pub fn is_watermark_tone_preset(&self) -> bool {
-        self.brightness == -50 && self.contrast == 70
+    /// 워터마크 효과 적용 여부 (Issue #1156).
+    ///
+    /// HWP/HWPX 에는 워터마크 적용 비트가 없다. 한컴 편집기는 "워터마크 효과"
+    /// 해제 시 밝기·대비를 모두 0 으로 되돌리므로, 밝기·대비가 둘 다 0 이 아닌
+    /// 경우 워터마크로 판정한다 (한쪽이라도 0 이면 워터마크 아님, effect 무관).
+    pub fn is_watermark(&self) -> bool {
+        self.brightness != 0 && self.contrast != 0
     }
 
     pub fn is_real_picture_watermark_tone_preset(&self) -> bool {
@@ -872,6 +877,16 @@ pub struct ImageNode {
     /// `None` 일 때 본문 그림 (현행 동작).
     #[serde(default)]
     pub header_footer_ref: Option<HeaderFooterImageRef>,
+    /// [Task #1151 v4] 표 셀 안 inline picture (tac=true) 인 경우: 셀 인덱스.
+    /// Rectangle/Ellipse/Path 의 [Task #1138] 패턴 정합. `None` 이면 셀 외부 picture.
+    #[serde(default)]
+    pub cell_index: Option<usize>,
+    /// [Task #1151 v4] 표 셀 안 inline picture 인 경우: 셀 내 문단 인덱스.
+    #[serde(default)]
+    pub cell_para_index: Option<usize>,
+    /// [Task #1151 v4] 표 셀 안 inline picture 인 경우: outer paragraph 의 표 control 인덱스.
+    #[serde(default)]
+    pub outer_table_control_index: Option<usize>,
 }
 
 /// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
@@ -893,8 +908,11 @@ pub enum HeaderFooterKind {
 }
 
 impl ImageNode {
-    pub fn is_watermark_tone_preset(&self) -> bool {
-        self.brightness == -50 && self.contrast == 70
+    /// 워터마크 효과 적용 여부 (Issue #1156).
+    /// 밝기·대비가 둘 다 0 이 아닌 경우 워터마크 (한쪽이라도 0 이면 아님, effect 무관).
+    /// HWP/HWPX 에 워터마크 비트는 없으며 한컴은 해제 시 밝기·대비를 0/0 으로 되돌린다.
+    pub fn is_watermark(&self) -> bool {
+        self.brightness != 0 && self.contrast != 0
     }
 
     pub fn is_real_picture_watermark_tone_preset(&self) -> bool {
@@ -919,6 +937,9 @@ impl ImageNode {
             text_wrap: None,
             external_path: None,
             header_footer_ref: None,
+            cell_index: None,
+            cell_para_index: None,
+            outer_table_control_index: None,
         }
     }
 }
@@ -932,6 +953,23 @@ pub struct GroupNode {
     pub para_index: Option<usize>,
     /// 문단 내 컨트롤 인덱스
     pub control_index: Option<usize>,
+}
+
+/// 각주/미주 내부에 있는 컨트롤의 원본 위치.
+#[derive(Debug, Clone, Serialize)]
+pub struct NoteControlRef {
+    /// `footnote` 또는 `endnote`
+    pub kind: String,
+    /// 원본 각주/미주 컨트롤이 있는 구역 인덱스
+    pub section_index: usize,
+    /// 원본 각주/미주 컨트롤이 있는 본문 문단 인덱스
+    pub para_index: usize,
+    /// 본문 문단 내 각주/미주 컨트롤 인덱스
+    pub control_index: usize,
+    /// 각주/미주 내부 문단 인덱스
+    pub note_para_index: usize,
+    /// 각주/미주 내부 문단 내 컨트롤 인덱스
+    pub inner_control_index: usize,
 }
 
 /// 수식 노드 (SVG 인라인 렌더링)
@@ -957,6 +995,8 @@ pub struct EquationNode {
     pub cell_index: Option<usize>,
     /// 표 셀 내 수식인 경우: 셀 내 문단 인덱스
     pub cell_para_index: Option<usize>,
+    /// 각주/미주 내부 수식인 경우 원본 위치
+    pub note_ref: Option<NoteControlRef>,
 }
 
 /// 인라인 Shape 좌표 맵 키. 섹션 단위 + 셀 경로로 셀 내 paragraph/control
@@ -1013,7 +1053,12 @@ impl PageRenderTree {
             .unwrap_or_default()
     }
 
-    /// 인라인 Shape 좌표 등록 (셀 컨텍스트 포함)
+    /// 인라인 Shape 좌표 등록 (셀 컨텍스트 포함).
+    /// [Task #1151 v4] 셀 안인 경우 InlineShapeKey 의 para 는 호출자가 전달한
+    /// cell paragraph idx 가 아닌 **outer paragraph idx** (`cell_ctx.parent_para_index`)
+    /// 로 정규화한다. cursor_rect 의 hit-test 가 `section.paragraphs.get(pi)` 로
+    /// outer paragraph 에서 table → cell → cell paragraph 경로로 resolve 하기 위해
+    /// 정합 필요.
     pub fn set_inline_shape_position(
         &mut self,
         sec: usize,
@@ -1024,11 +1069,13 @@ impl PageRenderTree {
         y: f64,
     ) {
         let cell_path = Self::cell_path_from_ctx(cell_ctx);
+        let para_for_key = cell_ctx.map(|c| c.parent_para_index).unwrap_or(para);
         self.inline_shape_positions
-            .insert((sec, para, ctrl, cell_path), (x, y));
+            .insert((sec, para_for_key, ctrl, cell_path), (x, y));
     }
 
-    /// 인라인 Shape 좌표 조회 (셀 컨텍스트 포함)
+    /// 인라인 Shape 좌표 조회 (셀 컨텍스트 포함).
+    /// [Task #1151 v4] `set_inline_shape_position` 과 동일한 para 정규화.
     pub fn get_inline_shape_position(
         &self,
         sec: usize,
@@ -1037,8 +1084,9 @@ impl PageRenderTree {
         cell_ctx: Option<&crate::renderer::layout::CellContext>,
     ) -> Option<(f64, f64)> {
         let cell_path = Self::cell_path_from_ctx(cell_ctx);
+        let para_for_key = cell_ctx.map(|c| c.parent_para_index).unwrap_or(para);
         self.inline_shape_positions
-            .get(&(sec, para, ctrl, cell_path))
+            .get(&(sec, para_for_key, ctrl, cell_path))
             .copied()
     }
 
@@ -1062,6 +1110,117 @@ impl PageRenderTree {
     /// 전체 트리를 clean으로 마킹
     pub fn mark_all_clean(&mut self) {
         self.root.mark_clean_recursive();
+    }
+
+    /// 동일 `bin_data_id` 를 가진 ImageNode 가 세로로 인접 겹칠 때,
+    /// 트리 순서상 먼저 그려지는 (z 가 작은) 쪽의 bbox/crop 을 위에 덮는
+    /// (z 가 큰) 쪽의 top 까지 축소한다.
+    ///
+    /// Task #1154: 동일 이미지를 두 Pic 컨트롤로 겹쳐 박스 효과를 만든 경우
+    /// 두 그림의 세로 스케일이 미세하게 달라 안티엘리어싱/리샘플링 시 잔상
+    /// (이중 라인) 이 노출되는 문제를 해결한다.
+    ///
+    /// 적용 조건 (모두 만족 시 clip):
+    /// 1. `A.bin_data_id == B.bin_data_id`
+    /// 2. `|A.x - B.x| <= 1.0` (수평 위치 동일)
+    /// 3. `|A.width - B.width| <= 1.0` (수평 폭 동일)
+    /// 4. A 가 트리 순서상 먼저 + `A.y < B.y` (A 가 위에 있음)
+    /// 5. `A.y + A.height > B.y` (세로 겹침)
+    ///
+    /// 조건 2/3 은 의도적 시각 효과 (test-image, 3-10월_교육_통합 의 대각선
+    /// 오프셋 등) 를 보호하기 위한 strict 가드.
+    pub fn clip_overlapping_same_bin_images(&mut self) {
+        // Phase 1: 트리 순서대로 ImageNode 의 (id, bbox, bin_id, crop) 수집
+        let mut images: Vec<(NodeId, BoundingBox, u16, Option<(i32, i32, i32, i32)>)> = Vec::new();
+        Self::collect_image_nodes(&self.root, &mut images);
+
+        if images.len() < 2 {
+            return;
+        }
+
+        // Phase 2: 페어 검출 + 각 LOWER 노드별 최종 clip 결정
+        // 한 노드가 여러 UPPER 와 겹치면 가장 위쪽 UPPER 를 기준으로 가장 작은 height 적용
+        let mut clips: std::collections::HashMap<NodeId, (f64, Option<(i32, i32, i32, i32)>)> =
+            std::collections::HashMap::new();
+
+        for i in 0..images.len() {
+            for j in (i + 1)..images.len() {
+                let (id_a, bbox_a, bin_a, crop_a) = &images[i];
+                let (_id_b, bbox_b, bin_b, _crop_b) = &images[j];
+                // 조건 1: 같은 bin_id
+                if bin_a != bin_b {
+                    continue;
+                }
+                // 조건 2/3: x, width 동일 (1px tolerance)
+                if (bbox_a.x - bbox_b.x).abs() > 1.0 {
+                    continue;
+                }
+                if (bbox_a.width - bbox_b.width).abs() > 1.0 {
+                    continue;
+                }
+                // 조건 4: A 가 위 (A.y < B.y)
+                if bbox_a.y >= bbox_b.y {
+                    continue;
+                }
+                // 조건 5: 세로 겹침 (A.y + A.height > B.y)
+                let a_bottom = bbox_a.y + bbox_a.height;
+                if a_bottom <= bbox_b.y {
+                    continue;
+                }
+                // Clip 계산: A 의 new_height = B.y - A.y
+                let new_height = bbox_b.y - bbox_a.y;
+                if new_height <= 0.0 || new_height >= bbox_a.height {
+                    continue;
+                }
+                let ratio = new_height / bbox_a.height;
+                let new_crop = crop_a.map(|(cl, ct, cr, cb)| {
+                    let span = (cb - ct) as f64;
+                    let new_cb = ct + (span * ratio).round() as i32;
+                    (cl, ct, cr, new_cb)
+                });
+                // 여러 UPPER 와 겹칠 때 가장 작은 new_height 채택
+                let entry = clips.entry(*id_a).or_insert((new_height, new_crop));
+                if new_height < entry.0 {
+                    *entry = (new_height, new_crop);
+                }
+            }
+        }
+
+        if clips.is_empty() {
+            return;
+        }
+
+        // Phase 3: 트리 walk 하여 mutation 적용
+        Self::apply_image_clips(&mut self.root, &clips);
+    }
+
+    fn collect_image_nodes(
+        node: &RenderNode,
+        out: &mut Vec<(NodeId, BoundingBox, u16, Option<(i32, i32, i32, i32)>)>,
+    ) {
+        if let RenderNodeType::Image(img) = &node.node_type {
+            out.push((node.id, node.bbox, img.bin_data_id, img.crop));
+        }
+        for child in &node.children {
+            Self::collect_image_nodes(child, out);
+        }
+    }
+
+    fn apply_image_clips(
+        node: &mut RenderNode,
+        clips: &std::collections::HashMap<NodeId, (f64, Option<(i32, i32, i32, i32)>)>,
+    ) {
+        if let Some((new_height, new_crop)) = clips.get(&node.id) {
+            node.bbox.height = *new_height;
+            if let RenderNodeType::Image(ref mut img) = &mut node.node_type {
+                if let Some(c) = new_crop {
+                    img.crop = Some(*c);
+                }
+            }
+        }
+        for child in &mut node.children {
+            Self::apply_image_clips(child, clips);
+        }
     }
 }
 
@@ -1122,5 +1281,332 @@ mod tests {
         let bbox = BoundingBox::from_hwpunit_rect(&rect, 96.0);
         assert!((bbox.width - 96.0).abs() < 0.01);
         assert!((bbox.height - 96.0).abs() < 0.01);
+    }
+
+    // === Task #1154: clip_overlapping_same_bin_images 단위 테스트 ===
+
+    fn make_image_node(
+        id: NodeId,
+        bbox: BoundingBox,
+        bin_id: u16,
+        crop: Option<(i32, i32, i32, i32)>,
+    ) -> RenderNode {
+        let img = ImageNode {
+            crop,
+            ..ImageNode::new(bin_id, None)
+        };
+        RenderNode::new(id, RenderNodeType::Image(img), bbox)
+    }
+
+    fn image_bbox(node: &RenderNode) -> BoundingBox {
+        node.bbox
+    }
+
+    fn image_crop(node: &RenderNode) -> Option<(i32, i32, i32, i32)> {
+        match &node.node_type {
+            RenderNodeType::Image(img) => img.crop,
+            _ => None,
+        }
+    }
+
+    /// exam_eng.hwp 페이지 2 의 정확한 케이스 (수평 동일 + 세로 인접)
+    /// → LOWER 의 bbox.height 와 crop.bottom 이 UPPER 의 top 까지 축소되어야 한다.
+    #[test]
+    fn test_clip_exam_eng_pattern() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let lower = make_image_node(
+            tree.next_id(),
+            BoundingBox::new(597.15, 243.59, 408.19, 256.09),
+            5,
+            Some((0, 0, 189900, 120958)),
+        );
+        let upper = make_image_node(
+            tree.next_id(),
+            BoundingBox::new(597.15, 463.17, 408.19, 70.0),
+            5,
+            Some((0, 105958, 189900, 138540)),
+        );
+        let lower_id = lower.id;
+        let upper_id = upper.id;
+        tree.root.children.push(lower);
+        tree.root.children.push(upper);
+
+        tree.clip_overlapping_same_bin_images();
+
+        let l = &tree.root.children[0];
+        assert_eq!(l.id, lower_id);
+        // 새 height = 463.17 - 243.59 = 219.58
+        let bbox = image_bbox(l);
+        assert!(
+            (bbox.height - 219.58).abs() < 0.01,
+            "lower height={}",
+            bbox.height
+        );
+        // 새 crop.bottom = 0 + 120958 * (219.58/256.09) = 103716 (round)
+        let crop = image_crop(l).unwrap();
+        assert_eq!(crop.0, 0);
+        assert_eq!(crop.1, 0);
+        assert_eq!(crop.2, 189900);
+        let expected_cb = (120958_f64 * (219.58 / 256.09)).round() as i32;
+        assert_eq!(crop.3, expected_cb);
+
+        // UPPER 은 변경되지 않음
+        let u = &tree.root.children[1];
+        assert_eq!(u.id, upper_id);
+        let u_bbox = image_bbox(u);
+        assert!((u_bbox.height - 70.0).abs() < 0.01);
+        let u_crop = image_crop(u).unwrap();
+        assert_eq!(u_crop, (0, 105958, 189900, 138540));
+    }
+
+    /// 다른 bin_id 페어는 무시되어야 한다.
+    #[test]
+    fn test_clip_different_bin_id_no_clip() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 250.0, 200.0, 100.0),
+            2, // 다른 bin
+            Some((0, 0, 100, 100)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        // 둘 다 원래 크기 유지
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 200.0);
+        assert_eq!(image_bbox(&tree.root.children[1]).height, 100.0);
+    }
+
+    /// 세로 겹침이 없으면 무시되어야 한다.
+    #[test]
+    fn test_clip_no_vertical_overlap_no_clip() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 100.0), // 100-200
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 250.0, 200.0, 100.0), // 250-350 (gap)
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 100.0);
+        assert_eq!(image_bbox(&tree.root.children[1]).height, 100.0);
+    }
+
+    /// x 가 다르면 (의도적 대각선 오프셋) 무시되어야 한다.
+    /// 회귀 보호: test-image.hwp / 3-10월_교육_통합_2022 패턴
+    #[test]
+    fn test_clip_different_x_no_clip() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+        // x 가 8px 다른 (의도적 그림자 효과 가정)
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(108.0, 150.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 200.0);
+        assert_eq!(image_bbox(&tree.root.children[1]).height, 200.0);
+    }
+
+    /// width 가 다르면 (서로 다른 크기 그림) 무시되어야 한다.
+    /// 회귀 보호: pic2.hwp 패턴 (같은 이미지를 다른 크기로 배치)
+    #[test]
+    fn test_clip_different_width_no_clip() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+        // width 가 100px 다른 (다른 크기 그림)
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 150.0, 100.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 200.0);
+        assert_eq!(image_bbox(&tree.root.children[1]).height, 200.0);
+    }
+
+    /// 트리 순서가 반대 (A.y > B.y) 일 때는 무시되어야 한다.
+    /// (clip 대상은 항상 위에 깔리는 = 트리 순서상 먼저 + y 작은 쪽)
+    #[test]
+    fn test_clip_reversed_order_no_clip() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        // 먼저 그려지는 노드가 아래쪽 (y 큰) — clip 안 함
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 250.0, 200.0, 100.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        // 둘 다 원래 크기 유지
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 100.0);
+        assert_eq!(image_bbox(&tree.root.children[1]).height, 200.0);
+    }
+
+    /// crop=None 인 경우에도 bbox 만 축소 적용.
+    #[test]
+    fn test_clip_without_crop() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            1,
+            None,
+        ));
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 250.0, 200.0, 100.0),
+            1,
+            None,
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        // LOWER 의 height 가 250-100 = 150 으로 축소
+        assert!((image_bbox(&tree.root.children[0]).height - 150.0).abs() < 0.01);
+        assert!(image_crop(&tree.root.children[0]).is_none());
+        // UPPER 은 변경 없음
+        assert!((image_bbox(&tree.root.children[1]).height - 100.0).abs() < 0.01);
+    }
+
+    /// 3 개 이미지 중첩: 가장 위 → 중간 → 아래 (A < B < C)
+    /// A 는 B 의 top 까지, B 는 C 의 top 까지 축소.
+    #[test]
+    fn test_clip_three_overlapping_chain() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        // A: y=0 height=200 (0-200)
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 0.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 1000, 2000)),
+        ));
+        // B: y=100 height=150 (100-250) — overlaps A
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 150.0),
+            1,
+            Some((0, 1000, 1000, 2500)),
+        ));
+        // C: y=180 height=100 (180-280) — overlaps both A and B
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 180.0, 200.0, 100.0),
+            1,
+            Some((0, 1800, 1000, 2800)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        // A: 가장 가까운 upper(B) 의 top=100 까지 → height=100
+        assert!((image_bbox(&tree.root.children[0]).height - 100.0).abs() < 0.01);
+        // B: 가장 가까운 upper(C) 의 top=180 → height=80
+        assert!((image_bbox(&tree.root.children[1]).height - 80.0).abs() < 0.01);
+        // C: 변경 없음
+        assert!((image_bbox(&tree.root.children[2]).height - 100.0).abs() < 0.01);
+    }
+
+    /// 자식 노드 (e.g., Body > Column > Image) 깊이에서도 동작.
+    #[test]
+    fn test_clip_nested_children() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let mut body = RenderNode::new(
+            tree.next_id(),
+            RenderNodeType::Body { clip_rect: None },
+            BoundingBox::new(0.0, 0.0, 1000.0, 1500.0),
+        );
+        let _id = tree.next_id();
+        body.children.push(make_image_node(
+            _id,
+            BoundingBox::new(597.15, 243.59, 408.19, 256.09),
+            5,
+            Some((0, 0, 189900, 120958)),
+        ));
+        let _id = tree.next_id();
+        body.children.push(make_image_node(
+            _id,
+            BoundingBox::new(597.15, 463.17, 408.19, 70.0),
+            5,
+            Some((0, 105958, 189900, 138540)),
+        ));
+        tree.root.children.push(body);
+
+        tree.clip_overlapping_same_bin_images();
+
+        let body = &tree.root.children[0];
+        let lower = &body.children[0];
+        assert!((image_bbox(lower).height - 219.58).abs() < 0.01);
+    }
+
+    /// 단일 이미지만 있는 경우 변경 없음 (no-op).
+    #[test]
+    fn test_clip_single_image_no_op() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        let _id = tree.next_id();
+        tree.root.children.push(make_image_node(
+            _id,
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            1,
+            Some((0, 0, 100, 100)),
+        ));
+
+        tree.clip_overlapping_same_bin_images();
+
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 200.0);
+        assert_eq!(image_crop(&tree.root.children[0]), Some((0, 0, 100, 100)));
     }
 }

@@ -345,8 +345,8 @@ fn render_box(
         }
         LayoutKind::Paren { left, right, body } => {
             // 텍스트 높이 파렌(`(`, `)`)은 폰트 글리프로 렌더, 그 외는 path. (Task #283)
-            let paren_w = fs * 0.333;
             let use_glyph = lb.height <= fs * 1.2;
+            let paren_w = if use_glyph { fs * 0.333 } else { fs * 0.27 };
             // 왼쪽 괄호
             if !left.is_empty() {
                 if use_glyph && (left == "(" || left == ")") {
@@ -420,24 +420,30 @@ fn draw_stretch_bracket(
     fs: f64,
 ) {
     let mid_x = x + w / 2.0;
-    let stroke_w = fs * 0.04;
+    let stroke_w = if matches!(bracket, "(" | ")") {
+        (fs * 0.042).max(0.48)
+    } else {
+        fs * 0.04
+    };
 
     match bracket {
         "(" => {
             svg.push_str(&format!(
-                "<path d=\"M{:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
-                mid_x + w * 0.2, y,
-                x, y + h / 2.0,
-                mid_x + w * 0.2, y + h,
+                "<path d=\"M{:.2},{:.2} C{:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\" stroke-linecap=\"round\"/>\n",
+                x + w * 0.9, y,
+                x + w * 0.05, y + h * 0.18,
+                x + w * 0.05, y + h * 0.82,
+                x + w * 0.9, y + h,
                 color, stroke_w,
             ));
         }
         ")" => {
             svg.push_str(&format!(
-                "<path d=\"M{:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
-                mid_x - w * 0.2, y,
-                x + w, y + h / 2.0,
-                mid_x - w * 0.2, y + h,
+                "<path d=\"M{:.2},{:.2} C{:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\" stroke-linecap=\"round\"/>\n",
+                x + w * 0.1, y,
+                x + w * 0.95, y + h * 0.18,
+                x + w * 0.95, y + h * 0.82,
+                x + w * 0.1, y + h,
                 color, stroke_w,
             ));
         }
@@ -705,7 +711,36 @@ mod tests {
         // 스트레치 파렌(분수 감쌈)은 path 유지 (Task #283)
         let svg = render_eq("LEFT ( a over b RIGHT )");
         assert!(svg.contains("<path")); // 스트레치 괄호
+        assert!(svg.contains(" C")); // 둥근 괄호는 완만한 cubic 곡선으로 렌더
+        assert!(svg.contains("stroke-linecap=\"round\""));
         assert!(svg.contains("<line")); // 분수선
+    }
+
+    #[test]
+    fn test_issue_1139_integral_left_right_parens_are_curved() {
+        let svg = render_eq(" int _{0} ^{pi } {} x`cos LEFT ( {pi } over {2} -x RIGHT ) dx");
+        assert!(svg.contains(">∫<"), "적분 기호가 렌더링되어야 함: {}", svg);
+        assert!(svg.contains(">cos<"), "cos 함수가 렌더링되어야 함: {}", svg);
+        assert!(
+            svg.contains(">π<"),
+            "pi 명령은 문자 π로 렌더링되어야 함: {}",
+            svg
+        );
+        assert!(
+            svg.contains(" C"),
+            "큰 둥근 괄호는 cubic path여야 함: {}",
+            svg
+        );
+        assert!(
+            !svg.contains(">LEFT<"),
+            "LEFT 명령이 문자로 새면 안 됨: {}",
+            svg
+        );
+        assert!(
+            !svg.contains(">RIGHT<"),
+            "RIGHT 명령이 문자로 새면 안 됨: {}",
+            svg
+        );
     }
 
     #[test]

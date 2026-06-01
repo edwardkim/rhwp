@@ -662,7 +662,7 @@ mod tests {
         );
 
         // IR delta 정합 검증: 5448 HU = 72.64 px.
-        let expected_gap = (5448.0_f64 * 96.0 / 7200.0_f64);
+        let expected_gap = 5448.0_f64 * 96.0 / 7200.0_f64;
         assert!(
             (gap_12 - expected_gap).abs() < 0.5,
             "①→② gap({:.2}) 가 IR vpos delta({:.2}) 와 일치해야 함",

@@ -1031,9 +1031,19 @@ impl EqLayout {
 
     fn layout_paren(&self, left: &str, right: &str, body: &EqNode, fs: f64) -> LayoutBox {
         let b = self.layout_node(body, fs);
-        let pad = fs * PAREN_PAD;
-        // Times New Roman '(' advance (em 기준) = 0.333. 글리프/path 공통 폭. (Task #283)
-        let paren_w = fs * 0.333;
+        let use_stretch_round = b.height > fs * 1.2 && matches!((left, right), ("(", ")"));
+        let pad = if use_stretch_round {
+            fs * 0.03
+        } else {
+            fs * PAREN_PAD
+        };
+        // Times New Roman '(' advance (em 기준) = 0.333. 텍스트 높이 glyph는 이 폭을 유지하고,
+        // 큰 둥근 괄호 path는 한컴 HyhwpEQ 출력에 가깝게 더 좁게 잡는다. (Task #283, #1139)
+        let paren_w = if use_stretch_round {
+            fs * 0.27
+        } else {
+            fs * 0.333
+        };
 
         let left_w = if left.is_empty() { 0.0 } else { paren_w };
         let right_w = if right.is_empty() { 0.0 } else { paren_w };

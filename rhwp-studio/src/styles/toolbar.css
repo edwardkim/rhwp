@@ -18,6 +18,11 @@
   gap: 0;
 }
 
+.tb-mode-group {
+  align-items: stretch;
+  min-width: 0;
+}
+
 .tb-sep {
   width: 1px;
   margin: 4px 4px;
@@ -226,4 +231,25 @@
   font-weight: 600;
   color: #2c5aa0;
   white-space: nowrap;
+}
+
+/* 주석 편집 모드 도구상자 */
+.tb-note-label {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: #2c5aa0;
+  white-space: nowrap;
+}
+
+.tb-note-group .tb-btn {
+  min-width: 56px;
+}
+
+.tb-note-close .tb-icon-text {
+  color: #3f78d8;
+  font-size: 28px;
+  line-height: 18px;
 }

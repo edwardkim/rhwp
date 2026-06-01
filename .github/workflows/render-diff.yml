@@ -37,6 +37,12 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+# [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
+# render-diff 는 pull_request 트리거 위주 — cancel-in-progress 는 PR 이벤트 한정.
+concurrency:
+  group: render-diff-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   canvas-visual-diff:
     name: Canvas visual diff
@@ -56,7 +62,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Cache cargo registry & build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry

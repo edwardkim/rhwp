@@ -2376,7 +2376,6 @@ mod latex_compat_tests {
     }
 
     #[test]
-    #[test]
     fn test_hwpeq_inf_remains_symbol() {
         let ast = parse("lim _{n→inf}");
         fn has_infinity(node: &EqNode) -> bool {

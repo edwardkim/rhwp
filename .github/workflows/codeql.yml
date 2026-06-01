@@ -37,6 +37,12 @@ on:
     - cron: '0 6 * * 1'  # 매주 월요일 06:00 UTC
   workflow_dispatch:
 
+# [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
+# cancel-in-progress 는 PR 이벤트에서만 활성화 — push/schedule(주간 cron) run 은 보존.
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -61,6 +67,20 @@ jobs:
       - name: Install Rust toolchain
         if: matrix.language == 'rust'
         uses: dtolnay/rust-toolchain@stable
+
+      # [Task #1192 B] CodeQL rust analyze 는 cargo 캐시가 없어 매번 cold build 였다.
+      # ci.yml 과 동일 path, 별도 key namespace(codeql-rust)로 warm build 화.
+      - name: Cache cargo registry & build (rust)
+        if: matrix.language == 'rust'
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-codeql-rust-
 
       - name: Build Rust (for CodeQL)
         if: matrix.language == 'rust'

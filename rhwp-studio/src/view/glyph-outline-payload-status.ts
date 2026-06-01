@@ -67,6 +67,29 @@ export function glyphOutlinePayloadStatus(
   }
 }
 
+export function glyphOutlinePayloadResourceKey(op: LayerGlyphOutlineOp): string | null {
+  const payloadKind = op.payloadKind ?? 'monochromeFill';
+  if (!hasExclusivePayloadFamily(op, payloadKind)) {
+    return null;
+  }
+  switch (payloadKind) {
+    case 'colorLayers':
+      return hasColorLayersResourceKeyContract(op) && op.colorLayers
+        ? colorLayersResourceKey(op.colorLayers)
+        : null;
+    case 'bitmapGlyph':
+      return hasBitmapGlyphContract(op) && op.bitmapGlyph
+        ? bitmapGlyphResourceKey(op.bitmapGlyph)
+        : null;
+    case 'svgGlyph':
+      return hasSvgGlyphContract(op) && op.svgGlyph
+        ? svgGlyphResourceKey(op.svgGlyph)
+        : null;
+    default:
+      return null;
+  }
+}
+
 function colorLayersStatus(
   op: LayerGlyphOutlineOp,
   options: GlyphOutlinePayloadStatusOptions,
@@ -216,6 +239,36 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
   return false;
 }
 
+function hasColorLayersResourceKeyContract(op: LayerGlyphOutlineOp): boolean {
+  const colorLayers = op.colorLayers;
+  if (!colorLayers) {
+    return false;
+  }
+  if (colorLayers.colorFormat === 'colrV0') {
+    return hasColrv0ResolvedLayerContract(colorLayers);
+  }
+  if (colorLayers.colorFormat === 'colrV1') {
+    return hasSupportedColrv1GraphContract(op);
+  }
+  return false;
+}
+
+function hasColrv0ResolvedLayerContract(colorLayers: NonNullable<LayerGlyphOutlineOp['colorLayers']>): boolean {
+  const layers = colorLayers.layers ?? [];
+  return colorLayers.colorFormat === 'colrV0'
+    && colorLayers.paintGraph === undefined
+    && layers.length > 0
+    && layers.every((layer) => (
+      isValidPathCommands(layer.commands)
+      && isValidResolvedColor(layer.fill)
+      && isSupportedFillRule(layer.fillRule)
+      && isValidTextRange(layer.sourceRangeUtf8)
+      && isNonEmptyTextRange(layer.glyphRange)
+      && isOptionalFiniteAffine(layer.transformToRun)
+      && (layer.opacity === undefined || Number.isFinite(layer.opacity))
+    ));
+}
+
 function isLeafMetadataValid(node: LayerColorPaintGraphNode): boolean {
   return isValidTextRange(node.sourceRangeUtf8)
     && isNonEmptyTextRange(node.glyphRange)
@@ -241,6 +294,10 @@ function isFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: num
     && Number.isFinite(transform.d)
     && Number.isFinite(transform.e)
     && Number.isFinite(transform.f);
+}
+
+function isOptionalFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): boolean {
+  return transform === undefined || isFiniteAffine(transform);
 }
 
 function isValidPathCommands(commands: unknown[] | undefined): boolean {
@@ -333,6 +390,100 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && glyph.interactivityAllowed !== true
     && glyph.viewBox !== undefined
     && isPositiveBounds(glyph.viewBox);
+}
+
+function colorLayersResourceKey(colorLayers: NonNullable<LayerGlyphOutlineOp['colorLayers']>): string {
+  const graph = colorLayers.paintGraph;
+  const graphKey = graph
+    ? `graph:root:${graph.rootNodeId ?? '-'}:nodes:${(graph.nodes ?? []).map((node) => [
+      node.nodeId ?? '-',
+      node.kind ?? '-',
+      textRangeKey(node.glyphRange),
+      fontColorGlyphRefKey(node.sourceFontRef),
+    ].join(':')).join('|')}`
+    : `layers:${(colorLayers.layers ?? []).map((layer) => [
+      layer.layerIndex ?? '-',
+      layer.glyphId ?? '-',
+      textRangeKey(layer.glyphRange),
+      textRangeKey(layer.sourceRangeUtf8),
+      fontColorGlyphRefKey(layer.sourceFontRef),
+      layer.paletteIndex ?? '-',
+    ].join(':')).join('|')}`;
+  return [
+    'glyphPayload:colorLayers',
+    `format:${colorLayers.colorFormat ?? '-'}`,
+    `source:${fontColorGlyphRefKey(colorLayers.sourceFontRef)}`,
+    `palette:${paletteRefKey(colorLayers.paletteRef)}`,
+    `range:${textRangeKey(colorLayers.sourceRangeUtf8)}`,
+    `glyphRange:${textRangeKey(colorLayers.glyphRange)}`,
+    graphKey,
+  ].join(':');
+}
+
+function bitmapGlyphResourceKey(glyph: NonNullable<LayerGlyphOutlineOp['bitmapGlyph']>): string {
+  return [
+    'glyphPayload:bitmapGlyph',
+    `imageRef:${glyph.imageRef ?? '-'}`,
+    `range:${textRangeKey(glyph.sourceRangeUtf8)}`,
+    `glyphRange:${textRangeKey(glyph.glyphRange)}`,
+    `placement:${boundsKey(glyph.placement)}`,
+    `alphaPremultiplied:${glyph.alphaPremultiplied === true}`,
+    `scaling:${glyph.scalingPolicy ?? '-'}`,
+    `filtering:${glyph.filtering ?? '-'}`,
+    `transform:${affineKey(glyph.transformToRun)}`,
+  ].join(':');
+}
+
+function svgGlyphResourceKey(glyph: NonNullable<LayerGlyphOutlineOp['svgGlyph']>): string {
+  return [
+    'glyphPayload:svgGlyph',
+    `svgRef:${glyph.svgRef ?? '-'}`,
+    `range:${textRangeKey(glyph.sourceRangeUtf8)}`,
+    `glyphRange:${textRangeKey(glyph.glyphRange)}`,
+    `viewBox:${boundsKey(glyph.viewBox)}`,
+    `intrinsicSize:${glyph.intrinsicSize ? `${fixed(glyph.intrinsicSize.width)},${fixed(glyph.intrinsicSize.height)}` : '-'}`,
+    `staticSanitized:${glyph.staticSanitized === true}`,
+    `script:${glyph.scriptAllowed === true}`,
+    `animation:${glyph.animationAllowed === true}`,
+    `external:${glyph.externalResourcesAllowed === true}`,
+    `interactive:${glyph.interactivityAllowed === true}`,
+    `transform:${affineKey(glyph.transformToRun)}`,
+  ].join(':');
+}
+
+function fontColorGlyphRefKey(ref: { faceKey?: string; glyphId?: number; paletteIndex?: number; colorFormat?: string } | undefined): string {
+  if (!ref) return '-';
+  return [
+    `face:${ref.faceKey ?? '-'}`,
+    `glyph:${ref.glyphId ?? '-'}`,
+    `palette:${ref.paletteIndex ?? '-'}`,
+    `format:${ref.colorFormat ?? '-'}`,
+  ].join(':');
+}
+
+function paletteRefKey(ref: { id?: string; index?: number; cpalDigest?: string } | undefined): string {
+  if (!ref) return '-';
+  return [
+    `id:${ref.id ?? '-'}`,
+    `index:${ref.index ?? '-'}`,
+    `digest:${ref.cpalDigest ?? '-'}`,
+  ].join(':');
+}
+
+function textRangeKey(range: { start?: number; end?: number } | undefined): string {
+  return range ? `${range.start ?? '-'}..${range.end ?? '-'}` : '-';
+}
+
+function boundsKey(bounds: { x?: number; y?: number; width?: number; height?: number } | undefined): string {
+  return bounds ? [bounds.x, bounds.y, bounds.width, bounds.height].map(fixed).join(',') : '-';
+}
+
+function affineKey(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): string {
+  return transform ? [transform.a, transform.b, transform.c, transform.d, transform.e, transform.f].map(fixed).join(',') : '-';
+}
+
+function fixed(value: number | undefined): string {
+  return Number.isFinite(value) ? (value ?? 0).toFixed(6) : '-';
 }
 
 function isPositiveBounds(bounds: { width?: number; height?: number }): boolean {

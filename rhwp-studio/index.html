@@ -120,7 +120,8 @@
           <div class="md-sep"></div>
           <div class="md-item disabled" data-cmd="insert:comment"><span class="md-icon icon-comment"></span><span class="md-label">주석</span></div>
           <div class="md-item" data-cmd="insert:footnote"><span class="md-icon icon-footnote"></span><span class="md-label">각주</span></div>
-          <div class="md-item disabled" data-cmd="insert:endnote"><span class="md-icon icon-endnote"></span><span class="md-label">미주</span></div>
+          <div class="md-item" data-cmd="insert:endnote"><span class="md-icon icon-endnote"></span><span class="md-label">미주</span></div>
+          <div class="md-item" data-cmd="insert:endnote-shape"><span class="md-icon icon-endnote"></span><span class="md-label">미주 모양</span></div>
           <div class="md-sep"></div>
           <div class="md-item" data-cmd="insert:symbols"><span class="md-icon icon-symbols"></span><span class="md-label">문자표</span><span class="md-shortcut">Alt+F10</span></div>
           <div class="md-sep"></div>
@@ -434,7 +435,7 @@
         <button class="tb-btn" data-cmd="page:header-create" title="머리말"><span class="tb-sprite icon-header"></span><span class="tb-label">머리말</span></button>
         <button class="tb-btn" data-cmd="page:footer-create" title="꼬리말"><span class="tb-sprite icon-footer"></span><span class="tb-label">꼬리말</span></button>
         <button class="tb-btn" data-cmd="insert:footnote" title="각주"><span class="tb-sprite icon-footnote"></span><span class="tb-label">각주</span></button>
-        <button class="tb-btn" title="미주"><span class="tb-sprite icon-endnote"></span><span class="tb-label">미주</span></button>
+        <button class="tb-btn" data-cmd="insert:endnote" title="미주"><span class="tb-sprite icon-endnote"></span><span class="tb-label">미주</span></button>
         <div class="tb-split">
           <button class="tb-btn tb-split-main" title="찾기 (Ctrl+F)" data-cmd="edit:find"><span class="tb-sprite icon-find"></span><span class="tb-label">찾기</span></button>
           <button class="tb-btn tb-split-arrow" title="찾기 메뉴"><span class="tb-arrow-icon">▾</span></button>
@@ -464,6 +465,16 @@
         <button class="tb-btn" data-cmd="page:insert-field-pagenum" title="쪽 번호 삽입"><span class="tb-icon-text">#</span><span class="tb-label">쪽번호</span></button>
         <button class="tb-btn" data-cmd="page:insert-field-totalpage" title="총 쪽수 삽입"><span class="tb-icon-text">##</span><span class="tb-label">총쪽수</span></button>
         <button class="tb-btn" data-cmd="page:insert-field-filename" title="파일 이름 삽입"><span class="tb-icon-text">F</span><span class="tb-label">파일명</span></button>
+      </div>
+      <!-- 주석 편집 모드 전용 도구상자 (숨김) -->
+      <div class="tb-group tb-mode-group tb-note-group" style="display:none">
+        <span class="tb-note-label">주석</span>
+        <span class="tb-sep"></span>
+        <button class="tb-btn" data-cmd="insert:footnote" title="각주"><span class="tb-sprite icon-footnote"></span><span class="tb-label">각주</span></button>
+        <button class="tb-btn" data-cmd="insert:endnote" title="미주"><span class="tb-sprite icon-endnote"></span><span class="tb-label">미주</span></button>
+        <button class="tb-btn" data-cmd="insert:endnote-shape" title="각주/미주 모양"><span class="tb-sprite icon-endnote"></span><span class="tb-label">각주/미주<br/>모양</span></button>
+        <span class="tb-sep"></span>
+        <button class="tb-btn tb-note-close" data-cmd="insert:note-close" title="닫기 (Shift+Esc)"><span class="tb-icon-text">×</span><span class="tb-label">닫기</span></button>
       </div>
       <!-- 파일 열기 (숨김) -->
       <input type="file" id="file-input" accept=".hwp,.hwpx" style="display:none" />

@@ -39,6 +39,12 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+# [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
+# cancel-in-progress 는 PR 이벤트에서만 활성화 — devel/main push 머지 검증 run 은 보존.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build-and-test:
     name: Build & Test
@@ -49,17 +55,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # [Task #1109] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
+      # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
       # cargo test (28 examples + integration tests) 빌드 시 디스크 한도 초과 방지.
-      # 메인테이너 레포 설정 cache 한도 증가 (10→15GB, 7→3일) 와 함께 다층 안전망.
+      # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
+      # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
         run: |
-          sudo apt-get clean
-          sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force || true
+          sudo rm -rf /usr/share/dotnet
           df -h
 
       - name: Install Rust toolchain
@@ -70,7 +73,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Cache cargo registry & build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -86,8 +89,9 @@ jobs:
       - name: Build
         run: cargo build --verbose
 
-      - name: Canvas layer parity tests
-        run: cargo test canvas_layer_tree_matches_legacy --lib --verbose
+      # [Task #1192 A] canvas_layer_tree_matches_legacy* 는 feature gate 없는 lib 테스트로
+      # 아래 "Run tests"(cargo test)에 이미 포함된다. 별도 step 은 순수 중복이라 제거.
+      # (native-skia 테스트는 default feature 가 아니므로 전용 step 을 유지한다.)
 
       - name: Check WASM target
         run: cargo check --target wasm32-unknown-unknown --lib
@@ -119,16 +123,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # [Task #1109] wasm-build job 도 build-and-test 와 동일 패턴 (선제적 안전망).
-      # WASM 빌드 산출물 크기 + wasm-pack 도구 + cargo cache 누적 영역 보호.
+      # [Task #1109 / #1192 C] wasm-build job 도 build-and-test 와 동일 축소 패턴.
+      # "크고 빠른" 항목(android/dotnet)만 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
         run: |
-          sudo apt-get clean
-          sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force || true
+          sudo rm -rf /usr/share/dotnet
           df -h
 
       - name: Install Rust toolchain
@@ -141,7 +141,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Cache cargo registry & build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry

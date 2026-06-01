@@ -18,6 +18,8 @@ export interface OverlayImageInfo {
   bakedWatermark?: boolean;
   wrap: 'behindText' | 'inFrontOfText';
   transform?: { rotation: number; horzFlip: boolean; vertFlip: boolean };
+  /** 그림 자르기 (HWPUNIT, 75 HU = 1 px @ 96 DPI). `<img>` 의 source rect → bbox 매핑용. */
+  crop?: { left: number; top: number; right: number; bottom: number };
 }
 
 interface OverlayImagesResult {
@@ -220,16 +222,11 @@ export class PageRenderer {
     for (const img of images) {
       const el = document.createElement('img');
       el.src = `data:${img.mime};base64,${img.base64}`;
-      el.style.position = 'absolute';
-      // bbox 는 zoom=1 페이지 좌표계이므로 화면 표시 배율을 적용한다.
-      el.style.left = `${img.bbox.x * displayScale}px`;
-      el.style.top = `${img.bbox.y * displayScale}px`;
-      el.style.width = `${img.bbox.width * displayScale}px`;
-      el.style.height = `${img.bbox.height * displayScale}px`;
       el.style.pointerEvents = 'none';
+
+      const filterParts: string[] = [];
       if (!img.bakedWatermark) {
         // CSS filter (그림 효과 + 밝기 + 대비)
-        const filterParts: string[] = [];
         if (img.effect === 'grayScale' || img.effect === 'pattern8x8') {
           filterParts.push('grayscale(100%)');
         } else if (img.effect === 'blackWhite') {
@@ -253,7 +250,64 @@ export class PageRenderer {
         el.style.opacity = '0.17';
       }
       // transform (회전/플립) — 작업 우선순위 낮음, 본 사이클은 미적용
-      layer.appendChild(el);
+
+      // bbox 는 zoom=1 페이지 좌표계이므로 화면 표시 배율을 적용한다.
+      const dx = img.bbox.x * displayScale;
+      const dy = img.bbox.y * displayScale;
+      const dw = img.bbox.width * displayScale;
+      const dh = img.bbox.height * displayScale;
+
+      // crop (HWPUNIT, 75 HU = 1 px @ 96 DPI) 가 있고 자르기가 의미 있는 경우 source rect 처리.
+      // <img> 는 직접 source rect 를 지정할 수 없으므로 wrapper div + overflow:hidden 으로
+      // 시각 영역만 노출하고 내부 img 를 scale + offset 으로 배치한다 (Task #1154).
+      const crop = img.crop;
+      const cropSpanW = crop ? Math.max(0, crop.right - crop.left) : 0;
+      const cropSpanH = crop ? Math.max(0, crop.bottom - crop.top) : 0;
+      const hasCrop = !!crop && cropSpanW > 0 && cropSpanH > 0;
+      if (hasCrop && crop) {
+        // crop_hu / 75 → source rect (px) in image natural pixel space.
+        const sxPx = crop.left / 75;
+        const syPx = crop.top / 75;
+        const swPx = cropSpanW / 75;
+        const shPx = cropSpanH / 75;
+        const scaleX = dw / swPx;
+        const scaleY = dh / shPx;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'absolute';
+        wrapper.style.left = `${dx}px`;
+        wrapper.style.top = `${dy}px`;
+        wrapper.style.width = `${dw}px`;
+        wrapper.style.height = `${dh}px`;
+        wrapper.style.overflow = 'hidden';
+        wrapper.style.pointerEvents = 'none';
+
+        el.style.position = 'absolute';
+        el.style.left = `${-sxPx * scaleX}px`;
+        el.style.top = `${-syPx * scaleY}px`;
+        // img.naturalWidth/Height 는 디코딩 완료 후에만 정확하므로 onload 시점에 적용.
+        // 첫 렌더 즉시 비율로 width 만 지정 (naturalWidth 대신 swPx*scaleX = dw 같은
+        // 자명한 단서가 없어, 로드 전에는 시각이 어색할 수 있다. scheduleReRender 가
+        // 이미 비동기 디코드를 처리하므로 onload 콜백으로 최종 크기를 확정한다).
+        const applyNaturalSize = () => {
+          el.style.width = `${el.naturalWidth * scaleX}px`;
+          el.style.height = `${el.naturalHeight * scaleY}px`;
+        };
+        if (el.complete && el.naturalWidth > 0) {
+          applyNaturalSize();
+        } else {
+          el.addEventListener('load', applyNaturalSize, { once: true });
+        }
+        wrapper.appendChild(el);
+        layer.appendChild(wrapper);
+      } else {
+        el.style.position = 'absolute';
+        el.style.left = `${dx}px`;
+        el.style.top = `${dy}px`;
+        el.style.width = `${dw}px`;
+        el.style.height = `${dh}px`;
+        layer.appendChild(el);
+      }
     }
     return layer;
   }
@@ -354,7 +408,10 @@ export class PageRenderer {
   /**
    * 비동기 이미지 로드 대응: data URL 이미지가 첫 렌더링 시
    * 아직 디코딩되지 않았을 수 있으므로 점진적 재렌더링한다.
-   * 200ms, 600ms 두 번 재시도하여 대부분의 이미지 로드를 커버한다.
+   *
+   * 작은 이미지 (헤더 라벨 등) 는 200/600ms 안에 디코드되지만, 큰 PNG/JPEG
+   * (수십 KB~수백 KB) 는 디코드가 1초 이상 걸릴 수 있어 한 번 더 시도하고
+   * (Task #1154), 그래도 누락이면 마지막에 자체 prefetch로 강제 디코드한다.
    */
   private scheduleReRender(
     pageIdx: number,
@@ -372,7 +429,7 @@ export class PageRenderer {
     this.cancelReRender(pageIdx);
     this.imageRetryCounts.set(pageIdx, imageCount);
 
-    const delays = [200, 600];
+    const delays = [200, 600, 1500];
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     for (const delay of delays) {
@@ -384,7 +441,71 @@ export class PageRenderer {
       }, delay);
       timers.push(timer);
     }
+
+    // 안전망: 1500ms 시점에서도 큰 이미지가 디코드 안 끝났을 수 있으므로,
+    // 페이지의 flow image base64 들을 자체 prefetch (Image.decode()) 한 후
+    // 모두 완료되면 한 번 더 렌더링한다. setTimeout 과 별개로 동작.
+    queueMicrotask(() => {
+      this.prefetchFlowImages(pageIdx)
+        .then(() => {
+          if (canvas.parentElement) {
+            this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
+            this.drawMarginGuides(pageIdx, canvas, renderScale);
+          }
+        })
+        .catch(() => {});
+    });
+
     this.reRenderTimers.set(pageIdx, timers);
+  }
+
+  /**
+   * 페이지의 flow layer image (BehindText/InFrontOfText 제외) base64 데이터를
+   * 자체 prefetch 하여 모든 이미지가 브라우저에 디코드 완료될 때까지 대기.
+   * Task #1154 — IMAGE_CACHE 의 비동기 디코드 누락 안전망.
+   */
+  private async prefetchFlowImages(pageIdx: number): Promise<void> {
+    let json: string;
+    try {
+      json = this.wasm.getPageLayerTree(pageIdx);
+    } catch {
+      return;
+    }
+    const tasks: Promise<unknown>[] = [];
+    const seen = new Set<string>();
+    const enqueue = (dataUrl: string) => {
+      if (seen.has(dataUrl)) return;
+      seen.add(dataUrl);
+      tasks.push(
+        new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = dataUrl;
+          // decode() 이 더 정확하지만 일부 브라우저 미지원
+          if (typeof img.decode === 'function') {
+            img.decode().then(() => resolve()).catch(() => resolve());
+          }
+        }),
+      );
+    };
+    // image 항목들의 mime + base64 추출 (간단한 정규식)
+    const re = /"type":"image"[^}]*?(?:"wrap":"(behindText|inFrontOfText)")?[^}]*?"mime":"([^"]+)","base64":"([^"]+)"/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(json)) !== null) {
+      const wrap = m[1]; // overlay wrap 은 prefetch 대상 아님 (별도 <img>)
+      if (wrap === 'behindText' || wrap === 'inFrontOfText') continue;
+      enqueue(`data:${m[2]};base64,${m[3]}`);
+    }
+    // rawSvg 항목 (OLE/차트 미리보기) 의 embedded data URL 추출.
+    // svg 필드는 JSON 인코딩 문자열이며 내부에 data:image/MIME;base64,... 가 등장한다.
+    // rawSvg 의 wrap 은 항상 flow 이므로 overlay 필터링 불필요.
+    const dataUrlRe = /data:(image\/[A-Za-z0-9.+-]+);base64,([A-Za-z0-9+/=]+)/g;
+    let d: RegExpExecArray | null;
+    while ((d = dataUrlRe.exec(json)) !== null) {
+      enqueue(`data:${d[1]};base64,${d[2]}`);
+    }
+    await Promise.all(tasks);
   }
 
   /** 특정 페이지의 지연 재렌더링을 취소한다 */
@@ -459,5 +580,6 @@ function toOverlayInfo(op: any, wrap: 'behindText' | 'inFrontOfText'): OverlayIm
     bakedWatermark: op.bakedWatermark === true,
     wrap,
     transform: op.transform,
+    crop: op.crop,
   };
 }

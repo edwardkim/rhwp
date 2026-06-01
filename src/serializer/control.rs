@@ -361,7 +361,15 @@ fn serialize_page_def(pd: &PageDef) -> Vec<u8> {
     w.write_u32(pd.margin_header).unwrap();
     w.write_u32(pd.margin_footer).unwrap();
     w.write_u32(pd.margin_gutter).unwrap();
-    w.write_u32(pd.attr).unwrap();
+    // [#1166] 용지 방향(landscape)은 attr bit0 (parse: body_text.rs `attr & 0x01`).
+    // HWPX 출처 문서는 pd.landscape 만 설정되고 attr bit0 은 0 이므로, 직렬화 시
+    // landscape 를 attr bit0 에 동기화해야 HWP5 저장본이 가로 방향을 보존한다.
+    let attr = if pd.landscape {
+        pd.attr | 0x01
+    } else {
+        pd.attr & !0x01
+    };
+    w.write_u32(attr).unwrap();
     w.into_bytes()
 }
 

@@ -226,12 +226,16 @@ fn parse_page_pr(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
         match attr.key.as_ref() {
             b"width" => page.width = parse_u32(&attr),
             b"height" => page.height = parse_u32(&attr),
-            // HWPX에서는 landscape 플래그를 false로 유지한다.
-            // HWPX의 width/height는 이미 실제 용지 방향대로 저장되어 있어
-            // 렌더러가 추가로 교환(swap)할 필요가 없다.
-            // HWP 바이너리는 항상 짧은변=width, 긴변=height로 저장하고
-            // landscape=true일 때 렌더러가 교환하지만, HWPX는 다른 규약을 따른다.
-            b"landscape" => { /* 무시: landscape = false 유지 */ }
+            // [#1166] HWPX 용지 방향. OWPML landscape 값:
+            //   WIDELY  = 세로(Portrait)  → landscape=false
+            //   NARROWLY= 가로(Landscape) → landscape=true
+            // (hwplib ForSecPr: Portrait→WIDELY, Landscape→NARROWLY 매핑 권위.)
+            // width/height 는 HWP 바이너리와 동일하게 짧은변=width/긴변=height 로
+            // 저장되고, landscape=true 일 때 렌더러가 swap 한다(page.rs). 종전엔
+            // landscape 를 무시해 가로 용지 HWPX 가 항상 세로로 렌더되는 결함.
+            b"landscape" => {
+                page.landscape = attr_str(&attr).eq_ignore_ascii_case("NARROWLY");
+            }
             b"gutterType" => {
                 let value = attr_str(&attr);
                 let binding_code = match value.as_str() {

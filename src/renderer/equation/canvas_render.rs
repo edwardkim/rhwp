@@ -239,8 +239,8 @@ fn render_box(
         }
         LayoutKind::Paren { left, right, body } => {
             // 텍스트 높이 파렌(`(`, `)`)은 폰트 글리프로 렌더, 그 외는 path. (Task #283)
-            let paren_w = fs * 0.333;
             let use_glyph = lb.height <= fs * 1.2;
+            let paren_w = if use_glyph { fs * 0.333 } else { fs * 0.27 };
             if !left.is_empty() {
                 if use_glyph && (left == "(" || left == ")") {
                     set_font(ctx, fs, false, false);
@@ -310,22 +310,44 @@ fn draw_stretch_bracket(
     fs: f64,
 ) {
     let mid_x = x + w / 2.0;
-    let stroke_w = fs * 0.04;
+    let stroke_w = if matches!(bracket, "(" | ")") {
+        (fs * 0.042).max(0.48)
+    } else {
+        fs * 0.04
+    };
     ctx.set_stroke_style_str(color);
     ctx.set_line_width(stroke_w);
 
     match bracket {
         "(" => {
             ctx.begin_path();
-            ctx.move_to(mid_x + w * 0.2, y);
-            let _ = ctx.quadratic_curve_to(x, y + h / 2.0, mid_x + w * 0.2, y + h);
+            ctx.set_line_cap("round");
+            ctx.move_to(x + w * 0.9, y);
+            let _ = ctx.bezier_curve_to(
+                x + w * 0.05,
+                y + h * 0.18,
+                x + w * 0.05,
+                y + h * 0.82,
+                x + w * 0.9,
+                y + h,
+            );
             ctx.stroke();
+            ctx.set_line_cap("butt");
         }
         ")" => {
             ctx.begin_path();
-            ctx.move_to(mid_x - w * 0.2, y);
-            let _ = ctx.quadratic_curve_to(x + w, y + h / 2.0, mid_x - w * 0.2, y + h);
+            ctx.set_line_cap("round");
+            ctx.move_to(x + w * 0.1, y);
+            let _ = ctx.bezier_curve_to(
+                x + w * 0.95,
+                y + h * 0.18,
+                x + w * 0.95,
+                y + h * 0.82,
+                x + w * 0.1,
+                y + h,
+            );
             ctx.stroke();
+            ctx.set_line_cap("butt");
         }
         "[" => {
             ctx.begin_path();

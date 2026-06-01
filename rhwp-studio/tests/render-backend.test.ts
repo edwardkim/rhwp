@@ -16,7 +16,12 @@ import {
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
-import { glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
+import {
+  CANVASKIT_REPLAY_PLANES,
+  layerPaintOpReplayPlane,
+} from '../src/view/canvaskit/replay-plane.ts';
+import type { LayerPaintOp } from '../src/core/types.ts';
+import { glyphOutlinePayloadResourceKey, glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
 
 test('render backend resolver keeps Canvas2D as the default and accepts skia aliases', () => {
   assert.equal(resolveRenderBackend(''), 'canvas2d');
@@ -79,6 +84,36 @@ test('CanvasKit renderer source does not introduce Canvas2D overlay replay', () 
   assert.equal(source.includes("getContext('2d')"), false);
   assert.equal(source.includes('renderPageToCanvas'), false);
   assert.equal(source.includes('rhwpOverlay'), false);
+});
+
+test('CanvasKit replay planes match native Skia direct z-order contract', () => {
+  assert.deepEqual(
+    [...CANVASKIT_REPLAY_PLANES],
+    ['background', 'behindText', 'flow', 'inFrontOfText'],
+  );
+});
+
+test('CanvasKit replay plane helper classifies PageLayerTree ops by wrap', () => {
+  const bbox = { x: 0, y: 0, width: 10, height: 10 };
+  const cases: Array<[LayerPaintOp, string]> = [
+    [{ type: 'pageBackground', bbox }, 'background'],
+    [{ type: 'image', bbox, wrap: 'behindText' }, 'behindText'],
+    [{ type: 'image', bbox, wrap: 'inFrontOfText' }, 'inFrontOfText'],
+    [{ type: 'image', bbox, wrap: 'topAndBottom' }, 'flow'],
+    [{ type: 'image', bbox }, 'flow'],
+    [{ type: 'textRun', bbox, text: 'flow' }, 'flow'],
+    [{ type: 'rectangle', bbox, style: { fillColor: '#ff0000' } }, 'flow'],
+  ];
+
+  for (const [op, expected] of cases) {
+    assert.equal(layerPaintOpReplayPlane(op), expected, op.type);
+  }
+});
+
+test('CanvasKit renderer source replays the root once per replay plane', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /for \(const replayPlane of CANVASKIT_REPLAY_PLANES\)/);
+  assert.match(source, /layerPaintOpReplayPlane\(op\) !== replayPlane/);
 });
 
 test('CanvasKit replay bridge fallback keeps compat on direct replay contract', () => {
@@ -189,6 +224,112 @@ test('GlyphOutline advanced payload gates reject richer payloads by default', ()
     }).reason,
     'unsupportedSvgGlyph',
   );
+});
+
+test('GlyphOutline payload resource keys keep payload families and palettes disjoint', () => {
+  const colorBase = {
+    type: 'glyphOutline' as const,
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    payloadKind: 'colorLayers' as const,
+    colorLayers: {
+      colorFormat: 'colrV1',
+      sourceRangeUtf8: { start: 0, end: 1 },
+      glyphRange: { start: 0, end: 1 },
+      sourceFontRef: { faceKey: 'fixture-face', glyphId: 42, colorFormat: 'colrV1' },
+      paletteRef: { id: 'document-palette', index: 0, cpalDigest: 'a'.repeat(64) },
+      paintGraph: {
+        rootNodeId: 0,
+        nodes: [{
+          nodeId: 0,
+          kind: 'solidPath',
+          solidPath: {
+            commands: [{ type: 'moveTo', x: 0, y: 0 }],
+            fill: { rgba: [0, 0, 0, 1] },
+            fillRule: 'nonzero',
+          },
+          sourceRangeUtf8: { start: 0, end: 1 },
+          glyphRange: { start: 0, end: 1 },
+          sourceFontRef: { faceKey: 'fixture-face', glyphId: 42, colorFormat: 'colrV1' },
+        }],
+      },
+    },
+  };
+  const colorKey = glyphOutlinePayloadResourceKey(colorBase);
+  const alternatePaletteKey = glyphOutlinePayloadResourceKey({
+    ...colorBase,
+    colorLayers: {
+      ...colorBase.colorLayers,
+      paletteRef: { id: 'document-palette', index: 1, cpalDigest: 'b'.repeat(64) },
+    },
+  });
+  const bitmapKey = glyphOutlinePayloadResourceKey({
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    payloadKind: 'bitmapGlyph',
+    bitmapGlyph: {
+      imageRef: 7,
+      sourceRangeUtf8: { start: 0, end: 1 },
+      glyphRange: { start: 0, end: 1 },
+      placement: { x: 0, y: 0, width: 10, height: 10 },
+      scalingPolicy: 'sourceExact',
+      filtering: 'linear',
+    },
+  });
+  const svgKey = glyphOutlinePayloadResourceKey({
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    payloadKind: 'svgGlyph',
+    svgGlyph: {
+      svgRef: 7,
+      sourceRangeUtf8: { start: 0, end: 1 },
+      glyphRange: { start: 0, end: 1 },
+      viewBox: { x: 0, y: 0, width: 10, height: 10 },
+      staticSanitized: true,
+      scriptAllowed: false,
+      animationAllowed: false,
+      externalResourcesAllowed: false,
+      interactivityAllowed: false,
+    },
+  });
+
+  assert.ok(colorKey?.includes('palette:id:document-palette:index:0:digest:'));
+  assert.notEqual(colorKey, alternatePaletteKey);
+  assert.ok(bitmapKey?.startsWith('glyphPayload:bitmapGlyph:imageRef:7'));
+  assert.ok(svgKey?.startsWith('glyphPayload:svgGlyph:svgRef:7'));
+  assert.notEqual(colorKey, bitmapKey);
+  assert.notEqual(colorKey, svgKey);
+  assert.notEqual(bitmapKey, svgKey);
+});
+
+test('GlyphOutline payload resource keys are suppressed for incomplete payloads', () => {
+  assert.equal(glyphOutlinePayloadResourceKey({
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    payloadKind: 'bitmapGlyph',
+    bitmapGlyph: {
+      imageRef: 7,
+      sourceRangeUtf8: { start: 0, end: 1 },
+      glyphRange: { start: 0, end: 1 },
+      scalingPolicy: 'backendDefault',
+      filtering: 'linear',
+    },
+  }), null);
+  assert.equal(glyphOutlinePayloadResourceKey({
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    payloadKind: 'svgGlyph',
+    svgGlyph: {
+      svgRef: 7,
+      sourceRangeUtf8: { start: 0, end: 1 },
+      glyphRange: { start: 0, end: 1 },
+      viewBox: { x: 0, y: 0, width: 10, height: 10 },
+      staticSanitized: false,
+      scriptAllowed: false,
+      animationAllowed: false,
+      externalResourcesAllowed: false,
+      interactivityAllowed: false,
+    },
+  }), null);
 });
 
 test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () => {

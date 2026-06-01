@@ -88,6 +88,8 @@ fn test_build_page_with_paragraph() {
         layout,
         column_contents: vec![ColumnContent {
             column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
             items: vec![PageItem::FullParagraph { para_index: 0 }],
             zone_layout: None,
             zone_y_offset: 0.0,
@@ -193,6 +195,8 @@ fn test_layout_with_composed_styles() {
         layout,
         column_contents: vec![ColumnContent {
             column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
             items: vec![PageItem::FullParagraph { para_index: 0 }],
             zone_layout: None,
             zone_y_offset: 0.0,
@@ -317,6 +321,8 @@ fn test_layout_multi_run_x_position() {
         layout,
         column_contents: vec![ColumnContent {
             column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
             items: vec![PageItem::FullParagraph { para_index: 0 }],
             zone_layout: None,
             zone_y_offset: 0.0,
@@ -685,6 +691,8 @@ fn test_layout_table_basic() {
         layout,
         column_contents: vec![ColumnContent {
             column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
             items: vec![
                 PageItem::FullParagraph { para_index: 0 },
                 PageItem::Table {
@@ -834,6 +842,8 @@ fn test_layout_table_cell_positions() {
         layout,
         column_contents: vec![ColumnContent {
             column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
             items: vec![
                 PageItem::FullParagraph { para_index: 0 },
                 PageItem::Table {

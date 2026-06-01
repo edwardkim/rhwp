@@ -8,6 +8,7 @@ mod json;
 pub mod layer_tree;
 pub mod paint_op;
 pub mod profile;
+pub mod replay_order;
 pub mod resources;
 pub mod schema;
 pub mod text_shape;
@@ -42,6 +43,7 @@ pub use paint_op::{
     TextVariantKind, TextVariantQuality,
 };
 pub use profile::RenderProfile;
+pub use replay_order::{paint_op_replay_plane, PaintReplayPlane};
 pub use resources::{
     font_blob_resource_key, image_resource_key, resource_digest_hex, svg_resource_key,
     FontBlobResourceId, ImageResourceId, ResourceArena, SvgResourceId, RESOURCE_KEY_ALGORITHM,

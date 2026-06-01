@@ -632,7 +632,7 @@ fn test_split_table_cell() {
 }
 
 #[test]
-fn test_merge_then_control_layout_has_colSpan() {
+fn test_merge_then_control_layout_has_col_span() {
     let mut doc = create_doc_with_table();
     // 병합 전: colSpan=1
     let layout_before = doc.get_page_control_layout_native(0).unwrap();
@@ -11301,7 +11301,7 @@ fn test_text_insert_detailed_diff() {
     let mut doc = HwpDocument::from_bytes(&orig_data).unwrap();
 
     // 텍스트 삽입
-    doc.insert_text_native(0, 0, 0, "가나다라마바사아");
+    doc.insert_text_native(0, 0, 0, "가나다라마바사아").unwrap();
     let saved = doc.export_hwp_native().unwrap();
 
     // 레코드 파싱
@@ -15780,7 +15780,7 @@ fn test_textbox_render_tree_debug() {
 
     let data = std::fs::read(path).unwrap();
     let mut doc = HwpDocument::from_bytes(&data).unwrap();
-    doc.convert_to_editable_native();
+    doc.convert_to_editable_native().unwrap();
 
     // 문서 구조 확인: Shape 컨트롤 찾기
     let mut shape_found = false;
@@ -20950,26 +20950,8 @@ fn test_page13_enter_propagation() {
     let mut before_pages: Vec<(usize, usize, usize)> = Vec::new(); // (first_pi, last_pi, item_count)
     for page in &doc.pagination[0].pages {
         let items = &page.column_contents[0].items;
-        let first = items
-            .first()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
-        let last = items
-            .last()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
+        let first = items.first().map(PageItem::para_index).unwrap_or(0);
+        let last = items.last().map(PageItem::para_index).unwrap_or(0);
         before_pages.push((first, last, items.len()));
     }
 
@@ -20985,26 +20967,8 @@ fn test_page13_enter_propagation() {
     let mut last_diff_page = 0;
     for (pidx, page) in doc.pagination[0].pages.iter().enumerate() {
         let items = &page.column_contents[0].items;
-        let first = items
-            .first()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
-        let last = items
-            .last()
-            .map(|it| match it {
-                PageItem::FullParagraph { para_index }
-                | PageItem::Table { para_index, .. }
-                | PageItem::PartialParagraph { para_index, .. }
-                | PageItem::PartialTable { para_index, .. }
-                | PageItem::Shape { para_index, .. } => *para_index,
-            })
-            .unwrap_or(0);
+        let first = items.first().map(PageItem::para_index).unwrap_or(0);
+        let last = items.last().map(PageItem::para_index).unwrap_or(0);
 
         let before = before_pages.get(pidx);
         let changed = before
@@ -21057,20 +21021,8 @@ fn test_page13_enter_propagation() {
             .get(pidx)
             .map(|p| &p.column_contents[0].items);
 
-        let pi1_first = items1.and_then(|i| i.first()).map(|it| match it {
-            PageItem::FullParagraph { para_index }
-            | PageItem::Table { para_index, .. }
-            | PageItem::PartialParagraph { para_index, .. }
-            | PageItem::PartialTable { para_index, .. }
-            | PageItem::Shape { para_index, .. } => *para_index,
-        });
-        let pi2_first = items2.and_then(|i| i.first()).map(|it| match it {
-            PageItem::FullParagraph { para_index }
-            | PageItem::Table { para_index, .. }
-            | PageItem::PartialParagraph { para_index, .. }
-            | PageItem::PartialTable { para_index, .. }
-            | PageItem::Shape { para_index, .. } => *para_index,
-        });
+        let pi1_first = items1.and_then(|i| i.first()).map(PageItem::para_index);
+        let pi2_first = items2.and_then(|i| i.first()).map(PageItem::para_index);
         let count1 = items1.map(|i| i.len()).unwrap_or(0);
         let count2 = items2.map(|i| i.len()).unwrap_or(0);
 

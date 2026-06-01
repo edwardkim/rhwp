@@ -23,6 +23,48 @@ fn effective_char_count(text_run: &TextRunNode) -> usize {
     text_run.text.chars().count()
 }
 
+fn note_number_format_from_hwp_code(code: u8) -> crate::renderer::NumberFormat {
+    match code {
+        0 => crate::renderer::NumberFormat::Digit,
+        1 => crate::renderer::NumberFormat::CircledDigit,
+        2 => crate::renderer::NumberFormat::RomanUpper,
+        3 => crate::renderer::NumberFormat::RomanLower,
+        4 => crate::renderer::NumberFormat::LatinUpper,
+        5 => crate::renderer::NumberFormat::LatinLower,
+        8 => crate::renderer::NumberFormat::HangulGaNaDa,
+        12 => crate::renderer::NumberFormat::HangulNumber,
+        13 => crate::renderer::NumberFormat::HanjaNumber,
+        _ => crate::renderer::NumberFormat::Digit,
+    }
+}
+
+fn note_decoration_char(value: u16) -> Option<char> {
+    if value == 0 {
+        None
+    } else {
+        char::from_u32(value as u32).filter(|ch| *ch != '\0')
+    }
+}
+
+fn note_marker_text(
+    number: u16,
+    number_shape: u32,
+    before_decoration_letter: u16,
+    after_decoration_letter: u16,
+) -> String {
+    let number = crate::renderer::format_number(
+        number,
+        note_number_format_from_hwp_code(number_shape as u8),
+    );
+    let prefix = note_decoration_char(before_decoration_letter)
+        .map(|ch| ch.to_string())
+        .unwrap_or_default();
+    let suffix = note_decoration_char(after_decoration_letter)
+        .unwrap_or(')')
+        .to_string();
+    format!("{}{}{}", prefix, number, suffix)
+}
+
 impl DocumentCore {
     pub fn get_cursor_rect_native(
         &self,
@@ -37,10 +79,8 @@ impl DocumentCore {
         let pages = self.find_pages_for_paragraph(section_idx, para_idx)?;
 
         let footnote_marker_positions: Vec<(usize, usize)> = self
-            .document
-            .sections
-            .get(section_idx)
-            .and_then(|section| section.paragraphs.get(para_idx))
+            .get_render_paragraph_ref(section_idx, para_idx)
+            .ok()
             .map(|para| {
                 let ctrl_positions = find_logical_control_positions(para);
                 para.controls
@@ -514,21 +554,19 @@ impl DocumentCore {
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
             if !self.show_control_codes {
-                if let Some(section) = self.document.sections.get(section_idx) {
-                    if let Some(para) = section.paragraphs.get(para_idx) {
-                        if let Some(hit) = find_inline_flow_cursor_hit(
-                            &tree,
-                            section_idx,
-                            para_idx,
-                            para,
-                            char_offset,
-                            page_num,
-                        ) {
-                            return Ok(format!(
-                                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                                hit.page_index, hit.x, hit.y, hit.height
-                            ));
-                        }
+                if let Ok(para) = self.get_render_paragraph_ref(section_idx, para_idx) {
+                    if let Some(hit) = find_inline_flow_cursor_hit(
+                        &tree,
+                        section_idx,
+                        para_idx,
+                        para,
+                        char_offset,
+                        page_num,
+                    ) {
+                        return Ok(format!(
+                            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                            hit.page_index, hit.x, hit.y, hit.height
+                        ));
                     }
                 }
             }
@@ -563,58 +601,56 @@ impl DocumentCore {
         // 조판부호 감추기 모드: 인라인 도형 컨트롤 위치에서 커서 좌표 반환
         // treat_as_char Shape는 inline_shape_positions에서 좌표를 가져와 커서 표시
         if !self.show_control_codes {
-            if let Some(section) = self.document.sections.get(section_idx) {
-                if let Some(para) = section.paragraphs.get(para_idx) {
-                    let text_len = para.text.chars().count();
-                    let ctrl_positions =
-                        crate::document_core::helpers::find_logical_control_positions(para);
+            if let Ok(para) = self.get_render_paragraph_ref(section_idx, para_idx) {
+                let text_len = para.text.chars().count();
+                let ctrl_positions =
+                    crate::document_core::helpers::find_logical_control_positions(para);
 
-                    // char_offset 위치에 인라인 컨트롤이 있는지 확인
-                    let inline_ctrl = para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                        matches!(
-                            ctrl,
-                            Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                        ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
-                            && char_offset != text_len
-                    });
-                    // 텍스트 범위 밖이지만 navigable 범위 내 (도형이 텍스트 뒤에 있을 때)
-                    let beyond_ctrl =
-                        if char_offset > text_len && char_offset <= navigable_text_len(para) {
-                            para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                                matches!(
-                                    ctrl,
-                                    Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                                ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
-                            })
+                // char_offset 위치에 인라인 컨트롤이 있는지 확인
+                let inline_ctrl = para.controls.iter().enumerate().find(|(ci, ctrl)| {
+                    matches!(
+                        ctrl,
+                        Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
+                    ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                        && char_offset != text_len
+                });
+                // 텍스트 범위 밖이지만 navigable 범위 내 (도형이 텍스트 뒤에 있을 때)
+                let beyond_ctrl =
+                    if char_offset > text_len && char_offset <= navigable_text_len(para) {
+                        para.controls.iter().enumerate().find(|(ci, ctrl)| {
+                            matches!(
+                                ctrl,
+                                Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
+                            ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                        })
+                    } else {
+                        None
+                    };
+
+                if let Some((ci, _ctrl)) = inline_ctrl.or(beyond_ctrl) {
+                    // inline_shape_positions에서 Shape 좌표 조회
+                    let first_page = pages[0];
+                    let tree = self.build_page_tree(first_page)?;
+                    if let Some((sx, sy)) =
+                        tree.get_inline_shape_position(section_idx, para_idx, ci, None)
+                    {
+                        let shape_h = if let Some(Control::Shape(s)) = para.controls.get(ci) {
+                            crate::renderer::hwpunit_to_px(
+                                s.common().height as i32,
+                                crate::renderer::DEFAULT_DPI,
+                            )
+                        } else if let Some(Control::Picture(p)) = para.controls.get(ci) {
+                            crate::renderer::hwpunit_to_px(
+                                p.common.height as i32,
+                                crate::renderer::DEFAULT_DPI,
+                            )
                         } else {
-                            None
+                            16.0
                         };
-
-                    if let Some((ci, _ctrl)) = inline_ctrl.or(beyond_ctrl) {
-                        // inline_shape_positions에서 Shape 좌표 조회
-                        let first_page = pages[0];
-                        let tree = self.build_page_tree(first_page)?;
-                        if let Some((sx, sy)) =
-                            tree.get_inline_shape_position(section_idx, para_idx, ci, None)
-                        {
-                            let shape_h = if let Some(Control::Shape(s)) = para.controls.get(ci) {
-                                crate::renderer::hwpunit_to_px(
-                                    s.common().height as i32,
-                                    crate::renderer::DEFAULT_DPI,
-                                )
-                            } else if let Some(Control::Picture(p)) = para.controls.get(ci) {
-                                crate::renderer::hwpunit_to_px(
-                                    p.common.height as i32,
-                                    crate::renderer::DEFAULT_DPI,
-                                )
-                            } else {
-                                16.0
-                            };
-                            return Ok(format!(
-                                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                                first_page, sx, sy, shape_h
-                            ));
-                        }
+                        return Ok(format!(
+                            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                            first_page, sx, sy, shape_h
+                        ));
                     }
                 }
             }
@@ -1217,12 +1253,28 @@ impl DocumentCore {
         // 클릭 시 해당 Shape의 텍스트 위치(char_offset)를 반환
         for (key, &(sx, sy)) in tree.inline_shape_positions() {
             let (si, pi, ci, ref cell_path) = *key;
-            // 셀 내부 inline shape 은 cursor hit-test 에서 별도 처리 — 섹션 단위만 검사
-            if !cell_path.is_empty() {
-                continue;
-            }
+            // [Task #1151 v4] 셀 안 inline picture/shape 도 hit-test 진입.
+            // cell_path 가 있으면 셀 안 paragraph 에서 control 을 조회, 없으면 outer
+            // paragraph 에서 조회 (기존 본문 path).
             if let Some(section) = self.document.sections.get(si) {
-                if let Some(para) = section.paragraphs.get(pi) {
+                let target_para = if cell_path.is_empty() {
+                    section.paragraphs.get(pi)
+                } else {
+                    // cell_path 의 마지막 entry = picture/shape 가 있는 셀의 (table_ci,
+                    // cell_idx, cell_para_idx). 중첩 표는 본 분기에서 첫 외곽 표 하나만
+                    // resolve (셀 안 표 안 picture 는 후속 task).
+                    let last = cell_path.last().copied().unwrap_or((0, 0, 0));
+                    section
+                        .paragraphs
+                        .get(pi)
+                        .and_then(|p| p.controls.get(last.0))
+                        .and_then(|c| match c {
+                            Control::Table(t) => t.cells.get(last.1),
+                            _ => None,
+                        })
+                        .and_then(|cell| cell.paragraphs.get(last.2))
+                };
+                if let Some(para) = target_para {
                     if let Some(ctrl) = para.controls.get(ci) {
                         let (sw, sh) = match ctrl {
                             Control::Shape(s) => (
@@ -1309,9 +1361,25 @@ impl DocumentCore {
                                 return Ok(format_hit(&runs[idx], offset, page_num));
                             }
                             // TextRun이 없으면 기본 반환
+                            // [Task #1151 v4] cell_path 가 있으면 cellPath / innerControlIdx
+                            // 정보 추가 — studio 측 picture select / 그림 속성 대화상자가
+                            // cellPath 인식하여 셀 안 picture 를 정상 처리.
+                            let cell_path_str = if cell_path.is_empty() {
+                                String::new()
+                            } else {
+                                let entries: Vec<String> = cell_path
+                                    .iter()
+                                    .map(|(t, c, p)| format!("[{},{},{}]", t, c, p))
+                                    .collect();
+                                format!(
+                                    ",\"cellPath\":[{}],\"innerControlIdx\":{}",
+                                    entries.join(","),
+                                    ci
+                                )
+                            };
                             return Ok(format!(
-                                "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                                si, pi, offset, page_num, sx, sy, sh
+                                "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}{}}}",
+                                si, pi, offset, page_num, sx, sy, sh, cell_path_str
                             ));
                         }
                     }
@@ -3445,6 +3513,421 @@ impl DocumentCore {
             last.char_start + last.char_count,
             page_num,
         ))
+    }
+
+    /// 각주/미주 내부 선택 영역의 줄별 사각형을 계산한다.
+    pub fn get_selection_rects_in_footnote_native(
+        &self,
+        page_num: u32,
+        footnote_index: usize,
+        start_fn_para_idx: usize,
+        start_char_offset: usize,
+        end_fn_para_idx: usize,
+        end_char_offset: usize,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        let tree = self.build_page_tree(page_num)?;
+        let Some(fn_node) = tree
+            .root
+            .children
+            .iter()
+            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea))
+        else {
+            return Ok("[]".to_string());
+        };
+
+        #[derive(Clone)]
+        struct FnRunInfo {
+            fn_para_idx: usize,
+            char_start: usize,
+            char_count: usize,
+            char_positions: Vec<f64>,
+            bbox_x: f64,
+            bbox_y: f64,
+            bbox_w: f64,
+            bbox_h: f64,
+        }
+
+        fn collect_runs(node: &RenderNode, footnote_index: usize, runs: &mut Vec<FnRunInfo>) {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if tr.section_index == Some(footnote_index) {
+                    if let (Some(marker_para), Some(cs)) = (tr.para_index, tr.char_start) {
+                        if marker_para >= (usize::MAX - 3000) && marker_para < (usize::MAX - 1000) {
+                            let fn_para_idx = usize::MAX - 2000 - marker_para;
+                            runs.push(FnRunInfo {
+                                fn_para_idx,
+                                char_start: cs,
+                                char_count: tr.text.chars().count(),
+                                char_positions: compute_char_positions(&tr.text, &tr.style),
+                                bbox_x: node.bbox.x,
+                                bbox_y: node.bbox.y,
+                                bbox_w: node.bbox.width,
+                                bbox_h: node.bbox.height,
+                            });
+                        }
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_runs(child, footnote_index, runs);
+            }
+        }
+
+        fn cmp_pos(a_para: usize, a_off: usize, b_para: usize, b_off: usize) -> std::cmp::Ordering {
+            a_para.cmp(&b_para).then_with(|| a_off.cmp(&b_off))
+        }
+
+        fn x_at(run: &FnRunInfo, char_offset: usize) -> f64 {
+            if char_offset <= run.char_start {
+                return run.bbox_x;
+            }
+            let local_idx = char_offset - run.char_start;
+            if local_idx < run.char_positions.len() {
+                run.bbox_x + run.char_positions[local_idx]
+            } else {
+                run.bbox_x + run.bbox_w
+            }
+        }
+
+        let mut runs = Vec::new();
+        collect_runs(fn_node, footnote_index, &mut runs);
+        runs.sort_by(|a, b| {
+            a.fn_para_idx
+                .cmp(&b.fn_para_idx)
+                .then_with(|| {
+                    a.bbox_y
+                        .partial_cmp(&b.bbox_y)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+                .then_with(|| {
+                    a.bbox_x
+                        .partial_cmp(&b.bbox_x)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+        });
+
+        let mut rects = Vec::new();
+        for run in runs {
+            let run_start = (run.fn_para_idx, run.char_start);
+            let run_end = (run.fn_para_idx, run.char_start + run.char_count);
+
+            if cmp_pos(run_end.0, run_end.1, start_fn_para_idx, start_char_offset)
+                != std::cmp::Ordering::Greater
+                || cmp_pos(run_start.0, run_start.1, end_fn_para_idx, end_char_offset)
+                    != std::cmp::Ordering::Less
+            {
+                continue;
+            }
+
+            let sel_start = if run.fn_para_idx == start_fn_para_idx {
+                start_char_offset.max(run.char_start)
+            } else {
+                run.char_start
+            };
+            let sel_end = if run.fn_para_idx == end_fn_para_idx {
+                end_char_offset.min(run.char_start + run.char_count)
+            } else {
+                run.char_start + run.char_count
+            };
+
+            if sel_end <= sel_start {
+                continue;
+            }
+
+            let x1 = x_at(&run, sel_start);
+            let x2 = x_at(&run, sel_end);
+            let width = (x2 - x1).max(1.0);
+            rects.push(format!(
+                "{{\"pageIndex\":{},\"x\":{:.2},\"y\":{:.2},\"width\":{:.2},\"height\":{:.2}}}",
+                page_num, x1, run.bbox_y, width, run.bbox_h
+            ));
+        }
+
+        Ok(format!("[{}]", rects.join(",")))
+    }
+
+    fn global_page_base_for_section(&self, section_idx: usize) -> u32 {
+        self.pagination
+            .iter()
+            .take(section_idx)
+            .map(|pr| pr.pages.len() as u32)
+            .sum()
+    }
+
+    fn cursor_rect_for_render_paragraph(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> Result<Option<String>, HwpError> {
+        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        struct CursorRun {
+            char_start: usize,
+            char_count: usize,
+            char_positions: Vec<f64>,
+            bbox_x: f64,
+            bbox_y: f64,
+            baseline: f64,
+            font_size: f64,
+        }
+
+        fn collect_runs(
+            node: &RenderNode,
+            section_idx: usize,
+            para_idx: usize,
+            runs: &mut Vec<CursorRun>,
+        ) {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if tr.section_index == Some(section_idx) && tr.para_index == Some(para_idx) {
+                    if let Some(cs) = tr.char_start {
+                        let positions = compute_char_positions(&tr.text, &tr.style);
+                        runs.push(CursorRun {
+                            char_start: cs,
+                            char_count: effective_char_count(tr),
+                            char_positions: positions,
+                            bbox_x: node.bbox.x,
+                            bbox_y: node.bbox.y,
+                            baseline: tr.baseline,
+                            font_size: tr.style.font_size,
+                        });
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_runs(child, section_idx, para_idx, runs);
+            }
+        }
+
+        let tree = self.build_page_tree(page_num)?;
+        let mut runs = Vec::new();
+        collect_runs(&tree.root, section_idx, para_idx, &mut runs);
+        runs.sort_by(|a, b| {
+            a.char_start
+                .cmp(&b.char_start)
+                .then_with(|| {
+                    a.bbox_y
+                        .partial_cmp(&b.bbox_y)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+                .then_with(|| {
+                    a.bbox_x
+                        .partial_cmp(&b.bbox_x)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+        });
+        if runs.is_empty() {
+            return Ok(None);
+        }
+
+        for run in &runs {
+            if char_offset >= run.char_start && char_offset <= run.char_start + run.char_count {
+                let local_idx = char_offset - run.char_start;
+                let cursor_x = if local_idx < run.char_positions.len() {
+                    run.bbox_x + run.char_positions[local_idx]
+                } else if !run.char_positions.is_empty() {
+                    run.bbox_x + run.char_positions.last().copied().unwrap_or(0.0)
+                } else {
+                    run.bbox_x
+                };
+                let ascent = run.font_size * 0.8;
+                let cursor_y = run.bbox_y + run.baseline - ascent;
+                return Ok(Some(format!(
+                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                    page_num, cursor_x, cursor_y, run.font_size
+                )));
+            }
+        }
+
+        let last = runs.last().unwrap();
+        let cursor_x = if !last.char_positions.is_empty() {
+            last.bbox_x + last.char_positions.last().copied().unwrap_or(0.0)
+        } else {
+            last.bbox_x
+        };
+        let ascent = last.font_size * 0.8;
+        let cursor_y = last.bbox_y + last.baseline - ascent;
+        Ok(Some(format!(
+            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+            page_num, cursor_x, cursor_y, last.font_size
+        )))
+    }
+
+    fn find_body_footnote_edit_target(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) -> Option<(u32, usize)> {
+        use crate::renderer::pagination::FootnoteSource;
+
+        let pr = self.pagination.get(section_idx)?;
+        let page_base = self.global_page_base_for_section(section_idx);
+        for (local_page_idx, page) in pr.pages.iter().enumerate() {
+            if let Some(footnote_idx) = page.footnotes.iter().position(|fn_ref| {
+                matches!(
+                    &fn_ref.source,
+                    FootnoteSource::Body { para_index, control_index }
+                        if *para_index == para_idx && *control_index == control_idx
+                )
+            }) {
+                return Some((page_base + local_page_idx as u32, footnote_idx));
+            }
+        }
+        None
+    }
+
+    fn find_endnote_edit_target(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        note_para_idx: usize,
+    ) -> Option<(u32, usize, usize)> {
+        let pr = self.pagination.get(section_idx)?;
+        let local_idx = pr.endnote_para_sources.iter().position(|src| {
+            src.section_index == section_idx
+                && src.para_index == para_idx
+                && src.control_index == control_idx
+                && src.note_para_index == note_para_idx
+        })?;
+        let virtual_para_idx =
+            self.document.sections.get(section_idx)?.paragraphs.len() + local_idx;
+        let page_base = self.global_page_base_for_section(section_idx);
+        for (local_page_idx, page) in pr.pages.iter().enumerate() {
+            if page
+                .column_contents
+                .iter()
+                .flat_map(|col| col.items.iter())
+                .any(|item| item.para_index() == virtual_para_idx)
+            {
+                return Some((
+                    page_base + local_page_idx as u32,
+                    local_idx,
+                    virtual_para_idx,
+                ));
+            }
+        }
+        None
+    }
+
+    pub fn get_note_edit_info_native(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+
+        match ctrl {
+            Control::Footnote(_) => {
+                let (page_num, footnote_index) = self
+                    .find_body_footnote_edit_target(section_idx, para_idx, control_idx)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("각주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                Ok(format!(
+                    "{{\"ok\":true,\"kind\":\"footnote\",\"pageNum\":{},\"footnoteIndex\":{},\"fnParaIndex\":0,\"charOffset\":2}}",
+                    page_num, footnote_index
+                ))
+            }
+            Control::Endnote(_) => {
+                let (page_num, endnote_index, virtual_para_idx) = self
+                    .find_endnote_edit_target(section_idx, para_idx, control_idx, 0)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                Ok(format!(
+                    "{{\"ok\":true,\"kind\":\"endnote\",\"pageNum\":{},\"footnoteIndex\":{},\"fnParaIndex\":0,\"charOffset\":2,\"virtualParaIndex\":{}}}",
+                    page_num, endnote_index, virtual_para_idx
+                ))
+            }
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 각주/미주가 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    pub fn get_cursor_rect_in_note_native(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        note_para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+
+        match ctrl {
+            Control::Footnote(_) => {
+                let (page_num, footnote_index) = self
+                    .find_body_footnote_edit_target(section_idx, para_idx, control_idx)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("각주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                self.get_cursor_rect_in_footnote_native(
+                    page_num,
+                    footnote_index,
+                    note_para_idx,
+                    char_offset,
+                )
+            }
+            Control::Endnote(endnote) => {
+                let (page_num, _, virtual_para_idx) = self
+                    .find_endnote_edit_target(section_idx, para_idx, control_idx, note_para_idx)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
+                    })?;
+                let render_char_offset = if note_para_idx == 0 {
+                    char_offset
+                        + note_marker_text(
+                            endnote.number,
+                            endnote.number_shape,
+                            endnote.before_decoration_letter,
+                            endnote.after_decoration_letter,
+                        )
+                        .chars()
+                        .count()
+                        + 1
+                } else {
+                    char_offset
+                };
+                self.cursor_rect_for_render_paragraph(
+                    page_num,
+                    section_idx,
+                    virtual_para_idx,
+                    render_char_offset,
+                )?
+                .ok_or_else(|| {
+                    HwpError::RenderError("미주 커서 위치를 찾을 수 없습니다".to_string())
+                })
+            }
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 각주/미주가 아닙니다".to_string(),
+            )),
+        }
     }
 
     /// 각주 내 커서 위치 (커서 렉트) 계산

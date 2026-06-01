@@ -15,31 +15,262 @@ use crate::model::shape::{common_obj_offsets, ShapeObject};
 const MIN_SHAPE_SIZE: u32 = 200;
 
 impl DocumentCore {
+    fn resolve_shape_control_ref(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&ShapeObject, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &section.paragraphs {
+                for ctrl in &body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Shape(s) => Ok(s.as_ref()),
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 Shape이 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    fn resolve_shape_control_mut(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&mut ShapeObject, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &mut section.paragraphs {
+                for ctrl in &mut body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get_mut(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Shape(s) => Ok(s.as_mut()),
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 Shape이 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    fn resolve_picture_control_ref(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&crate::model::image::Picture, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &section.paragraphs {
+                for ctrl in &body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Picture(p) => Ok(p),
+            Control::Shape(shape) => match shape.as_ref() {
+                ShapeObject::Picture(p) => Ok(p),
+                _ => Err(HwpError::RenderError(
+                    "지정된 Shape 컨트롤이 그림이 아닙니다".to_string(),
+                )),
+            },
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 그림이 아닙니다".to_string(),
+            )),
+        }
+    }
+
+    fn resolve_picture_control_mut(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<&mut crate::model::image::Picture, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+
+        let body_len = section.paragraphs.len();
+        let para = if parent_para_idx < body_len {
+            section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        } else {
+            let mut virtual_idx = parent_para_idx - body_len;
+            let mut found = None;
+            'outer: for body_para in &mut section.paragraphs {
+                for ctrl in &mut body_para.controls {
+                    if let Control::Endnote(en) = ctrl {
+                        if virtual_idx < en.paragraphs.len() {
+                            found = en.paragraphs.get_mut(virtual_idx);
+                            break 'outer;
+                        }
+                        virtual_idx -= en.paragraphs.len();
+                    }
+                }
+            }
+            found.ok_or_else(|| {
+                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?
+        };
+
+        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        match ctrl {
+            Control::Picture(p) => Ok(p),
+            Control::Shape(shape) => match shape.as_mut() {
+                ShapeObject::Picture(p) => Ok(p),
+                _ => Err(HwpError::RenderError(
+                    "지정된 Shape 컨트롤이 그림이 아닙니다".to_string(),
+                )),
+            },
+            _ => Err(HwpError::RenderError(
+                "지정된 컨트롤이 그림이 아닙니다".to_string(),
+            )),
+        }
+    }
+
     pub fn get_picture_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let pic = match ctrl {
-            crate::model::control::Control::Picture(p) => p,
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 그림이 아닙니다".to_string(),
-                ))
-            }
-        };
+        let pic = self.resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)?;
         Self::format_picture_properties_json(pic)
+    }
+
+    fn picture_crop_extent_hu(pic: &crate::model::image::Picture) -> (i32, i32) {
+        let width = if pic.shape_attr.original_width > 0 {
+            pic.shape_attr.original_width
+        } else {
+            pic.shape_attr.current_width
+        };
+        let height = if pic.shape_attr.original_height > 0 {
+            pic.shape_attr.original_height
+        } else {
+            pic.shape_attr.current_height
+        };
+        (
+            i32::try_from(width).unwrap_or(i32::MAX),
+            i32::try_from(height).unwrap_or(i32::MAX),
+        )
+    }
+
+    fn picture_crop_ui_amounts(pic: &crate::model::image::Picture) -> (i32, i32, i32, i32) {
+        let (extent_w, extent_h) = Self::picture_crop_extent_hu(pic);
+        let left = pic.crop.left.max(0);
+        let top = pic.crop.top.max(0);
+        let right = if extent_w > 0 && pic.crop.right > left {
+            (extent_w - pic.crop.right).max(0)
+        } else {
+            0
+        };
+        let bottom = if extent_h > 0 && pic.crop.bottom > top {
+            (extent_h - pic.crop.bottom).max(0)
+        } else {
+            0
+        };
+        (left, top, right, bottom)
+    }
+
+    fn set_picture_crop_from_ui_amounts(
+        pic: &mut crate::model::image::Picture,
+        left: i32,
+        top: i32,
+        right: i32,
+        bottom: i32,
+    ) {
+        let (extent_w, extent_h) = Self::picture_crop_extent_hu(pic);
+        pic.crop.left = left.max(0);
+        pic.crop.top = top.max(0);
+        if extent_w > 0 {
+            pic.crop.right = (extent_w - right.max(0)).max(pic.crop.left);
+        } else {
+            pic.crop.right = right.max(0);
+        }
+        if extent_h > 0 {
+            pic.crop.bottom = (extent_h - bottom.max(0)).max(pic.crop.top);
+        } else {
+            pic.crop.bottom = bottom.max(0);
+        }
     }
 
     /// [Task #825] 머리말/꼬리말 안 그림의 속성 조회.
@@ -152,6 +383,7 @@ impl DocumentCore {
         };
 
         let sa = &pic.shape_attr;
+        let (crop_left, crop_top, crop_right, crop_bottom) = Self::picture_crop_ui_amounts(pic);
 
         Ok(format!(
             concat!(
@@ -190,7 +422,7 @@ impl DocumentCore {
             // 원본 크기
             sa.original_width, sa.original_height,
             // 자르기
-            pic.crop.left, pic.crop.top, pic.crop.right, pic.crop.bottom,
+            crop_left, crop_top, crop_right, crop_bottom,
             // 안쪽 여백
             pic.padding.left, pic.padding.top, pic.padding.right, pic.padding.bottom,
             // 바깥 여백
@@ -227,35 +459,70 @@ impl DocumentCore {
         props_json: &str,
     ) -> Result<String, HwpError> {
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
-        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let pic = match ctrl {
-            crate::model::control::Control::Picture(p) => p,
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 그림이 아닙니다".to_string(),
-                ))
-            }
-        };
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
-        let caption_created = Self::apply_picture_props_inner(pic, props_json);
+        let (caption_created, should_migrate_to_inline) = {
+            let pic =
+                self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
+            // [Task #1151 v2] tac false→true migration 검출용 snapshot.
+            let was_tac = pic.common.treat_as_char;
+            let caption_created = Self::apply_picture_props_inner(pic, props_json);
+            let now_tac = pic.common.treat_as_char;
+            (caption_created, !was_tac && now_tac)
+        };
+
+        // [Task #1151 v2] floating → inline migration (H1 정합, samples/tac-verify/).
+        // 한컴 산출물 Scenario A~D 분석: tac false→true 시 picture 의 control 위치는
+        // 불변이고, 4 필드만 갱신 (treat_as_char / h/v_rel_to=Para / h/v_offset=0 /
+        // parent line_segs[0]). text/char_offsets/paragraph 수 변화 없음.
+        if should_migrate_to_inline {
+            let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            let body_len = section.paragraphs.len();
+            let para = if parent_para_idx < body_len {
+                section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+                })?
+            } else {
+                let mut virtual_idx = parent_para_idx - body_len;
+                let mut found = None;
+                'outer: for body_para in &mut section.paragraphs {
+                    for ctrl in &mut body_para.controls {
+                        if let Control::Endnote(en) = ctrl {
+                            if virtual_idx < en.paragraphs.len() {
+                                found = en.paragraphs.get_mut(virtual_idx);
+                                break 'outer;
+                            }
+                            virtual_idx -= en.paragraphs.len();
+                        }
+                    }
+                }
+                found.ok_or_else(|| {
+                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+                })?
+            };
+            let crate::model::paragraph::Paragraph {
+                line_segs,
+                controls,
+                ..
+            } = &mut *para;
+            match controls.get_mut(control_idx) {
+                Some(Control::Picture(pic_box)) => {
+                    Self::migrate_picture_floating_to_inline(line_segs, pic_box.as_mut());
+                }
+                Some(Control::Shape(shape)) => {
+                    if let ShapeObject::Picture(pic) = shape.as_mut() {
+                        Self::migrate_picture_floating_to_inline(line_segs, pic);
+                    }
+                }
+                _ => {}
+            }
+        }
         // 캡션 생성 시 AutoNumber 재할당 + 텍스트 생성 (본문 path 만 — 머리말/꼬리말은 별도).
         if caption_created {
             crate::parser::assign_auto_numbers(&mut self.document);
-            let pic_mut = match &mut self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls[control_idx]
-            {
-                crate::model::control::Control::Picture(p) => p,
-                _ => unreachable!(),
-            };
+            let pic_mut =
+                self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
             let para = &mut pic_mut.caption.as_mut().unwrap().paragraphs[0];
             para.text = "그림  ".to_string();
             para.char_offsets = vec![0, 1, 2, 11];
@@ -266,20 +533,24 @@ impl DocumentCore {
         section.raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        // [Task #1151 v5] page tree cache invalidate — 다른 picture/shape setter (셀 shape
+        // by_path / 셀 picture by_path / header-footer picture / shape 등) 모두 호출하나
+        // 본 본문 picture setter 만 누락되어 있어 studio 가 stale page tree 반환 → tac toggle
+        // 후 시각 변화 없음 증상의 root cause.
+        self.invalidate_page_tree_cache();
         self.event_log.push(DocumentEvent::PictureResized {
             section: section_idx,
             para: parent_para_idx,
             ctrl: control_idx,
         });
         if caption_created {
-            let char_offset = match &self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls[control_idx]
-            {
-                crate::model::control::Control::Picture(p) => p.caption.as_ref().map_or(0, |c| {
+            let char_offset = self
+                .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)?
+                .caption
+                .as_ref()
+                .map_or(0, |c| {
                     c.paragraphs.first().map_or(0, |p| p.text.chars().count())
-                }),
-                _ => 0,
-            };
+                });
             Ok(format!(
                 "{{\"ok\":true,\"captionCharOffset\":{}}}",
                 char_offset
@@ -366,6 +637,110 @@ impl DocumentCore {
             ctrl: outer_control_idx,
         });
         Ok("{\"ok\":true}".to_string())
+    }
+
+    /// [Task #1151 v2] Floating picture → inline 마이그레이션 (H1 정합).
+    ///
+    /// 한컴 2022 산출물 (`samples/tac-verify/scenario-{a,b,c,d}-after.hwp`) 분석
+    /// 결과: floating picture 의 `treat_as_char` 가 false→true 로 토글될 때
+    /// 한컴은 다음만 갱신한다 (자세한 분석: `mydocs/tech/hancom_picture_tac_toggle.md`).
+    ///
+    /// Picture 자체: `horz_rel_to = Para`, `vert_rel_to = Para`,
+    /// `horizontal_offset = 0`, `vertical_offset = 0`. (`treat_as_char = true` 와 attr
+    /// 비트는 `apply_picture_props_inner` 가 이미 처리.)
+    ///
+    /// Parent paragraph 의 `line_segs[0]`: `line_height = picture.common.height`,
+    /// `text_height = picture.common.height`, `baseline_distance = round(line_height × 0.85)`.
+    /// 비율 0.85 는 한컴 산출물 4 시나리오 (5331/16038/4847/19019) 모두 정확 관찰.
+    /// `line_segs` 가 비어있으면 신설 (line_spacing=600 기본).
+    ///
+    /// 변경 없음: paragraph.text / char_offsets / char_shapes / paragraph 수, picture
+    /// control 의 paragraph 위치 (sentinel char 추가하지 않음, 셀 안 이동 / 새 paragraph
+    /// 분리 모두 없음 — H1 정합).
+    pub(crate) fn migrate_picture_floating_to_inline(
+        line_segs: &mut Vec<crate::model::paragraph::LineSeg>,
+        pic: &mut crate::model::image::Picture,
+    ) {
+        use crate::model::shape::{HorzRelTo, VertRelTo};
+        pic.common.horz_rel_to = HorzRelTo::Para;
+        pic.common.vert_rel_to = VertRelTo::Para;
+        pic.common.horizontal_offset = 0;
+        pic.common.vertical_offset = 0;
+
+        let picture_height_hu = pic.common.height as i32;
+        let baseline = (picture_height_hu as f64 * 0.85).round() as i32;
+        if let Some(seg) = line_segs.first_mut() {
+            seg.line_height = picture_height_hu;
+            seg.text_height = picture_height_hu;
+            seg.baseline_distance = baseline;
+        } else {
+            line_segs.push(crate::model::paragraph::LineSeg {
+                line_height: picture_height_hu,
+                text_height: picture_height_hu,
+                baseline_distance: baseline,
+                line_spacing: 600,
+                ..Default::default()
+            });
+        }
+    }
+
+    /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
+    /// 4 개 by_path setter/getter (cell picture/shape × set/get) 의 공통 파싱.
+    /// 빈 path 면 Err 반환.
+    fn parse_cell_path_json(json: &str) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+        let path: Vec<(usize, usize, usize)> = serde_json::from_str::<Vec<serde_json::Value>>(json)
+            .map_err(|e| HwpError::RenderError(format!("cell_path JSON 파싱 실패: {}", e)))?
+            .iter()
+            .map(|v| {
+                let c = v.get("controlIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
+                let ci = v.get("cellIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
+                let cpi = v.get("cellParaIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
+                (c, ci, cpi)
+            })
+            .collect();
+        if path.is_empty() {
+            return Err(HwpError::RenderError(
+                "cell_path 가 비어있습니다".to_string(),
+            ));
+        }
+        Ok(path)
+    }
+
+    /// [Task #1151 v7] section + parent_para_idx + path → target paragraph (mut).
+    /// 2 개 set_cell_*_by_path_native (Picture / Shape) 의 공통 traversal.
+    /// immutable 버전은 cursor_nav.rs 의 `resolve_paragraph_by_path` 가 담당.
+    fn resolve_cell_paragraph_mut<'a>(
+        section: &'a mut crate::model::document::Section,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> Result<&'a mut crate::model::paragraph::Paragraph, HwpError> {
+        let mut current_para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+        })?;
+        for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
+            let ctrl = current_para.controls.get_mut(ctrl_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("경로[{}]: controls[{}] 범위 초과", i, ctrl_idx))
+            })?;
+            let table = match ctrl {
+                crate::model::control::Control::Table(t) => t,
+                _ => {
+                    return Err(HwpError::RenderError(format!(
+                        "경로[{}]: controls[{}] 가 표가 아닙니다",
+                        i, ctrl_idx
+                    )))
+                }
+            };
+            let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("경로[{}]: cells[{}] 범위 초과", i, cell_idx))
+            })?;
+            current_para = cell.paragraphs.get_mut(cell_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "경로[{}]: paragraphs[{}] 범위 초과",
+                    i, cell_para_idx
+                ))
+            })?;
+        }
+        Ok(current_para)
     }
 
     /// [Task #825] Picture 속성 JSON 적용 (mutation only). 후처리 (AutoNumber /
@@ -482,18 +857,31 @@ impl DocumentCore {
             }
         }
 
-        // 자르기
-        if let Some(v) = json_i32(props_json, "cropLeft") {
-            pic.crop.left = v;
-        }
-        if let Some(v) = json_i32(props_json, "cropTop") {
-            pic.crop.top = v;
-        }
-        if let Some(v) = json_i32(props_json, "cropRight") {
-            pic.crop.right = v;
-        }
-        if let Some(v) = json_i32(props_json, "cropBottom") {
-            pic.crop.bottom = v;
+        // 자르기: HWP 내부 crop은 원본 이미지의 source rect 좌표이고,
+        // 속성 창 UI는 네 방향에서 잘라낸 양을 표시한다.
+        let crop_left = json_i32(props_json, "cropLeft");
+        let crop_top = json_i32(props_json, "cropTop");
+        let crop_right = json_i32(props_json, "cropRight");
+        let crop_bottom = json_i32(props_json, "cropBottom");
+        if crop_left.is_some()
+            || crop_top.is_some()
+            || crop_right.is_some()
+            || crop_bottom.is_some()
+        {
+            let (mut left, mut top, mut right, mut bottom) = Self::picture_crop_ui_amounts(pic);
+            if let Some(v) = crop_left {
+                left = v;
+            }
+            if let Some(v) = crop_top {
+                top = v;
+            }
+            if let Some(v) = crop_right {
+                right = v;
+            }
+            if let Some(v) = crop_bottom {
+                bottom = v;
+            }
+            Self::set_picture_crop_from_ui_amounts(pic, left, top, right, bottom);
         }
 
         // 안쪽 여백 (그림 여백)
@@ -1386,11 +1774,24 @@ impl DocumentCore {
     }
 
     /// 커서 위치에 그림을 삽입한다 (네이티브).
+    ///
+    /// - `cell_path` 가 비어있으면 본문 paragraph 에 inline (treat_as_char=true) 삽입.
+    /// - `cell_path` 가 있으면 표 셀 영역에 floating picture (tac=false, wrap=Square,
+    ///   Page-relative offset) 로 삽입한다. 셀 자체는 비어있는 채로 유지되어 cursor
+    ///   클릭이 정상 동작 (#1151). 한컴 2022 의 셀 이미지 삽입 패턴과 동일
+    ///   (incellpicture.hwp 검증).
+    ///
+    /// `paper_offset_x_hu / paper_offset_y_hu`: 셀 floating 분기에서 사용할 paper-relative
+    /// 좌표 (HWPUNIT). `None` 이면 셀 좌상단 (`compute_cell_page_offset`) 을 default 로 사용
+    /// — 기존 동작 + API caller 호환. studio drag 좌표 기반 호출은 `Some` 으로 전달.
+    /// 본문 inline 분기 (cell_path 비어있음) 는 본 매개변수를 사용하지 않는다.
+    #[allow(clippy::too_many_arguments)]
     pub fn insert_picture_native(
         &mut self,
         section_idx: usize,
         para_idx: usize,
         char_offset: usize,
+        cell_path: &[(usize, usize, usize)],
         image_data: &[u8],
         width: u32,
         height: u32,
@@ -1398,6 +1799,8 @@ impl DocumentCore {
         natural_height_px: u32,
         extension: &str,
         description: &str,
+        paper_offset_x_hu: Option<i32>,
+        paper_offset_y_hu: Option<i32>,
     ) -> Result<String, HwpError> {
         use crate::model::bin_data::{
             BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
@@ -1424,6 +1827,10 @@ impl DocumentCore {
                 "이미지 데이터가 비어 있습니다".to_string(),
             ));
         }
+        // cell_path 가 있으면 경로가 유효한지 사전 검증.
+        if !cell_path.is_empty() {
+            self.resolve_cell_by_path(section_idx, para_idx, cell_path)?;
+        }
 
         // --- 1. BinDataContent 추가 ---
         let next_id = self.document.bin_data_content.len() as u16 + 1;
@@ -1449,23 +1856,7 @@ impl DocumentCore {
         });
         self.document.doc_info.raw_stream = None; // DocInfo 재직렬화
 
-        // --- 3. Picture 컨트롤 생성 ---
-        // CommonObjAttr: treat_as_char, vert_rel_to=Para, horz_rel_to=Column,
-        // width_criterion=absolute(4), height_criterion=absolute(2)
-        let common_attr: u32 = 0x01 | (2 << 3) | (2 << 8) | (4 << 15) | (2 << 18); // 0x0A0211
-        let common = CommonObjAttr {
-            ctrl_id: 0x67736F20, // "gso " — GenShape
-            attr: common_attr,
-            treat_as_char: true,
-            vert_rel_to: VertRelTo::Para,
-            horz_rel_to: HorzRelTo::Column,
-            width,
-            height,
-            z_order: 0,
-            description: description.to_string(),
-            ..Default::default()
-        };
-
+        // --- 공통 자원 ---
         let shape_attr = ShapeComponentAttr {
             original_width: width,
             original_height: height,
@@ -1476,19 +1867,128 @@ impl DocumentCore {
             render_sy: 1.0,
             ..Default::default()
         };
-
-        // border_x/border_y: 4 꼭짓점 좌표 (x,y 쌍으로 연속 저장)
-        // [tl.x, tl.y, tr.x, tr.y], [br.x, br.y, bl.x, bl.y]
         let bx = [0i32, 0, width as i32, 0];
         let by = [width as i32, height as i32, 0, height as i32];
-
-        // crop: 비크롭 시 이미지 원본 범위 (원본 크기 = 디스플레이 크기일 때)
-        // crop: 이미지 원본 픽셀 크기 × 75 (HWPUNIT/pixel at 96DPI)
         let crop = CropInfo {
             left: 0,
             top: 0,
             right: (natural_width_px * 75) as i32,
             bottom: (natural_height_px * 75) as i32,
+        };
+        let image_attr = ImageAttr {
+            bin_data_id: next_id,
+            brightness: 0,
+            contrast: 0,
+            effect: ImageEffect::RealPic,
+            external_path: None,
+        };
+
+        if !cell_path.is_empty() {
+            // === 셀 floating picture 분기 (#1151 v2 — 한컴 패턴 정합) ===
+            // Picture 는 표가 들어있는 paragraph 의 sibling control 로 append 된다.
+            // tac=false, wrap=Square (어울림), horz/vert_rel_to=Paper, offset 은 사용자 클릭/드래그 위치.
+            // [Task #1151 v8] 결함 A fix: 한컴 native default 가 Paper (incellpicture.hwp dump
+            // 확인 — horz_rel_to=Paper offset=11845, vert_rel_to=Paper offset=15595).
+            // [Task #1151 v8] 결함 C fix: 사용자가 클릭/드래그한 좌표 (paper-relative HU) 사용 —
+            // 한컴 native 동작 정합. caller (studio) 가 None 전달 시 셀 좌상단 default.
+            let (offset_x_hu, offset_y_hu) = match (paper_offset_x_hu, paper_offset_y_hu) {
+                (Some(x), Some(y)) => (x, y),
+                _ => self.compute_cell_page_offset(section_idx, para_idx, cell_path),
+            };
+
+            // CommonObjAttr (floating):
+            //   bits 3-4=vert_rel_to(0=Paper), bits 8-10=horz_rel_to(0=Paper),
+            //   bits 15-17=width_criterion(4=Absolute), bits 18-20=height_criterion(2=Absolute),
+            //   bits 21-23=text_wrap(0=Square)
+            let common_attr: u32 = (4 << 15) | (2 << 18);
+            let common = CommonObjAttr {
+                ctrl_id: 0x67736F20,
+                attr: common_attr,
+                treat_as_char: false,
+                vert_rel_to: VertRelTo::Paper,
+                horz_rel_to: HorzRelTo::Paper,
+                text_wrap: crate::model::shape::TextWrap::Square,
+                horizontal_offset: offset_x_hu.max(0) as u32,
+                vertical_offset: offset_y_hu.max(0) as u32,
+                width,
+                height,
+                z_order: 1,
+                description: description.to_string(),
+                ..Default::default()
+            };
+            let pic = Picture {
+                common,
+                shape_attr,
+                border_x: bx,
+                border_y: by,
+                crop,
+                image_attr,
+                ..Default::default()
+            };
+
+            // table 같은 paragraph 의 sibling control 로 append.
+            self.document.sections[section_idx].raw_stream = None;
+            let parent = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let new_ctrl_idx = parent.controls.len();
+            parent.controls.push(Control::Picture(Box::new(pic)));
+            parent.ctrl_data_records.push(None);
+
+            // outer table dirty 마킹 (재측정 유도)
+            let outer_ctrl = cell_path[0].0;
+            if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
+                [para_idx]
+                .controls
+                .get_mut(outer_ctrl)
+            {
+                t.dirty = true;
+            }
+            self.mark_section_dirty(section_idx);
+            self.paginate_if_needed();
+            // [Task #1151 v9 결함 F] page tree cache invalidate — v5 와 동일 결함 (다른
+            // setter 들은 모두 호출하나 본 insert path 의 셀 분기만 누락). 두 picture
+            // 연속 insert + toggle 시 cache stale → studio 화면 불일치.
+            self.invalidate_page_tree_cache();
+
+            self.event_log.push(DocumentEvent::PictureInserted {
+                section: section_idx,
+                para: para_idx,
+            });
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"controlIdx\":{}",
+                para_idx, new_ctrl_idx
+            )));
+        }
+
+        // === 본문 floating picture 분기 (Task #1151 v9 결함 E — 셀 분기와 동일 패턴) ===
+        //
+        // 한컴 native 동작 (사용자 시연 2026-05-30): 본문 picture 신규 삽입 시
+        // 글자처럼 취급 default = **미체크** (tac=false, floating). 셀 안 picture
+        // 와 동일. 이전 rhwp 본문 path 는 새 paragraph 생성 + inline glyph (tac=true)
+        // 로 만들어 한컴 default 와 불일치 — 재설계하여 셀 분기와 통합.
+        let (offset_x_hu, offset_y_hu) = match (paper_offset_x_hu, paper_offset_y_hu) {
+            (Some(x), Some(y)) => (x, y),
+            _ => (0, 0),
+        };
+
+        // CommonObjAttr (floating, 셀 분기와 동일):
+        //   bits 3-4=vert_rel_to(0=Paper), bits 8-10=horz_rel_to(0=Paper),
+        //   bits 15-17=width_criterion(4=Absolute), bits 18-20=height_criterion(2=Absolute),
+        //   bits 21-23=text_wrap(0=Square)
+        let common_attr: u32 = (4 << 15) | (2 << 18);
+        let common = CommonObjAttr {
+            ctrl_id: 0x67736F20, // "gso " — GenShape
+            attr: common_attr,
+            treat_as_char: false,
+            vert_rel_to: VertRelTo::Paper,
+            horz_rel_to: HorzRelTo::Paper,
+            text_wrap: crate::model::shape::TextWrap::Square,
+            horizontal_offset: offset_x_hu.max(0) as u32,
+            vertical_offset: offset_y_hu.max(0) as u32,
+            width,
+            height,
+            z_order: 1,
+            description: description.to_string(),
+            ..Default::default()
         };
 
         let pic = Picture {
@@ -1497,141 +1997,116 @@ impl DocumentCore {
             border_x: bx,
             border_y: by,
             crop,
-            image_attr: ImageAttr {
-                bin_data_id: next_id,
-                brightness: 0,
-                contrast: 0,
-                effect: ImageEffect::RealPic,
-                external_path: None,
-            },
+            image_attr,
             ..Default::default()
         };
 
-        // --- 4. 그림 포함 문단 생성 + 삽입 (createTable 패턴) ---
-        let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let default_char_shape_id: u32 = current_para
-            .char_shapes
-            .first()
-            .map(|cs| cs.char_shape_id)
-            .unwrap_or(0);
-        let default_para_shape_id: u16 = current_para.para_shape_id;
-
-        let pd = &self.document.sections[section_idx].section_def.page_def;
-        let content_width =
-            (pd.width as i32 - pd.margin_left as i32 - pd.margin_right as i32).max(7200) as u32;
-
-        let mut pic_raw_header_extra = vec![0u8; 10];
-        pic_raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes()); // n_char_shapes=1
-        pic_raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes()); // n_line_segs=1
-
-        let pic_para = Paragraph {
-            text: String::new(),
-            char_count: 9, // 확장 제어문자(8 code units) + 문단끝(1)
-            control_mask: 0x00000800,
-            char_offsets: vec![],
-            char_shapes: vec![CharShapeRef {
-                start_pos: 0,
-                char_shape_id: default_char_shape_id,
-            }],
-            line_segs: vec![LineSeg {
-                text_start: 0,
-                line_height: height as i32,
-                text_height: height as i32,
-                baseline_distance: (height as i32 * 850) / 1000,
-                line_spacing: 600,
-                segment_width: content_width as i32,
-                tag: 0x00060000,
-                ..Default::default()
-            }],
-            para_shape_id: default_para_shape_id,
-            style_id: 0,
-            controls: vec![Control::Picture(Box::new(pic))],
-            ctrl_data_records: vec![None],
-            has_para_text: true,
-            raw_header_extra: pic_raw_header_extra,
-            char_count_msb: false,
-            ..Default::default()
-        };
-
-        // 커서 위치에 삽입
+        // 현재 paragraph 의 sibling control 로 append (새 paragraph 생성 X).
         self.document.sections[section_idx].raw_stream = None;
+        let parent = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        let new_ctrl_idx = parent.controls.len();
+        parent.controls.push(Control::Picture(Box::new(pic)));
+        parent.ctrl_data_records.push(None);
 
-        let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let is_empty_para = para.text.is_empty() && para.controls.is_empty();
-
-        let insert_para_idx;
-        if is_empty_para && char_offset == 0 {
-            self.document.sections[section_idx].paragraphs[para_idx] = pic_para;
-            insert_para_idx = para_idx;
-        } else if char_offset == 0 && para.controls.is_empty() {
-            self.document.sections[section_idx]
-                .paragraphs
-                .insert(para_idx, pic_para);
-            insert_para_idx = para_idx;
-        } else {
-            if char_offset > 0 && !para.text.is_empty() {
-                let new_para =
-                    self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
-                self.document.sections[section_idx]
-                    .paragraphs
-                    .insert(para_idx + 1, new_para);
-                self.document.sections[section_idx]
-                    .paragraphs
-                    .insert(para_idx + 1, pic_para);
-                insert_para_idx = para_idx + 1;
-            } else {
-                self.document.sections[section_idx]
-                    .paragraphs
-                    .insert(para_idx + 1, pic_para);
-                insert_para_idx = para_idx + 1;
-            }
-        }
-
-        // 그림 아래에 빈 문단 추가
-        let mut empty_raw_header_extra = vec![0u8; 10];
-        empty_raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
-        empty_raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
-        let empty_para = Paragraph {
-            text: String::new(),
-            char_count: 1,
-            char_count_msb: false,
-            control_mask: 0,
-            para_shape_id: default_para_shape_id,
-            style_id: 0,
-            char_shapes: vec![CharShapeRef {
-                start_pos: 0,
-                char_shape_id: default_char_shape_id,
-            }],
-            line_segs: vec![LineSeg {
-                text_start: 0,
-                line_height: 1000,
-                text_height: 1000,
-                baseline_distance: 850,
-                line_spacing: 600,
-                segment_width: content_width as i32,
-                tag: 0x00060000,
-                ..Default::default()
-            }],
-            has_para_text: false,
-            raw_header_extra: empty_raw_header_extra,
-            ..Default::default()
-        };
-        self.document.sections[section_idx]
-            .paragraphs
-            .insert(insert_para_idx + 1, empty_para);
-
-        // --- 5. 리플로우 + 페이지네이션 ---
-        self.recompose_section(section_idx);
+        self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
+        // [Task #1151 v9 결함 F] page tree cache invalidate (v5 패턴).
+        self.invalidate_page_tree_cache();
 
         self.event_log.push(DocumentEvent::PictureInserted {
             section: section_idx,
-            para: insert_para_idx,
+            para: para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"paraIdx\":{},\"controlIdx\":0",
-            insert_para_idx
+            "\"paraIdx\":{},\"controlIdx\":{}",
+            para_idx, new_ctrl_idx
         )))
+    }
+
+    /// 표 셀의 page-relative 좌상단 좌표를 HWPUNIT 단위로 계산 (#1151 floating).
+    ///
+    /// render tree 를 순회하여 cell_path 와 매칭되는 TableCell 노드를 찾고
+    /// bbox.x / bbox.y (px) 를 HWPUNIT 으로 환산 (× 75).
+    ///
+    /// 매칭 실패 / 페이지 미빌드 시 (0, 0) fallback — picture 가 페이지 좌상단에
+    /// 떠도 사용자가 드래그로 위치 조정 가능.
+    pub(crate) fn compute_cell_page_offset(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path: &[(usize, usize, usize)],
+    ) -> (i32, i32) {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        if cell_path.is_empty() {
+            return (0, 0);
+        }
+
+        fn matches_cell_run(
+            node: &RenderNode,
+            parent_para: usize,
+            path: &[(usize, usize, usize)],
+        ) -> bool {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                return tr.cell_context.as_ref().is_some_and(|ctx| {
+                    ctx.parent_para_index == parent_para
+                        && ctx.path.len() == path.len()
+                        && ctx
+                            .path
+                            .iter()
+                            .zip(path.iter())
+                            .all(|(a, b)| a.control_index == b.0 && a.cell_index == b.1)
+                });
+            }
+            for child in &node.children {
+                if matches!(child.node_type, RenderNodeType::Table(_)) {
+                    continue;
+                }
+                if matches_cell_run(child, parent_para, path) {
+                    return true;
+                }
+            }
+            false
+        }
+
+        fn find_cell(
+            node: &RenderNode,
+            parent_para: usize,
+            path: &[(usize, usize, usize)],
+        ) -> Option<(f64, f64)> {
+            if let RenderNodeType::Table(_) = node.node_type {
+                if matches_cell_run(node, parent_para, path) {
+                    let target_cell = path.last().unwrap().1;
+                    for child in node.children.iter() {
+                        if let RenderNodeType::TableCell(ref tc) = child.node_type {
+                            if tc.model_cell_index == Some(target_cell as u32) {
+                                return Some((child.bbox.x, child.bbox.y));
+                            }
+                        }
+                    }
+                }
+            }
+            for child in &node.children {
+                if let Some(found) = find_cell(child, parent_para, path) {
+                    return Some(found);
+                }
+            }
+            None
+        }
+
+        let total_pages = self.page_count();
+        for p in 0..total_pages {
+            if let Ok(tree) = self.build_page_tree(p) {
+                if let Some((px, py)) = find_cell(&tree.root, parent_para_idx, cell_path) {
+                    // px → HWPUNIT (1px = 75 HWPUNIT at 96 DPI 가정).
+                    // 단, section_idx 가 의미 있는 단위 정합을 위해 section 자체의
+                    // 보정은 호출 측 (Picture.horz/vert_rel_to=Page) 가 처리.
+                    let _ = section_idx;
+                    return ((px * 75.0) as i32, (py * 75.0) as i32);
+                }
+            }
+        }
+        (0, 0)
     }
 
     /// 표의 모든 셀 bbox를 반환한다 (네이티브).
@@ -1792,7 +2267,10 @@ impl DocumentCore {
              \"vertRelTo\":\"{}\",\"vertAlign\":\"{}\",\
              \"horzRelTo\":\"{}\",\"horzAlign\":\"{}\",\
              \"vertOffset\":{},\"horzOffset\":{},\
-             \"textWrap\":\"{}\",\"zOrder\":{},\"instanceId\":{},\"description\":\"{}\"",
+             \"textWrap\":\"{}\",\"zOrder\":{},\"instanceId\":{},\
+             \"outerMarginLeft\":{},\"outerMarginTop\":{},\
+             \"outerMarginRight\":{},\"outerMarginBottom\":{},\
+             \"description\":\"{}\"",
             c.width,
             c.height,
             c.treat_as_char,
@@ -1805,6 +2283,10 @@ impl DocumentCore {
             text_wrap,
             c.z_order,
             c.instance_id,
+            c.margin.left,
+            c.margin.top,
+            c.margin.right,
+            c.margin.bottom,
             desc_escaped,
         )
     }
@@ -1814,7 +2296,7 @@ impl DocumentCore {
         c: &mut crate::model::shape::CommonObjAttr,
         props_json: &str,
     ) {
-        use super::super::helpers::{json_bool, json_str, json_u32};
+        use super::super::helpers::{json_bool, json_i16, json_str, json_u32};
 
         if let Some(w) = json_u32(props_json, "width") {
             c.width = w.max(MIN_SHAPE_SIZE);
@@ -1883,6 +2365,18 @@ impl DocumentCore {
         if let Some(v) = json_str(props_json, "description") {
             c.description = v;
         }
+        if let Some(v) = json_i16(props_json, "outerMarginLeft") {
+            c.margin.left = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginTop") {
+            c.margin.top = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginRight") {
+            c.margin.right = v;
+        }
+        if let Some(v) = json_i16(props_json, "outerMarginBottom") {
+            c.margin.bottom = v;
+        }
     }
 
     /// 글상자(Shape) 속성 조회 (네이티브).
@@ -1892,24 +2386,7 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let shape = match ctrl {
-            Control::Shape(s) => s.as_ref(),
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 Shape이 아닙니다".to_string(),
-                ))
-            }
-        };
+        let shape = self.resolve_shape_control_ref(section_idx, parent_para_idx, control_idx)?;
 
         let c = shape.common();
         let common_json = Self::common_obj_attr_to_json(c);
@@ -2036,24 +2513,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use super::super::helpers::{json_bool, json_i32, json_str};
 
-        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-        })?;
-        let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-        })?;
-
-        let shape = match ctrl {
-            Control::Shape(s) => s.as_mut(),
-            _ => {
-                return Err(HwpError::RenderError(
-                    "지정된 컨트롤이 Shape이 아닙니다".to_string(),
-                ))
-            }
-        };
+        let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
 
         // CommonObjAttr 업데이트
         // 리사이즈 핸들을 반대편으로 끌어당길 때 studio가 width/height=0 을 보내
@@ -2639,6 +3099,35 @@ impl DocumentCore {
     }
 
     /// [Task #1138] 표 셀 내 Shape 속성 조회 (by_path).
+    /// [Task #1151 v4] 셀 안 picture 속성 조회 (cell_path 기반).
+    /// `get_cell_shape_properties_by_path_native` Picture 버전.
+    pub fn get_cell_picture_properties_by_path_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path_json(cell_path_json)?;
+        let cell = self.resolve_cell_by_path(section_idx, parent_para_idx, &path)?;
+        let last_cell_para_idx = path.last().unwrap().2;
+        let cell_para = cell.paragraphs.get(last_cell_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("셀 내 문단 {} 범위 초과", last_cell_para_idx))
+        })?;
+        let ctrl = cell_para.controls.get(inner_control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("셀 내 컨트롤 {} 범위 초과", inner_control_idx))
+        })?;
+        let pic = match ctrl {
+            Control::Picture(p) => p,
+            _ => {
+                return Err(HwpError::RenderError(
+                    "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
+                ))
+            }
+        };
+        Self::format_picture_properties_json(pic)
+    }
+
     pub fn get_cell_shape_properties_by_path_native(
         &self,
         section_idx: usize,
@@ -2646,22 +3135,7 @@ impl DocumentCore {
         cell_path_json: &str,
         inner_control_idx: usize,
     ) -> Result<String, HwpError> {
-        let path: Vec<(usize, usize, usize)> =
-            serde_json::from_str::<Vec<serde_json::Value>>(cell_path_json)
-                .map_err(|e| HwpError::RenderError(format!("cell_path JSON 파싱 실패: {}", e)))?
-                .iter()
-                .map(|v| {
-                    let c = v.get("controlIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
-                    let ci = v.get("cellIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
-                    let cpi = v.get("cellParaIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
-                    (c, ci, cpi)
-                })
-                .collect();
-        if path.is_empty() {
-            return Err(HwpError::RenderError(
-                "cell_path 가 비어있습니다".to_string(),
-            ));
-        }
+        let path = Self::parse_cell_path_json(cell_path_json)?;
         let cell = self.resolve_cell_by_path(section_idx, parent_para_idx, &path)?;
         let last_cell_para_idx = path.last().unwrap().2;
         let cell_para = cell.paragraphs.get(last_cell_para_idx).ok_or_else(|| {
@@ -2682,6 +3156,57 @@ impl DocumentCore {
     }
 
     /// [Task #1138] 표 셀 내 Shape 속성 변경 (by_path).
+    /// [Task #1151 v4] 셀 안 picture 속성 변경 (cell_path 기반).
+    ///
+    /// `set_cell_shape_properties_by_path_native` 와 동일 패턴 — 셀 path 순회 후
+    /// inner_control_idx 의 Picture 에 대해 `apply_picture_props_inner` 적용.
+    /// v2 의 tac 토글 마이그레이션 path 는 본 셀 안 picture path 에서는 적용되지
+    /// 않는다 (셀 안 inline picture 는 이미 셀 안 위치에 있고, 한컴은 inline→floating
+    /// 자동 변환을 별도 path 로 처리. 본 PR 의 v2 scope 는 floating→inline 만).
+    pub fn set_cell_picture_properties_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path_json(cell_path_json)?;
+        {
+            let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            let current_para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, &path)?;
+            let ctrl = current_para
+                .controls
+                .get_mut(inner_control_idx)
+                .ok_or_else(|| {
+                    HwpError::RenderError(format!("셀 내 컨트롤 {} 범위 초과", inner_control_idx))
+                })?;
+            let pic = match ctrl {
+                Control::Picture(p) => p,
+                _ => {
+                    return Err(HwpError::RenderError(
+                        "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
+                    ))
+                }
+            };
+            Self::apply_picture_props_inner(pic, props_json);
+        }
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        let outer_table_ctrl = path.first().unwrap().0;
+        self.event_log.push(DocumentEvent::PictureResized {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: outer_table_ctrl,
+        });
+        Ok("{\"ok\":true}".to_string())
+    }
+
     pub fn set_cell_shape_properties_by_path_native(
         &mut self,
         section_idx: usize,
@@ -2690,53 +3215,12 @@ impl DocumentCore {
         inner_control_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
-        let path: Vec<(usize, usize, usize)> =
-            serde_json::from_str::<Vec<serde_json::Value>>(cell_path_json)
-                .map_err(|e| HwpError::RenderError(format!("cell_path JSON 파싱 실패: {}", e)))?
-                .iter()
-                .map(|v| {
-                    let c = v.get("controlIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
-                    let ci = v.get("cellIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
-                    let cpi = v.get("cellParaIdx").and_then(|x| x.as_u64()).unwrap_or(0) as usize;
-                    (c, ci, cpi)
-                })
-                .collect();
-        if path.is_empty() {
-            return Err(HwpError::RenderError(
-                "cell_path 가 비어있습니다".to_string(),
-            ));
-        }
+        let path = Self::parse_cell_path_json(cell_path_json)?;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
-            let mut current_para =
-                section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
-                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
-                })?;
-            for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
-                let ctrl = current_para.controls.get_mut(ctrl_idx).ok_or_else(|| {
-                    HwpError::RenderError(format!("경로[{}]: controls[{}] 범위 초과", i, ctrl_idx))
-                })?;
-                let table = match ctrl {
-                    Control::Table(t) => t,
-                    _ => {
-                        return Err(HwpError::RenderError(format!(
-                            "경로[{}]: controls[{}] 가 표가 아닙니다",
-                            i, ctrl_idx
-                        )))
-                    }
-                };
-                let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
-                    HwpError::RenderError(format!("경로[{}]: cells[{}] 범위 초과", i, cell_idx))
-                })?;
-                current_para = cell.paragraphs.get_mut(cell_para_idx).ok_or_else(|| {
-                    HwpError::RenderError(format!(
-                        "경로[{}]: paragraphs[{}] 범위 초과",
-                        i, cell_para_idx
-                    ))
-                })?;
-            }
+            let current_para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, &path)?;
             let ctrl = current_para
                 .controls
                 .get_mut(inner_control_idx)
@@ -4637,58 +5121,108 @@ impl DocumentCore {
         }
     }
 
-    pub fn get_equation_properties_native(
+    fn find_note_equation_ref(
         &self,
+        kind: &str,
         section_idx: usize,
         parent_para_idx: usize,
-        control_idx: usize,
-        cell_idx: Option<usize>,
-        cell_para_idx: Option<usize>,
-    ) -> Result<String, HwpError> {
-        let eq = self.find_equation_ref(
-            section_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-        )?;
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<&crate::model::control::Equation, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+        })?;
+        let note_para = match para.controls.get(note_control_idx) {
+            Some(Control::Footnote(note)) if kind == "footnote" => {
+                note.paragraphs.get(note_para_idx)
+            }
+            Some(Control::Endnote(note)) if kind == "endnote" => note.paragraphs.get(note_para_idx),
+            _ => None,
+        }
+        .ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "각주/미주 문단을 찾을 수 없습니다: kind={} sec={} para={} ctrl={} note_para={}",
+                kind, section_idx, parent_para_idx, note_control_idx, note_para_idx
+            ))
+        })?;
+        match note_para.controls.get(inner_control_idx) {
+            Some(Control::Equation(eq)) => Ok(eq),
+            _ => Err(HwpError::RenderError(format!(
+                "각주/미주 내부 컨트롤 {}은 수식이 아닙니다",
+                inner_control_idx
+            ))),
+        }
+    }
 
+    fn find_note_equation_mut(
+        &mut self,
+        kind: &str,
+        section_idx: usize,
+        parent_para_idx: usize,
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<&mut crate::model::control::Equation, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+        })?;
+        let note_para = match para.controls.get_mut(note_control_idx) {
+            Some(Control::Footnote(note)) if kind == "footnote" => {
+                note.paragraphs.get_mut(note_para_idx)
+            }
+            Some(Control::Endnote(note)) if kind == "endnote" => {
+                note.paragraphs.get_mut(note_para_idx)
+            }
+            _ => None,
+        }
+        .ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "각주/미주 문단을 찾을 수 없습니다: kind={} sec={} para={} ctrl={} note_para={}",
+                kind, section_idx, parent_para_idx, note_control_idx, note_para_idx
+            ))
+        })?;
+        match note_para.controls.get_mut(inner_control_idx) {
+            Some(Control::Equation(eq)) => Ok(eq),
+            _ => Err(HwpError::RenderError(format!(
+                "각주/미주 내부 컨트롤 {}은 수식이 아닙니다",
+                inner_control_idx
+            ))),
+        }
+    }
+
+    fn equation_properties_json(eq: &crate::model::control::Equation) -> String {
+        let common_json = Self::common_obj_attr_to_json(&eq.common);
         let script_escaped = super::super::helpers::json_escape(&eq.script);
         let font_name_escaped = super::super::helpers::json_escape(&eq.font_name);
 
-        Ok(format!(
+        format!(
             concat!(
-                "{{\"script\":\"{}\",\"fontSize\":{},\"color\":{},",
-                "\"baseline\":{},\"fontName\":\"{}\"}}"
+                "{{{},\"script\":\"{}\",\"fontSize\":{},\"color\":{},",
+                "\"baseline\":{},\"fontName\":\"{}\",",
+                "\"hasCaption\":false,\"captionDirection\":\"None\",",
+                "\"captionWidth\":0,\"captionSpacing\":0}}"
             ),
-            script_escaped, eq.font_size, eq.color, eq.baseline, font_name_escaped,
-        ))
+            common_json, script_escaped, eq.font_size, eq.color, eq.baseline, font_name_escaped,
+        )
     }
 
-    /// 수식 컨트롤의 속성을 변경한다 (네이티브).
-    pub fn set_equation_properties_native(
-        &mut self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        control_idx: usize,
-        cell_idx: Option<usize>,
-        cell_para_idx: Option<usize>,
+    fn apply_equation_properties(
+        eq: &mut crate::model::control::Equation,
+        dpi: f64,
         props_json: &str,
-    ) -> Result<String, HwpError> {
+    ) {
         use super::super::helpers::{json_i32, json_str, json_u32};
         use crate::renderer::equation::layout::EqLayout;
         use crate::renderer::equation::parser::EqParser;
         use crate::renderer::equation::tokenizer::tokenize;
         use crate::renderer::hwpunit_to_px;
-
-        let dpi = self.dpi;
-        let eq = self.find_equation_mut(
-            section_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-        )?;
 
         if let Some(s) = json_str(props_json, "script") {
             eq.script = s;
@@ -4705,8 +5239,8 @@ impl DocumentCore {
         if let Some(fn_) = json_str(props_json, "fontName") {
             eq.font_name = fn_;
         }
+        Self::apply_common_obj_attr_from_json(&mut eq.common, props_json);
 
-        // 수식 레이아웃 실행 → 개체 크기(common.width/height) 갱신
         let font_size_px = hwpunit_to_px(eq.font_size as i32, dpi);
         let tokens = tokenize(&eq.script);
         let ast = EqParser::new(tokens).parse();
@@ -4715,6 +5249,46 @@ impl DocumentCore {
         let new_h = crate::renderer::px_to_hwpunit(layout_box.height, dpi).max(0) as u32;
         eq.common.width = new_w;
         eq.common.height = new_h;
+    }
+
+    pub fn get_equation_properties_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: Option<usize>,
+        cell_para_idx: Option<usize>,
+    ) -> Result<String, HwpError> {
+        let eq = self.find_equation_ref(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+
+        Ok(Self::equation_properties_json(eq))
+    }
+
+    /// 수식 컨트롤의 속성을 변경한다 (네이티브).
+    pub fn set_equation_properties_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: Option<usize>,
+        cell_para_idx: Option<usize>,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let dpi = self.dpi;
+        let eq = self.find_equation_mut(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+        Self::apply_equation_properties(eq, dpi, props_json);
 
         // 표 셀 내 수식인 경우 표 dirty 플래그 설정
         if cell_idx.is_some() {
@@ -4728,6 +5302,55 @@ impl DocumentCore {
         }
 
         // 재조판
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok(super::super::helpers::json_ok())
+    }
+
+    pub fn get_note_equation_properties_native(
+        &self,
+        kind: &str,
+        section_idx: usize,
+        parent_para_idx: usize,
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let eq = self.find_note_equation_ref(
+            kind,
+            section_idx,
+            parent_para_idx,
+            note_control_idx,
+            note_para_idx,
+            inner_control_idx,
+        )?;
+        Ok(Self::equation_properties_json(eq))
+    }
+
+    pub fn set_note_equation_properties_native(
+        &mut self,
+        kind: &str,
+        section_idx: usize,
+        parent_para_idx: usize,
+        note_control_idx: usize,
+        note_para_idx: usize,
+        inner_control_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let dpi = self.dpi;
+        let eq = self.find_note_equation_mut(
+            kind,
+            section_idx,
+            parent_para_idx,
+            note_control_idx,
+            note_para_idx,
+            inner_control_idx,
+        )?;
+        Self::apply_equation_properties(eq, dpi, props_json);
+
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;
         self.recompose_section(section_idx);
@@ -4866,6 +5489,339 @@ impl DocumentCore {
     }
 
     // ─── 각주 삽입/삭제 API ──────────────────────────────
+
+    fn footnote_shape_number_format_code(format: crate::model::footnote::NumberFormat) -> u8 {
+        use crate::model::footnote::NumberFormat;
+        match format {
+            NumberFormat::Digit => 0,
+            NumberFormat::CircledDigit => 1,
+            NumberFormat::UpperRoman => 2,
+            NumberFormat::LowerRoman => 3,
+            NumberFormat::UpperAlpha => 4,
+            NumberFormat::LowerAlpha => 5,
+            NumberFormat::CircledUpperAlpha => 6,
+            NumberFormat::CircledLowerAlpha => 7,
+            NumberFormat::HangulSyllable => 8,
+            NumberFormat::CircledHangulSyllable => 9,
+            NumberFormat::HangulJamo => 10,
+            NumberFormat::CircledHangulJamo => 11,
+            NumberFormat::HangulDigit => 12,
+            NumberFormat::HanjaDigit => 13,
+            NumberFormat::CircledHanjaDigit => 14,
+            NumberFormat::HanjaGapEul => 15,
+            NumberFormat::HanjaGapEulHanja => 16,
+            NumberFormat::FourSymbol => 17,
+            NumberFormat::UserChar => 18,
+        }
+    }
+
+    fn footnote_shape_number_format_from_str(
+        value: &str,
+        fallback: crate::model::footnote::NumberFormat,
+    ) -> crate::model::footnote::NumberFormat {
+        use crate::model::footnote::NumberFormat;
+        match value {
+            "digit" => NumberFormat::Digit,
+            "circledDigit" => NumberFormat::CircledDigit,
+            "upperRoman" => NumberFormat::UpperRoman,
+            "lowerRoman" => NumberFormat::LowerRoman,
+            "upperAlpha" => NumberFormat::UpperAlpha,
+            "lowerAlpha" => NumberFormat::LowerAlpha,
+            "circledUpperAlpha" => NumberFormat::CircledUpperAlpha,
+            "circledLowerAlpha" => NumberFormat::CircledLowerAlpha,
+            "hangulSyllable" => NumberFormat::HangulSyllable,
+            "circledHangulSyllable" => NumberFormat::CircledHangulSyllable,
+            "hangulJamo" => NumberFormat::HangulJamo,
+            "circledHangulJamo" => NumberFormat::CircledHangulJamo,
+            "hangulDigit" => NumberFormat::HangulDigit,
+            "hanjaDigit" => NumberFormat::HanjaDigit,
+            "circledHanjaDigit" => NumberFormat::CircledHanjaDigit,
+            "hanjaGapEul" => NumberFormat::HanjaGapEul,
+            "hanjaGapEulHanja" => NumberFormat::HanjaGapEulHanja,
+            "fourSymbol" => NumberFormat::FourSymbol,
+            "userChar" => NumberFormat::UserChar,
+            _ => fallback,
+        }
+    }
+
+    fn footnote_shape_number_format_name(
+        format: crate::model::footnote::NumberFormat,
+    ) -> &'static str {
+        use crate::model::footnote::NumberFormat;
+        match format {
+            NumberFormat::Digit => "digit",
+            NumberFormat::CircledDigit => "circledDigit",
+            NumberFormat::UpperRoman => "upperRoman",
+            NumberFormat::LowerRoman => "lowerRoman",
+            NumberFormat::UpperAlpha => "upperAlpha",
+            NumberFormat::LowerAlpha => "lowerAlpha",
+            NumberFormat::CircledUpperAlpha => "circledUpperAlpha",
+            NumberFormat::CircledLowerAlpha => "circledLowerAlpha",
+            NumberFormat::HangulSyllable => "hangulSyllable",
+            NumberFormat::CircledHangulSyllable => "circledHangulSyllable",
+            NumberFormat::HangulJamo => "hangulJamo",
+            NumberFormat::CircledHangulJamo => "circledHangulJamo",
+            NumberFormat::HangulDigit => "hangulDigit",
+            NumberFormat::HanjaDigit => "hanjaDigit",
+            NumberFormat::CircledHanjaDigit => "circledHanjaDigit",
+            NumberFormat::HanjaGapEul => "hanjaGapEul",
+            NumberFormat::HanjaGapEulHanja => "hanjaGapEulHanja",
+            NumberFormat::FourSymbol => "fourSymbol",
+            NumberFormat::UserChar => "userChar",
+        }
+    }
+
+    fn footnote_numbering_name(
+        numbering: crate::model::footnote::FootnoteNumbering,
+    ) -> &'static str {
+        use crate::model::footnote::FootnoteNumbering;
+        match numbering {
+            FootnoteNumbering::Continue => "continue",
+            FootnoteNumbering::RestartSection => "restartSection",
+            FootnoteNumbering::RestartPage => "restartPage",
+        }
+    }
+
+    fn footnote_numbering_from_str(
+        value: &str,
+        fallback: crate::model::footnote::FootnoteNumbering,
+    ) -> crate::model::footnote::FootnoteNumbering {
+        use crate::model::footnote::FootnoteNumbering;
+        match value {
+            "continue" => FootnoteNumbering::Continue,
+            "restartSection" => FootnoteNumbering::RestartSection,
+            "restartPage" => FootnoteNumbering::RestartPage,
+            _ => fallback,
+        }
+    }
+
+    fn footnote_placement_name(
+        placement: crate::model::footnote::FootnotePlacement,
+    ) -> &'static str {
+        use crate::model::footnote::FootnotePlacement;
+        match placement {
+            FootnotePlacement::EachColumn => "documentEnd",
+            FootnotePlacement::BelowText => "sectionEnd",
+            FootnotePlacement::RightColumn => "rightColumn",
+        }
+    }
+
+    fn footnote_placement_from_str(
+        value: &str,
+        fallback: crate::model::footnote::FootnotePlacement,
+    ) -> crate::model::footnote::FootnotePlacement {
+        use crate::model::footnote::FootnotePlacement;
+        match value {
+            "documentEnd" | "eachColumn" => FootnotePlacement::EachColumn,
+            "sectionEnd" | "belowText" => FootnotePlacement::BelowText,
+            "rightColumn" => FootnotePlacement::RightColumn,
+            _ => fallback,
+        }
+    }
+
+    fn encode_footnote_shape_attr(shape: &crate::model::footnote::FootnoteShape) -> u32 {
+        use crate::model::footnote::{FootnoteNumbering, FootnotePlacement};
+        let number_format = Self::footnote_shape_number_format_code(shape.number_format) as u32;
+        let placement_numbering_bits = match (shape.numbering, shape.placement) {
+            (FootnoteNumbering::RestartPage, _) | (_, FootnotePlacement::RightColumn) => 2,
+            (FootnoteNumbering::RestartSection, _) | (_, FootnotePlacement::BelowText) => 1,
+            _ => 0,
+        };
+        (shape.attr & !0x03ff) | number_format | ((placement_numbering_bits & 0x03) << 8)
+    }
+
+    fn first_char_or_nul(value: &str) -> char {
+        value.chars().next().unwrap_or('\0')
+    }
+
+    fn json_escape_note_char(ch: char) -> String {
+        if ch == '\0' {
+            String::new()
+        } else {
+            crate::document_core::helpers::json_escape(&ch.to_string())
+        }
+    }
+
+    fn hwpunit16_from_json(json: &str, key: &str) -> Option<i16> {
+        crate::document_core::helpers::json_i32(json, key)
+            .map(|v| v.clamp(i16::MIN as i32, i16::MAX as i32) as i16)
+    }
+
+    fn make_note_inner_paragraph(
+        number_type: crate::model::control::AutoNumberType,
+        number: u16,
+        format: u8,
+        prefix_char: char,
+        suffix_char: char,
+        default_char_shape_id: u32,
+        para_shape_id: u16,
+        style_id: u8,
+    ) -> crate::model::paragraph::Paragraph {
+        use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+
+        let auto_num = crate::model::control::AutoNumber {
+            number_type,
+            format,
+            superscript: false,
+            number,
+            assigned_number: number,
+            user_symbol: '\0',
+            prefix_char,
+            suffix_char,
+        };
+
+        Paragraph {
+            text: "  ".to_string(),
+            char_count: 10,
+            char_count_msb: true,
+            control_mask: 1u32 << 0x12,
+            char_offsets: vec![0, 8],
+            para_shape_id,
+            style_id,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: default_char_shape_id,
+            }],
+            controls: vec![crate::model::control::Control::AutoNumber(auto_num)],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 1000,
+                text_height: 1000,
+                baseline_distance: 850,
+                line_spacing: 600,
+                segment_width: 0,
+                tag: 0x00060000,
+                ..Default::default()
+            }],
+            has_para_text: true,
+            ..Default::default()
+        }
+    }
+
+    fn endnote_style_defaults(&self, section_idx: usize, para_idx: usize) -> (u32, u16, u8) {
+        let section = &self.document.sections[section_idx];
+
+        for para in &section.paragraphs {
+            for ctrl in &para.controls {
+                if let Control::Endnote(en) = ctrl {
+                    if let Some(ep) = en.paragraphs.first() {
+                        let char_shape_id = ep
+                            .char_shapes
+                            .first()
+                            .map(|cs| cs.char_shape_id)
+                            .unwrap_or(0);
+                        return (char_shape_id, ep.para_shape_id, ep.style_id);
+                    }
+                }
+            }
+        }
+
+        for (idx, style) in self.document.doc_info.styles.iter().enumerate() {
+            if style.local_name == "미주" || style.english_name.eq_ignore_ascii_case("Endnote") {
+                return (
+                    style.char_shape_id as u32,
+                    style.para_shape_id,
+                    idx.min(u8::MAX as usize) as u8,
+                );
+            }
+        }
+
+        let current_para = &section.paragraphs[para_idx];
+        (
+            current_para
+                .char_shapes
+                .first()
+                .map(|cs| cs.char_shape_id)
+                .unwrap_or(0),
+            current_para.para_shape_id,
+            current_para.style_id,
+        )
+    }
+
+    fn sync_endnote_control_with_shape(
+        endnote: &mut crate::model::footnote::Endnote,
+        number_format_code: u8,
+        prefix_char: char,
+        suffix_char: char,
+    ) {
+        use crate::model::control::{AutoNumberType, Control};
+
+        endnote.before_decoration_letter = if prefix_char == '\0' {
+            0
+        } else {
+            prefix_char as u16
+        };
+        endnote.after_decoration_letter = if suffix_char == '\0' {
+            0
+        } else {
+            suffix_char as u16
+        };
+        endnote.number_shape = number_format_code as u32;
+
+        for para in &mut endnote.paragraphs {
+            for ctrl in &mut para.controls {
+                if let Control::AutoNumber(auto_num) = ctrl {
+                    if auto_num.number_type == AutoNumberType::Endnote {
+                        auto_num.format = number_format_code;
+                        auto_num.prefix_char = prefix_char;
+                        auto_num.suffix_char = suffix_char;
+                        auto_num.number = endnote.number;
+                        auto_num.assigned_number = endnote.number;
+                    }
+                }
+            }
+        }
+    }
+
+    fn renumber_paragraph_endnotes_with_shape(
+        paragraphs: &mut [crate::model::paragraph::Paragraph],
+        next_number: &mut u16,
+        number_format_code: u8,
+        prefix_char: char,
+        suffix_char: char,
+    ) {
+        for para in paragraphs {
+            for ctrl in &mut para.controls {
+                match ctrl {
+                    Control::Endnote(endnote) => {
+                        endnote.number = *next_number;
+                        Self::sync_endnote_control_with_shape(
+                            endnote,
+                            number_format_code,
+                            prefix_char,
+                            suffix_char,
+                        );
+                        *next_number = next_number.saturating_add(1);
+                    }
+                    Control::Table(table) => {
+                        for cell in &mut table.cells {
+                            Self::renumber_paragraph_endnotes_with_shape(
+                                &mut cell.paragraphs,
+                                next_number,
+                                number_format_code,
+                                prefix_char,
+                                suffix_char,
+                            );
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(text_box) =
+                            shape.drawing_mut().and_then(|d| d.text_box.as_mut())
+                        {
+                            Self::renumber_paragraph_endnotes_with_shape(
+                                &mut text_box.paragraphs,
+                                next_number,
+                                number_format_code,
+                                prefix_char,
+                                suffix_char,
+                            );
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
 
     /// 각주를 삽입한다.
     /// 커서 위치에 각주 컨트롤을 추가하고 빈 문단 1개를 생성한다.
@@ -5182,6 +6138,332 @@ impl DocumentCore {
             "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"footnoteNumber\":{}}}",
             para_idx, insert_idx, footnote_number
         ))
+    }
+
+    /// 미주를 삽입한다.
+    /// 커서 위치에 미주 컨트롤을 추가하고 빈 미주 문단 1개를 생성한다.
+    /// 반환: JSON `{"ok":true, "paraIdx":N, "controlIdx":N, "endnoteNumber":N}`
+    pub fn insert_endnote_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        use crate::model::footnote::Endnote;
+
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과",
+                section_idx
+            )));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과",
+                para_idx
+            )));
+        }
+
+        let shape = self.document.sections[section_idx]
+            .section_def
+            .endnote_shape
+            .clone();
+        let start_number = shape.start_number.max(1);
+        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+        let endnote_number = {
+            let mut count = 0u16;
+            let section = &self.document.sections[section_idx];
+            for (pi, para) in section.paragraphs.iter().enumerate() {
+                let is_before = pi < para_idx;
+                let is_same = pi == para_idx;
+                for (ci, ctrl) in para.controls.iter().enumerate() {
+                    match ctrl {
+                        Control::Endnote(_) => {
+                            if is_before {
+                                count += 1;
+                            } else if is_same {
+                                let positions =
+                                    crate::document_core::helpers::find_control_text_positions(
+                                        para,
+                                    );
+                                let pos = positions.get(ci).copied().unwrap_or(usize::MAX);
+                                if pos <= char_offset {
+                                    count += 1;
+                                }
+                            }
+                        }
+                        Control::Table(table) if is_before || is_same => {
+                            for cell in &table.cells {
+                                for cp in &cell.paragraphs {
+                                    count +=
+                                        cp.controls
+                                            .iter()
+                                            .filter(|c| matches!(c, Control::Endnote(_)))
+                                            .count() as u16;
+                                }
+                            }
+                        }
+                        Control::Shape(shape) if is_before || is_same => {
+                            if let Some(text_box) =
+                                shape.drawing().and_then(|d| d.text_box.as_ref())
+                            {
+                                for tp in &text_box.paragraphs {
+                                    count +=
+                                        tp.controls
+                                            .iter()
+                                            .filter(|c| matches!(c, Control::Endnote(_)))
+                                            .count() as u16;
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            start_number.saturating_add(count)
+        };
+
+        let (default_char_shape_id, para_shape_id, style_id) =
+            self.endnote_style_defaults(section_idx, para_idx);
+        let prefix_char = if shape.prefix_char == '\0' {
+            '\0'
+        } else {
+            shape.prefix_char
+        };
+        let suffix_char = if shape.suffix_char == '\0' {
+            ')'
+        } else {
+            shape.suffix_char
+        };
+
+        let inner_para = Self::make_note_inner_paragraph(
+            crate::model::control::AutoNumberType::Endnote,
+            endnote_number,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+            default_char_shape_id,
+            para_shape_id,
+            style_id,
+        );
+
+        let endnote = Endnote {
+            number: endnote_number,
+            paragraphs: vec![inner_para],
+            before_decoration_letter: prefix_char as u16,
+            after_decoration_letter: suffix_char as u16,
+            number_shape: number_format_code as u32,
+            ..Default::default()
+        };
+
+        self.document.sections[section_idx].raw_stream = None;
+        let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+
+        let insert_idx = {
+            let positions = crate::document_core::helpers::find_control_text_positions(paragraph);
+            let mut idx = paragraph.controls.len();
+            for (i, &pos) in positions.iter().enumerate() {
+                if pos > char_offset {
+                    idx = i;
+                    break;
+                }
+            }
+            idx
+        };
+
+        paragraph
+            .controls
+            .insert(insert_idx, Control::Endnote(Box::new(endnote)));
+        paragraph.ctrl_data_records.insert(insert_idx, None);
+
+        if !paragraph.char_offsets.is_empty() {
+            let text_len = paragraph.text.chars().count();
+            let safe_offset = char_offset.min(text_len);
+            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
+                *co += 8;
+            }
+        }
+        paragraph.char_count += 8;
+        paragraph.control_mask |= 1u32 << 0x0011;
+        paragraph.has_para_text = true;
+
+        let mut next_number = start_number;
+        Self::renumber_paragraph_endnotes_with_shape(
+            &mut self.document.sections[section_idx].paragraphs,
+            &mut next_number,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+        );
+
+        self.reflow_footnote_paragraph(section_idx, para_idx, insert_idx, 0);
+
+        {
+            use crate::renderer::composer::reflow_line_segs;
+            use crate::renderer::hwpunit_to_px;
+            let page_def = &self.document.sections[section_idx].section_def.page_def;
+            let text_width =
+                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
+            let available_width = hwpunit_to_px(text_width, self.dpi);
+            let para_style = self.styles.para_styles.get(
+                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize,
+            );
+            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+            let final_width = (available_width - margin_left - margin_right).max(0.0);
+            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
+        }
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        self.event_log.push(DocumentEvent::PictureInserted {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(format!(
+            "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"endnoteNumber\":{}}}",
+            para_idx, insert_idx, endnote_number
+        ))
+    }
+
+    /// 현재 구역의 미주 모양을 조회한다.
+    pub fn get_endnote_shape_native(&self, section_idx: usize) -> Result<String, HwpError> {
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let shape = &section.section_def.endnote_shape;
+        let separator_enabled = shape.separator_length != 0
+            || shape.separator_line_type != 0
+            || shape.separator_line_width != 0;
+        let separator_color =
+            crate::document_core::helpers::clipboard_color_to_css(shape.separator_color);
+
+        Ok(format!(
+            concat!(
+                "{{\"ok\":true,",
+                "\"numberFormat\":\"{}\",",
+                "\"userChar\":\"{}\",",
+                "\"prefixChar\":\"{}\",",
+                "\"suffixChar\":\"{}\",",
+                "\"startNumber\":{},",
+                "\"separatorEnabled\":{},",
+                "\"separatorLength\":{},",
+                "\"separatorMarginTop\":{},",
+                "\"separatorMarginBottom\":{},",
+                "\"noteSpacing\":{},",
+                "\"separatorLineType\":{},",
+                "\"separatorLineWidth\":{},",
+                "\"separatorColor\":\"{}\",",
+                "\"numbering\":\"{}\",",
+                "\"placement\":\"{}\"",
+                "}}"
+            ),
+            Self::footnote_shape_number_format_name(shape.number_format),
+            Self::json_escape_note_char(shape.user_char),
+            Self::json_escape_note_char(shape.prefix_char),
+            Self::json_escape_note_char(shape.suffix_char),
+            shape.start_number,
+            if separator_enabled { "true" } else { "false" },
+            shape.separator_length,
+            shape.separator_margin_top,
+            if shape.note_spacing != 0 {
+                shape.note_spacing
+            } else {
+                shape.separator_margin_bottom
+            },
+            shape.raw_unknown,
+            shape.separator_line_type,
+            shape.separator_line_width,
+            separator_color,
+            Self::footnote_numbering_name(shape.numbering),
+            Self::footnote_placement_name(shape.placement),
+        ))
+    }
+
+    /// 현재 구역의 미주 모양을 적용한다.
+    pub fn apply_endnote_shape_native(
+        &mut self,
+        section_idx: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let shape = &mut section.section_def.endnote_shape;
+
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numberFormat") {
+            shape.number_format =
+                Self::footnote_shape_number_format_from_str(&v, shape.number_format);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "userChar") {
+            shape.user_char = Self::first_char_or_nul(&v);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "prefixChar") {
+            shape.prefix_char = Self::first_char_or_nul(&v);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "suffixChar") {
+            shape.suffix_char = Self::first_char_or_nul(&v);
+        }
+        if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
+            shape.start_number = v.max(1);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
+            shape.separator_length = v.max(0);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginTop") {
+            shape.separator_margin_top = v.max(0);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginBottom") {
+            shape.note_spacing = v.max(0);
+        }
+        if let Some(v) = Self::hwpunit16_from_json(props_json, "noteSpacing") {
+            shape.raw_unknown = v.max(0) as u16;
+        }
+        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineType") {
+            shape.separator_line_type = v;
+        }
+        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineWidth") {
+            shape.separator_line_width = v;
+        }
+        if let Some(v) = crate::document_core::helpers::json_color(props_json, "separatorColor") {
+            shape.separator_color = v;
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numbering") {
+            shape.numbering = Self::footnote_numbering_from_str(&v, shape.numbering);
+        }
+        if let Some(v) = crate::document_core::helpers::json_str(props_json, "placement") {
+            shape.placement = Self::footnote_placement_from_str(&v, shape.placement);
+        }
+        if let Some(false) =
+            crate::document_core::helpers::json_bool(props_json, "separatorEnabled")
+        {
+            shape.separator_length = 0;
+            shape.separator_line_type = 0;
+            shape.separator_line_width = 0;
+        }
+        shape.attr = Self::encode_footnote_shape_attr(shape);
+        let start_number = shape.start_number.max(1);
+        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+        let prefix_char = shape.prefix_char;
+        let suffix_char = shape.suffix_char;
+        let mut next_number = start_number;
+        Self::renumber_paragraph_endnotes_with_shape(
+            &mut section.paragraphs,
+            &mut next_number,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+        );
+        section.raw_stream = None;
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        Ok(super::super::helpers::json_ok())
     }
 
     /// 본문 문단에 수식을 삽입한다 (표 셀/글상자 내부는 미지원).
@@ -5502,5 +6784,1292 @@ impl crate::document_core::DocumentCore {
             "\"controlIdx\":{}",
             insert_idx
         )))
+    }
+}
+
+#[cfg(test)]
+mod issue_1151_cell_picture_insert_tests {
+    //! Issue #1151: 표 셀 안 이미지 삽입이 항상 표 밖 본문 문단에 들어가는 결함.
+    //!
+    //! v2 설계 — 한컴 정합 floating picture 접근:
+    //! 셀 안 삽입 (cell_path 비어있지 않음) 시 picture 는 셀 내부 paragraph 에
+    //! inline 삽입되지 않고, 표가 있는 같은 paragraph 의 sibling control 로
+    //! floating (tac=false) 삽입된다. 셀 자체는 비어있는 채로 유지되어 사용자가
+    //! 클릭으로 cursor 를 셀에 위치시킬 수 있다.
+
+    use super::*;
+    use crate::model::document::{Document, Section, SectionDef};
+    use crate::model::page::PageDef;
+
+    fn make_test_core() -> DocumentCore {
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+        });
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        core
+    }
+
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+
+    fn parse_idx(res: &str, key: &str) -> usize {
+        res.split(&format!("\"{}\":", key))
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing {key} in {res}"))
+    }
+
+    #[test]
+    fn issue1151_insert_picture_into_table_cell_is_floating_sibling() {
+        let mut core = make_test_core();
+
+        // 1×1 표 생성
+        let table_res = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create 1x1 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert picture (floating)");
+
+        // 셀 안은 그대로 비어있어야 한다 (floating 은 셀에 들어가지 않음).
+        let table_ctrl =
+            &core.document.sections[0].paragraphs[table_para_idx].controls[table_ctrl_idx];
+        let table = match table_ctrl {
+            Control::Table(t) => t,
+            _ => panic!("expected Control::Table"),
+        };
+        let cell0_para0 = &table.cells[0].paragraphs[0];
+        assert!(
+            cell0_para0
+                .controls
+                .iter()
+                .all(|c| !matches!(c, Control::Picture(_))),
+            "cell 안에 picture 가 들어가면 안 된다 (floating 방식). got: {:?}",
+            cell0_para0.controls
+        );
+
+        // table 같은 paragraph 의 sibling control 로 Picture 가 존재해야 한다.
+        let parent_para = &core.document.sections[0].paragraphs[table_para_idx];
+        let picture = parent_para
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::Picture(p) => Some(p.as_ref()),
+                _ => None,
+            })
+            .expect("expected sibling Picture in parent paragraph");
+
+        // floating 속성 검증
+        assert!(
+            !picture.common.treat_as_char,
+            "floating picture 는 treat_as_char=false 여야 한다"
+        );
+        assert!(
+            matches!(
+                picture.common.text_wrap,
+                crate::model::shape::TextWrap::Square
+            ),
+            "floating picture wrap=Square (어울림) 이어야 한다. got: {:?}",
+            picture.common.text_wrap
+        );
+    }
+
+    #[test]
+    fn issue1151_v9_insert_picture_body_floating_default() {
+        // [Task #1151 v9 결함 E] 한컴 native 정합: 본문 picture 신규 삽입 시 default =
+        // tac=false (floating, 글자처럼 미체크). 셀 분기와 동일 패턴.
+        let mut core = make_test_core();
+        let image = minimal_png();
+        core.insert_picture_native(
+            0,
+            0,
+            0,
+            &[], // 빈 cell_path → 본문 floating (v9 fix 후)
+            &image,
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert picture body");
+
+        let body_para = &core.document.sections[0].paragraphs[0];
+        let pic_in_body = body_para.controls.iter().find_map(|c| match c {
+            Control::Picture(p) => Some(p.as_ref()),
+            _ => None,
+        });
+        let picture = pic_in_body.expect("expected Picture in body paragraph (sibling control)");
+
+        // 한컴 native 정합: tac=false, rel_to=Paper, wrap=Square
+        assert!(
+            !picture.common.treat_as_char,
+            "본문 picture default = tac=false (한컴 native 정합, v9 결함 E fix)"
+        );
+        assert!(
+            matches!(
+                picture.common.horz_rel_to,
+                crate::model::shape::HorzRelTo::Paper
+            ),
+            "본문 picture horz_rel_to = Paper (셀 분기와 동일)"
+        );
+        assert!(
+            matches!(
+                picture.common.vert_rel_to,
+                crate::model::shape::VertRelTo::Paper
+            ),
+            "본문 picture vert_rel_to = Paper"
+        );
+        assert!(matches!(
+            picture.common.text_wrap,
+            crate::model::shape::TextWrap::Square
+        ));
+
+        // 새 paragraph 생성 안 함 — 기존 paragraph 의 sibling control 로 append
+        assert_eq!(
+            core.document.sections[0].paragraphs.len(),
+            1,
+            "본문 picture 삽입 시 새 paragraph 생성 안 함 (sibling control)"
+        );
+    }
+
+    #[test]
+    fn issue1151_invalid_cell_path_returns_error() {
+        let mut core = make_test_core();
+        let _ = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create table");
+        let bad_path: Vec<(usize, usize, usize)> = vec![(0, 5, 0)]; // cell 5 는 1×1 표에 없음
+        let image = minimal_png();
+        let res = core.insert_picture_native(
+            0, 0, 0, &bad_path, &image, 5000, 5000, 1, 1, "png", "test", None, None,
+        );
+        assert!(
+            res.is_err(),
+            "out-of-range cell path → Err 기대, got {res:?}"
+        );
+    }
+}
+
+#[cfg(test)]
+mod issue_1151_v2_tac_toggle_tests {
+    //! Issue #1151 v2: floating picture → "글자처럼 취급" 토글 시 한컴 정합 (H1).
+    //!
+    //! 한컴 산출물 분석 (samples/tac-verify/scenario-{a,b,c,d}-after.hwp) 결과:
+    //! tac false→true 토글 시 picture 의 control 위치는 불변이고, 4 가지 필드만
+    //! 갱신된다. (a) treat_as_char=true, (b) horz/vert_rel_to=Para, (c) h/v_offset=0,
+    //! (d) parent paragraph 의 line_segs[0] 의 line_height = picture height,
+    //!     text_height = picture height, baseline_distance = round(lh*0.85).
+    //! paragraph.text / char_offsets / paragraph 수 변화 없음.
+
+    use super::*;
+    use crate::model::document::{Document, Section, SectionDef};
+    use crate::model::image::{ImageAttr, Picture};
+    use crate::model::page::PageDef;
+    use crate::model::paragraph::LineSeg;
+    use crate::model::shape::{CommonObjAttr, HorzRelTo, ShapeComponentAttr, TextWrap, VertRelTo};
+
+    fn make_test_core() -> DocumentCore {
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+        });
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        core
+    }
+
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+
+    fn parse_idx(res: &str, key: &str) -> usize {
+        res.split(&format!("\"{}\":", key))
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing {key} in {res}"))
+    }
+
+    /// 본문 (또는 임의 paragraph) 에 floating picture 를 직접 push 한다.
+    /// 한컴이 만든 floating picture 의 model 상태 (tac=false, Paper-relative, offset 있음)
+    /// 와 동등.
+    fn push_body_floating_picture(
+        para: &mut Paragraph,
+        width_hu: u32,
+        height_hu: u32,
+        offset_h: u32,
+        offset_v: u32,
+        bin_id: u16,
+    ) -> usize {
+        let common_attr: u32 = (1 << 3) | (1 << 8) | (4 << 15) | (2 << 18);
+        let pic = Picture {
+            common: CommonObjAttr {
+                ctrl_id: 0x67736F20,
+                attr: common_attr,
+                treat_as_char: false,
+                vert_rel_to: VertRelTo::Paper,
+                horz_rel_to: HorzRelTo::Paper,
+                text_wrap: TextWrap::Square,
+                horizontal_offset: offset_h,
+                vertical_offset: offset_v,
+                width: width_hu,
+                height: height_hu,
+                z_order: 0,
+                ..Default::default()
+            },
+            shape_attr: ShapeComponentAttr {
+                original_width: width_hu,
+                original_height: height_hu,
+                current_width: width_hu,
+                current_height: height_hu,
+                ..Default::default()
+            },
+            border_x: [0i32, 0, width_hu as i32, 0],
+            border_y: [width_hu as i32, height_hu as i32, 0, height_hu as i32],
+            image_attr: ImageAttr {
+                bin_data_id: bin_id,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let idx = para.controls.len();
+        para.controls.push(Control::Picture(Box::new(pic)));
+        para.ctrl_data_records.push(None);
+        idx
+    }
+
+    /// 한컴 산출물에서 관찰된 baseline 비율: lh × 0.85 (round).
+    fn expected_baseline(lh: i32) -> i32 {
+        (lh as f64 * 0.85).round() as i32
+    }
+
+    // ─── Scenario A 등가 ───────────────────────────────────────────────
+    #[test]
+    fn tac_toggle_table_sibling_floating_to_inline() {
+        let mut core = make_test_core();
+
+        // 1×1 표 생성
+        let table_res = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create 1x1 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+
+        // 셀 안 floating picture 삽입 (v1 path, h=5331 HU)
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+        let pic_w = 5977u32;
+        let pic_h = 5331u32;
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            pic_w,
+            pic_h,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert floating picture in cell");
+
+        // picture 는 표 sibling 위치 (= 마지막 control)
+        let pic_ctrl_idx = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        let before_paragraph_count = core.document.sections[0].paragraphs.len();
+        let before_controls_count = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len();
+
+        // tac false→true 토글
+        let res = core.set_picture_properties_native(
+            0,
+            table_para_idx,
+            pic_ctrl_idx,
+            r#"{"treatAsChar":true}"#,
+        );
+        assert!(res.is_ok(), "set_picture_properties_native failed: {res:?}");
+
+        let para = &core.document.sections[0].paragraphs[table_para_idx];
+        let pic = match &para.controls[pic_ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!("picture not at expected ctrl_idx"),
+        };
+
+        // (1) picture 위치 / paragraph 수 불변
+        assert_eq!(para.controls.len(), before_controls_count);
+        assert_eq!(
+            core.document.sections[0].paragraphs.len(),
+            before_paragraph_count
+        );
+
+        // (2) 4 필드 갱신
+        assert!(pic.common.treat_as_char, "treat_as_char true");
+        assert_eq!(pic.common.attr & 0x01, 0x01, "attr 비트 0 셋");
+        assert!(
+            matches!(pic.common.horz_rel_to, HorzRelTo::Para),
+            "horz_rel_to=Para, got {:?}",
+            pic.common.horz_rel_to
+        );
+        assert!(
+            matches!(pic.common.vert_rel_to, VertRelTo::Para),
+            "vert_rel_to=Para, got {:?}",
+            pic.common.vert_rel_to
+        );
+        assert_eq!(pic.common.horizontal_offset, 0, "h_offset=0");
+        assert_eq!(pic.common.vertical_offset, 0, "v_offset=0");
+
+        // (3) LINE_SEG[0] 갱신
+        let seg = &para.line_segs[0];
+        assert_eq!(
+            seg.line_height, pic_h as i32,
+            "line_segs[0].line_height = picture height"
+        );
+        assert_eq!(
+            seg.text_height, pic_h as i32,
+            "line_segs[0].text_height = picture height"
+        );
+        assert_eq!(
+            seg.baseline_distance,
+            expected_baseline(pic_h as i32),
+            "line_segs[0].baseline_distance = round(lh*0.85)"
+        );
+
+        // (4) text / char_offsets 불변 (sentinel char 추가하지 않음)
+        assert_eq!(para.text, "");
+        assert_eq!(para.char_offsets.len(), 0);
+    }
+
+    // ─── [Task #1151 v8 결함 A regression] v1 셀 floating 의 초기 rel_to=Paper ─
+    //
+    // 사용자 한컴 native 시연 (2026-05-30): 한컴이 셀 안 picture 신규 삽입 시
+    // 가로/세로 기준 = "종이" (Paper). v1 plan 의 incellpicture.hwp dump 분석 정합.
+    // v1 구현이 Page 로 잘못 설정한 결함을 정정.
+    #[test]
+    fn v8_cell_floating_picture_uses_paper_rel_to() {
+        let mut core = make_test_core();
+        let table_res = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create 1x1 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            5977,
+            5331,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert floating picture in cell");
+        let pic_ctrl_idx = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        let para = &core.document.sections[0].paragraphs[table_para_idx];
+        let pic = match &para.controls[pic_ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!("not Picture"),
+        };
+
+        // (A) typed field 가 Paper
+        assert!(
+            matches!(pic.common.horz_rel_to, HorzRelTo::Paper),
+            "horz_rel_to = Paper (한컴 native default), got {:?}",
+            pic.common.horz_rel_to
+        );
+        assert!(
+            matches!(pic.common.vert_rel_to, VertRelTo::Paper),
+            "vert_rel_to = Paper, got {:?}",
+            pic.common.vert_rel_to
+        );
+
+        // (B) attr 비트 정합 — bit 3-4 (vert) = 0, bit 8-10 (horz) = 0 (둘 다 Paper)
+        let bits_vert = (pic.common.attr >> 3) & 0b11;
+        let bits_horz = (pic.common.attr >> 8) & 0b111;
+        assert_eq!(bits_vert, 0, "attr bits 3-4 = Paper(0)");
+        assert_eq!(bits_horz, 0, "attr bits 8-10 = Paper(0)");
+
+        // (C) tac=false, wrap=Square 그대로
+        assert!(!pic.common.treat_as_char);
+        assert!(matches!(
+            pic.common.text_wrap,
+            crate::model::shape::TextWrap::Square
+        ));
+    }
+
+    // ─── [Task #1151 v9 결함 D regression v2] 큰 picture 2 장 wrap 시나리오 ───
+    //
+    // 사용자 시연 (2026-05-30 후속): 큰 picture 2 장 (page 폭 초과) 글자처럼 토글 시
+    // 한컴 native 는 wrap (다음 line). Stage 23 fix 첫 버전은 pic_y 결정이 pic_x wrap
+    // 처리 전이라 wrap 후 line_top_y 가 갱신됐어도 pic_y 가 wrap 전 값 → 두 picture
+    // 같은 위치 겹침. Fix: pic_y 결정을 pic_x 뒤로 옮김 (wrap 후 state 반영).
+    #[test]
+    fn v9_two_large_pictures_wrap_to_next_line() {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn collect_image_bboxes(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Image(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for child in &node.children {
+                collect_image_bboxes(child, out);
+            }
+        }
+
+        let mut core = make_test_core();
+        let table_res = core.create_table_native(0, 0, 0, 1, 1).expect("table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+
+        // 큰 picture 2 장 — 각 80mm × 60mm (22680 × 17010 HU)
+        // page 본문 폭 ≈ 150mm. 두 picture 합 160mm > 150mm → wrap 발생해야 함.
+        let pic_w = 22680u32;
+        let pic_h = 17010u32;
+
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            pic_w,
+            pic_h,
+            1,
+            1,
+            "png",
+            "p1",
+            None,
+            None,
+        )
+        .expect("insert pic1");
+        let pic1_ctrl = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        core.set_picture_properties_native(0, table_para_idx, pic1_ctrl, r#"{"treatAsChar":true}"#)
+            .expect("toggle pic1");
+
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            pic_w,
+            pic_h,
+            1,
+            1,
+            "png",
+            "p2",
+            None,
+            None,
+        )
+        .expect("insert pic2");
+        let pic2_ctrl = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        core.set_picture_properties_native(0, table_para_idx, pic2_ctrl, r#"{"treatAsChar":true}"#)
+            .expect("toggle pic2");
+
+        let tree = core.build_page_tree_cached(0).expect("build");
+        let mut images = vec![];
+        collect_image_bboxes(&tree.root, &mut images);
+        let pic_h_px = pic_h as f64 * 96.0 / 7200.0;
+
+        assert_eq!(images.len(), 2, "두 picture 모두 render 되어야 함");
+        let (x1, y1, _, _) = images[0];
+        let (x2, y2, _, _) = images[1];
+
+        // (A) 둘째 picture y 가 첫 picture y + pic_h 만큼 진행 (wrap)
+        let y_diff = y2 - y1;
+        assert!(
+            (y_diff - pic_h_px).abs() < 1.0,
+            "wrap: y_diff {:.2} ≈ pic_h {:.2} (한 picture height 만큼 진행) — got y1={}, y2={}",
+            y_diff,
+            pic_h_px,
+            y1,
+            y2
+        );
+
+        // (B) x 동일 (wrap 후 둘째 picture 가 새 line 의 좌측에서 시작)
+        assert!(
+            (x1 - x2).abs() < 1.0,
+            "wrap: x 동일 (둘 다 새 line 의 좌측) — got x1={}, x2={}",
+            x1,
+            x2
+        );
+    }
+
+    #[test]
+    fn v9_two_tac_pictures_horizontal_distribute() {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn collect_image_bboxes(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Image(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for child in &node.children {
+                collect_image_bboxes(child, out);
+            }
+        }
+
+        let mut core = make_test_core();
+        let table_res = core.create_table_native(0, 0, 0, 1, 1).expect("table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+
+        // picture 1 삽입 + tac
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            5670,
+            5670,
+            1,
+            1,
+            "png",
+            "test1",
+            None,
+            None,
+        )
+        .expect("insert pic1");
+        let pic1_ctrl = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        core.set_picture_properties_native(0, table_para_idx, pic1_ctrl, r#"{"treatAsChar":true}"#)
+            .expect("toggle pic1");
+
+        // picture 2 삽입 + tac
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            5670,
+            5670,
+            1,
+            1,
+            "png",
+            "test2",
+            None,
+            None,
+        )
+        .expect("insert pic2");
+        let pic2_ctrl = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        core.set_picture_properties_native(0, table_para_idx, pic2_ctrl, r#"{"treatAsChar":true}"#)
+            .expect("toggle pic2");
+
+        // render tree 의 image bbox 검증
+        let tree = core.build_page_tree_cached(0).expect("build page 0");
+        let mut images = vec![];
+        collect_image_bboxes(&tree.root, &mut images);
+        assert_eq!(images.len(), 2, "두 picture 모두 render 되어야 함");
+
+        let (x1, y1, w1, _h1) = images[0];
+        let (x2, y2, _w2, _h2) = images[1];
+
+        // (A) y 동일 (한 line) — 가로 분배 정합
+        assert!(
+            (y1 - y2).abs() < 0.5,
+            "두 picture y 동일 (가로 분배) — got y1={}, y2={}",
+            y1,
+            y2
+        );
+
+        // (B) x 다름 (가로 누적) — pic2 x = pic1 x + pic1 width
+        assert!(
+            x2 > x1 + 0.5,
+            "두 picture x 다름 (가로 누적) — got x1={}, x2={}",
+            x1,
+            x2
+        );
+        assert!(
+            (x2 - (x1 + w1)).abs() < 0.5,
+            "pic2 x ≈ pic1 x + pic1 width — got x1={}, x2={}, w1={}",
+            x1,
+            x2,
+            w1
+        );
+    }
+
+    // ─── Scenario D 등가 ───────────────────────────────────────────────
+    #[test]
+    fn tac_toggle_body_floating_to_inline() {
+        let mut core = make_test_core();
+        let pic_h = 19019u32;
+        let pic_w = 20863u32;
+        let ctrl_idx = {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            push_body_floating_picture(para, pic_w, pic_h, 13428, 13568, 1)
+        };
+
+        let res = core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#);
+        assert!(res.is_ok(), "set_picture_properties_native failed: {res:?}");
+
+        let para = &core.document.sections[0].paragraphs[0];
+        let pic = match &para.controls[ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!("picture not at expected ctrl_idx"),
+        };
+
+        assert!(pic.common.treat_as_char);
+        assert!(matches!(pic.common.horz_rel_to, HorzRelTo::Para));
+        assert!(matches!(pic.common.vert_rel_to, VertRelTo::Para));
+        assert_eq!(pic.common.horizontal_offset, 0);
+        assert_eq!(pic.common.vertical_offset, 0);
+
+        let seg = &para.line_segs[0];
+        assert_eq!(seg.line_height, pic_h as i32);
+        assert_eq!(seg.text_height, pic_h as i32);
+        assert_eq!(seg.baseline_distance, expected_baseline(pic_h as i32));
+
+        assert_eq!(para.text, "");
+        assert_eq!(para.char_offsets.len(), 0);
+    }
+
+    // ─── Scenario C 등가 ───────────────────────────────────────────────
+    #[test]
+    fn tac_toggle_3x3_center_cell_floating_to_inline() {
+        let mut core = make_test_core();
+
+        let table_res = core
+            .create_table_native(0, 0, 0, 3, 3)
+            .expect("create 3x3 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+
+        // (1,1) 중앙 셀의 cell_path: (outer_ctrl_idx, row, col)
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 1, 1)];
+        let image = minimal_png();
+        let pic_w = 5434u32;
+        let pic_h = 4847u32;
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            pic_w,
+            pic_h,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert floating picture in center cell");
+
+        let pic_ctrl_idx = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+        let res = core.set_picture_properties_native(
+            0,
+            table_para_idx,
+            pic_ctrl_idx,
+            r#"{"treatAsChar":true}"#,
+        );
+        assert!(res.is_ok(), "set_picture_properties_native failed: {res:?}");
+
+        let para = &core.document.sections[0].paragraphs[table_para_idx];
+        let pic = match &para.controls[pic_ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!("picture not at expected ctrl_idx"),
+        };
+        assert!(pic.common.treat_as_char);
+        assert_eq!(pic.common.horizontal_offset, 0);
+        assert_eq!(pic.common.vertical_offset, 0);
+        assert_eq!(para.line_segs[0].line_height, pic_h as i32);
+        assert_eq!(
+            para.line_segs[0].baseline_distance,
+            expected_baseline(pic_h as i32)
+        );
+    }
+
+    // ─── [Task #1151 v5] v1 path → tac toggle → page tree cache invalidate 검증 ─
+    //
+    // 사용자 보고 (2026-05-30): "rhwp 신규 표 + 셀 안 이미지 → tac 토글 시
+    // 시각 변화 없음". 진단 결과 model + composer + paragraph_layout 모두 정상
+    // 동작 (picture 가 표 아래 정확 위치 156.9 px 에 inline 렌더) 인데, studio
+    // 가 stale page tree 받음. root cause: set_picture_properties_native 의
+    // invalidate_page_tree_cache 호출 누락 — 다른 picture/shape setter (셀 picture
+    // by_path / 셀 shape by_path / header-footer / shape 등) 는 모두 호출.
+    //
+    // 본 테스트는 v1 path → tac toggle 후 build_page_render_tree 가 picture 가
+    // 표 아래로 이동한 새 위치로 ImageNode 를 emit 하는지 검증 — cache 갱신 정합.
+    #[test]
+    fn v5_tac_toggle_invalidates_page_tree_and_emits_inline_picture_below_table() {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn collect_image_bboxes(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Image(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for child in &node.children {
+                collect_image_bboxes(child, out);
+            }
+        }
+        fn collect_table_bboxes(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Table(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for child in &node.children {
+                collect_table_bboxes(child, out);
+            }
+        }
+
+        let mut core = make_test_core();
+        let table_res = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create 1x1 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+        let pic_w = 5977u32;
+        let pic_h = 5331u32;
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            pic_w,
+            pic_h,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert floating picture in cell");
+        let pic_ctrl_idx = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+
+        // toggle 전: build_page_tree_cached 호출 → cache 채움.
+        let tree_before = core
+            .build_page_tree_cached(0)
+            .expect("build_page_tree_cached pre-toggle");
+        let mut image_before: Vec<(f64, f64, f64, f64)> = vec![];
+        collect_image_bboxes(&tree_before.root, &mut image_before);
+        assert_eq!(image_before.len(), 1, "toggle 전 ImageNode 1 개 필요");
+        let (_x0, y_before, _w0, _h0) = image_before[0];
+
+        // tac false → true 토글
+        core.set_picture_properties_native(
+            0,
+            table_para_idx,
+            pic_ctrl_idx,
+            r#"{"treatAsChar":true}"#,
+        )
+        .expect("toggle");
+
+        // toggle 후: build_page_tree_cached 다시 호출. fix 적용 시 invalidate_page_tree_cache
+        // 가 작동하여 새 tree 반환 (picture 위치 = 표 아래). fix 미적용 시 stale cache 반환.
+        let tree_after = core
+            .build_page_tree_cached(0)
+            .expect("build_page_tree_cached post-toggle");
+        let mut image_after: Vec<(f64, f64, f64, f64)> = vec![];
+        collect_image_bboxes(&tree_after.root, &mut image_after);
+        let mut table_after: Vec<(f64, f64, f64, f64)> = vec![];
+        collect_table_bboxes(&tree_after.root, &mut table_after);
+
+        assert_eq!(image_after.len(), 1, "toggle 후 ImageNode 1 개 필요");
+        assert_eq!(table_after.len(), 1, "toggle 후 Table 1 개 필요");
+        let (_x_a, y_after, _w_a, _h_a) = image_after[0];
+        let (_tx, ty, _tw, th) = table_after[0];
+        let table_bottom = ty + th;
+
+        // (A) cache invalidate 검증: toggle 전후 picture y 가 다름 (stale cache 아님).
+        assert!(
+            (y_before - y_after).abs() > 0.5,
+            "FAIL: page tree cache invalidate 누락 — toggle 후에도 picture y 동일 (before={}, after={})",
+            y_before,
+            y_after
+        );
+
+        // (B) toggle 후 picture 가 표 아래 위치 (한컴 정합).
+        assert!(
+            y_after > table_bottom,
+            "FAIL: picture 가 표 아래에 미배치 — picture y={}, table bottom={}",
+            y_after,
+            table_bottom
+        );
+    }
+
+    // ─── [Task #1151 v6] 한컴 정합 (scenario-a-after.hwp) render tree baseline ──
+    //
+    // v6 root cause 진단 베이스라인 — 한컴 정합 model 의 render tree 가 표를
+    // 정확한 셀 size 로 그리고 picture 가 표 아래에 배치됨을 확인. v6 fix
+    // (Table::update_ctrl_dimensions 가 self.common 동기화) 가 적용된 후 rhwp
+    // v1 path + 셀 size 조절 + tac toggle 의 render tree 가 이 baseline 과 같은
+    // 패턴 (image y > table bottom) 을 따르는지가 v6 fix 정합 기준.
+    #[test]
+    fn v6_render_tree_scenario_a_after_baseline() {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn collect_image(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Image(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for c in &node.children {
+                collect_image(c, out);
+            }
+        }
+        fn collect_table(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Table(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for c in &node.children {
+                collect_table(c, out);
+            }
+        }
+
+        let bytes = std::fs::read("samples/tac-verify/scenario-a-after.hwp")
+            .expect("read scenario-a-after.hwp");
+        let doc = crate::parser::parse_hwp(&bytes).expect("parse scenario-a-after.hwp");
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        let tree = core.build_page_tree_cached(0).expect("build page 0");
+        let mut images = vec![];
+        let mut tables = vec![];
+        collect_image(&tree.root, &mut images);
+        collect_table(&tree.root, &mut tables);
+
+        // baseline 단언: 표 와 picture 가 분리되어 표 아래에 picture 배치
+        assert_eq!(tables.len(), 1, "한컴 정합 표 1개");
+        assert_eq!(images.len(), 1, "한컴 정합 picture 1개");
+        let (_tx, ty, _tw, th) = tables[0];
+        let (_ix, iy, _iw, _ih) = images[0];
+        assert!(
+            iy > ty + th,
+            "한컴 baseline: picture 가 표 아래 (iy={}, table_bottom={})",
+            iy,
+            ty + th
+        );
+    }
+
+    // ─── [Task #1151 v6 regression] rhwp v1 path + 셀 height 조절 + tac toggle ─
+    //
+    // Root cause: Table::update_ctrl_dimensions 가 raw_ctrl_data 만 갱신하고
+    // self.common.width / self.common.height 는 동기화하지 않아 paragraph_layout 의
+    // v3 helper 가 stale 값 (cell 조절 전) 을 사용 → picture 가 표 아래로 충분히
+    // 안 밀려나고 표 박스 안에 들어감 (사용자 보고 2026-05-30).
+    //
+    // Fix: update_ctrl_dimensions 에서 self.common.width / height 동기화.
+    // 검증: cell.height = 11498 조절 후 tac toggle → table.common.height == 11498
+    // 및 picture y > table bottom.
+    #[test]
+    fn v6_resize_cell_then_tac_toggle_picture_below_table() {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn collect_image(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Image(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for c in &node.children {
+                collect_image(c, out);
+            }
+        }
+        fn collect_table(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+            if matches!(node.node_type, RenderNodeType::Table(_)) {
+                out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+            }
+            for c in &node.children {
+                collect_table(c, out);
+            }
+        }
+
+        let mut core = make_test_core();
+        let table_res = core.create_table_native(0, 0, 0, 1, 1).expect("table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+
+        // 셀 height 를 한컴 정합 size (12498 HU) 와 유사하게 조절.
+        // default cell.height = 1282 → delta = 12498 - 1282 = 11216
+        core.resize_table_cells_native(
+            0,
+            table_para_idx,
+            table_ctrl_idx,
+            r#"[{"cellIdx":0,"heightDelta":11216}]"#,
+        )
+        .expect("resize cell");
+
+        // v6 fix 1: resize 후 table.common.height 가 cell.height 와 동기화
+        let table =
+            match &core.document.sections[0].paragraphs[table_para_idx].controls[table_ctrl_idx] {
+                Control::Table(t) => t,
+                _ => panic!(),
+            };
+        assert_eq!(
+            table.common.height, 11498,
+            "v6 fix: table.common.height 가 cell 조절 후 동기화 (raw_ctrl_data 뿐 아니라 self.common 도)"
+        );
+        assert_eq!(table.cells[0].height, 11498);
+
+        // picture 삽입 (v1 path)
+        let cell_path: Vec<(usize, usize, usize)> = vec![(table_ctrl_idx, 0, 0)];
+        let image = minimal_png();
+        core.insert_picture_native(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &image,
+            5977,
+            5331,
+            1,
+            1,
+            "png",
+            "test",
+            None,
+            None,
+        )
+        .expect("insert");
+        let pic_ctrl_idx = core.document.sections[0].paragraphs[table_para_idx]
+            .controls
+            .len()
+            - 1;
+
+        // tac toggle
+        core.set_picture_properties_native(
+            0,
+            table_para_idx,
+            pic_ctrl_idx,
+            r#"{"treatAsChar":true}"#,
+        )
+        .expect("toggle");
+
+        // v6 fix 2: render tree 의 picture 가 표 box 아래에 배치되는지 확인.
+        let tree = core.build_page_tree_cached(0).expect("build page 0");
+        let mut images = vec![];
+        let mut tables = vec![];
+        collect_image(&tree.root, &mut images);
+        collect_table(&tree.root, &mut tables);
+        assert_eq!(tables.len(), 1);
+        assert_eq!(images.len(), 1);
+        let (_tx, ty, _tw, th) = tables[0];
+        let (_ix, iy, _iw, _ih) = images[0];
+        assert!(
+            iy > ty + th,
+            "v6 fix: picture 가 표 아래 (iy={}, table_bottom={}) — table.common.height 동기화 정합",
+            iy,
+            ty + th
+        );
+    }
+
+    // ─── 이미 tac=true 인 picture 의 다른 속성 변경 — migration 미진입 ─────
+    #[test]
+    fn tac_toggle_when_already_tac_true_no_migration() {
+        let mut core = make_test_core();
+        let pic_h = 5000u32;
+        let ctrl_idx = {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            push_body_floating_picture(para, 5000, pic_h, 1000, 1000, 1)
+        };
+
+        // 먼저 tac=true 로 마이그레이션
+        core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
+            .expect("first migration");
+        let lh_after_first = core.document.sections[0].paragraphs[0].line_segs[0].line_height;
+
+        // 두 번째 호출: tac 변경 없이 다른 속성 변경 — migration 미진입
+        core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"brightness":50}"#)
+            .expect("second call no-op for migration");
+
+        let para = &core.document.sections[0].paragraphs[0];
+        // line_height 가 더 자라지 않아야 함 (이미 picture height 인 채로 유지)
+        assert_eq!(para.line_segs[0].line_height, lh_after_first);
+        // brightness 는 적용됨
+        let pic = match &para.controls[ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!(),
+        };
+        assert_eq!(pic.image_attr.brightness, 50);
+    }
+
+    // ─── tac=true → false 토글 — migration 미진입 (한 방향만) ──────────
+    #[test]
+    fn tac_toggle_true_to_false_no_migration_this_pr() {
+        let mut core = make_test_core();
+        let pic_h = 5000u32;
+        let ctrl_idx = {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            push_body_floating_picture(para, 5000, pic_h, 1000, 1000, 1)
+        };
+        // 먼저 tac=true 로
+        core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
+            .expect("forward migration");
+        let lh_after_forward = core.document.sections[0].paragraphs[0].line_segs[0].line_height;
+
+        // tac=false 로 — 역방향. line_height 추가 변동 없어야 함 (한 방향만 fix).
+        core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":false}"#)
+            .expect("reverse toggle");
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.line_segs[0].line_height, lh_after_forward,
+            "역방향 토글은 line_height 영향 없음"
+        );
+        let pic = match &para.controls[ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!(),
+        };
+        assert!(!pic.common.treat_as_char, "tac 비트는 false 로 토글");
+    }
+
+    // ─── 빈 line_segs paragraph 의 토글 — line_seg 신설 ────────────────
+    #[test]
+    fn tac_toggle_with_empty_line_segs_creates_new_seg() {
+        let mut core = make_test_core();
+        let pic_h = 7000u32;
+        let ctrl_idx = {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.line_segs.clear(); // 빈 line_segs 강제
+            push_body_floating_picture(para, 7000, pic_h, 1000, 1000, 1)
+        };
+        core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
+            .expect("migration");
+
+        let para = &core.document.sections[0].paragraphs[0];
+        assert!(
+            !para.line_segs.is_empty(),
+            "빈 line_segs 였다면 신설되어야 한다"
+        );
+        let seg = &para.line_segs[0];
+        assert_eq!(seg.line_height, pic_h as i32);
+        assert_eq!(seg.text_height, pic_h as i32);
+        assert_eq!(seg.baseline_distance, expected_baseline(pic_h as i32));
+    }
+
+    // LineSeg 빈 케이스 직접 검증용 (별도 helper 미사용 check)
+    #[test]
+    #[allow(dead_code)]
+    fn _lineseg_default_for_test() {
+        let seg = LineSeg::default();
+        assert_eq!(seg.line_height, 0);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  통합 검증 (Stage 2): 한컴 산출물 정합
+    //
+    //  samples/tac-verify/scenario-{a,b,c,d}-before.hwp 를 rhwp 가 파싱한 후
+    //  set_picture_properties_native 로 tac false→true 토글한 결과가
+    //  scenario-{a,b,c,d}-after.hwp 의 model 과 dump 동치인지 검증한다.
+    //  v2 fix 가 만든 model 이 한컴이 만든 model 과 양방향 정합임을 보장.
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// 양방향 정합 검증의 공통 단언 — paragraph 0.0 의 picture / line_segs 비교.
+    fn assert_toggle_matches_hancom(scenario: &str) {
+        let before_bytes =
+            std::fs::read(format!("samples/tac-verify/scenario-{scenario}-before.hwp"))
+                .expect("read before.hwp");
+        let after_bytes =
+            std::fs::read(format!("samples/tac-verify/scenario-{scenario}-after.hwp"))
+                .expect("read after.hwp");
+
+        let before_doc = crate::parser::parse_hwp(&before_bytes).expect("parse before");
+        let after_doc = crate::parser::parse_hwp(&after_bytes).expect("parse after");
+
+        let mut core = DocumentCore::new_empty();
+        core.set_document(before_doc);
+
+        // picture 위치 찾기 (paragraph 0.0 의 첫 Picture control)
+        let pic_ctrl_idx = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Picture(_)))
+            .unwrap_or_else(|| panic!("scenario-{scenario}-before: no Picture control"));
+
+        core.set_picture_properties_native(0, 0, pic_ctrl_idx, r#"{"treatAsChar":true}"#)
+            .expect("toggle");
+
+        // 토글된 picture
+        let toggled_para = &core.document.sections[0].paragraphs[0];
+        let toggled_pic = match &toggled_para.controls[pic_ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!("not Picture after toggle"),
+        };
+
+        // 한컴 after 의 picture
+        let after_para = &after_doc.sections[0].paragraphs[0];
+        let after_pic_ctrl_idx = after_para
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Picture(_)))
+            .unwrap_or_else(|| panic!("scenario-{scenario}-after: no Picture control"));
+        let after_pic = match &after_para.controls[after_pic_ctrl_idx] {
+            Control::Picture(p) => p.as_ref(),
+            _ => panic!(),
+        };
+
+        // (a) picture 4 필드 비교
+        assert_eq!(
+            toggled_pic.common.treat_as_char, after_pic.common.treat_as_char,
+            "scenario-{scenario}: treat_as_char mismatch"
+        );
+        assert_eq!(
+            toggled_pic.common.horizontal_offset, after_pic.common.horizontal_offset,
+            "scenario-{scenario}: horizontal_offset mismatch"
+        );
+        assert_eq!(
+            toggled_pic.common.vertical_offset, after_pic.common.vertical_offset,
+            "scenario-{scenario}: vertical_offset mismatch"
+        );
+        assert_eq!(
+            toggled_pic.common.horz_rel_to as u8, after_pic.common.horz_rel_to as u8,
+            "scenario-{scenario}: horz_rel_to mismatch"
+        );
+        assert_eq!(
+            toggled_pic.common.vert_rel_to as u8, after_pic.common.vert_rel_to as u8,
+            "scenario-{scenario}: vert_rel_to mismatch"
+        );
+
+        // (b) line_segs[0] 비교
+        let toggled_seg = &toggled_para.line_segs[0];
+        let after_seg = &after_para.line_segs[0];
+        assert_eq!(
+            toggled_seg.line_height, after_seg.line_height,
+            "scenario-{scenario}: line_height mismatch"
+        );
+        assert_eq!(
+            toggled_seg.text_height, after_seg.text_height,
+            "scenario-{scenario}: text_height mismatch"
+        );
+        assert_eq!(
+            toggled_seg.baseline_distance, after_seg.baseline_distance,
+            "scenario-{scenario}: baseline_distance mismatch (round(lh*0.85) 정합)"
+        );
+
+        // (c) paragraph 수 / picture 위치 불변
+        assert_eq!(
+            core.document.sections[0].paragraphs.len(),
+            after_doc.sections[0].paragraphs.len(),
+            "scenario-{scenario}: paragraph count mismatch"
+        );
+        assert_eq!(
+            pic_ctrl_idx, after_pic_ctrl_idx,
+            "scenario-{scenario}: picture control_idx mismatch"
+        );
+
+        // (d) paragraph.text 불변
+        assert_eq!(
+            toggled_para.text, after_para.text,
+            "scenario-{scenario}: paragraph.text mismatch"
+        );
+    }
+
+    #[test]
+    fn integration_tac_toggle_matches_hancom_scenario_a() {
+        assert_toggle_matches_hancom("a");
+    }
+
+    #[test]
+    fn integration_tac_toggle_matches_hancom_scenario_b() {
+        assert_toggle_matches_hancom("b");
+    }
+
+    #[test]
+    fn integration_tac_toggle_matches_hancom_scenario_c() {
+        assert_toggle_matches_hancom("c");
+    }
+
+    #[test]
+    fn integration_tac_toggle_matches_hancom_scenario_d() {
+        assert_toggle_matches_hancom("d");
     }
 }

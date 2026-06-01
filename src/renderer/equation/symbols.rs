@@ -350,6 +350,11 @@ static ARROWS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| 
         ("nearrow", "↗"),
         ("swarrow", "↙"),
         ("searrow", "↘"),
+        // HWP 변화표 수식은 대문자 대각 화살표 토큰을 사용한다.
+        ("NWARROW", "↖"),
+        ("NEARROW", "↗"),
+        ("SWARROW", "↙"),
+        ("SEARROW", "↘"),
         // 특수
         ("mapsto", "↦"),
         ("hookleft", "↩"),
@@ -690,6 +695,8 @@ mod tests {
     fn test_arrows() {
         assert_eq!(lookup_symbol("rarrow"), Some("→"));
         assert_eq!(lookup_symbol("RARROW"), Some("⇒"));
+        assert_eq!(lookup_symbol("NEARROW"), Some("↗"));
+        assert_eq!(lookup_symbol("SEARROW"), Some("↘"));
     }
 
     #[test]

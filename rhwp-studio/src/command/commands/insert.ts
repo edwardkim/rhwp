@@ -1,8 +1,10 @@
 import type { CommandDef } from '../types';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { EquationEditorDialog } from '@/ui/equation-editor-dialog';
+import { EquationPropertiesDialog } from '@/ui/equation-props-dialog';
 import { SymbolsDialog } from '@/ui/symbols-dialog';
 import { BookmarkDialog } from '@/ui/bookmark-dialog';
+import { EndnoteShapeDialog } from '@/ui/endnote-shape-dialog';
 import { showShapePicker } from '@/ui/shape-picker';
 import type { ShapeType } from '@/ui/shape-picker';
 
@@ -20,8 +22,35 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
 
 let picturePropsDialog: PicturePropsDialog | null = null;
 let equationEditorDialog: EquationEditorDialog | null = null;
+let equationPropsDialog: EquationPropertiesDialog | null = null;
 let symbolsDialog: SymbolsDialog | null = null;
 let bookmarkDialog: BookmarkDialog | null = null;
+let endnoteShapeDialog: EndnoteShapeDialog | null = null;
+
+function enterNoteEditing(
+  services: any,
+  ih: any,
+  sectionIdx: number,
+  paraIdx: number,
+  controlIdx: number,
+): void {
+  const info = services.wasm.getNoteEditInfo(sectionIdx, paraIdx, controlIdx);
+  if (!info?.ok) return;
+  const cursor = (ih as any).cursor;
+  if (!cursor?.enterFootnoteMode) return;
+  cursor.enterFootnoteMode(
+    sectionIdx,
+    paraIdx,
+    controlIdx,
+    info.footnoteIndex ?? 0,
+    info.pageNum ?? 0,
+  );
+  cursor.setFnCursorPosition(info.fnParaIndex ?? 0, info.charOffset ?? 2);
+  services.eventBus.emit('footnoteModeChanged', true);
+  (ih as any).active = true;
+  (ih as any).updateCaret?.();
+  (ih as any).textarea?.focus();
+}
 
 export const insertCommands: CommandDef[] = [
   {
@@ -129,19 +158,65 @@ export const insertCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
-      console.log('[footnote] pos:', pos);
       try {
         const result = services.wasm.insertFootnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
-        console.log('[footnote] result:', result);
         if (result.ok) {
           services.eventBus.emit('document-changed');
+          enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
         }
       } catch (err) {
         console.warn('[insert:footnote] 각주 삽입 실패:', err);
       }
     },
   },
-  stub('insert:endnote', '미주', 'icon-endnote'),
+  {
+    id: 'insert:endnote',
+    label: '미주',
+    icon: 'icon-endnote',
+    canExecute: () => true,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const pos = ih.getPosition();
+      try {
+        const result = services.wasm.insertEndnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
+        if (result.ok) {
+          services.eventBus.emit('document-changed');
+          enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
+        }
+      } catch (err) {
+        console.warn('[insert:endnote] 미주 삽입 실패:', err);
+      }
+    },
+  },
+  {
+    id: 'insert:note-close',
+    label: '닫기',
+    icon: 'icon-delete',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const cursor = (ih as any).cursor;
+      if (!cursor?.isInFootnote?.()) return;
+      cursor.exitFootnoteMode();
+      services.eventBus.emit('footnoteModeChanged', false);
+      (ih as any).updateCaret?.();
+      (ih as any).textarea?.focus();
+    },
+  },
+  {
+    id: 'insert:endnote-shape',
+    label: '미주 모양',
+    icon: 'icon-endnote',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const pos = services.getInputHandler()?.getPosition();
+      const sectionIdx = pos?.sectionIndex ?? 0;
+      endnoteShapeDialog = new EndnoteShapeDialog(services.wasm, services.eventBus, sectionIdx);
+      endnoteShapeDialog.show();
+    },
+  },
   {
     id: 'insert:symbols',
     label: '문자표',
@@ -176,19 +251,29 @@ export const insertCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
-      if (!ref || ref.type === 'equation' || ref.type === 'group') return;
+      if (!ref) return;
+      if (ref.type === 'equation') {
+        if (!equationPropsDialog) {
+          equationPropsDialog = new EquationPropertiesDialog(services.wasm, services.eventBus);
+        }
+        equationPropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
+        return;
+      }
       if (!picturePropsDialog) {
         picturePropsDialog = new PicturePropsDialog(services.wasm, services.eventBus);
       }
       // [Task #825] 머리말/꼬리말 그림은 ref.headerFooter 동반 — dialog 에 전달.
       // [Task #1138] 표 셀 내 도형(shape/line) 은 cellPath 구성하여 dialog 에 전달
-      // → by_path API 사용. picture (image) 는 paragraph_layout path 가 처리하므로
-      // cellPath 미사용 (검증 결과 picture 는 외부 좌표 path 로 정상 동작).
+      // → by_path API 사용.
+      // [Task #1151 v4] picture (image) 도 셀 안 inline picture (tac-img-02.hwp 같은
+      // 케이스) 의 경우 cellPath 구성 필요 — getCellPicturePropertiesByPath /
+      // setCellPicturePropertiesByPath wasm API 호출. cell context (cellIdx/cellParaIdx/
+      // outerTableControlIdx) 가 모두 있으면 셀 안 picture.
       const cellPath = (
         ref.cellIdx !== undefined &&
         ref.cellParaIdx !== undefined &&
         (ref as any).outerTableControlIdx !== undefined &&
-        (ref.type === 'shape' || ref.type === 'line')
+        (ref.type === 'shape' || ref.type === 'line' || ref.type === 'image')
       )
         ? [{
             controlIdx: (ref as any).outerTableControlIdx as number,
@@ -214,7 +299,7 @@ export const insertCommands: CommandDef[] = [
       if (!equationEditorDialog) {
         equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
       }
-      equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx);
+      equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
     },
   },
   {

@@ -161,6 +161,22 @@ impl LayerBuilder {
                     ClipKind::TableCell,
                 ))
             }
+            RenderNodeType::TextBox => {
+                let child = LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    self.build_children(node),
+                    self.cache_hint_for(&node.node_type),
+                    GroupKind::TextBox,
+                );
+                Some(LayerNode::clip_rect(
+                    node.bbox,
+                    Some(node.id),
+                    node.bbox,
+                    child,
+                    ClipKind::TextBox,
+                ))
+            }
             _ => Some(LayerNode::group(
                 node.bbox,
                 Some(node.id),
@@ -322,6 +338,58 @@ mod tests {
             }
             other => panic!("expected root group, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn builds_textbox_clip_layer() {
+        let mut tree = PageRenderTree::new(0, 800.0, 600.0);
+        let mut textbox = RenderNode::new(
+            7,
+            RenderNodeType::TextBox,
+            BoundingBox::new(50.0, 80.0, 240.0, 120.0),
+        );
+        textbox.children.push(RenderNode::new(
+            8,
+            RenderNodeType::TextRun(text_run("글상자")),
+            BoundingBox::new(60.0, 90.0, 60.0, 20.0),
+        ));
+        tree.root.children.push(textbox);
+
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+        let layer_tree = builder.build(&tree);
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        assert_eq!(children.len(), 1);
+
+        let LayerNodeKind::ClipRect {
+            clip,
+            clip_kind,
+            child,
+        } = &children[0].kind
+        else {
+            panic!("expected textbox clip");
+        };
+        assert_eq!(*clip_kind, ClipKind::TextBox);
+        assert_eq!(clip.x, 50.0);
+        assert_eq!(clip.y, 80.0);
+        assert_eq!(clip.width, 240.0);
+        assert_eq!(clip.height, 120.0);
+
+        let LayerNodeKind::Group {
+            group_kind,
+            children: textbox_children,
+            ..
+        } = &child.kind
+        else {
+            panic!("expected clipped textbox group");
+        };
+        assert!(matches!(group_kind, GroupKind::TextBox));
+        assert!(matches!(
+            &textbox_children[0].kind,
+            LayerNodeKind::Leaf { .. }
+        ));
     }
 
     #[test]
@@ -876,6 +944,7 @@ mod tests {
             control_index: None,
             cell_index: None,
             cell_para_index: None,
+            note_ref: None,
         }
     }
 

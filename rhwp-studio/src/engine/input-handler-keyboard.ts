@@ -464,7 +464,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
 
   // ─── 각주 편집 모드 키보드 처리 ──────────────────────────
   if (this.cursor.isInFootnote()) {
-    // Escape → 각주 편집 모드 탈출
+    // Shift+Esc 또는 Escape → 주석 편집 모드 탈출
     if (e.key === 'Escape') {
       e.preventDefault();
       this.cursor.exitFootnoteMode();
@@ -1552,9 +1552,13 @@ async function pasteImageFile(this: any, file: File, hasSelection: boolean): Pro
     this.executeOperation({ kind: 'snapshot', operationType: 'pasteImage', operation: (wasm: WasmBridge) => {
       if (hasSelection) this.deleteSelection();
       const p = this.cursor.getPosition();
+      // 표 셀 안 paste (#1151): floating picture 분기 — parentParaIndex + cellPath 전달.
+      const inCell = (p.cellPath?.length ?? 0) > 0 && p.parentParaIndex !== undefined;
+      const paraForCall = inCell ? p.parentParaIndex! : p.paragraphIndex;
+      const cellPathJson = inCell ? JSON.stringify(p.cellPath) : '';
       const result = wasm.insertPicture(
-        p.sectionIndex, p.paragraphIndex, p.charOffset,
-        data, wHwp, hHwp, natW, natH, ext, '',
+        p.sectionIndex, paraForCall, p.charOffset,
+        cellPathJson, data, wHwp, hHwp, natW, natH, ext, '',
       );
       if (result.ok) {
         return {

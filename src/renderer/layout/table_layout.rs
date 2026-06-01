@@ -2081,6 +2081,7 @@ impl LayoutEngine {
                             section_index,
                             cp_idx,
                             cell_context.clone(),
+                            false,
                             is_last_para,
                             0.0,
                             None,
@@ -2250,6 +2251,10 @@ impl LayoutEngine {
                                             width: clamped_w,
                                             height: clamped_h,
                                         };
+                                        // [Task #1151 v4] 셀 안 inline picture (tac=true):
+                                        // outer paragraph idx + inner picture ctrl idx +
+                                        // cell_ctx 전달 → ImageNode cell_index + cursor_rect
+                                        // hit-test 정합.
                                         self.layout_picture(
                                             tree,
                                             &mut cell_node,
@@ -2258,8 +2263,9 @@ impl LayoutEngine {
                                             bin_data_content,
                                             Alignment::Left,
                                             Some(section_index),
-                                            None,
-                                            None,
+                                            cell_context.as_ref().map(|c| c.parent_para_index),
+                                            Some(ctrl_idx),
+                                            cell_context.as_ref(),
                                         );
                                         inline_x += clamped_w;
                                         continue;
@@ -2309,6 +2315,9 @@ impl LayoutEngine {
                                         width: pic_w,
                                         height: pic_h,
                                     };
+                                    // [Task #1151 v4] 셀 안 non-inline picture (tac=false 자리차지 등):
+                                    // outer paragraph idx + inner picture ctrl idx +
+                                    // cell_ctx 전달.
                                     self.layout_picture(
                                         tree,
                                         &mut cell_node,
@@ -2317,8 +2326,9 @@ impl LayoutEngine {
                                         bin_data_content,
                                         Alignment::Left,
                                         Some(section_index),
-                                        None,
-                                        None,
+                                        cell_context.as_ref().map(|c| c.parent_para_index),
+                                        Some(ctrl_idx),
+                                        cell_context.as_ref(),
                                     );
                                     para_y += pic_h;
                                 }
@@ -2682,6 +2692,7 @@ impl LayoutEngine {
                                             control_index: Some(ctrl_idx),
                                             cell_index: Some(cell_idx),
                                             cell_para_index: Some(cp_idx),
+                                            note_ref: None,
                                         }),
                                         BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
                                     );

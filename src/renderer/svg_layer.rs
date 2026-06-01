@@ -95,6 +95,7 @@ impl SvgLayerRenderer {
                             model_cell_index: None,
                         }),
                     },
+                    ClipKind::TextBox => RenderNodeType::TextBox,
                     ClipKind::Generic => RenderNodeType::Body {
                         clip_rect: Some(*clip),
                     },

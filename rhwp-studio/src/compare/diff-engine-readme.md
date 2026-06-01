@@ -396,6 +396,15 @@ flowchart LR
 | `src/ui/history-dialog.ts` | `buildSnapshotFromWasm`, `compareSnapshots`, `compareDocuments` | 편집 문서 스냅샷 + 이력/비교 |
 | `src/ui/compare-dialog.ts` | `compareDocuments` | 외부 두 파일 비교 |
 
+### 6.1 rhwp-studio 진입점
+
+| 기능 | 메뉴 | 단축키 | 엔진 |
+|------|------|--------|------|
+| 문서 비교 | 편집 → 문서 비교 | `Alt+Shift+V` | `compareDocuments` — `strategy: 'alignment'` (외부 두 파일) |
+| 문서 이력 | 편집 → 문서 이력 관리 | `Ctrl+Shift+H` | `compareSnapshots` — `strategy: 'identity'` (같은 세션·stable_id) |
+
+비교 결과 탐색·상세 창은 `compare-result-window.ts`, 세션 공유는 `compare/session.ts`를 참고한다.
+
 ---
 
 ## 7. 디버그 로그 ①②③

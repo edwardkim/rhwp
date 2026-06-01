@@ -253,6 +253,7 @@ pub enum CacheHint {
 pub enum ClipKind {
     Body,
     TableCell,
+    TextBox,
     Generic,
 }
 
