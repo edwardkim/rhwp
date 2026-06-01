@@ -783,3 +783,51 @@ fn issue1134_cell_controls_not_lost_on_roundtrip() {
         orig, rt
     );
 }
+
+#[test]
+fn para_ids_unique_across_body_and_table() {
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+    use std::collections::HashSet;
+    use std::io::Read;
+
+    let bytes = include_bytes!("../samples/hwpx/basic-table-01.hwpx");
+    let doc = parse_hwpx(bytes).expect("parse");
+    let zip_bytes = serialize_hwpx(&doc).expect("serialize");
+
+    // zip에서 section XML 추출
+    let cursor = std::io::Cursor::new(zip_bytes);
+    let mut zip = zip::ZipArchive::new(cursor).expect("zip open");
+    let mut section_xml = String::new();
+    for i in 0..zip.len() {
+        let mut entry = zip.by_index(i).expect("zip entry");
+        let name = entry.name().to_string();
+        if name.contains("section") && name.ends_with(".xml") {
+            entry
+                .read_to_string(&mut section_xml)
+                .expect("read section xml");
+            break;
+        }
+    }
+    assert!(
+        !section_xml.is_empty(),
+        "section XML not found in serialized zip"
+    );
+
+    // <hp:p id="N"> 에서 id 값 수집
+    let ids: Vec<&str> = section_xml
+        .split(r#"<hp:p id=""#)
+        .skip(1)
+        .map(|s| s.split('"').next().unwrap_or(""))
+        .collect();
+
+    assert!(!ids.is_empty(), "직렬화 결과에 <hp:p> 요소가 없음");
+
+    let unique: HashSet<&str> = ids.iter().copied().collect();
+    assert_eq!(
+        ids.len(),
+        unique.len(),
+        "본문+셀 문단 id 중복 발견: {:?}",
+        ids
+    );
+}

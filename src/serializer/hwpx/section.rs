@@ -74,7 +74,7 @@ pub fn write_section(
 
     // 첫 문단 `<hp:p>` 태그를 IR 기반 속성으로 교체
     if let Some(p) = first_para {
-        let new_p_tag = render_hp_p_open(p, 0);
+        let new_p_tag = render_hp_p_open(p, ctx.next_para_id());
         out = out.replacen(TEMPLATE_FIRST_P_TAG, &new_p_tag, 1);
 
         // 첫 문단의 텍스트용 <hp:run> 의 charPrIDRef 를 IR 기반으로 교체
@@ -92,11 +92,11 @@ pub fn write_section(
     // 추가 문단: `</hp:p></hs:sec>` 직전에 `<hp:p>` 요소를 삽입.
     if section.paragraphs.len() > 1 {
         let mut extra = String::new();
-        for (idx, p) in section.paragraphs.iter().enumerate().skip(1) {
+        for p in section.paragraphs.iter().skip(1) {
             let (t, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
             vert_cursor = advance;
             let cs = first_run_char_shape_id(p);
-            extra.push_str(&render_hp_p_open(p, idx as u32));
+            extra.push_str(&render_hp_p_open(p, ctx.next_para_id()));
             extra.push_str(&format!(r#"<hp:run charPrIDRef="{}">"#, cs));
             extra.push_str(&t);
             extra.push_str(r#"</hp:run><hp:linesegarray>"#);
@@ -528,11 +528,11 @@ fn render_note_sublist(
         num = number,
     );
     let mut vert_cursor: u32 = 0;
-    for (idx, p) in paragraphs.iter().enumerate() {
+    for p in paragraphs.iter() {
         let (t, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
         vert_cursor = advance;
         let cs = first_run_char_shape_id(p);
-        out.push_str(&render_hp_p_open(p, idx as u32));
+        out.push_str(&render_hp_p_open(p, ctx.next_para_id()));
         out.push_str(&format!(r#"<hp:run charPrIDRef="{}">"#, cs));
         out.push_str(&t);
         out.push_str(r#"</hp:run><hp:linesegarray>"#);
