@@ -414,8 +414,8 @@ impl DocumentCore {
                 let spacing = (font_size as f64 * 0.6) as i32;
                 // seg_width: 셀 폭에서 좌우 패딩을 뺀 텍스트 영역 폭
                 let seg_w = (cell_width as i32) - (padding.left as i32) - (padding.right as i32);
-                // tag(flags): 0x00060000 = bit 17,18 (정상 HWP 셀 문단 패턴)
-                let line_tag: u32 = 0x00060000;
+                // tag(flags): bit 17(first segment) + bit 18(last segment).
+                let line_tag: u32 = crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE;
 
                 if cp_para.line_segs.is_empty() {
                     cp_para.line_segs.push(crate::model::paragraph::LineSeg {
@@ -670,7 +670,7 @@ impl DocumentCore {
                 baseline_distance: (total_height as f64 * 0.85).min(i32::MAX as f64) as i32,
                 line_spacing: 600,
                 segment_width: total_width.min(i32::MAX as u32) as i32,
-                tag: 0x00060000, // 정상 HWP 패턴 (bit 17,18)
+                tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             para_shape_id: table_para_shape_id,

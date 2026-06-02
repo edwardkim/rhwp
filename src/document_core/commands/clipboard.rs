@@ -8,7 +8,7 @@ use crate::document_core::{ClipboardData, DocumentCore};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 
 /// [Task #1161] 떠 있는 개체 반복 붙여넣기 cascade 1 회당 위치 오프셋(HWPUNIT).
 /// 약 2mm (1mm = 7200/25.4 ≈ 283.46 HWPUNIT). 한컴 정합은 작업지시자 시각 대조로 미세조정.
@@ -256,22 +256,22 @@ impl DocumentCore {
                 _ => 0,
             };
             if ctrl_height > 0 {
-                crate::model::paragraph::LineSeg {
+                LineSeg {
                     text_start: 0,
                     line_height: ctrl_height,
                     text_height: ctrl_height,
                     baseline_distance: (ctrl_height * 850) / 1000,
                     line_spacing: 600,
-                    tag: 0x00060000,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                     ..Default::default()
                 }
             } else {
-                crate::model::paragraph::LineSeg {
+                LineSeg {
                     text_start: 0,
                     line_height: 400,
                     text_height: 400,
                     baseline_distance: 320,
-                    tag: 0x00060000,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                     ..Default::default()
                 }
             }
@@ -818,14 +818,14 @@ impl DocumentCore {
                 start_pos: 0,
                 char_shape_id: default_char_shape_id,
             }],
-            line_segs: vec![crate::model::paragraph::LineSeg {
+            line_segs: vec![LineSeg {
                 text_start: 0,
                 line_height: 1000,
                 text_height: 1000,
                 baseline_distance: 850,
                 line_spacing: 600,
                 segment_width: content_width as i32,
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             has_para_text: false,

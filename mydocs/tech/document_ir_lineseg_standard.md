@@ -7,9 +7,15 @@
 이므로 HWP5 LineSeg 인코딩이 표준. **HWP5/HWPX/HWP3 모든 파서가 본 표준 의미로
 LineSeg 를 채워야 한다.**
 
-본 문서는 Task #604 (Document IR 표준 정합화) 에서 작성. PR #589 머지 후 시각 판정 중
-`Paragraph.wrap_precomputed` 플래그가 HWP3 휴리스틱을 IR 에 누설했음이 발견되어, IR 표준
-명문화로 부채 청산 + 포맷 일관성 확보가 본 문서의 목적.
+본 문서는 Task #604(Document IR 표준 정합화)에서 작성했다.
+HWP 3.0은 HWP 5.0의 `PARA_LINE_SEG`처럼 줄 위치, 세그먼트 폭, wrap zone 등을
+명시적으로 표현하는 정보가 부족하므로, HWP5 기반 공통 IR로 변환할 때 일부 값을
+파서가 계산하거나 추정해야 한다.
+
+PR #589 병합 후 시각 판정 과정에서, 이러한 HWP3 전용 추정값이
+`Paragraph.wrap_precomputed` 같은 공통 IR 필드에 남아 다른 포맷 처리에도 영향을 줄 수
+있음이 확인되었다. 따라서 `LineSeg` 필드의 표준 의미를 명문화하여, 포맷별 보정 로직과
+공통 IR 계약을 분리하는 것이 본 문서의 목적이다.
 
 ## 단위
 
@@ -31,7 +37,7 @@ hwpunit_to_px(hu, dpi=96) = hu * 96 / 7200
 | `line_spacing` | i32 | HWPUNIT | (없음) | 줄간격 |
 | `column_start` | i32 | HWPUNIT | 단(column) 좌측 | wrap zone x 오프셋. **0 = wrap 없음** |
 | `segment_width` | i32 | HWPUNIT | (없음) | 줄 너비. **단 너비와 같으면 wrap 없음** |
-| `tag` | u32 | 비트 플래그 | (없음) | 첫 줄 / 첫 단 등 |
+| `tag` | u32 | 비트 플래그 | (없음) | HWP5 PARA_LINE_SEG tag. bit 17/18 조합은 `LineSeg::TAG_SINGLE_SEGMENT_LINE` |
 
 ### vertical_pos 의 본질
 
@@ -41,6 +47,24 @@ hwpunit_to_px(hu, dpi=96) = hu * 96 / 7200
 - HWP5: 인코더가 누적 계산하여 저장 → 파서는 1:1 매핑
 - HWPX: 동일 (XML `vertpos` 속성)
 - **HWP3**: 본 표준에 정합하지 않음 (현재 항상 0). 향후 별도 task 에서 누적 계산 정정 권고
+
+### tag bit 의 본질
+
+HWP5 공식 스펙의 PARA_LINE_SEG tag bit 의미를 그대로 따른다. `0x00060000`은
+bit 17(first segment)과 bit 18(last segment)을 함께 켠 단일 세그먼트 줄이며, 코드에서는
+`LineSeg::TAG_SINGLE_SEGMENT_LINE`으로 표현한다.
+
+| bit | 의미 |
+|-----|------|
+| 0 | 페이지의 첫 줄 |
+| 1 | 컬럼의 첫 줄 |
+| 16 | 텍스트가 배열되지 않은 빈 세그먼트 |
+| 17 | 줄의 첫 세그먼트 |
+| 18 | 줄의 마지막 세그먼트 |
+| 19 | auto-hyphenation 수행 |
+| 20 | indentation 적용 |
+| 21 | 문단 머리 모양 적용 |
+| 31 | 구현 편의 property |
 
 ### column_start / segment_width 의 본질
 

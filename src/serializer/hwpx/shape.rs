@@ -17,7 +17,7 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, LineShape, RectangleShape, TextBox, TextFlow, TextWrap,
     VertAlign, VertRelTo,
@@ -251,6 +251,7 @@ fn write_draw_text_paragraph<W: Write>(
 
     // minimal lineseg
     start_tag(w, "hp:linesegarray")?;
+    let line_flags = LineSeg::TAG_SINGLE_SEGMENT_LINE.to_string();
     empty_tag(
         w,
         "hp:lineseg",
@@ -263,7 +264,7 @@ fn write_draw_text_paragraph<W: Write>(
             ("spacing", "600"),
             ("horzpos", "0"),
             ("horzsize", "42520"),
-            ("flags", "393216"),
+            ("flags", line_flags.as_str()),
         ],
     )?;
     end_tag(w, "hp:linesegarray")?;

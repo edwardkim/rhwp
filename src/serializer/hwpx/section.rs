@@ -5,9 +5,9 @@
 //! (IR에 대응 필드가 더 담길 때까지 점진적으로 동적화 예정).
 //!
 //! Stage #177 (2026-04-18): `<hp:lineseg>` 직렬화를 IR 기반으로 전환.
-//! `Paragraph.line_segs` 의 6개 필드(line_height, text_height, baseline_distance,
-//! line_spacing, column_start/segment_width, tag)를 그대로 출력하여 **원본 lineseg 값
-//! 보존**. rhwp 는 자신의 문서에서 새로 부정확한 값을 생산하지 않는다.
+//! `Paragraph.line_segs` 의 9개 필드(textpos, vertpos, vertsize, textheight, baseline,
+//! spacing, horzpos, horzsize, flags)를 그대로 출력하여 **원본 lineseg 값 보존**.
+//! rhwp 는 자신의 문서에서 새로 부정확한 값을 생산하지 않는다.
 //!
 //! IR 매핑 관행:
 //!   - `section.paragraphs` 여러 개 = 하드 문단 경계 (`<hp:p>` 여러 개)
@@ -17,7 +17,7 @@
 //!   - `paragraph.style_id` → `<hp:p styleIDRef>`
 //!   - `paragraph.column_type` → `<hp:p pageBreak/columnBreak>`
 //!   - `paragraph.char_shapes[0].char_shape_id` → 첫 `<hp:run charPrIDRef>`
-//!   - `paragraph.line_segs[i]` → 각 `<hp:lineseg>` 속성 (6개 필드 그대로 출력)
+//!   - `paragraph.line_segs[i]` → 각 `<hp:lineseg>` 속성 (9개 필드 그대로 출력)
 
 use quick_xml::Writer;
 
@@ -48,7 +48,7 @@ const TEMPLATE_RUN_BEFORE_TEXT: &str = r#"<hp:run charPrIDRef="0"><hp:t/>"#;
 
 /// 레퍼런스 기준 줄 레이아웃 파라미터.
 const VERT_STEP: u32 = 1600; // vertsize(1000) + spacing(600)
-const LINE_FLAGS: u32 = 393216;
+const LINE_FLAGS: u32 = LineSeg::TAG_SINGLE_SEGMENT_LINE;
 const HORZ_SIZE: u32 = 42520;
 /// 탭 기본 폭 (한컴이 열면서 재계산하지만 초기값으로 필요).
 const TAB_DEFAULT_WIDTH: u32 = 4000;
@@ -547,7 +547,7 @@ fn horz_align_to_hwpx(align: HorzAlign) -> &'static str {
     }
 }
 
-/// IR의 `line_segs` 를 그대로 XML로 직렬화 (6개 필드 전부 IR 값 사용).
+/// IR의 `line_segs` 를 그대로 XML로 직렬화 (9개 필드 전부 IR 값 사용).
 ///
 /// rhwp 는 자신의 문서에서 비표준 lineseg 를 **새로 생산하지 않는다**.
 /// 원본 한컴 파일의 lineseg 값이 파서에 의해 `Paragraph.line_segs` 에 담겼다면,
@@ -843,7 +843,7 @@ mod tests {
                 line_spacing: 600,
                 column_start: 0,
                 segment_width: 42520,
-                tag: 393216,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
             });
         }
         let (doc, section) = make_doc_with_paragraph(para);

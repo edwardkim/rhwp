@@ -28,6 +28,7 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
+use crate::model::paragraph::LineSeg;
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
 };
@@ -282,6 +283,7 @@ fn write_sub_list<W: Write>(
 
         // <hp:linesegarray> 최소 1개 lineseg
         start_tag(w, "hp:linesegarray")?;
+        let line_flags = LineSeg::TAG_SINGLE_SEGMENT_LINE.to_string();
         empty_tag(
             w,
             "hp:lineseg",
@@ -294,7 +296,7 @@ fn write_sub_list<W: Write>(
                 ("spacing", "600"),
                 ("horzpos", "0"),
                 ("horzsize", "12964"),
-                ("flags", "393216"),
+                ("flags", line_flags.as_str()),
             ],
         )?;
         end_tag(w, "hp:linesegarray")?;

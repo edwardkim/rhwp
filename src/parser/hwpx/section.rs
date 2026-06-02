@@ -660,7 +660,7 @@ fn parse_paragraph(
     if para.line_segs.is_empty() {
         para.line_segs.push(LineSeg {
             text_start: 0,
-            tag: 0x00060000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
             ..Default::default()
         });
     }

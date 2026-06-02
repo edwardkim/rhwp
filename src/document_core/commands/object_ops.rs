@@ -1272,7 +1272,7 @@ impl DocumentCore {
                         baseline_distance: 850,
                         line_spacing: 600,
                         segment_width: seg_w,
-                        tag: 0x00060000,
+                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                         ..Default::default()
                     }];
                 }
@@ -1383,7 +1383,7 @@ impl DocumentCore {
                 baseline_distance: 850,
                 line_spacing: 600,
                 segment_width: 0, // 한컴 표준: 표 문단의 segment_width는 0
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             para_shape_id: table_para_shape_id,
@@ -1457,7 +1457,7 @@ impl DocumentCore {
                 baseline_distance: 850,
                 line_spacing: 600,
                 segment_width: content_width as i32, // 한컴 표준: 편집 영역 폭
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             has_para_text: false,
@@ -1631,7 +1631,7 @@ impl DocumentCore {
                         baseline_distance: 850,
                         line_spacing: 600,
                         segment_width: seg_w,
-                        tag: 0x00060000,
+                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                         ..Default::default()
                     }];
                 }
@@ -3456,7 +3456,7 @@ impl DocumentCore {
                 baseline_distance: 850,
                 line_spacing: 600,
                 segment_width: tb_inner_width as i32,
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             has_para_text: false,
@@ -5690,7 +5690,7 @@ impl DocumentCore {
                 baseline_distance: 850,
                 line_spacing: 600,
                 segment_width: 0,
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             has_para_text: true,
@@ -6003,7 +6003,7 @@ impl DocumentCore {
                 baseline_distance: 850,
                 line_spacing: 600,
                 segment_width: 0,
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
             has_para_text: true,

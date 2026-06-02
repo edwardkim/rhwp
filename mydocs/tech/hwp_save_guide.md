@@ -49,8 +49,10 @@ LineSeg[0]:
   line_spacing:       600      ← 줄간격 (160% × 1000 × 0.6?)
   column_start:       0        ← 편집 영역 좌측
   segment_width:      42520    ← 편집 영역 전체 너비
-  tag:                0x00060000
+  tag:                0x00060000 ← bit 17(first segment) + bit 18(last segment)
 ```
+
+`0x00060000`은 범용 "HWP 기본 플래그"가 아니라, 공식 스펙의 PARA_LINE_SEG tag bit 17/18을 동시에 켠 **단일 세그먼트 줄(single segment line)** 계약이다. 코드에서는 `LineSeg::TAG_SINGLE_SEGMENT_LINE`으로 표현한다.
 
 ### 1.4 A4 기본 용지 설정 (template/empty.hwp)
 
@@ -103,6 +105,54 @@ LineSeg[0]:
 | PARA_CHAR_SHAPE | 8바이트/항목 (start_pos:4 + char_shape_id:4) | 완전 일치 |
 | PARA_LINE_SEG | 36바이트/항목 (9×4바이트) | 완전 일치 |
 | PARA_RANGE_TAG | 12바이트/항목 (start:4 + end:4 + tag:4) | 완전 일치 |
+
+#### 2.1.1 PARA_HEADER 저장 계약
+
+`src/serializer/body_text.rs`의 HWP5 저장 경로는 원본 `PARA_HEADER`를 그대로 복사하지 않는다. 편집 후 불일치를 막기 위해 다음 필드는 현재 IR 기준으로 재생성한다.
+
+| 필드 | 저장 계약 |
+|------|-----------|
+| `char_count` | `PARA_TEXT`/컨트롤 코드 단위 기준 실제 글자 수로 재계산 |
+| `char_count` bit 31 | 현재 list scope의 마지막 문단 여부로 결정. `Paragraph.char_count_msb` 원본값을 그대로 쓰지 않음 |
+| `control_mask` | `paragraph.controls`, text control char, field marker 기반으로 재계산 |
+| `numCharShapes` | 직렬화에 사용할 effective char shape 수로 재계산 |
+| `numRangeTags` | `paragraph.range_tags.len()`으로 재계산 |
+| `numLineSegs` | `paragraph.line_segs.len()`으로 재계산 |
+| `instanceId` 및 후속 extra | `Paragraph.raw_header_extra[6..]`를 보존. 앞 6바이트 count 영역은 저장 시 건너뜀 |
+
+따라서 `Paragraph.raw_header_extra`는 전체 PARA_HEADER tail의 불변 원본이 아니라, count 3개를 제외한 instanceId/변경추적 suffix 보존 저장소로 해석해야 한다.
+
+#### 2.1.2 PARA_LINE_SEG 저장 계약
+
+`PARA_LINE_SEG`는 공식 스펙 표 62와 동일하게 36바이트, 9개 `u32/i32` 필드를 1:1 저장한다.
+
+| 순서 | 필드 | IR |
+|------|------|----|
+| 1 | 텍스트 시작 위치 | `LineSeg.text_start` |
+| 2 | 줄의 세로 위치 | `LineSeg.vertical_pos` |
+| 3 | 줄의 높이 | `LineSeg.line_height` |
+| 4 | 텍스트 부분의 높이 | `LineSeg.text_height` |
+| 5 | 베이스라인까지 거리 | `LineSeg.baseline_distance` |
+| 6 | 줄간격 | `LineSeg.line_spacing` |
+| 7 | 컬럼에서의 시작 위치 | `LineSeg.column_start` |
+| 8 | 세그먼트의 폭 | `LineSeg.segment_width` |
+| 9 | 태그 | `LineSeg.tag` |
+
+`LineSeg.tag`의 공식 bit 의미:
+
+| bit | 의미 | 코드 상수 |
+|-----|------|-----------|
+| 0 | 페이지의 첫 줄 | `TAG_FIRST_LINE_OF_PAGE` |
+| 1 | 컬럼의 첫 줄 | `TAG_FIRST_LINE_OF_COLUMN` |
+| 16 | 텍스트가 배열되지 않은 빈 세그먼트 | `TAG_EMPTY_SEGMENT` |
+| 17 | 줄의 첫 세그먼트 | `TAG_FIRST_SEGMENT` |
+| 18 | 줄의 마지막 세그먼트 | `TAG_LAST_SEGMENT` |
+| 19 | auto-hyphenation 수행 | `TAG_AUTO_HYPHENATION` |
+| 20 | indentation 적용 | `TAG_INDENTATION` |
+| 21 | 문단 머리 모양 적용 | `TAG_PARAGRAPH_HEAD` |
+| 31 | 구현 편의 property | `TAG_IMPLEMENTATION_PROPERTY` |
+
+`TAG_SINGLE_SEGMENT_LINE = TAG_FIRST_SEGMENT | TAG_LAST_SEGMENT = 0x00060000`이다. 이 값은 한 줄이 하나의 세그먼트로 구성될 때의 계약이며, 페이지/컬럼 첫 줄 여부(bit 0/1)와는 별도이다.
 
 ### 2.2 컨트롤별 필수 레코드 매트릭스
 

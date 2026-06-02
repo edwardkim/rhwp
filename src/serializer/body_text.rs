@@ -364,7 +364,7 @@ fn serialize_para_header_with_mask(
     w.write_u16(para.line_segs.len() as u16).unwrap();
 
     // instanceId + 추가 바이트: raw_header_extra에서 복원
-    // raw_header_extra[0..5] = numCharShapes(2) + numRangeTags(2) + numLineSegs(2) → 건너뜀
+    // raw_header_extra[0..6] = numCharShapes(2) + numRangeTags(2) + numLineSegs(2) → 건너뜀
     // raw_header_extra[6..] = instanceId(4) + (옵션) 변경추적 UINT16 (2, 5.0.3.2 이상)
     if para.raw_header_extra.len() >= 10 {
         let extra = &para.raw_header_extra[6..];

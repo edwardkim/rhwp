@@ -12459,7 +12459,7 @@ fn test_save_table_1x1() {
             line_spacing: 600,
             column_start: 0,
             segment_width: cell_seg_width,
-            tag: 0x00060000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
         }],
         has_para_text: false, // 빈 문단: PARA_TEXT 없음
         raw_header_extra: vec![0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00],
@@ -12596,7 +12596,7 @@ fn test_save_table_1x1() {
             line_spacing: 600,
             column_start: 0,
             segment_width: 42520, // 참조: 편집 영역 전체 너비
-            tag: 0x00060000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
         }],
         has_para_text: false,
         raw_header_extra: vec![0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00],
@@ -13343,7 +13343,7 @@ fn test_save_picture() {
             line_spacing: ref_para.line_segs[0].line_spacing,
             column_start: 0,
             segment_width: ref_para.line_segs[0].segment_width, // 참조: 42520
-            tag: ref_para.line_segs[0].tag,                     // 참조: 0x00060000
+            tag: ref_para.line_segs[0].tag, // 참조: LineSeg::TAG_SINGLE_SEGMENT_LINE
         }],
         has_para_text: true,
         controls: new_controls,
@@ -15435,7 +15435,8 @@ fn test_parse_table_html_save() {
             // DIFF-6: line_segs의 tag
             if !p.line_segs.is_empty() {
                 assert_eq!(
-                    p.line_segs[0].tag, 0x00060000,
+                    p.line_segs[0].tag,
+                    LineSeg::TAG_SINGLE_SEGMENT_LINE,
                     "DIFF-6: 셀[{}] line_seg tag",
                     i
                 );
@@ -15483,8 +15484,9 @@ fn test_parse_table_html_save() {
         "DIFF-8: seg_width > 0"
     );
     assert_eq!(
-        table_para.line_segs[0].tag, 0x00060000,
-        "DIFF-8: tag=0x00060000"
+        table_para.line_segs[0].tag,
+        LineSeg::TAG_SINGLE_SEGMENT_LINE,
+        "DIFF-8: tag=LineSeg::TAG_SINGLE_SEGMENT_LINE"
     );
 
     // 삽입 및 저장

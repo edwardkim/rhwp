@@ -101,7 +101,7 @@ fn make_text_para(text: &str) -> Paragraph {
             baseline_distance: 850,
             line_spacing: 600,
             segment_width: 50000,
-            tag: 0x00060000,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
             ..Default::default()
         }],
         para_shape_id: 0,

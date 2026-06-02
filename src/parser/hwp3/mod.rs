@@ -3,6 +3,7 @@
 //! HWP3(.hwp) 문서 포맷을 읽고 파싱하여 애플리케이션의 공통 문서 모델로 변환한다.
 //! 문서 정보, 요약, 문단, 스타일 등을 종합적으로 처리하는 진입점 역할을 한다.
 use crate::model::document::Document;
+use crate::model::paragraph::LineSeg;
 use snafu::Snafu;
 use std::io::{self, Cursor, Read};
 
@@ -2059,7 +2060,7 @@ pub(crate) fn parse_paragraph_list(
                 line_spacing: fallback_line_spacing,
                 column_start: cs_sw.map(|(cs, _)| cs).unwrap_or(0),
                 segment_width: cs_sw.map(|(_, sw)| sw).unwrap_or(0),
-                tag: 0x00060000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             });
         } else {
@@ -2131,7 +2132,7 @@ pub(crate) fn parse_paragraph_list(
                 // hint (원래 HWP3 가 본 줄에서 페이지/단 break 했음) → 본 환경 typeset
                 // 의 자체 pagination 과 충돌 → 본 hint 누설 시 강제 페이지 break 발생.
                 // Stage A+D vpos 누적 정합화로 자연스러운 pagination 정합.
-                let tag = 0x00060000u32;
+                let tag = LineSeg::TAG_SINGLE_SEGMENT_LINE;
 
                 // 이 줄의 pgy로 어울림 구역 판정 (per-line)
                 //

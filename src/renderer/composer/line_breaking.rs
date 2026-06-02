@@ -929,7 +929,10 @@ pub(crate) fn reflow_line_segs(
         let text_height_hwp = line_height_hwp;
         let baseline_distance_hwp = (line_height_hwp as f64 * 0.85) as i32;
         let line_spacing_hwp = compute_line_spacing_hwp(ls_type, ls_value, line_height_hwp, dpi);
-        let orig_tag = orig.as_ref().map(|ls| ls.tag).unwrap_or(0x00060000);
+        let orig_tag = orig
+            .as_ref()
+            .map(|ls| ls.tag)
+            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE);
         LineSeg {
             text_start: utf16_start,
             line_height: line_height_hwp,
@@ -937,7 +940,11 @@ pub(crate) fn reflow_line_segs(
             baseline_distance: baseline_distance_hwp,
             line_spacing: line_spacing_hwp,
             segment_width: seg_width_hwp,
-            tag: if orig_tag != 0 { orig_tag } else { 0x00060000 },
+            tag: if orig_tag != 0 {
+                orig_tag
+            } else {
+                LineSeg::TAG_SINGLE_SEGMENT_LINE
+            },
             ..Default::default()
         }
     };
