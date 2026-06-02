@@ -507,8 +507,9 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                         code_units.push(cu);
                     }
                 } else {
-                    for _ in 0..7 {
-                        code_units.push(0);
+                    // tab_extended 없을 때: ext[6]=0x0009 마커 필수, 나머지 0
+                    for cu in [0u16, 0, 0, 0, 0, 0, 0x0009] {
+                        code_units.push(cu);
                     }
                 }
                 tab_idx += 1;
