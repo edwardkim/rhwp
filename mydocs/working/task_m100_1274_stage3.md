@@ -1,4 +1,4 @@
-# Task 1265 Stage 3
+# Task 1274 Stage 3
 
 ## 대상
 
@@ -48,15 +48,15 @@ Stage2에서 같은 페이지의 `pi=537` 빈 non-TAC 그림 host phantom overfl
   - 진행 중 테스트 범위 제한에 맞춰 전체 CI급 테스트는 실행하지 않았다.
 - `cargo build --bin rhwp`
   - 네이티브 SVG export용 바이너리 빌드 통과.
-- `python3 scripts/task1265_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
   - SVG/PDF/비교 PNG: 21/21/21.
   - `pi=553` 관련 `LAYOUT_OVERFLOW_DRAW`/`LAYOUT_OVERFLOW` 로그 제거 확인.
   - 남은 manifest overflow 후보: `pi=0` 2건.
 
 ## 시각 확인
 
-- `output/task1265/2022-11-practice/compare/compare_011.png`
+- `output/task1274/2022-11-practice/compare/compare_011.png`
   - 11쪽 `pi=553` 마지막 `iv) x>1일 때` 줄은 PDF와 동일하게 11쪽 끝에 남는다.
-- `output/task1265/2022-11-practice/compare/compare_012.png`
+- `output/task1274/2022-11-practice/compare/compare_012.png`
   - 12쪽 첫머리도 `pi=553` 나머지 줄에서 시작한다.
   - 다만 12쪽 이후 좌/우 단 분기 차이가 여전히 남아 있어 다음 stage에서 별도 분석한다.

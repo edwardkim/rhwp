@@ -1,4 +1,4 @@
-# Task 1265 Stage 10
+# Task 1274 Stage 10
 
 ## 대상
 
@@ -24,7 +24,7 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2022-10`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
 - 필요 시 전체 sweep으로 페이지 수와 overflow 수를 다시 확인한다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
@@ -48,11 +48,11 @@
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2022-10`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
   - SVG/PDF/비교 PNG 18쪽 유지
   - `2022-10` overflow 3줄에서 0줄로 감소
   - `dump-pages` 기준 16쪽 왼쪽 단 하단은 `pi=841`, `pi=842`를 유지하고, 오른쪽 단은 `pi=843`부터 시작한다.
-- `python3 scripts/task1265_visual_sweep.py`
+- `python3 scripts/task1274_visual_sweep.py`
 
 전체 sweep 결과:
 
@@ -65,7 +65,7 @@
 
 ## 시각 확인
 
-- `output/task1265/2022-10/compare/compare_016.png`
+- `output/task1274/2022-10/compare/compare_016.png`
 - `2022-10` 16쪽에서 문30 제목과 첫 본문 줄이 PDF처럼 왼쪽 단 하단에 남고, 오른쪽 단은 `조건 (가)에서`로 시작한다.
 
 ## 다음 후보

@@ -1,4 +1,4 @@
-# Task 1265 Stage 12
+# Task 1274 Stage 12
 
 ## 대상
 
@@ -6,7 +6,7 @@
   - `2024-09-between20`: 8줄
   - 18쪽 오른쪽 단 하단 `pi=937..939`
 - 비교 대상:
-  - `output/task1265/2024-09-between20/compare/compare_018.png`
+  - `output/task1274/2024-09-between20/compare/compare_018.png`
 
 ## 관찰
 
@@ -26,7 +26,7 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
 - 필요 시 전체 sweep으로 여섯 대상 페이지 수와 overflow를 다시 확인한다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
@@ -44,10 +44,10 @@
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
   - SVG/PDF/비교 PNG 24쪽 일치
   - `pi=937..939` overflow 제거
-- `python3 scripts/task1265_visual_sweep.py`
+- `python3 scripts/task1274_visual_sweep.py`
 
 전체 sweep 결과:
 
@@ -60,10 +60,10 @@
 
 ## 시각 확인
 
-- `output/task1265/2024-09-between20/compare/compare_018.png`
-- `output/task1265/2024-09-between20/compare/compare_019.png`
-- `output/task1265/2024-09-between20/compare/compare_023.png`
-- `output/task1265/2024-09-between20/compare/compare_024.png`
+- `output/task1274/2024-09-between20/compare/compare_018.png`
+- `output/task1274/2024-09-between20/compare/compare_019.png`
+- `output/task1274/2024-09-between20/compare/compare_023.png`
+- `output/task1274/2024-09-between20/compare/compare_024.png`
 
 18쪽/19쪽은 PDF처럼 `문24）`가 19쪽 왼쪽 단에서 시작한다. 23쪽/24쪽은 다음 후보로 남았다.
 

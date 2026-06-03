@@ -1,4 +1,4 @@
-# Task 1265 Stage 4
+# Task 1274 Stage 4
 
 ## 대상
 
@@ -41,9 +41,9 @@ Stage3의 compact 미주 하단 bleed 허용도 본문 단 흐름에서만 적�
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
   - SVG 21쪽, PDF 21쪽, 비교 PNG 21쪽
-  - `output/task1265/2022-11-practice/manifest.json`의 `overflow_lines` 비어 있음
+  - `output/task1274/2022-11-practice/manifest.json`의 `overflow_lines` 비어 있음
 
 ## 남은 작업
 
@@ -72,17 +72,17 @@ Stage3의 compact 미주 하단 bleed 허용도 본문 단 흐름에서만 적�
   - 48개 테스트 통과.
 - `cargo build --bin rhwp`
   - 네이티브 SVG export용 바이너리 빌드 통과.
-- `python3 scripts/task1265_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
   - SVG/PDF/비교 PNG: 21/21/21.
-  - `output/task1265/2022-11-practice/manifest.json`
+  - `output/task1274/2022-11-practice/manifest.json`
     - `overflow_lines: []`
 
 ## 시각 확인
 
-- `output/task1265/2022-11-practice/compare/compare_011.png`
+- `output/task1274/2022-11-practice/compare/compare_011.png`
   - 11쪽 하단의 compact 미주 bleed는 페이지 테두리 안에 남는다.
   - overflow manifest는 비었다.
-- `output/task1265/2022-11-practice/compare/compare_012.png`
+- `output/task1274/2022-11-practice/compare/compare_012.png`
   - 12쪽 좌/우 단 분기 차이는 남아 있다.
   - `dump-pages -p 11` 기준 `pi=571`이 `lines=0..4` / `lines=4..6`으로 갈라지며, PDF는 왼쪽 단에 더 많은 줄이 남는 형태다.
   - 이 문제는 overflow 오탐과 별개이므로 Stage5에서 `pi=571` split 기준을 별도 분석한다.

@@ -1,4 +1,4 @@
-# Task 1265 Stage 6
+# Task 1274 Stage 6
 
 ## 대상
 
@@ -27,7 +27,7 @@ Stage5 이후 6개 문서는 모두 PDF와 페이지 수가 1:1로 맞는다.
 
 - 작업 전 Stage6 미커밋 변경을 stash로 분리했다.
 - `git fetch upstream` 후 원격 `edwardkim/rhwp`의 `devel`은 `09f6b8d1`이었다.
-- `git rebase upstream/devel`을 실행했고, task 1265 커밋들은 충돌 없이 `upstream/devel` 위로 재작성되었다.
+- `git rebase upstream/devel`을 실행했고, task 1274 커밋들은 충돌 없이 `upstream/devel` 위로 재작성되었다.
 - Stage6 변경을 stash에서 복원했으며 충돌은 없었다.
 
 ## 원인
@@ -54,7 +54,7 @@ Stage5 이후 6개 문서는 모두 PDF와 페이지 수가 1:1로 맞는다.
   - 48개 통과
   - 기존 `2022-10` `pi=588` 관련 overflow 로그는 남아 있음
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py`
+- `python3 scripts/task1274_visual_sweep.py`
 
 전체 sweep 결과:
 
@@ -73,13 +73,13 @@ Stage6에서 제거된 로그:
 
 ## 시각 확인
 
-- `output/task1265/2022-09/contact_sheet.png`
-- `output/task1265/2024-09-below20/contact_sheet.png`
-- `output/task1265/2024-09-between20/contact_sheet.png`
+- `output/task1274/2022-09/contact_sheet.png`
+- `output/task1274/2024-09-below20/contact_sheet.png`
+- `output/task1274/2024-09-between20/contact_sheet.png`
 - 6쪽 확대 비교:
-  - `output/task1265/2022-09/compare/compare_006.png`
-  - `output/task1265/2024-09-below20/compare/compare_006.png`
-  - `output/task1265/2024-09-between20/compare/compare_006.png`
+  - `output/task1274/2022-09/compare/compare_006.png`
+  - `output/task1274/2024-09-below20/compare/compare_006.png`
+  - `output/task1274/2024-09-between20/compare/compare_006.png`
 - 빈 spacer 줄 제거로 실제 텍스트나 도형이 사라진 흔적은 없고, 페이지 수는 PDF와 계속 1:1로 유지된다.
 
 ## 다음 후보

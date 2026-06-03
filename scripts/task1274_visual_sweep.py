@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Task 1265 PDF/SVG visual sweep helper."""
+"""Task 1274 PDF/SVG visual sweep helper."""
 
 from __future__ import annotations
 
@@ -222,7 +222,7 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", choices=[*TARGETS.keys(), "all"], default="all")
-    parser.add_argument("--out", default="output/task1265")
+    parser.add_argument("--out", default="output/task1274")
     parser.add_argument("--rhwp-bin", default="target/debug/rhwp")
     parser.add_argument("--dpi", type=int, default=96)
     args = parser.parse_args()

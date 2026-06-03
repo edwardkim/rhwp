@@ -1,4 +1,4 @@
-# Task 1265 Stage 14
+# Task 1274 Stage 14
 
 ## 대상
 
@@ -35,14 +35,14 @@
 ## 판단
 
 - `issue_241` 실패는 Stage13 변경의 회귀가 아니라 현재 `upstream/devel` 기준에서도 재현되는 기존 최종 CI 실패다.
-- Task 1265의 여섯 PDF/PNG 1:1 비교 목표와 overflow 정리는 Stage13 검증 결과로 완료 상태다.
+- Task 1274의 여섯 PDF/PNG 1:1 비교 목표와 overflow 정리는 Stage13 검증 결과로 완료 상태다.
 - 이번 stage에서는 소스 코드를 수정하지 않고 최종 CI의 기준 브랜치 실패 근거만 남긴다.
 
 ## 초기 검증 계획
 
 - `cargo test --test issue_241 -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1265_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
 - 필요 시 `cargo fmt --check`, `cargo test --tests` 재실행
 
 ## 검증 결과

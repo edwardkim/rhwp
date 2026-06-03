@@ -334,7 +334,7 @@ fn issue_1189_2022_nov_page1_question1_marker_gap_matches_pdf() {
 }
 
 #[test]
-fn issue_1265_2022_nov_page11_empty_float_picture_host_has_no_phantom_overflow() {
+fn issue_1274_2022_nov_page11_empty_float_picture_host_has_no_phantom_overflow() {
     let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let tree = doc.build_page_render_tree(10).expect("page 11 render tree");
@@ -357,7 +357,7 @@ fn issue_1265_2022_nov_page11_empty_float_picture_host_has_no_phantom_overflow()
 }
 
 #[test]
-fn issue_1265_2022_nov_page11_partial_endnote_tail_stays_in_page_frame() {
+fn issue_1274_2022_nov_page11_partial_endnote_tail_stays_in_page_frame() {
     let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
 

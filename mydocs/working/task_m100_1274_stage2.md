@@ -1,4 +1,4 @@
-# Task 1265 Stage 2
+# Task 1274 Stage 2
 
 ## 대상
 
@@ -39,12 +39,12 @@ Stage1 전체 sweep에서 가장 큰 overflow 후보는 `3-11월_실전_통합_2
 
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` 통과: 47개 테스트.
 - `cargo build --bin rhwp` 통과.
-- `python3 scripts/task1265_visual_sweep.py --target 2022-11-practice` 통과.
+- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice` 통과.
 
 ## 시각/로그 확인
 
-- 비교 PNG: `output/task1265/2022-11-practice/compare/compare_011.png`
-- contact sheet: `output/task1265/2022-11-practice/contact_sheet.png`
+- 비교 PNG: `output/task1274/2022-11-practice/compare/compare_011.png`
+- contact sheet: `output/task1274/2022-11-practice/contact_sheet.png`
 - 페이지 수: SVG 21 / PDF 21 / compare 21
 - `pi=537`의 `overflow=1530.2px` 로그는 사라졌다.
 - 남은 11쪽 후보는 `pi=553`의 `14.4px` overflow이며 다음 스테이지에서 별도로 분석한다.

@@ -1,10 +1,10 @@
-# Task 1265 Stage 5
+# Task 1274 Stage 5
 
 ## 대상
 
 - 문서: `samples/3-11월_실전_통합_2022.hwp`
 - PDF: `pdf/3-11월_실전_통합_2022.pdf`
-- 비교 PNG: `output/task1265/2022-11-practice/compare/compare_012.png`
+- 비교 PNG: `output/task1274/2022-11-practice/compare/compare_012.png`
 
 ## 현상
 
@@ -36,9 +36,9 @@ Stage4 이후 `2022-11-practice`는 SVG/PDF/비교 PNG가 21쪽씩 생성되고 
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
   - SVG 21쪽, PDF 21쪽, 비교 PNG 21쪽
-  - `output/task1265/2022-11-practice/manifest.json`의 `overflow_lines` 비어 있음
+  - `output/task1274/2022-11-practice/manifest.json`의 `overflow_lines` 비어 있음
 - `compare_012.png`
   - `pi=571`이 왼쪽 단에서 유지되고, 오른쪽 단은 PDF처럼 `(ⅲ)` 문단부터 시작한다.
 

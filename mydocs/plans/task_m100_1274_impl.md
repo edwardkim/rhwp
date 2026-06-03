@@ -1,4 +1,4 @@
-# Task 1265 구현 계획서
+# Task 1274 구현 계획서
 
 ## 원칙
 
@@ -19,7 +19,7 @@
 
 - `3-09월_교육_통합_2022.hwp`부터 전체 페이지를 훑는다.
 - 로그의 `LAYOUT_OVERFLOW`/`LAYOUT_OVERFLOW_DRAW`를 먼저 잡고, PNG에서 수식 겹침과 미주 간격 차이를 확인한다.
-- 결함 페이지는 `mydocs/working/task_m100_1265_stageN.md`에 원인, 수정, 검증 산출물을 기록한다.
+- 결함 페이지는 `mydocs/working/task_m100_1274_stageN.md`에 원인, 수정, 검증 산출물을 기록한다.
 
 ## 3단계: 수정과 회귀 고정
 
@@ -31,13 +31,13 @@
 
 - 각 수정 후 타깃 페이지 SVG/PNG를 다시 만든다.
 - 관련 테스트와 `cargo fmt -- --check`, `git diff --check`를 실행한다.
-- 수정 단위가 독립적으로 검증되면 `task 1265:` 커밋을 만든다.
+- 수정 단위가 독립적으로 검증되면 `task 1274:` 커밋을 만든다.
 - 다음 페이지/문서로 계속 진행한다.
 
 ## 산출물 경로
 
-- SVG: `output/task1265/<문서키>/svg/`
-- rhwp PNG: `output/task1265/<문서키>/rhwp_png/`
-- PDF PNG: `output/task1265/<문서키>/pdf_png/`
-- 비교 PNG: `output/task1265/<문서키>/compare/`
-- 단계별 문서: `mydocs/working/task_m100_1265_stageN.md`
+- SVG: `output/task1274/<문서키>/svg/`
+- rhwp PNG: `output/task1274/<문서키>/rhwp_png/`
+- PDF PNG: `output/task1274/<문서키>/pdf_png/`
+- 비교 PNG: `output/task1274/<문서키>/compare/`
+- 단계별 문서: `mydocs/working/task_m100_1274_stageN.md`

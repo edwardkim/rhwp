@@ -1,4 +1,4 @@
-# Task 1265 Stage 13
+# Task 1274 Stage 13
 
 ## 대상
 
@@ -25,7 +25,7 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
 - 필요 시 전체 sweep으로 여섯 대상 페이지 수와 overflow를 다시 확인한다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
@@ -40,11 +40,11 @@
 - `cargo fmt` 완료.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 48개 통과.
 - `cargo build --bin rhwp` 통과.
-- `python3 scripts/task1265_visual_sweep.py --target 2024-09-between20`:
+- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`:
   - SVG 24쪽 / PDF 24쪽.
   - overflow 0건.
   - 22쪽 오른쪽 단에 `pi=1126..1128`이 들어가고 23쪽은 `문29`로 시작한다.
-- `python3 scripts/task1265_visual_sweep.py`:
+- `python3 scripts/task1274_visual_sweep.py`:
   - `2022-09`: 23/23, overflow 0건.
   - `2023-09`: 20/20, overflow 0건.
   - `2024-09-below20`: 23/23, overflow 0건.
@@ -63,7 +63,7 @@
 
 ## 산출물 무결성 감사
 
-- `output/task1265/summary.json`의 각 대상별 `svg_pages`, `pdf_pages`, `compare_pages`가 일치한다.
+- `output/task1274/summary.json`의 각 대상별 `svg_pages`, `pdf_pages`, `compare_pages`가 일치한다.
 - 각 대상별 `svg`, `rhwp_png`, `pdf_png`, `compare` 파일 개수가 manifest 페이지 수와 일치한다.
   - `2022-09`: SVG/RHWP PNG/PDF PNG/compare 23개.
   - `2023-09`: SVG/RHWP PNG/PDF PNG/compare 20개.
@@ -71,4 +71,4 @@
   - `2024-09-between20`: SVG/RHWP PNG/PDF PNG/compare 24개.
   - `2022-10`: SVG/RHWP PNG/PDF PNG/compare 18개.
   - `2022-11-practice`: SVG/RHWP PNG/PDF PNG/compare 21개.
-- `output/task1265/**/export.log`에서 `LAYOUT_OVERFLOW`, `LAYOUT_OVERFLOW_DRAW` 검색 결과가 없다.
+- `output/task1274/**/export.log`에서 `LAYOUT_OVERFLOW`, `LAYOUT_OVERFLOW_DRAW` 검색 결과가 없다.

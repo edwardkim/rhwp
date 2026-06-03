@@ -1,4 +1,4 @@
-# Task 1265 Stage 7
+# Task 1274 Stage 7
 
 ## 대상
 
@@ -27,7 +27,7 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2022-10`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
 - 필요 시 전체 sweep으로 페이지 수와 overflow 수를 다시 확인한다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
@@ -54,11 +54,11 @@
   - 48개 통과
   - 기존에 테스트 출력에 남던 `2022-10` `pi=588` overflow 로그가 사라졌다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1265_visual_sweep.py --target 2022-10`
+- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
   - SVG/PDF/비교 PNG 18쪽 유지
   - `2022-10` overflow 12줄에서 10줄로 감소
   - `pi=588` draw/item overflow 2줄 제거
-- `python3 scripts/task1265_visual_sweep.py`
+- `python3 scripts/task1274_visual_sweep.py`
 
 전체 sweep 결과:
 
@@ -76,8 +76,8 @@ Stage7에서 제거된 로그:
 
 ## 시각 확인
 
-- `output/task1265/2022-10/compare/compare_011.png`
-- `output/task1265/2022-10/compare/compare_012.png`
+- `output/task1274/2022-10/compare/compare_011.png`
+- `output/task1274/2022-10/compare/compare_012.png`
 - 11쪽/12쪽의 문20 흐름은 PDF와 같은 페이지 수를 유지하며, 빈 spacer 제외로 실제 텍스트나 수식이 사라지지 않았다.
 
 ## 다음 후보
