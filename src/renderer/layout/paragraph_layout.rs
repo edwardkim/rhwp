@@ -3388,14 +3388,14 @@ impl LayoutEngine {
                                 } else {
                                     layout_box.height
                                 };
-                                // 텍스트와 섞인 인라인 수식은 baseline을 맞춘다. 단,
-                                // 본문/미주에서 공백 run 안에 TAC 수식만 있는 줄은 한컴처럼
-                                // 저장된 LINE_SEG y 흐름에 직접 붙인다.
+                                // 텍스트와 섞인 인라인 수식뿐 아니라 공백 run 안의 TAC 수식도
+                                // baseline을 맞춘다. 수식 renderer는 bbox 높이로 세로 스케일하지
+                                // 않으므로 y에 직접 붙이면 큰 루트/분수 수식이 아래 줄을 덮는다.
                                 let eq_y = if cell_ctx.is_none()
                                     && comp_line.runs.iter().all(|r| {
                                         !r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
                                     }) {
-                                    y
+                                    y + baseline - layout_box.baseline
                                 } else {
                                     (y + baseline - layout_box.baseline).max(y)
                                 };
@@ -4003,7 +4003,7 @@ impl LayoutEngine {
                             let eq_y = if cell_ctx.is_some() {
                                 (y + baseline - layout_box.baseline).max(y)
                             } else {
-                                y
+                                y + baseline - layout_box.baseline
                             };
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (

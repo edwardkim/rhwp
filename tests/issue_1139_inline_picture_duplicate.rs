@@ -272,6 +272,31 @@ fn max_equation_bottom_in_region(
         .max_by(|a, b| a.partial_cmp(b).unwrap())
 }
 
+fn max_equation_visual_bottom_in_region(
+    node: &RenderNode,
+    x_min: f64,
+    x_max: f64,
+    y_min: f64,
+    y_max: f64,
+) -> Option<f64> {
+    let own = match &node.node_type {
+        RenderNodeType::Equation(eq)
+            if node.bbox.x >= x_min
+                && node.bbox.x < x_max
+                && node.bbox.y >= y_min
+                && node.bbox.y < y_max =>
+        {
+            Some(node.bbox.y + eq.layout_box.height)
+        }
+        _ => None,
+    };
+    own.into_iter()
+        .chain(node.children.iter().filter_map(|child| {
+            max_equation_visual_bottom_in_region(child, x_min, x_max, y_min, y_max)
+        }))
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+}
+
 fn max_para_content_bottom(node: &RenderNode, para_index: usize) -> Option<f64> {
     let own = match &node.node_type {
         RenderNodeType::TextLine(line) if line.para_index == Some(para_index) => {
@@ -1426,6 +1451,23 @@ fn issue_1261_2024_sep_page10_question12_tail_stays_inside_column() {
     assert!(
         question12_tail_bottom < 1092.5,
         "문12 꼬리는 10쪽 오른쪽 단 하단 안에 남아야 함: bottom={question12_tail_bottom}"
+    );
+}
+
+#[test]
+fn issue_1274_2022_sep_page18_question26_equation_paragraph_reserves_height() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(17).expect("page 18 render tree");
+
+    let equation_bottom =
+        max_equation_visual_bottom_in_region(&tree.root, 20.0, 300.0, 1020.0, 1095.0)
+            .expect("문26 하단 수식");
+    let next_text = find_text_line_bbox(&tree.root, 949, 0).expect("문26 다음 본문");
+
+    assert!(
+        next_text.y >= equation_bottom + 0.5,
+        "빈 TAC 수식 문단 pi=948은 실제 수식 하단과 다음 문단이 겹치지 않아야 함: equation_bottom={equation_bottom}, next={next_text:?}"
     );
 }
 
