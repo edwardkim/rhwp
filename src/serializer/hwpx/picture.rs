@@ -29,7 +29,8 @@ use quick_xml::Writer;
 
 use crate::model::image::{ImageEffect, Picture};
 use crate::model::shape::{
-    CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
+    CommonObjAttr, HorzAlign, HorzRelTo, ShapeComponentAttr, TextFlow, TextWrap, VertAlign,
+    VertRelTo,
 };
 
 use super::context::SerializeContext;
@@ -75,10 +76,10 @@ pub fn write_picture<W: Write>(
     // offset, orgSz, curSz, flip, rotationInfo, renderingInfo, imgRect, imgClip,
     // inMargin, imgDim, img, effects, sz, pos, outMargin
     write_offset(w, &pic.common)?;
-    write_org_sz(w)?; // ShapeComponentAttr 매핑 (IR 접근 제한으로 간이)
+    write_org_sz(w, &pic.shape_attr)?;
     write_cur_sz(w, &pic.common)?;
-    write_flip(w)?;
-    write_rotation_info(w)?;
+    write_flip(w, &pic.shape_attr)?;
+    write_rotation_info(w, &pic.shape_attr)?;
     write_rendering_info(w)?;
     write_img_rect(w, &pic.common)?;
     write_img_clip(w, pic)?;
@@ -102,11 +103,13 @@ fn write_offset<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Se
     empty_tag(w, "hp:offset", &[("x", &x), ("y", &y)])
 }
 
-fn write_org_sz<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    // IR에서 원본 크기는 shape_attr.original_width/height 이나 접근이 제한적.
-    // Stage 4 에선 common.width/height 를 그대로 원본 크기로 출력 (간이).
-    // Picture 라운드트립 실제 정확도는 shape_attr 직접 매핑 후 향상됨.
-    empty_tag(w, "hp:orgSz", &[("width", "0"), ("height", "0")])
+fn write_org_sz<W: Write>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+) -> Result<(), SerializeError> {
+    let ow = sa.original_width.to_string();
+    let oh = sa.original_height.to_string();
+    empty_tag(w, "hp:orgSz", &[("width", &ow), ("height", &oh)])
 }
 
 fn write_cur_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
@@ -115,19 +118,28 @@ fn write_cur_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Se
     empty_tag(w, "hp:curSz", &[("width", &width), ("height", &height)])
 }
 
-fn write_flip<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    empty_tag(w, "hp:flip", &[("horizontal", "0"), ("vertical", "0")])
+fn write_flip<W: Write>(w: &mut Writer<W>, sa: &ShapeComponentAttr) -> Result<(), SerializeError> {
+    let h = bool01(sa.horz_flip);
+    let v = bool01(sa.vert_flip);
+    empty_tag(w, "hp:flip", &[("horizontal", h), ("vertical", v)])
 }
 
-fn write_rotation_info<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
+fn write_rotation_info<W: Write>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+) -> Result<(), SerializeError> {
+    let angle = sa.rotation_angle.to_string();
+    let cx = sa.rotation_center.x.to_string();
+    let cy = sa.rotation_center.y.to_string();
+    let ri = bool01(sa.rotate_image);
     empty_tag(
         w,
         "hp:rotationInfo",
         &[
-            ("angle", "0"),
-            ("centerX", "0"),
-            ("centerY", "0"),
-            ("rotateimage", "0"),
+            ("angle", &angle),
+            ("centerX", &cx),
+            ("centerY", &cy),
+            ("rotateimage", ri),
         ],
     )
 }
