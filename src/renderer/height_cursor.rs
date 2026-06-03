@@ -59,6 +59,9 @@ pub(crate) struct HeightCursor {
     /// 흐름에서 이 마진보다 작은 간격을 가지면(다줄 풀이 끝 trailing 누락=문22) 끌어올린다.
     /// 생성자는 0 으로 두고 호출자(build_single_column)가 미주 흐름 컬럼에서만 설정한다.
     pub endnote_between_notes_hu: i32,
+    /// 렌더러가 기록한 직전 항목의 실제 콘텐츠 하단(px). trailing 줄간격을 실제
+    /// 콘텐츠 하단으로 오인하는 compact 미주 경계에서 공통 gap 기준으로 사용한다.
+    pub prev_item_content_bottom_y: Option<f64>,
 }
 
 impl HeightCursor {
@@ -88,6 +91,7 @@ impl HeightCursor {
             allow_start_height_backtrack,
             suppress_large_forward_jump,
             endnote_between_notes_hu: 0,
+            prev_item_content_bottom_y: None,
         }
     }
 
@@ -273,6 +277,8 @@ impl HeightCursor {
         );
         let prev_line_spacing_px = (seg.line_spacing.max(0) as f64) / 7200.0 * self.dpi;
         let prev_content_bottom_y = y_offset - prev_line_spacing_px;
+        let measured_prev_content_bottom_y =
+            self.prev_item_content_bottom_y.filter(|y| y.is_finite());
         let follows_tall_inline_item = self.suppress_large_forward_jump && seg.line_height > 1500;
         let compact_endnote_question_title = self.suppress_large_forward_jump
             && paragraphs
@@ -287,12 +293,20 @@ impl HeightCursor {
         {
             let preserved_gap_y =
                 if compact_endnote_question_title && follows_tall_inline_item && !is_page_path {
-                    // Display-style equation lines in compact endnotes already include a large
-                    // trailing line_spacing in some lazy-base flows. Hancom places the next
-                    // red question title shortly after the visible equation bottom instead
-                    // of after that full trailing gap (3-11월_실전_통합_2022 p11 문13/문14).
-                    // Page-base flows already carry the correct 7mm note gap and must keep it.
-                    prev_content_bottom_y + 10.0
+                    // compact 미주의 display 수식 뒤 새 문항 제목은 저장 trailing
+                    // line_spacing 전체 뒤가 아니라 실제 보이는 수식 하단 뒤의 "미주 사이"
+                    // 공통 간격에 맞춘다.
+                    // 렌더러가 실제 콘텐츠 하단을 제공하면 그 값을 공통 기준으로 삼고,
+                    // height-only 경로처럼 값이 없으면 기존 LINE_SEG 추정값으로 폴백한다.
+                    let content_bottom_y = measured_prev_content_bottom_y
+                        .map(|y| y.max(prev_content_bottom_y))
+                        .unwrap_or(prev_content_bottom_y);
+                    let gap_px = if self.endnote_between_notes_hu > 0 {
+                        (self.endnote_between_notes_hu as f64) / 7200.0 * self.dpi
+                    } else {
+                        10.0
+                    };
+                    content_bottom_y + gap_px
                 } else if y_offset > self.col_area_y + self.col_area_height * 0.75
                     || prev_para.text.trim().is_empty()
                 {
@@ -302,7 +316,11 @@ impl HeightCursor {
                 } else {
                     y_offset + prev_line_spacing_px + 40.0
                 };
-            Some(preserved_gap_y.min(end_y))
+            if compact_endnote_question_title && follows_tall_inline_item && !is_page_path {
+                Some(preserved_gap_y)
+            } else {
+                Some(preserved_gap_y.min(end_y))
+            }
         } else {
             None
         };
@@ -393,12 +411,12 @@ impl HeightCursor {
             } else {
                 y_offset
             };
-            let suppressed_hu = ((end_y - rendered_y).max(0.0) / self.dpi * 7200.0).round() as i32;
-            if suppressed_hu > 0 {
+            let base_delta_hu = ((end_y - rendered_y) / self.dpi * 7200.0).round() as i32;
+            if base_delta_hu != 0 {
                 if is_page_path {
-                    self.vpos_page_base = Some(base + suppressed_hu);
+                    self.vpos_page_base = Some(base + base_delta_hu);
                 } else {
-                    self.vpos_lazy_base = Some(base + suppressed_hu);
+                    self.vpos_lazy_base = Some(base + base_delta_hu);
                 }
             }
         }
@@ -839,6 +857,51 @@ mod tests {
 
         let got = c.vpos_adjust(500.0, 1, &ps, &styles(0.0));
         let expected = 500.0 - 1984.0 / 75.0 + 10.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
+    /// 렌더러가 실제 콘텐츠 하단을 제공하면 display 수식 뒤 제목은 그 하단 아래로 배치한다.
+    #[test]
+    fn compact_endnote_question_title_after_tall_line_uses_rendered_content_bottom_gap() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.prev_item_content_bottom_y = Some(500.0);
+        let mut ps = vec![
+            para(0, 100000, 2690, 1984, 5000),
+            para(0, 109174, 900, 452, 5000),
+        ];
+        ps[0].text = "따라서".to_string();
+        ps[1].text = "문8)".to_string();
+
+        let got = c.vpos_adjust(500.0, 1, &ps, &styles(0.0));
+        let expected = 510.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
+    /// 설정된 미주 사이 값이 있으면 display 수식 하단 뒤에 그 공통 간격을 적용한다.
+    #[test]
+    fn compact_endnote_question_title_after_tall_line_uses_between_notes_gap() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.prev_item_content_bottom_y = Some(500.0);
+        c.endnote_between_notes_hu = 5669; // 20mm
+        let mut ps = vec![
+            para(0, 100000, 2690, 1984, 5000),
+            para(0, 109174, 900, 452, 5000),
+        ];
+        ps[0].text = "따라서".to_string();
+        ps[1].text = "문8)".to_string();
+
+        let got = c.vpos_adjust(500.0, 1, &ps, &styles(0.0));
+        let expected = 500.0 + 5669.0 / 75.0;
 
         assert!(
             (got - expected).abs() < 1e-6,

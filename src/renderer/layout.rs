@@ -207,19 +207,6 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
-fn para_has_visible_text_or_tac_object(para: &Paragraph) -> bool {
-    para.text
-        .chars()
-        .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
-        || para.controls.iter().any(|ctrl| match ctrl {
-            Control::Equation(eq) => eq.common.treat_as_char,
-            Control::Picture(pic) => pic.common.treat_as_char,
-            Control::Shape(shape) => shape.common().treat_as_char,
-            Control::Table(table) => table.common.treat_as_char,
-            _ => false,
-        })
-}
-
 fn square_wrap_table_line_anchor_y(
     para: &Paragraph,
     table: &crate::model::table::Table,
@@ -2957,39 +2944,12 @@ impl LayoutEngine {
                     .map(|p| p.text.trim_start().starts_with('문'))
                     .unwrap_or(false);
             let y_before_vpos = y_offset;
-            let prev_item_content_bottom_before_vpos = if item_ordinal > 0 {
-                self.last_item_content_bottom.get()
+            hcursor.prev_item_content_bottom_y = if item_ordinal > 0 {
+                let content_bottom_y = self.last_item_content_bottom.get();
+                content_bottom_y.is_finite().then_some(content_bottom_y)
             } else {
-                f64::NAN
+                None
             };
-            let prev_item_has_visible_content_before_vpos = if item_ordinal > 0 {
-                hcursor
-                    .prev_layout_para
-                    .and_then(|prev_pi| paragraphs.get(prev_pi))
-                    .map(para_has_visible_text_or_tac_object)
-                    .unwrap_or(false)
-            } else {
-                false
-            };
-            let prev_item_has_tall_line_before_vpos = if item_ordinal > 0 {
-                hcursor
-                    .prev_layout_para
-                    .and_then(|prev_pi| paragraphs.get(prev_pi))
-                    .and_then(|prev_para| {
-                        prev_para
-                            .line_segs
-                            .iter()
-                            .rev()
-                            .find(|seg| seg.segment_width > 0)
-                            .or_else(|| prev_para.line_segs.last())
-                    })
-                    .map(|seg| seg.line_height > 1500)
-                    .unwrap_or(false)
-            } else {
-                false
-            };
-            let vpos_adjust_uses_lazy_base =
-                hcursor.vpos_page_base.is_none() && hcursor.vpos_lazy_base.is_some();
             if !shape_jumped && !prev_tac_seg_applied {
                 // [Task #1027 Stage C] inter-item VPOS_CORR 보정을 HeightCursor 에 위임 (동작 동일).
                 // 이전 문단 overlay-shape/분할표 bypass, page/lazy base 산출, sb 차감,
@@ -3012,22 +2972,6 @@ impl LayoutEngine {
                     y_offset = min_y;
                     hcursor.shift_vpos_base_for_rendered_delta(delta);
                 }
-            }
-            if current_is_endnote_question_title
-                && vpos_adjust_uses_lazy_base
-                && prev_item_has_visible_content_before_vpos
-                && prev_item_has_tall_line_before_vpos
-                && prev_item_content_bottom_before_vpos.is_finite()
-                && y_offset < prev_item_content_bottom_before_vpos
-            {
-                // compact 미주 새 문항 제목 보정이 직전 display 수식의 trailing
-                // line_spacing 을 과하게 빼면, 실제 렌더된 수식 하단 위로 제목이
-                // 되감길 수 있다. 저장 vpos 의 작은 양수 gap 은 존중하되, 실제
-                // 콘텐츠 침범만 차단한다.
-                let min_y = prev_item_content_bottom_before_vpos + 10.0;
-                let delta = min_y - y_offset;
-                y_offset = min_y;
-                hcursor.shift_vpos_base_for_rendered_delta(delta);
             }
             let current_vpos_rewinds_from_prev = hcursor
                 .prev_layout_para

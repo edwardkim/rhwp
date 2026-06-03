@@ -1328,10 +1328,11 @@ fn issue_1261_2024_sep_page10_question8_stays_below_previous_equation() {
     let previous_equation_bottom =
         max_para_content_bottom(&tree.root, 522).expect("문7 마지막 수식 문단");
     let question8_y = min_para_text_y(&tree.root, 523).expect("문8 제목");
+    let between_notes_gap = question8_y - previous_equation_bottom;
 
     assert!(
-        question8_y >= previous_equation_bottom + 8.0,
-        "문8 제목은 직전 문7 마지막 수식 하단 아래에서 시작해야 하며 겹치면 안 됨: prev_bottom={previous_equation_bottom}, q8_y={question8_y}"
+        (70.0..82.0).contains(&between_notes_gap),
+        "문8 제목은 직전 문7 마지막 수식 하단 뒤에 미주 사이 20mm 공통 간격을 유지해야 함: prev_bottom={previous_equation_bottom}, q8_y={question8_y}, gap={between_notes_gap}"
     );
 }
 

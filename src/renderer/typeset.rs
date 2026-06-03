@@ -2786,6 +2786,7 @@ impl TypesetEngine {
             allow_start_height_backtrack: false,
             suppress_large_forward_jump: false,
             endnote_between_notes_hu: 0,
+            prev_item_content_bottom_y: None,
         };
         let y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.
