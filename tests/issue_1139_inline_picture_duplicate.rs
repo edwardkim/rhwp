@@ -233,6 +233,18 @@ fn find_text_line_bbox(
         .find_map(|child| find_text_line_bbox(child, para_index, line_index))
 }
 
+fn count_text_line_nodes(node: &RenderNode, para_index: usize) -> usize {
+    let own = match &node.node_type {
+        RenderNodeType::TextLine(line) if line.para_index == Some(para_index) => 1,
+        _ => 0,
+    };
+    own + node
+        .children
+        .iter()
+        .map(|child| count_text_line_nodes(child, para_index))
+        .sum::<usize>()
+}
+
 fn max_equation_bottom_in_region(
     node: &RenderNode,
     x_min: f64,
@@ -318,6 +330,29 @@ fn issue_1189_2022_nov_page1_question1_marker_gap_matches_pdf() {
     assert!(
         question1_eq.x >= 68.0,
         "문1 수식이 문항 번호와 겹치면 안 됨: {question1_eq:?}"
+    );
+}
+
+#[test]
+fn issue_1265_2022_nov_page11_empty_float_picture_host_has_no_phantom_overflow() {
+    let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(10).expect("page 11 render tree");
+
+    let picture = find_image_bbox(&tree.root, 537, 0).expect("문12 그래프 그림");
+    assert!(
+        (175.0..=190.0).contains(&picture.y),
+        "빈 host 문단의 non-TAC 그림은 한컴/PDF처럼 우측 단 상단에 있어야 함: {picture:?}"
+    );
+    assert_eq!(
+        count_text_line_nodes(&tree.root, 537),
+        0,
+        "빈 그림 host 문단 pi=537은 실제 Shape item으로만 렌더되어야 하며 phantom TextLine을 남기면 안 됨"
+    );
+    let bottom = max_para_content_bottom(&tree.root, 537).expect("pi=537 content bottom");
+    assert!(
+        bottom < 360.0,
+        "pi=537 실제 콘텐츠 하단은 그림 bbox 하단이어야 하며 저장 vpos의 phantom line으로 페이지 밖을 가리키면 안 됨: bottom={bottom}, picture={picture:?}"
     );
 }
 

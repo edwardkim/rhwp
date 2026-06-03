@@ -228,6 +228,39 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_has_visible_textless_float_shape_item(
+    page_content: &PageContent,
+    para: &Paragraph,
+    para_index: usize,
+) -> bool {
+    if para_has_visible_text(para) {
+        return false;
+    }
+
+    para.controls
+        .iter()
+        .enumerate()
+        .any(|(control_index, ctrl)| {
+            let is_float_shape = match ctrl {
+                Control::Picture(pic) => !pic.common.treat_as_char,
+                Control::Shape(shape) => !shape.common().treat_as_char,
+                _ => false,
+            };
+            is_float_shape
+                && page_content.column_contents.iter().any(|cc| {
+                    cc.items.iter().any(|it| {
+                        matches!(
+                            it,
+                            PageItem::Shape {
+                                para_index: pi,
+                                control_index: ci,
+                            } if *pi == para_index && *ci == control_index
+                        )
+                    })
+                })
+        })
+}
+
 fn square_wrap_table_line_anchor_y(
     para: &Paragraph,
     table: &crate::model::table::Table,
@@ -3673,6 +3706,14 @@ impl LayoutEngine {
                     return (y_offset, false);
                 }
                 if let Some(para) = paragraphs.get(*para_index) {
+                    if para_has_visible_textless_float_shape_item(page_content, para, *para_index) {
+                        // 빈 non-TAC 그림/도형 host 문단은 바로 뒤 Shape PageItem 이 실제
+                        // 개체를 렌더한다. 여기서 layout_paragraph 를 태우면 보이지 않는
+                        // 빈 줄이 저장 vpos 기준으로 페이지 밖에 기록되어 overflow 오탐이 난다.
+                        para_start_y.entry(*para_index).or_insert(y_offset);
+                        return (y_offset, false);
+                    }
+
                     let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                     let has_block_table = para.controls.iter()
                         .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
