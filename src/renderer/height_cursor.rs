@@ -405,6 +405,20 @@ impl HeightCursor {
             && y_offset > self.col_area_y + self.col_area_height * 0.95
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset - end_y <= 32.0;
+        let current_has_visible_text = paragraphs
+            .get(item_para)
+            .map(para_has_visible_text)
+            .unwrap_or(false);
+        let compact_endnote_text_after_tall_tail_backtrack = self.suppress_large_forward_jump
+            && is_page_path
+            && !vpos_rewind
+            && follows_tall_inline_item
+            && current_has_visible_text
+            && !current_is_endnote_title
+            && end_y < y_offset - 8.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.90
+            && end_y <= self.col_area_y + self.col_area_height
+            && y_offset - end_y <= 32.0;
         let compact_endnote_deep_backtrack = self.suppress_large_forward_jump
             && !is_page_path
             && !vpos_rewind
@@ -430,6 +444,7 @@ impl HeightCursor {
             .and_then(|p| p.line_segs.first())
             .map(|s| hwpunit_to_px((s.line_height + s.line_spacing).max(0), self.dpi))
             .unwrap_or(0.0);
+        let equation_tail_prev_overlap_tolerance = if is_page_path { 4.0 } else { 0.0 };
         let compact_endnote_equation_tail_fit = self.suppress_large_forward_jump
             && !vpos_rewind
             && paragraphs
@@ -440,7 +455,7 @@ impl HeightCursor {
             && y_offset > self.col_area_y + self.col_area_height * 0.95
             && end_y <= y_offset + 0.5
             && end_y + current_line_advance_px > self.col_area_y + self.col_area_height + 0.5
-            && end_y >= prev_content_bottom_y
+            && end_y + equation_tail_prev_overlap_tolerance >= prev_content_bottom_y
             && end_y - current_line_advance_px <= y_offset;
         let compact_endnote_title_tail_backtrack = self.suppress_large_forward_jump
             && !is_page_path
@@ -490,11 +505,20 @@ impl HeightCursor {
         let result = if compact_endnote_title_bottom_backtrack {
             end_y
         } else if compact_endnote_page_tail_backtrack {
-            end_y
+            // page-path 하단 tail은 frame 안에 남기기 위해 저장 vpos를 따르되,
+            // 이전 텍스트 line의 실제 하단을 깊게 침범하면 문20처럼 본문/수식이
+            // 겹친다. 이전 line 하단보다 위로 올라가지 않게 한다.
+            end_y.max(prev_content_bottom_y).min(y_offset)
+        } else if compact_endnote_text_after_tall_tail_backtrack {
+            end_y.max(prev_content_bottom_y).min(y_offset)
         } else if compact_endnote_equation_tail_fit {
             let col_bottom = self.col_area_y + self.col_area_height;
+            let prev_floor = prev_content_bottom_y - equation_tail_prev_overlap_tolerance;
+            // page-path compact 미주 하단의 수식-only tail은 저장 vpos가 직전
+            // 수식 line 하단보다 몇 px 위를 가리킬 수 있다. 이때 frame-fit을
+            // 우선하되 이전 line과 과도하게 겹치지 않도록 작은 허용폭만 둔다.
             (col_bottom - current_line_advance_px - 2.0)
-                .max(prev_content_bottom_y)
+                .max(prev_floor)
                 .max(self.col_area_y)
                 .min(y_offset)
         } else if compact_endnote_single_line_tail_backtrack {
@@ -870,6 +894,47 @@ mod tests {
 
         let got = c.vpos_adjust(946.0, 1, &ps, &styles(0.0));
         let expected = 100.0 + 62000.0 / 75.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
+    /// page-path 하단 tail backtrack은 frame 안에 남아야 하지만 직전 줄의
+    /// 실제 콘텐츠 하단을 깊게 침범하면 문20처럼 본문 line과 다음 수식 line이 겹친다.
+    #[test]
+    fn compact_endnote_page_tail_backtrack_keeps_previous_content_bottom() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 65000, 900, 452, 5000),
+            para(0, 66000, 900, 452, 5000),
+        ];
+
+        let got = c.vpos_adjust(1000.0, 1, &ps, &styles(0.0));
+        let expected = 1000.0 - 452.0 / 75.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
+    /// page-path 하단에서 tall inline 뒤의 일반 텍스트도 저장 vpos가 안전한
+    /// 위치를 가리키면 직전 콘텐츠 하단까지 당겨 뒤 수식 line의 공간을 만든다.
+    #[test]
+    fn compact_endnote_page_tail_text_after_tall_line_backtracks_to_previous_bottom() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![
+            para(0, 65000, 1650, 452, 5000),
+            para(0, 66000, 900, 452, 5000),
+        ];
+        ps[1].text = "이므로 삼차식".to_string();
+
+        let got = c.vpos_adjust(1000.0, 1, &ps, &styles(0.0));
+        let expected = 1000.0 - 452.0 / 75.0;
 
         assert!(
             (got - expected).abs() < 1e-6,
