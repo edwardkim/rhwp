@@ -684,6 +684,11 @@ impl LayoutEngine {
         self.layout_overflows.borrow_mut().push(overflow);
     }
 
+    pub(crate) fn is_body_flow_col_area(&self, col_area: &LayoutRect) -> bool {
+        let (_, body_y, _, body_h) = self.current_body_area.get();
+        body_h > 0.0 && (col_area.y - body_y).abs() < 1.0 && (col_area.height - body_h).abs() < 1.0
+    }
+
     fn object_stable_index(para_index: usize, control_index: usize) -> u32 {
         ((para_index.min(u16::MAX as usize) as u32) << 16)
             | control_index.min(u16::MAX as usize) as u32

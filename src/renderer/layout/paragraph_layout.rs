@@ -1867,12 +1867,16 @@ impl LayoutEngine {
             // (stop drawing) 도 발생하지 않으며, drift 의 본질적 해결은 Stage 5 에서.
             let col_bottom = col_area.y + col_area.height;
             let line_visual_bottom = text_y + line_height;
+            let is_body_flow_col_area = self.is_body_flow_col_area(col_area);
             let tolerated_endnote_bottom_bleed = is_tolerated_endnote_column_bottom_bleed(
-                cell_ctx.is_none() && para_index >= self.endnote_para_base.get(),
+                is_body_flow_col_area
+                    && cell_ctx.is_none()
+                    && para_index >= self.endnote_para_base.get(),
                 line_visual_bottom,
                 col_bottom,
             );
-            if cell_ctx.is_none()
+            if is_body_flow_col_area
+                && cell_ctx.is_none()
                 && line_visual_bottom > col_bottom + 0.5
                 && !tolerated_endnote_bottom_bleed
             {
@@ -4657,7 +4661,7 @@ impl LayoutEngine {
 
             // Task #332 Stage 4b: clamp 제거, overflow 그대로 그림 (piling 차단)
             let col_bottom = col_area.y + col_area.height;
-            if y + line_height > col_bottom + 0.5 {
+            if self.is_body_flow_col_area(col_area) && y + line_height > col_bottom + 0.5 {
                 eprintln!(
                     "LAYOUT_OVERFLOW_DRAW: line={} y={:.1} col_bottom={:.1} overflow={:.1}px (fast path)",
                     line_idx, y + line_height, col_bottom, y + line_height - col_bottom,
