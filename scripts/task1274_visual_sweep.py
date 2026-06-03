@@ -371,16 +371,23 @@ def render_tree_bbox(node: dict[str, object]) -> tuple[float, float, float, floa
     return x, y, w, h
 
 
-def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, object]]:
+def load_render_tree(tree_path: Path) -> dict[str, object] | None:
     if not tree_path.exists():
-        return []
+        return None
     try:
         tree = json.loads(tree_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return []
+        return None
     if isinstance(tree, dict) and isinstance(tree.get("tree"), dict):
         tree = tree["tree"]
     if not isinstance(tree, dict):
+        return None
+    return tree
+
+
+def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, object]]:
+    tree = load_render_tree(tree_path)
+    if tree is None:
         return []
 
     equations: list[dict[str, object]] = []
@@ -437,6 +444,76 @@ def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, o
     return candidates[:20]
 
 
+def render_tree_question_title_overlap_candidates(tree_path: Path) -> list[dict[str, object]]:
+    tree = load_render_tree(tree_path)
+    if tree is None:
+        return []
+
+    lines: list[dict[str, object]] = []
+
+    def line_text(node: dict[str, object]) -> str:
+        parts: list[str] = []
+        children = node.get("children")
+        if isinstance(children, list):
+            for child in children:
+                if isinstance(child, dict) and child.get("type") == "TextRun":
+                    text = child.get("text")
+                    if isinstance(text, str):
+                        parts.append(text)
+        return "".join(parts)
+
+    def visit(node: dict[str, object], path: str) -> None:
+        bbox = render_tree_bbox(node)
+        if bbox is not None and node.get("type") == "TextLine":
+            text = line_text(node)
+            if text.strip():
+                lines.append(
+                    {
+                        "path": path,
+                        "bbox": bbox,
+                        "pi": node.get("pi"),
+                        "text": text[:48],
+                    }
+                )
+        children = node.get("children")
+        if isinstance(children, list):
+            for index, child in enumerate(children):
+                if isinstance(child, dict):
+                    visit(child, f"{path}/{index}")
+
+    visit(tree, "root")
+
+    candidates: list[dict[str, object]] = []
+    for index, title_line in enumerate(lines[:-1]):
+        title_text = str(title_line.get("text", ""))
+        if not re.match(r"^\s*문\s*\d+", title_text):
+            continue
+        next_line = lines[index + 1]
+        title_box = title_line["bbox"]
+        next_box = next_line["bbox"]
+        assert isinstance(title_box, tuple)
+        assert isinstance(next_box, tuple)
+        ratio = bbox_overlap_ratio(title_box, next_box)
+        if ratio >= 0.05:
+            candidates.append(
+                {
+                    "title_index": index,
+                    "next_index": index + 1,
+                    "overlap_ratio": round(ratio, 3),
+                    "title_path": title_line["path"],
+                    "next_path": next_line["path"],
+                    "title_pi": title_line.get("pi"),
+                    "next_pi": next_line.get("pi"),
+                    "title_text": title_text,
+                    "next_text": next_line.get("text"),
+                    "title_bbox": [round(v, 1) for v in title_box],
+                    "next_bbox": [round(v, 1) for v in next_box],
+                }
+            )
+    candidates.sort(key=lambda item: item["overlap_ratio"], reverse=True)
+    return candidates[:20]
+
+
 def analyze_page(
     rhwp_path: Path,
     pdf_path: Path,
@@ -489,6 +566,7 @@ def analyze_page(
     red_drift = compare_ordered_y(rhwp_red, pdf_red)
     line_drift = compare_ordered_y(rhwp_bands, pdf_bands)
     equation_overlaps = render_tree_equation_overlap_candidates(tree_path)
+    question_title_overlaps = render_tree_question_title_overlap_candidates(tree_path)
 
     rhwp_out_pixels = rhwp_out[4] if rhwp_out else 0
     pdf_out_pixels = pdf_out[4] if pdf_out else 0
@@ -523,6 +601,8 @@ def analyze_page(
         flags.append("line_band_drift")
     if equation_overlaps:
         flags.append("equation_text_overlap")
+    if question_title_overlaps:
+        flags.append("question_title_text_overlap")
 
     annotated = None
     if flags:
@@ -555,6 +635,7 @@ def analyze_page(
         "svg": str(svg_path),
         "render_tree_json": str(tree_path),
         "equation_text_overlap_candidates": equation_overlaps,
+        "question_title_text_overlap_candidates": question_title_overlaps,
         "annotated": str(annotated) if annotated else None,
     }
 
@@ -633,6 +714,9 @@ def analyze_pages(
         "red_marker_drift_pages": [page["page"] for page in flagged_pages if "red_marker_drift" in page["flags"]],
         "line_band_drift_pages": [page["page"] for page in flagged_pages if "line_band_drift" in page["flags"]],
         "equation_text_overlap_pages": [page["page"] for page in flagged_pages if "equation_text_overlap" in page["flags"]],
+        "question_title_text_overlap_pages": [
+            page["page"] for page in flagged_pages if "question_title_text_overlap" in page["flags"]
+        ],
         "metrics_json": str(metrics_path),
     }
     flagged_path = analysis_dir / "flagged_pages.json"
@@ -640,7 +724,7 @@ def analyze_pages(
     print(
         f"analysis: {key} flagged={len(flagged_pages)}/{page_count} "
         f"frame={summary['frame_overflow_pages']} red={summary['red_marker_drift_pages']} "
-        f"line={summary['line_band_drift_pages']}",
+        f"line={summary['line_band_drift_pages']} title={summary['question_title_text_overlap_pages']}",
         flush=True,
     )
     return {"summary": summary, "flagged_pages": flagged_pages}

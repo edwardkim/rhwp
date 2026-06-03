@@ -385,11 +385,16 @@ impl HeightCursor {
                 .get(item_para)
                 .map(|p| p.text.trim_start().starts_with('문'))
                 .unwrap_or(false);
+        // page-path compact 미주 하단의 새 문항 제목은 저장 vpos가 이미
+        // 제목/다음 본문을 분리하는 경우가 있다. 기존 95% 꼬리 조건은
+        // 2022-09 p17 문29처럼 하단 1줄 차이에서 제목만 아래로 눌러
+        // 다음 본문과 겹치게 만들었으므로 page-path 제목만 90%부터 허용한다.
+        let title_bottom_threshold = if is_page_path { 0.90 } else { 0.95 };
         let compact_endnote_title_bottom_backtrack = current_is_endnote_title
             && !vpos_rewind
             && !prev_para.text.trim().is_empty()
             && end_y < y_offset - 8.0
-            && y_offset > self.col_area_y + self.col_area_height * 0.95
+            && y_offset > self.col_area_y + self.col_area_height * title_bottom_threshold
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset - end_y <= 32.0;
         let compact_endnote_page_tail_backtrack = self.suppress_large_forward_jump
@@ -848,6 +853,28 @@ mod tests {
 
         let got = c.vpos_adjust(980.0, 1, &ps, &styles(0.0));
         assert!(got < 980.0, "got={got}");
+    }
+
+    /// page-path 하단의 새 미주 제목도 저장 vpos가 32px 이내 위쪽을 가리키면
+    /// 제목을 그 위치로 되돌려 다음 본문 line과 겹치지 않게 한다.
+    #[test]
+    fn compact_endnote_page_path_title_bottom_backtrack_allows_safe_title() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![
+            para(0, 61000, 2070, 1984, 5000),
+            para(0, 62000, 900, 452, 5000),
+        ];
+        ps[0].text = "구하는 확률은".to_string();
+        ps[1].text = "문29)".to_string();
+
+        let got = c.vpos_adjust(946.0, 1, &ps, &styles(0.0));
+        let expected = 100.0 + 62000.0 / 75.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
     }
 
     /// 빈 spacer 문단 뒤의 새 미주 제목은 빈 문단이 만든 간격을 다시 되감으면 안 된다.
