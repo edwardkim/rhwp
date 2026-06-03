@@ -2587,6 +2587,20 @@ impl TypesetEngine {
                             } else {
                                 None
                             };
+                            let split_endnote_to_fit = split_endnote_to_fit.filter(|split| {
+                                let single_line_tail_split_at_bottom = *split == 1
+                                    && !default_between_notes_gap
+                                    && !allow_default_late_question_tail
+                                    && para_has_visible_text_or_equation(en_para);
+                                !single_line_tail_split_at_bottom
+                            });
+                            if internal_rewind_split == Some(1)
+                                && !default_between_notes_gap
+                                && para_has_visible_text_or_equation(en_para)
+                            {
+                                internal_rewind_split = None;
+                                cleared_single_line_internal_rewind_split = true;
+                            }
                             let new_endnote_stale_forward_vpos = compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0

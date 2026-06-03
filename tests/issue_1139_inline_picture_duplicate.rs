@@ -1494,6 +1494,44 @@ fn issue_1189_2022_oct_page11_endnote_question_gaps_match_pdf() {
 }
 
 #[test]
+fn issue_1274_2022_oct_page11_question20_equation_tail_stays_in_frame() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(10).expect("page 11 render tree");
+
+    let equation_bottom =
+        max_equation_visual_bottom_in_region(&tree.root, 395.0, 700.0, 1020.0, 1100.0)
+            .expect("문20 하단 수식");
+    assert!(
+        equation_bottom <= 1096.0,
+        "문20 하단 수식-only tail은 한컴/PDF처럼 11쪽 frame 안에 남아야 함: bottom={equation_bottom}"
+    );
+    assert!(
+        equation_bottom >= 1080.0,
+        "문20 수식 tail을 과도하게 끌어올리면 PDF의 하단 잔여 흐름과 달라짐: bottom={equation_bottom}"
+    );
+}
+
+#[test]
+fn issue_1274_2022_oct_page16_question30_title_keeps_first_line() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(15).expect("page 16 render tree");
+
+    let title = find_text_line_bbox(&tree.root, 841, 0).expect("문30 제목");
+    let first_line = find_text_line_bbox(&tree.root, 842, 0).expect("문30 첫 본문 줄");
+
+    assert!(
+        (1060.0..=1085.0).contains(&title.y),
+        "문30 제목은 한컴/PDF처럼 16쪽 하단에 남아야 함: title={title:?}"
+    );
+    assert!(
+        first_line.y > title.y && first_line.y + first_line.height <= 1098.0,
+        "문30 첫 본문 줄도 제목과 함께 16쪽 frame 안에 보여야 함: title={title:?}, first_line={first_line:?}"
+    );
+}
+
+#[test]
 fn issue_1189_2022_nov_pages10_12_rewind_tail_and_equation_scale_match_pdf() {
     let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");

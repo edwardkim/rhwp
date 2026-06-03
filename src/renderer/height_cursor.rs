@@ -20,6 +20,19 @@ use super::style_resolver::ResolvedStyleSet;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{TextWrap, VertRelTo};
+use crate::renderer::hwpunit_to_px;
+
+fn para_has_visible_text(para: &Paragraph) -> bool {
+    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+}
+
+fn para_is_treat_as_char_equation_only(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|ctrl| matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char))
+}
 
 fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
     para.text.trim().is_empty()
@@ -367,6 +380,26 @@ impl HeightCursor {
                 .get(prev_pi)
                 .map(|p| p.text.trim_start().starts_with('문'))
                 .unwrap_or(false);
+        let current_is_endnote_title = self.suppress_large_forward_jump
+            && paragraphs
+                .get(item_para)
+                .map(|p| p.text.trim_start().starts_with('문'))
+                .unwrap_or(false);
+        let compact_endnote_title_bottom_backtrack = current_is_endnote_title
+            && !vpos_rewind
+            && !prev_para.text.trim().is_empty()
+            && end_y < y_offset - 8.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.95
+            && end_y <= self.col_area_y + self.col_area_height
+            && y_offset - end_y <= 32.0;
+        let compact_endnote_page_tail_backtrack = self.suppress_large_forward_jump
+            && is_page_path
+            && !vpos_rewind
+            && !follows_tall_inline_item
+            && end_y < y_offset - 8.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.95
+            && end_y <= self.col_area_y + self.col_area_height
+            && y_offset - end_y <= 32.0;
         let compact_endnote_deep_backtrack = self.suppress_large_forward_jump
             && !is_page_path
             && !vpos_rewind
@@ -378,6 +411,32 @@ impl HeightCursor {
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset > self.col_area_y + self.col_area_height * 0.90
             && y_offset - end_y <= 80.0;
+        let compact_endnote_single_line_tail_backtrack = self.suppress_large_forward_jump
+            && !is_page_path
+            && !vpos_rewind
+            && follows_endnote_title
+            && end_y < y_offset - 8.0
+            && y_offset > self.col_area_y + self.col_area_height
+            && end_y <= self.col_area_y + self.col_area_height
+            && end_y >= prev_content_bottom_y
+            && y_offset - end_y <= 32.0;
+        let current_line_advance_px = paragraphs
+            .get(item_para)
+            .and_then(|p| p.line_segs.first())
+            .map(|s| hwpunit_to_px((s.line_height + s.line_spacing).max(0), self.dpi))
+            .unwrap_or(0.0);
+        let compact_endnote_equation_tail_fit = self.suppress_large_forward_jump
+            && !vpos_rewind
+            && paragraphs
+                .get(item_para)
+                .map(para_is_treat_as_char_equation_only)
+                .unwrap_or(false)
+            && current_line_advance_px > 0.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.95
+            && end_y <= y_offset + 0.5
+            && end_y + current_line_advance_px > self.col_area_y + self.col_area_height + 0.5
+            && end_y >= prev_content_bottom_y
+            && end_y - current_line_advance_px <= y_offset;
         let compact_endnote_title_tail_backtrack = self.suppress_large_forward_jump
             && !is_page_path
             && !vpos_rewind
@@ -400,15 +459,6 @@ impl HeightCursor {
             && end_y >= prev_content_bottom_y
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset <= self.col_area_y + self.col_area_height * 0.75;
-        if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
-            let path = if is_page_path { "page" } else { "lazy" };
-            let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
-            eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} stale_forward={} compact_new_note={} compact_stale_note_gap={} compact_tac_pic_gap={} compact_bottom_rewind={} compact_deep_backtrack={} compact_safe_backtrack={} applied={}",
-                path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
-                vpos_end, base, self.col_area_y, y_offset, end_y, stale_forward, compact_endnote_new_note_jump, compact_endnote_stale_note_gap, compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind, compact_endnote_deep_backtrack, compact_endnote_safe_vpos_backtrack, (applied || compact_endnote_deep_backtrack || compact_endnote_safe_vpos_backtrack) && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
-            );
-        }
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
         if compact_endnote_stale_note_gap
             || (applied && (compact_endnote_new_note_jump || compact_endnote_tac_picture_gap))
@@ -432,7 +482,19 @@ impl HeightCursor {
                 }
             }
         }
-        let result = if compact_endnote_title_tail_backtrack {
+        let result = if compact_endnote_title_bottom_backtrack {
+            end_y
+        } else if compact_endnote_page_tail_backtrack {
+            end_y
+        } else if compact_endnote_equation_tail_fit {
+            let col_bottom = self.col_area_y + self.col_area_height;
+            (col_bottom - current_line_advance_px - 2.0)
+                .max(prev_content_bottom_y)
+                .max(self.col_area_y)
+                .min(y_offset)
+        } else if compact_endnote_single_line_tail_backtrack {
+            end_y
+        } else if compact_endnote_title_tail_backtrack {
             y_offset - (y_offset - end_y).min(16.0)
         } else if (applied || compact_endnote_deep_backtrack || compact_endnote_safe_vpos_backtrack)
             && !stale_forward
@@ -447,6 +509,21 @@ impl HeightCursor {
         } else {
             y_offset
         };
+        if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+            let path = if is_page_path { "page" } else { "lazy" };
+            eprintln!(
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} result={:.2} stale_forward={} current_title={} title_bottom={} page_tail={} equation_tail={} single_tail={} compact_new_note={} compact_stale_note_gap={} compact_tac_pic_gap={} compact_bottom_rewind={} compact_deep_backtrack={} compact_safe_backtrack={} applied={}",
+                path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
+                vpos_end, base, self.col_area_y, y_offset, end_y, result, stale_forward,
+                current_is_endnote_title, compact_endnote_title_bottom_backtrack,
+                compact_endnote_page_tail_backtrack, compact_endnote_equation_tail_fit,
+                compact_endnote_single_line_tail_backtrack,
+                compact_endnote_new_note_jump, compact_endnote_stale_note_gap,
+                compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind,
+                compact_endnote_deep_backtrack, compact_endnote_safe_vpos_backtrack,
+                (applied || compact_endnote_deep_backtrack || compact_endnote_safe_vpos_backtrack) && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,
+            );
+        }
         let prev_is_multiline = prev_para.line_segs.len() > 1;
         let stored_gap_px = result - y_offset;
         // [Task #1256/#1261] 단일 줄 prev(빈 separator)로 끝나는 미주 제목 경계: y_offset 은
@@ -461,6 +538,7 @@ impl HeightCursor {
             self.endnote_between_notes_hu > 0 && seg.line_spacing >= self.endnote_between_notes_hu;
         if injected_between_notes
             && compact_endnote_question_title
+            && !compact_endnote_title_bottom_backtrack
             && !vpos_rewind
             && !prev_is_multiline
             && (stored_gap_px < -0.5
