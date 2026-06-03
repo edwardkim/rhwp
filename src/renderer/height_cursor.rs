@@ -240,11 +240,22 @@ impl HeightCursor {
         // 이 경우에는 직전 문단의 line-seg 끝만 신뢰하고, 표 위치/높이는 Table
         // PageItem 렌더 단계에서 반영한다.
         let vpos_rewind = matches!(curr_first_vpos, Some(v) if v < seg.vertical_pos);
+        let curr_tac_picture_only = paragraphs
+            .get(item_para)
+            .map(para_is_treat_as_char_picture_only)
+            .unwrap_or(false);
+        let compact_endnote_tac_picture_rewind =
+            self.suppress_large_forward_jump && vpos_rewind && curr_tac_picture_only;
         let compact_endnote_bottom_rewind = self.suppress_large_forward_jump
             && vpos_rewind
             && y_offset > self.col_area_y + self.col_area_height * 0.75;
         let vpos_end = match curr_first_vpos {
-            Some(v) if (self.allow_vpos_rewind || compact_endnote_bottom_rewind) && vpos_rewind => {
+            Some(v)
+                if (self.allow_vpos_rewind
+                    || compact_endnote_bottom_rewind
+                    || compact_endnote_tac_picture_rewind)
+                    && vpos_rewind =>
+            {
                 v
             }
             Some(v) if v > seg.vertical_pos && !curr_has_topbottom_para_table => v,
@@ -260,7 +271,8 @@ impl HeightCursor {
         let allow_large_backward = (self.allow_vpos_rewind && vpos_rewind)
             || (self.allow_start_height_backtrack
                 && y_offset > self.col_area_y + self.col_area_height * 0.75)
-            || compact_endnote_bottom_rewind;
+            || compact_endnote_bottom_rewind
+            || compact_endnote_tac_picture_rewind;
         let (end_y, applied) = vpos_corrected_end_y(
             is_page_path,
             self.col_anchor_y,

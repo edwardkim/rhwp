@@ -3325,10 +3325,17 @@ impl LayoutEngine {
                 }
                 _ => y_offset,
             };
+            // 마지막 continuation 직전 항목도 미주 꼬리로 본다. 작은 bottom
+            // bleed는 draw overflow가 없으면 한컴식 하단 배치 허용 범위다.
             let is_endnote_tail_item = col_content.endnote_flow
                 && (item_ordinal + 1 == col_content.items.len()
                     || (item_ordinal + 2 == col_content.items.len()
-                        && current_is_endnote_question_title));
+                        && current_is_endnote_question_title)
+                    || (item_ordinal + 2 == col_content.items.len()
+                        && matches!(
+                            col_content.items.get(item_ordinal + 1),
+                            Some(PageItem::PartialParagraph { .. })
+                        )));
             let tolerated_endnote_bottom_bleed =
                 is_tolerated_endnote_column_bottom_bleed(is_endnote_tail_item, check_y, col_bottom);
             if check_y > col_bottom + tolerance && !tolerated_endnote_bottom_bleed {

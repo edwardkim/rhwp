@@ -2745,6 +2745,30 @@ impl TypesetEngine {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
+                            let tac_picture_rewind_height = if st.col_count > 1
+                                && local_vpos_rewind
+                                && para_is_treat_as_char_picture_only(en_para)
+                            {
+                                st.current_items
+                                    .iter()
+                                    .filter_map(page_item_para_index)
+                                    .find_map(|pi| {
+                                        paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        )
+                                        .and_then(|p| p.line_segs.first())
+                                        .map(|s| s.vertical_pos)
+                                    })
+                                    .and_then(|base_vpos| {
+                                        this_first_offset.map(|first_vpos| {
+                                            hwpunit_to_px((first_vpos - base_vpos).max(0), self.dpi)
+                                        })
+                                    })
+                            } else {
+                                None
+                            };
                             maybe_register_square_picture_wrap_anchor(
                                 &mut st,
                                 paragraphs,
@@ -2821,7 +2845,15 @@ impl TypesetEngine {
                                         _ => {}
                                     }
                                 }
-                                st.current_height += en_advance;
+                                if let Some(rewind_start) = tac_picture_rewind_height {
+                                    // 텍스트 없는 TAC 그림/도형 미주 문단은 저장 vpos로
+                                    // 앞쪽 제목/풀이 옆에 배치될 수 있다. 순차 y 뒤에
+                                    // 붙이면 그림 높이를 이중 가산해 다음 미주가 밀린다.
+                                    st.current_height =
+                                        st.current_height.max(rewind_start + en_advance);
+                                } else {
+                                    st.current_height += en_advance;
+                                }
                             }
                             activate_square_picture_wrap_for_para(&mut st, en_para_idx, en_para);
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
