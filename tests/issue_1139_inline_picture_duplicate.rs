@@ -1337,6 +1337,35 @@ fn issue_1261_2024_sep_page10_question8_stays_below_previous_equation() {
 }
 
 #[test]
+fn issue_1261_2024_sep_page10_question12_tail_stays_inside_column() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(9).expect("page 10 render tree");
+
+    let question10_y = min_para_text_y(&tree.root, 550).expect("문10 제목");
+    let question11_y = min_para_text_y(&tree.root, 557).expect("문11 제목");
+    let question12_y = min_para_text_y(&tree.root, 567).expect("문12 제목");
+    let question12_tail_bottom = max_para_content_bottom(&tree.root, 569).expect("문12 꼬리");
+
+    assert!(
+        (398.0..408.0).contains(&question10_y),
+        "문10 제목은 한컴 PDF bbox(약 402.8px)와 맞아야 함: q10={question10_y}"
+    );
+    assert!(
+        (614.0..624.0).contains(&question11_y),
+        "문11 제목은 한컴 PDF bbox(약 618.5px)와 맞아야 함: q11={question11_y}"
+    );
+    assert!(
+        (991.0..1001.0).contains(&question12_y),
+        "문12 제목은 한컴 PDF bbox(약 995.6px)와 맞아야 함: q12={question12_y}"
+    );
+    assert!(
+        question12_tail_bottom < 1092.5,
+        "문12 꼬리는 10쪽 오른쪽 단 하단 안에 남아야 함: bottom={question12_tail_bottom}"
+    );
+}
+
+#[test]
 fn issue_1189_2022_oct_page11_endnote_question_gaps_match_pdf() {
     let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");

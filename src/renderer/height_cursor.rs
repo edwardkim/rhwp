@@ -437,30 +437,29 @@ impl HeightCursor {
         };
         let prev_is_multiline = prev_para.line_segs.len() > 1;
         let stored_gap_px = result - y_offset;
-        // [Task #1256] 단일 줄 prev(빈 separator)로 끝나는 미주 제목 경계: y_offset 은
-        // typeset 이 주입한 between-notes(7mm) trailing 을 이미 포함하는데, applied/
-        // safe_vpos_backtrack 이 end_y(절대 vpos, 7mm 미포함)로 덮어써 제목을 ~7mm 위로
-        // 끌어올린다(문5/6/7 등 전 문서 15건, delta≈20.4px). y_offset 을 유지하고, 제목을
-        // 내린 만큼 활성 vpos base 를 이동해 후속 미주 항목이 동일 기준을 따르게 한다
-        // (절대-vpos desync/overflow 방지 — #1246/#1082 회귀의 본질). 다줄 prev(문22)는
-        // y_offset 이 7mm 을 못 가지는 별개 경로라 아래 #1246 rescue(+prev_ls)가 담당.
+        // [Task #1256/#1261] 단일 줄 prev(빈 separator)로 끝나는 미주 제목 경계: y_offset 은
+        // typeset 이 주입한 between-notes trailing 을 이미 포함한다. applied/
+        // safe_vpos_backtrack 이 그보다 위로 당기는 경우뿐 아니라, page-path vpos 가 소폭
+        // 아래로 미는 경우도 y_offset 을 유지해야 한다. 그렇지 않으면 `미주 사이`가 두 번
+        // 적용되어 다음 제목들이 아래로 누적 밀린다(미주사이20 p10 문10→문12 overflow).
+        // 기준을 y_offset 으로 유지하고, 차이만큼 활성 vpos base 를 이동해 후속 미주 항목이
+        // 동일 기준을 따르게 한다. 다줄 prev(문22)는 y_offset 이 between-notes 를 못 가지는
+        // 별개 경로라 아래 #1246 rescue(+prev_ls)가 담당.
         let injected_between_notes =
             self.endnote_between_notes_hu > 0 && seg.line_spacing >= self.endnote_between_notes_hu;
         if injected_between_notes
             && compact_endnote_question_title
             && !vpos_rewind
             && !prev_is_multiline
-            && stored_gap_px < -0.5
+            && (stored_gap_px < -0.5
+                || (stored_gap_px > 0.5 && self.endnote_between_notes_hu > 3000))
         {
-            // 베이스라인 result 가 실제로 y_offset 아래(cram)일 때만 복원한다. result 가 이미
-            // y_offset 이면(컬럼 하단 등 backtrack 미발동) base 를 건드리지 않아 spurious
-            // shift(후속 overflow)를 방지한다. base 이동량은 실제 하강분(y_offset - result).
-            let restored_hu = ((y_offset - result) / self.dpi * 7200.0).round() as i32;
-            if restored_hu > 0 {
+            let delta_hu = ((result - y_offset) / self.dpi * 7200.0).round() as i32;
+            if delta_hu != 0 {
                 if is_page_path {
-                    self.vpos_page_base = Some(base - restored_hu);
+                    self.vpos_page_base = Some(base + delta_hu);
                 } else {
-                    self.vpos_lazy_base = Some(base - restored_hu);
+                    self.vpos_lazy_base = Some(base + delta_hu);
                 }
             }
             return y_offset;
@@ -1093,6 +1092,34 @@ mod tests {
             c.vpos_page_base,
             Some(expected_base),
             "내린 만큼 vpos base 이동해야 후속 항목 desync 방지"
+        );
+    }
+
+    /// [Task #1261] 단일 줄 prev의 between-notes gap이 이미 y_offset에 있으면,
+    /// page-path vpos가 제목을 소폭 아래로 밀어도 gap을 한 번 더 더하지 않는다.
+    #[test]
+    fn compact_endnote_between_notes_singleline_prev_ignores_small_forward_vpos() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.endnote_between_notes_hu = 5669;
+        c.prev_layout_para = Some(0);
+        let prev = para(0, 1900, 900, 5669, 5000);
+        let mut curr = para(0, 3550, 900, 0, 5000); // y_offset보다 10px 아래 저장 vpos
+        curr.text = "문10)".to_string();
+        let ps = vec![prev, curr];
+        let y_offset = 100.0 + 2800.0 / 75.0;
+
+        let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
+
+        assert!(
+            (got - y_offset).abs() < 1e-6,
+            "이미 주입된 미주 사이 y_offset을 유지해야 함: got={got}, expected={y_offset}"
+        );
+        let end_y = 100.0 + 3550.0 / 75.0;
+        let expected_base = ((end_y - y_offset) / DPI * 7200.0).round() as i32;
+        assert_eq!(
+            c.vpos_page_base,
+            Some(expected_base),
+            "올린 만큼 vpos base 이동해야 후속 제목이 다시 밀리지 않음"
         );
     }
 
