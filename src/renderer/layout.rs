@@ -261,6 +261,50 @@ fn para_has_visible_textless_float_shape_item(
         })
 }
 
+fn textless_infront_para_host_requires_line_advance(para: &Paragraph) -> bool {
+    if para_has_visible_text(para) {
+        return false;
+    }
+
+    para.controls.iter().any(|ctrl| match ctrl {
+        Control::Picture(pic) => {
+            let cm = &pic.common;
+            !cm.treat_as_char
+                && matches!(cm.text_wrap, TextWrap::InFrontOfText)
+                && matches!(cm.vert_rel_to, VertRelTo::Para)
+        }
+        Control::Shape(shape) => {
+            let cm = shape.common();
+            !cm.treat_as_char
+                && matches!(cm.text_wrap, TextWrap::InFrontOfText)
+                && matches!(cm.vert_rel_to, VertRelTo::Para)
+        }
+        _ => false,
+    })
+}
+
+fn paragraph_line_advance_px(
+    para: &Paragraph,
+    composed: Option<&ComposedParagraph>,
+    dpi: f64,
+) -> f64 {
+    let advance_hu: i32 = composed
+        .map(|comp| {
+            comp.lines
+                .iter()
+                .map(|line| line.line_height + line.line_spacing)
+                .sum()
+        })
+        .unwrap_or_else(|| {
+            para.line_segs
+                .iter()
+                .map(|seg| seg.line_height + seg.line_spacing)
+                .sum()
+        });
+
+    hwpunit_to_px(advance_hu.max(0), dpi)
+}
+
 fn square_wrap_table_line_anchor_y(
     para: &Paragraph,
     table: &crate::model::table::Table,
@@ -3747,6 +3791,17 @@ impl LayoutEngine {
                         // 개체를 렌더한다. 여기서 layout_paragraph 를 태우면 보이지 않는
                         // 빈 줄이 저장 vpos 기준으로 페이지 밖에 기록되어 overflow 오탐이 난다.
                         para_start_y.entry(*para_index).or_insert(y_offset);
+                        if textless_infront_para_host_requires_line_advance(para) {
+                            // HWPX 글앞으로 도장처럼 문단 기준으로 붙는 host 는 빈
+                            // 텍스트를 그리지 않더라도 한컴처럼 줄 진행량은 예약한다.
+                            // BehindText 배경 그림은 기존 비예약 경로를 유지한다.
+                            let advance = paragraph_line_advance_px(
+                                para,
+                                composed.get(*para_index),
+                                self.dpi,
+                            );
+                            return (y_offset + advance, false);
+                        }
                         return (y_offset, false);
                     }
 
