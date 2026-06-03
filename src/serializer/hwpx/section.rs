@@ -164,22 +164,31 @@ fn render_paragraph_parts(
 /// IR 없이 텍스트만 있을 때 `<hp:t>` 와 fallback lineseg 생성.
 /// `write_section` 이 `first_para == None` 인 경우를 위해 유지.
 fn render_paragraph_parts_for_text(text: &str, vert_start: u32) -> (String, String, u32) {
-    let t_xml = render_hp_t_content(text);
+    let t_xml = render_hp_t_content(text, &[], &mut 0);
     let (linesegs, vert_end) = render_lineseg_array_fallback(text, vert_start);
     (t_xml, linesegs, vert_end)
 }
 
 /// `<hp:t>...</hp:t>` 본문 생성 — 탭/소프트브레이크/XML escape 포함.
-fn render_hp_t_content(text: &str) -> String {
+///
+/// `tab_extended`: IR의 탭 확장 정보 목록. `tab_idx`를 통해 탭 문자마다 순서대로 참조.
+/// 항목이 없으면 폴백(width=TAB_DEFAULT_WIDTH, leader=0, type=1)을 사용.
+fn render_hp_t_content(text: &str, tab_extended: &[[u16; 7]], tab_idx: &mut usize) -> String {
     let mut t_xml = String::from("<hp:t>");
     let mut buf = String::new();
     for c in text.chars() {
         match c {
             '\t' => {
                 flush_buf(&mut t_xml, &mut buf);
+                let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(*tab_idx) {
+                    *tab_idx += 1;
+                    (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
+                } else {
+                    (TAB_DEFAULT_WIDTH, 0u16, 1u16)
+                };
                 t_xml.push_str(&format!(
-                    r#"<hp:tab width="{}" leader="0" type="1"/>"#,
-                    TAB_DEFAULT_WIDTH
+                    r#"<hp:tab width="{}" leader="{}" type="{}"/>"#,
+                    width, leader, tab_type
                 ));
             }
             '\n' => {
@@ -207,12 +216,14 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             .collect()
     };
 
+    let mut tab_idx = 0usize;
+
     if slots.is_empty() {
-        return render_hp_t_content(&para.text);
+        return render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
     }
 
     if slot_count != slots.len() {
-        let mut out = render_hp_t_content(&para.text);
+        let mut out = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
         for slot in slots {
             render_control_slot(&mut out, slot, ctx);
         }
@@ -231,7 +242,7 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             .copied()
             .unwrap_or(expected_utf16_pos);
         while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
-            flush_text_fragment(&mut out, &mut text_buf);
+            flush_text_fragment(&mut out, &mut text_buf, &para.tab_extended, &mut tab_idx);
             render_control_slot(&mut out, slots[slot_idx], ctx);
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -246,14 +257,14 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         }
     }
 
-    flush_text_fragment(&mut out, &mut text_buf);
+    flush_text_fragment(&mut out, &mut text_buf, &para.tab_extended, &mut tab_idx);
     while slot_idx < slots.len() {
         render_control_slot(&mut out, slots[slot_idx], ctx);
         slot_idx += 1;
     }
 
     if out.is_empty() {
-        render_hp_t_content("")
+        render_hp_t_content("", &para.tab_extended, &mut tab_idx)
     } else {
         out
     }
@@ -292,9 +303,14 @@ fn is_hwpx_inline_slot(control: &Control) -> bool {
     )
 }
 
-fn flush_text_fragment(out: &mut String, text_buf: &mut String) {
+fn flush_text_fragment(
+    out: &mut String,
+    text_buf: &mut String,
+    tab_extended: &[[u16; 7]],
+    tab_idx: &mut usize,
+) {
     if !text_buf.is_empty() {
-        out.push_str(&render_hp_t_content(text_buf));
+        out.push_str(&render_hp_t_content(text_buf, tab_extended, tab_idx));
         text_buf.clear();
     }
 }
