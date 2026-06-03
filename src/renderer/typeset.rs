@@ -2624,13 +2624,37 @@ impl TypesetEngine {
                             let rewind_endnote_head_near_bottom = endnote_has_vpos_rewind
                                 && st.current_height + total_advance_fit
                                     > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX;
+                            let next_endnote_first_line_advance = if ep_idx == 0 {
+                                en_ctrl.paragraphs.get(1).map(|next_para| {
+                                    let next_comp =
+                                        crate::renderer::composer::compose_paragraph(next_para);
+                                    self.format_paragraph(
+                                        next_para,
+                                        Some(&next_comp),
+                                        &styles,
+                                        Some(en_col_w),
+                                    )
+                                    .line_advance(0)
+                                })
+                            } else {
+                                None
+                            };
+                            let rewind_endnote_head_would_split = endnote_has_vpos_rewind
+                                && next_endnote_first_line_advance
+                                    .map(|next_h| {
+                                        st.current_height + total_advance_fit + next_h
+                                            > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                    })
+                                    .unwrap_or(false);
                             let advance_for_new_endnote = st.col_count > 1
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
                                 && !allow_default_late_question_tail
                                 && !allow_default_question_title_tail
-                                && (!endnote_has_vpos_rewind || rewind_endnote_head_near_bottom)
+                                && (!endnote_has_vpos_rewind
+                                    || rewind_endnote_head_near_bottom
+                                    || rewind_endnote_head_would_split)
                                 && !new_endnote_stale_forward_vpos
                                 && st.current_height > available * new_endnote_advance_threshold
                                 && !st.current_items.is_empty();
