@@ -467,6 +467,16 @@ fn has_treat_as_char_picture_or_shape(para: Option<&Paragraph>) -> bool {
     .unwrap_or(false)
 }
 
+fn is_blank_spacer_line(
+    para: Option<&Paragraph>,
+    runs_all_whitespace: bool,
+    line_tac_offsets: &[(usize, f64, usize)],
+) -> bool {
+    runs_all_whitespace
+        && line_tac_offsets.is_empty()
+        && para.map(|p| p.controls.is_empty()).unwrap_or(false)
+}
+
 fn tac_picture_label_extra_px(
     runs_all_whitespace: bool,
     raw_line_height: f64,
@@ -1868,6 +1878,8 @@ impl LayoutEngine {
             let col_bottom = col_area.y + col_area.height;
             let line_visual_bottom = text_y + line_height;
             let is_body_flow_col_area = self.is_body_flow_col_area(col_area);
+            let blank_spacer_line =
+                is_blank_spacer_line(para, runs_all_whitespace, &line_tac_offsets);
             let tolerated_endnote_bottom_bleed = is_tolerated_endnote_column_bottom_bleed(
                 is_body_flow_col_area
                     && cell_ctx.is_none()
@@ -1878,6 +1890,7 @@ impl LayoutEngine {
             if is_body_flow_col_area
                 && cell_ctx.is_none()
                 && line_visual_bottom > col_bottom + 0.5
+                && !blank_spacer_line
                 && !tolerated_endnote_bottom_bleed
             {
                 eprintln!(
@@ -4504,7 +4517,12 @@ impl LayoutEngine {
             // 후행 줄간격을 콘텐츠 초과로 오판하지 않도록 한다(페이지네이터의 마지막 줄
             // trailing_ls 허용 #359/#404 와 정합). 매 줄 갱신 → 마지막 렌더 줄 값이 남는다.
             if cell_ctx.is_none() && !skip_advance_empty_line {
-                self.last_item_content_bottom.set(y + line_height);
+                let content_bottom = if blank_spacer_line {
+                    y
+                } else {
+                    y + line_height
+                };
+                self.last_item_content_bottom.set(content_bottom);
             }
             if endnote_line_vpos_base.is_some() {
                 let line_bottom = if skip_advance_empty_line {
