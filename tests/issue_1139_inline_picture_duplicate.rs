@@ -1320,6 +1320,22 @@ fn issue_1261_2022_oct_page5_question28_choices_stay_below_condition_box() {
 }
 
 #[test]
+fn issue_1261_2024_sep_page10_question8_stays_below_previous_equation() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(9).expect("page 10 render tree");
+
+    let previous_equation_bottom =
+        max_para_content_bottom(&tree.root, 522).expect("문7 마지막 수식 문단");
+    let question8_y = min_para_text_y(&tree.root, 523).expect("문8 제목");
+
+    assert!(
+        question8_y >= previous_equation_bottom + 8.0,
+        "문8 제목은 직전 문7 마지막 수식 하단 아래에서 시작해야 하며 겹치면 안 됨: prev_bottom={previous_equation_bottom}, q8_y={question8_y}"
+    );
+}
+
+#[test]
 fn issue_1189_2022_oct_page11_endnote_question_gaps_match_pdf() {
     let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
