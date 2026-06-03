@@ -145,6 +145,21 @@ fn find_image_bbox(
         .find_map(|child| find_image_bbox(child, para_index, control_index))
 }
 
+fn find_rectangle_bbox(
+    node: &RenderNode,
+    para_index: usize,
+    control_index: usize,
+) -> Option<BoundingBox> {
+    if let RenderNodeType::Rectangle(rect) = &node.node_type {
+        if rect.para_index == Some(para_index) && rect.control_index == Some(control_index) {
+            return Some(node.bbox.clone());
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_rectangle_bbox(child, para_index, control_index))
+}
+
 fn collect_equation_bboxes_containing(node: &RenderNode, needle: &str, out: &mut Vec<BoundingBox>) {
     if let RenderNodeType::Equation(eq) = &node.node_type {
         if eq.svg_content.contains(needle) {
@@ -1286,6 +1301,22 @@ fn issue_1189_2022_oct_page17_endnote_drag_selection_covers_equation_tail_lines(
             "한컴오피스처럼 문27 미주 드래그 선택이 수식 꼬리 문단까지 연속으로 덮어야 함: para_idx={para_idx}, para_y={para_y}, rects={rects:?}"
         );
     }
+}
+
+#[test]
+fn issue_1261_2022_oct_page5_question28_choices_stay_below_condition_box() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(4).expect("page 5 render tree");
+
+    let condition_box = find_rectangle_bbox(&tree.root, 306, 0).expect("문28 조건 박스");
+    let first_choice_line = find_text_line_bbox(&tree.root, 306, 1).expect("문28 ①②③ 선택지 줄");
+    let box_bottom = condition_box.y + condition_box.height;
+
+    assert!(
+        first_choice_line.y > box_bottom + 2.0,
+        "문28 선택지 줄은 조건 박스 아래에서 시작해야 하며 박스 내부 문장을 덮으면 안 됨: box={condition_box:?}, choice={first_choice_line:?}"
+    );
 }
 
 #[test]

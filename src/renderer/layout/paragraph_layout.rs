@@ -107,7 +107,11 @@ fn tac_picture_or_shape_height_for_line(
     para.controls.iter().find_map(|ctrl| {
         let height_hu = match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-            Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
+            Control::Shape(shape) if shape.common().treat_as_char => {
+                let common_h = shape.common().height as i32;
+                let current_h = shape.shape_attr().current_height as i32;
+                common_h.max(current_h)
+            }
             _ => return None,
         };
         let height = hwpunit_to_px(height_hu, dpi);
@@ -316,7 +320,11 @@ fn tac_offsets_for_line(
 fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
     let height_hu = match ctrl {
         Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
+        Control::Shape(shape) if shape.common().treat_as_char => {
+            let common_h = shape.common().height as i32;
+            let current_h = shape.shape_attr().current_height as i32;
+            common_h.max(current_h)
+        }
         _ => return None,
     };
     Some(hwpunit_to_px(height_hu, dpi))
@@ -1695,6 +1703,7 @@ impl LayoutEngine {
                 })
                 .fold(0.0f64, f64::max);
             let line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
+            let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
             // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
             // PARA_LINE_SEG가 없는 폴백(400 HWPUNIT=5.333px) 등 line_height가 폰트 크기보다 작으면,
             // ParaShape의 줄간격 설정(line_spacing_type + line_spacing)으로 올바른 줄 높이를 계산한다.
@@ -1724,10 +1733,10 @@ impl LayoutEngine {
             // 인라인 Shape(글상자)가 있는 줄: line_height에 Shape 높이가 포함됨
             // Shape는 별도 패스에서 para_y 기준으로 렌더링되므로,
             // 텍스트의 y와 line_height를 폰트 기반으로 보정하여 baseline 정렬
-            let has_tac_shape = !tac_offsets_px.is_empty()
+            let has_tac_shape = !line_tac_offsets.is_empty()
                 && para
                     .map(|p| {
-                        tac_offsets_px.iter().any(|(_, _, ci)| {
+                        line_tac_offsets.iter().any(|(_, _, ci)| {
                             p.controls
                                 .get(*ci)
                                 .map(|c| matches!(c, Control::Shape(_)))
@@ -1739,8 +1748,8 @@ impl LayoutEngine {
                 let font_lh = max_fs.max(1.0);
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
-            } else if has_tac_shape && raw_lh > max_fs * 1.5 {
-                // Shape 높이가 line_height에 포함 → 폰트 기반 line_height 사용
+            } else if has_tac_shape && !runs_all_whitespace && raw_lh > max_fs * 1.5 {
+                // Shape와 텍스트가 같은 줄에 있으면 Shape 높이가 line_height에 포함된다.
                 let font_lh = max_fs * 1.2; // 폰트 크기의 120%
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
@@ -1824,7 +1833,7 @@ impl LayoutEngine {
             };
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
-            let text_y = if has_tac_shape && raw_lh > max_fs * 1.5 {
+            let text_y = if has_tac_shape && !runs_all_whitespace && raw_lh > max_fs * 1.5 {
                 // raw_lh는 Shape 높이 포함 원본 줄 높이, line_height는 폰트 기반 보정 높이
                 // 텍스트를 Shape 하단 근처로 이동 (Shape 높이 - 폰트 줄 높이)
                 y + (raw_lh - line_height).max(0.0)
@@ -3270,7 +3279,9 @@ impl LayoutEngine {
                         if let Some(p) = para {
                             if let Some(Control::Shape(shape)) = p.controls.get(tac_ci) {
                                 let common = shape.common();
-                                let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
+                                let shape_h_hu = (common.height as i32)
+                                    .max(shape.shape_attr().current_height as i32);
+                                let shape_h = hwpunit_to_px(shape_h_hu, self.dpi);
                                 if raw_lh + 4.0 >= shape_h {
                                     current_line_reserved_tac_picture_height = Some(shape_h);
                                 }
@@ -3732,7 +3743,9 @@ impl LayoutEngine {
                                 // #476 의 fallback 차단 분기로 박스가 누락된다.
                                 if let Control::Shape(shape) = ctrl {
                                     let common = shape.common();
-                                    let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
+                                    let shape_h_hu = (common.height as i32)
+                                        .max(shape.shape_attr().current_height as i32);
+                                    let shape_h = hwpunit_to_px(shape_h_hu, self.dpi);
                                     let shape_y = (y + baseline - shape_h).max(y);
                                     tree.set_inline_shape_position(
                                         section_index,
@@ -4388,7 +4401,6 @@ impl LayoutEngine {
             // (LEFT narrow wrap zone) 의 공백 한 글자만 가짐 — 한컴 viewer 가 wrap zone
             // 좌측 영역에 텍스트 미배치한 결과. has_picture_shape_square_wrap 게이트로
             // wrap zone 호스트 paragraph 만 영향.
-            let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
             if !runs_all_whitespace
                 && !text_before_picture_line
                 && current_line_reserved_tac_picture_height.is_none()
