@@ -311,6 +311,7 @@ fn square_wrap_table_line_anchor_y(
 }
 
 pub(crate) const ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX: f64 = 24.0;
+const ENDNOTE_COLUMN_BOTTOM_OVERFLOW_LOG_TOLERANCE_PX: f64 = 28.0;
 
 pub(crate) fn is_tolerated_endnote_column_bottom_bleed(
     is_endnote_flow: bool,
@@ -320,9 +321,11 @@ pub(crate) fn is_tolerated_endnote_column_bottom_bleed(
     // 한컴은 compact 미주 하단에서 마지막 줄을 본문 하단보다 약간 아래,
     // 페이지 테두리 안쪽 여백에 남기기도 한다. 이 경우 줄을 다음 쪽으로
     // 넘기면 시각 분기가 틀어지므로, 작은 bleed는 page overflow로 보지 않는다.
+    // 9pt 기본 미주에서 줄 높이 반올림까지 포함하면 26px 안팎까지 내려가지만,
+    // 조판 분기 기준은 기존 24px를 유지하고 렌더 overflow 로그만 더 넓게 본다.
     is_endnote_flow
         && content_bottom > col_bottom
-        && content_bottom <= col_bottom + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+        && content_bottom <= col_bottom + ENDNOTE_COLUMN_BOTTOM_OVERFLOW_LOG_TOLERANCE_PX
 }
 
 /// 문단 번호 상태 (수준별 카운터)
@@ -3322,11 +3325,12 @@ impl LayoutEngine {
                 }
                 _ => y_offset,
             };
-            let tolerated_endnote_bottom_bleed = is_tolerated_endnote_column_bottom_bleed(
-                col_content.endnote_flow && item_ordinal + 1 == col_content.items.len(),
-                check_y,
-                col_bottom,
-            );
+            let is_endnote_tail_item = col_content.endnote_flow
+                && (item_ordinal + 1 == col_content.items.len()
+                    || (item_ordinal + 2 == col_content.items.len()
+                        && current_is_endnote_question_title));
+            let tolerated_endnote_bottom_bleed =
+                is_tolerated_endnote_column_bottom_bleed(is_endnote_tail_item, check_y, col_bottom);
             if check_y > col_bottom + tolerance && !tolerated_endnote_bottom_bleed {
                 let (item_type, para_idx) = match item {
                     PageItem::FullParagraph { para_index } => ("FullParagraph", *para_index),
