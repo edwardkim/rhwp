@@ -310,6 +310,21 @@ fn square_wrap_table_line_anchor_y(
     Some(para_y + hwpunit_to_px(anchor.vertical_pos - first.vertical_pos, dpi))
 }
 
+pub(crate) const ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX: f64 = 24.0;
+
+pub(crate) fn is_tolerated_endnote_column_bottom_bleed(
+    is_endnote_flow: bool,
+    content_bottom: f64,
+    col_bottom: f64,
+) -> bool {
+    // 한컴은 compact 미주 하단에서 마지막 줄을 본문 하단보다 약간 아래,
+    // 페이지 테두리 안쪽 여백에 남기기도 한다. 이 경우 줄을 다음 쪽으로
+    // 넘기면 시각 분기가 틀어지므로, 작은 bleed는 page overflow로 보지 않는다.
+    is_endnote_flow
+        && content_bottom > col_bottom
+        && content_bottom <= col_bottom + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+}
+
 /// 문단 번호 상태 (수준별 카운터)
 #[derive(Debug, Clone, Default)]
 struct NumberingState {
@@ -3302,7 +3317,12 @@ impl LayoutEngine {
                 }
                 _ => y_offset,
             };
-            if check_y > col_bottom + tolerance {
+            let tolerated_endnote_bottom_bleed = is_tolerated_endnote_column_bottom_bleed(
+                col_content.endnote_flow && item_ordinal + 1 == col_content.items.len(),
+                check_y,
+                col_bottom,
+            );
+            if check_y > col_bottom + tolerance && !tolerated_endnote_bottom_bleed {
                 let (item_type, para_idx) = match item {
                     PageItem::FullParagraph { para_index } => ("FullParagraph", *para_index),
                     PageItem::PartialParagraph { para_index, .. } => {

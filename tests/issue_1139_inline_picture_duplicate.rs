@@ -357,6 +357,35 @@ fn issue_1265_2022_nov_page11_empty_float_picture_host_has_no_phantom_overflow()
 }
 
 #[test]
+fn issue_1265_2022_nov_page11_partial_endnote_tail_stays_in_page_frame() {
+    let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page11 = doc.dump_page_items(Some(10));
+    let page12 = doc.dump_page_items(Some(11));
+    assert!(
+        page11.contains("PartialParagraph  pi=553  lines=0..8"),
+        "한컴/PDF 기준 문14) 꼬리 첫 조각은 11쪽 끝에 남아야 함\n{page11}"
+    );
+    assert!(
+        page12.contains("PartialParagraph  pi=553  lines=8..11"),
+        "문14) 꼬리 나머지는 12쪽 첫머리에서 이어져야 함\n{page12}"
+    );
+
+    let tree = doc.build_page_render_tree(10).expect("page 11 render tree");
+    let last_line = find_text_line_bbox(&tree.root, 553, 7).expect("pi=553 line 7");
+    let last_line_bottom = last_line.y + last_line.height;
+    assert!(
+        last_line_bottom < 1113.0,
+        "compact 미주 마지막 줄은 본문 하단을 조금 넘더라도 페이지 테두리 안에 남아야 함: {last_line:?}"
+    );
+    assert!(
+        find_text_line_bbox(&tree.root, 553, 8).is_none(),
+        "다음 줄까지 11쪽에 끌고 오면 12쪽 시작 분기가 한컴/PDF와 달라짐"
+    );
+}
+
+#[test]
 fn issue_1139_sample16_page3_page_number_stays_below_bottom_border() {
     let bytes = std::fs::read("samples/hwp3-sample16-hwp5.hwp").expect("sample16");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse sample16");

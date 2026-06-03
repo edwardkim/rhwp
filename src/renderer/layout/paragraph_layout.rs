@@ -18,7 +18,7 @@ use super::utils::{
     expand_numbering_format, extract_shape_transform, find_bin_data,
     numbering_format_to_number_format, picture_display_size_hu, resolve_numbering_id,
 };
-use super::{CellContext, LayoutEngine};
+use super::{is_tolerated_endnote_column_bottom_bleed, CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -1866,11 +1866,20 @@ impl LayoutEngine {
             // 클램프 없이 원래 y 에 그리면 piling 자체가 발생하지 않는다. 콘텐츠 손실
             // (stop drawing) 도 발생하지 않으며, drift 의 본질적 해결은 Stage 5 에서.
             let col_bottom = col_area.y + col_area.height;
-            if cell_ctx.is_none() && text_y + line_height > col_bottom + 0.5 {
+            let line_visual_bottom = text_y + line_height;
+            let tolerated_endnote_bottom_bleed = is_tolerated_endnote_column_bottom_bleed(
+                cell_ctx.is_none() && para_index >= self.endnote_para_base.get(),
+                line_visual_bottom,
+                col_bottom,
+            );
+            if cell_ctx.is_none()
+                && line_visual_bottom > col_bottom + 0.5
+                && !tolerated_endnote_bottom_bleed
+            {
                 eprintln!(
                     "LAYOUT_OVERFLOW_DRAW: section={} pi={} line={} y={:.1} col_bottom={:.1} overflow={:.1}px",
                     section_index, para_index, line_idx,
-                    text_y + line_height, col_bottom, text_y + line_height - col_bottom,
+                    line_visual_bottom, col_bottom, line_visual_bottom - col_bottom,
                 );
             }
             // [Task #604 R3] wrap_anchor 가 있으면 본 문단은 anchor 그림/표 옆 wrap text.
