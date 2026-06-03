@@ -97,10 +97,74 @@ render 의 "vpos 연속이면 포함" 가정이 어긋나는 지점이 #1246 의
 
 ---
 
-## 2. vpos_adjust 특례 8종 해부 + 핀 고정 테스트  *(Stage 2 예정)*
+## 2. vpos_adjust 특례 해부 + 핀 고정 테스트
 
-> 각 특례의 ① 트리거 조건 ② 도입 이유/샘플 ③ 핀 고정 회귀 테스트 매핑.
+> 검증: `cargo test --lib height_cursor` = **26 passed**, `cargo test --test issue_1082_endnote_multicolumn_drift` = **4 passed** (`stream/devel`, 2026-06-03).
+> 모든 특례는 공통 게이트 `suppress_large_forward_jump`(= 미주 흐름 컬럼) 아래에서만 활성.
 
-## 3. 불일치 지점 — render gap ≠ pagination 예약  *(Stage 2 예정)*
+### 2.1 공통 기반 게이트
+
+| 게이트 | 위치 | 의미 |
+|--------|------|------|
+| `suppress_large_forward_jump` | 진입 전 설정 | 미주 흐름 컬럼에서만 특례 허용 (본문 무영향) |
+| `compact_endnote_question_title` | `height_cursor.rs:272` | 다음 문단이 `문`으로 시작 + 직전 seg line_spacing>1000 → "새 미주 제목" |
+| `trailing_ls_hu` 게이트 (#1022 v2) | `height_cursor.rs:163` | vpos 연속+실텍스트면 trailing 0, 아니면 bridge. **무조건 적용/제거 둘 다 회귀** (메모리 `tech_lazy_base_trailing_ls_gate`) |
+
+### 2.2 특례별 표 (devel 7종 + PR #1247 1종)
+
+| # | 특례 | 위치 | 트리거(요약) | 존재 이유 / 샘플 | 핀 고정 테스트 |
+|---|------|------|-------------|-----------------|---------------|
+| S0 | invalid-lazy-base capped_y | `:195` | lazy_base<0 + 새 미주 제목 + 컬럼 하단 0.85↓ | 자리차지 표 뒤 역산 무효 시 미주 겹침 방지 | `invalid_lazy_base_skips_backtrack_after_tall_object` |
+| S1 | bottom_rewind | `:234` | vpos_rewind + 컬럼 하단 0.75↓ | 미주 흐름 단/쪽 재배치로 vpos 되감김 → 현재 vpos 신뢰 | `compact_endnote_bottom_rewind_uses_current_vpos`, `..._rewind_above_bottom_keeps_previous_vpos` |
+| S2 | new_note_jump (+gap_cap) | `:304`(`:278`) | 새 제목 + tall seg/gap_cap + end_y 32~120px 전진 | 큰 forward 점프를 7mm note-gap 으로 캡 (3-11월 p11 문13/14) | `compact_endnote_question_title_caps_large_forward_gap`, `..._after_tall_line_uses_content_bottom_gap` |
+| S3 | stale_note_gap | `:309` | 새 제목 + 컬럼 0.75↑ + end_y>+120px | stale forward(과대 전진) 시 trailing 만큼만 전진 | `compact_endnote_question_title_preserves_spacing_on_stale_forward_jump`, `..._after_empty_spacer_keeps_stored_gap_only` |
+| S4 | tac_picture_gap | `:318` | TAC 그림 문단 + end_y 0~12px | 인라인 그림 미주 줄 미세 gap 보존 (#1139 문27) | (통합) `issue_1139_inline_picture_duplicate`, `issue_1082` |
+| S5 | deep_backtrack | `:335` | 비-rewind + end_y < y_in-8 + 컬럼 0.90↑ + ≤80px | 컬럼 끝 직전 저장 vpos 의 backward gap 존중 | `compact_endnote_deep_backtrack_uses_vpos_near_column_bottom` 외 7건 (skips_page_path/after_tall_line/new_note_title/title_after_empty_spacer/after_note_title/crosses_previous_content + allows_safe_new_note_title) |
+| S6 | title_tail_backtrack | `:346` | 제목 직후 + 현재 3줄↑ + end_y<y_in-8 + 0.90↑ | 미주 제목 다음 다줄 본문의 제한적(≤16px) 되돌림 | `compact_endnote_limited_backtrack_after_note_title_tail` |
+| S7 | safe_vpos_backtrack | `:362` | 비-rewind + end_y<y_in-8 + 컬럼 0.75↓ | 미드-컬럼에서 저장 vpos backward 안전 존중 (#1209 문12) | `compact_endnote_deep_backtrack_skips_if_it_crosses_previous_content` (경계 공유), `issue_1082` |
+| **S8** | **min-gap (PR #1247)** | (미머지) | 새 제목 + forward + 다줄 prev + gap∈[-0.5,4.0)px | gap≈0(다줄 마지막 줄 trailing 누락=문22) 끌어올림 (#1246) | (PR 신규) `compact_endnote_min_gap_lifts_zero_gap_question_title` 외 2 |
+
+### 2.3 관찰
+
+- **8종 중 6종이 `compact_endnote_question_title`(새 미주 제목) 조건에 의존** → 특례 폭증의 진원지는
+  "미주 제목 앞 gap 을 얼마로 둘 것인가" 한 가지 질문이다. 답이 상황(컬럼 위치·prev 성격·vpos 방향)마다
+  달라 분기가 늘었다.
+- **backward 계열(S5/S6/S7)과 forward 계열(S2/S3/S8)이 대칭**: 저장 vpos 가 gap 을 과소(→끌어올림)
+  또는 과대(→캡/되돌림) 인코딩하는 양방향 오차를 각각 메운다. 근본은 "저장 vpos gap ≠ 실제 목표 gap".
+
+---
+
+## 3. 불일치 지점 — render gap ≠ typeset/pagination 예약
+
+### 3.1 핵심 경로 (gap≈0, #1246 문22)
+
+```
+typeset.rs:2219   prev_para.last_seg.line_spacing = between_notes(=1984+α)   ← trailing 을 IR 에 굽음
+typeset.rs:2213   vpos_offset += (between_notes - 1984)                       ← 초과분만 vpos 에 가산
+   └ 가정: base-flow 1984HU 는 "다줄 문단 마지막 줄 trailing" 으로 연속 vpos 에 이미 있다.
+
+render(height_cursor):163  vpos_continuous && prev_has_text  →  trailing_ls_hu = 0  (이미 포함으로 간주)
+   └ 그러나 다줄 미주 마지막 줄의 trailing 이 render 누적에서 누락되면
+     실제 sequential y 에는 1984HU 가 없음 → 저장 vpos gap ≈ 0
+       → S2~S7 어느 분기에도 안 걸림(전부 gap>임계 가정) → 제목이 윗줄에 붙음(문22)
+         → PR #1247 이 S8(min-gap)로 "gap≈0 이면 1984 끌어올림" 추가
+```
+
+### 3.2 불일치의 본질
+
+| 레이어 | "1984HU base-flow trailing" 가정 | 실제 |
+|--------|----------------------------------|------|
+| typeset | 연속 vpos 에 **이미 있다** → 초과분만 가산 | 단일줄 prev 는 맞음 |
+| render | vpos 연속이면 **이미 포함** (`:163` trailing_ls_hu=0) | **다줄 prev 마지막 줄 trailing 은 누락** → gap 0 |
+
+→ **단일줄 prev 에서는 두 가정이 일치, 다줄 prev 에서 어긋난다.** 이것이 #1246 의 정확한 불일치 지점.
+S8(min-gap)이 `prev_is_multiline` 한정인 이유가 바로 이 비대칭이다.
+
+### 3.3 pagination 측 정합
+
+- pagination 은 trailing 을 fit 판정에서 빼되(§1.3), 미주 흐름 vpos 예약은 typeset 의 `vpos_offset`
+  가산(`:2213`)으로 처리 → **pagination 자체는 IR 의 굽힌 trailing 을 신뢰**한다.
+- 즉 불일치는 **typeset 가정 ↔ render 재구성** 사이이며, pagination 은 typeset 편에 정렬돼 있다.
+  (PR #1247 이 별도 overflow 수정 없이 pi=475 가 해소된 이유: render 가 typeset 예약값에 맞춰졌기 때문.)
 
 ## 4. 판정 — 통일 가능 영역 / 게이트 필수 영역  *(Stage 3 예정)*
