@@ -558,14 +558,21 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
   if (!state.multiRefs && state.ref.type !== 'line') {
     const newW = Math.max(Math.round(newBbox.width * PX_TO_HWP), MIN_SIZE_HWP);
     const newH = Math.max(Math.round(newBbox.height * PX_TO_HWP), MIN_SIZE_HWP);
+    // offset 은 페이지 절대값이 아니라 "저장 offset + 페이지좌표 델타"로 적용한다.
+    // (중첩 picture 의 offset 은 컨테이너 상대 — 페이지 절대값이면 라이브 드래그 중
+    //  이미지가 예비 테두리에서 벗어나 어긋난다. finishPictureResizeDrag 와 동일 방식.)
     const newHorzOffset = Math.round(newBbox.x * PX_TO_HWP);
     const newVertOffset = Math.round(newBbox.y * PX_TO_HWP);
+    const origHorzOffset = Math.round(state.bbox.x * PX_TO_HWP);
+    const origVertOffset = Math.round(state.bbox.y * PX_TO_HWP);
+    const beforeHorzOffset = state.origHorzOffset ?? origHorzOffset;
+    const beforeVertOffset = state.origVertOffset ?? origVertOffset;
     try {
       setObjectProperties.call(this, state.ref, {
         width: newW,
         height: newH,
-        horzOffset: (newHorzOffset >>> 0),
-        vertOffset: (newVertOffset >>> 0),
+        horzOffset: ((beforeHorzOffset + (newHorzOffset - origHorzOffset)) >>> 0),
+        vertOffset: ((beforeVertOffset + (newVertOffset - origVertOffset)) >>> 0),
       });
       this.eventBus.emit('document-changed');
     } catch { /* ignore */ }
@@ -652,12 +659,17 @@ export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
     }
     const beforeHorzOffset = state.origHorzOffset ?? origHorzOffset;
     const beforeVertOffset = state.origVertOffset ?? origVertOffset;
-    if (newHorzOffset !== origHorzOffset) {
-      updated['horzOffset'] = (newHorzOffset >>> 0);
+    // offset 은 페이지 절대값이 아니라 "저장된 offset + 페이지좌표 델타"로 적용한다.
+    // (글상자/셀 중첩 picture 는 offset 이 컨테이너 상대라, 페이지 절대값을 쓰면 밖으로 튕김.
+    //  다중 선택 리사이즈 경로와 동일한 델타 방식 — 본문 그림은 before≈orig 이므로 동작 불변.)
+    const deltaHorz = newHorzOffset - origHorzOffset;
+    const deltaVert = newVertOffset - origVertOffset;
+    if (deltaHorz !== 0) {
+      updated['horzOffset'] = ((beforeHorzOffset + deltaHorz) >>> 0);
       before['horzOffset'] = beforeHorzOffset;
     }
-    if (newVertOffset !== origVertOffset) {
-      updated['vertOffset'] = (newVertOffset >>> 0);
+    if (deltaVert !== 0) {
+      updated['vertOffset'] = ((beforeVertOffset + deltaVert) >>> 0);
       before['vertOffset'] = beforeVertOffset;
     }
     if (Object.keys(updated).length > 0) {

@@ -65,8 +65,8 @@ runTest('글상자 안 picture 마우스 드래그 조작 lifecycle (#1273)', as
         select(); // 스크롤 후 핸들 재배치
         await nextFrame();
       };
-      // 선택 → 핸들 dir 로 드래그 1회. 반환: { stateCellPath, dragging }
-      const drag = async (stateName, dirPick, mdx, mdy) => {
+      // 선택 → 핸들 dir 로 드래그 1회. onMid 는 mousemove 후 mouseup 전(라이브 드래그 중) 실행.
+      const drag = async (stateName, dirPick, mdx, mdy, onMid) => {
         select();
         let h = (ih.pictureObjectRenderer.handles || []).find(dirPick);
         if (!h) return { handleDir: null };
@@ -80,6 +80,7 @@ runTest('글상자 안 picture 마우스 드래그 조작 lifecycle (#1273)', as
         const info = { handleDir: h.dir, stateCellPath: st?.ref?.cellPath ?? null, dragging: !!st };
         ih.onMouseMoveBound(me('mousemove', dx + mdx, dy + mdy));
         await nextFrame();
+        if (onMid) info.mid = onMid();
         ih.onMouseUpBound(me('mouseup', dx + mdx, dy + mdy));
         return info;
       };
@@ -94,17 +95,36 @@ runTest('글상자 안 picture 마우스 드래그 조작 lifecycle (#1273)', as
         out.resize.wUndo = getProps().width;
       }
 
+      // ───────── FLOATING 리사이즈 (글자처럼취급 해제 후 축소 → 글상자 이탈 회귀, Stage4) ─────────
+      {
+        const PX2HWP = 7200 / 96;
+        select();
+        ih.setObjectProperties(cursor.getSelectedPictureRef(), { treatAsChar: false });
+        await nextFrame();
+        const pB = getProps();
+        const bbB = ih.findPictureBbox(cursor.getSelectedPictureRef());
+        // onMid: 라이브 드래그 중(mouseup 전) 이미지 위치 캡처 — 예비박스 추적 확인
+        const info = await drag('pictureResizeState', (x) => x.dir === 'nw', 30, 30,
+          () => { const bb = ih.findPictureBbox(cursor.getSelectedPictureRef()); return bb ? Math.round(bb.y) : null; });
+        const pA = getProps();
+        const bbA = ih.findPictureBbox(cursor.getSelectedPictureRef());
+        out.floating = {
+          handleDir: info.handleDir, stateCellPath: info.stateCellPath,
+          treatAsChar: pB.treatAsChar,
+          vBefore: pB.vertOffset, vAfter: pA.vertOffset,
+          hBefore: pB.horzOffset, hAfter: pA.horzOffset,
+          pageAbsV: bbB ? Math.round(bbB.y * PX2HWP) : null,
+          bbYBefore: bbB ? Math.round(bbB.y) : null,
+          bbYMid: info.mid ?? null,
+          bbYAfter: bbA ? Math.round(bbA.y) : null,
+        };
+      }
+
       // ───────── ROTATE (rotate 핸들) ─────────
       {
         const a0 = getProps().rotationAngle ?? 0;
         const info = await drag('pictureRotateState', (x) => x.dir === 'rotate', 60, 30);
         out.rotate = { ...info, a0, a1: getProps().rotationAngle ?? 0 };
-      }
-
-      // ───────── MOVE (treat_as_char 이면 N/A) ─────────
-      {
-        const p0 = getProps();
-        out.move = { treatAsChar: !!p0.treatAsChar };
       }
     } finally {
       console.warn = origWarn;
@@ -135,7 +155,20 @@ runTest('글상자 안 picture 마우스 드래그 조작 lifecycle (#1273)', as
   assert(result.rotate.a1 !== result.rotate.a0,
     `회전 각도 미반영: ${result.rotate.a0} → ${result.rotate.a1}`);
 
-  console.log(`ℹ️ MOVE: treat_as_char=${result.move.treatAsChar} (인라인 picture → 이동 드래그 N/A; ` +
-    `by-path 이동은 리사이즈 undo 의 setCellPicturePropertiesByPath 로 간접 커버)`);
-  console.log('✅ #1273 글상자 picture: 리사이즈·회전 lifecycle + cellPath 보존 + undo 통과');
+  // FLOATING 리사이즈 — Stage 4: offset 이 페이지 절대값이 아니라 델타(컨테이너 상대)로 적용
+  //  (글자처럼취급 해제 후 축소 시 글상자 밖으로 이탈하지 않아야 함)
+  assert(result.floating?.handleDir === 'nw', 'floating 리사이즈 nw 핸들 실패');
+  assert(result.floating.treatAsChar === false, 'floating 전환 실패 (treatAsChar≠false)');
+  assert(Array.isArray(result.floating.stateCellPath) && result.floating.stateCellPath.length > 0,
+    `floating 리사이즈 stateCellPath 누락: ${JSON.stringify(result.floating.stateCellPath)}`);
+  assert(Math.abs(result.floating.vAfter - result.floating.vBefore) < 20000,
+    `floating vertOffset 페이지절대값 점프(Stage4 회귀): ${result.floating.vBefore} → ${result.floating.vAfter} ` +
+    `(page-abs≈${result.floating.pageAbsV})`);
+  assert(Math.abs(result.floating.bbYAfter - result.floating.bbYBefore) < 300,
+    `floating picture 가 글상자 밖으로 이탈(세로 점프): bbY ${result.floating.bbYBefore} → ${result.floating.bbYAfter}`);
+  // 라이브 드래그 중 이미지가 예비박스를 추적해야 함(updatePictureResizeDrag offset 도 델타 기반)
+  assert(result.floating.bbYMid != null && Math.abs(result.floating.bbYMid - result.floating.bbYBefore) < 300,
+    `라이브 드래그 중 이미지가 예비박스에서 이탈(어긋남): bbY ${result.floating.bbYBefore} → mid ${result.floating.bbYMid}`);
+
+  console.log('✅ #1273 글상자 picture: 리사이즈·회전·floating리사이즈 lifecycle + cellPath 보존 + undo 통과');
 });
