@@ -467,6 +467,23 @@ fn has_treat_as_char_picture_or_shape(para: Option<&Paragraph>) -> bool {
     .unwrap_or(false)
 }
 
+fn line_has_topbottom_tac_shape(
+    para: Option<&Paragraph>,
+    line_tac_offsets: &[(usize, f64, usize)],
+) -> bool {
+    let Some(para) = para else {
+        return false;
+    };
+    line_tac_offsets.iter().any(|(_, _, ci)| {
+        matches!(
+            para.controls.get(*ci),
+            Some(Control::Shape(shape))
+                if shape.common().treat_as_char
+                    && matches!(shape.common().text_wrap, TextWrap::TopAndBottom)
+        )
+    })
+}
+
 fn tac_picture_label_extra_px(
     runs_all_whitespace: bool,
     raw_line_height: f64,
@@ -4446,6 +4463,9 @@ impl LayoutEngine {
             let skip_advance_empty_line = skip_advance_empty_wrap
                 || skip_advance_empty_tac_picture
                 || skip_advance_empty_tac_lead;
+            let skip_trailing_topbottom_tac_shape = runs_all_whitespace
+                && line_has_topbottom_tac_shape(para, &line_tac_offsets)
+                && !skip_advance_empty_line;
             if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok()
                 && (para_index == 651 || para_index == 652)
             {
@@ -4499,6 +4519,11 @@ impl LayoutEngine {
                 y += line_height;
             } else if skip_advance_empty_line {
                 // no advance
+            } else if skip_trailing_topbottom_tac_shape {
+                // 자리차지 TAC Shape의 빈 host 줄은 LINE_SEG 높이가 이미 개체
+                // 점유 높이를 포함하므로 trailing spacing을 다시 더하지 않는다.
+                // 글앞으로 TAC Shape(문28 조건 박스)는 이 분기에서 제외된다.
+                y += line_height + tac_picture_label_extra;
             } else {
                 y += line_height + line_spacing_px + tac_picture_label_extra;
             }
