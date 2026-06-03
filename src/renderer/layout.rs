@@ -3125,7 +3125,10 @@ impl LayoutEngine {
                     PageItem::FullParagraph { para_index } => paragraphs
                         .get(*para_index)
                         .and_then(|p| p.line_segs.last())
-                        .filter(|seg| seg.line_spacing > 1000 && seg.line_height <= 1500)
+                        // [Task #1257] line_spacing>1000 이 주입된 between-notes 갭 마커. 직전
+                        // 미주가 tall 줄(수식)로 끝나도 갭은 보존해야 하므로 line_height 제한 제거
+                        // (문26 lh=2070·문29 lh=6897 케이스가 갭 0 으로 떨어지던 원인).
+                        .filter(|seg| seg.line_spacing > 1000)
                         .map(|seg| hwpunit_to_px(seg.line_spacing.max(0), self.dpi))
                         .unwrap_or(0.0),
                     PageItem::PartialParagraph {
