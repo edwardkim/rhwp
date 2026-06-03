@@ -9,6 +9,7 @@ fn main() {
         Some("--help") | Some("-h") => print_help(),
         Some("--version") | Some("-V") => println!("rhwp v{}", rhwp::version()),
         Some("export-svg") => export_svg(&args[2..]),
+        Some("export-render-tree") => export_render_tree(&args[2..]),
         Some("export-png") => export_png(&args[2..]),
         Some("export-pdf") => export_pdf(&args[2..]),
         Some("export-text") => export_text(&args[2..]),
@@ -75,6 +76,15 @@ fn print_help() {
     println!("      --embed-fonts           폰트 서브셋 임베딩 (사용 글자만 base64)");
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    println!();
+    println!("  export-render-tree <파일.hwp> [옵션]");
+    println!("      페이지별 render tree bbox JSON을 내보내기 (레이아웃 시각 분석용)");
+    println!();
+    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
+    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --show-para-marks       문단부호(↵/↓) 표시 상태의 트리 생성");
+    println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
+    println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!();
     println!("  export-png <파일.hwp> [옵션]   (native-skia feature 필요)");
     println!("      HWP 파일을 PNG로 내보내기 (Skia raster backend, AI 파이프라인 + VLM 연동)");
@@ -437,6 +447,153 @@ fn export_svg(args: &[String]) {
 
     println!(
         "내보내기 완료: {}개 SVG 파일 → {}/",
+        pages.len(),
+        output_dir
+    );
+}
+
+fn export_render_tree(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-render-tree <파일.hwp> [옵션] (rhwp --help 참조)");
+        return;
+    }
+
+    let file_path = &args[0];
+    let mut output_dir = "output".to_string();
+    let mut target_page: Option<u32> = None;
+    let mut show_para_marks = false;
+    let mut show_control_codes = false;
+    let mut respect_vpos_reset = false;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--output" | "-o" => {
+                if i + 1 < args.len() {
+                    output_dir = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                    return;
+                }
+            }
+            "--page" | "-p" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                            return;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return;
+                }
+            }
+            "--show-para-marks" => {
+                show_para_marks = true;
+                i += 1;
+            }
+            "--show-control-codes" => {
+                show_control_codes = true;
+                i += 1;
+            }
+            "--respect-vpos-reset" => {
+                respect_vpos_reset = true;
+                i += 1;
+            }
+            _ => {
+                eprintln!("알 수 없는 옵션: {}", args[i]);
+                i += 1;
+            }
+        }
+    }
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return;
+        }
+    };
+
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    if let Some(parent) = std::path::Path::new(file_path).parent() {
+        let _loaded = doc.populate_external_images_from_dir(parent);
+    }
+
+    if show_para_marks {
+        doc.set_show_paragraph_marks(true);
+    }
+    if show_control_codes {
+        doc.set_show_control_codes(true);
+    }
+    if respect_vpos_reset {
+        doc.set_respect_vpos_reset(true);
+    }
+
+    let page_count = doc.page_count();
+    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+
+    let output_path = Path::new(&output_dir);
+    if !output_path.exists() {
+        if let Err(e) = fs::create_dir_all(output_path) {
+            eprintln!(
+                "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
+                output_dir, e
+            );
+            return;
+        }
+    }
+
+    let pages: Vec<u32> = match target_page {
+        Some(p) => {
+            if p >= page_count {
+                eprintln!(
+                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                    page_count - 1
+                );
+                return;
+            }
+            vec![p]
+        }
+        None => (0..page_count).collect(),
+    };
+
+    for page_num in &pages {
+        match doc.build_page_render_tree(*page_num) {
+            Ok(tree) => {
+                let json_path = output_path.join(format!("render_tree_{:03}.json", page_num + 1));
+                let json = tree.root.to_json();
+                match fs::write(&json_path, json) {
+                    Ok(_) => println!("  → {}", json_path.display()),
+                    Err(e) => {
+                        eprintln!(
+                            "오류: render tree 저장 실패 - {}: {}",
+                            json_path.display(),
+                            e
+                        )
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 페이지 {} render tree 생성 실패 - {:?}", page_num, e);
+            }
+        }
+    }
+
+    println!(
+        "내보내기 완료: {}개 render tree JSON 파일 → {}/",
         pages.len(),
         output_dir
     );

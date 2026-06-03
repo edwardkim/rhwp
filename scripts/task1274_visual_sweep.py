@@ -15,6 +15,16 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 
+FRAME_OVERFLOW_PIXEL_LIMIT = 20
+FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT = 12
+CONTENT_BOTTOM_DELTA_LIMIT_PX = 36.0
+RED_MARKER_DRIFT_LIMIT_PX = 18.0
+LINE_BAND_DRIFT_LIMIT_PX = 42.0
+LINE_BAND_DRIFT_MEAN_LIMIT_PX = 60.0
+LINE_BAND_DRIFT_P90_LIMIT_PX = 120.0
+EQUATION_OVERLAP_LIMIT = 0.08
+
+
 @dataclass(frozen=True)
 class Target:
     key: str
@@ -111,18 +121,29 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
     rhwp_png_dir = base / "rhwp_png"
     pdf_png_dir = base / "pdf_png"
     compare_dir = base / "compare"
+    analysis_dir = base / "analysis"
+    tree_dir = base / "render_tree"
     clean_dir(svg_dir)
     clean_dir(rhwp_png_dir)
     clean_dir(pdf_png_dir)
     clean_dir(compare_dir)
+    clean_dir(analysis_dir)
+    clean_dir(tree_dir)
 
     export_log = base / "export.log"
     run([rhwp_bin, "export-svg", str(hwp), "-o", str(svg_dir)], cwd=root, log_path=export_log)
+    tree_log = base / "render_tree.log"
+    run(
+        [rhwp_bin, "export-render-tree", str(hwp), "-o", str(tree_dir)],
+        cwd=root,
+        log_path=tree_log,
+    )
 
     pdf_prefix = pdf_png_dir / "pdf"
     run(["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)], cwd=root)
 
     svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
+    tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
     print(f"SVG pages: {len(svg_paths)}", flush=True)
     for svg in svg_paths:
         png = rhwp_png_dir / f"rhwp_{page_num(svg):03d}.png"
@@ -133,6 +154,7 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
     print(f"PDF pages: {len(pdf_pngs)}", flush=True)
     compare_pages = make_compares(rhwp_pngs, pdf_pngs, compare_dir, target.key)
     contact = make_contact_sheet(compare_pages, base / "contact_sheet.png")
+    visual_analysis = analyze_pages(rhwp_pngs, pdf_pngs, svg_paths, tree_paths, analysis_dir, target.key)
 
     log_text = export_log.read_text(encoding="utf-8") if export_log.exists() else ""
     overflow_lines = [
@@ -145,16 +167,483 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
         "hwp": str(target.hwp),
         "pdf": str(target.pdf),
         "svg_pages": len(svg_paths),
+        "render_tree_pages": len(tree_paths),
         "pdf_pages": len(pdf_pngs),
         "compare_pages": len(compare_pages),
         "overflow_lines": overflow_lines,
         "contact_sheet": str(contact.relative_to(root)),
+        "analysis_dir": str(analysis_dir.relative_to(root)),
+        "visual_metrics": visual_analysis["summary"],
+        "flagged_pages": visual_analysis["flagged_pages"],
     }
     (base / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     return manifest
+
+
+def is_content_pixel(pixel: tuple[int, int, int]) -> bool:
+    r, g, b = pixel
+    if r >= 244 and g >= 244 and b >= 244:
+        return False
+    return min(r, g, b) < 232 or max(r, g, b) - min(r, g, b) > 24
+
+
+def is_dark_pixel(pixel: tuple[int, int, int]) -> bool:
+    r, g, b = pixel
+    return r < 110 and g < 110 and b < 110
+
+
+def is_red_marker_pixel(pixel: tuple[int, int, int]) -> bool:
+    r, g, b = pixel
+    return r > 170 and g < 120 and b < 120 and r - max(g, b) > 45
+
+
+def detect_frame(image: Image.Image) -> tuple[int, int, int, int]:
+    rgb = image.convert("RGB")
+    w, h = rgb.size
+    px = rgb.load()
+
+    row_counts = []
+    for y in range(h):
+        count = 0
+        for x in range(w):
+            if is_dark_pixel(px[x, y]):
+                count += 1
+        row_counts.append(count)
+
+    col_counts = []
+    for x in range(w):
+        count = 0
+        for y in range(h):
+            if is_dark_pixel(px[x, y]):
+                count += 1
+        col_counts.append(count)
+
+    top_candidates = [
+        (count, y)
+        for y, count in enumerate(row_counts[: max(1, h // 3)])
+        if y > h * 0.03 and count > w * 0.45
+    ]
+    bottom_candidates = [
+        (count, y)
+        for y, count in enumerate(row_counts[int(h * 0.60) :], start=int(h * 0.60))
+        if count > w * 0.45
+    ]
+    left_candidates = [
+        (count, x)
+        for x, count in enumerate(col_counts[: max(1, w // 3)])
+        if x > w * 0.02 and count > h * 0.45
+    ]
+    right_candidates = [
+        (count, x)
+        for x, count in enumerate(col_counts[int(w * 0.60) :], start=int(w * 0.60))
+        if count > h * 0.45
+    ]
+
+    top = max(top_candidates)[1] if top_candidates else round(h * 0.067)
+    bottom = max(bottom_candidates)[1] if bottom_candidates else round(h * 0.977)
+    left = max(left_candidates)[1] if left_candidates else round(w * 0.033)
+    right = max(right_candidates)[1] if right_candidates else round(w * 0.967)
+    return left, top, right, bottom
+
+
+def content_bounds(
+    image: Image.Image,
+    *,
+    x_min: int,
+    x_max: int,
+    y_min: int,
+    y_max: int,
+) -> tuple[int, int, int, int, int] | None:
+    rgb = image.convert("RGB")
+    w, h = rgb.size
+    px = rgb.load()
+    x_min = max(0, x_min)
+    x_max = min(w - 1, x_max)
+    y_min = max(0, y_min)
+    y_max = min(h - 1, y_max)
+    found = False
+    min_x = w
+    min_y = h
+    max_x = -1
+    max_y = -1
+    count = 0
+    for y in range(y_min, y_max + 1):
+        for x in range(x_min, x_max + 1):
+            if is_content_pixel(px[x, y]):
+                found = True
+                count += 1
+                min_x = min(min_x, x)
+                min_y = min(min_y, y)
+                max_x = max(max_x, x)
+                max_y = max(max_y, y)
+    if not found:
+        return None
+    return min_x, min_y, max_x, max_y, count
+
+
+def row_bands(
+    image: Image.Image,
+    *,
+    frame: tuple[int, int, int, int],
+    predicate,
+    min_pixels_per_row: int,
+    gap: int = 2,
+) -> list[dict[str, float]]:
+    rgb = image.convert("RGB")
+    px = rgb.load()
+    left, top, right, bottom = frame
+    rows: list[tuple[int, int, int, int]] = []
+    for y in range(max(0, top + 2), min(rgb.height, bottom - 1)):
+        xs = [x for x in range(max(0, left + 2), min(rgb.width, right - 1)) if predicate(px[x, y])]
+        if len(xs) >= min_pixels_per_row:
+            rows.append((y, min(xs), max(xs), len(xs)))
+    bands: list[dict[str, float]] = []
+    for y, min_x, max_x, count in rows:
+        if not bands or y - bands[-1]["y1"] > gap:
+            bands.append({"y0": y, "y1": y, "x0": min_x, "x1": max_x, "pixels": count})
+        else:
+            band = bands[-1]
+            band["y1"] = y
+            band["x0"] = min(band["x0"], min_x)
+            band["x1"] = max(band["x1"], max_x)
+            band["pixels"] += count
+    for band in bands:
+        band["cy"] = (band["y0"] + band["y1"]) / 2.0
+    return bands
+
+
+def compare_ordered_y(
+    rhwp_bands: list[dict[str, float]],
+    pdf_bands: list[dict[str, float]],
+) -> dict[str, float | int | None]:
+    count = min(len(rhwp_bands), len(pdf_bands))
+    if count == 0:
+        return {
+            "rhwp_count": len(rhwp_bands),
+            "pdf_count": len(pdf_bands),
+            "paired": 0,
+            "max_abs_delta_px": None,
+            "mean_abs_delta_px": None,
+        }
+    deltas = [rhwp_bands[i]["cy"] - pdf_bands[i]["cy"] for i in range(count)]
+    abs_deltas = [abs(delta) for delta in deltas]
+    sorted_abs = sorted(abs_deltas)
+    p90_index = min(len(sorted_abs) - 1, max(0, int(len(sorted_abs) * 0.9) - 1))
+    return {
+        "rhwp_count": len(rhwp_bands),
+        "pdf_count": len(pdf_bands),
+        "paired": count,
+        "max_abs_delta_px": round(max(abs_deltas), 1),
+        "p90_abs_delta_px": round(sorted_abs[p90_index], 1),
+        "mean_abs_delta_px": round(sum(abs_deltas) / len(abs_deltas), 1),
+    }
+
+
+def bbox_overlap_ratio(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
+    ax, ay, aw, ah = a
+    bx, by, bw, bh = b
+    x0 = max(ax, bx)
+    y0 = max(ay, by)
+    x1 = min(ax + aw, bx + bw)
+    y1 = min(ay + ah, by + bh)
+    if x1 <= x0 or y1 <= y0:
+        return 0.0
+    area = (x1 - x0) * (y1 - y0)
+    return area / max(1.0, min(aw * ah, bw * bh))
+
+
+def render_tree_bbox(node: dict[str, object]) -> tuple[float, float, float, float] | None:
+    bbox = node.get("bbox")
+    if not isinstance(bbox, dict):
+        return None
+    try:
+        x = float(bbox["x"])
+        y = float(bbox["y"])
+        w = float(bbox["w"])
+        h = float(bbox["h"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if w <= 0.0 or h <= 0.0:
+        return None
+    return x, y, w, h
+
+
+def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, object]]:
+    if not tree_path.exists():
+        return []
+    try:
+        tree = json.loads(tree_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    if isinstance(tree, dict) and isinstance(tree.get("tree"), dict):
+        tree = tree["tree"]
+    if not isinstance(tree, dict):
+        return []
+
+    equations: list[dict[str, object]] = []
+    text_runs: list[dict[str, object]] = []
+
+    def visit(node: dict[str, object], path: str) -> None:
+        bbox = render_tree_bbox(node)
+        node_type = node.get("type")
+        if bbox is not None and node_type == "Equation":
+            equations.append({"path": path, "bbox": bbox})
+        elif bbox is not None and node_type == "TextRun":
+            text = node.get("text")
+            if isinstance(text, str) and text.strip():
+                text_runs.append(
+                    {
+                        "path": path,
+                        "bbox": bbox,
+                        "pi": node.get("pi"),
+                        "text": text[:32],
+                    }
+                )
+
+        children = node.get("children")
+        if isinstance(children, list):
+            for index, child in enumerate(children):
+                if isinstance(child, dict):
+                    visit(child, f"{path}/{index}")
+
+    visit(tree, "root")
+
+    candidates = []
+    for eq_idx, equation in enumerate(equations):
+        eq_box = equation["bbox"]
+        assert isinstance(eq_box, tuple)
+        for text_idx, text_run in enumerate(text_runs):
+            text_box = text_run["bbox"]
+            assert isinstance(text_box, tuple)
+            ratio = bbox_overlap_ratio(eq_box, text_box)
+            if ratio >= EQUATION_OVERLAP_LIMIT:
+                candidates.append(
+                    {
+                        "equation_index": eq_idx,
+                        "text_index": text_idx,
+                        "overlap_ratio": round(ratio, 3),
+                        "equation_path": equation["path"],
+                        "text_path": text_run["path"],
+                        "text_pi": text_run.get("pi"),
+                        "text": text_run.get("text"),
+                        "equation_bbox": [round(v, 1) for v in eq_box],
+                        "text_bbox": [round(v, 1) for v in text_box],
+                    }
+                )
+    candidates.sort(key=lambda item: item["overlap_ratio"], reverse=True)
+    return candidates[:20]
+
+
+def analyze_page(
+    rhwp_path: Path,
+    pdf_path: Path,
+    svg_path: Path,
+    tree_path: Path,
+    analysis_dir: Path,
+    key: str,
+    page_index: int,
+) -> dict[str, object]:
+    rhwp = Image.open(rhwp_path).convert("RGB")
+    pdf = Image.open(pdf_path).convert("RGB")
+    rhwp_frame = detect_frame(rhwp)
+    pdf_frame = detect_frame(pdf)
+    rl, rt, rr, rb = rhwp_frame
+    pl, pt, pr, pb = pdf_frame
+
+    rhwp_out = content_bounds(rhwp, x_min=rl + 2, x_max=rr - 2, y_min=rb + 3, y_max=rhwp.height - 1)
+    pdf_out = content_bounds(pdf, x_min=pl + 2, x_max=pr - 2, y_min=pb + 3, y_max=pdf.height - 1)
+    rhwp_inside = content_bounds(rhwp, x_min=rl + 2, x_max=rr - 2, y_min=rt + 2, y_max=rb - 2)
+    pdf_inside = content_bounds(pdf, x_min=pl + 2, x_max=pr - 2, y_min=pt + 2, y_max=pb - 2)
+
+    rhwp_red = row_bands(
+        rhwp,
+        frame=rhwp_frame,
+        predicate=is_red_marker_pixel,
+        min_pixels_per_row=3,
+        gap=2,
+    )
+    pdf_red = row_bands(
+        pdf,
+        frame=pdf_frame,
+        predicate=is_red_marker_pixel,
+        min_pixels_per_row=3,
+        gap=2,
+    )
+    rhwp_bands = row_bands(
+        rhwp,
+        frame=rhwp_frame,
+        predicate=is_content_pixel,
+        min_pixels_per_row=8,
+        gap=2,
+    )
+    pdf_bands = row_bands(
+        pdf,
+        frame=pdf_frame,
+        predicate=is_content_pixel,
+        min_pixels_per_row=8,
+        gap=2,
+    )
+    red_drift = compare_ordered_y(rhwp_red, pdf_red)
+    line_drift = compare_ordered_y(rhwp_bands, pdf_bands)
+    equation_overlaps = render_tree_equation_overlap_candidates(tree_path)
+
+    rhwp_out_pixels = rhwp_out[4] if rhwp_out else 0
+    pdf_out_pixels = pdf_out[4] if pdf_out else 0
+    rhwp_out_max_y = rhwp_out[3] if rhwp_out else None
+    pdf_out_max_y = pdf_out[3] if pdf_out else None
+    rhwp_bottom = rhwp_inside[3] if rhwp_inside else None
+    pdf_bottom = pdf_inside[3] if pdf_inside else None
+    content_bottom_delta = None
+    if rhwp_bottom is not None and pdf_bottom is not None:
+        content_bottom_delta = round(float(rhwp_bottom - pdf_bottom), 1)
+
+    flags: list[str] = []
+    if rhwp_out_pixels > max(FRAME_OVERFLOW_PIXEL_LIMIT, pdf_out_pixels + FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT):
+        flags.append("frame_overflow_pixels")
+    if content_bottom_delta is not None and abs(content_bottom_delta) >= CONTENT_BOTTOM_DELTA_LIMIT_PX:
+        flags.append("content_bottom_drift")
+    if red_drift["max_abs_delta_px"] is not None and red_drift["max_abs_delta_px"] >= RED_MARKER_DRIFT_LIMIT_PX:
+        flags.append("red_marker_drift")
+    line_mean = line_drift["mean_abs_delta_px"]
+    line_p90 = line_drift.get("p90_abs_delta_px")
+    if (
+        line_mean is not None
+        and (
+            line_mean >= LINE_BAND_DRIFT_MEAN_LIMIT_PX
+            or (
+                line_p90 is not None
+                and line_mean >= LINE_BAND_DRIFT_LIMIT_PX
+                and line_p90 >= LINE_BAND_DRIFT_P90_LIMIT_PX
+            )
+        )
+    ):
+        flags.append("line_band_drift")
+    if equation_overlaps:
+        flags.append("equation_text_overlap")
+
+    annotated = None
+    if flags:
+        annotated_path = analysis_dir / f"annotated_{page_index + 1:03d}.png"
+        annotated = make_annotation(
+            rhwp,
+            pdf,
+            rhwp_frame,
+            pdf_frame,
+            rhwp_out,
+            pdf_out,
+            flags,
+            key,
+            page_index,
+            annotated_path,
+        )
+
+    return {
+        "page": page_index + 1,
+        "flags": flags,
+        "rhwp_frame": list(rhwp_frame),
+        "pdf_frame": list(pdf_frame),
+        "rhwp_outside_frame_pixels": rhwp_out_pixels,
+        "pdf_outside_frame_pixels": pdf_out_pixels,
+        "rhwp_outside_frame_max_y": rhwp_out_max_y,
+        "pdf_outside_frame_max_y": pdf_out_max_y,
+        "content_bottom_delta_px": content_bottom_delta,
+        "red_marker_drift": red_drift,
+        "line_band_drift": line_drift,
+        "svg": str(svg_path),
+        "render_tree_json": str(tree_path),
+        "equation_text_overlap_candidates": equation_overlaps,
+        "annotated": str(annotated) if annotated else None,
+    }
+
+
+def make_annotation(
+    rhwp: Image.Image,
+    pdf: Image.Image,
+    rhwp_frame: tuple[int, int, int, int],
+    pdf_frame: tuple[int, int, int, int],
+    rhwp_out: tuple[int, int, int, int, int] | None,
+    pdf_out: tuple[int, int, int, int, int] | None,
+    flags: list[str],
+    key: str,
+    page_index: int,
+    out_path: Path,
+) -> Path:
+    label_h = 40
+    gutter = 16
+    width = max(rhwp.width, pdf.width)
+    height = max(rhwp.height, pdf.height)
+    canvas = Image.new("RGB", (width * 2 + gutter, height + label_h), "white")
+    canvas.paste(rhwp, (0, label_h))
+    canvas.paste(pdf, (width + gutter, label_h))
+    draw = ImageDraw.Draw(canvas)
+    font = label_font()
+    draw.text((8, 8), f"{key} p{page_index + 1:03d} rhwp flags={','.join(flags)}", fill=(180, 0, 0), font=font)
+    draw.text((width + gutter + 8, 8), f"{key} p{page_index + 1:03d} pdf", fill=(20, 20, 20), font=font)
+    for offset_x, frame, out in ((0, rhwp_frame, rhwp_out), (width + gutter, pdf_frame, pdf_out)):
+        left, top, right, bottom = frame
+        draw.rectangle(
+            [offset_x + left, label_h + top, offset_x + right, label_h + bottom],
+            outline=(0, 120, 255),
+            width=2,
+        )
+        if out:
+            x0, y0, x1, y1, _ = out
+            draw.rectangle(
+                [offset_x + x0, label_h + y0, offset_x + x1, label_h + y1],
+                outline=(255, 0, 0),
+                width=3,
+            )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(out_path)
+    return out_path
+
+
+def analyze_pages(
+    rhwp_pngs: list[Path],
+    pdf_pngs: list[Path],
+    svg_paths: list[Path],
+    tree_paths: list[Path],
+    analysis_dir: Path,
+    key: str,
+) -> dict[str, object]:
+    page_count = min(len(rhwp_pngs), len(pdf_pngs), len(svg_paths), len(tree_paths))
+    pages = [
+        analyze_page(
+            rhwp_pngs[index],
+            pdf_pngs[index],
+            svg_paths[index],
+            tree_paths[index],
+            analysis_dir,
+            key,
+            index,
+        )
+        for index in range(page_count)
+    ]
+    flagged_pages = [page for page in pages if page["flags"]]
+    metrics_path = analysis_dir / "metrics.json"
+    metrics_path.write_text(json.dumps(pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    summary = {
+        "analyzed_pages": page_count,
+        "flagged_page_count": len(flagged_pages),
+        "frame_overflow_pages": [page["page"] for page in flagged_pages if "frame_overflow_pixels" in page["flags"]],
+        "content_bottom_drift_pages": [page["page"] for page in flagged_pages if "content_bottom_drift" in page["flags"]],
+        "red_marker_drift_pages": [page["page"] for page in flagged_pages if "red_marker_drift" in page["flags"]],
+        "line_band_drift_pages": [page["page"] for page in flagged_pages if "line_band_drift" in page["flags"]],
+        "equation_text_overlap_pages": [page["page"] for page in flagged_pages if "equation_text_overlap" in page["flags"]],
+        "metrics_json": str(metrics_path),
+    }
+    flagged_path = analysis_dir / "flagged_pages.json"
+    flagged_path.write_text(json.dumps(flagged_pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"analysis: {key} flagged={len(flagged_pages)}/{page_count} "
+        f"frame={summary['frame_overflow_pages']} red={summary['red_marker_drift_pages']} "
+        f"line={summary['line_band_drift_pages']}",
+        flush=True,
+    )
+    return {"summary": summary, "flagged_pages": flagged_pages}
 
 
 def label_font() -> ImageFont.ImageFont:
