@@ -7,6 +7,18 @@
 mod tests {
     use std::path::Path;
 
+    use crate::model::page::{ColumnDef, PageDef};
+    use crate::model::paragraph::{LineSeg, Paragraph};
+    use crate::model::style::{BorderLine, BorderLineType};
+    use crate::renderer::composer::compose_paragraph;
+    use crate::renderer::layout::LayoutEngine;
+    use crate::renderer::page_layout::PageLayoutInfo;
+    use crate::renderer::pagination::{ColumnContent, PageContent, PageItem};
+    use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+    use crate::renderer::style_resolver::{
+        ResolvedBorderStyle, ResolvedCharStyle, ResolvedParaStyle, ResolvedStyleSet,
+    };
+
     /// 테스트용 DocumentCore 생성 헬퍼
     fn load_document(path: &str) -> Option<crate::document_core::DocumentCore> {
         let p = Path::new(path);
@@ -16,6 +28,160 @@ mod tests {
         }
         let data = std::fs::read(p).ok()?;
         crate::document_core::DocumentCore::from_bytes(&data).ok()
+    }
+
+    fn collect_render_nodes<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            collect_render_nodes(child, out);
+        }
+    }
+
+    #[derive(Debug)]
+    struct ParaBorderNodeCounts {
+        stroked_rects: usize,
+        vertical_lines: usize,
+        horizontal_lines: usize,
+        line_summaries: Vec<String>,
+    }
+
+    fn render_synthetic_para_border_counts(borders: [BorderLine; 4]) -> ParaBorderNodeCounts {
+        let engine = LayoutEngine::with_default_dpi();
+        let page_def = PageDef {
+            width: 59528,
+            height: 84188,
+            margin_left: 8504,
+            margin_right: 8504,
+            margin_top: 5669,
+            margin_bottom: 4252,
+            margin_header: 4252,
+            margin_footer: 4252,
+            margin_gutter: 0,
+            ..Default::default()
+        };
+        let layout = PageLayoutInfo::from_page_def_default(&page_def, &ColumnDef::default());
+
+        let text = "가로선만 있는 문단 테두리".to_string();
+        let paragraphs = vec![Paragraph {
+            char_count: text.chars().count() as u32 + 1,
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            text,
+            para_shape_id: 0,
+            line_segs: vec![LineSeg {
+                line_height: 400,
+                baseline_distance: 320,
+                segment_width: 30000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }];
+        let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
+
+        let styles = ResolvedStyleSet {
+            char_styles: vec![ResolvedCharStyle::default()],
+            para_styles: vec![ResolvedParaStyle {
+                border_fill_id: 1,
+                ..Default::default()
+            }],
+            border_styles: vec![ResolvedBorderStyle {
+                borders,
+                fill_color: None,
+                pattern: None,
+                gradient: None,
+                image_fill: None,
+                diagonal_attr: 0,
+                diagonal: Default::default(),
+            }],
+            numberings: Vec::new(),
+            bullets: Vec::new(),
+        };
+
+        let page_content = PageContent {
+            page_index: 0,
+            page_number: 0,
+            section_index: 0,
+            layout,
+            column_contents: vec![ColumnContent {
+                column_index: 0,
+                start_height: 0.0,
+                endnote_flow: false,
+                items: vec![PageItem::FullParagraph { para_index: 0 }],
+                zone_layout: None,
+                zone_y_offset: 0.0,
+                wrap_around_paras: Vec::new(),
+                used_height: 0.0,
+                wrap_anchors: std::collections::HashMap::new(),
+            }],
+            active_header: None,
+            active_footer: None,
+            page_number_pos: None,
+            page_hide: None,
+            footnotes: Vec::new(),
+            active_master_page: None,
+            extra_master_pages: Vec::new(),
+        };
+
+        let tree = engine.build_render_tree(
+            &page_content,
+            &paragraphs,
+            &paragraphs,
+            &paragraphs,
+            &composed,
+            &styles,
+            &Default::default(),
+            &[],
+            None,
+            &[],
+            None,
+            0,
+            &[],
+        );
+
+        let mut nodes = Vec::new();
+        collect_render_nodes(&tree.root, &mut nodes);
+
+        let stroked_rects = nodes
+            .iter()
+            .filter(|node| match &node.node_type {
+                RenderNodeType::Rectangle(rect) => rect.style.stroke_width > 0.0,
+                _ => false,
+            })
+            .count();
+        let vertical_lines = nodes
+            .iter()
+            .filter(|node| match &node.node_type {
+                RenderNodeType::Line(line) => {
+                    (line.x1 - line.x2).abs() < 0.5 && (line.y1 - line.y2).abs() > 0.5
+                }
+                _ => false,
+            })
+            .count();
+        let line_summaries: Vec<String> = nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::Line(line) => Some(format!(
+                    "line x1={:.1} y1={:.1} x2={:.1} y2={:.1}",
+                    line.x1, line.y1, line.x2, line.y2
+                )),
+                _ => None,
+            })
+            .collect();
+        let horizontal_lines = nodes
+            .iter()
+            .filter(|node| match &node.node_type {
+                RenderNodeType::Line(line) => {
+                    (line.y1 - line.y2).abs() < 0.5 && (line.x1 - line.x2).abs() > 0.5
+                }
+                _ => false,
+            })
+            .count();
+
+        ParaBorderNodeCounts {
+            stroked_rects,
+            vertical_lines,
+            horizontal_lines,
+            line_summaries,
+        }
     }
 
     // ─── 페이지 수 검증 ───
@@ -214,6 +380,90 @@ mod tests {
         assert!(
             svg.contains("<rect") || svg.contains("<path"),
             "1-3.hwp에 문단 테두리/배경 렌더링 요소가 있어야 함"
+        );
+    }
+
+    /// Task #1205 RED: 문단 borderFill 의 left/right 가 NONE 이면 top/bottom 이
+    /// visible 이더라도 4면 stroke rectangle 이나 좌우 수직선을 만들면 안 된다.
+    #[test]
+    fn task_1205_para_border_none_sides_do_not_render_vertical_edges() {
+        let hidden = BorderLine {
+            line_type: BorderLineType::None,
+            width: 1,
+            color: 0,
+        };
+        let visible = BorderLine {
+            line_type: BorderLineType::Solid,
+            width: 1,
+            color: 0,
+        };
+        let counts = render_synthetic_para_border_counts([hidden, hidden, visible, visible]);
+
+        assert_eq!(
+            counts.stroked_rects, 0,
+            "left/right NONE 문단 border 는 4면 stroke rectangle 으로 렌더되면 안 됨"
+        );
+        assert_eq!(
+            counts.vertical_lines, 0,
+            "left/right NONE 문단 border 는 좌우 수직선을 렌더하면 안 됨"
+        );
+        assert!(
+            counts.horizontal_lines >= 1,
+            "top/bottom SOLID 문단 border 는 가로선을 렌더해야 함. lines={:?}",
+            counts.line_summaries
+        );
+    }
+
+    /// Task #1205 Stage 3: 4면이 모두 같은 visible stroke 이고 partial skip 이
+    /// 없을 때만 기존 단일 Rectangle stroke 경로를 사용할 수 있다.
+    #[test]
+    fn task_1205_rect_stroke_path_requires_four_visible_same_stroke() {
+        let hidden = BorderLine {
+            line_type: BorderLineType::None,
+            width: 1,
+            color: 0,
+        };
+        let visible = BorderLine {
+            line_type: BorderLineType::Solid,
+            width: 1,
+            color: 0,
+        };
+        let different_width = BorderLine {
+            width: 2,
+            ..visible
+        };
+
+        assert!(
+            super::super::para_border_can_use_rect_stroke(
+                &[visible, visible, visible, visible],
+                false,
+                false,
+            ),
+            "4면 동일 visible 문단 border 는 기존 Rectangle stroke 경로를 사용할 수 있어야 함"
+        );
+        assert!(
+            !super::super::para_border_can_use_rect_stroke(
+                &[hidden, hidden, visible, visible],
+                false,
+                false,
+            ),
+            "NONE side 가 있으면 Rectangle stroke 경로를 사용하면 안 됨"
+        );
+        assert!(
+            !super::super::para_border_can_use_rect_stroke(
+                &[visible, visible, different_width, visible],
+                false,
+                false,
+            ),
+            "side별 stroke 가 다르면 Rectangle stroke 경로를 사용하면 안 됨"
+        );
+        assert!(
+            !super::super::para_border_can_use_rect_stroke(
+                &[visible, visible, visible, visible],
+                false,
+                true,
+            ),
+            "partial skip 이 있으면 Rectangle stroke 경로를 사용하면 안 됨"
         );
     }
 

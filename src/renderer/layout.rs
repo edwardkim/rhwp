@@ -53,6 +53,27 @@ struct ColumnItemCtx<'a> {
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
 }
 
+fn para_border_is_visible(border: &BorderLine) -> bool {
+    !matches!(border.line_type, BorderLineType::None)
+}
+
+fn para_border_same_stroke(a: &BorderLine, b: &BorderLine) -> bool {
+    a.line_type == b.line_type && a.width == b.width && a.color == b.color
+}
+
+fn para_border_can_use_rect_stroke(
+    borders: &[BorderLine; 4],
+    skip_top: bool,
+    skip_bottom: bool,
+) -> bool {
+    borders.iter().all(para_border_is_visible)
+        && borders[1..]
+            .iter()
+            .all(|border| para_border_same_stroke(&borders[0], border))
+        && !skip_top
+        && !skip_bottom
+}
+
 /// `Square/어울림` 그림이 문단 중간부터 본문을 감싸는 경우, HWP5는
 /// `LINE_SEG`에서 그림 옆으로 좁아지는 첫 줄의 `vertical_pos`를 저장한다.
 /// 개체 자체도 그 줄의 top에 맞춰야 한컴의 “서로 자리를 침범하지 않는”
@@ -3452,22 +3473,20 @@ impl LayoutEngine {
                     let idx = (bf_id as usize).saturating_sub(1);
                     let border_style = styles.border_styles.get(idx);
                     let fill_color = border_style.and_then(|bs| bs.fill_color);
-                    let (stroke_color, stroke_width) = if let Some(bs) = border_style {
-                        let any_real_width = bs.borders.iter().any(|b| {
-                            !matches!(b.line_type, crate::model::style::BorderLineType::None)
-                        });
-                        if any_real_width {
-                            let top = &bs.borders[2];
-                            (
-                                Some(top.color),
-                                super::layout::border_rendering::border_width_to_px(top.width),
-                            )
-                        } else {
-                            (None, 0.0)
-                        }
-                    } else {
-                        (None, 0.0)
-                    };
+                    let borders = border_style.map(|bs| bs.borders);
+                    let stroke_width = borders
+                        .map(|borders| {
+                            borders
+                                .iter()
+                                .filter(|border| para_border_is_visible(border))
+                                .map(|border| {
+                                    super::layout::border_rendering::border_width_to_px(
+                                        border.width,
+                                    )
+                                })
+                                .fold(0.0, f64::max)
+                        })
+                        .unwrap_or(0.0);
                     // Task #321 v6: ParaShape::border_spacing 정식 반영 + stroke 있을 때 default 2px 최소.
                     // 인접 border 그룹과 충돌 방지를 위해 인접 경계는 inset 0.
                     const DEFAULT_MIN_INSET: f64 = 2.0;
@@ -3492,8 +3511,15 @@ impl LayoutEngine {
                     // Wrap inner edge 처리: partial_start 면 top, partial_end 면 bottom 미렌더링.
                     let skip_top = stroke_width > 0.0 && is_partial_start;
                     let skip_bottom = stroke_width > 0.0 && is_partial_end;
-                    if !skip_top && !skip_bottom {
+                    let can_use_rect_stroke = borders
+                        .map(|borders| {
+                            para_border_can_use_rect_stroke(&borders, skip_top, skip_bottom)
+                        })
+                        .unwrap_or(false);
+                    if can_use_rect_stroke {
                         // 기존 경로: 단일 Rectangle (fill + 4면 stroke)
+                        let stroke_border =
+                            borders.expect("can_use_rect_stroke requires borders")[0];
                         let rect_id = tree.next_id();
                         let rect_node = RenderNode::new(
                             rect_id,
@@ -3501,8 +3527,11 @@ impl LayoutEngine {
                                 0.0,
                                 super::ShapeStyle {
                                     fill_color,
-                                    stroke_color,
-                                    stroke_width,
+                                    stroke_color: Some(stroke_border.color),
+                                    stroke_width:
+                                        super::layout::border_rendering::border_width_to_px(
+                                            stroke_border.width,
+                                        ),
                                     ..Default::default()
                                 },
                                 None,
@@ -3530,43 +3559,32 @@ impl LayoutEngine {
                             );
                             col_node.children.insert(0, rect_node);
                         }
-                        let line_style = super::LineStyle {
-                            color: stroke_color.unwrap_or(0),
-                            width: stroke_width,
-                            ..Default::default()
-                        };
-                        let mut push_line = |x1: f64, y1: f64, x2: f64, y2: f64| {
-                            let lid = tree.next_id();
-                            let lnode = RenderNode::new(
-                                lid,
-                                RenderNodeType::Line(super::render_tree::LineNode::new(
-                                    x1,
-                                    y1,
-                                    x2,
-                                    y2,
-                                    line_style.clone(),
-                                )),
-                                super::render_tree::BoundingBox::new(
-                                    x1.min(x2),
-                                    y1.min(y2),
-                                    (x2 - x1).abs().max(stroke_width),
-                                    (y2 - y1).abs().max(stroke_width),
-                                ),
-                            );
-                            col_node.children.insert(0, lnode);
-                        };
+                        let mut push_border_line =
+                            |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
+                                if !para_border_is_visible(border) {
+                                    return;
+                                }
+                                let nodes =
+                                    super::layout::border_rendering::create_border_line_nodes(
+                                        tree, border, x1, y1, x2, y2,
+                                    );
+                                for node in nodes {
+                                    col_node.children.insert(0, node);
+                                }
+                            };
                         let x_left = x;
                         let x_right = x + w;
                         let y_top = rect_y;
                         let y_bot = rect_y + rect_h;
-                        // 좌·우 수직선은 항상 렌더
-                        push_line(x_left, y_top, x_left, y_bot);
-                        push_line(x_right, y_top, x_right, y_bot);
-                        if !skip_top {
-                            push_line(x_left, y_top, x_right, y_top);
-                        }
-                        if !skip_bottom {
-                            push_line(x_left, y_bot, x_right, y_bot);
+                        if let Some(borders) = borders {
+                            push_border_line(&borders[0], x_left, y_top, x_left, y_bot);
+                            push_border_line(&borders[1], x_right, y_top, x_right, y_bot);
+                            if !skip_top {
+                                push_border_line(&borders[2], x_left, y_top, x_right, y_top);
+                            }
+                            if !skip_bottom {
+                                push_border_line(&borders[3], x_left, y_bot, x_right, y_bot);
+                            }
                         }
                     }
                 }

@@ -23,10 +23,7 @@
 <clipPath id="cell-clip-155"><rect x="214.42666666666668" y="916.4533333333334" width="467.85333333333335" height="99.32"/></clipPath>
 </defs>
 <rect x="0" y="0" width="793.7066666666667" height="1122.5066666666667" fill="#ffffff"/>
-<g clip-path="url(#body-clip-3)"><rect x="60.00000000000001" y="1023.32" width="686.6666666666667" height="70.01333333333343" fill="none"/>
-<rect x="60.00000000000001" y="420.73333333333335" width="686.6666666666667" height="376.5866666666667" fill="none"/>
-<rect x="60.00000000000001" y="60.00000000000001" width="686.6666666666667" height="182.4" fill="none"/>
-<text x="343.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">주</text>
+<g clip-path="url(#body-clip-3)"><text x="343.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">주</text>
 <text x="359.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">주</text>
 <text x="375.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">총</text>
 <text x="391.33333333333337" y="124.80000000000001" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">회</text>
