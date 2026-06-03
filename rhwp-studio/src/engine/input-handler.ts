@@ -17,7 +17,7 @@ import type { CommandPalette } from '@/ui/command-palette';
 import type { CellSelectionRenderer } from './cell-selection-renderer';
 import type { TableObjectRenderer } from './table-object-renderer';
 import type { TableResizeRenderer, BorderEdge } from './table-resize-renderer';
-import type { CellBbox } from '@/core/types';
+import type { CellBbox, CellPathLike } from '@/core/types';
 import * as _mouse from './input-handler-mouse';
 import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
@@ -172,7 +172,7 @@ export class InputHandler {
   private isPictureResizeDragging = false;
   private pictureResizeState: {
     dir: string;
-    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' };
+    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
     origWidth: number;
     origHeight: number;
     origHorzOffset?: number;
@@ -188,7 +188,7 @@ export class InputHandler {
   // 그림/글상자 이동 드래그 상태
   private isPictureMoveDragging = false;
   private pictureMoveState: {
-    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' };
+    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
     origHorzOffset: number;
     origVertOffset: number;
     startPageX: number;
@@ -205,7 +205,7 @@ export class InputHandler {
   // 그림/글상자 회전 드래그 상태
   private isPictureRotateDragging = false;
   private pictureRotateState: {
-    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' };
+    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
     origAngle: number;      // 드래그 시작 시 원래 회전각 (도)
     centerX: number;        // 도형 중심 (scroll-content 좌표, px)
     centerY: number;

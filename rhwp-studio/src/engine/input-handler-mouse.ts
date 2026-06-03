@@ -304,7 +304,7 @@ export function onClick(this: any, e: MouseEvent): void {
                 const startAngle = Math.atan2(cy - objCy, cx - objCx);
                 this.isPictureRotateDragging = true;
                 this.pictureRotateState = {
-                  ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type },
+                  ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type, cellPath: ref.cellPath, headerFooter: ref.headerFooter },
                   origAngle,
                   centerX: objCx,
                   centerY: objCy,
@@ -320,7 +320,7 @@ export function onClick(this: any, e: MouseEvent): void {
               this.isPictureResizeDragging = true;
               this.pictureResizeState = {
                 dir,
-                ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type },
+                ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type, cellPath: ref.cellPath, headerFooter: ref.headerFooter },
                 origWidth: props.width,
                 origHeight: props.height,
                 origHorzOffset: props.horzOffset,
@@ -366,7 +366,7 @@ export function onClick(this: any, e: MouseEvent): void {
                   e.preventDefault();
                   this.isPictureMoveDragging = true;
                   this.pictureMoveState = {
-                    ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type },
+                    ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type, cellPath: ref.cellPath, headerFooter: ref.headerFooter },
                     origHorzOffset: props.horzOffset,
                     origVertOffset: props.vertOffset,
                     startPageX: px, startPageY: py,
