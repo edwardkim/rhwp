@@ -8,6 +8,7 @@
 - `samples/3-09월_교육_통합_2024-미주사이20.hwp` 10쪽 `문8)` 미주 제목과 직전 수식 겹침
 - 같은 10쪽 오른쪽 단 `문12)` 미주 내용 overflow
 - PR CI에서 드러난 `hwp3-sample16-hwp5*.hwp` 3쪽 TAC Shape trailing 회귀
+- PR CI에서 드러난 `table-in-tbox.hwp` 1쪽 글상자 바깥 hit-test 회귀
 
 ## 원인
 
@@ -15,6 +16,7 @@
 - 문8은 compact 미주 새 문항 제목 보정이 직전 display 수식의 실제 렌더 하단이 아니라 trailing line spacing을 뺀 추정값을 기준으로 삼았다.
 - 문12는 단일줄 빈 미주 separator가 이미 `미주 사이 20mm`를 포함한 상태에서 page-path vpos와 제목 gap 보존이 다시 간격을 더해 오른쪽 단 제목들이 누적 하강했다.
 - PR CI 회귀는 `자리차지` TAC Shape의 빈 host 줄에서 `LINE_SEG.line_height`가 이미 개체 점유 높이를 포함하는데 trailing spacing을 다시 더한 탓이었다.
+- 글상자 바깥 hit-test 회귀는 정확한 bbox hit가 실패한 뒤의 마지막 fallback이 본문 run뿐 아니라 글상자 내부 run까지 후보로 삼아 바깥 클릭을 글상자 첫 문단으로 스냅한 탓이었다.
 
 ## 변경 내용
 
@@ -26,6 +28,9 @@
 - `src/renderer/height_cursor.rs`, `src/renderer/layout.rs`, `src/renderer/typeset.rs`
   - compact 미주 제목 보정이 직전 렌더 콘텐츠 하단과 `미주 사이` 값을 공통 기준으로 사용하도록 정리했다.
   - 확장 미주 사이에서 단일줄 separator 뒤 page-path vpos가 제목을 소폭 아래로 밀 때 간격을 두 번 더하지 않도록 vpos base를 보정했다.
+- `src/document_core/queries/cursor_rect.rs`
+  - 정확한 셀/글상자/본문 hit 이후의 마지막 fallback은 본문 TextRun만 후보로 삼도록 제한했다.
+  - 본문 TextRun이 없는 페이지의 글상자 바깥 클릭은 글상자 내부가 아니라 페이지 본문 시작 위치로 떨어지도록 했다.
 - `tests/issue_1139_inline_picture_duplicate.rs`
   - 문28 조건 박스 하단보다 선택지 첫 줄이 아래에서 시작하는 회귀 테스트를 추가했다.
   - 문8이 직전 수식 하단 뒤 `미주 사이 20mm` 간격을 유지하는지 검증했다.
@@ -39,6 +44,7 @@
 
 - `cargo fmt -- --check`
 - `cargo test --lib height_cursor -- --nocapture`
+- `cargo test --test issue_919_textbox_hit_test -- --nocapture`
 - `cargo test --test issue_1116 -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1261_2022_oct_page5_question28_choices_stay_below_condition_box -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`

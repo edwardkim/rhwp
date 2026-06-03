@@ -1587,18 +1587,29 @@ impl DocumentCore {
             ));
         }
 
-        // 3. 가장 가까운 줄 찾기 (y 거리 기준)
-        // 다단: 클릭 칼럼의 run을 우선 후보로 사용
-        let column_runs: Vec<&RunInfo> = runs
+        // 3. 가장 가까운 본문 줄 찾기 (y 거리 기준)
+        //
+        // 정확한 cell/textbox/body hit가 모두 실패한 뒤의 fallback이다. 여기서
+        // 글상자/셀 run까지 후보에 넣으면 글상자 바깥 클릭이 가장 가까운
+        // 글상자 내부 문단으로 스냅된다.
+        let body_runs: Vec<&RunInfo> = runs.iter().filter(|r| r.cell_context.is_none()).collect();
+        let body_column_runs: Vec<&RunInfo> = body_runs
             .iter()
+            .copied()
             .filter(|r| {
                 click_column.is_none() || r.column_index.is_none() || r.column_index == click_column
             })
             .collect();
-        let candidate_runs = if column_runs.is_empty() {
-            &runs.iter().collect::<Vec<_>>()
+        let candidate_runs = if !body_column_runs.is_empty() {
+            &body_column_runs
+        } else if !body_runs.is_empty() {
+            &body_runs
         } else {
-            &column_runs
+            let (page_content, _, _) = self.find_page(page_num)?;
+            return Ok(format!(
+                "{{\"sectionIndex\":{},\"paragraphIndex\":0,\"charOffset\":0}}",
+                page_content.section_index
+            ));
         };
 
         let closest = candidate_runs
