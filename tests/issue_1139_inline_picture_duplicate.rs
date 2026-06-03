@@ -1367,7 +1367,12 @@ fn issue_1189_2022_nov_pages10_12_rewind_tail_and_equation_scale_match_pdf() {
 }
 
 #[test]
-fn issue_1209_2022_sep_page10_question12_uses_safe_vpos_backtrack() {
+fn issue_1256_2022_sep_page10_question12_keeps_between_notes_gap() {
+    // [Task #1256] 문12 제목 위에는 미주 사이(between-notes, 7mm) 간격이 있어야 한다.
+    // 한컴 PDF(pdf/3-09월_교육_통합_2022.pdf 10쪽) 기준 문11 풀이("k=9") 다음 빈 줄이
+    // 들어가고 문12) 가 시작한다. 종전 #1209 는 저장 LINE_SEG 의 backtrack 위치
+    // (cram, ~398px)를 단언했으나 이는 PDF 갭과 모순이라 #1256 에서 갭 포함 위치로 정정.
+    // 수식 중앙정렬·꼬리 간격(아래 나머지 단언)은 #1209 그대로 유지된다.
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let tree = doc.build_page_render_tree(9).expect("page 10 render tree");
@@ -1385,8 +1390,8 @@ fn issue_1209_2022_sep_page10_question12_uses_safe_vpos_backtrack() {
         .expect("문12 첫 수식");
 
     assert!(
-        (390.0..=406.0).contains(&question12_y),
-        "10쪽 문12 제목은 저장 LINE_SEG의 안전한 되감김 위치를 따라야 함: q12_y={question12_y}"
+        (410.0..=426.0).contains(&question12_y),
+        "10쪽 문12 제목은 한컴 PDF처럼 between-notes(7mm) 갭 포함 위치여야 함(#1256): q12_y={question12_y}"
     );
     assert!(
         (12.0..=30.0).contains(&(question12_body_y - question12_y)),

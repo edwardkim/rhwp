@@ -417,19 +417,46 @@ impl HeightCursor {
         } else {
             y_offset
         };
+        let prev_is_multiline = prev_para.line_segs.len() > 1;
+        let stored_gap_px = result - y_offset;
+        // [Task #1256] 단일 줄 prev(빈 separator)로 끝나는 미주 제목 경계: y_offset 은
+        // typeset 이 주입한 between-notes(7mm) trailing 을 이미 포함하는데, applied/
+        // safe_vpos_backtrack 이 end_y(절대 vpos, 7mm 미포함)로 덮어써 제목을 ~7mm 위로
+        // 끌어올린다(문5/6/7 등 전 문서 15건, delta≈20.4px). y_offset 을 유지하고, 제목을
+        // 내린 만큼 활성 vpos base 를 이동해 후속 미주 항목이 동일 기준을 따르게 한다
+        // (절대-vpos desync/overflow 방지 — #1246/#1082 회귀의 본질). 다줄 prev(문22)는
+        // y_offset 이 7mm 을 못 가지는 별개 경로라 아래 #1246 rescue(+prev_ls)가 담당.
+        let injected_between_notes =
+            self.endnote_between_notes_hu > 0 && seg.line_spacing >= self.endnote_between_notes_hu;
+        if injected_between_notes
+            && compact_endnote_question_title
+            && !vpos_rewind
+            && !prev_is_multiline
+            && stored_gap_px < -0.5
+        {
+            // 베이스라인 result 가 실제로 y_offset 아래(cram)일 때만 복원한다. result 가 이미
+            // y_offset 이면(컬럼 하단 등 backtrack 미발동) base 를 건드리지 않아 spurious
+            // shift(후속 overflow)를 방지한다. base 이동량은 실제 하강분(y_offset - result).
+            let restored_hu = ((y_offset - result) / self.dpi * 7200.0).round() as i32;
+            if restored_hu > 0 {
+                if is_page_path {
+                    self.vpos_page_base = Some(base - restored_hu);
+                } else {
+                    self.vpos_lazy_base = Some(base - restored_hu);
+                }
+            }
+            return y_offset;
+        }
         // [Task #1246] 미주 사이 min-gap: 새 미주 제목이 forward 흐름인데 between-notes 간격을
         // 확보하지 못하면(다줄 풀이로 끝나는 미주 → 직전 다줄 문단 마지막 줄 trailing 이 render
         // 에서 누락 → gap≈0, 문22) 직전 줄간격(주입된 between_notes)만큼 끌어올린다.
-        // - 다줄 prev 한정: 단일줄 prev 는 trailing 이 이미 sequential y(y_offset)에 포함되어
-        //   이중가산 위험 → 제외.
+        // - 다줄 prev 한정: 단일줄 prev 는 위 #1256 분기가 y_offset(주입 7mm 포함) 유지로 처리.
         // - 이미 충분한 간격(result >= y_offset + prev_ls, 3-09월 문15 등)은 무변경(max 의미).
         // - backtrack/rewind 류(result < y_offset)는 위 분기가 의도 선택한 값이므로 제외.
         // #1238 render-클램프가 침범하던 #1209 safe-vpos-backtrack 과 양립(여기선 forward 만).
         // 핵심: stored vpos 가 gap 을 거의 안 주는 경우(≈0)만 보정한다. 다줄 풀이로 끝나는 미주의
         // 마지막 줄 trailing 이 render 에서 누락되어 gap≈0 이 된 케이스(문22)가 대상.
         // stored vpos 가 의도적으로 작은 gap(예: 문13 ~12px)을 인코딩한 경우는 존중(over-lift 방지).
-        let prev_is_multiline = prev_para.line_segs.len() > 1;
-        let stored_gap_px = result - y_offset;
         if self.endnote_between_notes_hu > 0
             && compact_endnote_question_title
             && !vpos_rewind
@@ -974,5 +1001,54 @@ mod tests {
         let got = c.vpos_adjust(y_in, 1, &ps, &styles(0.0));
         // 단일줄 prev → 보정 없음 (stored gap 0 이어도 lift 안 함)
         assert!((got - y_in).abs() < 1e-6, "got={got} expected={y_in}");
+    }
+
+    /// [Task #1256] 단일 줄 prev(빈 separator, ls=between_notes)로 끝나는 미주 제목 경계에서
+    /// safe_vpos_backtrack 이 end_y(주입 7mm 미포함)로 cram 하면, y_offset(7mm 포함)을 유지하고
+    /// 내린 만큼 vpos base 를 이동한다.
+    #[test]
+    fn compact_endnote_between_notes_singleline_prev_keeps_gap_and_shifts_base() {
+        let mut c = compact_endnote_cursor(Some(0)); // page_path, base=0
+        c.endnote_between_notes_hu = 1984;
+        c.prev_layout_para = Some(0);
+        let prev = para(0, 1900, 900, 1984, 5000); // 단일줄 빈 separator, ls=1984(주입 7mm)
+        let mut curr = para(0, 2800, 900, 0, 5000);
+        curr.text = "문7)".to_string();
+        let ps = vec![prev, curr];
+        // end_y = 100 + 2800/75 = 137.333. y_offset=160 → safe_backtrack(end_y<y_offset-8,
+        // end_y>=prev_content_bottom=160-1984/75=133.55, mid-column) 발동 → 베이스라인 cram.
+        let y_offset = 160.0;
+        let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
+        assert!(
+            (got - y_offset).abs() < 1e-6,
+            "y_offset(7mm 포함) 유지해야 함: got={got}"
+        );
+        // 제목을 (160 - 137.333)px 내렸으므로 page base 가 그만큼 음수로 이동.
+        let end_y = 100.0 + 2800.0 / 75.0;
+        let expected_base = -(((y_offset - end_y) / DPI * 7200.0).round() as i32);
+        assert_eq!(
+            c.vpos_page_base,
+            Some(expected_base),
+            "내린 만큼 vpos base 이동해야 후속 항목 desync 방지"
+        );
+    }
+
+    /// [Task #1256] 자연 trailing(ls < between_notes)인 단일 줄 prev 는 injected_between_notes
+    /// 가 아니므로 위 보정 대상이 아니다(backtrack 결과 그대로, base 무이동).
+    #[test]
+    fn compact_endnote_between_notes_skips_natural_trailing_prev() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.endnote_between_notes_hu = 1984;
+        c.prev_layout_para = Some(0);
+        let prev = para(0, 1900, 900, 180, 5000); // 자연 trailing(180 < 1984)
+        let mut curr = para(0, 2800, 900, 0, 5000);
+        curr.text = "문7)".to_string();
+        let ps = vec![prev, curr];
+        let base_before = c.vpos_page_base;
+        let got = c.vpos_adjust(160.0, 1, &ps, &styles(0.0));
+        // injected_between_notes=false → #1256 분기 미발동. base 무변경.
+        assert_eq!(c.vpos_page_base, base_before, "base 무이동");
+        // 보정 분기를 타지 않으므로 y_offset 유지(cram 아님) 또는 backtrack — 핵심은 base 무이동.
+        let _ = got;
     }
 }
