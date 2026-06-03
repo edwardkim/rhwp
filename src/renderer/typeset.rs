@@ -2056,6 +2056,7 @@ impl TypesetEngine {
             let mut prev_en_bottom_vpos: Option<i32> = st.prev_body_bottom_vpos;
             let mut prev_endnote_had_vpos_rewind = false;
             let mut prev_endnote_had_inline_object_vpos_overestimate = false;
+            let mut cleared_single_line_internal_rewind_split = false;
             let mut emitted_endnote_separator = false;
             let mut emitted_endnote_count = 0usize;
             let mut last_render_endnote_para_local_idx: Option<usize> = None;
@@ -2214,8 +2215,19 @@ impl TypesetEngine {
                                         .unwrap_or(0);
                                     let extra_gap = (between_notes - prev_spacing).max(0);
                                     if extra_gap > 0 {
+                                        // split=1 내부 rewind를 가짜 단 분할로 보고 해소한 뒤에는
+                                        // 그 분할이 만들던 암묵적 여백이 사라진다. 큰 미주 사이
+                                        // 문서에서는 다음 미주 경계부터 전체 between-notes 값을
+                                        // 예약해 PDF의 24쪽 흐름을 유지한다.
                                         let pagination_gap =
-                                            endnote_between_notes_pagination_margin(shape);
+                                            if cleared_single_line_internal_rewind_split
+                                                && between_notes
+                                                    > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                            {
+                                                between_notes
+                                            } else {
+                                                endnote_between_notes_pagination_margin(shape)
+                                            };
                                         if pagination_gap > 0 {
                                             vpos_offset += pagination_gap;
                                         }
@@ -2399,7 +2411,7 @@ impl TypesetEngine {
                                         && st.current_height > available * 0.65
                                 })
                                 .unwrap_or(false);
-                            let internal_rewind_split = if compact_endnote_separator_profile
+                            let mut internal_rewind_split = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && (st.current_height > available * 0.75 || saved_page_reset_rewind)
                                 && para_has_visible_text_or_equation(en_para)
@@ -2604,6 +2616,10 @@ impl TypesetEngine {
                             if advance_for_fit {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
+                                if internal_rewind_split == Some(1) {
+                                    internal_rewind_split = None;
+                                    cleared_single_line_internal_rewind_split = true;
+                                }
                             }
                             let new_endnote_advance_threshold = if default_between_notes_gap {
                                 if st.current_column + 1 < st.col_count {
