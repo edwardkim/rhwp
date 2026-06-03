@@ -9,6 +9,7 @@ pub mod document_core;
 pub mod emf;
 pub mod error;
 pub mod model;
+pub mod ole_chart;
 pub mod ooxml_chart;
 pub mod paint;
 pub mod parser;

@@ -43,10 +43,12 @@ console_error_panic_hook = { version = "0.1", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
+charming-renderer = ["dep:charming"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+charming = { version = "0.6", optional = true, default-features = false, features = ["ssr"] }
 svg2pdf = "0.13"
 usvg = "0.45"
 resvg = { version = "0.47", optional = true }

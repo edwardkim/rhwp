@@ -22,6 +22,46 @@ use crate::model::shape::CommonObjAttr;
 use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
 use crate::model::style::Alignment;
 
+fn push_placeholder_render_node(
+    tree: &mut PageRenderTree,
+    parent: &mut RenderNode,
+    bbox: BoundingBox,
+    fill_color: u32,
+    stroke_color: u32,
+    label: String,
+) {
+    let node_id = tree.next_id();
+    let node = RenderNode::new(
+        node_id,
+        RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode {
+            fill_color,
+            stroke_color,
+            label,
+        }),
+        bbox,
+    );
+    parent.children.push(node);
+}
+
+fn push_raw_svg_render_node(
+    tree: &mut PageRenderTree,
+    parent: &mut RenderNode,
+    bbox: BoundingBox,
+    svg: String,
+) {
+    let node_id = tree.next_id();
+    let node = RenderNode::new(
+        node_id,
+        RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode { svg }),
+        bbox,
+    );
+    parent.children.push(node);
+}
+
+fn ole_chart_fallback_label(message: impl AsRef<str>, bin_data_id: u32) -> String {
+    format!("{} (BinData #{bin_data_id})", message.as_ref())
+}
+
 fn measure_composed_text_range_width(
     composed: &ComposedParagraph,
     styles: &ResolvedStyleSet,
@@ -1454,18 +1494,57 @@ impl LayoutEngine {
                                 {
                                     let svg_fragment =
                                         chart.render_svg(render_x, render_y, render_w, render_h);
-                                    let node_id = tree.next_id();
-                                    let node = RenderNode::new(
-                                        node_id,
-                                        RenderNodeType::RawSvg(
-                                            crate::renderer::render_tree::RawSvgNode {
-                                                svg: svg_fragment,
-                                            },
-                                        ),
+                                    push_raw_svg_render_node(
+                                        tree,
+                                        parent,
                                         BoundingBox::new(render_x, render_y, render_w, render_h),
+                                        svg_fragment,
                                     );
-                                    parent.children.push(node);
                                     rendered = true;
+                                }
+                            }
+
+                            // Issue #1251: legacy HWP chart `Contents` stream.
+                            if !rendered {
+                                if let Some(raw_contents) = container.raw_contents.as_ref() {
+                                    match crate::ole_chart::parse_ole_chart_contents(raw_contents) {
+                                        Ok(ole_chart) => {
+                                            let svg_fragment =
+                                                crate::ole_chart::render_ole_chart_svg_fragment(
+                                                    &ole_chart,
+                                                    render_x,
+                                                    render_y,
+                                                    render_w,
+                                                    render_h,
+                                                    ole.bin_data_id,
+                                                );
+                                            push_raw_svg_render_node(
+                                                tree,
+                                                parent,
+                                                BoundingBox::new(
+                                                    render_x, render_y, render_w, render_h,
+                                                ),
+                                                svg_fragment,
+                                            );
+                                            rendered = true;
+                                        }
+                                        Err(error) => {
+                                            push_placeholder_render_node(
+                                                tree,
+                                                parent,
+                                                BoundingBox::new(
+                                                    render_x, render_y, render_w, render_h,
+                                                ),
+                                                0xFFFFF4E5,
+                                                0xFFB45F06,
+                                                ole_chart_fallback_label(
+                                                    error.stable_message(),
+                                                    ole.bin_data_id,
+                                                ),
+                                            );
+                                            rendered = true;
+                                        }
+                                    }
                                 }
                             }
 
