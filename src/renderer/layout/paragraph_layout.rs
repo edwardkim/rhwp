@@ -469,12 +469,14 @@ fn has_treat_as_char_picture_or_shape(para: Option<&Paragraph>) -> bool {
 
 fn is_blank_spacer_line(
     para: Option<&Paragraph>,
+    is_endnote_virtual_para: bool,
     runs_all_whitespace: bool,
     line_tac_offsets: &[(usize, f64, usize)],
 ) -> bool {
-    runs_all_whitespace
-        && line_tac_offsets.is_empty()
-        && para.map(|p| p.controls.is_empty()).unwrap_or(false)
+    if !runs_all_whitespace || !line_tac_offsets.is_empty() {
+        return false;
+    }
+    is_endnote_virtual_para || para.map(|p| p.controls.is_empty()).unwrap_or(false)
 }
 
 fn tac_picture_label_extra_px(
@@ -1878,12 +1880,15 @@ impl LayoutEngine {
             let col_bottom = col_area.y + col_area.height;
             let line_visual_bottom = text_y + line_height;
             let is_body_flow_col_area = self.is_body_flow_col_area(col_area);
-            let blank_spacer_line =
-                is_blank_spacer_line(para, runs_all_whitespace, &line_tac_offsets);
+            let is_endnote_virtual_para = para_index >= self.endnote_para_base.get();
+            let blank_spacer_line = is_blank_spacer_line(
+                para,
+                is_endnote_virtual_para,
+                runs_all_whitespace,
+                &line_tac_offsets,
+            );
             let tolerated_endnote_bottom_bleed = is_tolerated_endnote_column_bottom_bleed(
-                is_body_flow_col_area
-                    && cell_ctx.is_none()
-                    && para_index >= self.endnote_para_base.get(),
+                is_body_flow_col_area && cell_ctx.is_none() && is_endnote_virtual_para,
                 line_visual_bottom,
                 col_bottom,
             );
