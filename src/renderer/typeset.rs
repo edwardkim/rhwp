@@ -3814,22 +3814,38 @@ impl TypesetEngine {
                     // 표라도 cur_h 누적이 컬럼 분배에 필요 (exam_eng.hwp p4 27번 보기 그림 위
                     // 데코레이션 표 회귀 차단).
                     //
-                    // [Task #992] 페이지 본문보다 큰 다행(多行) 표는 데코레이션이 아니라
+                    // [Task #992] 페이지 본문보다 큰 다행(多行) 표는 대개 데코레이션이 아니라
                     // 쪽 분할이 필요한 본문 표다. 데코레이션 단축 분기에서 제외해 정상
                     // 페이지네이션(format_table → typeset_block_table)을 타게 한다.
                     // 제외하지 않으면 페이지보다 큰 표가 한 페이지에 통째로 그려져
                     // 본문 영역을 넘는다.
+                    //
+                    // [Issue #1271] 단, HWPX paper-anchored BehindText/InFrontOfText 표는
+                    // rowBreak/repeatHeader 가 있어도 본문 흐름을 밀지 않는 페이지 배경/전경
+                    // 개체일 수 있다. 특히 cover/background 라벨 표처럼 종이 기준 절대좌표인
+                    // 표를 oversized_multirow 로 본문 분할하면 PDF에 없는 PartialTable 쪽이
+                    // 생겨 이후 바탕쪽 홀짝까지 한 쪽씩 밀린다.
                     // 워터마크/배경 데코레이션(글뒤로 1×1 래퍼 등, Issue #703)은
                     // 본문보다 작아 단축 분기를 그대로 탄다 — page_break/repeat_header
                     // 만으로는 구분 불가(calendar_year.hwp 1×1 래퍼도 RowBreak +
                     // repeat_header 비트를 가짐).
+                    let paper_anchored_overlay_table = !table.common.treat_as_char
+                        && matches!(
+                            table.common.vert_rel_to,
+                            crate::model::shape::VertRelTo::Paper
+                        )
+                        && matches!(
+                            table.common.horz_rel_to,
+                            crate::model::shape::HorzRelTo::Paper
+                        );
                     let table_measured_h = measured_tables
                         .iter()
                         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx)
                         .map(|mt| mt.total_height)
                         .unwrap_or(0.0);
-                    let oversized_multirow =
-                        table.row_count > 1 && table_measured_h > st.base_available_height();
+                    let oversized_multirow = table.row_count > 1
+                        && table_measured_h > st.base_available_height()
+                        && !paper_anchored_overlay_table;
                     if matches!(
                         table.common.text_wrap,
                         crate::model::shape::TextWrap::InFrontOfText
