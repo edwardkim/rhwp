@@ -779,6 +779,7 @@ export function finishPictureMoveDrag(this: any): void {
             r.sec, r.ppi, r.ci,
             totalDeltaH, totalDeltaV,
             r.origHorzOffset, r.origVertOffset,
+            r.cellPath,
           ),
         );
       }

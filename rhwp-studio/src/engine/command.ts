@@ -699,6 +699,39 @@ export class MoveTableCommand implements EditCommand {
 
 // ─── 그림 이동 명령 ─────────────────────────────────────
 
+/** 두 cellPath 가 동일한지 비교 (undefined/빈배열은 본문(body-level)로 동일 취급) */
+function sameCellPath(a?: CellPathLike, b?: CellPathLike): boolean {
+  return JSON.stringify(a ?? []) === JSON.stringify(b ?? []);
+}
+
+/** 개체 이동 명령용 속성 조회 — cellPath 존재 시 by-path API 로 분기 */
+function moveGetProps(
+  wasm: WasmBridge, kind: 'image' | 'shape',
+  sec: number, ppi: number, ci: number, cellPath?: CellPathLike,
+): { horzOffset: number; vertOffset: number } {
+  const nested = !!cellPath && cellPath.length > 0;
+  if (kind === 'shape') {
+    return nested ? wasm.getCellShapePropertiesByPath(sec, ppi, cellPath!, ci) : wasm.getShapeProperties(sec, ppi, ci);
+  }
+  return nested ? wasm.getCellPicturePropertiesByPath(sec, ppi, cellPath!, ci) : wasm.getPictureProperties(sec, ppi, ci);
+}
+
+/** 개체 이동 명령용 속성 변경 — cellPath 존재 시 by-path API 로 분기 */
+function moveSetProps(
+  wasm: WasmBridge, kind: 'image' | 'shape',
+  sec: number, ppi: number, ci: number, cellPath: CellPathLike | undefined,
+  props: Record<string, unknown>,
+): void {
+  const nested = !!cellPath && cellPath.length > 0;
+  if (kind === 'shape') {
+    if (nested) { wasm.setCellShapePropertiesByPath(sec, ppi, cellPath!, ci, props); return; }
+    wasm.setShapeProperties(sec, ppi, ci, props);
+    return;
+  }
+  if (nested) { wasm.setCellPicturePropertiesByPath(sec, ppi, cellPath!, ci, props); return; }
+  wasm.setPictureProperties(sec, ppi, ci, props);
+}
+
 export class MovePictureCommand implements EditCommand {
   readonly type = 'movePicture';
   readonly timestamp: number;
@@ -711,14 +744,15 @@ export class MovePictureCommand implements EditCommand {
     private deltaV: number,
     private origHorzOffset: number,
     private origVertOffset: number,
+    private cellPath?: CellPathLike,
     timestamp?: number,
   ) {
     this.timestamp = timestamp ?? Date.now();
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    const props = wasm.getPictureProperties(this.sec, this.ppi, this.ci);
-    wasm.setPictureProperties(this.sec, this.ppi, this.ci, {
+    const props = moveGetProps(wasm, 'image', this.sec, this.ppi, this.ci, this.cellPath);
+    moveSetProps(wasm, 'image', this.sec, this.ppi, this.ci, this.cellPath, {
       horzOffset: ((props.horzOffset + this.deltaH) >>> 0),
       vertOffset: ((props.vertOffset + this.deltaV) >>> 0),
     });
@@ -726,7 +760,7 @@ export class MovePictureCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.setPictureProperties(this.sec, this.ppi, this.ci, {
+    moveSetProps(wasm, 'image', this.sec, this.ppi, this.ci, this.cellPath, {
       horzOffset: this.origHorzOffset,
       vertOffset: this.origVertOffset,
     });
@@ -736,6 +770,7 @@ export class MovePictureCommand implements EditCommand {
   mergeWith(other: EditCommand): EditCommand | null {
     if (!(other instanceof MovePictureCommand)) return null;
     if (other.sec !== this.sec || other.ppi !== this.ppi || other.ci !== this.ci) return null;
+    if (!sameCellPath(other.cellPath, this.cellPath)) return null;
     if (other.timestamp - this.timestamp > 500) return null;
 
     return new MovePictureCommand(
@@ -744,6 +779,7 @@ export class MovePictureCommand implements EditCommand {
       this.deltaV + other.deltaV,
       this.origHorzOffset,
       this.origVertOffset,
+      this.cellPath,
       this.timestamp,
     );
   }
@@ -761,14 +797,15 @@ export class MoveShapeCommand implements EditCommand {
     private deltaV: number,
     private origHorzOffset: number,
     private origVertOffset: number,
+    private cellPath?: CellPathLike,
     timestamp?: number,
   ) {
     this.timestamp = timestamp ?? Date.now();
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    const props = wasm.getShapeProperties(this.sec, this.ppi, this.ci);
-    wasm.setShapeProperties(this.sec, this.ppi, this.ci, {
+    const props = moveGetProps(wasm, 'shape', this.sec, this.ppi, this.ci, this.cellPath);
+    moveSetProps(wasm, 'shape', this.sec, this.ppi, this.ci, this.cellPath, {
       horzOffset: ((props.horzOffset + this.deltaH) >>> 0),
       vertOffset: ((props.vertOffset + this.deltaV) >>> 0),
     });
@@ -776,7 +813,7 @@ export class MoveShapeCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.setShapeProperties(this.sec, this.ppi, this.ci, {
+    moveSetProps(wasm, 'shape', this.sec, this.ppi, this.ci, this.cellPath, {
       horzOffset: this.origHorzOffset,
       vertOffset: this.origVertOffset,
     });
@@ -786,6 +823,7 @@ export class MoveShapeCommand implements EditCommand {
   mergeWith(other: EditCommand): EditCommand | null {
     if (!(other instanceof MoveShapeCommand)) return null;
     if (other.sec !== this.sec || other.ppi !== this.ppi || other.ci !== this.ci) return null;
+    if (!sameCellPath(other.cellPath, this.cellPath)) return null;
     if (other.timestamp - this.timestamp > 500) return null;
 
     return new MoveShapeCommand(
@@ -794,6 +832,7 @@ export class MoveShapeCommand implements EditCommand {
       this.deltaV + other.deltaV,
       this.origHorzOffset,
       this.origVertOffset,
+      this.cellPath,
       this.timestamp,
     );
   }
