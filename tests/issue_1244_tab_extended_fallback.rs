@@ -20,7 +20,8 @@ fn issue_1244_inserted_tab_has_marker_after_roundtrip() {
     let mut core = DocumentCore::from_bytes(&blank).expect("blank 로드 실패");
 
     // 탭 문자 삽입 (section=0, para=0, offset=0)
-    core.insert_text_native(0, 0, 0, "\t").expect("탭 삽입 실패");
+    core.insert_text_native(0, 0, 0, "\t")
+        .expect("탭 삽입 실패");
 
     // HWP 직렬화
     let hwp_bytes = core.export_hwp_native().expect("HWP 직렬화 실패");
@@ -47,7 +48,8 @@ fn issue_1244_multiple_inserted_tabs_all_have_marker() {
     let blank = load_blank();
     let mut core = DocumentCore::from_bytes(&blank).expect("blank 로드 실패");
 
-    core.insert_text_native(0, 0, 0, "가\t나\t다").expect("삽입 실패");
+    core.insert_text_native(0, 0, 0, "가\t나\t다")
+        .expect("삽입 실패");
 
     let hwp_bytes = core.export_hwp_native().expect("HWP 직렬화 실패");
     let doc = rhwp::parser::parse_hwp(&hwp_bytes).expect("재파싱 실패");
