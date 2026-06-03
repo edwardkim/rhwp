@@ -24,6 +24,7 @@ export class FindDialog {
   private replaceButtonRow!: HTMLDivElement;
   private statusLabel!: HTMLSpanElement;
   private titleLabel!: HTMLSpanElement;
+  private keyCaptureHandler: ((e: KeyboardEvent) => void) | null = null;
 
   /** 현재 검색 결과 (바꾸기 시 위치 참조용) */
   private currentHit: SearchResult | null = null;
@@ -43,11 +44,13 @@ export class FindDialog {
     this.queryInput.value = FindDialog.lastQuery;
     this.caseSensitiveCheck.checked = FindDialog.lastCaseSensitive;
     this.applyMode();
+    this.installKeyCaptureHandler();
     this.focusInput();
   }
 
   hide(): void {
     this._open = false;
+    this.removeKeyCaptureHandler();
     this.wrap?.remove();
   }
 
@@ -100,16 +103,7 @@ export class FindDialog {
     this.queryInput = document.createElement('input');
     this.queryInput.type = 'text';
     this.queryInput.className = 'find-dialog-input';
-    this.queryInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.doSearch(!e.shiftKey);
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        this.hide();
-      }
-      e.stopPropagation();
-    });
+    this.queryInput.addEventListener('keydown', (e) => e.stopPropagation());
     this.queryInput.addEventListener('keyup', (e) => e.stopPropagation());
     this.queryInput.addEventListener('keypress', (e) => e.stopPropagation());
     findRow.appendChild(findLabel);
@@ -125,16 +119,7 @@ export class FindDialog {
     this.replaceInput = document.createElement('input');
     this.replaceInput.type = 'text';
     this.replaceInput.className = 'find-dialog-input';
-    this.replaceInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.doReplace();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        this.hide();
-      }
-      e.stopPropagation();
-    });
+    this.replaceInput.addEventListener('keydown', (e) => e.stopPropagation());
     this.replaceInput.addEventListener('keyup', (e) => e.stopPropagation());
     this.replaceInput.addEventListener('keypress', (e) => e.stopPropagation());
     this.replaceRow.appendChild(replaceLabel);
@@ -189,6 +174,48 @@ export class FindDialog {
     btn.textContent = text;
     btn.addEventListener('click', handler);
     return btn;
+  }
+
+  private installKeyCaptureHandler(): void {
+    if (this.keyCaptureHandler) return;
+    this.keyCaptureHandler = (e: KeyboardEvent) => {
+      if (!this._open) return;
+      const target = e.target as Node | null;
+      const isInDialog = Boolean(target && this.wrap.contains(target));
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.hide();
+        return;
+      }
+
+      if (this.isFindEnter(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (target === this.replaceInput && !e.shiftKey) this.doReplace();
+        else this.doSearch(!e.shiftKey);
+        this.focusInput();
+        return;
+      }
+
+      if (isInDialog) e.stopPropagation();
+    };
+    document.addEventListener('keydown', this.keyCaptureHandler, true);
+  }
+
+  private removeKeyCaptureHandler(): void {
+    if (!this.keyCaptureHandler) return;
+    document.removeEventListener('keydown', this.keyCaptureHandler, true);
+    this.keyCaptureHandler = null;
+  }
+
+  private isFindEnter(e: KeyboardEvent): boolean {
+    return e.key === 'Enter'
+      && !e.altKey
+      && !e.ctrlKey
+      && !e.metaKey
+      && !e.isComposing;
   }
 
   private applyMode(): void {
