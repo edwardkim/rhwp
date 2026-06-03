@@ -304,6 +304,17 @@ fn paragraph_by_global_index<'a>(
     }
 }
 
+fn page_item_para_index(item: &PageItem) -> Option<usize> {
+    match item {
+        PageItem::FullParagraph { para_index }
+        | PageItem::PartialParagraph { para_index, .. }
+        | PageItem::Table { para_index, .. }
+        | PageItem::PartialTable { para_index, .. }
+        | PageItem::Shape { para_index, .. } => Some(*para_index),
+        PageItem::EndnoteSeparator { .. } => None,
+    }
+}
+
 fn square_picture_wrap_anchor_for_para(
     st: &TypesetState,
     body_paragraphs: &[Paragraph],
@@ -2662,6 +2673,53 @@ impl TypesetEngine {
                                             > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
                                     })
                                     .unwrap_or(false);
+                            let large_between_notes_head_near_bottom =
+                                cleared_single_line_internal_rewind_split
+                                    && !default_between_notes_gap
+                                    && ep_idx == 0
+                                    && st.current_column + 1 >= st.col_count
+                                    && new_endnote_between_notes_px
+                                        .map(|gap| {
+                                            let reserved_head =
+                                                en_fit.max(fmt.line_advance(0) + gap);
+                                            st.current_height + reserved_head
+                                                > available
+                                                    - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                        })
+                                        .unwrap_or(false);
+                            let large_between_notes_vpos_head_outside =
+                                large_between_notes_head_near_bottom
+                                    || (cleared_single_line_internal_rewind_split
+                                        && !default_between_notes_gap
+                                        && ep_idx == 0
+                                        && st.current_column + 1 >= st.col_count
+                                        && st.current_height > available * 0.75
+                                        && st
+                                            .current_items
+                                            .iter()
+                                            .filter_map(page_item_para_index)
+                                            .find_map(|pi| {
+                                                paragraph_by_global_index(
+                                                    paragraphs,
+                                                    &st.endnote_paragraphs,
+                                                    pi,
+                                                )
+                                                .and_then(|p| p.line_segs.first())
+                                                .map(|s| s.vertical_pos)
+                                            })
+                                            .and_then(|base_vpos| {
+                                                this_first_offset.map(|first_vpos| {
+                                                    let predicted_y = hwpunit_to_px(
+                                                        (first_vpos - base_vpos).max(0),
+                                                        self.dpi,
+                                                    );
+                                                    predicted_y + fmt.line_advance(0)
+                                                        > available
+                                                            - 2.0
+                                                                * ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                                })
+                                            })
+                                            .unwrap_or(false));
                             let advance_for_new_endnote = st.col_count > 1
                                 && compact_endnote_separator_profile
                                 && ep_idx == 0
@@ -2670,9 +2728,12 @@ impl TypesetEngine {
                                 && !allow_default_question_title_tail
                                 && (!endnote_has_vpos_rewind
                                     || rewind_endnote_head_near_bottom
-                                    || rewind_endnote_head_would_split)
-                                && !new_endnote_stale_forward_vpos
-                                && st.current_height > available * new_endnote_advance_threshold
+                                    || rewind_endnote_head_would_split
+                                    || large_between_notes_vpos_head_outside)
+                                && (!new_endnote_stale_forward_vpos
+                                    || large_between_notes_vpos_head_outside)
+                                && (st.current_height > available * new_endnote_advance_threshold
+                                    || large_between_notes_vpos_head_outside)
                                 && !st.current_items.is_empty();
                             if advance_for_new_endnote {
                                 st.advance_column_or_new_page();
