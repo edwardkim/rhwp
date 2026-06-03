@@ -102,4 +102,3 @@ fn issue_1267_multiple_tabs_each_value_preserved() {
         }
     }
 }
-
