@@ -20,7 +20,7 @@ use crate::renderer::float_placement::{
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::MeasuredTable;
-use crate::renderer::layout::border_width_to_px;
+use crate::renderer::layout::{border_width_to_px, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{
@@ -2320,6 +2320,11 @@ impl TypesetEngine {
                                 .max_by_key(|(bottom, _)| *bottom);
                             let this_bottom_offset =
                                 endnote_bottom_with_spacing.map(|(bottom, _)| bottom);
+                            let this_content_bottom_offset = en_para
+                                .line_segs
+                                .iter()
+                                .map(|s| s.vertical_pos + s.line_height + endnote_start)
+                                .max();
                             // 다음 미주 묶음의 시작점도 렌더상 가장 낮은 줄 기준으로 갱신한다.
                             // 마지막 LINE_SEG가 위쪽으로 되감기는 문단에서는 last 기준이
                             // 다음 미주를 현재 쪽에 과도하게 붙인다.
@@ -2518,21 +2523,38 @@ impl TypesetEngine {
                             let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
                             let total_advance_fit =
                                 fmt.line_advances_sum(0..fmt.line_heights.len());
+                            let remaining_height = (available - st.current_height).max(0.0);
+                            let compact_endnote_own_vpos_span_fits =
+                                compact_endnote_separator_profile
+                                    && st.col_count > 1
+                                    && st.current_height < available
+                                    && default_between_notes_gap
+                                    && !local_vpos_rewind
+                                    && !internal_vpos_rewind
+                                    && para_has_visible_text_or_equation(en_para)
+                                    && matches!(
+                                        (this_first_offset, this_content_bottom_offset),
+                                        (Some(first), Some(bottom))
+                                            if hwpunit_to_px((bottom - first).max(0), dpi)
+                                                <= remaining_height
+                                                    + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                                    + 1.0
+                                    );
                             let split_endnote_to_fit = if compact_endnote_separator_profile
                                 && st.col_count > 1
                                 && !local_vpos_rewind
                                 && st.current_height < available
+                                && !compact_endnote_own_vpos_span_fits
                                 && (st.current_height + en_fit > available
                                     || st.current_height + total_advance_fit > available)
                                 && fmt.line_heights.len() > 1
                                 && para_has_visible_text_or_equation(en_para)
                             {
                                 let mut sum = 0.0;
-                                let remaining = (available - st.current_height).max(0.0);
                                 let mut split = 0usize;
                                 for line_idx in 0..fmt.line_heights.len() {
                                     let line_h = fmt.line_advance(line_idx);
-                                    if sum + line_h > remaining {
+                                    if sum + line_h > remaining_height {
                                         break;
                                     }
                                     sum += line_h;
@@ -2573,6 +2595,7 @@ impl TypesetEngine {
                                 && para_has_visible_text_or_equation(en_para);
                             let advance_for_fit = st.current_height + en_fit > available
                                 && split_endnote_to_fit.is_none()
+                                && !compact_endnote_own_vpos_span_fits
                                 && (!default_between_notes_gap || internal_rewind_split.is_none())
                                 && !late_question_title_small_overflow
                                 && !late_question_intro_tail
