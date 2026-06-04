@@ -1501,6 +1501,30 @@ fn issue_1284_2024_between20_page13_question_flow_matches_pdf() {
 }
 
 #[test]
+fn issue_1284_2024_between20_page18_late_question_titles_match_pdf() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let tree = doc.build_page_render_tree(17).expect("page 18 render tree");
+    let question29_y = min_para_text_y(&tree.root, 900).expect("문29 제목");
+    let question30_y = min_para_text_y(&tree.root, 928).expect("문30 제목");
+    let question23_y = min_para_text_y(&tree.root, 935).expect("문23 제목");
+
+    assert!(
+        (398.0..=414.0).contains(&question29_y),
+        "page18 왼쪽 단 문29 제목은 PDF bbox(약 404.2px) 근처여야 함: y={question29_y}"
+    );
+    assert!(
+        (366.0..=386.0).contains(&question30_y),
+        "page18 오른쪽 단 문30 제목은 PDF bbox(약 375.4px) 근처여야 함: y={question30_y}"
+    );
+    assert!(
+        (884.0..=902.0).contains(&question23_y),
+        "page18 오른쪽 단 다음 회차 문23 제목은 q30 tail 뒤 PDF bbox(약 891.4px) 근처여야 함: y={question23_y}"
+    );
+}
+
+#[test]
 fn issue_1284_2024_between20_page19_question24_continues_from_pdf_top() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
@@ -1580,6 +1604,7 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
     let q23_title_bbox = find_text_line_bbox(&tree.root, 1054, 0).expect("문23 제목");
     let q23_body_bbox = find_text_line_bbox(&tree.root, 1055, 0).expect("문23 본문 첫 줄");
     let q24_body_bbox = find_text_line_bbox(&tree.root, 1060, 0).expect("문24 본문 첫 줄");
+    let question30_y = min_para_text_y(&tree.root, 1025).expect("문30 제목");
     let question24_y = min_para_text_y(&tree.root, 1059).expect("문24 제목");
     let question25_y = min_para_text_y(&tree.root, 1066).expect("문25 제목");
     let question26_y = min_para_text_y(&tree.root, 1076).expect("문26 제목");
@@ -1594,6 +1619,10 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
         q23_body_bbox.x > 390.0 && (84.0..=104.0).contains(&q23_body_bbox.y),
         "문23 본문은 PDF page 21 오른쪽 단 상단에서 이어져야 함: {:?}",
         q23_body_bbox
+    );
+    assert!(
+        (208.0..=226.0).contains(&question30_y),
+        "page21 왼쪽 단 문30 제목은 PDF bbox(약 215.0px) 근처에서 시작해야 함: y={question30_y}"
     );
     assert!(
         (256.0..=276.0).contains(&question24_y),
