@@ -220,3 +220,39 @@ docker compose --env-file .env.docker run --rm wasm
 - PR #1291 수용 가능
 - GitHub Actions `action_required`는 처음 기여자 PR의 실행 승인 대기이며 실패가 아님
 - maintainer local integration 검증 통과
+
+## 9. Maintainer 동작 테스트 후 추가 보완
+
+maintainer 동작 테스트에서 PR 원래 목표였던 leading gap 클릭 시 caret 위치 보정은 성공 확인.
+
+추가 발견:
+
+- `samples/exam_social.hwp` 1페이지 오른쪽 단 첫 번째 표 셀 내부에서 caret을 둔 뒤 방향키 이동 시
+  `셀 5 범위 초과 (총 1개)` 오류 발생
+- 해당 표는 `s0:pi=15`의 1x1 TAC wrapper 표 안에 실제 6x3 내부표가 들어 있는 구조
+- hit-test가 내부표 `cellIndex=5`를 외곽 1x1 표의 `cellIndex=5`처럼 반환해 Studio 커서 이동과 by-path 조회가 실패
+
+보완 내용:
+
+- `hit_test_native`가 wrapper-unwrapped nested table 경로를
+  `outer cell 0 -> nested table cell 5` 형태의 `cellPath`로 복원하도록 보정
+- `get_cursor_rect_by_path_native`도 같은 경로 복원 규칙을 적용해 방향키 이동/rect 갱신 경로까지 정합화
+- Studio 입력/삭제/커서 이동은 `cellPath`가 있으면 1-depth 표라도 path 기반 API를 우선 사용하도록 조정
+- `tests/issue_717_table_cell_hit_test.rs`에 오른쪽 단 wrapper nested table 셀 편집 회귀 테스트 추가
+
+추가 검증:
+
+```text
+cargo fmt --all -- --check
+cargo test --test issue_717_table_cell_hit_test -- --nocapture
+cargo test --test issue_850_answer_sheet_name_hit_test -- --nocapture
+cargo test --test hit_test_leading_gap -- --nocapture
+cd rhwp-studio && npm run build
+cd rhwp-studio && npm test
+docker compose --env-file .env.docker run --rm wasm
+```
+
+결과:
+
+- 전체 통과
+- maintainer 웹 동작 테스트 성공 확인

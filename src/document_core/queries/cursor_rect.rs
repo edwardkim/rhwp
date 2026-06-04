@@ -9,6 +9,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::path::PathSegment;
+use crate::renderer::layout::{CellContext, CellPathEntry};
 use crate::renderer::render_tree::TextRunNode;
 
 /// 글자겹침 TextRun의 논리적 char_count (1) 반환, 아니면 실제 글자 수 반환.
@@ -143,6 +144,64 @@ pub(crate) fn resolve_x_on_line(line_runs: &[LineRunView], x: f64) -> (usize, us
 }
 
 impl DocumentCore {
+    /// 1x1 TAC wrapper 표를 시각적으로 unwrap 하여 내부 표를 직접 렌더링한 경우,
+    /// RenderNode 는 내부 표 cell_index 를 갖지만 cell_context 는 outer wrapper 표에
+    /// 머무를 수 있다. 이 상태로는 `[(outer_ci, inner_cell_idx, ...)]` 처럼 존재하지
+    /// 않는 outer cell 을 가리켜 Studio 커서 이동에서 by-path 조회가 실패한다.
+    ///
+    /// 모델을 확인해 outer 1x1 셀 안의 nested table control 로 path 를 복원한다.
+    fn repair_unwrapped_wrapper_cell_context(&self, section_index: usize, ctx: &mut CellContext) {
+        if ctx.path.len() != 1 {
+            return;
+        }
+        let outer = ctx.path[0];
+        let Some(table) = self
+            .document
+            .sections
+            .get(section_index)
+            .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+            .and_then(|p| p.controls.get(outer.control_index))
+            .and_then(|c| match c {
+                Control::Table(t) => Some(t.as_ref()),
+                _ => None,
+            })
+        else {
+            return;
+        };
+        if table.cells.len() != 1 || outer.cell_index < table.cells.len() {
+            return;
+        }
+        let Some(wrapper_cell) = table.cells.first() else {
+            return;
+        };
+        let Some(wrapper_para) = wrapper_cell.paragraphs.first() else {
+            return;
+        };
+        let Some(nested_ctrl_idx) =
+            wrapper_para
+                .controls
+                .iter()
+                .enumerate()
+                .find_map(|(ci, ctrl)| match ctrl {
+                    Control::Table(t) if outer.cell_index < t.cells.len() => Some(ci),
+                    _ => None,
+                })
+        else {
+            return;
+        };
+
+        if let Some(first) = ctx.path.first_mut() {
+            first.cell_index = 0;
+            first.cell_para_index = 0;
+        }
+        ctx.path.push(CellPathEntry {
+            control_index: nested_ctrl_idx,
+            cell_index: outer.cell_index,
+            cell_para_index: outer.cell_para_index,
+            text_direction: outer.text_direction,
+        });
+    }
+
     pub fn get_cursor_rect_native(
         &self,
         section_idx: usize,
@@ -1333,6 +1392,21 @@ impl DocumentCore {
             }
         }
 
+        for run in &mut runs {
+            if let Some(ref mut ctx) = run.cell_context {
+                self.repair_unwrapped_wrapper_cell_context(run.section_index, ctx);
+            }
+        }
+        for cb in &mut cell_bboxes {
+            if let Some(ref mut ctx) = cb.cell_context {
+                self.repair_unwrapped_wrapper_cell_context(cb.section_index, ctx);
+                let outer = &ctx.path[0];
+                cb.parent_para_index = ctx.parent_para_index;
+                cb.control_index = outer.control_index;
+                cb.cell_index = ctx.innermost().cell_index;
+            }
+        }
+
         // 0. 안내문(guide text) 히트 검사 — 필드 클릭 진입
         // 안내문 위 클릭 시 해당 필드의 시작 위치로 커서를 보낸다.
         for gr in &guide_runs {
@@ -2256,7 +2330,9 @@ impl DocumentCore {
 
         // 렌더 트리에서 경로가 일치하는 TextRun 찾기
         fn find_cursor_by_path(
+            core: &DocumentCore,
             node: &RenderNode,
+            section_idx: usize,
             parent_para: usize,
             path: &[(usize, usize, usize)],
             offset: usize,
@@ -2278,7 +2354,10 @@ impl DocumentCore {
                 }
             }
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                let cell_context = effective_cell_context(&tr.cell_context, &current_cell_ctx);
+                let mut cell_context = effective_cell_context(&tr.cell_context, &current_cell_ctx);
+                if let Some(ref mut ctx) = cell_context {
+                    core.repair_unwrapped_wrapper_cell_context(section_idx, ctx);
+                }
                 if cell_context_matches(&cell_context, parent_para, path) {
                     let cs = tr.char_start.unwrap_or(0);
                     let cc = effective_char_count(tr);
@@ -2302,7 +2381,9 @@ impl DocumentCore {
             }
             for child in &node.children {
                 if let Some(hit) = find_cursor_by_path(
+                    core,
                     child,
+                    section_idx,
                     parent_para,
                     path,
                     offset,
@@ -2319,7 +2400,9 @@ impl DocumentCore {
         for &page_num in &pages {
             let tree = self.build_page_tree_cached(page_num)?;
             if let Some((pi, x, y, h)) = find_cursor_by_path(
+                self,
                 &tree.root,
+                section_idx,
                 parent_para_idx,
                 &path,
                 char_offset,
@@ -2338,7 +2421,9 @@ impl DocumentCore {
         for &page_num in &pages {
             let tree = self.build_page_tree_cached(page_num)?;
             fn find_any_run(
+                core: &DocumentCore,
                 node: &RenderNode,
+                section_idx: usize,
                 parent_para: usize,
                 path: &[(usize, usize, usize)],
                 page: u32,
@@ -2362,14 +2447,20 @@ impl DocumentCore {
                     }
                 }
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    let cell_context = effective_cell_context(&tr.cell_context, &current_cell_ctx);
+                    let mut cell_context =
+                        effective_cell_context(&tr.cell_context, &current_cell_ctx);
+                    if let Some(ref mut ctx) = cell_context {
+                        core.repair_unwrapped_wrapper_cell_context(section_idx, ctx);
+                    }
                     if cell_context_matches(&cell_context, parent_para, path) {
                         return Some((page, node.bbox.x, node.bbox.y, node.bbox.height));
                     }
                 }
                 for child in &node.children {
                     if let Some(hit) = find_any_run(
+                        core,
                         child,
+                        section_idx,
                         parent_para,
                         path,
                         page,
@@ -2381,9 +2472,16 @@ impl DocumentCore {
                 }
                 None
             }
-            if let Some((pi, x, y, h)) =
-                find_any_run(&tree.root, parent_para_idx, &path, page_num, None, None)
-            {
+            if let Some((pi, x, y, h)) = find_any_run(
+                self,
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                &path,
+                page_num,
+                None,
+                None,
+            ) {
                 return Ok(format!(
                     "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
                     pi, x, y, h
