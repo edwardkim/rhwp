@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import html as html_lib
 import json
 import re
 import shutil
@@ -26,7 +27,13 @@ EQUATION_OVERLAP_LIMIT = 0.08
 LINE_ORDER_OVERLAP_LIMIT = 0.65
 LINE_ORDER_OVERLAP_MIN_PX = 4.0
 COLUMN_X_OVERLAP_LIMIT = 0.55
+QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
 QUESTION_TITLE_RE = re.compile(r"^\s*문\s*(\d+)")
+PDF_PAGE_RE = re.compile(r'<page\s+[^>]*width="([0-9.]+)"\s+height="([0-9.]+)"')
+PDF_WORD_RE = re.compile(
+    r'<word\s+[^>]*xMin="([0-9.]+)"\s+yMin="([0-9.]+)"\s+'
+    r'xMax="([0-9.]+)"\s+yMax="([0-9.]+)"[^>]*>(.*?)</word>'
+)
 
 
 @dataclass(frozen=True)
@@ -106,7 +113,7 @@ def page_num(path: Path) -> int:
 
 
 def ensure_tools() -> None:
-    missing = [tool for tool in ("rsvg-convert", "pdftoppm") if shutil.which(tool) is None]
+    missing = [tool for tool in ("rsvg-convert", "pdftoppm", "pdftotext") if shutil.which(tool) is None]
     if missing:
         raise SystemExit("필수 도구가 없습니다: " + ", ".join(missing))
 
@@ -127,6 +134,7 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
     compare_dir = base / "compare"
     analysis_dir = base / "analysis"
     tree_dir = base / "render_tree"
+    pdf_bbox_html = base / "pdf_bbox.html"
     clean_dir(svg_dir)
     clean_dir(rhwp_png_dir)
     clean_dir(pdf_png_dir)
@@ -145,6 +153,7 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
 
     pdf_prefix = pdf_png_dir / "pdf"
     run(["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)], cwd=root)
+    run(["pdftotext", "-bbox-layout", str(pdf), str(pdf_bbox_html)], cwd=root)
 
     svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
     tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
@@ -155,10 +164,19 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
 
     rhwp_pngs = sorted(rhwp_png_dir.glob("*.png"), key=page_num)
     pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)
+    pdf_question_markers = extract_pdf_question_markers(pdf_bbox_html, pdf_pngs)
     print(f"PDF pages: {len(pdf_pngs)}", flush=True)
     compare_pages = make_compares(rhwp_pngs, pdf_pngs, compare_dir, target.key)
     contact = make_contact_sheet(compare_pages, base / "contact_sheet.png")
-    visual_analysis = analyze_pages(rhwp_pngs, pdf_pngs, svg_paths, tree_paths, analysis_dir, target.key)
+    visual_analysis = analyze_pages(
+        rhwp_pngs,
+        pdf_pngs,
+        svg_paths,
+        tree_paths,
+        analysis_dir,
+        target.key,
+        pdf_question_markers,
+    )
 
     log_text = export_log.read_text(encoding="utf-8") if export_log.exists() else ""
     overflow_lines = [
@@ -174,6 +192,7 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
         "render_tree_pages": len(tree_paths),
         "pdf_pages": len(pdf_pngs),
         "compare_pages": len(compare_pages),
+        "pdf_question_markers": len(pdf_question_markers),
         "overflow_lines": overflow_lines,
         "contact_sheet": str(contact.relative_to(root)),
         "analysis_dir": str(analysis_dir.relative_to(root)),
@@ -460,6 +479,198 @@ def collect_render_tree_text_lines(tree: dict[str, object]) -> list[dict[str, ob
     return lines
 
 
+def column_index(center_x: float, image_width: int) -> int:
+    return 0 if center_x < image_width / 2.0 else 1
+
+
+def extract_pdf_question_markers(pdf_bbox_html: Path, pdf_pngs: list[Path]) -> list[dict[str, object]]:
+    if not pdf_bbox_html.exists():
+        return []
+
+    markers: list[dict[str, object]] = []
+    page_index = -1
+    page_width = 1.0
+    page_height = 1.0
+    image_width = 1
+    image_height = 1
+    try:
+        lines = pdf_bbox_html.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+
+    for line in lines:
+        page_match = PDF_PAGE_RE.search(line)
+        if page_match:
+            page_index += 1
+            page_width = max(1.0, float(page_match.group(1)))
+            page_height = max(1.0, float(page_match.group(2)))
+            if page_index < len(pdf_pngs):
+                with Image.open(pdf_pngs[page_index]) as image:
+                    image_width, image_height = image.size
+            continue
+
+        word_match = PDF_WORD_RE.search(line)
+        if not word_match or page_index < 0:
+            continue
+        text = html_lib.unescape(word_match.group(5)).strip()
+        question_match = QUESTION_TITLE_RE.match(text)
+        if not question_match:
+            continue
+
+        x0 = float(word_match.group(1)) * image_width / page_width
+        y0 = float(word_match.group(2)) * image_height / page_height
+        x1 = float(word_match.group(3)) * image_width / page_width
+        y1 = float(word_match.group(4)) * image_height / page_height
+        bbox = [round(x0, 1), round(y0, 1), round(x1 - x0, 1), round(y1 - y0, 1)]
+        center_x = x0 + (x1 - x0) / 2.0
+        markers.append(
+            {
+                "source": "pdf",
+                "page": page_index + 1,
+                "number": int(question_match.group(1)),
+                "question": f"문{question_match.group(1)}",
+                "text": text,
+                "bbox": bbox,
+                "column": column_index(center_x, image_width),
+            }
+        )
+    return markers
+
+
+def collect_render_tree_question_markers(tree_paths: list[Path], rhwp_pngs: list[Path]) -> list[dict[str, object]]:
+    markers: list[dict[str, object]] = []
+    for page_index, tree_path in enumerate(tree_paths):
+        tree = load_render_tree(tree_path)
+        if tree is None:
+            continue
+        image_width = 1
+        if page_index < len(rhwp_pngs):
+            with Image.open(rhwp_pngs[page_index]) as image:
+                image_width = image.size[0]
+        for line in collect_render_tree_text_lines(tree):
+            text = str(line.get("text", ""))
+            question_match = QUESTION_TITLE_RE.match(text)
+            if not question_match:
+                continue
+            bbox = line.get("bbox")
+            if not isinstance(bbox, tuple):
+                continue
+            x, _, w, _ = bbox
+            markers.append(
+                {
+                    "source": "rhwp",
+                    "page": page_index + 1,
+                    "number": int(question_match.group(1)),
+                    "question": f"문{question_match.group(1)}",
+                    "text": text[:96],
+                    "pi": line.get("pi"),
+                    "path": line.get("path"),
+                    "bbox": [round(v, 1) for v in bbox],
+                    "column": column_index(x + w / 2.0, image_width),
+                }
+            )
+    return markers
+
+
+def markers_by_question(markers: list[dict[str, object]]) -> dict[int, list[dict[str, object]]]:
+    by_number: dict[int, list[dict[str, object]]] = {}
+    for marker in markers:
+        number = marker.get("number")
+        if isinstance(number, int):
+            by_number.setdefault(number, []).append(marker)
+    return by_number
+
+
+def marker_y(marker: dict[str, object]) -> float | None:
+    bbox = marker.get("bbox")
+    if not isinstance(bbox, list) or len(bbox) != 4:
+        return None
+    try:
+        return float(bbox[1])
+    except (TypeError, ValueError):
+        return None
+
+
+def marker_match_score(rhwp_marker: dict[str, object], pdf_marker: dict[str, object]) -> float:
+    rhwp_page = int(rhwp_marker.get("page", 0))
+    pdf_page = int(pdf_marker.get("page", 0))
+    page_cost = abs(rhwp_page - pdf_page) * 2000.0
+    column_cost = 350.0 if rhwp_marker.get("column") != pdf_marker.get("column") else 0.0
+    rhwp_y = marker_y(rhwp_marker)
+    pdf_y = marker_y(pdf_marker)
+    y_cost = abs(rhwp_y - pdf_y) if rhwp_y is not None and pdf_y is not None else 500.0
+    return page_cost + column_cost + y_cost
+
+
+def build_question_marker_drifts(
+    rhwp_markers: list[dict[str, object]],
+    pdf_markers: list[dict[str, object]],
+) -> dict[int, list[dict[str, object]]]:
+    pdf_by_number = markers_by_question(pdf_markers)
+    by_page: dict[int, list[dict[str, object]]] = {}
+
+    for rhwp_marker in rhwp_markers:
+        number = rhwp_marker.get("number")
+        if not isinstance(number, int):
+            continue
+        pdf_candidates = pdf_by_number.get(number, [])
+        pdf_marker = min(pdf_candidates, key=lambda item: marker_match_score(rhwp_marker, item)) if pdf_candidates else None
+        reasons: list[str] = []
+        y_delta: float | None = None
+        page_delta: int | None = None
+
+        if pdf_marker is None:
+            reasons.append("missing_pdf_marker")
+            page = int(rhwp_marker.get("page", 1))
+        else:
+            rhwp_page = int(rhwp_marker.get("page", 0))
+            pdf_page = int(pdf_marker.get("page", 0))
+            page_delta = rhwp_page - pdf_page
+            if page_delta != 0:
+                reasons.append("page_drift")
+            if rhwp_marker.get("column") != pdf_marker.get("column"):
+                reasons.append("column_drift")
+
+            rhwp_bbox = rhwp_marker.get("bbox")
+            pdf_bbox = pdf_marker.get("bbox")
+            if isinstance(rhwp_bbox, list) and isinstance(pdf_bbox, list) and len(rhwp_bbox) == 4 and len(pdf_bbox) == 4:
+                y_delta = float(rhwp_bbox[1]) - float(pdf_bbox[1])
+                if abs(y_delta) >= QUESTION_MARKER_Y_DRIFT_LIMIT_PX:
+                    reasons.append("y_drift")
+            page = rhwp_page or pdf_page or 1
+
+        if not reasons:
+            continue
+
+        candidate = {
+            "number": number,
+            "question": f"문{number}",
+            "reasons": reasons,
+            "page_delta": page_delta,
+            "y_delta_px": round(y_delta, 1) if y_delta is not None else None,
+            "rhwp_page": rhwp_marker.get("page"),
+            "pdf_page": pdf_marker.get("page") if pdf_marker else None,
+            "rhwp_column": rhwp_marker.get("column"),
+            "pdf_column": pdf_marker.get("column") if pdf_marker else None,
+            "rhwp_pi": rhwp_marker.get("pi"),
+            "rhwp_text": rhwp_marker.get("text"),
+            "pdf_text": pdf_marker.get("text") if pdf_marker else None,
+            "rhwp_bbox": rhwp_marker.get("bbox"),
+            "pdf_bbox": pdf_marker.get("bbox") if pdf_marker else None,
+        }
+        by_page.setdefault(page, []).append(candidate)
+
+    for candidates in by_page.values():
+        candidates.sort(
+            key=lambda item: (
+                abs(float(item["page_delta"] or 0)) * 1000.0,
+                abs(float(item["y_delta_px"] or 0.0)),
+            ),
+            reverse=True,
+        )
+    return by_page
+
+
 def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, object]]:
     tree = load_render_tree(tree_path)
     if tree is None:
@@ -615,6 +826,7 @@ def analyze_page(
     analysis_dir: Path,
     key: str,
     page_index: int,
+    question_marker_drifts: list[dict[str, object]],
 ) -> dict[str, object]:
     rhwp = Image.open(rhwp_path).convert("RGB")
     pdf = Image.open(pdf_path).convert("RGB")
@@ -699,6 +911,8 @@ def analyze_page(
         flags.append("question_title_text_overlap")
     if line_order_overlaps:
         flags.append("line_order_overlap")
+    if question_marker_drifts:
+        flags.append("question_marker_drift")
 
     annotated = None
     if flags:
@@ -718,6 +932,7 @@ def analyze_page(
                 "equation_text_overlap": equation_overlaps,
                 "question_title_text_overlap": question_title_overlaps,
                 "line_order_overlap": line_order_overlaps,
+                "question_marker_drift": question_marker_drifts,
             },
         )
 
@@ -738,6 +953,7 @@ def analyze_page(
         "equation_text_overlap_candidates": equation_overlaps,
         "question_title_text_overlap_candidates": question_title_overlaps,
         "line_order_overlap_candidates": line_order_overlaps,
+        "question_marker_drift_candidates": question_marker_drifts,
         "annotated": str(annotated) if annotated else None,
     }
 
@@ -781,7 +997,7 @@ def make_annotation(
                 width=3,
             )
     if render_overlays:
-        draw_render_tree_overlays(draw, label_h, render_overlays)
+        draw_render_tree_overlays(draw, label_h, render_overlays, width + gutter)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(out_path)
     return out_path
@@ -791,19 +1007,42 @@ def draw_render_tree_overlays(
     draw: ImageDraw.ImageDraw,
     label_h: int,
     render_overlays: dict[str, list[dict[str, object]]],
+    pdf_offset_x: int,
 ) -> None:
     font = label_font()
 
-    def draw_bbox(box: object, color: tuple[int, int, int], width: int = 3) -> tuple[float, float] | None:
+    def draw_bbox(
+        box: object,
+        color: tuple[int, int, int],
+        width: int = 3,
+        *,
+        offset_x: int = 0,
+    ) -> tuple[float, float] | None:
         if not isinstance(box, list) or len(box) != 4:
             return None
         try:
             x, y, w, h = (float(v) for v in box)
         except (TypeError, ValueError):
             return None
-        draw.rectangle([x, label_h + y, x + w, label_h + y + h], outline=color, width=width)
-        return x, label_h + y
+        draw.rectangle(
+            [offset_x + x, label_h + y, offset_x + x + w, label_h + y + h],
+            outline=color,
+            width=width,
+        )
+        return offset_x + x, label_h + y
 
+    for item in render_overlays.get("question_marker_drift", [])[:8]:
+        anchor = draw_bbox(item.get("rhwp_bbox"), (255, 0, 0), 3)
+        draw_bbox(item.get("pdf_bbox"), (0, 140, 0), 3, offset_x=pdf_offset_x)
+        if anchor is not None:
+            x, y = anchor
+            label = (
+                f"{item.get('question')} "
+                f"p {item.get('rhwp_page')} vs {item.get('pdf_page')} "
+                f"dy={item.get('y_delta_px')} "
+                f"{','.join(str(v) for v in item.get('reasons', []))}"
+            )
+            draw.text((x, max(label_h + 2, y - 18)), label, fill=(255, 0, 0), font=font)
     for item in render_overlays.get("line_order_overlap", [])[:6]:
         anchor = draw_bbox(item.get("prev_bbox"), (116, 59, 205), 3)
         draw_bbox(item.get("next_bbox"), (255, 128, 0), 3)
@@ -838,8 +1077,27 @@ def analyze_pages(
     tree_paths: list[Path],
     analysis_dir: Path,
     key: str,
+    pdf_question_markers: list[dict[str, object]],
 ) -> dict[str, object]:
     page_count = min(len(rhwp_pngs), len(pdf_pngs), len(svg_paths), len(tree_paths))
+    rhwp_question_markers = collect_render_tree_question_markers(tree_paths[:page_count], rhwp_pngs[:page_count])
+    question_marker_drifts_by_page = build_question_marker_drifts(rhwp_question_markers, pdf_question_markers)
+
+    question_flow_path = analysis_dir / "question_flow.json"
+    question_flow_path.write_text(
+        json.dumps(
+            {
+                "rhwp_question_markers": rhwp_question_markers,
+                "pdf_question_markers": pdf_question_markers,
+                "question_marker_drifts_by_page": question_marker_drifts_by_page,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
     pages = [
         analyze_page(
             rhwp_pngs[index],
@@ -849,6 +1107,7 @@ def analyze_pages(
             analysis_dir,
             key,
             index,
+            question_marker_drifts_by_page.get(index + 1, []),
         )
         for index in range(page_count)
     ]
@@ -867,7 +1126,11 @@ def analyze_pages(
             page["page"] for page in flagged_pages if "question_title_text_overlap" in page["flags"]
         ],
         "line_order_overlap_pages": [page["page"] for page in flagged_pages if "line_order_overlap" in page["flags"]],
+        "question_marker_drift_pages": [
+            page["page"] for page in flagged_pages if "question_marker_drift" in page["flags"]
+        ],
         "metrics_json": str(metrics_path),
+        "question_flow_json": str(question_flow_path),
     }
     flagged_path = analysis_dir / "flagged_pages.json"
     flagged_path.write_text(json.dumps(flagged_pages, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -875,7 +1138,7 @@ def analyze_pages(
         f"analysis: {key} flagged={len(flagged_pages)}/{page_count} "
         f"frame={summary['frame_overflow_pages']} red={summary['red_marker_drift_pages']} "
         f"line={summary['line_band_drift_pages']} title={summary['question_title_text_overlap_pages']} "
-        f"order={summary['line_order_overlap_pages']}",
+        f"order={summary['line_order_overlap_pages']} question={summary['question_marker_drift_pages']}",
         flush=True,
     )
     return {"summary": summary, "flagged_pages": flagged_pages}
