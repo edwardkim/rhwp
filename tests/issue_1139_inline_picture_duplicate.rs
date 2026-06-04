@@ -1579,9 +1579,11 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
     let tree = doc.build_page_render_tree(20).expect("page 21 render tree");
     let q23_title_bbox = find_text_line_bbox(&tree.root, 1054, 0).expect("문23 제목");
     let q23_body_bbox = find_text_line_bbox(&tree.root, 1055, 0).expect("문23 본문 첫 줄");
+    let q24_body_bbox = find_text_line_bbox(&tree.root, 1060, 0).expect("문24 본문 첫 줄");
     let question24_y = min_para_text_y(&tree.root, 1059).expect("문24 제목");
     let question25_y = min_para_text_y(&tree.root, 1066).expect("문25 제목");
     let question26_y = min_para_text_y(&tree.root, 1076).expect("문26 제목");
+    let question26_tail_bottom = max_para_content_bottom(&tree.root, 1083).expect("문26 tail");
 
     assert!(
         q23_title_bbox.x < 80.0 && (1064.0..=1084.0).contains(&q23_title_bbox.y),
@@ -1598,12 +1600,21 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
         "문24 제목은 PDF bbox(약 266.2px) 근처에서 시작해야 함: y={question24_y}"
     );
     assert!(
-        (526.0..=612.0).contains(&question25_y),
+        (286.0..=304.0).contains(&q24_body_bbox.y),
+        "문24 제목 뒤 본문 첫 줄은 PDF bbox(약 294px)처럼 과한 title-body gap 없이 이어져야 함: {:?}",
+        q24_body_bbox
+    );
+    assert!(
+        (528.0..=558.0).contains(&question25_y),
         "문25 제목은 PDF bbox(약 535.8px) 근처에서 시작해야 함: y={question25_y}"
     );
     assert!(
-        (810.0..=902.0).contains(&question26_y),
+        (812.0..=842.0).contains(&question26_y),
         "문26 제목은 PDF bbox(약 818.5px) 근처에서 시작해야 함: y={question26_y}"
+    );
+    assert!(
+        question26_tail_bottom <= 1092.3,
+        "문26 tail은 page 21 오른쪽 단 frame 안에서 끝나야 함: bottom={question26_tail_bottom}"
     );
 }
 

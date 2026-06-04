@@ -409,6 +409,17 @@ impl HeightCursor {
             .get(item_para)
             .map(para_has_visible_text)
             .unwrap_or(false);
+        let compact_endnote_title_body_stale_forward = self.suppress_large_forward_jump
+            && !is_page_path
+            && follows_endnote_title
+            && !current_is_endnote_title
+            && !vpos_rewind
+            && current_has_visible_text
+            && end_y > y_offset + 32.0
+            && end_y < y_offset + 120.0
+            && y_offset > self.col_area_y + 1.0;
+        let title_body_gap_y = compact_endnote_title_body_stale_forward
+            .then_some(y_offset + prev_line_spacing_px.max(10.0).min(18.0));
         let compact_endnote_text_after_tall_tail_backtrack = self.suppress_large_forward_jump
             && is_page_path
             && !vpos_rewind
@@ -494,12 +505,15 @@ impl HeightCursor {
             && y_offset <= self.col_area_y + self.col_area_height * 0.75;
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
         if compact_endnote_stale_note_gap
+            || compact_endnote_title_body_stale_forward
             || (applied && (compact_endnote_new_note_jump || compact_endnote_tac_picture_gap))
         {
             // Compact endnote flow encodes visual gaps in absolute vpos.
             // Suppressed gaps must also move the vpos base, otherwise the next
             // line restores the skipped gap.
-            let rendered_y = if compact_endnote_new_note_jump {
+            let rendered_y = if let Some(y) = title_body_gap_y {
+                y
+            } else if compact_endnote_new_note_jump {
                 bottom_new_note_gap_cap.unwrap_or(y_offset)
             } else if let Some(y) = stale_note_gap_y {
                 y
@@ -547,6 +561,8 @@ impl HeightCursor {
             end_y
         } else if compact_endnote_title_tail_backtrack {
             y_offset - (y_offset - end_y).min(16.0)
+        } else if let Some(y) = title_body_gap_y {
+            y
         } else if (applied || compact_endnote_deep_backtrack || compact_endnote_safe_vpos_backtrack)
             && !stale_forward
             && !compact_endnote_new_note_jump
