@@ -2594,10 +2594,24 @@ impl TypesetEngine {
                                     && para_has_visible_text_or_equation(en_para);
                                 !single_line_tail_split_at_bottom
                             });
-                            if internal_rewind_split == Some(1)
-                                && !default_between_notes_gap
-                                && para_has_visible_text_or_equation(en_para)
-                            {
+                            let large_between_single_line_internal_rewind =
+                                internal_rewind_split == Some(1)
+                                    && !default_between_notes_gap
+                                    && para_has_visible_text_or_equation(en_para);
+                            let advance_large_between_single_line_rewind =
+                                large_between_single_line_internal_rewind
+                                    && st.current_column + 1 >= st.col_count
+                                    && st.current_height > available * 0.85
+                                    && !st.current_items.is_empty();
+                            if advance_large_between_single_line_rewind {
+                                // 큰 `미주 사이` 문서의 마지막 단 하단에서 첫 줄부터
+                                // vpos가 되감기는 문단은 한컴/PDF처럼 다음 쪽에서 통째로
+                                // 시작해야 한다. 현재 쪽에 FullParagraph로 남기면 첫 줄이
+                                // frame 밖에 그려지고, 다음 쪽 문항 흐름이 한 줄만큼 당겨진다.
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                                internal_rewind_split = None;
+                            } else if large_between_single_line_internal_rewind {
                                 internal_rewind_split = None;
                                 cleared_single_line_internal_rewind_split = true;
                             }
@@ -2611,6 +2625,17 @@ impl TypesetEngine {
                                     (Some(prev), Some(_), Some(bottom))
                                         if hwpunit_to_px((bottom - prev).max(0), self.dpi) > h4f + 100.0
                                 );
+                            let allow_large_between_question_title_tail =
+                                !default_between_notes_gap
+                                    && ep_idx == 0
+                                    && st.current_column + 1 >= st.col_count
+                                    && en_ref.number > 0
+                                    && fmt.line_heights.len() == 1
+                                    && st.current_height < available
+                                    && st.current_height + fmt.line_advance(0)
+                                        <= available
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0;
                             let late_question_title_small_overflow =
                                 allow_default_late_question_tail
                                     && ep_idx == 0
@@ -2635,6 +2660,7 @@ impl TypesetEngine {
                                 && !compact_endnote_own_vpos_span_fits
                                 && (!default_between_notes_gap || internal_rewind_split.is_none())
                                 && !late_question_title_small_overflow
+                                && !allow_large_between_question_title_tail
                                 && !late_question_intro_tail
                                 && !late_question_continuation_tail
                                 && !st.current_items.is_empty();
@@ -2740,6 +2766,7 @@ impl TypesetEngine {
                                 && emitted_endnote_count > 0
                                 && !allow_default_late_question_tail
                                 && !allow_default_question_title_tail
+                                && !allow_large_between_question_title_tail
                                 && (!endnote_has_vpos_rewind
                                     || rewind_endnote_head_near_bottom
                                     || rewind_endnote_head_would_split

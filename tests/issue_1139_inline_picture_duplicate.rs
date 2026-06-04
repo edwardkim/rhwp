@@ -1455,6 +1455,52 @@ fn issue_1261_2024_sep_page10_question12_tail_stays_inside_column() {
 }
 
 #[test]
+fn issue_1284_2024_between20_page13_question_flow_matches_pdf() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page12 = doc.dump_page_items(Some(11));
+    let page13 = doc.dump_page_items(Some(12));
+    assert!(
+        !page12.contains("FullParagraph[미주]  pi=662"),
+        "PDF 기준 page 12 하단에는 [알짜 풀이] 다음 ㄱ. [참] tail이 frame 밖에 남으면 안 됨\n{page12}"
+    );
+    let q14_tail = page13
+        .find("FullParagraph[미주]  pi=662")
+        .expect("page 13 starts with question 14 tail");
+    let q15_title = page13
+        .find("FullParagraph[미주]  pi=665")
+        .expect("page 13 question 15 title");
+    assert!(
+        q14_tail < q15_title,
+        "PDF 기준 page 13 첫머리의 문14 tail 뒤에 문15가 이어져야 함\n{page13}"
+    );
+
+    let tree = doc.build_page_render_tree(12).expect("page 13 render tree");
+    let question15_y = min_para_text_y(&tree.root, 665).expect("문15 제목");
+    let question16_y = min_para_text_y(&tree.root, 696).expect("문16 제목");
+    let question17_y = min_para_text_y(&tree.root, 708).expect("문17 제목");
+    let question18_y = min_para_text_y(&tree.root, 712).expect("문18 제목");
+
+    assert!(
+        (615.0..=635.0).contains(&question15_y),
+        "문15 제목은 PDF bbox(약 624.5px) 근처에서 시작해야 함: y={question15_y}"
+    );
+    assert!(
+        (588.0..=608.0).contains(&question16_y),
+        "문16 제목은 PDF bbox(약 597.7px) 근처에서 시작해야 함: y={question16_y}"
+    );
+    assert!(
+        (890.0..=910.0).contains(&question17_y),
+        "문17 제목은 PDF bbox(약 900.2px) 근처에서 시작해야 함: y={question17_y}"
+    );
+    assert!(
+        (1056.0..=1082.0).contains(&question18_y),
+        "문18 제목은 PDF bbox(약 1070.5px) 근처에서 drift 허용 범위 안에 있어야 함: y={question18_y}"
+    );
+}
+
+#[test]
 fn issue_1274_2022_sep_page18_question26_equation_paragraph_reserves_height() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
