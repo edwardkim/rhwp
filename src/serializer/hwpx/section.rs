@@ -30,6 +30,7 @@ use crate::model::shape::{
 };
 
 use super::context::SerializeContext;
+use super::field::{write_bookmark, write_field_begin, write_field_end};
 use super::utils::xml_escape;
 use super::SerializeError;
 use super::{picture, table};
@@ -206,6 +207,19 @@ fn render_hp_t_content(text: &str, tab_extended: &[[u16; 7]], tab_idx: &mut usiz
 
 /// Paragraph의 본문 run 콘텐츠를 `<hp:t>`와 인라인 컨트롤 XML로 직렬화한다.
 fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
+    // Bookmark는 IR에 위치 정보가 없어 문단 시작에 배치한다.
+    // (HWPX 파서가 char_count에 포함하지 않아 slot 시스템이 위치를 추적할 수 없음)
+    let mut prefix = String::new();
+    for ctrl in &para.controls {
+        if let Control::Bookmark(bm) = ctrl {
+            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
+                prefix.push_str("<hp:ctrl>");
+                prefix.push_str(&xml);
+                prefix.push_str("</hp:ctrl>");
+            }
+        }
+    }
+
     let slot_count = inferred_control_slot_count(para);
     let slots: Vec<&Control> = if slot_count == para.controls.len() {
         para.controls.iter().collect()
@@ -218,22 +232,34 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     let mut tab_idx = 0usize;
 
-    if slots.is_empty() {
-        return render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
+    if slots.is_empty() && para.field_ranges.is_empty() {
+        let mut out = prefix;
+        out.push_str(&render_hp_t_content(
+            &para.text,
+            &para.tab_extended,
+            &mut tab_idx,
+        ));
+        return out;
     }
 
     if slot_count != slots.len() {
-        let mut out = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
-        for slot in slots {
+        let mut out = prefix;
+        out.push_str(&render_hp_t_content(
+            &para.text,
+            &para.tab_extended,
+            &mut tab_idx,
+        ));
+        for slot in &slots {
             render_control_slot(&mut out, slot, ctx);
         }
         return out;
     }
 
-    let mut out = String::new();
+    let mut out = prefix;
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
+    let mut field_end_emitted = vec![false; para.field_ranges.len()];
 
     for (idx, c) in para.text.chars().enumerate() {
         let char_pos = para
@@ -255,9 +281,39 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         } else {
             expected_utf16_pos = expected_utf16_pos.saturating_add(width);
         }
+
+        // end_char_idx는 미포함(exclusive): 현재 문자가 필드 범위의 마지막이면 fieldEnd 삽입
+        let next_idx = idx + 1;
+        for (i, fr) in para.field_ranges.iter().enumerate() {
+            if fr.end_char_idx == next_idx && !field_end_emitted[i] {
+                flush_text_fragment(&mut out, &mut text_buf, &para.tab_extended, &mut tab_idx);
+                if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+                    if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+                        out.push_str("<hp:ctrl>");
+                        out.push_str(&xml);
+                        out.push_str("</hp:ctrl>");
+                    }
+                }
+                field_end_emitted[i] = true;
+            }
+        }
     }
 
     flush_text_fragment(&mut out, &mut text_buf, &para.tab_extended, &mut tab_idx);
+
+    // end_char_idx >= text.len() 인 경우 루프에서 감지되지 않으므로 루프 후에 처리
+    for (i, fr) in para.field_ranges.iter().enumerate() {
+        if !field_end_emitted[i] {
+            if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+                if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+                    out.push_str("<hp:ctrl>");
+                    out.push_str(&xml);
+                    out.push_str("</hp:ctrl>");
+                }
+            }
+        }
+    }
+
     while slot_idx < slots.len() {
         render_control_slot(&mut out, slots[slot_idx], ctx);
         slot_idx += 1;
@@ -284,7 +340,11 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
         expected = pos.max(expected).saturating_add(char_utf16_width(c));
     }
 
-    from_char_count.max(from_offsets) as usize
+    // fieldEnd는 8 code unit 슬롯이지만 para.controls[]에 대응 컨트롤이 없다.
+    // field_ranges.len()이 fieldEnd 수와 정확히 일치하므로 빼서 보정한다.
+    from_char_count
+        .max(from_offsets)
+        .saturating_sub(para.field_ranges.len() as u32) as usize
 }
 
 fn is_hwpx_inline_slot(control: &Control) -> bool {
@@ -336,6 +396,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         }
         Control::Endnote(note) => {
             out.push_str(&render_endnote(note, ctx));
+        }
+        Control::Field(f) => {
+            // fieldBegin은 <hp:ctrl>...</hp:ctrl>로 감싸야 함 (Table/Picture와 달리)
+            match writer_to_string(|w| write_field_begin(w, f)) {
+                Ok(xml) => {
+                    out.push_str("<hp:ctrl>");
+                    out.push_str(&xml);
+                    out.push_str("</hp:ctrl>");
+                }
+                Err(e) => eprintln!("[hwpx] Field 직렬화 실패: {e}"),
+            }
         }
         _ => {}
     }
@@ -910,6 +981,104 @@ mod tests {
         assert!(
             xml.contains(r#"vertsize="2000""#),
             "IR value 2000 must be used, not fallback 1000"
+        );
+    }
+
+    // ---------- #1289: Bookmark / Field dispatcher 연결 ----------
+
+    use crate::model::control::{Bookmark, Control, Field, FieldType};
+    use crate::model::paragraph::FieldRange;
+
+    #[test]
+    fn task1289_bookmark_emits_ctrl_wrapper() {
+        // Bookmark는 슬롯 시스템이 위치를 추적할 수 없으므로 문단 시작에 배치한다.
+        let mut para = Paragraph::default();
+        para.text = "hello".to_string();
+        para.char_count = 6; // "hello"(5) + para_end(1)
+        para.controls.push(Control::Bookmark(Bookmark {
+            name: "test_bm".to_string(),
+        }));
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:ctrl><hp:bookmark name="test_bm"/></hp:ctrl>"#),
+            "bookmark must be wrapped in <hp:ctrl>: {}",
+            &xml[..300.min(xml.len())]
+        );
+        assert!(xml.contains("hello"), "text must still be present");
+    }
+
+    #[test]
+    fn task1289_field_begin_end_roundtrip() {
+        // HWPX 파서가 생성하는 구조 시뮬레이션:
+        // fieldBegin(8 cu) + "hello"(5 cu) + fieldEnd(8 cu) + para_end(1 cu) = 22
+        // para.text 에는 "hello"만 있고 char_offsets 가 +8 오프셋으로 시작한다.
+        let mut f = Field::default();
+        f.field_type = FieldType::ClickHere;
+        f.field_id = 99;
+
+        let mut para = Paragraph::default();
+        para.text = "hello".to_string();
+        para.char_count = 22;
+        para.char_offsets = vec![8, 9, 10, 11, 12];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 5,
+            control_idx: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:ctrl><hp:fieldBegin id="99" type="CLICKHERE""#),
+            "fieldBegin must be emitted: {}",
+            &xml[..500.min(xml.len())]
+        );
+        assert!(
+            xml.contains(r#"<hp:ctrl><hp:fieldEnd beginIDRef="99"/></hp:ctrl>"#),
+            "fieldEnd must be emitted: {}",
+            &xml[..500.min(xml.len())]
+        );
+        assert!(xml.contains("hello"), "field text must be present");
+
+        // 순서 검증: fieldBegin < "hello" < fieldEnd
+        let begin_pos = xml.find("fieldBegin").expect("fieldBegin");
+        let hello_pos = xml.find("hello").expect("hello");
+        let end_pos = xml.find("fieldEnd").expect("fieldEnd");
+        assert!(begin_pos < hello_pos, "fieldBegin must precede text");
+        assert!(hello_pos < end_pos, "text must precede fieldEnd");
+    }
+
+    #[test]
+    fn task1289_field_end_at_para_boundary() {
+        // end_char_idx == text.len() 인 경우: 루프 내 감지 불가 → 루프 후 처리
+        let mut f = Field::default();
+        f.field_type = FieldType::Date;
+        f.field_id = 7;
+
+        let mut para = Paragraph::default();
+        para.text = "abc".to_string();
+        para.char_count = 20; // fieldBegin(8) + "abc"(3) + fieldEnd(8) + para_end(1)
+        para.char_offsets = vec![8, 9, 10];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 3, // == text.len() → 루프 후 처리 경로
+            control_idx: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="7"/>"#),
+            "fieldEnd must be emitted even when end_char_idx == text.len(): {}",
+            &xml[..400.min(xml.len())]
         );
     }
 }
