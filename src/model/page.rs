@@ -174,6 +174,15 @@ impl PageAreas {
     ///
     /// landscape=true이면 width와 height를 교환하여 가로 방향으로 렌더링
     pub fn from_page_def(page_def: &PageDef) -> Self {
+        Self::from_page_def_for_page(page_def, 1)
+    }
+
+    /// PageDef와 최종 쪽번호로부터 페이지 영역을 계산한다.
+    ///
+    /// `BindingMethod::DuplexSided`에서는 홀수쪽은 기존 좌우 여백 방향을 유지하고,
+    /// 짝수쪽은 좌우 여백을 교대한다. `page_number=0`은 아직 최종 쪽번호가
+    /// 확정되지 않은 상태로 보고 기존 방향을 유지한다.
+    pub fn from_page_def_for_page(page_def: &PageDef, page_number: u32) -> Self {
         // landscape=true면 width/height 교환
         let (page_width, page_height) = if page_def.landscape {
             (page_def.height, page_def.width)
@@ -181,8 +190,22 @@ impl PageAreas {
             (page_def.width, page_def.height)
         };
 
-        let content_left = page_def.margin_left + page_def.margin_gutter;
-        let content_right = page_width - page_def.margin_right;
+        let is_even_page = page_number != 0 && page_number.is_multiple_of(2);
+        let (effective_left, effective_right) =
+            if page_def.binding == BindingMethod::DuplexSided && is_even_page {
+                (
+                    page_def.margin_right,
+                    page_def.margin_left + page_def.margin_gutter,
+                )
+            } else {
+                (
+                    page_def.margin_left + page_def.margin_gutter,
+                    page_def.margin_right,
+                )
+            };
+
+        let content_left = effective_left;
+        let content_right = page_width - effective_right;
         // HWP 본문 시작 = margin_header + margin_top (한컴 도움말 기준)
         let content_top = page_def.margin_header + page_def.margin_top;
         // HWP 본문 끝 = height - margin_footer - margin_bottom
@@ -261,6 +284,79 @@ mod tests {
         assert!(areas.body_area.width() > 0);
         assert!(areas.body_area.height() > 0);
         assert!(areas.header_area.height() >= 0);
+    }
+
+    #[test]
+    fn page_areas_single_sided_keeps_horizontal_margins_on_even_pages() {
+        let page_def = PageDef {
+            width: 1000,
+            height: 1400,
+            margin_left: 100,
+            margin_right: 200,
+            margin_gutter: 30,
+            margin_top: 10,
+            margin_header: 20,
+            margin_bottom: 40,
+            margin_footer: 50,
+            binding: BindingMethod::SingleSided,
+            ..Default::default()
+        };
+
+        let odd = PageAreas::from_page_def_for_page(&page_def, 1);
+        let even = PageAreas::from_page_def_for_page(&page_def, 2);
+
+        assert_eq!(odd.body_area.left, 130);
+        assert_eq!(odd.body_area.right, 800);
+        assert_eq!(even.body_area.left, odd.body_area.left);
+        assert_eq!(even.body_area.right, odd.body_area.right);
+        assert_eq!(even.body_area.width(), odd.body_area.width());
+    }
+
+    #[test]
+    fn page_areas_duplex_sided_swaps_horizontal_margins_on_even_pages() {
+        let page_def = PageDef {
+            width: 1000,
+            height: 1400,
+            margin_left: 100,
+            margin_right: 200,
+            margin_gutter: 30,
+            margin_top: 10,
+            margin_header: 20,
+            margin_bottom: 40,
+            margin_footer: 50,
+            binding: BindingMethod::DuplexSided,
+            ..Default::default()
+        };
+
+        let odd = PageAreas::from_page_def_for_page(&page_def, 1);
+        let even = PageAreas::from_page_def_for_page(&page_def, 2);
+
+        assert_eq!(odd.body_area.left, 130);
+        assert_eq!(odd.body_area.right, 800);
+        assert_eq!(even.body_area.left, 200);
+        assert_eq!(even.body_area.right, 870);
+        assert_eq!(even.body_area.width(), odd.body_area.width());
+        assert_eq!(even.header_area.left, even.body_area.left);
+        assert_eq!(even.footer_area.left, even.body_area.left);
+    }
+
+    #[test]
+    fn page_areas_top_flip_keeps_left_right_margins_for_now() {
+        let page_def = PageDef {
+            width: 1000,
+            height: 1400,
+            margin_left: 100,
+            margin_right: 200,
+            margin_gutter: 30,
+            binding: BindingMethod::TopFlip,
+            ..Default::default()
+        };
+
+        let odd = PageAreas::from_page_def_for_page(&page_def, 1);
+        let even = PageAreas::from_page_def_for_page(&page_def, 2);
+
+        assert_eq!(even.body_area.left, odd.body_area.left);
+        assert_eq!(even.body_area.right, odd.body_area.right);
     }
 
     #[test]

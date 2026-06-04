@@ -219,6 +219,19 @@ fn assign_master_pages_for_section(
     }
 }
 
+fn apply_page_number_layouts_for_section(result: &mut PaginationResult, section: &Section) {
+    let page_def = &section.section_def.page_def;
+    for page in &mut result.pages {
+        page.layout
+            .apply_page_number_margins(page_def, page.page_number);
+        for column in &mut page.column_contents {
+            if let Some(zone_layout) = &mut column.zone_layout {
+                zone_layout.apply_page_number_margins(page_def, page.page_number);
+            }
+        }
+    }
+}
+
 impl DocumentCore {
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
     pub fn build_page_render_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
@@ -2341,6 +2354,9 @@ impl DocumentCore {
                     }
                 }
             }
+
+            // 맞쪽 편집 layout 은 구역 간 쪽번호 carry 이후 최종 page_number 기준으로 갱신한다.
+            apply_page_number_layouts_for_section(&mut result, section);
 
             // 바탕쪽 선택은 구역 간 쪽번호 carry 보정 이후 최종 page_number 기준으로 수행한다.
             assign_master_pages_for_section(&mut result, idx, section);
