@@ -1501,6 +1501,60 @@ fn issue_1284_2024_between20_page13_question_flow_matches_pdf() {
 }
 
 #[test]
+fn issue_1284_2024_between20_page19_question24_continues_from_pdf_top() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page18 = doc.dump_page_items(Some(17));
+    let page19 = doc.dump_page_items(Some(18));
+    assert!(
+        !page18.contains("FullParagraph[미주]  pi=937"),
+        "PDF 기준 page 18 오른쪽 단에는 문23까지만 남고 문24는 frame 밖에 남으면 안 됨\n{page18}"
+    );
+    let q24_title = page19
+        .find("FullParagraph[미주]  pi=937")
+        .expect("page 19 question 24 title");
+    let q25_title = page19
+        .find("FullParagraph[미주]  pi=940")
+        .expect("page 19 question 25 title");
+    let q26_title = page19
+        .find("FullParagraph[미주]  pi=945")
+        .expect("page 19 question 26 title");
+    assert!(
+        q24_title < q25_title && q25_title < q26_title,
+        "PDF 기준 page 19 왼쪽 단은 문24 -> 문25 -> 문26 순서로 이어져야 함\n{page19}"
+    );
+
+    let tree = doc.build_page_render_tree(18).expect("page 19 render tree");
+    let question24_y = min_para_text_y(&tree.root, 937).expect("문24 제목");
+    let question25_y = min_para_text_y(&tree.root, 940).expect("문25 제목");
+    let question26_y = min_para_text_y(&tree.root, 945).expect("문26 제목");
+    let question27_y = min_para_text_y(&tree.root, 956).expect("문27 제목");
+    let question28_y = min_para_text_y(&tree.root, 975).expect("문28 제목");
+
+    assert!(
+        (84.0..=100.0).contains(&question24_y),
+        "문24 제목은 PDF page 19 상단(약 90.7px)에서 시작해야 함: y={question24_y}"
+    );
+    assert!(
+        (300.0..=320.0).contains(&question25_y),
+        "문25 제목은 PDF bbox(약 307.8px) 근처에서 시작해야 함: y={question25_y}"
+    );
+    assert!(
+        (570.0..=590.0).contains(&question26_y),
+        "문26 제목은 PDF bbox(약 579.6px) 근처에서 시작해야 함: y={question26_y}"
+    );
+    assert!(
+        (980.0..=1004.0).contains(&question27_y),
+        "문27 제목은 PDF bbox(약 990.5px) 근처에서 시작해야 함: y={question27_y}"
+    );
+    assert!(
+        (794.0..=814.0).contains(&question28_y),
+        "문28 제목은 PDF bbox(약 803.5px) 근처에서 시작해야 함: y={question28_y}"
+    );
+}
+
+#[test]
 fn issue_1274_2022_sep_page18_question26_equation_paragraph_reserves_height() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");

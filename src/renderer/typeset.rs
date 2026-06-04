@@ -2594,10 +2594,10 @@ impl TypesetEngine {
                                     && para_has_visible_text_or_equation(en_para);
                                 !single_line_tail_split_at_bottom
                             });
-                            let large_between_single_line_internal_rewind =
-                                internal_rewind_split == Some(1)
-                                    && !default_between_notes_gap
-                                    && para_has_visible_text_or_equation(en_para);
+                            let large_between_single_line_internal_rewind = internal_rewind_split
+                                == Some(1)
+                                && !default_between_notes_gap
+                                && para_has_visible_text_or_equation(en_para);
                             let advance_large_between_single_line_rewind =
                                 large_between_single_line_internal_rewind
                                     && st.current_column + 1 >= st.col_count
@@ -2625,17 +2625,188 @@ impl TypesetEngine {
                                     (Some(prev), Some(_), Some(bottom))
                                         if hwpunit_to_px((bottom - prev).max(0), self.dpi) > h4f + 100.0
                                 );
-                            let allow_large_between_question_title_tail =
+                            let large_between_title_tail_render_overflows =
+                                if !default_between_notes_gap
+                                    && ep_idx == 0
+                                    && st.current_column + 1 >= st.col_count
+                                    && en_ref.number > 0
+                                    && fmt.line_heights.len() == 1
+                                    && !st.current_items.is_empty()
+                                {
+                                    let mut local_paras: Vec<Paragraph> = Vec::new();
+                                    let mut local_indices: Vec<(usize, usize)> = Vec::new();
+                                    for pi in st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .chain(std::iter::once(en_para_idx))
+                                    {
+                                        if local_indices.iter().any(|(global, _)| *global == pi) {
+                                            continue;
+                                        }
+                                        if let Some(p) = paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        ) {
+                                            let local = local_paras.len();
+                                            local_paras.push(p.clone());
+                                            local_indices.push((pi, local));
+                                        }
+                                    }
+                                    let lookup_local = |pi: usize, indices: &[(usize, usize)]| {
+                                        indices.iter().find_map(|(global, local)| {
+                                            (*global == pi).then_some(*local)
+                                        })
+                                    };
+                                    let first_vpos = st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .find_map(|pi| {
+                                            paragraph_by_global_index(
+                                                paragraphs,
+                                                &st.endnote_paragraphs,
+                                                pi,
+                                            )
+                                            .and_then(|p| p.line_segs.first())
+                                            .map(|seg| seg.vertical_pos)
+                                        });
+                                    let predicted_y = first_vpos.and_then(|page_base| {
+                                        let mut hc = HeightCursor::new(
+                                            self.dpi,
+                                            0.0,
+                                            available,
+                                            st.current_start_height,
+                                            Some(page_base),
+                                            st.skip_spacing_before_prededuct,
+                                            false,
+                                            st.current_endnote_flow
+                                                && st.current_start_height < -0.5,
+                                            st.current_endnote_flow,
+                                        );
+                                        hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+                                        let mut y = st.current_start_height;
+                                        for item in &st.current_items {
+                                            let Some(pi) = page_item_para_index(item) else {
+                                                continue;
+                                            };
+                                            let Some(local) = lookup_local(pi, &local_indices)
+                                            else {
+                                                continue;
+                                            };
+                                            y = hc.vpos_adjust(y, local, &local_paras, &styles);
+                                            let item_para = &local_paras[local];
+                                            let item_composed =
+                                                crate::renderer::composer::compose_paragraph(
+                                                    item_para,
+                                                );
+                                            let item_fmt = self.format_paragraph(
+                                                item_para,
+                                                Some(&item_composed),
+                                                &styles,
+                                                Some(en_col_w),
+                                            );
+                                            y += match item {
+                                                PageItem::PartialParagraph {
+                                                    start_line,
+                                                    end_line,
+                                                    ..
+                                                } => item_fmt
+                                                    .line_advances_sum(*start_line..*end_line),
+                                                PageItem::FullParagraph { .. } => {
+                                                    item_fmt.total_height
+                                                }
+                                                _ => 0.0,
+                                            };
+                                            let current_vpos_rewinds_from_prev = hc
+                                                .prev_layout_para
+                                                .and_then(|prev_local| {
+                                                    let prev_first = local_paras
+                                                        .get(prev_local)
+                                                        .and_then(|p| p.line_segs.first())
+                                                        .map(|seg| seg.vertical_pos)?;
+                                                    let curr_first = local_paras
+                                                        .get(local)
+                                                        .and_then(|p| p.line_segs.first())
+                                                        .map(|seg| seg.vertical_pos)?;
+                                                    Some(curr_first < prev_first)
+                                                })
+                                                .unwrap_or(false);
+                                            if matches!(
+                                                item,
+                                                PageItem::PartialParagraph { start_line, .. }
+                                                    if *start_line > 0
+                                            ) || current_vpos_rewinds_from_prev
+                                            {
+                                                hc.prev_layout_para = None;
+                                                hc.vpos_page_base = None;
+                                                hc.vpos_lazy_base = None;
+                                            } else {
+                                                hc.prev_layout_para = Some(local);
+                                            }
+                                            hc.prev_item_was_partial_table =
+                                                matches!(item, PageItem::PartialTable { .. });
+                                        }
+                                        lookup_local(en_para_idx, &local_indices).map(|local| {
+                                            hc.vpos_adjust(y, local, &local_paras, &styles)
+                                        })
+                                    });
+                                    predicted_y
+                                        .map(|y| {
+                                            y + fmt.line_advance(0)
+                                                > available
+                                                    + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                        })
+                                        .unwrap_or(false)
+                                } else {
+                                    false
+                                };
+                            let large_between_question_title_head_inside_frame =
                                 !default_between_notes_gap
                                     && ep_idx == 0
                                     && st.current_column + 1 >= st.col_count
                                     && en_ref.number > 0
                                     && fmt.line_heights.len() == 1
                                     && st.current_height < available
-                                    && st.current_height + fmt.line_advance(0)
-                                        <= available
-                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
-                                            + 2.0;
+                                    && st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .find_map(|pi| {
+                                            paragraph_by_global_index(
+                                                paragraphs,
+                                                &st.endnote_paragraphs,
+                                                pi,
+                                            )
+                                            .and_then(|p| p.line_segs.first())
+                                            .map(|s| s.vertical_pos)
+                                        })
+                                        .and_then(|base_vpos| {
+                                            this_first_offset.map(|first_vpos| {
+                                                let predicted_y = hwpunit_to_px(
+                                                    (first_vpos - base_vpos).max(0),
+                                                    self.dpi,
+                                                );
+                                                predicted_y + fmt.line_advance(0)
+                                                    <= available
+                                                        + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            })
+                                        })
+                                        .unwrap_or(false);
+                            if large_between_title_tail_render_overflows {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            let allow_large_between_question_title_tail = !default_between_notes_gap
+                                && ep_idx == 0
+                                && st.current_column + 1 >= st.col_count
+                                && en_ref.number > 0
+                                && fmt.line_heights.len() == 1
+                                && st.current_height < available
+                                && large_between_question_title_head_inside_frame
+                                && st.current_height + fmt.line_advance(0)
+                                    <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0;
                             let late_question_title_small_overflow =
                                 allow_default_late_question_tail
                                     && ep_idx == 0
