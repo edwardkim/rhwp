@@ -3114,10 +3114,13 @@ impl LayoutEngine {
                 && y_offset < y_before_vpos - 0.5
                 && y_before_vpos + current_line_height_px > col_area.y + col_area.height + 0.5
                 && y_offset + current_line_height_px <= col_area.y + col_area.height + 0.5;
+            let compact_endnote_title_gap_already_compacted =
+                current_is_endnote_question_title && hcursor.last_compacted_endnote_title_gap;
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
                 && prev_endnote_title_gap_px > 0.0
                 && !endnote_title_direct_bottom_fit
                 && !endnote_title_bottom_fit_applied
+                && !compact_endnote_title_gap_already_compacted
                 && (prev_endnote_title_gap_from_continued_partial
                     || y_offset > y_before_vpos + 0.5);
             if should_preserve_endnote_title_gap {

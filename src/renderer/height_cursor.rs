@@ -43,6 +43,23 @@ fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
         })
 }
 
+fn compact_between_notes_gap_px(raw_gap_hu: i32, dpi: f64, use_pagination_gap: bool) -> f64 {
+    if raw_gap_hu <= 0 {
+        return 10.0;
+    }
+    let effective_hu = if use_pagination_gap {
+        let extra = (raw_gap_hu - 1984).max(0);
+        if extra > 0 {
+            extra * 3 / 4
+        } else {
+            raw_gap_hu
+        }
+    } else {
+        raw_gap_hu
+    };
+    hwpunit_to_px(effective_hu, dpi)
+}
+
 pub(crate) struct HeightCursor {
     /// DPI (px/inch).
     pub dpi: f64,
@@ -75,6 +92,8 @@ pub(crate) struct HeightCursor {
     /// 렌더러가 기록한 직전 항목의 실제 콘텐츠 하단(px). trailing 줄간격을 실제
     /// 콘텐츠 하단으로 오인하는 compact 미주 경계에서 공통 gap 기준으로 사용한다.
     pub prev_item_content_bottom_y: Option<f64>,
+    /// 직전 `vpos_adjust`에서 새 미주 제목 gap을 저장 end_y보다 위로 compact했는지.
+    pub(crate) last_compacted_endnote_title_gap: bool,
 }
 
 impl HeightCursor {
@@ -105,6 +124,7 @@ impl HeightCursor {
             suppress_large_forward_jump,
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
+            last_compacted_endnote_title_gap: false,
         }
     }
 
@@ -122,6 +142,7 @@ impl HeightCursor {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        self.last_compacted_endnote_title_gap = false;
         let Some(prev_pi) = self.prev_layout_para else {
             return y_offset;
         };
@@ -332,11 +353,12 @@ impl HeightCursor {
                     let content_bottom_y = measured_prev_content_bottom_y
                         .map(|y| y.max(prev_content_bottom_y))
                         .unwrap_or(prev_content_bottom_y);
-                    let gap_px = if self.endnote_between_notes_hu > 0 {
-                        (self.endnote_between_notes_hu as f64) / 7200.0 * self.dpi
-                    } else {
-                        10.0
-                    };
+                    let gap_px = compact_between_notes_gap_px(
+                        self.endnote_between_notes_hu,
+                        self.dpi,
+                        prev_para.text.trim().is_empty()
+                            || para_is_treat_as_char_equation_only(prev_para),
+                    );
                     content_bottom_y + gap_px
                 } else if y_offset > self.col_area_y + self.col_area_height * 0.75
                     || prev_para.text.trim().is_empty()
@@ -582,6 +604,10 @@ impl HeightCursor {
         } else {
             y_offset
         };
+        self.last_compacted_endnote_title_gap = compact_endnote_new_note_jump
+            && bottom_new_note_gap_cap
+                .map(|cap| end_y - cap > 8.0)
+                .unwrap_or(false);
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
             eprintln!(
