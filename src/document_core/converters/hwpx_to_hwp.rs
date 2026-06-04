@@ -16,13 +16,15 @@
 //!
 //! Stage 1 (현재): 진입점만 노출. 영역별 매핑은 Stage 2~ 에서 추가.
 
-use crate::model::bin_data::{BinDataStatus, BinDataType};
+use std::collections::BTreeSet;
+
+use crate::model::bin_data::{BinDataContent, BinDataStatus, BinDataType};
 use crate::model::control::Control;
 use crate::model::document::{Document, Section, SectionDef};
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{common_obj_offsets, ShapeObject, TextBox};
-use crate::model::style::{BorderFill, BorderLineType, FillType};
+use crate::model::style::{BorderFill, BorderLineType, Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
 
@@ -63,6 +65,8 @@ pub struct AdapterReport {
     pub doc_properties_section_count_normalized: u32,
     /// HWPX embedded BinData metadata 보정 횟수
     pub bin_data_metadata_normalized: u32,
+    /// HWPX OLE Storage 포함 문서의 HWP5 BinData 순서/참조 materialize 횟수
+    pub bin_data_order_materialized: u32,
     /// `Control::SectionDef` 컨트롤 삽입 횟수 (Stage 4 — 섹션 개수)
     pub section_def_controls_inserted: u32,
     /// HWPX `hp:pic@href` 를 HWP CTRL_DATA ParameterSet 으로 materialize한 횟수
@@ -126,6 +130,7 @@ impl AdapterReport {
                 + self.file_header_compression_normalized
                 + self.doc_properties_section_count_normalized
                 + self.bin_data_metadata_normalized
+                + self.bin_data_order_materialized
                 + self.section_def_controls_inserted
                 + self.picture_href_ctrl_data_materialized
                 + self.table_layout_ctrl_data_materialized
@@ -171,6 +176,7 @@ pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
 
     normalize_file_header_for_hwp(doc, &mut report);
     normalize_doc_properties_for_hwp(doc, &mut report);
+    materialize_hwp5_bin_data_order(doc, &mut report);
     normalize_bin_data_for_hwp(doc, &mut report);
 
     // Stage 4: SectionDef 컨트롤 삽입 (HWPX 파서가 만들지 않으므로 직렬화기가 PAGE_DEF 출력 못 함)
@@ -195,11 +201,17 @@ pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
 /// HWPX embedded BinData를 한컴 HWP 저장 관례에 맞춰 materialize한다.
 ///
 /// HWPX parser는 `content.hpf`의 BinData 항목을 모델에 등록하지만 HWP `BIN_DATA`
-/// record 전용 attr/status 값은 비워 둔다. 한컴 HWP 로더는 embedded image의
-/// `BIN_DATA` record에서 `attr=0x0101`, 접근 상태 success 형태를 기대하므로,
-/// HWP 저장 직전에 HWPX 출처 모델을 명시적으로 보정한다.
+/// record 전용 attr/status 값은 비워 둔다. 한컴 HWP 로더는 일반 embedded image의
+/// `BIN_DATA` record에서 `attr=0x0101` + Success 상태를 허용하지만, OLE storage가 함께
+/// 있는 문서에서는 한컴 저장본이 image/OLE 모두 NotAccessed 계약(`0x0001`/`0x0002`)을
+/// 사용한다. HWP 저장 직전에 HWPX 출처 모델을 이 계약으로 명시적으로 보정한다.
 fn normalize_bin_data_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
     let mut changed = false;
+    let has_storage = doc
+        .doc_info
+        .bin_data_list
+        .iter()
+        .any(|bin_data| bin_data.data_type == BinDataType::Storage);
 
     for bin_data in &mut doc.doc_info.bin_data_list {
         if !matches!(
@@ -209,13 +221,25 @@ fn normalize_bin_data_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
             continue;
         }
 
-        if bin_data.attr != 0x0101 {
-            bin_data.attr = 0x0101;
+        let expected_attr = match bin_data.data_type {
+            BinDataType::Embedding if has_storage => 0x0001,
+            BinDataType::Embedding => 0x0101,
+            BinDataType::Storage => 0x0002,
+            BinDataType::Link => continue,
+        };
+        if bin_data.attr != expected_attr {
+            bin_data.attr = expected_attr;
             changed = true;
         }
 
-        if !matches!(bin_data.status, BinDataStatus::Success) {
-            bin_data.status = BinDataStatus::Success;
+        let expected_status = match bin_data.data_type {
+            BinDataType::Embedding if has_storage => BinDataStatus::NotAccessed,
+            BinDataType::Embedding => BinDataStatus::Success,
+            BinDataType::Storage => BinDataStatus::NotAccessed,
+            BinDataType::Link => continue,
+        };
+        if bin_data.status != expected_status {
+            bin_data.status = expected_status;
             changed = true;
         }
 
@@ -229,6 +253,270 @@ fn normalize_bin_data_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
         report.bin_data_metadata_normalized += 1;
         doc.doc_info.raw_stream_dirty = true;
     }
+}
+
+/// HWPX manifest 순서는 HWP5 저장 시 한컴이 기대하는 BinData 순서와 다를 수 있다.
+///
+/// 특히 OLE 차트가 포함된 HWPX 변환본은 `content.hpf`에 배경 이미지 → 본문 그림 → OLE
+/// 순서로 적히는 경우가 있다. HWP5의 `bin_data_id`는 `BIN_DATA` 레코드 순번을 가리키므로,
+/// 한컴 정답지처럼 본문 컨트롤에서 먼저 등장하는 그림/OLE를 앞에 두고 DocInfo 전용 배경
+/// 이미지는 뒤로 보내야 한다. 이때 모든 참조 ID와 `BinDataContent.id`도 함께 remap한다.
+fn materialize_hwp5_bin_data_order(doc: &mut Document, report: &mut AdapterReport) {
+    let bin_count = doc.doc_info.bin_data_list.len();
+    if bin_count <= 1
+        || !doc
+            .doc_info
+            .bin_data_list
+            .iter()
+            .any(|bd| bd.data_type == BinDataType::Storage)
+    {
+        return;
+    }
+
+    let mut order = Vec::with_capacity(bin_count);
+    let mut seen = BTreeSet::new();
+
+    for section in &doc.sections {
+        collect_bin_order_from_paragraphs(&section.paragraphs, bin_count, &mut order, &mut seen);
+        for master_page in &section.section_def.master_pages {
+            collect_bin_order_from_paragraphs(
+                &master_page.paragraphs,
+                bin_count,
+                &mut order,
+                &mut seen,
+            );
+        }
+    }
+
+    collect_bin_order_from_doc_info(doc, bin_count, &mut order, &mut seen);
+
+    for id in 1..=bin_count as u16 {
+        push_bin_order(id, bin_count, &mut order, &mut seen);
+    }
+
+    let identity: Vec<u16> = (1..=bin_count as u16).collect();
+    if order == identity {
+        return;
+    }
+
+    let mut remap = vec![0u16; bin_count + 1];
+    for (new_idx, old_id) in order.iter().enumerate() {
+        remap[*old_id as usize] = (new_idx + 1) as u16;
+    }
+
+    let old_bin_data = doc.doc_info.bin_data_list.clone();
+    let mut new_bin_data = Vec::with_capacity(old_bin_data.len());
+    for old_id in &order {
+        let Some(old) = old_bin_data.get((*old_id as usize).saturating_sub(1)) else {
+            continue;
+        };
+        let mut bin_data = old.clone();
+        bin_data.storage_id = remap[*old_id as usize];
+        new_bin_data.push(bin_data);
+    }
+    if new_bin_data.len() == old_bin_data.len() {
+        doc.doc_info.bin_data_list = new_bin_data;
+    }
+
+    let old_content = doc.bin_data_content.clone();
+    let mut new_content = Vec::with_capacity(old_content.len());
+    for old_id in &order {
+        if let Some(content) = old_content.iter().find(|content| content.id == *old_id) {
+            let mut content = content.clone();
+            content.id = remap[*old_id as usize];
+            new_content.push(content);
+        }
+    }
+    for content in old_content {
+        if content.id == 0 || content.id as usize > bin_count {
+            new_content.push(content);
+        }
+    }
+    doc.bin_data_content = new_content;
+
+    remap_bin_refs_in_doc(doc, &remap);
+    doc.doc_info.raw_stream_dirty = true;
+    report.bin_data_order_materialized += 1;
+}
+
+fn push_bin_order(id: u16, bin_count: usize, order: &mut Vec<u16>, seen: &mut BTreeSet<u16>) {
+    if id == 0 || id as usize > bin_count || !seen.insert(id) {
+        return;
+    }
+    order.push(id);
+}
+
+fn collect_bin_order_from_doc_info(
+    doc: &Document,
+    bin_count: usize,
+    order: &mut Vec<u16>,
+    seen: &mut BTreeSet<u16>,
+) {
+    for border_fill in &doc.doc_info.border_fills {
+        if let Some(image) = &border_fill.fill.image {
+            push_bin_order(image.bin_data_id, bin_count, order, seen);
+        }
+    }
+}
+
+fn collect_bin_order_from_paragraphs(
+    paragraphs: &[Paragraph],
+    bin_count: usize,
+    order: &mut Vec<u16>,
+    seen: &mut BTreeSet<u16>,
+) {
+    for para in paragraphs {
+        for ctrl in &para.controls {
+            collect_bin_order_from_control(ctrl, bin_count, order, seen);
+        }
+    }
+}
+
+fn collect_bin_order_from_control(
+    ctrl: &Control,
+    bin_count: usize,
+    order: &mut Vec<u16>,
+    seen: &mut BTreeSet<u16>,
+) {
+    match ctrl {
+        Control::Picture(pic) => {
+            push_bin_order(pic.image_attr.bin_data_id, bin_count, order, seen);
+        }
+        Control::Shape(shape) => collect_bin_order_from_shape(shape, bin_count, order, seen),
+        Control::Table(table) => {
+            for cell in &table.cells {
+                collect_bin_order_from_paragraphs(&cell.paragraphs, bin_count, order, seen);
+            }
+        }
+        Control::Header(header) => {
+            collect_bin_order_from_paragraphs(&header.paragraphs, bin_count, order, seen);
+        }
+        Control::Footer(footer) => {
+            collect_bin_order_from_paragraphs(&footer.paragraphs, bin_count, order, seen);
+        }
+        Control::Footnote(footnote) => {
+            collect_bin_order_from_paragraphs(&footnote.paragraphs, bin_count, order, seen);
+        }
+        Control::Endnote(endnote) => {
+            collect_bin_order_from_paragraphs(&endnote.paragraphs, bin_count, order, seen);
+        }
+        _ => {}
+    }
+}
+
+fn collect_bin_order_from_shape(
+    shape: &ShapeObject,
+    bin_count: usize,
+    order: &mut Vec<u16>,
+    seen: &mut BTreeSet<u16>,
+) {
+    match shape {
+        ShapeObject::Picture(pic) => {
+            push_bin_order(pic.image_attr.bin_data_id, bin_count, order, seen);
+        }
+        ShapeObject::Ole(ole) => {
+            if let Ok(id) = u16::try_from(ole.bin_data_id) {
+                push_bin_order(id, bin_count, order, seen);
+            }
+        }
+        ShapeObject::Group(group) => {
+            for child in &group.children {
+                collect_bin_order_from_shape(child, bin_count, order, seen);
+            }
+        }
+        _ => {}
+    }
+
+    if let Some(drawing) = shape.drawing() {
+        if let Some(image) = &drawing.fill.image {
+            push_bin_order(image.bin_data_id, bin_count, order, seen);
+        }
+        if let Some(text_box) = &drawing.text_box {
+            collect_bin_order_from_paragraphs(&text_box.paragraphs, bin_count, order, seen);
+        }
+    }
+}
+
+fn remap_bin_refs_in_doc(doc: &mut Document, remap: &[u16]) {
+    for border_fill in &mut doc.doc_info.border_fills {
+        remap_bin_ref_in_fill(&mut border_fill.fill, remap);
+    }
+
+    for section in &mut doc.sections {
+        remap_bin_refs_in_paragraphs(&mut section.paragraphs, remap);
+        for master_page in &mut section.section_def.master_pages {
+            remap_bin_refs_in_paragraphs(&mut master_page.paragraphs, remap);
+        }
+    }
+}
+
+fn remap_bin_refs_in_paragraphs(paragraphs: &mut [Paragraph], remap: &[u16]) {
+    for para in paragraphs {
+        for ctrl in &mut para.controls {
+            remap_bin_refs_in_control(ctrl, remap);
+        }
+    }
+}
+
+fn remap_bin_refs_in_control(ctrl: &mut Control, remap: &[u16]) {
+    match ctrl {
+        Control::Picture(pic) => {
+            pic.image_attr.bin_data_id = remap_bin_ref(pic.image_attr.bin_data_id, remap);
+        }
+        Control::Shape(shape) => remap_bin_refs_in_shape(shape, remap),
+        Control::Table(table) => {
+            for cell in &mut table.cells {
+                remap_bin_refs_in_paragraphs(&mut cell.paragraphs, remap);
+            }
+        }
+        Control::Header(header) => remap_bin_refs_in_paragraphs(&mut header.paragraphs, remap),
+        Control::Footer(footer) => remap_bin_refs_in_paragraphs(&mut footer.paragraphs, remap),
+        Control::Footnote(footnote) => {
+            remap_bin_refs_in_paragraphs(&mut footnote.paragraphs, remap)
+        }
+        Control::Endnote(endnote) => remap_bin_refs_in_paragraphs(&mut endnote.paragraphs, remap),
+        _ => {}
+    }
+}
+
+fn remap_bin_refs_in_shape(shape: &mut ShapeObject, remap: &[u16]) {
+    match shape {
+        ShapeObject::Picture(pic) => {
+            pic.image_attr.bin_data_id = remap_bin_ref(pic.image_attr.bin_data_id, remap);
+        }
+        ShapeObject::Ole(ole) => {
+            if let Ok(id) = u16::try_from(ole.bin_data_id) {
+                ole.bin_data_id = remap_bin_ref(id, remap) as u32;
+            }
+        }
+        ShapeObject::Group(group) => {
+            for child in &mut group.children {
+                remap_bin_refs_in_shape(child, remap);
+            }
+        }
+        _ => {}
+    }
+
+    if let Some(drawing) = shape.drawing_mut() {
+        remap_bin_ref_in_fill(&mut drawing.fill, remap);
+        if let Some(text_box) = &mut drawing.text_box {
+            remap_bin_refs_in_paragraphs(&mut text_box.paragraphs, remap);
+        }
+    }
+}
+
+fn remap_bin_ref_in_fill(fill: &mut Fill, remap: &[u16]) {
+    if let Some(image) = &mut fill.image {
+        image.bin_data_id = remap_bin_ref(image.bin_data_id, remap);
+    }
+}
+
+fn remap_bin_ref(id: u16, remap: &[u16]) -> u16 {
+    remap
+        .get(id as usize)
+        .copied()
+        .filter(|new_id| *new_id != 0)
+        .unwrap_or(id)
 }
 
 /// HWPX 출처 문서를 HWP5 저장 관례에 맞춰 압축 문서로 보정한다.

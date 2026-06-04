@@ -63,6 +63,10 @@ pub struct CommonObjAttr {
     ///
     /// Table adapter의 `0x08000000` 보강과 다른 `0x04000000` bit 26이다.
     pub hwp5_gen_shape_attr_bit26: bool,
+    /// VertRelTo가 para일 때 크기 보호 여부 (HWP5 GenShape CTRL_HEADER attr bit 20).
+    pub size_protect: bool,
+    /// HWPX 출처 GenShape 번호 범주 high bit 후보 (HWP5 GenShape CTRL_HEADER attr bit 28).
+    pub hwp5_gen_shape_attr_bit28: bool,
     /// 세로 위치 기준
     pub vert_rel_to: VertRelTo,
     /// 세로 정렬 방식

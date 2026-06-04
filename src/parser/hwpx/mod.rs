@@ -22,6 +22,37 @@ use std::collections::{HashMap, HashSet};
 use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
 use crate::model::document::{Document, FileHeader, HwpVersion, Section};
 
+fn is_internal_bin_data_href(href: &str) -> bool {
+    let href = href.to_ascii_lowercase();
+    href.starts_with("bindata/") || href.contains("/bindata/")
+}
+
+fn is_internal_ole_package_item(item: &content::PackageItem) -> bool {
+    let href = item.href.to_ascii_lowercase();
+    is_internal_bin_data_href(&href)
+        && (item.media_type.eq_ignore_ascii_case("application/ole") || href.ends_with(".ole"))
+}
+
+fn hwpx_bin_data_extension(item: &content::PackageItem) -> String {
+    if is_internal_ole_package_item(item) {
+        "OLE".to_string()
+    } else {
+        item.href.rsplit('.').next().unwrap_or("dat").to_string()
+    }
+}
+
+fn normalize_internal_ole_data(item: &content::PackageItem, mut data: Vec<u8>) -> Vec<u8> {
+    if !is_internal_ole_package_item(item) || data.len() <= 12 {
+        return data;
+    }
+
+    const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+    if data[..8] != CFB_MAGIC && data[4..12] == CFB_MAGIC {
+        data.drain(..4);
+    }
+    data
+}
+
 /// HWPX 파싱 에러
 #[derive(Debug)]
 pub enum HwpxError {
@@ -130,8 +161,10 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 는 BinDataType::Link + abs_path 로 등록. 이후 populate_link_image_paths (parser/mod.rs)
     // 가 Picture.external_path 설정 → Task #741 fallback 로 같은 dir 영역 image load.
     for (i, item) in package_info.bin_data_items.iter().enumerate() {
-        let ext = item.href.rsplit('.').next().unwrap_or("dat").to_string();
-        let (data_type, abs_path) = if item.is_embedded {
+        let ext = hwpx_bin_data_extension(item);
+        let (data_type, abs_path) = if is_internal_ole_package_item(item) {
+            (BinDataType::Storage, None)
+        } else if item.is_embedded {
             (BinDataType::Embedding, None)
         } else {
             (BinDataType::Link, Some(item.href.clone()))
@@ -214,12 +247,17 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     for (i, item) in package_info.bin_data_items.iter().enumerate() {
         // [Task #873] isEmbeded="0" (외부 file 참조) 는 ZIP 영역 영역 부재. skip.
         // populate_link_image_paths + populate_external_images_from_dir 가 후처리.
-        if !item.is_embedded {
+        //
+        // Issue #1283: 일부 HWPX는 ZIP 내부 OLE(`BinData/*.ole`)에도 isEmbeded="0"을
+        // 기록한다. 이 경우는 외부 링크가 아니므로 로드해야 기존 OLE `/Contents`
+        // 차트 렌더러가 동작한다.
+        if !item.is_embedded && !is_internal_ole_package_item(item) {
             continue;
         }
         match reader.read_file_bytes(&item.href) {
             Ok(data) => {
-                let ext = item.href.rsplit('.').next().unwrap_or("dat").to_string();
+                let data = normalize_internal_ole_data(item, data);
+                let ext = hwpx_bin_data_extension(item);
                 bin_data_content.push(BinDataContent {
                     id: (i + 1) as u16,
                     data,

@@ -1806,8 +1806,14 @@ fn pack_hwpx_common_obj_attr(common: &CommonObjAttr) -> u32 {
     if common.allow_overlap {
         attr |= 1 << 14;
     }
+    if common.size_protect {
+        attr |= 1 << 20;
+    }
     if common.hwp5_gen_shape_attr_bit26 {
         attr |= 1 << 26;
+    }
+    if common.hwp5_gen_shape_attr_bit28 {
+        attr |= 1 << 28;
     }
 
     attr |= (match common.vert_rel_to {
@@ -1853,6 +1859,12 @@ fn pack_hwpx_common_obj_attr(common: &CommonObjAttr) -> u32 {
         TextWrap::BehindText => 2,
         TextWrap::InFrontOfText => 3,
     }) << 21;
+    attr |= (match common.text_flow {
+        crate::model::shape::TextFlow::BothSides => 0,
+        crate::model::shape::TextFlow::LeftOnly => 1,
+        crate::model::shape::TextFlow::RightOnly => 2,
+        crate::model::shape::TextFlow::LargestOnly => 3,
+    }) << 24;
 
     attr
 }
@@ -2581,6 +2593,7 @@ fn parse_object_layout_child(
                     b"heightRelTo" => {
                         common.height_criterion = parse_size_criterion(&attr_str(&attr), false);
                     }
+                    b"protect" => common.size_protect = parse_bool(&attr),
                     _ => {}
                 }
             }
@@ -5007,10 +5020,15 @@ fn parse_hp_chart_element(
     use crate::model::shape::OleShape;
 
     let mut common = CommonObjAttr::default();
+    common.hwp5_gen_shape_attr_bit26 = true;
     let mut chart_num: u16 = 0;
+    let mut numbering_type_picture = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"numberingType" => {
+                numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
+            }
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
                 common.text_wrap = match attr_str(&attr).as_str() {
@@ -5043,6 +5061,10 @@ fn parse_hp_chart_element(
     }
 
     parse_common_shape_children(reader, &mut common, b"chart")?;
+    if numbering_type_picture {
+        common.hwp5_gen_shape_attr_bit28 = true;
+    }
+    common.attr = pack_hwpx_common_obj_attr(&common);
 
     if chart_num == 0 {
         return Ok(None);
@@ -5053,6 +5075,7 @@ fn parse_hp_chart_element(
     ole.bin_data_id = 60000u32 + chart_num as u32;
     ole.extent_x = 7200;
     ole.extent_y = 7200;
+    apply_hwpx_ole_shape_component_contract(&mut ole);
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
     ))))))
@@ -5066,10 +5089,15 @@ fn parse_hp_ole_element(
     use crate::model::shape::OleShape;
 
     let mut common = CommonObjAttr::default();
+    common.hwp5_gen_shape_attr_bit26 = true;
     let mut bin_id: u32 = 0;
+    let mut numbering_type_picture = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"numberingType" => {
+                numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
+            }
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
                 common.text_wrap = match attr_str(&attr).as_str() {
@@ -5101,15 +5129,51 @@ fn parse_hp_ole_element(
     }
 
     parse_common_shape_children(reader, &mut common, b"ole")?;
+    if numbering_type_picture {
+        common.hwp5_gen_shape_attr_bit28 = true;
+    }
+    common.attr = pack_hwpx_common_obj_attr(&common);
 
     let mut ole = OleShape::default();
     ole.common = common;
     ole.bin_data_id = bin_id;
     ole.extent_x = 7200;
     ole.extent_y = 7200;
+    apply_hwpx_ole_shape_component_contract(&mut ole);
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
     ))))))
+}
+
+fn apply_hwpx_ole_shape_component_contract(ole: &mut crate::model::shape::OleShape) {
+    let extent_w = if ole.extent_x > 0 {
+        ole.extent_x as u32
+    } else {
+        7200
+    };
+    let extent_h = if ole.extent_y > 0 {
+        ole.extent_y as u32
+    } else {
+        7200
+    };
+    let shape_attr = &mut ole.drawing.shape_attr;
+    shape_attr.ctrl_id = tags::SHAPE_OLE_ID;
+    shape_attr.is_two_ctrl_id = true;
+    if shape_attr.local_file_version == 0 {
+        shape_attr.local_file_version = 1;
+    }
+    if shape_attr.original_width == 0 {
+        shape_attr.original_width = extent_w;
+    }
+    if shape_attr.original_height == 0 {
+        shape_attr.original_height = extent_h;
+    }
+    if shape_attr.current_width == 0 {
+        shape_attr.current_width = shape_attr.original_width;
+    }
+    if shape_attr.current_height == 0 {
+        shape_attr.current_height = shape_attr.original_height;
+    }
 }
 
 /// `<hp:sz>`, `<hp:pos>`, `<hp:outMargin>` 등 공통 자식 요소를 공통 속성에 반영한다.
@@ -5130,6 +5194,7 @@ fn parse_common_shape_children(
                             match attr.key.as_ref() {
                                 b"width" => common.width = parse_u32(&attr),
                                 b"height" => common.height = parse_u32(&attr),
+                                b"protect" => common.size_protect = parse_bool(&attr),
                                 _ => {}
                             }
                         }
@@ -5173,6 +5238,8 @@ fn parse_common_shape_children(
                                 b"vertOffset" => common.vertical_offset = parse_u32(&attr),
                                 b"horzOffset" => common.horizontal_offset = parse_u32(&attr),
                                 b"treatAsChar" => common.treat_as_char = parse_bool(&attr),
+                                b"flowWithText" => common.flow_with_text = parse_bool(&attr),
+                                b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
                                 _ => {}
                             }
                         }
@@ -6204,6 +6271,43 @@ mod tests {
             panic!("expected rectangle shape");
         };
         assert_eq!(rect.round_rate, 50);
+    }
+
+    #[test]
+    fn test_parse_rect_preserves_size_protect() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:rect id="1" zOrder="0" textWrap="SQUARE" textFlow="RIGHT_ONLY">
+        <hp:drawText>
+          <hp:subList vertAlign="CENTER">
+            <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>기</hp:t></hp:run></hp:p>
+          </hp:subList>
+        </hp:drawText>
+        <hp:sz width="2600" height="2600" protect="1"/>
+        <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:rect>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Rectangle(rect) = shape.as_ref() else {
+            panic!("expected rectangle shape");
+        };
+        assert!(rect.common.size_protect);
+        assert!(rect.common.flow_with_text);
+        assert!(rect.common.allow_overlap);
+        assert_eq!(
+            rect.common.text_flow,
+            crate::model::shape::TextFlow::RightOnly
+        );
     }
 
     #[test]

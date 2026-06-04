@@ -76,7 +76,9 @@ pub fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 /// - bit 18-19: height_criterion
 /// - bit 21-23: text_wrap
 /// - bit 24-25: text_flow
+/// - bit 20: size protect when VertRelTo is Para
 /// - bit 26: HWPX GenShape storage high bit 후보
+/// - bit 28: HWPX GenShape numbering category high bit 후보
 pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     let mut a: u32 = 0;
     if common.treat_as_char {
@@ -92,12 +94,18 @@ pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     if common.allow_overlap {
         a |= 1 << 14;
     }
+    if common.size_protect {
+        a |= 1 << 20;
+    }
     a |= (width_criterion_to_bits(common.width_criterion) & 0x07) << 15;
     a |= (height_criterion_to_bits(common.height_criterion) & 0x03) << 18;
     a |= (text_wrap_to_bits(common.text_wrap) & 0x07) << 21;
     a |= (text_flow_to_bits(common.text_flow) & 0x03) << 24;
     if common.hwp5_gen_shape_attr_bit26 {
         a |= 1 << 26;
+    }
+    if common.hwp5_gen_shape_attr_bit28 {
+        a |= 1 << 28;
     }
     a
 }
@@ -207,6 +215,8 @@ mod tests {
             flow_with_text: false,
             allow_overlap: false,
             hwp5_gen_shape_attr_bit26: false,
+            size_protect: false,
+            hwp5_gen_shape_attr_bit28: false,
             vert_rel_to: VertRelTo::Para,
             vert_align: VertAlign::Top,
             horz_rel_to: HorzRelTo::Para,
@@ -244,6 +254,11 @@ mod tests {
             parsed.hwp5_gen_shape_attr_bit26,
             original.hwp5_gen_shape_attr_bit26
         );
+        assert_eq!(parsed.size_protect, original.size_protect);
+        assert_eq!(
+            parsed.hwp5_gen_shape_attr_bit28,
+            original.hwp5_gen_shape_attr_bit28
+        );
         assert_eq!(parsed.vert_rel_to, original.vert_rel_to);
         assert_eq!(parsed.horz_rel_to, original.horz_rel_to);
         assert_eq!(parsed.text_wrap, original.text_wrap);
@@ -266,18 +281,24 @@ mod tests {
         original.flow_with_text = true;
         original.allow_overlap = true;
         original.hwp5_gen_shape_attr_bit26 = true;
+        original.size_protect = true;
+        original.hwp5_gen_shape_attr_bit28 = true;
 
         let bytes = serialize_common_obj_attr(&original);
         let attr = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
 
         assert_ne!(attr & (1 << 13), 0);
         assert_ne!(attr & (1 << 14), 0);
+        assert_ne!(attr & (1 << 20), 0);
         assert_ne!(attr & (1 << 26), 0);
+        assert_ne!(attr & (1 << 28), 0);
 
         let parsed = parse_common_obj_attr(&bytes);
         assert!(parsed.flow_with_text);
         assert!(parsed.allow_overlap);
+        assert!(parsed.size_protect);
         assert!(parsed.hwp5_gen_shape_attr_bit26);
+        assert!(parsed.hwp5_gen_shape_attr_bit28);
     }
 
     #[test]

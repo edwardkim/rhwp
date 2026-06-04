@@ -16,8 +16,8 @@ use crate::model::image::{ImageEffect, Picture};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef};
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
-    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, ShapeComponentAttr,
-    ShapeObject,
+    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, HorzRelTo,
+    OleShape, ShapeComponentAttr, ShapeObject, TextFlow, TextWrap, VertRelTo,
 };
 use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
@@ -74,11 +74,17 @@ pub fn serialize_control(
             ));
         }
         Control::Bookmark(bm) => {
-            records.push(make_ctrl_record(
-                tags::CTRL_BOOKMARK,
-                level,
-                &serialize_bookmark(bm),
-            ));
+            records.push(make_ctrl_record(tags::CTRL_BOOKMARK, level, &[]));
+            if ctrl_data_record.is_none() {
+                if let Some(data) = serialize_bookmark_ctrl_data(bm) {
+                    records.push(Record {
+                        tag_id: tags::HWPTAG_CTRL_DATA,
+                        level: level + 1,
+                        size: data.len() as u32,
+                        data,
+                    });
+                }
+            }
         }
         Control::Picture(pic) => serialize_picture_control(pic, level, ctrl_data_record, records),
         Control::Shape(shape) => serialize_shape_control(shape, level, ctrl_data_record, records),
@@ -863,10 +869,25 @@ fn serialize_page_hide(ph: &PageHide) -> Vec<u8> {
     attr.to_le_bytes().to_vec()
 }
 
-fn serialize_bookmark(bm: &Bookmark) -> Vec<u8> {
+fn serialize_bookmark_ctrl_data(bm: &Bookmark) -> Option<Vec<u8>> {
+    if bm.name.is_empty() {
+        return None;
+    }
+
     let mut w = ByteWriter::new();
-    w.write_hwp_string(&bm.name).unwrap();
-    w.into_bytes()
+    w.write_u16(0x021b).unwrap(); // ParameterSet id
+    w.write_u16(1).unwrap(); // item count
+    w.write_u16(0).unwrap(); // dummy
+    w.write_u16(0x4000).unwrap(); // item id: bookmark name
+    w.write_u16(0x0001).unwrap(); // string
+
+    let utf16: Vec<u16> = bm.name.encode_utf16().collect();
+    w.write_u16(utf16.len() as u16).unwrap();
+    for ch in utf16 {
+        w.write_u16(ch).unwrap();
+    }
+
+    Some(w.into_bytes())
 }
 
 /// 글자 겹침 직렬화 (HWP 스펙 표 152)
@@ -993,12 +1014,53 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
 // 도형 ('gso ' + Shape)
 // ============================================================
 
+fn synthesize_hwpx_shape_ctrl_data(shape: &ShapeObject) -> Option<Vec<u8>> {
+    let ShapeObject::Rectangle(rect) = shape else {
+        return None;
+    };
+    rect.drawing.text_box.as_ref()?;
+    let common = &rect.common;
+    if !(common.size_protect
+        && common.flow_with_text
+        && common.allow_overlap
+        && common.vert_rel_to == VertRelTo::Para
+        && common.horz_rel_to == HorzRelTo::Para
+        && common.text_wrap == TextWrap::Square
+        && common.text_flow == TextFlow::RightOnly)
+    {
+        return None;
+    }
+
+    Some(vec![
+        0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x03, 0x30, 0x00, 0x80, 0x03, 0x30, 0x01, 0x00, 0x00,
+        0x00, 0x01, 0x70, 0x09, 0x00, 0x01, 0x00, 0x00, 0x00,
+    ])
+}
+
 fn serialize_shape_control(
     shape: &ShapeObject,
     level: u16,
     ctrl_data_record: Option<&[u8]>,
     records: &mut Vec<Record>,
 ) {
+    let synthesized_ctrl_data = if ctrl_data_record.is_none() {
+        synthesize_hwpx_shape_ctrl_data(shape)
+    } else {
+        None
+    };
+    let ctrl_data_record = ctrl_data_record.or(synthesized_ctrl_data.as_deref());
+
+    let emit_top_level_synthesized_ctrl_data = |records: &mut Vec<Record>| {
+        if let Some(data) = synthesized_ctrl_data.as_deref() {
+            records.push(Record {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: level + 1,
+                size: data.len() as u32,
+                data: data.to_vec(),
+            });
+        }
+    };
+
     // CTRL_DATA를 SHAPE_COMPONENT 자식으로 배치하는 헬퍼
     let emit_ctrl_data = |records: &mut Vec<Record>| {
         if let Some(data) = ctrl_data_record {
@@ -1024,6 +1086,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&line.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1068,6 +1131,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&rect.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1096,6 +1160,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&ellipse.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1137,6 +1202,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&poly.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1173,6 +1239,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&arc.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1202,6 +1269,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&curve.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1234,6 +1302,7 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&group.common),
             ));
+            emit_top_level_synthesized_ctrl_data(records);
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
             {
                 let mut data = serialize_shape_component(0x24636f6e, &group.shape_attr, true); // '$con'
@@ -1252,7 +1321,13 @@ fn serialize_shape_control(
                         ShapeObject::Group(_) => tags::CTRL_GEN_SHAPE,
                         ShapeObject::Picture(_) => tags::SHAPE_PICTURE_ID,
                         ShapeObject::Chart(c) => c.drawing.shape_attr.ctrl_id,
-                        ShapeObject::Ole(o) => o.drawing.shape_attr.ctrl_id,
+                        ShapeObject::Ole(o) => {
+                            if o.drawing.shape_attr.ctrl_id != 0 {
+                                o.drawing.shape_attr.ctrl_id
+                            } else {
+                                tags::SHAPE_OLE_ID
+                            }
+                        }
                     };
                     w.write_u32(child_ctrl_id).unwrap();
                 }
@@ -1301,26 +1376,25 @@ fn serialize_shape_control(
             });
         }
         ShapeObject::Ole(ole) => {
-            // Task #195 단계 2: raw_tag_data를 그대로 보존하여 라운드트립 유지
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
                 &serialize_common_obj_attr(&ole.common),
             ));
-            let sc_ctrl_id = ole.drawing.shape_attr.ctrl_id;
+            let drawing = ole_drawing_with_shape_component_contract(ole, true);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
                 size: 0,
-                data: serialize_drawing_shape_component(sc_ctrl_id, &ole.drawing, true),
+                data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, true),
             });
             emit_ctrl_data(records);
-            serialize_text_box_if_present(&ole.drawing, level + 2, records);
+            serialize_text_box_if_present(&drawing, level + 2, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT_OLE,
                 level: level + 2,
                 size: 0,
-                data: ole.raw_tag_data.clone(),
+                data: serialize_ole_data(ole),
             });
         }
     }
@@ -1563,26 +1637,84 @@ fn serialize_group_child(
             });
         }
         ShapeObject::Ole(ole) => {
-            // Task #195 단계 2: 그룹 내 OLE는 raw_tag_data로 라운드트립
+            let drawing = ole_drawing_with_shape_component_contract(ole, false);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_drawing_shape_component(
-                    ole.drawing.shape_attr.ctrl_id,
-                    &ole.drawing,
-                    false,
-                ),
+                data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, false),
             });
-            serialize_text_box_if_present(&ole.drawing, type_level, records);
+            serialize_text_box_if_present(&drawing, type_level, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT_OLE,
                 level: type_level,
                 size: 0,
-                data: ole.raw_tag_data.clone(),
+                data: serialize_ole_data(ole),
             });
         }
     }
+}
+
+fn serialize_ole_data(ole: &OleShape) -> Vec<u8> {
+    if !ole.raw_tag_data.is_empty() {
+        return ole.raw_tag_data.clone();
+    }
+
+    let mut w = ByteWriter::new();
+    w.write_u32(1).unwrap(); // property/type
+    w.write_i32(ole.extent_x).unwrap();
+    w.write_i32(ole.extent_y).unwrap();
+    w.write_u32(ole.bin_data_id).unwrap();
+    w.write_u32(0).unwrap();
+    w.write_u32(0).unwrap();
+    w.write_u16(0).unwrap();
+    w.into_bytes()
+}
+
+fn ole_drawing_with_shape_component_contract(ole: &OleShape, top_level: bool) -> DrawingObjAttr {
+    let mut drawing = ole.drawing.clone();
+    let extent_w = if ole.extent_x > 0 {
+        ole.extent_x as u32
+    } else if drawing.shape_attr.current_width > 0 {
+        drawing.shape_attr.current_width
+    } else if drawing.shape_attr.original_width > 0 {
+        drawing.shape_attr.original_width
+    } else {
+        7200
+    };
+    let extent_h = if ole.extent_y > 0 {
+        ole.extent_y as u32
+    } else if drawing.shape_attr.current_height > 0 {
+        drawing.shape_attr.current_height
+    } else if drawing.shape_attr.original_height > 0 {
+        drawing.shape_attr.original_height
+    } else {
+        7200
+    };
+
+    let attr = &mut drawing.shape_attr;
+    if attr.ctrl_id == 0 {
+        attr.ctrl_id = tags::SHAPE_OLE_ID;
+        attr.is_two_ctrl_id = top_level;
+    } else if top_level && !attr.is_two_ctrl_id {
+        attr.is_two_ctrl_id = true;
+    }
+    if attr.local_file_version == 0 {
+        attr.local_file_version = 1;
+    }
+    if attr.original_width == 0 {
+        attr.original_width = extent_w;
+    }
+    if attr.original_height == 0 {
+        attr.original_height = extent_h;
+    }
+    if attr.current_width == 0 {
+        attr.current_width = attr.original_width;
+    }
+    if attr.current_height == 0 {
+        attr.current_height = attr.original_height;
+    }
+    drawing
 }
 
 /// DrawingObjAttr의 text_box가 있으면 LIST_HEADER + 문단 목록 직렬화

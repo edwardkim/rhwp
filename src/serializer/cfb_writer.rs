@@ -179,7 +179,9 @@ fn find_bin_data_info_with_compress<'a>(
 ) -> (u16, &'a str, bool) {
     use crate::model::bin_data::BinDataCompression;
     for bd in bin_data_list {
-        if bd.data_type == BinDataType::Embedding && bd.storage_id == content.id {
+        if matches!(bd.data_type, BinDataType::Embedding | BinDataType::Storage)
+            && bd.storage_id == content.id
+        {
             let ext = bd.extension.as_deref().unwrap_or("dat");
             let should_compress = match bd.compression {
                 BinDataCompression::Default => doc_compressed,

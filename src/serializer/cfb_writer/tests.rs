@@ -1698,3 +1698,80 @@ fn test_ole_storage_size_prefix_restored() {
     // prefix 를 제외한 본문이 원본 OLE CFB 와 동일
     assert_eq!(&stream[4..], &ole_cfb[..], "OLE CFB 본문이 보존되어야 한다");
 }
+
+/// 압축 문서에서는 OLE Storage 도 `[size][CFB]` payload 를 만든 뒤 BinData 압축 정책에 따라
+/// raw deflate 로 저장해야 한다. 한컴 저장본의 chart OLE Storage 가 이 형태를 사용한다.
+#[test]
+fn test_compressed_ole_storage_payload_is_deflated() {
+    use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+
+    let mut ole_cfb = vec![0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+    ole_cfb.extend_from_slice(&[0x42u8; 64]);
+
+    let mut doc_info = DocInfo::default();
+    doc_info.bin_data_list.push(BinData {
+        data_type: BinDataType::Storage,
+        storage_id: 1,
+        extension: Some("OLE".to_string()),
+        ..Default::default()
+    });
+
+    let doc = Document {
+        header: FileHeader {
+            version: HwpVersion {
+                major: 5,
+                minor: 0,
+                build: 6,
+                revision: 1,
+            },
+            flags: 0x01,
+            compressed: true,
+            encrypted: false,
+            distribution: false,
+            raw_data: None,
+        },
+        doc_properties: DocProperties {
+            section_count: 1,
+            page_start_num: 1,
+            ..Default::default()
+        },
+        doc_info,
+        sections: vec![crate::model::document::Section {
+            section_def: SectionDef::default(),
+            paragraphs: vec![Paragraph {
+                line_segs: vec![LineSeg {
+                    line_height: 400,
+                    baseline_distance: 320,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            raw_stream: None,
+        }],
+        preview: None,
+        bin_data_content: vec![BinDataContent {
+            id: 1,
+            data: ole_cfb.clone(),
+            extension: "OLE".to_string(),
+        }],
+        extra_streams: Vec::new(),
+        is_hwp3_variant: false,
+    };
+
+    let bytes = serialize_hwp(&doc).unwrap();
+    let mut cfb = crate::parser::cfb_reader::CfbReader::open(&bytes).unwrap();
+    let stream = cfb.read_bin_data("BIN0001.OLE").unwrap();
+    assert!(
+        !stream.starts_with(&(ole_cfb.len() as u32).to_le_bytes()),
+        "compressed OLE Storage stream should not expose the size prefix before decompression"
+    );
+
+    let payload = decompress_stream(&stream).expect("OLE Storage stream must be deflated");
+    let prefix = u32::from_le_bytes([payload[0], payload[1], payload[2], payload[3]]);
+    assert_eq!(prefix as usize, ole_cfb.len());
+    assert_eq!(
+        &payload[4..12],
+        &[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]
+    );
+    assert_eq!(&payload[4..], &ole_cfb[..]);
+}

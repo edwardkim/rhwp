@@ -49,12 +49,27 @@ fn min_text_y_in_x_range(svg: &str, x_min: f64, x_max: f64, y_min: f64) -> Optio
     min_y
 }
 
-fn attr_f64(tag: &str, name: &str) -> Option<f64> {
+fn attr_value<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
     let needle = format!("{}=\"", name);
     let start = tag.find(&needle)? + needle.len();
     let rest = &tag[start..];
     let end = rest.find('"')?;
-    rest[..end].parse().ok()
+    Some(&rest[..end])
+}
+
+fn attr_f64(tag: &str, name: &str) -> Option<f64> {
+    attr_value(tag, name)?.parse().ok()
+}
+
+fn translate_y(tag: &str) -> Option<f64> {
+    let transform = attr_value(tag, "transform")?;
+    let inner = transform.strip_prefix("translate(")?.strip_suffix(')')?;
+    inner
+        .split(|c: char| c == ',' || c.is_whitespace())
+        .filter(|part| !part.is_empty())
+        .nth(1)?
+        .parse()
+        .ok()
 }
 
 /// 차트 placeholder (회색 점선 rect, fill #f0f0f0) 의 (y, height).
@@ -71,12 +86,36 @@ fn chart_placeholder_y_h(svg: &str) -> Option<(f64, f64)> {
     None
 }
 
+/// 실제 OLE chart SVG `<g transform="translate(x y)">` 의 (y, height).
+fn rendered_ole_chart_y_h(svg: &str) -> Option<(f64, f64)> {
+    for chunk in svg.split("<g ").skip(1) {
+        let tag_end = chunk.find('>')?;
+        let tag = &chunk[..tag_end];
+        if !tag.contains("hwp-ole-chart") {
+            continue;
+        }
+        let y = translate_y(tag)?;
+        let body = &chunk[tag_end + 1..];
+        for rect_chunk in body.split("<rect ").skip(1) {
+            let rect_tag_end = rect_chunk.find("/>").or_else(|| rect_chunk.find('>'))?;
+            let rect_tag = &rect_chunk[..rect_tag_end];
+            let h = attr_f64(rect_tag, "height")?;
+            return Some((y, h));
+        }
+    }
+    None
+}
+
+fn chart_y_h(svg: &str) -> Option<(f64, f64)> {
+    rendered_ole_chart_y_h(svg).or_else(|| chart_placeholder_y_h(svg))
+}
+
 #[test]
 fn chart_moves_to_second_column_and_text_does_not_overlap() {
     let svg = render_page_svg("samples/hwpx/143E433F503322BD33.hwpx", 0);
 
-    // 차트 placeholder (단1, x>396) 위치.
-    let (chart_y, chart_h) = chart_placeholder_y_h(&svg).expect("chart placeholder rect");
+    // 차트 OLE 렌더 결과(또는 구버전 placeholder)의 단1 위치.
+    let (chart_y, chart_h) = chart_y_h(&svg).expect("chart OLE bbox");
     let chart_bottom = chart_y + chart_h;
 
     // 차트가 단1 상단 근처 (body_area 상단 ~ 130px 이내) 에 배치.
