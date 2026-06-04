@@ -1548,9 +1548,47 @@ fn issue_1284_2023_sep_page16_question27_title_matches_pdf_tail() {
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let tree = doc.build_page_render_tree(15).expect("page 16 render tree");
 
+    let q23_title = find_text_line_bbox(&tree.root, 812, 0).expect("문23 제목");
+    let q24_title = find_text_line_bbox(&tree.root, 814, 0).expect("문24 제목");
+    let q25_title = find_text_line_bbox(&tree.root, 820, 0).expect("문25 제목");
+    let q25_tail_bottom = max_para_content_bottom(&tree.root, 822).expect("문25 꼬리 수식");
+    let q26_title = find_text_line_bbox(&tree.root, 823, 0).expect("문26 제목");
+    let q26_tail_bottom = max_para_content_bottom(&tree.root, 830).expect("문26 꼬리 수식");
     let q27_title = find_text_line_bbox(&tree.root, 831, 0).expect("문27 제목");
     let q27_first = find_text_line_bbox(&tree.root, 832, 0).expect("문27 첫 본문");
 
+    assert!(
+        (140.0..=155.0).contains(&q23_title.y),
+        "문23 제목은 PDF page 16 왼쪽 단 상단 bbox(약 y=147px)에 있어야 함: {:?}",
+        q23_title
+    );
+    assert!(
+        (248.0..=266.0).contains(&q24_title.y),
+        "문24 제목은 PDF page 16 왼쪽 단 중단 bbox(약 y=255px)에 있어야 함: {:?}",
+        q24_title
+    );
+    assert!(
+        (490.0..=520.0).contains(&q25_title.y),
+        "문25 제목은 PDF page 16 왼쪽 단 중단 bbox(약 y=496px) 근처여야 함: {:?}",
+        q25_title
+    );
+    assert!(
+        (616.0..=638.0).contains(&q26_title.y),
+        "문26 제목은 PDF page 16 왼쪽 단 중하단 bbox(약 y=625px)에 있어야 함: {:?}",
+        q26_title
+    );
+    assert!(
+        q25_tail_bottom <= q26_title.y - 6.0,
+        "문25 마지막 수식이 문26 제목과 겹치면 안 됨: 문25 bottom={:.1}, 문26={:?}",
+        q25_tail_bottom,
+        q26_title
+    );
+    assert!(
+        q26_tail_bottom <= q27_title.y - 6.0,
+        "문26 마지막 수식이 문27 제목과 겹치면 안 됨: 문26 bottom={:.1}, 문27={:?}",
+        q26_tail_bottom,
+        q27_title
+    );
     assert!(
         q27_title.x < 80.0 && (992.0..=1010.0).contains(&q27_title.y),
         "문27 제목은 PDF page 16 왼쪽 단 하단 bbox(약 y=1001px)에 있어야 함: {:?}",

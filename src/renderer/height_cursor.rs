@@ -401,8 +401,14 @@ impl HeightCursor {
             && y_offset <= self.col_area_y + self.col_area_height * 0.75
             && end_y > y_offset + 200.0
             && prev_line_spacing_px > 0.0;
+        let compact_endnote_top_stale_note_gap = compact_endnote_stale_note_gap
+            && y_offset <= self.col_area_y + self.col_area_height * 0.08;
         let stale_note_gap_y =
-            compact_endnote_stale_note_gap.then_some(y_offset + prev_line_spacing_px);
+            compact_endnote_stale_note_gap.then_some(if compact_endnote_top_stale_note_gap {
+                y_offset
+            } else {
+                y_offset + prev_line_spacing_px
+            });
         let compact_endnote_tac_picture_gap = self.suppress_large_forward_jump
             && !is_page_path
             && end_y > y_offset
@@ -526,6 +532,16 @@ impl HeightCursor {
             && y_offset > self.col_area_y + self.col_area_height * 0.90
             && y_offset <= col_bottom
             && y_offset - end_y <= 96.0;
+        let compact_endnote_question_title_tail_soft_backtrack = self.suppress_large_forward_jump
+            && !is_page_path
+            && current_is_endnote_title
+            && !vpos_rewind
+            && follows_tall_inline_item
+            && prev_para.text.trim().is_empty()
+            && end_y < y_offset - 20.0
+            && end_y >= y_offset - 32.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.90
+            && y_offset <= col_bottom;
         let compact_endnote_question_title_after_tall_tail_backtrack = self
             .suppress_large_forward_jump
             && !is_page_path
@@ -537,6 +553,19 @@ impl HeightCursor {
             && y_offset > self.col_area_y + self.col_area_height * 0.84
             && y_offset <= col_bottom
             && y_offset - end_y <= 120.0;
+        let compact_endnote_question_title_after_tall_mid_backtrack = self
+            .suppress_large_forward_jump
+            && !is_page_path
+            && current_is_endnote_title
+            && !vpos_rewind
+            && follows_tall_inline_item
+            && seg.line_height <= 3600
+            && (!prev_para.text.trim().is_empty() || para_has_equation_only(prev_para))
+            && end_y < y_offset - 32.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.50
+            && y_offset <= self.col_area_y + self.col_area_height * 0.75
+            && y_offset - end_y <= 96.0
+            && self.endnote_between_notes_hu <= 2500;
         let compact_endnote_question_title_after_tall_regular_gap = self
             .suppress_large_forward_jump
             && !is_page_path
@@ -634,12 +663,27 @@ impl HeightCursor {
             (y_offset - (y_offset - end_y).min(50.0))
                 .max(self.col_area_y)
                 .min(y_offset)
+        } else if compact_endnote_question_title_tail_soft_backtrack {
+            // 직전 수식 tail 보정으로 hard backtrack 임계값 바로 위에 놓인
+            // 제목은 순차 y를 그대로 쓰면 한컴보다 약 1줄 낮아진다.
+            // 저장 end_y 전체가 아니라 작은 폭만 당겨 tail과 제목 간격을 맞춘다.
+            (y_offset - (y_offset - end_y).min(10.0))
+                .max(self.col_area_y)
+                .min(y_offset)
         } else if compact_endnote_question_title_after_tall_tail_backtrack {
             // 하단부 큰 수식/inline 뒤 새 문항 제목은 저장 vpos 전체를 따르면
             // 앞 문항과 겹친다. 한컴처럼 제한적으로만 당겨 뒤 풀이 줄이
             // frame 안에 들어갈 공간을 확보한다.
             (y_offset - (y_offset - end_y).min(30.0) - curr_sb)
                 .max(prev_content_bottom_y - curr_sb - 12.0)
+                .max(self.col_area_y)
+                .min(y_offset)
+        } else if compact_endnote_question_title_after_tall_mid_backtrack {
+            // 중단 하단의 큰 수식 line 뒤 문항 제목은 저장 vpos가 한컴보다
+            // 약 한 줄 아래로 밀린 케이스가 있다. 전체 end_y까지 당기면 앞
+            // 풀이와 붙으므로, 수식 바닥 기준을 침범하지 않는 선에서만 제한한다.
+            (y_offset - (y_offset - end_y).min(41.0) - curr_sb)
+                .max(prev_content_bottom_y - curr_sb + 10.0)
                 .max(self.col_area_y)
                 .min(y_offset)
         } else if compact_endnote_question_title_after_tall_regular_gap {
@@ -731,6 +775,16 @@ impl HeightCursor {
                 }
             }
         }
+        if compact_endnote_question_title_after_tall_mid_backtrack && result > end_y + 0.5 {
+            let base_delta_hu = ((end_y - result) / self.dpi * 7200.0).round() as i32;
+            if base_delta_hu != 0 {
+                if is_page_path {
+                    self.vpos_page_base = Some(base + base_delta_hu);
+                } else {
+                    self.vpos_lazy_base = Some(base + base_delta_hu);
+                }
+            }
+        }
         self.last_compacted_endnote_title_gap = compact_endnote_new_note_jump
             && bottom_new_note_gap_cap
                 .map(|cap| end_y - cap > 8.0)
@@ -765,7 +819,9 @@ impl HeightCursor {
         if injected_between_notes
             && compact_endnote_question_title
             && !compact_endnote_question_title_tail_backtrack
+            && !compact_endnote_question_title_tail_soft_backtrack
             && !compact_endnote_question_title_after_tall_tail_backtrack
+            && !compact_endnote_question_title_after_tall_mid_backtrack
             && !compact_endnote_question_title_after_tall_regular_gap
             && !compact_endnote_title_bottom_backtrack
             && !vpos_rewind
@@ -1203,6 +1259,32 @@ mod tests {
         );
     }
 
+    /// 단 상단에 가까운 새 미주 제목은 순차 y가 이미 한컴/PDF 위치이므로
+    /// stale-forward 저장 vpos를 버리되 미주 사이 line spacing을 한 번 더 넣지 않는다.
+    #[test]
+    fn compact_endnote_question_title_top_stale_forward_keeps_sequential_y() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.vpos_lazy_base = Some(719467);
+        let mut ps = vec![
+            para(0, 722803, 900, 1984, 5000),
+            para(0, 742719, 900, 452, 5000),
+        ];
+        ps[0].text = "따라서".to_string();
+        ps[1].text = "문23)".to_string();
+
+        let y_offset = 147.19;
+        let end_y = COL_Y + (742719.0 - 719467.0) / 75.0;
+        let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
+        let expected_base = 719467 + ((end_y - y_offset) / DPI * 7200.0).round() as i32;
+
+        assert!(
+            (got - y_offset).abs() < 1e-6,
+            "got={got}, expected={y_offset}"
+        );
+        assert_eq!(c.vpos_lazy_base, Some(expected_base));
+    }
+
     /// 빈 문단이 새 미주 제목 앞의 시각 간격을 이미 만들었다면 추가 40px 완충은 넣지 않는다.
     #[test]
     fn compact_endnote_question_title_after_empty_spacer_keeps_stored_gap_only() {
@@ -1336,6 +1418,57 @@ mod tests {
         let y_offset = 419.63;
         let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
         let expected = y_offset - (1984.0 / 7200.0 * DPI) + 10.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
+    /// 중단 하단의 큰 수식 line 뒤 문항 제목은 한컴처럼 한 줄가량만 당기고,
+    /// 후속 문항이 저장 vpos와 다시 충돌하지 않도록 lazy base도 함께 이동한다.
+    #[test]
+    fn compact_endnote_question_title_after_tall_mid_backtrack_shifts_lazy_base() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.vpos_lazy_base = Some(736951);
+        c.endnote_between_notes_hu = 1984;
+        let mut ps = vec![
+            para(0, 771046, 2395, 1984, 5000),
+            para(0, 773893, 900, 452, 5000),
+        ];
+        ps[0].text = "따라서".to_string();
+        ps[1].text = "문26)".to_string();
+
+        let y_offset = 639.45;
+        let end_y = COL_Y + (773893.0 - 736951.0) / 75.0;
+        let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
+        let expected = (y_offset - 41.0).max(y_offset - 1984.0 / 75.0 + 10.0);
+        let expected_base = 736951 + ((end_y - expected) / DPI * 7200.0).round() as i32;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+        assert_eq!(c.vpos_lazy_base, Some(expected_base));
+    }
+
+    /// 수식 tail 보정 직후의 제목이 hard backtrack 임계값보다 작게 남으면
+    /// 순차 y를 그대로 두지 않고 작은 폭만 당겨 한컴의 하단 제목 위치에 맞춘다.
+    #[test]
+    fn compact_endnote_question_title_tail_soft_backtrack_after_equation_tail() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.vpos_lazy_base = Some(100000);
+        let mut ps = vec![
+            para(0, 135000, 3240, 1984, 5000),
+            para(0, 164586, 900, 452, 5000),
+        ];
+        ps[1].text = "문27)".to_string();
+
+        let y_offset = 990.0;
+        let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
+        let expected = 980.0;
 
         assert!(
             (got - expected).abs() < 1e-6,

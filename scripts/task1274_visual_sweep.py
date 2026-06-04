@@ -508,7 +508,11 @@ def load_render_tree(tree_path: Path) -> dict[str, object] | None:
     return tree
 
 
-def collect_render_tree_text_lines(tree: dict[str, object]) -> list[dict[str, object]]:
+def collect_render_tree_text_lines(
+    tree: dict[str, object],
+    *,
+    include_visual_empty: bool = False,
+) -> list[dict[str, object]]:
     lines: list[dict[str, object]] = []
 
     def line_text(node: dict[str, object]) -> str:
@@ -530,13 +534,14 @@ def collect_render_tree_text_lines(tree: dict[str, object]) -> list[dict[str, ob
         bbox = render_tree_bbox(node)
         if bbox is not None and node.get("type") == "TextLine":
             text = line_text(node)
-            if text.strip():
+            visual_empty = include_visual_empty and not text.strip() and bbox[3] >= 20.0
+            if text.strip() or visual_empty:
                 lines.append(
                     {
                         "path": path,
                         "bbox": bbox,
                         "pi": node.get("pi"),
-                        "text": text[:96],
+                        "text": text[:96] if text.strip() else "[VISUAL]",
                     }
                 )
         children = node.get("children")
@@ -923,7 +928,7 @@ def render_tree_line_order_overlap_candidates(tree_path: Path) -> list[dict[str,
     if tree is None:
         return []
 
-    lines = collect_render_tree_text_lines(tree)
+    lines = collect_render_tree_text_lines(tree, include_visual_empty=True)
     candidates: list[dict[str, object]] = []
     for index, prev_line in enumerate(lines[:-1]):
         next_line = lines[index + 1]
@@ -937,6 +942,8 @@ def render_tree_line_order_overlap_candidates(tree_path: Path) -> list[dict[str,
             continue
         prev_text = str(prev_line.get("text") or "")
         next_text = str(next_line.get("text") or "")
+        if prev_text == "[VISUAL]" and not QUESTION_TITLE_RE.match(next_text):
+            continue
         if "[EQ]" in prev_text and QUESTION_TITLE_RE.match(next_text):
             continue
         if bbox_x_overlap_ratio(prev_box, next_box) < COLUMN_X_OVERLAP_LIMIT:
