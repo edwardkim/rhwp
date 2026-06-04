@@ -29,6 +29,7 @@ COLUMN_LINE_DRIFT_P90_LIMIT_PX = 70.0
 EQUATION_OVERLAP_LIMIT = 0.08
 LINE_ORDER_OVERLAP_LIMIT = 0.65
 LINE_ORDER_OVERLAP_MIN_PX = 4.0
+FRAME_TAIL_LINE_OVERFLOW_MIN_PX = 4.0
 COLUMN_X_OVERLAP_LIMIT = 0.55
 QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
 QUESTION_TITLE_RE = re.compile(r"^\s*문\s*(\d+)")
@@ -971,6 +972,47 @@ def render_tree_line_order_overlap_candidates(tree_path: Path) -> list[dict[str,
     return candidates[:20]
 
 
+def render_tree_frame_tail_candidates(
+    tree_path: Path,
+    frame: tuple[int, int, int, int],
+) -> list[dict[str, object]]:
+    tree = load_render_tree(tree_path)
+    if tree is None:
+        return []
+
+    left, top, right, bottom = frame
+    mid_x = (left + right) / 2.0
+    candidates: list[dict[str, object]] = []
+    for line in collect_render_tree_text_lines(tree):
+        box = line["bbox"]
+        assert isinstance(box, tuple)
+        x, y, w, h = box
+        if y < top or x + w < left + 2 or x > right - 2:
+            continue
+        overflow_px = y + h - bottom
+        if overflow_px < FRAME_TAIL_LINE_OVERFLOW_MIN_PX:
+            continue
+        text = str(line.get("text") or "")
+        stripped = text.replace("\ufffc", "").strip()
+        if not stripped and "[EQ]" not in text:
+            continue
+        candidates.append(
+            {
+                "path": line["path"],
+                "pi": line.get("pi"),
+                "question": line.get("question"),
+                "question_text": line.get("question_text"),
+                "text": text[:96],
+                "overflow_px": round(overflow_px, 1),
+                "frame_bottom": bottom,
+                "column": 0 if x + w / 2.0 < mid_x else 1,
+                "bbox": [round(v, 1) for v in box],
+            }
+        )
+    candidates.sort(key=lambda item: item["overflow_px"], reverse=True)
+    return candidates[:20]
+
+
 def analyze_page(
     rhwp_path: Path,
     pdf_path: Path,
@@ -1028,6 +1070,7 @@ def analyze_page(
     equation_overlaps = render_tree_equation_overlap_candidates(tree_path)
     question_title_overlaps = render_tree_question_title_overlap_candidates(tree_path)
     line_order_overlaps = render_tree_line_order_overlap_candidates(tree_path)
+    frame_tail_overflows = render_tree_frame_tail_candidates(tree_path, rhwp_frame)
 
     rhwp_out_pixels = rhwp_out[4] if rhwp_out else 0
     pdf_out_pixels = pdf_out[4] if pdf_out else 0
@@ -1093,10 +1136,17 @@ def analyze_page(
         flags.append("question_title_text_overlap")
     if line_order_overlaps:
         flags.append("line_order_overlap")
+    frame_tail_flow_overflow = bool(frame_tail_overflows and (column_line_drift_candidates or rhwp_out_pixels > 0))
+    if frame_tail_flow_overflow:
+        flags.append("render_tree_frame_tail_overflow")
     if question_marker_drifts:
         flags.append("question_marker_drift")
     semantic_flow_flags = bool(
-        equation_overlaps or question_title_overlaps or line_order_overlaps or question_marker_drifts
+        equation_overlaps
+        or question_title_overlaps
+        or line_order_overlaps
+        or frame_tail_flow_overflow
+        or question_marker_drifts
     )
     if content_bottom_drift and (rhwp_out_pixels > 0 or semantic_flow_flags):
         flags.append("content_bottom_drift")
@@ -1125,6 +1175,7 @@ def analyze_page(
                 "equation_text_overlap": equation_overlaps,
                 "question_title_text_overlap": question_title_overlaps,
                 "line_order_overlap": line_order_overlaps,
+                "render_tree_frame_tail_overflow": frame_tail_overflows,
                 "question_marker_drift": question_marker_drifts,
                 "column_line_band_drift": column_line_drift_candidates,
             },
@@ -1152,6 +1203,7 @@ def analyze_page(
         "equation_text_overlap_candidates": equation_overlaps,
         "question_title_text_overlap_candidates": question_title_overlaps,
         "line_order_overlap_candidates": line_order_overlaps,
+        "render_tree_frame_tail_overflow_candidates": frame_tail_overflows,
         "question_marker_drift_candidates": question_marker_drifts,
         "annotated": str(annotated) if annotated else None,
     }
@@ -1265,6 +1317,15 @@ def draw_render_tree_overlays(
                 f"r={item.get('overlap_ratio')}"
             )
             draw.text((x, max(label_h + 2, y - 18)), label, fill=(116, 59, 205), font=font)
+    for item in render_overlays.get("render_tree_frame_tail_overflow", [])[:6]:
+        anchor = draw_bbox(item.get("bbox"), (255, 0, 0), 3)
+        if anchor is not None:
+            x, y = anchor
+            label = (
+                f"frame tail pi {item.get('pi')} "
+                f"c{item.get('column')} +{item.get('overflow_px')}px"
+            )
+            draw.text((x, max(label_h + 2, y - 18)), label, fill=(255, 0, 0), font=font)
     for item in render_overlays.get("equation_text_overlap", [])[:4]:
         anchor = draw_bbox(item.get("equation_bbox"), (255, 160, 0), 2)
         draw_bbox(item.get("text_bbox"), (220, 0, 160), 2)
@@ -1340,6 +1401,9 @@ def analyze_pages(
             page["page"] for page in flagged_pages if "question_title_text_overlap" in page["flags"]
         ],
         "line_order_overlap_pages": [page["page"] for page in flagged_pages if "line_order_overlap" in page["flags"]],
+        "render_tree_frame_tail_overflow_pages": [
+            page["page"] for page in flagged_pages if "render_tree_frame_tail_overflow" in page["flags"]
+        ],
         "question_marker_drift_pages": [
             page["page"] for page in flagged_pages if "question_marker_drift" in page["flags"]
         ],
@@ -1354,7 +1418,9 @@ def analyze_pages(
         f"line={summary['line_band_drift_pages']} column={summary['column_line_band_drift_pages']} "
         f"eq={summary['equation_text_overlap_pages']} "
         f"title={summary['question_title_text_overlap_pages']} "
-        f"order={summary['line_order_overlap_pages']} question={summary['question_marker_drift_pages']}",
+        f"order={summary['line_order_overlap_pages']} "
+        f"tail={summary['render_tree_frame_tail_overflow_pages']} "
+        f"question={summary['question_marker_drift_pages']}",
         flush=True,
     )
     return {"summary": summary, "flagged_pages": flagged_pages}

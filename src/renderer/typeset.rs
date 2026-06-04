@@ -2768,6 +2768,34 @@ impl TypesetEngine {
                             } else {
                                 false
                             };
+                            let large_between_tail_before_rewind_picture =
+                                !default_between_notes_gap
+                                    && compact_endnote_separator_profile
+                                    && ep_idx > 0
+                                    && st.col_count > 1
+                                    && st.current_column + 1 < st.col_count
+                                    && st.current_height > available * 0.88
+                                    && !st.current_items.is_empty()
+                                    && !local_vpos_rewind
+                                    && !internal_vpos_rewind
+                                    && fmt.line_heights.len() == 1
+                                    && para_has_visible_text_or_equation(en_para)
+                                    && !para_is_treat_as_char_picture_only(en_para)
+                                    && st.current_height + fmt.line_advance(0) > available - 50.0
+                                    && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(
+                                        |next_para| {
+                                            para_is_treat_as_char_picture_only(next_para)
+                                                && matches!(
+                                                    (
+                                                        this_first_offset,
+                                                        next_para.line_segs.first().map(|s| {
+                                                            s.vertical_pos + endnote_start
+                                                        }),
+                                                    ),
+                                                    (Some(cur), Some(next)) if next < cur
+                                                )
+                                        },
+                                    );
                             let large_between_title_tail_render_overflows =
                                 if !default_between_notes_gap
                                     && ep_idx == 0
@@ -3128,7 +3156,9 @@ impl TypesetEngine {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }
-                            if large_between_tail_render_overflows {
+                            if large_between_tail_render_overflows
+                                || large_between_tail_before_rewind_picture
+                            {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }

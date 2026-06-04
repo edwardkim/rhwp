@@ -1831,6 +1831,19 @@ fn issue_1284_2024_between20_page22_23_question_tail_matches_pdf() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
 
+    let page22 = doc.dump_page_items(Some(21));
+    let page22_col1 = page22.find("  단 1").expect("page 22 second column");
+    let q28_formula_tail = page22
+        .find("FullParagraph[미주]  pi=1114")
+        .expect("page 22 q28 formula tail");
+    let q28_graph = page22
+        .find("FullParagraph[미주]  pi=1115")
+        .expect("page 22 q28 graph paragraph");
+    assert!(
+        q28_formula_tail > page22_col1 && q28_graph > q28_formula_tail,
+        "PDF 기준 page 22 오른쪽 단은 문28 마지막 ㉡ 식(pi=1114) 뒤 그래프(pi=1115)로 이어져야 함\n{page22}"
+    );
+
     let page23 = doc.dump_page_items(Some(22));
     let page23_col1 = page23.find("  단 1").expect("page 23 second column");
     let q29_projection_tail = page23
@@ -1851,9 +1864,16 @@ fn issue_1284_2024_between20_page22_23_question_tail_matches_pdf() {
 
     let page22_tree = doc.build_page_render_tree(21).expect("page 22 render tree");
     let q28_y = min_para_text_y(&page22_tree.root, 1106).expect("문28 제목");
+    let q28_formula_tail_bbox =
+        find_text_line_bbox(&page22_tree.root, 1114, 0).expect("문28 ㉡ tail");
     assert!(
         (846.0..=866.0).contains(&q28_y),
         "문28 제목은 PDF bbox(약 856.9px) 근처에서 시작해야 함: y={q28_y}"
+    );
+    assert!(
+        q28_formula_tail_bbox.x > 390.0 && (84.0..=116.0).contains(&q28_formula_tail_bbox.y),
+        "문28 마지막 ㉡ 식은 PDF처럼 page 22 오른쪽 단 상단에서 이어져야 함: {:?}",
+        q28_formula_tail_bbox
     );
 
     let page23_tree = doc.build_page_render_tree(22).expect("page 23 render tree");
