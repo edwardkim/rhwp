@@ -9,3 +9,47 @@
 # @xogh3198 (taeho) — PR #571/#799 (rhwp-studio 문서 비교·이력 + diff-engine)
 # 커밋이 "thlee2 <thlee2>" 로 기록되어 GitHub 기여에서 누락됨.
 taeho <92752011+xogh3198@users.noreply.github.com> thlee2 <thlee2>
+
+# @planet6897 (Jaeuk Ryu) — 일부 커밋이 "Jaeook Ryu <jaeook.ryu@gmail.com>" 로
+# 기록됨(#1248/#1256/#1257/#1258 미주 trailing 조사). 동일인 통합.
+Jaeuk Ryu <35355437+planet6897@users.noreply.github.com> Jaeook Ryu <jaeook.ryu@gmail.com>
+
+# @twoLoop-40 — PR #1226 (수식 LEFT-RIGHT 첨자 결합). 커밋이 "joonho <jh.lee@spira-t.com>" 로 기록됨.
+twoLoop-40 <72702492+twoLoop-40@users.noreply.github.com> joonho <jh.lee@spira-t.com>
+
+# @lidge-jun — PR #1281 (찾기 대화상자 Enter). 커밋이 "bitkyc08-arch <bitkyc08@gmail.com>" 로 기록됨.
+lidge-jun <243035832+lidge-jun@users.noreply.github.com> bitkyc08-arch <bitkyc08@gmail.com>
+
+# @humdrum00001010 — PR #1291 (hit-test caret snapping). 커밋이 "phi hu" 와
+# "humdrum00001010" 두 이름(gmail)으로 기록됨. GitHub 계정으로 통합.
+humdrum00001010 <24985201+humdrum00001010@users.noreply.github.com> phi hu <humdrum00001010@gmail.com>
+humdrum00001010 <24985201+humdrum00001010@users.noreply.github.com> humdrum00001010 <humdrum00001010@gmail.com>
+
+# ── 동일인 표시 통합 (GitHub 계정 기준 정규화; 별개 인물 아님) ──
+# @jangster77 (Taesup Jang)
+jangster77 <76559226+jangster77@users.noreply.github.com> Taesup Jang <tsjang@gmail.com>
+# @postmelee — 커밋이 "postmelee" / "Taegyu Lee" 두 이름(meleeisdeveloping)으로 기록됨.
+postmelee <65849802+postmelee@users.noreply.github.com> postmelee <meleeisdeveloping@gmail.com>
+postmelee <65849802+postmelee@users.noreply.github.com> Taegyu Lee <meleeisdeveloping@gmail.com>
+# @johndoekim — gmail 커밋 + GitHub noreply("johndoe") 통합.
+johndoekim <127470168+johndoekim@users.noreply.github.com> johndoekim <amok0316@gmail.com>
+johndoekim <127470168+johndoekim@users.noreply.github.com> johndoe <127470168+johndoekim@users.noreply.github.com>
+# @Martinel2 — 커밋이 "Martinel2 <kkuldangi3>" / "Kim J.H <...Martinel2>" 로 기록됨.
+Martinel2 <96414625+Martinel2@users.noreply.github.com> Martinel2 <kkuldangi3@naver.com>
+Martinel2 <96414625+Martinel2@users.noreply.github.com> Kim J.H <96414625+Martinel2@users.noreply.github.com>
+# @Mireutale — 소문자 "mireutale <gmail>" 통합.
+Mireutale <162964181+Mireutale@users.noreply.github.com> mireutale <mireutale@gmail.com>
+# @seo-rii — 커밋이 "seorii <me@seorii.page>" 로 기록됨.
+seo-rii <48939845+seo-rii@users.noreply.github.com> seorii <me@seorii.page>
+# @oksure (Hyunwoo Park)
+oksure <35975+oksure@users.noreply.github.com> Hyunwoo Park <oksure@gmail.com>
+# @chkwon (Changhyun Kwon) — gmail / GitHub noreply 두 이메일 통합.
+chkwon <7596204+chkwon@users.noreply.github.com> Changhyun Kwon <chkwon@gmail.com>
+chkwon <7596204+chkwon@users.noreply.github.com> Changhyun Kwon <chkwon@users.noreply.github.com>
+# @wonbbnote — PR #1222 회귀 테스트 co-author(별개 GitHub 계정). gmail → noreply.
+wonbbnote <102503017+wonbbnote@users.noreply.github.com> wonbbnote <wonbb3313@gmail.com>
+
+# ── 메인테이너 본인 표시 통합 (edwardkim) ──
+edwardkim <tangokorea@gmail.com> edward <tangokorea@gmail.com>
+edwardkim <tangokorea@gmail.com> edward kim <tangokorea@gmail.com>
+edwardkim <tangokorea@gmail.com> edward.kim <edward.kim@minervasoft.co.kr>
