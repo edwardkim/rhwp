@@ -1808,8 +1808,8 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
         "문24 제목은 PDF bbox(약 266.2px) 근처에서 시작해야 함: y={question24_y}"
     );
     assert!(
-        (286.0..=304.0).contains(&q24_body_bbox.y),
-        "문24 제목 뒤 본문 첫 줄은 PDF bbox(약 294px)처럼 과한 title-body gap 없이 이어져야 함: {:?}",
+        (282.0..=304.0).contains(&q24_body_bbox.y),
+        "문24 제목 뒤 본문 첫 줄은 PDF bbox(수식 상단 약 284.5px, 일반 글자 약 294px)처럼 과한 title-body gap 없이 이어져야 함: {:?}",
         q24_body_bbox
     );
     assert!(
@@ -1977,6 +1977,134 @@ fn issue_1284_2022_oct_page15_question28_formula_does_not_overlap_case_label() {
     assert!(
         next_text.y >= equation_bottom + 0.1,
         "문28 중간 수식과 (ii) 본문은 PDF처럼 겹치지 않아야 함: equation_bottom={equation_bottom}, next={next_text:?}"
+    );
+}
+
+#[test]
+fn issue_1284_2022_oct_page14_question25_tail_matches_pdf_frame() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(13).expect("page 14 render tree");
+
+    let question25_title = find_text_line_bbox(&tree.root, 776, 0).expect("문25 제목");
+    let question25_tail = find_text_line_bbox(&tree.root, 779, 0).expect("문25 tail");
+    let question25_tail_bottom = question25_tail.y + question25_tail.height;
+
+    assert!(
+        question25_title.x > 390.0 && (934.0..=948.0).contains(&question25_title.y),
+        "문25 제목은 PDF page 14 오른쪽 단 bbox(약 y=939.7px)와 맞아야 함: {:?}",
+        question25_title
+    );
+    assert!(
+        question25_tail_bottom <= 1097.0,
+        "문25 tail은 한컴/PDF처럼 page 14 frame 안에서 끝나야 함: tail={:?}, bottom={question25_tail_bottom}",
+        question25_tail
+    );
+}
+
+#[test]
+fn issue_1284_2022_oct_page17_question29_tail_matches_pdf_frame() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(16).expect("page 17 render tree");
+
+    let question28_title = find_text_line_bbox(&tree.root, 926, 0).expect("문28 제목");
+    let question29_title = find_text_line_bbox(&tree.root, 948, 0).expect("문29 제목");
+    let question29_tail = find_text_line_bbox(&tree.root, 962, 1).expect("문29 tail 마지막 줄");
+    let question29_tail_bottom = question29_tail.y + question29_tail.height;
+
+    assert!(
+        question28_title.x > 390.0 && (200.0..=214.0).contains(&question28_title.y),
+        "문28 제목은 PDF page 17 오른쪽 단 bbox(약 y=206.6px)와 맞아야 함: {:?}",
+        question28_title
+    );
+    assert!(
+        question29_title.x > 390.0 && (668.0..=684.0).contains(&question29_title.y),
+        "문29 제목은 PDF page 17 오른쪽 단 bbox(약 y=675.1px)와 맞아야 함: {:?}",
+        question29_title
+    );
+    assert!(
+        question29_tail_bottom <= 1097.0,
+        "문29 tail은 한컴/PDF처럼 page 17 frame 안에서 끝나야 함: tail={:?}, bottom={question29_tail_bottom}",
+        question29_tail
+    );
+}
+
+#[test]
+fn issue_1284_2022_nov_practice_page11_question14_tail_matches_pdf_frame() {
+    let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(10).expect("page 11 render tree");
+
+    let question13_title = find_text_line_bbox(&tree.root, 539, 0).expect("문13 제목");
+    let question14_title = find_text_line_bbox(&tree.root, 545, 0).expect("문14 제목");
+    let question14_tail = find_text_line_bbox(&tree.root, 553, 7).expect("문14 tail 마지막 줄");
+    let question14_tail_bottom = question14_tail.y + question14_tail.height;
+
+    assert!(
+        question13_title.x > 390.0 && (398.0..=408.0).contains(&question13_title.y),
+        "문13 제목은 PDF page 11 오른쪽 단 bbox(약 y=401.8px)와 맞아야 함: {:?}",
+        question13_title
+    );
+    assert!(
+        question14_title.x > 390.0 && (614.0..=624.0).contains(&question14_title.y),
+        "문14 제목은 PDF page 11 오른쪽 단 bbox(약 y=617.8px)와 맞아야 함: {:?}",
+        question14_title
+    );
+    assert!(
+        question14_tail_bottom <= 1097.0,
+        "문14 tail은 한컴/PDF처럼 page 11 frame 안에서 끝나야 함: tail={:?}, bottom={question14_tail_bottom}",
+        question14_tail
+    );
+}
+
+#[test]
+fn issue_1284_2022_nov_practice_page19_question25_tail_matches_pdf_frame() {
+    let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(18).expect("page 19 render tree");
+
+    let question24_title = find_text_line_bbox(&tree.root, 899, 0).expect("문24 제목");
+    let question25_title = find_text_line_bbox(&tree.root, 903, 0).expect("문25 제목");
+    let question25_tail = find_text_line_bbox(&tree.root, 906, 0).expect("문25 tail");
+    let question25_tail_bottom = question25_tail.y + question25_tail.height;
+
+    assert!(
+        question24_title.x < 100.0 && (826.0..=838.0).contains(&question24_title.y),
+        "문24 제목은 PDF page 19 왼쪽 단 bbox(약 y=832.0px)와 맞아야 함: {:?}",
+        question24_title
+    );
+    assert!(
+        question25_title.x < 100.0 && (965.0..=977.0).contains(&question25_title.y),
+        "문25 제목은 PDF page 19 왼쪽 단 bbox(약 y=971.2px)와 맞아야 함: {:?}",
+        question25_title
+    );
+    assert!(
+        question25_tail_bottom <= 1097.0,
+        "문25 tail은 한컴/PDF처럼 page 19 frame 안에서 끝나야 함: tail={:?}, bottom={question25_tail_bottom}",
+        question25_tail
+    );
+}
+
+#[test]
+fn issue_1284_2023_sep_page19_question29_tail_matches_pdf_frame() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2023.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(18).expect("page 19 render tree");
+
+    let question29_title = find_text_line_bbox(&tree.root, 946, 0).expect("문29 제목");
+    let question29_tail = find_text_line_bbox(&tree.root, 953, 0).expect("문29 tail");
+    let question29_tail_bottom = question29_tail.y + question29_tail.height;
+
+    assert!(
+        question29_title.x > 390.0 && (696.0..=708.0).contains(&question29_title.y),
+        "문29 제목은 PDF page 19 오른쪽 단 bbox(약 y=701.5px)와 맞아야 함: {:?}",
+        question29_title
+    );
+    assert!(
+        question29_tail_bottom <= 1097.0,
+        "문29 tail은 한컴/PDF처럼 page 19 frame 안에서 끝나야 함: tail={:?}, bottom={question29_tail_bottom}",
+        question29_tail
     );
 }
 

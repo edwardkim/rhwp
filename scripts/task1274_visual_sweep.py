@@ -1013,6 +1013,36 @@ def render_tree_frame_tail_candidates(
     return candidates[:20]
 
 
+def suppress_tolerated_frame_tail_candidates(
+    candidates: list[dict[str, object]],
+    *,
+    rhwp_out_pixels: int,
+    content_bottom_delta: float | None,
+    question_marker_drifts: list[dict[str, object]],
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    active: list[dict[str, object]] = []
+    suppressed: list[dict[str, object]] = []
+
+    marker_is_stable = not question_marker_drifts
+    bottom_is_close = content_bottom_delta is None or abs(content_bottom_delta) < 16.0
+    for item in candidates:
+        overflow = float(item.get("overflow_px") or 0.0)
+        bbox = item.get("bbox")
+        text = str(item.get("text") or "")
+        line_height = float(bbox[3]) if isinstance(bbox, list) and len(bbox) == 4 else 0.0
+        small_bottom_bleed = overflow <= 6.0 and rhwp_out_pixels <= 300
+        equation_line_height_bleed = overflow <= 12.0 and rhwp_out_pixels <= 10 and (
+            "[EQ]" in text or line_height >= 20.0
+        )
+
+        if marker_is_stable and bottom_is_close and (small_bottom_bleed or equation_line_height_bleed):
+            suppressed.append({**item, "suppressed_reason": "small_visual_tail_bleed"})
+        else:
+            active.append(item)
+
+    return active, suppressed
+
+
 def analyze_page(
     rhwp_path: Path,
     pdf_path: Path,
@@ -1081,6 +1111,12 @@ def analyze_page(
     content_bottom_delta = None
     if rhwp_bottom is not None and pdf_bottom is not None:
         content_bottom_delta = round(float(rhwp_bottom - pdf_bottom), 1)
+    frame_tail_overflows, suppressed_frame_tail_overflows = suppress_tolerated_frame_tail_candidates(
+        frame_tail_overflows,
+        rhwp_out_pixels=rhwp_out_pixels,
+        content_bottom_delta=content_bottom_delta,
+        question_marker_drifts=question_marker_drifts,
+    )
 
     flags: list[str] = []
     rhwp_out_extent = None
@@ -1204,6 +1240,7 @@ def analyze_page(
         "question_title_text_overlap_candidates": question_title_overlaps,
         "line_order_overlap_candidates": line_order_overlaps,
         "render_tree_frame_tail_overflow_candidates": frame_tail_overflows,
+        "render_tree_frame_tail_overflow_suppressed_candidates": suppressed_frame_tail_overflows,
         "question_marker_drift_candidates": question_marker_drifts,
         "annotated": str(annotated) if annotated else None,
     }
