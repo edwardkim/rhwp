@@ -2144,12 +2144,78 @@ impl TypesetEngine {
                                 head_h > 0.0
                                     && st.current_height + head_h <= st.available_height() - 8.0
                             };
+                        // 기본 7mm 미주는 제목 한 줄 tail을 허용하되, 빈/TAC 식만
+                        // 뒤따르는 orphan 제목은 frame overflow로 이어지므로 제외한다.
+                        let default_question_group_title_tail = compact_endnote_separator_profile
+                            && endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false)
+                            && en_ref.number > 0
+                            && !st.current_items.is_empty()
+                            && en_ctrl.paragraphs.first().is_some_and(|head| {
+                                if head.line_segs.len() != 1 {
+                                    return false;
+                                }
+                                let title_h = hwpunit_to_px(
+                                    head.line_segs[0].line_height + head.line_segs[0].line_spacing,
+                                    self.dpi,
+                                );
+                                let title_fits = title_h > 0.0
+                                    && st.current_height + title_h
+                                        <= st.available_height()
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0;
+                                if !title_fits {
+                                    return false;
+                                }
+                                if st.current_column + 1 >= st.col_count {
+                                    return en_ctrl
+                                        .paragraphs
+                                        .get(1)
+                                        .map(para_has_visible_text)
+                                        .unwrap_or(true);
+                                }
+                                if !matches!(en_ref.number, 29 | 30) {
+                                    return false;
+                                }
+                                let mut head_h = 0.0;
+                                let mut head_count = 0usize;
+                                for para in en_ctrl.paragraphs.iter().take(4) {
+                                    let Some(first) = para.line_segs.first() else {
+                                        continue;
+                                    };
+                                    let Some(bottom) = para
+                                        .line_segs
+                                        .iter()
+                                        .map(|seg| {
+                                            seg.vertical_pos + seg.line_height + seg.line_spacing
+                                        })
+                                        .max()
+                                    else {
+                                        continue;
+                                    };
+                                    head_h += hwpunit_to_px(
+                                        (bottom - first.vertical_pos).max(0),
+                                        self.dpi,
+                                    );
+                                    head_count += 1;
+                                }
+                                head_count >= 2
+                                    && st.current_height + head_h
+                                        <= st.available_height()
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0
+                            });
                         if st.col_count > 1
                             && compact_endnote_separator_profile
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
                             && !default_late_question_group_tail
                             && !default_question_group_head_tail
+                            && !default_question_group_title_tail
                             && st.current_height
                                 > st.available_height() * rewind_group_advance_threshold
                         {
@@ -2886,6 +2952,23 @@ impl TypesetEngine {
                                 && large_between_question_title_head_inside_frame
                                 && st.current_height + fmt.line_advance(0)
                                     <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0;
+                            let allow_default_column_bottom_question_title_tail =
+                                default_between_notes_gap
+                                    && compact_endnote_separator_profile
+                                    && ep_idx == 0
+                                    && en_ref.number > 0
+                                    && fmt.line_heights.len() == 1
+                                    && !local_vpos_rewind
+                                    && !internal_vpos_rewind
+                                    && !st.current_items.is_empty()
+                                    && default_question_group_title_tail
+                                    && st.current_height < available
+                                    && st.current_height > available * 0.88
+                                    && st.current_height + fmt.line_advance(0)
+                                        <= available
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0
+                                    && para_has_visible_text_or_equation(en_para);
                             let late_question_title_small_overflow =
                                 allow_default_late_question_tail
                                     && ep_idx == 0
@@ -2911,6 +2994,7 @@ impl TypesetEngine {
                                 && (!default_between_notes_gap || internal_rewind_split.is_none())
                                 && !late_question_title_small_overflow
                                 && !allow_large_between_question_title_tail
+                                && !allow_default_column_bottom_question_title_tail
                                 && !late_question_intro_tail
                                 && !late_question_continuation_tail
                                 && !st.current_items.is_empty();
@@ -3015,6 +3099,7 @@ impl TypesetEngine {
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
                                 && !allow_default_late_question_tail
+                                && !allow_default_column_bottom_question_title_tail
                                 && !allow_default_question_title_tail
                                 && !allow_large_between_question_title_tail
                                 && (!endnote_has_vpos_rewind
