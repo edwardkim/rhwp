@@ -444,7 +444,20 @@ impl HeightCursor {
             .and_then(|p| p.line_segs.first())
             .map(|s| hwpunit_to_px((s.line_height + s.line_spacing).max(0), self.dpi))
             .unwrap_or(0.0);
+        let current_line_height_px = paragraphs
+            .get(item_para)
+            .and_then(|p| p.line_segs.first())
+            .map(|s| hwpunit_to_px(s.line_height.max(0), self.dpi))
+            .unwrap_or(current_line_advance_px);
         let equation_tail_prev_overlap_tolerance = if is_page_path { 4.0 } else { 0.0 };
+        let col_bottom = self.col_area_y + self.col_area_height;
+        let compact_endnote_question_title_bottom_fit = self.suppress_large_forward_jump
+            && current_is_endnote_title
+            && !vpos_rewind
+            && current_line_height_px > 0.0
+            && y_offset + current_line_height_px > col_bottom + 0.5
+            && y_offset <= col_bottom + 80.0
+            && prev_content_bottom_y < col_bottom;
         let compact_endnote_equation_tail_fit = self.suppress_large_forward_jump
             && !vpos_rewind
             && paragraphs
@@ -511,8 +524,17 @@ impl HeightCursor {
             end_y.max(prev_content_bottom_y).min(y_offset)
         } else if compact_endnote_text_after_tall_tail_backtrack {
             end_y.max(prev_content_bottom_y).min(y_offset)
+        } else if compact_endnote_question_title_bottom_fit {
+            // 큰 미주 사이 문서에서는 새 문항 제목 1줄만 단 하단에 남기고
+            // 본문은 다음 단으로 넘기는 저장본이 있다. 이때 stale-forward vpos는
+            // 버리되, 순차 y가 frame을 조금 넘으면 제목 visual line-height만큼
+            // 하단 안쪽으로 당겨 한컴/PDF처럼 제목 tail을 보존한다. 반환값은
+            // paragraph top이므로 layout에서 다시 더해지는 spacing_before를 뺀다.
+            (col_bottom - current_line_height_px - 7.0 - curr_sb)
+                .max(prev_content_bottom_y - curr_sb)
+                .max(self.col_area_y)
+                .min(y_offset)
         } else if compact_endnote_equation_tail_fit {
-            let col_bottom = self.col_area_y + self.col_area_height;
             let prev_floor = prev_content_bottom_y - equation_tail_prev_overlap_tolerance;
             // page-path compact 미주 하단의 수식-only tail은 저장 vpos가 직전
             // 수식 line 하단보다 몇 px 위를 가리킬 수 있다. 이때 frame-fit을

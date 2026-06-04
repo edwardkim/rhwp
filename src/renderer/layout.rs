@@ -3091,8 +3091,33 @@ impl LayoutEngine {
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
                 y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
             } // !shape_jumped
+            let current_line_height_px = paragraphs
+                .get(item_para)
+                .and_then(|p| p.line_segs.first())
+                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                .unwrap_or(0.0);
+            let endnote_title_direct_bottom_fit = current_is_endnote_question_title
+                && col_content.endnote_flow
+                && current_line_height_px > 0.0
+                && y_offset + current_line_height_px > col_area.y + col_area.height + 0.5
+                && y_offset <= col_area.y + col_area.height + 80.0;
+            if endnote_title_direct_bottom_fit {
+                // TAC/수식 직후에는 prev_tac_seg_applied 때문에 HeightCursor 보정이
+                // 생략될 수 있다. 그래도 새 문항 제목 1줄이 단 하단 안쪽에 들어가면
+                // 한컴/PDF처럼 제목 tail만 현재 단에 남긴다.
+                y_offset = (col_area.y + col_area.height - current_line_height_px - 7.0)
+                    .max(col_area.y)
+                    .min(y_offset);
+            }
+            let endnote_title_bottom_fit_applied = current_is_endnote_question_title
+                && current_line_height_px > 0.0
+                && y_offset < y_before_vpos - 0.5
+                && y_before_vpos + current_line_height_px > col_area.y + col_area.height + 0.5
+                && y_offset + current_line_height_px <= col_area.y + col_area.height + 0.5;
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
                 && prev_endnote_title_gap_px > 0.0
+                && !endnote_title_direct_bottom_fit
+                && !endnote_title_bottom_fit_applied
                 && (prev_endnote_title_gap_from_continued_partial
                     || y_offset > y_before_vpos + 0.5);
             if should_preserve_endnote_title_gap {

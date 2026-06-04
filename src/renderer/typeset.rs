@@ -2765,10 +2765,10 @@ impl TypesetEngine {
                             let large_between_question_title_head_inside_frame =
                                 !default_between_notes_gap
                                     && ep_idx == 0
-                                    && st.current_column + 1 >= st.col_count
                                     && en_ref.number > 0
                                     && fmt.line_heights.len() == 1
                                     && st.current_height < available
+                                    && st.current_height > available * 0.85
                                     && st
                                         .current_items
                                         .iter()
@@ -2800,7 +2800,6 @@ impl TypesetEngine {
                             }
                             let allow_large_between_question_title_tail = !default_between_notes_gap
                                 && ep_idx == 0
-                                && st.current_column + 1 >= st.col_count
                                 && en_ref.number > 0
                                 && fmt.line_heights.len() == 1
                                 && st.current_height < available
