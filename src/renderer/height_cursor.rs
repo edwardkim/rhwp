@@ -1016,7 +1016,7 @@ mod tests {
     }
 
     /// page-path 하단의 새 미주 제목도 저장 vpos가 32px 이내 위쪽을 가리키면
-    /// 제목을 그 위치로 되돌려 다음 본문 line과 겹치지 않게 한다.
+    /// 제목을 그 위치 근처로 되돌리되, 첫 본문 line과 겹치지 않도록 4px 여유를 둔다.
     #[test]
     fn compact_endnote_page_path_title_bottom_backtrack_allows_safe_title() {
         let mut c = compact_endnote_cursor(Some(0));
@@ -1029,7 +1029,7 @@ mod tests {
         ps[1].text = "문29)".to_string();
 
         let got = c.vpos_adjust(946.0, 1, &ps, &styles(0.0));
-        let expected = 100.0 + 62000.0 / 75.0;
+        let expected = 100.0 + 62000.0 / 75.0 - 4.0;
 
         assert!(
             (got - expected).abs() < 1e-6,
