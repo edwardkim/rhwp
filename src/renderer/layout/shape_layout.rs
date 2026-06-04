@@ -1764,16 +1764,16 @@ impl LayoutEngine {
         // 글상자 샘플이 확보되면 재검증한다.
         let sa = &drawing.shape_attr;
         let local_styles_scaled: Option<ResolvedStyleSet> = {
-            let sw_ratio = if sa.original_width > 0 && sa.current_width > 0 {
-                sa.current_width as f64 / sa.original_width as f64
-            } else {
-                1.0
+            let positive_current_ratio = |current: u32, original: u32| -> f64 {
+                let signed_current = current as i32;
+                if original > 0 && signed_current > 0 {
+                    signed_current as f64 / original as f64
+                } else {
+                    1.0
+                }
             };
-            let sh_ratio = if sa.original_height > 0 && sa.current_height > 0 {
-                sa.current_height as f64 / sa.original_height as f64
-            } else {
-                1.0
-            };
+            let sw_ratio = positive_current_ratio(sa.current_width, sa.original_width);
+            let sh_ratio = positive_current_ratio(sa.current_height, sa.original_height);
             let max_ratio = sw_ratio.max(sh_ratio);
             let min_ratio = sw_ratio.min(sh_ratio);
             // [Task #928] 인라인 도형 (treat_as_char=true) 은 폰트 자동 축소 적용 안 함.
@@ -1782,6 +1782,11 @@ impl LayoutEngine {
             // 폰트를 11.5pt 그대로 유지한다. 본 ratio 축소 (#874 #3) 가 잘못 발동하여
             // 폰트가 6.88px 로 축소되던 회귀를 차단. shortcut.hwp 마스터 페이지
             // 글상자는 tac=false 라 ratio 적용 유지.
+            //
+            // [PR #1276] HWPX 바탕쪽 하단 글상자처럼 current size 가 음수 HWPUNIT 을
+            // u32 로 보존한 값이면(예: curSz height 4294965455 = -1841) 확대율로
+            // 사용하지 않는다. 이를 양수로 해석하면 sh_ratio 가 수백만 배가 되어
+            // 내부 글꼴이 0px 에 가깝게 붕괴한다.
             if min_ratio > 1.5 && !parent_treat_as_char {
                 let inv = (2.0 / max_ratio).min(1.0);
                 let mut local = styles.clone();

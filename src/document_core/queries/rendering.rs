@@ -15,7 +15,7 @@ use crate::renderer::html::HtmlRenderer;
 use crate::renderer::layer_renderer::LayerRenderer;
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::pagination::{PageContent, PaginationResult, Paginator};
+use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, Paginator};
 use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
@@ -117,6 +117,106 @@ fn insert_hwp3_title_filler_page(result: &mut PaginationResult, section_index: u
         page.page_number = page.page_number.saturating_add(1);
     }
     result.pages.insert(0, blank);
+}
+
+fn assign_master_pages_for_section(
+    result: &mut PaginationResult,
+    section_index: usize,
+    section: &Section,
+) {
+    use crate::model::header_footer::HeaderFooterApply;
+
+    for page in &mut result.pages {
+        page.active_master_page = None;
+        page.extra_master_pages.clear();
+    }
+
+    let mps = &section.section_def.master_pages;
+    if mps.is_empty() {
+        return;
+    }
+
+    let mp_both = mps
+        .iter()
+        .position(|m| m.apply_to == HeaderFooterApply::Both && !m.is_extension);
+    let mp_odd = mps
+        .iter()
+        .position(|m| m.apply_to == HeaderFooterApply::Odd && !m.is_extension);
+    let mp_even = mps
+        .iter()
+        .position(|m| m.apply_to == HeaderFooterApply::Even && !m.is_extension);
+    let ext_mp_indices: Vec<usize> = mps
+        .iter()
+        .enumerate()
+        .filter(|(_, m)| m.is_extension)
+        .map(|(i, _)| i)
+        .collect();
+
+    let section_page_count = result.pages.len();
+    for (page_idx_in_section, page) in result.pages.iter_mut().enumerate() {
+        let is_last = page_idx_in_section + 1 == section_page_count;
+        let is_first_page = page_idx_in_section == 0;
+
+        if is_first_page && section.section_def.hide_master_page {
+            continue;
+        }
+
+        let selected = if page.page_number % 2 == 1 {
+            mp_odd.or(mp_both)
+        } else {
+            mp_even.or(mp_both)
+        };
+        page.active_master_page = selected.map(|mi| MasterPageRef {
+            section_index,
+            master_page_index: mi,
+        });
+
+        if is_last && !ext_mp_indices.is_empty() {
+            let replace_exts: Vec<usize> = ext_mp_indices
+                .iter()
+                .filter(|&&i| !mps[i].overlap || mps[i].replace_base)
+                .copied()
+                .collect();
+            let overlap_exts: Vec<usize> = ext_mp_indices
+                .iter()
+                .filter(|&&i| mps[i].overlap && !mps[i].replace_base)
+                .copied()
+                .collect();
+
+            if let Some(&replace_idx) = replace_exts.last() {
+                page.active_master_page = Some(MasterPageRef {
+                    section_index,
+                    master_page_index: replace_idx,
+                });
+            }
+
+            let active_apply = page
+                .active_master_page
+                .as_ref()
+                .and_then(|mp_ref| mps.get(mp_ref.master_page_index))
+                .map(|m| m.apply_to);
+            let mut remaining_overlap_exts: Vec<usize> = Vec::new();
+            for &i in &overlap_exts {
+                if Some(mps[i].apply_to) == active_apply {
+                    page.active_master_page = Some(MasterPageRef {
+                        section_index,
+                        master_page_index: i,
+                    });
+                } else {
+                    remaining_overlap_exts.push(i);
+                }
+            }
+            if !remaining_overlap_exts.is_empty() {
+                page.extra_master_pages = remaining_overlap_exts
+                    .iter()
+                    .map(|&mi| MasterPageRef {
+                        section_index,
+                        master_page_index: mi,
+                    })
+                    .collect();
+            }
+        }
+    }
 }
 
 impl DocumentCore {
@@ -2167,109 +2267,6 @@ impl DocumentCore {
                 }
             }
 
-            // 바탕쪽 선택 (기본 + 확장)
-            if !section.section_def.master_pages.is_empty() {
-                use crate::model::header_footer::HeaderFooterApply;
-                use crate::renderer::pagination::MasterPageRef;
-
-                let mps = &section.section_def.master_pages;
-                // 기본 바탕쪽 (비확장 Both/Odd/Even)
-                let mp_both = mps
-                    .iter()
-                    .position(|m| m.apply_to == HeaderFooterApply::Both && !m.is_extension);
-                let mp_odd = mps
-                    .iter()
-                    .position(|m| m.apply_to == HeaderFooterApply::Odd && !m.is_extension);
-                let mp_even = mps
-                    .iter()
-                    .position(|m| m.apply_to == HeaderFooterApply::Even && !m.is_extension);
-                // 확장 바탕쪽 (is_extension=true, 마지막 쪽/임의 쪽)
-                let ext_mp_indices: Vec<usize> = mps
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, m)| m.is_extension)
-                    .map(|(i, _)| i)
-                    .collect();
-
-                // 구역 내 페이지 수 (마지막 쪽 판별용)
-                let section_page_count = result.pages.len();
-
-                for (page_idx_in_section, page) in result.pages.iter_mut().enumerate() {
-                    let is_odd = page.page_number % 2 == 1;
-                    let is_last = page_idx_in_section + 1 == section_page_count;
-                    let is_first_page = page_idx_in_section == 0;
-
-                    // 첫 쪽 감추기: hide_master_page가 true이면 첫 쪽에서 바탕쪽 미적용
-                    if is_first_page && section.section_def.hide_master_page {
-                        continue;
-                    }
-
-                    // 1. 기본 바탕쪽 선택: Odd/Even > Both
-                    let selected = if is_odd {
-                        mp_odd.or(mp_both)
-                    } else {
-                        mp_even.or(mp_both)
-                    };
-                    page.active_master_page = selected.map(|mi| MasterPageRef {
-                        section_index: idx,
-                        master_page_index: mi,
-                    });
-
-                    // 2. 확장 바탕쪽: 마지막 쪽에 적용
-                    // 겹치기(overlap): 기존 바탕쪽 위에 추가
-                    // 비겹치기: 기존 바탕쪽 대체
-                    if is_last && !ext_mp_indices.is_empty() {
-                        let replace_exts: Vec<usize> = ext_mp_indices
-                            .iter()
-                            .filter(|&&i| !mps[i].overlap || mps[i].replace_base)
-                            .copied()
-                            .collect();
-                        let overlap_exts: Vec<usize> = ext_mp_indices
-                            .iter()
-                            .filter(|&&i| mps[i].overlap && !mps[i].replace_base)
-                            .copied()
-                            .collect();
-
-                        // 대체형 확장이 있으면 active를 대체
-                        if let Some(&replace_idx) = replace_exts.last() {
-                            page.active_master_page = Some(MasterPageRef {
-                                section_index: idx,
-                                master_page_index: replace_idx,
-                            });
-                        }
-                        // 겹침형 확장:
-                        // - apply_to 가 active 와 동일: 같은 위치(헤더/푸터/배경) 컨텐츠가 충돌 → active 대체
-                        //   (HWP 작성자가 마지막 쪽 전용 헤더로 의도. 한컴 PDF 출력 동작과 일치)
-                        // - apply_to 가 다름(예: active=Odd, 확장=Both): 보조 컨텐츠 추가 → extra
-                        let active_apply = page
-                            .active_master_page
-                            .as_ref()
-                            .and_then(|mp_ref| mps.get(mp_ref.master_page_index))
-                            .map(|m| m.apply_to);
-                        let mut remaining_overlap_exts: Vec<usize> = Vec::new();
-                        for &i in &overlap_exts {
-                            if Some(mps[i].apply_to) == active_apply {
-                                page.active_master_page = Some(MasterPageRef {
-                                    section_index: idx,
-                                    master_page_index: i,
-                                });
-                            } else {
-                                remaining_overlap_exts.push(i);
-                            }
-                        }
-                        if !remaining_overlap_exts.is_empty() {
-                            page.extra_master_pages = remaining_overlap_exts
-                                .iter()
-                                .map(|&mi| MasterPageRef {
-                                    section_index: idx,
-                                    master_page_index: mi,
-                                })
-                                .collect();
-                        }
-                    }
-                }
-            }
-
             // 머리말/꼬리말 carry 업데이트:
             // 페이지 active_header뿐 아니라 구역에 정의된 머리말 컨트롤도 carry에 반영
             // (짝수 페이지가 없어도 Even 머리말이 다음 구역에 상속되어야 함)
@@ -2344,6 +2341,9 @@ impl DocumentCore {
                     }
                 }
             }
+
+            // 바탕쪽 선택은 구역 간 쪽번호 carry 보정 이후 최종 page_number 기준으로 수행한다.
+            assign_master_pages_for_section(&mut result, idx, section);
 
             // 구역 간 머리말/꼬리말 상속 (쪽번호 보정 이후 실행)
             if idx > 0 {
@@ -3752,6 +3752,76 @@ mod tests {
         assert_eq!(core.get_bin_data(0), Some(&[0x01, 0x02, 0x03][..]));
         assert_eq!(core.get_bin_data(1), Some(&[0xAA, 0xBB][..]));
         assert_eq!(core.get_bin_data(2), None);
+    }
+
+    #[test]
+    fn master_page_selection_uses_final_carried_page_number_parity() {
+        use crate::model::document::{Document, Section, SectionDef};
+        use crate::model::header_footer::{HeaderFooterApply, MasterPage};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        fn a4_section(section_def: SectionDef) -> Section {
+            Section {
+                section_def,
+                paragraphs: vec![Paragraph::default()],
+                raw_stream: None,
+            }
+        }
+
+        let page_def = PageDef {
+            width: 59528,
+            height: 84188,
+            margin_left: 8504,
+            margin_right: 8504,
+            margin_top: 5668,
+            margin_bottom: 4252,
+            margin_header: 4252,
+            margin_footer: 4252,
+            ..Default::default()
+        };
+
+        let mut document = Document::default();
+        document.sections.push(a4_section(SectionDef {
+            page_def: page_def.clone(),
+            ..Default::default()
+        }));
+        document.sections.push(a4_section(SectionDef {
+            page_def,
+            master_pages: vec![
+                MasterPage {
+                    apply_to: HeaderFooterApply::Odd,
+                    ..Default::default()
+                },
+                MasterPage {
+                    apply_to: HeaderFooterApply::Even,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        }));
+
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core.paginate();
+
+        let page = core
+            .pagination
+            .get(1)
+            .and_then(|result| result.pages.first())
+            .expect("section 1 first page");
+        assert_eq!(
+            page.page_number, 2,
+            "section 1 first page should carry section 0 page number"
+        );
+        let active = page
+            .active_master_page
+            .as_ref()
+            .expect("section 1 page should have an active master page");
+        assert_eq!(
+            active.master_page_index, 1,
+            "final page_number=2 must select the Even master page, not the section-local Odd page"
+        );
     }
 
     #[test]

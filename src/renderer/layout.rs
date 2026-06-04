@@ -1448,11 +1448,10 @@ impl LayoutEngine {
                 continue;
             }
 
-            let direct_pos = ctrl_positions.get(ctrl_idx).copied().filter(|&pos| {
-                text_chars
-                    .get(pos)
-                    .map_or(false, |ch| Self::is_auto_number_placeholder_char(*ch))
-            });
+            let direct_pos = ctrl_positions
+                .get(ctrl_idx)
+                .copied()
+                .filter(|&pos| Self::is_auto_number_placeholder_at(para, &text_chars, pos));
 
             let pos = direct_pos.or_else(|| {
                 Self::find_auto_number_placeholder_char(para, &text_chars, search_from)
@@ -1471,6 +1470,26 @@ impl LayoutEngine {
         ch == '\u{0015}' || ch.is_whitespace()
     }
 
+    fn is_auto_number_placeholder_at(para: &Paragraph, text_chars: &[char], idx: usize) -> bool {
+        if !text_chars
+            .get(idx)
+            .map_or(false, |ch| Self::is_auto_number_placeholder_char(*ch))
+        {
+            return false;
+        }
+
+        let Some(&current) = para.char_offsets.get(idx) else {
+            return false;
+        };
+        let next = para
+            .char_offsets
+            .get(idx.saturating_add(1))
+            .copied()
+            .unwrap_or_else(|| para.char_count.saturating_sub(1));
+
+        next.saturating_sub(current) >= 8
+    }
+
     fn find_auto_number_placeholder_char(
         para: &Paragraph,
         text_chars: &[char],
@@ -1480,18 +1499,13 @@ impl LayoutEngine {
             .iter()
             .enumerate()
             .skip(search_from)
-            .find(|(idx, ch)| {
-                if !Self::is_auto_number_placeholder_char(**ch) {
-                    return false;
-                }
-                para.char_offsets
-                    .get(idx.saturating_add(1))
-                    .zip(para.char_offsets.get(*idx))
-                    .map_or(false, |(next, current)| next.saturating_sub(*current) >= 8)
-            })
+            .find(|(idx, _)| Self::is_auto_number_placeholder_at(para, text_chars, *idx))
             .map(|(idx, _)| idx);
 
         preferred.or_else(|| {
+            if !para.char_offsets.is_empty() {
+                return None;
+            }
             text_chars
                 .iter()
                 .enumerate()
