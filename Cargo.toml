@@ -48,9 +48,9 @@ native-skia = ["dep:resvg", "dep:skia-safe"]
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
-usvg = "0.45"
+usvg = "0.47"
 resvg = { version = "0.47", optional = true }
-pdf-writer = "0.12"
+pdf-writer = "0.15"
 subsetter = "0.2"
 ttf-parser = "0.25"
 skia-safe = { version = "0.97.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
