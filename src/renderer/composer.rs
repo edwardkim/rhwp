@@ -118,18 +118,26 @@ pub fn compose_section(section: &Section) -> Vec<ComposedParagraph> {
 ///
 /// 영향 범위: composer 내부만 (rendering pipeline). para 원본 (editor) 영향 없음.
 fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
-    // inline-visible extended ctrls 수 계산 (header/footer/footnote/endnote/hidden 제외)
+    // inline-visible extended ctrls 수 계산.
+    //
+    // 본문 텍스트 흐름에서 한 글자 폭(\u{FFFC} 마커)을 차지하는 컨트롤만 센다 —
+    // Shape/Table/Picture/Equation/Form. SectionDef/ColumnDef/NewNumber/PageNumberPos
+    // /Bookmark/Field/Hyperlink 같은 구조·메타 컨트롤은 폭 0 이라 마커가 없으며,
+    // 이를 inline 으로 잘못 세면 (예: 구역 첫 문단 제목 "하도급계" 앞의
+    // SectionDef+ColumnDef) leading \u{FFFC} 가 합성되어 measurer 의 글자 위치가
+    // 페인터/캐럿(`get_cursor_rect*`) 대비 밀리고, 캐럿이 삽입/삭제 위치와 어긋난다.
+    // (Header/Footer/Footnote/Endnote/HiddenComment 도 본문 흐름 글자 폭 없음.)
     let inline_ctrl_count = para
         .controls
         .iter()
         .filter(|c| {
-            !matches!(
+            matches!(
                 c,
-                Control::Header(_)
-                    | Control::Footer(_)
-                    | Control::Footnote(_)
-                    | Control::Endnote(_)
-                    | Control::HiddenComment(_)
+                Control::Shape(_)
+                    | Control::Table(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
             )
         })
         .count();
