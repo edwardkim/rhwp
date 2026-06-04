@@ -34,6 +34,14 @@ fn para_is_treat_as_char_equation_only(para: &Paragraph) -> bool {
             .any(|ctrl| matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char))
 }
 
+fn para_has_equation_only(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|ctrl| matches!(ctrl, Control::Equation(_)))
+}
+
 fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
     para.text.trim().is_empty()
         && para.controls.iter().any(|ctrl| match ctrl {
@@ -458,6 +466,14 @@ impl HeightCursor {
             && y_offset > self.col_area_y + self.col_area_height * 0.90
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset - end_y <= 32.0;
+        let compact_endnote_text_after_lazy_tall_equation_floor = self.suppress_large_forward_jump
+            && !is_page_path
+            && !vpos_rewind
+            && follows_tall_inline_item
+            && current_has_visible_text
+            && !current_is_endnote_title
+            && para_has_equation_only(prev_para)
+            && y_offset <= self.col_area_y + self.col_area_height - 80.0;
         let compact_endnote_deep_backtrack = self.suppress_large_forward_jump
             && !is_page_path
             && !vpos_rewind
@@ -488,7 +504,7 @@ impl HeightCursor {
             .and_then(|p| p.line_segs.first())
             .map(|s| hwpunit_to_px(s.line_height.max(0), self.dpi))
             .unwrap_or(current_line_advance_px);
-        let equation_tail_prev_overlap_tolerance = if is_page_path { 4.0 } else { 0.0 };
+        let equation_tail_prev_overlap_tolerance = if is_page_path { 6.0 } else { 0.0 };
         let col_bottom = self.col_area_y + self.col_area_height;
         let compact_endnote_question_title_bottom_fit = self.suppress_large_forward_jump
             && current_is_endnote_title
@@ -497,6 +513,15 @@ impl HeightCursor {
             && y_offset + current_line_height_px > col_bottom + 0.5
             && y_offset <= col_bottom + 80.0
             && prev_content_bottom_y < col_bottom;
+        let compact_endnote_question_title_tail_backtrack = self.suppress_large_forward_jump
+            && !is_page_path
+            && current_is_endnote_title
+            && !vpos_rewind
+            && prev_para.text.trim().is_empty()
+            && end_y < y_offset - 32.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.90
+            && y_offset <= col_bottom
+            && y_offset - end_y <= 96.0;
         let compact_endnote_equation_tail_fit = self.suppress_large_forward_jump
             && !vpos_rewind
             && paragraphs
@@ -557,23 +582,48 @@ impl HeightCursor {
                 }
             }
         }
-        let result = if compact_endnote_title_bottom_backtrack {
-            end_y
+        let mut result = if compact_endnote_title_bottom_backtrack {
+            // 저장 vpos가 제목 top만 frame 안쪽으로 맞추는 경우가 있어,
+            // page-tail이 아닌 제목+첫줄 보존 케이스에서는 작은 하단 여유를 둔다.
+            let title_tail_pad = if compact_endnote_page_tail_backtrack {
+                0.0
+            } else {
+                4.0
+            };
+            (end_y - title_tail_pad)
+                .max(prev_content_bottom_y)
+                .max(self.col_area_y)
+        } else if compact_endnote_question_title_tail_backtrack {
+            // 빈 spacer 뒤 새 문항 제목은 저장 line_spacing 전체가 아니라
+            // 한컴처럼 하단 tail 1줄만 앞 단에 남긴다.
+            (y_offset - (y_offset - end_y).min(50.0))
+                .max(self.col_area_y)
+                .min(y_offset)
         } else if compact_endnote_page_tail_backtrack {
             // page-path 하단 tail은 frame 안에 남기기 위해 저장 vpos를 따르되,
             // 이전 텍스트 line의 실제 하단을 깊게 침범하면 문20처럼 본문/수식이
             // 겹친다. 이전 line 하단보다 위로 올라가지 않게 한다.
             end_y.max(prev_content_bottom_y).min(y_offset)
         } else if compact_endnote_text_after_tall_tail_backtrack {
-            end_y.max(prev_content_bottom_y).min(y_offset)
+            let mut prev_floor = measured_prev_content_bottom_y
+                .map(|y| y + 0.25)
+                .unwrap_or(prev_content_bottom_y);
+            if para_has_equation_only(prev_para) {
+                let inferred_extra =
+                    hwpunit_to_px((seg.line_height - seg.line_spacing).max(0), self.dpi).min(1.8);
+                let equation_line_floor = prev_content_bottom_y + inferred_extra;
+                prev_floor = prev_floor.max(equation_line_floor);
+            }
+            end_y.max(prev_floor).min(y_offset)
         } else if compact_endnote_question_title_bottom_fit {
             // 큰 미주 사이 문서에서는 새 문항 제목 1줄만 단 하단에 남기고
             // 본문은 다음 단으로 넘기는 저장본이 있다. 이때 stale-forward vpos는
             // 버리되, 순차 y가 frame을 조금 넘으면 제목 visual line-height만큼
-            // 하단 안쪽으로 당겨 한컴/PDF처럼 제목 tail을 보존한다. 반환값은
+            // 하단 안쪽으로 당겨 한컴/PDF처럼 제목 tail을 보존한다. 제목 바로
+            // 다음 첫 줄까지 하단 frame에 걸리는 케이스가 있어 여유를 조금 둔다. 반환값은
             // paragraph top이므로 layout에서 다시 더해지는 spacing_before를 뺀다.
-            (col_bottom - current_line_height_px - 7.0 - curr_sb)
-                .max(prev_content_bottom_y - curr_sb)
+            (col_bottom - current_line_height_px - 11.0 - curr_sb)
+                .max(prev_content_bottom_y - curr_sb - 4.0)
                 .max(self.col_area_y)
                 .min(y_offset)
         } else if compact_endnote_equation_tail_fit {
@@ -604,6 +654,21 @@ impl HeightCursor {
         } else {
             y_offset
         };
+        if compact_endnote_text_after_lazy_tall_equation_floor {
+            let inferred_extra =
+                hwpunit_to_px((seg.line_height - seg.line_spacing).max(0), self.dpi) * 0.4;
+            result = result.max(prev_content_bottom_y + inferred_extra + 0.25);
+        }
+        if compact_endnote_title_bottom_backtrack && result < end_y - 0.5 {
+            let base_delta_hu = ((end_y - result) / self.dpi * 7200.0).round() as i32;
+            if base_delta_hu != 0 {
+                if is_page_path {
+                    self.vpos_page_base = Some(base + base_delta_hu);
+                } else {
+                    self.vpos_lazy_base = Some(base + base_delta_hu);
+                }
+            }
+        }
         self.last_compacted_endnote_title_gap = compact_endnote_new_note_jump
             && bottom_new_note_gap_cap
                 .map(|cap| end_y - cap > 8.0)
@@ -637,6 +702,7 @@ impl HeightCursor {
             self.endnote_between_notes_hu > 0 && seg.line_spacing >= self.endnote_between_notes_hu;
         if injected_between_notes
             && compact_endnote_question_title
+            && !compact_endnote_question_title_tail_backtrack
             && !compact_endnote_title_bottom_backtrack
             && !vpos_rewind
             && !prev_is_multiline

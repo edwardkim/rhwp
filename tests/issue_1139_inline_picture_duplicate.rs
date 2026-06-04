@@ -1543,6 +1543,28 @@ fn issue_1284_2023_sep_page14_question23_title_tail_matches_pdf() {
 }
 
 #[test]
+fn issue_1284_2023_sep_page16_question27_title_matches_pdf_tail() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2023.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(15).expect("page 16 render tree");
+
+    let q27_title = find_text_line_bbox(&tree.root, 831, 0).expect("문27 제목");
+    let q27_first = find_text_line_bbox(&tree.root, 832, 0).expect("문27 첫 본문");
+
+    assert!(
+        q27_title.x < 80.0 && (992.0..=1010.0).contains(&q27_title.y),
+        "문27 제목은 PDF page 16 왼쪽 단 하단 bbox(약 y=1001px)에 있어야 함: {:?}",
+        q27_title
+    );
+    assert!(
+        q27_first.y > q27_title.y,
+        "문27 첫 본문은 제목 아래에서 이어져야 함: title={:?}, first={:?}",
+        q27_title,
+        q27_first
+    );
+}
+
+#[test]
 fn issue_1284_2023_sep_page20_question30_title_stays_in_left_tail() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2023.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
@@ -1648,6 +1670,19 @@ fn issue_1284_2022_sep_page17_question27_starts_at_pdf_top() {
 fn issue_1284_2024_between20_page18_late_question_titles_match_pdf() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page17 = doc.dump_page_items(Some(16));
+    let page18 = doc.dump_page_items(Some(17));
+    assert!(
+        page17.contains("PartialParagraph  pi=894  lines=0..4")
+            && !page17.contains("FullParagraph[미주]  pi=894"),
+        "PDF 기준 page17 오른쪽 단 하단에는 문28 (ⅰ) 풀이의 마지막 줄 직전까지 남아야 함\n{page17}"
+    );
+    assert!(
+        page18.contains("PartialParagraph  pi=894  lines=4..5")
+            && !page18.contains("FullParagraph[미주]  pi=894"),
+        "PDF 기준 page18 왼쪽 단은 문28 (ⅰ) 풀이 마지막 줄부터 시작해야 함\n{page18}"
+    );
 
     let tree = doc.build_page_render_tree(17).expect("page 18 render tree");
     let question29_y = min_para_text_y(&tree.root, 900).expect("문29 제목");
@@ -1890,6 +1925,38 @@ fn issue_1274_2022_oct_page11_question20_equation_tail_stays_in_frame() {
     assert!(
         equation_bottom >= 1080.0,
         "문20 수식 tail을 과도하게 끌어올리면 PDF의 하단 잔여 흐름과 달라짐: bottom={equation_bottom}"
+    );
+}
+
+#[test]
+fn issue_1284_2022_oct_page11_question20_formula_does_not_overlap_next_text() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(10).expect("page 11 render tree");
+
+    let equation_bottom = max_equation_bottom_in_region(&tree.root, 390.0, 520.0, 980.0, 1010.0)
+        .expect("문20 조건식 수식");
+    let next_text = find_text_line_bbox(&tree.root, 585, 0).expect("문20 다음 본문");
+
+    assert!(
+        next_text.y >= equation_bottom + 0.1,
+        "문20 조건식 수식과 다음 본문은 한컴/PDF처럼 겹치지 않아야 함: equation_bottom={equation_bottom}, next={next_text:?}"
+    );
+}
+
+#[test]
+fn issue_1284_2022_oct_page15_question28_formula_does_not_overlap_case_label() {
+    let bytes = std::fs::read("samples/3-10월_교육_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(14).expect("page 15 render tree");
+
+    let equation_bottom = max_equation_bottom_in_region(&tree.root, 390.0, 570.0, 740.0, 790.0)
+        .expect("문28 중간 수식");
+    let next_text = find_text_line_bbox(&tree.root, 817, 0).expect("문28 (ii) 본문");
+
+    assert!(
+        next_text.y >= equation_bottom + 0.1,
+        "문28 중간 수식과 (ii) 본문은 PDF처럼 겹치지 않아야 함: equation_bottom={equation_bottom}, next={next_text:?}"
     );
 }
 

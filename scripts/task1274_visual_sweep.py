@@ -24,12 +24,15 @@ RED_MARKER_DRIFT_LIMIT_PX = 18.0
 LINE_BAND_DRIFT_LIMIT_PX = 42.0
 LINE_BAND_DRIFT_MEAN_LIMIT_PX = 60.0
 LINE_BAND_DRIFT_P90_LIMIT_PX = 120.0
+COLUMN_LINE_DRIFT_MEAN_LIMIT_PX = 42.0
+COLUMN_LINE_DRIFT_P90_LIMIT_PX = 70.0
 EQUATION_OVERLAP_LIMIT = 0.08
 LINE_ORDER_OVERLAP_LIMIT = 0.65
 LINE_ORDER_OVERLAP_MIN_PX = 4.0
 COLUMN_X_OVERLAP_LIMIT = 0.55
 QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
 QUESTION_TITLE_RE = re.compile(r"^\s*문\s*(\d+)")
+CHOICE_MARKER_ONLY_RE = re.compile(r"^[①-⑳]+$")
 PDF_PAGE_RE = re.compile(r'<page\s+[^>]*width="([0-9.]+)"\s+height="([0-9.]+)"')
 PDF_WORD_RE = re.compile(
     r'<word\s+[^>]*xMin="([0-9.]+)"\s+yMin="([0-9.]+)"\s+'
@@ -368,6 +371,69 @@ def compare_ordered_y(
     }
 
 
+def column_frame(frame: tuple[int, int, int, int], column: int) -> tuple[int, int, int, int]:
+    left, top, right, bottom = frame
+    mid = (left + right) // 2
+    if column == 0:
+        return left, top, max(left, mid - 2), bottom
+    return min(right, mid + 2), top, right, bottom
+
+
+def column_line_band_drifts(
+    rhwp: Image.Image,
+    pdf: Image.Image,
+    rhwp_frame: tuple[int, int, int, int],
+    pdf_frame: tuple[int, int, int, int],
+) -> list[dict[str, object]]:
+    drifts: list[dict[str, object]] = []
+    for column in (0, 1):
+        rhwp_column_frame = column_frame(rhwp_frame, column)
+        pdf_column_frame = column_frame(pdf_frame, column)
+        rhwp_bands = row_bands(
+            rhwp,
+            frame=rhwp_column_frame,
+            predicate=is_content_pixel,
+            min_pixels_per_row=8,
+            gap=2,
+        )
+        pdf_bands = row_bands(
+            pdf,
+            frame=pdf_column_frame,
+            predicate=is_content_pixel,
+            min_pixels_per_row=8,
+            gap=2,
+        )
+        drift = compare_ordered_y(rhwp_bands, pdf_bands)
+        drifts.append(
+            {
+                "column": column,
+                "rhwp_frame": list(rhwp_column_frame),
+                "pdf_frame": list(pdf_column_frame),
+                "drift": drift,
+                "rhwp_first_band": rhwp_bands[0] if rhwp_bands else None,
+                "rhwp_last_band": rhwp_bands[-1] if rhwp_bands else None,
+                "pdf_first_band": pdf_bands[0] if pdf_bands else None,
+                "pdf_last_band": pdf_bands[-1] if pdf_bands else None,
+            }
+        )
+    return drifts
+
+
+def column_line_band_drift_candidates(drifts: list[dict[str, object]]) -> list[dict[str, object]]:
+    candidates: list[dict[str, object]] = []
+    for item in drifts:
+        drift = item.get("drift")
+        if not isinstance(drift, dict):
+            continue
+        mean = drift.get("mean_abs_delta_px")
+        p90 = drift.get("p90_abs_delta_px")
+        if not isinstance(mean, (int, float)) or not isinstance(p90, (int, float)):
+            continue
+        if mean >= COLUMN_LINE_DRIFT_MEAN_LIMIT_PX and p90 >= COLUMN_LINE_DRIFT_P90_LIMIT_PX:
+            candidates.append(item)
+    return candidates
+
+
 def bbox_overlap_ratio(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
     ax, ay, aw, ah = a
     bx, by, bw, bh = b
@@ -379,6 +445,17 @@ def bbox_overlap_ratio(a: tuple[float, float, float, float], b: tuple[float, flo
         return 0.0
     area = (x1 - x0) * (y1 - y0)
     return area / max(1.0, min(aw * ah, bw * bh))
+
+
+def bbox_overlap_size(
+    a: tuple[float, float, float, float],
+    b: tuple[float, float, float, float],
+) -> tuple[float, float]:
+    ax, ay, aw, ah = a
+    bx, by, bw, bh = b
+    width = max(0.0, min(ax + aw, bx + bw) - max(ax, bx))
+    height = max(0.0, min(ay + ah, by + bh) - max(ay, by))
+    return width, height
 
 
 def interval_overlap_ratio(a0: float, a1: float, b0: float, b1: float) -> float:
@@ -682,11 +759,64 @@ def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, o
     equations: list[dict[str, object]] = []
     text_runs: list[dict[str, object]] = []
 
-    def visit(node: dict[str, object], path: str) -> None:
+    def line_text(node: dict[str, object]) -> str:
+        parts: list[str] = []
+        children = node.get("children")
+        if isinstance(children, list):
+            for child in children:
+                if not isinstance(child, dict):
+                    continue
+                if child.get("type") == "TextRun":
+                    text = child.get("text")
+                    if isinstance(text, str):
+                        parts.append(text)
+        return "".join(parts)
+
+    def is_equation_overlap_noise(
+        equation: dict[str, object],
+        text_run: dict[str, object],
+        ratio: float,
+    ) -> bool:
+        eq_line_text = str(equation.get("line_text") or "")
+        text_line_text = str(text_run.get("line_text") or "")
+        text = str(text_run.get("text") or "")
+        text_box = text_run["bbox"]
+        assert isinstance(text_box, tuple)
+        stripped = text.strip()
+        if equation.get("line_pi") == text_run.get("pi"):
+            return True
+        if QUESTION_TITLE_RE.match(eq_line_text) or QUESTION_TITLE_RE.match(text_line_text):
+            return True
+        if "\ufffc" in text:
+            return True
+        if CHOICE_MARKER_ONLY_RE.match(stripped):
+            return True
+        if text_box[3] >= 20.0 and ratio < 0.12:
+            return True
+        return False
+
+    def visit(
+        node: dict[str, object],
+        path: str,
+        line_path: str | None = None,
+        current_line_text: str = "",
+        current_line_pi: object | None = None,
+    ) -> None:
         bbox = render_tree_bbox(node)
         node_type = node.get("type")
+        current_line_path = path if node_type == "TextLine" else line_path
+        next_line_text = line_text(node) if node_type == "TextLine" else current_line_text
+        next_line_pi = node.get("pi") if node_type == "TextLine" else current_line_pi
         if bbox is not None and node_type == "Equation":
-            equations.append({"path": path, "bbox": bbox})
+            equations.append(
+                {
+                    "path": path,
+                    "bbox": bbox,
+                    "line_path": current_line_path,
+                    "line_text": next_line_text,
+                    "line_pi": next_line_pi,
+                }
+            )
         elif bbox is not None and node_type == "TextRun":
             text = node.get("text")
             if isinstance(text, str) and text.strip():
@@ -694,6 +824,8 @@ def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, o
                     {
                         "path": path,
                         "bbox": bbox,
+                        "line_path": current_line_path,
+                        "line_text": next_line_text,
                         "pi": node.get("pi"),
                         "text": text[:32],
                     }
@@ -703,7 +835,7 @@ def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, o
         if isinstance(children, list):
             for index, child in enumerate(children):
                 if isinstance(child, dict):
-                    visit(child, f"{path}/{index}")
+                    visit(child, f"{path}/{index}", current_line_path, next_line_text, next_line_pi)
 
     visit(tree, "root")
 
@@ -714,17 +846,31 @@ def render_tree_equation_overlap_candidates(tree_path: Path) -> list[dict[str, o
         for text_idx, text_run in enumerate(text_runs):
             text_box = text_run["bbox"]
             assert isinstance(text_box, tuple)
+            if equation.get("line_path") == text_run.get("line_path"):
+                continue
+            # TextRun bbox는 줄 높이를 포함하므로, 바로 위 텍스트 줄의
+            # 아래쪽 line box와 다음 수식 줄이 겹치는 정상 배치를 제외한다.
+            if text_box[1] < eq_box[1] and (text_box[1] + text_box[3]) > eq_box[1]:
+                continue
             ratio = bbox_overlap_ratio(eq_box, text_box)
-            if ratio >= EQUATION_OVERLAP_LIMIT:
+            overlap_width, overlap_height = bbox_overlap_size(eq_box, text_box)
+            if is_equation_overlap_noise(equation, text_run, ratio):
+                continue
+            if ratio >= EQUATION_OVERLAP_LIMIT and overlap_width >= 3.0 and overlap_height >= 2.5:
                 candidates.append(
                     {
                         "equation_index": eq_idx,
                         "text_index": text_idx,
                         "overlap_ratio": round(ratio, 3),
+                        "overlap_width_px": round(overlap_width, 1),
+                        "overlap_height_px": round(overlap_height, 1),
                         "equation_path": equation["path"],
                         "text_path": text_run["path"],
                         "text_pi": text_run.get("pi"),
                         "text": text_run.get("text"),
+                        "equation_line_pi": equation.get("line_pi"),
+                        "equation_line_text": equation.get("line_text"),
+                        "text_line_text": text_run.get("line_text"),
                         "equation_bbox": [round(v, 1) for v in eq_box],
                         "text_bbox": [round(v, 1) for v in text_box],
                     }
@@ -787,6 +933,10 @@ def render_tree_line_order_overlap_candidates(tree_path: Path) -> list[dict[str,
         prev_pi = prev_line.get("pi")
         next_pi = next_line.get("pi")
         if prev_pi is not None and prev_pi == next_pi:
+            continue
+        prev_text = str(prev_line.get("text") or "")
+        next_text = str(next_line.get("text") or "")
+        if "[EQ]" in prev_text and QUESTION_TITLE_RE.match(next_text):
             continue
         if bbox_x_overlap_ratio(prev_box, next_box) < COLUMN_X_OVERLAP_LIMIT:
             continue
@@ -873,6 +1023,8 @@ def analyze_page(
     )
     red_drift = compare_ordered_y(rhwp_red, pdf_red)
     line_drift = compare_ordered_y(rhwp_bands, pdf_bands)
+    column_line_drifts = column_line_band_drifts(rhwp, pdf, rhwp_frame, pdf_frame)
+    column_line_drift_candidates = column_line_band_drift_candidates(column_line_drifts)
     equation_overlaps = render_tree_equation_overlap_candidates(tree_path)
     question_title_overlaps = render_tree_question_title_overlap_candidates(tree_path)
     line_order_overlaps = render_tree_line_order_overlap_candidates(tree_path)
@@ -905,13 +1057,26 @@ def analyze_page(
         and not tolerated_rhwp_frame_bleed
     ):
         flags.append("frame_overflow_pixels")
-    if content_bottom_delta is not None and abs(content_bottom_delta) >= CONTENT_BOTTOM_DELTA_LIMIT_PX:
-        flags.append("content_bottom_drift")
-    if red_drift["max_abs_delta_px"] is not None and red_drift["max_abs_delta_px"] >= RED_MARKER_DRIFT_LIMIT_PX:
-        flags.append("red_marker_drift")
+    content_bottom_drift = content_bottom_delta is not None and abs(content_bottom_delta) >= CONTENT_BOTTOM_DELTA_LIMIT_PX
+    red_counts_match = red_drift["rhwp_count"] == red_drift["pdf_count"]
+    red_mean = red_drift["mean_abs_delta_px"]
+    red_p90 = red_drift.get("p90_abs_delta_px")
+    red_marker_drift_is_stable = (
+        red_counts_match
+        and red_drift["paired"] >= 2
+        and red_mean is not None
+        and red_p90 is not None
+        and red_mean >= RED_MARKER_DRIFT_LIMIT_PX * 0.5
+        and red_p90 >= RED_MARKER_DRIFT_LIMIT_PX
+    )
+    red_marker_drift = (
+        red_drift["max_abs_delta_px"] is not None
+        and red_drift["max_abs_delta_px"] >= RED_MARKER_DRIFT_LIMIT_PX
+        and red_marker_drift_is_stable
+    )
     line_mean = line_drift["mean_abs_delta_px"]
     line_p90 = line_drift.get("p90_abs_delta_px")
-    if (
+    line_band_drift = (
         line_mean is not None
         and (
             line_mean >= LINE_BAND_DRIFT_MEAN_LIMIT_PX
@@ -921,8 +1086,7 @@ def analyze_page(
                 and line_p90 >= LINE_BAND_DRIFT_P90_LIMIT_PX
             )
         )
-    ):
-        flags.append("line_band_drift")
+    )
     if equation_overlaps:
         flags.append("equation_text_overlap")
     if question_title_overlaps:
@@ -931,6 +1095,17 @@ def analyze_page(
         flags.append("line_order_overlap")
     if question_marker_drifts:
         flags.append("question_marker_drift")
+    semantic_flow_flags = bool(
+        equation_overlaps or question_title_overlaps or line_order_overlaps or question_marker_drifts
+    )
+    if content_bottom_drift and (rhwp_out_pixels > 0 or semantic_flow_flags):
+        flags.append("content_bottom_drift")
+    if red_marker_drift and question_marker_drifts:
+        flags.append("red_marker_drift")
+    if line_band_drift and semantic_flow_flags:
+        flags.append("line_band_drift")
+    if column_line_drift_candidates and semantic_flow_flags:
+        flags.append("column_line_band_drift")
 
     annotated = None
     if flags:
@@ -951,6 +1126,7 @@ def analyze_page(
                 "question_title_text_overlap": question_title_overlaps,
                 "line_order_overlap": line_order_overlaps,
                 "question_marker_drift": question_marker_drifts,
+                "column_line_band_drift": column_line_drift_candidates,
             },
         )
 
@@ -969,6 +1145,8 @@ def analyze_page(
         "content_bottom_delta_px": content_bottom_delta,
         "red_marker_drift": red_drift,
         "line_band_drift": line_drift,
+        "column_line_band_drift": column_line_drifts,
+        "column_line_band_drift_candidates": column_line_drift_candidates,
         "svg": str(svg_path),
         "render_tree_json": str(tree_path),
         "equation_text_overlap_candidates": equation_overlaps,
@@ -1031,6 +1209,18 @@ def draw_render_tree_overlays(
     pdf_offset_x: int,
 ) -> None:
     font = label_font()
+
+    for index, item in enumerate(render_overlays.get("column_line_band_drift", [])[:4]):
+        drift = item.get("drift")
+        if not isinstance(drift, dict):
+            continue
+        label = (
+            f"column flow c{item.get('column')} "
+            f"mean={drift.get('mean_abs_delta_px')} "
+            f"p90={drift.get('p90_abs_delta_px')} "
+            f"max={drift.get('max_abs_delta_px')}"
+        )
+        draw.text((18, label_h + 18 + index * 20), label, fill=(180, 0, 0), font=font)
 
     def draw_bbox(
         box: object,
@@ -1142,6 +1332,9 @@ def analyze_pages(
         "content_bottom_drift_pages": [page["page"] for page in flagged_pages if "content_bottom_drift" in page["flags"]],
         "red_marker_drift_pages": [page["page"] for page in flagged_pages if "red_marker_drift" in page["flags"]],
         "line_band_drift_pages": [page["page"] for page in flagged_pages if "line_band_drift" in page["flags"]],
+        "column_line_band_drift_pages": [
+            page["page"] for page in flagged_pages if "column_line_band_drift" in page["flags"]
+        ],
         "equation_text_overlap_pages": [page["page"] for page in flagged_pages if "equation_text_overlap" in page["flags"]],
         "question_title_text_overlap_pages": [
             page["page"] for page in flagged_pages if "question_title_text_overlap" in page["flags"]
@@ -1158,7 +1351,9 @@ def analyze_pages(
     print(
         f"analysis: {key} flagged={len(flagged_pages)}/{page_count} "
         f"frame={summary['frame_overflow_pages']} red={summary['red_marker_drift_pages']} "
-        f"line={summary['line_band_drift_pages']} title={summary['question_title_text_overlap_pages']} "
+        f"line={summary['line_band_drift_pages']} column={summary['column_line_band_drift_pages']} "
+        f"eq={summary['equation_text_overlap_pages']} "
+        f"title={summary['question_title_text_overlap_pages']} "
         f"order={summary['line_order_overlap_pages']} question={summary['question_marker_drift_pages']}",
         flush=True,
     )
