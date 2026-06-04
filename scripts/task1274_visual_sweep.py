@@ -18,6 +18,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 FRAME_OVERFLOW_PIXEL_LIMIT = 20
 FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT = 12
+FRAME_OVERFLOW_TOLERATED_BLEED_PX = 12
 CONTENT_BOTTOM_DELTA_LIMIT_PX = 36.0
 RED_MARKER_DRIFT_LIMIT_PX = 18.0
 LINE_BAND_DRIFT_LIMIT_PX = 42.0
@@ -266,7 +267,9 @@ def detect_frame(image: Image.Image) -> tuple[int, int, int, int]:
     ]
 
     top = max(top_candidates)[1] if top_candidates else round(h * 0.067)
-    bottom = max(bottom_candidates)[1] if bottom_candidates else round(h * 0.977)
+    bottom = max(bottom_candidates, key=lambda item: item[1])[1] if bottom_candidates else round(h * 0.977)
+    if bottom < h * 0.90:
+        bottom = round(h * 0.977)
     left = max(left_candidates)[1] if left_candidates else round(w * 0.033)
     right = max(right_candidates)[1] if right_candidates else round(w * 0.967)
     return left, top, right, bottom
@@ -885,7 +888,22 @@ def analyze_page(
         content_bottom_delta = round(float(rhwp_bottom - pdf_bottom), 1)
 
     flags: list[str] = []
-    if rhwp_out_pixels > max(FRAME_OVERFLOW_PIXEL_LIMIT, pdf_out_pixels + FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT):
+    rhwp_out_extent = None
+    pdf_out_extent = None
+    if rhwp_out_max_y is not None:
+        rhwp_out_extent = int(rhwp_out_max_y - rb)
+    if pdf_out_max_y is not None:
+        pdf_out_extent = int(pdf_out_max_y - pb)
+    tolerated_rhwp_frame_bleed = (
+        rhwp_out_extent is not None
+        and 0 < rhwp_out_extent <= FRAME_OVERFLOW_TOLERATED_BLEED_PX
+        and (content_bottom_delta is None or abs(content_bottom_delta) < CONTENT_BOTTOM_DELTA_LIMIT_PX)
+    )
+
+    if (
+        rhwp_out_pixels > max(FRAME_OVERFLOW_PIXEL_LIMIT, pdf_out_pixels + FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT)
+        and not tolerated_rhwp_frame_bleed
+    ):
         flags.append("frame_overflow_pixels")
     if content_bottom_delta is not None and abs(content_bottom_delta) >= CONTENT_BOTTOM_DELTA_LIMIT_PX:
         flags.append("content_bottom_drift")
@@ -945,6 +963,9 @@ def analyze_page(
         "pdf_outside_frame_pixels": pdf_out_pixels,
         "rhwp_outside_frame_max_y": rhwp_out_max_y,
         "pdf_outside_frame_max_y": pdf_out_max_y,
+        "rhwp_outside_frame_extent_px": rhwp_out_extent,
+        "pdf_outside_frame_extent_px": pdf_out_extent,
+        "frame_overflow_tolerated_bleed": tolerated_rhwp_frame_bleed,
         "content_bottom_delta_px": content_bottom_delta,
         "red_marker_drift": red_drift,
         "line_band_drift": line_drift,
