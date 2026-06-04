@@ -220,7 +220,10 @@ impl DocumentCore {
     }
 
     /// 표의 행/열/셀 수를 반환한다 (네이티브).
-    pub(crate) fn move_vertical_native(
+    // `pub` (not `pub(crate)`): the ehwp NIF (external crate) calls this directly for
+    // arrow Up/Down caret nav. Mirrors fork patch 5938df11. Harmless for the WASM build
+    // (its `pub fn move_vertical` wrapper is in-crate either way).
+    pub fn move_vertical_native(
         &self,
         sec: usize,
         para: usize,
