@@ -2625,6 +2625,82 @@ impl TypesetEngine {
                                     (Some(prev), Some(_), Some(bottom))
                                         if hwpunit_to_px((bottom - prev).max(0), self.dpi) > h4f + 100.0
                                 );
+                            let large_between_tail_render_overflows = if !default_between_notes_gap
+                                && compact_endnote_separator_profile
+                                && ep_idx > 0
+                                && st.col_count > 1
+                                && st.current_column + 1 < st.col_count
+                                && st.current_height > available * 0.85
+                                && !st.current_items.is_empty()
+                                && !local_vpos_rewind
+                                && !internal_vpos_rewind
+                                && para_has_visible_text_or_equation(en_para)
+                            {
+                                let prev_equation_only_tail = st
+                                    .current_items
+                                    .iter()
+                                    .rev()
+                                    .filter_map(page_item_para_index)
+                                    .find_map(|pi| {
+                                        paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        )
+                                    })
+                                    .map(|prev_para| {
+                                        !para_has_visible_text(prev_para)
+                                            && prev_para.controls.iter().any(|ctrl| {
+                                                matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char)
+                                            })
+                                    })
+                                    .unwrap_or(false);
+                                st.current_items
+                                    .iter()
+                                    .filter_map(page_item_para_index)
+                                    .find_map(|pi| {
+                                        paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        )
+                                        .and_then(|p| p.line_segs.first())
+                                        .map(|s| s.vertical_pos)
+                                    })
+                                    .and_then(|base_vpos| {
+                                        this_first_offset.map(|first_vpos| {
+                                            let predicted_y = hwpunit_to_px(
+                                                (first_vpos - base_vpos).max(0),
+                                                self.dpi,
+                                            ) + st.current_start_height;
+                                            let rendered_h =
+                                                fmt.line_advances_sum(0..fmt.line_heights.len());
+                                            // TAC 그림/수식으로 lazy base가 깊게 보정된 단에서는
+                                            // 저장 vpos 직접 예측이 실제 렌더 y보다 낮게 나올 수 있다.
+                                            // 직전 수식-only 문단 뒤의 한 줄짜리 풀이 tail은 남은
+                                            // 공간이 50px 이하이면 한컴처럼 다음 단에서 이어간다.
+                                            let near_bottom_tail = prev_equation_only_tail
+                                                && fmt.line_heights.len() == 1
+                                                && para_has_visible_text(en_para)
+                                                && !para_is_treat_as_char_picture_only(en_para)
+                                                && !para_has_treat_as_char_picture_or_shape(
+                                                    en_para,
+                                                )
+                                                && st.current_height > available * 0.90
+                                                && st.current_height < available - 55.0
+                                                && st.current_height + rendered_h
+                                                    > available - 50.0;
+                                            predicted_y + rendered_h
+                                                > available
+                                                    + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                                    + 1.0
+                                                || near_bottom_tail
+                                        })
+                                    })
+                                    .unwrap_or(false)
+                            } else {
+                                false
+                            };
                             let large_between_title_tail_render_overflows =
                                 if !default_between_notes_gap
                                     && ep_idx == 0
@@ -2795,6 +2871,10 @@ impl TypesetEngine {
                                         })
                                         .unwrap_or(false);
                             if large_between_title_tail_render_overflows {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            if large_between_tail_render_overflows {
                                 st.advance_column_or_new_page();
                                 prev_en_bottom_vpos = None;
                             }

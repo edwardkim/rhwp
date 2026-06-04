@@ -1619,6 +1619,50 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
 }
 
 #[test]
+fn issue_1284_2024_between20_page22_23_question_tail_matches_pdf() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2024-미주사이20.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+
+    let page23 = doc.dump_page_items(Some(22));
+    let page23_col1 = page23.find("  단 1").expect("page 23 second column");
+    let q29_projection_tail = page23
+        .find("FullParagraph[미주]  pi=1159")
+        .expect("page 23 q29 projection tail");
+    let q29_projection_formula = page23
+        .find("FullParagraph[미주]  pi=1160")
+        .expect("page 23 q29 projection formula");
+    let q30_title = page23
+        .find("FullParagraph[미주]  pi=1163")
+        .expect("page 23 q30 title");
+    assert!(
+        q29_projection_tail > page23_col1
+            && q29_projection_formula > q29_projection_tail
+            && q30_title > q29_projection_formula,
+        "PDF 기준 page 23 오른쪽 단은 문29 tail(pi=1159,1160) 뒤 문30으로 이어져야 함\n{page23}"
+    );
+
+    let page22_tree = doc.build_page_render_tree(21).expect("page 22 render tree");
+    let q28_y = min_para_text_y(&page22_tree.root, 1106).expect("문28 제목");
+    assert!(
+        (846.0..=866.0).contains(&q28_y),
+        "문28 제목은 PDF bbox(약 856.9px) 근처에서 시작해야 함: y={q28_y}"
+    );
+
+    let page23_tree = doc.build_page_render_tree(22).expect("page 23 render tree");
+    let q29_tail_bbox = find_text_line_bbox(&page23_tree.root, 1159, 0).expect("문29 tail");
+    let q30_y = min_para_text_y(&page23_tree.root, 1163).expect("문30 제목");
+    assert!(
+        q29_tail_bbox.x > 390.0 && (84.0..=104.0).contains(&q29_tail_bbox.y),
+        "문29 마지막 정사영 tail은 PDF처럼 page 23 오른쪽 단 상단에서 이어져야 함: {:?}",
+        q29_tail_bbox
+    );
+    assert!(
+        (238.0..=258.0).contains(&q30_y),
+        "문30 제목은 문29 tail 뒤 PDF bbox(약 248px) 근처에서 시작해야 함: y={q30_y}"
+    );
+}
+
+#[test]
 fn issue_1274_2022_sep_page18_question26_equation_paragraph_reserves_height() {
     let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwp").expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");

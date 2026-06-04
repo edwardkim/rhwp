@@ -257,8 +257,14 @@ impl HeightCursor {
             .get(item_para)
             .map(para_is_treat_as_char_picture_only)
             .unwrap_or(false);
-        let compact_endnote_tac_picture_rewind =
-            self.suppress_large_forward_jump && vpos_rewind && curr_tac_picture_only;
+        let prev_has_visible_text = paragraphs
+            .get(prev_pi)
+            .map(para_has_visible_text)
+            .unwrap_or(false);
+        let compact_endnote_tac_picture_rewind = self.suppress_large_forward_jump
+            && vpos_rewind
+            && curr_tac_picture_only
+            && !prev_has_visible_text;
         let compact_endnote_bottom_rewind = self.suppress_large_forward_jump
             && vpos_rewind
             && y_offset > self.col_area_y + self.col_area_height * 0.75;
