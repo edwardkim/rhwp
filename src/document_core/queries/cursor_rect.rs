@@ -65,6 +65,83 @@ fn note_marker_text(
     format!("{}{}{}", prefix, number, suffix)
 }
 
+/// 한 시각 줄(line)을 구성하는 한 run 의, 클릭 x → 문자 위치 해석에 필요한 최소 정보.
+///
+/// `hit_test_native` 내부의 `RunInfo` 에서 줄별로 추려 만든 가벼운 view.
+/// 이 view 만 분리해 두면 줄 단위 x 해석 로직(`resolve_x_on_line`)을 문서/페이지
+/// 트리 없이 단위 테스트할 수 있다.
+pub(crate) struct LineRunView<'a> {
+    pub bbox_x: f64,
+    pub bbox_w: f64,
+    pub char_start: usize,
+    pub char_count: usize,
+    /// 각 글자의 run-local x 좌표(누적 advance). 비어 있으면 글자 위치 미상.
+    pub char_positions: &'a [f64],
+}
+
+/// run-local x 에 해당하는 글자 인덱스. `hit_test_native` 내부 `find_char_at_x`
+/// 와 동일 의미(positions[i] = i번째 글자의 left x, 0.0 포함 안 함)를 유지한다.
+fn line_local_char_at_x(positions: &[f64], local_x: f64) -> usize {
+    for (i, &px) in positions.iter().enumerate() {
+        if i == 0 {
+            if local_x < px / 2.0 {
+                return 0;
+            }
+        } else {
+            let mid = (positions[i - 1] + px) / 2.0;
+            if local_x < mid {
+                return i;
+            }
+        }
+    }
+    positions.len()
+}
+
+/// 한 시각 줄(line)에 속한 run 들(이미 bbox_x 오름차순 정렬) 안에서 클릭 x 를
+/// 가장 가까운 문자 위치로 해석한다. 반환: (line_runs 내 인덱스, 절대 char offset).
+///
+/// 줄을 구성하는 run 이 1개든 여러 개든 동일하게:
+///   - x 가 run bbox 안 → 정확한 글자 위치
+///   - x 가 두 run 사이의 빈틈 → 더 가까운 쪽 경계(왼쪽 run 끝 / 오른쪽 run 시작)
+///   - x 가 첫 run 왼쪽 → 첫 run 시작
+///   - x 가 마지막 run 오른쪽 → 마지막 run 끝
+///
+/// 기존 fallback 들이 줄 시작/끝으로만 스냅하던 결함(클릭 y 가 글리프 bbox 의
+/// 행간 여백에 떨어졌을 때, 그리고 다중 run 줄의 run 경계 빈틈)을 정정한다.
+pub(crate) fn resolve_x_on_line(line_runs: &[LineRunView], x: f64) -> (usize, usize) {
+    debug_assert!(!line_runs.is_empty());
+    // 첫 run 왼쪽
+    if x < line_runs[0].bbox_x {
+        let r = &line_runs[0];
+        return (0, r.char_start);
+    }
+    for (i, r) in line_runs.iter().enumerate() {
+        if x <= r.bbox_x + r.bbox_w {
+            // 이 run 의 bbox 안 (또는 이전 run 과의 빈틈 안)
+            if x >= r.bbox_x {
+                let local_x = x - r.bbox_x;
+                // char_count 로 클램프: 빈 run(char_count=0)이지만 bbox_w 가 셀 폭만큼
+                // 넓은 입력칸의 경우 char_positions(=[0.0])가 len()=1 을 돌려주어
+                // char_start+1 (= 줄 끝 너머) 로 새던 결함을 막는다. 글자 인덱스는
+                // 결코 그 run 의 char_count 를 넘을 수 없다.
+                let local_idx = line_local_char_at_x(r.char_positions, local_x).min(r.char_count);
+                return (i, r.char_start + local_idx);
+            }
+            // 이전 run 과 이 run 사이의 빈틈: 더 가까운 경계로 스냅
+            let prev = &line_runs[i - 1];
+            let prev_right = prev.bbox_x + prev.bbox_w;
+            if (x - prev_right) <= (r.bbox_x - x) {
+                return (i - 1, prev.char_start + prev.char_count);
+            }
+            return (i, r.char_start);
+        }
+    }
+    // 마지막 run 오른쪽
+    let last = line_runs.len() - 1;
+    let r = &line_runs[last];
+    (last, r.char_start + r.char_count)
+}
+
 impl DocumentCore {
     pub fn get_cursor_rect_native(
         &self,
@@ -1070,6 +1147,22 @@ impl DocumentCore {
             }
         }
 
+        /// 줄 단위 x 해석을 모듈 스코프 `resolve_x_on_line` 에 위임한다.
+        /// (모듈 스코프 함수는 문서/페이지 트리 없이 단위 테스트가 가능하다.)
+        fn resolve_x_on_line(line_runs: &[&RunInfo], x: f64) -> (usize, usize) {
+            let views: Vec<super::cursor_rect::LineRunView> = line_runs
+                .iter()
+                .map(|r| super::cursor_rect::LineRunView {
+                    bbox_x: r.bbox_x,
+                    bbox_w: r.bbox_w,
+                    char_start: r.char_start,
+                    char_count: r.char_count,
+                    char_positions: &r.char_positions,
+                })
+                .collect();
+            super::cursor_rect::resolve_x_on_line(&views, x)
+        }
+
         fn format_hit(run: &RunInfo, offset: usize, page_num: u32) -> String {
             let base = format!(
                 "\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{}",
@@ -1485,47 +1578,37 @@ impl DocumentCore {
                 .collect();
 
             if !cell_runs.is_empty() {
-                // 같은 y 범위의 run 중 x가 가장 가까운 것
-                let mut best = cell_runs[0];
-                let mut best_offset = best.char_start;
-                for r in &cell_runs {
-                    if y >= r.bbox_y && y <= r.bbox_y + r.bbox_h {
-                        if x < r.bbox_x {
-                            // 텍스트 왼쪽 → 해당 run 시작
-                            best = r;
-                            best_offset = r.char_start;
-                            break;
-                        } else if x <= r.bbox_x + r.bbox_w {
-                            // 텍스트 위 → 정확한 문자 위치
-                            let local_x = x - r.bbox_x;
-                            best = r;
-                            best_offset = r.char_start + find_char_at_x(&r.char_positions, local_x);
-                            break;
-                        }
-                        // 텍스트 오른쪽 → 이 run의 끝 (다음 run이 없으면 여기)
-                        best = r;
-                        best_offset = r.char_start + r.char_count;
-                    }
-                }
-                // y 범위 매칭이 없으면 가장 가까운 run 사용
-                if !cell_runs
+                // 클릭이 속한 시각 줄(line)을 고른다.
+                //   1순위: 클릭 y 가 글리프 bbox 안에 드는 run 의 줄
+                //   2순위: (행간 여백 클릭) 클릭 y 에 세로로 가장 가까운 run 의 줄
+                // 줄 식별은 run 의 bbox_y(줄 윗변)로 한다. 같은 줄의 run 은 bbox_y 가 같다.
+                let line_y = cell_runs
                     .iter()
-                    .any(|r| y >= r.bbox_y && y <= r.bbox_y + r.bbox_h)
-                {
-                    let nearest = cell_runs.iter().min_by_key(|r| {
-                        let mid_y = r.bbox_y + r.bbox_h / 2.0;
-                        ((y - mid_y).abs() * 1000.0) as i64
+                    .filter(|r| y >= r.bbox_y && y <= r.bbox_y + r.bbox_h)
+                    .map(|r| r.bbox_y)
+                    .next()
+                    .or_else(|| {
+                        cell_runs
+                            .iter()
+                            .min_by(|a, b| {
+                                let da = (y - (a.bbox_y + a.bbox_h / 2.0)).abs();
+                                let db = (y - (b.bbox_y + b.bbox_h / 2.0)).abs();
+                                da.partial_cmp(&db).unwrap()
+                            })
+                            .map(|r| r.bbox_y)
                     });
-                    if let Some(r) = nearest {
-                        best = r;
-                        best_offset = if x < r.bbox_x {
-                            r.char_start
-                        } else {
-                            r.char_start + r.char_count
-                        };
-                    }
+
+                if let Some(ly) = line_y {
+                    let mut line_runs: Vec<&RunInfo> = cell_runs
+                        .iter()
+                        .copied()
+                        .filter(|r| (r.bbox_y - ly).abs() < 1.0)
+                        .collect();
+                    line_runs.sort_by(|a, b| a.bbox_x.partial_cmp(&b.bbox_x).unwrap());
+                    let (idx, offset) = resolve_x_on_line(&line_runs, x);
+                    return Ok(format_hit(line_runs[idx], offset, page_num));
                 }
-                return Ok(format_hit(best, best_offset, page_num));
+                return Ok(format_hit(cell_runs[0], cell_runs[0].char_start, page_num));
             }
 
             // 양식 컨트롤(FormObject)만 있는 셀: TextRun이 없어 cell_runs가 비어있음.
@@ -1601,18 +1684,10 @@ impl DocumentCore {
 
         if !same_line_runs.is_empty() {
             same_line_runs.sort_by(|a, b| a.bbox_x.partial_cmp(&b.bbox_x).unwrap());
-            // 클릭이 줄의 왼쪽이면 첫 run 시작
-            if x < same_line_runs[0].bbox_x {
-                let run = same_line_runs[0];
-                return Ok(format_hit(run, run.char_start, page_num));
-            }
-            // 줄의 오른쪽이면 마지막 run 끝
-            let last = same_line_runs.last().unwrap();
-            return Ok(format_hit(
-                last,
-                last.char_start + last.char_count,
-                page_num,
-            ));
+            // 줄 안에서 클릭 x 를 가장 가까운 문자 위치로 해석
+            // (다중 run 줄의 run 경계 빈틈 포함 — 줄 끝으로 스냅하지 않음)
+            let (idx, offset) = resolve_x_on_line(&same_line_runs, x);
+            return Ok(format_hit(same_line_runs[idx], offset, page_num));
         }
 
         // 3. 가장 가까운 줄 찾기 (y 거리 기준)
@@ -1652,33 +1727,17 @@ impl DocumentCore {
 
         let target_y = closest.bbox_y;
         let target_h = closest.bbox_h;
-        let mut line_runs: Vec<&&RunInfo> = candidate_runs
+        let mut line_runs: Vec<&RunInfo> = candidate_runs
             .iter()
             .filter(|r| (r.bbox_y - target_y).abs() < 1.0 && (r.bbox_h - target_h).abs() < 1.0)
+            .copied()
             .collect();
         line_runs.sort_by(|a, b| a.bbox_x.partial_cmp(&b.bbox_x).unwrap());
 
-        if x < line_runs[0].bbox_x {
-            let run = line_runs[0];
-            return Ok(format_hit(run, run.char_start, page_num));
-        }
-
-        // x 좌표로 적합한 run 찾기
-        for run in &line_runs {
-            if x >= run.bbox_x && x <= run.bbox_x + run.bbox_w {
-                let local_x = x - run.bbox_x;
-                let char_offset = find_char_at_x(&run.char_positions, local_x);
-                return Ok(format_hit(run, run.char_start + char_offset, page_num));
-            }
-        }
-
-        // 줄의 오른쪽 끝
-        let last = line_runs.last().unwrap();
-        Ok(format_hit(
-            last,
-            last.char_start + last.char_count,
-            page_num,
-        ))
+        // 줄 안에서 클릭 x 를 가장 가까운 문자 위치로 해석
+        // (run 경계 빈틈 포함 — 줄 끝으로만 스냅하지 않음)
+        let (idx, offset) = resolve_x_on_line(&line_runs, x);
+        Ok(format_hit(line_runs[idx], offset, page_num))
     }
 
     /// 안내문 클릭 시 필드 시작 위치를 찾아 hitTest 결과를 반환한다.
@@ -4280,5 +4339,135 @@ impl DocumentCore {
             "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\"}}",
             section_idx, para_idx, control_idx, source_type
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{resolve_x_on_line, LineRunView};
+
+    // 줄 단위 x 해석(`resolve_x_on_line`)의 회귀 테스트.
+    //
+    // 핵심은 "줄 시작/끝으로 스냅하지 않는다" 이다. char_positions 는 production
+    // 의 `compute_char_positions` 와 동일하게 `[0.0, w1, w1+w2, ...]` (char_count+1
+    // 개, 0.0 포함) 형태로 구성한다. 줄 안 글자 경계로의 정확한 라운딩은
+    // production `find_char_at_x` 의 미드포인트 규칙을 그대로 따르므로, 여기서는
+    // "줄 시작/끝 상수로 붕괴하지 않고 x 에 따라 단조 증가" 라는 회귀 핵심 속성을
+    // 검증한다.
+
+    /// char_count 개 글자가 균등 폭 `w` 로 놓인 한 run.
+    fn run(bbox_x: f64, char_start: usize, char_count: usize, w: f64, positions: &[f64]) -> LineRunView<'_> {
+        LineRunView {
+            bbox_x,
+            bbox_w: w * char_count as f64,
+            char_start,
+            char_count,
+            char_positions: positions,
+        }
+    }
+
+    /// 10글자 run 하나로 된 줄. bbox_x=100, 글자 폭 10px. char_start=7 (줄 시작이
+    /// 문단 offset 0 이 아님을 확인).
+    const POS10: [f64; 11] = [
+        0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0,
+    ];
+
+    /// 회귀: 줄 한가운데 x 의 클릭은 줄 시작도 끝도 아닌 중간 글자 offset 으로
+    /// 해석되어야 한다. (leading-gap 클릭이 줄 시작/끝으로 스냅하던 버그)
+    ///
+    /// `resolve_x_on_line` 은 클릭 y 와 무관하게 줄 안에서 x 만으로 해석하므로,
+    /// 글리프 bbox 의 행간 여백(leading gap)에 떨어진 클릭도 동일하게 이 경로를
+    /// 타게 되어 더 이상 줄 시작/끝으로 스냅하지 않는다.
+    #[test]
+    fn mid_line_x_resolves_to_mid_line_offset_not_start_or_end() {
+        let line = vec![run(100.0, 7, 10, 10.0, &POS10)];
+        let line_start = 7; // char_start
+        let line_end = 17; // char_start + char_count
+
+        // 줄 한가운데(x=150)
+        let (idx, offset) = resolve_x_on_line(&line, 150.0);
+        assert_eq!(idx, 0, "단일 run 줄이므로 run 인덱스는 0");
+        assert!(
+            offset > line_start && offset < line_end,
+            "회귀: 줄 한가운데(x=150) 클릭이 줄 시작({line_start})/끝({line_end}) 사이의 \
+             중간 글자로 해석되어야 함, got {offset}"
+        );
+    }
+
+    /// 줄 전체에 x 를 쓸어가며 해석한 offset 이 (약)단조 증가하고, 시작/끝 상수로
+    /// 붕괴하지 않아야 한다. (어떤 내부 x 도 줄 시작/끝으로 스냅하지 않음을 확인)
+    #[test]
+    fn interior_x_sweep_is_monotonic_and_spans_the_line() {
+        let line = vec![run(100.0, 7, 10, 10.0, &POS10)];
+        let mut prev = 0usize;
+        let mut distinct = std::collections::BTreeSet::new();
+        let mut x = 100.0; // bbox_x
+        while x <= 200.0 {
+            let (_, offset) = resolve_x_on_line(&line, x);
+            assert!(
+                offset >= prev,
+                "x={x} 에서 offset={offset} 이 직전 {prev} 보다 작음 (단조 증가 위반)"
+            );
+            distinct.insert(offset);
+            prev = offset;
+            x += 2.0;
+        }
+        assert!(
+            distinct.len() >= 8,
+            "회귀: 줄 내부 x 스윕이 {} 개의 distinct offset 만 냄 {distinct:?}; \
+             줄 시작/끝 상수로 스냅하면 1~2 개로 붕괴함",
+            distinct.len()
+        );
+    }
+
+    /// 줄 경계 밖: 왼쪽은 줄 시작, 오른쪽은 줄 끝으로 클램프.
+    #[test]
+    fn outside_line_clamps_to_start_and_end() {
+        let line = vec![run(100.0, 7, 10, 10.0, &POS10)];
+        assert_eq!(resolve_x_on_line(&line, 50.0), (0, 7), "줄 왼쪽 → 줄 시작");
+        assert_eq!(resolve_x_on_line(&line, 999.0), (0, 17), "줄 오른쪽 → 줄 끝");
+    }
+
+    /// 다중 run 줄: 두 run 사이의 빈틈 클릭은 줄 끝으로 스냅하지 않고
+    /// 더 가까운 run 경계로 해석되어야 한다. (다중 run 줄 inter-run-gap 버그)
+    #[test]
+    fn inter_run_gap_snaps_to_nearer_boundary_not_line_end() {
+        const P0: [f64; 4] = [0.0, 10.0, 20.0, 30.0]; // 3 chars, 폭 10
+        const P1: [f64; 4] = [0.0, 10.0, 20.0, 30.0]; // 3 chars, 폭 10
+        // run0: x[100,130], chars 0..3 ; 빈틈 ; run1: x[200,230], chars 5..8
+        let line = vec![
+            run(100.0, 0, 3, 10.0, &P0),
+            run(200.0, 5, 3, 10.0, &P1),
+        ];
+        let line_end = 5 + 3; // 8
+
+        // 빈틈 안에서 왼쪽 run 에 가까운 x(140) → 왼쪽 run 끝 (offset 3)
+        let (idx, offset) = resolve_x_on_line(&line, 140.0);
+        assert_eq!((idx, offset), (0, 3), "빈틈 왼쪽 → 왼쪽 run 끝");
+        assert_ne!(offset, line_end, "회귀: 빈틈 클릭이 줄 끝으로 스냅하면 안 됨");
+
+        // 빈틈 안에서 오른쪽 run 에 가까운 x(190) → 오른쪽 run 시작 (offset 5)
+        let (idx, offset) = resolve_x_on_line(&line, 190.0);
+        assert_eq!((idx, offset), (1, 5), "빈틈 오른쪽 → 오른쪽 run 시작");
+    }
+
+    /// 회귀: 빈 입력칸(char_count=0)이지만 bbox_w 가 셀 폭만큼 넓은 run.
+    /// char_positions = [0.0] 한 개뿐이라 라운딩 함수가 len()=1 을 돌려주지만,
+    /// 글자 인덱스는 char_count(=0) 로 클램프되어 offset 은 항상 char_start 여야 한다.
+    /// (exam_social/exam_science 답안지 `성명` 빈 입력칸 클릭이 offset 1 로 새던 버그)
+    #[test]
+    fn empty_run_with_wide_bbox_clamps_to_char_start() {
+        const EMPTY: [f64; 1] = [0.0];
+        let line = vec![LineRunView {
+            bbox_x: 212.7,
+            bbox_w: 97.0, // 빈 입력칸 폭(글자 없음)
+            char_start: 0,
+            char_count: 0,
+            char_positions: &EMPTY,
+        }];
+        // bbox 한참 안쪽 클릭(x=250)도 빈 run 이므로 offset 0 (줄/run 시작).
+        assert_eq!(resolve_x_on_line(&line, 250.0), (0, 0));
+        // 오른쪽 끝 너머도 마찬가지.
+        assert_eq!(resolve_x_on_line(&line, 999.0), (0, 0));
     }
 }
