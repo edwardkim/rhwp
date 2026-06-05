@@ -1487,7 +1487,12 @@ impl DocumentCore {
             zones: Vec::new(),
             cells,
             cell_grid: Vec::new(),
-            page_break: TablePageBreak::None,
+            // 행 경계에서 페이지를 나눔(인트라-로우 분할 없음). 생성 직후 in-memory
+            // page_break가 None이면 pagination 엔진이 표 전체를 보호(분할 금지)해
+            // 페이지 경계 근처에서 표 전체가 다음 쪽으로 점프하며 앞 쪽에 큰 공백이
+            // 생긴다. raw_table_record_attr(0x06, bit0-1=2)도 RowBreak를 인코딩하므로
+            // 둘을 일치시킨다.
+            page_break: TablePageBreak::RowBreak,
             repeat_header: false,
             caption: None,
             common: crate::model::shape::CommonObjAttr {
@@ -7165,6 +7170,35 @@ mod issue_1151_cell_picture_insert_tests {
             ),
             "floating picture wrap=Square (어울림) 이어야 한다. got: {:?}",
             picture.common.text_wrap
+        );
+    }
+
+    #[test]
+    fn create_table_native_defaults_to_row_break() {
+        // 신규 생성 표는 RowBreak(행 경계 분할)이어야 한다. None 이면 pagination
+        // 엔진이 표 전체를 보호해 페이지 경계에서 표가 통째로 다음 쪽으로 점프하며
+        // 앞 쪽에 큰 공백이 생긴다.
+        use crate::model::table::TablePageBreak;
+        let mut core = make_test_core();
+        let res = core
+            .create_table_native(0, 0, 0, 12, 2)
+            .expect("create 12x2 table");
+        let para_idx = parse_idx(&res, "paraIdx");
+        let ctrl_idx = parse_idx(&res, "controlIdx");
+        let table = match &core.document.sections[0].paragraphs[para_idx].controls[ctrl_idx] {
+            Control::Table(t) => t,
+            other => panic!("expected Control::Table, got {other:?}"),
+        };
+        assert_eq!(
+            table.page_break,
+            TablePageBreak::RowBreak,
+            "신규 표 default page_break는 RowBreak 여야 한다"
+        );
+        // 직렬화 attr(bit0-1)도 RowBreak(2)를 인코딩해야 한다 (in-memory enum과 일치).
+        assert_eq!(
+            table.raw_table_record_attr & 0x03,
+            0x02,
+            "raw_table_record_attr bit0-1 == RowBreak(2)"
         );
     }
 
