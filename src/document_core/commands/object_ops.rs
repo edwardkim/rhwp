@@ -1442,9 +1442,18 @@ impl DocumentCore {
         // 바이트 레이아웃: flags(4) + v_offset(4) + h_offset(4) + width(4) + height(4)
         //                 + z_order(4) + margin_l(2) + margin_r(2) + margin_t(2) + margin_b(2)
         //                 + instance_id(4) = 36바이트 (+ 여유 2바이트 = 38)
-        // vert=Para(2), horz=Para(3), wrap=TopAndBottom(1)
+        // 인라인(글자처럼 취급) 표: treat_as_char(bit0)=1, vert=Page(0), horz=Para(3),
+        // wrap=TopAndBottom(1). create_table_ex_native(treat_as_char=true)와 동일한
+        // 플래그 구성 — floating 이 아닌 본문 텍스트 흐름에 참여하므로 RowBreak 와
+        // 결합해 페이지 경계에서 행 단위로 분할되고, 앞 쪽에 큰 공백을 남기지 않는다.
         // width_criterion=Absolute(4), height_criterion=Absolute(2)
-        let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21);
+        #[allow(clippy::identity_op)]
+        let flags: u32 = (1 << 0) /* treat_as_char */
+            | (0 << 3) /* vert=Page */
+            | (3 << 8) /* horz=Para */
+            | (4 << 15) /* width_criterion=Absolute */
+            | (2 << 18) /* height_criterion=Absolute */
+            | (1 << 21) /* wrap=TopAndBottom */;
         let outer_margin: i16 = 283; // ~1mm
         let mut raw_ctrl_data = vec![0u8; 38];
         raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
@@ -1472,7 +1481,7 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
-            attr: 0x082A2210, // 한컴 기본값 (blank_h_saved.hwp)
+            attr: 0x04000006, // 인라인 표 기본값 (create_table_ex_native 정합)
             row_count,
             col_count,
             cell_spacing: 0,
@@ -1490,15 +1499,19 @@ impl DocumentCore {
             // 행 경계에서 페이지를 나눔(인트라-로우 분할 없음). 생성 직후 in-memory
             // page_break가 None이면 pagination 엔진이 표 전체를 보호(분할 금지)해
             // 페이지 경계 근처에서 표 전체가 다음 쪽으로 점프하며 앞 쪽에 큰 공백이
-            // 생긴다. raw_table_record_attr(0x06, bit0-1=2)도 RowBreak를 인코딩하므로
+            // 생긴다. raw_table_record_attr(bit0-1=2)도 RowBreak를 인코딩하므로
             // 둘을 일치시킨다.
             page_break: TablePageBreak::RowBreak,
             repeat_header: false,
             caption: None,
+            // 인라인(글자처럼 취급) 표: treat_as_char=true + vert_rel_to=Page.
+            // create_table_ex_native(treat_as_char=true)와 동일 — 표가 floating 이
+            // 아니라 본문 텍스트 흐름에 참여하므로, RowBreak 와 결합해 페이지 경계에서
+            // 행 단위로 분할되며 앞 쪽에 큰 공백을 남기지 않는다.
             common: crate::model::shape::CommonObjAttr {
-                treat_as_char: false,
+                treat_as_char: true,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
-                vert_rel_to: crate::model::shape::VertRelTo::Para,
+                vert_rel_to: crate::model::shape::VertRelTo::Page,
                 horz_rel_to: crate::model::shape::HorzRelTo::Para,
                 vert_align: crate::model::shape::VertAlign::Top,
                 horz_align: crate::model::shape::HorzAlign::Left,
@@ -1511,7 +1524,7 @@ impl DocumentCore {
             outer_margin_top: 283,
             outer_margin_bottom: 283,
             raw_ctrl_data,
-            raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
+            raw_table_record_attr: 0x04000006, // 인라인 표 기본값 (bit0-1=RowBreak)
             raw_table_record_extra: vec![0u8; 2],
             dirty: true,
         };
@@ -7200,6 +7213,44 @@ mod issue_1151_cell_picture_insert_tests {
             0x02,
             "raw_table_record_attr bit0-1 == RowBreak(2)"
         );
+    }
+
+    #[test]
+    fn create_table_native_defaults_to_inline_tac() {
+        // 신규 생성 표는 인라인(글자처럼 취급)이어야 한다. floating 이면 본문 텍스트
+        // 흐름에 참여하지 않아 페이지 경계 근처에서 표 전체가 다음 쪽으로 점프하며 앞
+        // 쪽에 큰 공백이 생긴다(treatAsChar=false 일 때 관측된 버그). treat_as_char=true
+        // + RowBreak 조합이라야 행 단위로 분할되며 앞 텍스트 바로 뒤에 이어진다.
+        use crate::model::table::TablePageBreak;
+        let mut core = make_test_core();
+        let res = core
+            .create_table_native(0, 0, 0, 6, 2)
+            .expect("create 6x2 table");
+        let para_idx = parse_idx(&res, "paraIdx");
+        let ctrl_idx = parse_idx(&res, "controlIdx");
+        let table = match &core.document.sections[0].paragraphs[para_idx].controls[ctrl_idx] {
+            Control::Table(t) => t,
+            other => panic!("expected Control::Table, got {other:?}"),
+        };
+        assert!(
+            table.common.treat_as_char,
+            "신규 표는 인라인(treat_as_char=true)이어야 한다"
+        );
+        assert_eq!(
+            table.common.vert_rel_to,
+            crate::model::shape::VertRelTo::Page,
+            "인라인 표 vert_rel_to=Page (create_table_ex_native 정합)"
+        );
+        // raw_ctrl_data flags bit0(treat_as_char) 도 켜져 있어야 한다.
+        let flags = u32::from_le_bytes(
+            table.raw_ctrl_data[common_obj_offsets::FLAGS]
+                .try_into()
+                .unwrap(),
+        );
+        assert_eq!(flags & 0x1, 0x1, "raw_ctrl_data flags bit0=treat_as_char");
+        // RowBreak 는 유지되어야 한다.
+        assert_eq!(table.page_break, TablePageBreak::RowBreak);
+        assert_eq!(table.raw_table_record_attr & 0x03, 0x02);
     }
 
     #[test]
