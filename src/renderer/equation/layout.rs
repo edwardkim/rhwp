@@ -1152,7 +1152,7 @@ pub(crate) fn is_integral_symbol(symbol: &str) -> bool {
 }
 
 /// 텍스트 폭 추정
-fn estimate_text_width(text: &str, font_size: f64, italic: bool) -> f64 {
+pub(crate) fn estimate_text_width(text: &str, font_size: f64, italic: bool) -> f64 {
     let mut w = 0.0;
     for ch in text.chars() {
         let ratio = if ch.is_ascii() {

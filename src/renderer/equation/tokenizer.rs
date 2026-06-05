@@ -28,6 +28,9 @@ pub struct Token {
     pub ty: TokenType,
     pub value: String,
     pub pos: usize,
+    /// 이 토큰 앞에 일반 공백이 있었는지. 무브레이스 첨자 operand 의 경계 판정에 쓰인다
+    /// (HWP 수식에서 일반 공백은 시각적으로는 무의미하나 operand 구분자 역할을 한다, #1304).
+    pub space_before: bool,
 }
 
 impl Token {
@@ -36,6 +39,7 @@ impl Token {
             ty,
             value: value.into(),
             pos,
+            space_before: false,
         }
     }
 
@@ -44,6 +48,7 @@ impl Token {
             ty: TokenType::Eof,
             value: String::new(),
             pos,
+            space_before: false,
         }
     }
 }
@@ -52,6 +57,8 @@ impl Token {
 pub struct Tokenizer {
     chars: Vec<char>,
     pos: usize,
+    /// 직전 `next_token` 호출이 토큰 앞에서 일반 공백을 건너뛰었는지 (#1304).
+    last_had_space: bool,
 }
 
 impl Tokenizer {
@@ -59,6 +66,7 @@ impl Tokenizer {
         Self {
             chars: script.chars().collect(),
             pos: 0,
+            last_had_space: false,
         }
     }
 
@@ -316,8 +324,10 @@ impl Tokenizer {
 
     /// 다음 토큰 반환
     pub fn next_token(&mut self) -> Token {
-        // 일반 공백 건너뛰기
+        // 일반 공백 건너뛰기 — 건너뛴 공백 유무를 기록(#1304: operand 경계 판정용)
+        let before = self.pos;
         self.skip_spaces();
+        self.last_had_space = self.pos > before;
 
         if self.pos >= self.chars.len() {
             return Token::eof(self.pos);
@@ -467,7 +477,8 @@ impl Tokenizer {
     pub fn tokenize(mut self) -> Vec<Token> {
         let mut tokens = Vec::new();
         loop {
-            let token = self.next_token();
+            let mut token = self.next_token();
+            token.space_before = self.last_had_space;
             let is_eof = token.ty == TokenType::Eof;
             tokens.push(token);
             if is_eof {

@@ -635,6 +635,47 @@ impl EqParser {
         }
     }
 
+    /// 현재 토큰이 "공백 없이 붙은 관계연산자"인지 (#1304).
+    /// HWP 무브레이스 하한 operand 의 연결 구분자 — `sum_k=1`, `lim_x->0`, `1<=k`.
+    /// 관계연산자 앞에 공백이 있으면(`x^2 = 4`) false 를 돌려 묶지 않는다.
+    fn is_tight_relational(&self) -> bool {
+        match self.tokens.get(self.pos) {
+            Some(t) => {
+                t.ty == TokenType::Symbol
+                    && !t.space_before
+                    && matches!(
+                        t.value.as_str(),
+                        "=" | "<" | ">" | "<=" | ">=" | "!=" | "==" | "->"
+                    )
+            }
+            None => false,
+        }
+    }
+
+    /// 무브레이스 아래첨자/하한 operand 파싱 (#1304).
+    /// `원자 (공백없는 관계연산자 원자)*` 패턴으로 하나의 operand 를 묶는다.
+    /// `sum_k=1 ^6` 의 하한이 `k=1` 전체가 되도록 한다.
+    /// 위첨자(`^`)에는 적용하지 않는다 — `x^2=4` 류 위첨자 등식 보호.
+    fn parse_script_operand(&mut self) -> EqNode {
+        let first = self.parse_single_or_group();
+        if !self.is_tight_relational() {
+            return first;
+        }
+        let mut items = vec![first];
+        while self.is_tight_relational() {
+            let sym = self.current_value().to_string();
+            self.pos += 1;
+            // `->` 는 화살표 기호로 변환 (parse_element 와 동일)
+            if sym == "->" {
+                items.push(EqNode::MathSymbol("→".to_string()));
+            } else {
+                items.push(EqNode::Symbol(sym));
+            }
+            items.push(self.parse_single_or_group());
+        }
+        EqNode::Row(items).simplify()
+    }
+
     /// 첨자(subscript/superscript) 파싱 시도
     /// 한컴 수식에서 함수/기호 뒤에 Thin 공백(`)이 오고 첨자가 따라오는 패턴이 일반적이므로,
     /// Thin 공백 뒤에 첨자가 있으면 공백을 건너뛰고 첨자를 파싱한다.
@@ -662,7 +703,7 @@ impl EqParser {
             let ty = self.current_type();
             if ty == TokenType::Subscript && !has_sub {
                 self.pos += 1;
-                sub = Some(self.parse_single_or_group());
+                sub = Some(self.parse_script_operand());
                 has_sub = true;
             } else if ty == TokenType::Superscript && !has_sup {
                 self.pos += 1;
@@ -1112,7 +1153,7 @@ impl EqParser {
             }
             if self.current_type() == TokenType::Subscript && sub.is_none() {
                 self.pos += 1;
-                sub = Some(Box::new(self.parse_single_or_group()));
+                sub = Some(Box::new(self.parse_script_operand()));
             } else if self.current_type() == TokenType::Superscript && sup.is_none() {
                 self.pos += 1;
                 sup = Some(Box::new(self.parse_single_or_group()));
@@ -1130,7 +1171,7 @@ impl EqParser {
 
         if self.current_type() == TokenType::Subscript {
             self.pos += 1;
-            sub = Some(Box::new(self.parse_single_or_group()));
+            sub = Some(Box::new(self.parse_script_operand()));
         }
 
         EqNode::Limit { is_upper, sub }
@@ -2493,6 +2534,161 @@ mod latex_compat_tests {
             contains_degree(&ast),
             "hwpeq 'deg' must produce °, not function text: {:?}",
             ast
+        );
+    }
+
+    // ── #1304: 무브레이스 첨자 공백 구분 ────────────────────────────────
+
+    /// 트리에서 첫 BigOp 노드를 찾는다.
+    fn find_big_op(node: &EqNode) -> Option<&EqNode> {
+        match node {
+            EqNode::BigOp { .. } => Some(node),
+            EqNode::Row(children) => children.iter().find_map(find_big_op),
+            _ => None,
+        }
+    }
+
+    /// `sum_k=1 ^6` (브레이스 없음, 공백 구분) → ∑ 하한 `k=1` 전체, 상한 `6`.
+    /// 기존엔 하한이 `k` 하나로 잘리고 `=1` 이 본문으로, `^6` 이 `1` 의 위첨자로 깨졌다.
+    #[test]
+    fn task1304_unbraced_sum_lower_limit_full() {
+        let ast = parse("sum_k=1 ^6 (k+1)^2");
+        let big = find_big_op(&ast).expect("BigOp(∑) 가 있어야 함");
+        let (sub, sup) = match big {
+            EqNode::BigOp { symbol, sub, sup } => {
+                assert_eq!(symbol, "∑");
+                (sub.as_ref(), sup.as_ref())
+            }
+            _ => unreachable!(),
+        };
+        // 하한 = Row[k, =, 1]
+        let sub = sub.expect("하한(sub)이 있어야 함");
+        match sub.as_ref() {
+            EqNode::Row(items) => {
+                let dbg = format!("{:?}", items);
+                assert!(
+                    items.len() == 3
+                        && matches!(&items[0], EqNode::Text(t) if t == "k")
+                        && matches!(&items[1], EqNode::Symbol(s) if s == "=")
+                        && matches!(&items[2], EqNode::Number(n) if n == "1"),
+                    "하한은 k=1 전체여야 함: {dbg}"
+                );
+            }
+            other => panic!("하한이 Row[k,=,1] 여야 함, got {:?}", other),
+        }
+        // 상한 = 6
+        let sup = sup.expect("상한(sup)이 있어야 함");
+        assert!(
+            matches!(sup.as_ref(), EqNode::Number(n) if n == "6"),
+            "상한은 6 이어야 함: {:?}",
+            sup
+        );
+    }
+
+    /// `lim_x->0` (공백 없음) → 극한 하한 `x->0` 전체 (x → 0).
+    #[test]
+    fn task1304_unbraced_lim_lower_limit_full() {
+        let ast = parse("lim_x->0 f(x)");
+        fn find_limit(node: &EqNode) -> Option<&EqNode> {
+            match node {
+                EqNode::Limit { .. } => Some(node),
+                EqNode::Row(children) => children.iter().find_map(find_limit),
+                _ => None,
+            }
+        }
+        let lim = find_limit(&ast).expect("Limit 노드가 있어야 함");
+        let sub = match lim {
+            EqNode::Limit { sub, .. } => sub.as_ref().expect("하한이 있어야 함"),
+            _ => unreachable!(),
+        };
+        match sub.as_ref() {
+            EqNode::Row(items) => assert!(
+                items.len() == 3
+                    && matches!(&items[0], EqNode::Text(t) if t == "x")
+                    && matches!(&items[1], EqNode::MathSymbol(s) if s == "→")
+                    && matches!(&items[2], EqNode::Number(n) if n == "0"),
+                "극한 하한은 x→0 전체여야 함: {:?}",
+                items
+            ),
+            other => panic!("극한 하한이 Row[x,→,0] 여야 함, got {:?}", other),
+        }
+    }
+
+    /// 회귀: 브레이스 표기 `sum _{k=1} ^{6}` 는 기존대로 정상.
+    #[test]
+    fn task1304_braced_sum_unchanged() {
+        let ast = parse("sum _{k=1} ^{6}");
+        let big = find_big_op(&ast).expect("BigOp(∑)");
+        if let EqNode::BigOp { sub, sup, .. } = big {
+            let sub_dbg = format!("{:?}", sub);
+            assert!(
+                sub_dbg.contains("\"k\"") && sub_dbg.contains("\"=\"") && sub_dbg.contains("\"1\""),
+                "브레이스 하한도 k=1 전체: {sub_dbg}"
+            );
+            assert!(
+                matches!(sup.as_deref(), Some(EqNode::Number(n)) if n == "6"),
+                "상한 6: {:?}",
+                sup
+            );
+        }
+    }
+
+    /// 회귀: 공백 있는 등식 `x^2 = 4` 는 위첨자에 `=4` 가 흡수되면 안 된다 (sup=2).
+    #[test]
+    fn task1304_spaced_equation_not_merged() {
+        let ast = parse("x^2 = 4");
+        // 위첨자는 2 하나, 이후 = 4 는 본문(Row)에 남아야 한다.
+        let dbg = format!("{:?}", ast);
+        // Superscript{ base: x, sup: 2 } 형태가 존재하고, sup 안에 '=' 가 없어야 함.
+        fn sup_has_no_equals(node: &EqNode) -> bool {
+            match node {
+                EqNode::Superscript { sup, .. } => !format!("{:?}", sup).contains("\"=\""),
+                EqNode::Row(children) => children.iter().all(sup_has_no_equals),
+                _ => true,
+            }
+        }
+        assert!(
+            sup_has_no_equals(&ast),
+            "x^2 = 4 의 위첨자에 =4 가 흡수되면 안 됨: {dbg}"
+        );
+        assert!(dbg.contains("Superscript"), "x^2 위첨자 유지: {dbg}");
+    }
+
+    /// 회귀: 인접 식별자 `a_n b` 는 하한이 `n` 하나여야 한다 (b 흡수 금지).
+    #[test]
+    fn task1304_adjacent_identifier_not_merged() {
+        let ast = parse("a_n b");
+        let dbg = format!("{:?}", ast);
+        fn first_subscript_sub<'a>(node: &'a EqNode) -> Option<&'a EqNode> {
+            match node {
+                EqNode::Subscript { sub, .. } => Some(sub.as_ref()),
+                EqNode::Row(children) => children.iter().find_map(first_subscript_sub),
+                _ => None,
+            }
+        }
+        let sub = first_subscript_sub(&ast).expect("Subscript 가 있어야 함");
+        assert!(
+            matches!(sub, EqNode::Text(t) if t == "n"),
+            "a_n b 의 하한은 n 하나여야 함 (b 흡수 금지): {dbg}"
+        );
+    }
+
+    /// 회귀: 산술 `a_n+1` 의 하한은 `n` 하나 (관계연산자 아님 → 미병합).
+    #[test]
+    fn task1304_arithmetic_subscript_not_merged() {
+        let ast = parse("a_n+1");
+        fn first_subscript_sub<'a>(node: &'a EqNode) -> Option<&'a EqNode> {
+            match node {
+                EqNode::Subscript { sub, .. } => Some(sub.as_ref()),
+                EqNode::Row(children) => children.iter().find_map(first_subscript_sub),
+                _ => None,
+            }
+        }
+        let sub = first_subscript_sub(&ast).expect("Subscript");
+        assert!(
+            matches!(sub, EqNode::Text(t) if t == "n"),
+            "a_n+1 의 하한은 n 하나여야 함: {:?}",
+            sub
         );
     }
 }

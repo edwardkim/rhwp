@@ -246,8 +246,12 @@ fn render_box(
                 let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
                 // Task #1233: 연산자는 max_w(= lb.width - trailing pad)에 중앙정렬 →
                 // pad 전체가 순수 trailing 간격이 되고 첨자(max_w 중앙정렬)와 정렬된다.
+                // #1304: 연산자 폭은 layout 의 estimate_text_width 와 동일 기준을 써야
+                // 첨자(레이아웃이 estimate_text_width 로 max_w 중앙정렬)와 가로 중심이 맞는다.
+                // (기존 estimate_op_width 의 0.6 과소추정 → ∑가 우측으로, 첨자가 좌측으로 보임)
                 let center_w = lb.width - fs * super::layout::BIG_OP_TRAIL_PAD;
-                let op_x = x + (center_w - estimate_op_width(symbol, op_fs)) / 2.0;
+                let op_x =
+                    x + (center_w - super::layout::estimate_text_width(symbol, op_fs, false)) / 2.0;
                 let op_y = y + sup_h + op_fs * 0.8;
                 svg.push_str(&format!(
                     "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
@@ -405,10 +409,6 @@ fn font_size_from_box(lb: &LayoutBox, base_fs: f64) -> f64 {
     } else {
         base_fs
     }
-}
-
-fn estimate_op_width(text: &str, fs: f64) -> f64 {
-    text.chars().count() as f64 * fs * 0.6
 }
 
 /// 늘림 괄호 렌더링
