@@ -196,7 +196,19 @@ impl EqParser {
                 let group = self.parse_group();
                 self.try_parse_scripts(group)
             }
-            TokenType::LParen | TokenType::RParen | TokenType::LBracket | TokenType::RBracket => {
+            TokenType::LParen => {
+                // #1305: `(...)` 뒤에 첨자가 오면 Paren 그룹으로 묶어 첨자를 결합한다
+                // (그렇지 않으면 `)` 뒤 `^2` 가 base 없는 orphan Superscript 가 됨).
+                // 첨자가 없으면 기존대로 느슨한 Symbol 흐름 유지 → 일반 괄호 렌더 무변경.
+                if self.paren_then_script() {
+                    let group = self.parse_paren_group();
+                    self.try_parse_scripts(group)
+                } else {
+                    self.pos += 1;
+                    EqNode::Symbol(val)
+                }
+            }
+            TokenType::RParen | TokenType::LBracket | TokenType::RBracket => {
                 self.pos += 1;
                 EqNode::Symbol(val)
             }
@@ -592,6 +604,50 @@ impl EqParser {
             pos += 1;
         }
         self.tokens.len()
+    }
+
+    /// 현재 LParen 의 매칭 RParen 다음 토큰이 첨자(`^`/`_`)인지 (#1305).
+    /// 참이면 `(...)` 를 Paren 그룹으로 묶어 첨자를 결합해야 한다.
+    /// 현재 토큰이 LParen 이라는 전제.
+    fn paren_then_script(&self) -> bool {
+        let mut depth = 0i32;
+        let mut p = self.pos;
+        while p < self.tokens.len() {
+            match self.tokens[p].ty {
+                TokenType::LParen => depth += 1,
+                TokenType::RParen => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return matches!(
+                            self.tokens.get(p + 1).map(|t| t.ty),
+                            Some(TokenType::Subscript) | Some(TokenType::Superscript)
+                        );
+                    }
+                }
+                TokenType::Eof => return false,
+                _ => {}
+            }
+            p += 1;
+        }
+        false
+    }
+
+    /// `(...)` 를 자동크기 괄호 그룹으로 파싱 (#1305). 현재 LParen 전제.
+    fn parse_paren_group(&mut self) -> EqNode {
+        self.pos += 1; // '(' 소비
+        let mut items = Vec::new();
+        while !self.at_end() && self.current_type() != TokenType::RParen {
+            if self.try_consume_infix_over_atop(&mut items) {
+                continue;
+            }
+            items.push(self.parse_element());
+        }
+        self.expect(TokenType::RParen); // ')' 소비
+        EqNode::Paren {
+            left: "(".to_string(),
+            right: ")".to_string(),
+            body: Box::new(EqNode::Row(items).simplify()),
+        }
     }
 
     /// 단일 토큰 또는 그룹 파싱 (첨자/인자용)
@@ -2689,6 +2745,92 @@ mod latex_compat_tests {
             matches!(sub, EqNode::Text(t) if t == "n"),
             "a_n+1 의 하한은 n 하나여야 함: {:?}",
             sub
+        );
+    }
+
+    // ── #1305: 괄호 그룹 뒤 위첨자 ─────────────────────────────────────
+
+    fn find_superscript(node: &EqNode) -> Option<&EqNode> {
+        match node {
+            EqNode::Superscript { .. } => Some(node),
+            EqNode::Row(children) => children.iter().find_map(find_superscript),
+            _ => None,
+        }
+    }
+    fn find_subscript(node: &EqNode) -> Option<&EqNode> {
+        match node {
+            EqNode::Subscript { .. } => Some(node),
+            EqNode::Row(children) => children.iter().find_map(find_subscript),
+            _ => None,
+        }
+    }
+    fn contains_paren(node: &EqNode) -> bool {
+        match node {
+            EqNode::Paren { .. } => true,
+            EqNode::Row(children) => children.iter().any(contains_paren),
+            _ => false,
+        }
+    }
+
+    /// `(k+1)^2` → 위첨자가 Paren 그룹에 결합 (base 가 비지 않은 Superscript).
+    #[test]
+    fn task1305_paren_superscript_binds_to_group() {
+        let ast = parse("(k+1)^2");
+        let sup = find_superscript(&ast).expect("Superscript 가 있어야 함");
+        match sup {
+            EqNode::Superscript { base, sup } => {
+                assert!(
+                    matches!(base.as_ref(), EqNode::Paren { .. }),
+                    "위첨자 base 가 Paren 그룹이어야 함(orphan Empty 금지): {:?}",
+                    base
+                );
+                assert!(
+                    matches!(sup.as_ref(), EqNode::Number(n) if n == "2"),
+                    "지수는 2: {:?}",
+                    sup
+                );
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    /// `(k+1)_i` → 아래첨자도 Paren 그룹에 결합.
+    #[test]
+    fn task1305_paren_subscript_binds_to_group() {
+        let ast = parse("(k+1)_i");
+        let sub = find_subscript(&ast).expect("Subscript 가 있어야 함");
+        if let EqNode::Subscript { base, .. } = sub {
+            assert!(
+                matches!(base.as_ref(), EqNode::Paren { .. }),
+                "아래첨자 base 가 Paren 그룹이어야 함: {:?}",
+                base
+            );
+        }
+    }
+
+    /// 회귀: 첨자 없는 일반 괄호는 Paren 그룹으로 묶이지 않는다 (느슨한 Symbol 유지).
+    #[test]
+    fn task1305_plain_paren_not_grouped() {
+        let ast = parse("(k+1)");
+        assert!(
+            !contains_paren(&ast),
+            "첨자 없는 괄호는 Paren 노드를 만들지 않아야 함: {:?}",
+            ast
+        );
+        // a(b) 같은 함수꼴도 영향 없음
+        let ast2 = parse("a(b)");
+        assert!(!contains_paren(&ast2), "a(b) 도 Paren 미생성: {:?}", ast2);
+    }
+
+    /// 회귀: 숫자 base 위첨자 `7^2`, LEFT-RIGHT 그룹 첨자(#1226)는 정상 유지.
+    #[test]
+    fn task1305_regression_number_and_leftright_scripts() {
+        let n = format!("{:?}", parse("7^2"));
+        assert!(n.contains("Superscript"), "7^2 정상: {n}");
+        let lr = format!("{:?}", parse("left ( x right ) ^2"));
+        assert!(
+            lr.contains("Superscript") && lr.contains("Paren") && !lr.contains("base: Empty"),
+            "left(x)right^2 결합 정상: {lr}"
         );
     }
 }
