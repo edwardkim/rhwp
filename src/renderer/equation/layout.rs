@@ -462,9 +462,14 @@ impl EqLayout {
 
         let (base_y, sup_y, total_h);
         if sup_shift >= 0.0 {
-            // 위첨자가 base 높이 내에 들어감 — sup를 상단에, base를 아래로
+            // [Task #1300] 위첨자 상단을 base 상단에 맞춘다 (한컴 정합).
+            // 기존엔 base 를 sup_shift(=b.baseline 비례) 만큼 아래로 밀어 위첨자를
+            // 박스 최상단에 두었는데, 키 큰 base(괄호 분수 등)에서 위첨자가 base 상단
+            // 위로 과하게 치솟아 윗줄을 침범했다(#1300). base 를 밀지 않고(상단 정렬)
+            // 위첨자 상단이 base 상단과 같은 높이에 오도록 한다.
+            // base 가 sup 보다 낮은 경우만 sup 를 담도록 base 를 내린다.
             sup_y = 0.0;
-            base_y = sup_shift.max(s.height - b.height).max(0.0);
+            base_y = (s.height - b.height).max(0.0);
             total_h = (base_y + b.height).max(s.height);
         } else {
             // 위첨자가 base 상단 위로 확장 — sup를 상단에, base를 |sup_shift|만큼 내림
@@ -1289,6 +1294,49 @@ mod tests {
         let lb = parse_and_layout("x^2", 20.0);
         assert!(lb.width > 0.0);
         assert!(lb.height > 0.0);
+    }
+
+    #[test]
+    fn test_superscript_tall_base_no_overshoot() {
+        // [#1300] 키 큰 base(괄호 분수 등)의 위첨자가 baseline 위로 과하게 치솟아
+        // 윗줄을 침범하던 문제. base 밀어내기(base_y)는 sup 높이를 넘지 않아야 한다.
+        fn find_sup(lb: &LayoutBox) -> Option<(&LayoutBox, &LayoutBox)> {
+            match &lb.kind {
+                LayoutKind::Superscript { base, sup } => Some((base, sup)),
+                LayoutKind::Row(ch) => ch.iter().rev().find_map(find_sup),
+                _ => None,
+            }
+        }
+        // 위첨자 상단이 base 상단보다 위로 치솟지 않아야 한다(상단 정렬). 즉 sup.y >= base.y.
+        // (이전 버그: 키 큰 base 를 아래로 밀어 sup.y=0 < base.y 가 되어 위첨자가 base 상단 위로 떠올랐다.)
+        const MARGIN: f64 = 0.01;
+
+        // 키 큰 base: 괄호로 감싼 분수 — 상단 정렬(base_y≈0) 확인
+        let tall = parse_and_layout("LEFT ( {1} over {6} RIGHT )^4", 12.0);
+        let (b_tall, s_tall) = find_sup(&tall).expect("tall superscript");
+        assert!(
+            s_tall.y >= b_tall.y - MARGIN,
+            "tall: sup.y ({}) must not rise above base.y ({})",
+            s_tall.y,
+            b_tall.y
+        );
+        // 합성 baseline 이 base 자연 baseline 과 일치(이중 가산 없음)
+        assert!(
+            (tall.baseline - (b_tall.y + b_tall.baseline)).abs() < MARGIN,
+            "tall: box baseline ({}) should equal base baseline ({})",
+            tall.baseline,
+            b_tall.y + b_tall.baseline
+        );
+
+        // 짧은 base: x^4 도 동일 불변(상단 정렬) — 위첨자가 base 상단 위로 안 떠오름
+        let short = parse_and_layout("x^4", 12.0);
+        let (b_short, s_short) = find_sup(&short).expect("short superscript");
+        assert!(
+            s_short.y >= b_short.y - MARGIN,
+            "short: sup.y ({}) must not rise above base.y ({})",
+            s_short.y,
+            b_short.y
+        );
     }
 
     #[test]
