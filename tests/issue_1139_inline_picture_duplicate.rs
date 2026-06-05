@@ -410,6 +410,33 @@ fn issue_1274_2022_nov_page11_partial_endnote_tail_stays_in_page_frame() {
     );
 }
 
+/// [#1302] 다줄 미주 문단(pi=852, 분수 포함 키 큰 줄)의 마지막 줄 다음, 같은 문제(문30) 내
+/// 연속 텍스트 문단(pi=853)이 컬럼 하단에서 줄간격이 좁아지면 안 된다.
+/// page-path compact 미주 하단의 `page_tail_backtrack` 이 stored vpos 가 정상 한 줄 전진
+/// (lh+ls)을 인코딩한 breakable 텍스트 연속에까지 발동해 trailing 줄간격(~6px)을 깎던 버그.
+/// 18쪽 좌측 단: "극솟값…갖는다"(pi=852 끝줄) → "(나)를 고려하기…"(pi=853 첫줄).
+#[test]
+fn issue_1302_2022_nov_page18_multiline_endnote_continuation_keeps_line_spacing() {
+    let bytes = std::fs::read("samples/3-11월_실전_통합_2022.hwp").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let tree = doc.build_page_render_tree(17).expect("page 18 render tree");
+
+    // pi=852 는 2줄(line_index 0,1) — 마지막 줄.
+    let prev_last = find_text_line_bbox(&tree.root, 852, 1).expect("pi=852 마지막 줄");
+    // pi=853 컬럼0 첫 줄.
+    let cont_first = find_text_line_bbox(&tree.root, 853, 0).expect("pi=853 첫 줄");
+
+    let gap = cont_first.y - prev_last.y;
+    // 정상 한 줄 전진(lh+ls) ≈ 18~20px. 버그 시 lh 만(≈12~14px)으로 좁아짐.
+    assert!(
+        (16.0..=22.0).contains(&gap),
+        "다줄 미주 문단 다음 같은 문제 연속 문단 줄간격이 trailing 누락으로 좁아지면 안 됨: \
+         pi=852끝줄.y={}, pi=853첫줄.y={}, gap={gap}",
+        prev_last.y,
+        cont_first.y
+    );
+}
+
 #[test]
 fn issue_1139_sample16_page3_page_number_stays_below_bottom_border() {
     let bytes = std::fs::read("samples/hwp3-sample16-hwp5.hwp").expect("sample16");
