@@ -8324,3 +8324,124 @@ mod issue_1151_v2_tac_toggle_tests {
         assert_toggle_matches_hancom("d");
     }
 }
+
+#[cfg(test)]
+mod issue_1280_textbox_creation_tests {
+    //! Issue #1280: rhwp-studio가 삽입한 글상자가 text_box 없는 Rectangle로 생성되어
+    //! 커서 진입·타이핑·붙여넣기가 모두 실패하던 결함.
+    //!
+    //! 근본 결함은 프런트(`input-handler.ts`)가 `shapeType: 'rectangle'`을 전달한 것이고,
+    //! 백엔드 `create_shape_control_native`는 `shape_type == "textbox"`일 때 text_box(내부 문단)를
+    //! 정상 구성한다. 본 테스트는 그 백엔드 계약(글상자=text_box 있음, 사각형=없음)을 고정하여
+    //! 프런트 수정과 함께 회귀를 막는다.
+
+    use super::*;
+    use crate::model::document::{Document, Section, SectionDef};
+    use crate::model::page::PageDef;
+
+    fn make_test_core() -> DocumentCore {
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+        });
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        core
+    }
+
+    fn parse_idx(res: &str, key: &str) -> usize {
+        res.split(&format!("\"{}\":", key))
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing {key} in {res}"))
+    }
+
+    /// 도형 생성 후 (para_idx, ctrl_idx) 반환. 글상자는 한컴 기본값과 동일하게 treat_as_char=true.
+    fn create_shape(core: &mut DocumentCore, shape_type: &str) -> (usize, usize) {
+        let treat_as_char = shape_type == "textbox";
+        // 인자: section_idx, para_idx, char_offset, width, height, horz_offset, vert_offset,
+        // treat_as_char, text_wrap_str, shape_type, line_flip_x, line_flip_y, polygon_points
+        let res = core
+            .create_shape_control_native(
+                0,
+                0,
+                0,
+                21600,
+                7200,
+                0,
+                0,
+                treat_as_char,
+                "TopAndBottom",
+                shape_type,
+                false,
+                false,
+                &[],
+            )
+            .unwrap_or_else(|e| panic!("create {shape_type} failed: {e:?}"));
+        (parse_idx(&res, "paraIdx"), parse_idx(&res, "controlIdx"))
+    }
+
+    fn textbox_of<'a>(
+        core: &'a DocumentCore,
+        para_idx: usize,
+        ctrl_idx: usize,
+    ) -> Option<&'a crate::model::shape::TextBox> {
+        match &core.document.sections[0].paragraphs[para_idx].controls[ctrl_idx] {
+            Control::Shape(s) => crate::document_core::helpers::get_textbox_from_shape(s.as_ref()),
+            other => panic!("expected Control::Shape, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn create_textbox_has_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_shape(&mut core, "textbox");
+        assert!(
+            textbox_of(&core, para, ctrl).is_some(),
+            "글상자(shape_type=textbox)는 text_box를 가져야 한다 (#1280)"
+        );
+    }
+
+    #[test]
+    fn create_rectangle_has_no_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_shape(&mut core, "rectangle");
+        assert!(
+            textbox_of(&core, para, ctrl).is_none(),
+            "일반 사각형(shape_type=rectangle)은 text_box가 없어야 한다 (글상자/사각형 경로 분리)"
+        );
+    }
+
+    #[test]
+    fn insert_text_into_created_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_shape(&mut core, "textbox");
+
+        // 글상자 내부(cell_idx=0 무시, cell_para_idx=0, char_offset=0)에 텍스트 삽입.
+        // 수정 전 프런트 경로에서는 text_box가 없어 "지정된 Shape 컨트롤에 텍스트 박스가 없습니다"로 실패했다.
+        core.insert_text_in_cell_native(0, para, ctrl, 0, 0, 0, "테스트")
+            .expect("글상자에 텍스트 입력이 성공해야 한다 (#1280)");
+
+        let tb = textbox_of(&core, para, ctrl).expect("글상자 text_box 존재");
+        assert_eq!(
+            tb.paragraphs[0].text, "테스트",
+            "글상자 내부 첫 문단에 입력 텍스트가 보존되어야 한다"
+        );
+    }
+}
