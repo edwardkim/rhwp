@@ -1289,6 +1289,18 @@ impl TypesetEngine {
                         && para.controls.is_empty()
                         && para_has_visible_text(para)
                         && next_heading_after_top_content_reset;
+                    // [Float-flow] 문단 기준(vert=Para) 위아래(TopAndBottom) 비-TAC 표는
+                    // 흐름 안에서 앵커 문단 위치에 inline 으로 흘러야 한다(한컴 viewer 정합).
+                    // 이런 표의 앵커 LINE_SEG 는 vertical_pos=0 으로 인코딩되는데, 이는
+                    // 페이지/단 reset 신호가 아니라 단순 앵커 아티팩트다. cv==0 만으로
+                    // vpos-reset 가드를 발동하면 표가 통째로 다음 페이지로 밀려 본문에
+                    // 큰 공백이 생긴다(용역계약서_예시.hwp 제4조↔표). layout 의
+                    // compute_table_y_position 는 raw_y.max(y_start) 로 흐름 위치에
+                    // 배치하므로, 이 표의 앵커 문단은 reset trigger 에서 제외한다.
+                    let is_para_float_table_anchor = !para_has_visible_text(para)
+                        && para.controls.iter().any(|c| {
+                            matches!(c, Control::Table(t) if is_para_topbottom_float(&t.common))
+                        });
                     let trigger = if st.col_count > 1 {
                         if is_distribute {
                             cv < prev_vpos_end && prev_vpos_end > 0
@@ -1296,7 +1308,10 @@ impl TypesetEngine {
                             cv < pv && pv > 5000
                         }
                     } else {
-                        (cv == 0 && pv > 5000 && !hwp3_content_vpos_zero_reset)
+                        (cv == 0
+                            && pv > 5000
+                            && !hwp3_content_vpos_zero_reset
+                            && !is_para_float_table_anchor)
                             || near_page_top_reset
                     };
                     if trigger {
