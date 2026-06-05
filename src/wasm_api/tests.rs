@@ -21657,3 +21657,116 @@ fn test_reflow_linesegs_empty_document_returns_zero() {
     let count = doc.reflow_linesegs();
     assert_eq!(count, 0);
 }
+
+/// 셀 배경 채우기: set_cell_properties로 fillColor를 주면 셀의 BorderFill이
+/// solid + 해당 색으로 바뀌고, get_cell_properties가 그 값을 보고해야 한다.
+/// (이전엔 fillColor가 무시되어 fillType:"none"으로 남는 무동작 버그였다)
+fn make_doc_with_2x2_table() -> (HwpDocument, usize) {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().unwrap();
+    // pi=0의 offset 0에 2×2 표 삽입
+    doc.create_table_ex_native(0, 0, 0, 2, 2, true, Some(&[6777, 6777]))
+        .unwrap();
+    // 삽입된 표 컨트롤의 인덱스 찾기
+    let para = &doc.document.sections[0].paragraphs[0];
+    let ctrl_idx = para
+        .controls
+        .iter()
+        .position(|c| matches!(c, crate::model::control::Control::Table(_)))
+        .expect("표 컨트롤이 있어야 함");
+    (doc, ctrl_idx)
+}
+
+#[test]
+fn test_set_cell_fill_color_solid() {
+    let (mut doc, ctrl) = make_doc_with_2x2_table();
+
+    // 사전: 셀 0의 채우기 없음
+    let before = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
+    assert!(
+        before.contains("\"fillType\":\"none\""),
+        "초기엔 채우기 없음 예상: {before}"
+    );
+
+    // fillColor로 노란색 칠하기 (fillType 생략 → solid 기본)
+    doc.set_cell_properties_native(0, 0, ctrl, 0, r##"{"fillColor":"#FFFF00"}"##)
+        .unwrap();
+
+    let after = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
+    assert!(
+        after.contains("\"fillType\":\"solid\""),
+        "fillType solid 예상: {after}"
+    );
+    assert!(
+        after.contains("\"fillColor\":\"#ffff00\""),
+        "fillColor #ffff00 예상: {after}"
+    );
+
+    // 형제 셀(1)은 영향받지 않아야 함 (공유 BorderFill 제자리 수정 금지 확인)
+    let sibling = doc.get_cell_properties_native(0, 0, ctrl, 1).unwrap();
+    assert!(
+        sibling.contains("\"fillType\":\"none\""),
+        "형제 셀은 채우기 없음 유지: {sibling}"
+    );
+}
+
+#[test]
+fn test_set_cell_fill_background_color_alias() {
+    // 에이전트/@cell_props 호환: BackgroundColor 별칭도 받아야 한다.
+    let (mut doc, ctrl) = make_doc_with_2x2_table();
+    doc.set_cell_properties_native(0, 0, ctrl, 2, r##"{"BackgroundColor":"#00FF00"}"##)
+        .unwrap();
+    let after = doc.get_cell_properties_native(0, 0, ctrl, 2).unwrap();
+    assert!(after.contains("\"fillType\":\"solid\""), "{after}");
+    assert!(after.contains("\"fillColor\":\"#00ff00\""), "{after}");
+}
+
+#[test]
+fn test_set_cell_fill_none_clears() {
+    let (mut doc, ctrl) = make_doc_with_2x2_table();
+    doc.set_cell_properties_native(0, 0, ctrl, 0, r##"{"fillColor":"#FF0000"}"##)
+        .unwrap();
+    assert!(doc
+        .get_cell_properties_native(0, 0, ctrl, 0)
+        .unwrap()
+        .contains("\"fillType\":\"solid\""));
+    // fillType:"none"으로 채우기 제거
+    doc.set_cell_properties_native(0, 0, ctrl, 0, r#"{"fillType":"none"}"#)
+        .unwrap();
+    assert!(doc
+        .get_cell_properties_native(0, 0, ctrl, 0)
+        .unwrap()
+        .contains("\"fillType\":\"none\""));
+}
+
+#[test]
+fn test_set_cell_fill_preserves_borders() {
+    // fill만 바꿔도 기존 테두리는 유지되어야 한다 (현재 BorderFill 복제 기반).
+    let (mut doc, ctrl) = make_doc_with_2x2_table();
+    // 먼저 좌측 테두리를 지정
+    doc.set_cell_properties_native(
+        0,
+        0,
+        ctrl,
+        0,
+        r##"{"borderLeft":{"type":1,"width":2,"color":"#FF0000"}}"##,
+    )
+    .unwrap();
+    let with_border = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
+    assert!(
+        with_border.contains("\"borderLeft\":{\"type\":1"),
+        "좌측 테두리 설정 확인: {with_border}"
+    );
+    // 이제 fill만 추가
+    doc.set_cell_properties_native(0, 0, ctrl, 0, r##"{"fillColor":"#FFFF00"}"##)
+        .unwrap();
+    let both = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
+    assert!(
+        both.contains("\"fillColor\":\"#ffff00\""),
+        "fill 적용: {both}"
+    );
+    assert!(
+        both.contains("\"borderLeft\":{\"type\":1"),
+        "fill 변경 후에도 테두리 보존: {both}"
+    );
+}

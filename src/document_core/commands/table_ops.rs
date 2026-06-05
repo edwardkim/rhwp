@@ -551,10 +551,31 @@ impl DocumentCore {
             }
         }
 
-        // BorderFill 변경: borderLeft 등이 포함된 경우 create_border_fill_from_json으로 처리
-        let has_border = json.contains("\"borderLeft\"");
-        if has_border {
-            let new_bf_id = self.create_border_fill_from_json(json);
+        // BorderFill 변경: 테두리(borderLeft 등) 또는 배경 채우기(fillColor/BackgroundColor/
+        // fillType)가 요청에 포함된 경우 처리한다.
+        //
+        // HWP에서 셀 배경색은 셀의 직접 필드가 아니라, 셀의 border_fill_id가 가리키는
+        // BorderFill 레코드의 fill 정보다. 따라서 색을 칠하려면 해당 셀의 현재 BorderFill을
+        // 복제해 (테두리·3D효과 보존) fill만 교체한 새 BorderFill을 만들어 셀에 배정해야 한다.
+        // 공유 BorderFill(예: id=3)을 제자리에서 수정하면 모든 셀이 함께 칠해지므로 금지.
+        let has_border = json.contains("\"borderLeft\"")
+            || json.contains("\"borderRight\"")
+            || json.contains("\"borderTop\"")
+            || json.contains("\"borderBottom\"");
+        let has_fill = json.contains("\"fillColor\"")
+            || json.contains("\"BackgroundColor\"")
+            || json.contains("\"fillType\"");
+        if has_border || has_fill {
+            // 셀의 현재 BorderFill을 복제 후 요청 내용을 덮어쓴 새 BorderFill의 id를 만든다.
+            let old_bf_id = {
+                let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+                let cell = table.cells.get(cell_idx).ok_or_else(|| {
+                    HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx))
+                })?;
+                cell.border_fill_id
+            };
+            let new_bf_id =
+                self.derive_cell_border_fill(old_bf_id, json, has_border, has_fill);
 
             // 새 BorderFill의 테두리 데이터 복사 (이웃 셀 갱신용)
             let new_borders = {
@@ -582,19 +603,21 @@ impl DocumentCore {
                 )
             };
 
-            // 이웃 셀의 공유 엣지 테두리를 갱신
+            // 테두리가 변경된 경우에만 이웃 셀의 공유 엣지 테두리를 갱신
             // borders 배열: [좌(0), 우(1), 상(2), 하(3)]
-            self.update_neighbor_borders(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                target_row,
-                target_col,
-                target_col_span,
-                target_row_span,
-                &new_borders,
-            );
+            if has_border {
+                self.update_neighbor_borders(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    target_row,
+                    target_col,
+                    target_col_span,
+                    target_row_span,
+                    &new_borders,
+                );
+            }
         }
 
         self.document.sections[section_idx].raw_stream = None;
@@ -602,6 +625,108 @@ impl DocumentCore {
         self.paginate_if_needed();
 
         Ok("{\"ok\":true}".to_string())
+    }
+
+    /// 셀의 현재 BorderFill(`old_bf_id`)을 복제한 뒤, JSON으로 요청된 테두리/채우기만
+    /// 덮어써서 새 BorderFill을 doc_info에 등록하고 그 id(1-based)를 반환한다.
+    ///
+    /// - 기존 BorderFill을 복제하므로 변경하지 않은 테두리·대각선·3D효과(attr)는 보존된다.
+    /// - 공유 BorderFill을 제자리 수정하지 않으므로 다른 셀에 영향이 없다.
+    /// - 동일한 BorderFill이 이미 있으면 중복 추가 없이 그 id를 재사용한다.
+    ///
+    /// 채우기 prop:
+    /// - `fillColor` 또는 별칭 `BackgroundColor`(에이전트/`@cell_props` 호환)로 색 지정
+    /// - 색이 주어지면 `fillType`은 기본 `solid`
+    /// - `fillType:"none"`이면 채우기를 제거
+    fn derive_cell_border_fill(
+        &mut self,
+        old_bf_id: u16,
+        json: &str,
+        has_border: bool,
+        has_fill: bool,
+    ) -> u16 {
+        use super::super::helpers::{
+            border_fills_equal, css_color_to_bgr, json_color, json_i32, json_object, json_str,
+            u8_to_border_line_type,
+        };
+        use crate::model::style::{BorderFill, Fill, FillType, SolidFill};
+
+        // 베이스: 셀의 현재 BorderFill 복제 (없으면 기본값)
+        let mut bf: BorderFill = old_bf_id
+            .checked_sub(1)
+            .and_then(|idx| self.document.doc_info.border_fills.get(idx as usize))
+            .cloned()
+            .unwrap_or_default();
+        // raw_data는 원본 바이트 라운드트립용 — 수정했으므로 무효화해 재직렬화 유도
+        bf.raw_data = None;
+
+        // 테두리 덮어쓰기 (지정된 방향만)
+        if has_border {
+            let dir_keys = ["borderLeft", "borderRight", "borderTop", "borderBottom"];
+            for (i, key) in dir_keys.iter().enumerate() {
+                if let Some(obj_str) = json_object(json, key) {
+                    let type_val = json_i32(&obj_str, "type").unwrap_or(0);
+                    bf.borders[i].line_type = u8_to_border_line_type(type_val as u8);
+                    bf.borders[i].width = json_i32(&obj_str, "width").unwrap_or(0) as u8;
+                    bf.borders[i].color = json_color(&obj_str, "color").unwrap_or(0);
+                }
+            }
+        }
+
+        // 채우기 덮어쓰기
+        if has_fill {
+            // 색 별칭: fillColor 우선, 없으면 BackgroundColor
+            let fill_color = json_str(json, "fillColor")
+                .or_else(|| json_str(json, "BackgroundColor"))
+                .and_then(|css| css_color_to_bgr(&css));
+            // fillType: 명시값 우선, 없고 색이 주어지면 solid 기본
+            let fill_type_str = json_str(json, "fillType");
+            let want_solid = match fill_type_str.as_deref() {
+                Some("solid") => true,
+                Some("none") => false,
+                Some(_) => fill_color.is_some(),
+                None => fill_color.is_some(),
+            };
+
+            if want_solid {
+                // 기존 solid 채우기가 있으면 그 무늬 정보를 보존
+                let existing = bf.fill.solid.unwrap_or_default();
+                let bg = fill_color.unwrap_or(existing.background_color);
+                let pat_c = json_color(json, "patternColor").unwrap_or(existing.pattern_color);
+                let pat_t = json_i32(json, "patternType")
+                    .map(|v| v as i32)
+                    .unwrap_or(existing.pattern_type);
+                bf.fill = Fill {
+                    fill_type: FillType::Solid,
+                    solid: Some(SolidFill {
+                        background_color: bg,
+                        pattern_color: pat_c,
+                        pattern_type: pat_t,
+                    }),
+                    ..Default::default()
+                };
+            } else {
+                // fillType:"none" → 채우기 제거
+                bf.fill = Fill::default();
+            }
+        }
+
+        // 동일한 BorderFill 검색/추가
+        if let Some((i, _)) = self
+            .document
+            .doc_info
+            .border_fills
+            .iter()
+            .enumerate()
+            .find(|(_, existing)| border_fills_equal(existing, &bf))
+        {
+            return (i + 1) as u16;
+        }
+        self.document.doc_info.border_fills.push(bf);
+        self.document.doc_info.raw_stream_dirty = true;
+        self.styles =
+            crate::renderer::style_resolver::resolve_styles(&self.document.doc_info, self.dpi);
+        self.document.doc_info.border_fills.len() as u16
     }
 
     /// 셀 테두리 변경 시 이웃 셀의 공유 엣지 테두리를 동기화한다.
