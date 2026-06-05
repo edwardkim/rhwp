@@ -51,6 +51,15 @@ impl DocumentCore {
         loaded
     }
 
+    /// 내장 빈 템플릿(`blank2010.hwp`)을 파싱해 새 DocumentCore 를 생성한다.
+    ///
+    /// `from_bytes` 와 동일한 (검증·reflow·compose·paginate 포함) 경로를 통과하므로
+    /// 로드된 문서와 완전히 동일한 IR 상태를 갖는다. ehwp 의 `new()` NIF 진입점.
+    pub fn new_blank() -> Result<DocumentCore, HwpError> {
+        const BLANK_TEMPLATE: &[u8] = include_bytes!("../../../saved/blank2010.hwp");
+        DocumentCore::from_bytes(BLANK_TEMPLATE)
+    }
+
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
         let mut document = crate::parser::parse_document(data)
@@ -1201,5 +1210,29 @@ mod validate_linesegs_tests {
         seg.line_height = 1000;
         para.line_segs.push(seg);
         assert!(DocumentCore::needs_reflow_broadly(&para));
+    }
+}
+
+#[cfg(test)]
+mod new_blank_tests {
+    use super::*;
+
+    /// `new_blank` parses the embedded template through the same `from_bytes`
+    /// path used by `open`, yielding a fully-paginated DocumentCore.
+    #[test]
+    fn new_blank_produces_a_paginated_document() {
+        let core = DocumentCore::new_blank().expect("new_blank");
+        assert!(core.page_count() >= 1, "blank doc should paginate >= 1 page");
+        assert!(!core.document.sections.is_empty(), "blank doc has a section");
+    }
+
+    /// new -> export(HWP) -> re-open round-trips without error and preserves a page.
+    #[test]
+    fn new_blank_export_reopen_round_trip() {
+        let mut core = DocumentCore::new_blank().expect("new_blank");
+        let bytes = core.export_hwp_with_adapter().expect("export hwp");
+        assert!(!bytes.is_empty(), "export produced bytes");
+        let reopened = DocumentCore::from_bytes(&bytes).expect("re-open exported bytes");
+        assert!(reopened.page_count() >= 1, "re-opened doc paginates");
     }
 }
