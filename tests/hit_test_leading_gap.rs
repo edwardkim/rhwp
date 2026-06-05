@@ -16,9 +16,10 @@
 //! We sweep the click x across that line at two click y values:
 //!   * y = 488.0 — *inside* the glyph box (always worked).
 //!   * y = 481.5 — in the *leading gap* just above the box top (the bug).
-//! and assert the caret x (a) tracks the click x within tolerance and
-//! (b) increases monotonically — i.e. no snap to a constant line-start/line-end
-//! x. The leading-gap case failed before the fix.
+//!
+//! We then assert the caret x tracks the click x within tolerance and increases
+//! monotonically — i.e. no snap to a constant line-start/line-end x. The
+//! leading-gap case failed before the fix.
 
 use std::path::Path;
 

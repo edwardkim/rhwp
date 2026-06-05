@@ -2144,12 +2144,78 @@ impl TypesetEngine {
                                 head_h > 0.0
                                     && st.current_height + head_h <= st.available_height() - 8.0
                             };
+                        // 기본 7mm 미주는 제목 한 줄 tail을 허용하되, 빈/TAC 식만
+                        // 뒤따르는 orphan 제목은 frame overflow로 이어지므로 제외한다.
+                        let default_question_group_title_tail = compact_endnote_separator_profile
+                            && endnote_shape
+                                .map(|shape| {
+                                    endnote_between_notes_margin(shape) as i32
+                                        <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+                                })
+                                .unwrap_or(false)
+                            && en_ref.number > 0
+                            && !st.current_items.is_empty()
+                            && en_ctrl.paragraphs.first().is_some_and(|head| {
+                                if head.line_segs.len() != 1 {
+                                    return false;
+                                }
+                                let title_h = hwpunit_to_px(
+                                    head.line_segs[0].line_height + head.line_segs[0].line_spacing,
+                                    self.dpi,
+                                );
+                                let title_fits = title_h > 0.0
+                                    && st.current_height + title_h
+                                        <= st.available_height()
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0;
+                                if !title_fits {
+                                    return false;
+                                }
+                                if st.current_column + 1 >= st.col_count {
+                                    return en_ctrl
+                                        .paragraphs
+                                        .get(1)
+                                        .map(para_has_visible_text)
+                                        .unwrap_or(true);
+                                }
+                                if !matches!(en_ref.number, 29 | 30) {
+                                    return false;
+                                }
+                                let mut head_h = 0.0;
+                                let mut head_count = 0usize;
+                                for para in en_ctrl.paragraphs.iter().take(4) {
+                                    let Some(first) = para.line_segs.first() else {
+                                        continue;
+                                    };
+                                    let Some(bottom) = para
+                                        .line_segs
+                                        .iter()
+                                        .map(|seg| {
+                                            seg.vertical_pos + seg.line_height + seg.line_spacing
+                                        })
+                                        .max()
+                                    else {
+                                        continue;
+                                    };
+                                    head_h += hwpunit_to_px(
+                                        (bottom - first.vertical_pos).max(0),
+                                        self.dpi,
+                                    );
+                                    head_count += 1;
+                                }
+                                head_count >= 2
+                                    && st.current_height + head_h
+                                        <= st.available_height()
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0
+                            });
                         if st.col_count > 1
                             && compact_endnote_separator_profile
                             && !st.current_items.is_empty()
                             && prev_endnote_had_vpos_rewind
                             && !default_late_question_group_tail
                             && !default_question_group_head_tail
+                            && !default_question_group_title_tail
                             && st.current_height
                                 > st.available_height() * rewind_group_advance_threshold
                         {
@@ -2594,10 +2660,24 @@ impl TypesetEngine {
                                     && para_has_visible_text_or_equation(en_para);
                                 !single_line_tail_split_at_bottom
                             });
-                            if internal_rewind_split == Some(1)
+                            let large_between_single_line_internal_rewind = internal_rewind_split
+                                == Some(1)
                                 && !default_between_notes_gap
-                                && para_has_visible_text_or_equation(en_para)
-                            {
+                                && para_has_visible_text_or_equation(en_para);
+                            let advance_large_between_single_line_rewind =
+                                large_between_single_line_internal_rewind
+                                    && st.current_column + 1 >= st.col_count
+                                    && st.current_height > available * 0.85
+                                    && !st.current_items.is_empty();
+                            if advance_large_between_single_line_rewind {
+                                // 큰 `미주 사이` 문서의 마지막 단 하단에서 첫 줄부터
+                                // vpos가 되감기는 문단은 한컴/PDF처럼 다음 쪽에서 통째로
+                                // 시작해야 한다. 현재 쪽에 FullParagraph로 남기면 첫 줄이
+                                // frame 밖에 그려지고, 다음 쪽 문항 흐름이 한 줄만큼 당겨진다.
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                                internal_rewind_split = None;
+                            } else if large_between_single_line_internal_rewind {
                                 internal_rewind_split = None;
                                 cleared_single_line_internal_rewind_split = true;
                             }
@@ -2611,6 +2691,530 @@ impl TypesetEngine {
                                     (Some(prev), Some(_), Some(bottom))
                                         if hwpunit_to_px((bottom - prev).max(0), self.dpi) > h4f + 100.0
                                 );
+                            let large_between_tail_render_overflows = if !default_between_notes_gap
+                                && compact_endnote_separator_profile
+                                && ep_idx > 0
+                                && st.col_count > 1
+                                && st.current_column + 1 < st.col_count
+                                && st.current_height > available * 0.85
+                                && !st.current_items.is_empty()
+                                && !local_vpos_rewind
+                                && !internal_vpos_rewind
+                                && split_endnote_to_fit.is_none()
+                                && para_has_visible_text_or_equation(en_para)
+                            {
+                                let prev_equation_only_tail = st
+                                    .current_items
+                                    .iter()
+                                    .rev()
+                                    .filter_map(page_item_para_index)
+                                    .find_map(|pi| {
+                                        paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        )
+                                    })
+                                    .map(|prev_para| {
+                                        !para_has_visible_text(prev_para)
+                                            && prev_para.controls.iter().any(|ctrl| {
+                                                matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char)
+                                            })
+                                    })
+                                    .unwrap_or(false);
+                                st.current_items
+                                    .iter()
+                                    .filter_map(page_item_para_index)
+                                    .find_map(|pi| {
+                                        paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        )
+                                        .and_then(|p| p.line_segs.first())
+                                        .map(|s| s.vertical_pos)
+                                    })
+                                    .and_then(|base_vpos| {
+                                        this_first_offset.map(|first_vpos| {
+                                            let predicted_y = hwpunit_to_px(
+                                                (first_vpos - base_vpos).max(0),
+                                                self.dpi,
+                                            ) + st.current_start_height;
+                                            let rendered_h =
+                                                fmt.line_advances_sum(0..fmt.line_heights.len());
+                                            // TAC 그림/수식으로 lazy base가 깊게 보정된 단에서는
+                                            // 저장 vpos 직접 예측이 실제 렌더 y보다 낮게 나올 수 있다.
+                                            // 직전 수식-only 문단 뒤의 한 줄짜리 풀이 tail은 남은
+                                            // 공간이 50px 이하이면 한컴처럼 다음 단에서 이어간다.
+                                            let near_bottom_tail = prev_equation_only_tail
+                                                && fmt.line_heights.len() == 1
+                                                && para_has_visible_text(en_para)
+                                                && !para_is_treat_as_char_picture_only(en_para)
+                                                && !para_has_treat_as_char_picture_or_shape(
+                                                    en_para,
+                                                )
+                                                && st.current_height > available * 0.90
+                                                && st.current_height < available - 55.0
+                                                && st.current_height + rendered_h
+                                                    > available - 50.0;
+                                            predicted_y + rendered_h
+                                                > available
+                                                    + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                                    + 1.0
+                                                || near_bottom_tail
+                                        })
+                                    })
+                                    .unwrap_or(false)
+                            } else {
+                                false
+                            };
+                            let large_between_tail_before_rewind_picture =
+                                !default_between_notes_gap
+                                    && compact_endnote_separator_profile
+                                    && ep_idx > 0
+                                    && st.col_count > 1
+                                    && st.current_column + 1 < st.col_count
+                                    && st.current_height > available * 0.88
+                                    && !st.current_items.is_empty()
+                                    && !local_vpos_rewind
+                                    && !internal_vpos_rewind
+                                    && fmt.line_heights.len() == 1
+                                    && para_has_visible_text_or_equation(en_para)
+                                    && !para_is_treat_as_char_picture_only(en_para)
+                                    && st.current_height + fmt.line_advance(0) > available - 50.0
+                                    && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(
+                                        |next_para| {
+                                            para_is_treat_as_char_picture_only(next_para)
+                                                && matches!(
+                                                    (
+                                                        this_first_offset,
+                                                        next_para.line_segs.first().map(|s| {
+                                                            s.vertical_pos + endnote_start
+                                                        }),
+                                                    ),
+                                                    (Some(cur), Some(next)) if next < cur
+                                                )
+                                        },
+                                    );
+                            let large_between_title_tail_render_overflows =
+                                if !default_between_notes_gap
+                                    && ep_idx == 0
+                                    && st.current_column + 1 >= st.col_count
+                                    && en_ref.number > 0
+                                    && fmt.line_heights.len() == 1
+                                    && !st.current_items.is_empty()
+                                {
+                                    let mut local_paras: Vec<Paragraph> = Vec::new();
+                                    let mut local_indices: Vec<(usize, usize)> = Vec::new();
+                                    for pi in st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .chain(std::iter::once(en_para_idx))
+                                    {
+                                        if local_indices.iter().any(|(global, _)| *global == pi) {
+                                            continue;
+                                        }
+                                        if let Some(p) = paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        ) {
+                                            let local = local_paras.len();
+                                            local_paras.push(p.clone());
+                                            local_indices.push((pi, local));
+                                        }
+                                    }
+                                    let lookup_local = |pi: usize, indices: &[(usize, usize)]| {
+                                        indices.iter().find_map(|(global, local)| {
+                                            (*global == pi).then_some(*local)
+                                        })
+                                    };
+                                    let first_vpos = st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .find_map(|pi| {
+                                            paragraph_by_global_index(
+                                                paragraphs,
+                                                &st.endnote_paragraphs,
+                                                pi,
+                                            )
+                                            .and_then(|p| p.line_segs.first())
+                                            .map(|seg| seg.vertical_pos)
+                                        });
+                                    let predicted_y = first_vpos.and_then(|page_base| {
+                                        let mut hc = HeightCursor::new(
+                                            self.dpi,
+                                            0.0,
+                                            available,
+                                            st.current_start_height,
+                                            Some(page_base),
+                                            st.skip_spacing_before_prededuct,
+                                            false,
+                                            st.current_endnote_flow
+                                                && st.current_start_height < -0.5,
+                                            st.current_endnote_flow,
+                                        );
+                                        hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+                                        let mut y = st.current_start_height;
+                                        for item in &st.current_items {
+                                            let Some(pi) = page_item_para_index(item) else {
+                                                continue;
+                                            };
+                                            let Some(local) = lookup_local(pi, &local_indices)
+                                            else {
+                                                continue;
+                                            };
+                                            y = hc.vpos_adjust(y, local, &local_paras, &styles);
+                                            let item_para = &local_paras[local];
+                                            let item_composed =
+                                                crate::renderer::composer::compose_paragraph(
+                                                    item_para,
+                                                );
+                                            let item_fmt = self.format_paragraph(
+                                                item_para,
+                                                Some(&item_composed),
+                                                &styles,
+                                                Some(en_col_w),
+                                            );
+                                            y += match item {
+                                                PageItem::PartialParagraph {
+                                                    start_line,
+                                                    end_line,
+                                                    ..
+                                                } => item_fmt
+                                                    .line_advances_sum(*start_line..*end_line),
+                                                PageItem::FullParagraph { .. } => {
+                                                    item_fmt.total_height
+                                                }
+                                                _ => 0.0,
+                                            };
+                                            let current_vpos_rewinds_from_prev = hc
+                                                .prev_layout_para
+                                                .and_then(|prev_local| {
+                                                    let prev_first = local_paras
+                                                        .get(prev_local)
+                                                        .and_then(|p| p.line_segs.first())
+                                                        .map(|seg| seg.vertical_pos)?;
+                                                    let curr_first = local_paras
+                                                        .get(local)
+                                                        .and_then(|p| p.line_segs.first())
+                                                        .map(|seg| seg.vertical_pos)?;
+                                                    Some(curr_first < prev_first)
+                                                })
+                                                .unwrap_or(false);
+                                            if matches!(
+                                                item,
+                                                PageItem::PartialParagraph { start_line, .. }
+                                                    if *start_line > 0
+                                            ) || current_vpos_rewinds_from_prev
+                                            {
+                                                hc.prev_layout_para = None;
+                                                hc.vpos_page_base = None;
+                                                hc.vpos_lazy_base = None;
+                                            } else {
+                                                hc.prev_layout_para = Some(local);
+                                            }
+                                            hc.prev_item_was_partial_table =
+                                                matches!(item, PageItem::PartialTable { .. });
+                                        }
+                                        lookup_local(en_para_idx, &local_indices).map(|local| {
+                                            hc.vpos_adjust(y, local, &local_paras, &styles)
+                                        })
+                                    });
+                                    let next_first_line_h = en_ctrl
+                                        .paragraphs
+                                        .get(1)
+                                        .map(|next_para| {
+                                            let next_comp =
+                                                crate::renderer::composer::compose_paragraph(
+                                                    next_para,
+                                                );
+                                            self.format_paragraph(
+                                                next_para,
+                                                Some(&next_comp),
+                                                &styles,
+                                                Some(en_col_w),
+                                            )
+                                            .line_advance(0)
+                                        })
+                                        .unwrap_or(0.0);
+                                    predicted_y
+                                        .map(|y| {
+                                            let title_h = fmt.line_advance(0);
+                                            let title_overflows = y + title_h
+                                                > available
+                                                    + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX;
+                                            let title_would_orphan = next_first_line_h > 0.0
+                                                && y + title_h + next_first_line_h
+                                                    > available
+                                                        + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                                        + 2.0;
+                                            title_overflows || title_would_orphan
+                                        })
+                                        .unwrap_or(false)
+                                } else {
+                                    false
+                                };
+                            let large_between_question_title_head_inside_frame =
+                                !default_between_notes_gap
+                                    && ep_idx == 0
+                                    && en_ref.number > 0
+                                    && fmt.line_heights.len() == 1
+                                    && st.current_height < available
+                                    && st.current_height > available * 0.85
+                                    && st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .find_map(|pi| {
+                                            paragraph_by_global_index(
+                                                paragraphs,
+                                                &st.endnote_paragraphs,
+                                                pi,
+                                            )
+                                            .and_then(|p| p.line_segs.first())
+                                            .map(|s| s.vertical_pos)
+                                        })
+                                        .and_then(|base_vpos| {
+                                            this_first_offset.map(|first_vpos| {
+                                                let predicted_y = hwpunit_to_px(
+                                                    (first_vpos - base_vpos).max(0),
+                                                    self.dpi,
+                                                );
+                                                predicted_y + fmt.line_advance(0)
+                                                    <= available
+                                                        + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            })
+                                        })
+                                        .unwrap_or(false);
+                            let large_between_last_column_visual_split =
+                                if !default_between_notes_gap
+                                    && compact_endnote_separator_profile
+                                    && ep_idx > 0
+                                    && st.col_count > 1
+                                    && st.current_column + 1 >= st.col_count
+                                    && st.current_height > available * 0.85
+                                    && st.current_height < available
+                                    && st.current_height + en_fit > available
+                                    && !st.current_items.is_empty()
+                                    && !local_vpos_rewind
+                                    && !internal_vpos_rewind
+                                    && fmt.line_heights.len() > 1
+                                    && para_has_visible_text_or_equation(en_para)
+                                {
+                                    let mut local_paras: Vec<Paragraph> = Vec::new();
+                                    let mut local_indices: Vec<(usize, usize)> = Vec::new();
+                                    for pi in st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .chain(std::iter::once(en_para_idx))
+                                    {
+                                        if local_indices.iter().any(|(global, _)| *global == pi) {
+                                            continue;
+                                        }
+                                        if let Some(p) = paragraph_by_global_index(
+                                            paragraphs,
+                                            &st.endnote_paragraphs,
+                                            pi,
+                                        ) {
+                                            let local = local_paras.len();
+                                            local_paras.push(p.clone());
+                                            local_indices.push((pi, local));
+                                        }
+                                    }
+                                    let lookup_local = |pi: usize, indices: &[(usize, usize)]| {
+                                        indices.iter().find_map(|(global, local)| {
+                                            (*global == pi).then_some(*local)
+                                        })
+                                    };
+                                    let first_vpos = st
+                                        .current_items
+                                        .iter()
+                                        .filter_map(page_item_para_index)
+                                        .find_map(|pi| {
+                                            paragraph_by_global_index(
+                                                paragraphs,
+                                                &st.endnote_paragraphs,
+                                                pi,
+                                            )
+                                            .and_then(|p| p.line_segs.first())
+                                            .map(|seg| seg.vertical_pos)
+                                        });
+                                    let predicted_y = first_vpos.and_then(|page_base| {
+                                        let mut hc = HeightCursor::new(
+                                            self.dpi,
+                                            0.0,
+                                            available,
+                                            st.current_start_height,
+                                            Some(page_base),
+                                            st.skip_spacing_before_prededuct,
+                                            false,
+                                            st.current_endnote_flow
+                                                && st.current_start_height < -0.5,
+                                            st.current_endnote_flow,
+                                        );
+                                        hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+                                        let mut y = st.current_start_height;
+                                        for item in &st.current_items {
+                                            let Some(pi) = page_item_para_index(item) else {
+                                                continue;
+                                            };
+                                            let Some(local) = lookup_local(pi, &local_indices)
+                                            else {
+                                                continue;
+                                            };
+                                            y = hc.vpos_adjust(y, local, &local_paras, &styles);
+                                            let item_para = &local_paras[local];
+                                            let item_composed =
+                                                crate::renderer::composer::compose_paragraph(
+                                                    item_para,
+                                                );
+                                            let item_fmt = self.format_paragraph(
+                                                item_para,
+                                                Some(&item_composed),
+                                                &styles,
+                                                Some(en_col_w),
+                                            );
+                                            y += match item {
+                                                PageItem::PartialParagraph {
+                                                    start_line,
+                                                    end_line,
+                                                    ..
+                                                } => item_fmt
+                                                    .line_advances_sum(*start_line..*end_line),
+                                                PageItem::FullParagraph { .. } => {
+                                                    item_fmt.total_height
+                                                }
+                                                _ => 0.0,
+                                            };
+                                            let current_vpos_rewinds_from_prev = hc
+                                                .prev_layout_para
+                                                .and_then(|prev_local| {
+                                                    let prev_first = local_paras
+                                                        .get(prev_local)
+                                                        .and_then(|p| p.line_segs.first())
+                                                        .map(|seg| seg.vertical_pos)?;
+                                                    let curr_first = local_paras
+                                                        .get(local)
+                                                        .and_then(|p| p.line_segs.first())
+                                                        .map(|seg| seg.vertical_pos)?;
+                                                    Some(curr_first < prev_first)
+                                                })
+                                                .unwrap_or(false);
+                                            if matches!(
+                                                item,
+                                                PageItem::PartialParagraph { start_line, .. }
+                                                    if *start_line > 0
+                                            ) || current_vpos_rewinds_from_prev
+                                            {
+                                                hc.prev_layout_para = None;
+                                                hc.vpos_page_base = None;
+                                                hc.vpos_lazy_base = None;
+                                            } else {
+                                                hc.prev_layout_para = Some(local);
+                                            }
+                                            hc.prev_item_was_partial_table =
+                                                matches!(item, PageItem::PartialTable { .. });
+                                        }
+                                        lookup_local(en_para_idx, &local_indices).map(|local| {
+                                            hc.vpos_adjust(y, local, &local_paras, &styles)
+                                        })
+                                    });
+
+                                    predicted_y.and_then(|y| {
+                                        if y >= available {
+                                            return None;
+                                        }
+                                        // 큰 미주 사이 문서의 마지막 단은 렌더 vpos가 직전
+                                        // 문단들을 위로 당긴 뒤 남는 visual tail 공간을 사용한다.
+                                        // pagination 누적 높이만 보면 부족하지만, 한컴/PDF는 다음
+                                        // 문단의 마지막 1줄만 이월시키는 패턴이 있어 이 경로에만
+                                        // 단 하단 visual 한도를 넓힌다.
+                                        let visual_tail_limit = available
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 46.0;
+                                        let mut consumed = 0.0;
+                                        let mut split = 0usize;
+                                        for line_idx in 0..fmt.line_heights.len() {
+                                            let next = consumed + fmt.line_advance(line_idx);
+                                            if y + next > visual_tail_limit {
+                                                break;
+                                            }
+                                            consumed = next;
+                                            split = line_idx + 1;
+                                        }
+                                        (split > 0 && split < fmt.line_heights.len())
+                                            .then_some(split)
+                                    })
+                                } else {
+                                    None
+                                };
+                            if large_between_title_tail_render_overflows {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            if large_between_tail_render_overflows
+                                || large_between_tail_before_rewind_picture
+                            {
+                                st.advance_column_or_new_page();
+                                prev_en_bottom_vpos = None;
+                            }
+                            let next_endnote_first_line_advance = if ep_idx == 0 {
+                                en_ctrl.paragraphs.get(1).map(|next_para| {
+                                    let next_comp =
+                                        crate::renderer::composer::compose_paragraph(next_para);
+                                    self.format_paragraph(
+                                        next_para,
+                                        Some(&next_comp),
+                                        &styles,
+                                        Some(en_col_w),
+                                    )
+                                    .line_advance(0)
+                                })
+                            } else {
+                                None
+                            };
+                            let large_between_question_title_would_orphan =
+                                !default_between_notes_gap
+                                    && ep_idx == 0
+                                    && en_ref.number > 0
+                                    && next_endnote_first_line_advance
+                                        .map(|next_h| {
+                                            st.current_height + fmt.line_advance(0) + next_h
+                                                > available
+                                                    + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                                    + 2.0
+                                        })
+                                        .unwrap_or(false);
+                            let allow_large_between_question_title_tail = !default_between_notes_gap
+                                && ep_idx == 0
+                                && en_ref.number > 0
+                                && fmt.line_heights.len() == 1
+                                && st.current_height < available
+                                && large_between_question_title_head_inside_frame
+                                && !large_between_question_title_would_orphan
+                                && st.current_height + fmt.line_advance(0)
+                                    <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0;
+                            let allow_default_column_bottom_question_title_tail =
+                                default_between_notes_gap
+                                    && compact_endnote_separator_profile
+                                    && ep_idx == 0
+                                    && en_ref.number > 0
+                                    && fmt.line_heights.len() == 1
+                                    && !local_vpos_rewind
+                                    && !internal_vpos_rewind
+                                    && !st.current_items.is_empty()
+                                    && default_question_group_title_tail
+                                    && st.current_height < available
+                                    && st.current_height > available * 0.88
+                                    && st.current_height + fmt.line_advance(0)
+                                        <= available
+                                            + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                                            + 2.0
+                                    && para_has_visible_text_or_equation(en_para);
                             let late_question_title_small_overflow =
                                 allow_default_late_question_tail
                                     && ep_idx == 0
@@ -2632,9 +3236,12 @@ impl TypesetEngine {
                                 && para_has_visible_text_or_equation(en_para);
                             let advance_for_fit = st.current_height + en_fit > available
                                 && split_endnote_to_fit.is_none()
+                                && large_between_last_column_visual_split.is_none()
                                 && !compact_endnote_own_vpos_span_fits
                                 && (!default_between_notes_gap || internal_rewind_split.is_none())
                                 && !late_question_title_small_overflow
+                                && !allow_large_between_question_title_tail
+                                && !allow_default_column_bottom_question_title_tail
                                 && !late_question_intro_tail
                                 && !late_question_continuation_tail
                                 && !st.current_items.is_empty();
@@ -2665,21 +3272,6 @@ impl TypesetEngine {
                             let rewind_endnote_head_near_bottom = endnote_has_vpos_rewind
                                 && st.current_height + total_advance_fit
                                     > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX;
-                            let next_endnote_first_line_advance = if ep_idx == 0 {
-                                en_ctrl.paragraphs.get(1).map(|next_para| {
-                                    let next_comp =
-                                        crate::renderer::composer::compose_paragraph(next_para);
-                                    self.format_paragraph(
-                                        next_para,
-                                        Some(&next_comp),
-                                        &styles,
-                                        Some(en_col_w),
-                                    )
-                                    .line_advance(0)
-                                })
-                            } else {
-                                None
-                            };
                             let rewind_endnote_head_would_split = endnote_has_vpos_rewind
                                 && next_endnote_first_line_advance
                                     .map(|next_h| {
@@ -2739,7 +3331,9 @@ impl TypesetEngine {
                                 && ep_idx == 0
                                 && emitted_endnote_count > 0
                                 && !allow_default_late_question_tail
+                                && !allow_default_column_bottom_question_title_tail
                                 && !allow_default_question_title_tail
+                                && !allow_large_between_question_title_tail
                                 && (!endnote_has_vpos_rewind
                                     || rewind_endnote_head_near_bottom
                                     || rewind_endnote_head_would_split
@@ -2803,6 +3397,7 @@ impl TypesetEngine {
                                 });
                             if let Some(split_line) = tall_line_internal_rewind_split
                                 .or(split_endnote_to_fit)
+                                .or(large_between_last_column_visual_split)
                                 .or(internal_rewind_split)
                             {
                                 let first_h = fmt.line_advances_sum(0..split_line);
@@ -2960,6 +3555,7 @@ impl TypesetEngine {
             suppress_large_forward_jump: false,
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
+            last_compacted_endnote_title_gap: false,
         };
         let y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.

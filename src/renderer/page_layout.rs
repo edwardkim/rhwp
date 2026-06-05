@@ -56,6 +56,16 @@ impl LayoutRect {
 impl PageLayoutInfo {
     /// PageDef와 ColumnDef로부터 페이지 레이아웃을 계산한다.
     pub fn from_page_def(page_def: &PageDef, column_def: &ColumnDef, dpi: f64) -> Self {
+        Self::from_page_def_for_page(page_def, column_def, dpi, 1)
+    }
+
+    /// PageDef, ColumnDef, 최종 쪽번호로부터 페이지 레이아웃을 계산한다.
+    pub fn from_page_def_for_page(
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        dpi: f64,
+        page_number: u32,
+    ) -> Self {
         // landscape=true이면 width/height 교환
         let (width_hwp, height_hwp) = if page_def.landscape {
             (page_def.height, page_def.width)
@@ -65,7 +75,7 @@ impl PageLayoutInfo {
         let page_width = hwpunit_to_px(width_hwp as i32, dpi);
         let page_height = hwpunit_to_px(height_hwp as i32, dpi);
 
-        let areas = PageAreas::from_page_def(page_def);
+        let areas = PageAreas::from_page_def_for_page(page_def, page_number);
 
         let header_area = LayoutRect::from_hwpunit_rect(&areas.header_area, dpi);
         let body_area = LayoutRect::from_hwpunit_rect(&areas.body_area, dpi);
@@ -97,6 +107,40 @@ impl PageLayoutInfo {
     /// 기본 DPI(96)로 계산
     pub fn from_page_def_default(page_def: &PageDef, column_def: &ColumnDef) -> Self {
         Self::from_page_def(page_def, column_def, DEFAULT_DPI)
+    }
+
+    /// 기존 레이아웃을 최종 쪽번호 기준 좌우 여백으로 이동한다.
+    ///
+    /// ColumnDef가 다른 zone layout일 수 있으므로 단 너비/간격은 보존하고, page body의
+    /// 기준 x 이동량만 각 영역에 적용한다.
+    pub fn apply_page_number_margins(&mut self, page_def: &PageDef, page_number: u32) {
+        let target_areas = PageAreas::from_page_def_for_page(page_def, page_number);
+        let target_header = LayoutRect::from_hwpunit_rect(&target_areas.header_area, self.dpi);
+        let target_body = LayoutRect::from_hwpunit_rect(&target_areas.body_area, self.dpi);
+        let target_footer = LayoutRect::from_hwpunit_rect(&target_areas.footer_area, self.dpi);
+
+        let delta_x = target_body.x - self.body_area.x;
+        if delta_x.abs() < f64::EPSILON
+            && (target_body.width - self.body_area.width).abs() < f64::EPSILON
+        {
+            return;
+        }
+
+        self.header_area.x = target_header.x;
+        self.header_area.width = target_header.width;
+        self.body_area.x = target_body.x;
+        self.body_area.width = target_body.width;
+        self.footer_area.x = target_footer.x;
+        self.footer_area.width = target_footer.width;
+
+        if self.footnote_area.width > 0.0 || self.footnote_area.height > 0.0 {
+            self.footnote_area.x += delta_x;
+            self.footnote_area.width = target_body.width;
+        }
+
+        for column_area in &mut self.column_areas {
+            column_area.x += delta_x;
+        }
     }
 
     /// 본문 영역의 사용 가능한 높이 (각주 영역 제외 + 페이지네이션 허용치 포함)
@@ -214,7 +258,7 @@ fn calculate_column_areas(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::page::{ColumnDef, PageDef};
+    use crate::model::page::{BindingMethod, ColumnDef, PageDef};
 
     fn a4_page_def() -> PageDef {
         PageDef {
@@ -273,5 +317,94 @@ mod tests {
         let layout = PageLayoutInfo::from_page_def_default(&page_def, &col_def);
 
         assert!(layout.available_body_height() > 0.0);
+    }
+
+    #[test]
+    fn page_layout_duplex_sided_even_page_swaps_body_and_columns() {
+        let page_def = PageDef {
+            width: 1000,
+            height: 1400,
+            margin_left: 100,
+            margin_right: 200,
+            margin_gutter: 30,
+            margin_top: 10,
+            margin_header: 20,
+            margin_bottom: 40,
+            margin_footer: 50,
+            binding: BindingMethod::DuplexSided,
+            ..Default::default()
+        };
+        let col_def = ColumnDef {
+            column_count: 2,
+            spacing: 60,
+            ..Default::default()
+        };
+
+        let odd = PageLayoutInfo::from_page_def_for_page(&page_def, &col_def, DEFAULT_DPI, 1);
+        let even = PageLayoutInfo::from_page_def_for_page(&page_def, &col_def, DEFAULT_DPI, 2);
+
+        assert!(even.body_area.x > odd.body_area.x);
+        assert!((even.body_area.width - odd.body_area.width).abs() < 0.01);
+        assert_eq!(odd.column_areas.len(), 2);
+        assert_eq!(even.column_areas.len(), 2);
+        assert!((even.column_areas[0].x - even.body_area.x).abs() < 0.01);
+        assert!((even.column_areas[0].width - odd.column_areas[0].width).abs() < 0.01);
+        assert!(
+            (even.column_areas[1].x
+                - even.column_areas[0].x
+                - (odd.column_areas[1].x - odd.column_areas[0].x))
+                .abs()
+                < 0.01
+        );
+    }
+
+    #[test]
+    fn page_layout_from_page_def_matches_page_one_layout() {
+        let page_def = PageDef {
+            binding: BindingMethod::DuplexSided,
+            ..a4_page_def()
+        };
+        let col_def = ColumnDef::default();
+
+        let default_layout = PageLayoutInfo::from_page_def(&page_def, &col_def, DEFAULT_DPI);
+        let page_one_layout =
+            PageLayoutInfo::from_page_def_for_page(&page_def, &col_def, DEFAULT_DPI, 1);
+
+        assert!((default_layout.body_area.x - page_one_layout.body_area.x).abs() < 0.01);
+        assert!((default_layout.body_area.width - page_one_layout.body_area.width).abs() < 0.01);
+    }
+
+    #[test]
+    fn apply_page_number_margins_moves_existing_zone_layout_without_rebuilding_columns() {
+        let page_def = PageDef {
+            width: 1000,
+            height: 1400,
+            margin_left: 100,
+            margin_right: 200,
+            margin_gutter: 30,
+            binding: BindingMethod::DuplexSided,
+            ..Default::default()
+        };
+        let col_def = ColumnDef {
+            column_count: 2,
+            same_width: false,
+            widths: vec![200, 300],
+            gaps: vec![40],
+            ..Default::default()
+        };
+
+        let mut layout =
+            PageLayoutInfo::from_page_def_for_page(&page_def, &col_def, DEFAULT_DPI, 1);
+        let original_col_delta = layout.column_areas[1].x - layout.column_areas[0].x;
+
+        layout.apply_page_number_margins(&page_def, 2);
+
+        let expected = PageLayoutInfo::from_page_def_for_page(&page_def, &col_def, DEFAULT_DPI, 2);
+        assert!((layout.body_area.x - expected.body_area.x).abs() < 0.01);
+        assert!((layout.body_area.width - expected.body_area.width).abs() < 0.01);
+        assert!((layout.column_areas[0].x - expected.body_area.x).abs() < 0.01);
+        assert!(
+            (layout.column_areas[1].x - layout.column_areas[0].x - original_col_delta).abs() < 0.01
+        );
     }
 }

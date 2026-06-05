@@ -235,13 +235,19 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
     const ppi = pos.parentParaIndex!;
     const ci = pos.controlIndex!;
     const cei = pos.cellIndex!;
-    const cpi = pos.cellParaIndex!;
-    const paraLen = this.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
+    const useCellPath = (pos.cellPath?.length ?? 0) > 0;
+    const cpi = useCellPath ? pos.cellPath![pos.cellPath!.length - 1].cellParaIndex : pos.cellParaIndex!;
+    const pathJson = useCellPath ? JSON.stringify(pos.cellPath) : '';
+    const paraLen = useCellPath
+      ? this.wasm.getCellParagraphLengthByPath(sec, ppi, pathJson)
+      : this.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
     if (charOffset < paraLen) {
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(pos, 1, 'forward') });
     } else {
       // 셀 문단 끝에서 Delete → 다음 셀 문단과 병합
-      const paraCount = this.wasm.getCellParagraphCount(sec, ppi, ci, cei);
+      const paraCount = useCellPath
+        ? this.wasm.getCellParagraphCountByPath(sec, ppi, pathJson)
+        : this.wasm.getCellParagraphCount(sec, ppi, ci, cei);
       if (cpi + 1 < paraCount) {
         this.executeOperation({ kind: 'command', command: new MergeNextParagraphInCellCommand(pos) });
       }
@@ -321,7 +327,7 @@ export function onCompositionEnd(this: any): void {
 
 export function getTextAt(this: any, pos: DocumentPosition, count: number): string {
   try {
-    if ((pos.cellPath?.length ?? 0) > 1 && pos.parentParaIndex !== undefined) {
+    if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
       return this.wasm.getTextInCellByPath(pos.sectionIndex, pos.parentParaIndex, JSON.stringify(pos.cellPath), pos.charOffset, count);
     } else if (pos.parentParaIndex !== undefined) {
       return this.wasm.getTextInCell(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
@@ -504,7 +510,7 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
     );
     return;
   }
-  if ((pos.cellPath?.length ?? 0) > 1 && pos.parentParaIndex !== undefined) {
+  if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
     this.wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, JSON.stringify(pos.cellPath), pos.charOffset, text);
   } else if (pos.parentParaIndex !== undefined) {
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellParaIndex: cpi, charOffset } = pos;
@@ -533,7 +539,7 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
     );
     return;
   }
-  if ((pos.cellPath?.length ?? 0) > 1 && pos.parentParaIndex !== undefined) {
+  if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
     this.wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, JSON.stringify(pos.cellPath), pos.charOffset, count);
   } else if (pos.parentParaIndex !== undefined) {
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellParaIndex: cpi, charOffset } = pos;

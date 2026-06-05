@@ -20,6 +20,7 @@ use crate::renderer::render_tree::RenderLayerInfo;
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
 use super::equation_conv::render_equation;
+use super::font_lookup::{collect_system_families, match_system_family_style, SystemFontFamilies};
 use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 use super::text_replay::SkiaTextReplay;
 
@@ -239,13 +240,20 @@ pub struct SkiaLayerRenderer {
     /// key = primary face name (Typeface::family_name), value = Typeface.
     /// SVG 의 `--font-path` 와 같은 패턴으로 ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 도 사용 가능.
     custom_typefaces: HashMap<String, Typeface>,
+    /// 시스템에 실제 존재하는 font family 목록.
+    /// headless macOS 에서 missing family 를 CoreText 에 넘기면 downloadable font
+    /// lookup IPC가 영구 대기할 수 있어, match_family_style 호출 전 사전 필터로 사용한다.
+    system_families: SystemFontFamilies,
 }
 
 impl SkiaLayerRenderer {
     pub fn new() -> Self {
+        let font_mgr = FontMgr::default();
+        let system_families = collect_system_families(&font_mgr);
         Self {
-            font_mgr: FontMgr::default(),
+            font_mgr,
             custom_typefaces: HashMap::new(),
+            system_families,
         }
     }
 
@@ -508,6 +516,7 @@ impl SkiaLayerRenderer {
             canvas,
             font_mgr: &self.font_mgr,
             custom_typefaces: &self.custom_typefaces,
+            system_families: &self.system_families,
             output_options,
         };
         let open_shape_transform =
@@ -992,6 +1001,7 @@ impl SkiaLayerRenderer {
                                 render_equation(
                                     canvas,
                                     &self.font_mgr,
+                                    &self.system_families,
                                     &equation.layout_box,
                                     0.0,
                                     0.0,
@@ -1002,6 +1012,7 @@ impl SkiaLayerRenderer {
                                 render_equation(
                                     canvas,
                                     &self.font_mgr,
+                                    &self.system_families,
                                     &equation.layout_box,
                                     bbox.x,
                                     bbox.y,
@@ -1065,7 +1076,9 @@ impl SkiaLayerRenderer {
             if let Some(tf) = self.custom_typefaces.get(*family).cloned() {
                 return Font::new(tf, size);
             }
-            if let Some(tf) = self.font_mgr.match_family_style(family, style) {
+            if let Some(tf) =
+                match_system_family_style(&self.font_mgr, &self.system_families, family, style)
+            {
                 return Font::new(tf, size);
             }
         }

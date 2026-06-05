@@ -17,6 +17,16 @@ updates:
           - "usvg"
           - "resvg"
           - "ttf-parser"
+    # [#1217 후속] svg2pdf 0.13(최신)이 usvg 0.45 / pdf-writer 0.12 에 고정되어 있어,
+    # svg2pdf 를 제외한 결합 crate 를 올리면 그래프에 다중 버전이 공존해 타입 충돌
+    # (PR #1296: usvg 0.47 + pdf-writer 0.15 → error[E0308] multiple versions).
+    # svg2pdf 업스트림이 새 usvg/pdf-writer 를 지원하는 버전을 낼 때까지 이들의
+    # 단독 업데이트를 무시한다. svg2pdf 자체가 bump 되면 그룹으로 동반 해소된다.
+    ignore:
+      - dependency-name: "usvg"
+      - dependency-name: "pdf-writer"
+      - dependency-name: "resvg"
+      - dependency-name: "ttf-parser"
 
   - package-ecosystem: "npm"
     directory: "/rhwp-studio"

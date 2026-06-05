@@ -134,3 +134,45 @@ fn issue_717_exam_social_view_table_empty_area_stays_in_clicked_table() {
 
     assert_table_hit(&hit, 6, 0, 845.0..=975.0);
 }
+
+#[test]
+fn issue_717_exam_social_right_column_wrapper_nested_cell_path_is_editable() {
+    let mut doc = load_exam_social();
+
+    // 오른쪽 단 첫 번째 표는 문단 s0:pi=15 의 1x1 TAC wrapper 표 안에
+    // 실제 6x3 내부표가 들어 있는 구조다. wrapper 표가 시각적으로 unwrap 되면
+    // hit-test가 내부표 cellIndex=5를 외곽 1x1 표의 셀처럼 반환하던 회귀가 있었다.
+    let hit = hit_json(&doc, 0, 700.0, 420.0);
+
+    assert_table_hit(&hit, 15, 0, 390.0..=450.0);
+    assert_eq!(
+        hit["cellIndex"].as_u64(),
+        Some(0),
+        "public cellIndex must stay on the outer wrapper cell, hit={hit}"
+    );
+    assert_eq!(
+        path_tuples(&hit),
+        vec![(0, 0, 0), (1, 5, 0)],
+        "wrapper-unwrapped nested table hit must preserve the full editable path, hit={hit}"
+    );
+
+    let path = path_tuples(&hit);
+    let path_json = serde_json::to_string(&hit["cellPath"]).expect("cellPath json");
+    let char_offset = hit["charOffset"].as_u64().unwrap_or(0) as usize;
+    doc.insert_text_in_cell_by_path(0, 15, &path, char_offset, "X")
+        .unwrap_or_else(|e| panic!("insert_text_in_cell_by_path failed: {e}"));
+    let inserted = doc
+        .get_text_in_cell_by_path(0, 15, &path, char_offset, 1)
+        .expect("get inserted text");
+    assert_eq!(inserted, "X");
+
+    let rect_json = doc
+        .get_cursor_rect_by_path(0, 15, &path_json, (char_offset + 1) as u32)
+        .unwrap_or_else(|e| panic!("cursor rect after wrapper nested cell insertion: {e:?}"));
+    let rect: Value = serde_json::from_str(&rect_json).expect("cursor rect json");
+    assert_eq!(rect["pageIndex"].as_u64(), Some(0), "rect={rect}");
+    assert!(
+        rect["height"].as_f64().unwrap_or(0.0) > 0.0,
+        "cursor rect height must be positive, rect={rect}"
+    );
+}

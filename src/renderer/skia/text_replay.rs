@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use skia_safe::{
     font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathEffect, Rect, Typeface,
@@ -13,12 +13,14 @@ use crate::renderer::layout::{compute_char_positions, split_into_clusters};
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{clamp_tab_leader_end_x, TextStyle};
 
+use super::font_lookup::{match_system_family_style, SystemFontFamilies};
 use super::renderer::colorref_to_skia;
 
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) custom_typefaces: &'a HashMap<String, Typeface>,
+    pub(super) system_families: &'a SystemFontFamilies,
     pub(super) output_options: &'a LayerOutputOptions,
 }
 
@@ -90,23 +92,26 @@ impl SkiaTextReplay<'_> {
                 // 모든 후보를 chain 으로 보존 — char 단위 fallback 에 사용.
                 let typeface_chain: Vec<Typeface> = {
                     let mut chain: Vec<Typeface> = Vec::new();
-                    let mut seen: std::collections::HashSet<String> =
-                        std::collections::HashSet::new();
-                    let mut push = |chain: &mut Vec<Typeface>,
-                                    seen: &mut std::collections::HashSet<String>,
-                                    tf: Typeface| {
-                        let key = tf.family_name();
-                        if seen.insert(key) {
-                            chain.push(tf);
-                        }
-                    };
+                    let mut seen: HashSet<String> = HashSet::new();
+                    let mut push =
+                        |chain: &mut Vec<Typeface>, seen: &mut HashSet<String>, tf: Typeface| {
+                            let key = tf.family_name();
+                            if seen.insert(key) {
+                                chain.push(tf);
+                            }
+                        };
                     for family in &families {
                         if let Some(tf) = self.custom_typefaces.get(*family).cloned() {
                             push(&mut chain, &mut seen, tf);
                         }
                     }
                     for family in &families {
-                        if let Some(tf) = self.font_mgr.match_family_style(family, font_style) {
+                        if let Some(tf) = match_system_family_style(
+                            self.font_mgr,
+                            self.system_families,
+                            family,
+                            font_style,
+                        ) {
                             push(&mut chain, &mut seen, tf);
                         }
                     }
@@ -682,19 +687,22 @@ impl SkiaTextReplay<'_> {
                 12.0
             };
             let make_mark_font = |size: f32| {
-                let mut font = self
-                    .font_mgr
-                    .match_family_style("DejaVu Sans", FontStyle::normal())
-                    .or_else(|| {
-                        self.font_mgr
-                            .legacy_make_typeface(None::<&str>, FontStyle::normal())
-                    })
-                    .map(|tf| Font::new(tf, size))
-                    .unwrap_or_else(|| {
-                        let mut font = Font::default();
-                        font.set_size(size);
-                        font
-                    });
+                let mut font = match_system_family_style(
+                    self.font_mgr,
+                    self.system_families,
+                    "DejaVu Sans",
+                    FontStyle::normal(),
+                )
+                .or_else(|| {
+                    self.font_mgr
+                        .legacy_make_typeface(None::<&str>, FontStyle::normal())
+                })
+                .map(|tf| Font::new(tf, size))
+                .unwrap_or_else(|| {
+                    let mut font = Font::default();
+                    font.set_size(size);
+                    font
+                });
                 font.set_edging(font::Edging::AntiAlias);
                 font
             };

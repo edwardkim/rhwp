@@ -9,8 +9,6 @@
 //! - 누름틀(ClickHere), 날짜, 메일머지 등 복잡한 필드는 `<hp:fieldBegin type="...">` 의
 //!   type 속성만 구분하고 내부 command 직렬화는 #186 에서 확장.
 
-#![allow(dead_code)]
-
 use std::io::Write;
 
 use quick_xml::Writer;
@@ -60,6 +58,7 @@ pub fn write_field_end<W: Write>(w: &mut Writer<W>, field_id: u32) -> Result<(),
 // 하이퍼링크 (필드의 특수형) — <hp:fieldBegin type="HYPERLINK"> 변형
 // =====================================================================
 
+#[allow(dead_code)]
 pub fn write_hyperlink_begin<W: Write>(
     w: &mut Writer<W>,
     link: &Hyperlink,
@@ -86,6 +85,7 @@ pub fn write_hyperlink_begin<W: Write>(
 // =====================================================================
 
 /// `<hp:fn>` 각주 뼈대 (내부 문단 직렬화는 #186 에서 연결).
+#[allow(dead_code)]
 pub fn write_footnote_open<W: Write>(w: &mut Writer<W>, number: u16) -> Result<(), SerializeError> {
     let n = number.to_string();
     start_tag(w, "hp:fn")?;
@@ -93,10 +93,12 @@ pub fn write_footnote_open<W: Write>(w: &mut Writer<W>, number: u16) -> Result<(
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn write_footnote_close<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
     end_tag(w, "hp:fn")
 }
 
+#[allow(dead_code)]
 pub fn write_endnote_open<W: Write>(w: &mut Writer<W>, number: u16) -> Result<(), SerializeError> {
     let n = number.to_string();
     start_tag(w, "hp:en")?;
@@ -104,6 +106,7 @@ pub fn write_endnote_open<W: Write>(w: &mut Writer<W>, number: u16) -> Result<()
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn write_endnote_close<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
     end_tag(w, "hp:en")
 }

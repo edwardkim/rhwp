@@ -4,6 +4,56 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [0.7.14] — 2026-06-05
+
+> Patch cycle following v0.7.13 (May 26–Jun 5) — focused on endnote (explanation) flow/spacing
+> alignment, equation rendering/layout refinements, in-cell picture editing (insert/copy/hit-test)
+> Hancom parity, HWPX save-contract extensions, and multiple external contributor PRs. Public API
+> stays backward-compatible — PATCH.
+
+### Endnote flow & spacing
+- Aligned compact-endnote question-title gaps (7mm between-notes), multi-line paragraph leading,
+  consecutive inline-equation multi-row merge, and below-separator margins to Hancom
+  (#1240, #1241, #1247, #1255, #1259, #1262, tasks #1245/#1248/#1256/#1257/#1258)
+- Corrected end-of-column line position and overflow in multi-column (EACH_COLUMN) endnote flow
+
+### Equation rendering
+- Script token handling: root/sqrt & relational glued-split, rm+bar(overline) leak, prime/cdots gluing (#1208)
+- Trailing scripts bound to LEFT-RIGHT delimiter groups (`|x|^3`) (#1226)
+- Big-operator (Σ/∏/∫) operand spacing; resolved Hangul compression/overlap on equation lines (#1235, #1223)
+- Restored HWPX endnote/footnote prefixChar marker glyph ('문') (#1202)
+
+### In-cell picture editing — Hancom parity
+- Table + picture insert/toggle/visual/click parity (#1177), in-cell shape object-properties dialog (#1150)
+- Nested-cell picture copy (Ctrl+C) + floating-object paste cascade (#1228)
+- Rectangle-textbox picture click hit-test/properties/insert (#1254), nested-cell paste path preservation (#1207)
+- HWP5 wrap=Square host cursor advance (answer↔question overlap), equation-only cell z-table row compression (#1220, #1225)
+
+### Layout & rendering
+- HWPX curve `<hp:seg>` outline rendering (#1203), textFlow roundtrip preservation (#1213)
+- BehindText/InFrontOfText z-order composition, paper-relative BehindText z-order, master-page textbox numbering (#1163, #1252)
+- Fixed 90°/270° rotated image bbox double-rotation (#1102), RawSvg(OLE/chart) first-load blank render (#1182)
+- Font fidelity: Hancom Dotum fallback → Noto Sans KR ExtraLight (#1234)
+- Hancom-style grid view & page borders, ghost-image fix (#1137, #1164)
+
+### HWPX save contract
+- Bookmark/Field dispatcher wiring, OLE chart, rotated picture, facing-page margin alternation, masterpage idRef (#1289, #1242)
+- Globally-unique body/table-cell paragraph ids (#1222), external image reference/bytes injection contracts (#1142/#1143)
+
+### rhwp-studio
+- Reduced input-edit re-render cost (narrow invalidation) (#1212), shared modal-dialog drag
+- mac window resize centering, find/goto dialog Enter handling, hit-test caret snapping (#1193, #1281, #1291)
+
+### Infra & docs
+- Dependabot coupled-dependency grouping, vite/puppeteer-core dev-dep bumps (#1214, #1216)
+- macOS headless Skia font-lookup hang prevention (task #823), Rust test warning cleanup (#1180)
+- Fixed ClickHere field-value file corruption (#1076)
+
+### Contributors
+@planet6897, @postmelee, @jangster77, @johndoekim, @Martinel2, @Mireutale, @chkwon, @oksure,
+@seo-rii, @xogh3198, @twoLoop-40, @lidge-jun, @humdrum00001010, @HaimLee-4869, @wonbbnote
+and Dependabot. Thank you.
+
 ## [0.7.13] — 2026-05-26
 
 > Patch cycle following v0.7.12 (May 18–26) — focused on HWPX rendering/save compatibility, exam/public-agency document regressions, and multiple external contributor PR cherry-picks.

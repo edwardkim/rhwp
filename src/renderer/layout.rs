@@ -228,6 +228,73 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn inline_equation_count(para: &Paragraph) -> usize {
+    para.controls
+        .iter()
+        .filter(|ctrl| matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char))
+        .count()
+}
+
+fn endnote_question_number(para: &Paragraph) -> Option<u16> {
+    let text = para.text.trim_start().strip_prefix('문')?;
+    let digits: String = text.chars().take_while(|ch| ch.is_ascii_digit()).collect();
+    (!digits.is_empty()).then(|| digits.parse().ok()).flatten()
+}
+
+fn compact_endnote_title_gap_after_single_equation_tail(
+    prev_para: &Paragraph,
+    current_para: &Paragraph,
+    prev_content_bottom_y: f64,
+    y_offset: f64,
+    prev_endnote_title_gap_px: f64,
+    item_ordinal: usize,
+    dpi: f64,
+) -> Option<f64> {
+    let question_number = endnote_question_number(current_para)?;
+    if item_ordinal > 13
+        || prev_endnote_title_gap_px < 50.0
+        || question_number < 29
+        || inline_equation_count(prev_para) != 1
+    {
+        return None;
+    }
+
+    let consumed_gap = y_offset - prev_content_bottom_y;
+    if consumed_gap < prev_endnote_title_gap_px * 0.70 {
+        return None;
+    }
+
+    let prev_seg = prev_para
+        .line_segs
+        .iter()
+        .rev()
+        .find(|seg| seg.segment_width > 0)
+        .or_else(|| prev_para.line_segs.last())?;
+    let current_first_vpos = current_para.line_segs.first()?.vertical_pos;
+    let saved_gap_px = hwpunit_to_px(
+        (current_first_vpos - (prev_seg.vertical_pos + prev_seg.line_height)).max(0),
+        dpi,
+    );
+    if saved_gap_px >= prev_endnote_title_gap_px * 0.70
+        && saved_gap_px <= prev_endnote_title_gap_px * 1.20
+    {
+        // 저장 vpos가 20mm급 미주 사이 간격 자체를 이미 표현하는 경계는
+        // 단일 수식 tail 압축 대상으로 보지 않는다.
+        return None;
+    }
+
+    // 페이지/단 첫머리로 이어진 미주 tail 뒤의 단일 수식 줄은 한컴/PDF에서
+    // 20mm gap 전체를 다시 열지 않는다. 저장 vpos가 크게 튄 경우만 기본 7mm
+    // 흐름 몫을 남기고, 일반 단일 수식 tail은 실제 수식 하단에 붙여 시작한다.
+    let target_gap = if saved_gap_px > prev_endnote_title_gap_px * 1.50 {
+        prev_endnote_title_gap_px * 0.35
+    } else {
+        0.0
+    };
+    let target_y = prev_content_bottom_y + target_gap;
+    (target_y + 4.0 < y_offset).then_some(target_y)
+}
+
 fn para_has_visible_textless_float_shape_item(
     page_content: &PageContent,
     para: &Paragraph,
@@ -3079,20 +3146,83 @@ impl LayoutEngine {
                     .map(|p| p.text.trim_start().starts_with('문'))
                     .unwrap_or(false);
             let y_before_vpos = y_offset;
-            hcursor.prev_item_content_bottom_y = if item_ordinal > 0 {
+            let prev_item_content_bottom_y = if item_ordinal > 0 {
                 let content_bottom_y = self.last_item_content_bottom.get();
                 content_bottom_y.is_finite().then_some(content_bottom_y)
             } else {
                 None
             };
-            if !shape_jumped && !prev_tac_seg_applied {
+            hcursor.prev_item_content_bottom_y = prev_item_content_bottom_y;
+            if !shape_jumped && (!prev_tac_seg_applied || current_is_endnote_question_title) {
                 // [Task #1027 Stage C] inter-item VPOS_CORR 보정을 HeightCursor 에 위임 (동작 동일).
                 // 이전 문단 overlay-shape/분할표 bypass, page/lazy base 산출, sb 차감,
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
                 y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
             } // !shape_jumped
+            let current_title_tail_backtracked =
+                current_is_endnote_question_title && y_offset < y_before_vpos - 32.0;
+            let current_line_height_px = paragraphs
+                .get(item_para)
+                .and_then(|p| p.line_segs.first())
+                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                .unwrap_or(0.0);
+            let endnote_title_direct_bottom_fit = current_is_endnote_question_title
+                && col_content.endnote_flow
+                && current_line_height_px > 0.0
+                && y_offset + current_line_height_px > col_area.y + col_area.height + 0.5
+                && y_offset <= col_area.y + col_area.height + 80.0;
+            if endnote_title_direct_bottom_fit {
+                // TAC/수식 직후에는 prev_tac_seg_applied 때문에 HeightCursor 보정이
+                // 생략될 수 있다. 그래도 새 문항 제목 1줄이 단 하단 안쪽에 들어가면
+                // 한컴/PDF처럼 제목 tail만 현재 단에 남긴다.
+                y_offset = (col_area.y + col_area.height - current_line_height_px - 7.0)
+                    .max(col_area.y)
+                    .min(y_offset);
+            }
+            let endnote_title_bottom_fit_applied = current_is_endnote_question_title
+                && current_line_height_px > 0.0
+                && y_offset < y_before_vpos - 0.5
+                && y_before_vpos + current_line_height_px > col_area.y + col_area.height + 0.5
+                && y_offset + current_line_height_px <= col_area.y + col_area.height + 0.5;
+            let mut compacted_equation_tail_title_gap = false;
+            if current_is_endnote_question_title
+                && col_content.endnote_flow
+                && !endnote_title_direct_bottom_fit
+                && !endnote_title_bottom_fit_applied
+            {
+                if let (Some(prev_pi), Some(prev_content_bottom_y), Some(current_para)) = (
+                    hcursor.prev_layout_para,
+                    prev_item_content_bottom_y,
+                    paragraphs.get(item_para),
+                ) {
+                    if let Some(prev_para) = paragraphs.get(prev_pi) {
+                        if let Some(compacted_y) =
+                            compact_endnote_title_gap_after_single_equation_tail(
+                                prev_para,
+                                current_para,
+                                prev_content_bottom_y,
+                                y_offset,
+                                prev_endnote_title_gap_px,
+                                item_ordinal,
+                                self.dpi,
+                            )
+                        {
+                            y_offset = compacted_y.max(col_area.y);
+                            hcursor.vpos_page_base = None;
+                            hcursor.vpos_lazy_base = None;
+                            compacted_equation_tail_title_gap = true;
+                        }
+                    }
+                }
+            }
+            let compact_endnote_title_gap_already_compacted = current_is_endnote_question_title
+                && (hcursor.last_compacted_endnote_title_gap || compacted_equation_tail_title_gap);
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
                 && prev_endnote_title_gap_px > 0.0
+                && !endnote_title_direct_bottom_fit
+                && !endnote_title_bottom_fit_applied
+                && !compact_endnote_title_gap_already_compacted
+                && !current_title_tail_backtracked
                 && (prev_endnote_title_gap_from_continued_partial
                     || y_offset > y_before_vpos + 0.5);
             if should_preserve_endnote_title_gap {

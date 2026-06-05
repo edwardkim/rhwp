@@ -96,7 +96,7 @@ fn rendered_ole_chart_y_h(svg: &str) -> Option<(f64, f64)> {
         }
         let y = translate_y(tag)?;
         let body = &chunk[tag_end + 1..];
-        for rect_chunk in body.split("<rect ").skip(1) {
+        if let Some(rect_chunk) = body.split("<rect ").nth(1) {
             let rect_tag_end = rect_chunk.find("/>").or_else(|| rect_chunk.find('>'))?;
             let rect_tag = &rect_chunk[..rect_tag_end];
             let h = attr_f64(rect_tag, "height")?;

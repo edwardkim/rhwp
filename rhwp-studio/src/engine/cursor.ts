@@ -390,21 +390,21 @@ export class CursorState {
   private moveHorizontalInCell(delta: number): void {
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, charOffset, cellPath } = pos;
-    const depth = this.nestingDepth();
-    // 중첩 표에서는 cellPath의 마지막 엔트리의 cellParaIndex가 실제 셀 문단 인덱스
-    const cpi = (depth > 1 && cellPath) ? cellPath[cellPath.length - 1].cellParaIndex : pos.cellParaIndex!;
+    const useCellPath = (cellPath?.length ?? 0) > 0 && ppi !== undefined;
+    const cpi = useCellPath ? cellPath![cellPath!.length - 1].cellParaIndex : pos.cellParaIndex!;
     let newOffset = charOffset + delta;
 
-    // 경로 기반 (중첩 표) vs flat (단일 표) 헬퍼
+    // hit-test가 cellPath를 제공하면 1-depth 표라도 경로 기반 API가 더 정확하다.
     const getParaLen = (paraIdx: number): number => {
-      if (depth > 1 && cellPath) {
-        const p = cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: paraIdx });
+      if (useCellPath) {
+        const path = cellPath!;
+        const p = path.map((e, i) => i < path.length - 1 ? e : { ...e, cellParaIndex: paraIdx });
         return this.wasm.getCellParagraphLengthByPath(sec, ppi!, JSON.stringify(p));
       }
       return this.wasm.getCellParagraphLength(sec, ppi!, ci!, cei!, paraIdx);
     };
     const getParaCount = (): number => {
-      if (depth > 1 && cellPath) {
+      if (useCellPath) {
         return this.wasm.getCellParagraphCountByPath(sec, ppi!, JSON.stringify(cellPath));
       }
       return this.wasm.getCellParagraphCount(sec, ppi!, ci!, cei!);
@@ -454,12 +454,11 @@ export class CursorState {
     this.atLineEnd = false;
     const px = this.preferredX ?? -1.0;
     const pos = this.position;
-    const depth = this.nestingDepth();
 
     try {
       let result;
-      if (depth > 1 && pos.cellPath && pos.parentParaIndex !== undefined) {
-        // 중첩 표: 경로 기반 API 사용
+      if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
+        // cellPath가 있으면 1-depth 표/글상자도 경로 기반 API 사용
         const pathJson = JSON.stringify(pos.cellPath);
         result = this.wasm.moveVerticalByPath(
           pos.sectionIndex, pos.parentParaIndex, pathJson,
@@ -612,11 +611,23 @@ export class CursorState {
         const ppi = pos.parentParaIndex!;
         const ci = pos.controlIndex!;
         const cei = pos.cellIndex!;
-        const cpi = pos.cellParaIndex!;
-        const cellParaCount = this.wasm.getCellParagraphCount(sec, ppi, ci, cei);
+        const cellPath = pos.cellPath;
+        const useCellPath = (cellPath?.length ?? 0) > 0;
+        const cpi = useCellPath ? cellPath![cellPath!.length - 1].cellParaIndex : pos.cellParaIndex!;
+        const cellParaCount = useCellPath
+          ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
+          : this.wasm.getCellParagraphCount(sec, ppi, ci, cei);
         const target = cpi + direction;
         if (target >= 0 && target < cellParaCount) {
-          this.position = { ...pos, cellParaIndex: target, charOffset: 0 };
+          this.position = {
+            ...pos,
+            paragraphIndex: target,
+            cellParaIndex: target,
+            cellPath: useCellPath
+              ? cellPath!.map((e, i) => i < cellPath!.length - 1 ? e : { ...e, cellParaIndex: target })
+              : cellPath,
+            charOffset: 0,
+          };
           this.updateRect();
         }
       } catch (e) {
@@ -717,10 +728,15 @@ export class CursorState {
     const ppi = pos.parentParaIndex!;
     const ci = pos.controlIndex!;
     const cei = pos.cellIndex!;
-    const cpi = pos.cellParaIndex!;
+    const cellPath = pos.cellPath;
+    const useCellPath = (cellPath?.length ?? 0) > 0;
+    const cpi = useCellPath ? cellPath![cellPath!.length - 1].cellParaIndex : pos.cellParaIndex!;
 
     try {
-      const paraLen = this.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
+      const pathJson = useCellPath ? JSON.stringify(cellPath) : '';
+      const paraLen = useCellPath
+        ? this.wasm.getCellParagraphLengthByPath(sec, ppi, pathJson)
+        : this.wasm.getCellParagraphLength(sec, ppi, ci, cei, cpi);
 
       if (direction === 1) {
         if (pos.charOffset >= paraLen) {
@@ -728,7 +744,9 @@ export class CursorState {
           return;
         }
         const remaining = paraLen - pos.charOffset;
-        const text = this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, pos.charOffset, Math.min(remaining, 50));
+        const text = useCellPath
+          ? this.wasm.getTextInCellByPath(sec, ppi, pathJson, pos.charOffset, Math.min(remaining, 50))
+          : this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, pos.charOffset, Math.min(remaining, 50));
         const offset = findWordBoundaryForward(text);
         this.position = { ...pos, charOffset: pos.charOffset + offset };
       } else {
@@ -738,7 +756,9 @@ export class CursorState {
         }
         const start = Math.max(0, pos.charOffset - 50);
         const count = pos.charOffset - start;
-        const text = this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, start, count);
+        const text = useCellPath
+          ? this.wasm.getTextInCellByPath(sec, ppi, pathJson, start, count)
+          : this.wasm.getTextInCell(sec, ppi, ci, cei, cpi, start, count);
         const offset = findWordBoundaryBackward(text);
         this.position = { ...pos, charOffset: start + offset };
       }
@@ -755,10 +775,10 @@ export class CursorState {
   private getCellReadingOrder(): number[] {
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
-    const depth = this.nestingDepth();
+    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
 
     let bboxes: { cellIdx: number; row: number; col: number }[];
-    if (depth > 1 && cellPath) {
+    if (useCellPath && cellPath) {
       bboxes = this.wasm.getTableCellBboxesByPath(sec, ppi!, JSON.stringify(cellPath));
     } else {
       bboxes = this.wasm.getTableCellBboxes(sec, ppi!, ci!);
@@ -787,8 +807,8 @@ export class CursorState {
 
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
-    const depth = this.nestingDepth();
-    const cei = (depth > 1 && cellPath) ? cellPath[cellPath.length - 1].cellIndex : pos.cellIndex!;
+    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    const cei = (useCellPath && cellPath) ? cellPath[cellPath.length - 1].cellIndex : pos.cellIndex!;
 
     try {
       const order = this.getCellReadingOrder();
@@ -800,7 +820,7 @@ export class CursorState {
       }
 
       const nextCellIdx = order[curPos + 1];
-      this.moveToCellByIndex(sec, ppi!, ci, depth, cellPath, nextCellIdx, 'start');
+      this.moveToCellByIndex(sec, ppi!, ci, cellPath, nextCellIdx, 'start');
       this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToCellNext 실패:', e);
@@ -815,8 +835,8 @@ export class CursorState {
 
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = pos;
-    const depth = this.nestingDepth();
-    const cei = (depth > 1 && cellPath) ? cellPath[cellPath.length - 1].cellIndex : pos.cellIndex!;
+    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    const cei = (useCellPath && cellPath) ? cellPath[cellPath.length - 1].cellIndex : pos.cellIndex!;
 
     try {
       const order = this.getCellReadingOrder();
@@ -828,7 +848,7 @@ export class CursorState {
       }
 
       const prevCellIdx = order[curPos - 1];
-      this.moveToCellByIndex(sec, ppi!, ci, depth, cellPath, prevCellIdx, 'end');
+      this.moveToCellByIndex(sec, ppi!, ci, cellPath, prevCellIdx, 'end');
       this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToCellPrev 실패:', e);
@@ -838,10 +858,11 @@ export class CursorState {
   /** cellIndex 기준으로 셀 위치를 설정한다 (start=셀 첫 위치, end=셀 마지막 위치) */
   private moveToCellByIndex(
     sec: number, ppi: number, ci: number | undefined,
-    depth: number, cellPath: CellPathEntry[] | undefined,
+    cellPath: CellPathEntry[] | undefined,
     targetCellIdx: number, where: 'start' | 'end',
   ): void {
-    if (depth > 1 && cellPath) {
+    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    if (useCellPath && cellPath) {
       const basePath = cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellIndex: targetCellIdx, cellParaIndex: 0 });
       if (where === 'end') {
         const paraCount = this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(basePath));
@@ -933,9 +954,8 @@ export class CursorState {
         return;
       }
 
-      const depth = this.nestingDepth();
-      if (depth > 1 && this.position.cellPath) {
-        // 중첩 표: 경로 기반 API 사용
+      if ((this.position.cellPath?.length ?? 0) > 0) {
+        // cellPath가 있으면 1-depth 표/글상자도 경로 기반 API 사용
         const { sectionIndex: sec, parentParaIndex: ppi, cellPath, charOffset } = this.position;
         const pathJson = JSON.stringify(cellPath);
         this.rect = this.wasm.getCursorRectByPath(sec, ppi!, pathJson, charOffset);
@@ -986,10 +1006,9 @@ export class CursorState {
     if (ppi === undefined || ci === undefined || cei === undefined) return false;
 
     try {
-      const depth = this.nestingDepth();
       let info, dims;
-      if (depth > 1 && cellPath) {
-        // 중첩 표: 경로 기반 API 사용
+      if ((cellPath?.length ?? 0) > 0) {
+        // cellPath가 있으면 1-depth 표도 경로 기반 API 사용
         const pathJson = JSON.stringify(cellPath);
         info = this.wasm.getCellInfoByPath(sec, ppi, pathJson);
         dims = this.wasm.getTableDimensionsByPath(sec, ppi, pathJson);
