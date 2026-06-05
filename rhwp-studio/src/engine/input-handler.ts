@@ -147,7 +147,7 @@ export class InputHandler {
   private imagePlacementOverlay: HTMLDivElement | null = null;
 
   // 도형/글상자 삽입 배치 모드 상태
-  private shapePlacementType: string = 'rectangle'; // 'rectangle' | 'ellipse' | 'line'
+  private shapePlacementType: string = 'rectangle'; // 'rectangle' | 'ellipse' | 'line' | 'arc' | 'polygon' | 'textbox' | 'connector-*'
   private textboxPlacementMode = false;
   private textboxPlacementDrag: {
     startClientX: number; startClientY: number;
@@ -510,7 +510,9 @@ export class InputHandler {
 
   /** 글상자 배치 모드 진입: 메뉴에서 호출. 마우스로 영역 지정 대기 */
   enterTextboxPlacementMode(): void {
-    this.shapePlacementType = 'rectangle';
+    // 글상자는 백엔드에서 text_box(내부 문단)를 가진 도형으로 생성되어야 한다.
+    // 'rectangle'을 전달하면 text_box 없는 Rectangle이 만들어져 커서 진입·타이핑·붙여넣기가 모두 실패한다(#1280).
+    this.shapePlacementType = 'textbox';
     this.textboxPlacementMode = true;
     this.textboxPlacementDrag = null;
     this.container.style.cursor = 'crosshair';
