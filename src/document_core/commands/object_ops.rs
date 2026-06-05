@@ -8444,4 +8444,36 @@ mod issue_1280_textbox_creation_tests {
             "글상자 내부 첫 문단에 입력 텍스트가 보존되어야 한다"
         );
     }
+
+    /// #1280 이슈가 기대 동작에 명시한 "글상자 안 붙여넣기"를 실측한다.
+    /// 본문 텍스트를 copy_selection 으로 복사한 뒤 글상자 안에 paste_internal_in_cell 로 붙여넣는다.
+    /// 수정 전(text_box 없는 Rectangle)이면 이 경로가 "글상자 없음"(clipboard.rs:512)으로 실패한다.
+    ///
+    /// 주의: 이미지/컨트롤 붙여넣기는 paste_paragraphs_into_cell_paragraphs 가 merge_from 으로 처리하는데
+    /// merge_from 이 controls 를 병합하지 않아 컨트롤이 조용히 누락되는 **별개 결함**의 영향을 받는다.
+    /// 따라서 본 테스트는 텍스트 붙여넣기(컨트롤 없음 경로)만 검증한다.
+    #[test]
+    fn paste_text_into_textbox() {
+        let mut core = make_test_core();
+
+        // 1. 본문에 텍스트 입력 후 선택 영역 복사 → 내부 클립보드에 텍스트 적재(controls 없음)
+        core.insert_text_native(0, 0, 0, "복사원본")
+            .expect("본문 텍스트 입력");
+        core.copy_selection_native(0, 0, 0, 0, 4)
+            .expect("본문 텍스트 복사");
+
+        // 2. 글상자 생성
+        let (tb_para, tb_ctrl) = create_shape(&mut core, "textbox");
+
+        // 3. 글상자 안에 붙여넣기 (cell_idx=0, cell_para_idx=0, char_offset=0)
+        core.paste_internal_in_cell_native(0, tb_para, tb_ctrl, 0, 0, 0)
+            .expect("글상자에 붙여넣기가 성공해야 한다 (#1280; 수정 전엔 \"글상자 없음\")");
+
+        // 4. 글상자 내부 첫 문단에 붙여넣은 텍스트가 들어갔는지 확인
+        let tb = textbox_of(&core, tb_para, tb_ctrl).expect("글상자 text_box 존재");
+        assert!(
+            tb.paragraphs.iter().any(|p| p.text.contains("복사원본")),
+            "붙여넣기 후 글상자 내부 문단에 복사한 텍스트가 있어야 한다"
+        );
+    }
 }
