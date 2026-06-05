@@ -599,7 +599,7 @@ impl DocumentCore {
 
     // ─── Phase 3 네이티브 구현: 커서 이동 API ─────────────────
 
-    pub(crate) fn delete_range_native(
+    pub fn delete_range_native(
         &mut self,
         section_idx: usize,
         start_para: usize,

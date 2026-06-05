@@ -438,7 +438,7 @@ impl DocumentCore {
         }
     }
 
-    pub(crate) fn get_cell_properties_native(
+    pub fn get_cell_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -491,7 +491,7 @@ impl DocumentCore {
     }
 
     /// 셀 속성을 수정한다 (네이티브).
-    pub(crate) fn set_cell_properties_native(
+    pub fn set_cell_properties_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -954,7 +954,7 @@ impl DocumentCore {
     }
 
     /// 표 속성을 조회한다 (네이티브).
-    pub(crate) fn get_table_properties_native(
+    pub fn get_table_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -1119,7 +1119,7 @@ impl DocumentCore {
     }
 
     /// 표 속성을 수정한다 (네이티브).
-    pub(crate) fn set_table_properties_native(
+    pub fn set_table_properties_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
