@@ -600,6 +600,17 @@ impl HwpDocument {
         self.core.get_document_info()
     }
 
+    /// 자연스러운 IR 트리(전체 `Control` taxonomy)를 DFS 순회하여 모든 주소 지정
+    /// 가능 요소를 평탄한 JSON 배열로 반환한다.
+    ///
+    /// `doc.find` 추상화를 위한 단일 진입점. 각 노드:
+    /// `{ "type": "<kind>", "ref": "<json-ref-string>", "text": "<text or ''>",
+    ///    "row": <n?>, "col": <n?> }`
+    #[wasm_bindgen(js_name = enumerateElements)]
+    pub fn enumerate_elements(&self) -> String {
+        self.core.enumerate_elements()
+    }
+
     /// 특정 페이지의 텍스트 레이아웃 정보를 JSON 문자열로 반환한다.
     ///
     /// 각 TextRun의 위치, 텍스트, 글자별 X 좌표 경계값을 포함한다.
