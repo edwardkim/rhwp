@@ -711,20 +711,20 @@ impl DocumentCore {
             )
         };
 
-        // [Task #1037] dialog 표시 한컴 정합:
+        // [Task #1037 + para-unit regression] dialog 표시 한컴 정합:
         // - margin/indent 는 raw_ps 직접 사용 (variant_div 미적용)
-        // - HWP3 native: raw margin_left 는 continuation 라인 position 으로 저장 → 한컴 dialog
-        //   "왼쪽 여백" 은 effective first-line position 으로 (margin_left + min(0, indent)) 변환
-        // - HWP5 변환본 (is_hwp3_variant=true): Task #1037 parser normalize 후 raw 는 한컴 dialog 표준
-        //   의미로 정합 (margin_left = first-line position) → 직접 사용
-        let is_variant = self.document.is_hwp3_variant;
+        // - HWP3 native 만 raw margin_left 가 continuation 라인 position 이므로
+        //   한컴 dialog "왼쪽 여백" 을 effective first-line position 으로 보정한다.
+        // - HWP5/HWPX 및 HWP3→HWP5 변환본은 raw margin_left 가 dialog 의 왼쪽 여백 의미다.
         let (raw_left_hu, raw_right_hu, raw_indent_hu) = raw_ps
             .map(|r| (r.margin_left, r.margin_right, r.indent))
             .unwrap_or((0, 0, 0));
-        let effective_left_hu = if is_variant {
-            raw_left_hu
-        } else {
+        let is_hwp3_native =
+            self.document.header.version.major == 3 && !self.document.is_hwp3_variant;
+        let effective_left_hu = if is_hwp3_native {
             raw_left_hu + raw_indent_hu.min(0)
+        } else {
+            raw_left_hu
         };
         // [Issue #1172] ParaShape margin/indent 의 IR 값은 2× 스케일이다
         // (HWP5 바이너리 원본 스케일, HWPX 도 parser 의 val2x 로 통일 — header.rs).

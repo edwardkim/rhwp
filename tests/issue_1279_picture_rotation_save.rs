@@ -120,6 +120,32 @@ fn issue_1279_reference_hwp_and_hwpx_preserve_picture_rotation_matrix() {
 }
 
 #[test]
+fn issue_1279_hwpx_to_hwp_export_preserves_picture_rotation_contract() {
+    let bytes = read_fixture("samples/hwpx/ta-pic-001-r.hwpx");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("load HWPX fixture");
+
+    let exported = core
+        .export_hwp_with_adapter()
+        .expect("export HWPX source to HWP");
+    let reparsed = parse_document(&exported).expect("reparse exported HWP");
+    let pic = first_cell_picture(&reparsed);
+
+    assert_eq!(pic.common.width, 18425, "exported rotated bbox width");
+    assert_eq!(pic.common.height, 18160, "exported rotated bbox height");
+    assert_eq!(pic.shape_attr.current_width, 13668, "exported curSz width");
+    assert_eq!(
+        pic.shape_attr.current_height, 12686,
+        "exported curSz height"
+    );
+    assert_eq!(
+        pic.shape_attr.flip & 0x0008_0000,
+        0x0008_0000,
+        "exported rotate-image storage bit must be preserved"
+    );
+    assert_rotated_picture_contract(pic, 34);
+}
+
+#[test]
 fn issue_1279_cell_picture_rotation_edit_exports_hancom_rendering_matrix() {
     let bytes = read_fixture("samples/ta-pic-001-r.hwp");
     let mut core = DocumentCore::from_bytes(&bytes).expect("load HWP fixture");

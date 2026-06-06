@@ -4,6 +4,40 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [0.7.15] — 2026-06-06
+
+> Security patch following v0.7.14 — hardens browser-extension service-worker fetch paths,
+> refines equation TAC flow/caret movement, and continues HWPX save-contract stabilization.
+> Public APIs remain backward-compatible — PATCH.
+
+### Security
+- Hardened Chrome/Firefox extension document-fetch paths in the service worker (#1307).
+  - Added message sender validation to separate extension viewer and content-script callers.
+  - Blocked localhost, loopback, link-local, private-network, and internal-host URLs.
+  - Revalidates the final URL after redirects with the same policy.
+  - Uses `credentials: "omit"` for extension-side fetches.
+  - Keeps automatically extracted thumbnail data out of the page DOM.
+- Prepared Chrome/Edge/Firefox extension `0.2.4`: no new permissions and no new external network endpoints.
+
+### Equation and Endnote Flow
+- Improved wrapping and paragraph-indent handling for equation TAC-only lines, and fixed endnote-area caret navigation regressions (#1310).
+- Reduced duplicate stops/skips when moving the caret across forced line breaks and paragraph boundaries around TAC equations (#1308/#1310).
+- Follow-up fixes for endnote equation scripts, continuation spacing, and superscript alignment (#1301/#1303/#1306).
+
+### HWPX Save Contract
+- Fixed hard-coded flip/rotation and missing `isEmbeded` output in HWPX picture serialization (#1309).
+- Preserved HWPX diagonal cell-border `hh:slash` / `hh:backSlash` type values (#1311).
+- Preserved zero-length HWPX field ordering (#1299).
+
+### rhwp-studio and Docs
+- Separated paragraph left-margin and hanging-indent dialog bindings.
+- Improved visual-sweep contributor guidance, including rsvg/font setup (#1292).
+- Expanded CLI analysis/debugging command guides.
+
+### Contributors
+Thanks to Dangel for the security report and validation help, and to all external contributors and
+Dependabot for this patch cycle.
+
 ## [0.7.14] — 2026-06-05
 
 > Patch cycle following v0.7.13 (May 26–Jun 5) — focused on endnote (explanation) flow/spacing

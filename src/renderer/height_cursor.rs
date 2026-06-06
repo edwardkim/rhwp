@@ -443,10 +443,29 @@ impl HeightCursor {
             && y_offset > self.col_area_y + self.col_area_height * title_bottom_threshold
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset - end_y <= 32.0;
+        // [Task #1302] curr 첫 줄 stored vpos 가 prev 한 줄 정상 전진(lh+ls) 이상을 인코딩하는
+        // **breakable 비제목 텍스트** 연속 문단은 overlap tail 이 아니라 정상 연속이다. 이때
+        // page_base drift 로 end_y 가 위로 보여도(end_y < y_offset) page_tail backtrack 으로
+        // y_offset(=trailing 포함 정답)을 깎으면 같은 미주 연속 문단이 컬럼 하단에서 줄간격이
+        // 좁아진다(3-11월 18쪽 pi=852→853). 텍스트는 컬럼/쪽으로 넘길 수 있어 frame-fit 이
+        // 불필요하다. 반면 문항 제목은 title-bottom 보정 계열의 기존 PDF 핀(#1284)을 따라야
+        // 하고, 수식-only tail(#1274)은 atomic 이라 frame 안에 맞춰야 하므로 제외하고 종전대로
+        // backtrack 한다(equation_tail_fit 경로와 정합).
+        let curr_is_equation_only_tail = paragraphs
+            .get(item_para)
+            .map(para_is_treat_as_char_equation_only)
+            .unwrap_or(false);
+        let curr_first_full_advance = !current_is_endnote_title
+            && !curr_is_equation_only_tail
+            && matches!(
+                curr_first_vpos,
+                Some(v) if v - seg.vertical_pos >= seg.line_height + seg.line_spacing
+            );
         let compact_endnote_page_tail_backtrack = self.suppress_large_forward_jump
             && is_page_path
             && !vpos_rewind
             && !follows_tall_inline_item
+            && !curr_first_full_advance
             && end_y < y_offset - 8.0
             && y_offset > self.col_area_y + self.col_area_height * 0.95
             && end_y <= self.col_area_y + self.col_area_height

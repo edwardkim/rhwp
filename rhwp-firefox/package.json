@@ -1,6 +1,6 @@
 {
   "name": "rhwp-firefox",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "rhwp HWP 뷰어 & 에디터 — Firefox 확장 프로그램",
   "license": "MIT",
   "private": true,

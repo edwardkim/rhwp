@@ -212,8 +212,16 @@ fn write_border_fill<W: Write>(
 
     // 자식 순서 (BorderFillType.cpp:51-58):
     // slash, backSlash, leftBorder, rightBorder, topBorder, bottomBorder, diagonal, fillBrush
-    write_diag_line(w, "hh:slash")?;
-    write_diag_line(w, "hh:backSlash")?;
+    write_diag_line(
+        w,
+        "hh:slash",
+        diagonal_shape_type(((bf.attr >> 2) & 0x07) as u8),
+    )?;
+    write_diag_line(
+        w,
+        "hh:backSlash",
+        diagonal_shape_type(((bf.attr >> 5) & 0x07) as u8),
+    )?;
     write_border_line(w, "hh:leftBorder", &bf.borders[0])?;
     write_border_line(w, "hh:rightBorder", &bf.borders[1])?;
     write_border_line(w, "hh:topBorder", &bf.borders[2])?;
@@ -232,12 +240,26 @@ fn write_border_fill<W: Write>(
     Ok(())
 }
 
-fn write_diag_line<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
+fn write_diag_line<W: Write>(
+    w: &mut Writer<W>,
+    name: &str,
+    type_str: &str,
+) -> Result<(), SerializeError> {
     empty_tag(
         w,
         name,
-        &[("type", "NONE"), ("Crooked", "0"), ("isCounter", "0")],
+        &[("type", type_str), ("Crooked", "0"), ("isCounter", "0")],
     )
+}
+
+fn diagonal_shape_type(code: u8) -> &'static str {
+    match code & 0x07 {
+        0 => "NONE",
+        0b010 => "CENTER",
+        0b011 => "CENTER_BELOW",
+        0b110 => "CENTER_ABOVE",
+        _ => "ALL",
+    }
 }
 
 fn write_border_line<W: Write>(
@@ -981,5 +1003,33 @@ mod tests {
         let sm = snippet.find("symMark=").unwrap();
         let bf = snippet.find("borderFillIDRef=").unwrap();
         assert!(ip < hp && hp < tc && tc < sc && sc < uf && uf < uk && uk < sm && sm < bf);
+    }
+
+    #[test]
+    fn write_border_fill_preserves_slash_and_backslash_shape_types() {
+        let mut bf = BorderFill::default();
+        bf.attr = (0b010 << 2) | (0b011 << 5);
+
+        let mut writer = Writer::new(Vec::new());
+        write_border_fill(&mut writer, 0, &bf).expect("write borderFill");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hh:slash type="CENTER" Crooked="0" isCounter="0"/>"#),
+            "slash 방향 비트가 CENTER로 보존되어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:backSlash type="CENTER_BELOW" Crooked="0" isCounter="0"/>"#),
+            "backSlash 방향 비트가 CENTER_BELOW로 보존되어야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn diagonal_shape_type_matches_hwpx_parser_codes() {
+        assert_eq!(diagonal_shape_type(0), "NONE");
+        assert_eq!(diagonal_shape_type(0b010), "CENTER");
+        assert_eq!(diagonal_shape_type(0b011), "CENTER_BELOW");
+        assert_eq!(diagonal_shape_type(0b110), "CENTER_ABOVE");
+        assert_eq!(diagonal_shape_type(0b111), "ALL");
     }
 }

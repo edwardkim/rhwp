@@ -2,6 +2,39 @@
 
 이 프로젝트의 주요 변경 사항을 기록합니다.
 
+## [0.7.15] — 2026-06-06
+
+> v0.7.14 후속 security patch — 브라우저 확장 service worker fetch 경로 보안 강화,
+> 수식 TAC 흐름·커서 이동 보정, HWPX 저장 계약 후속 보강. 공개 API 하위 호환 유지 — PATCH.
+
+### 보안
+- Chrome/Firefox 확장 service worker의 문서 fetch 경로를 강화했다 (#1307).
+  - message sender 검증을 추가해 extension viewer와 content script 호출 경계를 분리.
+  - localhost, loopback, link-local, private network, 내부 호스트명 URL을 차단.
+  - redirect 이후 최종 URL을 같은 정책으로 재검증.
+  - extension-side fetch에 `credentials: "omit"` 적용.
+  - 자동 thumbnail 데이터가 page DOM에 직접 노출되지 않도록 hover card 내부 처리를 보강.
+- Chrome/Edge/Firefox 확장 `0.2.4` 배포 준비: 새 권한 또는 새 외부 네트워크 endpoint 없음.
+
+### 수식·미주 흐름
+- 수식 TAC-only 라인의 자동 줄넘김과 문단 들여쓰기 적용을 보강하고, 미주 영역 커서 이동 회귀를 정정 (#1310).
+- 강제 줄넘김 뒤 TAC 수식 커서 이동과 문단 간 이동에서 중복 정지/스킵 현상을 줄임 (#1308/#1310).
+- 미주 수식 script 렌더링, continuation spacing, superscript alignment 후속 보정 (#1301/#1303/#1306).
+
+### HWPX 저장 계약
+- HWPX 그림 직렬화에서 flip/rotation 하드코딩 및 `isEmbeded` 누락을 정정 (#1309).
+- HWPX 대각선 셀 테두리 `hh:slash` / `hh:backSlash` type 보존 (#1311).
+- zero-length HWPX field ordering 보존 (#1299).
+
+### rhwp-studio·문서
+- 문단 정보 대화상자에서 왼쪽 여백과 내어쓰기 바인딩을 분리 (#1307 후속 작업 중 발견).
+- visual sweep contributor guide와 rsvg/font 준비 문서를 보강 (#1292).
+- CLI 분석·디버깅 명령 가이드 보강.
+
+### 기여자
+보안 제보와 재검증에 도움을 준 Dangel, 그리고 본 패치 사이클에 기여한 모든 외부 기여자와
+Dependabot에 감사드립니다.
+
 ## [0.7.14] — 2026-06-05
 
 > v0.7.13 후속 patch 사이클 (5/26~6/5) — 미주(해설) 흐름·간격 정합 집중, 수식 렌더링/배치

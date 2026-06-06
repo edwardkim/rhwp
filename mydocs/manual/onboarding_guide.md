@@ -27,7 +27,22 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Node.js (rhwp-studio 웹 에디터)
 # → Node.js 18+ 설치
+
+# SVG/PDF 시각 sweep 보조 도구 (교육 통합/렌더링 PR 검증용)
+# Ubuntu/WSL/Debian 기준
+sudo apt install librsvg2-bin poppler-utils
+
+# 한국어 폰트 (시각 sweep false positive 감소용)
+sudo apt install fonts-noto-cjk fonts-nanum
 ```
+
+`librsvg2-bin`은 `rsvg-convert`를 제공하고, `poppler-utils`는 `pdftoppm`과
+`pdftotext`를 제공한다. 이 세 도구는 PDF 기준 시각 sweep 자동화에 필요하다.
+`fonts-noto-cjk`와 `fonts-nanum`은 공개 한글 폰트 환경을 맞춰 SVG/PDF 비교의
+폰트 차이 후보를 줄이기 위한 권장 설치 항목이다.
+한컴/HY 계열 전용 폰트는 저장소에 포함하지 않고, 라이선스가 있는 로컬 경로를
+`--font-path`로 지정해서 사용한다.
+자세한 절차는 [PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 참고한다.
 
 ### 2.2 빌드 확인
 

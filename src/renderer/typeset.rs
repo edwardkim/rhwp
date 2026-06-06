@@ -3662,6 +3662,40 @@ impl TypesetEngine {
         let (mut line_heights, mut line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) =
             composed
         {
+            let tac_offsets_px: Vec<(usize, f64, usize)> = comp
+                .tac_controls
+                .iter()
+                .map(|(pos, width_hu, control_index)| {
+                    (*pos, hwpunit_to_px(*width_hu, self.dpi), *control_index)
+                })
+                .collect();
+            let line_available_width_px = |line_idx: usize| {
+                column_width_px.map(|cw| {
+                    let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                    let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                    let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+                    let effective_margin_l =
+                        crate::renderer::equation_tac_flow::paragraph_effective_margin_left(
+                            margin_l, indent, line_idx,
+                        );
+                    (cw - effective_margin_l - margin_r).max(0.0)
+                })
+            };
+            let equation_line_available_width_px = |visual_line_idx: usize| {
+                column_width_px.map(|cw| {
+                    let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                    let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                    let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+                    let effective_margin_l = crate::renderer::equation_tac_flow::
+                        paragraph_effective_margin_left_with_indent_scale(
+                            margin_l,
+                            indent,
+                            visual_line_idx,
+                            2.0,
+                        );
+                    (cw - effective_margin_l - margin_r).max(0.0)
+                })
+            };
             let mut pairs = Vec::with_capacity(comp.lines.len());
             let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
             for (line_idx, line) in comp.lines.iter().enumerate() {
@@ -3749,7 +3783,19 @@ impl TypesetEngine {
                 } else {
                     (raw_lh, hwpunit_to_px(line.line_spacing, self.dpi))
                 };
-                pairs.push((lh, line_spacing_px));
+                let extra_rows =
+                    crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow(
+                        Some(para),
+                        comp,
+                        &tac_offsets_px,
+                        line_idx,
+                        equation_line_available_width_px(0).unwrap_or(f64::INFINITY),
+                        equation_line_available_width_px(1).unwrap_or(f64::INFINITY),
+                    )
+                    .map(|flow| flow.extra_rows)
+                    .unwrap_or(0);
+                let flow_lh = lh + extra_rows as f64 * (lh + line_spacing_px);
+                pairs.push((flow_lh, line_spacing_px));
                 prev_line_reserved_tac_picture_height = tac_picture_height;
             }
             pairs.into_iter().unzip()

@@ -88,8 +88,25 @@ PR branch 전체를 merge하지 않은 이유:
 | `cargo check --target wasm32-unknown-unknown --lib` | 통과 |  |
 | `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` | 통과 | 67 passed |
 | `cargo test --features native-skia skia --lib --verbose` | 통과 | 39 passed |
-| `python3 scripts/task1274_visual_sweep.py --target all` | 미실행 | 로컬 필수 도구 `rsvg-convert` 없음 |
+| `python3 scripts/task1274_visual_sweep.py --target all` | 실행 완료 | `rsvg-convert` 설치 후 재실행 |
 | `docker compose --env-file .env.docker run --rm wasm` | 통과 | Done in 2m 54s |
+
+`visual_sweep --target all` 재실행 결과:
+
+| target | SVG/PDF pages | flagged | frame | line | column | order | question |
+|---|---:|---:|---|---|---|---|---|
+| `2022-09` | 23/23 | 1 | `[]` | `[]` | `[10]` | `[10]` | `[]` |
+| `2023-09` | 20/20 | 0 | `[]` | `[]` | `[]` | `[]` | `[]` |
+| `2024-09-below20` | 23/23 | 1 | `[]` | `[10]` | `[10]` | `[10]` | `[]` |
+| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[11]` | `[]` |
+| `2022-10` | 18/18 | 0 | `[]` | `[]` | `[]` | `[]` | `[]` |
+| `2022-11-practice` | 21/21 | 0 | `[]` | `[]` | `[]` | `[]` | `[]` |
+
+참고:
+
+- 전체 target의 SVG/PDF 페이지 수는 모두 일치했다.
+- `frame`, `question`, `title`, `tail`, `equation` 계열 핵심 후보는 모두 비어 있다.
+- `2022-09` page 10, `2024-09-below20` page 10, `2024-09-between20` page 11에서 line/column/order 계열 잔여 후보가 감지됐다. 메인테이너 SVG/웹 시각 판정은 통과했으므로 이번 PR 수용 blocker로 보지는 않는다.
 
 WASM 산출물:
 

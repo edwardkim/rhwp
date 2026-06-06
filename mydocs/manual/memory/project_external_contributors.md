@@ -22,3 +22,6 @@ ahnbu / bapdodi / cskwork (donga-csk) / DanMeon / dragonnite1221-lgtm (Lee doyun
 - @jskang/@yl-star7: PR #213 HWPX char offsets
 - @nameofSEOKWONHONG: PR #586 FFI C# binding (Issue #403 첫 사용)
 - @xogh3198: PR #571 base skew 옵션 C 처리 사례
+
+**보안 제보 기여자**:
+- Dangel: Chrome/Firefox 확장 service worker URL fetch 보안 취약성 책임 제보 (#1307). 공개 문서에는 이메일, PoC 링크, 로컬 경로, 재현 명령 없이 `Dangel` 표기만 사용한다.

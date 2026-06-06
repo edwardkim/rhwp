@@ -21,16 +21,27 @@ fn load(rel: &str) -> rhwp::wasm_api::HwpDocument {
     rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse")
 }
 
-fn margin_left_px(doc: &rhwp::wasm_api::HwpDocument, sec: usize, para: usize) -> f64 {
+fn para_prop_number(
+    doc: &rhwp::wasm_api::HwpDocument,
+    sec: usize,
+    para: usize,
+    key_name: &str,
+) -> f64 {
     let json = doc
         .get_para_properties_at_native(sec, para)
         .expect("para props");
-    // "marginLeft":<f64>, 추출
-    let key = "\"marginLeft\":";
-    let start = json.find(key).expect("marginLeft key") + key.len();
+    let key = format!("\"{}\":", key_name);
+    let start = json.find(&key).unwrap_or_else(|| panic!("{key_name} key")) + key.len();
     let rest = &json[start..];
     let end = rest.find(|c: char| c == ',' || c == '}').expect("delim");
-    rest[..end].trim().parse().expect("parse marginLeft")
+    rest[..end]
+        .trim()
+        .parse()
+        .unwrap_or_else(|_| panic!("parse {key_name}"))
+}
+
+fn margin_left_px(doc: &rhwp::wasm_api::HwpDocument, sec: usize, para: usize) -> f64 {
+    para_prop_number(doc, sec, para, "marginLeft")
 }
 
 /// px → pt (frontend pxToPt 와 동일: px * 72 / 96)
@@ -50,6 +61,30 @@ fn para_001_first_paragraph_left_margin_is_10pt() {
             "{rel}: 첫 문단 왼쪽 여백이 10.0pt 여야 함 (표시 px={px:.2} → {pt:.2}pt). \
              2× 스케일 IR 의 ÷2 환산 누락 시 20pt 로 나타나는 round-trip 결함."
         );
+    }
+}
+
+#[test]
+fn para_unit_hanging_indent_does_not_bind_to_left_margin() {
+    // Hancom 2022 paragraph dialog resets display units to pt after reopen.
+    // The sample keeps paragraph left margin at 0 and varies only hanging indent.
+    // Regression: build_para_properties_json exposed effective_left = margin_left + indent,
+    // so the dialog showed negative left margin instead of 0.
+    for rel in ["samples/para-unit-01.hwp", "samples/hwpx/para-unit-01.hwpx"] {
+        let doc = load(rel);
+
+        for para in [0usize, 13usize] {
+            let margin_left_pt = px_to_pt(para_prop_number(&doc, 0, para, "marginLeft"));
+            let indent_pt = px_to_pt(para_prop_number(&doc, 0, para, "indent"));
+            assert!(
+                margin_left_pt.abs() < 0.1,
+                "{rel} para {para}: 왼쪽 여백은 0.0pt 여야 함 (actual {margin_left_pt:.2}pt)"
+            );
+            assert!(
+                indent_pt < -0.1,
+                "{rel} para {para}: 내어쓰기 값은 음수로 별도 표시되어야 함 (actual {indent_pt:.2}pt)"
+            );
+        }
     }
 }
 

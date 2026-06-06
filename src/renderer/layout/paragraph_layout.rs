@@ -162,85 +162,6 @@ fn line_has_tac_control(comp: &ComposedParagraph, line_idx: usize) -> bool {
         .any(|(pos, _, _)| char_pos_in_line(*pos, start, end))
 }
 
-/// [Task #1239] 모든 줄이 수식만(빈 runs)이고 char_start 가 비구분(연속 동일/감소)일 때,
-/// **같은 char_start 의 줄들에 같은 char position 의 연속 TAC 를 순서대로 분배**해
-/// tac_idx → line_idx 매핑을 만든다.
-///
-/// 연속 인라인 수식이 한컴 LINE_SEG 로 별도 줄에 배치된 경우(풀이 정렬식 "S=…=…=…"),
-/// 사이에 텍스트 char 가 없어 `control_text_positions` 가 둘을 같은 position 으로 복원 →
-/// char 위치 기반 줄 배정이 같은 줄로 병합하던 문제(#1239)를 해소한다.
-/// (#1221 의 줄수==tac수 1:1 매핑을 m:n 으로 일반화.) None 이면 char 기반 매핑을 사용한다.
-///
-/// `tac_offsets_px` 는 호출부에서 pos 오름차순 정렬되어 있다고 가정한다.
-fn equation_only_tac_line_assignment(
-    para: Option<&Paragraph>,
-    comp: &ComposedParagraph,
-    tac_offsets_px: &[(usize, f64, usize)],
-) -> Option<Vec<usize>> {
-    let n_lines = comp.lines.len();
-    if n_lines <= 1 || tac_offsets_px.is_empty() {
-        return None;
-    }
-    if !comp.lines.iter().all(|l| l.runs.is_empty()) {
-        return None;
-    }
-    // char_start 가 비구분(연속 동일/감소) 일 때만 char 기반이 깨진 케이스 → 분배 적용.
-    let degenerate = comp
-        .lines
-        .windows(2)
-        .any(|w| w[1].char_start <= w[0].char_start);
-    if !degenerate {
-        return None;
-    }
-    let mut assign = vec![n_lines - 1; tac_offsets_px.len()];
-    let mut li = 0usize;
-    let mut k = 0usize;
-    while k < tac_offsets_px.len() {
-        let pos = tac_offsets_px[k].0;
-        // pos 보다 작은 char_start 줄 건너뜀
-        while li < n_lines && comp.lines[li].char_start < pos {
-            li += 1;
-        }
-        // 같은 pos 의 연속 TAC 묶음
-        let tac_start = k;
-        while k < tac_offsets_px.len() && tac_offsets_px[k].0 == pos {
-            k += 1;
-        }
-        let tac_count = k - tac_start;
-        // char_start == pos 인 줄 묶음
-        let line_start = li;
-        while li < n_lines && comp.lines[li].char_start == pos {
-            li += 1;
-        }
-        let line_count = li - line_start;
-        let line_candidates: Vec<usize> = (line_start..li).collect();
-        let filtered_candidates: Vec<usize> = line_candidates
-            .iter()
-            .copied()
-            .filter(|idx| {
-                !line_is_leading_empty_equation_tac_guide(para, comp, tac_offsets_px, *idx)
-            })
-            .collect();
-        let line_targets = if filtered_candidates.is_empty() {
-            &line_candidates
-        } else {
-            &filtered_candidates
-        };
-        for t in 0..tac_count {
-            assign[tac_start + t] = if line_count == 0 {
-                line_start.min(n_lines - 1)
-            } else if line_targets.is_empty() {
-                line_start.min(n_lines - 1)
-            } else {
-                // TAC 수가 줄 수보다 많으면 나머지는 마지막 줄에 모음(예: "S =∫₀³" 1줄 2TAC).
-                // 단, 미주 수식 문단의 선행 guide 줄처럼 TAC가 없는 빈 줄은 후보에서 제외한다.
-                line_targets[t.min(line_targets.len() - 1)]
-            };
-        }
-    }
-    Some(assign)
-}
-
 fn line_has_strict_tac_control(
     comp: &ComposedParagraph,
     tac_offsets_px: &[(usize, f64, usize)],
@@ -1671,15 +1592,28 @@ impl LayoutEngine {
             }
         };
         let mut endnote_line_vpos_y_end: Option<f64> = None;
+        let mut endnote_auto_wrap_y_end: Option<f64> = None;
         let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for line_idx in start_line..end {
             let comp_line = &composed.lines[line_idx];
             let mut current_line_reserved_tac_picture_height: Option<f64> = None;
+            let mut endnote_used_auto_wrap_y = false;
             if let (Some((base_vpos, base_y)), Some(seg)) = (
                 endnote_line_vpos_base,
                 para.and_then(|p| p.line_segs.get(line_idx)),
             ) {
-                y = base_y + hwpunit_to_px(seg.vertical_pos - base_vpos, self.dpi);
+                let vpos_y = base_y + hwpunit_to_px(seg.vertical_pos - base_vpos, self.dpi);
+                if let Some(prev) = endnote_auto_wrap_y_end {
+                    if prev > vpos_y + 0.5 {
+                        y = prev;
+                        endnote_used_auto_wrap_y = true;
+                    } else {
+                        y = vpos_y;
+                        endnote_auto_wrap_y_end = None;
+                    }
+                } else {
+                    y = vpos_y;
+                }
             } else if let (Some((base_vpos, base_y)), Some(seg)) = (
                 para_topbottom_line_vpos_base,
                 para.and_then(|p| p.line_segs.get(line_idx)),
@@ -1828,21 +1762,8 @@ impl LayoutEngine {
             // - 보통(ind=0): 모든 줄 margin_left
             // - 들여쓰기(ind>0): 첫줄 margin_left+indent, 다음줄 margin_left
             // - 내어쓰기(ind<0): 첫줄 margin_left, 다음줄 margin_left+|indent|
-            let line_indent = if indent > 0.0 {
-                if line_idx == 0 {
-                    indent
-                } else {
-                    0.0
-                }
-            } else if indent < 0.0 {
-                if line_idx == 0 {
-                    0.0
-                } else {
-                    indent.abs()
-                }
-            } else {
-                0.0
-            };
+            let line_indent =
+                crate::renderer::equation_tac_flow::paragraph_line_indent(indent, line_idx);
             let effective_margin_left = margin_left + line_indent;
 
             // [Task #489] Picture/Shape Square wrap (어울림) 시 LINE_SEG.cs/sw 적용.
@@ -2013,6 +1934,68 @@ impl LayoutEngine {
                         - inline_offset
                         - num_offset,
                 );
+            let equation_indent_scale = if cell_ctx.is_some() { 1.0 } else { 2.0 };
+            let equation_first_effective_margin_left =
+                crate::renderer::equation_tac_flow::paragraph_effective_margin_left_with_indent_scale(
+                    margin_left,
+                    indent,
+                    0,
+                    equation_indent_scale,
+                );
+            let equation_continuation_effective_margin_left =
+                crate::renderer::equation_tac_flow::paragraph_effective_margin_left_with_indent_scale(
+                    margin_left,
+                    indent,
+                    1,
+                    equation_indent_scale,
+                );
+            let equation_first_available_width = line_avail_w_override
+                .map(|w| w - inline_offset - num_offset)
+                .unwrap_or(
+                    effective_col_w
+                        - equation_first_effective_margin_left
+                        - margin_right
+                        - inline_offset
+                        - num_offset,
+                );
+            let equation_continuation_available_width = line_avail_w_override
+                .map(|w| w - inline_offset - num_offset)
+                .unwrap_or(
+                    effective_col_w
+                        - equation_continuation_effective_margin_left
+                        - margin_right
+                        - inline_offset
+                        - num_offset,
+                );
+            let equation_tac_line_flow =
+                crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow(
+                    para,
+                    composed,
+                    &tac_offsets_px,
+                    line_idx,
+                    if cell_ctx.is_some() {
+                        f64::INFINITY
+                    } else {
+                        equation_first_available_width
+                    },
+                    if cell_ctx.is_some() {
+                        f64::INFINITY
+                    } else {
+                        equation_continuation_available_width
+                    },
+                );
+            let equation_tac_extra_rows = equation_tac_line_flow
+                .as_ref()
+                .map(|flow| flow.extra_rows)
+                .unwrap_or(0);
+            let line_flow_height =
+                line_height + equation_tac_extra_rows as f64 * (line_height + line_spacing_px);
+            if equation_tac_extra_rows > 0 {
+                line_node.bbox.height = line_flow_height;
+                if let RenderNodeType::TextLine(ref mut text_line) = line_node.node_type {
+                    text_line.line_height = line_flow_height;
+                }
+            }
 
             // 텍스트 정렬을 위한 전체 줄 폭 계산 (자연 폭, 추가 간격 미포함)
             // treat_as_char 이미지 폭도 포함하여 정확한 폭 산출
@@ -2478,6 +2461,14 @@ impl LayoutEngine {
             let line_plain_text: String = comp_line.runs.iter().map(|r| r.text.as_str()).collect();
             let is_answer_sheet_number_label =
                 cell_ctx.is_some() && line_plain_text.trim() == "수험번호";
+            // [Task #1308 CI follow-up / #1256 regression]
+            // 본문/미주 흐름의 TAC-only 줄은 저장된 LINE_SEG x 흐름을 따라야 한다.
+            // 빈 TextRun 이 있는 수식-only 문단은 일반 정렬 경로로 들어오므로,
+            // Distribute/Center 의 잔여 폭 중앙 오프셋을 적용하면 한컴과 달리 수식 블록이
+            // 열 안쪽으로 밀린다. 표 셀 안 수식은 기존처럼 셀 정렬을 따른다.
+            let non_cell_tac_only_line = cell_ctx.is_none()
+                && !line_tac_offsets_for_width.is_empty()
+                && line_plain_text.trim().is_empty();
 
             // 셀 overflow/underflow 분기로 자간 보정된 경우 정렬 기준 폭은 실제 렌더 폭이어야 함.
             // 특히 #1285 답안지 `수험번호` 라벨은 음수 자간으로 압축된 텍스트를 자연 폭 기준으로
@@ -2553,16 +2544,20 @@ impl LayoutEngine {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
                         (available_width - effective_text_width).max(0.0)
+                    } else if non_cell_tac_only_line {
+                        0.0
                     } else {
                         (available_width - effective_text_width).max(0.0) / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
                 }
                 Alignment::Distribute if !needs_distribute || total_char_count <= 1 => {
-                    x_base
-                        + inline_offset
-                        + num_x_offset
-                        + (available_width - effective_text_width).max(0.0) / 2.0
+                    let align_offset = if non_cell_tac_only_line {
+                        0.0
+                    } else {
+                        (available_width - effective_text_width).max(0.0) / 2.0
+                    };
+                    x_base + inline_offset + num_x_offset + align_offset
                 }
                 Alignment::Right => {
                     x_base
@@ -3523,8 +3518,6 @@ impl LayoutEngine {
                                                 .or(Some(section_index)),
                                             para_index: if let Some(ref ctx) = cell_ctx {
                                                 Some(ctx.parent_para_index)
-                                            } else if let Some(ref r) = note_ref {
-                                                Some(r.para_index)
                                             } else {
                                                 Some(para_index)
                                             },
@@ -3864,6 +3857,10 @@ impl LayoutEngine {
                 }
             }
 
+            let defer_empty_line_control_marker = comp_line.runs.is_empty()
+                && !tac_offsets_px.is_empty()
+                && equation_tac_line_flow.is_some();
+
             // runs가 비어있으면 빈 TextRun 생성 (빈 셀 편집용)
             if comp_line.runs.is_empty() {
                 // runs가 없는 빈 줄에서 treat_as_char 이미지 렌더링
@@ -4004,8 +4001,9 @@ impl LayoutEngine {
                         para_index: Some(para_index),
                         char_start: Some(char_offset),
                         cell_context: cell_ctx.clone(),
-                        is_para_end: is_last_line_of_para,
-                        is_line_break_end: comp_line.has_line_break,
+                        is_para_end: is_last_line_of_para && !defer_empty_line_control_marker,
+                        is_line_break_end: comp_line.has_line_break
+                            && !defer_empty_line_control_marker,
                         rotation: 0.0,
                         is_vertical: false,
                         char_overlap: None,
@@ -4013,7 +4011,7 @@ impl LayoutEngine {
                         baseline,
                         field_marker: FieldMarkerType::None,
                     }),
-                    BoundingBox::new(x_start, y, available_width, line_height),
+                    BoundingBox::new(x_start, y, available_width, line_flow_height),
                 );
                 line_node.children.push(run_node);
             }
@@ -4029,28 +4027,31 @@ impl LayoutEngine {
                     .get(line_idx + 1)
                     .map(|l| l.char_start)
                     .unwrap_or(usize::MAX);
-                // [#1221/#1239] 모든 줄이 빈 runs(수식만)이고 줄 char_start 가 비구분일 때
-                // char 범위로는 tac→줄 매핑이 깨진다(빈 줄 흡수/행 겹침). 같은 char_start 줄들에
-                // 같은 position 의 연속 TAC 를 순서대로 분배한다(#1221 1:1 의 m:n 일반화).
-                let eq_tac_assignment =
-                    equation_only_tac_line_assignment(para, composed, &tac_offsets_px);
                 let tac_on_line = |k: usize, pos: usize| -> bool {
-                    if let Some(ref assign) = eq_tac_assignment {
-                        assign.get(k).copied() == Some(line_idx)
+                    if let Some(ref flow) = equation_tac_line_flow {
+                        flow.row_for_tac(k).is_some()
                     } else {
                         pos >= line_start_char && pos < line_end_char
                     }
+                };
+                let tac_row_for = |k: usize| -> usize {
+                    equation_tac_line_flow
+                        .as_ref()
+                        .and_then(|flow| flow.row_for_tac(k))
+                        .unwrap_or(0)
                 };
                 // [Task #490] 셀에 텍스트 없이 수식만 있을 때는 셀 ParaShape alignment 를
                 // 따라야 한다. 단, [Task #1245] 본문/미주 수식-only 줄은 저장된 LINE_SEG
                 // 흐름을 따라야 하며 문단 alignment 를 다시 적용하면 열 안에서 중앙으로 밀린다.
                 // [Task #489] effective_col_x 적용 (Picture+Square wrap LINE_SEG cs/sw 좁은 영역).
-                let line_tac_width: f64 = tac_offsets_px
-                    .iter()
-                    .enumerate()
-                    .filter(|(k, (pos, _, _))| tac_on_line(*k, *pos))
-                    .map(|(_, (_, w, _))| *w)
-                    .sum();
+                let mut row_tac_widths = vec![0.0f64; equation_tac_extra_rows + 1];
+                for (k, (pos, w, _)) in tac_offsets_px.iter().enumerate() {
+                    if tac_on_line(k, *pos) {
+                        let row = tac_row_for(k).min(row_tac_widths.len() - 1);
+                        row_tac_widths[row] += *w;
+                    }
+                }
+                let line_tac_width: f64 = row_tac_widths.iter().sum();
                 let align_offset = if cell_ctx.is_some() {
                     match alignment {
                         Alignment::Center | Alignment::Distribute => {
@@ -4062,12 +4063,44 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
-                let tac_base_x = if cell_ctx.is_some() {
-                    effective_col_x + effective_margin_left
-                } else {
-                    effective_col_x
+                // Empty-run TAC-only lines still belong to the visual line flow.
+                // Therefore paragraph margins and first-line/hanging indent must
+                // use the same x origin as ordinary TextLine nodes.
+                let row_base_x = |row: usize| -> f64 {
+                    let visual_line_idx = equation_tac_line_flow
+                        .as_ref()
+                        .map(|flow| flow.visual_line_idx_for_row(row))
+                        .unwrap_or(line_idx + row);
+                    let row_effective_margin_left =
+                        crate::renderer::equation_tac_flow::paragraph_effective_margin_left_with_indent_scale(
+                            margin_left,
+                            indent,
+                            visual_line_idx,
+                            if equation_tac_line_flow.is_some() && cell_ctx.is_none() {
+                                2.0
+                            } else {
+                                1.0
+                            },
+                        );
+                    effective_col_x + row_effective_margin_left
                 };
-                let mut inline_x = tac_base_x + align_offset;
+                let mut row_inline_x: Vec<f64> = (0..=equation_tac_extra_rows)
+                    .map(|row| {
+                        let row_width = row_tac_widths.get(row).copied().unwrap_or(0.0);
+                        let row_align_offset = if cell_ctx.is_some() {
+                            match alignment {
+                                Alignment::Center | Alignment::Distribute => {
+                                    (available_width - row_width).max(0.0) / 2.0
+                                }
+                                Alignment::Right => (available_width - row_width).max(0.0),
+                                _ => 0.0,
+                            }
+                        } else {
+                            align_offset
+                        };
+                        row_base_x(row) + row_align_offset
+                    })
+                    .collect();
                 for (tac_k, &(tac_pos, tac_w, tac_ci)) in tac_offsets_px.iter().enumerate() {
                     if !tac_on_line(tac_k, tac_pos) {
                         continue;
@@ -4095,10 +4128,13 @@ impl LayoutEngine {
                             } else {
                                 layout_box.height
                             };
+                            let tac_row = tac_row_for(tac_k).min(row_inline_x.len() - 1);
+                            let row_y = y + tac_row as f64 * (line_height + line_spacing_px);
+                            let inline_x = row_inline_x[tac_row];
                             let eq_y = if cell_ctx.is_some() {
-                                (y + baseline - layout_box.baseline).max(y)
+                                (row_y + baseline - layout_box.baseline).max(row_y)
                             } else {
-                                y + baseline - layout_box.baseline
+                                row_y + baseline - layout_box.baseline
                             };
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (
@@ -4128,8 +4164,6 @@ impl LayoutEngine {
                                             .or(Some(section_index)),
                                         para_index: if let Some(ref ctx) = cell_ctx {
                                             Some(ctx.parent_para_index)
-                                        } else if let Some(ref r) = note_ref {
-                                            Some(r.para_index)
                                         } else {
                                             Some(para_index)
                                         },
@@ -4154,9 +4188,49 @@ impl LayoutEngine {
                                 inline_x,
                                 eq_y,
                             );
-                            inline_x += tac_w;
+                            row_inline_x[tac_row] += tac_w;
                         }
                     }
+                }
+
+                if defer_empty_line_control_marker
+                    && (is_last_line_of_para || comp_line.has_line_break)
+                    && !row_inline_x.is_empty()
+                {
+                    let marker_row = row_tac_widths
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find_map(|(row, width)| if *width > 0.0 { Some(row) } else { None })
+                        .unwrap_or(0)
+                        .min(row_inline_x.len() - 1);
+                    let marker_x = row_inline_x[marker_row];
+                    let marker_y = y + marker_row as f64 * (line_height + line_spacing_px);
+                    let marker_id = tree.next_id();
+                    let marker_style = resolved_to_text_style(styles, 0, 0);
+                    let marker_node = RenderNode::new(
+                        marker_id,
+                        RenderNodeType::TextRun(TextRunNode {
+                            text: String::new(),
+                            style: marker_style,
+                            char_shape_id: None,
+                            para_shape_id: Some(composed.para_style_id),
+                            section_index: Some(section_index),
+                            para_index: Some(para_index),
+                            char_start: None,
+                            cell_context: cell_ctx.clone(),
+                            is_para_end: is_last_line_of_para,
+                            is_line_break_end: comp_line.has_line_break,
+                            rotation: 0.0,
+                            is_vertical: false,
+                            char_overlap: None,
+                            border_fill_id: 0,
+                            baseline,
+                            field_marker: FieldMarkerType::None,
+                        }),
+                        BoundingBox::new(marker_x, marker_y, 0.0, line_height),
+                    );
+                    line_node.children.push(marker_node);
                 }
             }
 
@@ -4620,7 +4694,7 @@ impl LayoutEngine {
                 let content_bottom = if blank_spacer_line {
                     y
                 } else {
-                    y + line_height
+                    y + line_flow_height
                 };
                 self.last_item_content_bottom.set(content_bottom);
             }
@@ -4639,19 +4713,22 @@ impl LayoutEngine {
                     } else {
                         0.0
                     };
-                    y + line_height + trailing + tac_picture_label_extra
+                    y + line_flow_height + trailing + tac_picture_label_extra
                 };
                 let next_y = endnote_line_vpos_y_end
                     .map(|prev| prev.max(line_bottom))
                     .unwrap_or(line_bottom);
                 endnote_line_vpos_y_end = Some(next_y);
+                if equation_tac_extra_rows > 0 || endnote_used_auto_wrap_y {
+                    endnote_auto_wrap_y_end = Some(line_bottom);
+                }
                 y = next_y;
             } else if is_cell_last_line && cell_ctx.is_some() {
-                y += line_height;
+                y += line_flow_height;
             } else if skip_advance_empty_line {
                 // no advance
             } else {
-                y += line_height + line_spacing_px + tac_picture_label_extra;
+                y += line_flow_height + line_spacing_px + tac_picture_label_extra;
             }
             prev_line_reserved_tac_picture_height = current_line_reserved_tac_picture_height;
         }

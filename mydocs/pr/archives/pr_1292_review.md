@@ -265,8 +265,25 @@ git cherry-pick f3f4c0d7 a583c66c f2fa3632 b16e4e8f bc53f250 0495601b a83058e2 2
 | `cargo check --target wasm32-unknown-unknown --lib` | 통과 |  |
 | `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` | 통과 | 67 passed |
 | `cargo test --features native-skia skia --lib --verbose` | 통과 | 39 passed |
-| `python3 scripts/task1274_visual_sweep.py --target all` | 미실행 | 로컬 필수 도구 `rsvg-convert` 없음 |
+| `python3 scripts/task1274_visual_sweep.py --target all` | 실행 완료 | `rsvg-convert` 설치 후 재실행 |
 | `docker compose --env-file .env.docker run --rm wasm` | 통과 | Done in 2m 54s, `pkg/rhwp_bg.wasm` 5.3M |
+
+`visual_sweep --target all` 재실행 결과:
+
+| target | SVG/PDF pages | flagged | frame | line | column | order | question |
+|---|---:|---:|---|---|---|---|---|
+| `2022-09` | 23/23 | 1 | `[]` | `[]` | `[10]` | `[10]` | `[]` |
+| `2023-09` | 20/20 | 0 | `[]` | `[]` | `[]` | `[]` | `[]` |
+| `2024-09-below20` | 23/23 | 1 | `[]` | `[10]` | `[10]` | `[10]` | `[]` |
+| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[11]` | `[]` |
+| `2022-10` | 18/18 | 0 | `[]` | `[]` | `[]` | `[]` | `[]` |
+| `2022-11-practice` | 21/21 | 0 | `[]` | `[]` | `[]` | `[]` | `[]` |
+
+참고:
+
+- 전체 target의 SVG/PDF 페이지 수는 모두 일치했다.
+- `frame`, `question`, `title`, `tail`, `equation` 계열 핵심 후보는 모두 비어 있다.
+- `2022-09` page 10, `2024-09-below20` page 10, `2024-09-between20` page 11에서 line/column/order 계열 잔여 후보가 감지됐다. 메인테이너 SVG/웹 시각 판정은 통과했으므로 이번 PR 수용 blocker로 보지는 않는다.
 
 WASM 동기화:
 
@@ -292,5 +309,5 @@ cp pkg/rhwp.js pkg/rhwp_bg.wasm pkg/rhwp.d.ts pkg/rhwp_bg.wasm.d.ts rhwp-studio/
 현재 판정:
 
 - 자동 검증과 maintainer SVG/웹 시각 판정을 모두 통과했다.
-- `python3 scripts/task1274_visual_sweep.py --target all`은 로컬 필수 도구 `rsvg-convert`가 없어 미실행이지만, PR head 기준 Render Diff는 성공했고 maintainer 시각 판정으로 최종 게이트를 통과했다.
+- `python3 scripts/task1274_visual_sweep.py --target all`도 `rsvg-convert` 설치 후 재실행했다. 일부 line/column/order 잔여 후보는 있으나, 페이지 수와 핵심 drift 후보는 안정적이며 maintainer 시각 판정으로 최종 게이트를 통과했다.
 - PR #1292는 수용 가능하다.

@@ -66,6 +66,19 @@ npm run build
 
 ## 변경 이력
 
+### v0.2.4 (2026-06-06)
+
+**보안 강화**
+- service worker의 HWP/HWPX 문서 fetch 경로 sender 검증 보강
+- localhost, loopback, private network, link-local, 내부 호스트명 URL 차단
+- redirect 이후 최종 URL 재검증 및 `credentials: "omit"` 적용
+- 자동 thumbnail 데이터가 page DOM에 직접 노출되지 않도록 hover card 내부 처리 보강
+- 새 권한 없음, 새 외부 네트워크 endpoint 없음
+
+**번들 업데이트**
+- rhwp core `0.7.15` WASM 번들 반영
+- 수식 TAC 흐름, 커서 이동, HWPX 저장 계약 후속 수정 반영
+
 ### v0.2.3 (2026-05-26)
 
 **번들 업데이트**

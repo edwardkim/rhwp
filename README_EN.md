@@ -71,6 +71,25 @@ Foundation  Typeset   Collab    Complete
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
 - 1,100+ tests
 
+#### v0.7.15 Cycle (2026-06-06)
+
+> Security patch — browser-extension service-worker fetch hardening, equation TAC flow/caret fixes,
+> HWPX save-contract follow-ups, and browser extension v0.2.4 preparation
+
+**Browser Extension Security**
+- Hardened Chrome/Firefox service-worker document-fetch sender validation, internal/localhost/private URL blocking, and final redirect URL revalidation
+- Uses `credentials: "omit"` for extension-side fetches and keeps automatically extracted thumbnail data out of the page DOM
+- Chrome/Edge/Firefox extension v0.2.4: no new permissions and no new external network endpoints
+
+**Equation and Endnote Flow**
+- Improved wrapping and paragraph-indent handling for equation TAC-only lines
+- Fixed caret movement across forced line breaks, equation TACs, endnote areas, and paragraph boundaries
+
+**HWPX Save Contract**
+- Fixed HWPX picture serialization for flip/rotation and `isEmbeded`
+- Preserved HWPX diagonal cell-border `hh:slash` / `hh:backSlash` type values
+- Preserved zero-length HWPX field ordering
+
 #### v0.7.13 Cycle (2026-05-18 ~ 2026-05-26)
 
 > Focused HWPX rendering/save compatibility fixes, exam/public-agency document regression fixes, and browser extension v0.2.3 preparation
@@ -207,7 +226,7 @@ Foundation  Typeset   Collab    Complete
 - Content-script `init()` gate split to honor hoverPreview / autoOpen independently from showBadges (external contribution by [@postmelee](https://github.com/postmelee) — PR [#224](https://github.com/edwardkim/rhwp/pull/224))
 
 **Thanks to contributors**
-v0.7.x cycle cumulative external contributors: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@cskwork](https://github.com/cskwork), [@DanMeon](https://github.com/DanMeon), [@dragonnite1221-lgtm](https://github.com/dragonnite1221-lgtm), [@dreamworker0](https://github.com/dreamworker0), [@jangster77](https://github.com/jangster77), [@johndoekim](https://github.com/johndoekim), [@kihyunnn](https://github.com/kihyunnn), [@marsimon](https://github.com/marsimon), [@oksure](https://github.com/oksure), [@planet6897](https://github.com/planet6897), [@postmelee](https://github.com/postmelee), [@seanshin](https://github.com/seanshin), [@seo-rii](https://github.com/seo-rii), [@seunghan91](https://github.com/seunghan91), [@ubermensch1218](https://github.com/ubermensch1218), [@xogh3198](https://github.com/xogh3198), [@yl-star7](https://github.com/yl-star7)
+v0.7.x cycle cumulative external contributors: [@ahnbu](https://github.com/ahnbu), [@bapdodi](https://github.com/bapdodi), [@cskwork](https://github.com/cskwork), Dangel, [@DanMeon](https://github.com/DanMeon), [@dragonnite1221-lgtm](https://github.com/dragonnite1221-lgtm), [@dreamworker0](https://github.com/dreamworker0), [@jangster77](https://github.com/jangster77), [@johndoekim](https://github.com/johndoekim), [@kihyunnn](https://github.com/kihyunnn), [@marsimon](https://github.com/marsimon), [@oksure](https://github.com/oksure), [@planet6897](https://github.com/planet6897), [@postmelee](https://github.com/postmelee), [@seanshin](https://github.com/seanshin), [@seo-rii](https://github.com/seo-rii), [@seunghan91](https://github.com/seunghan91), [@ubermensch1218](https://github.com/ubermensch1218), [@xogh3198](https://github.com/xogh3198), [@yl-star7](https://github.com/yl-star7)
 
 ### v1.0.0 — Typesetting Engine
 
@@ -311,7 +330,7 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 
 ## npm Packages — Use in Your Web Project
 
-Current release: `@rhwp/core` / `@rhwp/editor` v0.7.13.
+Current release: `@rhwp/core` / `@rhwp/editor` v0.7.15.
 
 ### Embed a Full Editor (3 lines)
 
