@@ -376,6 +376,40 @@ impl DocumentCore {
         }
     }
 
+    /// 그림의 "표시(display) 지오메트리" — 속성 창/외부 API 가 기대하는 사용자
+    /// 좌표계로 환산한 (width, height, horzOffset, vertOffset).
+    ///
+    /// 회전이 없는 그림은 `common.width/height` + `common.offset` 가 곧 표시값이다.
+    /// 회전된 그림은 `refresh_picture_rotation_layout_for_save` 가 다음을 저장한다:
+    ///   - `common.width/height` = 회전 bbox (예: 4000×2500 @30° → 4714×4165)
+    ///   - `common.horizontal/vertical_offset` = bbox 좌상단 (center 기준 재계산, 음수 가능)
+    ///   - `shape_attr.current_width/height` = 회전 전 표시 크기 (4000×2500)
+    /// 이 함수는 그 변환을 역산하여 사용자가 입력한 표시 크기/좌상단 offset 을
+    /// 복원한다 (round-trip 정합). offset 은 항상 **부호 있는 i32** 로 반환 —
+    /// `common.*_offset` 는 u32 필드지만 의미상 signed (회전/이동 시 음수 가능)이다.
+    fn picture_display_geometry(pic: &crate::model::image::Picture) -> (u32, u32, i32, i32) {
+        let c = &pic.common;
+        let common_w = c.width;
+        let common_h = c.height;
+        let common_hoff = c.horizontal_offset as i32;
+        let common_voff = c.vertical_offset as i32;
+
+        let rotated = pic.shape_attr.rotation_angle.rem_euclid(360) != 0;
+        let cur_w = pic.shape_attr.current_width;
+        let cur_h = pic.shape_attr.current_height;
+
+        if rotated && cur_w > 0 && cur_h > 0 {
+            // bbox 중심 → 회전 전 표시 박스 좌상단 역산.
+            let center_x = common_hoff as i64 + (common_w as i64 / 2);
+            let center_y = common_voff as i64 + (common_h as i64 / 2);
+            let disp_hoff = (center_x - (cur_w as i64 / 2)) as i32;
+            let disp_voff = (center_y - (cur_h as i64 / 2)) as i32;
+            (cur_w, cur_h, disp_hoff, disp_voff)
+        } else {
+            (common_w, common_h, common_hoff, common_voff)
+        }
+    }
+
     /// [Task #825] 머리말/꼬리말 안 그림의 속성 조회.
     /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
     ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
@@ -487,6 +521,10 @@ impl DocumentCore {
 
         let sa = &pic.shape_attr;
         let (crop_left, crop_top, crop_right, crop_bottom) = Self::picture_crop_ui_amounts(pic);
+        // 표시 지오메트리 (회전 역산 + 부호 있는 offset). c.width/c.vertical_offset 를
+        // 그대로 노출하면 회전 시 bbox 크기 + u32-underflow offset (예: 4294967264) 이
+        // 새어나간다 — round-trip 정합을 위해 display 좌표계로 환산.
+        let (disp_w, disp_h, disp_hoff, disp_voff) = Self::picture_display_geometry(pic);
 
         Ok(format!(
             concat!(
@@ -513,10 +551,10 @@ impl DocumentCore {
                 "\"hasCaption\":{},\"captionDirection\":\"{}\",\"captionVertAlign\":\"{}\",",
                 "\"captionWidth\":{},\"captionSpacing\":{},\"captionMaxWidth\":{},\"captionIncludeMargin\":{}{}}}"
             ),
-            c.width, c.height, c.treat_as_char,
+            disp_w, disp_h, c.treat_as_char,
             vert_rel, vert_align,
             horz_rel, horz_align,
-            c.vertical_offset, c.horizontal_offset,
+            disp_voff, disp_hoff,
             text_wrap,
             pic.image_attr.brightness, pic.image_attr.contrast, effect,
             desc_escaped,
@@ -2130,31 +2168,35 @@ impl DocumentCore {
             )));
         }
 
-        // === 본문 floating picture 분기 (Task #1151 v9 결함 E — 셀 분기와 동일 패턴) ===
+        // === 본문 inline picture 분기 ===
         //
-        // 한컴 native 동작 (사용자 시연 2026-05-30): 본문 picture 신규 삽입 시
-        // 글자처럼 취급 default = **미체크** (tac=false, floating). 셀 안 picture
-        // 와 동일. 이전 rhwp 본문 path 는 새 paragraph 생성 + inline glyph (tac=true)
-        // 로 만들어 한컴 default 와 불일치 — 재설계하여 셀 분기와 통합.
-        let (offset_x_hu, offset_y_hu) = match (paper_offset_x_hu, paper_offset_y_hu) {
-            (Some(x), Some(y)) => (x, y),
-            _ => (0, 0),
-        };
-
-        // CommonObjAttr (floating, 셀 분기와 동일):
-        //   bits 3-4=vert_rel_to(0=Paper), bits 8-10=horz_rel_to(0=Paper),
-        //   bits 15-17=width_criterion(4=Absolute), bits 18-20=height_criterion(2=Absolute),
-        //   bits 21-23=text_wrap(0=Square)
-        let common_attr: u32 = (4 << 15) | (2 << 18);
+        // 한컴 호환 default: 본문 신규 그림은 **글자처럼 취급 (treat_as_char=true)**,
+        // Para-relative, offset 0 — 문단 line 안에 글자처럼 흐른다 (인라인 표/수식과
+        // 동일 메커니즘). 이전 (Task #1151 v9 defect E) 구현은 tac=false floating +
+        // Paper-relative offset(0,0) 로 만들어 그림이 페이지 좌상단에 떠서 제목 텍스트를
+        // 옆으로 밀어내는 레이아웃 결함을 유발했다 (본 함수 doc-comment 의 명시된 계약과도
+        // 모순). 인라인으로 환원하여 "제목 위 → 그림 아래" 가 정상 렌더되도록 한다.
+        //
+        // 인라인 객체는 HWP char stream 에서 확장 제어문자 8 코드유닛을 차지한다
+        // (인라인 표 insert 와 동일 회계). control_mask 의 GSO 비트(11)도 설정.
+        //
+        // width_criterion=Absolute(4), height_criterion=Absolute(2) — 지정 크기 고정.
+        // attr 비트가 struct 필드와 일치해야 한다 (serialize 는 attr≠0 이면 리터럴 사용):
+        //   bit0=tac(1), vert_rel(3-4)=Para(2), horz_rel(8-9)=Para(3),
+        //   width_crit(15-17)=Absolute(4), height_crit(18-19)=Absolute(2),
+        //   text_wrap(21-23)=Square(0).
+        let common_attr: u32 = 0x01 | (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18);
         let common = CommonObjAttr {
             ctrl_id: 0x67736F20, // "gso " — GenShape
             attr: common_attr,
-            treat_as_char: false,
-            vert_rel_to: VertRelTo::Paper,
-            horz_rel_to: HorzRelTo::Paper,
+            treat_as_char: true,
+            vert_rel_to: VertRelTo::Para,
+            horz_rel_to: HorzRelTo::Para,
+            vert_align: crate::model::shape::VertAlign::Top,
+            horz_align: crate::model::shape::HorzAlign::Left,
             text_wrap: crate::model::shape::TextWrap::Square,
-            horizontal_offset: offset_x_hu.max(0) as u32,
-            vertical_offset: offset_y_hu.max(0) as u32,
+            horizontal_offset: 0,
+            vertical_offset: 0,
             width,
             height,
             z_order: 1,
@@ -2172,16 +2214,65 @@ impl DocumentCore {
             ..Default::default()
         };
 
-        // 현재 paragraph 의 sibling control 로 append (새 paragraph 생성 X).
+        // 현재 paragraph 에 인라인 control 로 삽입 (char_offset 기준 위치 정렬).
         self.document.sections[section_idx].raw_stream = None;
         let parent = &mut self.document.sections[section_idx].paragraphs[para_idx];
-        let new_ctrl_idx = parent.controls.len();
-        parent.controls.push(Control::Picture(Box::new(pic)));
-        parent.ctrl_data_records.push(None);
+
+        // 삽입 위치: char_offset 이후의 첫 control 앞 (인라인 수식 insert 패턴).
+        let new_ctrl_idx = {
+            let positions = super::super::helpers::find_control_text_positions(parent);
+            let mut idx = parent.controls.len();
+            for (i, &pos) in positions.iter().enumerate() {
+                if pos > char_offset {
+                    idx = i;
+                    break;
+                }
+            }
+            idx
+        };
+        parent
+            .controls
+            .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
+        parent.ctrl_data_records.insert(new_ctrl_idx, None);
+
+        // 확장 제어문자 8 코드유닛: char_offset 이후 char_offsets shift + char_count.
+        let insert_utf16_pos = if char_offset < parent.char_offsets.len() {
+            parent.char_offsets[char_offset]
+        } else if !parent.char_offsets.is_empty() {
+            let last_idx = parent.char_offsets.len() - 1;
+            let last_char_len = parent
+                .text
+                .chars()
+                .nth(last_idx)
+                .map(|c| c.len_utf16() as u32)
+                .unwrap_or(1);
+            parent.char_offsets[last_idx] + last_char_len
+        } else {
+            0
+        };
+        for offset in parent.char_offsets.iter_mut() {
+            if *offset >= insert_utf16_pos {
+                *offset += 8;
+            }
+        }
+        parent.char_count += 8;
+        parent.control_mask |= 0x00000800; // GSO 비트(11)
+        parent.has_para_text = true;
+
+        // line_seg 높이를 그림 높이로 키워 인라인 그림이 한 줄을 차지하도록.
+        let pic_h = height as i32;
+        if let Some(seg) = parent.line_segs.first_mut() {
+            if pic_h > seg.line_height {
+                seg.line_height = pic_h;
+                seg.text_height = pic_h;
+                seg.baseline_distance = (pic_h as f64 * 0.85) as i32;
+            }
+        }
 
         self.mark_section_dirty(section_idx);
+        self.reflow_paragraph(section_idx, para_idx);
+        self.recompose_section(section_idx);
         self.paginate_if_needed();
-        // [Task #1151 v9 결함 F] page tree cache invalidate (v5 패턴).
         self.invalidate_page_tree_cache();
 
         self.event_log.push(DocumentEvent::PictureInserted {
@@ -2449,8 +2540,10 @@ impl DocumentCore {
             vert_align,
             horz_rel,
             horz_align,
-            c.vertical_offset,
-            c.horizontal_offset,
+            // offset 은 의미상 signed (음수 가능) — u32 필드를 i32 로 재해석해
+            // round-trip 시 4294967264 같은 underflow garbage 를 막는다.
+            c.vertical_offset as i32,
+            c.horizontal_offset as i32,
             text_wrap,
             c.z_order,
             c.instance_id,
@@ -3698,6 +3791,17 @@ impl DocumentCore {
         };
         if treat_as_char {
             attr |= 0x01;
+            // 글자처럼 취급(인라인) 도형은 anchor 가 문단 기준이어야 한다. 기본 도형
+            // attr 리터럴(0x046A4000)은 Paper-relative + 글앞으로(InFrontOfText) 로
+            // 굳어 있어 tac 비트만 OR 하면 "tac=true 인데 Paper-relative + 글앞으로"
+            // 라는 모순된 상태가 직렬화된다 (serialize_common_obj_attr 는 attr≠0 이면
+            // 리터럴을 그대로 기록). 한컴은 이 모순을 거부할 수 있으므로 rel-to 비트
+            // (vert 3-4, horz 8-9) 를 Para(0b11)/Column, text_wrap(21-23) 를 Square(0)
+            // 로 정정하여 struct 필드와 일치시킨다.
+            attr &= !((0b11 << 3) | (0b11 << 8) | (0b111 << 21));
+            // 파서 매핑: vert_rel (attr>>3)&3 → Para=2; horz_rel (attr>>8)&3 → Para=3.
+            attr |= (2 << 3) | (3 << 8);
+            // text_wrap bits(21-23) = 0 → Square (어울림)
         }
 
         // --- 빈 문단 (글상자 내부용) ---
@@ -3798,7 +3902,8 @@ impl DocumentCore {
                 }
             },
             treat_as_char,
-            vert_rel_to: if shape_type == "textbox" {
+            // 인라인(tac) 도형은 Para anchor — attr 비트 정정과 일치 (위 참조).
+            vert_rel_to: if shape_type == "textbox" || treat_as_char {
                 VertRelTo::Para
             } else {
                 VertRelTo::Paper
@@ -3806,6 +3911,8 @@ impl DocumentCore {
             vert_align: VertAlign::Top,
             horz_rel_to: if shape_type == "textbox" {
                 HorzRelTo::Column
+            } else if treat_as_char {
+                HorzRelTo::Para
             } else {
                 HorzRelTo::Paper
             },
@@ -7254,16 +7361,18 @@ mod issue_1151_cell_picture_insert_tests {
     }
 
     #[test]
-    fn issue1151_v9_insert_picture_body_floating_default() {
-        // [Task #1151 v9 결함 E] 한컴 native 정합: 본문 picture 신규 삽입 시 default =
-        // tac=false (floating, 글자처럼 미체크). 셀 분기와 동일 패턴.
+    fn insert_picture_body_default_is_inline() {
+        // 본문 picture 신규 삽입 default = **글자처럼 취급 (treat_as_char=true)**,
+        // Para-relative, offset 0. 이전 (Task #1151 v9 defect E) 의 floating + Paper
+        // offset(0,0) default 는 그림을 페이지 좌상단에 띄워 제목을 옆으로 밀어내는
+        // 레이아웃 결함을 유발했다 — 인라인으로 환원 (본 함수 doc-comment 계약 정합).
         let mut core = make_test_core();
         let image = minimal_png();
         core.insert_picture_native(
             0,
             0,
             0,
-            &[], // 빈 cell_path → 본문 floating (v9 fix 후)
+            &[],
             &image,
             5000,
             5000,
@@ -7281,37 +7390,46 @@ mod issue_1151_cell_picture_insert_tests {
             Control::Picture(p) => Some(p.as_ref()),
             _ => None,
         });
-        let picture = pic_in_body.expect("expected Picture in body paragraph (sibling control)");
+        let picture = pic_in_body.expect("expected Picture in body paragraph (inline control)");
 
-        // 한컴 native 정합: tac=false, rel_to=Paper, wrap=Square
         assert!(
-            !picture.common.treat_as_char,
-            "본문 picture default = tac=false (한컴 native 정합, v9 결함 E fix)"
+            picture.common.treat_as_char,
+            "본문 picture default = tac=true (인라인)"
         );
         assert!(
             matches!(
                 picture.common.horz_rel_to,
-                crate::model::shape::HorzRelTo::Paper
+                crate::model::shape::HorzRelTo::Para
             ),
-            "본문 picture horz_rel_to = Paper (셀 분기와 동일)"
+            "인라인 picture horz_rel_to = Para"
         );
         assert!(
             matches!(
                 picture.common.vert_rel_to,
-                crate::model::shape::VertRelTo::Paper
+                crate::model::shape::VertRelTo::Para
             ),
-            "본문 picture vert_rel_to = Paper"
+            "인라인 picture vert_rel_to = Para"
         );
-        assert!(matches!(
-            picture.common.text_wrap,
-            crate::model::shape::TextWrap::Square
-        ));
+        assert_eq!(picture.common.horizontal_offset, 0);
+        assert_eq!(picture.common.vertical_offset, 0);
+        // attr 비트가 struct 와 일치 (serialize 는 attr≠0 이면 리터럴 사용).
+        assert_eq!(picture.common.attr & 0x01, 0x01, "attr tac bit");
+        assert_eq!(
+            (picture.common.attr >> 3) & 0x03,
+            2,
+            "attr vert_rel=Para(2)"
+        );
+        assert_eq!(
+            (picture.common.attr >> 8) & 0x03,
+            3,
+            "attr horz_rel=Para(3)"
+        );
 
-        // 새 paragraph 생성 안 함 — 기존 paragraph 의 sibling control 로 append
+        // 새 paragraph 생성 안 함 — 기존 paragraph 에 인라인 control 로 삽입.
         assert_eq!(
             core.document.sections[0].paragraphs.len(),
             1,
-            "본문 picture 삽입 시 새 paragraph 생성 안 함 (sibling control)"
+            "본문 picture 삽입 시 새 paragraph 생성 안 함 (인라인 control)"
         );
     }
 
