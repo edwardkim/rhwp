@@ -1065,6 +1065,11 @@ impl DocumentCore {
                         cd.widths.clear();
                         cd.gaps.clear();
                     }
+                    // 원본 attr(u16)을 무효화한다. serializer 는 raw_attr != 0 이면
+                    // 그것을 그대로 쓰므로(라운드트립 보존), 여기서 비우지 않으면
+                    // 갱신된 column_count/type/same_width 가 export 시 버려져
+                    // 단 개수 변경이 파일에 반영되지 않는다(예: set_columns(2) 후 저장 시 1단 유지).
+                    cd.raw_attr = 0;
                     found = true;
                     break;
                 }

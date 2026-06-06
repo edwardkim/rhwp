@@ -250,6 +250,45 @@ fn test_export_hwp_empty() {
     assert_eq!(&bytes[0..4], &[0xD0, 0xCF, 0x11, 0xE0]);
 }
 
+/// set_column_def_native(2단) 후 export → re-parse 시 단 개수가 보존되는지 검증한다.
+///
+/// 회귀: 기존 ColumnDef 는 파싱 시 raw_attr(원본 u16)을 보관하고, serializer 는
+/// raw_attr != 0 이면 그대로 쓴다(라운드트립 보존). 그래서 set_column_def_native 가
+/// column_count 만 바꾸고 raw_attr 을 비우지 않으면, export 시 stale raw_attr(1단)이
+/// 그대로 직렬화되어 단 개수 변경이 파일에 반영되지 않는다(set_columns(2) → 저장 → 1단).
+#[test]
+fn test_set_column_def_native_roundtrip_preserves_count() {
+    let path = "samples/basic/Textmail.hwp";
+    if !std::path::Path::new(path).exists() {
+        eprintln!("SKIP: {} 없음", path);
+        return;
+    }
+    let data = std::fs::read(path).unwrap();
+    let mut doc = HwpDocument::from_bytes(&data).unwrap();
+
+    // 전제: 샘플은 1단. set_column_def_native 가 기존 ColumnDef 를 2단으로 갱신.
+    let cd0 = HwpDocument::find_initial_column_def(&doc.document.sections[0].paragraphs);
+    assert_eq!(cd0.column_count, 1, "샘플 전제(1단) 불일치");
+    doc.set_column_def_native(0, 2, 0, true, 2268).unwrap();
+
+    // 메모리 상태: 2단이어야 함
+    let cd_mem = HwpDocument::find_initial_column_def(&doc.document.sections[0].paragraphs);
+    assert_eq!(cd_mem.column_count, 2, "메모리 ColumnDef 가 2단이 아님");
+
+    // export → re-parse: 단 개수가 디스크 라운드트립을 통해 보존되어야 한다.
+    // (이 단언이 핵심 회귀. raw_attr 미무효화 시 stale 1단이 직렬화되어 실패한다.)
+    let bytes = doc.export_hwp_native().expect("export 실패");
+    let reparsed = HwpDocument::from_bytes(&bytes).expect("re-parse 실패");
+    let cd_disk =
+        HwpDocument::find_initial_column_def(&reparsed.document.sections[0].paragraphs);
+    assert_eq!(
+        cd_disk.column_count, 2,
+        "라운드트립 후 단 개수가 보존되지 않음 (got {}단)",
+        cd_disk.column_count
+    );
+    assert!(cd_disk.same_width, "라운드트립 후 same_width 손실");
+}
+
 #[test]
 fn test_hwp_error_display() {
     let err = HwpError::InvalidFile("테스트".to_string());
