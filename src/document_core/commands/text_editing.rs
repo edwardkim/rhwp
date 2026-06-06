@@ -1450,84 +1450,92 @@ impl DocumentCore {
             lines
         };
 
-        // 1) 셀을 첫 문단(cell_para 0) 하나로 접고, 그 문단의 텍스트를 비운다.
-        //    delete_text_at은 char_shapes/para_shape_id를 보존하므로 첫 문단의
-        //    서식(글꼴·정렬·줄간격)이 그대로 남는다. 새 줄들이 상속할 "셀 대표
-        //    글자 서식"으로 첫 문단의 선두(offset 0) char_shape_id를 기억한다 —
-        //    분할 지점(텍스트 끝)의 활성 서식이 아니라, 셀 본래의 시작 서식을
-        //    모든 줄에 적용해야 `① 영문 ¶ 해석`의 글꼴이 줄마다 일관되게 유지된다.
-        let lead_char_shape: u32 = {
-            let cell_paras =
-                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
-            if cell_paras.is_empty() {
-                return Err(HwpError::RenderError(
-                    "셀에 문단이 없습니다".to_string(),
-                ));
+        // 1) 셀을 첫 문단(cell_para 0) 하나로 접고 그 문단을 비운다. 추가 셀 문단을
+        //    마지막부터 첫 문단으로 반복 병합한 뒤 첫 문단 전체 길이를 삭제한다.
+        //    merge/delete 프리미티브는 char_shape/para_shape 를 보존하므로 셀의
+        //    기존 서식이 그대로 남는다.
+        loop {
+            let count =
+                self.get_cell_paragraph_count_native(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            if count <= 1 {
+                break;
             }
-            let lead = cell_paras[0]
-                .char_shapes
-                .first()
-                .map(|cs| cs.char_shape_id)
-                .unwrap_or(0);
-            // 첫 문단 이후 문단 제거 — 첫 문단의 서식만 남긴다.
-            cell_paras.truncate(1);
-            let first = &mut cell_paras[0];
-            let len = first.text.chars().count();
-            first.delete_text_at(0, len);
-            lead
-        };
-
-        // 2) 줄 0을 첫 문단에 삽입한다.
-        {
-            let cell_paras =
-                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
-            cell_paras[0].insert_text_at(0, &lines[0]);
-        }
-
-        // 3) 나머지 줄: 직전 문단 끝에서 split_at으로 새 문단을 만들어(ParaShape/
-        //    style 상속) 텍스트를 삽입한다.
-        for (i, line) in lines.iter().enumerate().skip(1) {
-            let cell_paras =
-                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
-            let prev_idx = i - 1;
-            let prev_len = cell_paras[prev_idx].text.chars().count();
-            // split_at은 para_shape_id/style_id를 복제한다.
-            let mut new_para = cell_paras[prev_idx].split_at(prev_len);
-            new_para.insert_text_at(0, line);
-            cell_paras.insert(i, new_para);
-        }
-
-        // 4) 모든 줄의 글자 서식을 셀 대표 char_shape 하나로 정규화한다. split_at은
-        //    분할 지점의 활성 서식을 가져오므로, 이를 첫 문단 선두 서식으로 통일해야
-        //    줄마다 글꼴이 흔들리지 않는다(전체 셀 내용 교체의 의도된 동작).
-        {
-            let cell_paras =
-                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
-            for cp in cell_paras.iter_mut().take(lines.len()) {
-                cp.char_shapes = vec![crate::model::paragraph::CharShapeRef {
-                    start_pos: 0,
-                    char_shape_id: lead_char_shape,
-                }];
-            }
-        }
-
-        // 5) dirty 마킹 + 전체 셀 문단 리플로우 + 재페이지네이션.
-        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
-        let line_count = lines.len();
-        for cp in 0..line_count {
-            self.reflow_cell_paragraph(
+            self.merge_paragraph_in_cell_native(
                 section_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
-                cp,
-            );
+                count - 1,
+            )?;
         }
-        // split_at/reflow_line_segs 는 각 새 문단의 LINE_SEG.vertical_pos 를 0 으로
-        // 둔다(문단 내부 누적만 계산). Top 정렬 셀 렌더러(table_layout.rs)는 각 문단
-        // top 을 `cell_top + LINE_SEG.vertical_pos` 로 고정하므로, vpos 가 모두 0 이면
-        // N 개 문단이 같은 y 로 겹쳐 한 줄로 무너진다. 셀 문단 벡터에 vpos 누적을
-        // 재계산해 0, lh+ls, 2·(lh+ls)… 로 세로로 분리시킨다(템플릿 원본과 동일).
+        let len0 = self.get_cell_paragraph_length_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            0,
+        )?;
+        self.delete_text_in_cell_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            0,
+            0,
+            len0,
+        )?;
+
+        // 2) 줄 0을 첫 문단에 삽입한다(첫 문단의 서식을 상속).
+        self.insert_text_in_cell_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            0,
+            0,
+            &lines[0],
+        )?;
+
+        // 3) 나머지 줄: 현재 마지막 셀 문단의 끝에서 split 해 새 문단을 만들고
+        //    (ParaShape/CharShape/style 상속), 그 문단에 줄을 삽입한다. split/insert
+        //    프리미티브는 각 문단을 개별 reflow 하지만 문단 *사이* vpos 는 두지 않으므로
+        //    아래 (4)에서 한 번에 누적 재계산한다.
+        for (i, line) in lines.iter().enumerate().skip(1) {
+            let prev_idx = i - 1;
+            let prev_len = self.get_cell_paragraph_length_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                prev_idx,
+            )?;
+            self.split_paragraph_in_cell_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                prev_idx,
+                prev_len,
+            )?;
+            self.insert_text_in_cell_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                i,
+                0,
+                line,
+            )?;
+        }
+
+        // 4) vpos 누적 마무리. 위 프리미티브는 각 셀 문단을 개별 reflow 하지만
+        //    (reflow_cell_paragraph → 문단 내부 vpos 만 누적), 셀 문단 *사이*의
+        //    vertical_pos 는 모두 0 으로 남는다. Top 정렬 셀 렌더러는 각 문단 top 을
+        //    `cell_top + LINE_SEG.vertical_pos` 로 고정하므로 vpos 가 모두 0 이면
+        //    N 개 문단이 한 줄로 겹친다. recalculate_section_vpos 로 셀 문단 벡터의
+        //    누적 오프셋(0, lh+ls, 2·(lh+ls)…)을 재계산해 세로로 분리시킨다.
+        //    (upstream 셀 프리미티브는 cross-paragraph vpos 를 다루지 않으므로 이
+        //    한 번의 finalize 호출이 collapse 회귀 테스트의 계약이다.)
         {
             let cell_paras =
                 self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
@@ -1537,6 +1545,7 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
+        let line_count = lines.len();
         self.event_log.push(DocumentEvent::CellTextChanged {
             section: section_idx,
             para: parent_para_idx,
@@ -2512,10 +2521,11 @@ impl DocumentCore {
 
     /// path 기반 셀(중첩 표 지원) 전체 내용을 여러 줄 텍스트로 REPLACE 한다.
     ///
-    /// `set_cell_text_native`(단일 레벨)와 동일한 서식 보존 로직을 그대로
-    /// 사용하되, 대상 셀을 `get_cell_paragraphs_mut_by_path`(중첩 path)로
-    /// 해석한다. 첫 문단(cell_para 0)의 선두 char_shape 를 기억해 모든 줄에
-    /// 적용하고, 추가 줄은 `split_at` 으로 ParaShape/style 을 상속한다.
+    /// `set_cell_text_native`(단일 레벨)의 by-path 미러. 업스트림의 셀 편집
+    /// 프리미티브(merge/delete/split/insert `_by_path`)를 조합해 셀을 비우고
+    /// 다시 채운다. 서식(ParaShape/CharShape/style)은 이들 프리미티브가 편집
+    /// 지점에서 상속하므로 보존되고, 마지막에 cross-paragraph vpos 만 한 번
+    /// 누적 재계산한다(업스트림 by-path 프리미티브는 reflow/vpos 미수행).
     pub fn set_cell_text_by_path_native(
         &mut self,
         section_idx: usize,
@@ -2535,71 +2545,67 @@ impl DocumentCore {
             lines
         };
 
-        // 1) 셀을 첫 문단 하나로 접고 텍스트를 비운다. 셀 대표 글자 서식으로
-        //    첫 문단 선두(offset 0) char_shape_id 를 기억한다 (set_cell_text_native 미러).
-        let lead_char_shape: u32 = {
-            let cell_paras =
-                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            if cell_paras.is_empty() {
-                return Err(HwpError::RenderError("셀에 문단이 없습니다".to_string()));
-            }
-            let lead = cell_paras[0]
-                .char_shapes
-                .first()
-                .map(|cs| cs.char_shape_id)
-                .unwrap_or(0);
-            cell_paras.truncate(1);
-            let first = &mut cell_paras[0];
-            let len = first.text.chars().count();
-            first.delete_text_at(0, len);
-            lead
+        // 끝 셀(path.last)의 cell_para_idx 만 바꾼 path 를 만든다. by-path
+        // 프리미티브는 마지막 엔트리의 cell_para_idx 로 대상 문단을 고른다.
+        let path_with_cpi = |cpi: usize| -> Vec<(usize, usize, usize)> {
+            let mut p = path.to_vec();
+            let last = p.len() - 1;
+            p[last].2 = cpi;
+            p
+        };
+        // 끝 셀 문단 개수.
+        let cell_para_count = |this: &mut Self| -> Result<usize, HwpError> {
+            Ok(this
+                .get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?
+                .len())
+        };
+        // 끝 셀의 cpi 번째 문단 글자 수.
+        let cell_para_len = |this: &mut Self, cpi: usize| -> Result<usize, HwpError> {
+            let p = path_with_cpi(cpi);
+            Ok(this
+                .get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, &p)?
+                .text
+                .chars()
+                .count())
         };
 
-        // 2) 줄 0을 첫 문단에 삽입한다.
-        {
-            let cell_paras =
-                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            cell_paras[0].insert_text_at(0, &lines[0]);
-        }
-
-        // 3) 나머지 줄: 직전 문단 끝에서 split_at 으로 새 문단을 만들어 텍스트를 삽입.
-        for (i, line) in lines.iter().enumerate().skip(1) {
-            let cell_paras =
-                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            let prev_idx = i - 1;
-            let prev_len = cell_paras[prev_idx].text.chars().count();
-            let mut new_para = cell_paras[prev_idx].split_at(prev_len);
-            new_para.insert_text_at(0, line);
-            cell_paras.insert(i, new_para);
-        }
-
-        // 4) 모든 줄의 글자 서식을 셀 대표 char_shape 하나로 정규화한다.
-        {
-            let cell_paras =
-                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            for cp in cell_paras.iter_mut().take(lines.len()) {
-                cp.char_shapes = vec![crate::model::paragraph::CharShapeRef {
-                    start_pos: 0,
-                    char_shape_id: lead_char_shape,
-                }];
+        // 1) 셀을 첫 문단 하나로 접고 비운다(set_cell_text_native 미러). merge/delete
+        //    by-path 프리미티브는 char_shape/para_shape 를 보존한다.
+        loop {
+            let count = cell_para_count(self)?;
+            if count <= 1 {
+                break;
             }
+            let p = path_with_cpi(count - 1);
+            self.merge_paragraph_in_cell_by_path(section_idx, parent_para_idx, &p)?;
+        }
+        let len0 = cell_para_len(self, 0)?;
+        let p0 = path_with_cpi(0);
+        self.delete_text_in_cell_by_path(section_idx, parent_para_idx, &p0, 0, len0)?;
+
+        // 2) 줄 0을 첫 문단에 삽입(첫 문단 서식 상속).
+        self.insert_text_in_cell_by_path(section_idx, parent_para_idx, &p0, 0, &lines[0])?;
+
+        // 3) 나머지 줄: 현재 마지막 셀 문단 끝에서 split 후 삽입(ParaShape/CharShape/
+        //    style 상속). 문단 사이 vpos 는 아래 (4)에서 누적 재계산한다.
+        for (i, line) in lines.iter().enumerate().skip(1) {
+            let prev_idx = i - 1;
+            let prev_len = cell_para_len(self, prev_idx)?;
+            let p_prev = path_with_cpi(prev_idx);
+            self.split_paragraph_in_cell_by_path(section_idx, parent_para_idx, &p_prev, prev_len)?;
+            let p_new = path_with_cpi(i);
+            self.insert_text_in_cell_by_path(section_idx, parent_para_idx, &p_new, 0, line)?;
         }
 
-        // 5) 줄 나눔/줄높이 리플로우 + vpos 누적 재계산.
-        //    set_cell_text_native 와 동일하게, 새로 만든 문단들은 split_at 으로
-        //    원본 첫 문단의 LINE_SEG 치수(line_height 등)를 상속하지만
-        //    vertical_pos 는 모두 0 으로 남는다. Top 정렬 셀 렌더러는 각 문단 top 을
-        //    `cell_top + LINE_SEG.vertical_pos` 로 고정하므로 vpos 가 모두 0 이면
-        //    N 개 문단이 한 줄로 겹친다. 셀 폭으로 각 문단을 reflow 한 뒤
-        //    recalculate_section_vpos 로 0, lh+ls, 2·(lh+ls)… 누적시켜 분리한다.
+        // 4) vpos 누적 마무리(set_cell_text_native 미러). 단, by-path 프리미티브는
+        //    리플로우조차 하지 않으므로(insert/split/delete by-path 는 reflow 미수행)
+        //    먼저 끝 셀의 각 문단을 셀 폭으로 reflow 해 line_seg 높이를 셀 폭에 맞춘
+        //    뒤 recalculate_section_vpos 로 문단 사이 vertical_pos 를 누적시킨다.
         let inner_width_px = self.cell_inner_width_px_by_path(section_idx, parent_para_idx, path);
         {
-            // self.styles 와 self.document 는 서로 다른 필드이므로 분리 차용한다
-            // (ResolvedStyleSet 복제를 피한다).
+            // self.styles 와 self.document 분리 차용(ResolvedStyleSet 복제 회피).
             let dpi = self.dpi;
             let styles = &self.styles;
-            // path 끝 셀의 문단 Vec 로 직접 하강(가변) — get_*_by_path 는 &mut self 를
-            // 잡아 styles 차용과 충돌하므로 self.document 만 가변 차용해 내려간다.
             let mut para: &mut Paragraph = self.document.sections[section_idx]
                 .paragraphs
                 .get_mut(parent_para_idx)
@@ -2628,15 +2634,12 @@ impl DocumentCore {
                     .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
             }
         }
-
-        // 6) dirty 마킹(최외곽 표) + raw 무효화 + 재페이지네이션.
-        let outer_ctrl = path[0].0;
-        self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
         let line_count = lines.len();
+        let outer_ctrl = path[0].0;
         self.event_log.push(DocumentEvent::CellTextChanged {
             section: section_idx,
             para: parent_para_idx,
