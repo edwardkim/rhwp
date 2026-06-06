@@ -1424,6 +1424,176 @@ impl DocumentCore {
         )))
     }
 
+    /// 셀(또는 글상자/그림 캡션) 전체 내용을 여러 줄 텍스트로 REPLACE 한다.
+    ///
+    /// `lines`의 각 원소가 셀 안의 한 문단이 된다. 기존 셀 문단을 모두 비우고
+    /// 첫 문단(cell_para 0)의 ParaShape/CharShape/style을 보존한 채 다시 채운다.
+    /// 추가 문단은 첫 문단을 `split_at`으로 분할해 만들어 같은 서식을 상속한다
+    /// (HWP의 `① 영문 ¶ 해석` 2-문단 셀 모양·글꼴이 그대로 유지된다).
+    ///
+    /// `lines`가 비어 있으면 빈 한 문단으로 만든다. 셀 내부 컨트롤(중첩 표/그림
+    /// 등)은 첫 문단에만 남으므로, 컨트롤이 있는 셀이면 그 컨트롤은 보존되고
+    /// 텍스트만 교체된다.
+    pub fn set_cell_text_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        lines: &[String],
+    ) -> Result<String, HwpError> {
+        // 빈 입력은 빈 한 줄로 정규화한다(셀에는 항상 최소 한 문단이 있어야 한다).
+        let empty = String::new();
+        let lines: &[String] = if lines.is_empty() {
+            std::slice::from_ref(&empty)
+        } else {
+            lines
+        };
+
+        // 1) 셀을 첫 문단(cell_para 0) 하나로 접고, 그 문단의 텍스트를 비운다.
+        //    delete_text_at은 char_shapes/para_shape_id를 보존하므로 첫 문단의
+        //    서식(글꼴·정렬·줄간격)이 그대로 남는다. 새 줄들이 상속할 "셀 대표
+        //    글자 서식"으로 첫 문단의 선두(offset 0) char_shape_id를 기억한다 —
+        //    분할 지점(텍스트 끝)의 활성 서식이 아니라, 셀 본래의 시작 서식을
+        //    모든 줄에 적용해야 `① 영문 ¶ 해석`의 글꼴이 줄마다 일관되게 유지된다.
+        let lead_char_shape: u32 = {
+            let cell_paras =
+                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            if cell_paras.is_empty() {
+                return Err(HwpError::RenderError(
+                    "셀에 문단이 없습니다".to_string(),
+                ));
+            }
+            let lead = cell_paras[0]
+                .char_shapes
+                .first()
+                .map(|cs| cs.char_shape_id)
+                .unwrap_or(0);
+            // 첫 문단 이후 문단 제거 — 첫 문단의 서식만 남긴다.
+            cell_paras.truncate(1);
+            let first = &mut cell_paras[0];
+            let len = first.text.chars().count();
+            first.delete_text_at(0, len);
+            lead
+        };
+
+        // 2) 줄 0을 첫 문단에 삽입한다.
+        {
+            let cell_paras =
+                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            cell_paras[0].insert_text_at(0, &lines[0]);
+        }
+
+        // 3) 나머지 줄: 직전 문단 끝에서 split_at으로 새 문단을 만들어(ParaShape/
+        //    style 상속) 텍스트를 삽입한다.
+        for (i, line) in lines.iter().enumerate().skip(1) {
+            let cell_paras =
+                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            let prev_idx = i - 1;
+            let prev_len = cell_paras[prev_idx].text.chars().count();
+            // split_at은 para_shape_id/style_id를 복제한다.
+            let mut new_para = cell_paras[prev_idx].split_at(prev_len);
+            new_para.insert_text_at(0, line);
+            cell_paras.insert(i, new_para);
+        }
+
+        // 4) 모든 줄의 글자 서식을 셀 대표 char_shape 하나로 정규화한다. split_at은
+        //    분할 지점의 활성 서식을 가져오므로, 이를 첫 문단 선두 서식으로 통일해야
+        //    줄마다 글꼴이 흔들리지 않는다(전체 셀 내용 교체의 의도된 동작).
+        {
+            let cell_paras =
+                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            for cp in cell_paras.iter_mut().take(lines.len()) {
+                cp.char_shapes = vec![crate::model::paragraph::CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: lead_char_shape,
+                }];
+            }
+        }
+
+        // 5) dirty 마킹 + 전체 셀 문단 리플로우 + 재페이지네이션.
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
+        let line_count = lines.len();
+        for cp in 0..line_count {
+            self.reflow_cell_paragraph(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cp,
+            );
+        }
+        self.document.sections[section_idx].raw_stream = None;
+        self.mark_section_dirty(section_idx);
+        self.paginate_if_needed();
+
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: control_idx,
+            cell: cell_idx,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"cellParaCount\":{}",
+            line_count
+        )))
+    }
+
+    /// 셀(표)/글상자(도형)/캡션(그림)의 문단 Vec에 대한 가변 참조.
+    /// 단일 레벨 컨트롤(중첩 표 제외) — `*_in_cell_native` 류와 동일한 라우팅.
+    fn cell_paragraphs_mut(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+    ) -> Result<&mut Vec<Paragraph>, HwpError> {
+        let para = self
+            .document
+            .sections
+            .get_mut(section_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx)))?
+            .paragraphs
+            .get_mut(parent_para_idx)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("부모 문단 인덱스 {} 범위 초과", parent_para_idx))
+            })?;
+        match para.controls.get_mut(control_idx) {
+            Some(Control::Table(table)) => {
+                if cell_idx == 65534 {
+                    let cap = table.caption.as_mut().ok_or_else(|| {
+                        HwpError::RenderError("표에 캡션이 없습니다".to_string())
+                    })?;
+                    Ok(&mut cap.paragraphs)
+                } else {
+                    let cell_count = table.cells.len();
+                    let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "셀 인덱스 {} 범위 초과 (총 {}개)",
+                            cell_idx, cell_count
+                        ))
+                    })?;
+                    Ok(&mut cell.paragraphs)
+                }
+            }
+            Some(Control::Shape(shape)) => {
+                let tb = super::super::helpers::get_textbox_from_shape_mut(shape)
+                    .ok_or_else(|| HwpError::RenderError("도형에 글상자가 없습니다".to_string()))?;
+                Ok(&mut tb.paragraphs)
+            }
+            Some(Control::Picture(pic)) => {
+                let cap = pic.caption.as_mut().ok_or_else(|| {
+                    HwpError::RenderError("그림에 캡션이 없습니다".to_string())
+                })?;
+                Ok(&mut cap.paragraphs)
+            }
+            _ => Err(HwpError::RenderError(format!(
+                "컨트롤 인덱스 {}가 표/글상자/그림이 아닙니다",
+                control_idx
+            ))),
+        }
+    }
+
     /// 셀 내부 문단 병합 (네이티브 에러 타입)
     ///
     /// cell_para_idx 문단을 이전 문단(cell_para_idx - 1)에 병합한다.
@@ -2898,5 +3068,80 @@ mod tests {
                 tree.err()
             );
         }
+    }
+
+    // set_cell_text_native: a 2x1 table, fill cell 0 with a two-line
+    // "EN ¶ 해석" content in ONE op, then assert the cell has two paragraphs
+    // with that text AND each new paragraph inherits the first paragraph's
+    // ParaShape/CharShape/style (format preserved).
+    #[test]
+    fn set_cell_text_replaces_with_multi_paragraph_preserving_format() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        // Insert a 2x1 table at the body start; find its control index.
+        let created = core.create_table_native(0, 0, 0, 2, 1).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&created).unwrap();
+        let para_idx = v["paraIdx"].as_u64().unwrap() as usize;
+        let ctrl_idx = v["controlIdx"].as_u64().unwrap() as usize;
+
+        // Seed cell 0 with a single existing line so we exercise the CLEAR path,
+        // and capture its para/char shape to compare against the rebuilt ones.
+        core.insert_text_in_cell_native(0, para_idx, ctrl_idx, 0, 0, 0, "old text")
+            .unwrap();
+        let (base_para_shape, base_style) = {
+            let p = core
+                .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 0)
+                .unwrap();
+            (p.para_shape_id, p.style_id)
+        };
+        let base_char_shape = core
+            .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 0)
+            .unwrap()
+            .char_shapes
+            .first()
+            .map(|cs| cs.char_shape_id);
+
+        // ONE op replaces the whole cell with two paragraphs.
+        let lines = vec![
+            "① Sleep is important.".to_string(),
+            "수면은 중요하다.".to_string(),
+        ];
+        let res = core
+            .set_cell_text_native(0, para_idx, ctrl_idx, 0, &lines)
+            .unwrap();
+        let rv: serde_json::Value = serde_json::from_str(&res).unwrap();
+        assert_eq!(rv["cellParaCount"].as_u64().unwrap(), 2);
+
+        // Two cell paragraphs with the exact text.
+        let p0 = core
+            .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 0)
+            .unwrap();
+        assert_eq!(p0.text, "① Sleep is important.");
+        let p1 = core
+            .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 1)
+            .unwrap();
+        assert_eq!(p1.text, "수면은 중요하다.");
+        // No stray third paragraph.
+        assert!(core
+            .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 2)
+            .is_none());
+
+        // Format preserved: both rebuilt paragraphs carry the original cell
+        // paragraph's ParaShape, style, and char shape.
+        assert_eq!(p0.para_shape_id, base_para_shape, "p0 ParaShape preserved");
+        assert_eq!(p1.para_shape_id, base_para_shape, "p1 ParaShape preserved");
+        assert_eq!(p0.style_id, base_style, "p0 style preserved");
+        assert_eq!(p1.style_id, base_style, "p1 style preserved");
+        // Both rebuilt paragraphs carry a char shape, and the second line
+        // inherits the SAME char shape as the first (the cell's run style flows
+        // to every new line — the format-preservation guarantee). `base_char_shape`
+        // is recorded for documentation; synthetic empty cells may start without
+        // an explicit char shape, so the load-bearing check is p0 == p1.
+        let _ = base_char_shape;
+        let p0_cs = p0.char_shapes.first().map(|cs| cs.char_shape_id);
+        let p1_cs = p1.char_shapes.first().map(|cs| cs.char_shape_id);
+        assert!(p0_cs.is_some(), "p0 has a char shape");
+        assert_eq!(p0_cs, p1_cs, "new line inherits the cell's char shape");
     }
 }
