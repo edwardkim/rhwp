@@ -2500,6 +2500,101 @@ impl DocumentCore {
         )))
     }
 
+    /// path 기반 셀(중첩 표 지원) 전체 내용을 여러 줄 텍스트로 REPLACE 한다.
+    ///
+    /// `set_cell_text_native`(단일 레벨)와 동일한 서식 보존 로직을 그대로
+    /// 사용하되, 대상 셀을 `get_cell_paragraphs_mut_by_path`(중첩 path)로
+    /// 해석한다. 첫 문단(cell_para 0)의 선두 char_shape 를 기억해 모든 줄에
+    /// 적용하고, 추가 줄은 `split_at` 으로 ParaShape/style 을 상속한다.
+    pub fn set_cell_text_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        lines: &[String],
+    ) -> Result<String, HwpError> {
+        if path.is_empty() {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
+        }
+
+        // 빈 입력은 빈 한 줄로 정규화한다(셀에는 항상 최소 한 문단이 있어야 한다).
+        let empty = String::new();
+        let lines: &[String] = if lines.is_empty() {
+            std::slice::from_ref(&empty)
+        } else {
+            lines
+        };
+
+        // 1) 셀을 첫 문단 하나로 접고 텍스트를 비운다. 셀 대표 글자 서식으로
+        //    첫 문단 선두(offset 0) char_shape_id 를 기억한다 (set_cell_text_native 미러).
+        let lead_char_shape: u32 = {
+            let cell_paras =
+                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+            if cell_paras.is_empty() {
+                return Err(HwpError::RenderError("셀에 문단이 없습니다".to_string()));
+            }
+            let lead = cell_paras[0]
+                .char_shapes
+                .first()
+                .map(|cs| cs.char_shape_id)
+                .unwrap_or(0);
+            cell_paras.truncate(1);
+            let first = &mut cell_paras[0];
+            let len = first.text.chars().count();
+            first.delete_text_at(0, len);
+            lead
+        };
+
+        // 2) 줄 0을 첫 문단에 삽입한다.
+        {
+            let cell_paras =
+                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+            cell_paras[0].insert_text_at(0, &lines[0]);
+        }
+
+        // 3) 나머지 줄: 직전 문단 끝에서 split_at 으로 새 문단을 만들어 텍스트를 삽입.
+        for (i, line) in lines.iter().enumerate().skip(1) {
+            let cell_paras =
+                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+            let prev_idx = i - 1;
+            let prev_len = cell_paras[prev_idx].text.chars().count();
+            let mut new_para = cell_paras[prev_idx].split_at(prev_len);
+            new_para.insert_text_at(0, line);
+            cell_paras.insert(i, new_para);
+        }
+
+        // 4) 모든 줄의 글자 서식을 셀 대표 char_shape 하나로 정규화한다.
+        {
+            let cell_paras =
+                self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+            for cp in cell_paras.iter_mut().take(lines.len()) {
+                cp.char_shapes = vec![crate::model::paragraph::CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: lead_char_shape,
+                }];
+            }
+        }
+
+        // 5) dirty 마킹(최외곽 표) + raw 무효화 + 재페이지네이션.
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.document.sections[section_idx].raw_stream = None;
+        self.mark_section_dirty(section_idx);
+        self.paginate_if_needed();
+
+        let line_count = lines.len();
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: outer_ctrl,
+            cell: path[0].1,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"cellParaCount\":{}",
+            line_count
+        )))
+    }
+
     /// path 기반 셀 문단 분할 (중첩 표 지원)
     pub fn split_paragraph_in_cell_by_path(
         &mut self,
