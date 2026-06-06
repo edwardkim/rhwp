@@ -1523,6 +1523,16 @@ impl DocumentCore {
                 cp,
             );
         }
+        // split_at/reflow_line_segs 는 각 새 문단의 LINE_SEG.vertical_pos 를 0 으로
+        // 둔다(문단 내부 누적만 계산). Top 정렬 셀 렌더러(table_layout.rs)는 각 문단
+        // top 을 `cell_top + LINE_SEG.vertical_pos` 로 고정하므로, vpos 가 모두 0 이면
+        // N 개 문단이 같은 y 로 겹쳐 한 줄로 무너진다. 셀 문단 벡터에 vpos 누적을
+        // 재계산해 0, lh+ls, 2·(lh+ls)… 로 세로로 분리시킨다(템플릿 원본과 동일).
+        {
+            let cell_paras =
+                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            crate::renderer::composer::recalculate_section_vpos(cell_paras, 0);
+        }
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -2575,7 +2585,51 @@ impl DocumentCore {
             }
         }
 
-        // 5) dirty 마킹(최외곽 표) + raw 무효화 + 재페이지네이션.
+        // 5) 줄 나눔/줄높이 리플로우 + vpos 누적 재계산.
+        //    set_cell_text_native 와 동일하게, 새로 만든 문단들은 split_at 으로
+        //    원본 첫 문단의 LINE_SEG 치수(line_height 등)를 상속하지만
+        //    vertical_pos 는 모두 0 으로 남는다. Top 정렬 셀 렌더러는 각 문단 top 을
+        //    `cell_top + LINE_SEG.vertical_pos` 로 고정하므로 vpos 가 모두 0 이면
+        //    N 개 문단이 한 줄로 겹친다. 셀 폭으로 각 문단을 reflow 한 뒤
+        //    recalculate_section_vpos 로 0, lh+ls, 2·(lh+ls)… 누적시켜 분리한다.
+        let inner_width_px = self.cell_inner_width_px_by_path(section_idx, parent_para_idx, path);
+        {
+            // self.styles 와 self.document 는 서로 다른 필드이므로 분리 차용한다
+            // (ResolvedStyleSet 복제를 피한다).
+            let dpi = self.dpi;
+            let styles = &self.styles;
+            // path 끝 셀의 문단 Vec 로 직접 하강(가변) — get_*_by_path 는 &mut self 를
+            // 잡아 styles 차용과 충돌하므로 self.document 만 가변 차용해 내려간다.
+            let mut para: &mut Paragraph = self.document.sections[section_idx]
+                .paragraphs
+                .get_mut(parent_para_idx)
+                .ok_or_else(|| HwpError::RenderError("문단 범위 초과".to_string()))?;
+            for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
+                let table = match para.controls.get_mut(ctrl_idx) {
+                    Some(Control::Table(t)) => t.as_mut(),
+                    _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
+                };
+                let cell = table
+                    .cells
+                    .get_mut(cell_idx)
+                    .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
+                if i == path.len() - 1 {
+                    if let Some(w) = inner_width_px {
+                        for cp in cell.paragraphs.iter_mut() {
+                            reflow_line_segs(cp, w, styles, dpi);
+                        }
+                    }
+                    crate::renderer::composer::recalculate_section_vpos(&mut cell.paragraphs, 0);
+                    break;
+                }
+                para = cell
+                    .paragraphs
+                    .get_mut(cell_para_idx)
+                    .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
+            }
+        }
+
+        // 6) dirty 마킹(최외곽 표) + raw 무효화 + 재페이지네이션.
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
         self.document.sections[section_idx].raw_stream = None;
@@ -2593,6 +2647,48 @@ impl DocumentCore {
             "\"cellParaCount\":{}",
             line_count
         )))
+    }
+
+    /// path 끝 셀의 사용 가능한 내부 폭(px)을 계산한다(좌우 패딩 제외).
+    /// reflow_line_segs 의 줄 나눔 폭으로 사용. 셀 폭/패딩을 못 구하면 None.
+    fn cell_inner_width_px_by_path(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> Option<f64> {
+        use crate::renderer::hwpunit_to_px;
+        let mut para = self
+            .document
+            .sections
+            .get(section_idx)?
+            .paragraphs
+            .get(parent_para_idx)?;
+        for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
+            let table = match para.controls.get(ctrl_idx) {
+                Some(Control::Table(t)) => t.as_ref(),
+                _ => return None,
+            };
+            let cell = table.cells.get(cell_idx)?;
+            if i == path.len() - 1 {
+                let pad_l = if cell.padding.left != 0 {
+                    cell.padding.left
+                } else {
+                    table.padding.left
+                };
+                let pad_r = if cell.padding.right != 0 {
+                    cell.padding.right
+                } else {
+                    table.padding.right
+                };
+                let w = hwpunit_to_px(cell.width as i32, self.dpi)
+                    - hwpunit_to_px(pad_l as i32, self.dpi)
+                    - hwpunit_to_px(pad_r as i32, self.dpi);
+                return Some(w.max(0.0));
+            }
+            para = cell.paragraphs.get(cell_para_idx)?;
+        }
+        None
     }
 
     /// path 기반 셀 문단 분할 (중첩 표 지원)
@@ -2758,6 +2854,64 @@ impl DocumentCore {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Regression for the multi-paragraph cell-collapse bug: a nested-cell
+    /// REPLACE via `set_cell_text_by_path_native` must give each created cell
+    /// paragraph a strictly increasing `line_segs[0].vertical_pos` (cumulative
+    /// line offset), so the Top-aligned renderer stacks them on distinct rows
+    /// instead of overlapping at `cell_top + 0`.
+    #[test]
+    fn set_cell_by_path_cascades_vertical_pos() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/exam_social.hwp");
+        let bytes = std::fs::read(&path).unwrap();
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+
+        let cell_path = [(0usize, 0usize, 0usize), (1usize, 1usize, 0usize)];
+        let lines: Vec<String> = ["L0", "L1", "L2", "L3", "L4", "L5"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        let res = core
+            .set_cell_text_by_path_native(0, 1, &cell_path, &lines)
+            .unwrap();
+        assert!(res.contains("\"cellParaCount\":6"), "got {res}");
+
+        // body -> outer table(ctrl 0) -> cell 0 -> para 0 -> nested table(ctrl 1) -> cell 1
+        let para = &core.document.sections[0].paragraphs[1];
+        let Some(Control::Table(t0)) = para.controls.get(0) else {
+            panic!("outer table missing")
+        };
+        let inner_host = &t0.cells[0].paragraphs[0];
+        let Some(Control::Table(t1)) = inner_host.controls.get(1) else {
+            panic!("nested table missing")
+        };
+        let inner_cell = &t1.cells[1];
+        assert_eq!(inner_cell.paragraphs.len(), 6, "6 replacement paragraphs");
+
+        let vps: Vec<i32> = inner_cell
+            .paragraphs
+            .iter()
+            .map(|p| p.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1))
+            .collect();
+        for w in vps.windows(2) {
+            assert!(
+                w[1] > w[0],
+                "nested cell paragraph vertical_pos must strictly increase, got {vps:?}"
+            );
+        }
+        let pitch = inner_cell.paragraphs[0]
+            .line_segs
+            .first()
+            .map(|s| s.line_height + s.line_spacing)
+            .unwrap_or(0);
+        assert!(pitch > 0, "line pitch must be positive, got {pitch}");
+        assert!(
+            vps[1] - vps[0] >= pitch - 1,
+            "vpos step ({}) must be >= one line pitch ({pitch}); vps={vps:?}",
+            vps[1] - vps[0]
+        );
+    }
 
     #[test]
     fn test_page_overflow_with_enter() {
