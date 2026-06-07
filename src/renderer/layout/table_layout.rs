@@ -1036,7 +1036,7 @@ impl LayoutEngine {
         cell_inner_width_px: f64,
     ) -> f64 {
         let cell_para_count = paragraphs.len();
-        paragraphs
+        let line_based_height: f64 = paragraphs
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
@@ -1059,7 +1059,8 @@ impl LayoutEngine {
                     styles,
                 )
             })
-            .sum()
+            .sum();
+        line_based_height.max(self.calc_nested_controls_bottom_height(paragraphs, styles))
     }
 
     /// pre-composed 문단들의 콘텐츠 높이 합산 (compose 생략)
@@ -1845,7 +1846,9 @@ impl LayoutEngine {
                     0.0
                 };
 
-                composed_height.max(vpos_height)
+                let nested_bottom =
+                    self.calc_nested_controls_bottom_height(&cell.paragraphs, styles);
+                composed_height.max(vpos_height).max(nested_bottom)
             };
 
             // 수직 정렬 (분할 표에서는 Top 강제 — 보이는 영역이 전체 셀보다 작음)
@@ -3123,6 +3126,44 @@ impl LayoutEngine {
             + cell_spacing * (row_count.saturating_sub(1) as f64)
             + om_top
             + om_bottom
+    }
+
+    /// 셀 내 중첩 표가 실제로 차지하는 하단 위치를 계산한다.
+    ///
+    /// 일부 HWP/HWPX는 중첩 표 문단의 LINE_SEG.line_height에 내부 표의 실제
+    /// 높이를 반영하지 않는다. 렌더링/측정은 해당 문단의 vertical_pos에 중첩 표
+    /// 측정 높이를 더한 값을 셀 콘텐츠 끝점 후보로 사용한다.
+    pub(crate) fn calc_nested_controls_bottom_height(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        paragraphs
+            .iter()
+            .map(|p| {
+                let nested_h: f64 = p
+                    .controls
+                    .iter()
+                    .map(|ctrl| {
+                        if let Control::Table(t) = ctrl {
+                            self.calc_nested_table_height(t, styles)
+                        } else {
+                            0.0
+                        }
+                    })
+                    .sum();
+                if nested_h <= 0.0 {
+                    0.0
+                } else {
+                    let para_top = p
+                        .line_segs
+                        .first()
+                        .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                        .unwrap_or(0.0);
+                    para_top + nested_h
+                }
+            })
+            .fold(0.0f64, f64::max)
     }
 
     /// 셀의 content_offset 이후 실제 남은 콘텐츠 높이를 계산한다.

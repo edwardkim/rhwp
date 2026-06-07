@@ -4,7 +4,8 @@ use super::font_lookup::{match_system_family_style, SystemFontFamilies};
 
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{
-    is_integral_symbol, LayoutBox, LayoutKind, AXIS_HEIGHT, BIG_OP_SCALE, SCRIPT_SCALE,
+    integral_geom, is_integral_symbol, LayoutBox, LayoutKind, AXIS_HEIGHT, BIG_OP_SCALE,
+    INTEGRAL_SCALE, SCRIPT_SCALE,
 };
 use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
 
@@ -113,24 +114,25 @@ fn render_box(
             );
         }
         LayoutKind::MathSymbol(text) => {
-            let font_size = if is_integral_symbol(text) {
-                lb.height
+            // Task #1317: 적분 기호(∫)는 폰트 text 가 아닌 stroke path 로 렌더(geom SSOT,
+            // svg/canvas 와 동일). 그 외 MathSymbol 은 text 렌더.
+            if is_integral_symbol(text) {
+                draw_integral(canvas, x, y, fs, color);
             } else {
-                font_size_from_box(lb, fs)
-            };
-            draw_text(
-                canvas,
-                font_mgr,
-                system_families,
-                text,
-                x,
-                y + lb.baseline,
-                font_size,
-                false,
-                false,
-                color,
-                false,
-            );
+                draw_text(
+                    canvas,
+                    font_mgr,
+                    system_families,
+                    text,
+                    x,
+                    y + lb.baseline,
+                    font_size_from_box(lb, fs),
+                    false,
+                    false,
+                    color,
+                    false,
+                );
+            }
         }
         LayoutKind::Function(name) => {
             draw_text(
@@ -343,29 +345,35 @@ fn render_box(
             );
         }
         LayoutKind::BigOp { symbol, sub, sup } => {
-            let op_fs = fs * BIG_OP_SCALE;
-            let (op_x, op_y) = if is_integral_symbol(symbol) {
-                (x, y + op_fs * 0.8)
+            let is_integral = is_integral_symbol(symbol);
+            // Task #1313: 적분은 전용 스케일(INTEGRAL_SCALE), ∑/∏ 등은 BIG_OP_SCALE.
+            let op_fs = fs
+                * if is_integral {
+                    INTEGRAL_SCALE
+                } else {
+                    BIG_OP_SCALE
+                };
+            if is_integral {
+                // Task #1317: 적분 기호는 stroke path 로 렌더(geom SSOT).
+                draw_integral(canvas, x, y, fs, color);
             } else {
                 let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
-                (
-                    x + (lb.width - estimate_op_width(symbol, op_fs)) / 2.0,
-                    y + sup_h + op_fs * 0.8,
-                )
-            };
-            draw_text(
-                canvas,
-                font_mgr,
-                system_families,
-                symbol,
-                op_x,
-                op_y,
-                op_fs,
-                false,
-                false,
-                color,
-                false,
-            );
+                let op_x = x + (lb.width - estimate_op_width(symbol, op_fs)) / 2.0;
+                let op_y = y + sup_h + op_fs * 0.8;
+                draw_text(
+                    canvas,
+                    font_mgr,
+                    system_families,
+                    symbol,
+                    op_x,
+                    op_y,
+                    op_fs,
+                    false,
+                    false,
+                    color,
+                    false,
+                );
+            }
             if let Some(sup) = sup {
                 render_box(
                     canvas,
@@ -943,6 +951,34 @@ fn font_size_from_box(lb: &LayoutBox, base_fs: f64) -> f64 {
 
 fn estimate_op_width(text: &str, fs: f64) -> f64 {
     text.chars().count() as f64 * fs * 0.6
+}
+
+/// 적분 기호(∫)를 stroke path 로 렌더 (Task #1317).
+///
+/// svg_render.rs `integral_path` / canvas_render.rs `draw_integral` 와 동일한
+/// `integral_geom` 기하·곡선을 사용해 SVG/Canvas/Skia 3경로가 정합한다. 폰트
+/// 비의존으로 글리프 bbox 가 결정적이며 상·하한 attach point 와 어긋나지 않는다.
+fn draw_integral(canvas: &Canvas, x: f64, y: f64, fs: f64, color: Color) {
+    let g = integral_geom(fs);
+    let h = g.bottom_y - g.top_y;
+    let p0x = x + g.bottom_hook_x;
+    let p0y = y + g.bottom_y;
+    let p3x = x + g.top_hook_x;
+    let p3y = y + g.top_y;
+    let c1x = x + g.width * 1.02;
+    let c1y = y + g.bottom_y - h * 0.30;
+    let c2x = x - g.width * 0.10;
+    let c2y = y + g.top_y + h * 0.30;
+    let mut paint = stroke_paint(color, g.stroke_w);
+    paint.set_stroke_cap(paint::Cap::Round);
+    let mut path = PathBuilder::new();
+    path.move_to((p0x as f32, p0y as f32));
+    path.cubic_to(
+        (c1x as f32, c1y as f32),
+        (c2x as f32, c2y as f32),
+        (p3x as f32, p3y as f32),
+    );
+    canvas.draw_path(&path.detach(), &paint);
 }
 
 fn fill_paint(color: Color) -> Paint {

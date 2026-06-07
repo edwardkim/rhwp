@@ -598,6 +598,51 @@ impl HeightMeasurer {
             .sum()
     }
 
+    /// 셀 내 중첩 표가 실제로 차지하는 하단 위치를 계산한다.
+    ///
+    /// 중첩 표가 있는 문단의 LINE_SEG.line_height는 표의 실제 높이를 담지 못하는
+    /// 문서가 있다. 이 경우 문단의 vertical_pos를 기준으로 중첩 표의 재귀 측정
+    /// 높이를 더해 셀 콘텐츠의 실제 끝점을 구한다.
+    fn cell_nested_controls_bottom(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        depth: usize,
+    ) -> f64 {
+        if depth >= Self::MAX_NESTED_DEPTH {
+            return 0.0;
+        }
+        paragraphs
+            .iter()
+            .map(|p| {
+                let nested_h: f64 = p
+                    .controls
+                    .iter()
+                    .filter_map(|ctrl| {
+                        if let Control::Table(nested) = ctrl {
+                            Some(
+                                self.measure_table_impl(nested, 0, 0, styles, depth + 1)
+                                    .total_height,
+                            )
+                        } else {
+                            None
+                        }
+                    })
+                    .sum();
+                if nested_h <= 0.0 {
+                    0.0
+                } else {
+                    let para_top = p
+                        .line_segs
+                        .first()
+                        .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                        .unwrap_or(0.0);
+                    para_top + nested_h
+                }
+            })
+            .fold(0.0f64, f64::max)
+    }
+
     /// 표의 높이를 측정한다 (depth 기반 재귀).
     fn measure_table_impl(
         &self,
@@ -836,7 +881,11 @@ impl HeightMeasurer {
                         .map(|s| s.vertical_pos + s.line_height)
                         .max()
                         .unwrap_or(0);
-                    hwpunit_to_px(last_seg_end, self.dpi).max(text_height)
+                    let nested_bottom =
+                        self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
+                    hwpunit_to_px(last_seg_end, self.dpi)
+                        .max(text_height)
+                        .max(nested_bottom)
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                     let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
@@ -1071,7 +1120,9 @@ impl HeightMeasurer {
                 // controls_height를 별도로 더하면 이중 계산됨
                 // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                 let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
-                let content_height = text_height + non_inline_h;
+                let nested_bottom =
+                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
+                let content_height = (text_height + non_inline_h).max(nested_bottom);
                 let required_height = content_height + pad_top + pad_bottom;
                 let combined: f64 = (r..r + span).map(|i| row_heights[i]).sum();
                 if required_height > combined {
@@ -1304,23 +1355,9 @@ impl HeightMeasurer {
                     .iter()
                     .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
                     .unwrap();
-                let nested_h: f64 = cell
-                    .paragraphs
-                    .iter()
-                    .flat_map(|p| p.controls.iter())
-                    .filter_map(|c| {
-                        if let Control::Table(t) = c {
-                            Some(t.as_ref())
-                        } else {
-                            None
-                        }
-                    })
-                    .map(|t| {
-                        self.measure_table_impl(t, 0, 0, styles, depth + 1)
-                            .total_height
-                    })
-                    .sum();
-                mc.total_content_height = nested_h.max(mc.total_content_height);
+                let nested_bottom =
+                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
+                mc.total_content_height = nested_bottom.max(mc.total_content_height);
             }
         }
 
