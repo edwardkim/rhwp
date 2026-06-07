@@ -105,7 +105,6 @@ mod tests {
                 column_index: 0,
                 start_height: 0.0,
                 endnote_flow: false,
-                endnote_bottom_anchor: false,
                 items: vec![PageItem::FullParagraph { para_index: 0 }],
                 zone_layout: None,
                 zone_y_offset: 0.0,
