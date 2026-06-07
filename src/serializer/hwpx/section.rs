@@ -261,6 +261,27 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let mut expected_utf16_pos = 0u32;
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
 
+    // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
+    // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
+    if para.text.is_empty() {
+        while slot_idx < slots.len() {
+            render_control_slot(&mut out, slots[slot_idx], ctx);
+            slot_idx += 1;
+        }
+        for (i, fr) in para.field_ranges.iter().enumerate() {
+            if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
+                if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+                    if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+                        out.push_str("<hp:ctrl>");
+                        out.push_str(&xml);
+                        out.push_str("</hp:ctrl>");
+                    }
+                }
+                field_end_emitted[i] = true;
+            }
+        }
+    }
+
     for (idx, c) in para.text.chars().enumerate() {
         let char_pos = para
             .char_offsets
@@ -1201,5 +1222,50 @@ mod tests {
         assert!(abc_pos < begin_pos, "ABC must precede fieldBegin");
         assert!(begin_pos < end_pos, "fieldBegin must precede fieldEnd");
         assert!(end_pos < de_pos, "fieldEnd must precede DE");
+    }
+
+    // ---------- #1321: 빈 문단(text == "")의 0-length field 순서 ----------
+
+    #[test]
+    fn task1321_zero_length_field_in_empty_paragraph() {
+        // 빈 문단(text="")에 0-length 필드:
+        // HWP stream: fieldBegin(8cu) + fieldEnd(8cu) + para_end(1cu) = 17cu
+        let mut f = Field::default();
+        f.field_type = FieldType::ClickHere;
+        f.field_id = 99;
+
+        let mut para = Paragraph::default();
+        para.text = "".to_string();
+        para.char_count = 17;
+        para.char_offsets = vec![];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 0,
+            control_idx: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:fieldBegin id="99""#),
+            "fieldBegin must be emitted: {}",
+            &xml[..400.min(xml.len())]
+        );
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="99"/>"#),
+            "fieldEnd must be emitted: {}",
+            &xml[..400.min(xml.len())]
+        );
+
+        let begin_pos = xml.find("fieldBegin").expect("fieldBegin");
+        let end_pos = xml.find("fieldEnd").expect("fieldEnd");
+        assert!(
+            begin_pos < end_pos,
+            "빈 문단에서도 fieldBegin이 fieldEnd보다 앞에 와야 한다: {}",
+            &xml[..400.min(xml.len())]
+        );
     }
 }
