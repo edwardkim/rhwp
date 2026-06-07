@@ -3670,14 +3670,15 @@ impl DocumentCore {
             (pd.width as i32 - pd.margin_left as i32 - pd.margin_right as i32).max(7200) as u32;
 
         // attr 비트 계산
-        // textbox: Para/Top/Column/Left/Square = 0x0A0210
-        // 도형(line/ellipse/rectangle): 한컴 기본값 0x046A4000
-        //   Paper/Top/Paper/Left/InFrontOfText + textSide=2 + bit16-17=2 + objNumSort=2 + bit26=1
-        let mut attr: u32 = if shape_type == "textbox" {
-            0x0A0210
-        } else {
-            0x046A4000
-        };
+        // 도형(line/ellipse/rectangle) 및 floating 글상자: 한컴 기본값 0x046A4000
+        //   Paper/Top/Paper/Left/InFrontOfText + 절대크기 + allow_overlap + bit26
+        // inline 글상자(treat_as_char=true): Para/Top/Column/Left/Square = 0x0A0210
+        // [Task #1280 v2] 삽입 글상자는 한컴 정답값 floating(treat_as_char=false)+글앞으로(InFrontOfText).
+        //   권위 샘플 samples/textbox-under-image.hwp 실측: 글상자 배치=글앞으로/Paper/Paper/false.
+        //   serializer(control.rs:1768)는 common.attr!=0 이면 그대로 직렬화하므로 attr 와 enum 필드를
+        //   함께 정합시킨다. treat_as_char=true 인 inline 글상자는 #1280 본편 동작을 그대로 보존.
+        let inline_textbox = shape_type == "textbox" && treat_as_char;
+        let mut attr: u32 = if inline_textbox { 0x0A0210 } else { 0x046A4000 };
         if treat_as_char {
             attr |= 0x01;
         }
@@ -3780,13 +3781,14 @@ impl DocumentCore {
                 }
             },
             treat_as_char,
-            vert_rel_to: if shape_type == "textbox" {
+            // [Task #1280 v2] inline 글상자만 Para/Column(본문 기준), floating 글상자·도형은 Paper.
+            vert_rel_to: if inline_textbox {
                 VertRelTo::Para
             } else {
                 VertRelTo::Paper
             },
             vert_align: VertAlign::Top,
-            horz_rel_to: if shape_type == "textbox" {
+            horz_rel_to: if inline_textbox {
                 HorzRelTo::Column
             } else {
                 HorzRelTo::Paper
@@ -8406,6 +8408,108 @@ mod issue_1280_textbox_creation_tests {
             Control::Shape(s) => crate::document_core::helpers::get_textbox_from_shape(s.as_ref()),
             other => panic!("expected Control::Shape, got {other:?}"),
         }
+    }
+
+    fn common_of<'a>(
+        core: &'a DocumentCore,
+        para_idx: usize,
+        ctrl_idx: usize,
+    ) -> &'a crate::model::shape::CommonObjAttr {
+        match &core.document.sections[0].paragraphs[para_idx].controls[ctrl_idx] {
+            Control::Shape(s) => s.common(),
+            other => panic!("expected Control::Shape, got {other:?}"),
+        }
+    }
+
+    /// 글상자를 직접 인자로 생성(treat_as_char/text_wrap 명시). (para_idx, ctrl_idx) 반환.
+    fn create_textbox_with(
+        core: &mut DocumentCore,
+        treat_as_char: bool,
+        text_wrap: &str,
+    ) -> (usize, usize) {
+        let res = core
+            .create_shape_control_native(
+                0,
+                0,
+                0,
+                21600,
+                7200,
+                1000,
+                2000,
+                treat_as_char,
+                text_wrap,
+                "textbox",
+                false,
+                false,
+                &[],
+            )
+            .unwrap_or_else(|e| panic!("create textbox failed: {e:?}"));
+        (parse_idx(&res, "paraIdx"), parse_idx(&res, "controlIdx"))
+    }
+
+    /// [Task #1280 v2] 삽입 글상자를 floating(treat_as_char=false)+InFrontOfText 로 만들면
+    /// 한컴 정답값(Paper/Paper/글앞으로)으로 생성되고 text_box 는 그대로 유지된다.
+    /// 권위 샘플 samples/textbox-under-image.hwp 실측 정합.
+    #[test]
+    fn create_floating_textbox_is_in_front_paper() {
+        use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, false, "InFrontOfText");
+
+        // text_box 유지 (글상자 기능 보존 — floating 에서도)
+        assert!(
+            textbox_of(&core, para, ctrl).is_some(),
+            "floating 글상자도 text_box 를 가져야 한다"
+        );
+
+        let c = common_of(&core, para, ctrl);
+        assert!(!c.treat_as_char, "floating: treat_as_char=false");
+        assert_eq!(
+            c.text_wrap,
+            TextWrap::InFrontOfText,
+            "글앞으로(InFrontOfText)"
+        );
+        assert_eq!(c.vert_rel_to, VertRelTo::Paper, "vert_rel_to=Paper");
+        assert_eq!(c.horz_rel_to, HorzRelTo::Paper, "horz_rel_to=Paper");
+        // 직렬화 attr 비트 정합 (serializer 는 common.attr!=0 이면 그대로 사용).
+        assert_eq!(c.attr & 0x01, 0, "attr bit0(treat_as_char)=0");
+        assert_eq!((c.attr >> 3) & 0x03, 0, "attr bit3-4(vert_rel_to)=Paper(0)");
+        assert_eq!((c.attr >> 8) & 0x03, 0, "attr bit8-9(horz_rel_to)=Paper(0)");
+        assert_eq!(
+            (c.attr >> 21) & 0x07,
+            3,
+            "attr bit21-23(text_wrap)=InFrontOfText(3)"
+        );
+    }
+
+    /// inline 글상자(treat_as_char=true)는 #1280 본편 배치(Para/Column)를 그대로 보존한다(회귀 가드).
+    #[test]
+    fn create_inline_textbox_preserves_para_column() {
+        use crate::model::shape::{HorzRelTo, VertRelTo};
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, true, "Square");
+        let c = common_of(&core, para, ctrl);
+        assert!(c.treat_as_char, "inline: treat_as_char=true");
+        assert_eq!(c.vert_rel_to, VertRelTo::Para, "inline vert_rel_to=Para");
+        assert_eq!(
+            c.horz_rel_to,
+            HorzRelTo::Column,
+            "inline horz_rel_to=Column"
+        );
+    }
+
+    /// floating 글상자에도 텍스트 입력이 정상 동작(#1280 본편 회귀 없음).
+    #[test]
+    fn insert_text_into_floating_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, false, "InFrontOfText");
+        core.insert_text_in_cell_native(0, para, ctrl, 0, 0, 0, "플로팅")
+            .expect("floating 글상자 텍스트 입력 성공");
+        let tb = textbox_of(&core, para, ctrl).expect("text_box 존재");
+        assert_eq!(
+            tb.paragraphs[0].text, "플로팅",
+            "floating 글상자 내부 텍스트 보존"
+        );
     }
 
     #[test]

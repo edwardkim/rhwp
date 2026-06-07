@@ -871,9 +871,11 @@ export class InputHandler {
     } catch { /* 페이지 정보 없으면 그대로 */ }
 
     // 도형 위치 계산 (종이 기준 오프셋, HWPUNIT)
+    // [Task #1280 v2] 글상자도 floating(InFrontOfText)으로 삽입하므로 종이 기준 오프셋을
+    //   계산한다(기존 사각형 등과 동일 경로). 수정 전엔 글상자만 인라인이라 offset=0 으로 스킵했다.
     let horzOffset = 0;
     let vertOffset = 0;
-    if (this.shapePlacementType !== 'textbox') {
+    {
       // 드래그 영역 중심점의 화면 좌표
       const centerX = (drag.startClientX + drag.currentClientX) / 2;
       const centerY = (drag.startClientY + drag.currentClientY) / 2;
@@ -885,7 +887,6 @@ export class InputHandler {
         const cY = centerY - contentRect.top;
         const pageIdx = this.virtualScroll.getPageAtPoint(cX, cY);
         const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
-        const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
         const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
         // 종이 좌표 (px → HWPUNIT)
         const paperX = ((cX - pageLeft) / zoom) * 75;
@@ -906,6 +907,10 @@ export class InputHandler {
 
     // WASM 호출로 도형 생성
     try {
+      // [Task #1280 v2] 삽입 글상자는 한컴 정답값 floating(treat_as_char=false) + 글앞으로
+      //   (InFrontOfText)로 생성한다. 그래야 글상자 위 어울림(Square) 이미지가 글상자 뒤로 가고
+      //   (plane 3>2), 로드된 기존 글상자(이미 floating)와도 정합한다.
+      const isTextbox = this.shapePlacementType === 'textbox';
       const result = this.wasm.createShapeControl({
         sectionIdx: sec,
         paraIdx,
@@ -917,6 +922,7 @@ export class InputHandler {
         shapeType: this.shapePlacementType,
         lineFlipX,
         lineFlipY,
+        ...(isTextbox ? { treatAsChar: false, textWrap: 'InFrontOfText' } : {}),
       });
       if (result.ok) {
         this.eventBus.emit('document-changed');

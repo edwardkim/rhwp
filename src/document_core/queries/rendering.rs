@@ -1514,9 +1514,28 @@ impl DocumentCore {
             // (plane=2, z=0, stable=node.id) 폴백으로 렌더 정렬과 동일.
             let (plane, z_order, stable_index) =
                 crate::renderer::layout::LayoutEngine::paper_node_sort_key(node);
+            // wrap 은 이미지뿐 아니라 shape/line/group/path 에도 노출(히트테스트 plane/wrap 일관성).
+            // 이미지는 자체 wrap_str(image_node.text_wrap)을 방출하므로 중복 방지로 제외한다.
+            let wrap_extra = if matches!(node.node_type, RenderNodeType::Image(_)) {
+                ""
+            } else {
+                match node.layer.and_then(|l| l.text_wrap) {
+                    Some(crate::model::shape::TextWrap::BehindText) => ",\"wrap\":\"behindText\"",
+                    Some(crate::model::shape::TextWrap::InFrontOfText) => {
+                        ",\"wrap\":\"inFrontOfText\""
+                    }
+                    Some(crate::model::shape::TextWrap::Square) => ",\"wrap\":\"square\"",
+                    Some(crate::model::shape::TextWrap::Tight) => ",\"wrap\":\"tight\"",
+                    Some(crate::model::shape::TextWrap::Through) => ",\"wrap\":\"through\"",
+                    Some(crate::model::shape::TextWrap::TopAndBottom) => {
+                        ",\"wrap\":\"topAndBottom\""
+                    }
+                    None => "",
+                }
+            };
             let layer_str = format!(
-                ",\"plane\":{},\"zOrder\":{},\"stableIndex\":{}",
-                plane, z_order, stable_index
+                ",\"plane\":{},\"zOrder\":{},\"stableIndex\":{}{}",
+                plane, z_order, stable_index, wrap_extra
             );
             match &node.node_type {
                 RenderNodeType::Table(table_node) => {
