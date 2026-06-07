@@ -9,6 +9,7 @@ use crate::model::page::ColumnDef;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::style_resolver::resolve_styles;
 
 impl DocumentCore {
     pub fn insert_text_native(
@@ -1093,6 +1094,26 @@ impl DocumentCore {
                 self.document.sections[section_idx].paragraphs[0]
                     .controls
                     .push(Control::ColumnDef(cd));
+            }
+        }
+
+        // 단 개수 변경 시 기존 문단들의 LINE_SEG 폭은 이전 단 너비(또는 본문 전체
+        // 너비)로 인코딩되어 있어 그대로 두면 새 단 너비와 어긋난다. 특히 ColumnDef
+        // 컨트롤을 호스팅하는 첫 문단은 본문 전체 폭(예: 42519 HU)으로 남아, 렌더러가
+        // 그 stale LINE_SEG 를 그대로 그리면 단 경계를 넘어 옆 단 텍스트와 겹친다
+        // ("text brokerage"). 단 정의 변경 후 구역의 모든 텍스트 문단을 새 단 너비로
+        // reflow 하여 LINE_SEG.segment_width / 줄나눔을 일관되게 만든다.
+        // 표/그림 등 컨트롤 줄높이에 의존하는 문단은 reflow_paragraph 가 텍스트 기반으로
+        // 폭만 재계산하므로, 컨트롤만 있고 텍스트가 없는 문단은 건너뛴다.
+        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let para_count = self.document.sections[section_idx].paragraphs.len();
+        for p_idx in 0..para_count {
+            let has_text = !self.document.sections[section_idx].paragraphs[p_idx]
+                .text
+                .trim()
+                .is_empty();
+            if has_text {
+                self.reflow_paragraph(section_idx, p_idx);
             }
         }
 

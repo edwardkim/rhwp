@@ -2000,8 +2000,77 @@ impl DocumentCore {
         self.paginate_pass(&empty_breaks);
     }
 
+    /// 다단 구역에서 본문 전체 폭으로 인코딩된 stale LINE_SEG 를 단 너비로 정규화한다.
+    ///
+    /// HWP 편집기(예: ehwp NIF)가 단 정의를 바꾸고도 ColumnDef 호스트 문단의
+    /// LINE_SEG.segment_width 를 갱신하지 못하면, 그 문단은 본문 전체 폭(예: 42519 HU)
+    /// 으로 남는다. 렌더러는 LINE_SEG 를 충실히 그리므로, 단 1개 너비짜리 영역에
+    /// 본문 전체 폭 텍스트가 그려져 옆 단 텍스트와 겹치는 "text brokerage" 가 발생한다.
+    /// 단 너비보다 확연히 넓은 segment_width 는 구조적으로 불가능한 stale 데이터이므로
+    /// 단 너비로 reflow 한다. 정상(단 너비 이하) LINE_SEG 는 손대지 않아 원본 한컴
+    /// 문서의 줄나눔 충실도를 보존한다.
+    fn normalize_overwide_column_linesegs(&mut self) {
+        let dpi = self.dpi;
+        let styles = resolve_styles(&self.document.doc_info, dpi);
+        // 단 너비 초과 판정 여유 (px). 1단↔본문 폭 차이는 수백 px 이므로 보수적으로 24px.
+        const OVERWIDE_SLACK_PX: f64 = 24.0;
+        let sec_count = self.document.sections.len();
+        let mut modified_sections: Vec<usize> = Vec::new();
+        for sec_idx in 0..sec_count {
+            let section = &mut self.document.sections[sec_idx];
+            let column_def = Self::find_initial_column_def(&section.paragraphs);
+            if column_def.column_count.max(1) <= 1 {
+                continue; // 단일 단: 정규화 불필요
+            }
+            let page_def = &section.section_def.page_def;
+            let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
+            let col_width_px = match layout.column_areas.first() {
+                Some(a) => a.width,
+                None => continue,
+            };
+            let col_width_hu = crate::renderer::px_to_hwpunit(col_width_px, dpi);
+            let overwide_hu = col_width_hu + crate::renderer::px_to_hwpunit(OVERWIDE_SLACK_PX, dpi);
+            let mut first_modified: Option<usize> = None;
+            for (p_idx, para) in section.paragraphs.iter_mut().enumerate() {
+                if para.text.trim().is_empty() {
+                    continue;
+                }
+                let is_overwide = para
+                    .line_segs
+                    .iter()
+                    .any(|ls| ls.segment_width > overwide_hu);
+                if !is_overwide {
+                    continue;
+                }
+                let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                let available_width = (col_width_px - margin_left - margin_right).max(1.0);
+                crate::renderer::composer::reflow_line_segs(para, available_width, &styles, dpi);
+                if first_modified.is_none() {
+                    first_modified = Some(p_idx);
+                }
+            }
+            if let Some(start_idx) = first_modified {
+                // reflow 로 line_segs 가 바뀌면 vertical_pos 누적을 재계산해야 후속
+                // 문단들의 흐름 위치가 일관된다.
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[sec_idx].paragraphs,
+                    start_idx,
+                );
+                modified_sections.push(sec_idx);
+            }
+        }
+        // 렌더러는 self.composed (ComposedParagraph) 의 줄 구조로 텍스트를 배치하므로,
+        // line_segs 를 바꾼 뒤에는 해당 구역을 반드시 recompose 해야 새 줄나눔이 반영된다.
+        for sec_idx in modified_sections {
+            self.recompose_section(sec_idx);
+        }
+    }
+
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         self.invalidate_page_tree_cache();
+        self.normalize_overwide_column_linesegs();
         let paginator = Paginator::new(self.dpi);
         let hwp3_origin_flow_spacing_before =
             self.document.is_hwp3_variant || self.document.header.version.major == 3;
