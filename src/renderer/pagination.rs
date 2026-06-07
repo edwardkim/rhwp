@@ -162,6 +162,11 @@ pub struct ColumnContent {
     /// 미주 본문은 일반 본문과 달리 한 단 안에서도 LINE_SEG vpos가 크게
     /// 되감길 수 있으므로, 렌더러의 vpos 보정 가드에서 별도 취급한다.
     pub endnote_flow: bool,
+    /// [endnote-at-document-end] 이 단이 미주 블록을 **문서/구역 끝(단 하단)** 에
+    /// bottom-anchor 한 단인지 여부. true 이면 렌더러는 `start_height`(양수)를 단 상단
+    /// 오프셋으로 해석해 미주 블록을 단 하단으로 내려 그린다(한컴 미주 배치 정합).
+    /// false 인 일반/시험지형 미주 흐름은 종전대로 단 상단부터 그린다.
+    pub endnote_bottom_anchor: bool,
     /// 배치될 문단 슬라이스 정보
     pub items: Vec<PageItem>,
     /// 이 존의 레이아웃 (None이면 page.layout 사용). 다단 설정 나누기로 같은 페이지 내 단 수 변경 시 사용.
@@ -539,6 +544,7 @@ impl PaginationResult {
                         column_index: cc.column_index,
                         start_height: cc.start_height,
                         endnote_flow: cc.endnote_flow,
+                        endnote_bottom_anchor: cc.endnote_bottom_anchor,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,

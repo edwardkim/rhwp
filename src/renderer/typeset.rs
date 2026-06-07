@@ -147,6 +147,9 @@ struct TypesetState {
     current_start_height: f64,
     /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
     current_endnote_flow: bool,
+    /// [endnote-at-document-end] 현재 단의 미주 블록을 단 하단에 bottom-anchor 했는지 여부.
+    /// flush 시 ColumnContent.endnote_bottom_anchor 로 전달 → 렌더러가 단 하단 배치.
+    current_endnote_bottom_anchor: bool,
     /// [Task #1082] 현재 단에서 마지막으로 배치된 본문 FullParagraph 의 bottom vpos (HU,
     /// 섹션 절대값). 미주 vpos-delta 누적의 첫 항목 base 시드용. 단 advance 시 None.
     prev_body_bottom_vpos: Option<i32>,
@@ -630,6 +633,7 @@ impl TypesetState {
             current_height: 0.0,
             current_start_height: 0.0,
             current_endnote_flow: false,
+            current_endnote_bottom_anchor: false,
             prev_body_bottom_vpos: None,
             current_column: 0,
             col_count,
@@ -716,6 +720,7 @@ impl TypesetState {
             column_index: self.current_column,
             start_height: self.current_start_height,
             endnote_flow: self.current_endnote_flow,
+            endnote_bottom_anchor: self.current_endnote_bottom_anchor,
             items: std::mem::take(&mut self.current_items),
             zone_layout: self.current_zone_layout.clone(),
             zone_y_offset: self.current_zone_y_offset,
@@ -738,6 +743,7 @@ impl TypesetState {
             column_index: self.current_column,
             start_height: self.current_start_height,
             endnote_flow: self.current_endnote_flow,
+            endnote_bottom_anchor: self.current_endnote_bottom_anchor,
             items: std::mem::take(&mut self.current_items),
             zone_layout: self.current_zone_layout.clone(),
             zone_y_offset: self.current_zone_y_offset,
@@ -764,6 +770,7 @@ impl TypesetState {
             self.current_height = self.pending_body_wide_top_reserve;
             self.current_start_height = self.current_height;
             self.current_endnote_flow = false;
+            self.current_endnote_bottom_anchor = false;
             self.reset_vpos_cursor();
         } else {
             self.push_new_page();
@@ -796,6 +803,7 @@ impl TypesetState {
         self.current_height = 0.0;
         self.current_start_height = 0.0;
         self.current_endnote_flow = false;
+        self.current_endnote_bottom_anchor = false;
         self.current_footnote_height = 0.0;
         self.is_first_footnote_on_page = true;
         self.current_zone_y_offset = 0.0;
@@ -2084,12 +2092,87 @@ impl TypesetEngine {
             let mut prev_endnote_had_inline_object_vpos_overestimate = false;
             let mut cleared_single_line_internal_rewind_split = false;
             let mut emitted_endnote_separator = false;
+            // [endnote-at-document-end] 미주 블록을 단 하단에 bottom-anchor 했는지 여부.
+            // anchor 시 current_start_height 가 미주 블록 시작 y(단 하단 기준)이므로,
+            // 구분선 emit 에서 start_height 를 재계산해 덮어쓰지 않도록 가드한다.
+            let mut endnote_bottom_anchored = false;
             let mut emitted_endnote_count = 0usize;
             let mut last_render_endnote_para_local_idx: Option<usize> = None;
             // 이 플래그는 "시험지 미주 흐름"의 split/rewind 보정 사용 여부다.
             // 구분선 아래 여백이 20mm처럼 커도 문항 미주 흐름 자체는 같은
             // 정책을 타야 하므로 separator 크기와 분리한다.
             let compact_endnote_separator_profile = endnote_shape.is_some();
+
+            // [endnote-at-document-end] 한컴 정합: 미주(미주)는 각주와 달리 본문 흐름에
+            // 이어 그리지 않고 **문서(구역)의 끝**에 모아 배치한다. 본문이 페이지를 다
+            // 채우지 못하면 미주가 본문 바로 아래(쪽 중간)에 footnote 처럼 붙어 그려지던
+            // 버그를 고친다.
+            //
+            // 정책: 미주 블록(구분선 + 미주 문단들) 전체 높이를 미리 추정한다. 블록이
+            //   단 하나에 통째로 들어가는 "일반 문서" 케이스에서는
+            //     (1) 마지막 단으로 이동(2단 등 다단이면 가장 오른쪽/마지막 단 = 문서 끝),
+            //     (2) 그 단의 하단에 bottom-anchor 한다.
+            //   렌더러는 미주 문단을 저장된 LINE_SEG vpos(=endnote_start=vpos_offset 기준)로
+            //   배치하므로, vpos_offset 과 본문→미주 전환 height(current_height)를 단 하단으로
+            //   끌어내려 구분선·미주 문단을 같은 위치에 맞춘다.
+            //
+            //   미주가 한 단을 넘쳐 여러 단/쪽으로 흐르는 시험지형 케이스는 블록이 단 하나에
+            //   들어가지 않으므로 anchor 가 적용되지 않고 기존 inline 흐름 그대로 동작한다.
+            {
+                let mut block_px = 0.0f64;
+                if let Some(shape) = endnote_shape {
+                    let sep_height = endnote_separator_height_px(shape, self.dpi);
+                    if sep_height > 0.0 && !endnote_has_compact_separator_below(shape) {
+                        block_px += sep_height;
+                    }
+                }
+                let en_col_w = st
+                    .layout
+                    .column_areas
+                    .get(st.current_column as usize)
+                    .map(|a| a.width)
+                    .unwrap_or(st.layout.body_area.width);
+                for en_ref in &endnote_refs {
+                    if let Some(para) = paragraphs.get(en_ref.para_index) {
+                        if let Some(Control::Endnote(en_ctrl)) =
+                            para.controls.get(en_ref.control_index)
+                        {
+                            for en_para in &en_ctrl.paragraphs {
+                                let composed =
+                                    crate::renderer::composer::compose_paragraph(en_para);
+                                let fmt = self.format_paragraph(
+                                    en_para,
+                                    Some(&composed),
+                                    &styles,
+                                    Some(en_col_w),
+                                );
+                                block_px += fmt.line_advances_sum(0..fmt.line_heights.len())
+                                    + fmt.spacing_after;
+                            }
+                        }
+                    }
+                }
+                // 블록이 단 하나의 가용 높이에 통째로 들어갈 때만 문서-끝 배치를 적용한다.
+                if block_px > 0.0 && block_px <= st.available_height() + 0.5 {
+                    // (1) 다단이면 마지막(가장 오른쪽) 단으로 이동 = 문서 끝.
+                    while st.current_column + 1 < st.col_count {
+                        st.advance_column_or_new_page();
+                    }
+                    // (2) 마지막 단 하단에 bottom-anchor. 렌더러는 endnote_flow 단의
+                    //     positive start_height 를 단 상단 오프셋(아래로 밀기)으로 해석한다
+                    //     (layout.rs `endnote_bottom_anchor`). current_height 는 미주 블록의
+                    //     시작 높이가 되어 단 내 used/overflow 회계가 단 하단에 맞춰진다.
+                    let available = st.available_height();
+                    if available - block_px > st.current_height + 0.5 {
+                        st.current_height = available - block_px;
+                        st.current_start_height = st.current_height;
+                        st.current_endnote_bottom_anchor = true;
+                        st.reset_vpos_cursor();
+                        prev_en_bottom_vpos = None;
+                        endnote_bottom_anchored = true;
+                    }
+                }
+            }
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
@@ -2110,7 +2193,11 @@ impl TypesetEngine {
                                     st.current_endnote_flow = true;
                                     if !endnote_has_compact_separator_below(shape) {
                                         st.current_height += sep_height;
-                                        st.current_start_height = st.current_height;
+                                        // bottom-anchor 시 start_height(=구분선 시작 y)는
+                                        // 위에서 이미 설정했으므로 sep 만큼 밀어 덮어쓰지 않는다.
+                                        if !endnote_bottom_anchored {
+                                            st.current_start_height = st.current_height;
+                                        }
                                     }
                                 }
                             }

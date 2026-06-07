@@ -2894,10 +2894,20 @@ impl LayoutEngine {
                 .first()
                 .map(|item| page_item_is_treat_as_char_picture_only(item, paragraphs))
                 .unwrap_or(false);
+        // [endnote-at-document-end] 미주 블록을 단 하단에 bottom-anchor 한 단은
+        // start_height(양수)를 단 상단 오프셋으로 써서 미주(구분선+문단)를 단 하단으로
+        // 내려 그린다. 첫 항목(보통 EndnoteSeparator)부터 이 오프셋에서 순차 배치된다.
+        let endnote_bottom_anchor_shift = if col_content.endnote_bottom_anchor
+            && col_content.start_height > 0.5
+        {
+            col_content.start_height.max(0.0)
+        } else {
+            0.0
+        };
         let start_shift = if allow_negative_visual_start {
             col_content.start_height.min(0.0)
         } else {
-            0.0
+            endnote_bottom_anchor_shift
         };
         let visual_col_y = col_area.y + start_shift;
         let visual_col_height = col_area.height - start_shift;
