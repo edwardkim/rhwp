@@ -306,8 +306,13 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                     Some((pos, s.common().width as i32, i))
                 }
                 Control::Equation(eq) => {
-                    // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
-                    Some((pos, eq.common.width as i32, i))
+                    // HWP 저장값을 우선 사용 — 한컴 편집기가 실제 폰트로 계산한 너비.
+                    // 단, 작성 툴(에이전트/MCP)이 bbox 를 0 으로 둔 수식은 advance 가
+                    // 사라져 뒤 텍스트와 겹치므로, 스크립트 조판 자연폭으로 보충한다
+                    // (한컴 뷰어도 size=0 수식을 조판 시 재측정).
+                    let (eq_w, _eq_h) =
+                        crate::renderer::equation::equation_effective_size_hwpunit(eq);
+                    Some((pos, eq_w, i))
                 }
                 Control::Form(f) => Some((pos, f.width as i32, i)),
                 Control::Table(t)

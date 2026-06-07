@@ -315,6 +315,23 @@ impl HeightMeasurer {
                     (*pos, hwpunit_to_px(*width_hu, self.dpi), *control_index)
                 })
                 .collect();
+            // 인라인/단독 수식의 자연 높이(px)를 미리 수집한다. control_index → height_px.
+            // 작성 툴이 bbox 를 0 으로 둔 수식은 LINE_SEG line_height 에 반영되지 않아
+            // 줄 높이가 텍스트 높이로 collapse → 다음 줄/표 셀과 세로로 겹친다(작업지시 증상).
+            // 한컴 뷰어처럼 조판 자연 높이를 확보하기 위해, 각 줄의 line_height 를
+            // 그 줄에 놓인 수식 높이 이상으로 끌어올린다.
+            let equation_heights_px: std::collections::HashMap<usize, f64> = comp
+                .tac_controls
+                .iter()
+                .filter_map(|(_pos, _w, ci)| match para.controls.get(*ci) {
+                    Some(Control::Equation(eq)) => {
+                        let (_w, h_hu) =
+                            crate::renderer::equation::equation_effective_size_hwpunit(eq);
+                        Some((*ci, hwpunit_to_px(h_hu, self.dpi)))
+                    }
+                    _ => None,
+                })
+                .collect();
             let equation_line_available_width_px = |visual_line_idx: usize| {
                 column_width_px.map(|cw| {
                     let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -376,6 +393,29 @@ impl HeightMeasurer {
                         )
                         .map(|flow| flow.extra_rows)
                         .unwrap_or(0);
+                    // 이 줄에 놓인 수식의 최대 자연 높이 — 줄 높이를 끌어올려
+                    // 수식이 차지하는 세로 공간을 확보한다(겹침 방지).
+                    let line_start = line.char_start;
+                    let line_end = comp
+                        .lines
+                        .get(line_idx + 1)
+                        .map(|l| l.char_start)
+                        .unwrap_or(usize::MAX);
+                    let max_eq_h = comp
+                        .tac_controls
+                        .iter()
+                        .filter(|(pos, _, _)| {
+                            if line_end == usize::MAX {
+                                *pos >= line_start
+                            } else if line_end <= line_start {
+                                *pos == line_start
+                            } else {
+                                *pos >= line_start && *pos < line_end
+                            }
+                        })
+                        .filter_map(|(_, _, ci)| equation_heights_px.get(ci).copied())
+                        .fold(0.0f64, f64::max);
+                    let lh = lh.max(max_eq_h);
                     (
                         lh + extra_rows as f64 * (lh + line_spacing_px),
                         line_spacing_px,
@@ -797,6 +837,37 @@ impl HeightMeasurer {
                                             cell_ls_type,
                                             cell_ls_val,
                                         );
+                                        // 셀 내 수식 줄높이 확보: 이 줄에 놓인 수식의 자연
+                                        // 높이가 텍스트 줄높이보다 크면 셀 높이가 collapse 되어
+                                        // 다중행 수식(행렬·적분 첨자 등)이 잘리므로 끌어올린다.
+                                        let eq_line_start = line.char_start;
+                                        let eq_line_end = comp
+                                            .lines
+                                            .get(i + 1)
+                                            .map(|l| l.char_start)
+                                            .unwrap_or(usize::MAX);
+                                        let max_eq_h = comp
+                                            .tac_controls
+                                            .iter()
+                                            .filter(|(pos, _, _)| {
+                                                if eq_line_end == usize::MAX {
+                                                    *pos >= eq_line_start
+                                                } else if eq_line_end <= eq_line_start {
+                                                    *pos == eq_line_start
+                                                } else {
+                                                    *pos >= eq_line_start && *pos < eq_line_end
+                                                }
+                                            })
+                                            .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
+                                                Some(Control::Equation(eq)) => {
+                                                    let (_w, h_hu) =
+                                                        crate::renderer::equation::equation_effective_size_hwpunit(eq);
+                                                    Some(hwpunit_to_px(h_hu, self.dpi))
+                                                }
+                                                _ => None,
+                                            })
+                                            .fold(0.0f64, f64::max);
+                                        let h = h.max(max_eq_h);
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
                                         // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
@@ -1043,6 +1114,37 @@ impl HeightMeasurer {
                                             cell_ls_type,
                                             cell_ls_val,
                                         );
+                                        // 셀 내 수식 줄높이 확보: 이 줄에 놓인 수식의 자연
+                                        // 높이가 텍스트 줄높이보다 크면 셀 높이가 collapse 되어
+                                        // 다중행 수식(행렬·적분 첨자 등)이 잘리므로 끌어올린다.
+                                        let eq_line_start = line.char_start;
+                                        let eq_line_end = comp
+                                            .lines
+                                            .get(i + 1)
+                                            .map(|l| l.char_start)
+                                            .unwrap_or(usize::MAX);
+                                        let max_eq_h = comp
+                                            .tac_controls
+                                            .iter()
+                                            .filter(|(pos, _, _)| {
+                                                if eq_line_end == usize::MAX {
+                                                    *pos >= eq_line_start
+                                                } else if eq_line_end <= eq_line_start {
+                                                    *pos == eq_line_start
+                                                } else {
+                                                    *pos >= eq_line_start && *pos < eq_line_end
+                                                }
+                                            })
+                                            .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
+                                                Some(Control::Equation(eq)) => {
+                                                    let (_w, h_hu) =
+                                                        crate::renderer::equation::equation_effective_size_hwpunit(eq);
+                                                    Some(hwpunit_to_px(h_hu, self.dpi))
+                                                }
+                                                _ => None,
+                                            })
+                                            .fold(0.0f64, f64::max);
+                                        let h = h.max(max_eq_h);
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
                                         // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
@@ -1107,9 +1209,19 @@ impl HeightMeasurer {
         // 발동 영역 sweep 진단 (187 fixture): ≤2% 7 건 면제, ≥5% 11 건 그대로.
         const TAC_SHRINK_THRESHOLD_RATIO: f64 = 0.02;
         let shrink_threshold = (common_h * TAC_SHRINK_THRESHOLD_RATIO).max(1.0);
+        // 비례 축소 상한 — 저장된 common.height 가 "물리적으로 불가능"할 만큼
+        // 작으면(콘텐츠 자연 높이가 저장값의 MAX_SHRINK_FACTOR 배 초과) 그 저장값은
+        // 작성 툴이 bbox 를 미계산한 가짜값이다. 이 경우 한컴 뷰어처럼 콘텐츠에 맞춰
+        // 표를 늘린다(축소 시 셀이 collapse 되어 다중행 수식/문단이 잘림).
+        //
+        // 사용자가 의도적으로 압축한 TAC 표(≥5% 차이)는 보통 factor ≤ ~1.7 이므로
+        // 2.0 이하는 종전대로 축소하고, 2.0 초과(예: 본 학습지 표 — 저장 6410 HU vs
+        // 콘텐츠 ~45000 HU ≈ 7배)는 가짜값으로 보고 expand 한다.
+        const MAX_SHRINK_FACTOR: f64 = 2.0;
         let table_height = if table.common.treat_as_char
             && common_h > 0.0
             && raw_table_height > common_h + shrink_threshold
+            && raw_table_height <= common_h * MAX_SHRINK_FACTOR
         {
             let scale = common_h / raw_table_height;
             for h in &mut row_heights {
@@ -1229,6 +1341,35 @@ impl HeightMeasurer {
                                     cell_ls_type,
                                     cell_ls_val,
                                 );
+                                // 셀 내 수식 줄높이 확보(다중행 수식 잘림 방지).
+                                let eq_line_start = line.char_start;
+                                let eq_line_end = comp
+                                    .lines
+                                    .get(li + 1)
+                                    .map(|l| l.char_start)
+                                    .unwrap_or(usize::MAX);
+                                let max_eq_h = comp
+                                    .tac_controls
+                                    .iter()
+                                    .filter(|(pos, _, _)| {
+                                        if eq_line_end == usize::MAX {
+                                            *pos >= eq_line_start
+                                        } else if eq_line_end <= eq_line_start {
+                                            *pos == eq_line_start
+                                        } else {
+                                            *pos >= eq_line_start && *pos < eq_line_end
+                                        }
+                                    })
+                                    .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
+                                        Some(Control::Equation(eq)) => {
+                                            let (_w, h_hu) =
+                                                crate::renderer::equation::equation_effective_size_hwpunit(eq);
+                                            Some(hwpunit_to_px(h_hu, self.dpi))
+                                        }
+                                        _ => None,
+                                    })
+                                    .fold(0.0f64, f64::max);
+                                let h = h.max(max_eq_h);
                                 let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                                 // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
                                 let is_cell_last_line = is_last_para && li + 1 == line_count;

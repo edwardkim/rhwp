@@ -1794,6 +1794,34 @@ impl LayoutEngine {
                     ),
                 )
             };
+            // 수식 줄높이 확보: 이 줄에 놓인 인라인/단독 수식의 자연 높이가 텍스트
+            // line_height 보다 크면 줄높이를 그만큼 끌어올린다(겹침 방지). 작성 툴이
+            // bbox 를 0 으로 둔 수식은 LINE_SEG 에 높이가 없어 줄이 collapse 되므로,
+            // height_measurer 와 동일하게 한컴 조판 자연 높이로 보충한다.
+            // baseline 은 키운 만큼 아래로 내려 수식이 줄 상단에서 시작하도록 맞춘다.
+            let line_eq_height_px = para
+                .map(|p| {
+                    line_tac_offsets
+                        .iter()
+                        .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
+                            Some(Control::Equation(eq)) => {
+                                let (_w, h_hu) =
+                                    crate::renderer::equation::equation_effective_size_hwpunit(eq);
+                                Some(hwpunit_to_px(h_hu, self.dpi))
+                            }
+                            _ => None,
+                        })
+                        .fold(0.0f64, f64::max)
+                })
+                .unwrap_or(0.0);
+            let (line_height, baseline) = if line_eq_height_px > line_height {
+                let grown = line_eq_height_px;
+                // baseline 을 늘어난 높이만큼 아래로 이동 → 텍스트 baseline 유지 +
+                // 수식은 줄 내부에 세로로 담긴다.
+                (grown, baseline + (grown - line_height))
+            } else {
+                (line_height, baseline)
+            };
             // 들여쓰기/내어쓰기: 문단 여백은 무조건 적용
             // - 보통(ind=0): 모든 줄 margin_left
             // - 들여쓰기(ind>0): 첫줄 margin_left+indent, 다음줄 margin_left
