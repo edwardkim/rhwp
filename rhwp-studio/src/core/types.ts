@@ -534,6 +534,18 @@ export interface ControlLayoutItem {
   noteRef?: NoteControlRef;
   outerTableControlIdx?: number;
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
+  /**
+   * [Task #1280 v2] 렌더 정렬키 — 겹침 클릭 시 "최상단 개체" 판정용.
+   * Rust `paper_node_sort_key`(layout.rs)와 단일 진실 원천. 클수록 위.
+   * plane: BehindText=1, 어울림/기본=2, InFrontOfText=3.
+   */
+  plane?: number;
+  /** [Task #1280 v2] 개체 z-order (작을수록 먼저 그림 = 아래). */
+  zOrder?: number;
+  /** [Task #1280 v2] 같은 plane/zOrder 내 안정 정렬 tie-breaker. */
+  stableIndex?: number;
+  /** [Task #1280 v2] 텍스트 어울림 모드(이미지뿐 아니라 shape/line/group에도 노출). */
+  wrap?: string;
 }
 
 /** 개체 참조 (그림/글상자 공용) */
