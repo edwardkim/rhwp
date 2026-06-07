@@ -1170,7 +1170,10 @@ mod tests {
         let end_pos = xml.find("fieldEnd").expect("fieldEnd");
         let hello_pos = xml.find("hello").expect("hello");
         assert!(begin_pos < end_pos, "fieldBegin must precede fieldEnd");
-        assert!(end_pos < hello_pos, "fieldEnd must precede text for 0-length field");
+        assert!(
+            end_pos < hello_pos,
+            "fieldEnd must precede text for 0-length field"
+        );
     }
 
     #[test]
@@ -1197,8 +1200,11 @@ mod tests {
         let mut ctx = SerializeContext::collect_from_document(&doc);
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
 
-        assert!(xml.contains("ABCDE") || (xml.contains("ABC") && xml.contains("DE")),
-            "all text must be present: {}", &xml[..500.min(xml.len())]);
+        assert!(
+            xml.contains("ABCDE") || (xml.contains("ABC") && xml.contains("DE")),
+            "all text must be present: {}",
+            &xml[..500.min(xml.len())]
+        );
 
         // 순서 검증: "ABC" < fieldBegin < fieldEnd < "DE"
         let begin_pos = xml.find("fieldBegin").expect("fieldBegin");
@@ -1206,9 +1212,10 @@ mod tests {
         // ABC는 fieldBegin 앞에
         let abc_pos = xml.find('A').expect("A");
         // DE는 fieldEnd 뒤에 (fieldEnd 태그 닫힘 이후)
-        let field_end_close = xml.find("fieldEnd").unwrap()
-            + xml[xml.find("fieldEnd").unwrap()..].find('>').unwrap();
-        let de_pos = xml[field_end_close..].find('D')
+        let field_end_close =
+            xml.find("fieldEnd").unwrap() + xml[xml.find("fieldEnd").unwrap()..].find('>').unwrap();
+        let de_pos = xml[field_end_close..]
+            .find('D')
             .map(|p| p + field_end_close)
             .expect("D after fieldEnd");
 
