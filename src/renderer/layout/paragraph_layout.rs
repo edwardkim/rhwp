@@ -321,7 +321,10 @@ fn is_leading_endnote_marker_rendered_as_prefix(
         && marker_pos == line_char_start
         && matches!(
             para.and_then(|p| p.controls.get(control_index)),
-            Some(Control::Endnote(_))
+            // 앞 장식 문자('문' 등)를 가진 시험지형 미주만 본문 선두에 풀사이즈
+            // 마커를 그리므로(위첨자 앵커를 그 마커가 대체) 이 경우에만 위첨자를
+            // 억제한다. 장식 문자 없는 일반 미주는 본문에 위첨자 앵커를 정상 표시.
+            Some(Control::Endnote(en)) if en.before_decoration_letter != 0
         )
 }
 
@@ -1470,11 +1473,20 @@ impl LayoutEngine {
 
         // [Issue #926] Endnote 인라인 마커 — 첫 줄 앞에 일반 텍스트로 emit
         // 한컴에서 미주 마커는 위첨자가 아닌 본문 크기 텍스트로 표시
+        //
+        // [본문 누출 수정] 표준 미주(endnote)는 본문에 위첨자 앵커(¹⁾)만 남기고
+        // 번호+내용은 문서 끝에만 렌더한다(typeset.rs 문서끝 주입). 인라인 본문
+        // 마커는 시험지형 "문N)" 질문 라벨(앞 장식 문자 '문' 보유) 전용이다.
+        // before_decoration_letter 가 없는 일반 미주는 본문에 마커를 찍지 않는다
+        // (예: 2단_각주_데모.hwp para3 의 "1)" 본문 누출 제거).
         let mut endnote_marker_x_advance = 0.0f64;
         if start_line == 0 {
             if let Some(p) = para {
                 for ctrl in &p.controls {
                     if let Control::Endnote(en) = ctrl {
+                        if en.before_decoration_letter == 0 {
+                            continue;
+                        }
                         let marker_text =
                             format!("{} ", note_marker_text_from_control(Some(ctrl), en.number));
                         let first_cs_id = p
@@ -2244,10 +2256,14 @@ impl LayoutEngine {
                     // 위첨자를 그리지 않으므로(문26 "공" x=78=선두 마커 끝), 측정에서도
                     // est_x 에 위첨자 폭을 더하면 이중 계상 → 거짓 오버플로우.
                     // start_line==0 의 미주(= endnote_marker_x_advance 처리 대상)는 제외.
+                    // 단, 풀사이즈 선두 마커는 앞 장식 문자('문' 등) 보유 미주만
+                    // 렌더하므로(위 emit 조건과 동일), 그 경우에만 측정에서 제외한다.
+                    // 일반 미주(장식 문자 없음)는 본문에 위첨자 앵커만 그리므로
+                    // 측정도 위첨자 폭을 포함해야 한다.
                     let is_leading_endnote_marker = start_line == 0
                         && matches!(
                             para.and_then(|p| p.controls.get(ctrl_idx)),
-                            Some(Control::Endnote(_))
+                            Some(Control::Endnote(en)) if en.before_decoration_letter != 0
                         );
                     if is_leading_endnote_marker {
                         continue;
