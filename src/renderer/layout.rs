@@ -772,7 +772,10 @@ impl LayoutEngine {
         }
     }
 
-    fn paper_node_sort_key(node: &RenderNode) -> (u8, i32, u32) {
+    /// 종이 기준 렌더 노드의 정렬키 `(plane, z_order, stable_index)`.
+    /// 레이아웃 쿼리(`get_page_control_layout_native`)가 컨트롤별 plane/zOrder/stableIndex 를
+    /// 프런트 히트테스트에 노출할 때 재사용한다(렌더 정렬과 단일 진실 원천 유지). [Task #1280 v2]
+    pub(crate) fn paper_node_sort_key(node: &RenderNode) -> (u8, i32, u32) {
         let layer = node.layer;
         let (z_order, stable_index) = layer
             .map(|layer| (layer.z_order, layer.stable_index))

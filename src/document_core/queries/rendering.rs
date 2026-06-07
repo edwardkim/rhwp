@@ -1508,6 +1508,16 @@ impl DocumentCore {
 
         // 렌더 트리에서 Table, Image 노드를 재귀적으로 수집
         fn collect_controls(node: &RenderNode, controls: &mut Vec<String>) {
+            // [Task #1280 v2] 컨트롤별 plane/zOrder/stableIndex 노출 — 렌더 정렬키
+            // `paper_node_sort_key`(layout.rs)를 그대로 재사용해 프런트 히트테스트가
+            // 겹침 시 "최상단 개체"를 선택할 수 있게 한다. inline(layer=None) 노드는
+            // (plane=2, z=0, stable=node.id) 폴백으로 렌더 정렬과 동일.
+            let (plane, z_order, stable_index) =
+                crate::renderer::layout::LayoutEngine::paper_node_sort_key(node);
+            let layer_str = format!(
+                ",\"plane\":{},\"zOrder\":{},\"stableIndex\":{}",
+                plane, z_order, stable_index
+            );
             match &node.node_type {
                 RenderNodeType::Table(table_node) => {
                     // 문서 좌표
@@ -1539,10 +1549,10 @@ impl DocumentCore {
                     }
 
                     controls.push(format!(
-                        "{{\"type\":\"table\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"rowCount\":{},\"colCount\":{}{},\"cells\":[{}]}}",
+                        "{{\"type\":\"table\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"rowCount\":{},\"colCount\":{}{}{},\"cells\":[{}]}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                         table_node.row_count, table_node.col_count,
-                        doc_coords,
+                        doc_coords, layer_str,
                         cells.join(",")
                     ));
                     // Table 내부도 탐색 (셀 내 수식 등 수집)
@@ -1580,9 +1590,9 @@ impl DocumentCore {
                     });
 
                     controls.push(format!(
-                        "{{\"type\":\"equation\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}}}",
+                        "{{\"type\":\"equation\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords, cell_coords, note_ref
+                        doc_coords, cell_coords, note_ref, layer_str
                     ));
                     return;
                 }
@@ -1670,9 +1680,9 @@ impl DocumentCore {
                         None => String::new(),
                     };
                     controls.push(format!(
-                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}{}{}{}}}",
+                        "{{\"type\":\"image\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}{}{}{}{}{}{}{}}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                        doc_coords, wrap_str, hf_str, cell_str, outer_table_str, cell_path_str
+                        doc_coords, wrap_str, hf_str, cell_str, outer_table_str, cell_path_str, layer_str
                     ));
                     return;
                 }
@@ -1683,9 +1693,9 @@ impl DocumentCore {
                         group_node.control_index,
                     ) {
                         controls.push(format!(
-                            "{{\"type\":\"group\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}}}",
+                            "{{\"type\":\"group\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                            si, pi, ci
+                            si, pi, ci, layer_str
                         ));
                         return; // 자식 개별 수집하지 않음 — 묶음 전체가 하나의 컨트롤
                     }
@@ -1709,9 +1719,9 @@ impl DocumentCore {
                             None => String::new(),
                         };
                         controls.push(format!(
-                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
+                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                            si, pi, ci, cell_str, outer_table_str
+                            si, pi, ci, cell_str, outer_table_str, layer_str
                         ));
                         // [Task #1171] return 하지 않고 자식으로 재귀 — 사각형 글상자(text_box)
                         // 안 중첩 picture/도형이 cellPath(cell_index=0 sentinel)로 수집되도록 한다.
@@ -1737,10 +1747,10 @@ impl DocumentCore {
                             None => String::new(),
                         };
                         controls.push(format!(
-                            "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
+                            "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                             line_node.x1, line_node.y1, line_node.x2, line_node.y2,
-                            si, pi, ci, cell_str, outer_table_str
+                            si, pi, ci, cell_str, outer_table_str, layer_str
                         ));
                         return;
                     }
@@ -1763,9 +1773,9 @@ impl DocumentCore {
                             None => String::new(),
                         };
                         controls.push(format!(
-                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
+                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                            si, pi, ci, cell_str, outer_table_str
+                            si, pi, ci, cell_str, outer_table_str, layer_str
                         ));
                         return;
                     }
@@ -1790,16 +1800,16 @@ impl DocumentCore {
                         if let Some((x1, y1, x2, y2)) = path_node.connector_endpoints {
                             // 연결선: 선 선택 방식 (시작/끝 좌표 포함)
                             controls.push(format!(
-                                "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
+                                "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
                                 node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                                 x1, y1, x2, y2,
-                                si, pi, ci, cell_str, outer_table_str
+                                si, pi, ci, cell_str, outer_table_str, layer_str
                             ));
                         } else {
                             controls.push(format!(
-                                "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
+                                "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
                                 node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                                si, pi, ci, cell_str, outer_table_str
+                                si, pi, ci, cell_str, outer_table_str, layer_str
                             ));
                         }
                         return;
@@ -3709,6 +3719,52 @@ mod tests {
             }
             other => panic!("root should be Page node, got {:?}", other),
         }
+    }
+
+    /// [Task #1280 v2] 레이아웃 쿼리가 컨트롤별 plane/zOrder/stableIndex 를 노출하고,
+    /// 렌더 정렬키(`paper_node_sort_key`)와 동일하게 한컴 권위 샘플
+    /// (글상자=InFrontOfText plane 3, 이미지=Square plane 2)을 산출하는지 검증.
+    /// 이미지가 글상자 뒤(plane 2 < 3)로 가는 한컴 정합의 근거.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn task1280_v2_control_layout_exposes_plane_z_order_stable_index() {
+        // "type":"<name>" 다음 처음 나오는 "<key>": 정수값 추출(plane 은 컨트롤 객체 끝에 부착).
+        fn field_after_type(json: &str, type_name: &str, key: &str) -> Option<i64> {
+            let tstart = json.find(&format!("\"type\":\"{}\"", type_name))?;
+            let needle = format!("\"{}\":", key);
+            let kstart = json[tstart..].find(&needle)? + tstart + needle.len();
+            let kend = json[kstart..].find(|c| c == ',' || c == '}')? + kstart;
+            json[kstart..kend].trim().parse().ok()
+        }
+
+        let data = std::fs::read("samples/textbox-under-image.hwp")
+            .expect("read samples/textbox-under-image.hwp");
+        let mut core = DocumentCore::from_bytes(&data).expect("load textbox-under-image.hwp");
+        core.paginate();
+        let json = core
+            .get_page_control_layout_native(0)
+            .expect("control layout for page 0");
+
+        // 신규 필드가 노출됨
+        assert!(json.contains("\"plane\":"), "plane 필드 누락: {json}");
+        assert!(json.contains("\"zOrder\":"), "zOrder 필드 누락: {json}");
+        assert!(
+            json.contains("\"stableIndex\":"),
+            "stableIndex 필드 누락: {json}"
+        );
+
+        // 권위 샘플: 글상자(shape)=InFrontOfText plane 3, 이미지=Square plane 2.
+        let shape_plane = field_after_type(&json, "shape", "plane")
+            .unwrap_or_else(|| panic!("shape plane 추출 실패: {json}"));
+        let image_plane = field_after_type(&json, "image", "plane")
+            .unwrap_or_else(|| panic!("image plane 추출 실패: {json}"));
+        assert_eq!(shape_plane, 3, "글상자는 InFrontOfText(plane 3): {json}");
+        assert_eq!(image_plane, 2, "이미지는 Square(plane 2): {json}");
+        // 핵심 불변식: 이미지가 글상자 뒤(plane 작음) — 한컴 동일.
+        assert!(
+            image_plane < shape_plane,
+            "이미지가 글상자 뒤여야 함(plane {image_plane} < {shape_plane}): {json}"
+        );
     }
 
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
