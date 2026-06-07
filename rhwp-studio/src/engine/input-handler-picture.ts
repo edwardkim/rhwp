@@ -54,6 +54,35 @@ function matchesControlRef(ctrl: any, ref: PictureObjectRef, layoutType: string)
   return true;
 }
 
+/**
+ * [Task #1280 v2] 렌더 정렬키 (plane, zOrder, stableIndex). Rust `paper_node_sort_key`
+ * (layout.rs)와 단일 진실 원천. 사전식으로 클수록 위(최상단). layer 필드 부재 시
+ * 렌더 폴백 (plane=2, z=0, stable=0)과 동일하게 처리한다.
+ */
+function controlTopKey(ctrl: any): [number, number, number] {
+  return [ctrl.plane ?? 2, ctrl.zOrder ?? 0, ctrl.stableIndex ?? 0];
+}
+
+/** a가 b보다 위(최상단)인가? 정렬키 사전식 비교. 동률이면 false(기존 emit 순서 유지). */
+function isAboveControl(a: any, b: any): boolean {
+  const ka = controlTopKey(a);
+  const kb = controlTopKey(b);
+  if (ka[0] !== kb[0]) return ka[0] > kb[0];
+  if (ka[1] !== kb[1]) return ka[1] > kb[1];
+  return ka[2] > kb[2];
+}
+
+/** 적중한 layout 컨트롤에서 PictureObjectRef 를 구성한다(line 은 끝점 포함). */
+function controlToRef(ctrl: any): PictureObjectRef {
+  if (ctrl.type === 'line') {
+    return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: 'line',
+      x1: ctrl.x1, y1: ctrl.y1, x2: ctrl.x2, y2: ctrl.y2 };
+  }
+  return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type,
+    cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx,
+    cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter };
+}
+
 /** 클릭 좌표에서 그림, 글상자, 수식 개체를 찾는다. */
 /** 점과 선분 사이 최소 거리 (px) */
 function pointToSegmentDist(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
@@ -96,7 +125,11 @@ export function findPictureAtClick(this: any,
     // Task #516 결함 3 (옵션 3-C): BehindText 그림은 텍스트 영역 위에서는 후순위.
     // 1차 패스: BehindText 가 아닌 그림 우선 hit-test.
     // 2차 패스: BehindText 그림은 텍스트 hit-test 결과가 비어 있을 때만 hit.
+    // [Task #1280 v2] 겹침 클릭 = "최상단 개체" 선택. 첫-적중-반환 대신 적중 후보 전부를
+    // 돌며 (plane, zOrder, stableIndex) 최댓값(렌더 정렬키, Stage1 노출)을 고른다.
+    // 이로써 "보이는 것 = 클릭되는 것"(WYSIWYG) 정합. 단일 적중 시 결과 불변(회귀 0).
     const behindCtrls: any[] = [];
+    let topHit: any = null;
     for (const ctrl of layout.controls) {
       if (ctrl.type !== 'image' && ctrl.type !== 'shape' && ctrl.type !== 'equation' && ctrl.type !== 'group' && ctrl.type !== 'line') continue;
       if (ctrl.secIdx === undefined || ctrl.paraIdx === undefined || ctrl.controlIdx === undefined) continue;
@@ -109,11 +142,12 @@ export function findPictureAtClick(this: any,
         continue;
       }
 
+      let hit = false;
       if (ctrl.type === 'line') {
         // 직선: 점-선분 거리, 연결선: 곡선 경로 샘플링으로 히트 판정
         const threshold = 6;
         const dist1 = pointToSegmentDist(pageX, pageY, ctrl.x1, ctrl.y1, ctrl.x2, ctrl.y2);
-        let hit = dist1 <= threshold;
+        hit = dist1 <= threshold;
         if (!hit && ctrl.w > 2 && ctrl.h > 2) {
           const sx = ctrl.x1, sy = ctrl.y1, ex = ctrl.x2, ey = ctrl.y2;
           const mx = ctrl.x + ctrl.w / 2, my = ctrl.y + ctrl.h / 2;
@@ -149,17 +183,18 @@ export function findPictureAtClick(this: any,
             }
           }
         }
-        if (hit) {
-          return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: 'line',
-            x1: ctrl.x1, y1: ctrl.y1, x2: ctrl.x2, y2: ctrl.y2 };
-        }
       } else {
         // bbox 히트 판정
-        if (pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
-            pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h) {
-          return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter };
-        }
+        hit = pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
+          pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h;
       }
+
+      if (hit && (topHit === null || isAboveControl(ctrl, topHit))) {
+        topHit = ctrl;
+      }
+    }
+    if (topHit) {
+      return controlToRef(topHit);
     }
     // 2차 패스: BehindText 그림 hit-test (옵션 3-C, Task #516).
     // 텍스트 hit-test 결과를 확인하여 텍스트가 있는 위치면 그림 hit 무시.
