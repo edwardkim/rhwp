@@ -1794,31 +1794,39 @@ impl LayoutEngine {
                     ),
                 )
             };
-            // 수식 줄높이 확보: 이 줄에 놓인 인라인/단독 수식의 자연 높이가 텍스트
-            // line_height 보다 크면 줄높이를 그만큼 끌어올린다(겹침 방지). 작성 툴이
-            // bbox 를 0 으로 둔 수식은 LINE_SEG 에 높이가 없어 줄이 collapse 되므로,
-            // height_measurer 와 동일하게 한컴 조판 자연 높이로 보충한다.
-            // baseline 은 키운 만큼 아래로 내려 수식이 줄 상단에서 시작하도록 맞춘다.
-            let line_eq_height_px = para
+            // 수식 줄높이 확보: 이 줄에 놓인 인라인/단독 수식이 텍스트보다 크면 줄
+            // 높이·baseline 을 끌어올려 수식의 세로 공간을 확보한다(겹침 방지).
+            //
+            // [TALL 분수 수정] 이전엔 줄 높이를 수식 "총높이" 로만 키우고 baseline 을
+            // 그 증분만큼 내렸는데, 그러면 baseline **아래**(descent) 예약이 텍스트
+            // descent 그대로라 다단 분수(분자/분모, 예: d^4w / dx^4)의 깊은 분모가
+            // 줄 바닥 밖으로 삐져나와 다음 문단(예: "3. 레이놀즈 수")과 겹쳤다.
+            // → ascent/descent 를 분리해 baseline 은 수식 ascent 위치에 맞추고, 줄
+            //   높이는 baseline + 수식 descent 까지 확보한다(렌더 paint 와 동일한
+            //   px 조판 ascent/descent 사용 → eq_y 와 정확히 정합).
+            let line_eq_ad_px = para
                 .map(|p| {
                     line_tac_offsets
                         .iter()
                         .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
                             Some(Control::Equation(eq)) => {
-                                let (_w, h_hu) =
-                                    crate::renderer::equation::equation_effective_size_hwpunit(eq);
-                                Some(hwpunit_to_px(h_hu, self.dpi))
+                                Some(crate::renderer::equation::equation_natural_ascent_descent_px(
+                                    eq, self.dpi,
+                                ))
                             }
                             _ => None,
                         })
-                        .fold(0.0f64, f64::max)
+                        // 한 줄에 여러 수식이면 가장 깊은 ascent/descent 를 각각 취한다.
+                        .fold((0.0f64, 0.0f64), |(a, d), (ea, ed)| (a.max(ea), d.max(ed)))
                 })
-                .unwrap_or(0.0);
-            let (line_height, baseline) = if line_eq_height_px > line_height {
-                let grown = line_eq_height_px;
-                // baseline 을 늘어난 높이만큼 아래로 이동 → 텍스트 baseline 유지 +
-                // 수식은 줄 내부에 세로로 담긴다.
-                (grown, baseline + (grown - line_height))
+                .unwrap_or((0.0, 0.0));
+            let (eq_ascent_px, eq_descent_px) = line_eq_ad_px;
+            let (line_height, baseline) = if eq_ascent_px > 0.0 || eq_descent_px > 0.0 {
+                // 텍스트 descent 는 보존하면서 수식 descent 를 추가로 예약한다.
+                let text_descent = (line_height - baseline).max(0.0);
+                let new_baseline = baseline.max(eq_ascent_px);
+                let new_line_height = new_baseline + text_descent.max(eq_descent_px);
+                (new_line_height.max(line_height), new_baseline)
             } else {
                 (line_height, baseline)
             };
