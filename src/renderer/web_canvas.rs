@@ -66,7 +66,7 @@ use super::composer::{
 };
 use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
-use super::layout::{compute_char_positions, split_into_clusters};
+use super::layout::{compute_char_positions, font_family_has_metrics, split_into_clusters};
 use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
@@ -75,6 +75,59 @@ use crate::model::control::FormType;
 thread_local! {
     static IMAGE_CACHE: std::cell::RefCell<std::collections::HashMap<u64, HtmlImageElement>> =
         std::cell::RefCell::new(std::collections::HashMap::new());
+}
+
+// [Task: 임베디드 그림 첫-렌더 페인트] 동기 디코드 캔버스 캐시.
+//
+// 기존 draw_image 는 HtmlImageElement.set_src(data URL) 로 이미지를 비동기
+// 로드하므로, 페이지를 한 번만 renderPageToCanvas 하는 뷰어(ecrits)에서는
+// img.complete()==false 라 첫 렌더에 그림이 그려지지 않는다 (재렌더가 없어
+// 영영 빈 칸). PNG/JPEG/BMP 는 image 크레이트로 Rust 측에서 즉시 디코드해
+// 오프스크린 HtmlCanvasElement 에 put_image_data 한 뒤, drawImage(canvas)
+// 로 첫 렌더에 동기 페인트한다. 캐시 값 None = 디코드 불가(WMF/SVG 등) →
+// 기존 HtmlImageElement 비동기 경로로 폴백.
+#[cfg(target_arch = "wasm32")]
+thread_local! {
+    static DECODED_CANVAS_CACHE: std::cell::RefCell<
+        std::collections::HashMap<u64, Option<HtmlCanvasElement>>,
+    > = std::cell::RefCell::new(std::collections::HashMap::new());
+}
+
+/// 이미지 바이트를 RGBA 로 디코드해 오프스크린 캔버스로 만든다 (동기).
+///
+/// image 크레이트가 디코드 가능한 포맷(PNG/JPEG/BMP)만 처리. 실패하면
+/// None — 호출부는 기존 HtmlImageElement 비동기 경로로 폴백한다.
+#[cfg(target_arch = "wasm32")]
+fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
+    let dynimg = image::load_from_memory(data).ok()?;
+    let rgba = dynimg.to_rgba8();
+    let (iw, ih) = (rgba.width(), rgba.height());
+    if iw == 0 || ih == 0 {
+        return None;
+    }
+    let buf = rgba.into_raw();
+    let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
+        wasm_bindgen::Clamped(&buf),
+        iw,
+        ih,
+    )
+    .ok()?;
+
+    let document = web_sys::window()?.document()?;
+    let canvas: HtmlCanvasElement = document
+        .create_element("canvas")
+        .ok()?
+        .dyn_into::<HtmlCanvasElement>()
+        .ok()?;
+    canvas.set_width(iw);
+    canvas.set_height(ih);
+    let ctx = canvas
+        .get_context("2d")
+        .ok()??
+        .dyn_into::<CanvasRenderingContext2d>()
+        .ok()?;
+    ctx.put_image_data(&image_data, 0.0, 0.0).ok()?;
+    Some(canvas)
 }
 
 /// 빠른 해시 (FNV-1a 64비트)
@@ -2057,6 +2110,14 @@ impl Renderer for WebCanvasRenderer {
         let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
         let has_ratio = (ratio - 1.0).abs() > 0.01;
 
+        // [치환 폰트 글리프 왜곡 방지] 요청 폰트가 내장 메트릭 DB 에 없으면
+        // (= 브라우저가 다른 폰트로 치환) char_positions 의 advance 는 실제
+        // 글리프 폭이 아닌 휴리스틱 폴백(0.5em 등)이다. 이 경우 ASCII 글리프를
+        // advance 에 맞춰 글리프별 가로 스케일(pin_ascii_advance)하면 치환 폰트의
+        // 좁은 글리프(l/i/t)가 과도하게 늘어난다. 치환 폰트에서는 글리프를
+        // 자연 advance 그대로 그리고, run 내 누적 x 도 측정 폭으로 재산출한다.
+        let font_substituted = !font_family_has_metrics(&style.font_family, style.bold, style.italic);
+
         // 클러스터 분할
         let clusters = split_into_clusters(text);
 
@@ -2211,9 +2272,16 @@ impl Renderer for WebCanvasRenderer {
                             0.0
                         }
                     };
-                    let pin_ascii_advance =
-                        cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
-                    let fit_scale = if cluster_advance > 0.0 {
+                    let is_ascii_alnum = cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
+                    // [치환 폰트] ASCII 글리프를 휴리스틱 advance 에 맞춰 늘이는
+                    // pin_ascii_advance 를 끈다. char_positions 의 advance 가 실제
+                    // 글리프 폭이 아니라 0.5em 폴백이므로, 좁은 글리프(l/i/t)가
+                    // 2배까지 늘어나 왜곡되기 때문이다.
+                    let pin_ascii_advance = !font_substituted && is_ascii_alnum;
+                    // 치환 폰트의 ASCII 는 자연 폭 그대로 그린다 — 늘이지도(pin),
+                    // 줄이지도(overflow shrink) 않아야 l/i/t 와 m/w 가 일관된다.
+                    let skip_fit = font_substituted && is_ascii_alnum;
+                    let fit_scale = if cluster_advance > 0.0 && !skip_fit {
                         self.ctx
                             .measure_text(cluster_str)
                             .ok()
@@ -2541,7 +2609,32 @@ impl Renderer for WebCanvasRenderer {
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let key = hash_bytes(data);
 
-        // 캐시에서 이미 로드된 이미지를 찾는다
+        // [동기 페인트] PNG/JPEG/BMP 는 image 크레이트로 즉시 디코드한 오프스크린
+        // 캔버스를 drawImage 로 첫 렌더에 그린다 (비동기 HtmlImageElement 가
+        // 첫 렌더에 빈 칸이 되는 문제 회피). drawImage(canvas) 는 ctx 변환을
+        // 존중하고 (x,y,w,h) 로 스케일한다.
+        let decoded = DECODED_CANVAS_CACHE.with(|cache| {
+            let mut c = cache.borrow_mut();
+            if let Some(slot) = c.get(&key) {
+                return slot.clone();
+            }
+            // 캐시 크기 제한 (최대 200개)
+            if c.len() > 200 {
+                c.clear();
+            }
+            let canvas = decode_image_to_canvas(data);
+            c.insert(key, canvas.clone());
+            canvas
+        });
+        if let Some(canvas) = decoded {
+            let _ = self
+                .ctx
+                .draw_image_with_html_canvas_element_and_dw_and_dh(&canvas, x, y, w, h);
+            return;
+        }
+
+        // 캐시에서 이미 로드된 이미지를 찾는다 (image 크레이트 미지원 포맷:
+        // WMF/SVG/PCX 등 → HtmlImageElement 비동기 경로)
         let cached = IMAGE_CACHE.with(|cache| {
             let c = cache.borrow();
             c.get(&key).cloned()
@@ -2631,6 +2724,29 @@ impl WebCanvasRenderer {
         dh: f64,
     ) {
         let key = hash_bytes(data);
+
+        // [동기 페인트] PNG/JPEG/BMP 는 디코드된 오프스크린 캔버스로 첫 렌더에
+        // crop 적용. (draw_image 와 동일 캐시 공유)
+        let decoded = DECODED_CANVAS_CACHE.with(|cache| {
+            let mut c = cache.borrow_mut();
+            if let Some(slot) = c.get(&key) {
+                return slot.clone();
+            }
+            if c.len() > 200 {
+                c.clear();
+            }
+            let canvas = decode_image_to_canvas(data);
+            c.insert(key, canvas.clone());
+            canvas
+        });
+        if let Some(canvas) = decoded {
+            let _ = self
+                .ctx
+                .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
+                    &canvas, sx, sy, sw, sh, dx, dy, dw, dh,
+                );
+            return;
+        }
 
         let cached = IMAGE_CACHE.with(|cache| {
             let c = cache.borrow();
