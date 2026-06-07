@@ -653,21 +653,27 @@ mod tests {
     }
 
     #[test]
-    fn test_build_cfb_difat_large_output() {
-        // 회귀(#1227): FAT 섹터가 109개를 초과(출력 > 약 7.14MB)하면 DIFAT 섹터가
-        // 필요하다. 과거 mini_cfb는 DIFAT를 작성하지 않아 109개를 넘는 FAT 섹터
-        // 위치가 어디에도 기록되지 않았고, FAT 체인이 단절되어 cfb 크레이트가
-        // "next_id invalid"로 열기에 실패했다.
+    fn test_build_cfb_difat_over_threshold() {
+        // 회귀(#1227): FAT 섹터가 109개를 초과하면(헤더 DIFAT 슬롯 109개 한계 →
+        // 출력 ≈ 109×128×512 = 7,143,424 byte ≈ 7.14MB 초과) DIFAT 섹터가 필요하다.
+        // 과거 mini_cfb는 DIFAT 미작성으로 109개 초과분 FAT 섹터 위치가 유실되어
+        // FAT 체인이 단절, cfb 크레이트가 "next_id invalid"로 열기에 실패했다.
         //
-        // 8MB 스트림 → 데이터만 16384 섹터 → FAT 섹터 > 109개 → DIFAT 필수.
-        let big = vec![0x5Au8; 8 * 1024 * 1024];
-        let streams = vec![("/BinData/BIN0001", big.as_slice())];
-        let bytes = build_cfb(&streams).unwrap();
+        // 임계값 바로 위(약 7.2MB)로 최소화해 CI 메모리/시간 부담을 줄인다. 이보다
+        // 작으면 FAT 섹터가 109개 이하라 DIFAT 경로를 타지 않으므로 더 줄일 수 없다.
+        // 결정적 패턴을 써서 별도 대용량 기대 버퍼 없이 검증하고, 입력은 즉시 해제한다.
+        let n = 7_200_000usize;
+        let big: Vec<u8> = (0..n).map(|i| (i % 251) as u8).collect();
+        let bytes = {
+            let streams = vec![("/BinData/BIN0001", big.as_slice())];
+            build_cfb(&streams).unwrap()
+        };
+        drop(big); // 입력 버퍼 즉시 해제 — 동시 보유 메모리 절감
 
         // 헤더에 DIFAT 섹터가 기록되었는지 확인
         let first_difat = u32::from_le_bytes(bytes[68..72].try_into().unwrap());
         let num_difat = u32::from_le_bytes(bytes[72..76].try_into().unwrap());
-        assert!(num_difat > 0, "출력 > 7.14MB인데 DIFAT 섹터가 0개");
+        assert!(num_difat > 0, "출력이 7.14MB를 넘는데 DIFAT 섹터가 0개");
         assert_ne!(
             first_difat, ENDOFCHAIN,
             "DIFAT가 필요한데 first_difat가 ENDOFCHAIN"
@@ -682,30 +688,14 @@ mod tests {
             &mut read_data,
         )
         .unwrap();
-        assert_eq!(read_data.len(), big.len());
-        assert_eq!(read_data, big);
-    }
-
-    #[test]
-    fn test_build_cfb_difat_boundary() {
-        // 경계값 부근: FAT 섹터가 정확히 109개를 살짝 넘기는 크기에서도
-        // DIFAT 체인이 올바르게 구성되는지 확인한다.
-        // 약 7.2MB → FAT 섹터 110~111개 → DIFAT 섹터 1개.
-        let big = vec![0xC3u8; 7_200_000];
-        let streams = vec![("/BinData/BIN0001", big.as_slice())];
-        let bytes = build_cfb(&streams).unwrap();
-
-        let num_difat = u32::from_le_bytes(bytes[72..76].try_into().unwrap());
-        assert!(num_difat >= 1, "경계 초과인데 DIFAT 섹터가 없음");
-
-        let cursor = std::io::Cursor::new(&bytes);
-        let mut cfb = cfb::CompoundFile::open(cursor).unwrap();
-        let mut read_data = Vec::new();
-        std::io::Read::read_to_end(
-            &mut cfb.open_stream("/BinData/BIN0001").unwrap(),
-            &mut read_data,
-        )
-        .unwrap();
-        assert_eq!(read_data, big);
+        // 길이 + 결정적 패턴 일치로 검증 (별도 대용량 기대 버퍼 보유 없음)
+        assert_eq!(read_data.len(), n);
+        assert!(
+            read_data
+                .iter()
+                .enumerate()
+                .all(|(i, &b)| b == (i % 251) as u8),
+            "라운드트립 데이터가 원본 패턴과 불일치"
+        );
     }
 }
