@@ -57,15 +57,25 @@ fn note_decoration_char(value: u16) -> Option<char> {
     }
 }
 
-fn format_endnote_marker_text(endnote: &crate::model::footnote::Endnote) -> String {
-    let number = format_number(
-        endnote.number,
-        note_number_format_from_hwp_code(endnote.number_shape as u8),
-    );
+fn format_endnote_marker_text(
+    endnote: &crate::model::footnote::Endnote,
+    shape: Option<&crate::model::footnote::FootnoteShape>,
+) -> String {
+    // 미주 자동 번호의 서식 권위는 구역의 미주 모양(endnote_shape.number_format)이다.
+    // (예: LowerRoman → "i"). 모양이 있으면 그 형식/장식 문자를 우선 사용하고,
+    // 없을 때만 컨트롤 자체의 number_shape/장식 문자로 폴백한다. 이로써 본문 인라인
+    // 참조 마커와 미주 목록 번호가 동일한 서식을 쓴다.
+    let format = match shape {
+        Some(s) => RenderNumberFormat::from_footnote_shape_format(s.number_format),
+        None => note_number_format_from_hwp_code(endnote.number_shape as u8),
+    };
+    let number = format_number(endnote.number, format);
     let prefix = note_decoration_char(endnote.before_decoration_letter)
+        .or_else(|| shape.and_then(|s| (s.prefix_char != '\0').then_some(s.prefix_char)))
         .map(|ch| ch.to_string())
         .unwrap_or_default();
     let suffix = note_decoration_char(endnote.after_decoration_letter)
+        .or_else(|| shape.and_then(|s| (s.suffix_char != '\0').then_some(s.suffix_char)))
         .unwrap_or(')')
         .to_string();
     format!("{}{}{}", prefix, number, suffix)
@@ -2091,19 +2101,50 @@ impl TypesetEngine {
             // 정책을 타야 하므로 separator 크기와 분리한다.
             let compact_endnote_separator_profile = endnote_shape.is_some();
 
-            // [endnote-at-document-end] 한컴 정합: 미주(미주)는 각주와 달리 본문 흐름에
-            // 이어 그리지 않고 **문서(구역)의 끝**에 모아 배치한다. 단, 한컴 PDF 정합
-            // (pdf/endnote-01-2022.pdf 마지막 쪽 참조)은 미주 구분선+문단을 본문 마지막
-            // 내용 **바로 다음**부터 위→아래로 흘려 그린다(쪽 하단에 footnote 처럼
-            // bottom-anchor 하지 않는다). 본 typeset 의 미주 emit 루프가 이미 본문 마지막
-            // 단(= 문서 끝)에 이어서 미주를 inline flow 로 배치하므로 여기서 별도 위치
-            // 조정을 하지 않는다.
+            // [endnote-at-document-end] 미주(미주)는 각주와 달리 본문 흐름에 이어 그리지
+            // 않고 **문서/구역의 끝**에 모아 배치한다(endnote_shape.placement). 일반 미주는
+            // 본문 다음의 **새 마지막 쪽 맨 위**에서 시작한다(사용자 스크린샷 정합:
+            // 쪽1 하단=각주 → 쪽 나눔 → 쪽2 맨 위 미주). 각주는 본문 쪽 하단에 그대로
+            // 둔다(footnote 경로는 페이지별로 분리되어 영향 없음).
             //
-            // 이전 시도(a463950f)는 미주 블록을 마지막 단 하단에 bottom-anchor 했는데,
-            // 본문이 쪽을 다 못 채우면 미주가 (1) 가장 오른쪽 단 (2) 쪽 하단으로 끌려가
-            // 같은 쪽의 각주 바로 위에 겹쳐 그려지는 오배치를 일으켰다(미주 진단 오인).
-            // 한컴은 미주를 각주 영역과 무관하게 본문 끝 다음에 모아 그리므로 그 보정을
-            // 제거하고 자연스러운 trailing flow 로 되돌린다.
+            // 시험지형 미주("문N)" 등, before_decoration_letter != 0)는 다단 inline flow 로
+            // 본문 단에 이어 흐르므로(#926/#1082) 쪽을 강제로 나누지 않는다. 따라서
+            // 모든 참조 미주가 장식 문자 없는 **일반 미주**일 때만 새 쪽으로 보낸다.
+            //
+            // placement 의미(미주): EachColumn=문서끝, BelowText=구역끝 — 둘 다 trailing
+            // 영역이므로 새 쪽 배치 대상. RightColumn(가장 오른쪽 단)은 inline 유지.
+            let endnotes_are_plain = endnote_refs.iter().all(|en_ref| {
+                paragraphs
+                    .get(en_ref.para_index)
+                    .and_then(|p| p.controls.get(en_ref.control_index))
+                    .map(|c| match c {
+                        Control::Endnote(en) => en.before_decoration_letter == 0,
+                        _ => false,
+                    })
+                    .unwrap_or(false)
+            });
+            let placement_is_document_or_section_end = endnote_shape
+                .map(|s| {
+                    use crate::model::footnote::FootnotePlacement;
+                    matches!(
+                        s.placement,
+                        FootnotePlacement::EachColumn | FootnotePlacement::BelowText
+                    )
+                })
+                // 미주 모양이 없으면(드묾) 문서끝을 기본으로 간주.
+                .unwrap_or(true);
+            // 본문이 실질 내용을 가질 때만 쪽을 나눈다. 빈 문서(미주만 있는 경우)에서
+            // 쪽을 나누면 앞에 빈 쪽만 남으므로, 본문에 비공백 텍스트가 하나도 없으면
+            // 미주를 현재 쪽에 이어 그린다(한컴 정합).
+            let body_has_content = paragraphs.iter().any(|p| !p.text.trim().is_empty());
+            if endnotes_are_plain && placement_is_document_or_section_end && body_has_content {
+                // 본문 마지막 단을 flush 하고 새 쪽을 연다. 미주 구분선+문단이 새 쪽의
+                // 첫 항목이 되어, 렌더러 vpos 정규화가 이를 단 상단(쪽 맨 위)에 배치한다.
+                st.force_new_page();
+                // 새 쪽에서는 미주 vpos 를 쪽 상단(0) 기준으로 다시 흐르게 한다.
+                vpos_offset = 0;
+                prev_en_bottom_vpos = None;
+            }
 
             for en_ref in &endnote_refs {
                 if let Some(para) = paragraphs.get(en_ref.para_index) {
@@ -2358,7 +2399,8 @@ impl TypesetEngine {
                             }
                             // 첫 paragraph에 미주 번호 prepend
                             if ep_idx == 0 {
-                                let prefix = format!("{} ", format_endnote_marker_text(en_ctrl));
+                                let prefix =
+                                    format!("{} ", format_endnote_marker_text(en_ctrl, endnote_shape));
                                 en_para_copy.text = format!("{}{}", prefix, en_para_copy.text);
                                 en_para_copy.char_count += prefix.encode_utf16().count() as u32;
                                 let shift = prefix.encode_utf16().count() as u32;

@@ -1213,38 +1213,10 @@ fn format_footnote_number(
     prefix: char,
     suffix: char,
 ) -> String {
-    let num_str = match format {
-        NumberFormat::Digit => number.to_string(),
-        NumberFormat::CircledDigit => {
-            // ① ~ ⑳
-            if number >= 1 && number <= 20 {
-                char::from_u32(0x2460 + (number - 1) as u32)
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| number.to_string())
-            } else {
-                number.to_string()
-            }
-        }
-        NumberFormat::LowerAlpha => {
-            if number >= 1 && number <= 26 {
-                char::from_u32(b'a' as u32 + (number - 1) as u32)
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| number.to_string())
-            } else {
-                number.to_string()
-            }
-        }
-        NumberFormat::UpperAlpha => {
-            if number >= 1 && number <= 26 {
-                char::from_u32(b'A' as u32 + (number - 1) as u32)
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| number.to_string())
-            } else {
-                number.to_string()
-            }
-        }
-        _ => number.to_string(), // 기타 형식은 숫자로 fallback
-    };
+    // 각주 모양(footnote_shape)의 번호 서식을 렌더 형식으로 변환해 공용 포매터로 그린다.
+    // (Digit/CircledDigit/Roman/Alpha/Hangul/Hanja 등). 종전엔 Digit/CircledDigit/Alpha 만
+    // 처리하고 로마자 등은 숫자로 폴백했으나, 이제 endnote 와 동일한 포매터를 공유한다.
+    let num_str = format_number(number, NumFmt::from_footnote_shape_format(*format));
 
     let prefix_str = if prefix != '\0' {
         prefix.to_string()

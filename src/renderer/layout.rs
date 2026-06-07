@@ -699,6 +699,13 @@ pub struct LayoutEngine {
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HWPUNIT, 0=미적용). HeightCursor 가 미주
     /// 사이 min-gap 보정(gap 부족 시 끌어올림)에 사용한다. 섹션 렌더 셋업마다 갱신.
     endnote_between_notes_hu: std::cell::Cell<i32>,
+    /// 현재 섹션 미주 자동 번호의 서식 권위 = endnote_shape.number_format (예: LowerRoman→"i").
+    /// 본문 인라인 미주 참조 마커가 컨트롤의 number_shape 대신 이 형식을 따른다.
+    /// None = 미설정(컨트롤 number_shape 폴백). 섹션 렌더 셋업마다 갱신.
+    endnote_number_format: std::cell::Cell<Option<NumFmt>>,
+    /// 현재 섹션 각주 자동 번호의 서식 권위 = footnote_shape.number_format.
+    /// 본문 인라인 각주 참조 마커가 따른다. None = 컨트롤 number_shape 폴백.
+    footnote_number_format: std::cell::Cell<Option<NumFmt>>,
     /// 현재 활성 필드 위치 — 안내문 렌더링 스킵용
     /// (section_idx, para_idx, control_idx, cell_path)
     /// cell_path: 셀 내 필드일 경우 Some(Vec<(ctrl, cell, para)>)
@@ -772,6 +779,8 @@ impl LayoutEngine {
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
             endnote_between_notes_hu: std::cell::Cell::new(0),
+            endnote_number_format: std::cell::Cell::new(None),
+            footnote_number_format: std::cell::Cell::new(None),
             active_field: std::cell::RefCell::new(None),
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
@@ -889,6 +898,14 @@ impl LayoutEngine {
     /// HeightCursor 가 미주 사이 min-gap 보정에 사용. 0 = 미적용.
     pub fn set_endnote_between_notes_hu(&self, between_notes_hu: i32) {
         self.endnote_between_notes_hu.set(between_notes_hu.max(0));
+    }
+
+    /// 현재 섹션의 각주/미주 자동 번호 서식(구역 footnote_shape/endnote_shape.number_format)을
+    /// 레이아웃 엔진에 전달한다(섹션 렌더 셋업마다 호출). 본문 인라인 참조 마커가
+    /// 컨트롤의 number_shape 대신 이 형식을 따른다(예: 미주 LowerRoman → "i").
+    pub fn set_note_number_formats(&self, footnote_format: NumFmt, endnote_format: NumFmt) {
+        self.footnote_number_format.set(Some(footnote_format));
+        self.endnote_number_format.set(Some(endnote_format));
     }
 
     fn note_ref_for_endnote_equation(

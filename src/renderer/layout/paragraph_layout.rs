@@ -279,8 +279,13 @@ fn format_note_marker_text(
     number_shape: u32,
     before_decoration_letter: u16,
     after_decoration_letter: u16,
+    shape_format: Option<NumFmt>,
 ) -> String {
-    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
+    // 자동 번호 서식 권위: 구역의 각주/미주 모양(shape_format, 예: 미주 LowerRoman→"i").
+    // 모양 형식이 주어지면 그것을, 없으면 컨트롤의 number_shape 를 사용한다. 본문 인라인
+    // 참조 마커와 각주/미주 목록 번호가 동일한 서식을 따르도록 한다.
+    let format = shape_format.unwrap_or_else(|| note_number_format_from_hwp_code(number_shape as u8));
+    let number = format_number(number, format);
     let prefix = note_decoration_char(before_decoration_letter)
         .map(|ch| ch.to_string())
         .unwrap_or_default();
@@ -290,19 +295,29 @@ fn format_note_marker_text(
     format!("{}{}{}", prefix, number, suffix)
 }
 
-fn note_marker_text_from_control(ctrl: Option<&Control>, fallback_number: u16) -> String {
+/// 본문 인라인 각주/미주 참조 마커 텍스트.
+/// `footnote_format`/`endnote_format` 은 구역의 footnote_shape/endnote_shape.number_format
+/// (서식 권위). None 이면 컨트롤의 number_shape 로 폴백한다.
+fn note_marker_text_from_control(
+    ctrl: Option<&Control>,
+    fallback_number: u16,
+    footnote_format: Option<NumFmt>,
+    endnote_format: Option<NumFmt>,
+) -> String {
     match ctrl {
         Some(Control::Footnote(footnote)) => format_note_marker_text(
             fallback_number,
             footnote.number_shape,
             footnote.before_decoration_letter,
             footnote.after_decoration_letter,
+            footnote_format,
         ),
         Some(Control::Endnote(endnote)) => format_note_marker_text(
             fallback_number,
             endnote.number_shape,
             endnote.before_decoration_letter,
             endnote.after_decoration_letter,
+            endnote_format,
         ),
         _ => format!("{})", fallback_number),
     }
@@ -895,6 +910,8 @@ impl LayoutEngine {
                             let fn_text = note_marker_text_from_control(
                                 para.controls.get(fn_ctrl_idx),
                                 fn_num,
+                                self.footnote_number_format.get(),
+                                self.endnote_number_format.get(),
                             );
                             let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
                             let sup_font_size = (base_ts.font_size * 0.55).max(7.0);
@@ -1487,8 +1504,15 @@ impl LayoutEngine {
                         if en.before_decoration_letter == 0 {
                             continue;
                         }
-                        let marker_text =
-                            format!("{} ", note_marker_text_from_control(Some(ctrl), en.number));
+                        let marker_text = format!(
+                            "{} ",
+                            note_marker_text_from_control(
+                                Some(ctrl),
+                                en.number,
+                                self.footnote_number_format.get(),
+                                self.endnote_number_format.get(),
+                            )
+                        );
                         let first_cs_id = p
                             .char_shapes
                             .first()
@@ -2275,6 +2299,8 @@ impl LayoutEngine {
                         let fn_text = note_marker_text_from_control(
                             para.and_then(|p| p.controls.get(ctrl_idx)),
                             fnum,
+                            self.footnote_number_format.get(),
+                            self.endnote_number_format.get(),
                         );
                         let sup_size = (ts.font_size * 0.55).max(7.0);
                         let sup_ts = TextStyle {
@@ -3191,6 +3217,8 @@ impl LayoutEngine {
                                 let fn_text = note_marker_text_from_control(
                                     para.and_then(|p| p.controls.get(ctrl_idx)),
                                     fnum,
+                                    self.footnote_number_format.get(),
+                                    self.endnote_number_format.get(),
                                 );
                                 let base_ts = &text_style;
                                 let sup_size = (base_ts.font_size * 0.55).max(7.0);

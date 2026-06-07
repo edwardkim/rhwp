@@ -3210,6 +3210,18 @@ impl DocumentCore {
             self.layout_engine
                 .set_endnote_between_notes_hu(pr.endnote_between_notes_hu);
         }
+        // 미주/각주 자동 번호 서식: 구역의 footnote_shape/endnote_shape.number_format 을
+        // 권위로 본문 인라인 참조 마커가 따른다(예: 미주 LowerRoman → "i"). 미주 목록
+        // 번호는 typeset 단계에서 endnote_shape 를 직접 읽으므로, 여기서는 본문 인라인
+        // 마커가 동일 서식을 쓰도록 레이아웃 엔진에 전달한다.
+        if let Some(section) = self.document.sections.get(sec_idx) {
+            use crate::renderer::NumberFormat as RNF;
+            let sd = &section.section_def;
+            self.layout_engine.set_note_number_formats(
+                RNF::from_footnote_shape_format(sd.footnote_shape.number_format),
+                RNF::from_footnote_shape_format(sd.endnote_shape.number_format),
+            );
+        }
 
         // [Task #836] 미주 paragraphs를 본문 paragraphs 뒤에 합쳐서 전달
         // endnote para_index = paragraphs.len() + idx → combined에서 접근 가능

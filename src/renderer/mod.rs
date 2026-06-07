@@ -837,6 +837,31 @@ impl NumberFormat {
             _ => NumberFormat::Digit,
         }
     }
+
+    /// 각주/미주 모양(FootnoteShape)의 번호 서식을 렌더용 NumberFormat 으로 변환.
+    ///
+    /// 모델 `footnote::NumberFormat` 은 한컴이 지원하는 모든 변형(원문자/한글/한자
+    /// 등)을 담지만, 렌더러는 그중 실제 글리프 생성기를 가진 형식만 직접 그린다.
+    /// 매칭되는 형식은 정확히 매핑하고, 아직 전용 생성기가 없는 형식은 Digit 로
+    /// 폴백한다. 미주/각주 자동 번호를 구역의 `endnote_shape`/`footnote_shape`
+    /// 에서 직접 읽어 렌더(예: LowerRoman → "i")할 때 사용한다.
+    pub fn from_footnote_shape_format(format: crate::model::footnote::NumberFormat) -> Self {
+        use crate::model::footnote::NumberFormat as M;
+        match format {
+            M::Digit => NumberFormat::Digit,
+            M::CircledDigit => NumberFormat::CircledDigit,
+            M::UpperRoman => NumberFormat::RomanUpper,
+            M::LowerRoman => NumberFormat::RomanLower,
+            M::UpperAlpha => NumberFormat::LatinUpper,
+            M::LowerAlpha => NumberFormat::LatinLower,
+            M::HangulSyllable => NumberFormat::HangulGaNaDa,
+            M::HangulDigit => NumberFormat::HangulNumber,
+            M::HanjaDigit => NumberFormat::HanjaNumber,
+            // 아직 전용 글리프 생성기가 없는 형식(원문자 알파벳/자모, 한자 갑을 등)은
+            // 표준 숫자로 폴백한다.
+            _ => NumberFormat::Digit,
+        }
+    }
 }
 
 /// 번호를 문자열로 변환
