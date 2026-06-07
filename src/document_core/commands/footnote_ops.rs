@@ -372,13 +372,36 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        // 각주 영역 폭 = 페이지 텍스트 영역 폭
+        // 각주/미주 영역 폭. 단일 단이면 페이지 텍스트 영역 폭, 다단이면 단 너비.
+        // [FIX 2] 2단 이상 문서에서 각주/미주 본문은 단 폭 안에서 줄바꿈해야 하므로
+        // (편집 후 re-wrap 도 렌더 경로 normalize_overwide_column_linesegs 와 동일한
+        // 단 너비를 사용해야 일관된다) 단 정의가 다단이면 첫 단 너비로 reflow 한다.
         let available_width = {
             let section = &self.document.sections[section_idx];
             let page_def = &section.section_def.page_def;
-            let text_width =
-                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
-            hwpunit_to_px(text_width, self.dpi)
+            let column_def = Self::find_initial_column_def(&section.paragraphs);
+            if column_def.column_count.max(1) > 1 {
+                let layout = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
+                    page_def,
+                    &column_def,
+                    self.dpi,
+                );
+                layout
+                    .column_areas
+                    .first()
+                    .map(|a| a.width)
+                    .unwrap_or_else(|| {
+                        let text_width = page_def.width as i32
+                            - page_def.margin_left as i32
+                            - page_def.margin_right as i32;
+                        hwpunit_to_px(text_width, self.dpi)
+                    })
+            } else {
+                let text_width = page_def.width as i32
+                    - page_def.margin_left as i32
+                    - page_def.margin_right as i32;
+                hwpunit_to_px(text_width, self.dpi)
+            }
         };
 
         // 문단 여백 적용

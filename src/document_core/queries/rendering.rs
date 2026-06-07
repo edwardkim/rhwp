@@ -2031,23 +2031,57 @@ impl DocumentCore {
             let col_width_hu = crate::renderer::px_to_hwpunit(col_width_px, dpi);
             let overwide_hu = col_width_hu + crate::renderer::px_to_hwpunit(OVERWIDE_SLACK_PX, dpi);
             let mut first_modified: Option<usize> = None;
+            // 단 너비 초과 line_seg 를 단 너비로 reflow 하는 공통 클로저.
+            // 본문 문단과 각주/미주 내부 문단 모두 같은 규칙을 쓴다.
+            let reflow_if_overwide =
+                |para: &mut crate::model::paragraph::Paragraph| -> bool {
+                    if para.text.trim().is_empty() {
+                        return false;
+                    }
+                    let is_overwide = para
+                        .line_segs
+                        .iter()
+                        .any(|ls| ls.segment_width > overwide_hu);
+                    if !is_overwide {
+                        return false;
+                    }
+                    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                    let available_width = (col_width_px - margin_left - margin_right).max(1.0);
+                    crate::renderer::composer::reflow_line_segs(
+                        para,
+                        available_width,
+                        &styles,
+                        dpi,
+                    );
+                    true
+                };
             for (p_idx, para) in section.paragraphs.iter_mut().enumerate() {
-                if para.text.trim().is_empty() {
-                    continue;
+                let mut para_changed = reflow_if_overwide(para);
+
+                // [FIX 2] 다단 문서에서 각주/미주 본문 텍스트도 단 너비로 줄바꿈한다.
+                // 원본 HWP 는 각주/미주 line_seg 를 본문 전체 폭으로 저장해 두는데,
+                // 그대로 그리면 2단 문서의 각주가 페이지 전체 폭으로 뻗어 한 줄로
+                // 나온다. 본문 문단과 동일한 over-wide 판정 + 단 너비 reflow 를
+                // 각주/미주 내부 문단에도 적용해 단 폭 안에서 여러 줄로 감싼다.
+                // (이미 단 폭 이하로 흐르는 미주 등은 손대지 않아 회귀를 격리한다.)
+                for ctrl in para.controls.iter_mut() {
+                    let note_paras = match ctrl {
+                        crate::model::control::Control::Footnote(f) => Some(&mut f.paragraphs),
+                        crate::model::control::Control::Endnote(e) => Some(&mut e.paragraphs),
+                        _ => None,
+                    };
+                    if let Some(note_paras) = note_paras {
+                        for note_para in note_paras.iter_mut() {
+                            if reflow_if_overwide(note_para) {
+                                para_changed = true;
+                            }
+                        }
+                    }
                 }
-                let is_overwide = para
-                    .line_segs
-                    .iter()
-                    .any(|ls| ls.segment_width > overwide_hu);
-                if !is_overwide {
-                    continue;
-                }
-                let para_style = styles.para_styles.get(para.para_shape_id as usize);
-                let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                let available_width = (col_width_px - margin_left - margin_right).max(1.0);
-                crate::renderer::composer::reflow_line_segs(para, available_width, &styles, dpi);
-                if first_modified.is_none() {
+
+                if para_changed && first_modified.is_none() {
                     first_modified = Some(p_idx);
                 }
             }

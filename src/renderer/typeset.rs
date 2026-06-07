@@ -6746,11 +6746,30 @@ fn endnote_has_compact_separator_below(shape: &FootnoteShape) -> bool {
     endnote_separator_below_margin(shape) <= ENDNOTE_COMPACT_SEPARATOR_BELOW_MAX_HU
 }
 
+/// 미주(endnote)의 구분선이 한컴 기본 미주 모양의 "감춰진" 구분선인지 판정한다.
+///
+/// [FIX 3] 한컴오피스의 **표준 기본 미주**는 번호("1)")만 그리고 그 위에 가로
+/// 구분선을 그리지 않는다(각주와 다른 점). 그런데 HWP5 의 기본 미주 모양 레코드
+/// (blank2010.hwp 템플릿과 동일: line_type=1 실선 / line_width=1 최소굵기 / 검정)
+/// 에는 footnote 와 똑같은 구분선 필드가 채워져 있어, 그대로 그리면 미주 위에
+/// 각주식 구분선이 잘못 나온다.
+///
+/// 그래서 *기본(평범한 가는 검정 실선)* 구분선은 미주에서 숨기고, 시험지처럼
+/// 의도적으로 커스터마이즈한 구분선(예: line_type 10 의 굵은 초록 줄,
+/// 3-09월_교육_통합_2022.hwp)은 그대로 honor 한다 — issue_1139 회귀 보호.
+fn endnote_separator_is_canonical_default(shape: &FootnoteShape) -> bool {
+    // 실선(1) + 최소 굵기(<=1) + 검정 = 한컴 표준 기본 미주 구분선 → 숨김.
+    shape.separator_line_type == 1
+        && shape.separator_line_width <= 1
+        && (shape.separator_color & 0x00FF_FFFF) == 0x0000_0000
+}
+
 fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     let has_separator = shape.separator_line_type != 0
         || shape.separator_line_width != 0
         || shape.separator_length != 0;
-    if !has_separator {
+    // [FIX 3] 표준 기본 미주 구분선은 그리지 않는다 (canonical 미주 = 번호만).
+    if !has_separator || endnote_separator_is_canonical_default(shape) {
         return 0.0;
     }
     hwpunit_to_px(shape.separator_margin_top as i32, dpi)
