@@ -733,8 +733,8 @@ mod utils;
 pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, resolved_to_text_style,
-    split_into_clusters,
+    extract_tab_leaders_with_extended, find_next_tab_stop, font_family_has_metrics, is_cjk_char,
+    resolved_to_text_style, split_into_clusters,
 };
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.

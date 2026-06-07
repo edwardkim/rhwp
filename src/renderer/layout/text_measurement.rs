@@ -1581,6 +1581,20 @@ fn is_monospace_metric(metric: &font_metrics_data::FontMetric) -> bool {
     count >= 16
 }
 
+/// 요청 폰트의 내장 메트릭 DB 등록 여부.
+///
+/// `compute_char_positions` 의 advance 가 실제 글리프 폭(메트릭 DB)에서
+/// 나온 값인지, 아니면 DB 미등록 폰트의 휴리스틱 폴백(`font_size * 0.5`
+/// 등)인지 구분하는 데 쓴다. WASM 캔버스 렌더러는 메트릭이 없는(=브라우저
+/// 대체 폰트로 치환되는) 폰트에 대해 글리프별 가로 스케일링(per-glyph
+/// x-scale)을 적용하면 안 된다 — 치환 폰트의 실제 advance 와 어긋나
+/// l/i/t 같은 좁은 글리프가 과도하게 늘어나기 때문이다 (한컴 바겐세일 M
+/// → Pretendard 치환 시 Vocabulary 열 왜곡).
+pub(crate) fn font_family_has_metrics(font_family: &str, bold: bool, italic: bool) -> bool {
+    let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    font_metrics_data::find_metric(primary_name, bold, italic).is_some()
+}
+
 /// 내장 폰트 메트릭으로 문자 폭 측정 (em 단위 → px 변환)
 ///
 /// 내장 메트릭이 있으면 JS 브릿지 호출 없이 즉시 반환.
