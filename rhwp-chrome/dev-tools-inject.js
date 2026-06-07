@@ -4,7 +4,7 @@
   'use strict';
   if (window.rhwpDev) return;
 
-  const VERSION = '0.2.3';
+  const VERSION = '0.2.4';
 
   window.rhwpDev = {
     inspect() {

@@ -85,6 +85,56 @@ fn classify_navigable(ctrl: &Control) -> Option<bool> {
     }
 }
 
+fn is_equation_only_navigation_paragraph(para: &Paragraph) -> bool {
+    let mut has_equation = false;
+
+    for ctrl in &para.controls {
+        match ctrl {
+            Control::Equation(_) => has_equation = true,
+            _ if classify_navigable(ctrl).is_some() => return false,
+            _ => {}
+        }
+    }
+
+    has_equation && para.text.chars().all(|ch| ch == '\u{fffc}')
+}
+
+fn equation_control_at_position(
+    para: &Paragraph,
+    ctrl_positions: &[usize],
+    logical_pos: usize,
+) -> bool {
+    para.controls.iter().enumerate().any(|(ci, ctrl)| {
+        matches!(ctrl, Control::Equation(_)) && ctrl_positions.get(ci).copied() == Some(logical_pos)
+    })
+}
+
+fn should_skip_equation_only_duplicate_boundary(
+    para: &Paragraph,
+    ctrl_positions: &[usize],
+    char_offset: usize,
+    next_offset: usize,
+    text_len: usize,
+) -> bool {
+    if char_offset == 0
+        || next_offset + 1 > text_len
+        || !is_equation_only_navigation_paragraph(para)
+    {
+        return false;
+    }
+
+    let previous_equation_ends_here = para.controls.iter().enumerate().any(|(ci, ctrl)| {
+        matches!(ctrl, Control::Equation(_))
+            && ctrl_positions
+                .get(ci)
+                .copied()
+                .is_some_and(|pos| pos + 1 == char_offset)
+    });
+    let next_equation_starts_here = equation_control_at_position(para, ctrl_positions, next_offset);
+
+    previous_equation_ends_here && next_equation_starts_here
+}
+
 /// context 스택을 따라 현재 컨테이너의 paragraphs를 반환한다.
 /// 오버플로우 타겟 글상자의 경우 소스의 오버플로우 문단 슬라이스를 반환한다.
 fn resolve_paragraphs<'a>(
@@ -169,6 +219,39 @@ fn next_cell_index(
 }
 
 impl DocumentCore {
+    fn nav_paragraph_ref<'a>(
+        &'a self,
+        sec: usize,
+        para: usize,
+        context: &[NavContextEntry],
+        overflow_links: &[OverflowLink],
+    ) -> Option<&'a Paragraph> {
+        if context.is_empty() {
+            self.get_render_paragraph_ref(sec, para).ok()
+        } else {
+            resolve_paragraphs(&self.document.sections, sec, context, overflow_links)?.get(para)
+        }
+    }
+
+    fn nav_paragraph_count(
+        &self,
+        sec: usize,
+        context: &[NavContextEntry],
+        overflow_links: &[OverflowLink],
+    ) -> Option<usize> {
+        if context.is_empty() {
+            let body_count = self.document.sections.get(sec)?.paragraphs.len();
+            let endnote_count = self
+                .pagination
+                .get(sec)
+                .map(|pagination| pagination.endnote_paragraphs.len())
+                .unwrap_or(0);
+            Some(body_count + endnote_count)
+        } else {
+            Some(resolve_paragraphs(&self.document.sections, sec, context, overflow_links)?.len())
+        }
+    }
+
     /// 외부에서 전달받은 context의 ctrl_text_pos를 실제 문서 데이터로 복원한다.
     /// TypeScript 측에서 ctrl_text_pos를 모르는 경우 0으로 전달하므로,
     /// Rust가 편집용 logical control position 으로 올바른 값을 채운다.
@@ -250,16 +333,13 @@ impl DocumentCore {
         let sections = &self.document.sections;
         let forward = delta > 0;
 
-        // 현재 컨테이너의 paragraphs 해석
-        let paragraphs = match resolve_paragraphs(sections, sec, context, overflow_links) {
-            Some(p) => p,
-            None => {
-                return NavResult::Boundary;
-            }
+        let para_count = match self.nav_paragraph_count(sec, context, overflow_links) {
+            Some(count) if count > 0 => count,
+            _ => return NavResult::Boundary,
         };
 
         // Step 1: 현재 문단 내 탐색
-        if let Some(current_para) = paragraphs.get(para) {
+        if let Some(current_para) = self.nav_paragraph_ref(sec, para, context, overflow_links) {
             let text_len = navigable_text_len(current_para);
             let ctrl_positions = find_logical_control_positions(current_para);
 
@@ -334,6 +414,21 @@ impl DocumentCore {
                 }
 
                 // 다음 offset에 컨트롤이 있는지도 확인
+                if should_skip_equation_only_duplicate_boundary(
+                    current_para,
+                    &ctrl_positions,
+                    char_offset,
+                    next_offset,
+                    text_len,
+                ) {
+                    return NavResult::Text {
+                        sec,
+                        para,
+                        char_offset: next_offset + 1,
+                        context: context.to_vec(),
+                    };
+                }
+
                 for (ci, ctrl) in current_para.controls.iter().enumerate() {
                     let cpos = ctrl_positions.get(ci).copied().unwrap_or(text_len);
                     if cpos == next_offset {
@@ -474,7 +569,6 @@ impl DocumentCore {
 
         // Step 2: 같은 컨테이너의 다음/이전 문단
         // max_para가 설정된 경우, 렌더링된 범위를 넘어서는 문단으로 이동하지 않는다.
-        let para_count = paragraphs.len();
         // 렌더 범위 상한: max_para가 있으면 그 이후 문단은 진입하지 않음
         let effective_para_limit = max_para.map_or(para_count, |mp| (mp + 1).min(para_count));
 
@@ -557,12 +651,12 @@ impl DocumentCore {
                 return self.exit_control(sec, &last, forward, &parent_ctx, overflow_links);
             } else {
                 // Table 탈출: 다음/이전 셀 확인
-                let parent_paras =
-                    match resolve_paragraphs(sections, sec, &parent_ctx, overflow_links) {
-                        Some(p) => p,
-                        None => return NavResult::Boundary,
-                    };
-                let parent_para = match parent_paras.get(last.parent_para) {
+                let parent_para = match self.nav_paragraph_ref(
+                    sec,
+                    last.parent_para,
+                    &parent_ctx,
+                    overflow_links,
+                ) {
                     Some(p) => p,
                     None => return NavResult::Boundary,
                 };
@@ -607,7 +701,9 @@ impl DocumentCore {
         } else {
             if sec > 0 {
                 let prev_sec = sec - 1;
-                let prev_para_count = sections[prev_sec].paragraphs.len();
+                let prev_para_count = self
+                    .nav_paragraph_count(prev_sec, &[], overflow_links)
+                    .unwrap_or(0);
                 return self.navigate_to_para_end(
                     prev_sec,
                     prev_para_count.saturating_sub(1),
@@ -629,13 +725,7 @@ impl DocumentCore {
         context: &[NavContextEntry],
         overflow_links: &[OverflowLink],
     ) -> NavResult {
-        let sections = &self.document.sections;
-        let paragraphs = match resolve_paragraphs(sections, sec, context, overflow_links) {
-            Some(p) => p,
-            None => return NavResult::Boundary,
-        };
-
-        if let Some(current_para) = paragraphs.get(para) {
+        if let Some(current_para) = self.nav_paragraph_ref(sec, para, context, overflow_links) {
             let text_len = navigable_text_len(current_para);
             let ctrl_positions = find_logical_control_positions(current_para);
 
@@ -656,26 +746,14 @@ impl DocumentCore {
                                 overflow_links,
                             );
                         }
-                        // 표: 건너뛰기 → 다음 위치로
-                        let skip = 1;
-                        if skip <= text_len {
-                            return NavResult::Text {
-                                sec,
-                                para,
-                                char_offset: skip,
-                                context: context.to_vec(),
-                            };
-                        }
-                        // 표만 있는 문단 → 다음 문단으로
-                        return self.navigate_next_editable(
+                        // 문단 경계에서 새 문단으로 진입할 때는 시작 위치에 멈춘다.
+                        // 수식/그림/표 같은 inline control 은 다음 오른쪽 이동에서 1글자처럼 소비된다.
+                        return NavResult::Text {
                             sec,
                             para,
-                            0,
-                            1,
-                            context,
-                            None,
-                            overflow_links,
-                        );
+                            char_offset: 0,
+                            context: context.to_vec(),
+                        };
                     }
                 }
                 if cpos > 0 {
@@ -701,13 +779,7 @@ impl DocumentCore {
         context: &[NavContextEntry],
         overflow_links: &[OverflowLink],
     ) -> NavResult {
-        let sections = &self.document.sections;
-        let paragraphs = match resolve_paragraphs(sections, sec, context, overflow_links) {
-            Some(p) => p,
-            None => return NavResult::Boundary,
-        };
-
-        if let Some(current_para) = paragraphs.get(para) {
+        if let Some(current_para) = self.nav_paragraph_ref(sec, para, context, overflow_links) {
             let text_len = navigable_text_len(current_para);
             let ctrl_positions = find_logical_control_positions(current_para);
 
@@ -843,11 +915,7 @@ impl DocumentCore {
             self.navigate_to_para_end(sec, last_para, &new_ctx, overflow_links)
         } else {
             // Table: 마지막 셀로 진입
-            let parent_paras = match resolve_paragraphs(sections, sec, context, overflow_links) {
-                Some(p) => p,
-                None => return NavResult::Boundary,
-            };
-            let parent_para = match parent_paras.get(para) {
+            let parent_para = match self.nav_paragraph_ref(sec, para, context, overflow_links) {
                 Some(p) => p,
                 None => return NavResult::Boundary,
             };
@@ -903,48 +971,44 @@ impl DocumentCore {
 
         if forward {
             // 부모 문단의 텍스트 길이 확인
-            let parent_paras = match resolve_paragraphs(sections, sec, parent_ctx, overflow_links) {
-                Some(p) => p,
-                None => return NavResult::Boundary,
-            };
-            let text_len = parent_paras
-                .get(exited.parent_para)
-                .map(|p| navigable_text_len(p))
-                .unwrap_or(0);
+            let parent_p =
+                match self.nav_paragraph_ref(sec, exited.parent_para, parent_ctx, overflow_links) {
+                    Some(p) => p,
+                    None => return NavResult::Boundary,
+                };
+            let text_len = navigable_text_len(parent_p);
 
             if exited.ctrl_text_pos <= text_len {
                 // 컨트롤 다음 위치에 다른 편집 가능 컨트롤이 있는지 확인
-                if let Some(parent_p) = parent_paras.get(exited.parent_para) {
-                    let ctrl_positions = find_logical_control_positions(parent_p);
-                    // 오버플로우 타겟 탈출 시 소스 컨트롤 건너뛰기
-                    let skip_ctrl_idx = target_link.map(|l| l.source_ctrl_idx);
+                let ctrl_positions = find_logical_control_positions(parent_p);
+                // 오버플로우 타겟 탈출 시 소스 컨트롤 건너뛰기
+                let skip_ctrl_idx = target_link.map(|l| l.source_ctrl_idx);
 
-                    for (ci, ctrl) in parent_p.controls.iter().enumerate() {
-                        if ci <= exited.ctrl_idx {
-                            continue; // 같은 컨트롤이거나 이미 지나친 것
+                for (ci, ctrl) in parent_p.controls.iter().enumerate() {
+                    if ci <= exited.ctrl_idx {
+                        continue; // 같은 컨트롤이거나 이미 지나친 것
+                    }
+                    // 소스 컨트롤 건너뛰기
+                    if Some(ci) == skip_ctrl_idx {
+                        continue;
+                    }
+                    let cpos = ctrl_positions.get(ci).copied().unwrap_or(text_len);
+                    if cpos == exited.ctrl_text_pos {
+                        // 같은 위치에 다른 편집 가능 컨트롤 → 진입
+                        if let Some(is_tb) = classify_navigable(ctrl) {
+                            return self.enter_control_forward(
+                                sec,
+                                exited.parent_para,
+                                ci,
+                                cpos,
+                                is_tb,
+                                parent_ctx,
+                                overflow_links,
+                            );
                         }
-                        // 소스 컨트롤 건너뛰기
-                        if Some(ci) == skip_ctrl_idx {
-                            continue;
-                        }
-                        let cpos = ctrl_positions.get(ci).copied().unwrap_or(text_len);
-                        if cpos == exited.ctrl_text_pos {
-                            // 같은 위치에 다른 편집 가능 컨트롤 → 진입
-                            if let Some(is_tb) = classify_navigable(ctrl) {
-                                return self.enter_control_forward(
-                                    sec,
-                                    exited.parent_para,
-                                    ci,
-                                    cpos,
-                                    is_tb,
-                                    parent_ctx,
-                                    overflow_links,
-                                );
-                            }
-                        }
-                        if cpos > exited.ctrl_text_pos {
-                            break; // 더 뒤 위치는 나중에 도달
-                        }
+                    }
+                    if cpos > exited.ctrl_text_pos {
+                        break; // 더 뒤 위치는 나중에 도달
                     }
                 }
 
@@ -961,7 +1025,9 @@ impl DocumentCore {
             }
 
             // ctrl_text_pos >= text_len → 다음 문단으로
-            let para_count = parent_paras.len();
+            let para_count = self
+                .nav_paragraph_count(sec, parent_ctx, overflow_links)
+                .unwrap_or(0);
             if exited.parent_para + 1 < para_count {
                 return self.navigate_to_para_start(
                     sec,
@@ -989,14 +1055,45 @@ impl DocumentCore {
             NavResult::Boundary
         } else {
             // Backward: 부모 문단 정보 조회
-            let parent_paras = match resolve_paragraphs(sections, sec, parent_ctx, overflow_links) {
-                Some(p) => p,
-                None => return NavResult::Boundary,
-            };
+            let parent_p =
+                match self.nav_paragraph_ref(sec, exited.parent_para, parent_ctx, overflow_links) {
+                    Some(p) => p,
+                    None => return NavResult::Boundary,
+                };
 
             // 같은 텍스트 위치에 이전 편집 가능 컨트롤이 있으면 backward 진입
             // (모든 컨트롤이 ctrl_text_pos=0인 문단에서 역방향 탐색에 필요)
-            if let Some(parent_p) = parent_paras.get(exited.parent_para) {
+            let ctrl_positions = find_logical_control_positions(parent_p);
+            for (ci, ctrl) in parent_p.controls.iter().enumerate().rev() {
+                if ci >= exited.ctrl_idx {
+                    continue;
+                }
+                let cpos = ctrl_positions
+                    .get(ci)
+                    .copied()
+                    .unwrap_or(navigable_text_len(parent_p));
+                if cpos == exited.ctrl_text_pos {
+                    if let Some(is_tb) = classify_navigable(ctrl) {
+                        return self.enter_control_backward(
+                            sec,
+                            exited.parent_para,
+                            ci,
+                            cpos,
+                            is_tb,
+                            parent_ctx,
+                            overflow_links,
+                        );
+                    }
+                }
+                if cpos < exited.ctrl_text_pos {
+                    break;
+                }
+            }
+
+            // ctrl_text_pos > 0: 컨트롤 직전 텍스트 위치 (ctrl_text_pos - 1)
+            if exited.ctrl_text_pos > 0 {
+                let prev_pos = exited.ctrl_text_pos - 1;
+                // prev_pos에 다른 편집 가능 컨트롤이 있는지 확인
                 let ctrl_positions = find_logical_control_positions(parent_p);
                 for (ci, ctrl) in parent_p.controls.iter().enumerate().rev() {
                     if ci >= exited.ctrl_idx {
@@ -1006,7 +1103,7 @@ impl DocumentCore {
                         .get(ci)
                         .copied()
                         .unwrap_or(navigable_text_len(parent_p));
-                    if cpos == exited.ctrl_text_pos {
+                    if cpos == prev_pos {
                         if let Some(is_tb) = classify_navigable(ctrl) {
                             return self.enter_control_backward(
                                 sec,
@@ -1019,42 +1116,8 @@ impl DocumentCore {
                             );
                         }
                     }
-                    if cpos < exited.ctrl_text_pos {
+                    if cpos < prev_pos {
                         break;
-                    }
-                }
-            }
-
-            // ctrl_text_pos > 0: 컨트롤 직전 텍스트 위치 (ctrl_text_pos - 1)
-            if exited.ctrl_text_pos > 0 {
-                let prev_pos = exited.ctrl_text_pos - 1;
-                // prev_pos에 다른 편집 가능 컨트롤이 있는지 확인
-                if let Some(parent_p) = parent_paras.get(exited.parent_para) {
-                    let ctrl_positions = find_logical_control_positions(parent_p);
-                    for (ci, ctrl) in parent_p.controls.iter().enumerate().rev() {
-                        if ci >= exited.ctrl_idx {
-                            continue;
-                        }
-                        let cpos = ctrl_positions
-                            .get(ci)
-                            .copied()
-                            .unwrap_or(navigable_text_len(parent_p));
-                        if cpos == prev_pos {
-                            if let Some(is_tb) = classify_navigable(ctrl) {
-                                return self.enter_control_backward(
-                                    sec,
-                                    exited.parent_para,
-                                    ci,
-                                    cpos,
-                                    is_tb,
-                                    parent_ctx,
-                                    overflow_links,
-                                );
-                            }
-                        }
-                        if cpos < prev_pos {
-                            break;
-                        }
                     }
                 }
                 return NavResult::Text {
@@ -1089,7 +1152,9 @@ impl DocumentCore {
             // Body 수준 → 이전 섹션
             if sec > 0 {
                 let prev_sec = sec - 1;
-                let prev_para_count = sections[prev_sec].paragraphs.len();
+                let prev_para_count = self
+                    .nav_paragraph_count(prev_sec, &[], overflow_links)
+                    .unwrap_or(0);
                 return self.navigate_to_para_end(
                     prev_sec,
                     prev_para_count.saturating_sub(1),

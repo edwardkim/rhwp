@@ -121,6 +121,10 @@ fn print_help() {
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!();
+    println!("  export-pdf <파일.hwp> [-o 출력.pdf] [-p 페이지]");
+    println!("      HWP 파일을 PDF로 내보내기 (svg2pdf + pdf-writer)");
+    println!();
     println!("  info <파일.hwp>");
     println!("      HWP 파일 정보 표시");
     println!();
@@ -129,6 +133,9 @@ fn print_help() {
     println!();
     println!("  dump-pages <파일.hwp> [-p <번호>] [--respect-vpos-reset]");
     println!("      페이지네이션 결과 덤프 (페이지별 문단/표 배치 목록)");
+    println!();
+    println!("  dump-records <파일.hwp>");
+    println!("      HWP5 raw record 덤프 (DocInfo/BodyText 레코드 트리)");
     println!();
     println!("  diag <파일.hwp>");
     println!("      문서 구조 진단 (번호/글머리표/개요 분석)");
@@ -169,6 +176,9 @@ fn print_help() {
     println!("  convert <입력.hwp|입력.hwpx> <출력.hwp>");
     println!("      배포용(읽기전용) HWP를 편집 가능한 HWP로 변환");
     println!();
+    println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
+    println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
+    println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
@@ -182,6 +192,13 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 경로 (기본: 입력명_thumb.png)");
     println!("      --base64                  base64 문자열을 stdout에 출력");
     println!("      --data-uri                data:image/... URI 형식으로 stdout에 출력");
+    println!();
+    println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
+    println!("  test-caption <파일.hwp>             캡션 라운드트립 검증");
+    println!("  test-field <파일.hwp>               필드 라운드트립 검증");
+    println!("  test-shape <입력.hwp> <출력.hwp>    도형 라운드트립 검증");
+    println!("  gen-table                           표 테스트 HWP 생성");
+    println!("  gen-pua                             PUA 문자 테스트 HWP 생성");
     println!();
     println!("옵션:");
     println!("  -h, --help      도움말 표시");

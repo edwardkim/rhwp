@@ -308,9 +308,32 @@ impl HeightMeasurer {
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
         let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
+            let tac_offsets_px: Vec<(usize, f64, usize)> = comp
+                .tac_controls
+                .iter()
+                .map(|(pos, width_hu, control_index)| {
+                    (*pos, hwpunit_to_px(*width_hu, self.dpi), *control_index)
+                })
+                .collect();
+            let equation_line_available_width_px = |visual_line_idx: usize| {
+                column_width_px.map(|cw| {
+                    let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                    let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                    let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+                    let effective_margin_l = crate::renderer::equation_tac_flow::
+                        paragraph_effective_margin_left_with_indent_scale(
+                            margin_l,
+                            indent,
+                            visual_line_idx,
+                            2.0,
+                        );
+                    (cw - effective_margin_l - margin_r).max(0.0)
+                })
+            };
             comp.lines
                 .iter()
-                .map(|line| {
+                .enumerate()
+                .map(|(line_idx, line)| {
                     let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                     let max_fs = line
                         .runs
@@ -327,7 +350,7 @@ impl HeightMeasurer {
                     // 분해 — HWP3/HWP5 line_segs 의 (line_height=base, line_spacing=extra)
                     // 의미와 정합. 종전 처럼 ls_val/100 전체를 line_height 에 baking 하면
                     // trailing_ls 제거 효과가 line_segs 있는 path 와 어긋남.
-                    if max_fs > 0.0 && raw_lh < max_fs {
+                    let (lh, line_spacing_px) = if max_fs > 0.0 && raw_lh < max_fs {
                         use crate::model::style::LineSpacingType;
                         let (base, extra) = match ls_type {
                             LineSpacingType::Percent => {
@@ -341,7 +364,22 @@ impl HeightMeasurer {
                         (base, extra)
                     } else {
                         (raw_lh, hwpunit_to_px(line.line_spacing, self.dpi))
-                    }
+                    };
+                    let extra_rows =
+                        crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow(
+                            Some(para),
+                            comp,
+                            &tac_offsets_px,
+                            line_idx,
+                            equation_line_available_width_px(0).unwrap_or(f64::INFINITY),
+                            equation_line_available_width_px(1).unwrap_or(f64::INFINITY),
+                        )
+                        .map(|flow| flow.extra_rows)
+                        .unwrap_or(0);
+                    (
+                        lh + extra_rows as f64 * (lh + line_spacing_px),
+                        line_spacing_px,
+                    )
                 })
                 .unzip()
         } else if !para.line_segs.is_empty() {

@@ -3,7 +3,7 @@
 // CFB(OLE2 Compound File) 컨테이너에서 /PrvImage 스트림만 추출한다.
 // 전체 HWP 파싱 없이 썸네일만 빠르게 얻을 수 있다.
 
-import { resolveDocumentUrl } from './document-url-resolver.js';
+import { fetchDocumentWithPolicy, validateDocumentFetchUrl } from './fetch-security.js';
 
 const THUMBNAIL_CACHE = new Map();
 const CACHE_MAX_SIZE = 100;
@@ -11,16 +11,20 @@ const CACHE_MAX_SIZE = 100;
 /**
  * URL에서 HWP 파일을 fetch하여 PrvImage 썸네일을 추출한다.
  * @param {string} url - HWP 파일 URL
+ * @param {{allowDownloadUrl?: boolean}} [options]
  * @returns {Promise<{dataUri: string, width: number, height: number} | null>}
  */
-export async function extractThumbnailFromUrl(url) {
+export async function extractThumbnailFromUrl(url, options = {}) {
+  const requireDocumentPath = options.allowDownloadUrl !== true;
+  const safeUrl = validateDocumentFetchUrl(url, { requireDocumentPath }).href;
+
   // 캐시 확인
-  if (THUMBNAIL_CACHE.has(url)) {
-    return THUMBNAIL_CACHE.get(url);
+  if (THUMBNAIL_CACHE.has(safeUrl)) {
+    return THUMBNAIL_CACHE.get(safeUrl);
   }
 
   try {
-    const response = await fetch(resolveDocumentUrl(url));
+    const response = await fetchDocumentWithPolicy(safeUrl, { requireDocumentPath });
     if (!response.ok) return null;
     const buffer = await response.arrayBuffer();
     const data = new Uint8Array(buffer);
@@ -36,7 +40,7 @@ export async function extractThumbnailFromUrl(url) {
         const firstKey = THUMBNAIL_CACHE.keys().next().value;
         THUMBNAIL_CACHE.delete(firstKey);
       }
-      THUMBNAIL_CACHE.set(url, result);
+      THUMBNAIL_CACHE.set(safeUrl, result);
     }
     return result;
   } catch {

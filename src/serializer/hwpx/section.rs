@@ -274,6 +274,26 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
         }
 
+        // 0-length 필드(start == end == idx): fieldBegin 방출 직후, 문자 push 전에 fieldEnd 방출.
+        // post-char 검사(next_idx 기준)는 end-1 번째 문자 처리 후 방출하므로 0-length 필드에서
+        // fieldEnd가 fieldBegin 앞에 나오거나 텍스트 뒤로 밀리는 문제가 생긴다.
+        for (i, fr) in para.field_ranges.iter().enumerate() {
+            if fr.start_char_idx == fr.end_char_idx
+                && fr.end_char_idx == idx
+                && !field_end_emitted[i]
+            {
+                flush_text_fragment(&mut out, &mut text_buf, &para.tab_extended, &mut tab_idx);
+                if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+                    if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+                        out.push_str("<hp:ctrl>");
+                        out.push_str(&xml);
+                        out.push_str("</hp:ctrl>");
+                    }
+                }
+                field_end_emitted[i] = true;
+            }
+        }
+
         text_buf.push(c);
         let width = char_utf16_width(c);
         if char_pos >= expected_utf16_pos {
@@ -282,10 +302,14 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             expected_utf16_pos = expected_utf16_pos.saturating_add(width);
         }
 
-        // end_char_idx는 미포함(exclusive): 현재 문자가 필드 범위의 마지막이면 fieldEnd 삽입
+        // end_char_idx는 미포함(exclusive): 현재 문자가 필드 범위의 마지막이면 fieldEnd 삽입.
+        // 0-length 필드(start == end)는 위의 pre-char 검사에서 처리하므로 제외한다.
         let next_idx = idx + 1;
         for (i, fr) in para.field_ranges.iter().enumerate() {
-            if fr.end_char_idx == next_idx && !field_end_emitted[i] {
+            if fr.end_char_idx == next_idx
+                && !field_end_emitted[i]
+                && fr.start_char_idx < fr.end_char_idx
+            {
                 flush_text_fragment(&mut out, &mut text_buf, &para.tab_extended, &mut tab_idx);
                 if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
                     if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
@@ -1080,5 +1104,102 @@ mod tests {
             "fieldEnd must be emitted even when end_char_idx == text.len(): {}",
             &xml[..400.min(xml.len())]
         );
+    }
+
+    // ---------- #1298: 0-length field range fieldBegin/fieldEnd 인터리빙 ----------
+
+    #[test]
+    fn task1298_zero_length_field_at_para_start() {
+        // 0-length 필드 at position 0 (start=0, end=0):
+        // HWP stream: fieldBegin(8cu) fieldEnd(8cu) "hello"(5cu) para_end(1cu) = 22cu
+        // char_offsets: [16, 17, 18, 19, 20] (fieldBegin+fieldEnd 갭 16 이후 텍스트)
+        let mut f = Field::default();
+        f.field_type = FieldType::ClickHere;
+        f.field_id = 55;
+
+        let mut para = Paragraph::default();
+        para.text = "hello".to_string();
+        para.char_count = 22;
+        para.char_offsets = vec![16, 17, 18, 19, 20];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 0, // 0-length
+            control_idx: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:ctrl><hp:fieldBegin id="55""#),
+            "fieldBegin must be emitted: {}",
+            &xml[..500.min(xml.len())]
+        );
+        assert!(
+            xml.contains(r#"<hp:ctrl><hp:fieldEnd beginIDRef="55"/></hp:ctrl>"#),
+            "fieldEnd must be emitted: {}",
+            &xml[..500.min(xml.len())]
+        );
+        assert!(xml.contains("hello"), "text must still be present");
+
+        // 순서 검증: fieldBegin < fieldEnd < "hello"
+        let begin_pos = xml.find("fieldBegin").expect("fieldBegin");
+        let end_pos = xml.find("fieldEnd").expect("fieldEnd");
+        let hello_pos = xml.find("hello").expect("hello");
+        assert!(begin_pos < end_pos, "fieldBegin must precede fieldEnd");
+        assert!(
+            end_pos < hello_pos,
+            "fieldEnd must precede text for 0-length field"
+        );
+    }
+
+    #[test]
+    fn task1298_zero_length_field_mid_text() {
+        // 0-length 필드 at position 3 (start=3, end=3), text="ABCDE":
+        // HWP stream: A B C fieldBegin(8cu) fieldEnd(8cu) D E para_end
+        // char_offsets: [0,1,2, 19,20] (D 앞에 16cu 갭)
+        let mut f = Field::default();
+        f.field_type = FieldType::ClickHere;
+        f.field_id = 77;
+
+        let mut para = Paragraph::default();
+        para.text = "ABCDE".to_string();
+        para.char_count = 5 + 8 + 8 + 1; // text + fieldBegin + fieldEnd + para_end
+        para.char_offsets = vec![0, 1, 2, 19, 20];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 3,
+            end_char_idx: 3, // 0-length mid-text
+            control_idx: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains("ABCDE") || (xml.contains("ABC") && xml.contains("DE")),
+            "all text must be present: {}",
+            &xml[..500.min(xml.len())]
+        );
+
+        // 순서 검증: "ABC" < fieldBegin < fieldEnd < "DE"
+        let begin_pos = xml.find("fieldBegin").expect("fieldBegin");
+        let end_pos = xml.find("fieldEnd").expect("fieldEnd");
+        // ABC는 fieldBegin 앞에
+        let abc_pos = xml.find('A').expect("A");
+        // DE는 fieldEnd 뒤에 (fieldEnd 태그 닫힘 이후)
+        let field_end_close =
+            xml.find("fieldEnd").unwrap() + xml[xml.find("fieldEnd").unwrap()..].find('>').unwrap();
+        let de_pos = xml[field_end_close..]
+            .find('D')
+            .map(|p| p + field_end_close)
+            .expect("D after fieldEnd");
+
+        assert!(abc_pos < begin_pos, "ABC must precede fieldBegin");
+        assert!(begin_pos < end_pos, "fieldBegin must precede fieldEnd");
+        assert!(end_pos < de_pos, "fieldEnd must precede DE");
     }
 }

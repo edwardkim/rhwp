@@ -343,11 +343,9 @@ export const formatCommands: CommandDef[] = [
         } catch { /* ignore */ }
       }
       dialog.onApply = (nid, restartMode, startNum) => {
-        const pos = ih.getPosition();
         if (nid === 0) {
           // "(없음)": 번호 해제
-          services.wasm.applyParaFormat(pos.sectionIndex, pos.paragraphIndex,
-            JSON.stringify({ headType: 'None', numberingId: 0 }));
+          ih.applyParaPropsAtCursor({ headType: 'None', numberingId: 0 });
         } else if (restartMode === 0) {
           // "앞 번호 이어": 이전 번호 문단의 numbering_id를 찾아서 적용
           const prevNid = (props as any).numberingId ?? nid;
@@ -359,11 +357,9 @@ export const formatCommands: CommandDef[] = [
           // "이전 번호 이어": 현재 numbering_id 유지
           ih.applyNumbering(nid);
         }
-        services.eventBus.emit('document-changed');
       };
       dialog.onApplyBullet = (bulletChar) => {
         ih.applyBullet(bulletChar);
-        services.eventBus.emit('document-changed');
       };
       dialog.onClose = () => ih.focus();
       dialog.show();

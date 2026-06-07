@@ -675,6 +675,21 @@ mod tests {
         );
         drop(sec0);
 
+        // content.hpf manifest에 embedded BinData 계약이 명시되어야 한컴이 이미지를 로드한다.
+        let cursor3 = std::io::Cursor::new(&bytes);
+        let mut archive3 = zip::ZipArchive::new(cursor3).expect("zip");
+        let mut content_hpf = archive3
+            .by_name("Contents/content.hpf")
+            .expect("content.hpf");
+        let mut content_xml = String::new();
+        std::io::Read::read_to_string(&mut content_hpf, &mut content_xml).expect("read");
+        assert!(
+            content_xml.contains(r#"isEmbeded="1""#),
+            "embedded BinData manifest item must include isEmbeded=1: {}",
+            content_xml
+        );
+        drop(content_hpf);
+
         // 라운드트립: BinData 보존 확인
         let parsed = parse_hwpx(&bytes).expect("parse back");
         assert_eq!(parsed.bin_data_content.len(), 1);

@@ -477,11 +477,16 @@ impl DocumentCore {
                 };
                 inline_controls.push((ci, raw_pos, pos, x, x + w));
 
-                let line_metrics = stops
+                let nearby_text_metrics = stops
                     .range(..=pos + 1)
                     .next_back()
                     .map(|(_, hit)| (hit.y, hit.height))
-                    .or_else(|| stops.values().next().map(|hit| (hit.y, hit.height)))
+                    .or_else(|| stops.values().next().map(|hit| (hit.y, hit.height)));
+                let line_metrics = nearby_text_metrics
+                    .filter(|(text_y, text_h)| {
+                        let text_mid = *text_y + *text_h / 2.0;
+                        text_mid >= y && text_mid <= y + h
+                    })
                     .unwrap_or((y, h.max(10.0)));
 
                 stops.insert(

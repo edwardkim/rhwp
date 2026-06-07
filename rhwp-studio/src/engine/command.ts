@@ -1,5 +1,5 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
-import type { DocumentPosition, CharProperties, CellPathLike } from '@/core/types';
+import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike } from '@/core/types';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -17,18 +17,61 @@ export interface EditCommand {
 
 // ─── 편집 작업 서술자 (라우팅 통합) ────────────────────
 
+export type EditDomain =
+  | 'text'
+  | 'charFormat'
+  | 'paraFormat'
+  | 'table'
+  | 'object'
+  | 'page'
+  | 'field'
+  | 'view'
+  | 'unknown';
+
+export type RefreshPolicy = 'auto' | 'full' | 'pageLocal' | 'selectionOnly' | 'none';
+
+export type DirtyScope =
+  | 'document'
+  | 'section'
+  | 'page'
+  | 'paragraph'
+  | 'table'
+  | 'object'
+  | 'none';
+
+export type SelectionPolicy =
+  | 'auto'
+  | 'keep'
+  | 'moveToResult'
+  | 'restoreObjectSelection'
+  | 'none';
+
+export interface OperationMetadata {
+  /** 메뉴/툴바/단축키 action id. */
+  actionId?: string;
+  /** 편집 도메인. 직접 wasm mutation을 audit 할 때 분류 기준으로 사용한다. */
+  domain?: EditDomain;
+  /** mutation 후 렌더링 갱신 정책. 생략하면 kind 별 기존 기본값을 따른다. */
+  refresh?: RefreshPolicy;
+  /** 장기적으로 renderer invalidation 최적화에 사용할 dirty 범위. */
+  dirtyScope?: DirtyScope;
+  /** selection/caret 복원 정책. 현재는 문서화용 metadata로만 사용한다. */
+  selection?: SelectionPolicy;
+}
+
 /**
  * 편집 작업 서술자 — 호출부가 "무엇을 하려는가"만 기술하고,
  * 라우터(executeOperation)가 적절한 Undo 전략을 자동 선택한다.
  *
  * - command: 정밀 커맨드 (텍스트 삽입/삭제, 문단 분할/병합, 서식)
  * - snapshot: 스냅샷 기반 커맨드 (붙여넣기, 객체 삭제 등)
- * - record:  WASM 직접 호출 후 히스토리에만 기록 (IME, 객체 이동)
+ * - record:  WASM 직접 호출 후 히스토리에만 기록 (IME, 객체 이동).
+ *            아키텍처 문서에서는 recordApplied 계약으로 정의한다.
  */
 export type OperationDescriptor =
-  | { kind: 'command'; command: EditCommand }
-  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition }
-  | { kind: 'record'; command: EditCommand };
+  | { kind: 'command'; command: EditCommand; meta?: OperationMetadata }
+  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition; meta?: OperationMetadata }
+  | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
 
 // ─── 본문/셀 분기 헬퍼 ────────────────────────────────
 
@@ -407,7 +450,9 @@ interface ParaFormatEntry {
   startOffset: number;
   endOffset: number;
   /** undo용: 적용 전 charShapeId */
-  prevCharShapeId?: number;
+  beforeCharShapeId?: number;
+  /** redo용: 적용 후 charShapeId */
+  afterCharShapeId?: number;
 }
 
 export class ApplyCharFormatCommand implements EditCommand {
@@ -423,6 +468,11 @@ export class ApplyCharFormatCommand implements EditCommand {
   ) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
+    if (this.entries.length > 0 && this.entries.every((entry) => entry.afterCharShapeId !== undefined)) {
+      this.restoreCharShapeIds(wasm, 'after');
+      return { ...this.start };
+    }
+
     const { start, end } = this;
     const propsJson = JSON.stringify(this.props);
 
@@ -440,11 +490,12 @@ export class ApplyCharFormatCommand implements EditCommand {
         const to = p === endPara ? end.charOffset : wasm.getCellParagraphLength(sec, ppi, ci, cei, p);
         if (to <= from) continue;
 
-        // undo용 이전 서식 저장
         const prevProps = wasm.getCellCharPropertiesAt(sec, ppi, ci, cei, p, from);
-        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, prevCharShapeId: prevProps.charShapeId });
+        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
 
         wasm.applyCharFormatInCell(sec, ppi, ci, cei, p, from, to, propsJson);
+        const afterProps = wasm.getCellCharPropertiesAt(sec, ppi, ci, cei, p, from);
+        this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
       }
     } else {
       const sec = start.sectionIndex;
@@ -458,9 +509,11 @@ export class ApplyCharFormatCommand implements EditCommand {
         if (to <= from) continue;
 
         const prevProps = wasm.getCharPropertiesAt(sec, p, from);
-        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, prevCharShapeId: prevProps.charShapeId });
+        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
 
         wasm.applyCharFormat(sec, p, from, to, propsJson);
+        const afterProps = wasm.getCharPropertiesAt(sec, p, from);
+        this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
       }
     }
 
@@ -468,24 +521,131 @@ export class ApplyCharFormatCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    const { start } = this;
+    this.restoreCharShapeIds(wasm, 'before');
+    return { ...this.start };
+  }
 
-    // 이전 charShapeId로 복원
+  private restoreCharShapeIds(wasm: WasmBridge, side: 'before' | 'after'): void {
+    const { start } = this;
     for (const entry of this.entries) {
-      if (entry.prevCharShapeId === undefined) continue;
-      const restoreJson = JSON.stringify({ charShapeId: entry.prevCharShapeId });
+      const charShapeId = side === 'before' ? entry.beforeCharShapeId : entry.afterCharShapeId;
+      if (charShapeId === undefined) continue;
 
       if (isCell(start)) {
-        wasm.applyCharFormatInCell(
+        wasm.setCharShapeIdInCell(
           start.sectionIndex, start.parentParaIndex!, start.controlIndex!, start.cellIndex!,
-          entry.paraIndex, entry.startOffset, entry.endOffset, restoreJson,
+          entry.paraIndex, entry.startOffset, entry.endOffset, charShapeId,
         );
       } else {
-        wasm.applyCharFormat(start.sectionIndex, entry.paraIndex, entry.startOffset, entry.endOffset, restoreJson);
+        wasm.setCharShapeId(start.sectionIndex, entry.paraIndex, entry.startOffset, entry.endOffset, charShapeId);
       }
     }
+  }
 
-    return { ...this.start };
+  mergeWith(): null { return null; }
+}
+
+// ─── 문단 서식 적용 명령 ─────────────────────────────
+
+export type ParaFormatTarget =
+  | { kind: 'body'; sec: number; para: number }
+  | { kind: 'cell'; sec: number; parentPara: number; controlIdx: number; cellIdx: number; cellParaIdx: number };
+
+interface ParaShapeHistoryEntry {
+  target: ParaFormatTarget;
+  beforeParaShapeId: number;
+  afterParaShapeId?: number;
+}
+
+function getParaShapeId(wasm: WasmBridge, target: ParaFormatTarget): number {
+  const props = target.kind === 'body'
+    ? wasm.getParaPropertiesAt(target.sec, target.para)
+    : wasm.getCellParaPropertiesAt(
+        target.sec,
+        target.parentPara,
+        target.controlIdx,
+        target.cellIdx,
+        target.cellParaIdx,
+      );
+  const paraShapeId = props.paraShapeId;
+  if (paraShapeId === undefined) {
+    throw new Error('문단 모양 ID를 조회할 수 없습니다');
+  }
+  return paraShapeId;
+}
+
+function applyParaFormatToTarget(wasm: WasmBridge, target: ParaFormatTarget, propsJson: string): void {
+  if (target.kind === 'body') {
+    wasm.applyParaFormat(target.sec, target.para, propsJson);
+    return;
+  }
+  wasm.applyParaFormatInCell(
+    target.sec,
+    target.parentPara,
+    target.controlIdx,
+    target.cellIdx,
+    target.cellParaIdx,
+    propsJson,
+  );
+}
+
+function restoreParaShapeId(wasm: WasmBridge, target: ParaFormatTarget, paraShapeId: number): void {
+  if (target.kind === 'body') {
+    wasm.setParaShapeId(target.sec, target.para, paraShapeId);
+    return;
+  }
+  wasm.setCellParaShapeId(
+    target.sec,
+    target.parentPara,
+    target.controlIdx,
+    target.cellIdx,
+    target.cellParaIdx,
+    paraShapeId,
+  );
+}
+
+export class ApplyParaFormatCommand implements EditCommand {
+  readonly type = 'applyParaFormat';
+  readonly timestamp = Date.now();
+
+  private entries: ParaShapeHistoryEntry[] = [];
+
+  constructor(
+    private targets: ParaFormatTarget[],
+    private props: Partial<ParaProperties>,
+    private cursorBefore: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.entries.length > 0 && this.entries.every(entry => entry.afterParaShapeId !== undefined)) {
+      for (const entry of this.entries) {
+        restoreParaShapeId(wasm, entry.target, entry.afterParaShapeId!);
+      }
+      return { ...this.cursorBefore };
+    }
+
+    const propsJson = JSON.stringify(this.props);
+    const entries: ParaShapeHistoryEntry[] = this.targets.map(target => ({
+      target,
+      beforeParaShapeId: getParaShapeId(wasm, target),
+    }));
+
+    for (const entry of entries) {
+      applyParaFormatToTarget(wasm, entry.target, propsJson);
+    }
+    for (const entry of entries) {
+      entry.afterParaShapeId = getParaShapeId(wasm, entry.target);
+    }
+
+    this.entries = entries;
+    return { ...this.cursorBefore };
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    for (const entry of this.entries) {
+      restoreParaShapeId(wasm, entry.target, entry.beforeParaShapeId);
+    }
+    return { ...this.cursorBefore };
   }
 
   mergeWith(): null { return null; }

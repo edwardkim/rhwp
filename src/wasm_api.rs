@@ -5177,6 +5177,20 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 글자 서식 ID를 직접 복원한다 (본문 문단).
+    #[wasm_bindgen(js_name = setCharShapeId)]
+    pub fn set_char_shape_id(
+        &mut self,
+        sec_idx: usize,
+        para_idx: usize,
+        start_offset: usize,
+        end_offset: usize,
+        char_shape_id: u32,
+    ) -> Result<String, JsValue> {
+        self.set_char_shape_id_native(sec_idx, para_idx, start_offset, end_offset, char_shape_id)
+            .map_err(|e| e.into())
+    }
+
     /// 글자 서식을 적용한다 (셀 내 문단).
     #[wasm_bindgen(js_name = applyCharFormatInCell)]
     pub fn apply_char_format_in_cell(
@@ -5199,6 +5213,32 @@ impl HwpDocument {
             start_offset,
             end_offset,
             props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 글자 서식 ID를 직접 복원한다 (셀 내 문단).
+    #[wasm_bindgen(js_name = setCharShapeIdInCell)]
+    pub fn set_char_shape_id_in_cell(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        start_offset: usize,
+        end_offset: usize,
+        char_shape_id: u32,
+    ) -> Result<String, JsValue> {
+        self.set_char_shape_id_in_cell_native(
+            sec_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            start_offset,
+            end_offset,
+            char_shape_id,
         )
         .map_err(|e| e.into())
     }
@@ -5261,6 +5301,18 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 문단의 paraShapeId를 직접 설정한다.
+    #[wasm_bindgen(js_name = setParaShapeId)]
+    pub fn set_para_shape_id(
+        &mut self,
+        sec_idx: usize,
+        para_idx: usize,
+        para_shape_id: u16,
+    ) -> Result<String, JsValue> {
+        self.set_para_shape_id_native(sec_idx, para_idx, para_shape_id)
+            .map_err(|e| e.into())
+    }
+
     /// 문단 서식을 적용한다 (셀 내 문단).
     #[wasm_bindgen(js_name = applyParaFormatInCell)]
     pub fn apply_para_format_in_cell(
@@ -5279,6 +5331,28 @@ impl HwpDocument {
             cell_idx,
             cell_para_idx,
             props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 셀 내 문단의 paraShapeId를 직접 설정한다.
+    #[wasm_bindgen(js_name = setCellParaShapeId)]
+    pub fn set_cell_para_shape_id(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        para_shape_id: u16,
+    ) -> Result<String, JsValue> {
+        self.set_cell_para_shape_id_native(
+            sec_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            para_shape_id,
         )
         .map_err(|e| e.into())
     }

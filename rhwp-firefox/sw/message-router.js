@@ -5,6 +5,11 @@
 
 import { openViewer } from './viewer-launcher.js';
 import { extractThumbnailFromUrl } from './thumbnail-extractor.js';
+import {
+  fetchDocumentWithPolicy,
+  isTrustedExtensionPageSender,
+  isWebPageSender
+} from './fetch-security.js';
 
 /**
  * 메시지 라우터를 설정한다.
@@ -37,9 +42,12 @@ const messageHandlers = {
    * 뷰어 탭 → Service Worker: CORS 우회 파일 fetch
    * Service Worker의 fetch는 host_permissions에 의해 CORS 제한 없음
    */
-  'fetch-file': async (message) => {
+  'fetch-file': async (message, sender) => {
     try {
-      const response = await fetch(message.url);
+      if (!isTrustedExtensionPageSender(sender, browser)) {
+        return { error: 'Unauthorized sender' };
+      }
+      const response = await fetchDocumentWithPolicy(message.url);
       if (!response.ok) {
         return { error: `HTTP ${response.status}: ${response.statusText}` };
       }
@@ -55,9 +63,14 @@ const messageHandlers = {
    * Content Script → Service Worker: HWP 썸네일 추출
    * Service Worker에서 fetch + CFB PrvImage 추출 (CORS 우회)
    */
-  'extract-thumbnail': async (message) => {
+  'extract-thumbnail': async (message, sender) => {
     try {
-      const result = await extractThumbnailFromUrl(message.url);
+      if (!isWebPageSender(sender)) {
+        return { error: 'Unauthorized sender' };
+      }
+      const result = await extractThumbnailFromUrl(message.url, {
+        allowDownloadUrl: message.allowDownloadUrl === true
+      });
       return result || { error: 'PrvImage not found' };
     } catch (err) {
       return { error: err.message };

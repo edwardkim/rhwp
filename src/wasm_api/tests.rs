@@ -16962,6 +16962,11 @@ fn test_delete_table_control() {
 
     // 삭제 전 char_count
     let before_char_count = doc.document.sections[0].paragraphs[3].char_count;
+    let before_next_vpos = doc.document.sections[0]
+        .paragraphs
+        .get(4)
+        .and_then(|p| p.line_segs.first())
+        .map(|ls| ls.vertical_pos);
 
     // 표 bbox 조회 성공 확인
     let bbox_result = doc.get_table_bbox_native(0, 3, 0);
@@ -16982,6 +16987,22 @@ fn test_delete_table_control() {
         before_char_count - 8,
         "char_count 8 감소 확인"
     );
+
+    if let (Some(before), Some(after)) = (
+        before_next_vpos,
+        doc.document.sections[0]
+            .paragraphs
+            .get(4)
+            .and_then(|p| p.line_segs.first())
+            .map(|ls| ls.vertical_pos),
+    ) {
+        assert!(
+            after < before,
+            "표 삭제 후 다음 문단 vpos가 위로 당겨져야 함: before={}, after={}",
+            before,
+            after
+        );
+    }
 
     eprintln!(
         "표 삭제: 컨트롤 {}→{}, char_count {}→{}",

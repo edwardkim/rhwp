@@ -1368,9 +1368,19 @@ export class WasmBridge {
     return this.doc.applyCharFormat(sec, para, startOffset, endOffset, propsJson);
   }
 
+  setCharShapeId(sec: number, para: number, startOffset: number, endOffset: number, charShapeId: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).setCharShapeId(sec, para, startOffset, endOffset, charShapeId);
+  }
+
   applyCharFormatInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, startOffset: number, endOffset: number, propsJson: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.applyCharFormatInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, startOffset, endOffset, propsJson);
+  }
+
+  setCharShapeIdInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, startOffset: number, endOffset: number, charShapeId: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).setCharShapeIdInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, startOffset, endOffset, charShapeId);
   }
 
   findOrCreateFontId(name: string): number {
@@ -1405,9 +1415,19 @@ export class WasmBridge {
     return this.doc.applyParaFormat(sec, para, propsJson);
   }
 
+  setParaShapeId(sec: number, para: number, paraShapeId: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).setParaShapeId(sec, para, paraShapeId);
+  }
+
   applyParaFormatInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, propsJson: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.applyParaFormatInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, propsJson);
+  }
+
+  setCellParaShapeId(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, paraShapeId: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).setCellParaShapeId(sec, parentPara, controlIdx, cellIdx, cellParaIdx, paraShapeId);
   }
 
   /** 머리말/꼬리말 문단의 문단 속성을 조회한다 */

@@ -45,6 +45,21 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))
     }
 
+    fn render_paragraph_count_in_section(&self, section_idx: usize) -> usize {
+        let body_count = self
+            .document
+            .sections
+            .get(section_idx)
+            .map(|section| section.paragraphs.len())
+            .unwrap_or(0);
+        let endnote_count = self
+            .pagination
+            .get(section_idx)
+            .map(|pagination| pagination.endnote_paragraphs.len())
+            .unwrap_or(0);
+        body_count + endnote_count
+    }
+
     /// 셀 내 문단의 줄 정보를 반환한다 (네이티브).
     pub(crate) fn get_line_info_in_cell_native(
         &self,
@@ -902,35 +917,87 @@ impl DocumentCore {
             .sections
             .get(sec)
             .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", sec)))?;
-        let target_para_i = para as i32 + delta;
+        let render_para_count = self.render_paragraph_count_in_section(sec);
+        if render_para_count == 0 {
+            return Ok((sec, 0, 0, None));
+        }
+
+        let current_para = para.min(render_para_count - 1);
+        let target_para_i = current_para as i32 + delta;
 
         // 구역 경계 처리
         if target_para_i < 0 {
             if sec == 0 {
-                return Ok((sec, para, 0, None)); // 문서 시작 — 이동 안 함
+                return Ok((sec, current_para, 0, None)); // 문서 시작 — 이동 안 함
             }
             let prev_sec = sec - 1;
-            let prev_para_count = self.document.sections[prev_sec].paragraphs.len();
+            let prev_para_count = self.render_paragraph_count_in_section(prev_sec);
             if prev_para_count == 0 {
-                return Ok((sec, para, 0, None));
+                return Ok((sec, current_para, 0, None));
             }
-            return self.enter_paragraph(prev_sec, prev_para_count - 1, delta, preferred_x);
+            return self.enter_render_paragraph(prev_sec, prev_para_count - 1, delta, preferred_x);
         }
 
         let target_para = target_para_i as usize;
-        if target_para >= section.paragraphs.len() {
+        if target_para >= render_para_count {
             if sec + 1 >= self.document.sections.len() {
                 // 문서 끝 — 이동 안 함
-                let para_len = navigable_text_len(&self.document.sections[sec].paragraphs[para]);
-                return Ok((sec, para, para_len, None));
+                let para_len = self
+                    .get_render_paragraph_ref(sec, current_para)
+                    .map(navigable_text_len)
+                    .unwrap_or(0);
+                return Ok((sec, current_para, para_len, None));
             }
-            return self.enter_paragraph(sec + 1, 0, delta, preferred_x);
+            return self.enter_render_paragraph(sec + 1, 0, delta, preferred_x);
         }
 
         // 칼럼 경계를 넘는 경우 preferredX를 대상 칼럼 좌표계로 변환
-        let adjusted_px =
-            self.transform_preferred_x_across_columns(sec, para, target_para, preferred_x);
-        self.enter_paragraph(sec, target_para, delta, adjusted_px)
+        let adjusted_px = if current_para < section.paragraphs.len()
+            && target_para < section.paragraphs.len()
+        {
+            self.transform_preferred_x_across_columns(sec, current_para, target_para, preferred_x)
+        } else {
+            preferred_x
+        };
+        self.enter_render_paragraph(sec, target_para, delta, adjusted_px)
+    }
+
+    pub(crate) fn enter_render_paragraph(
+        &self,
+        sec: usize,
+        target_para: usize,
+        delta: i32,
+        preferred_x: f64,
+    ) -> Result<(usize, usize, usize, Option<(usize, usize, usize, usize)>), HwpError> {
+        let body_count = self
+            .document
+            .sections
+            .get(sec)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", sec)))?
+            .paragraphs
+            .len();
+
+        if target_para < body_count {
+            return self.enter_paragraph(sec, target_para, delta, preferred_x);
+        }
+
+        let para_ref = self.get_render_paragraph_ref(sec, target_para)?;
+        let target_line = if delta > 0 {
+            0
+        } else if para_ref.line_segs.is_empty() {
+            0
+        } else {
+            para_ref.line_segs.len() - 1
+        };
+        let range = Self::get_line_char_range(para_ref, target_line);
+        let offset = self
+            .find_char_at_x_on_line(sec, target_para, None, range, preferred_x)
+            .unwrap_or(if delta > 0 {
+                0
+            } else {
+                navigable_text_len(para_ref)
+            });
+        Ok((sec, target_para, offset, None))
     }
 
     /// 목표 문단으로 진입한다 (표면 표 문단이면 셀 내부로).

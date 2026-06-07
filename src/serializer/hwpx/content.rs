@@ -129,6 +129,7 @@ pub fn write_content_hpf(
                 ("id", entry.id.as_str()),
                 ("href", entry.href.as_str()),
                 ("media-type", entry.media_type.as_str()),
+                ("isEmbeded", "1"),
             ],
         )?;
     }
