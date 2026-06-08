@@ -131,6 +131,8 @@ impl DocumentCore {
 
         let section_index = location.section_index;
         self.set_field_text_at(&location, fri, value)?;
+        // [ecrits #148] 값 길이 변경으로 인한 줄나눔 재계산 (recompose 전에 수행)
+        self.reflow_field_location_paragraph(&location);
         self.recompose_section(section_index);
 
         Ok(format!(
@@ -169,6 +171,8 @@ impl DocumentCore {
         if let Some(sec) = self.document.sections.get_mut(section_index) {
             sec.raw_stream = None;
         }
+        // [ecrits #148] 값 길이 변경으로 인한 줄나눔 재계산 (recompose 전에 수행)
+        self.reflow_field_location_paragraph(&location);
         self.recompose_section(section_index);
 
         Ok(format!(
@@ -315,6 +319,48 @@ impl DocumentCore {
                 }
             }
             _ => Err(HwpError::InvalidField("셀 필드가 아닌 위치".into())),
+        }
+    }
+
+    /// 필드 값 교체로 길이가 바뀐 문단의 line_segs를 다시 흘려(reflow) 줄나눔을 갱신한다.
+    ///
+    /// [ecrits #148] delete_text_at/insert_text_at 는 line_segs 의 text_start 를
+    /// 삽입/삭제 문자 수만큼 시프트만 할 뿐 줄나눔 경계 자체는 재계산하지 않는다.
+    /// composer(compose_paragraph)는 line_segs 경계로 본문/셀 줄을 그대로 슬라이스
+    /// 하므로, 짧은 빈칸(예: "------")을 긴 값으로 채우면 마지막 줄이 컬럼 폭을 넘어
+    /// 오른쪽 여백 밖으로 흘러나간다(본문 줄나눔 미재계산). 셀 편집 경로가 이미
+    /// reflow_cell_paragraph 로 셀 문단을 reflow 하듯, 필드 채움도 편집 직후 해당
+    /// 문단을 컬럼/셀 폭에 맞게 reflow 해 줄나눔을 재계산한다.
+    fn reflow_field_location_paragraph(&mut self, location: &FieldLocation) {
+        match location.nested_path.last() {
+            // 본문 문단: 컬럼 폭으로 reflow
+            None => self.reflow_paragraph(location.section_index, location.para_index),
+            // 1단계 표 셀: 셀 폭으로 reflow
+            Some(NestedEntry::TableCell {
+                control_index,
+                cell_index,
+                para_index,
+            }) if location.nested_path.len() == 1 => self.reflow_cell_paragraph(
+                location.section_index,
+                location.para_index,
+                *control_index,
+                *cell_index,
+                *para_index,
+            ),
+            // 1단계 글상자: 글상자 폭으로 reflow (cell_index 는 Shape arm 에서 미사용)
+            Some(NestedEntry::TextBox {
+                control_index,
+                para_index,
+            }) if location.nested_path.len() == 1 => self.reflow_cell_paragraph(
+                location.section_index,
+                location.para_index,
+                *control_index,
+                0,
+                *para_index,
+            ),
+            // 더 깊은 중첩은 reflow 헬퍼가 인덱스를 받지 못하므로 건드리지 않는다
+            // (회귀 격리 — 기존 동작 유지). 본 #148 케이스는 본문 1단계만 해당.
+            _ => {}
         }
     }
 

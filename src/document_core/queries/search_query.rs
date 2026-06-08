@@ -367,6 +367,33 @@ impl DocumentCore {
             }
         }
 
+        // [ecrits #148] 치환으로 길이가 바뀐 문단의 줄나눔(line_segs)을 재계산한다.
+        // delete_text_at/insert_text_at 은 line_segs.text_start 를 시프트만 하고
+        // 줄나눔 경계는 재계산하지 않으므로, 새 값이 길어지면 마지막 줄이 컬럼/셀
+        // 폭을 넘어 오른쪽 여백 밖으로 흘러나간다. recompose 전에 reflow 한다.
+        // (한 문단에 여러 매치가 있어도 reflow 는 멱등이므로 중복 dedup 한다.)
+        if count > 0 {
+            let mut body_paras: Vec<(usize, usize)> = Vec::new();
+            let mut cell_paras: Vec<(usize, usize, usize, usize, usize)> = Vec::new();
+            for hit in &all_hits {
+                if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = hit.cell_context {
+                    cell_paras.push((hit.sec, parent_para, ctrl_idx, cell_idx, cell_para_idx));
+                } else {
+                    body_paras.push((hit.sec, hit.para));
+                }
+            }
+            body_paras.sort_unstable();
+            body_paras.dedup();
+            for (sec, para) in body_paras {
+                self.reflow_paragraph(sec, para);
+            }
+            cell_paras.sort_unstable();
+            cell_paras.dedup();
+            for (sec, pp, ci, cell, cp) in cell_paras {
+                self.reflow_cell_paragraph(sec, pp, ci, cell, cp);
+            }
+        }
+
         // 변경된 섹션들 recompose
         if count > 0 {
             let mut affected_sections: Vec<usize> = all_hits.iter().map(|h| h.sec).collect();
