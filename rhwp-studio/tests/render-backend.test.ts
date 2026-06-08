@@ -140,6 +140,16 @@ test('PageRenderer uses filtered canvas layers for background, behind, and front
   assert.match(source, /collectLayerPlaneSummary\(root,\s*summary,\s*null\)/);
 });
 
+test('PageLayerTree bridge normalizes canonical build/debug option metadata', () => {
+  const source = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
+  assert.match(source, /buildOptions:\s*\{/);
+  assert.match(source, /debugOptions:\s*\{/);
+  assert.match(source, /tree\.buildOptions \?\?=/);
+  assert.match(source, /showTransparentBorders:\s*outputOptions\.showTransparentBorders \?\? false/);
+  assert.match(source, /clipEnabled:\s*outputOptions\.clipEnabled \?\? true/);
+  assert.match(source, /debugOverlay:\s*outputOptions\.debugOverlay \?\? false/);
+});
+
 test('CanvasKit replay bridge fallback keeps compat on direct replay contract', () => {
   const source = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
   const method = source.match(/getCanvasKitReplayPlan\([^)]*\): string \{(?<body>[\s\S]*?)\n  \}/);

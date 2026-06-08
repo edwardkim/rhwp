@@ -32,7 +32,7 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"buildOptions\":{{\"showTransparentBorders\":{},\"clipEnabled\":{}}},\"debugOptions\":{{\"debugOverlay\":{}}},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
             LAYER_TREE_SCHEMA.schema_version,
             LAYER_TREE_SCHEMA.schema_minor_version,
             LAYER_TREE_SCHEMA.schema_version,
@@ -44,6 +44,9 @@ impl PageLayerTree {
             json_escape(LAYER_TREE_SCHEMA.unit),
             json_escape(LAYER_TREE_SCHEMA.coordinate_system),
             json_escape(render_profile_str(self.profile)),
+            self.output_options.show_transparent_borders,
+            self.output_options.clip_enabled,
+            self.output_options.debug_overlay,
             self.output_options.show_paragraph_marks,
             self.output_options.show_control_codes,
             self.output_options.show_transparent_borders,
@@ -78,7 +81,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let has_glyph_outline_payload_resource_keys =
         text_variant_features.has_glyph_outline_payload_resource_keys;
     let has_display_text = text_variant_features.has_display_text;
-    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\"");
+    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\",\"layer.optionMetadata\"");
     if has_display_text {
         buf.push_str(",\"text.displayText\"");
     }
@@ -2579,6 +2582,8 @@ mod tests {
         assert!(json.contains("\"unit\":\"px\""));
         assert!(json.contains("\"coordinateSystem\":\"page-top-left-y-down\""));
         assert!(json.contains("\"profile\":\"screen\""));
+        assert!(json.contains("\"buildOptions\":{"));
+        assert!(json.contains("\"debugOptions\":{"));
         assert!(json.contains("\"outputOptions\":{"));
         assert!(json.contains("\"clipEnabled\":true"));
         assert!(json.contains("\"type\":\"textRun\""));
@@ -2589,6 +2594,7 @@ mod tests {
         assert!(json.contains("\"clusterBasis\":\"legacyPosition\""));
         assert!(json.contains("\"clusters\":[{\"sourceRangeUtf8\""));
         assert!(json.contains("\"legacyVisuals\":{"));
+        assert!(json.contains("\"layer.optionMetadata\""));
         assert!(json.contains(&positions_json));
         assert!(!json.contains("\"displayText\""));
         assert!(!json.contains("\"displayPositions\""));
@@ -3517,7 +3523,7 @@ mod tests {
     }
 
     #[test]
-    fn serializes_layer_output_options() {
+    fn serializes_layer_option_metadata() {
         let root = LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, Vec::new());
         let json = PageLayerTree::new(10.0, 10.0, root)
             .with_output_options(crate::paint::LayerOutputOptions {
@@ -3529,8 +3535,11 @@ mod tests {
             })
             .to_json();
 
-        assert!(json.contains("\"showParagraphMarks\":true"));
-        assert!(json.contains("\"showControlCodes\":true"));
+        assert!(json
+            .contains("\"buildOptions\":{\"showTransparentBorders\":true,\"clipEnabled\":false}"));
+        assert!(json.contains("\"debugOptions\":{\"debugOverlay\":true}"));
+        assert!(json
+            .contains("\"outputOptions\":{\"showParagraphMarks\":true,\"showControlCodes\":true"));
         assert!(json.contains("\"showTransparentBorders\":true"));
         assert!(json.contains("\"clipEnabled\":false"));
         assert!(json.contains("\"debugOverlay\":true"));

@@ -345,7 +345,7 @@ export class WasmBridge {
     if (typeof d.getPageLayerTree === 'function') {
       return d.getPageLayerTree(pageNum);
     }
-    return '{"pageWidth":0,"pageHeight":0,"profile":"screen","root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
+    return '{"pageWidth":0,"pageHeight":0,"profile":"screen","buildOptions":{"showTransparentBorders":false,"clipEnabled":true},"debugOptions":{"debugOverlay":false},"outputOptions":{"showParagraphMarks":false,"showControlCodes":false},"root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
   }
 
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
@@ -374,6 +374,17 @@ export class WasmBridge {
           pageWidth: pageInfo.width,
           pageHeight: pageInfo.height,
           profile,
+          buildOptions: {
+            showTransparentBorders: false,
+            clipEnabled: true,
+          },
+          debugOptions: {
+            debugOverlay: false,
+          },
+          outputOptions: {
+            showParagraphMarks: false,
+            showControlCodes: false,
+          },
           root: {
             kind: 'leaf',
             bounds: { x: 0, y: 0, width: pageInfo.width, height: pageInfo.height },
@@ -390,6 +401,15 @@ export class WasmBridge {
     if (!tree.profile) {
       tree.profile = profile;
     }
+    const outputOptions = tree.outputOptions ?? {};
+    tree.outputOptions = outputOptions;
+    tree.buildOptions ??= {
+      showTransparentBorders: outputOptions.showTransparentBorders ?? false,
+      clipEnabled: outputOptions.clipEnabled ?? true,
+    };
+    tree.debugOptions ??= {
+      debugOverlay: outputOptions.debugOverlay ?? false,
+    };
     return tree as PageLayerTree;
   }
 

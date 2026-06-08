@@ -69,6 +69,8 @@ fn test_page_layer_tree_export_uses_schema_contract() {
         LAYER_TREE_SCHEMA.coordinate_system
     )));
     assert!(json.contains("\"profile\":\"screen\""));
+    assert!(json.contains("\"buildOptions\":{"));
+    assert!(json.contains("\"debugOptions\":{"));
     assert!(json.contains("\"outputOptions\":{"));
 }
 
@@ -85,8 +87,13 @@ fn test_page_layer_tree_export_preserves_output_options() {
         .get_page_layer_tree_native(0)
         .expect("layer tree should export output options");
 
-    assert!(json.contains("\"showParagraphMarks\":true"));
-    assert!(json.contains("\"showControlCodes\":true"));
+    assert!(
+        json.contains("\"buildOptions\":{\"showTransparentBorders\":true,\"clipEnabled\":false}")
+    );
+    assert!(json.contains("\"debugOptions\":{\"debugOverlay\":true}"));
+    assert!(
+        json.contains("\"outputOptions\":{\"showParagraphMarks\":true,\"showControlCodes\":true")
+    );
     assert!(json.contains("\"showTransparentBorders\":true"));
     assert!(json.contains("\"clipEnabled\":false"));
     assert!(json.contains("\"debugOverlay\":true"));
