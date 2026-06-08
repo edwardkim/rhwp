@@ -10,7 +10,9 @@ use super::super::{
     TextStyle,
 };
 use super::border_rendering::border_width_to_px;
-use super::text_measurement::{estimate_text_width, resolved_to_text_style};
+use super::text_measurement::{
+    estimate_text_width, resolved_to_text_style, resolved_to_text_style_for_text,
+};
 use super::utils::{extract_shape_transform, find_bin_data, picture_display_size_hu};
 use super::LayoutEngine;
 use crate::model::bin_data::BinDataContent;
@@ -872,7 +874,12 @@ impl LayoutEngine {
             // 원본 TextRun들
             let mut char_offset = comp_line.char_start;
             for run in &comp_line.runs {
-                let text_style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                let text_style = resolved_to_text_style_for_text(
+                    styles,
+                    run.char_style_id,
+                    run.lang_index,
+                    &run.text,
+                );
                 let width = estimate_text_width(&run.text, &text_style);
 
                 let run_id = tree.next_id();

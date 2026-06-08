@@ -9,7 +9,8 @@ use super::border_rendering::{
     build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
 };
 use super::text_measurement::{
-    is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
+    is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, resolved_to_text_style_for_text,
+    vertical_substitute_char,
 };
 use super::utils::{extract_shape_transform, find_bin_data};
 use super::{CellContext, CellPathEntry, LayoutEngine};
@@ -118,8 +119,12 @@ impl LayoutEngine {
                 let mut col_height = 0.0;
 
                 for run in &line.runs {
-                    let text_style =
-                        resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    let text_style = resolved_to_text_style_for_text(
+                        styles,
+                        run.char_style_id,
+                        run.lang_index,
+                        &run.text,
+                    );
                     for ch in run.text.chars() {
                         if ch == '\n' || ch == '\r' {
                             char_offset += 1;

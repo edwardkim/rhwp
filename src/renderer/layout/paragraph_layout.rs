@@ -12,7 +12,7 @@ use super::super::{
 use super::border_rendering::create_border_line_nodes;
 use super::text_measurement::{
     compute_char_positions, estimate_text_width, extract_tab_leaders_with_extended,
-    find_next_tab_stop, resolved_to_text_style,
+    find_next_tab_stop, resolved_to_text_style, resolved_to_text_style_for_text,
 };
 use super::utils::{
     expand_numbering_format, extract_shape_transform, find_bin_data,
@@ -284,7 +284,8 @@ fn format_note_marker_text(
     // 자동 번호 서식 권위: 구역의 각주/미주 모양(shape_format, 예: 미주 LowerRoman→"i").
     // 모양 형식이 주어지면 그것을, 없으면 컨트롤의 number_shape 를 사용한다. 본문 인라인
     // 참조 마커와 각주/미주 목록 번호가 동일한 서식을 따르도록 한다.
-    let format = shape_format.unwrap_or_else(|| note_number_format_from_hwp_code(number_shape as u8));
+    let format =
+        shape_format.unwrap_or_else(|| note_number_format_from_hwp_code(number_shape as u8));
     let number = format_number(number, format);
     let prefix = note_decoration_char(before_decoration_letter)
         .map(|ch| ch.to_string())
@@ -511,7 +512,8 @@ pub(crate) fn right_tab_block_width(
         if let Some(_ov) = &r.char_overlap {
             let chars: Vec<char> = r.text.chars().collect();
             let fs = {
-                let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                let ts =
+                    resolved_to_text_style_for_text(styles, r.char_style_id, r.lang_index, &r.text);
                 if ts.font_size > 0.0 {
                     ts.font_size
                 } else {
@@ -521,7 +523,8 @@ pub(crate) fn right_tab_block_width(
             w += fs * crate::renderer::composer::char_overlap_advance_units(&chars) as f64;
             continue;
         }
-        let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+        let mut ts =
+            resolved_to_text_style_for_text(styles, r.char_style_id, r.lang_index, &r.text);
         ts.default_tab_width = default_tab_width;
         ts.tab_stops = tab_stops.to_vec();
         ts.auto_tab_right = auto_tab_right;
@@ -703,7 +706,7 @@ impl LayoutEngine {
                         .unwrap_or(char_style_id);
                     let ch = map_pua_bullet_char(text_chars[ch_idx]);
                     let lang = super::super::style_resolver::detect_lang_category(ch);
-                    let ts = resolved_to_text_style(styles, cs_id, lang);
+                    let ts = resolved_to_text_style_for_text(styles, cs_id, lang, &ch.to_string());
                     total += estimate_text_width(&ch.to_string(), &ts);
                 }
                 total
@@ -866,8 +869,12 @@ impl LayoutEngine {
                                 let first_lang = super::super::style_resolver::detect_lang_category(
                                     text_chars[line_run_start],
                                 );
-                                let run_ts =
-                                    resolved_to_text_style(styles, current_cs_id, first_lang);
+                                let run_ts = resolved_to_text_style_for_text(
+                                    styles,
+                                    current_cs_id,
+                                    first_lang,
+                                    &run_text,
+                                );
                                 let run_width = estimate_text_width(&run_text, &run_ts);
                                 let run_bbox_h = if wrapped_below_table {
                                     text_line_baseline
@@ -957,7 +964,8 @@ impl LayoutEngine {
 
                         let ch = text_chars[ch_idx];
                         let lang = super::super::style_resolver::detect_lang_category(ch);
-                        let ts = resolved_to_text_style(styles, cs_id, lang);
+                        let ts =
+                            resolved_to_text_style_for_text(styles, cs_id, lang, &ch.to_string());
                         let ch_w = estimate_text_width(&ch.to_string(), &ts);
 
                         // char_shape 변경 또는 줄바꿈 시 누적된 run을 출력
@@ -987,7 +995,12 @@ impl LayoutEngine {
                             let first_lang = super::super::style_resolver::detect_lang_category(
                                 text_chars[line_run_start],
                             );
-                            let run_ts = resolved_to_text_style(styles, current_cs_id, first_lang);
+                            let run_ts = resolved_to_text_style_for_text(
+                                styles,
+                                current_cs_id,
+                                first_lang,
+                                &run_text,
+                            );
                             let run_width = estimate_text_width(&run_text, &run_ts);
 
                             let run_id = tree.next_id();
@@ -1054,7 +1067,12 @@ impl LayoutEngine {
                         let first_lang = super::super::style_resolver::detect_lang_category(
                             text_chars[line_run_start],
                         );
-                        let run_ts = resolved_to_text_style(styles, current_cs_id, first_lang);
+                        let run_ts = resolved_to_text_style_for_text(
+                            styles,
+                            current_cs_id,
+                            first_lang,
+                            &run_text,
+                        );
                         let run_width = estimate_text_width(&run_text, &run_ts);
 
                         let run_id = tree.next_id();
@@ -1461,7 +1479,14 @@ impl LayoutEngine {
                     .lines
                     .first()
                     .and_then(|l| l.runs.first())
-                    .map(|r| resolved_to_text_style(styles, r.char_style_id, r.lang_index))
+                    .map(|r| {
+                        resolved_to_text_style_for_text(
+                            styles,
+                            r.char_style_id,
+                            r.lang_index,
+                            &r.text,
+                        )
+                    })
                     .unwrap_or_else(|| resolved_to_text_style(styles, 0, 0));
                 estimate_text_width(num_text, &num_style)
             } else {
@@ -1676,7 +1701,12 @@ impl LayoutEngine {
                 .runs
                 .iter()
                 .map(|r| {
-                    let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                    let ts = resolved_to_text_style_for_text(
+                        styles,
+                        r.char_style_id,
+                        r.lang_index,
+                        &r.text,
+                    );
                     if ts.font_size > 0.0 {
                         ts.font_size
                     } else {
@@ -1809,11 +1839,11 @@ impl LayoutEngine {
                     line_tac_offsets
                         .iter()
                         .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
-                            Some(Control::Equation(eq)) => {
-                                Some(crate::renderer::equation::equation_natural_ascent_descent_px(
+                            Some(Control::Equation(eq)) => Some(
+                                crate::renderer::equation::equation_natural_ascent_descent_px(
                                     eq, self.dpi,
-                                ))
-                            }
+                                ),
+                            ),
                             _ => None,
                         })
                         // 한 줄에 여러 수식이면 가장 깊은 ascent/descent 를 각각 취한다.
@@ -2089,7 +2119,12 @@ impl LayoutEngine {
                     run.text.chars().count()
                 };
                 let run_char_end_est = run_char_pos_est + run_char_count_est;
-                let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                let mut ts = resolved_to_text_style_for_text(
+                    styles,
+                    run.char_style_id,
+                    run.lang_index,
+                    &run.text,
+                );
                 ts.default_tab_width = tab_width;
                 ts.tab_stops = tab_stops.clone();
                 ts.auto_tab_right = auto_tab_right;
@@ -2420,10 +2455,11 @@ impl LayoutEngine {
                     // 후행 공백 폭 계산
                     let trailing_width = if trailing_spaces > 0 {
                         if let Some(last_run) = comp_line.runs.last() {
-                            let mut ts = resolved_to_text_style(
+                            let mut ts = resolved_to_text_style_for_text(
                                 styles,
                                 last_run.char_style_id,
                                 last_run.lang_index,
+                                &last_run.text,
                             );
                             ts.default_tab_width = tab_width;
                             let trailing_str: String = " ".repeat(trailing_spaces);
@@ -2446,10 +2482,11 @@ impl LayoutEngine {
                         let raw_ews = slack / interior_spaces as f64;
                         let space_base_w = estimate_text_width(
                             " ",
-                            &resolved_to_text_style(
+                            &resolved_to_text_style_for_text(
                                 styles,
                                 comp_line.runs[0].char_style_id,
                                 comp_line.runs[0].lang_index,
+                                " ",
                             ),
                         );
                         let min_ews = -(space_base_w * 0.5);
@@ -2488,7 +2525,12 @@ impl LayoutEngine {
                 && total_text_width < available_width
                 && total_text_width > 0.0
                 && comp_line.runs.iter().any(|r| {
-                    let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                    let ts = resolved_to_text_style_for_text(
+                        styles,
+                        r.char_style_id,
+                        r.lang_index,
+                        &r.text,
+                    );
                     ts.letter_spacing < -0.01
                 })
                 && {
@@ -2500,8 +2542,12 @@ impl LayoutEngine {
                         .runs
                         .iter()
                         .map(|r| {
-                            let mut ts =
-                                resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                            let mut ts = resolved_to_text_style_for_text(
+                                styles,
+                                r.char_style_id,
+                                r.lang_index,
+                                &r.text,
+                            );
                             ts.default_tab_width = tab_width;
                             ts.letter_spacing = 0.0;
                             estimate_text_width(&r.text, &ts)
@@ -2520,7 +2566,12 @@ impl LayoutEngine {
                 for _ in 0..3 {
                     let mut measured = 0.0f64;
                     for r in &comp_line.runs {
-                        let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                        let mut ts = resolved_to_text_style_for_text(
+                            styles,
+                            r.char_style_id,
+                            r.lang_index,
+                            &r.text,
+                        );
                         ts.default_tab_width = tab_width;
                         ts.extra_char_spacing = extra;
                         measured += estimate_text_width(&r.text, &ts);
@@ -2563,7 +2614,12 @@ impl LayoutEngine {
                     .runs
                     .iter()
                     .map(|r| {
-                        let mut ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                        let mut ts = resolved_to_text_style_for_text(
+                            styles,
+                            r.char_style_id,
+                            r.lang_index,
+                            &r.text,
+                        );
                         ts.default_tab_width = tab_width;
                         ts.tab_stops = tab_stops.clone();
                         ts.auto_tab_right = auto_tab_right;
@@ -2654,10 +2710,11 @@ impl LayoutEngine {
             if line_idx == start_line && start_line == 0 {
                 if let Some(ref num_text) = composed.numbering_text {
                     let num_style = if let Some(first_run) = comp_line.runs.first() {
-                        resolved_to_text_style(
+                        resolved_to_text_style_for_text(
                             styles,
                             first_run.char_style_id,
                             first_run.lang_index,
+                            num_text,
                         )
                     } else {
                         resolved_to_text_style(styles, 0, 0)
@@ -2778,8 +2835,12 @@ impl LayoutEngine {
                 for (smi, (spos, stext)) in shape_markers.iter().enumerate() {
                     if !shape_marker_inserted[smi] && *spos <= run_char_pos {
                         shape_marker_inserted[smi] = true;
-                        let base_style =
-                            resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                        let base_style = resolved_to_text_style_for_text(
+                            styles,
+                            run.char_style_id,
+                            run.lang_index,
+                            &run.text,
+                        );
                         let mut ms = base_style;
                         ms.color = 0x0000FF; // BGR: 빨간색
                         ms.font_size *= 0.55;
@@ -2811,8 +2872,12 @@ impl LayoutEngine {
                         x += mw;
                     }
                 }
-                let mut text_style =
-                    resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                let mut text_style = resolved_to_text_style_for_text(
+                    styles,
+                    run.char_style_id,
+                    run.lang_index,
+                    &run.text,
+                );
                 text_style.default_tab_width = tab_width;
                 text_style.tab_stops = tab_stops.clone();
                 text_style.auto_tab_right = auto_tab_right;
@@ -4391,7 +4456,12 @@ impl LayoutEngine {
 
                         let base_run = comp_line.runs.last().or(comp_line.runs.first());
                         let base_style = if let Some(run) = base_run {
-                            resolved_to_text_style(styles, run.char_style_id, run.lang_index)
+                            resolved_to_text_style_for_text(
+                                styles,
+                                run.char_style_id,
+                                run.lang_index,
+                                &run.text,
+                            )
                         } else {
                             resolved_to_text_style(styles, 0, 0)
                         };

@@ -1505,9 +1505,18 @@ pub(crate) fn resolved_to_text_style(
     char_style_id: u32,
     lang_index: usize,
 ) -> TextStyle {
+    resolved_to_text_style_for_text(styles, char_style_id, lang_index, "")
+}
+
+pub(crate) fn resolved_to_text_style_for_text(
+    styles: &ResolvedStyleSet,
+    char_style_id: u32,
+    lang_index: usize,
+    text: &str,
+) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
-            font_family: cs.font_family_for_lang(lang_index).to_string(),
+            font_family: cs.font_family_for_run(lang_index, text).to_string(),
             font_size: cs.font_size,
             color: cs.text_color,
             bold: cs.bold,

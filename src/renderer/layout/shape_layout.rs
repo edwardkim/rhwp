@@ -8,7 +8,7 @@ use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, PathCommand, ShapeStyle, TextStyle};
 use super::text_measurement::{
     estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
-    vertical_substitute_char,
+    resolved_to_text_style_for_text, vertical_substitute_char,
 };
 use super::utils::{
     drawing_to_line_style, drawing_to_shape_style, extract_shape_transform, find_bin_data,
@@ -103,7 +103,12 @@ fn measure_composed_text_range_width(
                         continue;
                     }
                 }
-                let mut style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                let mut style = resolved_to_text_style_for_text(
+                    styles,
+                    run.char_style_id,
+                    run.lang_index,
+                    &run.text,
+                );
                 style.default_tab_width = tab_width;
                 width += estimate_text_width(&seg_text, &style);
             }
@@ -2144,31 +2149,34 @@ impl LayoutEngine {
 
             // 인라인 컨트롤의 시작 x 위치 (정렬 기반)
             // 이미지+텍스트 전체 폭을 기준으로 정렬 (함께 센터링)
-            let first_line_text_width: f64 = if total_inline_width > 0.0
-                && pi < composed_paras.len()
-            {
-                if let Some(first_line) = composed_paras[pi].lines.first() {
-                    let tab_width = styles
-                        .para_styles
-                        .get(composed_paras[pi].para_style_id as usize)
-                        .map(|s| s.default_tab_width)
-                        .unwrap_or(0.0);
-                    first_line
-                        .runs
-                        .iter()
-                        .map(|run| {
-                            let mut ts =
-                                resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                            ts.default_tab_width = tab_width;
-                            estimate_text_width(&run.text, &ts)
-                        })
-                        .sum()
+            let first_line_text_width: f64 =
+                if total_inline_width > 0.0 && pi < composed_paras.len() {
+                    if let Some(first_line) = composed_paras[pi].lines.first() {
+                        let tab_width = styles
+                            .para_styles
+                            .get(composed_paras[pi].para_style_id as usize)
+                            .map(|s| s.default_tab_width)
+                            .unwrap_or(0.0);
+                        first_line
+                            .runs
+                            .iter()
+                            .map(|run| {
+                                let mut ts = resolved_to_text_style_for_text(
+                                    styles,
+                                    run.char_style_id,
+                                    run.lang_index,
+                                    &run.text,
+                                );
+                                ts.default_tab_width = tab_width;
+                                estimate_text_width(&run.text, &ts)
+                            })
+                            .sum()
+                    } else {
+                        0.0
+                    }
                 } else {
                     0.0
-                }
-            } else {
-                0.0
-            };
+                };
             let total_line_width = total_inline_width + first_line_text_width;
             let mut inline_x = match para_alignment {
                 Alignment::Center | Alignment::Distribute => {
@@ -2560,8 +2568,12 @@ impl LayoutEngine {
                 let mut col_height = 0.0;
 
                 for run in &line.runs {
-                    let text_style =
-                        resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    let text_style = resolved_to_text_style_for_text(
+                        styles,
+                        run.char_style_id,
+                        run.lang_index,
+                        &run.text,
+                    );
                     for ch in run.text.chars() {
                         if ch == '\n' || ch == '\r' {
                             char_offset += 1;

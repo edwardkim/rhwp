@@ -656,6 +656,44 @@ pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
     (px * HWPUNIT_PER_INCH / dpi) as i32
 }
 
+/// 폰트의 CSS generic 계열 (serif / sans-serif / monospace).
+///
+/// [숫자 폰트 일관성] HWP 의 글자 모양은 한글/영문(숫자)/한자… 언어별 폰트
+/// 슬롯을 따로 가진다. 숫자는 영문 슬롯을 쓰므로, 본문(한글) 슬롯이 명조(serif)
+/// 인데 영문 슬롯이 고딕(sans)인 문서에서는 숫자만 고딕으로 튀어 보인다
+/// (예: HY신명조 본문 속 HY중고딕 숫자). 이 계열 분류로 두 슬롯이 다른 계열
+/// 인지 판정하여, 다를 때만 숫자를 본문 슬롯에 맞춘다 (`font_family_for_run`).
+pub fn generic_font_class(font_family: &str) -> &'static str {
+    if font_family.is_empty() {
+        return "sans-serif";
+    }
+    let lower = font_family.to_ascii_lowercase();
+    if font_family.contains("굴림체")
+        || font_family.contains("바탕체")
+        || lower.contains("gulimche")
+        || lower.contains("batangche")
+        || lower.contains("coding")
+        || lower.contains("courier")
+        || lower.contains("mono")
+    {
+        return "monospace";
+    }
+    if font_family.contains("바탕")
+        || font_family.contains("명조")
+        || font_family.contains("궁서")
+        || lower.contains("times")
+        || lower.contains("hymjre")
+        || lower.contains("palatino")
+        || lower.contains("georgia")
+        || lower.contains("batang")
+        || lower.contains("gungsuh")
+        || (lower.contains("serif") && !lower.contains("sans"))
+    {
+        return "serif";
+    }
+    "sans-serif"
+}
+
 /// CSS generic fallback 반환 (serif 또는 sans-serif)
 ///
 /// 폰트 이름에 명조/바탕/궁서 등 세리프 계열 키워드가 포함되면 "serif",

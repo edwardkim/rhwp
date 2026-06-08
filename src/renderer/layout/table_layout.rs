@@ -41,7 +41,9 @@ use super::border_rendering::{
     build_row_col_x, collect_cell_borders, render_cell_diagonal, render_edge_borders,
     render_transparent_borders,
 };
-use super::text_measurement::{estimate_text_width, resolved_to_text_style};
+use super::text_measurement::{
+    estimate_text_width, resolved_to_text_style, resolved_to_text_style_for_text,
+};
 use super::utils::find_bin_data;
 use super::{CellContext, CellPathEntry, LayoutEngine};
 
@@ -1271,7 +1273,12 @@ impl LayoutEngine {
             for line in &comp.lines {
                 let mut w = 0.0;
                 for run in &line.runs {
-                    let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    let mut ts = resolved_to_text_style_for_text(
+                        styles,
+                        run.char_style_id,
+                        run.lang_index,
+                        &run.text,
+                    );
                     if run.char_overlap.is_some() {
                         let fs = if ts.font_size > 0.0 {
                             ts.font_size
@@ -2475,10 +2482,11 @@ impl LayoutEngine {
                                                     .and_then(|l| l.runs.first())
                                                     .map(|r| r.lang_index)
                                                     .unwrap_or(0);
-                                                let ts = resolved_to_text_style(
+                                                let ts = resolved_to_text_style_for_text(
                                                     styles,
                                                     char_style_id,
                                                     lang_index,
+                                                    &text_before,
                                                 );
                                                 // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
                                                 let text_before_metrics: String = {
@@ -2803,10 +2811,11 @@ impl LayoutEngine {
                                         for line in &composed.lines {
                                             for run in &line.runs {
                                                 if !run.text.is_empty() {
-                                                    let ts = resolved_to_text_style(
+                                                    let ts = resolved_to_text_style_for_text(
                                                         styles,
                                                         run.char_style_id,
                                                         run.lang_index,
+                                                        &run.text,
                                                     );
                                                     // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
                                                     text_w += estimate_text_width(
@@ -2847,10 +2856,11 @@ impl LayoutEngine {
                                                 if run.text.is_empty() {
                                                     continue;
                                                 }
-                                                let ts = resolved_to_text_style(
+                                                let ts = resolved_to_text_style_for_text(
                                                     styles,
                                                     run.char_style_id,
                                                     run.lang_index,
+                                                    &run.text,
                                                 );
                                                 // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
                                                 let run_w = estimate_text_width(
@@ -2969,7 +2979,12 @@ impl LayoutEngine {
                                     .and_then(|l| l.runs.last())
                                     .map(|r| r.lang_index)
                                     .unwrap_or(0);
-                                let ts = resolved_to_text_style(styles, char_style_id, lang_index);
+                                let ts = resolved_to_text_style_for_text(
+                                    styles,
+                                    char_style_id,
+                                    lang_index,
+                                    remaining_trimmed,
+                                );
                                 // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
                                 let remaining_metrics: String = {
                                     use super::super::pua_oldhangul::map_pua_old_hangul;
@@ -3604,10 +3619,11 @@ impl LayoutEngine {
                             .runs
                             .iter()
                             .map(|r| {
-                                let ts = super::text_measurement::resolved_to_text_style(
+                                let ts = super::text_measurement::resolved_to_text_style_for_text(
                                     styles,
                                     r.char_style_id,
                                     r.lang_index,
+                                    &r.text,
                                 );
                                 if ts.font_size > 0.0 {
                                     ts.font_size

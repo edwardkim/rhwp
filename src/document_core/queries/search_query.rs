@@ -6,6 +6,7 @@ use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
+use std::collections::BTreeMap;
 
 /// 검색 결과 위치 정보
 #[derive(Debug, Clone)]
@@ -384,13 +385,27 @@ impl DocumentCore {
             }
             body_paras.sort_unstable();
             body_paras.dedup();
+            let mut body_vpos_start: BTreeMap<usize, usize> = BTreeMap::new();
             for (sec, para) in body_paras {
                 self.reflow_paragraph(sec, para);
+                body_vpos_start
+                    .entry(sec)
+                    .and_modify(|start| *start = (*start).min(para))
+                    .or_insert(para);
+            }
+            for (sec, start_para) in body_vpos_start {
+                if let Some(section) = self.document.sections.get_mut(sec) {
+                    crate::renderer::composer::recalculate_section_vpos(
+                        &mut section.paragraphs,
+                        start_para,
+                    );
+                }
             }
             cell_paras.sort_unstable();
             cell_paras.dedup();
             for (sec, pp, ci, cell, cp) in cell_paras {
                 self.reflow_cell_paragraph(sec, pp, ci, cell, cp);
+                self.mark_cell_control_dirty(sec, pp, ci);
             }
         }
 
@@ -399,9 +414,15 @@ impl DocumentCore {
             let mut affected_sections: Vec<usize> = all_hits.iter().map(|h| h.sec).collect();
             affected_sections.sort();
             affected_sections.dedup();
+            for sec_idx in &affected_sections {
+                if let Some(section) = self.document.sections.get_mut(*sec_idx) {
+                    section.raw_stream = None;
+                }
+            }
             for sec_idx in affected_sections {
                 self.recompose_section(sec_idx);
             }
+            self.paginate_if_needed();
         }
 
         Ok(format!("{{\"ok\":true,\"count\":{}}}", count))

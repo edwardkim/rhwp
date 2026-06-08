@@ -4,7 +4,7 @@
 //! CharShapeRef 경계에 따라 다중 TextRun으로 분할한다.
 //! 인라인 컨트롤(표/도형) 삽입 위치를 식별한다.
 
-use super::layout::{estimate_text_width, resolved_to_text_style};
+use super::layout::{estimate_text_width, resolved_to_text_style, resolved_to_text_style_for_text};
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
@@ -1260,7 +1260,12 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
     line.runs
         .iter()
         .map(|run| {
-            let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+            let ts = resolved_to_text_style_for_text(
+                styles,
+                run.char_style_id,
+                run.lang_index,
+                &run.text,
+            );
             estimate_text_width(effective_text_for_metrics(run), &ts)
         })
         .sum()
@@ -1419,7 +1424,8 @@ fn split_composed_line_by_width(
     };
 
     for run in &src.runs {
-        let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        let ts =
+            resolved_to_text_style_for_text(styles, run.char_style_id, run.lang_index, &run.text);
         // 현재 run 의 template 변경 (char_style 다른 run 들 처리)
         if current_run_template
             .as_ref()

@@ -741,7 +741,7 @@ pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
     extract_tab_leaders_with_extended, find_next_tab_stop, font_family_has_metrics, is_cjk_char,
-    resolved_to_text_style, split_into_clusters,
+    resolved_to_text_style, resolved_to_text_style_for_text, split_into_clusters,
 };
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
@@ -6744,7 +6744,12 @@ impl LayoutEngine {
                 .runs
                 .iter()
                 .map(|r| {
-                    let ts = resolved_to_text_style(styles, r.char_style_id, r.lang_index);
+                    let ts = resolved_to_text_style_for_text(
+                        styles,
+                        r.char_style_id,
+                        r.lang_index,
+                        &r.text,
+                    );
                     if ts.font_size > 0.0 {
                         ts.font_size
                     } else {
@@ -6846,7 +6851,12 @@ impl LayoutEngine {
         let mut tac_pos = 0usize;
 
         'outer: for run in &first_line.runs {
-            let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+            let mut ts = resolved_to_text_style_for_text(
+                styles,
+                run.char_style_id,
+                run.lang_index,
+                &run.text,
+            );
             ts.default_tab_width = tab_width;
             ts.tab_stops = tab_stops.clone();
             ts.auto_tab_right = auto_tab_right;
@@ -6944,7 +6954,8 @@ fn compute_tac_leading_width(
     let mut width = 0.0;
     for run in &first_line.runs {
         let run_len = run.text.chars().count();
-        let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        let style =
+            resolved_to_text_style_for_text(styles, run.char_style_id, run.lang_index, &run.text);
         // [Task #555] PUA 옛한글 변환 후 폰트 매트릭스는 자모 시퀀스 기준.
         let effective_full = effective_text_for_metrics(run);
         match tac_pos_opt {

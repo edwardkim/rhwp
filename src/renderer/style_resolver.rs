@@ -127,6 +127,30 @@ impl ResolvedCharStyle {
         &self.font_family
     }
 
+    /// run 텍스트를 고려한 폰트 이름.
+    ///
+    /// 기본은 `font_family_for_lang(lang_index)` 와 동일하나, **순수 숫자 run**
+    /// 이 영문 슬롯(lang_index==1)을 쓰는데 그 영문 슬롯과 한글(본문) 슬롯의
+    /// generic 계열이 다를 때(예: 명조 본문 + 고딕 영문)는 숫자를 한글 슬롯
+    /// 폰트로 맞춰 본문과 일관되게 그린다. 영문 글자(알파벳)·기호가 섞인 run 은
+    /// 문서가 지정한 영문 폰트를 그대로 존중한다(영문 폰트 회귀 방지).
+    pub fn font_family_for_run(&self, lang_index: usize, text: &str) -> &str {
+        let latin = self.font_family_for_lang(lang_index);
+        if lang_index != 1 || !is_pure_number_run(text) {
+            return latin;
+        }
+        let hangul = self.font_family_for_lang(0);
+        if hangul.is_empty() || hangul == latin {
+            return latin;
+        }
+        use crate::renderer::generic_font_class;
+        if generic_font_class(latin) != generic_font_class(hangul) {
+            hangul
+        } else {
+            latin
+        }
+    }
+
     /// 지정 언어 카테고리의 자간(px)을 반환한다.
     pub fn letter_spacing_for_lang(&self, lang_index: usize) -> f64 {
         if lang_index < self.letter_spacings.len() {
@@ -427,6 +451,26 @@ pub fn detect_lang_category(ch: char) -> usize {
         // 호출부에서 "이전 문자의 언어를 따르는" 로직으로 처리
         _ => 0,
     }
+}
+
+/// run 이 "순수 숫자"인지 판정한다 (숫자 폰트 일관성용, `font_family_for_run`).
+///
+/// 숫자(0-9)를 하나 이상 포함하고, 그 외 문자는 숫자와 함께 쓰이는 중립
+/// 기호(공백/소수점/쉼표/괄호/퍼센트/하이픈/콜론/슬래시 등)만 허용한다.
+/// 알파벳이 하나라도 섞이면 영문 run 으로 보아 false (영문 폰트 존중).
+pub fn is_pure_number_run(text: &str) -> bool {
+    let mut has_digit = false;
+    for ch in text.chars() {
+        if ch.is_ascii_digit() {
+            has_digit = true;
+        } else if !matches!(
+            ch,
+            ' ' | '.' | ',' | '(' | ')' | '%' | '-' | ':' | '/' | '~' | '+' | '·' | '\u{00A0}'
+        ) {
+            return false;
+        }
+    }
+    has_digit
 }
 
 /// FontFace 테이블에서 폰트 이름 조회 + 폰트 치환 적용
