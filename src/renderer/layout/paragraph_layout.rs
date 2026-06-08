@@ -1,6 +1,8 @@
 //! 문단 레이아웃 (인라인 표, 문단 전체/부분, composed/raw) + 번호 매기기
 
-use super::super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
+use super::super::composer::{
+    compose_paragraph, effective_text_for_metrics, ComposedParagraph, ComposedTextRun,
+};
 use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -43,6 +45,34 @@ pub(crate) fn ensure_min_baseline(raw_baseline: f64, max_font_size: f64) -> f64 
     }
     let min_baseline = max_font_size * 0.8;
     raw_baseline.max(min_baseline)
+}
+
+fn paragraph_active_text_style(
+    styles: &ResolvedStyleSet,
+    para: Option<&Paragraph>,
+    char_offset: usize,
+) -> (TextStyle, Option<u32>) {
+    let char_shape_id = para
+        .and_then(|p| p.char_shape_id_at(char_offset))
+        .or_else(|| para.and_then(|p| p.char_shapes.first().map(|cs| cs.char_shape_id)));
+
+    if let Some(id) = char_shape_id {
+        (resolved_to_text_style(styles, id, 0), Some(id))
+    } else {
+        (resolved_to_text_style(styles, 0, 0), None)
+    }
+}
+
+fn numbering_marker_text_style(
+    styles: &ResolvedStyleSet,
+    para: Option<&Paragraph>,
+    first_run: Option<&ComposedTextRun>,
+) -> TextStyle {
+    if let Some(run) = first_run {
+        resolved_to_text_style(styles, run.char_style_id, run.lang_index)
+    } else {
+        paragraph_active_text_style(styles, para, 0).0
+    }
 }
 
 fn para_float_horz_intersects_column(
@@ -1437,12 +1467,11 @@ impl LayoutEngine {
         // 개요 번호/글머리표 마커 폭 사전 계산 (첫 줄 가용폭 차감용)
         let numbering_width = if start_line == 0 {
             if let Some(ref num_text) = composed.numbering_text {
-                let num_style = composed
-                    .lines
-                    .first()
-                    .and_then(|l| l.runs.first())
-                    .map(|r| resolved_to_text_style(styles, r.char_style_id, r.lang_index))
-                    .unwrap_or_else(|| resolved_to_text_style(styles, 0, 0));
+                let num_style = numbering_marker_text_style(
+                    styles,
+                    para,
+                    composed.lines.first().and_then(|l| l.runs.first()),
+                );
                 estimate_text_width(num_text, &num_style)
             } else {
                 0.0
@@ -2575,15 +2604,8 @@ impl LayoutEngine {
             // 개요 번호/글머리표: 첫 줄에서 별도 TextRunNode로 렌더링 (char_start: None)
             if line_idx == start_line && start_line == 0 {
                 if let Some(ref num_text) = composed.numbering_text {
-                    let num_style = if let Some(first_run) = comp_line.runs.first() {
-                        resolved_to_text_style(
-                            styles,
-                            first_run.char_style_id,
-                            first_run.lang_index,
-                        )
-                    } else {
-                        resolved_to_text_style(styles, 0, 0)
-                    };
+                    let num_style =
+                        numbering_marker_text_style(styles, para, comp_line.runs.first());
                     let num_width = estimate_text_width(num_text, &num_style);
                     let num_id = tree.next_id();
                     let num_node = RenderNode::new(
@@ -3989,13 +4011,14 @@ impl LayoutEngine {
                 }
 
                 let run_id = tree.next_id();
-                let text_style = resolved_to_text_style(styles, 0, 0);
+                let (text_style, char_shape_id) =
+                    paragraph_active_text_style(styles, para, char_offset);
                 let run_node = RenderNode::new(
                     run_id,
                     RenderNodeType::TextRun(TextRunNode {
                         text: String::new(),
                         style: text_style,
-                        char_shape_id: None,
+                        char_shape_id,
                         para_shape_id: Some(composed.para_style_id),
                         section_index: Some(section_index),
                         para_index: Some(para_index),
@@ -4207,7 +4230,7 @@ impl LayoutEngine {
                     let marker_x = row_inline_x[marker_row];
                     let marker_y = y + marker_row as f64 * (line_height + line_spacing_px);
                     let marker_id = tree.next_id();
-                    let marker_style = resolved_to_text_style(styles, 0, 0);
+                    let marker_style = paragraph_active_text_style(styles, para, char_offset).0;
                     let marker_node = RenderNode::new(
                         marker_id,
                         RenderNodeType::TextRun(TextRunNode {
@@ -4800,13 +4823,14 @@ impl LayoutEngine {
 
             // 빈 문단에도 TextRun 노드를 생성하여 캐럿 위치 제공
             let run_id = tree.next_id();
-            let text_style = resolved_to_text_style(styles, 0, 0);
+            let (text_style, char_shape_id) =
+                paragraph_active_text_style(styles, para, char_offset);
             let run_node = RenderNode::new(
                 run_id,
                 RenderNodeType::TextRun(TextRunNode {
                     text: String::new(),
                     style: text_style,
-                    char_shape_id: None,
+                    char_shape_id,
                     para_shape_id: Some(composed.para_style_id),
                     section_index: Some(section_index),
                     para_index: Some(para_index),
