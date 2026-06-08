@@ -1209,19 +1209,42 @@ impl HeightMeasurer {
         // 발동 영역 sweep 진단 (187 fixture): ≤2% 7 건 면제, ≥5% 11 건 그대로.
         const TAC_SHRINK_THRESHOLD_RATIO: f64 = 0.02;
         let shrink_threshold = (common_h * TAC_SHRINK_THRESHOLD_RATIO).max(1.0);
-        // 비례 축소 상한 — 저장된 common.height 가 "물리적으로 불가능"할 만큼
-        // 작으면(콘텐츠 자연 높이가 저장값의 MAX_SHRINK_FACTOR 배 초과) 그 저장값은
-        // 작성 툴이 bbox 를 미계산한 가짜값이다. 이 경우 한컴 뷰어처럼 콘텐츠에 맞춰
-        // 표를 늘린다(축소 시 셀이 collapse 되어 다중행 수식/문단이 잘림).
+        // 비례 축소 상한 (TAC_SHRINK_MAX_RATIO) — 저장된 common.height 가 콘텐츠
+        // 자연 높이보다 이 배율 이상 작으면 저장값을 신뢰하지 않고 콘텐츠에 맞춰
+        // 표를 확장한다. 두 가지 stale 원인을 한 임계로 흡수한다:
+        //  (1) 작성 툴이 bbox 를 미계산한 가짜 common.height (≈7배 등)
+        //  (2) [ecrits #146/#149] 편집으로 늘어난 셀 줄 수 (≈1.65배)
         //
-        // 사용자가 의도적으로 압축한 TAC 표(≥5% 차이)는 보통 factor ≤ ~1.7 이므로
-        // 2.0 이하는 종전대로 축소하고, 2.0 초과(예: 본 학습지 표 — 저장 6410 HU vs
-        // 콘텐츠 ~45000 HU ≈ 7배)는 가짜값으로 보고 expand 한다.
-        const MAX_SHRINK_FACTOR: f64 = 2.0;
+        // 종전 MAX_SHRINK_FACTOR=2.0 은 (1) 만 expand 하고 (2) 는 축소 → 편집된
+        // 셀이 collapse·bleed/clip 했다. 임계를 1.35 로 낮춰 (2) 도 expand 한다.
+        //
+        // [ecrits #146/#149] TAC 표 stale-height 가드.
+        //
+        // 비례 축소는 저장된 common.height 가 신뢰 가능한 "의도적 압축"(작성 시점
+        // 콘텐츠와 정합)일 때만 옳다. 이때 셀 콘텐츠 자연 높이 합(raw_table_height)은
+        // common.height 와 거의 같다 — 진단상 한컴 작성 TAC 표는 raw/common 비율이
+        // 1.0~1.12 범위(측정 오차/line_height 보정 부산물)에 머문다.
+        //
+        // 그러나 편집(insert_text/replace_text/set_cell)으로 셀 줄 수가 늘면
+        // 콘텐츠는 커지는데 common.height/cell.height 는 갱신되지 않아 stale 이 된다
+        // (편집 경로는 line_segs 만 reflow, 저장 높이는 안 건드림). 이 경우
+        // raw_table_height 가 common.height 를 크게 초과(예: 1줄→3줄 = ~1.65x)하며,
+        // 이를 축소하면 늘어난 줄이 collapse·bleed/clip 한다(#146 지급기일 다중 날짜,
+        // #149 상호/주소 wrap → 사업자번호 누락).
+        //
+        // 따라서 raw/common 비율이 TAC_SHRINK_MAX_RATIO 이하일 때만 (의도적 압축
+        // 으로 보고) 축소하고, 초과하면 stale 로 보고 콘텐츠에 맞춰 확장한다(한컴
+        // 뷰어 동작). 진단 관측 정상 압축 표 비율: tac-img-02 ≤1.12, exam_eng/
+        // exam_science 보기표 =1.239(작성 시 의도적 압축 — reference PDF 정합).
+        // 편집 성장(1줄→3줄)은 ≈1.65. 따라서 1.239(정상) < 1.35 < 1.65(편집) 로
+        // 안전 분리 — 정상 압축 표는 종전대로 축소, 편집 성장만 확장.
+        // 종전 MAX_SHRINK_FACTOR=2.0(가짜 bbox expand 임계)는 1.35 로 흡수된다 —
+        // 2.0 초과 가짜값도 1.35 초과이므로 동일하게 expand 된다.
+        const TAC_SHRINK_MAX_RATIO: f64 = 1.35;
         let table_height = if table.common.treat_as_char
             && common_h > 0.0
             && raw_table_height > common_h + shrink_threshold
-            && raw_table_height <= common_h * MAX_SHRINK_FACTOR
+            && raw_table_height <= common_h * TAC_SHRINK_MAX_RATIO
         {
             let scale = common_h / raw_table_height;
             for h in &mut row_heights {
