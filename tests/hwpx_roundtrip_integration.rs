@@ -582,3 +582,178 @@ fn para_ids_unique_across_body_and_table() {
         ids
     );
 }
+
+// ---------- 쪽/번호 인라인 컨트롤 직렬화 (pageHiding/pageNum/newNum) ----------
+// 회귀: 이 컨트롤들이 HWPX 직렬화 시 누락되어(render_control_slot `_ => {}`)
+// 저장 후 재파싱하면 사라졌다(데이터 손실). 카운트뿐 아니라 속성값까지 보존돼야 함.
+
+fn page_hides(doc: &rhwp::model::document::Document) -> Vec<(bool, bool, bool, bool, bool, bool)> {
+    use rhwp::model::control::Control;
+    let mut v = Vec::new();
+    for s in &doc.sections {
+        for p in &s.paragraphs {
+            for c in &p.controls {
+                if let Control::PageHide(ph) = c {
+                    v.push((
+                        ph.hide_header,
+                        ph.hide_footer,
+                        ph.hide_master_page,
+                        ph.hide_border,
+                        ph.hide_fill,
+                        ph.hide_page_num,
+                    ));
+                }
+            }
+        }
+    }
+    v
+}
+
+fn page_nums(doc: &rhwp::model::document::Document) -> Vec<(u8, u8)> {
+    use rhwp::model::control::Control;
+    let mut v = Vec::new();
+    for s in &doc.sections {
+        for p in &s.paragraphs {
+            for c in &p.controls {
+                if let Control::PageNumberPos(pn) = c {
+                    v.push((pn.position, pn.format));
+                }
+            }
+        }
+    }
+    v
+}
+
+fn new_nums(
+    doc: &rhwp::model::document::Document,
+) -> Vec<(u16, rhwp::model::control::AutoNumberType)> {
+    use rhwp::model::control::Control;
+    let mut v = Vec::new();
+    for s in &doc.sections {
+        for p in &s.paragraphs {
+            for c in &p.controls {
+                if let Control::NewNumber(nn) = c {
+                    v.push((nn.number, nn.number_type));
+                }
+            }
+        }
+    }
+    v
+}
+
+#[test]
+fn page_hiding_and_page_num_preserved_on_roundtrip() {
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    // 정부 보도자료: pageHiding + pageNum 다수 포함.
+    let bytes = include_bytes!("../samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx");
+    let d1 = parse_hwpx(bytes).expect("parse");
+    let (ph1, pn1) = (page_hides(&d1), page_nums(&d1));
+    assert!(!ph1.is_empty(), "fixture must contain pageHiding");
+    assert!(!pn1.is_empty(), "fixture must contain pageNum");
+
+    let out = serialize_hwpx(&d1).expect("serialize");
+    let d2 = parse_hwpx(&out).expect("reparse");
+    // 값까지 동일해야 함 (속성 역매핑 정확성 검증).
+    assert_eq!(page_hides(&d2), ph1, "PageHide 컨트롤/값 보존 실패");
+    assert_eq!(page_nums(&d2), pn1, "PageNumberPos 컨트롤/값 보존 실패");
+}
+
+#[test]
+fn new_num_preserved_on_roundtrip() {
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    // aift: newNum 포함.
+    let bytes = include_bytes!("../samples/hwpx/aift.hwpx");
+    let d1 = parse_hwpx(bytes).expect("parse aift");
+    let nn1 = new_nums(&d1);
+    assert!(!nn1.is_empty(), "aift must contain newNum");
+
+    let out = serialize_hwpx(&d1).expect("serialize aift");
+    let d2 = parse_hwpx(&out).expect("reparse aift");
+    assert_eq!(new_nums(&d2), nn1, "NewNumber 컨트롤/값 보존 실패");
+}
+
+// 머리말/꼬리말: 중첩 문단(subList)을 포함하는 컨트롤이 직렬화 시 통째로 누락됐다.
+// 개수 + 적용범위(applyPageType) + 내부 문단 수까지 보존돼야 함.
+type HfSig = Vec<(rhwp::model::header_footer::HeaderFooterApply, usize, String)>;
+
+fn headers_footers(doc: &rhwp::model::document::Document) -> (HfSig, HfSig) {
+    use rhwp::model::control::Control;
+    let (mut hs, mut fs): (HfSig, HfSig) = (Vec::new(), Vec::new());
+    let first_text = |paras: &[rhwp::model::paragraph::Paragraph]| {
+        paras.first().map(|p| p.text.clone()).unwrap_or_default()
+    };
+    for s in &doc.sections {
+        for p in &s.paragraphs {
+            for c in &p.controls {
+                match c {
+                    Control::Header(h) => {
+                        hs.push((h.apply_to, h.paragraphs.len(), first_text(&h.paragraphs)))
+                    }
+                    Control::Footer(f) => {
+                        fs.push((f.apply_to, f.paragraphs.len(), first_text(&f.paragraphs)))
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    (hs, fs)
+}
+
+#[test]
+fn header_footer_preserved_on_roundtrip() {
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let bytes = include_bytes!("../samples/hwpx/143E433F503322BD33.hwpx");
+    let d1 = parse_hwpx(bytes).expect("parse");
+    let (h1, f1) = headers_footers(&d1);
+    assert!(
+        !h1.is_empty() || !f1.is_empty(),
+        "fixture must contain header/footer"
+    );
+
+    let out = serialize_hwpx(&d1).expect("serialize");
+    let d2 = parse_hwpx(&out).expect("reparse");
+    let (h2, f2) = headers_footers(&d2);
+    // applyPageType + 내부 문단 수 + 첫 문단 텍스트까지 보존.
+    assert_eq!(h2, h1, "Header 컨트롤/내용 보존 실패");
+    assert_eq!(f2, f1, "Footer 컨트롤/내용 보존 실패");
+}
+
+fn auto_nums(
+    doc: &rhwp::model::document::Document,
+) -> Vec<(u16, rhwp::model::control::AutoNumberType, u8)> {
+    use rhwp::model::control::Control;
+    let mut v = Vec::new();
+    for s in &doc.sections {
+        for p in &s.paragraphs {
+            for c in &p.controls {
+                if let Control::AutoNumber(an) = c {
+                    v.push((an.number, an.number_type, an.format));
+                }
+            }
+        }
+    }
+    v
+}
+
+#[test]
+fn auto_num_preserved_on_roundtrip() {
+    use rhwp::parser::hwpx::parse_hwpx;
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    // eq-002: 본문에 autoNum 컨트롤 포함.
+    let bytes = include_bytes!("../samples/hwpx/eq-002.hwpx");
+    let d1 = parse_hwpx(bytes).expect("parse");
+    let an1 = auto_nums(&d1);
+    assert!(!an1.is_empty(), "fixture must contain autoNum");
+
+    let out = serialize_hwpx(&d1).expect("serialize");
+    let d2 = parse_hwpx(&out).expect("reparse");
+    assert_eq!(auto_nums(&d2), an1, "AutoNumber 컨트롤/값 보존 실패");
+}
