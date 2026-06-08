@@ -208,7 +208,9 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::layout::{
+            compute_char_positions, estimate_text_width, resolved_to_text_style,
+        };
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // 문단이 포함된 페이지 찾기
@@ -557,6 +559,33 @@ impl DocumentCore {
             stops.get(&offset).copied()
         }
 
+        let (is_list_para, list_marker_char_shape_id) = self
+            .get_render_paragraph_ref(section_idx, para_idx)
+            .ok()
+            .map(|para| {
+                let is_list = self
+                    .styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|ps| {
+                        matches!(
+                            ps.head_type,
+                            crate::model::style::HeadType::Outline
+                                | crate::model::style::HeadType::Number
+                                | crate::model::style::HeadType::Bullet
+                        )
+                    })
+                    .unwrap_or(false);
+                let marker_style_id = para.char_shapes.first().map(|cs| cs.char_shape_id);
+                (is_list, marker_style_id)
+            })
+            .unwrap_or((false, None));
+        let list_marker_char_shape_id = if is_list_para {
+            list_marker_char_shape_id
+        } else {
+            None
+        };
+
         // 렌더 트리에서 커서 위치를 찾는 재귀 함수
         // exact_only: true이면 정확한 매칭(zero-width 앵커)만 반환
         fn find_cursor_in_node(
@@ -566,6 +595,7 @@ impl DocumentCore {
             offset: usize,
             page_index: u32,
             exact_only: bool,
+            is_list_para: bool,
             footnote_marker_positions: &[(usize, usize)],
         ) -> Option<CursorHit> {
             if let RenderNodeType::FootnoteMarker(ref marker) = node.node_type {
@@ -602,8 +632,15 @@ impl DocumentCore {
                         // 커서가 이 TextRun 범위 안에 있는지 확인
                         // char_start <= offset <= char_start + char_count
                         if offset >= char_start && offset <= char_start + char_count {
+                            let empty_list_anchor = is_list_para
+                                && char_count == 0
+                                && offset == char_start
+                                && text_run.text.is_empty();
                             // exact_only 모드: zero-width 앵커(bbox.width==0)만 허용
-                            if exact_only
+                            if empty_list_anchor {
+                                // 빈 번호/글머리표 문단의 body anchor 는 marker 앞쪽 x 에
+                                // 놓일 수 있으므로 fallback 에서 marker 오른쪽 끝으로 보정한다.
+                            } else if exact_only
                                 && !(char_count == 0
                                     && offset == char_start
                                     && node.bbox.width == 0.0)
@@ -682,6 +719,7 @@ impl DocumentCore {
                     offset,
                     page_index,
                     exact_only,
+                    is_list_para,
                     footnote_marker_positions,
                 ) {
                     return Some(hit);
@@ -718,6 +756,7 @@ impl DocumentCore {
                 char_offset,
                 page_num,
                 true,
+                is_list_para,
                 &footnote_marker_positions,
             );
             let hit_result = exact_hit.or_else(|| {
@@ -728,6 +767,7 @@ impl DocumentCore {
                     char_offset,
                     page_num,
                     false,
+                    is_list_para,
                     &footnote_marker_positions,
                 )
             });
@@ -801,33 +841,149 @@ impl DocumentCore {
         let first_page = pages[0];
         let tree = self.build_page_tree(first_page)?;
 
-        // 해당 문단의 첫 TextRun 또는 TextLine 노드를 찾아 y/height 반환
-        fn find_para_line(node: &RenderNode, sec: usize, para: usize) -> Option<(f64, f64, f64)> {
-            // TextRun 매칭 (일반 문단, 번호/글머리표 TextRun 제외)
+        #[derive(Clone, Copy)]
+        struct ParaLineHit {
+            line_x: f64,
+            y: f64,
+            height: f64,
+            first_body_x: Option<f64>,
+            marker_end_x: Option<f64>,
+        }
+
+        impl ParaLineHit {
+            fn cursor_x(self, is_list_para: bool, char_offset: usize) -> f64 {
+                if is_list_para && char_offset == 0 {
+                    self.marker_end_x
+                        .or(self.first_body_x)
+                        .unwrap_or(self.line_x)
+                } else if is_list_para {
+                    self.first_body_x
+                        .or(self.marker_end_x)
+                        .unwrap_or(self.line_x)
+                } else {
+                    self.line_x
+                }
+            }
+        }
+
+        fn collect_para_line_text_runs(
+            node: &RenderNode,
+            sec: usize,
+            para: usize,
+            is_list_para: bool,
+            list_marker_char_shape_id: Option<u32>,
+            styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+            hit: &mut ParaLineHit,
+        ) {
+            if let RenderNodeType::TextRun(ref text_run) = node.node_type {
+                if text_run.section_index == Some(sec)
+                    && text_run.para_index == Some(para)
+                    && text_run.cell_context.is_none()
+                {
+                    if text_run.char_start.is_some() {
+                        hit.first_body_x.get_or_insert(node.bbox.x);
+                    } else if is_list_para
+                        && text_run.field_marker
+                            == crate::renderer::render_tree::FieldMarkerType::None
+                    {
+                        let marker_width = list_marker_char_shape_id
+                            .map(|cs_id| {
+                                let marker_style = resolved_to_text_style(styles, cs_id, 0);
+                                estimate_text_width(&text_run.text, &marker_style)
+                            })
+                            .unwrap_or(node.bbox.width);
+                        hit.marker_end_x.get_or_insert(node.bbox.x + marker_width);
+                    }
+                }
+            }
+
+            for child in &node.children {
+                collect_para_line_text_runs(
+                    child,
+                    sec,
+                    para,
+                    is_list_para,
+                    list_marker_char_shape_id,
+                    styles,
+                    hit,
+                );
+            }
+        }
+
+        // 해당 문단의 첫 TextLine을 찾아 빈 list 문단이면 marker 뒤 본문 시작 x까지 수집한다.
+        fn find_para_line(
+            node: &RenderNode,
+            sec: usize,
+            para: usize,
+            is_list_para: bool,
+            list_marker_char_shape_id: Option<u32>,
+            styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        ) -> Option<ParaLineHit> {
+            if let RenderNodeType::TextLine(ref line) = node.node_type {
+                if line.section_index == Some(sec) && line.para_index == Some(para) {
+                    let mut hit = ParaLineHit {
+                        line_x: node.bbox.x,
+                        y: node.bbox.y,
+                        height: node.bbox.height,
+                        first_body_x: None,
+                        marker_end_x: None,
+                    };
+                    collect_para_line_text_runs(
+                        node,
+                        sec,
+                        para,
+                        is_list_para,
+                        list_marker_char_shape_id,
+                        styles,
+                        &mut hit,
+                    );
+                    return Some(hit);
+                }
+            }
+
+            // TextLine을 찾지 못하는 예외적인 렌더 트리에서는 기존 TextRun fallback을 보존한다.
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 if text_run.section_index == Some(sec)
                     && text_run.para_index == Some(para)
                     && text_run.cell_context.is_none()
                     && text_run.char_start.is_some()
                 {
-                    return Some((node.bbox.x, node.bbox.y, node.bbox.height));
+                    return Some(ParaLineHit {
+                        line_x: node.bbox.x,
+                        y: node.bbox.y,
+                        height: node.bbox.height,
+                        first_body_x: Some(node.bbox.x),
+                        marker_end_x: None,
+                    });
                 }
             }
-            // TextLine 매칭 (빈 문단 — TextRun이 없을 때 폴백)
-            if let RenderNodeType::TextLine(ref line) = node.node_type {
-                if line.section_index == Some(sec) && line.para_index == Some(para) {
-                    return Some((node.bbox.x, node.bbox.y, node.bbox.height));
-                }
-            }
+
             for child in &node.children {
-                if let Some(r) = find_para_line(child, sec, para) {
+                if let Some(r) = find_para_line(
+                    child,
+                    sec,
+                    para,
+                    is_list_para,
+                    list_marker_char_shape_id,
+                    styles,
+                ) {
                     return Some(r);
                 }
             }
             None
         }
 
-        if let Some((x, y, h)) = find_para_line(&tree.root, section_idx, para_idx) {
+        if let Some(line_hit) = find_para_line(
+            &tree.root,
+            section_idx,
+            para_idx,
+            is_list_para,
+            list_marker_char_shape_id,
+            &self.styles,
+        ) {
+            let x = line_hit.cursor_x(is_list_para, char_offset);
+            let y = line_hit.y;
+            let h = line_hit.height;
             // 인라인 도형 컨트롤이 있는 경우: char_offset에 따라 x 위치 조정
             let adjusted_x = if char_offset > 0 {
                 // 해당 문단의 인라인 Shape/Picture/Table 노드 bbox를 수집
