@@ -1128,17 +1128,10 @@ impl LayoutEngine {
             wrap_around_paras,
         );
 
-        // 단 구분선 — 페이지 안에 zone-specific layout(다단 zone) 이 있으면 zone 별
-        // emit_zone_column_separators 가 이미 sep 을 그리므로 page-level fallback 은 skip.
-        // (Issue #874 Case 4: shortcut.hwp 2쪽~ 페이지 layout 이 2단으로 잡혀 body_area
-        // 전체 길이 점선이 zone-별 sep 위에 중복 그려지는 결함 정정.)
-        let has_zone_specific_layout = page_content
-            .column_contents
-            .iter()
-            .any(|cc| cc.zone_layout.is_some());
-        if !has_zone_specific_layout {
-            self.build_column_separators(&mut tree, &mut body_node, layout);
-        }
+        // 단 구분선은 build_columns 내부의 emit_zone_column_separators 가 zone(또는
+        // page layout 폴백)별 콘텐츠 높이로 그린다. 과거 page-level build_column_separators
+        // 는 body 전체높이를 고정으로 그려 부분 페이지에서 구분선이 과도하게 길었고,
+        // zone emit 과 이중 렌더되어 [Task #1333 v2] 에서 제거되었다.
 
         // 콘텐츠 레이아웃 후 clip_rect 확정:
         // 자식 노드(표 등)의 실제 바운딩 박스를 재귀적으로 반영하여
@@ -2245,60 +2238,6 @@ impl LayoutEngine {
         footer_node
     }
 
-    /// 단 구분선을 렌더링하여 body_node에 추가한다.
-    fn build_column_separators(
-        &self,
-        tree: &mut PageRenderTree,
-        body_node: &mut RenderNode,
-        layout: &PageLayoutInfo,
-    ) {
-        if layout.column_areas.len() >= 2 && layout.separator_type > 0 {
-            let line_width = border_width_to_px(layout.separator_width).max(0.5);
-            // HWP 선 종류 코드 (doc_info.rs:294 line_type 매핑과 정합):
-            // 1=실선, 2=Dash, 3=Dot(점선), 5=DashDotDot, 6=LongDash, 7=Circle(원형 점선),
-            // 8+ (이중선/물결 등) 은 Solid 대체.
-            let dash = match layout.separator_type {
-                2 => StrokeDash::Dash,
-                3 => StrokeDash::Dot,
-                4 => StrokeDash::DashDot,
-                5 => StrokeDash::DashDotDot,
-                6 => StrokeDash::Dash, // LongDash → Dash 근사 (PR #843)
-                7 => StrokeDash::Dot,  // Circle(원형 점선) → Dot (PR #843)
-                _ => StrokeDash::Solid,
-            };
-            for i in 0..layout.column_areas.len() - 1 {
-                let left_col = &layout.column_areas[i];
-                let right_col = &layout.column_areas[i + 1];
-                let sep_x = (left_col.x + left_col.width + right_col.x) / 2.0;
-                let sep_y1 = left_col.y;
-                let sep_y2 = left_col.y + left_col.height;
-                let sep_id = tree.next_id();
-                let sep_node = RenderNode::new(
-                    sep_id,
-                    RenderNodeType::Line(LineNode::new(
-                        sep_x,
-                        sep_y1,
-                        sep_x,
-                        sep_y2,
-                        LineStyle {
-                            color: layout.separator_color,
-                            width: line_width,
-                            dash,
-                            ..Default::default()
-                        },
-                    )),
-                    BoundingBox::new(
-                        sep_x - line_width / 2.0,
-                        sep_y1,
-                        line_width,
-                        sep_y2 - sep_y1,
-                    ),
-                );
-                body_node.children.push(sep_node);
-            }
-        }
-    }
-
     /// 각주 영역 노드를 생성하여 tree에 추가한다.
     fn build_footnote_area(
         &self,
@@ -2614,6 +2553,11 @@ impl LayoutEngine {
                             .unwrap_or(false));
                 last_zone_y_offset = col_content.zone_y_offset;
                 // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
+                // [Task #1333 v2] zone emit(emit_zone_column_separators)이 단 구분선의 단일
+                // 경로다. zone_layout=None(초기 단정의·연속 페이지)은 unwrap_or(layout)로
+                // page layout 을 따르며, 콘텐츠가 채워진 높이까지만 구분선을 그린다(한컴 정합).
+                // 과거의 page-level build_column_separators(전체높이 고정)는 부분 페이지에서
+                // 구분선을 과도하게 길게 그려 제거됨.
                 if zone_layout.column_areas.len() >= 2 && zone_layout.separator_type > 0 {
                     prev_zone_layout_for_sep = Some(zone_layout.clone());
                     prev_zone_sep_y_start = current_zone_start_y.max(zone_layout.body_area.y);
@@ -2800,6 +2744,12 @@ impl LayoutEngine {
         y_start: f64,
         y_end: f64,
     ) {
+        // [Task #1333 v2] 콘텐츠 높이(y_end)가 body 영역 하단을 넘으면 하단에서 자른다.
+        // 꽉 찬 페이지에서 prev_zone_y_end 가 trailing 간격 등으로 body 를 초과해 구분선이
+        // 페이지 밖까지 그려지던 결함(예: 대상문서 p22 105%) 정정. 부분 페이지(콘텐츠 < body
+        // 하단)와 sub-page zone 은 영향 없음.
+        let body_bottom = zone_layout.body_area.y + zone_layout.body_area.height;
+        let y_end = y_end.min(body_bottom);
         if zone_layout.column_areas.len() < 2 || zone_layout.separator_type == 0 || y_end <= y_start
         {
             return;
