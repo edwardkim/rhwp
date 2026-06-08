@@ -1,0 +1,115 @@
+name: Full Renderer Sweep
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  full-renderer-sweep:
+    name: Full Renderer Sweep
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Cache cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-full-renderer-sweep-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-full-renderer-sweep-cargo-
+            ${{ runner.os }}-cargo-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: rhwp-studio/package-lock.json
+
+      - name: Install font packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk fonts-noto-core fonts-noto-mono fonts-nanum libfontconfig1-dev libfreetype6-dev
+
+      - name: Install studio dependencies
+        working-directory: rhwp-studio
+        run: npm ci
+
+      - name: Install headless Chrome
+        working-directory: rhwp-studio
+        run: |
+          chrome_path="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          if [ -z "$chrome_path" ]; then
+            chrome_install_output="$(./node_modules/.bin/browsers install chrome@stable --path "$HOME/.cache/puppeteer" --format '{{path}}' 2>&1)" || {
+              printf '%s\n' "$chrome_install_output" >&2
+              exit 1
+            }
+            chrome_path="$(printf '%s\n' "$chrome_install_output" | tail -n 1)"
+          fi
+          if [ ! -f "$chrome_path" ]; then
+            chrome_path="$(find "$HOME/.cache/puppeteer" -type f \( -name chrome -o -name chrome-headless-shell \) | sort | tail -n 1)"
+          fi
+          if [ -z "$chrome_path" ] || [ ! -f "$chrome_path" ]; then
+            echo "Chrome executable not found under $HOME/.cache/puppeteer" >&2
+            exit 1
+          fi
+          echo "CHROME_PATH=$chrome_path" >> "$GITHUB_ENV"
+          echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
+
+      - name: Run native Skia tests
+        run: cargo test --features native-skia skia --lib --verbose
+
+      - name: Build WASM package
+        run: wasm-pack build --target web --release
+
+      - name: Build studio
+        working-directory: rhwp-studio
+        run: npm run build
+
+      - name: Run browser render diff sweep
+        working-directory: rhwp-studio
+        env:
+          RHWP_RENDER_SAMPLE_SCOPE: full
+          RHWP_RENDER_DIFF_ALL: "1"
+        run: npm run e2e:render-diff:ci
+
+      - name: Capture representative multi-profile baseline
+        run: python3 scripts/renderer_baseline.py --profiles screen,print,high-quality,fast-preview --browser-mode headless --output output/renderer-baseline/workflow-dispatch
+
+      - name: Capture WebGPU-preferred CanvasKit baseline
+        run: python3 scripts/renderer_baseline.py --profiles screen --browser-mode headless --canvaskit-surface webgpu --skip-native --output output/renderer-baseline/workflow-dispatch-webgpu
+
+      - name: Capture software CanvasKit baseline
+        run: python3 scripts/renderer_baseline.py --profiles screen --browser-mode headless --canvaskit-surface software --skip-native --output output/renderer-baseline/workflow-dispatch-software
+
+      - name: Upload full renderer sweep artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-renderer-sweep-artifacts
+          path: |
+            output/layer-svg-diff/
+            output/skia-diff/
+            output/e2e/
+            output/renderer-baseline/
+            rhwp-studio/e2e/screenshots/
+          if-no-files-found: warn
+          retention-days: 14

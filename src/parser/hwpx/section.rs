@@ -4162,7 +4162,22 @@ fn parse_ctrl_autonum(
                 if local == b"autoNumFormat" {
                     for attr in ce.attributes().flatten() {
                         match attr.key.as_ref() {
-                            b"type" => an.format = parse_u8(&attr),
+                            // autoNumFormat type 은 문자열 enum (DIGIT/CIRCLE_DIGIT/…).
+                            // 과거 parse_u8 은 문자열을 0으로만 떨궈 DIGIT 외 형식을 잃었다.
+                            // pageNum formatType 과 동일한 문자열→코드 매핑을 사용한다.
+                            b"type" => {
+                                an.format = match attr_str(&attr).as_str() {
+                                    "DIGIT" => 0,
+                                    "CIRCLE_DIGIT" => 1,
+                                    "ROMAN_CAPITAL" => 2,
+                                    "ROMAN_SMALL" => 3,
+                                    "LATIN_CAPITAL" => 4,
+                                    "LATIN_SMALL" => 5,
+                                    "HANGUL" => 6,
+                                    "HANJA" => 7,
+                                    _ => 0,
+                                };
+                            }
                             b"userChar" => {
                                 let s = attr_str(&attr);
                                 an.user_symbol = s.chars().next().unwrap_or('\0');

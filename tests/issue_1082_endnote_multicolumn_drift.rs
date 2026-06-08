@@ -7,6 +7,10 @@
 //! - `samples/3-09월_교육_통합_2022.hwp` (277 → 26)
 //! - `samples/3-10월_교육_통합_2022.hwp` (159 → 17)
 //! - `samples/3-11월_실전_통합_2022.hwp` (561 → 9)
+//! - `samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp` (#1336: p22 미주 단 0,
+//!   ~50px — REG_LIMIT 이내. 구분선 상/하 20mm 변형에서만 잔존하는 누적 드리프트.
+//!   근본 정정은 미주 다단 fit/accumulation 캡(exam별 하드튜닝)에 손대야 해 보류,
+//!   본 바운드 테스트로 회귀 추적. 상세: mydocs/report/task_m100_1336_report.md)
 //!
 //! 정정 (typeset.rs): 다단 미주 누적을 렌더 vpos 정규화와 정합 — 직전 배치 아이템 bottom 기준
 //! vpos delta(px) 로 누적. 시드 = 본문 last bottom(body→endnote 전환 정합); 단 advance 시 None.
@@ -99,5 +103,17 @@ fn exam_3_11_2022_hwp_endnote_drift_capped() {
     assert!(
         t <= REG_LIMIT_PX,
         "3-11'22 hwp endnote drift {t:.1}px > {REG_LIMIT_PX}"
+    );
+}
+
+/// #1336: 2024 구분선 상/하 20mm 변형. p22 미주 단 0 의 누적 드리프트(~50px)가
+/// REG_LIMIT(60px) 이내로 유지되는지 회귀 가드. 근본 정정 보류(미주 다단 fit 캡
+/// exam별 하드튜닝 영역), 바운드로 추적.
+#[test]
+fn exam_3_09_2024_sep2020_hwp_endnote_drift_capped() {
+    let t = doc_total_overflow_px("samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp");
+    assert!(
+        t <= REG_LIMIT_PX,
+        "3-09'24 sep20/20 hwp endnote drift {t:.1}px > {REG_LIMIT_PX}"
     );
 }

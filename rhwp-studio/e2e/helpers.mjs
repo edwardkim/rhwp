@@ -9,15 +9,58 @@
  *   node e2e/text-flow.test.mjs                  # 호스트 Chrome CDP
  *   node e2e/text-flow.test.mjs --mode=headless  # headless Chrome
  */
+import path from 'path';
+import pixelmatch from 'pixelmatch';
 import puppeteer from 'puppeteer-core';
+import { existsSync, readdirSync } from 'fs';
+import os from 'os';
+import { PNG } from 'pngjs';
 import { TestReporter } from './report-generator.mjs';
 
-const CHROME_PATH = process.env.CHROME_PATH
-  || process.env.PUPPETEER_EXECUTABLE_PATH
-  || '/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 const REPORT_DIR = '../output/e2e';
+
+function resolveChromePath() {
+  const envPath = process.env.CHROME_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (envPath && existsSync(envPath)) return envPath;
+
+  const systemChrome = [
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium',
+  ].find((candidate) => existsSync(candidate));
+  if (systemChrome) return systemChrome;
+
+  const cacheRoot = path.join(os.homedir(), '.cache', 'puppeteer');
+  if (!existsSync(cacheRoot)) return envPath || '';
+
+  const stack = [cacheRoot];
+  const candidates = [];
+  while (stack.length) {
+    const current = stack.pop();
+    let entries;
+    try {
+      entries = readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const candidate = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(candidate);
+      } else if (entry.isFile() && (entry.name === 'chrome' || entry.name === 'chrome-headless-shell')) {
+        candidates.push(candidate);
+      }
+    }
+  }
+
+  const entries = candidates.sort().reverse();
+  return entries.find((candidate) => path.basename(candidate) === 'chrome') || entries[0] || envPath || '';
+}
+
+const CHROME_PATH = resolveChromePath();
 
 function sampleFetchPath(filename) {
   const value = String(filename || '').trim();
@@ -139,9 +182,9 @@ export async function closeBrowser(browser) {
 const CANVAS_SELECTOR = '#scroll-container canvas';
 
 /** Vite dev server에서 앱을 로드하고 WASM 초기화 완료 대기 */
-export async function loadApp(page) {
-  await page.goto(VITE_URL, { waitUntil: 'networkidle0', timeout: 30000 });
-  await page.waitForFunction(() => !!window.__wasm, { timeout: 15000 });
+export async function loadApp(page, search = '') {
+  await page.goto(`${VITE_URL}${search}`, { waitUntil: 'networkidle0', timeout: 30000 });
+  await page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, { timeout: 15000 });
   await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
 }
 
@@ -261,6 +304,120 @@ export async function screenshot(page, name) {
     }
   }
   return path;
+}
+
+/** 편집 영역의 첫 번째 페이지 캔버스를 지정 경로로 캡처한다 */
+export async function captureCanvasScreenshot(page, outputPath, logLabel = 'Canvas Screenshot') {
+  const { mkdirSync, existsSync } = await import('fs');
+  const outputDir = path.dirname(outputPath);
+  if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
+  const canvas = await page.$(CANVAS_SELECTOR);
+  if (!canvas) throw new Error('편집 영역 캔버스를 찾을 수 없습니다');
+  const buffer = await canvas.screenshot({ path: outputPath });
+  console.log(`  ${logLabel}: ${outputPath}`);
+  _lastScreenshot = path.basename(outputPath);
+  return { path: outputPath, buffer };
+}
+
+export function cropPngBuffer(buffer, { x = 0, y = 0, width, height }) {
+  const source = PNG.sync.read(buffer);
+  const cropX = Number(x);
+  const cropY = Number(y);
+  const cropWidth = Number(width);
+  const cropHeight = Number(height);
+  if (
+    !Number.isInteger(cropX)
+    || !Number.isInteger(cropY)
+    || !Number.isInteger(cropWidth)
+    || !Number.isInteger(cropHeight)
+    || cropX < 0
+    || cropY < 0
+    || cropWidth <= 0
+    || cropHeight <= 0
+    || cropX + cropWidth > source.width
+    || cropY + cropHeight > source.height
+  ) {
+    throw new Error(
+      `invalid PNG crop: ${cropX},${cropY} ${cropWidth}x${cropHeight} `
+        + `for ${source.width}x${source.height}`,
+    );
+  }
+
+  const cropped = new PNG({ width: cropWidth, height: cropHeight });
+  for (let row = 0; row < cropHeight; row += 1) {
+    const sourceStart = ((cropY + row) * source.width + cropX) * 4;
+    const targetStart = row * cropWidth * 4;
+    source.data.copy(cropped.data, targetStart, sourceStart, sourceStart + cropWidth * 4);
+  }
+  return PNG.sync.write(cropped);
+}
+
+/** 두 PNG 버퍼를 exact/tolerant 기준으로 비교한다 */
+export async function comparePngBuffers(expectedBuffer, actualBuffer, {
+  threshold = 0,
+  ignoreChannelDelta = 0,
+  maxDiffPixels = null,
+  maxDiffRatio = null,
+} = {}) {
+  const expected = PNG.sync.read(expectedBuffer);
+  const actual = PNG.sync.read(actualBuffer);
+
+  if (expected.width !== actual.width || expected.height !== actual.height) {
+    throw new Error(`이미지 크기 불일치: ${expected.width}x${expected.height} vs ${actual.width}x${actual.height}`);
+  }
+
+  const exactDiffPixels = pixelmatch(
+    expected.data,
+    actual.data,
+    null,
+    expected.width,
+    expected.height,
+    { threshold, includeAA: true },
+  );
+
+  let rawTolerantDiffPixels = 0;
+  let totalChannelDelta = 0;
+  let maxChannelDelta = 0;
+  const totalPixels = expected.width * expected.height;
+
+  for (let i = 0; i < expected.data.length; i += 4) {
+    let pixelMaxDelta = 0;
+    for (let channel = 0; channel < 4; channel++) {
+      const delta = Math.abs(expected.data[i + channel] - actual.data[i + channel]);
+      totalChannelDelta += delta;
+      if (delta > pixelMaxDelta) pixelMaxDelta = delta;
+      if (delta > maxChannelDelta) maxChannelDelta = delta;
+    }
+    if (pixelMaxDelta > ignoreChannelDelta) {
+      rawTolerantDiffPixels++;
+    }
+  }
+
+  const exactDiffRatio = totalPixels > 0 ? exactDiffPixels / totalPixels : 0;
+  const rawTolerantDiffRatio = totalPixels > 0 ? rawTolerantDiffPixels / totalPixels : 0;
+  const meanAbsChannelDelta = totalPixels > 0 ? totalChannelDelta / (totalPixels * 4) : 0;
+  const hasPixelBudget = maxDiffPixels != null;
+  const hasRatioBudget = maxDiffRatio != null;
+  const passed = (!hasPixelBudget || rawTolerantDiffPixels <= maxDiffPixels)
+    && (!hasRatioBudget || rawTolerantDiffRatio <= maxDiffRatio);
+
+  return {
+    passed,
+    passMetric: hasPixelBudget || hasRatioBudget ? 'tolerant' : 'reportOnly',
+    width: expected.width,
+    height: expected.height,
+    exactDiffPixels,
+    exactDiffRatio,
+    rawTolerantDiffPixels,
+    rawTolerantDiffRatio,
+    diffPixels: rawTolerantDiffPixels,
+    diffRatio: rawTolerantDiffRatio,
+    maxChannelDelta,
+    meanAbsChannelDelta,
+    ignoreChannelDelta,
+    maxDiffPixels,
+    maxDiffRatio,
+  };
 }
 
 /** WASM bridge를 통해 페이지 수 조회 */
