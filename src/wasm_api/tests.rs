@@ -11,6 +11,38 @@ fn test_create_empty_document() {
 }
 
 #[test]
+fn test_create_shape_control_applies_fill_color() {
+    let mut doc = HwpDocument::create_empty();
+    let mut document = Document::default();
+    document.sections.push(Section {
+        paragraphs: vec![Paragraph::default()],
+        ..Default::default()
+    });
+    doc.set_document(document);
+
+    let result = doc
+        .create_shape_control_from_json_native(
+            r##"{"sectionIdx":0,"paraIdx":0,"charOffset":0,"width":6000,"height":3000,"shapeType":"rectangle","treatAsChar":true,"fillColor":"#FFA500"}"##,
+        )
+        .expect("shape creation should succeed");
+
+    let para_idx = json_u32(&result, "paraIdx").expect("paraIdx in create result");
+    let control_idx = json_u32(&result, "controlIdx").expect("controlIdx in create result");
+    let props = doc
+        .get_shape_properties_native(0, para_idx as usize, control_idx as usize)
+        .expect("created shape properties");
+
+    assert!(
+        props.contains(r#""fillType":"solid""#),
+        "shape should be solid-filled: {props}"
+    );
+    assert!(
+        props.contains(r#""fillBgColor":42495"#),
+        "shape should keep #FFA500 as BGR 0x00A5FF: {props}"
+    );
+}
+
+#[test]
 fn test_empty_document_info() {
     let doc = HwpDocument::create_empty();
     let info = doc.get_document_info();
@@ -279,8 +311,7 @@ fn test_set_column_def_native_roundtrip_preserves_count() {
     // (이 단언이 핵심 회귀. raw_attr 미무효화 시 stale 1단이 직렬화되어 실패한다.)
     let bytes = doc.export_hwp_native().expect("export 실패");
     let reparsed = HwpDocument::from_bytes(&bytes).expect("re-parse 실패");
-    let cd_disk =
-        HwpDocument::find_initial_column_def(&reparsed.document.sections[0].paragraphs);
+    let cd_disk = HwpDocument::find_initial_column_def(&reparsed.document.sections[0].paragraphs);
     assert_eq!(
         cd_disk.column_count, 2,
         "라운드트립 후 단 개수가 보존되지 않음 (got {}단)",

@@ -4705,7 +4705,7 @@ mod tests {
     fn inter_run_gap_snaps_to_nearer_boundary_not_line_end() {
         const P0: [f64; 4] = [0.0, 10.0, 20.0, 30.0]; // 3 chars, 폭 10
         const P1: [f64; 4] = [0.0, 10.0, 20.0, 30.0]; // 3 chars, 폭 10
-        // run0: x[100,130], chars 0..3 ; 빈틈 ; run1: x[200,230], chars 5..8
+                                                      // run0: x[100,130], chars 0..3 ; 빈틈 ; run1: x[200,230], chars 5..8
         let line = vec![run(100.0, 0, 3, 10.0, &P0), run(200.0, 5, 3, 10.0, &P1)];
         let line_end = 5 + 3; // 8
 

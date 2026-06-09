@@ -49,6 +49,50 @@ pub fn is_tac_table_inline(
     false
 }
 
+fn tac_table_has_stale_cell_line_height(table: &Table) -> bool {
+    table.cells.iter().any(|cell| {
+        if cell.text_direction != 0 || cell.height >= 0x80000000 {
+            return false;
+        }
+
+        let cell_height = cell.height as i32;
+        if cell_height <= 0 {
+            return false;
+        }
+
+        let line_count: usize = cell.paragraphs.iter().map(|p| p.line_segs.len()).sum();
+        if line_count < 2 {
+            return false;
+        }
+
+        let prefer_cell_axis = |c: i16, t: i16| -> bool {
+            if cell.apply_inner_margin {
+                c != 0
+            } else {
+                (c as i32) > (t as i32)
+            }
+        };
+        let pad_top = if prefer_cell_axis(cell.padding.top, table.padding.top) {
+            cell.padding.top as i32
+        } else {
+            table.padding.top as i32
+        };
+
+        let max_line_bottom = cell
+            .paragraphs
+            .iter()
+            .flat_map(|p| p.line_segs.iter())
+            .map(|ls| ls.vertical_pos.saturating_add(ls.line_height))
+            .max()
+            .unwrap_or(0);
+
+        // About 0.25 mm. Larger overrun means PARA_LINE_SEG was reflowed but the
+        // stored cell/common heights were not, so TAC shrink would reintroduce clip.
+        const STALE_CELL_HEIGHT_TOLERANCE_HU: i32 = 72;
+        pad_top + max_line_bottom > cell_height + STALE_CELL_HEIGHT_TOLERANCE_HU
+    })
+}
+
 /// 문단의 측정된 높이 정보
 #[derive(Debug, Clone)]
 pub struct MeasuredParagraph {
@@ -1292,7 +1336,10 @@ impl HeightMeasurer {
         // 종전 MAX_SHRINK_FACTOR=2.0(가짜 bbox expand 임계)는 1.35 로 흡수된다 —
         // 2.0 초과 가짜값도 1.35 초과이므로 동일하게 expand 된다.
         const TAC_SHRINK_MAX_RATIO: f64 = 1.35;
+        let has_stale_cell_line_height =
+            table.common.treat_as_char && tac_table_has_stale_cell_line_height(table);
         let table_height = if table.common.treat_as_char
+            && !has_stale_cell_line_height
             && common_h > 0.0
             && raw_table_height > common_h + shrink_threshold
             && raw_table_height <= common_h * TAC_SHRINK_MAX_RATIO
@@ -2228,6 +2275,29 @@ mod tests {
     use super::*;
     use crate::model::paragraph::{LineSeg, Paragraph};
     use crate::model::table::{Cell, Table};
+    use crate::model::Padding;
+
+    fn text_para_with_line_count(line_count: usize) -> Paragraph {
+        let line_len = 10usize;
+        let text = "x".repeat(line_count * line_len);
+        Paragraph {
+            char_count: (text.chars().count() + 1) as u32,
+            text,
+            line_segs: (0..line_count)
+                .map(|i| LineSeg {
+                    text_start: (i * line_len) as u32,
+                    vertical_pos: i as i32 * 1600,
+                    line_height: 1000,
+                    text_height: 1000,
+                    baseline_distance: 850,
+                    line_spacing: 600,
+                    segment_width: 8000,
+                    ..Default::default()
+                })
+                .collect(),
+            ..Default::default()
+        }
+    }
 
     #[test]
     fn test_measure_empty_section() {
@@ -2310,6 +2380,61 @@ mod tests {
         let measured = measurer.measure_table(&table, 0, 0, &styles);
         assert_eq!(measured.row_heights.len(), 2);
         assert!(measured.total_height > 0.0);
+    }
+
+    #[test]
+    fn tac_shrink_skips_stale_cell_line_geometry() {
+        let measurer = HeightMeasurer::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let table_padding = Padding {
+            left: 141,
+            right: 141,
+            top: 141,
+            bottom: 141,
+        };
+        let make_cell = |row: u16, height: u32, line_count: usize| Cell {
+            row,
+            col: 0,
+            row_span: 1,
+            col_span: 1,
+            height,
+            width: 8476,
+            padding: table_padding,
+            paragraphs: vec![text_para_with_line_count(line_count)],
+            ..Default::default()
+        };
+        let table = Table {
+            row_count: 5,
+            col_count: 1,
+            padding: table_padding,
+            common: crate::model::shape::CommonObjAttr {
+                treat_as_char: true,
+                height: 11_773,
+                ..Default::default()
+            },
+            cells: vec![
+                make_cell(0, 2_229, 1),
+                make_cell(1, 2_229, 1),
+                make_cell(2, 2_857, 2),
+                make_cell(3, 2_229, 3),
+                make_cell(4, 2_229, 1),
+            ],
+            ..Default::default()
+        };
+
+        let measured = measurer.measure_table(&table, 0, 0, &styles);
+        let common_h = hwpunit_to_px(table.common.height as i32, DEFAULT_DPI);
+        let stale_row_min = hwpunit_to_px(4_300, DEFAULT_DPI);
+
+        assert!(
+            measured.total_height > common_h + 1.0,
+            "stale TAC table must expand instead of shrinking to common.height"
+        );
+        assert!(
+            measured.row_heights[3] >= stale_row_min,
+            "row with 3 line_segs must keep content height, got {:.2}px",
+            measured.row_heights[3]
+        );
     }
 
     #[test]

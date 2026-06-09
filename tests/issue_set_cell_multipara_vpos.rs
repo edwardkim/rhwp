@@ -35,7 +35,9 @@ fn letter_xy(svg: &str, letters: &[char]) -> Vec<(f64, f64)> {
         let te = after.find('>').unwrap_or(after.len());
         let tag = &after[..te];
         let body = &after[te + 1..];
-        let Some(ce) = body.find("</text>") else { break };
+        let Some(ce) = body.find("</text>") else {
+            break;
+        };
         let b = &body[..ce];
         if b.chars().count() == 1 && letters.contains(&b.chars().next().unwrap()) {
             let attr = |name: &str| -> Option<f64> {
@@ -51,7 +53,9 @@ fn letter_xy(svg: &str, letters: &[char]) -> Vec<(f64, f64)> {
                 t.find(',').and_then(|c| {
                     let x: f64 = t[..c].parse().ok()?;
                     let tc = &t[c + 1..];
-                    let ye = tc.find(|ch: char| ch == ')' || ch == ' ').unwrap_or(tc.len());
+                    let ye = tc
+                        .find(|ch: char| ch == ')' || ch == ' ')
+                        .unwrap_or(tc.len());
                     let y: f64 = tc[..ye].parse().ok()?;
                     Some((x, y))
                 })
@@ -168,7 +172,10 @@ fn set_cell_text_one_and_two_paragraphs_keep_spacing() {
             .expect("set 1 line");
         let svg = doc.render_page_svg_native(0).expect("render");
         let ys = distinct_cell_rows(&svg, &['Q']);
-        assert!(!ys.is_empty(), "single paragraph must render a visible row: {ys:?}");
+        assert!(
+            !ys.is_empty(),
+            "single paragraph must render a visible row: {ys:?}"
+        );
     }
     // 2 lines: two vertically-separated rows.
     {

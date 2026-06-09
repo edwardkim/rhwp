@@ -244,6 +244,128 @@ impl HwpDocument {
 
         1
     }
+
+    fn shape_creation_props_json(json: &str) -> Option<String> {
+        let mut props = serde_json::Map::new();
+
+        if let Some(v) =
+            Self::shape_creation_color(json, &["fillBgColor", "fillColor", "BackgroundColor"])
+        {
+            props.insert("fillBgColor".to_string(), serde_json::json!(v));
+            props.insert("fillType".to_string(), serde_json::json!("solid"));
+            props
+                .entry("fillPatType".to_string())
+                .or_insert_with(|| serde_json::json!(-1));
+        }
+
+        for key in ["fillPatColor", "fillPatType", "fillAlpha"] {
+            if let Some(v) = json_i32(json, key) {
+                props.insert(key.to_string(), serde_json::json!(v));
+            }
+        }
+
+        if let Some(v) = json_str(json, "fillType") {
+            props.insert("fillType".to_string(), serde_json::json!(v));
+        }
+
+        if let Some(v) = Self::shape_creation_color(json, &["borderColor"]) {
+            props.insert("borderColor".to_string(), serde_json::json!(v));
+        }
+        for key in ["borderWidth", "lineType", "roundRate", "rotationAngle"] {
+            if let Some(v) = json_i32(json, key) {
+                props.insert(key.to_string(), serde_json::json!(v));
+            }
+        }
+
+        if props.is_empty() {
+            None
+        } else {
+            serde_json::to_string(&props).ok()
+        }
+    }
+
+    fn shape_creation_color(json: &str, keys: &[&str]) -> Option<u32> {
+        for key in keys {
+            if let Some(v) = json_color(json, key) {
+                return Some(v);
+            }
+            if let Some(v) = json_i32(json, key) {
+                return Some(v as u32);
+            }
+        }
+        None
+    }
+
+    fn create_shape_control_from_json_native(&mut self, json: &str) -> Result<String, HwpError> {
+        let sec = json_u32(json, "sectionIdx").unwrap_or(0) as usize;
+        let para = json_u32(json, "paraIdx").unwrap_or(0) as usize;
+        let offset = json_u32(json, "charOffset").unwrap_or(0) as usize;
+        let width = json_u32(json, "width").unwrap_or(8504);
+        let height = json_u32(json, "height").unwrap_or(8504);
+        let horz_offset = json_u32(json, "horzOffset").unwrap_or(0);
+        let vert_offset = json_u32(json, "vertOffset").unwrap_or(0);
+        let shape_type = json_str(json, "shapeType").unwrap_or_else(|| "rectangle".to_string());
+        // 글상자는 기본적으로 treat_as_char=true (한컴 기본값)
+        let default_tac = shape_type == "textbox";
+        let treat_as_char = json_bool(json, "treatAsChar").unwrap_or(default_tac);
+        let text_wrap = json_str(json, "textWrap").unwrap_or_else(|| "Square".to_string());
+        let line_flip_x = json_bool(json, "lineFlipX").unwrap_or(false);
+        let line_flip_y = json_bool(json, "lineFlipY").unwrap_or(false);
+        // 다각형 꼭짓점: "polygonPoints":[{"x":N,"y":N},...]
+        let polygon_points: Vec<crate::model::Point> = if shape_type == "polygon" {
+            Self::parse_polygon_points(json)
+        } else {
+            Vec::new()
+        };
+        let result = self.create_shape_control_native(
+            sec,
+            para,
+            offset,
+            width,
+            height,
+            horz_offset,
+            vert_offset,
+            treat_as_char,
+            &text_wrap,
+            &shape_type,
+            line_flip_x,
+            line_flip_y,
+            &polygon_points,
+        )?;
+
+        if let Some(props_json) = Self::shape_creation_props_json(json) {
+            if let (Some(pi), Some(ci)) = (
+                json_u32(&result, "paraIdx"),
+                json_u32(&result, "controlIdx"),
+            ) {
+                self.set_shape_properties_native(sec, pi as usize, ci as usize, &props_json)?;
+            }
+        }
+
+        // 연결선: SubjectID + 제어점 라우팅 설정 (생성 후)
+        if shape_type.starts_with("connector-") {
+            let ssid = json_u32(json, "startSubjectID").unwrap_or(0);
+            let ssidx = json_u32(json, "startSubjectIndex").unwrap_or(0);
+            let esid = json_u32(json, "endSubjectID").unwrap_or(0);
+            let esidx = json_u32(json, "endSubjectIndex").unwrap_or(0);
+            let pi = json_u32(&result, "paraIdx");
+            let ci = json_u32(&result, "controlIdx");
+            if let (Some(pi), Some(ci)) = (pi, ci) {
+                self.update_connector_subject_ids(
+                    sec,
+                    pi as usize,
+                    ci as usize,
+                    ssid,
+                    ssidx,
+                    esid,
+                    esidx,
+                );
+                self.recalculate_connector_routing(sec, pi as usize, ci as usize, ssidx, esidx);
+            }
+        }
+
+        Ok(result)
+    }
 }
 
 #[wasm_bindgen]
@@ -2864,65 +2986,8 @@ impl HwpDocument {
     /// 반환: JSON `{"ok":true,"paraIdx":<N>,"controlIdx":0}`
     #[wasm_bindgen(js_name = createShapeControl)]
     pub fn create_shape_control(&mut self, json: &str) -> Result<String, JsValue> {
-        let sec = json_u32(json, "sectionIdx").unwrap_or(0) as usize;
-        let para = json_u32(json, "paraIdx").unwrap_or(0) as usize;
-        let offset = json_u32(json, "charOffset").unwrap_or(0) as usize;
-        let width = json_u32(json, "width").unwrap_or(8504);
-        let height = json_u32(json, "height").unwrap_or(8504);
-        let horz_offset = json_u32(json, "horzOffset").unwrap_or(0);
-        let vert_offset = json_u32(json, "vertOffset").unwrap_or(0);
-        let shape_type = json_str(json, "shapeType").unwrap_or_else(|| "rectangle".to_string());
-        // 글상자는 기본적으로 treat_as_char=true (한컴 기본값)
-        let default_tac = shape_type == "textbox";
-        let treat_as_char = json_bool(json, "treatAsChar").unwrap_or(default_tac);
-        let text_wrap = json_str(json, "textWrap").unwrap_or_else(|| "Square".to_string());
-        let line_flip_x = json_bool(json, "lineFlipX").unwrap_or(false);
-        let line_flip_y = json_bool(json, "lineFlipY").unwrap_or(false);
-        // 다각형 꼭짓점: "polygonPoints":[{"x":N,"y":N},...]
-        let polygon_points: Vec<crate::model::Point> = if shape_type == "polygon" {
-            Self::parse_polygon_points(json)
-        } else {
-            Vec::new()
-        };
-        let result = self.create_shape_control_native(
-            sec,
-            para,
-            offset,
-            width,
-            height,
-            horz_offset,
-            vert_offset,
-            treat_as_char,
-            &text_wrap,
-            &shape_type,
-            line_flip_x,
-            line_flip_y,
-            &polygon_points,
-        )?;
-
-        // 연결선: SubjectID + 제어점 라우팅 설정 (생성 후)
-        if shape_type.starts_with("connector-") {
-            let ssid = json_u32(json, "startSubjectID").unwrap_or(0);
-            let ssidx = json_u32(json, "startSubjectIndex").unwrap_or(0);
-            let esid = json_u32(json, "endSubjectID").unwrap_or(0);
-            let esidx = json_u32(json, "endSubjectIndex").unwrap_or(0);
-            let pi = json_u32(&result, "paraIdx");
-            let ci = json_u32(&result, "controlIdx");
-            if let (Some(pi), Some(ci)) = (pi, ci) {
-                self.update_connector_subject_ids(
-                    sec,
-                    pi as usize,
-                    ci as usize,
-                    ssid,
-                    ssidx,
-                    esid,
-                    esidx,
-                );
-                self.recalculate_connector_routing(sec, pi as usize, ci as usize, ssidx, esidx);
-            }
-        }
-
-        Ok(result)
+        self.create_shape_control_from_json_native(json)
+            .map_err(|e| e.into())
     }
 
     /// Shape(글상자) 속성을 조회한다.

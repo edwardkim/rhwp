@@ -1222,8 +1222,14 @@ mod new_blank_tests {
     #[test]
     fn new_blank_produces_a_paginated_document() {
         let core = DocumentCore::new_blank().expect("new_blank");
-        assert!(core.page_count() >= 1, "blank doc should paginate >= 1 page");
-        assert!(!core.document.sections.is_empty(), "blank doc has a section");
+        assert!(
+            core.page_count() >= 1,
+            "blank doc should paginate >= 1 page"
+        );
+        assert!(
+            !core.document.sections.is_empty(),
+            "blank doc has a section"
+        );
     }
 
     /// new -> export(HWP) -> re-open round-trips without error and preserves a page.

@@ -135,7 +135,10 @@ mod size_tests {
     fn font_size_scales_natural_extent() {
         let small = equation_effective_size_hwpunit(&eq("a over b", 0, 0, 1000));
         let big = equation_effective_size_hwpunit(&eq("a over b", 0, 0, 2000));
-        assert!(big.0 > small.0 && big.1 > small.1, "글자 크기에 비례해야 함");
+        assert!(
+            big.0 > small.0 && big.1 > small.1,
+            "글자 크기에 비례해야 함"
+        );
     }
 
     #[test]
@@ -146,7 +149,10 @@ mod size_tests {
         let (ascent, descent) = equation_natural_ascent_descent_px(&e, dpi);
         let font_px = crate::renderer::hwpunit_to_px(1000, dpi);
         let (_w, h, _bl) = equation_natural_metrics(&e.script, font_px);
-        assert!((ascent + descent - h).abs() < 1e-6, "ascent+descent == height");
+        assert!(
+            (ascent + descent - h).abs() < 1e-6,
+            "ascent+descent == height"
+        );
         assert!(ascent > 0.0 && descent > 0.0);
     }
 

@@ -64,6 +64,14 @@ fn style_params(style: &TextStyle) -> (f64, f64, f64) {
     (font_size, ratio, tab_w)
 }
 
+fn effective_letter_spacing(style: &TextStyle, base_width: f64, font_size: f64) -> f64 {
+    if style.letter_spacing.abs() <= f64::EPSILON || base_width <= 0.0 || font_size <= 0.0 {
+        return style.letter_spacing;
+    }
+
+    style.letter_spacing * (base_width / font_size).clamp(0.0, 1.0)
+}
+
 /// inline_tabs ext[2] 에서 탭 종류를 추출.
 ///
 /// HWP `tab_extended` 포맷 (PR #292 / Task #290 실증):
@@ -301,7 +309,10 @@ impl TextMeasurer for EmbeddedTextMeasurer {
         let char_width = |i: usize| -> f64 {
             let c = chars[i];
             if c == '\u{2007}' {
-                return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+                let base_w = font_size * 0.5;
+                return base_w * ratio
+                    + effective_letter_spacing(style, base_w, font_size)
+                    + style.extra_char_spacing;
             }
             // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
             if c == '\u{FFFC}' {
@@ -343,7 +354,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else {
                 base_w_raw
             };
-            let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
+            let mut w = base_w * ratio
+                + effective_letter_spacing(style, base_w, font_size)
+                + style.extra_char_spacing;
             if c == ' ' {
                 w += style.extra_word_spacing;
             }
@@ -518,7 +531,10 @@ impl TextMeasurer for EmbeddedTextMeasurer {
         let char_width = |i: usize| -> f64 {
             let c = chars[i];
             if c == '\u{2007}' {
-                return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+                let base_w = font_size * 0.5;
+                return base_w * ratio
+                    + effective_letter_spacing(style, base_w, font_size)
+                    + style.extra_char_spacing;
             }
             // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
             if c == '\u{FFFC}' {
@@ -556,7 +572,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else {
                 base_w_raw
             };
-            let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
+            let mut w = base_w * ratio
+                + effective_letter_spacing(style, base_w, font_size)
+                + style.extra_char_spacing;
             if c == ' ' {
                 w += style.extra_word_spacing;
             }
@@ -1027,7 +1045,10 @@ impl TextMeasurer for WasmTextMeasurer {
         let char_width = |i: usize| -> f64 {
             let c = chars[i];
             if c == '\u{2007}' {
-                return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+                let char_px = font_size * 0.5;
+                return char_px * ratio
+                    + effective_letter_spacing(style, char_px, font_size)
+                    + style.extra_char_spacing;
             }
             // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
             if c == '\u{FFFC}' {
@@ -1061,7 +1082,9 @@ impl TextMeasurer for WasmTextMeasurer {
             } else {
                 char_px_raw
             };
-            let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
+            let mut w = char_px * ratio
+                + effective_letter_spacing(style, char_px, font_size)
+                + style.extra_char_spacing;
             if c == ' ' {
                 w += style.extra_word_spacing;
             }
@@ -1227,7 +1250,10 @@ impl TextMeasurer for WasmTextMeasurer {
         let char_width = |i: usize| -> f64 {
             let c = chars[i];
             if c == '\u{2007}' {
-                return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+                let char_px = font_size * 0.5;
+                return char_px * ratio
+                    + effective_letter_spacing(style, char_px, font_size)
+                    + style.extra_char_spacing;
             }
             // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
             if c == '\u{FFFC}' {
@@ -1261,7 +1287,9 @@ impl TextMeasurer for WasmTextMeasurer {
             } else {
                 char_px_raw
             };
-            let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
+            let mut w = char_px * ratio
+                + effective_letter_spacing(style, char_px, font_size)
+                + style.extra_char_spacing;
             if c == ' ' {
                 w += style.extra_word_spacing;
             }
@@ -1698,7 +1726,10 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
     let char_width = |i: usize| -> f64 {
         let c = chars[i];
         if c == '\u{2007}' {
-            return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            let base_w = font_size * 0.5;
+            return base_w * ratio
+                + effective_letter_spacing(style, base_w, font_size)
+                + style.extra_char_spacing;
         }
         // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
         if c == '\u{FFFC}' {
@@ -1727,7 +1758,9 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         } else {
             base_w_raw
         };
-        let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
+        let mut w = base_w * ratio
+            + effective_letter_spacing(style, base_w, font_size)
+            + style.extra_char_spacing;
         if c == ' ' {
             w += style.extra_word_spacing;
         }
@@ -1995,7 +2028,9 @@ mod tests {
                     total = ((total / tab_w).floor() + 1.0) * tab_w;
                     continue;
                 }
-                total += self.char_width * ratio + style.letter_spacing + style.extra_char_spacing;
+                total += self.char_width * ratio
+                    + effective_letter_spacing(style, self.char_width, font_size)
+                    + style.extra_char_spacing;
                 if chars[i] == ' ' {
                     total += style.extra_word_spacing;
                 }
@@ -2020,7 +2055,9 @@ mod tests {
                     positions.push(x);
                     continue;
                 }
-                x += self.char_width * ratio + style.letter_spacing + style.extra_char_spacing;
+                x += self.char_width * ratio
+                    + effective_letter_spacing(style, self.char_width, font_size)
+                    + style.extra_char_spacing;
                 if chars[i] == ' ' {
                     x += style.extra_word_spacing;
                 }
@@ -2274,6 +2311,29 @@ mod tests {
                 positions
             );
         }
+    }
+
+    #[test]
+    fn test_negative_letter_spacing_scales_with_halfwidth_glyphs() {
+        let style = TextStyle {
+            font_size: 20.0,
+            ratio: 1.0,
+            letter_spacing: -2.4,
+            ..Default::default()
+        };
+        let positions = compute_char_positions("가2", &style);
+
+        let hangul_advance = positions[1] - positions[0];
+        let digit_advance = positions[2] - positions[1];
+
+        assert!(
+            (hangul_advance - 17.6).abs() < 0.01,
+            "full-width Hangul should keep full letter spacing: {hangul_advance}"
+        );
+        assert!(
+            (digit_advance - 8.8).abs() < 0.01,
+            "half-width digit should receive half letter spacing: {digit_advance}"
+        );
     }
 
     /// 동일 시나리오에서 ASCII 마침표도 역진되지 않아야 한다.

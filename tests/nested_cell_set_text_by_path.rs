@@ -195,8 +195,12 @@ fn set_cell_text_by_path_single_level_matches_legacy() {
         "1-element path REPLACE must report the same result as legacy"
     );
     // Both documents' cell now reads ALPHA / BETA identically.
-    let a_line0 = a.get_text_in_cell_by_path(0, ppi, &path, 0, usize::MAX).unwrap();
-    let b_line0 = b.get_text_in_cell_by_path(0, ppi, &path, 0, usize::MAX).unwrap();
+    let a_line0 = a
+        .get_text_in_cell_by_path(0, ppi, &path, 0, usize::MAX)
+        .unwrap();
+    let b_line0 = b
+        .get_text_in_cell_by_path(0, ppi, &path, 0, usize::MAX)
+        .unwrap();
     assert_eq!(a_line0, "ALPHA");
     assert_eq!(b_line0, "ALPHA");
     assert_eq!(a_line0, b_line0);

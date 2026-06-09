@@ -2408,8 +2408,10 @@ impl TypesetEngine {
                             }
                             // 첫 paragraph에 미주 번호 prepend
                             if ep_idx == 0 {
-                                let prefix =
-                                    format!("{} ", format_endnote_marker_text(en_ctrl, endnote_shape));
+                                let prefix = format!(
+                                    "{} ",
+                                    format_endnote_marker_text(en_ctrl, endnote_shape)
+                                );
                                 en_para_copy.text = format!("{}{}", prefix, en_para_copy.text);
                                 en_para_copy.char_count += prefix.encode_utf16().count() as u32;
                                 let shift = prefix.encode_utf16().count() as u32;
@@ -4299,8 +4301,8 @@ impl TypesetEngine {
                 {
                     break;
                 }
-                let content_h = fmt.line_heights[li];
-                if cumulative + content_h > avail_for_lines && li > cursor_line {
+                let line_advance = fmt.line_advance(li);
+                if cumulative + line_advance > avail_for_lines && li > cursor_line {
                     // [Task #631] HWP 권위값 더블체크
                     // 누적 추정으로는 fit 실패하지만 HWP 파일 자체가 다음 줄(li+1)에
                     // vpos-reset(=0) 을 인코딩한 경우, 한컴 엔진이 직접 li 까지를 현재
@@ -4328,7 +4330,7 @@ impl TypesetEngine {
                         break;
                     }
                 }
-                cumulative += fmt.line_advance(li);
+                cumulative += line_advance;
                 end_line = li + 1;
             }
 
@@ -5123,6 +5125,7 @@ impl TypesetEngine {
 
         let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
+        let measured_table_height = ft.effective_height.max(0.0);
         let table_height = if tac_count > 1 {
             let tac_idx = para
                 .controls
@@ -5155,10 +5158,13 @@ impl TypesetEngine {
             // line_advance를 쓰면 HWPX lineSeg가 `표줄 + 다음 텍스트줄`로
             // 분리된 문서에서, 표 자체는 남은 영역에 들어가는데도 spacing 때문에
             // 표가 다음 페이지로 밀린다(2025 donations HWPX pi=25).
-            fmt.line_heights[0]
+            fmt.line_heights[0].max(measured_table_height)
         } else if fmt.total_height > 0.0 {
-            // 단일 TAC: 호스트 문단의 height_for_fit 사용
-            fmt.height_for_fit
+            // 단일 TAC: 보통은 호스트 문단 LINE_SEG 높이와 표 측정값이 일치한다.
+            // 편집 후 셀 line_segs만 reflow되고 common/cell height가 stale이면 렌더러는
+            // MeasuredTable 높이로 표를 확장하므로, 페이지네이션 advance도 같은 높이를
+            // 써야 후속 문단이 표 아래로 내려간다.
+            fmt.height_for_fit.max(measured_table_height)
         } else {
             ft.total_height
         };

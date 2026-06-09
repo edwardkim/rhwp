@@ -574,8 +574,7 @@ impl DocumentCore {
                 })?;
                 cell.border_fill_id
             };
-            let new_bf_id =
-                self.derive_cell_border_fill(old_bf_id, json, has_border, has_fill);
+            let new_bf_id = self.derive_cell_border_fill(old_bf_id, json, has_border, has_fill);
 
             // 새 BorderFill의 테두리 데이터 복사 (이웃 셀 갱신용)
             let new_borders = {

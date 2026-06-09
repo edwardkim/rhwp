@@ -1481,8 +1481,12 @@ impl DocumentCore {
         //    merge/delete 프리미티브는 char_shape/para_shape 를 보존하므로 셀의
         //    기존 서식이 그대로 남는다.
         loop {
-            let count =
-                self.get_cell_paragraph_count_native(section_idx, parent_para_idx, control_idx, cell_idx)?;
+            let count = self.get_cell_paragraph_count_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+            )?;
             if count <= 1 {
                 break;
             }
@@ -1606,9 +1610,10 @@ impl DocumentCore {
         match para.controls.get_mut(control_idx) {
             Some(Control::Table(table)) => {
                 if cell_idx == 65534 {
-                    let cap = table.caption.as_mut().ok_or_else(|| {
-                        HwpError::RenderError("표에 캡션이 없습니다".to_string())
-                    })?;
+                    let cap = table
+                        .caption
+                        .as_mut()
+                        .ok_or_else(|| HwpError::RenderError("표에 캡션이 없습니다".to_string()))?;
                     Ok(&mut cap.paragraphs)
                 } else {
                     let cell_count = table.cells.len();
@@ -1627,9 +1632,10 @@ impl DocumentCore {
                 Ok(&mut tb.paragraphs)
             }
             Some(Control::Picture(pic)) => {
-                let cap = pic.caption.as_mut().ok_or_else(|| {
-                    HwpError::RenderError("그림에 캡션이 없습니다".to_string())
-                })?;
+                let cap = pic
+                    .caption
+                    .as_mut()
+                    .ok_or_else(|| HwpError::RenderError("그림에 캡션이 없습니다".to_string()))?;
                 Ok(&mut cap.paragraphs)
             }
             _ => Err(HwpError::RenderError(format!(
@@ -2891,8 +2897,7 @@ mod tests {
     /// instead of overlapping at `cell_top + 0`.
     #[test]
     fn set_cell_by_path_cascades_vertical_pos() {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("samples/exam_social.hwp");
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/exam_social.hwp");
         let bytes = std::fs::read(&path).unwrap();
         let mut core = DocumentCore::from_bytes(&bytes).unwrap();
 

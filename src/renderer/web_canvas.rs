@@ -47,6 +47,25 @@ fn expand_pua_old_hangul_canvas(text: &str) -> String {
     }
     out
 }
+
+#[derive(Debug, PartialEq, Eq)]
+struct CanvasGlyphFitPolicy {
+    pin_ascii_advance: bool,
+    skip_fit: bool,
+}
+
+fn canvas_glyph_fit_policy(
+    style: &TextStyle,
+    font_substituted: bool,
+    is_ascii_alnum: bool,
+) -> CanvasGlyphFitPolicy {
+    let has_negative_spacing = style.letter_spacing + style.extra_char_spacing < -0.01;
+
+    CanvasGlyphFitPolicy {
+        pin_ascii_advance: is_ascii_alnum && !font_substituted && !has_negative_spacing,
+        skip_fit: has_negative_spacing || (font_substituted && is_ascii_alnum),
+    }
+}
 use super::composer::{
     decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
 };
@@ -91,12 +110,9 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
         return None;
     }
     let buf = rgba.into_raw();
-    let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
-        wasm_bindgen::Clamped(&buf),
-        iw,
-        ih,
-    )
-    .ok()?;
+    let image_data =
+        web_sys::ImageData::new_with_u8_clamped_array_and_sh(wasm_bindgen::Clamped(&buf), iw, ih)
+            .ok()?;
 
     let document = web_sys::window()?.document()?;
     let canvas: HtmlCanvasElement = document
@@ -2099,7 +2115,8 @@ impl Renderer for WebCanvasRenderer {
         // advance 에 맞춰 글리프별 가로 스케일(pin_ascii_advance)하면 치환 폰트의
         // 좁은 글리프(l/i/t)가 과도하게 늘어난다. 치환 폰트에서는 글리프를
         // 자연 advance 그대로 그리고, run 내 누적 x 도 측정 폭으로 재산출한다.
-        let font_substituted = !font_family_has_metrics(&style.font_family, style.bold, style.italic);
+        let font_substituted =
+            !font_family_has_metrics(&style.font_family, style.bold, style.italic);
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);
@@ -2260,11 +2277,11 @@ impl Renderer for WebCanvasRenderer {
                     // pin_ascii_advance 를 끈다. char_positions 의 advance 가 실제
                     // 글리프 폭이 아니라 0.5em 폴백이므로, 좁은 글리프(l/i/t)가
                     // 2배까지 늘어나 왜곡되기 때문이다.
-                    let pin_ascii_advance = !font_substituted && is_ascii_alnum;
+                    let fit_policy =
+                        canvas_glyph_fit_policy(style, font_substituted, is_ascii_alnum);
                     // 치환 폰트의 ASCII 는 자연 폭 그대로 그린다 — 늘이지도(pin),
                     // 줄이지도(overflow shrink) 않아야 l/i/t 와 m/w 가 일관된다.
-                    let skip_fit = font_substituted && is_ascii_alnum;
-                    let fit_scale = if cluster_advance > 0.0 && !skip_fit {
+                    let fit_scale = if cluster_advance > 0.0 && !fit_policy.skip_fit {
                         self.ctx
                             .measure_text(cluster_str)
                             .ok()
@@ -2273,7 +2290,7 @@ impl Renderer for WebCanvasRenderer {
                                 let visual_w = actual_w * ratio;
                                 if visual_w <= 0.0 {
                                     None
-                                } else if pin_ascii_advance {
+                                } else if fit_policy.pin_ascii_advance {
                                     Some((cluster_advance / visual_w).clamp(0.1, 2.0))
                                 } else if visual_w > cluster_advance + 0.25 {
                                     Some((cluster_advance / visual_w).clamp(0.1, 1.0))
@@ -3593,5 +3610,53 @@ mod tests {
         assert_eq!(color_to_css(0x00FF0000), "#0000ff"); // 파랑
         assert_eq!(color_to_css(0x00FFFFFF), "#ffffff"); // 흰색
         assert_eq!(color_to_css(0x00000000), "#000000"); // 검정
+    }
+
+    #[test]
+    fn negative_spacing_does_not_fit_glyph_to_advance() {
+        let style = TextStyle {
+            letter_spacing: -2.4,
+            extra_char_spacing: 0.0,
+            ..Default::default()
+        };
+
+        assert_eq!(
+            canvas_glyph_fit_policy(&style, false, false),
+            CanvasGlyphFitPolicy {
+                pin_ascii_advance: false,
+                skip_fit: true
+            }
+        );
+        assert_eq!(
+            canvas_glyph_fit_policy(&style, false, true),
+            CanvasGlyphFitPolicy {
+                pin_ascii_advance: false,
+                skip_fit: true
+            }
+        );
+    }
+
+    #[test]
+    fn positive_spacing_keeps_existing_ascii_fit_policy() {
+        let style = TextStyle {
+            letter_spacing: 0.0,
+            extra_char_spacing: 0.0,
+            ..Default::default()
+        };
+
+        assert_eq!(
+            canvas_glyph_fit_policy(&style, false, true),
+            CanvasGlyphFitPolicy {
+                pin_ascii_advance: true,
+                skip_fit: false
+            }
+        );
+        assert_eq!(
+            canvas_glyph_fit_policy(&style, true, true),
+            CanvasGlyphFitPolicy {
+                pin_ascii_advance: false,
+                skip_fit: true
+            }
+        );
     }
 }

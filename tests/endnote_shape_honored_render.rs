@@ -26,8 +26,7 @@ fn doc_with_body_and_plain_endnote() -> HwpDocument {
     doc.insert_text_native(0, 0, 0, "본문 내용이 한 줄 있는 문서입니다.")
         .expect("insert body text");
     // Plain endnote (before_decoration_letter == 0) at the end of the body.
-    doc.insert_endnote_native(0, 0, 5)
-        .expect("insert endnote");
+    doc.insert_endnote_native(0, 0, 5).expect("insert endnote");
     doc
 }
 
@@ -70,7 +69,10 @@ fn plain_endnote_goes_to_new_last_page_and_honors_number_format() {
     doc.apply_endnote_shape_native(0, "{\"numberFormat\":\"lowerRoman\"}")
         .expect("apply lowerRoman endnote shape");
     let pages_roman = doc.page_count();
-    assert!(pages_roman >= 2, "LowerRoman 적용 후에도 미주는 새 마지막 쪽");
+    assert!(
+        pages_roman >= 2,
+        "LowerRoman 적용 후에도 미주는 새 마지막 쪽"
+    );
     let last_roman = doc.dump_page_items(Some(pages_roman - 1));
     assert!(
         last_roman.contains("i)"),

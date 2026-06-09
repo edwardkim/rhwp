@@ -9,7 +9,9 @@ use crate::model::page::ColumnDef;
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
 use crate::renderer::canvas::CanvasRenderer;
-use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
+use crate::renderer::composer::{
+    compose_paragraph, compose_section, estimate_composed_line_width, ComposedParagraph,
+};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
 use crate::renderer::html::HtmlRenderer;
 use crate::renderer::layer_renderer::LayerRenderer;
@@ -17,7 +19,7 @@ use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, Paginator};
 use crate::renderer::render_tree::PageRenderTree;
-use crate::renderer::style_resolver::resolve_styles;
+use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use std::cell::RefCell;
@@ -32,6 +34,35 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
     let para_shape_ratio = document.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
     let char_shape_ratio = document.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
     para_shape_ratio < 0.05 && char_shape_ratio < 0.15
+}
+
+fn stale_lineseg_starts_overflow(
+    para: &Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if para.controls.len() > 0
+        || para.line_segs.len() < 2
+        || para.text.trim().is_empty()
+        || para.text.contains('\n')
+        || available_width_px <= 0.0
+    {
+        return false;
+    }
+
+    let has_non_increasing_start = para
+        .line_segs
+        .windows(2)
+        .any(|pair| pair[1].text_start <= pair[0].text_start);
+    if !has_non_increasing_start {
+        return false;
+    }
+
+    compose_paragraph(para)
+        .lines
+        .iter()
+        .map(|line| estimate_composed_line_width(line, styles))
+        .any(|width| width > available_width_px + 0.5)
 }
 
 fn should_insert_hwp3_title_filler_page(
@@ -2029,28 +2060,20 @@ impl DocumentCore {
         self.paginate_pass(&empty_breaks);
     }
 
-    /// 다단 구역에서 본문 전체 폭으로 인코딩된 stale LINE_SEG 를 단 너비로 정규화한다.
+    /// stale LINE_SEG metadata 를 실제 컬럼 너비로 정규화한다.
     ///
-    /// HWP 편집기(예: ehwp NIF)가 단 정의를 바꾸고도 ColumnDef 호스트 문단의
-    /// LINE_SEG.segment_width 를 갱신하지 못하면, 그 문단은 본문 전체 폭(예: 42519 HU)
-    /// 으로 남는다. 렌더러는 LINE_SEG 를 충실히 그리므로, 단 1개 너비짜리 영역에
-    /// 본문 전체 폭 텍스트가 그려져 옆 단 텍스트와 겹치는 "text brokerage" 가 발생한다.
-    /// 단 너비보다 확연히 넓은 segment_width 는 구조적으로 불가능한 stale 데이터이므로
-    /// 단 너비로 reflow 한다. 정상(단 너비 이하) LINE_SEG 는 손대지 않아 원본 한컴
-    /// 문서의 줄나눔 충실도를 보존한다.
+    /// 기존 다단 over-wide segment_width 보정에 더해, 편집 후 모든 text_start 가
+    /// 0으로 남은 body paragraph 도 overflow 가 확인될 때만 reflow 한다.
     fn normalize_overwide_column_linesegs(&mut self) {
         let dpi = self.dpi;
         let styles = resolve_styles(&self.document.doc_info, dpi);
-        // 단 너비 초과 판정 여유 (px). 1단↔본문 폭 차이는 수백 px 이므로 보수적으로 24px.
         const OVERWIDE_SLACK_PX: f64 = 24.0;
         let sec_count = self.document.sections.len();
         let mut modified_sections: Vec<usize> = Vec::new();
+
         for sec_idx in 0..sec_count {
             let section = &mut self.document.sections[sec_idx];
             let column_def = Self::find_initial_column_def(&section.paragraphs);
-            if column_def.column_count.max(1) <= 1 {
-                continue; // 단일 단: 정규화 불필요
-            }
             let page_def = &section.section_def.page_def;
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
             let col_width_px = match layout.column_areas.first() {
@@ -2060,41 +2083,37 @@ impl DocumentCore {
             let col_width_hu = crate::renderer::px_to_hwpunit(col_width_px, dpi);
             let overwide_hu = col_width_hu + crate::renderer::px_to_hwpunit(OVERWIDE_SLACK_PX, dpi);
             let mut first_modified: Option<usize> = None;
-            // 단 너비 초과 line_seg 를 단 너비로 reflow 하는 공통 클로저.
-            // 본문 문단과 각주/미주 내부 문단 모두 같은 규칙을 쓴다.
-            let reflow_if_overwide =
-                |para: &mut crate::model::paragraph::Paragraph| -> bool {
-                    if para.text.trim().is_empty() {
-                        return false;
-                    }
-                    let is_overwide = para
+
+            let reflow_if_needed = |para: &mut crate::model::paragraph::Paragraph,
+                                    available_width_px: f64|
+             -> bool {
+                if para.text.trim().is_empty() {
+                    return false;
+                }
+
+                let is_column_overwide = column_def.column_count.max(1) > 1
+                    && para
                         .line_segs
                         .iter()
                         .any(|ls| ls.segment_width > overwide_hu);
-                    if !is_overwide {
-                        return false;
-                    }
-                    let para_style = styles.para_styles.get(para.para_shape_id as usize);
-                    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                    let available_width = (col_width_px - margin_left - margin_right).max(1.0);
-                    crate::renderer::composer::reflow_line_segs(
-                        para,
-                        available_width,
-                        &styles,
-                        dpi,
-                    );
-                    true
-                };
-            for (p_idx, para) in section.paragraphs.iter_mut().enumerate() {
-                let mut para_changed = reflow_if_overwide(para);
+                let is_stale_text_start_overflow =
+                    stale_lineseg_starts_overflow(para, available_width_px, &styles);
 
-                // [FIX 2] 다단 문서에서 각주/미주 본문 텍스트도 단 너비로 줄바꿈한다.
-                // 원본 HWP 는 각주/미주 line_seg 를 본문 전체 폭으로 저장해 두는데,
-                // 그대로 그리면 2단 문서의 각주가 페이지 전체 폭으로 뻗어 한 줄로
-                // 나온다. 본문 문단과 동일한 over-wide 판정 + 단 너비 reflow 를
-                // 각주/미주 내부 문단에도 적용해 단 폭 안에서 여러 줄로 감싼다.
-                // (이미 단 폭 이하로 흐르는 미주 등은 손대지 않아 회귀를 격리한다.)
+                if !is_column_overwide && !is_stale_text_start_overflow {
+                    return false;
+                }
+
+                crate::renderer::composer::reflow_line_segs(para, available_width_px, &styles, dpi);
+                true
+            };
+
+            for (p_idx, para) in section.paragraphs.iter_mut().enumerate() {
+                let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                let available_width = (col_width_px - margin_left - margin_right).max(1.0);
+                let mut para_changed = reflow_if_needed(para, available_width);
+
                 for ctrl in para.controls.iter_mut() {
                     let note_paras = match ctrl {
                         crate::model::control::Control::Footnote(f) => Some(&mut f.paragraphs),
@@ -2103,7 +2122,14 @@ impl DocumentCore {
                     };
                     if let Some(note_paras) = note_paras {
                         for note_para in note_paras.iter_mut() {
-                            if reflow_if_overwide(note_para) {
+                            let note_style =
+                                styles.para_styles.get(note_para.para_shape_id as usize);
+                            let note_margin_left = note_style.map(|s| s.margin_left).unwrap_or(0.0);
+                            let note_margin_right =
+                                note_style.map(|s| s.margin_right).unwrap_or(0.0);
+                            let note_width =
+                                (col_width_px - note_margin_left - note_margin_right).max(1.0);
+                            if reflow_if_needed(note_para, note_width) {
                                 para_changed = true;
                             }
                         }
@@ -2124,8 +2150,7 @@ impl DocumentCore {
                 modified_sections.push(sec_idx);
             }
         }
-        // 렌더러는 self.composed (ComposedParagraph) 의 줄 구조로 텍스트를 배치하므로,
-        // line_segs 를 바꾼 뒤에는 해당 구역을 반드시 recompose 해야 새 줄나눔이 반영된다.
+
         for sec_idx in modified_sections {
             self.recompose_section(sec_idx);
         }
@@ -3837,6 +3862,62 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
+
+    fn styles_with_font_size(font_size: f64) -> ResolvedStyleSet {
+        use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle};
+
+        ResolvedStyleSet {
+            char_styles: vec![ResolvedCharStyle {
+                font_size,
+                ratio: 1.0,
+                ..Default::default()
+            }],
+            para_styles: vec![ResolvedParaStyle::default()],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn stale_lineseg_starts_overflow_detects_overwide_duplicate_starts() {
+        use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+
+        let text = "주식회사클라우드솔루션과주식회사넥스트AI랩은계약서를각각보관한다";
+        let char_offsets: Vec<u32> = (0..text.chars().count() as u32).collect();
+        let para = Paragraph {
+            text: text.to_string(),
+            char_offsets,
+            char_count: text.chars().count() as u32 + 1,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 1100,
+                    segment_width: 48_188,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 0,
+                    line_height: 1100,
+                    segment_width: 48_188,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 0,
+                    line_height: 1100,
+                    segment_width: 48_188,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        let styles = styles_with_font_size(11.0);
+
+        assert!(stale_lineseg_starts_overflow(&para, 180.0, &styles));
+        assert!(!stale_lineseg_starts_overflow(&para, 1_000.0, &styles));
+    }
 
     #[test]
     fn build_page_render_tree_exposes_public_page_tree() {
