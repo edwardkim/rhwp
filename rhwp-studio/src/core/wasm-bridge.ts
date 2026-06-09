@@ -345,7 +345,7 @@ export class WasmBridge {
     if (typeof d.getPageLayerTree === 'function') {
       return d.getPageLayerTree(pageNum);
     }
-    return '{"pageWidth":0,"pageHeight":0,"profile":"screen","buildOptions":{"showTransparentBorders":false,"clipEnabled":true},"debugOptions":{"debugOverlay":false},"outputOptions":{"showParagraphMarks":false,"showControlCodes":false},"root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
+    return '{"pageWidth":0,"pageHeight":0,"profile":"screen","buildOptions":{"showTransparentBorders":false,"clipEnabled":true},"debugOptions":{"debugOverlay":false},"outputOptions":{"showParagraphMarks":false,"showControlCodes":false,"showTransparentBorders":false,"clipEnabled":true,"debugOverlay":false},"root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
   }
 
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
@@ -384,6 +384,9 @@ export class WasmBridge {
           outputOptions: {
             showParagraphMarks: false,
             showControlCodes: false,
+            showTransparentBorders: false,
+            clipEnabled: true,
+            debugOverlay: false,
           },
           root: {
             kind: 'leaf',
@@ -402,14 +405,19 @@ export class WasmBridge {
       tree.profile = profile;
     }
     const outputOptions = tree.outputOptions ?? {};
+    const buildOptions = tree.buildOptions ?? {};
+    buildOptions.showTransparentBorders ??= outputOptions.showTransparentBorders ?? false;
+    buildOptions.clipEnabled ??= outputOptions.clipEnabled ?? true;
+    const debugOptions = tree.debugOptions ?? {};
+    debugOptions.debugOverlay ??= outputOptions.debugOverlay ?? false;
+    outputOptions.showParagraphMarks ??= false;
+    outputOptions.showControlCodes ??= false;
+    outputOptions.showTransparentBorders ??= buildOptions.showTransparentBorders;
+    outputOptions.clipEnabled ??= buildOptions.clipEnabled;
+    outputOptions.debugOverlay ??= debugOptions.debugOverlay;
     tree.outputOptions = outputOptions;
-    tree.buildOptions ??= {
-      showTransparentBorders: outputOptions.showTransparentBorders ?? false,
-      clipEnabled: outputOptions.clipEnabled ?? true,
-    };
-    tree.debugOptions ??= {
-      debugOverlay: outputOptions.debugOverlay ?? false,
-    };
+    tree.buildOptions = buildOptions;
+    tree.debugOptions = debugOptions;
     return tree as PageLayerTree;
   }
 

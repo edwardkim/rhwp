@@ -2482,6 +2482,7 @@ mod tests {
         EquationNode, FieldMarkerType, ImageNode, PathNode, PlaceholderNode, RawSvgNode,
         RenderLayerInfo, TextRunNode,
     };
+    use serde_json::Value;
 
     #[test]
     fn serializes_text_and_shape_ops_for_browser_replay() {
@@ -3535,13 +3536,33 @@ mod tests {
             })
             .to_json();
 
-        assert!(json
-            .contains("\"buildOptions\":{\"showTransparentBorders\":true,\"clipEnabled\":false}"));
-        assert!(json.contains("\"debugOptions\":{\"debugOverlay\":true}"));
-        assert!(json
-            .contains("\"outputOptions\":{\"showParagraphMarks\":true,\"showControlCodes\":true"));
-        assert!(json.contains("\"showTransparentBorders\":true"));
-        assert!(json.contains("\"clipEnabled\":false"));
-        assert!(json.contains("\"debugOverlay\":true"));
+        let parsed: Value = serde_json::from_str(&json).expect("PageLayerTree JSON");
+
+        assert_eq!(
+            parsed["buildOptions"]["showTransparentBorders"].as_bool(),
+            Some(true)
+        );
+        assert_eq!(parsed["buildOptions"]["clipEnabled"].as_bool(), Some(false));
+        assert_eq!(parsed["debugOptions"]["debugOverlay"].as_bool(), Some(true));
+        assert_eq!(
+            parsed["outputOptions"]["showParagraphMarks"].as_bool(),
+            Some(true)
+        );
+        assert_eq!(
+            parsed["outputOptions"]["showControlCodes"].as_bool(),
+            Some(true)
+        );
+        assert_eq!(
+            parsed["outputOptions"]["showTransparentBorders"].as_bool(),
+            Some(true)
+        );
+        assert_eq!(
+            parsed["outputOptions"]["clipEnabled"].as_bool(),
+            Some(false)
+        );
+        assert_eq!(
+            parsed["outputOptions"]["debugOverlay"].as_bool(),
+            Some(true)
+        );
     }
 }

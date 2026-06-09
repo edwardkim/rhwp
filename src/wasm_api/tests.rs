@@ -3,6 +3,7 @@ use crate::model::document::{Document, Section};
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::paint::LAYER_TREE_SCHEMA;
 use crate::parser::control::parse_common_obj_attr;
+use serde_json::Value;
 
 #[test]
 fn test_create_empty_document() {
@@ -54,24 +55,25 @@ fn test_page_layer_tree_export_uses_schema_contract() {
     let json = doc
         .get_page_layer_tree_native(0)
         .expect("empty document layer tree should export");
+    let parsed: Value = serde_json::from_str(&json).expect("PageLayerTree JSON");
 
-    assert!(json.contains(&format!(
-        "\"schemaVersion\":{}",
-        LAYER_TREE_SCHEMA.schema_version
-    )));
-    assert!(json.contains(&format!(
-        "\"resourceTableVersion\":{}",
-        LAYER_TREE_SCHEMA.resource_table_version
-    )));
-    assert!(json.contains(&format!("\"unit\":\"{}\"", LAYER_TREE_SCHEMA.unit)));
-    assert!(json.contains(&format!(
-        "\"coordinateSystem\":\"{}\"",
-        LAYER_TREE_SCHEMA.coordinate_system
-    )));
-    assert!(json.contains("\"profile\":\"screen\""));
-    assert!(json.contains("\"buildOptions\":{"));
-    assert!(json.contains("\"debugOptions\":{"));
-    assert!(json.contains("\"outputOptions\":{"));
+    assert_eq!(
+        parsed["schemaVersion"].as_u64(),
+        Some(LAYER_TREE_SCHEMA.schema_version as u64)
+    );
+    assert_eq!(
+        parsed["resourceTableVersion"].as_u64(),
+        Some(LAYER_TREE_SCHEMA.resource_table_version as u64)
+    );
+    assert_eq!(parsed["unit"].as_str(), Some(LAYER_TREE_SCHEMA.unit));
+    assert_eq!(
+        parsed["coordinateSystem"].as_str(),
+        Some(LAYER_TREE_SCHEMA.coordinate_system)
+    );
+    assert_eq!(parsed["profile"].as_str(), Some("screen"));
+    assert!(parsed["buildOptions"].is_object());
+    assert!(parsed["debugOptions"].is_object());
+    assert!(parsed["outputOptions"].is_object());
 }
 
 #[test]
@@ -86,17 +88,34 @@ fn test_page_layer_tree_export_preserves_output_options() {
     let json = doc
         .get_page_layer_tree_native(0)
         .expect("layer tree should export output options");
+    let parsed: Value = serde_json::from_str(&json).expect("PageLayerTree JSON");
 
-    assert!(
-        json.contains("\"buildOptions\":{\"showTransparentBorders\":true,\"clipEnabled\":false}")
+    assert_eq!(
+        parsed["buildOptions"]["showTransparentBorders"].as_bool(),
+        Some(true)
     );
-    assert!(json.contains("\"debugOptions\":{\"debugOverlay\":true}"));
-    assert!(
-        json.contains("\"outputOptions\":{\"showParagraphMarks\":true,\"showControlCodes\":true")
+    assert_eq!(parsed["buildOptions"]["clipEnabled"].as_bool(), Some(false));
+    assert_eq!(parsed["debugOptions"]["debugOverlay"].as_bool(), Some(true));
+    assert_eq!(
+        parsed["outputOptions"]["showParagraphMarks"].as_bool(),
+        Some(true)
     );
-    assert!(json.contains("\"showTransparentBorders\":true"));
-    assert!(json.contains("\"clipEnabled\":false"));
-    assert!(json.contains("\"debugOverlay\":true"));
+    assert_eq!(
+        parsed["outputOptions"]["showControlCodes"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["showTransparentBorders"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["clipEnabled"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["debugOverlay"].as_bool(),
+        Some(true)
+    );
 }
 
 #[test]
