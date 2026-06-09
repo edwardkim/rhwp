@@ -1571,6 +1571,12 @@ impl DocumentCore {
                 self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
             crate::renderer::composer::recalculate_section_vpos(cell_paras, 0);
         }
+        self.grow_table_cell_height_to_line_geometry(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+        )?;
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -2647,19 +2653,29 @@ impl DocumentCore {
                     Some(Control::Table(t)) => t.as_mut(),
                     _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
                 };
+                if i == path.len() - 1 {
+                    {
+                        let cell = table
+                            .cells
+                            .get_mut(cell_idx)
+                            .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
+                        if let Some(w) = inner_width_px {
+                            for cp in cell.paragraphs.iter_mut() {
+                                reflow_line_segs(cp, w, styles, dpi);
+                            }
+                        }
+                        crate::renderer::composer::recalculate_section_vpos(
+                            &mut cell.paragraphs,
+                            0,
+                        );
+                    }
+                    Self::grow_cell_height_to_line_geometry(table, cell_idx);
+                    break;
+                }
                 let cell = table
                     .cells
                     .get_mut(cell_idx)
                     .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
-                if i == path.len() - 1 {
-                    if let Some(w) = inner_width_px {
-                        for cp in cell.paragraphs.iter_mut() {
-                            reflow_line_segs(cp, w, styles, dpi);
-                        }
-                    }
-                    crate::renderer::composer::recalculate_section_vpos(&mut cell.paragraphs, 0);
-                    break;
-                }
                 para = cell
                     .paragraphs
                     .get_mut(cell_para_idx)
@@ -2682,6 +2698,73 @@ impl DocumentCore {
             "\"cellParaCount\":{}",
             line_count
         )))
+    }
+
+    fn grow_table_cell_height_to_line_geometry(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+    ) -> Result<(), HwpError> {
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        Self::grow_cell_height_to_line_geometry(table, cell_idx);
+        Ok(())
+    }
+
+    fn grow_cell_height_to_line_geometry(table: &mut crate::model::table::Table, cell_idx: usize) {
+        let table_padding = table.padding;
+        let Some(cell) = table.cells.get_mut(cell_idx) else {
+            return;
+        };
+        if let Some(min_height) = Self::minimum_cell_height_for_line_geometry(table_padding, cell) {
+            if min_height > cell.height {
+                cell.height = min_height;
+                table.update_ctrl_dimensions();
+                table.dirty = true;
+            }
+        }
+    }
+
+    fn minimum_cell_height_for_line_geometry(
+        table_padding: crate::model::Padding,
+        cell: &crate::model::table::Cell,
+    ) -> Option<u32> {
+        if cell.text_direction != 0
+            || cell.row_span != 1
+            || cell.height >= 0x8000_0000
+            || cell.paragraphs.iter().all(|p| p.line_segs.is_empty())
+        {
+            return None;
+        }
+
+        let prefer_cell_axis = |cell_value: i16, table_value: i16| -> bool {
+            if cell.apply_inner_margin {
+                cell_value != 0
+            } else {
+                (cell_value as i32) > (table_value as i32)
+            }
+        };
+        let pad_top = if prefer_cell_axis(cell.padding.top, table_padding.top) {
+            cell.padding.top as i32
+        } else {
+            table_padding.top as i32
+        };
+        let pad_bottom = if prefer_cell_axis(cell.padding.bottom, table_padding.bottom) {
+            cell.padding.bottom as i32
+        } else {
+            table_padding.bottom as i32
+        };
+        let max_line_bottom = cell
+            .paragraphs
+            .iter()
+            .flat_map(|p| p.line_segs.iter())
+            .map(|ls| ls.vertical_pos.saturating_add(ls.line_height))
+            .max()
+            .unwrap_or(0);
+
+        let required = pad_top + max_line_bottom + pad_bottom;
+        Some(required.max(pad_top + pad_bottom).max(1) as u32)
     }
 
     /// path 끝 셀의 사용 가능한 내부 폭(px)을 계산한다(좌우 패딩 제외).
@@ -3426,5 +3509,57 @@ mod tests {
         let p1_cs = p1.char_shapes.first().map(|cs| cs.char_shape_id);
         assert!(p0_cs.is_some(), "p0 has a char shape");
         assert_eq!(p0_cs, p1_cs, "new line inherits the cell's char shape");
+    }
+
+    #[test]
+    fn set_cell_text_grows_stored_cell_and_table_height() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        let created = core.create_table_native(0, 0, 0, 1, 1).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&created).unwrap();
+        let para_idx = v["paraIdx"].as_u64().unwrap() as usize;
+        let ctrl_idx = v["controlIdx"].as_u64().unwrap() as usize;
+
+        let (before_cell_h, before_table_h) =
+            table_cell_and_common_height(&core, para_idx, ctrl_idx, 0);
+
+        let lines: Vec<String> = (1..=8).map(|i| format!("line {i}")).collect();
+        core.set_cell_text_native(0, para_idx, ctrl_idx, 0, &lines)
+            .unwrap();
+
+        let (after_cell_h, after_table_h) =
+            table_cell_and_common_height(&core, para_idx, ctrl_idx, 0);
+
+        assert!(
+            after_cell_h > before_cell_h,
+            "edited cell height must grow for exported HWP geometry"
+        );
+        assert!(
+            after_table_h >= after_cell_h && after_table_h > before_table_h,
+            "table common.height must track grown row height"
+        );
+
+        let para = &core.document.sections[0].paragraphs[para_idx];
+        let table = match para.controls.get(ctrl_idx).unwrap() {
+            Control::Table(table) => table,
+            _ => panic!("expected table"),
+        };
+        let raw_height = u32::from_le_bytes(table.raw_ctrl_data[16..20].try_into().unwrap());
+        assert_eq!(raw_height, table.common.height);
+    }
+
+    fn table_cell_and_common_height(
+        core: &DocumentCore,
+        para_idx: usize,
+        ctrl_idx: usize,
+        cell_idx: usize,
+    ) -> (u32, u32) {
+        let para = &core.document.sections[0].paragraphs[para_idx];
+        let table = match para.controls.get(ctrl_idx).unwrap() {
+            Control::Table(table) => table,
+            _ => panic!("expected table"),
+        };
+        (table.cells[cell_idx].height, table.common.height)
     }
 }
