@@ -1134,6 +1134,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     }
     case 'Tab': {
       e.preventDefault();
+      if (e.shiftKey) {
+        this.applyHangingIndentAtCursor();
+        break;
+      }
       // 탭 문자 삽입 (본문·표 셀·글상자 공통)
       this.executeOperation({ kind: 'command', command: new InsertTabCommand(this.cursor.getPosition()) });
       break;

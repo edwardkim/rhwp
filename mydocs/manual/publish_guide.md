@@ -240,9 +240,14 @@ npm/editor/package.json:  0.6.1 → 0.6.2  (다른 파일 변경 없음)
 ### 1단계: 코드 검증
 
 ```bash
-cargo build && cargo test        # 네이티브 빌드 + 941개 테스트 (2026-04-23 기준)
+cargo build && cargo test        # 네이티브 빌드 + 테스트
 docker compose --env-file .env.docker run --rm wasm   # WASM 빌드
 ```
+
+macOS 로컬에서 release 검증이 필요한 경우 `cargo test --release --tests` 대신
+`cargo test --profile release-test --tests` 를 사용한다. 이유와 실측치는
+[개발환경 가이드](dev_environment_guide.md)의 "macOS 로컬 빌드/테스트 검증"을
+참조한다.
 
 E2E 테스트:
 ```bash
@@ -299,6 +304,7 @@ git checkout devel
 git merge local/devel
 cargo build
 cargo test
+# macOS release 통합 검증: cargo test --profile release-test --tests
 docker compose --env-file .env.docker run --rm wasm
 git push origin devel
 

@@ -80,9 +80,37 @@ git push origin home
 
 ```bash
 cargo build          # 빌드
-cargo test           # 테스트 (615개)
+cargo test           # 일반 개발 테스트
 cargo build --release
 ```
+
+### macOS 로컬 빌드/테스트 검증
+
+macOS(aarch64-apple-darwin)에서는 `tests/*.rs` 각 파일이 별도 통합 테스트
+바이너리로 링크된다. `[profile.release]` 는 산출물 크기 최적화를 위해
+`lto = true` / `codegen-units = 1` 을 사용하므로, `cargo test --release --tests`
+는 통합 테스트 바이너리별 LTO 링크 때문에 매우 오래 걸릴 수 있다.
+
+macOS 로컬 push/머지 전 검증은 release 산출물 프로필을 건드리지 않고, 통합 테스트만
+별도 `release-test` 프로필로 실행한다.
+
+```bash
+cargo build --release                    # 산출물 release 빌드
+cargo test --release --lib               # release 프로필 unit 회귀
+cargo test --profile release-test --tests # 통합 테스트 회귀(macOS 권장)
+cargo fmt --check
+```
+
+2026-06-09 macOS 실측 기준:
+
+| 명령 | 용도 | real |
+|------|------|------|
+| `cargo test --release --tests --no-run` | release LTO 통합 테스트 빌드/링크 | 886.75s |
+| `cargo test --profile release-test --tests --no-run` | LTO 없는 별도 테스트 프로필 cold build | 149.49s |
+| `cargo test --profile release-test --tests -q` | 캐시 후 통합 테스트 실행 포함 | 65.02s |
+
+`release-test` 는 로컬 검증 속도를 위한 프로필이다. 릴리즈 산출물 자체는
+계속 `[profile.release]` 의 LTO 설정으로 빌드한다.
 
 ### WASM 빌드 (Docker)
 

@@ -228,6 +228,14 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|ctrl| matches!(ctrl, Control::Table(t) if is_para_topbottom_float(&t.common)))
+}
+
 fn inline_equation_count(para: &Paragraph) -> usize {
     para.controls
         .iter()
@@ -848,7 +856,10 @@ impl LayoutEngine {
         }
     }
 
-    fn paper_node_sort_key(node: &RenderNode) -> (u8, i32, u32) {
+    /// 종이 기준 렌더 노드의 정렬키 `(plane, z_order, stable_index)`.
+    /// 레이아웃 쿼리(`get_page_control_layout_native`)가 컨트롤별 plane/zOrder/stableIndex 를
+    /// 프런트 히트테스트에 노출할 때 재사용한다(렌더 정렬과 단일 진실 원천 유지). [Task #1280 v2]
+    pub(crate) fn paper_node_sort_key(node: &RenderNode) -> (u8, i32, u32) {
         let layer = node.layer;
         let (z_order, stable_index) = layer
             .map(|layer| (layer.z_order, layer.stable_index))
@@ -1134,17 +1145,10 @@ impl LayoutEngine {
             wrap_around_paras,
         );
 
-        // 단 구분선 — 페이지 안에 zone-specific layout(다단 zone) 이 있으면 zone 별
-        // emit_zone_column_separators 가 이미 sep 을 그리므로 page-level fallback 은 skip.
-        // (Issue #874 Case 4: shortcut.hwp 2쪽~ 페이지 layout 이 2단으로 잡혀 body_area
-        // 전체 길이 점선이 zone-별 sep 위에 중복 그려지는 결함 정정.)
-        let has_zone_specific_layout = page_content
-            .column_contents
-            .iter()
-            .any(|cc| cc.zone_layout.is_some());
-        if !has_zone_specific_layout {
-            self.build_column_separators(&mut tree, &mut body_node, layout);
-        }
+        // 단 구분선은 build_columns 내부의 emit_zone_column_separators 가 zone(또는
+        // page layout 폴백)별 콘텐츠 높이로 그린다. 과거 page-level build_column_separators
+        // 는 body 전체높이를 고정으로 그려 부분 페이지에서 구분선이 과도하게 길었고,
+        // zone emit 과 이중 렌더되어 [Task #1333 v2] 에서 제거되었다.
 
         // 콘텐츠 레이아웃 후 clip_rect 확정:
         // 자식 노드(표 등)의 실제 바운딩 박스를 재귀적으로 반영하여
@@ -2251,60 +2255,6 @@ impl LayoutEngine {
         footer_node
     }
 
-    /// 단 구분선을 렌더링하여 body_node에 추가한다.
-    fn build_column_separators(
-        &self,
-        tree: &mut PageRenderTree,
-        body_node: &mut RenderNode,
-        layout: &PageLayoutInfo,
-    ) {
-        if layout.column_areas.len() >= 2 && layout.separator_type > 0 {
-            let line_width = border_width_to_px(layout.separator_width).max(0.5);
-            // HWP 선 종류 코드 (doc_info.rs:294 line_type 매핑과 정합):
-            // 1=실선, 2=Dash, 3=Dot(점선), 5=DashDotDot, 6=LongDash, 7=Circle(원형 점선),
-            // 8+ (이중선/물결 등) 은 Solid 대체.
-            let dash = match layout.separator_type {
-                2 => StrokeDash::Dash,
-                3 => StrokeDash::Dot,
-                4 => StrokeDash::DashDot,
-                5 => StrokeDash::DashDotDot,
-                6 => StrokeDash::Dash, // LongDash → Dash 근사 (PR #843)
-                7 => StrokeDash::Dot,  // Circle(원형 점선) → Dot (PR #843)
-                _ => StrokeDash::Solid,
-            };
-            for i in 0..layout.column_areas.len() - 1 {
-                let left_col = &layout.column_areas[i];
-                let right_col = &layout.column_areas[i + 1];
-                let sep_x = (left_col.x + left_col.width + right_col.x) / 2.0;
-                let sep_y1 = left_col.y;
-                let sep_y2 = left_col.y + left_col.height;
-                let sep_id = tree.next_id();
-                let sep_node = RenderNode::new(
-                    sep_id,
-                    RenderNodeType::Line(LineNode::new(
-                        sep_x,
-                        sep_y1,
-                        sep_x,
-                        sep_y2,
-                        LineStyle {
-                            color: layout.separator_color,
-                            width: line_width,
-                            dash,
-                            ..Default::default()
-                        },
-                    )),
-                    BoundingBox::new(
-                        sep_x - line_width / 2.0,
-                        sep_y1,
-                        line_width,
-                        sep_y2 - sep_y1,
-                    ),
-                );
-                body_node.children.push(sep_node);
-            }
-        }
-    }
-
     /// 각주 영역 노드를 생성하여 tree에 추가한다.
     fn build_footnote_area(
         &self,
@@ -2492,11 +2442,12 @@ impl LayoutEngine {
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
-        // [Task #866 v2 Stage 3] zone 별 단 구분선 렌더용. 페이지 단일 layout 기준의 기존
-        // build_column_separators 는 shortcut.hwp 처럼 페이지 내 다단 zone 의 ColumnDef
-        // (예: pi=2 의 2단/구분선 type=7) 를 못 보므로 zone 별로 별도 렌더가 필요.
+        // [Task #866 v2 Stage 3] zone 별 단 구분선 렌더용. 페이지 내 다단 zone 의 ColumnDef
+        // (예: pi=2 의 2단/구분선 type=7) 를 반영하고, [Task #1333] 이후 단 구분선은
+        // 이 zone emit 경로 하나에서 그린다.
         let mut prev_zone_layout_for_sep: Option<PageLayoutInfo> = None;
         let mut prev_zone_sep_y_start: f64 = 0.0;
+        let mut prev_zone_sep_full_body: bool = false;
         // [Task #853/#866] 직전 zone 의 "디자인 spacing"(1단 ColumnDef 의 `간격`, 다단은 0).
         // 한컴은 zone 전환 시 (이전 zone 디자인 spacing /2)+(새 zone /2) 만큼 세로 여백을
         // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
@@ -2546,12 +2497,17 @@ impl LayoutEngine {
             if is_new_zone {
                 // 직전 zone 의 단 구분선 emit (있다면).
                 if let Some(pz) = prev_zone_layout_for_sep.take() {
+                    let sep_y_end = if prev_zone_sep_full_body {
+                        pz.body_area.y + pz.body_area.height
+                    } else {
+                        prev_zone_y_end
+                    };
                     self.emit_zone_column_separators(
                         tree,
                         body_node,
                         &pz,
                         prev_zone_sep_y_start,
-                        prev_zone_y_end,
+                        sep_y_end,
                     );
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
@@ -2620,11 +2576,17 @@ impl LayoutEngine {
                             .unwrap_or(false));
                 last_zone_y_offset = col_content.zone_y_offset;
                 // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
+                // [Task #1333] zone emit(emit_zone_column_separators)이 단 구분선의 단일
+                // 경로다. zone_layout=None(초기 단정의·연속 페이지)은 page layout 을 따르며
+                // body 전체 높이를 사용한다. zone_layout=Some(페이지 내부 zone 전환)만 콘텐츠
+                // 높이를 사용해 shortcut.hwp 같은 혼합 zone 의 부분 구분선 정합을 유지한다.
                 if zone_layout.column_areas.len() >= 2 && zone_layout.separator_type > 0 {
                     prev_zone_layout_for_sep = Some(zone_layout.clone());
                     prev_zone_sep_y_start = current_zone_start_y.max(zone_layout.body_area.y);
+                    prev_zone_sep_full_body = col_content.zone_layout.is_none();
                 } else {
                     prev_zone_layout_for_sep = None;
+                    prev_zone_sep_full_body = false;
                 }
             }
 
@@ -2786,18 +2748,23 @@ impl LayoutEngine {
 
         // 마지막 zone 의 단 구분선 emit.
         if let Some(pz) = prev_zone_layout_for_sep.take() {
+            let sep_y_end = if prev_zone_sep_full_body {
+                pz.body_area.y + pz.body_area.height
+            } else {
+                prev_zone_y_end
+            };
             self.emit_zone_column_separators(
                 tree,
                 body_node,
                 &pz,
                 prev_zone_sep_y_start,
-                prev_zone_y_end,
+                sep_y_end,
             );
         }
     }
 
     /// [Task #866 v2 Stage 3] 단일 zone 의 단 구분선을 emit.
-    /// page 전역 build_column_separators 와 동일 모양이나 zone_layout 기준 + y 범위 인자 지정.
+    /// zone_layout 기준 + y 범위 인자로 단 구분선을 그린다.
     fn emit_zone_column_separators(
         &self,
         tree: &mut PageRenderTree,
@@ -2806,6 +2773,12 @@ impl LayoutEngine {
         y_start: f64,
         y_end: f64,
     ) {
+        // [Task #1333 v2] 콘텐츠 높이(y_end)가 body 영역 하단을 넘으면 하단에서 자른다.
+        // 꽉 찬 페이지에서 prev_zone_y_end 가 trailing 간격 등으로 body 를 초과해 구분선이
+        // 페이지 밖까지 그려지던 결함(예: 대상문서 p22 105%) 정정. 부분 페이지(콘텐츠 < body
+        // 하단)와 sub-page zone 은 영향 없음.
+        let body_bottom = zone_layout.body_area.y + zone_layout.body_area.height;
+        let y_end = y_end.min(body_bottom);
         if zone_layout.column_areas.len() < 2 || zone_layout.separator_type == 0 || y_end <= y_start
         {
             return;
@@ -4979,15 +4952,19 @@ impl LayoutEngine {
                         y_offset += para_style.spacing_after;
                     }
                 }
-                // [Task #1147 v2] HWPX 원본의 빈 앵커 TopAndBottom 비-TAC 표는 typeset
-                // 측 is_topbottom_empty_anchor_hwpx 보정으로 host_line_spacing=0 처리되므로,
-                // 렌더러도 앵커 line_spacing 을 표 아래 갭으로 가산하지 않는다. 가산 시
-                // typeset 의 cur_h 와 layout 의 y_offset 가 18 px 어긋나 표 직후 문단이
-                // 시각상 아래로 밀려난다 (작업지시자 시각 검수, 권위 PDF 정합).
-                let is_topbottom_empty_anchor_hwpx =
-                    self.is_hwpx_source.get() && is_current_empty_para_float;
+                // [Task #1147 v2] HWPX 원본의 빈 앵커 TopAndBottom 비-TAC 표는 다음
+                // 항목이 일반 문단일 때 host_line_spacing=0 으로 맞춘다. 단, [Task
+                // #1133] 다음 항목도 빈 앵커 TopAndBottom 표이면 해당 line_spacing 이
+                // 표-표 사이 간격이므로 HWP처럼 보존한다.
+                let next_is_empty_topbottom_table_anchor = paragraphs
+                    .get(para_index + 1)
+                    .map(para_is_empty_topbottom_table_anchor)
+                    .unwrap_or(false);
+                let suppress_empty_anchor_spacing = self.is_hwpx_source.get()
+                    && is_current_empty_para_float
+                    && !next_is_empty_topbottom_table_anchor;
                 if let Some(seg) = para.line_segs.last() {
-                    let gap = if is_topbottom_empty_anchor_hwpx {
+                    let gap = if suppress_empty_anchor_spacing {
                         0
                     } else if is_current_empty_para_float {
                         seg.line_spacing.max(0)

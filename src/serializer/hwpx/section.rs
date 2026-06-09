@@ -21,9 +21,12 @@
 
 use quick_xml::Writer;
 
-use crate::model::control::{Control, Equation};
+use crate::model::control::{
+    AutoNumber, AutoNumberType, Control, Equation, NewNumber, PageHide, PageNumberPos,
+};
 use crate::model::document::{Document, Section};
 use crate::model::footnote::{Endnote, Footnote};
+use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo,
@@ -261,6 +264,27 @@ fn render_run_content(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let mut expected_utf16_pos = 0u32;
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
 
+    // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
+    // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
+    if para.text.is_empty() {
+        while slot_idx < slots.len() {
+            render_control_slot(&mut out, slots[slot_idx], ctx);
+            slot_idx += 1;
+        }
+        for (i, fr) in para.field_ranges.iter().enumerate() {
+            if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
+                if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+                    if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+                        out.push_str("<hp:ctrl>");
+                        out.push_str(&xml);
+                        out.push_str("</hp:ctrl>");
+                    }
+                }
+                field_end_emitted[i] = true;
+            }
+        }
+    }
+
     for (idx, c) in para.text.chars().enumerate() {
         let char_pos = para
             .char_offsets
@@ -384,6 +408,12 @@ fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Form(_)
             | Control::Footnote(_)
             | Control::Endnote(_)
+            | Control::PageHide(_)
+            | Control::PageNumberPos(_)
+            | Control::NewNumber(_)
+            | Control::Header(_)
+            | Control::Footer(_)
+            | Control::AutoNumber(_)
     )
 }
 
@@ -432,8 +462,216 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 Err(e) => eprintln!("[hwpx] Field 직렬화 실패: {e}"),
             }
         }
+        Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
+        Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::NewNumber(nn) => out.push_str(&render_new_num(nn)),
+        Control::Header(h) => out.push_str(&render_header(h, ctx)),
+        Control::Footer(f) => out.push_str(&render_footer(f, ctx)),
+        Control::AutoNumber(an) => out.push_str(&render_autonum(an)),
         _ => {}
     }
+}
+
+/// 장식 문자(userChar/prefixChar/suffixChar)용 속성값. '\0'(미설정)은 빈 문자열.
+fn ctrl_char_attr(c: char) -> String {
+    if c == '\0' {
+        String::new()
+    } else {
+        xml_escape(&c.to_string())
+    }
+}
+
+/// `<hp:ctrl><hp:autoNum num=".." numType=".."><hp:autoNumFormat .../></hp:autoNum></hp:ctrl>`
+/// 자동 번호(AutoNumber) 컨트롤. format은 pageNum formatType과 동일한 코드→문자열 매핑.
+fn render_autonum(an: &AutoNumber) -> String {
+    format!(
+        concat!(
+            r#"<hp:ctrl><hp:autoNum num="{num}" numType="{nt}">"#,
+            r#"<hp:autoNumFormat type="{ty}" userChar="{u}" prefixChar="{p}" "#,
+            r#"suffixChar="{s}" supscript="{sup}"/></hp:autoNum></hp:ctrl>"#
+        ),
+        num = an.number,
+        nt = auto_number_type_to_str(an.number_type),
+        ty = page_num_format_to_str(an.format),
+        u = ctrl_char_attr(an.user_symbol),
+        p = ctrl_char_attr(an.prefix_char),
+        s = ctrl_char_attr(an.suffix_char),
+        sup = an.superscript as u8,
+    )
+}
+
+/// 머리말/꼬리말 적용 범위 → HWPX `applyPageType`. `parse_apply_page_type`의 역매핑.
+fn apply_page_type_to_str(a: HeaderFooterApply) -> &'static str {
+    match a {
+        HeaderFooterApply::Both => "BOTH",
+        HeaderFooterApply::Even => "EVEN",
+        HeaderFooterApply::Odd => "ODD",
+    }
+}
+
+/// `<hp:ctrl><hp:{header|footer} applyPageType=".."><hp:subList ...>문단들</hp:subList>...`
+/// 머리말/꼬리말은 중첩 문단(subList)을 가진다 — render_note_sublist와 동일한 문단 직렬화
+/// 경로(render_paragraph_parts)를 쓰되, subList 텍스트 영역 속성은 IR 보존값을 사용한다.
+fn render_header_footer(
+    tag: &str,
+    h: HeaderFooterFields<'_>,
+    ctx: &mut SerializeContext,
+) -> String {
+    let mut out = format!(
+        concat!(
+            r#"<hp:ctrl><hp:{tag} id="0" applyPageType="{apply}">"#,
+            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" "#,
+            r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
+            r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
+        ),
+        tag = tag,
+        apply = apply_page_type_to_str(h.apply_to),
+        tw = h.text_width,
+        th = h.text_height,
+        tr = h.text_ref,
+        nr = h.num_ref,
+    );
+    let mut vert_cursor: u32 = 0;
+    for p in h.paragraphs.iter() {
+        let (t, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        vert_cursor = advance;
+        let cs = first_run_char_shape_id(p);
+        out.push_str(&render_hp_p_open(p, ctx.next_para_id()));
+        out.push_str(&format!(r#"<hp:run charPrIDRef="{}">"#, cs));
+        out.push_str(&t);
+        out.push_str(r#"</hp:run><hp:linesegarray>"#);
+        out.push_str(&linesegs);
+        out.push_str(r#"</hp:linesegarray></hp:p>"#);
+    }
+    out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
+    out
+}
+
+/// render_header_footer 공통 인자 묶음 (Header/Footer가 동일 필드를 가짐).
+struct HeaderFooterFields<'a> {
+    apply_to: HeaderFooterApply,
+    text_width: u32,
+    text_height: u32,
+    text_ref: u8,
+    num_ref: u8,
+    paragraphs: &'a [Paragraph],
+}
+
+fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
+    render_header_footer(
+        "header",
+        HeaderFooterFields {
+            apply_to: h.apply_to,
+            text_width: h.text_width,
+            text_height: h.text_height,
+            text_ref: h.text_ref,
+            num_ref: h.num_ref,
+            paragraphs: &h.paragraphs,
+        },
+        ctx,
+    )
+}
+
+fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
+    render_header_footer(
+        "footer",
+        HeaderFooterFields {
+            apply_to: f.apply_to,
+            text_width: f.text_width,
+            text_height: f.text_height,
+            text_ref: f.text_ref,
+            num_ref: f.num_ref,
+            paragraphs: &f.paragraphs,
+        },
+        ctx,
+    )
+}
+
+/// `<hp:ctrl><hp:pageHiding .../></hp:ctrl>` — 감추기(PageHide) 컨트롤.
+/// `parse_page_hiding_attrs`의 역매핑. bool → "0"/"1" (한컴 정합).
+fn render_page_hiding(ph: &PageHide) -> String {
+    format!(
+        concat!(
+            r#"<hp:ctrl><hp:pageHiding hideHeader="{}" hideFooter="{}" "#,
+            r#"hideMasterPage="{}" hideBorder="{}" hideFill="{}" hidePageNum="{}"/></hp:ctrl>"#
+        ),
+        ph.hide_header as u8,
+        ph.hide_footer as u8,
+        ph.hide_master_page as u8,
+        ph.hide_border as u8,
+        ph.hide_fill as u8,
+        ph.hide_page_num as u8,
+    )
+}
+
+/// 쪽 번호 위치 코드(표 150) → HWPX `pos` 문자열. `parse_page_num_attrs`의 역매핑.
+fn page_num_pos_to_str(pos: u8) -> &'static str {
+    match pos {
+        0 => "NONE",
+        1 => "TOP_LEFT",
+        2 => "TOP_CENTER",
+        3 => "TOP_RIGHT",
+        4 => "BOTTOM_LEFT",
+        5 => "BOTTOM_CENTER",
+        6 => "BOTTOM_RIGHT",
+        7 => "OUTSIDE_TOP",
+        8 => "OUTSIDE_BOTTOM",
+        9 => "INSIDE_TOP",
+        10 => "INSIDE_BOTTOM",
+        _ => "BOTTOM_CENTER",
+    }
+}
+
+/// 번호 형식 코드(표 134) → HWPX `formatType` 문자열. `parse_page_num_attrs`의 역매핑.
+fn page_num_format_to_str(fmt: u8) -> &'static str {
+    match fmt {
+        0 => "DIGIT",
+        1 => "CIRCLE_DIGIT",
+        2 => "ROMAN_CAPITAL",
+        3 => "ROMAN_SMALL",
+        4 => "LATIN_CAPITAL",
+        5 => "LATIN_SMALL",
+        6 => "HANGUL",
+        7 => "HANJA",
+        _ => "DIGIT",
+    }
+}
+
+/// `<hp:ctrl><hp:pageNum .../></hp:ctrl>` — 쪽 번호 위치(PageNumberPos) 컨트롤.
+fn render_page_num(pn: &PageNumberPos) -> String {
+    // dash_char 기본값은 '-' (모델: 항상 '-'); '\0'이면 '-'로 폴백.
+    let side = if pn.dash_char == '\0' {
+        '-'
+    } else {
+        pn.dash_char
+    };
+    format!(
+        r#"<hp:ctrl><hp:pageNum pos="{}" formatType="{}" sideChar="{}"/></hp:ctrl>"#,
+        page_num_pos_to_str(pn.position),
+        page_num_format_to_str(pn.format),
+        xml_escape(&side.to_string()),
+    )
+}
+
+/// 번호 종류 → HWPX `numType` 문자열. `parse_num_type`의 역매핑(Picture→FIGURE).
+fn auto_number_type_to_str(t: AutoNumberType) -> &'static str {
+    match t {
+        AutoNumberType::Page => "PAGE",
+        AutoNumberType::Footnote => "FOOTNOTE",
+        AutoNumberType::Endnote => "ENDNOTE",
+        AutoNumberType::Picture => "FIGURE",
+        AutoNumberType::Table => "TABLE",
+        AutoNumberType::Equation => "EQUATION",
+    }
+}
+
+/// `<hp:ctrl><hp:newNum .../></hp:ctrl>` — 새 번호 지정(NewNumber) 컨트롤.
+fn render_new_num(nn: &NewNumber) -> String {
+    format!(
+        r#"<hp:ctrl><hp:newNum num="{}" numType="{}"/></hp:ctrl>"#,
+        nn.number,
+        auto_number_type_to_str(nn.number_type),
+    )
 }
 
 fn writer_to_string<F>(f: F) -> Result<String, SerializeError>
@@ -468,13 +706,30 @@ fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
             }
         };
     }
+    if let ShapeObject::Group(g) = shape {
+        let mut xml = match writer_to_string(|w| super::shape::write_container_open(w, &g.common)) {
+            Ok(xml) => xml,
+            Err(e) => {
+                eprintln!("[hwpx] Shape::Group 직렬화 실패: {e}");
+                String::new()
+            }
+        };
+        for child in &g.children {
+            xml.push_str(&render_shape(child, ctx));
+        }
+        match writer_to_string(super::shape::write_container_close) {
+            Ok(close) => xml.push_str(&close),
+            Err(e) => eprintln!("[hwpx] Shape::Group 닫기 실패: {e}"),
+        }
+        return xml;
+    }
     let (tag, c) = match shape {
         ShapeObject::Rectangle(_) | ShapeObject::Line(_) => unreachable!(),
         ShapeObject::Ellipse(e) => ("ellipse", &e.common),
         ShapeObject::Arc(a) => ("arc", &a.common),
         ShapeObject::Polygon(p) => ("polygon", &p.common),
         ShapeObject::Curve(cv) => ("curve", &cv.common),
-        ShapeObject::Group(g) => ("container", &g.common),
+        ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
             return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
                 Ok(xml) => xml,
@@ -1201,5 +1456,50 @@ mod tests {
         assert!(abc_pos < begin_pos, "ABC must precede fieldBegin");
         assert!(begin_pos < end_pos, "fieldBegin must precede fieldEnd");
         assert!(end_pos < de_pos, "fieldEnd must precede DE");
+    }
+
+    // ---------- #1321: 빈 문단(text == "")의 0-length field 순서 ----------
+
+    #[test]
+    fn task1321_zero_length_field_in_empty_paragraph() {
+        // 빈 문단(text="")에 0-length 필드:
+        // HWP stream: fieldBegin(8cu) + fieldEnd(8cu) + para_end(1cu) = 17cu
+        let mut f = Field::default();
+        f.field_type = FieldType::ClickHere;
+        f.field_id = 99;
+
+        let mut para = Paragraph::default();
+        para.text = "".to_string();
+        para.char_count = 17;
+        para.char_offsets = vec![];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 0,
+            control_idx: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:fieldBegin id="99""#),
+            "fieldBegin must be emitted: {}",
+            &xml[..400.min(xml.len())]
+        );
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="99"/>"#),
+            "fieldEnd must be emitted: {}",
+            &xml[..400.min(xml.len())]
+        );
+
+        let begin_pos = xml.find("fieldBegin").expect("fieldBegin");
+        let end_pos = xml.find("fieldEnd").expect("fieldEnd");
+        assert!(
+            begin_pos < end_pos,
+            "빈 문단에서도 fieldBegin이 fieldEnd보다 앞에 와야 한다: {}",
+            &xml[..400.min(xml.len())]
+        );
     }
 }

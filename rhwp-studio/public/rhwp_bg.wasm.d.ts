@@ -241,9 +241,12 @@ export const hwpdocument_searchText: (a: number, b: number, c: number, d: number
 export const hwpdocument_setActiveField: (a: number, b: number, c: number, d: number) => number;
 export const hwpdocument_setActiveFieldByPath: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const hwpdocument_setActiveFieldInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+export const hwpdocument_setCellParaShapeId: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_setCellPicturePropertiesByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const hwpdocument_setCellProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_setCellShapePropertiesByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
+export const hwpdocument_setCharShapeId: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+export const hwpdocument_setCharShapeIdInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const hwpdocument_setClipEnabled: (a: number, b: number) => void;
 export const hwpdocument_setColumnDef: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_setDpi: (a: number, b: number) => void;
@@ -260,6 +263,7 @@ export const hwpdocument_setNumberingRestart: (a: number, b: number, c: number, 
 export const hwpdocument_setPageBorderFill: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_setPageDef: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_setPageHide: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
+export const hwpdocument_setParaShapeId: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_setPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_setSectionDef: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_setSectionDefAll: (a: number, b: number, c: number) => [number, number, number, number];

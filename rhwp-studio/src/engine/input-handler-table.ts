@@ -264,22 +264,18 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
   if (!hit) { this.cancelImagePlacement(); return; }
 
   const sec = hit.sectionIndex;
-  // 표 셀 안 클릭 (#1151): floating picture 분기를 위해 cellPath 와
-  // parentParaIndex (= 표가 들어있는 outer paragraph) 사용. 본문 클릭은
-  // 기존 paragraphIndex 그대로.
-  // [Task #1171 v2] 글상자(Shape text_box) 위에 드롭한 이미지는 한컴처럼 본문(body) 레벨
-  // 떠있는 개체(글상자의 sibling)로 삽입한다. 글상자 hit 은 cellPath(글상자 sentinel,
-  // cellIndex=0)를 반환하지만, insertPicture 의 cell 경로 검증(resolve_cell_by_path)은 표
-  // 전용이라 글상자 경로를 "표가 아닙니다" 로 거부 → 삽입 실패. 따라서 글상자(isTextBox)는
-  // 표 셀과 달리 cellPath 를 쓰지 않고 본문 para(parentParaIndex = 글상자를 소유한 본문 문단)에
-  // floating 으로 삽입한다. 실제 표 셀(#1151)은 기존대로 cellPath 사용.
+  // 표 셀/글상자 안 클릭: cellPath 와 parentParaIndex (= 소유 본문 paragraph) 를 사용한다.
+  // 표 셀은 기존 #1151 경로처럼 parent paragraph sibling floating 으로 삽입되고,
+  // 글상자는 #1322 보강 경로에서 text_box 내부 paragraph control 로 삽입된다.
   const isTextBoxHit = hit.isTextBox === true;
   const inCell = (hit.cellPath?.length ?? 0) > 0 && hit.parentParaIndex !== undefined && !isTextBoxHit;
+  const inTextBox = isTextBoxHit && (hit.cellPath?.length ?? 0) > 0 && hit.parentParaIndex !== undefined;
+  const textBoxControlIdx = hit.controlIndex ?? hit.cellPath?.[0]?.controlIdx ?? hit.cellPath?.[0]?.controlIndex;
   // 표 셀: 외곽 표 소유 본문 para, 글상자: 글상자 소유 본문 para, 본문: 클릭 문단.
-  const useParentPara = (inCell || isTextBoxHit) && hit.parentParaIndex !== undefined;
+  const useParentPara = (inCell || inTextBox) && hit.parentParaIndex !== undefined;
   const paraIdx = useParentPara ? hit.parentParaIndex! : hit.paragraphIndex;
   const charOffset = hit.charOffset;
-  const cellPathJson = inCell ? JSON.stringify(hit.cellPath) : '';
+  const cellPathJson = (inCell || inTextBox) ? JSON.stringify(hit.cellPath) : '';
 
   // 크기 결정
   const zoom = this.viewportManager.getZoom();
@@ -317,8 +313,33 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
       const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
       const dragPageX = (dragContentX - pageLeft) / zoom;
       const dragPageY = (dragContentY - pageOffset) / zoom;
-      paperOffsetXHu = Math.round(dragPageX * 75);
-      paperOffsetYHu = Math.round(dragPageY * 75);
+      if (inTextBox) {
+        paperOffsetXHu = 0;
+        paperOffsetYHu = 0;
+        try {
+          const layout = this.wasm.getPageControlLayout(pageIdx);
+          const shape = layout.controls.find((ctrl: any) =>
+            ctrl.type === 'shape' &&
+            ctrl.secIdx === sec &&
+            ctrl.paraIdx === paraIdx &&
+            ctrl.controlIdx === textBoxControlIdx
+          );
+          if (shape) {
+            const props = this.wasm.getShapeProperties(sec, paraIdx, textBoxControlIdx);
+            const marginLeftPx = ((props as any).tbMarginLeft ?? 0) / 75;
+            const marginTopPx = ((props as any).tbMarginTop ?? 0) / 75;
+            paperOffsetXHu = Math.max(0, Math.round((dragPageX - shape.x - marginLeftPx) * 75));
+            paperOffsetYHu = Math.max(0, Math.round((dragPageY - shape.y - marginTopPx) * 75));
+          }
+        } catch {
+          // 글상자 bbox 조회 실패 시 글상자 내부 좌상단 삽입으로 fallback.
+          paperOffsetXHu = 0;
+          paperOffsetYHu = 0;
+        }
+      } else {
+        paperOffsetXHu = Math.round(dragPageX * 75);
+        paperOffsetYHu = Math.round(dragPageY * 75);
+      }
     }
   }
 
@@ -591,4 +612,3 @@ export function resizeTableProportional(this: any, key: 'ArrowUp' | 'ArrowDown' 
     console.warn('[InputHandler] resizeTableProportional 실패:', err);
   }
 }
-

@@ -42,9 +42,14 @@ export interface SaveDocumentResult {
   fileName: string;
 }
 
+export const HWP_DOCUMENT_ACCEPT: Record<string, string[]> = {
+  'application/x-hwp': ['.hwp'],
+  'application/hwp+zip': ['.hwpx'],
+};
+
 const HWP_OPEN_PICKER_TYPES = [{
   description: 'HWP/HWPX 문서',
-  accept: { 'application/x-hwp': ['.hwp', '.hwpx'] },
+  accept: HWP_DOCUMENT_ACCEPT,
 }];
 
 const HWP_SAVE_PICKER_TYPES = [{
@@ -54,6 +59,10 @@ const HWP_SAVE_PICKER_TYPES = [{
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
+}
+
+export function isSupportedDocumentFileName(fileName: string): boolean {
+  return /\.(hwp|hwpx)$/i.test(fileName.trim());
 }
 
 async function writeBlobToHandle(handle: FileSystemFileHandleLike, blob: Blob): Promise<void> {

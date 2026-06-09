@@ -920,6 +920,75 @@ impl DocumentCore {
         Ok(current_para)
     }
 
+    /// path 의 마지막 엔트리가 글상자(Shape text_box)를 가리키는지 판정한다.
+    ///
+    /// 표 셀 picture 삽입은 한컴 정합상 parent paragraph 의 sibling floating
+    /// picture 로 처리하지만, 글상자 내부 picture 는 text_box paragraph 안에
+    /// 실제 Picture control 로 들어가야 한다. `resolve_cell_by_path` 는 마지막
+    /// 엔트리가 표일 때만 성공하므로, insert path 에서는 표/글상자를 먼저 구분한다.
+    fn cell_path_terminates_at_textbox(
+        section: &crate::model::document::Section,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> Result<bool, HwpError> {
+        let mut current_para = section.paragraphs.get(parent_para_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
+        })?;
+
+        for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
+            let ctrl = current_para.controls.get(ctrl_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("경로[{}]: controls[{}] 범위 초과", i, ctrl_idx))
+            })?;
+            match ctrl {
+                crate::model::control::Control::Table(table) => {
+                    let cell = table.cells.get(cell_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!("경로[{}]: cells[{}] 범위 초과", i, cell_idx))
+                    })?;
+                    if i == path.len() - 1 {
+                        return Ok(false);
+                    }
+                    current_para = cell.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: paragraphs[{}] 범위 초과",
+                            i, cell_para_idx
+                        ))
+                    })?;
+                }
+                crate::model::control::Control::Shape(shape) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 글상자의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let text_box = get_textbox_from_shape(shape.as_ref()).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
+                            i, ctrl_idx
+                        ))
+                    })?;
+                    if i == path.len() - 1 {
+                        return Ok(true);
+                    }
+                    current_para = text_box.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: 글상자문단 {} 범위 초과",
+                            i, cell_para_idx
+                        ))
+                    })?;
+                }
+                _ => {
+                    return Err(HwpError::RenderError(format!(
+                        "경로[{}]: controls[{}] 가 표/글상자가 아닙니다",
+                        i, ctrl_idx
+                    )))
+                }
+            }
+        }
+
+        Err(HwpError::RenderError("경로가 비어있습니다".to_string()))
+    }
+
     /// [Task #825] Picture 속성 JSON 적용 (mutation only). 후처리 (AutoNumber /
     /// recompose / paginate / event log) 는 호출자 책임.
     /// 반환: caption_created (true 면 호출자가 AutoNumber 후처리 필요).
@@ -2036,10 +2105,22 @@ impl DocumentCore {
                 "이미지 데이터가 비어 있습니다".to_string(),
             ));
         }
-        // cell_path 가 있으면 경로가 유효한지 사전 검증.
-        if !cell_path.is_empty() {
-            self.resolve_cell_by_path(section_idx, para_idx, cell_path)?;
-        }
+        // cell_path 가 있으면 경로가 유효한지 사전 검증한다.
+        //
+        // 표 셀 picture 는 한컴 정합상 표 sibling floating 으로 삽입하지만,
+        // 글상자(text_box) 내부 picture 는 글상자 문단의 control 로 들어가야 한다.
+        // 기존 resolve_cell_by_path 는 마지막 엔트리가 표일 때만 성공하므로
+        // 먼저 표/글상자를 구분한다.
+        let cell_path_is_textbox = if !cell_path.is_empty() {
+            let section = &self.document.sections[section_idx];
+            let is_textbox = Self::cell_path_terminates_at_textbox(section, para_idx, cell_path)?;
+            if !is_textbox {
+                self.resolve_cell_by_path(section_idx, para_idx, cell_path)?;
+            }
+            is_textbox
+        } else {
+            false
+        };
 
         // --- 1. BinDataContent 추가 ---
         let next_id = self.document.bin_data_content.len() as u16 + 1;
@@ -2093,6 +2174,75 @@ impl DocumentCore {
         };
 
         if !cell_path.is_empty() {
+            if cell_path_is_textbox {
+                // === 글상자 내부 picture 분기 (#1322 maintainer fix) ===
+                // hitTest 의 글상자 sentinel path (`cellIdx=0`) 가 넘어온 경우에는
+                // Picture 를 body paragraph 의 sibling 으로 띄우지 않고, 실제 text_box
+                // paragraph 안에 삽입한다. 글상자 내부 좌표계는 text_box content box
+                // 기준이므로 caller 가 전달한 offset 은 Para-relative 로 해석한다.
+                let (offset_x_hu, offset_y_hu) = match (paper_offset_x_hu, paper_offset_y_hu) {
+                    (Some(x), Some(y)) => (x, y),
+                    _ => (0, 0),
+                };
+
+                // CommonObjAttr (text_box 내부 floating):
+                //   bits 3-4=vert_rel_to(2=Para), bits 8-10=horz_rel_to(3=Para),
+                //   bits 15-17=width_criterion(4=Absolute),
+                //   bits 18-20=height_criterion(2=Absolute),
+                //   bits 21-23=text_wrap(0=Square)
+                let common_attr: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18);
+                let common = CommonObjAttr {
+                    ctrl_id: 0x67736F20,
+                    attr: common_attr,
+                    treat_as_char: false,
+                    vert_rel_to: VertRelTo::Para,
+                    horz_rel_to: HorzRelTo::Para,
+                    text_wrap: crate::model::shape::TextWrap::Square,
+                    horizontal_offset: offset_x_hu.max(0) as u32,
+                    vertical_offset: offset_y_hu.max(0) as u32,
+                    width,
+                    height,
+                    z_order: 1,
+                    description: description.to_string(),
+                    ..Default::default()
+                };
+                let pic = Picture {
+                    common,
+                    shape_attr,
+                    border_x: bx,
+                    border_y: by,
+                    crop,
+                    image_attr,
+                    ..Default::default()
+                };
+
+                let new_ctrl_idx = {
+                    let section = &mut self.document.sections[section_idx];
+                    section.raw_stream = None;
+                    let target_para =
+                        Self::resolve_cell_paragraph_mut(section, para_idx, cell_path)?;
+                    let new_ctrl_idx = target_para.controls.len();
+                    target_para.controls.push(Control::Picture(Box::new(pic)));
+                    target_para.ctrl_data_records.push(None);
+                    target_para.control_mask |= 0x00000800;
+                    new_ctrl_idx
+                };
+
+                self.mark_section_dirty(section_idx);
+                self.recompose_section(section_idx);
+                self.paginate_if_needed();
+                self.invalidate_page_tree_cache();
+
+                self.event_log.push(DocumentEvent::PictureInserted {
+                    section: section_idx,
+                    para: para_idx,
+                });
+                return Ok(super::super::helpers::json_ok_with(&format!(
+                    "\"paraIdx\":{},\"controlIdx\":{}",
+                    para_idx, new_ctrl_idx
+                )));
+            }
+
             // === 셀 floating picture 분기 (#1151 v2 — 한컴 패턴 정합) ===
             // Picture 는 표가 들어있는 paragraph 의 sibling control 로 append 된다.
             // tac=false, wrap=Square (어울림), horz/vert_rel_to=Paper, offset 은 사용자 클릭/드래그 위치.
@@ -3781,14 +3931,15 @@ impl DocumentCore {
             (pd.width as i32 - pd.margin_left as i32 - pd.margin_right as i32).max(7200) as u32;
 
         // attr 비트 계산
-        // textbox: Para/Top/Column/Left/Square = 0x0A0210
-        // 도형(line/ellipse/rectangle): 한컴 기본값 0x046A4000
-        //   Paper/Top/Paper/Left/InFrontOfText + textSide=2 + bit16-17=2 + objNumSort=2 + bit26=1
-        let mut attr: u32 = if shape_type == "textbox" {
-            0x0A0210
-        } else {
-            0x046A4000
-        };
+        // 도형(line/ellipse/rectangle) 및 floating 글상자: 한컴 기본값 0x046A4000
+        //   Paper/Top/Paper/Left/InFrontOfText + 절대크기 + allow_overlap + bit26
+        // inline 글상자(treat_as_char=true): Para/Top/Column/Left/Square = 0x0A0210
+        // [Task #1280 v2] 삽입 글상자는 한컴 정답값 floating(treat_as_char=false)+글앞으로(InFrontOfText).
+        //   권위 샘플 samples/textbox-under-image.hwp 실측: 글상자 배치=글앞으로/Paper/Paper/false.
+        //   serializer(control.rs:1768)는 common.attr!=0 이면 그대로 직렬화하므로 attr 와 enum 필드를
+        //   함께 정합시킨다. treat_as_char=true 인 inline 글상자는 #1280 본편 동작을 그대로 보존.
+        let inline_textbox = shape_type == "textbox" && treat_as_char;
+        let mut attr: u32 = if inline_textbox { 0x0A0210 } else { 0x046A4000 };
         if treat_as_char {
             attr |= 0x01;
             // 글자처럼 취급(인라인) 도형은 anchor 가 문단 기준이어야 한다. 기본 도형
@@ -3902,14 +4053,15 @@ impl DocumentCore {
                 }
             },
             treat_as_char,
-            // 인라인(tac) 도형은 Para anchor — attr 비트 정정과 일치 (위 참조).
-            vert_rel_to: if shape_type == "textbox" || treat_as_char {
+            // Inline/treat-as-char objects must use paragraph-relative anchors.
+            // Floating text boxes keep upstream's Paper/Paper placement.
+            vert_rel_to: if inline_textbox || treat_as_char {
                 VertRelTo::Para
             } else {
                 VertRelTo::Paper
             },
             vert_align: VertAlign::Top,
-            horz_rel_to: if shape_type == "textbox" {
+            horz_rel_to: if inline_textbox {
                 HorzRelTo::Column
             } else if treat_as_char {
                 HorzRelTo::Para
@@ -8525,5 +8677,326 @@ mod issue_1151_v2_tac_toggle_tests {
     #[test]
     fn integration_tac_toggle_matches_hancom_scenario_d() {
         assert_toggle_matches_hancom("d");
+    }
+}
+
+#[cfg(test)]
+mod issue_1280_textbox_creation_tests {
+    //! Issue #1280: rhwp-studio가 삽입한 글상자가 text_box 없는 Rectangle로 생성되어
+    //! 커서 진입·타이핑·붙여넣기가 모두 실패하던 결함.
+    //!
+    //! 근본 결함은 프런트(`input-handler.ts`)가 `shapeType: 'rectangle'`을 전달한 것이고,
+    //! 백엔드 `create_shape_control_native`는 `shape_type == "textbox"`일 때 text_box(내부 문단)를
+    //! 정상 구성한다. 본 테스트는 그 백엔드 계약(글상자=text_box 있음, 사각형=없음)을 고정하여
+    //! 프런트 수정과 함께 회귀를 막는다.
+
+    use super::*;
+    use crate::model::document::{Document, Section, SectionDef};
+    use crate::model::page::PageDef;
+
+    fn make_test_core() -> DocumentCore {
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+        });
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        core
+    }
+
+    fn parse_idx(res: &str, key: &str) -> usize {
+        res.split(&format!("\"{}\":", key))
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing {key} in {res}"))
+    }
+
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+
+    /// 도형 생성 후 (para_idx, ctrl_idx) 반환. 글상자는 한컴 기본값과 동일하게 treat_as_char=true.
+    fn create_shape(core: &mut DocumentCore, shape_type: &str) -> (usize, usize) {
+        let treat_as_char = shape_type == "textbox";
+        // 인자: section_idx, para_idx, char_offset, width, height, horz_offset, vert_offset,
+        // treat_as_char, text_wrap_str, shape_type, line_flip_x, line_flip_y, polygon_points
+        let res = core
+            .create_shape_control_native(
+                0,
+                0,
+                0,
+                21600,
+                7200,
+                0,
+                0,
+                treat_as_char,
+                "TopAndBottom",
+                shape_type,
+                false,
+                false,
+                &[],
+            )
+            .unwrap_or_else(|e| panic!("create {shape_type} failed: {e:?}"));
+        (parse_idx(&res, "paraIdx"), parse_idx(&res, "controlIdx"))
+    }
+
+    fn textbox_of<'a>(
+        core: &'a DocumentCore,
+        para_idx: usize,
+        ctrl_idx: usize,
+    ) -> Option<&'a crate::model::shape::TextBox> {
+        match &core.document.sections[0].paragraphs[para_idx].controls[ctrl_idx] {
+            Control::Shape(s) => crate::document_core::helpers::get_textbox_from_shape(s.as_ref()),
+            other => panic!("expected Control::Shape, got {other:?}"),
+        }
+    }
+
+    fn common_of<'a>(
+        core: &'a DocumentCore,
+        para_idx: usize,
+        ctrl_idx: usize,
+    ) -> &'a crate::model::shape::CommonObjAttr {
+        match &core.document.sections[0].paragraphs[para_idx].controls[ctrl_idx] {
+            Control::Shape(s) => s.common(),
+            other => panic!("expected Control::Shape, got {other:?}"),
+        }
+    }
+
+    /// 글상자를 직접 인자로 생성(treat_as_char/text_wrap 명시). (para_idx, ctrl_idx) 반환.
+    fn create_textbox_with(
+        core: &mut DocumentCore,
+        treat_as_char: bool,
+        text_wrap: &str,
+    ) -> (usize, usize) {
+        let res = core
+            .create_shape_control_native(
+                0,
+                0,
+                0,
+                21600,
+                7200,
+                1000,
+                2000,
+                treat_as_char,
+                text_wrap,
+                "textbox",
+                false,
+                false,
+                &[],
+            )
+            .unwrap_or_else(|e| panic!("create textbox failed: {e:?}"));
+        (parse_idx(&res, "paraIdx"), parse_idx(&res, "controlIdx"))
+    }
+
+    /// [Task #1280 v2] 삽입 글상자를 floating(treat_as_char=false)+InFrontOfText 로 만들면
+    /// 한컴 정답값(Paper/Paper/글앞으로)으로 생성되고 text_box 는 그대로 유지된다.
+    /// 권위 샘플 samples/textbox-under-image.hwp 실측 정합.
+    #[test]
+    fn create_floating_textbox_is_in_front_paper() {
+        use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, false, "InFrontOfText");
+
+        // text_box 유지 (글상자 기능 보존 — floating 에서도)
+        assert!(
+            textbox_of(&core, para, ctrl).is_some(),
+            "floating 글상자도 text_box 를 가져야 한다"
+        );
+
+        let c = common_of(&core, para, ctrl);
+        assert!(!c.treat_as_char, "floating: treat_as_char=false");
+        assert_eq!(
+            c.text_wrap,
+            TextWrap::InFrontOfText,
+            "글앞으로(InFrontOfText)"
+        );
+        assert_eq!(c.vert_rel_to, VertRelTo::Paper, "vert_rel_to=Paper");
+        assert_eq!(c.horz_rel_to, HorzRelTo::Paper, "horz_rel_to=Paper");
+        // 직렬화 attr 비트 정합 (serializer 는 common.attr!=0 이면 그대로 사용).
+        assert_eq!(c.attr & 0x01, 0, "attr bit0(treat_as_char)=0");
+        assert_eq!((c.attr >> 3) & 0x03, 0, "attr bit3-4(vert_rel_to)=Paper(0)");
+        assert_eq!((c.attr >> 8) & 0x03, 0, "attr bit8-9(horz_rel_to)=Paper(0)");
+        assert_eq!(
+            (c.attr >> 21) & 0x07,
+            3,
+            "attr bit21-23(text_wrap)=InFrontOfText(3)"
+        );
+    }
+
+    /// inline 글상자(treat_as_char=true)는 #1280 본편 배치(Para/Column)를 그대로 보존한다(회귀 가드).
+    #[test]
+    fn create_inline_textbox_preserves_para_column() {
+        use crate::model::shape::{HorzRelTo, VertRelTo};
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, true, "Square");
+        let c = common_of(&core, para, ctrl);
+        assert!(c.treat_as_char, "inline: treat_as_char=true");
+        assert_eq!(c.vert_rel_to, VertRelTo::Para, "inline vert_rel_to=Para");
+        assert_eq!(
+            c.horz_rel_to,
+            HorzRelTo::Column,
+            "inline horz_rel_to=Column"
+        );
+    }
+
+    /// floating 글상자에도 텍스트 입력이 정상 동작(#1280 본편 회귀 없음).
+    #[test]
+    fn insert_text_into_floating_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, false, "InFrontOfText");
+        core.insert_text_in_cell_native(0, para, ctrl, 0, 0, 0, "플로팅")
+            .expect("floating 글상자 텍스트 입력 성공");
+        let tb = textbox_of(&core, para, ctrl).expect("text_box 존재");
+        assert_eq!(
+            tb.paragraphs[0].text, "플로팅",
+            "floating 글상자 내부 텍스트 보존"
+        );
+    }
+
+    /// 글상자 안에서 이미지 배치 영역을 드래그한 경우, 그림은 body sibling 이 아니라
+    /// text_box 내부 paragraph 의 Picture control 로 들어가야 한다.
+    #[test]
+    fn insert_picture_into_textbox_uses_textbox_paragraph_control() {
+        use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+
+        let mut core = make_test_core();
+        let (para, ctrl) = create_textbox_with(&mut core, false, "InFrontOfText");
+        let body_control_count_before = core.document.sections[0].paragraphs[para].controls.len();
+        let cell_path = vec![(ctrl, 0, 0)];
+        let image = minimal_png();
+
+        core.insert_picture_native(
+            0,
+            para,
+            0,
+            &cell_path,
+            &image,
+            5000,
+            4000,
+            1,
+            1,
+            "png",
+            "textbox picture",
+            Some(750),
+            Some(1500),
+        )
+        .expect("글상자 내부 picture 삽입 성공");
+
+        let body = &core.document.sections[0].paragraphs[para];
+        assert_eq!(
+            body.controls.len(),
+            body_control_count_before,
+            "글상자 내부 삽입은 body sibling control 을 추가하면 안 된다"
+        );
+
+        let tb = textbox_of(&core, para, ctrl).expect("글상자 text_box 존재");
+        let picture = tb.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::Picture(p) => Some(p.as_ref()),
+                _ => None,
+            })
+            .expect("글상자 내부 문단에 Picture control 이 있어야 한다");
+
+        assert!(!picture.common.treat_as_char);
+        assert_eq!(picture.common.horz_rel_to, HorzRelTo::Para);
+        assert_eq!(picture.common.vert_rel_to, VertRelTo::Para);
+        assert_eq!(picture.common.text_wrap, TextWrap::Square);
+        assert_eq!(picture.common.horizontal_offset, 750);
+        assert_eq!(picture.common.vertical_offset, 1500);
+        assert_eq!(picture.common.width, 5000);
+        assert_eq!(picture.common.height, 4000);
+    }
+
+    #[test]
+    fn create_textbox_has_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_shape(&mut core, "textbox");
+        assert!(
+            textbox_of(&core, para, ctrl).is_some(),
+            "글상자(shape_type=textbox)는 text_box를 가져야 한다 (#1280)"
+        );
+    }
+
+    #[test]
+    fn create_rectangle_has_no_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_shape(&mut core, "rectangle");
+        assert!(
+            textbox_of(&core, para, ctrl).is_none(),
+            "일반 사각형(shape_type=rectangle)은 text_box가 없어야 한다 (글상자/사각형 경로 분리)"
+        );
+    }
+
+    #[test]
+    fn insert_text_into_created_textbox() {
+        let mut core = make_test_core();
+        let (para, ctrl) = create_shape(&mut core, "textbox");
+
+        // 글상자 내부(cell_idx=0 무시, cell_para_idx=0, char_offset=0)에 텍스트 삽입.
+        // 수정 전 프런트 경로에서는 text_box가 없어 "지정된 Shape 컨트롤에 텍스트 박스가 없습니다"로 실패했다.
+        core.insert_text_in_cell_native(0, para, ctrl, 0, 0, 0, "테스트")
+            .expect("글상자에 텍스트 입력이 성공해야 한다 (#1280)");
+
+        let tb = textbox_of(&core, para, ctrl).expect("글상자 text_box 존재");
+        assert_eq!(
+            tb.paragraphs[0].text, "테스트",
+            "글상자 내부 첫 문단에 입력 텍스트가 보존되어야 한다"
+        );
+    }
+
+    /// #1280 이슈가 기대 동작에 명시한 "글상자 안 붙여넣기"를 실측한다.
+    /// 본문 텍스트를 copy_selection 으로 복사한 뒤 글상자 안에 paste_internal_in_cell 로 붙여넣는다.
+    /// 수정 전(text_box 없는 Rectangle)이면 이 경로가 "글상자 없음"(clipboard.rs:512)으로 실패한다.
+    ///
+    /// 주의: 이미지/컨트롤 붙여넣기는 paste_paragraphs_into_cell_paragraphs 가 merge_from 으로 처리하는데
+    /// merge_from 이 controls 를 병합하지 않아 컨트롤이 조용히 누락되는 **별개 결함**의 영향을 받는다.
+    /// 따라서 본 테스트는 텍스트 붙여넣기(컨트롤 없음 경로)만 검증한다.
+    #[test]
+    fn paste_text_into_textbox() {
+        let mut core = make_test_core();
+
+        // 1. 본문에 텍스트 입력 후 선택 영역 복사 → 내부 클립보드에 텍스트 적재(controls 없음)
+        core.insert_text_native(0, 0, 0, "복사원본")
+            .expect("본문 텍스트 입력");
+        core.copy_selection_native(0, 0, 0, 0, 4)
+            .expect("본문 텍스트 복사");
+
+        // 2. 글상자 생성
+        let (tb_para, tb_ctrl) = create_shape(&mut core, "textbox");
+
+        // 3. 글상자 안에 붙여넣기 (cell_idx=0, cell_para_idx=0, char_offset=0)
+        core.paste_internal_in_cell_native(0, tb_para, tb_ctrl, 0, 0, 0)
+            .expect("글상자에 붙여넣기가 성공해야 한다 (#1280; 수정 전엔 \"글상자 없음\")");
+
+        // 4. 글상자 내부 첫 문단에 붙여넣은 텍스트가 들어갔는지 확인
+        let tb = textbox_of(&core, tb_para, tb_ctrl).expect("글상자 text_box 존재");
+        assert!(
+            tb.paragraphs.iter().any(|p| p.text.contains("복사원본")),
+            "붙여넣기 후 글상자 내부 문단에 복사한 텍스트가 있어야 한다"
+        );
     }
 }

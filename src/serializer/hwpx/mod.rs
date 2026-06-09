@@ -698,6 +698,67 @@ mod tests {
     }
 
     #[test]
+    fn issue_1345_picture_effects_shadow_roundtrip() {
+        use crate::model::control::Control;
+        use crate::model::shape::ShapeObject;
+
+        fn count_shape_picture_shadows(shape: &ShapeObject) -> usize {
+            match shape {
+                ShapeObject::Picture(pic) => usize::from(pic.effects.shadow.is_some()),
+                ShapeObject::Group(group) => {
+                    group.children.iter().map(count_shape_picture_shadows).sum()
+                }
+                _ => 0,
+            }
+        }
+
+        fn count_picture_shadows(control: &Control) -> usize {
+            match control {
+                Control::Picture(pic) => usize::from(pic.effects.shadow.is_some()),
+                Control::Shape(shape) => count_shape_picture_shadows(shape),
+                _ => 0,
+            }
+        }
+
+        let bytes = std::fs::read("samples/hwpx/aift.hwpx")
+            .expect("samples/hwpx/aift.hwpx must be readable");
+        let original = parse_hwpx(&bytes).expect("parse original");
+        let parsed_shadow_count: usize = original
+            .sections
+            .iter()
+            .flat_map(|section| &section.paragraphs)
+            .flat_map(|para| &para.controls)
+            .map(count_picture_shadows)
+            .sum();
+        assert!(
+            parsed_shadow_count > 0,
+            "parser must preserve at least one picture shadow effect"
+        );
+
+        let serialized = serialize_hwpx(&original).expect("serialize roundtrip");
+
+        let mut archive =
+            zip::ZipArchive::new(std::io::Cursor::new(serialized)).expect("roundtrip zip");
+        let section_names: Vec<String> = archive
+            .file_names()
+            .filter(|name| name.starts_with("Contents/section") && name.ends_with(".xml"))
+            .map(String::from)
+            .collect();
+        let mut section_xml = String::new();
+        for name in section_names {
+            let mut section = archive.by_name(&name).expect("roundtrip section");
+            std::io::Read::read_to_string(&mut section, &mut section_xml).expect("read section");
+        }
+
+        for needle in ["<hp:shadow ", "<hp:scale ", "<hp:effectsColor ", "<hp:rgb "] {
+            assert!(
+                section_xml.contains(needle),
+                "roundtrip section XML must preserve {needle}"
+            );
+        }
+    }
+
+    #[test]
     fn table_control_roundtrip() {
         use crate::model::control::Control;
         use crate::model::table::Table;

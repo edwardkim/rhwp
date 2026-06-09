@@ -7,6 +7,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use crate::error::HwpError;
 use crate::model::image::ImageEffect;
 use crate::model::ColorRef;
+use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
     paint_op_replay_plane_with_layer, GlyphRunOrientation, GlyphRunReplayEligibility,
     LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree, PaintOp,
@@ -365,6 +366,9 @@ impl SkiaLayerRenderer {
         }
         let mut next_text_source_id = 0_u32;
         for replay_plane in PaintReplayPlane::ORDERED {
+            if !layer_node_has_replay_plane(&tree.root, replay_plane) {
+                continue;
+            }
             self.render_node(
                 canvas,
                 &tree.root,

@@ -72,6 +72,7 @@ exact membership skip이다.
 
 - `cargo fmt --check`
 - `cargo test --release --lib`
+- macOS 로컬: `cargo test --profile release-test --tests`
 - 신규 테스트
 - 필요 시 WASM 빌드
 - 단계 보고서 `mydocs/working/task_m100_823_stage1.md`

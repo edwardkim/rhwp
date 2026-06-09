@@ -1,0 +1,275 @@
+{
+  "label": "transition-core-baseline",
+  "description": "Representative renderer baseline corpus for transition hardening.",
+  "samples": [
+    {
+      "id": "paragraph-line-basic",
+      "file": "lseg-01-basic.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Basic line segmentation sample from the existing CanvasKit representative suite.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      }
+    },
+    {
+      "id": "paragraph-basic",
+      "file": "lseg-05-tab.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "General paragraph flow, tab stops, and inline text spacing.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      }
+    },
+    {
+      "id": "text-align-justify",
+      "file": "re-align-justify-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Justified text sample for paragraph alignment and advance parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      }
+    },
+    {
+      "id": "shift-return",
+      "file": "shift-return.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Soft line break and paragraph flow sample.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.006
+      }
+    },
+    {
+      "id": "font-batang-hancom",
+      "file": "re-font-batang-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "Batang/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.008
+      }
+    },
+    {
+      "id": "table-core",
+      "file": "hwp_table_test.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Baseline table layout, borders, and cell clipping.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      }
+    },
+    {
+      "id": "table-in-textbox",
+      "file": "table-in-tbox.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Table inside text box sample for nested table, text box, and clip replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      }
+    },
+    {
+      "id": "image-crop",
+      "file": "pic-crop-01.hwp",
+      "category": "image",
+      "page": 0,
+      "notes": "Image crop and fill semantics.",
+      "browserParityThresholds": {
+        "maxDiffRatio": 0.0065
+      }
+    },
+    {
+      "id": "image-start",
+      "file": "img-start-001.hwp",
+      "category": "image",
+      "page": 0,
+      "notes": "Image anchoring and start-position sample from the checked-in HWP corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      }
+    },
+    {
+      "id": "equation-inline",
+      "file": "eq-01.hwp",
+      "category": "equation",
+      "page": 0,
+      "notes": "Equation layout and symbol fallback.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      }
+    },
+    {
+      "id": "header-image",
+      "file": "pic-in-head-01.hwp",
+      "category": "header-footer",
+      "page": 0,
+      "notes": "Header region rendering with floating image content.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      }
+    },
+    {
+      "id": "footnote",
+      "file": "footnote-01.hwp",
+      "category": "footnote",
+      "page": 0,
+      "notes": "Footnote marker and footnote area layout.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0095
+      }
+    },
+    {
+      "id": "endnote",
+      "file": "endnote-01.hwp",
+      "category": "endnote",
+      "page": 0,
+      "notes": "Endnote marker and endnote area layout from the existing CanvasKit sweep overrides.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0095
+      }
+    },
+    {
+      "id": "field-core",
+      "file": "field-01.hwp",
+      "category": "field",
+      "page": 0,
+      "notes": "Core field sample from the existing CanvasKit representative suite.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 64,
+        "solidInkMaxDiffRatio": 0.005
+      }
+    },
+    {
+      "id": "hwpctl-api",
+      "file": "hwpctl_API_v2.4.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "HWP control API reference sample for CanvasKit control-document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      }
+    },
+    {
+      "id": "exam-math",
+      "file": "exam_math.hwp",
+      "category": "exam",
+      "page": 0,
+      "notes": "Math exam real-document sample for equation and dense layout parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      }
+    },
+    {
+      "id": "shape-group",
+      "file": "group-drawing-02.hwp",
+      "category": "group-drawing",
+      "page": 0,
+      "notes": "Nested group drawing replay and transform composition.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      }
+    },
+    {
+      "id": "form-controls",
+      "file": "form-01.hwp",
+      "category": "form",
+      "page": 0,
+      "notes": "Form object overlays and control-state painting."
+    },
+    {
+      "id": "hwpx-ref-table",
+      "file": "hwpx/ref/ref_table.hwpx",
+      "category": "hwpx",
+      "page": 0,
+      "notes": "HWPX reference table sample for table-oriented format parity coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      }
+    },
+    {
+      "id": "legacy-doc-2010",
+      "file": "2010-01-06.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Legacy real-document sample from the existing CanvasKit representative suite.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0065
+      }
+    }
+  ]
+}

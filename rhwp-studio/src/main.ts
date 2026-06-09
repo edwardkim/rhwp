@@ -17,6 +17,7 @@ import { insertCommands } from '@/command/commands/insert';
 import { tableCommands } from '@/command/commands/table';
 import { pageCommands } from '@/command/commands/page';
 import { toolCommands } from '@/command/commands/tool';
+import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/pwa-file-handling';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { showValidationModalIfNeeded } from '@/ui/validation-modal';
@@ -239,6 +240,20 @@ async function initialize(): Promise<void> {
     setupEventListeners();
     setupGlobalShortcuts();
     loadFromUrlParam();
+    installPwaFileHandling(window as FileHandlingWindowLike, {
+      openDocumentBytes(payload) {
+        eventBus.emit('open-document-bytes', payload);
+      },
+      notifyUnsupportedFile(fileName) {
+        showLoadError(new Error(`지원하지 않는 파일 형식입니다: ${fileName}. HWP/HWPX 파일만 지원합니다.`));
+      },
+      notifyError(error) {
+        showLoadError(error);
+      },
+      notifyMultipleFiles(count) {
+        console.warn(`[pwa-file-handling] 여러 파일(${count}개)이 전달되어 첫 번째 파일만 엽니다.`);
+      },
+    });
 
     // E2E 테스트용 전역 노출 (개발 모드 전용)
     if (import.meta.env.DEV) {

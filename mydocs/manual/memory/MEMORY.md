@@ -32,7 +32,7 @@
 - [PR 생성은 별도 승인 후 진행](feedback_pr_requires_explicit_approval.md) — PR 준비와 GitHub PR 생성 분리
 - [PR 본문 한국어 작성 필수](feedback_pr_body_korean_required.md) — 내부 타스크 PR 제목과 본문은 한국어
 - [PR 전 로컬 CI급 검증 필수](feedback_pr_ci_before_pr.md) — PR 생성/최종 푸시 전 CI급 로컬 테스트
-- [push 전 cargo test --tests + fmt --check 필수](feedback_push_full_test_required.md) — --lib만으론 통합 테스트 회귀 못 잡음 (PR #1020)
+- [push 전 cargo test --tests + fmt --check 필수](feedback_push_full_test_required.md) — --lib만으론 통합 테스트 회귀 못 잡음; macOS는 `release-test` 프로필 사용
 - [컨트리뷰터 사이클 사전 점검 의무](feedback_contributor_cycle_check.md) — gh pr list --author로 누적 PR 확인, "첫 사이클" 임의 추정 금지
 - [PR supersede 체인 세 패턴](feedback_pr_supersede_chain.md) — close+통합 / 머지+supersede / 머지+회귀정정. 동일 컨트리뷰터 PR 점검 필수
 - [GitHub 미연결 author는 .mailmap으로 정정](feedback_mailmap_for_unlinked_authors.md) — history rewrite 금지, 비파괴 매핑

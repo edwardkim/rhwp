@@ -1,6 +1,7 @@
 use serde::Serialize;
 
 use crate::model::shape::TextWrap;
+use crate::paint::layer_tree::{LayerNode, LayerNodeKind};
 use crate::paint::paint_op::PaintOp;
 use crate::renderer::render_tree::RenderLayerInfo;
 
@@ -65,9 +66,33 @@ pub fn render_layer_replay_plane(layer: Option<RenderLayerInfo>) -> PaintReplayP
     }
 }
 
+pub(crate) fn layer_node_has_replay_plane(node: &LayerNode, target: PaintReplayPlane) -> bool {
+    layer_node_has_replay_plane_with_layer(node, target, None)
+}
+
+fn layer_node_has_replay_plane_with_layer(
+    node: &LayerNode,
+    target: PaintReplayPlane,
+    inherited_layer: Option<RenderLayerInfo>,
+) -> bool {
+    let active_layer = node.layer.or(inherited_layer);
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => children
+            .iter()
+            .any(|child| layer_node_has_replay_plane_with_layer(child, target, active_layer)),
+        LayerNodeKind::ClipRect { child, .. } => {
+            layer_node_has_replay_plane_with_layer(child, target, active_layer)
+        }
+        LayerNodeKind::Leaf { ops } => ops
+            .iter()
+            .any(|op| paint_op_replay_plane_with_layer(op, active_layer) == target),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::paint::{CacheHint, GroupKind, LayerNode};
     use crate::renderer::render_tree::{
         BoundingBox, ImageNode, PageBackgroundNode, RectangleNode, RenderLayerInfo,
     };
@@ -159,5 +184,56 @@ mod tests {
             paint_op_replay_plane_with_layer(&vector, Some(front_layer)),
             PaintReplayPlane::InFrontOfText
         );
+    }
+
+    #[test]
+    fn layer_node_replay_plane_scan_descends_groups() {
+        let child = LayerNode::leaf(
+            bbox(),
+            None,
+            vec![image_with_wrap(Some(TextWrap::InFrontOfText))],
+        );
+        let group = LayerNode::group(
+            bbox(),
+            None,
+            vec![child],
+            CacheHint::None,
+            GroupKind::Generic,
+        );
+
+        assert!(layer_node_has_replay_plane(
+            &group,
+            PaintReplayPlane::InFrontOfText
+        ));
+        assert!(!layer_node_has_replay_plane(
+            &group,
+            PaintReplayPlane::BehindText
+        ));
+    }
+
+    #[test]
+    fn layer_node_replay_plane_scan_honors_inherited_layer_metadata() {
+        let child = LayerNode::leaf(
+            bbox(),
+            None,
+            vec![PaintOp::Rectangle {
+                bbox: bbox(),
+                rect: RectangleNode::new(0.0, ShapeStyle::default(), None),
+            }],
+        );
+        let group = LayerNode::group(
+            bbox(),
+            None,
+            vec![child],
+            CacheHint::None,
+            GroupKind::Generic,
+        )
+        .with_layer(Some(RenderLayerInfo::new(Some(TextWrap::BehindText), 1, 1)));
+
+        assert!(layer_node_has_replay_plane(
+            &group,
+            PaintReplayPlane::BehindText
+        ));
+        assert!(!layer_node_has_replay_plane(&group, PaintReplayPlane::Flow));
     }
 }
