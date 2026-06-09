@@ -17,18 +17,61 @@ export interface EditCommand {
 
 // ─── 편집 작업 서술자 (라우팅 통합) ────────────────────
 
+export type EditDomain =
+  | 'text'
+  | 'charFormat'
+  | 'paraFormat'
+  | 'table'
+  | 'object'
+  | 'page'
+  | 'field'
+  | 'view'
+  | 'unknown';
+
+export type RefreshPolicy = 'auto' | 'full' | 'pageLocal' | 'selectionOnly' | 'none';
+
+export type DirtyScope =
+  | 'document'
+  | 'section'
+  | 'page'
+  | 'paragraph'
+  | 'table'
+  | 'object'
+  | 'none';
+
+export type SelectionPolicy =
+  | 'auto'
+  | 'keep'
+  | 'moveToResult'
+  | 'restoreObjectSelection'
+  | 'none';
+
+export interface OperationMetadata {
+  /** 메뉴/툴바/단축키 action id. */
+  actionId?: string;
+  /** 편집 도메인. 직접 wasm mutation을 audit 할 때 분류 기준으로 사용한다. */
+  domain?: EditDomain;
+  /** mutation 후 렌더링 갱신 정책. 생략하면 kind 별 기존 기본값을 따른다. */
+  refresh?: RefreshPolicy;
+  /** 장기적으로 renderer invalidation 최적화에 사용할 dirty 범위. */
+  dirtyScope?: DirtyScope;
+  /** selection/caret 복원 정책. 현재는 문서화용 metadata로만 사용한다. */
+  selection?: SelectionPolicy;
+}
+
 /**
  * 편집 작업 서술자 — 호출부가 "무엇을 하려는가"만 기술하고,
  * 라우터(executeOperation)가 적절한 Undo 전략을 자동 선택한다.
  *
  * - command: 정밀 커맨드 (텍스트 삽입/삭제, 문단 분할/병합, 서식)
  * - snapshot: 스냅샷 기반 커맨드 (붙여넣기, 객체 삭제 등)
- * - record:  WASM 직접 호출 후 히스토리에만 기록 (IME, 객체 이동)
+ * - record:  WASM 직접 호출 후 히스토리에만 기록 (IME, 객체 이동).
+ *            아키텍처 문서에서는 recordApplied 계약으로 정의한다.
  */
 export type OperationDescriptor =
-  | { kind: 'command'; command: EditCommand }
-  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition }
-  | { kind: 'record'; command: EditCommand };
+  | { kind: 'command'; command: EditCommand; meta?: OperationMetadata }
+  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition; meta?: OperationMetadata }
+  | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
 
 // ─── 본문/셀 분기 헬퍼 ────────────────────────────────
 

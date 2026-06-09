@@ -81,6 +81,8 @@ pub struct CharShape {
     pub strike_shape: u8,
     /// 커닝 여부 (bit 30)
     pub kerning: bool,
+    /// 글꼴에 어울리는 빈칸 사용 여부 (bit 25)
+    pub use_font_space: bool,
 }
 
 /// CharShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
@@ -115,6 +117,7 @@ impl PartialEq for CharShape {
             && self.underline_shape == other.underline_shape
             && self.strike_shape == other.strike_shape
             && self.kerning == other.kerning
+            && self.use_font_space == other.use_font_space
     }
 }
 

@@ -386,10 +386,22 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const pos = ih.getPosition();
       try {
-        const result = JSON.parse(services.wasm.insertPageBreak(pos.sectionIndex, pos.paragraphIndex, pos.charOffset));
-        if (result.ok) {
-          services.eventBus.emit('document-changed');
-        }
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'pageBreak',
+          operation: (wasm) => {
+            const result = JSON.parse(wasm.insertPageBreak(pos.sectionIndex, pos.paragraphIndex, pos.charOffset));
+            if (result.ok) {
+              return {
+                sectionIndex: pos.sectionIndex,
+                paragraphIndex: result.paraIdx ?? pos.paragraphIndex,
+                charOffset: result.charOffset ?? 0,
+              };
+            }
+            return pos;
+          },
+          meta: { actionId: 'page:break', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) {
         console.warn('[page:break] 쪽 나누기 실패:', err);
       }
@@ -436,10 +448,22 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const pos = ih.getPosition();
       try {
-        const result = JSON.parse(services.wasm.insertColumnBreak(pos.sectionIndex, pos.paragraphIndex, pos.charOffset));
-        if (result.ok) {
-          services.eventBus.emit('document-changed');
-        }
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'columnBreak',
+          operation: (wasm) => {
+            const result = JSON.parse(wasm.insertColumnBreak(pos.sectionIndex, pos.paragraphIndex, pos.charOffset));
+            if (result.ok) {
+              return {
+                sectionIndex: pos.sectionIndex,
+                paragraphIndex: result.paraIdx ?? pos.paragraphIndex,
+                charOffset: result.charOffset ?? 0,
+              };
+            }
+            return pos;
+          },
+          meta: { actionId: 'page:column-break', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) {
         console.warn('[page:column-break] 단 나누기 실패:', err);
       }

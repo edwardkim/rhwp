@@ -5729,6 +5729,34 @@ export class HwpDocument {
         return ret !== 0;
     }
     /**
+     * 셀 내 문단의 paraShapeId를 직접 설정한다.
+     * @param {number} sec_idx
+     * @param {number} parent_para_idx
+     * @param {number} control_idx
+     * @param {number} cell_idx
+     * @param {number} cell_para_idx
+     * @param {number} para_shape_id
+     * @returns {string}
+     */
+    setCellParaShapeId(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, para_shape_id) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_setCellParaShapeId(this.__wbg_ptr, sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, para_shape_id);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * [Task #1151 v4] 표 셀 내 Picture 속성 변경 (by_path). Shape 패턴 정합.
      * @param {number} section_idx
      * @param {number} parent_para_idx
@@ -5819,6 +5847,63 @@ export class HwpDocument {
             return getStringFromWasm0(ptr3, len3);
         } finally {
             wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
+     * 글자 서식 ID를 직접 복원한다 (본문 문단).
+     * @param {number} sec_idx
+     * @param {number} para_idx
+     * @param {number} start_offset
+     * @param {number} end_offset
+     * @param {number} char_shape_id
+     * @returns {string}
+     */
+    setCharShapeId(sec_idx, para_idx, start_offset, end_offset, char_shape_id) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_setCharShapeId(this.__wbg_ptr, sec_idx, para_idx, start_offset, end_offset, char_shape_id);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 글자 서식 ID를 직접 복원한다 (셀 내 문단).
+     * @param {number} sec_idx
+     * @param {number} parent_para_idx
+     * @param {number} control_idx
+     * @param {number} cell_idx
+     * @param {number} cell_para_idx
+     * @param {number} start_offset
+     * @param {number} end_offset
+     * @param {number} char_shape_id
+     * @returns {string}
+     */
+    setCharShapeIdInCell(sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, start_offset, end_offset, char_shape_id) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_setCharShapeIdInCell(this.__wbg_ptr, sec_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, start_offset, end_offset, char_shape_id);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
     /**
@@ -6200,6 +6285,31 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_setPageHide(this.__wbg_ptr, sec, para, hide_header, hide_footer, hide_master, hide_border, hide_fill, hide_page_num);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 문단의 paraShapeId를 직접 설정한다.
+     * @param {number} sec_idx
+     * @param {number} para_idx
+     * @param {number} para_shape_id
+     * @returns {string}
+     */
+    setParaShapeId(sec_idx, para_idx, para_shape_id) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_setParaShapeId(this.__wbg_ptr, sec_idx, para_idx, para_shape_id);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {

@@ -400,7 +400,7 @@ fn write_char_pr<W: Write>(
             ("height", &cs.base_size.to_string()),
             ("textColor", &color_hex(cs.text_color)),
             ("shadeColor", &shade),
-            ("useFontSpace", bool01(false)),
+            ("useFontSpace", bool01(cs.use_font_space)),
             ("useKerning", bool01(cs.kerning)),
             ("symMark", sym_mark_str(cs.emphasis_dot)),
             ("borderFillIDRef", &cs.border_fill_id.to_string()),
@@ -1031,5 +1031,37 @@ mod tests {
         assert_eq!(diagonal_shape_type(0b011), "CENTER_BELOW");
         assert_eq!(diagonal_shape_type(0b110), "CENTER_ABOVE");
         assert_eq!(diagonal_shape_type(0b111), "ALL");
+    }
+
+    #[test]
+    fn write_char_pr_use_font_space_roundtrip() {
+        // use_font_space=true 인 CharShape를 직렬화하면 useFontSpace="1" 이 출력되어야 한다.
+        let mut doc = Document::default();
+        doc.doc_info.char_shapes.push(CharShape {
+            use_font_space: true,
+            ..Default::default()
+        });
+        doc.doc_info.char_shapes.push(CharShape {
+            use_font_space: false,
+            ..Default::default()
+        });
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_header(&doc, &ctx).unwrap()).unwrap();
+
+        // 첫 번째 charPr(id=0)에 useFontSpace="1"
+        let first = xml.find("useFontSpace=").expect("useFontSpace attribute");
+        assert!(
+            xml[first..].starts_with(r#"useFontSpace="1""#),
+            "use_font_space=true → useFontSpace=\"1\": {xml}"
+        );
+        // 두 번째 charPr(id=1)에 useFontSpace="0"
+        let second = xml[first + 1..]
+            .find("useFontSpace=")
+            .expect("second useFontSpace");
+        let second_abs = first + 1 + second;
+        assert!(
+            xml[second_abs..].starts_with(r#"useFontSpace="0""#),
+            "use_font_space=false → useFontSpace=\"0\": {xml}"
+        );
     }
 }

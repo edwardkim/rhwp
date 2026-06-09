@@ -228,6 +228,14 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|ctrl| matches!(ctrl, Control::Table(t) if is_para_topbottom_float(&t.common)))
+}
+
 fn inline_equation_count(para: &Paragraph) -> usize {
     para.controls
         .iter()
@@ -4962,15 +4970,19 @@ impl LayoutEngine {
                         y_offset += para_style.spacing_after;
                     }
                 }
-                // [Task #1147 v2] HWPX 원본의 빈 앵커 TopAndBottom 비-TAC 표는 typeset
-                // 측 is_topbottom_empty_anchor_hwpx 보정으로 host_line_spacing=0 처리되므로,
-                // 렌더러도 앵커 line_spacing 을 표 아래 갭으로 가산하지 않는다. 가산 시
-                // typeset 의 cur_h 와 layout 의 y_offset 가 18 px 어긋나 표 직후 문단이
-                // 시각상 아래로 밀려난다 (작업지시자 시각 검수, 권위 PDF 정합).
-                let is_topbottom_empty_anchor_hwpx =
-                    self.is_hwpx_source.get() && is_current_empty_para_float;
+                // [Task #1147 v2] HWPX 원본의 빈 앵커 TopAndBottom 비-TAC 표는 다음
+                // 항목이 일반 문단일 때 host_line_spacing=0 으로 맞춘다. 단, [Task
+                // #1133] 다음 항목도 빈 앵커 TopAndBottom 표이면 해당 line_spacing 이
+                // 표-표 사이 간격이므로 HWP처럼 보존한다.
+                let next_is_empty_topbottom_table_anchor = paragraphs
+                    .get(para_index + 1)
+                    .map(para_is_empty_topbottom_table_anchor)
+                    .unwrap_or(false);
+                let suppress_empty_anchor_spacing = self.is_hwpx_source.get()
+                    && is_current_empty_para_float
+                    && !next_is_empty_topbottom_table_anchor;
                 if let Some(seg) = para.line_segs.last() {
-                    let gap = if is_topbottom_empty_anchor_hwpx {
+                    let gap = if suppress_empty_anchor_spacing {
                         0
                     } else if is_current_empty_para_float {
                         seg.line_spacing.max(0)

@@ -786,14 +786,16 @@ export function finishPictureMoveDrag(this: any): void {
       const targets = multiRefs || [{ ...this.pictureMoveState.ref, origHorzOffset: this.pictureMoveState.origHorzOffset, origVertOffset: this.pictureMoveState.origVertOffset }];
       for (const r of targets) {
         const CmdClass = (r.type === 'shape' || r.type === 'line' || r.type === 'group') ? MoveShapeCommand : MovePictureCommand;
-        this.history.recordWithoutExecute(
-          new CmdClass(
+        this.executeOperation({
+          kind: 'record',
+          command: new CmdClass(
             r.sec, r.ppi, r.ci,
             totalDeltaH, totalDeltaV,
             r.origHorzOffset, r.origVertOffset,
             r.cellPath,
           ),
-        );
+          meta: { domain: 'object', refresh: 'none', dirtyScope: 'object' },
+        });
       }
     }
   }

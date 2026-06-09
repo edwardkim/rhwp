@@ -6,7 +6,7 @@ import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
 import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand } from './command';
-import type { OperationDescriptor, ParaFormatTarget } from './command';
+import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy } from './command';
 import { VirtualScroll } from '@/view/virtual-scroll';
 import { ViewportManager } from '@/view/viewport-manager';
 import type { DocumentPosition, CharProperties, ParaProperties, CursorRect, FormObjectHitResult } from '@/core/types';
@@ -1749,11 +1749,7 @@ export class InputHandler {
           this.cursor.moveTo(newPos);
           this.cursor.resetPreferredX();
         }
-        if (this.shouldUsePageLocalRefresh(desc.command.type, beforePos, newPos)) {
-          this.afterPageLocalEdit();
-        } else {
-          this.afterEdit();
-        }
+        this.refreshAfterOperation(desc.meta?.refresh, 'auto', desc.command.type, beforePos, newPos);
         break;
       }
       case 'snapshot': {
@@ -1762,11 +1758,13 @@ export class InputHandler {
         const newPos = this.history.execute(cmd, this.wasm);
         this.cursor.moveTo(newPos);
         this.cursor.resetPreferredX();
-        this.afterEdit();
+        this.refreshAfterOperation(desc.meta?.refresh, 'full', desc.operationType, cursorBefore, newPos);
         break;
       }
       case 'record': {
-        this.history.recordWithoutExecute(desc.command);
+        const pos = this.cursor.getPosition();
+        this.history.recordWithoutExecute(desc.command, this.wasm);
+        this.refreshAfterOperation(desc.meta?.refresh, 'none', desc.command.type, pos, pos);
         break;
       }
     }
@@ -1844,6 +1842,36 @@ export class InputHandler {
       this.afterPageLocalEdit();
     } else {
       this.afterEdit();
+    }
+  }
+
+  private refreshAfterOperation(
+    requested: RefreshPolicy | undefined,
+    fallback: RefreshPolicy,
+    commandType: string,
+    beforePos: DocumentPosition,
+    afterPos: DocumentPosition,
+  ): void {
+    const policy = requested ?? fallback;
+    switch (policy) {
+      case 'none':
+        return;
+      case 'selectionOnly':
+        this.updateCaret();
+        return;
+      case 'pageLocal':
+        this.afterPageLocalEdit();
+        return;
+      case 'full':
+        this.afterEdit();
+        return;
+      case 'auto':
+      default:
+        if (this.shouldUsePageLocalRefresh(commandType, beforePos, afterPos)) {
+          this.afterPageLocalEdit();
+        } else {
+          this.afterEdit();
+        }
     }
   }
 

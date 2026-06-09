@@ -1605,94 +1605,102 @@ impl DocumentCore {
                 section_idx
             )));
         }
-        let section = &mut self.document.sections[section_idx];
-        if parent_para_idx >= section.paragraphs.len() {
-            return Err(HwpError::RenderError(format!(
-                "부모 문단 인덱스 {} 범위 초과",
-                parent_para_idx
-            )));
-        }
-        let para = &mut section.paragraphs[parent_para_idx];
-        if control_idx >= para.controls.len() {
-            return Err(HwpError::RenderError(format!(
-                "컨트롤 인덱스 {} 범위 초과",
-                control_idx
-            )));
-        }
-        // 표 컨트롤인지 확인
-        if !matches!(
-            &para.controls[control_idx],
-            crate::model::control::Control::Table(_)
-        ) {
-            return Err(HwpError::RenderError(
-                "지정된 컨트롤이 표가 아닙니다".to_string(),
-            ));
-        }
-
-        // 컨트롤이 차지하는 갭의 시작 위치를 찾아 char_offsets 조정
-        // serialize_para_text와 동일한 로직으로 control_idx번째 컨트롤의 위치를 찾는다
-        let text_chars: Vec<char> = para.text.chars().collect();
-        let mut ci = 0usize;
-        let mut prev_end: u32 = 0;
-        let mut gap_start: Option<u32> = None;
-        'outer: for i in 0..text_chars.len() {
-            let offset = if i < para.char_offsets.len() {
-                para.char_offsets[i]
-            } else {
-                prev_end
-            };
-            while prev_end + 8 <= offset && ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break 'outer;
-                }
-                ci += 1;
-                prev_end += 8;
+        {
+            let section = &mut self.document.sections[section_idx];
+            if parent_para_idx >= section.paragraphs.len() {
+                return Err(HwpError::RenderError(format!(
+                    "부모 문단 인덱스 {} 범위 초과",
+                    parent_para_idx
+                )));
             }
-            // 문자 크기 산정
-            let char_size: u32 = if text_chars[i] == '\t' {
-                8
-            } else if text_chars[i].len_utf16() == 2 {
-                2
-            } else {
-                1
-            };
-            prev_end = offset + char_size;
-        }
-        // 텍스트 뒤에 배치된 컨트롤 (남은 컨트롤)
-        if gap_start.is_none() {
-            while ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break;
-                }
-                ci += 1;
-                prev_end += 8;
+            let para = &mut section.paragraphs[parent_para_idx];
+            if control_idx >= para.controls.len() {
+                return Err(HwpError::RenderError(format!(
+                    "컨트롤 인덱스 {} 범위 초과",
+                    control_idx
+                )));
             }
-        }
+            // 표 컨트롤인지 확인
+            if !matches!(
+                &para.controls[control_idx],
+                crate::model::control::Control::Table(_)
+            ) {
+                return Err(HwpError::RenderError(
+                    "지정된 컨트롤이 표가 아닙니다".to_string(),
+                ));
+            }
 
-        // char_offsets 조정: 컨트롤 이후의 모든 offset을 8 감소
-        if let Some(gs) = gap_start {
-            let threshold = gs + 8;
-            for offset in para.char_offsets.iter_mut() {
-                if *offset >= threshold {
-                    *offset -= 8;
+            // 컨트롤이 차지하는 갭의 시작 위치를 찾아 char_offsets 조정
+            // serialize_para_text와 동일한 로직으로 control_idx번째 컨트롤의 위치를 찾는다
+            let text_chars: Vec<char> = para.text.chars().collect();
+            let mut ci = 0usize;
+            let mut prev_end: u32 = 0;
+            let mut gap_start: Option<u32> = None;
+            'outer: for i in 0..text_chars.len() {
+                let offset = if i < para.char_offsets.len() {
+                    para.char_offsets[i]
+                } else {
+                    prev_end
+                };
+                while prev_end + 8 <= offset && ci < para.controls.len() {
+                    if ci == control_idx {
+                        gap_start = Some(prev_end);
+                        break 'outer;
+                    }
+                    ci += 1;
+                    prev_end += 8;
+                }
+                // 문자 크기 산정
+                let char_size: u32 = if text_chars[i] == '\t' {
+                    8
+                } else if text_chars[i].len_utf16() == 2 {
+                    2
+                } else {
+                    1
+                };
+                prev_end = offset + char_size;
+            }
+            // 텍스트 뒤에 배치된 컨트롤 (남은 컨트롤)
+            if gap_start.is_none() {
+                while ci < para.controls.len() {
+                    if ci == control_idx {
+                        gap_start = Some(prev_end);
+                        break;
+                    }
+                    ci += 1;
+                    prev_end += 8;
                 }
             }
+
+            // char_offsets 조정: 컨트롤 이후의 모든 offset을 8 감소
+            if let Some(gs) = gap_start {
+                let threshold = gs + 8;
+                for offset in para.char_offsets.iter_mut() {
+                    if *offset >= threshold {
+                        *offset -= 8;
+                    }
+                }
+            }
+
+            // 컨트롤 및 대응하는 ctrl_data_record 제거
+            para.controls.remove(control_idx);
+            if control_idx < para.ctrl_data_records.len() {
+                para.ctrl_data_records.remove(control_idx);
+            }
+
+            // char_count 갱신 (확장 컨트롤 = 8 code unit)
+            if para.char_count >= 8 {
+                para.char_count -= 8;
+            }
+
+            section.raw_stream = None;
         }
 
-        // 컨트롤 및 대응하는 ctrl_data_record 제거
-        para.controls.remove(control_idx);
-        if control_idx < para.ctrl_data_records.len() {
-            para.ctrl_data_records.remove(control_idx);
-        }
-
-        // char_count 갱신 (확장 컨트롤 = 8 code unit)
-        if para.char_count >= 8 {
-            para.char_count -= 8;
-        }
-
-        section.raw_stream = None;
+        self.reflow_paragraph(section_idx, parent_para_idx);
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            parent_para_idx,
+        );
         self.recompose_section(section_idx);
         self.paginate_if_needed();
 

@@ -251,6 +251,14 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|ctrl| matches!(ctrl, Control::Table(t) if is_para_topbottom_float(&t.common)))
+}
+
 fn para_has_visible_text_or_equation(para: &Paragraph) -> bool {
     para_has_visible_text(para)
         || para
@@ -1707,6 +1715,7 @@ impl TypesetEngine {
                     para_idx,
                     para,
                     composed.get(para_idx),
+                    paragraphs.get(para_idx + 1),
                     styles,
                     measured_tables,
                     page_def,
@@ -4339,6 +4348,7 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         styles: &ResolvedStyleSet,
         composed: Option<&ComposedParagraph>,
+        next_para: Option<&Paragraph>,
         is_column_top: bool,
         is_hwpx_source: bool,
     ) -> FormattedTable {
@@ -4392,6 +4402,9 @@ impl TypesetEngine {
         //   PS.spacing_before / host_line_spacing 을 별도 가산하면 HWPX vpos delta 와
         //   +sb +leading 만큼 어긋나 페이지 overflow 유발.
         //   HWP5/HWP3 는 LINE_SEG 인코딩이 달라 기존 동작 유지 (hwpspec 등 178p 정합).
+        // [Task #1133] 단, 빈 앵커 TopAndBottom 표가 연속될 때는 첫 표의
+        //   host_line_spacing 이 표-표 사이 시각 간격이다. 이를 0으로 누르면 HWPX
+        //   pi=28→29가 HWP와 달리 붙어 출력된다.
         let is_topbottom_empty_anchor_hwpx = is_hwpx_source
             && !is_tac
             && matches!(
@@ -4399,8 +4412,13 @@ impl TypesetEngine {
                 crate::model::shape::TextWrap::TopAndBottom
             )
             && para.text.is_empty();
+        let next_is_empty_topbottom_table_anchor = next_para
+            .map(para_is_empty_topbottom_table_anchor)
+            .unwrap_or(false);
+        let suppress_empty_anchor_spacing =
+            is_topbottom_empty_anchor_hwpx && !next_is_empty_topbottom_table_anchor;
 
-        let host_line_spacing = if is_topbottom_empty_anchor_hwpx {
+        let host_line_spacing = if suppress_empty_anchor_spacing {
             0.0
         } else if !is_tac && !is_single_cell_placeholder {
             para.line_segs
@@ -4416,10 +4434,11 @@ impl TypesetEngine {
         // - 자리차지(text_wrap=1) 비-TAC 표: spacing_before 제외
         //   (layout에서 v_offset 기반 절대 위치로 배치)
         // - 단 상단: spacing_before 제외
-        // - [Task #1147] HWPX 빈 앵커 TopAndBottom 비-TAC 표: spacing_before 제외 (위 주석)
+        // - [Task #1147] HWPX 빈 앵커 TopAndBottom 비-TAC 표: 다음 항목이 일반 문단이면
+        //   spacing_before 제외 (위 주석). 다음 항목도 표 앵커이면 HWP처럼 보존한다.
         let before = if !is_tac && table_text_wrap == 1 {
             outer_top
-        } else if is_topbottom_empty_anchor_hwpx && !is_column_top {
+        } else if suppress_empty_anchor_spacing && !is_column_top {
             outer_top
         } else {
             (if !is_column_top { sb } else { 0.0 }) + outer_top
@@ -4514,6 +4533,7 @@ impl TypesetEngine {
         para_idx: usize,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
+        next_para: Option<&Paragraph>,
         styles: &ResolvedStyleSet,
         measured_tables: &[MeasuredTable],
         _page_def: &PageDef,
@@ -4683,6 +4703,7 @@ impl TypesetEngine {
                         measured_tables,
                         styles,
                         composed,
+                        next_para,
                         is_column_top,
                         st.is_hwpx_source,
                     );
