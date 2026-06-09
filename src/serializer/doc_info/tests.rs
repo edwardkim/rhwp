@@ -151,6 +151,7 @@ fn test_serialize_char_shape_roundtrip() {
         underline_shape: 0,
         strike_shape: 0,
         kerning: false,
+        use_font_space: false,
     };
 
     let data = serialize_char_shape(&cs);
@@ -463,6 +464,7 @@ fn test_serialize_doc_info_roundtrip() {
         underline_shape: 0,
         strike_shape: 0,
         kerning: false,
+        use_font_space: false,
     });
     doc_info.para_shapes.push(ParaShape {
         raw_data: None,
