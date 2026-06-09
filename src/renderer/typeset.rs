@@ -34,6 +34,12 @@ use super::pagination::{
     PageContent, PageItem, PaginationResult,
 };
 
+const TABLE_SPLIT_FIT_TOLERANCE_PX: f64 = 1.0;
+
+fn table_rows_fit_budget(height: f64, budget: f64) -> bool {
+    height <= budget + TABLE_SPLIT_FIT_TOLERANCE_PX
+}
+
 fn note_number_format_from_hwp_code(code: u8) -> RenderNumberFormat {
     match code {
         0 => RenderNumberFormat::Digit,
@@ -5846,6 +5852,43 @@ impl TypesetEngine {
                 );
             }
 
+            if cursor_row == 0
+                && !is_continuation
+                && start_cut.is_empty()
+                && st.current_height < 1.0
+                && caption_overhead == 0.0
+            {
+                let whole_rows_height: f64 = cut_row_h
+                    .iter()
+                    .enumerate()
+                    .map(|(r, h)| h + if r > 0 { cs } else { 0.0 })
+                    .sum();
+
+                // Exported HWP table row totals can be subpixel-larger than the body
+                // box while Hancom still keeps the table unbroken. Limit the recovery
+                // to first-fragment whole-table placement; middle fragments stay exact.
+                if whole_rows_height > avail_for_rows
+                    && table_rows_fit_budget(whole_rows_height, avail_for_rows)
+                {
+                    if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                        eprintln!(
+                            "TABLE_WHOLE_TOLERANCE: pi={} sec={} rows={} whole={:.1} avail={:.1}",
+                            para_idx,
+                            st.section_index,
+                            row_count,
+                            whole_rows_height,
+                            avail_for_rows,
+                        );
+                    }
+                    st.current_items.push(PageItem::Table {
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                    });
+                    st.current_height += whole_rows_height + host_spacing_total;
+                    break;
+                }
+            }
+
             // [Task #993] 컷 기반 행 경계 walk — cursor_row 부터 avail_for_rows
             // 안에 들어가는 행을 advance_row_cut(단일 권위 함수)으로 누적 배치한다.
             // 예산을 못 채우거나 vpos 리셋(hard break)을 만난 첫 행이 분할 행이
@@ -6883,6 +6926,12 @@ mod tests {
     fn test_typeset_engine_creation() {
         let engine = TypesetEngine::new(96.0);
         assert_eq!(engine.dpi, 96.0);
+    }
+
+    #[test]
+    fn table_rows_fit_budget_accepts_subpixel_export_drift() {
+        assert!(table_rows_fit_budget(1072.0, 1071.1));
+        assert!(!table_rows_fit_budget(1072.2, 1071.1));
     }
 
     #[test]
