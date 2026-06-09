@@ -521,7 +521,8 @@ fn parse_char_shape(
             b"height" => cs.base_size = parse_i32(&attr),
             b"textColor" => cs.text_color = parse_color(&attr),
             b"shadeColor" => cs.shade_color = parse_color(&attr),
-            b"useFontSpace" | b"useKerning" | b"symMark" => {}
+            b"useFontSpace" => cs.use_font_space = parse_bool(&attr),
+            b"useKerning" | b"symMark" => {}
             b"borderFillIDRef" => cs.border_fill_id = parse_u16(&attr),
             _ => {}
         }

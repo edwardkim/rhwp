@@ -596,6 +596,8 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let strike_shape = ((attr >> 26) & 0x0F) as u8;
     // 커닝 여부 (bit 30)
     let kerning = (attr & (1 << 30)) != 0;
+    // 글꼴에 어울리는 빈칸 사용 여부 (bit 25)
+    let use_font_space = (attr & (1 << 25)) != 0;
 
     Ok(CharShape {
         raw_data: None,
@@ -628,6 +630,7 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
         underline_shape,
         strike_shape,
         kerning,
+        use_font_space,
     })
 }
 
@@ -1018,6 +1021,50 @@ mod tests {
         assert!(cs.bold);
         assert!(cs.italic);
         assert_eq!(cs.text_color, 0);
+    }
+
+    #[test]
+    fn test_parse_char_shape_use_font_space() {
+        fn make_data(attr: u32) -> Vec<u8> {
+            let mut data = Vec::new();
+            for _ in 0..7 {
+                data.extend_from_slice(&0u16.to_le_bytes());
+            }
+            for _ in 0..7 {
+                data.push(100);
+            }
+            for _ in 0..7 {
+                data.push(0i8 as u8);
+            }
+            for _ in 0..7 {
+                data.push(100);
+            }
+            for _ in 0..7 {
+                data.push(0i8 as u8);
+            }
+            data.extend_from_slice(&1000i32.to_le_bytes());
+            data.extend_from_slice(&attr.to_le_bytes());
+            data.push(0); // shadow_offset_x
+            data.push(0); // shadow_offset_y
+            data.extend_from_slice(&0u32.to_le_bytes()); // text_color
+            data.extend_from_slice(&0u32.to_le_bytes()); // underline_color
+            data.extend_from_slice(&0x00FFFFFFu32.to_le_bytes()); // shade_color
+            data.extend_from_slice(&0x00B2B2B2u32.to_le_bytes()); // shadow_color
+            data
+        }
+
+        // bit 25 미설정 → use_font_space=false
+        let cs = parse_char_shape(&make_data(0)).unwrap();
+        assert!(!cs.use_font_space);
+
+        // bit 25 설정 → use_font_space=true
+        let cs = parse_char_shape(&make_data(1 << 25)).unwrap();
+        assert!(cs.use_font_space);
+
+        // bit 30 (kerning) 과 bit 25 동시 설정
+        let cs = parse_char_shape(&make_data((1 << 30) | (1 << 25))).unwrap();
+        assert!(cs.kerning);
+        assert!(cs.use_font_space);
     }
 
     #[test]
