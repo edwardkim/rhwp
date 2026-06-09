@@ -13,7 +13,10 @@ use crate::model::control::{
 use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply, MasterPage};
-use crate::model::image::{CropInfo, ImageAttr, ImageEffect};
+use crate::model::image::{
+    CropInfo, EffectColor, EffectPoint, EffectRgb, ImageAttr, ImageEffect, PictureEffects,
+    PictureShadow,
+};
 use crate::model::page::{
     BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderBasis, PageBorderFill,
     PageBorderUiBasis, PageDef,
@@ -2133,6 +2136,7 @@ fn parse_picture(
     let mut border_y = [0i32; 4];
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
+    let mut effects = PictureEffects::default();
 
     // <hp:pic> 요소 자체의 속성 파싱
     for attr in e.attributes().flatten() {
@@ -2180,6 +2184,9 @@ fn parse_picture(
             }
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"shapeComment" => {
                 common.description = read_dutmal_text(reader, b"shapeComment")?;
+            }
+            Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"effects" => {
+                effects = parse_picture_effects(reader)?;
             }
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
@@ -2431,8 +2438,142 @@ fn parse_picture(
     pic.border_x = border_x;
     pic.border_y = border_y;
     pic.instance_id = picture_instance_id;
+    pic.effects = effects;
 
     Ok(Control::Picture(Box::new(pic)))
+}
+
+fn parse_picture_effects(reader: &mut Reader<&[u8]>) -> Result<PictureEffects, HwpxError> {
+    let mut effects = PictureEffects::default();
+    let mut buf = Vec::new();
+
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref e)) if local_name(e.name().as_ref()) == b"shadow" => {
+                effects.shadow = Some(parse_picture_shadow(e, reader)?);
+            }
+            Ok(Event::Empty(ref e)) if local_name(e.name().as_ref()) == b"shadow" => {
+                effects.shadow = Some(parse_picture_shadow_attrs(e));
+            }
+            Ok(Event::End(ref e)) if local_name(e.name().as_ref()) == b"effects" => break,
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("effects: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+
+    Ok(effects)
+}
+
+fn parse_picture_shadow(
+    e: &quick_xml::events::BytesStart<'_>,
+    reader: &mut Reader<&[u8]>,
+) -> Result<PictureShadow, HwpxError> {
+    let mut shadow = parse_picture_shadow_attrs(e);
+    let mut buf = Vec::new();
+
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref e)) => match local_name(e.name().as_ref()) {
+                b"skew" => shadow.skew = Some(parse_effect_point(e)),
+                b"scale" => shadow.scale = Some(parse_effect_point(e)),
+                b"effectsColor" => {
+                    shadow.color = Some(parse_effect_color_attrs(e));
+                }
+                _ => {}
+            },
+            Ok(Event::Start(ref e)) if local_name(e.name().as_ref()) == b"effectsColor" => {
+                shadow.color = Some(parse_effect_color(e, reader)?);
+            }
+            Ok(Event::End(ref e)) if local_name(e.name().as_ref()) == b"shadow" => break,
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("shadow: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+
+    Ok(shadow)
+}
+
+fn parse_picture_shadow_attrs(e: &quick_xml::events::BytesStart<'_>) -> PictureShadow {
+    let mut shadow = PictureShadow::default();
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"style" => shadow.style = Some(attr_str(&attr)),
+            b"alpha" => shadow.alpha = Some(attr_str(&attr)),
+            b"radius" => shadow.radius = Some(attr_str(&attr)),
+            b"direction" => shadow.direction = Some(attr_str(&attr)),
+            b"distance" => shadow.distance = Some(attr_str(&attr)),
+            b"alignStyle" => shadow.align_style = Some(attr_str(&attr)),
+            b"rotationStyle" => shadow.rotation_style = Some(attr_str(&attr)),
+            _ => {}
+        }
+    }
+    shadow
+}
+
+fn parse_effect_point(e: &quick_xml::events::BytesStart<'_>) -> EffectPoint {
+    let mut point = EffectPoint::default();
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"x" => point.x = Some(attr_str(&attr)),
+            b"y" => point.y = Some(attr_str(&attr)),
+            _ => {}
+        }
+    }
+    point
+}
+
+fn parse_effect_color(
+    e: &quick_xml::events::BytesStart<'_>,
+    reader: &mut Reader<&[u8]>,
+) -> Result<EffectColor, HwpxError> {
+    let mut color = parse_effect_color_attrs(e);
+    let mut buf = Vec::new();
+
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref e)) if local_name(e.name().as_ref()) == b"rgb" => {
+                color.rgb = Some(parse_effect_rgb(e));
+            }
+            Ok(Event::End(ref e)) if local_name(e.name().as_ref()) == b"effectsColor" => break,
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("effectsColor: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+
+    Ok(color)
+}
+
+fn parse_effect_color_attrs(e: &quick_xml::events::BytesStart<'_>) -> EffectColor {
+    let mut color = EffectColor::default();
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"type" => color.color_type = Some(attr_str(&attr)),
+            b"schemeIdx" => color.scheme_idx = Some(attr_str(&attr)),
+            b"systemIdx" => color.system_idx = Some(attr_str(&attr)),
+            b"presetIdx" => color.preset_idx = Some(attr_str(&attr)),
+            _ => {}
+        }
+    }
+    color
+}
+
+fn parse_effect_rgb(e: &quick_xml::events::BytesStart<'_>) -> EffectRgb {
+    let mut rgb = EffectRgb::default();
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"r" => rgb.r = Some(attr_str(&attr)),
+            b"g" => rgb.g = Some(attr_str(&attr)),
+            b"b" => rgb.b = Some(attr_str(&attr)),
+            _ => {}
+        }
+    }
+    rgb
 }
 
 // ─── 그리기 객체 공통 속성 파싱 ───

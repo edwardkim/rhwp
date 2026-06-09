@@ -13303,6 +13303,7 @@ fn test_save_picture() {
         border_opacity: ref_pic.border_opacity,
         instance_id: ref_pic.instance_id,
         raw_picture_extra: ref_pic.raw_picture_extra.clone(),
+        effects: ref_pic.effects.clone(),
         caption: None,
     };
 
@@ -14489,6 +14490,7 @@ fn test_save_pic_in_table() {
         border_opacity: ref_pic.border_opacity,
         instance_id: ref_pic.instance_id,
         raw_picture_extra: ref_pic.raw_picture_extra.clone(),
+        effects: ref_pic.effects.clone(),
         caption: None,
     };
 

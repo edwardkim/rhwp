@@ -489,13 +489,30 @@ fn render_shape(shape: &ShapeObject, ctx: &SerializeContext) -> String {
             }
         };
     }
+    if let ShapeObject::Group(g) = shape {
+        let mut xml = match writer_to_string(|w| super::shape::write_container_open(w, &g.common)) {
+            Ok(xml) => xml,
+            Err(e) => {
+                eprintln!("[hwpx] Shape::Group 직렬화 실패: {e}");
+                String::new()
+            }
+        };
+        for child in &g.children {
+            xml.push_str(&render_shape(child, ctx));
+        }
+        match writer_to_string(super::shape::write_container_close) {
+            Ok(close) => xml.push_str(&close),
+            Err(e) => eprintln!("[hwpx] Shape::Group 닫기 실패: {e}"),
+        }
+        return xml;
+    }
     let (tag, c) = match shape {
         ShapeObject::Rectangle(_) | ShapeObject::Line(_) => unreachable!(),
         ShapeObject::Ellipse(e) => ("ellipse", &e.common),
         ShapeObject::Arc(a) => ("arc", &a.common),
         ShapeObject::Polygon(p) => ("polygon", &p.common),
         ShapeObject::Curve(cv) => ("curve", &cv.common),
-        ShapeObject::Group(g) => ("container", &g.common),
+        ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
             return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
                 Ok(xml) => xml,

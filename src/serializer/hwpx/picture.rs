@@ -27,7 +27,9 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
-use crate::model::image::{ImageEffect, Picture};
+use crate::model::image::{
+    EffectColor, EffectPoint, EffectRgb, ImageEffect, Picture, PictureShadow,
+};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeComponentAttr, TextFlow, TextWrap, VertAlign,
     VertRelTo,
@@ -86,7 +88,7 @@ pub fn write_picture<W: Write>(
     write_in_margin(w, pic)?;
     write_img_dim(w, pic)?;
     write_img(w, pic, ctx)?; // 3-way 단언 지점
-    write_effects(w)?;
+    write_effects(w, pic)?;
     write_sz(w, &pic.common)?;
     write_pos(w, &pic.common)?;
     write_out_margin(w, &pic.common)?;
@@ -247,11 +249,90 @@ fn write_img<W: Write>(
     )
 }
 
-fn write_effects<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    // Stage 4 에선 빈 effects 출력 (필요시 확장).
+fn write_effects<W: Write>(w: &mut Writer<W>, pic: &Picture) -> Result<(), SerializeError> {
     start_tag(w, "hp:effects")?;
+    if let Some(shadow) = &pic.effects.shadow {
+        write_shadow(w, shadow)?;
+    }
     end_tag(w, "hp:effects")?;
     Ok(())
+}
+
+fn write_shadow<W: Write>(w: &mut Writer<W>, shadow: &PictureShadow) -> Result<(), SerializeError> {
+    let mut attrs = Vec::new();
+    push_opt_attr(&mut attrs, "style", shadow.style.as_deref());
+    push_opt_attr(&mut attrs, "alpha", shadow.alpha.as_deref());
+    push_opt_attr(&mut attrs, "radius", shadow.radius.as_deref());
+    push_opt_attr(&mut attrs, "direction", shadow.direction.as_deref());
+    push_opt_attr(&mut attrs, "distance", shadow.distance.as_deref());
+    push_opt_attr(&mut attrs, "alignStyle", shadow.align_style.as_deref());
+    push_opt_attr(
+        &mut attrs,
+        "rotationStyle",
+        shadow.rotation_style.as_deref(),
+    );
+
+    start_tag_attrs(w, "hp:shadow", &attrs)?;
+    if let Some(skew) = &shadow.skew {
+        write_effect_point(w, "hp:skew", skew)?;
+    }
+    if let Some(scale) = &shadow.scale {
+        write_effect_point(w, "hp:scale", scale)?;
+    }
+    if let Some(color) = &shadow.color {
+        write_effect_color(w, color)?;
+    }
+    end_tag(w, "hp:shadow")?;
+    Ok(())
+}
+
+fn write_effect_point<W: Write>(
+    w: &mut Writer<W>,
+    name: &str,
+    point: &EffectPoint,
+) -> Result<(), SerializeError> {
+    let mut attrs = Vec::new();
+    push_opt_attr(&mut attrs, "x", point.x.as_deref());
+    push_opt_attr(&mut attrs, "y", point.y.as_deref());
+    empty_tag(w, name, &attrs)
+}
+
+fn write_effect_color<W: Write>(
+    w: &mut Writer<W>,
+    color: &EffectColor,
+) -> Result<(), SerializeError> {
+    let mut attrs = Vec::new();
+    push_opt_attr(&mut attrs, "type", color.color_type.as_deref());
+    push_opt_attr(&mut attrs, "schemeIdx", color.scheme_idx.as_deref());
+    push_opt_attr(&mut attrs, "systemIdx", color.system_idx.as_deref());
+    push_opt_attr(&mut attrs, "presetIdx", color.preset_idx.as_deref());
+
+    if let Some(rgb) = &color.rgb {
+        start_tag_attrs(w, "hp:effectsColor", &attrs)?;
+        write_effect_rgb(w, rgb)?;
+        end_tag(w, "hp:effectsColor")?;
+    } else {
+        empty_tag(w, "hp:effectsColor", &attrs)?;
+    }
+    Ok(())
+}
+
+fn write_effect_rgb<W: Write>(w: &mut Writer<W>, rgb: &EffectRgb) -> Result<(), SerializeError> {
+    let mut attrs = Vec::new();
+    push_opt_attr(&mut attrs, "r", rgb.r.as_deref());
+    push_opt_attr(&mut attrs, "g", rgb.g.as_deref());
+    push_opt_attr(&mut attrs, "b", rgb.b.as_deref());
+    empty_tag(w, "hp:rgb", &attrs)
+}
+
+fn push_opt_attr<'a>(
+    attrs: &mut Vec<(&'static str, &'a str)>,
+    key: &'static str,
+    value: Option<&'a str>,
+) {
+    if let Some(value) = value {
+        attrs.push((key, value));
+    }
 }
 
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
@@ -392,7 +473,9 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::model::document::Document;
-    use crate::model::image::{ImageAttr, Picture};
+    use crate::model::image::{
+        EffectColor, EffectPoint, EffectRgb, ImageAttr, Picture, PictureEffects, PictureShadow,
+    };
     use crate::serializer::hwpx::context::SerializeContext;
 
     fn make_picture(bin_data_id: u16) -> Picture {
@@ -532,5 +615,47 @@ mod tests {
         assert_eq!(image_effect_str(ImageEffect::RealPic), "REAL_PIC");
         assert_eq!(image_effect_str(ImageEffect::GrayScale), "GRAY_SCALE");
         assert_eq!(image_effect_str(ImageEffect::BlackWhite), "BLACK_WHITE");
+    }
+
+    #[test]
+    fn picture_effects_shadow_are_serialized() {
+        let doc = make_doc_with_bin(1, "png");
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.effects = PictureEffects {
+            shadow: Some(PictureShadow {
+                style: Some("OUTSIDE".to_string()),
+                alpha: Some("0.8".to_string()),
+                radius: Some("400".to_string()),
+                direction: Some("45".to_string()),
+                distance: Some("1000".to_string()),
+                align_style: Some("TOP_LEFT".to_string()),
+                rotation_style: Some("0".to_string()),
+                skew: None,
+                scale: Some(EffectPoint {
+                    x: Some("1".to_string()),
+                    y: Some("1".to_string()),
+                }),
+                color: Some(EffectColor {
+                    color_type: Some("RGB".to_string()),
+                    scheme_idx: Some("-1".to_string()),
+                    system_idx: Some("-1".to_string()),
+                    preset_idx: Some("-1".to_string()),
+                    rgb: Some(EffectRgb {
+                        r: Some("0".to_string()),
+                        g: Some("0".to_string()),
+                        b: Some("0".to_string()),
+                    }),
+                }),
+            }),
+        };
+
+        let xml = serialize(&pic, &ctx);
+        assert!(xml.contains(r#"<hp:shadow style="OUTSIDE" alpha="0.8" radius="400" direction="45" distance="1000" alignStyle="TOP_LEFT" rotationStyle="0">"#));
+        assert!(xml.contains(r#"<hp:scale x="1" y="1"/>"#));
+        assert!(xml.contains(
+            r#"<hp:effectsColor type="RGB" schemeIdx="-1" systemIdx="-1" presetIdx="-1">"#
+        ));
+        assert!(xml.contains(r#"<hp:rgb r="0" g="0" b="0"/>"#));
     }
 }
