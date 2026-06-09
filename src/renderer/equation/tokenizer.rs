@@ -455,6 +455,14 @@ impl Tokenizer {
             return self.read_command();
         }
 
+        // HWP 수식 PUA(사용자 정의 영역) 특수기호 매핑 (#1343)
+        // 한컴 수식 편집기가 PUA로 저장한 기호(예: 조건부 막대 U+E04D)를 표준 기호로
+        // 변환한다. 매핑이 없으면 아래 Text 분기로 폴백하여 글리프 미존재 시 두부(▦)가 된다.
+        if let Some(sym) = super::symbols::lookup_equation_pua(ch) {
+            self.pos += 1;
+            return Token::new(TokenType::Symbol, sym, start);
+        }
+
         // 기타 문자 (한글 등) — 연속 비-ASCII 문자를 하나의 Text 토큰으로
         if !ch.is_ascii() {
             let mut value = String::new();
@@ -693,6 +701,20 @@ mod tests {
             .map(|t| t.value.as_str())
             .collect();
         assert_eq!(syms, vec!["<=", ">=", "!=", "=="]);
+    }
+
+    #[test]
+    fn test_pua_conditional_bar() {
+        // #1343: 한컴 수식 PUA 조건부 막대 U+E04D → 단일 `|` 기호와 동일 토큰
+        let tokens = tokenize("rm P LEFT ( it A \u{E04D} B RIGHT )");
+        let bar: Vec<_> = tokens
+            .iter()
+            .filter(|t| t.ty == TokenType::Symbol)
+            .map(|t| t.value.as_str())
+            .collect();
+        assert_eq!(bar, vec!["|"]);
+        // PUA 원형 코드포인트가 토큰에 남지 않아야 한다(두부 방지)
+        assert!(tokens.iter().all(|t| !t.value.contains('\u{E04D}')));
     }
 
     #[test]

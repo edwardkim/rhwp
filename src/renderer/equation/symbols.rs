@@ -613,6 +613,19 @@ pub fn lookup_function(cmd: &str) -> Option<&'static str> {
     FUNCTIONS.get(cmd).copied()
 }
 
+/// HWP 수식 스크립트 PUA(사용자 정의 영역) 특수기호 → 표준 기호 매핑
+///
+/// 한컴 수식 편집기는 일부 기호를 PUA(U+E000~F8FF)로 저장한다. 매핑이 없으면
+/// 글리프 미존재로 두부(▦)가 렌더된다.
+/// - `U+E04D`: 조건부 확률 막대 `|` (예: `P(A|B)`) — #1343
+static EQUATION_PUA: LazyLock<HashMap<char, &'static str>> =
+    LazyLock::new(|| HashMap::from([('\u{E04D}', "|")]));
+
+/// PUA 영역 수식 기호 조회 (#1343)
+pub fn lookup_equation_pua(ch: char) -> Option<&'static str> {
+    EQUATION_PUA.get(&ch).copied()
+}
+
 /// 글자 장식 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum DecoKind {
