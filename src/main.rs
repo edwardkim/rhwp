@@ -1041,7 +1041,7 @@ fn export_pdf(args: &[String]) {
         }
     };
 
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
@@ -1055,7 +1055,10 @@ fn export_pdf(args: &[String]) {
     // 출력 디렉토리 생성
     if let Some(parent) = Path::new(&output_file).parent() {
         if !parent.exists() {
-            let _ = fs::create_dir_all(parent);
+            if let Err(e) = fs::create_dir_all(parent) {
+                eprintln!("오류: 출력 디렉토리를 만들 수 없습니다 - {}", e);
+                return;
+            }
         }
     }
 
@@ -1074,33 +1077,25 @@ fn export_pdf(args: &[String]) {
         None => (0..page_count).collect(),
     };
 
-    // SVG 렌더링 → PDF 변환
-    let mut svg_pages: Vec<String> = Vec::new();
-    for page_num in &pages {
-        match doc.render_page_svg(*page_num) {
-            Ok(svg) => svg_pages.push(svg),
-            Err(e) => {
-                eprintln!("오류: 페이지 {} 렌더링 실패 - {:?}", page_num, e);
-                return;
-            }
-        }
-    }
-
     #[cfg(not(target_arch = "wasm32"))]
     {
-        use rhwp::renderer::pdf;
-        match pdf::svgs_to_pdf(&svg_pages) {
-            Ok(pdf_bytes) => match fs::write(&output_file, &pdf_bytes) {
-                Ok(_) => println!(
-                    "  → {} ({}KB, {}페이지)",
-                    output_file,
-                    pdf_bytes.len() / 1024,
-                    svg_pages.len()
-                ),
-                Err(e) => eprintln!("오류: PDF 저장 실패 - {}", e),
-            },
-            Err(e) => eprintln!("오류: PDF 변환 실패 - {}", e),
+        let pdf_bytes = match doc.render_pages_pdf_native(&pages) {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                eprintln!("오류: PDF 변환 실패 - {}", e);
+                return;
+            }
+        };
+        if let Err(e) = fs::write(&output_file, &pdf_bytes) {
+            eprintln!("오류: PDF 저장 실패 - {}", e);
+            return;
         }
+        println!(
+            "  → {} ({}KB, {}페이지)",
+            output_file,
+            pdf_bytes.len() / 1024,
+            pages.len()
+        );
     }
 
     println!("PDF 내보내기 완료");

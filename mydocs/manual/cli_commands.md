@@ -42,6 +42,10 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
 
 ### `export-pdf <파일> [-o 출력.pdf] [-p 페이지]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).
+- `DocumentCore::render_page_pdf_native`, `render_pages_pdf_native`, `render_document_pdf_native`
+  native API와 같은 SVG-derived PDF export 경로를 사용한다.
+- `-p`는 0-based 단일 페이지 선택이며, 생략하면 전체 문서를 다중 페이지 PDF로 내보낸다.
+- direct/vector `PageLayerTree → PDF` backend는 아직 후속 작업이다.
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.

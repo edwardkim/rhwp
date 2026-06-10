@@ -295,6 +295,41 @@ impl DocumentCore {
         Ok(renderer.output().to_string())
     }
 
+    /// PDF export for one page, implemented as the current compatibility path:
+    /// SVG render output -> svg2pdf.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn render_page_pdf_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
+        let svg = self.render_page_svg_native(page_num)?;
+        crate::renderer::pdf::svg_to_pdf(&svg).map_err(HwpError::RenderError)
+    }
+
+    /// PDF export for an explicit 0-based page selection.
+    ///
+    /// This keeps PDF as a native/export API surface rather than a WASM render path.
+    /// The implementation intentionally reuses the SVG compatibility output until a
+    /// direct/vector PDF backend is introduced.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn render_pages_pdf_native(&self, page_nums: &[u32]) -> Result<Vec<u8>, HwpError> {
+        if page_nums.is_empty() {
+            return Err(HwpError::RenderError(
+                "PDF export requires at least one page".to_string(),
+            ));
+        }
+
+        let mut svg_pages = Vec::with_capacity(page_nums.len());
+        for &page_num in page_nums {
+            svg_pages.push(self.render_page_svg_native(page_num)?);
+        }
+        crate::renderer::pdf::svgs_to_pdf(&svg_pages).map_err(HwpError::RenderError)
+    }
+
+    /// PDF export for the full document.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn render_document_pdf_native(&self) -> Result<Vec<u8>, HwpError> {
+        let pages: Vec<u32> = (0..self.page_count()).collect();
+        self.render_pages_pdf_native(&pages)
+    }
+
     /// SVG 렌더링 (폰트 임베딩 옵션 포함)
     #[cfg(not(target_arch = "wasm32"))]
     pub fn render_page_svg_with_fonts(
