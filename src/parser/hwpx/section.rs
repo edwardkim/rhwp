@@ -1496,6 +1496,8 @@ fn read_text_content_with_tabs(
 
 fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
     let mut ext = [0u16; 7];
+    // 주의: HWP5 탭 inline 컨트롤의 code unit 3~5 패딩(문서에 따라 0x00 또는 0x20)은
+    // OWPML <hp:tab> 속성으로 운반할 수 없어 HWP→HWPX 변환 시 보존 불가 (알려진 한계).
     ext[6] = 0x0009;
     let mut leader = 0u16;
     let mut tab_type = 0u16;

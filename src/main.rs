@@ -19,6 +19,7 @@ fn main() {
         Some("dump-pages") => dump_pages(&args[2..]),
         Some("diag") => diag_document(&args[2..]),
         Some("convert") => convert_hwp(&args[2..]),
+        Some("hwp2hwpx") => hwp_to_hwpx(&args[2..]),
         Some("build-from-ingest") => build_from_ingest(&args[2..]),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
         Some("hwp5-inventory-diff") => rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]),
@@ -45,7 +46,9 @@ fn main() {
         Some("gen-table") => gen_table(&args[2..]),
         Some("gen-pua") => gen_pua_test(&args[2..]),
         Some("test-field") => test_field_roundtrip(&args[2..]),
-        Some("ir-diff") => ir_diff(&args[2..]),
+        Some("ir-diff") => {
+            ir_diff(&args[2..]);
+        }
         Some("thumbnail") => extract_thumbnail(&args[2..]),
         _ => {
             println!("rhwp v{}", rhwp::version());
@@ -175,6 +178,11 @@ fn print_help() {
     println!();
     println!("  convert <입력.hwp|입력.hwpx> <출력.hwp>");
     println!("      배포용(읽기전용) HWP를 편집 가능한 HWP로 변환");
+    println!();
+    println!("  hwp2hwpx <입력.hwp> <출력.hwpx> [--verify] [--verify-pages]");
+    println!("      HWP5 바이너리를 HWPX(OWPML)로 변환 (한컴 불필요)");
+    println!("      --verify: 변환 직후 원본과 IR diff 비교, 차이 0이 아니면 exit 3");
+    println!("      --verify-pages: 양쪽 렌더 페이지 수 비교, 불일치 시 exit 4");
     println!();
     println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
@@ -3997,10 +4005,89 @@ fn diff_common_obj(
     }
 }
 
-fn ir_diff(args: &[String]) {
+/// HWP → HWPX 변환 (rhwp 단독 경로). `--verify` 시 변환 직후 IR diff 무손실 검증,
+/// `--verify-pages` 시 양쪽 렌더 페이지 수 비교 (IR diff 사각지대 감시).
+fn hwp_to_hwpx(args: &[String]) {
+    let mut verify = false;
+    let mut verify_pages = false;
+    let mut paths: Vec<String> = Vec::new();
+    for a in args {
+        match a.as_str() {
+            "--verify" => verify = true,
+            "--verify-pages" => verify_pages = true,
+            _ => paths.push(a.clone()),
+        }
+    }
+    if paths.len() != 2 {
+        eprintln!("사용법: rhwp hwp2hwpx <입력.hwp> <출력.hwpx> [--verify] [--verify-pages]");
+        std::process::exit(2);
+    }
+    let input = &paths[0];
+    let output = &paths[1];
+    let data = match fs::read(input) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: {} 읽기 실패: {}", input, e);
+            std::process::exit(1);
+        }
+    };
+    let doc = match rhwp::parser::parse_document(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: {} 파싱 실패: {:?}", input, e);
+            std::process::exit(1);
+        }
+    };
+    let hwpx = match rhwp::serializer::serialize_hwpx(&doc) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: HWPX 직렬화 실패: {:?}", e);
+            std::process::exit(1);
+        }
+    };
+    if let Err(e) = fs::write(output, &hwpx) {
+        eprintln!("오류: {} 쓰기 실패: {}", output, e);
+        std::process::exit(1);
+    }
+    println!("변환 완료: {} → {} ({} bytes)", input, output, hwpx.len());
+    if verify {
+        let n = ir_diff(&[output.clone(), input.clone()]);
+        if n == 0 {
+            println!("[verify] 무손실 검증 통과 (IR diff 0)");
+        } else if n == usize::MAX {
+            eprintln!("[verify] 검증 실행 실패");
+            std::process::exit(1);
+        } else {
+            eprintln!("[verify] IR diff {} 건 — 무손실 아님", n);
+            std::process::exit(3);
+        }
+    }
+    if verify_pages {
+        let count = |bytes: &[u8]| -> Option<usize> {
+            rhwp::wasm_api::HwpDocument::from_bytes(bytes)
+                .ok()
+                .map(|d| d.page_count() as usize)
+        };
+        match (count(&data), count(&hwpx)) {
+            (Some(pa), Some(pb)) if pa == pb => {
+                println!("[verify-pages] 페이지 수 일치 ({} 페이지)", pa);
+            }
+            (Some(pa), Some(pb)) => {
+                eprintln!("[verify-pages] 페이지 수 불일치: 원본 {} vs 변환 {}", pa, pb);
+                std::process::exit(4);
+            }
+            _ => {
+                eprintln!("[verify-pages] 페이지 수 산출 실패");
+                std::process::exit(1);
+            }
+        }
+    }
+}
+
+fn ir_diff(args: &[String]) -> usize {
     if args.len() < 2 {
         eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]");
-        return;
+        return usize::MAX;
     }
 
     let file_a = &args[0];
@@ -4040,14 +4127,14 @@ fn ir_diff(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 읽기 실패: {}", file_a, e);
-            return;
+            return usize::MAX;
         }
     };
     let data_b = match fs::read(file_b) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 읽기 실패: {}", file_b, e);
-            return;
+            return usize::MAX;
         }
     };
 
@@ -4055,14 +4142,14 @@ fn ir_diff(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 파싱 실패: {:?}", file_a, e);
-            return;
+            return usize::MAX;
         }
     };
     let doc_b = match rhwp::parser::parse_document(&data_b) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 파싱 실패: {:?}", file_b, e);
-            return;
+            return usize::MAX;
         }
     };
 
@@ -4235,7 +4322,11 @@ fn ir_diff(args: &[String]) {
                     .zip(pb.tab_extended.iter())
                     .enumerate()
                 {
-                    if ta != tb {
+                    // code unit 3~5 는 HWP5 벤더 패딩 (문서별 0x00/0x20 상이).
+                    // OWPML <hp:tab> 에 운반 필드가 없고 한컴 변환기도 보존하지 않으므로
+                    // 의미론적 무손실 비교에서 제외한다 (2026-06-11 한컴産 HWPX 실측).
+                    let sem = |t: &[u16; 7]| [t[0], t[1], t[2], t[6]];
+                    if sem(ta) != sem(tb) {
                         diffs.push(format!("tab_ext[{}]: A={:?} vs B={:?}", ti, ta, tb));
                         break;
                     }
@@ -4467,6 +4558,7 @@ fn ir_diff(args: &[String]) {
     }
 
     println!("\n=== 비교 완료: 차이 {} 건 ===", total_diffs);
+    total_diffs as usize
 }
 
 fn extract_thumbnail(args: &[String]) {

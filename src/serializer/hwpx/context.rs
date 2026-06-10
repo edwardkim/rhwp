@@ -138,25 +138,40 @@ impl SerializeContext {
             }
         }
 
-        // BinData: bin_data_content의 storage_id → manifest 엔트리 생성
-        for (i, bd) in doc.bin_data_content.iter().enumerate() {
-            let ext = if bd.extension.is_empty() {
-                "bin"
-            } else {
-                bd.extension.as_str()
-            };
+        // BinData: 그림의 `bin_data_id` 가 가리키는 키 공간에 맞춰 manifest 엔트리 생성.
+        //
+        // - HWP5 경로: 그림 bin_data_id = DocInfo BIN_DATA 목록의 1-based 인덱스.
+        //   bin_data_list[idx].storage_id 로 bin_data_content 를 찾아 (idx+1) 키로 등록.
+        //   (storage_id 가 인덱스와 어긋난 문서에서 직접 키잉은 미등록 오류 유발)
+        // - HWPX 경로(bin_data_list 비어있음): bin_data_content.id 를 그대로 키로 사용.
+        let make_entry = |i: usize, ext: &str, content_id: u16| {
+            let ext = if ext.is_empty() { "bin" } else { ext };
             let manifest_id = format!("image{}", i + 1);
             let href = format!("BinData/{}.{}", manifest_id, ext);
-            let media_type = mime_from_ext(ext);
-            ctx.bin_data_map.insert(
-                bd.id,
-                BinDataEntry {
-                    manifest_id,
-                    href,
-                    media_type: media_type.to_string(),
-                    bin_data_id: bd.id,
-                },
-            );
+            BinDataEntry {
+                manifest_id,
+                href,
+                media_type: mime_from_ext(ext).to_string(),
+                bin_data_id: content_id,
+            }
+        };
+        if doc.doc_info.bin_data_list.is_empty() {
+            for (i, bd) in doc.bin_data_content.iter().enumerate() {
+                ctx.bin_data_map
+                    .insert(bd.id, make_entry(i, &bd.extension, bd.id));
+            }
+        } else {
+            for (idx, bdl) in doc.doc_info.bin_data_list.iter().enumerate() {
+                let key = (idx + 1) as u16;
+                if let Some(bd) = doc
+                    .bin_data_content
+                    .iter()
+                    .find(|b| b.id == bdl.storage_id)
+                {
+                    ctx.bin_data_map
+                        .insert(key, make_entry(idx, &bd.extension, bd.id));
+                }
+            }
         }
 
         ctx

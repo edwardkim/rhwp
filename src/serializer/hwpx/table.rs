@@ -271,34 +271,72 @@ fn write_sub_list<W: Write>(
             ],
         )?;
 
-        let cs = para
-            .char_shapes
-            .first()
-            .map(|r| r.char_shape_id)
-            .unwrap_or(0);
-        let cs_str = cs.to_string();
-        start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
-        write_cell_text(w, &para.text, &para.tab_extended)?;
-        end_tag(w, "hp:run")?;
+        let mut emitted = false;
+        // 글자모양 경계 보존: 컨트롤·탭 없는 다중 글자모양 문단은 run 분할 (#multi-run)
+        // (탭 포함 문단은 tab_extended 인덱스가 슬라이스 간 이어져야 하므로 단일 run 유지)
+        if !para.text.contains('\t') {
+            if let Some(run_slices) = super::section::split_runs_by_char_shapes(para) {
+                for (cs, slice) in run_slices {
+                    ctx.char_shape_ids.reference(cs);
+                    let cs_str = cs.to_string();
+                    start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
+                    write_cell_text(w, slice, &[])?;
+                    end_tag(w, "hp:run")?;
+                }
+                emitted = true;
+            }
+        }
+        if !emitted {
+            let cs = para
+                .char_shapes
+                .first()
+                .map(|r| r.char_shape_id)
+                .unwrap_or(0);
+            let cs_str = cs.to_string();
+            start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
+            write_cell_text(w, &para.text, &para.tab_extended)?;
+            end_tag(w, "hp:run")?;
+        }
 
-        // <hp:linesegarray> 최소 1개 lineseg
+        // <hp:linesegarray> — IR 에 lineseg 가 있으면 원본 값 보존 (셀 높이/페이지네이션 정합),
+        // 없을 때만 기본값 1개 생성.
         start_tag(w, "hp:linesegarray")?;
-        let line_flags = LineSeg::TAG_SINGLE_SEGMENT_LINE.to_string();
-        empty_tag(
-            w,
-            "hp:lineseg",
-            &[
-                ("textpos", "0"),
-                ("vertpos", "0"),
-                ("vertsize", "1000"),
-                ("textheight", "1000"),
-                ("baseline", "850"),
-                ("spacing", "600"),
-                ("horzpos", "0"),
-                ("horzsize", "12964"),
-                ("flags", line_flags.as_str()),
-            ],
-        )?;
+        if para.line_segs.is_empty() {
+            let line_flags = LineSeg::TAG_SINGLE_SEGMENT_LINE.to_string();
+            empty_tag(
+                w,
+                "hp:lineseg",
+                &[
+                    ("textpos", "0"),
+                    ("vertpos", "0"),
+                    ("vertsize", "1000"),
+                    ("textheight", "1000"),
+                    ("baseline", "850"),
+                    ("spacing", "600"),
+                    ("horzpos", "0"),
+                    ("horzsize", "12964"),
+                    ("flags", line_flags.as_str()),
+                ],
+            )?;
+        } else {
+            for seg in &para.line_segs {
+                empty_tag(
+                    w,
+                    "hp:lineseg",
+                    &[
+                        ("textpos", &seg.text_start.to_string()),
+                        ("vertpos", &seg.vertical_pos.to_string()),
+                        ("vertsize", &seg.line_height.to_string()),
+                        ("textheight", &seg.text_height.to_string()),
+                        ("baseline", &seg.baseline_distance.to_string()),
+                        ("spacing", &seg.line_spacing.to_string()),
+                        ("horzpos", &seg.column_start.to_string()),
+                        ("horzsize", &seg.segment_width.to_string()),
+                        ("flags", &seg.tag.to_string()),
+                    ],
+                )?;
+            }
+        }
         end_tag(w, "hp:linesegarray")?;
 
         end_tag(w, "hp:p")?;
@@ -384,10 +422,12 @@ fn text_flow_str(f: TextFlow) -> &'static str {
 
 fn table_page_break_str(pb: TablePageBreak) -> &'static str {
     use TablePageBreak::*;
+    // 한컴 의미론: HWPX pageBreak="CELL" ↔ HWP5 행 경계 나눔(RowBreak),
+    // "TABLE" ↔ 셀 단위 나눔(CellBreak). parser/hwpx/section.rs 의 역매핑과 쌍.
     match pb {
         None => "NONE",
-        CellBreak => "CELL",
-        RowBreak => "TABLE",
+        CellBreak => "TABLE",
+        RowBreak => "CELL",
     }
 }
 
