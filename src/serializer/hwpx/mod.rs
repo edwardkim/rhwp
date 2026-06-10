@@ -13,6 +13,7 @@ pub mod content;
 pub mod context;
 pub mod field;
 pub mod fixtures;
+pub mod form;
 pub mod header;
 pub mod picture;
 pub mod roundtrip;

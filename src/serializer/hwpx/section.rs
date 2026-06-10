@@ -432,6 +432,11 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 Err(e) => eprintln!("[hwpx] Field 직렬화 실패: {e}"),
             }
         }
+        Control::Form(form) => match writer_to_string(|w| super::form::write_form(w, form)) {
+            // 폼은 <hp:run> 직접 자식 (Table/Picture와 동일, <hp:ctrl> 비포장)
+            Ok(xml) => out.push_str(&xml),
+            Err(e) => eprintln!("[hwpx] Form 직렬화 실패: {e}"),
+        },
         _ => {}
     }
 }
