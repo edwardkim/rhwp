@@ -3188,6 +3188,34 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [Task #1355] 단일 흐름 gap 이중계상 제거.
+            // 직전 미주 콘텐츠의 trailing line-spacing 이 이미 "미주 사이" gap 을 만들었는데도
+            // (흐름 전진량 y_before_vpos - prev_content_bottom_y 가 gap 이상) vpos_adjust 가
+            // saved-vpos 기준으로 gap 을 한 번 더 더하면 제목 앞 여백이 약 2배가 된다
+            // (#1355: p18 문30 위 여백 과다 → 문24 답안 본문 초과, p19 문28 드리프트).
+            // 이 경우 제목을 흐름 위치(y_before_vpos)로 되돌려 gap 을 한 번만 남긴다.
+            // 흐름이 gap 을 만들지 않은 경우(prev_content_bottom_y == y_before_vpos)는
+            // 조건 미충족으로 무영향이며, 단일 수식 tail 압축(compact_*) 이 이미 처리한
+            // 경우도 제외한다.
+            if current_is_endnote_question_title
+                && col_content.endnote_flow
+                && !compacted_equation_tail_title_gap
+                && !endnote_title_direct_bottom_fit
+                && !endnote_title_bottom_fit_applied
+                && !current_title_tail_backtracked
+                && prev_endnote_title_gap_px > 0.0
+                && y_offset > y_before_vpos + 4.0
+            {
+                if let Some(prev_bottom) = prev_item_content_bottom_y {
+                    let flow_advance = y_before_vpos - prev_bottom;
+                    if flow_advance >= prev_endnote_title_gap_px * 0.9 {
+                        y_offset = y_before_vpos;
+                        hcursor.vpos_page_base = None;
+                        hcursor.vpos_lazy_base = None;
+                        compacted_equation_tail_title_gap = true;
+                    }
+                }
+            }
             let compact_endnote_title_gap_already_compacted = current_is_endnote_question_title
                 && (hcursor.last_compacted_endnote_title_gap || compacted_equation_tail_title_gap);
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
