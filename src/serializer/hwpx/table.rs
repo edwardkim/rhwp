@@ -35,6 +35,7 @@ use crate::model::shape::{
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
 use super::context::SerializeContext;
+use super::section::render_hp_t_content;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
 
@@ -277,8 +278,7 @@ fn write_sub_list<W: Write>(
             .unwrap_or(0);
         let cs_str = cs.to_string();
         start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
-        // 텍스트만 출력 (탭·소프트브레이크는 Stage 3 범위에서 제외 — section.rs 와 동일 방식으로 단순화)
-        write_cell_text(w, &para.text)?;
+        write_cell_text(w, &para.text, &para.tab_extended)?;
         end_tag(w, "hp:run")?;
 
         // <hp:linesegarray> 최소 1개 lineseg
@@ -308,16 +308,15 @@ fn write_sub_list<W: Write>(
     Ok(())
 }
 
-fn write_cell_text<W: Write>(w: &mut Writer<W>, text: &str) -> Result<(), SerializeError> {
-    use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-    // <hp:t>text</hp:t>
-    w.write_event(Event::Start(BytesStart::new("hp:t")))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    if !text.is_empty() {
-        w.write_event(Event::Text(BytesText::new(text)))
-            .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    }
-    w.write_event(Event::End(BytesEnd::new("hp:t")))
+fn write_cell_text<W: Write>(
+    w: &mut Writer<W>,
+    text: &str,
+    tab_extended: &[[u16; 7]],
+) -> Result<(), SerializeError> {
+    let mut tab_idx = 0usize;
+    let xml = render_hp_t_content(text, tab_extended, &mut tab_idx);
+    w.get_mut()
+        .write_all(xml.as_bytes())
         .map_err(|e| SerializeError::XmlError(e.to_string()))?;
     Ok(())
 }
@@ -683,5 +682,23 @@ mod tests {
                 expected_id
             );
         }
+    }
+
+    #[test]
+    fn cell_text_serializes_tab_and_line_break_as_hwpx_inline_elements() {
+        let mut t = empty_table(1, 1);
+        let para = &mut t.cells[0].paragraphs[0];
+        para.text = "A\tB\nC".to_string();
+        para.tab_extended = vec![[2000, 0, 0x0100, 0, 0, 0, 0]];
+
+        let xml = serialize(&t);
+
+        assert!(
+            xml.contains(
+                r#"<hp:t>A<hp:tab width="2000" leader="0" type="1"/>B<hp:lineBreak/>C</hp:t>"#
+            ),
+            "cell text must emit hp:tab/hp:lineBreak instead of raw control chars: {}",
+            xml
+        );
     }
 }

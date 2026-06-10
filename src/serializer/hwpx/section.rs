@@ -177,7 +177,11 @@ fn render_paragraph_parts_for_text(text: &str, vert_start: u32) -> (String, Stri
 ///
 /// `tab_extended`: IR의 탭 확장 정보 목록. `tab_idx`를 통해 탭 문자마다 순서대로 참조.
 /// 항목이 없으면 폴백(width=TAB_DEFAULT_WIDTH, leader=0, type=1)을 사용.
-fn render_hp_t_content(text: &str, tab_extended: &[[u16; 7]], tab_idx: &mut usize) -> String {
+pub(crate) fn render_hp_t_content(
+    text: &str,
+    tab_extended: &[[u16; 7]],
+    tab_idx: &mut usize,
+) -> String {
     let mut t_xml = String::from("<hp:t>");
     let mut buf = String::new();
     for c in text.chars() {
