@@ -3188,6 +3188,60 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [Task #1355] 미주 제목 saved-vpos 점프에 의한 gap 이중계상 정정.
+            // 직전 미주 콘텐츠의 trailing line-spacing 이 흐름에 "미주 사이" gap 을 이미
+            // 만들었는데(flow_advance ≈ gap), 제목의 saved LINE_SEG vpos 가 직전 bottom 보다
+            // 크게 점프(원본에서 단/쪽 경계를 건넌 미주)하면 vpos_adjust 가 saved 기준으로 gap
+            // 을 한 번 더 더해 제목 앞 여백이 약 2배가 된다(예: p18 문30 → 문24 답안 본문 초과).
+            // 이때만 제목을 흐름 위치(y_before_vpos)로 되돌려 gap 을 한 번만 남긴다.
+            // saved-vpos 점프가 작은 일반 순차 미주(2022_oct q19 등)는 vpos_adjust 가 정답
+            // 이므로 제외 — flow_advance 만으로는 양자 시그니처가 동일(둘 다 ≈gap)해 구분 불가,
+            // saved-vpos 점프량(원본 단/쪽 경계 신호)으로 구분한다.
+            if current_is_endnote_question_title
+                && col_content.endnote_flow
+                && !compacted_equation_tail_title_gap
+                && !endnote_title_direct_bottom_fit
+                && !endnote_title_bottom_fit_applied
+                && !current_title_tail_backtracked
+                && prev_endnote_title_gap_px > 0.0
+                && y_offset > y_before_vpos + 4.0
+            {
+                let cur_first_vpos = paragraphs
+                    .get(item_para)
+                    .and_then(|p| p.line_segs.first())
+                    .map(|s| s.vertical_pos);
+                let prev_last_bottom_vpos = hcursor
+                    .prev_layout_para
+                    .and_then(|pi| paragraphs.get(pi))
+                    .and_then(|p| p.line_segs.last())
+                    .map(|s| s.vertical_pos + s.line_height);
+                let saved_delta_hu = match (cur_first_vpos, prev_last_bottom_vpos) {
+                    (Some(cf), Some(pb)) => cf - pb,
+                    _ => 0,
+                };
+                // 이중계상은 직전 미주 문단이 "수식 전용(보이는 텍스트 없음)" tail 일 때만
+                // 발생한다(수식 tail 의 trailing line-spacing 인플레이션 + saved-vpos 점프).
+                // 직전이 텍스트 문단이면 vpos_adjust 가 정답이므로 제외(2022_sep q15,
+                // 2022_oct q29 회귀 방지).
+                let prev_is_textless = hcursor
+                    .prev_layout_para
+                    .and_then(|pi| paragraphs.get(pi))
+                    .map(|p| !para_has_visible_text(p))
+                    .unwrap_or(false);
+                if let Some(prev_bottom) = prev_item_content_bottom_y {
+                    let flow_advance = y_before_vpos - prev_bottom;
+                    if prev_is_textless
+                        && flow_advance >= prev_endnote_title_gap_px * 0.9
+                        && flow_advance <= prev_endnote_title_gap_px * 1.25
+                        && saved_delta_hu > 5000
+                    {
+                        y_offset = y_before_vpos;
+                        hcursor.vpos_page_base = None;
+                        hcursor.vpos_lazy_base = None;
+                        compacted_equation_tail_title_gap = true;
+                    }
+                }
+            }
             let compact_endnote_title_gap_already_compacted = current_is_endnote_question_title
                 && (hcursor.last_compacted_endnote_title_gap || compacted_equation_tail_title_gap);
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
