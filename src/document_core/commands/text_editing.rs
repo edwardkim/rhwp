@@ -297,6 +297,12 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+        )?;
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
         self.document.sections[section_idx].raw_stream = None;
@@ -348,6 +354,12 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+        )?;
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
         self.document.sections[section_idx].raw_stream = None;
@@ -596,6 +608,19 @@ impl DocumentCore {
             }
             _ => {}
         }
+    }
+
+    fn recalculate_cell_paragraph_vpos_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+    ) -> Result<(), HwpError> {
+        let cell_paras =
+            self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
+        crate::renderer::composer::recalculate_section_vpos(cell_paras, 0);
+        Ok(())
     }
 
     // ─── Phase 3 네이티브 구현: 커서 이동 API ─────────────────
@@ -1432,6 +1457,12 @@ impl DocumentCore {
             cell_idx,
             new_cell_para_idx,
         );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+        )?;
 
         // raw 스트림 무효화, section dirty, 재페이지네이션
         self.document.sections[section_idx].raw_stream = None;
@@ -1558,19 +1589,6 @@ impl DocumentCore {
             )?;
         }
 
-        // 4) vpos 누적 마무리. 위 프리미티브는 각 셀 문단을 개별 reflow 하지만
-        //    (reflow_cell_paragraph → 문단 내부 vpos 만 누적), 셀 문단 *사이*의
-        //    vertical_pos 는 모두 0 으로 남는다. Top 정렬 셀 렌더러는 각 문단 top 을
-        //    `cell_top + LINE_SEG.vertical_pos` 로 고정하므로 vpos 가 모두 0 이면
-        //    N 개 문단이 한 줄로 겹친다. recalculate_section_vpos 로 셀 문단 벡터의
-        //    누적 오프셋(0, lh+ls, 2·(lh+ls)…)을 재계산해 세로로 분리시킨다.
-        //    (upstream 셀 프리미티브는 cross-paragraph vpos 를 다루지 않으므로 이
-        //    한 번의 finalize 호출이 collapse 회귀 테스트의 계약이다.)
-        {
-            let cell_paras =
-                self.cell_paragraphs_mut(section_idx, parent_para_idx, control_idx, cell_idx)?;
-            crate::renderer::composer::recalculate_section_vpos(cell_paras, 0);
-        }
         self.grow_table_cell_height_to_line_geometry(
             section_idx,
             parent_para_idx,
@@ -1727,6 +1745,12 @@ impl DocumentCore {
             cell_idx,
             prev_idx,
         );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+        )?;
 
         // raw 스트림 무효화, section dirty, 재페이지네이션
         self.document.sections[section_idx].raw_stream = None;
@@ -2508,6 +2532,7 @@ impl DocumentCore {
         // 최외곽 표 dirty 마킹
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.reflow_cell_paragraphs_by_path(section_idx, parent_para_idx, path)?;
 
         // 리플로우 (최외곽 표 기준 — 중첩 표 셀 폭은 별도 계산이 필요하나 우선 section dirty로 처리)
         self.document.sections[section_idx].raw_stream = None;
@@ -2541,6 +2566,7 @@ impl DocumentCore {
 
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.reflow_cell_paragraphs_by_path(section_idx, parent_para_idx, path)?;
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -2635,53 +2661,6 @@ impl DocumentCore {
             self.insert_text_in_cell_by_path(section_idx, parent_para_idx, &p_new, 0, line)?;
         }
 
-        // 4) vpos 누적 마무리(set_cell_text_native 미러). 단, by-path 프리미티브는
-        //    리플로우조차 하지 않으므로(insert/split/delete by-path 는 reflow 미수행)
-        //    먼저 끝 셀의 각 문단을 셀 폭으로 reflow 해 line_seg 높이를 셀 폭에 맞춘
-        //    뒤 recalculate_section_vpos 로 문단 사이 vertical_pos 를 누적시킨다.
-        let inner_width_px = self.cell_inner_width_px_by_path(section_idx, parent_para_idx, path);
-        {
-            // self.styles 와 self.document 분리 차용(ResolvedStyleSet 복제 회피).
-            let dpi = self.dpi;
-            let styles = &self.styles;
-            let mut para: &mut Paragraph = self.document.sections[section_idx]
-                .paragraphs
-                .get_mut(parent_para_idx)
-                .ok_or_else(|| HwpError::RenderError("문단 범위 초과".to_string()))?;
-            for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
-                let table = match para.controls.get_mut(ctrl_idx) {
-                    Some(Control::Table(t)) => t.as_mut(),
-                    _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
-                };
-                if i == path.len() - 1 {
-                    {
-                        let cell = table
-                            .cells
-                            .get_mut(cell_idx)
-                            .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
-                        if let Some(w) = inner_width_px {
-                            for cp in cell.paragraphs.iter_mut() {
-                                reflow_line_segs(cp, w, styles, dpi);
-                            }
-                        }
-                        crate::renderer::composer::recalculate_section_vpos(
-                            &mut cell.paragraphs,
-                            0,
-                        );
-                    }
-                    Self::grow_cell_height_to_line_geometry(table, cell_idx);
-                    break;
-                }
-                let cell = table
-                    .cells
-                    .get_mut(cell_idx)
-                    .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
-                para = cell
-                    .paragraphs
-                    .get_mut(cell_para_idx)
-                    .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
-            }
-        }
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -2809,6 +2788,62 @@ impl DocumentCore {
         None
     }
 
+    fn reflow_cell_paragraphs_by_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> Result<(), HwpError> {
+        if path.is_empty() {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
+        }
+
+        let inner_width_px = self.cell_inner_width_px_by_path(section_idx, parent_para_idx, path);
+        let dpi = self.dpi;
+        let styles = &self.styles;
+        let mut para: &mut Paragraph = self.document.sections[section_idx]
+            .paragraphs
+            .get_mut(parent_para_idx)
+            .ok_or_else(|| HwpError::RenderError("문단 범위 초과".to_string()))?;
+
+        for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
+            let table = match para.controls.get_mut(ctrl_idx) {
+                Some(Control::Table(t)) => t.as_mut(),
+                _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
+            };
+
+            if i == path.len() - 1 {
+                {
+                    let cell = table
+                        .cells
+                        .get_mut(cell_idx)
+                        .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
+
+                    if let Some(w) = inner_width_px {
+                        for cp in cell.paragraphs.iter_mut() {
+                            reflow_line_segs(cp, w, styles, dpi);
+                        }
+                    }
+
+                    crate::renderer::composer::recalculate_section_vpos(&mut cell.paragraphs, 0);
+                }
+                Self::grow_cell_height_to_line_geometry(table, cell_idx);
+                return Ok(());
+            }
+
+            let cell = table
+                .cells
+                .get_mut(cell_idx)
+                .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
+            para = cell
+                .paragraphs
+                .get_mut(cell_para_idx)
+                .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
+        }
+
+        Ok(())
+    }
+
     /// path 기반 셀 문단 분할 (중첩 표 지원)
     pub fn split_paragraph_in_cell_by_path(
         &mut self,
@@ -2859,6 +2894,7 @@ impl DocumentCore {
 
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.reflow_cell_paragraphs_by_path(section_idx, parent_para_idx, path)?;
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -2929,6 +2965,7 @@ impl DocumentCore {
 
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.reflow_cell_paragraphs_by_path(section_idx, parent_para_idx, path)?;
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
