@@ -62,7 +62,12 @@
 
 ### 4.4 작업지시자 시각 판정
 
-- rhwp-studio 수동 검증 대기 (Stage 3 보고서 5절 체크리스트 참조)
+rhwp-studio 수동 검증 4항목 통과 (2026-06-11 작업지시자 확인):
+
+1. 본문 이미지 복사 → 글상자 안 붙여넣기 → 렌더 정상
+2. 본문 이미지 복사 → 표 셀 안 붙여넣기 → 렌더 정상
+3. 텍스트 붙여넣기(본문/셀/글상자), 본문 이미지 붙여넣기 무회귀
+4. 셀 안 백스페이스 문단 병합 시 그림 보존
 
 ## 5. 범위 밖 관찰 (별도 이슈 후보)
 
@@ -74,7 +79,10 @@
 - html_import의 merge_from 우회 분기(`has_controls` 검사)는 본 수정으로 단순화
   가능해졌으나 본 타스크 범위 밖.
 
-## 6. 후속 절차
+## 6. 후속 절차 (CONTRIBUTING.md 컨트리뷰터 워크플로우)
 
-- 작업지시자 시각 판정 통과 후: `local/devel` no-ff 병합 → `devel` 병합·push →
-  Issue #1323 close (작업지시자 승인 후 수행).
+- PR 전 체크리스트: `cargo fmt --all -- --check` / `cargo test` /
+  `cargo clippy -- -D warnings` 통과 확인
+- Fork(`johndoekim/rhwp`)에 작업 브랜치 push → `edwardkim/rhwp` `devel` 대상
+  PR 생성
+- CI 통과 + 메인테이너 리뷰 승인 후 merge, Issue #1323 close는 메인테이너 수행
