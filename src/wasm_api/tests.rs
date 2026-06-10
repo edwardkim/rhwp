@@ -2328,6 +2328,112 @@ fn test_paste_picture_into_table_cell_hwp5_roundtrip() {
     );
 }
 
+/// #1323 시각 검증 보조: 표 셀/글상자에 붙여넣은 그림이 SVG 렌더링에 실제
+/// `<image>` 요소로 나타나는지 검증한다. BinData를 실제 등록(insert_picture)하여
+/// 렌더러가 data URI 이미지를 방출하는 경로를 그대로 사용한다.
+#[test]
+fn test_paste_picture_into_cell_and_textbox_renders_in_svg() {
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+    fn parse_idx(res: &str, key: &str) -> usize {
+        res.split(&format!("\"{}\":", key))
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing {key} in {res}"))
+    }
+    fn count_images(svg: &str) -> usize {
+        svg.matches("<image").count()
+    }
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    // 헬퍼의 기본 그림은 BinData가 없으므로 실제 그림을 별도 삽입해 사용한다
+    let res = doc
+        .insert_picture_native(
+            0,
+            1,
+            0,
+            &[],
+            &minimal_png(),
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "",
+            None,
+            None,
+        )
+        .expect("본문 그림 삽입");
+    let pic_para = parse_idx(&res, "paraIdx");
+    let pic_ctrl = parse_idx(&res, "controlIdx");
+
+    let svg_before = doc.render_page_svg_native(0).expect("기준 SVG 렌더");
+    let base = count_images(&svg_before);
+    assert!(base >= 1, "본문 그림이 SVG에 렌더되어야 한다: {base}");
+
+    doc.copy_control_native(0, pic_para, &[], pic_ctrl)
+        .expect("그림 복사");
+
+    // 표 셀에 붙여넣기 → <image> 1개 증가
+    // (기존 문단은 모두 그림 컨트롤을 보유하므로 표 전용 빈 문단을 추가)
+    doc.document.sections[0]
+        .paragraphs
+        .push(Paragraph::default());
+    let empty_para = doc.document.sections[0].paragraphs.len() - 1;
+    doc.create_table_ex_native(0, empty_para, 0, 2, 2, true, None)
+        .expect("표 생성");
+    let (t_para, t_ctrl) = find_table_pos(&doc);
+    doc.paste_internal_in_cell_native(0, t_para, t_ctrl, 0, 0, 0)
+        .expect("셀에 그림 붙여넣기");
+
+    let svg_cell = doc.render_page_svg_native(0).expect("셀 paste 후 SVG 렌더");
+    assert_eq!(
+        count_images(&svg_cell),
+        base + 1,
+        "셀에 붙여넣은 그림이 SVG에 렌더되어야 한다 (#1323)"
+    );
+
+    // 글상자에 붙여넣기 → <image> 1개 더 증가
+    let tb_res = doc
+        .create_shape_control_native(
+            0,
+            t_para,
+            0,
+            21600,
+            7200,
+            0,
+            0,
+            true,
+            "TopAndBottom",
+            "textbox",
+            false,
+            false,
+            &[],
+        )
+        .expect("글상자 생성");
+    let tb_para = parse_idx(&tb_res, "paraIdx");
+    let tb_ctrl = parse_idx(&tb_res, "controlIdx");
+    doc.paste_internal_in_cell_native(0, tb_para, tb_ctrl, 0, 0, 0)
+        .expect("글상자에 그림 붙여넣기");
+
+    let svg_tb = doc
+        .render_page_svg_native(0)
+        .expect("글상자 paste 후 SVG 렌더");
+    assert_eq!(
+        count_images(&svg_tb),
+        base + 2,
+        "글상자에 붙여넣은 그림이 SVG에 렌더되어야 한다 (#1323)"
+    );
+}
+
 #[test]
 fn test_clipboard_clear() {
     let mut doc = HwpDocument::create_empty();
