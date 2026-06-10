@@ -238,6 +238,44 @@ struct TypesetState {
     skip_spacing_before_prededuct: bool,
 }
 
+/// [Task #1363] 미주 높이 모델 SSOT 마이그레이션 단계 플래그(`RHWP_EN_SSOT`).
+///
+/// 미주 para 누적(`acc`)을 layout 순차 렌더 높이(`line_advances_sum`)로 점진 이전하는
+/// 동안, divergence 항목을 단계별로 게이트하기 위한 A/B 스위치. 기본은 legacy(현행 saved-vpos
+/// delta) — 미설정 시 모든 동작이 종전과 동일하다. 상세: `mydocs/working/task_m100_1363_stage2.md`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum EnSsotLevel {
+    /// 전 divergence 원복 — 현행 `metric_advance_px.max(min_h)` (saved-vpos delta). 롤백용.
+    Legacy,
+    /// Stage 3: Divergence A(내부 vpos rewind)를 SSOT(line_advances_sum)로 이전.
+    A,
+    /// **기본값(Stage 4 승격)**: A + Divergence C(TAC 그림 미주 순차 적층 — 겹침 가정 제거).
+    B,
+    /// 예약 tier — 현재 B 와 동일. 잔여 Divergence B(trailing-ls)·전면 SSOT 는 안전 정합
+    /// 불가(Stage 5 실증: overflow 무영향이나 2022 overflow/2024·2023 질문흐름 회귀)로 보류.
+    On,
+}
+
+fn en_ssot_level() -> EnSsotLevel {
+    // [Task #1363] 승격 이력:
+    //   Stage 3 — A(rewind→line_advances_sum): 전 골든 무회귀로 기본 승격.
+    //   Stage 4 — B(+TAC 그림 순차 적층, Divergence C): sep20/20 p22 overflow 50.1→0,
+    //             cargo test 2126 pass·sweep flagged 불변으로 기본 승격. 미설정 시 B.
+    // `legacy`/`off` 로 전 divergence 원복(긴급 롤백·비교), `A` 는 C 제외 단계, `on` 은 예약(현 B 동일).
+    match std::env::var("RHWP_EN_SSOT").ok().as_deref() {
+        Some("legacy") | Some("Legacy") | Some("off") => EnSsotLevel::Legacy,
+        Some("A") => EnSsotLevel::A,
+        Some("on") | Some("On") | Some("ON") => EnSsotLevel::On,
+        _ => EnSsotLevel::B,
+    }
+}
+
+/// [Task #1363] 미주 para 단위 SSOT divergence 정량 측정 디버그(`RHWP_EN_SSOT_DEBUG=1`).
+/// `scripts/task1363_ssot_diff.py` 가 stderr 의 `EN_SSOT` 라인을 수집한다.
+fn en_ssot_debug() -> bool {
+    std::env::var("RHWP_EN_SSOT_DEBUG").is_ok()
+}
+
 /// [Task #853] ColumnDef 의 "디자인 spacing"(px): 1단이면 `간격`, 다단이면 0.
 fn column_def_design_spacing_px(cd: &ColumnDef, dpi: f64) -> f64 {
     if cd.column_count.max(1) <= 1 {
@@ -2552,7 +2590,13 @@ impl TypesetEngine {
                                 .unwrap_or(h4f);
                             let has_treat_as_char_picture_shape =
                                 para_has_treat_as_char_picture_or_shape(en_para);
-                            let mut compute_en_metrics = |prev: Option<i32>| -> (f64, f64) {
+                            // [Task #1363] SSOT: layout 이 순차 format 으로 렌더하는 점유 높이.
+                            // Divergence A(내부 vpos rewind) 이전의 ground truth.
+                            let line_advances_sum =
+                                fmt.line_advances_sum(0..fmt.line_heights.len());
+                            let ssot_level = en_ssot_level();
+                            let ssot_debug = en_ssot_debug();
+                            let mut compute_en_metrics = |prev: Option<i32>, emit: bool| -> (f64, f64) {
                                 if col_count > 1 {
                                     if let (Some(tf), Some(tb)) =
                                         (this_first_offset, this_bottom_offset)
@@ -2608,9 +2652,53 @@ impl TypesetEngine {
                                             advance_px
                                         };
                                         let fit = (metric_advance_px - trailing_ls_px).max(min_h);
-                                        let acc = metric_advance_px.max(min_h);
+                                        let acc_legacy = metric_advance_px.max(min_h);
+                                        // [Task #1363] Divergence A: 내부 vpos rewind para 는
+                                        // layout 이 첫 줄만 vpos 로 배치한 뒤 나머지 줄을 순차
+                                        // format 으로 렌더하므로 실제 점유 높이 = 전체
+                                        // line_advances_sum. saved-vpos delta(metric_advance_px)
+                                        // 는 rewind 로 과소 추정(pi=894 −61.2)되어 단 하단
+                                        // 본문 초과를 유발 → SSOT 로 대체.
+                                        // [Task #1363 Stage 5] 잔여 Divergence B(trailing-ls)·
+                                        // 전면 SSOT 는 acc=line_advances_sum 로 닫을 수 없음(실증):
+                                        //  · 전면: capped/stale/overlap para 를 렌더가 line_adv_sum
+                                        //    보다 작게 겹쳐 그려 2022 overflow +166px 회귀.
+                                        //  · uncapped sequential 한정: trailing-ls 가산이 미주
+                                        //    질문 흐름(단 배치)을 흔들어 issue_1139/1261/1284 10건
+                                        //    회귀. → 잔여 divergence 는 overflow 무영향이고 안전
+                                        //    정합 불가하므로 보류. acc 는 A(rewind)/C(TAC)만 SSOT.
+                                        let acc = if ssot_level >= EnSsotLevel::A && internal_vpos_rewind
+                                        {
+                                            line_advances_sum.max(min_vpos_rewind_height)
+                                        } else {
+                                            acc_legacy
+                                        };
+                                        if emit && ssot_debug {
+                                            eprintln!(
+                                                "EN_SSOT pi={} rewind={} acc_legacy={:.1} acc={:.1} line_adv_sum={:.1} fit={:.1} h4f={:.1}",
+                                                en_para_idx,
+                                                internal_vpos_rewind,
+                                                acc_legacy,
+                                                acc,
+                                                line_advances_sum,
+                                                fit,
+                                                h4f,
+                                            );
+                                        }
                                         (fit, acc)
                                     } else {
+                                        if emit && ssot_debug {
+                                            eprintln!(
+                                                "EN_SSOT pi={} rewind={} acc_legacy={:.1} acc={:.1} line_adv_sum={:.1} fit={:.1} h4f={:.1}",
+                                                en_para_idx,
+                                                internal_vpos_rewind,
+                                                tot,
+                                                tot,
+                                                line_advances_sum,
+                                                h4f,
+                                                h4f,
+                                            );
+                                        }
                                         (h4f, tot)
                                     }
                                 } else {
@@ -2618,9 +2706,8 @@ impl TypesetEngine {
                                 }
                             };
 
-                            let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos);
-                            let total_advance_fit =
-                                fmt.line_advances_sum(0..fmt.line_heights.len());
+                            let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos, false);
+                            let total_advance_fit = line_advances_sum;
                             let remaining_height = (available - st.current_height).max(0.0);
                             let compact_endnote_own_vpos_span_fits =
                                 compact_endnote_separator_profile
@@ -3394,7 +3481,7 @@ impl TypesetEngine {
                                 page_def,
                             );
                             // advance 후 재평가 — 새 단 첫 미주는 prev=None → 자체 높이.
-                            let (_, en_advance) = compute_en_metrics(prev_en_bottom_vpos);
+                            let (_, en_advance) = compute_en_metrics(prev_en_bottom_vpos, true);
                             let mut split_endnote_emitted = false;
                             let tall_line_internal_rewind_split =
                                 internal_rewind_split.filter(|split| {
@@ -3463,13 +3550,37 @@ impl TypesetEngine {
                                         _ => {}
                                     }
                                 }
-                                if let Some(rewind_start) = tac_picture_rewind_height {
-                                    // 텍스트 없는 TAC 그림/도형 미주 문단은 저장 vpos로
-                                    // 앞쪽 제목/풀이 옆에 배치될 수 있다. 순차 y 뒤에
-                                    // 붙이면 그림 높이를 이중 가산해 다음 미주가 밀린다.
+                                // [Task #1363 Divergence C] TAC 그림 미주 para 의 누적 경로.
+                                // 종전(legacy/A): local_vpos_rewind TAC 그림은 저장 vpos 가
+                                // 앞 제목 옆을 가리킨다고 보고 `max(rewind_start+adv)` 로 누적
+                                // (겹침 가정). 그러나 TAC(treat_as_char) 그림은 렌더러가 문단
+                                // 흐름에 inline 으로 **순차 적층**한다(옆 배치 아님). 겹침 가정은
+                                // 그림 높이를 과소 계상해 단을 과충전(sep20/20 p22 col0 +58px →
+                                // 본문 50px 초과). SSOT(B+): 렌더러처럼 순차 적층(`+= adv`).
+                                let tac_stack_ssot = matches!(tac_picture_rewind_height, Some(_))
+                                    && ssot_level >= EnSsotLevel::B;
+                                if let Some(rewind_start) =
+                                    tac_picture_rewind_height.filter(|_| !tac_stack_ssot)
+                                {
+                                    if ssot_debug {
+                                        eprintln!(
+                                            "EN_ACC pi={} path=TACmax ch_before={:.1} rewind_start={:.1} adv={:.1} ch_after={:.1}",
+                                            en_para_idx, st.current_height, rewind_start,
+                                            en_advance, st.current_height.max(rewind_start + en_advance),
+                                        );
+                                    }
                                     st.current_height =
                                         st.current_height.max(rewind_start + en_advance);
                                 } else {
+                                    if ssot_debug {
+                                        eprintln!(
+                                            "EN_ACC pi={} path={} ch_before={:.1} adv={:.1} ch_after={:.1}",
+                                            en_para_idx,
+                                            if tac_stack_ssot { "TACstack" } else { "add" },
+                                            st.current_height, en_advance,
+                                            st.current_height + en_advance,
+                                        );
+                                    }
                                     st.current_height += en_advance;
                                 }
                             }
