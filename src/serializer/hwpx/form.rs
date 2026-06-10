@@ -7,26 +7,29 @@
 //!
 //! ## 보존 범위
 //!
-//! 파서가 읽어 모델에 보존하는 값은 모두 충실히 재현한다:
+//! 파서가 읽어 모델에 보존하는 값은 모두 충실히 재현한다. 스칼라 필드:
 //! - 요소명(폼 타입), `name`, `caption`(버튼류), `value`(체크 상태), `selectedValue`/
-//!   `<hp:text>`(콤보/에디트 텍스트), `<hp:listItem>`(콤보 항목), `foreColor`/`backColor`,
-//!   `<hp:sz>` 폭·높이, `enabled`, 그리고 `properties` 에 보존된 공통 속성
-//!   (`GroupName`/`TabStop`/`Editable`/`TabOrder`/`BorderType`/`DrawFrame`/`Printable`/
-//!   `Command`/`ListBoxRows`/`ListBoxWidth`/`EditEnable`/`CharShapeID`/`FollowContext`/
-//!   `AutoSize`/`WordWrap`).
+//!   `<hp:text>`(콤보/에디트 텍스트), `foreColor`/`backColor`, `<hp:sz>` 폭·높이, `enabled`.
 //!
-//! ## 알려진 손실 (파서가 읽지 않아 모델에 없는 값 → 기본값으로 출력)
+//! `properties` 에 키-값으로 보존되어 round-trip 하는 속성:
+//! - 공통: `GroupName`/`TabStop`/`Editable`/`TabOrder`/`BorderType`/`DrawFrame`/`Printable`/
+//!   `Command`/`CharShapeID`/`FollowContext`/`AutoSize`/`WordWrap`
+//! - 버튼류: `RadioGroupName`/`TriState`/`BackStyle`
+//! - 콤보: `ListBoxRows`/`ListBoxWidth`/`EditEnable`, 항목 `listItem{N}`+`listItemDisplay{N}`
+//! - 에디트: `MultiLine`/`PasswordChar`/`MaxLength`/`ScrollBars`/`TabKeyBehavior`/`Number`/
+//!   `ReadOnly`/`AlignText`
+//! - `<hp:sz>`: `SzWidthRelTo`/`SzHeightRelTo`/`SzProtect`
+//! - `<hp:pos>`(앵커링 11속성): `PosTreatAsChar`/`PosAffectLSpacing`/`PosFlowWithText`/
+//!   `PosAllowOverlap`/`PosHoldAnchorAndSO`/`PosVertRelTo`/`PosHorzRelTo`/`PosVertAlign`/
+//!   `PosHorzAlign`/`PosVertOffset`/`PosHorzOffset`
+//! - `<hp:outMargin>`: `OutMarginLeft`/`OutMarginRight`/`OutMarginTop`/`OutMarginBottom`
 //!
-//! 파서(`parse_form_object`)가 읽지 않는 다음 속성은 라운드트립되지 않고 한컴 기본값으로
-//! 출력된다. 모두 폼의 표시/동작 세부일 뿐 사용자 콘텐츠가 아니며, 샘플 문서가 쓰는 값과
-//! 일치한다. 라운드트립 충실도를 더 높이려면 파서가 이들을 `properties` 에 보존하도록
-//! 확장해야 한다(후속 과제):
-//! - `<hp:pos>`(앵커링; treatAsChar=1 인라인 기본), `<hp:outMargin>`(0 기본)
-//! - 버튼류 `backStyle`/`triState`/`radioGroupName`
-//! - `<hp:sz>` 의 `widthRelTo`/`heightRelTo`/`protect`
-//! - `<hp:listItem>` 의 `displayText`
-//! - `edit` 전용 `multiLine`/`passwordChar`/`maxLength`/`scrollBars`/`tabKeyBehavior`/
-//!   `numOnly`/`readOnly`/`alignText`
+//! 위 키가 `properties` 에 없으면(예: 새로 생성한 폼) 각 속성은 한컴 기본값으로 출력된다.
+//!
+//! ## 알려진 손실
+//!
+//! 위에 열거한 표준 스키마 속성만 보존한다. `parse_form_object` 가 디스패치/열거하지 않는
+//! 비표준·확장 속성(있다면)은 모델에 들어오지 않아 출력 시 누락된다.
 
 use std::io::Write;
 
@@ -149,8 +152,14 @@ pub fn write_form<W: Write>(w: &mut Writer<W>, form: &FormObject) -> Result<(), 
 
     match form.form_type {
         FormType::ComboBox => {
-            for item in combo_items(form) {
-                empty_tag(w, "hp:listItem", &[("displayText", ""), ("value", item)])?;
+            for (i, item) in combo_items(form).into_iter().enumerate() {
+                let display_key = format!("listItemDisplay{}", i);
+                let display = prop(form, &display_key, "");
+                empty_tag(
+                    w,
+                    "hp:listItem",
+                    &[("displayText", display), ("value", item)],
+                )?;
             }
         }
         FormType::Edit => {
@@ -171,36 +180,42 @@ pub fn write_form<W: Write>(w: &mut Writer<W>, form: &FormObject) -> Result<(), 
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", prop(form, "SzWidthRelTo", "ABSOLUTE")),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", prop(form, "SzHeightRelTo", "ABSOLUTE")),
+            ("protect", prop(form, "SzProtect", "0")),
         ],
     )?;
 
-    // <hp:pos> — 인라인(treatAsChar=1) 기본. 파서가 pos 를 읽지 않으므로 모델에 없다.
+    // <hp:pos> — 파서가 보존한 앵커링 값(`Pos*`)을 그대로 출력. 없으면 인라인
+    // (treatAsChar=1) 기본값으로 떨어진다.
     empty_tag(
         w,
         "hp:pos",
         &[
-            ("treatAsChar", "1"),
-            ("affectLSpacing", "0"),
-            ("flowWithText", "1"),
-            ("allowOverlap", "1"),
-            ("holdAnchorAndSO", "0"),
-            ("vertRelTo", "PARA"),
-            ("horzRelTo", "COLUMN"),
-            ("vertAlign", "TOP"),
-            ("horzAlign", "LEFT"),
-            ("vertOffset", "0"),
-            ("horzOffset", "0"),
+            ("treatAsChar", prop(form, "PosTreatAsChar", "1")),
+            ("affectLSpacing", prop(form, "PosAffectLSpacing", "0")),
+            ("flowWithText", prop(form, "PosFlowWithText", "1")),
+            ("allowOverlap", prop(form, "PosAllowOverlap", "1")),
+            ("holdAnchorAndSO", prop(form, "PosHoldAnchorAndSO", "0")),
+            ("vertRelTo", prop(form, "PosVertRelTo", "PARA")),
+            ("horzRelTo", prop(form, "PosHorzRelTo", "COLUMN")),
+            ("vertAlign", prop(form, "PosVertAlign", "TOP")),
+            ("horzAlign", prop(form, "PosHorzAlign", "LEFT")),
+            ("vertOffset", prop(form, "PosVertOffset", "0")),
+            ("horzOffset", prop(form, "PosHorzOffset", "0")),
         ],
     )?;
 
     empty_tag(
         w,
         "hp:outMargin",
-        &[("left", "0"), ("right", "0"), ("top", "0"), ("bottom", "0")],
+        &[
+            ("left", prop(form, "OutMarginLeft", "0")),
+            ("right", prop(form, "OutMarginRight", "0")),
+            ("top", prop(form, "OutMarginTop", "0")),
+            ("bottom", prop(form, "OutMarginBottom", "0")),
+        ],
     )?;
 
     end_tag(w, tag)?;
@@ -281,5 +296,35 @@ mod tests {
         let xml = to_string(|w| write_form(w, &form));
         assert!(xml.starts_with("<hp:edit"), "{xml}");
         assert!(xml.contains("<hp:text>입력값</hp:text>"), "{xml}");
+    }
+
+    #[test]
+    fn nondefault_pos_outmargin_sz_listdisplay_are_emitted_from_props() {
+        // 파서가 보존한 비기본값(`Pos*`/`OutMargin*`/`Sz*`/`listItemDisplay*`)이
+        // 하드코딩 기본이 아니라 properties 에서 출력되는지 확인.
+        let mut props = HashMap::new();
+        props.insert("PosVertOffset".to_string(), "1234".to_string());
+        props.insert("PosVertRelTo".to_string(), "PAPER".to_string());
+        props.insert("OutMarginLeft".to_string(), "283".to_string());
+        props.insert("SzWidthRelTo".to_string(), "RELATIVE".to_string());
+        props.insert("SzProtect".to_string(), "1".to_string());
+        props.insert("listItem0".to_string(), "v0".to_string());
+        props.insert("listItemDisplay0".to_string(), "표시0".to_string());
+        let form = FormObject {
+            form_type: FormType::ComboBox,
+            name: "ComboBox".to_string(),
+            properties: props,
+            ..Default::default()
+        };
+        let xml = to_string(|w| write_form(w, &form));
+        assert!(xml.contains(r#"vertOffset="1234""#), "{xml}");
+        assert!(xml.contains(r#"vertRelTo="PAPER""#), "{xml}");
+        assert!(xml.contains(r#"left="283""#), "{xml}");
+        assert!(xml.contains(r#"widthRelTo="RELATIVE""#), "{xml}");
+        assert!(xml.contains(r#"protect="1""#), "{xml}");
+        assert!(
+            xml.contains(r#"<hp:listItem displayText="표시0" value="v0"/>"#),
+            "{xml}"
+        );
     }
 }

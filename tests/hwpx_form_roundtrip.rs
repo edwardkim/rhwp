@@ -5,15 +5,17 @@
 //! (5개 폼: btn/checkBtn/radioBtn/comboBox/edit 각 1개)를 열어 저장·재파싱한 뒤
 //! 폼 개수와 파서가 보존하는 핵심 필드가 유지되는지 단언한다.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, FormObject, FormType};
 use rhwp::model::document::Document;
 use rhwp::model::paragraph::Paragraph;
 
-/// 폼의 라운드트립 비교용 정규화 투영. 파서가 모델에 보존하는 값만 담는다.
-/// `FormType` 이 `Eq` 를 파생하지 않으므로 `PartialEq` 만 둔다.
+/// 폼의 라운드트립 비교용 정규화 투영. 파서가 모델에 보존하는 값을 전부 담는다.
+/// `properties` 전체를 비교하므로 Tier A(`BackStyle` 등) + Tier B(`Pos*`/`OutMargin*`/
+/// `Sz*`/`listItemDisplay*`) 보존이 그대로 단언된다. `FormType` 이 `Eq` 를 파생하지
+/// 않으므로 `PartialEq` 만 둔다. `properties` 는 정렬해 실패 시 diff 가독성을 높인다.
 #[derive(Debug, PartialEq)]
 struct FormProjection {
     form_type: FormType,
@@ -26,17 +28,11 @@ struct FormProjection {
     height: u32,
     fore_color: u32,
     back_color: u32,
-    list_items: Vec<String>,
+    properties: BTreeMap<String, String>,
 }
 
 impl FormProjection {
     fn from(form: &FormObject) -> Self {
-        let mut list_items = Vec::new();
-        let mut i = 0;
-        while let Some(v) = form.properties.get(&format!("listItem{}", i)) {
-            list_items.push(v.clone());
-            i += 1;
-        }
         FormProjection {
             form_type: form.form_type,
             name: form.name.clone(),
@@ -48,7 +44,11 @@ impl FormProjection {
             height: form.height,
             fore_color: form.fore_color,
             back_color: form.back_color,
-            list_items,
+            properties: form
+                .properties
+                .iter()
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect(),
         }
     }
 }
@@ -104,19 +104,33 @@ fn form_objects_survive_hwpx_roundtrip() {
         assert!(types.contains(&t), "원본에 {:?} 폼 없음: {:?}", t, types);
     }
 
+    let original_len = original.len();
+
+    // 샘플 전제: PushButton 의 backStyle 은 비기본값(TRANSPARENT, writer 기본은 OPAQUE).
+    // 이 값이 round-trip 후에도 살아야 Tier A 보존이 의미 있게 검증된다 — 전부 기본값이면
+    // "보존했다"와 "버리고 기본값 냈다"가 구분되지 않는다.
+    let before_map = by_name(original);
+    assert_eq!(
+        before_map["PushButton"]
+            .properties
+            .get("BackStyle")
+            .map(String::as_str),
+        Some("TRANSPARENT"),
+        "원본 PushButton backStyle 이 비기본값(TRANSPARENT)이어야 라운드트립 검증이 의미 있다"
+    );
+
     let saved = core.export_hwpx_native().expect("HWPX 직렬화 실패");
     let reloaded = DocumentCore::from_bytes(&saved).expect("저장본 재파싱 실패");
     let after = collect_forms(reloaded.document());
 
     assert_eq!(
         after.len(),
-        original.len(),
+        original_len,
         "라운드트립 후 폼 개수 불일치: 원본 {} → 저장본 {}",
-        original.len(),
+        original_len,
         after.len()
     );
 
-    let before_map = by_name(original);
     let after_map = by_name(after);
     for (name, before) in &before_map {
         let after = after_map
