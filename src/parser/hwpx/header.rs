@@ -521,8 +521,7 @@ fn parse_char_shape(
             b"height" => cs.base_size = parse_i32(&attr),
             b"textColor" => cs.text_color = parse_color(&attr),
             b"shadeColor" => cs.shade_color = parse_color(&attr),
-            b"useFontSpace" => cs.use_font_space = parse_bool(&attr),
-            b"useKerning" | b"symMark" => {}
+            b"useFontSpace" | b"useKerning" | b"symMark" => {}
             b"borderFillIDRef" => cs.border_fill_id = parse_u16(&attr),
             _ => {}
         }
@@ -1098,7 +1097,11 @@ fn parse_para_shape_switch(
                                     let val = parse_i32(&attr);
                                     if in_hwpunitchar_case {
                                         // HwpUnitChar 값은 실제 HWPUNIT(1× 스케일)이므로
-                                        // HWP 바이너리와 동일한 2× 스케일로 변환
+                                        // HWP 바이너리와 동일한 2× 스케일로 변환.
+                                        // (HWP5 raw 여백류는 전부 2× 일관 — 2026-06-11
+                                        // PARA_SHAPE raw hex 실측. 1×로 보이던 문서들은
+                                        // parser/mod.rs 의 HWP3 변환본 /2 정규화(Task
+                                        // #1042) 결과였다 — ir-diff 가 동치 처리.)
                                         let val2x = val * 2;
                                         match tag_name {
                                             b"left" => ps.margin_left = val2x,

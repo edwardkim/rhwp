@@ -3967,7 +3967,11 @@ fn diff_common_obj(
             ci, tag, a.treat_as_char, b.treat_as_char
         ));
     }
-    if a.text_wrap != b.text_wrap {
+    // treat_as_char(글자처럼 취급) 객체는 인라인 배치라 text_wrap 이 적용되지 않는다 —
+    // 한컴은 HWPX 저장 시 이 무의미 필드를 기본값(TOP_AND_BOTTOM)으로 정규화하므로
+    // (LH 쌍 실측: HWP5 raw=Square 잔존 vs HWPX=TOP_AND_BOTTOM, tac=true 표 한정)
+    // 양쪽 모두 tac=true 이면 wrap 차이는 의미론 동치로 본다.
+    if a.text_wrap != b.text_wrap && !(a.treat_as_char && b.treat_as_char) {
         diffs.push(format!(
             "ctrl[{}] {} wrap: A={:?} vs B={:?}",
             ci, tag, a.text_wrap, b.text_wrap
@@ -4082,6 +4086,51 @@ fn hwp_to_hwpx(args: &[String]) {
             }
         }
     }
+}
+
+/// 두 문서의 CharShape 참조가 의미상 같은 글자모양인지 비교.
+///
+/// id 공간이 문서마다 다르므로(한컴 HWPX 저장 시 테이블 재구성) 폰트 이름으로
+/// 해석해 비교한다. HWPX 파서가 아직 구성하지 않는 raw 필드(attr, shadow offset,
+/// outline 등)는 1차 비교에서 제외 — 핵심 시각 필드만 (계획서 C1 선별 기준).
+fn char_shape_semantic_eq(
+    doc_a: &rhwp::model::document::Document,
+    doc_b: &rhwp::model::document::Document,
+    id_a: u32,
+    id_b: u32,
+) -> bool {
+    let (Some(a), Some(b)) = (
+        doc_a.doc_info.char_shapes.get(id_a as usize),
+        doc_b.doc_info.char_shapes.get(id_b as usize),
+    ) else {
+        return false;
+    };
+    let font_names = |doc: &rhwp::model::document::Document, ids: &[u16; 7]| -> Vec<String> {
+        (0..7)
+            .map(|k| {
+                doc.doc_info
+                    .font_faces
+                    .get(k)
+                    .and_then(|v| v.get(ids[k] as usize))
+                    .map(|f| f.name.clone())
+                    .unwrap_or_default()
+            })
+            .collect()
+    };
+    font_names(doc_a, &a.font_ids) == font_names(doc_b, &b.font_ids)
+        && a.base_size == b.base_size
+        && a.ratios == b.ratios
+        && a.spacings == b.spacings
+        && a.relative_sizes == b.relative_sizes
+        && a.char_offsets == b.char_offsets
+        && a.bold == b.bold
+        && a.italic == b.italic
+        && a.underline_type == b.underline_type
+        && a.text_color == b.text_color
+        && a.shade_color == b.shade_color
+        && a.strikethrough == b.strikethrough
+        && a.subscript == b.subscript
+        && a.superscript == b.superscript
 }
 
 fn ir_diff(args: &[String]) -> usize {
@@ -4276,10 +4325,17 @@ fn ir_diff(args: &[String]) -> usize {
                 ));
             }
 
-            // char_count 비교
-            if pa.char_count != pb.char_count {
-                diffs.push(format!("cc: A={} vs B={}", pa.char_count, pb.char_count));
-            }
+            // char_count 비교 — 보류 후 문단 끝에서 조건부 보고.
+            // HWP5 raw nchars 는 문단 끝 마커 포함 여부가 저장본에 따라 달라
+            // (트레일링 컨트롤 문단 ±1, HWPX 에 운반 필드 없음) 파생값 단독
+            // 차이는 실질 비교(text/offsets/controls/char_shapes)가 모두
+            // 일치하면 보고하지 않는다. 컨트롤 드랍 검출은 controls count·
+            // char_offsets 비교가 담당.
+            let cc_pending = if pa.char_count != pb.char_count {
+                Some(format!("cc: A={} vs B={}", pa.char_count, pb.char_count))
+            } else {
+                None
+            };
 
             // char_offsets 비교
             if pa.char_offsets != pb.char_offsets {
@@ -4333,8 +4389,13 @@ fn ir_diff(args: &[String]) -> usize {
                 }
             }
 
-            // LINE_SEG 비교
-            if pa.line_segs.len() != pb.line_segs.len() {
+            // LINE_SEG 비교 — HWP3 변환본 판정 문서(variant)와의 쌍은 면제:
+            // lineseg 는 조판 파생값이고 한컴 자신도 변환 시 재계산한다
+            // (Task #1001 실측: vpos 비선형 1.15배). 비-variant 쌍 게이트는 유지.
+            let variant_pair_doc = doc_a.is_hwp3_variant != doc_b.is_hwp3_variant;
+            if variant_pair_doc {
+                // skip
+            } else if pa.line_segs.len() != pb.line_segs.len() {
                 diffs.push(format!(
                     "line_segs count: A={} vs B={}",
                     pa.line_segs.len(),
@@ -4446,13 +4507,30 @@ fn ir_diff(args: &[String]) -> usize {
                         ));
                         break;
                     }
-                    if ca.char_shape_id != cb.char_shape_id {
+                    // id 직접 비교 금지 — 한컴이 HWPX 저장 시 CharShape/FaceName
+                    // 테이블을 재구성해 id 공간이 달라진다 (tac쌍 317 vs 307 실측).
+                    // 참조가 가리키는 글자모양의 의미 내용으로 비교한다.
+                    if ca.char_shape_id != cb.char_shape_id
+                        && !char_shape_semantic_eq(
+                            &doc_a,
+                            &doc_b,
+                            ca.char_shape_id,
+                            cb.char_shape_id,
+                        )
+                    {
                         diffs.push(format!(
-                            "cs[{}].id: A={} vs B={}",
+                            "cs[{}].id: A={} vs B={} (내용 상이)",
                             ci, ca.char_shape_id, cb.char_shape_id
                         ));
                         break;
                     }
+                }
+            }
+
+            // 보류한 cc 차이 — 실질 차이가 있는 문단에서만 함께 보고
+            if let Some(cc) = cc_pending {
+                if !diffs.is_empty() {
+                    diffs.push(cc);
                 }
             }
 
@@ -4475,6 +4553,13 @@ fn ir_diff(args: &[String]) -> usize {
             emit_diff!("ParaShape 수: A={} vs B={}", ps_a.len(), ps_b.len());
             total_diffs += 1;
         }
+        // HWP3 변환본으로 판정된 문서는 HWP5 파서가 indent/sb/sa 를 /2 정규화한다
+        // (parser/mod.rs Task #1042). 같은 문서의 HWPX 파싱본(2× 규약, 휴리스틱 없음)과
+        // 비교할 때 그 가공分(정확히 2배)은 동치로 인정 — 한쪽만 variant 일 때 한정.
+        let variant_pair = doc_a.is_hwp3_variant != doc_b.is_hwp3_variant;
+        let halved_eq = |x: i32, y: i32| -> bool {
+            x == y || (variant_pair && (x == y.saturating_mul(2) || y == x.saturating_mul(2)))
+        };
         let ps_count = ps_a.len().min(ps_b.len());
         for i in 0..ps_count {
             let a = &ps_a[i];
@@ -4486,16 +4571,16 @@ fn ir_diff(args: &[String]) -> usize {
             if a.margin_right != b.margin_right {
                 ps_diffs.push(format!("mr: {}vs{}", a.margin_right, b.margin_right));
             }
-            if a.indent != b.indent {
+            if !halved_eq(a.indent, b.indent) {
                 ps_diffs.push(format!("indent: {}vs{}", a.indent, b.indent));
             }
             if a.tab_def_id != b.tab_def_id {
                 ps_diffs.push(format!("tab_def: {}vs{}", a.tab_def_id, b.tab_def_id));
             }
-            if a.spacing_before != b.spacing_before {
+            if !halved_eq(a.spacing_before, b.spacing_before) {
                 ps_diffs.push(format!("sb: {}vs{}", a.spacing_before, b.spacing_before));
             }
-            if a.spacing_after != b.spacing_after {
+            if !halved_eq(a.spacing_after, b.spacing_after) {
                 ps_diffs.push(format!("sa: {}vs{}", a.spacing_after, b.spacing_after));
             }
             if a.line_spacing != b.line_spacing {
@@ -4525,7 +4610,13 @@ fn ir_diff(args: &[String]) -> usize {
                 total_diffs += 1;
             } else {
                 for (ti, (ta, tb)) in a.tabs.iter().zip(b.tabs.iter()).enumerate() {
-                    if ta.position != tb.position
+                    // HWP3 변환본(variant) 쌍에서 한쪽 position 이 u32 음수 영역
+                    // (0x80000000 이상)이면 변환본 raw sentinel — pos 차이 면제
+                    // (hwp3-sample14 실측: B=0xFFFC0C40 류 vs A=0).
+                    let variant_pair = doc_a.is_hwp3_variant != doc_b.is_hwp3_variant;
+                    let pos_noise = variant_pair
+                        && (ta.position >= 0x8000_0000 || tb.position >= 0x8000_0000);
+                    if (ta.position != tb.position && !pos_noise)
                         || ta.tab_type != tb.tab_type
                         || ta.fill_type != tb.fill_type
                     {
