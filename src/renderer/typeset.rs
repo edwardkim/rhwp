@@ -2600,85 +2600,91 @@ impl TypesetEngine {
                                 fmt.line_advances_sum(0..fmt.line_heights.len());
                             let ssot_level = en_ssot_level();
                             let ssot_debug = en_ssot_debug();
-                            let mut compute_en_metrics = |prev: Option<i32>, emit: bool| -> (f64, f64) {
-                                if col_count > 1 {
-                                    if let (Some(tf), Some(tb)) =
-                                        (this_first_offset, this_bottom_offset)
-                                    {
-                                        let base =
-                                            if local_vpos_rewind || large_vpos_jump_at_column_top {
+                            let mut compute_en_metrics =
+                                |prev: Option<i32>, emit: bool| -> (f64, f64) {
+                                    if col_count > 1 {
+                                        if let (Some(tf), Some(tb)) =
+                                            (this_first_offset, this_bottom_offset)
+                                        {
+                                            let base = if local_vpos_rewind
+                                                || large_vpos_jump_at_column_top
+                                            {
                                                 tf
                                             } else {
                                                 prev.unwrap_or(tf)
                                             };
-                                        let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
-                                        let compact_local_rewind =
-                                            compact_endnote_separator_profile && local_vpos_rewind;
-                                        // 한컴 저장본의 미주 LineSeg는 TAC 도형을 포함한 문단의
-                                        // 다음 줄/문단 시작 vpos까지 이미 반영한다. formatter가
-                                        // inline object 높이를 다시 큰 floor로 잡으면 2023 12쪽처럼
-                                        // 다음 문제 시작이 한 단 늦게 밀린다.
-                                        let inline_object_formatter_overestimate =
-                                            compact_endnote_separator_profile
-                                                && has_treat_as_char_picture_shape
-                                                && !internal_vpos_rewind
-                                                && !compact_local_rewind
-                                                && !large_vpos_jump_at_column_top
-                                                && h4f > advance_px + 80.0
-                                                && advance_px > min_vpos_rewind_height + 40.0;
-                                        if inline_object_formatter_overestimate {
-                                            current_endnote_had_inline_object_vpos_overestimate =
+                                            let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
+                                            let compact_local_rewind =
+                                                compact_endnote_separator_profile
+                                                    && local_vpos_rewind;
+                                            // 한컴 저장본의 미주 LineSeg는 TAC 도형을 포함한 문단의
+                                            // 다음 줄/문단 시작 vpos까지 이미 반영한다. formatter가
+                                            // inline object 높이를 다시 큰 floor로 잡으면 2023 12쪽처럼
+                                            // 다음 문제 시작이 한 단 늦게 밀린다.
+                                            let inline_object_formatter_overestimate =
+                                                compact_endnote_separator_profile
+                                                    && has_treat_as_char_picture_shape
+                                                    && !internal_vpos_rewind
+                                                    && !compact_local_rewind
+                                                    && !large_vpos_jump_at_column_top
+                                                    && h4f > advance_px + 80.0
+                                                    && advance_px > min_vpos_rewind_height + 40.0;
+                                            if inline_object_formatter_overestimate {
+                                                current_endnote_had_inline_object_vpos_overestimate =
                                                 true;
-                                        }
-                                        let min_h = if inline_object_formatter_overestimate {
-                                            (advance_px - trailing_ls_px)
-                                                .max(min_vpos_rewind_height)
-                                        } else if internal_vpos_rewind || compact_local_rewind {
-                                            min_vpos_rewind_height
-                                        } else {
-                                            h4f
-                                        };
-                                        let stale_forward_vpos = compact_endnote_separator_profile
-                                            && !local_vpos_rewind
-                                            && !large_vpos_jump_at_column_top
-                                            && advance_px > h4f + 100.0;
-                                        let capped_new_endnote_advance =
-                                            new_endnote_between_notes_px
-                                                .map(|gap| h4f + gap)
-                                                .filter(|cap| advance_px > *cap + 12.0);
-                                        let metric_advance_px = if compact_local_rewind {
-                                            min_vpos_rewind_height
-                                        } else if let Some(cap) = capped_new_endnote_advance {
-                                            cap
-                                        } else if stale_forward_vpos {
-                                            h4f
-                                        } else {
-                                            advance_px
-                                        };
-                                        let fit = (metric_advance_px - trailing_ls_px).max(min_h);
-                                        let acc_legacy = metric_advance_px.max(min_h);
-                                        // [Task #1363] Divergence A: 내부 vpos rewind para 는
-                                        // layout 이 첫 줄만 vpos 로 배치한 뒤 나머지 줄을 순차
-                                        // format 으로 렌더하므로 실제 점유 높이 = 전체
-                                        // line_advances_sum. saved-vpos delta(metric_advance_px)
-                                        // 는 rewind 로 과소 추정(pi=894 −61.2)되어 단 하단
-                                        // 본문 초과를 유발 → SSOT 로 대체.
-                                        // [Task #1363 Stage 5] 잔여 Divergence B(trailing-ls)·
-                                        // 전면 SSOT 는 acc=line_advances_sum 로 닫을 수 없음(실증):
-                                        //  · 전면: capped/stale/overlap para 를 렌더가 line_adv_sum
-                                        //    보다 작게 겹쳐 그려 2022 overflow +166px 회귀.
-                                        //  · uncapped sequential 한정: trailing-ls 가산이 미주
-                                        //    질문 흐름(단 배치)을 흔들어 issue_1139/1261/1284 10건
-                                        //    회귀. → 잔여 divergence 는 overflow 무영향이고 안전
-                                        //    정합 불가하므로 보류. acc 는 A(rewind)/C(TAC)만 SSOT.
-                                        let acc = if ssot_level >= EnSsotLevel::A && internal_vpos_rewind
-                                        {
-                                            line_advances_sum.max(min_vpos_rewind_height)
-                                        } else {
-                                            acc_legacy
-                                        };
-                                        if emit && ssot_debug {
-                                            eprintln!(
+                                            }
+                                            let min_h = if inline_object_formatter_overestimate {
+                                                (advance_px - trailing_ls_px)
+                                                    .max(min_vpos_rewind_height)
+                                            } else if internal_vpos_rewind || compact_local_rewind {
+                                                min_vpos_rewind_height
+                                            } else {
+                                                h4f
+                                            };
+                                            let stale_forward_vpos =
+                                                compact_endnote_separator_profile
+                                                    && !local_vpos_rewind
+                                                    && !large_vpos_jump_at_column_top
+                                                    && advance_px > h4f + 100.0;
+                                            let capped_new_endnote_advance =
+                                                new_endnote_between_notes_px
+                                                    .map(|gap| h4f + gap)
+                                                    .filter(|cap| advance_px > *cap + 12.0);
+                                            let metric_advance_px = if compact_local_rewind {
+                                                min_vpos_rewind_height
+                                            } else if let Some(cap) = capped_new_endnote_advance {
+                                                cap
+                                            } else if stale_forward_vpos {
+                                                h4f
+                                            } else {
+                                                advance_px
+                                            };
+                                            let fit =
+                                                (metric_advance_px - trailing_ls_px).max(min_h);
+                                            let acc_legacy = metric_advance_px.max(min_h);
+                                            // [Task #1363] Divergence A: 내부 vpos rewind para 는
+                                            // layout 이 첫 줄만 vpos 로 배치한 뒤 나머지 줄을 순차
+                                            // format 으로 렌더하므로 실제 점유 높이 = 전체
+                                            // line_advances_sum. saved-vpos delta(metric_advance_px)
+                                            // 는 rewind 로 과소 추정(pi=894 −61.2)되어 단 하단
+                                            // 본문 초과를 유발 → SSOT 로 대체.
+                                            // [Task #1363 Stage 5] 잔여 Divergence B(trailing-ls)·
+                                            // 전면 SSOT 는 acc=line_advances_sum 로 닫을 수 없음(실증):
+                                            //  · 전면: capped/stale/overlap para 를 렌더가 line_adv_sum
+                                            //    보다 작게 겹쳐 그려 2022 overflow +166px 회귀.
+                                            //  · uncapped sequential 한정: trailing-ls 가산이 미주
+                                            //    질문 흐름(단 배치)을 흔들어 issue_1139/1261/1284 10건
+                                            //    회귀. → 잔여 divergence 는 overflow 무영향이고 안전
+                                            //    정합 불가하므로 보류. acc 는 A(rewind)/C(TAC)만 SSOT.
+                                            let acc = if ssot_level >= EnSsotLevel::A
+                                                && internal_vpos_rewind
+                                            {
+                                                line_advances_sum.max(min_vpos_rewind_height)
+                                            } else {
+                                                acc_legacy
+                                            };
+                                            if emit && ssot_debug {
+                                                eprintln!(
                                                 "EN_SSOT pi={} rewind={} acc_legacy={:.1} acc={:.1} line_adv_sum={:.1} fit={:.1} h4f={:.1}",
                                                 en_para_idx,
                                                 internal_vpos_rewind,
@@ -2688,11 +2694,11 @@ impl TypesetEngine {
                                                 fit,
                                                 h4f,
                                             );
-                                        }
-                                        (fit, acc)
-                                    } else {
-                                        if emit && ssot_debug {
-                                            eprintln!(
+                                            }
+                                            (fit, acc)
+                                        } else {
+                                            if emit && ssot_debug {
+                                                eprintln!(
                                                 "EN_SSOT pi={} rewind={} acc_legacy={:.1} acc={:.1} line_adv_sum={:.1} fit={:.1} h4f={:.1}",
                                                 en_para_idx,
                                                 internal_vpos_rewind,
@@ -2702,13 +2708,13 @@ impl TypesetEngine {
                                                 h4f,
                                                 h4f,
                                             );
+                                            }
+                                            (h4f, tot)
                                         }
+                                    } else {
                                         (h4f, tot)
                                     }
-                                } else {
-                                    (h4f, tot)
-                                }
-                            };
+                                };
 
                             let (en_fit, _) = compute_en_metrics(prev_en_bottom_vpos, false);
                             let total_advance_fit = line_advances_sum;
@@ -3591,11 +3597,9 @@ impl TypesetEngine {
                                 // compute_en_metrics(saved-delta) 대신 HeightCursor 시뮬레이션이
                                 // 단 실제 렌더 높이를 산출 → fit 결정(다음 para)이 렌더 정합.
                                 if ssot_level >= EnSsotLevel::A2 {
-                                    if let Some(sim_bottom) = self
-                                        .simulate_endnote_column_bottom_y(
-                                            &st, paragraphs, styles, available, en_col_w,
-                                        )
-                                    {
+                                    if let Some(sim_bottom) = self.simulate_endnote_column_bottom_y(
+                                        &st, paragraphs, styles, available, en_col_w,
+                                    ) {
                                         if ssot_debug {
                                             eprintln!(
                                                 "EN_ACC pi={} path=A2sim {:.1} -> {:.1}",
@@ -3680,9 +3684,7 @@ impl TypesetEngine {
             if local_indices.iter().any(|(global, _)| *global == pi) {
                 continue;
             }
-            if let Some(p) =
-                paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, pi)
-            {
+            if let Some(p) = paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, pi) {
                 let local = local_paras.len();
                 local_paras.push(p.clone());
                 local_indices.push((pi, local));
