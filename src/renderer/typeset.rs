@@ -254,6 +254,9 @@ enum EnSsotLevel {
     /// 예약 tier — 현재 B 와 동일. 잔여 Divergence B(trailing-ls)·전면 SSOT 는 안전 정합
     /// 불가(Stage 5 실증: overflow 무영향이나 2022 overflow/2024·2023 질문흐름 회귀)로 보류.
     On,
+    /// [v2 후보 A] 미주 다단 누적을 **렌더러 HeightCursor 시뮬레이션**으로 대체(실험).
+    /// compute_en_metrics 근사 대신 build_single_column 동일 경로로 단 bottom y 를 스냅.
+    A2,
 }
 
 fn en_ssot_level() -> EnSsotLevel {
@@ -266,6 +269,7 @@ fn en_ssot_level() -> EnSsotLevel {
         Some("legacy") | Some("Legacy") | Some("off") => EnSsotLevel::Legacy,
         Some("A") => EnSsotLevel::A,
         Some("on") | Some("On") | Some("ON") => EnSsotLevel::On,
+        Some("A2") | Some("a2") => EnSsotLevel::A2,
         _ => EnSsotLevel::B,
     }
 }
@@ -3583,6 +3587,24 @@ impl TypesetEngine {
                                     }
                                     st.current_height += en_advance;
                                 }
+                                // [Task #1363 v2 Stage 2] A2: 누적을 렌더 시뮬 bottom 으로 스냅.
+                                // compute_en_metrics(saved-delta) 대신 HeightCursor 시뮬레이션이
+                                // 단 실제 렌더 높이를 산출 → fit 결정(다음 para)이 렌더 정합.
+                                if ssot_level >= EnSsotLevel::A2 {
+                                    if let Some(sim_bottom) = self
+                                        .simulate_endnote_column_bottom_y(
+                                            &st, paragraphs, styles, available, en_col_w,
+                                        )
+                                    {
+                                        if ssot_debug {
+                                            eprintln!(
+                                                "EN_ACC pi={} path=A2sim {:.1} -> {:.1}",
+                                                en_para_idx, st.current_height, sim_bottom,
+                                            );
+                                        }
+                                        st.current_height = sim_bottom;
+                                    }
+                                }
                             }
                             activate_square_picture_wrap_for_para(&mut st, en_para_idx, en_para);
                             // 다음 미주의 base 가 될 본 미주 bottom 기록.
@@ -3634,6 +3656,114 @@ impl TypesetEngine {
     /// 문단의 렌더링 높이를 계산한다 (format).
     /// [Task #1027 Stage D] 항목 fit 직전, `current_height` 를 vpos-정합 위치로 스냅한다.
     ///
+    /// [Task #1363 v2 Stage 2] 미주 다단 SSOT 시뮬레이션.
+    ///
+    /// `st.current_items`(현재 단에 배치된 미주 항목들)를 렌더러 `build_single_column` 과
+    /// 동일 경로(`HeightCursor::vpos_adjust` + line/total advances)로 재생해 단의 bottom y 를
+    /// 산출한다. A2 게이트에서 `current_height` 를 이 값으로 스냅 → compute_en_metrics 의
+    /// saved-delta 근사를 렌더 실측과 정합시킨다(p21 과대·p17 과소 누적 원인 제거 목표).
+    /// `current_height` 상대공간(col_area_y=0, start=`current_start_height`)에서 구동.
+    fn simulate_endnote_column_bottom_y(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+    ) -> Option<f64> {
+        if st.current_items.is_empty() {
+            return None;
+        }
+        let mut local_paras: Vec<Paragraph> = Vec::new();
+        let mut local_indices: Vec<(usize, usize)> = Vec::new();
+        for pi in st.current_items.iter().filter_map(page_item_para_index) {
+            if local_indices.iter().any(|(global, _)| *global == pi) {
+                continue;
+            }
+            if let Some(p) =
+                paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, pi)
+            {
+                let local = local_paras.len();
+                local_paras.push(p.clone());
+                local_indices.push((pi, local));
+            }
+        }
+        let lookup_local = |pi: usize| {
+            local_indices
+                .iter()
+                .find_map(|(global, local)| (*global == pi).then_some(*local))
+        };
+        let page_base = st
+            .current_items
+            .iter()
+            .filter_map(page_item_para_index)
+            .find_map(|pi| {
+                paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, pi)
+                    .and_then(|p| p.line_segs.first())
+                    .map(|seg| seg.vertical_pos)
+            })?;
+        let mut hc = HeightCursor::new(
+            self.dpi,
+            0.0,
+            available,
+            st.current_start_height,
+            Some(page_base),
+            st.skip_spacing_before_prededuct,
+            false,
+            st.current_endnote_flow && st.current_start_height < -0.5,
+            st.current_endnote_flow,
+        );
+        hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+        let mut y = st.current_start_height;
+        for item in &st.current_items {
+            let Some(pi) = page_item_para_index(item) else {
+                continue;
+            };
+            let Some(local) = lookup_local(pi) else {
+                continue;
+            };
+            y = hc.vpos_adjust(y, local, &local_paras, styles);
+            let item_para = &local_paras[local];
+            let item_composed = crate::renderer::composer::compose_paragraph(item_para);
+            let item_fmt =
+                self.format_paragraph(item_para, Some(&item_composed), styles, Some(en_col_w));
+            y += match item {
+                PageItem::PartialParagraph {
+                    start_line,
+                    end_line,
+                    ..
+                } => item_fmt.line_advances_sum(*start_line..*end_line),
+                PageItem::FullParagraph { .. } => item_fmt.total_height,
+                _ => 0.0,
+            };
+            let current_vpos_rewinds_from_prev = hc
+                .prev_layout_para
+                .and_then(|prev_local| {
+                    let prev_first = local_paras
+                        .get(prev_local)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|seg| seg.vertical_pos)?;
+                    let curr_first = local_paras
+                        .get(local)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|seg| seg.vertical_pos)?;
+                    Some(curr_first < prev_first)
+                })
+                .unwrap_or(false);
+            if matches!(item, PageItem::PartialParagraph { start_line, .. } if *start_line > 0)
+                || current_vpos_rewinds_from_prev
+            {
+                hc.prev_layout_para = None;
+                hc.vpos_page_base = None;
+                hc.vpos_lazy_base = None;
+            } else {
+                hc.prev_layout_para = Some(local);
+            }
+            hc.prev_item_was_partial_table = matches!(item, PageItem::PartialTable { .. });
+        }
+        Some(y)
+    }
+
     /// 렌더러 `build_single_column` 의 inter-item VPOS_CORR(Stage C `HeightCursor::vpos_adjust`)
     /// 를 페이지네이터에서도 적용해, 단락마다 `+= total_height` 로 누적된 sb·trailing_ls
     /// drift 를 다음 항목 진입 시 제거한다(렌더러와 동일 측정). 단단(col_count==1) 전용 —
