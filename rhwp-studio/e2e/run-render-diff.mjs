@@ -84,20 +84,20 @@ async function findAvailablePort(startPort, attempts = 20) {
   throw new Error(`failed to find an available port starting at ${startPort}`);
 }
 
-async function runRenderDiff(serverUrl) {
-  const child = spawnCommand(['run', 'e2e:render-diff'], { VITE_URL: serverUrl });
+async function runNpmScript(script, serverUrl) {
+  const child = spawnCommand(['run', script], { VITE_URL: serverUrl });
   const exitCode = await new Promise((resolve, reject) => {
     child.once('error', reject);
     child.once('exit', (code, signal) => {
       if (signal) {
-        reject(new Error(`render diff terminated by signal ${signal}`));
+        reject(new Error(`${script} terminated by signal ${signal}`));
         return;
       }
       resolve(code ?? 1);
     });
   });
   if (exitCode !== 0) {
-    throw new Error(`render diff failed with exit code ${exitCode}`);
+    throw new Error(`${script} failed with exit code ${exitCode}`);
   }
 }
 
@@ -114,7 +114,16 @@ const devServer = spawnCommand(
 
 try {
   await waitForServer(serverUrl, devServer, logPath);
-  await runRenderDiff(serverUrl);
+  if (process.env.RHWP_RENDER_DIFF_SKIP_CANVAS !== '1') {
+    await runNpmScript('e2e:render-diff', serverUrl);
+  }
+  if (process.env.RHWP_RENDER_DIFF_PDF === '1') {
+    try {
+      await runNpmScript('e2e:pdf-render-diff', serverUrl);
+    } catch (error) {
+      console.error(`PDF render diff report failed without gating CI: ${error.message || error}`);
+    }
+  }
 } finally {
   await stopServer(devServer);
   fs.closeSync(logFile);
