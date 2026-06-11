@@ -299,8 +299,7 @@ impl DocumentCore {
     /// SVG render output -> svg2pdf.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn render_page_pdf_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
-        let svg = self.render_page_svg_native(page_num)?;
-        crate::renderer::pdf::svg_to_pdf(&svg).map_err(HwpError::RenderError)
+        self.render_pages_pdf_native(&[page_num])
     }
 
     /// PDF export for an explicit 0-based page selection.

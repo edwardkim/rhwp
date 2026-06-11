@@ -1,3 +1,5 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 use rhwp::error::HwpError;
 use rhwp::wasm_api::HwpDocument;
 use std::path::Path;

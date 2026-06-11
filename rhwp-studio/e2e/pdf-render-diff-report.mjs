@@ -12,6 +12,7 @@ import {
   mkdirSync,
   realpathSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'fs';
@@ -74,6 +75,8 @@ function optionalNumberFromEnv(name) {
   const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : null;
 }
+
+const COMMAND_TIMEOUT_MS = numberFromEnv('RHWP_RENDER_DIFF_COMMAND_TIMEOUT_MS', 120000);
 
 function maxPagesFromEnv() {
   const raw = process.env.RHWP_RENDER_DIFF_MAX_PAGES;
@@ -181,9 +184,13 @@ function runCommand(command, args, options = {}) {
     cwd: options.cwd || repoRoot,
     encoding: 'utf8',
     maxBuffer: 16 * 1024 * 1024,
+    timeout: COMMAND_TIMEOUT_MS,
   });
 
   if (result.error) {
+    if (result.error.code === 'ETIMEDOUT') {
+      throw new Error(`${command} ${args.join(' ')} timed out after ${COMMAND_TIMEOUT_MS}ms`);
+    }
     throw result.error;
   }
   if (result.status !== 0) {
@@ -198,6 +205,21 @@ function runCommand(command, args, options = {}) {
     stdout: result.stdout || '',
     stderr: result.stderr || '',
   };
+}
+
+function removeIfExists(path) {
+  rmSync(path, { force: true });
+}
+
+function assertFreshPdf(path) {
+  const stat = statSync(path);
+  if (!stat.isFile() || stat.size === 0) {
+    throw new Error(`PDF export did not create a non-empty PDF: ${path}`);
+  }
+  const header = readFileSync(path).subarray(0, 5).toString('ascii');
+  if (header !== '%PDF-') {
+    throw new Error(`PDF export did not create a PDF file: ${path}`);
+  }
 }
 
 function rhwpCommandPrefix() {
@@ -324,6 +346,7 @@ function renderMarkdownSummary(config, results) {
     `- raster DPI: ${config.rasterDpi}`,
     `- max pages: ${formatPageLimit(config.maxPages)}`,
     `- channel tolerance: ${config.channelTolerance}`,
+    `- command timeout: ${config.commandTimeoutMs}ms`,
     `- report threshold: ${config.maxDiffRatio == null ? 'disabled' : config.maxDiffRatio}`,
     `- compared pages: ${results.filter(result => !result.error).length}`,
     `- warning pages: ${warnings.length}`,
@@ -411,6 +434,7 @@ const config = {
   maxPages: maxPagesFromEnv(),
   channelTolerance: numberFromEnv('RHWP_RENDER_DIFF_PDF_CHANNEL_TOLERANCE', 8),
   maxDiffRatio: optionalNumberFromEnv('RHWP_RENDER_DIFF_PDF_MAX_RATIO'),
+  commandTimeoutMs: COMMAND_TIMEOUT_MS,
   writeImages: process.env.RHWP_RENDER_DIFF_PDF_WRITE_IMAGES !== '0',
 };
 config.rasterDpi = Math.max(1, Math.round(72 * config.scale));
@@ -447,6 +471,10 @@ runTest('PDF export visual diff report', async ({ page }) => {
         const diffPath = join(ARTIFACT_DIR, `${baseName}-pdf-diff.png`);
 
         try {
+          for (const artifactPath of [referencePath, pdfPath, pdfRasterPath, diffPath]) {
+            removeIfExists(artifactPath);
+          }
+
           const reference = await page.evaluate((args) => {
             const doc = window.__wasm?.doc;
             if (!doc) throw new Error('window.__wasm.doc is not available');
@@ -474,6 +502,7 @@ runTest('PDF export visual diff report', async ({ page }) => {
             '-p',
             String(pageIndex),
           ]);
+          assertFreshPdf(pdfPath);
           runCommand('pdftoppm', [
             '-r',
             String(config.rasterDpi),

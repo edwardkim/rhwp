@@ -987,98 +987,104 @@ fn export_pdf(args: &[String]) {
         return;
     }
 
-    let file_path = &args[0];
-    let mut output_file = String::new();
-    let mut target_page: Option<u32> = None;
-
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--output" | "-o" => {
-                if i + 1 < args.len() {
-                    output_file = args[i + 1].clone();
-                    i += 2;
-                } else {
-                    eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
-                    return;
-                }
-            }
-            "--page" | "-p" => {
-                if i + 1 < args.len() {
-                    match args[i + 1].parse::<u32>() {
-                        Ok(n) => target_page = Some(n),
-                        Err(_) => {
-                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
-                        }
-                    }
-                    i += 2;
-                } else {
-                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
-                }
-            }
-            _ => {
-                i += 1;
-            }
-        }
+    #[cfg(target_arch = "wasm32")]
+    {
+        eprintln!("오류: PDF 내보내기는 native 빌드에서만 지원됩니다.");
+        return;
     }
-
-    // 기본 출력 파일명
-    if output_file.is_empty() {
-        let stem = Path::new(file_path)
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("output");
-        output_file = format!("output/{}.pdf", stem);
-    }
-
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
-        }
-    };
-
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
-        }
-    };
-
-    let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
-
-    // 출력 디렉토리 생성
-    if let Some(parent) = Path::new(&output_file).parent() {
-        if !parent.exists() {
-            if let Err(e) = fs::create_dir_all(parent) {
-                eprintln!("오류: 출력 디렉토리를 만들 수 없습니다 - {}", e);
-                return;
-            }
-        }
-    }
-
-    // 페이지 범위 결정
-    let pages: Vec<u32> = match target_page {
-        Some(p) => {
-            if p >= page_count {
-                eprintln!(
-                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
-                    page_count - 1
-                );
-                return;
-            }
-            vec![p]
-        }
-        None => (0..page_count).collect(),
-    };
 
     #[cfg(not(target_arch = "wasm32"))]
     {
+        let file_path = &args[0];
+        let mut output_file = String::new();
+        let mut target_page: Option<u32> = None;
+
+        let mut i = 1;
+        while i < args.len() {
+            match args[i].as_str() {
+                "--output" | "-o" => {
+                    if i + 1 < args.len() {
+                        output_file = args[i + 1].clone();
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
+                        return;
+                    }
+                }
+                "--page" | "-p" => {
+                    if i + 1 < args.len() {
+                        match args[i + 1].parse::<u32>() {
+                            Ok(n) => target_page = Some(n),
+                            Err(_) => {
+                                eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                                return;
+                            }
+                        }
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                        return;
+                    }
+                }
+                _ => {
+                    i += 1;
+                }
+            }
+        }
+
+        // 기본 출력 파일명
+        if output_file.is_empty() {
+            let stem = Path::new(file_path)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("output");
+            output_file = format!("output/{}.pdf", stem);
+        }
+
+        let data = match fs::read(file_path) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+                return;
+            }
+        };
+
+        let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: HWP 파싱 실패 - {}", e);
+                return;
+            }
+        };
+
+        let page_count = doc.page_count();
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+
+        // 출력 디렉토리 생성
+        if let Some(parent) = Path::new(&output_file).parent() {
+            if !parent.exists() {
+                if let Err(e) = fs::create_dir_all(parent) {
+                    eprintln!("오류: 출력 디렉토리를 만들 수 없습니다 - {}", e);
+                    return;
+                }
+            }
+        }
+
+        // 페이지 범위 결정
+        let pages: Vec<u32> = match target_page {
+            Some(p) => {
+                if p >= page_count {
+                    eprintln!(
+                        "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                        page_count - 1
+                    );
+                    return;
+                }
+                vec![p]
+            }
+            None => (0..page_count).collect(),
+        };
+
         let pdf_bytes = match doc.render_pages_pdf_native(&pages) {
             Ok(bytes) => bytes,
             Err(e) => {
@@ -1096,9 +1102,8 @@ fn export_pdf(args: &[String]) {
             pdf_bytes.len() / 1024,
             pages.len()
         );
+        println!("PDF 내보내기 완료");
     }
-
-    println!("PDF 내보내기 완료");
 }
 
 fn export_text(args: &[String]) {

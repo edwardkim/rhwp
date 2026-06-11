@@ -10,6 +10,7 @@ on:
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
       - 'src/wasm_api.rs'
+      - 'src/main.rs'
       - 'rhwp-studio/**'
       - '.github/workflows/render-diff.yml'
   workflow_dispatch:
@@ -29,7 +30,7 @@ on:
         default: false
         type: boolean
       write-images:
-        description: 'Write PNG artifacts even when cases pass'
+        description: 'Write Canvas PNG artifacts even when cases pass. PDF report artifacts are always retained.'
         required: false
         default: false
         type: boolean
@@ -80,6 +81,7 @@ jobs:
         run: wasm-pack build --target web --dev
 
       - name: Build native CLI for PDF report
+        continue-on-error: true
         run: cargo build --bin rhwp
 
       - name: Setup Node.js
@@ -116,6 +118,7 @@ jobs:
           RHWP_RENDER_DIFF_ALL: ${{ inputs['full-suite'] == true && '1' || '0' }}
           RHWP_RENDER_DIFF_WRITE_IMAGES: ${{ inputs['write-images'] == true && '1' || '0' }}
           RHWP_RENDER_DIFF_PDF: '1'
+          RHWP_RENDER_DIFF_PDF_WRITE_IMAGES: '1'
           RHWP_RENDER_DIFF_RHWP_BIN: ../target/debug/rhwp
         run: npm run e2e:render-diff:ci
 
