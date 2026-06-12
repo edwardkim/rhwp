@@ -63,7 +63,7 @@ impl PageLayerTree {
         write_text_source_entries(&mut buf, &self.text_sources);
         buf.push_str(",\"fontResources\":");
         write_font_resources(&mut buf, self.resources.font_resources());
-        write_text_export_metadata(&mut buf, &self.root);
+        write_text_export_metadata(&mut buf, &self.root, &self.resources);
         buf.push_str(",\"textV2\":");
         TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
         buf.push('}');
@@ -71,9 +71,9 @@ impl PageLayerTree {
     }
 }
 
-fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
+fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &ResourceArena) {
     let externalized_visuals = externalized_text_visuals(root);
-    let text_variant_features = collect_text_variant_features(root);
+    let text_variant_features = collect_text_variant_features(root, resources);
     let has_variant_groups = text_variant_features.has_variant_groups();
     let has_glyph_runs = text_variant_features.has_glyph_runs;
     let has_glyph_outlines = text_variant_features.has_glyph_outlines;
@@ -82,6 +82,8 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let has_glyph_outline_svg = text_variant_features.has_glyph_outline_svg;
     let has_glyph_outline_payload_resource_keys =
         text_variant_features.has_glyph_outline_payload_resource_keys;
+    let has_glyph_outline_payload_resource_digest_keys =
+        text_variant_features.has_glyph_outline_payload_resource_digest_keys;
     let has_display_text = text_variant_features.has_display_text;
     buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\",\"layer.optionMetadata\"");
     if has_display_text {
@@ -101,9 +103,13 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     }
     if has_glyph_outline_svg {
         buf.push_str(",\"text.glyphOutline.svgGlyph\"");
+        buf.push_str(",\"text.glyphOutline.svgGlyph.vectorResourceId\"");
     }
     if has_glyph_outline_payload_resource_keys {
         buf.push_str(",\"text.glyphOutline.payloadResourceKey\"");
+    }
+    if has_glyph_outline_payload_resource_digest_keys {
+        buf.push_str(",\"text.glyphOutline.payloadResourceDigestKey\"");
     }
     if has_variant_groups {
         buf.push_str(",\"text.variantGroups\"");
@@ -137,9 +143,13 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     }
     if has_glyph_outline_svg {
         optional_features.push("text.glyphOutline.svgGlyph");
+        optional_features.push("text.glyphOutline.svgGlyph.vectorResourceId");
     }
     if has_glyph_outline_payload_resource_keys {
         optional_features.push("text.glyphOutline.payloadResourceKey");
+    }
+    if has_glyph_outline_payload_resource_digest_keys {
+        optional_features.push("text.glyphOutline.payloadResourceDigestKey");
     }
     buf.push_str("],\"optionalFeatures\":[");
     for (idx, feature) in optional_features.iter().enumerate() {
@@ -148,7 +158,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
         }
         buf.push_str(&json_escape(feature));
     }
-    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.glyphOutline.colorLayers\",\"text.glyphOutline.colorLayers.colrV0\",\"text.glyphOutline.colorLayers.colrV1\",\"text.glyphOutline.bitmapGlyph\",\"text.glyphOutline.svgGlyph\",\"text.glyphOutline.payloadResourceKey\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.glyphOutline.colorLayers\",\"text.glyphOutline.colorLayers.colrV0\",\"text.glyphOutline.colorLayers.colrV1\",\"text.glyphOutline.bitmapGlyph\",\"text.glyphOutline.svgGlyph\",\"text.glyphOutline.svgGlyph.vectorResourceId\",\"text.glyphOutline.payloadResourceKey\",\"text.glyphOutline.payloadResourceDigestKey\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -173,6 +183,7 @@ struct TextVariantFeatureFlags {
     has_glyph_outline_bitmap: bool,
     has_glyph_outline_svg: bool,
     has_glyph_outline_payload_resource_keys: bool,
+    has_glyph_outline_payload_resource_digest_keys: bool,
     has_display_text: bool,
 }
 
@@ -182,7 +193,10 @@ impl TextVariantFeatureFlags {
     }
 }
 
-fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
+fn collect_text_variant_features(
+    root: &LayerNode,
+    resources: &ResourceArena,
+) -> TextVariantFeatureFlags {
     let mut features = TextVariantFeatureFlags::default();
     let mut stack = vec![root];
     while let Some(node) = stack.pop() {
@@ -214,6 +228,9 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
                                 matches!(outline.payload_kind, GlyphOutlinePayloadKind::SvgGlyph);
                             features.has_glyph_outline_payload_resource_keys |=
                                 outline.has_payload_resource_key();
+                            features.has_glyph_outline_payload_resource_digest_keys |= outline
+                                .payload_resource_key_with_resources(Some(resources))
+                                .is_some_and(|key| key.contains(":resource:"));
                         }
                         _ => {}
                     }
@@ -226,6 +243,7 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
             && features.has_glyph_outline_bitmap
             && features.has_glyph_outline_svg
             && features.has_glyph_outline_payload_resource_keys
+            && features.has_glyph_outline_payload_resource_digest_keys
             && features.has_display_text
         {
             return features;
@@ -3405,13 +3423,17 @@ mod tests {
             &resource_digest_hex(svg_fragment.as_bytes()),
         );
 
+        assert!(json.contains("\"schemaMinorVersion\":17"));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
         assert!(json.contains(&format!(":resource:{image_resource_key}\"")));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:svgGlyph:svgRef:0"));
         assert!(json.contains(&format!(":resource:{svg_resource_key}\"")));
+        assert!(json.contains("\"vectorResourceId\":0"));
         assert!(json.contains("\"strictVisualContract\":true"));
         assert!(json.contains("\"staticSanitizedContract\":true"));
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));
+        assert!(json.contains("\"text.glyphOutline.payloadResourceDigestKey\""));
+        assert!(json.contains("\"text.glyphOutline.svgGlyph.vectorResourceId\""));
     }
 
     #[test]

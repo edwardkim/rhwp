@@ -232,6 +232,9 @@ the default public replay path.
   identity and appends the interned resource's `blake3` key when bytes are
   available. Two exports that reuse `imageRef: 0` or `svgRef: 0` for different
   producer bytes therefore do not share a strict glyph cache slot.
+- The schema minor version and feature arrays advertise the P24 additions:
+  `text.glyphOutline.payloadResourceDigestKey` and
+  `text.glyphOutline.svgGlyph.vectorResourceId`.
 - `BitmapGlyph` remains strict only for a single producer-selected strike with
   deterministic alpha, scaling, filtering, finite placement, non-empty text and
   glyph ranges, and no `backendDefault` scaling policy.

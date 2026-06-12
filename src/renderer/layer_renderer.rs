@@ -3,7 +3,7 @@ use crate::model::ColorRef;
 use crate::paint::{
     GlyphOutlinePayloadKind, GlyphRunOrientation, GlyphRunReplayEligibility,
     LayerGlyphOutlinePaint, LayerGlyphRunPaint, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
-    TextVariantKind, TextVariantQuality,
+    ResourceArena, TextVariantKind, TextVariantQuality,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -144,6 +144,7 @@ pub enum VariantRejectReason {
     UnsupportedColorGlyph,
     UnsupportedBitmapGlyph,
     UnsupportedSvgGlyph,
+    MissingGlyphPayloadResource,
     PositionAdjustedNotAllowed,
     PositionAdjustedResidualTooLarge,
 }
@@ -170,6 +171,7 @@ impl VariantRejectReason {
             Self::UnsupportedColorGlyph => "unsupportedColorGlyph",
             Self::UnsupportedBitmapGlyph => "unsupportedBitmapGlyph",
             Self::UnsupportedSvgGlyph => "unsupportedSvgGlyph",
+            Self::MissingGlyphPayloadResource => "missingGlyphPayloadResource",
             Self::PositionAdjustedNotAllowed => "positionAdjustedNotAllowed",
             Self::PositionAdjustedResidualTooLarge => "positionAdjustedResidualTooLarge",
         }
@@ -248,7 +250,7 @@ pub fn analyze_text_variant_selection(
     collect_text_variant_groups(&tree.root, &mut groups, &mut next_order);
     groups
         .into_iter()
-        .map(|(equivalence_group, group)| group.finish(equivalence_group, options))
+        .map(|(equivalence_group, group)| group.finish(equivalence_group, options, &tree.resources))
         .collect()
 }
 
@@ -263,12 +265,13 @@ impl TextVariantGroupState {
         self,
         equivalence_group: String,
         options: TextVariantSelectionOptions,
+        resources: &ResourceArena,
     ) -> TextVariantSelectionReport {
         let mut evaluated = self
             .variants
             .into_values()
             .map(|candidate| {
-                let reasons = candidate.reject_reasons(options);
+                let reasons = candidate.reject_reasons(options, resources);
                 EvaluatedTextVariantCandidate { candidate, reasons }
             })
             .collect::<Vec<_>>();
@@ -387,7 +390,11 @@ impl TextVariantCandidate {
         self.glyph_outlines.push(outline.clone());
     }
 
-    fn reject_reasons(&self, options: TextVariantSelectionOptions) -> Vec<VariantRejectReason> {
+    fn reject_reasons(
+        &self,
+        options: TextVariantSelectionOptions,
+        resources: &ResourceArena,
+    ) -> Vec<VariantRejectReason> {
         let mut reasons = BTreeSet::<VariantRejectReason>::new();
         self.collect_structure_reasons(&mut reasons);
         match self.variant_kind {
@@ -410,7 +417,7 @@ impl TextVariantCandidate {
                     reasons.insert(VariantRejectReason::BackendDoesNotSupportVariant);
                 }
                 for outline in &self.glyph_outlines {
-                    collect_glyph_outline_reject_reasons(outline, options, &mut reasons);
+                    collect_glyph_outline_reject_reasons(outline, options, resources, &mut reasons);
                 }
             }
         }
@@ -524,6 +531,7 @@ fn collect_glyph_run_reject_reasons(
 fn collect_glyph_outline_reject_reasons(
     outline: &LayerGlyphOutlinePaint,
     options: TextVariantSelectionOptions,
+    resources: &ResourceArena,
     reasons: &mut BTreeSet<VariantRejectReason>,
 ) {
     if !outline.has_exclusive_payload_family() {
@@ -566,16 +574,32 @@ fn collect_glyph_outline_reject_reasons(
             }
         },
         GlyphOutlinePayloadKind::BitmapGlyph => match outline.bitmap_glyph.as_ref() {
-            Some(bitmap_glyph)
-                if bitmap_glyph.has_strict_visual_contract() && options.allow_bitmap_glyph => {}
-            _ => {
+            Some(bitmap_glyph) if !bitmap_glyph.has_strict_visual_contract() => {
+                reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
+            }
+            Some(_) if !options.allow_bitmap_glyph => {
+                reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
+            }
+            Some(bitmap_glyph) if resources.image_bytes(bitmap_glyph.image_ref).is_none() => {
+                reasons.insert(VariantRejectReason::MissingGlyphPayloadResource);
+            }
+            Some(_) => {}
+            None => {
                 reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
             }
         },
         GlyphOutlinePayloadKind::SvgGlyph => match outline.svg_glyph.as_ref() {
-            Some(svg_glyph)
-                if svg_glyph.has_static_sanitized_contract() && options.allow_svg_glyph => {}
-            _ => {
+            Some(svg_glyph) if !svg_glyph.has_static_sanitized_contract() => {
+                reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
+            }
+            Some(_) if !options.allow_svg_glyph => {
+                reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
+            }
+            Some(svg_glyph) if resources.svg_fragment(svg_glyph.svg_ref).is_none() => {
+                reasons.insert(VariantRejectReason::MissingGlyphPayloadResource);
+            }
+            Some(_) => {}
+            None => {
                 reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
             }
         },
@@ -640,8 +664,9 @@ mod tests {
         GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
         GlyphRunOrientation, ImageResourceId, LayerAffineTransform, LayerGlyphOutlinePath,
         LayerNode, LayerPoint, LayerVector, PaintTextStyle, PaintVariantMeta, ResolvedColor,
-        ScriptTag, ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDirection,
-        TextRunPlacement, TextSourceId, TextSourceRange, TextSourceSpan, WritingMode,
+        ResourceArena, ScriptTag, ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId,
+        TextDirection, TextRunPlacement, TextSourceId, TextSourceRange, TextSourceSpan,
+        WritingMode,
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
     use crate::renderer::{PathCommand, TextStyle};
@@ -1042,6 +1067,19 @@ mod tests {
             .unwrap()
     }
 
+    fn first_report_with_resource_setup(
+        ops: Vec<PaintOp>,
+        options: TextVariantSelectionOptions,
+        setup: impl FnOnce(&mut ResourceArena),
+    ) -> TextVariantSelectionReport {
+        let mut tree = tree(ops);
+        setup(&mut tree.resources);
+        analyze_text_variant_selection(&tree, options)
+            .into_iter()
+            .next()
+            .unwrap()
+    }
+
     #[test]
     fn canvaskit_selects_strict_glyph_run() {
         let report = first_report(
@@ -1284,7 +1322,7 @@ mod tests {
     }
 
     #[test]
-    fn advanced_bitmap_and_svg_glyph_payloads_select_only_when_explicitly_allowed() {
+    fn advanced_bitmap_and_svg_glyph_payloads_reject_missing_resources_when_allowed() {
         let bitmap_report = first_report(
             vec![text_op(), bitmap_glyph_outline()],
             TextVariantSelectionOptions {
@@ -1294,15 +1332,57 @@ mod tests {
         );
         assert_eq!(
             bitmap_report.selected_variant_kind,
-            Some(TextVariantKind::GlyphOutline)
+            Some(TextVariantKind::TextRun)
         );
-        assert!(bitmap_report.rejected_variants.is_empty());
+        assert!(bitmap_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::MissingGlyphPayloadResource));
 
         let svg_report = first_report(
             vec![text_op(), svg_glyph_outline()],
             TextVariantSelectionOptions {
                 allow_svg_glyph: true,
                 ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert_eq!(
+            svg_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(svg_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::MissingGlyphPayloadResource));
+    }
+
+    #[test]
+    fn advanced_bitmap_and_svg_glyph_payloads_select_only_with_resources() {
+        let bitmap_report = first_report_with_resource_setup(
+            vec![text_op(), bitmap_glyph_outline()],
+            TextVariantSelectionOptions {
+                allow_bitmap_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+            |resources| {
+                assert_eq!(
+                    resources.intern_image_bytes(&[1, 2, 3, 4]),
+                    ImageResourceId(0)
+                );
+            },
+        );
+        assert_eq!(
+            bitmap_report.selected_variant_kind,
+            Some(TextVariantKind::GlyphOutline)
+        );
+        assert!(bitmap_report.rejected_variants.is_empty());
+
+        let svg_report = first_report_with_resource_setup(
+            vec![text_op(), svg_glyph_outline()],
+            TextVariantSelectionOptions {
+                allow_svg_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+            |resources| {
+                assert_eq!(resources.intern_svg_fragment("<path/>"), SvgResourceId(0));
             },
         );
         assert_eq!(
