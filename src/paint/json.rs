@@ -6,6 +6,7 @@ use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_es
 use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
+use crate::paint::ResourceArena;
 use crate::paint::{
     BitmapGlyphPayload, CacheHint, ClipKind, ColorLayerNode, ColorLayersPayload,
     ColorPaintGraphNode, ColorPaintGraphPayload, FontColorGlyphRef, FontResourceTable,
@@ -56,7 +57,8 @@ impl PageLayerTree {
             self.page_height
         );
         let mut text_source_state = TextSourceExportState::default();
-        self.root.write_json(&mut buf, &mut text_source_state);
+        self.root
+            .write_json(&mut buf, &mut text_source_state, &self.resources);
         buf.push_str(",\"textSources\":");
         write_text_source_entries(&mut buf, &self.text_sources);
         buf.push_str(",\"fontResources\":");
@@ -277,7 +279,12 @@ fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
 }
 
 impl LayerNode {
-    fn write_json(&self, buf: &mut String, text_sources: &mut TextSourceExportState) {
+    fn write_json(
+        &self,
+        buf: &mut String,
+        text_sources: &mut TextSourceExportState,
+        resources: &ResourceArena,
+    ) {
         buf.push('{');
         buf.push_str("\"bounds\":");
         write_bbox(buf, self.bounds);
@@ -306,7 +313,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    child.write_json(buf, text_sources);
+                    child.write_json(buf, text_sources, resources);
                 }
                 buf.push(']');
             }
@@ -323,7 +330,7 @@ impl LayerNode {
                     json_escape(clip_kind_str(*clip_kind))
                 );
                 buf.push_str(",\"child\":");
-                child.write_json(buf, text_sources);
+                child.write_json(buf, text_sources, resources);
             }
             LayerNodeKind::Leaf { ops } => {
                 buf.push_str(",\"kind\":\"leaf\",\"ops\":[");
@@ -332,7 +339,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    op.write_json(buf, text_sources, &leaf_visuals);
+                    op.write_json(buf, text_sources, &leaf_visuals, resources);
                 }
                 buf.push(']');
             }
@@ -347,6 +354,7 @@ impl PaintOp {
         buf: &mut String,
         text_sources: &mut TextSourceExportState,
         leaf_visuals: &LeafTextVisualOps,
+        resources: &ResourceArena,
     ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
@@ -504,7 +512,9 @@ impl PaintOp {
                     ",\"payloadKind\":{}",
                     json_escape(outline.payload_kind.as_str())
                 );
-                if let Some(payload_resource_key) = outline.payload_resource_key() {
+                if let Some(payload_resource_key) =
+                    outline.payload_resource_key_with_resources(Some(resources))
+                {
                     let _ = write!(
                         buf,
                         ",\"payloadResourceKey\":{}",
@@ -2008,8 +2018,8 @@ fn write_bitmap_glyph_payload(buf: &mut String, payload: &BitmapGlyphPayload) {
 fn write_svg_glyph_payload(buf: &mut String, payload: &SvgGlyphPayload) {
     let _ = write!(
         buf,
-        "{{\"svgRef\":{},\"sourceRangeUtf8\":",
-        payload.svg_ref.0
+        "{{\"svgRef\":{},\"vectorResourceId\":{},\"sourceRangeUtf8\":",
+        payload.svg_ref.0, payload.svg_ref.0
     );
     write_text_source_range(buf, payload.source_range_utf8);
     let _ = write!(
@@ -2463,18 +2473,18 @@ mod tests {
     use super::*;
     use crate::model::shape::TextWrap;
     use crate::paint::{
-        BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, CacheHint, ClipKind,
-        ColorGlyphFormat, ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind,
-        ColorPaintGraphPayload, ColorPaintSolidPathNode, FontColorGlyphRef, FontFaceKey,
-        FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
-        GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
-        GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
-        GlyphRunReplayEligibility, GroupKind, ImageResourceId, LayerAffineTransform,
-        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
-        LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta, ResolvedColor, ScriptTag,
-        ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDecorationKind,
-        TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
-        TextVariantQuality, WritingMode,
+        image_resource_key, resource_digest_hex, svg_resource_key, BitmapGlyphFiltering,
+        BitmapGlyphPayload, BitmapGlyphScalingPolicy, CacheHint, ClipKind, ColorGlyphFormat,
+        ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind, ColorPaintGraphPayload,
+        ColorPaintSolidPathNode, FontColorGlyphRef, FontFaceKey, FontFallbackPolicyId,
+        FontInstanceKey, GlyphCluster, GlyphOutlineFillRule, GlyphOutlinePayloadKind,
+        GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange,
+        GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, GroupKind,
+        ImageResourceId, LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath,
+        LayerGlyphRunPaint, LayerNode, LayerPoint, LayerVector, PageLayerTree, PaintTextStyle,
+        PaintVariantMeta, ResolvedColor, ScriptTag, ShapeKey, ShapingEngineId, SvgGlyphPayload,
+        SvgResourceId, TextDecorationKind, TextDirection, TextSourceId, TextSourceRange,
+        TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -3311,7 +3321,7 @@ mod tests {
                 payload_kind: GlyphOutlinePayloadKind::BitmapGlyph,
                 color_layers: None,
                 bitmap_glyph: Some(BitmapGlyphPayload {
-                    image_ref: ImageResourceId(7),
+                    image_ref: ImageResourceId(0),
                     source_range_utf8: TextSourceRange::new(0, 1),
                     glyph_range: GlyphRange::new(0, 1),
                     placement: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
@@ -3348,7 +3358,7 @@ mod tests {
                 color_layers: None,
                 bitmap_glyph: None,
                 svg_glyph: Some(SvgGlyphPayload {
-                    svg_ref: SvgResourceId(7),
+                    svg_ref: SvgResourceId(0),
                     source_range_utf8: TextSourceRange::new(0, 1),
                     glyph_range: GlyphRange::new(0, 1),
                     view_box: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
@@ -3367,7 +3377,7 @@ mod tests {
                 diagnostics,
             }),
         };
-        let tree = PageLayerTree::new(
+        let mut tree = PageLayerTree::new(
             120.0,
             80.0,
             LayerNode::leaf(
@@ -3376,11 +3386,29 @@ mod tests {
                 vec![bitmap_outline, svg_outline],
             ),
         );
+        let image_bytes = [0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a];
+        let svg_fragment = "<path d=\"M0 0H10V10Z\"/>";
+        assert_eq!(
+            tree.resources.intern_image_bytes(&image_bytes),
+            ImageResourceId(0)
+        );
+        assert_eq!(
+            tree.resources.intern_svg_fragment(svg_fragment),
+            SvgResourceId(0)
+        );
 
         let json = tree.to_json();
+        let image_resource_key =
+            image_resource_key(image_bytes.len(), &resource_digest_hex(image_bytes));
+        let svg_resource_key = svg_resource_key(
+            svg_fragment.len(),
+            &resource_digest_hex(svg_fragment.as_bytes()),
+        );
 
-        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:7"));
-        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:svgGlyph:svgRef:7"));
+        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
+        assert!(json.contains(&format!(":resource:{image_resource_key}\"")));
+        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:svgGlyph:svgRef:0"));
+        assert!(json.contains(&format!(":resource:{svg_resource_key}\"")));
         assert!(json.contains("\"strictVisualContract\":true"));
         assert!(json.contains("\"staticSanitizedContract\":true"));
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));

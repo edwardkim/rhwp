@@ -2,7 +2,10 @@ use crate::model::style::UnderlineType;
 use crate::model::ColorRef;
 use crate::paint::font::{GlyphRunReplayEligibility, ShapeKey, TextDirection, WritingMode};
 use crate::paint::layer_tree::{TextSourceRange, TextSourceSpan};
-use crate::paint::resources::{ImageResourceId, SvgResourceId};
+use crate::paint::resources::{
+    image_resource_key, resource_digest_hex, svg_resource_key, ImageResourceId, ResourceArena,
+    SvgResourceId,
+};
 use crate::renderer::render_tree::{
     BoundingBox, EllipseNode, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
     LineNode, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode,
@@ -241,10 +244,18 @@ impl LayerGlyphOutlinePaint {
     }
 
     /// Stable, export-local identity for payload resources that sit behind a
-    /// GlyphOutline sidecar. This is not a binary digest; it is the replay
-    /// decision key that keeps color/bitmap/SVG payload families from sharing a
-    /// cache slot merely because a producer reused the same numeric resource id.
+    /// GlyphOutline sidecar. The key starts with replay decision metadata and
+    /// may append an interned resource digest when bytes are available, so
+    /// color/bitmap/SVG payload families do not share a cache slot merely
+    /// because a producer reused the same numeric resource id.
     pub fn payload_resource_key(&self) -> Option<String> {
+        self.payload_resource_key_with_resources(None)
+    }
+
+    pub fn payload_resource_key_with_resources(
+        &self,
+        resources: Option<&ResourceArena>,
+    ) -> Option<String> {
         if !self.has_payload_resource_key() {
             return None;
         }
@@ -258,10 +269,11 @@ impl LayerGlyphOutlinePaint {
             GlyphOutlinePayloadKind::BitmapGlyph => self
                 .bitmap_glyph
                 .as_ref()
-                .map(bitmap_glyph_payload_resource_key),
-            GlyphOutlinePayloadKind::SvgGlyph => {
-                self.svg_glyph.as_ref().map(svg_glyph_payload_resource_key)
-            }
+                .map(|payload| bitmap_glyph_payload_resource_key(payload, resources)),
+            GlyphOutlinePayloadKind::SvgGlyph => self
+                .svg_glyph
+                .as_ref()
+                .map(|payload| svg_glyph_payload_resource_key(payload, resources)),
         }
     }
 
@@ -345,8 +357,11 @@ fn color_paint_graph_key(graph: &ColorPaintGraphPayload) -> String {
     key
 }
 
-fn bitmap_glyph_payload_resource_key(payload: &BitmapGlyphPayload) -> String {
-    format!(
+fn bitmap_glyph_payload_resource_key(
+    payload: &BitmapGlyphPayload,
+    resources: Option<&ResourceArena>,
+) -> String {
+    let mut key = format!(
         "glyphPayload:bitmapGlyph:imageRef:{}:range:{}:glyphRange:{}:placement:{}:alphaPremultiplied:{}:scaling:{}:filtering:{}:transform:{}",
         payload.image_ref.0,
         text_range_key(payload.source_range_utf8),
@@ -356,11 +371,23 @@ fn bitmap_glyph_payload_resource_key(payload: &BitmapGlyphPayload) -> String {
         payload.scaling_policy.as_str(),
         payload.filtering.as_str(),
         optional_affine_key(payload.transform_to_run),
-    )
+    );
+    if let Some(resource_key) = resources.and_then(|resources| {
+        resources
+            .image_bytes(payload.image_ref)
+            .map(|bytes| image_resource_key(bytes.len(), resource_digest_hex(bytes).as_str()))
+    }) {
+        key.push_str(":resource:");
+        key.push_str(&resource_key);
+    }
+    key
 }
 
-fn svg_glyph_payload_resource_key(payload: &SvgGlyphPayload) -> String {
-    format!(
+fn svg_glyph_payload_resource_key(
+    payload: &SvgGlyphPayload,
+    resources: Option<&ResourceArena>,
+) -> String {
+    let mut key = format!(
         "glyphPayload:svgGlyph:svgRef:{}:range:{}:glyphRange:{}:viewBox:{}:intrinsicSize:{}:staticSanitized:{}:script:{}:animation:{}:external:{}:interactive:{}:transform:{}",
         payload.svg_ref.0,
         text_range_key(payload.source_range_utf8),
@@ -376,7 +403,16 @@ fn svg_glyph_payload_resource_key(payload: &SvgGlyphPayload) -> String {
         payload.external_resources_allowed,
         payload.interactivity_allowed,
         optional_affine_key(payload.transform_to_run),
-    )
+    );
+    if let Some(resource_key) = resources.and_then(|resources| {
+        resources
+            .svg_fragment(payload.svg_ref)
+            .map(|svg| svg_resource_key(svg.len(), resource_digest_hex(svg.as_bytes()).as_str()))
+    }) {
+        key.push_str(":resource:");
+        key.push_str(&resource_key);
+    }
+    key
 }
 
 fn font_color_glyph_ref_key(value: Option<&FontColorGlyphRef>) -> String {

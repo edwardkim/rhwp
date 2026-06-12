@@ -220,6 +220,29 @@ resource identity and native font-construction blockers explicit.
 - The public compatibility path is unchanged: unsupported or unconstructed
   glyph variants continue to use the `TextRun` fallback.
 
+## P24 Strict Bitmap/SVG Glyph Producer Corpus
+
+P24 widens the advanced glyph payload corpus without making bitmap or SVG glyphs
+the default public replay path.
+
+- `ResourceArena` can now intern image bytes and static SVG fragments alongside
+  font blobs, giving producer-output fixtures a concrete resource path instead
+  of only hand-authored numeric ids.
+- `payloadResourceKey` keeps the existing payload-family/source/placement
+  identity and appends the interned resource's `blake3` key when bytes are
+  available. Two exports that reuse `imageRef: 0` or `svgRef: 0` for different
+  producer bytes therefore do not share a strict glyph cache slot.
+- `BitmapGlyph` remains strict only for a single producer-selected strike with
+  deterministic alpha, scaling, filtering, finite placement, non-empty text and
+  glyph ranges, and no `backendDefault` scaling policy.
+- `SvgGlyph` remains strict only for a static sanitized vector resource with a
+  required finite positive `viewBox`; script, animation, external resources, and
+  interactivity flags must all stay false. JSON keeps the compatibility `svgRef`
+  field and also exposes `vectorResourceId` as the clearer static-vector alias.
+- Even when a backend explicitly enables the bitmap or SVG glyph family, invalid
+  strict payloads still reject and the schema-v1 compatibility export keeps the
+  `TextRun` fallback.
+
 Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
 output can use fuzzy PNG comparison, but semantic decisions must be exact:
 selected variant id, fallback reason, resource resolution, effect preprocessing

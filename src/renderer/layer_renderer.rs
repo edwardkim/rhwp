@@ -1284,6 +1284,81 @@ mod tests {
     }
 
     #[test]
+    fn advanced_bitmap_and_svg_glyph_payloads_select_only_when_explicitly_allowed() {
+        let bitmap_report = first_report(
+            vec![text_op(), bitmap_glyph_outline()],
+            TextVariantSelectionOptions {
+                allow_bitmap_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert_eq!(
+            bitmap_report.selected_variant_kind,
+            Some(TextVariantKind::GlyphOutline)
+        );
+        assert!(bitmap_report.rejected_variants.is_empty());
+
+        let svg_report = first_report(
+            vec![text_op(), svg_glyph_outline()],
+            TextVariantSelectionOptions {
+                allow_svg_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert_eq!(
+            svg_report.selected_variant_kind,
+            Some(TextVariantKind::GlyphOutline)
+        );
+        assert!(svg_report.rejected_variants.is_empty());
+    }
+
+    #[test]
+    fn invalid_advanced_glyph_payloads_fallback_even_when_family_is_allowed() {
+        let mut backend_default_bitmap = bitmap_glyph_outline();
+        if let PaintOp::GlyphOutline { outline, .. } = &mut backend_default_bitmap {
+            outline.bitmap_glyph.as_mut().unwrap().scaling_policy =
+                BitmapGlyphScalingPolicy::BackendDefault;
+        }
+        let bitmap_report = first_report(
+            vec![text_op(), backend_default_bitmap],
+            TextVariantSelectionOptions {
+                allow_bitmap_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert_eq!(
+            bitmap_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(bitmap_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedBitmapGlyph));
+
+        let mut unsafe_svg = svg_glyph_outline();
+        if let PaintOp::GlyphOutline { outline, .. } = &mut unsafe_svg {
+            outline
+                .svg_glyph
+                .as_mut()
+                .unwrap()
+                .external_resources_allowed = true;
+        }
+        let svg_report = first_report(
+            vec![text_op(), unsafe_svg],
+            TextVariantSelectionOptions {
+                allow_svg_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+        );
+        assert_eq!(
+            svg_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(svg_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedSvgGlyph));
+    }
+
+    #[test]
     fn colrv1_graph_supported_gradient_gate_can_select_gradient_subset() {
         for kind in [
             ColorPaintGraphNodeKind::LinearGradientPath,
