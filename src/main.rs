@@ -46,6 +46,7 @@ fn main() {
         Some("gen-pua") => gen_pua_test(&args[2..]),
         Some("test-field") => test_field_roundtrip(&args[2..]),
         Some("ir-diff") => ir_diff(&args[2..]),
+        Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
         _ => {
             println!("rhwp v{}", rhwp::version());
@@ -185,6 +186,10 @@ fn print_help() {
     println!("                 controls(타입+속성), tab_extended, ParaShape, TabDef");
     println!("      표: page_break, outer_margin, treat_as_char, wrap, size, v_offset/h_offset");
     println!("      그림/도형: treat_as_char, wrap, size, v_offset/h_offset, vert_rel/horz_rel");
+    println!();
+    println!("  hwpx-roundtrip <파일.hwpx | --batch 폴더> [-o <출력폴더>]");
+    println!("      HWPX → IR → HWPX roundtrip 검증 (Task #1315 baseline)");
+    println!("      재조립 .hwpx와 inventory.tsv를 출력 폴더(기본 output/poc/task1315)에 생성");
     println!();
     println!("  thumbnail <파일.hwp> [옵션]");
     println!("      HWP 파일에서 썸네일(PrvImage) 추출");

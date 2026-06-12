@@ -222,6 +222,48 @@ fn test_insert_column_out_of_bounds() {
     assert!(table.insert_column(5, true).is_err());
 }
 
+// === set_column_widths 테스트 ===
+
+#[test]
+fn test_set_column_widths_basic() {
+    let mut table = make_table(2, 3);
+    table.set_column_widths(&[2000, 3000, 1000]).unwrap();
+    assert_eq!(table.get_column_widths(), vec![2000, 3000, 1000]);
+    // 모든 col_span==1 셀이 자기 열 폭으로 설정된다.
+    for cell in &table.cells {
+        let expected = [2000u32, 3000, 1000][cell.col as usize];
+        assert_eq!(cell.width, expected, "col {} 셀 폭", cell.col);
+    }
+}
+
+#[test]
+fn test_set_column_widths_merged_cell() {
+    let mut table = make_table(2, 3);
+    // (0,0) 셀을 col_span=2로 병합하고 병합된 (1,0) 셀 제거
+    table.cells[0].col_span = 2;
+    table.cells[0].width = 7200;
+    table.cells.retain(|c| !(c.col == 1 && c.row == 0));
+    table.rebuild_grid();
+
+    table.set_column_widths(&[2000, 3000, 1000]).unwrap();
+
+    // 병합 셀(col0, span2)은 걸친 두 열 폭의 합(2000+3000)이 된다.
+    let merged = table
+        .cells
+        .iter()
+        .find(|c| c.col == 0 && c.row == 0 && c.col_span == 2)
+        .unwrap();
+    assert_eq!(merged.width, 5000);
+    // 열 폭은 col_span==1 셀(행 1) 기준으로 정확히 반영된다.
+    assert_eq!(table.get_column_widths(), vec![2000, 3000, 1000]);
+}
+
+#[test]
+fn test_set_column_widths_wrong_len() {
+    let mut table = make_table(2, 3);
+    assert!(table.set_column_widths(&[1000, 2000]).is_err());
+}
+
 // === merge_cells 테스트 ===
 
 #[test]

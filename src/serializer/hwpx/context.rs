@@ -89,6 +89,12 @@ pub struct SerializeContext {
     pub bin_data_map: HashMap<u16, BinDataEntry>,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
+    /// subList(셀·글상자) 직렬화 중첩 깊이 (#1379 3단계).
+    ///
+    /// 본문 경로는 colPr 를 섹션 템플릿 첫 run 에서 처리하므로 인라인 미방출이
+    /// 정합이지만, 셀·글상자 subList 의 colPr 는 원본 XML 에 인라인으로 존재한다.
+    /// `render_control_slot` 의 ColumnDef 방출을 subList 경로(depth > 0)로 한정한다.
+    pub sub_list_depth: u32,
 }
 
 impl SerializeContext {

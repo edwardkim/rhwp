@@ -28,13 +28,13 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
-use crate::model::paragraph::LineSeg;
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
 use super::context::SerializeContext;
+use super::section::{render_hp_p_open, render_paragraph_parts};
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
 
@@ -246,79 +246,29 @@ fn write_sub_list<W: Write>(
         ],
     )?;
 
-    // 셀 내부 문단 재귀 — 각 문단은 간단한 <hp:p><hp:run><hp:t>텍스트</hp:t></hp:run></hp:p> 구조
+    // 셀 내부 문단 재귀 — 본문과 동일한 공유 직렬화 경로(render_paragraph_parts)로
+    // 컨트롤 슬롯(표 재귀 포함) 방출 + run 분할 + lineseg IR 보존/fallback (#1379 2단계).
+    // sub_list_depth: 셀 경로 한정 colPr 인라인 방출 스코프 (#1379 3단계).
+    ctx.sub_list_depth += 1;
+    let mut vert_cursor: u32 = 0;
     for para in cell.paragraphs.iter() {
         ctx.para_shape_ids.reference(para.para_shape_id);
         ctx.style_ids.reference(para.style_id as u16);
-        if let Some(cs_ref) = para.char_shapes.first() {
-            ctx.char_shape_ids.reference(cs_ref.char_shape_id);
-        }
 
-        let pi_str = ctx.next_para_id().to_string();
-        let ppr = para.para_shape_id.to_string();
-        let sp = para.style_id.to_string();
-        start_tag_attrs(
-            w,
-            "hp:p",
-            &[
-                ("id", &pi_str),
-                ("paraPrIDRef", &ppr),
-                ("styleIDRef", &sp),
-                ("pageBreak", "0"),
-                ("columnBreak", "0"),
-                ("merged", "0"),
-            ],
-        )?;
-
-        let cs = para
-            .char_shapes
-            .first()
-            .map(|r| r.char_shape_id)
-            .unwrap_or(0);
-        let cs_str = cs.to_string();
-        start_tag_attrs(w, "hp:run", &[("charPrIDRef", &cs_str)])?;
-        // 텍스트만 출력 (탭·소프트브레이크는 Stage 3 범위에서 제외 — section.rs 와 동일 방식으로 단순화)
-        write_cell_text(w, &para.text)?;
-        end_tag(w, "hp:run")?;
-
-        // <hp:linesegarray> 최소 1개 lineseg
-        start_tag(w, "hp:linesegarray")?;
-        let line_flags = LineSeg::TAG_SINGLE_SEGMENT_LINE.to_string();
-        empty_tag(
-            w,
-            "hp:lineseg",
-            &[
-                ("textpos", "0"),
-                ("vertpos", "0"),
-                ("vertsize", "1000"),
-                ("textheight", "1000"),
-                ("baseline", "850"),
-                ("spacing", "600"),
-                ("horzpos", "0"),
-                ("horzsize", "12964"),
-                ("flags", line_flags.as_str()),
-            ],
-        )?;
-        end_tag(w, "hp:linesegarray")?;
-
-        end_tag(w, "hp:p")?;
-    }
-
-    end_tag(w, "hp:subList")?;
-    Ok(())
-}
-
-fn write_cell_text<W: Write>(w: &mut Writer<W>, text: &str) -> Result<(), SerializeError> {
-    use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-    // <hp:t>text</hp:t>
-    w.write_event(Event::Start(BytesStart::new("hp:t")))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    if !text.is_empty() {
-        w.write_event(Event::Text(BytesText::new(text)))
+        let (runs, linesegs, advance) = render_paragraph_parts(para, vert_cursor, ctx);
+        vert_cursor = advance;
+        let mut p_xml = render_hp_p_open(para, ctx.next_para_id());
+        p_xml.push_str(&runs);
+        p_xml.push_str("<hp:linesegarray>");
+        p_xml.push_str(&linesegs);
+        p_xml.push_str("</hp:linesegarray></hp:p>");
+        w.get_mut()
+            .write_all(p_xml.as_bytes())
             .map_err(|e| SerializeError::XmlError(e.to_string()))?;
     }
-    w.write_event(Event::End(BytesEnd::new("hp:t")))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
+    ctx.sub_list_depth -= 1;
+
+    end_tag(w, "hp:subList")?;
     Ok(())
 }
 
@@ -477,6 +427,13 @@ mod tests {
         let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
         write_table(&mut w, table, &mut ctx).expect("write_table");
         String::from_utf8(w.into_inner()).unwrap()
+    }
+
+    fn cs(start_pos: u32, char_shape_id: u32) -> crate::model::paragraph::CharShapeRef {
+        crate::model::paragraph::CharShapeRef {
+            start_pos,
+            char_shape_id,
+        }
     }
 
     #[test]
@@ -683,5 +640,343 @@ mod tests {
                 expected_id
             );
         }
+    }
+
+    #[test]
+    fn cell_text_serializes_tab_and_line_break_as_hwpx_inline_elements() {
+        let mut t = empty_table(1, 1);
+        let para = &mut t.cells[0].paragraphs[0];
+        para.text = "A\tB\nC".to_string();
+        para.tab_extended = vec![[2000, 0, 0x0100, 0, 0, 0, 0]];
+
+        let xml = serialize(&t);
+
+        assert!(
+            xml.contains(
+                r#"<hp:t>A<hp:tab width="2000" leader="0" type="1"/>B<hp:lineBreak/>C</hp:t>"#
+            ),
+            "cell text must emit hp:tab/hp:lineBreak instead of raw control chars: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1378_cell_paragraph_multi_run_split() {
+        // 셀 문단 다중 char_shapes → 경계 기준 다중 run 분할 (#1378 3단계).
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.text = "abcd".to_string();
+            para.char_offsets = vec![0, 1, 2, 3];
+            para.char_count = 5;
+            para.char_shapes = vec![cs(0, 1), cs(2, 2)];
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(
+                r#"<hp:run charPrIDRef="1"><hp:t>ab</hp:t></hp:run><hp:run charPrIDRef="2"><hp:t>cd</hp:t></hp:run>"#
+            ),
+            "셀 문단이 경계에서 2 run 으로 분할되어야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1378_cell_boundary_with_control_gap_offsets() {
+        // IR 내 컨트롤(8 유닛 갭)이 있어도 char_offsets 매핑으로 경계 위치가
+        // 어긋나지 않는다 (컨트롤 자체의 출력은 #1379 범위).
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.text = "abcd".to_string();
+            para.char_offsets = vec![0, 1, 10, 11];
+            para.char_count = 13;
+            para.char_shapes = vec![cs(0, 1), cs(10, 2)];
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(
+                r#"<hp:run charPrIDRef="1"><hp:t>ab</hp:t></hp:run><hp:run charPrIDRef="2"><hp:t>cd</hp:t></hp:run>"#
+            ),
+            "경계(pos=10)가 컨트롤 갭 뒤 'c' 앞에 떨어져야 함: {}",
+            xml
+        );
+    }
+
+    /// bin_data_id=1 을 참조하는 Picture 컨트롤 — `serialize_with_bin` 과 함께 사용.
+    fn picture_control() -> crate::model::control::Control {
+        let mut pic = crate::model::image::Picture::default();
+        pic.image_attr.bin_data_id = 1;
+        crate::model::control::Control::Picture(Box::new(pic))
+    }
+
+    /// BinDataContent(id=1) 등록 문서 기준으로 직렬화 — hp:pic 방출 테스트용.
+    fn serialize_with_bin(table: &Table) -> String {
+        let mut doc = Document::default();
+        doc.bin_data_content
+            .push(crate::model::bin_data::BinDataContent {
+                id: 1,
+                data: vec![0u8; 4],
+                extension: "png".to_string(),
+            });
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_table(&mut w, table, &mut ctx).expect("write_table");
+        String::from_utf8(w.into_inner()).unwrap()
+    }
+
+    #[test]
+    fn task1379_cell_paragraph_emits_picture_control() {
+        // 셀 문단의 Picture 컨트롤이 hp:pic 으로 방출되어야 함 (#1379 2단계).
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.char_count = 9; // 슬롯 1개(8 유닛) + 종단 1
+            para.controls.push(picture_control());
+        }
+        let xml = serialize_with_bin(&t);
+        assert!(
+            xml.contains("<hp:pic "),
+            "셀 문단의 Picture 가 hp:pic 으로 방출되어야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1379_nested_table_in_cell_recurses_with_unique_para_ids() {
+        // 셀 안 표 재귀 — 중첩 hp:tbl 방출 + next_para_id 채번 무충돌.
+        let mut outer = empty_table(1, 1);
+        {
+            let para = &mut outer.cells[0].paragraphs[0];
+            para.char_count = 9;
+            para.controls
+                .push(crate::model::control::Control::Table(Box::new(
+                    empty_table(1, 1),
+                )));
+        }
+        let xml = serialize(&outer);
+        assert_eq!(
+            xml.matches("<hp:tbl ").count(),
+            2,
+            "중첩 hp:tbl 이 방출되어야 함: {}",
+            xml
+        );
+        assert_eq!(xml.matches("<hp:p ").count(), 2, "문단 2개여야 함");
+        for id in 0..2u32 {
+            assert_eq!(
+                xml.matches(&format!(r#"<hp:p id="{}""#, id)).count(),
+                1,
+                "id={} 가 없거나 중복 — 재귀 채번 충돌",
+                id
+            );
+        }
+    }
+
+    #[test]
+    fn task1379_cell_control_slot_position_between_text() {
+        // char_offsets 8 유닛 갭 위치에서 컨트롤이 정확히 방출되어야 함.
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.text = "ab".to_string();
+            para.char_offsets = vec![0, 9]; // a=0, 슬롯=1..9, b=9
+            para.char_count = 11;
+            para.controls.push(picture_control());
+        }
+        let xml = serialize_with_bin(&t);
+        let a = xml.find("<hp:t>a</hp:t>").expect("a 텍스트");
+        let p = xml.find("<hp:pic ").expect("hp:pic");
+        let b = xml.find("<hp:t>b</hp:t>").expect("b 텍스트");
+        assert!(a < p && p < b, "슬롯이 a 와 b 사이에 와야 함: {}", xml);
+    }
+
+    #[test]
+    fn task1379_cell_char_shape_boundary_after_control_restored() {
+        // #1378 게이트의 경계 8×컨트롤수 시프트 해소 — 경계 (8,77) 이 컨트롤 뒤에 복원.
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.text = "ab".to_string();
+            para.char_offsets = vec![8, 9]; // 슬롯=0..8, a=8, b=9
+            para.char_count = 11;
+            para.char_shapes = vec![cs(0, 1), cs(8, 77)];
+            para.controls.push(picture_control());
+        }
+        let xml = serialize_with_bin(&t);
+        assert!(
+            xml.contains(r#"<hp:run charPrIDRef="1"><hp:pic "#),
+            "run1 은 컨트롤만 포함해야 함: {}",
+            xml
+        );
+        assert!(
+            xml.contains(r#"<hp:run charPrIDRef="77"><hp:t>ab</hp:t></hp:run>"#),
+            "경계(pos=8)가 컨트롤 뒤 텍스트 앞에 복원되어야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1379_cell_lineseg_preserved_from_ir() {
+        // 합성 lineseg 제거 — IR line_segs 가 있으면 값 그대로 보존 (#177 정렬).
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.line_segs.push(crate::model::paragraph::LineSeg {
+                text_start: 0,
+                vertical_pos: 1234,
+                line_height: 900,
+                text_height: 900,
+                baseline_distance: 765,
+                line_spacing: 540,
+                column_start: 0,
+                segment_width: 7777,
+                tag: 0x60000,
+            });
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(
+                r#"<hp:lineseg textpos="0" vertpos="1234" vertsize="900" textheight="900" baseline="765" spacing="540" horzpos="0" horzsize="7777" flags="393216"/>"#
+            ),
+            "IR lineseg 값이 그대로 방출되어야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1379_cell_char_overlap_emitted_as_compose() {
+        // 셀 내 글자겹침 — render_control_slot CharOverlap arm (mel-001 양상).
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.char_count = 9;
+            para.controls
+                .push(crate::model::control::Control::CharOverlap(
+                    crate::model::control::CharOverlap {
+                        chars: vec!['장'],
+                        border_type: 0,
+                        inner_char_size: -3,
+                        expansion: 1,
+                        char_shape_ids: vec![37, u32::MAX],
+                    },
+                ));
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(
+                r#"<hp:compose circleType="CHAR" charSz="-3" composeType="OVERLAP" charPrCnt="2" composeText="장">"#
+            ),
+            "compose 속성이 원본 형태로 방출되어야 함: {}",
+            xml
+        );
+        assert!(
+            xml.contains(
+                r#"<hp:charPr prIDRef="37"/><hp:charPr prIDRef="4294967295"/></hp:compose>"#
+            ),
+            "charPr 목록이 미설정(u32::MAX) 포함 그대로 방출되어야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1379_ta_pic_001_r_roundtrip_preserves_cell_pictures() {
+        // 이슈 #1379 대표 샘플 — roundtrip 후 셀 내 Picture 전수(실측 2개) 보존.
+        fn count_cell_pictures(doc: &Document) -> usize {
+            doc.sections
+                .iter()
+                .flat_map(|s| &s.paragraphs)
+                .flat_map(|p| &p.controls)
+                .filter_map(|c| match c {
+                    crate::model::control::Control::Table(t) => Some(t),
+                    _ => None,
+                })
+                .flat_map(|t| &t.cells)
+                .flat_map(|c| &c.paragraphs)
+                .flat_map(|p| &p.controls)
+                .filter(|c| matches!(c, crate::model::control::Control::Picture(_)))
+                .count()
+        }
+        let bytes = std::fs::read("samples/hwpx/ta-pic-001-r.hwpx").expect("샘플 읽기");
+        let doc1 = crate::parser::hwpx::parse_hwpx(&bytes).expect("파싱");
+        let n1 = count_cell_pictures(&doc1);
+        // 원본 section0.xml 실측 hp:pic 2개 (전부 셀 내부) — 이슈 본문의 "4개" 는
+        // 부정확 수치로 확인됨 (stage2 보고서 참조).
+        assert_eq!(n1, 2, "원본 셀 내 Picture 는 2개여야 함");
+        let out = crate::serializer::hwpx::serialize_hwpx(&doc1).expect("직렬화");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&out).expect("재파싱");
+        assert_eq!(
+            count_cell_pictures(&doc2),
+            n1,
+            "roundtrip 후 셀 내 Picture 수가 보존되어야 함"
+        );
+    }
+
+    #[test]
+    fn task1379_cell_column_def_emits_col_pr() {
+        // 셀 문단의 ColumnDef 가 hp:ctrl/hp:colPr 인라인으로 방출되어야 함 (#1379 3단계).
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.char_count = 9; // 슬롯 1개(8 유닛) + 종단 1
+            let mut cd = crate::model::page::ColumnDef::default();
+            cd.column_count = 1;
+            cd.same_width = true;
+            para.controls
+                .push(crate::model::control::Control::ColumnDef(cd));
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(
+                r#"<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl>"#
+            ),
+            "셀 문단의 ColumnDef 가 hp:colPr 로 방출되어야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1379_cell_column_def_col_line_emitted_when_separator() {
+        // separator_type≠0 인 경우 hp:colLine 자식 방출.
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.char_count = 9;
+            let mut cd = crate::model::page::ColumnDef::default();
+            cd.column_count = 2;
+            cd.same_width = true;
+            cd.spacing = 1134;
+            cd.separator_type = 2; // DASH
+            cd.separator_width = 1; // 0.12 mm
+            para.controls
+                .push(crate::model::control::Control::ColumnDef(cd));
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r##"<hp:colLine type="DASH" width="0.12 mm" color="#000000"/>"##),
+            "separator 있는 ColumnDef 는 hp:colLine 을 방출해야 함: {}",
+            xml
+        );
+    }
+
+    #[test]
+    fn task1378_cell_tab_in_split_runs() {
+        // 탭 포함 셀 문단 run 분할 — 탭은 첫 run 에, 분할 텍스트는 새 run 에.
+        let mut t = empty_table(1, 1);
+        {
+            let para = &mut t.cells[0].paragraphs[0];
+            para.text = "a\tb".to_string();
+            para.char_offsets = vec![0, 1, 2];
+            para.char_count = 4;
+            para.char_shapes = vec![cs(0, 1), cs(2, 2)];
+            para.tab_extended = vec![[2000, 0, 0x0100, 0, 0, 0, 0]];
+        }
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(
+                r#"<hp:run charPrIDRef="1"><hp:t>a<hp:tab width="2000" leader="0" type="1"/></hp:t></hp:run><hp:run charPrIDRef="2"><hp:t>b</hp:t></hp:run>"#
+            ),
+            "탭 포함 분할: run1=a+tab, run2=b 여야 함: {}",
+            xml
+        );
     }
 }

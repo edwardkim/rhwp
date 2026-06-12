@@ -106,14 +106,17 @@ fn exam_3_11_2022_hwp_endnote_drift_capped() {
     );
 }
 
-/// #1336: 2024 구분선 상/하 20mm 변형. p22 미주 단 0 의 누적 드리프트(~50px)가
-/// REG_LIMIT(60px) 이내로 유지되는지 회귀 가드. 근본 정정 보류(미주 다단 fit 캡
-/// exam별 하드튜닝 영역), 바운드로 추적.
+/// #1336/#1363: 2024 구분선 상/하 20mm 변형. p22 미주 단 0 의 누적 드리프트.
+/// 종전 ~50px(REG_LIMIT 이내 바운드 추적, 근본 정정 보류)였으나, Task #1363 Stage 4
+/// 에서 근본 원인 규명·해소: TAC 그림 미주(pi=1131)를 겹침이 아닌 렌더러대로 순차
+/// 적층(Divergence C)하여 단 과충전(+58px)을 제거 → overflow 0px. 재발 방지로 타이트
+/// 바운드(TIGHT) 가드.
+const SEP2020_TIGHT_PX: f64 = 5.0;
 #[test]
 fn exam_3_09_2024_sep2020_hwp_endnote_drift_capped() {
     let t = doc_total_overflow_px("samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp");
     assert!(
-        t <= REG_LIMIT_PX,
-        "3-09'24 sep20/20 hwp endnote drift {t:.1}px > {REG_LIMIT_PX}"
+        t <= SEP2020_TIGHT_PX,
+        "3-09'24 sep20/20 hwp endnote drift {t:.1}px > {SEP2020_TIGHT_PX} (Task #1363 회귀)"
     );
 }

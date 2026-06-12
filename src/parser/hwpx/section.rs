@@ -2693,6 +2693,15 @@ fn parse_object_element_attrs(
             b"instid" => ids.instid = parse_u32(&attr),
             b"groupLevel" => shape_attr.group_level = attr_str(&attr).parse().unwrap_or(0),
             b"ratio" => ids.round_rate = parse_u8(&attr).min(100),
+            // [Task #1379] numberingType (캡션 번호 범주) 보존 — exam_kor 등 광범위 사용.
+            b"numberingType" => {
+                common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
+                };
+            }
             _ => {}
         }
     }
@@ -3373,12 +3382,16 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                                 // 가 세로쓰기 (`layout_vertical_textbox_text_with_paras`)
                                 // 활성화. "VERTICAL"/"VERTICALALL" 모두 code 1.
                                 b"textDirection" => {
-                                    let direction_code: u32 = match attr_str(&attr).as_str() {
+                                    let dir = attr_str(&attr);
+                                    let direction_code: u32 = match dir.as_str() {
                                         "VERTICAL" | "VERTICALALL" => 1,
                                         _ => 0,
                                     };
                                     text_box.list_attr =
                                         (text_box.list_attr & !0b111) | direction_code;
+                                    // [Task #1379] VERTICAL/VERTICALALL 구분 보존
+                                    // — serializer 역방출용 (list_attr 만으로는 구분 불가).
+                                    text_box.vertical_all = dir == "VERTICALALL";
                                 }
                                 _ => {}
                             }
@@ -5002,6 +5015,52 @@ fn parse_form_object(
                 form.properties
                     .insert("Command".to_string(), attr_str(&attr));
             }
+            // 버튼류 전용 속성 (라운드트립 보존; writer 가 동일 키로 읽음)
+            b"radioGroupName" => {
+                form.properties
+                    .insert("RadioGroupName".to_string(), attr_str(&attr));
+            }
+            b"triState" => {
+                form.properties
+                    .insert("TriState".to_string(), attr_str(&attr));
+            }
+            b"backStyle" => {
+                form.properties
+                    .insert("BackStyle".to_string(), attr_str(&attr));
+            }
+            // Edit 전용 속성 (라운드트립 보존)
+            b"multiLine" => {
+                form.properties
+                    .insert("MultiLine".to_string(), attr_str(&attr));
+            }
+            b"passwordChar" => {
+                form.properties
+                    .insert("PasswordChar".to_string(), attr_str(&attr));
+            }
+            b"maxLength" => {
+                form.properties
+                    .insert("MaxLength".to_string(), attr_str(&attr));
+            }
+            b"scrollBars" => {
+                form.properties
+                    .insert("ScrollBars".to_string(), attr_str(&attr));
+            }
+            b"tabKeyBehavior" => {
+                form.properties
+                    .insert("TabKeyBehavior".to_string(), attr_str(&attr));
+            }
+            b"numOnly" => {
+                form.properties
+                    .insert("Number".to_string(), attr_str(&attr));
+            }
+            b"readOnly" => {
+                form.properties
+                    .insert("ReadOnly".to_string(), attr_str(&attr));
+            }
+            b"alignText" => {
+                form.properties
+                    .insert("AlignText".to_string(), attr_str(&attr));
+            }
             _ => {}
         }
     }
@@ -5009,7 +5068,8 @@ fn parse_form_object(
     // 자식 요소 순회
     let end_tag = local_name(e.name().as_ref()).to_vec();
     let mut buf = Vec::new();
-    let mut list_items: Vec<String> = Vec::new();
+    // (value, displayText) 쌍으로 보존 — comboBox 항목
+    let mut list_items: Vec<(String, String)> = Vec::new();
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -5047,22 +5107,72 @@ fn parse_form_object(
                 let local = local_name(cname.as_ref());
                 match local {
                     b"sz" => {
-                        // <hp:sz width="..." height="..."/>
+                        // <hp:sz width="..." widthRelTo="..." height="..." heightRelTo="..." protect="..."/>
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"width" => form.width = parse_u32(&attr),
                                 b"height" => form.height = parse_u32(&attr),
+                                b"widthRelTo" => {
+                                    form.properties
+                                        .insert("SzWidthRelTo".to_string(), attr_str(&attr));
+                                }
+                                b"heightRelTo" => {
+                                    form.properties
+                                        .insert("SzHeightRelTo".to_string(), attr_str(&attr));
+                                }
+                                b"protect" => {
+                                    form.properties
+                                        .insert("SzProtect".to_string(), attr_str(&attr));
+                                }
                                 _ => {}
                             }
                         }
                     }
-                    b"listItem" => {
-                        // <hp:listItem value="..."/> (comboBox 항목)
+                    b"pos" => {
+                        // <hp:pos .../> 앵커링 (표준 ShapePositionType 11속성) — 라운드트립 보존
                         for attr in ce.attributes().flatten() {
-                            if attr.key.as_ref() == b"value" {
-                                list_items.push(attr_str(&attr));
+                            let key = match attr.key.as_ref() {
+                                b"treatAsChar" => "PosTreatAsChar",
+                                b"affectLSpacing" => "PosAffectLSpacing",
+                                b"flowWithText" => "PosFlowWithText",
+                                b"allowOverlap" => "PosAllowOverlap",
+                                b"holdAnchorAndSO" => "PosHoldAnchorAndSO",
+                                b"vertRelTo" => "PosVertRelTo",
+                                b"horzRelTo" => "PosHorzRelTo",
+                                b"vertAlign" => "PosVertAlign",
+                                b"horzAlign" => "PosHorzAlign",
+                                b"vertOffset" => "PosVertOffset",
+                                b"horzOffset" => "PosHorzOffset",
+                                _ => continue,
+                            };
+                            form.properties.insert(key.to_string(), attr_str(&attr));
+                        }
+                    }
+                    b"outMargin" => {
+                        // <hp:outMargin left=".." right=".." top=".." bottom=".."/> — 라운드트립 보존
+                        for attr in ce.attributes().flatten() {
+                            let key = match attr.key.as_ref() {
+                                b"left" => "OutMarginLeft",
+                                b"right" => "OutMarginRight",
+                                b"top" => "OutMarginTop",
+                                b"bottom" => "OutMarginBottom",
+                                _ => continue,
+                            };
+                            form.properties.insert(key.to_string(), attr_str(&attr));
+                        }
+                    }
+                    b"listItem" => {
+                        // <hp:listItem displayText="..." value="..."/> (comboBox 항목)
+                        let mut value = String::new();
+                        let mut display = String::new();
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"value" => value = attr_str(&attr),
+                                b"displayText" => display = attr_str(&attr),
+                                _ => {}
                             }
                         }
+                        list_items.push((value, display));
                     }
                     b"formCharPr" => {
                         // <hp:formCharPr charPrIDRef="0" followContext="0" autoSz="1" wordWrap="0"/>
@@ -5104,11 +5214,13 @@ fn parse_form_object(
         buf.clear();
     }
 
-    // comboBox 항목 목록을 properties에 저장
+    // comboBox 항목 목록(값 + 표시 텍스트)을 properties에 저장
     if !list_items.is_empty() {
-        for (i, item) in list_items.iter().enumerate() {
+        for (i, (value, display)) in list_items.iter().enumerate() {
             form.properties
-                .insert(format!("listItem{}", i), item.clone());
+                .insert(format!("listItem{}", i), value.clone());
+            form.properties
+                .insert(format!("listItemDisplay{}", i), display.clone());
         }
     }
 

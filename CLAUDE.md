@@ -223,6 +223,22 @@ rhwp ir-diff sample.hwpx sample.hwp --max-lines 50      # 출력 50줄 제한
 
 상세 매뉴얼: `mydocs/manual/ir_diff_command.md`
 
+### HWPX roundtrip 검증 (`hwpx-roundtrip`)
+
+HWPX 파일을 parse→serialize→재parse 하여 IR 뼈대 보존 + 패키지(ZIP) 구조 + 2-round 안정성을 검사한다.
+
+```bash
+rhwp hwpx-roundtrip sample.hwpx                                  # 단일 파일 검사
+rhwp hwpx-roundtrip --batch samples/hwpx                         # 폴더 전수 (재귀)
+rhwp hwpx-roundtrip --batch samples/hwpx -o output/poc/task1315  # inventory.tsv + *.rt.hwpx 산출
+```
+
+하드 실패 존재 시 종료 코드 1. `samples/hwpx/` 전수 회귀 게이트는 `cargo test --test hwpx_roundtrip_baseline` (신규 샘플 자동 포함, xfail/제외 등급은 테스트 파일의 상수 참조).
+
+> 주의: baseline 통과 = 구조(뼈대) 보존이며 시각 충실도 보장이 아니다.
+
+상세 매뉴얼: `mydocs/manual/hwpx_roundtrip_baseline.md`
+
 ### 디버깅 워크플로우
 
 레이아웃/간격 버그 디버깅 시 다음 순서로 진행한다:

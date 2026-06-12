@@ -835,6 +835,128 @@ impl DocumentCore {
         Ok("{\"ok\":true}".to_string())
     }
 
+    /// 표의 열별 폭(HWPUNIT)을 절대값으로 설정한다 (네이티브).
+    ///
+    /// `widths.len()` 은 표의 열 수와 같아야 한다. `insert_table_column` 과 달리
+    /// 표 전체 폭이 입력한 폭들의 합이 되므로, 페이지를 넘지 않게 하려면
+    /// 합을 본문 폭 이하로 전달하거나 `fit_table_to_page_native` 를 쓴다.
+    pub fn set_table_column_widths_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        widths: Vec<u32>,
+    ) -> Result<String, HwpError> {
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        table
+            .set_column_widths(&widths)
+            .map_err(HwpError::RenderError)?;
+        table.dirty = true;
+        let col_count = table.col_count;
+        let total: u32 = table.get_column_widths().iter().sum();
+
+        // 폭이 바뀐 셀의 모든 문단을 재배치(line_segs 재계산)한다.
+        let reflow: Vec<(usize, usize)> = {
+            let para = &self.document.sections[section_idx].paragraphs[parent_para_idx];
+            if let Some(Control::Table(t)) = para.controls.get(control_idx) {
+                t.cells
+                    .iter()
+                    .enumerate()
+                    .map(|(i, c)| (i, c.paragraphs.len()))
+                    .collect()
+            } else {
+                Vec::new()
+            }
+        };
+        for (cell_idx, para_count) in reflow {
+            for cell_para_idx in 0..para_count {
+                self.reflow_cell_paragraph(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                );
+            }
+        }
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"colCount\":{},\"tableWidth\":{}",
+            col_count, total
+        )))
+    }
+
+    /// 표를 본문(페이지 텍스트) 폭에 맞춰 비례 축소한다 (네이티브).
+    ///
+    /// 표의 열 폭 합이 본문 폭(페이지 본문 영역 폭 − 표 바깥 좌우 여백)을 넘으면
+    /// 각 열을 같은 비율로 줄여 표가 페이지를 넘지 않게 한다. 이미 본문 폭 이하이면
+    /// 변경하지 않는다(축소 전용).
+    pub fn fit_table_to_page_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        const MIN_COL: u32 = 200; // 최소 열 폭 (HWPUNIT)
+
+        // 현재 열 폭과 표 바깥 좌우 여백을 읽는다.
+        let (widths, outer_lr) = {
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let outer = table.outer_margin_left as i64 + table.outer_margin_right as i64;
+            (table.get_column_widths(), outer.max(0) as u32)
+        };
+        let total: u32 = widths.iter().sum();
+
+        // 본문(텍스트) 폭 = 페이지 본문 영역 폭 − 표 바깥 좌우 여백.
+        let page_def = &self.document.sections[section_idx].section_def.page_def;
+        let body = crate::model::page::PageAreas::from_page_def(page_def).body_area;
+        let body_w = (body.right - body.left).max(0) as u32;
+        let target = body_w.saturating_sub(outer_lr);
+
+        if total == 0 || target == 0 || total <= target {
+            // 이미 페이지 폭 안에 들어옴 — 변경 없음.
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"colCount\":{},\"tableWidth\":{},\"pageContentWidth\":{},\"changed\":false",
+                widths.len(),
+                total,
+                target
+            )));
+        }
+
+        // 비례 축소(내림) 후 잔여분을 마지막 열에 더해 합이 정확히 target 이 되게 한다.
+        let mut new_w: Vec<u32> = widths
+            .iter()
+            .map(|&w| ((w as u64 * target as u64) / total as u64) as u32)
+            .collect();
+        let assigned: u64 = new_w.iter().map(|&w| w as u64).sum();
+        let remainder = target as u64 - assigned; // 내림이므로 항상 >= 0
+        if let Some(last) = new_w.last_mut() {
+            *last = (*last as u64 + remainder) as u32;
+        }
+        for w in &mut new_w {
+            if *w < MIN_COL {
+                *w = MIN_COL;
+            }
+        }
+
+        self.set_table_column_widths_native(section_idx, parent_para_idx, control_idx, new_w)?;
+
+        let new_total: u32 = {
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            table.get_column_widths().iter().sum()
+        };
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"colCount\":{},\"tableWidth\":{},\"pageContentWidth\":{},\"changed\":true",
+            widths.len(),
+            new_total,
+            target
+        )))
+    }
+
     /// JSON 객체 내 정수 키 값을 파싱하는 헬퍼.
     pub(crate) fn parse_json_i32(json: &str, key: &str) -> Option<i32> {
         let pattern = format!("\"{}\":", key);

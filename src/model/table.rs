@@ -296,6 +296,36 @@ impl Table {
         widths
     }
 
+    /// 열별 폭(HWPUNIT)을 절대값으로 설정한다.
+    ///
+    /// `widths.len()` 은 `col_count` 와 같아야 한다. 병합 셀(`col_span > 1`)은
+    /// 걸친 열들의 폭 합으로 설정된다. 설정 후 표 전체 크기
+    /// (`update_ctrl_dimensions`)와 그리드 인덱스(`rebuild_grid`)를 갱신한다.
+    ///
+    /// `insert_column` 이 기준 열 폭을 복제해 표를 넓히는 것과 달리, 이 메서드는
+    /// 입력한 폭들의 합이 그대로 표 전체 폭이 된다. 페이지 폭에 맞추려면
+    /// 합이 본문 폭 이하가 되도록 전달한다.
+    pub fn set_column_widths(&mut self, widths: &[HwpUnit]) -> Result<(), String> {
+        if widths.len() != self.col_count as usize {
+            return Err(format!(
+                "열 폭 개수 {} 가 표의 열 수 {} 와 다릅니다",
+                widths.len(),
+                self.col_count
+            ));
+        }
+        for cell in &mut self.cells {
+            let c = cell.col as usize;
+            if c >= widths.len() {
+                continue;
+            }
+            let end = (c + cell.col_span as usize).min(widths.len());
+            cell.width = widths[c..end].iter().sum();
+        }
+        self.update_ctrl_dimensions();
+        self.rebuild_grid();
+        Ok(())
+    }
+
     /// 행별 높이를 추출한다 (row_span==1인 셀 기준).
     /// 높이가 0인 행은 기본값 400으로 대체 (새 셀 생성용).
     pub fn get_row_heights(&self) -> Vec<HwpUnit> {
