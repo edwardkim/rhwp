@@ -3157,6 +3157,31 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 표 셀 문단에 앵커된 각주를 삽입한다 (+선택적 노트 본문 텍스트).
+    #[wasm_bindgen(js_name = insertFootnoteInCell)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn insert_footnote_in_cell(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        cell_idx: u32,
+        cell_para_idx: u32,
+        char_offset: u32,
+        text: &str,
+    ) -> Result<String, JsValue> {
+        self.insert_footnote_in_cell_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            cell_idx as usize,
+            cell_para_idx as usize,
+            char_offset as usize,
+            text,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 미주를 삽입한다.
     #[wasm_bindgen(js_name = insertEndnote)]
     pub fn insert_endnote(

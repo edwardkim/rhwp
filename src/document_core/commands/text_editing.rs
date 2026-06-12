@@ -610,7 +610,7 @@ impl DocumentCore {
         }
     }
 
-    fn recalculate_cell_paragraph_vpos_native(
+    pub(crate) fn recalculate_cell_paragraph_vpos_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,

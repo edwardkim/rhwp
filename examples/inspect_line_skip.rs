@@ -13,7 +13,9 @@ use std::fs;
 use rhwp::wasm_api::HwpDocument;
 
 fn main() {
-    let path = env::args().nth(1).unwrap_or_else(|| "/tmp/l4_repro.hwp".to_string());
+    let path = env::args()
+        .nth(1)
+        .unwrap_or_else(|| "/tmp/l4_repro.hwp".to_string());
     let bytes = fs::read(&path).expect("read repro file");
     let doc = HwpDocument::from_bytes(&bytes).expect("document load failed");
 
@@ -80,10 +82,14 @@ fn main() {
             || head.contains("그리고")
             || head.contains("합니다")
         {
-            let text = head.split("\"text\":\"").nth(1).and_then(|s| s.split('"').next());
-            let cs = head.split("\"charStart\":").nth(1).and_then(|s| {
-                s.split(|c: char| !c.is_ascii_digit()).next()
-            });
+            let text = head
+                .split("\"text\":\"")
+                .nth(1)
+                .and_then(|s| s.split('"').next());
+            let cs = head
+                .split("\"charStart\":")
+                .nth(1)
+                .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next());
             let ctx = head.contains("cellContext") || head.contains("cell_context");
             println!("run text={:?} charStart={:?} hasCellCtx={}", text, cs, ctx);
         }

@@ -6587,50 +6587,7 @@ impl DocumentCore {
         paragraph.has_para_text = true;
 
         // 전체 각주 순서 번호 재계산 (1부터 순차)
-        // 본문 문단 + 표 셀 + 글상자 내부의 각주를 모두 포함
-        {
-            let mut num = 1u16;
-            for pi in 0..self.document.sections[section_idx].paragraphs.len() {
-                for ci in 0..self.document.sections[section_idx].paragraphs[pi]
-                    .controls
-                    .len()
-                {
-                    match &mut self.document.sections[section_idx].paragraphs[pi].controls[ci] {
-                        Control::Footnote(ref mut fn_) => {
-                            fn_.number = num;
-                            num += 1;
-                        }
-                        Control::Table(ref mut table) => {
-                            for cell in &mut table.cells {
-                                for cp in &mut cell.paragraphs {
-                                    for cc in &mut cp.controls {
-                                        if let Control::Footnote(ref mut fn_) = cc {
-                                            fn_.number = num;
-                                            num += 1;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Control::Shape(ref mut shape) => {
-                            if let Some(text_box) =
-                                shape.drawing_mut().and_then(|d| d.text_box.as_mut())
-                            {
-                                for tp in &mut text_box.paragraphs {
-                                    for tc in &mut tp.controls {
-                                        if let Control::Footnote(ref mut fn_) = tc {
-                                            fn_.number = num;
-                                            num += 1;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        self.renumber_footnotes(section_idx);
 
         // 각주 내부 문단 리플로우
         self.reflow_footnote_paragraph(section_idx, para_idx, insert_idx, 0);
@@ -6665,6 +6622,379 @@ impl DocumentCore {
         Ok(format!(
             "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"footnoteNumber\":{}}}",
             para_idx, insert_idx, footnote_number
+        ))
+    }
+
+    /// 문서 순서(본문 문단 → 표 셀 → 글상자)대로 각주 번호를 1부터 재계산한다.
+    /// `insert_footnote_native`/`insert_footnote_in_cell_native` 공용.
+    pub(crate) fn renumber_footnotes(&mut self, section_idx: usize) {
+        let mut num = 1u16;
+        for pi in 0..self.document.sections[section_idx].paragraphs.len() {
+            for ci in 0..self.document.sections[section_idx].paragraphs[pi]
+                .controls
+                .len()
+            {
+                match &mut self.document.sections[section_idx].paragraphs[pi].controls[ci] {
+                    Control::Footnote(ref mut fn_) => {
+                        fn_.number = num;
+                        num += 1;
+                    }
+                    Control::Table(ref mut table) => {
+                        for cell in &mut table.cells {
+                            for cp in &mut cell.paragraphs {
+                                for cc in &mut cp.controls {
+                                    if let Control::Footnote(ref mut fn_) = cc {
+                                        fn_.number = num;
+                                        num += 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Control::Shape(ref mut shape) => {
+                        if let Some(text_box) =
+                            shape.drawing_mut().and_then(|d| d.text_box.as_mut())
+                        {
+                            for tp in &mut text_box.paragraphs {
+                                for tc in &mut tp.controls {
+                                    if let Control::Footnote(ref mut fn_) = tc {
+                                        fn_.number = num;
+                                        num += 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    /// 표 셀 문단에 앵커된 각주를 삽입하고, `text` 가 비어있지 않으면 노트
+    /// 본문까지 한 호출로 채운다 (placeholder "  " 뒤 char_offset 2 — 한컴
+    /// contract, `populate_note_text`/`insertTextInFootnote` 와 동일 좌표).
+    ///
+    /// `insert_footnote_native` 의 셀 변형: 앵커가 본문 문단이 아니라
+    /// `section.paragraphs[parent_para_idx].controls[control_idx]`(표)의
+    /// `cells[cell_idx].paragraphs[cell_para_idx]` 에 박힌다. 번호는 본문
+    /// 재계산 패스(`renumber_footnotes`)와 같은 문서 순서로 산정한다.
+    ///
+    /// 반환: JSON `{"ok":true,"paraIdx":N,"controlIdx":N,"cellIdx":N,
+    /// "cellParaIdx":N,"noteControlIdx":N,"footnoteNumber":N}` —
+    /// `noteControlIdx` 는 셀 문단 controls 내 각주 인덱스.
+    #[allow(clippy::too_many_arguments)]
+    pub fn insert_footnote_in_cell_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        text: &str,
+    ) -> Result<String, HwpError> {
+        use crate::model::footnote::Footnote;
+        use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+        use crate::renderer::composer::reflow_line_segs;
+        use crate::renderer::hwpunit_to_px;
+
+        // 좌표 검증 (get_cell_paragraph_mut 가 표/글상자 + 인덱스 검증을 수행)
+        let _ = self.get_cell_paragraph_mut(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+
+        // 각주 번호: 문서 순서(renumber_footnotes 와 동일)상 삽입 위치 이전의
+        // 각주 수 + 1
+        let footnote_number = {
+            let section = &self.document.sections[section_idx];
+            let mut count = 0u16;
+            'outer: for (pi, para) in section.paragraphs.iter().enumerate() {
+                if pi > parent_para_idx {
+                    break;
+                }
+                for (ci, ctrl) in para.controls.iter().enumerate() {
+                    let fully_before = pi < parent_para_idx || ci < control_idx;
+                    match ctrl {
+                        Control::Footnote(_) if fully_before => count += 1,
+                        Control::Table(table) => {
+                            if fully_before {
+                                for cell in &table.cells {
+                                    for cp in &cell.paragraphs {
+                                        count += cp
+                                            .controls
+                                            .iter()
+                                            .filter(|c| matches!(c, Control::Footnote(_)))
+                                            .count()
+                                            as u16;
+                                    }
+                                }
+                            } else if pi == parent_para_idx && ci == control_idx {
+                                for (cell_i, cell) in table.cells.iter().enumerate() {
+                                    if cell_i > cell_idx {
+                                        break;
+                                    }
+                                    for (cp_i, cp) in cell.paragraphs.iter().enumerate() {
+                                        if cell_i == cell_idx && cp_i > cell_para_idx {
+                                            break;
+                                        }
+                                        let positions =
+                                            crate::document_core::helpers::find_control_text_positions(cp);
+                                        for (cc_i, cc) in cp.controls.iter().enumerate() {
+                                            if !matches!(cc, Control::Footnote(_)) {
+                                                continue;
+                                            }
+                                            let same_para =
+                                                cell_i == cell_idx && cp_i == cell_para_idx;
+                                            if !same_para {
+                                                count += 1;
+                                            } else {
+                                                let pos = positions
+                                                    .get(cc_i)
+                                                    .copied()
+                                                    .unwrap_or(usize::MAX);
+                                                if pos <= char_offset {
+                                                    count += 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                break 'outer;
+                            }
+                        }
+                        Control::Shape(shape) if fully_before => {
+                            if let Some(text_box) =
+                                shape.drawing().and_then(|d| d.text_box.as_ref())
+                            {
+                                for tp in &text_box.paragraphs {
+                                    count +=
+                                        tp.controls
+                                            .iter()
+                                            .filter(|c| matches!(c, Control::Footnote(_)))
+                                            .count() as u16;
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            count + 1
+        };
+
+        // 스타일 참조: 기존 각주(본문/셀)의 첫 문단 char_shape, 없으면 셀 문단
+        let default_char_shape_id = {
+            let section = &self.document.sections[section_idx];
+            let mut found = None;
+            'style: for para in &section.paragraphs {
+                for ctrl in &para.controls {
+                    if let Control::Footnote(fn_) = ctrl {
+                        if let Some(fp) = fn_.paragraphs.first() {
+                            found = fp
+                                .char_shapes
+                                .first()
+                                .map(|cs| cs.char_shape_id)
+                                .or(Some(0));
+                            break 'style;
+                        }
+                    }
+                    if let Control::Table(table) = ctrl {
+                        for cell in &table.cells {
+                            for cp in &cell.paragraphs {
+                                for cc in &cp.controls {
+                                    if let Control::Footnote(fn_) = cc {
+                                        if let Some(fp) = fn_.paragraphs.first() {
+                                            found = fp
+                                                .char_shapes
+                                                .first()
+                                                .map(|cs| cs.char_shape_id)
+                                                .or(Some(0));
+                                            break 'style;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            found.unwrap_or_else(|| {
+                let cp = &section.paragraphs[parent_para_idx];
+                cp.char_shapes
+                    .first()
+                    .map(|cs| cs.char_shape_id)
+                    .unwrap_or(0)
+            })
+        };
+
+        // 신규 각주 inner paragraph — insert_footnote_native 와 동일한 한컴
+        // contract ("  " + AutoNumber, char_offsets [0,8], char_count 10).
+        let auto_num = crate::model::control::AutoNumber {
+            number_type: crate::model::control::AutoNumberType::Footnote,
+            format: 0, // Digit
+            superscript: false,
+            number: footnote_number,
+            assigned_number: footnote_number,
+            user_symbol: '\0',
+            prefix_char: '\0',
+            suffix_char: ')',
+        };
+        let mut inner_para = Paragraph {
+            text: "  ".to_string(),
+            char_count: 10,
+            char_count_msb: true,
+            control_mask: 1u32 << 0x12, // bit 18 (AutoNumber)
+            char_offsets: vec![0, 8],
+            para_shape_id: 0,
+            style_id: 11, // 각주 style
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: default_char_shape_id,
+            }],
+            controls: vec![crate::model::control::Control::AutoNumber(auto_num)],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 1000,
+                text_height: 1000,
+                baseline_distance: 850,
+                line_spacing: 600,
+                segment_width: 0,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            has_para_text: true,
+            ..Default::default()
+        };
+
+        // 노트 본문 텍스트: placeholder 두 칸 뒤 (offset 2) — populate_note_text
+        // / insertTextInFootnote 와 같은 좌표.
+        if !text.is_empty() {
+            inner_para.insert_text_at(2, text);
+        }
+
+        // 각주 영역 폭으로 inner paragraph 리플로우 (reflow_footnote_paragraph 의
+        // 폭 산정과 동일 — 셀 앵커 각주는 본문 경로로 resolve 되지 않으므로
+        // 삽입 전에 직접 리플로우한다).
+        {
+            let available_width = {
+                let section = &self.document.sections[section_idx];
+                let page_def = &section.section_def.page_def;
+                let column_def = Self::find_initial_column_def(&section.paragraphs);
+                if column_def.column_count.max(1) > 1 {
+                    let layout = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
+                        page_def,
+                        &column_def,
+                        self.dpi,
+                    );
+                    layout
+                        .column_areas
+                        .first()
+                        .map(|a| a.width)
+                        .unwrap_or_else(|| {
+                            let text_width = page_def.width as i32
+                                - page_def.margin_left as i32
+                                - page_def.margin_right as i32;
+                            hwpunit_to_px(text_width, self.dpi)
+                        })
+                } else {
+                    let text_width = page_def.width as i32
+                        - page_def.margin_left as i32
+                        - page_def.margin_right as i32;
+                    hwpunit_to_px(text_width, self.dpi)
+                }
+            };
+            let para_style = self
+                .styles
+                .para_styles
+                .get(inner_para.para_shape_id as usize);
+            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+            let final_width = (available_width - margin_left - margin_right).max(0.0);
+            reflow_line_segs(&mut inner_para, final_width, &self.styles, self.dpi);
+        }
+
+        let footnote = Footnote {
+            number: footnote_number,
+            paragraphs: vec![inner_para],
+            after_decoration_letter: 0x0029, // ')'
+            ..Default::default()
+        };
+
+        // 셀 문단에 각주 컨트롤 삽입 (본문 버전과 동일한 invariant:
+        // controls/ctrl_data_records 동기 삽입 + char_offsets 8 cu 갭 +
+        // char_count/control_mask/has_para_text 갱신)
+        self.document.sections[section_idx].raw_stream = None;
+        let insert_idx = {
+            let cell_para = self.get_cell_paragraph_mut(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
+            let positions = crate::document_core::helpers::find_control_text_positions(cell_para);
+            let mut idx = cell_para.controls.len();
+            for (i, &pos) in positions.iter().enumerate() {
+                if pos > char_offset {
+                    idx = i;
+                    break;
+                }
+            }
+            cell_para
+                .controls
+                .insert(idx, Control::Footnote(Box::new(footnote)));
+            cell_para.ctrl_data_records.insert(idx, None);
+            if !cell_para.char_offsets.is_empty() {
+                let text_len = cell_para.text.chars().count();
+                let safe_offset = char_offset.min(text_len);
+                for co in cell_para.char_offsets[safe_offset..].iter_mut() {
+                    *co += 8;
+                }
+            }
+            cell_para.char_count += 8;
+            cell_para.control_mask |= 1u32 << 0x0011; // 각주/미주 비트
+            cell_para.has_para_text = true;
+            idx
+        };
+
+        // 전체 각주 번호 재계산 + 셀 리플로우/배치 갱신
+        self.renumber_footnotes(section_idx);
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
+        self.reflow_cell_paragraph(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+        )?;
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.mark_section_dirty(section_idx);
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: control_idx,
+            cell: cell_idx,
+        });
+
+        Ok(format!(
+            "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{},\"cellIdx\":{},\"cellParaIdx\":{},\"noteControlIdx\":{},\"footnoteNumber\":{}}}",
+            parent_para_idx, control_idx, cell_idx, cell_para_idx, insert_idx, footnote_number
         ))
     }
 

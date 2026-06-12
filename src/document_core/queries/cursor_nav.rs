@@ -1708,12 +1708,11 @@ impl DocumentCore {
                 // left 히트와 다른 줄에 있으면 한 칸 앞으로 물러나 같은 줄 끝을 찾는다.
                 let right_hit = find_cursor!(para_idx, range_end, CursorBias::Trailing)
                     .and_then(|rh| {
-                        let cross_line = left_hit.as_ref().map_or(false, |lh| {
-                            rh.page != lh.page || (rh.y - lh.y).abs() > 0.5
-                        });
+                        let cross_line = left_hit
+                            .as_ref()
+                            .map_or(false, |lh| rh.page != lh.page || (rh.y - lh.y).abs() > 0.5);
                         if cross_line && range_end > range_start {
-                            find_cursor!(para_idx, range_end - 1, CursorBias::Trailing)
-                                .or(Some(rh))
+                            find_cursor!(para_idx, range_end - 1, CursorBias::Trailing).or(Some(rh))
                         } else {
                             Some(rh)
                         }

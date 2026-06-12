@@ -2060,19 +2060,24 @@ impl TypesetEngine {
                         }
                     }
                     Control::Footnote(fn_ctrl) => {
-                        if !has_table {
-                            if let Some(page) = st.pages.last_mut() {
-                                page.footnotes.push(FootnoteRef {
-                                    number: fn_ctrl.number,
-                                    source: FootnoteSource::Body {
-                                        para_index: para_idx,
-                                        control_index: ctrl_idx,
-                                    },
-                                });
-                            }
-                            let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
-                            st.add_footnote_height(fn_height);
+                        // 표 호스트 문단에서도 BODY 레벨 각주는 여기서만 수집된다 —
+                        // typeset_table_paragraph 는 셀 내부 각주(TableCell)만 걷고,
+                        // 과거의 `if !has_table` 가드는 그 보완 경로가 없어 표 문단에
+                        // 앵커된 각주를 영원히 누락시켰다(파일에는 있으나 미표시,
+                        // legacy engine.rs 는 가드 없이 정상 수집). 셀 각주와는 컨트롤
+                        // 소속이 달라(para.controls vs cell_para.controls) 이중 수집은
+                        // 발생하지 않는다.
+                        if let Some(page) = st.pages.last_mut() {
+                            page.footnotes.push(FootnoteRef {
+                                number: fn_ctrl.number,
+                                source: FootnoteSource::Body {
+                                    para_index: para_idx,
+                                    control_index: ctrl_idx,
+                                },
+                            });
                         }
+                        let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
+                        st.add_footnote_height(fn_height);
                     }
                     Control::Endnote(en_ctrl) => {
                         // [Task #836] 미주 수집 — 문서 끝에 모아서 렌더
