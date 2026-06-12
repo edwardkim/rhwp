@@ -259,9 +259,8 @@ fn write_sub_list<W: Write>(
         vert_cursor = advance;
         let mut p_xml = render_hp_p_open(para, ctx.next_para_id());
         p_xml.push_str(&runs);
-        p_xml.push_str("<hp:linesegarray>");
         p_xml.push_str(&linesegs);
-        p_xml.push_str("</hp:linesegarray></hp:p>");
+        p_xml.push_str("</hp:p>");
         w.get_mut()
             .write_all(p_xml.as_bytes())
             .map_err(|e| SerializeError::XmlError(e.to_string()))?;

@@ -54,8 +54,6 @@ const TEMPLATE_SECPR_RUN_OPEN: &str = r#"<hp:run charPrIDRef="0"><hp:secPr "#;
 
 /// 레퍼런스 기준 줄 레이아웃 파라미터.
 const VERT_STEP: u32 = 1600; // vertsize(1000) + spacing(600)
-const LINE_FLAGS: u32 = LineSeg::TAG_SINGLE_SEGMENT_LINE;
-const HORZ_SIZE: u32 = 42520;
 /// 탭 기본 폭 (한컴이 열면서 재계산하지만 초기값으로 필요).
 const TAB_DEFAULT_WIDTH: u32 = 4000;
 
@@ -71,10 +69,8 @@ pub fn write_section(
     let first_para = section.paragraphs.first();
     let (first_runs, first_linesegs, first_advance) = match first_para {
         Some(p) => render_paragraph_parts(p, vert_cursor, ctx),
-        None => {
-            let (linesegs, vert_end) = render_lineseg_array_fallback("", vert_cursor);
-            (String::new(), linesegs, vert_end)
-        }
+        // 문단이 없는 섹션(비파싱 IR) — linesegarray 방출 생략 (#1380)
+        None => (String::new(), String::new(), vert_cursor),
     };
     vert_cursor = first_advance;
 
@@ -110,9 +106,8 @@ pub fn write_section(
             vert_cursor = advance;
             extra.push_str(&render_hp_p_open(p, ctx.next_para_id()));
             extra.push_str(&runs);
-            extra.push_str("<hp:linesegarray>");
             extra.push_str(&linesegs);
-            extra.push_str(r#"</hp:linesegarray></hp:p>"#);
+            extra.push_str("</hp:p>");
         }
         out = out.replacen(PARA_CLOSE, &format!("</hp:p>{}</hs:sec>", extra), 1);
     }
@@ -147,11 +142,13 @@ fn first_run_char_shape_id(p: &Paragraph) -> u32 {
     p.char_shapes.first().map(|r| r.char_shape_id).unwrap_or(0)
 }
 
-/// Paragraph 하나를 (완전한 `<hp:run>` 시퀀스 XML, lineseg XML, 다음 vert_cursor)로 변환.
+/// Paragraph 하나를 (완전한 `<hp:run>` 시퀀스 XML, `<hp:linesegarray>` 요소 XML,
+/// 다음 vert_cursor)로 변환.
 ///
-/// `<hp:lineseg>` 출력 원칙 (#177):
-/// - `para.line_segs` 가 비어있지 않으면 **IR 값 그대로 출력**
-/// - 비어있을 때만 텍스트 내 `\n` 기반으로 fallback 생성 (빈 문단·`Document::default()` 호환)
+/// `<hp:lineseg>` 출력 원칙 (#177, #1380):
+/// - `para.line_segs` 가 비어있지 않으면 **IR 값 그대로** `<hp:linesegarray>` 요소로 출력
+/// - 비어있으면 **요소 자체를 방출 생략** (빈 문자열 반환) — 원본에 linesegarray 가
+///   없는 문단의 보존 + rhwp 는 lineseg 를 새로 생산하지 않음. 한컴은 열 때 재계산
 pub(crate) fn render_paragraph_parts(
     para: &Paragraph,
     vert_start: u32,
@@ -161,13 +158,17 @@ pub(crate) fn render_paragraph_parts(
 
     if !para.line_segs.is_empty() {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
-        let linesegs = render_lineseg_array_from_ir(&para.line_segs);
+        let linesegs = format!(
+            "{}{}{}",
+            LINESEG_SLOT_OPEN,
+            render_lineseg_array_from_ir(&para.line_segs),
+            LINESEG_SLOT_CLOSE
+        );
         let vert_end = next_vert_cursor_from_ir(&para.line_segs, vert_start);
         (runs_xml, linesegs, vert_end)
     } else {
-        // Fallback — IR에 line_segs 가 없으면 기존 생성 로직 유지
-        let (linesegs, vert_end) = render_lineseg_array_fallback(&para.text, vert_start);
-        (runs_xml, linesegs, vert_end)
+        // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
+        (runs_xml, String::new(), vert_start)
     }
 }
 
@@ -804,9 +805,8 @@ fn render_header_footer(
         vert_cursor = advance;
         out.push_str(&render_hp_p_open(p, ctx.next_para_id()));
         out.push_str(&runs);
-        out.push_str("<hp:linesegarray>");
         out.push_str(&linesegs);
-        out.push_str(r#"</hp:linesegarray></hp:p>"#);
+        out.push_str("</hp:p>");
     }
     out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
     out
@@ -1056,9 +1056,8 @@ fn render_note_sublist(
         vert_cursor = advance;
         out.push_str(&render_hp_p_open(p, ctx.next_para_id()));
         out.push_str(&runs);
-        out.push_str("<hp:linesegarray>");
         out.push_str(&linesegs);
-        out.push_str(r#"</hp:linesegarray></hp:p>"#);
+        out.push_str("</hp:p>");
     }
     out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
     out
@@ -1216,35 +1215,6 @@ fn next_vert_cursor_from_ir(segs: &[LineSeg], vert_start: u32) -> u32 {
     }
 }
 
-/// Fallback — IR 에 line_segs 가 없는 경우에만 사용 (예: `Document::default()`).
-/// 과거 동작을 보존하기 위해 기존 정적값으로 lineseg 생성.
-fn render_lineseg_array_fallback(text: &str, vert_start: u32) -> (String, u32) {
-    let mut linesegs = String::new();
-    push_lineseg_static(&mut linesegs, 0, vert_start);
-    let mut utf16_pos: u32 = 0;
-    let mut lines_in_para: u32 = 0;
-    for c in text.chars() {
-        let u16_len = c.len_utf16() as u32;
-        match c {
-            '\t' | '\n' => {
-                utf16_pos += u16_len;
-                if c == '\n' {
-                    lines_in_para += 1;
-                    push_lineseg_static(
-                        &mut linesegs,
-                        utf16_pos,
-                        vert_start + lines_in_para * VERT_STEP,
-                    );
-                }
-            }
-            c if (c as u32) < 0x20 => {}
-            _ => utf16_pos += u16_len,
-        }
-    }
-    let vert_end = vert_start + (lines_in_para + 1) * VERT_STEP;
-    (linesegs, vert_end)
-}
-
 fn flush_buf(t_xml: &mut String, buf: &mut String) {
     if !buf.is_empty() {
         t_xml.push_str(&xml_escape(buf));
@@ -1252,30 +1222,21 @@ fn flush_buf(t_xml: &mut String, buf: &mut String) {
     }
 }
 
-/// Fallback 전용 static lineseg 생성기 — IR에 값이 없을 때만 사용.
-/// 주: 이 함수의 출력은 "명세 상 정확한 값" 이 아닌 정적 자리표이므로,
-/// 호출 후 문서는 `DocumentCore::from_bytes` 의 `reflow_zero_height_paragraphs`
-/// 또는 사용자의 `reflow_linesegs_on_demand` 로 재계산되어야 한다.
-fn push_lineseg_static(out: &mut String, textpos: u32, vertpos: u32) {
-    out.push_str(&format!(
-        r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="{}" flags="{}"/>"#,
-        textpos, vertpos, HORZ_SIZE, LINE_FLAGS,
-    ));
-}
-
-fn replace_first_linesegs(xml: &str, new_inner: &str) -> String {
+/// 템플릿의 첫 `<hp:linesegarray>...</hp:linesegarray>` **요소 전체**를
+/// `new_element` 로 치환한다. `new_element` 가 빈 문자열이면 요소가 제거된다
+/// (#1380 — line_segs 빈 문단의 linesegarray 방출 생략).
+fn replace_first_linesegs(xml: &str, new_element: &str) -> String {
     let open = xml
         .find(LINESEG_SLOT_OPEN)
         .expect("template has linesegarray");
-    let inner_start = open + LINESEG_SLOT_OPEN.len();
-    let close_rel = xml[inner_start..]
+    let close_rel = xml[open..]
         .find(LINESEG_SLOT_CLOSE)
         .expect("template has closing linesegarray");
-    let inner_end = inner_start + close_rel;
-    let mut out = String::with_capacity(xml.len() + new_inner.len());
-    out.push_str(&xml[..inner_start]);
-    out.push_str(new_inner);
-    out.push_str(&xml[inner_end..]);
+    let elem_end = open + close_rel + LINESEG_SLOT_CLOSE.len();
+    let mut out = String::with_capacity(xml.len() + new_element.len());
+    out.push_str(&xml[..open]);
+    out.push_str(new_element);
+    out.push_str(&xml[elem_end..]);
     out
 }
 
@@ -1480,16 +1441,30 @@ mod tests {
     }
 
     #[test]
-    fn task177_fallback_used_when_ir_empty() {
-        // IR 의 line_segs 가 비어있으면 fallback 경로로 정적 값 출력.
+    fn task1380_linesegarray_omitted_when_ir_empty() {
+        // IR 의 line_segs 가 비어있으면 linesegarray 요소 자체를 방출 생략 (#1380).
+        // 종전 fallback(vertsize=1000 합성)은 원본 무 → RT 유 비대칭을 만들었다.
         let mut para = Paragraph::default();
-        para.text = "a\nb".to_string(); // 소프트브레이크 1개 → fallback 은 lineseg 2개 생성
+        para.text = "a\nb".to_string(); // 텍스트가 있어도 IR 에 lineseg 없으면 생략
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
-        // 정적 fallback: vertsize=1000, textheight=1000, baseline=850, spacing=600
-        assert!(xml.contains(r#"vertsize="1000""#));
-        assert!(xml.contains(r#"baseline="850""#));
+        assert!(
+            !xml.contains("<hp:linesegarray"),
+            "empty line_segs must omit linesegarray entirely: {}",
+            xml
+        );
+        assert!(!xml.contains("<hp:lineseg "));
+    }
+
+    #[test]
+    fn task1380_empty_section_omits_linesegarray() {
+        // 문단이 없는 섹션(비파싱 IR)도 템플릿의 linesegarray 가 제거되어야 함 (#1380).
+        let doc = crate::model::document::Document::default();
+        let section = crate::model::document::Section::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(!xml.contains("<hp:linesegarray"));
     }
 
     #[test]

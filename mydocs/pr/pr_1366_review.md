@@ -186,3 +186,16 @@ CLI smoke:
   - 기능 방향성 긍정 평가
   - 최신 `devel` 기준 재작업/재요청 권고
   - conflict, `cargo fmt`, `useFontSpace` 회귀, `ir-diff` 의미론 비교 보강 요청
+
+### 2026-06-12 범위 축소 안내 (#1379 머지 후속)
+
+#1379 머지(devel `6da9cab6`)로 PR 중복 영역이 확대되어 범위 축소 안내 코멘트를 추가 등록했다.
+
+- 코멘트: https://github.com/edwardkim/rhwp/pull/1366#issuecomment-4686340488
+- 드랍 권장: 다중 run 분할(#1378/#1379 공유 경로로 supersede), 셀 lineseg IR 보존(#1379
+  write_sub_list 전면 교체), SecDef/ColDef 슬롯 소비(#1379 colPr depth 가드),
+  secPr 용지 여백(#1388 — 메인테이너 측 처리 예정)
+- 유지 권장 (고유 가치): hwp2hwpx CLI + verify 게이트, BinData 1-based 매핑,
+  pageBreak CELL/TABLE 의미론, footNotePr/endNotePr IR, ir-diff 의미론 업그레이드
+- 기존 수정 요청(fmt, useFontSpace 복구 등)은 그대로 유효
+- 상태: 컨트리뷰터 응답 대기

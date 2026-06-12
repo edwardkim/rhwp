@@ -70,10 +70,13 @@ impl DocumentCore {
         let check_textrun_reflow = matches!(source_format, crate::parser::FileFormat::Hwpx);
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
-        // lineSegArray가 없는 문단(line_height=0)에 대해 합성 LineSeg 생성
-        // HWPX에서 lineSegArray 누락 시 기본값(모든 필드 0)이 들어가므로,
-        // compose 전에 올바른 line_height/line_spacing을 계산해야 줄바꿈·높이가 정상 동작한다.
-        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI);
+        // lineSegArray가 없는 문단에 대해 합성 LineSeg 생성.
+        // HWPX 파서는 linesegarray 부재 문단의 line_segs 를 빈 채 보존하므로(#1380)
+        // HWPX 에서만 빈 line_segs 를 합성 대상에 포함한다 — compose 전에 올바른
+        // line_height/line_spacing 을 계산해야 줄바꿈·높이가 정상 동작한다.
+        // HWP5/HWP3 의 빈 line_segs 는 종전대로 reflow 하지 않는다 (페이지 수 보존).
+        let include_empty = matches!(source_format, crate::parser::FileFormat::Hwpx);
+        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI, include_empty);
 
         // HWPX → HWP 라운드트립 일관성 normalize (#314):
         // HWPX 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
@@ -243,7 +246,13 @@ impl DocumentCore {
     /// 설정되어 줄바꿈·문단 높이 계산이 불가능하다. 이 함수는 문서 로드 직후
     /// CharPr/ParaPr 기반으로 올바른 line_height/line_spacing을 계산한다.
     /// 본문 문단뿐 아니라 표 셀 내부 문단도 처리한다.
-    fn reflow_zero_height_paragraphs(document: &mut Document, styles: &ResolvedStyleSet, dpi: f64) {
+    /// `include_empty`: 빈 `line_segs` 도 합성 대상으로 포함 (HWPX 전용 — #1380).
+    fn reflow_zero_height_paragraphs(
+        document: &mut Document,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+        include_empty: bool,
+    ) {
         use crate::model::control::Control;
 
         for section in &mut document.sections {
@@ -259,7 +268,7 @@ impl DocumentCore {
             let mut body_line_seg_changed = false;
             for para in &mut section.paragraphs {
                 // 본문 문단 reflow
-                if Self::needs_line_seg_reflow(para) {
+                if Self::needs_line_seg_reflow(para, include_empty) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
@@ -322,7 +331,7 @@ impl DocumentCore {
                                 crate::renderer::hwpunit_to_px(cell.padding.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
                             for cell_para in &mut cell.paragraphs {
-                                if Self::needs_line_seg_reflow(cell_para) {
+                                if Self::needs_line_seg_reflow(cell_para, include_empty) {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
                             }
@@ -412,8 +421,17 @@ impl DocumentCore {
 
     /// 문단의 LineSeg가 합성(reflow)이 필요한지 판단한다.
     /// line_segs가 1개이고 line_height가 0이면 lineSegArray 누락 상태.
-    fn needs_line_seg_reflow(para: &crate::model::paragraph::Paragraph) -> bool {
-        para.line_segs.len() == 1 && para.line_segs[0].line_height == 0
+    ///
+    /// `include_empty`: 빈 `line_segs` 도 누락으로 취급할지 여부. **HWPX 전용** —
+    /// HWPX 파서는 linesegarray 부재 문단을 빈 채 보존하므로(#1380) 로드 시 합성이
+    /// 필요하다. HWP5/HWP3 는 빈 line_segs 를 reflow 하지 않던 종전 동작을 유지한다
+    /// (확장 시 sample16-hwp5 페이지 수 64→over-split 회귀 확인).
+    fn needs_line_seg_reflow(
+        para: &crate::model::paragraph::Paragraph,
+        include_empty: bool,
+    ) -> bool {
+        (include_empty && para.line_segs.is_empty())
+            || (para.line_segs.len() == 1 && para.line_segs[0].line_height == 0)
     }
 
     /// 사용자 명시 요청에 의한 더 넓은 reflow 판정 (#177).
@@ -427,7 +445,7 @@ impl DocumentCore {
         if !para.text.is_empty() && para.line_segs.is_empty() {
             return true;
         }
-        if Self::needs_line_seg_reflow(para) {
+        if Self::needs_line_seg_reflow(para, false) {
             return true;
         }
         // 한컴 textRun reflow 패턴 — 규칙 R3 과 동일 조건
