@@ -228,9 +228,8 @@ fn collect_text_variant_features(
                                 matches!(outline.payload_kind, GlyphOutlinePayloadKind::SvgGlyph);
                             features.has_glyph_outline_payload_resource_keys |=
                                 outline.has_payload_resource_key();
-                            features.has_glyph_outline_payload_resource_digest_keys |= outline
-                                .payload_resource_key_with_resources(Some(resources))
-                                .is_some_and(|key| key.contains(":resource:"));
+                            features.has_glyph_outline_payload_resource_digest_keys |=
+                                has_payload_resource_digest_key(outline, resources);
                         }
                         _ => {}
                     }
@@ -250,6 +249,25 @@ fn collect_text_variant_features(
         }
     }
     features
+}
+
+fn has_payload_resource_digest_key(
+    outline: &crate::paint::LayerGlyphOutlinePaint,
+    resources: &ResourceArena,
+) -> bool {
+    match outline.payload_kind {
+        GlyphOutlinePayloadKind::BitmapGlyph => outline
+            .bitmap_glyph
+            .as_ref()
+            .is_some_and(|payload| resources.image_bytes(payload.image_ref).is_some()),
+        GlyphOutlinePayloadKind::SvgGlyph => outline
+            .svg_glyph
+            .as_ref()
+            .is_some_and(|payload| resources.svg_fragment(payload.svg_ref).is_some()),
+        GlyphOutlinePayloadKind::ColorLayers
+        | GlyphOutlinePayloadKind::MonochromeFill
+        | GlyphOutlinePayloadKind::MonochromeFillStroke => false,
+    }
 }
 
 fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
@@ -3152,7 +3170,7 @@ mod tests {
                 color_layers: Some(ColorLayersPayload {
                     color_format: ColorGlyphFormat::ColrV1,
                     source_font_ref: Some(FontColorGlyphRef {
-                        face_key: Some("fixture-face".to_string()),
+                        face_key: Some("fixture:resource:face".to_string()),
                         glyph_id: Some(42),
                         palette_index: Some(0),
                         color_format: Some(ColorGlyphFormat::ColrV1),
@@ -3185,7 +3203,7 @@ mod tests {
                             source_range_utf8: Some(TextSourceRange::new(0, 1)),
                             glyph_range: Some(GlyphRange::new(0, 1)),
                             source_font_ref: Some(FontColorGlyphRef {
-                                face_key: Some("fixture-face".to_string()),
+                                face_key: Some("fixture:resource:face".to_string()),
                                 glyph_id: Some(42),
                                 palette_index: Some(0),
                                 color_format: Some(ColorGlyphFormat::ColrV1),
@@ -3246,6 +3264,12 @@ mod tests {
         assert!(json.contains("\"text.glyphOutline.colorLayers\""));
         assert!(json.contains("\"text.glyphOutline.colorLayers.colrV1\""));
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));
+        assert_eq!(
+            json.matches("\"text.glyphOutline.payloadResourceDigestKey\"")
+                .count(),
+            1,
+            "color-layer metadata containing ':resource:' must not advertise a resource digest payload feature"
+        );
     }
 
     #[test]
