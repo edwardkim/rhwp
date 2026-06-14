@@ -3134,6 +3134,7 @@ impl LayoutEngine {
         let mut tac_seg_applied_para: Option<usize> = None;
         let mut prev_endnote_title_gap_px = 0.0;
         let mut prev_endnote_title_gap_from_continued_partial = false;
+        let mut pending_textless_equation_tail_gap_restore: Option<(EndnoteParaSource, f64)> = None;
 
         // 고정값 줄간격 TAC 표 병행 (Task #9): 표 하단 비교용
         let mut fix_table_start_y: f64 = 0.0;
@@ -3329,6 +3330,26 @@ impl LayoutEngine {
                     .get(item_para)
                     .map(|p| p.text.trim_start().starts_with('문'))
                     .unwrap_or(false);
+            let current_endnote_source = if col_content.endnote_flow {
+                self.endnote_para_source_for(item_para)
+            } else {
+                None
+            };
+            if current_is_endnote_question_title {
+                if let (Some((pending_source, delta)), Some(current_source)) = (
+                    pending_textless_equation_tail_gap_restore.as_ref(),
+                    current_endnote_source.as_ref(),
+                ) {
+                    if !same_endnote_control(pending_source, current_source) {
+                        // textless equation tail 뒤 제목에서 생략한 logical gap은
+                        // 해당 미주의 본문까지는 적용하지 않는다. 다음 미주 제목을
+                        // 만날 때만 vpos base에 복원해 후속 문항이 같이 당겨지지
+                        // 않게 한다.
+                        hcursor.shift_vpos_base_for_rendered_delta(*delta);
+                        pending_textless_equation_tail_gap_restore = None;
+                    }
+                }
+            }
             let y_before_vpos = y_offset;
             let prev_item_content_bottom_y = if item_ordinal > 0 {
                 let content_bottom_y = self.last_item_content_bottom.get();
@@ -3586,22 +3607,52 @@ impl LayoutEngine {
             let suppress_zero_between_large_separator_title_gap = self
                 .current_endnote_zero_between_large_separator_profile()
                 && prev_endnote_title_gap_px >= 50.0;
+            let textless_equation_tail_gap_already_visible = current_is_endnote_question_title
+                && col_content.endnote_flow
+                && prev_endnote_title_gap_px > 0.0
+                && !prev_endnote_title_gap_from_continued_partial
+                && y_before_vpos > col_area.y + col_area.height * 0.65
+                && hcursor
+                    .prev_layout_para
+                    .and_then(|prev_pi| {
+                        let prev_para = paragraphs.get(prev_pi)?;
+                        let prev_content_bottom_y = prev_item_content_bottom_y?;
+                        let prev_has_textless_equation_tail = inline_equation_count(prev_para) > 0
+                            && !para_has_visible_text(prev_para);
+                        let required_gap_y = prev_content_bottom_y + prev_endnote_title_gap_px;
+                        (prev_has_textless_equation_tail && y_offset + 0.5 >= required_gap_y)
+                            .then_some(())
+                    })
+                    .is_some();
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
                 && prev_endnote_title_gap_px > 0.0
                 && !endnote_title_direct_bottom_fit
                 && !endnote_title_bottom_fit_applied
                 && !compact_endnote_title_gap_already_compacted
                 && !suppress_zero_between_large_separator_title_gap
+                && !textless_equation_tail_gap_already_visible
                 && !current_title_tail_backtracked
                 && !current_large_gap_title_compacted_by_cursor
                 && (prev_endnote_title_gap_from_continued_partial
                     || y_offset > y_before_vpos + 0.5);
+            if textless_equation_tail_gap_already_visible {
+                let min_y = y_before_vpos + prev_endnote_title_gap_px;
+                if y_offset < min_y {
+                    if let Some(source) = current_endnote_source.clone() {
+                        pending_textless_equation_tail_gap_restore =
+                            Some((source, min_y - y_offset));
+                    }
+                }
+            }
             if should_preserve_endnote_title_gap {
                 // Compact 미주에서 다음 문제 제목이 오면 LINE_SEG의 절대 vpos가
                 // 현재 쪽/단 기준과 어긋나 직전 미주 내용 뒤의 "미주 사이"
                 // 간격이 사라질 수 있다. 직전 paragraph 조각의 trailing
                 // line_spacing을 공통 gap으로 보존하고, 후속 항목도 같은 기준을
                 // 따르도록 vpos base를 함께 이동한다.
+                // 다만 단 하단부 textless equation tail은 직전 content bottom 기준
+                // gap이 이미 충분한 경우가 있다. 이때 logical flow 기준으로 다시
+                // 보존하면 다음 문항 영역을 침범하므로 여기서 한 번 더 얹지 않는다.
                 let min_y = y_before_vpos + prev_endnote_title_gap_px;
                 if y_offset < min_y {
                     let delta = min_y - y_offset;
