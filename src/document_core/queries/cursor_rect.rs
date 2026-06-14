@@ -1091,6 +1091,39 @@ impl DocumentCore {
             }
         }
 
+        // [각주 캐럿 — 각주 영역 직접 클릭] 마커뿐 아니라 페이지 하단 각주 *본문*
+        // 영역을 직접 클릭해도 캐럿이 그 위치의 각주 안으로 들어간다. 각주 영역
+        // 클릭은 일반 텍스트 해석에선 가장 가까운 본문 줄로 잘못 떨어지므로, 여기서
+        // 가로채 각주 안 정확한 위치(fnParaIndex/charOffset)로 해석한다. 호스트
+        // section/para/control 은 페이지 각주 정보에서 채운다.
+        {
+            use serde_json::Value;
+            let in_fn = self.hit_test_in_footnote_native(page_num, x, y)?;
+            if let Ok(f) = serde_json::from_str::<Value>(&in_fn) {
+                if f.get("hit").and_then(Value::as_bool).unwrap_or(false) {
+                    let fi = f.get("footnoteIndex").and_then(Value::as_u64).unwrap_or(0) as usize;
+                    let inner = f.get("fnParaIndex").and_then(Value::as_u64).unwrap_or(0);
+                    let off = f.get("charOffset").and_then(Value::as_u64).unwrap_or(0);
+                    let cursor = f
+                        .get("cursorRect")
+                        .map(|v| v.to_string())
+                        .unwrap_or_else(|| "null".to_string());
+                    let info = self
+                        .get_page_footnote_info_native(page_num, fi)
+                        .ok()
+                        .and_then(|s| serde_json::from_str::<Value>(&s).ok())
+                        .unwrap_or(Value::Null);
+                    let sec = info.get("sectionIdx").and_then(Value::as_u64).unwrap_or(0);
+                    let para = info.get("paraIdx").and_then(Value::as_u64).unwrap_or(0);
+                    let ctrl = info.get("controlIdx").and_then(Value::as_u64).unwrap_or(0);
+                    return Ok(format!(
+                        "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{},\"note\":{{\"controlIndex\":{},\"footnoteIndex\":{},\"innerParaIndex\":{}}},\"cursorRect\":{}}}",
+                        sec, para, off, ctrl, fi, inner, cursor
+                    ));
+                }
+            }
+        }
+
         let tree = self.build_page_tree_cached(page_num)?;
 
         // 문자 위치를 미리 계산한 TextRun 정보
