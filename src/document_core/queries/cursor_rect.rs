@@ -4647,10 +4647,17 @@ impl DocumentCore {
 
         fn find_marker(node: &RenderNode, x: f64, y: f64) -> Option<MarkerHit> {
             if let RenderNodeType::FootnoteMarker(ref marker) = node.node_type {
-                if x >= node.bbox.x
-                    && x <= node.bbox.x + node.bbox.width
-                    && y >= node.bbox.y
-                    && y <= node.bbox.y + node.bbox.height
+                // The marker glyph is a superscript — its bare bbox is only a few
+                // px wide, an effectively unclickable target. Pad the hit zone by
+                // a fraction of the marker HEIGHT (so it scales with font size /
+                // DPI), making it comfortably clickable while overlapping its
+                // neighbours only slightly.
+                let pad_x = node.bbox.height * 0.5;
+                let pad_y = node.bbox.height * 0.3;
+                if x >= node.bbox.x - pad_x
+                    && x <= node.bbox.x + node.bbox.width + pad_x
+                    && y >= node.bbox.y - pad_y
+                    && y <= node.bbox.y + node.bbox.height + pad_y
                 {
                     return Some(MarkerHit {
                         section_index: marker.section_index,
