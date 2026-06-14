@@ -770,6 +770,24 @@ impl HwpDocument {
         self.dpi
     }
 
+    /// 픽셀 → HWPUNIT (현재 DPI 기준).
+    ///
+    /// 에디터의 이미지 이동/크기 제스처가 페이지 픽셀 좌표를 모델 좌표로
+    /// 커밋할 때 쓰는 *권위* 변환이다. 렌더 트리 bbox 가 `hwpunit_to_px(hu, dpi)`
+    /// 로 만들어지므로 그 역변환도 같은 DPI 한 개로 정확하다(줌은 `set_dpi` 로
+    /// 흡수됨). 프런트가 `7200/96 = 75` 같은 상수를 손으로 들거나 `width/px`
+    /// 비율을 추정하지 않도록 엔진이 단일 진실원을 제공한다.
+    #[wasm_bindgen(js_name = pxToHwpUnit)]
+    pub fn px_to_hwpunit_js(&self, px: f64) -> i32 {
+        crate::renderer::px_to_hwpunit(px, self.dpi)
+    }
+
+    /// HWPUNIT → 픽셀 (현재 DPI 기준). `pxToHwpUnit` 의 역변환.
+    #[wasm_bindgen(js_name = hwpUnitToPx)]
+    pub fn hwpunit_to_px_js(&self, hwpunit: i32) -> f64 {
+        crate::renderer::hwpunit_to_px(hwpunit, self.dpi)
+    }
+
     /// 대체 폰트 경로를 설정한다.
     #[wasm_bindgen(js_name = setFallbackFont)]
     pub fn set_fallback_font(&mut self, path: &str) {
