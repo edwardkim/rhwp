@@ -13,7 +13,9 @@ pub mod content;
 pub mod context;
 pub mod field;
 pub mod fixtures;
+pub mod form;
 pub mod header;
+pub mod package_check;
 pub mod picture;
 pub mod roundtrip;
 pub mod section;
@@ -48,8 +50,14 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     // 1. mimetype (반드시 최초 엔트리, STORED, extra field 없음)
     z.write_stored("mimetype", b"application/hwp+zip")?;
 
-    // 2. version.xml
-    z.write_deflated("version.xml", VERSION_XML.as_bytes())?;
+    // 2. version.xml — 원본 보존 우선 (없으면 하드코딩 상수).
+    //    하드코딩 상수는 Windows/특정 빌드 고정값이라 한컴 변환본의 실제 플랫폼
+    //    버전을 덮어쓴다. 원본 보조 엔트리가 있으면 그대로 출력한다.
+    z.write_deflated(
+        "version.xml",
+        doc.hwpx_aux_entry("version.xml")
+            .unwrap_or_else(|| VERSION_XML.as_bytes()),
+    )?;
 
     // 3. Contents/header.xml — Stage 1 동적 생성 (IR 기반)
     let header_xml = header::write_header(doc, &ctx)?;
@@ -64,12 +72,27 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
         z.write_deflated(&section_hrefs[i], &xml)?;
     }
 
-    // 5. Preview/PrvText.txt + Preview/PrvImage.png
-    z.write_deflated("Preview/PrvText.txt", PRV_TEXT)?;
-    z.write_deflated("Preview/PrvImage.png", PRV_IMAGE_PNG)?;
+    // 5. Preview/PrvText.txt + Preview/PrvImage.png — 원본 보존 우선.
+    //    하드코딩 상수는 빈/placeholder 미리보기라 원본 썸네일·미리보기 텍스트를
+    //    잃는다. 보조 엔트리가 있으면 원본을 그대로 출력한다.
+    z.write_deflated(
+        "Preview/PrvText.txt",
+        doc.hwpx_aux_entry("Preview/PrvText.txt")
+            .unwrap_or(PRV_TEXT),
+    )?;
+    z.write_deflated(
+        "Preview/PrvImage.png",
+        doc.hwpx_aux_entry("Preview/PrvImage.png")
+            .unwrap_or(PRV_IMAGE_PNG),
+    )?;
 
-    // 6. settings.xml
-    z.write_deflated("settings.xml", SETTINGS_XML.as_bytes())?;
+    // 6. settings.xml — 원본 보존 우선.
+    //    하드코딩 상수는 PrintInfo(확대/인쇄 설정) 등을 빠뜨린다.
+    z.write_deflated(
+        "settings.xml",
+        doc.hwpx_aux_entry("settings.xml")
+            .unwrap_or_else(|| SETTINGS_XML.as_bytes()),
+    )?;
 
     // 7. META-INF/container.rdf
     z.write_deflated("META-INF/container.rdf", META_INF_CONTAINER_RDF.as_bytes())?;
@@ -103,7 +126,11 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
             media_type: e.media_type.clone(),
         })
         .collect();
-    let content_hpf = content::write_content_hpf(&section_hrefs, &content_bin_entries)?;
+    let content_hpf = content::write_content_hpf(
+        &section_hrefs,
+        &content_bin_entries,
+        doc.hwpx_aux_entry("Contents/content.hpf"),
+    )?;
     z.write_deflated("Contents/content.hpf", &content_hpf)?;
 
     // 10. META-INF/container.xml
@@ -155,6 +182,49 @@ mod tests {
         let parsed = parse_hwpx(&bytes).expect("parse back");
         assert_eq!(parsed.sections.len(), 0);
         assert!(parsed.bin_data_content.is_empty());
+    }
+
+    /// 보조 엔트리(version.xml/settings.xml/Preview/*)가 보존된 경우,
+    /// 직렬화기는 하드코딩 상수가 아니라 원본 바이트를 그대로 출력해야 한다.
+    /// (한컴 변환본 라운드트립 무손실 보장)
+    #[test]
+    fn aux_entries_passthrough_verbatim() {
+        let mut doc = Document::default();
+        let custom: &[(&str, &[u8])] = &[
+            ("version.xml", b"<custom-version platform=\"Mac\"/>"),
+            ("settings.xml", b"<custom-settings printInfo=\"on\"/>"),
+            ("Preview/PrvText.txt", b"preview body text"),
+            ("Preview/PrvImage.png", &[0x89, b'P', b'N', b'G', 1, 2, 3]),
+        ];
+        doc.hwpx_aux_entries = custom
+            .iter()
+            .map(|(p, d)| (p.to_string(), d.to_vec()))
+            .collect();
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        for (path, expected) in custom {
+            let mut entry = archive
+                .by_name(path)
+                .unwrap_or_else(|_| panic!("missing entry {path}"));
+            let mut got = Vec::new();
+            std::io::Read::read_to_end(&mut entry, &mut got).expect("read");
+            assert_eq!(&got, expected, "{path} not passed through verbatim");
+        }
+    }
+
+    /// 보조 엔트리가 없으면(HWP5 등) 하드코딩 상수로 폴백한다.
+    #[test]
+    fn aux_entries_fallback_to_constants() {
+        let doc = Document::default();
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut entry = archive.by_name("version.xml").expect("version.xml");
+        let mut got = Vec::new();
+        std::io::Read::read_to_end(&mut entry, &mut got).expect("read");
+        assert_eq!(got, static_assets::VERSION_XML.as_bytes());
     }
 
     #[test]
@@ -502,7 +572,46 @@ mod tests {
     }
 
     #[test]
-    fn linesegs_emitted_per_linebreak() {
+    fn linesegs_from_ir_emitted_per_linebreak() {
+        // IR 에 lineseg 가 있으면 줄 수만큼 그대로 방출. IR 에 없으면 방출 생략 (#1380)
+        // — 종전의 텍스트 `\n` 기반 fallback 합성은 제거됐다.
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "A\nB\nC".to_string();
+        for (textpos, vertpos) in [(0u32, 0i32), (2, 1600), (4, 3200)] {
+            para.line_segs.push(crate::model::paragraph::LineSeg {
+                text_start: textpos,
+                vertical_pos: vertpos,
+                line_height: 1000,
+                text_height: 1000,
+                baseline_distance: 850,
+                line_spacing: 600,
+                tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            });
+        }
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
+
+        let count = xml.matches("<hp:lineseg ").count();
+        assert_eq!(count, 3, "expected 3 linesegs, got {}: {}", count, xml);
+        assert!(xml.contains(r#"textpos="0" vertpos="0""#));
+        assert!(xml.contains(r#"textpos="2" vertpos="1600""#));
+        assert!(xml.contains(r#"textpos="4" vertpos="3200""#));
+    }
+
+    #[test]
+    fn task1380_no_linesegarray_when_ir_has_none() {
+        // 파서가 zero-default 를 주입하지 않으므로(#1380) IR 에 lineseg 없는 문단은
+        // 패키지 산출물에서도 linesegarray 가 없어야 한다 (원본 무 → RT 무 대칭).
         let mut doc = Document::default();
         let mut section = crate::model::document::Section::default();
         let mut para = crate::model::paragraph::Paragraph::default();
@@ -517,12 +626,7 @@ mod tests {
         let mut xml = String::new();
         std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
 
-        // 3줄(소프트) → lineseg 3개, textpos=0/2/4, vertpos=0/1600/3200
-        let count = xml.matches("<hp:lineseg ").count();
-        assert_eq!(count, 3, "expected 3 linesegs, got {}: {}", count, xml);
-        assert!(xml.contains(r#"textpos="0" vertpos="0""#));
-        assert!(xml.contains(r#"textpos="2" vertpos="1600""#));
-        assert!(xml.contains(r#"textpos="4" vertpos="3200""#));
+        assert!(!xml.contains("<hp:linesegarray"), "got: {}", xml);
     }
 
     #[test]

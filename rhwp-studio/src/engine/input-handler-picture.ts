@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { MovePictureCommand, MoveShapeCommand, ResizeObjectCommand } from './command';
+import type { ObjectResizeTarget } from './command';
+import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import type { CellPathLike } from '@/core/types';
 
 type PictureObjectRef = {
@@ -473,11 +475,63 @@ export function deleteObjectControl(this: any, ref: PictureObjectRef): void {
   }
 }
 
+// ─── Shift+방향키 크기 조절 (#1231) ─────────────────────
+
+/**
+ * 그림 객체 선택 모드에서 Shift+방향키로 개체 크기를 단계 조절한다 (한컴 정합).
+ * 이동(moveSelectedPicture)과 동일한 격자 단계를 쓰고, 드래그 리사이즈와 동일하게
+ * ResizeObjectCommand 로 Undo/Redo 를 기록한다. 셀/글상자/머리말 내 개체는
+ * get/setObjectProperties 의 경로 분기를 그대로 탄다.
+ */
+export function resizeSelectedPicture(this: any, key: ArrowKey): void {
+  const refs = this.cursor.getSelectedPictureRefs();
+  const ref = this.cursor.getSelectedPictureRef();
+  if (!ref) return;
+
+  const step = Math.round(this.gridStepMm * 7200 / 25.4); // mm → HWPUNIT
+  const targets = refs.length > 1 ? refs : [ref];
+  try {
+    // 1단계: 조회/계산만 먼저 전부 수행 — 일부 개체 조회가 실패해도 문서는 무변경
+    const pending: { r: PictureObjectRef; target: ObjectResizeTarget }[] = [];
+    for (const r of targets) {
+      const props = getObjectProperties.call(this, r);
+      const resized = computeArrowResize(key, props.width, props.height, step);
+      if (!resized) continue;
+      pending.push({
+        r,
+        target: {
+          sec: r.sec,
+          ppi: r.ppi,
+          ci: r.ci,
+          type: r.type,
+          cellPath: r.cellPath,
+          before: resized.before,
+          after: resized.after,
+        },
+      });
+    }
+    if (pending.length === 0) return;
+    // 2단계: 적용 후 Undo 기록 (드래그 리사이즈와 동일 순서; 원본 ref 로 적용해
+    // headerFooter 등 dispatch 필드를 보존한다)
+    for (const { r, target } of pending) {
+      setObjectProperties.call(this, r, target.after);
+    }
+    this.executeOperation({
+      kind: 'record',
+      command: new ResizeObjectCommand(pending.map((p) => p.target)),
+    });
+    this.eventBus.emit('document-changed');
+    this.renderPictureObjectSelection();
+  } catch (err) {
+    console.warn('[InputHandler] 개체 크기 조절 실패:', err);
+  }
+}
+
 // ─── 핸들 드래그 리사이즈 ─────────────────────────
 
 /** 1 page px = 7200/96 = 75 HWPUNIT */
 const PX_TO_HWP = 7200 / 96;
-const MIN_SIZE_HWP = 283; // ≈1mm
+// MIN_SIZE_HWP 는 picture-resize.ts 에서 import (드래그/키보드 리사이즈 공용 하한)
 
 /**
  * 회전각을 반영하여 리사이즈 후 새 bbox(비회전 기준)를 계산한다.

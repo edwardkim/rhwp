@@ -98,6 +98,9 @@ export const tableCommands: CommandDef[] = [
             return pos;
           },
         }), '표 만들기');
+        // 대화상자 닫힘 후 편집 포커스 복원 — textarea 에 keydown 이 바인딩되어
+        // 있어, 복원하지 않으면 직후 F5 등이 브라우저 기본동작으로 빠진다 (#1140)
+        (ih2 as any).textarea?.focus();
       };
       dialog.show(params?.anchorEl as HTMLElement | undefined);
     },
@@ -313,6 +316,8 @@ export const tableCommands: CommandDef[] = [
           },
         }), '셀 나누기');
         if (isMultiCell) ih2.exitCellSelectionMode?.();
+        // 대화상자 닫힘 후 편집 포커스 복원 (#1140 — 표 만들기와 동일 결함)
+        (ih2 as any).textarea?.focus();
       };
       dialog.show();
     },

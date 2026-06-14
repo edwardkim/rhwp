@@ -293,6 +293,7 @@ fn parse_hwp_with_cfb(
         preview,
         bin_data_content,
         extra_streams,
+        hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
     };
 
@@ -563,6 +564,7 @@ fn parse_hwp_with_lenient(
         preview: None,
         bin_data_content,
         extra_streams: Vec::new(),
+        hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
     };
 

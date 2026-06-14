@@ -3,11 +3,54 @@ use crate::model::document::{Document, Section};
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::paint::LAYER_TREE_SCHEMA;
 use crate::parser::control::parse_common_obj_attr;
+use serde_json::Value;
 
 #[test]
 fn test_create_empty_document() {
     let doc = HwpDocument::create_empty();
     assert_eq!(doc.page_count(), 1);
+}
+
+/// [#1386] createEmpty는 구역 1개 + 빈 문단 1개를 포함해 생성 직후
+/// 편집/조회/내보내기가 가능해야 한다 (구역 0개 → 모든 API 실패 회귀 방지).
+#[test]
+fn test_create_empty_document_is_editable() {
+    let mut doc = HwpDocument::create_empty();
+    assert_eq!(doc.get_section_count(), 1, "기본 구역 1개");
+
+    // 편집: 구역 0 / 문단 0에 텍스트 삽입이 성공해야 한다
+    doc.insert_text_native(0, 0, 0, "새 문서 첫 문단")
+        .expect("createEmpty 문서에 insertText가 동작해야 한다 (#1386)");
+
+    // 조회: 삽입한 텍스트가 읽혀야 한다
+    let text = doc
+        .get_text_range_native(0, 0, 0, 8)
+        .expect("getTextRange가 동작해야 한다");
+    assert!(
+        text.contains("새 문서"),
+        "삽입 텍스트가 조회되어야 한다: {text}"
+    );
+
+    // 내보내기: HWP/HWPX 직렬화가 모두 성공해야 한다
+    let hwp = doc
+        .export_hwp_with_adapter()
+        .expect("createEmpty 문서 exportHwp");
+    assert!(!hwp.is_empty());
+    let hwpx = doc
+        .export_hwpx_native()
+        .expect("createEmpty 문서 exportHwpx");
+    assert!(!hwpx.is_empty());
+
+    // 재파싱: 내보낸 HWP가 다시 열리고 텍스트가 보존되어야 한다
+    let reparsed =
+        crate::document_core::DocumentCore::from_bytes(&hwp).expect("exportHwp 결과 재파싱");
+    assert!(
+        reparsed.document().sections[0]
+            .paragraphs
+            .iter()
+            .any(|p| p.text.contains("새 문서")),
+        "재파싱 문서에 삽입 텍스트가 보존되어야 한다"
+    );
 }
 
 #[test]
@@ -86,22 +129,25 @@ fn test_page_layer_tree_export_uses_schema_contract() {
     let json = doc
         .get_page_layer_tree_native(0)
         .expect("empty document layer tree should export");
+    let parsed: Value = serde_json::from_str(&json).expect("PageLayerTree JSON");
 
-    assert!(json.contains(&format!(
-        "\"schemaVersion\":{}",
-        LAYER_TREE_SCHEMA.schema_version
-    )));
-    assert!(json.contains(&format!(
-        "\"resourceTableVersion\":{}",
-        LAYER_TREE_SCHEMA.resource_table_version
-    )));
-    assert!(json.contains(&format!("\"unit\":\"{}\"", LAYER_TREE_SCHEMA.unit)));
-    assert!(json.contains(&format!(
-        "\"coordinateSystem\":\"{}\"",
-        LAYER_TREE_SCHEMA.coordinate_system
-    )));
-    assert!(json.contains("\"profile\":\"screen\""));
-    assert!(json.contains("\"outputOptions\":{"));
+    assert_eq!(
+        parsed["schemaVersion"].as_u64(),
+        Some(LAYER_TREE_SCHEMA.schema_version as u64)
+    );
+    assert_eq!(
+        parsed["resourceTableVersion"].as_u64(),
+        Some(LAYER_TREE_SCHEMA.resource_table_version as u64)
+    );
+    assert_eq!(parsed["unit"].as_str(), Some(LAYER_TREE_SCHEMA.unit));
+    assert_eq!(
+        parsed["coordinateSystem"].as_str(),
+        Some(LAYER_TREE_SCHEMA.coordinate_system)
+    );
+    assert_eq!(parsed["profile"].as_str(), Some("screen"));
+    assert!(parsed["buildOptions"].is_object());
+    assert!(parsed["debugOptions"].is_object());
+    assert!(parsed["outputOptions"].is_object());
 }
 
 #[test]
@@ -116,12 +162,34 @@ fn test_page_layer_tree_export_preserves_output_options() {
     let json = doc
         .get_page_layer_tree_native(0)
         .expect("layer tree should export output options");
+    let parsed: Value = serde_json::from_str(&json).expect("PageLayerTree JSON");
 
-    assert!(json.contains("\"showParagraphMarks\":true"));
-    assert!(json.contains("\"showControlCodes\":true"));
-    assert!(json.contains("\"showTransparentBorders\":true"));
-    assert!(json.contains("\"clipEnabled\":false"));
-    assert!(json.contains("\"debugOverlay\":true"));
+    assert_eq!(
+        parsed["buildOptions"]["showTransparentBorders"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(parsed["buildOptions"]["clipEnabled"].as_bool(), Some(false));
+    assert_eq!(parsed["debugOptions"]["debugOverlay"].as_bool(), Some(true));
+    assert_eq!(
+        parsed["outputOptions"]["showParagraphMarks"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["showControlCodes"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["showTransparentBorders"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["clipEnabled"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        parsed["outputOptions"]["debugOverlay"].as_bool(),
+        Some(true)
+    );
 }
 
 #[test]
@@ -2130,6 +2198,351 @@ fn test_paste_inline_picture_no_cascade() {
         offs,
         vec![1000, 1000, 1000],
         "inline 그림에 cascade 적용됨: {offs:?}"
+    );
+}
+
+/// 섹션 0에서 첫 번째 표 컨트롤의 (para_idx, ctrl_idx)를 찾는다.
+fn find_table_pos(doc: &HwpDocument) -> (usize, usize) {
+    use crate::model::control::Control;
+    for (pi, p) in doc.document.sections[0].paragraphs.iter().enumerate() {
+        for (ci, c) in p.controls.iter().enumerate() {
+            if matches!(c, Control::Table(_)) {
+                return (pi, ci);
+            }
+        }
+    }
+    panic!("표 컨트롤 없음");
+}
+
+/// #1323: 표 셀 안 이미지 붙여넣기 — merge_from 컨트롤 병합으로 그림·CTRL_DATA가
+/// 보존되어야 한다. 수정 전에는 에러 없이 조용히 누락되었다.
+#[test]
+fn test_paste_picture_into_table_cell() {
+    use crate::model::control::Control;
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    // CTRL_DATA 인덱스 정렬 검증용 레코드 부여
+    doc.document.sections[0].paragraphs[0].ctrl_data_records = vec![Some(vec![7, 7, 7])];
+    doc.copy_control_native(0, 0, &[], 0).expect("그림 복사");
+
+    doc.create_table_ex_native(0, 1, 0, 2, 2, true, None)
+        .expect("표 생성");
+    let (t_para, t_ctrl) = find_table_pos(&doc);
+
+    doc.paste_internal_in_cell_native(0, t_para, t_ctrl, 0, 0, 0)
+        .expect("셀에 그림 붙여넣기");
+
+    let table = match &doc.document.sections[0].paragraphs[t_para].controls[t_ctrl] {
+        Control::Table(t) => t,
+        other => panic!("표가 아님: {other:?}"),
+    };
+    let mut found = None;
+    for p in &table.cells[0].paragraphs {
+        for (i, c) in p.controls.iter().enumerate() {
+            if matches!(c, Control::Picture(_)) {
+                found = Some((p, i));
+            }
+        }
+    }
+    let (cell_para, pic_idx) = found.expect("셀 안에 그림 컨트롤이 보존되어야 한다 (#1323)");
+    assert_eq!(
+        cell_para.ctrl_data_records.get(pic_idx).cloned().flatten(),
+        Some(vec![7, 7, 7]),
+        "CTRL_DATA가 controls 인덱스 정렬을 유지한 채 보존되어야 한다"
+    );
+}
+
+/// #1323: path 기반 셀 붙여넣기(paste_internal_in_cell_by_path)도 동일하게 그림을 보존한다.
+#[test]
+fn test_paste_picture_into_cell_by_path() {
+    use crate::model::control::Control;
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    doc.copy_control_native(0, 0, &[], 0).expect("그림 복사");
+
+    doc.create_table_ex_native(0, 1, 0, 2, 2, true, None)
+        .expect("표 생성");
+    let (t_para, t_ctrl) = find_table_pos(&doc);
+
+    // path = [(ctrl_idx, cell_idx, cell_para_idx)] — 셀 1의 문단 0에 붙여넣기
+    doc.paste_internal_in_cell_by_path_native(0, t_para, &[(t_ctrl, 1, 0)], 0)
+        .expect("path 기반 셀 붙여넣기");
+
+    let table = match &doc.document.sections[0].paragraphs[t_para].controls[t_ctrl] {
+        Control::Table(t) => t,
+        other => panic!("표가 아님: {other:?}"),
+    };
+    let pic_count: usize = table.cells[1]
+        .paragraphs
+        .iter()
+        .map(|p| {
+            p.controls
+                .iter()
+                .filter(|c| matches!(c, Control::Picture(_)))
+                .count()
+        })
+        .sum();
+    assert_eq!(
+        pic_count, 1,
+        "path 기반 붙여넣기에서도 그림 컨트롤이 보존되어야 한다 (#1323)"
+    );
+}
+
+/// #1323: 그림 캡션 안 붙여넣기(Control::Picture 분기)도 컨트롤을 보존한다.
+#[test]
+fn test_paste_picture_into_picture_caption() {
+    use crate::model::control::Control;
+    use crate::model::shape::Caption;
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    doc.copy_control_native(0, 0, &[], 0).expect("그림 복사");
+
+    // 본문 그림에 캡션 부여
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Picture(p) => {
+            p.caption = Some(Caption {
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            });
+        }
+        other => panic!("그림이 아님: {other:?}"),
+    }
+
+    doc.paste_internal_in_cell_native(0, 0, 0, 0, 0, 0)
+        .expect("캡션에 그림 붙여넣기");
+
+    let caption = match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Picture(p) => p.caption.as_ref().expect("캡션 존재"),
+        other => panic!("그림이 아님: {other:?}"),
+    };
+    let pic_count: usize = caption
+        .paragraphs
+        .iter()
+        .map(|p| {
+            p.controls
+                .iter()
+                .filter(|c| matches!(c, Control::Picture(_)))
+                .count()
+        })
+        .sum();
+    assert_eq!(
+        pic_count, 1,
+        "캡션 안에 붙여넣은 그림 컨트롤이 보존되어야 한다 (#1323)"
+    );
+}
+
+/// #1323 부수 해소: 본문 문단 시작 Backspace 병합 시 병합 대상 문단의 컨트롤이
+/// 보존되어야 한다 (수정 전에는 merge_from이 controls를 드롭).
+#[test]
+fn test_merge_paragraph_preserves_controls() {
+    use crate::model::control::Control;
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    // 문단 1에 텍스트 입력 후 문단 0(그림 문단)으로 병합
+    doc.insert_text_native(0, 1, 0, "가나")
+        .expect("텍스트 입력");
+    doc.merge_paragraph_native(0, 1).expect("문단 병합");
+
+    let para = &doc.document.sections[0].paragraphs[0];
+    assert_eq!(para.text, "가나");
+    assert_eq!(
+        para.controls
+            .iter()
+            .filter(|c| matches!(c, Control::Picture(_)))
+            .count(),
+        1,
+        "백스페이스 병합 시 그림 컨트롤이 보존되어야 한다 (#1323)"
+    );
+    assert_eq!(
+        para.control_text_positions(),
+        vec![0],
+        "그림은 병합된 텍스트 앞 위치를 유지해야 한다"
+    );
+}
+
+/// #1323 부수 해소: 셀 문단 시작 Backspace 병합(merge_paragraph_in_cell) 시
+/// 병합 대상 셀 문단의 컨트롤이 보존되어야 한다.
+#[test]
+fn test_merge_paragraph_in_cell_preserves_controls() {
+    use crate::model::control::Control;
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    doc.create_table_ex_native(0, 1, 0, 2, 2, true, None)
+        .expect("표 생성");
+    let (t_para, t_ctrl) = find_table_pos(&doc);
+
+    // 셀 0에 그림 문단을 두 번째 문단으로 구성
+    let pic_para = doc.document.sections[0].paragraphs[0].clone();
+    match &mut doc.document.sections[0].paragraphs[t_para].controls[t_ctrl] {
+        Control::Table(t) => t.cells[0].paragraphs.push(pic_para),
+        other => panic!("표가 아님: {other:?}"),
+    }
+
+    doc.merge_paragraph_in_cell_native(0, t_para, t_ctrl, 0, 1)
+        .expect("셀 문단 병합");
+
+    let table = match &doc.document.sections[0].paragraphs[t_para].controls[t_ctrl] {
+        Control::Table(t) => t,
+        other => panic!("표가 아님: {other:?}"),
+    };
+    assert_eq!(
+        table.cells[0].paragraphs.len(),
+        1,
+        "셀 문단이 병합되어야 한다"
+    );
+    assert_eq!(
+        table.cells[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Picture(_)))
+            .count(),
+        1,
+        "셀 백스페이스 병합 시 그림 컨트롤이 보존되어야 한다 (#1323)"
+    );
+}
+
+/// #1323: 셀에 그림을 붙여넣은 문서가 HWP5 직렬화 → 재파싱 후에도 그림을 보존한다.
+/// (char_count 역산·char_offsets 갭 인코딩이 직렬화 계약과 정합함을 검증)
+#[test]
+fn test_paste_picture_into_table_cell_hwp5_roundtrip() {
+    use crate::model::control::Control;
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    doc.copy_control_native(0, 0, &[], 0).expect("그림 복사");
+    doc.create_table_ex_native(0, 1, 0, 2, 2, true, None)
+        .expect("표 생성");
+    let (t_para, t_ctrl) = find_table_pos(&doc);
+    doc.paste_internal_in_cell_native(0, t_para, t_ctrl, 0, 0, 0)
+        .expect("셀에 그림 붙여넣기");
+
+    let bytes = doc.export_hwp_native().expect("HWP5 직렬화");
+    let doc2 = HwpDocument::from_bytes(&bytes).expect("재파싱");
+
+    let mut found = false;
+    for p in &doc2.document.sections[0].paragraphs {
+        for c in &p.controls {
+            if let Control::Table(t) = c {
+                for cell_para in t.cells.iter().flat_map(|cl| cl.paragraphs.iter()) {
+                    if cell_para
+                        .controls
+                        .iter()
+                        .any(|cc| matches!(cc, Control::Picture(_)))
+                    {
+                        found = true;
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        found,
+        "HWP5 round-trip 후에도 셀 안 그림 컨트롤이 보존되어야 한다 (#1323)"
+    );
+}
+
+/// #1323 시각 검증 보조: 표 셀/글상자에 붙여넣은 그림이 SVG 렌더링에 실제
+/// `<image>` 요소로 나타나는지 검증한다. BinData를 실제 등록(insert_picture)하여
+/// 렌더러가 data URI 이미지를 방출하는 경로를 그대로 사용한다.
+#[test]
+fn test_paste_picture_into_cell_and_textbox_renders_in_svg() {
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+    fn parse_idx(res: &str, key: &str) -> usize {
+        res.split(&format!("\"{}\":", key))
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing {key} in {res}"))
+    }
+    fn count_images(svg: &str) -> usize {
+        svg.matches("<image").count()
+    }
+
+    let mut doc = create_doc_with_floating_picture(true, 0, 0);
+    // 헬퍼의 기본 그림은 BinData가 없으므로 실제 그림을 별도 삽입해 사용한다
+    let res = doc
+        .insert_picture_native(
+            0,
+            1,
+            0,
+            &[],
+            &minimal_png(),
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "",
+            None,
+            None,
+        )
+        .expect("본문 그림 삽입");
+    let pic_para = parse_idx(&res, "paraIdx");
+    let pic_ctrl = parse_idx(&res, "controlIdx");
+
+    let svg_before = doc.render_page_svg_native(0).expect("기준 SVG 렌더");
+    let base = count_images(&svg_before);
+    assert!(base >= 1, "본문 그림이 SVG에 렌더되어야 한다: {base}");
+
+    doc.copy_control_native(0, pic_para, &[], pic_ctrl)
+        .expect("그림 복사");
+
+    // 표 셀에 붙여넣기 → <image> 1개 증가
+    // (기존 문단은 모두 그림 컨트롤을 보유하므로 표 전용 빈 문단을 추가)
+    doc.document.sections[0]
+        .paragraphs
+        .push(Paragraph::default());
+    let empty_para = doc.document.sections[0].paragraphs.len() - 1;
+    doc.create_table_ex_native(0, empty_para, 0, 2, 2, true, None)
+        .expect("표 생성");
+    let (t_para, t_ctrl) = find_table_pos(&doc);
+    doc.paste_internal_in_cell_native(0, t_para, t_ctrl, 0, 0, 0)
+        .expect("셀에 그림 붙여넣기");
+
+    let svg_cell = doc.render_page_svg_native(0).expect("셀 paste 후 SVG 렌더");
+    assert_eq!(
+        count_images(&svg_cell),
+        base + 1,
+        "셀에 붙여넣은 그림이 SVG에 렌더되어야 한다 (#1323)"
+    );
+
+    // 글상자에 붙여넣기 → <image> 1개 더 증가
+    let tb_res = doc
+        .create_shape_control_native(
+            0,
+            t_para,
+            0,
+            21600,
+            7200,
+            0,
+            0,
+            true,
+            "TopAndBottom",
+            "textbox",
+            false,
+            false,
+            &[],
+        )
+        .expect("글상자 생성");
+    let tb_para = parse_idx(&tb_res, "paraIdx");
+    let tb_ctrl = parse_idx(&tb_res, "controlIdx");
+    doc.paste_internal_in_cell_native(0, tb_para, tb_ctrl, 0, 0, 0)
+        .expect("글상자에 그림 붙여넣기");
+
+    let svg_tb = doc
+        .render_page_svg_native(0)
+        .expect("글상자 paste 후 SVG 렌더");
+    assert_eq!(
+        count_images(&svg_tb),
+        base + 2,
+        "글상자에 붙여넣은 그림이 SVG에 렌더되어야 한다 (#1323)"
     );
 }
 
@@ -13375,6 +13788,7 @@ fn test_save_picture() {
         raw_picture_extra: ref_pic.raw_picture_extra.clone(),
         effects: ref_pic.effects.clone(),
         caption: None,
+        img_dim: (0, 0),
     };
 
     // 5. 문단 구성 (참조 파일: 단일 문단에 SectionDef + ColumnDef + Picture)
@@ -14562,6 +14976,7 @@ fn test_save_pic_in_table() {
         raw_picture_extra: ref_pic.raw_picture_extra.clone(),
         effects: ref_pic.effects.clone(),
         caption: None,
+        img_dim: (0, 0),
     };
 
     // 6. 셀 내부 문단 구성 (cc=9: gso(8)+CR(1), mask=0x00000800)

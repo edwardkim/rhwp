@@ -2447,7 +2447,6 @@ impl LayoutEngine {
         // 이 zone emit 경로 하나에서 그린다.
         let mut prev_zone_layout_for_sep: Option<PageLayoutInfo> = None;
         let mut prev_zone_sep_y_start: f64 = 0.0;
-        let mut prev_zone_sep_full_body: bool = false;
         // [Task #853/#866] 직전 zone 의 "디자인 spacing"(1단 ColumnDef 의 `간격`, 다단은 0).
         // 한컴은 zone 전환 시 (이전 zone 디자인 spacing /2)+(새 zone /2) 만큼 세로 여백을
         // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
@@ -2497,17 +2496,12 @@ impl LayoutEngine {
             if is_new_zone {
                 // 직전 zone 의 단 구분선 emit (있다면).
                 if let Some(pz) = prev_zone_layout_for_sep.take() {
-                    let sep_y_end = if prev_zone_sep_full_body {
-                        pz.body_area.y + pz.body_area.height
-                    } else {
-                        prev_zone_y_end
-                    };
                     self.emit_zone_column_separators(
                         tree,
                         body_node,
                         &pz,
                         prev_zone_sep_y_start,
-                        sep_y_end,
+                        prev_zone_y_end,
                     );
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
@@ -2577,16 +2571,15 @@ impl LayoutEngine {
                 last_zone_y_offset = col_content.zone_y_offset;
                 // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
                 // [Task #1333] zone emit(emit_zone_column_separators)이 단 구분선의 단일
-                // 경로다. zone_layout=None(초기 단정의·연속 페이지)은 page layout 을 따르며
-                // body 전체 높이를 사용한다. zone_layout=Some(페이지 내부 zone 전환)만 콘텐츠
-                // 높이를 사용해 shortcut.hwp 같은 혼합 zone 의 부분 구분선 정합을 유지한다.
+                // 경로다. zone_layout=None(초기 단정의·연속 페이지)은 unwrap_or(layout)로
+                // page layout 을 따르며, 콘텐츠가 채워진 높이까지만 구분선을 그린다(한컴 정합).
+                // 꽉 찬 페이지는 콘텐츠≈body 라 전체 높이로, 부분 페이지(섹션 끝 등)는 콘텐츠
+                // 하단까지만 그려진다. body 초과분은 emit_zone_column_separators 가 캡한다.
                 if zone_layout.column_areas.len() >= 2 && zone_layout.separator_type > 0 {
                     prev_zone_layout_for_sep = Some(zone_layout.clone());
                     prev_zone_sep_y_start = current_zone_start_y.max(zone_layout.body_area.y);
-                    prev_zone_sep_full_body = col_content.zone_layout.is_none();
                 } else {
                     prev_zone_layout_for_sep = None;
-                    prev_zone_sep_full_body = false;
                 }
             }
 
@@ -2748,17 +2741,12 @@ impl LayoutEngine {
 
         // 마지막 zone 의 단 구분선 emit.
         if let Some(pz) = prev_zone_layout_for_sep.take() {
-            let sep_y_end = if prev_zone_sep_full_body {
-                pz.body_area.y + pz.body_area.height
-            } else {
-                prev_zone_y_end
-            };
             self.emit_zone_column_separators(
                 tree,
                 body_node,
                 &pz,
                 prev_zone_sep_y_start,
-                sep_y_end,
+                prev_zone_y_end,
             );
         }
     }
@@ -2825,6 +2813,95 @@ impl LayoutEngine {
 
     /// 단일 단의 콘텐츠를 레이아웃한다.
     #[allow(clippy::too_many_arguments)]
+    /// [Task #1363 v3 옵션 3] 미주 단의 전 items 를 scratch 로 **1회 순차 레이아웃**해 정확한
+    /// 렌더 단 bottom(px, col_area 상대)을 반환한다. per-para 고립 측정 + HeightCursor 시뮬의
+    /// 컨텍스트 의존·순차 상호작용(vpos forward-jump ↔ trailing) 발산을 회피한다 — 렌더
+    /// 코드(`build_single_column`) 자체로 측정하므로 sim==render 가 구조적으로 보장된다.
+    ///
+    /// `items`/`paragraphs`/`composed` 는 호출부에서 단 items 만 추출해 **로컬 0-기반 재색인**해
+    /// 전달한다. `col_area` 는 상대 프레임(`y=0`)으로 둔다. 표/그림 개체는 measured_tables/
+    /// bin_data 없이 측정(미주 단은 텍스트/수식 지배 — 표 미주는 근사). numbering/overflow 등
+    /// 상태는 매 호출 새 scratch 엔진이라 격리된다([[tech_endnote_overflow_nonmonotonic_gate]]).
+    pub(crate) fn measure_endnote_column_bottom(
+        &self,
+        items: Vec<PageItem>,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        col_area: &LayoutRect,
+        start_height: f64,
+        section_index: usize,
+        between_notes_hu: i32,
+    ) -> f64 {
+        self.endnote_between_notes_hu.set(between_notes_hu);
+        // 로컬 paras 는 전부 미주 para(0-기반 재색인). `endnote_para_base=0` 으로 미주 vpos
+        // 정규화 경로(`endnote_line_vpos_base`: para_index >= base)를 활성화한다 — 미설정 시
+        // usize::MAX 라 정규화가 꺼져 para 의 절대 파일-vpos 가 그대로 새어 단독 측정이
+        // 폭발한다(수식 para 35px→13721px).
+        self.endnote_para_base.set(0);
+        let layout_info = PageLayoutInfo {
+            page_width: col_area.width,
+            page_height: col_area.y + col_area.height,
+            header_area: *col_area,
+            body_area: *col_area,
+            column_areas: vec![*col_area],
+            footnote_area: *col_area,
+            footer_area: *col_area,
+            dpi: self.dpi,
+            separator_type: 0,
+            separator_width: 0,
+            separator_color: 0,
+            pagination_tolerance_px: 0.0,
+        };
+        let col_content = ColumnContent {
+            column_index: 0,
+            start_height,
+            endnote_flow: true,
+            items,
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+            used_height: 0.0,
+            wrap_anchors: std::collections::HashMap::new(),
+        };
+        let page_content = PageContent {
+            page_index: 0,
+            page_number: 0,
+            section_index,
+            layout: layout_info.clone(),
+            column_contents: Vec::new(),
+            active_header: None,
+            active_footer: None,
+            page_number_pos: None,
+            page_hide: None,
+            footnotes: Vec::new(),
+            active_master_page: None,
+            extra_master_pages: Vec::new(),
+        };
+        let mut tree = PageRenderTree::new(0, col_area.width, col_area.y + col_area.height);
+        let mut paper_images: Vec<RenderNode> = Vec::new();
+        let (_node, y_offset) = self.build_single_column(
+            &mut tree,
+            &mut paper_images,
+            &col_content,
+            &page_content,
+            paragraphs,
+            composed,
+            styles,
+            &[],
+            &[],
+            &layout_info,
+            &layout_info,
+            col_area,
+            0,
+            &[],
+            &[],
+        );
+        // y_offset 은 col_area 절대 프레임의 단 콘텐츠 bottom. 호출부가 `current_height`
+        // (=col_area.y 가 단 시작) 프레임과 정합하도록 그대로 반환한다.
+        y_offset
+    }
+
     fn build_single_column(
         &self,
         tree: &mut PageRenderTree,
@@ -3205,6 +3282,60 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [Task #1355] 미주 제목 saved-vpos 점프에 의한 gap 이중계상 정정.
+            // 직전 미주 콘텐츠의 trailing line-spacing 이 흐름에 "미주 사이" gap 을 이미
+            // 만들었는데(flow_advance ≈ gap), 제목의 saved LINE_SEG vpos 가 직전 bottom 보다
+            // 크게 점프(원본에서 단/쪽 경계를 건넌 미주)하면 vpos_adjust 가 saved 기준으로 gap
+            // 을 한 번 더 더해 제목 앞 여백이 약 2배가 된다(예: p18 문30 → 문24 답안 본문 초과).
+            // 이때만 제목을 흐름 위치(y_before_vpos)로 되돌려 gap 을 한 번만 남긴다.
+            // saved-vpos 점프가 작은 일반 순차 미주(2022_oct q19 등)는 vpos_adjust 가 정답
+            // 이므로 제외 — flow_advance 만으로는 양자 시그니처가 동일(둘 다 ≈gap)해 구분 불가,
+            // saved-vpos 점프량(원본 단/쪽 경계 신호)으로 구분한다.
+            if current_is_endnote_question_title
+                && col_content.endnote_flow
+                && !compacted_equation_tail_title_gap
+                && !endnote_title_direct_bottom_fit
+                && !endnote_title_bottom_fit_applied
+                && !current_title_tail_backtracked
+                && prev_endnote_title_gap_px > 0.0
+                && y_offset > y_before_vpos + 4.0
+            {
+                let cur_first_vpos = paragraphs
+                    .get(item_para)
+                    .and_then(|p| p.line_segs.first())
+                    .map(|s| s.vertical_pos);
+                let prev_last_bottom_vpos = hcursor
+                    .prev_layout_para
+                    .and_then(|pi| paragraphs.get(pi))
+                    .and_then(|p| p.line_segs.last())
+                    .map(|s| s.vertical_pos + s.line_height);
+                let saved_delta_hu = match (cur_first_vpos, prev_last_bottom_vpos) {
+                    (Some(cf), Some(pb)) => cf - pb,
+                    _ => 0,
+                };
+                // 이중계상은 직전 미주 문단이 "수식 전용(보이는 텍스트 없음)" tail 일 때만
+                // 발생한다(수식 tail 의 trailing line-spacing 인플레이션 + saved-vpos 점프).
+                // 직전이 텍스트 문단이면 vpos_adjust 가 정답이므로 제외(2022_sep q15,
+                // 2022_oct q29 회귀 방지).
+                let prev_is_textless = hcursor
+                    .prev_layout_para
+                    .and_then(|pi| paragraphs.get(pi))
+                    .map(|p| !para_has_visible_text(p))
+                    .unwrap_or(false);
+                if let Some(prev_bottom) = prev_item_content_bottom_y {
+                    let flow_advance = y_before_vpos - prev_bottom;
+                    if prev_is_textless
+                        && flow_advance >= prev_endnote_title_gap_px * 0.9
+                        && flow_advance <= prev_endnote_title_gap_px * 1.25
+                        && saved_delta_hu > 5000
+                    {
+                        y_offset = y_before_vpos;
+                        hcursor.vpos_page_base = None;
+                        hcursor.vpos_lazy_base = None;
+                        compacted_equation_tail_title_gap = true;
+                    }
+                }
+            }
             let compact_endnote_title_gap_already_compacted = current_is_endnote_question_title
                 && (hcursor.last_compacted_endnote_title_gap || compacted_equation_tail_title_gap);
             let should_preserve_endnote_title_gap = current_is_endnote_question_title
@@ -3367,6 +3498,16 @@ impl LayoutEngine {
                     new_y,
                     new_y - _y_in,
                     was_tac,
+                );
+            }
+            if col_content.endnote_flow && std::env::var("RHWP_EN_SSOT_DEBUG").is_ok() {
+                eprintln!(
+                    "EN_RENDER pi={} y_in_rel={:.1} y_out_rel={:.1} dy={:.1} col_h={:.1}",
+                    item_para,
+                    _y_in - col_area.y,
+                    new_y - col_area.y,
+                    new_y - _y_in,
+                    col_area.height,
                 );
             }
             y_offset = new_y;

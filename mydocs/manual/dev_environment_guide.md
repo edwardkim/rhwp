@@ -112,6 +112,21 @@ cargo fmt --check
 `release-test` 는 로컬 검증 속도를 위한 프로필이다. 릴리즈 산출물 자체는
 계속 `[profile.release]` 의 LTO 설정으로 빌드한다.
 
+### Linux(WSL2) 실측 — release-test 프로필 권장
+
+2026-06-12 WSL2(홈 PC) 실측 기준, Linux에서도 push/머지 전 통합 테스트 검증은
+`release-test` 프로필이 빠르다.
+
+| 명령 | 용도 | real |
+|------|------|------|
+| `cargo test --tests` (dev, warm) | 종전 push 전 검증 방식 | 262s |
+| `cargo test --profile release-test --tests -q` (cold) | target/release-test 삭제 후 최초 빌드 포함 | 131s |
+| `cargo test --profile release-test --tests -q` (warm) | 캐시 후 반복 실행 | 108s |
+
+warm 기준 약 2.4배 빠르며, cold(최초 1회)조차 dev warm의 절반이다. 이후 push/머지 전
+검증은 Linux에서도 `cargo test --profile release-test --tests` + `cargo fmt --check`
+조합을 사용한다.
+
 ### WASM 빌드 (Docker)
 
 ```bash

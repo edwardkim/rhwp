@@ -714,20 +714,29 @@ impl Paragraph {
     /// 병합 후 other 문단의 내용은 현재 문단에 포함된다.
     /// 반환값: 병합 지점의 char offset (원래 텍스트의 길이).
     pub fn merge_from(&mut self, other: &Paragraph) -> usize {
-        if other.text.is_empty() {
+        // 텍스트 없이 컨트롤만 있는 문단(예: 그림 복사 클립보드)도 병합 대상 (#1323)
+        if other.text.is_empty() && other.controls.is_empty() {
             return self.text.chars().count();
         }
 
         let self_text_len = self.text.chars().count();
 
-        // 현재 문단 끝의 UTF-16 위치
+        // 현재 문단 끝의 UTF-16 위치.
+        // 마지막 문자 뒤(trailing) 컨트롤은 char_offsets에 갭이 인코딩되어 있지 않으므로
+        // 컨트롤당 8 code unit을 가산해야 other 텍스트가 컨트롤 갭 뒤로 이어진다 (#1323).
+        let trailing_ctrl_units: u32 = self
+            .control_text_positions()
+            .iter()
+            .filter(|&&p| p >= self_text_len)
+            .count() as u32
+            * 8;
         let utf16_end: u32 = if !self.char_offsets.is_empty() {
             let last = self.char_offsets.len() - 1;
             let text_chars: Vec<char> = self.text.chars().collect();
             self.char_offsets[last] + Self::char_utf16_len(text_chars[last])
         } else {
             0
-        };
+        } + trailing_ctrl_units;
 
         // 1. 텍스트 결합
         self.text.push_str(&other.text);
@@ -789,6 +798,7 @@ impl Paragraph {
         }
 
         // 5-1. field_ranges 결합 (other의 char 인덱스에 self_text_len 추가)
+        //      ctrl_offset은 병합 전 self.controls.len() — 5-2의 controls 병합보다 먼저 캡처
         let ctrl_offset = self.controls.len();
         for fr in &other.field_ranges {
             self.field_ranges.push(FieldRange {
@@ -798,8 +808,31 @@ impl Paragraph {
             });
         }
 
-        // 6. char_count 갱신 (-1 because merge removes one paragraph end)
-        self.char_count = (self_text_len + other.text.chars().count()) as u32 + 1;
+        // 5-2. controls / ctrl_data_records / control_mask 병합 (#1323)
+        //      ctrl_data_records[i]는 controls[i] 대응이므로 self 쪽을 None 패딩 후 이어붙인다.
+        if !other.controls.is_empty() {
+            while self.ctrl_data_records.len() < self.controls.len() {
+                self.ctrl_data_records.push(None);
+            }
+            for i in 0..other.controls.len() {
+                self.ctrl_data_records
+                    .push(other.ctrl_data_records.get(i).cloned().flatten());
+            }
+            self.controls.extend(other.controls.iter().cloned());
+            self.control_mask |= other.control_mask;
+        }
+
+        // 6. char_count 갱신: 텍스트 + 컨트롤(각 8 code unit) + 문단끝(1)
+        //    split_at의 ctrl_code_units 계산과 정합. HWPX 직렬화가 char_count에서
+        //    컨트롤 수를 역산하므로 컨트롤 유닛 포함 필수.
+        self.char_count = (self_text_len + other.text.chars().count()) as u32
+            + self.controls.len() as u32 * 8
+            + 1;
+
+        // 7. has_para_text: 병합 후 텍스트/컨트롤이 있으면 PARA_TEXT 필요
+        if !self.text.is_empty() || !self.controls.is_empty() {
+            self.has_para_text = true;
+        }
 
         self_text_len
     }

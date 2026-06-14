@@ -733,11 +733,16 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       // paste 이벤트에서 처리되도록 폴스루 (preventDefault 하지 않음)
       return;
     }
-    // 방향키 → 개체 위치 이동
+    // 방향키 → 개체 위치 이동, Shift+방향키 → 개체 크기 조절 (#1231 한컴 정합)
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
         e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
-      this.moveSelectedPicture(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
+      const arrow = e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight';
+      if (e.shiftKey) {
+        this.resizeSelectedPicture(arrow);
+      } else {
+        this.moveSelectedPicture(arrow);
+      }
       return;
     }
     // Shift/Ctrl/Alt/Meta 키만 누름 → 무시

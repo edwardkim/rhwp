@@ -85,8 +85,23 @@ pub struct CommonObjAttr {
     pub height_criterion: SizeCriterion,
     /// 개체 설명문
     pub description: String,
+    /// HWPX `numberingType` (캡션 번호 범주) 보존 (#1379).
+    ///
+    /// HWP5 파서는 설정하지 않는다 (기본 None). HWPX 그리기 개체의
+    /// `numberingType="PICTURE"` 등을 라운드트립 보존하기 위한 필드.
+    pub numbering_type: ObjectNumberingType,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
+}
+
+/// HWPX 개체 `numberingType` (캡션 번호 범주)
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum ObjectNumberingType {
+    #[default]
+    None,
+    Picture,
+    Table,
+    Equation,
 }
 
 /// 세로 위치 기준
@@ -284,6 +299,11 @@ pub struct DrawingObjAttr {
 pub struct TextBox {
     /// LIST_HEADER list_attr (라운드트립 보존용)
     pub list_attr: u32,
+    /// HWPX `textDirection="VERTICALALL"` 구분 보존 (#1379).
+    ///
+    /// `list_attr` bit 0~2 는 VERTICAL/VERTICALALL 을 모두 code 1 로 합치므로
+    /// (renderer 세로쓰기 분기 호환), HWPX 라운드트립용 구분은 본 필드로 보존한다.
+    pub vertical_all: bool,
     /// 세로 정렬 (list_attr bit 5~6: 0=top, 1=center, 2=bottom)
     pub vertical_align: crate::model::table::VerticalAlign,
     /// 왼쪽 여백

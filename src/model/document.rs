@@ -37,6 +37,11 @@ pub struct Document {
     /// 파서가 모델링하지 않는 추가 CFB 스트림 (라운드트립 보존용)
     /// (스트림 경로, 데이터)
     pub extra_streams: Vec<(String, Vec<u8>)>,
+    /// HWPX 원본 보조 엔트리 (라운드트립 무손실 보존용).
+    /// IR 로 모델링되지 않는 ZIP 엔트리(version.xml, settings.xml, Preview/* 등)의
+    /// 원본 바이트를 (경로, 데이터)로 보존한다. HWPX 직렬화 시 하드코딩 상수 대신
+    /// 같은 경로의 원본을 그대로 출력하여 플랫폼/인쇄설정/미리보기 손실을 막는다.
+    pub hwpx_aux_entries: Vec<(String, Vec<u8>)>,
     /// [Task #1001] HWP3 → HWP5 변환본 여부 (휴리스틱 식별).
     /// 변환본의 ParaShape spacing/margin 은 HWP3 원본의 2배 단위로 저장되어
     /// 한컴 viewer 와 일치하려면 typeset 단계에서 1/2 보정 필요.
@@ -160,6 +165,16 @@ pub struct DocInfo {
     pub distribute_doc_data_removed: bool,
     /// raw_stream이 model 변경과 동기화되지 않음 (serializer에서 재생성 필요)
     pub raw_stream_dirty: bool,
+    /// HWPX 헤더의 `</hh:refList>` 와 `</hh:head>` 사이 문서 설정 블록
+    /// (compatibleDocument/docOption/trackchageConfig)을 원본 그대로 보존한다.
+    /// 본문과 무관한 문서 전역 설정이라 헤더를 재생성해도 이 구간만은 원본을
+    /// splice 해 무손실을 보장한다(content.hpf metadata 보존과 동일 전략).
+    /// 원본 HWPX가 없으면(HWP5 경로 등) None → serializer가 하드코딩 폴백.
+    pub hwpx_head_tail: Option<String>,
+    /// HWPX `<hh:head version="X.Y">` 의 HWPML 스키마 버전. 문서별로 다르므로
+    /// (1.2~1.5 등) 원본 값을 보존해 직렬화 때 그대로 재방출한다.
+    /// 원본 HWPX가 없으면 None → serializer가 "1.2" 폴백.
+    pub hwpml_version: Option<String>,
 }
 
 /// 본문의 구역 (Section)
@@ -233,6 +248,17 @@ pub struct SectionDef {
 }
 
 impl Document {
+    /// HWPX 원본 보조 엔트리를 경로로 조회한다.
+    ///
+    /// 직렬화기가 하드코딩 상수 대신 원본 바이트를 출력할지 결정할 때 사용한다.
+    /// 보존되지 않은 경로면 `None` 을 돌려준다.
+    pub fn hwpx_aux_entry(&self, path: &str) -> Option<&[u8]> {
+        self.hwpx_aux_entries
+            .iter()
+            .find(|(p, _)| p == path)
+            .map(|(_, d)| d.as_slice())
+    }
+
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
     ///
     /// 렌더러는 `bin_data_id - 1` 인덱스를 먼저 조회하므로, 저장소 엔트리의

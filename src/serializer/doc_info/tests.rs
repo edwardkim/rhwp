@@ -62,6 +62,7 @@ fn test_serialize_face_name_simple() {
         alt_name: None,
         type_info: None,
         default_name: None,
+        subst_font: None,
     };
 
     let data = serialize_face_name(&font);
@@ -81,6 +82,7 @@ fn test_serialize_face_name_with_alt() {
         alt_name: Some("Malgun Gothic".to_string()),
         type_info: None,
         default_name: None,
+        subst_font: None,
     };
 
     let data = serialize_face_name(&font);
@@ -104,6 +106,7 @@ fn test_serialize_face_name_with_type_info_and_default_name() {
         alt_name: None,
         type_info: Some([2, 11, 6, 0, 0, 1, 1, 1, 1, 1]),
         default_name: Some("Gulim".to_string()),
+        subst_font: None,
     };
 
     let data = serialize_face_name(&font);
@@ -151,6 +154,7 @@ fn test_serialize_char_shape_roundtrip() {
         underline_shape: 0,
         strike_shape: 0,
         kerning: false,
+        use_font_space: false,
     };
 
     let data = serialize_char_shape(&cs);
@@ -183,6 +187,33 @@ fn test_serialize_char_shape_roundtrip() {
     }
     assert_eq!(r.read_i32().unwrap(), 1000);
     assert_eq!(r.read_u32().unwrap(), 0x03);
+}
+
+#[test]
+fn test_serialize_char_shape_use_font_space_bit() {
+    let mut cs = CharShape {
+        base_size: 1000,
+        ratios: [100; 7],
+        relative_sizes: [100; 7],
+        shade_color: 0x00FFFFFF,
+        shadow_color: 0x00B2B2B2,
+        use_font_space: true,
+        ..Default::default()
+    };
+
+    let data = serialize_char_shape(&cs);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data);
+    r.skip(14 + 7 + 7 + 7 + 7 + 4).unwrap();
+    let attr = r.read_u32().unwrap();
+    assert_ne!(attr & (1 << 25), 0);
+
+    cs.attr = 1 << 25;
+    cs.use_font_space = false;
+    let data = serialize_char_shape(&cs);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data);
+    r.skip(14 + 7 + 7 + 7 + 7 + 4).unwrap();
+    let attr = r.read_u32().unwrap();
+    assert_eq!(attr & (1 << 25), 0);
 }
 
 #[test]
@@ -431,6 +462,7 @@ fn test_serialize_doc_info_roundtrip() {
         alt_name: None,
         type_info: None,
         default_name: None,
+        subst_font: None,
     });
     doc_info.char_shapes.push(CharShape {
         raw_data: None,
@@ -463,6 +495,7 @@ fn test_serialize_doc_info_roundtrip() {
         underline_shape: 0,
         strike_shape: 0,
         kerning: false,
+        use_font_space: false,
     });
     doc_info.para_shapes.push(ParaShape {
         raw_data: None,

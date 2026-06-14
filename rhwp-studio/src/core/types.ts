@@ -845,13 +845,23 @@ export interface PageLayerTree {
   unit?: 'px';
   coordinateSystem?: string;
   profile?: LayerRenderProfile;
+  buildOptions?: {
+    showTransparentBorders?: boolean;
+    clipEnabled?: boolean;
+  };
+  debugOptions?: {
+    debugOverlay?: boolean;
+  };
   pageWidth: number;
   pageHeight: number;
   outputOptions?: {
     showParagraphMarks?: boolean;
     showControlCodes?: boolean;
+    /** Compatibility mirror; prefer buildOptions.showTransparentBorders. */
     showTransparentBorders?: boolean;
+    /** Compatibility mirror; prefer buildOptions.clipEnabled. */
     clipEnabled?: boolean;
+    /** Compatibility mirror; prefer debugOptions.debugOverlay. */
     debugOverlay?: boolean;
   };
   resources?: LayerResources;

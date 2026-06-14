@@ -11,3 +11,4 @@ pub mod hwp5_inventory;
 pub mod hwp5_inventory_diff;
 pub mod hwp5_mel_personnel_probe;
 pub mod hwp5_table_probe;
+pub mod hwpx_roundtrip_batch;

@@ -519,6 +519,9 @@ impl DocumentCore {
                 }
             }
             for sec_idx in affected_sections {
+                // 편집 시 raw 스트림 무효화 (재직렬화 유도) — 캐시가 남으면 export_hwp가
+                // 원본 바이트를 그대로 반환해 치환 결과가 저장에서 유실된다 (#1385)
+                self.document.sections[sec_idx].raw_stream = None;
                 self.recompose_section(sec_idx);
             }
             self.paginate_if_needed();

@@ -2,6 +2,51 @@
 
 use super::*;
 
+/// HWP 선 굵기 enum: index(0~15) ↔ mm. 한컴 표준 16단계.
+///
+/// 파서(mm→index 최근접)와 직렬화기(index→mm 문자열)가 이 단일 테이블을 공유해
+/// 라운드트립 무손실을 보장한다. 종전엔 파서가 6단계 coarse bucket
+/// (mm≤0.3→1, ≤0.5→2, ≤1.0→3)으로, 직렬화기가 16단계로 달라서 0.4mm→0.15mm,
+/// 0.6mm→0.2mm 처럼 테두리 굵기가 변질됐다(IR index 는 안정이라 diff=0 이지만
+/// 시각적으로 다른 굵기로 출력).
+pub const BORDER_WIDTHS: [(f64, &str); 16] = [
+    (0.1, "0.1"),
+    (0.12, "0.12"),
+    (0.15, "0.15"),
+    (0.2, "0.2"),
+    (0.25, "0.25"),
+    (0.3, "0.3"),
+    (0.4, "0.4"),
+    (0.5, "0.5"),
+    (0.6, "0.6"),
+    (0.7, "0.7"),
+    (1.0, "1.0"),
+    (1.5, "1.5"),
+    (2.0, "2.0"),
+    (3.0, "3.0"),
+    (4.0, "4.0"),
+    (5.0, "5.0"),
+];
+
+/// mm 값에 가장 가까운 [`BORDER_WIDTHS`] 굵기 index(0~15)를 돌려준다(파서용).
+pub fn border_width_index(mm: f64) -> u8 {
+    BORDER_WIDTHS
+        .iter()
+        .enumerate()
+        .min_by(|(_, a), (_, b)| (mm - a.0).abs().total_cmp(&(mm - b.0).abs()))
+        .map(|(i, _)| i as u8)
+        .unwrap_or(0)
+}
+
+/// 굵기 index(0~15)에 대응하는 mm 문자열을 돌려준다(직렬화기용). 범위를 벗어나면
+/// 기본값 "0.1".
+pub fn border_width_mm_str(index: u8) -> &'static str {
+    BORDER_WIDTHS
+        .get(index as usize)
+        .map(|(_, s)| *s)
+        .unwrap_or("0.1")
+}
+
 /// 글꼴 정보 (HWPTAG_FACE_NAME)
 #[derive(Debug, Clone, Default)]
 pub struct Font {
@@ -17,6 +62,26 @@ pub struct Font {
     pub type_info: Option<[u8; 10]>,
     /// 기본 글꼴 이름
     pub default_name: Option<String>,
+    /// 대체 글꼴 (HWPX `<hh:substFont>`) — 원본 글꼴 부재 시 대체될 글꼴 정보.
+    /// HWP5 의 `alt_name`/`alt_type` 과 달리 type·임베드 정보를 독립적으로 보존한다.
+    pub subst_font: Option<SubstFont>,
+}
+
+/// 대체 글꼴 (HWPX `<hh:substFont>`)
+///
+/// 4개 속성을 모두 보존해 라운드트립 무손실을 보장한다. `font_type`/`is_embedded`/
+/// `bin_item_id_ref` 는 부모 `<hh:font>` 의 같은 이름 속성과 독립적이다
+/// (예: HFT 글꼴이 TTF 대체 글꼴을 가질 수 있음).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct SubstFont {
+    /// 대체 글꼴 이름
+    pub face: String,
+    /// 대체 글꼴 유형 (0: 알 수 없음, 1: TTF, 2: HFT)
+    pub font_type: u8,
+    /// 임베드 여부
+    pub is_embedded: bool,
+    /// 임베드 바이너리 아이템 ID 참조 (비임베드 시 빈 문자열; 항상 존재)
+    pub bin_item_id_ref: String,
 }
 
 /// 글자 모양 (HWPTAG_CHAR_SHAPE)
@@ -81,6 +146,8 @@ pub struct CharShape {
     pub strike_shape: u8,
     /// 커닝 여부 (bit 30)
     pub kerning: bool,
+    /// 글꼴에 어울리는 빈칸 사용 여부 (bit 25)
+    pub use_font_space: bool,
 }
 
 /// CharShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
@@ -115,6 +182,7 @@ impl PartialEq for CharShape {
             && self.underline_shape == other.underline_shape
             && self.strike_shape == other.strike_shape
             && self.kerning == other.kerning
+            && self.use_font_space == other.use_font_space
     }
 }
 
@@ -225,6 +293,12 @@ pub struct Numbering {
     pub start_number: u16,
     /// 수준별 시작 번호
     pub level_start_numbers: [u32; 7],
+    /// HWPX `<hh:numbering>` 의 자식 `<hh:paraHead>` 영역 원본 XML
+    /// (여는/닫는 태그 사이 그대로). 모델은 7수준만 표현하지만 HWPX 는
+    /// 10수준 + align/useInstWidth/autoIndent/checkable/형식문자열 등을
+    /// 가지므로, 무손실 라운드트립을 위해 원본 구간을 그대로 보존해 splice 한다.
+    /// HWP5 바이너리 경로 등 원본 XML 이 없으면 `None` → 하드코딩 폴백.
+    pub raw_para_heads: Option<String>,
 }
 
 /// 문단 머리 정보 (표 41)
@@ -845,6 +919,33 @@ impl ParaShapeMods {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn border_width_table_is_a_lossless_bijection() {
+        // 모든 enum index 가 mm 문자열로 나갔다가 최근접 매핑으로 같은 index 로 돌아와야 한다.
+        for (i, (mm, s)) in BORDER_WIDTHS.iter().enumerate() {
+            assert_eq!(border_width_mm_str(i as u8), *s, "index {i} → 문자열");
+            let reparsed: f64 = s.parse().unwrap();
+            assert_eq!(
+                border_width_index(reparsed),
+                i as u8,
+                "{mm}mm 가 index {i} 로 최근접 복원되어야 함"
+            );
+        }
+    }
+
+    #[test]
+    fn border_width_index_fixes_coarse_bucket_regression() {
+        // 종전 coarse bucket 이 변질시키던 실제 값들이 정확히 보존되는지 확인.
+        assert_eq!(border_width_index(0.4), 6); // 종전 2(→"0.15")로 변질
+        assert_eq!(border_width_mm_str(6), "0.4");
+        assert_eq!(border_width_index(0.6), 8); // 종전 3(→"0.2")로 변질
+        assert_eq!(border_width_mm_str(8), "0.6");
+        assert_eq!(border_width_index(0.1), 0);
+        assert_eq!(border_width_mm_str(0), "0.1");
+        // 범위 밖 index 는 기본값.
+        assert_eq!(border_width_mm_str(99), "0.1");
+    }
 
     #[test]
     fn test_char_shape_default() {

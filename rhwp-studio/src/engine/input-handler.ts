@@ -959,6 +959,11 @@ export class InputHandler {
     _table.moveSelectedPicture.call(this, key);
   }
 
+  /** 그림 객체 선택 모드에서 Shift+방향키로 개체 크기 조절 (#1231) */
+  private resizeSelectedPicture(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
+    _picture.resizeSelectedPicture.call(this, key);
+  }
+
   /** 마우스 드래그로 표 이동 — 드래그 중 갱신 */
   private updateMoveDrag(e: MouseEvent): void {
     _table.updateMoveDrag.call(this, e);

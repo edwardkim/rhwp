@@ -103,12 +103,16 @@ fn issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only() 
         has_text_node_at(&svg, 77.46666666666667, 122.42666666666668, "2"),
         "page auto number must render once at the first placeholder"
     );
+    // [#1382] fwSpace 의 x 앵커 100.47 → 103.83: autoNum 폭 축 일관화로 char_shapes
+    // 경계가 offsets 축(9)으로 정정되어, fwSpace 가 한컴 원본 run 구조대로 자동번호와
+    // 같은 run(charPrIDRef 63)의 스타일로 귀속된다 (종전엔 1유닛 축 경계 탓에 후속
+    // run 74 스타일로 잘못 귀속). 본 테스트의 의도(번호 1회 치환 + fwSpace 보존)는 불변.
     assert!(
-        has_text_node_at(&svg, 100.46666666666667, 122.42666666666668, "\u{2007}"),
+        has_text_node_at(&svg, 103.83066666666667, 122.42666666666668, "\u{2007}"),
         "the full-width space after the page auto number must remain a space"
     );
     assert!(
-        !has_text_node_at(&svg, 100.46666666666667, 122.42666666666668, "2"),
+        !has_text_node_at(&svg, 103.83066666666667, 122.42666666666668, "2"),
         "the full-width space after the page auto number must not be replaced by a second page number"
     );
 }

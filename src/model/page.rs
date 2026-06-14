@@ -34,6 +34,25 @@ pub struct PageDef {
     pub binding: BindingMethod,
 }
 
+impl PageDef {
+    /// 한컴 새 문서 기본 용지: A4 세로(210×297mm = 59528×84188 HWPUNIT),
+    /// 여백 좌우 30mm / 위 20mm / 아래 15mm / 머리말·꼬리말 15mm / 제본 0.
+    pub fn a4_default() -> Self {
+        PageDef {
+            width: 59528,
+            height: 84188,
+            margin_left: 8504,
+            margin_right: 8504,
+            margin_top: 5669,
+            margin_bottom: 4252,
+            margin_header: 4252,
+            margin_footer: 4252,
+            margin_gutter: 0,
+            ..Default::default()
+        }
+    }
+}
+
 /// 제책 방법
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum BindingMethod {

@@ -191,20 +191,20 @@
 <text x="289.28000000000003" y="404.90000000000003" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" fill="#000000">(</text>
 <text x="322.61333333333334" y="404.90000000000003" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="13.333333333333334" fill="#000000">)</text>
 </g>
-<line x1="60.00000000000001" y1="246.42666666666668" x2="739.0933333333332" y2="246.42666666666668" stroke="#000000" stroke-width="0.4"/>
-<line x1="60.00000000000001" y1="272.33333333333337" x2="739.0933333333332" y2="272.33333333333337" stroke="#000000" stroke-width="0.4"/>
-<line x1="60.00000000000001" y1="298.24" x2="739.0933333333332" y2="298.24" stroke="#000000" stroke-width="0.4"/>
-<line x1="60.00000000000001" y1="327.92" x2="739.0933333333332" y2="327.92" stroke="#000000" stroke-width="0.4"/>
-<line x1="60.00000000000001" y1="357.6" x2="739.0933333333332" y2="357.6" stroke="#000000" stroke-width="0.4"/>
-<line x1="195.81333333333333" y1="387.28000000000003" x2="392" y2="387.28000000000003" stroke="#000000" stroke-width="0.4"/>
-<line x1="60.00000000000001" y1="413.1866666666667" x2="739.0933333333332" y2="413.1866666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="60.00000000000001" y1="246.42666666666668" x2="60.00000000000001" y2="413.1866666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="195.81333333333333" y1="272.33333333333337" x2="195.81333333333333" y2="413.1866666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="392" y1="272.33333333333337" x2="392" y2="298.24" stroke="#000000" stroke-width="0.4"/>
-<line x1="392" y1="327.92" x2="392" y2="413.1866666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="561.7733333333333" y1="272.33333333333337" x2="561.7733333333333" y2="298.24" stroke="#000000" stroke-width="0.4"/>
-<line x1="561.7733333333333" y1="327.92" x2="561.7733333333333" y2="413.1866666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="739.0933333333332" y1="246.42666666666668" x2="739.0933333333332" y2="413.1866666666667" stroke="#000000" stroke-width="0.4"/>
+<line x1="60.00000000000001" y1="246.42666666666668" x2="739.0933333333332" y2="246.42666666666668" stroke="#000000" stroke-width="0.5"/>
+<line x1="60.00000000000001" y1="272.33333333333337" x2="739.0933333333332" y2="272.33333333333337" stroke="#000000" stroke-width="0.5"/>
+<line x1="60.00000000000001" y1="298.24" x2="739.0933333333332" y2="298.24" stroke="#000000" stroke-width="0.5"/>
+<line x1="60.00000000000001" y1="327.92" x2="739.0933333333332" y2="327.92" stroke="#000000" stroke-width="0.5"/>
+<line x1="60.00000000000001" y1="357.6" x2="739.0933333333332" y2="357.6" stroke="#000000" stroke-width="0.5"/>
+<line x1="195.81333333333333" y1="387.28000000000003" x2="392" y2="387.28000000000003" stroke="#000000" stroke-width="0.5"/>
+<line x1="60.00000000000001" y1="413.1866666666667" x2="739.0933333333332" y2="413.1866666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="60.00000000000001" y1="246.42666666666668" x2="60.00000000000001" y2="413.1866666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="195.81333333333333" y1="272.33333333333337" x2="195.81333333333333" y2="413.1866666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="392" y1="272.33333333333337" x2="392" y2="298.24" stroke="#000000" stroke-width="0.5"/>
+<line x1="392" y1="327.92" x2="392" y2="413.1866666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="561.7733333333333" y1="272.33333333333337" x2="561.7733333333333" y2="298.24" stroke="#000000" stroke-width="0.5"/>
+<line x1="561.7733333333333" y1="327.92" x2="561.7733333333333" y2="413.1866666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="739.0933333333332" y1="246.42666666666668" x2="739.0933333333332" y2="413.1866666666667" stroke="#000000" stroke-width="0.5"/>
 <text x="343.33333333333337" y="435.4666666666667" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">(</text>
 <text x="351.33333333333337" y="435.4666666666667" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">대</text>
 <text x="367.33333333333337" y="435.4666666666667" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" font-weight="bold" fill="#000000">리</text>
@@ -462,12 +462,12 @@
 <text x="292.36" y="994.7133333333335" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="14.666666666666666" fill="#000000">호</text>
 <text x="313.92" y="994.7133333333335" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="14.666666666666666" fill="#000000">:</text>
 </g>
-<line x1="82.4" y1="817.1333333333334" x2="682.28" y2="817.1333333333334" stroke="#000000" stroke-width="0.4"/>
-<line x1="82.4" y1="916.4533333333334" x2="682.28" y2="916.4533333333334" stroke="#000000" stroke-width="0.4"/>
-<line x1="82.4" y1="1015.7733333333334" x2="682.28" y2="1015.7733333333334" stroke="#000000" stroke-width="0.4"/>
-<line x1="82.4" y1="817.1333333333334" x2="82.4" y2="1015.7733333333334" stroke="#000000" stroke-width="0.4"/>
-<line x1="214.42666666666668" y1="817.1333333333334" x2="214.42666666666668" y2="1015.7733333333334" stroke="#000000" stroke-width="0.4"/>
-<line x1="682.28" y1="817.1333333333334" x2="682.28" y2="1015.7733333333334" stroke="#000000" stroke-width="0.4"/>
+<line x1="82.4" y1="817.1333333333334" x2="682.28" y2="817.1333333333334" stroke="#000000" stroke-width="0.5"/>
+<line x1="82.4" y1="916.4533333333334" x2="682.28" y2="916.4533333333334" stroke="#000000" stroke-width="0.5"/>
+<line x1="82.4" y1="1015.7733333333334" x2="682.28" y2="1015.7733333333334" stroke="#000000" stroke-width="0.5"/>
+<line x1="82.4" y1="817.1333333333334" x2="82.4" y2="1015.7733333333334" stroke="#000000" stroke-width="0.5"/>
+<line x1="214.42666666666668" y1="817.1333333333334" x2="214.42666666666668" y2="1015.7733333333334" stroke="#000000" stroke-width="0.5"/>
+<line x1="682.28" y1="817.1333333333334" x2="682.28" y2="1015.7733333333334" stroke="#000000" stroke-width="0.5"/>
 <text x="307.33333333333337" y="1062.52" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" fill="#000000" textLength="8.0000" lengthAdjust="spacingAndGlyphs">2</text>
 <text x="315.33333333333337" y="1062.52" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" fill="#000000" textLength="8.0000" lengthAdjust="spacingAndGlyphs">0</text>
 <text x="323.33333333333337" y="1062.52" font-family="굴림체,&apos;GulimChe&apos;,&apos;굴림체&apos;,&apos;D2Coding&apos;,&apos;Noto Sans Mono&apos;,monospace" font-size="16" fill="#000000" textLength="8.0000" lengthAdjust="spacingAndGlyphs">2</text>

@@ -968,6 +968,7 @@ fn test_expand_numbering_format_digit() {
         ],
         start_number: 0,
         level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
     };
     let counters = [3, 2, 1, 0, 0, 0, 0];
     let result =
@@ -1005,6 +1006,7 @@ fn test_expand_numbering_format_hangul() {
         ],
         start_number: 0,
         level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
     };
     let counters = [1, 3, 0, 0, 0, 0, 0];
     let result =

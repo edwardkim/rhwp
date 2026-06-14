@@ -40,6 +40,7 @@ mod tests {
                 alt_name: None,
                 type_info: None,
                 default_name: None,
+                subst_font: None,
             });
             (fonts.len() - 1) as u16
         };

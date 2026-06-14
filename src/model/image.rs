@@ -42,6 +42,11 @@ pub struct Picture {
     pub effects: PictureEffects,
     /// 캡션
     pub caption: Option<super::shape::Caption>,
+    /// HWPX `<hp:imgDim>` 원본 이미지 픽셀 크기 (#1389).
+    ///
+    /// imgClip extent 와 독립(전수 측정: 불일치 24/170) — 원본 이미지 픽셀 크기를
+    /// verbatim 보존한다. (dimwidth, dimheight). HWPX 파서만 적재.
+    pub img_dim: (u32, u32),
 }
 
 /// 자르기 정보

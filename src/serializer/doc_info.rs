@@ -476,6 +476,12 @@ pub fn serialize_char_shape(cs: &CharShape) -> Vec<u8> {
     // bits 21-24: emphasis_dot (강조점 종류)
     attr &= !(0x0F << 21);
     attr |= (cs.emphasis_dot as u32 & 0x0F) << 21;
+    // bit 25: use font space
+    if cs.use_font_space {
+        attr |= 1u32 << 25;
+    } else {
+        attr &= !(1u32 << 25);
+    }
     // bits 26-29: strike_shape (취소선 모양, 표 27 선 종류)
     attr &= !(0x0F << 26);
     attr |= (cs.strike_shape as u32 & 0x0F) << 26;

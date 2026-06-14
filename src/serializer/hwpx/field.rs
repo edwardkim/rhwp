@@ -30,7 +30,31 @@ pub fn write_bookmark<W: Write>(w: &mut Writer<W>, bm: &Bookmark) -> Result<(), 
 // <hp:fieldBegin> / <hp:fieldEnd>
 // =====================================================================
 
-/// `<hp:fieldBegin>` — 필드 시작 마커.
+/// `<hp:fieldBegin>` 여는 태그 + 속성 문자열을 만든다 (자기닫힘 `/>` 없이).
+///
+/// [#1391] parameters / memo subList 가 있으면 호출부가 자식을 채우고 `</hp:fieldBegin>`
+/// 로 닫는다. 없으면 호출부가 `/>` 로 자기닫힘 처리.
+pub fn field_begin_open_tag(field: &Field) -> String {
+    let id_str = field.field_id.to_string();
+    let ft = field_type_str(field.field_type);
+    let name = xml_escape_attr(field.ctrl_data_name.as_deref().unwrap_or(""));
+    format!(
+        r#"<hp:fieldBegin id="{}" type="{}" name="{}" editable="{}""#,
+        id_str,
+        ft,
+        name,
+        bool01(field.is_editable_in_form()),
+    )
+}
+
+fn xml_escape_attr(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+}
+
+/// `<hp:fieldBegin>` — 필드 시작 마커 (자식 없는 경우 자기닫힘).
 ///
 /// HWPX 필드는 텍스트 흐름 안에서 `<hp:fieldBegin>` ~ 텍스트 ~ `<hp:fieldEnd>` 쌍으로 표현된다.
 pub fn write_field_begin<W: Write>(w: &mut Writer<W>, field: &Field) -> Result<(), SerializeError> {

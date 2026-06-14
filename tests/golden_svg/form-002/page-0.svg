@@ -730,10 +730,10 @@
 <text x="620.9600000000002" y="845.4400000000002" font-family="휴먼명조,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="16" font-weight="bold" fill="#0000ff">립</text>
 <text x="636.6400000000001" y="845.4400000000002" font-family="휴먼명조,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="16" font-weight="bold" fill="#0000ff">화</text>
 </g>
-<line x1="92.34666666666666" y1="826.1866666666668" x2="702.4933333333333" y2="826.1866666666668" stroke="#000000" stroke-width="0.4" stroke-dasharray="6 3"/>
-<line x1="92.34666666666666" y1="853.4933333333335" x2="702.4933333333333" y2="853.4933333333335" stroke="#000000" stroke-width="0.4" stroke-dasharray="6 3"/>
-<line x1="92.34666666666666" y1="826.1866666666668" x2="92.34666666666666" y2="853.4933333333335" stroke="#000000" stroke-width="0.4" stroke-dasharray="6 3"/>
-<line x1="702.4933333333333" y1="826.1866666666668" x2="702.4933333333333" y2="853.4933333333335" stroke="#000000" stroke-width="0.4" stroke-dasharray="6 3"/>
+<line x1="92.34666666666666" y1="826.1866666666668" x2="702.4933333333333" y2="826.1866666666668" stroke="#000000" stroke-width="0.5" stroke-dasharray="6 3"/>
+<line x1="92.34666666666666" y1="853.4933333333335" x2="702.4933333333333" y2="853.4933333333335" stroke="#000000" stroke-width="0.5" stroke-dasharray="6 3"/>
+<line x1="92.34666666666666" y1="826.1866666666668" x2="92.34666666666666" y2="853.4933333333335" stroke="#000000" stroke-width="0.5" stroke-dasharray="6 3"/>
+<line x1="702.4933333333333" y1="826.1866666666668" x2="702.4933333333333" y2="853.4933333333335" stroke="#000000" stroke-width="0.5" stroke-dasharray="6 3"/>
 <text x="77.46666666666667" y="885.8533333333334" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="18.666666666666668" font-weight="bold" fill="#000000">□</text>
 <text x="105.46666666666667" y="885.8533333333334" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="18.666666666666668" font-weight="bold" fill="#000000">개</text>
 <text x="123.57333333333334" y="885.8533333333334" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="18.666666666666668" font-weight="bold" fill="#000000">발</text>
@@ -915,37 +915,37 @@
 <text x="654.9066666666664" y="997.0266666666668" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="16" fill="#000000">개</text>
 <text x="670.4266666666664" y="997.0266666666668" font-family="함초롬바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="16" fill="#000000">발</text>
 </g>
-<line x1="75.58666666666667" y1="94.48" x2="711.2266666666667" y2="94.48" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="132.69333333333333" x2="408.4666666666666" y2="132.69333333333333" stroke="#000000" stroke-width="0.4"/>
-<line x1="477.69333333333327" y1="132.69333333333333" x2="711.2266666666667" y2="132.69333333333333" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="159.12" x2="711.2266666666667" y2="159.12" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="185.54666666666668" x2="711.2266666666667" y2="185.54666666666668" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="211.97333333333336" x2="711.2266666666667" y2="211.97333333333336" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="238.40000000000003" x2="711.2266666666667" y2="238.40000000000003" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="258.16" x2="711.2266666666667" y2="258.16" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="277.92" x2="711.2266666666667" y2="277.92" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="297.68" x2="711.2266666666667" y2="297.68" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="317.44" x2="711.2266666666667" y2="317.44" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="337.2" x2="711.2266666666667" y2="337.2" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="363.62666666666667" x2="711.2266666666667" y2="363.62666666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="390.05333333333334" x2="711.2266666666667" y2="390.05333333333334" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="416.48" x2="711.2266666666667" y2="416.48" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="442.9066666666667" x2="711.2266666666667" y2="442.9066666666667" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="469.33333333333337" x2="711.2266666666667" y2="469.33333333333337" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="495.76000000000005" x2="711.2266666666667" y2="495.76000000000005" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="553.8933333333333" x2="711.2266666666667" y2="553.8933333333333" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="581.2" x2="258.04" y2="581.2" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="1010.5333333333335" x2="711.2266666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.4"/>
-<line x1="75.58666666666667" y1="94.48" x2="75.58666666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.4"/>
-<line x1="192.73333333333335" y1="94.48" x2="192.73333333333335" y2="553.8933333333333" stroke="#000000" stroke-width="0.4"/>
-<line x1="258.04" y1="553.8933333333333" x2="258.04" y2="581.2" stroke="#000000" stroke-width="0.4"/>
-<line x1="261.81333333333333" y1="238.40000000000003" x2="261.81333333333333" y2="337.2" stroke="#000000" stroke-width="0.4"/>
-<line x1="334.02666666666664" y1="442.9066666666667" x2="334.02666666666664" y2="469.33333333333337" stroke="#000000" stroke-width="0.4"/>
-<line x1="408.4666666666666" y1="94.48" x2="408.4666666666666" y2="159.12" stroke="#000000" stroke-width="0.4"/>
-<line x1="451.88" y1="442.9066666666667" x2="451.88" y2="469.33333333333337" stroke="#000000" stroke-width="0.4"/>
-<line x1="477.69333333333327" y1="94.48" x2="477.69333333333327" y2="159.12" stroke="#000000" stroke-width="0.4"/>
-<line x1="594.28" y1="94.48" x2="594.28" y2="159.12" stroke="#000000" stroke-width="0.4"/>
-<line x1="711.2266666666667" y1="94.48" x2="711.2266666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.4"/>
+<line x1="75.58666666666667" y1="94.48" x2="711.2266666666667" y2="94.48" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="132.69333333333333" x2="408.4666666666666" y2="132.69333333333333" stroke="#000000" stroke-width="0.5"/>
+<line x1="477.69333333333327" y1="132.69333333333333" x2="711.2266666666667" y2="132.69333333333333" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="159.12" x2="711.2266666666667" y2="159.12" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="185.54666666666668" x2="711.2266666666667" y2="185.54666666666668" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="211.97333333333336" x2="711.2266666666667" y2="211.97333333333336" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="238.40000000000003" x2="711.2266666666667" y2="238.40000000000003" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="258.16" x2="711.2266666666667" y2="258.16" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="277.92" x2="711.2266666666667" y2="277.92" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="297.68" x2="711.2266666666667" y2="297.68" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="317.44" x2="711.2266666666667" y2="317.44" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="337.2" x2="711.2266666666667" y2="337.2" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="363.62666666666667" x2="711.2266666666667" y2="363.62666666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="390.05333333333334" x2="711.2266666666667" y2="390.05333333333334" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="416.48" x2="711.2266666666667" y2="416.48" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="442.9066666666667" x2="711.2266666666667" y2="442.9066666666667" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="469.33333333333337" x2="711.2266666666667" y2="469.33333333333337" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="495.76000000000005" x2="711.2266666666667" y2="495.76000000000005" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="553.8933333333333" x2="711.2266666666667" y2="553.8933333333333" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="581.2" x2="258.04" y2="581.2" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="1010.5333333333335" x2="711.2266666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.5"/>
+<line x1="75.58666666666667" y1="94.48" x2="75.58666666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.5"/>
+<line x1="192.73333333333335" y1="94.48" x2="192.73333333333335" y2="553.8933333333333" stroke="#000000" stroke-width="0.5"/>
+<line x1="258.04" y1="553.8933333333333" x2="258.04" y2="581.2" stroke="#000000" stroke-width="0.5"/>
+<line x1="261.81333333333333" y1="238.40000000000003" x2="261.81333333333333" y2="337.2" stroke="#000000" stroke-width="0.5"/>
+<line x1="334.02666666666664" y1="442.9066666666667" x2="334.02666666666664" y2="469.33333333333337" stroke="#000000" stroke-width="0.5"/>
+<line x1="408.4666666666666" y1="94.48" x2="408.4666666666666" y2="159.12" stroke="#000000" stroke-width="0.5"/>
+<line x1="451.88" y1="442.9066666666667" x2="451.88" y2="469.33333333333337" stroke="#000000" stroke-width="0.5"/>
+<line x1="477.69333333333327" y1="94.48" x2="477.69333333333327" y2="159.12" stroke="#000000" stroke-width="0.5"/>
+<line x1="594.28" y1="94.48" x2="594.28" y2="159.12" stroke="#000000" stroke-width="0.5"/>
+<line x1="711.2266666666667" y1="94.48" x2="711.2266666666667" y2="1010.5333333333335" stroke="#000000" stroke-width="0.5"/>
 </g>
 <text x="387.85333333333335" y="1060.2266666666667" font-family="바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="10" fill="#000000">-</text>
 <text x="394.09333333333336" y="1060.2266666666667" font-family="바탕,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang Ext-B&apos;,&apos;함초롬바탕 확장B&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="10" fill="#000000" textLength="5.9467" lengthAdjust="spacingAndGlyphs">1</text>

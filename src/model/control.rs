@@ -229,6 +229,12 @@ pub struct Field {
     pub memo_index: u32,
     /// 메모 본문 문단 리스트 (`fieldBegin type="MEMO"` 내부 subList)
     pub memo_paragraphs: Vec<Paragraph>,
+    /// HWPX `<hp:parameters>` 요소 원문 verbatim (#1391).
+    ///
+    /// 전 fieldBegin 타입(MEMO/HYPERLINK/FORMULA/BOOKMARK 등)이 parameters 를
+    /// 가지나 IR 은 Command/Number 만 추출하므로, 무손실 roundtrip 을 위해 원문을
+    /// 그대로 보존한다 (HWP5 경로엔 무관 — HWPX 파서만 적재).
+    pub raw_parameters_xml: Option<String>,
 }
 
 impl Field {

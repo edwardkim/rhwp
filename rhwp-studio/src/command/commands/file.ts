@@ -4,6 +4,12 @@ import { AboutDialog } from '@/ui/about-dialog';
 import { showSaveAs } from '@/ui/save-as-dialog';
 import { showUnsavedChangesDialog } from '@/ui/unsaved-changes-dialog';
 import {
+  appendPrintStyle,
+  appendSvgPage,
+  createPrintPage,
+  type PrintPage,
+} from '@/command/print-pages';
+import {
   pickOpenFileHandle,
   readFileFromHandle,
   saveDocumentToFileSystem,
@@ -125,28 +131,6 @@ export async function confirmSaveBeforeReplacingDocument(
   return result === 'saved';
 }
 
-function appendPrintStyle(doc: Document, widthMm: number, heightMm: number): void {
-  const style = doc.createElement('style');
-  style.textContent = `
-@page { size: ${widthMm}mm ${heightMm}mm; margin: 0; }
-* { margin: 0; padding: 0; }
-body { background: #fff; }
-.page { page-break-after: always; width: ${widthMm}mm; height: ${heightMm}mm; overflow: hidden; }
-.page:last-child { page-break-after: auto; }
-.page svg { width: 100%; height: 100%; }
-@media screen {
-  body { background: #e5e7eb; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px; }
-  .page { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  .print-bar { position: fixed; top: 0; left: 0; right: 0; background: #1e293b; color: #fff; padding: 8px 16px; display: flex; align-items: center; gap: 12px; font: 14px sans-serif; z-index: 100; }
-  .print-bar button { padding: 6px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-  .print-bar button:hover { background: #1d4ed8; }
-  body { padding-top: 56px; }
-}
-@media print { .print-bar { display: none; } }
-`;
-  doc.head.appendChild(style);
-}
-
 function createPrintButton(doc: Document, id: string, label: string, background?: string): HTMLButtonElement {
   const button = doc.createElement('button');
   button.id = id;
@@ -156,27 +140,11 @@ function createPrintButton(doc: Document, id: string, label: string, background?
   return button;
 }
 
-function appendSvgPage(doc: Document, container: HTMLElement, svg: string): void {
-  const page = doc.createElement('div');
-  page.className = 'page';
-
-  const parsed = new DOMParser().parseFromString(svg, 'image/svg+xml');
-  const parseError = parsed.querySelector('parsererror');
-  if (parseError) {
-    throw new Error(`인쇄용 SVG 파싱 실패: ${parseError.textContent || 'parsererror'}`);
-  }
-
-  page.appendChild(doc.importNode(parsed.documentElement, true));
-  container.appendChild(page);
-}
-
 function setupPrintDocument(
   printWin: Window,
   fileName: string,
   pageCount: number,
-  widthMm: number,
-  heightMm: number,
-  svgPages: string[],
+  printPages: PrintPage[],
 ): void {
   const doc = printWin.document;
   doc.documentElement.lang = 'ko';
@@ -186,7 +154,7 @@ function setupPrintDocument(
   const meta = doc.createElement('meta');
   meta.setAttribute('charset', 'UTF-8');
   doc.head.appendChild(meta);
-  appendPrintStyle(doc, widthMm, heightMm);
+  appendPrintStyle(doc, printPages);
 
   const printBar = doc.createElement('div');
   printBar.className = 'print-bar';
@@ -197,8 +165,8 @@ function setupPrintDocument(
   printBar.append(printButton, closeButton, title);
 
   doc.body.replaceChildren(printBar);
-  for (const svg of svgPages) {
-    appendSvgPage(doc, doc.body, svg);
+  for (const printPage of printPages) {
+    appendSvgPage(doc, doc.body, printPage);
   }
 
   printButton.addEventListener('click', () => {
@@ -346,19 +314,15 @@ export const fileCommands: CommandDef[] = [
 
       try {
         // SVG 페이지 생성
-        const svgPages: string[] = [];
+        const printPages: PrintPage[] = [];
         for (let i = 0; i < pageCount; i++) {
           if (statusEl) statusEl.textContent = `인쇄 준비 중... (${i + 1}/${pageCount})`;
           const svg = wasm.renderPageSvg(i);
-          svgPages.push(svg);
+          const pageInfo = wasm.getPageInfo(i);
+          printPages.push(createPrintPage(svg, pageInfo, i));
           // UI 갱신을 위한 양보
           if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
         }
-
-        // 첫 페이지 정보로 용지 크기 결정
-        const pageInfo = wasm.getPageInfo(0);
-        const widthMm = Math.round(pageInfo.width * 25.4 / 96);
-        const heightMm = Math.round(pageInfo.height * 25.4 / 96);
 
         // 인쇄 전용 창 생성
         const printWin = window.open('', '_blank');
@@ -367,7 +331,7 @@ export const fileCommands: CommandDef[] = [
           return;
         }
 
-        setupPrintDocument(printWin, wasm.fileName, pageCount, widthMm, heightMm, svgPages);
+        setupPrintDocument(printWin, wasm.fileName, pageCount, printPages);
 
         if (statusEl) statusEl.textContent = origStatus;
       } catch (err) {
