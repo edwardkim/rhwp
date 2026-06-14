@@ -1098,7 +1098,21 @@ impl DocumentCore {
         // section/para/control 은 페이지 각주 정보에서 채운다.
         {
             use serde_json::Value;
-            let in_fn = self.hit_test_in_footnote_native(page_num, x, y)?;
+            // Gate on the footnote AREA first: hit_test_in_footnote has a
+            // "nearest footnote" fallback that would otherwise claim BODY clicks
+            // (it returns a hit for a body point far above the footnotes).
+            // hit_test_footnote is the strict area test (false in the body).
+            let in_area = self
+                .hit_test_footnote_native(page_num, x, y)
+                .ok()
+                .and_then(|s| serde_json::from_str::<Value>(&s).ok())
+                .map(|v| v.get("hit").and_then(Value::as_bool).unwrap_or(false))
+                .unwrap_or(false);
+            let in_fn = if in_area {
+                self.hit_test_in_footnote_native(page_num, x, y)?
+            } else {
+                "{\"hit\":false}".to_string()
+            };
             if let Ok(f) = serde_json::from_str::<Value>(&in_fn) {
                 if f.get("hit").and_then(Value::as_bool).unwrap_or(false) {
                     let fi = f.get("footnoteIndex").and_then(Value::as_u64).unwrap_or(0) as usize;
