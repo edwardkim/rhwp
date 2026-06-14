@@ -2109,6 +2109,164 @@ impl DocumentCore {
         }
     }
 
+    /// 한 점 (x,y) 아래의 요소를 해석해 doc.* ref·타입·하이라이트 rects 를 돌려준다.
+    ///
+    /// 프런트(HWP 브라우저 에디터)가 손으로 하던 히트테스트 전체를 엔진이 권위
+    /// 있게 수행한다: 각주 마커 → 포함 컨트롤(그림/도형/표/수식) → 셀/문단, 그리고
+    /// 셀 bbox / 다단 칼럼 밴딩 하이라이트까지. 프런트는 얇은 렌더러가 된다
+    /// (포함 판정·rect 밴딩·`?? 0` 폴백 없음).
+    ///
+    /// 반환 JSON:
+    ///   `{"type":"footnote|picture|shape|table|equation|cell|paragraph",
+    ///     "ref":<doc.* ref>, "rects":[{pageIndex,x,y,width,height}…],
+    ///     "footnoteNumber"?:n, "controlIndex"?:n}`
+    pub fn pick_at_point_native(&self, page_num: u32, x: f64, y: f64) -> Result<String, HwpError> {
+        use serde_json::Value;
+
+        let f = |v: &Value, k: &str| v.get(k).and_then(Value::as_f64).unwrap_or(0.0);
+        let u = |v: &Value, k: &str| v.get(k).and_then(Value::as_u64).unwrap_or(0);
+        let rect = |page: u64, x: f64, y: f64, w: f64, h: f64| {
+            format!(
+                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}}",
+                page, x, y, w, h
+            )
+        };
+
+        // 줄 rects 를 칼럼 밴드별로 합친다: x-구간이 겹치는 줄끼리(= 같은 칼럼)
+        // 묶어 밴드별 합집합. 다단에서 페이지폭 박스(칼럼+거터+칼럼)를 막는다.
+        fn band_rects_by_column(rects: &[serde_json::Value]) -> String {
+            struct Band {
+                x1: f64,
+                y1: f64,
+                x2: f64,
+                y2: f64,
+            }
+            let mut by_page: std::collections::BTreeMap<u64, Vec<Band>> =
+                std::collections::BTreeMap::new();
+            for r in rects {
+                let page = r.get("pageIndex").and_then(serde_json::Value::as_u64).unwrap_or(0);
+                let rx1 = r.get("x").and_then(serde_json::Value::as_f64).unwrap_or(0.0);
+                let ry1 = r.get("y").and_then(serde_json::Value::as_f64).unwrap_or(0.0);
+                let rx2 = rx1 + r.get("width").and_then(serde_json::Value::as_f64).unwrap_or(0.0);
+                let ry2 = ry1 + r.get("height").and_then(serde_json::Value::as_f64).unwrap_or(0.0);
+                let bands = by_page.entry(page).or_default();
+                match bands.iter_mut().find(|b| rx1 < b.x2 && rx2 > b.x1) {
+                    Some(b) => {
+                        b.x1 = b.x1.min(rx1);
+                        b.y1 = b.y1.min(ry1);
+                        b.x2 = b.x2.max(rx2);
+                        b.y2 = b.y2.max(ry2);
+                    }
+                    None => bands.push(Band { x1: rx1, y1: ry1, x2: rx2, y2: ry2 }),
+                }
+            }
+            let mut out: Vec<String> = Vec::new();
+            for (page, bands) in by_page {
+                for b in bands {
+                    out.push(format!(
+                        "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}}",
+                        page, b.x1, b.y1, b.x2 - b.x1, b.y2 - b.y1
+                    ));
+                }
+            }
+            format!("[{}]", out.join(","))
+        }
+
+        // ── 1) 각주 마커가 최우선 ──
+        if let Ok(m) =
+            serde_json::from_str::<Value>(&self.hit_test_body_footnote_marker_native(page_num, x, y)?)
+        {
+            if m.get("hit").and_then(Value::as_bool).unwrap_or(false) {
+                let b = m.get("bbox").cloned().unwrap_or(Value::Null);
+                let number = m.get("footnoteNumber").and_then(Value::as_i64).unwrap_or(0);
+                return Ok(format!(
+                    "{{\"type\":\"footnote\",\"ref\":{{\"section\":{},\"paragraph\":{},\"control\":{},\"subParagraph\":0}},\"rects\":[{}],\"footnoteNumber\":{},\"controlIndex\":{}}}",
+                    u(&m, "sectionIndex"), u(&m, "paragraphIndex"), u(&m, "controlIndex"),
+                    rect(page_num as u64, f(&b, "x"), f(&b, "y"), f(&b, "w"), f(&b, "h")),
+                    number, u(&m, "controlIndex")
+                ));
+            }
+        }
+
+        // ── 2) 기본 텍스트 히트(문단/셀) ──
+        let hit: Value = serde_json::from_str(&self.hit_test_native(page_num, x, y)?)
+            .map_err(|e| HwpError::RenderError(e.to_string()))?;
+        let section = u(&hit, "sectionIndex") as usize;
+        let paragraph = u(&hit, "paragraphIndex") as usize;
+        let is_cell = hit.get("cellIndex").is_some();
+
+        // ── 3) 포함 컨트롤(셀 히트가 아닐 때만; 인라인 컨트롤은 char 로 잡힌다) ──
+        if !is_cell {
+            if let Ok(layout) =
+                serde_json::from_str::<Value>(&self.get_page_control_layout_native(page_num)?)
+            {
+                if let Some(controls) = layout.get("controls").and_then(Value::as_array) {
+                    for c in controls {
+                        if c.get("secIdx").and_then(Value::as_u64).unwrap_or(0) as usize != section {
+                            continue;
+                        }
+                        if c.get("paraIdx").and_then(Value::as_u64) != Some(paragraph as u64) {
+                            continue;
+                        }
+                        let (cx, cy, cw, ch) = (f(c, "x"), f(c, "y"), f(c, "w"), f(c, "h"));
+                        if x < cx || x > cx + cw || y < cy || y > cy + ch {
+                            continue;
+                        }
+                        let ctype = c.get("type").and_then(Value::as_str).unwrap_or("shape");
+                        let cidx = u(c, "controlIdx");
+                        return Ok(format!(
+                            "{{\"type\":\"{}\",\"ref\":{{\"section\":{},\"paragraph\":{},\"control\":{},\"type\":\"{}\"}},\"rects\":[{}],\"controlIndex\":{}}}",
+                            ctype, section, paragraph, cidx, ctype,
+                            rect(page_num as u64, cx, cy, cw, ch), cidx
+                        ));
+                    }
+                }
+            }
+        }
+
+        // ── 4) 셀/문단 요소 + 엔진 계산 하이라이트 rects ──
+        if is_cell {
+            let parent = u(&hit, "parentParaIndex") as usize;
+            let ctrl = u(&hit, "controlIndex") as usize;
+            let cell_idx = u(&hit, "cellIndex");
+            let cell_para = u(&hit, "cellParaIndex");
+            let mut rects = String::from("[]");
+            if let Ok(boxes) =
+                serde_json::from_str::<Value>(&self.get_table_cell_bboxes_native(section, parent, ctrl)?)
+            {
+                if let Some(b) = boxes.as_array().and_then(|a| {
+                    a.iter()
+                        .find(|b| b.get("cellIdx").and_then(Value::as_u64) == Some(cell_idx))
+                }) {
+                    rects = format!(
+                        "[{}]",
+                        rect(u(b, "pageIndex"), f(b, "x"), f(b, "y"), f(b, "w"), f(b, "h"))
+                    );
+                }
+            }
+            let cell_path = hit
+                .get("cellPath")
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "[]".to_string());
+            return Ok(format!(
+                "{{\"type\":\"cell\",\"ref\":{{\"section\":{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{},\"cellPath\":{}}},\"rects\":{}}}",
+                section, parent, ctrl, cell_idx, cell_para, cell_path, rects
+            ));
+        }
+
+        // 문단: 줄 rects 를 칼럼 밴드별로 합쳐 하이라이트.
+        let para_len = self.get_paragraph_length_native(section, paragraph).unwrap_or(0);
+        let sel: Value = serde_json::from_str(&self.get_selection_rects_native(
+            section, paragraph, 0, paragraph, para_len, None,
+        )?)
+        .unwrap_or_else(|_| Value::Array(vec![]));
+        let rects = band_rects_by_column(sel.as_array().map(|v| v.as_slice()).unwrap_or(&[]));
+        Ok(format!(
+            "{{\"type\":\"paragraph\",\"ref\":{{\"section\":{},\"paragraph\":{},\"offset\":{}}},\"rects\":{}}}",
+            section, paragraph, u(&hit, "charOffset"), rects
+        ))
+    }
+
     /// 표 셀 내부 커서의 픽셀 좌표를 반환한다 (네이티브)
     pub fn get_cursor_rect_in_cell_native(
         &self,

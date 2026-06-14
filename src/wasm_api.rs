@@ -1892,6 +1892,14 @@ impl HwpDocument {
         self.hit_test_native(page_num, x, y).map_err(|e| e.into())
     }
 
+    /// 한 점 아래의 요소를 *해석*해 doc.* ref·타입·하이라이트 rects 를 돌려준다.
+    /// `hitTest` 가 char offset 만 주는 것과 달리, 각주 마커·포함 컨트롤·셀/문단을
+    /// 우선순위대로 풀어 프런트가 손으로 하던 히트테스트(+rect 밴딩)를 일원화한다.
+    #[wasm_bindgen(js_name = pickAtPoint)]
+    pub fn pick_at_point(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
+        self.pick_at_point_native(page_num, x, y).map_err(|e| e.into())
+    }
+
     /// 머리말/꼬리말 내 커서 위치의 픽셀 좌표를 반환한다.
     ///
     /// preferred_page: 선호 페이지 (더블클릭한 페이지). -1이면 첫 번째 발견 페이지 사용.
