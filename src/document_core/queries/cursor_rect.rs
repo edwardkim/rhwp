@@ -1063,6 +1063,34 @@ impl DocumentCore {
         use crate::renderer::layout::{compute_char_positions, CellContext, CellPathEntry};
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
+        // [각주 캐럿] 본문 각주 마커를 클릭하면 캐럿이 각주 본문 안으로 들어간다
+        // (워드프로세서 표준: 마크 클릭 → 각주 편집 진입). 캐럿 히트를 *엔진*이
+        // 각주 안 위치로 해석해 돌려주므로, 프런트의 일반 캐럿 배치가 그대로 각주
+        // 안에 떨어진다(프런트에 각주 분기 불필요 — 캐럿 히트 자체를 확장). 마커
+        // 히트(패딩 적용)가 footnoteIndex 를 주고, 진입 위치는 각주 첫 편집 지점
+        // (inner para 0, char offset 2 — "  " 마커 다음)이다. note 컨텍스트를 함께
+        // 실어 프런트가 셀 컨텍스트처럼 입력을 각주로 라우팅할 수 있게 한다.
+        {
+            use serde_json::Value;
+            let marker = self.hit_test_body_footnote_marker_native(page_num, x, y)?;
+            if let Ok(m) = serde_json::from_str::<Value>(&marker) {
+                if m.get("hit").and_then(Value::as_bool).unwrap_or(false) {
+                    let fi = m.get("footnoteIndex").and_then(Value::as_u64).unwrap_or(0) as usize;
+                    let sec = m.get("sectionIndex").and_then(Value::as_u64).unwrap_or(0);
+                    let para = m.get("paragraphIndex").and_then(Value::as_u64).unwrap_or(0);
+                    let ctrl = m.get("controlIndex").and_then(Value::as_u64).unwrap_or(0);
+                    if let Ok(rect) =
+                        self.get_cursor_rect_in_footnote_native(page_num, fi, 0, 2)
+                    {
+                        return Ok(format!(
+                            "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":2,\"note\":{{\"controlIndex\":{},\"footnoteIndex\":{},\"innerParaIndex\":0}},\"cursorRect\":{}}}",
+                            sec, para, ctrl, fi, rect
+                        ));
+                    }
+                }
+            }
+        }
+
         let tree = self.build_page_tree_cached(page_num)?;
 
         // 문자 위치를 미리 계산한 TextRun 정보
