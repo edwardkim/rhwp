@@ -295,6 +295,9 @@ fn has_payload_resource_digest_key(
     outline: &crate::paint::LayerGlyphOutlinePaint,
     resources: &ResourceArena,
 ) -> bool {
+    if !outline.has_payload_resource_key() {
+        return false;
+    }
     match outline.payload_kind {
         GlyphOutlinePayloadKind::BitmapGlyph => outline
             .bitmap_glyph
@@ -3384,6 +3387,18 @@ mod tests {
         };
         assert!(!incomplete_bitmap_outline.has_payload_resource_key());
         assert!(incomplete_bitmap_outline.payload_resource_key().is_none());
+        let mut resources = ResourceArena::default();
+        let invalid_image_id = resources.intern_image_bytes(&[1, 2, 3, 4]);
+        let mut invalid_bitmap_with_resource = incomplete_bitmap_outline.clone();
+        invalid_bitmap_with_resource
+            .bitmap_glyph
+            .as_mut()
+            .unwrap()
+            .image_ref = invalid_image_id;
+        assert!(!has_payload_resource_digest_key(
+            &invalid_bitmap_with_resource,
+            &resources
+        ));
         let bitmap_outline = PaintOp::GlyphOutline {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
