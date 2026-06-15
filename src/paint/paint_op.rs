@@ -2,10 +2,7 @@ use crate::model::style::UnderlineType;
 use crate::model::ColorRef;
 use crate::paint::font::{GlyphRunReplayEligibility, ShapeKey, TextDirection, WritingMode};
 use crate::paint::layer_tree::{TextSourceRange, TextSourceSpan};
-use crate::paint::resources::{
-    image_resource_key, resource_digest_hex, svg_resource_key, ImageResourceId, ResourceArena,
-    SvgResourceId,
-};
+use crate::paint::resources::{ImageResourceId, ResourceArena, SvgResourceId};
 use crate::renderer::render_tree::{
     BoundingBox, EllipseNode, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
     LineNode, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode,
@@ -372,13 +369,11 @@ fn bitmap_glyph_payload_resource_key(
         payload.filtering.as_str(),
         optional_affine_key(payload.transform_to_run),
     );
-    if let Some(resource_key) = resources.and_then(|resources| {
-        resources
-            .image_bytes(payload.image_ref)
-            .map(|bytes| image_resource_key(bytes.len(), resource_digest_hex(bytes).as_str()))
-    }) {
+    if let Some(resource_key) =
+        resources.and_then(|resources| resources.image_resource_key(payload.image_ref))
+    {
         key.push_str(":resource:");
-        key.push_str(&resource_key);
+        key.push_str(resource_key);
     }
     key
 }
@@ -404,13 +399,11 @@ fn svg_glyph_payload_resource_key(
         payload.interactivity_allowed,
         optional_affine_key(payload.transform_to_run),
     );
-    if let Some(resource_key) = resources.and_then(|resources| {
-        resources
-            .svg_fragment(payload.svg_ref)
-            .map(|svg| svg_resource_key(svg.len(), resource_digest_hex(svg.as_bytes()).as_str()))
-    }) {
+    if let Some(resource_key) =
+        resources.and_then(|resources| resources.svg_resource_key(payload.svg_ref))
+    {
         key.push_str(":resource:");
-        key.push_str(&resource_key);
+        key.push_str(resource_key);
     }
     key
 }

@@ -27,6 +27,39 @@ use crate::renderer::{
     ShadowStyle, ShapeStyle, StrokeDash, TabLeaderInfo, TextStyle,
 };
 
+const KNOWN_TEXT_FEATURES: &[&str] = &[
+    "fontResources",
+    "fontResources.blobFaceSplit",
+    "text.variantGroups",
+    "text.shapeDiagnostics",
+    "text.v2.diagnostics",
+    "text.v2.slotDiagnostics",
+    "text.v2.validationIssues",
+    "text.lineBreakRiskTelemetry",
+    "text.fallbackFreeStrictProfile",
+    "text.glyphRun",
+    "text.outlineGlyph",
+    "text.glyphOutline",
+    "text.glyphOutline.strictSidecar",
+    "text.glyphOutline.monochromeFill",
+    "text.glyphOutline.monochromeFillStroke",
+    "text.glyphOutline.colorLayers",
+    "text.glyphOutline.colorLayers.colrV0",
+    "text.glyphOutline.colorLayers.colrV1",
+    "text.glyphOutline.bitmapGlyph",
+    "text.glyphOutline.svgGlyph",
+    "text.glyphOutline.svgGlyph.vectorResourceId",
+    "text.glyphOutline.payloadResourceKey",
+    "text.glyphOutline.payloadResourceDigestKey",
+    "text.specialVisualOps",
+    "text.charOverlapOp",
+    "text.controlMarkOp",
+    "text.tabLeaderOp",
+    "text.decorationOp",
+    "text.displayText",
+    "text.vertical.mixedPerGlyph",
+];
+
 impl PageLayerTree {
     pub fn to_json(&self) -> String {
         let mut buf = String::with_capacity(32_768);
@@ -158,7 +191,14 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
         }
         buf.push_str(&json_escape(feature));
     }
-    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.glyphOutline.colorLayers\",\"text.glyphOutline.colorLayers.colrV0\",\"text.glyphOutline.colorLayers.colrV1\",\"text.glyphOutline.bitmapGlyph\",\"text.glyphOutline.svgGlyph\",\"text.glyphOutline.svgGlyph.vectorResourceId\",\"text.glyphOutline.payloadResourceKey\",\"text.glyphOutline.payloadResourceDigestKey\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"knownFeatures\":[");
+    for (idx, feature) in KNOWN_TEXT_FEATURES.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        buf.push_str(&json_escape(feature));
+    }
+    buf.push_str("],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -2509,18 +2549,18 @@ mod tests {
     use super::*;
     use crate::model::shape::TextWrap;
     use crate::paint::{
-        image_resource_key, resource_digest_hex, svg_resource_key, BitmapGlyphFiltering,
-        BitmapGlyphPayload, BitmapGlyphScalingPolicy, CacheHint, ClipKind, ColorGlyphFormat,
-        ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind, ColorPaintGraphPayload,
-        ColorPaintSolidPathNode, FontColorGlyphRef, FontFaceKey, FontFallbackPolicyId,
-        FontInstanceKey, GlyphCluster, GlyphOutlineFillRule, GlyphOutlinePayloadKind,
-        GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange,
-        GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, GroupKind,
-        ImageResourceId, LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath,
-        LayerGlyphRunPaint, LayerNode, LayerPoint, LayerVector, PageLayerTree, PaintTextStyle,
-        PaintVariantMeta, ResolvedColor, ScriptTag, ShapeKey, ShapingEngineId, SvgGlyphPayload,
-        SvgResourceId, TextDecorationKind, TextDirection, TextSourceId, TextSourceRange,
-        TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode,
+        BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, CacheHint, ClipKind,
+        ColorGlyphFormat, ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind,
+        ColorPaintGraphPayload, ColorPaintSolidPathNode, FontColorGlyphRef, FontFaceKey,
+        FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
+        GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
+        GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
+        GlyphRunReplayEligibility, GroupKind, ImageResourceId, LayerAffineTransform,
+        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
+        LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta, ResolvedColor, ScriptTag,
+        ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDecorationKind,
+        TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
+        TextVariantQuality, WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -3430,22 +3470,18 @@ mod tests {
         );
         let image_bytes = [0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a];
         let svg_fragment = "<path d=\"M0 0H10V10Z\"/>";
-        assert_eq!(
-            tree.resources.intern_image_bytes(&image_bytes),
-            ImageResourceId(0)
-        );
-        assert_eq!(
-            tree.resources.intern_svg_fragment(svg_fragment),
-            SvgResourceId(0)
-        );
+        let image_id = tree.resources.intern_image_bytes(&image_bytes);
+        let svg_id = tree.resources.intern_svg_fragment(svg_fragment);
+        assert_eq!(image_id, ImageResourceId(0));
+        assert_eq!(svg_id, SvgResourceId(0));
+        let image_resource_key = tree
+            .resources
+            .image_resource_key(image_id)
+            .unwrap()
+            .to_string();
+        let svg_resource_key = tree.resources.svg_resource_key(svg_id).unwrap().to_string();
 
         let json = tree.to_json();
-        let image_resource_key =
-            image_resource_key(image_bytes.len(), &resource_digest_hex(image_bytes));
-        let svg_resource_key = svg_resource_key(
-            svg_fragment.len(),
-            &resource_digest_hex(svg_fragment.as_bytes()),
-        );
 
         assert!(json.contains("\"schemaMinorVersion\":17"));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
@@ -3458,6 +3494,14 @@ mod tests {
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));
         assert!(json.contains("\"text.glyphOutline.payloadResourceDigestKey\""));
         assert!(json.contains("\"text.glyphOutline.svgGlyph.vectorResourceId\""));
+    }
+
+    #[test]
+    fn known_text_features_are_unique() {
+        let mut seen = std::collections::BTreeSet::new();
+        for feature in KNOWN_TEXT_FEATURES {
+            assert!(seen.insert(*feature), "duplicate known feature: {feature}");
+        }
     }
 
     #[test]
