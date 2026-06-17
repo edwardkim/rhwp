@@ -234,6 +234,57 @@ fn copying_clickhere_preserves_field_control_after_structural_controls_are_strip
 }
 
 #[test]
+fn pasted_clickhere_reports_field_and_following_input_stays_outside() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("create blank document");
+    core.insert_click_here_field_at(0, 0, 0, "입력하세요", "", "copied", true)
+        .expect("insert clickhere");
+    assert!(core.set_active_field(0, 0, 0));
+    core.insert_text_native(0, 0, 0, "123")
+        .expect("fill clickhere");
+    core.clear_active_field();
+
+    core.copy_selection_native(0, 0, 0, 0, 3)
+        .expect("copy clickhere value");
+    let paste_json = core
+        .paste_internal_native(0, 0, 3)
+        .expect("paste clickhere after original");
+    let paste: Value = serde_json::from_str(&paste_json).expect("parse paste result");
+    assert_eq!(
+        paste["containsField"], true,
+        "Studio paste handler needs this flag to leave caret outside the pasted ClickHere: {paste_json}"
+    );
+    assert_eq!(paste["charOffset"].as_u64(), Some(6));
+
+    // Studio는 containsField=true를 받으면 마지막 누름틀 끝 경계를 필드 바깥으로 표시한다.
+    core.clear_active_field();
+    core.insert_text_native(0, 0, 6, "X")
+        .expect("following input should be body text");
+
+    let fields = core.collect_all_fields();
+    let click_fields: Vec<_> = fields
+        .iter()
+        .filter(|f| f.field.field_type == FieldType::ClickHere)
+        .collect();
+    assert_eq!(click_fields.len(), 2);
+    let para = &core.document().sections[0].paragraphs[0];
+    assert_eq!(para.text, "123123X");
+    let ranges: Vec<_> = click_fields
+        .iter()
+        .map(|field| {
+            let range = &para.field_ranges[field.field_range_index];
+            (
+                range.start_char_idx,
+                range.end_char_idx,
+                field.value.as_str(),
+            )
+        })
+        .collect();
+    assert_eq!(ranges, vec![(0, 3, "123"), (3, 6, "123")]);
+}
+
+#[test]
 fn copying_clickhere_after_prefix_preserves_field_value() {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native()
@@ -403,6 +454,29 @@ fn adjacent_clickhere_input_prefers_new_empty_field_at_shared_boundary() {
         shared_info.contains(r#""isGuide":true"#),
         "shared boundary should expose second field as guide: {}",
         shared_info
+    );
+
+    let guide_rect: Value = serde_json::from_str(
+        &core
+            .get_cursor_rect_native(0, 0, 6)
+            .expect("second guide cursor rect"),
+    )
+    .expect("parse second guide cursor rect");
+    let guide_x = guide_rect["x"].as_f64().expect("guide x");
+    let guide_y = guide_rect["y"].as_f64().expect("guide y");
+    let guide_h = guide_rect["height"].as_f64().expect("guide height");
+    let guide_hit = core
+        .hit_test_native(0, guide_x + 6.0, guide_y + guide_h / 2.0)
+        .expect("hit test second guide");
+    assert!(
+        guide_hit.contains(&format!(r#""fieldId":{}"#, second_id)),
+        "mouse hit on second guide should resolve to second clickhere: {}",
+        guide_hit
+    );
+    assert!(
+        guide_hit.contains(r#""charOffset":6"#),
+        "mouse hit on second guide should keep shared boundary offset: {}",
+        guide_hit
     );
 
     assert!(

@@ -220,6 +220,12 @@ export const editCommands: CommandDef[] = [
       if (!props.ok) return;
 
       const dialog = new FieldEditDialog();
+      const restoreEditorFocus = () => {
+        requestAnimationFrame(() => {
+          (ih as any).updateCaret?.();
+          ih.focus();
+        });
+      };
       dialog.onApply = (newProps) => {
         console.log('[field:edit] apply:', newProps);
         const result = services.wasm.updateClickHereProps(
@@ -227,9 +233,11 @@ export const editCommands: CommandDef[] = [
         );
         console.log('[field:edit] updateResult:', result);
         if (result.ok) {
-          services.eventBus.emit('document-changed');
+          services.eventBus.emit('document-mutated', 'field-edit');
+          services.eventBus.emit('document-changed', 'field-edit');
         }
       };
+      dialog.onClose = restoreEditorFocus;
       dialog.showWith({
         guide: props.guide ?? '',
         memo: props.memo ?? '',

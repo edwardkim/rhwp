@@ -164,9 +164,6 @@ export class EquationPropertiesDialog {
         this.hide();
       }
     });
-    this.overlay.addEventListener('mousedown', (e) => {
-      if (e.target === this.overlay) this.hide();
-    });
 
     enableDialogDrag(this.dialog, titleBar);
   }

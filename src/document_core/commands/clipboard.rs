@@ -16,6 +16,10 @@ use crate::model::paragraph::{FieldRange, LineSeg, Paragraph};
 /// 약 2mm (1mm = 7200/25.4 ≈ 283.46 HWPUNIT). 한컴 정합은 작업지시자 시각 대조로 미세조정.
 const PASTE_CASCADE_STEP_HU: u32 = 567;
 
+fn clipboard_paragraphs_contain_field(paragraphs: &[Paragraph]) -> bool {
+    paragraphs.iter().any(|para| !para.field_ranges.is_empty())
+}
+
 fn clipboard_control_char_code(ctrl: &Control) -> u16 {
     match ctrl {
         Control::SectionDef(_) | Control::ColumnDef(_) => 0x0002,
@@ -562,6 +566,7 @@ impl DocumentCore {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
+        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
 
         // 인덱스 검증
         if section_idx >= self.document.sections.len() {
@@ -613,8 +618,8 @@ impl DocumentCore {
                 para: para_idx,
             });
             return Ok(super::super::helpers::json_ok_with(&format!(
-                "\"paraIdx\":{},\"charOffset\":{}",
-                para_idx, new_offset
+                "\"paraIdx\":{},\"charOffset\":{},\"containsField\":{}",
+                para_idx, new_offset, contains_field
             )));
         }
 
@@ -666,8 +671,8 @@ impl DocumentCore {
             para: para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"paraIdx\":{},\"charOffset\":{}",
-            last_para_idx, merge_point
+            "\"paraIdx\":{},\"charOffset\":{},\"containsField\":{}",
+            last_para_idx, merge_point, contains_field
         )))
     }
 
@@ -737,6 +742,7 @@ impl DocumentCore {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
+        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
         self.renumber_pasted_field_ids(&mut clip_paras);
 
         let (last_para_idx, merge_point) = {
@@ -801,8 +807,8 @@ impl DocumentCore {
             para: parent_para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"cellParaIdx\":{},\"charOffset\":{}",
-            last_para_idx, merge_point
+            "\"cellParaIdx\":{},\"charOffset\":{},\"containsField\":{}",
+            last_para_idx, merge_point, contains_field
         )))
     }
 
@@ -818,6 +824,7 @@ impl DocumentCore {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
+        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
         self.renumber_pasted_field_ids(&mut clip_paras);
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
@@ -846,8 +853,8 @@ impl DocumentCore {
             para: parent_para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"cellParaIdx\":{},\"charOffset\":{}",
-            last_para_idx, merge_point
+            "\"cellParaIdx\":{},\"charOffset\":{},\"containsField\":{}",
+            last_para_idx, merge_point, contains_field
         )))
     }
 

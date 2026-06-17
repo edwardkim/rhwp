@@ -13,6 +13,7 @@
 import type { PictureProperties, ShapeProperties, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
+import { userSettings } from '@/core/user-settings';
 import { enableDialogDrag } from './dialog-drag';
 
 /** HWPUNIT ↔ mm 변환 상수 (1 inch = 25.4 mm = 7200 HWPUNIT) */
@@ -82,6 +83,8 @@ export class PicturePropsDialog {
   private widthInput!: HTMLInputElement;
   private heightInput!: HTMLInputElement;
   private sizeFixedCheck!: HTMLInputElement;
+  private keepRatioCheck!: HTMLInputElement;
+  private syncingBasicSize = false;
   private originalWidth = 0;
   private originalHeight = 0;
 
@@ -343,12 +346,9 @@ export class PicturePropsDialog {
     this.dialog.appendChild(mainRow);
     this.overlay.appendChild(this.dialog);
 
-    // Escape / 오버레이 클릭
+    // Escape
     this.overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); this.hide(); }
-    });
-    this.overlay.addEventListener('mousedown', (e) => {
-      if (e.target === this.overlay) this.hide();
     });
 
     enableDialogDrag(this.dialog, titleBar);
@@ -431,21 +431,38 @@ export class PicturePropsDialog {
     const sfLabel = this.checkboxLabel('크기 고정(S)');
     this.sizeFixedCheck = sfLabel.querySelector('input') as HTMLInputElement;
     hRow.appendChild(sfLabel);
+    const krLabel = this.checkboxLabel('비율 유지');
+    this.keepRatioCheck = krLabel.querySelector('input') as HTMLInputElement;
+    this.keepRatioCheck.checked = userSettings.getPicturePropsKeepRatio();
+    hRow.appendChild(krLabel);
     sizeFs.appendChild(hRow);
 
     // 비율 유지 이벤트
+    this.keepRatioCheck.addEventListener('change', () => {
+      userSettings.setPicturePropsKeepRatio(this.keepRatioCheck.checked);
+    });
     this.widthInput.addEventListener('input', () => {
-      if (this.originalWidth > 0) {
+      if (this.keepRatioCheck.checked && !this.syncingBasicSize && this.originalWidth > 0) {
         const ratio = this.originalHeight / this.originalWidth;
         const w = parseFloat(this.widthInput.value) || 0;
-        this.heightInput.value = (w * ratio).toFixed(2);
+        this.syncingBasicSize = true;
+        try {
+          this.heightInput.value = (w * ratio).toFixed(2);
+        } finally {
+          this.syncingBasicSize = false;
+        }
       }
     });
     this.heightInput.addEventListener('input', () => {
-      if (this.originalHeight > 0) {
+      if (this.keepRatioCheck.checked && !this.syncingBasicSize && this.originalHeight > 0) {
         const ratio = this.originalWidth / this.originalHeight;
         const h = parseFloat(this.heightInput.value) || 0;
-        this.widthInput.value = (h * ratio).toFixed(2);
+        this.syncingBasicSize = true;
+        try {
+          this.widthInput.value = (h * ratio).toFixed(2);
+        } finally {
+          this.syncingBasicSize = false;
+        }
       }
     });
 
@@ -2564,12 +2581,9 @@ export class PicturePropsDialog {
     overlay.appendChild(dlg);
     enableDialogDrag(dlg, titleBar);
 
-    // Escape / 오버레이 클릭
+    // Escape
     overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); overlay.remove(); }
-    });
-    overlay.addEventListener('mousedown', (e) => {
-      if (e.target === overlay) overlay.remove();
     });
 
     document.body.appendChild(overlay);

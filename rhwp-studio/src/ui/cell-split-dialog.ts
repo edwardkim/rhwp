@@ -47,9 +47,6 @@ export class CellSplitDialog {
     // 오버레이
     this.overlay = document.createElement('div');
     this.overlay.className = 'modal-overlay';
-    this.overlay.addEventListener('click', (e) => {
-      if (e.target === this.overlay) this.hide();
-    });
 
     // 다이얼로그
     this.dialog = document.createElement('div');

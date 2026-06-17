@@ -116,6 +116,8 @@ export class InputHandler {
   private fieldStartExitKey: string | null = null;
   /** 누름틀 끝 경계에서 오른쪽 이동으로 필드 밖에 머문 상태 */
   private fieldEndExitKey: string | null = null;
+  /** 누름틀을 포함한 붙여넣기 직후 마지막 필드 끝을 바깥 위치로 고정한다 */
+  private pastedFieldEndOutsidePending = false;
 
   // 마우스 드래그 선택 상태
   private isDragging = false;
@@ -1795,8 +1797,13 @@ export class InputHandler {
         const cursorBefore = this.cursor.getPosition();
         const cmd = new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
         const newPos = this.history.execute(cmd, this.wasm);
+        const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
+        this.pastedFieldEndOutsidePending = false;
         this.cursor.moveTo(newPos);
         this.cursor.resetPreferredX();
+        if (markPastedFieldEndOutside) {
+          this.markCurrentFieldEndOutside();
+        }
         this.refreshAfterOperation(desc.meta?.refresh, 'full', desc.operationType, cursorBefore, newPos);
         break;
       }
@@ -3066,6 +3073,100 @@ export class InputHandler {
     }
   }
 
+  /** 마우스로 누름틀 위치를 직접 클릭하면 키보드 경계 이탈 상태를 해제한다. */
+  prepareClickHerePointerEntry(pageX?: number): void {
+    const pos = this.cursor.getPosition();
+    try {
+      const fi = this.wasm.getFieldInfoAt(pos);
+      const guidePos = this.findEmptyClickHereGuideHitPosition(pos);
+      if (guidePos) {
+        this.fieldStartExitKey = null;
+        this.fieldEndExitKey = null;
+        this.cursor.moveTo(guidePos);
+        const fieldChanged = this.wasm.setActiveField(guidePos);
+        if (fieldChanged) this.eventBus.emit('document-changed');
+        return;
+      }
+
+      if (!fi.inField || fi.fieldType !== 'clickhere') {
+        return;
+      }
+
+      if (typeof pageX === 'number' && this.prepareClickHerePointerBoundaryExit(pos, fi, pageX)) {
+        return;
+      }
+
+      this.fieldStartExitKey = null;
+      this.fieldEndExitKey = null;
+
+      if (!fi.isGuide || fi.startCharIdx === undefined) return;
+
+      const normalized = { ...pos, charOffset: fi.startCharIdx };
+      if (pos.charOffset !== fi.startCharIdx) {
+        this.cursor.moveTo(normalized);
+      }
+      const fieldChanged = this.wasm.setActiveField(normalized);
+      if (fieldChanged) this.eventBus.emit('document-changed');
+    } catch {
+      // 클릭 hit-test 직후 필드 조회 실패는 일반 클릭 처리로 흘려보낸다.
+    }
+  }
+
+  private prepareClickHerePointerBoundaryExit(pos: DocumentPosition, fi: any, pageX: number): boolean {
+    const start = fi.startCharIdx ?? -1;
+    const end = fi.endCharIdx ?? -1;
+    if (start < 0 || end < 0 || start === end) return false;
+
+    const rects = this.getClickHereBoundaryRects(pos, start, end);
+    if (!rects) return false;
+
+    const tolerance = 1;
+    if (pos.charOffset <= start && pageX < rects.startRect.x - tolerance) {
+      this.fieldEndExitKey = null;
+      this.fieldStartExitKey = this.fieldBoundaryKey(pos, fi.fieldId, start);
+      this.fieldMarker.hide();
+      this.wasm.clearActiveField();
+      this.eventBus.emit('field-info-changed', null);
+      return true;
+    }
+
+    if (pos.charOffset >= end && pageX > rects.endRect.x + tolerance) {
+      this.fieldStartExitKey = null;
+      this.fieldEndExitKey = this.fieldBoundaryKey(pos, fi.fieldId, end);
+      this.fieldMarker.hide();
+      this.wasm.clearActiveField();
+      this.eventBus.emit('field-info-changed', null);
+      return true;
+    }
+
+    return false;
+  }
+
+  private findEmptyClickHereGuideHitPosition(pos: DocumentPosition): DocumentPosition | null {
+    try {
+      const fields = this.wasm.getFieldList()
+        .filter((field: any) =>
+          field.fieldType === 'clickhere'
+          && typeof field.startCharIdx === 'number'
+          && field.startCharIdx === field.endCharIdx)
+        .map((field: any) => {
+          const fieldPos = this.formFieldPosition(field);
+          if (!fieldPos || !this.isSameTextContainer(pos, fieldPos)) return null;
+          const guideLen = Array.from(field.guide ?? '').length;
+          if (guideLen <= 0) return null;
+          const start = field.startCharIdx;
+          const guideEnd = start + guideLen;
+          if (pos.charOffset < start || pos.charOffset > guideEnd) return null;
+          return fieldPos;
+        })
+        .filter((fieldPos: DocumentPosition | null): fieldPos is DocumentPosition => fieldPos !== null)
+        .sort((a: DocumentPosition, b: DocumentPosition) => b.charOffset - a.charOffset);
+      return fields[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   /** 현재 위치가 빈 누름틀 안내문 영역인지 확인한다. */
   isClickHereGuidePosition(pos: DocumentPosition): boolean {
     try {
@@ -3106,6 +3207,42 @@ export class InputHandler {
     ].join(':');
   }
 
+  private getClickHereBoundaryRects(pos: DocumentPosition, start: number, end: number): { startRect: CursorRect; endRect: CursorRect } | null {
+    try {
+      if ((pos.cellPath?.length ?? 0) > 1 && pos.parentParaIndex !== undefined) {
+        const pathJson = JSON.stringify(pos.cellPath);
+        return {
+          startRect: this.wasm.getCursorRectByPath(
+            pos.sectionIndex, pos.parentParaIndex, pathJson, start,
+          ),
+          endRect: this.wasm.getCursorRectByPath(
+            pos.sectionIndex, pos.parentParaIndex, pathJson, end,
+          ),
+        };
+      }
+
+      if (pos.parentParaIndex !== undefined) {
+        return {
+          startRect: this.wasm.getCursorRectInCell(
+            pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
+            pos.cellIndex!, pos.cellParaIndex!, start,
+          ),
+          endRect: this.wasm.getCursorRectInCell(
+            pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
+            pos.cellIndex!, pos.cellParaIndex!, end,
+          ),
+        };
+      }
+
+      return {
+        startRect: this.wasm.getCursorRect(pos.sectionIndex, pos.paragraphIndex, start),
+        endRect: this.wasm.getCursorRect(pos.sectionIndex, pos.paragraphIndex, end),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   /** 커서 위치의 필드 상태에 따라 낫표 마커를 표시/숨김한다 */
   private updateFieldMarkers(): void {
     const wasVisible = this.fieldMarker.isVisible;
@@ -3130,30 +3267,9 @@ export class InputHandler {
         // 활성 필드 설정 → 안내문 숨김 + 페이지 캐시 무효화
         const fieldChanged = this.wasm.setActiveField(pos);
         const zoom = this.viewportManager.getZoom();
-        // 필드 시작/끝 위치의 커서 좌표를 얻어 마커 표시
-        let startRect: CursorRect, endRect: CursorRect;
-        if ((pos.cellPath?.length ?? 0) > 1 && pos.parentParaIndex !== undefined) {
-          // 중첩 표: path 기반 커서 좌표
-          const pathJson = JSON.stringify(pos.cellPath);
-          startRect = this.wasm.getCursorRectByPath(
-            pos.sectionIndex, pos.parentParaIndex, pathJson, fi.startCharIdx,
-          );
-          endRect = this.wasm.getCursorRectByPath(
-            pos.sectionIndex, pos.parentParaIndex, pathJson, fi.endCharIdx,
-          );
-        } else if (pos.parentParaIndex !== undefined) {
-          startRect = this.wasm.getCursorRectInCell(
-            pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
-            pos.cellIndex!, pos.cellParaIndex!, fi.startCharIdx,
-          );
-          endRect = this.wasm.getCursorRectInCell(
-            pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
-            pos.cellIndex!, pos.cellParaIndex!, fi.endCharIdx,
-          );
-        } else {
-          startRect = this.wasm.getCursorRect(pos.sectionIndex, pos.paragraphIndex, fi.startCharIdx);
-          endRect = this.wasm.getCursorRect(pos.sectionIndex, pos.paragraphIndex, fi.endCharIdx);
-        }
+        const rects = this.getClickHereBoundaryRects(pos, fi.startCharIdx, fi.endCharIdx);
+        if (!rects) return;
+        const { startRect, endRect } = rects;
         this.fieldMarker.show(startRect, endRect, zoom);
         // 필드 진입 또는 다른 필드로 전환 시 재렌더링 (안내문 표시/숨김 반영)
         if (!wasVisible || fieldChanged) {

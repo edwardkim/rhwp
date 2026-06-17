@@ -240,10 +240,6 @@ export class TableCreateDialog {
 
     // 오버레이 내부에 대화상자를 넣어야 flex 센터링이 작동함
     overlay.appendChild(dlg);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
-    });
-
     // 타이틀
     const title = document.createElement('div');
     title.className = 'dialog-title';

@@ -36,11 +36,18 @@ export interface ThemeSettings {
   mode: ThemeMode;
 }
 
+/** 대화상자 UI 설정 */
+export interface DialogSettings {
+  /** 개체 속성 기본 탭에서 너비/높이 입력 비율을 유지할지 여부 */
+  picturePropsKeepRatio: boolean;
+}
+
 /** 전체 설정 구조 */
 export interface AppSettings {
   version: number;
   font: FontSettings;
   theme: ThemeSettings;
+  dialog: DialogSettings;
 }
 
 /** 언어 인덱스 상수 (HWP 7개 언어) */
@@ -99,11 +106,18 @@ function defaultSettings(): AppSettings {
     theme: {
       mode: 'system',
     },
+    dialog: {
+      picturePropsKeepRatio: true,
+    },
   };
 }
 
 function normalizeThemeMode(value: unknown): ThemeMode {
   return value === 'light' || value === 'dark' || value === 'system' ? value : 'system';
+}
+
+function normalizeBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback;
 }
 
 /** 사용자 환경설정 서비스 (싱글턴) */
@@ -121,6 +135,7 @@ class UserSettingsService {
       const parsed = JSON.parse(raw) as Partial<AppSettings>;
       // 기본값 병합
       const defaults = defaultSettings();
+      const dialog: Partial<DialogSettings> = parsed.dialog ?? {};
       return {
         version: parsed.version ?? defaults.version,
         font: {
@@ -131,6 +146,14 @@ class UserSettingsService {
           ...defaults.theme,
           ...(parsed.theme ?? {}),
           mode: normalizeThemeMode(parsed.theme?.mode),
+        },
+        dialog: {
+          ...defaults.dialog,
+          ...dialog,
+          picturePropsKeepRatio: normalizeBoolean(
+            dialog.picturePropsKeepRatio,
+            defaults.dialog.picturePropsKeepRatio,
+          ),
         },
       };
     } catch {
@@ -166,6 +189,22 @@ class UserSettingsService {
   /** 테마 모드 설정 */
   setThemeMode(mode: ThemeMode): void {
     this.data.theme.mode = normalizeThemeMode(mode);
+    this.save();
+  }
+
+  /** 대화상자 UI 설정 반환 */
+  getDialogSettings(): DialogSettings {
+    return this.data.dialog;
+  }
+
+  /** 개체 속성 기본 탭 비율 유지 설정 반환 */
+  getPicturePropsKeepRatio(): boolean {
+    return this.data.dialog.picturePropsKeepRatio;
+  }
+
+  /** 개체 속성 기본 탭 비율 유지 설정 */
+  setPicturePropsKeepRatio(value: boolean): void {
+    this.data.dialog.picturePropsKeepRatio = value;
     this.save();
   }
 

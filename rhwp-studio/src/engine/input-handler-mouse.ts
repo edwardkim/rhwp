@@ -907,6 +907,7 @@ export function onClick(this: any, e: MouseEvent): void {
     this.cursor.clearSelection();
     this.cursor.moveTo(hit);
     this.cursor.resetPreferredX();
+    this.prepareClickHerePointerEntry?.(pageX);
     this.cursor.setAnchor(); // 드래그 시작점(anchor) 설정
     this.active = true;
     this.startTextSelectionDrag(e);

@@ -1506,6 +1506,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
 
     // 내부 클립보드 텍스트 붙여넣기 (서식 보존)
     this.executeOperation({ kind: 'snapshot', operationType: 'pasteInternal', operation: (wasm: WasmBridge) => {
+      this.pastedFieldEndOutsidePending = false;
       if (hasSelection) this.deleteSelection();
       const p = this.cursor.getPosition();
       let result: string;
@@ -1523,6 +1524,9 @@ export function onPaste(this: any, e: ClipboardEvent): void {
       }
       const parsed = JSON.parse(result);
       if (parsed.ok) {
+        if (parsed.containsField === true) {
+          this.pastedFieldEndOutsidePending = true;
+        }
         return positionAfterPasteResult(p, parsed);
       }
       return p;

@@ -155,11 +155,6 @@ export class ValidationModal {
     dialog.appendChild(footer);
 
     this.overlay.appendChild(dialog);
-
-    // 오버레이 배경 클릭은 취소로 처리 (명시적 선택 유도하려면 막을 수도 있음)
-    this.overlay.addEventListener('click', (e) => {
-      if (e.target === this.overlay) this.resolve('cancel');
-    });
   }
 
   private bindKeyboard(): void {

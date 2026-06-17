@@ -1525,6 +1525,23 @@ impl DocumentCore {
             })
         }
 
+        fn same_cell_context(a: &Option<CellContext>, b: &Option<CellContext>) -> bool {
+            match (a, b) {
+                (None, None) => true,
+                (Some(a), Some(b)) => {
+                    a.parent_para_index == b.parent_para_index
+                        && a.path.len() == b.path.len()
+                        && a.path.iter().zip(&b.path).all(|(a, b)| {
+                            a.control_index == b.control_index
+                                && a.cell_index == b.cell_index
+                                && a.cell_para_index == b.cell_para_index
+                                && a.text_direction == b.text_direction
+                        })
+                }
+                _ => false,
+            }
+        }
+
         let mut runs: Vec<RunInfo> = Vec::new();
         let mut guide_runs: Vec<GuideRunInfo> = Vec::new();
         let mut cell_bboxes: Vec<CellBboxInfo> = Vec::new();
@@ -1621,12 +1638,24 @@ impl DocumentCore {
                 && y >= gr.bbox_y
                 && y <= gr.bbox_y + gr.bbox_h
             {
+                let guide_char_offset = runs
+                    .iter()
+                    .find(|run| {
+                        run.section_index == gr.section_index
+                            && run.paragraph_index == gr.paragraph_index
+                            && run.char_count == 0
+                            && same_cell_context(&run.cell_context, &gr.cell_context)
+                            && (run.bbox_x - gr.bbox_x).abs() < 0.5
+                            && (run.bbox_y - gr.bbox_y).abs() < 1.0
+                    })
+                    .map(|run| run.char_start);
                 // 필드 시작 위치 찾기: 해당 문단의 field_ranges에서 검색
                 if let Some(field_hit) = self.find_field_hit_for_guide(
                     gr.section_index,
                     gr.paragraph_index,
                     &gr.cell_context,
                     page_num,
+                    guide_char_offset,
                     gr.bbox_x,
                     gr.bbox_y,
                     gr.bbox_h,
@@ -2027,6 +2056,7 @@ impl DocumentCore {
         paragraph_index: usize,
         cell_context: &Option<crate::renderer::layout::CellContext>,
         page_num: u32,
+        guide_char_offset: Option<usize>,
         guide_x: f64,
         guide_y: f64,
         guide_h: f64,
@@ -2050,64 +2080,80 @@ impl DocumentCore {
                 .get(paragraph_index)?
         };
 
-        // 이 문단의 ClickHere 필드 범위 검색
+        let build_hit = |char_offset: usize, field: &crate::model::control::Field| {
+            let base = format!(
+                "\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{}",
+                section_index, paragraph_index, char_offset,
+            );
+            let cursor_rect = format!(
+                ",\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                page_num, guide_x, guide_y, guide_h,
+            );
+            let field_info = format!(
+                ",\"isField\":true,\"fieldId\":{},\"fieldType\":\"{}\"",
+                field.field_id,
+                field.field_type_str(),
+            );
+            if let Some(ctx) = cell_context {
+                let outer = &ctx.path[0];
+                let tb = if matches!(
+                    self.document
+                        .sections
+                        .get(section_index)
+                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                        .and_then(|p| p.controls.get(outer.control_index)),
+                    Some(Control::Shape(_))
+                ) {
+                    ",\"isTextBox\":true"
+                } else {
+                    ""
+                };
+                let path_entries: Vec<String> = ctx
+                    .path
+                    .iter()
+                    .map(|e| {
+                        format!(
+                            "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                            e.control_index, e.cell_index, e.cell_para_index
+                        )
+                    })
+                    .collect();
+                let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
+                format!(
+                    "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
+                    base, ctx.parent_para_index, outer.control_index,
+                    outer.cell_index, outer.cell_para_index,
+                    cell_path, tb, field_info, cursor_rect,
+                )
+            } else {
+                format!("{{{}{}{}}}", base, field_info, cursor_rect)
+            }
+        };
+
+        let mut first_empty_clickhere = None;
+        let mut first_clickhere = None;
+
+        // 안내문은 빈 ClickHere에만 표시되므로 빈 field range를 우선 매칭한다.
         for fr in &para.field_ranges {
             if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
                 if field.field_type == FieldType::ClickHere {
-                    // 필드 시작 위치로 커서를 보낸다
-                    let char_offset = fr.start_char_idx;
-                    let base = format!(
-                        "\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{}",
-                        section_index, paragraph_index, char_offset,
-                    );
-                    let cursor_rect = format!(
-                        ",\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                        page_num, guide_x, guide_y, guide_h,
-                    );
-                    let field_info = format!(
-                        ",\"isField\":true,\"fieldId\":{},\"fieldType\":\"{}\"",
-                        field.field_id,
-                        field.field_type_str(),
-                    );
-                    if let Some(ctx) = cell_context {
-                        let outer = &ctx.path[0];
-                        let tb = if matches!(
-                            self.document
-                                .sections
-                                .get(section_index)
-                                .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                                .and_then(|p| p.controls.get(outer.control_index)),
-                            Some(Control::Shape(_))
-                        ) {
-                            ",\"isTextBox\":true"
-                        } else {
-                            ""
-                        };
-                        let path_entries: Vec<String> = ctx
-                            .path
-                            .iter()
-                            .map(|e| {
-                                format!(
-                                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                                    e.control_index, e.cell_index, e.cell_para_index
-                                )
-                            })
-                            .collect();
-                        let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
-                        return Some(format!(
-                            "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
-                            base, ctx.parent_para_index, outer.control_index,
-                            outer.cell_index, outer.cell_para_index,
-                            cell_path, tb, field_info, cursor_rect,
-                        ));
-                    } else {
-                        return Some(format!("{{{}{}{}}}", base, field_info, cursor_rect));
+                    let is_empty = fr.start_char_idx == fr.end_char_idx;
+                    if is_empty {
+                        if guide_char_offset == Some(fr.start_char_idx) {
+                            return Some(build_hit(fr.start_char_idx, field));
+                        }
+                        if first_empty_clickhere.is_none() {
+                            first_empty_clickhere = Some(build_hit(fr.start_char_idx, field));
+                        }
+                    }
+                    if first_clickhere.is_none() {
+                        first_clickhere = Some(build_hit(fr.start_char_idx, field));
                     }
                 }
             }
         }
 
-        None
+        first_empty_clickhere.or(first_clickhere)
     }
 
     /// 셀의 (col, row, pad_left_px, pad_top_px, pad_bottom_px)를 모델에서 조회한다.

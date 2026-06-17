@@ -197,9 +197,6 @@ export class BookmarkDialog {
 
     this.dialog.appendChild(body);
     this.overlay.appendChild(this.dialog);
-    this.overlay.addEventListener('click', (e) => {
-      if (e.target === this.overlay) this.hide();
-    });
   }
 
   private createButton(text: string, handler: () => void): HTMLButtonElement {
