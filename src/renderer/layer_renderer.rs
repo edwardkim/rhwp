@@ -614,14 +614,15 @@ fn collect_glyph_run_font_resource_reject_reasons(
     }
 
     match resources.font_blob_bytes_for_ref(data_ref) {
-        Some(bytes)
-            if font_digest_matches_resource_bytes(digest, bytes)
-                && blob
-                    .digest
-                    .as_ref()
-                    .is_none_or(|digest| font_digest_matches_resource_bytes(digest, bytes)) => {}
-        Some(_) => {
-            reasons.insert(VariantRejectReason::FontBlobDigestMismatch);
+        Some(bytes) => {
+            let actual_digest = crate::paint::resource_digest_hex(bytes);
+            if !font_digest_matches_resource_digest(digest, &actual_digest)
+                || !blob.digest.as_ref().is_none_or(|digest| {
+                    font_digest_matches_resource_digest(digest, &actual_digest)
+                })
+            {
+                reasons.insert(VariantRejectReason::FontBlobDigestMismatch);
+            }
         }
         None => {
             reasons.insert(VariantRejectReason::FontBlobBytesMissing);
@@ -629,9 +630,8 @@ fn collect_glyph_run_font_resource_reject_reasons(
     }
 }
 
-fn font_digest_matches_resource_bytes(digest: &crate::paint::FontDigest, bytes: &[u8]) -> bool {
-    digest.algorithm == crate::paint::RESOURCE_KEY_ALGORITHM
-        && digest.value == crate::paint::resource_digest_hex(bytes)
+fn font_digest_matches_resource_digest(digest: &crate::paint::FontDigest, actual: &str) -> bool {
+    digest.algorithm == crate::paint::RESOURCE_KEY_ALGORITHM && digest.value == actual
 }
 
 fn collect_glyph_outline_reject_reasons(
@@ -1370,6 +1370,51 @@ mod tests {
         assert_eq!(
             VariantRejectReason::FontBlobBytesMissing.as_str(),
             "fontBlobBytesMissing"
+        );
+    }
+
+    #[test]
+    fn canvaskit_rejects_non_portable_font_blob_proof() {
+        let report = first_report_with_resource_setup(
+            vec![text_op(), glyph_run(diagnostics(), 42)],
+            TextVariantSelectionOptions::canvaskit(),
+            |resources| {
+                let digest = FontDigest {
+                    algorithm: crate::paint::RESOURCE_KEY_ALGORITHM.to_string(),
+                    value: resource_digest_hex([0_u8, 1, 2, 3]),
+                };
+                resources.font_resources_mut().blobs.push(FontBlobResource {
+                    id: FontBlobKey("blob-0".to_string()),
+                    digest: Some(digest.clone()),
+                    source: FontResourceSource::SystemResolved,
+                    data_ref: None,
+                    portability: FontPortability::ResolvedButNotEmbedded {
+                        digest: Some(digest),
+                    },
+                });
+                resources.font_resources_mut().faces.push(FontFaceResource {
+                    id: FontFaceKey("face-0".to_string()),
+                    blob_key: FontBlobKey("blob-0".to_string()),
+                    face_index: 0,
+                    postscript_name: None,
+                    family_names: Vec::new(),
+                    style_names: Vec::new(),
+                    weight_class: None,
+                    width_class: None,
+                    italic: None,
+                });
+            },
+        );
+
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.fallback_required);
+        assert_eq!(
+            report.rejected_variants[0].reasons,
+            vec![VariantRejectReason::FontBlobNotPortable]
+        );
+        assert_eq!(
+            VariantRejectReason::FontBlobNotPortable.as_str(),
+            "fontBlobNotPortable"
         );
     }
 
