@@ -292,9 +292,11 @@ backend contract.
   compatible export.
 - Font metrics data and font-name resolution remain compatibility diagnostics,
   not portable replay proof. A resolver may use `font_metrics_data.rs` to compare
-  shaped advances against legacy `TextRun` layout, but strict glyph replay still
-  needs explicit `fontResources`/`ResourceArena` identity, resource bytes,
-  digest/`dataRef`, face index, variation axes, and shaping proof.
+  shaped advances against legacy `TextRun` layout, but the future native strict
+  replay proof should still be based on explicit `fontResources`/`ResourceArena`
+  identity, resource bytes, digest/`dataRef`, face index, variation axes, and
+  shaping proof. P26 keeps metrics/name resolution out of strict proof and leaves
+  full ResourceArena enforcement to the resolver/proof follow-up.
 
 Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
 output can use fuzzy PNG comparison, but semantic decisions must be exact:

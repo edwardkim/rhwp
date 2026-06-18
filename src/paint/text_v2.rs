@@ -534,6 +534,9 @@ fn glyph_run_fallback_reason(run: &LayerGlyphRunPaint) -> Option<String> {
     if glyph_run_is_strict(run) {
         return None;
     }
+    if let Some(reason) = glyph_run_diagnostics_fallback_reason(&run.diagnostics) {
+        return Some(reason);
+    }
     if matches!(run.orientation, GlyphRunOrientation::MixedPerGlyph) {
         return Some("mixedPerGlyphAuthorityPending".to_string());
     }
@@ -543,7 +546,7 @@ fn glyph_run_fallback_reason(run: &LayerGlyphRunPaint) -> Option<String> {
     if run.glyph_transforms.is_some() {
         return Some("glyphTransformAuthorityPending".to_string());
     }
-    glyph_run_diagnostics_fallback_reason(&run.diagnostics)
+    None
 }
 
 fn glyph_run_diagnostics_fallback_reason(diagnostics: &GlyphRunDiagnostics) -> Option<String> {
@@ -730,7 +733,11 @@ mod tests {
     }
 
     fn glyph_op(reason: Option<&str>, missing_glyph_count: u32) -> PaintOp {
-        glyph_op_part(reason, missing_glyph_count, 0, 1)
+        glyph_op_for_text("A", reason, missing_glyph_count)
+    }
+
+    fn glyph_op_for_text(text: &str, reason: Option<&str>, missing_glyph_count: u32) -> PaintOp {
+        glyph_op_part_for_text(text, reason, missing_glyph_count, 0, 1)
     }
 
     fn glyph_op_part(
@@ -739,13 +746,25 @@ mod tests {
         part_index: u32,
         part_count: u32,
     ) -> PaintOp {
+        glyph_op_part_for_text("A", reason, missing_glyph_count, part_index, part_count)
+    }
+
+    fn glyph_op_part_for_text(
+        text: &str,
+        reason: Option<&str>,
+        missing_glyph_count: u32,
+        part_index: u32,
+        part_count: u32,
+    ) -> PaintOp {
+        let utf8_len = text.len() as u32;
+        let utf16_len = text.encode_utf16().count() as u32;
         PaintOp::GlyphRun {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             run: Box::new(LayerGlyphRunPaint {
                 source: TextSourceSpan {
                     id: TextSourceId(0),
-                    utf8_range: TextSourceRange::new(0, 1),
-                    utf16_range: TextSourceRange::new(0, 1),
+                    utf8_range: TextSourceRange::new(0, utf8_len),
+                    utf16_range: TextSourceRange::new(0, utf16_len),
                     stable_source_key: None,
                 },
                 variant: {
@@ -797,9 +816,9 @@ mod tests {
                 positions: vec![LayerPoint { x: 0.0, y: 0.0 }],
                 advances: None,
                 clusters: vec![GlyphCluster {
-                    source_range_utf8: TextSourceRange::new(0, 1),
-                    source_range_utf16: Some(TextSourceRange::new(0, 1)),
-                    text_range_utf8: Some(TextSourceRange::new(0, 1)),
+                    source_range_utf8: TextSourceRange::new(0, utf8_len),
+                    source_range_utf16: Some(TextSourceRange::new(0, utf16_len)),
+                    text_range_utf8: Some(TextSourceRange::new(0, utf8_len)),
                     glyph_range: GlyphRange::new(0, 1),
                     flags: Vec::new(),
                 }],
@@ -1145,6 +1164,47 @@ mod tests {
     }
 
     #[test]
+    fn producer_diagnostic_reason_takes_priority_over_authority_pending_reason() {
+        let mut op = glyph_op(None, 1);
+        if let PaintOp::GlyphRun { run, .. } = &mut op {
+            run.orientation = GlyphRunOrientation::VerticalUpright;
+            run.glyph_transforms = Some(vec![GlyphTransform {
+                xx: 1.0,
+                xy: 0.0,
+                yx: 0.0,
+                yy: 1.0,
+                tx: 0.0,
+                ty: 0.0,
+            }]);
+        }
+        let tree = PageLayerTree::new(
+            100.0,
+            100.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+                None,
+                vec![text_op("A"), op],
+            ),
+        );
+        let diagnostics = TextV2Diagnostics::from_layer_tree_with_profile(
+            &tree,
+            TextV2CompatibilityProfile::FallbackFreeStrict,
+        );
+
+        assert!(diagnostics.has_errors());
+        assert_eq!(
+            diagnostics.slot_diagnostics[0].fallback_reason.as_deref(),
+            Some("missingGlyph")
+        );
+        assert_eq!(
+            diagnostics.slot_diagnostics[0].variants[0]
+                .fallback_reason
+                .as_deref(),
+            Some("missingGlyph")
+        );
+    }
+
+    #[test]
     fn reports_line_break_risk_context_for_complex_text_runs() {
         let mut run = text_run("A\tB");
         run.style.inline_tabs.push([0, 0, 0, 0, 0, 0, 0]);
@@ -1187,7 +1247,7 @@ mod tests {
                         bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
                         run,
                     },
-                    glyph_op(None, 0),
+                    glyph_op_for_text("A\tB", None, 0),
                 ],
             ),
         );
