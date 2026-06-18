@@ -128,6 +128,12 @@ pub enum VariantRejectReason {
     BackendDoesNotSupportVariant,
     FontNotPortable,
     ExternalFontNotVerified,
+    FontFaceMissing,
+    FontBlobMissing,
+    FontBlobNotPortable,
+    FontBlobBytesMissing,
+    FontBlobDataRefMismatch,
+    FontBlobDigestMismatch,
     FaceIndexUnsupported,
     VariationUnsupported,
     GlyphIdOutOfRange,
@@ -160,6 +166,12 @@ impl VariantRejectReason {
             Self::BackendDoesNotSupportVariant => "backendDoesNotSupportVariant",
             Self::FontNotPortable => "fontNotPortable",
             Self::ExternalFontNotVerified => "externalFontNotVerified",
+            Self::FontFaceMissing => "fontFaceMissing",
+            Self::FontBlobMissing => "fontBlobMissing",
+            Self::FontBlobNotPortable => "fontBlobNotPortable",
+            Self::FontBlobBytesMissing => "fontBlobBytesMissing",
+            Self::FontBlobDataRefMismatch => "fontBlobDataRefMismatch",
+            Self::FontBlobDigestMismatch => "fontBlobDigestMismatch",
             Self::FaceIndexUnsupported => "faceIndexUnsupported",
             Self::VariationUnsupported => "variationUnsupported",
             Self::GlyphIdOutOfRange => "glyphIdOutOfRange",
@@ -547,14 +559,11 @@ fn collect_glyph_run_reject_reasons(
         if !run.shape_key.font_instance.variations.is_empty() {
             reasons.insert(VariantRejectReason::VariationUnsupported);
         }
-        if resources
-            .font_resources()
-            .faces
-            .iter()
-            .find(|face| face.id == run.shape_key.font_instance.face_key)
-            .is_some_and(|face| face.face_index != 0)
-        {
-            reasons.insert(VariantRejectReason::FaceIndexUnsupported);
+        if matches!(
+            run.diagnostics.replay_eligibility,
+            GlyphRunReplayEligibility::Portable
+        ) {
+            collect_glyph_run_font_resource_reject_reasons(run, resources, reasons);
         }
     }
     collect_text_variant_diagnostics_reject_reasons(&run.diagnostics, options, reasons);
@@ -565,6 +574,64 @@ fn collect_glyph_run_reject_reasons(
     {
         reasons.insert(VariantRejectReason::GlyphIdOutOfRange);
     }
+}
+
+fn collect_glyph_run_font_resource_reject_reasons(
+    run: &LayerGlyphRunPaint,
+    resources: &ResourceArena,
+    reasons: &mut BTreeSet<VariantRejectReason>,
+) {
+    let font_resources = resources.font_resources();
+    let Some(face) = font_resources
+        .faces
+        .iter()
+        .find(|face| face.id == run.shape_key.font_instance.face_key)
+    else {
+        reasons.insert(VariantRejectReason::FontFaceMissing);
+        return;
+    };
+
+    if face.face_index != 0 {
+        reasons.insert(VariantRejectReason::FaceIndexUnsupported);
+    }
+
+    let Some(blob) = font_resources
+        .blobs
+        .iter()
+        .find(|blob| blob.id == face.blob_key)
+    else {
+        reasons.insert(VariantRejectReason::FontBlobMissing);
+        return;
+    };
+
+    let crate::paint::FontPortability::PortableBlob { digest, data_ref } = &blob.portability else {
+        reasons.insert(VariantRejectReason::FontBlobNotPortable);
+        return;
+    };
+
+    if blob.data_ref.as_ref() != Some(data_ref) {
+        reasons.insert(VariantRejectReason::FontBlobDataRefMismatch);
+    }
+
+    match resources.font_blob_bytes_for_ref(data_ref) {
+        Some(bytes)
+            if font_digest_matches_resource_bytes(digest, bytes)
+                && blob
+                    .digest
+                    .as_ref()
+                    .is_none_or(|digest| font_digest_matches_resource_bytes(digest, bytes)) => {}
+        Some(_) => {
+            reasons.insert(VariantRejectReason::FontBlobDigestMismatch);
+        }
+        None => {
+            reasons.insert(VariantRejectReason::FontBlobBytesMissing);
+        }
+    }
+}
+
+fn font_digest_matches_resource_bytes(digest: &crate::paint::FontDigest, bytes: &[u8]) -> bool {
+    digest.algorithm == crate::paint::RESOURCE_KEY_ALGORITHM
+        && digest.value == crate::paint::resource_digest_hex(bytes)
 }
 
 fn collect_glyph_outline_reject_reasons(
@@ -693,19 +760,21 @@ fn collect_text_variant_diagnostics_reject_reasons(
 mod tests {
     use super::*;
     use crate::paint::{
+        font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
         BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, ColorGlyphFormat,
         ColorGradientStop, ColorLayersPayload, ColorLinearGradient, ColorPaintGraphNode,
         ColorPaintGraphNodeKind, ColorPaintGraphPayload, ColorPaintLinearGradientPathNode,
         ColorPaintRadialGradientPathNode, ColorPaintSolidPathNode, ColorPaintSweepGradientPathNode,
-        ColorRadialGradient, ColorSweepGradient, FontBlobKey, FontColorGlyphRef, FontFaceKey,
-        FontFaceResource, FontFallbackPolicyId, FontInstanceKey, GlyphCluster,
-        GlyphOutlineFillRule, GlyphOutlinePaintOrder, GlyphOutlinePayloadKind,
-        GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange,
-        GlyphRunDiagnostics, GlyphRunOrientation, GlyphTransform, ImageResourceId,
-        LayerAffineTransform, LayerGlyphOutlinePath, LayerNode, LayerPoint, LayerVector,
-        PaintTextStyle, PaintVariantMeta, ResolvedColor, ResourceArena, ScriptTag, ShapeKey,
-        ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDirection, TextRunPlacement,
-        TextSourceId, TextSourceRange, TextSourceSpan, VariationAxisValue, WritingMode,
+        ColorRadialGradient, ColorSweepGradient, FontBlobKey, FontBlobResource, FontColorGlyphRef,
+        FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId, FontInstanceKey,
+        FontPortability, FontResourceSource, GlyphCluster, GlyphOutlineFillRule,
+        GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
+        GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
+        GlyphRunOrientation, GlyphTransform, ImageResourceId, LayerAffineTransform,
+        LayerGlyphOutlinePath, LayerNode, LayerPoint, LayerVector, PaintTextStyle,
+        PaintVariantMeta, ResolvedColor, ResourceArena, ScriptTag, ShapeKey, ShapingEngineId,
+        SvgGlyphPayload, SvgResourceId, TextDirection, TextRunPlacement, TextSourceId,
+        TextSourceRange, TextSourceSpan, VariationAxisValue, WritingMode,
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
     use crate::renderer::{PathCommand, TextStyle};
@@ -1096,11 +1165,47 @@ mod tests {
         PageLayerTree::new(100.0, 100.0, LayerNode::leaf(bbox(), None, ops))
     }
 
+    fn add_portable_font_resources(resources: &mut ResourceArena) {
+        let font_bytes = [0_u8, 1, 2, 3];
+        resources.intern_font_blob_bytes(&font_bytes);
+        let blob_key = FontBlobKey("blob-0".to_string());
+        let face_key = FontFaceKey("face-0".to_string());
+        let digest_value = resource_digest_hex(font_bytes);
+        let digest = FontDigest {
+            algorithm: crate::paint::RESOURCE_KEY_ALGORITHM.to_string(),
+            value: digest_value.clone(),
+        };
+        let data_ref = BinaryResourceRef {
+            kind: BinaryResourceKind::FontBlob,
+            id: font_blob_resource_key(font_bytes.len(), &digest_value),
+        };
+        resources.font_resources_mut().blobs.push(FontBlobResource {
+            id: blob_key.clone(),
+            digest: Some(digest.clone()),
+            source: FontResourceSource::Embedded,
+            data_ref: Some(data_ref.clone()),
+            portability: FontPortability::PortableBlob { digest, data_ref },
+        });
+        resources.font_resources_mut().faces.push(FontFaceResource {
+            id: face_key,
+            blob_key,
+            face_index: 0,
+            postscript_name: None,
+            family_names: Vec::new(),
+            style_names: Vec::new(),
+            weight_class: None,
+            width_class: None,
+            italic: None,
+        });
+    }
+
     fn first_report(
         ops: Vec<PaintOp>,
         options: TextVariantSelectionOptions,
     ) -> TextVariantSelectionReport {
-        analyze_text_variant_selection(&tree(ops), options)
+        let mut tree = tree(ops);
+        add_portable_font_resources(&mut tree.resources);
+        analyze_text_variant_selection(&tree, options)
             .into_iter()
             .next()
             .unwrap()
@@ -1160,6 +1265,39 @@ mod tests {
         let report = first_report_with_resource_setup(
             vec![text_op(), glyph_run(diagnostics(), 42)],
             TextVariantSelectionOptions::canvaskit(),
+            add_portable_font_resources,
+        );
+
+        assert_eq!(report.selected_variant_id.as_deref(), Some("glyphRun"));
+        assert!(!report.fallback_required);
+        assert!(report.rejected_variants.is_empty());
+    }
+
+    #[test]
+    fn canvaskit_rejects_portable_glyph_run_without_font_face_proof() {
+        let report = first_report_with_resource_setup(
+            vec![text_op(), glyph_run(diagnostics(), 42)],
+            TextVariantSelectionOptions::canvaskit(),
+            |_| {},
+        );
+
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.fallback_required);
+        assert_eq!(
+            report.rejected_variants[0].reasons,
+            vec![VariantRejectReason::FontFaceMissing]
+        );
+        assert_eq!(
+            VariantRejectReason::FontFaceMissing.as_str(),
+            "fontFaceMissing"
+        );
+    }
+
+    #[test]
+    fn canvaskit_rejects_font_face_without_blob_proof() {
+        let report = first_report_with_resource_setup(
+            vec![text_op(), glyph_run(diagnostics(), 42)],
+            TextVariantSelectionOptions::canvaskit(),
             |resources| {
                 resources.font_resources_mut().faces.push(FontFaceResource {
                     id: FontFaceKey("face-0".to_string()),
@@ -1175,9 +1313,113 @@ mod tests {
             },
         );
 
-        assert_eq!(report.selected_variant_id.as_deref(), Some("glyphRun"));
-        assert!(!report.fallback_required);
-        assert!(report.rejected_variants.is_empty());
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.fallback_required);
+        assert_eq!(
+            report.rejected_variants[0].reasons,
+            vec![VariantRejectReason::FontBlobMissing]
+        );
+        assert_eq!(
+            VariantRejectReason::FontBlobMissing.as_str(),
+            "fontBlobMissing"
+        );
+    }
+
+    #[test]
+    fn canvaskit_rejects_font_blob_without_resource_bytes() {
+        let report = first_report_with_resource_setup(
+            vec![text_op(), glyph_run(diagnostics(), 42)],
+            TextVariantSelectionOptions::canvaskit(),
+            |resources| {
+                let digest_value = resource_digest_hex([0_u8, 1, 2, 3]);
+                let digest = FontDigest {
+                    algorithm: crate::paint::RESOURCE_KEY_ALGORITHM.to_string(),
+                    value: digest_value.clone(),
+                };
+                let data_ref = BinaryResourceRef {
+                    kind: BinaryResourceKind::FontBlob,
+                    id: font_blob_resource_key(4, &digest_value),
+                };
+                resources.font_resources_mut().blobs.push(FontBlobResource {
+                    id: FontBlobKey("blob-0".to_string()),
+                    digest: Some(digest.clone()),
+                    source: FontResourceSource::Embedded,
+                    data_ref: Some(data_ref.clone()),
+                    portability: FontPortability::PortableBlob { digest, data_ref },
+                });
+                resources.font_resources_mut().faces.push(FontFaceResource {
+                    id: FontFaceKey("face-0".to_string()),
+                    blob_key: FontBlobKey("blob-0".to_string()),
+                    face_index: 0,
+                    postscript_name: None,
+                    family_names: Vec::new(),
+                    style_names: Vec::new(),
+                    weight_class: None,
+                    width_class: None,
+                    italic: None,
+                });
+            },
+        );
+
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.fallback_required);
+        assert_eq!(
+            report.rejected_variants[0].reasons,
+            vec![VariantRejectReason::FontBlobBytesMissing]
+        );
+        assert_eq!(
+            VariantRejectReason::FontBlobBytesMissing.as_str(),
+            "fontBlobBytesMissing"
+        );
+    }
+
+    #[test]
+    fn canvaskit_rejects_font_blob_digest_mismatch() {
+        let report = first_report_with_resource_setup(
+            vec![text_op(), glyph_run(diagnostics(), 42)],
+            TextVariantSelectionOptions::canvaskit(),
+            |resources| {
+                add_portable_font_resources(resources);
+                resources.font_resources_mut().blobs[0].digest = Some(FontDigest {
+                    algorithm: crate::paint::RESOURCE_KEY_ALGORITHM.to_string(),
+                    value: resource_digest_hex([9_u8, 9, 9, 9]),
+                });
+            },
+        );
+
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.fallback_required);
+        assert_eq!(
+            report.rejected_variants[0].reasons,
+            vec![VariantRejectReason::FontBlobDigestMismatch]
+        );
+        assert_eq!(
+            VariantRejectReason::FontBlobDigestMismatch.as_str(),
+            "fontBlobDigestMismatch"
+        );
+    }
+
+    #[test]
+    fn canvaskit_rejects_font_blob_data_ref_mismatch() {
+        let report = first_report_with_resource_setup(
+            vec![text_op(), glyph_run(diagnostics(), 42)],
+            TextVariantSelectionOptions::canvaskit(),
+            |resources| {
+                add_portable_font_resources(resources);
+                resources.font_resources_mut().blobs[0].data_ref = None;
+            },
+        );
+
+        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
+        assert!(report.fallback_required);
+        assert_eq!(
+            report.rejected_variants[0].reasons,
+            vec![VariantRejectReason::FontBlobDataRefMismatch]
+        );
+        assert_eq!(
+            VariantRejectReason::FontBlobDataRefMismatch.as_str(),
+            "fontBlobDataRefMismatch"
+        );
     }
 
     #[test]
@@ -1241,19 +1483,7 @@ mod tests {
         let report = first_report_with_resource_setup(
             vec![text_op(), glyph_run(diagnostics(), 42)],
             native_skia_options(),
-            |resources| {
-                resources.font_resources_mut().faces.push(FontFaceResource {
-                    id: FontFaceKey("face-0".to_string()),
-                    blob_key: FontBlobKey("blob-0".to_string()),
-                    face_index: 0,
-                    postscript_name: None,
-                    family_names: Vec::new(),
-                    style_names: Vec::new(),
-                    weight_class: None,
-                    width_class: None,
-                    italic: None,
-                });
-            },
+            add_portable_font_resources,
         );
 
         assert_eq!(report.selected_variant_id.as_deref(), Some("glyphRun"));
