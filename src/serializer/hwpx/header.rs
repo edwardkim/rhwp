@@ -941,6 +941,9 @@ fn write_para_pr<W: Write>(
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
     write_para_margin_switch(w, ps)?;
 
+    let border_connect = if (ps.attr1 >> 28) & 1 != 0 { "1" } else { "0" };
+    let border_ignore_margin = if (ps.attr1 >> 29) & 1 != 0 { "1" } else { "0" };
+
     empty_tag(
         w,
         "hh:border",
@@ -950,8 +953,8 @@ fn write_para_pr<W: Write>(
             ("offsetRight", &ps.border_spacing[1].to_string()),
             ("offsetTop", &ps.border_spacing[2].to_string()),
             ("offsetBottom", &ps.border_spacing[3].to_string()),
-            ("connect", "0"),
-            ("ignoreMargin", "0"),
+            ("connect", border_connect),
+            ("ignoreMargin", border_ignore_margin),
         ],
     )?;
 

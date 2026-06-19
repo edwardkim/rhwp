@@ -307,26 +307,28 @@ impl Field {
         self.properties & 1 != 0
     }
 
-    /// 누름틀 command 문자열을 재구축한다.
+    /// 누름틀(ClickHere) command 문자열을 한컴 포맷으로 재구축한다.
     ///
-    /// 한컴은 wstring 값 뒤에 공백을 기대하므로 trim_end()를 호출하지 않는다.
-    pub fn build_clickhere_command(guide: &str, memo: &str, name: &str) -> String {
+    /// 한컴 정답지(`samples/field-01.hwp`, `form-01.hwp`) 동형 (#1434):
+    /// ```text
+    /// Clickhere:set:{N}:Direction:wstring:{gl}:{guide} HelpState:wstring:{ml}:{memo}␣␣
+    /// ```
+    /// - HelpState 값 뒤 공백 2개 (구분 1 + trailing 1).
+    /// - `set` 길이 N = inner 글자수 − 1 (마지막 trailing 공백 제외).
+    /// - 필드 이름(Name)은 command 에 넣지 않는다 — CTRL_DATA 레코드(0x57) 전담.
+    ///   (이전엔 Name 키를 넣어 한컴이 Direction 범위를 잘못 잘라 안내문 바인딩 실패.)
+    pub fn build_clickhere_command(guide: &str, memo: &str) -> String {
         let guide_len = guide.chars().count();
         let memo_len = memo.chars().count();
-        let name_len = name.chars().count();
 
-        // Direction + HelpState + Name (Name이 비어있으면 생략)
-        // 각 wstring 값 뒤에 공백 1개를 유지한다 (한컴 호환).
-        let mut inner = format!(
-            "Direction:wstring:{}:{} HelpState:wstring:{}:{} ",
+        // HelpState 값 뒤 공백 2개 (한컴 정답지 동형).
+        let inner = format!(
+            "Direction:wstring:{}:{} HelpState:wstring:{}:{}  ",
             guide_len, guide, memo_len, memo
         );
-        if !name.is_empty() {
-            inner.push_str(&format!("Name:wstring:{}:{} ", name_len, name));
-        }
-        // trim_end()를 호출하지 않고 trailing space를 보존한다.
-        let total_len = inner.chars().count();
-        format!("Clickhere:set:{}:{}", total_len, inner)
+        // set 길이는 마지막 trailing 공백 1개를 제외한 inner 글자수.
+        let set_len = inner.chars().count() - 1;
+        format!("Clickhere:set:{}:{}", set_len, inner)
     }
 
     /// FieldType을 문자열로 변환한다.
@@ -440,6 +442,61 @@ mod tests {
     #[test]
     fn test_field_type_default() {
         assert_eq!(FieldType::default(), FieldType::Unknown);
+    }
+
+    // ---------- #1434: 누름틀 command 한컴 포맷 정합 ----------
+
+    /// 한컴 정답지(field-01/form-01)의 command 문자열과 바이트 동형이어야 한다.
+    #[test]
+    fn task1434_clickhere_command_hancom_format() {
+        // 한컴 원본: `Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  `
+        assert_eq!(
+            Field::build_clickhere_command("여기에 입력", ""),
+            "Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  "
+        );
+        // 한컴 원본: `Clickhere:set:47:Direction:wstring:5:제목 입력 HelpState:wstring:0:  `
+        assert_eq!(
+            Field::build_clickhere_command("제목 입력", ""),
+            "Clickhere:set:47:Direction:wstring:5:제목 입력 HelpState:wstring:0:  "
+        );
+    }
+
+    /// command 에 Name 키가 들어가면 안 된다 (이름은 CTRL_DATA 전담). 한컴이 Name 키를
+    /// 만나면 Direction 범위를 잘못 잘라 안내문 바인딩 실패 (#1434 회귀 가드).
+    #[test]
+    fn task1434_command_has_no_name_key() {
+        let cmd = Field::build_clickhere_command("여기에 입력", "");
+        assert!(
+            !cmd.contains("Name:"),
+            "command 에 Name 키가 있으면 한컴 안내문 바인딩 실패: {cmd}"
+        );
+    }
+
+    /// 생성한 command 에서 guide_text/memo_text 가 정확히 재추출되어야 한다 (왕복 정합).
+    #[test]
+    fn task1434_command_guide_memo_roundtrip() {
+        let field = Field {
+            field_type: FieldType::ClickHere,
+            command: Field::build_clickhere_command("여기에 입력", "도움말"),
+            ..Default::default()
+        };
+        assert_eq!(field.guide_text(), Some("여기에 입력"));
+        assert_eq!(field.memo_text(), Some("도움말"));
+    }
+
+    /// set 길이는 inner 글자수 − 1 (마지막 trailing 공백 제외) 규칙을 따른다.
+    #[test]
+    fn task1434_set_length_excludes_trailing_space() {
+        let cmd = Field::build_clickhere_command("a", "");
+        // inner = "Direction:wstring:1:a HelpState:wstring:0:  " (trailing 2개)
+        let inner = cmd.strip_prefix("Clickhere:set:").unwrap();
+        let (set_str, body) = inner.split_once(':').unwrap();
+        let set_len: usize = set_str.parse().unwrap();
+        assert_eq!(
+            set_len,
+            body.chars().count() - 1,
+            "set 길이 = inner 글자수 − 1 (trailing 공백 제외): {cmd}"
+        );
     }
 
     #[test]

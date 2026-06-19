@@ -69,6 +69,11 @@ fn para_border_can_use_rect_stroke(
     skip_bottom: bool,
 ) -> bool {
     borders.iter().all(para_border_is_visible)
+        // Rectangle stroke 는 dash 정보를 표현하지 못하므로 점선/파선 문단 테두리는
+        // 면별 LineNode 경로로 보내야 한컴의 선 모양과 일치한다.
+        && borders
+            .iter()
+            .all(|border| matches!(border.line_type, BorderLineType::Solid))
         && borders[1..]
             .iter()
             .all(|border| para_border_same_stroke(&borders[0], border))

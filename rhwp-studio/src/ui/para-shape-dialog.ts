@@ -696,6 +696,8 @@ export class ParaShapeDialog {
     this.borderResult.bdSpacingInputs[1].value = (sp[2] / HWPUNIT_PER_MM).toFixed(2);
     this.borderResult.bdSpacingInputs[2].value = (sp[1] / HWPUNIT_PER_MM).toFixed(2);
     this.borderResult.bdSpacingInputs[3].value = (sp[3] / HWPUNIT_PER_MM).toFixed(2);
+    this.borderResult.bdConnectCb.checked = p.borderConnect ?? false;
+    this.borderResult.bdIgnoreMarginCb.checked = p.borderIgnoreMargin ?? false;
     this.borderResult.updateBdPreview();
 
     this.updatePreview();
@@ -894,6 +896,10 @@ export class ParaShapeDialog {
     if (newSp[0] !== origSp[0] || newSp[1] !== origSp[1] || newSp[2] !== origSp[2] || newSp[3] !== origSp[3]) {
       mods.borderSpacing = newSp;
     }
+    const borderConnect = this.borderResult.bdConnectCb.checked;
+    if (borderConnect !== (p.borderConnect ?? false)) mods.borderConnect = borderConnect;
+    const borderIgnoreMargin = this.borderResult.bdIgnoreMarginCb.checked;
+    if (borderIgnoreMargin !== (p.borderIgnoreMargin ?? false)) mods.borderIgnoreMargin = borderIgnoreMargin;
 
     return mods;
   }

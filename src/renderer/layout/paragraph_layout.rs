@@ -1914,8 +1914,36 @@ impl LayoutEngine {
             let cs_significant = comp_line.column_start > 0
                 && comp_line.segment_width > 0
                 && comp_line.segment_width < col_area_w_hu;
+            // [Task #1440] anchor 매칭이 없는 후속 body 문단이라도 LINE_SEG 자체가
+            // 단 폭보다 확연히 좁은 wrap zone 을 보존하면 그 저장 폭을 따른다.
+            // 정상 들여쓰기 계열은 cs+sw ~= col_w 이므로 제외한다.
+            //
+            // LineSeg cs/sw 만으로 wrap zone 을 판정하면 paragraph border 박스의 내부
+            // inset도 그림 어울림으로 오인된다(#547 passage box, #1440 6쪽 지문 박스).
+            // anchor 메타데이터가 없는 fallback 보정은 같은 문단 안에서 실제로 좁은 줄과
+            // 넓은 줄이 섞인 precomputed picture-wrap 흐름에만 제한한다.
+            let para_has_mixed_segment_widths = para
+                .map(|p| {
+                    let mut min_sw = i32::MAX;
+                    let mut max_sw = 0;
+                    for seg in p.line_segs.iter().filter(|seg| seg.segment_width > 0) {
+                        min_sw = min_sw.min(seg.segment_width);
+                        max_sw = max_sw.max(seg.segment_width);
+                    }
+                    min_sw != i32::MAX && max_sw.saturating_sub(min_sw) > 1000
+                })
+                .unwrap_or(false);
+            let precomputed_body_wrap_line = cell_ctx.is_none()
+                && para_has_mixed_segment_widths
+                && comp_line.segment_width > 0
+                && line_avail_hu < col_area_w_hu - 200
+                && para
+                    .and_then(|p| p.line_segs.get(line_idx))
+                    .map(|seg| seg.is_in_wrap_zone(col_area_w_hu))
+                    .unwrap_or(false);
             let (effective_col_x, effective_col_w) = if (has_picture_shape_square_wrap
-                || line_has_inline_tac_table)
+                || line_has_inline_tac_table
+                || precomputed_body_wrap_line)
                 && comp_line.segment_width > 0
                 && (line_avail_hu < col_area_w_hu - 200 || cs_significant)
             {

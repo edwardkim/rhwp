@@ -819,6 +819,8 @@ pub struct ParaShapeMods {
     // 테두리/배경 탭 속성
     pub border_fill_id: Option<u16>,
     pub border_spacing: Option<[i16; 4]>,
+    pub border_connect: Option<bool>,
+    pub border_ignore_margin: Option<bool>,
 }
 
 impl ParaShapeMods {
@@ -911,6 +913,12 @@ impl ParaShapeMods {
         }
         if let Some(v) = self.border_spacing {
             ps.border_spacing = v;
+        }
+        if let Some(v) = self.border_connect {
+            set_bit(&mut ps.attr1, 28, v);
+        }
+        if let Some(v) = self.border_ignore_margin {
+            set_bit(&mut ps.attr1, 29, v);
         }
         ps
     }

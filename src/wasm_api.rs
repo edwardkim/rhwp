@@ -4042,7 +4042,7 @@ impl HwpDocument {
                         let orig_memo = f.memo_text().unwrap_or("").to_string();
                         if guide != orig_guide || memo != orig_memo {
                             // guide 또는 memo가 변경되었으므로 command 재구축
-                            let new_command = Field::build_clickhere_command(guide, memo, "");
+                            let new_command = Field::build_clickhere_command(guide, memo);
                             f.command = new_command;
                         }
                         // command가 변경되지 않았으면 원본 보존

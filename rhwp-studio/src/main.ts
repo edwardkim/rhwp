@@ -22,6 +22,7 @@ import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showToast } from '@/ui/toast';
+import { showDropConfirmDialog } from '@/ui/drop-confirm-dialog';
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
@@ -368,7 +369,19 @@ function setupFileInput(): void {
     if (!file) return;
     const dropName = file.name.toLowerCase();
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
-    if (imageExts.some(ext => dropName.endsWith(ext))) {
+    const isImage = imageExts.some(ext => dropName.endsWith(ext));
+    const isDoc = dropName.endsWith('.hwp') || dropName.endsWith('.hwpx');
+    if (!isImage && !isDoc) {
+      alert('HWP/HWPX 파일 또는 이미지 파일만 지원합니다.');
+      return;
+    }
+
+    // [#1439] 보안: 드롭으로 로컬 파일을 읽는 동작은 기본에서 제외하고, 사용자가
+    // 명시적으로 [열기]를 눌러 동의한 경우에만 진행한다 (확장/웹 공통).
+    const confirmed = await showDropConfirmDialog(file.name);
+    if (!confirmed) return;
+
+    if (isImage) {
       if (!inputHandler || wasm.pageCount === 0) return;
       const data = new Uint8Array(await file.arrayBuffer());
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
@@ -385,10 +398,8 @@ function setupFileInput(): void {
       }
       return;
     }
-    if (!dropName.endsWith('.hwp') && !dropName.endsWith('.hwpx')) {
-      alert('HWP/HWPX 파일 또는 이미지 파일만 지원합니다.');
-      return;
-    }
+
+    // HWP/HWPX — loadFile 내부 unsaved 가드는 드롭 확인 이후에 동작한다.
     await loadFile(file);
   });
 }

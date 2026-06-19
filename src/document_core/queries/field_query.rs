@@ -1244,7 +1244,9 @@ fn insert_click_here_field_in_para(
 
     let field = Field {
         field_type: FieldType::ClickHere,
-        command: Field::build_clickhere_command(guide, memo, name),
+        // [#1434] 이름은 ctrl_data_name(CTRL_DATA 0x57)으로 별도 저장하므로 command 에
+        // 넣지 않는다 (Name 키가 끼면 한컴이 안내문 바인딩 실패).
+        command: Field::build_clickhere_command(guide, memo),
         properties: if editable { 1 } else { 0 },
         extra_properties: 0x09,
         field_id,

@@ -579,6 +579,12 @@ pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShap
     if let Some(v) = json_i32(json, "koreanBreakUnit") {
         mods.korean_break_unit = Some(v as u8);
     }
+    if let Some(v) = json_bool(json, "borderConnect") {
+        mods.border_connect = Some(v);
+    }
+    if let Some(v) = json_bool(json, "borderIgnoreMargin") {
+        mods.border_ignore_margin = Some(v);
+    }
 
     mods
 }

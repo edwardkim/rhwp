@@ -770,6 +770,8 @@ impl DocumentCore {
                 };
                 let english_break_unit = (a1 >> 5) & 0x03;
                 let korean_break_unit = (a1 >> 7) & 0x01;
+                let border_connect = (a1 >> 28) & 1 != 0;
+                let border_ignore_margin = (a1 >> 29) & 1 != 0;
                 format!(
                     concat!(
                         "{{\"alignment\":\"{}\",\"lineSpacing\":{:.1},\"lineSpacingType\":\"{:?}\",",
@@ -781,7 +783,8 @@ impl DocumentCore {
                         "\"autoSpaceKrEn\":{},\"autoSpaceKrNum\":{},\"verticalAlign\":{},",
                         "\"englishBreakUnit\":{},\"koreanBreakUnit\":{},",
                         "\"tabAutoLeft\":{},\"tabAutoRight\":{},\"tabStops\":[{}],\"defaultTabSpacing\":{},",
-                        "{},\"borderSpacing\":[{},{},{},{}]}}"
+                        "{},\"borderSpacing\":[{},{},{},{}],",
+                        "\"borderConnect\":{},\"borderIgnoreMargin\":{}}}"
                     ),
                     align_str,
                     ps.line_spacing, ps.line_spacing_type,
@@ -799,6 +802,7 @@ impl DocumentCore {
                     tab_auto_left, tab_auto_right, tab_stops_json, default_tab_spacing,
                     border_fill_json,
                     border_spacing[0], border_spacing[1], border_spacing[2], border_spacing[3],
+                    border_connect, border_ignore_margin,
                 )
             }
             None => {
@@ -819,7 +823,8 @@ impl DocumentCore {
                         "\"borderTop\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderBottom\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0,",
-                        "\"borderSpacing\":[0,0,0,0]}}"
+                        "\"borderSpacing\":[0,0,0,0],",
+                        "\"borderConnect\":false,\"borderIgnoreMargin\":false}}"
                     ),
                     para_shape_id, default_tab_spacing
                 )

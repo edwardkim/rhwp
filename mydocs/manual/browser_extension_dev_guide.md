@@ -137,6 +137,31 @@ background에서 `fetch(message.url)`을 무검증으로 실행하면:
 6. 파일 크기 제한
 7. sender 검증 (viewer.html만 허용)
 
+### 드래그&드롭 로컬 파일 로딩은 명시적 동의(opt-in) 후에만 (#1439)
+
+드롭 한 번으로 로컬 파일을 즉시 읽어 로딩하면 사용자의 명시적 동의 없이 로컬 파일이
+처리된다. 드롭 로컬 파일 로딩은 **기본 동작에서 제외**하고, 모달 확인 대화상자로
+사용자가 [열기]를 눌러 동의한 경우에만 진행한다.
+
+```javascript
+// ❌ 드롭 즉시 로딩 — 명시적 동의 없음
+container.addEventListener('drop', async (e) => {
+  const file = e.dataTransfer?.files[0];
+  await loadFile(file); // 바로 로딩
+});
+
+// ✅ 드롭 → 확인 대화상자 → [열기]에서만 로딩 (drop-confirm-dialog.ts)
+const confirmed = await showDropConfirmDialog(file.name);
+if (!confirmed) return; // 미동의 → 미로딩 (보안 기본값 안전)
+await loadFile(file);
+```
+
+- 확장(standalone 탭)/웹 공통 — 순수 DOM 모달이라 `chrome` API 의존 없이 동작.
+- 드롭은 `dataTransfer.files`(File 객체)라 file:// scheme 권한(#1131)과 무관 — 게이트는
+  그 위 계층의 사용자 동의.
+- 순서: **드롭 보안 확인 → unsaved 변경 가드** (먼저 "이 파일 열기" 동의 → 저장 경고).
+- 파일 메뉴/열기 버튼은 이미 명시적 트리거이므로 게이트 미적용.
+
 ### sender 검증 필수
 
 ```javascript

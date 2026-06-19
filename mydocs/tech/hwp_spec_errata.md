@@ -699,6 +699,32 @@ HWP5 `hwp5-anchor-trace` 결과도 첫 번째 그림 `CTRL_HEADER`에서 각각
 
 ---
 
+## 32. ParaShape attr1 bit 28/29 — HWPX `hh:border connect/ignoreMargin`
+
+### 현상
+
+한컴 문단 모양 대화상자의 `문단 테두리 연결`은 두 개 이상의 연속 문단을 하나의
+문단 테두리로 연결하는 설정이다. HWP5에서는 `HWPTAG_PARA_SHAPE` 속성1의 bit 28에
+저장되고, `문단 여백 무시`는 bit 29에 저장된다.
+
+HWPX에서는 같은 값이 `<hh:paraPr>` 아래 `<hh:border>`의 `connect="1|0"` 및
+`ignoreMargin="1|0"` 속성으로 저장된다.
+
+### 기준 샘플
+
+- `samples/[2027] 온새미로 1 본교재.hwp(x)` 6쪽 지문 박스 문단
+- HWPX 원본 `paraPr`의 `<hh:border connect="1" ignoreMargin="1">`
+- HWP5/HWPX 파싱 후 ParaShape `attr1` bit 28/29 on
+
+### 정정
+
+- Studio 문단 모양 속성 JSON은 `borderConnect`, `borderIgnoreMargin`을 노출해야 한다.
+- 문단 모양 수정 명령은 위 값을 ParaShape attr1 bit 28/29에 반영해야 한다.
+- HWPX serializer는 `connect`/`ignoreMargin`을 고정 `0`으로 쓰지 말고 ParaShape attr1
+  bit 28/29에서 출력해야 한다.
+
+---
+
 ## 검증 원칙
 
 1. **바이너리 우선**: 스펙 문서보다 실제 바이너리 데이터를 신뢰한다
