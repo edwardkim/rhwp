@@ -2552,10 +2552,12 @@ mod tests {
     use super::*;
     use crate::model::shape::TextWrap;
     use crate::paint::{
+        font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
         BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, CacheHint, ClipKind,
         ColorGlyphFormat, ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind,
-        ColorPaintGraphPayload, ColorPaintSolidPathNode, FontColorGlyphRef, FontFaceKey,
-        FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
+        ColorPaintGraphPayload, ColorPaintSolidPathNode, FontBlobKey, FontBlobResource,
+        FontColorGlyphRef, FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId,
+        FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster, GlyphOutlineFillRule,
         GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
         GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
         GlyphRunReplayEligibility, GroupKind, ImageResourceId, LayerAffineTransform,
@@ -2563,7 +2565,7 @@ mod tests {
         LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta, ResolvedColor, ScriptTag,
         ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDecorationKind,
         TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
-        TextVariantQuality, WritingMode,
+        TextVariantQuality, WritingMode, RESOURCE_KEY_ALGORITHM,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -2910,8 +2912,7 @@ mod tests {
         assert!(json.contains("\"legacyVisuals\":{\"charOverlap\":\"mirror\""));
     }
 
-    #[test]
-    fn serializes_optional_glyph_run_variant_with_text_run_fallback() {
+    fn optional_glyph_run_variant_tree() -> PageLayerTree {
         let source = TextSourceSpan {
             id: TextSourceId(0),
             utf8_range: TextSourceRange::new(0, 1),
@@ -3024,7 +3025,7 @@ mod tests {
             }),
         };
 
-        let tree = PageLayerTree::new(
+        PageLayerTree::new(
             120.0,
             80.0,
             LayerNode::leaf(
@@ -3032,7 +3033,46 @@ mod tests {
                 None,
                 vec![text_run, glyph_run],
             ),
-        );
+        )
+    }
+
+    fn add_portable_font_resources(resources: &mut ResourceArena) {
+        let font_bytes = [0_u8, 1, 2, 3];
+        resources.intern_font_blob_bytes(&font_bytes);
+        let blob_key = FontBlobKey("blob-0".to_string());
+        let face_key = FontFaceKey("face-0".to_string());
+        let digest_value = resource_digest_hex(font_bytes);
+        let digest = FontDigest {
+            algorithm: RESOURCE_KEY_ALGORITHM.to_string(),
+            value: digest_value.clone(),
+        };
+        let data_ref = BinaryResourceRef {
+            kind: BinaryResourceKind::FontBlob,
+            id: font_blob_resource_key(font_bytes.len(), &digest_value),
+        };
+        resources.font_resources_mut().blobs.push(FontBlobResource {
+            id: blob_key.clone(),
+            digest: Some(digest.clone()),
+            source: FontResourceSource::Embedded,
+            data_ref: Some(data_ref.clone()),
+            portability: FontPortability::PortableBlob { digest, data_ref },
+        });
+        resources.font_resources_mut().faces.push(FontFaceResource {
+            id: face_key,
+            blob_key,
+            face_index: 0,
+            postscript_name: None,
+            family_names: Vec::new(),
+            style_names: Vec::new(),
+            weight_class: None,
+            width_class: None,
+            italic: None,
+        });
+    }
+
+    #[test]
+    fn serializes_optional_glyph_run_variant_with_text_run_fallback() {
+        let tree = optional_glyph_run_variant_tree();
         let json = tree.to_json();
 
         assert!(json.contains("\"type\":\"glyphRun\""));
@@ -3047,6 +3087,22 @@ mod tests {
         assert!(json.contains("\"replayEligibility\":\"portable\""));
         assert!(json.contains("\"strictVisualEligible\":true"));
         assert!(json.contains("\"slotDiagnostics\":[{\"paintOrderSlotId\":\"text-0\""));
+        assert!(json.contains("\"strictVariantAvailable\":false"));
+        assert!(json.contains("\"fallbackReason\":\"fontFaceMissing\""));
+    }
+
+    #[test]
+    fn serializes_strict_glyph_run_variant_when_font_resources_are_proven() {
+        let mut tree = optional_glyph_run_variant_tree();
+        add_portable_font_resources(&mut tree.resources);
+        let json = tree.to_json();
+
+        assert!(json.contains("\"type\":\"glyphRun\""));
+        assert!(json.contains("\"fontResources\":{\"blobs\":["));
+        assert!(json.contains("\"portability\":\"portableBlob\""));
+        assert!(json.contains("\"faces\":["));
+        assert!(json.contains("\"optionalFeatures\":[\"fontResources\",\"text.glyphRun\"]"));
+        assert!(json.contains("\"variants\":[\"textRun\",\"glyphRun\"]"));
         assert!(json.contains("\"strictVariantAvailable\":true"));
     }
 
