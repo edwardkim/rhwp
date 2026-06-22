@@ -2435,11 +2435,9 @@ impl HwpDocument {
         let row_count = json_u32(options_json, "rowCount").unwrap_or(2) as u16;
         let col_count = json_u32(options_json, "colCount").unwrap_or(2) as u16;
         let treat_as_char = json_bool(options_json, "treatAsChar").unwrap_or(false);
-        // colWidths: JSON 배열에서 u32 목록 추출
-        let col_widths: Option<Vec<u32>> = {
-            let key = "colWidths";
-            if let Some(start) = options_json.find(&format!("\"{}\"", key)) {
-                let rest = &options_json[start..];
+        fn parse_u32_array(json: &str, key: &str) -> Option<Vec<u32>> {
+            if let Some(start) = json.find(&format!("\"{}\"", key)) {
+                let rest = &json[start..];
                 if let Some(arr_start) = rest.find('[') {
                     if let Some(arr_end) = rest[arr_start..].find(']') {
                         let arr_str = &rest[arr_start + 1..arr_start + arr_end];
@@ -2461,7 +2459,9 @@ impl HwpDocument {
             } else {
                 None
             }
-        };
+        }
+        let col_widths = parse_u32_array(options_json, "colWidths");
+        let row_heights = parse_u32_array(options_json, "rowHeights");
 
         self.create_table_ex_native(
             section_idx,
@@ -2471,6 +2471,7 @@ impl HwpDocument {
             col_count,
             treat_as_char,
             col_widths.as_deref(),
+            row_heights.as_deref(),
         )
         .map_err(|e| e.into())
     }
@@ -5234,6 +5235,9 @@ impl HwpDocument {
             Some(s) => s.clone(),
             None => return false,
         };
+        let old_csid = style.char_shape_id as u32;
+        let old_psid = style.para_shape_id;
+        let style_type = style.style_type;
 
         // CharShape 수정
         if !char_mods_json.is_empty() && char_mods_json != "{}" {
@@ -5272,44 +5276,85 @@ impl HwpDocument {
 
         // raw_data 무효화
         self.core.document.doc_info.styles[style_id as usize].raw_data = None;
+        self.core.document.doc_info.raw_stream_dirty = true;
 
-        // ── 스타일 변경을 해당 스타일을 사용하는 모든 문단에 전파 ──
-        let updated_style = self.core.document.doc_info.styles[style_id as usize].clone();
         let sid = style_id as u8;
-        let new_csid = updated_style.char_shape_id as u32;
-        let new_psid = updated_style.para_shape_id;
-        for section in &mut self.core.document.sections {
-            for para in &mut section.paragraphs {
+        let mut body_targets = Vec::new();
+        let mut cell_targets = Vec::new();
+        for (sec_idx, section) in self.core.document.sections.iter().enumerate() {
+            for (para_idx, para) in section.paragraphs.iter().enumerate() {
                 if para.style_id == sid {
-                    para.para_shape_id = new_psid;
-                    para.char_shapes.clear();
-                    para.char_shapes
-                        .push(crate::model::paragraph::CharShapeRef {
-                            start_pos: 0,
-                            char_shape_id: new_csid,
-                        });
+                    body_targets.push((sec_idx, para_idx));
                 }
-                // 셀 내 문단도 전파
-                for ctrl in &mut para.controls {
-                    if let crate::model::control::Control::Table(ref mut table) = *ctrl {
-                        for cell in &mut table.cells {
-                            for cpara in &mut cell.paragraphs {
+                for (control_idx, ctrl) in para.controls.iter().enumerate() {
+                    if let Control::Table(table) = ctrl {
+                        for (cell_idx, cell) in table.cells.iter().enumerate() {
+                            for (cell_para_idx, cpara) in cell.paragraphs.iter().enumerate() {
                                 if cpara.style_id == sid {
-                                    cpara.para_shape_id = new_psid;
-                                    cpara.char_shapes.clear();
-                                    cpara
-                                        .char_shapes
-                                        .push(crate::model::paragraph::CharShapeRef {
-                                            start_pos: 0,
-                                            char_shape_id: new_csid,
-                                        });
+                                    cell_targets.push((
+                                        sec_idx,
+                                        para_idx,
+                                        control_idx,
+                                        cell_idx,
+                                        cell_para_idx,
+                                    ));
                                 }
                             }
                         }
                     }
                 }
             }
-            section.raw_stream = None;
+        }
+
+        // ── 스타일 변경을 해당 스타일을 사용하는 모든 문단에 전파 ──
+        let updated_style = self.core.document.doc_info.styles[style_id as usize].clone();
+        let new_csid = updated_style.char_shape_id as u32;
+        let new_psid = updated_style.para_shape_id;
+
+        for (sec_idx, para_idx) in body_targets {
+            if let Some(para) = self
+                .core
+                .document
+                .sections
+                .get_mut(sec_idx)
+                .and_then(|s| s.paragraphs.get_mut(para_idx))
+            {
+                if style_type == 0 && para.para_shape_id == old_psid {
+                    para.para_shape_id = new_psid;
+                }
+                para.replace_style_char_shape_preserving_overrides(old_csid, new_csid);
+            }
+            self.core.reflow_body_paragraph(sec_idx, para_idx);
+            if let Some(section) = self.core.document.sections.get_mut(sec_idx) {
+                section.raw_stream = None;
+            }
+        }
+
+        for (sec_idx, para_idx, control_idx, cell_idx, cell_para_idx) in cell_targets {
+            if let Ok(cpara) = self.core.get_cell_paragraph_mut(
+                sec_idx,
+                para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ) {
+                if style_type == 0 && cpara.para_shape_id == old_psid {
+                    cpara.para_shape_id = new_psid;
+                }
+                cpara.replace_style_char_shape_preserving_overrides(old_csid, new_csid);
+            }
+            self.core.reflow_cell_paragraph(
+                sec_idx,
+                para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            );
+            self.core
+                .mark_cell_control_dirty(sec_idx, para_idx, control_idx);
+            if let Some(section) = self.core.document.sections.get_mut(sec_idx) {
+                section.raw_stream = None;
+            }
         }
 
         // 스타일 캐시 무효화 + 전체 리빌드
@@ -5334,12 +5379,23 @@ impl HwpDocument {
         let style_type = json_i32(json, "type").unwrap_or(0) as u8;
         let next_style_id = json_i32(json, "nextStyleId").unwrap_or(0) as u8;
 
-        // 기본 "바탕글" 스타일(ID 0)의 CharShape/ParaShape를 복사
+        // 한컴 스타일 추가 흐름은 현재 문단의 모양을 기본값으로 삼는다.
+        // 호출자가 base ID를 넘기지 않으면 기존 호환성을 위해 바탕글을 사용한다.
         let base_style = self.core.document.doc_info.styles.first();
-        let (char_shape_id, para_shape_id) = match base_style {
+        let (fallback_char_shape_id, fallback_para_shape_id) = match base_style {
             Some(s) => (s.char_shape_id, s.para_shape_id),
             None => (0, 0),
         };
+        let char_shape_id = json_i32(json, "baseCharShapeId")
+            .filter(|id| *id >= 0)
+            .map(|id| id as u16)
+            .filter(|id| (*id as usize) < self.core.document.doc_info.char_shapes.len())
+            .unwrap_or(fallback_char_shape_id);
+        let para_shape_id = json_i32(json, "baseParaShapeId")
+            .filter(|id| *id >= 0)
+            .map(|id| id as u16)
+            .filter(|id| (*id as usize) < self.core.document.doc_info.para_shapes.len())
+            .unwrap_or(fallback_para_shape_id);
 
         let new_style = Style {
             raw_data: None,
@@ -5352,6 +5408,7 @@ impl HwpDocument {
             char_shape_id,
         };
         self.core.document.doc_info.styles.push(new_style);
+        self.core.document.doc_info.raw_stream_dirty = true;
         let new_id = (self.core.document.doc_info.styles.len() - 1) as i32;
         // 스타일 캐시 갱신
         self.core.styles = crate::renderer::style_resolver::resolve_styles(

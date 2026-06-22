@@ -1,8 +1,8 @@
 //! 커서 이동/줄 정보/경로 탐색/선택 영역 관련 native 메서드
 
 use super::super::helpers::{
-    find_logical_control_positions, get_textbox_from_shape, has_table_control, navigable_text_len,
-    utf16_pos_to_char_idx, LineInfoResult,
+    find_logical_control_positions, get_textbox_from_shape, has_table_control,
+    is_treat_as_char_object_control, navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -11,15 +11,8 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::render_tree::PageRenderTree;
 
 fn is_caret_logical_inline_control(ctrl: &Control) -> bool {
-    matches!(
-        ctrl,
-        Control::Shape(_)
-            | Control::Table(_)
-            | Control::Picture(_)
-            | Control::Equation(_)
-            | Control::Footnote(_)
-            | Control::Endnote(_)
-    )
+    is_treat_as_char_object_control(ctrl)
+        || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
 }
 
 fn control_only_caret_utf16_to_char_idx(para: &Paragraph, caret_utf16: u32) -> usize {
@@ -998,6 +991,7 @@ impl DocumentCore {
             cell_ctx: Option<(usize, usize, usize, usize)>,
             char_range: (usize, usize),
             control_positions: &[usize],
+            caret_inline_controls: &[bool],
             page_index: u32,
             result: &mut Vec<PositionCandidate>,
         ) {
@@ -1012,6 +1006,9 @@ impl DocumentCore {
                 );
                 if matches {
                     if let Some(ci) = img.control_index {
+                        if caret_inline_controls.get(ci).copied() != Some(true) {
+                            return;
+                        }
                         if let Some(pos) = control_positions.get(ci).copied() {
                             if pos >= char_range.0 && pos <= char_range.1 {
                                 let (caret_y, caret_h) =
@@ -1048,15 +1045,24 @@ impl DocumentCore {
                     cell_ctx,
                     char_range,
                     control_positions,
+                    caret_inline_controls,
                     page_index,
                     result,
                 );
             }
         }
 
-        let control_positions = self
+        let (control_positions, caret_inline_controls) = self
             .resolve_paragraph(sec, para, cell_ctx)
-            .map(find_logical_control_positions)
+            .map(|para| {
+                (
+                    find_logical_control_positions(para),
+                    para.controls
+                        .iter()
+                        .map(is_treat_as_char_object_control)
+                        .collect::<Vec<_>>(),
+                )
+            })
             .unwrap_or_default();
 
         // 페이지 순회하며 매칭 run 수집
@@ -1072,6 +1078,7 @@ impl DocumentCore {
                 cell_ctx,
                 char_range,
                 &control_positions,
+                &caret_inline_controls,
                 page_num,
                 &mut candidates,
             );

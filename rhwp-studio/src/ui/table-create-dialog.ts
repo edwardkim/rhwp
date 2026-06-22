@@ -17,11 +17,32 @@
 
 import { makeOption } from './dom-utils';
 import { enableDialogDrag } from './dialog-drag';
+import { HWPUNIT_PER_MM } from '@/core/hwp-constants';
 
 const GRID_ROWS = 8;
 const GRID_COLS = 10;
 const CELL_SIZE = 16;   // px
 const CELL_GAP = 2;     // px
+
+export interface TableCreateOptions {
+  treatAsChar?: boolean;
+  colWidths?: number[];
+  rowHeights?: number[];
+}
+
+function mmToHwpunit(mm: number): number {
+  return Math.round(mm * HWPUNIT_PER_MM);
+}
+
+function splitEvenly(total: number, count: number): number[] {
+  const base = Math.floor(total / count);
+  let rest = total - base * count;
+  return Array.from({ length: count }, () => {
+    const v = base + (rest > 0 ? 1 : 0);
+    rest -= rest > 0 ? 1 : 0;
+    return Math.max(1, v);
+  });
+}
 
 export class TableCreateDialog {
   private overlay!: HTMLDivElement;
@@ -34,7 +55,7 @@ export class TableCreateDialog {
   private hoverCol = -1;
 
   /** 그리드 선택 콜백 */
-  onApply: ((rows: number, cols: number) => void) | null = null;
+  onApply: ((rows: number, cols: number, options?: TableCreateOptions) => void) | null = null;
 
   /**
    * 그리드 피커를 표시한다.
@@ -369,8 +390,17 @@ export class TableCreateDialog {
     function doApply() {
       const rows = Math.max(1, Math.min(256, parseInt(rowInput.value, 10) || 2));
       const cols = Math.max(1, Math.min(256, parseInt(colInput.value, 10) || 3));
+      const options: TableCreateOptions = { treatAsChar: treatChk.checked };
+      if (widthMode.value === 'custom') {
+        const totalWidth = mmToHwpunit(Math.max(1, parseFloat(widthVal.value) || 148));
+        options.colWidths = splitEvenly(totalWidth, cols);
+      }
+      if (heightMode.value === 'custom') {
+        const rowHeight = mmToHwpunit(Math.max(1, parseFloat(heightVal.value) || 22.6));
+        options.rowHeights = Array.from({ length: rows }, () => rowHeight);
+      }
       close();
-      if (self.onApply) self.onApply(rows, cols);
+      if (self.onApply) self.onApply(rows, cols, options);
     }
 
     document.body.appendChild(overlay);

@@ -1691,6 +1691,7 @@ export class InputHandler {
       { type: 'command', commandId: 'edit:copy' },
       { type: 'command', commandId: 'edit:paste' },
       { type: 'command', commandId: 'edit:format-copy' },
+      { type: 'command', commandId: 'edit:format-paste' },
       { type: 'separator' },
       { type: 'command', commandId: 'table:cell-props', label: '셀 속성...' },
       { type: 'separator' },
@@ -1726,6 +1727,7 @@ export class InputHandler {
       { type: 'command', commandId: 'edit:copy' },
       { type: 'command', commandId: 'edit:paste' },
       { type: 'command', commandId: 'edit:format-copy' },
+      { type: 'command', commandId: 'edit:format-paste' },
       { type: 'separator' },
       { type: 'command', commandId: 'format:char-shape', label: '글자 모양' },
       { type: 'command', commandId: 'format:para-shape', label: '문단 모양' },
@@ -3172,6 +3174,9 @@ export class InputHandler {
   /** 선택 영역이 있는가? */
   hasSelection(): boolean { return this.cursor.hasSelection(); }
 
+  /** 모양 복사 상태가 있는가? */
+  hasCopiedFormat(): boolean { return this.formatCopyState !== null; }
+
   /** 현재 커서 위치를 반환한다 */
   getCursorPosition(): DocumentPosition { return this.cursor.getPosition(); }
 
@@ -3861,6 +3866,11 @@ export class InputHandler {
     this.copyFormatAtCursor();
   }
 
+  /** 모양 붙여넣기만 수행한다 (커맨드 시스템용) */
+  performFormatPaste(): void {
+    this.applyCopiedFormatToCurrentTarget();
+  }
+
   private applyCopiedFormatToCurrentTarget(): boolean {
     if (!this.formatCopyState) return false;
 
@@ -3996,17 +4006,28 @@ export class InputHandler {
 
   /** 스타일 적용 (커맨드 시스템용) */
   applyStyle(styleId: number): void {
-    const pos = this.cursor.getPosition();
     try {
-      if (pos.parentParaIndex !== undefined) {
-        this.wasm.applyCellStyle(
-          pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
-          pos.cellIndex!, pos.cellParaIndex!, styleId,
-        );
-      } else {
-        this.wasm.applyStyle(pos.sectionIndex, pos.paragraphIndex, styleId);
-      }
-      this.afterEdit();
+      const targets = this.getParaFormatTargetsAtCursor();
+      if (targets.length === 0) return;
+      const cursorBefore = this.cursor.getPosition();
+      const operation = (wasm: WasmBridge): DocumentPosition => {
+        for (const target of targets) {
+          if (target.kind === 'body') {
+            wasm.applyStyle(target.sec, target.para, styleId);
+            continue;
+          }
+          wasm.applyCellStyle(
+            target.sec,
+            target.parentPara,
+            target.controlIdx,
+            target.cellIdx,
+            target.cellParaIdx,
+            styleId,
+          );
+        }
+        return { ...cursorBefore };
+      };
+      this.executeOperation({ kind: 'snapshot', operationType: 'applyStyle', operation });
     } catch (err) {
       console.warn('[InputHandler] applyStyle 실패:', err);
     }

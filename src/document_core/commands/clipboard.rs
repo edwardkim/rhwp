@@ -3,7 +3,7 @@
 use super::super::helpers::{
     border_line_type_to_u8_val, clipboard_color_to_css, clipboard_escape_html, color_ref_to_css,
     detect_clipboard_image_mime, get_textbox_from_shape, get_textbox_from_shape_mut,
-    text_to_logical_offset, utf16_pos_to_char_idx,
+    utf16_pos_to_char_idx,
 };
 use super::super::queries::field_query::rebuild_char_offsets;
 use crate::document_core::{ClipboardData, DocumentCore};
@@ -92,6 +92,26 @@ fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
     }
 }
 
+fn text_to_split_logical_offset(para: &Paragraph, text_offset: usize) -> usize {
+    let control_positions = para.control_text_positions();
+    if control_positions.is_empty() {
+        return text_offset;
+    }
+
+    // 클립보드 range trimming 은 곧바로 Paragraph::split_at()을 호출한다.
+    // 따라서 커서 탐색용 논리 offset이 아니라 split_at()과 같은 movable control
+    // 기준으로 변환해야 non-TAC 그림이 텍스트 앞에 있어도 첫 글자를 잃지 않는다.
+    let before_count = para
+        .controls
+        .iter()
+        .enumerate()
+        .filter(|(_, ctrl)| Paragraph::is_split_movable_control(ctrl))
+        .filter_map(|(ci, _)| control_positions.get(ci))
+        .filter(|&&pos| pos < text_offset)
+        .count();
+    text_offset + before_count
+}
+
 fn clip_paragraph_text_range_for_clipboard(
     source: &Paragraph,
     start_char_offset: usize,
@@ -103,7 +123,7 @@ fn clip_paragraph_text_range_for_clipboard(
 
     let mut clipped = source.clone();
     if end < text_len {
-        let end_logical = text_to_logical_offset(&clipped, end);
+        let end_logical = text_to_split_logical_offset(&clipped, end);
         let _ = clipped.split_at(end_logical);
     }
     if start == 0 {
@@ -115,7 +135,7 @@ fn clip_paragraph_text_range_for_clipboard(
     let old_records = clipped.ctrl_data_records.clone();
     let old_ranges = clipped.field_ranges.clone();
 
-    let start_logical = text_to_logical_offset(&clipped, start);
+    let start_logical = text_to_split_logical_offset(&clipped, start);
     let mut suffix = clipped.split_at(start_logical);
     let mut keep_control = vec![false; old_controls.len()];
 
