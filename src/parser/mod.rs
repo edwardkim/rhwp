@@ -755,6 +755,7 @@ fn assign_auto_numbers_in_controls(
                 let idx = counter_index(an.number_type);
                 counters[idx] += 1;
                 an.assigned_number = counters[idx];
+                an.number = counters[idx];
             }
             Control::Table(table) => {
                 // 표 내부 셀의 문단도 처리

@@ -4,7 +4,8 @@
 //! DFS로 순회하여 다음/이전 편집 가능 위치를 찾는다.
 
 use crate::document_core::helpers::{
-    find_logical_control_positions, get_textbox_from_shape, navigable_text_len,
+    find_logical_control_positions, get_textbox_from_shape, is_treat_as_char_object_control,
+    navigable_text_len,
 };
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
@@ -70,12 +71,14 @@ fn classify_navigable(ctrl: &Control) -> Option<bool> {
                     return Some(true);
                 }
             }
-            // TextBox 없거나 비어있는 도형 → 표처럼 1칸 건너뛰기
+            // TextBox 없거나 비어있는 TAC 도형만 표처럼 1칸 건너뛰기
+            s.common().treat_as_char.then_some(false)
+        }
+        Control::Table(_) | Control::Picture(_) | Control::Equation(_)
+            if is_treat_as_char_object_control(ctrl) =>
+        {
             Some(false)
         }
-        Control::Table(_) => Some(false),
-        Control::Picture(_) => Some(false),
-        Control::Equation(_) => Some(false),
         Control::Footnote(_) => Some(false),
         Control::Endnote(_) => Some(false),
         // CharOverlap은 layout에서 char_count=1로 처리되므로
@@ -90,7 +93,7 @@ fn is_equation_only_navigation_paragraph(para: &Paragraph) -> bool {
 
     for ctrl in &para.controls {
         match ctrl {
-            Control::Equation(_) => has_equation = true,
+            Control::Equation(_) if is_treat_as_char_object_control(ctrl) => has_equation = true,
             _ if classify_navigable(ctrl).is_some() => return false,
             _ => {}
         }
@@ -107,7 +110,9 @@ fn equation_only_virtual_last_offset(para: &Paragraph) -> Option<usize> {
     let equation_count = para
         .controls
         .iter()
-        .filter(|ctrl| matches!(ctrl, Control::Equation(_)))
+        .filter(|ctrl| {
+            matches!(ctrl, Control::Equation(_)) && is_treat_as_char_object_control(ctrl)
+        })
         .count();
     if equation_count == 0 {
         None
@@ -147,7 +152,9 @@ fn equation_control_at_position(
     logical_pos: usize,
 ) -> bool {
     para.controls.iter().enumerate().any(|(ci, ctrl)| {
-        matches!(ctrl, Control::Equation(_)) && ctrl_positions.get(ci).copied() == Some(logical_pos)
+        matches!(ctrl, Control::Equation(_))
+            && is_treat_as_char_object_control(ctrl)
+            && ctrl_positions.get(ci).copied() == Some(logical_pos)
     })
 }
 
@@ -167,6 +174,7 @@ fn should_skip_equation_only_duplicate_boundary(
 
     let previous_equation_ends_here = para.controls.iter().enumerate().any(|(ci, ctrl)| {
         matches!(ctrl, Control::Equation(_))
+            && is_treat_as_char_object_control(ctrl)
             && ctrl_positions
                 .get(ci)
                 .copied()

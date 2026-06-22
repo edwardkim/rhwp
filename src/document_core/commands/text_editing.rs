@@ -10,6 +10,7 @@ use crate::model::page::ColumnDef;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::style_resolver::resolve_styles;
 
 #[derive(Clone, Copy)]
 struct FieldEndInsertion {
@@ -746,6 +747,7 @@ impl DocumentCore {
             }
         };
 
+        let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let cell_width_px = hwpunit_to_px(cell_width as i32, self.dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
@@ -765,7 +767,7 @@ impl DocumentCore {
                 None => return,
             }
         };
-        let para_style = self.styles.para_styles.get(para_shape_id as usize);
+        let para_style = styles.para_styles.get(para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
@@ -778,21 +780,24 @@ impl DocumentCore {
             Some(Control::Table(table)) => {
                 if let Some(cell) = table.cells.get_mut(cell_idx) {
                     if let Some(cell_para) = cell.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        cell_para.line_segs.clear();
+                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        cell_para.line_segs.clear();
+                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        cell_para.line_segs.clear();
+                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }

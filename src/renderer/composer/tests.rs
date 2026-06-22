@@ -279,9 +279,11 @@ fn test_compose_with_ctrl_char_gap() {
 fn test_identify_inline_controls_table() {
     use crate::model::table::Table;
 
+    let mut table = Table::default();
+    table.common.treat_as_char = true;
     let para = Paragraph {
         text: "표 앞 텍스트".to_string(),
-        controls: vec![Control::Table(Box::default())],
+        controls: vec![Control::Table(Box::new(table))],
         ..Default::default()
     };
 

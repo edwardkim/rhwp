@@ -147,6 +147,7 @@ impl Paginator {
             0
         };
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
+        let tac_seg_width_fallback_hu = layout.column_width_hu();
         let measurer = HeightMeasurer::new(self.dpi).with_hwp3_variant(is_hwp3_variant);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
@@ -710,6 +711,7 @@ impl Paginator {
                 base_available_height,
                 page_def,
                 height_before_controls,
+                tac_seg_width_fallback_hu,
             );
 
             let page_changed = st.pages.len() != page_count_before_controls;
@@ -1534,6 +1536,7 @@ impl Paginator {
         base_available_height: f64,
         page_def: &PageDef,
         para_start_height: f64,
+        tac_seg_width_fallback_hu: i32,
     ) {
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             match ctrl {
@@ -1576,7 +1579,13 @@ impl Paginator {
                     }
                     // treat_as_char 표: 인라인이면 skip
                     if table.common.treat_as_char {
-                        let seg_w = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                        let raw_seg_w =
+                            para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                        let seg_w = if raw_seg_w > 0 {
+                            raw_seg_w
+                        } else {
+                            tac_seg_width_fallback_hu.max(0)
+                        };
                         if crate::renderer::height_measurer::is_tac_table_inline(
                             table,
                             seg_w,

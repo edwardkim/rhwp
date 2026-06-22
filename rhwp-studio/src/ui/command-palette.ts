@@ -135,7 +135,7 @@ export class CommandPalette {
       // canExecute가 항상 false인 stub는 제외
       if (def.canExecute) {
         const ctx = {
-          hasDocument: false, hasSelection: false, inTable: false,
+          hasDocument: false, hasSelection: false, hasCopiedFormat: false, inTable: false,
           inCellSelectionMode: false, inTableObjectSelection: false,
           inPictureObjectSelection: false, inField: false, isEditable: true,
           editMode: 'normal' as const, isFormMode: false, canEditFormField: false,

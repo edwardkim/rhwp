@@ -8,16 +8,19 @@ use crate::model::paragraph::Paragraph;
 use crate::model::path::PathSegment;
 use crate::model::style::BorderLineType;
 
+pub(crate) fn is_treat_as_char_object_control(ctrl: &Control) -> bool {
+    match ctrl {
+        Control::Shape(shape) => shape.common().treat_as_char,
+        Control::Table(table) => table.common.treat_as_char,
+        Control::Picture(picture) => picture.common.treat_as_char,
+        Control::Equation(equation) => equation.common.treat_as_char,
+        _ => false,
+    }
+}
+
 fn is_logical_inline_control(ctrl: &Control) -> bool {
-    matches!(
-        ctrl,
-        Control::Shape(_)
-            | Control::Table(_)
-            | Control::Picture(_)
-            | Control::Equation(_)
-            | Control::Footnote(_)
-            | Control::Endnote(_)
-    )
+    is_treat_as_char_object_control(ctrl)
+        || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
 }
 
 /// 문단의 탐색 가능한 텍스트 길이를 반환한다.
@@ -1423,7 +1426,9 @@ mod tests {
     use super::*;
     use crate::model::document::SectionDef;
     use crate::model::footnote::Footnote;
+    use crate::model::image::Picture;
     use crate::model::page::ColumnDef;
+    use crate::model::shape::TextWrap;
 
     #[test]
     fn navigable_text_len_counts_trailing_footnote_marker() {
@@ -1460,14 +1465,19 @@ mod tests {
 
     #[test]
     fn logical_positions_do_not_double_count_control_only_fallback() {
+        let mut first_picture = Picture::default();
+        first_picture.common.treat_as_char = true;
+        let mut second_picture = Picture::default();
+        second_picture.common.treat_as_char = true;
+
         let para = Paragraph {
             text: String::new(),
             char_offsets: vec![],
             controls: vec![
                 Control::SectionDef(Box::<SectionDef>::default()),
                 Control::ColumnDef(ColumnDef::default()),
-                Control::Picture(Box::default()),
-                Control::Picture(Box::default()),
+                Control::Picture(Box::new(first_picture)),
+                Control::Picture(Box::new(second_picture)),
             ],
             ..Default::default()
         };
@@ -1476,5 +1486,31 @@ mod tests {
         assert_eq!(find_logical_control_positions(&para), vec![0, 0, 0, 1]);
         assert_eq!(logical_paragraph_length(&para), 2);
         assert_eq!(navigable_text_len(&para), 2);
+    }
+
+    #[test]
+    fn logical_positions_skip_non_tac_picture_controls() {
+        let mut tac_picture = Picture::default();
+        tac_picture.common.treat_as_char = true;
+        let mut topbottom_picture = Picture::default();
+        topbottom_picture.common.treat_as_char = false;
+        topbottom_picture.common.text_wrap = TextWrap::TopAndBottom;
+
+        let para = Paragraph {
+            text: String::new(),
+            char_offsets: vec![],
+            controls: vec![
+                Control::SectionDef(Box::<SectionDef>::default()),
+                Control::ColumnDef(ColumnDef::default()),
+                Control::Picture(Box::new(topbottom_picture)),
+                Control::Picture(Box::new(tac_picture)),
+            ],
+            ..Default::default()
+        };
+
+        assert_eq!(find_control_text_positions(&para), vec![0, 0, 0, 1]);
+        assert_eq!(find_logical_control_positions(&para), vec![0, 0, 0, 0]);
+        assert_eq!(logical_paragraph_length(&para), 1);
+        assert_eq!(navigable_text_len(&para), 1);
     }
 }

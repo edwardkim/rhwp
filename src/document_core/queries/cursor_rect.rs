@@ -2,7 +2,7 @@
 
 use super::super::helpers::{
     color_ref_to_css, find_char_at_x, find_logical_control_positions, has_table_control,
-    navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
+    is_treat_as_char_object_control, navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -240,11 +240,7 @@ impl DocumentCore {
         }
 
         fn is_inline_cursor_control(ctrl: &Control) -> bool {
-            match ctrl {
-                Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => true,
-                Control::Table(table) => table.common.treat_as_char,
-                _ => false,
-            }
+            is_treat_as_char_object_control(ctrl)
         }
 
         fn text_offset_after_same_pos_inline_controls(
@@ -526,17 +522,18 @@ impl DocumentCore {
             inline_controls.sort_by_key(|&(ci, raw_pos, pos, _, _)| (raw_pos, pos, ci));
 
             if para.text.is_empty()
-                && para
-                    .controls
-                    .iter()
-                    .all(|ctrl| matches!(ctrl, Control::Equation(_)))
+                && para.controls.iter().all(|ctrl| {
+                    matches!(ctrl, Control::Equation(_)) && is_treat_as_char_object_control(ctrl)
+                })
             {
                 let mut equation_controls = para
                     .controls
                     .iter()
                     .enumerate()
                     .filter_map(|(ci, ctrl)| {
-                        if !matches!(ctrl, Control::Equation(_)) {
+                        if !matches!(ctrl, Control::Equation(_))
+                            || !is_treat_as_char_object_control(ctrl)
+                        {
                             return None;
                         }
                         let (x, y, w, h) = control_bboxes.get(&ci).copied()?;
@@ -891,20 +888,16 @@ impl DocumentCore {
 
                 // char_offset 위치에 인라인 컨트롤이 있는지 확인
                 let inline_ctrl = para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                    matches!(
-                        ctrl,
-                        Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                    ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                    is_inline_cursor_control(ctrl)
+                        && ctrl_positions.get(*ci).copied() == Some(char_offset)
                         && char_offset != text_len
                 });
                 // 텍스트 범위 밖이지만 navigable 범위 내 (도형이 텍스트 뒤에 있을 때)
                 let beyond_ctrl =
                     if char_offset > text_len && char_offset <= navigable_text_len(para) {
                         para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                            matches!(
-                                ctrl,
-                                Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                            ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                            is_inline_cursor_control(ctrl)
+                                && ctrl_positions.get(*ci).copied() == Some(char_offset)
                         })
                     } else {
                         None
@@ -1095,42 +1088,66 @@ impl DocumentCore {
                     node: &RenderNode,
                     sec: usize,
                     para: usize,
+                    render_para: Option<&Paragraph>,
                     bboxes: &mut Vec<(f64, f64)>,
                 ) {
+                    fn is_caret_control(
+                        render_para: Option<&Paragraph>,
+                        control_index: Option<usize>,
+                    ) -> bool {
+                        let Some(ci) = control_index else {
+                            return false;
+                        };
+                        render_para
+                            .and_then(|para| para.controls.get(ci))
+                            .is_some_and(is_treat_as_char_object_control)
+                    }
+
                     match &node.node_type {
                         RenderNodeType::Line(ln)
                             if ln.section_index == Some(sec) && ln.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, ln.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Rectangle(rn)
                             if rn.section_index == Some(sec) && rn.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, rn.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Ellipse(en)
                             if en.section_index == Some(sec) && en.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, en.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Table(tn)
                             if tn.section_index == Some(sec) && tn.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, tn.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Image(im)
                             if im.section_index == Some(sec) && im.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, im.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         _ => {}
                     }
                     for child in &node.children {
-                        collect_inline_bboxes(child, sec, para, bboxes);
+                        collect_inline_bboxes(child, sec, para, render_para, bboxes);
                     }
                 }
                 let mut bboxes = Vec::new();
-                collect_inline_bboxes(&tree.root, section_idx, para_idx, &mut bboxes);
+                let render_para = self.get_render_paragraph_ref(section_idx, para_idx).ok();
+                collect_inline_bboxes(&tree.root, section_idx, para_idx, render_para, &mut bboxes);
                 bboxes.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
 
                 if char_offset <= bboxes.len() && !bboxes.is_empty() {
@@ -1623,7 +1640,13 @@ impl DocumentCore {
                             .sections
                             .get(si)
                             .and_then(|section| section.paragraphs.get(pi))
-                            .and_then(|para| find_logical_control_positions(para).get(ci).copied());
+                            .and_then(|para| {
+                                let ctrl = para.controls.get(ci)?;
+                                if !is_treat_as_char_object_control(ctrl) {
+                                    return None;
+                                }
+                                find_logical_control_positions(para).get(ci).copied()
+                            });
                         if let Some(char_offset) = char_offset {
                             hits.push((
                                 si,
@@ -1912,6 +1935,11 @@ impl DocumentCore {
                             if shape_has_textbox {
                                 // 글상자는 메인 매칭에서 처리 — 0.5 분기 break.
                                 break;
+                            }
+                            if !is_treat_as_char_object_control(ctrl) {
+                                // 자리차지/글 앞으로/글 뒤로 개체는 본문 문자 슬롯이 아니므로
+                                // 그림 bbox 클릭을 커서 앞/뒤 offset으로 변환하지 않는다.
+                                continue;
                             }
                             let ctrl_positions =
                                 crate::document_core::helpers::find_logical_control_positions(para);

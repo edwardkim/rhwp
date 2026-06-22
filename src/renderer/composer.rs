@@ -119,13 +119,7 @@ pub fn compose_section(section: &Section) -> Vec<ComposedParagraph> {
 /// 영향 범위: composer 내부만 (rendering pipeline). para 원본 (editor) 영향 없음.
 fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     fn needs_synthesized_inline_marker(ctrl: &Control) -> bool {
-        matches!(
-            ctrl,
-            Control::Picture(_) | Control::Shape(_) | Control::Table(_) | Control::Form(_)
-        ) || matches!(
-            ctrl,
-            Control::Equation(eq) if eq.common.treat_as_char
-        )
+        is_render_inline_control(ctrl)
     }
 
     // 렌더에 실제 자리를 차지하는 TAC/개체 컨트롤 수 계산.
@@ -275,7 +269,7 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     let inline_controls = identify_inline_controls(para);
 
     // treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 수집
-    let tac_positions = find_control_text_positions(para);
+    let tac_positions = find_render_inline_control_positions(para);
     let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
     let tac_controls: Vec<(usize, i32, usize)> = para
         .controls
@@ -1034,8 +1028,9 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
 
     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
         let control_type = match ctrl {
-            Control::Table(_) => InlineControlType::Table,
-            Control::Shape(_) | Control::Picture(_) => InlineControlType::Shape,
+            Control::Table(t) if t.common.treat_as_char => InlineControlType::Table,
+            Control::Shape(shape) if shape.common().treat_as_char => InlineControlType::Shape,
+            Control::Picture(pic) if pic.common.treat_as_char => InlineControlType::Shape,
             Control::Equation(eq) if eq.common.treat_as_char => InlineControlType::Shape,
             Control::SectionDef(_) | Control::ColumnDef(_) => InlineControlType::Other,
             _ => continue,
@@ -1061,6 +1056,33 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
 /// → document_core::helpers::find_control_text_positions 으로 위임
 fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
     crate::document_core::find_control_text_positions(para)
+}
+
+fn is_render_inline_control(ctrl: &Control) -> bool {
+    match ctrl {
+        Control::Picture(pic) => pic.common.treat_as_char,
+        Control::Shape(shape) => shape.common().treat_as_char,
+        Control::Table(table) => table.common.treat_as_char,
+        Control::Equation(eq) => eq.common.treat_as_char,
+        Control::Form(_) => true,
+        _ => false,
+    }
+}
+
+fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usize> {
+    if para.text.is_empty() && para.char_offsets.is_empty() {
+        let mut inline_seen = 0usize;
+        let mut positions = Vec::with_capacity(para.controls.len());
+        for ctrl in &para.controls {
+            positions.push(inline_seen);
+            if is_render_inline_control(ctrl) {
+                inline_seen += 1;
+            }
+        }
+        return positions;
+    }
+
+    find_control_text_positions(para)
 }
 
 /// CharOverlap 컨트롤의 글자를 조합된 텍스트에 올바른 위치로 삽입한다.

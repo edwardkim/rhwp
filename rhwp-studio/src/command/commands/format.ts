@@ -419,7 +419,16 @@ export const formatCommands: CommandDef[] = [
 
       // 추가 요청
       dialog.onAddRequest = () => {
-        const addDlg = new StyleEditDialog(services.wasm, services.eventBus, 'add');
+        let baseInfo = {};
+        try {
+          baseInfo = {
+            charProps: ih.getCharProperties(),
+            paraProps: ih.getParaProperties(),
+          };
+        } catch {
+          baseInfo = {};
+        }
+        const addDlg = new StyleEditDialog(services.wasm, services.eventBus, 'add', undefined, baseInfo);
         addDlg.onSave = () => dialog.refresh();
         addDlg.show();
       };

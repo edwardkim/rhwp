@@ -55,6 +55,15 @@ struct ColumnItemCtx<'a> {
 
 const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 
+fn effective_tac_segment_width_hu(para: &Paragraph, fallback_width_hu: i32) -> i32 {
+    let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+    if seg_width > 0 {
+        seg_width
+    } else {
+        fallback_width_hu.max(0)
+    }
+}
+
 fn para_border_is_visible(border: &BorderLine) -> bool {
     !matches!(border.line_type, BorderLineType::None)
 }
@@ -259,6 +268,17 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_has_visible_inline_control(para: &Paragraph) -> bool {
+    para.controls.iter().any(|ctrl| match ctrl {
+        Control::Picture(pic) => pic.common.treat_as_char,
+        Control::Shape(shape) => shape.common().treat_as_char,
+        Control::Table(table) => table.common.treat_as_char,
+        Control::Equation(eq) => eq.common.treat_as_char,
+        Control::Form(_) => true,
+        _ => false,
+    })
+}
+
 fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
     !para_has_visible_text(para)
         && para
@@ -390,7 +410,7 @@ fn para_has_visible_textless_float_shape_item(
     para: &Paragraph,
     para_index: usize,
 ) -> bool {
-    if para_has_visible_text(para) {
+    if para_has_visible_text(para) || para_has_visible_inline_control(para) {
         return false;
     }
 
@@ -4485,7 +4505,10 @@ impl LayoutEngine {
                         return (y_offset, false);
                     }
 
-                    let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                    let seg_width = effective_tac_segment_width_hu(
+                        para,
+                        px_to_hwpunit(col_area.width, self.dpi),
+                    );
                     let has_block_table = para.controls.iter()
                         .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
                             || (t.common.treat_as_char
@@ -4714,8 +4737,10 @@ impl LayoutEngine {
                     // TAC 블록 표 문단의 post-text PP: 텍스트가 공백만이면 건너뜀
                     // (Table PageItem에서 이미 y_offset이 결정됨)
                     if prev_tac_seg_applied {
-                        let seg_width =
-                            para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                        let seg_width = effective_tac_segment_width_hu(
+                            para,
+                            px_to_hwpunit(col_area.width, self.dpi),
+                        );
                         let has_tac_block = para.controls.iter().any(|c| {
                             matches!(c, Control::Table(t) if t.common.treat_as_char
                                 && !crate::renderer::height_measurer::is_tac_table_inline(
@@ -5128,6 +5153,10 @@ impl LayoutEngine {
                 } else {
                     None
                 };
+                // [Task #1470 Stage 2] paragraph_layout가 인라인 TAC 표를 이미
+                // 렌더하고 좌표를 등록한 경우, PageItem 표 경로에서는 본문 흐름
+                // advance만 보존하고 같은 컨트롤을 다시 그리지 않는다.
+                let tac_already_rendered_inline = is_tac && inline_pos.is_some();
                 let tbl_inline_x = if let Some((ix, _)) = inline_pos {
                     Some(ix)
                 } else if !is_tac
@@ -5326,28 +5355,45 @@ impl LayoutEngine {
                     } else {
                         y_offset
                     };
-                    let table_visual_end = self.layout_table(
-                        tree,
-                        col_node,
-                        t,
-                        page_content.section_index,
-                        styles,
-                        *outline_numbering_id,
-                        col_area,
-                        table_y_start,
-                        bin_data_content,
-                        mt,
-                        0,
-                        Some((para_index, control_index)),
-                        alignment,
-                        None,
-                        effective_margin,
-                        margin_right,
-                        tbl_inline_x,
-                        None,
-                        Some(para_y_for_table),
-                        false,
-                    );
+                    let table_visual_end = if tac_already_rendered_inline {
+                        let measured_height = mt.map(|m| m.total_height).filter(|h| *h > 0.0);
+                        let fallback_height = hwpunit_to_px(t.common.height as i32, self.dpi);
+                        table_y_start + measured_height.unwrap_or(fallback_height)
+                    } else {
+                        self.layout_table(
+                            tree,
+                            col_node,
+                            t,
+                            page_content.section_index,
+                            styles,
+                            *outline_numbering_id,
+                            col_area,
+                            table_y_start,
+                            bin_data_content,
+                            mt,
+                            0,
+                            Some((para_index, control_index)),
+                            alignment,
+                            None,
+                            effective_margin,
+                            margin_right,
+                            tbl_inline_x,
+                            None,
+                            Some(para_y_for_table),
+                            false,
+                        )
+                    };
+                    if is_tac {
+                        let marker_x = tbl_inline_x.unwrap_or(col_area.x + effective_margin);
+                        tree.set_inline_shape_position(
+                            page_content.section_index,
+                            para_index,
+                            control_index,
+                            None,
+                            marker_x,
+                            table_y_start,
+                        );
+                    }
                     table_y_end = table_visual_end;
                     y_offset = if table_visual_shift > 0.0 {
                         (table_visual_end - table_visual_shift).max(table_y_before)
@@ -5615,7 +5661,8 @@ impl LayoutEngine {
             }
             // ── 같은 문단의 인라인 TAC 표 렌더링 ──
             if !is_tac {
-                let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                let seg_width =
+                    effective_tac_segment_width_hu(para, px_to_hwpunit(col_area.width, self.dpi));
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if ci == control_index {
                         continue;
@@ -5995,14 +6042,13 @@ impl LayoutEngine {
                             hwpunit_to_px(pic.shape_attr.current_height as i32, self.dpi),
                         );
                         let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                        // [Task #1151 v3] 같은 paragraph 의 sibling wrap=TopAndBottom 표
-                        // (tac=false) 가 차지하는 vertical 영역만큼 picture y 보정.
-                        let sibling_table_reserved_hu =
-                            super::layout::paragraph_layout::calc_sibling_topandbottom_table_reserved_hu(
+                        // 같은 paragraph 의 sibling wrap=TopAndBottom 개체(tac=false)가
+                        // 차지하는 vertical 영역만큼 picture y 보정.
+                        let sibling_reserved_hu =
+                            super::layout::paragraph_layout::calc_sibling_topandbottom_reserved_hu(
                                 &para.controls,
                             );
-                        let sibling_table_reserved_px =
-                            hwpunit_to_px(sibling_table_reserved_hu, self.dpi);
+                        let sibling_reserved_px = hwpunit_to_px(sibling_reserved_hu, self.dpi);
 
                         // [Task #1151 v9 결함 D] sibling TAC picture 시퀀스 위치 판별.
                         // 한컴 native 정합: 동일 paragraph 안 sibling tac=true picture 들이
@@ -6022,7 +6068,7 @@ impl LayoutEngine {
                             .unwrap_or(false);
 
                         // pic_y 결정:
-                        // - 단일 picture / 시퀀스 첫 picture: paragraph 시작 y + sibling_table_reserved
+                        // - 단일 picture / 시퀀스 첫 picture: paragraph 시작 y + sibling_reserved
                         //   + 라벨/그림 높이 정합 보정
                         // - 시퀀스 후속 picture: state.line_top_y (pic_x wrap 처리 후 결정 — 아래)
                         // [Task #1151 v9 결함 D fix] pic_y 의 시퀀스 후속 picture 결정은 pic_x
@@ -6031,7 +6077,7 @@ impl LayoutEngine {
                         let comp = composed.get(para_index);
                         let para_y_for_pic =
                             para_start_y.get(&para_index).copied().unwrap_or(y_offset)
-                                + sibling_table_reserved_px;
+                                + sibling_reserved_px;
                         let default_pic_y = self.compute_tac_picture_shape_y(
                             para,
                             comp,
