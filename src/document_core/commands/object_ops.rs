@@ -590,21 +590,21 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
-        let (caption_created, should_migrate_to_inline) = {
+        let (caption_created, should_migrate_to_inline, should_migrate_to_floating) = {
             let pic =
                 self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
             // [Task #1151 v2] tac false→true migration 검출용 snapshot.
             let was_tac = pic.common.treat_as_char;
             let caption_created = Self::apply_picture_props_inner(pic, props_json);
             let now_tac = pic.common.treat_as_char;
-            (caption_created, !was_tac && now_tac)
+            (caption_created, !was_tac && now_tac, was_tac && !now_tac)
         };
 
         // [Task #1151 v2] floating → inline migration (H1 정합, samples/tac-verify/).
         // 한컴 산출물 Scenario A~D 분석: tac false→true 시 picture 의 control 위치는
         // 불변이고, 4 필드만 갱신 (treat_as_char / h/v_rel_to=Para / h/v_offset=0 /
         // parent line_segs[0]). text/char_offsets/paragraph 수 변화 없음.
-        if should_migrate_to_inline {
+        if should_migrate_to_inline || should_migrate_to_floating {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
@@ -631,21 +631,25 @@ impl DocumentCore {
                     HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
                 })?
             };
-            let crate::model::paragraph::Paragraph {
-                line_segs,
-                controls,
-                ..
-            } = &mut *para;
-            match controls.get_mut(control_idx) {
-                Some(Control::Picture(pic_box)) => {
-                    Self::migrate_picture_floating_to_inline(line_segs, pic_box.as_mut());
-                }
-                Some(Control::Shape(shape)) => {
-                    if let ShapeObject::Picture(pic) = shape.as_mut() {
-                        Self::migrate_picture_floating_to_inline(line_segs, pic);
+            if should_migrate_to_inline {
+                let crate::model::paragraph::Paragraph {
+                    line_segs,
+                    controls,
+                    ..
+                } = &mut *para;
+                match controls.get_mut(control_idx) {
+                    Some(Control::Picture(pic_box)) => {
+                        Self::migrate_picture_floating_to_inline(line_segs, pic_box.as_mut());
                     }
+                    Some(Control::Shape(shape)) => {
+                        if let ShapeObject::Picture(pic) = shape.as_mut() {
+                            Self::migrate_picture_floating_to_inline(line_segs, pic);
+                        }
+                    }
+                    _ => {}
                 }
-                _ => {}
+            } else {
+                Self::migrate_empty_picture_para_inline_to_floating(para);
             }
         }
         // 캡션 생성 시 AutoNumber 재할당 + 텍스트 생성 (본문 path 만 — 머리말/꼬리말은 별도).
@@ -812,6 +816,124 @@ impl DocumentCore {
                 ..Default::default()
             });
         }
+    }
+
+    /// TAC 그림을 자리차지 개체로 되돌릴 때, 텍스트 없는 그림 전용 문단의
+    /// LINE_SEG를 남은 TAC 개체 수에 맞춰 재구성한다.
+    ///
+    /// 기존 false→true 마이그레이션은 첫 LINE_SEG를 그림 높이로 키운다. 반대로
+    /// true→false가 되면 그 그림은 더 이상 inline 글자 슬롯이 아니므로, 같은
+    /// 문단의 남은 TAC 그림만 빈 줄에 1개씩 매핑되어야 한다. 한컴 저장본
+    /// `투명도0-50-2nd그림글차처럼off.hwp`처럼 TopAndBottom 예약 높이는 첫 TAC
+    /// 줄의 `vertical_pos`에 반영한다.
+    pub(crate) fn migrate_empty_picture_para_inline_to_floating(
+        para: &mut crate::model::paragraph::Paragraph,
+    ) {
+        if !para.text.is_empty() || !para.char_offsets.is_empty() {
+            return;
+        }
+
+        let old_seg = para.line_segs.first().cloned().unwrap_or_default();
+        let line_spacing = if old_seg.line_spacing > 0 {
+            old_seg.line_spacing
+        } else {
+            600
+        };
+        let reserved_hu = Self::topbottom_reserved_height_for_empty_picture_para(&para.controls);
+        let tac_heights = para
+            .controls
+            .iter()
+            .filter_map(Self::tac_control_height_for_empty_picture_para)
+            .collect::<Vec<_>>();
+
+        if tac_heights.is_empty() {
+            para.line_segs = vec![crate::model::paragraph::LineSeg {
+                text_start: 0,
+                vertical_pos: reserved_hu,
+                line_height: 1000,
+                text_height: 1000,
+                baseline_distance: 850,
+                line_spacing,
+                segment_width: old_seg.segment_width,
+                column_start: old_seg.column_start,
+                tag: old_seg.tag,
+            }];
+            return;
+        }
+
+        let mut vpos = reserved_hu;
+        let mut rebuilt = Vec::with_capacity(tac_heights.len());
+        for (idx, height) in tac_heights.into_iter().enumerate() {
+            let line_height = height.max(1);
+            rebuilt.push(crate::model::paragraph::LineSeg {
+                text_start: (idx as u32) * 8,
+                vertical_pos: vpos,
+                line_height,
+                text_height: line_height,
+                baseline_distance: (line_height as f64 * 0.85).round() as i32,
+                line_spacing,
+                segment_width: old_seg.segment_width,
+                column_start: old_seg.column_start,
+                tag: old_seg.tag,
+            });
+            vpos += line_height + line_spacing;
+        }
+        para.line_segs = rebuilt;
+    }
+
+    fn tac_control_height_for_empty_picture_para(ctrl: &Control) -> Option<i32> {
+        match ctrl {
+            Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
+            Control::Shape(shape) if shape.common().treat_as_char => {
+                let common_h = shape.common().height as i32;
+                let current_h = shape.shape_attr().current_height as i32;
+                Some(common_h.max(current_h))
+            }
+            Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
+            Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
+            _ => None,
+        }
+    }
+
+    fn topbottom_reserved_height_for_empty_picture_para(controls: &[Control]) -> i32 {
+        controls
+            .iter()
+            .map(|ctrl| match ctrl {
+                Control::Picture(pic)
+                    if !pic.common.treat_as_char
+                        && matches!(
+                            pic.common.text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        ) =>
+                {
+                    pic.common.height as i32
+                        + pic.common.margin.top as i32
+                        + pic.common.margin.bottom as i32
+                }
+                Control::Shape(shape)
+                    if !shape.common().treat_as_char
+                        && matches!(
+                            shape.common().text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        ) =>
+                {
+                    let common = shape.common();
+                    common.height as i32 + common.margin.top as i32 + common.margin.bottom as i32
+                }
+                Control::Table(table)
+                    if !table.common.treat_as_char
+                        && matches!(
+                            table.common.text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        ) =>
+                {
+                    table.common.height as i32
+                        + table.outer_margin_top as i32
+                        + table.outer_margin_bottom as i32
+                }
+                _ => 0,
+            })
+            .sum()
     }
 
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
@@ -1984,6 +2106,7 @@ impl DocumentCore {
         col_count: u16,
         treat_as_char: bool,
         col_widths_hu: Option<&[u32]>,
+        row_heights_hu: Option<&[u32]>,
     ) -> Result<String, HwpError> {
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::style::{BorderFill, BorderLine, BorderLineType, DiagonalLine, Fill};
@@ -2047,9 +2170,17 @@ impl DocumentCore {
             top: 141,
             bottom: 141,
         };
-        let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
-        let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
-        let total_height = rendered_row_height * row_count as u32;
+        let min_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
+        let row_heights: Vec<u32> = if let Some(heights) = row_heights_hu {
+            if heights.len() == row_count as usize {
+                heights.iter().map(|h| (*h).max(min_row_height)).collect()
+            } else {
+                vec![min_row_height; row_count as usize]
+            }
+        } else {
+            vec![min_row_height; row_count as usize]
+        };
+        let total_height: u32 = row_heights.iter().sum();
 
         // BorderFill
         let cell_border_fill_id = {
@@ -2094,9 +2225,10 @@ impl DocumentCore {
         // 셀 생성
         let mut cells = Vec::with_capacity((row_count as usize) * (col_count as usize));
         for r in 0..row_count {
+            let row_height = row_heights[r as usize];
             for c in 0..col_count {
                 let col_w = col_ws[c as usize];
-                let mut cell = Cell::new_empty(c, r, col_w, cell_height, cell_border_fill_id);
+                let mut cell = Cell::new_empty(c, r, col_w, row_height, cell_border_fill_id);
                 cell.padding = cell_pad;
                 cell.vertical_align = crate::model::table::VerticalAlign::Center;
                 for cp in &mut cell.paragraphs {
@@ -2109,11 +2241,13 @@ impl DocumentCore {
                         cp.raw_header_extra = rhe;
                     }
                     let seg_w = (col_w as i32) - 141 - 141;
+                    let text_height =
+                        row_height.saturating_sub((cell_pad.top + cell_pad.bottom) as u32);
                     cp.line_segs = vec![LineSeg {
                         text_start: 0,
-                        line_height: 1000,
-                        text_height: 1000,
-                        baseline_distance: 850,
+                        line_height: text_height as i32,
+                        text_height: text_height as i32,
+                        baseline_distance: (text_height as f64 * 0.85) as i32,
                         line_spacing: 600,
                         segment_width: seg_w,
                         tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
@@ -9087,9 +9221,9 @@ mod issue_1151_v2_tac_toggle_tests {
         assert_eq!(pic.image_attr.brightness, 50);
     }
 
-    // ─── tac=true → false 토글 — migration 미진입 (한 방향만) ──────────
+    // ─── tac=true → false 토글 — 빈 그림 문단 LINE_SEG 재구성 ──────────
     #[test]
-    fn tac_toggle_true_to_false_no_migration_this_pr() {
+    fn tac_toggle_true_to_false_restores_empty_picture_para_line_seg() {
         let mut core = make_test_core();
         let pic_h = 5000u32;
         let ctrl_idx = {
@@ -9100,14 +9234,20 @@ mod issue_1151_v2_tac_toggle_tests {
         core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
             .expect("forward migration");
         let lh_after_forward = core.document.sections[0].paragraphs[0].line_segs[0].line_height;
+        assert_eq!(lh_after_forward, pic_h as i32);
 
-        // tac=false 로 — 역방향. line_height 추가 변동 없어야 함 (한 방향만 fix).
+        // tac=false 로 — 빈 그림 전용 문단에는 더 이상 inline 슬롯이 없으므로 기본 빈 줄로 복원.
         core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":false}"#)
             .expect("reverse toggle");
         let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(para.line_segs.len(), 1);
         assert_eq!(
-            para.line_segs[0].line_height, lh_after_forward,
-            "역방향 토글은 line_height 영향 없음"
+            para.line_segs[0].line_height, 1000,
+            "남은 TAC 개체가 없으면 기본 빈 줄 높이로 복원"
+        );
+        assert_eq!(
+            para.line_segs[0].baseline_distance, 850,
+            "기본 빈 줄 기준선으로 복원"
         );
         let pic = match &para.controls[ctrl_idx] {
             Control::Picture(p) => p.as_ref(),

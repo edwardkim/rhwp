@@ -1,6 +1,7 @@
 import type { CommandDef, CommandServices, EditorContext } from '../types';
 import { TableCellPropsDialog } from '@/ui/table-cell-props-dialog';
 import { TableCreateDialog } from '@/ui/table-create-dialog';
+import type { TableCreateOptions } from '@/ui/table-create-dialog';
 import { CellSplitDialog } from '@/ui/cell-split-dialog';
 import { CellBorderBgDialog } from '@/ui/cell-border-bg-dialog';
 import { FormulaDialog } from '@/ui/formula-dialog';
@@ -99,14 +100,23 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex !== undefined) return;
       const dialog = new TableCreateDialog();
-      dialog.onApply = (rows, cols) => {
+      dialog.onApply = (rows, cols, options?: TableCreateOptions) => {
         const ih2 = services.getInputHandler();
         if (!ih2) return;
         safeTableOp(() => ih2.executeOperation({
           kind: 'snapshot',
           operationType: 'createTable',
           operation: (wasm) => {
-            const result = wasm.createTable(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, rows, cols);
+            const result = options
+              ? wasm.createTableEx({
+                  sectionIdx: pos.sectionIndex,
+                  paraIdx: pos.paragraphIndex,
+                  charOffset: pos.charOffset,
+                  rowCount: rows,
+                  colCount: cols,
+                  ...options,
+                })
+              : wasm.createTable(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, rows, cols);
             if (result.ok) {
               return {
                 sectionIndex: pos.sectionIndex,

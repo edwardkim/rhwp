@@ -5,6 +5,7 @@ import { GotoDialog } from '@/ui/goto-dialog';
 import { HistoryDialog } from '@/ui/history-dialog';
 import { CompareDialog } from '@/ui/compare-dialog';
 import { CompareSessionStore } from '@/compare/session';
+import { canExecuteFormatPaste } from '../format-paste-availability';
 
 /** 검색 대화상자 싱글톤 — 열려 있으면 재사용 */
 let findDialogInstance: FindDialog | null = null;
@@ -74,6 +75,15 @@ export const editCommands: CommandDef[] = [
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       services.getInputHandler()?.performFormatCopy();
+    },
+  },
+  {
+    id: 'edit:format-paste',
+    label: '모양 붙여넣기',
+    icon: 'icon-format-copy',
+    canExecute: canExecuteFormatPaste,
+    execute(services) {
+      services.getInputHandler()?.performFormatPaste();
     },
   },
   {

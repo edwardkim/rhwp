@@ -1406,6 +1406,17 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use super::super::helpers::{json_bool, json_i16, json_i32, json_str, json_u32, json_u8};
 
+        let caption_style = self
+            .document
+            .doc_info
+            .styles
+            .iter()
+            .position(|s| s.english_name == "Caption" || s.local_name == "캡션")
+            .and_then(|idx| self.document.doc_info.styles.get(idx).map(|s| (idx, s)));
+        let (caption_style_id, caption_para_shape_id, caption_char_shape_id) = caption_style
+            .map(|(idx, s)| (idx as u8, s.para_shape_id, s.char_shape_id as u32))
+            .unwrap_or((0, 0, 0));
+
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
 
         if let Some(v) = json_i16(json, "cellSpacing") {
@@ -1598,6 +1609,7 @@ impl DocumentCore {
 
         // 캡션 생성/수정
         let mut caption_created = false;
+        let mut caption_changed = false;
         if let Some(has_cap) = json_bool(json, "hasCaption") {
             if has_cap && table.caption.is_none() {
                 let mut cap = crate::model::shape::Caption::default();
@@ -1606,6 +1618,22 @@ impl DocumentCore {
                     ..Default::default()
                 };
                 let mut cap_para = crate::model::paragraph::Paragraph::new_empty();
+                // 한컴 표 캡션은 AutoNumber 앞에 "표" 접두어를 함께 표시한다.
+                cap_para.text = "표  ".to_string();
+                cap_para.char_count = 13;
+                cap_para.char_count_msb = true;
+                cap_para.control_mask = 1u32 << 0x12;
+                cap_para.char_offsets = vec![0, 1, 2, 11];
+                cap_para.style_id = caption_style_id;
+                cap_para.para_shape_id = caption_para_shape_id;
+                cap_para.char_shapes = vec![crate::model::paragraph::CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: caption_char_shape_id,
+                }];
+                cap_para
+                    .controls
+                    .push(crate::model::control::Control::AutoNumber(an));
+                cap_para.ctrl_data_records.push(None);
                 // max_width = 표 전체 폭 (열 폭 합산)
                 let total_width: u32 = table
                     .cells
@@ -1624,15 +1652,19 @@ impl DocumentCore {
                 cap.spacing = 850; // 약 3mm
                 table.caption = Some(cap);
                 caption_created = true;
-                table.caption.as_mut().unwrap().paragraphs[0]
-                    .controls
-                    .push(crate::model::control::Control::AutoNumber(an));
                 // attr bit 29: 캡션 존재 플래그 (한컴 호환성)
                 table.attr |= 1 << 29;
+                table.common.attr = table.attr;
+                table.raw_table_record_attr = table.attr;
+            } else if !has_cap && table.caption.is_some() {
+                table.caption = None;
+                table.attr &= !(1 << 29);
+                table.common.attr = table.attr;
+                table.raw_table_record_attr = table.attr;
+                caption_changed = true;
             }
         }
         // 캡션 속성 수정
-        let mut caption_changed = false;
         if let Some(ref mut cap) = table.caption {
             if let Some(v) = json_u8(json, "captionDirection") {
                 cap.direction = match v {
@@ -1677,57 +1709,27 @@ impl DocumentCore {
             table.dirty = true;
         }
 
-        // 캡션 생성 시 AutoNumber 번호 확정 + 텍스트에 직접 삽입
-        if caption_created {
+        // 캡션 생성/수정/삭제 후에는 문서 전체 AutoNumber를 다시 배정한다.
+        // 중간 표 캡션 삭제 시 남은 표 번호가 한컴처럼 1부터 이어지도록 보장한다.
+        if caption_created || caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
-            // AutoNumber에서 할당된 번호를 가져와 텍스트에 직접 포함
-            // (모델 텍스트와 렌더링 텍스트를 일치시켜 캐럿 위치 정확성 보장)
-            let assigned_num = {
-                let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-                let para = &table.caption.as_ref().unwrap().paragraphs[0];
-                para.controls
-                    .iter()
-                    .find_map(|c| {
-                        if let crate::model::control::Control::AutoNumber(an) = c {
-                            Some(an.assigned_number)
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or(1)
-            };
-            let num_str = format!("{}", assigned_num);
-            // "표 N " 형태의 텍스트 직접 생성 (AutoNumber 치환 불필요)
-            let caption_text = format!("표 {} ", num_str);
-            let char_count_text: u32 = caption_text.chars().count() as u32;
-
-            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-            let cap_max_width = table.caption.as_ref().map(|c| c.max_width).unwrap_or(0);
-            let para = &mut table.caption.as_mut().unwrap().paragraphs[0];
-            para.text = caption_text;
-            // char_offsets: 순차적 (AutoNumber 갭 없음, 모델=렌더링 일치)
-            para.char_offsets = (0..char_count_text).collect();
-            para.char_count = char_count_text + 1; // 텍스트 + 끝마커
-                                                   // AutoNumber 컨트롤 제거 (번호가 텍스트에 직접 포함됨)
-            para.controls.clear();
-            // char_shapes: 전체 텍스트에 기본 스타일(0) 적용
-            para.char_shapes = vec![crate::model::paragraph::CharShapeRef {
-                start_pos: 0,
-                char_shape_id: 0,
-            }];
-            // line_segs의 segment_width를 표 폭으로 설정
-            if let Some(ls) = para.line_segs.first_mut() {
-                ls.segment_width = cap_max_width as i32;
-            }
-            // 직접 접근으로 borrow 분리하여 reflow_line_segs 호출
             if let Some(crate::model::control::Control::Table(ref mut tbl)) =
                 self.document.sections[section_idx].paragraphs[parent_para_idx]
                     .controls
                     .get_mut(control_idx)
             {
                 if let Some(ref mut cap) = tbl.caption {
+                    let available_width_hu = if matches!(
+                        cap.direction,
+                        crate::model::shape::CaptionDirection::Left
+                            | crate::model::shape::CaptionDirection::Right
+                    ) {
+                        cap.width
+                    } else {
+                        cap.max_width
+                    };
                     let available_width_px =
-                        crate::renderer::hwpunit_to_px(cap.max_width as i32, self.dpi);
+                        crate::renderer::hwpunit_to_px(available_width_hu as i32, self.dpi);
                     crate::renderer::composer::reflow_line_segs(
                         &mut cap.paragraphs[0],
                         available_width_px,

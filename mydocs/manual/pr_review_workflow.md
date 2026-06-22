@@ -118,10 +118,16 @@ git status
 ### 4.3 빌드 · 테스트
 
 ```bash
-cargo build --lib
-cargo test --lib
-cargo clippy -- -D warnings
+cargo build --release
+cargo test --release --lib
+cargo test --profile release-test --tests
+cargo fmt --check
+git diff --check
+cargo clippy --all-targets -- -D warnings
 cargo test --doc
+cd rhwp-studio && npx tsc --noEmit
+cd rhwp-studio && npm test
+wasm-pack build --target web --out-dir pkg
 ```
 
 **렌더 영향 PR 추가 체크**:

@@ -12,6 +12,8 @@ export interface EditorContext {
   hasDocument: boolean;
   /** 선택 영역이 있는가? */
   hasSelection: boolean;
+  /** 모양 복사 상태가 있는가? */
+  hasCopiedFormat: boolean;
   /** 커서가 표 셀 내부인가? */
   inTable: boolean;
   /** F5 셀 선택 모드인가? */

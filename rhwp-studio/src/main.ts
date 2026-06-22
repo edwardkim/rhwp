@@ -85,6 +85,7 @@ function getContext(): EditorContext {
   return {
     hasDocument: hasDoc,
     hasSelection: inputHandler?.hasSelection() ?? false,
+    hasCopiedFormat: inputHandler?.hasCopiedFormat() ?? false,
     inTable: inputHandler?.isInTable() ?? false,
     inCellSelectionMode: inputHandler?.isInCellSelectionMode() ?? false,
     inTableObjectSelection: inputHandler?.isInTableObjectSelection() ?? false,
