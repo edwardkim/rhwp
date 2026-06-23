@@ -270,6 +270,9 @@ pub struct WebCanvasRenderer {
     /// BehindText plane 을 별도 canvas layer 로 합성할 때 flow Canvas 의 페이지 배경을
     /// 투명하게 둘지 여부.
     transparent_page_background: bool,
+    /// `LayerFilter::All` renders the layer tree in logical replay-plane order,
+    /// independent of raw tree child order.
+    active_replay_plane: Option<PaintReplayPlane>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -290,6 +293,7 @@ impl WebCanvasRenderer {
             scale: 1.0,
             layer_filter: LayerFilter::All,
             transparent_page_background: false,
+            active_replay_plane: None,
         })
     }
 
@@ -312,6 +316,9 @@ impl WebCanvasRenderer {
     fn should_render_op(&self, op: &PaintOp, layer: Option<RenderLayerInfo>) -> bool {
         use crate::model::shape::TextWrap;
         let replay_plane = paint_op_replay_plane_with_layer(op, layer);
+        if let Some(active) = self.active_replay_plane {
+            return replay_plane == active;
+        }
         match self.layer_filter {
             LayerFilter::All => true,
             LayerFilter::BackgroundOnly => replay_plane == PaintReplayPlane::Background,
@@ -351,7 +358,19 @@ impl WebCanvasRenderer {
             LayerFilter::WrapOnly(_) => true,
         };
         self.begin_page(tree.page_width, tree.page_height);
-        self.render_layer_node(&tree.root, None);
+        if self.layer_filter == LayerFilter::All {
+            let prev = self.active_replay_plane;
+            for replay_plane in PaintReplayPlane::ORDERED {
+                if !layer_node_has_replay_plane(&tree.root, replay_plane) {
+                    continue;
+                }
+                self.active_replay_plane = Some(replay_plane);
+                self.render_layer_node(&tree.root, None);
+            }
+            self.active_replay_plane = prev;
+        } else {
+            self.render_layer_node(&tree.root, None);
+        }
         self.transparent_page_background = false;
     }
 
