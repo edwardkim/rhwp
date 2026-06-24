@@ -172,9 +172,16 @@ pub fn write_line<W: Write>(
 // =====================================================================
 
 /// `<hp:container>` 뼈대 — 내부 자식 도형 루프는 dispatcher에서 처리.
+///
+/// 한컴 실측(hwpx-h-01) 컨테이너 직계 순서:
+/// offset → orgSz → curSz → flip → rotationInfo → renderingInfo → [자식 도형들]
+/// → sz → pos → outMargin → shapeComment.
+/// 그룹 자신의 shape_attr(orgSz/curSz/offset/renderingInfo)이 누락되면 렌더러가
+/// 그룹 스케일·자식 기준 좌표를 계산하지 못해 자식이 그룹 원점에 고유 크기로 붕괴한다.
 pub fn write_container_open<W: Write>(
     w: &mut Writer<W>,
     common: &CommonObjAttr,
+    sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
     let id_str = common.instance_id.to_string();
     let z_order = common.z_order.to_string();
@@ -198,21 +205,28 @@ pub fn write_container_open<W: Write>(
         ],
     )?;
 
-    write_sz(w, common)?;
-    write_pos(w, common)?;
-    write_out_margin(w, common)?;
+    // 그룹 자신의 좌표계 — 자식 도형 앞에 방출 (write_rect 패턴과 동일 순서).
+    write_offset(w, sa)?;
+    write_org_sz(w, sa)?;
+    write_cur_sz(w, sa)?;
+    write_flip(w, sa)?;
+    write_rotation_info(w, sa)?;
+    write_rendering_info(w, sa)?;
 
     Ok(())
 }
 
-/// `<hp:container>` 닫기 — 캡션(#1403)은 자식 도형 뒤에 방출한다.
-/// 한컴 실물(aift.hwpx) 자식 순서: [자식 도형들] → sz → pos → outMargin → caption.
+/// `<hp:container>` 닫기 — 자식 도형 뒤에 sz → pos → outMargin → caption(#1403) →
+/// shapeComment(#1392) 순으로 방출 (한컴 실측 hwpx-h-01/aift 순서).
 pub fn write_container_close<W: Write>(
     w: &mut Writer<W>,
     caption: Option<&crate::model::shape::Caption>,
     common: &CommonObjAttr,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    write_sz(w, common)?;
+    write_pos(w, common)?;
+    write_out_margin(w, common)?;
     if let Some(cap) = caption {
         write_caption(w, cap, ctx)?;
     }
@@ -377,8 +391,8 @@ fn write_rotation_info<W: Write>(
 
 /// `<hp:renderingInfo>` — `raw_rendering` (cnt u16 LE + trans 6×f64 + cnt×(sca, rot))
 /// 를 디코드해 행렬을 재구성한다 (`parse_rendering_info` 의 역). raw 비정합/빈 경우
-/// identity 3행렬 fallback (picture.rs 패턴).
-fn write_rendering_info<W: Write>(
+/// identity 3행렬 fallback. pic 자식도 공유 (그룹 내 자식 transMatrix 보존).
+pub(crate) fn write_rendering_info<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {

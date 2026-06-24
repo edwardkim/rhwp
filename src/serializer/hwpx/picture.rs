@@ -86,7 +86,9 @@ pub fn write_picture<W: Write>(
     write_cur_sz(w, pic)?;
     write_flip(w, &pic.shape_attr)?;
     write_rotation_info(w, &pic.shape_attr)?;
-    write_rendering_info(w)?;
+    // [#1501] 그룹 자식 pic 의 transMatrix(render_tx/sx) 보존 — 종전 identity 고정 출력은
+    // 그룹 내 자식을 원점·고유크기로 붕괴시켰다. shape.rs 의 raw_rendering 디코더 공유.
+    super::shape::write_rendering_info(w, &pic.shape_attr)?;
     write_img_rect(w, pic)?;
     write_img_clip(w, pic)?;
     write_in_margin(w, pic)?;
@@ -166,31 +168,6 @@ fn write_rotation_info<W: Write>(
             ("centerX", &cx),
             ("centerY", &cy),
             ("rotateimage", ri),
-        ],
-    )
-}
-
-fn write_rendering_info<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    // 3개 행렬 (transMatrix / scaMatrix / rotMatrix) 을 identity 로 출력.
-    start_tag(w, "hp:renderingInfo")?;
-    write_matrix(w, "hc:transMatrix")?;
-    write_matrix(w, "hc:scaMatrix")?;
-    write_matrix(w, "hc:rotMatrix")?;
-    end_tag(w, "hp:renderingInfo")?;
-    Ok(())
-}
-
-fn write_matrix<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
-    empty_tag(
-        w,
-        name,
-        &[
-            ("e1", "1"),
-            ("e2", "0"),
-            ("e3", "0"),
-            ("e4", "0"),
-            ("e5", "1"),
-            ("e6", "0"),
         ],
     )
 }

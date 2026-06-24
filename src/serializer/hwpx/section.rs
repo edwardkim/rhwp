@@ -1096,7 +1096,9 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         };
     }
     if let ShapeObject::Group(g) = shape {
-        let mut xml = match writer_to_string(|w| super::shape::write_container_open(w, &g.common)) {
+        let mut xml = match writer_to_string(|w| {
+            super::shape::write_container_open(w, &g.common, &g.shape_attr)
+        }) {
             Ok(xml) => xml,
             Err(e) => {
                 eprintln!("[hwpx] Shape::Group 직렬화 실패: {e}");
