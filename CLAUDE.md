@@ -239,6 +239,23 @@ rhwp hwpx-roundtrip --batch samples/hwpx -o output/poc/task1315  # inventory.tsv
 
 상세 매뉴얼: `mydocs/manual/hwpx_roundtrip_baseline.md`
 
+### 렌더 기하 정합성 검증 (`render-diff`)
+
+`hwpx-roundtrip` 의 상위 단계. IR 뼈대가 같아도(IrDiff 0) 라운드트립이 **렌더 결과**(페이지 수, 렌더 노드 삽입/삭제, bbox 변위)를 바꾸는 시각 회귀를 검출한다. 페이지별 `RenderNode` bbox 를 타입 LCS 매칭으로 비교하는 **폰트 비의존 결정론적** 게이트다.
+
+```bash
+rhwp render-diff sample.hwpx                            # 자기 라운드트립 (원본 vs 직렬화→재parse)
+rhwp render-diff a.hwpx b.hwpx                          # 두 파일 직접 비교
+rhwp render-diff --batch samples/hwpx -o output/poc/task1499  # 전수 → geom_inventory.tsv
+rhwp render-diff sample.hwpx --threshold 1.0            # 변위 임계 변경 (기본 0.5px)
+```
+
+판정: `PASS` / `STRUCT_MISMATCH`(페이지수·노드 삽입삭제) / `DISP_OVER`(변위>임계). 하드 실패 시 종료 코드 1. `samples/hwpx/` 전수 회귀 게이트는 `cargo test --test visual_roundtrip_baseline` (신규 샘플 자동 포함, XFAIL/EXCLUDED 등급은 테스트 파일 상수 참조).
+
+> 주의: 자기 roundtrip PASS = **내부 회귀 방지**이며 한컴 정답지 시각 충실도와는 별개다.
+
+상세 매뉴얼: `mydocs/manual/render_diff_command.md`
+
 ### 디버깅 워크플로우
 
 레이아웃/간격 버그 디버깅 시 다음 순서로 진행한다:

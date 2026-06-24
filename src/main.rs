@@ -49,6 +49,7 @@ fn main() {
         Some("test-field") => test_field_roundtrip(&args[2..]),
         Some("ir-diff") => ir_diff(&args[2..]),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
+        Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
         _ => {
             println!("rhwp v{}", rhwp::version());
@@ -199,6 +200,11 @@ fn print_help() {
     println!("      HWPX → IR → HWPX roundtrip 검증 (Task #1315 baseline)");
     println!("      재조립 .hwpx와 inventory.tsv를 출력 폴더(기본 output/poc/task1315)에 생성");
     println!("      --lineseg-report: 문단별 lineseg diff를 lineseg_diff.tsv로 산출 (#1380 측정)");
+    println!();
+    println!("  render-diff <a.hwpx> [b.hwpx | --batch 폴더] [-o <출력>] [--threshold <px>]");
+    println!("      라운드트립 렌더 기하(페이지별 RenderNode bbox) 정합성 비교 (Task #1499)");
+    println!("      단일=자기 라운드트립, 두 파일=직접 비교, --batch=geom_inventory.tsv");
+    println!("      판정: PASS / STRUCT_MISMATCH(페이지수·노드 삽입삭제) / DISP_OVER(변위>임계)");
     println!();
     println!("  thumbnail <파일.hwp> [옵션]");
     println!("      HWP 파일에서 썸네일(PrvImage) 추출");
