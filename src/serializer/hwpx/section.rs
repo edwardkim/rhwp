@@ -1118,12 +1118,32 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         }
         return xml;
     }
-    let (tag, c, caption) = match shape {
+    let (tag, c, caption, sa) = match shape {
         ShapeObject::Rectangle(_) | ShapeObject::Line(_) => unreachable!(),
-        ShapeObject::Ellipse(e) => ("ellipse", &e.common, &e.drawing.caption),
-        ShapeObject::Arc(a) => ("arc", &a.common, &a.drawing.caption),
-        ShapeObject::Polygon(p) => ("polygon", &p.common, &p.drawing.caption),
-        ShapeObject::Curve(cv) => ("curve", &cv.common, &cv.drawing.caption),
+        ShapeObject::Ellipse(e) => (
+            "ellipse",
+            &e.common,
+            &e.drawing.caption,
+            Some(&e.drawing.shape_attr),
+        ),
+        ShapeObject::Arc(a) => (
+            "arc",
+            &a.common,
+            &a.drawing.caption,
+            Some(&a.drawing.shape_attr),
+        ),
+        ShapeObject::Polygon(p) => (
+            "polygon",
+            &p.common,
+            &p.drawing.caption,
+            Some(&p.drawing.shape_attr),
+        ),
+        ShapeObject::Curve(cv) => (
+            "curve",
+            &cv.common,
+            &cv.drawing.caption,
+            Some(&cv.drawing.shape_attr),
+        ),
         ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
             return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
@@ -1134,26 +1154,37 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
                 }
             };
         }
-        ShapeObject::Chart(ch) => ("chart", &ch.common, &ch.caption),
-        ShapeObject::Ole(o) => ("ole", &o.common, &o.caption),
+        ShapeObject::Chart(ch) => ("chart", &ch.common, &ch.caption, None),
+        ShapeObject::Ole(o) => ("ole", &o.common, &o.caption, None),
     };
-    render_common_shape_xml(tag, c, caption, ctx)
+    render_common_shape_xml(tag, c, caption, sa, ctx)
 }
 
 fn render_common_shape_xml(
     tag: &str,
     c: &CommonObjAttr,
     caption: &Option<crate::model::shape::Caption>,
+    sa: Option<&crate::model::shape::ShapeComponentAttr>,
     ctx: &mut SerializeContext,
 ) -> String {
+    // 도형 좌표계 블록(offset/orgSz/curSz/flip/rotationInfo/renderingInfo) — 누락 시
+    // 회전/뒤집힘이 소실되어 bbox 가 전치되는 등 렌더가 어긋난다(#1501 동류, polygon 등).
+    let shape_block = sa
+        .map(|sa| {
+            writer_to_string(|w| super::shape::write_shape_component_block(w, sa))
+                .unwrap_or_default()
+        })
+        .unwrap_or_default();
     let mut out = format!(
         concat!(
             r#"<hp:{tag} id="{id}" zOrder="{zo}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0">"#,
+            "{block}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE"/>"#,
             r#"<hp:pos treatAsChar="{tac}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
             r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
         ),
         tag = tag,
+        block = shape_block,
         id = c.instance_id,
         zo = c.z_order,
         tw = text_wrap_to_hwpx(c.text_wrap),

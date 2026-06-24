@@ -32,7 +32,8 @@ const MAX_DISP: f64 = 0.5;
 const VISUAL_XFAIL: &[(&str, &str)] = &[
     // (승격) 그룹 자식 좌표 변환 누락(컨테이너 shape_attr + pic renderingInfo) 정정으로
     // 514.12px 군 4건(보도자료 ×3 + hwpx-h-01)이 PASS 로 승격됨.
-    ("shape-001.hwpx", "6.81px 변위(도형)"),
+    // (승격) 레거시 도형(polygon 등) shape_attr 블록 누락 정정으로 shape-001(회전 전치
+    // 6.81px)이 PASS 로 승격됨. el-school-001 의 도형 변위도 0 으로 해소(구조 불일치만 잔존).
     // 노드 삽입/삭제(구조 불일치) ± 좌표 변위.
     ("143E433F503322BD33.hwpx", "구조 불일치 1페이지"),
     ("exam_social-p1.hwpx", "구조 불일치 1페이지"),
@@ -44,7 +45,10 @@ const VISUAL_XFAIL: &[(&str, &str)] = &[
     ("exam_social.hwpx", "구조 불일치 4페이지"),
     ("[2027] 온새미로 1 본교재.hwpx", "구조 불일치 45페이지"),
     ("2026_oss_rst.hwpx", "459px 변위 + 구조 불일치 1페이지"),
-    ("el-school-001.hwpx", "6.81px 변위 + 구조 불일치 1페이지"),
+    (
+        "el-school-001.hwpx",
+        "구조 불일치 1페이지(도형 변위는 #shape 정정으로 0)",
+    ),
     ("hy-002.hwpx", "603px 변위 + 구조 불일치 1페이지"),
     ("footnote-01.hwpx", "613px 변위 + 구조 불일치 4페이지(각주)"),
     ("aift.hwpx", "621px 변위 + 구조 불일치 5페이지(대형)"),

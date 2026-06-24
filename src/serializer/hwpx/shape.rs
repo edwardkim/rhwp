@@ -332,6 +332,22 @@ pub fn write_draw_text<W: Write>(
 // ShapeComponentAttr 하위 요소 (offset / orgSz / curSz / flip / rotationInfo / renderingInfo)
 // =====================================================================
 
+/// AbstractShapeComponentType 의 좌표계 블록을 한컴 순서로 방출한다:
+/// offset → orgSz → curSz → flip → rotationInfo → renderingInfo.
+/// 누락 시 회전/뒤집힘·그룹 내 좌표가 소실되어 렌더가 어긋난다(ellipse/arc/polygon/curve 공용).
+pub(crate) fn write_shape_component_block<W: Write>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+) -> Result<(), SerializeError> {
+    write_offset(w, sa)?;
+    write_org_sz(w, sa)?;
+    write_cur_sz(w, sa)?;
+    write_flip(w, sa)?;
+    write_rotation_info(w, sa)?;
+    write_rendering_info(w, sa)?;
+    Ok(())
+}
+
 fn write_offset<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
