@@ -663,18 +663,22 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
 
     // #177: HWPX 비표준 lineseg 감지 → 경고 있으면 모달로 사용자 선택 요청
     try {
-      const report = wasm.getValidationWarnings();
-      console.log(`[validation] ${report.count} warnings`, report.summary);
-      if (report.count > 0) {
-        const choice = await showValidationModalIfNeeded(report);
-        console.log(`[validation] user choice: ${choice}`);
-        if (choice === 'auto-fix') {
-          const n = wasm.reflowLinesegs();
-          console.log(`[validation] reflowed ${n} paragraphs`);
-          // 렌더 재계산
-          canvasView?.loadDocument();
-          msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
-          normalizedDuringLoad = n > 0;
+      if (wasm.getSourceFormat() === 'hwpx') {
+        const report = wasm.getValidationWarnings();
+        console.log(`[validation] ${report.count} warnings`, report.summary);
+        if (report.count > 0) {
+          const choice = await showValidationModalIfNeeded(report);
+          console.log(`[validation] user choice: ${choice}`);
+          if (choice === 'auto-fix') {
+            const n = wasm.reflowLinesegs();
+            console.log(`[validation] reflowed ${n} paragraphs`);
+            if (n > 0) {
+              // 렌더 재계산
+              canvasView?.loadDocument();
+              msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
+              normalizedDuringLoad = true;
+            }
+          }
         }
       }
     } catch (e) {

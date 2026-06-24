@@ -438,7 +438,6 @@ impl DocumentCore {
     ///
     /// `needs_line_seg_reflow` (명백한 미계산) + 다음 케이스 포함:
     /// - 텍스트가 있는데 line_segs 가 비어있음 (LinesegArrayEmpty)
-    /// - 긴 텍스트 + lineseg 1개 + '\n' 없음 (LinesegTextRunReflow 패턴)
     ///
     /// 이 함수는 `reflow_linesegs_on_demand` 에서만 사용되며, 자동 파싱 경로에는 영향 없음.
     fn needs_reflow_broadly(para: &crate::model::paragraph::Paragraph) -> bool {
@@ -448,22 +447,16 @@ impl DocumentCore {
         if Self::needs_line_seg_reflow(para, false) {
             return true;
         }
-        // 한컴 textRun reflow 패턴 — 규칙 R3 과 동일 조건
-        const LONG_TEXT_THRESHOLD: usize = 40;
-        if para.line_segs.len() == 1
-            && !para.text.contains('\n')
-            && para.text.chars().count() > LONG_TEXT_THRESHOLD
-        {
-            return true;
-        }
         false
     }
 
     /// 사용자 명시 요청에 의한 전체 lineseg reflow (#177).
     ///
-    /// `validate_linesegs` 에 기록된 경고 대상 문단들 중 reflow 가능한 것을 모두 처리한다.
+    /// `validate_linesegs` 에 기록된 경고 대상 문단들 중 명백히 reflow 가능한 것을 처리한다.
     /// 기본 파싱 경로의 `reflow_zero_height_paragraphs` 와 달리 이 메서드는
     /// 사용자가 UI에서 "자동 보정" 을 명시적으로 선택했을 때만 호출되어야 한다.
+    /// `LinesegTextRunReflow` 는 한컴이 계산한 1개 lineseg 를 강제로 다시 풀면
+    /// 페이지 수가 바뀔 수 있으므로 경고만 남기고 자동 보정 대상에서 제외한다.
     ///
     /// 반환값: 실제로 reflow 된 문단 개수 (본문 + 셀 내부 합계).
     pub fn reflow_linesegs_on_demand(&mut self) -> usize {
@@ -576,6 +569,8 @@ impl DocumentCore {
         self.page_tree_cache.borrow_mut().clear();
         self.snapshot_store.clear();
         self.next_snapshot_id = 0;
+        self.source_format = crate::parser::FileFormat::Hwp;
+        self.validation_report = ValidationReport::new();
 
         self.convert_to_editable_native()?;
         self.paginate();
@@ -1212,12 +1207,12 @@ mod validate_linesegs_tests {
     }
 
     #[test]
-    fn needs_reflow_broadly_covers_textrun_reflow() {
+    fn needs_reflow_broadly_skips_textrun_reflow() {
         let mut para = Paragraph::default();
         para.text = "이것은 충분히 길어서 한 줄로 표시하기 어려운 한국어 문장입니다. 한컴은 textRun으로 reflow하지만 rhwp는 그대로 그립니다.".to_string();
         let mut seg = LineSeg::default();
         seg.line_height = 1000;
         para.line_segs.push(seg);
-        assert!(DocumentCore::needs_reflow_broadly(&para));
+        assert!(!DocumentCore::needs_reflow_broadly(&para));
     }
 }

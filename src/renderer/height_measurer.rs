@@ -208,6 +208,55 @@ impl HeightMeasurer {
         }
     }
 
+    fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
+        if common.treat_as_char {
+            return 0.0;
+        }
+        if !matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        ) {
+            return 0.0;
+        }
+
+        let object_height = hwpunit_to_px(common.height as i32, self.dpi);
+        let top_offset = if matches!(common.vert_rel_to, VertRelTo::Para) {
+            hwpunit_to_px((common.vertical_offset as i32).max(0), self.dpi)
+        } else {
+            0.0
+        };
+        top_offset + object_height
+    }
+
+    fn cell_wrap_objects_bottom_height(&self, paragraphs: &[Paragraph]) -> f64 {
+        paragraphs
+            .iter()
+            .map(|p| {
+                let para_top = p
+                    .line_segs
+                    .first()
+                    .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                let object_bottom = p
+                    .controls
+                    .iter()
+                    .map(|ctrl| match ctrl {
+                        Control::Picture(pic) => self.cell_wrap_object_visual_bottom(&pic.common),
+                        Control::Shape(shape) => {
+                            self.cell_wrap_object_visual_bottom(shape.common())
+                        }
+                        _ => 0.0,
+                    })
+                    .fold(0.0f64, f64::max);
+                if object_bottom > 0.0 {
+                    para_top + object_bottom
+                } else {
+                    0.0
+                }
+            })
+            .fold(0.0f64, f64::max)
+    }
+
     /// 구역의 모든 콘텐츠 높이를 측정한다.
     ///
     /// `column_width_px`: 단 너비 (px). `Some` 이면 line_segs.empty paragraph 의
@@ -889,10 +938,12 @@ impl HeightMeasurer {
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
                         .max(nested_bottom)
+                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                     let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
-                    text_height + non_inline_h
+                    (text_height + non_inline_h)
+                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs))
                 };
 
                 // 패딩 포함 총 필요 높이
@@ -1109,7 +1160,9 @@ impl HeightMeasurer {
                 let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
                 let nested_bottom =
                     self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
-                let content_height = (text_height + non_inline_h).max(nested_bottom);
+                let content_height = (text_height + non_inline_h)
+                    .max(nested_bottom)
+                    .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs));
                 let required_height = content_height + pad_top + pad_bottom;
                 let combined: f64 = (r..r + span).map(|i| row_heights[i]).sum();
                 if required_height > combined {
@@ -1346,6 +1399,17 @@ impl HeightMeasurer {
                     self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
                 mc.total_content_height = nested_bottom.max(mc.total_content_height);
             }
+        }
+        for mc in &mut measured_cells {
+            let Some(cell) = table
+                .cells
+                .iter()
+                .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
+            else {
+                continue;
+            };
+            let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);
+            mc.total_content_height = mc.total_content_height.max(wrap_bottom);
         }
 
         let (row_block_start, row_block_end) = compute_row_blocks(table, row_heights.len());

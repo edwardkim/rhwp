@@ -1937,6 +1937,20 @@ impl LayoutEngine {
     /// *세로 중앙* 에 담겨 출력된다 (테두리 아래로 흘러나가지 않음).
     /// paper 기준 테두리는 종이 전체를 감싸 쪽 번호가 테두리 *안쪽* 에 오며
     /// (aift.hwp Task #634), 이 경우 보정하지 않고 None.
+    fn footer_page_number_y(
+        &self,
+        layout: &PageLayoutInfo,
+        footer_area: &LayoutRect,
+        font_size: f64,
+    ) -> f64 {
+        let center_y = if footer_area.height > 0.5 {
+            footer_area.y + footer_area.height / 2.0
+        } else {
+            (footer_area.y + layout.page_height) / 2.0
+        };
+        center_y + font_size / 3.0
+    }
+
     fn page_number_baseline_y(
         &self,
         layout: &PageLayoutInfo,
@@ -1949,7 +1963,7 @@ impl LayoutEngine {
             return None;
         }
         // 꼬리말 영역 세로 중앙 baseline (기존 footer 중앙 공식과 동일).
-        Some(layout.footer_area.y + layout.footer_area.height / 2.0 + font_size / 3.0)
+        Some(self.footer_page_number_y(layout, &layout.footer_area, font_size))
     }
 
     fn build_page_borders(
@@ -2602,7 +2616,11 @@ impl LayoutEngine {
                 .map(|ph| ph.hide_border)
                 .unwrap_or(false);
             let is_footer = !matches!(pnp.position, 1..=3 | 7 | 9);
-            let footer_center = target_area.y + target_area.height / 2.0 + font_size / 3.0;
+            let footer_center = if is_footer {
+                self.footer_page_number_y(layout, target_area, font_size)
+            } else {
+                target_area.y + target_area.height / 2.0 + font_size / 3.0
+            };
             // body 기준 테두리 + 테두리 실제 그려질 때만 footer_area 중앙으로
             // 보정 (target_area 가 footer_area 와 다를 수 있는 경우 정합).
             // 그 외(paper 기준/테두리 없음/hide_border)는 기존 footer_center.

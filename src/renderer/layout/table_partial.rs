@@ -206,25 +206,42 @@ impl LayoutEngine {
                         .filter(|c| c.row as usize == r && c.row_span == 1)
                         .collect();
                     rcells.sort_by_key(|c| c.col);
-                    let per_start: Vec<usize> = rcells
-                        .iter()
-                        .map(|c| match (in_start, start_block) {
+                    let mut per_start: Vec<usize> = Vec::with_capacity(rcells.len());
+                    let mut per_end: Vec<usize> = Vec::with_capacity(rcells.len());
+                    let mut has_visible_range = false;
+                    let mut has_row_cut = false;
+                    for c in &rcells {
+                        let units = self.cell_units(c, table, styles);
+                        let su = match (in_start, start_block) {
                             (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
                                 .and_then(|i| start_cut.get(i).copied())
                                 .unwrap_or(0),
                             _ => 0,
-                        })
-                        .collect();
-                    let per_end: Vec<usize> = rcells
-                        .iter()
-                        .map(|c| match (in_end, end_block) {
+                        }
+                        .min(units.len());
+                        let eu = match (in_end, end_block) {
                             (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
                                 .and_then(|i| end_cut.get(i).copied())
-                                .unwrap_or(usize::MAX),
-                            _ => usize::MAX,
-                        })
-                        .collect();
-                    let h = self.row_cut_content_height(table, r, &per_start, &per_end, styles);
+                                .unwrap_or(units.len()),
+                            _ => units.len(),
+                        }
+                        .clamp(su, units.len());
+                        if eu > su {
+                            has_visible_range = true;
+                        }
+                        if su > 0 || eu < units.len() {
+                            has_row_cut = true;
+                        }
+                        per_start.push(su);
+                        per_end.push(eu);
+                    }
+                    let h = if !has_visible_range {
+                        0.0
+                    } else if has_row_cut {
+                        self.row_cut_content_height(table, r, &per_start, &per_end, styles)
+                    } else {
+                        self.row_cut_content_height(table, r, &[], &[], styles)
+                    };
                     if h > 0.0 {
                         row_heights[r] = h;
                     }
@@ -690,6 +707,7 @@ impl LayoutEngine {
                         .max(line_h)
                         .max(nested_bottom)
                         .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs))
+                        .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
                     self.calc_composed_paras_content_height(
                         &composed_paras,
@@ -697,6 +715,7 @@ impl LayoutEngine {
                         styles,
                     )
                     .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs))
+                    .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
                 }
             };
 
@@ -1235,7 +1254,10 @@ impl LayoutEngine {
                                     };
                                     let available_h =
                                         (inner_area.height - (nested_y - inner_area.y)).max(0.0);
-                                    // TAC(글자처럼 취급) 표: 앞 텍스트 너비만큼 x 오프셋 적용
+                                    // TAC(글자처럼 취급) 표: 앞 텍스트 너비만큼 x 오프셋 적용.
+                                    // 분할 표 내부에서는 composed 텍스트가 이전 줄까지 포함할 수
+                                    // 있으므로, 표가 남은 폭에 들어가지 않으면 셀 좌측 기준으로
+                                    // 배치해 페이지 오른쪽 밖으로 밀려나는 것을 막는다.
                                     let tac_text_offset = if nested_table.common.treat_as_char {
                                         let mut text_w = 0.0;
                                         for line in &composed.lines {
@@ -1254,10 +1276,23 @@ impl LayoutEngine {
                                     } else {
                                         0.0
                                     };
+                                    let nested_w = if nested_table.common.width > 0 {
+                                        hwpunit_to_px(nested_table.common.width as i32, self.dpi)
+                                    } else {
+                                        inner_area.width
+                                    };
+                                    let tac_x_offset = if nested_table.common.treat_as_char
+                                        && tac_text_offset > 0.0
+                                        && tac_text_offset + nested_w > inner_area.width + 0.5
+                                    {
+                                        0.0
+                                    } else {
+                                        tac_text_offset.min(inner_area.width)
+                                    };
                                     let ctrl_area = LayoutRect {
-                                        x: inner_area.x + tac_text_offset,
+                                        x: inner_area.x + tac_x_offset,
                                         y: nested_y,
-                                        width: (inner_area.width - tac_text_offset).max(0.0),
+                                        width: (inner_area.width - tac_x_offset).max(0.0),
                                         height: available_h,
                                     };
 
