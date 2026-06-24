@@ -98,6 +98,18 @@ HWP 내장 썸네일(PrvImage) 추출.
 ### `build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
 ingest JSON(시험문제 등) → HWPX 생성. (rhwp-exam-ingest 파이프라인)
 
+### `render-diff <파일> [--via hwpx|hwp] [-p <페이지>] [--max-disp <px>]`
+라운드트립 **시각 정합성 게이트** — 페이지별 `RenderNode` bbox 변위(px)를 정량화한다.
+구조 보존만 보는 `hwpx-roundtrip` 과 달리, 라운드트립이 유발한 렌더 기하 변화(시각 회귀)를
+검출한다(자기 roundtrip 통과 ≠ 한컴 충실도임에 유의 — 내부 회귀 방지용).
+- `render-diff <파일>` — 자기 라운드트립(원본 IR vs 직렬화→재로드 IR). `--via hwpx`(기본)는
+  hwp 레거시→hwpx 전환 시각 보존 검증, `--via hwp` 는 HWP 어댑터 경로.
+- `render-diff <A> <B>` — 두 파일 직접 비교.
+- `--batch <폴더> [-o 출력폴더]` — 폴더 전수 → `geom_inventory.tsv`(기본 `output/poc/render_diff`).
+  컬럼: sample/status/pages_a/pages_b/max_disp/worst_page/struct_pages/over_pages/elapsed_ms/error.
+- status: PASS / OVER(변위>임계) / STRUCT_MISMATCH(노드 삽입·삭제) / PAGE_MISMATCH(하드) / LOAD_FAIL.
+- 매칭: 노드 타입 LCS 정렬(삽입/삭제 있어도 대응 노드 변위 측정). `--max-disp` 기본 1.0px.
+
 ---
 
 ## 4. HWPX→HWP 저장 계약 분석 (hwp5-* 진단 도구)
