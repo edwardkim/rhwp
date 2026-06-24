@@ -87,6 +87,9 @@ pub fn write_section(
     // 중첩 linesegarray(각주·머리말 등)가 anchor 탐색을 오염시키지 않도록 한다.
     let mut out = replace_first_linesegs(EMPTY_SECTION_XML, &first_linesegs);
     out = replace_page_pr(&out, &section.section_def.page_def);
+    // 쪽 테두리/배경 — 템플릿의 하드코딩 borderFillIDRef="1"(테두리 없음)을 IR 값으로
+    // 치환한다. 누락 시 문서의 쪽 테두리가 소실되어 외곽 4선 노드가 사라진다(#1388 동형).
+    out = replace_page_border_fill(&out, &section.section_def);
 
     // [#1407] 본문 단 정의(colPr) — 첫 문단 IR 의 ColumnDef 를 템플릿 하드코딩
     // colPr(colCount=1)에 치환한다. 본문(depth 0) ColumnDef 는 render_runs 인라인
@@ -1487,6 +1490,80 @@ fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String 
         // 템플릿이 변경됐거나 이미 치환된 경우 — 원본 유지(회귀 방지).
         out
     }
+}
+
+/// 템플릿의 3개 `pageBorderFill`(BOTH/EVEN/ODD, 하드코딩 borderFillIDRef="1") 을 IR 값으로
+/// 치환한다. 누락 시 문서의 실제 쪽 테두리가 소실된다. 파서는 첫 항목(BOTH)을
+/// `page_border_fill`, 나머지(EVEN/ODD)를 `extra_page_border_fills` 에 위치 기반 저장한다.
+fn replace_page_border_fill(xml: &str, sec_def: &crate::model::document::SectionDef) -> String {
+    let entries: [(&str, &crate::model::page::PageBorderFill); 3] = [
+        ("BOTH", &sec_def.page_border_fill),
+        (
+            "EVEN",
+            sec_def
+                .extra_page_border_fills
+                .first()
+                .unwrap_or(&sec_def.page_border_fill),
+        ),
+        (
+            "ODD",
+            sec_def
+                .extra_page_border_fills
+                .get(1)
+                .unwrap_or(&sec_def.page_border_fill),
+        ),
+    ];
+    let mut out = xml.to_string();
+    for (ty, pbf) in entries {
+        // 템플릿 고정 문자열 (empty_section0.xml 와 정확히 일치해야 함).
+        let template = format!(
+            r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
+        );
+        if out.contains(&template) {
+            out = out.replacen(&template, &render_page_border_fill(ty, pbf), 1);
+        }
+        // 미일치 시 원본 유지(회귀 방지) — replace_page_pr 패턴과 동형.
+    }
+    out
+}
+
+/// 단일 `pageBorderFill` 요소를 IR 에서 재구성한다. attr 비트 → textBorder/fillArea/
+/// headerInside/footerInside (parser `page_border_fill_attr` 의 역).
+fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -> String {
+    let text_border = if pbf.attr & 0x0000_0001 != 0 {
+        "PAPER"
+    } else {
+        "CONTENT"
+    };
+    let fill_area = if pbf.attr & 0x0000_0008 != 0 {
+        "PAGE"
+    } else if pbf.attr & 0x0000_0010 != 0 {
+        "BORDER"
+    } else {
+        "PAPER"
+    };
+    let header_inside = if pbf.attr & 0x0000_0002 != 0 {
+        "1"
+    } else {
+        "0"
+    };
+    let footer_inside = if pbf.attr & 0x0000_0004 != 0 {
+        "1"
+    } else {
+        "0"
+    };
+    format!(
+        r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="{}" textBorder="{}" headerInside="{}" footerInside="{}" fillArea="{}"><hp:offset left="{}" right="{}" top="{}" bottom="{}"/></hp:pageBorderFill>"#,
+        pbf.border_fill_id,
+        text_border,
+        header_inside,
+        footer_inside,
+        fill_area,
+        pbf.spacing_left,
+        pbf.spacing_right,
+        pbf.spacing_top,
+        pbf.spacing_bottom,
+    )
 }
 
 #[cfg(test)]

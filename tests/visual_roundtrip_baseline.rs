@@ -38,7 +38,8 @@ const VISUAL_XFAIL: &[(&str, &str)] = &[
     ("143E433F503322BD33.hwpx", "구조 불일치 1페이지"),
     ("exam_social-p1.hwpx", "구조 불일치 1페이지"),
     ("exam-kor-2p.hwpx", "구조 불일치 1페이지"),
-    ("expense_report.hwpx", "구조 불일치 1페이지"),
+    // (승격) secPr pageBorderFill borderFillIDRef 하드코딩 "1" 정정으로 쪽 테두리 4선이
+    // 보존되어 expense_report 가 PASS 로 승격됨.
     ("exam_kor.hwpx", "구조 불일치 17페이지(대형)"),
     ("exam-kor-3p.hwpx", "구조 불일치 2페이지"),
     ("exam-kor-4p.hwpx", "구조 불일치 3페이지"),
