@@ -176,7 +176,7 @@ pub(crate) struct RowCutResult {
 }
 
 /// [Task #993] 한 셀의 콘텐츠 유닛 — 합성 줄 1개 또는 중첩 표 atom 1개.
-struct CellUnit {
+pub(super) struct CellUnit {
     /// 유닛 높이 (px).
     height: f64,
     /// 이 유닛 앞에 vpos 리셋(셀 내부 페이지 분할)이 있는가.
@@ -318,6 +318,55 @@ impl LayoutEngine {
                 _ => 0.0,
             })
             .sum()
+    }
+
+    fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
+        if common.treat_as_char {
+            return 0.0;
+        }
+        if !matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        ) {
+            return 0.0;
+        }
+
+        let object_height = hwpunit_to_px(common.height as i32, self.dpi);
+        let top_offset = if matches!(common.vert_rel_to, VertRelTo::Para) {
+            hwpunit_to_px((common.vertical_offset as i32).max(0), self.dpi)
+        } else {
+            0.0
+        };
+        top_offset + object_height
+    }
+
+    pub(crate) fn calc_cell_wrap_objects_bottom_height(&self, paragraphs: &[Paragraph]) -> f64 {
+        paragraphs
+            .iter()
+            .map(|p| {
+                let para_top = p
+                    .line_segs
+                    .first()
+                    .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                let object_bottom = p
+                    .controls
+                    .iter()
+                    .map(|ctrl| match ctrl {
+                        Control::Picture(pic) => self.cell_wrap_object_visual_bottom(&pic.common),
+                        Control::Shape(shape) => {
+                            self.cell_wrap_object_visual_bottom(shape.common())
+                        }
+                        _ => 0.0,
+                    })
+                    .fold(0.0f64, f64::max);
+                if object_bottom > 0.0 {
+                    para_top + object_bottom
+                } else {
+                    0.0
+                }
+            })
+            .fold(0.0f64, f64::max)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -1362,6 +1411,7 @@ impl LayoutEngine {
         line_based_height
             .max(self.calc_nested_controls_bottom_height(paragraphs, styles))
             .max(self.calc_non_inline_controls_flow_height(paragraphs))
+            .max(self.calc_cell_wrap_objects_bottom_height(paragraphs))
     }
 
     /// pre-composed 문단들의 콘텐츠 높이 합산 (compose 생략)
@@ -2222,7 +2272,12 @@ impl LayoutEngine {
 
                 let nested_bottom =
                     self.calc_nested_controls_bottom_height(&cell.paragraphs, styles);
-                composed_height.max(vpos_height).max(nested_bottom)
+                let wrap_object_bottom =
+                    self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs);
+                composed_height
+                    .max(vpos_height)
+                    .max(nested_bottom)
+                    .max(wrap_object_bottom)
             };
 
             // 수직 정렬 (분할 표에서는 Top 강제 — 보이는 영역이 전체 셀보다 작음)
@@ -4009,7 +4064,7 @@ impl LayoutEngine {
     /// 의 줄 높이 계산과 동일 규칙(줄 h+ls, 셀 마지막 줄 ls 제외, 문단 첫·마지막
     /// 줄에 spacing_before/after). `hard_break_before` = 이 유닛 앞에 HWP vpos
     /// 리셋(셀 내부 페이지 분할, `[Task #697]`)이 있는가.
-    fn cell_units(
+    pub(super) fn cell_units(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
@@ -4321,6 +4376,7 @@ impl LayoutEngine {
         let mut hit_hard_break = false;
         let mut fully_consumed = true;
         let mut consumed_height = 0.0f64;
+        let rewind_internal_hard_break_orphan = Self::row_has_prior_rowspan_cover(table, row);
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
@@ -4330,9 +4386,11 @@ impl LayoutEngine {
                 let u = &units[j];
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
                 if j > start && u.hard_break_before {
-                    Self::rewind_rowbreak_orphan_before_hard_break(
-                        table, &units, start, &mut j, &mut h,
-                    );
+                    if rewind_internal_hard_break_orphan {
+                        Self::rewind_rowbreak_orphan_before_hard_break(
+                            table, &units, start, &mut j, &mut h,
+                        );
+                    }
                     hit_hard_break = true;
                     break;
                 }
@@ -4422,6 +4480,76 @@ impl LayoutEngine {
         }
     }
 
+    /// RowBreak rowspan 블록에서 셀의 행 시작 y를 반영해 컷을 전진시킨다.
+    ///
+    /// 일반 `advance_row_block_cut`은 블록 안의 모든 셀에 같은 예산을 주기 때문에,
+    /// 위쪽 큰 셀이 페이지 경계에서 잘릴 때 아래 행의 짧은 셀까지 먼저 소비할 수 있다.
+    /// 이 함수는 행별 top offset을 빼고 남은 예산으로 셀을 전진시켜 같은 블록 안의
+    /// 아래 행 내용이 한컴처럼 다음 조각에 남도록 한다.
+    pub(crate) fn advance_row_block_cut_with_row_offsets(
+        &self,
+        table: &crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+        start_cut: &[usize],
+        avail_height: f64,
+        row_offsets: &[f64],
+        styles: &ResolvedStyleSet,
+    ) -> RowCutResult {
+        let mut cells = Self::row_block_cells(table, b_start, b_end);
+        cells.sort_by_key(|c| (c.row, c.col));
+
+        let mut end_cut: RowCut = Vec::with_capacity(cells.len());
+        let mut hit_hard_break = false;
+        let mut fully_consumed = true;
+        let mut consumed_height = 0.0f64;
+        for (i, cell) in cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            let cell_row = cell.row as usize;
+            let row_offset = cell_row
+                .checked_sub(b_start)
+                .and_then(|idx| row_offsets.get(idx))
+                .copied()
+                .unwrap_or(0.0);
+            let cell_budget = (avail_height - row_offset).max(0.0);
+            let allow_force_progress = row_offset <= 0.5;
+            let mut j = start;
+            let mut h = 0.0f64;
+            while j < units.len() {
+                let u = &units[j];
+                if j > start && u.hard_break_before {
+                    Self::rewind_rowbreak_orphan_before_hard_break(
+                        table, &units, start, &mut j, &mut h,
+                    );
+                    hit_hard_break = true;
+                    break;
+                }
+                if j > start && h + u.height > cell_budget {
+                    break;
+                }
+                if j == start && !allow_force_progress && h + u.height > cell_budget {
+                    break;
+                }
+                h += u.height;
+                j += 1;
+            }
+            if j < units.len() {
+                fully_consumed = false;
+            }
+            if h > 0.0 {
+                consumed_height = consumed_height.max(row_offset + h);
+            }
+            end_cut.push(j);
+        }
+        RowCutResult {
+            end_cut,
+            hit_hard_break,
+            fully_consumed,
+            consumed_height,
+        }
+    }
+
     fn rewind_rowbreak_orphan_before_hard_break(
         table: &crate::model::table::Table,
         units: &[CellUnit],
@@ -4445,9 +4573,38 @@ impl LayoutEngine {
         }
     }
 
+    fn row_has_prior_rowspan_cover(table: &crate::model::table::Table, row: usize) -> bool {
+        table.cells.iter().any(|cell| {
+            let start = cell.row as usize;
+            let end = start + (cell.row_span as usize).max(1);
+            cell.row_span > 1 && start < row && row < end
+        })
+    }
+
+    /// RowBreak 표의 rowspan 블록 중 셀 내부 HWP page reset 이 처음 나타나는 셀의
+    /// 시작 행을 찾는다. 단순 rowspan 라벨 표는 기존 행 경계 분할을 유지한다.
+    pub(crate) fn row_block_first_internal_hard_break_row(
+        &self,
+        table: &crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<usize> {
+        Self::row_block_cells(table, b_start, b_end)
+            .iter()
+            .filter_map(|cell| {
+                let has_hard_break = self
+                    .cell_units(cell, table, styles)
+                    .iter()
+                    .enumerate()
+                    .any(|(i, unit)| i > 0 && unit.hard_break_before);
+                has_hard_break.then_some(cell.row as usize)
+            })
+            .min()
+    }
+
     /// RowBreak 표의 rowspan 블록 중 셀 내부 HWP page reset 이 있는 블록만
-    /// 블록 컷 대상으로 삼기 위한 가드. 단순 rowspan 라벨 표는 기존 행 경계
-    /// 분할을 유지한다.
+    /// 블록 컷 대상으로 삼기 위한 가드.
     pub(crate) fn row_block_has_internal_hard_break(
         &self,
         table: &crate::model::table::Table,
@@ -4455,14 +4612,8 @@ impl LayoutEngine {
         b_end: usize,
         styles: &ResolvedStyleSet,
     ) -> bool {
-        Self::row_block_cells(table, b_start, b_end)
-            .iter()
-            .any(|cell| {
-                self.cell_units(cell, table, styles)
-                    .iter()
-                    .enumerate()
-                    .any(|(i, unit)| i > 0 && unit.hard_break_before)
-            })
+        self.row_block_first_internal_hard_break_row(table, b_start, b_end, styles)
+            .is_some()
     }
 
     /// [Task #1025] 행블록 `[b_start, b_end)` 와 교차하는 셀(rs>1 포함)을 모은다.
@@ -4517,6 +4668,69 @@ impl LayoutEngine {
         max_h
     }
 
+    /// 블록 컷 벡터를 특정 행의 per-row 컷으로 변환해 해당 행 표시 높이를 계산한다.
+    pub(crate) fn row_block_cut_row_content_height(
+        &self,
+        table: &crate::model::table::Table,
+        b_start: usize,
+        b_end: usize,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut block_cells = Self::row_block_cells(table, b_start, b_end);
+        block_cells.sort_by_key(|c| (c.row, c.col));
+
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|c| c.col);
+
+        if row_cells.is_empty() {
+            return 0.0;
+        }
+
+        let mut per_start = Vec::with_capacity(row_cells.len());
+        let mut per_end = Vec::with_capacity(row_cells.len());
+        let mut has_visible_range = false;
+        let mut has_row_cut = false;
+        for cell in row_cells {
+            let block_idx = block_cells
+                .iter()
+                .position(|c| c.row == cell.row && c.col == cell.col);
+            let units = self.cell_units(cell, table, styles);
+            let su = block_idx
+                .and_then(|idx| start_cut.get(idx).copied())
+                .unwrap_or(0)
+                .min(units.len());
+            let eu = block_idx
+                .and_then(|idx| end_cut.get(idx).copied())
+                .unwrap_or(units.len())
+                .clamp(su, units.len());
+            if eu > su {
+                has_visible_range = true;
+            }
+            if su > 0 || eu < units.len() {
+                has_row_cut = true;
+            }
+            per_start.push(su);
+            per_end.push(eu);
+        }
+
+        if !has_visible_range {
+            return 0.0;
+        }
+
+        if has_row_cut {
+            self.row_cut_content_height(table, row, &per_start, &per_end, styles)
+        } else {
+            self.row_cut_content_height(table, row, &[], &[], styles)
+        }
+    }
+
     /// [Task #993] 한 셀의 유닛 범위 `[start_unit, end_unit)`를 문단별 줄 범위로
     /// 변환한다. `layout_partial_table`이 `RowCut`으로 가시 범위를 렌더할 때
     /// 사용 — 결과는 종전 `compute_cell_line_ranges`와 같은
@@ -4548,6 +4762,55 @@ impl LayoutEngine {
             }
         }
         ranges
+    }
+
+    /// RowBreak 분할의 컷 범위에 실제 보이는 내용이 남아 있는지 확인한다.
+    ///
+    /// 마지막 continuation 에 빈 문단/패딩만 남은 조각은 한컴 PDF에서 별도 페이지를
+    /// 만들지 않는 경우가 있어, 페이지네이터가 terminal sliver 를 걸러낼 때 사용한다.
+    pub(crate) fn row_cut_range_has_visible_content(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|c| c.col);
+
+        for (i, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let su = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            let eu = end_cut
+                .get(i)
+                .copied()
+                .unwrap_or(units.len())
+                .clamp(su, units.len());
+            if units[su..eu]
+                .iter()
+                .any(|unit| Self::cell_unit_has_visible_content(cell, unit))
+            {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn cell_unit_has_visible_content(cell: &crate::model::table::Cell, unit: &CellUnit) -> bool {
+        if unit.nested_row.is_some() {
+            return true;
+        }
+
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return false;
+        };
+        !para.text.trim().is_empty() || !para.controls.is_empty()
     }
 
     /// [Task #993 / #1022] 분할 행에서 컷 범위 `[start_cut, end_cut)` 사이의
@@ -4853,6 +5116,13 @@ mod row_cut_tests {
         }
     }
 
+    fn rowbreak_table(cells: Vec<Cell>) -> Table {
+        Table {
+            page_break: crate::model::table::TablePageBreak::RowBreak,
+            ..table(cells)
+        }
+    }
+
     fn composed_text(text: &str) -> ComposedParagraph {
         ComposedParagraph {
             lines: vec![ComposedLine {
@@ -4964,6 +5234,43 @@ mod row_cut_tests {
         let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1000.0, &styles);
         assert_eq!(r2.end_cut, vec![5]);
         assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_advance_row_cut_rowbreak_rewinds_internal_hard_break_orphan() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let internal_reset = Paragraph {
+            line_segs: vec![
+                LineSeg {
+                    vertical_pos: 0,
+                    line_height: 1200,
+                    line_spacing: 0,
+                    ..Default::default()
+                },
+                LineSeg {
+                    vertical_pos: 0,
+                    line_height: 1200,
+                    line_spacing: 0,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        let t = rowbreak_table(vec![
+            rscell(0, 0, 2, vec![text_para(1, 0)]),
+            cell(
+                1,
+                1,
+                vec![text_para(1, 0), text_para(1, 1200), internal_reset],
+            ),
+        ]);
+
+        let r = eng.advance_row_cut(&t, 1, &[], 1000.0, &styles);
+
+        assert_eq!(r.end_cut, vec![2]);
+        assert!(r.hit_hard_break);
+        assert!(!r.fully_consumed);
     }
 
     #[test]

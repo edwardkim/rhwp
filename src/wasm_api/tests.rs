@@ -23283,6 +23283,53 @@ fn test_reflow_linesegs_empty_document_returns_zero() {
     assert_eq!(count, 0);
 }
 
+#[test]
+fn test_create_blank_document_clears_previous_hwpx_validation_warnings() {
+    let bytes = std::fs::read("samples/hwpx_sample2.hwpx").expect("HWPX 샘플 읽기");
+    let mut doc = HwpDocument::new(&bytes).expect("HWPX 샘플 로드");
+
+    let before: Value = serde_json::from_str(&doc.get_validation_warnings()).expect("경고 JSON");
+    assert!(
+        before["count"].as_u64().unwrap_or(0) > 0,
+        "재현 샘플은 HWPX validation warning이 있어야 함: {before}"
+    );
+    assert_eq!(doc.get_source_format(), "hwpx");
+
+    doc.create_blank_document_native()
+        .expect("새 문서 생성 성공");
+
+    let after: Value = serde_json::from_str(&doc.get_validation_warnings()).expect("경고 JSON");
+    assert_eq!(
+        after["count"].as_u64(),
+        Some(0),
+        "새 문서는 이전 HWPX warning을 물려받으면 안 됨: {after}"
+    );
+    assert_eq!(doc.get_source_format(), "hwp");
+}
+
+#[test]
+fn test_reflow_linesegs_keeps_hwpx_sample2_page_count_for_textrun_warnings() {
+    let bytes = std::fs::read("samples/hwpx_sample2.hwpx").expect("HWPX 샘플 읽기");
+    let mut doc = HwpDocument::new(&bytes).expect("HWPX 샘플 로드");
+
+    let before_page_count = doc.page_count();
+    let before: Value = serde_json::from_str(&doc.get_validation_warnings()).expect("경고 JSON");
+    assert_eq!(before_page_count, 29);
+    assert_eq!(before["count"].as_u64(), Some(151));
+
+    let reflowed = doc.reflow_linesegs();
+
+    assert_eq!(
+        reflowed, 0,
+        "LinesegTextRunReflow 경고는 페이지 수를 바꿀 수 있어 자동 보정하지 않음"
+    );
+    assert_eq!(
+        doc.page_count(),
+        before_page_count,
+        "권장 보정으로 HWPX 페이지 수가 바뀌면 안 됨"
+    );
+}
+
 // ---------- #1413: insertPictureEx(options object) 동치 ----------
 
 /// `insertPictureEx`(options JSON + image_data)가 positional `insertPicture` 와
