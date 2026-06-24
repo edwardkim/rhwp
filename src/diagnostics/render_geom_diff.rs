@@ -48,6 +48,21 @@ impl NodeDelta {
     }
 }
 
+/// 한 노드 타입의 개수 증감 (구조 불일치 원인 국소화용).
+#[derive(Debug, Clone)]
+pub struct TypeDelta {
+    pub node_type: &'static str,
+    pub count_a: usize,
+    pub count_b: usize,
+}
+
+impl TypeDelta {
+    /// 순증감 (b - a). 음수 = 라운드트립에서 손실, 양수 = 추가.
+    pub fn net(&self) -> i64 {
+        self.count_b as i64 - self.count_a as i64
+    }
+}
+
 /// 한 페이지의 기하 차이.
 #[derive(Debug, Clone)]
 pub struct PageGeomDiff {
@@ -62,6 +77,8 @@ pub struct PageGeomDiff {
     pub mean_disp: f64,
     /// 변위 큰 순 상위 노드 (보고용, 최대 `TOP_DELTAS`개).
     pub top_deltas: Vec<NodeDelta>,
+    /// 노드 타입별 개수 증감 (개수가 다른 타입만). 구조 불일치 원인 국소화용.
+    pub type_deltas: Vec<TypeDelta>,
 }
 
 /// 문서 전체 기하 차이.
@@ -121,6 +138,35 @@ fn node_type_str(t: &RenderNodeType) -> &'static str {
 
 fn count_nodes(n: &RenderNode) -> usize {
     1 + n.children.iter().map(count_nodes).sum::<usize>()
+}
+
+/// 노드 타입별 개수 히스토그램 (재귀).
+fn type_histogram(n: &RenderNode, acc: &mut std::collections::BTreeMap<&'static str, usize>) {
+    *acc.entry(node_type_str(&n.node_type)).or_insert(0) += 1;
+    for c in &n.children {
+        type_histogram(c, acc);
+    }
+}
+
+/// 두 트리의 타입 히스토그램 차이 — 개수가 다른 타입만 (타입명 정렬).
+fn compute_type_deltas(root_a: &RenderNode, root_b: &RenderNode) -> Vec<TypeDelta> {
+    let mut ha = std::collections::BTreeMap::new();
+    let mut hb = std::collections::BTreeMap::new();
+    type_histogram(root_a, &mut ha);
+    type_histogram(root_b, &mut hb);
+    let keys: std::collections::BTreeSet<&'static str> =
+        ha.keys().chain(hb.keys()).copied().collect();
+    keys.into_iter()
+        .filter_map(|k| {
+            let a = ha.get(k).copied().unwrap_or(0);
+            let b = hb.get(k).copied().unwrap_or(0);
+            (a != b).then_some(TypeDelta {
+                node_type: k,
+                count_a: a,
+                count_b: b,
+            })
+        })
+        .collect()
 }
 
 /// 페이지 변위 누적기.
@@ -269,6 +315,7 @@ pub fn diff_page(page: u32, root_a: &RenderNode, root_b: &RenderNode) -> PageGeo
         max_disp: acc.max_disp,
         mean_disp,
         top_deltas: acc.top,
+        type_deltas: compute_type_deltas(root_a, root_b),
     }
 }
 
@@ -476,8 +523,25 @@ struct BatchRow {
     worst_page: Option<u32>,
     struct_pages: usize,
     over_pages: usize,
+    /// 파일 전체에 걸친 노드 타입별 순증감 (구조 불일치 원인 국소화).
+    struct_delta: String,
     elapsed_ms: u128,
     error: String,
+}
+
+/// 문서 전 페이지의 타입 델타를 타입별 순증감으로 집계 (예: `Line:-4;RawSvg:-1`).
+fn aggregate_struct_delta(diff: &DocGeomDiff) -> String {
+    let mut net: std::collections::BTreeMap<&'static str, i64> = std::collections::BTreeMap::new();
+    for p in &diff.pages {
+        for d in &p.type_deltas {
+            *net.entry(d.node_type).or_insert(0) += d.net();
+        }
+    }
+    net.iter()
+        .filter(|(_, v)| **v != 0)
+        .map(|(t, v)| format!("{t}:{v:+}"))
+        .collect::<Vec<_>>()
+        .join(";")
 }
 
 fn run_batch(opts: &CliOptions) -> i32 {
@@ -513,6 +577,7 @@ fn run_batch(opts: &CliOptions) -> i32 {
             worst_page: None,
             struct_pages: 0,
             over_pages: 0,
+            struct_delta: String::new(),
             elapsed_ms: 0,
             error: String::new(),
         };
@@ -529,18 +594,24 @@ fn run_batch(opts: &CliOptions) -> i32 {
                 row.worst_page = sum.worst_page;
                 row.struct_pages = sum.struct_pages;
                 row.over_pages = sum.over_pages;
+                row.struct_delta = aggregate_struct_delta(&diff);
             }
             Err(e) => row.error = e,
         }
         row.elapsed_ms = started.elapsed().as_millis();
         println!(
-            "[{:>15}] max_disp={:>7.2} struct={} over={} {:>6}ms  {}",
+            "[{:>15}] max_disp={:>7.2} struct={} over={} {:>6}ms  {}{}",
             row.status,
             row.max_disp,
             row.struct_pages,
             row.over_pages,
             row.elapsed_ms,
-            row.rel_path
+            row.rel_path,
+            if row.struct_delta.is_empty() {
+                String::new()
+            } else {
+                format!("  [{}]", row.struct_delta)
+            }
         );
         if !row.error.is_empty() {
             println!("                  └ {}", row.error);
@@ -569,11 +640,11 @@ fn write_batch_tsv(out_dir: &Path, rows: &[BatchRow]) -> Result<(), String> {
     fs::create_dir_all(out_dir).map_err(|e| format!("출력 폴더 생성 실패: {e}"))?;
     let path = out_dir.join("geom_inventory.tsv");
     let mut tsv = String::from(
-        "sample\tstatus\tpages_a\tpages_b\tmax_disp\tworst_page\tstruct_pages\tover_pages\telapsed_ms\terror\n",
+        "sample\tstatus\tpages_a\tpages_b\tmax_disp\tworst_page\tstruct_pages\tover_pages\telapsed_ms\terror\tstruct_delta\n",
     );
     for r in rows {
         tsv.push_str(&format!(
-            "{}\t{}\t{}\t{}\t{:.3}\t{}\t{}\t{}\t{}\t{}\n",
+            "{}\t{}\t{}\t{}\t{:.3}\t{}\t{}\t{}\t{}\t{}\t{}\n",
             r.rel_path.replace('\t', " "),
             r.status,
             r.pages_a,
@@ -586,6 +657,7 @@ fn write_batch_tsv(out_dir: &Path, rows: &[BatchRow]) -> Result<(), String> {
             r.over_pages,
             r.elapsed_ms,
             r.error.replace(['\t', '\n', '\r'], " "),
+            r.struct_delta.replace('\t', " "),
         ));
     }
     fs::write(&path, tsv).map_err(|e| format!("TSV 쓰기 실패: {e}"))?;
@@ -695,6 +767,24 @@ fn run_single(opts: &CliOptions) -> i32 {
             );
             for d in p.top_deltas.iter().take(3) {
                 println!("      {:>7.2}px  {}", d.disp(), d.path);
+            }
+            // 구조 불일치 원인: 노드 타입별 증감 (예: Line: 4→0  RawSvg: 1→0).
+            if !p.type_deltas.is_empty() {
+                let deltas = p
+                    .type_deltas
+                    .iter()
+                    .map(|d| {
+                        format!(
+                            "{}: {}→{} ({:+})",
+                            d.node_type,
+                            d.count_a,
+                            d.count_b,
+                            d.net()
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("  ");
+                println!("      Δ {deltas}");
             }
         }
     }
@@ -810,5 +900,24 @@ mod tests {
         let pg = diff_page(0, &a, &b);
         assert!(pg.structure_mismatch); // 삽입 감지
         assert_eq!(pg.max_disp, 0.0); // 대응 노드 변위는 0 으로 정확 측정(가려지지 않음)
+    }
+
+    #[test]
+    fn type_deltas_report_inserted_node_type() {
+        let a = page_root(vec![text_run(0.0, 0.0, 1.0, 1.0)]);
+        let b = page_root(vec![
+            text_run(0.0, 0.0, 1.0, 1.0),
+            text_run(0.0, 0.0, 1.0, 1.0),
+        ]);
+        let pg = diff_page(0, &a, &b);
+        let tb = pg
+            .type_deltas
+            .iter()
+            .find(|d| d.node_type == "TextBox")
+            .expect("TextBox 타입 델타가 있어야 함");
+        assert_eq!((tb.count_a, tb.count_b), (1, 2));
+        assert_eq!(tb.net(), 1);
+        // 개수가 같은 타입(Body)은 델타에 없어야 한다.
+        assert!(pg.type_deltas.iter().all(|d| d.node_type != "Body"));
     }
 }
