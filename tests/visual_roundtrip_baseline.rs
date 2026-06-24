@@ -31,9 +31,18 @@ const MAX_DISP: f64 = 0.5;
 /// 이들 드리프트의 본질 정정은 별도 이슈(직렬화/레이아웃 회귀 위험으로 분리).
 const VISUAL_XFAIL: &[(&str, &str)] = &[
     // 객체 시프트(보도자료 계열) — 동일 514.12px, 2페이지.
-    ("2024년 1분기 해외직접투자 보도자료 ff.hwpx", "514.12px 변위(객체 시프트)"),
-    ("2024년 2분기 해외직접투자 보도자료ff.hwpx", "514.12px 변위(객체 시프트)"),
-    ("2024년 연간 해외직접투자 보도자료 _ ff.hwpx", "514.12px 변위(객체 시프트)"),
+    (
+        "2024년 1분기 해외직접투자 보도자료 ff.hwpx",
+        "514.12px 변위(객체 시프트)",
+    ),
+    (
+        "2024년 2분기 해외직접투자 보도자료ff.hwpx",
+        "514.12px 변위(객체 시프트)",
+    ),
+    (
+        "2024년 연간 해외직접투자 보도자료 _ ff.hwpx",
+        "514.12px 변위(객체 시프트)",
+    ),
     ("hwpx-h-01.hwpx", "514.12px 변위(객체 시프트)"),
     ("shape-001.hwpx", "6.81px 변위(도형)"),
     // 노드 삽입/삭제(구조 불일치) ± 좌표 변위.
@@ -67,7 +76,10 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
             let path = entry.expect("디렉토리 항목 읽기 실패").path();
             if path.is_dir() {
                 walk(&path, root, acc);
-            } else if path.extension().is_some_and(|e| e.eq_ignore_ascii_case("hwpx")) {
+            } else if path
+                .extension()
+                .is_some_and(|e| e.eq_ignore_ascii_case("hwpx"))
+            {
                 let rel = path
                     .strip_prefix(root)
                     .expect("strip_prefix")
@@ -144,7 +156,10 @@ fn visual_baseline_all_samples() {
 fn visual_xfail_entries_still_fail() {
     for (name, reason) in VISUAL_XFAIL {
         let path = Path::new(SAMPLES_ROOT).join(name);
-        assert!(path.exists(), "VISUAL_XFAIL 샘플 실종: {name} (목록 정비 필요)");
+        assert!(
+            path.exists(),
+            "VISUAL_XFAIL 샘플 실종: {name} (목록 정비 필요)"
+        );
         assert!(
             visual_check(&path).is_err(),
             "VISUAL_XFAIL 샘플이 PASS 함: {name} — baseline 으로 승격하고 VISUAL_XFAIL 에서 제거하라 (기록 사유: {reason})"

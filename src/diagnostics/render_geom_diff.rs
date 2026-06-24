@@ -154,8 +154,11 @@ impl PageAccum {
     }
 
     fn finish_top(&mut self) {
-        self.top
-            .sort_by(|a, b| b.disp().partial_cmp(&a.disp()).unwrap_or(std::cmp::Ordering::Equal));
+        self.top.sort_by(|a, b| {
+            b.disp()
+                .partial_cmp(&a.disp())
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         self.top.truncate(TOP_DELTAS);
     }
 }
@@ -216,8 +219,16 @@ fn walk(a: &RenderNode, b: &RenderNode, path: &str, acc: &mut PageAccum) {
         dh: b.bbox.height - a.bbox.height,
     });
 
-    let sa: Vec<&str> = a.children.iter().map(|c| node_type_str(&c.node_type)).collect();
-    let sb: Vec<&str> = b.children.iter().map(|c| node_type_str(&c.node_type)).collect();
+    let sa: Vec<&str> = a
+        .children
+        .iter()
+        .map(|c| node_type_str(&c.node_type))
+        .collect();
+    let sb: Vec<&str> = b
+        .children
+        .iter()
+        .map(|c| node_type_str(&c.node_type))
+        .collect();
     for (ia, jb) in lcs_align(&sa, &sb) {
         match (ia, jb) {
             (Some(i), Some(j)) => {
@@ -340,7 +351,10 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
             "-p" | "--page" => {
                 i += 1;
                 let v = args.get(i).ok_or("-p 다음에 페이지 번호 필요")?;
-                page = Some(v.parse().map_err(|_| format!("페이지 번호 파싱 실패: {v}"))?);
+                page = Some(
+                    v.parse()
+                        .map_err(|_| format!("페이지 번호 파싱 실패: {v}"))?,
+                );
             }
             "--max-disp" => {
                 i += 1;
@@ -435,7 +449,8 @@ fn collect_doc_files(root: &Path) -> Result<Vec<PathBuf>, String> {
     let mut files = Vec::new();
     let mut stack = vec![root.to_path_buf()];
     while let Some(dir) = stack.pop() {
-        let entries = fs::read_dir(&dir).map_err(|e| format!("폴더 읽기 실패 {}: {e}", dir.display()))?;
+        let entries =
+            fs::read_dir(&dir).map_err(|e| format!("폴더 읽기 실패 {}: {e}", dir.display()))?;
         for entry in entries {
             let path = entry.map_err(|e| format!("항목 읽기 실패: {e}"))?.path();
             if path.is_dir() {
@@ -475,7 +490,10 @@ fn run_batch(opts: &CliOptions) -> i32 {
         }
     };
     if files.is_empty() {
-        eprintln!("오류: 처리할 .hwp/.hwpx 파일이 없습니다: {}", root.display());
+        eprintln!(
+            "오류: 처리할 .hwp/.hwpx 파일이 없습니다: {}",
+            root.display()
+        );
         return 2;
     }
 
@@ -498,9 +516,10 @@ fn run_batch(opts: &CliOptions) -> i32 {
             elapsed_ms: 0,
             error: String::new(),
         };
-        match fs::read(path).map_err(|e| e.to_string()).and_then(|data| {
-            roundtrip_geom(&data, opts.via).map_err(|e| format!("{e:?}"))
-        }) {
+        match fs::read(path)
+            .map_err(|e| e.to_string())
+            .and_then(|data| roundtrip_geom(&data, opts.via).map_err(|e| format!("{e:?}")))
+        {
             Ok(diff) => {
                 let sum = summarize(&diff, None, opts.max_disp);
                 row.status = status_str(&diff, &sum, opts.max_disp).to_string();
@@ -516,7 +535,12 @@ fn run_batch(opts: &CliOptions) -> i32 {
         row.elapsed_ms = started.elapsed().as_millis();
         println!(
             "[{:>15}] max_disp={:>7.2} struct={} over={} {:>6}ms  {}",
-            row.status, row.max_disp, row.struct_pages, row.over_pages, row.elapsed_ms, row.rel_path
+            row.status,
+            row.max_disp,
+            row.struct_pages,
+            row.over_pages,
+            row.elapsed_ms,
+            row.rel_path
         );
         if !row.error.is_empty() {
             println!("                  └ {}", row.error);
@@ -555,7 +579,9 @@ fn write_batch_tsv(out_dir: &Path, rows: &[BatchRow]) -> Result<(), String> {
             r.pages_a,
             r.pages_b,
             r.max_disp,
-            r.worst_page.map(|p| p.to_string()).unwrap_or_else(|| "-".into()),
+            r.worst_page
+                .map(|p| p.to_string())
+                .unwrap_or_else(|| "-".into()),
             r.struct_pages,
             r.over_pages,
             r.elapsed_ms,
@@ -586,18 +612,20 @@ fn run_single(opts: &CliOptions) -> i32 {
     let diff = if opts.positionals.len() == 2 {
         // 두 파일 직접 비교.
         let (a, b) = (&opts.positionals[0], &opts.positionals[1]);
-        let core_a = match fs::read(a).map_err(|e| e.to_string()).and_then(|d| {
-            DocumentCore::from_bytes(&d).map_err(|e| format!("{e:?}"))
-        }) {
+        let core_a = match fs::read(a)
+            .map_err(|e| e.to_string())
+            .and_then(|d| DocumentCore::from_bytes(&d).map_err(|e| format!("{e:?}")))
+        {
             Ok(c) => c,
             Err(e) => {
                 eprintln!("오류: A 로드 실패 {}: {e}", a.display());
                 return 2;
             }
         };
-        let core_b = match fs::read(b).map_err(|e| e.to_string()).and_then(|d| {
-            DocumentCore::from_bytes(&d).map_err(|e| format!("{e:?}"))
-        }) {
+        let core_b = match fs::read(b)
+            .map_err(|e| e.to_string())
+            .and_then(|d| DocumentCore::from_bytes(&d).map_err(|e| format!("{e:?}")))
+        {
             Ok(c) => c,
             Err(e) => {
                 eprintln!("오류: B 로드 실패 {}: {e}", b.display());
@@ -640,7 +668,9 @@ fn run_single(opts: &CliOptions) -> i32 {
     println!(
         "최대 변위: {:.2} px (page {})",
         sum.max_disp,
-        sum.worst_page.map(|p| p.to_string()).unwrap_or_else(|| "-".into())
+        sum.worst_page
+            .map(|p| p.to_string())
+            .unwrap_or_else(|| "-".into())
     );
     println!(
         "임계 초과 페이지: {} / 구조 불일치 페이지: {} (임계 {:.2}px)",
@@ -657,7 +687,11 @@ fn run_single(opts: &CliOptions) -> i32 {
                 p.mean_disp,
                 p.node_count_a,
                 p.node_count_b,
-                if p.structure_mismatch { "  [STRUCT]" } else { "" }
+                if p.structure_mismatch {
+                    "  [STRUCT]"
+                } else {
+                    ""
+                }
             );
             for d in p.top_deltas.iter().take(3) {
                 println!("      {:>7.2}px  {}", d.disp(), d.path);
@@ -769,7 +803,10 @@ mod tests {
     fn displacement_measured_despite_inserted_sibling() {
         // a: [run@(10,20)]  b: [run@(10,20), run@(0,0)] — 첫 노드는 동일 위치, 둘째는 삽입.
         let a = page_root(vec![text_run(10.0, 20.0, 5.0, 5.0)]);
-        let b = page_root(vec![text_run(10.0, 20.0, 5.0, 5.0), text_run(0.0, 0.0, 5.0, 5.0)]);
+        let b = page_root(vec![
+            text_run(10.0, 20.0, 5.0, 5.0),
+            text_run(0.0, 0.0, 5.0, 5.0),
+        ]);
         let pg = diff_page(0, &a, &b);
         assert!(pg.structure_mismatch); // 삽입 감지
         assert_eq!(pg.max_disp, 0.0); // 대응 노드 변위는 0 으로 정확 측정(가려지지 않음)
