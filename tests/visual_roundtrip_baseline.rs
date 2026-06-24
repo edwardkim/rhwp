@@ -30,22 +30,15 @@ const MAX_DISP: f64 = 0.5;
 /// 측정 기준: `rhwp render-diff --batch samples/hwpx` (2026-06-24).
 /// 이들 드리프트의 본질 정정은 별도 이슈(직렬화/레이아웃 회귀 위험으로 분리).
 const VISUAL_XFAIL: &[(&str, &str)] = &[
-    // (승격) 그룹 자식 좌표 변환 누락(컨테이너 shape_attr + pic renderingInfo) 정정으로
-    // 514.12px 군 4건(보도자료 ×3 + hwpx-h-01)이 PASS 로 승격됨.
-    // (승격) 레거시 도형(polygon 등) shape_attr 블록 누락 정정으로 shape-001(회전 전치
-    // 6.81px)이 PASS 로 승격됨. el-school-001 의 도형 변위도 0 으로 해소(구조 불일치만 잔존).
-    // 노드 삽입/삭제(구조 불일치) ± 좌표 변위.
-    ("143E433F503322BD33.hwpx", "구조 불일치 1페이지"),
-    ("exam_social-p1.hwpx", "구조 불일치 1페이지"),
-    ("exam-kor-2p.hwpx", "구조 불일치 1페이지"),
-    // (승격) secPr pageBorderFill borderFillIDRef 하드코딩 "1" 정정으로 쪽 테두리 4선이
-    // 보존되어 expense_report 가 PASS 로 승격됨.
-    ("exam_kor.hwpx", "구조 불일치 17페이지(대형)"),
-    ("exam-kor-3p.hwpx", "구조 불일치 2페이지"),
-    ("exam-kor-4p.hwpx", "구조 불일치 3페이지"),
-    ("exam_social.hwpx", "구조 불일치 4페이지"),
-    ("[2027] 온새미로 1 본교재.hwpx", "구조 불일치 45페이지"),
-    ("2026_oss_rst.hwpx", "459px 변위 + 구조 불일치 1페이지"),
+    // 승격 이력: 514.12px 그룹 자식(보도자료 ×3 + hwpx-h-01) — 컨테이너 shape_attr + pic
+    // renderingInfo. 도형 회전 전치(shape-001) — 레거시 도형 shape_attr 블록. 쪽 테두리
+    // (expense_report) — pageBorderFill borderFillIDRef. 바탕쪽(exam 6종 + 온새미로) —
+    // masterPage 직렬화. 잔여는 아래 (차트/표/각주/이미지 등 별개 원인).
+    ("143E433F503322BD33.hwpx", "차트 RawSvg→Placeholder 1페이지"),
+    (
+        "2026_oss_rst.hwpx",
+        "459px 변위 + 구조 불일치 1페이지(TextRun)",
+    ),
     (
         "el-school-001.hwpx",
         "구조 불일치 1페이지(도형 변위는 #shape 정정으로 0)",

@@ -15,6 +15,7 @@ pub mod field;
 pub mod fixtures;
 pub mod form;
 pub mod header;
+pub mod master_page;
 pub mod package_check;
 pub mod picture;
 pub mod roundtrip;
@@ -70,6 +71,22 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     for (i, sec) in doc.sections.iter().enumerate() {
         let xml = section::write_section(sec, doc, i, &mut ctx)?;
         z.write_deflated(&section_hrefs[i], &xml)?;
+    }
+
+    // 4b. Contents/masterpage{N}.xml — 바탕쪽 (전 섹션 누적 전역 인덱스).
+    //     id/href 의 인덱스는 section.rs 의 idRef 인덱스와 동일 규칙(전역 누적)이라
+    //     별도 공유 상태 없이 정합한다.
+    let mut master_items: Vec<(String, String)> = Vec::new();
+    let mut mp_global = 0usize;
+    for sec in &doc.sections {
+        for mp in &sec.section_def.master_pages {
+            let id = format!("masterpage{}", mp_global);
+            let href = format!("Contents/masterpage{}.xml", mp_global);
+            let xml = master_page::render_master_page_xml(mp, &id, &mut ctx);
+            z.write_deflated(&href, xml.as_bytes())?;
+            master_items.push((id, href));
+            mp_global += 1;
+        }
     }
 
     // 5. Preview/PrvText.txt + Preview/PrvImage.png — 원본 보존 우선.
@@ -129,6 +146,7 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     let content_hpf = content::write_content_hpf(
         &section_hrefs,
         &content_bin_entries,
+        &master_items,
         doc.hwpx_aux_entry("Contents/content.hpf"),
     )?;
     z.write_deflated("Contents/content.hpf", &content_hpf)?;

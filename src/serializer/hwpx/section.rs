@@ -68,8 +68,8 @@ const TAB_DEFAULT_WIDTH: u32 = 4000;
 /// Stage 2 진입점. `ctx` 는 Stage 3+ 에서 파라미터 검증에 사용.
 pub fn write_section(
     section: &Section,
-    _doc: &Document,
-    _index: usize,
+    doc: &Document,
+    index: usize,
     ctx: &mut SerializeContext,
 ) -> Result<Vec<u8>, SerializeError> {
     let mut vert_cursor: u32 = 0;
@@ -90,6 +90,27 @@ pub fn write_section(
     // 쪽 테두리/배경 — 템플릿의 하드코딩 borderFillIDRef="1"(테두리 없음)을 IR 값으로
     // 치환한다. 누락 시 문서의 쪽 테두리가 소실되어 외곽 4선 노드가 사라진다(#1388 동형).
     out = replace_page_border_fill(&out, &section.section_def);
+
+    // 바탕쪽(masterPage) — secPr 의 masterPageCnt 치환 + secPr 내부 끝에 idRef 참조 삽입.
+    // 누락 시 라운드트립에서 바탕쪽 전체(그 안의 그림/표/문단 노드 포함)가 소실된다.
+    // id 인덱스는 전 섹션 누적 전역값으로, mod.rs 의 파일 생성 인덱스와 정합한다.
+    let master_pages = &section.section_def.master_pages;
+    if !master_pages.is_empty() {
+        let base: usize = doc.sections[..index]
+            .iter()
+            .map(|s| s.section_def.master_pages.len())
+            .sum();
+        let ids: Vec<String> = (0..master_pages.len())
+            .map(|k| format!("masterpage{}", base + k))
+            .collect();
+        out = out.replacen(
+            r#"masterPageCnt="0""#,
+            &format!(r#"masterPageCnt="{}""#, master_pages.len()),
+            1,
+        );
+        let refs = super::master_page::render_master_page_refs(&ids);
+        out = out.replacen("</hp:secPr>", &format!("{refs}</hp:secPr>"), 1);
+    }
 
     // [#1407] 본문 단 정의(colPr) — 첫 문단 IR 의 ColumnDef 를 템플릿 하드코딩
     // colPr(colCount=1)에 치환한다. 본문(depth 0) ColumnDef 는 render_runs 인라인

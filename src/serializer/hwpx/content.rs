@@ -35,6 +35,7 @@ fn extract_metadata_block(original: &str) -> Option<&str> {
 pub fn write_content_hpf(
     section_hrefs: &[String],
     bin_data: &[BinDataEntry],
+    master_items: &[(String, String)],
     original_content_hpf: Option<&[u8]>,
 ) -> Result<Vec<u8>, SerializeError> {
     // 원본 metadata 블록(있으면) — 본문과 무관한 저작자/일자/주제 보존용.
@@ -140,6 +141,19 @@ pub fn write_content_hpf(
         )?;
     }
 
+    // 바탕쪽(masterpage) 등록 — section XML 의 idRef 와 id 가 일치해야 파서가 바인딩한다.
+    for (id, href) in master_items {
+        empty_tag(
+            &mut w,
+            "opf:item",
+            &[
+                ("id", id.as_str()),
+                ("href", href.as_str()),
+                ("media-type", "application/xml"),
+            ],
+        )?;
+    }
+
     // settings.xml 등록
     empty_tag(
         &mut w,
@@ -201,6 +215,7 @@ mod tests {
         let out = write_content_hpf(
             &["Contents/section0.xml".to_string()],
             &[],
+            &[],
             Some(original.as_bytes()),
         )
         .expect("serialize");
@@ -237,7 +252,7 @@ mod tests {
     /// 원본이 없으면(HWP5 등) 하드코딩 metadata 로 폴백한다.
     #[test]
     fn metadata_falls_back_when_no_original() {
-        let out = write_content_hpf(&["Contents/section0.xml".to_string()], &[], None)
+        let out = write_content_hpf(&["Contents/section0.xml".to_string()], &[], &[], None)
             .expect("serialize");
         let s = String::from_utf8(out).expect("utf8");
         assert!(s.contains(r#"<opf:meta name="creator" content="text">rhwp</opf:meta>"#));
