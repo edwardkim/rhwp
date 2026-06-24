@@ -508,16 +508,16 @@ fn tac_picture_label_extra_px(
 }
 
 fn tac_picture_label_extra_for_line(
-    cell_ctx: Option<&CellContext>,
+    _cell_ctx: Option<&CellContext>,
     runs_all_whitespace: bool,
     raw_line_height: f64,
     reserved_picture_height: Option<f64>,
     max_font_size: f64,
     line_spacing_px: f64,
 ) -> f64 {
-    // #1352: 표 셀 안의 "TAC picture + 실제 텍스트" 줄은 한컴 PDF 기준
+    // #1352/#1486: "TAC picture + 실제 텍스트" 줄은 한컴 PDF 기준
     // picture와 텍스트가 같은 세로 위치에 놓인다. label 보정은 TAC-only 라인에만 남긴다.
-    if cell_ctx.is_some() && !runs_all_whitespace {
+    if !runs_all_whitespace {
         return 0.0;
     }
     tac_picture_label_extra_px(
