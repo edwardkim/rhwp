@@ -5,6 +5,8 @@
   'use strict';
 
   const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
   const PROCESSED_ATTR = 'data-rhwp-processed';
@@ -185,10 +187,58 @@
 
   // ─── 링크 감지 ───
 
+  function hasDocumentPath(pathname) {
+    if (typeof pathname !== 'string') return false;
+    try {
+      return DOCUMENT_PATH_EXTENSIONS.test(decodeURIComponent(pathname).toLowerCase());
+    } catch {
+      return DOCUMENT_PATH_EXTENSIONS.test(pathname.toLowerCase());
+    }
+  }
+
+  function classifyDocumentHref(href) {
+    let parsed;
+    try {
+      parsed = new URL(href);
+    } catch {
+      return { status: 'unknown' };
+    }
+
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return { status: 'unknown' };
+    }
+
+    if (parsed.hostname === 'raw.githubusercontent.com') {
+      return hasDocumentPath(parsed.pathname)
+        ? { status: 'openable' }
+        : { status: 'not-document' };
+    }
+
+    if (parsed.hostname === 'github.com') {
+      const segments = parsed.pathname.split('/').filter(Boolean);
+      if (segments.length >= 3) {
+        const marker = segments[2];
+        if (marker === 'blob') {
+          const pathParts = segments.slice(4);
+          return pathParts.length > 0 && hasDocumentPath(pathParts.join('/'))
+            ? { status: 'openable' }
+            : { status: 'not-document' };
+        }
+        if (GITHUB_NON_DOCUMENT_MARKERS.has(marker)) {
+          return { status: 'not-document' };
+        }
+      }
+    }
+
+    return hasDocumentPath(parsed.pathname)
+      ? { status: 'openable' }
+      : { status: 'unknown' };
+  }
+
   function isHwpLink(anchor) {
     if (!anchor.href) return false;
     if (anchor.getAttribute('data-hwp') === 'true') return true;
-    return HWP_EXTENSIONS.test(anchor.href);
+    return classifyDocumentHref(anchor.href).status === 'openable';
   }
 
   function isExplicitHwpLink(anchor) {
