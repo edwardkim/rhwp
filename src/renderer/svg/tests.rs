@@ -248,6 +248,33 @@ fn test_bmp_to_png_invalid_returns_none() {
     assert!(bmp_bytes_to_png_bytes(&junk).is_none());
 }
 
+/// 최소 2x1 RGBA TIFF를 생성한다 (테스트용).
+fn make_minimal_tiff_2x1() -> Vec<u8> {
+    let img = image::RgbaImage::from_raw(
+        2,
+        1,
+        vec![
+            220, 220, 220, 255, //
+            255, 255, 255, 255,
+        ],
+    )
+    .expect("valid RGBA image");
+    let mut out = Vec::new();
+    img.write_to(
+        &mut std::io::Cursor::new(&mut out),
+        image::ImageFormat::Tiff,
+    )
+    .expect("TIFF encode");
+    out
+}
+
+#[test]
+fn test_tiff_to_png_success() {
+    let tiff = make_minimal_tiff_2x1();
+    let png = tiff_bytes_to_png_bytes(&tiff).expect("TIFF->PNG 변환 실패");
+    assert!(png.starts_with(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]));
+}
+
 /// 최소 2x1 8-bit paletted PCX를 생성한다 (테스트용).
 fn make_minimal_pcx_2x1() -> Vec<u8> {
     let mut header = [0u8; 128];
@@ -304,6 +331,26 @@ fn test_page_background_image_pcx_converts_to_png() {
     let output = renderer.output();
     assert!(output.contains("data:image/png;base64,iVBORw0KGgo"));
     assert!(!output.contains("data:image/x-pcx"));
+}
+
+#[test]
+fn test_page_background_image_tiff_converts_to_png() {
+    let image = PageBackgroundImage {
+        data: make_minimal_tiff_2x1(),
+        fill_mode: ImageFillMode::FitToSize,
+        brightness: 0,
+        contrast: 0,
+        effect: crate::model::image::ImageEffect::RealPic,
+    };
+    let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(200.0, 100.0);
+
+    renderer.render_page_background_image(&image, &bbox);
+
+    let output = renderer.output();
+    assert!(output.contains("data:image/png;base64,iVBORw0KGgo"));
+    assert!(!output.contains("data:image/tiff"));
 }
 
 #[test]

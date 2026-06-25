@@ -10,7 +10,7 @@ use super::form_caption::display_form_caption;
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
     real_picture_watermark_bytes_to_hancom_tone_png_bytes,
-    real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes,
+    real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes, tiff_bytes_to_png_bytes,
     watermark_jpeg_bytes_to_hancom_baked_png_bytes,
 };
 use super::pua_oldhangul::map_pua_old_hangul;
@@ -1356,7 +1356,7 @@ impl SvgRenderer {
         // 놓쳐 opacity 가 빠지는 회귀를 냈다.
         let is_watermark_image = img.is_watermark();
         let detected_mime = detect_image_mime_type(&img.data);
-        // BMP/PCX → PNG 재인코딩 (브라우저 호환성과 PCX white transparency 정합)
+        // BMP/PCX/TIFF → PNG 재인코딩 (브라우저 호환성과 PCX white transparency 정합)
         let (render_bytes, render_mime): (std::borrow::Cow<[u8]>, &str) =
             if preserve_color_watermark {
                 match real_picture_watermark_bytes_to_hancom_tone_png_bytes(&img.data) {
@@ -1376,6 +1376,14 @@ impl SvgRenderer {
                 }
             } else if detected_mime == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(&img.data) {
+                    Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
+                    None => (
+                        std::borrow::Cow::Borrowed(img.data.as_slice()),
+                        detected_mime,
+                    ),
+                }
+            } else if detected_mime == "image/tiff" {
+                match tiff_bytes_to_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
                     None => (
                         std::borrow::Cow::Borrowed(img.data.as_slice()),
@@ -1491,7 +1499,7 @@ impl SvgRenderer {
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
         // BMP → PNG 변환 (브라우저는 SVG <image> 내부의 data:image/bmp 미지원)
-        // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
+        // PCX/TIFF → PNG 변환 (브라우저는 두 포맷을 native 렌더링하지 못함)
         let (render_data, render_mime, baked_watermark): (std::borrow::Cow<[u8]>, &str, bool) =
             if preserve_color_watermark {
                 match real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes(data) {
@@ -1510,6 +1518,11 @@ impl SvgRenderer {
                 }
             } else if mime_type == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
+            } else if mime_type == "image/tiff" {
+                match tiff_bytes_to_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
@@ -3185,6 +3198,11 @@ impl Renderer for SvgRenderer {
                 }
             } else if mime_type == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/tiff" {
+                match tiff_bytes_to_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }

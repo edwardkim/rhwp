@@ -95,7 +95,7 @@ thread_local! {
 
 /// 이미지 바이트를 RGBA 로 디코드해 오프스크린 캔버스로 만든다 (동기).
 ///
-/// image 크레이트가 디코드 가능한 포맷(PNG/JPEG/BMP)만 처리. 실패하면
+/// image 크레이트가 디코드 가능한 포맷(PNG/JPEG/BMP/TIFF)만 처리. 실패하면
 /// None — 호출부는 기존 HtmlImageElement 비동기 경로로 폴백한다.
 #[cfg(target_arch = "wasm32")]
 fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
@@ -156,6 +156,11 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
         "image/x-icon"
     } else if data.len() >= 2 && &data[0..2] == b"BM" {
         "image/bmp"
+    } else if data.len() >= 4
+        && (data.starts_with(&[0x49, 0x49, 0x2A, 0x00])
+            || data.starts_with(&[0x4D, 0x4D, 0x00, 0x2A]))
+    {
+        "image/tiff"
     } else if data.len() >= 4
         && (data.starts_with(&[0xD7, 0xCD, 0xC6, 0x9A])
             || data.starts_with(&[0x01, 0x00, 0x09, 0x00]))
@@ -2653,7 +2658,7 @@ impl Renderer for WebCanvasRenderer {
         let mime_type = detect_image_mime_type(data);
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
-        // PCX → PNG 변환 (브라우저는 PCX 포맷을 native 렌더링하지 못함, Task #514)
+        // PCX/TIFF → PNG 변환 (브라우저는 두 포맷을 native 렌더링하지 못함)
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) =
             if mime_type == "image/x-wmf" {
                 match crate::renderer::svg::convert_wmf_to_svg(data) {
@@ -2662,6 +2667,11 @@ impl Renderer for WebCanvasRenderer {
                 }
             } else if mime_type == "image/x-pcx" {
                 match crate::renderer::image_resolver::pcx_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/tiff" {
+                match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }

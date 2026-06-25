@@ -825,6 +825,11 @@ impl PaintOp {
                                 Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
                                 None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
                             }
+                        } else if mime == "image/tiff" {
+                            match crate::renderer::svg::tiff_bytes_to_png_bytes(data) {
+                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            }
                         } else {
                             (mime, std::borrow::Cow::Borrowed(data.as_slice()))
                         };

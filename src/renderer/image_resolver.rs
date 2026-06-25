@@ -27,6 +27,12 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
         }),
+        "image/tiff" => tiff_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
+            data,
+            mime: "image/png",
+            kind: ResolvedImageKind::FormatConverted,
+            suppress_effects: false,
+        }),
         "image/jpeg" if is_watermark_image(image) => {
             watermark_jpeg_bytes_to_hancom_baked_png_bytes(data).map(|data| ResolvedImagePayload {
                 data,
@@ -67,6 +73,20 @@ pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     use image::{load_from_memory_with_format, ImageFormat};
 
     let img = load_from_memory_with_format(data, ImageFormat::Bmp).ok()?;
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+        .ok()?;
+    Some(out)
+}
+
+/// TIFF 바이트를 PNG 바이트로 재인코딩한다. 실패 시 None 반환.
+///
+/// 브라우저와 rsvg는 SVG `<image>` 내부의 `data:image/tiff` URI를 안정적으로
+/// 렌더링하지 못하므로, SVG/Canvas/HTML 임베딩 전에 PNG로 변환한다.
+pub(crate) fn tiff_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::{load_from_memory_with_format, ImageFormat};
+
+    let img = load_from_memory_with_format(data, ImageFormat::Tiff).ok()?;
     let mut out = Vec::new();
     img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
         .ok()?;
