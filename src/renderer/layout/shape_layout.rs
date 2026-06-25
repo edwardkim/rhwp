@@ -18,9 +18,9 @@ use super::{CellContext, CellPathEntry};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::CommonObjAttr;
+use crate::model::shape::{CommonObjAttr, GroupShape, RectangleShape, ShapeObject, TextBox};
 use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
-use crate::model::style::Alignment;
+use crate::model::style::{Alignment, FillType};
 
 fn push_placeholder_render_node(
     tree: &mut PageRenderTree,
@@ -161,6 +161,144 @@ fn textbox_tac_space_advance_override(
         Some(remaining / space_count as f64)
     } else {
         None
+    }
+}
+
+fn textbox_has_visible_text(text_box: &TextBox) -> bool {
+    text_box
+        .paragraphs
+        .iter()
+        .any(|para| para.text.chars().any(|ch| !ch.is_whitespace()))
+}
+
+fn shape_has_visible_text(shape: &ShapeObject) -> bool {
+    match shape {
+        ShapeObject::Group(group) => group.children.iter().any(shape_has_visible_text),
+        _ => shape
+            .drawing()
+            .and_then(|drawing| drawing.text_box.as_ref())
+            .is_some_and(textbox_has_visible_text),
+    }
+}
+
+fn should_skip_blank_matrix_group_strip(rect: &RectangleShape, group: &GroupShape) -> bool {
+    let drawing = &rect.drawing;
+    let sa = &drawing.shape_attr;
+    if sa.group_level == 0
+        || drawing.text_box.is_some()
+        || drawing.caption.is_some()
+        || drawing.fill.fill_type != FillType::Solid
+        || drawing.fill.gradient.is_some()
+        || drawing.fill.image.is_some()
+    {
+        return false;
+    }
+
+    let has_axis_scale =
+        (sa.render_sx.abs() - 1.0).abs() > 0.001 || (sa.render_sy.abs() - 1.0).abs() > 0.001;
+    if !has_axis_scale {
+        return false;
+    }
+
+    let Some(solid) = drawing.fill.solid else {
+        return false;
+    };
+    let line = &drawing.border_line;
+    let line_type = line.attr & 0x3f;
+    if solid.background_color != 0x00ff_ffff
+        || solid.pattern_type > 0
+        || line.color != 0
+        || line.width > 40
+        || line_type != 1
+    {
+        return false;
+    }
+
+    let strip_w = sa.original_width as f64 * sa.render_sx.abs();
+    let strip_h = sa.original_height as f64 * sa.render_sy.abs();
+    let group_w = group
+        .shape_attr
+        .current_width
+        .max(group.shape_attr.original_width)
+        .max(group.common.width) as f64;
+    let group_h = group
+        .shape_attr
+        .current_height
+        .max(group.shape_attr.original_height)
+        .max(group.common.height) as f64;
+    if group_w <= 0.0
+        || group_h <= 0.0
+        || strip_w < group_w * 0.95
+        || strip_h <= 0.0
+        || strip_h > group_h * 0.35
+    {
+        return false;
+    }
+
+    group.children.iter().any(shape_has_visible_text)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::paragraph::Paragraph;
+    use crate::model::style::SolidFill;
+
+    fn chapter_strip_rect() -> RectangleShape {
+        let mut rect = RectangleShape::default();
+        rect.drawing.shape_attr.group_level = 1;
+        rect.drawing.shape_attr.original_width = 43_725;
+        rect.drawing.shape_attr.original_height = 2_700;
+        rect.drawing.shape_attr.render_sx = 0.987;
+        rect.drawing.shape_attr.render_sy = 0.574;
+        rect.drawing.fill.fill_type = FillType::Solid;
+        rect.drawing.fill.solid = Some(SolidFill {
+            background_color: 0x00ff_ffff,
+            pattern_color: 0,
+            pattern_type: 0,
+        });
+        rect.drawing.border_line.color = 0;
+        rect.drawing.border_line.width = 33;
+        rect.drawing.border_line.attr = 1;
+        rect
+    }
+
+    fn title_text_rect() -> ShapeObject {
+        let mut rect = RectangleShape::default();
+        let mut text_box = TextBox::default();
+        text_box.paragraphs.push(Paragraph {
+            text: "제1장. 행정업무 운영 개요".to_string(),
+            ..Default::default()
+        });
+        rect.drawing.text_box = Some(text_box);
+        ShapeObject::Rectangle(rect)
+    }
+
+    fn chapter_group(children: Vec<ShapeObject>) -> GroupShape {
+        let mut group = GroupShape::default();
+        group.common.width = 43_858;
+        group.common.height = 11_460;
+        group.children = children;
+        group
+    }
+
+    #[test]
+    fn skips_blank_matrix_group_strip_when_title_text_sibling_exists() {
+        let strip = chapter_strip_rect();
+        let group = chapter_group(vec![
+            ShapeObject::Rectangle(strip.clone()),
+            title_text_rect(),
+        ]);
+
+        assert!(should_skip_blank_matrix_group_strip(&strip, &group));
+    }
+
+    #[test]
+    fn keeps_blank_matrix_group_strip_without_text_sibling() {
+        let strip = chapter_strip_rect();
+        let group = chapter_group(vec![ShapeObject::Rectangle(strip.clone())]);
+
+        assert!(!should_skip_blank_matrix_group_strip(&strip, &group));
     }
 }
 
@@ -1374,6 +1512,12 @@ impl LayoutEngine {
                 };
 
                 for (_ci, child) in group.children.iter().enumerate() {
+                    if let ShapeObject::Rectangle(rect) = child {
+                        if should_skip_blank_matrix_group_strip(rect, group) {
+                            continue;
+                        }
+                    }
+
                     let sa = child.shape_attr();
                     let has_rotation = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
 
