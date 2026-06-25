@@ -500,6 +500,7 @@ impl LayoutEngine {
             overflow_map,
             &[],
             None, // [Task #1138] 본문 도형 — 셀 정보 없음
+            false,
         );
 
         // 캡션 렌더링
@@ -742,6 +743,7 @@ impl LayoutEngine {
                     &empty_map,
                     parent_cell_path,
                     None, // [Task #1138] TODO: layout_group_child_affine 에 cell ctx propagate (별도 후속)
+                    true,
                 );
             }
         }
@@ -769,11 +771,18 @@ impl LayoutEngine {
         parent_cell_path: &[CellPathEntry],
         // [Task #1138] 표 셀 내 도형인 경우: (cell_idx, cell_para_idx, outer_table_ctrl_idx)
         table_cell_ref: Option<(usize, usize, usize)>,
+        // 그룹 자식은 renderingInfo 행렬로 이미 위치/대칭이 반영되어 있으므로
+        // ShapeComponentAttr의 flip/rotation을 다시 SVG transform으로 적용하지 않는다.
+        matrix_positioned: bool,
     ) {
         use crate::model::shape::ShapeObject;
 
         // 공통: 회전/대칭 정보 추출
-        let transform = extract_shape_transform(shape.shape_attr());
+        let transform = if matrix_positioned {
+            ShapeTransform::default()
+        } else {
+            extract_shape_transform(shape.shape_attr())
+        };
 
         // [Task #1138] 표 셀 내 도형 식별을 위한 cell 정보 추출 (helper)
         let cell_index = table_cell_ref.map(|(ci, _, _)| ci);
@@ -1393,18 +1402,18 @@ impl LayoutEngine {
                             parent_cell_path,
                         );
                     } else {
-                        // render_tx/ty와 render_sx/sy에는 이미 그룹 스케일이 반영되어 있으므로
-                        // group_sx/sy를 추가 적용하지 않음
-                        let child_x = base_x + hwpunit_to_px(sa.render_tx as i32, self.dpi);
-                        let child_y = base_y + hwpunit_to_px(sa.render_ty as i32, self.dpi);
-                        let child_w = hwpunit_to_px(
-                            (sa.original_width as f64 * sa.render_sx.abs()) as i32,
-                            self.dpi,
-                        );
-                        let child_h = hwpunit_to_px(
-                            (sa.original_height as f64 * sa.render_sy.abs()) as i32,
-                            self.dpi,
-                        );
+                        // render_tx/ty와 render_sx/sy에는 이미 그룹 스케일과 flip이 반영되어
+                        // 있으므로 group_sx/sy나 ShapeComponentAttr의 flip을 추가 적용하지
+                        // 않는다. 음수 scale이면 tx는 오른쪽/아래쪽 모서리일 수 있으므로
+                        // 두 변환 모서리의 min/max로 실제 bbox를 만든다.
+                        let x0 = sa.render_tx;
+                        let y0 = sa.render_ty;
+                        let x1 = sa.render_tx + sa.original_width as f64 * sa.render_sx;
+                        let y1 = sa.render_ty + sa.original_height as f64 * sa.render_sy;
+                        let child_x = base_x + hwpunit_to_px(x0.min(x1).round() as i32, self.dpi);
+                        let child_y = base_y + hwpunit_to_px(y0.min(y1).round() as i32, self.dpi);
+                        let child_w = hwpunit_to_px((x1 - x0).abs().round() as i32, self.dpi);
+                        let child_h = hwpunit_to_px((y1 - y0).abs().round() as i32, self.dpi);
                         let empty_map = std::collections::HashMap::new();
                         self.layout_shape_object(
                             tree,
@@ -1422,6 +1431,7 @@ impl LayoutEngine {
                             &empty_map,
                             parent_cell_path,
                             table_cell_ref, // [Task #1138] 그룹 자식 — 부모와 같은 셀 컨텍스트
+                            true,
                         );
                     }
                 }
@@ -2308,6 +2318,7 @@ impl LayoutEngine {
                             &empty_map,
                             &nested_parent_path,
                             None, // [Task #1138] TODO: layout_textbox_content 에 cell ctx propagate (별도 후속)
+                            false,
                         );
                     }
                     Control::Picture(pic) => {
