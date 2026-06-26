@@ -9084,6 +9084,79 @@ impl TypesetEngine {
             }
         }
 
+        // [Task #1537] 폰트 치환 drift 로 인한 "tail 1줄 spill 후 강제 쪽나누기 고아 페이지" 차단.
+        //
+        // 증상: 본문 문단 N 이 페이지 하단을 ~한 줄 미만으로 미세 초과(폰트 치환으로 부피가
+        // 한컴 대비 커짐)하여 마지막 줄만 새 페이지로 split → 그 직후 문단 N+1 이 명시적
+        // 쪽나누기(column_type==Page/Section)를 가지면 또 새 페이지를 강제 → spill 한 1줄이
+        // 거의 빈 페이지에 고립된다(2025 행정업무운영 편람: 0-idx page 11/13/17, 본문 1줄+빈공간).
+        //
+        // 한컴은 폰트 drift 가 없어 문단 N 전체를 현재 페이지에 담고 N+1 의 쪽나누기로 깔끔히
+        // 다음 페이지를 시작한다. 우리도 "초과량이 한 줄 미만(=drift)이고 다음 문단이 어차피
+        // 쪽나누기로 페이지를 끝낸다"는 두 조건이 모두 맞을 때만 문단 N 을 통째로 현재 페이지에
+        // 배치(하단 여백으로 소량 bleed 허용)해 고아 페이지를 제거한다. 일반 본문 흐름(다음
+        // 문단이 쪽나누기가 아님)이나 초과량이 한 줄 이상(진짜 split 필요)인 경우는 불변.
+
+        // 다음 문단이 쪽/구역 나누기인가? 사이에 빈 문단(텍스트·컨트롤 없음)이 끼어 있으면
+        // 건너뛴다 — 빈 문단은 높이를 거의 차지하지 않고 hide_empty_line 로 흡수되므로,
+        // "tail spill → 빈 문단 → 강제 쪽나누기" 패턴에서도 spill 한 줄이 동일하게 고립된다.
+        // 단, 텍스트/컨트롤이 있는 일반 문단을 만나면 즉시 중단(false) — 그 문단이
+        // 현재 페이지를 마저 채우므로 고아 페이지가 생기지 않는다.
+        let next_para_forces_break = {
+            let mut idx = para_idx + 1;
+            let mut forced = false;
+            while let Some(next_para) = paragraphs.get(idx) {
+                if matches!(
+                    next_para.column_type,
+                    ColumnBreakType::Page | ColumnBreakType::Section
+                ) {
+                    forced = true;
+                    break;
+                }
+                let is_empty = next_para.text.trim().is_empty() && next_para.controls.is_empty();
+                if !is_empty {
+                    break;
+                }
+                idx += 1;
+            }
+            forced
+        };
+        // 본문 높이를 바꾸지 않는 컨트롤(각주/미주)만 허용 — 표/그림/글상자가 있으면
+        // 줄 단위 split/배치 규칙이 달라지므로 제외.
+        let only_note_controls = para
+            .controls
+            .iter()
+            .all(|c| matches!(c, Control::Footnote(_) | Control::Endnote(_)));
+        if st.col_count == 1
+            && forced_page_break_line.is_none()
+            && next_para_forces_break
+            && !para.text.trim().is_empty()
+            && only_note_controls
+            && !st.current_items.is_empty()
+            && fmt.line_heights.len() >= 2
+        {
+            let first_line_advance = fmt.line_advance(0);
+            // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를
+            // 막으려던 LAYOUT_DRIFT_SAFETY_PX(현재 페이지 한정) 여유는 이 경우 의미가 없다.
+            // 따라서 safety 를 뺀 `available` 이 아니라 진짜 본문 하단(각주/존 차감 포함)인
+            // available_height() 를 기준으로 초과량을 잰다.
+            let true_available = st.available_height();
+            // 초과량이 한 줄 미만(폰트 drift)일 때만 통째 배치.
+            // (full-place 체크를 이미 통과 못 했으므로 overflow > -safety. 진짜 본문 하단
+            //  기준으로 한 줄 미만 초과면 마지막 줄 spill 대신 통째 배치.)
+            let overflow = st.current_height + fmt.height_for_fit - true_available;
+            if overflow < first_line_advance {
+                st.current_items.push(PageItem::FullParagraph {
+                    para_index: para_idx,
+                });
+                st.current_height += fmt.total_height;
+                if let Some(v) = body_bottom_vpos {
+                    st.prev_body_bottom_vpos = Some(v);
+                }
+                return;
+            }
+        }
+
         // split: 줄 단위 분할
         let line_count = fmt.line_heights.len();
         if line_count == 0 {

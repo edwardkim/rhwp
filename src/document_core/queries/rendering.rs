@@ -1539,6 +1539,98 @@ impl DocumentCore {
         Ok(format!("{{\"runs\":[{}]}}", runs.join(",")))
     }
 
+    /// 진단용: 페이지의 본문/각주 줄 분포 요약 (examples/diag_blank_pages.rs 전용).
+    ///
+    /// FootnoteArea 아래의 TextRun 은 각주, 그 밖의 TextRun 은 본문으로 분류한다.
+    /// 반환 JSON: sectionIdx, bodyLines, bodyMinY, bodyMaxY, footnoteLines, footnoteCount.
+    pub fn diag_page_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        let tree = self.build_page_tree(page_num)?;
+
+        // 본문/각주 TextRun bbox.y 수집. in_footnote 플래그로 영역 구분.
+        fn collect(
+            node: &RenderNode,
+            in_footnote: bool,
+            body: &mut Vec<f64>,
+            footnote: &mut Vec<f64>,
+            body_paras: &mut Vec<usize>,
+        ) {
+            let now_in_footnote =
+                in_footnote || matches!(node.node_type, RenderNodeType::FootnoteArea);
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if now_in_footnote {
+                    footnote.push(node.bbox.y);
+                } else {
+                    body.push(node.bbox.y);
+                    if let Some(pi) = tr.para_index {
+                        body_paras.push(pi);
+                    }
+                }
+            }
+            for child in &node.children {
+                collect(child, now_in_footnote, body, footnote, body_paras);
+            }
+        }
+
+        let mut body: Vec<f64> = Vec::new();
+        let mut footnote: Vec<f64> = Vec::new();
+        let mut body_paras: Vec<usize> = Vec::new();
+        collect(&tree.root, false, &mut body, &mut footnote, &mut body_paras);
+
+        let (section_idx, footnote_count) = self.diag_page_section_and_footnote_count(page_num);
+
+        let body_min = if body.is_empty() {
+            0.0
+        } else {
+            body.iter().copied().fold(f64::INFINITY, f64::min)
+        };
+        let body_max = if body.is_empty() {
+            0.0
+        } else {
+            body.iter().copied().fold(f64::NEG_INFINITY, f64::max)
+        };
+        let para_min = body_paras
+            .iter()
+            .copied()
+            .min()
+            .map(|v| v as i64)
+            .unwrap_or(-1);
+        let para_max = body_paras
+            .iter()
+            .copied()
+            .max()
+            .map(|v| v as i64)
+            .unwrap_or(-1);
+
+        Ok(format!(
+            "{{\"sectionIdx\":{},\"bodyLines\":{},\"bodyMinY\":{:.1},\"bodyMaxY\":{:.1},\"footnoteLines\":{},\"footnoteCount\":{},\"paraMin\":{},\"paraMax\":{}}}",
+            section_idx,
+            body.len(),
+            body_min,
+            body_max,
+            footnote.len(),
+            footnote_count,
+            para_min,
+            para_max,
+        ))
+    }
+
+    /// 진단용: 페이지의 (구역 인덱스, 각주 개수) 반환.
+    pub fn diag_page_section_and_footnote_count(&self, page_num: u32) -> (usize, usize) {
+        let mut offset = 0u32;
+        for (si, pr) in self.pagination.iter().enumerate() {
+            let count = pr.pages.len() as u32;
+            if page_num < offset + count {
+                let local = (page_num - offset) as usize;
+                let fn_count = pr.pages.get(local).map(|p| p.footnotes.len()).unwrap_or(0);
+                return (si, fn_count);
+            }
+            offset += count;
+        }
+        (0, 0)
+    }
+
     /// 컨트롤(표, 이미지 등) 레이아웃 정보 (네이티브 에러 타입)
     pub fn get_page_control_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
