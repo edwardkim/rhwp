@@ -20,7 +20,54 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CommonObjAttr, DrawingObjAttr, TextBox};
 use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
-use crate::model::style::Alignment;
+use crate::model::style::{Alignment, FillType};
+
+/// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
+fn textbox_has_visible_text(text_box: &TextBox) -> bool {
+    text_box
+        .paragraphs
+        .iter()
+        .any(|para| para.text.chars().any(|ch| !ch.is_whitespace()))
+}
+
+/// 평탄화된 HWPX 그룹(matrix group) 자식의 "글상자 보조선"(검정 얇은 SOLID 테두리)은
+/// 한컴 실물에서 인쇄되지 않는다(편람 장 표지 "행정업무 운영 개요" 제목/목록 글상자).
+/// 오탐 방지를 위해 매우 좁게 한정: 그룹 자식(group_level>0) + 회전/전단 없음 + 검정
+/// (color==0) 얇은(0<width<=40 HWPUNIT) SOLID(line_type==1) 테두리 + 캡션 없음 +
+/// (a) 채우기 없는 텍스트 전용 글상자 또는 (b) 흰색 단색 마스크 박스.
+fn should_suppress_group_child_construction_stroke(drawing: &DrawingObjAttr) -> bool {
+    if drawing.caption.is_some() {
+        return false;
+    }
+    let sa = &drawing.shape_attr;
+    let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
+    if sa.group_level == 0 || has_rotation_or_shear {
+        return false;
+    }
+    let line = &drawing.border_line;
+    let line_type = line.attr & 0x3f;
+    if line_type != 1 || line.color != 0 || line.width <= 0 || line.width > 40 {
+        return false;
+    }
+    let text_only_box = drawing
+        .text_box
+        .as_ref()
+        .is_some_and(textbox_has_visible_text)
+        && drawing.fill.fill_type == FillType::None
+        && drawing.fill.gradient.is_none()
+        && drawing.fill.image.is_none();
+    if text_only_box {
+        return true;
+    }
+    drawing.text_box.is_none()
+        && drawing.fill.fill_type == FillType::Solid
+        && drawing.fill.gradient.is_none()
+        && drawing.fill.image.is_none()
+        && drawing
+            .fill
+            .solid
+            .is_some_and(|solid| solid.background_color == 0x00ff_ffff && solid.pattern_type <= 0)
+}
 
 fn push_placeholder_render_node(
     tree: &mut PageRenderTree,
@@ -934,7 +981,12 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
-                let (style, gradient) = drawing_to_shape_style(&rect.drawing);
+                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing);
+                // 평탄화된 그룹 자식 글상자의 비인쇄 보조선(검정 얇은 SOLID)을 억제한다.
+                if should_suppress_group_child_construction_stroke(&rect.drawing) {
+                    style.stroke_color = None;
+                    style.stroke_width = 0.0;
+                }
                 let round_px = if rect.round_rate > 0 {
                     (rect.round_rate as f64 / 100.0) * render_w.min(render_h) / 2.0
                 } else {
