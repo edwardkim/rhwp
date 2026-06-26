@@ -9003,7 +9003,20 @@ impl TypesetEngine {
             .last()
             .map(|s| s.vertical_pos + s.line_height + s.line_spacing);
 
-        if forced_page_break_line.is_none() && st.current_height + fmt.height_for_fit <= available {
+        // height_for_fit already excludes the last line's trailing line_spacing (the
+        // paragraph's true content bottom), so it is already conservative. Subtracting
+        // LAYOUT_DRIFT_SAFETY_PX from `available` on top double-counts and rejects a last
+        // line Hancom fits -> ~1-line/page early split that accumulates into page drift.
+        // Judge single-column whole-paragraph fit against the un-shaved body height; keep
+        // the safety margin on the multi-column (vpos-stacked) path.
+        let whole_fit_available = if st.col_count > 1 {
+            available
+        } else {
+            st.available_height()
+        };
+        if forced_page_break_line.is_none()
+            && st.current_height + fmt.height_for_fit <= whole_fit_available
+        {
             // place: 전체 배치
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
