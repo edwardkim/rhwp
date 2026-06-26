@@ -261,7 +261,7 @@ fn parse_hwp_with_cfb(
     // 5-7. 미리보기, BinData, 추가 스트림
     let preview = extract_preview(&mut cfb);
     let bin_data_content = load_bin_data_content(&mut cfb, &doc_info.bin_data_list, compressed);
-    let extra_streams = collect_extra_streams(&mut cfb, &doc_info.bin_data_list);
+    let extra_streams = collect_extra_streams(&mut cfb, &doc_info.bin_data_list, &bin_data_content);
 
     // Document 조립
     let model_header = ModelFileHeader {
@@ -1061,10 +1061,24 @@ fn detect_image_format(data: &[u8]) -> PreviewImageFormat {
 /// 이미 별도로 파싱되므로 제외한다.
 fn collect_extra_streams(
     cfb: &mut cfb_reader::CfbReader,
-    _bin_data_list: &[crate::model::bin_data::BinData],
+    bin_data_list: &[crate::model::bin_data::BinData],
+    bin_data_content: &[BinDataContent],
 ) -> Vec<(String, Vec<u8>)> {
     let all_streams = cfb.list_streams();
     let mut extra = Vec::new();
+
+    // [Task #1554] 직렬화기(`cfb_writer`)가 `bin_data_content` 로부터 재생성할
+    // /BinData 스트림 경로 집합. 직렬화기와 동일한 명명 규칙(`find_bin_data_info_with_compress`)
+    // 을 미러링하여 계산한다. 이 집합에 들어가지 않는 /BinData 스트림은 대응 BinData
+    // 레코드가 없는 "고아 스트림"(예: img-start-001 의 20개 BIN, interview.hwp 의 BIN0001)
+    // 이며, 그대로 두면 저장 시 통째 드롭된다. extra_streams 로 원본 바이트를 보존한다.
+    let emitted_bin_paths: std::collections::HashSet<String> = bin_data_content
+        .iter()
+        .map(|c| {
+            let (storage_id, ext) = serialized_bin_name(bin_data_list, c);
+            format!("/BinData/BIN{:04X}.{}", storage_id, ext)
+        })
+        .collect();
 
     for path in &all_streams {
         // 이미 파싱된 스트림은 제외
@@ -1072,10 +1086,14 @@ fn collect_extra_streams(
             || path == "/DocInfo"
             || path.starts_with("/BodyText/")
             || path.starts_with("/ViewText/")
-            || path.starts_with("/BinData/")
             || path == "/PrvImage"
             || path == "/PrvText"
         {
+            continue;
+        }
+
+        // /BinData 는 직렬화기가 재생성하는 스트림만 제외하고, 고아 스트림은 보존
+        if path.starts_with("/BinData/") && emitted_bin_paths.contains(path) {
             continue;
         }
 
@@ -1086,6 +1104,25 @@ fn collect_extra_streams(
     }
 
     extra
+}
+
+/// 직렬화기가 `BinDataContent` 에 대해 생성할 스트림 이름의 (storage_id, ext) 계산.
+///
+/// `cfb_writer::find_bin_data_info_with_compress` 의 명명 규칙(매칭 레코드 우선,
+/// 없으면 content 자체값)을 미러링한다. extra_streams 의 고아 /BinData 판별 전용.
+fn serialized_bin_name<'a>(
+    bin_data_list: &'a [crate::model::bin_data::BinData],
+    content: &'a BinDataContent,
+) -> (u16, &'a str) {
+    use crate::model::bin_data::BinDataType;
+    for bd in bin_data_list {
+        if matches!(bd.data_type, BinDataType::Embedding | BinDataType::Storage)
+            && bd.storage_id == content.id
+        {
+            return (bd.storage_id, bd.extension.as_deref().unwrap_or("dat"));
+        }
+    }
+    (content.id, &content.extension)
 }
 
 /// BinData 스토리지에서 이미지 데이터 로드

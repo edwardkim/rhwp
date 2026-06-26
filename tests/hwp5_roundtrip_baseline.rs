@@ -28,19 +28,10 @@ const LARGE_THRESHOLD: u64 = 3 * 1024 * 1024;
 
 /// B등급 (xfail) — (상대 경로, 사유). 사유 없는 등록 금지.
 ///
-/// 전부 `serialize_document`(HWP5 직렬화)의 **BinData 그림 스트림 드롭**(F1, Task #1552
-/// 조사). 편집가능(배포용 아님) 실문서. 후속 이슈에서 serializer 수정 시 통과 → 승격.
-const XFAIL: &[(&str, &str)] = &[
-    ("img-start-001.hwp", "F1 BinData 드롭 20/20 (전 그림 소실)"),
-    ("basic/BookReview.hwp", "F1 BinData 드롭 7/10"),
-    ("basic/Worldcup_FIFA2010_32.hwp", "F1 BinData 드롭 13/47"),
-    ("exam_social.hwp", "F1 BinData 드롭 2/8"),
-    ("basic/NewYear_s_Day.hwp", "F1 BinData 드롭 2/4"),
-    ("chart/분산형/곡선이있는분산형.hwp", "F1 BinData 드롭 2/3"),
-    ("pic-crop-01.hwp", "F1 BinData 드롭 2/3"),
-    ("basic/interview.hwp", "F1 BinData 드롭 1/3"),
-    ("basic/BlogForm_Recipe.hwp", "F1 BinData 드롭 1/3"),
-];
+/// 과거 `serialize_document`(HWP5 직렬화)의 **BinData 그림 스트림 드롭**(F1, Task #1552
+/// 조사) 9건이 등록되어 있었으나, Task #1554 에서 대응 BinData 레코드 없는 고아 /BinData
+/// 스트림을 `extra_streams` 로 보존하도록 수정하여 전건 baseline 승격(목록에서 제거).
+const XFAIL: &[(&str, &str)] = &[];
 
 fn rel_of(path: &Path, root: &Path) -> String {
     path.strip_prefix(root)
