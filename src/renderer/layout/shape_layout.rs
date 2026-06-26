@@ -1386,7 +1386,35 @@ impl LayoutEngine {
                     let sa = child.shape_attr();
                     let has_rotation = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
 
-                    if has_rotation {
+                    if let ShapeObject::Group(_) = child {
+                        // 중첩 그룹: HWPX renderingInfo 행렬은 모든 자손(leaf)에 대해
+                        // 최상위 그룹 좌표계로 평탄화(flatten)되어 저장된다. 즉 손자
+                        // 도형의 render_tx/ty 도 이미 base_x/base_y(최상위 그룹 원점)
+                        // 기준 절대값이다. 따라서 중첩 그룹의 자식을 배치할 때 그 그룹의
+                        // render_tx/ty 만큼 원점을 이동하면 손자에서 같은 오프셋이 한 번 더
+                        // 더해져 이중 변환된다(제목/목록이 페이지 밖으로 밀려남).
+                        // 중첩 그룹은 원점(base_x/base_y)을 그대로 전달해 손자들이 동일한
+                        // 최상위 프레임에서 자기 행렬로 직접 배치되도록 한다.
+                        let empty_map = std::collections::HashMap::new();
+                        self.layout_shape_object(
+                            tree,
+                            &mut group_node,
+                            child,
+                            base_x,
+                            base_y,
+                            w,
+                            h,
+                            section_index,
+                            para_index,
+                            control_index,
+                            styles,
+                            bin_data_content,
+                            &empty_map,
+                            parent_cell_path,
+                            table_cell_ref,
+                            true,
+                        );
+                    } else if has_rotation {
                         self.layout_group_child_affine(
                             tree,
                             &mut group_node,
