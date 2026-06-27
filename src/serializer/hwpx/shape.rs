@@ -888,6 +888,7 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
     let treat = bool01(c.treat_as_char);
     let vert_offset = c.vertical_offset.to_string();
     let horz_offset = c.horizontal_offset.to_string();
+    let hold = bool01(c.prevent_page_break != 0); // [#1594] IR 보존
     empty_tag(
         w,
         "hp:pos",
@@ -896,7 +897,7 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
             ("affectLSpacing", "0"),
             ("flowWithText", bool01(c.flow_with_text)),
             ("allowOverlap", bool01(c.allow_overlap)),
-            ("holdAnchorAndSO", "0"),
+            ("holdAnchorAndSO", hold),
             ("vertRelTo", vert_rel_to_str(c.vert_rel_to)),
             ("horzRelTo", horz_rel_to_str(c.horz_rel_to)),
             ("vertAlign", vert_align_str(c.vert_align)),
