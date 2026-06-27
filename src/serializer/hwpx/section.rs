@@ -2424,7 +2424,7 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
 
         assert!(
-            xml.contains(r#"<hp:ctrl><hp:fieldBegin id="99" type="CLICKHERE""#),
+            xml.contains(r#"<hp:ctrl><hp:fieldBegin id="99" type="CLICK_HERE""#),
             "fieldBegin must be emitted: {}",
             &xml[..500.min(xml.len())]
         );

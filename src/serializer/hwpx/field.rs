@@ -177,7 +177,7 @@ fn field_type_str(t: FieldType) -> &'static str {
         MailMerge => "MAILMERGE",
         CrossRef => "CROSSREF",
         Formula => "FORMULA",
-        ClickHere => "CLICKHERE",
+        ClickHere => "CLICK_HERE",
         Summary => "SUMMARY",
         UserInfo => "USERINFO",
         Hyperlink => "HYPERLINK",
@@ -214,7 +214,9 @@ mod tests {
         f.field_id = 42;
         let xml = to_string(|w| write_field_begin(w, &f));
         assert!(xml.contains(r#"id="42""#));
-        assert!(xml.contains(r#"type="CLICKHERE""#));
+        // [#1595] 올바른 HWPX 값은 CLICK_HERE (언더스코어). 종전 "CLICKHERE" 는
+        // 한글이 미인식해 ClickHere placeholder 높이 변동 → 페이지 붕괴(#1589).
+        assert!(xml.contains(r#"type="CLICK_HERE""#), "{xml}");
     }
 
     #[test]
