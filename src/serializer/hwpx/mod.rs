@@ -482,8 +482,8 @@ mod tests {
         para.controls.push(Control::Ruby(Ruby {
             main_text: "기준글".to_string(),
             ruby_text: "덧말".to_string(),
-            pos_type: 1,       // BOTTOM
-            align: 2,          // CENTER
+            pos_type: 1, // BOTTOM
+            align: 2,    // CENTER
             sz_ratio: 80,
             option: 3,
             style_id_ref: 5,
@@ -587,7 +587,9 @@ mod tests {
         assert!(
             cs.is_empty(),
             "빈 문단은 char_shapes 가 비어야 한다 (spurious (0,0) 금지): {:?}",
-            cs.iter().map(|c| (c.start_pos, c.char_shape_id)).collect::<Vec<_>>()
+            cs.iter()
+                .map(|c| (c.start_pos, c.char_shape_id))
+                .collect::<Vec<_>>()
         );
     }
 
