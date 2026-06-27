@@ -1065,6 +1065,36 @@ impl LayoutEngine {
         )
     }
 
+    fn render_layer_from_control(
+        control: &Control,
+        para_index: usize,
+        control_index: usize,
+    ) -> Option<RenderLayerInfo> {
+        match control {
+            Control::Shape(shape) => Some(Self::render_layer_from_common(
+                shape.common(),
+                para_index,
+                control_index,
+            )),
+            Control::Picture(picture) => Some(Self::render_layer_from_common(
+                &picture.common,
+                para_index,
+                control_index,
+            )),
+            Control::Table(table) => Some(Self::render_layer_from_common(
+                &table.common,
+                para_index,
+                control_index,
+            )),
+            Control::Equation(equation) => Some(Self::render_layer_from_common(
+                &equation.common,
+                para_index,
+                control_index,
+            )),
+            _ => None,
+        }
+    }
+
     fn push_layered_paper_children(
         paper_images: &mut Vec<RenderNode>,
         temp_parent: &mut RenderNode,
@@ -2207,11 +2237,20 @@ impl LayoutEngine {
                     let has_controls = !para.controls.is_empty();
                     if has_controls {
                         for (ci, ctrl) in para.controls.iter().enumerate() {
+                            let layer = Self::render_layer_from_control(ctrl, pi, ci);
+                            let mut temp_parent = layer.map(|_| {
+                                RenderNode::new(
+                                    tree.next_id(),
+                                    RenderNodeType::MasterPage,
+                                    layout_rect_to_bbox(&paper_area),
+                                )
+                            });
+                            let target_node = temp_parent.as_mut().unwrap_or(&mut mp_node);
                             match ctrl {
                                 Control::Shape(_) | Control::Equation(_) => {
                                     self.layout_shape(
                                         tree,
-                                        &mut mp_node,
+                                        target_node,
                                         &mp.paragraphs,
                                         pi,
                                         ci,
@@ -2253,7 +2292,7 @@ impl LayoutEngine {
                                     };
                                     self.layout_picture(
                                         tree,
-                                        &mut mp_node,
+                                        target_node,
                                         pic,
                                         &pic_area,
                                         bin_data_content,
@@ -2274,7 +2313,7 @@ impl LayoutEngine {
                                     // current_body_area를 통해 본문 영역으로 계산된다.
                                     self.layout_table(
                                         tree,
-                                        &mut mp_node,
+                                        target_node,
                                         t,
                                         section_index,
                                         styles,
@@ -2297,6 +2336,14 @@ impl LayoutEngine {
                                     );
                                 }
                                 _ => {}
+                            }
+                            if let (Some(layer), Some(temp_parent)) = (layer, temp_parent.as_mut())
+                            {
+                                Self::push_layered_paper_children(
+                                    &mut mp_node.children,
+                                    temp_parent,
+                                    layer,
+                                );
                             }
                         }
                     } else if !para.text.is_empty() {
@@ -2338,6 +2385,9 @@ impl LayoutEngine {
                         }
                     }
                 }
+                // Hancom prepares master-page furniture through object order, not raw XML
+                // order: text-wrap plane, zOrder, then stable source index.
+                Self::sort_paper_render_nodes(&mut mp_node.children);
                 tree.root.children.push(mp_node);
                 self.current_page_number.set(previous_page_number);
             }
@@ -2556,7 +2606,7 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
     ) {
         let mut footnote_layout = layout.clone();
-        if !page_content.footnotes.is_empty() {
+        if !page_content.footnotes.is_empty() && footnote_layout.footnote_area.height <= 0.0 {
             let fn_height = self.estimate_footnote_area_height(
                 &page_content.footnotes,
                 paragraphs,

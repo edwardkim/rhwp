@@ -3,8 +3,10 @@ use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
 use super::utils::{expand_numbering_format, numbering_format_to_number_format};
 use super::*;
+use crate::model::footnote::Footnote;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use crate::model::shape::RectangleShape;
 use crate::model::style::{Numbering, NumberingHead};
 use crate::renderer::composer::compose_paragraph;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -61,6 +63,85 @@ fn test_build_empty_page() {
     );
     // 페이지 노드 + 배경 + 머리말 + 본문 + 각주 + 꼬리말
     assert!(tree.root.children.len() >= 4);
+}
+
+#[test]
+fn footnote_area_uses_pagination_reserved_rect() {
+    let engine = LayoutEngine::with_default_dpi();
+    let mut layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let reserved_height = layout.body_area.height * 0.75;
+    let expected_y = layout.body_area.y + layout.body_area.height - reserved_height;
+    layout.update_footnote_area(reserved_height);
+
+    let note_para = Paragraph {
+        text: "각주 본문".to_string(),
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let paragraphs = vec![Paragraph {
+        text: "본문".to_string(),
+        controls: vec![Control::Footnote(Box::new(Footnote {
+            number: 1,
+            paragraphs: vec![note_para],
+            ..Default::default()
+        }))],
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    }];
+    let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 1,
+        section_index: 0,
+        layout,
+        column_contents: Vec::new(),
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: vec![FootnoteRef {
+            number: 1,
+            source: FootnoteSource::Body {
+                para_index: 0,
+                control_index: 0,
+            },
+        }],
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    let tree = engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &composed,
+        &ResolvedStyleSet::default(),
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    );
+
+    let footnote_area = tree
+        .root
+        .children
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::FootnoteArea))
+        .expect("footnote area");
+    assert!((footnote_area.bbox.height - reserved_height).abs() < 0.01);
+    assert!((footnote_area.bbox.y - expected_y).abs() < 0.01);
 }
 
 #[test]
@@ -1532,5 +1613,73 @@ fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
         order,
         vec![3, 5, 2, 4, 1],
         "BehindText는 z-order/stable 순서로 먼저, flow, InFrontOfText 순으로 정렬"
+    );
+}
+
+#[test]
+fn master_page_controls_sort_by_render_layer_z_order() {
+    fn rect_control(z_order: i32, horizontal_offset: u32) -> Control {
+        Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape {
+            common: CommonObjAttr {
+                width: 10_000,
+                height: 10_000,
+                horizontal_offset,
+                z_order,
+                text_wrap: TextWrap::InFrontOfText,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                ..Default::default()
+            },
+            ..Default::default()
+        })))
+    }
+
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let mut tree = PageRenderTree::new(0, layout.page_width, layout.page_height);
+    let master_page = MasterPage {
+        paragraphs: vec![Paragraph {
+            controls: vec![
+                rect_control(20, 0),
+                rect_control(10, 20_000),
+                rect_control(20, 40_000),
+            ],
+            ..Default::default()
+        }],
+        text_width: 10_000,
+        text_height: 10_000,
+        ..Default::default()
+    };
+
+    engine.build_master_page_into(
+        &mut tree,
+        Some(&master_page),
+        &layout,
+        &[],
+        &ResolvedStyleSet::default(),
+        &[],
+        0,
+        1,
+    );
+
+    let master_node = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::MasterPage))
+        .expect("master page node should be rendered");
+    let z_order: Vec<i32> = master_node
+        .children
+        .iter()
+        .filter_map(|node| match node.node_type {
+            RenderNodeType::Rectangle(_) => node.layer.map(|layer| layer.z_order),
+            _ => None,
+        })
+        .collect();
+
+    assert_eq!(
+        z_order,
+        vec![10, 20, 20],
+        "master-page children should replay Hancom object order, not raw control order"
     );
 }

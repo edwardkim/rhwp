@@ -106,12 +106,9 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
         return None;
     }
     let buf = rgba.into_raw();
-    let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
-        wasm_bindgen::Clamped(&buf),
-        iw,
-        ih,
-    )
-    .ok()?;
+    let image_data =
+        web_sys::ImageData::new_with_u8_clamped_array_and_sh(wasm_bindgen::Clamped(&buf), iw, ih)
+            .ok()?;
 
     let document = web_sys::window()?.document()?;
     let canvas: HtmlCanvasElement = document
@@ -2121,7 +2118,8 @@ impl Renderer for WebCanvasRenderer {
         // advance 에 맞춰 글리프별 가로 스케일(pin_ascii_advance)하면 치환 폰트의
         // 좁은 글리프(l/i/t)가 과도하게 늘어난다. 치환 폰트에서는 글리프를
         // 자연 advance 그대로 그리고, run 내 누적 x 도 측정 폭으로 재산출한다.
-        let font_substituted = !font_family_has_metrics(&style.font_family, style.bold, style.italic);
+        let font_substituted =
+            !font_family_has_metrics(&style.font_family, style.bold, style.italic);
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);

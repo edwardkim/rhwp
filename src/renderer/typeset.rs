@@ -30,8 +30,9 @@ use crate::renderer::{
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
 use super::pagination::{
-    ColumnContent, EndnoteParaSource, EndnoteRef, FootnoteRef, FootnoteSource, HeaderFooterRef,
-    PageContent, PageItem, PaginationResult,
+    estimate_footnote_note_height, footnote_between_notes_margin_px,
+    footnote_separator_overhead_px, ColumnContent, EndnoteParaSource, EndnoteRef, FootnoteRef,
+    FootnoteSource, HeaderFooterRef, PageContent, PageItem, PaginationResult,
 };
 
 fn note_number_format_from_hwp_code(code: u8) -> RenderNumberFormat {
@@ -117,6 +118,8 @@ struct FormattedTable {
     cells: Vec<crate::renderer::height_measurer::MeasuredCell>,
     /// 표 셀 내 각주 높이 합계 (가용 높이에서 차감)
     table_footnote_height: f64,
+    /// 표 셀 내 각주 수 (separator/between-notes 예약 계산용)
+    table_footnote_count: usize,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -176,6 +179,8 @@ struct TypesetState {
     is_first_footnote_on_page: bool,
     /// 각주 구분선 오버헤드
     footnote_separator_overhead: f64,
+    /// 각주 사이 간격
+    footnote_between_notes_margin: f64,
     /// 각주 안전 여백
     footnote_safety_margin: f64,
     /// 존(zone) y 오프셋 (다단 나누기 시 누적)
@@ -983,6 +988,7 @@ impl TypesetState {
         col_count: u16,
         section_index: usize,
         footnote_separator_overhead: f64,
+        footnote_between_notes_margin: f64,
         footnote_safety_margin: f64,
         column_type: ColumnType,
     ) -> Self {
@@ -1000,6 +1006,7 @@ impl TypesetState {
             current_footnote_height: 0.0,
             is_first_footnote_on_page: true,
             footnote_separator_overhead,
+            footnote_between_notes_margin,
             footnote_safety_margin,
             current_zone_y_offset: 0.0,
             current_zone_layout: None,
@@ -1068,8 +1075,41 @@ impl TypesetState {
         if self.is_first_footnote_on_page {
             self.current_footnote_height += self.footnote_separator_overhead;
             self.is_first_footnote_on_page = false;
+        } else {
+            self.current_footnote_height += self.footnote_between_notes_margin;
         }
         self.current_footnote_height += height;
+        self.sync_current_page_footnote_area();
+    }
+
+    fn projected_footnote_height(&self, note_content_height: f64, note_count: usize) -> f64 {
+        if note_count == 0 {
+            return self.current_footnote_height;
+        }
+        let separator = if self.is_first_footnote_on_page {
+            self.footnote_separator_overhead
+        } else {
+            0.0
+        };
+        let between_count = if self.is_first_footnote_on_page {
+            note_count.saturating_sub(1)
+        } else {
+            note_count
+        };
+        self.current_footnote_height
+            + separator
+            + self.footnote_between_notes_margin * between_count as f64
+            + note_content_height
+    }
+
+    fn sync_current_page_footnote_area(&mut self) {
+        if self.current_footnote_height <= 0.0 {
+            return;
+        }
+        if let Some(page) = self.pages.last_mut() {
+            page.layout
+                .update_footnote_area(self.current_footnote_height);
+        }
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
@@ -1575,6 +1615,7 @@ impl TypesetEngine {
             false,
             false,
             None,
+            None,
             force_break_before,
             false,
         )
@@ -1601,6 +1642,7 @@ impl TypesetEngine {
         is_hwp3_variant: bool,
         skip_spacing_before_prededuct: bool,
         hwp3_origin_page_tolerance: bool,
+        footnote_shape: Option<&FootnoteShape>,
         endnote_shape: Option<&FootnoteShape>,
         force_break_before: &std::collections::HashSet<usize>,
         is_hwpx_source: bool,
@@ -1608,7 +1650,11 @@ impl TypesetEngine {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         self.is_hwpx_source.set(is_hwpx_source);
         let col_count = column_def.column_count.max(1);
-        let footnote_separator_overhead = hwpunit_to_px(400, self.dpi);
+        let default_footnote_shape = FootnoteShape::default();
+        let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
+        let footnote_separator_overhead = footnote_separator_overhead_px(footnote_shape, self.dpi);
+        let footnote_between_notes_margin =
+            footnote_between_notes_margin_px(footnote_shape, self.dpi);
         let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
         // [Task #1007] variant cross-paragraph vpos reset THRESHOLD 계산용 body height (HU)
         let body_height_hu_for_variant: i32 = if is_hwp3_variant {
@@ -1630,6 +1676,7 @@ impl TypesetEngine {
             col_count,
             section_index,
             footnote_separator_overhead,
+            footnote_between_notes_margin,
             footnote_safety_margin,
             column_def.column_type,
         );
@@ -2626,7 +2673,7 @@ impl TypesetEngine {
                                                             tb_control_index: tc_idx,
                                                         },
                                                     });
-                                                    let fn_height = Self::estimate_footnote_height(
+                                                    let fn_height = estimate_footnote_note_height(
                                                         fn_ctrl, self.dpi,
                                                     );
                                                     st.add_footnote_height(fn_height);
@@ -2713,7 +2760,7 @@ impl TypesetEngine {
                                     },
                                 });
                             }
-                            let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
+                            let fn_height = estimate_footnote_note_height(fn_ctrl, self.dpi);
                             st.add_footnote_height(fn_height);
                         }
                     }
@@ -9387,24 +9434,6 @@ impl TypesetEngine {
     // Phase 2: Break Token 기반 표 조판
     // ========================================================
 
-    /// 단일 각주의 높이를 추정한다 (HeightMeasurer::estimate_single_footnote_height 동일).
-    fn estimate_footnote_height(footnote: &crate::model::footnote::Footnote, dpi: f64) -> f64 {
-        let mut fn_height = 0.0;
-        for para in &footnote.paragraphs {
-            if para.line_segs.is_empty() {
-                fn_height += hwpunit_to_px(400, dpi);
-            } else {
-                for seg in &para.line_segs {
-                    fn_height += hwpunit_to_px(seg.line_height, dpi);
-                }
-            }
-        }
-        if fn_height <= 0.0 {
-            fn_height = hwpunit_to_px(400, dpi);
-        }
-        fn_height
-    }
-
     /// 표의 조판 높이를 계산한다 (format 단계).
     /// MeasuredTable + host_spacing을 통합하여 layout과 동일한 규칙으로 계산.
     #[allow(clippy::too_many_arguments)]
@@ -9568,18 +9597,14 @@ impl TypesetEngine {
 
         // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
         let mut table_footnote_height = 0.0;
-        let mut table_has_footnotes = false;
+        let mut table_footnote_count = 0usize;
         for cell in &table.cells {
             for cp in &cell.paragraphs {
                 for cc in &cp.controls {
                     if let Control::Footnote(fn_ctrl) = cc {
-                        let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
-                        if !table_has_footnotes {
-                            // 첫 각주 시 구분선 오버헤드 추가 여부는 호출 시점의 상태에 의존
-                            // 여기서는 순수 각주 높이만 누적 (구분선은 typeset_block_table에서 처리)
-                        }
+                        let fn_height = estimate_footnote_note_height(fn_ctrl, self.dpi);
                         table_footnote_height += fn_height;
-                        table_has_footnotes = true;
+                        table_footnote_count += 1;
                     }
                 }
             }
@@ -9598,6 +9623,7 @@ impl TypesetEngine {
             page_break,
             cells,
             table_footnote_height,
+            table_footnote_count,
         }
     }
 
@@ -9856,7 +9882,7 @@ impl TypesetEngine {
                                         });
                                     }
                                     let fn_height =
-                                        Self::estimate_footnote_height(fn_ctrl, self.dpi);
+                                        estimate_footnote_note_height(fn_ctrl, self.dpi);
                                     st.add_footnote_height(fn_height);
                                 }
                             }
@@ -10069,13 +10095,8 @@ impl TypesetEngine {
         let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
         let lane_bottom = lane_top + reserved_height;
 
-        let table_footnote = ft.table_footnote_height;
-        let fn_separator = if table_footnote > 0.0 && st.is_first_footnote_on_page {
-            st.footnote_separator_overhead
-        } else {
-            0.0
-        };
-        let total_footnote = st.current_footnote_height + table_footnote + fn_separator;
+        let total_footnote =
+            st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
         let fn_margin = if total_footnote > 0.0 {
             st.footnote_safety_margin
         } else {
@@ -10452,13 +10473,8 @@ impl TypesetEngine {
         is_last_placed: bool,
     ) {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
-        let table_fn_h = ft.table_footnote_height;
-        let fn_separator = if table_fn_h > 0.0 && st.is_first_footnote_on_page {
-            st.footnote_separator_overhead
-        } else {
-            0.0
-        };
-        let total_footnote = st.current_footnote_height + table_fn_h + fn_separator;
+        let total_footnote =
+            st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
         let fn_margin = if total_footnote > 0.0 {
             st.footnote_safety_margin
         } else {
@@ -12240,6 +12256,85 @@ mod tests {
         );
 
         assert_eq!(result.pages.len(), 1, "빈 문서도 최소 1페이지");
+    }
+
+    #[test]
+    fn footnote_area_reserve_uses_section_shape_metrics() {
+        let engine = TypesetEngine::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let shape = FootnoteShape {
+            separator_margin_top: 1000,
+            note_spacing: 700,
+            raw_unknown: 900,
+            separator_line_width: 4,
+            ..Default::default()
+        };
+        let note1 = Paragraph {
+            text: "첫 각주".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 400,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let note2 = Paragraph {
+            text: "둘째 각주".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 600,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let paras = vec![Paragraph {
+            text: "본문".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 400,
+                ..Default::default()
+            }],
+            controls: vec![
+                Control::Footnote(Box::new(crate::model::footnote::Footnote {
+                    number: 1,
+                    paragraphs: vec![note1],
+                    ..Default::default()
+                })),
+                Control::Footnote(Box::new(crate::model::footnote::Footnote {
+                    number: 2,
+                    paragraphs: vec![note2],
+                    ..Default::default()
+                })),
+            ],
+            ..Default::default()
+        }];
+        let composed: Vec<ComposedParagraph> = paras
+            .iter()
+            .map(crate::renderer::composer::compose_paragraph)
+            .collect();
+
+        let result = engine.typeset_section_with_variant(
+            &paras,
+            &composed,
+            &styles,
+            &a4_page_def(),
+            &ColumnDef::default(),
+            0,
+            &[],
+            false,
+            false,
+            false,
+            false,
+            Some(&shape),
+            None,
+            &std::collections::HashSet::new(),
+            false,
+        );
+
+        let expected = footnote_separator_overhead_px(&shape, DEFAULT_DPI)
+            + hwpunit_to_px(400, DEFAULT_DPI)
+            + footnote_between_notes_margin_px(&shape, DEFAULT_DPI)
+            + hwpunit_to_px(600, DEFAULT_DPI);
+        let page = result.pages.first().expect("page");
+        assert_eq!(page.footnotes.len(), 2);
+        assert!((page.layout.footnote_area.height - expected).abs() < 0.01);
     }
 
     #[test]
