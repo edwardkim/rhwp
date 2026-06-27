@@ -163,10 +163,21 @@ pub struct Hyperlink {
 /// 덧말 ('tdut' 컨트롤)
 #[derive(Debug, Clone, Default)]
 pub struct Ruby {
-    /// 덧말 텍스트
+    /// 기준 텍스트 (`<hp:mainText>`) — 덧말이 달리는 본문 글자. (#1587)
+    /// 파서가 para.text 에 넣지 않고 여기 보존한다(시각 충실도 핵심).
+    pub main_text: String,
+    /// 덧말 텍스트 (`<hp:subText>`)
     pub ruby_text: String,
-    /// 정렬 방식
-    pub alignment: u8,
+    /// 위치 (`posType`): 0=TOP, 1=BOTTOM. (#1587)
+    pub pos_type: u8,
+    /// 정렬 (`align`): 0=LEFT, 1=RIGHT, 2=CENTER. (#1587)
+    pub align: u8,
+    /// 덧말 크기 비율 (`szRatio`, %). (#1587)
+    pub sz_ratio: u8,
+    /// 옵션 비트 (`option`). (#1587)
+    pub option: u32,
+    /// 글자 스타일 참조 (`styleIDRef`). (#1587)
+    pub style_id_ref: u16,
 }
 
 /// 글자 겹침 ('tcps' 컨트롤, HWP 스펙 표 152)
