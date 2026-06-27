@@ -1,4 +1,5 @@
 id	status	ir_diff_count	class
+36382399	PASS	0	본문 인라인 ColumnDef 드롭 회귀가드(#1584)
 36382669	PASS	0	multi-section/secCnt 회귀가드(#1557)
 36383351	PASS	0	PASS 클린
 36384285	PASS	0	PASS 클린

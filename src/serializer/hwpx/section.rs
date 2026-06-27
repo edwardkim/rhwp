@@ -75,11 +75,15 @@ pub fn write_section(
     let mut vert_cursor: u32 = 0;
 
     let first_para = section.paragraphs.first();
+    // [#1584] 첫 문단 렌더 직전 set — 본문 첫 ColumnDef(섹션 템플릿 흡수분)의 인라인
+    // XML 방출만 1회 억제한다(슬롯 위치는 보존). 렌더 직후 reset 하여 추가 문단 누설 방지.
+    ctx.body_coldef_template_pending = true;
     let (first_runs, first_linesegs, first_advance) = match first_para {
         Some(p) => render_paragraph_parts(p, vert_cursor, ctx),
         // 문단이 없는 섹션(비파싱 IR) — linesegarray 방출 생략 (#1380)
         None => (String::new(), String::new(), vert_cursor),
     };
+    ctx.body_coldef_template_pending = false;
     vert_cursor = first_advance;
 
     // 치환은 모두 pristine 템플릿의 고정 anchor 에 대해 수행한다 (#1378):
@@ -423,18 +427,37 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     let slot_count = inferred_control_slot_count(para);
     let slots: Vec<&Control> = if slot_count == para.controls.len() {
+        // 전 컨트롤이 위치 슬롯인 경로. 본문 첫 문단의 첫 ColumnDef 도 슬롯으로 남겨
+        // char-offset 정합을 보존하고, 그 XML 만 render_control_slot 의 consume-once
+        // 플래그로 억제한다(템플릿이 이미 방출 — 중복 방지). 2번째+ 는 인라인 방출.
         para.controls.iter().collect()
     } else {
-        // [Task #1379] 셀·글상자 subList(depth > 0) 경로에서는 ColumnDef 도
-        // 인라인 슬롯으로 취급한다 (원본 XML 에 <hp:ctrl><hp:colPr/></hp:ctrl> 인라인 존재).
-        // 본문(depth 0) 경로는 섹션 템플릿 첫 run 의 colPr 가 받으므로 불변.
-        para.controls
+        // [Task #1379] 셀·글상자 subList(depth>0) 경로에서는 ColumnDef 도 인라인 슬롯으로
+        // 취급한다 (원본 XML 에 <hp:ctrl><hp:colPr/></hp:ctrl> 인라인 존재).
+        // [Task #1584] 본문(depth 0) 경로에서도 ColumnDef 를 인라인 슬롯에 포함하되,
+        // 첫 문단의 첫 ColumnDef(섹션 템플릿 흡수분)는 슬롯에서 제외한다 — 이 분기는
+        // slot_count 가 char-offset 추정과 어긋나는 케이스로, 템플릿 흡수분은 위치 슬롯을
+        // 점유하지 않으므로(추정 카운트에서 제외됨) 슬롯에 넣으면 위치가 어긋난다.
+        // 2번째+ 본문 ColumnDef 는 포함하여 드롭을 방지한다.
+        let suppress_first_col = ctx.sub_list_depth == 0 && ctx.body_coldef_template_pending;
+        let mut col_seen = 0u32;
+        let collected: Vec<&Control> = para
+            .controls
             .iter()
             .filter(|c| {
+                if matches!(c, Control::ColumnDef(_)) {
+                    col_seen += 1;
+                    return !(suppress_first_col && col_seen == 1);
+                }
                 is_hwpx_inline_slot(c)
-                    || (ctx.sub_list_depth > 0 && matches!(c, Control::ColumnDef(_)))
             })
-            .collect()
+            .collect();
+        if suppress_first_col {
+            // 템플릿 흡수분을 슬롯에서 이미 제외했으므로, render_control_slot 의
+            // consume-once 억제가 2번째 ColumnDef 를 잘못 건너뛰지 않도록 플래그 해제.
+            ctx.body_coldef_template_pending = false;
+        }
+        collected
     };
 
     let mut tab_idx = 0usize;
@@ -827,10 +850,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             Err(e) => eprintln!("[hwpx] Form 직렬화 실패: {e}"),
         },
         Control::CharOverlap(co) => out.push_str(&render_compose(co)),
-        // [Task #1379] 셀·글상자 subList 한정 인라인 colPr 방출.
-        // 본문 경로(depth 0)는 섹션 템플릿 첫 run 에서 처리하므로 미방출 유지.
-        Control::ColumnDef(cd) if ctx.sub_list_depth > 0 => {
-            out.push_str(&render_col_pr_ctrl(cd));
+        // [Task #1379/#1584] 인라인 colPr 방출.
+        // - subList(depth>0): 전부 인라인 방출(원본 XML 인라인 존재).
+        // - 본문(depth 0): 첫 문단의 첫 ColumnDef 1개는 섹션 템플릿 colPr 앵커가 이미
+        //   방출했으므로(중복 방지) consume-once 플래그로 XML 만 건너뛴다. 슬롯 자체는
+        //   상위(render_runs)에서 유지하므로 char-offset 위치 정합은 보존된다.
+        Control::ColumnDef(cd) => {
+            if ctx.sub_list_depth == 0 && ctx.body_coldef_template_pending {
+                ctx.body_coldef_template_pending = false;
+            } else {
+                out.push_str(&render_col_pr_ctrl(cd));
+            }
         }
         _ => {}
     }
@@ -2843,5 +2873,35 @@ mod tests {
         };
         assert_eq!(shapes_of(0), vec![(0, 1), (19, 2)], "섹션 첫 문단");
         assert_eq!(shapes_of(1), vec![(0, 1), (3, 2)], "추가 문단");
+    }
+
+    // ---------- #1584: 본문 인라인 ColumnDef 드롭 회귀 가드 ----------
+
+    #[test]
+    fn task1584_body_first_para_two_columndefs_roundtrip() {
+        // 본문 첫 문단에 ColumnDef 2개(섹션 단 정의 + 인라인 단 정의).
+        // 섹션 템플릿은 첫 ColumnDef 1개만 흡수하고, 2번째 인라인 ColumnDef 는
+        // 본문 인라인 슬롯에서 제외되어 드롭된다(controls 6→5 양상).
+        // 수정 전: reparse 후 ColumnDef 1개만 → RED. 수정 후: 2개 보존 → GREEN.
+        let mut p0 = Paragraph::default();
+        p0.controls.push(Control::ColumnDef(ColumnDef::default()));
+        p0.controls.push(Control::ColumnDef(ColumnDef::default()));
+
+        let mut section = Section::default();
+        section.paragraphs.push(p0);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let bytes = crate::serializer::hwpx::serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let coldef_count = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::ColumnDef(_)))
+            .count();
+        assert_eq!(
+            coldef_count, 2,
+            "본문 첫 문단의 ColumnDef 2개가 roundtrip 후 모두 보존돼야 한다 (템플릿1 + 인라인1): {coldef_count}"
+        );
     }
 }

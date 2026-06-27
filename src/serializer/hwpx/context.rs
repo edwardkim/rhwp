@@ -95,6 +95,14 @@ pub struct SerializeContext {
     /// 정합이지만, 셀·글상자 subList 의 colPr 는 원본 XML 에 인라인으로 존재한다.
     /// `render_control_slot` 의 ColumnDef 방출을 subList 경로(depth > 0)로 한정한다.
     pub sub_list_depth: u32,
+    /// 본문 첫 문단의 첫 ColumnDef(섹션 템플릿 colPr 앵커가 흡수하는 단 정의)의
+    /// **인라인 XML 방출만** 1회 억제하기 위한 consume-once 플래그 (#1584).
+    ///
+    /// ColumnDef 는 char-offset 슬롯(8유닛)을 점유하므로 `slots` 에는 그대로 남겨
+    /// 위치 정합을 보존하되, 첫 ColumnDef 의 `<hp:colPr>` XML 은 템플릿이 이미
+    /// 방출했으므로 중복 방지를 위해 건너뛴다. `write_section` 이 첫 문단 렌더 직전
+    /// true 로 설정하고, 첫 본문 ColumnDef 방출 시 `render_control_slot` 이 소거한다.
+    pub body_coldef_template_pending: bool,
 }
 
 impl SerializeContext {
