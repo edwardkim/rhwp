@@ -572,7 +572,11 @@ mod tests {
         // prevent_page_break=0 이면 holdAnchorAndSO="0" (기존 동작 보존).
         let t = empty_table(1, 1);
         let xml = serialize(&t);
-        assert!(xml.contains(r#"holdAnchorAndSO="0""#), "기본 0: {}", &xml[..xml.len().min(300)]);
+        assert!(
+            xml.contains(r#"holdAnchorAndSO="0""#),
+            "기본 0: {}",
+            &xml[..xml.len().min(300)]
+        );
     }
 
     // ---------- #1387: write_caption — 표 캡션 직렬화 ----------

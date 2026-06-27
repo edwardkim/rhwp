@@ -970,9 +970,7 @@ fn diff_paragraph_char_shapes(
                     });
                 }
                 // [#1594] holdAnchorAndSO 보존 게이트 — 페이지 하단 앵커 개체 붕괴 봉인.
-                if let Some(detail) =
-                    diff_hold_anchor(&ta.common, &tb.common)
-                {
+                if let Some(detail) = diff_hold_anchor(&ta.common, &tb.common) {
                     diff.push(IrDifference::ObjectHoldAnchor {
                         section,
                         paragraph,
