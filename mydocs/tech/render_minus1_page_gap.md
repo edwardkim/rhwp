@@ -164,3 +164,14 @@ per-paragraph 누적 추적(typeset.rs:1648 루프)으로 확정한 다요인:
 Task #1600(−1쪽 갭)은 요인 A(#1608) + 요인 B(footer 누적, 미규명)의 다요인 문제로,
 통제셋·게이트(`tests/fixtures/render_page_controlset.tsv`, `tools/render_page_gate.py`)를
 자산으로 보존하고 실제 수정은 #1608 및 후속 layout-fidelity 조사로 이관.
+
+---
+
+## [해소] 요인 A — Task #1608 완료 (tolerance 제거)
+
+`is_hwp3_origin = (head version == "1.4")` 오탐지를 제거(파싱 시점 HWP3 tolerance 부여 삭제).
+통제셋 일치 60→66(net **+6**), −1쪽 29→21(8 해소), 회귀 2건(36395325·36382819, 네이티브
+인데 부당 tolerance 가 우연히 정답을 맞추던 케이스 = 요인 B 잔존). HWP3 변환본
+(hwp3-sample-hwpx) 16→16 무변동. 전 회귀 게이트 통과. 상세 `mydocs/report/task_m100_1608_report.md`.
+
+**요인 B(footer 콘텐츠 누적 부족, 21건)는 여전히 미규명** — 별도 layout-fidelity 조사 대상.
