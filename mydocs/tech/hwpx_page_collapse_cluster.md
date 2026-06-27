@@ -139,6 +139,30 @@ HWPX 직렬화기가 `holdAnchorAndSO` 를 **"0" 하드코딩**, 파싱된 IR �
 > 결론: 페이지 붕괴는 "누적 미세차"가 아니라 **단일 속성 `holdAnchorAndSO` 직렬화 드롭**. §5b 의
 > 9후보가 모두 음성이었던 이유 — 진짜 원인이 그 목록 밖(pos 의 boolean 속성)이었음.
 
+## 5e. 잔여 붕괴(~8%) 좁히기 — 불완전 generic-shape 지오메트리
+
+#1595(CLICK_HERE) 후 잔여 붕괴 표본 3건(36396457·36389684·36385226) 이진탐색·특성화:
+
+| 파일 | 섹션 | 도형 | deciding |
+|------|----:|------|----------|
+| 36396457 | 3 | polygon×4 | section2 문단23 polygon |
+| 36389684 | 4 | polygon×5,pic×2 | (polygon 추정) |
+| 36385226 | 1 | ellipse×9,pic×2 | (ellipse 추정) |
+
+**3건 전부 generic-shape(polygon/ellipse) 보유** → 공통 경로 `render_common_shape_xml`
+(section.rs:1327)이 불완전:
+- 태그에서 `numberingType="PICTURE"`·`dropcapstyle`·`href`·`groupLevel`·`instid` 드롭.
+- `<hp:pos>` 에서 affectLSpacing·flowWithText·allowOverlap·holdAnchorAndSO 누락.
+- **드로잉 지오메트리(lineShape·points·fillBrush) 드롭/축약**(rt −2614자) — **이것이 deciding**.
+
+**통제 테스트(36396457 section2)**: polygon 태그속성 복원만으로는 미해소(page 4) →
+**지오메트리 드롭이 원인**. 문단23(polygon 포함) 전체 revert 시에만 해소(page 11).
+
+→ **잔여 붕괴의 근본 = generic-shape(polygon/ellipse/arc/curve) 지오메트리 직렬화 미완**
+(shape.rs:11 "Arc/Polygon/Curve 확대 별도 분류" 갭). rect/picture 와 달리 실제 도형 데이터가
+보존되지 않아 렌더 크기·레이아웃 변동 → 경계 근처 문서 붕괴. **별 타스크(도형 직렬화 완성)**
+필요, 우선순위 낮음(잔여 ~8% = 군집의 long tail).
+
 ## 6. 결론 + 권고
 
 붕괴는 **IR-identical content 인데 한글 reflow 결과만 다른 심층 레이아웃 충실도 결함**. 표면
