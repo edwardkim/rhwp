@@ -2844,4 +2844,34 @@ mod tests {
         assert_eq!(shapes_of(0), vec![(0, 1), (19, 2)], "섹션 첫 문단");
         assert_eq!(shapes_of(1), vec![(0, 1), (3, 2)], "추가 문단");
     }
+
+    // ---------- #1584: 본문 인라인 ColumnDef 드롭 회귀 가드 ----------
+
+    #[test]
+    fn task1584_body_first_para_two_columndefs_roundtrip() {
+        // 본문 첫 문단에 ColumnDef 2개(섹션 단 정의 + 인라인 단 정의).
+        // 섹션 템플릿은 첫 ColumnDef 1개만 흡수하고, 2번째 인라인 ColumnDef 는
+        // 본문 인라인 슬롯에서 제외되어 드롭된다(controls 6→5 양상).
+        // 수정 전: reparse 후 ColumnDef 1개만 → RED. 수정 후: 2개 보존 → GREEN.
+        let mut p0 = Paragraph::default();
+        p0.controls.push(Control::ColumnDef(ColumnDef::default()));
+        p0.controls.push(Control::ColumnDef(ColumnDef::default()));
+
+        let mut section = Section::default();
+        section.paragraphs.push(p0);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let bytes = crate::serializer::hwpx::serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let coldef_count = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::ColumnDef(_)))
+            .count();
+        assert_eq!(
+            coldef_count, 2,
+            "본문 첫 문단의 ColumnDef 2개가 roundtrip 후 모두 보존돼야 한다 (템플릿1 + 인라인1): {coldef_count}"
+        );
+    }
 }
