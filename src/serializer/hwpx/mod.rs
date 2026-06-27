@@ -467,6 +467,45 @@ mod tests {
     }
 
     #[test]
+    fn task1587_ruby_control_roundtrips() {
+        // Ruby(덧말) 컨트롤은 is_hwpx_inline_slot 에 등록돼 슬롯으로 인식되나
+        // render_control_slot 에 방출 arm 이 없어 저장 시 드롭된다(controls=[]).
+        // 수정 전: reparse 후 Ruby 소실 → RED. 수정 후: 보존 → GREEN.
+        use crate::model::control::{Control, Ruby};
+
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "ab".to_string();
+        para.char_offsets = vec![0, 9];
+        para.char_count = 11; // (11-1-2)/8 = 1 슬롯
+        para.controls.push(Control::Ruby(Ruby {
+            ruby_text: "덧말".to_string(),
+            ..Default::default()
+        }));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize ruby");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let rubies: Vec<_> = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter_map(|c| match c {
+                Control::Ruby(r) => Some(r),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            rubies.len(),
+            1,
+            "Ruby 컨트롤이 roundtrip 후 보존돼야 한다 (현재 드롭): {:?}",
+            doc2.sections[0].paragraphs[0].controls
+        );
+        assert_eq!(rubies[0].ruby_text, "덧말", "덧말(subText) 텍스트 보존");
+    }
+
+    #[test]
     fn equation_control_does_not_consume_unmapped_control_gap() {
         use crate::model::control::{Control, Equation};
         use crate::model::shape::CommonObjAttr;
