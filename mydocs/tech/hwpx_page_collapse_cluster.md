@@ -62,6 +62,32 @@ orig↔rt 비교: **IR-비교 가능 메트릭 전부 동일**.
   단순 원인 아님.
 - rt 가 `Preview/PrvImage.png` 추가(썸네일, 레이아웃 무관).
 
+## 5b. 근본원인 좁히기 — 통제 실험 (거의 동일 쌍)
+
+**완벽한 비교쌍**: 붕괴 `36383351 [관악산] 산악구조대 구급의약품 폐기 계획`(2→1) vs OK
+`36387726 [북한산] …`(동일 템플릿, 1문단 차). 두 파일의 **orig↔rt serialization 차이가 완전 동일**
+(빈 hp:t +41/+39, 헤더 탭 −48KB, Preview) → **붕괴는 file-specific 아님, content 가 페이지 경계
+근처인지에만 의존** 확정.
+
+**하이브리드 bisection**(charPr id 매핑 동일=유효):
+
+| 조합 | 페이지 |
+|------|----:|
+| orig-sec + orig-hdr | 2 |
+| orig-sec + rt-hdr | 2 |
+| rt-sec + orig-hdr | **1** |
+| rt-sec + rt-hdr | **1** |
+
+→ **rt-section0 이 원인**(header/탭 switch 확정 배제, header 무관).
+
+**개별 차이 통제 배제**(orig 수정 or rt-sec revert, 한글 페이지수로 판정 — 전부 붕괴 불변):
+빈 `<hp:t></hp:t>` 런·self-closed `<hp:run/>`·`<hp:t/>`·curSz(0↔5669)·noteLine(NONE↔SOLID)·
+noteSpacing·fwSpace(전각공백→공백)·para id(0x80000000↔순차)·linesegarray(**96/96 바이트 동일**)·
+outlineShapeIDRef(0↔1). **9+ 후보 전부 단일 원인 아님**.
+
+→ **단일 변수로 재현 불가 = 누적/미세 상호작용 효과**(rt 의 빈런 표현·미세 spacing·shape 속성
+차이가 합쳐져 경계-근처 문서를 tip). 정밀 규명은 한글 내부 레이아웃 디버깅 영역(정적 XML 분석 한계).
+
 ## 6. 결론 + 권고
 
 붕괴는 **IR-identical content 인데 한글 reflow 결과만 다른 심층 레이아웃 충실도 결함**. 표면
