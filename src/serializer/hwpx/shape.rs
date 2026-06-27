@@ -163,6 +163,9 @@ pub fn write_line<W: Write>(
     if let Some(cap) = &line.drawing.caption {
         write_caption(w, cap, ctx)?;
     }
+    // [#1588] 도형 설명 — caption 뒤 (write_rect/container 와 동형). 누락 시 선 도형
+    // shapeComment("선입니다." 등)가 저장 시 드롭됐다.
+    write_shape_comment(w, c)?;
 
     end_tag(w, "hp:line")?;
     Ok(())
