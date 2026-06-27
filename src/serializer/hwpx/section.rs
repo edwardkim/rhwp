@@ -23,7 +23,7 @@ use quick_xml::Writer;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
-    PageNumberPos,
+    PageNumberPos, Ruby,
 };
 use crate::model::document::{Document, Section};
 use crate::model::footnote::{Endnote, Footnote};
@@ -850,6 +850,9 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             Err(e) => eprintln!("[hwpx] Form 직렬화 실패: {e}"),
         },
         Control::CharOverlap(co) => out.push_str(&render_compose(co)),
+        // [Task #1587] 덧말(Ruby) 인라인 방출. is_hwpx_inline_slot 에 등록돼 슬롯 위치는
+        // 자동이나 종전 방출 arm 부재로 드롭됐다. parse_dutmal 의 역매핑.
+        Control::Ruby(r) => out.push_str(&render_dutmal(r)),
         // [Task #1379/#1584] 인라인 colPr 방출.
         // - subList(depth>0): 전부 인라인 방출(원본 XML 인라인 존재).
         // - 본문(depth 0): 첫 문단의 첫 ColumnDef 1개는 섹션 템플릿 colPr 앵커가 이미
@@ -864,6 +867,30 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         }
         _ => {}
     }
+}
+
+/// 덧말(Ruby) `<hp:dutmal>` 직렬화 (#1587). `parse_dutmal` 의 역매핑.
+/// 속성 순서는 한컴 실측(posType szRatio option styleIDRef align)을 따른다.
+fn render_dutmal(r: &Ruby) -> String {
+    let pos_type = match r.pos_type {
+        1 => "BOTTOM",
+        _ => "TOP",
+    };
+    let align = match r.align {
+        1 => "RIGHT",
+        2 => "CENTER",
+        _ => "LEFT",
+    };
+    format!(
+        r#"<hp:dutmal posType="{}" szRatio="{}" option="{}" styleIDRef="{}" align="{}"><hp:mainText>{}</hp:mainText><hp:subText>{}</hp:subText></hp:dutmal>"#,
+        pos_type,
+        r.sz_ratio,
+        r.option,
+        r.style_id_ref,
+        align,
+        xml_escape(&r.main_text),
+        xml_escape(&r.ruby_text),
+    )
 }
 
 fn generated_field_parameters(field: &Field) -> Option<String> {

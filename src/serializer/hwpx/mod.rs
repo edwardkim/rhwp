@@ -480,8 +480,13 @@ mod tests {
         para.char_offsets = vec![0, 9];
         para.char_count = 11; // (11-1-2)/8 = 1 슬롯
         para.controls.push(Control::Ruby(Ruby {
+            main_text: "기준글".to_string(),
             ruby_text: "덧말".to_string(),
-            ..Default::default()
+            pos_type: 1,       // BOTTOM
+            align: 2,          // CENTER
+            sz_ratio: 80,
+            option: 3,
+            style_id_ref: 5,
         }));
         section.paragraphs.push(para);
         doc.sections.push(section);
@@ -502,7 +507,15 @@ mod tests {
             "Ruby 컨트롤이 roundtrip 후 보존돼야 한다 (현재 드롭): {:?}",
             doc2.sections[0].paragraphs[0].controls
         );
-        assert_eq!(rubies[0].ruby_text, "덧말", "덧말(subText) 텍스트 보존");
+        let r = rubies[0];
+        // 전 필드 무손실 (#1587 — mainText/posType/align/szRatio/option/styleIDRef)
+        assert_eq!(r.main_text, "기준글", "mainText 보존");
+        assert_eq!(r.ruby_text, "덧말", "subText(덧말) 보존");
+        assert_eq!(r.pos_type, 1, "posType(BOTTOM) 보존");
+        assert_eq!(r.align, 2, "align(CENTER) 보존");
+        assert_eq!(r.sz_ratio, 80, "szRatio 보존");
+        assert_eq!(r.option, 3, "option 보존");
+        assert_eq!(r.style_id_ref, 5, "styleIDRef 보존");
     }
 
     #[test]
