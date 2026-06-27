@@ -542,6 +542,7 @@ impl LayoutEngine {
                 cap_w,
                 cap_y,
                 &mut self.auto_counter.borrow_mut(),
+                bin_data_content,
                 None,
             );
         }

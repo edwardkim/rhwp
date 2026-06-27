@@ -535,6 +535,7 @@ impl LayoutEngine {
                 cap_w,
                 cap_y,
                 &mut self.auto_counter.borrow_mut(),
+                bin_data_content,
                 Some(cell_ctx),
             );
         }
@@ -618,6 +619,7 @@ impl LayoutEngine {
         content_width: f64,
         y_start: f64,
         auto_counter: &mut AutoNumberCounter,
+        bin_data_content: &[BinDataContent],
         cell_ctx: Option<super::CellContext>,
     ) {
         if caption.paragraphs.is_empty() {
@@ -664,8 +666,8 @@ impl LayoutEngine {
                 false,
                 0.0,
                 None,
-                None,
-                None,
+                Some(para),
+                Some(bin_data_content),
                 None, // 캡션 컨텍스트 — wrap zone 무관
             );
         }

@@ -64,6 +64,7 @@ fn group_label_matches_replay_plane(
 use super::composer::{
     decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
 };
+use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
 use super::layout::{compute_char_positions, split_into_clusters};
 use crate::model::control::FormType;
@@ -1844,12 +1845,15 @@ impl WebCanvasRenderer {
                 self.ctx.stroke_rect(x, y, w, h);
                 // 캡션 텍스트 (회색)
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.5).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str("#808080");
                     self.ctx.set_text_align("center");
                     self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.caption, x + w / 2.0, y + h / 2.0);
+                    let _ = self
+                        .ctx
+                        .fill_text(caption.as_ref(), x + w / 2.0, y + h / 2.0);
                     self.ctx.set_text_align("left");
                     self.ctx.set_text_baseline("alphabetic");
                 }
@@ -1876,13 +1880,14 @@ impl WebCanvasRenderer {
                 }
                 // 캡션
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.7).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str(&form.fore_color);
                     self.ctx.set_text_baseline("middle");
                     let _ = self
                         .ctx
-                        .fill_text(&form.caption, x + box_size + 4.0, y + h / 2.0);
+                        .fill_text(caption.as_ref(), x + box_size + 4.0, y + h / 2.0);
                     self.ctx.set_text_baseline("alphabetic");
                 }
             }
@@ -1907,13 +1912,14 @@ impl WebCanvasRenderer {
                 }
                 // 캡션
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.7).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str(&form.fore_color);
                     self.ctx.set_text_baseline("middle");
                     let _ = self
                         .ctx
-                        .fill_text(&form.caption, x + r * 2.0 + 4.0, y + h / 2.0);
+                        .fill_text(caption.as_ref(), x + r * 2.0 + 4.0, y + h / 2.0);
                     self.ctx.set_text_baseline("alphabetic");
                 }
             }
