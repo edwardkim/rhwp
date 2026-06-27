@@ -110,6 +110,35 @@ PyMuPDF 렌더):
 > 함의: 붕괴는 "텍스트/내용 손실"이 아니라 **razor-thin 레이아웃 마진에서의 페이지 분할 변동**.
 > 실문서 다수가 발신명의 블록을 본문 끝 직후 하단에 두는 동일 양식이라 14–16% 가 경계 근처.
 
+## 5d. 근본원인 확정 — `holdAnchorAndSO` 직렬화 드롭 (실버그)
+
+§5b 에서 단일 변수 분리 실패 후, **단락 단위 이진 탐색**(rt-section 문단을 orig 로 되돌리며
+한글 페이지수 판정)으로 정확히 좁힘:
+
+- 문단 5-9 revert → 해소 → 문단 9(발신명의 footer 표 포함) 단독 revert → **해소**.
+- 문단 9 정규화 diff(id/빈런 제거) → **유일 차이 1건**:
+  ```
+  외곽 footer 표(페이지 하단 앵커, vertRelTo="PAGE" vertAlign="BOTTOM")의 <hp:pos>:
+    orig: holdAnchorAndSO="1"   rt: holdAnchorAndSO="0"
+  ```
+- **결정 테스트**: orig 에서 `holdAnchorAndSO` 1→0 만 치환 → **2쪽→1쪽 붕괴 재현**. 확정.
+
+### 코드 (실버그)
+
+HWPX 직렬화기가 `holdAnchorAndSO` 를 **"0" 하드코딩**, 파싱된 IR 값 무시:
+- `table.rs:146`, `picture.rs:407`, `shape.rs:899`, equation(`section.rs:1451`) = `("holdAnchorAndSO","0")`.
+- 파서(`parser/hwpx/section.rs:1672`)는 정상 저장: `holdAnchorAndSO → common.prevent_page_break`(i32).
+- **IR 비교가 `prevent_page_break` 미검사 → IR diff=0** (게이트 미검출, 시각만 붕괴).
+
+### 군집 적용성
+
+무작위 400 표본 orig 의 `holdAnchorAndSO="1"` 보유: **붕괴 53/63(84%)**, OK 278/337(82%).
+→ 직렬화기가 전수 1→0 드롭. 페이지 경계 근처 문서(붕괴군)에서 발신명의 footer(페이지 하단 앵커)
+위치가 바뀌어 붕괴. **`holdAnchorAndSO` 보존 수정 시 붕괴군 대다수 해소 예상**(별 통제 비교 필요).
+
+> 결론: 페이지 붕괴는 "누적 미세차"가 아니라 **단일 속성 `holdAnchorAndSO` 직렬화 드롭**. §5b 의
+> 9후보가 모두 음성이었던 이유 — 진짜 원인이 그 목록 밖(pos 의 boolean 속성)이었음.
+
 ## 6. 결론 + 권고
 
 붕괴는 **IR-identical content 인데 한글 reflow 결과만 다른 심층 레이아웃 충실도 결함**. 표면
