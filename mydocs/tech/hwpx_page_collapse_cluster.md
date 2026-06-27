@@ -1,0 +1,64 @@
+# HWPX 페이지 붕괴 군집 조사 (#1589)
+
+- 일자: 2026-06-27
+- 바이너리: devel 0c72b210 (4 채택 누적)
+- 도구: `tools/verify_hangul_pages.py` (한글 PageCount 오라클)
+
+## 1. 군집 규모 (중대)
+
+fidelity14 **PASS(IR diff=0) 파일 120건 표본**(seed 7) 한글 오라클:
+
+| 판정 | 건수 | 비율 |
+|------|----:|----:|
+| OK | 102 | 85% |
+| **COLLAPSE** | **17** | **14%** |
+| ERR(COM 열기 실패) | 1 | 1% |
+
+→ **IR 게이트를 통과한 파일의 ~14%가 한글에서 페이지 붕괴.** 단일 파일(#1589 최초 36384160)이
+아닌 **대규모 군집**. IR diff=0 ≠ 시각 무손실의 가장 큰 잔존 갭.
+
+## 2. 붕괴 패턴
+
+| 패턴 | 건수 |
+|------|----:|
+| 2→1 | 16 |
+| 5→4 | 1 |
+
+거의 전부 **마지막 1쪽 흡수**(2→1). 대상 전부 정부 "결재문서본문" 양식 — 체계적 단일 원인 시사.
+
+## 3. IR-invisible 확인 (36389184, 2→1 대표)
+
+orig↔rt 비교: **IR-비교 가능 메트릭 전부 동일**.
+- 구조: hp:p 122, hp:run 110, hp:lineseg 218, hp:tbl 4, hp:tr 21, hp:tc 94 — 모두 일치.
+- 수직: Σvertpos/vertsize/textheight/baseline/spacing 전부 일치.
+- header: charPr 30(height 동일), paraPr 32(lineSpacing 동일), fontface 8, borderFill 10.
+
+→ 한글이 reflow 에 쓰는 IR 값은 동일한데 페이지수만 다름.
+
+## 4. 배제한 가설 (red herrings)
+
+| 가설 | 검증 | 결론 |
+|------|------|------|
+| **탭 switch 래퍼 드롭**(48KB) | rhwp 가 `<hp:switch><hp:case ...HwpUnitChar><hh:tabItem unit="HWPUNIT"/></hp:case><hp:default>...</hp:default></hp:switch>` 를 plain `<hh:tabItem>` 로 방출(48KB 감소). **그러나 OK(비붕괴) 파일도 동일 드롭**(Δ=48628) | **무관**(보편적·양성). 단 pos=0 탭이라 레이아웃 영향 없음 |
+| **#1592 빈문단 run 제거** | pre-#1592 rt(fidelity13)도 동일하게 2→1 붕괴 | **무관**(붕괴가 #1592 선행) |
+
+## 5. 남은 구체 차이 (미규명)
+
+- rt 가 **빈 `<hp:t></hp:t>` 58개 추가**(orig 0). close_run 규칙5(빈 run `<hp:t></hp:t>` 보존)
+  유래. 단 빈 run 은 높이를 **더해** rt 를 길게 만들 텐데 붕괴는 rt 가 **짧음** → 방향 불일치,
+  단순 원인 아님.
+- rt 가 `Preview/PrvImage.png` 추가(썸네일, 레이아웃 무관).
+
+## 6. 결론 + 권고
+
+붕괴는 **IR-identical content 인데 한글 reflow 결과만 다른 심층 레이아웃 충실도 결함**. 표면
+XML 차이(탭 switch·빈 t·preview)로는 설명 안 됨 — 한글이 읽는 **비-IR 레이아웃 신호**(런 경계
+분할, 문자 폭 미세, 줄바꿈 기회 등)의 차이로 추정.
+
+**규모 큼(~14%)·난이도 높음**. 후속 권고:
+1. **전수 오라클 배치**로 정확한 붕괴율·군집 규모 확정(현재 120 표본 추정).
+2. 붕괴/비붕괴 파일 쌍의 **section0 정밀 바이트 diff**(런 경계·hp:t 분할 패턴 차이).
+3. 한글에서 **페이지 브레이크 위치 시각 비교**(어느 줄/문단에서 갈리는지).
+4. 가설: 런 경계 분할(charPr boundary)이 한글 줄바꿈 기회를 바꿔 더 촘촘히 패킹 → 행 수 감소.
+
+근거: `output/poc/fidelity14/oracle_collapse_scan.tsv`, 메모리 [[hwp5-save-fidelity-gaps]].
