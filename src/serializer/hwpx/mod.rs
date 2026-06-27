@@ -519,6 +519,50 @@ mod tests {
     }
 
     #[test]
+    fn task1591_bookmark_not_hoisted_before_slot() {
+        // [#1591] 북마크가 슬롯 컨트롤(표 등) 뒤에 있을 때, 직렬화기(section.rs:416-426)가
+        // 북마크를 문단 시작으로 hoisting 하면 컨트롤 순서가 뒤바뀌고 후속 슬롯이 +8 밀려
+        // char_shape 가 시프트한다. 비-첫 문단으로 구성(첫 문단 secPr/colPr 템플릿 주입 회피).
+        use crate::model::control::{Bookmark, Control};
+        use crate::model::style::BorderFill;
+        use crate::model::table::Table;
+
+        let mut doc = Document::default();
+        doc.doc_info.border_fills.push(BorderFill::default());
+        let mut section = crate::model::document::Section::default();
+        section
+            .paragraphs
+            .push(crate::model::paragraph::Paragraph::default()); // para0 더미
+        let mut p = crate::model::paragraph::Paragraph::default();
+        p.text = "AB".to_string();
+        p.char_offsets = vec![0, 9]; // A@0, [표 슬롯 8], B@9
+        p.char_count = 11;
+        p.controls.push(Control::Table(Box::<Table>::default()));
+        p.controls.push(Control::Bookmark(Bookmark {
+            name: "bm".to_string(),
+        }));
+        section.paragraphs.push(p);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let ctrls: Vec<&str> = doc2.sections[0].paragraphs[1]
+            .controls
+            .iter()
+            .map(|c| match c {
+                Control::Table(_) => "tbl",
+                Control::Bookmark(_) => "bm",
+                _ => "?",
+            })
+            .collect();
+        assert_eq!(
+            ctrls,
+            vec!["tbl", "bm"],
+            "북마크가 표 뒤 위치를 보존해야 한다 (hoisting 시 [bm,tbl] 로 뒤바뀜)"
+        );
+    }
+
+    #[test]
     fn equation_control_does_not_consume_unmapped_control_gap() {
         use crate::model::control::{Control, Equation};
         use crate::model::shape::CommonObjAttr;
