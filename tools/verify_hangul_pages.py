@@ -25,6 +25,7 @@ import csv
 import random
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 
@@ -172,8 +173,9 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
             inc_fh.write("\t".join(str(x) for x in rec) + "\n")
             inc_fh.flush()
 
-    # COM 인스턴스는 수천 건 누적 시 사망(과거 ~1868건에서 전멸) → 주기적 재시작.
-    restart_every = 300
+    # COM 인스턴스는 수천 건 누적 시 사망(과거 ~1868건에서 전멸) → 주기적 하드 재시작.
+    # 주의: hwp.quit() 만으로는 Hwp.exe 프로세스가 남아 누적(200+ 누수 관측) → taskkill 병행.
+    restart_every = 600
 
     def restart_hwp():
         nonlocal hwp
@@ -181,6 +183,13 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
             hwp.quit()
         except Exception:
             pass
+        # 잔존 Hwp.exe 강제 종료(누수 방지) 후 새 인스턴스 생성.
+        try:
+            subprocess.run(["taskkill", "/F", "/IM", "Hwp.exe"],
+                           capture_output=True, timeout=30)
+        except Exception:
+            pass
+        time.sleep(1)
         hwp = Hwp(new=True, visible=visible)
 
     try:
