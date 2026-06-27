@@ -135,6 +135,9 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
     let treat = bool01(c.treat_as_char);
     let vert_offset = c.vertical_offset.to_string();
     let horz_offset = c.horizontal_offset.to_string();
+    // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존한다. 종전 "0" 하드코딩은
+    // 페이지 하단 앵커 개체(발신명의 footer 등)의 1→0 드롭으로 한글 페이지 붕괴를 유발했다.
+    let hold = bool01(c.prevent_page_break != 0);
     empty_tag(
         w,
         "hp:pos",
@@ -143,7 +146,7 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
             ("affectLSpacing", "0"),
             ("flowWithText", "1"),
             ("allowOverlap", "0"),
-            ("holdAnchorAndSO", "0"),
+            ("holdAnchorAndSO", hold),
             ("vertRelTo", vert_rel_to_str(c.vert_rel_to)),
             ("horzRelTo", horz_rel_to_str(c.horz_rel_to)),
             ("vertAlign", vert_align_str(c.vert_align)),
@@ -546,6 +549,30 @@ mod tests {
             start_pos,
             char_shape_id,
         }
+    }
+
+    // ---------- #1594: holdAnchorAndSO 보존 ----------
+
+    #[test]
+    fn task1594_hold_anchor_preserved() {
+        // [#1594] holdAnchorAndSO 는 IR(common.prevent_page_break)을 보존해야 한다.
+        // 현재 직렬화가 "0" 하드코딩 → 1→0 드롭(페이지 하단 앵커 개체에서 페이지 붕괴 원인). RED.
+        let mut t = empty_table(1, 1);
+        t.common.prevent_page_break = 1;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"holdAnchorAndSO="1""#),
+            "holdAnchorAndSO 가 IR 값(1)으로 방출돼야 한다(현재 0 하드코딩): {}",
+            &xml[..xml.len().min(500)]
+        );
+    }
+
+    #[test]
+    fn task1594_hold_anchor_zero_when_unset() {
+        // prevent_page_break=0 이면 holdAnchorAndSO="0" (기존 동작 보존).
+        let t = empty_table(1, 1);
+        let xml = serialize(&t);
+        assert!(xml.contains(r#"holdAnchorAndSO="0""#), "기본 0: {}", &xml[..xml.len().min(300)]);
     }
 
     // ---------- #1387: write_caption — 표 캡션 직렬화 ----------

@@ -216,6 +216,14 @@ pub enum IrDifference {
         path: String,
         detail: String,
     },
+    /// 개체 `holdAnchorAndSO`(IR `prevent_page_break`) 불일치 — 페이지 하단 앵커
+    /// 개체에서 1→0 드롭 시 한글 페이지 붕괴를 유발(#1594). IR-invisible 였던 갭을 봉인.
+    ObjectHoldAnchor {
+        section: usize,
+        paragraph: usize,
+        path: String,
+        detail: String,
+    },
 }
 
 impl std::fmt::Display for IrDifference {
@@ -360,6 +368,16 @@ impl std::fmt::Display for IrDifference {
                 "section[{}] paragraph[{}]{} tbl page_break: {}",
                 section, paragraph, path, detail
             ),
+            ObjectHoldAnchor {
+                section,
+                paragraph,
+                path,
+                detail,
+            } => write!(
+                f,
+                "section[{}] paragraph[{}]{} holdAnchorAndSO: {}",
+                section, paragraph, path, detail
+            ),
         }
     }
 }
@@ -407,6 +425,21 @@ fn diff_object_comment(a: &str, b: &str) -> Option<String> {
         None
     } else {
         Some(format!("expected={:?} actual={:?}", a, b))
+    }
+}
+
+/// 두 개체의 `prevent_page_break`(holdAnchorAndSO) 비교 (#1594). 다르면 detail, 같으면 None.
+fn diff_hold_anchor(
+    a: &crate::model::shape::CommonObjAttr,
+    b: &crate::model::shape::CommonObjAttr,
+) -> Option<String> {
+    if a.prevent_page_break == b.prevent_page_break {
+        None
+    } else {
+        Some(format!(
+            "expected={} actual={}",
+            a.prevent_page_break, b.prevent_page_break
+        ))
     }
 }
 
@@ -936,6 +969,17 @@ fn diff_paragraph_char_shapes(
                         detail: format!("expected={:?} actual={:?}", ta.page_break, tb.page_break),
                     });
                 }
+                // [#1594] holdAnchorAndSO 보존 게이트 — 페이지 하단 앵커 개체 붕괴 봉인.
+                if let Some(detail) =
+                    diff_hold_anchor(&ta.common, &tb.common)
+                {
+                    diff.push(IrDifference::ObjectHoldAnchor {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]tbl"),
+                        detail,
+                    });
+                }
                 for (cell_i, (cea, ceb)) in ta.cells.iter().zip(tb.cells.iter()).enumerate() {
                     for (k, (qa, qb)) in
                         cea.paragraphs.iter().zip(ceb.paragraphs.iter()).enumerate()
@@ -991,6 +1035,15 @@ fn diff_paragraph_char_shapes(
                         detail,
                     });
                 }
+                // [#1594] holdAnchorAndSO 보존 게이트.
+                if let Some(detail) = diff_hold_anchor(&pia.common, &pib.common) {
+                    diff.push(IrDifference::ObjectHoldAnchor {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]pic"),
+                        detail,
+                    });
+                }
                 if let (Some(ca), Some(cb)) = (&pia.caption, &pib.caption) {
                     for (k, (qa, qb)) in ca.paragraphs.iter().zip(cb.paragraphs.iter()).enumerate()
                     {
@@ -1006,6 +1059,15 @@ fn diff_paragraph_char_shapes(
                     diff_object_comment(&ea.common.description, &eb.common.description)
                 {
                     diff.push(IrDifference::ObjectComment {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]eq"),
+                        detail,
+                    });
+                }
+                // [#1594] holdAnchorAndSO 보존 게이트.
+                if let Some(detail) = diff_hold_anchor(&ea.common, &eb.common) {
+                    diff.push(IrDifference::ObjectHoldAnchor {
                         section,
                         paragraph,
                         path: format!("{path}/ctrl[{ci}]eq"),
