@@ -4907,28 +4907,37 @@ fn parse_dutmal(
     reader: &mut Reader<&[u8]>,
 ) -> Result<Control, HwpxError> {
     let mut ruby = Ruby::default();
-    // 요소 속성
+    // 요소 속성 (#1587 — posType/align 분리 보존 + szRatio/option/styleIDRef)
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"posType" => {
-                ruby.alignment = match attr_str(&attr).as_str() {
+                ruby.pos_type = match attr_str(&attr).as_str() {
                     "TOP" => 0,
                     "BOTTOM" => 1,
                     _ => 0,
                 };
             }
             b"align" => {
-                ruby.alignment = match attr_str(&attr).as_str() {
+                ruby.align = match attr_str(&attr).as_str() {
                     "LEFT" => 0,
                     "RIGHT" => 1,
                     "CENTER" => 2,
                     _ => 0,
                 };
             }
+            b"szRatio" => {
+                ruby.sz_ratio = attr_str(&attr).parse().unwrap_or(0);
+            }
+            b"option" => {
+                ruby.option = attr_str(&attr).parse().unwrap_or(0);
+            }
+            b"styleIDRef" => {
+                ruby.style_id_ref = attr_str(&attr).parse().unwrap_or(0);
+            }
             _ => {}
         }
     }
-    // 자식 요소 파싱 (subText)
+    // 자식 요소 파싱 (mainText 기준 텍스트 + subText 덧말)
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf) {
@@ -4938,8 +4947,9 @@ fn parse_dutmal(
                 if local == b"subText" {
                     ruby.ruby_text = read_dutmal_text(reader, b"subText")?;
                 } else if local == b"mainText" {
-                    // mainText는 이미 문단 텍스트에 포함되므로 스킵
-                    skip_element(reader, b"mainText")?;
+                    // [#1587] mainText(기준 텍스트)는 para.text 에 포함되지 않으므로
+                    // 모델에 보존한다(종전 skip → 손실 → 직렬화 시 복원 불가였음).
+                    ruby.main_text = read_dutmal_text(reader, b"mainText")?;
                 } else {
                     let tag = local.to_vec();
                     skip_element(reader, &tag)?;
