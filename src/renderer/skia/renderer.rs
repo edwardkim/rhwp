@@ -2,6 +2,7 @@ use skia_safe::{
     paint, surfaces, Canvas, Color, EncodedImageFormat, Font, FontMgr, FontStyle, Paint,
     PathBuilder, PathEffect, RRect, Rect, Typeface,
 };
+use std::borrow::Cow;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::error::HwpError;
@@ -13,6 +14,7 @@ use crate::paint::{
     LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree, PaintOp,
     PaintReplayPlane, ResourceArena, TextVariantQuality,
 };
+use crate::renderer::form_caption::display_form_caption;
 use crate::renderer::layer_renderer::{
     LayerRasterRenderer, LayerRenderResult, RasterOutputFormat, RasterRenderOptions,
     RasterRenderOutput,
@@ -284,13 +286,23 @@ pub struct SkiaLayerRenderer {
 
 impl SkiaLayerRenderer {
     pub fn new() -> Self {
-        let font_mgr = FontMgr::default();
-        let system_families = collect_system_families(&font_mgr);
-        Self {
-            font_mgr,
-            custom_typefaces: HashMap::new(),
-            system_families,
+        // [perf] FontMgr::default() + collect_system_families() (시스템 폰트 family 전수
+        // 열거) 는 페이지당 ~8ms 가 드는데, 프로세스(스레드) 내에서 불변이다. 매 렌더마다
+        // 재열거하지 않도록 thread-local 로 1회만 계산하고, 이후 new() 는 캐시를 복제
+        // (FontMgr = refcount bump, families = HashSet clone ~수십 µs) 해 재사용한다.
+        // 폰트 매칭 입력이 동일하므로 렌더 출력은 바이트 단위로 불변이다.
+        thread_local! {
+            static SKIA_FONT_BASE: (FontMgr, SystemFontFamilies) = {
+                let font_mgr = FontMgr::default();
+                let system_families = collect_system_families(&font_mgr);
+                (font_mgr, system_families)
+            };
         }
+        SKIA_FONT_BASE.with(|(font_mgr, system_families)| Self {
+            font_mgr: font_mgr.clone(),
+            custom_typefaces: HashMap::new(),
+            system_families: system_families.clone(),
+        })
     }
 
     /// 사용자 지정 폰트 디렉토리 (ttfs 등) 의 폰트를 로드하여 Skia 가 직접 사용 가능하게 한다.
@@ -1182,19 +1194,19 @@ impl SkiaLayerRenderer {
                 canvas.draw_rrect(rrect, &stroke);
 
                 let label = if form.caption.is_empty() {
-                    &form.name
+                    Cow::Borrowed(form.name.as_str())
                 } else {
-                    &form.caption
+                    display_form_caption(&form.caption)
                 };
                 if !label.is_empty() {
                     let font = self.make_form_font((h * 0.45).clamp(8.0, 14.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
-                    let text_w = font.measure_str(label, Some(&tp)).0;
+                    let text_w = font.measure_str(label.as_ref(), Some(&tp)).0;
                     let tx = x + (w - text_w) / 2.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(label, (tx, ty), &font, &tp);
+                    canvas.draw_str(label.as_ref(), (tx, ty), &font, &tp);
                 }
             }
             FormType::CheckBox => {
@@ -1238,13 +1250,14 @@ impl SkiaLayerRenderer {
                 }
 
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font = self.make_form_font((h * 0.6).clamp(8.0, 13.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
                     let tx = bx + box_size + 4.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(&form.caption, (tx, ty), &font, &tp);
+                    canvas.draw_str(caption.as_ref(), (tx, ty), &font, &tp);
                 }
             }
             FormType::RadioButton => {
@@ -1274,13 +1287,14 @@ impl SkiaLayerRenderer {
                 }
 
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font = self.make_form_font((h * 0.6).clamp(8.0, 13.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
                     let tx = cx + r + 4.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(&form.caption, (tx, ty), &font, &tp);
+                    canvas.draw_str(caption.as_ref(), (tx, ty), &font, &tp);
                 }
             }
             FormType::ComboBox => {

@@ -27,6 +27,8 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo};
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
 
+const CAPTION_CELL_SENTINEL: usize = 65534;
+
 /// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
 /// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
 #[inline]
@@ -155,6 +157,12 @@ fn tac_picture_or_shape_height_for_line(
 
 fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
     matches!(ctrl, Some(Control::Equation(eq)) if eq.common.treat_as_char)
+}
+
+fn is_caption_cell_context(cell_ctx: Option<&CellContext>) -> bool {
+    cell_ctx
+        .and_then(|ctx| ctx.path.last())
+        .is_some_and(|entry| entry.cell_index == CAPTION_CELL_SENTINEL)
 }
 
 fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
@@ -4130,7 +4138,9 @@ impl LayoutEngine {
                 // runs가 없는 빈 줄에서 treat_as_char 이미지 렌더링
                 // 테이블 셀 내부에서는 table_layout.rs가 layout_picture로 이미 처리하므로 스킵.
                 // 셀 외부에서 해당 줄 범위에 걸린 TAC만 여기서 렌더링.
-                if cell_ctx.is_none() && !line_tac_offsets.is_empty() {
+                let empty_line_tac_allowed =
+                    cell_ctx.is_none() || is_caption_cell_context(cell_ctx.as_ref());
+                if empty_line_tac_allowed && !line_tac_offsets.is_empty() {
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                         // TAC 이미지 전체 폭 계산 후 문단 정렬 적용
                         let total_tac_width: f64 =

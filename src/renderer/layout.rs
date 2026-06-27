@@ -6836,6 +6836,7 @@ impl LayoutEngine {
                                 pic_w,
                                 cap_y,
                                 &mut self.auto_counter.borrow_mut(),
+                                bin_data_content,
                                 Some(cell_ctx),
                             );
                             // [Task #864 Stage F] caption 이 차지한 영역까지 result_y 진행.

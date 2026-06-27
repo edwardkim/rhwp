@@ -122,6 +122,16 @@ ingest JSON(시험문제 등) → HWPX 생성. (rhwp-exam-ingest 파이프라인
   `Δ Line: 4→0 (-4)  RawSvg: 1→0 (-1)`, 배치는 콘솔/`struct_delta` 컬럼에 `Line:-4;RawSvg:-1`).
   음수=라운드트립 손실, 양수=추가. 손실 노드 타입으로 직렬화 누락 원인을 즉시 좁힌다.
 
+### `bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]`
+**단계별 처리 성능 계측** — parse / layout / render / serialize 를 워밍업 1회 후 N회(기본 3)
+반복하여 median(ms)으로 보고한다.
+- 단계: `parse`(바이트→IR, `parse_document`) · `layout`(=load−parse 근사) ·
+  `render`(전 페이지 SVG) · `serialize`(`serialize_hwpx`, 저장 비용).
+- 파일별 크기KB/쪽수 + 단계별 median + total 표, 다파일 시 합계·쪽당 평균.
+- `--batch <폴더>` 재귀 전수(.hwp/.hwpx), `--tsv <경로>` 산출(부모 폴더 자동 생성).
+- **주의**: 절대 수치는 측정 머신·빌드(release/debug) 의존. 동일 환경 **상대 비교·재현**
+  지표로 해석(한컴 등 외부 기준 아님). release 빌드 권장.
+
 ---
 
 ## 4. HWPX→HWP 저장 계약 분석 (hwp5-* 진단 도구)

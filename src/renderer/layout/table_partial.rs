@@ -1635,6 +1635,7 @@ impl LayoutEngine {
                     table_width,
                     y_start,
                     &mut self.auto_counter.borrow_mut(),
+                    bin_data_content,
                     cap_cell_ctx.clone(),
                 );
             }
@@ -1658,6 +1659,7 @@ impl LayoutEngine {
                     table_width,
                     caption_y,
                     &mut self.auto_counter.borrow_mut(),
+                    bin_data_content,
                     cap_cell_ctx.clone(),
                 );
             }
@@ -1689,6 +1691,7 @@ impl LayoutEngine {
                     cap_width_px,
                     cap_y,
                     &mut self.auto_counter.borrow_mut(),
+                    bin_data_content,
                     cap_cell_ctx.clone(),
                 );
             }
