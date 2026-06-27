@@ -413,17 +413,9 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     let mut splitter = RunSplitter::new(para);
 
-    // Bookmark는 IR에 위치 정보가 없어 문단 시작(첫 run)에 배치한다.
-    // (HWPX 파서가 char_count에 포함하지 않아 slot 시스템이 위치를 추적할 수 없음)
-    for ctrl in &para.controls {
-        if let Control::Bookmark(bm) = ctrl {
-            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                splitter.content.push_str("<hp:ctrl>");
-                splitter.content.push_str(&xml);
-                splitter.content.push_str("</hp:ctrl>");
-            }
-        }
-    }
+    // [#1591] Bookmark 는 char-offset 슬롯(8유닛)을 점유하므로 슬롯 시스템(is_hwpx_inline_slot
+    // + render_control_slot)이 제 위치에 방출한다. 종전엔 위치 미추적으로 문단 시작에 hoisting
+    // 했으나, 후위 북마크가 앞으로 재배치되며 후속 슬롯·char_shape 를 +8 시프트시켰다(#1591).
 
     let slot_count = inferred_control_slot_count(para);
     let slots: Vec<&Control> = if slot_count == para.controls.len() {
@@ -758,6 +750,7 @@ pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Header(_)
             | Control::Footer(_)
             | Control::AutoNumber(_)
+            | Control::Bookmark(_)
     )
 }
 
@@ -850,6 +843,14 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             Err(e) => eprintln!("[hwpx] Form 직렬화 실패: {e}"),
         },
         Control::CharOverlap(co) => out.push_str(&render_compose(co)),
+        // [Task #1591] 북마크 인라인 방출 — char-offset 슬롯 위치 보존(hoisting 제거).
+        Control::Bookmark(bm) => {
+            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
+                out.push_str("<hp:ctrl>");
+                out.push_str(&xml);
+                out.push_str("</hp:ctrl>");
+            }
+        }
         // [Task #1587] 덧말(Ruby) 인라인 방출. is_hwpx_inline_slot 에 등록돼 슬롯 위치는
         // 자동이나 종전 방출 arm 부재로 드롭됐다. parse_dutmal 의 역매핑.
         Control::Ruby(r) => out.push_str(&render_dutmal(r)),

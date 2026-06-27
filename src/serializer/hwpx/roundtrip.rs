@@ -898,18 +898,11 @@ fn diff_paragraph_char_shapes(
     }
 
     // 인라인 슬롯 컨트롤 타입 시퀀스 비교 (#1379) — subList 컨트롤 소실 검출.
-    // Bookmark 등 위치 정보가 없는 비슬롯 컨트롤은 제외 (serializer 가 문단 선두로
-    // 재배치하므로 순서 비교가 성립하지 않음).
-    let sa: Vec<&Control> = pa
-        .controls
-        .iter()
-        .filter(|c| is_hwpx_inline_slot(c))
-        .collect();
-    let sb: Vec<&Control> = pb
-        .controls
-        .iter()
-        .filter(|c| is_hwpx_inline_slot(c))
-        .collect();
+    // [#1591] Bookmark 는 slot 시스템에 편입(위치 보존)됐으나, diff 비교에서는 종전대로
+    // 제외한다(게이트 의미 불변 — 보수적 결합 분리). 북마크 자체의 보존 비교는 별도 과제.
+    let cmp_slot = |c: &&Control| is_hwpx_inline_slot(c) && !matches!(c, Control::Bookmark(_));
+    let sa: Vec<&Control> = pa.controls.iter().filter(cmp_slot).collect();
+    let sb: Vec<&Control> = pb.controls.iter().filter(cmp_slot).collect();
     let ctrl_same = sa.len() == sb.len()
         && sa
             .iter()
