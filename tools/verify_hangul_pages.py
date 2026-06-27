@@ -81,7 +81,7 @@ def collect_pairs_inventory(
     return pairs
 
 
-def run(pairs, out_tsv, visible, use_pdf) -> int:
+def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
     try:
         from pyhwpx import Hwp
     except ImportError:
@@ -101,7 +101,36 @@ def run(pairs, out_tsv, visible, use_pdf) -> int:
         return 2
 
     head = git_head()
+
+    # [resume] 기존 out_tsv 의 처리분을 읽어 건너뛴다(증분 기록과 짝). 전수 배치 중
+    # COM 크래시 시 재실행으로 이어서 진행하기 위함.
+    done_rows = []  # (verdict, o, r, note, rel)
+    done_rels = set()
+    if resume and out_tsv is not None and out_tsv.exists():
+        with open(out_tsv, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.rstrip("\n")
+                if not line or line.startswith("#") or line.startswith("verdict\t"):
+                    continue
+                parts = line.split("\t")
+                if len(parts) == 5:
+                    done_rows.append(tuple(parts))
+                    done_rels.add(parts[4])
+        pairs = [p for p in pairs if p[2] not in done_rels]
+        print(f"# [resume] 기존 {len(done_rels)}건 건너뜀, 남은 {len(pairs)}건")
+
     print(f"# 한글 페이지 오라클 | git HEAD={head} | 대상 {len(pairs)}건")
+
+    # 증분 기록 핸들 — 각 행 처리 직후 flush 하여 크래시 내성 확보.
+    inc_fh = None
+    if out_tsv is not None:
+        out_tsv.parent.mkdir(parents=True, exist_ok=True)
+        new_file = not (resume and out_tsv.exists())
+        inc_fh = open(out_tsv, "a", encoding="utf-8")
+        if new_file:
+            inc_fh.write(f"# git_head={head} pdf={use_pdf}\n")
+            inc_fh.write("verdict\torig_pg\trt_pg\tnote\trel\n")
+            inc_fh.flush()
 
     hwp = Hwp(new=True, visible=visible)
     tmp_pdf = Path.cwd() / "_hpv_tmp.pdf"
@@ -119,17 +148,27 @@ def run(pairs, out_tsv, visible, use_pdf) -> int:
         hwp.clear(option=1)
         return n
 
-    rows = []
-    collapse = ok = other = 0
+    rows = list(done_rows)
+    # 기존(resume) 분 카운트 반영
+    collapse = sum(1 for x in done_rows if x[0] == "COLLAPSE")
+    ok = sum(1 for x in done_rows if x[0] == "OK")
+    other = sum(1 for x in done_rows if x[0] in ("EXPAND", "ERR"))
+
+    def emit(rec):
+        rows.append(rec)
+        if inc_fh is not None:
+            inc_fh.write("\t".join(str(x) for x in rec) + "\n")
+            inc_fh.flush()
+
     try:
         for i, (orig, rt, rel) in enumerate(pairs):
             try:
                 o = page_count(orig)
                 r = page_count(rt)
             except Exception as exc:  # 파일별 격리
-                rows.append(("ERR", -1, -1, type(exc).__name__, rel))
+                emit(("ERR", -1, -1, type(exc).__name__, rel))
                 other += 1
-                print(f"  [{i+1:>3}/{len(pairs)}] {'ERR':>8}  {rel}", flush=True)
+                print(f"  [{i+1:>4}/{len(pairs)}] {'ERR':>8}  {rel}", flush=True)
                 continue
             if o == r:
                 verdict, ok = "OK", ok + 1
@@ -137,8 +176,8 @@ def run(pairs, out_tsv, visible, use_pdf) -> int:
                 verdict, collapse = "COLLAPSE", collapse + 1
             else:
                 verdict, other = "EXPAND", other + 1
-            rows.append((verdict, o, r, "", rel))
-            print(f"  [{i+1:>3}/{len(pairs)}] {verdict:>8}  pg {o}->{r}  {rel}", flush=True)
+            emit((verdict, o, r, "", rel))
+            print(f"  [{i+1:>4}/{len(pairs)}] {verdict:>8}  pg {o}->{r}  {rel}", flush=True)
     finally:
         try:
             hwp.quit()
@@ -149,15 +188,11 @@ def run(pairs, out_tsv, visible, use_pdf) -> int:
                 tmp_pdf.unlink()
             except Exception:
                 pass
+        if inc_fh is not None:
+            inc_fh.close()
 
     if out_tsv is not None:
-        out_tsv.parent.mkdir(parents=True, exist_ok=True)
-        with open(out_tsv, "w", encoding="utf-8") as fh:
-            fh.write(f"# git_head={head} pdf={use_pdf}\n")
-            fh.write("verdict\torig_pg\trt_pg\tnote\trel\n")
-            for v, o, r, note, rel in rows:
-                fh.write(f"{v}\t{o}\t{r}\t{note}\t{rel}\n")
-        print(f"\nTSV 저장: {out_tsv}")
+        print(f"\nTSV 저장(증분): {out_tsv}")
 
     total = len(rows)
     rate = 100.0 * collapse / total if total else 0.0
@@ -183,6 +218,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--pdf", action="store_true", help="PDF 페이지수 교차검증(PyMuPDF)")
     ap.add_argument("-o", "--out", type=Path, default=None, help="결과 TSV 경로")
     ap.add_argument("--visible", action="store_true", help="한글 창 표시(디버깅)")
+    ap.add_argument("--resume", action="store_true",
+                   help="기존 -o TSV 의 처리분을 건너뛰고 이어서 진행(전수 배치 크래시 내성)")
     args = ap.parse_args(argv)
 
     if args.batch:
@@ -203,7 +240,7 @@ def main(argv: list[str]) -> int:
         pairs = rng.sample(pairs, args.sample)
         pairs.sort(key=lambda p: p[2])
 
-    return run(pairs, args.out, args.visible, args.pdf)
+    return run(pairs, args.out, args.visible, args.pdf, resume=args.resume)
 
 
 if __name__ == "__main__":
