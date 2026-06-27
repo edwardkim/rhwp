@@ -1057,6 +1057,27 @@ mod tests {
         assert_eq!(line_shape_style(none_with_flat_end_cap), "NONE");
     }
 
+    /// #1588: 선 도형 설명(shapeComment)이 저장 시 방출돼야 한다.
+    /// write_rect/container 는 호출하나 write_line 만 누락 → 드롭(RED).
+    #[test]
+    fn task1588_line_shape_comment_emitted() {
+        let mut line = LineShape::default();
+        line.common.description = "선입니다.".to_string();
+        let xml = serialize_line(&line);
+        assert!(
+            xml.contains("<hp:shapeComment>선입니다.</hp:shapeComment>"),
+            "선 도형 shapeComment 방출돼야 한다 (현재 드롭): {xml}"
+        );
+    }
+
+    /// #1588: 설명 없는 선 도형은 shapeComment 미방출 (빈 태그 금지).
+    #[test]
+    fn task1588_line_shape_no_comment_when_empty() {
+        let line = LineShape::default();
+        let xml = serialize_line(&line);
+        assert!(!xml.contains("<hp:shapeComment"), "빈 설명 미방출: {xml}");
+    }
+
     fn cs(start_pos: u32, char_shape_id: u32) -> crate::model::paragraph::CharShapeRef {
         crate::model::paragraph::CharShapeRef {
             start_pos,
