@@ -411,6 +411,19 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         ctx.char_shape_ids.reference(cs.char_shape_id);
     }
 
+    // [#1592] 완전 빈 문단(원본에 <hp:run> 없음)은 run 을 방출하지 않는다. char_shapes=[]
+    // 인 문단에 RunSplitter 가 기본 (0,0) 세그먼트로 charPrIDRef="0" 빈 run 을 추가하면,
+    // 재파싱 시 spurious (0,0) char_shape 가 생긴다(원본은 run 없어 char_shapes=[]).
+    // char_shapes 가 있으면(예: [(0,0)] 명시) 종전대로 run 을 방출한다(linesegarray 는 별도).
+    if para.text.is_empty()
+        && para.char_shapes.is_empty()
+        && para.controls.is_empty()
+        && para.field_ranges.is_empty()
+        && para.orphan_field_ends.is_empty()
+    {
+        return String::new();
+    }
+
     let mut splitter = RunSplitter::new(para);
 
     // Bookmark는 IR에 위치 정보가 없어 문단 시작(첫 run)에 배치한다.
@@ -2756,12 +2769,12 @@ mod tests {
 
     #[test]
     fn task1378_empty_paragraph_single_run_id_zero() {
-        // 빈 문단·char_shapes 빈 경우 — 단일 run id 0 유지 (경계 케이스 5)
+        // [#1592 갱신] 완전 빈 문단(text="", char_shapes=[], 컨트롤 없음)은 run 을 방출하지
+        // 않는다. char_shapes=[] 는 "원본에 <hp:run> 없음"을 의미하므로(빈 run 이 있었다면
+        // 파서가 [(0,0)] 을 산출), run 을 추가하면 재파싱 시 spurious (0,0) 가 생긴다(#1592).
+        // 종전 #1378 은 빈 run(id 0)을 방출했으나, 이는 run 없던 빈 문단에 entry 를 가공했다.
         let para = Paragraph::default();
-        assert_eq!(
-            runs_of(&para),
-            r#"<hp:run charPrIDRef="0"><hp:t></hp:t></hp:run>"#
-        );
+        assert_eq!(runs_of(&para), "");
     }
 
     #[test]

@@ -565,6 +565,33 @@ mod tests {
     }
 
     #[test]
+    fn task1592_empty_paragraph_no_spurious_charshape() {
+        // [#1592] run 이 없던 완전 빈 문단(char_shapes=[])에 직렬화기가 빈
+        // <hp:run charPrIDRef="0"> 를 추가하면 재파싱 시 char_shapes 가 [(0,0)] 으로 생긴다.
+        // 비-첫 문단으로 구성(첫 문단 템플릿 회피).
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        // para0: 텍스트 있는 일반 문단
+        let mut p0 = crate::model::paragraph::Paragraph::default();
+        p0.text = "본문".to_string();
+        section.paragraphs.push(p0);
+        // para1: 완전 빈 문단 (text="", char_shapes=[], controls=[])
+        section
+            .paragraphs
+            .push(crate::model::paragraph::Paragraph::default());
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let cs = &doc2.sections[0].paragraphs[1].char_shapes;
+        assert!(
+            cs.is_empty(),
+            "빈 문단은 char_shapes 가 비어야 한다 (spurious (0,0) 금지): {:?}",
+            cs.iter().map(|c| (c.start_pos, c.char_shape_id)).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
     fn equation_control_does_not_consume_unmapped_control_gap() {
         use crate::model::control::{Control, Equation};
         use crate::model::shape::CommonObjAttr;
