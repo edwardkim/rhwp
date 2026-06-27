@@ -59,11 +59,16 @@ control-slot 공간에서 어긋남.
 36388711 p0 (로고/표): (52,8)(81,9)→(36,8)(73,9)  −16/−8  [secPr,colPr,tbl, line×3]
 ```
 
-- 36384689·36385445 는 **동일 +8 패턴**(체계적, "문서번호" 표 머리 문단). secPr/colPr run 의
-  charPr 경계 산정이 원본과 8유닛 어긋남 — 추정 슬롯 카운트 vs 실제 char_offset 불일치 의심.
-- 36388711 은 −16/−8 혼재(로고 영역 다중 슬롯).
-- 수정 방향: secPr/colPr 첫 run 의 char_shape 경계 산정 로직 정밀 조사 필요(F3·#1561 와 별개).
-  **dedicated 조사 권장**.
+### 후속 규명 (#1591/#1593 조사 결과)
+
+| 파일 | 진짜 근본 | 처리 |
+|------|----------|------|
+| 36384689·36385445 (C1) | **first-para mismatch-path 위치추정**: para0 가 #1584 ColumnDef 템플릿 흡수로 `slot_count`(cc기반)≠`slots.len()`→mismatch 경로가 char_shape +8 오배치. 표면 증상이던 북마크 hoist 는 무관(수정해도 +8 불변) | #1591 재범위, **미해결(F3급)** |
+| 36388711 (C2) | **same-para fieldEnd 드롭(cc −8) + 북마크 hoist 결합**. fieldBegin/End 1/1→1/0. F3(#1561 cross-para) 와 다른 same-para 변종 | #1593, **보류** |
+
+→ **잔여 3건 모두 first-para mismatch-path 슬롯 위치추정으로 수렴**. F3(#1561, 2회 실패)·
+#1591(순효과0 롤백)과 동질의 고위험 영역. 개별 파일 수정 대신 **mismatch-path 슬롯 위치추정
+통합 리팩터**로 묶어 처리 권고(광역 통제비교 필수, 악화 즉시 롤백).
 
 ## D. 빈/공백 문단 spurious char_shape (1건: 36386761)
 
@@ -73,16 +78,23 @@ control-slot 공간에서 어긋남.
 
 - 원본에 char_shape 없는 공백 문단에 저장→재파싱 시 기본 char_shape (0,0) 가 생성됨.
 - 영향: 없음(기본 글자모양). 경미.
-- 수정 방향: 빈 char_shapes 문단의 secPr/run charPrIDRef 방출 조건 점검.
+- **해결(#1592, 채택)**: render_runs 가 완전 빈 문단(char_shapes=[])에 run 미방출. 통제비교
+  개선1/회귀0. (RunSplitter::new 규칙3 + close_run 규칙5 가 빈 run 을 가공하던 것을 차단.)
 
 ---
 
-## 권고 (우선순위)
+## 처리 결과 (2026-06-27)
 
-1. **Class A (Ruby)** — 유일한 시각 영향 실버그. 3건 + char_shape 하위 증상 1건 동시 해소.
-   **별도 이슈 + 정식 타스크 1순위**.
-2. **Class B (write_line shapeComment)** — 1줄 수정, 3건 해소. **별도 이슈 + 간단 수정 2순위**.
-3. **Class C (para0 char_shape)** — 체계적 2건 포함. **조사 선행** 후 판단.
-4. **Class D (spurious 0,0)** — 경미. 후순위 또는 C 와 묶음.
+| Class | 이슈 | 결과 |
+|-------|------|------|
+| A (Ruby 드롭) | #1587 | **채택** (개선3) |
+| B (선 도형 shapeComment) | #1588 | **채택** (개선3) |
+| C1 (para0 mismatch-path) | #1591 | **불채택**(북마크 hoist 순효과0) → mismatch-path 재범위, 미해결 |
+| C2 (fieldEnd 드롭+북마크 결합) | #1593 | **보류** (통합 리팩터 권고) |
+| D (spurious 0,0) | #1592 | **채택** (개선1) |
 
-> 나머지 PARSE_FAIL 12건 = "ZIP EOCD 없음" 손상 다운로드(수집기 아티팩트, rhwp 무관).
+**누적: HWPX 실문서 IR_DIFF 59→3** (#1584 ColumnDef 포함 4 채택). 잔여 3건(C1 2 + C2 1)은
+모두 **first-para mismatch-path 슬롯 위치추정**으로 수렴 → F3(#1561)·#1591 동질 고위험.
+**통합 리팩터 권고**(개별 수정 금지, 광역 통제비교 필수).
+
+> PARSE_FAIL 12건 = "ZIP EOCD 없음" 손상 다운로드(수집기 아티팩트, rhwp 무관).
