@@ -103,6 +103,15 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
 
     head = git_head()
 
+    # 깨끗한 시작 — 잔존 Hwp.exe(이전 배치 누수)를 정리한 뒤 인스턴스 생성.
+    # 오염된 COM 환경에서 시작하면 첫 인스턴스부터 com_error 다발(관측).
+    try:
+        subprocess.run(["taskkill", "/F", "/IM", "Hwp.exe"],
+                       capture_output=True, timeout=30)
+        time.sleep(1)
+    except Exception:
+        pass
+
     # [resume] 기존 out_tsv 의 처리분을 읽어 건너뛴다(증분 기록과 짝). 전수 배치 중
     # COM 크래시 시 재실행으로 이어서 진행하기 위함.
     done_rows = []  # (verdict, o, r, note, rel) — 성공분만(ERR 제외 → 재시도)
