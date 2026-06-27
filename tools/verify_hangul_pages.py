@@ -104,9 +104,10 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
 
     # [resume] 기존 out_tsv 의 처리분을 읽어 건너뛴다(증분 기록과 짝). 전수 배치 중
     # COM 크래시 시 재실행으로 이어서 진행하기 위함.
-    done_rows = []  # (verdict, o, r, note, rel)
+    done_rows = []  # (verdict, o, r, note, rel) — 성공분만(ERR 제외 → 재시도)
     done_rels = set()
     if resume and out_tsv is not None and out_tsv.exists():
+        err_retry = 0
         with open(out_tsv, encoding="utf-8") as fh:
             for line in fh:
                 line = line.rstrip("\n")
@@ -114,10 +115,20 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
                     continue
                 parts = line.split("\t")
                 if len(parts) == 5:
+                    if parts[0] == "ERR":
+                        err_retry += 1  # ERR 은 done 처리 안 함 → 재시도
+                        continue
                     done_rows.append(tuple(parts))
                     done_rels.add(parts[4])
+        # ERR 행을 버리고 성공분만 남겨 TSV 재작성(중복 방지) — 이후 증분 append.
+        out_tsv.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_tsv, "w", encoding="utf-8") as fh:
+            fh.write(f"# git_head={head} pdf={use_pdf}\n")
+            fh.write("verdict\torig_pg\trt_pg\tnote\trel\n")
+            for rec in done_rows:
+                fh.write("\t".join(str(x) for x in rec) + "\n")
         pairs = [p for p in pairs if p[2] not in done_rels]
-        print(f"# [resume] 기존 {len(done_rels)}건 건너뜀, 남은 {len(pairs)}건")
+        print(f"# [resume] 성공 {len(done_rels)}건 건너뜀, ERR {err_retry}건 재시도 포함 남은 {len(pairs)}건")
 
     print(f"# 한글 페이지 오라클 | git HEAD={head} | 대상 {len(pairs)}건")
 
@@ -125,9 +136,10 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
     inc_fh = None
     if out_tsv is not None:
         out_tsv.parent.mkdir(parents=True, exist_ok=True)
-        new_file = not (resume and out_tsv.exists())
-        inc_fh = open(out_tsv, "a", encoding="utf-8")
-        if new_file:
+        if resume and out_tsv.exists():
+            inc_fh = open(out_tsv, "a", encoding="utf-8")  # 재작성된 파일에 이어쓰기
+        else:
+            inc_fh = open(out_tsv, "w", encoding="utf-8")  # fresh: truncate
             inc_fh.write(f"# git_head={head} pdf={use_pdf}\n")
             inc_fh.write("verdict\torig_pg\trt_pg\tnote\trel\n")
             inc_fh.flush()
@@ -160,8 +172,21 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
             inc_fh.write("\t".join(str(x) for x in rec) + "\n")
             inc_fh.flush()
 
+    # COM 인스턴스는 수천 건 누적 시 사망(과거 ~1868건에서 전멸) → 주기적 재시작.
+    restart_every = 300
+
+    def restart_hwp():
+        nonlocal hwp
+        try:
+            hwp.quit()
+        except Exception:
+            pass
+        hwp = Hwp(new=True, visible=visible)
+
     try:
         for i, (orig, rt, rel) in enumerate(pairs):
+            if i > 0 and i % restart_every == 0:
+                restart_hwp()  # 주기적 재시작
             try:
                 o = page_count(orig)
                 r = page_count(rt)
@@ -169,6 +194,7 @@ def run(pairs, out_tsv, visible, use_pdf, resume=False) -> int:
                 emit(("ERR", -1, -1, type(exc).__name__, rel))
                 other += 1
                 print(f"  [{i+1:>4}/{len(pairs)}] {'ERR':>8}  {rel}", flush=True)
+                restart_hwp()  # ERR 후 COM 상태 불량 가능 → 재생성
                 continue
             if o == r:
                 verdict, ok = "OK", ok + 1
