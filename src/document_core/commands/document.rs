@@ -922,8 +922,14 @@ impl DocumentCore {
             }
             // 뒤에서부터 삭제 (인덱스 안정성 유지)
             for &(fri, start, end) in removals.iter().rev() {
-                let removed_len = end - start;
                 let chars: Vec<char> = para.text.chars().collect();
+                // [Task #1620] 다중 removal 처리 중 앞선 removal 이 para.text 를 축소하면(특히
+                // 같은 범위를 가리키는 중첩 field_range) 이후 removal 의 수집-시점 (start,end) 가
+                // 현재 길이를 초과해 슬라이스 패닉(36396650). 현재 길이 기준 범위를 재검증해 skip.
+                if start > end || end > chars.len() {
+                    continue;
+                }
+                let removed_len = end - start;
                 let new_text: String = chars[..start].iter().chain(chars[end..].iter()).collect();
                 para.text = new_text;
                 para.field_ranges[fri].end_char_idx = start;
@@ -975,6 +981,54 @@ mod validate_linesegs_tests {
     use super::*;
     use crate::model::document::{Document, Section};
     use crate::model::paragraph::{LineSeg, Paragraph};
+
+    /// [Task #1620] `clear_initial_field_texts`: 같은 텍스트 범위를 가리키는 다중 ClickHere
+    /// field_range 처리 시, 첫 removal 이 `para.text` 를 비우면 이후 removal 이 stale 인덱스로
+    /// 슬라이스해 패닉(36396650, `document.rs:927` range out of range). 범위 가드 추가로
+    /// 패닉 없이 정규화돼야 함.
+    #[test]
+    fn clear_initial_field_texts_no_panic_on_overlapping_removals() {
+        use crate::model::control::{Control, Field, FieldType};
+        use crate::model::paragraph::FieldRange;
+
+        let field = Field {
+            field_type: FieldType::ClickHere,
+            command: "Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  "
+                .to_string(),
+            properties: 0, // bit15 == 0 (초기 상태 → 안내문 제거 대상)
+            ..Default::default()
+        };
+        // 같은 텍스트 범위 [0,6) 를 가리키는 field_range 2개(중첩) → 다중 removal.
+        let para = Paragraph {
+            text: "여기에 입력".to_string(),
+            controls: vec![Control::Field(field)],
+            field_ranges: vec![
+                FieldRange {
+                    start_char_idx: 0,
+                    end_char_idx: 6,
+                    control_idx: 0,
+                },
+                FieldRange {
+                    start_char_idx: 0,
+                    end_char_idx: 6,
+                    control_idx: 0,
+                },
+            ],
+            ..Default::default()
+        };
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        // 수정 전: document.rs 제거 루프에서 stale 인덱스 슬라이스 패닉.
+        // 수정 후: 패닉 없이 안내문 제거(빈 텍스트).
+        DocumentCore::clear_initial_field_texts(&mut doc);
+        assert!(
+            doc.sections[0].paragraphs[0].text.is_empty(),
+            "안내문이 제거돼 빈 텍스트여야 함"
+        );
+    }
 
     /// 텍스트는 있는데 line_segs 가 비어있는 문단 — LinesegArrayEmpty 감지
     #[test]
