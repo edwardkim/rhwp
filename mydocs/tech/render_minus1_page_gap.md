@@ -186,5 +186,18 @@ Task #1600(−1쪽 갭)은 요인 A(#1608) + 요인 B(footer 누적, 미규명)�
 ~60px 과소. `typeset.rs` 에 Page+Bottom 블록의 vpos 동기화 + 선언높이 fit 추가.
 
 통제셋 일치 66→72(net **+6**), −1쪽 21→12(9 해소, 3 회귀). 요인 A(#1608)+B(#1611) 누적
-60→72(+12). 잔여 −1쪽 12건은 footer 외 별 요인(대형 tac 표 과소측정 36398709 등).
-상세 `mydocs/report/task_m100_1611_report.md`.
+60→72(+12). 상세 `mydocs/report/task_m100_1611_report.md`.
+
+---
+
+## [정정/특성화] 잔여 −1쪽 12건 — Task #1612
+
+직전 "대형 tac 표 과소측정(36398709 등)" 판단은 **dump-pages 메트릭 아티팩트로 정정**:
+`compute_hwp_used_height` 가 누적 vpos 를 per-page `used` 와 비교해 다페이지에서 diff 가
+~800px/page 누적 증가(−3300px 등) → 과소측정 오판. 페이지 시작 vpos 차감으로 메트릭 정정
+(진단 전용, 페이지수 불변).
+
+잔여 12건 실제 특성: **단일페이지 footer 8건(본문 누적 ~20~43px 부족, razor-thin) +
+다페이지 4건**. 본문 per-line 은 저장 LINE_SEG(한글 동일) → inter-paragraph gap/spacing
+미세차 = **Task #1600 하드코어, 단일 surgical fix 부재**. 고위험·저마진(net>0 보장 어려움)으로
+코드 수정 보류·특성 보존. 상세 `mydocs/report/task_m100_1612_report.md`.

@@ -3705,6 +3705,33 @@ fn compute_hwp_used_height(
     use crate::renderer::hwpunit_to_px;
     use crate::renderer::pagination::PageItem;
 
+    // [Task #1612] vpos 는 다페이지에서 누적값(예: page2 vpos≈66568~127587 HU)이므로, per-page
+    // `used_height` 와 비교하려면 이 페이지 시작 오프셋을 빼야 한다. 차감하지 않으면 페이지마다
+    // diff 가 ~수백px 누적 증가해 "대형 표 과소측정" 으로 오판된다(#1612). 페이지 첫 문단 항목의
+    // top vpos 를 기준선으로 삼는다(문단 항목이 없으면 0).
+    let base_top: i32 =
+        cc.items
+            .iter()
+            .find_map(|item| {
+                let (para_index, line) = match item {
+                    PageItem::FullParagraph { para_index } => (*para_index, 0usize),
+                    PageItem::PartialParagraph {
+                        para_index,
+                        start_line,
+                        ..
+                    } => (*para_index, *start_line),
+                    PageItem::Table { para_index, .. }
+                    | PageItem::PartialTable { para_index, .. } => (*para_index, 0usize),
+                    _ => return None,
+                };
+                paragraphs
+                    .get(para_index)?
+                    .line_segs
+                    .get(line)
+                    .map(|s| s.vertical_pos)
+            })
+            .unwrap_or(0);
+
     // 1) 단 항목 내 첫 vpos-reset 검색
     for item in &cc.items {
         let (para_idx, range_start, range_end) = match item {
@@ -3738,7 +3765,7 @@ fn compute_hwp_used_height(
                 if seg.vertical_pos == 0 {
                     if let Some(prev) = p.line_segs.get(i.saturating_sub(1)) {
                         let bottom_hwpu = prev.vertical_pos + prev.line_height + prev.line_spacing;
-                        return Some(hwpunit_to_px(bottom_hwpu, dpi));
+                        return Some(hwpunit_to_px((bottom_hwpu - base_top).max(0), dpi));
                     }
                 }
             }
@@ -3774,7 +3801,7 @@ fn compute_hwp_used_height(
     let p = paragraphs.get(para_idx)?;
     let seg = p.line_segs.get(line_idx)?;
     let bottom_hwpu = seg.vertical_pos + seg.line_height + seg.line_spacing;
-    Some(hwpunit_to_px(bottom_hwpu, dpi))
+    Some(hwpunit_to_px((bottom_hwpu - base_top).max(0), dpi))
 }
 
 /// LINE_SEG vertical_pos 범위를 문자열로 포맷.
@@ -3873,6 +3900,52 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
+
+    /// [Task #1612] `compute_hwp_used_height` 는 per-page 높이를 내야 한다. vpos 는
+    /// 다페이지에서 누적값이므로 페이지 시작 오프셋을 차감하지 않으면 page N>1 에서
+    /// 누적값(수백~수천px)을 반환해 dump-pages diff 가 "대형 표 과소측정" 으로 오판된다.
+    #[test]
+    fn task1612_hwp_used_height_is_per_page_not_cumulative() {
+        use crate::model::paragraph::{LineSeg, Paragraph};
+        use crate::renderer::pagination::{ColumnContent, PageItem};
+
+        let seg = |vpos: i32| LineSeg {
+            vertical_pos: vpos,
+            line_height: 1700,
+            line_spacing: 0,
+            ..Default::default()
+        };
+        // para 0 = page-1 콘텐츠(vpos 0..), para 1 = page-2 콘텐츠(vpos 누적값 66568..).
+        let p0 = Paragraph {
+            line_segs: vec![seg(0), seg(1700)],
+            ..Default::default()
+        };
+        let p1 = Paragraph {
+            line_segs: vec![seg(66568), seg(68268)],
+            ..Default::default()
+        };
+        let paragraphs = vec![p0, p1];
+
+        // "page 2" 단: para 1 만 포함.
+        let cc = ColumnContent {
+            column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
+            items: vec![PageItem::FullParagraph { para_index: 1 }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: vec![],
+            used_height: 0.0,
+            wrap_anchors: std::collections::HashMap::new(),
+        };
+
+        let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");
+        // per-page: (68268+1700) − 66568 = 3400 HU ≈ 45.3px. 누적이면 ≈ 933px.
+        assert!(
+            h < 100.0,
+            "per-page 높이(누적 vpos 차감)여야 하는데 {h:.1}px (누적값 미차감 의심)"
+        );
+    }
 
     #[test]
     fn build_page_render_tree_exposes_public_page_tree() {
