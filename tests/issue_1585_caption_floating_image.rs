@@ -218,9 +218,7 @@ fn nested_table_caption_topbottom_picture_emits_image_node() {
     collect_caption_images(&tree.root, &mut caption_images);
 
     assert!(
-        caption_images
-            .iter()
-            .any(|entry| *entry == (bin_id, Some(TextWrap::TopAndBottom), true)),
+        caption_images.contains(&(bin_id, Some(TextWrap::TopAndBottom), true)),
         "nested table caption TopAndBottom image must be emitted with payload: {caption_images:?}"
     );
     assert_eq!(

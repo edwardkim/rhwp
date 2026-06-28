@@ -390,7 +390,9 @@ impl DocumentCore {
                 "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                 "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                 "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-                "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+                "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0,",
+                "\"diagonalLine\":0,\"diagonalSlash\":0,\"diagonalBackSlash\":0,",
+                "\"diagonalWidth\":0,\"diagonalColor\":\"#000000\",\"centerLine\":\"NONE\""
             ).to_string();
         }
         let bf = self
@@ -418,11 +420,19 @@ impl DocumentCore {
                     }
                     _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
                 };
+                let diagonal_slash = (bf.attr >> 2) & 0x07;
+                let diagonal_backslash = (bf.attr >> 5) & 0x07;
                 format!(
-                    "\"borderFillId\":{},{},\"fillType\":\"{}\",\"fillColor\":\"{}\",\"patternColor\":\"{}\",\"patternType\":{}",
+                    "\"borderFillId\":{},{},\"fillType\":\"{}\",\"fillColor\":\"{}\",\"patternColor\":\"{}\",\"patternType\":{},\"diagonalLine\":{},\"diagonalSlash\":{},\"diagonalBackSlash\":{},\"diagonalWidth\":{},\"diagonalColor\":\"{}\",\"centerLine\":\"{}\"",
                     bf_id,
                     borders_json.join(","),
                     fill_type_str, fill_color, pat_color, pat_type,
+                    bf.diagonal.diagonal_type,
+                    diagonal_slash,
+                    diagonal_backslash,
+                    bf.diagonal.width,
+                    color_ref_to_css(bf.diagonal.color),
+                    bf.center_line.as_hwpx(),
                 )
             }
             None => {
@@ -432,7 +442,9 @@ impl DocumentCore {
                     "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                     "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                     "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0,",
+                    "\"diagonalLine\":0,\"diagonalSlash\":0,\"diagonalBackSlash\":0,",
+                    "\"diagonalWidth\":0,\"diagonalColor\":\"#000000\",\"centerLine\":\"NONE\""
                 ).to_string()
             }
         }
@@ -596,9 +608,16 @@ impl DocumentCore {
             }
         }
 
-        // BorderFill 변경: borderLeft 등이 포함된 경우 create_border_fill_from_json으로 처리
-        let has_border = json.contains("\"borderLeft\"");
-        if has_border {
+        // BorderFill 변경: 테두리/배경/대각선/중심선 필드가 포함된 경우 처리
+        let has_border_fill_change = json.contains("\"borderLeft\"")
+            || json.contains("\"fillType\"")
+            || json.contains("\"diagonalLine\"")
+            || json.contains("\"diagonalSlash\"")
+            || json.contains("\"diagonalBackSlash\"")
+            || json.contains("\"diagonalWidth\"")
+            || json.contains("\"diagonalColor\"")
+            || json.contains("\"centerLine\"");
+        if has_border_fill_change {
             let new_bf_id = self.create_border_fill_from_json(json);
 
             // 새 BorderFill의 테두리 데이터 복사 (이웃 셀 갱신용)
@@ -1718,10 +1737,17 @@ impl DocumentCore {
             table.dirty = true;
         }
 
-        // BorderFill 변경 — 표 테두리 변경 시 모든 셀에도 동일 적용
+        // BorderFill 변경 — 표 테두리/배경/대각선 변경 시 모든 셀에도 동일 적용
         // (HWP 렌더링은 cell.border_fill_id를 사용, table.border_fill_id는 페이지 분할용)
-        let has_border = json.contains("\"borderLeft\"");
-        if has_border {
+        let has_border_fill_change = json.contains("\"borderLeft\"")
+            || json.contains("\"fillType\"")
+            || json.contains("\"diagonalLine\"")
+            || json.contains("\"diagonalSlash\"")
+            || json.contains("\"diagonalBackSlash\"")
+            || json.contains("\"diagonalWidth\"")
+            || json.contains("\"diagonalColor\"")
+            || json.contains("\"centerLine\"");
+        if has_border_fill_change {
             let new_bf_id = self.create_border_fill_from_json(json);
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
             table.border_fill_id = new_bf_id;

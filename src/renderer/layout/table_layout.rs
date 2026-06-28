@@ -832,6 +832,7 @@ impl LayoutEngine {
         }
 
         // ── 4-2. cellzone 배경 렌더링 (zone 전체 영역에 한 번) ──
+        let mut cellzone_diagonal_nodes = Vec::new();
         for zone in &table.zones {
             if zone.border_fill_id == 0 {
                 continue;
@@ -899,6 +900,9 @@ impl LayoutEngine {
                         zone_h,
                         bin_data_content,
                     );
+                    cellzone_diagonal_nodes.extend(render_cell_diagonal(
+                        tree, zone_bs, zone_x, zone_y, zone_w, zone_h,
+                    ));
                 }
             }
         }
@@ -935,6 +939,10 @@ impl LayoutEngine {
             inline_table_flow_y_shift,
             header_footer_padding_compat,
         );
+
+        if !cellzone_diagonal_nodes.is_empty() {
+            table_node.children.extend(cellzone_diagonal_nodes);
+        }
 
         // ── 5-1. 표 전체 외곽 테두리 보충 ──
         // 셀 테두리만으로는 표 외곽이 비어있을 수 있음.

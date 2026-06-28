@@ -1402,6 +1402,15 @@ pub(crate) fn border_fills_equal(
     if a.center_line != b.center_line {
         return false;
     }
+    if a.diagonal.diagonal_type != b.diagonal.diagonal_type {
+        return false;
+    }
+    if a.diagonal.width != b.diagonal.width {
+        return false;
+    }
+    if a.diagonal.color != b.diagonal.color {
+        return false;
+    }
     for i in 0..4 {
         if a.borders[i].line_type != b.borders[i].line_type {
             return false;

@@ -456,6 +456,18 @@ export interface CellProperties {
   fillColor?: string;
   patternColor?: string;
   patternType?: number;
+  /** 대각선 선 종류 (0=없음, 1=실선, 2=파선, ...) */
+  diagonalLine?: number;
+  /** / 대각선 방향 비트 */
+  diagonalSlash?: number;
+  /** \ 대각선 방향 비트 */
+  diagonalBackSlash?: number;
+  /** 대각선 굵기 (0-6) */
+  diagonalWidth?: number;
+  /** 대각선 색상 (#rrggbb) */
+  diagonalColor?: string;
+  /** 중심선 방향: NONE / VERTICAL / HORIZONTAL / CROSS */
+  centerLine?: string;
 }
 
 /** WASM getTableProperties() 반환 타입 — HWPUNIT 원본값 */

@@ -23,6 +23,25 @@
   flex: 0 0 auto;
 }
 
+.dialog-wrap.tcp-border-bg-dialog {
+  width: min(560px, calc(100vw - 32px)) !important;
+  height: min(640px, calc(100vh - 32px));
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-wrap.tcp-border-bg-dialog .dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.dialog-wrap.tcp-border-bg-dialog .dialog-footer {
+  flex: 0 0 auto;
+}
+
 .tcp-dialog-body {
   min-height: 0;
 }
@@ -33,6 +52,12 @@
 }
 
 .dialog-wrap.tcp-dialog .dialog-tab-panel {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.dialog-wrap.tcp-border-bg-dialog .dialog-tab-panel {
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
@@ -196,6 +221,60 @@
   height: 60px;
   margin: 8px auto;
   border: 1px solid var(--color-border-input);
+  background: var(--doc-paper);
+}
+
+/* ── 셀 테두리/배경: 대각선 탭 ── */
+.tcp-diag-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 12px;
+  align-items: start;
+}
+
+.tcp-diag-controls {
+  min-width: 0;
+}
+
+.tcp-diag-button-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 34px);
+  gap: 4px;
+}
+
+.tcp-diag-btn {
+  width: 34px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.tcp-diag-btn:hover {
+  border-color: var(--accent-hover);
+  background: var(--color-accent-bg-light);
+}
+
+.tcp-diag-btn.active {
+  border-color: var(--color-primary);
+  background: var(--color-accent-bg);
+  color: var(--color-primary-dark);
+}
+
+.tcp-diag-btn svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tcp-diag-preview-svg {
+  width: 160px;
+  height: 120px;
+  display: block;
+  border: 1px solid var(--ui-border-subtle);
   background: var(--doc-paper);
 }
 

@@ -70,6 +70,12 @@ export class CellBorderBgDialog extends ModalDialog {
   private diagWidthSelect!: HTMLSelectElement;
   private diagColorInput!: HTMLInputElement;
   private diagScopeRadios!: HTMLInputElement[];
+  private diagPreviewSvg!: SVGSVGElement;
+  private diagButtons: HTMLButtonElement[] = [];
+  private diagSlashBits = 0;
+  private diagBackSlashBits = 0;
+  private diagCenterLine = 'NONE';
+  private activeTabId = 'border';
 
   // 셀 속성 캐시
   private cellProps!: CellProperties;
@@ -91,6 +97,7 @@ export class CellBorderBgDialog extends ModalDialog {
 
   show(): void {
     super.show();
+    this.dialog.classList.add('tcp-border-bg-dialog');
     const { sec, ppi, ci } = this.tableCtx;
     this.cellProps = this.wasm.getCellProperties(sec, ppi, ci, this.cellIdx);
     this.populateFields();
@@ -98,6 +105,7 @@ export class CellBorderBgDialog extends ModalDialog {
 
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
+    body.className = 'tcp-dialog-body';
 
     const tabDefs: TabDef[] = [
       { id: 'border', label: '테두리', builder: () => this.buildBorderTab() },
@@ -109,6 +117,7 @@ export class CellBorderBgDialog extends ModalDialog {
     const tabBar = document.createElement('div');
     tabBar.className = 'dialog-tabs';
     const panelContainer = document.createElement('div');
+    panelContainer.className = 'tcp-panel-container';
 
     for (let i = 0; i < tabDefs.length; i++) {
       const def = tabDefs[i];
@@ -135,6 +144,7 @@ export class CellBorderBgDialog extends ModalDialog {
   }
 
   private switchTab(idx: number): void {
+    this.activeTabId = ['border', 'background', 'diagonal'][idx] ?? 'border';
     for (let i = 0; i < this.tabs.length; i++) {
       this.tabs[i].classList.toggle('active', i === idx);
       this.panels[i].classList.toggle('active', i === idx);
@@ -476,6 +486,10 @@ export class CellBorderBgDialog extends ModalDialog {
   private buildDiagonalTab(): HTMLElement {
     const frag = document.createElement('div');
     frag.className = 'tcp-tab-content';
+    const layout = document.createElement('div');
+    layout.className = 'tcp-diag-layout';
+    const controls = document.createElement('div');
+    controls.className = 'tcp-diag-controls';
 
     // 선 속성
     const lineSection = this.createSection('선 속성');
@@ -485,6 +499,7 @@ export class CellBorderBgDialog extends ModalDialog {
       ['0', '없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
       ['4', '일점쇄선'], ['5', '이점쇄선'], ['6', '긴 파선'], ['7', '이중 실선'],
     ]);
+    this.diagLineTypeSelect.addEventListener('change', () => this.updateDiagonalPreview());
     typeRow.appendChild(this.diagLineTypeSelect);
     lineSection.appendChild(typeRow);
 
@@ -494,6 +509,7 @@ export class CellBorderBgDialog extends ModalDialog {
       ['0', '0.1mm'], ['1', '0.12mm'], ['2', '0.15mm'], ['3', '0.2mm'],
       ['4', '0.25mm'], ['5', '0.3mm'], ['6', '0.4mm'],
     ]);
+    this.diagWidthSelect.addEventListener('change', () => this.updateDiagonalPreview());
     widthRow.appendChild(this.diagWidthSelect);
     lineSection.appendChild(widthRow);
 
@@ -504,58 +520,224 @@ export class CellBorderBgDialog extends ModalDialog {
     this.diagColorInput.value = '#000000';
     this.diagColorInput.style.width = '40px';
     this.diagColorInput.style.height = '22px';
+    this.diagColorInput.addEventListener('input', () => this.updateDiagonalPreview());
     colorRow.appendChild(this.diagColorInput);
     lineSection.appendChild(colorRow);
-    frag.appendChild(lineSection);
+    controls.appendChild(lineSection);
 
     // 대각선 방향 아이콘
     const dirSection = this.createSection('대각선 방향');
 
-    // \ 대각선
     const bsRow = this.row();
     bsRow.appendChild(this.label('\\ 대각선'));
-    const bsGroup = document.createElement('div');
-    bsGroup.className = 'dialog-btn-group';
-    const bsBtn = document.createElement('button');
-    bsBtn.type = 'button';
-    bsBtn.textContent = '\\';
-    bsBtn.addEventListener('click', () => bsBtn.classList.toggle('active'));
-    bsGroup.appendChild(bsBtn);
-    bsRow.appendChild(bsGroup);
+    bsRow.appendChild(this.createDiagonalButtonGroup('backSlash', [
+      ['CENTER', 0b010, '단순 역대각선'],
+      ['CENTER_BELOW', 0b011, '아래쪽 분기 역대각선'],
+      ['ALL', 0b111, '전체 분기 역대각선'],
+    ]));
     dirSection.appendChild(bsRow);
 
-    // / 대각선
     const fsRow = this.row();
     fsRow.appendChild(this.label('/ 대각선'));
-    const fsGroup = document.createElement('div');
-    fsGroup.className = 'dialog-btn-group';
-    const fsBtn = document.createElement('button');
-    fsBtn.type = 'button';
-    fsBtn.textContent = '/';
-    fsBtn.addEventListener('click', () => fsBtn.classList.toggle('active'));
-    fsGroup.appendChild(fsBtn);
-    fsRow.appendChild(fsGroup);
+    fsRow.appendChild(this.createDiagonalButtonGroup('slash', [
+      ['CENTER', 0b010, '단순 대각선'],
+      ['CENTER_BELOW', 0b011, '아래쪽 분기 대각선'],
+      ['ALL', 0b111, '전체 분기 대각선'],
+    ]));
     dirSection.appendChild(fsRow);
 
-    // + 중심선
     const csRow = this.row();
     csRow.appendChild(this.label('+ 중심선'));
-    const csGroup = document.createElement('div');
-    csGroup.className = 'dialog-btn-group';
-    const csBtn = document.createElement('button');
-    csBtn.type = 'button';
-    csBtn.textContent = '+';
-    csBtn.addEventListener('click', () => csBtn.classList.toggle('active'));
-    csGroup.appendChild(csBtn);
-    csRow.appendChild(csGroup);
+    csRow.appendChild(this.createCenterLineButtonGroup());
     dirSection.appendChild(csRow);
 
-    frag.appendChild(dirSection);
+    controls.appendChild(dirSection);
 
     // 적용 범위
-    frag.appendChild(this.buildScopeSection('diag'));
+    controls.appendChild(this.buildScopeSection('diag'));
+
+    const previewSection = this.createSection('미리 보기');
+    this.diagPreviewSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.diagPreviewSvg.classList.add('tcp-diag-preview-svg');
+    this.diagPreviewSvg.setAttribute('viewBox', '0 0 160 120');
+    previewSection.appendChild(this.diagPreviewSvg);
+
+    layout.appendChild(controls);
+    layout.appendChild(previewSection);
+    frag.appendChild(layout);
 
     return frag;
+  }
+
+  private createDiagonalButtonGroup(
+    kind: 'slash' | 'backSlash',
+    defs: [string, number, string][],
+  ): HTMLDivElement {
+    const group = document.createElement('div');
+    group.className = 'tcp-diag-button-grid';
+    for (const [shape, bits, title] of defs) {
+      const btn = this.createIconButton(title, this.createDiagonalIcon(kind, shape));
+      btn.addEventListener('click', () => {
+        if (kind === 'slash') {
+          this.diagSlashBits = this.diagSlashBits === bits ? 0 : bits;
+        } else {
+          this.diagBackSlashBits = this.diagBackSlashBits === bits ? 0 : bits;
+        }
+        this.updateDiagonalButtons();
+        this.updateDiagonalPreview();
+      });
+      btn.dataset.kind = kind;
+      btn.dataset.bits = String(bits);
+      group.appendChild(btn);
+      this.diagButtons.push(btn);
+    }
+    return group;
+  }
+
+  private createCenterLineButtonGroup(): HTMLDivElement {
+    const group = document.createElement('div');
+    group.className = 'tcp-diag-button-grid';
+    const defs: [string, string][] = [
+      ['VERTICAL', '가로 중심선'],
+      ['HORIZONTAL', '세로 중심선'],
+      ['CROSS', '가로세로 중심선'],
+    ];
+    for (const [value, title] of defs) {
+      const btn = this.createIconButton(title, this.createCenterLineIcon(value));
+      btn.addEventListener('click', () => {
+        this.diagCenterLine = this.diagCenterLine === value ? 'NONE' : value;
+        this.updateDiagonalButtons();
+        this.updateDiagonalPreview();
+      });
+      btn.dataset.kind = 'centerLine';
+      btn.dataset.value = value;
+      group.appendChild(btn);
+      this.diagButtons.push(btn);
+    }
+    return group;
+  }
+
+  private createIconButton(title: string, svg: SVGSVGElement): HTMLButtonElement {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tcp-diag-btn';
+    btn.title = title;
+    btn.appendChild(svg);
+    return btn;
+  }
+
+  private createDiagonalIcon(kind: 'slash' | 'backSlash', shape: string): SVGSVGElement {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 36 28');
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', '3'); rect.setAttribute('y', '3');
+    rect.setAttribute('width', '30'); rect.setAttribute('height', '22');
+    rect.setAttribute('fill', 'none'); rect.setAttribute('stroke', 'currentColor');
+    rect.setAttribute('stroke-width', '1');
+    svg.appendChild(rect);
+    const segments = this.diagonalSegments(kind, shape, 3, 3, 30, 22);
+    for (const [x1, y1, x2, y2] of segments) {
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', String(x1)); line.setAttribute('y1', String(y1));
+      line.setAttribute('x2', String(x2)); line.setAttribute('y2', String(y2));
+      line.setAttribute('stroke', 'currentColor'); line.setAttribute('stroke-width', '1.6');
+      svg.appendChild(line);
+    }
+    return svg;
+  }
+
+  private createCenterLineIcon(value: string): SVGSVGElement {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 36 28');
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', '3'); rect.setAttribute('y', '3');
+    rect.setAttribute('width', '30'); rect.setAttribute('height', '22');
+    rect.setAttribute('fill', 'none'); rect.setAttribute('stroke', 'currentColor');
+    rect.setAttribute('stroke-width', '1');
+    svg.appendChild(rect);
+    const lines: [number, number, number, number][] = [];
+    if (value === 'VERTICAL' || value === 'CROSS') lines.push([3, 14, 33, 14]);
+    if (value === 'HORIZONTAL' || value === 'CROSS') lines.push([18, 3, 18, 25]);
+    for (const [x1, y1, x2, y2] of lines) {
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', String(x1)); line.setAttribute('y1', String(y1));
+      line.setAttribute('x2', String(x2)); line.setAttribute('y2', String(y2));
+      line.setAttribute('stroke', 'currentColor'); line.setAttribute('stroke-width', '1.6');
+      svg.appendChild(line);
+    }
+    return svg;
+  }
+
+  private diagonalSegments(
+    kind: 'slash' | 'backSlash',
+    shape: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ): [number, number, number, number][] {
+    const x1 = x;
+    const y1 = y;
+    const x2 = x + w;
+    const y2 = y + h;
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    if (kind === 'slash') {
+      if (shape === 'CENTER_BELOW') return [[x1, y1, x2, cy], [x1, y1, cx, y2]];
+      if (shape === 'ALL') return [[x1, y2, x2, y1], [x1, y2, x2, cy], [x1, y2, cx, y1]];
+      return [[x1, y2, x2, y1]];
+    }
+    if (shape === 'CENTER_BELOW') return [[x2, y1, x1, cy], [x2, y1, cx, y2]];
+    if (shape === 'ALL') return [[x1, y1, x2, y2], [x1, y1, cx, y2], [x1, y1, x2, cy]];
+    return [[x1, y1, x2, y2]];
+  }
+
+  private updateDiagonalButtons(): void {
+    for (const btn of this.diagButtons) {
+      const kind = btn.dataset.kind;
+      if (kind === 'slash') {
+        btn.classList.toggle('active', Number(btn.dataset.bits) === this.diagSlashBits);
+      } else if (kind === 'backSlash') {
+        btn.classList.toggle('active', Number(btn.dataset.bits) === this.diagBackSlashBits);
+      } else if (kind === 'centerLine') {
+        btn.classList.toggle('active', btn.dataset.value === this.diagCenterLine);
+      }
+    }
+  }
+
+  private updateDiagonalPreview(): void {
+    const svg = this.diagPreviewSvg;
+    if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const ns = 'http://www.w3.org/2000/svg';
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', '20'); rect.setAttribute('y', '16');
+    rect.setAttribute('width', '120'); rect.setAttribute('height', '88');
+    rect.style.setProperty('fill', DOC_PAPER_COLOR);
+    rect.setAttribute('stroke', 'var(--color-border)');
+    svg.appendChild(rect);
+
+    const lineType = parseInt(this.diagLineTypeSelect?.value ?? '0', 10);
+    if (lineType === 0) return;
+    const color = this.diagColorInput?.value ?? '#000000';
+    const width = Math.max(0.8, (parseInt(this.diagWidthSelect?.value ?? '0', 10) + 1) * 0.8);
+    const dashMap: Record<number, string> = {
+      2: '7,4', 3: '2,3', 4: '8,3,2,3', 5: '8,3,2,3,2,3', 6: '12,4',
+    };
+    const draw = (x1: number, y1: number, x2: number, y2: number) => {
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', String(x1)); line.setAttribute('y1', String(y1));
+      line.setAttribute('x2', String(x2)); line.setAttribute('y2', String(y2));
+      line.setAttribute('stroke', color); line.setAttribute('stroke-width', String(width));
+      if (dashMap[lineType]) line.setAttribute('stroke-dasharray', dashMap[lineType]);
+      svg.appendChild(line);
+    };
+    if (this.diagSlashBits !== 0) draw(20, 104, 140, 16);
+    if (this.diagBackSlashBits !== 0) draw(20, 16, 140, 104);
+    if (this.diagCenterLine === 'VERTICAL' || this.diagCenterLine === 'CROSS') draw(20, 60, 140, 60);
+    if (this.diagCenterLine === 'HORIZONTAL' || this.diagCenterLine === 'CROSS') draw(80, 16, 80, 104);
   }
 
   // ─── 공통: 적용 범위 섹션 ────────────────────
@@ -612,12 +794,22 @@ export class CellBorderBgDialog extends ModalDialog {
       this.bgNoneRadio.checked = true;
     }
     this.updateBgPreview();
+
+    this.diagLineTypeSelect.value = String(cp.diagonalLine ?? 0);
+    this.diagWidthSelect.value = String(cp.diagonalWidth ?? 0);
+    this.diagColorInput.value = cp.diagonalColor ?? '#000000';
+    this.diagSlashBits = cp.diagonalSlash ?? 0;
+    this.diagBackSlashBits = cp.diagonalBackSlash ?? 0;
+    this.diagCenterLine = cp.centerLine ?? 'NONE';
+    this.updateDiagonalButtons();
+    this.updateDiagonalPreview();
   }
 
   protected onConfirm(): void {
     const { sec, ppi, ci } = this.tableCtx;
 
     const newProps: Record<string, unknown> = {};
+    newProps.borderFillId = this.cellProps.borderFillId ?? 0;
 
     // 테두리
     newProps.borderLeft = this.borderEdits[0];
@@ -635,9 +827,22 @@ export class CellBorderBgDialog extends ModalDialog {
       newProps.fillType = 'none';
     }
 
-    // 적용 범위 결정: 테두리 탭의 scope를 기준으로 판단
-    const borderScope = this.borderScopeRadios?.find(r => r.checked)?.value ?? 'selected';
-    if (borderScope === 'all') {
+    // 대각선/중심선
+    newProps.diagonalLine = parseInt(this.diagLineTypeSelect.value, 10);
+    newProps.diagonalSlash = this.diagSlashBits;
+    newProps.diagonalBackSlash = this.diagBackSlashBits;
+    newProps.diagonalWidth = parseInt(this.diagWidthSelect.value, 10);
+    newProps.diagonalColor = this.diagColorInput.value;
+    newProps.centerLine = this.diagCenterLine;
+
+    // 적용 범위 결정: 마지막으로 선택한 탭의 scope를 따른다.
+    const scopeRadios = this.activeTabId === 'background'
+      ? this.bgScopeRadios
+      : this.activeTabId === 'diagonal'
+        ? this.diagScopeRadios
+        : this.borderScopeRadios;
+    const scope = scopeRadios?.find(r => r.checked)?.value ?? 'selected';
+    if (scope === 'all') {
       const dims = this.wasm.getTableDimensions(sec, ppi, ci);
       for (let i = 0; i < dims.cellCount; i++) {
         this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);

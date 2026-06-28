@@ -779,45 +779,105 @@ impl DocumentCore {
             BorderFill, BorderLine, CenterLine, DiagonalLine, Fill, FillType, SolidFill,
         };
 
+        fn json_diag_bits(json: &str, key: &str) -> Option<u16> {
+            json_i32(json, key)
+                .map(|v| (v as u16) & 0x07)
+                .or_else(|| json_bool(json, key).map(|v| if v { 0b010 } else { 0 }))
+        }
+
+        fn json_center_line(json: &str) -> Option<CenterLine> {
+            json_str(json, "centerLine").map(|value| {
+                let normalized = value.trim().to_ascii_uppercase();
+                match normalized.as_str() {
+                    "VERTICAL" | "HORIZONTAL_BAR" => CenterLine::Vertical,
+                    "HORIZONTAL" | "VERTICAL_BAR" => CenterLine::Horizontal,
+                    "CROSS" => CenterLine::Cross,
+                    _ => CenterLine::None,
+                }
+            })
+        }
+
+        let mut bf = json_u32(json, "borderFillId")
+            .and_then(|id| {
+                if id == 0 {
+                    None
+                } else {
+                    self.document
+                        .doc_info
+                        .border_fills
+                        .get((id - 1) as usize)
+                        .cloned()
+                }
+            })
+            .unwrap_or(BorderFill {
+                raw_data: None,
+                attr: 0,
+                borders: [BorderLine::default(); 4],
+                diagonal: DiagonalLine::default(),
+                center_line: CenterLine::None,
+                fill: Fill::default(),
+            });
+        bf.raw_data = None;
+
         // 4방향 테두리 파싱
         let dir_keys = ["borderLeft", "borderRight", "borderTop", "borderBottom"];
-        let mut borders = [BorderLine::default(); 4];
         for (i, key) in dir_keys.iter().enumerate() {
             if let Some(obj_str) = json_object(json, key) {
                 let type_val = json_i32(&obj_str, "type").unwrap_or(0);
-                borders[i].line_type = u8_to_border_line_type(type_val as u8);
-                borders[i].width = json_i32(&obj_str, "width").unwrap_or(0) as u8;
-                borders[i].color = json_color(&obj_str, "color").unwrap_or(0);
+                bf.borders[i].line_type = u8_to_border_line_type(type_val as u8);
+                bf.borders[i].width = json_i32(&obj_str, "width").unwrap_or(0) as u8;
+                bf.borders[i].color = json_color(&obj_str, "color").unwrap_or(0);
             }
         }
 
         // 채우기 파싱
-        let fill_type_str = json_str(json, "fillType").unwrap_or_default();
-        let fill = if fill_type_str == "solid" {
-            let bg = json_color(json, "fillColor").unwrap_or(0xFFFFFF);
-            let pat_c = json_color(json, "patternColor").unwrap_or(0);
-            let pat_t = json_i32(json, "patternType").unwrap_or(0);
-            Fill {
-                fill_type: FillType::Solid,
-                solid: Some(SolidFill {
-                    background_color: bg,
-                    pattern_color: pat_c,
-                    pattern_type: pat_t,
-                }),
-                ..Default::default()
-            }
-        } else {
-            Fill::default()
-        };
+        if let Some(fill_type_str) = json_str(json, "fillType") {
+            bf.fill = if fill_type_str == "solid" {
+                let bg = json_color(json, "fillColor").unwrap_or(0xFFFFFF);
+                let pat_c = json_color(json, "patternColor").unwrap_or(0);
+                let pat_t = json_i32(json, "patternType").unwrap_or(0);
+                Fill {
+                    fill_type: FillType::Solid,
+                    solid: Some(SolidFill {
+                        background_color: bg,
+                        pattern_color: pat_c,
+                        pattern_type: pat_t,
+                    }),
+                    ..Default::default()
+                }
+            } else {
+                Fill::default()
+            };
+        }
 
-        let bf = BorderFill {
-            raw_data: None,
-            attr: 0,
-            borders,
-            diagonal: DiagonalLine::default(),
-            center_line: CenterLine::None,
-            fill,
-        };
+        let has_diagonal_json = json.contains("\"diagonalLine\"")
+            || json.contains("\"diagonalSlash\"")
+            || json.contains("\"diagonalBackSlash\"")
+            || json.contains("\"diagonalWidth\"")
+            || json.contains("\"diagonalColor\"")
+            || json.contains("\"centerLine\"");
+        if has_diagonal_json {
+            let slash_bits =
+                json_diag_bits(json, "diagonalSlash").unwrap_or(((bf.attr >> 2) & 0x07) as u16);
+            let backslash_bits =
+                json_diag_bits(json, "diagonalBackSlash").unwrap_or(((bf.attr >> 5) & 0x07) as u16);
+            bf.center_line = json_center_line(json).unwrap_or(bf.center_line);
+            bf.diagonal.diagonal_type =
+                json_i32(json, "diagonalLine").unwrap_or(bf.diagonal.diagonal_type as i32) as u8;
+            bf.diagonal.width =
+                json_i32(json, "diagonalWidth").unwrap_or(bf.diagonal.width as i32) as u8;
+            bf.diagonal.color = json_color(json, "diagonalColor").unwrap_or(bf.diagonal.color);
+            bf.attr &= !((0x07 << 2)
+                | (0x07 << 5)
+                | (1 << 8)
+                | (1 << 10)
+                | (1 << 11)
+                | (1 << 12)
+                | (1 << 13));
+            bf.attr |= (slash_bits & 0x07) << 2;
+            bf.attr |= (backslash_bits & 0x07) << 5;
+            bf.attr |= bf.center_line.hwp_attr_bits();
+        }
 
         // 기존 BorderFill에서 동일한 항목 검색
         for (i, existing) in self.document.doc_info.border_fills.iter().enumerate() {

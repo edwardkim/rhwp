@@ -557,7 +557,7 @@ pub enum BorderLineType {
 /// 대각선 정보
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DiagonalLine {
-    /// 대각선 종류 (0: Slash, 1: BackSlash, 2: Crooked)
+    /// 대각선 선 종류 코드. BorderLineType의 HWP/HWPX 코드와 같은 값을 사용한다.
     pub diagonal_type: u8,
     /// 대각선 굵기
     pub width: u8,

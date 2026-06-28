@@ -622,6 +622,60 @@ fn create_parallel_lines(
     nodes
 }
 
+/// 임의 방향 평행선 노드 생성 (대각선 이중선/삼중선용)
+fn create_parallel_lines_perpendicular(
+    tree: &mut PageRenderTree,
+    color: u32,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+    lines: &[(f64, f64)],
+    dash: StrokeDash,
+) -> Vec<RenderNode> {
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let len = (dx * dx + dy * dy).sqrt();
+    if len < 0.01 {
+        return vec![];
+    }
+    let nx = -dy / len;
+    let ny = dx / len;
+    let mut nodes = Vec::with_capacity(lines.len());
+
+    for &(offset, width) in lines {
+        let lx1 = x1 + nx * offset;
+        let ly1 = y1 + ny * offset;
+        let lx2 = x2 + nx * offset;
+        let ly2 = y2 + ny * offset;
+
+        let id = tree.next_id();
+        nodes.push(RenderNode::new(
+            id,
+            RenderNodeType::Line(LineNode::new(
+                lx1,
+                ly1,
+                lx2,
+                ly2,
+                LineStyle {
+                    color,
+                    width,
+                    dash,
+                    ..Default::default()
+                },
+            )),
+            BoundingBox::new(
+                lx1.min(lx2),
+                ly1.min(ly2),
+                (lx2 - lx1).abs().max(width),
+                (ly2 - ly1).abs().max(width),
+            ),
+        ));
+    }
+
+    nodes
+}
+
 /// 단일선 노드 생성
 fn create_single_line(
     tree: &mut PageRenderTree,
@@ -655,6 +709,130 @@ fn create_single_line(
             (y2 - y1).abs().max(width),
         ),
     )]
+}
+
+fn border_line_type_from_code(code: u8) -> BorderLineType {
+    match code {
+        0 => BorderLineType::None,
+        1 => BorderLineType::Solid,
+        2 => BorderLineType::Dash,
+        3 => BorderLineType::Dot,
+        4 => BorderLineType::DashDot,
+        5 => BorderLineType::DashDotDot,
+        6 => BorderLineType::LongDash,
+        7 => BorderLineType::Circle,
+        8 => BorderLineType::Double,
+        9 => BorderLineType::ThinThickDouble,
+        10 => BorderLineType::ThickThinDouble,
+        11 => BorderLineType::ThinThickThinTriple,
+        12 => BorderLineType::Wave,
+        13 => BorderLineType::DoubleWave,
+        14 => BorderLineType::Thick3D,
+        15 => BorderLineType::Thick3DReverse,
+        16 => BorderLineType::Thin3D,
+        17 => BorderLineType::Thin3DReverse,
+        _ => BorderLineType::Solid,
+    }
+}
+
+fn create_diagonal_line_nodes(
+    tree: &mut PageRenderTree,
+    line_type: BorderLineType,
+    color: u32,
+    width_index: u8,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    if line_type == BorderLineType::None {
+        return vec![];
+    }
+
+    let base_width = border_width_to_px(width_index);
+    match line_type {
+        BorderLineType::None => vec![],
+        BorderLineType::Double => {
+            let total = base_width.max(3.0);
+            let sub_w = (total * 0.3).max(0.4);
+            let gap = (total * 0.4).max(1.0);
+            let offset = (gap + sub_w) / 2.0;
+            create_parallel_lines_perpendicular(
+                tree,
+                color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[(-offset, sub_w), (offset, sub_w)],
+                StrokeDash::Solid,
+            )
+        }
+        BorderLineType::ThinThickDouble => {
+            let total = base_width.max(3.0);
+            let thin_w = (total * 0.2).max(0.4);
+            let thick_w = (total * 0.4).max(0.6);
+            let gap = (total * 0.4).max(1.0);
+            let thin_offset = -(gap + thin_w) / 2.0;
+            let thick_offset = (gap + thick_w) / 2.0;
+            create_parallel_lines_perpendicular(
+                tree,
+                color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[(thin_offset, thin_w), (thick_offset, thick_w)],
+                StrokeDash::Solid,
+            )
+        }
+        BorderLineType::ThickThinDouble => {
+            let total = base_width.max(3.0);
+            let thick_w = (total * 0.4).max(0.6);
+            let thin_w = (total * 0.2).max(0.4);
+            let gap = (total * 0.4).max(1.0);
+            let thick_offset = -(gap + thick_w) / 2.0;
+            let thin_offset = (gap + thin_w) / 2.0;
+            create_parallel_lines_perpendicular(
+                tree,
+                color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[(thick_offset, thick_w), (thin_offset, thin_w)],
+                StrokeDash::Solid,
+            )
+        }
+        BorderLineType::ThinThickThinTriple => {
+            let total = base_width.max(4.0);
+            let thin_w = (total * 0.15).max(0.4);
+            let thick_w = (total * 0.3).max(0.6);
+            let gap = (total * 0.15).max(0.8);
+            let outer_offset = thick_w / 2.0 + gap + thin_w / 2.0;
+            create_parallel_lines_perpendicular(
+                tree,
+                color,
+                x1,
+                y1,
+                x2,
+                y2,
+                &[
+                    (-outer_offset, thin_w),
+                    (0.0, thick_w),
+                    (outer_offset, thin_w),
+                ],
+                StrokeDash::Solid,
+            )
+        }
+        _ => {
+            if let Some(dash) = border_line_type_to_dash(line_type) {
+                create_single_line(tree, color, base_width, dash, x1, y1, x2, y2)
+            } else {
+                vec![]
+            }
+        }
+    }
 }
 
 /// BorderLine이 시각적으로 차지하는 전체 폭(px).
@@ -739,9 +917,9 @@ fn border_line_type_to_dash(lt: BorderLineType) -> Option<StrokeDash> {
 /// 셀 대각선 렌더링
 /// HWP BorderFill.attr 비트:
 ///   bit 2~4: Slash(`/`) 대각선 모양
-///     000=none, 010=slash, 011=LeftTop→Bottom, 110=LeftTop→Right, 111=LeftTop→Bottom&Right
+///     000=none, 그 외=slash
 ///   bit 5~7: BackSlash(`\`) 대각선 모양
-///     000=none, 010=backslash, 011=RightTop→Bottom, 110=RightTop→Left, 111=RightTop→Bottom&Left
+///     000=none, 그 외=backslash
 ///   bit 13: 중심선
 pub(crate) fn render_cell_diagonal(
     tree: &mut PageRenderTree,
@@ -766,8 +944,7 @@ pub(crate) fn render_cell_diagonal(
         return vec![];
     }
     let color = diag.color;
-    let width = border_width_to_px(diag.width);
-    let dash = StrokeDash::Solid;
+    let line_type = border_line_type_from_code(diag.diagonal_type);
 
     let mut nodes = Vec::new();
 
@@ -780,76 +957,38 @@ pub(crate) fn render_cell_diagonal(
 
     match center_line {
         CenterLine::Vertical => {
-            nodes.extend(create_single_line(tree, color, width, dash, x1, cy, x2, cy));
+            nodes.extend(create_diagonal_line_nodes(
+                tree, line_type, color, diag.width, x1, cy, x2, cy,
+            ));
         }
         CenterLine::Horizontal => {
-            nodes.extend(create_single_line(tree, color, width, dash, cx, y1, cx, y2));
+            nodes.extend(create_diagonal_line_nodes(
+                tree, line_type, color, diag.width, cx, y1, cx, y2,
+            ));
         }
         CenterLine::Cross => {
-            nodes.extend(create_single_line(tree, color, width, dash, cx, y1, cx, y2));
-            nodes.extend(create_single_line(tree, color, width, dash, x1, cy, x2, cy));
+            nodes.extend(create_diagonal_line_nodes(
+                tree, line_type, color, diag.width, cx, y1, cx, y2,
+            ));
+            nodes.extend(create_diagonal_line_nodes(
+                tree, line_type, color, diag.width, x1, cy, x2, cy,
+            ));
         }
         CenterLine::None => {}
     }
 
-    // Slash (`/`) 대각선
+    // HWPX의 CENTER_BELOW/ALL/Crooked/isCounter 조합은 저장 비트로는 보존하되,
+    // 한컴 2024 샘플의 셀 렌더링은 단일 대각선으로 정규화되어 보인다.
     if slash_bits != 0 {
-        match slash_bits {
-            0b010 => {
-                // 단순 슬래시: 좌하 → 우상
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, x2, y1));
-            }
-            0b011 => {
-                // LeftTop → Bottom Edge: 좌상 → 우하중간, 좌상 → 하변중간
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, x2, cy));
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, cx, y2));
-            }
-            0b110 => {
-                // LeftTop → Right Edge: 좌하 → 우상, 우하 → 좌상 방향으로 분기
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, cx, y1));
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, x2, cy));
-            }
-            0b111 => {
-                // LeftTop → Bottom & Right Edge: 3방향
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, x2, y1));
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, x2, cy));
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, cx, y1));
-            }
-            _ => {
-                // 기타: 단순 슬래시로 폴백
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y2, x2, y1));
-            }
-        }
+        nodes.extend(create_diagonal_line_nodes(
+            tree, line_type, color, diag.width, x1, y2, x2, y1,
+        ));
     }
 
-    // BackSlash (`\`) 대각선
     if backslash_bits != 0 {
-        match backslash_bits {
-            0b010 => {
-                // 단순 백슬래시: 좌상 → 우하
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, x2, y2));
-            }
-            0b011 => {
-                // RightTop → Bottom Edge: 우상 → 좌하중간, 우상 → 하변중간
-                nodes.extend(create_single_line(tree, color, width, dash, x2, y1, x1, cy));
-                nodes.extend(create_single_line(tree, color, width, dash, x2, y1, cx, y2));
-            }
-            0b110 => {
-                // RightTop → Left Edge: 우하 → 좌상 방향으로 분기
-                nodes.extend(create_single_line(tree, color, width, dash, x2, y2, cx, y1));
-                nodes.extend(create_single_line(tree, color, width, dash, x2, y2, x1, cy));
-            }
-            0b111 => {
-                // RightTop → Bottom & Left Edge: 3방향
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, x2, y2));
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, cx, y2));
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, x2, cy));
-            }
-            _ => {
-                // 기타: 단순 백슬래시로 폴백
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y1, x2, y2));
-            }
-        }
+        nodes.extend(create_diagonal_line_nodes(
+            tree, line_type, color, diag.width, x1, y1, x2, y2,
+        ));
     }
 
     nodes
@@ -873,6 +1012,18 @@ mod tests {
                 color: 0x00F4_C741,
             },
             center_line,
+            ..Default::default()
+        }
+    }
+
+    fn diagonal_style(attr: u16) -> ResolvedBorderStyle {
+        ResolvedBorderStyle {
+            diagonal_attr: attr,
+            diagonal: DiagonalLine {
+                diagonal_type: 1,
+                width: 0,
+                color: 0,
+            },
             ..Default::default()
         }
     }
@@ -948,5 +1099,46 @@ mod tests {
             (horizontal.x1, horizontal.y1, horizontal.x2, horizontal.y2),
             (10.0, 40.0, 110.0, 40.0)
         );
+    }
+
+    #[test]
+    fn render_nonzero_diagonal_shape_codes_as_basic_x() {
+        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let nodes = render_cell_diagonal(
+            &mut tree,
+            &diagonal_style((0b111 << 2) | (0b111 << 5)),
+            10.0,
+            20.0,
+            100.0,
+            40.0,
+        );
+
+        assert_eq!(nodes.len(), 2);
+        let slash = line_node(&nodes[0]);
+        let backslash = line_node(&nodes[1]);
+        assert_eq!(
+            (slash.x1, slash.y1, slash.x2, slash.y2),
+            (10.0, 60.0, 110.0, 20.0)
+        );
+        assert_eq!(
+            (backslash.x1, backslash.y1, backslash.x2, backslash.y2),
+            (10.0, 20.0, 110.0, 60.0)
+        );
+    }
+
+    #[test]
+    fn render_thick_slim_diagonal_as_parallel_lines() {
+        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut style = diagonal_style(0b010 << 2);
+        style.diagonal.diagonal_type = 10;
+        style.diagonal.width = 13;
+        let nodes = render_cell_diagonal(&mut tree, &style, 10.0, 20.0, 100.0, 40.0);
+
+        assert_eq!(nodes.len(), 2);
+        let thick = line_node(&nodes[0]);
+        let thin = line_node(&nodes[1]);
+        assert!(thick.style.width > thin.style.width);
+        assert_ne!((thick.x1, thick.y1), (thin.x1, thin.y1));
+        assert_ne!((thick.x2, thick.y2), (thin.x2, thin.y2));
     }
 }
