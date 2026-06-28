@@ -174,11 +174,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let header_xml = reader.read_file("Contents/header.xml")?;
     let (mut doc_info, doc_properties) = header::parse_hwpx_header(&header_xml)?;
 
-    // [Task #554] HWP3 → HWPX 변환본 식별: hwpml 스키마 버전 = "1.4"
-    // 변환본은 한글97의 "마지막 줄 tolerance" (1600 HU) 가 누락되어 페이지 수가
-    // 늘어나므로, 본 시점에 식별하여 page_def.margin_bottom 보정 (post-process)에 사용.
+    // [Task #1608] head version("1.4")은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가
+    // 아니다. 네이티브 한글2022 HWPX(version.xml: major=5 minor=1 "Hancom Office Hangul")도
+    // head version 1.4 라, 과거 `is_hwp3_origin = (head version == "1.4")` (Task #554) 판정은
+    // 거의 모든 모던 HWPX 를 HWP3-origin 으로 오탐지해 부당한 "마지막 줄" tolerance(1600 HU)를
+    // 부여했고, 이것이 경계 문서를 1쪽 적게 렌더하는 −1쪽 갭의 한 요인이었다(Task #1600 요인 A).
+    // 메타데이터로 진짜 변환본과 네이티브를 구별할 판별자가 없어(조사 확정), 파싱 시점의 HWP3
+    // tolerance 부여를 제거한다.
     let hwpml_version = header::parse_hwpx_hwpml_version(&header_xml);
-    let is_hwp3_origin = hwpml_version.as_deref() == Some("1.4");
     // 무손실: 원본 HWPML 버전을 보존해 직렬화 때 그대로 재방출(하드코딩 금지).
     doc_info.hwpml_version = hwpml_version.clone();
 
@@ -258,15 +261,9 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         }
     }
 
-    // [Task #554] HWP3 변환본 보정: 한글97의 마지막 줄 tolerance 모방.
-    // HWPX→HWP 저장 contract 에서는 PAGE_DEF margin_bottom 원본값을 보존해야 하므로
-    // margin 자체를 줄이지 않고 pagination 전용 tolerance 로만 전달한다.
-    if is_hwp3_origin {
-        for section in sections.iter_mut() {
-            section.section_def.page_def.pagination_bottom_tolerance =
-                section.section_def.page_def.margin_bottom.min(1600);
-        }
-    }
+    // [Task #1608] (제거) 과거 Task #554 의 HWP3-origin tolerance 부여는
+    // head version == "1.4" 오탐지로 네이티브 HWPX 전반에 부당 적용되어 삭제했다.
+    // 상세 사유는 위 hwpml_version 파싱부 주석 참조.
 
     // 5. BinData 이미지 로딩
     let mut bin_data_content = Vec::new();

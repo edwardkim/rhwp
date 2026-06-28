@@ -62,8 +62,10 @@ pub(crate) fn is_real_strike_shape(shape: &str) -> bool {
 
 /// header.xml의 `<hh:head version="X.Y">` 속성에서 hwpml 스키마 버전을 추출한다.
 ///
-/// HWP3 → HWPX 변환본은 한컴이 hwpml="1.4"로 저장하는 반면, 한컴 한글로 직접
-/// 작성한 HWPX는 hwpml="1.5" 이상이다 (Task #554 진단 결과: 6/6 fixture 100% 정확).
+/// 이 값은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가 아니다. 네이티브 한글2022
+/// HWPX 도 head version "1.4" 로 저장되므로 변환본 판별에 쓰면 안 된다(Task #1608 — 과거
+/// Task #554 의 `== "1.4"` 판별은 오탐지로 제거됨). 현재 용도는 직렬화 무손실을 위한 원본
+/// 버전 보존(`doc_info.hwpml_version`)뿐이다.
 ///
 /// 본 함수는 헤더 root element 만 읽고 즉시 반환하므로 비용이 매우 낮다.
 pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
