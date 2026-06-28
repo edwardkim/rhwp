@@ -98,6 +98,25 @@ fn positive_vpos_end_before_negative_wrap(para: &Paragraph) -> Option<i32> {
         .max()
 }
 
+fn paragraph_text_box_bottom_px(para: &Paragraph, page_vpos_base: i32, dpi: f64) -> Option<f64> {
+    para.line_segs
+        .iter()
+        .filter(|ls| !is_synthetic_line_seg(ls))
+        .map(|ls| {
+            let text_height = if ls.text_height > 0 {
+                ls.text_height
+            } else {
+                ls.line_height.max(0)
+            };
+            ls.vertical_pos
+                .saturating_add(text_height)
+                .saturating_sub(page_vpos_base)
+        })
+        .max()
+        .filter(|bottom| *bottom >= 0)
+        .map(|bottom| crate::renderer::hwpunit_to_px(bottom, dpi))
+}
+
 impl Paginator {
     pub fn paginate_with_measured(
         &self,
@@ -1178,7 +1197,14 @@ impl Paginator {
                 trailing_ls
             };
             // 부동소수점 누적 오차 허용 (0.5px ≈ 0.13mm)
-            st.current_height + (para_height - effective_trailing) <= available_now + 0.5
+            let advance_fits =
+                st.current_height + (para_height - effective_trailing) <= available_now + 0.5;
+            let page_vpos_base = st.page_vpos_base.unwrap_or(0);
+            let text_box_fits = !para.line_segs.is_empty()
+                && !st.current_items.is_empty()
+                && paragraph_text_box_bottom_px(para, page_vpos_base, self.dpi)
+                    .is_some_and(|bottom| bottom <= available_now + 0.5);
+            advance_fits || text_box_fits
         } {
             // 문단 전체가 현재 페이지에 들어감
             st.current_items.push(PageItem::FullParagraph {

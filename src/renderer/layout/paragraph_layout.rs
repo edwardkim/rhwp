@@ -77,6 +77,44 @@ fn numbering_marker_text_style(
     }
 }
 
+fn aligned_edge_space_visual_run<'a>(
+    text: &'a str,
+    style: &TextStyle,
+    alignment: Alignment,
+    x: f64,
+    char_start: usize,
+) -> Option<(&'a str, f64, f64, usize)> {
+    if !matches!(
+        alignment,
+        Alignment::Center | Alignment::Right | Alignment::Distribute | Alignment::Split
+    ) {
+        return None;
+    }
+
+    let leading_count = text.chars().take_while(|ch| *ch == ' ').count();
+    if leading_count < 2 {
+        return None;
+    }
+
+    let content = text.trim_start_matches(' ');
+    if content.is_empty() {
+        return None;
+    }
+
+    let font_size = if style.font_size > 0.0 {
+        style.font_size
+    } else {
+        12.0
+    };
+    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    let per_space =
+        (font_size * 0.3 * ratio + style.letter_spacing + style.extra_char_spacing).max(0.0);
+    let visual_x = x + per_space * leading_count as f64;
+    let visual_w = estimate_text_width(content, style);
+
+    Some((content, visual_x, visual_w, char_start + leading_count))
+}
+
 fn para_float_horz_intersects_column(
     common: &CommonObjAttr,
     width_hu: i32,
@@ -3348,17 +3386,36 @@ impl LayoutEngine {
 
                         if run_fn_markers.is_empty() {
                             // 각주 없음: 기존 방식으로 전체 TextRun 생성
+                            let (render_text, render_x, render_w, render_char_start) =
+                                if let Some((text, visual_x, visual_w, visual_char_start)) =
+                                    aligned_edge_space_visual_run(
+                                        &run.text,
+                                        &text_style,
+                                        alignment,
+                                        x,
+                                        char_offset,
+                                    )
+                                {
+                                    (
+                                        text.to_string(),
+                                        visual_x,
+                                        visual_w,
+                                        Some(visual_char_start),
+                                    )
+                                } else {
+                                    (run.text.clone(), x, full_width, Some(char_offset))
+                                };
                             let run_id = tree.next_id();
                             let run_node = RenderNode::new(
                                 run_id,
                                 RenderNodeType::TextRun(TextRunNode {
-                                    text: run.text.clone(),
+                                    text: render_text,
                                     style: text_style,
                                     char_shape_id: Some(run.char_style_id),
                                     para_shape_id: Some(composed.para_style_id),
                                     section_index: Some(section_index),
                                     para_index: Some(para_index),
-                                    char_start: Some(char_offset),
+                                    char_start: render_char_start,
                                     cell_context: cell_ctx.clone(),
                                     is_para_end: is_last_run,
                                     is_line_break_end: is_line_break,
@@ -3369,7 +3426,7 @@ impl LayoutEngine {
                                     baseline,
                                     field_marker: FieldMarkerType::None,
                                 }),
-                                BoundingBox::new(x, y, full_width, line_height),
+                                BoundingBox::new(render_x, y, render_w, line_height),
                             );
                             line_node.children.push(run_node);
                         } else {
@@ -3522,6 +3579,7 @@ impl LayoutEngine {
                     // shape_layout 이 inline_shape_position 을 보고 별도 패스에서 렌더하므로 중복되지 않는다.
 
                     for &(tac_rel, tac_w, tac_ci) in &run_tacs {
+                        let mut preceding_text_trailing_space_width = 0.0;
                         // tac 앞 텍스트 세그먼트 렌더링
                         if seg_start < tac_rel {
                             let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
@@ -3538,19 +3596,55 @@ impl LayoutEngine {
                                 );
                             }
                             let seg_w = estimate_text_width(&seg_text, &seg_style);
+                            if seg_text.chars().any(|ch| !ch.is_whitespace()) {
+                                let trailing_spaces: String = seg_text
+                                    .chars()
+                                    .rev()
+                                    .take_while(|ch| *ch == ' ')
+                                    .collect::<Vec<_>>()
+                                    .into_iter()
+                                    .rev()
+                                    .collect();
+                                if !trailing_spaces.is_empty() {
+                                    preceding_text_trailing_space_width =
+                                        estimate_text_width(&trailing_spaces, &seg_style);
+                                }
+                            }
                             let seg_char_count = tac_rel - seg_start;
+                            let (
+                                render_seg_text,
+                                render_seg_x,
+                                render_seg_w,
+                                render_seg_char_start,
+                            ) = if let Some((text, visual_x, visual_w, visual_char_start)) =
+                                aligned_edge_space_visual_run(
+                                    &seg_text,
+                                    &seg_style,
+                                    alignment,
+                                    x,
+                                    sub_char_offset,
+                                ) {
+                                (
+                                    text.to_string(),
+                                    visual_x,
+                                    visual_w,
+                                    Some(visual_char_start),
+                                )
+                            } else {
+                                (seg_text, x, seg_w, Some(sub_char_offset))
+                            };
                             {
                                 let sub_run_id = tree.next_id();
                                 let sub_run_node = RenderNode::new(
                                     sub_run_id,
                                     RenderNodeType::TextRun(TextRunNode {
-                                        text: seg_text,
+                                        text: render_seg_text,
                                         style: seg_style,
                                         char_shape_id: Some(run.char_style_id),
                                         para_shape_id: Some(composed.para_style_id),
                                         section_index: Some(section_index),
                                         para_index: Some(para_index),
-                                        char_start: Some(sub_char_offset),
+                                        char_start: render_seg_char_start,
                                         cell_context: cell_ctx.clone(),
                                         is_para_end: false,
                                         is_line_break_end: false,
@@ -3561,7 +3655,7 @@ impl LayoutEngine {
                                         baseline,
                                         field_marker: FieldMarkerType::None,
                                     }),
-                                    BoundingBox::new(x, y, seg_w, line_height),
+                                    BoundingBox::new(render_seg_x, y, render_seg_w, line_height),
                                 );
                                 line_node.children.push(sub_run_node);
                             }
@@ -3827,6 +3921,17 @@ impl LayoutEngine {
                                     let om_bottom =
                                         hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
                                     let table_y = (y + baseline + om_bottom - table_h).max(y);
+                                    let table_x = if cell_ctx.is_some() {
+                                        clamp_inline_tac_table_x_to_line(
+                                            x,
+                                            tac_w,
+                                            x_base,
+                                            available_width,
+                                            preceding_text_trailing_space_width,
+                                        )
+                                    } else {
+                                        x
+                                    };
                                     self.layout_table(
                                         tree,
                                         col_node,
@@ -3844,7 +3949,7 @@ impl LayoutEngine {
                                         None,
                                         0.0,
                                         0.0,
-                                        Some(x),
+                                        Some(table_x),
                                         None,
                                         None,
                                         false,
@@ -3856,7 +3961,7 @@ impl LayoutEngine {
                                         para_index,
                                         tac_ci,
                                         cell_ctx.as_ref(),
-                                        x,
+                                        table_x,
                                         table_y,
                                     );
                                 }
@@ -5862,9 +5967,70 @@ fn form_color_to_css(color: u32) -> String {
     format!("#{:02x}{:02x}{:02x}", r, g, b)
 }
 
+fn clamp_inline_tac_table_x_to_line(
+    x: f64,
+    table_width: f64,
+    line_x: f64,
+    line_width: f64,
+    trailing_space_width: f64,
+) -> f64 {
+    if !x.is_finite()
+        || !table_width.is_finite()
+        || !line_x.is_finite()
+        || !line_width.is_finite()
+        || !trailing_space_width.is_finite()
+        || table_width <= 0.0
+        || line_width <= 0.0
+    {
+        return x;
+    }
+
+    let line_right = line_x + line_width;
+    let right_overflow = (x + table_width - line_right).max(0.0);
+    let trailing_adjustment = trailing_space_width.max(0.0).min(right_overflow * 0.64);
+    let effective_line_width = (line_width - trailing_adjustment).max(0.0);
+    let max_x = (line_x + effective_line_width - table_width).max(line_x);
+    x.clamp(line_x, max_x)
+}
+
 #[cfg(test)]
 mod pua_mapping_tests {
-    use super::map_pua_bullet_char;
+    use super::{
+        aligned_edge_space_visual_run, clamp_inline_tac_table_x_to_line, map_pua_bullet_char,
+    };
+    use crate::model::style::Alignment;
+    use crate::renderer::TextStyle;
+
+    #[test]
+    fn clamps_cell_inline_table_to_line_right_edge() {
+        let clipped = clamp_inline_tac_table_x_to_line(546.5, 96.9, 186.1, 428.9, 0.0);
+        assert!((clipped - 518.1).abs() < 0.001);
+
+        let clipped_before_trailing_spaces =
+            clamp_inline_tac_table_x_to_line(546.5, 96.9, 186.1, 428.9, 43.0);
+        assert!((clipped_before_trailing_spaces - 499.9).abs() < 0.1);
+
+        let already_inside = clamp_inline_tac_table_x_to_line(224.5, 96.9, 186.1, 428.9, 43.0);
+        assert!((already_inside - 224.5).abs() < 0.001);
+    }
+
+    #[test]
+    fn centered_edge_spaces_use_compact_visual_advance() {
+        let style = TextStyle {
+            font_size: 20.0,
+            ..Default::default()
+        };
+
+        let (text, x, _, char_start) =
+            aligned_edge_space_visual_run("  제목", &style, Alignment::Center, 100.0, 7).unwrap();
+
+        assert_eq!(text, "제목");
+        assert!((x - 112.0).abs() < 0.001);
+        assert_eq!(char_start, 9);
+        assert!(
+            aligned_edge_space_visual_run("  제목", &style, Alignment::Left, 100.0, 7).is_none()
+        );
+    }
 
     #[test]
     fn supplementary_pua_a_passthrough_for_boxed_digits() {

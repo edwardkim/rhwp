@@ -61,6 +61,43 @@ fn group_label_matches_replay_plane(
         None => true,
     }
 }
+
+fn is_kopub_dotum_light_face(font_family: &str) -> bool {
+    let primary = font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
+    let lower = primary.to_ascii_lowercase();
+    (primary.contains("KoPub돋움체") || lower.contains("kopub dotum"))
+        && (primary.contains("Light") || lower.contains("light"))
+}
+
+fn canvas_generic_fallback(font_family: &str) -> &'static str {
+    if is_kopub_dotum_light_face(font_family) {
+        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif";
+    }
+    super::generic_fallback(font_family)
+}
+
+fn canvas_font_family(font_family: &str) -> String {
+    if font_family.is_empty() {
+        "sans-serif".to_string()
+    } else {
+        let fallback = canvas_generic_fallback(font_family);
+        format!("\"{}\", {}", font_family, fallback)
+    }
+}
+
+fn canvas_css_font_weight(style: &TextStyle) -> Option<&'static str> {
+    if !style.bold && is_kopub_dotum_light_face(&style.font_family) {
+        None
+    } else {
+        style.css_font_weight()
+    }
+}
 use super::composer::{
     decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
 };
@@ -125,6 +162,18 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
         .ok()?;
     ctx.put_image_data(&image_data, 0.0, 0.0).ok()?;
     Some(canvas)
+}
+
+#[cfg(target_arch = "wasm32")]
+fn normalize_browser_image_bytes(data: &[u8]) -> std::borrow::Cow<'_, [u8]> {
+    if crate::renderer::image_resolver::detect_image_mime_type(data) == "image/jpeg" {
+        if let Some(png) = crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(data)
+        {
+            return std::borrow::Cow::Owned(png);
+        }
+    }
+
+    std::borrow::Cow::Borrowed(data)
 }
 
 /// 빠른 해시 (FNV-1a 64비트)
@@ -700,9 +749,7 @@ impl WebCanvasRenderer {
         } else if run.rotation != 0.0 {
             let cx = bbox.x + bbox.width / 2.0;
             let cy = bbox.y + bbox.height / 2.0;
-            let font_weight = run
-                .style
-                .css_font_weight()
+            let font_weight = canvas_css_font_weight(&run.style)
                 .map(|weight| format!("{} ", weight))
                 .unwrap_or_default();
             let font_style_str = if run.style.italic { "italic " } else { "" };
@@ -711,12 +758,7 @@ impl WebCanvasRenderer {
             } else {
                 12.0
             };
-            let font_family = if run.style.font_family.is_empty() {
-                "sans-serif".to_string()
-            } else {
-                let fallback = super::generic_fallback(&run.style.font_family);
-                format!("\"{}\" , {}", run.style.font_family, fallback)
-            };
+            let font_family = canvas_font_family(&run.style.font_family);
             let font = format!(
                 "{}{}{:.3}px {}",
                 font_style_str, font_weight, font_size, font_family
@@ -2082,8 +2124,7 @@ impl Renderer for WebCanvasRenderer {
         let text = &expand_pua_old_hangul_canvas(text);
 
         // 글꼴 설정
-        let font_weight = style
-            .css_font_weight()
+        let font_weight = canvas_css_font_weight(style)
             .map(|weight| format!("{} ", weight))
             .unwrap_or_default();
         let font_style = if style.italic { "italic " } else { "" };
@@ -2102,12 +2143,7 @@ impl Renderer for WebCanvasRenderer {
             (base_font_size, y)
         };
 
-        let font_family = if style.font_family.is_empty() {
-            "sans-serif".to_string()
-        } else {
-            let fallback = super::generic_fallback(&style.font_family);
-            format!("\"{}\", {}", style.font_family, fallback)
-        };
+        let font_family = canvas_font_family(&style.font_family);
 
         let font = format!(
             "{}{}{:.3}px {}",
@@ -2250,8 +2286,7 @@ impl Renderer for WebCanvasRenderer {
                 );
                 if needs_font_fallback {
                     self.ctx.save();
-                    let fallback_weight = style
-                        .css_font_weight()
+                    let fallback_weight = canvas_css_font_weight(style)
                         .map(|weight| format!("{weight} "))
                         .unwrap_or_default();
                     let fallback_font = format!(
@@ -2621,6 +2656,8 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
+        let render_data = normalize_browser_image_bytes(data);
+        let data = render_data.as_ref();
         let key = hash_bytes(data);
 
         // [동기 페인트] PNG/JPEG/BMP 는 image 크레이트로 즉시 디코드한 오프스크린
@@ -2684,6 +2721,11 @@ impl Renderer for WebCanvasRenderer {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
+            } else if mime_type == "image/jpeg" {
+                match crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
             } else {
                 (std::borrow::Cow::Borrowed(data), mime_type)
             };
@@ -2742,6 +2784,8 @@ impl WebCanvasRenderer {
         dw: f64,
         dh: f64,
     ) {
+        let render_data = normalize_browser_image_bytes(data);
+        let data = render_data.as_ref();
         let key = hash_bytes(data);
 
         // [동기 페인트] PNG/JPEG/BMP 는 디코드된 오프스크린 캔버스로 첫 렌더에
@@ -2955,14 +2999,8 @@ impl WebCanvasRenderer {
             glyph_color.clone()
         };
 
-        let font_family = if style.font_family.is_empty() {
-            "sans-serif".to_string()
-        } else {
-            let fallback = super::generic_fallback(&style.font_family);
-            format!("\"{}\" , {}", style.font_family, fallback)
-        };
-        let font_weight = style
-            .css_font_weight()
+        let font_family = canvas_font_family(&style.font_family);
+        let font_weight = canvas_css_font_weight(style)
             .map(|weight| format!("{} ", weight))
             .unwrap_or_default();
         let font_style_str = if style.italic { "italic " } else { "" };
@@ -3124,12 +3162,7 @@ impl WebCanvasRenderer {
             glyph_color.clone()
         };
 
-        let font_family = if style.font_family.is_empty() {
-            "sans-serif".to_string()
-        } else {
-            let fallback = super::generic_fallback(&style.font_family);
-            format!("\"{}\" , {}", style.font_family, fallback)
-        };
+        let font_family = canvas_font_family(&style.font_family);
 
         let cx = bbox_x + box_size / 2.0;
         let cy = bbox_y + bbox_h - box_size / 2.0;
@@ -3169,8 +3202,7 @@ impl WebCanvasRenderer {
             1.0
         };
 
-        let font_weight = style
-            .css_font_weight()
+        let font_weight = canvas_css_font_weight(style)
             .map(|weight| format!("{} ", weight))
             .unwrap_or_default();
         let font_style_str = if style.italic { "italic " } else { "" };
@@ -3399,6 +3431,7 @@ impl WebCanvasRenderer {
                         bbox.y + bbox.height - img_height,
                     ),
                     ImageFillMode::TileAll
+                    | ImageFillMode::Total
                     | ImageFillMode::TileHorzTop
                     | ImageFillMode::TileHorzBottom
                     | ImageFillMode::TileVertLeft
@@ -3413,7 +3446,7 @@ impl WebCanvasRenderer {
                 self.ctx.clip();
 
                 match mode {
-                    ImageFillMode::TileAll => {
+                    ImageFillMode::TileAll | ImageFillMode::Total => {
                         // 바둑판식으로-모두: 전체 타일링
                         let mut ty = bbox.y;
                         while ty < bbox.y + bbox.height {

@@ -382,6 +382,30 @@ fn test_page_background_image_fit_to_size_preserves_bbox_output() {
 }
 
 #[test]
+fn test_image_fill_total_uses_native_brush_pattern() {
+    let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
+    let mut image = ImageNode::new(1, Some(png));
+    image.fill_mode = Some(ImageFillMode::Total);
+    let bbox = BoundingBox::new(10.0, 20.0, 100.0, 4.0);
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(200.0, 100.0);
+
+    renderer.render_image_node(&image, &bbox);
+
+    let output = renderer.output();
+    assert!(
+        output.contains("fill=\"url(#tile-pat-"),
+        "TOTAL image brush should render as native-size pattern: {output}"
+    );
+    assert!(
+        !output.contains(
+            "<image x=\"10\" y=\"20\" width=\"100\" height=\"4\" preserveAspectRatio=\"none\""
+        ),
+        "TOTAL image brush must not stretch source pixels into the target bbox: {output}"
+    );
+}
+
+#[test]
 fn test_page_background_image_center_uses_original_image_size() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let image = PageBackgroundImage {

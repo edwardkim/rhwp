@@ -735,6 +735,7 @@ pub(crate) fn write_fill_brush<W: Write>(
             let img = fill.image.clone().unwrap_or_default();
             let mode = match img.fill_mode {
                 ImageFillMode::FitToSize => "FIT",
+                ImageFillMode::Total => "TOTAL",
                 ImageFillMode::Center => "CENTER",
                 _ => "TILE",
             };

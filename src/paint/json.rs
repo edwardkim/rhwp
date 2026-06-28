@@ -830,6 +830,11 @@ impl PaintOp {
                                 Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
                                 None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
                             }
+                        } else if mime == "image/jpeg" {
+                            match crate::renderer::svg::grayscale_jpeg_bytes_to_png_bytes(data) {
+                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            }
                         } else {
                             (mime, std::borrow::Cow::Borrowed(data.as_slice()))
                         };
@@ -2481,6 +2486,7 @@ fn image_fill_mode_str(value: ImageFillMode) -> &'static str {
         ImageFillMode::TileVertLeft => "tileVertLeft",
         ImageFillMode::TileVertRight => "tileVertRight",
         ImageFillMode::FitToSize => "fitToSize",
+        ImageFillMode::Total => "total",
         ImageFillMode::Center => "center",
         ImageFillMode::CenterTop => "centerTop",
         ImageFillMode::CenterBottom => "centerBottom",

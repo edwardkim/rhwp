@@ -1141,7 +1141,31 @@ impl LayoutEngine {
                         let conn_y1 = render_y + hwpunit_to_px(line.start.y, self.dpi) * sy;
                         let conn_x2 = render_x + hwpunit_to_px(line.end.x, self.dpi) * sx;
                         let conn_y2 = render_y + hwpunit_to_px(line.end.y, self.dpi) * sy;
-                        commands.push(PathCommand::MoveTo(conn_x1, conn_y1));
+                        let connector_point_xy =
+                            |cp: &crate::model::shape::ConnectorControlPoint| {
+                                (
+                                    render_x + hwpunit_to_px(cp.x, self.dpi) * sx,
+                                    render_y + hwpunit_to_px(cp.y, self.dpi) * sy,
+                                )
+                            };
+                        let first_control_is_start = conn
+                            .control_points
+                            .first()
+                            .map(|cp| cp.point_type == 3)
+                            .unwrap_or(false);
+                        let last_control_is_end = conn
+                            .control_points
+                            .last()
+                            .map(|cp| cp.point_type == 26)
+                            .unwrap_or(false);
+                        let (path_start_x, path_start_y) = if first_control_is_start {
+                            connector_point_xy(&conn.control_points[0])
+                        } else {
+                            (conn_x1, conn_y1)
+                        };
+                        let mut path_end_x = conn_x2;
+                        let mut path_end_y = conn_y2;
+                        commands.push(PathCommand::MoveTo(path_start_x, path_start_y));
 
                         if conn.link_type.is_arc() {
                             // 곡선 연결선: 제어점(type=2)을 bezier 제어점으로, 나머지는 앵커로 사용
@@ -1209,13 +1233,21 @@ impl LayoutEngine {
                                 }
                             }
                         } else {
-                            // 꺽인 연결선: 제어점을 LineTo로 연결
-                            for cp in &conn.control_points {
-                                let cpx = render_x + hwpunit_to_px(cp.x, self.dpi) * sx;
-                                let cpy = render_y + hwpunit_to_px(cp.y, self.dpi) * sy;
+                            for cp in conn.control_points.iter().skip(if first_control_is_start {
+                                1
+                            } else {
+                                0
+                            }) {
+                                let (cpx, cpy) = connector_point_xy(cp);
                                 commands.push(PathCommand::LineTo(cpx, cpy));
+                                path_end_x = cpx;
+                                path_end_y = cpy;
                             }
-                            commands.push(PathCommand::LineTo(conn_x2, conn_y2));
+                            if !last_control_is_end {
+                                commands.push(PathCommand::LineTo(conn_x2, conn_y2));
+                                path_end_x = conn_x2;
+                                path_end_y = conn_y2;
+                            }
                         }
 
                         let style = ShapeStyle {
@@ -1235,7 +1267,8 @@ impl LayoutEngine {
                         path_node.cell_para_index = cell_para_index;
                         path_node.outer_table_control_index = outer_table_control_index;
                         // 연결선: 시작/끝 좌표 (선 선택 방식용) + 화살표
-                        path_node.connector_endpoints = Some((conn_x1, conn_y1, conn_x2, conn_y2));
+                        path_node.connector_endpoints =
+                            Some((path_start_x, path_start_y, path_end_x, path_end_y));
                         if line_style.start_arrow != super::super::ArrowStyle::None
                             || line_style.end_arrow != super::super::ArrowStyle::None
                         {

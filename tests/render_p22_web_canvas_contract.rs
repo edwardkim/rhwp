@@ -48,3 +48,21 @@ fn web_canvas_control_code_group_labels_follow_active_replay_plane() {
         "layer group labels should use the replay-plane gate"
     );
 }
+
+#[test]
+fn web_canvas_kopub_light_uses_canvas_specific_font_guard() {
+    assert!(
+        WEB_CANVAS_SOURCE.contains("fn canvas_css_font_weight("),
+        "WebCanvas should own the browser-canvas font-weight override"
+    );
+    assert!(
+        WEB_CANVAS_SOURCE.contains("is_kopub_dotum_light_face(&style.font_family)"),
+        "KoPub Dotum Light should not inherit the generic 300-weight hint in canvas"
+    );
+    assert!(
+        WEB_CANVAS_SOURCE.contains(
+            "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight'"
+        ),
+        "KoPub Dotum Light canvas fallback should prefer system Korean sans before ExtraLight"
+    );
+}

@@ -8,8 +8,8 @@ use super::composer::{
 };
 use super::form_caption::display_form_caption;
 pub(crate) use super::image_resolver::{
-    bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
-    real_picture_watermark_bytes_to_hancom_tone_png_bytes,
+    bmp_bytes_to_png_bytes, detect_image_mime_type, grayscale_jpeg_bytes_to_png_bytes,
+    pcx_bytes_to_png_bytes, real_picture_watermark_bytes_to_hancom_tone_png_bytes,
     real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes, tiff_bytes_to_png_bytes,
     watermark_jpeg_bytes_to_hancom_baked_png_bytes,
 };
@@ -469,7 +469,13 @@ impl SvgRenderer {
             }
             RenderNodeType::Path(path) => {
                 self.open_shape_transform(&path.transform, &node.bbox);
-                self.draw_path_with_gradient(&path.commands, &path.style, path.gradient.as_deref());
+                let connector_line = path.line_style.as_ref().zip(path.connector_endpoints);
+                self.draw_path_with_gradient_and_line_style(
+                    &path.commands,
+                    &path.style,
+                    path.gradient.as_deref(),
+                    connector_line,
+                );
             }
             RenderNodeType::Equation(eq) => {
                 // 수식 SVG 조각을 bbox 위치에 배치
@@ -1224,6 +1230,16 @@ impl SvgRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
+        self.draw_path_with_gradient_and_line_style(commands, style, gradient, None);
+    }
+
+    fn draw_path_with_gradient_and_line_style(
+        &mut self,
+        commands: &[PathCommand],
+        style: &ShapeStyle,
+        gradient: Option<&GradientFillInfo>,
+        connector_line: Option<(&LineStyle, (f64, f64, f64, f64))>,
+    ) {
         let mut d = String::new();
         for cmd in commands {
             match cmd {
@@ -1264,6 +1280,35 @@ impl SvgRenderer {
                 StrokeDash::DashDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3\""),
                 StrokeDash::DashDotDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3 2 3\""),
                 _ => {}
+            }
+        }
+
+        if let Some((line_style, (x1, y1, x2, y2))) = connector_line {
+            let line_len = ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+                .sqrt()
+                .max(1.0);
+            let color = color_to_svg(line_style.color);
+            if line_style.start_arrow != super::ArrowStyle::None {
+                let marker_id = self.ensure_arrow_marker(
+                    &color,
+                    line_style.width,
+                    line_len,
+                    &line_style.start_arrow,
+                    line_style.start_arrow_size,
+                    true,
+                );
+                attrs.push_str(&format!(" marker-start=\"url(#{})\"", marker_id));
+            }
+            if line_style.end_arrow != super::ArrowStyle::None {
+                let marker_id = self.ensure_arrow_marker(
+                    &color,
+                    line_style.width,
+                    line_len,
+                    &line_style.end_arrow,
+                    line_style.end_arrow_size,
+                    false,
+                );
+                attrs.push_str(&format!(" marker-end=\"url(#{})\"", marker_id));
             }
         }
 
@@ -1395,6 +1440,14 @@ impl SvgRenderer {
                         detected_mime,
                     ),
                 }
+            } else if detected_mime == "image/jpeg" {
+                match grayscale_jpeg_bytes_to_png_bytes(&img.data) {
+                    Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
+                    None => (
+                        std::borrow::Cow::Borrowed(img.data.as_slice()),
+                        detected_mime,
+                    ),
+                }
             } else {
                 (
                     std::borrow::Cow::Borrowed(img.data.as_slice()),
@@ -1440,7 +1493,7 @@ impl SvgRenderer {
                     bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
                 ));
             }
-            ImageFillMode::TileAll => {
+            ImageFillMode::TileAll | ImageFillMode::Total => {
                 self.render_tiled_image(&render_bytes, &data_uri, bbox, true, true, None);
             }
             ImageFillMode::TileHorzTop | ImageFillMode::TileHorzBottom => {
@@ -1534,6 +1587,11 @@ impl SvgRenderer {
             } else if is_watermark_image && mime_type == "image/jpeg" {
                 match watermark_jpeg_bytes_to_hancom_baked_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", true),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
+            } else if mime_type == "image/jpeg" {
+                match grayscale_jpeg_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
             } else {
@@ -1636,7 +1694,7 @@ impl SvgRenderer {
                     ));
                 }
             }
-            ImageFillMode::TileAll => {
+            ImageFillMode::TileAll | ImageFillMode::Total => {
                 // 바둑판식으로-모두: 원래 크기로 전체 타일링
                 self.render_tiled_image(
                     &render_data,
