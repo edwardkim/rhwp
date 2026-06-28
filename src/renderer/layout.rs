@@ -2275,10 +2275,10 @@ impl LayoutEngine {
                                         ci,
                                         section_index,
                                         styles,
-                                        body_area,
+                                        &paper_area,
                                         body_area,
                                         &paper_area,
-                                        body_area.y,
+                                        paper_area.y,
                                         Alignment::Left,
                                         bin_data_content,
                                         &std::collections::HashMap::new(),
@@ -2288,7 +2288,7 @@ impl LayoutEngine {
                                 Control::Picture(pic) => {
                                     let (pic_w, pic_h) = self.resolve_object_size(
                                         &pic.common,
-                                        body_area,
+                                        &paper_area,
                                         body_area,
                                         &paper_area,
                                     );
@@ -2296,11 +2296,11 @@ impl LayoutEngine {
                                         &pic.common,
                                         pic_w,
                                         pic_h,
-                                        body_area,
-                                        body_area,
+                                        &paper_area,
+                                        &paper_area,
                                         body_area,
                                         &paper_area,
-                                        body_area.y,
+                                        paper_area.y,
                                         Alignment::Left,
                                     );
                                     let pic_area = super::layout::LayoutRect {
@@ -2309,10 +2309,17 @@ impl LayoutEngine {
                                         width: pic_w,
                                         height: pic_h,
                                     };
+                                    let mut positioned = (**pic).clone();
+                                    positioned.common.horizontal_offset = 0;
+                                    positioned.common.vertical_offset = 0;
+                                    positioned.common.horz_rel_to = HorzRelTo::Para;
+                                    positioned.common.vert_rel_to = VertRelTo::Para;
+                                    positioned.common.horz_align = HorzAlign::Left;
+                                    positioned.common.vert_align = VertAlign::Top;
                                     self.layout_picture(
                                         tree,
                                         target_node,
-                                        pic,
+                                        &positioned,
                                         &pic_area,
                                         bin_data_content,
                                         Alignment::Left,
