@@ -1870,6 +1870,7 @@ fn is_fullwidth_symbol(c: char) -> bool {
         '\u{00A3}' |                   // £ POUND SIGN
         '\u{00A5}'                     // ¥ YEN SIGN
     )
+    || ('\u{2190}'..='\u{21FF}').contains(&c) // Arrows (→, ⇨, ⇒ 등)
     || ('\u{2460}'..='\u{24FF}').contains(&c) // Enclosed Alphanumerics (①②③ 등)
     || ('\u{25A0}'..='\u{25FF}').contains(&c) // Geometric Shapes (□■▲◆○ 등, 섹션 머리 기호)
     || ('\u{2600}'..='\u{26FF}').contains(&c) // Miscellaneous Symbols (☆★ 등)
@@ -2126,6 +2127,22 @@ mod tests {
         // "A B" = A(10) + space(10+5) + B(10) = 35
         let w = m.estimate_text_width("A B", &style);
         assert!((w - 35.0).abs() < 0.01, "expected 35.0, got {}", w);
+    }
+
+    #[test]
+    fn test_unicode_arrow_uses_symbol_advance() {
+        let style = TextStyle {
+            font_family: "KoPub돋움체 Light".to_string(),
+            font_size: 10.0,
+            ..Default::default()
+        };
+
+        let arrow = estimate_text_width("⇒", &style);
+        let ascii = estimate_text_width("A", &style);
+        assert!(
+            arrow > ascii,
+            "arrow should use symbol advance, arrow={arrow}, ascii={ascii}"
+        );
     }
 
     #[test]
