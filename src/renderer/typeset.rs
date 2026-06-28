@@ -10523,7 +10523,15 @@ impl TypesetEngine {
                 let declared_px =
                     crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi);
                 let block_height = table_total.max(declared_px);
-                let sync_h = st.current_height.max(target_y);
+                // [Task #1624] footer stored vpos 가 흐름 cur_h 보다 footer 한 개 높이 이상 위에
+                // 있으면(본문이 짧은데 vpos 가 page-bottom 앵커/누적 노이즈), vpos 동기화는
+                // 본문 직후에 들어갈 footer 를 spurious 하게 다음 쪽으로 민다(+1쪽 over-push).
+                // vpos 가 흐름을 plausibly 따를 때(cur_h + block_height 이내)만 동기화한다.
+                let sync_h = if target_y <= st.current_height + block_height {
+                    st.current_height.max(target_y)
+                } else {
+                    st.current_height
+                };
                 if sync_h + block_height <= available {
                     // 현재 쪽에 stored vpos 위치로 배치.
                     st.current_height = sync_h;
