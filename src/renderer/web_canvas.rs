@@ -80,7 +80,7 @@ thread_local! {
 // [Task: 임베디드 그림 첫-렌더 페인트] 동기 디코드 캔버스 캐시.
 //
 // 기존 draw_image 는 HtmlImageElement.set_src(data URL) 로 이미지를 비동기
-// 로드하므로, 페이지를 한 번만 renderPageToCanvas 하는 뷰어(ecrits)에서는
+// 로드하므로, 페이지를 한 번만 renderPageToCanvas 하는 브라우저 뷰어에서는
 // img.complete()==false 라 첫 렌더에 그림이 그려지지 않는다 (재렌더가 없어
 // 영영 빈 칸). PNG/JPEG/BMP 는 image 크레이트로 Rust 측에서 즉시 디코드해
 // 오프스크린 HtmlCanvasElement 에 put_image_data 한 뒤, drawImage(canvas)
