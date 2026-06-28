@@ -260,11 +260,18 @@ impl SvgRenderer {
             RenderNodeType::PageBackground(bg) => {
                 // 배경색 먼저 (이미지가 투명 부분을 가질 수 있으므로)
                 if let Some(color) = bg.background_color {
-                    let color_str = color_to_svg(color);
-                    self.output.push_str(&format!(
-                        "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"{}\"/>\n",
-                        node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height, color_str,
-                    ));
+                    let is_default_white_page_fill = (color & 0x00ff_ffff) == 0x00ff_ffff
+                        && node.bbox.x.abs() < 0.001
+                        && node.bbox.y.abs() < 0.001
+                        && (node.bbox.width - self.width).abs() < 0.001
+                        && (node.bbox.height - self.height).abs() < 0.001;
+                    if !is_default_white_page_fill {
+                        let color_str = color_to_svg(color);
+                        self.output.push_str(&format!(
+                            "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"{}\"/>\n",
+                            node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height, color_str,
+                        ));
+                    }
                 }
                 // 그라데이션 (배경색 위에 덮음)
                 if let Some(grad) = &bg.gradient {
