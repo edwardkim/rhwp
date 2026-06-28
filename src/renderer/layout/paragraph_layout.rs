@@ -1506,6 +1506,7 @@ impl LayoutEngine {
         let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
+        let condense_min_space = para_style.map(|s| s.condense_min_space).unwrap_or(0);
 
         // [Task #489] 비-TAC Picture/Shape with wrap=Square 보유 여부.
         // 한컴은 어울림 그림이 있는 paragraph 의 LINE_SEG.cs/sw 를 그림 너비만큼 좁혀
@@ -2589,15 +2590,19 @@ impl LayoutEngine {
                     } else {
                         // 양쪽 정렬: 단어 간격 분배 (또는 음수 슬랙 시 압축)
                         let raw_ews = slack / interior_spaces as f64;
-                        let space_base_w = estimate_text_width(
-                            " ",
-                            &resolved_to_text_style(
-                                styles,
-                                comp_line.runs[0].char_style_id,
-                                comp_line.runs[0].lang_index,
-                            ),
+                        let space_style = resolved_to_text_style(
+                            styles,
+                            comp_line.runs[0].char_style_id,
+                            comp_line.runs[0].lang_index,
                         );
-                        let min_ews = -(space_base_w * 0.5);
+                        let space_base_w = estimate_text_width(" ", &space_style);
+                        let min_ews = if condense_min_space > 0 {
+                            let shrink_percent = f64::from(condense_min_space.min(75)) / 100.0;
+                            let min_space = space_base_w * (1.0 - shrink_percent);
+                            min_space - space_base_w
+                        } else {
+                            -(space_base_w * 0.5)
+                        };
                         (raw_ews.max(min_ews), 0.0, 0.0)
                     }
                 } else if total_char_count > 1 {

@@ -64,6 +64,15 @@ const FONT_LIST: FontEntry[] = [
   // Haansoft Dotum: HWP 문서가 직접 지정하는 한컴 돋움 영문명(예: 수능 모의고사 본문).
   // 기존 미등록 → 체인의 'Malgun Gothic'(Pretendard) 가 먼저 매칭되어 굵게 렌더됐다.
   { name: 'Haansoft Dotum', file: 'fonts/NotoSansKR-ExtraLight.woff2' },
+  { name: 'KoPub돋움체 Light', file: 'fonts/NotoSansKR-ExtraLight.woff2' },
+  { name: 'KoPub Dotum Light', file: 'fonts/NotoSansKR-ExtraLight.woff2' },
+  { name: 'KoPubWorld돋움체 Light', file: 'fonts/NotoSansKR-ExtraLight.woff2' },
+  { name: 'KoPub바탕체 Light', file: 'fonts/NotoSerifKR-Regular.woff2' },
+  { name: 'KoPub바탕체 Medium', file: 'fonts/NotoSerifKR-Regular.woff2' },
+  { name: 'KoPub바탕체 Bold', file: 'fonts/NotoSerifKR-Bold.woff2' },
+  { name: 'KoPub Batang Light', file: 'fonts/NotoSerifKR-Regular.woff2' },
+  { name: 'KoPub Batang Medium', file: 'fonts/NotoSerifKR-Regular.woff2' },
+  { name: 'KoPub Batang Bold', file: 'fonts/NotoSerifKR-Bold.woff2' },
   { name: '바탕', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: '바탕체', file: 'fonts/D2Coding-Regular.woff2' },
   { name: '궁서', file: 'fonts/GowunBatang-Regular.woff2' },

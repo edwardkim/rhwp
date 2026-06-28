@@ -700,7 +700,11 @@ impl WebCanvasRenderer {
         } else if run.rotation != 0.0 {
             let cx = bbox.x + bbox.width / 2.0;
             let cy = bbox.y + bbox.height / 2.0;
-            let font_weight = if run.style.bold { "bold " } else { "" };
+            let font_weight = run
+                .style
+                .css_font_weight()
+                .map(|weight| format!("{} ", weight))
+                .unwrap_or_default();
             let font_style_str = if run.style.italic { "italic " } else { "" };
             let font_size = if run.style.font_size > 0.0 {
                 run.style.font_size
@@ -2078,7 +2082,10 @@ impl Renderer for WebCanvasRenderer {
         let text = &expand_pua_old_hangul_canvas(text);
 
         // 글꼴 설정
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = style
+            .css_font_weight()
+            .map(|weight| format!("{} ", weight))
+            .unwrap_or_default();
         let font_style = if style.italic { "italic " } else { "" };
         let base_font_size = if style.font_size > 0.0 {
             style.font_size
@@ -2243,10 +2250,14 @@ impl Renderer for WebCanvasRenderer {
                 );
                 if needs_font_fallback {
                     self.ctx.save();
+                    let fallback_weight = style
+                        .css_font_weight()
+                        .map(|weight| format!("{weight} "))
+                        .unwrap_or_default();
                     let fallback_font = format!(
                         "{}{}{:.3}px 'Malgun Gothic','맑은 고딕',sans-serif",
                         if style.italic { "italic " } else { "" },
-                        if style.bold { "bold " } else { "" },
+                        fallback_weight,
                         font_size
                     );
                     self.ctx.set_font(&fallback_font);
@@ -2950,7 +2961,10 @@ impl WebCanvasRenderer {
             let fallback = super::generic_fallback(&style.font_family);
             format!("\"{}\" , {}", style.font_family, fallback)
         };
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = style
+            .css_font_weight()
+            .map(|weight| format!("{} ", weight))
+            .unwrap_or_default();
         let font_style_str = if style.italic { "italic " } else { "" };
         let font = format!(
             "{}{}{:.3}px {}",
@@ -3155,7 +3169,10 @@ impl WebCanvasRenderer {
             1.0
         };
 
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = style
+            .css_font_weight()
+            .map(|weight| format!("{} ", weight))
+            .unwrap_or_default();
         let font_style_str = if style.italic { "italic " } else { "" };
         let font = format!(
             "{}{}{:.3}px {}",

@@ -322,10 +322,8 @@ impl SvgRenderer {
                     };
                     let mut attrs = format!("font-family=\"{}\" font-size=\"{}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"central\"",
                         escape_xml(&font_family), font_size, color);
-                    if run.style.is_visually_bold() {
-                        attrs.push_str(" font-weight=\"bold\"");
-                    } else if run.style.is_medium_weight() {
-                        attrs.push_str(" font-weight=\"500\"");
+                    if let Some(weight) = run.style.css_font_weight() {
+                        attrs.push_str(&format!(" font-weight=\"{}\"", weight));
                     }
                     if run.style.italic {
                         attrs.push_str(" font-style=\"italic\"");
@@ -1986,10 +1984,8 @@ impl SvgRenderer {
             escape_xml(&font_family_str),
             inner_font_size
         );
-        if style.is_visually_bold() {
-            font_attrs.push_str(" font-weight=\"bold\"");
-        } else if style.is_medium_weight() {
-            font_attrs.push_str(" font-weight=\"500\"");
+        if let Some(weight) = style.css_font_weight() {
+            font_attrs.push_str(&format!(" font-weight=\"{}\"", weight));
         }
         if style.italic {
             font_attrs.push_str(" font-style=\"italic\"");
@@ -2130,10 +2126,8 @@ impl SvgRenderer {
             escape_xml(&font_family_str),
             inner_font_size
         );
-        if style.is_visually_bold() {
-            font_attrs.push_str(" font-weight=\"bold\"");
-        } else if style.is_medium_weight() {
-            font_attrs.push_str(" font-weight=\"500\"");
+        if let Some(weight) = style.css_font_weight() {
+            font_attrs.push_str(&format!(" font-weight=\"{}\"", weight));
         }
         if style.italic {
             font_attrs.push_str(" font-style=\"italic\"");
@@ -2643,6 +2637,13 @@ impl Renderer for SvgRenderer {
             width, height, width, height,
         ));
         self.defs_insert_pos = self.output.len();
+        // HWP/PDF pages are opaque white by default. Some pages have no explicit
+        // PageBackground node; without this, SVG-to-PNG tools composite the
+        // transparent page against black and produce false visual diffs.
+        self.output.push_str(&format!(
+            "<rect x=\"0\" y=\"0\" width=\"{}\" height=\"{}\" fill=\"#ffffff\"/>\n",
+            width, height
+        ));
     }
 
     fn end_page(&mut self) {
@@ -2701,10 +2702,8 @@ impl Renderer for SvgRenderer {
             escape_xml(&font_family),
             font_size,
         );
-        if style.is_visually_bold() {
-            base_attrs.push_str(" font-weight=\"bold\"");
-        } else if style.is_medium_weight() {
-            base_attrs.push_str(" font-weight=\"500\"");
+        if let Some(weight) = style.css_font_weight() {
+            base_attrs.push_str(&format!(" font-weight=\"{}\"", weight));
         }
         if style.italic {
             base_attrs.push_str(" font-style=\"italic\"");

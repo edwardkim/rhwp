@@ -309,10 +309,8 @@ impl Renderer for HtmlRenderer {
             x, draw_y, font_family, draw_size, color,
         );
 
-        if style.is_visually_bold() {
-            css.push_str("font-weight:bold;");
-        } else if style.is_medium_weight() {
-            css.push_str("font-weight:500;");
+        if let Some(weight) = style.css_font_weight() {
+            css.push_str(&format!("font-weight:{};", weight));
         }
         if style.italic {
             css.push_str("font-style:italic;");

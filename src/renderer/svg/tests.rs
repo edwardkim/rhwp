@@ -8,6 +8,9 @@ fn test_svg_begin_end_page() {
     let output = renderer.output();
     assert!(output.starts_with("<svg"));
     assert!(output.contains("width=\"800\""));
+    assert!(
+        output.contains("<rect x=\"0\" y=\"0\" width=\"800\" height=\"600\" fill=\"#ffffff\"/>")
+    );
     assert!(output.ends_with("</svg>\n"));
 }
 

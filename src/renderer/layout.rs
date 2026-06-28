@@ -1565,6 +1565,8 @@ impl LayoutEngine {
         _composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
+        body_area: &LayoutRect,
+        paper_area: &LayoutRect,
         table_area: Option<&LayoutRect>,
         page_index: u32,
         page_number: u32,
@@ -1648,27 +1650,44 @@ impl LayoutEngine {
                     // 머리말/꼬리말 내 Picture: header/footer area 기준 배치
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         if let Control::Picture(pic) = ctrl {
-                            let pic_container = LayoutRect {
-                                x: area.x,
-                                y: y_offset,
-                                width: area.width,
-                                height: area.height - (y_offset - area.y),
-                            };
-                            // [Task #825] inner para_index = i (hf_paragraphs 안 인덱스),
-                            // inner control_index = ci. outer 위치는 outer_hf_ref 보존.
-                            self.layout_picture_full(
-                                tree,
-                                area_node,
-                                pic,
-                                &pic_container,
-                                bin_data_content,
-                                Alignment::Left,
-                                outer_section_index,
-                                Some(i),
-                                Some(ci),
-                                outer_hf_ref.clone(),
-                                None, // [Task #1151 v4] cell_ctx: 머리말/꼬리말 path
-                            );
+                            if pic.common.treat_as_char {
+                                let pic_container = LayoutRect {
+                                    x: area.x,
+                                    y: y_offset,
+                                    width: area.width,
+                                    height: area.height - (y_offset - area.y),
+                                };
+                                // [Task #825] inner para_index = i (hf_paragraphs 안 인덱스),
+                                // inner control_index = ci. outer 위치는 outer_hf_ref 보존.
+                                self.layout_picture_full(
+                                    tree,
+                                    area_node,
+                                    pic,
+                                    &pic_container,
+                                    bin_data_content,
+                                    Alignment::Left,
+                                    outer_section_index,
+                                    Some(i),
+                                    Some(ci),
+                                    outer_hf_ref.clone(),
+                                    None, // [Task #1151 v4] cell_ctx: 머리말/꼬리말 path
+                                );
+                            } else {
+                                self.layout_header_footer_picture(
+                                    tree,
+                                    area_node,
+                                    pic,
+                                    area,
+                                    body_area,
+                                    paper_area,
+                                    y_offset,
+                                    bin_data_content,
+                                    outer_section_index,
+                                    i,
+                                    ci,
+                                    outer_hf_ref.clone(),
+                                );
+                            }
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             y_offset += pic_h;
                         }
@@ -1703,8 +1722,8 @@ impl LayoutEngine {
                             0, // section_index
                             styles,
                             area,
-                            area,
-                            area,
+                            body_area,
+                            paper_area,
                             y_offset,
                             Alignment::Left,
                             bin_data_content,
@@ -2394,6 +2413,86 @@ impl LayoutEngine {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn layout_header_footer_picture(
+        &self,
+        tree: &mut PageRenderTree,
+        area_node: &mut RenderNode,
+        pic: &crate::model::image::Picture,
+        area: &LayoutRect,
+        body_area: &LayoutRect,
+        paper_area: &LayoutRect,
+        para_y: f64,
+        bin_data_content: &[BinDataContent],
+        outer_section_index: Option<usize>,
+        inner_para_index: usize,
+        inner_control_index: usize,
+        outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
+    ) {
+        let rotation = pic.shape_attr.rotation_angle.rem_euclid(360);
+        let uses_rotated_frame = rotation != 0
+            && pic.shape_attr.current_width > 0
+            && pic.shape_attr.current_height > 0
+            && pic.common.width > 0
+            && pic.common.height > 0;
+        let (pic_width_hu, pic_height_hu) = if uses_rotated_frame {
+            (
+                pic.shape_attr.current_width as i32,
+                pic.shape_attr.current_height as i32,
+            )
+        } else {
+            picture_display_size_hu(pic)
+        };
+        let frame_width = if uses_rotated_frame {
+            hwpunit_to_px(pic.common.width as i32, self.dpi)
+        } else {
+            hwpunit_to_px(pic_width_hu, self.dpi)
+        };
+        let frame_height = if uses_rotated_frame {
+            hwpunit_to_px(pic.common.height as i32, self.dpi)
+        } else {
+            hwpunit_to_px(pic_height_hu, self.dpi)
+        };
+
+        let (frame_x, frame_y) = self.compute_object_position(
+            &pic.common,
+            frame_width,
+            frame_height,
+            area,
+            area,
+            body_area,
+            paper_area,
+            para_y,
+            Alignment::Left,
+        );
+        let mut positioned = pic.clone();
+        positioned.common.horizontal_offset = 0;
+        positioned.common.vertical_offset = 0;
+        positioned.common.horz_rel_to = HorzRelTo::Para;
+        positioned.common.vert_rel_to = VertRelTo::Para;
+        positioned.common.horz_align = HorzAlign::Left;
+        positioned.common.vert_align = VertAlign::Top;
+        let pic_container = LayoutRect {
+            x: frame_x,
+            y: frame_y,
+            width: frame_width,
+            height: frame_height,
+        };
+        self.layout_picture_full(
+            tree,
+            area_node,
+            &positioned,
+            &pic_container,
+            bin_data_content,
+            Alignment::Left,
+            outer_section_index,
+            Some(inner_para_index),
+            Some(inner_control_index),
+            outer_hf_ref,
+            None,
+        );
+    }
+
     /// 머리말 영역 노드를 생성하여 tree에 추가한다.
     fn build_header(
         &self,
@@ -2438,6 +2537,13 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.header_area,
+                                &layout.body_area,
+                                &LayoutRect {
+                                    x: 0.0,
+                                    y: 0.0,
+                                    width: layout.page_width,
+                                    height: layout.page_height,
+                                },
                                 header_table_area.as_ref(),
                                 page_content.page_index,
                                 page_content.page_number,
@@ -2564,6 +2670,13 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.footer_area,
+                                &layout.body_area,
+                                &LayoutRect {
+                                    x: 0.0,
+                                    y: 0.0,
+                                    width: layout.page_width,
+                                    height: layout.page_height,
+                                },
                                 None,
                                 page_content.page_index,
                                 page_content.page_number,

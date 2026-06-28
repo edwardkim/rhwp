@@ -1683,3 +1683,279 @@ fn master_page_controls_sort_by_render_layer_z_order() {
         "master-page children should replay Hancom object order, not raw control order"
     );
 }
+
+fn first_header_child_bbox<F>(tree: &PageRenderTree, predicate: F) -> BoundingBox
+where
+    F: Fn(&RenderNodeType) -> bool + Copy,
+{
+    fn find<F>(node: &RenderNode, predicate: F) -> Option<BoundingBox>
+    where
+        F: Fn(&RenderNodeType) -> bool + Copy,
+    {
+        if predicate(&node.node_type) {
+            return Some(node.bbox);
+        }
+        node.children
+            .iter()
+            .find_map(|child| find(child, predicate))
+    }
+
+    let header = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Header))
+        .expect("header node should be rendered");
+    find(header, predicate).expect("matching header child should be rendered")
+}
+
+fn render_tree_with_header_control(control: Control) -> PageRenderTree {
+    use crate::model::header_footer::Header;
+    use crate::renderer::pagination::HeaderFooterRef;
+
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let paragraphs = vec![Paragraph {
+        controls: vec![Control::Header(Box::new(Header {
+            paragraphs: vec![Paragraph {
+                controls: vec![control],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }))],
+        ..Default::default()
+    }];
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 1,
+        section_index: 0,
+        layout,
+        column_contents: Vec::new(),
+        active_header: Some(HeaderFooterRef {
+            para_index: 0,
+            control_index: 0,
+            source_section_index: 0,
+        }),
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+    engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &[],
+        &ResolvedStyleSet::default(),
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    )
+}
+
+#[test]
+fn header_paper_relative_shape_uses_page_origin() {
+    let tree = render_tree_with_header_control(Control::Shape(Box::new(ShapeObject::Rectangle(
+        RectangleShape {
+            common: CommonObjAttr {
+                width: 7_500,
+                height: 3_000,
+                horizontal_offset: 1_500,
+                vertical_offset: 2_250,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                text_wrap: TextWrap::InFrontOfText,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    ))));
+
+    let bbox = first_header_child_bbox(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Rectangle(_))
+    });
+    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
+    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+}
+
+#[test]
+fn header_paper_relative_picture_uses_page_origin() {
+    let tree =
+        render_tree_with_header_control(Control::Picture(Box::new(crate::model::image::Picture {
+            common: CommonObjAttr {
+                width: 7_500,
+                height: 3_000,
+                horizontal_offset: 1_500,
+                vertical_offset: 2_250,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                text_wrap: TextWrap::InFrontOfText,
+                ..Default::default()
+            },
+            ..Default::default()
+        })));
+
+    let bbox = first_header_child_bbox(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Image(_))
+    });
+    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
+    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+}
+
+#[test]
+fn group_child_matrix_coordinates_are_not_translated_twice() {
+    fn shape_attr(
+        tx: f64,
+        ty: f64,
+        width: u32,
+        height: u32,
+    ) -> crate::model::shape::ShapeComponentAttr {
+        crate::model::shape::ShapeComponentAttr {
+            original_width: width,
+            original_height: height,
+            current_width: width,
+            current_height: height,
+            render_tx: tx,
+            render_ty: ty,
+            render_sx: 1.0,
+            render_sy: 1.0,
+            ..Default::default()
+        }
+    }
+
+    let engine = LayoutEngine::with_default_dpi();
+    let expected_y = hwpunit_to_px(1000, engine.dpi);
+    let rect = ShapeObject::Rectangle(RectangleShape {
+        drawing: crate::model::shape::DrawingObjAttr {
+            shape_attr: shape_attr(0.0, 1000.0, 1000, 500),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+    let nested_group = ShapeObject::Group(crate::model::shape::GroupShape {
+        shape_attr: shape_attr(0.0, 1000.0, 1000, 500),
+        children: vec![rect],
+        ..Default::default()
+    });
+    let outer_group = ShapeObject::Group(crate::model::shape::GroupShape {
+        shape_attr: shape_attr(0.0, 0.0, 1000, 1000),
+        children: vec![nested_group],
+        ..Default::default()
+    });
+    let mut tree = PageRenderTree::new(0, 200.0, 200.0);
+    let mut parent = RenderNode::new(
+        tree.next_id(),
+        RenderNodeType::MasterPage,
+        BoundingBox::new(0.0, 0.0, 200.0, 200.0),
+    );
+
+    engine.layout_shape_object(
+        &mut tree,
+        &mut parent,
+        &outer_group,
+        0.0,
+        0.0,
+        hwpunit_to_px(1000, engine.dpi),
+        hwpunit_to_px(1000, engine.dpi),
+        0,
+        0,
+        0,
+        &ResolvedStyleSet::default(),
+        &[],
+        &std::collections::HashMap::new(),
+        &[],
+        None,
+        false,
+    );
+
+    let outer = parent.children.first().expect("outer group rendered");
+    let nested = outer.children.first().expect("nested group rendered");
+    let child = nested.children.first().expect("child rendered");
+    assert!(
+        (nested.bbox.y - expected_y).abs() < 0.01,
+        "nested group y should come from its composed rendering matrix"
+    );
+    assert!(
+        (child.bbox.y - expected_y).abs() < 0.01,
+        "child matrix y should not add nested group bbox y again"
+    );
+}
+
+#[test]
+fn top_level_group_anchor_offsets_local_child_matrices_once() {
+    fn shape_attr(
+        tx: f64,
+        ty: f64,
+        width: u32,
+        height: u32,
+        group_level: u16,
+    ) -> crate::model::shape::ShapeComponentAttr {
+        crate::model::shape::ShapeComponentAttr {
+            original_width: width,
+            original_height: height,
+            current_width: width,
+            current_height: height,
+            group_level,
+            render_tx: tx,
+            render_ty: ty,
+            render_sx: 1.0,
+            render_sy: 1.0,
+            ..Default::default()
+        }
+    }
+
+    let engine = LayoutEngine::with_default_dpi();
+    let anchor_y = hwpunit_to_px(2000, engine.dpi);
+    let local_child_y = hwpunit_to_px(1000, engine.dpi);
+    let rect = ShapeObject::Rectangle(RectangleShape {
+        drawing: crate::model::shape::DrawingObjAttr {
+            shape_attr: shape_attr(0.0, 1000.0, 1000, 500, 1),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+    let outer_group = ShapeObject::Group(crate::model::shape::GroupShape {
+        shape_attr: shape_attr(0.0, 0.0, 1000, 1000, 0),
+        children: vec![rect],
+        ..Default::default()
+    });
+    let mut tree = PageRenderTree::new(0, 200.0, 200.0);
+    let mut parent = RenderNode::new(
+        tree.next_id(),
+        RenderNodeType::MasterPage,
+        BoundingBox::new(0.0, 0.0, 200.0, 200.0),
+    );
+
+    engine.layout_shape_object(
+        &mut tree,
+        &mut parent,
+        &outer_group,
+        0.0,
+        anchor_y,
+        hwpunit_to_px(1000, engine.dpi),
+        hwpunit_to_px(1000, engine.dpi),
+        0,
+        0,
+        0,
+        &ResolvedStyleSet::default(),
+        &[],
+        &std::collections::HashMap::new(),
+        &[],
+        None,
+        false,
+    );
+
+    let outer = parent.children.first().expect("outer group rendered");
+    let child = outer.children.first().expect("child rendered");
+    assert!(
+        (child.bbox.y - (anchor_y + local_child_y)).abs() < 0.01,
+        "top-level group anchor should offset local child matrices exactly once"
+    );
+}

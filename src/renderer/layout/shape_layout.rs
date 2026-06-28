@@ -30,6 +30,14 @@ fn textbox_has_visible_text(text_box: &TextBox) -> bool {
         .any(|para| para.text.chars().any(|ch| !ch.is_whitespace()))
 }
 
+fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
+    text_box.paragraphs.iter().any(|para| {
+        para.controls
+            .iter()
+            .any(|control| matches!(control, Control::Picture(pic) if !pic.common.treat_as_char))
+    })
+}
+
 /// 평탄화된 HWPX 그룹(matrix group) 자식의 "글상자 보조선"(검정 얇은 SOLID 테두리)은
 /// 한컴 실물에서 인쇄되지 않는다(편람 장 표지 "행정업무 운영 개요" 제목/목록 글상자).
 /// 오탐 방지를 위해 매우 좁게 한정: 그룹 자식(group_level>0) + 회전/전단 없음 + 검정
@@ -246,24 +254,27 @@ fn should_reflow_matrix_textbox_lines(
     let has_axis_scale =
         (sa.render_sx.abs() - 1.0).abs() > 0.001 || (sa.render_sy.abs() - 1.0).abs() > 0.001;
     let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
+    let compressed_group_child = sa.group_level > 0
+        && sa.render_sx > 0.0
+        && sa.render_sy > 0.0
+        && (sa.render_sx < 0.99 || sa.render_sy < 0.99);
     has_axis_scale
         && !has_rotation_or_shear
         && text_box.paragraphs.iter().any(|para| {
             matrix_textbox_lines_need_reflow(para)
-                && matrix_textbox_lines_overflow_height(para, available_height, dpi)
+                && (compressed_group_child
+                    || matrix_textbox_lines_overflow_height(para, available_height, dpi))
         })
 }
 
 fn reflow_matrix_textbox_para(
     para: &mut Paragraph,
     available_width: f64,
-    available_height: f64,
+    _available_height: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    if !matrix_textbox_lines_need_reflow(para)
-        || !matrix_textbox_lines_overflow_height(para, available_height, dpi)
-    {
+    if !matrix_textbox_lines_need_reflow(para) {
         return;
     }
 
@@ -553,8 +564,10 @@ impl LayoutEngine {
         let (mut shape_w, mut shape_h) =
             self.resolve_object_size(common, col_area, body_area, paper_area);
 
-        // current size가 common size보다 크면 current size 사용
-        // (스케일 행렬이 적용된 글상자 등에서 common.height < current_height인 경우)
+        if shape
+            .drawing()
+            .and_then(|drawing| drawing.text_box.as_ref())
+            .is_some_and(textbox_contains_non_tac_picture)
         {
             let sa = shape.shape_attr();
             let cur_w = hwpunit_to_px(sa.current_width as i32, self.dpi);
@@ -721,7 +734,9 @@ impl LayoutEngine {
     }
 
     /// 회전이 있는 그룹 자식 도형을 전체 아핀 변환으로 렌더링한다.
-    /// group_x/y: 그룹의 페이지 절대 좌표 (px)
+    /// HWPX/HWP renderingInfo is already composed within the top-level group
+    /// coordinate system. Apply only that top-level group anchor; nested group
+    /// bboxes are structural and must not be applied as another translation.
     /// sa: 자식의 ShapeComponentAttr (아핀 행렬 포함)
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_group_child_affine(
@@ -729,8 +744,8 @@ impl LayoutEngine {
         tree: &mut PageRenderTree,
         parent: &mut RenderNode,
         child: &crate::model::shape::ShapeObject,
-        group_x: f64,
-        group_y: f64,
+        group_origin_x: f64,
+        group_origin_y: f64,
         sa: &crate::model::shape::ShapeComponentAttr,
         section_index: usize,
         para_index: usize,
@@ -750,13 +765,13 @@ impl LayoutEngine {
         let d = sa.render_sy;
         let ty = sa.render_ty;
 
-        // HWP 좌표를 아핀 변환 후 페이지 절대 좌표(px)로 변환하는 헬퍼
+        // HWP 좌표를 아핀 변환 후 페이지 절대 좌표(px)로 변환하는 헬퍼.
         let transform_pt = |ox: f64, oy: f64| -> (f64, f64) {
             let gx = a * ox + b * oy + tx;
             let gy = c * ox + d * oy + ty;
             (
-                group_x + hwpunit_to_px(gx as i32, self.dpi),
-                group_y + hwpunit_to_px(gy as i32, self.dpi),
+                group_origin_x + hwpunit_to_px(gx as i32, self.dpi),
+                group_origin_y + hwpunit_to_px(gy as i32, self.dpi),
             )
         };
 
@@ -946,6 +961,51 @@ impl LayoutEngine {
         // 그룹 자식은 renderingInfo 행렬로 이미 위치/대칭이 반영되어 있으므로
         // ShapeComponentAttr의 flip/rotation을 다시 SVG transform으로 적용하지 않는다.
         matrix_positioned: bool,
+    ) {
+        self.layout_shape_object_with_group_origin(
+            tree,
+            parent,
+            shape,
+            base_x,
+            base_y,
+            w,
+            h,
+            section_index,
+            para_index,
+            control_index,
+            styles,
+            bin_data_content,
+            overflow_map,
+            parent_cell_path,
+            table_cell_ref,
+            matrix_positioned,
+            None,
+        );
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn layout_shape_object_with_group_origin(
+        &self,
+        tree: &mut PageRenderTree,
+        parent: &mut RenderNode,
+        shape: &crate::model::shape::ShapeObject,
+        base_x: f64,
+        base_y: f64,
+        w: f64,
+        h: f64,
+        section_index: usize,
+        para_index: usize,
+        control_index: usize,
+        styles: &ResolvedStyleSet,
+        bin_data_content: &[BinDataContent],
+        overflow_map: &std::collections::HashMap<(usize, usize), Vec<Paragraph>>,
+        parent_cell_path: &[CellPathEntry],
+        // [Task #1138] 표 셀 내 도형인 경우: (cell_idx, cell_para_idx, outer_table_ctrl_idx)
+        table_cell_ref: Option<(usize, usize, usize)>,
+        // 그룹 자식은 renderingInfo 행렬로 이미 위치/대칭이 반영되어 있으므로
+        // ShapeComponentAttr의 flip/rotation을 다시 SVG transform으로 적용하지 않는다.
+        matrix_positioned: bool,
+        inherited_group_origin: Option<(f64, f64)>,
     ) {
         use crate::model::shape::ShapeObject;
 
@@ -1541,6 +1601,13 @@ impl LayoutEngine {
             ShapeObject::Group(group) => {
                 // 묶음 개체: Group 컨테이너 노드로 감싸서 hittest 시 하나의 개체로 선택되도록 함
                 let group_id = tree.next_id();
+                let group_origin = inherited_group_origin.unwrap_or_else(|| {
+                    if group.shape_attr.group_level == 0 {
+                        (base_x, base_y)
+                    } else {
+                        (0.0, 0.0)
+                    }
+                });
                 let mut group_node = RenderNode::new(
                     group_id,
                     RenderNodeType::Group(GroupNode {
@@ -1550,19 +1617,6 @@ impl LayoutEngine {
                     }),
                     BoundingBox::new(base_x, base_y, w, h),
                 );
-                // 그룹 스케일 팩터: current_size / original_size (리사이즈 시 적용)
-                let gsa = &group.shape_attr;
-                let group_sx = if gsa.original_width > 0 {
-                    gsa.current_width as f64 / gsa.original_width as f64
-                } else {
-                    1.0
-                };
-                let group_sy = if gsa.original_height > 0 {
-                    gsa.current_height as f64 / gsa.original_height as f64
-                } else {
-                    1.0
-                };
-
                 for (_ci, child) in group.children.iter().enumerate() {
                     let sa = child.shape_attr();
                     let has_rotation = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
@@ -1572,8 +1626,8 @@ impl LayoutEngine {
                             tree,
                             &mut group_node,
                             child,
-                            base_x,
-                            base_y,
+                            group_origin.0,
+                            group_origin.1,
                             sa,
                             section_index,
                             para_index,
@@ -1583,20 +1637,23 @@ impl LayoutEngine {
                             parent_cell_path,
                         );
                     } else {
-                        // render_tx/ty와 render_sx/sy에는 이미 그룹 스케일과 flip이 반영되어
-                        // 있으므로 group_sx/sy나 ShapeComponentAttr의 flip을 추가 적용하지
-                        // 않는다. 음수 scale이면 tx는 오른쪽/아래쪽 모서리일 수 있으므로
-                        // 두 변환 모서리의 min/max로 실제 bbox를 만든다.
+                        // render_tx/ty와 render_sx/sy에는 top-level group 로컬 좌표계
+                        // 안에서 그룹 스케일/이동/flip이 합성되어 있다. top-level group
+                        // anchor만 더하고, nested group bbox는 다시 더하지 않는다. 음수
+                        // scale이면 tx는 오른쪽/아래쪽 모서리일 수 있으므로 두 변환
+                        // 모서리의 min/max로 실제 bbox를 만든다.
                         let x0 = sa.render_tx;
                         let y0 = sa.render_ty;
                         let x1 = sa.render_tx + sa.original_width as f64 * sa.render_sx;
                         let y1 = sa.render_ty + sa.original_height as f64 * sa.render_sy;
-                        let child_x = base_x + hwpunit_to_px(x0.min(x1).round() as i32, self.dpi);
-                        let child_y = base_y + hwpunit_to_px(y0.min(y1).round() as i32, self.dpi);
+                        let child_x =
+                            group_origin.0 + hwpunit_to_px(x0.min(x1).round() as i32, self.dpi);
+                        let child_y =
+                            group_origin.1 + hwpunit_to_px(y0.min(y1).round() as i32, self.dpi);
                         let child_w = hwpunit_to_px((x1 - x0).abs().round() as i32, self.dpi);
                         let child_h = hwpunit_to_px((y1 - y0).abs().round() as i32, self.dpi);
                         let empty_map = std::collections::HashMap::new();
-                        self.layout_shape_object(
+                        self.layout_shape_object_with_group_origin(
                             tree,
                             &mut group_node,
                             child,
@@ -1613,6 +1670,7 @@ impl LayoutEngine {
                             parent_cell_path,
                             table_cell_ref, // [Task #1138] 그룹 자식 — 부모와 같은 셀 컨텍스트
                             true,
+                            Some(group_origin),
                         );
                     }
                 }
