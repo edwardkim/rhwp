@@ -9002,6 +9002,10 @@ impl TypesetEngine {
                 let total_h = st.current_height + fmt.height_for_fit;
                 let fit_fail_within_safety =
                     total_h > available && total_h <= available + LAYOUT_DRIFT_SAFETY_PX;
+                let base_available = st.base_available_height() - st.current_zone_y_offset;
+                let fit_fail_only_after_footnote_reserve = st.current_footnote_height > 0.0
+                    && total_h > available
+                    && total_h <= base_available;
                 let prior_trailing_drift = st.current_height > available
                     && st.current_height <= available + LAYOUT_DRIFT_SAFETY_PX + 0.5;
                 let previous_item_is_empty_para = st
@@ -9021,7 +9025,7 @@ impl TypesetEngine {
                     st.hidden_empty_paras.insert(para_idx);
                     return;
                 }
-                if fit_fail_within_safety {
+                if fit_fail_within_safety || fit_fail_only_after_footnote_reserve {
                     st.current_items.push(PageItem::FullParagraph {
                         para_index: para_idx,
                     });

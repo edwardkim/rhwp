@@ -1601,7 +1601,7 @@ impl LayoutEngine {
             ShapeObject::Group(group) => {
                 // 묶음 개체: Group 컨테이너 노드로 감싸서 hittest 시 하나의 개체로 선택되도록 함
                 let group_id = tree.next_id();
-                let group_origin = inherited_group_origin.unwrap_or_else(|| {
+                let group_origin = inherited_group_origin.unwrap_or({
                     if group.shape_attr.group_level == 0 {
                         (base_x, base_y)
                     } else {
