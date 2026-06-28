@@ -10500,6 +10500,53 @@ impl TypesetEngine {
             }
         }
 
+        // [Task #1611] PAGE-앵커(vert=쪽) + valign=Bottom 자리차지 표(발신명의 footer 등)는
+        // 한컴이 stored vpos 위치에 두고, 본문 누적이 그 위치+높이를 넘기면 블록을 통째로
+        // 다음 쪽에 단독 배치한다. Paper-앵커(절대좌표, 위 10440)와 달리 페이지네이션에
+        // 참여하므로 cur_h 를 stored vpos 로 끌어올린 뒤(본문 흐름이 vpos 보다 짧을 때) fit 을
+        // 판정한다. 동기화하지 않으면 footer 가 flowed cur_h(vpos 보다 ~수십px 낮음)에 배치되어
+        // page-fit 이 과소되고 footer 가 본문 페이지에 흡수된다(−1쪽 갭 요인 B).
+        let is_page_bottom_topbottom_block = !table.common.treat_as_char
+            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            && matches!(table.common.vert_rel_to, VertRelTo::Page)
+            && matches!(
+                table.common.vert_align,
+                crate::model::shape::VertAlign::Bottom
+            );
+        if is_page_bottom_topbottom_block && st.current_column == 0 {
+            if let Some(first_seg) = para.line_segs.first() {
+                let target_y =
+                    crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
+                // 한컴은 고정크기 자리차지 블록을 **선언 높이**(common.height)로 렌더·예약한다.
+                // 페이지네이터의 effective_height 는 셀 내용 기반 측정치라 선언보다 작을 수 있어
+                // (footer 351.4px 선언 vs 302.3px 측정) fit 이 과소된다 → 선언 높이로 판정·예약.
+                let declared_px =
+                    crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi);
+                let block_height = table_total.max(declared_px);
+                let sync_h = st.current_height.max(target_y);
+                if sync_h + block_height <= available {
+                    // 현재 쪽에 stored vpos 위치로 배치.
+                    st.current_height = sync_h;
+                } else if !st.current_items.is_empty() {
+                    // vpos 기준 초과 → 발신명의 블록을 통째로 다음 쪽에 단독 배치(분할 부적절).
+                    st.advance_column_or_new_page();
+                }
+                self.place_table_with_text(
+                    st,
+                    para_idx,
+                    ctrl_idx,
+                    para,
+                    table,
+                    fmt,
+                    para_start_height,
+                    block_height,
+                    is_first_placed,
+                    is_last_placed,
+                );
+                return;
+            }
+        }
+
         if st.current_height + table_total <= available {
             self.place_table_with_text(
                 st,
