@@ -27,6 +27,7 @@ pub mod utils;
 pub mod writer;
 
 use std::collections::HashSet;
+use std::fmt::Write as _;
 
 use crate::model::document::Document;
 
@@ -111,8 +112,12 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
             .unwrap_or_else(|| SETTINGS_XML.as_bytes()),
     )?;
 
-    // 7. META-INF/container.rdf
-    z.write_deflated("META-INF/container.rdf", META_INF_CONTAINER_RDF.as_bytes())?;
+    // 7. META-INF/container.rdf — header + every section part.
+    // Hancom uses this RDF graph alongside content.hpf; a stale one-section
+    // RDF makes multi-section documents fail to open even when the ZIP and
+    // content.hpf contain every section.
+    let container_rdf = write_container_rdf(&section_hrefs);
+    z.write_deflated("META-INF/container.rdf", container_rdf.as_bytes())?;
 
     // 8. BinData ZIP 엔트리 (Stage 4)
     //    `ctx.bin_data_map` 의 엔트리 순서대로 실제 바이너리를 ZIP에 추가.
@@ -170,6 +175,41 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     z.finish()
 }
 
+fn write_container_rdf(section_hrefs: &[String]) -> String {
+    const PKG_NS: &str = "http://www.hancom.co.kr/hwpml/2016/meta/pkg#";
+
+    let mut out = String::new();
+    out.push_str(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>"#);
+    out.push_str(r#"<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">"#);
+    out.push_str(r#"<rdf:Description rdf:about="">"#);
+    let _ = write!(
+        out,
+        r#"<ns0:hasPart xmlns:ns0="{PKG_NS}" rdf:resource="Contents/header.xml"/>"#
+    );
+    out.push_str(r#"</rdf:Description>"#);
+    out.push_str(r#"<rdf:Description rdf:about="Contents/header.xml">"#);
+    let _ = write!(out, r#"<rdf:type rdf:resource="{PKG_NS}HeaderFile"/>"#);
+    out.push_str(r#"</rdf:Description>"#);
+
+    for href in section_hrefs {
+        out.push_str(r#"<rdf:Description rdf:about="">"#);
+        let _ = write!(
+            out,
+            r#"<ns0:hasPart xmlns:ns0="{PKG_NS}" rdf:resource="{href}"/>"#
+        );
+        out.push_str(r#"</rdf:Description>"#);
+        let _ = write!(out, r#"<rdf:Description rdf:about="{href}">"#);
+        let _ = write!(out, r#"<rdf:type rdf:resource="{PKG_NS}SectionFile"/>"#);
+        out.push_str(r#"</rdf:Description>"#);
+    }
+
+    out.push_str(r#"<rdf:Description rdf:about="">"#);
+    let _ = write!(out, r#"<rdf:type rdf:resource="{PKG_NS}Document"/>"#);
+    out.push_str(r#"</rdf:Description>"#);
+    out.push_str(r#"</rdf:RDF>"#);
+    out
+}
+
 /// 3-way BinData 동기화 단언: `ctx.bin_data_entries()`, content.hpf manifest,
 /// ZIP entry 의 href 집합이 모두 일치하는지 확인.
 fn assert_bin_data_3way(
@@ -190,6 +230,8 @@ fn assert_bin_data_3way(
 
 #[cfg(test)]
 mod tests {
+    use std::io::Read;
+
     use super::*;
     use crate::parser::hwpx::parse_hwpx;
 
@@ -253,6 +295,158 @@ mod tests {
         let bytes = serialize_hwpx(&doc).expect("serialize one-section");
         let parsed = parse_hwpx(&bytes).expect("parse back");
         assert_eq!(parsed.sections.len(), 1);
+    }
+
+    #[test]
+    fn master_pages_are_serialized_as_package_parts() {
+        use crate::model::document::Section;
+        use crate::model::header_footer::{HeaderFooterApply, MasterPage};
+        use crate::model::paragraph::Paragraph;
+        use crate::serializer::hwpx::package_check::check_package;
+
+        let mut doc = Document::default();
+        let mut section0 = Section::default();
+        let mut section1 = Section::default();
+
+        let mut first_master_para = Paragraph::default();
+        first_master_para.text = "first master".to_string();
+        section0.section_def.master_pages.push(MasterPage {
+            apply_to: HeaderFooterApply::Both,
+            text_width: 10_000,
+            text_height: 10_000,
+            text_ref: 1,
+            paragraphs: vec![first_master_para],
+            ..Default::default()
+        });
+
+        let mut second_master_para = Paragraph::default();
+        second_master_para.text = "second master".to_string();
+        section1.section_def.master_pages.push(MasterPage {
+            apply_to: HeaderFooterApply::Odd,
+            text_width: 12_000,
+            text_height: 8_000,
+            text_ref: 1,
+            paragraphs: vec![second_master_para],
+            ..Default::default()
+        });
+
+        doc.sections.push(section0);
+        doc.sections.push(section1);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize master pages");
+        let report = check_package(&bytes, &doc);
+        assert!(report.is_ok(), "problems: {}", report.summary());
+
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        for name in ["Contents/masterpage0.xml", "Contents/masterpage1.xml"] {
+            archive
+                .by_name(name)
+                .unwrap_or_else(|_| panic!("missing {name}"));
+        }
+
+        let mut content_hpf = String::new();
+        archive
+            .by_name("Contents/content.hpf")
+            .expect("content.hpf")
+            .read_to_string(&mut content_hpf)
+            .expect("read content.hpf");
+        assert!(content_hpf.contains(r#"id="masterpage0""#));
+        assert!(content_hpf.contains(r#"href="Contents/masterpage1.xml""#));
+
+        let mut section1_xml = String::new();
+        archive
+            .by_name("Contents/section1.xml")
+            .expect("section1")
+            .read_to_string(&mut section1_xml)
+            .expect("read section1");
+        assert!(section1_xml.contains(r#"masterPageCnt="1""#));
+        assert!(section1_xml.contains(r#"idRef="masterpage1""#));
+
+        drop(archive);
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        assert_eq!(parsed.sections[0].section_def.master_pages.len(), 1);
+        assert_eq!(parsed.sections[1].section_def.master_pages.len(), 1);
+        assert_eq!(
+            parsed.sections[1].section_def.master_pages[0].apply_to,
+            HeaderFooterApply::Odd
+        );
+    }
+
+    #[test]
+    fn container_rdf_lists_every_section() {
+        let mut doc = Document::default();
+        for _ in 0..3 {
+            doc.sections
+                .push(crate::model::document::Section::default());
+        }
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut container_rdf = String::new();
+        archive
+            .by_name("META-INF/container.rdf")
+            .expect("container.rdf")
+            .read_to_string(&mut container_rdf)
+            .expect("read container.rdf");
+
+        assert!(container_rdf.contains(r#"rdf:resource="Contents/header.xml""#));
+        for i in 0..3 {
+            let href = format!("Contents/section{i}.xml");
+            assert!(
+                container_rdf.contains(&format!(r#"rdf:resource="{href}""#)),
+                "missing hasPart for {href}: {container_rdf}"
+            );
+            assert!(
+                container_rdf.contains(&format!(r#"rdf:about="{href}""#)),
+                "missing type description for {href}: {container_rdf}"
+            );
+        }
+    }
+
+    #[test]
+    fn header_footer_ids_are_preserved() {
+        use crate::model::control::Control;
+        use crate::model::document::Section;
+        use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
+        use crate::model::paragraph::Paragraph;
+
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        let mut para = Paragraph::default();
+
+        para.controls.push(Control::Footer(Box::new(Footer {
+            raw_ctrl_extra: 2u32.to_le_bytes().to_vec(),
+            apply_to: HeaderFooterApply::Even,
+            ..Default::default()
+        })));
+        para.controls.push(Control::Header(Box::new(Header {
+            raw_ctrl_extra: 1u32.to_le_bytes().to_vec(),
+            apply_to: HeaderFooterApply::Odd,
+            ..Default::default()
+        })));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize header/footer ids");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut section0_xml = String::new();
+        archive
+            .by_name("Contents/section0.xml")
+            .expect("section0")
+            .read_to_string(&mut section0_xml)
+            .expect("read section0");
+
+        assert!(
+            section0_xml.contains(r#"<hp:footer id="2" applyPageType="EVEN">"#),
+            "footer id not preserved: {section0_xml}"
+        );
+        assert!(
+            section0_xml.contains(r#"<hp:header id="1" applyPageType="ODD">"#),
+            "header id not preserved: {section0_xml}"
+        );
     }
 
     #[test]
