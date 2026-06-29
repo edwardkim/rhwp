@@ -23,9 +23,10 @@ use crate::model::page::{
 };
 use crate::model::paragraph::{CharShapeRef, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
 use crate::model::shape::{
-    ArcShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape, GroupShape, HorzAlign,
-    HorzRelTo, LineShape, PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject,
-    SizeCriterion, TextBox, TextWrap, VertAlign, VertRelTo,
+    ArcShape, CommonObjAttr, ConnectorControlPoint, ConnectorData, CurveShape, DrawingObjAttr,
+    EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, LinkLineType, PolygonShape,
+    RectangleShape, ShapeComponentAttr, ShapeObject, SizeCriterion, TextBox, TextWrap, VertAlign,
+    VertRelTo,
 };
 use crate::model::style::{Fill, ShapeBorderLine};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
@@ -485,7 +486,8 @@ fn parse_paragraph(
                         // lineseg 배열 파싱
                         parse_lineseg_array(reader, &mut para)?;
                     }
-                    b"rect" | b"ellipse" | b"line" | b"arc" | b"polygon" | b"curve" => {
+                    b"rect" | b"ellipse" | b"line" | b"connectLine" | b"arc" | b"polygon"
+                    | b"curve" => {
                         // 그리기 객체 파싱
                         let shape = parse_shape_object(local, ce, reader)?;
                         text_parts.push("\u{0002}".to_string());
@@ -3276,6 +3278,26 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
     bl
 }
 
+fn parse_connect_line_type_attr(e: &quick_xml::events::BytesStart) -> LinkLineType {
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"type" {
+            return match attr_str(&attr).to_ascii_uppercase().as_str() {
+                "STRAIGHT_ONEWAY" => LinkLineType::StraightOneWay,
+                "STRAIGHT_BOTH" => LinkLineType::StraightBoth,
+                "STROKE_NOARROW" => LinkLineType::StrokeNoArrow,
+                "STROKE_ONEWAY" => LinkLineType::StrokeOneWay,
+                "STROKE_BOTH" => LinkLineType::StrokeBoth,
+                "ARC_NOARROW" => LinkLineType::ArcNoArrow,
+                "ARC_ONEWAY" => LinkLineType::ArcOneWay,
+                "ARC_BOTH" => LinkLineType::ArcBoth,
+                _ => LinkLineType::StraightNoArrow,
+            };
+        }
+    }
+
+    LinkLineType::StraightNoArrow
+}
+
 /// shape 내부의 `<hp:fillBrush>` 자식 요소를 파싱하여 Fill을 반환한다.
 fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError> {
     use crate::model::style::{FillType, GradientFill, ImageFill, ImageFillMode, SolidFill};
@@ -3358,7 +3380,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                 b"mode" => {
                                     img.fill_mode = match attr_str(&attr).as_str() {
                                         "TILE" | "TILE_ALL" => ImageFillMode::TileAll,
-                                        "FIT" | "FIT_TO_SIZE" | "STRETCH" | "TOTAL" => {
+                                        "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                             ImageFillMode::FitToSize
                                         }
                                         "CENTER" => ImageFillMode::Center,
@@ -3560,6 +3582,12 @@ fn parse_shape_object(
     let mut e_end2 = crate::model::Point::default();
 
     let object_ids = parse_object_element_attrs(e, &mut common, &mut shape_attr);
+    let connect_line_type = parse_connect_line_type_attr(e);
+    let mut connect_start_subject_id = 0_u32;
+    let mut connect_start_subject_index = 0_u32;
+    let mut connect_end_subject_id = 0_u32;
+    let mut connect_end_subject_index = 0_u32;
+    let mut connect_control_points = Vec::new();
 
     let tag_name = String::from_utf8_lossy(shape_type).to_string();
     let mut caption: Option<crate::model::shape::Caption> = None;
@@ -3674,6 +3702,8 @@ fn parse_shape_object(
                             match attr.key.as_ref() {
                                 b"x" => x_coords[0] = parse_i32(&attr),
                                 b"y" => y_coords[0] = parse_i32(&attr),
+                                b"subjectIDRef" => connect_start_subject_id = parse_u32(&attr),
+                                b"subjectIdx" => connect_start_subject_index = parse_u32(&attr),
                                 _ => {}
                             }
                         }
@@ -3683,9 +3713,23 @@ fn parse_shape_object(
                             match attr.key.as_ref() {
                                 b"x" => x_coords[1] = parse_i32(&attr),
                                 b"y" => y_coords[1] = parse_i32(&attr),
+                                b"subjectIDRef" => connect_end_subject_id = parse_u32(&attr),
+                                b"subjectIdx" => connect_end_subject_index = parse_u32(&attr),
                                 _ => {}
                             }
                         }
+                    }
+                    b"point" => {
+                        let mut point = ConnectorControlPoint::default();
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"x" => point.x = parse_i32(&attr),
+                                b"y" => point.y = parse_i32(&attr),
+                                b"type" => point.point_type = parse_u16(&attr),
+                                _ => {}
+                            }
+                        }
+                        connect_control_points.push(point);
                     }
                     // [Task #1598] ellipse / arc 전용 지오메트리. x/y 속성만 읽어 Point 채움.
                     b"center" => parse_xy(ce, &mut e_center),
@@ -3778,6 +3822,28 @@ fn parse_shape_object(
             },
             ..Default::default()
         }),
+        b"connectLine" => ShapeObject::Line(LineShape {
+            common,
+            drawing,
+            start: crate::model::Point {
+                x: x_coords[0],
+                y: y_coords[0],
+            },
+            end: crate::model::Point {
+                x: x_coords[1],
+                y: y_coords[1],
+            },
+            connector: Some(ConnectorData {
+                link_type: connect_line_type,
+                start_subject_id: connect_start_subject_id,
+                start_subject_index: connect_start_subject_index,
+                end_subject_id: connect_end_subject_id,
+                end_subject_index: connect_end_subject_index,
+                control_points: connect_control_points,
+                raw_trailing: Vec::new(),
+            }),
+            ..Default::default()
+        }),
         b"arc" => ShapeObject::Arc(ArcShape {
             common,
             drawing,
@@ -3861,7 +3927,8 @@ fn parse_container(
                             children.push(ShapeObject::Picture(pic));
                         }
                     }
-                    b"rect" | b"ellipse" | b"line" | b"arc" | b"polygon" | b"curve" => {
+                    b"rect" | b"ellipse" | b"line" | b"connectLine" | b"arc" | b"polygon"
+                    | b"curve" => {
                         // 자식 그리기 객체
                         let child = parse_shape_object(local, ce, reader)?;
                         if let Control::Shape(shape) = child {
@@ -6993,6 +7060,56 @@ mod tests {
         assert_eq!(master_page.ext_flags, 0x0007);
         assert_eq!(master_page.hwpx_page_number, Some(4));
         assert_eq!(master_page.raw_list_header.len(), 34);
+    }
+
+    #[test]
+    fn test_parse_hwpx_connect_line_materializes_connector() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:connectLine id="1522096658" zOrder="513" textWrap="IN_FRONT_OF_TEXT" textFlow="BOTH_SIDES" instid="448354835" type="STRAIGHT_ONEWAY">
+        <hp:offset x="0" y="0"/>
+        <hp:orgSz width="1257" height="1"/>
+        <hp:curSz width="1257" height="0"/>
+        <hp:pos treatAsChar="0" flowWithText="0" allowOverlap="1" vertRelTo="PAPER" horzRelTo="PAPER" vertOffset="25812" horzOffset="45538"/>
+        <hp:lineShape color="#000000" width="141" style="SOLID" headStyle="NORMAL" tailStyle="ARROW" headfill="1" tailfill="1" headSz="MEDIUM_MEDIUM" tailSz="MEDIUM_MEDIUM"/>
+        <hp:startPt x="0" y="0" subjectIDRef="11" subjectIdx="2"/>
+        <hp:endPt x="1257" y="0" subjectIDRef="22" subjectIdx="3"/>
+        <hp:controlPoints>
+          <hp:point x="0" y="0" type="3"/>
+          <hp:point x="100" y="0" type="26"/>
+        </hp:controlPoints>
+      </hp:connectLine>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Line(line) = shape.as_ref() else {
+            panic!("expected line shape");
+        };
+
+        assert_eq!(line.common.instance_id, 1522096658);
+        assert_eq!(line.common.horizontal_offset, 45538);
+        assert_eq!(line.common.vertical_offset, 25812);
+        assert_eq!(line.start.x, 0);
+        assert_eq!(line.end.x, 1257);
+
+        let connector = line.connector.as_ref().expect("connector data");
+        assert_eq!(connector.link_type, LinkLineType::StraightOneWay);
+        assert_eq!(connector.start_subject_id, 11);
+        assert_eq!(connector.start_subject_index, 2);
+        assert_eq!(connector.end_subject_id, 22);
+        assert_eq!(connector.end_subject_index, 3);
+        assert_eq!(connector.control_points.len(), 2);
+        assert_eq!(connector.control_points[1].x, 100);
+        assert_eq!(connector.control_points[1].point_type, 26);
     }
 
     #[test]
