@@ -1018,31 +1018,35 @@ fn paragraph_forces_page_boundary_after(
     )
 }
 
-fn paragraph_visible_bottom_px(para: &Paragraph, page_vpos_base: i32, dpi: f64) -> Option<f64> {
-    para.line_segs
+fn single_line_visible_bounds_px(
+    para: &Paragraph,
+    page_vpos_base: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let mut real_lines = para
+        .line_segs
         .iter()
-        .filter(|ls| !is_synthetic_line_seg(ls))
-        .map(|ls| {
-            let text_height = if ls.text_height > 0 {
-                ls.text_height
-            } else {
-                ls.line_height.max(0)
-            };
-            ls.vertical_pos
-                .saturating_add(text_height)
-                .saturating_sub(page_vpos_base)
-        })
-        .max()
-        .filter(|bottom| *bottom >= 0)
-        .map(|bottom| hwpunit_to_px(bottom, dpi))
+        .filter(|ls| !is_synthetic_line_seg(ls));
+    let line = real_lines.next()?;
+    if real_lines.next().is_some() {
+        return None;
+    }
+
+    line_seg_visible_bounds_px(line, page_vpos_base, dpi)
 }
 
-fn line_seg_visible_bottom_px(seg: &LineSeg, page_vpos_base: i32, dpi: f64) -> Option<f64> {
+fn line_seg_visible_bounds_px(seg: &LineSeg, page_vpos_base: i32, dpi: f64) -> Option<(f64, f64)> {
+    let top = seg.vertical_pos.saturating_sub(page_vpos_base);
     let bottom = seg
         .vertical_pos
         .saturating_add(seg.line_height)
         .saturating_sub(page_vpos_base);
-    (bottom >= 0).then(|| hwpunit_to_px(bottom, dpi))
+    (top >= 0 && bottom >= 0).then(|| (hwpunit_to_px(top, dpi), hwpunit_to_px(bottom, dpi)))
+}
+
+fn saved_bounds_fit_at_flow_tail(bounds: (f64, f64), current_height: f64, available: f64) -> bool {
+    let (top, bottom) = bounds;
+    top + 16.0 >= current_height && bottom <= available + 0.5
 }
 
 fn positive_vpos_end_before_negative_wrap(para: &Paragraph) -> Option<i32> {
@@ -9091,8 +9095,10 @@ impl TypesetEngine {
             && para.controls.is_empty()
             && !st.current_items.is_empty()
             && current_page_vpos_base
-                .and_then(|base| paragraph_visible_bottom_px(para, base, self.dpi))
-                .is_some_and(|bottom| bottom <= st.available_height() + 0.5);
+                .and_then(|base| single_line_visible_bounds_px(para, base, self.dpi))
+                .is_some_and(|bounds| {
+                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                });
 
         if forced_page_break_line.is_none()
             && (st.current_height + fmt.height_for_fit <= available
@@ -9735,9 +9741,11 @@ impl TypesetEngine {
                 })
                 .and_then(|line_idx| para.line_segs.get(line_idx))
                 .and_then(|seg| {
-                    line_seg_visible_bottom_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                    line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
                 })
-                .is_some_and(|bottom| bottom <= st.available_height() + 0.5)
+                .is_some_and(|bounds| {
+                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                })
         } else {
             false
         };
@@ -10267,9 +10275,11 @@ impl TypesetEngine {
             .and_then(|base| {
                 para.line_segs
                     .get(tac_seg_idx)
-                    .and_then(|seg| line_seg_visible_bottom_px(seg, base, self.dpi))
+                    .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
             })
-            .is_some_and(|bottom| bottom <= available + 0.5);
+            .is_some_and(|bounds| {
+                saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+            });
         if st.current_height + table_height > available
             && !saved_tac_table_bottom_fits
             && !st.current_items.is_empty()
