@@ -808,9 +808,49 @@ export class WasmBridge {
     return JSON.parse(this.doc.getCellProperties(sec, parentPara, controlIdx, cellIdx));
   }
 
+  getCellOwnProperties(sec: number, parentPara: number, controlIdx: number, cellIdx: number): CellProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      getCellOwnProperties(sec: number, parentPara: number, controlIdx: number, cellIdx: number): string;
+    };
+    return JSON.parse(doc.getCellOwnProperties(sec, parentPara, controlIdx, cellIdx));
+  }
+
   setCellProperties(sec: number, parentPara: number, controlIdx: number, cellIdx: number, props: Partial<CellProperties>): { ok: boolean } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setCellProperties(sec, parentPara, controlIdx, cellIdx, JSON.stringify(props)));
+  }
+
+  setCellZoneProperties(
+    sec: number,
+    parentPara: number,
+    controlIdx: number,
+    range: { startRow: number; startCol: number; endRow: number; endCol: number },
+    props: Partial<CellProperties>,
+  ): { ok: boolean; borderFillId: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      setCellZoneProperties(
+        sec: number,
+        parentPara: number,
+        controlIdx: number,
+        startRow: number,
+        startCol: number,
+        endRow: number,
+        endCol: number,
+        json: string,
+      ): string;
+    };
+    return JSON.parse(doc.setCellZoneProperties(
+      sec,
+      parentPara,
+      controlIdx,
+      range.startRow,
+      range.startCol,
+      range.endRow,
+      range.endCol,
+      JSON.stringify(props),
+    ));
   }
 
   resizeTableCells(

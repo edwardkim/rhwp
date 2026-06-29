@@ -402,7 +402,7 @@ impl DocumentCore {
             .get((bf_id - 1) as usize);
         match bf {
             Some(bf) => {
-                use crate::model::style::FillType;
+                use crate::model::style::{CenterLine, FillType};
                 let dir_names = ["Left", "Right", "Top", "Bottom"];
                 let borders_json: Vec<String> = bf.borders.iter().enumerate().map(|(i, b)| {
                     format!(
@@ -420,8 +420,19 @@ impl DocumentCore {
                     }
                     _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
                 };
-                let diagonal_slash = (bf.attr >> 2) & 0x07;
-                let diagonal_backslash = (bf.attr >> 5) & 0x07;
+                let mut diagonal_slash = (bf.attr >> 2) & 0x07;
+                let mut diagonal_backslash = (bf.attr >> 5) & 0x07;
+                let mut center_line = if bf.center_line != CenterLine::None {
+                    bf.center_line
+                } else {
+                    CenterLine::from_hwp_attr(bf.attr)
+                };
+                if center_line != CenterLine::None {
+                    diagonal_slash = 0;
+                    diagonal_backslash = 0;
+                } else if diagonal_slash != 0 || diagonal_backslash != 0 {
+                    center_line = CenterLine::None;
+                }
                 format!(
                     "\"borderFillId\":{},{},\"fillType\":\"{}\",\"fillColor\":\"{}\",\"patternColor\":\"{}\",\"patternType\":{},\"diagonalLine\":{},\"diagonalSlash\":{},\"diagonalBackSlash\":{},\"diagonalWidth\":{},\"diagonalColor\":\"{}\",\"centerLine\":\"{}\"",
                     bf_id,
@@ -432,7 +443,7 @@ impl DocumentCore {
                     diagonal_backslash,
                     bf.diagonal.width,
                     color_ref_to_css(bf.diagonal.color),
-                    bf.center_line.as_hwpx(),
+                    center_line.as_hwpx(),
                 )
             }
             None => {
@@ -450,12 +461,69 @@ impl DocumentCore {
         }
     }
 
+    /// UI 조회에서는 셀 고유 값보다 cellzone overlay가 실제 표시 상태에 가깝다.
+    fn cell_effective_border_fill_id(
+        table: &crate::model::table::Table,
+        cell_idx: usize,
+    ) -> Option<u16> {
+        let cell = table.cells.get(cell_idx)?;
+        let row = cell.row;
+        let col = cell.col;
+        let zone_border_fill_id = table
+            .zones
+            .iter()
+            .rev()
+            .find(|zone| {
+                zone.border_fill_id > 0
+                    && zone.start_row <= row
+                    && row <= zone.end_row
+                    && zone.start_col <= col
+                    && col <= zone.end_col
+            })
+            .map(|zone| zone.border_fill_id);
+
+        Some(zone_border_fill_id.unwrap_or(cell.border_fill_id))
+    }
+
     pub(crate) fn get_cell_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
         control_idx: usize,
         cell_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.get_cell_properties_with_border_mode(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            true,
+        )
+    }
+
+    pub(crate) fn get_cell_own_properties_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.get_cell_properties_with_border_mode(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            false,
+        )
+    }
+
+    fn get_cell_properties_with_border_mode(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        use_effective_border_fill: bool,
     ) -> Result<String, HwpError> {
         let para = self
             .document
@@ -488,7 +556,12 @@ impl DocumentCore {
             crate::model::table::VerticalAlign::Bottom => 2,
         };
 
-        let bf_json = self.build_border_fill_json_by_id(cell.border_fill_id);
+        let border_fill_id = if use_effective_border_fill {
+            Self::cell_effective_border_fill_id(table, cell_idx).unwrap_or(cell.border_fill_id)
+        } else {
+            cell.border_fill_id
+        };
+        let bf_json = self.build_border_fill_json_by_id(border_fill_id);
 
         Ok(format!(
             "{{\"width\":{},\"height\":{},\"paddingLeft\":{},\"paddingRight\":{},\"paddingTop\":{},\"paddingBottom\":{},\"applyInnerMargin\":{},\"verticalAlign\":{},\"textDirection\":{},\"isHeader\":{},\"cellProtect\":{},\"fieldName\":{},\"editableInForm\":{},{}}}",
@@ -533,18 +606,54 @@ impl DocumentCore {
                 .map(ToOwned::to_owned)
         };
 
+        let has_border_fill_change = json.contains("\"borderLeft\"")
+            || json.contains("\"fillType\"")
+            || json.contains("\"diagonalLine\"")
+            || json.contains("\"diagonalSlash\"")
+            || json.contains("\"diagonalBackSlash\"")
+            || json.contains("\"diagonalWidth\"")
+            || json.contains("\"diagonalColor\"")
+            || json.contains("\"centerLine\"");
+        let cell_border_fill_json = if has_border_fill_change {
+            Some(self.normalize_cell_border_fill_json_for_edit(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                json,
+            ))
+        } else {
+            None
+        };
+
         let (needs_reflow, reflow_para_count) = {
             let mut needs_reflow = false;
+            let mut size_changed = false;
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let direct_border_fill_id = if has_border_fill_change {
+                None
+            } else {
+                top_u32("borderFillId").map(|v| v as u16).and_then(|bf_id| {
+                    table.cells.get(cell_idx).and_then(|cell| {
+                        if Self::cell_is_covered_by_zone_border_fill(table, cell, bf_id) {
+                            None
+                        } else {
+                            Some(bf_id)
+                        }
+                    })
+                })
+            };
             let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx))
             })?;
 
             if let Some(v) = top_u32("width") {
                 needs_reflow |= cell.width != v;
+                size_changed |= cell.width != v;
                 cell.width = v;
             }
             if let Some(v) = top_u32("height") {
+                size_changed |= cell.height != v;
                 cell.height = v;
             }
             if let Some(v) = top_i16("paddingLeft") {
@@ -587,10 +696,12 @@ impl DocumentCore {
             if let Some(v) = top_str("fieldName") {
                 cell.field_name = if v.is_empty() { None } else { Some(v) };
             }
-            if let Some(v) = top_u32("borderFillId") {
-                cell.border_fill_id = v as u16;
+            if let Some(v) = direct_border_fill_id {
+                cell.border_fill_id = v;
             }
-            table.update_ctrl_dimensions();
+            if size_changed {
+                table.update_ctrl_dimensions();
+            }
             table.dirty = true;
             (needs_reflow, table.cells[cell_idx].paragraphs.len())
         };
@@ -608,17 +719,25 @@ impl DocumentCore {
             }
         }
 
-        // BorderFill 변경: 테두리/배경/대각선/중심선 필드가 포함된 경우 처리
-        let has_border_fill_change = json.contains("\"borderLeft\"")
-            || json.contains("\"fillType\"")
-            || json.contains("\"diagonalLine\"")
-            || json.contains("\"diagonalSlash\"")
-            || json.contains("\"diagonalBackSlash\"")
-            || json.contains("\"diagonalWidth\"")
-            || json.contains("\"diagonalColor\"")
-            || json.contains("\"centerLine\"");
         if has_border_fill_change {
-            let new_bf_id = self.create_border_fill_from_json(json);
+            let border_fill_json = cell_border_fill_json.as_deref().unwrap_or(json);
+            let new_bf_id = self.create_border_fill_from_json(border_fill_json);
+            let new_bf_has_cell_diagonal = self
+                .document
+                .doc_info
+                .border_fills
+                .get((new_bf_id as usize).saturating_sub(1))
+                .is_some_and(Self::border_fill_has_cell_diagonal);
+            let cell_diagonal_bf_ids: Vec<u16> = self
+                .document
+                .doc_info
+                .border_fills
+                .iter()
+                .enumerate()
+                .filter_map(|(idx, bf)| {
+                    Self::border_fill_has_cell_diagonal(bf).then_some((idx + 1) as u16)
+                })
+                .collect();
 
             // 새 BorderFill의 테두리 데이터 복사 (이웃 셀 갱신용)
             let new_borders = {
@@ -634,15 +753,26 @@ impl DocumentCore {
             // 대상 셀 정보 추출 + border_fill_id 변경
             let (target_row, target_col, target_col_span, target_row_span) = {
                 let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-                let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
-                    HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx))
-                })?;
-                cell.border_fill_id = new_bf_id;
+                let (row, col, col_span, row_span) = {
+                    let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx))
+                    })?;
+                    cell.border_fill_id = new_bf_id;
+                    (cell.row, cell.col, cell.col_span, cell.row_span)
+                };
+                Self::sync_cellzone_origin_cell_diagonal_override(
+                    table,
+                    row,
+                    col,
+                    new_bf_id,
+                    new_bf_has_cell_diagonal,
+                    &cell_diagonal_bf_ids,
+                );
                 (
-                    cell.row as usize,
-                    cell.col as usize,
-                    cell.col_span as usize,
-                    cell.row_span as usize,
+                    row as usize,
+                    col as usize,
+                    col_span as usize,
+                    row_span as usize,
                 )
             };
 
@@ -666,6 +796,261 @@ impl DocumentCore {
         self.paginate_if_needed();
 
         Ok("{\"ok\":true}".to_string())
+    }
+
+    fn border_fill_has_cell_diagonal(bf: &crate::model::style::BorderFill) -> bool {
+        let center_line = if bf.center_line != crate::model::style::CenterLine::None {
+            bf.center_line
+        } else {
+            crate::model::style::CenterLine::from_hwp_attr(bf.attr)
+        };
+        if center_line != crate::model::style::CenterLine::None {
+            return false;
+        }
+
+        let slash = (bf.attr >> 2) & 0x07;
+        let backslash = (bf.attr >> 5) & 0x07;
+        bf.diagonal.diagonal_type != 0 && (slash != 0 || backslash != 0)
+    }
+
+    fn sync_cellzone_origin_cell_diagonal_override(
+        table: &mut crate::model::table::Table,
+        row: u16,
+        col: u16,
+        new_bf_id: u16,
+        new_bf_has_cell_diagonal: bool,
+        cell_diagonal_bf_ids: &[u16],
+    ) {
+        let has_large_origin_diagonal_zone = table.zones.iter().any(|zone| {
+            zone.start_row == row
+                && zone.start_col == col
+                && (zone.end_row > row || zone.end_col > col)
+                && cell_diagonal_bf_ids.contains(&zone.border_fill_id)
+        });
+        if !has_large_origin_diagonal_zone {
+            return;
+        }
+
+        if new_bf_has_cell_diagonal {
+            if let Some(zone) = table.zones.iter_mut().find(|zone| {
+                zone.start_row == row
+                    && zone.start_col == col
+                    && zone.end_row == row
+                    && zone.end_col == col
+            }) {
+                zone.border_fill_id = new_bf_id;
+            } else {
+                table.zones.push(crate::model::table::TableZone {
+                    start_col: col,
+                    start_row: row,
+                    end_col: col,
+                    end_row: row,
+                    border_fill_id: new_bf_id,
+                });
+            }
+        } else {
+            table.zones.retain(|zone| {
+                !(zone.start_row == row
+                    && zone.start_col == col
+                    && zone.end_row == row
+                    && zone.end_col == col
+                    && cell_diagonal_bf_ids.contains(&zone.border_fill_id))
+            });
+        }
+    }
+
+    fn normalize_cell_border_fill_json_for_edit(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        json: &str,
+    ) -> String {
+        let Ok(mut value) = serde_json::from_str::<serde_json::Value>(json) else {
+            return json.to_string();
+        };
+        let Some(obj) = value.as_object_mut() else {
+            return json.to_string();
+        };
+        let incoming_bf_id = obj
+            .get("borderFillId")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u16)
+            .unwrap_or(0);
+        if incoming_bf_id == 0 {
+            return json.to_string();
+        }
+
+        let Some(table) = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(|para| match para.controls.get(control_idx) {
+                Some(Control::Table(table)) => Some(table),
+                _ => None,
+            })
+        else {
+            return json.to_string();
+        };
+        let Some(cell) = table.cells.get(cell_idx) else {
+            return json.to_string();
+        };
+        if cell.border_fill_id == incoming_bf_id
+            || !Self::cell_is_covered_by_zone_border_fill(table, cell, incoming_bf_id)
+        {
+            return json.to_string();
+        }
+
+        let incoming_idx = (incoming_bf_id as usize).saturating_sub(1);
+        let own_idx = (cell.border_fill_id as usize).saturating_sub(1);
+        let zone_bf = self.document.doc_info.border_fills.get(incoming_idx);
+        let own_bf = self.document.doc_info.border_fills.get(own_idx);
+        let incoming_borders_are_zone = zone_bf
+            .map(|bf| Self::json_borders_match_border_fill(obj, bf))
+            .unwrap_or(false);
+
+        obj.insert(
+            "borderFillId".to_string(),
+            serde_json::Value::Number(serde_json::Number::from(cell.border_fill_id)),
+        );
+        if incoming_borders_are_zone {
+            if let Some(bf) = own_bf {
+                Self::write_border_json_from_border_fill(obj, bf);
+            }
+        }
+
+        serde_json::to_string(&value).unwrap_or_else(|_| json.to_string())
+    }
+
+    fn cell_is_covered_by_zone_border_fill(
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        border_fill_id: u16,
+    ) -> bool {
+        let cell_start_row = cell.row;
+        let cell_end_row = cell.row.saturating_add(cell.row_span).saturating_sub(1);
+        let cell_start_col = cell.col;
+        let cell_end_col = cell.col.saturating_add(cell.col_span).saturating_sub(1);
+        table.zones.iter().any(|zone| {
+            zone.border_fill_id == border_fill_id
+                && cell_start_row <= zone.end_row
+                && cell_end_row >= zone.start_row
+                && cell_start_col <= zone.end_col
+                && cell_end_col >= zone.start_col
+        })
+    }
+
+    fn json_borders_match_border_fill(
+        obj: &serde_json::Map<String, serde_json::Value>,
+        bf: &crate::model::style::BorderFill,
+    ) -> bool {
+        const KEYS: [&str; 4] = ["borderLeft", "borderRight", "borderTop", "borderBottom"];
+        KEYS.iter().enumerate().all(|(idx, key)| {
+            let Some(border) = obj.get(*key).and_then(|v| v.as_object()) else {
+                return false;
+            };
+            let line = bf.borders[idx];
+            let type_matches = border.get("type").and_then(|v| v.as_i64()).map(|v| v as u8)
+                == Some(border_line_type_to_u8_val(line.line_type));
+            let width_matches = border
+                .get("width")
+                .and_then(|v| v.as_i64())
+                .map(|v| v as u8)
+                == Some(line.width);
+            let color_matches = border
+                .get("color")
+                .and_then(|v| v.as_str())
+                .map(|v| v.eq_ignore_ascii_case(&color_ref_to_css(line.color)))
+                .unwrap_or(false);
+            type_matches && width_matches && color_matches
+        })
+    }
+
+    fn write_border_json_from_border_fill(
+        obj: &mut serde_json::Map<String, serde_json::Value>,
+        bf: &crate::model::style::BorderFill,
+    ) {
+        const KEYS: [&str; 4] = ["borderLeft", "borderRight", "borderTop", "borderBottom"];
+        for (idx, key) in KEYS.iter().enumerate() {
+            let line = bf.borders[idx];
+            obj.insert(
+                (*key).to_string(),
+                serde_json::json!({
+                    "type": border_line_type_to_u8_val(line.line_type),
+                    "width": line.width,
+                    "color": color_ref_to_css(line.color),
+                }),
+            );
+        }
+    }
+
+    /// 선택 영역을 하나의 셀처럼 취급하는 cellzone 테두리/배경 속성을 적용한다.
+    pub(crate) fn set_cell_zone_properties_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        start_row: u16,
+        start_col: u16,
+        end_row: u16,
+        end_col: u16,
+        json: &str,
+    ) -> Result<String, HwpError> {
+        let cellzone_json = Self::strip_center_line_for_cellzone_json(json);
+        let new_bf_id = self.create_border_fill_from_json(&cellzone_json);
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        if table.row_count == 0 || table.col_count == 0 {
+            return Err(HwpError::RenderError(
+                "빈 표에는 cellzone을 적용할 수 없습니다".to_string(),
+            ));
+        }
+
+        let max_row = table.row_count.saturating_sub(1);
+        let max_col = table.col_count.saturating_sub(1);
+        let sr = start_row.min(end_row).min(max_row);
+        let er = start_row.max(end_row).min(max_row);
+        let sc = start_col.min(end_col).min(max_col);
+        let ec = start_col.max(end_col).min(max_col);
+
+        if let Some(zone) = table.zones.iter_mut().find(|zone| {
+            zone.start_row == sr && zone.end_row == er && zone.start_col == sc && zone.end_col == ec
+        }) {
+            zone.border_fill_id = new_bf_id;
+        } else {
+            table.zones.push(crate::model::table::TableZone {
+                start_col: sc,
+                start_row: sr,
+                end_col: ec,
+                end_row: er,
+                border_fill_id: new_bf_id,
+            });
+        }
+        table.dirty = true;
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok(format!(
+            "{{\"ok\":true,\"startRow\":{},\"startCol\":{},\"endRow\":{},\"endCol\":{},\"borderFillId\":{}}}",
+            sr, sc, er, ec, new_bf_id
+        ))
+    }
+
+    fn strip_center_line_for_cellzone_json(json: &str) -> String {
+        let Ok(mut value) = serde_json::from_str::<serde_json::Value>(json) else {
+            return json.to_string();
+        };
+        let Some(obj) = value.as_object_mut() else {
+            return json.to_string();
+        };
+        obj.insert(
+            "centerLine".to_string(),
+            serde_json::Value::String("NONE".to_string()),
+        );
+        serde_json::to_string(&value).unwrap_or_else(|_| json.to_string())
     }
 
     /// 셀 테두리 변경 시 이웃 셀의 공유 엣지 테두리를 동기화한다.

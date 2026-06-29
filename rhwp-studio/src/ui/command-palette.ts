@@ -136,7 +136,7 @@ export class CommandPalette {
       if (def.canExecute) {
         const ctx = {
           hasDocument: false, hasSelection: false, hasCopiedFormat: false, inTable: false,
-          inCellSelectionMode: false, inTableObjectSelection: false,
+          inCellSelectionMode: false, hasMultiCellSelection: false, inTableObjectSelection: false,
           inPictureObjectSelection: false, inField: false, isEditable: true,
           editMode: 'normal' as const, isFormMode: false, canEditFormField: false,
           canUndo: false, canRedo: false, zoom: 1.0, showControlCodes: false, showParagraphMarks: false,

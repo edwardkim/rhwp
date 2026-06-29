@@ -14,6 +14,7 @@ import {
 
 const inTable = (ctx: EditorContext) => ctx.inTable;
 const inTableOrCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
+const hasMultiCellSelection = (ctx: EditorContext) => ctx.hasMultiCellSelection;
 
 type CellRange = { startRow: number; startCol: number; endRow: number; endCol: number };
 type TableDimensions = { rowCount: number; colCount: number; cellCount: number };
@@ -295,21 +296,37 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
-      const dialog = new CellBorderBgDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'each');
+      const selectionRange = ih.isInCellSelectionMode?.() ? ih.getSelectedCellRange?.() ?? null : null;
+      const dialog = new CellBorderBgDialog(
+        services.wasm,
+        services.eventBus,
+        tableCtx,
+        pos.cellIndex,
+        'each',
+        selectionRange,
+      );
       dialog.show();
     },
   },
   {
     id: 'table:border-one',
     label: '하나의 셀처럼 적용(Z)...',
-    canExecute: inTable,
+    canExecute: hasMultiCellSelection,
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
+      if (!ih.hasMultiCellSelection()) return;
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
-      const dialog = new CellBorderBgDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'asOne');
+      const dialog = new CellBorderBgDialog(
+        services.wasm,
+        services.eventBus,
+        tableCtx,
+        pos.cellIndex,
+        'asOne',
+        ih.getSelectedCellRange(),
+      );
       dialog.show();
     },
   },

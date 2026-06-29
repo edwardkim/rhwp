@@ -535,6 +535,19 @@ fn serialize_table_record(table: &Table) -> Vec<u8> {
 
     w.write_u16(table.border_fill_id).unwrap();
 
+    // 영역 속성: UINT16 nZones + TableZone[nZones].
+    //
+    // `셀 테두리/배경 - 하나의 셀처럼 적용`은 개별 셀이 아니라 TABLE cellzone
+    // overlay로 저장되어야 한컴에서 선택 영역 전체 대각선으로 표시된다.
+    w.write_u16(table.zones.len() as u16).unwrap();
+    for zone in &table.zones {
+        w.write_u16(zone.start_row).unwrap();
+        w.write_u16(zone.start_col).unwrap();
+        w.write_u16(zone.end_row).unwrap();
+        w.write_u16(zone.end_col).unwrap();
+        w.write_u16(zone.border_fill_id).unwrap();
+    }
+
     // 원본 추가 바이트 복원 (라운드트립용)
     if !table.raw_table_record_extra.is_empty() {
         w.write_bytes(&table.raw_table_record_extra).unwrap();
@@ -558,7 +571,12 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     };
     let list_attr: u32 = ((cell.text_direction as u32) << 16) | (v_align_code << 21);
     w.write_u32(list_attr).unwrap();
-    w.write_u16(cell.list_header_width_ref).unwrap();
+    let list_header_width_ref = if cell.list_header_width_ref == 0 {
+        0x0400
+    } else {
+        cell.list_header_width_ref
+    };
+    w.write_u16(list_header_width_ref).unwrap();
 
     // 셀 속성
     w.write_u16(cell.col).unwrap();
@@ -573,9 +591,13 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     w.write_i16(cell.padding.bottom).unwrap();
     w.write_u16(cell.border_fill_id).unwrap();
 
-    // 원본 추가 바이트 복원 (라운드트립용)
+    // 원본 추가 바이트 복원. HWPX/신규 생성 셀에는 원본이 없으므로
+    // 한컴 저장본의 셀 LIST_HEADER 47바이트 contract에 맞춰 폭 참조를 보강한다.
     if !cell.raw_list_extra.is_empty() {
         w.write_bytes(&cell.raw_list_extra).unwrap();
+    } else {
+        w.write_u32(cell.width).unwrap();
+        w.write_bytes(&[0; 9]).unwrap();
     }
 
     records.push(Record {

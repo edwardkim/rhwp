@@ -835,6 +835,31 @@ fn create_diagonal_line_nodes(
     }
 }
 
+fn create_crooked_diagonal_line_nodes(
+    tree: &mut PageRenderTree,
+    line_type: BorderLineType,
+    color: u32,
+    width_index: u8,
+    points: &[(f64, f64)],
+) -> Vec<RenderNode> {
+    let mut nodes = Vec::new();
+    for pair in points.windows(2) {
+        let (x1, y1) = pair[0];
+        let (x2, y2) = pair[1];
+        nodes.extend(create_diagonal_line_nodes(
+            tree,
+            line_type,
+            color,
+            width_index,
+            x1,
+            y1,
+            x2,
+            y2,
+        ));
+    }
+    nodes
+}
+
 /// BorderLine이 시각적으로 차지하는 전체 폭(px).
 ///
 /// `create_border_line_nodes`의 이중선/삼중선 분해 규칙과 같은 값을 써서,
@@ -920,6 +945,8 @@ fn border_line_type_to_dash(lt: BorderLineType) -> Option<StrokeDash> {
 ///     000=none, 그 외=slash
 ///   bit 5~7: BackSlash(`\`) 대각선 모양
 ///     000=none, 그 외=backslash
+///   bit 8~9: Slash 대각선 꺾은선
+///   bit 10: BackSlash 대각선 꺾은선
 ///   bit 13: 중심선
 pub(crate) fn render_cell_diagonal(
     tree: &mut PageRenderTree,
@@ -932,6 +959,8 @@ pub(crate) fn render_cell_diagonal(
     let attr = border_style.diagonal_attr;
     let slash_bits = (attr >> 2) & 0x07;
     let backslash_bits = (attr >> 5) & 0x07;
+    let slash_crooked = (attr >> 8) & 0x03;
+    let backslash_crooked = (attr >> 10) & 0x01;
     let center_line = border_style.center_line;
 
     if slash_bits == 0 && backslash_bits == 0 && center_line == CenterLine::None {
@@ -977,18 +1006,45 @@ pub(crate) fn render_cell_diagonal(
         CenterLine::None => {}
     }
 
-    // HWPX의 CENTER_BELOW/ALL/Crooked/isCounter 조합은 저장 비트로는 보존하되,
-    // 한컴 2024 샘플의 셀 렌더링은 단일 대각선으로 정규화되어 보인다.
     if slash_bits != 0 {
-        nodes.extend(create_diagonal_line_nodes(
-            tree, line_type, color, diag.width, x1, y2, x2, y1,
-        ));
+        if slash_crooked != 0 {
+            let p1 = (x1, y2);
+            let p2 = (cell_x + cell_w * 0.4, cy);
+            let p3 = (cell_x + cell_w * 0.6, cy);
+            let p4 = (x2, y1);
+            nodes.extend(create_crooked_diagonal_line_nodes(
+                tree,
+                line_type,
+                color,
+                diag.width,
+                &[p1, p2, p3, p4],
+            ));
+        } else {
+            nodes.extend(create_diagonal_line_nodes(
+                tree, line_type, color, diag.width, x1, y2, x2, y1,
+            ));
+        }
     }
 
     if backslash_bits != 0 {
-        nodes.extend(create_diagonal_line_nodes(
-            tree, line_type, color, diag.width, x1, y1, x2, y2,
-        ));
+        let use_crooked = backslash_crooked != 0 || (slash_bits == 0 && slash_crooked != 0);
+        if use_crooked {
+            let p1 = (x1, y1);
+            let p2 = (cell_x + cell_w * 0.4, cy);
+            let p3 = (cell_x + cell_w * 0.6, cy);
+            let p4 = (x2, y2);
+            nodes.extend(create_crooked_diagonal_line_nodes(
+                tree,
+                line_type,
+                color,
+                diag.width,
+                &[p1, p2, p3, p4],
+            ));
+        } else {
+            nodes.extend(create_diagonal_line_nodes(
+                tree, line_type, color, diag.width, x1, y1, x2, y2,
+            ));
+        }
     }
 
     nodes
@@ -1123,6 +1179,36 @@ mod tests {
         assert_eq!(
             (backslash.x1, backslash.y1, backslash.x2, backslash.y2),
             (10.0, 20.0, 110.0, 60.0)
+        );
+    }
+
+    #[test]
+    fn render_slash_crooked_with_backslash_as_bent_backslash() {
+        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let nodes = render_cell_diagonal(
+            &mut tree,
+            &diagonal_style((2 << 8) | (0b010 << 5)),
+            10.0,
+            20.0,
+            100.0,
+            40.0,
+        );
+
+        assert_eq!(nodes.len(), 3);
+        let first = line_node(&nodes[0]);
+        let middle = line_node(&nodes[1]);
+        let last = line_node(&nodes[2]);
+        assert_eq!(
+            (first.x1, first.y1, first.x2, first.y2),
+            (10.0, 20.0, 50.0, 40.0)
+        );
+        assert_eq!(
+            (middle.x1, middle.y1, middle.x2, middle.y2),
+            (50.0, 40.0, 70.0, 40.0)
+        );
+        assert_eq!(
+            (last.x1, last.y1, last.x2, last.y2),
+            (70.0, 40.0, 110.0, 60.0)
         );
     }
 

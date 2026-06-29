@@ -317,14 +317,14 @@ fn write_border_fill<W: Write>(
         w,
         "hh:slash",
         diagonal_shape_type(((attr >> 2) & 0x07) as u8),
-        attr & (1 << 8) != 0,
+        (attr >> 8) & 0x03,
         attr & (1 << 11) != 0,
     )?;
     write_diag_line(
         w,
         "hh:backSlash",
         diagonal_shape_type(((attr >> 5) & 0x07) as u8),
-        attr & (1 << 10) != 0,
+        (attr >> 10) & 0x01,
         attr & (1 << 12) != 0,
     )?;
     write_border_line(w, "hh:leftBorder", &bf.borders[0])?;
@@ -346,17 +346,17 @@ fn write_diag_line<W: Write>(
     w: &mut Writer<W>,
     name: &str,
     type_str: &str,
-    crooked: bool,
+    crooked: u16,
     is_counter: bool,
 ) -> Result<(), SerializeError> {
-    let crooked = if crooked { "1" } else { "0" };
+    let crooked = crooked.to_string();
     let is_counter = if is_counter { "1" } else { "0" };
     empty_tag(
         w,
         name,
         &[
             ("type", type_str),
-            ("Crooked", crooked),
+            ("Crooked", crooked.as_str()),
             ("isCounter", is_counter),
         ],
     )
@@ -385,7 +385,15 @@ fn effective_center_line(bf: &BorderFill) -> CenterLine {
 }
 
 fn effective_border_fill_attr(bf: &BorderFill) -> u16 {
-    bf.attr | bf.center_line.hwp_attr_bits()
+    let center_line = effective_center_line(bf);
+    if center_line == CenterLine::None {
+        return bf.attr;
+    }
+
+    let mut attr = bf.attr;
+    attr &=
+        !((0x07 << 2) | (0x07 << 5) | (0x03 << 8) | (1 << 10) | (1 << 11) | (1 << 12) | (1 << 13));
+    attr | center_line.hwp_attr_bits()
 }
 
 fn write_border_line<W: Write>(
@@ -1553,8 +1561,33 @@ mod tests {
             "centerLine 방향이 보존되어야 함: {xml}"
         );
         assert!(
-            xml.contains(r#"<hh:slash type="NONE" Crooked="1" isCounter="0"/>"#),
-            "VERTICAL 중심선의 HWP attr 보조 비트가 Crooked=1 로 보존되어야 함: {xml}"
+            xml.contains(r#"<hh:slash type="NONE" Crooked="3" isCounter="0"/>"#),
+            "VERTICAL 중심선의 HWP attr 보조 비트가 Crooked=3 으로 보존되어야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_border_fill_preserves_slash_crooked_two_bit_value() {
+        let mut bf = BorderFill::default();
+        bf.attr = (2 << 8) | (0b010 << 5);
+
+        let mut writer = Writer::new(Vec::new());
+        write_border_fill(
+            &mut writer,
+            0,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hh:slash type="NONE" Crooked="2" isCounter="0"/>"#),
+            "slash Crooked=2 가 보존되어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:backSlash type="CENTER" Crooked="0" isCounter="0"/>"#),
+            "backSlash CENTER 가 보존되어야 함: {xml}"
         );
     }
 

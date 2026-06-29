@@ -484,9 +484,18 @@ impl CenterLine {
     pub fn hwp_attr_bits(self) -> u16 {
         match self {
             Self::None => 0,
-            Self::Vertical => (1 << 13) | (1 << 8),
+            Self::Vertical => (1 << 13) | (0x03 << 8),
             Self::Horizontal => (1 << 13) | (1 << 10),
-            Self::Cross => 1 << 13,
+            Self::Cross => (1 << 13) | (0x03 << 8) | (1 << 10),
+        }
+    }
+
+    pub fn hwp_binary_attr_bits(self) -> u16 {
+        match self {
+            Self::None => 0,
+            Self::Vertical => (1 << 13) | (0x03 << 8),
+            Self::Horizontal => (1 << 13) | (1 << 10),
+            Self::Cross => (1 << 13) | (0x03 << 8) | (1 << 10),
         }
     }
 

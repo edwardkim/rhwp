@@ -1,6 +1,6 @@
 import { ModalDialog } from './dialog';
 import type { WasmBridge } from '@/core/wasm-bridge';
-import type { CellProperties } from '@/core/types';
+import type { CellBbox, CellProperties } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
 
 const HWPUNIT_PER_MM = 7200 / 25.4;
@@ -16,6 +16,50 @@ function mmToHwp16(mm: number): number {
 const DOC_PAPER_COLOR = 'var(--doc-paper)';
 const PREVIEW_GUIDE_STROKE = 'var(--ui-border-light)';
 const LINE_SAMPLE_STROKE = 'currentColor';
+const DIAGONAL_LINE_TYPE_OPTIONS: string[][] = [
+  ['0', '없음'],
+  ['1', '실선'],
+  ['2', '파선'],
+  ['3', '점선'],
+  ['4', '일점쇄선'],
+  ['5', '이점쇄선'],
+  ['6', '긴 파선'],
+  ['7', '원형 파선'],
+  ['8', '이중 실선'],
+  ['9', '가는-굵은 이중선'],
+  ['10', '굵은-가는 이중선'],
+  ['11', '가는-굵은-가는 삼중선'],
+  ['12', '물결선'],
+  ['13', '이중 물결선'],
+  ['14', '3D 굵은선'],
+  ['15', '3D 굵은선 반전'],
+  ['16', '3D 가는선'],
+  ['17', '3D 가는선 반전'],
+];
+const DIAGONAL_WIDTH_OPTIONS: string[][] = [
+  ['0', '0.1mm'],
+  ['1', '0.12mm'],
+  ['2', '0.15mm'],
+  ['3', '0.2mm'],
+  ['4', '0.25mm'],
+  ['5', '0.3mm'],
+  ['6', '0.4mm'],
+  ['7', '0.5mm'],
+  ['8', '0.6mm'],
+  ['9', '0.7mm'],
+  ['10', '1.0mm'],
+  ['11', '1.5mm'],
+  ['12', '2.0mm'],
+  ['13', '3.0mm'],
+  ['14', '4.0mm'],
+  ['15', '5.0mm'],
+];
+const DIAGONAL_WIDTH_MM = [0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0];
+
+function diagonalPreviewWidthPx(widthIndex: number): number {
+  const mm = DIAGONAL_WIDTH_MM[widthIndex] ?? DIAGONAL_WIDTH_MM[0];
+  return Math.min(8, Math.max(0.8, mm * 2.6));
+}
 
 /** 탭 정의 */
 interface TabDef {
@@ -23,6 +67,8 @@ interface TabDef {
   label: string;
   builder: () => HTMLElement;
 }
+
+type CellRange = { startRow: number; startCol: number; endRow: number; endCol: number };
 
 /**
  * 셀 테두리/배경 대화상자 (3탭: 테두리/배경/대각선)
@@ -36,6 +82,7 @@ export class CellBorderBgDialog extends ModalDialog {
   private tableCtx: { sec: number; ppi: number; ci: number };
   private cellIdx: number;
   private applyMode: 'each' | 'asOne';
+  private selectionRange: CellRange | null;
 
   // 탭 UI
   private tabs: HTMLButtonElement[] = [];
@@ -86,6 +133,7 @@ export class CellBorderBgDialog extends ModalDialog {
     tableCtx: { sec: number; ppi: number; ci: number },
     cellIdx: number,
     applyMode: 'each' | 'asOne' = 'each',
+    selectionRange: CellRange | null = null,
   ) {
     super('셀 테두리/배경', 460);
     this.wasm = wasm;
@@ -93,13 +141,16 @@ export class CellBorderBgDialog extends ModalDialog {
     this.tableCtx = tableCtx;
     this.cellIdx = cellIdx;
     this.applyMode = applyMode;
+    this.selectionRange = selectionRange;
   }
 
   show(): void {
     super.show();
     this.dialog.classList.add('tcp-border-bg-dialog');
     const { sec, ppi, ci } = this.tableCtx;
-    this.cellProps = this.wasm.getCellProperties(sec, ppi, ci, this.cellIdx);
+    this.cellProps = this.applyMode === 'each'
+      ? this.wasm.getCellOwnProperties(sec, ppi, ci, this.cellIdx)
+      : this.wasm.getCellProperties(sec, ppi, ci, this.cellIdx);
     this.populateFields();
   }
 
@@ -495,20 +546,14 @@ export class CellBorderBgDialog extends ModalDialog {
     const lineSection = this.createSection('선 속성');
     const typeRow = this.row();
     typeRow.appendChild(this.label('종류'));
-    this.diagLineTypeSelect = this.selectOptions([
-      ['0', '없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
-      ['4', '일점쇄선'], ['5', '이점쇄선'], ['6', '긴 파선'], ['7', '이중 실선'],
-    ]);
+    this.diagLineTypeSelect = this.selectOptions(DIAGONAL_LINE_TYPE_OPTIONS);
     this.diagLineTypeSelect.addEventListener('change', () => this.updateDiagonalPreview());
     typeRow.appendChild(this.diagLineTypeSelect);
     lineSection.appendChild(typeRow);
 
     const widthRow = this.row();
     widthRow.appendChild(this.label('굵기'));
-    this.diagWidthSelect = this.selectOptions([
-      ['0', '0.1mm'], ['1', '0.12mm'], ['2', '0.15mm'], ['3', '0.2mm'],
-      ['4', '0.25mm'], ['5', '0.3mm'], ['6', '0.4mm'],
-    ]);
+    this.diagWidthSelect = this.selectOptions(DIAGONAL_WIDTH_OPTIONS);
     this.diagWidthSelect.addEventListener('change', () => this.updateDiagonalPreview());
     widthRow.appendChild(this.diagWidthSelect);
     lineSection.appendChild(widthRow);
@@ -575,6 +620,22 @@ export class CellBorderBgDialog extends ModalDialog {
   ): HTMLDivElement {
     const group = document.createElement('div');
     group.className = 'tcp-diag-button-grid';
+    const clearTitle = kind === 'slash' ? '대각선 해제' : '역대각선 해제';
+    const clearBtn = this.createIconButton(clearTitle, this.createEmptyDiagonalIcon());
+    clearBtn.addEventListener('click', () => {
+      if (kind === 'slash') {
+        this.diagSlashBits = 0;
+      } else {
+        this.diagBackSlashBits = 0;
+      }
+      this.updateDiagonalButtons();
+      this.updateDiagonalPreview();
+    });
+    clearBtn.dataset.kind = kind;
+    clearBtn.dataset.bits = '0';
+    group.appendChild(clearBtn);
+    this.diagButtons.push(clearBtn);
+
     for (const [shape, bits, title] of defs) {
       const btn = this.createIconButton(title, this.createDiagonalIcon(kind, shape));
       btn.addEventListener('click', () => {
@@ -583,6 +644,7 @@ export class CellBorderBgDialog extends ModalDialog {
         } else {
           this.diagBackSlashBits = this.diagBackSlashBits === bits ? 0 : bits;
         }
+        if (this.hasDiagonalSelection()) this.diagCenterLine = 'NONE';
         this.updateDiagonalButtons();
         this.updateDiagonalPreview();
       });
@@ -597,6 +659,17 @@ export class CellBorderBgDialog extends ModalDialog {
   private createCenterLineButtonGroup(): HTMLDivElement {
     const group = document.createElement('div');
     group.className = 'tcp-diag-button-grid';
+    const clearBtn = this.createIconButton('중심선 해제', this.createEmptyDiagonalIcon());
+    clearBtn.addEventListener('click', () => {
+      this.diagCenterLine = 'NONE';
+      this.updateDiagonalButtons();
+      this.updateDiagonalPreview();
+    });
+    clearBtn.dataset.kind = 'centerLine';
+    clearBtn.dataset.value = 'NONE';
+    group.appendChild(clearBtn);
+    this.diagButtons.push(clearBtn);
+
     const defs: [string, string][] = [
       ['VERTICAL', '가로 중심선'],
       ['HORIZONTAL', '세로 중심선'],
@@ -606,6 +679,10 @@ export class CellBorderBgDialog extends ModalDialog {
       const btn = this.createIconButton(title, this.createCenterLineIcon(value));
       btn.addEventListener('click', () => {
         this.diagCenterLine = this.diagCenterLine === value ? 'NONE' : value;
+        if (this.hasCenterLineSelection()) {
+          this.diagSlashBits = 0;
+          this.diagBackSlashBits = 0;
+        }
         this.updateDiagonalButtons();
         this.updateDiagonalPreview();
       });
@@ -624,6 +701,20 @@ export class CellBorderBgDialog extends ModalDialog {
     btn.title = title;
     btn.appendChild(svg);
     return btn;
+  }
+
+  private createEmptyDiagonalIcon(): SVGSVGElement {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 36 28');
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', '3'); rect.setAttribute('y', '3');
+    rect.setAttribute('width', '30'); rect.setAttribute('height', '22');
+    rect.setAttribute('fill', 'none');
+    rect.setAttribute('stroke', 'currentColor');
+    rect.setAttribute('stroke-width', '1');
+    svg.appendChild(rect);
+    return svg;
   }
 
   private createDiagonalIcon(kind: 'slash' | 'backSlash', shape: string): SVGSVGElement {
@@ -694,15 +785,46 @@ export class CellBorderBgDialog extends ModalDialog {
     return [[x1, y1, x2, y2]];
   }
 
+  private hasDiagonalSelection(): boolean {
+    return this.diagSlashBits !== 0 || this.diagBackSlashBits !== 0;
+  }
+
+  private hasCenterLineSelection(): boolean {
+    return this.diagCenterLine !== 'NONE';
+  }
+
+  private normalizeDiagonalExclusive(): void {
+    if (this.applyMode === 'asOne') {
+      this.diagCenterLine = 'NONE';
+    } else if (this.hasCenterLineSelection()) {
+      this.diagSlashBits = 0;
+      this.diagBackSlashBits = 0;
+    } else if (this.hasDiagonalSelection()) {
+      this.diagCenterLine = 'NONE';
+    }
+  }
+
   private updateDiagonalButtons(): void {
+    const centerLineUnavailable = this.applyMode === 'asOne';
+    const centerLineSelected = this.hasCenterLineSelection();
+    const diagonalSelected = this.hasDiagonalSelection();
     for (const btn of this.diagButtons) {
       const kind = btn.dataset.kind;
       if (kind === 'slash') {
-        btn.classList.toggle('active', Number(btn.dataset.bits) === this.diagSlashBits);
+        const active = Number(btn.dataset.bits) === this.diagSlashBits;
+        btn.classList.toggle('active', active);
+        btn.disabled = centerLineSelected;
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       } else if (kind === 'backSlash') {
-        btn.classList.toggle('active', Number(btn.dataset.bits) === this.diagBackSlashBits);
+        const active = Number(btn.dataset.bits) === this.diagBackSlashBits;
+        btn.classList.toggle('active', active);
+        btn.disabled = centerLineSelected;
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       } else if (kind === 'centerLine') {
-        btn.classList.toggle('active', btn.dataset.value === this.diagCenterLine);
+        const active = !centerLineUnavailable && btn.dataset.value === this.diagCenterLine;
+        btn.classList.toggle('active', active);
+        btn.disabled = centerLineUnavailable || diagonalSelected;
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       }
     }
   }
@@ -722,22 +844,51 @@ export class CellBorderBgDialog extends ModalDialog {
     const lineType = parseInt(this.diagLineTypeSelect?.value ?? '0', 10);
     if (lineType === 0) return;
     const color = this.diagColorInput?.value ?? '#000000';
-    const width = Math.max(0.8, (parseInt(this.diagWidthSelect?.value ?? '0', 10) + 1) * 0.8);
+    const widthIndex = parseInt(this.diagWidthSelect?.value ?? '0', 10);
+    const width = diagonalPreviewWidthPx(widthIndex);
     const dashMap: Record<number, string> = {
       2: '7,4', 3: '2,3', 4: '8,3,2,3', 5: '8,3,2,3,2,3', 6: '12,4',
     };
-    const draw = (x1: number, y1: number, x2: number, y2: number) => {
+    const draw = (x1: number, y1: number, x2: number, y2: number, strokeWidth = width, offset = 0) => {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.hypot(dx, dy) || 1;
+      const ox = (-dy / len) * offset;
+      const oy = (dx / len) * offset;
       const line = document.createElementNS(ns, 'line');
-      line.setAttribute('x1', String(x1)); line.setAttribute('y1', String(y1));
-      line.setAttribute('x2', String(x2)); line.setAttribute('y2', String(y2));
-      line.setAttribute('stroke', color); line.setAttribute('stroke-width', String(width));
+      line.setAttribute('x1', String(x1 + ox)); line.setAttribute('y1', String(y1 + oy));
+      line.setAttribute('x2', String(x2 + ox)); line.setAttribute('y2', String(y2 + oy));
+      line.setAttribute('stroke', color); line.setAttribute('stroke-width', String(strokeWidth));
       if (dashMap[lineType]) line.setAttribute('stroke-dasharray', dashMap[lineType]);
       svg.appendChild(line);
     };
-    if (this.diagSlashBits !== 0) draw(20, 104, 140, 16);
-    if (this.diagBackSlashBits !== 0) draw(20, 16, 140, 104);
-    if (this.diagCenterLine === 'VERTICAL' || this.diagCenterLine === 'CROSS') draw(20, 60, 140, 60);
-    if (this.diagCenterLine === 'HORIZONTAL' || this.diagCenterLine === 'CROSS') draw(80, 16, 80, 104);
+
+    const drawStyled = (x1: number, y1: number, x2: number, y2: number) => {
+      const thin = Math.max(0.8, width * 0.28);
+      const thick = Math.max(1.4, width * 0.72);
+      const gap = Math.max(2.2, width * 0.5);
+      if (lineType === 8) {
+        draw(x1, y1, x2, y2, thin, -gap / 2);
+        draw(x1, y1, x2, y2, thin, gap / 2);
+      } else if (lineType === 9) {
+        draw(x1, y1, x2, y2, thin, -gap / 2);
+        draw(x1, y1, x2, y2, thick, gap / 2);
+      } else if (lineType === 10) {
+        draw(x1, y1, x2, y2, thick, -gap / 2);
+        draw(x1, y1, x2, y2, thin, gap / 2);
+      } else if (lineType === 11) {
+        draw(x1, y1, x2, y2, thin, -gap);
+        draw(x1, y1, x2, y2, thick, 0);
+        draw(x1, y1, x2, y2, thin, gap);
+      } else {
+        draw(x1, y1, x2, y2);
+      }
+    };
+
+    if (this.diagSlashBits !== 0) drawStyled(20, 104, 140, 16);
+    if (this.diagBackSlashBits !== 0) drawStyled(20, 16, 140, 104);
+    if (this.diagCenterLine === 'VERTICAL' || this.diagCenterLine === 'CROSS') drawStyled(20, 60, 140, 60);
+    if (this.diagCenterLine === 'HORIZONTAL' || this.diagCenterLine === 'CROSS') drawStyled(80, 16, 80, 104);
   }
 
   // ─── 공통: 적용 범위 섹션 ────────────────────
@@ -801,12 +952,32 @@ export class CellBorderBgDialog extends ModalDialog {
     this.diagSlashBits = cp.diagonalSlash ?? 0;
     this.diagBackSlashBits = cp.diagonalBackSlash ?? 0;
     this.diagCenterLine = cp.centerLine ?? 'NONE';
+    this.normalizeDiagonalExclusive();
     this.updateDiagonalButtons();
     this.updateDiagonalPreview();
   }
 
+  private selectedCellIndicesForRange(range: CellRange): number[] {
+    const { sec, ppi, ci } = this.tableCtx;
+    const indices = new Set<number>();
+    const overlaps = (bbox: CellBbox): boolean => {
+      const endRow = bbox.row + Math.max(1, bbox.rowSpan) - 1;
+      const endCol = bbox.col + Math.max(1, bbox.colSpan) - 1;
+      return bbox.row <= range.endRow &&
+        endRow >= range.startRow &&
+        bbox.col <= range.endCol &&
+        endCol >= range.startCol;
+    };
+
+    for (const bbox of this.wasm.getTableCellBboxes(sec, ppi, ci)) {
+      if (overlaps(bbox)) indices.add(bbox.cellIdx);
+    }
+    return [...indices];
+  }
+
   protected onConfirm(): void {
     const { sec, ppi, ci } = this.tableCtx;
+    this.normalizeDiagonalExclusive();
 
     const newProps: Record<string, unknown> = {};
     newProps.borderFillId = this.cellProps.borderFillId ?? 0;
@@ -842,10 +1013,33 @@ export class CellBorderBgDialog extends ModalDialog {
         ? this.diagScopeRadios
         : this.borderScopeRadios;
     const scope = scopeRadios?.find(r => r.checked)?.value ?? 'selected';
-    if (scope === 'all') {
+    if (this.applyMode === 'asOne') {
+      const range = scope === 'all'
+        ? (() => {
+          const dims = this.wasm.getTableDimensions(sec, ppi, ci);
+          return {
+            startRow: 0,
+            startCol: 0,
+            endRow: Math.max(0, dims.rowCount - 1),
+            endCol: Math.max(0, dims.colCount - 1),
+          };
+        })()
+        : this.selectionRange;
+      if (range) {
+        this.wasm.setCellZoneProperties(sec, ppi, ci, range, newProps as Partial<CellProperties>);
+      } else {
+        this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
+      }
+    } else if (scope === 'all') {
       const dims = this.wasm.getTableDimensions(sec, ppi, ci);
       for (let i = 0; i < dims.cellCount; i++) {
         this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);
+      }
+    } else if (this.selectionRange) {
+      const cellIndices = this.selectedCellIndicesForRange(this.selectionRange);
+      const targetIndices = cellIndices.length > 0 ? cellIndices : [this.cellIdx];
+      for (const cellIdx of targetIndices) {
+        this.wasm.setCellProperties(sec, ppi, ci, cellIdx, newProps as Partial<CellProperties>);
       }
     } else {
       this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);

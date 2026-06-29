@@ -1,6 +1,7 @@
 import { WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
+import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
@@ -92,6 +93,7 @@ function getContext(): EditorContext {
     hasCopiedFormat: inputHandler?.hasCopiedFormat() ?? false,
     inTable: inputHandler?.isInTable() ?? false,
     inCellSelectionMode: inputHandler?.isInCellSelectionMode() ?? false,
+    hasMultiCellSelection: inputHandler?.hasMultiCellSelection() ?? false,
     inTableObjectSelection: inputHandler?.isInTableObjectSelection() ?? false,
     inPictureObjectSelection: inputHandler?.isInPictureObjectSelection() ?? false,
     inField: inputHandler?.isInField() ?? false,
@@ -842,49 +844,6 @@ function notifyHwpxSaveModeIfNeeded(): void {
   if (sb) sb.textContent = 'HWPX 변환 저장 모드 — 저장 시 HWP(.hwp)로 내보냅니다';
 }
 
-type DocumentByteKind = 'hwp' | 'hwpx' | 'html' | 'unknown';
-
-const HWP_CFB_SIGNATURE = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1] as const;
-const ZIP_SIGNATURES = [
-  [0x50, 0x4B, 0x03, 0x04],
-  [0x50, 0x4B, 0x05, 0x06],
-  [0x50, 0x4B, 0x07, 0x08],
-] as const;
-
-function startsWithBytes(bytes: Uint8Array, signature: readonly number[]): boolean {
-  if (bytes.length < signature.length) return false;
-  return signature.every((byte, index) => bytes[index] === byte);
-}
-
-function detectDocumentByteKind(bytes: Uint8Array, contentType?: string | null): DocumentByteKind {
-  if (startsWithBytes(bytes, HWP_CFB_SIGNATURE)) return 'hwp';
-  if (ZIP_SIGNATURES.some(signature => startsWithBytes(bytes, signature))) return 'hwpx';
-
-  const declaredContentType = contentType?.toLowerCase() ?? '';
-  if (declaredContentType.includes('text/html')) return 'html';
-
-  const prefix = new TextDecoder('utf-8')
-    .decode(bytes.subarray(0, Math.min(bytes.length, 256)))
-    .trimStart()
-    .toLowerCase();
-
-  if (prefix.startsWith('<!doctype') || prefix.startsWith('<html') || prefix.startsWith('<?xml')) {
-    return 'html';
-  }
-
-  return 'unknown';
-}
-
-function assertRemoteDocumentBytes(bytes: Uint8Array, contentType?: string | null): void {
-  const kind = detectDocumentByteKind(bytes, contentType);
-  if (kind === 'hwp' || kind === 'hwpx') return;
-
-  if (kind === 'html') {
-    throw new Error('실제 HWP/HWPX 파일이 아닙니다. 파일 미리보기/오류 페이지가 반환되었습니다.');
-  }
-
-  throw new Error('실제 HWP/HWPX 파일이 아닙니다. 파일 시그니처를 확인할 수 없습니다.');
-}
 
 async function createNewDocument(): Promise<void> {
   const msg = sbMessage();

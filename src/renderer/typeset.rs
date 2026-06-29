@@ -9777,7 +9777,24 @@ impl TypesetEngine {
         // 선언된 절대 위치를 함께 보존한다. 여기서 vertical_offset 순으로 재정렬하면
         // 제목 텍스트와 co-anchored float 표의 순서가 뒤집히므로 정렬 대상에서 제외한다.
         // 공백-only host 는 기존 TopAndBottom empty/float 흐름을 유지한다(#157).
-        let should_sort_para_float_tables = !para_has_non_whitespace_text(para);
+        // [Issue #1639] 빈 host 라도 para-relative float 표 중 음수 vertical_offset 이
+        // 하나라도 있으면, 아래 vertical_offset 오름차순 정렬이 음수 표를 양수/0 형제
+        // 앞으로 끌어와 문서/배열 순서를 역전시킨다(설명 표가 본문 표 뒤로 밀리는 실문서
+        // 회귀). 한컴은 음수가 섞이면 표를 문서/앵커 순서대로 배치하므로, 음수 혼재
+        // 빈 host 는 재정렬을 끄고 배열 순서를 보존한다. 양수 전용 빈 host 의
+        // vertical_offset 재정렬(#986/#1088)은 그대로 유지한다.
+        // 경계: `signed_hwpunit < 0` 인 음수만 트리거하며, offset == 0 은 음수가 아니므로
+        // 양수와 함께 정렬을 유지한다(0/양수=정렬 ON, 음수 혼재=정렬 OFF).
+        let has_negative_para_float = para.controls.iter().any(|ctrl| {
+            matches!(
+                ctrl,
+                Control::Table(t)
+                    if is_para_topbottom_float(&t.common)
+                        && signed_hwpunit(t.common.vertical_offset) < 0
+            )
+        });
+        let should_sort_para_float_tables =
+            !para_has_non_whitespace_text(para) && !has_negative_para_float;
         let float_table_voffset = |ctrl: &Control| -> i32 {
             match ctrl {
                 Control::Table(t)

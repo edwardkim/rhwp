@@ -199,3 +199,53 @@ CLI smoke:
   pageBreak CELL/TABLE 의미론, footNotePr/endNotePr IR, ir-diff 의미론 업그레이드
 - 기존 수정 요청(fmt, useFontSpace 복구 등)은 그대로 유효
 - 상태: 컨트리뷰터 응답 대기
+
+---
+
+## 8. 2026-06-29 재검토 — devel 전면 추월 + 컨트리뷰터 17일 무응답
+
+6/12 안내 이후 17일간 devel 의 HWPX serializer/parser 가 **96 커밋** 추가 진전
+(#1384/#1388/#1532/#1533/#1586/#1594/#1597 등)했고, PR 은 6/12 head(`33593a3c`)에서
+갱신 없음. 컨트리뷰터(idaeho/김대호)는 6/10·6/12 두 차례 안내에 **응답 없음**.
+
+### 8.1 6/12 "유지 권장 5항목"의 현 devel 상태 — 사실상 전멸
+
+| 6/12 유지 권장 (고유) | 현 devel(2026-06-29) |
+|---|---|
+| BinData 1-based 매핑 | **추월** — `context.rs` #1384 로 1-based 통일(borderFill/binaryItemIDRef) |
+| pageBreak CELL/TABLE 의미론 | **추월** — 파서 `section.rs:1582-84` 가 PR 과 동일 매핑(CELL→RowBreak, TABLE→CellBreak) + 한컴 의미론 주석 + `table_page_break_str` 직렬화 |
+| ir-diff 의미론 업그레이드 | **추월** — `main.rs tab_ext_semantic_differs()`([0][2][6]만 비교) PR 보다 상세 |
+| footNotePr/endNotePr IR | secPr IR 직렬화 #1388 로 처리(별도 잔여 여부는 미미) |
+| hwp2hwpx CLI + verify 게이트 | devel 부재(고유)이나 `convert`/`convert_hwp` + `hwpx_to_hwp.rs` 양방향 변환기 + `hwpx-roundtrip`/`hwp5-roundtrip` 검증 도구와 **목적 중복** |
+
+충돌 4파일(main.rs·header.rs·serializer/section.rs **18블록**·table.rs) 대조 결과,
+충돌 해소 = devel 의 더 정교한 구현(#1378/#1388/#1407/#1584)을 PR 의 과거 구현으로 **역행**.
+
+### 8.2 최종 권고 — **close (정중)**
+
+- (B) serializer fidelity 묶음: devel 이 전부 추월·역행 위험.
+- (A) hwp2hwpx CLI: `convert` 양방향 변환기와 목적 중복. 순수 신규 가치(독립 verify 게이트
+  UX)는 작으며, 현 PR 코드로는 useFontSpace 회귀(3.2)·fmt 미통과(3.3) 동반.
+- 컨트리뷰터 17일 무응답 + 매번 추월 확대 → **재작업 요청 반복은 비현실적**.
+
+**처리: 정중한 감사 + 상황 설명 후 close.** 단, `convert` 에 `--verify`/`--verify-pages`
+게이트 UX 가 유용하다고 판단되면 **devel 기준 신규 이슈로 분리**해 메인테이너/후속 기여로
+재구현(PR 그대로 끌고 오지 않음). 첫 기여 예우 — fork base 동기화 안내 + 향후 재기여 환영 톤.
+
+### 8.3 권위 주의
+
+PR 실측(11샘플 IR diff 1074→3, 페이지 5/11→11/11)은 **v0.7.15 기준 + 컨트리뷰터 측정**.
+현 devel 은 #1597 무손실 통합으로 이미 그 수준 이상(페이지붕괴 0%). 최종 무손실 판정은
+작업지시자 환경 + `hwpx_roundtrip_baseline` 회귀 게이트 권위.
+
+---
+
+## 9. 처리 결과 (2026-06-29)
+
+- **close 완료** — 정중한 감사 + devel 추월 상황 설명 코멘트 등록
+  (https://github.com/edwardkim/rhwp/pull/1366#issuecomment-4828059243).
+- **신규 이슈 #1638 분리** — `convert` 변환 검증 게이트(--verify/--verify-pages)를 devel
+  기준으로 재구현(PR #1366 의 유용한 UX 아이디어만 계승). 명령 표면 최소화(신규 `hwp2hwpx`
+  대신 기존 `convert` 에 플래그) 검토 포함.
+- 첫 기여 예우 — fork base 동기화 안내 + #1638 재기여 환영 톤.
+- 본 보고서 `pr/archives/` 이동.

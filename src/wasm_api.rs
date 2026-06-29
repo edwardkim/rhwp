@@ -2221,6 +2221,26 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 셀 고유 속성을 조회한다.
+    ///
+    /// cellzone overlay를 합성하지 않고 셀 자체의 borderFill만 반환한다.
+    #[wasm_bindgen(js_name = getCellOwnProperties)]
+    pub fn get_cell_own_properties(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        cell_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_cell_own_properties_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            cell_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 셀 속성을 수정한다.
     ///
     /// 반환: JSON `{"ok":true}`
@@ -2238,6 +2258,34 @@ impl HwpDocument {
             parent_para_idx as usize,
             control_idx as usize,
             cell_idx as usize,
+            json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 선택 영역을 하나의 셀처럼 취급하는 cellzone 테두리/배경 속성을 적용한다.
+    ///
+    /// 반환: JSON `{"ok":true,"startRow":...,"borderFillId":...}`
+    #[wasm_bindgen(js_name = setCellZoneProperties)]
+    pub fn set_cell_zone_properties(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        start_row: u32,
+        start_col: u32,
+        end_row: u32,
+        end_col: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_cell_zone_properties_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            start_row as u16,
+            start_col as u16,
+            end_row as u16,
+            end_col as u16,
             json,
         )
         .map_err(|e| e.into())

@@ -321,6 +321,16 @@ default path.
 - The public compatibility path is unchanged: when proof is missing, the backend
   keeps the `TextRun` fallback.
 
+## CanvasKit Parity Plan Link
+
+CanvasKit replay widening is tracked in
+`docs/canvaskit-parity-implementation.md`. That plan keeps Text IR v2 sidecars
+as guarded alternatives to the `TextRun` compatibility path, and it keeps
+CanvasKit direct replay separate from hidden Canvas2D overlay behavior. Text IR
+v2 changes that affect `GlyphRun`, `GlyphOutline`, `text.variantGroups`,
+`ResourceArena`, or fallback-free profiles should update that plan when they
+also change CanvasKit selection, cache, or render-diff expectations.
+
 Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
 output can use fuzzy PNG comparison, but semantic decisions must be exact:
 selected variant id, fallback reason, resource resolution, effect preprocessing

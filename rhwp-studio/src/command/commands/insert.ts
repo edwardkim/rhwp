@@ -213,8 +213,9 @@ export const insertCommands: CommandDef[] = [
     id: 'insert:footnote',
     label: '각주',
     icon: 'icon-footnote',
-    canExecute: () => true,
+    canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
+      if (!services.getContext().hasDocument) return;
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
@@ -233,8 +234,9 @@ export const insertCommands: CommandDef[] = [
     id: 'insert:endnote',
     label: '미주',
     icon: 'icon-endnote',
-    canExecute: () => true,
+    canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
+      if (!services.getContext().hasDocument) return;
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();

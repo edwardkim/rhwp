@@ -13,8 +13,8 @@ use super::record_writer::write_record;
 use crate::model::bin_data::{BinData, BinDataType};
 use crate::model::document::{DocInfo, DocProperties};
 use crate::model::style::{
-    BorderFill, BorderLineType, Bullet, CharShape, FillType, Font, ImageFillMode, Numbering,
-    ParaShape, Style, TabDef,
+    BorderFill, BorderLineType, Bullet, CenterLine, CharShape, FillType, Font, ImageFillMode,
+    Numbering, ParaShape, Style, TabDef,
 };
 use crate::parser::tags;
 
@@ -308,7 +308,21 @@ fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
 pub fn serialize_border_fill(bf: &BorderFill) -> Vec<u8> {
     let mut w = ByteWriter::new();
     let mut attr = bf.attr;
-    attr |= bf.center_line.hwp_attr_bits();
+    let center_line = if bf.center_line != CenterLine::None {
+        bf.center_line
+    } else {
+        CenterLine::from_hwp_attr(attr)
+    };
+    if center_line != CenterLine::None {
+        attr &= !((0x07 << 2)
+            | (0x07 << 5)
+            | (0x03 << 8)
+            | (1 << 10)
+            | (1 << 11)
+            | (1 << 12)
+            | (1 << 13));
+        attr |= center_line.hwp_binary_attr_bits();
+    }
     w.write_u16(attr).unwrap();
 
     // 4방향 테두리 (인터리브: 종류 + 굵기 + 색상)

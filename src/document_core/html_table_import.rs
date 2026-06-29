@@ -857,19 +857,33 @@ impl DocumentCore {
             || json.contains("\"diagonalColor\"")
             || json.contains("\"centerLine\"");
         if has_diagonal_json {
-            let slash_bits =
-                json_diag_bits(json, "diagonalSlash").unwrap_or(((bf.attr >> 2) & 0x07) as u16);
-            let backslash_bits =
-                json_diag_bits(json, "diagonalBackSlash").unwrap_or(((bf.attr >> 5) & 0x07) as u16);
-            bf.center_line = json_center_line(json).unwrap_or(bf.center_line);
+            let slash_bits_json = json_diag_bits(json, "diagonalSlash");
+            let backslash_bits_json = json_diag_bits(json, "diagonalBackSlash");
+            let center_line_json = json_center_line(json);
+            let mut slash_bits = slash_bits_json.unwrap_or(((bf.attr >> 2) & 0x07) as u16);
+            let mut backslash_bits = backslash_bits_json.unwrap_or(((bf.attr >> 5) & 0x07) as u16);
+            let explicit_diagonal_bits = slash_bits_json.is_some() || backslash_bits_json.is_some();
+            if let Some(center_line) = center_line_json {
+                bf.center_line = center_line;
+            }
             bf.diagonal.diagonal_type =
                 json_i32(json, "diagonalLine").unwrap_or(bf.diagonal.diagonal_type as i32) as u8;
             bf.diagonal.width =
                 json_i32(json, "diagonalWidth").unwrap_or(bf.diagonal.width as i32) as u8;
             bf.diagonal.color = json_color(json, "diagonalColor").unwrap_or(bf.diagonal.color);
+
+            if bf.center_line != CenterLine::None
+                && (center_line_json.is_some() || !explicit_diagonal_bits)
+            {
+                slash_bits = 0;
+                backslash_bits = 0;
+            } else if slash_bits != 0 || backslash_bits != 0 {
+                bf.center_line = CenterLine::None;
+            }
+
             bf.attr &= !((0x07 << 2)
                 | (0x07 << 5)
-                | (1 << 8)
+                | (0x03 << 8)
                 | (1 << 10)
                 | (1 << 11)
                 | (1 << 12)

@@ -11,6 +11,8 @@ on:
       - 'src/document_core/queries/rendering.rs'
       - 'src/wasm_api.rs'
       - 'src/main.rs'
+      - 'docs/canvaskit-parity-implementation.md'
+      - 'docs/text-ir-v2.md'
       - 'rhwp-studio/**'
       - 'mydocs/**'
       - '.github/workflows/render-diff.yml'

@@ -3686,6 +3686,12 @@ export class InputHandler {
   /** 셀 선택 모드인가? */
   isInCellSelectionMode(): boolean { return this.cursor.isInCellSelectionMode(); }
 
+  /** 여러 셀이 선택된 상태인가? */
+  hasMultiCellSelection(): boolean {
+    const range = this.cursor.getSelectedCellRange();
+    return Boolean(range && (range.startRow !== range.endRow || range.startCol !== range.endCol));
+  }
+
   /** 표 객체 선택 모드인가? */
   isInTableObjectSelection(): boolean { return this.cursor.isInTableObjectSelection(); }
 
@@ -3922,7 +3928,7 @@ export class InputHandler {
     const pos = this.cursor.getPosition();
     const cellProps = pos.parentParaIndex !== undefined
       ? pickDefined(
-          this.wasm.getCellProperties(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!, pos.cellIndex!),
+          this.wasm.getCellOwnProperties(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!, pos.cellIndex!),
           FORMAT_COPY_CELL_KEYS,
         ) as Partial<CellProperties>
       : undefined;

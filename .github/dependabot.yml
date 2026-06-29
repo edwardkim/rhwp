@@ -40,3 +40,22 @@ updates:
         patterns:
           - "vite"
           - "vite-plugin-pwa"
+
+  # [#1649] 확장(chrome/firefox)도 vite 를 추적한다. studio 가 vite 8 까지 따라온
+  # 사이 확장만 vite 6 에 방치되어 있었다(고정 의도 아님). 확장 빌드는 build.mjs 가
+  # cwd:rhwp-studio 에서 npx vite 를 호출해 이미 studio vite 를 쓰므로, 확장의 vite 는
+  # dev 서버 전용이나 보안 패치 추적 누락 방지를 위해 일치시킨다. vite-plugin-pwa 는
+  # studio 전용이라 확장엔 그룹이 불필요(devDep = typescript + vite).
+  - package-ecosystem: "npm"
+    directory: "/rhwp-chrome"
+    target-branch: "devel"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "npm"
+    directory: "/rhwp-firefox"
+    target-branch: "devel"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10

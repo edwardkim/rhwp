@@ -258,6 +258,19 @@
   background: var(--color-accent-bg-light);
 }
 
+.tcp-diag-btn:disabled {
+  background: var(--ui-surface-muted);
+  border-color: var(--color-border-lighter);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.tcp-diag-btn:disabled:hover {
+  background: var(--ui-surface-muted);
+  border-color: var(--color-border-lighter);
+}
+
 .tcp-diag-btn.active {
   border-color: var(--color-primary);
   background: var(--color-accent-bg);

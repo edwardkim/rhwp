@@ -4,12 +4,18 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = path.resolve(studioRoot, '..');
 const canvaskitPath = path.join(studioRoot, 'src/view/canvaskit-renderer.ts');
 const canvaskitDirectory = path.join(studioRoot, 'src/view/canvaskit');
 const layerTypesPath = path.join(studioRoot, 'src/core/types.ts');
+const textIrV2DocPath = path.join(repoRoot, 'docs/text-ir-v2.md');
+const canvaskitParityPlanDocPath = path.join(repoRoot, 'docs/canvaskit-parity-implementation.md');
 
 const canvaskitSource = fs.readFileSync(canvaskitPath, 'utf8');
 const layerTypesSource = fs.readFileSync(layerTypesPath, 'utf8');
+const textIrV2DocSource = fs.readFileSync(textIrV2DocPath, 'utf8');
+const canvaskitParityPlanDocSource = fs.readFileSync(canvaskitParityPlanDocPath, 'utf8');
+const normalizedCanvaskitParityPlanDocSource = canvaskitParityPlanDocSource.replace(/\s+/g, ' ');
 
 function extractBlockBody(source, signatureIndex, blockName) {
   let bodyStart = -1;
@@ -152,6 +158,56 @@ const forbiddenCanvas2dApiPatterns = [
   [/\bFileReader\b/, 'FileReader'],
   [/\bCanvas2DLayerRenderer\b/, 'Canvas2DLayerRenderer'],
   [/canvas2d-layer-renderer/, 'canvas2d-layer-renderer import'],
+];
+const canvaskitParityPlanTouchpoints = [
+  { token: 'src/paint/text_v2.rs', path: path.join(repoRoot, 'src/paint/text_v2.rs'), kind: 'file' },
+  {
+    token: 'src/renderer/canvaskit_policy.rs',
+    path: path.join(repoRoot, 'src/renderer/canvaskit_policy.rs'),
+    kind: 'file',
+  },
+  {
+    token: 'rhwp-studio/src/core/types.ts',
+    path: path.join(studioRoot, 'src/core/types.ts'),
+    kind: 'file',
+  },
+  {
+    token: 'rhwp-studio/src/view/canvaskit-renderer.ts',
+    path: canvaskitPath,
+    kind: 'file',
+  },
+  {
+    token: 'rhwp-studio/src/view/canvaskit/',
+    path: canvaskitDirectory,
+    kind: 'directory',
+  },
+  {
+    token: 'rhwp-studio/src/view/glyph-outline-payload-status.ts',
+    path: path.join(studioRoot, 'src/view/glyph-outline-payload-status.ts'),
+    kind: 'file',
+  },
+  {
+    token: 'rhwp-studio/e2e/renderer-contract.test.mjs',
+    path: fileURLToPath(import.meta.url),
+    kind: 'file',
+  },
+  {
+    token: '.github/workflows/render-diff.yml',
+    path: path.join(repoRoot, '.github/workflows/render-diff.yml'),
+    kind: 'file',
+  },
+];
+const canvaskitParityPlanRequiredTokens = [
+  'PageLayerTree',
+  'CanvasKit direct replay',
+  'must not depend on Canvas2D',
+  'unsupported operations stay visible',
+  'TextRun compatibility',
+  'GlyphRun',
+  'GlyphOutline',
+  'text.variantGroups',
+  'ResourceArena',
+  'render-diff CI',
 ];
 
 assert.deepEqual(
@@ -303,5 +359,31 @@ for (const { label, source } of canvaskitSourceFiles) {
     );
   }
 }
+
+for (const { token, path: touchpointPath, kind } of canvaskitParityPlanTouchpoints) {
+  assert.ok(
+    canvaskitParityPlanDocSource.includes(token),
+    `CanvasKit parity plan should mention touchpoint ${token}`,
+  );
+
+  const stat = fs.statSync(touchpointPath);
+  if (kind === 'directory') {
+    assert.ok(stat.isDirectory(), `CanvasKit parity plan touchpoint ${token} should be a directory`);
+  } else {
+    assert.ok(stat.isFile(), `CanvasKit parity plan touchpoint ${token} should be a file`);
+  }
+}
+
+for (const token of canvaskitParityPlanRequiredTokens) {
+  assert.ok(
+    normalizedCanvaskitParityPlanDocSource.includes(token),
+    `CanvasKit parity plan should keep guard token: ${token}`,
+  );
+}
+
+assert.ok(
+  textIrV2DocSource.includes('docs/canvaskit-parity-implementation.md'),
+  'Text IR v2 contract should link to the CanvasKit parity implementation plan',
+);
 
 console.log('renderer backend contract guard passed');

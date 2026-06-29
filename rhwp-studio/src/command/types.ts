@@ -18,6 +18,8 @@ export interface EditorContext {
   inTable: boolean;
   /** F5 셀 선택 모드인가? */
   inCellSelectionMode: boolean;
+  /** 여러 셀이 선택된 상태인가? */
+  hasMultiCellSelection: boolean;
   /** 표 객체 선택 모드인가? */
   inTableObjectSelection: boolean;
   /** 그림 객체 선택 모드인가? */
