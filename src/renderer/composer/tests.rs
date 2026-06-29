@@ -759,6 +759,32 @@ fn test_reflow_english_word_wrap() {
     assert_eq!(para.line_segs[1].text_start, 6); // "World" 시작
 }
 
+#[test]
+fn test_reflow_condense_shrinks_measured_space_width() {
+    let mut styles = make_styles_with_font_size(10.0);
+    styles.para_styles[0].condense_min_space = 20;
+
+    let mut para = Paragraph {
+        text: "A B ABCDEF".to_string(),
+        char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        char_count: 10,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    // Natural width is 50px: 8 latin chars at 5px + 2 spaces at 5px.
+    // condense=20 allows each measured space to shrink by 20%, saving 2px.
+    reflow_line_segs(&mut para, 48.0, &styles, 96.0);
+    assert_eq!(para.line_segs.len(), 1);
+}
+
 /// 강제 줄 바꿈: \n에서 즉시 줄 바꿈
 #[test]
 fn test_reflow_forced_line_break() {
@@ -816,7 +842,7 @@ fn test_tokenize_korean_eojeol() {
         char_shape_id: 0,
     }];
 
-    let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
+    let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 1);
     // "가나" (Text) + " " (Space) + "다라" (Text) = 3 tokens
     assert_eq!(tokens.len(), 3);
     assert!(matches!(
@@ -833,6 +859,37 @@ fn test_tokenize_korean_eojeol() {
         BreakToken::Text {
             start_idx: 3,
             end_idx: 5,
+            ..
+        }
+    ));
+}
+
+/// 토크나이저: 한국어 글자 단위 토큰화
+#[test]
+fn test_tokenize_korean_break_word_chars() {
+    let styles = make_styles_with_font_size(16.0);
+    let text: Vec<char> = "가나".chars().collect();
+    let offsets: Vec<u32> = (0..text.len() as u32).collect();
+    let shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
+
+    let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
+    assert_eq!(tokens.len(), 2);
+    assert!(matches!(
+        tokens[0],
+        BreakToken::Text {
+            start_idx: 0,
+            end_idx: 1,
+            ..
+        }
+    ));
+    assert!(matches!(
+        tokens[1],
+        BreakToken::Text {
+            start_idx: 1,
+            end_idx: 2,
             ..
         }
     ));

@@ -181,9 +181,12 @@ pub struct ResolvedParaStyle {
     pub tab_stops: Vec<TabStop>,
     /// 문단 오른쪽 끝 자동 탭 여부
     pub auto_tab_right: bool,
+    /// HWPX paraPr condense / HWP ParaShape attr1 bits 9..15.
+    /// Spec name: minimum spacing value, 0..75%.
+    pub condense_min_space: u8,
     /// 줄 나눔 기준 영어 단위 (0=단어, 1=하이픈, 2=글자) — attr1 bit 5-6
     pub english_break_unit: u8,
-    /// 줄 나눔 기준 한글 단위 (0=어절, 1=글자) — attr1 bit 7
+    /// 줄 나눔 기준 한글 단위 (0=글자, 1=어절/KEEP_WORD) — attr1 bit 7
     pub korean_break_unit: u8,
     /// 외톨이줄 보호 — attr1 bit 16
     pub widow_orphan: bool,
@@ -214,6 +217,7 @@ impl Default for ResolvedParaStyle {
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
+            condense_min_space: 0,
             english_break_unit: 0,
             korean_break_unit: 0,
             widow_orphan: false,
@@ -830,6 +834,7 @@ fn resolve_single_para_style(
         default_tab_width,
         tab_stops,
         auto_tab_right,
+        condense_min_space: ((ps.attr1 >> 9) & 0x7f).min(75) as u8,
         english_break_unit: ((ps.attr1 >> 5) & 0x03) as u8,
         korean_break_unit: ((ps.attr1 >> 7) & 0x01) as u8,
         widow_orphan: (ps.attr1 >> 16) & 1 != 0 || (ps.attr2 >> 5) & 1 != 0,

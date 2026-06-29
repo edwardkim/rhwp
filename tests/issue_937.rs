@@ -130,6 +130,34 @@ fn issue_937_f081c_filler_should_not_render_as_text() {
 }
 
 #[test]
+fn issue_937_f02fc_callout_bullet_should_render_as_pointer() {
+    assert_eq!(
+        expand_pua_render_text("\u{F02FC} 전자서명"),
+        "► 전자서명",
+        "U+F02FC 한컴 PUA callout bullet 는 missing glyph 대신 right pointer 로 표시되어야 함",
+    );
+    assert_eq!(
+        pua_to_display_text('\u{F02FC}').as_deref(),
+        Some("►"),
+        "CharOverlap/display helper 도 같은 U+F02FC 표시 문자열을 반환해야 함",
+    );
+}
+
+#[test]
+fn issue_937_f031c_toc_bullet_should_render_as_square() {
+    assert_eq!(
+        expand_pua_render_text("\u{F031C} 행정업무"),
+        "■ 행정업무",
+        "U+F031C 한컴 PUA TOC bullet 는 missing glyph 대신 black square 로 표시되어야 함",
+    );
+    assert_eq!(
+        pua_to_display_text('\u{F031C}').as_deref(),
+        Some("■"),
+        "CharOverlap/display helper 도 같은 U+F031C 표시 문자열을 반환해야 함",
+    );
+}
+
+#[test]
 fn issue_937_svg_renders_f012b_as_signature_seal() {
     let bytes = read_bokhakwonseo();
     let doc = HwpDocument::from_bytes(&bytes).expect("parse samples/복학원서.hwp");
