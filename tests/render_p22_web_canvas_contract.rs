@@ -48,3 +48,25 @@ fn web_canvas_control_code_group_labels_follow_active_replay_plane() {
         "layer group labels should use the replay-plane gate"
     );
 }
+
+#[test]
+fn web_canvas_decodes_bitmap_bytes_before_html_image_fallback() {
+    assert!(
+        WEB_CANVAS_SOURCE.contains("fn decode_image_to_canvas(data: &[u8])"),
+        "WebCanvas should have a synchronous bitmap decode path"
+    );
+    assert!(
+        WEB_CANVAS_SOURCE.contains("put_image_data(&image_data, 0.0, 0.0)"),
+        "decoded image bytes should be copied into an offscreen canvas"
+    );
+    assert!(
+        WEB_CANVAS_SOURCE.contains("draw_image_with_html_canvas_element_and_dw_and_dh"),
+        "full-image drawing should paint the decoded canvas before HtmlImage fallback"
+    );
+    assert!(
+        WEB_CANVAS_SOURCE.contains(
+            "draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh"
+        ),
+        "cropped-image drawing should paint the decoded canvas before HtmlImage fallback"
+    );
+}
