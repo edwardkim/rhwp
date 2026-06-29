@@ -3,12 +3,11 @@
 //! 렌더 트리를 HTML 문자열로 변환한다.
 //! CSS로 스타일링하여 접근성과 텍스트 선택을 지원한다.
 
+use super::image_resolver::{
+    bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes, tiff_bytes_to_png_bytes,
+};
 use super::layout::compute_char_positions;
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
-use super::image_resolver::{
-    bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
-    tiff_bytes_to_png_bytes,
-};
 use super::svg::convert_wmf_to_svg;
 use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
 use crate::model::style::UnderlineType;
