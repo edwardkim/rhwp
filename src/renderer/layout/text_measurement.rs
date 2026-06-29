@@ -916,7 +916,10 @@ mod wasm_internals {
 
     /// 1000pt 측정용 CSS font 문자열 생성
     pub(super) fn build_1000pt_font_string(style: &TextStyle) -> String {
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = style
+            .css_font_weight()
+            .map(|weight| format!("{} ", weight))
+            .unwrap_or_default();
         let font_style = if style.italic { "italic " } else { "" };
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
@@ -1581,10 +1584,54 @@ fn is_monospace_metric(metric: &font_metrics_data::FontMetric) -> bool {
     count >= 16
 }
 
+/// 요청 폰트의 내장 메트릭 DB 등록 여부.
+///
+/// `compute_char_positions` 의 advance 가 실제 글리프 폭(메트릭 DB)에서
+/// 나온 값인지, 아니면 DB 미등록 폰트의 휴리스틱 폴백(`font_size * 0.5`
+/// 등)인지 구분하는 데 쓴다. WASM 캔버스 렌더러는 메트릭이 없는(=브라우저
+/// 대체 폰트로 치환되는) 폰트에 대해 글리프별 가로 스케일링(per-glyph
+/// x-scale)을 적용하면 안 된다 — 치환 폰트의 실제 advance 와 어긋나
+/// l/i/t 같은 좁은 글리프가 과도하게 늘어나기 때문이다 (한컴 바겐세일 M
+/// → Pretendard 치환 시 Vocabulary 열 왜곡).
+pub(crate) fn font_family_has_metrics(font_family: &str, bold: bool, italic: bool) -> bool {
+    let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    font_metrics_data::find_metric(primary_name, bold, italic).is_some()
+}
+
 /// 내장 폰트 메트릭으로 문자 폭 측정 (em 단위 → px 변환)
 ///
 /// 내장 메트릭이 있으면 JS 브릿지 호출 없이 즉시 반환.
 /// 없으면 None을 반환하여 폴백 경로를 사용하게 한다.
+fn quantize_hwp_px(px: f64) -> f64 {
+    let hwp = (px * 75.0) as i32;
+    hwp as f64 / 75.0
+}
+
+fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
+    let lower = primary_name.to_lowercase();
+    let is_dotum = primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum");
+    let is_batang = primary_name.contains("KoPub바탕체") || lower.contains("kopub batang");
+    if !is_dotum && !is_batang {
+        return None;
+    }
+
+    if c == ' ' {
+        return Some(quantize_hwp_px(font_size * 0.5));
+    }
+    if is_narrow_punctuation(c) {
+        return Some(quantize_hwp_px(font_size * 0.3));
+    }
+    if c.is_ascii() {
+        return Some(quantize_hwp_px(font_size * 0.5));
+    }
+    if is_cjk_char(c) || is_fullwidth_symbol(c) {
+        let factor = if is_dotum { 0.84 } else { 0.94 };
+        return Some(quantize_hwp_px(font_size * factor));
+    }
+
+    None
+}
+
 fn measure_char_width_embedded(
     font_family: &str,
     bold: bool,
@@ -1594,6 +1641,9 @@ fn measure_char_width_embedded(
 ) -> Option<f64> {
     // CSS font-family 체인에서 첫 번째 폰트명으로 메트릭 조회
     let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    if let Some(w) = kopub_char_width(primary_name, c, font_size) {
+        return Some(w);
+    }
     let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
     // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호
     let w = if c == ' ' {
@@ -1645,8 +1695,7 @@ fn measure_char_width_embedded(
 
     // 한컴과 동일한 HWPUNIT 정수 변환: w * base_size / em (내림)
     // round가 아닌 truncate (as i32)로 처리하여 한컴 정수 나눗셈과 일치
-    let hwp = (actual_px * 75.0) as i32;
-    Some(hwp as f64 / 75.0)
+    Some(quantize_hwp_px(actual_px))
 }
 
 // ── 호환 래퍼 (기존 호출부 변경 없음) ──────────────────────────────
@@ -1821,6 +1870,7 @@ fn is_fullwidth_symbol(c: char) -> bool {
         '\u{00A3}' |                   // £ POUND SIGN
         '\u{00A5}'                     // ¥ YEN SIGN
     )
+    || ('\u{2190}'..='\u{21FF}').contains(&c) // Arrows (→, ⇨, ⇒ 등)
     || ('\u{2460}'..='\u{24FF}').contains(&c) // Enclosed Alphanumerics (①②③ 등)
     || ('\u{25A0}'..='\u{25FF}').contains(&c) // Geometric Shapes (□■▲◆○ 등, 섹션 머리 기호)
     || ('\u{2600}'..='\u{26FF}').contains(&c) // Miscellaneous Symbols (☆★ 등)
@@ -2080,6 +2130,22 @@ mod tests {
     }
 
     #[test]
+    fn test_unicode_arrow_uses_symbol_advance() {
+        let style = TextStyle {
+            font_family: "KoPub돋움체 Light".to_string(),
+            font_size: 10.0,
+            ..Default::default()
+        };
+
+        let arrow = estimate_text_width("⇒", &style);
+        let ascii = estimate_text_width("A", &style);
+        assert!(
+            arrow > ascii,
+            "arrow should use symbol advance, arrow={arrow}, ascii={ascii}"
+        );
+    }
+
+    #[test]
     fn test_mock_measurer_tab() {
         let m = MockTextMeasurer { char_width: 10.0 };
         let style = TextStyle {
@@ -2133,6 +2199,19 @@ mod tests {
             "expected 32.0 (2*16.0 heuristic), got {}",
             w
         );
+    }
+
+    #[test]
+    fn test_kopub_dotum_uses_narrow_publication_metrics() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: "KoPub돋움체 Light".to_string(),
+            font_size: 14.0,
+            ..Default::default()
+        };
+
+        let w = m.estimate_text_width("가나", &style);
+        assert_eq!(w, 24.0);
     }
 
     #[test]

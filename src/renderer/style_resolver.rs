@@ -728,18 +728,40 @@ pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
     )
 }
 
-/// 중고딕/태고딕 계열 (CSS font-weight 500) 폰트 판별.
-///
-/// HWP 에서 중고딕 계열은 Regular(400)과 Bold(700) 사이의 Medium(500) weight.
-/// Fallback 폰트 매칭 시 weight 500 힌트를 주어 선명도를 유지한다.
-pub(crate) fn is_medium_weight_face(font_family: &str) -> bool {
-    let primary = font_family
+fn primary_font_face(font_family: &str) -> &str {
+    font_family
         .split(',')
         .next()
         .unwrap_or(font_family)
         .trim()
         .trim_matches('\'')
-        .trim_matches('"');
+        .trim_matches('"')
+}
+
+/// Face name explicitly carries a bold weight.
+pub(crate) fn is_bold_weight_face(font_family: &str) -> bool {
+    let primary = primary_font_face(font_family);
+    let lower = primary.to_lowercase();
+    lower.contains("bold") || lower.contains("볼드")
+}
+
+/// Face name explicitly carries a light weight.
+pub(crate) fn is_light_weight_face(font_family: &str) -> bool {
+    let primary = primary_font_face(font_family);
+    let lower = primary.to_lowercase();
+    !is_bold_weight_face(font_family)
+        && (lower.contains("light")
+            || lower.contains("extralight")
+            || lower.contains("thin")
+            || lower.contains("ultralight"))
+}
+
+/// 중고딕/태고딕 계열 (CSS font-weight 500) 폰트 판별.
+///
+/// HWP 에서 중고딕 계열은 Regular(400)과 Bold(700) 사이의 Medium(500) weight.
+/// Fallback 폰트 매칭 시 weight 500 힌트를 주어 선명도를 유지한다.
+pub(crate) fn is_medium_weight_face(font_family: &str) -> bool {
+    let primary = primary_font_face(font_family);
     let lower = primary.to_lowercase();
     lower.contains("중고딕")
         || lower.contains("태고딕")
