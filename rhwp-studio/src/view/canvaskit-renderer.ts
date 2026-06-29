@@ -826,12 +826,6 @@ export class CanvasKitLayerRenderer {
     if (style.engrave) {
       this.unsupportedOps.add('textRun:engraveTextEffect');
     }
-    if (style.superscript) {
-      this.unsupportedOps.add('textRun:superscriptTextEffect');
-    }
-    if (style.subscript) {
-      this.unsupportedOps.add('textRun:subscriptTextEffect');
-    }
     if (style.shadeColor && style.shadeColor.toLowerCase() !== '#ffffff') {
       this.unsupportedOps.add('textRun:shadeTextEffect');
     }
@@ -855,7 +849,16 @@ export class CanvasKitLayerRenderer {
     this.recordTextRunCoverageGaps(op);
     const paint = this.makeFillPaint(style.color ?? '#000000');
     paint.setAntiAlias?.(true);
-    const fontSize = style.fontSize ?? Math.max(1, op.bbox.height || 12);
+    const baseFontSize = style.fontSize ?? Math.max(1, op.bbox.height || 12);
+    let fontSize = baseFontSize;
+    let y = op.baseline ?? op.bbox.y + baseFontSize;
+    if (style.superscript) {
+      fontSize = baseFontSize * 0.7;
+      y -= baseFontSize * 0.3;
+    } else if (style.subscript) {
+      fontSize = baseFontSize * 0.7;
+      y += baseFontSize * 0.15;
+    }
     // P16 한계: 기본 typeface 가 없으면 (로딩 실패) 비-Latin (CJK 등) 텍스트는
     // 글리프를 만들 수 없어 조용히 skip 하고 진단(unsupportedOps)에만 남긴다.
     // Canvas2D 로 덮지 않는 것이 P16 본질이다. fontFamily 별 typeface 매핑과
@@ -867,7 +870,6 @@ export class CanvasKitLayerRenderer {
     }
     const font = new this.canvasKit.Font(this.defaultTypeface, fontSize);
     const x = op.bbox.x;
-    const y = op.baseline ?? op.bbox.y + fontSize;
     const rotation = op.rotation ?? 0;
     canvas.save();
     if (rotation !== 0) {

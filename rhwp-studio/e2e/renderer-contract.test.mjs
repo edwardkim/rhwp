@@ -358,6 +358,11 @@ requireSnippet(
   /const rotation = op\.rotation \?\? 0;[\s\S]*?if \(rotation !== 0\) \{[\s\S]*?canvas\.rotate\(rotation, x, y\);[\s\S]*?\}/,
   'textRun replay should keep rotation on the direct CanvasKit path',
 );
+requireSnippet(
+  renderTextRunBody,
+  /let fontSize = baseFontSize;[\s\S]*?let y = op\.baseline \?\? op\.bbox\.y \+ baseFontSize;[\s\S]*?style\.superscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?y -= baseFontSize \* 0\.3;[\s\S]*?style\.subscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?y \+= baseFontSize \* 0\.15;/,
+  'textRun replay should keep superscript/subscript on the direct CanvasKit path',
+);
 for (const expectedTextRunGap of [
   'textRun:verticalText',
   'textRun:textDecoration',
@@ -366,8 +371,6 @@ for (const expectedTextRunGap of [
   'textRun:shadowTextEffect',
   'textRun:embossTextEffect',
   'textRun:engraveTextEffect',
-  'textRun:superscriptTextEffect',
-  'textRun:subscriptTextEffect',
   'textRun:shadeTextEffect',
   'textRun:ratioTextEffect',
 ]) {
