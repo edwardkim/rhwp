@@ -30,8 +30,9 @@ use crate::renderer::{
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
 use super::pagination::{
-    ColumnContent, EndnoteParaSource, EndnoteRef, FootnoteRef, FootnoteSource, HeaderFooterRef,
-    PageContent, PageItem, PaginationResult,
+    estimate_footnote_note_height, footnote_between_notes_margin_px,
+    footnote_separator_overhead_px, ColumnContent, EndnoteParaSource, EndnoteRef, FootnoteRef,
+    FootnoteSource, HeaderFooterRef, PageContent, PageItem, PaginationResult,
 };
 
 fn note_number_format_from_hwp_code(code: u8) -> RenderNumberFormat {
@@ -117,6 +118,8 @@ struct FormattedTable {
     cells: Vec<crate::renderer::height_measurer::MeasuredCell>,
     /// 표 셀 내 각주 높이 합계 (가용 높이에서 차감)
     table_footnote_height: f64,
+    /// 표 셀 내 각주 수 (separator/between-notes 예약 계산용)
+    table_footnote_count: usize,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -176,6 +179,8 @@ struct TypesetState {
     is_first_footnote_on_page: bool,
     /// 각주 구분선 오버헤드
     footnote_separator_overhead: f64,
+    /// 각주 사이 간격
+    footnote_between_notes_margin: f64,
     /// 각주 안전 여백
     footnote_safety_margin: f64,
     /// 존(zone) y 오프셋 (다단 나누기 시 누적)
@@ -458,6 +463,27 @@ fn page_item_para_index(item: &PageItem) -> Option<usize> {
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
         | PageItem::Shape { para_index, .. } => Some(*para_index),
+        PageItem::EndnoteSeparator { .. } => None,
+    }
+}
+
+fn page_item_vpos_base(item: &PageItem, paragraphs: &[Paragraph]) -> Option<i32> {
+    match item {
+        PageItem::PartialParagraph {
+            para_index,
+            start_line,
+            ..
+        } => paragraphs
+            .get(*para_index)
+            .and_then(|para| para.line_segs.get(*start_line))
+            .map(|seg| seg.vertical_pos),
+        PageItem::FullParagraph { para_index }
+        | PageItem::Table { para_index, .. }
+        | PageItem::PartialTable { para_index, .. }
+        | PageItem::Shape { para_index, .. } => paragraphs
+            .get(*para_index)
+            .and_then(|para| para.line_segs.first())
+            .map(|seg| seg.vertical_pos),
         PageItem::EndnoteSeparator { .. } => None,
     }
 }
@@ -960,6 +986,69 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
+fn paragraph_saved_vpos_reset_starts_new_page_after(
+    current_para: &Paragraph,
+    next_para: &Paragraph,
+    col_count: u16,
+    is_hwp3_variant: bool,
+) -> bool {
+    let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
+    let curr_last_vpos = current_para.line_segs.last().map(|s| s.vertical_pos);
+    let multi_col = col_count > 1;
+    let allowed_top_vpos = if is_hwp3_variant { 1500 } else { 0 };
+
+    matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl))
+        if (if multi_col { nv < cl } else { nv <= allowed_top_vpos }) && cl > 5000)
+}
+
+fn paragraph_forces_page_boundary_after(
+    current_para: &Paragraph,
+    next_para: &Paragraph,
+    col_count: u16,
+    is_hwp3_variant: bool,
+) -> bool {
+    matches!(
+        next_para.column_type,
+        ColumnBreakType::Page | ColumnBreakType::Section
+    ) || paragraph_saved_vpos_reset_starts_new_page_after(
+        current_para,
+        next_para,
+        col_count,
+        is_hwp3_variant,
+    )
+}
+
+fn single_line_visible_bounds_px(
+    para: &Paragraph,
+    page_vpos_base: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let mut real_lines = para
+        .line_segs
+        .iter()
+        .filter(|ls| !is_synthetic_line_seg(ls));
+    let line = real_lines.next()?;
+    if real_lines.next().is_some() {
+        return None;
+    }
+
+    line_seg_visible_bounds_px(line, page_vpos_base, dpi)
+}
+
+fn line_seg_visible_bounds_px(seg: &LineSeg, page_vpos_base: i32, dpi: f64) -> Option<(f64, f64)> {
+    let top = seg.vertical_pos.saturating_sub(page_vpos_base);
+    let bottom = seg
+        .vertical_pos
+        .saturating_add(seg.line_height)
+        .saturating_sub(page_vpos_base);
+    (top >= 0 && bottom >= 0).then(|| (hwpunit_to_px(top, dpi), hwpunit_to_px(bottom, dpi)))
+}
+
+fn saved_bounds_fit_at_flow_tail(bounds: (f64, f64), current_height: f64, available: f64) -> bool {
+    let (top, bottom) = bounds;
+    top + 16.0 >= current_height && bottom <= available + 0.5
+}
+
 fn positive_vpos_end_before_negative_wrap(para: &Paragraph) -> Option<i32> {
     let last_real = para
         .line_segs
@@ -983,6 +1072,7 @@ impl TypesetState {
         col_count: u16,
         section_index: usize,
         footnote_separator_overhead: f64,
+        footnote_between_notes_margin: f64,
         footnote_safety_margin: f64,
         column_type: ColumnType,
     ) -> Self {
@@ -1000,6 +1090,7 @@ impl TypesetState {
             current_footnote_height: 0.0,
             is_first_footnote_on_page: true,
             footnote_separator_overhead,
+            footnote_between_notes_margin,
             footnote_safety_margin,
             current_zone_y_offset: 0.0,
             current_zone_layout: None,
@@ -1068,8 +1159,41 @@ impl TypesetState {
         if self.is_first_footnote_on_page {
             self.current_footnote_height += self.footnote_separator_overhead;
             self.is_first_footnote_on_page = false;
+        } else {
+            self.current_footnote_height += self.footnote_between_notes_margin;
         }
         self.current_footnote_height += height;
+        self.sync_current_page_footnote_area();
+    }
+
+    fn projected_footnote_height(&self, note_content_height: f64, note_count: usize) -> f64 {
+        if note_count == 0 {
+            return self.current_footnote_height;
+        }
+        let separator = if self.is_first_footnote_on_page {
+            self.footnote_separator_overhead
+        } else {
+            0.0
+        };
+        let between_count = if self.is_first_footnote_on_page {
+            note_count.saturating_sub(1)
+        } else {
+            note_count
+        };
+        self.current_footnote_height
+            + separator
+            + self.footnote_between_notes_margin * between_count as f64
+            + note_content_height
+    }
+
+    fn sync_current_page_footnote_area(&mut self) {
+        if self.current_footnote_height <= 0.0 {
+            return;
+        }
+        if let Some(page) = self.pages.last_mut() {
+            page.layout
+                .update_footnote_area(self.current_footnote_height);
+        }
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
@@ -1575,6 +1699,7 @@ impl TypesetEngine {
             false,
             false,
             None,
+            None,
             force_break_before,
             false,
         )
@@ -1601,6 +1726,7 @@ impl TypesetEngine {
         is_hwp3_variant: bool,
         skip_spacing_before_prededuct: bool,
         hwp3_origin_page_tolerance: bool,
+        footnote_shape: Option<&FootnoteShape>,
         endnote_shape: Option<&FootnoteShape>,
         force_break_before: &std::collections::HashSet<usize>,
         is_hwpx_source: bool,
@@ -1608,7 +1734,11 @@ impl TypesetEngine {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         self.is_hwpx_source.set(is_hwpx_source);
         let col_count = column_def.column_count.max(1);
-        let footnote_separator_overhead = hwpunit_to_px(400, self.dpi);
+        let default_footnote_shape = FootnoteShape::default();
+        let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
+        let footnote_separator_overhead = footnote_separator_overhead_px(footnote_shape, self.dpi);
+        let footnote_between_notes_margin =
+            footnote_between_notes_margin_px(footnote_shape, self.dpi);
         let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
         // [Task #1007] variant cross-paragraph vpos reset THRESHOLD 계산용 body height (HU)
         let body_height_hu_for_variant: i32 = if is_hwp3_variant {
@@ -1630,6 +1760,7 @@ impl TypesetEngine {
             col_count,
             section_index,
             footnote_separator_overhead,
+            footnote_between_notes_margin,
             footnote_safety_margin,
             column_def.column_type,
         );
@@ -2014,15 +2145,14 @@ impl TypesetEngine {
                     if next_force_break {
                         false
                     } else {
-                        let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
-                        let curr_last_vpos = para.line_segs.last().map(|s| s.vertical_pos);
                         // [Task #470] 다단 섹션에서는 nv == 0 → nv < cl 로 완화 (컬럼 헤더 오프셋).
                         // 단일 단에서는 partial-table split 회귀 (issue #418) 회피 위해 nv == 0 유지.
-                        let multi_col = st.col_count > 1;
-                        let allowed_top_vpos = if st.is_hwp3_variant { 1500 } else { 0 };
-                        matches!((next_first_vpos, curr_last_vpos), (Some(nv), Some(cl))
-                        if (if multi_col { nv < cl } else { nv <= allowed_top_vpos })
-                            && cl > 5000)
+                        paragraph_saved_vpos_reset_starts_new_page_after(
+                            para,
+                            next_para,
+                            st.col_count,
+                            st.is_hwp3_variant,
+                        )
                     }
                 } else {
                     false
@@ -2694,7 +2824,7 @@ impl TypesetEngine {
                                                             tb_control_index: tc_idx,
                                                         },
                                                     });
-                                                    let fn_height = Self::estimate_footnote_height(
+                                                    let fn_height = estimate_footnote_note_height(
                                                         fn_ctrl, self.dpi,
                                                     );
                                                     st.add_footnote_height(fn_height);
@@ -2781,7 +2911,7 @@ impl TypesetEngine {
                                     },
                                 });
                             }
-                            let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
+                            let fn_height = estimate_footnote_note_height(fn_ctrl, self.dpi);
                             st.add_footnote_height(fn_height);
                         }
                     }
@@ -8907,68 +9037,6 @@ impl TypesetEngine {
         st.apply_visible_float_exclusions(exclusion_probe_height);
         let available = (st.available_height() - safety).max(0.0);
 
-        // Task #321 Stage 1 진단: 포맷터 총 높이 vs LINE_SEG 실측 총 높이 비교
-        // Stage 5a 확장: per-paragraph 카테고리 분해 (sb/sa/lines/line_sum/ls_sum)
-        if std::env::var("RHWP_TYPESET_DRIFT").is_ok() {
-            let vpos_h: Option<f64> = if let (Some(first), Some(last)) =
-                (para.line_segs.first(), para.line_segs.last())
-            {
-                let span_hu =
-                    (last.vertical_pos + last.line_height + last.line_spacing) - first.vertical_pos;
-                if span_hu > 0 {
-                    Some(crate::renderer::hwpunit_to_px(span_hu, self.dpi))
-                } else {
-                    None
-                }
-            } else {
-                None
-            };
-            let first_vpos = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
-            let last_vpos = para.line_segs.last().map(|s| s.vertical_pos).unwrap_or(-1);
-            let lh_sum: f64 = fmt.line_heights.iter().sum();
-            let ls_sum: f64 = fmt.line_spacings.iter().sum();
-            let line_count = fmt.line_heights.len();
-            let trailing_ls = fmt.line_spacings.last().copied().unwrap_or(0.0);
-            let diff = match vpos_h {
-                Some(v) => fmt.total_height - v,
-                None => 0.0,
-            };
-            let vpos_h_str = vpos_h
-                .map(|v| format!("{:.1}", v))
-                .unwrap_or_else(|| "-".to_string());
-            eprintln!(
-                "TYPESET_DRIFT_PI: pi={} col={} sb={:.1} sa={:.1} lines={} lh_sum={:.1} ls_sum={:.1} trail_ls={:.1} fmt_total={:.1} vpos_h={} diff={:+.1} first_vpos={} last_vpos={} cur_h={:.1} avail={:.1}",
-                para_idx, st.current_column, fmt.spacing_before, fmt.spacing_after,
-                line_count, lh_sum, ls_sum, trailing_ls,
-                fmt.total_height, vpos_h_str, diff,
-                first_vpos, last_vpos,
-                st.current_height, available,
-            );
-
-            // 옵션: per-line 분해 (LINE_SEG 와 비교)
-            if std::env::var("RHWP_TYPESET_DRIFT_LINES").is_ok() {
-                for (li, (lh, ls)) in fmt
-                    .line_heights
-                    .iter()
-                    .zip(fmt.line_spacings.iter())
-                    .enumerate()
-                {
-                    let seg = para.line_segs.get(li);
-                    let seg_lh = seg
-                        .map(|s| crate::renderer::hwpunit_to_px(s.line_height, self.dpi))
-                        .unwrap_or(-1.0);
-                    let seg_ls = seg
-                        .map(|s| crate::renderer::hwpunit_to_px(s.line_spacing, self.dpi))
-                        .unwrap_or(-1.0);
-                    let seg_vpos = seg.map(|s| s.vertical_pos).unwrap_or(-1);
-                    eprintln!(
-                        "TYPESET_DRIFT_LINE: pi={} li={} fmt_lh={:.1} fmt_ls={:.1} seg_lh={:.1} seg_ls={:.1} vpos={}",
-                        para_idx, li, lh, ls, seg_lh, seg_ls, seg_vpos,
-                    );
-                }
-            }
-        }
-
         // 다단 레이아웃에서 문단 내 단 경계 감지
         // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
         // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
@@ -9023,6 +9091,10 @@ impl TypesetEngine {
                 let total_h = st.current_height + fmt.height_for_fit;
                 let fit_fail_within_safety =
                     total_h > available && total_h <= available + LAYOUT_DRIFT_SAFETY_PX;
+                let base_available = st.base_available_height() - st.current_zone_y_offset;
+                let fit_fail_only_after_footnote_reserve = st.current_footnote_height > 0.0
+                    && total_h > available
+                    && total_h <= base_available;
                 let prior_trailing_drift = st.current_height > available
                     && st.current_height <= available + LAYOUT_DRIFT_SAFETY_PX + 0.5;
                 let previous_item_is_empty_para = st
@@ -9042,7 +9114,7 @@ impl TypesetEngine {
                     st.hidden_empty_paras.insert(para_idx);
                     return;
                 }
-                if fit_fail_within_safety {
+                if fit_fail_within_safety || fit_fail_only_after_footnote_reserve {
                     st.current_items.push(PageItem::FullParagraph {
                         para_index: para_idx,
                     });
@@ -9079,7 +9151,27 @@ impl TypesetEngine {
             .last()
             .map(|s| s.vertical_pos + s.line_height + s.line_spacing);
 
-        if forced_page_break_line.is_none() && st.current_height + fmt.height_for_fit <= available {
+        let current_page_vpos_base = st.vpos_page_base.or_else(|| {
+            st.current_items
+                .first()
+                .and_then(|item| page_item_vpos_base(item, paragraphs))
+        });
+        let saved_single_line_bottom_fits = forced_page_break_line.is_none()
+            && st.col_count == 1
+            && fmt.line_heights.len() == 1
+            && fmt.spacing_after <= 0.5
+            && para.controls.is_empty()
+            && !st.current_items.is_empty()
+            && current_page_vpos_base
+                .and_then(|base| single_line_visible_bounds_px(para, base, self.dpi))
+                .is_some_and(|bounds| {
+                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                });
+
+        if forced_page_break_line.is_none()
+            && (st.current_height + fmt.height_for_fit <= available
+                || saved_single_line_bottom_fits)
+        {
             // place: 전체 배치
             st.current_items.push(PageItem::FullParagraph {
                 para_index: para_idx,
@@ -9145,6 +9237,83 @@ impl TypesetEngine {
                 } else {
                     fmt.total_height
                 };
+                if let Some(v) = body_bottom_vpos {
+                    st.prev_body_bottom_vpos = Some(v);
+                }
+                return;
+            }
+        }
+
+        // [Task #1537] 폰트 치환 drift 로 인한 "tail 1줄 spill 후 강제 쪽나누기 고아 페이지" 차단.
+        //
+        // 증상: 본문 문단 N 이 페이지 하단을 ~한 줄 미만으로 미세 초과(폰트 치환으로 부피가
+        // 한컴 대비 커짐)하여 마지막 줄만 새 페이지로 split → 그 직후 문단 N+1 이 명시적
+        // 쪽나누기(column_type==Page/Section)를 가지면 또 새 페이지를 강제 → spill 한 1줄이
+        // 거의 빈 페이지에 고립된다(2025 행정업무운영 편람: 0-idx page 11/13/17, 본문 1줄+빈공간).
+        //
+        // 한컴은 폰트 drift 가 없어 문단 N 전체를 현재 페이지에 담고 N+1 의 쪽나누기로 깔끔히
+        // 다음 페이지를 시작한다. 우리도 "초과량이 한 줄 미만(=drift)이고 다음 문단이 어차피
+        // 쪽나누기로 페이지를 끝낸다"는 두 조건이 모두 맞을 때만 문단 N 을 통째로 현재 페이지에
+        // 배치(하단 여백으로 소량 bleed 허용)해 고아 페이지를 제거한다. 일반 본문 흐름(다음
+        // 문단이 쪽나누기가 아님)이나 초과량이 한 줄 이상(진짜 split 필요)인 경우는 불변.
+
+        // 다음 문단이 쪽/구역 나누기인가? 사이에 빈 문단(텍스트·컨트롤 없음)이 끼어 있으면
+        // 건너뛴다 — 빈 문단은 높이를 거의 차지하지 않고 hide_empty_line 로 흡수되므로,
+        // "tail spill → 빈 문단 → 강제 쪽나누기" 패턴에서도 spill 한 줄이 동일하게 고립된다.
+        // 단, 텍스트/컨트롤이 있는 일반 문단을 만나면 즉시 중단(false) — 그 문단이
+        // 현재 페이지를 마저 채우므로 고아 페이지가 생기지 않는다.
+        let next_para_forces_break = {
+            let mut idx = para_idx + 1;
+            let mut prior_para = para;
+            let mut forced = false;
+            while let Some(next_para) = paragraphs.get(idx) {
+                if paragraph_forces_page_boundary_after(
+                    prior_para,
+                    next_para,
+                    st.col_count,
+                    st.is_hwp3_variant,
+                ) {
+                    forced = true;
+                    break;
+                }
+                let is_empty = next_para.text.trim().is_empty() && next_para.controls.is_empty();
+                if !is_empty {
+                    break;
+                }
+                prior_para = next_para;
+                idx += 1;
+            }
+            forced
+        };
+        // 본문 높이를 바꾸지 않는 컨트롤(각주/미주)만 허용 — 표/그림/글상자가 있으면
+        // 줄 단위 split/배치 규칙이 달라지므로 제외.
+        let only_note_controls = para
+            .controls
+            .iter()
+            .all(|c| matches!(c, Control::Footnote(_) | Control::Endnote(_)));
+        if st.col_count == 1
+            && forced_page_break_line.is_none()
+            && next_para_forces_break
+            && !para.text.trim().is_empty()
+            && only_note_controls
+            && !st.current_items.is_empty()
+            && fmt.line_heights.len() >= 2
+        {
+            let first_line_advance = fmt.line_advance(0);
+            // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를
+            // 막으려던 LAYOUT_DRIFT_SAFETY_PX(현재 페이지 한정) 여유는 이 경우 의미가 없다.
+            // 따라서 safety 를 뺀 `available` 이 아니라 진짜 본문 하단(각주/존 차감 포함)인
+            // available_height() 를 기준으로 초과량을 잰다.
+            let true_available = st.available_height();
+            // 초과량이 한 줄 미만(폰트 drift)일 때만 통째 배치.
+            // (full-place 체크를 이미 통과 못 했으므로 overflow > -safety. 진짜 본문 하단
+            //  기준으로 한 줄 미만 초과면 마지막 줄 spill 대신 통째 배치.)
+            let overflow = st.current_height + fmt.height_for_fit - true_available;
+            if overflow < first_line_advance {
+                st.current_items.push(PageItem::FullParagraph {
+                    para_index: para_idx,
+                });
+                st.current_height += fmt.total_height;
                 if let Some(v) = body_bottom_vpos {
                     st.prev_body_bottom_vpos = Some(v);
                 }
@@ -9382,24 +9551,6 @@ impl TypesetEngine {
     // Phase 2: Break Token 기반 표 조판
     // ========================================================
 
-    /// 단일 각주의 높이를 추정한다 (HeightMeasurer::estimate_single_footnote_height 동일).
-    fn estimate_footnote_height(footnote: &crate::model::footnote::Footnote, dpi: f64) -> f64 {
-        let mut fn_height = 0.0;
-        for para in &footnote.paragraphs {
-            if para.line_segs.is_empty() {
-                fn_height += hwpunit_to_px(400, dpi);
-            } else {
-                for seg in &para.line_segs {
-                    fn_height += hwpunit_to_px(seg.line_height, dpi);
-                }
-            }
-        }
-        if fn_height <= 0.0 {
-            fn_height = hwpunit_to_px(400, dpi);
-        }
-        fn_height
-    }
-
     /// 표의 조판 높이를 계산한다 (format 단계).
     /// MeasuredTable + host_spacing을 통합하여 layout과 동일한 규칙으로 계산.
     #[allow(clippy::too_many_arguments)]
@@ -9563,18 +9714,14 @@ impl TypesetEngine {
 
         // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
         let mut table_footnote_height = 0.0;
-        let mut table_has_footnotes = false;
+        let mut table_footnote_count = 0usize;
         for cell in &table.cells {
             for cp in &cell.paragraphs {
                 for cc in &cp.controls {
                     if let Control::Footnote(fn_ctrl) = cc {
-                        let fn_height = Self::estimate_footnote_height(fn_ctrl, self.dpi);
-                        if !table_has_footnotes {
-                            // 첫 각주 시 구분선 오버헤드 추가 여부는 호출 시점의 상태에 의존
-                            // 여기서는 순수 각주 높이만 누적 (구분선은 typeset_block_table에서 처리)
-                        }
+                        let fn_height = estimate_footnote_note_height(fn_ctrl, self.dpi);
                         table_footnote_height += fn_height;
-                        table_has_footnotes = true;
+                        table_footnote_count += 1;
                     }
                 }
             }
@@ -9593,6 +9740,7 @@ impl TypesetEngine {
             page_break,
             cells,
             table_footnote_height,
+            table_footnote_count,
         }
     }
 
@@ -9650,12 +9798,32 @@ impl TypesetEngine {
         } else {
             fmt.total_height
         };
+        let saved_single_tac_bottom_fits = if has_tac && tac_count <= 1 {
+            para.controls
+                .iter()
+                .find_map(|ctrl| match ctrl {
+                    Control::Table(table) if self.is_effective_tac_table(para, table, &fmt) => {
+                        Some(self.tac_table_line_index(para, table, &fmt).unwrap_or(0))
+                    }
+                    _ => None,
+                })
+                .and_then(|line_idx| para.line_segs.get(line_idx))
+                .and_then(|seg| {
+                    line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                })
+                .is_some_and(|bounds| {
+                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                })
+        } else {
+            false
+        };
 
         // 넘치면 flush (단일 TAC 표만)
         if st.current_height + height_for_fit > st.available_height()
             && !st.current_items.is_empty()
             && has_tac
             && tac_count <= 1
+            && !saved_single_tac_bottom_fits
         {
             st.advance_column_or_new_page();
         }
@@ -9868,7 +10036,7 @@ impl TypesetEngine {
                                         });
                                     }
                                     let fn_height =
-                                        Self::estimate_footnote_height(fn_ctrl, self.dpi);
+                                        estimate_footnote_note_height(fn_ctrl, self.dpi);
                                     st.add_footnote_height(fn_height);
                                 }
                             }
@@ -10081,13 +10249,8 @@ impl TypesetEngine {
         let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
         let lane_bottom = lane_top + reserved_height;
 
-        let table_footnote = ft.table_footnote_height;
-        let fn_separator = if table_footnote > 0.0 && st.is_first_footnote_on_page {
-            st.footnote_separator_overhead
-        } else {
-            0.0
-        };
-        let total_footnote = st.current_footnote_height + table_footnote + fn_separator;
+        let total_footnote =
+            st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
         let fn_margin = if total_footnote > 0.0 {
             st.footnote_safety_margin
         } else {
@@ -10146,19 +10309,22 @@ impl TypesetEngine {
         }
 
         let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
-        // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
-        let table_height = if tac_count > 1 {
-            let tac_idx = para
-                .controls
+        let tac_seg_idx = if tac_count > 1 {
+            para.controls
                 .iter()
                 .take(ctrl_idx)
                 .filter(
                     |c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, fmt)),
                 )
-                .count();
-            let is_last_tac = tac_idx + 1 == tac_count;
+                .count()
+        } else {
+            tac_table_line_idx.unwrap_or(0)
+        };
+        // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
+        let table_height = if tac_count > 1 {
+            let is_last_tac = tac_seg_idx + 1 == tac_count;
             para.line_segs
-                .get(tac_idx)
+                .get(tac_seg_idx)
                 .map(|seg| {
                     let line_h = hwpunit_to_px(seg.line_height, self.dpi);
                     if is_last_tac {
@@ -10189,7 +10355,20 @@ impl TypesetEngine {
 
         // TAC 표는 분할하지 않고 통째로 배치
         let available = st.available_height();
-        if st.current_height + table_height > available && !st.current_items.is_empty() {
+        let current_page_vpos_base = st.vpos_page_base.unwrap_or(0);
+        let saved_tac_table_bottom_fits = Some(current_page_vpos_base)
+            .and_then(|base| {
+                para.line_segs
+                    .get(tac_seg_idx)
+                    .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
+            })
+            .is_some_and(|bounds| {
+                saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+            });
+        if st.current_height + table_height > available
+            && !saved_tac_table_bottom_fits
+            && !st.current_items.is_empty()
+        {
             st.advance_column_or_new_page();
         }
 
@@ -10464,13 +10643,8 @@ impl TypesetEngine {
         is_last_placed: bool,
     ) {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
-        let table_fn_h = ft.table_footnote_height;
-        let fn_separator = if table_fn_h > 0.0 && st.is_first_footnote_on_page {
-            st.footnote_separator_overhead
-        } else {
-            0.0
-        };
-        let total_footnote = st.current_footnote_height + table_fn_h + fn_separator;
+        let total_footnote =
+            st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
         let fn_margin = if total_footnote > 0.0 {
             st.footnote_safety_margin
         } else {
@@ -11889,7 +12063,11 @@ impl TypesetEngine {
                             ..
                         } => *para_index == *ph_para && *start_line == 0,
                         PageItem::Table { para_index, .. } => *para_index == *ph_para,
-                        PageItem::PartialTable { para_index, .. } => *para_index == *ph_para,
+                        PageItem::PartialTable {
+                            para_index,
+                            is_continuation,
+                            ..
+                        } => *para_index == *ph_para && !*is_continuation,
                         PageItem::Shape { para_index, .. } => *para_index == *ph_para,
                         PageItem::EndnoteSeparator { .. } => false,
                     })
@@ -12167,6 +12345,7 @@ mod tests {
     use crate::model::paragraph::{LineSeg, Paragraph};
     use crate::renderer::composer::ComposedParagraph;
     use crate::renderer::height_measurer::HeightMeasurer;
+    use crate::renderer::page_layout::PageLayoutInfo;
     use crate::renderer::pagination::Paginator;
     use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -12192,6 +12371,37 @@ mod tests {
                 ..Default::default()
             }],
             ..Default::default()
+        }
+    }
+
+    fn page_with_items(items: Vec<PageItem>) -> PageContent {
+        PageContent {
+            page_index: 0,
+            page_number: 0,
+            section_index: 0,
+            layout: PageLayoutInfo::from_page_def(
+                &a4_page_def(),
+                &ColumnDef::default(),
+                DEFAULT_DPI,
+            ),
+            column_contents: vec![ColumnContent {
+                column_index: 0,
+                start_height: 0.0,
+                endnote_flow: false,
+                items,
+                zone_layout: None,
+                zone_y_offset: 0.0,
+                wrap_around_paras: Vec::new(),
+                used_height: 0.0,
+                wrap_anchors: std::collections::HashMap::new(),
+            }],
+            active_header: None,
+            active_footer: None,
+            page_number_pos: None,
+            page_hide: None,
+            footnotes: Vec::new(),
+            active_master_page: None,
+            extra_master_pages: Vec::new(),
         }
     }
 
@@ -12263,6 +12473,121 @@ mod tests {
     }
 
     #[test]
+    fn table_continuation_does_not_reapply_page_hide() {
+        let hide = crate::model::control::PageHide {
+            hide_master_page: true,
+            hide_page_num: true,
+            ..Default::default()
+        };
+        let mut pages = vec![
+            page_with_items(vec![PageItem::PartialTable {
+                para_index: 7,
+                control_index: 0,
+                start_row: 0,
+                end_row: 2,
+                is_continuation: false,
+                start_cut: Vec::new(),
+                end_cut: Vec::new(),
+                is_block_split: false,
+            }]),
+            page_with_items(vec![PageItem::PartialTable {
+                para_index: 7,
+                control_index: 0,
+                start_row: 2,
+                end_row: 4,
+                is_continuation: true,
+                start_cut: Vec::new(),
+                end_cut: Vec::new(),
+                is_block_split: false,
+            }]),
+        ];
+
+        TypesetEngine::finalize_pages(&mut pages, &[], &None, &[], &[(7, hide)], 0);
+
+        assert!(pages[0].page_hide.is_some());
+        assert!(pages[1].page_hide.is_none());
+    }
+
+    #[test]
+    fn footnote_area_reserve_uses_section_shape_metrics() {
+        let engine = TypesetEngine::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let shape = FootnoteShape {
+            separator_margin_top: 1000,
+            note_spacing: 700,
+            raw_unknown: 900,
+            separator_line_width: 4,
+            ..Default::default()
+        };
+        let note1 = Paragraph {
+            text: "첫 각주".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 400,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let note2 = Paragraph {
+            text: "둘째 각주".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 600,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let paras = vec![Paragraph {
+            text: "본문".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 400,
+                ..Default::default()
+            }],
+            controls: vec![
+                Control::Footnote(Box::new(crate::model::footnote::Footnote {
+                    number: 1,
+                    paragraphs: vec![note1],
+                    ..Default::default()
+                })),
+                Control::Footnote(Box::new(crate::model::footnote::Footnote {
+                    number: 2,
+                    paragraphs: vec![note2],
+                    ..Default::default()
+                })),
+            ],
+            ..Default::default()
+        }];
+        let composed: Vec<ComposedParagraph> = paras
+            .iter()
+            .map(crate::renderer::composer::compose_paragraph)
+            .collect();
+
+        let result = engine.typeset_section_with_variant(
+            &paras,
+            &composed,
+            &styles,
+            &a4_page_def(),
+            &ColumnDef::default(),
+            0,
+            &[],
+            false,
+            false,
+            false,
+            false,
+            Some(&shape),
+            None,
+            &std::collections::HashSet::new(),
+            false,
+        );
+
+        let expected = footnote_separator_overhead_px(&shape, DEFAULT_DPI)
+            + hwpunit_to_px(400, DEFAULT_DPI)
+            + footnote_between_notes_margin_px(&shape, DEFAULT_DPI)
+            + hwpunit_to_px(600, DEFAULT_DPI);
+        let page = result.pages.first().expect("page");
+        assert_eq!(page.footnotes.len(), 2);
+        assert!((page.layout.footnote_area.height - expected).abs() < 0.01);
+    }
+
+    #[test]
     fn test_typeset_single_paragraph() {
         let engine = TypesetEngine::with_default_dpi();
         let paginator = Paginator::with_default_dpi();
@@ -12314,6 +12639,235 @@ mod tests {
         );
 
         assert_pagination_match(&old_result, &new_result, "page_overflow");
+    }
+
+    #[test]
+    fn saved_single_line_at_body_bottom_stays_on_current_page() {
+        let engine = TypesetEngine::with_default_dpi();
+        let mut styles = ResolvedStyleSet::default();
+        styles
+            .para_styles
+            .push(crate::renderer::style_resolver::ResolvedParaStyle {
+                spacing_before: 9.3,
+                ..Default::default()
+            });
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+        let layout = PageLayoutInfo::from_page_def(&page_def, &col_def, DEFAULT_DPI);
+        let body_height_hu =
+            crate::renderer::px_to_hwpunit(layout.available_body_height(), DEFAULT_DPI);
+        let line_height = 1200;
+        let line_spacing = 840;
+        let spacing_before_hu = crate::renderer::px_to_hwpunit(9.3, DEFAULT_DPI);
+        let lead_height = body_height_hu - line_height;
+        let lead_measured_height = lead_height - spacing_before_hu + 600;
+        let paras = vec![
+            Paragraph {
+                text: "lead".to_string(),
+                line_segs: vec![LineSeg {
+                    vertical_pos: 0,
+                    line_height: lead_measured_height,
+                    text_height: lead_measured_height,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+            Paragraph {
+                para_shape_id: 0,
+                text: "tail".to_string(),
+                line_segs: vec![LineSeg {
+                    vertical_pos: lead_height,
+                    line_height,
+                    text_height: line_height,
+                    line_spacing,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+        ];
+        let composed: Vec<ComposedParagraph> = Vec::new();
+
+        let result = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &[],
+            false,
+            &std::collections::HashSet::new(),
+        );
+
+        assert_eq!(result.pages.len(), 1);
+        assert_eq!(result.pages[0].column_contents[0].items.len(), 2);
+    }
+
+    #[test]
+    fn two_line_tail_before_vpos_reset_stays_on_current_page_when_visible_bottom_fits() {
+        let engine = TypesetEngine::with_default_dpi();
+        let mut styles = ResolvedStyleSet::default();
+        styles
+            .para_styles
+            .push(crate::renderer::style_resolver::ResolvedParaStyle::default());
+        styles
+            .para_styles
+            .push(crate::renderer::style_resolver::ResolvedParaStyle {
+                spacing_before: hwpunit_to_px(2400, DEFAULT_DPI),
+                spacing_after: hwpunit_to_px(1400, DEFAULT_DPI),
+                ..Default::default()
+            });
+
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+        let layout = PageLayoutInfo::from_page_def(&page_def, &col_def, DEFAULT_DPI);
+        let body_height_hu =
+            crate::renderer::px_to_hwpunit(layout.available_body_height(), DEFAULT_DPI);
+        let line_height = 1200;
+        let line_spacing = 840;
+        let first_vpos = body_height_hu - 3740;
+        let lead_height = first_vpos - 2400;
+
+        let paras = vec![
+            Paragraph {
+                text: "lead".to_string(),
+                line_segs: vec![LineSeg {
+                    vertical_pos: 0,
+                    line_height: lead_height,
+                    text_height: lead_height,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+            Paragraph {
+                para_shape_id: 1,
+                text: "line one\nline two".to_string(),
+                line_segs: vec![
+                    LineSeg {
+                        vertical_pos: first_vpos,
+                        line_height,
+                        text_height: line_height,
+                        line_spacing,
+                        ..Default::default()
+                    },
+                    LineSeg {
+                        vertical_pos: first_vpos + line_height + line_spacing,
+                        line_height,
+                        text_height: line_height,
+                        line_spacing,
+                        text_start: 9,
+                        ..Default::default()
+                    },
+                ],
+                ..Default::default()
+            },
+            Paragraph {
+                text: "next page".to_string(),
+                line_segs: vec![LineSeg {
+                    vertical_pos: 0,
+                    line_height,
+                    text_height: line_height,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+        ];
+        let composed: Vec<ComposedParagraph> = Vec::new();
+
+        let result = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &[],
+            false,
+            &std::collections::HashSet::new(),
+        );
+
+        assert_eq!(result.pages.len(), 2);
+        assert!(matches!(
+            result.pages[0].column_contents[0].items.as_slice(),
+            [
+                PageItem::FullParagraph { para_index: 0 },
+                PageItem::FullParagraph { para_index: 1 }
+            ]
+        ));
+        assert!(matches!(
+            result.pages[1].column_contents[0].items.as_slice(),
+            [PageItem::FullParagraph { para_index: 2 }]
+        ));
+    }
+
+    #[test]
+    fn saved_tac_table_line_at_body_bottom_stays_on_current_page() {
+        let engine = TypesetEngine::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+        let layout = PageLayoutInfo::from_page_def(&page_def, &col_def, DEFAULT_DPI);
+        let body_height_hu =
+            crate::renderer::px_to_hwpunit(layout.available_body_height(), DEFAULT_DPI);
+        let table_height = 10_072;
+        let table_vpos = body_height_hu - table_height;
+        let lead_height = table_vpos + 900;
+        let paras = vec![
+            Paragraph {
+                text: "lead".to_string(),
+                line_segs: vec![LineSeg {
+                    vertical_pos: 0,
+                    line_height: lead_height,
+                    text_height: lead_height,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+            Paragraph {
+                controls: vec![Control::Table(Box::new(crate::model::table::Table {
+                    attr: 1,
+                    row_count: 3,
+                    col_count: 3,
+                    common: crate::model::shape::CommonObjAttr {
+                        treat_as_char: true,
+                        text_wrap: crate::model::shape::TextWrap::TopAndBottom,
+                        height: table_height as u32,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }))],
+                line_segs: vec![LineSeg {
+                    vertical_pos: table_vpos,
+                    line_height: table_height,
+                    text_height: table_height,
+                    line_spacing: 120,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+        ];
+        let composed: Vec<ComposedParagraph> = Vec::new();
+
+        let result = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &[],
+            false,
+            &std::collections::HashSet::new(),
+        );
+
+        assert_eq!(result.pages.len(), 1);
+        assert!(matches!(
+            result.pages[0].column_contents[0].items.as_slice(),
+            [
+                PageItem::FullParagraph { para_index: 0 },
+                PageItem::Table { para_index: 1, .. }
+            ]
+        ));
     }
 
     /// [Task #1363 v3 Stage 2] scratch 측정 부작용 격리 회귀 가드.
