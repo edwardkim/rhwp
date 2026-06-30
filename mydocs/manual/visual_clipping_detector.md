@@ -36,3 +36,30 @@ python tools/detect_table_clipping.py --batch <폴더> --sample N --seed S --exe
 - per-page 용량 정합(별표4 Δ+3 등) 변경 시: render_page_gate(페이지수) + 본 도구(클리핑) **양쪽**으로
   검증해야 안전. 용량을 늘려 페이지수를 줄이되 클리핑(max_overflow)이 증가하지 않아야 한다.
 - 향후 확장: 한글 PDF(`pdf/`) 대비 픽셀 diff(SVG→PNG vs PDF→PNG)로 시각 충실도 정량화(별도).
+
+---
+
+## 라운드 2 추가 — 시각 회귀 게이트 + 재현성 강건화 (#1658)
+
+### 재현성 규명·수정 (중요)
+detector 가 같은 문서를 때로는 클리핑 검출, 때로는 0 으로 보고하던 "flaky" 현상의 **근본 원인은
+도구가 아니라 호출부의 경로 형식**이었다:
+- **MSYS/Git-Bash 경로 mangling**: bash 가 native exe 인자(`/c/...`)는 `C:\...` 로 변환하나,
+  **python 문자열에 박힌 `/c/...` 는 변환되지 않아** Windows python 의 glob/open 이 0 파일로
+  **무음 실패**(클리핑 0 오판). → `detect_table_clipping.norm_path()` 가 `/c/X/..`→`X:\..` 정규화.
+- **한글 파일명 NFC/NFD**: `Path.exists()` 가 정규화 차이로 오탐 → pre-check 제거, rhwp(OS)가 직접 열게 함.
+→ 교훈: Windows 에서 python/exe 에 경로 전달 시 **native Windows 경로**(또는 PowerShell) 사용,
+  ad-hoc `python -c` 에 `$SCRATCH`(MSYS) 직접 박지 말 것.
+
+### 시각 회귀 게이트 (`tools/clipping_gate.py`)
+controlset(92문서) 전체의 클리핑 baseline 을 만들고, render 변경 후 **클리핑 증가(신규/페이지/overflow)**
+를 회귀로 판정한다(페이지수 게이트가 못 잡는 시각 회귀 차단). render-fidelity(rowspan cut↔render 정합)
+같은 좌표 변경의 안전판.
+```
+python tools/clipping_gate.py --save tests/fixtures/clipping_baseline.tsv   # baseline 생성
+python tools/clipping_gate.py --check tests/fixtures/clipping_baseline.tsv   # 회귀 시 exit 1
+python tools/clipping_gate.py --check <base> --fixture <docs.tsv>            # 임의 문서군
+```
+- baseline: `tests/fixtures/clipping_baseline.tsv` (controlset 92문서, 현재 **클리핑 0**).
+- 검증: byeolpyo4(23.5px 클리핑)를 0-baseline 으로 대조 시 **회귀 1건 정확 검출**.
+- 보조 신호: rhwp render 자체의 `LAYOUT_OVERFLOW`(layout.rs) — 표/줄이 col_bottom 초과 시 stderr 진단.
