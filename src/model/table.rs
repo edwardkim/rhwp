@@ -136,7 +136,7 @@ pub struct Cell {
     pub field_name: Option<String>,
 }
 
-/// 표 셀 전치 복사 데이터.
+/// 표 셀 행/열 바꿈 복사 데이터.
 ///
 /// `cells[row][col]` 은 원본 범위의 셀 문단 목록이다.
 #[derive(Debug, Clone, Default)]
@@ -439,7 +439,7 @@ impl Table {
                 let cell = &self.cells[cell_idx];
                 if cell.row != row || cell.col != col || cell.row_span != 1 || cell.col_span != 1 {
                     return Err(format!(
-                        "병합 셀 ({},{})은 전치 범위에 포함할 수 없습니다",
+                        "병합 셀 ({},{})은 행/열 바꿈 범위에 포함할 수 없습니다",
                         cell.row, cell.col
                     ));
                 }
@@ -449,7 +449,7 @@ impl Table {
         Ok(())
     }
 
-    /// 직사각형 범위의 셀 문단을 전치 복사용 데이터로 복사한다.
+    /// 직사각형 범위의 셀 문단을 행/열 바꿈 복사용 데이터로 복사한다.
     pub fn copy_transpose_range(
         &self,
         start_row: u16,
@@ -481,7 +481,7 @@ impl Table {
         })
     }
 
-    /// 전치 복사 데이터를 대상 시작 셀부터 붙여넣는다.
+    /// 행/열 바꿈 복사 데이터를 대상 시작 셀부터 붙여넣는다.
     ///
     /// 반환값은 내용이 교체된 `(cell_idx, paragraph_count)` 목록이다.
     pub fn paste_transposed_cells(
@@ -491,7 +491,7 @@ impl Table {
         data: &TableTransposeData,
     ) -> Result<Vec<(usize, usize)>, String> {
         if data.source_rows == 0 || data.source_cols == 0 || data.cells.is_empty() {
-            return Err("전치 복사 데이터가 비어 있습니다".to_string());
+            return Err("행/열 바꿈 복사 데이터가 비어 있습니다".to_string());
         }
         if data.cells.len() != data.source_rows as usize
             || data
@@ -499,7 +499,7 @@ impl Table {
                 .iter()
                 .any(|row| row.len() != data.source_cols as usize)
         {
-            return Err("전치 복사 데이터의 행/열 크기가 일치하지 않습니다".to_string());
+            return Err("행/열 바꿈 복사 데이터의 행/열 크기가 일치하지 않습니다".to_string());
         }
 
         let target_rows = data.source_cols;
@@ -537,7 +537,7 @@ impl Table {
     /// 병합 없는 전체 표를 제자리에서 전치한다.
     pub fn transpose_unmerged_table_in_place(&mut self) -> Result<Vec<(usize, usize)>, String> {
         if self.row_count == 0 || self.col_count == 0 {
-            return Err("전치할 표가 비어 있습니다".to_string());
+            return Err("행/열을 바꿀 표가 비어 있습니다".to_string());
         }
         self.validate_unmerged_rect(0, 0, self.row_count - 1, self.col_count - 1)?;
 
