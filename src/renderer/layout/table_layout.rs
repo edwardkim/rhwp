@@ -2498,11 +2498,14 @@ impl LayoutEngine {
                                     text_height += eq_h;
                                 }
                             }
-                            Control::Table(t) => {
-                                // 중첩 표 높이: 행 높이 합산
-                                let nested_h = self.calc_nested_table_height(t, styles);
-                                text_height += nested_h;
-                            }
+                            // [Task #1658] 중첩 표 높이를 composed(text_height)에 가산하지 않는다.
+                            // 가산하면 stored vpos(last_seg_end, nested 포함) 및 아래 nested_bottom
+                            // 과 double-count 되어 total_content_height 가 ~2× 과대 → Center/Bottom
+                            // offset≈0 → 상단정렬(valign over-count, kkyu8925 제보). 중첩 표 기여는
+                            // final max 의 vpos_height(B)·nested_bottom 이 담당하며, composed 의
+                            // line_height 가 중첩을 반영하는 케이스는 composed 가, 미반영(과소)
+                            // 케이스는 nested_bottom 이 max 로 보정한다(#44 under-count 가드 보존).
+                            Control::Table(_) => {}
                             _ => {}
                         }
                     }
