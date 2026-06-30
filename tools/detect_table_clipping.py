@@ -28,6 +28,20 @@ from pathlib import Path
 SVG_NS = "{http://www.w3.org/2000/svg}"
 
 
+def norm_path(p) -> Path:
+    """MSYS/Git-Bash 경로(/c/Users/..)를 Windows 경로(C:\\Users\\..)로 정규화.
+
+    bash↔python 혼용 시 `/c/...` 가 Windows python 에 그대로 넘어와 glob/open 이
+    무음 실패(0 파일)하던 재현성 버그 방지. 그 외 경로는 그대로 둔다.
+    """
+    s = str(p)
+    if sys.platform == "win32":
+        m = re.match(r"^/([a-zA-Z])/(.*)$", s)
+        if m:
+            return Path(f"{m.group(1).upper()}:/{m.group(2)}")
+    return Path(s)
+
+
 def _body_regions(root: ET.Element) -> dict[str, float]:
     """clipPath id=body-clip-N → body_bottom(y+height)."""
     out: dict[str, float] = {}
@@ -87,6 +101,8 @@ def detect_in_svg(svg_path: Path, eps: float) -> list[tuple[str, float, float]]:
 
 def check_file(path: Path, exe: str, eps: float) -> tuple[int, int, float]:
     """(클리핑 페이지수, 전체 페이지수, 최대 overflow px)."""
+    path = norm_path(path)
+    exe = str(norm_path(exe))
     with tempfile.TemporaryDirectory() as td:
         r = subprocess.run(
             [exe, "export-svg", str(path), "-o", td],
