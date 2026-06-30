@@ -12,10 +12,39 @@ use super::height_measurer::{HeightMeasurer, MeasuredSection};
 use super::page_layout::PageLayoutInfo;
 use super::style_resolver::ResolvedStyleSet;
 use crate::model::control::Control;
+use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::shape::CaptionDirection;
+
+pub fn estimate_footnote_note_height(footnote: &Footnote, dpi: f64) -> f64 {
+    let mut height = 0.0;
+    for para in &footnote.paragraphs {
+        if para.line_segs.is_empty() {
+            height += super::hwpunit_to_px(400, dpi);
+        } else {
+            for seg in &para.line_segs {
+                height += super::hwpunit_to_px(seg.line_height, dpi);
+            }
+        }
+    }
+    if height <= 0.0 {
+        super::hwpunit_to_px(400, dpi)
+    } else {
+        height
+    }
+}
+
+pub fn footnote_separator_overhead_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    super::hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
+        + super::layout::border_width_to_px(shape.separator_line_width).max(0.5)
+        + super::hwpunit_to_px(shape.separator_below_margin_hu() as i32, dpi)
+}
+
+pub fn footnote_between_notes_margin_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    super::hwpunit_to_px(shape.between_notes_margin_hu() as i32, dpi)
+}
 
 /// 미주 참조
 #[derive(Debug, Clone)]
@@ -667,6 +696,8 @@ pub struct PaginationOpts {
     /// 페이지 절반 이상 + 현재 paragraph 의 first_line vpos 가 페이지 1/4 이내)
     /// 시 강제 page break — 한컴 변환 시 인코딩한 page break 시그널 인식.
     pub is_hwp3_variant: bool,
+    /// 현재 구역의 각주 모양. 각주 예약 영역을 렌더 영역과 같은 metric으로 계산한다.
+    pub footnote_shape: Option<FootnoteShape>,
 }
 
 /// 페이지 분할 엔진

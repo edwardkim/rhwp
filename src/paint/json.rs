@@ -814,20 +814,33 @@ impl PaintOp {
                     // Task #516 Stage 5.2: overlay layer 의 <img> data URL 생성용 mime 노출.
                     // PCX 등 비표준은 PNG 변환 후 emit (CLI SVG 와 동일 정책 적용).
                     let mime = crate::renderer::svg::detect_image_mime_type(data);
-                    let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) =
-                        if mime == "image/x-pcx" {
-                            match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
-                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
-                            }
-                        } else if mime == "image/bmp" {
-                            match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
-                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
-                            }
-                        } else {
-                            (mime, std::borrow::Cow::Borrowed(data.as_slice()))
-                        };
+                    let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) = if mime
+                        == "image/x-pcx"
+                    {
+                        match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if mime == "image/bmp" {
+                        match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if mime == "image/tiff" {
+                        match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if mime == "image/jpeg" {
+                        match crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(
+                            data,
+                        ) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else {
+                        (mime, std::borrow::Cow::Borrowed(data.as_slice()))
+                    };
                     let base64_data =
                         base64::engine::general_purpose::STANDARD.encode(&*final_data);
                     let _ = write!(
@@ -2476,6 +2489,7 @@ fn image_fill_mode_str(value: ImageFillMode) -> &'static str {
         ImageFillMode::TileVertLeft => "tileVertLeft",
         ImageFillMode::TileVertRight => "tileVertRight",
         ImageFillMode::FitToSize => "fitToSize",
+        ImageFillMode::Total => "total",
         ImageFillMode::Center => "center",
         ImageFillMode::CenterTop => "centerTop",
         ImageFillMode::CenterBottom => "centerBottom",

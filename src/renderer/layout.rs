@@ -1065,6 +1065,105 @@ impl LayoutEngine {
         )
     }
 
+    fn render_layer_from_control(
+        control: &Control,
+        para_index: usize,
+        control_index: usize,
+    ) -> Option<RenderLayerInfo> {
+        match control {
+            Control::Shape(shape) => Some(Self::render_layer_from_common(
+                shape.common(),
+                para_index,
+                control_index,
+            )),
+            Control::Picture(picture) => Some(Self::render_layer_from_common(
+                &picture.common,
+                para_index,
+                control_index,
+            )),
+            Control::Table(table) => Some(Self::render_layer_from_common(
+                &table.common,
+                para_index,
+                control_index,
+            )),
+            Control::Equation(equation) => Some(Self::render_layer_from_common(
+                &equation.common,
+                para_index,
+                control_index,
+            )),
+            _ => None,
+        }
+    }
+
+    fn control_common_attr(control: &Control) -> Option<&CommonObjAttr> {
+        match control {
+            Control::Shape(shape) => Some(shape.common()),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Table(table) => Some(&table.common),
+            Control::Equation(equation) => Some(&equation.common),
+            _ => None,
+        }
+    }
+
+    fn master_background_common_attr(control: &Control) -> Option<&CommonObjAttr> {
+        match control {
+            Control::Shape(shape) => Some(shape.common()),
+            Control::Picture(picture) => Some(&picture.common),
+            _ => None,
+        }
+    }
+
+    fn render_layer_from_master_control(
+        &self,
+        control: &Control,
+        para_index: usize,
+        control_index: usize,
+        paper_area: &LayoutRect,
+        body_area: &LayoutRect,
+    ) -> Option<RenderLayerInfo> {
+        let common = Self::control_common_attr(control)?;
+        let mut layer = Self::render_layer_from_common(common, para_index, control_index);
+        if Self::master_background_common_attr(control).is_some_and(|common| {
+            self.is_master_paper_background_control(common, paper_area, body_area)
+        }) {
+            layer.text_wrap = Some(TextWrap::BehindText);
+        }
+        Some(layer)
+    }
+
+    fn is_master_paper_background_control(
+        &self,
+        common: &CommonObjAttr,
+        paper_area: &LayoutRect,
+        body_area: &LayoutRect,
+    ) -> bool {
+        if !matches!(common.text_wrap, TextWrap::InFrontOfText) {
+            return false;
+        }
+        if !matches!(common.horz_rel_to, HorzRelTo::Paper)
+            || !matches!(common.vert_rel_to, VertRelTo::Paper)
+        {
+            return false;
+        }
+
+        let (width, height) = self.resolve_object_size(common, paper_area, body_area, paper_area);
+        let (x, y) = self.compute_object_position(
+            common,
+            width,
+            height,
+            paper_area,
+            paper_area,
+            body_area,
+            paper_area,
+            paper_area.y,
+            Alignment::Left,
+        );
+
+        let near_origin = (x - paper_area.x).abs() <= 1.0 && (y - paper_area.y).abs() <= 1.0;
+        let covers_paper = width >= paper_area.width * 0.95 && height >= paper_area.height * 0.95;
+        near_origin && covers_paper
+    }
+
     fn push_layered_paper_children(
         paper_images: &mut Vec<RenderNode>,
         temp_parent: &mut RenderNode,
@@ -1535,6 +1634,8 @@ impl LayoutEngine {
         _composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
+        body_area: &LayoutRect,
+        paper_area: &LayoutRect,
         table_area: Option<&LayoutRect>,
         page_index: u32,
         page_number: u32,
@@ -1618,27 +1719,44 @@ impl LayoutEngine {
                     // 머리말/꼬리말 내 Picture: header/footer area 기준 배치
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         if let Control::Picture(pic) = ctrl {
-                            let pic_container = LayoutRect {
-                                x: area.x,
-                                y: y_offset,
-                                width: area.width,
-                                height: area.height - (y_offset - area.y),
-                            };
-                            // [Task #825] inner para_index = i (hf_paragraphs 안 인덱스),
-                            // inner control_index = ci. outer 위치는 outer_hf_ref 보존.
-                            self.layout_picture_full(
-                                tree,
-                                area_node,
-                                pic,
-                                &pic_container,
-                                bin_data_content,
-                                Alignment::Left,
-                                outer_section_index,
-                                Some(i),
-                                Some(ci),
-                                outer_hf_ref.clone(),
-                                None, // [Task #1151 v4] cell_ctx: 머리말/꼬리말 path
-                            );
+                            if pic.common.treat_as_char {
+                                let pic_container = LayoutRect {
+                                    x: area.x,
+                                    y: y_offset,
+                                    width: area.width,
+                                    height: area.height - (y_offset - area.y),
+                                };
+                                // [Task #825] inner para_index = i (hf_paragraphs 안 인덱스),
+                                // inner control_index = ci. outer 위치는 outer_hf_ref 보존.
+                                self.layout_picture_full(
+                                    tree,
+                                    area_node,
+                                    pic,
+                                    &pic_container,
+                                    bin_data_content,
+                                    Alignment::Left,
+                                    outer_section_index,
+                                    Some(i),
+                                    Some(ci),
+                                    outer_hf_ref.clone(),
+                                    None, // [Task #1151 v4] cell_ctx: 머리말/꼬리말 path
+                                );
+                            } else {
+                                self.layout_header_footer_picture(
+                                    tree,
+                                    area_node,
+                                    pic,
+                                    area,
+                                    body_area,
+                                    paper_area,
+                                    y_offset,
+                                    bin_data_content,
+                                    outer_section_index,
+                                    i,
+                                    ci,
+                                    outer_hf_ref.clone(),
+                                );
+                            }
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             y_offset += pic_h;
                         }
@@ -1673,8 +1791,8 @@ impl LayoutEngine {
                             0, // section_index
                             styles,
                             area,
-                            area,
-                            area,
+                            body_area,
+                            paper_area,
                             y_offset,
                             Alignment::Left,
                             bin_data_content,
@@ -2207,20 +2325,35 @@ impl LayoutEngine {
                     let has_controls = !para.controls.is_empty();
                     if has_controls {
                         for (ci, ctrl) in para.controls.iter().enumerate() {
+                            let layer = self.render_layer_from_master_control(
+                                ctrl,
+                                pi,
+                                ci,
+                                &paper_area,
+                                body_area,
+                            );
+                            let mut temp_parent = layer.map(|_| {
+                                RenderNode::new(
+                                    0,
+                                    RenderNodeType::MasterPage,
+                                    layout_rect_to_bbox(&paper_area),
+                                )
+                            });
+                            let target_node = temp_parent.as_mut().unwrap_or(&mut mp_node);
                             match ctrl {
                                 Control::Shape(_) | Control::Equation(_) => {
                                     self.layout_shape(
                                         tree,
-                                        &mut mp_node,
+                                        target_node,
                                         &mp.paragraphs,
                                         pi,
                                         ci,
                                         section_index,
                                         styles,
-                                        body_area,
+                                        &paper_area,
                                         body_area,
                                         &paper_area,
-                                        body_area.y,
+                                        paper_area.y,
                                         Alignment::Left,
                                         bin_data_content,
                                         &std::collections::HashMap::new(),
@@ -2230,7 +2363,7 @@ impl LayoutEngine {
                                 Control::Picture(pic) => {
                                     let (pic_w, pic_h) = self.resolve_object_size(
                                         &pic.common,
-                                        body_area,
+                                        &paper_area,
                                         body_area,
                                         &paper_area,
                                     );
@@ -2238,11 +2371,11 @@ impl LayoutEngine {
                                         &pic.common,
                                         pic_w,
                                         pic_h,
-                                        body_area,
-                                        body_area,
+                                        &paper_area,
+                                        &paper_area,
                                         body_area,
                                         &paper_area,
-                                        body_area.y,
+                                        paper_area.y,
                                         Alignment::Left,
                                     );
                                     let pic_area = super::layout::LayoutRect {
@@ -2251,10 +2384,17 @@ impl LayoutEngine {
                                         width: pic_w,
                                         height: pic_h,
                                     };
+                                    let mut positioned = (**pic).clone();
+                                    positioned.common.horizontal_offset = 0;
+                                    positioned.common.vertical_offset = 0;
+                                    positioned.common.horz_rel_to = HorzRelTo::Para;
+                                    positioned.common.vert_rel_to = VertRelTo::Para;
+                                    positioned.common.horz_align = HorzAlign::Left;
+                                    positioned.common.vert_align = VertAlign::Top;
                                     self.layout_picture(
                                         tree,
-                                        &mut mp_node,
-                                        pic,
+                                        target_node,
+                                        &positioned,
                                         &pic_area,
                                         bin_data_content,
                                         Alignment::Left,
@@ -2274,7 +2414,7 @@ impl LayoutEngine {
                                     // current_body_area를 통해 본문 영역으로 계산된다.
                                     self.layout_table(
                                         tree,
-                                        &mut mp_node,
+                                        target_node,
                                         t,
                                         section_index,
                                         styles,
@@ -2297,6 +2437,14 @@ impl LayoutEngine {
                                     );
                                 }
                                 _ => {}
+                            }
+                            if let (Some(layer), Some(temp_parent)) = (layer, temp_parent.as_mut())
+                            {
+                                Self::push_layered_paper_children(
+                                    &mut mp_node.children,
+                                    temp_parent,
+                                    layer,
+                                );
                             }
                         }
                     } else if !para.text.is_empty() {
@@ -2338,10 +2486,93 @@ impl LayoutEngine {
                         }
                     }
                 }
+                // Hancom prepares master-page furniture through object order, not raw XML
+                // order: text-wrap plane, zOrder, then stable source index.
+                Self::sort_paper_render_nodes(&mut mp_node.children);
                 tree.root.children.push(mp_node);
                 self.current_page_number.set(previous_page_number);
             }
         }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn layout_header_footer_picture(
+        &self,
+        tree: &mut PageRenderTree,
+        area_node: &mut RenderNode,
+        pic: &crate::model::image::Picture,
+        area: &LayoutRect,
+        body_area: &LayoutRect,
+        paper_area: &LayoutRect,
+        para_y: f64,
+        bin_data_content: &[BinDataContent],
+        outer_section_index: Option<usize>,
+        inner_para_index: usize,
+        inner_control_index: usize,
+        outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
+    ) {
+        let rotation = pic.shape_attr.rotation_angle.rem_euclid(360);
+        let uses_rotated_frame = rotation != 0
+            && pic.shape_attr.current_width > 0
+            && pic.shape_attr.current_height > 0
+            && pic.common.width > 0
+            && pic.common.height > 0;
+        let (pic_width_hu, pic_height_hu) = if uses_rotated_frame {
+            (
+                pic.shape_attr.current_width as i32,
+                pic.shape_attr.current_height as i32,
+            )
+        } else {
+            picture_display_size_hu(pic)
+        };
+        let frame_width = if uses_rotated_frame {
+            hwpunit_to_px(pic.common.width as i32, self.dpi)
+        } else {
+            hwpunit_to_px(pic_width_hu, self.dpi)
+        };
+        let frame_height = if uses_rotated_frame {
+            hwpunit_to_px(pic.common.height as i32, self.dpi)
+        } else {
+            hwpunit_to_px(pic_height_hu, self.dpi)
+        };
+
+        let (frame_x, frame_y) = self.compute_object_position(
+            &pic.common,
+            frame_width,
+            frame_height,
+            area,
+            area,
+            body_area,
+            paper_area,
+            para_y,
+            Alignment::Left,
+        );
+        let mut positioned = pic.clone();
+        positioned.common.horizontal_offset = 0;
+        positioned.common.vertical_offset = 0;
+        positioned.common.horz_rel_to = HorzRelTo::Para;
+        positioned.common.vert_rel_to = VertRelTo::Para;
+        positioned.common.horz_align = HorzAlign::Left;
+        positioned.common.vert_align = VertAlign::Top;
+        let pic_container = LayoutRect {
+            x: frame_x,
+            y: frame_y,
+            width: frame_width,
+            height: frame_height,
+        };
+        self.layout_picture_full(
+            tree,
+            area_node,
+            &positioned,
+            &pic_container,
+            bin_data_content,
+            Alignment::Left,
+            outer_section_index,
+            Some(inner_para_index),
+            Some(inner_control_index),
+            outer_hf_ref,
+            None,
+        );
     }
 
     /// 머리말 영역 노드를 생성하여 tree에 추가한다.
@@ -2388,6 +2619,13 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.header_area,
+                                &layout.body_area,
+                                &LayoutRect {
+                                    x: 0.0,
+                                    y: 0.0,
+                                    width: layout.page_width,
+                                    height: layout.page_height,
+                                },
                                 header_table_area.as_ref(),
                                 page_content.page_index,
                                 page_content.page_number,
@@ -2514,6 +2752,13 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.footer_area,
+                                &layout.body_area,
+                                &LayoutRect {
+                                    x: 0.0,
+                                    y: 0.0,
+                                    width: layout.page_width,
+                                    height: layout.page_height,
+                                },
                                 None,
                                 page_content.page_index,
                                 page_content.page_number,

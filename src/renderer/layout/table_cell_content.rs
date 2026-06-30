@@ -406,6 +406,7 @@ impl LayoutEngine {
             &empty_map,
             &[],
             shape_table_cell_ref,
+            false,
         );
     }
 

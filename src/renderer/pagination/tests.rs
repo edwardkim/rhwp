@@ -28,6 +28,60 @@ fn make_paragraph_with_height(line_height: i32) -> Paragraph {
 }
 
 #[test]
+fn page_bottom_text_box_fit_keeps_line_even_when_advance_overflows() {
+    let paginator = Paginator::with_default_dpi();
+    let styles = ResolvedStyleSet::default();
+    let page_def = a4_page_def();
+    let body_height_hu = page_def
+        .height
+        .saturating_sub(page_def.margin_top)
+        .saturating_sub(page_def.margin_bottom)
+        .saturating_sub(page_def.margin_header)
+        .saturating_sub(page_def.margin_footer) as i32;
+
+    let lead_advance = body_height_hu - 580;
+    let lead = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: 0,
+            line_height: lead_advance,
+            text_height: body_height_hu - 2500,
+            line_spacing: 0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let bottom_line = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: body_height_hu - 1200,
+            line_height: 1200,
+            text_height: 1200,
+            line_spacing: 840,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let composed: Vec<ComposedParagraph> = Vec::new();
+    let (result, _measured) = paginator.paginate(
+        &[lead, bottom_line],
+        &composed,
+        &styles,
+        &page_def,
+        &ColumnDef::default(),
+        0,
+    );
+
+    assert_eq!(result.pages.len(), 1);
+    let items = &result.pages[0].column_contents[0].items;
+    assert!(matches!(
+        items.as_slice(),
+        [
+            PageItem::FullParagraph { para_index: 0 },
+            PageItem::FullParagraph { para_index: 1 }
+        ]
+    ));
+}
+
+#[test]
 fn test_empty_paragraphs() {
     let paginator = Paginator::with_default_dpi();
     let styles = ResolvedStyleSet::default();

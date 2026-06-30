@@ -7,6 +7,7 @@ use std::sync::{Arc, OnceLock};
 
 use crate::model::image::ImageEffect;
 use crate::model::style::ImageFillMode;
+use crate::renderer::image_resolver::{detect_image_mime_type, grayscale_jpeg_bytes_to_png_bytes};
 
 const MAX_SVG_FRAGMENT_BYTES: usize = 4 * 1024 * 1024;
 const MAX_SVG_RASTER_PIXELS: u64 = 67_108_864;
@@ -146,7 +147,14 @@ pub fn draw_image_bytes(
     if !is_valid_destination_rect(x, y, width, height) {
         return;
     }
-    let Some(image) = Image::from_encoded(Data::new_copy(bytes)) else {
+    let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
+        grayscale_jpeg_bytes_to_png_bytes(bytes)
+    } else {
+        None
+    };
+    let encoded_bytes = normalized_bytes.as_deref().unwrap_or(bytes);
+
+    let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
         draw_missing_image_placeholder(x, y, width, height);
         return;
     };
@@ -227,6 +235,7 @@ pub fn draw_image_bytes(
     if matches!(
         mode,
         ImageFillMode::TileAll
+            | ImageFillMode::Total
             | ImageFillMode::TileHorzTop
             | ImageFillMode::TileHorzBottom
             | ImageFillMode::TileVertLeft
@@ -276,7 +285,9 @@ pub fn draw_image_bytes(
             true
         };
 
-        if matches!(mode, ImageFillMode::TileAll) && draw_tiled_shader(dst, x, y) {
+        if matches!(mode, ImageFillMode::TileAll | ImageFillMode::Total)
+            && draw_tiled_shader(dst, x, y)
+        {
             canvas.restore();
             return;
         }

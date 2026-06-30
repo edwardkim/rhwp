@@ -77,6 +77,45 @@ thread_local! {
         std::cell::RefCell::new(std::collections::HashMap::new());
 }
 
+#[cfg(target_arch = "wasm32")]
+thread_local! {
+    static DECODED_CANVAS_CACHE: std::cell::RefCell<
+        std::collections::HashMap<u64, Option<HtmlCanvasElement>>,
+    > = std::cell::RefCell::new(std::collections::HashMap::new());
+}
+
+#[cfg(target_arch = "wasm32")]
+fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
+    let dynimg = image::load_from_memory(data).ok()?;
+    let rgba = dynimg.to_rgba8();
+    let (iw, ih) = (rgba.width(), rgba.height());
+    if iw == 0 || ih == 0 {
+        return None;
+    }
+
+    let buf = rgba.into_raw();
+    let image_data =
+        web_sys::ImageData::new_with_u8_clamped_array_and_sh(wasm_bindgen::Clamped(&buf), iw, ih)
+            .ok()?;
+
+    let document = web_sys::window()?.document()?;
+    let canvas: HtmlCanvasElement = document
+        .create_element("canvas")
+        .ok()?
+        .dyn_into::<HtmlCanvasElement>()
+        .ok()?;
+    canvas.set_width(iw);
+    canvas.set_height(ih);
+
+    let ctx = canvas
+        .get_context("2d")
+        .ok()??
+        .dyn_into::<CanvasRenderingContext2d>()
+        .ok()?;
+    ctx.put_image_data(&image_data, 0.0, 0.0).ok()?;
+    Some(canvas)
+}
+
 /// 빠른 해시 (FNV-1a 64비트)
 #[cfg(target_arch = "wasm32")]
 fn hash_bytes(data: &[u8]) -> u64 {
@@ -2541,6 +2580,25 @@ impl Renderer for WebCanvasRenderer {
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let key = hash_bytes(data);
 
+        let decoded = DECODED_CANVAS_CACHE.with(|cache| {
+            let mut c = cache.borrow_mut();
+            if let Some(slot) = c.get(&key) {
+                return slot.clone();
+            }
+            if c.len() > 200 {
+                c.clear();
+            }
+            let canvas = decode_image_to_canvas(data);
+            c.insert(key, canvas.clone());
+            canvas
+        });
+        if let Some(canvas) = decoded {
+            let _ = self
+                .ctx
+                .draw_image_with_html_canvas_element_and_dw_and_dh(&canvas, x, y, w, h);
+            return;
+        }
+
         // 캐시에서 이미 로드된 이미지를 찾는다
         let cached = IMAGE_CACHE.with(|cache| {
             let c = cache.borrow();
@@ -2631,6 +2689,27 @@ impl WebCanvasRenderer {
         dh: f64,
     ) {
         let key = hash_bytes(data);
+
+        let decoded = DECODED_CANVAS_CACHE.with(|cache| {
+            let mut c = cache.borrow_mut();
+            if let Some(slot) = c.get(&key) {
+                return slot.clone();
+            }
+            if c.len() > 200 {
+                c.clear();
+            }
+            let canvas = decode_image_to_canvas(data);
+            c.insert(key, canvas.clone());
+            canvas
+        });
+        if let Some(canvas) = decoded {
+            let _ = self
+                .ctx
+                .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
+                    &canvas, sx, sy, sw, sh, dx, dy, dw, dh,
+                );
+            return;
+        }
 
         let cached = IMAGE_CACHE.with(|cache| {
             let c = cache.borrow();

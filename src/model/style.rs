@@ -656,6 +656,7 @@ pub enum ImageFillMode {
     TileVertLeft,
     TileVertRight,
     FitToSize,
+    Total,
     Center,
     CenterTop,
     CenterBottom,

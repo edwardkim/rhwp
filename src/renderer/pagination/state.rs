@@ -24,6 +24,7 @@ pub(super) struct PaginationState {
     pub on_first_multicolumn_page: bool,
     pub section_index: usize,
     pub footnote_separator_overhead: f64,
+    pub footnote_between_notes_margin: f64,
     pub footnote_safety_margin: f64,
     /// 현재 단에 축적된 어울림 리턴 문단 목록
     pub current_column_wrap_around_paras: Vec<WrapAroundPara>,
@@ -51,6 +52,7 @@ impl PaginationState {
         col_count: u16,
         section_index: usize,
         footnote_separator_overhead: f64,
+        footnote_between_notes_margin: f64,
         footnote_safety_margin: f64,
     ) -> Self {
         Self {
@@ -67,6 +69,7 @@ impl PaginationState {
             on_first_multicolumn_page: false,
             section_index,
             footnote_separator_overhead,
+            footnote_between_notes_margin,
             footnote_safety_margin,
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
@@ -207,8 +210,41 @@ impl PaginationState {
         if self.is_first_footnote_on_page {
             self.current_footnote_height += self.footnote_separator_overhead;
             self.is_first_footnote_on_page = false;
+        } else {
+            self.current_footnote_height += self.footnote_between_notes_margin;
         }
         self.current_footnote_height += height;
+        self.sync_current_page_footnote_area();
+    }
+
+    pub fn projected_footnote_height(&self, note_content_height: f64, note_count: usize) -> f64 {
+        if note_count == 0 {
+            return self.current_footnote_height;
+        }
+        let separator = if self.is_first_footnote_on_page {
+            self.footnote_separator_overhead
+        } else {
+            0.0
+        };
+        let between_count = if self.is_first_footnote_on_page {
+            note_count.saturating_sub(1)
+        } else {
+            note_count
+        };
+        self.current_footnote_height
+            + separator
+            + self.footnote_between_notes_margin * between_count as f64
+            + note_content_height
+    }
+
+    fn sync_current_page_footnote_area(&mut self) {
+        if self.current_footnote_height <= 0.0 {
+            return;
+        }
+        if let Some(page) = self.pages.last_mut() {
+            page.layout
+                .update_footnote_area(self.current_footnote_height);
+        }
     }
 
     /// 새 페이지 push + 상태 리셋
