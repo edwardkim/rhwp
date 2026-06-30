@@ -35,6 +35,31 @@ fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: usize) -> f
     margin_left + line_indent
 }
 
+fn cell_para_line_anchor_y(
+    base_y: f64,
+    content_cell_y: f64,
+    pad_top: f64,
+    vertical_pos_hu: i32,
+    dpi: f64,
+    use_top_vpos_anchor: bool,
+) -> f64 {
+    if use_top_vpos_anchor {
+        content_cell_y + pad_top + hwpunit_to_px(vertical_pos_hu, dpi)
+    } else {
+        base_y + hwpunit_to_px(vertical_pos_hu, dpi)
+    }
+}
+
+fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
+    paragraphs.first().is_some_and(|para| {
+        para.text.trim().is_empty()
+            && para
+                .controls
+                .iter()
+                .any(|ctrl| matches!(ctrl, Control::Shape(shape) if shape.common().treat_as_char))
+    })
+}
+
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
@@ -2639,7 +2664,9 @@ impl LayoutEngine {
                     // 문서는 한컴이 각 문단 top을 vpos로 고정해 둔다. 누적 y만 쓰면
                     // spacing_before가 중복되거나 음수 line_spacing이 누적되어 줄 위치가
                     // 점점 어긋난다.
-                    if use_top_vpos_anchor && !has_nested_table {
+                    let use_saved_cell_para_vpos =
+                        use_top_vpos_anchor || has_initial_tac_shape_host(&cell.paragraphs);
+                    if use_saved_cell_para_vpos && !has_nested_table {
                         if let Some(first_seg) = para.line_segs.first() {
                             if first_seg.vertical_pos >= 0 {
                                 let spacing_before = styles
@@ -2647,9 +2674,14 @@ impl LayoutEngine {
                                     .get(para.para_shape_id as usize)
                                     .map(|s| s.spacing_before)
                                     .unwrap_or(0.0);
-                                let anchored_y = content_cell_y
-                                    + pad_top
-                                    + hwpunit_to_px(first_seg.vertical_pos, self.dpi);
+                                let anchored_y = cell_para_line_anchor_y(
+                                    text_y_start,
+                                    content_cell_y,
+                                    pad_top,
+                                    first_seg.vertical_pos,
+                                    self.dpi,
+                                    use_top_vpos_anchor,
+                                );
                                 // layout_composed_paragraph()가 spacing_before를 더하므로
                                 // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
                                 para_y = anchored_y - spacing_before;

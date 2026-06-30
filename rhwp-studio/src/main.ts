@@ -771,10 +771,7 @@ async function loadBytes(
     { discardPreviousDraft: true },
   );
   const elapsed = performance.now() - startTime;
-  // initializeDocument 안에서 #177 validation 모달이 표시될 수 있음.
-  // HWPX 토스트는 모달과의 이벤트 충돌을 피하기 위해 모달 닫힌 후 표시.
   await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
-  notifyHwpxSaveModeIfNeeded();
 }
 
 function shouldSkipInitialAutosaveRecovery(): boolean {
@@ -819,30 +816,6 @@ async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
     message: `"${fileName}" 복구본을 열었습니다.\n원본 파일은 자동으로 덮어쓰지 않습니다.`,
     durationMs: 5000,
   });
-}
-
-/**
- * #888: HWPX 출처 문서 로드 시 HWP 변환 저장 안내.
- * - 우상단 토스트 1회
- * - 상태 표시줄 메시지
- */
-function notifyHwpxSaveModeIfNeeded(): void {
-  if (wasm.getSourceFormat() !== 'hwpx') return;
-
-  showToast({
-    message: 'HWPX 문서는 저장 시 HWP 형식으로 변환 저장됩니다.\n원본 HWPX를 덮어쓰지 않도록 .hwp 파일명으로 저장합니다.',
-    durationMs: 0, // 자동 페이드 없음 — 사용자가 확인 버튼으로 닫음
-    action: {
-      label: '이슈 보기',
-      onClick: () => {
-        window.open('https://github.com/edwardkim/rhwp/issues/888', '_blank');
-      },
-    },
-    confirmLabel: '확인',
-  });
-
-  const sb = sbMessage();
-  if (sb) sb.textContent = 'HWPX 변환 저장 모드 — 저장 시 HWP(.hwp)로 내보냅니다';
 }
 
 
