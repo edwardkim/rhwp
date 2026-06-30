@@ -42,6 +42,7 @@ def load_rels(fixture: Path) -> list[str]:
 def measure(fixture: Path, exe: str) -> dict[str, tuple[int, float]]:
     """rel -> (clip_pages, max_overflow_px). 문서 부재/ERR 은 건너뛴다."""
     out: dict[str, tuple[int, float]] = {}
+    n_err = 0
     rels = load_rels(fixture)
     for n, rel in enumerate(rels, 1):
         # 한글 파일명 NFC/NFD 정규화 차이로 Path.exists() 가 오탐하므로 pre-check 없이
@@ -50,13 +51,14 @@ def measure(fixture: Path, exe: str) -> dict[str, tuple[int, float]]:
         clipped, _pages, max_ov = check_file(src, exe, EPS)
         if clipped < 0:
             print(f"  ERR/없음 {rel}", file=sys.stderr)
+            n_err += 1
             continue
         out[rel] = (clipped, round(max_ov, 1))
         if clipped > 0:
             print(f"  CLIP {clipped}p {max_ov:.1f}px  {rel}")
         if n % 20 == 0:
             print(f"  ...{n}/{len(rels)}", file=sys.stderr)
-    return out
+    return out, n_err
 
 
 def save(baseline: dict[str, tuple[int, float]], path: Path) -> None:
@@ -87,15 +89,18 @@ def main() -> int:
                     if sys.platform == "win32" else "target/release/rhwp")
     a = ap.parse_args()
 
-    cur = measure(a.fixture, a.exe)
+    cur, n_err = measure(a.fixture, a.exe)
 
     if a.save:
         save(cur, a.save)
         n_clip = sum(1 for cp, _ in cur.values() if cp > 0)
-        print(f"\n[baseline 저장] 문서={len(cur)} 클리핑문서={n_clip} → {a.save}")
-        return 0
+        print(f"\n[baseline 저장] 문서={len(cur)} 클리핑문서={n_clip} ERR={n_err} → {a.save}")
+        # baseline 생성 시 1건이라도 ERR 이면 불완전 baseline → 실패.
+        return 1 if n_err > 0 else 0
 
     base = load_baseline(a.check)
+    # baseline 에 있으나 이번에 측정되지 않은(부재/렌더실패) 키 = 검증 누락.
+    missing = sorted(set(base) - set(cur))
     regressions: list[str] = []
     for rel, (cp, ov) in cur.items():
         bcp, bov = base.get(rel, (0, 0.0))
@@ -105,10 +110,17 @@ def main() -> int:
         1 for rel, (cp, ov) in cur.items()
         if (cp, ov) < base.get(rel, (0, 0.0))
     )
-    print(f"\n[clipping-gate] 문서={len(cur)} 개선={improvements} 회귀={len(regressions)}")
+    print(
+        f"\n[clipping-gate] 문서={len(cur)} 개선={improvements} 회귀={len(regressions)} "
+        f"ERR/없음={n_err} baseline누락={len(missing)}"
+    )
     for r in regressions:
         print(f"  회귀 ▲ {r}")
-    return 1 if regressions else 0
+    for m in missing:
+        print(f"  baseline 누락(측정실패) ▲ {m}", file=sys.stderr)
+    # 시각 회귀 차단 게이트: 회귀뿐 아니라 ERR/렌더실패/측정누락도 실패로 처리
+    # (문서=0 등 전부 실패가 통과로 둔갑하는 것 방지).
+    return 1 if (regressions or n_err > 0 or missing) else 0
 
 
 if __name__ == "__main__":

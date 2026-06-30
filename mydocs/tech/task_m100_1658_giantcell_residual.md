@@ -1,3 +1,5 @@
+> **현행화 안내(2026-07-01)**: 본 문서의 byeolpyo4 절대 수치(27쪽 / CLIP 1/27p 23.5px)는 라운드2 당시 devel 기준이다. 현재 PR head(devel 병합 후)에서는 **byeolpyo4 = 26쪽 / CLIP 6/26p max 90.7px** 로, devel 진화(다른 PR 병합)에 따라 변동했다. 본 PR의 수정(continuation ≤3 cut)은 byeolpyo4 절대값이 아니라 **controlset(75/92)·대형 오라클(442)·클리핑 게이트(controlset 92 회귀 0)** 로 검증된다. byeolpyo4 클리핑 자체는 deferral 비viable로 ceiling(별도 트랙) 유지.
+
 # 분석 — #1658 별표4 잔여 Δ+2 (거대 셀 4줄 orphan, empty_spacer reset)
 
 - 일자: 2026-06-30 / 대상: 산업통상부 별표4(rhwp 27 / 한글 25, Δ+2 잔여).
