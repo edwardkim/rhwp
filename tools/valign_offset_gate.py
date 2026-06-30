@@ -90,7 +90,9 @@ def main() -> int:
             n_bug += 1
         print(f"  {name}: y={pt:.1f}pt (BUG~{bug}/FIX~{fix}) -> {verdict}")
     print(f"\n[valign-gate] BUG(미수정)={n_bug} 누락={n_missing}")
-    return 1 if n_bug > 0 else 0
+    # 회귀 차단 게이트: BUG(미수정)뿐 아니라 fixture 없음/마커없음/export 실패(누락)도
+    # 실패로 처리한다(전부 누락이어도 통과로 둔갑하는 것 방지).
+    return 1 if (n_bug > 0 or n_missing > 0) else 0
 
 
 if __name__ == "__main__":
