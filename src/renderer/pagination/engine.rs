@@ -98,6 +98,28 @@ fn positive_vpos_end_before_negative_wrap(para: &Paragraph) -> Option<i32> {
         .max()
 }
 
+fn single_line_text_box_bottom_px(para: &Paragraph, page_vpos_base: i32, dpi: f64) -> Option<f64> {
+    let mut real_lines = para
+        .line_segs
+        .iter()
+        .filter(|ls| !is_synthetic_line_seg(ls));
+    let line = real_lines.next()?;
+    if real_lines.next().is_some() || line.vertical_pos <= page_vpos_base {
+        return None;
+    }
+
+    let text_height = if line.text_height > 0 {
+        line.text_height
+    } else {
+        line.line_height.max(0)
+    };
+    let bottom = line
+        .vertical_pos
+        .saturating_add(text_height)
+        .saturating_sub(page_vpos_base);
+    (bottom >= 0).then(|| crate::renderer::hwpunit_to_px(bottom, dpi))
+}
+
 impl Paginator {
     pub fn paginate_with_measured(
         &self,
@@ -155,7 +177,15 @@ impl Paginator {
             Self::collect_header_footer_controls(paragraphs, section_index);
 
         let col_count = column_def.column_count.max(1);
-        let footnote_separator_overhead = crate::renderer::hwpunit_to_px(400, self.dpi);
+        let default_footnote_shape = crate::model::footnote::FootnoteShape::default();
+        let footnote_shape = opts
+            .footnote_shape
+            .as_ref()
+            .unwrap_or(&default_footnote_shape);
+        let footnote_separator_overhead =
+            super::footnote_separator_overhead_px(footnote_shape, self.dpi);
+        let footnote_between_notes_margin =
+            super::footnote_between_notes_margin_px(footnote_shape, self.dpi);
         let footnote_safety_margin = crate::renderer::hwpunit_to_px(3000, self.dpi);
 
         let mut st = PaginationState::new(
@@ -163,6 +193,7 @@ impl Paginator {
             col_count,
             section_index,
             footnote_separator_overhead,
+            footnote_between_notes_margin,
             footnote_safety_margin,
         );
 
@@ -1169,7 +1200,14 @@ impl Paginator {
                 trailing_ls
             };
             // 부동소수점 누적 오차 허용 (0.5px ≈ 0.13mm)
-            st.current_height + (para_height - effective_trailing) <= available_now + 0.5
+            let advance_fits =
+                st.current_height + (para_height - effective_trailing) <= available_now + 0.5;
+            let page_vpos_base = st.page_vpos_base.unwrap_or(0);
+            let text_box_fits = !para.line_segs.is_empty()
+                && !st.current_items.is_empty()
+                && single_line_text_box_bottom_px(para, page_vpos_base, self.dpi)
+                    .is_some_and(|bottom| bottom <= available_now + 0.5);
+            advance_fits || text_box_fits
         } {
             // 문단 전체가 현재 페이지에 들어감
             st.current_items.push(PageItem::FullParagraph {
@@ -1659,8 +1697,9 @@ impl Paginator {
                                                 tb_control_index: tc_idx,
                                             },
                                         });
-                                        let fn_height =
-                                            measurer.estimate_single_footnote_height(&fn_ctrl);
+                                        let fn_height = super::estimate_footnote_note_height(
+                                            &fn_ctrl, self.dpi,
+                                        );
                                         st.add_footnote_height(fn_height);
                                     }
                                 }
@@ -1707,7 +1746,7 @@ impl Paginator {
                                 control_index: ctrl_idx,
                             },
                         });
-                        let fn_height = measurer.estimate_single_footnote_height(fn_ctrl);
+                        let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                         st.add_footnote_height(fn_height);
                     }
                 }
@@ -1772,24 +1811,22 @@ impl Paginator {
 
         // 표 내 각주 높이 사전 계산
         let mut table_footnote_height = 0.0;
-        let mut table_has_footnotes = false;
+        let mut table_footnote_count = 0usize;
         for cell in &table.cells {
             for cp in &cell.paragraphs {
                 for cc in &cp.controls {
                     if let Control::Footnote(fn_ctrl) = cc {
-                        let fn_height = measurer.estimate_single_footnote_height(fn_ctrl);
-                        if !table_has_footnotes && st.is_first_footnote_on_page {
-                            table_footnote_height += st.footnote_separator_overhead;
-                        }
+                        let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                         table_footnote_height += fn_height;
-                        table_has_footnotes = true;
+                        table_footnote_count += 1;
                     }
                 }
             }
         }
 
         // 현재 사용 가능한 높이
-        let total_footnote = st.current_footnote_height + table_footnote_height;
+        let total_footnote =
+            st.projected_footnote_height(table_footnote_height, table_footnote_count);
         let table_margin = if total_footnote > 0.0 {
             st.footnote_safety_margin
         } else {
@@ -2052,7 +2089,7 @@ impl Paginator {
                                     cell_control_index: cc_idx,
                                 },
                             });
-                            let fn_height = measurer.estimate_single_footnote_height(fn_ctrl);
+                            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                             st.add_footnote_height(fn_height);
                         }
                     }

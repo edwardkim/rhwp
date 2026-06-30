@@ -5155,8 +5155,7 @@ impl LayoutEngine {
         let relaxed_hard_break = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
-        ) && table.row_count <= 5
-            && table.col_count <= 2;
+        ) && (table.col_count <= 2 || table.row_count > 5);
         let rewind_internal_hard_break_orphan = Self::row_has_prior_rowspan_cover(table, row);
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
@@ -5296,8 +5295,7 @@ impl LayoutEngine {
         let relaxed_hard_break = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
-        ) && table.row_count <= 5
-            && table.col_count <= 2;
+        ) && (table.col_count <= 2 || table.row_count > 5);
         for (i, cell) in cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
@@ -6010,7 +6008,14 @@ impl LayoutEngine {
             let content: f64 =
                 units[su..eu].iter().map(|u| u.height).sum::<f64>() + mixed_nested_extra;
             let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
-            let pad_cell = pad_top + pad_bottom;
+            let has_visible_cut = units[su..eu]
+                .iter()
+                .any(|unit| Self::cell_unit_has_visible_content(cell, unit));
+            let pad_cell = if is_whole_row || has_visible_cut {
+                pad_top + pad_bottom
+            } else {
+                0.0
+            };
             let cell_h_px = if cell.height < 0x8000_0000 {
                 hwpunit_to_px(cell.height as i32, self.dpi)
             } else {
@@ -6028,6 +6033,41 @@ impl LayoutEngine {
             }
         }
         max_h
+    }
+
+    /// RowBreak 분할 예산에서 실제 남은 가시 내용이 있는 셀의 패딩만 예약한다.
+    ///
+    /// Q&A 표처럼 왼쪽 gutter 빈 셀에 큰 padding 이 들어간 행은 그 padding 때문에
+    /// 오른쪽 답변 셀의 첫 줄까지 다음 쪽으로 밀릴 수 있다. 분할 행에서는 보이는
+    /// cut 이 남은 셀의 padding 만 행 예산에 반영해 렌더러의 split 높이와 맞춘다.
+    pub(crate) fn row_remaining_visible_padding_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|c| c.col);
+
+        let mut max_padding = 0.0f64;
+        for (i, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let su = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            if !units[su..]
+                .iter()
+                .any(|unit| Self::cell_unit_has_visible_content(cell, unit))
+            {
+                continue;
+            }
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+            max_padding = max_padding.max(pad_top + pad_bottom);
+        }
+        max_padding
     }
 
     /// 줄 범위(line_ranges)에 해당하는 셀 콘텐츠의 실제 렌더링 높이를 계산한다.

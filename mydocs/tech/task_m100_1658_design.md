@@ -79,3 +79,21 @@ reserve/2-pass 를 발명하려다 6번 실패. 대신 **Paginator 의 검증된
 
 - HeightCursor 의 표 경계 스냅은 미주/다단/TAC 수식과 상호작용 → 좁은 게이트로 점진 확장 필수.
 - 대형 오라클도 표본이므로, 최종은 더 큰 표본 + 시각 판정 병행.
+
+## 6. 제보 케이스 — centered-cell over-count (kkyu8925, 2026-06-30)
+
+GitHub #1658 코멘트(kkyu8925) 제보. "저장 line-seg vpos 권위" 방향과 직결되는 셀 세로정렬 케이스.
+
+- **증상**: 머리행+안내문단+중첩표2개가 든 자리차지 표(큰 셀 `valign=Center`)에서, 셀 내용이
+  한컴은 세로 중앙·rhwp 는 **상단** 정렬. 안내 문단 y ≈ 122pt(rhwp) vs ≈ 247pt(한컴), 약 125pt 차.
+  표 전체 높이(≈846px)는 동일.
+- **근원**: `src/renderer/layout/table_cell_content.rs:650-676` (devel `30931679`). `has_nested` 분기에서
+  `total_content_height = max(last_seg_end(저장), calc_composed_paras_content_height(계산),
+  calc_nested_controls_bottom_height(계산))` 가 `inner_height` 에 근접 → `Center` offset
+  `(inner_height - total_content_height)/2 ≈ 0` → 상단 정렬.
+- **양방향 충돌**: #44(셀 내부 표 세로중앙 오류, CLOSED)는 **under-count**(중첩표 높이 미반영 → 과소),
+  본 케이스는 **over-count**. computed/stored 선택이 양방향으로 어긋남 → 국소 단순치환(저장 권위화)은
+  #44 를 정반대로 회귀.
+- **처리 방향**: 본 #1658 통합 vpos 회계(저장 vpos 절대좌표 정렬 + 중첩 컨트롤 바닥 일관 회계)에
+  centered-cell 케이스를 편입해 일관 해소. 합성 fixture(중첩표 든 centered 셀, 실문서 비포함) 제보자가
+  제작 제안 — render_page_gate / valign Center offset 회귀 게이트에 편입 예정.

@@ -27,6 +27,12 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
         }),
+        "image/tiff" => tiff_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
+            data,
+            mime: "image/png",
+            kind: ResolvedImageKind::FormatConverted,
+            suppress_effects: false,
+        }),
         "image/jpeg" if is_watermark_image(image) => {
             watermark_jpeg_bytes_to_hancom_baked_png_bytes(data).map(|data| ResolvedImagePayload {
                 data,
@@ -35,6 +41,12 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
                 suppress_effects: true,
             })
         }
+        "image/jpeg" => grayscale_jpeg_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
+            data,
+            mime: "image/png",
+            kind: ResolvedImageKind::FormatConverted,
+            suppress_effects: false,
+        }),
         _ => None,
     }
 }
@@ -67,6 +79,69 @@ pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     use image::{load_from_memory_with_format, ImageFormat};
 
     let img = load_from_memory_with_format(data, ImageFormat::Bmp).ok()?;
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+        .ok()?;
+    Some(out)
+}
+
+/// TIFF 바이트를 PNG 바이트로 재인코딩한다. 실패 시 None 반환.
+///
+/// 브라우저와 rsvg는 SVG `<image>` 내부의 `data:image/tiff` URI를 안정적으로
+/// 렌더링하지 못하므로, SVG/Canvas/HTML 임베딩 전에 PNG로 변환한다.
+pub(crate) fn tiff_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::{load_from_memory_with_format, ImageFormat};
+
+    let img = load_from_memory_with_format(data, ImageFormat::Tiff).ok()?;
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+        .ok()?;
+    Some(out)
+}
+
+/// Browser SVG/Canvas decoders can expose stale color planes in old Photoshop
+/// grayscale JPEGs. Re-encode only visually gray JPEGs to PNG so color photos
+/// keep the compact JPEG path.
+pub(crate) fn grayscale_jpeg_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::{load_from_memory_with_format, ImageFormat};
+
+    if detect_image_mime_type(data) != "image/jpeg" {
+        return None;
+    }
+
+    let mut img = load_from_memory_with_format(data, ImageFormat::Jpeg)
+        .ok()?
+        .to_rgba8();
+    if img.width() == 0 || img.height() == 0 {
+        return None;
+    }
+
+    let has_photoshop_profile = data
+        .windows(b"Adobe Photoshop".len())
+        .any(|chunk| chunk == b"Adobe Photoshop")
+        || data
+            .windows(b"Adobe_CM".len())
+            .any(|chunk| chunk == b"Adobe_CM");
+    let is_gray = img.pixels().all(|px| {
+        let [r, g, b, _] = px.0;
+        let min = r.min(g).min(b);
+        let max = r.max(g).max(b);
+        max.saturating_sub(min) <= 2
+    });
+    let is_luma_plane_gray = has_photoshop_profile
+        && img.pixels().all(|px| {
+            let [_, g, b, _] = px.0;
+            g.abs_diff(128) <= 2 && b.abs_diff(128) <= 2
+        });
+    if is_luma_plane_gray {
+        for px in img.pixels_mut() {
+            let gray = px.0[0];
+            px.0 = [gray, gray, gray, px.0[3]];
+        }
+    } else if !is_gray {
+        return None;
+    }
+
     let mut out = Vec::new();
     img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
         .ok()?;
@@ -357,4 +432,74 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
         return "image/x-pcx";
     }
     "application/octet-stream"
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{grayscale_jpeg_bytes_to_png_bytes, resolve_image_payload};
+    use crate::paint::ResolvedImageKind;
+    use crate::renderer::render_tree::ImageNode;
+    use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
+    use std::io::Cursor;
+
+    fn jpeg_from_pixels(width: u32, height: u32, pixels: impl Fn(u32, u32) -> [u8; 3]) -> Vec<u8> {
+        let mut img = RgbImage::new(width, height);
+        for y in 0..height {
+            for x in 0..width {
+                img.put_pixel(x, y, Rgb(pixels(x, y)));
+            }
+        }
+
+        let mut out = Vec::new();
+        DynamicImage::ImageRgb8(img)
+            .write_to(&mut Cursor::new(&mut out), ImageFormat::Jpeg)
+            .expect("encode jpeg");
+        out
+    }
+
+    #[test]
+    fn grayscale_jpeg_is_normalized_to_png() {
+        let jpeg = jpeg_from_pixels(2, 2, |x, y| {
+            let g = 180 + (x + y) as u8;
+            [g, g, g]
+        });
+
+        let png = grayscale_jpeg_bytes_to_png_bytes(&jpeg).expect("gray jpeg should normalize");
+        assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+    }
+
+    #[test]
+    fn color_jpeg_keeps_jpeg_path() {
+        let jpeg = jpeg_from_pixels(2, 2, |x, y| {
+            if (x + y) % 2 == 0 {
+                [220, 64, 64]
+            } else {
+                [64, 120, 220]
+            }
+        });
+
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&jpeg).is_none());
+    }
+
+    #[test]
+    fn tiff_image_payload_is_normalized_to_png() {
+        let mut img = RgbImage::new(2, 2);
+        for y in 0..2 {
+            for x in 0..2 {
+                img.put_pixel(x, y, Rgb([32 + x as u8, 96 + y as u8, 160]));
+            }
+        }
+        let mut tiff = Vec::new();
+        DynamicImage::ImageRgb8(img)
+            .write_to(&mut Cursor::new(&mut tiff), ImageFormat::Tiff)
+            .expect("encode tiff");
+
+        let image = ImageNode::new(1, Some(tiff));
+        let resolved = resolve_image_payload(&image).expect("tiff should resolve");
+
+        assert_eq!(resolved.mime, "image/png");
+        assert_eq!(resolved.kind, ResolvedImageKind::FormatConverted);
+        assert!(resolved.data.starts_with(b"\x89PNG\r\n\x1a\n"));
+        assert!(!resolved.suppress_effects);
+    }
 }

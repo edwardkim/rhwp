@@ -9,7 +9,8 @@
 //!    META-INF/container.xml·container.rdf·manifest.xml)
 //! 4. `Contents/section{N}.xml` 엔트리 수 = IR 섹션 수 (잉여 섹션 엔트리 금지)
 //! 5. `Contents/content.hpf` manifest 가 참조하는 href 가 모두 ZIP 에 실재
-//! 6. `BinData/` 엔트리 수·확장자 멀티셋 = IR `bin_data_content` 보존
+//! 6. `Contents/masterpage{N}.xml` 엔트리·manifest·section idRef = IR 바탕쪽 보존
+//! 7. `BinData/` 엔트리 수·확장자 멀티셋 = IR `bin_data_content` 보존
 //!
 //! 주의: serializer 가 BinData href 를 `BinData/image{N}.{ext}` 로 재명명하므로
 //! 원본 ZIP 의 엔트리 **이름**이 아니라 IR 기준 **수·확장자**를 보존 기준으로 삼는다.
@@ -126,23 +127,46 @@ pub fn check_package(hwpx_bytes: &[u8], doc: &Document) -> PackageCheckReport {
     }
 
     // 5. content.hpf manifest href 실재 확인
-    match read_entry_string(&mut archive, "Contents/content.hpf") {
+    let content_hpf = match read_entry_string(&mut archive, "Contents/content.hpf") {
         Ok(hpf) => {
             for href in extract_hrefs(&hpf) {
                 if !names.contains(href.as_str()) {
                     report.push(format!("content.hpf 참조 엔트리 누락: {href}"));
                 }
             }
+            Some(hpf)
         }
         Err(e) => {
             // 필수 엔트리 검사에서 이미 누락 보고됐을 수 있으므로 읽기 실패만 기록
             if names.contains("Contents/content.hpf") {
                 report.push(format!("content.hpf 읽기 실패: {e}"));
             }
+            None
+        }
+    };
+
+    // 5b. container.rdf section graph coverage.
+    // Hancom checks this package graph separately from content.hpf; stale RDF
+    // can make otherwise ZIP-valid multi-section HWPX exports fail to open.
+    match read_entry_string(&mut archive, "META-INF/container.rdf") {
+        Ok(rdf) => check_container_rdf(&mut report, &rdf, doc),
+        Err(e) => {
+            if names.contains("META-INF/container.rdf") {
+                report.push(format!("container.rdf 읽기 실패: {e}"));
+            }
         }
     }
 
-    // 6. BinData 수·확장자 보존 (IR 기준)
+    // 6. 바탕쪽(masterpage) 엔트리·manifest·section idRef 보존.
+    check_master_pages(
+        &mut report,
+        &mut archive,
+        &names,
+        content_hpf.as_deref(),
+        doc,
+    );
+
+    // 7. BinData 수·확장자 보존 (IR 기준)
     let zip_bin: Vec<&String> = names.iter().filter(|n| n.starts_with("BinData/")).collect();
     if zip_bin.len() != doc.bin_data_content.len() {
         report.push(format!(
@@ -177,6 +201,115 @@ fn is_section_entry_name(name: &str) -> bool {
         .is_some_and(|digits| !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit()))
 }
 
+/// `Contents/masterpage{숫자}.xml` 형태인지 확인.
+fn is_master_page_entry_name(name: &str) -> bool {
+    name.strip_prefix("Contents/masterpage")
+        .and_then(|rest| rest.strip_suffix(".xml"))
+        .is_some_and(|digits| !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit()))
+}
+
+fn check_master_pages(
+    report: &mut PackageCheckReport,
+    archive: &mut zip::ZipArchive<Cursor<&[u8]>>,
+    names: &HashSet<String>,
+    content_hpf: Option<&str>,
+    doc: &Document,
+) {
+    let expected_count: usize = doc
+        .sections
+        .iter()
+        .map(|section| section.section_def.master_pages.len())
+        .sum();
+    let zip_count = names
+        .iter()
+        .filter(|n| is_master_page_entry_name(n))
+        .count();
+    if zip_count != expected_count {
+        report.push(format!(
+            "바탕쪽 엔트리 수 불일치: zip={} ir={}",
+            zip_count, expected_count
+        ));
+    }
+
+    let mut global = 0usize;
+    for (section_idx, section) in doc.sections.iter().enumerate() {
+        let section_master_count = section.section_def.master_pages.len();
+        let ids: Vec<String> = (0..section_master_count)
+            .map(|offset| format!("masterpage{}", global + offset))
+            .collect();
+
+        for id in &ids {
+            let href = format!("Contents/{id}.xml");
+            if !names.contains(&href) {
+                report.push(format!("바탕쪽 엔트리 누락: {href}"));
+            }
+            if let Some(hpf) = content_hpf {
+                if !hpf.contains(&format!(r#"id="{id}""#))
+                    || !hpf.contains(&format!(r#"href="{href}""#))
+                {
+                    report.push(format!("content.hpf 바탕쪽 manifest 누락: {id} -> {href}"));
+                }
+            }
+        }
+
+        if section_master_count > 0 {
+            let section_href = format!("Contents/section{section_idx}.xml");
+            match read_entry_string(archive, &section_href) {
+                Ok(section_xml) => {
+                    let expected_cnt = format!(r#"masterPageCnt="{section_master_count}""#);
+                    if !section_xml.contains(&expected_cnt) {
+                        report.push(format!(
+                            "section{section_idx} masterPageCnt 불일치: expected {section_master_count}"
+                        ));
+                    }
+                    for id in &ids {
+                        let expected_ref = format!(r#"idRef="{id}""#);
+                        if !section_xml.contains(&expected_ref) {
+                            report.push(format!("section{section_idx} 바탕쪽 idRef 누락: {id}"));
+                        }
+                    }
+                }
+                Err(e) => {
+                    if names.contains(&section_href) {
+                        report.push(format!("{section_href} 읽기 실패: {e}"));
+                    }
+                }
+            }
+        }
+
+        global += section_master_count;
+    }
+}
+
+fn check_container_rdf(report: &mut PackageCheckReport, rdf: &str, doc: &Document) {
+    if !rdf.contains(r#"rdf:resource="Contents/header.xml""#)
+        || !rdf.contains(r#"rdf:about="Contents/header.xml""#)
+    {
+        report.push("container.rdf header 참조 누락".to_string());
+    }
+
+    for i in 0..doc.sections.len() {
+        let href = format!("Contents/section{i}.xml");
+        if !rdf.contains(&format!(r#"rdf:resource="{href}""#))
+            || !rdf.contains(&format!(r#"rdf:about="{href}""#))
+        {
+            report.push(format!("container.rdf 섹션 참조 누락: {href}"));
+        }
+    }
+
+    let rdf_section_count = extract_rdf_resources(rdf)
+        .iter()
+        .filter(|href| is_section_entry_name(href))
+        .count();
+    if rdf_section_count != doc.sections.len() {
+        report.push(format!(
+            "container.rdf 섹션 참조 수 불일치: rdf={} ir={}",
+            rdf_section_count,
+            doc.sections.len()
+        ));
+    }
+}
+
 /// ZIP 엔트리를 문자열로 읽는다.
 fn read_entry_string(
     archive: &mut zip::ZipArchive<Cursor<&[u8]>>,
@@ -204,6 +337,21 @@ fn extract_hrefs(xml: &str) -> Vec<String> {
         }
     }
     hrefs
+}
+
+fn extract_rdf_resources(xml: &str) -> Vec<String> {
+    let mut resources = Vec::new();
+    let mut rest = xml;
+    while let Some(pos) = rest.find("rdf:resource=\"") {
+        rest = &rest[pos + "rdf:resource=\"".len()..];
+        if let Some(end) = rest.find('"') {
+            resources.push(rest[..end].to_string());
+            rest = &rest[end + 1..];
+        } else {
+            break;
+        }
+    }
+    resources
 }
 
 /// 파일명에서 소문자 확장자 추출 (없으면 빈 문자열).
@@ -295,6 +443,60 @@ mod tests {
     }
 
     #[test]
+    fn master_page_package_parts_are_required_when_ir_has_master_pages() {
+        use crate::model::document::Section;
+        use crate::model::header_footer::{HeaderFooterApply, MasterPage};
+        use crate::model::paragraph::Paragraph;
+
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        let mut master_para = Paragraph::default();
+        master_para.text = "master".to_string();
+        section.section_def.master_pages.push(MasterPage {
+            apply_to: HeaderFooterApply::Both,
+            text_width: 10_000,
+            text_height: 10_000,
+            text_ref: 1,
+            paragraphs: vec![master_para],
+            ..Default::default()
+        });
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let report = check_package(&bytes, &doc);
+        assert!(report.is_ok(), "problems: {}", report.summary());
+
+        let missing_master_bytes = serialize_hwpx(&doc_with_sections(1)).expect("serialize stale");
+        let report = check_package(&missing_master_bytes, &doc);
+        assert!(!report.is_ok());
+        assert!(
+            report.summary().contains("바탕쪽 엔트리 수 불일치")
+                && report
+                    .summary()
+                    .contains("content.hpf 바탕쪽 manifest 누락")
+                && report.summary().contains("section0 masterPageCnt 불일치"),
+            "summary: {}",
+            report.summary()
+        );
+    }
+
+    #[test]
+    fn detects_container_rdf_section_coverage_mismatch() {
+        let stale_bytes = serialize_hwpx(&doc_with_sections(1)).expect("serialize stale");
+        let expected_doc = doc_with_sections(2);
+        let report = check_package(&stale_bytes, &expected_doc);
+        assert!(!report.is_ok());
+        assert!(
+            report.summary().contains("container.rdf 섹션 참조 누락")
+                && report
+                    .summary()
+                    .contains("container.rdf 섹션 참조 수 불일치"),
+            "summary: {}",
+            report.summary()
+        );
+    }
+
+    #[test]
     fn rejects_non_zip_bytes() {
         let doc = Document::default();
         let report = check_package(b"not a zip at all", &doc);
@@ -313,6 +515,10 @@ mod tests {
         assert!(!is_section_entry_name("Contents/section.xml"));
         assert!(!is_section_entry_name("Contents/sectionA.xml"));
         assert!(!is_section_entry_name("Contents/header.xml"));
+        assert!(is_master_page_entry_name("Contents/masterpage0.xml"));
+        assert!(is_master_page_entry_name("Contents/masterpage12.xml"));
+        assert!(!is_master_page_entry_name("Contents/masterpage.xml"));
+        assert!(!is_master_page_entry_name("Contents/masterpageA.xml"));
     }
 
     #[test]
@@ -323,6 +529,18 @@ mod tests {
             vec![
                 "Contents/header.xml".to_string(),
                 "settings.xml".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn extract_rdf_resources_basic() {
+        let xml = r#"<rdf:type rdf:resource="pkg#Document"/><ns0:hasPart rdf:resource="Contents/section0.xml"/>"#;
+        assert_eq!(
+            extract_rdf_resources(xml),
+            vec![
+                "pkg#Document".to_string(),
+                "Contents/section0.xml".to_string()
             ]
         );
     }

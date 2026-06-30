@@ -1465,9 +1465,10 @@ fn parse_border_fill(
                                             "CENTER" => ImageFillMode::Center,
                                             "CENTER_TOP" => ImageFillMode::CenterTop,
                                             "CENTER_BOTTOM" => ImageFillMode::CenterBottom,
-                                            "FIT" | "FIT_TO_SIZE" | "STRETCH" | "TOTAL" => {
+                                            "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                                 ImageFillMode::FitToSize
                                             }
+                                            "TOTAL" => ImageFillMode::Total,
                                             "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                             _ => ImageFillMode::TileAll,
                                         };
@@ -2646,6 +2647,23 @@ mod tests {
             .into_iter()
             .next()
             .expect("borderFill 파싱 실패")
+    }
+
+    #[test]
+    fn test_img_brush_total_keeps_total_mode() {
+        let bf = parse_single_border_fill(
+            r#"<hh:borderFill id="346">
+                 <hh:fillBrush>
+                   <hc:imgBrush mode="TOTAL" bright="10" contrast="0" effect="REAL_PIC">
+                     <hc:img binaryItemIDRef="image36"/>
+                   </hc:imgBrush>
+                 </hh:fillBrush>
+               </hh:borderFill>"#,
+        );
+
+        let img = bf.fill.image.expect("image brush");
+        assert_eq!(img.fill_mode, ImageFillMode::Total);
+        assert_eq!(img.bin_data_id, 36);
     }
 
     #[test]

@@ -2168,6 +2168,7 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
                 ImageFillMode::TileHorzBottom => 2,
                 ImageFillMode::TileVertLeft => 3,
                 ImageFillMode::TileVertRight => 4,
+                ImageFillMode::Total => 0,
                 ImageFillMode::FitToSize => 5,
                 ImageFillMode::Center => 6,
                 ImageFillMode::CenterTop => 7,

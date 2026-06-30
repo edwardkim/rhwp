@@ -222,9 +222,11 @@ pub(crate) fn tokenize_paragraph(
             continue;
         }
 
-        // 한글 어절 또는 글자
+        // 한글 어절 또는 글자.
+        // HWPX breakNonLatinWord="KEEP_WORD" is preserved as attr1 bit 7,
+        // which resolves to korean_break_unit == 1.
         if is_hangul(ch) {
-            if korean_break_unit == 0 {
+            if korean_break_unit == 1 {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
@@ -577,6 +579,34 @@ fn to_hwp(px: f64) -> i32 {
     (px * 75.0) as i32
 }
 
+fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
+    if condense_min_space == 0 || space_width_hwp <= 0 {
+        return 0;
+    }
+    let shrink_percent = condense_min_space.min(75) as i32;
+    space_width_hwp * shrink_percent / 100
+}
+
+fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
+    width_hwp - space_savings_hwp
+}
+
+fn condense_fit_can_pull_next_token(
+    current_width_hwp: i32,
+    current_space_savings_hwp: i32,
+    effective_width_hwp: i32,
+    max_font_size: f64,
+) -> bool {
+    let current_condensed_width =
+        condensed_line_width_hwp(current_width_hwp, current_space_savings_hwp);
+    let remaining_hwp = effective_width_hwp - current_condensed_width;
+    // Hancom uses condense to rescue a line that still has a meaningful
+    // natural gap, but it does not pull the next word into an already tight
+    // line. The p03 PDF preface is sensitive to that distinction.
+    let min_remaining_hwp = to_hwp((max_font_size * 2.5).max(20.0));
+    remaining_hwp >= min_remaining_hwp
+}
+
 /// 토큰을 줄에 배치하는 Greedy 알고리즘
 /// 한컴과 동일한 결과를 위해 HWPUNIT 정수로 폭을 누적한다.
 fn fill_lines(
@@ -586,6 +616,7 @@ fn fill_lines(
     indent_px: f64,
     default_tab_width: f64,
     korean_break_unit: u8,
+    condense_min_space: u8,
 ) -> Vec<LineBreakResult> {
     if tokens.is_empty() {
         return vec![LineBreakResult {
@@ -609,12 +640,14 @@ fn fill_lines(
     let mut results = Vec::new();
     let mut line_start_idx = 0usize;
     let mut lw = 0i32; // HWPUNIT 정수 누적
+    let mut line_space_savings = 0i32;
     let mut line_max_fs = 0.0f64;
     let mut is_first_line = true;
 
     let mut last_break_token_idx: Option<usize> = None;
     let mut last_break_char_idx: usize = 0;
     let mut width_at_last_break = 0i32;
+    let mut space_savings_at_last_break = 0i32;
     let mut fs_at_last_break = 0.0f64;
 
     let eff_w = |first: bool| -> i32 {
@@ -646,6 +679,7 @@ fn fill_lines(
                 });
                 line_start_idx = *idx + 1;
                 lw = 0;
+                line_space_savings = 0;
                 line_max_fs = 0.0;
                 is_first_line = false;
                 last_break_token_idx = None;
@@ -669,6 +703,7 @@ fn fill_lines(
                         });
                         line_start_idx = last_break_char_idx;
                         lw = lw - width_at_last_break;
+                        line_space_savings -= space_savings_at_last_break;
                     } else {
                         results.push(LineBreakResult {
                             start_idx: line_start_idx,
@@ -678,6 +713,7 @@ fn fill_lines(
                         });
                         line_start_idx = *idx;
                         lw = 0;
+                        line_space_savings = 0;
                         line_max_fs = *max_font_size;
                     }
                     is_first_line = false;
@@ -689,6 +725,7 @@ fn fill_lines(
                     last_break_token_idx = Some(ti);
                     last_break_char_idx = *idx;
                     width_at_last_break = lw;
+                    space_savings_at_last_break = line_space_savings;
                     fs_at_last_break = line_max_fs;
                     lw = next_tab_hwp;
                 }
@@ -704,8 +741,11 @@ fn fill_lines(
                 last_break_token_idx = Some(ti);
                 last_break_char_idx = *idx;
                 width_at_last_break = lw;
+                space_savings_at_last_break = line_space_savings;
                 fs_at_last_break = line_max_fs;
-                lw += to_hwp(*width);
+                let space_hwp = to_hwp(*width);
+                lw += space_hwp;
+                line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
             BreakToken::Text {
                 start_idx,
@@ -726,22 +766,43 @@ fn fill_lines(
                 if *end_idx - *start_idx == 1 && *start_idx > line_start_idx {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
-                        korean_break_unit == 1
+                        korean_break_unit == 0
                     } else {
                         is_cjk_ideograph(c)
                     };
+                    let candidate_w = lw + w_hwp;
                     // 이 글자가 줄에 들어가는 경우에만 break point 갱신
-                    if allow_break && lw + w_hwp <= eff_w(is_first_line) + LINE_BREAK_TOLERANCE {
+                    if allow_break
+                        && condensed_line_width_hwp(candidate_w, line_space_savings)
+                            <= eff_w(is_first_line) + LINE_BREAK_TOLERANCE
+                    {
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
+                        width_at_last_break = candidate_w; // 이 글자 폭 포함
+                        space_savings_at_last_break = line_space_savings;
                         fs_at_last_break = line_max_fs;
                     }
                 }
                 // 한컴은 HWPUNIT 정수 양자화 시 미세한 반올림 차이를 허용
                 // 12 HU(~0.17mm) 이내의 초과는 줄에 포함 (경험적 허용 오차)
                 const LINE_BREAK_TOLERANCE: i32 = 15;
-                if lw + w_hwp > eff_w(is_first_line) + LINE_BREAK_TOLERANCE {
+                let effective_width = eff_w(is_first_line);
+                let natural_candidate = lw + w_hwp;
+                let condensed_candidate =
+                    condensed_line_width_hwp(natural_candidate, line_space_savings);
+                let needs_condense_to_fit = natural_candidate
+                    > effective_width + LINE_BREAK_TOLERANCE
+                    && condensed_candidate <= effective_width + LINE_BREAK_TOLERANCE;
+                let condense_pull_allowed = !needs_condense_to_fit
+                    || condense_fit_can_pull_next_token(
+                        lw,
+                        line_space_savings,
+                        effective_width,
+                        *max_font_size,
+                    );
+                if condensed_candidate > effective_width + LINE_BREAK_TOLERANCE
+                    || !condense_pull_allowed
+                {
                     if *start_idx > line_start_idx {
                         if let Some(_) = last_break_token_idx {
                             results.push(LineBreakResult {
@@ -756,6 +817,12 @@ fn fill_lines(
                             }
                             line_start_idx = next_start;
                             lw = recalc_width_hwp(tokens, ti, next_start);
+                            line_space_savings = recalc_space_savings_hwp(
+                                tokens,
+                                ti,
+                                next_start,
+                                condense_min_space,
+                            );
                             lw += w_hwp;
                             line_max_fs = *max_font_size;
                             is_first_line = false;
@@ -782,6 +849,7 @@ fn fill_lines(
                         is_first_line = false;
                     }
                     lw = remaining_w;
+                    line_space_savings = 0;
                     line_max_fs = remaining_fs;
                     last_break_token_idx = None;
                     continue;
@@ -835,6 +903,30 @@ fn recalc_width_hwp(tokens: &[BreakToken], current_token_idx: usize, new_line_st
             }
             BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
                 w += to_hwp(*width);
+            }
+            _ => {}
+        }
+    }
+    w
+}
+
+/// 줄 바꿈 지점 이후 공백 압축 가능 폭 재계산 (HWPUNIT)
+fn recalc_space_savings_hwp(
+    tokens: &[BreakToken],
+    current_token_idx: usize,
+    new_line_start: usize,
+    condense_min_space: u8,
+) -> i32 {
+    let mut w = 0i32;
+    for t in &tokens[..current_token_idx] {
+        match t {
+            BreakToken::Space {
+                idx,
+                width,
+                max_font_size,
+            } if *idx >= new_line_start => {
+                let space_hwp = to_hwp(*width);
+                w += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
             _ => {}
         }
@@ -1083,6 +1175,7 @@ pub(crate) fn reflow_line_segs(
     let indent_px = para_style.map(|s| s.indent).unwrap_or(0.0);
     let english_break_unit = para_style.map(|s| s.english_break_unit).unwrap_or(0);
     let korean_break_unit = para_style.map(|s| s.korean_break_unit).unwrap_or(0);
+    let condense_min_space = para_style.map(|s| s.condense_min_space).unwrap_or(0);
     let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
@@ -1101,8 +1194,8 @@ pub(crate) fn reflow_line_segs(
         indent_px,
         tab_width,
         korean_break_unit,
+        condense_min_space,
     );
-
     let mut new_line_segs: Vec<LineSeg> = Vec::new();
     for lb in &line_breaks {
         let utf16_start = if new_line_segs.is_empty() {

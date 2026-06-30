@@ -1150,12 +1150,13 @@ fn render_header_footer(
 ) -> String {
     let mut out = format!(
         concat!(
-            r#"<hp:ctrl><hp:{tag} id="0" applyPageType="{apply}">"#,
+            r#"<hp:ctrl><hp:{tag} id="{id}" applyPageType="{apply}">"#,
             r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" "#,
             r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
             r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
         ),
         tag = tag,
+        id = h.id,
         apply = apply_page_type_to_str(h.apply_to),
         tw = h.text_width,
         th = h.text_height,
@@ -1177,6 +1178,7 @@ fn render_header_footer(
 
 /// render_header_footer 공통 인자 묶음 (Header/Footer가 동일 필드를 가짐).
 struct HeaderFooterFields<'a> {
+    id: u32,
     apply_to: HeaderFooterApply,
     text_width: u32,
     text_height: u32,
@@ -1185,10 +1187,18 @@ struct HeaderFooterFields<'a> {
     paragraphs: &'a [Paragraph],
 }
 
+fn hwpx_header_footer_id(raw_ctrl_extra: &[u8]) -> u32 {
+    raw_ctrl_extra
+        .get(..4)
+        .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .unwrap_or(0)
+}
+
 fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
     render_header_footer(
         "header",
         HeaderFooterFields {
+            id: hwpx_header_footer_id(&h.raw_ctrl_extra),
             apply_to: h.apply_to,
             text_width: h.text_width,
             text_height: h.text_height,
@@ -1204,6 +1214,7 @@ fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
     render_header_footer(
         "footer",
         HeaderFooterFields {
+            id: hwpx_header_footer_id(&f.raw_ctrl_extra),
             apply_to: f.apply_to,
             text_width: f.text_width,
             text_height: f.text_height,
