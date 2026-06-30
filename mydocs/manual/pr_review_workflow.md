@@ -53,7 +53,7 @@ mydocs/pr/pr_{N}_review.md
 mydocs/pr/pr_{N}_review_impl.md
 ```
 
-처리 완료 후 7.5 절에서 `mydocs/pr/archives/` 로 이동한다. collaborator self-merge 후보 또는
+처리 완료 후 7.6 절에서 `mydocs/pr/archives/` 로 이동한다. collaborator self-merge 후보 또는
 collaborator-mediated 외부 PR 처럼 처음부터 archive 경로에 작성하는 방식은 8장·9장 예외 경로에서만
 사용한다.
 
@@ -211,7 +211,31 @@ PR 에 감사 + 검증 결과 요약 + 다음 PR 격려:
 감사합니다.
 ```
 
-### 7.3 devel Sync
+### 7.3 후속 문서 처리 여부 확정
+
+이슈 close 확인과 기여자/PR 후속 코멘트를 남긴 뒤에는 **반드시 후속 문서 처리 여부를 확정**한다.
+PR 처리 사실이 GitHub metadata 에만 남고 `mydocs/orders/{yyyymmdd}.md`, PR review/report, task report 에
+누락되는 것을 막기 위한 게이트다.
+
+다음 중 하나로 결론을 남긴다.
+
+- **PR head 에 이미 포함됨**: collaborator self-merge 후보 또는 collaborator-mediated 외부 PR 처럼 review 문서,
+  오늘할일, report 가 merge 된 PR diff 에 함께 포함된 경우. 이때도 merge SHA, 이슈 close 여부, supersede close
+  결과처럼 merge 후에야 확정되는 값이 빠졌는지 확인한다.
+- **별도 후속 문서 PR 필요**: merge 후 확정된 사실을 기존 문서에 보강해야 하거나, 오늘할일에 처리 기록이
+  빠진 경우. `mydocs/**` 만 변경하는 문서 전용 브랜치를 만들고 PR 로 반영한다.
+- **추가 문서 불필요**: PR review/report/오늘할일이 모두 최신이고, merge 후 확정값 누락도 없는 경우. 이 판단은
+  상태 보고에 명시한다.
+
+후속 문서 PR 을 만드는 경우 원칙:
+
+- 코드, 샘플, workflow 파일을 섞지 않고 `mydocs/**` 문서만 변경한다.
+- 문서 전용 변경이어도 `git diff --check` 를 실행한다.
+- PR 본문에는 대상 PR/이슈 번호, merge SHA, 이슈 close 여부, fast-pass 조건을 기록한다.
+- fast-pass 가 적용되어 heavy job 이 `skipped` 로 보이더라도 preflight 성공과 merge 가능 상태를 확인한 뒤 merge 한다.
+- 후속 문서 PR merge 후 `devel` 을 다시 sync 하고, 문서 PR 브랜치도 로컬/원격 모두 정리한다.
+
+### 7.4 devel Sync
 
 ```bash
 git fetch upstream
@@ -219,7 +243,7 @@ git checkout local/devel
 git rebase upstream/devel   # 로컬 작업분이 있으면 머지 커밋 위로 재적용
 ```
 
-### 7.4 렌더 영향 PR 의 경우 · Golden 재생성 체크
+### 7.5 렌더 영향 PR 의 경우 · Golden 재생성 체크
 
 **반드시** 다음을 확인:
 
@@ -239,7 +263,7 @@ git push upstream devel
 
 2회 연속 재현된 실수 (PR #221 / PR #251 사이클) 로 인해 **체크리스트 수준의 필수 절차**.
 
-### 7.5 리뷰 문서 archives 이동
+### 7.6 리뷰 문서 archives 이동
 
 maintainer 일반 경로의 PR 리뷰 문서는 처리 완료 후 archive 경로로 이동한다.
 
@@ -251,7 +275,7 @@ mv mydocs/pr/pr_N_review_impl.md mydocs/pr/archives/
 다음 커밋에 포함하거나 오늘할일 커밋에 동반한다. collaborator self-merge 후보 예외 경로에서는
 처음부터 archive 경로에 두므로 이 이동 단계를 수행하지 않는다.
 
-### 7.6 로컬/원격 PR 작업 브랜치 정리
+### 7.7 로컬/원격 PR 작업 브랜치 정리
 
 PR 처리용으로 별도 worktree 를 만들었다면 브랜치 삭제 전에 worktree 를 먼저 제거한다. worktree 가 남아 있으면
 해당 브랜치가 checkout 중인 상태라 `git branch -D` 가 실패한다.
@@ -289,7 +313,7 @@ git branch -r | rg 'task_m100_1470' || true
 git ls-remote --heads upstream task_m100_1470
 ```
 
-### 7.7 오늘할일 갱신
+### 7.8 오늘할일 갱신
 
 maintainer 일반 경로에서는 PR merge 와 후속 처리를 끝낸 뒤 이 절을 수행한다. collaborator 경로의
 오늘할일 생성·갱신 시점은 8.2.1 절 또는 9.2.1 절을 따른다.

@@ -2871,6 +2871,79 @@ impl DocumentCore {
             };
             let measured = self.measured_sections.get(sec_idx);
 
+            // [Task #1700] cc.items 에 없는 문단(어울림 흡수 / 빈 줄 감춤)을 페이지 PI 로 표면화
+            // 하기 위한 사전 패스. 한글(OLE)은 이들을 본문 문단으로 카운트하므로 문단→페이지
+            // 매핑이 정합된다. 레이아웃/렌더 트리는 변경하지 않으므로 기하·페이지 수·시각 불변.
+            // 1) items 문단 → 표시 페이지(global+1) 매핑 — **마지막** 출현 페이지(다중 페이지 표는
+            //    끝 페이지에 빈 문단이 따라오므로 last-page 가 한글과 정합).
+            let sec_start_page = global_page;
+            let mut item_disp_page: std::collections::HashMap<usize, u32> =
+                std::collections::HashMap::new();
+            for (li, page) in pr.pages.iter().enumerate() {
+                let disp = sec_start_page + li as u32 + 1;
+                for cc in &page.column_contents {
+                    for item in &cc.items {
+                        let pidx = match item {
+                            PageItem::FullParagraph { para_index }
+                            | PageItem::PartialParagraph { para_index, .. }
+                            | PageItem::Table { para_index, .. }
+                            | PageItem::PartialTable { para_index, .. }
+                            | PageItem::Shape { para_index, .. } => Some(*para_index),
+                            _ => None,
+                        };
+                        if let Some(p) = pidx {
+                            item_disp_page.insert(p, disp);
+                        }
+                    }
+                }
+            }
+            // 2) 표면화 대상을 페이지별로 그룹화: (para_index, is_wrap, table_pi).
+            //    - 어울림(wrap-around): 앵커 표(table_para_index)의 페이지에 귀속.
+            //    - 빈 줄 감춤(hidden_empty_paras): 직전 item 문단(대개 표)의 페이지에 귀속.
+            let mut extra_by_page: std::collections::HashMap<u32, Vec<(usize, bool, usize)>> =
+                std::collections::HashMap::new();
+            let mut emitted_extra: std::collections::HashSet<usize> =
+                std::collections::HashSet::new();
+            for page in pr.pages.iter() {
+                for cc in &page.column_contents {
+                    for wp in &cc.wrap_around_paras {
+                        if !emitted_extra.insert(wp.para_index) {
+                            continue;
+                        }
+                        let disp = item_disp_page
+                            .get(&wp.table_para_index)
+                            .copied()
+                            .unwrap_or(sec_start_page + 1);
+                        extra_by_page.entry(disp).or_default().push((
+                            wp.para_index,
+                            true,
+                            wp.table_para_index,
+                        ));
+                    }
+                }
+            }
+            let mut hidden_sorted: Vec<usize> = pr
+                .hidden_empty_paras
+                .iter()
+                .copied()
+                .filter(|p| !item_disp_page.contains_key(p) && !emitted_extra.contains(p))
+                .collect();
+            hidden_sorted.sort_unstable();
+            for hidx in hidden_sorted {
+                let mut disp = sec_start_page + 1;
+                for j in (0..hidx).rev() {
+                    if let Some(d) = item_disp_page.get(&j) {
+                        disp = *d;
+                        break;
+                    }
+                }
+                extra_by_page
+                    .entry(disp)
+                    .or_default()
+                    .push((hidx, false, 0));
+                emitted_extra.insert(hidx);
+            }
+
             for (local_idx, page) in pr.pages.iter().enumerate() {
                 if let Some(pf) = page_filter {
                     if global_page != pf {
@@ -3142,6 +3215,40 @@ impl DocumentCore {
                                     separator_length, margin_above, margin_below, line_width, color & 0x00ff_ffff
                                 ));
                             }
+                        }
+                    }
+                }
+
+                // [Task #1700] cc.items 에 없는 문단(어울림 / 빈 줄 감춤) 표면화.
+                let disp_page = global_page + 1;
+                if let Some(list) = extra_by_page.get(&disp_page) {
+                    for (pidx, is_wrap, tpi) in list {
+                        let preview = paragraphs
+                            .get(*pidx)
+                            .map(|p| {
+                                let t: String = p
+                                    .text
+                                    .chars()
+                                    .filter(|c| *c > '\u{001F}')
+                                    .take(40)
+                                    .collect();
+                                if t.is_empty() {
+                                    "(빈)".to_string()
+                                } else {
+                                    t
+                                }
+                            })
+                            .unwrap_or_default();
+                        if *is_wrap {
+                            out.push_str(&format!(
+                                "    WrapAroundPara  pi={}  table_pi={}  \"{}\"\n",
+                                pidx, tpi, preview
+                            ));
+                        } else {
+                            out.push_str(&format!(
+                                "    HiddenEmptyPara  pi={}  \"{}\"\n",
+                                pidx, preview
+                            ));
                         }
                     }
                 }
