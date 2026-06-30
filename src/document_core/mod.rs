@@ -39,7 +39,7 @@ pub(crate) struct ClipboardData {
     pub(crate) plain_text: String,
 }
 
-/// 표 셀 전치 전용 내부 버퍼
+/// 표 셀 행/열 바꿈 전용 내부 버퍼
 pub(crate) struct TableTransposeClipboard {
     pub(crate) data: TableTransposeData,
 }
@@ -65,7 +65,7 @@ pub struct DocumentCore {
     pub(crate) layout_engine: LayoutEngine,
     /// 내부 클립보드
     pub(crate) clipboard: Option<ClipboardData>,
-    /// 표 셀 전치 복사 버퍼
+    /// 표 셀 행/열 바꿈 복사 버퍼
     pub(crate) table_transpose_clipboard: Option<TableTransposeClipboard>,
     /// [Task #1161] 떠 있는 개체(treat_as_char=false) 반복 붙여넣기 cascade 카운터.
     /// 새 컨트롤 복사 시 0 으로 리셋, 붙여넣기마다 +1 하여 위치 오프셋 누적(한컴 정합).
