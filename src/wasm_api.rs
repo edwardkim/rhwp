@@ -1420,7 +1420,7 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
-    /// 선택된 표 셀 범위를 전치 복사용 내부 버퍼에 저장한다.
+    /// 선택된 표 셀 범위를 행/열 바꿈 복사용 내부 버퍼에 저장한다.
     ///
     /// 반환값: JSON `{"ok":true,"sourceRows":N,"sourceCols":N,"targetRows":N,"targetCols":N}`
     #[wasm_bindgen(js_name = copyTableCellsTransposed)]
@@ -1446,7 +1446,7 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
-    /// 전치 복사 버퍼를 대상 시작 셀부터 붙여넣는다.
+    /// 행/열 바꿈 복사 버퍼를 대상 시작 셀부터 붙여넣는다.
     ///
     /// 반환값: JSON `{"ok":true,"sourceRows":N,"sourceCols":N,"targetRows":N,"targetCols":N}`
     #[wasm_bindgen(js_name = pasteTableCellsTransposed)]
@@ -1486,7 +1486,7 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
-    /// 전치 복사 버퍼를 커서 위치에 새 표로 생성해 붙여넣는다.
+    /// 행/열 바꿈 복사 버퍼를 커서 위치에 새 표로 생성해 붙여넣는다.
     ///
     /// 반환값: JSON `{"ok":true,"paraIdx":N,"controlIdx":N,"sourceRows":N,"sourceCols":N,"targetRows":N,"targetCols":N}`
     #[wasm_bindgen(js_name = pasteTableCellsTransposedAsTable)]
@@ -1504,7 +1504,7 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
-    /// 표 전치 복사 버퍼 보유 여부를 반환한다.
+    /// 행/열 바꿈 복사 버퍼 보유 여부를 반환한다.
     #[wasm_bindgen(js_name = hasTableTransposeClipboard)]
     pub fn has_table_transpose_clipboard(&self) -> bool {
         self.has_table_transpose_clipboard_native()

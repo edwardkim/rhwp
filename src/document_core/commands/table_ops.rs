@@ -305,7 +305,7 @@ impl DocumentCore {
         )))
     }
 
-    /// 선택된 셀 범위를 전치 복사용 내부 버퍼에 저장한다.
+    /// 선택된 셀 범위를 행/열 바꿈 복사용 내부 버퍼에 저장한다.
     pub fn copy_table_cells_transposed_native(
         &mut self,
         section_idx: usize,
@@ -332,7 +332,7 @@ impl DocumentCore {
         )))
     }
 
-    /// 전치 복사 버퍼를 대상 시작 셀부터 정적 붙여넣기한다.
+    /// 행/열 바꿈 복사 버퍼를 대상 시작 셀부터 정적 붙여넣기한다.
     pub fn paste_table_cells_transposed_native(
         &mut self,
         section_idx: usize,
@@ -344,7 +344,7 @@ impl DocumentCore {
         let data = self
             .table_transpose_clipboard
             .as_ref()
-            .ok_or_else(|| HwpError::RenderError("전치 복사 데이터가 없습니다".to_string()))?
+            .ok_or_else(|| HwpError::RenderError("행/열 바꿈 복사 데이터가 없습니다".to_string()))?
             .data
             .clone();
 
@@ -384,7 +384,7 @@ impl DocumentCore {
         )))
     }
 
-    /// 선택된 전체 표를 제자리에서 전치한다.
+    /// 선택된 전체 표의 행/열을 제자리에서 바꾼다.
     pub fn transpose_table_cells_in_place_native(
         &mut self,
         section_idx: usize,
@@ -428,7 +428,7 @@ impl DocumentCore {
         )))
     }
 
-    /// 전치 복사 버퍼를 커서 위치에 새 표로 생성해 붙여넣는다.
+    /// 행/열 바꿈 복사 버퍼를 커서 위치에 새 표로 생성해 붙여넣는다.
     pub fn paste_table_cells_transposed_as_new_table_native(
         &mut self,
         section_idx: usize,
@@ -438,7 +438,7 @@ impl DocumentCore {
         let data = self
             .table_transpose_clipboard
             .as_ref()
-            .ok_or_else(|| HwpError::RenderError("전치 복사 데이터가 없습니다".to_string()))?
+            .ok_or_else(|| HwpError::RenderError("행/열 바꿈 복사 데이터가 없습니다".to_string()))?
             .data
             .clone();
 
@@ -448,7 +448,7 @@ impl DocumentCore {
         let target_cols = source_rows;
         if target_rows == 0 || target_cols == 0 {
             return Err(HwpError::RenderError(
-                "전치 복사 데이터가 비어 있습니다".to_string(),
+                "행/열 바꿈 복사 데이터가 비어 있습니다".to_string(),
             ));
         }
 
@@ -475,7 +475,7 @@ impl DocumentCore {
         )))
     }
 
-    /// 표 전치 복사 버퍼 보유 여부.
+    /// 행/열 바꿈 복사 버퍼 보유 여부.
     pub fn has_table_transpose_clipboard_native(&self) -> bool {
         self.table_transpose_clipboard.is_some()
     }

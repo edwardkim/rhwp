@@ -1755,7 +1755,7 @@ fn test_table_transpose_in_place_native_api() {
         assert_eq!(table.cells[2].paragraphs[0].text, "셀B");
         assert_eq!(table.cells[3].paragraphs[0].text, "셀D");
     } else {
-        panic!("전치된 기존 표 컨트롤을 찾을 수 없음");
+        panic!("행/열이 바뀐 기존 표 컨트롤을 찾을 수 없음");
     }
 }
 
@@ -1796,7 +1796,7 @@ fn test_table_transpose_paste_as_new_table_native_api() {
         assert_eq!(target_table.cells[2].paragraphs[0].text, "셀B");
         assert_eq!(target_table.cells[3].paragraphs[0].text, "셀D");
     } else {
-        panic!("전치 붙여넣기 표 컨트롤을 찾을 수 없음");
+        panic!("행/열 바꿈 붙여넣기 표 컨트롤을 찾을 수 없음");
     }
 }
 

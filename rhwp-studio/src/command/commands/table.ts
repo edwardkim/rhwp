@@ -559,7 +559,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:transpose-copy',
-    label: '셀 전치 복사',
+    label: '행/열 바꿈 복사',
     canExecute: (ctx) => ctx.inCellSelectionMode,
     execute(services) {
       const ih = services.getInputHandler();
@@ -580,13 +580,13 @@ export const tableCommands: CommandDef[] = [
           range.endRow,
           range.endCol,
         );
-      }, '셀 전치 복사');
+      }, '행/열 바꿈 복사');
       restoreEditorFocus(ih);
     },
   },
   {
     id: 'table:transpose-paste',
-    label: '셀 전치 붙여넣기',
+    label: '행/열 바꿈 붙여넣기',
     canExecute: (ctx) => ctx.hasDocument && ctx.hasTableTransposeClipboard,
     execute(services) {
       const ih = services.getInputHandler();
@@ -697,7 +697,7 @@ export const tableCommands: CommandDef[] = [
 
           return pasteAsNewTable(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
         },
-      }), '셀 전치 붙여넣기');
+      }), '행/열 바꿈 붙여넣기');
       restoreEditorFocus(ih);
     },
   },

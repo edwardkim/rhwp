@@ -2,10 +2,10 @@
 
 ## 구현 방침
 
-1차 구현은 정적 전치 복사/붙여넣기다.
+1차 구현은 정적 행/열 바꿈 복사/붙여넣기다.
 
 - `copy`: 현재 F5 셀 선택 범위를 Rust `DocumentCore` 내부 버퍼에 저장한다.
-- `paste`: 현재 커서 셀을 좌상단으로 삼아 버퍼 내용을 전치해 대상 셀에 덮어쓴다.
+- `paste`: 현재 커서 셀을 좌상단으로 삼아 버퍼 내용의 행/열을 바꿔 대상 셀에 덮어쓴다.
 - undo/redo는 Studio의 `SnapshotCommand`를 사용한다.
 
 ## Rust 모델
@@ -53,7 +53,7 @@
 `rhwp-studio/src/core/wasm-bridge.ts`
 
 - WASM 메서드 래퍼 추가
-- 전치 복사 버퍼 보유 여부를 `EditorContext`에 노출
+- 행/열 바꿈 복사 버퍼 보유 여부를 `EditorContext`에 노출
 
 `rhwp-studio/src/command/commands/table.ts`
 
@@ -63,12 +63,12 @@
   - 복사 후 대상 셀 지정이 쉽도록 셀 선택 모드를 종료
 - `table:transpose-paste`
   - 표 내부 커서가 있을 때 실행
-  - 전치 복사 버퍼가 있을 때만 활성화
+  - 행/열 바꿈 복사 버퍼가 있을 때만 활성화
   - 스냅샷 작업으로 WASM paste 호출
 
 `rhwp-studio/index.html`, `rhwp-studio/src/engine/input-handler.ts`
 
-- 표 메뉴와 표 셀 컨텍스트 메뉴에 전치 복사/붙여넣기 항목 추가
+- 표 메뉴와 표 셀 컨텍스트 메뉴에 행/열 바꿈 복사/붙여넣기 항목 추가
 
 `rhwp-studio/src/engine/input-handler-keyboard.ts`
 
@@ -78,11 +78,11 @@
 
 `src/model/table/tests.rs`
 
-- 4×2 범위 복사 후 다른 위치에 2×4 전치 붙여넣기
+- 4×2 범위 복사 후 다른 위치에 2×4 행/열 바꿈 붙여넣기
 - 대상 범위 초과 실패
 - 병합 셀 포함 실패
 - 원본 유지 확인
 
 Studio 정적 테스트:
 
-- 표 메뉴/컨텍스트 메뉴에 전치 복사/붙여넣기 명령이 노출되는지 확인
+- 표 메뉴/컨텍스트 메뉴에 행/열 바꿈 복사/붙여넣기 명령이 노출되는지 확인
