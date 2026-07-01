@@ -5125,6 +5125,38 @@ impl LayoutEngine {
             .sum()
     }
 
+    /// [Task #1718] RowBreak 셀에서 용량을 살짝 넘긴 "가시 꼬리줄"에 over-fill grace 를
+    /// 줄지 판정한다.
+    ///
+    /// 원래 grace 조건은 `units[j+1..].any(spacer)` — 뒤 어딘가에 빈 문단 spacer 가
+    /// 하나라도 있으면 grace 였다. 이 때문에 654문단 거대 셀(spacer 가 문서 전체에
+    /// 흩어져 있음)에서는 연속 본문 한복판에서도 항상 grace 가 걸려 페이지당 +1~5줄
+    /// over-fill → under-pagination(승강기 별표27: rhwp 40 vs 한글 48).
+    ///
+    /// 반대로 `all(spacer)` 로 좁히면 caption 줄 + 개체(그림상자) 앞의 spacer 처럼
+    /// 뒤에 가시/개체 유닛이 남아 있는 진짜 구조적 꼬리줄까지 무너뜨린다
+    /// (rowbreak-problem-pages 13쪽 회귀).
+    ///
+    /// 정답 판별: 오버플로 꼬리줄 다음 "첫 spacer 전까지"의 유닛을 본다.
+    /// - spacer 가 없다 → 순수 본문 꼬리 → grace 거부.
+    /// - 그 사이가 전부 가시 텍스트 줄의 끊김 없는 연속(run) → 본문 한복판 → grace 거부.
+    /// - spacer 가 바로 뒤이거나(진짜 꼬리줄) 그 사이에 비가시 유닛(개체/중첩/오브젝트
+    ///   높이 등)이 끼어 있으면 → 구조적 꼬리줄 → grace 유지.
+    ///
+    /// 거대 셀 grace 후보 37건은 모두 "첫 spacer 전까지 전부 가시 run" 이라 거부되고,
+    /// 13쪽 caption 은 spacer 앞에 개체 유닛이 끼어 grace 가 유지된다.
+    fn grace_visible_tail_before_spacer(units: &[CellUnit], j: usize) -> bool {
+        let Some(first_spacer) = units[j + 1..].iter().position(|u| u.empty_spacer) else {
+            return false;
+        };
+        // 진짜 꼬리줄(first_spacer == 0, run 이 빔) 또는 spacer 전에 비가시 유닛이 끼면 grace.
+        // 전부 가시 텍스트 줄로 채워진 연속 run 이면(거대 셀 본문) grace 거부.
+        first_spacer == 0
+            || !units[j + 1..j + 1 + first_spacer]
+                .iter()
+                .all(|u| u.vis_start < u.vis_end)
+    }
+
     /// [Task #993] 분할 표 행 컷을 전진시킨다 — 분할 표 페이지네이션의 단일 권위 함수.
     ///
     /// `start_cut`(이전 페이지까지 셀별 소비 유닛 수)에서 시작해, 각 셀을 공통
@@ -5229,12 +5261,7 @@ impl LayoutEngine {
                         && u.vis_start < u.vis_end
                         && h + u.height
                             <= avail_height + ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX
-                        // [Task #1718] grace 는 뒤가 "전부" spacer 인 진짜 꼬리줄에만 적용한다.
-                        // any() 였을 때는 셀 뒤쪽 어딘가에 빈 문단 spacer 가 하나라도 있으면
-                        // (654문단 거대 셀은 spacer 가 흩어져 있음) 연속 텍스트 중간에서도
-                        // grace 가 걸려 avail+120px 까지 라인을 과충전 → 페이지당 +1~5줄
-                        // over-fill, 대형 RowBreak 셀에서 under-pagination(승강기 40 vs 한글 48).
-                        && units[j + 1..].iter().all(|unit| unit.empty_spacer);
+                        && Self::grace_visible_tail_before_spacer(&units, j);
                     if visible_tail_before_spacer {
                         h += u.height;
                         j += 1;
@@ -5359,12 +5386,7 @@ impl LayoutEngine {
                         && u.vis_start < u.vis_end
                         && h + u.height
                             <= avail_height + ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX
-                        // [Task #1718] grace 는 뒤가 "전부" spacer 인 진짜 꼬리줄에만 적용한다.
-                        // any() 였을 때는 셀 뒤쪽 어딘가에 빈 문단 spacer 가 하나라도 있으면
-                        // (654문단 거대 셀은 spacer 가 흩어져 있음) 연속 텍스트 중간에서도
-                        // grace 가 걸려 avail+120px 까지 라인을 과충전 → 페이지당 +1~5줄
-                        // over-fill, 대형 RowBreak 셀에서 under-pagination(승강기 40 vs 한글 48).
-                        && units[j + 1..].iter().all(|unit| unit.empty_spacer);
+                        && Self::grace_visible_tail_before_spacer(&units, j);
                     if visible_tail_before_spacer {
                         h += u.height;
                         j += 1;
@@ -6459,29 +6481,28 @@ mod row_cut_tests {
     }
 
     #[test]
-    fn test_advance_row_cut_rowbreak_grace_denied_when_visible_after_spacer() {
-        // [Task #1718] visible_tail over-fill grace 는 뒤가 "전부" spacer 일 때만 적용한다.
-        // 오버플로 가시라인 뒤에 spacer 하나 + 가시라인이 더 있으면(any=true, all=false)
-        // grace 를 주지 않고 capacity 에서 break — 대형 RowBreak 셀 연속텍스트 over-fill 방지
-        // (승강기 별표27: 페이지당 +1~5줄 과충전 → under-pagination 40 vs 한글 48).
+    fn test_advance_row_cut_rowbreak_grace_denied_in_continuous_visible_run() {
+        // [Task #1718 v2] over-fill grace 는 오버플로 꼬리줄과 첫 spacer 사이가
+        // "끊김 없는 가시 텍스트 줄의 연속(run)" 이면 거부한다 — 거대 RowBreak 셀 본문
+        // 한복판(spacer 는 저 멀리)에서 grace 가 걸려 페이지당 +1~5줄 과충전 →
+        // under-pagination(승강기 별표27: 40 vs 한글 48) 을 막는다.
         let eng = LayoutEngine::new(96.0);
         let styles = ResolvedStyleSet::default();
         let t = rowbreak_table(vec![cell(
             0,
             0,
             vec![
-                visible_text_para(4, 0),     // 가시 4유닛 (vpos 0,1200,2400,3600)
-                empty_overlay_para(1, 4800), // spacer 유닛
-                visible_text_para(1, 6000),  // spacer 뒤 가시 유닛 → all(spacer)=false
+                visible_text_para(6, 0),     // 가시 6유닛 (vpos 0,1200,..6000)
+                empty_overlay_para(1, 7200), // spacer 는 가시 run 뒤에 위치
             ],
         )]);
         // avail=52px: 3줄(48px) 소비, 4번째(64px)는 +12px 초과(<120 tolerance).
-        // 뒤에 가시라인 존재 → grace 거부 → end_cut=[3], 본문 미초과.
+        // 첫 spacer 전까지 units[4..6]=[가시,가시] 연속 run → grace 거부 → end_cut=[3].
         let r = eng.advance_row_cut(&t, 0, &[], 52.0, &styles);
         assert_eq!(
             r.end_cut,
             vec![3],
-            "가시라인이 뒤따르면 over-fill grace 미적용"
+            "연속 가시 run 한복판에서는 over-fill grace 미적용"
         );
         assert!(
             r.consumed_height <= 52.5,
@@ -6492,8 +6513,8 @@ mod row_cut_tests {
 
     #[test]
     fn test_advance_row_cut_rowbreak_grace_kept_for_true_tail_before_spacers() {
-        // [Task #1718] 오버플로 가시라인 뒤가 전부 spacer 면 grace 유지 — 진짜 꼬리줄
-        // 보존(byeolpyo1/4 over-pagination 방지 케이스 무회귀).
+        // [Task #1718] 오버플로 가시라인 바로 뒤가 spacer 면(진짜 꼬리줄) grace 유지 —
+        // caption/꼬리줄 보존(byeolpyo1/4 over-pagination 방지 케이스 무회귀).
         let eng = LayoutEngine::new(96.0);
         let styles = ResolvedStyleSet::default();
         let t = rowbreak_table(vec![cell(
@@ -6501,7 +6522,7 @@ mod row_cut_tests {
             0,
             vec![
                 visible_text_para(4, 0),
-                empty_overlay_para(1, 4800), // 뒤 전부 spacer
+                empty_overlay_para(1, 4800), // 바로 뒤 spacer → 진짜 꼬리줄
                 empty_overlay_para(1, 6000),
             ],
         )]);
