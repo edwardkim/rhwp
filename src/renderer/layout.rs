@@ -6100,6 +6100,16 @@ impl LayoutEngine {
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                     let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                    // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로.
+                    let (strip_x, strip_width) =
+                        crate::renderer::text_anchor_square_table_strip(para)
+                            .map(|(cs, sw)| {
+                                (
+                                    col_area.x + hwpunit_to_px(cs, self.dpi),
+                                    hwpunit_to_px(sw, self.dpi),
+                                )
+                            })
+                            .unwrap_or((wrap_text_x, wrap_text_width));
                     // Task #463: 인라인 floating 표 우측 x 계산 (paragraph border box 확장용).
                     // table_layout::compute_table_x_position 와 동일 공식.
                     let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
@@ -6117,6 +6127,9 @@ impl LayoutEngine {
                         y_offset,
                         wrap_text_x,
                         wrap_text_width,
+                        strip_x,
+                        strip_width,
+                        true,
                         0.0,
                         bin_data_content,
                         Some(tbl_x_right),
@@ -6627,6 +6640,17 @@ impl LayoutEngine {
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                     let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                    // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로,
+                    // 호스트 텍스트는 이미 "분할 표 첫 부분" 경로에서 렌더됨 → 이중 렌더 방지.
+                    let strip = crate::renderer::text_anchor_square_table_strip(para);
+                    let (strip_x, strip_width) = strip
+                        .map(|(cs, sw)| {
+                            (
+                                col_area.x + hwpunit_to_px(cs, self.dpi),
+                                hwpunit_to_px(sw, self.dpi),
+                            )
+                        })
+                        .unwrap_or((wrap_text_x, wrap_text_width));
                     let content_offset = if let Some(mt) = pt_mt {
                         mt.range_height(0, start_row)
                     } else {
@@ -6647,6 +6671,9 @@ impl LayoutEngine {
                         y_offset,
                         wrap_text_x,
                         wrap_text_width,
+                        strip_x,
+                        strip_width,
+                        strip.is_none(),
                         content_offset,
                         bin_data_content,
                         Some(tbl_x_right),
@@ -7547,6 +7574,15 @@ impl LayoutEngine {
         table_y_end: f64,
         wrap_text_x: f64,
         wrap_text_width: f64,
+        // [Task #1745] 후속 어울림 문단(WrapAroundPara)이 놓일 wrap 띠. 표 단독 anchor
+        // 는 wrap_text_x/width 와 동일. 텍스트 혼합 anchor 는 표 geometry 로 도출한
+        // 띠(text_anchor_square_table_strip) — host 영역(전폭)과 분리된다.
+        strip_x: f64,
+        strip_width: f64,
+        // [Task #1745] 호스트 문단 텍스트 렌더 여부. 분할 표의 텍스트 혼합 anchor 는
+        // 호스트 텍스트가 이미 일반 경로(분할 표 첫 부분)에서 렌더되므로 false 로
+        // 이중 렌더를 막는다.
+        render_host_text: bool,
         table_content_offset: f64,
         bin_data_content: &[BinDataContent],
         // Task #463: 인라인 floating 표(예: 인용 따옴표 ｢｣)의 우측 끝 x 좌표.
@@ -7589,13 +7625,20 @@ impl LayoutEngine {
             width: wrap_text_width + host_margin_left + host_margin_right,
             height: col_area.height,
         };
+        // [Task #1745] 후속 어울림 문단용 띠 영역 (표 단독 anchor 는 wrap_area 와 동일).
+        let strip_area = LayoutRect {
+            x: strip_x - host_margin_left,
+            y: col_area.y,
+            width: strip_width + host_margin_left + host_margin_right,
+            height: col_area.height,
+        };
 
         // 호스트 문단(표 문단) 텍스트를 어울림 영역에 렌더링
         let has_host_text = table_para
             .text
             .chars()
             .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-        if table_content_offset == 0.0 {
+        if table_content_offset == 0.0 && render_host_text {
             if has_host_text {
                 if let Some(comp) = composed.get(table_para_index) {
                     let text_start_line = comp.lines.iter().position(|line| {
@@ -7743,7 +7786,7 @@ impl LayoutEngine {
                     para,
                     comp,
                     styles,
-                    &wrap_area,
+                    &strip_area,
                     para_y,
                     0,
                     end_line,
@@ -7772,7 +7815,7 @@ impl LayoutEngine {
                         .filter(|fs| *fs > 0.0)
                         .unwrap_or(13.3)
                 };
-                let mark_x = wrap_text_x;
+                let mark_x = strip_x;
 
                 let line_id = tree.next_id();
                 let line_node = RenderNode::new(

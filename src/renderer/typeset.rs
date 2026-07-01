@@ -1298,6 +1298,36 @@ impl TypesetState {
         self.prev_body_bottom_vpos = None;
     }
 
+    /// [Task #1745] 흡수된 어울림 문단 기록 — 다쪽 분할 표는 첫 fragment column 에 소급.
+    ///
+    /// 한글은 어울림 문단을 anchor 표의 시작 쪽(첫 fragment) 옆 wrap 띠에 배치한다.
+    /// RowBreak 분할 표는 흡수 시점에 첫 fragment column 이 이미 flush 되어 있으므로,
+    /// 현재 column 에 anchor 의 첫 fragment(비연속 PartialTable/Table)가 없으면
+    /// `pages` 에서 찾아 그 column 의 wrap_around_paras 에 push 한다.
+    fn record_wrap_around_para(&mut self, wrap_para: crate::renderer::pagination::WrapAroundPara) {
+        let anchor = wrap_para.table_para_index;
+        let is_first_fragment = |it: &PageItem| match it {
+            PageItem::Table { para_index, .. } => *para_index == anchor,
+            PageItem::PartialTable {
+                para_index,
+                is_continuation,
+                ..
+            } => *para_index == anchor && !*is_continuation,
+            _ => false,
+        };
+        if !self.current_items.iter().any(is_first_fragment) {
+            for page in self.pages.iter_mut() {
+                for col in page.column_contents.iter_mut() {
+                    if col.items.iter().any(is_first_fragment) {
+                        col.wrap_around_paras.push(wrap_para);
+                        return;
+                    }
+                }
+            }
+        }
+        self.current_column_wrap_around_paras.push(wrap_para);
+    }
+
     /// 비어있어도 flush
     fn flush_column_always(&mut self) {
         let col_content = ColumnContent {
@@ -2625,7 +2655,8 @@ impl TypesetEngine {
                             })
                             .unwrap_or(false);
                         if last_seg_match || is_empty_para {
-                            st.current_column_wrap_around_paras.push(
+                            // [Task #1745] 다쪽 분할 표는 첫 fragment column 에 소급 기록.
+                            st.record_wrap_around_para(
                                 crate::renderer::pagination::WrapAroundPara {
                                     para_index: para_idx,
                                     table_para_index: st.wrap_around_table_para,
@@ -2825,13 +2856,24 @@ impl TypesetEngine {
                         }
                     });
                     if is_wrap_around {
-                        st.wrap_around_cs =
-                            para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                        st.wrap_around_sw = para
-                            .line_segs
-                            .first()
-                            .map(|s| s.segment_width as i32)
-                            .unwrap_or(0);
+                        // [Task #1745] 텍스트 혼합 anchor(첫 LINE_SEG 가 전폭 텍스트 줄)면
+                        // anchor LINE_SEG 가 wrap 띠를 인코딩하지 않으므로 표 geometry 로
+                        // 띠 (cs, sw) 를 도출해 후속 문단 매칭에 사용 (한글: 후속 문단을
+                        // 표 옆 잔여 띠에 배치 — samples/task1745).
+                        if let Some((strip_cs, strip_sw)) =
+                            crate::renderer::text_anchor_square_table_strip(para)
+                        {
+                            st.wrap_around_cs = strip_cs;
+                            st.wrap_around_sw = strip_sw;
+                        } else {
+                            st.wrap_around_cs =
+                                para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
+                            st.wrap_around_sw = para
+                                .line_segs
+                                .first()
+                                .map(|s| s.segment_width as i32)
+                                .unwrap_or(0);
+                        }
                         st.wrap_around_table_para = para_idx;
                         st.wrap_around_any_seg = false;
                     }
