@@ -208,8 +208,9 @@ jobs:
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
-      - name: Cache cargo registry & build
-        uses: actions/cache@v5
+      - name: Restore cargo registry & build cache
+        id: cargo_cache_restore
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/registry
@@ -251,6 +252,16 @@ jobs:
 
       - name: Clippy
         run: cargo clippy -- -D warnings
+
+      - name: Save cargo registry & build cache
+        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.cargo_cache_restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
   wasm-build:
     name: WASM Build
