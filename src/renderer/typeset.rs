@@ -2340,7 +2340,17 @@ impl TypesetEngine {
                     };
 
                     if !(height_fits && vpos_fits) {
-                        // 빈 문단이 현재 페이지에 안 들어감 → skip (단독 빈 페이지 차단)
+                        // [#1706] 빈 문단이 현재 페이지에 안 들어감.
+                        // 종전엔 통째로 drop(continue) → 문단이 모델에서 사라져 한글 대비
+                        // 문단→페이지 매핑이 어긋났다(rhwp_pNone; 대형 TAC 표가 페이지를 채운
+                        // 직후의 빈 문단). 한글은 이 빈 문단을 현재 페이지 하단의 빈 줄 1개로 유지.
+                        // → drop 대신 현재 페이지에 0-높이로 흡수 기록(hide_empty_line 와 동일
+                        //   시멘틱). 페이지를 advance 하지 않으므로 단독 빈 페이지 회귀(synam-001
+                        //   등)는 발생하지 않는다.
+                        st.hidden_empty_paras.insert(para_idx);
+                        st.current_items.push(PageItem::FullParagraph {
+                            para_index: para_idx,
+                        });
                         continue;
                     }
                     // height·vpos 둘 다 fit → 정상 emit (아래로 진행)
@@ -2370,7 +2380,15 @@ impl TypesetEngine {
                         .unwrap_or(0.0);
                     let avail = st.available_height() - st.current_height;
                     if empty_h_px > avail {
-                        // 빈 paragraph 가 fit 안 됨 → skip 으로 단독 page 차단
+                        // [#1706] 빈 paragraph 가 fit 안 됨.
+                        // 종전엔 drop(continue) → 문단이 모델에서 사라져 한글 대비 매핑이
+                        // 어긋났다(rhwp_pNone). 한컴은 이 빈 문단을 현재 page 하단의 빈 줄로
+                        // 흡수(위 주석)하므로, drop 대신 현재 페이지에 0-높이로 흡수 기록한다.
+                        // 페이지를 advance 하지 않으므로 단독 page 회귀(sample18 등)는 없다.
+                        st.hidden_empty_paras.insert(para_idx);
+                        st.current_items.push(PageItem::FullParagraph {
+                            para_index: para_idx,
+                        });
                         continue;
                     }
                     // fit 가능 — 정상 emit (기존 동작)
@@ -11078,7 +11096,6 @@ impl TypesetEngine {
                 }
             })
             .collect();
-        let header_row_height = cut_row_h.first().copied().unwrap_or(0.0);
 
         // [Task #1046 Stage 1] 분할 표 cut 행높이 vs 렌더러 MeasuredTable 행높이 비교.
         if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
@@ -11313,22 +11330,22 @@ impl TypesetEngine {
             };
 
             // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
-            // start_row 이전의 is_header 행을 모두 반복하므로(다중 머리행: rs>=2
-            // 헤더 셀 등), 페이지네이터도 동일하게 머리행 전체 높이 + 각 행 뒤
-            // cs(본문 첫 행 앞 cs 포함)를 계산한다. 종전엔 행 0만 계산해 다중
-            // 머리행 표(예: pi=111 75x10, rs=2 헤더)에서 본문 초과 발생.
+            // start_row 이전의 반복 제목행을 다시 그리므로(다중 머리행: rs>=2 헤더 셀 등),
+            // 페이지네이터도 동일 제목행 전체 높이 + 각 행 뒤 cs 를 계산한다.
+            // [Task #1716] 반복 대상은 **표 상단의 연속 제목행 블록**(leading_header_rows)뿐.
+            // 종전엔 cursor 아래의 모든 is_header 행을 합산해, 본문 행에도 header="1" 이
+            // 흩어진 표(건설공사 품질시험기준 pi=12)에서 cursor 전진 시 overhead 가 누적되어
+            // 가용 높이가 0이 되고 페이지당 1행 폭주(+100쪽)가 발생했다. 렌더러(table_partial)도
+            // 동일 leading_header_rows 를 사용하므로 desync(오버플로) 없음.
             let header_overhead =
                 if is_continuation && mt.repeat_header && mt.has_header_cells && row_count > 1 {
-                    let mut hr: Vec<usize> = table
-                        .cells
-                        .iter()
-                        .filter(|c| c.is_header && (c.row as usize) < cursor_row)
-                        .map(|c| c.row as usize)
+                    let hr: Vec<usize> = table
+                        .leading_header_rows()
+                        .into_iter()
+                        .filter(|&r| r < cursor_row)
                         .collect();
-                    hr.sort_unstable();
-                    hr.dedup();
                     if hr.is_empty() {
-                        header_row_height + cs
+                        0.0
                     } else {
                         let h: f64 = hr.iter().map(|&r| cut_row_h[r]).sum();
                         h + cs * hr.len() as f64

@@ -162,11 +162,13 @@ impl LayoutEngine {
         {
             let split_last_row = end_row.saturating_sub(1);
             let mut rows_to_set: std::collections::BTreeSet<usize> = (start_row..end_row).collect();
-            // 연속분 머리행 반복 — start_row 이전의 is_header 행도 렌더된다.
+            // 연속분 머리행 반복 — start_row 이전의 반복 제목행도 렌더된다.
+            // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
+            // 페이지네이터(typeset.rs header_overhead)와 동일 leading_header_rows 사용 → 정합.
             if is_continuation && table.repeat_header && start_row > 0 {
-                for c in &table.cells {
-                    if c.is_header && (c.row as usize) < start_row {
-                        rows_to_set.insert(c.row as usize);
+                for r in table.leading_header_rows() {
+                    if r < start_row {
+                        rows_to_set.insert(r);
                     }
                 }
             }
@@ -305,14 +307,13 @@ impl LayoutEngine {
         );
 
         // ── 4. 렌더링할 행 목록 구성 ──
-        // is_continuation && repeat_header → start_row 이전의 is_header 행만 반복
+        // is_continuation && repeat_header → start_row 이전의 반복 제목행만 반복.
+        // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
+        // 페이지네이터(typeset.rs header_overhead)와 동일 leading_header_rows 사용 → 정합.
         let mut header_rows: Vec<usize> = Vec::new();
         if is_continuation && table.repeat_header && start_row > 0 {
-            let mut seen = vec![false; row_count];
-            for c in &table.cells {
-                let r = c.row as usize;
-                if c.is_header && r < start_row && r < row_count && !seen[r] {
-                    seen[r] = true;
+            for r in table.leading_header_rows() {
+                if r < start_row && r < row_count {
                     header_rows.push(r);
                 }
             }

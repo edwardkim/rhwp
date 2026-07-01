@@ -280,6 +280,35 @@ impl Cell {
 }
 
 impl Table {
+    /// [Task #1716] 반복 제목행으로 재사용할 **표 상단의 연속 제목행 블록** `0..H` 를 반환한다.
+    ///
+    /// 행 r 이 제목행 ⟺ header 셀(`is_header`, rowspan 덮개 포함)이 r 을 덮음. 상단(행 0)부터
+    /// 제목행이 연속되는 최대 구간만 반환하고, 표 중간·하단에 흩어진 `is_header` 행은 제외한다.
+    /// (일부 문서는 본문 행에도 `header="1"` 을 다수 부여한다. 그 행들까지 반복 대상으로 잡으면
+    /// 연속 페이지마다 반복 overhead 가 누적되어 가용 높이가 0이 되고 페이지당 1행 폭주가 발생.)
+    pub fn leading_header_rows(&self) -> Vec<usize> {
+        let rc = self.row_count as usize;
+        if rc == 0 {
+            return Vec::new();
+        }
+        let mut is_header_row = vec![false; rc];
+        for cell in &self.cells {
+            if !cell.is_header {
+                continue;
+            }
+            let start = cell.row as usize;
+            let span = (cell.row_span as usize).max(1);
+            for r in start..(start + span).min(rc) {
+                is_header_row[r] = true;
+            }
+        }
+        let mut h = 0usize;
+        while h < rc && is_header_row[h] {
+            h += 1;
+        }
+        (0..h).collect()
+    }
+
     /// 저장/복구 후 Studio 런타임 힌트가 사라진 행 단위 가로 resize를 보수적으로 추론한다.
     ///
     /// 한컴 HWP5에는 `local_resize_rows` 같은 rhwp 내부 힌트를 저장할 곳이 없다. 따라서

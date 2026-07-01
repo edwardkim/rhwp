@@ -1007,3 +1007,56 @@ fn test_transpose_rejects_merged_cells() {
     target_table.merge_cells(0, 1, 0, 2).unwrap();
     assert!(target_table.paste_transposed_cells(0, 1, &data).is_err());
 }
+
+// [Task #1716] leading_header_rows: 상단 연속 제목행 블록만 반환하는지 검증
+#[test]
+fn test_leading_header_rows_scattered_body_headers() {
+    // 상단 1행 header + 본문(행 2·4)에 흩어진 header → [0] 만
+    let mut t = make_table(6, 3);
+    for c in 0..3 {
+        let i = t.cell_index_at(0, c).unwrap();
+        t.cells[i].is_header = true;
+    }
+    for &r in &[2u16, 4] {
+        let i = t.cell_index_at(r, 0).unwrap();
+        t.cells[i].is_header = true;
+    }
+    assert_eq!(t.leading_header_rows(), vec![0]);
+}
+
+#[test]
+fn test_leading_header_rows_contiguous_multi() {
+    // 상단 연속 2행 header → [0,1] (#1022 다중 머리행 보존)
+    let mut t = make_table(5, 3);
+    for r in 0..2 {
+        for c in 0..3 {
+            let i = t.cell_index_at(r, c).unwrap();
+            t.cells[i].is_header = true;
+        }
+    }
+    assert_eq!(t.leading_header_rows(), vec![0, 1]);
+}
+
+#[test]
+fn test_leading_header_rows_rowspan_header() {
+    // rowspan=2 header 셀이 행 0..2 를 덮음 → [0,1]
+    let mut t = make_table(4, 2);
+    let i = t.cell_index_at(0, 0).unwrap();
+    t.cells[i].is_header = true;
+    t.cells[i].row_span = 2;
+    assert_eq!(t.leading_header_rows(), vec![0, 1]);
+}
+
+#[test]
+fn test_leading_header_rows_none_and_all() {
+    let t = make_table(3, 2);
+    assert_eq!(t.leading_header_rows(), Vec::<usize>::new());
+    let mut all = make_table(3, 2);
+    for r in 0..3 {
+        for c in 0..2 {
+            let i = all.cell_index_at(r, c).unwrap();
+            all.cells[i].is_header = true;
+        }
+    }
+    assert_eq!(all.leading_header_rows(), vec![0, 1, 2]);
+}

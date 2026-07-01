@@ -2879,6 +2879,9 @@ impl DocumentCore {
             let sec_start_page = global_page;
             let mut item_disp_page: std::collections::HashMap<usize, u32> =
                 std::collections::HashMap::new();
+            // [#1705] 표의 첫(앵커) 출현 페이지 — 어울림 빈 문단이 표 옆 wrap zone 에 있을 때 사용.
+            let mut item_first_page: std::collections::HashMap<usize, u32> =
+                std::collections::HashMap::new();
             for (li, page) in pr.pages.iter().enumerate() {
                 let disp = sec_start_page + li as u32 + 1;
                 for cc in &page.column_contents {
@@ -2892,7 +2895,8 @@ impl DocumentCore {
                             _ => None,
                         };
                         if let Some(p) = pidx {
-                            item_disp_page.insert(p, disp);
+                            item_disp_page.insert(p, disp); // 마지막(끝) 페이지
+                            item_first_page.entry(p).or_insert(disp); // 첫(앵커) 페이지
                         }
                     }
                 }
@@ -2910,10 +2914,24 @@ impl DocumentCore {
                         if !emitted_extra.insert(wp.para_index) {
                             continue;
                         }
-                        let disp = item_disp_page
-                            .get(&wp.table_para_index)
-                            .copied()
-                            .unwrap_or(sec_start_page + 1);
+                        // [#1705] 어울림(floating) 표의 트레일링 빈 문단 귀속:
+                        //   line_seg 폭(sw)이 좁으면(표 옆 wrap zone) 표의 **첫(앵커) 페이지**,
+                        //   전체 폭이면(표 아래로 흐름) 표의 **마지막 페이지**.
+                        //   한글은 wrap zone 문단을 앵커 페이지에, 전체폭 문단을 표 끝 페이지에 둔다.
+                        let sw_px = paragraphs
+                            .get(wp.para_index)
+                            .and_then(|p| p.line_segs.first())
+                            .map(|s| hwpunit_to_px(s.segment_width as i32, dpi))
+                            .unwrap_or(0.0);
+                        let body_w = page.layout.body_area.width;
+                        let is_wrap_zone = sw_px > 0.0 && sw_px < body_w * 0.9;
+                        let disp = if is_wrap_zone {
+                            item_first_page.get(&wp.table_para_index)
+                        } else {
+                            item_disp_page.get(&wp.table_para_index)
+                        }
+                        .copied()
+                        .unwrap_or(sec_start_page + 1);
                         extra_by_page.entry(disp).or_default().push((
                             wp.para_index,
                             true,
