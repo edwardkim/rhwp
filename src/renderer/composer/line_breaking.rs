@@ -1080,10 +1080,13 @@ pub(crate) fn reflow_line_segs(
         let text_height_hwp = line_height_hwp;
         let baseline_distance_hwp = (line_height_hwp as f64 * 0.85) as i32;
         let line_spacing_hwp = compute_line_spacing_hwp(ls_type, ls_value, line_height_hwp, dpi);
+        // [Task #1811] 원본 linesegarray 부재(orig=None) 시 합성 seg 에 구현속성
+        // 태그를 부여 — vpos 보정 등에서 실제 저장 증거와 구분한다 (컨버터의
+        // 합성 lineseg flags=0x8000_0000 관례와 정합).
         let orig_tag = orig
             .as_ref()
             .map(|ls| ls.tag)
-            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE);
+            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY);
         LineSeg {
             text_start: utf16_start,
             line_height: line_height_hwp,

@@ -5220,6 +5220,25 @@ impl LayoutEngine {
         let rewind_internal_hard_break_orphan = Self::row_has_prior_rowspan_cover(table, row);
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
+            if std::env::var("RHWP_CUT_DBG").is_ok() {
+                let desc: Vec<String> = units
+                    .iter()
+                    .map(|u| {
+                        format!(
+                            "h={:.1}{}{}v{}..{}",
+                            u.height,
+                            if u.empty_spacer { " sp" } else { "" },
+                            if u.hard_break_before { " hb " } else { " " },
+                            u.vis_start,
+                            u.vis_end,
+                        )
+                    })
+                    .collect();
+                eprintln!(
+                    "CUT_DBG row={row} cell={i} avail={avail_height:.1} units=[{}]",
+                    desc.join(" | ")
+                );
+            }
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let mut j = start;
             let mut h = 0.0f64;

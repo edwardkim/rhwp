@@ -189,6 +189,16 @@ impl HeightCursor {
         let Some(seg) = prev_seg else {
             return y_offset;
         };
+        // [Task #1811] 합성 seg(원본 linesegarray 부재 — reflow/컨버터 생성,
+        // TAG_IMPLEMENTATION_PROPERTY)는 저장 증거가 아니다. **전방(forward)** 보정
+        // 근거로 쓰면 구세션 저장 flow 위치로 과대 전진해(+9.6px) 후속 분할 표 예산이
+        // 부족해진다 (saved_bounds_cumulative_page_break p4 컷 [2]→[3] 결손).
+        // [Task #1811 v2] 단, 되감기와 대형 재앵커 점프는 허용한다 — 전면 차단하면
+        // 파스 경로별 미세 측정차가 재동기화를 잃고 누적되어 라운드트립 쪽나눔이
+        // 갈린다 (seoul_1006 p7→p8 Group+줄 이월 회귀). 판정은 최종 result 산출 후
+        // 방향·크기로 한다 (함수 끝 SYNTH_FORWARD_REANCHOR_MIN_PX 클램프).
+        let synthetic_prev_seg =
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
         if seg.vertical_pos == 0 && prev_pi > 0 {
             return y_offset;
         }
@@ -1256,6 +1266,27 @@ impl HeightCursor {
             && (-0.5..4.0).contains(&stored_gap_px)
         {
             return y_offset + prev_line_spacing_px;
+        }
+        // [Task #1811 v2] 합성 seg 증거의 **소폭(drift형) 전방 이동**만 차단한다.
+        // - 되감기(result < y_offset): 허용 — sequential 이 앞서 나갔을 때의 재동기화.
+        // - 대형 전방 점프(> SYNTH_FORWARD_REANCHOR_MIN_PX): 허용 — 저장 vpos 로의
+        //   구조적 재앵커. 파스 경로별 미세 측정차(예: seoul_1006 pi=41 표 +9.6px)가
+        //   누적되어도 양 경로가 같은 저장 좌표에 재앵커되어 쪽나눔 결정이 수렴한다.
+        //   전면 차단하면 누적차가 쪽 경계에서 발현해 라운드트립 pagination 이 갈린다.
+        // - 소폭 전방(≤ 임계): 차단 — 구세션 저장 flow 위치로의 과대 전진(+9.6px,
+        //   saved_bounds_cumulative_page_break p4 분할 예산 결손)이 이 대역이다.
+        const SYNTH_FORWARD_REANCHOR_MIN_PX: f64 = 48.0;
+        if synthetic_prev_seg
+            && result > y_offset + 0.5
+            && result - y_offset <= SYNTH_FORWARD_REANCHOR_MIN_PX
+        {
+            if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                eprintln!(
+                    "VPOS_SYNTH_FWD_SKIP: pi={} prev_pi={} y_in={:.2} result={:.2}",
+                    item_para, prev_pi, y_offset, result,
+                );
+            }
+            return y_offset;
         }
         result
     }

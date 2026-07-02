@@ -2004,6 +2004,14 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            if std::env::var("RHWP_FLOW_DBG").is_ok() {
+                eprintln!(
+                    "FLOW_DBG pi={} page={} cur_h={:.1}",
+                    para_idx,
+                    st.pages.len(),
+                    st.current_height
+                );
+            }
             // 표 컨트롤 감지
             let has_table = self.paragraph_has_table(para);
 
