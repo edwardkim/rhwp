@@ -4624,6 +4624,173 @@ fn diff_common_obj(
     }
 }
 
+/// [#1807] 글상자 문단 한 쌍의 핵심 필드 비교 — 본문 문단 비교의 축약판.
+/// 직렬화 결함(#1795: FIELD_END 갭 선점 → char_offsets 시프트)이 글상자 안에서
+/// 발생해도 ir-diff 가 검출하도록 text/cc/char_offsets/char_shapes/line_segs/
+/// field_ranges 를 비교한다.
+fn diff_textbox_paragraph_fields(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+) {
+    if pa.text != pb.text {
+        diffs.push(format!(
+            "{} text: A={:?} vs B={:?}",
+            prefix,
+            pa.text.chars().take(30).collect::<String>(),
+            pb.text.chars().take(30).collect::<String>()
+        ));
+    }
+    if pa.char_count != pb.char_count {
+        diffs.push(format!(
+            "{} cc: A={} vs B={}",
+            prefix, pa.char_count, pb.char_count
+        ));
+    }
+    if pa.char_offsets != pb.char_offsets {
+        if pa.char_offsets.len() != pb.char_offsets.len() {
+            diffs.push(format!(
+                "{} char_offsets len: A={} vs B={}",
+                prefix,
+                pa.char_offsets.len(),
+                pb.char_offsets.len()
+            ));
+        } else if let Some((idx, (a, b))) = pa
+            .char_offsets
+            .iter()
+            .zip(pb.char_offsets.iter())
+            .enumerate()
+            .find(|(_, (a, b))| a != b)
+        {
+            diffs.push(format!(
+                "{} char_offsets[{}]: A={} vs B={}",
+                prefix, idx, a, b
+            ));
+        }
+    }
+    if pa.char_shapes.len() != pb.char_shapes.len() {
+        diffs.push(format!(
+            "{} char_shapes count: A={} vs B={}",
+            prefix,
+            pa.char_shapes.len(),
+            pb.char_shapes.len()
+        ));
+    } else if let Some((idx, (ca, cb))) = pa
+        .char_shapes
+        .iter()
+        .zip(pb.char_shapes.iter())
+        .enumerate()
+        .find(|(_, (ca, cb))| ca.start_pos != cb.start_pos || ca.char_shape_id != cb.char_shape_id)
+    {
+        diffs.push(format!(
+            "{} cs[{}]: A=({},{}) vs B=({},{})",
+            prefix, idx, ca.start_pos, ca.char_shape_id, cb.start_pos, cb.char_shape_id
+        ));
+    }
+    if pa.line_segs.len() != pb.line_segs.len() {
+        diffs.push(format!(
+            "{} line_segs count: A={} vs B={}",
+            prefix,
+            pa.line_segs.len(),
+            pb.line_segs.len()
+        ));
+    } else if let Some((idx, (la, lb))) = pa
+        .line_segs
+        .iter()
+        .zip(pb.line_segs.iter())
+        .enumerate()
+        .find(|(_, (la, lb))| la.text_start != lb.text_start || la.vertical_pos != lb.vertical_pos)
+    {
+        diffs.push(format!(
+            "{} ls[{}]: A=(ts={},vpos={}) vs B=(ts={},vpos={})",
+            prefix, idx, la.text_start, la.vertical_pos, lb.text_start, lb.vertical_pos
+        ));
+    }
+    if pa.field_ranges.len() != pb.field_ranges.len() {
+        diffs.push(format!(
+            "{} field_ranges count: A={} vs B={}",
+            prefix,
+            pa.field_ranges.len(),
+            pb.field_ranges.len()
+        ));
+    } else if let Some((idx, (fa, fb))) = pa
+        .field_ranges
+        .iter()
+        .zip(pb.field_ranges.iter())
+        .enumerate()
+        .find(|(_, (fa, fb))| {
+            fa.start_char_idx != fb.start_char_idx
+                || fa.end_char_idx != fb.end_char_idx
+                || fa.control_idx != fb.control_idx
+        })
+    {
+        diffs.push(format!(
+            "{} field_ranges[{}]: A=({}..{},c{}) vs B=({}..{},c{})",
+            prefix,
+            idx,
+            fa.start_char_idx,
+            fa.end_char_idx,
+            fa.control_idx,
+            fb.start_char_idx,
+            fb.end_char_idx,
+            fb.control_idx
+        ));
+    }
+}
+
+/// [#1807] 글상자 문단 목록 재귀 비교. 중첩 글상자(Shape in Shape)도 재귀한다.
+fn diff_textbox_paragraph_lists(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    pas: &[rhwp::model::paragraph::Paragraph],
+    pbs: &[rhwp::model::paragraph::Paragraph],
+) {
+    use rhwp::model::control::Control;
+    if pas.len() != pbs.len() {
+        diffs.push(format!(
+            "{} tb 문단 수: A={} vs B={}",
+            prefix,
+            pas.len(),
+            pbs.len()
+        ));
+    }
+    for (k, (pa, pb)) in pas.iter().zip(pbs.iter()).enumerate() {
+        let p = format!("{} tb_p[{}]", prefix, k);
+        diff_textbox_paragraph_fields(diffs, &p, pa, pb);
+        for (cj, (ca, cb)) in pa.controls.iter().zip(pb.controls.iter()).enumerate() {
+            if let (Control::Shape(sa), Control::Shape(sb)) = (ca, cb) {
+                diff_shape_textbox(diffs, &format!("{}.ctrl[{}]", p, cj), sa, sb);
+            }
+        }
+    }
+}
+
+/// [#1807] Shape 글상자 유무 + 내부 문단 재귀 비교 진입점.
+fn diff_shape_textbox(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    sa: &rhwp::model::shape::ShapeObject,
+    sb: &rhwp::model::shape::ShapeObject,
+) {
+    let ta = sa.drawing().and_then(|d| d.text_box.as_ref());
+    let tb = sb.drawing().and_then(|d| d.text_box.as_ref());
+    match (ta, tb) {
+        (Some(ta), Some(tb)) => {
+            diff_textbox_paragraph_lists(diffs, prefix, &ta.paragraphs, &tb.paragraphs);
+        }
+        (Some(_), None) | (None, Some(_)) => {
+            diffs.push(format!(
+                "{} text_box 유무: A={} vs B={}",
+                prefix,
+                ta.is_some(),
+                tb.is_some()
+            ));
+        }
+        (None, None) => {}
+    }
+}
+
 /// `tab_extended`(`[u16; 7]`) 두 인라인 탭 레코드가 **의미 있는** 필드에서 다른지 판정.
 ///
 /// HWPX 파서(`parse_tab_extension`)는 인라인 탭을 `ext[0]`=width,
@@ -4972,6 +5139,9 @@ fn ir_diff(args: &[String]) {
                         }
                         (Control::Shape(sa), Control::Shape(sb)) => {
                             diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                            // [#1807] 글상자 내부 문단 재귀 비교 — 직렬화 결함이
+                            // 글상자 안에서 발생해도 검출되도록 (#1795 소거망 구멍)
+                            diff_shape_textbox(&mut diffs, &format!("ctrl[{}] shape", ci), sa, sb);
                         }
                         _ if control_tag(ca) != control_tag(cb) => {
                             diffs.push(format!(
