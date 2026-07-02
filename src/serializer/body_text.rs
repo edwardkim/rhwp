@@ -1257,10 +1257,10 @@ mod tests {
         );
         assert_eq!(p.field_ranges.len(), 2);
         assert_eq!(
-            (p.field_ranges[1].start_char_idx, p.field_ranges[1].end_char_idx),
-            (3, 5),
+            p.field_ranges[1].start_char_idx, 3,
             "두 번째 필드 범위가 앞으로 당겨지면 안 된다"
         );
+        assert_eq!(p.field_ranges[1].end_char_idx, 5);
     }
 
     /// 확장 컨트롤 포함 문단 라운드트립
