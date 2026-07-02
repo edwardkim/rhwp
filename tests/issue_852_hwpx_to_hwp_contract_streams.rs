@@ -95,7 +95,8 @@ fn form_01_keeps_nine_cfb_streams() {
     let actual: std::collections::BTreeSet<String> = cfb
         .walk()
         .filter(|e| e.is_stream())
-        .map(|e| e.path().to_string_lossy().into_owned())
+        // [Task #1775] Windows 는 PathBuf 표시가 `\` 구분자라 기대값(`/`)과 어긋난다.
+        .map(|e| e.path().to_string_lossy().replace('\\', "/"))
         .collect();
     let required = [
         "/FileHeader",
