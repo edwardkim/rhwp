@@ -22,14 +22,26 @@ rhwp 는 v0.2.1 사이클부터 외부 기여자 PR 이 급증했다. 하이퍼-
 
 새 PR 이 열리면 다음을 순서대로 확인한다.
 
-### 2.1 기본 메타
+### 2.1 reviewer assign 선행
+
+PR review 처리를 시작하기 전에 먼저 reviewer 를 assign 한다. reviewer assign 이 빠지면 PR 검토 상태가
+GitHub 상에서 추적되지 않으므로, 메타 확인·로컬 fetch·문서 작성보다 앞서 수행한다.
+
+```bash
+gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
+```
+
+여러 PR 을 체리픽 누적 검토하는 경우에도 각 원 PR 번호별로 reviewer 를 먼저 assign 한 뒤 개별 review
+문서를 작성한다.
+
+### 2.2 기본 메타
 
 - [ ] **base 브랜치**: `devel` 이어야 함. `main` 이면 rebase 요청 (이전 재리젝 사례: PR #234)
 - [ ] **연관 이슈**: PR description 에 `closes #N` 또는 `#N` 참조가 있어야 함. 없으면 코멘트로 요청
 - [ ] **mergeable state**: `MERGEABLE` + `CLEAN` / `BEHIND` / `DIRTY` 중 확인
 - [ ] **CI 상태**: `Build & Test` / `CodeQL` 실행 결과
 
-### 2.2 규모 분석
+### 2.3 규모 분석
 
 ```bash
 gh pr view N --repo edwardkim/rhwp --json additions,deletions,files,commits
@@ -39,12 +51,12 @@ gh pr view N --repo edwardkim/rhwp --json additions,deletions,files,commits
 - **대형 PR** (>1000 라인) → 별도 검토 사이클, 바로 머지 불가
 - **소형 PR** (<100 라인) → admin merge 고려 가능
 
-### 2.3 작성자 확인
+### 2.4 작성자 확인
 
 - **FIRST_TIME_CONTRIBUTOR**: 환영 인사 + 세심한 피드백 톤
 - **기존 기여자**: 이전 PR 컨텍스트 참고
 
-### 2.4 update branch 이후 이전 SHA CI 강제 취소
+### 2.5 update branch 이후 이전 SHA CI 강제 취소
 
 PR 검토 중 contributor 또는 maintainer 가 `Update branch` / `devel` merge 로 PR head 를 갱신하면, 이전 head
 SHA 에서 시작된 GitHub Actions run 이 그대로 남아 새 head 의 required check 와 섞여 보일 수 있다. 이 경우
@@ -134,6 +146,74 @@ PR review 문서는 merge 후에도 모순되지 않아야 한다. 따라서 다
 - 특정 `head SHA` 를 "현재 head" 로만 적고 merge 전 재확인 조건을 남기지 않음
 - 과거 GitHub Actions 통과 상태를 최신 통과 조건 없이 최종 판정처럼 기록
 
+### 3.4 가설 기각/재분류 PR 판단 규칙
+
+조사 PR 이 어떤 가설을 **기각**하거나 다른 원인 계통으로 **재분류**하는 경우, 그것만으로 merge 보류나
+reject 사유로 보지 않는다. PR 의 목적이 "처음 가설대로 고치는 것"이 아니라 "가설이 틀렸음을 증명하고
+후속 분류를 확정하는 것"이면, 그 증명 자체가 merge 대상이다.
+
+이 유형의 PR 은 다음 조건을 만족하면 merge 후보로 판단할 수 있다.
+
+- 최종 보고서, stage 문서, README, 샘플 설명이 모두 같은 결론을 가리킨다.
+- 초기 가설은 "초기 가설" 또는 "검증 대상"으로만 남기고, 확정 사실처럼 쓰지 않는다.
+- 기각/재분류 근거가 샘플, 기준 PDF, 하니스 결과, visual sweep, 로그 중 적절한 자료로 남아 있다.
+- 후속 추적 이슈가 필요하면 어떤 이슈로 이관되는지 명확히 적는다.
+
+반대로, 최종 보고서는 기각/재분류를 말하는데 계획서나 README가 초기 가설을 사실처럼 유지하면 merge
+보류 사유다. 이때는 PR 작성자에게 수정을 요청하거나, 메인터너 권한으로 문서를 보정한 뒤 "가설 기각이
+맞음을 증명하는 PR"로 merge 판단한다.
+
+### 3.5 시각 검증 및 asset 기록 규칙
+
+일반 PR review, collaborator-mediated review, 여러 PR 체리픽 누적 검토 모두에서 PR 내용상 렌더링 결과
+확인이 필요하면 [PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 사용할 수 있다. 시각 검증은 모든
+샘플 PR 에 기계적으로 수행하는 절차가 아니라, PR 의 수정 목적과 검증해야 할 사용자-visible 동작에 맞춰
+선택한다.
+
+시각 검증 후보 예시는 다음과 같다.
+
+- renderer/layout/typeset/paint/wasm 출력이 바뀌는 PR
+- HWP/HWPX 샘플, 기준 PDF, visual regression 자료가 추가된 PR
+- 페이지 수, 쪽 경계, 표/그림 자리차지, 텍스트 wrap, clipping, 색상/밑줄처럼 눈으로 확인해야 하는 이슈
+- 코드 검증은 통과하지만 PR 설명상 기준 PDF 또는 한컴 출력과의 비교가 필요한 PR
+
+Codex 와 Claude 는 visual sweep 을 수행한 경우 `compare`, `overlay`, `review` PNG 경로와
+`visual_accuracy_proxy_percent` 를 제시하고, 검증 이미지를 확인한 뒤 작업지시자 승인 없이 시각 판정을
+최종 통과로 단정하지 않는다.
+
+시각 검증이 반드시 필요한 PR review 에 기준 PDF 가 첨부되어 있지 않으면, maintainer 또는 collaborator 에게
+한컴 2020/2024 등 실제 기준 프로그램에서 저장한 PDF 파일 업로드를 요청한다. 기준 PDF 없이 생성한 자동
+비교 결과는 임시 참고 자료로만 기록하고 최종 시각 판정 근거로 사용하지 않는다.
+
+maintainer 또는 collaborator 가 PR review 검증을 위해 추가한 기준 PDF/HWP/HWPX 샘플이 untracked 로
+존재하면, 해당 파일은 임시 디버그 산출물이 아니라 검증 근거 샘플로 간주한다. PR review 문서, visual
+asset 과 함께 커밋 대상에 포함하고, review 문서에는 샘플 경로와 어떤 검증에 사용했는지 기록한다.
+
+시각 검증 PNG 를 PR 기록 자산으로 남길 때는 먼저 PR review 문서에 visual sweep 산출물의 임시 경로
+(`output/.../review/review_NNN.png` 등), 페이지 수, 자동 후보 수, `visual_accuracy_proxy_percent`, 사람
+판정 메모를 기록한다. 이후 asset 반영은 작업 상황에 따라 다음 두 방식 중 하나를 선택한다.
+
+**옵션 1. 현재 PR 에 review 문서와 asset 을 함께 포함**
+
+현재 PR 에 문서/asset 을 함께 포함해도 되는 경우 사용한다. PR review 문서를 `mydocs/pr/archives/` 로
+이동하고, 선택한 검증 PNG 를 `mydocs/pr/assets/` 아래로 옮긴 뒤 같은 PR branch 에 remote push 한다.
+그 PR 이 merge 된 뒤 원시 PR 또는 supersede 된 PR close/comment 시 `devel` 기준 asset 링크와 리뷰 결론을
+남긴다.
+
+**옵션 2. 원 PR merge 후 docs-only 문서/asset PR 로 분리**
+
+코드 PR 과 review 기록/asset 을 분리해야 하거나 fast-pass 문서 PR 로 후속 처리하는 것이 더 안전한 경우
+사용한다. 원 코드 PR 을 먼저 merge 한 뒤, 선택한 검증 PNG 를 `mydocs/pr/assets/` 아래로 옮기고 review
+문서/오늘할일과 함께 별도 후속 문서/자산 PR 로 올린다. 후속 문서/자산 PR 을 merge 하여 PNG 가 `devel` 에
+존재하게 만든 다음, 원시 PR 또는 supersede 된 PR 에 review comment 를 남기며 asset 링크와 리뷰 결론을
+안내한다.
+
+원시 PR comment 에 넣는 이미지 링크는 다음 형식을 사용한다.
+
+```markdown
+![PR #N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/pr/assets/<file>.png)
+```
+
 ## 4. 로컬 사전 검증
 
 ### 4.1 PR 브랜치 fetch
@@ -152,6 +232,19 @@ git status
 ```
 
 충돌 없으면 그대로 진행, 충돌 시 해결 방침 작업지시자 결정 요청.
+
+### 4.2.1 여러 PR 체리픽 누적 검토
+
+여러 PR 이 같은 영역을 단계적으로 수정하고 오래된 순서대로 merge 해야 하는 경우, 별도 로컬 브랜치에서
+`upstream/devel` 기준 체리픽 누적 검토를 할 수 있다. 이때도 리뷰 기록은 반드시 원 PR 번호별로 분리한다.
+
+- 체리픽 순서는 오래된 PR 번호 또는 작업지시자가 지정한 순서를 따른다.
+- PR 내부의 `Merge branch 'devel' ...` 커밋은 검토 목적 체리픽에서 제외하고, 실제 기능/문서 커밋만 적용한다.
+- 누적 브랜치는 충돌, 테스트, 시각 검증 확인용 임시 브랜치일 뿐이며 review 문서를 묶어서 한 파일로 만들지 않는다.
+- `mydocs/pr/pr_{N}_review.md`, `mydocs/pr/pr_{N}_review_impl.md` 는 각 PR 번호별로 작성한다.
+- 각 review 문서에는 체리픽 순서, 적용한 커밋 SHA, 충돌 여부, 선행 PR 의존 여부를 해당 PR 기준으로 기록한다.
+- 시각 검증이 필요한 경우 3.5 절의 공통 visual sweep 및 asset 기록 규칙을 따른다.
+- 여러 PR 을 한꺼번에 로컬 검증했더라도 GitHub merge 전에는 각 PR 의 최신 head, mergeable, required checks 를 개별 확인한다.
 
 ### 4.3 빌드 · 테스트
 
@@ -517,6 +610,7 @@ collaborator 가 외부 PR head 또는 별도 후속 PR 에 review/운영 문서
   - `mydocs/**`
   - 신규 추가(`added`) 상태의 `samples/**/*.hwp`
   - 신규 추가(`added`) 상태의 `samples/**/*.hwpx`
+  - 신규 추가(`added`) 상태의 `samples/**/*.pdf`
   - 신규 추가(`added`) 상태의 `pdf/**/*.pdf`
 - 기존 `samples/**` 또는 `pdf/**` 파일을 수정, 삭제, rename 한 경우 fast-pass 대상이 아니다.
 - 해당 후속 커밋들은 single-parent commit 이다.

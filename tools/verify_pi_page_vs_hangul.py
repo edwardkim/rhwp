@@ -16,6 +16,16 @@ PI 인덱스가 1:1 정렬된다(다중 구역은 구역별 문단수 누적 오
 
 PI_MISMATCH/PAGE_DELTA 1건↑ 종료코드 1.
 
+알려진 한계 — 캐럿-개체 분리 (시각 정합인데 PI_MISMATCH 로 나오는 오탐, #1757):
+  rhwp 는 "pi 가 처음 등장한 쪽"(표 몸체 시작 쪽), 한글은 SetPos 캐럿 쪽을 보고한다.
+  1) 자리차지 다쪽 표 anchor — 표 몸체는 양쪽 동일 렌더인데 한글 캐럿(anchor 줄)은
+     표가 끝나는 쪽 (예: 17991519 공항시설법 별표3, pi1 rhwp 1쪽 ↔ 한글 4쪽).
+  2) 쪽 경계 TAC(글자처럼) 표 문단 — 표는 양쪽 모두 다음 쪽에 통째 렌더(이전 쪽
+     하단은 빈 공간)인데 한글 캐럿은 이전 쪽 (예: 2789777 군수품 별표3 pi4,
+     36389863 물품검사 조서 pi9 — 한글 PDF 시각 확인 완료).
+  판별: 해당 pi 문단이 다쪽 자리차지/쪽 경계 TAC 표이면 한글 PDF 를 생성해 시각
+  대조 후 오탐 여부 확정. 상세: mydocs/manual/verify_pi_page_vs_hangul.md
+
 사용:
     python tools/verify_pi_page_vs_hangul.py --batch <원본폴더> [--sample N] [--seed S] -o out.tsv
     python tools/verify_pi_page_vs_hangul.py --files a.hwpx b.hwp -o out.tsv

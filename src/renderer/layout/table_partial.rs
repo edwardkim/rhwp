@@ -964,6 +964,19 @@ impl LayoutEngine {
                         None
                     };
                     let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
+                    // [Task #1728 v2] 셀-내 continuation 조각(cut su>0)의 첫 가시 문단
+                    // (아직 텍스트 없음 + 문단 첫 줄부터 시작)은 셀-상단이라 layout_composed_paragraph
+                    // 의 column-top 트림에 걸려 앞 간격이 사라진다. 한컴은 유지하므로 토글 on.
+                    // 1×1 linear 셀(page-spanning 컨테이너, preserve_linear_single_cell_vpos
+                    // 계열)의 continuation 은 자연 흐름으로 이미 정합하며 textbox/shape 를 품을 수
+                    // 있어 spacing 추가 시 프레임 밖으로 밀린다(#issue_rowbreak_chart_overlap p17).
+                    // 다행/다열 표의 거대 셀 intra-cell continuation 만 대상으로 한정한다.
+                    let keep_spacing = cut_units.is_some_and(|(su, _)| su > 0)
+                        && !has_preceding_text
+                        && start_line == 0
+                        && !(table.row_count == 1 && table.col_count == 1);
+                    self.keep_continuation_column_top_spacing_before
+                        .set(keep_spacing);
                     para_y = self.layout_composed_paragraph(
                         tree,
                         &mut cell_node,
@@ -984,6 +997,7 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         None, // 셀 컨텍스트 — wrap zone 무관
                     );
+                    self.keep_continuation_column_top_spacing_before.set(false);
 
                     let has_visible_text = composed
                         .lines

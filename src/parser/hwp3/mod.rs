@@ -158,6 +158,78 @@ fn build_raw_ctrl_data(common: &crate::model::shape::CommonObjAttr) -> Vec<u8> {
     data
 }
 
+fn hwp3_color_index_to_color_ref(color: u8) -> crate::model::ColorRef {
+    // 한글 3.0 글자 모양의 1바이트 색상값은 기본 8색 인덱스이다.
+    // 내부 ColorRef는 0x00BBGGRR 순서이므로 SVG/CSS 변환 전 BGR 값으로 정규화한다.
+    match color {
+        0 => 0x00000000, // 검정
+        1 => 0x00FF0000, // 파랑
+        2 => 0x0000FF00, // 초록
+        3 => 0x00FFFF00, // 청록
+        4 => 0x000000FF, // 빨강
+        5 => 0x00FF00FF, // 자주
+        6 => 0x0000FFFF, // 노랑
+        7 => 0x00FFFFFF, // 흰색
+        _ => 0x00000000,
+    }
+}
+
+const HWP3_TO_IR_PARA_UNIT: i32 = 8;
+
+fn hwp3_para_metric_to_ir(value: i16) -> i32 {
+    (value as i32) * HWP3_TO_IR_PARA_UNIT
+}
+
+fn hwp3_para_metric_u16_to_ir(value: u16) -> i32 {
+    (value as i32) * HWP3_TO_IR_PARA_UNIT
+}
+
+fn hwp3_tab_position_to_ir(value: u16) -> u32 {
+    (value as u32) * (HWP3_TO_IR_PARA_UNIT as u32)
+}
+
+fn reset_hwp3_plain_paragraph_text(para: &mut crate::model::paragraph::Paragraph, text: &str) {
+    para.text = text.to_string();
+    para.char_offsets.clear();
+    let mut utf16_pos = 0u32;
+    for ch in para.text.chars() {
+        para.char_offsets.push(utf16_pos);
+        utf16_pos += ch.encode_utf16(&mut [0; 2]).len() as u32;
+    }
+    para.char_count = utf16_pos;
+    para.has_para_text = !para.text.is_empty();
+}
+
+fn hwp3_paragraphs_have_renderable_content(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> bool {
+    paragraphs
+        .iter()
+        .any(|para| !para.text.trim().is_empty() || !para.controls.is_empty())
+}
+
+fn hwp3_is_treat_as_char_visual_control(ctrl: &crate::model::control::Control) -> bool {
+    match ctrl {
+        crate::model::control::Control::Picture(pic) => pic.common.treat_as_char,
+        crate::model::control::Control::Shape(shape) => shape.common().treat_as_char,
+        _ => false,
+    }
+}
+
+fn strip_hwp3_single_tac_visual_marker(para: &mut crate::model::paragraph::Paragraph) {
+    if para.text == "\u{FFFC}"
+        && para.controls.len() == 1
+        && hwp3_is_treat_as_char_visual_control(&para.controls[0])
+    {
+        reset_hwp3_plain_paragraph_text(para, "");
+        para.has_para_text = true;
+    }
+}
+
+fn hwp3_ir_para_metric_to_line_box(value: i32) -> i32 {
+    value / 2
+}
+
 pub(crate) fn convert_char_shape(
     hwp3_cs: &crate::parser::hwp3::records::Hwp3CharShape,
 ) -> crate::model::style::CharShape {
@@ -177,6 +249,7 @@ pub(crate) fn convert_char_shape(
     ];
     cs.ratios = hwp3_cs.ratios;
     cs.spacings = hwp3_cs.spacings;
+    cs.text_color = hwp3_color_index_to_color_ref(hwp3_cs.text_color);
     cs.attr = hwp3_cs.attr as u32;
     cs.italic = hwp3_cs.is_italic();
     cs.bold = hwp3_cs.is_bold();
@@ -195,12 +268,11 @@ pub(crate) fn convert_para_shape(
     doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
 ) -> crate::model::style::ParaShape {
     let mut ps = crate::model::style::ParaShape::default();
-    // HWP 3.0에서 여백과 들여쓰기는 hunit(1/1800 인치) 또는 shunit 단위로 제공됩니다.
-    // 내부 모델은 HWPUNIT(1/7200 인치)을 사용합니다.
-    // 따라서 4를 곱합니다.
-    ps.margin_left = (hwp3_ps.left_margin as i32) * 4;
-    ps.margin_right = (hwp3_ps.right_margin as i32) * 4;
-    ps.indent = (hwp3_ps.indent as i32) * 4;
+    // HWP3 여백/들여쓰기 단위는 hunit(1/1800인치)이다. 공통 ParaShape IR은
+    // HWP5/HWPX와 같이 실제 HWPUNIT 값의 2배 스케일로 저장하므로 4*2를 곱한다.
+    ps.margin_left = hwp3_para_metric_u16_to_ir(hwp3_ps.left_margin);
+    ps.margin_right = hwp3_para_metric_u16_to_ir(hwp3_ps.right_margin);
+    ps.indent = hwp3_para_metric_to_ir(hwp3_ps.indent);
 
     // 줄 간격: MSB가 1이면 hunit 단위의 절대 간격을 의미하고, 그 외에는 퍼센트를 의미합니다.
     if (hwp3_ps.line_spacing & 0x8000) != 0 {
@@ -211,8 +283,8 @@ pub(crate) fn convert_para_shape(
         ps.line_spacing = hwp3_ps.line_spacing as i32;
     }
 
-    ps.spacing_after = (hwp3_ps.margin_bottom as i32) * 4;
-    ps.spacing_before = (hwp3_ps.margin_top as i32) * 4;
+    ps.spacing_after = hwp3_para_metric_u16_to_ir(hwp3_ps.margin_bottom);
+    ps.spacing_before = hwp3_para_metric_u16_to_ir(hwp3_ps.margin_top);
     ps.alignment = match hwp3_ps.align {
         0 => crate::model::style::Alignment::Justify,
         1 => crate::model::style::Alignment::Left,
@@ -245,7 +317,7 @@ pub(crate) fn convert_para_shape(
             other => other,
         };
         tab_items.push(crate::model::style::TabItem {
-            position: (t.position as u32) * 4,
+            position: hwp3_tab_position_to_ir(t.position),
             tab_type: t.tab_type,
             fill_type,
         });
@@ -271,6 +343,88 @@ pub(crate) fn convert_para_shape(
     ps
 }
 
+fn hwp3_para_line_box(
+    para_shape: Option<&crate::model::style::ParaShape>,
+    column_width_hu: i32,
+) -> (i32, i32) {
+    let Some(ps) = para_shape else {
+        return (0, column_width_hu.max(0));
+    };
+
+    let margin_left = hwp3_ir_para_metric_to_line_box(ps.margin_left);
+    let margin_right = hwp3_ir_para_metric_to_line_box(ps.margin_right);
+    let indent = hwp3_ir_para_metric_to_line_box(ps.indent);
+
+    let left = margin_left.saturating_add(indent.min(0)).max(0);
+    let right = margin_right.max(0);
+    let start = left.min(column_width_hu.max(0));
+    let width = column_width_hu.saturating_sub(start).saturating_sub(right);
+    (start, width.max(0))
+}
+
+fn hwp3_para_flow_spacing(para_shape: Option<&crate::model::style::ParaShape>) -> (i32, i32) {
+    let Some(ps) = para_shape else {
+        return (0, 0);
+    };
+
+    (
+        hwp3_ir_para_metric_to_line_box(ps.spacing_before).max(0),
+        hwp3_ir_para_metric_to_line_box(ps.spacing_after).max(0),
+    )
+}
+
+fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
+    // HWP3 미주는 HWPX 기준 출력처럼 본문 영역 안에서 2단으로 흘린다.
+    // 한글 97 계열의 기본 미주 단 간격은 5mm에 해당하는 1416 HWPUNIT로 본다.
+    const HWP3_NOTE_COLUMN_GAP_HU: i32 = 1416;
+    column_width_hu
+        .saturating_sub(HWP3_NOTE_COLUMN_GAP_HU)
+        .saturating_div(2)
+        .max(1)
+}
+
+fn hwp3_default_endnote_shape() -> crate::model::footnote::FootnoteShape {
+    use crate::model::footnote::{
+        FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
+    };
+
+    let mut shape = FootnoteShape {
+        number_format: NumberFormat::Digit,
+        suffix_char: ')',
+        start_number: 1,
+        separator_margin_top: 864,
+        note_spacing: 576,
+        separator_line_width: 1,
+        separator_color: 0x00000000,
+        numbering: FootnoteNumbering::Continue,
+        placement: FootnotePlacement::EachColumn,
+        ..Default::default()
+    };
+    shape.attr = shape.encode_attr();
+    shape
+}
+
+fn hwp3_default_endnote_column_def() -> crate::model::page::ColumnDef {
+    crate::model::page::ColumnDef {
+        column_count: 2,
+        same_width: true,
+        spacing: 1416,
+        separator_type: 2,
+        separator_width: 3,
+        separator_color: 0x00000000,
+        ..Default::default()
+    }
+}
+
+fn hwp3_default_body_column_def() -> crate::model::page::ColumnDef {
+    crate::model::page::ColumnDef {
+        column_count: 1,
+        same_width: true,
+        spacing: 0,
+        ..Default::default()
+    }
+}
+
 pub(crate) fn parse_paragraph_list(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -280,6 +434,7 @@ pub(crate) fn parse_paragraph_list(
     pic_name_to_id: &mut std::collections::HashMap<String, u16>,
     body_left_hu: i32,
     column_width_hu: i32,
+    body_height_hu: i32,
 ) -> Result<Vec<crate::model::paragraph::Paragraph>, Hwp3Error> {
     use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
     use byteorder::{LittleEndian, ReadBytesExt};
@@ -1073,6 +1228,7 @@ pub(crate) fn parse_paragraph_list(
                                     pic_name_to_id,
                                     body_left_hu,
                                     column_width_hu,
+                                    0,
                                 )?;
                                 cell.paragraphs = nested;
                                 cells.push(cell);
@@ -1091,6 +1247,7 @@ pub(crate) fn parse_paragraph_list(
                                 pic_name_to_id,
                                 body_left_hu,
                                 column_width_hu,
+                                0,
                             )?;
                             let caption_direction = match caption_pos {
                                 0 => crate::model::shape::CaptionDirection::Bottom,
@@ -1099,12 +1256,14 @@ pub(crate) fn parse_paragraph_list(
                                 3 => crate::model::shape::CaptionDirection::Right,
                                 _ => crate::model::shape::CaptionDirection::Bottom,
                             };
-                            table.caption = Some(crate::model::shape::Caption {
-                                direction: caption_direction,
-                                width: caption_width as _,
-                                paragraphs: caption_paras,
-                                ..Default::default()
-                            });
+                            if hwp3_paragraphs_have_renderable_content(&caption_paras) {
+                                table.caption = Some(crate::model::shape::Caption {
+                                    direction: caption_direction,
+                                    width: caption_width as _,
+                                    paragraphs: caption_paras,
+                                    ..Default::default()
+                                });
+                            }
 
                             if obj_type == 2 {
                                 let mut eq = crate::model::control::Equation::default();
@@ -1307,6 +1466,7 @@ pub(crate) fn parse_paragraph_list(
                                 pic_name_to_id,
                                 body_left_hu,
                                 column_width_hu,
+                                0,
                             )?;
                             let caption_direction = match caption_pos {
                                 0 => crate::model::shape::CaptionDirection::Bottom,
@@ -1316,64 +1476,65 @@ pub(crate) fn parse_paragraph_list(
                                 _ => crate::model::shape::CaptionDirection::Bottom,
                             };
 
-                            let caption = crate::model::shape::Caption {
-                                direction: caption_direction,
-                                width: caption_width as _,
-                                paragraphs: caption_paras,
-                                ..Default::default()
-                            };
+                            let caption = hwp3_paragraphs_have_renderable_content(&caption_paras)
+                                .then(|| crate::model::shape::Caption {
+                                    direction: caption_direction,
+                                    width: caption_width as _,
+                                    paragraphs: caption_paras,
+                                    ..Default::default()
+                                });
 
                             if pic_type == 0 || pic_type == 1 || pic_type == 2 {
-                                pic.caption = Some(caption);
+                                pic.caption = caption;
                                 parsed_picture = Some(pic);
                             } else if pic_type == 3 {
                                 // For drawing objects, we might attach the caption if the root is a known shape
                                 if let Some(mut drawing_obj) = parsed_drawing_object.take() {
                                     match &mut drawing_obj {
                                         crate::model::shape::ShapeObject::Group(g) => {
-                                            g.caption = Some(caption);
+                                            g.caption = caption.clone();
                                             pic.common.width = g.common.width;
                                             pic.common.height = g.common.height;
                                             g.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Line(l) => {
-                                            l.drawing.caption = Some(caption);
+                                            l.drawing.caption = caption.clone();
                                             pic.common.width = l.common.width;
                                             pic.common.height = l.common.height;
                                             l.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Rectangle(r) => {
-                                            r.drawing.caption = Some(caption);
+                                            r.drawing.caption = caption.clone();
                                             pic.common.width = r.common.width;
                                             pic.common.height = r.common.height;
                                             r.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Ellipse(e) => {
-                                            e.drawing.caption = Some(caption);
+                                            e.drawing.caption = caption.clone();
                                             pic.common.width = e.common.width;
                                             pic.common.height = e.common.height;
                                             e.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Arc(a) => {
-                                            a.drawing.caption = Some(caption);
+                                            a.drawing.caption = caption.clone();
                                             pic.common.width = a.common.width;
                                             pic.common.height = a.common.height;
                                             a.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Polygon(p) => {
-                                            p.drawing.caption = Some(caption);
+                                            p.drawing.caption = caption.clone();
                                             pic.common.width = p.common.width;
                                             pic.common.height = p.common.height;
                                             p.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Curve(c) => {
-                                            c.drawing.caption = Some(caption);
+                                            c.drawing.caption = caption.clone();
                                             pic.common.width = c.common.width;
                                             pic.common.height = c.common.height;
                                             c.common = pic.common.clone();
                                         }
                                         crate::model::shape::ShapeObject::Picture(p) => {
-                                            p.caption = Some(caption);
+                                            p.caption = caption.clone();
                                             pic.common.width = p.common.width;
                                             pic.common.height = p.common.height;
                                             p.common = pic.common.clone();
@@ -1470,6 +1631,7 @@ pub(crate) fn parse_paragraph_list(
                                 pic_name_to_id,
                                 body_left_hu,
                                 column_width_hu,
+                                0,
                             )?;
                         } else if ch == 16 {
                             // 머리말/꼬리말
@@ -1486,6 +1648,7 @@ pub(crate) fn parse_paragraph_list(
                                 pic_name_to_id,
                                 body_left_hu,
                                 column_width_hu,
+                                0,
                             )?;
                         } else if ch == 17 {
                             // 각주/미주
@@ -1493,6 +1656,13 @@ pub(crate) fn parse_paragraph_list(
                             if let Err(_) = body_cursor.read_exact(&mut info_buf) {
                                 break;
                             }
+                            let is_endnote =
+                                (&info_buf[10..12]).read_u16::<LittleEndian>().unwrap_or(0) == 1;
+                            let note_column_width_hu = if is_endnote {
+                                hwp3_note_column_width_hu(column_width_hu)
+                            } else {
+                                column_width_hu
+                            };
                             nested_paragraphs = parse_paragraph_list(
                                 body_cursor,
                                 doc_char_shapes,
@@ -1501,7 +1671,8 @@ pub(crate) fn parse_paragraph_list(
                                 doc_tab_defs,
                                 pic_name_to_id,
                                 body_left_hu,
-                                column_width_hu,
+                                note_column_width_hu,
+                                0,
                             )?;
                         } else if ch == 29 {
                             // 상호 참조
@@ -1577,11 +1748,37 @@ pub(crate) fn parse_paragraph_list(
                             // 헤더 직후가 정상 단락 내용이므로 추가 skip 없음.
                         }
 
-                        // ch=15(숨은설명), ch=16(머리말/꼬리말), ch=17(각주/미주)는
-                        // HWP5 모델에서 인라인 앵커가 없는 비인라인 컨트롤이다.
-                        // \u{FFFC}를 text_string에 넣으면 폰트 미지원 글리프("?")로 렌더링되므로 생략.
-                        let is_non_inline_ctrl = ch == 15 || ch == 16 || ch == 17;
-                        if !is_non_inline_ctrl {
+                        let is_non_tac_table = ch == 10
+                            && parsed_table
+                                .as_ref()
+                                .is_some_and(|table| !table.common.treat_as_char);
+                        let is_tac_picture_or_shape = ch == 11
+                            && (parsed_picture
+                                .as_ref()
+                                .is_some_and(|pic| pic.common.treat_as_char)
+                                || parsed_drawing_object
+                                    .as_ref()
+                                    .is_some_and(|shape| shape.common().treat_as_char));
+                        let is_tac_line = ch == 14
+                            && parsed_line
+                                .as_ref()
+                                .is_some_and(|line| line.common.treat_as_char);
+                        let is_control_only_marker =
+                            text_string.is_empty() && i >= para_info.char_count as usize;
+                        let preserve_invisible_anchor_gap = ch == 17 || is_non_tac_table;
+                        // ch=15(숨은설명), ch=16(머리말/꼬리말), 비-TAC 표,
+                        // 단독 TAC 그림/도형/선 자리 문단은 화면에 보이는 대체 글자를
+                        // 만들지 않는다. 미주/각주와 비-TAC 표는 본문 안의 8유닛 앵커 슬롯을
+                        // 별도로 보존해 컨트롤 위치를 잃지 않게 한다.
+                        let omit_visible_marker = ch == 15
+                            || ch == 16
+                            || preserve_invisible_anchor_gap
+                            || (is_control_only_marker && (is_tac_picture_or_shape || is_tac_line));
+                        if omit_visible_marker {
+                            if preserve_invisible_anchor_gap {
+                                utf16_len += 8;
+                            }
+                        } else {
                             char_offsets.push(utf16_len);
                             utf16_len += 1;
                             text_string.push('\u{FFFC}');
@@ -1608,36 +1805,20 @@ pub(crate) fn parse_paragraph_list(
                                 controls
                                     .push(crate::model::control::Control::Equation(Box::new(eq)));
                             } else if parsed_obj_type == 1 {
-                                let mut rect = crate::model::shape::RectangleShape::default();
                                 if let Some(table) = parsed_table {
-                                    rect.common = table.common.clone();
-                                    let mut tb = crate::model::shape::TextBox::default();
-                                    if let Some(cell) = table.cells.first() {
-                                        tb.paragraphs = cell.paragraphs.clone();
-                                        tb.margin_left = cell.padding.left as _;
-                                        tb.margin_right = cell.padding.right as _;
-                                        tb.margin_top = cell.padding.top as _;
-                                        tb.margin_bottom = cell.padding.bottom as _;
-                                        tb.vertical_align = cell.vertical_align;
-
-                                        if let Some(bf) = doc_border_fills
-                                            .get(cell.border_fill_id.saturating_sub(1) as usize)
-                                        {
-                                            rect.drawing.border_line =
-                                                crate::model::style::ShapeBorderLine {
-                                                    width: bf.borders[0].width as i32,
-                                                    color: bf.borders[0].color,
-                                                    ..Default::default()
-                                                };
-                                            rect.drawing.fill = bf.fill.clone();
-                                        }
-                                    }
-                                    rect.drawing.text_box = Some(tb);
-                                    rect.drawing.caption = table.caption.clone();
+                                    // HWP3 obj_type=1 글상자는 1x1 표 구조가 자리차지 흐름과
+                                    // 내부 여백을 이미 담고 있으므로 Table IR 그대로 보존한다.
+                                    controls.push(crate::model::control::Control::Table(Box::new(
+                                        table,
+                                    )));
+                                } else {
+                                    let mut rect = crate::model::shape::RectangleShape::default();
+                                    rect.drawing.text_box =
+                                        Some(crate::model::shape::TextBox::default());
+                                    controls.push(crate::model::control::Control::Shape(Box::new(
+                                        crate::model::shape::ShapeObject::Rectangle(rect),
+                                    )));
                                 }
-                                controls.push(crate::model::control::Control::Shape(Box::new(
-                                    crate::model::shape::ShapeObject::Rectangle(rect),
-                                )));
                             } else if parsed_obj_type == 3 {
                                 let mut form = crate::model::control::FormObject::default();
                                 form.form_type = crate::model::control::FormType::PushButton;
@@ -1885,6 +2066,7 @@ pub(crate) fn parse_paragraph_list(
         para.controls = controls;
         para.ctrl_data_records = ctrl_data_records;
         para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
+        strip_hwp3_single_tac_visual_marker(&mut para);
 
         let mut char_shapes = Vec::new();
         char_shapes.push(CharShapeRef {
@@ -1934,6 +2116,9 @@ pub(crate) fn parse_paragraph_list(
                 fixed_line_spacing = Some(para_shape.line_spacing);
             }
         }
+        let para_shape = doc_para_shapes.get(para_shape_id as usize);
+        let para_line_box = hwp3_para_line_box(para_shape, column_width_hu);
+        let para_flow_spacing = hwp3_para_flow_spacing(para_shape);
 
         let fallback_text_height = base_size as i32;
         // [Task #604 Stage D-2] HWP5 IR 정합: percent 줄간격도 lh=th, ls=th*(ratio-100)/100
@@ -2052,14 +2237,15 @@ pub(crate) fn parse_paragraph_list(
                     None
                 }
             });
+            let (column_start, segment_width) = cs_sw.unwrap_or(para_line_box);
             line_segs.push(LineSeg {
                 text_start: 0,
                 line_height: fallback_line_height,
                 text_height: fallback_text_height,
                 baseline_distance: fallback_baseline_distance,
                 line_spacing: fallback_line_spacing,
-                column_start: cs_sw.map(|(cs, _)| cs).unwrap_or(0),
-                segment_width: cs_sw.map(|(_, sw)| sw).unwrap_or(0),
+                column_start,
+                segment_width,
                 tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             });
@@ -2154,6 +2340,7 @@ pub(crate) fn parse_paragraph_list(
                         None
                     }
                 });
+                let (column_start, segment_width) = line_cs_sw.unwrap_or(para_line_box);
 
                 // [Task #604 Stage A+D] HWP3 본질 유지: lh / ls 그대로 (Stage 5 B-2 revert).
                 // HWP5 v2024 변환본 분석 결과 lh+ls 누적값이 본 환경 HWP3 의 lh 와 동등
@@ -2166,8 +2353,8 @@ pub(crate) fn parse_paragraph_list(
                     text_height: th,
                     baseline_distance: bl,
                     line_spacing: ls,
-                    column_start: line_cs_sw.map(|(cs, _)| cs).unwrap_or(0),
-                    segment_width: line_cs_sw.map(|(_, sw)| sw).unwrap_or(0),
+                    column_start,
+                    segment_width,
                     tag,
                 });
             }
@@ -2245,6 +2432,15 @@ pub(crate) fn parse_paragraph_list(
             }
         }
 
+        if para.text.is_empty()
+            && para.controls.len() == 1
+            && hwp3_is_treat_as_char_visual_control(&para.controls[0])
+        {
+            for seg in para.line_segs.iter_mut() {
+                seg.line_spacing = 0;
+            }
+        }
+
         // HWP3 후처리: tac=false(부동) + 자리차지(TopAndBottom) 그림의
         // caption.width=0 보정 (layout_body_picture 캡션 렌더링에 그림 너비 사용).
         // paginator는 Control::Picture 처리 시 pic_h를 current_height에 추가하므로
@@ -2295,27 +2491,34 @@ pub(crate) fn parse_paragraph_list(
             }
         }
 
-        // pgy 추적 (wrap zone 의 is_page_break 판정 용 — 본 영역에서는 column_type
-        // 갱신 안 함).
-        //
-        // [Task #604 Stage D-2] pgy 기반 자연 페이지 wrap 은 column_type=Page 로
-        // 인코딩하지 않음. 본 환경 typeset.rs 가 item 높이 기준 자체 pagination →
-        // 자연 wrap 은 typeset 책임. column_type=Page 는 명시적 [쪽나누기] (flags&0x02)
-        // 만 설정 → vpos reset 도 본 영역만 발생.
         let last_pgy = line_infos.last().map(|l| l.pgy).unwrap_or(0);
         if last_pgy > 0 {
             prev_last_pgy = last_pgy;
         }
+        let is_top_level_body = body_height_hu > 0 && column_width_hu >= 30000;
+        // HWP3 pgy 감소는 저장 당시 자연 페이지 경계를 담고 있지만, 페이지 첫 제목
+        // 직후에도 다시 감소하는 경우가 있다. 현재 페이지에 최소한의 본문 높이가
+        // 쌓였을 때만 자연 페이지 경계로 승격해 단독 제목 페이지를 막는다.
+        const HWP3_MIN_NATURAL_PAGE_BREAK_CONTENT_HU: i32 = 12000;
+        let pgy_page_break = is_top_level_body
+            && !prev_para_had_flags_break
+            && is_page_break
+            && acc_section_vpos >= HWP3_MIN_NATURAL_PAGE_BREAK_CONTENT_HU;
+        let first_line_page_break = is_top_level_body
+            && acc_section_vpos >= HWP3_MIN_NATURAL_PAGE_BREAK_CONTENT_HU
+            && line_infos
+                .first()
+                .is_some_and(|first_line| first_line.break_flag & 0x8001 == 0x8001);
 
-        // para_info.flags bit 1 = 명시적 페이지나눔: 이전 문단에 이 플래그가 있으면
-        // 현재 문단이 새 페이지에서 시작한다.
+        // para_info.flags bit 1은 명시적 쪽나누기이고, pgy/break_flag는 선별된
+        // 자연 페이지 경계이다. 표 셀/미주 등 nested paragraph list에서는
+        // body_height_hu=0 이므로 자연 페이지 승격이 일어나지 않는다.
         // [Task #724] 한컴 IR 정합: 빈 paragraph (text_len=0 + controls=0) 인 경우
         // column_type=Page 설정 안 함 (HWP5 변환본 paragraph 171 column_type=Normal 정합).
         // 단, vpos reset 은 강제 (force_vpos_reset) — page break 시점 acc_section_vpos=0
         // 정합 (HWP5 변환본 vpos=0 페이지 시작 정합 보존).
-        // 본문 paragraph 의 page break flag 는 그대로 column_type=Page 적용.
         let mut force_vpos_reset = false;
-        if prev_para_had_flags_break {
+        if prev_para_had_flags_break || pgy_page_break || first_line_page_break {
             let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
             if !is_empty_no_ctrl {
                 para.column_type = crate::model::paragraph::ColumnBreakType::Page;
@@ -2324,23 +2527,6 @@ pub(crate) fn parse_paragraph_list(
             }
         }
         prev_para_had_flags_break = para_info.flags & 0x02 != 0;
-
-        // [Task #604 Stage D-2] HWP3 line_info.break_flag 의 페이지 경계 신호를
-        // column_type=Page 로 변환. 본 신호는 HWP3 가 자연 wrap 한 페이지 시작.
-        // HWP5 v2024 변환본의 vpos=0 (페이지 상단 시작) 인코딩 영역과 정합.
-        // 0x8000 = 신호 마커, 0x0001 = 페이지 경계.
-        // [Task #724] 한컴 IR 정합: 빈 paragraph (text_len=0 + controls=0) 인 경우
-        // column_type=Page 설정 안 함 + force_vpos_reset 적용 (vpos reset 보존).
-        if let Some(first_line) = line_infos.first() {
-            if first_line.break_flag & 0x8001 == 0x8001 {
-                let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
-                if !is_empty_no_ctrl {
-                    para.column_type = crate::model::paragraph::ColumnBreakType::Page;
-                } else {
-                    force_vpos_reset = true;
-                }
-            }
-        }
 
         // [Task #604 Stage A+D] HWP5 IR 표준 정합화: paragraph 간 vpos 연결 + 그림
         // 영역 끝 시 cs/sw=0/full 전환 + paragraph 내 vpos 누적.
@@ -2356,11 +2542,11 @@ pub(crate) fn parse_paragraph_list(
         {
             // 페이지 break 시 vpos reset (anchor 검출 전 reset 필수 — Stage A+D 정정)
             // [Task #724] force_vpos_reset (빈 paragraph + page break flag) 도 reset 적용
-            if matches!(
+            let starts_new_page = matches!(
                 para.column_type,
                 crate::model::paragraph::ColumnBreakType::Page
-            ) || force_vpos_reset
-            {
+            ) || force_vpos_reset;
+            if starts_new_page {
                 acc_section_vpos = 0;
                 wrap_zone_end_vpos = 0;
             }
@@ -2449,6 +2635,9 @@ pub(crate) fn parse_paragraph_list(
             // 가 한글97 layout 시점에 본 line 부터 새 페이지 인식). HWP5 v2024 변환본의
             // paragraph 내 ls[i].vpos=0 영역 정합 (typeset Task #321 vpos-reset guard
             // 영역 trigger 정합).
+            if !starts_new_page && !para.line_segs.is_empty() {
+                acc_section_vpos = acc_section_vpos.saturating_add(para_flow_spacing.0);
+            }
             for (i, seg) in para.line_segs.iter_mut().enumerate() {
                 if i > 0 && i < line_infos.len() && line_infos[i].pgy < line_infos[i - 1].pgy {
                     // 새 페이지 시작 — vpos reset
@@ -2466,22 +2655,17 @@ pub(crate) fn parse_paragraph_list(
                         }
                     }
                 } else if wrap_zone_end_vpos > 0 && acc_section_vpos >= wrap_zone_end_vpos {
-                    // wrap zone 영역 끝 — cs/sw=0/full 전환
-                    // [Task #724] sw=column_width_hu (col_area 전체 폭) 한컴 IR 정합.
-                    // 본 환경 HWP3 파서가 sw=0 으로 인코딩 시 composer/paragraph_layout
-                    // 에서 좁은 폭 분산 layout 결함 발생.
+                    // wrap zone 영역 끝 — 문단 고유 여백 box 로 복귀.
                     if seg.column_start > 0 || seg.segment_width == 0 {
-                        seg.column_start = 0;
-                        seg.segment_width = column_width_hu;
+                        seg.column_start = para_line_box.0;
+                        seg.segment_width = para_line_box.1;
                     }
                 } else if wrap_zone_end_vpos == 0 {
-                    // [Task #724 Stage 9] wrap zone 비활성 + cs=0/sw=0 인 case
-                    // (paragraph 189 ls[3~6] / paragraph 190/191 등 페이지 break 후 paragraph)
-                    // sw=column_width_hu 정합화 — 한컴 HWP5 변환본 IR 정합 (sw=51024).
-                    // 본 환경 HWP3 파서가 페이지 break 후 sw=0 으로 인코딩 → composer/layout
-                    // 좁은 폭 분산 결함.
+                    // [Task #1692 Stage 4] wrap zone 비활성 줄은 HWP3 ParaShape 의
+                    // 좌/우 여백을 LINE_SEG box 로 반영한다.
                     if seg.column_start == 0 && seg.segment_width == 0 {
-                        seg.segment_width = column_width_hu;
+                        seg.column_start = para_line_box.0;
+                        seg.segment_width = para_line_box.1;
                     }
                 }
 
@@ -2489,6 +2673,9 @@ pub(crate) fn parse_paragraph_list(
                 acc_section_vpos = acc_section_vpos
                     .saturating_add(seg.line_height)
                     .saturating_add(seg.line_spacing);
+            }
+            if !para.line_segs.is_empty() {
+                acc_section_vpos = acc_section_vpos.saturating_add(para_flow_spacing.1);
             }
         }
 
@@ -2648,7 +2835,14 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     let body_left_hu = doc_info.left_margin as i32 * 4;
     let body_right_hu = doc_info.right_margin as i32 * 4;
     let paper_width_hu = doc_info.paper_width as i32 * 4;
+    let paper_height_hu = doc_info.paper_length as i32 * 4;
     let column_width_hu = (paper_width_hu - body_left_hu - body_right_hu).max(1);
+    let body_height_hu = paper_height_hu
+        .saturating_sub(doc_info.header_length as i32 * 4)
+        .saturating_sub(doc_info.top_margin as i32 * 4)
+        .saturating_sub(doc_info.footer_length as i32 * 4)
+        .saturating_sub(doc_info.bottom_margin as i32 * 4)
+        .max(1);
     let mut paragraphs = parse_paragraph_list(
         &mut body_cursor,
         &mut doc_char_shapes,
@@ -2658,6 +2852,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         &mut pic_name_to_id,
         body_left_hu,
         column_width_hu,
+        body_height_hu,
     )?;
 
     // 추가 정보 블록 읽기 (압축 해제된 스트림의 끝 부분)
@@ -2886,12 +3081,312 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     doc.doc_info.bin_data_list = doc_bin_data_list;
     doc.bin_data_content = doc_bin_data_content;
 
+    // HWP3 pic_type=1 OLE도 payload가 없으면 Link BinData로 남는다.
+    // 같은 디렉터리의 외부 파일을 로드할 수 있도록 공통 Link 경로 전달을 적용한다.
+    super::populate_link_image_paths(&mut doc);
+
     crate::parser::assign_auto_numbers(&mut doc);
+    fixup_hwp3_notes(&mut doc);
+    fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
     fixup_hwp3_heading_decoration(&mut doc);
 
     Ok(doc)
+}
+
+#[derive(Debug)]
+struct Hwp3NoteFixupState {
+    footnote_number: u16,
+    endnote_number: u16,
+    has_endnote: bool,
+}
+
+fn fixup_hwp3_notes(doc: &mut crate::model::document::Document) {
+    let para_shapes = doc.doc_info.para_shapes.clone();
+    let mut state = Hwp3NoteFixupState {
+        footnote_number: doc.doc_properties.footnote_start_num.max(1),
+        endnote_number: doc.doc_properties.endnote_start_num.max(1),
+        has_endnote: false,
+    };
+
+    for section in &mut doc.sections {
+        for paragraph in &mut section.paragraphs {
+            fixup_hwp3_notes_in_controls(&mut paragraph.controls, &mut state);
+        }
+    }
+
+    if state.has_endnote {
+        for section in &mut doc.sections {
+            section.section_def.endnote_shape = hwp3_default_endnote_shape();
+            ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
+            let page_def = &section.section_def.page_def;
+            let body_width_hu = page_def
+                .width
+                .saturating_sub(page_def.margin_left)
+                .saturating_sub(page_def.margin_right) as i32;
+            fixup_hwp3_answer_column_def(&mut section.paragraphs, &para_shapes, body_width_hu);
+        }
+    }
+}
+
+fn ensure_hwp3_initial_body_column_def(paragraphs: &mut [crate::model::paragraph::Paragraph]) {
+    use crate::model::control::Control;
+
+    let Some(first_paragraph) = paragraphs.first_mut() else {
+        return;
+    };
+    if first_paragraph
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::ColumnDef(_)))
+    {
+        return;
+    }
+
+    first_paragraph
+        .controls
+        .insert(0, Control::ColumnDef(hwp3_default_body_column_def()));
+}
+
+fn fixup_hwp3_answer_column_def(
+    paragraphs: &mut [crate::model::paragraph::Paragraph],
+    para_shapes: &[crate::model::style::ParaShape],
+    body_width_hu: i32,
+) {
+    use crate::model::control::Control;
+
+    let Some(paragraph) = paragraphs.iter_mut().rev().find(|paragraph| {
+        paragraph.text.contains("해답")
+            && !paragraph
+                .controls
+                .iter()
+                .any(|control| matches!(control, Control::ColumnDef(_)))
+    }) else {
+        return;
+    };
+
+    let column_def = hwp3_default_endnote_column_def();
+    let note_column_width_hu = hwp3_note_column_width_hu(body_width_hu);
+    let para_shape = para_shapes.get(paragraph.para_shape_id as usize);
+    let (column_start, segment_width) = hwp3_para_line_box(para_shape, note_column_width_hu);
+    paragraph.controls.insert(0, Control::ColumnDef(column_def));
+    for line_seg in &mut paragraph.line_segs {
+        line_seg.column_start = column_start;
+        line_seg.segment_width = segment_width;
+    }
+}
+
+fn fixup_hwp3_notes_in_paragraphs(
+    paragraphs: &mut [crate::model::paragraph::Paragraph],
+    state: &mut Hwp3NoteFixupState,
+) {
+    for paragraph in paragraphs {
+        fixup_hwp3_notes_in_controls(&mut paragraph.controls, state);
+    }
+}
+
+fn normalize_hwp3_note_line_vpos(paragraph: &mut crate::model::paragraph::Paragraph) {
+    if paragraph.line_segs.len() <= 1 {
+        return;
+    }
+
+    let mut expected_vpos = None;
+    for line_seg in &mut paragraph.line_segs {
+        if let Some(expected) = expected_vpos {
+            if line_seg.vertical_pos == 0 && expected > 0 {
+                // HWP3 미주 내부에는 실제 단/쪽 리셋이 아닌 후속 줄 vpos=0이
+                // 저장되는 사례가 있다. 본문 문단의 페이지 리셋 의미는 유지하고,
+                // note 내부 일반 연속줄만 이전 줄 advance 기준으로 복원한다.
+                line_seg.vertical_pos = expected;
+            }
+        }
+
+        expected_vpos = Some(
+            line_seg
+                .vertical_pos
+                .saturating_add(line_seg.line_height)
+                .saturating_add(line_seg.line_spacing),
+        );
+    }
+}
+
+fn fixup_hwp3_notes_in_controls(
+    controls: &mut [crate::model::control::Control],
+    state: &mut Hwp3NoteFixupState,
+) {
+    use crate::model::control::Control;
+
+    for control in controls {
+        match control {
+            Control::Footnote(footnote) => {
+                footnote.number = state.footnote_number;
+                state.footnote_number = state.footnote_number.saturating_add(1);
+                footnote.after_decoration_letter = ')' as u16;
+                footnote.number_shape = 0;
+                fixup_hwp3_notes_in_paragraphs(&mut footnote.paragraphs, state);
+            }
+            Control::Endnote(endnote) => {
+                state.has_endnote = true;
+                endnote.number = state.endnote_number;
+                state.endnote_number = state.endnote_number.saturating_add(1);
+                endnote.after_decoration_letter = ')' as u16;
+                endnote.number_shape = 0;
+                for paragraph in &mut endnote.paragraphs {
+                    normalize_hwp3_note_line_vpos(paragraph);
+                }
+                fixup_hwp3_notes_in_paragraphs(&mut endnote.paragraphs, state);
+            }
+            Control::Table(table) => {
+                for cell in &mut table.cells {
+                    fixup_hwp3_notes_in_paragraphs(&mut cell.paragraphs, state);
+                }
+                if let Some(caption) = &mut table.caption {
+                    fixup_hwp3_notes_in_paragraphs(&mut caption.paragraphs, state);
+                }
+            }
+            Control::Picture(picture) => {
+                if let Some(caption) = &mut picture.caption {
+                    fixup_hwp3_notes_in_paragraphs(&mut caption.paragraphs, state);
+                }
+            }
+            Control::Shape(shape) => {
+                if let Some(drawing) = shape.drawing_mut() {
+                    if let Some(caption) = &mut drawing.caption {
+                        fixup_hwp3_notes_in_paragraphs(&mut caption.paragraphs, state);
+                    }
+                    if let Some(text_box) = &mut drawing.text_box {
+                        fixup_hwp3_notes_in_paragraphs(&mut text_box.paragraphs, state);
+                    }
+                }
+            }
+            Control::Header(header) => {
+                fixup_hwp3_notes_in_paragraphs(&mut header.paragraphs, state);
+            }
+            Control::Footer(footer) => {
+                fixup_hwp3_notes_in_paragraphs(&mut footer.paragraphs, state);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn fixup_hwp3_outline_fields(doc: &mut crate::model::document::Document) {
+    use crate::model::style::HeadType;
+
+    let numbering_id = ensure_hwp3_default_outline_numbering(&mut doc.doc_info.numberings);
+    for section in &mut doc.sections {
+        if section.section_def.outline_numbering_id == 0 {
+            section.section_def.outline_numbering_id = numbering_id;
+        }
+
+        for paragraph in &mut section.paragraphs {
+            let Some(level) = hwp3_outline_number_level(paragraph) else {
+                continue;
+            };
+
+            // HWP3 Outline field는 앞쪽 control marker를 본문 text에 남긴다.
+            // 번호 문단으로 복원한 뒤 보이는 legacy marker만 제거한다.
+            while paragraph
+                .text
+                .chars()
+                .next()
+                .is_some_and(|ch| ch == '-' || ch == '\u{FFFC}')
+            {
+                if paragraph.delete_text_at(0, 1) == 0 {
+                    break;
+                }
+            }
+
+            let Some(base_shape) = doc
+                .doc_info
+                .para_shapes
+                .get(paragraph.para_shape_id as usize)
+                .cloned()
+            else {
+                continue;
+            };
+
+            let mut outline_shape = base_shape;
+            outline_shape.head_type = HeadType::Number;
+            outline_shape.numbering_id = numbering_id;
+            outline_shape.para_level = level;
+            outline_shape.attr1 &= !((0x03 << 23) | (0x07 << 25));
+            outline_shape.attr1 |= (0x02 << 23) | ((level as u32 & 0x07) << 25);
+
+            doc.doc_info.para_shapes.push(outline_shape);
+            paragraph.para_shape_id = (doc.doc_info.para_shapes.len() - 1) as u16;
+        }
+    }
+}
+
+fn ensure_hwp3_default_outline_numbering(
+    numberings: &mut Vec<crate::model::style::Numbering>,
+) -> u16 {
+    use crate::model::style::{Numbering, NumberingHead};
+
+    if !numberings.is_empty() {
+        return 1;
+    }
+
+    let mut numbering = Numbering {
+        level_formats: [
+            "^1.".to_string(),
+            "^2)".to_string(),
+            "(^3)".to_string(),
+            "^4.".to_string(),
+            "^5)".to_string(),
+            "(^6)".to_string(),
+            "^7".to_string(),
+        ],
+        start_number: 0,
+        level_start_numbers: [1; 7],
+        ..Default::default()
+    };
+
+    let formats = [2, 0, 0, 8, 8, 8, 1];
+    for (head, number_format) in numbering.heads.iter_mut().zip(formats) {
+        *head = NumberingHead {
+            number_format,
+            ..Default::default()
+        };
+    }
+
+    numberings.push(numbering);
+    1
+}
+
+fn hwp3_outline_number_level(paragraph: &crate::model::paragraph::Paragraph) -> Option<u8> {
+    use crate::model::control::Control;
+
+    paragraph.controls.iter().find_map(|control| {
+        let Control::Field(field) = control else {
+            return None;
+        };
+        hwp3_outline_command_level(&field.command)
+    })
+}
+
+fn hwp3_outline_command_level(command: &str) -> Option<u8> {
+    if !command.starts_with("Outline:") {
+        return None;
+    }
+
+    let mut kind = None;
+    let mut level = None;
+    for part in command.split(':') {
+        if let Some(value) = part.strip_prefix("kind=") {
+            kind = value.parse::<u8>().ok();
+        } else if let Some(value) = part.strip_prefix("level=") {
+            level = value.parse::<u8>().ok();
+        }
+    }
+
+    if kind != Some(1) {
+        return None;
+    }
+
+    Some(level.unwrap_or(0).min(6))
 }
 
 /// [Task #1008 격차 C] HWP3 의 heading decoration text strip.
@@ -3110,11 +3605,14 @@ fn apply_bullet_fixup_single(
         return;
     }
     let ps = &para_shapes[ps_id];
+    let margin_left = hwp3_ir_para_metric_to_line_box(ps.margin_left);
+    let margin_right = hwp3_ir_para_metric_to_line_box(ps.margin_right);
+    let indent = hwp3_ir_para_metric_to_line_box(ps.indent);
 
     // 2단계 글머리 ◦ 패턴: margins (L=6500, R=1000, I=-2500) + ls=130|145
-    let is_level2 = ps.margin_left == 6500
-        && ps.margin_right == 1000
-        && ps.indent == -2500
+    let is_level2 = margin_left == 6500
+        && margin_right == 1000
+        && indent == -2500
         && (ps.line_spacing == 130 || ps.line_spacing == 145);
 
     // 1단계 글머리 ○ 패턴 — sample16 paragraph 393.text_box.paragraphs (nested):
@@ -3122,10 +3620,8 @@ fn apply_bullet_fixup_single(
     // ParaShape 패턴 확인 후 적용. 우선 ls=130 + indent=-2000 패턴 (paragraph 89 와 동일) 시도.
     // 단 nested 처리 시 paragraph 393 text_box 안의 첫 char 가 공백 + 본문 paragraph
     // 패턴이면 ○ 추가.
-    let is_level1 = ps.margin_left == 6000
-        && ps.margin_right == 1000
-        && ps.indent == -2000
-        && ps.line_spacing == 100; // text_box paragraph 의 ls=100
+    let is_level1 =
+        margin_left == 6000 && margin_right == 1000 && indent == -2000 && ps.line_spacing == 100; // text_box paragraph 의 ls=100
 
     let bullet_str = if is_level1 {
         "○ "
@@ -3293,6 +3789,30 @@ mod tests {
         assert_eq!(pbf.spacing_bottom, 160);
         assert_eq!(pbf.basis, PageBorderBasis::BodyBased);
         assert_eq!(pbf.ui_basis, PageBorderUiBasis::Page);
+    }
+
+    #[test]
+    fn task1692_hwp3_color_index_maps_to_color_ref() {
+        assert_eq!(hwp3_color_index_to_color_ref(0), 0x00000000);
+        assert_eq!(hwp3_color_index_to_color_ref(1), 0x00FF0000);
+        assert_eq!(hwp3_color_index_to_color_ref(2), 0x0000FF00);
+        assert_eq!(hwp3_color_index_to_color_ref(3), 0x00FFFF00);
+        assert_eq!(hwp3_color_index_to_color_ref(4), 0x000000FF);
+        assert_eq!(hwp3_color_index_to_color_ref(5), 0x00FF00FF);
+        assert_eq!(hwp3_color_index_to_color_ref(6), 0x0000FFFF);
+        assert_eq!(hwp3_color_index_to_color_ref(7), 0x00FFFFFF);
+        assert_eq!(hwp3_color_index_to_color_ref(255), 0x00000000);
+    }
+
+    #[test]
+    fn task1692_convert_char_shape_preserves_text_color() {
+        let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
+            text_color: 1,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&hwp3_cs);
+
+        assert_eq!(cs.text_color, 0x00FF0000);
     }
 
     #[test]

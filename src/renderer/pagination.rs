@@ -81,6 +81,10 @@ pub struct PaginationResult {
     pub wrap_around_paras: Vec<WrapAroundPara>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
     pub hidden_empty_paras: std::collections::HashSet<usize>,
+    /// [Task #1755] 지연 이월 표의 host 텍스트 줄이 typeset 에서 이월 전 쪽에
+    /// PartialParagraph 로 pre-emit 된 문단 집합 — layout 의 마지막 fragment 뒤
+    /// host 렌더(`render_deferred_rowbreak_host_text_after`) 이중 렌더 억제용.
+    pub pre_emitted_host_paras: std::collections::HashSet<usize>,
     /// 섹션별 미주 목록 (문서 끝 또는 섹션 끝에 렌더)
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)
