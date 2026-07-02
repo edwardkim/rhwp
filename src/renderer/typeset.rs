@@ -1089,6 +1089,45 @@ fn saved_bounds_fit_at_flow_tail(bounds: (f64, f64), current_height: f64, availa
     top + 16.0 >= current_height && bottom <= available + 0.5
 }
 
+/// [Task #1749] 저장 flow 가 이 문단을 "페이지 마지막 줄"로 인코딩했는가.
+///
+/// saved bounds 신뢰(`saved_single_line_bottom_fits`)는 저장 LINE_SEG vpos 가 페이지
+/// 배정을 인코딩한다는 전제 위에 있다. 페이지-마지막 증거는 세 가지다:
+/// ① 다음 문단의 첫 실줄이 없음(문서/구역 끝 — fe6de3ef 합성 테스트 보호 케이스),
+/// ② 다음 실줄이 현재 줄보다 작은 vpos 로 리셋(다음 줄이 새 쪽),
+/// ③ 다음 실줄에 도달하기 전에 명시적 쪽/구역나누기 문단이 있음 — 누적좌표 문서는
+///    쪽 경계에서도 vpos 가 리셋되지 않으므로(예: 결재문서 36375752 pi26→pi27
+///    [쪽나누기]) 리셋 검사만으로는 이 증거를 볼 수 없다. 신뢰 경로는 vpos 를
+///    페이지 기준점 상대값으로 쓰므로 누적좌표라도 페이지 내 위치는 유효하다.
+/// 어느 증거도 없이 다음 vpos 가 증가 지속하면(예: 결재문서 36371084 pi18→pi19)
+/// 저장 vpos 로 페이지를 알 수 없으므로 신뢰하지 않는다 — 누적높이 판정으로 복귀해
+/// 쪽 경계 overfill 을 막는다.
+fn saved_flow_marks_page_last(paragraphs: &[Paragraph], para_idx: usize) -> bool {
+    let curr_vpos = match paragraphs
+        .get(para_idx)
+        .and_then(|p| p.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)))
+    {
+        Some(ls) => ls.vertical_pos,
+        None => return false,
+    };
+    for next_para in paragraphs.iter().skip(para_idx + 1) {
+        if matches!(
+            next_para.column_type,
+            ColumnBreakType::Page | ColumnBreakType::Section
+        ) {
+            return true;
+        }
+        if let Some(next) = next_para
+            .line_segs
+            .iter()
+            .find(|ls| !is_synthetic_line_seg(ls))
+        {
+            return next.vertical_pos < curr_vpos;
+        }
+    }
+    true
+}
+
 fn positive_vpos_end_before_negative_wrap(para: &Paragraph) -> Option<i32> {
     let last_real = para
         .line_segs
@@ -9454,6 +9493,9 @@ impl TypesetEngine {
             && fmt.spacing_after <= 0.5
             && para.controls.is_empty()
             && !st.current_items.is_empty()
+            // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
+            // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
+            && saved_flow_marks_page_last(paragraphs, para_idx)
             && current_page_vpos_base
                 .and_then(|base| single_line_visible_bounds_px(para, base, self.dpi))
                 .is_some_and(|bounds| {
@@ -13008,6 +13050,49 @@ mod tests {
             }],
             ..Default::default()
         }
+    }
+
+    fn para_at_vpos(vpos: i32) -> Paragraph {
+        Paragraph {
+            line_segs: vec![LineSeg {
+                vertical_pos: vpos,
+                line_height: 1300,
+                text_height: 1300,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    /// [Task #1749] 저장 flow 페이지-마지막 인코딩 판정
+    #[test]
+    fn test_saved_flow_marks_page_last() {
+        // (a) 다음 실줄 없음(문서 끝) — 신뢰 (fe6de3ef 합성 테스트 보호 케이스)
+        let doc_end = vec![para_at_vpos(0), para_at_vpos(72626)];
+        assert!(saved_flow_marks_page_last(&doc_end, 1));
+
+        // (b) 다음 줄 vpos 리셋(새 쪽) — 신뢰
+        let reset = vec![para_at_vpos(72626), para_at_vpos(700)];
+        assert!(saved_flow_marks_page_last(&reset, 0));
+
+        // (c) 누적좌표(다음 vpos 증가 지속) — 불신 (36371084 pi18→pi19)
+        let cumulative = vec![para_at_vpos(72626), para_at_vpos(74902)];
+        assert!(!saved_flow_marks_page_last(&cumulative, 0));
+
+        // (d) 빈 line_segs 문단 건너뛰고 다음 실줄로 판정
+        let with_empty = vec![
+            para_at_vpos(72626),
+            Paragraph::default(),
+            para_at_vpos(74902),
+        ];
+        assert!(!saved_flow_marks_page_last(&with_empty, 0));
+
+        // (e) 누적좌표라도 다음 문단이 명시적 쪽나누기면 페이지-마지막 증거로 신뢰
+        //     (36375752 pi26→pi27 [쪽나누기]: vpos 137484→140204 리셋 없음)
+        let mut page_break_next = para_at_vpos(140204);
+        page_break_next.column_type = ColumnBreakType::Page;
+        let cumulative_with_break = vec![para_at_vpos(137484), page_break_next];
+        assert!(saved_flow_marks_page_last(&cumulative_with_break, 0));
     }
 
     fn page_with_items(items: Vec<PageItem>) -> PageContent {
