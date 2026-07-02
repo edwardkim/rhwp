@@ -507,6 +507,18 @@ impl HeightCursor {
             .get(item_para)
             .map(para_has_visible_text)
             .unwrap_or(false);
+        let current_looks_like_numbered_note = paragraphs
+            .get(item_para)
+            .map(|p| {
+                let text = p.text.trim_start();
+                let digit_len = text
+                    .as_bytes()
+                    .iter()
+                    .take_while(|b| b.is_ascii_digit())
+                    .count();
+                (1..=3).contains(&digit_len) && text.as_bytes().get(digit_len) == Some(&b')')
+            })
+            .unwrap_or(false);
         let current_is_tac_table_host = paragraphs
             .get(item_para)
             .map(para_has_treat_as_char_table)
@@ -565,6 +577,17 @@ impl HeightCursor {
             .and_then(|p| p.line_segs.first())
             .map(|s| hwpunit_to_px((s.line_height + s.line_spacing).max(0), self.dpi))
             .unwrap_or(0.0);
+        let compact_endnote_page_no_separator_tail_pullup = self.suppress_large_forward_jump
+            && is_page_path
+            && current_has_visible_text
+            && current_looks_like_numbered_note
+            && !curr_is_equation_only_tail
+            && seg.line_spacing < 0
+            && current_line_advance_px <= 14.5
+            && end_y < y_offset - 6.0
+            && y_offset - end_y <= 18.0
+            && end_y <= self.col_area_y + self.col_area_height
+            && y_offset > self.col_area_y + self.col_area_height - 80.0;
         let current_line_height_px = paragraphs
             .get(item_para)
             .and_then(|p| p.line_segs.first())
@@ -780,6 +803,17 @@ impl HeightCursor {
             && !follows_tall_inline_item
             && y_offset > self.col_area_y + self.col_area_height * 0.90
             && y_offset <= col_bottom;
+        let compact_endnote_zero_gap_text_floor = self.suppress_large_forward_jump
+            && is_page_path
+            && self.endnote_between_notes_hu == 0
+            && !current_is_endnote_title
+            && current_has_visible_text
+            && current_looks_like_numbered_note
+            && !curr_is_equation_only_tail
+            && measured_prev_content_bottom_y.is_some()
+            && end_y < prev_content_floor_y - 0.25
+            && y_offset >= prev_content_floor_y
+            && y_offset - end_y <= 24.0;
         if compact_endnote_stale_note_gap
             || compact_endnote_title_body_stale_forward
             || compact_endnote_large_gap_body_stale_forward
@@ -928,6 +962,11 @@ impl HeightCursor {
                 .max(prev_content_floor_y)
                 .max(self.col_area_y)
                 .min(y_offset)
+        } else if compact_endnote_zero_gap_text_floor {
+            // 0mm 미주의 일반 텍스트 연속 문단은 저장 vpos가 실제 렌더 하단보다
+            // 위를 가리키는 경우가 있다. 제목/수식 tail 특수 보정이 아닌 일반
+            // 텍스트에서는 직전 TextLine bbox 하단을 최소 시작점으로 보존한다.
+            prev_content_floor_y.max(self.col_area_y).min(y_offset)
         } else if hwpx_page_start_stale_forward {
             y_offset
         } else if compact_endnote_large_gap_body_stale_forward {
@@ -1004,6 +1043,11 @@ impl HeightCursor {
                 .max(prev_floor)
                 .max(self.col_area_y)
                 .min(y_offset)
+        } else if compact_endnote_page_no_separator_tail_pullup {
+            // 렌더용 lineSeg를 위로 당긴 page-path 한 줄 tail은 저장 end_y가
+            // 의도한 위치다. 여기서 순차 y_offset을 고르면 127~129 같은 마지막
+            // 번호 묶음이 frame 아래로 잘린다.
+            end_y.max(self.col_area_y).min(y_offset)
         } else if compact_endnote_single_line_tail_backtrack {
             end_y
         } else if compact_endnote_title_tail_backtrack {
@@ -1066,6 +1110,9 @@ impl HeightCursor {
         if title_after_equation_tail_extra_gap > 0.0 {
             result = (result + title_after_equation_tail_extra_gap).min(col_bottom);
             self.shift_vpos_base_for_rendered_delta(title_after_equation_tail_extra_gap);
+        }
+        if compact_endnote_zero_gap_text_floor && result > end_y + 0.5 {
+            self.shift_vpos_base_for_rendered_delta(result - end_y);
         }
         if compact_endnote_text_after_lazy_tall_equation_floor {
             let inferred_extra =
@@ -2127,6 +2174,37 @@ mod tests {
         let got = c.vpos_adjust(y_in, 1, &[prev, curr], &styles(0.0));
 
         assert!((got - y_in).abs() < 1e-6, "got={got} expected={y_in}");
+    }
+
+    /// 0mm 미주 일반 텍스트 연속 문단은 저장 vpos가 직전 렌더 bbox 하단보다 위를
+    /// 가리켜도 실제 콘텐츠 하단 아래에서 시작해야 글자 겹침이 생기지 않는다.
+    #[test]
+    fn compact_endnote_zero_gap_text_keeps_previous_content_floor() {
+        let mut c = compact_endnote_cursor(Some(1000));
+        c.endnote_between_notes_hu = 0;
+        c.prev_layout_para = Some(0);
+        c.prev_item_content_bottom_y = Some(115.0);
+
+        let mut prev = para(0, 1000, 800, 160, 5000);
+        prev.text = "202) 무력한 과거의 삶".to_string();
+        let mut curr = para(0, 1960, 800, 160, 5000);
+        curr.text = "203) 현실에 정면으로 맞서는 삶".to_string();
+
+        let y_offset = 118.0;
+        let got = c.vpos_adjust(y_offset, 1, &[prev, curr], &styles(0.0));
+        let expected_floor = y_offset - 160.0 / 75.0;
+        assert!(
+            (got - expected_floor).abs() < 1e-6,
+            "got={got} expected={expected_floor}"
+        );
+
+        let end_y = COL_Y + (1960.0 - 1000.0) / 75.0;
+        let expected_base = 1000 - (((got - end_y) / DPI * 7200.0).round() as i32);
+        assert_eq!(
+            c.vpos_page_base,
+            Some(expected_base),
+            "내린 만큼 vpos base를 이동해야 후속 문단이 다시 당겨지지 않음"
+        );
     }
 
     /// [Task #1256] 단일 줄 prev(빈 separator, ls=between_notes)로 끝나는 미주 제목 경계에서

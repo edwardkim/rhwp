@@ -986,8 +986,22 @@ export interface LayerTextStyle {
   italic?: boolean;
   ratio?: number;
   underline?: string;
+  underlineShape?: number;
   strikethrough?: boolean;
+  strikeShape?: number;
+  outlineType?: number;
+  shadowType?: number;
+  shadowColor?: string;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  emboss?: boolean;
+  engrave?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  underlineColor?: string;
+  strikeColor?: string;
   shadeColor?: string;
+  emphasisDot?: number;
 }
 
 export interface LayerTextRunOp {

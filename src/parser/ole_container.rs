@@ -154,6 +154,19 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
     }
 }
 
+/// 한글 글맵시(HMapsi) 계열 OLE 컨테이너인지 빠르게 판별한다.
+///
+/// 구형/변환 HWPX의 글맵시 OLE는 일반 EMF/DIB preview 없이 `HMapsi`/`Hmapsi file`
+/// 네이티브 스트림만 가진다. 현재는 전용 parser가 없으므로 렌더러의 preview clip
+/// fallback 대상인지 판정하는 용도로 사용한다.
+pub fn is_hmapsi_ole_container(cfb_bytes: &[u8]) -> bool {
+    contains_bytes(cfb_bytes, b"HMapsi") || contains_bytes(cfb_bytes, b"Hmapsi file")
+}
+
+fn contains_bytes(haystack: &[u8], needle: &[u8]) -> bool {
+    !needle.is_empty() && haystack.windows(needle.len()).any(|w| w == needle)
+}
+
 /// 바이트 슬라이스의 선두 매직으로 이미지 포맷을 판별
 pub fn detect_native_image(data: &[u8]) -> Option<(NativeImageKind, Vec<u8>)> {
     if data.len() < 4 {

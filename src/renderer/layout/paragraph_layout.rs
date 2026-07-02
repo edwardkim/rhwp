@@ -1562,8 +1562,14 @@ impl LayoutEngine {
         // LINE_SEG.vertical_pos 로 상한 클램프해 적용한다. 페이지 break 후 이어진 column-top
         // (para_index>0)은 종전대로 0. (Task #853)
         let is_column_top = (y - col_area.y).abs() < 1.0;
+        // [Task #1728 v2] RowBreak 셀-내 continuation 조각의 첫 가시 문단은 셀-상단이지만
+        // (is_column_top) 셀-상대 인덱스>0 이라 아래 para_index==0 클램프 분기에도 못 든다.
+        // 한컴은 이 첫 문단의 앞 간격(spacing_before)을 유지하므로, 토글이 켜진 이 문단만
+        // column-top 이 아닌 것처럼 spacing_before 를 전량 적용한다.
+        let keep_continuation_spacing_before =
+            self.keep_continuation_column_top_spacing_before.get();
         if start_line == 0 && spacing_before > 0.0 {
-            if !is_column_top {
+            if !is_column_top || keep_continuation_spacing_before {
                 y += spacing_before;
             } else if para_index == 0 && !suppress_column_top_vpos_fallback {
                 let vpos0_px = para
@@ -1638,8 +1644,27 @@ impl LayoutEngine {
         let mut endnote_marker_x_advance = 0.0f64;
         if start_line == 0 {
             if let Some(p) = para {
-                for ctrl in &p.controls {
+                let ctrl_positions = p.control_text_positions();
+                let first_line_char_start = composed
+                    .lines
+                    .first()
+                    .map(|line| line.char_start)
+                    .unwrap_or(0);
+                for (ctrl_idx, ctrl) in p.controls.iter().enumerate() {
                     if let Control::Endnote(en) = ctrl {
+                        let Some(marker_pos) = ctrl_positions.get(ctrl_idx).copied() else {
+                            continue;
+                        };
+                        if !is_leading_endnote_marker_rendered_as_prefix(
+                            para,
+                            ctrl_idx,
+                            0,
+                            start_line,
+                            marker_pos,
+                            first_line_char_start,
+                        ) {
+                            continue;
+                        }
                         let marker_text =
                             format!("{} ", note_marker_text_from_control(Some(ctrl), en.number));
                         let first_cs_id = p
@@ -2207,6 +2232,28 @@ impl LayoutEngine {
                 .unwrap_or(0);
             let line_flow_height =
                 line_height + equation_tac_extra_rows as f64 * (line_height + line_spacing_px);
+            let render_line_flow_height =
+                if cell_ctx.is_none() && para_index >= self.endnote_para_base.get() {
+                    // 미주 lineSeg의 행 진행값이 실제 TextLine bbox보다 작으면 단일 줄 미주가
+                    // 서로 겹친다. Pagination은 별도 압축 흐름을 쓰더라도 렌더 y 진행은
+                    // 실제 그려진 줄 높이를 최소값으로 보존한다.
+                    line_flow_height.max(max_fs).max(line_node.bbox.height)
+                } else {
+                    line_flow_height
+                };
+            let render_line_spacing_px =
+                if cell_ctx.is_none() && para_index >= self.endnote_para_base.get() {
+                    // 비가시 구분선/0mm 미주는 pagination과 render가 같은 압축 spacing을
+                    // 써야 단 하단 클리핑이 생기지 않는다. 다만 과한 음수값은 글자 겹침을
+                    // 만들 수 있으므로 실제 glyph 높이의 10% 범위로 제한한다.
+                    if line_spacing_px < 0.0 {
+                        line_spacing_px.max(-render_line_flow_height * 0.10)
+                    } else {
+                        line_spacing_px
+                    }
+                } else {
+                    line_spacing_px
+                };
             if equation_tac_extra_rows > 0 {
                 line_node.bbox.height = line_flow_height;
                 if let RenderNodeType::TextLine(ref mut text_line) = line_node.node_type {
@@ -2461,11 +2508,14 @@ impl LayoutEngine {
                     // 위첨자를 그리지 않으므로(문26 "공" x=78=선두 마커 끝), 측정에서도
                     // est_x 에 위첨자 폭을 더하면 이중 계상 → 거짓 오버플로우.
                     // start_line==0 의 미주(= endnote_marker_x_advance 처리 대상)는 제외.
-                    let is_leading_endnote_marker = start_line == 0
-                        && matches!(
-                            para.and_then(|p| p.controls.get(ctrl_idx)),
-                            Some(Control::Endnote(_))
-                        );
+                    let is_leading_endnote_marker = is_leading_endnote_marker_rendered_as_prefix(
+                        para,
+                        ctrl_idx,
+                        line_idx,
+                        start_line,
+                        fpos,
+                        comp_line.char_start,
+                    );
                     if is_leading_endnote_marker {
                         continue;
                     }
@@ -2508,8 +2558,12 @@ impl LayoutEngine {
 
             // 정렬별 간격 분배 계산
             let has_forced_break = comp_line.has_line_break;
-            let needs_justify =
-                alignment == Alignment::Justify && !is_last_line_of_para && !has_forced_break;
+            // 머리말/꼬리말은 내부 문단 인덱스를 `usize::MAX - i`로 넘긴다.
+            // HWP3 머리말 단일 줄 Justify도 한컴처럼 머리말 폭까지 공간을 벌려야 한다.
+            let is_header_footer_para = para_index >= usize::MAX - 1024;
+            let needs_justify = alignment == Alignment::Justify
+                && (!is_last_line_of_para || is_header_footer_para)
+                && !has_forced_break;
             let needs_distribute = alignment == Alignment::Distribute
                 || (alignment == Alignment::Split && !is_last_line_of_para && !has_forced_break);
 
@@ -5014,7 +5068,7 @@ impl LayoutEngine {
                 let content_bottom = if blank_spacer_line {
                     y
                 } else {
-                    y + line_flow_height
+                    y + render_line_flow_height
                 };
                 self.last_item_content_bottom.set(content_bottom);
                 if equation_only_endnote_tail_line && content_bottom > col_bottom {
@@ -5032,11 +5086,11 @@ impl LayoutEngine {
                     let trailing = if line_idx + 1 < end
                         || self.endnote_para_has_same_endnote_successor(para_index)
                     {
-                        line_spacing_px
+                        render_line_spacing_px
                     } else {
                         0.0
                     };
-                    y + line_flow_height + trailing + tac_picture_label_extra
+                    y + render_line_flow_height + trailing + tac_picture_label_extra
                 };
                 let next_y = endnote_line_vpos_y_end
                     .map(|prev| prev.max(line_bottom))
@@ -5051,7 +5105,7 @@ impl LayoutEngine {
             } else if skip_advance_empty_line {
                 // no advance
             } else {
-                y += line_flow_height + line_spacing_px + tac_picture_label_extra;
+                y += render_line_flow_height + render_line_spacing_px + tac_picture_label_extra;
             }
             prev_line_reserved_tac_picture_height = current_line_reserved_tac_picture_height;
         }
@@ -5775,6 +5829,12 @@ pub fn map_pua_bullet_char(ch: char) -> char {
             // 부재 → render-time substitution. 측정/렌더링 양쪽 자동 적용.
             // sample11.hwp 머리말/꼬리말 가로선 패턴 (각 85+ 회) 시각 정합.
             0xF080F => '\u{2501}', // ━ BOX DRAWINGS HEAVY HORIZONTAL (한컴 — 굵은 가로선)
+            // [Task #1692 Stage 9] HWP3 관계도 계열 선문자.
+            // 한컴은 U+F0811/F0817/F081A를 자체 글리프로 이어진 선처럼 렌더한다.
+            // 공개 폰트 경로에서는 .notdef 두부가 나오므로 대응 가능한 box drawing으로 낮춘다.
+            0xF0811 => '\u{250C}', // ┌ BOX DRAWINGS LIGHT DOWN AND RIGHT
+            0xF0817 => '\u{2514}', // └ BOX DRAWINGS LIGHT UP AND RIGHT
+            0xF081A => '\u{2500}', // ─ BOX DRAWINGS LIGHT HORIZONTAL
             0xF0827 => '\u{25A0}', // ■ BLACK SQUARE (한컴 — 잠정, 시각 판정 후 조정)
             _ => ch,
         };

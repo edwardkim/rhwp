@@ -85,25 +85,24 @@ jobs:
               if (file.status !== 'added') {
                 return false;
               }
-              if (
+              return isReviewReferencePath(filename);
+            }
+
+            function isReviewReferencePath(filename) {
+              return (
                 filename.startsWith('samples/')
-                && (filename.endsWith('.hwp') || filename.endsWith('.hwpx'))
-              ) {
-                return true;
-              }
-              return filename.startsWith('pdf/') && filename.endsWith('.pdf');
+                && (
+                  filename.endsWith('.hwp')
+                  || filename.endsWith('.hwpx')
+                  || filename.endsWith('.pdf')
+                )
+              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
             }
 
             function reviewOnlyLabel(files) {
               const hasReferenceArtifact = files.some((file) => (
                 file.status === 'added'
-                && (
-                  (
-                    file.filename.startsWith('samples/')
-                    && (file.filename.endsWith('.hwp') || file.filename.endsWith('.hwpx'))
-                  )
-                  || (file.filename.startsWith('pdf/') && file.filename.endsWith('.pdf'))
-                )
+                && isReviewReferencePath(file.filename)
               ));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }

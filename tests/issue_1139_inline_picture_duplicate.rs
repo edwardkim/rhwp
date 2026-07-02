@@ -1064,9 +1064,7 @@ fn issue_1293_clean_visual_sweep_targets_keep_page_counts_and_shape_profiles() {
         );
 
         let shape = &doc.document().sections[0].section_def.endnote_shape;
-        let visible_separator = shape.separator_length != 0
-            || shape.separator_line_type != 0
-            || shape.separator_line_width != 0;
+        let visible_separator = shape.separator_line_type != 0 && shape.separator_line_width != 0;
         assert_eq!(
             visible_separator, target.visible_separator,
             "{} 구분선 표시 여부가 sweep 기준과 달라지면 안 됨",

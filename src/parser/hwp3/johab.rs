@@ -72,9 +72,20 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
     if (0x3590..=0x3599).contains(&ch) {
         return char::from_u32(0x2160 + (ch - 0x3590) as u32);
     }
+    // HWP3 사적 원문자 계열. 연속 코드가 ①~⑩에 대응한다.
+    if (0x36E7..=0x36F0).contains(&ch) {
+        return char::from_u32(0x2460 + (ch - 0x36E7) as u32);
+    }
     let codepoint: u32 = match ch {
-        0x301C => 0xF080F, // 한컴 PUA — 굵은 가로선 (94.5% 발생)
-        0x35E1 => 0x2500,  // ─ BOX DRAWINGS LIGHT HORIZONTAL
+        0x0081 => 0x201C,  // 왼쪽 큰따옴표
+        0x0082 => 0x201D,  // 오른쪽 큰따옴표
+        0x301E => 0xF0811, // 한컴 PUA - 관계도 가지 선문자
+        0x301C => 0xF080F, // 한컴 PUA - 굵은 가로선 (94.5% 발생)
+        0x3024 => 0xF0817, // 한컴 PUA - 관계도 하단 가지 선문자
+        0x3027 => 0xF081A, // 한컴 PUA - 관계도 가로 선문자
+        0x3404 => 0x2024,  // 한 점 리더
+        0x3446 => 0x2192,  // 오른쪽 화살표
+        0x35E1 => 0x2500,  // 상자 그리기 가로선
         0x303D => 0xF0827, // 한컴 PUA
         0x3479 => 0x25B7,  // ▷ WHITE RIGHT-POINTING TRIANGLE
         0x347A => 0x25B6,  // ▶ BLACK RIGHT-POINTING TRIANGLE
