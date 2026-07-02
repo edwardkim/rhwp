@@ -11613,7 +11613,11 @@ impl TypesetEngine {
                 self.format_paragraph(para, composed_all.get(para_idx), styles, Some(col_w));
             let host_lines = host_fmt.line_heights.len();
             let host_h = host_fmt.line_advances_sum(0..host_lines);
-            if host_lines == 0 || st.current_height + host_h > st.available_height() - 4.0 {
+            // [Task #1763] prefill 후보는 저장 vpos 로 같은-쪽 인코딩이 보증되므로
+            // 추가 안전마진 없이 본문 가용 높이로 판정한다 (측정 정밀화 후 저장 flow
+            // 와 정확 일치하는 누적에서 진짜 fit(2814765 pi53, 여유 2.1px)이 여분
+            // 4px 마진에 탈락하는 회귀 방지).
+            if host_lines == 0 || st.current_height + host_h > st.available_height() {
                 return;
             }
             st.current_items.push(PageItem::PartialParagraph {
@@ -11641,7 +11645,7 @@ impl TypesetEngine {
             }
             let fmt_n =
                 self.format_paragraph(next, composed_all.get(next_idx), styles, Some(col_w));
-            if st.current_height + fmt_n.height_for_fit > st.available_height() - 4.0 {
+            if st.current_height + fmt_n.height_for_fit > st.available_height() {
                 break;
             }
             let trim_sb =

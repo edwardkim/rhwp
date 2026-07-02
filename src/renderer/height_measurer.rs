@@ -1020,6 +1020,48 @@ impl HeightMeasurer {
                 } else {
                     content_height + total_pad
                 };
+                // [Task #1763] 한컴 선언 셀높이 권위 — 저장 cell.height 는 trailing ls
+                // 미포함(825행 주석 원칙)인데, 다문단 셀 측정은 셀 마지막 줄 trailing ls
+                // 를 포함(#874/#1086 보존 조건)해 required 가 선언높이를 초과 확장할 수
+                // 있다(2501937 row0: 콘텐츠 10016HU + trailing 600HU + pad → 149.1px >
+                // 선언 142.2px, 한글은 선언 유지). 초과분이 전적으로 trailing ls 때문이면
+                // (trailing 제외 콘텐츠+pad 가 선언 안) 선언높이로 clamp — 콘텐츠가 진짜
+                // 초과하는 기존 보존 케이스(aift/KTX)는 조건 미충족으로 불변.
+                // RowBreak(행 단위 쪽나눔) 표는 TAC 여부와 무관하게 clamp 제외 —
+                // 분할 배치가 trailing 포함 측정에 정합 (rowbreak-problem-pages p11~13).
+                let cell_last_trailing_ls = if cell.text_direction == 0
+                    && !has_nested_table_in_cell
+                    && cell.paragraphs.len() > 1
+                    && !matches!(table.page_break, TablePageBreak::RowBreak)
+                {
+                    cell.paragraphs
+                        .last()
+                        .map(|p| {
+                            let mut comp = compose_paragraph(p);
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp,
+                                p,
+                                cell_inner_width,
+                                styles,
+                            );
+                            comp.lines
+                                .last()
+                                .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                                .unwrap_or(0.0)
+                        })
+                        .unwrap_or(0.0)
+                } else {
+                    0.0
+                };
+                let required_height = if cell_h_px > 0.0
+                    && required_height > cell_h_px
+                    && cell_last_trailing_ls > 0.0
+                    && content_height - cell_last_trailing_ls + total_pad <= cell_h_px
+                {
+                    cell_h_px
+                } else {
+                    required_height
+                };
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
