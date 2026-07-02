@@ -712,13 +712,11 @@ mod tests {
         assert_eq!(r.style_id_ref, 5, "styleIDRef 보존");
     }
 
-    #[ignore = "#1591: 북마크 hoist 수정은 롤백됨(순효과 0). Class C1 char_shape +8 의 진짜 \
-근본은 first-para mismatch-path 위치추정(F3급, 별건). 본 RED 는 hoist 버그 repro 로 보존."]
     #[test]
     fn task1591_bookmark_not_hoisted_before_slot() {
-        // [#1591] 북마크가 슬롯 컨트롤(표 등) 뒤에 있을 때, 직렬화기(section.rs:416-426)가
-        // 북마크를 문단 시작으로 hoisting 하면 컨트롤 순서가 뒤바뀐다. 다만 char_shape +8
-        // 시프트의 진짜 근본은 mismatch-path 위치추정이라, 이 hoist 수정만으로는 게이트 미해소.
+        // [#1591] 북마크가 슬롯 컨트롤(표 등) 뒤에 있을 때, 직렬화기가 북마크를 문단
+        // 시작으로 hoisting 하면 컨트롤 순서가 뒤바뀐다. [#1591 v2] 슬롯 있는 문단의
+        // 북마크 in-order 방출로 수정 — GREEN 전환 (1라운드 RED, 순서 보존 가드).
         use crate::model::control::{Bookmark, Control};
         use crate::model::style::BorderFill;
         use crate::model::table::Table;
@@ -755,6 +753,140 @@ mod tests {
             ctrls,
             vec!["tbl", "bm"],
             "북마크가 표 뒤 위치를 보존해야 한다 (hoisting 시 [bm,tbl] 로 뒤바뀜)"
+        );
+    }
+
+    #[test]
+    fn task1591v2_first_para_hidden_slot_char_shape_position() {
+        // [#1591 v2, Class C1 — 36384689 동형] 첫 문단의 hidden 슬롯(secPr/템플릿 흡수
+        // colPr)이 cc 축 8유닛을 점유하는 문서: 종전엔 slot_count(4) != slots.len() 로
+        // mismatch 폴백이 후위 슬롯(pageNum)을 char-offset 없이 방출해 char_shape 경계가
+        // (24,·)→(32,·) +8 시프트. hidden 정합으로 메인 경로에 진입해 경계 24 가 보존된다.
+        use crate::model::control::{Bookmark, Control, PageNumberPos};
+        use crate::model::document::SectionDef;
+        use crate::model::page::ColumnDef;
+        use crate::model::paragraph::CharShapeRef;
+        use crate::model::style::{BorderFill, CharShape};
+        use crate::model::table::Table;
+
+        let mut doc = Document::default();
+        doc.doc_info.border_fills.push(BorderFill::default());
+        doc.doc_info.char_shapes.push(CharShape::default()); // id 0
+        doc.doc_info.char_shapes.push(CharShape::default()); // id 1
+        let mut section = crate::model::document::Section::default();
+        let mut p = crate::model::paragraph::Paragraph::default();
+        p.text = String::new();
+        p.char_count = 33; // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32] + 1
+        p.char_shapes = vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            },
+            CharShapeRef {
+                start_pos: 24,
+                char_shape_id: 1,
+            },
+        ];
+        p.controls
+            .push(Control::SectionDef(Box::<SectionDef>::default()));
+        p.controls.push(Control::ColumnDef(ColumnDef::default()));
+        p.controls.push(Control::Table(Box::<Table>::default()));
+        p.controls
+            .push(Control::PageNumberPos(PageNumberPos::default()));
+        p.controls.push(Control::Bookmark(Bookmark {
+            name: "별첨 1".to_string(),
+        }));
+        section.paragraphs.push(p);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let p2 = &doc2.sections[0].paragraphs[0];
+        let positions: Vec<u32> = p2.char_shapes.iter().map(|cs| cs.start_pos).collect();
+        assert_eq!(
+            positions,
+            vec![0, 24],
+            "char_shape 경계가 24 에 보존돼야 한다 (mismatch 폴백 시 +8 → 32)"
+        );
+        let ctrls: Vec<&str> = p2
+            .controls
+            .iter()
+            .map(|c| match c {
+                Control::SectionDef(_) => "secd",
+                Control::ColumnDef(_) => "cold",
+                Control::Table(_) => "tbl",
+                Control::PageNumberPos(_) => "pagenum",
+                Control::Bookmark(_) => "bm",
+                _ => "?",
+            })
+            .collect();
+        assert_eq!(
+            ctrls,
+            vec!["secd", "cold", "tbl", "pagenum", "bm"],
+            "컨트롤 순서(표·pageNum 뒤 북마크) 보존"
+        );
+    }
+
+    #[test]
+    fn task1593_first_para_same_para_field_end_preserved() {
+        // [#1593, Class C2 — 36388711 동형] 첫 문단(hidden 슬롯 점유)의 same-para 균형
+        // 필드: 종전 mismatch 폴백은 fieldBegin(슬롯)만 방출하고 닫는 fieldEnd 를
+        // 소실시켜 cc −8 + 후속 char_shape 경계 −8. hidden 정합 후 메인 경로가
+        // fieldEnd 를 위치대로 방출해 cc·경계가 보존된다.
+        use crate::model::control::{Bookmark, Control, Field};
+        use crate::model::document::SectionDef;
+        use crate::model::page::ColumnDef;
+        use crate::model::paragraph::{CharShapeRef, FieldRange};
+        use crate::model::style::CharShape;
+
+        let mut doc = Document::default();
+        doc.doc_info.char_shapes.push(CharShape::default()); // id 0
+        doc.doc_info.char_shapes.push(CharShape::default()); // id 1
+        let mut section = crate::model::document::Section::default();
+        let mut p = crate::model::paragraph::Paragraph::default();
+        // [secd 0..8][cold 8..16][fieldBegin 16..24] A@24 [fieldEnd 25..33] B@33 → cc 35
+        p.text = "AB".to_string();
+        p.char_offsets = vec![24, 33];
+        p.char_count = 35;
+        p.char_shapes = vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            },
+            CharShapeRef {
+                start_pos: 33,
+                char_shape_id: 1,
+            },
+        ];
+        p.controls
+            .push(Control::SectionDef(Box::<SectionDef>::default()));
+        p.controls.push(Control::ColumnDef(ColumnDef::default()));
+        p.controls.push(Control::Field(Field::default()));
+        p.controls.push(Control::Bookmark(Bookmark {
+            name: "bm".to_string(),
+        }));
+        p.field_ranges = vec![FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 1,
+            control_idx: 2,
+        }];
+        section.paragraphs.push(p);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let p2 = &doc2.sections[0].paragraphs[0];
+        assert_eq!(
+            p2.field_ranges.len(),
+            1,
+            "same-para 균형 필드(fieldBegin/End 1/1)가 보존돼야 한다 (종전: fieldEnd 드롭)"
+        );
+        assert_eq!(p2.char_count, 35, "fieldEnd 8유닛 보존 → cc 불변");
+        let positions: Vec<u32> = p2.char_shapes.iter().map(|cs| cs.start_pos).collect();
+        assert_eq!(
+            positions,
+            vec![0, 33],
+            "후속 char_shape 경계 보존 (종전 −8)"
         );
     }
 

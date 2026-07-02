@@ -15,3 +15,6 @@ id	status	ir_diff_count	class
 36389298	PASS	0	PASS 클린
 36395270	PASS	0	footer over-push 가드(#1624)
 36387725	PASS	0	footer Page+Bottom page-fit 가드(#1611)
+36384689	PASS	0	first-para hidden 슬롯 정합 회귀가드(#1591 v2, Class C1 char_shape +8)
+36385445	PASS	0	first-para hidden 슬롯 정합 회귀가드(#1591 v2, Class C1 동형)
+36388711	PASS	0	same-para fieldEnd 복원+북마크 in-order 회귀가드(#1593, Class C2)

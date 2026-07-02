@@ -457,24 +457,6 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     let mut splitter = RunSplitter::new(para);
 
-    // Bookmark는 zero-width 라 slot char-position 축에 안 잡힌다.
-    // - 비-empty 문단: 종전대로 문단 시작(첫 run)에 배치(슬롯 char-position 정밀 경로 보호).
-    // - [Task #1627] empty-text(객체-only) 문단: 문단 시작 강제는 원본 컨트롤 순서(예:
-    //   Table·PageNumberPos 뒤의 Bookmark)를 깨고 roundtrip char_shape 오프셋을 shift시킨다.
-    //   → para.controls 순서대로 slot 사이에 in-order 방출(아래 emit_bookmarks_before).
-    let bm_inorder = para.text.is_empty();
-    if !bm_inorder {
-        for ctrl in &para.controls {
-            if let Control::Bookmark(bm) = ctrl {
-                if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                    splitter.content.push_str("<hp:ctrl>");
-                    splitter.content.push_str(&xml);
-                    splitter.content.push_str("</hp:ctrl>");
-                }
-            }
-        }
-    }
-
     let slot_count = inferred_control_slot_count(para);
     // slots 와 각 slot 의 para.controls 인덱스(slot_ctrl_indices)를 병행 수집 —
     // [Task #1627] empty-text 문단의 bookmark in-order 방출에서 slot 사이 위치 계산에 사용.
@@ -491,18 +473,26 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             // [Task #1379] 셀·글상자 subList(depth>0) 경로에서는 ColumnDef 도 인라인 슬롯으로
             // 취급한다 (원본 XML 에 <hp:ctrl><hp:colPr/></hp:ctrl> 인라인 존재).
             // [Task #1584] 본문(depth 0) 경로에서도 ColumnDef 를 인라인 슬롯에 포함하되,
-            // 첫 문단의 첫 ColumnDef(섹션 템플릿 흡수분)는 슬롯에서 제외한다 — 이 분기는
-            // slot_count 가 char-offset 추정과 어긋나는 케이스로, 템플릿 흡수분은 위치 슬롯을
-            // 점유하지 않으므로(추정 카운트에서 제외됨) 슬롯에 넣으면 위치가 어긋난다.
+            // 첫 문단의 첫 ColumnDef(섹션 템플릿 흡수분)는 슬롯에서 기본 제외한다.
             // 2번째+ 본문 ColumnDef 는 포함하여 드롭을 방지한다.
             let suppress_first_col = ctx.sub_list_depth == 0 && ctx.body_coldef_template_pending;
             let mut col_seen = 0u32;
             let mut s: Vec<&Control> = Vec::new();
             let mut si: Vec<usize> = Vec::new();
+            // 제외된 hidden 슬롯 후보(SectionDef·템플릿 흡수 첫 ColumnDef)의 인덱스.
+            let mut hidden: Vec<usize> = Vec::new();
             for (i, c) in para.controls.iter().enumerate() {
                 let keep = if matches!(c, Control::ColumnDef(_)) {
                     col_seen += 1;
-                    !(suppress_first_col && col_seen == 1)
+                    if suppress_first_col && col_seen == 1 {
+                        hidden.push(i);
+                        false
+                    } else {
+                        true
+                    }
+                } else if matches!(c, Control::SectionDef(_)) {
+                    hidden.push(i);
+                    false
                 } else {
                     is_hwpx_inline_slot(c)
                 };
@@ -511,13 +501,60 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     si.push(i);
                 }
             }
-            if suppress_first_col {
-                // 템플릿 흡수분을 슬롯에서 이미 제외했으므로, render_control_slot 의
-                // consume-once 억제가 2번째 ColumnDef 를 잘못 건너뛰지 않도록 플래그 해제.
-                ctx.body_coldef_template_pending = false;
+            // [Task #1591 v2] hidden 슬롯 정합: cc 증거(slot_count)가 hidden 후보
+            // (secPr/템플릿 흡수 colPr — 원본 XML 에서 첫 run 이 점유하는 8유닛 슬롯)의
+            // 점유를 보여주면 위치 슬롯으로 편입한다. XML 은 방출되지 않고
+            // (SectionDef: 방출 arm 없음, 첫 ColumnDef: consume-once 억제) 위치 축만
+            // 8유닛씩 전진 — 첫 문단이 mismatch 폴백 대신 메인 경로(위치 정확)로
+            // 진입해 후위 슬롯(pageNum 등)·fieldEnd 가 char-offset 위치에 방출된다
+            // (Class C1 +8 시프트·C2 fieldEnd 드롭의 근원 교정). 증거 불일치(합성 IR,
+            // hidden 이 cc 를 점유하지 않는 문서)는 종전 동작 그대로.
+            if !hidden.is_empty() && slot_count == s.len() + hidden.len() {
+                let mut s2: Vec<&Control> = Vec::new();
+                let mut si2: Vec<usize> = Vec::new();
+                let mut keep_iter = si.iter().peekable();
+                for (i, c) in para.controls.iter().enumerate() {
+                    let kept = keep_iter.peek() == Some(&&i);
+                    if kept {
+                        keep_iter.next();
+                    }
+                    if kept || hidden.contains(&i) {
+                        s2.push(c);
+                        si2.push(i);
+                    }
+                }
+                // 첫 ColumnDef 를 슬롯으로 되살렸으므로 consume-once 플래그를 유지해
+                // render_control_slot 이 XML 방출만 1회 건너뛰게 한다(첫 분기와 동형).
+                (s2, si2)
+            } else {
+                if suppress_first_col {
+                    // 템플릿 흡수분을 슬롯에서 제외한 채 진행하므로, render_control_slot 의
+                    // consume-once 억제가 2번째 ColumnDef 를 잘못 건너뛰지 않도록 플래그 해제.
+                    ctx.body_coldef_template_pending = false;
+                }
+                (s, si)
             }
-            (s, si)
         };
+
+    // Bookmark는 zero-width 라 slot char-position 축에 안 잡힌다.
+    // - [Task #1627] empty-text(객체-only) 문단: 문단 시작 강제는 원본 컨트롤 순서(예:
+    //   Table·PageNumberPos 뒤의 Bookmark)를 깨고 roundtrip char_shape 오프셋을 shift시킨다
+    //   → para.controls 순서대로 slot 사이에 in-order 방출.
+    // - [Task #1591 v2] 슬롯이 있는 비-empty 문단도 in-order 로 통일(1라운드 hoist 제거
+    //   편입 — 표/pageNum 뒤 북마크의 원본 순서 보존).
+    // - 비-empty·무슬롯 문단: 종전대로 문단 시작(첫 run)에 배치(순서 증거 없음, 종전 유지).
+    let bm_inorder = para.text.is_empty() || !slots.is_empty();
+    if !bm_inorder {
+        for ctrl in &para.controls {
+            if let Control::Bookmark(bm) = ctrl {
+                if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
+                    splitter.content.push_str("<hp:ctrl>");
+                    splitter.content.push_str(&xml);
+                    splitter.content.push_str("</hp:ctrl>");
+                }
+            }
+        }
+    }
 
     let mut tab_idx = 0usize;
 
@@ -552,6 +589,12 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             // 마지막 slot 뒤에 오는 trailing bookmark.
             emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
         }
+        // [Task #1591 v2] 균형 field_ranges 의 닫는 fieldEnd 도 말미 복원 — 이 경로는
+        // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
+        // 1/0 으로 깨지며 cc −8 (#1593). #1556 고아 복원과 동형(위치 대신 말미 일괄).
+        for fr in &para.field_ranges {
+            emit_field_end(&mut splitter.content, para, fr.control_idx);
+        }
         // [Task #1556] 위치 추정 불가 경로에서도 고아 fieldEnd 의 8유닛 슬롯은 복원한다
         // (정확한 위치 대신 말미 일괄 — 최소한 char_count 보존).
         for ofe in &para.orphan_field_ends {
@@ -569,11 +612,24 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
     let text_char_count = para.text.chars().count();
 
+    // [Task #1591 v2] 메인 경로 bookmark in-order 방출 추적 (mismatch 경로와 동일 기제).
+    // 메인 경로는 종전엔 hoist 전담이라 방출 지점이 없었다 — 첫 문단(hidden 슬롯 정합)이
+    // 메인 경로로 진입하면서 슬롯 사이 in-order 방출이 필요해졌다.
+    let mut bm_done = vec![false; para.controls.len()];
+
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
     // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
+            if bm_inorder {
+                emit_inorder_bookmarks(
+                    &mut splitter.content,
+                    para,
+                    &mut bm_done,
+                    slot_ctrl_indices[slot_idx],
+                );
+            }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -615,6 +671,14 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
+            if bm_inorder {
+                emit_inorder_bookmarks(
+                    &mut splitter.content,
+                    para,
+                    &mut bm_done,
+                    slot_ctrl_indices[slot_idx],
+                );
+            }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -764,9 +828,21 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
+        if bm_inorder {
+            emit_inorder_bookmarks(
+                &mut splitter.content,
+                para,
+                &mut bm_done,
+                slot_ctrl_indices[slot_idx],
+            );
+        }
         render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+    }
+    if bm_inorder {
+        // 마지막 슬롯 뒤(컨트롤 순서 후미)의 trailing bookmark.
+        emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
     }
 
     splitter.finish()
