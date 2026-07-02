@@ -23,7 +23,7 @@ use super::utils::{
 use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo};
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
 
@@ -1577,6 +1577,21 @@ impl LayoutEngine {
                     .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
                     .unwrap_or(0.0);
                 y += spacing_before.min(vpos0_px.max(0.0));
+            } else if !suppress_column_top_vpos_fallback {
+                // [Task #1811] 쪽 상단(para_index>0) 문단도 저장 첫 줄 vpos 가 증거다 —
+                // 한컴이 앞 간격을 유지한 문서는 쪽-상대 vpos ≈ spacing_before 로 저장되고
+                // (task1750 샘플 p2: sb=700HU, vpos=700 — 트림 시 페이지 전체가 5pt 위로
+                // 밀려 visual sweep 이중상), 트림한 문서는 vpos=0 이다. #853 의
+                // para_index==0 클램프를 저장 증거 기반으로 일반화하되, 누적축 vpos
+                // 인코딩(vpos ≫ sb)은 쪽-상대 증거가 아니므로 종전(트림) 유지.
+                let vpos0_px = para
+                    .and_then(|p| p.line_segs.first())
+                    .filter(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                    .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                if vpos0_px > 0.0 && vpos0_px <= spacing_before + 0.5 {
+                    y += vpos0_px;
+                }
             }
         }
         // [Task #1012] paragraph 첫 line vpos > 0 인데 spacing_before=0 으로
