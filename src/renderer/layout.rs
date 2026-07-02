@@ -4251,7 +4251,11 @@ impl LayoutEngine {
                                     } else {
                                         seg.line_height
                                     };
-                                    hwpunit_to_px(line_height + seg.line_spacing, self.dpi)
+                                    // [Task #1789] line_spacing 은 겹침 판정에서 제외 —
+                                    // 잉크가 zone 위에 들어가는 줄을 spacing 포함분 수 px
+                                    // 겹침으로 표 아래로 밀면 한컴 저장 flow(36385142 pi8
+                                    // vpos=34925 = 표 위 유지)와 어긋난다 (최대 345px).
+                                    hwpunit_to_px(line_height, self.dpi)
                                 })
                             })
                             .unwrap_or(0.0),
@@ -4271,7 +4275,11 @@ impl LayoutEngine {
                                     } else {
                                         seg.line_height
                                     };
-                                    hwpunit_to_px(line_height + seg.line_spacing, self.dpi)
+                                    // [Task #1789] line_spacing 은 겹침 판정에서 제외 —
+                                    // 잉크가 zone 위에 들어가는 줄을 spacing 포함분 수 px
+                                    // 겹침으로 표 아래로 밀면 한컴 저장 flow(36385142 pi8
+                                    // vpos=34925 = 표 위 유지)와 어긋난다 (최대 345px).
+                                    hwpunit_to_px(line_height, self.dpi)
                                 })
                             })
                             .unwrap_or(0.0),
