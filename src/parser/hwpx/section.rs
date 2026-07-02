@@ -1783,6 +1783,16 @@ fn parse_table(
         buf.clear();
     }
 
+    // [Task #1772] outMargin → common.margin 동기화 (IR 계약).
+    // 레이아웃의 쪽 고정 자리차지 표 예약 하단(calc_shape_bottom_y)은 common.margin 을
+    // 참조하고, HWPX→HWP 어댑터(materialize_table_outer_margin)도 직렬화 시 동일하게
+    // 동기화한다. 파서가 outer_margin_* 만 채우면 HWPX 직파스 문서에서만 표 바깥 여백이
+    // 무시되어 본문이 저장 lineseg(한컴 위치)보다 위로 붙는다 (11.36px 군집).
+    table.common.margin.left = table.outer_margin_left;
+    table.common.margin.right = table.outer_margin_right;
+    table.common.margin.top = table.outer_margin_top;
+    table.common.margin.bottom = table.outer_margin_bottom;
+
     // row_sizes 설정 (행별 셀 높이의 최대값)
     for r in 0..table.row_count {
         let max_h = table
