@@ -632,6 +632,43 @@ impl LayoutEngine {
                             None
                         }
                     }) {
+                        // [Task #1658 v3] 외곽 1×1 래퍼가 페이지/용지 앵커 자리차지
+                        // (절대배치) 표면, unwrap 이 외곽의 절대 y 를 소실시키고 내부 표를
+                        // flow 커서(y_start)에 렌더하던 결함 교정 — 외곽 표 속성으로 절대
+                        // y 를 계산해 내부 표 시작점으로 사용한다 (하단 고정 결재/서명 틀이
+                        // 본문 상단에 그려지던 문제, #1653 RCA 패턴 B).
+                        let y_start = if depth == 0
+                            && !table.common.treat_as_char
+                            && matches!(
+                                table.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            )
+                            && matches!(
+                                table.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Page
+                                    | crate::model::shape::VertRelTo::Paper
+                            ) {
+                            let outer_h = hwpunit_to_px(
+                                crate::renderer::float_placement::signed_hwpunit(
+                                    table.common.height,
+                                )
+                                .max(0),
+                                self.dpi,
+                            );
+                            self.compute_table_y_position(
+                                table,
+                                outer_h,
+                                y_start,
+                                col_area,
+                                depth,
+                                0.0,
+                                0.0,
+                                para_y,
+                                allow_para_top_bleed,
+                            )
+                        } else {
+                            y_start
+                        };
                         // [Task: nested-table-border] 자료 박스 외곽 테두리 추가:
                         // 외부 1x1 표가 wrapper 라도 padding + border_fill 에 테두리선이
                         // 정의된 경우 (자료 박스 외곽), 외곽 4개 라인을 별도 추가하여 시각 정합.

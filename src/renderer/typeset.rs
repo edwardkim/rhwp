@@ -16,7 +16,8 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::{
-    horizontal_range, is_para_topbottom_float, signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+    horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float, signed_hwpunit,
+    FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{fit_measured_table_to_declared_height, MeasuredTable};
@@ -208,6 +209,14 @@ struct TypesetState {
     section_index: usize,
     /// 각주 높이 누적
     current_footnote_height: f64,
+    /// [Task #1658 v3] 페이지 하단 고정 표(vert=쪽·valign=Bottom, 결재/서명 틀)의
+    /// 하단 배타 영역 높이 — 겹침 허용이므로 합이 아닌 max(union). 본문 텍스트는
+    /// 이 영역 위까지만 흐른다 (available_height 차감). 페이지 전환 시 리셋.
+    current_bottom_fixed_exclusion: f64,
+    /// [Task #1658 v3] 이 페이지에서 하단 고정 표가 소비했을 저장-flow 높이 누계.
+    /// 한글 저장 vpos 는 하단 틀도 문서순으로 누적하므로, 후속 틀의 vpos 동기화
+    /// (#1611) 시 이 값을 차감해야 본문 텍스트 끝 위치가 복원된다.
+    bottom_fixed_consumed_flow: f64,
     /// 첫 각주 여부
     is_first_footnote_on_page: bool,
     /// 각주 구분선 오버헤드
@@ -1182,6 +1191,8 @@ impl TypesetState {
             layout,
             section_index,
             current_footnote_height: 0.0,
+            current_bottom_fixed_exclusion: 0.0,
+            bottom_fixed_consumed_flow: 0.0,
             is_first_footnote_on_page: true,
             footnote_separator_overhead,
             footnote_between_notes_margin,
@@ -1243,7 +1254,12 @@ impl TypesetState {
         } else {
             0.0
         };
-        (base - self.current_footnote_height - fn_margin - self.current_zone_y_offset).max(0.0)
+        (base
+            - self.current_footnote_height
+            - fn_margin
+            - self.current_zone_y_offset
+            - self.current_bottom_fixed_exclusion)
+            .max(0.0)
     }
 
     /// 기본 가용 높이 (각주/존 미차감)
@@ -1384,6 +1400,8 @@ impl TypesetState {
         self.current_start_height = 0.0;
         self.current_endnote_flow = false;
         self.current_footnote_height = 0.0;
+        self.current_bottom_fixed_exclusion = 0.0;
+        self.bottom_fixed_consumed_flow = 0.0;
         self.is_first_footnote_on_page = true;
         self.current_zone_y_offset = 0.0;
         self.current_zone_layout = None;
@@ -11560,23 +11578,24 @@ impl TypesetEngine {
         // 참여하므로 cur_h 를 stored vpos 로 끌어올린 뒤(본문 흐름이 vpos 보다 짧을 때) fit 을
         // 판정한다. 동기화하지 않으면 footer 가 flowed cur_h(vpos 보다 ~수십px 낮음)에 배치되어
         // page-fit 이 과소되고 footer 가 본문 페이지에 흡수된다(−1쪽 갭 요인 B).
-        let is_page_bottom_topbottom_block = !table.common.treat_as_char
-            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-            && matches!(table.common.vert_rel_to, VertRelTo::Page)
-            && matches!(
-                table.common.vert_align,
-                crate::model::shape::VertAlign::Bottom
-            );
+        let is_page_bottom_topbottom_block = is_page_bottom_fixed_float(&table.common);
         if is_page_bottom_topbottom_block && st.current_column == 0 {
             if let Some(first_seg) = para.line_segs.first() {
-                let target_y =
-                    crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
                 // 한컴은 고정크기 자리차지 블록을 **선언 높이**(common.height)로 렌더·예약한다.
                 // 페이지네이터의 effective_height 는 셀 내용 기반 측정치라 선언보다 작을 수 있어
                 // (footer 351.4px 선언 vs 302.3px 측정) fit 이 과소된다 → 선언 높이로 판정·예약.
                 let declared_px =
                     crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi);
                 let block_height = table_total.max(declared_px);
+                // [Task #1658 v3] 한글 실측(stage1): 하단 고정 틀은 본문 하단에
+                // 절대배치(다수 시 서로 겹침 허용)되고 본문 텍스트는 하단 배타 영역
+                // (= 최대 블록 높이) 위까지만 흐른다 — flow 소비 모델이 아니다
+                // (관악 36389312: 틀 2개 합 604px 가 flow 소비되면 한글 1쪽이 2쪽으로
+                // over-pagination). 저장 vpos 는 하단 틀도 문서순 누적하므로, 같은
+                // 페이지에 이미 예약된 틀의 소비분을 차감해 본문 텍스트 끝을 복원한다.
+                let target_y =
+                    crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi)
+                        - st.bottom_fixed_consumed_flow;
                 // [Task #1624] footer stored vpos 가 흐름 cur_h 보다 footer 한 개 높이 이상 위에
                 // 있으면(본문이 짧은데 vpos 가 page-bottom 앵커/누적 노이즈), vpos 동기화는
                 // 본문 직후에 들어갈 footer 를 spurious 하게 다음 쪽으로 민다(+1쪽 over-push).
@@ -11586,13 +11605,22 @@ impl TypesetEngine {
                 } else {
                     st.current_height
                 };
-                if sync_h + block_height <= available {
-                    // 현재 쪽에 stored vpos 위치로 배치.
+                let v_off = hwpunit_to_px(
+                    signed_hwpunit(table.common.vertical_offset).max(0),
+                    self.dpi,
+                );
+                let prospective_excl = st.current_bottom_fixed_exclusion.max(block_height + v_off);
+                // available 은 이미 현재 배타 영역을 차감한 값 — 이 블록 편입 후의
+                // 가용 높이로 보정해 "본문 텍스트 끝이 배타 영역을 침범하는가"를 판정.
+                let avail_after = available + st.current_bottom_fixed_exclusion - prospective_excl;
+                if sync_h <= avail_after {
+                    // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
                     st.current_height = sync_h;
                 } else if !st.current_items.is_empty() {
-                    // vpos 기준 초과 → 발신명의 블록을 통째로 다음 쪽에 단독 배치(분할 부적절).
+                    // 배타 영역 침범 → 발신명의 블록을 통째로 다음 쪽에 단독 배치(분할 부적절).
                     st.advance_column_or_new_page();
                 }
+                let flow_before = st.current_height;
                 self.place_table_with_text(
                     st,
                     para_idx,
@@ -11605,6 +11633,13 @@ impl TypesetEngine {
                     is_first_placed,
                     is_last_placed,
                 );
+                // 배타 모델: 블록은 flow 를 소비하지 않는다(하단 절대배치) — 소비 롤백
+                // 후 하단 배타 영역으로 예약. 저장-flow 소비 누계는 후속 틀 vpos 보정용.
+                let consumed = (st.current_height - flow_before).max(0.0);
+                st.current_height = flow_before;
+                st.bottom_fixed_consumed_flow += consumed;
+                st.current_bottom_fixed_exclusion =
+                    st.current_bottom_fixed_exclusion.max(block_height + v_off);
                 return;
             }
         }

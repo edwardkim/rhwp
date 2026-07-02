@@ -1,6 +1,6 @@
 //! Flow reservation helpers for non-inline floating objects.
 
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo};
+use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
@@ -16,6 +16,16 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// [Task #1658 v3] 페이지 하단 고정(vert=쪽·valign=Bottom) 자리차지 개체 (결재/서명 틀).
+/// 한글은 이를 본문 하단에 절대배치(겹침 허용)하고 본문 텍스트를 그 위까지만 흐르게
+/// 한다(하단 배타 영역) — 문서순 flow 소비 대상이 아니다. #1653 RCA 패턴 B.
+pub(crate) fn is_page_bottom_fixed_float(common: &CommonObjAttr) -> bool {
+    !common.treat_as_char
+        && matches!(common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(common.vert_rel_to, VertRelTo::Page)
+        && matches!(common.vert_align, VertAlign::Bottom)
 }
 
 /// Horizontal reference data used by float placement and table layout.
