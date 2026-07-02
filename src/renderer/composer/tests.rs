@@ -1050,3 +1050,12 @@ fn test_expand_tone_marks_to_spacing_dot() {
     let out2 = expand_pua_render_text("\u{302F}가");
     assert_eq!(out2, "\u{205A}가", "쌍방점은 세로 두 점으로 치환");
 }
+
+#[test]
+fn test_expand_hancom_relationship_line_pua_to_box_drawing() {
+    let out = expand_pua_render_text("\u{F0811}\u{F0817}\u{F081A}");
+    assert_eq!(
+        out, "┌└─",
+        "한컴 관계도 PUA 선문자는 공개 폰트 환경에서 두부가 아닌 box drawing 문자로 표시되어야 함"
+    );
+}

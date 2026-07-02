@@ -1931,6 +1931,7 @@ fn parse_alignment(attr: &quick_xml::events::attributes::Attribute) -> Alignment
         "RIGHT" => Alignment::Right,
         "CENTER" => Alignment::Center,
         "DISTRIBUTE" => Alignment::Distribute,
+        "DISTRIBUTE_SPACE" => Alignment::Justify,
         _ => Alignment::Justify,
     }
 }
@@ -2270,13 +2271,21 @@ mod tests {
 
     #[test]
     fn test_parse_alignment() {
-        let xml = r#"<e horizontal="CENTER"/>"#;
-        let mut reader = Reader::from_str(xml);
-        let mut buf = Vec::new();
-        if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
-            for attr in e.attributes().flatten() {
-                if attr.key.as_ref() == b"horizontal" {
-                    assert_eq!(parse_alignment(&attr), Alignment::Center);
+        let cases = [
+            ("CENTER", Alignment::Center),
+            ("DISTRIBUTE", Alignment::Distribute),
+            ("DISTRIBUTE_SPACE", Alignment::Justify),
+        ];
+
+        for (value, expected) in cases {
+            let xml = format!(r#"<e horizontal="{value}"/>"#);
+            let mut reader = Reader::from_str(&xml);
+            let mut buf = Vec::new();
+            if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
+                for attr in e.attributes().flatten() {
+                    if attr.key.as_ref() == b"horizontal" {
+                        assert_eq!(parse_alignment(&attr), expected);
+                    }
                 }
             }
         }

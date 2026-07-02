@@ -47,6 +47,7 @@ QUESTION_TITLE_OVERLAP_MIN_PX = 3.0
 FRAME_TAIL_LINE_OVERFLOW_MIN_PX = 4.0
 COLUMN_X_OVERLAP_LIMIT = 0.55
 QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
+DEFAULT_PIXEL_DIFF_THRESHOLD = 32
 LARGE_INK_TILE_SIZE = 16
 LARGE_INK_TILE_MIN_PIXELS = 20
 LARGE_INK_REGION_MIN_WIDTH_PX = 72.0
@@ -177,10 +178,87 @@ def clean_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def resolve_input_path(root: Path, path: Path) -> Path:
+    return path if path.is_absolute() else root / path
+
+
+def safe_rel_str(root: Path, path: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def safe_target_key(value: str) -> str:
+    key = value.strip() or "custom"
+    key = re.sub(r"[\\/:\s]+", "-", key)
+    key = re.sub(r"[^0-9A-Za-z가-힣_.-]+", "-", key)
+    key = re.sub(r"-+", "-", key).strip(".-")
+    return key or "custom"
+
+
+def parse_page_selection(page_values: list[int] | None, pages_values: list[str] | None) -> list[int] | None:
+    selected: set[int] = set()
+    for page in page_values or []:
+        if page < 1:
+            raise SystemExit("--page는 1 이상의 페이지 번호를 사용해야 합니다.")
+        selected.add(page)
+
+    for spec in pages_values or []:
+        for part in spec.split(","):
+            token = part.strip()
+            if not token:
+                continue
+            if "-" in token:
+                start_text, end_text = token.split("-", 1)
+                try:
+                    start = int(start_text.strip())
+                    end = int(end_text.strip())
+                except ValueError as exc:
+                    raise SystemExit(f"--pages 범위를 해석할 수 없습니다: {token}") from exc
+                if start < 1 or end < 1 or end < start:
+                    raise SystemExit(f"--pages 범위가 올바르지 않습니다: {token}")
+                selected.update(range(start, end + 1))
+                continue
+            try:
+                page = int(token)
+            except ValueError as exc:
+                raise SystemExit(f"--pages 페이지 번호를 해석할 수 없습니다: {token}") from exc
+            if page < 1:
+                raise SystemExit("--pages는 1 이상의 페이지 번호를 사용해야 합니다.")
+            selected.add(page)
+
+    return sorted(selected) if selected else None
+
+
+def filter_paths_by_pages(paths: list[Path], selected_pages: list[int] | None) -> list[Path]:
+    if not selected_pages:
+        return paths
+    selected = set(selected_pages)
+    return [path for path in paths if page_num(path) in selected]
+
+
+def ensure_selected_pages_available(
+    selected_pages: list[int],
+    groups: dict[str, list[Path]],
+) -> None:
+    missing_by_group: dict[str, list[int]] = {}
+    for group_name, paths in groups.items():
+        available = {page_num(path) for path in paths}
+        missing = [page for page in selected_pages if page not in available]
+        if missing:
+            missing_by_group[group_name] = missing
+    if missing_by_group:
+        details = ", ".join(
+            f"{name}: {pages}" for name, pages in sorted(missing_by_group.items())
+        )
+        raise SystemExit(f"선택한 페이지의 산출물을 찾을 수 없습니다: {details}")
+
+
 def page_num(path: Path) -> int:
     matches = re.findall(r"(\d+)", path.stem)
     if not matches:
-        raise ValueError(f"페이지 번호를 찾을 수 없습니다: {path}")
+        return 1
     return int(matches[-1])
 
 
@@ -222,9 +300,7 @@ def compact_note_shape(note_shape: dict[str, object]) -> list[dict[str, object]]
                 "separatorBelowMm": _note_mm(ui, "separatorBelow"),
                 "betweenNotesMm": _note_mm(ui, "betweenNotes"),
                 "separatorEnabled": bool(
-                    raw.get("separatorLineType")
-                    or raw.get("separatorLineWidth")
-                    or _note_hu(raw, "separatorLength")
+                    raw.get("separatorLineType") and raw.get("separatorLineWidth")
                 ),
                 "separatorLengthMm": _note_mm(raw, "separatorLength"),
                 "rawSeparatorMarginTopMm": _note_mm(raw, "separatorMarginTop"),
@@ -260,20 +336,30 @@ def first_endnote_shape(compact_shapes: list[dict[str, object]]) -> dict[str, ob
     return {}
 
 
-def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi: int) -> dict[str, object]:
+def render_target(
+    root: Path,
+    target: Target,
+    out_root: Path,
+    rhwp_bin: str,
+    dpi: int,
+    pixel_diff_threshold: int,
+    selected_pages: list[int] | None,
+) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
-    hwp = root / target.hwp
-    pdf = root / target.pdf
+    hwp = resolve_input_path(root, target.hwp)
+    pdf = resolve_input_path(root, target.pdf)
     if not hwp.exists():
         raise SystemExit(f"HWP 파일이 없습니다: {hwp}")
     if not pdf.exists():
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
 
-    base = out_root / target.key
+    base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
     rhwp_png_dir = base / "rhwp_png"
     pdf_png_dir = base / "pdf_png"
     compare_dir = base / "compare"
+    overlay_dir = base / "overlay"
+    review_dir = base / "review"
     analysis_dir = base / "analysis"
     tree_dir = base / "render_tree"
     pdf_bbox_html = base / "pdf_bbox.html"
@@ -281,6 +367,8 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
     clean_dir(rhwp_png_dir)
     clean_dir(pdf_png_dir)
     clean_dir(compare_dir)
+    clean_dir(overlay_dir)
+    clean_dir(review_dir)
     clean_dir(analysis_dir)
     clean_dir(tree_dir)
 
@@ -300,19 +388,55 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
     run(["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)], cwd=root)
     run(["pdftotext", "-bbox-layout", str(pdf), str(pdf_bbox_html)], cwd=root)
 
-    svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
-    tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
-    print(f"SVG pages: {len(svg_paths)}", flush=True)
-    for svg in svg_paths:
+    all_svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
+    all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
+    print(f"SVG pages: {len(all_svg_paths)}", flush=True)
+    for svg in all_svg_paths:
         png = rhwp_png_dir / f"rhwp_{page_num(svg):03d}.png"
         run(["rsvg-convert", "-f", "png", "-o", str(png), str(svg)], cwd=root, verbose=False)
 
-    rhwp_pngs = sorted(rhwp_png_dir.glob("*.png"), key=page_num)
-    pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)
-    pdf_question_markers = extract_pdf_question_markers(pdf_bbox_html, pdf_pngs)
-    print(f"PDF pages: {len(pdf_pngs)}", flush=True)
+    all_rhwp_pngs = sorted(rhwp_png_dir.glob("*.png"), key=page_num)
+    all_pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)
+    pdf_question_markers = extract_pdf_question_markers(pdf_bbox_html, all_pdf_pngs)
+    print(f"PDF pages: {len(all_pdf_pngs)}", flush=True)
+    svg_paths = filter_paths_by_pages(all_svg_paths, selected_pages)
+    tree_paths = filter_paths_by_pages(all_tree_paths, selected_pages)
+    rhwp_pngs = filter_paths_by_pages(all_rhwp_pngs, selected_pages)
+    pdf_pngs = filter_paths_by_pages(all_pdf_pngs, selected_pages)
+    if selected_pages:
+        print(f"Selected pages: {selected_pages}", flush=True)
+        ensure_selected_pages_available(
+            selected_pages,
+            {
+                "svg": svg_paths,
+                "render_tree": tree_paths,
+                "rhwp_png": rhwp_pngs,
+                "pdf_png": pdf_pngs,
+            },
+        )
     compare_pages = make_compares(rhwp_pngs, pdf_pngs, compare_dir, target.key)
+    overlay_result = make_overlay_compares(
+        rhwp_pngs,
+        pdf_pngs,
+        overlay_dir,
+        target.key,
+        pixel_diff_threshold=pixel_diff_threshold,
+    )
     contact = make_contact_sheet(compare_pages, base / "contact_sheet.png")
+    overlay_contact = make_contact_sheet(
+        overlay_result["pages"],
+        base / "overlay_contact_sheet.png",
+    ) if overlay_result["pages"] else None
+    review_pages = make_review_panels(
+        compare_pages,
+        overlay_result["pages"],
+        overlay_result["metrics"],
+        review_dir,
+    )
+    review_contact = make_contact_sheet(
+        review_pages,
+        base / "review_contact_sheet.png",
+    ) if review_pages else None
     visual_analysis = analyze_pages(
         rhwp_pngs,
         pdf_pngs,
@@ -332,18 +456,34 @@ def render_target(root: Path, target: Target, out_root: Path, rhwp_bin: str, dpi
     ]
     manifest = {
         "key": target.key,
-        "hwp": str(target.hwp),
-        "pdf": str(target.pdf),
+        "hwp": safe_rel_str(root, hwp),
+        "pdf": safe_rel_str(root, pdf),
+        "requested_pages": selected_pages,
+        "exported_svg_pages": len(all_svg_paths),
+        "exported_render_tree_pages": len(all_tree_paths),
+        "exported_pdf_pages": len(all_pdf_pngs),
         "svg_pages": len(svg_paths),
         "render_tree_pages": len(tree_paths),
         "pdf_pages": len(pdf_pngs),
         "compare_pages": len(compare_pages),
+        "overlay_pages": len(overlay_result["pages"]),
+        "review_pages": len(review_pages),
         "pdf_question_markers": len(pdf_question_markers),
         "overflow_lines": overflow_lines,
-        "contact_sheet": str(contact.relative_to(root)),
-        "analysis_dir": str(analysis_dir.relative_to(root)),
+        "contact_sheet": safe_rel_str(root, contact),
+        "overlay_contact_sheet": safe_rel_str(root, overlay_contact)
+        if overlay_contact is not None
+        else None,
+        "review_contact_sheet": safe_rel_str(root, review_contact)
+        if review_contact is not None
+        else None,
+        "analysis_dir": safe_rel_str(root, analysis_dir),
+        "overlay_dir": safe_rel_str(root, overlay_dir),
+        "review_dir": safe_rel_str(root, review_dir),
         "note_shape": compact_shapes,
-        "note_shape_json": str(note_shape_path.relative_to(root)),
+        "note_shape_json": safe_rel_str(root, note_shape_path),
+        "overlay_metrics": overlay_result["summary"],
+        "overlay_metrics_json": safe_rel_str(root, overlay_result["metrics_path"]),
         "visual_metrics": visual_analysis["summary"],
         "flagged_pages": visual_analysis["flagged_pages"],
     }
@@ -1491,9 +1631,14 @@ def extract_pdf_question_markers(pdf_bbox_html: Path, pdf_pngs: list[Path]) -> l
     return markers
 
 
-def collect_render_tree_question_markers(tree_paths: list[Path], rhwp_pngs: list[Path]) -> list[dict[str, object]]:
+def collect_render_tree_question_markers(
+    tree_paths: list[Path],
+    rhwp_pngs: list[Path],
+    page_numbers: list[int] | None = None,
+) -> list[dict[str, object]]:
     markers: list[dict[str, object]] = []
     for page_index, tree_path in enumerate(tree_paths):
+        page_number = page_numbers[page_index] if page_numbers and page_index < len(page_numbers) else page_index + 1
         tree = load_render_tree(tree_path)
         if tree is None:
             continue
@@ -1513,7 +1658,7 @@ def collect_render_tree_question_markers(tree_paths: list[Path], rhwp_pngs: list
             markers.append(
                 {
                     "source": "rhwp",
-                    "page": page_index + 1,
+                    "page": page_number,
                     "number": int(question_match.group(1)),
                     "question": f"문{question_match.group(1)}",
                     "text": text[:96],
@@ -2480,7 +2625,12 @@ def analyze_pages(
     endnote_shape: dict[str, object],
 ) -> dict[str, object]:
     page_count = min(len(rhwp_pngs), len(pdf_pngs), len(svg_paths), len(tree_paths))
-    rhwp_question_markers = collect_render_tree_question_markers(tree_paths[:page_count], rhwp_pngs[:page_count])
+    page_numbers = [page_num(path) for path in rhwp_pngs[:page_count]]
+    rhwp_question_markers = collect_render_tree_question_markers(
+        tree_paths[:page_count],
+        rhwp_pngs[:page_count],
+        page_numbers,
+    )
     question_marker_drifts_by_page = build_question_marker_drifts(rhwp_question_markers, pdf_question_markers)
 
     question_flow_path = analysis_dir / "question_flow.json"
@@ -2506,8 +2656,8 @@ def analyze_pages(
             tree_paths[index],
             analysis_dir,
             key,
-            index,
-            question_marker_drifts_by_page.get(index + 1, []),
+            page_numbers[index] - 1,
+            question_marker_drifts_by_page.get(page_numbers[index], []),
             endnote_shape,
         )
         for index in range(page_count)
@@ -2606,6 +2756,289 @@ def label_font() -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def padded_pair(left_image: Image.Image, right_image: Image.Image) -> tuple[Image.Image, Image.Image]:
+    width = max(left_image.width, right_image.width)
+    height = max(left_image.height, right_image.height)
+    left = Image.new("RGB", (width, height), "white")
+    right = Image.new("RGB", (width, height), "white")
+    left.paste(left_image.convert("RGB"), (0, 0))
+    right.paste(right_image.convert("RGB"), (0, 0))
+    return left, right
+
+
+def overlay_color(
+    rhwp_pixel: tuple[int, int, int],
+    pdf_pixel: tuple[int, int, int],
+    *,
+    threshold: int,
+) -> tuple[tuple[int, int, int], bool, bool, bool]:
+    max_delta = max(abs(rhwp_pixel[channel] - pdf_pixel[channel]) for channel in range(3))
+    rhwp_ink = is_content_pixel(rhwp_pixel)
+    pdf_ink = is_content_pixel(pdf_pixel)
+    union_ink = rhwp_ink or pdf_ink
+    if max_delta <= threshold:
+        avg = tuple((rhwp_pixel[channel] + pdf_pixel[channel]) // 2 for channel in range(3))
+        gray = int(avg[0] * 0.299 + avg[1] * 0.587 + avg[2] * 0.114)
+        return (gray, gray, gray), False, union_ink, False
+    if rhwp_ink and not pdf_ink:
+        return (255, 40, 40), True, union_ink, True
+    if pdf_ink and not rhwp_ink:
+        return (40, 100, 255), True, union_ink, True
+    if rhwp_ink and pdf_ink:
+        return (255, 150, 0), True, union_ink, True
+    return (255, 190, 220), True, union_ink, False
+
+
+def make_overlay_page(
+    rhwp_path: Path,
+    pdf_path: Path,
+    out_path: Path,
+    key: str,
+    page_index: int,
+    *,
+    pixel_diff_threshold: int,
+) -> dict[str, object]:
+    rhwp_raw = Image.open(rhwp_path).convert("RGB")
+    pdf_raw = Image.open(pdf_path).convert("RGB")
+    rhwp, pdf = padded_pair(rhwp_raw, pdf_raw)
+    width, height = rhwp.size
+    overlay = Image.new("RGB", (width, height), "white")
+    rhwp_px = rhwp.load()
+    pdf_px = pdf.load()
+    out_px = overlay.load()
+
+    diff_pixels = 0
+    ink_union_pixels = 0
+    ink_diff_pixels = 0
+    max_channel_delta = 0
+    total_abs_delta = 0
+    bbox_min_x = width
+    bbox_min_y = height
+    bbox_max_x = -1
+    bbox_max_y = -1
+
+    for y in range(height):
+        for x in range(width):
+            rhwp_pixel = rhwp_px[x, y]
+            pdf_pixel = pdf_px[x, y]
+            channel_deltas = [abs(rhwp_pixel[channel] - pdf_pixel[channel]) for channel in range(3)]
+            max_delta = max(channel_deltas)
+            max_channel_delta = max(max_channel_delta, max_delta)
+            total_abs_delta += sum(channel_deltas)
+            color, is_diff, union_ink, ink_diff = overlay_color(
+                rhwp_pixel,
+                pdf_pixel,
+                threshold=pixel_diff_threshold,
+            )
+            out_px[x, y] = color
+            if union_ink:
+                ink_union_pixels += 1
+            if is_diff:
+                diff_pixels += 1
+                bbox_min_x = min(bbox_min_x, x)
+                bbox_min_y = min(bbox_min_y, y)
+                bbox_max_x = max(bbox_max_x, x)
+                bbox_max_y = max(bbox_max_y, y)
+            if ink_diff:
+                ink_diff_pixels += 1
+
+    total_pixels = width * height
+    diff_ratio = diff_pixels / total_pixels if total_pixels else 0.0
+    ink_diff_ratio = ink_diff_pixels / ink_union_pixels if ink_union_pixels else 0.0
+    pixel_match_percent = (1.0 - diff_ratio) * 100.0
+    ink_match_percent = (1.0 - ink_diff_ratio) * 100.0 if ink_union_pixels else None
+    visual_accuracy_proxy_percent = ink_match_percent if ink_match_percent is not None else pixel_match_percent
+    diff_bbox = None
+    if bbox_max_x >= 0:
+        diff_bbox = [bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y]
+
+    label_h = 42
+    canvas = Image.new("RGB", (width, height + label_h), "white")
+    canvas.paste(overlay, (0, label_h))
+    draw = ImageDraw.Draw(canvas)
+    font = label_font()
+    ink_match_label = f"{ink_match_percent:.3f}%" if ink_match_percent is not None else "n/a"
+    draw.text(
+        (8, 6),
+        (
+            f"{key} p{page_index + 1:03d} overlay "
+            f"pixel_match={pixel_match_percent:.3f}% "
+            f"ink_match={ink_match_label} "
+            f"diff={diff_pixels}/{total_pixels}"
+        ),
+        fill=(20, 20, 20),
+        font=font,
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(out_path)
+
+    return {
+        "page": page_index + 1,
+        "rhwp_png": str(rhwp_path),
+        "pdf_png": str(pdf_path),
+        "overlay_png": str(out_path),
+        "width": width,
+        "height": height,
+        "pixel_diff_threshold": pixel_diff_threshold,
+        "total_pixels": total_pixels,
+        "diff_pixels": diff_pixels,
+        "diff_ratio": round(diff_ratio, 8),
+        "pixel_match_percent": round(pixel_match_percent, 5),
+        "ink_union_pixels": ink_union_pixels,
+        "ink_diff_pixels": ink_diff_pixels,
+        "ink_diff_ratio": round(ink_diff_ratio, 8) if ink_union_pixels else None,
+        "ink_match_percent": round(ink_match_percent, 5) if ink_match_percent is not None else None,
+        "visual_accuracy_proxy_percent": round(visual_accuracy_proxy_percent, 5),
+        "mean_abs_channel_delta": round(total_abs_delta / (total_pixels * 3), 3)
+        if total_pixels
+        else 0.0,
+        "max_channel_delta": max_channel_delta,
+        "diff_bbox": diff_bbox,
+    }
+
+
+def make_overlay_compares(
+    rhwp_pngs: list[Path],
+    pdf_pngs: list[Path],
+    out_dir: Path,
+    key: str,
+    *,
+    pixel_diff_threshold: int,
+) -> dict[str, object]:
+    count = min(len(rhwp_pngs), len(pdf_pngs))
+    pages: list[Path] = []
+    metrics: list[dict[str, object]] = []
+    for index in range(count):
+        page_number = page_num(rhwp_pngs[index])
+        out = out_dir / f"overlay_{page_number:03d}.png"
+        page_metrics = make_overlay_page(
+            rhwp_pngs[index],
+            pdf_pngs[index],
+            out,
+            key,
+            page_number - 1,
+            pixel_diff_threshold=pixel_diff_threshold,
+        )
+        pages.append(out)
+        metrics.append(page_metrics)
+
+    pixel_matches = [
+        float(item["pixel_match_percent"])
+        for item in metrics
+        if isinstance(item.get("pixel_match_percent"), (int, float))
+    ]
+    ink_matches = [
+        float(item["ink_match_percent"])
+        for item in metrics
+        if isinstance(item.get("ink_match_percent"), (int, float))
+    ]
+    proxy_matches = [
+        float(item["visual_accuracy_proxy_percent"])
+        for item in metrics
+        if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
+    ]
+    worst_pixel = min(pixel_matches) if pixel_matches else None
+    worst_ink = min(ink_matches) if ink_matches else None
+    worst_proxy = min(proxy_matches) if proxy_matches else None
+    summary = {
+        "compared_pages": count,
+        "pixel_diff_threshold": pixel_diff_threshold,
+        "average_pixel_match_percent": round(sum(pixel_matches) / len(pixel_matches), 5)
+        if pixel_matches
+        else None,
+        "worst_pixel_match_percent": round(worst_pixel, 5)
+        if worst_pixel is not None
+        else None,
+        "average_ink_match_percent": round(sum(ink_matches) / len(ink_matches), 5)
+        if ink_matches
+        else None,
+        "worst_ink_match_percent": round(worst_ink, 5)
+        if worst_ink is not None
+        else None,
+        "average_visual_accuracy_proxy_percent": round(sum(proxy_matches) / len(proxy_matches), 5)
+        if proxy_matches
+        else None,
+        "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
+        if worst_proxy is not None
+        else None,
+        "worst_pages": [
+            item["page"]
+            for item in sorted(
+                metrics,
+                key=lambda row: float(row.get("visual_accuracy_proxy_percent", 100.0)),
+            )[:10]
+        ],
+    }
+    metrics_path = out_dir / "overlay_metrics.json"
+    metrics_path.write_text(
+        json.dumps({"summary": summary, "pages": metrics}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return {"pages": pages, "metrics": metrics, "metrics_path": metrics_path, "summary": summary}
+
+
+def review_comment_line(metrics: dict[str, object] | None) -> str:
+    percent = metrics.get("visual_accuracy_proxy_percent") if metrics else None
+    if isinstance(percent, (int, float)):
+        return f"코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 {percent:.2f}%."
+    return "코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 확인 불가."
+
+
+def make_review_panels(
+    compare_pages: list[Path],
+    overlay_pages: list[Path],
+    overlay_metrics: list[dict[str, object]],
+    out_dir: Path,
+) -> list[Path]:
+    overlays_by_page = {page_num(path): path for path in overlay_pages}
+    metrics_by_page = {
+        int(item["page"]): item
+        for item in overlay_metrics
+        if isinstance(item.get("page"), int)
+    }
+    review_pages: list[Path] = []
+    gutter = 18
+    footer_padding_x = 18
+    footer_padding_y = 14
+    font = label_font()
+    for compare_path in compare_pages:
+        page = page_num(compare_path)
+        overlay_path = overlays_by_page.get(page)
+        if overlay_path is None:
+            continue
+        compare = Image.open(compare_path).convert("RGB")
+        overlay = Image.open(overlay_path).convert("RGB")
+        width = compare.width + gutter + overlay.width
+        image_height = max(compare.height, overlay.height)
+        comment_line = review_comment_line(metrics_by_page.get(page))
+        bbox = font.getbbox(comment_line)
+        line_height = bbox[3] - bbox[1]
+        overlay_footer_height = footer_padding_y * 2 + line_height
+        height = max(image_height, overlay.height + overlay_footer_height)
+        canvas = Image.new("RGB", (width, height), "white")
+        canvas.paste(compare, (0, 0))
+        overlay_x = compare.width + gutter
+        canvas.paste(overlay, (overlay_x, 0))
+        draw = ImageDraw.Draw(canvas)
+        separator_y = overlay.height + 1
+        draw.line(
+            [(overlay_x, separator_y), (overlay_x + overlay.width, separator_y)],
+            fill=(210, 210, 210),
+            width=2,
+        )
+        draw.text(
+            (overlay_x + footer_padding_x, overlay.height + footer_padding_y),
+            comment_line,
+            fill=(20, 20, 20),
+            font=font,
+        )
+        out = out_dir / f"review_{page:03d}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        canvas.save(out)
+        review_pages.append(out)
+    return review_pages
+
+
 def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, key: str) -> list[Path]:
     count = min(len(rhwp_pngs), len(pdf_pngs))
     font = label_font()
@@ -2613,17 +3046,18 @@ def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, ke
     for index in range(count):
         rhwp = Image.open(rhwp_pngs[index]).convert("RGB")
         pdf = Image.open(pdf_pngs[index]).convert("RGB")
+        page_number = page_num(rhwp_pngs[index])
         width = max(rhwp.width, pdf.width)
         height = max(rhwp.height, pdf.height)
         label_h = 30
         gutter = 16
         canvas = Image.new("RGB", (width * 2 + gutter, height + label_h), "white")
         draw = ImageDraw.Draw(canvas)
-        draw.text((8, 5), f"{key} p{index + 1:03d} rhwp", fill=(20, 20, 20), font=font)
-        draw.text((width + gutter + 8, 5), f"{key} p{index + 1:03d} pdf", fill=(20, 20, 20), font=font)
+        draw.text((8, 5), f"{key} p{page_number:03d} rhwp", fill=(20, 20, 20), font=font)
+        draw.text((width + gutter + 8, 5), f"{key} p{page_number:03d} pdf", fill=(20, 20, 20), font=font)
         canvas.paste(rhwp, (0, label_h))
         canvas.paste(pdf, (width + gutter, label_h))
-        out = out_dir / f"compare_{index + 1:03d}.png"
+        out = out_dir / f"compare_{page_number:03d}.png"
         canvas.save(out)
         pages.append(out)
     return pages
@@ -2658,29 +3092,108 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
     return out_path
 
 
+def custom_targets_from_args(args: argparse.Namespace) -> list[Target]:
+    targets: list[Target] = []
+    if args.hwp or args.pdf:
+        if not args.hwp or not args.pdf:
+            raise SystemExit("--hwp와 --pdf는 함께 지정해야 합니다.")
+        key = args.key or Path(args.hwp).stem
+        targets.append(Target(safe_target_key(key), Path(args.hwp), Path(args.pdf)))
+
+    for item in args.file_target or []:
+        key, document_path, pdf_path = item
+        targets.append(Target(safe_target_key(key), Path(document_path), Path(pdf_path)))
+    return dedupe_target_keys(targets)
+
+
+def dedupe_target_keys(targets: list[Target]) -> list[Target]:
+    counts: dict[str, int] = {}
+    deduped: list[Target] = []
+    for target in targets:
+        key = safe_target_key(target.key)
+        counts[key] = counts.get(key, 0) + 1
+        if counts[key] > 1:
+            key = f"{key}-{counts[key]}"
+        deduped.append(Target(key, target.hwp, target.pdf))
+    return deduped
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--target",
         action="append",
         choices=[*TARGETS.keys(), "all"],
-        help="검증할 target입니다. 여러 번 지정할 수 있으며 생략하면 전체를 실행합니다.",
+        help=(
+            "검증할 preset target입니다. 여러 번 지정할 수 있습니다. "
+            "target과 일반 파일 입력을 모두 생략하면 전체 preset을 실행합니다."
+        ),
     )
     parser.add_argument("--out", default="output/task1274")
     parser.add_argument("--rhwp-bin", default="target/debug/rhwp")
     parser.add_argument("--dpi", type=int, default=96)
+    parser.add_argument(
+        "--page",
+        action="append",
+        type=int,
+        help="비교할 1-based 페이지 번호입니다. 여러 번 지정할 수 있습니다.",
+    )
+    parser.add_argument(
+        "--pages",
+        action="append",
+        help="비교할 1-based 페이지 목록/범위입니다. 예: 22 또는 43-46 또는 1,3,5-7",
+    )
+    parser.add_argument("--key", help="--hwp/--pdf로 넘긴 단일 외부 파일 target 이름입니다.")
+    parser.add_argument("--hwp", help="임의 HWP/HWPX 파일 경로입니다. 절대 경로와 상대 경로를 모두 허용합니다.")
+    parser.add_argument("--pdf", help="임의 기준 PDF 파일 경로입니다. 절대 경로와 상대 경로를 모두 허용합니다.")
+    parser.add_argument(
+        "--file-target",
+        action="append",
+        nargs=3,
+        metavar=("KEY", "DOC", "PDF"),
+        help="임의 파일 target을 추가합니다. 여러 번 지정할 수 있습니다.",
+    )
+    parser.add_argument(
+        "--pixel-diff-threshold",
+        type=int,
+        default=DEFAULT_PIXEL_DIFF_THRESHOLD,
+        help=(
+            "PNG overlay diff에서 차이 픽셀로 볼 RGB 채널 최대 차이 임계값입니다 "
+            f"(기본값: {DEFAULT_PIXEL_DIFF_THRESHOLD})."
+        ),
+    )
     args = parser.parse_args()
+    if not 0 <= args.pixel_diff_threshold <= 255:
+        raise SystemExit("--pixel-diff-threshold는 0 이상 255 이하로 지정해야 합니다.")
+    selected_pages = parse_page_selection(args.page, args.pages)
 
     root = Path.cwd()
     ensure_tools()
-    requested_targets = args.target or ["all"]
-    if "all" in requested_targets:
+    custom_targets = custom_targets_from_args(args)
+    requested_targets = args.target
+    if requested_targets and "all" in requested_targets:
         selected = list(TARGETS.values())
-    else:
+    elif requested_targets:
         selected = [TARGETS[target_key] for target_key in requested_targets]
+    elif custom_targets:
+        selected = []
+    else:
+        selected = list(TARGETS.values())
+    selected = dedupe_target_keys([*selected, *custom_targets])
     out_root = root / args.out
     out_root.mkdir(parents=True, exist_ok=True)
-    manifests = [render_target(root, target, out_root, args.rhwp_bin, args.dpi) for target in selected]
+    manifests = [
+        render_target(
+            root,
+            target,
+            out_root,
+            args.rhwp_bin,
+            args.dpi,
+            args.pixel_diff_threshold,
+            selected_pages,
+        )
+        for target in selected
+    ]
     summary_path = out_root / "summary.json"
     summary_path.write_text(json.dumps(manifests, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"summary: {summary_path}")

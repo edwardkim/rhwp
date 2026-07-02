@@ -328,18 +328,18 @@ fn sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing() {
     let doc = load_doc("samples/hwp3-sample16-hwp5.hwp");
     let dump = doc.dump_page_items(Some(2));
     // #1648 수정으로 페이지 하단 빈 문단(pi=87)이 한컴처럼 page3 에 배치(items 19→20).
-    // 한컴 2022 PDF(pdf/hwp3-sample16-hwp5-2022.pdf) p3 마지막 가시줄=pi=86, p4 시작="(2) 주전산센터…"
-    // 로 가시 경계 동일 — 종전 누락되던 trailing 빈 문단만 올바르게 합산.
+    // 단, pi=87은 가시 내용이 없는 trailing 빈 문단이므로 시각 사용 높이 used는
+    // 2022 변환본(items=19)과 같은 경계를 유지해야 한다.
     let summary = dump
         .lines()
         .find(|line| line.contains("단 0 (items=20"))
         .unwrap_or_else(|| panic!("p3 단 요약을 찾을 수 없음:\n{dump}"));
 
     assert!(
-        summary.contains("used=904.1px")
+        summary.contains("used=874.5px")
             && summary.contains("hwp_used≈841.6px")
-            && summary.contains("diff=+62.5px"),
-        "p3 단 요약은 HWP3-origin spacing_before와 마지막 LINE_SEG의 ls 포함 vpos 흐름을 표시해야 함: {summary}"
+            && summary.contains("diff=+32.9px"),
+        "p3 단 요약은 trailing 빈 문단을 items에 유지하되 시각 사용 높이는 2022 기준과 같은 경계를 유지해야 함: {summary}"
     );
 }
 

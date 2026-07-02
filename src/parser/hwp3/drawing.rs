@@ -698,6 +698,7 @@ fn map_to_shape_object(
                     pic_name_to_id,
                     0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
                     i32::MAX / 2, // column_width_hu
+                    0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
                 )?;
                 parsed_paragraphs = paras;
             }
