@@ -5749,6 +5749,28 @@ impl LayoutEngine {
         }
     }
 
+    /// [Task #1748] 셀 유닛 누적높이가 `budget`(패딩 제외 콘텐츠 예산) 안에
+    /// 들어가는 선두 유닛 수를 반환한다. 컷 행에 걸친(straddling) rowspan 셀의
+    /// 높이 기반 가시 유닛 컷 산출용 — 컷 페이지의 eu 와 연속 페이지의 su 가
+    /// 같은 예산 식으로 계산되어 경계 줄 인덱스가 산술적으로 일치한다.
+    pub(crate) fn cell_units_fitting_height(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        budget: f64,
+    ) -> usize {
+        const EPS: f64 = 0.1;
+        let units = self.cell_units(cell, table, styles);
+        let mut n = 0usize;
+        let mut h = 0.0f64;
+        while n < units.len() && h + units[n].height <= budget + EPS {
+            h += units[n].height;
+            n += 1;
+        }
+        n
+    }
+
     /// [Task #993] 한 셀의 유닛 범위 `[start_unit, end_unit)`를 문단별 줄 범위로
     /// 변환한다. `layout_partial_table`이 `RowCut`으로 가시 범위를 렌더할 때
     /// 사용 — 결과는 종전 `compute_cell_line_ranges`와 같은

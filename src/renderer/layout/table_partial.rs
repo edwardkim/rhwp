@@ -152,6 +152,9 @@ impl LayoutEngine {
         let col_widths = self.resolve_column_widths(table, col_count);
         let mut row_heights =
             self.resolve_row_heights(table, col_count, row_count, measured_table, styles);
+        // [Task #1748] 컷 걸침 rowspan 셀의 이전 프래그먼트 소비 높이 재계산용 —
+        // 2b 컷 오버라이드 이전의 원본 행 높이 (프래그먼트 무관 값).
+        let resolved_row_heights = row_heights.clone();
 
         // ── 2b. 행 높이 오버라이드 (Task #993: 컷 기반) ──
         // 렌더 대상 모든 행의 높이를 페이지네이터와 동일한 컷 측정
@@ -515,6 +518,25 @@ impl LayoutEngine {
             };
             let is_in_split_row = is_split_start_row || is_split_end_row;
 
+            // [Task #1748] RowBreak 표에서 페이지 경계가 rowspan 블록 내부를 per-row
+            // 분할할 때(#1022 경로), 컷 부기(start_cut/end_cut)는 컷 행의 row_span==1
+            // 셀만 담아 경계에 걸친 rowspan 셀은 컷 없이 전체 렌더된다 — 컷 페이지에선
+            // 셀 박스 아래로 흘러넘치고(+13px 잉크), 연속 페이지에선 처음부터
+            // 재렌더(중복)된다. 높이 기반 유닛 컷으로 가시 줄 범위를 제한한다.
+            let straddles_fragment_start = cell_row < start_row && cell_end_row > start_row;
+            let straddles_fragment_end = cell_row < render_range_end
+                && (cell_end_row > render_range_end
+                    || (cell_end_row == render_range_end && !end_cut.is_empty()));
+            let is_rowbreak_straddle = !is_block_split
+                && !is_in_split_row
+                && cell.row_span > 1
+                && !is_repeated_header_cell
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && (straddles_fragment_start || straddles_fragment_end);
+
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
                 cell_id,
@@ -525,7 +547,7 @@ impl LayoutEngine {
                     row_span: cell.row_span,
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
-                    clip: is_in_split_row,
+                    clip: is_in_split_row || is_rowbreak_straddle,
                     model_cell_index: Some(cell_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -628,6 +650,48 @@ impl LayoutEngine {
                     (su, eu)
                 };
                 Some(pair)
+            } else if is_rowbreak_straddle {
+                // [Task #1748] 높이 기반 유닛 컷. 이전 프래그먼트 소비 높이(prior_h)는
+                // 2b 오버라이드와 동일한 식으로 재계산 — 온전 행은 컷 측정
+                // (row_cut_content_height), 분할 행(start_row)은 start_cut 이전 유닛
+                // 높이. 컷 페이지가 end_cut 으로 계산한 값과 같은 식이라 경계 유닛
+                // 인덱스(컷 페이지 eu == 연속 페이지 su)가 산술적으로 일치한다.
+                let mut prior_h = 0.0f64;
+                if straddles_fragment_start {
+                    for r in cell_row..start_row {
+                        let has_single_row_cells = table
+                            .cells
+                            .iter()
+                            .any(|c| c.row as usize == r && c.row_span == 1);
+                        let h = if has_single_row_cells {
+                            let h = self.row_cut_content_height(table, r, &[], &[], styles);
+                            if h > 0.0 {
+                                h
+                            } else {
+                                resolved_row_heights.get(r).copied().unwrap_or(0.0)
+                            }
+                        } else {
+                            resolved_row_heights.get(r).copied().unwrap_or(0.0)
+                        };
+                        prior_h += h + cell_spacing;
+                    }
+                    if !start_cut.is_empty() {
+                        prior_h +=
+                            self.row_cut_content_height(table, start_row, &[], start_cut, styles);
+                    }
+                }
+                let su = if prior_h > 0.0 {
+                    self.cell_units_fitting_height(cell, table, styles, prior_h - pad_top)
+                } else {
+                    0
+                };
+                let eu = if straddles_fragment_end {
+                    self.cell_units_fitting_height(cell, table, styles, prior_h + cell_h - pad_top)
+                        .max(su)
+                } else {
+                    usize::MAX
+                };
+                Some((su, eu))
             } else {
                 None
             };
@@ -755,7 +819,7 @@ impl LayoutEngine {
             } else {
                 false
             };
-            let effective_align = if is_in_split_row && cell_was_split {
+            let effective_align = if (is_in_split_row || is_rowbreak_straddle) && cell_was_split {
                 VerticalAlign::Top
             } else {
                 cell.vertical_align
