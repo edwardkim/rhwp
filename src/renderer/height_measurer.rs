@@ -845,7 +845,8 @@ impl HeightMeasurer {
                 // micro-grid 결재란 라운드트립 9.3px). aim=true 는 기존대로 cell.padding
                 // 을 0 포함 그대로 존중 — layout 의 `!= 0 → 표 기본 폴백`과 다르지만,
                 // #493 세로 Shift 리사이즈(셀보호2.hwp 셀[20] aim=true pad top/bottom=0)가
-                // 이 의미에 의존한다. aim=true && 0 의 레이아웃-측정 정합은 후속 항목.
+                // 이 의미에 의존한다 (#1809 완전 통일 시도는 해당 테스트 회귀로 원복 —
+                // vertical_shift_local_height_keeps_unrelated_cells_stable).
                 let eff_pad = if cell.apply_inner_margin {
                     cell.padding
                 } else {
@@ -1116,29 +1117,21 @@ impl HeightMeasurer {
             let r = cell.row as usize;
             let span = cell.row_span as usize;
             if span > 1 && r + span <= row_count {
-                let (pad_top, pad_bottom) = if cell.apply_inner_margin {
-                    (
-                        hwpunit_to_px(cell.padding.top as i32, self.dpi),
-                        hwpunit_to_px(cell.padding.bottom as i32, self.dpi),
-                    )
-                } else {
-                    (
-                        hwpunit_to_px(table.padding.top as i32, self.dpi),
-                        hwpunit_to_px(table.padding.bottom as i32, self.dpi),
-                    )
-                };
+                // [#1809] aim 직접 분기 → 단일 출처(Cell::effective_padding) 통일.
+                // aim=true 인데 cell padding 이 0 인 셀은 표 기본으로 폴백해야
+                // 레이아웃(resolve_cell_padding)과 정합한다. 직접 분기가 남으면
+                // HWPX→HWP 변환의 micro-grid 계약(aim 일괄 세트)만으로 병합 셀
+                // 행높이 측정이 갈린다 (admrul_0296 행 32.37→31.60, 표 3.87px).
+                let eff_pad = cell.effective_padding(&table.padding);
+                let (pad_top, pad_bottom) = (
+                    hwpunit_to_px(eff_pad.top as i32, self.dpi),
+                    hwpunit_to_px(eff_pad.bottom as i32, self.dpi),
+                );
                 // [Task #671] 좌우 패딩 (recompose_for_cell_width inner_width 계산용)
-                let (pad_left, pad_right) = if cell.apply_inner_margin {
-                    (
-                        hwpunit_to_px(cell.padding.left as i32, self.dpi),
-                        hwpunit_to_px(cell.padding.right as i32, self.dpi),
-                    )
-                } else {
-                    (
-                        hwpunit_to_px(table.padding.left as i32, self.dpi),
-                        hwpunit_to_px(table.padding.right as i32, self.dpi),
-                    )
-                };
+                let (pad_left, pad_right) = (
+                    hwpunit_to_px(eff_pad.left as i32, self.dpi),
+                    hwpunit_to_px(eff_pad.right as i32, self.dpi),
+                );
                 let cell_w_px = if cell.width < 0x80000000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
                 } else {
@@ -1347,16 +1340,10 @@ impl HeightMeasurer {
                 .iter()
                 .filter(|cell| (cell.row as usize) < row_count)
                 .map(|cell| {
-                    let pad_top = if cell.apply_inner_margin {
-                        hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                    } else {
-                        hwpunit_to_px(table.padding.top as i32, self.dpi)
-                    };
-                    let pad_bottom = if cell.apply_inner_margin {
-                        hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
-                    } else {
-                        hwpunit_to_px(table.padding.bottom as i32, self.dpi)
-                    };
+                    // [#1809] aim 직접 분기 → 단일 출처 통일 (위 2-c단계와 동일 근거)
+                    let eff_pad = cell.effective_padding(&table.padding);
+                    let pad_top = hwpunit_to_px(eff_pad.top as i32, self.dpi);
+                    let pad_bottom = hwpunit_to_px(eff_pad.bottom as i32, self.dpi);
 
                     let mut line_heights = Vec::new();
                     let mut para_line_counts = Vec::new();

@@ -1407,9 +1407,10 @@ fn adapt_table_with_context(
 
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
     let use_cell_width_ref = table_requires_cell_width_ref_contract(table);
+    let table_padding = table.padding;
     for cell in &mut table.cells {
         adapt_cell_list_attr(cell, report);
-        materialize_cell_list_header_contract(cell, use_cell_width_ref, report);
+        materialize_cell_list_header_contract(cell, use_cell_width_ref, &table_padding, report);
         for cpara in &mut cell.paragraphs {
             adapt_paragraph_with_context(cpara, report, context);
         }
@@ -1429,10 +1430,20 @@ fn table_requires_cell_width_ref_contract(table: &Table) -> bool {
 fn materialize_cell_list_header_contract(
     cell: &mut Cell,
     use_width_ref: bool,
+    table_padding: &crate::model::Padding,
     report: &mut AdapterReport,
 ) {
     let before_width_ref = cell.list_header_width_ref;
     let before_extra_len = cell.raw_list_extra.len();
+
+    // [#1809] micro-grid 계약으로 width_ref bit0(=aim)을 켤 때, aim=false 셀의
+    // 유효 안 여백(effective_padding — 표 기본 폴백 포함)을 셀 padding 에 물질화한다.
+    // 재파싱 시 aim=true 가 되면 측정/레이아웃의 aim=true 원값 존중 경로(#493 시멘틱)가
+    // raw cell padding 을 그대로 쓰므로, 물질화 없이는 padding 0 셀의 행높이가
+    // 원본(HWPX, 표 기본 여백)과 어긋난다 (admrul_0296 행 32.37→31.60, 표 3.87px).
+    if use_width_ref && !cell.apply_inner_margin {
+        cell.padding = cell.effective_padding(table_padding);
+    }
 
     if use_width_ref || cell.apply_inner_margin {
         cell.list_header_width_ref |= 0x0001;
@@ -1789,7 +1800,12 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(&mut cell, true, &mut report);
+        materialize_cell_list_header_contract(
+            &mut cell,
+            true,
+            &crate::model::Padding::default(),
+            &mut report,
+        );
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -1800,7 +1816,12 @@ mod tests {
         assert!(cell.raw_list_extra[4..].iter().all(|&byte| byte == 0));
         assert_eq!(report.cells_list_header_contract_materialized, 1);
 
-        materialize_cell_list_header_contract(&mut cell, true, &mut report);
+        materialize_cell_list_header_contract(
+            &mut cell,
+            true,
+            &crate::model::Padding::default(),
+            &mut report,
+        );
         assert_eq!(report.cells_list_header_contract_materialized, 1);
     }
 
@@ -1814,7 +1835,12 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(&mut cell, false, &mut report);
+        materialize_cell_list_header_contract(
+            &mut cell,
+            false,
+            &crate::model::Padding::default(),
+            &mut report,
+        );
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0);
         assert_eq!(cell.raw_list_extra.len(), 13);
