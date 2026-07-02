@@ -72,6 +72,13 @@ impl PageLayoutInfo {
         } else {
             (page_def.width, page_def.height)
         };
+        // [Task #1583] 손상/미설정 PageDef(용지 0) 방어 — A4 폴백 (PageAreas 와 동일
+        // 규칙). 방치 시 0-크기 SVG 캔버스로 PDF 변환이 "SVG has an invalid size" 실패.
+        let (width_hwp, height_hwp) = if width_hwp == 0 || height_hwp == 0 {
+            (59528, 84188)
+        } else {
+            (width_hwp, height_hwp)
+        };
         let page_width = hwpunit_to_px(width_hwp as i32, dpi);
         let page_height = hwpunit_to_px(height_hwp as i32, dpi);
 
