@@ -172,6 +172,51 @@ impl Cell {
         self.set_list_header_flag(CELL_FLAG_HAS_MARGIN, value);
     }
 
+    /// [Task #1785] 렌더에 실제 적용되는 축별 안 여백 선택 규칙 (단일 출처).
+    ///
+    /// HWP 스펙: aim=true → cell.padding(단, 0 은 표 기본으로 폴백), aim=false →
+    /// table.padding. 예외로 aim=false 여도 레거시 보존값(cell > table, 2500HU 미만)은
+    /// 한컴이 렌더에 사용한다 (KTX 목차, exam_kor 보기 박스).
+    /// 레이아웃(resolve_cell_padding)과 높이 측정(height_measurer)이 반드시 같은 값을
+    /// 봐야 한다 — 규칙이 갈리면 예약 높이와 실제 렌더가 어긋나 표 높이가 틀어진다.
+    pub fn use_cell_padding_axis(
+        &self,
+        cell_padding: i16,
+        table_padding: i16,
+        allow_saved_small_cell_margin: bool,
+    ) -> bool {
+        if self.apply_inner_margin {
+            return cell_padding != 0;
+        }
+        if cell_padding <= table_padding {
+            return false;
+        }
+        if !allow_saved_small_cell_margin && cell_padding >= 2500 {
+            return false;
+        }
+        true
+    }
+
+    /// 축별 규칙(`use_cell_padding_axis`)을 네 축에 적용한 유효 안 여백 (HWPUNIT).
+    pub fn effective_padding(
+        &self,
+        table_padding: &crate::model::Padding,
+    ) -> crate::model::Padding {
+        let pick = |c: i16, t: i16| -> i16 {
+            if self.use_cell_padding_axis(c, t, false) {
+                c
+            } else {
+                t
+            }
+        };
+        crate::model::Padding {
+            left: pick(self.padding.left, table_padding.left),
+            right: pick(self.padding.right, table_padding.right),
+            top: pick(self.padding.top, table_padding.top),
+            bottom: pick(self.padding.bottom, table_padding.bottom),
+        }
+    }
+
     pub fn cell_protect(&self) -> bool {
         self.list_header_width_ref & CELL_FLAG_PROTECT != 0
     }

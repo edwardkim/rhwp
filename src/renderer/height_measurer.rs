@@ -839,30 +839,23 @@ impl HeightMeasurer {
         for cell in &table.cells {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
-                // 셀 패딩 — layout 의 resolve_cell_padding 과 일관성:
-                //   aim=true  → cell.padding (0 도 명시값으로 존중)
-                //   aim=false → table.padding
-                let pad_top = if cell.apply_inner_margin {
-                    hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                // [Task #1785] 셀 패딩 — aim=false 는 layout 의 레거시 보존값 규칙
+                // (Cell::effective_padding)과 통일: 단순 table.padding 폴백은 cell > table
+                // 보존값 케이스에서 layout 렌더와 어긋나 표 높이가 틀어진다 (36381023
+                // micro-grid 결재란 라운드트립 9.3px). aim=true 는 기존대로 cell.padding
+                // 을 0 포함 그대로 존중 — layout 의 `!= 0 → 표 기본 폴백`과 다르지만,
+                // #493 세로 Shift 리사이즈(셀보호2.hwp 셀[20] aim=true pad top/bottom=0)가
+                // 이 의미에 의존한다. aim=true && 0 의 레이아웃-측정 정합은 후속 항목.
+                let eff_pad = if cell.apply_inner_margin {
+                    cell.padding
                 } else {
-                    hwpunit_to_px(table.padding.top as i32, self.dpi)
+                    cell.effective_padding(&table.padding)
                 };
-                let pad_bottom = if cell.apply_inner_margin {
-                    hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
-                } else {
-                    hwpunit_to_px(table.padding.bottom as i32, self.dpi)
-                };
+                let pad_top = hwpunit_to_px(eff_pad.top as i32, self.dpi);
+                let pad_bottom = hwpunit_to_px(eff_pad.bottom as i32, self.dpi);
                 // [Task #671] 좌우 패딩 — recompose_for_cell_width 의 inner_width 계산용
-                let pad_left = if cell.apply_inner_margin {
-                    hwpunit_to_px(cell.padding.left as i32, self.dpi)
-                } else {
-                    hwpunit_to_px(table.padding.left as i32, self.dpi)
-                };
-                let pad_right = if cell.apply_inner_margin {
-                    hwpunit_to_px(cell.padding.right as i32, self.dpi)
-                } else {
-                    hwpunit_to_px(table.padding.right as i32, self.dpi)
-                };
+                let pad_left = hwpunit_to_px(eff_pad.left as i32, self.dpi);
+                let pad_right = hwpunit_to_px(eff_pad.right as i32, self.dpi);
                 let cell_w_px = if cell.width < 0x80000000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
                 } else {

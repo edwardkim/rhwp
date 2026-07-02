@@ -1870,22 +1870,9 @@ impl LayoutEngine {
         table_padding: i16,
         allow_saved_small_cell_margin: bool,
     ) -> bool {
-        if cell.apply_inner_margin {
-            return cell_padding != 0;
-        }
-
-        if cell_padding <= table_padding {
-            return false;
-        }
-
-        // 오래된 HWP/HWPX에는 hasMargin=0이어도 셀별 안여백 보존값이 렌더링에
-        // 필요한 경우가 있다(KTX 목차, exam_kor 보기 박스 등). 다만 1443 샘플처럼
-        // 사용자가 10mm급 명시 여백을 껐다가 저장한 값은 한컴이 렌더링에 쓰지 않는다.
-        if !allow_saved_small_cell_margin && cell_padding >= 2500 {
-            return false;
-        }
-
-        true
+        // [Task #1785] 규칙 본체는 Cell::use_cell_padding_axis 로 이동 — height_measurer
+        // 와 단일 출처 공유 (규칙이 갈리면 예약 높이와 실제 렌더가 어긋난다).
+        cell.use_cell_padding_axis(cell_padding, table_padding, allow_saved_small_cell_margin)
     }
 
     /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
