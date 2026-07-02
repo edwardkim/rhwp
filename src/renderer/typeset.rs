@@ -210,6 +210,9 @@ struct TypesetState {
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
     /// 후속 섹션 블록 뒤로 잠시 미루기 위한 큐.
     deferred_table_controls: Vec<DeferredTableControl>,
+    /// [Task #1753] 지연 이월되는 visible-host 자리차지 표 직전에 현재 쪽 잔여 공간으로
+    /// 선행 배치(prefill)된 후속 문단들 — 메인 루프에서 스킵.
+    prefilled_paras: std::collections::HashSet<usize>,
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
     skip_safety_margin_once: bool,
@@ -1172,6 +1175,7 @@ impl TypesetState {
             pending_body_wide_top_reserve: 0.0,
             visible_float_exclusions: Vec::new(),
             deferred_table_controls: Vec::new(),
+            prefilled_paras: std::collections::HashSet::new(),
             skip_safety_margin_once: false,
             skip_footnote_margin_once: false,
             tail_overflow_tolerance_once: 0.0,
@@ -1875,6 +1879,10 @@ impl TypesetEngine {
             Self::collect_header_footer_controls(paragraphs, section_index);
 
         for (para_idx, para) in paragraphs.iter().enumerate() {
+            // [Task #1753] 지연 이월 표 직전에 선행 채움(prefill)으로 이미 배치된 문단 스킵.
+            if st.prefilled_paras.contains(&para_idx) {
+                continue;
+            }
             // 표 컨트롤 감지
             let has_table = self.paragraph_has_table(para);
 
@@ -2782,6 +2790,8 @@ impl TypesetEngine {
                     styles,
                     measured_tables,
                     page_def,
+                    paragraphs,
+                    composed,
                 );
             }
 
@@ -10160,6 +10170,8 @@ impl TypesetEngine {
                 para_start_height,
                 deferred.is_first_placed,
                 deferred.is_last_placed,
+                paragraphs,
+                composed,
             );
 
             for (cell_idx, cell) in table.cells.iter().enumerate() {
@@ -10204,6 +10216,7 @@ impl TypesetEngine {
 
     /// 표가 포함된 문단을 처리한다.
     /// 각 컨트롤(표/도형)에 대해 format → fits → place/split 패턴 적용.
+    #[allow(clippy::too_many_arguments)]
     fn typeset_table_paragraph(
         &self,
         st: &mut TypesetState,
@@ -10214,6 +10227,9 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         measured_tables: &[MeasuredTable],
         _page_def: &PageDef,
+        // [Task #1753] 지연 이월 표의 후속 문단 prefill 용 전체 슬라이스.
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
     ) {
         // 호스트 문단 format (TAC 표의 높이 보정용)
         let host_col_w = st
@@ -10489,6 +10505,8 @@ impl TypesetEngine {
                             para_start_height,
                             is_first_placed,
                             is_last_placed,
+                            paragraphs_all,
+                            composed_all,
                         );
                         if self.should_defer_remaining_coanchored_rowbreak_tables(
                             st,
@@ -11149,6 +11167,90 @@ impl TypesetEngine {
     /// 비-TAC 블록 표의 조판: fits → place / split(Break Token 기반).
     /// 기존 Paginator의 split_table_rows와 동일한 세밀한 분할 로직.
     #[allow(clippy::too_many_arguments)]
+    /// [Task #1753] 지연 이월되는 visible-host 자리차지 표의 후속 문단 선행 채움.
+    ///
+    /// 한글은 자리차지(TopAndBottom·vert=Para) RowBreak 표가 현재 쪽 잔여 공간에 안
+    /// 들어가 다음 쪽으로 이월될 때, 후속 텍스트를 현재 쪽 잔여 공간에 먼저 채운다
+    /// (fill-before-deferred-float — 2814765 pi52/53, 한글 PDF·저장 LINE_SEG 정합).
+    /// rhwp 순차 모델에서는 이월 직전에 후속 control-free 문단들을 현재 쪽에 선행
+    /// 배치하고 `prefilled_paras` 로 메인 루프에서 스킵한다.
+    ///
+    /// 가드: 단일 단 + 현재 쪽에 항목 존재 + 텍스트 anchor + RowBreak 자리차지 표
+    /// (v_off ≥ 0). 후보 문단은 저장 첫 실줄 vpos 가 (host vpos, 본문높이HU] 구간
+    /// (같은 쪽 연속 인코딩 — 누적좌표 문서는 자연 배제)이고 누적높이 fit 일 때만.
+    #[allow(clippy::too_many_arguments)]
+    fn prefill_before_deferred_table(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+    ) {
+        const MAX_PREFILL: usize = 8;
+        if st.col_count != 1 || st.current_items.is_empty() {
+            return;
+        }
+        if !para_has_visible_text(para)
+            || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+            || signed_hwpunit(table.common.vertical_offset) < 0
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+        {
+            return;
+        }
+        let Some(host_vpos) = para
+            .line_segs
+            .iter()
+            .find(|ls| !is_synthetic_line_seg(ls))
+            .map(|ls| ls.vertical_pos)
+        else {
+            return;
+        };
+        let body_h_hu = crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
+        if host_vpos < 0 || host_vpos > body_h_hu {
+            return; // 누적좌표 등 — 저장 flow 로 같은 쪽 여부를 알 수 없음
+        }
+        let col_w = st
+            .layout
+            .column_areas
+            .get(st.current_column as usize)
+            .map(|a| a.width)
+            .unwrap_or(st.layout.body_area.width);
+        let end = paragraphs_all.len().min(para_idx + 1 + MAX_PREFILL);
+        for next_idx in (para_idx + 1)..end {
+            let next = &paragraphs_all[next_idx];
+            if !next.controls.is_empty() {
+                break;
+            }
+            let Some(seg) = next.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)) else {
+                break;
+            };
+            // 저장 flow 가 host 와 같은 쪽 연속임을 인코딩한 경우만.
+            if seg.vertical_pos <= host_vpos
+                || seg.vertical_pos.saturating_add(seg.line_height) > body_h_hu
+            {
+                break;
+            }
+            let fmt_n =
+                self.format_paragraph(next, composed_all.get(next_idx), styles, Some(col_w));
+            if st.current_height + fmt_n.height_for_fit > st.available_height() - 4.0 {
+                break;
+            }
+            let trim_sb =
+                !st.is_hwp3_variant && !para_near_rowbreak_table(paragraphs_all, next_idx);
+            st.current_items.push(PageItem::FullParagraph {
+                para_index: next_idx,
+            });
+            st.current_height += fmt_n.flow_advance_height(next, st.col_count, trim_sb);
+            st.prefilled_paras.insert(next_idx);
+        }
+    }
+
     fn typeset_block_table(
         &self,
         st: &mut TypesetState,
@@ -11163,6 +11265,9 @@ impl TypesetEngine {
         para_start_height: f64,
         is_first_placed: bool,
         is_last_placed: bool,
+        // [Task #1753] 지연 이월 직전 후속 문단 prefill 용 전체 슬라이스.
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
     ) {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let total_footnote =
@@ -11554,6 +11659,18 @@ impl TypesetEngine {
                 || remaining_on_page < min_content
                 || multirow_clean_defer
             {
+                // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기
+                // 직전, 후속 문단을 현재 쪽 잔여 공간에 선행 채움(한글 fill-before-
+                // deferred-float 정합 — 2814765 pi52/53 은 9쪽 하단, 표는 10쪽부터).
+                self.prefill_before_deferred_table(
+                    st,
+                    para_idx,
+                    para,
+                    table,
+                    paragraphs_all,
+                    composed_all,
+                    styles,
+                );
                 st.advance_column_or_new_page();
             }
         }
