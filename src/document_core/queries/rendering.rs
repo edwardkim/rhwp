@@ -34,6 +34,13 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
     para_shape_ratio < 0.05 && char_shape_ratio < 0.15
 }
 
+fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
+    // HWP3-origin HWP5 변환본은 parser 단계에서 ParaShape spacing 계열을 절반으로
+    // 정규화하므로, 본문 흐름 계산에서는 원래 spacing_before를 복원한다.
+    // 원본 HWP3는 HWP3 parser가 만든 spacing 값을 기준으로 삼아 여기서 재확대하지 않는다.
+    document.is_hwp3_variant
+}
+
 fn should_insert_hwp3_title_filler_page(
     hwp3_origin_page_tolerance: bool,
     section_index: usize,
@@ -2141,8 +2148,7 @@ impl DocumentCore {
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         self.invalidate_page_tree_cache();
         let paginator = Paginator::new(self.dpi);
-        let hwp3_origin_flow_spacing_before =
-            self.document.is_hwp3_variant || self.document.header.version.major == 3;
+        let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         let is_hwpx_source = matches!(self.source_format, crate::parser::FileFormat::Hwpx);
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.document.is_hwp3_variant)
@@ -3336,12 +3342,17 @@ impl DocumentCore {
         self.layout_engine
             .set_hwp3_variant(self.document.is_hwp3_variant);
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
-            self.document.is_hwp3_variant || self.document.header.version.major == 3,
+            uses_hwp3_origin_flow_spacing_before(&self.document),
         );
         self.layout_engine.set_hwpx_source(matches!(
             self.source_format,
             crate::parser::FileFormat::Hwpx
         ));
+        self.layout_engine.set_hwpx_page_preview(
+            self.document
+                .hwpx_aux_entry("Preview/PrvImage.png")
+                .filter(|_| matches!(self.source_format, crate::parser::FileFormat::Hwpx)),
+        );
         // 활성 필드 정보를 레이아웃 엔진에 전달 (안내문 숨김용)
         self.layout_engine
             .set_active_field(self.active_field.as_ref().map(|af| {

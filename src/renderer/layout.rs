@@ -64,6 +64,12 @@ fn effective_tac_segment_width_hu(para: &Paragraph, fallback_width_hu: i32) -> i
     }
 }
 
+#[derive(Clone)]
+struct PagePreviewImage {
+    mime: &'static str,
+    data: Vec<u8>,
+}
+
 fn para_border_is_visible(border: &BorderLine) -> bool {
     !matches!(border.line_type, BorderLineType::None)
 }
@@ -960,6 +966,13 @@ pub struct LayoutEngine {
     /// [Task #1147 v2] HWPX 원본 여부 — 빈 앵커 TopAndBottom 비-TAC 표 직후 갭을
     /// typeset (host_line_spacing=0) 과 동일하게 0 으로 억제하기 위한 트리거.
     is_hwpx_source: std::cell::Cell<bool>,
+    /// [Task #1728 v2] RowBreak 셀-내 continuation 조각의 첫 가시 문단에서만 set.
+    /// 이 문단은 셀-상단(is_column_top)이고 셀-상대 인덱스>0 이지만, 한컴은 앞 간격
+    /// (spacing_before)을 유지하므로 column-top 트림을 우회해 전량 적용한다.
+    keep_continuation_column_top_spacing_before: std::cell::Cell<bool>,
+    /// HWPX `Preview/PrvImage.png` 원본. HMapsi OLE처럼 일반 preview stream이 없는
+    /// legacy 객체의 제한적 첫 페이지 fallback에 사용한다.
+    hwpx_page_preview: std::cell::RefCell<Option<PagePreviewImage>>,
 }
 
 mod border_rendering;
@@ -1023,7 +1036,9 @@ impl LayoutEngine {
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             is_hwp3_variant: std::cell::Cell::new(false),
             use_hwp3_origin_flow_spacing_before: std::cell::Cell::new(false),
+            keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             is_hwpx_source: std::cell::Cell::new(false),
+            hwpx_page_preview: std::cell::RefCell::new(None),
         }
     }
 
@@ -1327,6 +1342,25 @@ impl LayoutEngine {
     /// [Task #1147 v2] HWPX 원본 소스 표시.
     pub fn set_hwpx_source(&self, enabled: bool) {
         self.is_hwpx_source.set(enabled);
+    }
+
+    /// HWPX page preview 이미지를 렌더 fallback용으로 설정한다.
+    pub fn set_hwpx_page_preview(&self, data: Option<&[u8]>) {
+        *self.hwpx_page_preview.borrow_mut() = data.and_then(|bytes| {
+            if bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+                Some(PagePreviewImage {
+                    mime: "image/png",
+                    data: bytes.to_vec(),
+                })
+            } else if bytes.starts_with(b"GIF8") {
+                Some(PagePreviewImage {
+                    mime: "image/gif",
+                    data: bytes.to_vec(),
+                })
+            } else {
+                None
+            }
+        });
     }
 
     /// 이미 렌더된 인라인 이미지 노드의 y 좌표를 dy만큼 이동 (캡션 Top 보정)
@@ -1713,8 +1747,7 @@ impl LayoutEngine {
                 }
             } else if has_picture {
                 // Picture 컨트롤이 있는 문단
-                let mut comp = compose_paragraph(para);
-                self.substitute_hf_field_markers(&mut comp, page_number);
+                let comp = self.compose_header_footer_paragraph(para, page_number);
                 if comp.tac_controls.is_empty() {
                     // 머리말/꼬리말 내 Picture: header/footer area 기준 배치
                     for (ci, ctrl) in para.controls.iter().enumerate() {
@@ -1803,8 +1836,7 @@ impl LayoutEngine {
                 }
                 // 텍스트도 함께 렌더링
                 if !para.text.is_empty() {
-                    let mut comp = compose_paragraph(para);
-                    self.substitute_hf_field_markers(&mut comp, page_number);
+                    let comp = self.compose_header_footer_paragraph(para, page_number);
                     y_offset = self.layout_paragraph(
                         tree,
                         area_node,
@@ -1822,8 +1854,7 @@ impl LayoutEngine {
                 }
             } else {
                 // 일반 텍스트 문단 레이아웃 (필드 마커 치환 포함)
-                let mut comp = compose_paragraph(para);
-                self.substitute_hf_field_markers(&mut comp, page_number);
+                let comp = self.compose_header_footer_paragraph(para, page_number);
                 y_offset = self.layout_paragraph(
                     tree,
                     area_node,
@@ -1843,6 +1874,22 @@ impl LayoutEngine {
                 break;
             }
         }
+    }
+
+    fn compose_header_footer_paragraph(
+        &self,
+        para: &Paragraph,
+        page_number: u32,
+    ) -> ComposedParagraph {
+        let mut comp = compose_paragraph(para);
+        self.substitute_hf_field_markers(&mut comp, page_number);
+        if para.controls.iter().any(|ctrl| {
+            matches!(ctrl, Control::AutoNumber(an)
+                if an.number_type == crate::model::control::AutoNumberType::Page)
+        }) {
+            self.substitute_page_auto_numbers_in_composed(para, &mut comp, page_number);
+        }
+        comp
     }
 
     /// 머리말/꼬리말 ComposedParagraph의 필드 마커를 실제 값으로 치환한다.
@@ -1929,10 +1976,12 @@ impl LayoutEngine {
                 continue;
             }
 
-            let direct_pos = ctrl_positions
-                .get(ctrl_idx)
-                .copied()
-                .filter(|&pos| Self::is_auto_number_placeholder_at(para, &text_chars, pos));
+            let direct_pos = ctrl_positions.get(ctrl_idx).copied().filter(|&pos| {
+                Self::is_auto_number_placeholder_at(para, &text_chars, pos)
+                    || text_chars
+                        .get(pos)
+                        .map_or(false, |ch| Self::is_auto_number_placeholder_char(*ch))
+            });
 
             let pos = direct_pos.or_else(|| {
                 Self::find_auto_number_placeholder_char(para, &text_chars, search_from)
@@ -1985,7 +2034,14 @@ impl LayoutEngine {
 
         preferred.or_else(|| {
             if !para.char_offsets.is_empty() {
-                return None;
+                return text_chars
+                    .iter()
+                    .enumerate()
+                    .rev()
+                    .find(|(idx, ch)| {
+                        *idx >= search_from && Self::is_auto_number_placeholder_char(**ch)
+                    })
+                    .map(|(idx, _)| idx);
             }
             text_chars
                 .iter()
@@ -2100,8 +2156,15 @@ impl LayoutEngine {
         footer_area: &LayoutRect,
         font_size: f64,
     ) -> f64 {
+        // [Task #1728] 자동 쪽번호 세로 위치: HWP 실측상 glyph 은 body_bottom(footer_area.y) 에서
+        // margin_footer/2 + ~10px 아래에 온다(gc/ktx/aift 3문서 1~2px 정합). 종전 공식은
+        // footer_area.height(= margin_bottom)/2 를 써서, margin_footer ≠ margin_bottom 인 문서
+        // (margin_footer=0 인 giant cell, margin_footer≠margin_bottom 인 KTX)를 7~18px 낮게 놓았다.
+        // margin_footer = page_height - footer_area.bottom.
         let center_y = if footer_area.height > 0.5 {
-            footer_area.y + footer_area.height / 2.0
+            let margin_footer =
+                (layout.page_height - (footer_area.y + footer_area.height)).max(0.0);
+            footer_area.y + margin_footer / 2.0
         } else {
             (footer_area.y + layout.page_height) / 2.0
         };
@@ -5379,7 +5442,7 @@ impl LayoutEngine {
         color: crate::model::ColorRef,
     ) -> f64 {
         y_offset += hwpunit_to_px(margin_above as i32, self.dpi);
-        let has_separator = line_type != 0 || line_width_raw != 0 || separator_length != 0;
+        let has_separator = line_type != 0 && line_width_raw != 0;
         let line_width = if has_separator {
             let line_width = border_width_to_px(line_width_raw).max(0.5);
             let sep_length = if separator_length > 0 {
@@ -6100,6 +6163,16 @@ impl LayoutEngine {
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                     let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                    // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로.
+                    let (strip_x, strip_width) =
+                        crate::renderer::text_anchor_square_table_strip(para)
+                            .map(|(cs, sw)| {
+                                (
+                                    col_area.x + hwpunit_to_px(cs, self.dpi),
+                                    hwpunit_to_px(sw, self.dpi),
+                                )
+                            })
+                            .unwrap_or((wrap_text_x, wrap_text_width));
                     // Task #463: 인라인 floating 표 우측 x 계산 (paragraph border box 확장용).
                     // table_layout::compute_table_x_position 와 동일 공식.
                     let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
@@ -6117,6 +6190,9 @@ impl LayoutEngine {
                         y_offset,
                         wrap_text_x,
                         wrap_text_width,
+                        strip_x,
+                        strip_width,
+                        true,
                         0.0,
                         bin_data_content,
                         Some(tbl_x_right),
@@ -6627,6 +6703,17 @@ impl LayoutEngine {
                     let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
                     let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
+                    // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로,
+                    // 호스트 텍스트는 이미 "분할 표 첫 부분" 경로에서 렌더됨 → 이중 렌더 방지.
+                    let strip = crate::renderer::text_anchor_square_table_strip(para);
+                    let (strip_x, strip_width) = strip
+                        .map(|(cs, sw)| {
+                            (
+                                col_area.x + hwpunit_to_px(cs, self.dpi),
+                                hwpunit_to_px(sw, self.dpi),
+                            )
+                        })
+                        .unwrap_or((wrap_text_x, wrap_text_width));
                     let content_offset = if let Some(mt) = pt_mt {
                         mt.range_height(0, start_row)
                     } else {
@@ -6647,6 +6734,9 @@ impl LayoutEngine {
                         y_offset,
                         wrap_text_x,
                         wrap_text_width,
+                        strip_x,
+                        strip_width,
+                        strip.is_none(),
                         content_offset,
                         bin_data_content,
                         Some(tbl_x_right),
@@ -7547,6 +7637,15 @@ impl LayoutEngine {
         table_y_end: f64,
         wrap_text_x: f64,
         wrap_text_width: f64,
+        // [Task #1745] 후속 어울림 문단(WrapAroundPara)이 놓일 wrap 띠. 표 단독 anchor
+        // 는 wrap_text_x/width 와 동일. 텍스트 혼합 anchor 는 표 geometry 로 도출한
+        // 띠(text_anchor_square_table_strip) — host 영역(전폭)과 분리된다.
+        strip_x: f64,
+        strip_width: f64,
+        // [Task #1745] 호스트 문단 텍스트 렌더 여부. 분할 표의 텍스트 혼합 anchor 는
+        // 호스트 텍스트가 이미 일반 경로(분할 표 첫 부분)에서 렌더되므로 false 로
+        // 이중 렌더를 막는다.
+        render_host_text: bool,
         table_content_offset: f64,
         bin_data_content: &[BinDataContent],
         // Task #463: 인라인 floating 표(예: 인용 따옴표 ｢｣)의 우측 끝 x 좌표.
@@ -7589,13 +7688,20 @@ impl LayoutEngine {
             width: wrap_text_width + host_margin_left + host_margin_right,
             height: col_area.height,
         };
+        // [Task #1745] 후속 어울림 문단용 띠 영역 (표 단독 anchor 는 wrap_area 와 동일).
+        let strip_area = LayoutRect {
+            x: strip_x - host_margin_left,
+            y: col_area.y,
+            width: strip_width + host_margin_left + host_margin_right,
+            height: col_area.height,
+        };
 
         // 호스트 문단(표 문단) 텍스트를 어울림 영역에 렌더링
         let has_host_text = table_para
             .text
             .chars()
             .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-        if table_content_offset == 0.0 {
+        if table_content_offset == 0.0 && render_host_text {
             if has_host_text {
                 if let Some(comp) = composed.get(table_para_index) {
                     let text_start_line = comp.lines.iter().position(|line| {
@@ -7743,7 +7849,7 @@ impl LayoutEngine {
                     para,
                     comp,
                     styles,
-                    &wrap_area,
+                    &strip_area,
                     para_y,
                     0,
                     end_line,
@@ -7772,7 +7878,7 @@ impl LayoutEngine {
                         .filter(|fs| *fs > 0.0)
                         .unwrap_or(13.3)
                 };
-                let mark_x = wrap_text_x;
+                let mark_x = strip_x;
 
                 let line_id = tree.next_id();
                 let line_node = RenderNode::new(

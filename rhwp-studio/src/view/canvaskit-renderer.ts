@@ -796,6 +796,46 @@ export class CanvasKitLayerRenderer {
     }
   }
 
+  private recordTextRunCoverageGaps(op: LayerTextRunOp): void {
+    const style = op.style ?? {};
+    if (op.isVertical) {
+      this.unsupportedOps.add('textRun:verticalText');
+    }
+    if (style.underline && style.underline !== 'none') {
+      this.unsupportedOps.add('textRun:textDecoration');
+    }
+    if (style.strikethrough) {
+      this.unsupportedOps.add('textRun:textDecoration');
+    }
+    if (style.emphasisDot && style.emphasisDot !== 0) {
+      this.unsupportedOps.add('textRun:emphasisDot');
+    }
+    if (style.outlineType && style.outlineType !== 0) {
+      this.unsupportedOps.add('textRun:outlineTextEffect');
+    }
+    if (style.shadowType && style.shadowType !== 0) {
+      this.unsupportedOps.add('textRun:shadowTextEffect');
+    }
+    if (style.emboss) {
+      this.unsupportedOps.add('textRun:embossTextEffect');
+    }
+    if (style.engrave) {
+      this.unsupportedOps.add('textRun:engraveTextEffect');
+    }
+    if (style.superscript) {
+      this.unsupportedOps.add('textRun:superscriptTextEffect');
+    }
+    if (style.subscript) {
+      this.unsupportedOps.add('textRun:subscriptTextEffect');
+    }
+    if (style.shadeColor && style.shadeColor.toLowerCase() !== '#ffffff') {
+      this.unsupportedOps.add('textRun:shadeTextEffect');
+    }
+    if (style.ratio !== undefined && Math.abs(style.ratio - 1) > Number.EPSILON) {
+      this.unsupportedOps.add('textRun:ratioTextEffect');
+    }
+  }
+
   private boundsAreDrawable(bounds: LayerBounds): boolean {
     return Number.isFinite(bounds.x)
       && Number.isFinite(bounds.y)
@@ -808,6 +848,7 @@ export class CanvasKitLayerRenderer {
   private renderTextRun(canvas: SkCanvas, op: LayerTextRunOp): void {
     if (!op.text) return;
     const style = op.style ?? {};
+    this.recordTextRunCoverageGaps(op);
     const paint = this.makeFillPaint(style.color ?? '#000000');
     paint.setAntiAlias?.(true);
     const fontSize = style.fontSize ?? Math.max(1, op.bbox.height || 12);

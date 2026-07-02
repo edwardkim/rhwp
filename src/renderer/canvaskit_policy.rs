@@ -343,7 +343,7 @@ impl CanvasKitReplayPlanBuilder {
                 direct_item(path, paint_op_type(op), CanvasKitReplayFeature::VectorShape)
             }
             PaintOp::FootnoteMarker { .. } => {
-                let mut item = self.transition_overlay_item(
+                let mut item = direct_item(
                     path,
                     paint_op_type(op),
                     CanvasKitReplayFeature::TextSpecialVisual,
@@ -358,16 +358,19 @@ impl CanvasKitReplayPlanBuilder {
                 self.transition_overlay_item(path, "equation", CanvasKitReplayFeature::Equation)
             }
             PaintOp::FormObject { .. } => {
-                self.transition_overlay_item(path, "formObject", CanvasKitReplayFeature::FormObject)
+                let mut item = direct_item(path, "formObject", CanvasKitReplayFeature::FormObject);
+                item.detail = Some("basicStaticReplay".to_string());
+                item
             }
             PaintOp::RawSvg { .. } => {
                 self.transition_overlay_item(path, "rawSvg", CanvasKitReplayFeature::RawSvgFragment)
             }
-            PaintOp::Placeholder { .. } => self.transition_overlay_item(
-                path,
-                "placeholder",
-                CanvasKitReplayFeature::Placeholder,
-            ),
+            PaintOp::Placeholder { .. } => {
+                let mut item =
+                    direct_item(path, "placeholder", CanvasKitReplayFeature::Placeholder);
+                item.detail = Some("basicStaticReplay".to_string());
+                item
+            }
             PaintOp::TextRun { run, .. } => self.text_run_item(path, run),
             PaintOp::CharOverlap { .. }
             | PaintOp::TextControlMark { .. }
@@ -604,9 +607,6 @@ fn text_run_transition_detail(run: &TextRunNode) -> Option<&'static str> {
     if run.is_vertical {
         return Some("verticalText");
     }
-    if run.rotation.abs() > f64::EPSILON {
-        return Some("rotatedText");
-    }
     if run.char_overlap.is_some() {
         return Some("charOverlap");
     }
@@ -633,6 +633,12 @@ fn text_run_transition_detail(run: &TextRunNode) -> Option<&'static str> {
     }
     if run.style.engrave {
         return Some("engraveTextEffect");
+    }
+    if run.style.superscript {
+        return Some("superscriptTextEffect");
+    }
+    if run.style.subscript {
+        return Some("subscriptTextEffect");
     }
     if run.style.shade_color != 0x00FF_FFFF {
         return Some("shadeTextEffect");
@@ -769,11 +775,12 @@ fn selected_reason_as_str(reason: VariantSelectedReason) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::control::FormType;
     use crate::model::style::ImageFillMode;
     use crate::paint::{GroupKind, LayerNode, ResolvedImageKind, ResolvedImagePayload};
     use crate::renderer::render_tree::{
-        BoundingBox, FootnoteMarkerNode, ImageNode, PageBackgroundImage, RectangleNode,
-        RenderLayerInfo,
+        BoundingBox, FootnoteMarkerNode, FormObjectNode, ImageNode, PageBackgroundImage,
+        PlaceholderNode, RectangleNode, RenderLayerInfo,
     };
     use crate::renderer::{GradientFillInfo, ShapeStyle, TextStyle};
 
@@ -1087,26 +1094,51 @@ mod tests {
 
     #[test]
     fn simple_text_is_direct_but_text_effect_is_policy_visible() {
+        let mut rotated = text_run("A");
+        rotated.rotation = 15.0;
         let mut vertical = text_run("A");
         vertical.is_vertical = true;
+        let mut superscript = text_run("A");
+        superscript.style.superscript = true;
+        let mut subscript = text_run("A");
+        subscript.style.subscript = true;
         let tree = tree_with_ops(vec![
             PaintOp::text_run(bbox(), text_run("A")),
+            PaintOp::text_run(bbox(), rotated),
             PaintOp::text_run(bbox(), vertical),
+            PaintOp::text_run(bbox(), superscript),
+            PaintOp::text_run(bbox(), subscript),
         ]);
 
         let default_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(default_plan.summary.direct_items, 1);
-        assert_eq!(default_plan.summary.direct_required_items, 1);
+        assert_eq!(default_plan.summary.direct_items, 2);
+        assert_eq!(default_plan.summary.direct_required_items, 3);
         assert_eq!(
-            default_plan.items[1].detail.as_deref(),
+            default_plan.items[2].detail.as_deref(),
             Some("verticalText")
+        );
+        assert_eq!(
+            default_plan.items[3].detail.as_deref(),
+            Some("superscriptTextEffect")
+        );
+        assert_eq!(
+            default_plan.items[4].detail.as_deref(),
+            Some("subscriptTextEffect")
         );
 
         let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
-        assert_eq!(compat_plan.summary.direct_items, 1);
-        assert_eq!(compat_plan.summary.direct_required_items, 1);
+        assert_eq!(compat_plan.summary.direct_items, 2);
+        assert_eq!(compat_plan.summary.direct_required_items, 3);
         assert_eq!(compat_plan.summary.compat_overlay_items, 0);
-        assert_eq!(compat_plan.items[1].detail.as_deref(), Some("verticalText"));
+        assert_eq!(compat_plan.items[2].detail.as_deref(), Some("verticalText"));
+        assert_eq!(
+            compat_plan.items[3].detail.as_deref(),
+            Some("superscriptTextEffect")
+        );
+        assert_eq!(
+            compat_plan.items[4].detail.as_deref(),
+            Some("subscriptTextEffect")
+        );
     }
 
     #[test]
@@ -1119,7 +1151,7 @@ mod tests {
     }
 
     #[test]
-    fn footnote_marker_is_reported_as_text_special_visual() {
+    fn static_canvaskit_runtime_ops_are_reported_as_direct() {
         let tree = tree_with_ops(vec![PaintOp::footnote_marker(
             bbox(),
             FootnoteMarkerNode {
@@ -1139,19 +1171,57 @@ mod tests {
             default_plan.items[0].feature,
             CanvasKitReplayFeature::TextSpecialVisual
         );
-        assert_eq!(
-            default_plan.items[0].status,
-            CanvasKitReplayStatus::DirectRequired
-        );
+        assert_eq!(default_plan.items[0].status, CanvasKitReplayStatus::Direct);
         assert_eq!(
             default_plan.items[0].detail.as_deref(),
             Some("footnoteMarker")
         );
 
         let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
+        assert_eq!(compat_plan.items[0].status, CanvasKitReplayStatus::Direct);
+    }
+
+    #[test]
+    fn form_and_placeholder_match_studio_direct_runtime_branches() {
+        let form = FormObjectNode {
+            form_type: FormType::CheckBox,
+            caption: "Agree".to_string(),
+            text: String::new(),
+            fore_color: "#111111".to_string(),
+            back_color: "#ffffff".to_string(),
+            value: 1,
+            enabled: true,
+            section_index: 0,
+            para_index: 0,
+            control_index: 0,
+            name: "check1".to_string(),
+            cell_location: None,
+        };
+        let placeholder = PlaceholderNode {
+            fill_color: 0x00FF_FFFF,
+            stroke_color: 0x0000_0000,
+            label: "OLE".to_string(),
+        };
+        let tree = tree_with_ops(vec![
+            PaintOp::form_object(bbox(), form),
+            PaintOp::placeholder(bbox(), placeholder),
+        ]);
+
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+
         assert_eq!(
-            compat_plan.items[0].status,
-            CanvasKitReplayStatus::DirectRequired
+            plan.items
+                .iter()
+                .map(|item| item.status)
+                .collect::<Vec<_>>(),
+            vec![CanvasKitReplayStatus::Direct, CanvasKitReplayStatus::Direct]
+        );
+        assert_eq!(
+            plan.items
+                .iter()
+                .map(|item| item.detail.as_deref())
+                .collect::<Vec<_>>(),
+            vec![Some("basicStaticReplay"), Some("basicStaticReplay")]
         );
     }
 

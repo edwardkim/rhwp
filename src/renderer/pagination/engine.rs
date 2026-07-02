@@ -14,6 +14,40 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+fn para_is_layout_empty(para: &Paragraph) -> bool {
+    !para_has_visible_text(para) && para.controls.is_empty()
+}
+
+fn should_hide_page_bottom_empty_reset_bridge(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    body_height_hu: i32,
+) -> bool {
+    if !para_is_layout_empty(para) || para.line_segs.len() != 1 {
+        return false;
+    }
+
+    let Some(curr_seg) = para
+        .line_segs
+        .first()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+    else {
+        return false;
+    };
+    let Some(next_seg) = next_para
+        .filter(|next| !para_is_layout_empty(next))
+        .and_then(|next| next.line_segs.first())
+        .filter(|seg| !is_synthetic_line_seg(seg))
+    else {
+        return false;
+    };
+
+    let curr_vpos_near_bottom = curr_seg.vertical_pos > body_height_hu * 70 / 100;
+    let next_starts_new_page = next_seg.vertical_pos >= 0 && next_seg.vertical_pos <= 1500;
+
+    curr_vpos_near_bottom && next_starts_new_page
+}
+
 fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
     para.text.starts_with('\u{F03C5}')
         && para
@@ -553,6 +587,24 @@ impl Paginator {
             let fit_without_trail =
                 st.current_height + para_height_for_fit - trailing_tac_ls <= available_height + 0.5;
             let fit_with_trail = st.current_height + para_height_for_fit <= available_height + 0.5;
+
+            // 한컴은 페이지 하단의 빈 문단이 다음 보이는 문단의 vpos=0 재시작을
+            // 잇는 경우, 그 빈 문단만 단독 페이지로 만들지 않는다.
+            if !has_table
+                && (!st.current_items.is_empty() || !st.pages.is_empty())
+                && should_hide_page_bottom_empty_reset_bridge(
+                    para,
+                    paragraphs.get(para_idx + 1),
+                    body_height_hu_for_variant.max(crate::renderer::px_to_hwpunit(
+                        st.layout.body_area.height,
+                        self.dpi,
+                    )),
+                )
+            {
+                hidden_empty_paras.insert(para_idx);
+                continue;
+            }
+
             if !fit_with_trail
                 && !fit_without_trail
                 && !st.current_items.is_empty()
