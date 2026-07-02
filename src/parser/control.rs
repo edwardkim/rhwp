@@ -388,8 +388,9 @@ fn parse_cell(records: &[Record]) -> Cell {
 }
 
 /// 셀의 raw_list_extra에서 필드 이름을 추출한다.
-/// 구조: raw_list_extra[14..16] = name_len (u16), [16..16+name_len*2] = UTF-16LE 문자열
-fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
+/// 구조: raw_list_extra[15..17] = name_len (u16 LE), [17..17+name_len*2] = UTF-16LE 문자열
+/// (직렬화 대칭: serializer::control::build_cell_list_extra — #1808)
+pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
     if extra.len() < 18 {
         return None;
     }

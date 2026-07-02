@@ -593,11 +593,13 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
 
     // 원본 추가 바이트 복원. HWPX/신규 생성 셀에는 원본이 없으므로
     // 한컴 저장본의 셀 LIST_HEADER 47바이트 contract에 맞춰 폭 참조를 보강한다.
-    if !cell.raw_list_extra.is_empty() {
+    // [#1808] 모델의 field_name 과 raw_list_extra 인코딩이 일치하면 원본 보존,
+    // 불일치(HWPX 출처 셀 필드, 편집기 변경)면 한컴 계약대로 재구성한다.
+    let raw_field = crate::parser::control::parse_cell_field_name(&cell.raw_list_extra);
+    if !cell.raw_list_extra.is_empty() && raw_field.as_deref() == cell.field_name.as_deref() {
         w.write_bytes(&cell.raw_list_extra).unwrap();
     } else {
-        w.write_u32(cell.width).unwrap();
-        w.write_bytes(&[0; 9]).unwrap();
+        w.write_bytes(&build_cell_list_extra(cell)).unwrap();
     }
 
     records.push(Record {
@@ -609,6 +611,48 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
 
     // 셀 내부 문단 (원본 HWP에서는 LIST_HEADER와 같은 레벨)
     serialize_paragraph_list(&cell.paragraphs, level, records);
+}
+
+/// [#1808] 셀 LIST_HEADER 추가 바이트(34바이트 이후) 재구성 — 한컴 계약.
+///
+/// 필드 없는 셀: width(4) + 0×9 = 13바이트.
+/// 필드 셀 (한컴 원본 admrul_0039/0045 대조로 확정한 레이아웃):
+///   [0..4]   width (u32 LE)
+///   [4..8]   ff 1b 02 01 (필드 속성 마커)
+///   [8..12]  00 ×4
+///   [12..15] 40 01 00
+///   [15..17] name_len (u16 LE)
+///   [17..]   UTF-16LE 필드 이름
+///   [+8]     00 ×8
+/// 파서 대칭: parser::control::parse_cell_field_name (offset 15/17).
+fn build_cell_list_extra(cell: &Cell) -> Vec<u8> {
+    // 원본 extra 가 있으면 선두 4바이트(폭 참조 계약값)를 보존한다.
+    let width_bytes: [u8; 4] = if cell.raw_list_extra.len() >= 4 {
+        cell.raw_list_extra[0..4].try_into().unwrap()
+    } else {
+        cell.width.to_le_bytes()
+    };
+    match cell.field_name.as_deref() {
+        Some(name) if !name.is_empty() => {
+            let utf16: Vec<u16> = name.encode_utf16().collect();
+            let mut v = Vec::with_capacity(25 + utf16.len() * 2);
+            v.extend_from_slice(&width_bytes);
+            v.extend_from_slice(&[0xff, 0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00]);
+            v.extend_from_slice(&[0x40, 0x01, 0x00]);
+            v.extend_from_slice(&(utf16.len() as u16).to_le_bytes());
+            for cu in &utf16 {
+                v.extend_from_slice(&cu.to_le_bytes());
+            }
+            v.extend_from_slice(&[0u8; 8]);
+            v
+        }
+        _ => {
+            let mut v = Vec::with_capacity(13);
+            v.extend_from_slice(&width_bytes);
+            v.extend_from_slice(&[0u8; 9]);
+            v
+        }
+    }
 }
 
 fn serialize_caption(caption: &Caption, level: u16, records: &mut Vec<Record>) {
