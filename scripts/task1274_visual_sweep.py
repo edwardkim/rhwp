@@ -222,9 +222,7 @@ def compact_note_shape(note_shape: dict[str, object]) -> list[dict[str, object]]
                 "separatorBelowMm": _note_mm(ui, "separatorBelow"),
                 "betweenNotesMm": _note_mm(ui, "betweenNotes"),
                 "separatorEnabled": bool(
-                    raw.get("separatorLineType")
-                    or raw.get("separatorLineWidth")
-                    or _note_hu(raw, "separatorLength")
+                    raw.get("separatorLineType") and raw.get("separatorLineWidth")
                 ),
                 "separatorLengthMm": _note_mm(raw, "separatorLength"),
                 "rawSeparatorMarginTopMm": _note_mm(raw, "separatorMarginTop"),

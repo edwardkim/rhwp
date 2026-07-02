@@ -301,8 +301,10 @@ const renderEllipseBody = extractMethodBody(canvaskitSource, 'renderEllipse');
 const renderPathBody = extractMethodBody(canvaskitSource, 'renderPath');
 const renderLineBody = extractMethodBody(canvaskitSource, 'renderLine');
 const renderFormObjectBody = extractMethodBody(canvaskitSource, 'renderFormObject');
+const renderTextRunBody = extractMethodBody(canvaskitSource, 'renderTextRun');
 const renderGlyphOutlineBody = extractMethodBody(canvaskitSource, 'renderGlyphOutline');
 const renderColorPaintGraphNodeBody = extractMethodBody(canvaskitSource, 'renderColorPaintGraphNode');
+const recordTextRunCoverageGapsBody = extractMethodBody(canvaskitSource, 'recordTextRunCoverageGaps');
 
 requireSnippet(
   renderRectangleBody,
@@ -329,6 +331,34 @@ requireSnippet(
   /op\.formType === 'checkbox' \|\| op\.formType === 'radio'[\s\S]*?canvas\.drawLine[\s\S]*?const label = op\.caption \|\| op\.text[\s\S]*?this\.renderTextRun/,
   'form object replay should keep checkbox/radio mark and caption text branches explicit',
 );
+requireSnippet(
+  renderTextRunBody,
+  /this\.recordTextRunCoverageGaps\(op\);[\s\S]*?canvas\.drawText\(op\.text, x, y, paint, font\)/,
+  'textRun replay should record unsupported effect diagnostics before drawing the compatibility text',
+);
+requireSnippet(
+  renderTextRunBody,
+  /const rotation = op\.rotation \?\? 0;[\s\S]*?if \(rotation !== 0\) \{[\s\S]*?canvas\.rotate\(rotation, x, y\);[\s\S]*?\}/,
+  'textRun replay should keep rotation on the direct CanvasKit path',
+);
+for (const expectedTextRunGap of [
+  'textRun:verticalText',
+  'textRun:textDecoration',
+  'textRun:emphasisDot',
+  'textRun:outlineTextEffect',
+  'textRun:shadowTextEffect',
+  'textRun:embossTextEffect',
+  'textRun:engraveTextEffect',
+  'textRun:superscriptTextEffect',
+  'textRun:subscriptTextEffect',
+  'textRun:shadeTextEffect',
+  'textRun:ratioTextEffect',
+]) {
+  assert.ok(
+    recordTextRunCoverageGapsBody.includes(`'${expectedTextRunGap}'`),
+    `textRun runtime diagnostics should include ${expectedTextRunGap}`,
+  );
+}
 requireSnippet(
   renderGlyphOutlineBody,
   /op\.colorLayers\?\.paintGraph[\s\S]*?graph\.rootNodeId[\s\S]*?this\.renderColorPaintGraphNode/,

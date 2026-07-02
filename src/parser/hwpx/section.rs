@@ -4488,6 +4488,9 @@ fn parse_ctrl_footnote(
         }
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"footNote")?;
+    for paragraph in &mut note.paragraphs {
+        normalize_hwpx_note_line_vpos(paragraph);
+    }
     Ok(Control::Footnote(Box::new(note)))
 }
 
@@ -4532,7 +4535,35 @@ fn parse_ctrl_endnote(
         }
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"endNote")?;
+    for paragraph in &mut note.paragraphs {
+        normalize_hwpx_note_line_vpos(paragraph);
+    }
     Ok(Control::Endnote(Box::new(note)))
+}
+
+fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph) {
+    if paragraph.line_segs.len() <= 1 {
+        return;
+    }
+
+    let mut expected_vpos = None;
+    for line_seg in &mut paragraph.line_segs {
+        if let Some(expected) = expected_vpos {
+            if line_seg.vertical_pos == 0 && expected > 0 {
+                // HWPX 미주/각주 내부에는 실제 단/쪽 리셋이 아닌 후속 줄
+                // vpos=0이 저장되는 사례가 있다. 본문 의미는 유지하고,
+                // note 내부 연속줄만 이전 줄 advance 기준으로 복원한다.
+                line_seg.vertical_pos = expected;
+            }
+        }
+
+        expected_vpos = Some(
+            line_seg
+                .vertical_pos
+                .saturating_add(line_seg.line_height)
+                .saturating_add(line_seg.line_spacing),
+        );
+    }
 }
 
 /// `<hp:ctrl>` → `<autoNum num="..." numType="...">` + `<autoNumFormat .../>` 자식
