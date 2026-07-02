@@ -153,6 +153,22 @@ git status
 
 충돌 없으면 그대로 진행, 충돌 시 해결 방침 작업지시자 결정 요청.
 
+### 4.2.1 여러 PR 체리픽 누적 검토
+
+여러 PR 이 같은 영역을 단계적으로 수정하고 오래된 순서대로 merge 해야 하는 경우, 별도 로컬 브랜치에서
+`upstream/devel` 기준 체리픽 누적 검토를 할 수 있다. 이때도 리뷰 기록은 반드시 원 PR 번호별로 분리한다.
+
+- 체리픽 순서는 오래된 PR 번호 또는 작업지시자가 지정한 순서를 따른다.
+- PR 내부의 `Merge branch 'devel' ...` 커밋은 검토 목적 체리픽에서 제외하고, 실제 기능/문서 커밋만 적용한다.
+- 누적 브랜치는 충돌, 테스트, 시각 검증 확인용 임시 브랜치일 뿐이며 review 문서를 묶어서 한 파일로 만들지 않는다.
+- `mydocs/pr/pr_{N}_review.md`, `mydocs/pr/pr_{N}_review_impl.md` 는 각 PR 번호별로 작성한다.
+- 각 review 문서에는 체리픽 순서, 적용한 커밋 SHA, 충돌 여부, 선행 PR 의존 여부를 해당 PR 기준으로 기록한다.
+- 여러 PR 을 한꺼번에 로컬 검증했더라도 GitHub merge 전에는 각 PR 의 최신 head, mergeable, required checks 를 개별 확인한다.
+
+시각적 검증이 필요한 PR 이 포함되면 [PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 따른다. Codex 는
+`compare`, `overlay`, `review` PNG 경로와 `visual_accuracy_proxy_percent` 를 제시하고, 검증 이미지를 확인한 뒤
+작업지시자 승인 없이 시각 판정을 최종 통과로 단정하지 않는다.
+
 ### 4.3 빌드 · 테스트
 
 ```bash

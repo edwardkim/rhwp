@@ -143,8 +143,8 @@ python3 scripts/task1274_visual_sweep.py \
 ```bash
 python3 scripts/task1274_visual_sweep.py \
   --key so-sueop \
-  --hwp /Users/tsjang/rhwp/samples/SO-SUEOP.hwpx \
-  --pdf /Users/tsjang/rhwp/pdf/SO-SUEOP-2024.pdf \
+  --hwp samples/SO-SUEOP.hwpx \
+  --pdf pdf/SO-SUEOP-2024.pdf \
   --out output/visual-so-sueop
 ```
 
@@ -156,8 +156,8 @@ stem을 target 이름으로 사용한다.
 
 ```bash
 python3 scripts/task1274_visual_sweep.py \
-  --file-target so-sueop /Users/tsjang/rhwp/samples/SO-SUEOP.hwpx /Users/tsjang/rhwp/pdf/SO-SUEOP-2024.pdf \
-  --file-target pr1674 /Users/tsjang/rhwp/samples/pr-1674.hwpx /Users/tsjang/rhwp/pdf/pr-1674-2024.pdf \
+  --file-target so-sueop samples/SO-SUEOP.hwpx pdf/SO-SUEOP-2024.pdf \
+  --file-target pr1674 samples/pr-1674.hwpx pdf/pr-1674-2024.pdf \
   --out output/visual-custom
 ```
 
@@ -174,8 +174,8 @@ python3 scripts/task1274_visual_sweep.py \
 ```bash
 python3 scripts/task1274_visual_sweep.py \
   --key so-sueop-p22 \
-  --hwp /Users/tsjang/rhwp/samples/SO-SUEOP.hwpx \
-  --pdf /Users/tsjang/rhwp/pdf/SO-SUEOP-2024.pdf \
+  --hwp samples/SO-SUEOP.hwpx \
+  --pdf pdf/SO-SUEOP-2024.pdf \
   --page 22 \
   --out output/visual-so-sueop-p22
 ```
