@@ -1353,43 +1353,12 @@ fn serialize_shape_control(
             ));
             emit_top_level_synthesized_ctrl_data(records);
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
-            {
-                let mut data = serialize_shape_component(0x24636f6e, &group.shape_attr, true); // '$con'
-                                                                                               // 자식 수 (u16)
-                let mut w = ByteWriter::new();
-                w.write_u16(group.children.len() as u16).unwrap();
-                // 각 자식의 ctrl_id (u32)
-                for child in &group.children {
-                    let child_ctrl_id = match child {
-                        ShapeObject::Line(_) => tags::SHAPE_LINE_ID,
-                        ShapeObject::Rectangle(_) => tags::SHAPE_RECT_ID,
-                        ShapeObject::Ellipse(_) => tags::SHAPE_ELLIPSE_ID,
-                        ShapeObject::Arc(_) => tags::SHAPE_ARC_ID,
-                        ShapeObject::Polygon(_) => tags::SHAPE_POLYGON_ID,
-                        ShapeObject::Curve(_) => tags::SHAPE_CURVE_ID,
-                        ShapeObject::Group(_) => tags::CTRL_GEN_SHAPE,
-                        ShapeObject::Picture(_) => tags::SHAPE_PICTURE_ID,
-                        ShapeObject::Chart(c) => c.drawing.shape_attr.ctrl_id,
-                        ShapeObject::Ole(o) => {
-                            if o.drawing.shape_attr.ctrl_id != 0 {
-                                o.drawing.shape_attr.ctrl_id
-                            } else {
-                                tags::SHAPE_OLE_ID
-                            }
-                        }
-                    };
-                    w.write_u32(child_ctrl_id).unwrap();
-                }
-                // instance_id (한컴 호환)
-                w.write_u32(group.common.instance_id).unwrap();
-                data.extend_from_slice(&w.into_bytes());
-                records.push(Record {
-                    tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                    level: level + 1,
-                    size: 0,
-                    data,
-                });
-            }
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: level + 1,
+                size: 0,
+                data: group_container_component_data(group, true),
+            });
             emit_ctrl_data(records);
             // 자식 개체 직렬화 (CTRL_HEADER 없이 SHAPE_COMPONENT + 도형별 태그)
             let child_comp_level = level + 2;
@@ -1447,6 +1416,43 @@ fn serialize_shape_control(
             });
         }
     }
+}
+
+/// 그룹('$con') SHAPE_COMPONENT 데이터: 공통 component + 자식 수(u16) +
+/// 자식 ctrl_id 목록(u32[]) + instance_id (한컴 호환). 최상위/중첩 그룹 공용.
+fn group_container_component_data(
+    group: &crate::model::shape::GroupShape,
+    top_level: bool,
+) -> Vec<u8> {
+    use crate::parser::tags;
+
+    let mut data = serialize_shape_component(0x24636f6e, &group.shape_attr, top_level); // '$con'
+    let mut w = ByteWriter::new();
+    w.write_u16(group.children.len() as u16).unwrap();
+    for child in &group.children {
+        let child_ctrl_id = match child {
+            ShapeObject::Line(_) => tags::SHAPE_LINE_ID,
+            ShapeObject::Rectangle(_) => tags::SHAPE_RECT_ID,
+            ShapeObject::Ellipse(_) => tags::SHAPE_ELLIPSE_ID,
+            ShapeObject::Arc(_) => tags::SHAPE_ARC_ID,
+            ShapeObject::Polygon(_) => tags::SHAPE_POLYGON_ID,
+            ShapeObject::Curve(_) => tags::SHAPE_CURVE_ID,
+            ShapeObject::Group(_) => tags::CTRL_GEN_SHAPE,
+            ShapeObject::Picture(_) => tags::SHAPE_PICTURE_ID,
+            ShapeObject::Chart(c) => c.drawing.shape_attr.ctrl_id,
+            ShapeObject::Ole(o) => {
+                if o.drawing.shape_attr.ctrl_id != 0 {
+                    o.drawing.shape_attr.ctrl_id
+                } else {
+                    tags::SHAPE_OLE_ID
+                }
+            }
+        };
+        w.write_u32(child_ctrl_id).unwrap();
+    }
+    w.write_u32(group.common.instance_id).unwrap();
+    data.extend_from_slice(&w.into_bytes());
+    data
 }
 
 /// 그룹 자식 개체 직렬화 (CTRL_HEADER 없이 SHAPE_COMPONENT + 도형별 태그)
@@ -1640,12 +1646,15 @@ fn serialize_group_child(
             });
         }
         ShapeObject::Group(group) => {
-            // 중첩 그룹
+            // [Task #1771] 중첩 그룹: 파서(parse_container_children)·한컴 계약은
+            // "자식 경계 = SHAPE_COMPONENT @ child_level ('$con') + 손자들이 더 깊은
+            // level" 이다. 기존 CONTAINER(0x56) 단독 방출은 경계로 인식되지 않아
+            // 재파스 시 하위 전체가 소실됐다 (3067999: children 710→12).
             records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_CONTAINER,
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_shape_component(tags::CTRL_GEN_SHAPE, &group.shape_attr, false),
+                data: group_container_component_data(group, false),
             });
             for nested_child in &group.children {
                 serialize_group_child(nested_child, comp_level + 1, comp_level + 2, records);
