@@ -569,14 +569,19 @@ fn serialize_numbering(numbering: &Numbering) -> Vec<u8> {
     w.into_bytes()
 }
 
-/// HWPTAG_BULLET 직렬화 (표 44: 글머리표, 20바이트)
+/// HWPTAG_BULLET 직렬화 (표 44: 글머리표)
+///
+/// 문단 머리 정보는 12바이트(attr 4 + width_adjust 2 + text_distance 2 +
+/// char_shape_id 4)다. char_shape_id 4바이트를 누락하면 재파싱 시
+/// bullet_char 오프셋이 어긋나 글머리표 문자가 NUL 로 손상된다 (#1793).
 fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // 문단 머리 정보 (8바이트)
+    // 문단 머리 정보 (12바이트)
     w.write_u32(bullet.attr).unwrap();
     w.write_i16(bullet.width_adjust).unwrap();
     w.write_i16(bullet.text_distance).unwrap();
+    w.write_u32(bullet.char_shape_id).unwrap();
 
     // 글머리표 문자 (WCHAR)
     w.write_u16(bullet.bullet_char as u16).unwrap();

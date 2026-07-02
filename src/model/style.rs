@@ -316,7 +316,7 @@ pub struct NumberingHead {
     pub number_format: u8,
 }
 
-/// 글머리표 정의 (HWPTAG_BULLET, 표 44, 20바이트)
+/// 글머리표 정의 (HWPTAG_BULLET, 표 44, 24바이트)
 #[derive(Debug, Clone, Default)]
 pub struct Bullet {
     /// 원본 레코드 바이트 (라운드트립 보존용)
@@ -327,6 +327,8 @@ pub struct Bullet {
     pub width_adjust: i16,
     /// 본문과의 거리
     pub text_distance: i16,
+    /// 글자 모양 아이디 참조 (문단 머리 정보 12바이트의 마지막 4바이트)
+    pub char_shape_id: u32,
     /// 글머리표 문자 (●, ■, ▶ 등)
     pub bullet_char: char,
     /// 이미지 글머리표 여부 (0=문자, ID=이미지)

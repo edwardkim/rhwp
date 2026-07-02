@@ -520,7 +520,9 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                 prev_end = offset + 1;
             }
             '\u{00A0}' => {
-                code_units.push(0x0018);
+                // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈으로
+                // 재파싱 시 '-' 가 되므로 쓰면 안 된다 (#1793).
+                code_units.push(0x001E);
                 prev_end = offset + 1;
             }
             '\u{2007}' => {
@@ -1116,6 +1118,22 @@ mod tests {
 
         assert_eq!(&bytes[8..10], &0x001F_u16.to_le_bytes());
         assert_ne!(compute_control_mask(&para) & (1u32 << 0x001f), 0);
+    }
+
+    /// [#1793] 묶음 빈칸(NBSP, U+00A0)은 코드 30(0x1E)으로 직렬화되어야 한다.
+    /// 코드 24(0x18)는 하이픈이라 재파싱 시 '-' 로 손상된다.
+    #[test]
+    fn test_nbsp_serializes_as_code_30() {
+        let para = Paragraph {
+            char_count: 4,
+            text: "가\u{00A0}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
     }
 
     /// 컨트롤 문자 코드 매핑 테스트
