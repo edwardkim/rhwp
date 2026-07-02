@@ -9653,7 +9653,27 @@ impl TypesetEngine {
                     bottom_px <= st.base_available_height() + 0.5
                 })
                 .unwrap_or(false);
-        if (st.current_height >= available || remaining < first_line_h)
+        // [Task #1750] 저장 LINE_SEG 가 문단 전체를 새 쪽 상단으로 인코딩한 경우
+        // (첫 줄 vpos 가 near-top 으로 리셋 + 직전 문단은 페이지 하단부) 분할하지
+        // 않고 페이지를 넘긴다. 단일 단 vpos-reset 가드(line 2279)는 cv==0 만
+        // 인정하므로 near-top(예: 700HU) 리셋 문서는 분할 경로로 새어 들어와
+        // 첫 줄이 이전 쪽 말미에 남는다 (3024019 pi22: ls[0] vpos=700, 한글도
+        // 문단 전체를 새 쪽 배치). 전체 배치가 이미 실패한 분할 직전에만 적용해
+        // 일반 흐름(#418/#321 보수 기준)은 건드리지 않는다.
+        let stored_whole_para_reset = st.col_count == 1
+            && para_idx > 0
+            && para
+                .line_segs
+                .first()
+                .filter(|ls| !is_synthetic_line_seg(ls))
+                .map(|ls| ls.vertical_pos > 0 && ls.vertical_pos <= 2500)
+                .unwrap_or(false)
+            && paragraphs[para_idx - 1]
+                .line_segs
+                .last()
+                .map(|s| s.vertical_pos + s.line_height > 60_000)
+                .unwrap_or(false);
+        if (st.current_height >= available || remaining < first_line_h || stored_whole_para_reset)
             && !st.current_items.is_empty()
             && !hwp_first_line_before_reset_fits
         {
