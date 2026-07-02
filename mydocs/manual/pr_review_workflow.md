@@ -153,7 +153,25 @@ git status
 
 충돌 없으면 그대로 진행, 충돌 시 해결 방침 작업지시자 결정 요청.
 
-### 4.2.1 여러 PR 체리픽 누적 검토
+### 4.2.1 시각 검증 사용 기준
+
+일반 PR review 와 여러 PR 체리픽 누적 검토 모두에서, PR 내용상 렌더링 결과 확인이 필요하면
+[PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 사용할 수 있다. 시각 검증은 모든 샘플 PR 에
+기계적으로 수행하는 절차가 아니라, PR 의 수정 목적과 검증해야 할 사용자-visible 동작에 맞춰 선택한다.
+
+시각 검증 후보 예시는 다음과 같다.
+
+- renderer/layout/typeset/paint/wasm 출력이 바뀌는 PR
+- HWP/HWPX 샘플, 기준 PDF, visual regression 자료가 추가된 PR
+- 페이지 수, 쪽 경계, 표/그림 자리차지, 텍스트 wrap, clipping, 색상/밑줄처럼 눈으로 확인해야 하는 이슈
+- 코드 검증은 통과하지만 PR 설명상 기준 PDF 또는 한컴 출력과의 비교가 필요한 PR
+
+Codex 와 Claude 는 visual sweep 을 수행한 경우 `compare`, `overlay`, `review` PNG 경로와
+`visual_accuracy_proxy_percent` 를 제시하고, 검증 이미지를 확인한 뒤 작업지시자 승인 없이 시각 판정을
+최종 통과로 단정하지 않는다. 시각 검증 PNG 를 PR 기록 자산으로 남길 때는 후속 문서/자산 PR 에서
+`mydocs/pr/assets/` 아래에 포함하고, 원시 PR 코멘트에는 해당 asset 링크와 리뷰 결론을 안내한다.
+
+### 4.2.2 여러 PR 체리픽 누적 검토
 
 여러 PR 이 같은 영역을 단계적으로 수정하고 오래된 순서대로 merge 해야 하는 경우, 별도 로컬 브랜치에서
 `upstream/devel` 기준 체리픽 누적 검토를 할 수 있다. 이때도 리뷰 기록은 반드시 원 PR 번호별로 분리한다.
@@ -164,10 +182,6 @@ git status
 - `mydocs/pr/pr_{N}_review.md`, `mydocs/pr/pr_{N}_review_impl.md` 는 각 PR 번호별로 작성한다.
 - 각 review 문서에는 체리픽 순서, 적용한 커밋 SHA, 충돌 여부, 선행 PR 의존 여부를 해당 PR 기준으로 기록한다.
 - 여러 PR 을 한꺼번에 로컬 검증했더라도 GitHub merge 전에는 각 PR 의 최신 head, mergeable, required checks 를 개별 확인한다.
-
-시각적 검증이 필요한 PR 이 포함되면 [PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 따른다. Codex 는
-`compare`, `overlay`, `review` PNG 경로와 `visual_accuracy_proxy_percent` 를 제시하고, 검증 이미지를 확인한 뒤
-작업지시자 승인 없이 시각 판정을 최종 통과로 단정하지 않는다.
 
 ### 4.3 빌드 · 테스트
 

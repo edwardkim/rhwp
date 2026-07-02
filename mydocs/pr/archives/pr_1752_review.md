@@ -79,7 +79,7 @@
 ## PR 코멘트 처리 시 PNG 위치
 
 - 추가 보완 후보 대표 샘플 1장의 로컬 위치만 기록한다.
-- 코멘트 처리 시 제시할 PNG: `output/pr-page2-visual/pr1752-saved-bounds-page-break-hwpx/review/review_005.png`
+- 코멘트 처리 시 제시할 PNG: `mydocs/pr/assets/pr_1752_visual_review_p5_followup_candidate.png`
 - 코멘트 요지: PR 핵심 조건(pi26 2쪽 마지막 문단 유지, 전체 5쪽 유지)은 맞지만, HWPX p5 하단 tail/line drift 후보가 남아 후속 이슈로 분리해 추적한다.
 - 코멘트 요지에 다음 요청도 포함한다: 이후 시각 대조가 필요한 샘플을 추가할 때는 한컴 2020, 한컴 2024 등 기준 환경에서 저장한 PDF 파일도 함께 업로드해 달라고 요청한다.
 - 정상 케이스 PNG는 별도로 첨부하지 않는다. 이 PR 코멘트는 보완 후보 1장만 첨부해 후속 범위를 명확히 한다.

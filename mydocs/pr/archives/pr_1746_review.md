@@ -76,7 +76,7 @@
 ## PR 코멘트 처리 시 PNG 위치
 
 - 정상 대표 샘플 1장의 로컬 위치만 기록한다.
-- 코멘트 처리 시 제시할 PNG: `output/pr1746-visual/pr1746-table-text-anchor/review/review_002.png`
+- 코멘트 처리 시 제시할 PNG: `mydocs/pr/assets/pr_1746_visual_review_p2.png`
 - 코멘트 요지: PR 포함 HWP 샘플의 p2 기준으로 후속 문단 wrap strip이 유지되며, visual sweep 자동 후보는 0/3이다.
 - 코멘트 요지에 다음 요청도 포함한다: 이후 시각 대조가 필요한 샘플을 추가할 때는 한컴 2020, 한컴 2024 등 기준 환경에서 저장한 PDF 파일도 함께 업로드해 달라고 요청한다.
 - 보조 untracked HWPX p2 후보 이미지는 PR 범위 밖 후속 검토 자료이므로 #1746 머지 코멘트에는 첨부하지 않는다.

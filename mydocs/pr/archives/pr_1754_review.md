@@ -65,7 +65,7 @@
 ## PR 코멘트 처리 시 PNG 위치
 
 - 정상 대표 샘플 1장의 로컬 위치만 기록한다.
-- 코멘트 처리 시 제시할 PNG: `output/pr-page2-visual/pr1754-deferred-fill-hwpx/review/review_009.png`
+- 코멘트 처리 시 제시할 PNG: `mydocs/pr/assets/pr_1754_visual_review_p9.png`
 - 코멘트 요지: p9에서 pi=52/53 후속 control-free 문단이 현재 쪽 잔여 공간에 선행 배치되고, HWP/HWPX visual sweep 자동 후보는 모두 0/21이다.
 - 코멘트 요지에 다음 요청도 포함한다: 이후 시각 대조가 필요한 샘플을 추가할 때는 한컴 2020, 한컴 2024 등 기준 환경에서 저장한 PDF 파일도 함께 업로드해 달라고 요청한다.
 
