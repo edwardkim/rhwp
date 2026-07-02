@@ -533,6 +533,7 @@ collaborator 가 외부 PR head 또는 별도 후속 PR 에 review/운영 문서
   - `mydocs/**`
   - 신규 추가(`added`) 상태의 `samples/**/*.hwp`
   - 신규 추가(`added`) 상태의 `samples/**/*.hwpx`
+  - 신규 추가(`added`) 상태의 `samples/**/*.pdf`
   - 신규 추가(`added`) 상태의 `pdf/**/*.pdf`
 - 기존 `samples/**` 또는 `pdf/**` 파일을 수정, 삭제, rename 한 경우 fast-pass 대상이 아니다.
 - 해당 후속 커밋들은 single-parent commit 이다.
