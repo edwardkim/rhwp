@@ -3691,6 +3691,27 @@ impl LayoutEngine {
                 PageItem::PartialTable { para_index, .. } => *para_index,
                 PageItem::Shape { para_index, .. } => *para_index,
                 PageItem::EndnoteSeparator { .. } => {
+                    // 한컴 정합: 미주 구분선/본문은 직전 본문 마지막 줄의 '텍스트 바닥'을
+                    // 기준으로 배치된다 — 구분선 = 바닥 + aboveLine, 본문 = 구분선 + belowLine.
+                    // 마지막 줄의 trailing 줄간격(line_spacing)은 note 영역 어디에도 포함되지
+                    // 않는다. rhwp 문단 advance 는 그 trailing 줄간격을 포함하므로, note 영역
+                    // '전체'(구분선+본문)를 그만큼 위로 올린다(=y_offset 에서 한 번만 빼고 다시
+                    // 더하지 않는다). 측정: above(본문→구분선)=12px≈aboveLine(850HU) 일치,
+                    // below(구분선→본문) rhwp 18px→한컴 10px = trailing 줄간격 8px(600HU) 초과분
+                    // 을 재분류하던 것을 제거. (직전 hack 은 다시 더해 본문만 8px 아래로 밀렸음.)
+                    let trailing_ls_px = col_content.items[..item_ordinal]
+                        .iter()
+                        .rev()
+                        .find_map(|it| match it {
+                            PageItem::FullParagraph { para_index }
+                            | PageItem::PartialParagraph { para_index, .. } => paragraphs
+                                .get(*para_index)
+                                .and_then(|p| p.line_segs.last())
+                                .filter(|ls| ls.line_spacing > 0)
+                                .map(|ls| hwpunit_to_px(ls.line_spacing, self.dpi)),
+                            _ => None,
+                        })
+                        .unwrap_or(0.0);
                     let (new_y, _) = self.layout_column_item(
                         tree,
                         &mut col_node,
@@ -3710,7 +3731,7 @@ impl LayoutEngine {
                         col_area,
                         outline_numbering_id,
                         multi_col_width,
-                        y_offset,
+                        (y_offset - trailing_ls_px).max(0.0),
                         prev_tac_seg_applied,
                         wrap_around_paras,
                         &col_content.wrap_anchors,
@@ -5462,10 +5483,17 @@ impl LayoutEngine {
         y_offset += hwpunit_to_px(margin_above as i32, self.dpi);
         let has_separator = line_type != 0 && line_width_raw != 0;
         let line_width = if has_separator {
-            let line_width = border_width_to_px(line_width_raw).max(0.5);
+            // 한컴은 0.12mm 급 얇은 구분선도 최소 1px 실선으로 그린다(측정: bar row
+            // avg~64). rhwp 의 0.5px 는 50% 회색(avg~128)으로 너무 흐리게 나오므로
+            // 최소 1px 로 올려 실선 두께를 맞춘다.
+            let line_width = border_width_to_px(line_width_raw).max(1.0);
             let sep_length = if separator_length > 0 {
+                // 명시 길이는 단 너비로 clamp (한컴도 과길이 값을 단 폭으로 자름).
                 hwpunit_to_px(separator_length as i32, self.dpi).min(col_area.width)
             } else {
+                // length="-1"(그리고 0)은 한컴의 "기본 구분선" sentinel = 단 전폭이 아니라
+                // 짧은 기본 길이다. Frida 로 Hwp.exe 를 -1 fixture 로 spawn 해 측정: 구분선
+                // 236px / 단 596px = 약 40% (전폭 아님). 큰 값(14692344 등)만 단 전폭으로 clamp.
                 col_area.width / 3.0
             };
             let line_id = tree.next_id();
