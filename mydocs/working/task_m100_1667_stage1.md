@@ -88,7 +88,11 @@ merge 후 `devel` push run에서 다음을 확인한다.
 - saved cache 크기
 - cache reservation/read-only/save failure 경고 여부
 
-## 다음 단계
+## 후속 관측
 
-draft PR을 생성한 뒤 PR run에서 위 관측 항목을 확인한다. PR CI 관측 결과와 merge 후 `devel` push 관측 결과는
-measurement 문서 또는 후속 stage 보고서에 분리해 기록한다.
+PR #1857 merge 후 PR run과 `devel` push run 관측값은
+`mydocs/report/task_m100_1667_measurement.md`에 원천 측정값으로 분리 기록한다.
+
+이 단계에서 확인할 핵심은 CodeQL Rust cache의 PR restore-only / trusted branch save-only 정책 정렬이다.
+exact cache hit 이후에도 남는 `Dirty rhwp` / `Compiling rhwp`, Render Diff cargo cache, stale PR ref cleanup은
+#1667 후속 단계에서 별도로 판단한다.
